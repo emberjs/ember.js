@@ -1050,7 +1050,7 @@ function registerLibraries() {
   if (!librariesRegistered) {
     librariesRegistered = true;
 
-    if (environment.hasDOM) {
+    if (environment.hasDOM && typeof jQuery === 'function') {
       libraries.registerCoreLibrary('jQuery', jQuery().jquery);
     }
   }

@@ -4,6 +4,8 @@ import { guidFor } from 'ember-metal/utils';
 import { Mixin } from 'ember-metal/mixin';
 import { POST_INIT } from 'ember-runtime/system/core_object';
 import symbol from 'ember-metal/symbol';
+import { environment } from 'ember-environment';
+import { matches } from 'ember-views/system/utils';
 
 const INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
 
@@ -129,23 +131,34 @@ export default Mixin.create({
     @private
   */
   appendTo(selector) {
-    let $ = this._environment ? this._environment.options.jQuery : jQuery;
+    let env = this._environment || environment;
+    let target;
 
-    if ($) {
-      let target = $(selector);
+    if (env.hasDOM) {
+      target = typeof selector === 'string' ? document.querySelector(selector) : selector;
 
-      assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target.length > 0);
-      assert('You cannot append to an existing Ember.View.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
+      assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target);
+      assert('You cannot append to an existing Ember.View.', !matches(target, '.ember-view'));
+      assert('You cannot append to an existing Ember.View.', (function() {
+        let node = target.parentNode;
+        while (node) {
+          if (node.nodeType !== 9 && matches(node, '.ember-view')) {
+            return false;
+          }
 
-      this.renderer.appendTo(this, target[0]);
+          node = node.parentNode;
+        }
+
+        return true;
+      })());
     } else {
-      let target = selector;
+      target = selector;
 
       assert('You tried to append to a selector string (' + selector + ') in an environment without jQuery', typeof target !== 'string');
       assert('You tried to append to a non-Element (' + selector + ') in an environment without jQuery', typeof selector.appendChild === 'function');
-
-      this.renderer.appendTo(this, target);
     }
+
+    this.renderer.appendTo(this, target);
 
     return this;
   },

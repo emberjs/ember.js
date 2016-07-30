@@ -1,3 +1,5 @@
+/* globals Element */
+
 /**
 @module ember
 @submodule ember-views
@@ -58,4 +60,24 @@ export function getViewClientRects(view) {
 export function getViewBoundingClientRect(view) {
   let range = getViewRange(view);
   return range.getBoundingClientRect();
+}
+
+/**
+  Determines if the element matches the specified selector.
+
+  @private
+  @method matches
+  @param {DOMElement} el
+  @param {String} selector
+*/
+export const elMatches = typeof Element !== 'undefined' &&
+  (Element.prototype.matches ||
+   Element.prototype.matchesSelector ||
+   Element.prototype.mozMatchesSelector ||
+   Element.prototype.msMatchesSelector ||
+   Element.prototype.oMatchesSelector ||
+   Element.prototype.webkitMatchesSelector);
+
+export function matches(el, selector) {
+  return elMatches.call(el, selector);
 }
