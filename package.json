@@ -39,7 +39,7 @@
     "git-repo-info": "^1.1.4",
     "git-repo-version": "^0.3.1",
     "github": "^0.2.3",
-    "glimmer-engine": "tildeio/glimmer#2b342e2",
+    "glimmer-engine": "tildeio/glimmer#c48c75b",
     "glob": "^5.0.13",
     "htmlbars": "0.14.24",
     "mocha": "^2.4.5",
