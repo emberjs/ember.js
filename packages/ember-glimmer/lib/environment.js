@@ -141,7 +141,7 @@ export default class Environment extends GlimmerEnvironment {
     });
 
     this._templateCache = new Cache(1000, Template => {
-      return new Template(this);
+      return Template.create({ env: this });
     }, template => template.id);
 
     this._compilerCache = new Cache(10, Compiler => {
