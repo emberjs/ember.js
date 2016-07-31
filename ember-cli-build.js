@@ -73,9 +73,14 @@ function babelConfigFor(environment) {
 
   var isProduction = (environment === 'production');
   if (isProduction) {
-    plugins.push(filterImports({
-      'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal']
-    }));
+    var debugImportsConfig = {'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal']};
+    var filterDebugImportsPlugin = filterImports(debugImportsConfig);
+
+    filterDebugImportsPlugin._augmentCacheKey = function() {
+      return JSON.stringify(debugImportsConfig);
+    };
+
+    plugins.push(filterDebugImportsPlugin);
   }
 
   return { plugins: plugins };
