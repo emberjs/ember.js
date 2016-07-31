@@ -11,6 +11,8 @@ moduleFor('outlet view', class extends RenderingTest {
   }
 
   ['@htmlbars should render the outlet when set after DOM insertion']() {
+    // fails in glimmer because of an attempt to access `.id` on
+    // the provided template (which is undefined)
     let outletState = {
       render: {
         owner: this.owner,
@@ -31,6 +33,7 @@ moduleFor('outlet view', class extends RenderingTest {
 
     this.assertText('');
 
+    this.registerTemplate('application', 'HI{{outlet}}');
     outletState = {
       render: {
         owner: this.owner,
@@ -39,7 +42,7 @@ moduleFor('outlet view', class extends RenderingTest {
         name: 'application',
         controller: {},
         ViewClass: undefined,
-        template: this.compile('HI{{outlet}}')
+        template: this.owner.lookup('template:application')
       },
       outlets: Object.create(null)
     };
@@ -50,15 +53,16 @@ moduleFor('outlet view', class extends RenderingTest {
 
     this.assertStableRerender();
 
+    this.registerTemplate('index', '<p>BYE</p>');
     outletState.outlets.main = {
       render: {
         owner: this.owner,
         into: undefined,
         outlet: 'main',
-        name: 'application',
+        name: 'index',
         controller: {},
         ViewClass: undefined,
-        template: this.compile('<p>BYE</p>')
+        template: this.owner.lookup('template:index')
       },
       outlets: Object.create(null)
     };
@@ -68,7 +72,8 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertText('HIBYE');
   }
 
-  ['@htmlbars should render the outlet when set before DOM insertion']() {
+  ['@test should render the outlet when set before DOM insertion']() {
+    this.registerTemplate('application', 'HI{{outlet}}');
     let outletState = {
       render: {
         owner: this.owner,
@@ -77,7 +82,7 @@ moduleFor('outlet view', class extends RenderingTest {
         name: 'application',
         controller: {},
         ViewClass: undefined,
-        template: this.compile('HI{{outlet}}')
+        template: this.owner.lookup('template:application')
       },
       outlets: Object.create(null)
     };
@@ -90,15 +95,16 @@ moduleFor('outlet view', class extends RenderingTest {
 
     this.assertStableRerender();
 
+    this.registerTemplate('index', '<p>BYE</p>');
     outletState.outlets.main = {
       render: {
         owner: this.owner,
         into: undefined,
         outlet: 'main',
-        name: 'application',
+        name: 'index',
         controller: {},
         ViewClass: undefined,
-        template: this.compile('<p>BYE</p>')
+        template: this.owner.lookup('template:index')
       },
       outlets: Object.create(null)
     };
@@ -108,7 +114,8 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertText('HIBYE');
   }
 
-  ['@htmlbars should support an optional name']() {
+  ['@test should support an optional name']() {
+    this.registerTemplate('application', '<h1>HI</h1>{{outlet "special"}}');
     let outletState = {
       render: {
         owner: this.owner,
@@ -117,7 +124,7 @@ moduleFor('outlet view', class extends RenderingTest {
         name: 'application',
         controller: {},
         ViewClass: undefined,
-        template: this.compile('<h1>HI</h1>{{outlet "special"}}')
+        template: this.owner.lookup('template:application')
       },
       outlets: Object.create(null)
     };
@@ -130,15 +137,16 @@ moduleFor('outlet view', class extends RenderingTest {
 
     this.assertStableRerender();
 
+    this.registerTemplate('special', '<p>BYE</p>');
     outletState.outlets.special = {
       render: {
         owner: this.owner,
         into: undefined,
         outlet: 'main',
-        name: 'application',
+        name: 'special',
         controller: {},
         ViewClass: undefined,
-        template: this.compile('<p>BYE</p>')
+        template: this.owner.lookup('template:special')
       },
       outlets: Object.create(null)
     };
@@ -150,6 +158,7 @@ moduleFor('outlet view', class extends RenderingTest {
 
   ['@htmlbars should support bound outlet name']() {
     let controller = { outletName: 'foo' };
+    this.registerTemplate('application', '<h1>HI</h1>{{outlet outletName}}');
     let outletState = {
       render: {
         owner: this.owner,
@@ -158,7 +167,7 @@ moduleFor('outlet view', class extends RenderingTest {
         name: 'application',
         controller: controller,
         ViewClass: undefined,
-        template: this.compile('<h1>HI</h1>{{outlet outletName}}')
+        template: this.owner.lookup('template:application')
       },
       outlets: Object.create(null)
     };
@@ -171,28 +180,30 @@ moduleFor('outlet view', class extends RenderingTest {
 
     this.assertStableRerender();
 
+    this.registerTemplate('foo', '<p>FOO</p>');
     outletState.outlets.foo = {
       render: {
         owner: this.owner,
         into: undefined,
         outlet: 'main',
-        name: 'application',
+        name: 'foo',
         controller: {},
         ViewClass: undefined,
-        template: this.compile('<p>FOO</p>')
+        template: this.owner.lookup('template:foo')
       },
       outlets: Object.create(null)
     };
 
+    this.registerTemplate('bar', '<p>BAR</p>');
     outletState.outlets.bar = {
       render: {
         owner: this.owner,
         into: undefined,
         outlet: 'main',
-        name: 'application',
+        name: 'bar',
         controller: {},
         ViewClass: undefined,
-        template: this.compile('<p>BAR</p>')
+        template: this.owner.lookup('template:bar')
       },
       outlets: Object.create(null)
     };
