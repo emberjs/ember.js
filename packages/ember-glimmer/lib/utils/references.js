@@ -67,21 +67,6 @@ export class RootReference extends ConstReference {
   get(propertyKey) {
     let self = this.value();
     let ref = self[REFERENCE_FOR_KEY] && self[REFERENCE_FOR_KEY](propertyKey);
-
-    if (isEnabled('mandatory-setter')) {
-      if (ref) {
-        let _ref = ref;
-
-        ref = Object.create(ref);
-
-        ref.value = function() {
-          let meta = metaFor(self);
-          watchKey(self, propertyKey, meta);
-          return _ref.value();
-        };
-      }
-    }
-
     return ref || new PropertyReference(this, propertyKey);
   }
 }
