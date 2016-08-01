@@ -395,11 +395,7 @@ export const ArrayTestCases = {
 
 };
 
-// Testing behaviors shared across the "toggling" conditionals, i.e. {{#if}},
-// {{#unless}}, {{#with}}, (if) and (unless)
-export class TogglingConditionalsTest extends BasicConditionalsTest {}
-
-applyMixins(TogglingConditionalsTest,
+const IfUnlessWithTestCases = [
 
   new StableTruthyGenerator([
     true,
@@ -474,7 +470,11 @@ applyMixins(TogglingConditionalsTest,
 
   ArrayTestCases
 
-);
+];
+
+// Testing behaviors shared across the "toggling" conditionals, i.e. {{#if}},
+// {{#unless}}, {{#with}}, {{#each}}, {{#each-in}}, (if) and (unless)
+export class TogglingConditionalsTest extends BasicConditionalsTest {}
 
 // Testing behaviors shared across the (if) and (unless) helpers
 export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
@@ -492,6 +492,44 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
     let wrappedTemplate = this.wrapperFor(templates);
     this.render(wrappedTemplate, context);
+  }
+
+  ['@test it has access to the outer scope from both templates']() {
+    let template = this.wrapperFor([
+      this.templateFor({ cond: 'cond1', truthy: 'truthy', falsy: 'falsy' }),
+      this.templateFor({ cond: 'cond2', truthy: 'truthy', falsy: 'falsy' })
+    ]);
+
+    this.render(template, { cond1: this.truthyValue, cond2: this.falsyValue, truthy: 'YES', falsy: 'NO' });
+
+    this.assertText('YESNO');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('YESNO');
+
+    this.runTask(() => {
+      set(this.context, 'truthy', 'YASS');
+      set(this.context, 'falsy', 'NOPE');
+    });
+
+    this.assertText('YASSNOPE');
+
+    this.runTask(() => {
+      set(this.context, 'cond1', this.falsyValue);
+      set(this.context, 'cond2', this.truthyValue);
+    });
+
+    this.assertText('NOPEYASS');
+
+    this.runTask(() => {
+      set(this.context, 'truthy', 'YES');
+      set(this.context, 'falsy', 'NO');
+      set(this.context, 'cond1', this.truthyValue);
+      set(this.context, 'cond2', this.falsyValue);
+    });
+
+    this.assertText('YESNO');
   }
 
   ['@test it does not update when the unbound helper is used']() {
@@ -582,7 +620,13 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
 }
 
-export const SyntaxCondtionalTestHelpers = {
+export class IfUnlessHelperTest extends TogglingHelperConditionalsTest {}
+
+applyMixins(IfUnlessHelperTest, ...IfUnlessWithTestCases);
+
+// Testing behaviors shared across the "toggling" syntatical constructs,
+// i.e. {{#if}}, {{#unless}}, {{#with}}, {{#each}} and {{#each-in}}
+export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
   renderValues(...values) {
     let templates = [];
@@ -597,12 +641,6 @@ export const SyntaxCondtionalTestHelpers = {
     this.render(wrappedTemplate, assign({ t: 'T', f: 'F' }, context));
   }
 
-};
-
-// Testing behaviors shared across the "toggling" syntatical constructs,
-// i.e. {{#if}}, {{#unless}} and {{#with}}
-export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
-
   ['@test it does not update when the unbound helper is used']() {
     let template = `${
       this.templateFor({ cond: '(unbound cond1)', truthy: 'T1', falsy: 'F1' })
@@ -610,7 +648,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
       this.templateFor({ cond: '(unbound cond2)', truthy: 'T2', falsy: 'F2' })
     }`;
 
-    this.render(template, { cond1: true, cond2: this.falsyValue });
+    this.render(template, { cond1: this.truthyValue, cond2: this.falsyValue });
 
     this.assertText('T1F2');
 
@@ -635,6 +673,44 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     });
 
     this.assertText('T1F2');
+  }
+
+  ['@test it has access to the outer scope from both templates']() {
+    let template = this.wrapperFor([
+      this.templateFor({ cond: 'cond1', truthy: '{{truthy}}', falsy: '{{falsy}}' }),
+      this.templateFor({ cond: 'cond2', truthy: '{{truthy}}', falsy: '{{falsy}}' })
+    ]);
+
+    this.render(template, { cond1: this.truthyValue, cond2: this.falsyValue, truthy: 'YES', falsy: 'NO' });
+
+    this.assertText('YESNO');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('YESNO');
+
+    this.runTask(() => {
+      set(this.context, 'truthy', 'YASS');
+      set(this.context, 'falsy', 'NOPE');
+    });
+
+    this.assertText('YASSNOPE');
+
+    this.runTask(() => {
+      set(this.context, 'cond1', this.falsyValue);
+      set(this.context, 'cond2', this.truthyValue);
+    });
+
+    this.assertText('NOPEYASS');
+
+    this.runTask(() => {
+      set(this.context, 'truthy', 'YES');
+      set(this.context, 'falsy', 'NO');
+      set(this.context, 'cond1', this.truthyValue);
+      set(this.context, 'cond2', this.falsyValue);
+    });
+
+    this.assertText('YESNO');
   }
 
   ['@test it updates correctly when enclosing another conditional']() {
@@ -822,4 +898,6 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
 }
 
-applyMixins(TogglingSyntaxConditionalsTest, SyntaxCondtionalTestHelpers);
+export class IfUnlessWithSyntaxTest extends TogglingSyntaxConditionalsTest {}
+
+applyMixins(IfUnlessWithSyntaxTest, ...IfUnlessWithTestCases);

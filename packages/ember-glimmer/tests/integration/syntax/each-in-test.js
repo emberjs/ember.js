@@ -7,27 +7,24 @@ import ObjectProxy from 'ember-runtime/system/object_proxy';
 import EmberObject from 'ember-runtime/system/object';
 
 import {
-  BasicConditionalsTest,
-  SyntaxCondtionalTestHelpers,
+  TogglingSyntaxConditionalsTest,
   TruthyGenerator,
   FalsyGenerator
 } from '../../utils/shared-conditional-tests';
 
-class EachInTest extends BasicConditionalsTest {
+class EachInTest extends TogglingSyntaxConditionalsTest {
 
   get truthyValue() {
     return { 'Not Empty': 1 };
   }
 
   get falsyValue() {
-    return {};
+    return false;
   }
 
 }
 
 applyMixins(EachInTest,
-
-  SyntaxCondtionalTestHelpers,
 
   new TruthyGenerator([
     // TODO: figure out what the rest of the cases are
