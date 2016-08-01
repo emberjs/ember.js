@@ -173,7 +173,7 @@ module.exports = function() {
   ]);
 
   var glimmerTests = merge([
-    // transpiledTSLintTree, current disabled due to failures
+    transpiledTSLintTree,
     find(jsTree, { include: ['*/tests/**/*.js'] }),
     find(jsTree, { include: ['glimmer-test-helpers/**/*.js'] })
   ]);
