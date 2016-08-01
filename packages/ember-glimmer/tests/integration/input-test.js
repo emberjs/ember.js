@@ -33,6 +33,22 @@ moduleFor('Input element tests', class extends RenderingTest {
     this.assertPropertyHasValue(propertyName, values[0], `${propertyName} can be set back to the initial value`);
   }
 
+  runFalsyValueProperty(values) {
+    let value = 'value';
+    let template = `<input value={{value}}>`;
+    this.render(template, { value: values[0] });
+    this.assertPropertyHasValue(value, '', `${value} is set on initial render`);
+
+    this.runTask(() => this.rerender());
+    this.assertPropertyHasValue(value, '', `${value} is set on noop rerender`);
+    this.setComponentValue(values[1]);
+
+    this.assertPropertyHasValue(value, values[1], `${value} is set on rerender`);
+
+    this.setComponentValue(values[0]);
+    this.assertPropertyHasValue(value, '', `${value} can be set back to the initial value`);
+  }
+
   ['@test input disabled attribute']() {
     this.runPropertyTest('disabled', [false, true]);
   }
@@ -59,6 +75,18 @@ moduleFor('Input element tests', class extends RenderingTest {
 
   ['@test input tabindex attribute']() {
     this.runAttributeTest('tabindex', [2, 3]);
+  }
+
+  ['@test null input value']() {
+    this.runFalsyValueProperty([null, 'hello']);
+  }
+
+  ['@test undefined input value']() {
+    this.runFalsyValueProperty([undefined, 'hello']);
+  }
+
+  ['@glimmer undefined `toString` method as input value']() {
+    this.runFalsyValueProperty([Object.create(null), 'hello']);
   }
 
   ['@test cursor position is not lost when updating content']() {
