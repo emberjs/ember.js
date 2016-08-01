@@ -79,8 +79,10 @@ versions of jQuery.
 ## From ember-cli
 
 1. `ember test --server`
-2. connect the browsers you want
-3. if phantom didn't connect automatically, you can run `./bin/connect-phantom-to <optional-port>`
+
+2. Connect the browsers you want.
+
+3. If phantom didn't connect automatically, you can run `./bin/connect-phantom-to <optional-port>`.
 
 To run a specific browser, you can use the `--launch` flag
 
