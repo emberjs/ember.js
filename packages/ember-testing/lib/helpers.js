@@ -55,6 +55,7 @@ asyncHelper('visit', visit);
 
   @method click
   @param {String} selector jQuery selector for finding element on the DOM
+  @param {Object} context A DOM Element, Document, or jQuery to use as context
   @return {RSVP.Promise}
   @public
 */
