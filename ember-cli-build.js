@@ -97,7 +97,7 @@ function getVersion() {
   var projectPath = process.cwd();
   var info = getGitInfo(projectPath);
   if (info.tag) {
-    return info.tag;
+    return info.tag.replace(/^v/, '');
   }
 
   var packageVersion  = require(path.join(projectPath, 'package.json')).version;
