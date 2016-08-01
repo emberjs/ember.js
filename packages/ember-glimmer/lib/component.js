@@ -20,6 +20,7 @@ import {
   PropertyReference
 } from './utils/references';
 import { DirtyableTag } from 'glimmer-reference';
+import { readDOMAttr } from 'glimmer-runtime';
 import { assert, deprecate } from 'ember-metal/debug';
 import { NAME_KEY } from 'ember-metal/mixin';
 import { getOwner } from 'container/owner';
@@ -116,8 +117,7 @@ const Component = CoreView.extend(
     },
 
     readDOMAttr(name) {
-      // TODO this is probably not correct
-      return this.element.getAttribute(name);
+      return readDOMAttr(this.element, name);
     },
 
     [TO_ROOT_REFERENCE]() {

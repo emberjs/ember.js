@@ -1,6 +1,7 @@
 /* globals EmberDev */
 import isEnabled from 'ember-metal/features';
 import { set } from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
 import { observer } from 'ember-metal/mixin';
 import EmberObject from 'ember-runtime/system/object';
 import { Component, compile, htmlSafe } from '../../utils/helpers';
@@ -2687,4 +2688,65 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
   }
 
+  ['@test it can use readDOMAttr to read input value']() {
+    let component;
+    let assertElement = (expectedValue) => {
+      // value is a property, not an attribute
+      this.assertHTML(`<input class="ember-view" id="${component.elementId}">`);
+      this.assert.equal(this.firstChild.value, expectedValue, 'value property is correct');
+      this.assert.equal(get(component, 'value'), expectedValue, 'component.get("value") is correct');
+    };
+
+    this.registerComponent('one-way-input', {
+      ComponentClass: Component.extend({
+        tagName: 'input',
+        attributeBindings: ['value'],
+
+        init() {
+          this._super(...arguments);
+          component = this;
+        },
+
+        change() {
+          let value = this.readDOMAttr('value');
+          this.set('value', value);
+        }
+      })
+    });
+
+    this.render('{{one-way-input value=value}}', {
+      value: 'foo'
+    });
+
+    assertElement('foo');
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      this.firstChild.value = 'bar';
+      this.$('input').trigger('change');
+    });
+
+    assertElement('bar');
+
+    this.runTask(() => {
+      this.firstChild.value = 'foo';
+      this.$('input').trigger('change');
+    });
+
+    assertElement('foo');
+
+    this.runTask(() => {
+      set(component, 'value', 'bar');
+    });
+
+    assertElement('bar');
+
+    this.runTask(() => {
+      this.firstChild.value = 'foo';
+      this.$('input').trigger('change');
+    });
+
+    assertElement('foo');
+  }
 });
