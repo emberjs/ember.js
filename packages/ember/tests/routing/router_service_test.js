@@ -110,7 +110,7 @@ QUnit.module('Router Service', {
   }
 });
 
-QUnit.test('Basic route', function() {
+QUnit.test('transitionTo - Basic route', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
     this.route('camelot');
@@ -122,20 +122,16 @@ QUnit.test('Basic route', function() {
   App.CamelotRoute = Route.extend({
   });
 
-  var currentPath;
-  var currentRouteName;
   var controller;
+  var router;
 
   App.ApplicationController = Controller.extend({
     router: inject.service(),
     init() {
       this._super.apply(arguments);
       controller = this;
+      router = get(this, 'router');
     },
-    currentPathDidChange: observer('currentPath', function() {
-      currentPath = get(this, 'currentPath');
-    }),
-
     actions: {
       moveToCamelot() {
         get(this, 'router').transitionTo('camelot');
@@ -144,9 +140,6 @@ QUnit.test('Basic route', function() {
   });
 
   App.CamelotController = Controller.extend({
-    currentPathDidChange: observer('currentPath', function() {
-      currentPath = get(this, 'currentPath');
-    })
   });
 
   bootApplication();
@@ -155,14 +148,17 @@ QUnit.test('Basic route', function() {
     controller.send('moveToCamelot');
   });
 
-  var currentRouteName = get(controller, 'router.currentRouteName');
+  var currentRouteName = get(router, 'currentRouteName');
+  var currentURL       = get(router, 'currentURL');
+  var isActive         = router.isActive('camelot');
 
-  equal(currentPath, 'camelot');
+  equal(isActive, true);
+  equal(currentRouteName, 'camelot');
+  equal(currentURL, '/camelot', 'The URL update correctly');
   equal(jQuery('h3:contains(silly)', '#qunit-fixture').length, 1, 'The camelot template was rendered');
 });
 
-
-QUnit.test('Dynamic segment', function() {
+QUnit.test('transitionTo - Dynamic segment', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
     this.route('homepage', { path: 'homepage/:post_id' });
@@ -213,7 +209,7 @@ QUnit.test('Dynamic segment', function() {
   equal(jQuery('p:contains(Homepage)', '#qunit-fixture').length, 1, 'The model was set');
 });
 
-QUnit.test('Dynamic segment - model hook', function() {
+QUnit.test('transitionTo - Dynamic segment - model hook', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
     this.route('homepage', { path: 'homepage/:post_id' });
@@ -243,6 +239,156 @@ QUnit.test('Dynamic segment - model hook', function() {
     actions: {
       moveToRoute() {
         get(this, 'router').transitionTo('homepage', 1);
+      }
+    }
+  });
+
+  bootApplication();
+
+  run(function() {
+    controller.send('moveToRoute');
+  });
+
+  var currentRouteName = get(router, 'currentRouteName');
+  var currentURL       = get(router, 'currentURL');
+  var isActive         = router.isActive('homepage', homepageModel);
+
+  equal(isActive, true);
+  equal(currentRouteName, 'homepage');
+  equal(currentURL, '/homepage/1', 'The URL update correctly');
+  equal(jQuery('h3:contains(Megatroll)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
+  equal(jQuery('p:contains(Homepage)', '#qunit-fixture').length, 1, 'The model was set');
+});
+
+QUnit.test('replaceWith - Basic route', function() {
+  Router.map(function() {
+    this.route('home', { path: '/' });
+    this.route('camelot');
+  });
+
+  App.HomeRoute = Route.extend({
+  });
+
+  App.CamelotRoute = Route.extend({
+  });
+
+  var controller;
+  var router;
+
+  App.ApplicationController = Controller.extend({
+    router: inject.service(),
+    init() {
+      this._super.apply(arguments);
+      controller = this;
+      router = get(this, 'router');
+    },
+    actions: {
+      moveToCamelot() {
+        get(this, 'router').replaceWith('camelot');
+      }
+    }
+  });
+
+  App.CamelotController = Controller.extend({
+  });
+
+  bootApplication();
+
+  run(function() {
+    controller.send('moveToCamelot');
+  });
+
+  var currentRouteName = get(router, 'currentRouteName');
+  var currentURL       = get(router, 'currentURL');
+  var isActive         = router.isActive('camelot');
+
+  equal(isActive, true);
+  equal(currentRouteName, 'camelot');
+  equal(currentURL, '/camelot', 'The URL update correctly');
+  equal(jQuery('h3:contains(silly)', '#qunit-fixture').length, 1, 'The camelot template was rendered');
+});
+
+QUnit.test('replaceWith - Dynamic segment', function() {
+  Router.map(function() {
+    this.route('home', { path: '/' });
+    this.route('homepage', { path: 'homepage/:post_id' });
+  });
+
+  var homepageModel = { id: 1, home: 'Homepage' };
+  var controller;
+  var router;
+
+  App.HomeRoute = Route.extend({
+  });
+
+  App.HomepageRoute = Route.extend({
+    model() {
+      return homepageModel;
+    }
+  });
+
+  App.ApplicationController = Controller.extend({
+    router: inject.service(),
+    init() {
+      this._super.apply(arguments);
+      controller = this;
+      router = get(this, 'router');
+    },
+
+    actions: {
+      moveToRoute() {
+        get(this, 'router').replaceWith('homepage', homepageModel);
+      }
+    }
+  });
+
+  bootApplication();
+
+  run(function() {
+    controller.send('moveToRoute');
+  });
+
+  var currentRouteName = get(router, 'currentRouteName');
+  var currentURL       = get(router, 'currentURL');
+  var isActive         = router.isActive('homepage', homepageModel);
+
+  equal(isActive, true);
+  equal(currentRouteName, 'homepage');
+  equal(currentURL, '/homepage/1', 'The URL update correctly');
+  equal(jQuery('h3:contains(Megatroll)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
+  equal(jQuery('p:contains(Homepage)', '#qunit-fixture').length, 1, 'The model was set');
+});
+
+QUnit.test('replaceWith - Dynamic segment - model hook', function() {
+  Router.map(function() {
+    this.route('home', { path: '/' });
+    this.route('homepage', { path: 'homepage/:post_id' });
+  });
+
+  var homepageModel = { id: 1, home: 'Homepage' };
+  var controller;
+  var router;
+
+  App.HomeRoute = Route.extend({
+  });
+
+  App.HomepageRoute = Route.extend({
+    model() {
+      return homepageModel;
+    }
+  });
+
+  App.ApplicationController = Controller.extend({
+    router: inject.service(),
+    init() {
+      this._super.apply(arguments);
+      controller = this;
+      router = get(this, 'router');
+    },
+
+    actions: {
+      moveToRoute() {
+        get(this, 'router').replaceWith('homepage', 1);
       }
     }
   });
