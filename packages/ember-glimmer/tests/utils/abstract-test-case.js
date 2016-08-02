@@ -31,8 +31,8 @@ export function applyMixins(TestClass, ...mixins) {
       let generator = mixinOrGenerator;
       mixin = {};
 
-      generator.cases.forEach(value => {
-        assign(mixin, generator.generate(value));
+      generator.cases.forEach((value, idx) => {
+        assign(mixin, generator.generate(value, idx));
       });
     } else {
       mixin = mixinOrGenerator;
