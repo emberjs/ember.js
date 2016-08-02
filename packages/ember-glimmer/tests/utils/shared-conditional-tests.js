@@ -44,7 +44,7 @@ class AbstractGenerator {
   }
 
   /* abstract */
-  generate(value) {
+  generate(value, idx) {
     throw new Error('Not implemented: `generate`');
   }
 
@@ -62,9 +62,9 @@ class AbstractGenerator {
 
 export class TruthyGenerator extends AbstractGenerator {
 
-  generate(value) {
+  generate(value, idx) {
     return {
-      [`@test it should consider ${JSON.stringify(value)} truthy`]() {
+      [`@test it should consider ${JSON.stringify(value)} truthy [${idx}]`]() {
         this.renderValues(value);
 
         this.assertText('T1');
@@ -88,9 +88,9 @@ export class TruthyGenerator extends AbstractGenerator {
 
 export class FalsyGenerator extends AbstractGenerator {
 
-  generate(value) {
+  generate(value, idx) {
     return {
-      [`@test it should consider ${JSON.stringify(value)} falsy`]() {
+      [`@test it should consider ${JSON.stringify(value)} falsy [${idx}]`]() {
         this.renderValues(value);
 
         this.assertText('F1');
@@ -114,9 +114,9 @@ export class FalsyGenerator extends AbstractGenerator {
 
 export class StableTruthyGenerator extends TruthyGenerator {
 
-  generate(value) {
-    return assign(super.generate(value), {
-      [`@test it maintains DOM stability when condition changes from ${value} to another truthy value and back`]() {
+  generate(value, idx) {
+    return assign(super.generate(value, idx), {
+      [`@test it maintains DOM stability when condition changes from ${value} to another truthy value and back [${idx}]`]() {
         this.renderValues(value);
 
         this.assertText('T1');
@@ -142,9 +142,9 @@ export class StableTruthyGenerator extends TruthyGenerator {
 
 export class StableFalsyGenerator extends FalsyGenerator {
 
-  generate(value) {
+  generate(value, idx) {
     return assign(super.generate(value), {
-      [`@test it maintains DOM stability when condition changes from ${value} to another falsy value and back`]() {
+      [`@test it maintains DOM stability when condition changes from ${value} to another falsy value and back [${idx}]`]() {
         this.renderValues(value);
 
         this.assertText('F1');
@@ -170,12 +170,12 @@ export class StableFalsyGenerator extends FalsyGenerator {
 
 class ObjectProxyGenerator extends AbstractGenerator {
 
-  generate(value) {
+  generate(value, idx) {
     // This is inconsistent with our usual to-bool policy, but the current proxy implementation
     // simply uses !!content to determine truthiness
     if (value) {
       return {
-        [`@test it should consider an object proxy with \`${JSON.stringify(value)}\` truthy`]() {
+        [`@test it should consider an object proxy with \`${JSON.stringify(value)}\` truthy [${idx}]`]() {
           this.renderValues(ObjectProxy.create({ content: value }));
 
           this.assertText('T1');
@@ -195,7 +195,7 @@ class ObjectProxyGenerator extends AbstractGenerator {
       };
     } else {
       return {
-        [`@test it should consider an object proxy with \`${JSON.stringify(value)}\` falsy`]() {
+        [`@test it should consider an object proxy with \`${JSON.stringify(value)}\` falsy [${idx}]`]() {
           this.renderValues(ObjectProxy.create({ content: value }));
 
           this.assertText('F1');
