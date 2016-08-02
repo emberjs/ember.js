@@ -469,4 +469,26 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
 
     this.assertComponentElement(this.nthChild(0), { tagName: 'a', attrs: { href: 'unsafe:javascript:alert(\'foo\')' } });
   }
+
+  ['@test it can bind the role attribute (issue #14007)']() {
+    let FooBarComponent = Component.extend({ attributeBindings: ['role'] });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar role=role}}', { role: 'button' });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { role: 'button' } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { role: 'button' } });
+
+    this.runTask(() => set(this.context, 'role', 'combobox'));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { role: 'combobox' } });
+
+    this.runTask(() => set(this.context, 'role', null));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div' });
+  }
 });
