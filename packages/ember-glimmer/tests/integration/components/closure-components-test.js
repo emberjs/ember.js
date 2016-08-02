@@ -806,6 +806,140 @@ moduleFor('Components test: closure components', class extends RenderingTest {
     assert.equal(this.$().text(), 'message: goodbye');
   }
 
+  ['@test GH#13982 contextual component ref is stable even when bound params change'](assert) {
+    let instance, previousInstance;
+    let initCount = 0;
+
+    this.registerComponent('my-comp', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super();
+          previousInstance = instance;
+          instance = this;
+          initCount++;
+        },
+        isOpen: undefined
+      }),
+      template: '{{if isOpen "open" "closed"}}'
+    });
+
+    this.render(strip`
+      {{#with (hash ctxCmp=(component "my-comp" isOpen=isOpen)) as |thing|}}
+        {{#thing.ctxCmp}}This is a contextual component{{/thing.ctxCmp}}
+      {{/with}}
+    `, {
+      isOpen: true
+    });
+
+    assert.ok(!isEmpty(instance), 'a instance was created');
+    assert.equal(previousInstance, undefined, 'no previous component exists');
+    assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
+    assert.equal(this.$().text(), 'open', 'the componet text is "open"');
+
+    this.runTask(() => this.rerender());
+
+    assert.ok(!isEmpty(instance), 'the component instance exists');
+    assert.equal(previousInstance, undefined, 'no previous component exists');
+    assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
+    assert.equal(this.$().text(), 'open', 'the componet text is "open"');
+
+    this.runTask(() => this.context.set('isOpen', false));
+
+    assert.ok(!isEmpty(instance), 'the component instance exists');
+    assert.equal(previousInstance, undefined, 'no previous component exists');
+    assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
+    assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
+
+    this.runTask(() => this.rerender());
+
+    assert.ok(!isEmpty(instance), 'the component instance exists');
+    assert.equal(previousInstance, undefined, 'no previous component exists');
+    assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
+    assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
+
+    this.runTask(() => this.context.set('isOpen', true));
+
+    assert.ok(!isEmpty(instance), 'the component instance exists');
+    assert.equal(previousInstance, undefined, 'no previous component exists');
+    assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
+    assert.equal(this.$().text(), 'open', 'the componet text is "open"');
+  }
+
+  ['@glimmer GH#13982 contextual component ref is recomputed when component name param changes'](assert) {
+    let instance, previousInstance;
+    let initCount = 0;
+
+    this.registerComponent('my-comp', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super();
+          previousInstance = instance;
+          instance = this;
+          initCount++;
+        },
+        isOpen: undefined
+      }),
+      template: 'my-comp: {{if isOpen "open" "closed"}}'
+    });
+
+    this.registerComponent('your-comp', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super();
+          previousInstance = instance;
+          instance = this;
+          initCount++;
+        },
+        isOpen: undefined
+      }),
+      template: 'your-comp: {{if isOpen "open" "closed"}}'
+    });
+
+    this.render(strip`
+      {{#with (hash ctxCmp=(component compName isOpen=isOpen)) as |thing|}}
+        {{#thing.ctxCmp}}This is a contextual component{{/thing.ctxCmp}}
+      {{/with}}
+    `, {
+      compName: 'my-comp',
+      isOpen: true
+    });
+
+    assert.ok(!isEmpty(instance), 'a instance was created');
+    assert.equal(previousInstance, undefined, 'there is no previous instance');
+    assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
+    assert.equal(this.$().text(), 'my-comp: open');
+
+    this.runTask(() => this.rerender());
+
+    assert.ok(!isEmpty(instance), 'a instance exists after rerender');
+    assert.equal(previousInstance, undefined, 'there is no previous instance after rerender');
+    assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
+    assert.equal(this.$().text(), 'my-comp: open');
+
+    this.runTask(() => this.context.set('compName', 'your-comp'));
+
+    assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
+    assert.ok(!isEmpty(previousInstance), 'a previous instance now exists');
+    assert.notEqual(instance, previousInstance, 'the instance and previous instance are not the same object');
+    assert.equal(initCount, 2, 'the component was constructed exactly 2 times');
+    assert.equal(this.$().text(), 'your-comp: open');
+
+    this.runTask(() => this.rerender());
+
+    assert.ok(!isEmpty(instance), 'an instance was created after component name changed (rerender)');
+    assert.ok(!isEmpty(previousInstance), 'a previous instance now exists (rerender)');
+    assert.notEqual(instance, previousInstance, 'the instance and previous instance are not the same object (rerender)');
+    assert.equal(initCount, 2, 'the component was constructed exactly 2 times (rerender)');
+    assert.equal(this.$().text(), 'your-comp: open');
+
+    this.runTask(() => this.context.set('compName', 'my-comp'));
+
+    assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
+    assert.ok(!isEmpty(previousInstance), 'a previous instance still exists');
+    assert.notEqual(instance, previousInstance, 'the instance and previous instance are not the same object');
+    assert.equal(initCount, 3, 'the component was constructed exactly 3 times (rerender)');
+    assert.equal(this.$().text(), 'my-comp: open');
+  }
 });
 
 class ClosureComponentMutableParamsTest extends RenderingTest {
