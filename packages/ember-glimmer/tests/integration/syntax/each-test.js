@@ -68,59 +68,64 @@ class ArrayLike {
 
   // The following methods are APIs used by the tests
 
-  clear() {
-    this._array.length = 0;
-    propertyDidChange(this, 'length');
-  }
-
   objectAt(idx) {
     return this._array[idx];
   }
 
+  clear() {
+    this._array.length = 0;
+    this.arrayContentDidChange();
+  }
+
   replace(idx, del, ins) {
     this._array.splice(idx, del, ...ins);
-    propertyDidChange(this, 'length');
+    this.arrayContentDidChange();
   }
 
   unshiftObject(obj) {
     this._array.unshift(obj);
-    propertyDidChange(this, 'length');
+    this.arrayContentDidChange();
   }
 
   unshiftObjects(arr) {
     this._array.unshift(...arr);
-    propertyDidChange(this, 'length');
+    this.arrayContentDidChange();
   }
 
   pushObject(obj) {
     this._array.push(obj);
-    propertyDidChange(this, 'length');
+    this.arrayContentDidChange();
   }
 
   pushObjects(arr) {
     this._array.push(...arr);
-    propertyDidChange(this, 'length');
+    this.arrayContentDidChange();
   }
 
   shiftObject() {
     let obj = this._array.shift();
-    propertyDidChange(this, 'length');
+    this.arrayContentDidChange();
     return obj;
   }
 
   popObject() {
     let obj = this._array.pop();
-    propertyDidChange(this, 'length');
+    this.arrayContentDidChange();
     return obj;
   }
 
   insertAt(idx, obj) {
     this._array.splice(idx, 0, obj);
-    propertyDidChange(this, 'length');
+    this.arrayContentDidChange();
   }
 
   removeAt(idx, len = 1) {
     this._array.splice(idx, len);
+    this.arrayContentDidChange();
+  }
+
+  arrayContentDidChange() {
+    propertyDidChange(this, '[]');
     propertyDidChange(this, 'length');
   }
 
@@ -571,18 +576,6 @@ moduleFor('Syntax test: {{#each}} with array-like objects', class extends Single
 
   makeList(list) {
     return this.list = new ArrayLike(list);
-  }
-
-  runTask(taskFunc) {
-    // This feature requires manual re-render in HTMLBars
-    if (this.isGlimmer) {
-      return super.runTask(taskFunc);
-    } else {
-      return super.runTask(() => {
-        taskFunc();
-        this.rerender();
-      });
-    }
   }
 
 });
