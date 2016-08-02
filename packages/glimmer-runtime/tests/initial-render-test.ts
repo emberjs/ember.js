@@ -349,6 +349,14 @@ test("The compiler can handle simple helpers", function() {
   compilesTo('<div>{{testing title}}</div>', '<div>hello</div>', { title: 'hello' });
 });
 
+test("GH#13999 The compiler can handle simple helpers with inline null parameter", function() {
+  env.registerHelper('say-hello', function() {
+    return 'hello';
+  });
+
+  compilesTo('<div>{{say-hello null}}</div>', '<div>hello</div>');
+});
+
 test("The compiler can handle sexpr helpers", function() {
   env.registerHelper('testing', function(params) {
     return params[0] + "!";
