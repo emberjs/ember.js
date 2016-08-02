@@ -21,7 +21,7 @@ for a detailed explanation.
 
   Example:
 
-  ```
+  ```javascript
   comments: [
     {id: 1, comment: 'I\'m a duplicate comment!'},
     {id: 2, comment: 'Then you should be fixed!'},
