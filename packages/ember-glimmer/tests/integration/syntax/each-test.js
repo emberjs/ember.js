@@ -135,12 +135,60 @@ class AbstractEachTest extends RenderingTest {
 
   /* abstract */
   makeList() {
-    // this.list = ...;
+    // this.list = this.delegate = ...;
     throw new Error('Not implemented: `makeList`');
   }
 
   replaceList(list) {
     this.runTask(() => set(this.context, 'list', this.makeList(list)));
+  }
+
+  forEach(callback) {
+    return this.delegate.forEach(callback);
+  }
+
+  objectAt(idx) {
+    return this.delegate.objectAt(idx);
+  }
+
+  clear() {
+    return this.delegate.clear();
+  }
+
+  replace(idx, del, ins) {
+    return this.delegate.replace(idx, del, ins);
+  }
+
+  unshiftObject(obj) {
+    return this.delegate.unshiftObject(obj);
+  }
+
+  unshiftObjects(arr) {
+    return this.delegate.unshiftObjects(arr);
+  }
+
+  pushObject(obj) {
+    return this.delegate.pushObject(obj);
+  }
+
+  pushObjects(arr) {
+    return this.delegate.pushObjects(arr);
+  }
+
+  shiftObject() {
+    return this.delegate.shiftObject();
+  }
+
+  popObject() {
+    return this.delegate.popObject();
+  }
+
+  insertAt(idx, obj) {
+    return this.delegate.insertAt(idx, obj);
+  }
+
+  removeAt(idx, len) {
+    return this.delegate.removeAt(idx, len);
   }
 
   render(template, context = {}) {
@@ -158,7 +206,7 @@ class AbstractEachTest extends RenderingTest {
 class SingleEachTest extends AbstractEachTest {
 
   ['@test it repeats the given block for each item in the array']() {
-    let list = this.makeList([{ text: 'hello' }]);
+    this.makeList([{ text: 'hello' }]);
 
     this.render(`{{#each list as |item|}}{{item.text}}{{else}}Empty{{/each}}`);
 
@@ -168,52 +216,52 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertText('hello');
 
-    this.runTask(() => set(list.objectAt(0), 'text', 'Hello'));
+    this.runTask(() => set(this.objectAt(0), 'text', 'Hello'));
 
     this.assertText('Hello');
 
     this.runTask(() => {
-      list.pushObject({ text: ' ' });
-      list.pushObject({ text: 'World' });
+      this.pushObject({ text: ' ' });
+      this.pushObject({ text: 'World' });
     });
 
     this.assertText('Hello World');
 
     this.runTask(() => {
-      list.pushObject({ text: 'Earth' });
-      list.removeAt(1);
-      list.insertAt(1, { text: 'Globe' });
+      this.pushObject({ text: 'Earth' });
+      this.removeAt(1);
+      this.insertAt(1, { text: 'Globe' });
     });
 
     this.assertText('HelloGlobeWorldEarth');
 
     this.runTask(() => {
-      list.pushObject({ text: 'Planet' });
-      list.removeAt(1);
-      list.insertAt(1, { text: ' ' });
-      list.pushObject({ text: ' ' });
-      list.pushObject({ text: 'Earth' });
-      list.removeAt(3);
+      this.pushObject({ text: 'Planet' });
+      this.removeAt(1);
+      this.insertAt(1, { text: ' ' });
+      this.pushObject({ text: ' ' });
+      this.pushObject({ text: 'Earth' });
+      this.removeAt(3);
     });
 
     this.assertText('Hello WorldPlanet Earth');
 
     this.runTask(() => {
-      list.pushObject({ text: 'Globe' });
-      list.removeAt(1);
-      list.insertAt(1, { text: ' ' });
-      list.pushObject({ text: ' ' });
-      list.pushObject({ text: 'World' });
-      list.removeAt(2);
+      this.pushObject({ text: 'Globe' });
+      this.removeAt(1);
+      this.insertAt(1, { text: ' ' });
+      this.pushObject({ text: ' ' });
+      this.pushObject({ text: 'World' });
+      this.removeAt(2);
     });
 
     this.assertText('Hello Planet EarthGlobe World');
 
-    this.runTask(() => list.replace(2, 4, { text: 'my' }));
+    this.runTask(() => this.replace(2, 4, { text: 'my' }));
 
     this.assertText('Hello my World');
 
-    this.runTask(() => list.clear());
+    this.runTask(() => this.clear());
 
     this.assertText('Empty');
 
@@ -223,7 +271,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   ['@test it receives the index as the second parameter']() {
-    let list = this.makeList([{ text: 'hello' }, { text: 'world' }]);
+    this.makeList([{ text: 'hello' }, { text: 'world' }]);
 
     this.render(`{{#each list as |item index|}}[{{index}}. {{item.text}}]{{/each}}`);
 
@@ -231,7 +279,7 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => list.insertAt(1, { text: 'my' }));
+    this.runTask(() => this.insertAt(1, { text: 'my' }));
 
     this.assertText('[0. hello][1. my][2. world]');
 
@@ -241,7 +289,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   ['@test it accepts a string key']() {
-    let list = this.makeList([{ text: 'hello' }, { text: 'world' }]);
+    this.makeList([{ text: 'hello' }, { text: 'world' }]);
 
     this.render(`{{#each list key='text' as |item|}}{{item.text}}{{/each}}`);
 
@@ -249,7 +297,7 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => list.pushObject({ text: 'again' }));
+    this.runTask(() => this.pushObject({ text: 'again' }));
 
     this.assertText('helloworldagain');
 
@@ -259,7 +307,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   ['@test it accepts a numeric key']() {
-    let list = this.makeList([{ id: 1 }, { id: 2 }]);
+    this.makeList([{ id: 1 }, { id: 2 }]);
 
     this.render(`{{#each list key='id' as |item|}}{{item.id}}{{/each}}`);
 
@@ -267,7 +315,7 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => list.pushObject({ id: 3 }));
+    this.runTask(() => this.pushObject({ id: 3 }));
 
     this.assertText('123');
 
@@ -277,7 +325,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   ['@test it can specify @index as the key']() {
-    let list = this.makeList([{ id: 1 }, { id: 2 }]);
+    this.makeList([{ id: 1 }, { id: 2 }]);
 
     this.render(`{{#each list key='@index' as |item|}}{{item.id}}{{/each}}`);
 
@@ -285,7 +333,7 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => list.pushObject({ id: 3 }));
+    this.runTask(() => this.pushObject({ id: 3 }));
 
     this.assertText('123');
 
@@ -295,7 +343,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   ['@test it can specify @identity as the key for arrays of primitives']() {
-    let list = this.makeList([1, 2]);
+    this.makeList([1, 2]);
 
     this.render(`{{#each list key='@identity' as |item|}}{{item}}{{/each}}`);
 
@@ -303,7 +351,7 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => list.pushObject(3));
+    this.runTask(() => this.pushObject(3));
 
     this.assertText('123');
 
@@ -313,7 +361,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   ['@test it can specify @identity as the key for mixed arrays of objects and primitives']() {
-    let list = this.makeList([1, { id: 2 }, 3]);
+    this.makeList([1, { id: 2 }, 3]);
 
     this.render(`{{#each list key='@identity' as |item|}}{{if item.id item.id item}}{{/each}}`);
 
@@ -321,7 +369,7 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => list.insertAt(2, { id: 4 }));
+    this.runTask(() => this.insertAt(2, { id: 4 }));
 
     this.assertText('1243');
 
@@ -331,7 +379,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   ['@test it can render duplicate primitive items']() {
-    let list = this.makeList(['a', 'a', 'a']);
+    this.makeList(['a', 'a', 'a']);
 
     this.render(`{{#each list as |item|}}{{item}}{{/each}}`);
 
@@ -339,11 +387,11 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => list.pushObject('a'));
+    this.runTask(() => this.pushObject('a'));
 
     this.assertText('aaaa');
 
-    this.runTask(() => list.pushObject('a'));
+    this.runTask(() => this.pushObject('a'));
 
     this.assertText('aaaaa');
 
@@ -355,7 +403,7 @@ class SingleEachTest extends AbstractEachTest {
   ['@test it can render duplicate objects']() {
     let duplicateItem = { text: 'foo' };
 
-    let list = this.makeList([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }]);
+    this.makeList([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }]);
 
     this.render(`{{#each list as |item|}}{{item.text}}{{/each}}`);
 
@@ -363,11 +411,11 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => list.pushObject(duplicateItem));
+    this.runTask(() => this.pushObject(duplicateItem));
 
     this.assertText('foofoobarbazfoo');
 
-    this.runTask(() => list.pushObject(duplicateItem));
+    this.runTask(() => this.pushObject(duplicateItem));
 
     this.assertText('foofoobarbazfoofoo');
 
@@ -377,7 +425,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   [`@test it maintains DOM stability when condition changes between objects with the same keys`]() {
-    let list = this.makeList([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]);
+    this.makeList([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]);
 
     this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`);
 
@@ -386,10 +434,10 @@ class SingleEachTest extends AbstractEachTest {
     this.takeSnapshot();
 
     this.runTask(() => {
-      list.popObject();
-      list.popObject();
-      list.pushObject({ text: ' ' });
-      list.pushObject({ text: 'world' });
+      this.popObject();
+      this.popObject();
+      this.pushObject({ text: ' ' });
+      this.pushObject({ text: 'world' });
     });
 
     this.assertText('Hello world');
@@ -404,7 +452,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   [`@test it maintains DOM stability for stable keys when list is updated`]() {
-    let list = this.makeList([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]);
+    this.makeList([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]);
 
     this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`);
 
@@ -412,13 +460,13 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    let oldSnapshot = this.snapshot;
+    let oldSnapshot = this.takeSnapshot();
 
     this.runTask(() => {
-      list.unshiftObject({ text: ', ' });
-      list.unshiftObject({ text: 'Hi' });
-      list.pushObject({ text: '!' });
-      list.pushObject({ text: 'earth' });
+      this.unshiftObject({ text: ', ' });
+      this.unshiftObject({ text: 'Hi' });
+      this.pushObject({ text: '!' });
+      this.pushObject({ text: 'earth' });
     });
 
     this.assertText('Hi, Hello world!earth');
@@ -433,14 +481,14 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   [`@test it renders all items with duplicate key values`]() {
-    let list = this.makeList([{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }]);
+    this.makeList([{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }]);
 
     this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('HelloHelloHello');
 
     this.runTask(() => {
-      list.forEach(hash => set(hash, 'text', 'Goodbye'));
+      this.forEach(hash => set(hash, 'text', 'Goodbye'));
     });
 
     this.assertText('GoodbyeGoodbyeGoodbye');
@@ -451,7 +499,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   ['@test context is not changed to the inner scope inside an {{#each as}} block']() {
-    let list = this.makeList([{ name: 'Chad' }, { name: 'Zack' }, { name: 'Asa' }]);
+    this.makeList([{ name: 'Chad' }, { name: 'Zack' }, { name: 'Asa' }]);
 
     this.render(`{{name}}-{{#each list as |person|}}{{name}}{{/each}}-{{name}}`, {
       name: 'Joel'
@@ -461,7 +509,7 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => list.shiftObject());
+    this.runTask(() => this.shiftObject());
 
     this.assertText('Joel-JoelJoel-Joel');
 
@@ -476,7 +524,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   ['@test can access the item and the original scope']() {
-    let list = this.makeList([{ name: 'Tom Dale' }, { name: 'Yehuda Katz' }, { name: 'Godfrey Chan' }]);
+    this.makeList([{ name: 'Tom Dale' }, { name: 'Yehuda Katz' }, { name: 'Godfrey Chan' }]);
 
     this.render(`{{#each list key="name" as |person|}}[{{title}}: {{person.name}}]{{/each}}`, {
       title: 'Señor Engineer'
@@ -489,10 +537,10 @@ class SingleEachTest extends AbstractEachTest {
     this.assertText('[Señor Engineer: Tom Dale][Señor Engineer: Yehuda Katz][Señor Engineer: Godfrey Chan]');
 
     this.runTask(() => {
-      set(list.objectAt(1), 'name', 'Stefan Penner');
-      list.removeAt(0);
-      list.pushObject({ name: 'Tom Dale' });
-      list.insertAt(1, { name: 'Chad Hietala' });
+      set(this.objectAt(1), 'name', 'Stefan Penner');
+      this.removeAt(0);
+      this.pushObject({ name: 'Tom Dale' });
+      this.insertAt(1, { name: 'Chad Hietala' });
       set(this.context, 'title', 'Principal Engineer');
     });
 
@@ -505,7 +553,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   ['@test the scoped variable is not available outside the {{#each}} block.']() {
-    let list = this.makeList(['Yehuda']);
+    this.makeList(['Yehuda']);
 
     this.render(`{{name}}-{{#each list as |name|}}{{name}}{{/each}}-{{name}}`, {
       name: 'Stef'
@@ -517,7 +565,7 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertText('Stef-Yehuda-Stef');
 
-    this.runTask(() => list.pushObjects([' ', 'Katz']));
+    this.runTask(() => this.pushObjects([' ', 'Katz']));
 
     this.assertText('Stef-Yehuda Katz-Stef');
 
@@ -532,7 +580,7 @@ class SingleEachTest extends AbstractEachTest {
   }
 
   ['@test inverse template is displayed with context']() {
-    let list = this.makeList([]);
+    this.makeList([]);
 
     this.render(`{{#each list as |thing|}}Has Thing{{else}}No Thing {{otherThing}}{{/each}}`, {
       otherThing: 'bar'
@@ -548,7 +596,7 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertText('No Thing biz');
 
-    this.runTask(() => list.pushObject('non-empty'));
+    this.runTask(() => this.pushObject('non-empty'));
 
     this.assertText('Has Thing');
 
@@ -567,7 +615,7 @@ class SingleEachTest extends AbstractEachTest {
 moduleFor('Syntax test: {{#each}} with arrays', class extends SingleEachTest {
 
   makeList(list) {
-    return this.list = emberA(list);
+    return this.list = this.delegate = emberA(list);
   }
 
 });
@@ -575,15 +623,15 @@ moduleFor('Syntax test: {{#each}} with arrays', class extends SingleEachTest {
 moduleFor('Syntax test: {{#each}} with array-like objects', class extends SingleEachTest {
 
   makeList(list) {
-    return this.list = new ArrayLike(list);
+    return this.list = this.delegate = new ArrayLike(list);
   }
 
 });
 
-moduleFor('Syntax test: {{#each}} with array proxies, replacing itself', class extends SingleEachTest {
+moduleFor('Syntax test: {{#each}} with array proxies, modifying itself', class extends SingleEachTest {
 
   makeList(list) {
-    return this.list = ArrayProxy.create({ content: emberA(list) });
+    return this.list = this.delegate = ArrayProxy.create({ content: emberA(list) });
   }
 
 });
@@ -591,7 +639,8 @@ moduleFor('Syntax test: {{#each}} with array proxies, replacing itself', class e
 moduleFor('Syntax test: {{#each}} with array proxies, replacing its content', class extends SingleEachTest {
 
   makeList(list) {
-    return this.list = ArrayProxy.create({ content: emberA(list) });
+    let content = this.delegate = emberA(list);
+    return this.list = ArrayProxy.create({ content });
   }
 
   replaceList(list) {
