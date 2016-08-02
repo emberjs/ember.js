@@ -412,6 +412,8 @@ const IfUnlessWithTestCases = [
     EmberObject.create(),
     EmberObject.create({ foo: 'bar' }),
     ObjectProxy.create({ content: true }),
+    Object,
+    function() {},
     /*jshint -W053 */
     new String('hello'),
     new String(''),
@@ -715,7 +717,8 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
   ['@test it updates correctly when enclosing another conditional']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
-    let template = this.wrappedTemplateFor({ cond: 'outer', truthy: '{{#if inner}}T-inner{{else}}F-inner{{/if}}', falsy: 'F-outer' });
+    let inner = this.templateFor({ cond: 'inner', truthy: 'T-inner', falsy: 'F-inner' });
+    let template = this.wrappedTemplateFor({ cond: 'outer', truthy: inner, falsy: 'F-outer' });
 
     this.render(template, { outer: this.truthyValue, inner: this.truthyValue });
 

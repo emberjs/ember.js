@@ -13,46 +13,6 @@ import {
   ArrayTestCases
 } from '../../utils/shared-conditional-tests';
 
-class TogglingEachTest extends TogglingSyntaxConditionalsTest {
-
-  get truthyValue() { return ['non-empty']; }
-  get falsyValue() { return []; }
-
-}
-
-applyMixins(TogglingEachTest,
-
-  new TruthyGenerator([
-    // TODO: figure out what the rest of the cases are
-    ['hello']
-  ]),
-
-  new FalsyGenerator([
-    // TODO: figure out what the rest of the cases are
-    [],
-    undefined
-  ]),
-
-  ArrayTestCases
-
-);
-
-moduleFor('Syntax test: toggling {{#each}}', class extends TogglingEachTest {
-
-  templateFor({ cond, truthy, falsy }) {
-    return `{{#each ${cond}}}${truthy}{{else}}${falsy}{{/each}}`;
-  }
-
-});
-
-moduleFor('Syntax test: toggling {{#each as}}', class extends TogglingEachTest {
-
-  templateFor({ cond, truthy, falsy }) {
-    return `{{#each ${cond} as |test|}}${truthy}{{else}}${falsy}{{/each}}`;
-  }
-
-});
-
 class ArrayLike {
   constructor(content) {
     this._array = content;
@@ -130,6 +90,61 @@ class ArrayLike {
   }
 
 }
+
+class TogglingEachTest extends TogglingSyntaxConditionalsTest {
+
+  get truthyValue() { return ['non-empty']; }
+  get falsyValue() { return []; }
+
+}
+
+applyMixins(TogglingEachTest,
+
+  new TruthyGenerator([
+    ['hello'],
+    emberA(['hello']),
+    new ArrayLike(['hello']),
+    ArrayProxy.create({ content: ['hello'] }),
+    ArrayProxy.create({ content: emberA(['hello']) })
+  ]),
+
+  new FalsyGenerator([
+    true,
+    false,
+    null,
+    undefined,
+    '',
+    0,
+    1,
+    Object,
+    function() {},
+    [],
+    {},
+    { foo: 'bar' },
+    Object.create(null),
+    Object.create({}),
+    Object.create({ foo: 'bar' })
+  ]),
+
+  ArrayTestCases
+
+);
+
+moduleFor('Syntax test: toggling {{#each}}', class extends TogglingEachTest {
+
+  templateFor({ cond, truthy, falsy }) {
+    return `{{#each ${cond}}}${truthy}{{else}}${falsy}{{/each}}`;
+  }
+
+});
+
+moduleFor('Syntax test: toggling {{#each as}}', class extends TogglingEachTest {
+
+  templateFor({ cond, truthy, falsy }) {
+    return `{{#each ${cond} as |test|}}${truthy}{{else}}${falsy}{{/each}}`;
+  }
+
+});
 
 class AbstractEachTest extends RenderingTest {
 

@@ -19,34 +19,56 @@ class EachInTest extends TogglingSyntaxConditionalsTest {
   }
 
   get falsyValue() {
-    return false;
+    return {};
   }
 
 }
 
+function EmptyFunction() {}
+
+function NonEmptyFunction() {}
+NonEmptyFunction.foo = 'bar';
+
+class EmptyConstructor {}
+
+class NonEmptyConstructor {}
+NonEmptyConstructor.foo = 'bar';
+
 applyMixins(EachInTest,
 
   new TruthyGenerator([
-    // TODO: figure out what the rest of the cases are
     { foo: 1 },
     EmberObject.create({ 'Not Empty': 1 }),
     ObjectProxy.create({ content: { 'Not empty': 1 } }),
-    ObjectProxy.create({ content: Object.create({}) }),
-    ObjectProxy.create({ content: EmberObject.create() })
+    [1],
+    NonEmptyFunction,
+    NonEmptyConstructor
   ]),
 
   new FalsyGenerator([
-    // TODO: figure out what the rest of the cases are
-    {},
-    Object.create({ 'Not Empty': 1 }),
-    Object.create({}),
-    EmberObject.create(),
-    ObjectProxy.create({}),
-    // TODO: These 2 should be falsy but are returning true
-    //ObjectProxy.create({ content: null }),
-    //ObjectProxy.create({ content: {} }),
+    null,
     undefined,
-    null
+    true,
+    false,
+    '',
+    'hello',
+    0,
+    1,
+    [],
+    EmptyFunction,
+    EmptyConstructor,
+    {},
+    Object.create(null),
+    Object.create({}),
+    Object.create({ 'Not Empty': 1 }),
+    EmberObject.create(),
+    ObjectProxy.create(),
+    ObjectProxy.create({ content: null }),
+    ObjectProxy.create({ content: {} }),
+    ObjectProxy.create({ content: Object.create(null) }),
+    ObjectProxy.create({ content: Object.create({}) }),
+    ObjectProxy.create({ content: Object.create({ 'Not Empty': 1 }) }),
+    ObjectProxy.create({ content: EmberObject.create() })
   ])
 );
 
