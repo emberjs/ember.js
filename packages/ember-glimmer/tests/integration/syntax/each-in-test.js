@@ -14,12 +14,8 @@ import {
 
 class EachInTest extends TogglingSyntaxConditionalsTest {
 
-  get truthyValue() {
-    return { 'Not Empty': 1 };
-  }
-
-  get falsyValue() {
-    return {};
+  templateFor({ cond, truthy, falsy }) {
+    return `{{#each-in ${cond} as |key|}}${truthy}{{else}}${falsy}{{/each-in}}`;
   }
 
 }
@@ -34,12 +30,13 @@ class EmptyConstructor {}
 class NonEmptyConstructor {}
 NonEmptyConstructor.foo = 'bar';
 
-applyMixins(EachInTest,
+class BasicEachInTest extends EachInTest {}
+
+applyMixins(BasicEachInTest,
 
   new TruthyGenerator([
     { foo: 1 },
     EmberObject.create({ 'Not Empty': 1 }),
-    ObjectProxy.create({ content: { 'Not empty': 1 } }),
     [1],
     NonEmptyFunction,
     NonEmptyConstructor
@@ -48,12 +45,9 @@ applyMixins(EachInTest,
   new FalsyGenerator([
     null,
     undefined,
-    true,
     false,
     '',
-    'hello',
     0,
-    1,
     [],
     EmptyFunction,
     EmptyConstructor,
@@ -61,21 +55,18 @@ applyMixins(EachInTest,
     Object.create(null),
     Object.create({}),
     Object.create({ 'Not Empty': 1 }),
-    EmberObject.create(),
-    ObjectProxy.create(),
-    ObjectProxy.create({ content: null }),
-    ObjectProxy.create({ content: {} }),
-    ObjectProxy.create({ content: Object.create(null) }),
-    ObjectProxy.create({ content: Object.create({}) }),
-    ObjectProxy.create({ content: Object.create({ 'Not Empty': 1 }) }),
-    ObjectProxy.create({ content: EmberObject.create() })
+    EmberObject.create()
   ])
 );
 
-moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
+moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
 
-  templateFor({ cond, truthy, falsy }) {
-    return `{{#each-in ${cond} as |key|}}${truthy}{{else}}${falsy}{{/each-in}}`;
+  get truthyValue() {
+    return { 'Not Empty': 1 };
+  }
+
+  get falsyValue() {
+    return {};
   }
 
   [`@test it repeats the given block for each item in the hash`]() {
@@ -362,6 +353,131 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
     this.runTask(() => set(this.context, 'arr', arr));
 
     this.assertText('[0:1][1:2][2:3][foo:bar]');
+  }
+
+});
+
+class EachInEdgeCasesTest extends EachInTest {}
+
+applyMixins(EachInEdgeCasesTest,
+
+  new FalsyGenerator([
+    true,
+    1,
+    'hello'
+  ])
+
+);
+
+moduleFor('@glimmer Syntax test: {{#each-in}} edge cases', class extends EachInEdgeCasesTest {
+
+  get truthyValue() {
+    return { 'Not Empty': 1 };
+  }
+
+  get falsyValue() {
+    return {};
+  }
+
+});
+
+class EachInProxyTest extends EachInTest {}
+
+applyMixins(EachInProxyTest,
+
+  new TruthyGenerator([
+    ObjectProxy.create({ content: { 'Not empty': 1 } })
+  ]),
+
+  new FalsyGenerator([
+    ObjectProxy.create(),
+    ObjectProxy.create({ content: null }),
+    ObjectProxy.create({ content: {} }),
+    ObjectProxy.create({ content: Object.create(null) }),
+    ObjectProxy.create({ content: Object.create({}) }),
+    ObjectProxy.create({ content: Object.create({ 'Not Empty': 1 }) }),
+    ObjectProxy.create({ content: EmberObject.create() })
+  ])
+);
+
+moduleFor('@glimmer Syntax test: {{#each-in}} with `ObjectProxy`', class extends EachInProxyTest {
+
+  get truthyValue() {
+    return ObjectProxy.create({ content: { 'Not Empty': 1 } });
+  }
+
+  get falsyValue() {
+    return ObjectProxy.create({ content: null });
+  }
+
+  ['@test it iterates over the content, not the proxy']() {
+    let content = {
+      'Smartphones': 8203,
+      'JavaScript Frameworks': Infinity
+    };
+
+    let proxy = ObjectProxy.create({
+      content,
+      foo: 'bar'
+    });
+
+    this.render(strip`
+      <ul>
+        {{#each-in categories as |category count|}}
+          <li>{{category}}: {{count}}</li>
+        {{/each-in}}
+      </ul>
+    `, { categories: proxy });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      set(proxy, 'content.Smartphones', 100);
+      set(proxy, 'content.Tweets', 443115);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 100</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Tweets: 443115</li>
+      </ul>
+    `);
+
+    this.runTask(() => {
+      set(proxy, 'content', {
+        'Smartphones': 100,
+        'Tablets': 20
+      });
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 100</li>
+        <li>Tablets: 20</li>
+      </ul>
+    `);
+
+    this.runTask(() => set(this.context, 'categories', ObjectProxy.create({
+      content: {
+        'Smartphones': 8203,
+        'JavaScript Frameworks': Infinity
+      }
+    })));
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
   }
 
 });

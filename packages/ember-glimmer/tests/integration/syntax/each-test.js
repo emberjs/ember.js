@@ -98,7 +98,9 @@ class TogglingEachTest extends TogglingSyntaxConditionalsTest {
 
 }
 
-applyMixins(TogglingEachTest,
+class BasicEachTest extends TogglingEachTest {}
+
+applyMixins(BasicEachTest,
 
   new TruthyGenerator([
     ['hello'],
@@ -109,28 +111,19 @@ applyMixins(TogglingEachTest,
   ]),
 
   new FalsyGenerator([
-    true,
-    false,
     null,
     undefined,
+    false,
     '',
     0,
-    1,
-    Object,
-    function() {},
-    [],
-    {},
-    { foo: 'bar' },
-    Object.create(null),
-    Object.create({}),
-    Object.create({ foo: 'bar' })
+    []
   ]),
 
   ArrayTestCases
 
 );
 
-moduleFor('Syntax test: toggling {{#each}}', class extends TogglingEachTest {
+moduleFor('Syntax test: toggling {{#each}}', class extends BasicEachTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#each ${cond}}}${truthy}{{else}}${falsy}{{/each}}`;
@@ -138,7 +131,42 @@ moduleFor('Syntax test: toggling {{#each}}', class extends TogglingEachTest {
 
 });
 
-moduleFor('Syntax test: toggling {{#each as}}', class extends TogglingEachTest {
+moduleFor('Syntax test: toggling {{#each as}}', class extends BasicEachTest {
+
+  templateFor({ cond, truthy, falsy }) {
+    return `{{#each ${cond} as |test|}}${truthy}{{else}}${falsy}{{/each}}`;
+  }
+
+});
+
+class EachEdgeCasesTest extends TogglingEachTest {}
+
+applyMixins(EachEdgeCasesTest,
+
+  new FalsyGenerator([
+    true,
+    'hello',
+    1,
+    Object,
+    function() {},
+    {},
+    { foo: 'bar' },
+    Object.create(null),
+    Object.create({}),
+    Object.create({ foo: 'bar' })
+  ])
+
+);
+
+moduleFor('@glimmer Syntax test: toggling {{#each}}', class extends EachEdgeCasesTest {
+
+  templateFor({ cond, truthy, falsy }) {
+    return `{{#each ${cond}}}${truthy}{{else}}${falsy}{{/each}}`;
+  }
+
+});
+
+moduleFor('@glimmer Syntax test: toggling {{#each as}}', class extends EachEdgeCasesTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#each ${cond} as |test|}}${truthy}{{else}}${falsy}{{/each}}`;
