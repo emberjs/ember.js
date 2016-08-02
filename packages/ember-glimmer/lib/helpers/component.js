@@ -26,7 +26,7 @@ export class ClosureComponentReference extends CachedReference {
     super();
     this.defRef = args.positional.at(0);
     this.env = env;
-    this.tag = args.tag;
+    this.tag = args.positional.at(0).tag;
     this.parentMeta = parentMeta;
     this.args = args;
   }
