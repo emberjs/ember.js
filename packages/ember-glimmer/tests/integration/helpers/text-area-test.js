@@ -17,7 +17,7 @@ class TextAreaRenderingTest extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'textarea', attrs: mergedAttrs });
 
     if (value) {
-      this.assert.strictEqual(value, this.firstChild.value);
+      this.assert.strictEqual(this.firstChild.value, value);
     }
   }
 
@@ -70,6 +70,15 @@ applyMixins(
 
 moduleFor('Helpers test: {{textarea}}', class extends TextAreaRenderingTest {
 
+  //TEMP: GJ: quick hack to override the `if (value) {` from TextAreaRenderingTest
+  //TODO: GJ: why is overriding `assertTextArea` affecting the `BoundTextAreaAttributes` tests from above?
+  assertTextArea2({ attrs, value } = {}) {
+    let mergedAttrs = assign({ 'class': classes('ember-view ember-text-area') }, attrs);
+    this.assertComponentElement(this.firstChild, { tagName: 'textarea', attrs: mergedAttrs });
+
+    this.assert.strictEqual(this.firstChild.value, value);
+  }
+
   ['@test Should insert a textarea']() {
     this.render('{{textarea}}');
 
@@ -118,6 +127,21 @@ moduleFor('Helpers test: {{textarea}}', class extends TextAreaRenderingTest {
 
     this.runTask(() => set(this.context, 'model', { val: 'A beautiful day in Seattle' }));
     this.assertTextArea({ value: 'A beautiful day in Seattle' });
+  }
+
+  ['@test GH#14001 Should bind its contents when intially an empty string']() {
+    this.render('{{textarea value=model.val}}', {
+      model: { val: '' }
+    });
+    this.assertTextArea2({ value: '' });
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'model.val', 'Dublin'));
+    this.assertTextArea({ value: 'Dublin' });
+
+    this.runTask(() => set(this.context, 'model', { val: '' }));
+    this.assertTextArea({ value: '' });
   }
 
   ['@test should update the value for `cut` / `input` / `change` events']() {
