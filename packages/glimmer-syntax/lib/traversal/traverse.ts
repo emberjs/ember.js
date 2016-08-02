@@ -13,6 +13,16 @@ function visitNode(visitor, node) {
     result = handler.enter.call(null, node);
   }
 
+  if (result !== undefined && result !== null) {
+    if (JSON.stringify(node) === JSON.stringify(result)) {
+      result = undefined;
+    } else if (Array.isArray(result)) {
+      return visitArray(visitor, result) || result;
+    } else {
+      return visitNode(visitor, result) || result;
+    }
+  }
+
   if (result === undefined) {
     let keys = visitorKeys[node.type];
 

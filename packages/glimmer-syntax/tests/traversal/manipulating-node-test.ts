@@ -204,16 +204,64 @@ QUnit.test('Inside of a block', () => {
   astEqual(ast, `{{a}}{{b}}{{c}}{{#w}}{{x}}{{a}}{{b}}{{c}}{{z}}{{/w}}`);
 });
 
-QUnit.test('Exit event is not triggered if the node is replaced during the enter event', assert => {
-  let ast = parse(`{{x}}`);
-  let didExit = false;
+QUnit.test('Should recurrsively walk the transformed node', assert => {
+  let ast = parse(`{{x}}{{y}}{{z}}`);
 
   traverse(ast, {
-    MustacheStatement: {
-      enter() { return b.mustache('y'); },
-      exit() { didExit = true; }
+    MustacheStatement: function(node) {
+      if (node.path.original === 'x') {
+        return b.mustache('y');
+      } else if (node.path.original === 'y') {
+        return b.mustache('z');
+      }
     }
   });
 
-  assert.strictEqual(didExit, false);
+  astEqual(ast, `{{z}}{{z}}{{z}}`);
+});
+
+QUnit.test('Should recurrsively walk the keys in the transformed node', assert => {
+  let ast = parse(`{{#foo}}{{#bar}}{{baz}}{{/bar}}{{else}}{{#bar}}{{bat}}{{/bar}}{{/foo}}`);
+
+  traverse(ast, {
+    BlockStatement: function(node) {
+      if (node.path.original === 'foo') {
+        return b.block(b.path('x-foo'), node.params, node.hash, node.program, node.inverse, node.loc);
+      } else if (node.path.original === 'bar') {
+        return b.block(b.path('x-bar'), node.params, node.hash, node.program, node.inverse, node.loc);
+      }
+    },
+
+    MustacheStatement: function(node) {
+      if (node.path.original === 'baz') {
+        return b.mustache('x-baz');
+      } else if (node.path.original === 'bat') {
+        return b.mustache('x-bat');
+      }
+    }
+  });
+
+  astEqual(ast, `{{#x-foo}}{{#x-bar}}{{x-baz}}{{/x-bar}}{{else}}{{#x-bar}}{{x-bat}}{{/x-bar}}{{/x-foo}}`);
+});
+
+QUnit.test('Exit event is not triggered if the node is replaced during the enter event', assert => {
+  let ast = parse(`{{x}}`);
+
+  let entered = [];
+  let exited  = [];
+
+  traverse(ast, {
+    MustacheStatement: {
+      enter(node) {
+        entered.push(node.path.original);
+        return b.mustache('y');
+      },
+      exit(node) {
+        exited.push(node.path.original);
+      }
+    }
+  });
+
+  assert.deepEqual(entered, ['x', 'y']);
+  assert.deepEqual(exited, ['y']);
 });
