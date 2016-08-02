@@ -29,15 +29,23 @@ export class ClosureComponentReference extends CachedReference {
     this.tag = args.positional.at(0).tag;
     this.parentMeta = parentMeta;
     this.args = args;
+    this.lastDefinition = undefined;
+    this.lastName = undefined;
   }
 
   compute() {
     // TODO: Figure out how to extract this because it's nearly identical to
     // DynamicComponentReference::compute(). The only differences besides
     // currying are in the assertion messages.
-    let { args, defRef, env, parentMeta } = this;
+    let { args, defRef, env, parentMeta, lastDefinition, lastName } = this;
     let nameOrDef = defRef.value();
     let definition = null;
+
+    if (nameOrDef && nameOrDef === lastName) {
+      return lastDefinition;
+    }
+
+    this.lastName = nameOrDef;
 
     if (typeof nameOrDef === 'string') {
       definition = env.getComponentDefinition([nameOrDef], parentMeta);
@@ -53,6 +61,8 @@ export class ClosureComponentReference extends CachedReference {
     }
 
     let newDef = createCurriedDefinition(definition, args);
+
+    this.lastDefinition = newDef;
 
     return newDef;
   }
