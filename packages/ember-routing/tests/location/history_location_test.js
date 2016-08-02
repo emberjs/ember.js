@@ -1,7 +1,6 @@
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import HistoryLocation from 'ember-routing/location/history_location';
-import jQuery from 'ember-views/system/jquery';
 
 let FakeHistory, HistoryTestLocation, location;
 
@@ -29,6 +28,12 @@ function mockBrowserLocation(path) {
     protocol: protocol,
     search: tmp.search
   };
+}
+
+function triggerPopstate() {
+  var event = document.createEvent('HTMLEvents');
+  event.initEvent('popstate', true, false);
+  window.dispatchEvent(event);
 }
 
 QUnit.module('Ember.HistoryLocation', {
@@ -303,7 +308,7 @@ QUnit.test('HistoryLocation.onUpdateURL callback executes as expected', function
 
   location.onUpdateURL(callback);
 
-  jQuery(window).trigger('popstate');
+  triggerPopstate();
 });
 
 QUnit.test('HistoryLocation.onUpdateURL doesn\'t executes callback if URL doesn\'t start with rootURL', function() {
@@ -326,5 +331,5 @@ QUnit.test('HistoryLocation.onUpdateURL doesn\'t executes callback if URL doesn\
 
   location.onUpdateURL(callback);
 
-  jQuery(window).trigger('popstate');
+  triggerPopstate();
 });
