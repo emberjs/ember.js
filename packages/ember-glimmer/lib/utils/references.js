@@ -3,7 +3,7 @@ import { set } from 'ember-metal/property_set';
 import { tagFor } from 'ember-metal/tags';
 import { didRender } from 'ember-metal/transaction';
 import symbol from 'ember-metal/symbol';
-import { CURRENT_TAG, CONSTANT_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst } from 'glimmer-reference';
+import { CONSTANT_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst } from 'glimmer-reference';
 import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
@@ -231,11 +231,11 @@ export class ConditionalReference extends GlimmerConditionalReference {
   }
 
   toBool(predicate) {
+    this.objectTag.update(tagFor(predicate));
+
     if (isProxy(predicate)) {
-      this.objectTag.update(CURRENT_TAG);
       return get(predicate, 'isTruthy');
     } else {
-      this.objectTag.update(tagFor(predicate));
       return emberToBool(predicate);
     }
   }
