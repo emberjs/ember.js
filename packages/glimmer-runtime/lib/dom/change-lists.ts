@@ -35,7 +35,7 @@ export function defaultPropertyChangeLists(tagName: string, attr: string) {
     return SafeHrefPropertyChangeList;
   }
 
-  if (isInputValue(tagName, attr)) {
+  if (isUserInputValue(tagName, attr)) {
     return InputValuePropertyChangeList;
   }
 
@@ -107,8 +107,8 @@ export const AttributeChangeList = {
   }
 };
 
-function isInputValue(tagName: string, attribute: string) {
-  return tagName === 'INPUT' && attribute === 'value';
+function isUserInputValue(tagName: string, attribute: string) {
+  return (tagName === 'INPUT' || tagName === 'TEXTAREA') && attribute === 'value';
 }
 
 export const InputValuePropertyChangeList = {
