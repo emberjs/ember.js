@@ -213,3 +213,19 @@ test('handles undefined `toString` input values', assert => {
 
   assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
 });
+
+test('handles empty string textarea values', assert => {
+  let template = compile('<textarea value={{name}} />');
+
+  render(template, { name: '' });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
+
+  rerender({ name: 'Alex' });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), 'Alex');
+
+  rerender({ name: '' });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
+});
