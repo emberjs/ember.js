@@ -117,6 +117,10 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
     this._parentObjectTag = parentObjectTag;
     this._propertyKey = propertyKey;
 
+    this._wasProxy = false;
+    this._proxyWrapperTag = null;
+    this._proxyContentTag = null;
+
     if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
         isEnabled('ember-glimmer-allow-backtracking-rerender')) {
       let tag = combine([parentReferenceTag, parentObjectTag]);
@@ -127,14 +131,32 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
   }
 
   compute() {
-    let { _parentReference, _parentObjectTag, _propertyKey } = this;
+    let { _parentReference, _parentObjectTag, _wasProxy, _propertyKey } = this;
 
     let parentValue = _parentReference.value();
 
     if (isProxy(parentValue)) {
-      _parentObjectTag.update(CURRENT_TAG);
+      let proxyContent = get(parentValue, 'content');
+
+      if (_wasProxy) {
+        this._proxyWrapperTag.update(tagFor(parentValue));
+        this._proxyContentTag.update(tagFor(proxyContent));
+      } else {
+        let _proxyWrapperTag = this._proxyWrapperTag = new UpdatableTag(tagFor(parentValue));
+        let _proxyContentTag = this._proxyContentTag = new UpdatableTag(tagFor(proxyContent));
+
+        _parentObjectTag.update(combine([_proxyWrapperTag, _proxyContentTag]));
+
+        this._wasProxy = true;
+      }
     } else {
       _parentObjectTag.update(tagFor(parentValue));
+
+      if (_wasProxy) {
+        this._wasProxy = false;
+        this._proxyWrapperTag = null;
+        this._proxyContentTag = null;
+      }
     }
 
     if (typeof parentValue === 'object' && parentValue) {

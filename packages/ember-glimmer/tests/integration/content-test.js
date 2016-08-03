@@ -223,7 +223,7 @@ class DynamicContentTest extends RenderingTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'proxy.name', 'Yehuda Katz'));
+    this.runTask(() => set(this.context, 'proxy.content.name', 'Yehuda Katz'));
 
     this.assertContent('Yehuda Katz');
     this.assertInvariants();
@@ -233,7 +233,7 @@ class DynamicContentTest extends RenderingTest {
     this.assertContent('Godfrey Chan');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'proxy.content.name', 'Stefan Penner'));
+    this.runTask(() => set(this.context, 'proxy.name', 'Stefan Penner'));
 
     this.assertContent('Stefan Penner');
     this.assertInvariants();
@@ -245,6 +245,137 @@ class DynamicContentTest extends RenderingTest {
     this.runTask(() => set(this.context, 'proxy', ObjectProxy.create({ content: { name: 'Tom Dale' } })));
 
     this.assertContent('Tom Dale');
+    this.assertInvariants();
+  }
+
+  ['@glimmer it can read from a nested path in a proxy object']() {
+    this.renderPath('proxy.name.last', { proxy: ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } }) });
+
+    this.assertContent('Dale');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'proxy.content.name.last', 'Cruise'));
+
+    this.assertContent('Cruise');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxy.content.name.first', 'Suri'));
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'proxy.content.name', { first: 'Yehuda', last: 'Katz' }));
+
+    this.assertContent('Katz');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxy.content', { name: { first: 'Godfrey', last: 'Chan' } }));
+
+    this.assertContent('Chan');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxy.name', { first: 'Stefan', last: 'Penner' }));
+
+    this.assertContent('Penner');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxy', null));
+
+    this.assertIsEmpty();
+
+    this.runTask(() => set(this.context, 'proxy', ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } })));
+
+    this.assertContent('Dale');
+    this.assertInvariants();
+  }
+
+  ['@glimmer it can read from a path flipping between a proxy and a real object']() {
+    this.renderPath('proxyOrObject.name.last', { proxyOrObject: ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } }) });
+
+    this.assertContent('Dale');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'proxyOrObject', { name: { first: 'Tom', last: 'Dale' } }));
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'proxyOrObject.name.last', 'Cruise'));
+
+    this.assertContent('Cruise');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxyOrObject.name.first', 'Suri'));
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'proxyOrObject', { name: { first: 'Yehuda', last: 'Katz' } }));
+
+    this.assertContent('Katz');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxyOrObject', ObjectProxy.create({ content: { name: { first: 'Godfrey', last: 'Chan' } } })));
+
+    this.assertContent('Chan');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxyOrObject.content.name', { first: 'Stefan', last: 'Penner' }));
+
+    this.assertContent('Penner');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxyOrObject', null));
+
+    this.assertIsEmpty();
+
+    this.runTask(() => set(this.context, 'proxyOrObject', ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } })));
+
+    this.assertContent('Dale');
+    this.assertInvariants();
+  }
+
+  ['@glimmer it can read from a path flipping between a real object and a proxy']() {
+    this.renderPath('objectOrProxy.name.last', { objectOrProxy: { name: { first: 'Tom', last: 'Dale' } } });
+
+    this.assertContent('Dale');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'objectOrProxy', ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } })));
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'objectOrProxy.content.name.last', 'Cruise'));
+
+    this.assertContent('Cruise');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'objectOrProxy.content.name.first', 'Suri'));
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'objectOrProxy.content', { name: { first: 'Yehuda', last: 'Katz' } }));
+
+    this.assertContent('Katz');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'objectOrProxy', { name: { first: 'Godfrey', last: 'Chan' } }));
+
+    this.assertContent('Chan');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'objectOrProxy.name', { first: 'Stefan', last: 'Penner' }));
+
+    this.assertContent('Penner');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'objectOrProxy', null));
+
+    this.assertIsEmpty();
+
+    this.runTask(() => set(this.context, 'objectOrProxy', { name: { first: 'Tom', last: 'Dale' } }));
+
+    this.assertContent('Dale');
     this.assertInvariants();
   }
 
