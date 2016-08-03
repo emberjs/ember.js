@@ -40,7 +40,7 @@ export namespace Expressions {
   export type Arg            = ['arg', Path];
   export type Get            = ['get', Path];
   export type SelfGet        = ['self-get', Path];
-  export type Value          = str | number | boolean;
+  export type Value          = str | number | boolean | null | undefined; // tslint:disable-line
   export type HasBlock       = ['hasBlock', str];
   export type HasBlockParams = ['hasBlockParams', str];
 
@@ -77,8 +77,11 @@ export namespace Expressions {
   export const isHasBlock       = is<HasBlock>('hasBlock');
   export const isHasBlockParams = is<HasBlockParams>('hasBlockParams');
 
-  export function isValue(value: any): value is Value {
-    return value !== null && typeof value !== 'object';
+  export function isPrimitiveValue(value: any): value is Value {
+    if (value === null) {
+      return true;
+    }
+    return typeof value !== 'object';
   }
 }
 
