@@ -24,20 +24,17 @@ const {
   isHasBlockParams,
   isHelper,
   isUnknown,
-  isValue
+  isPrimitiveValue
 } = SerializedExpressions;
 
 export default function(sexp: SerializedExpression): any {
-  if (isValue(sexp)) {
-    return ValueSyntax.fromSpec(sexp);
-  } else {
-    if (isArg(sexp)) return ArgSyntax.fromSpec(sexp);
-    if (isConcat(sexp)) return ConcatSyntax.fromSpec(sexp);
-    if (isGet(sexp)) return GetSyntax.fromSpec(sexp);
-    if (isSelfGet(sexp)) return SelfGetSyntax.fromSpec(sexp);
-    if (isHelper(sexp)) return HelperSyntax.fromSpec(sexp);
-    if (isUnknown(sexp)) return UnknownSyntax.fromSpec(sexp);
-    if (isHasBlock(sexp)) return HasBlockSyntax.fromSpec(sexp);
-    if (isHasBlockParams(sexp)) return HasBlockParamsSyntax.fromSpec(sexp);
-  }
+  if (isPrimitiveValue(sexp)) return ValueSyntax.fromSpec(sexp);
+  if (isArg(sexp)) return ArgSyntax.fromSpec(sexp);
+  if (isConcat(sexp)) return ConcatSyntax.fromSpec(sexp);
+  if (isGet(sexp)) return GetSyntax.fromSpec(sexp);
+  if (isSelfGet(sexp)) return SelfGetSyntax.fromSpec(sexp);
+  if (isHelper(sexp)) return HelperSyntax.fromSpec(sexp);
+  if (isUnknown(sexp)) return UnknownSyntax.fromSpec(sexp);
+  if (isHasBlock(sexp)) return HasBlockSyntax.fromSpec(sexp);
+  if (isHasBlockParams(sexp)) return HasBlockParamsSyntax.fromSpec(sexp);
 };
