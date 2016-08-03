@@ -349,6 +349,58 @@ test("The compiler can handle simple helpers", function() {
   compilesTo('<div>{{testing title}}</div>', '<div>hello</div>', { title: 'hello' });
 });
 
+test("GH#13999 The compiler can handle simple helpers with inline null parameter", function() {
+  let value;
+  env.registerHelper('say-hello', function(params) {
+    value = params[0];
+    return 'hello';
+  });
+
+  compilesTo('<div>{{say-hello null}}</div>', '<div>hello</div>');
+  strictEqual(value, null, 'is null');
+});
+
+test("GH#13999 The compiler can handle simple helpers with inline undefined parameter", function() {
+  let value = 'PLACEHOLDER';
+  let length;
+  env.registerHelper('say-hello', function(params) {
+    length = params.length;
+    value = params[0];
+    return 'hello';
+  });
+
+  compilesTo('<div>{{say-hello undefined}}</div>', '<div>hello</div>');
+  strictEqual(length, 1);
+  strictEqual(value, null, 'is undefined'); // undefined is converted to null type
+});
+
+test("GH#13999 The compiler can handle components with null named arguments", function() {
+  let value;
+  env.registerHelper('say-hello', function(_, hash) {
+    value = hash['foo'];
+    return 'hello';
+  });
+
+  compilesTo('<div>{{say-hello foo=null}}</div>', '<div>hello</div>');
+  strictEqual(value, null, 'is null');
+});
+
+test("GH#13999 The compiler can handle components with undefined named arguments", function() {
+  env.registerHelper('say-hello', function() {
+    return 'hello';
+  });
+
+  compilesTo('<div>{{say-hello foo=undefined}}</div>', '<div>hello</div>');
+});
+
+test("Null curly in attributes", function() {
+  compilesTo('<div class="foo {{null}}">hello</div>', '<div class="foo ">hello</div>');
+});
+
+test("Null in primative synatx", function() {
+  compilesTo('{{#if null}}NOPE{{else}}YUP{{/if}}', 'YUP');
+});
+
 test("The compiler can handle sexpr helpers", function() {
   env.registerHelper('testing', function(params) {
     return params[0] + "!";
