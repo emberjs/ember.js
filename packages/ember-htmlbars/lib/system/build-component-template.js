@@ -186,7 +186,7 @@ function normalizeComponentAttributes(component, attrs) {
     }
   }
 
-  normalized.role = buildStatement('get', 'ariaRole');
+  normalized.role = normalized.role || buildStatement('get', 'ariaRole');
 
   if (attrs.tagName) {
     component.tagName = attrs.tagName;
