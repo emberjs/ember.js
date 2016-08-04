@@ -722,6 +722,25 @@ export class CloseBlockOpcode extends Opcode {
   }
 }
 
+export class Undefined {
+  type = "undefined";
+  public value: string | undefined;
+  static fromSpec(value) {
+    return new Undefined(value);
+  }
+  constructor(value: string) {
+    this.value = undefined;
+  }
+
+  inner() {
+    return this.value;
+  }
+
+  compile() {
+    return new CompiledValue<string>(this);
+  }
+}
+
 export class Value<T extends SerializedExpressions.Value> extends ExpressionSyntax<T> {
   type = "value";
 

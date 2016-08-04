@@ -7,7 +7,8 @@ import {
   HasBlock as HasBlockSyntax,
   HasBlockParams as HasBlockParamsSyntax,
   Helper as HelperSyntax,
-  Unknown as UnknownSyntax
+  Unknown as UnknownSyntax,
+  Undefined as UndefinedSyntax
 } from './core';
 
 import {
@@ -24,10 +25,12 @@ const {
   isHasBlockParams,
   isHelper,
   isUnknown,
-  isPrimitiveValue
+  isPrimitiveValue,
+  isUndefined
 } = SerializedExpressions;
 
 export default function(sexp: SerializedExpression): any {
+  if (isUndefined(sexp)) return UndefinedSyntax.fromSpec(sexp);
   if (isPrimitiveValue(sexp)) return ValueSyntax.fromSpec(sexp);
   if (isArg(sexp)) return ArgSyntax.fromSpec(sexp);
   if (isConcat(sexp)) return ConcatSyntax.fromSpec(sexp);
