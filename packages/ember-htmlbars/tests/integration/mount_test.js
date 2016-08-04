@@ -40,6 +40,7 @@ function commonSetup() {
     app.register('component-lookup:main', ComponentLookup);
 
     appInstance = app.buildInstance();
+    appInstance.setupRegistry();
   });
 }
 
