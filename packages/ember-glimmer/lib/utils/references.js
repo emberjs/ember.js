@@ -142,12 +142,11 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
         this._proxyWrapperTag.update(tagFor(parentValue));
         this._proxyContentTag.update(tagFor(proxyContent));
       } else {
+        this._wasProxy = true;
         let _proxyWrapperTag = this._proxyWrapperTag = new UpdatableTag(tagFor(parentValue));
         let _proxyContentTag = this._proxyContentTag = new UpdatableTag(tagFor(proxyContent));
 
         _parentObjectTag.update(combine([_proxyWrapperTag, _proxyContentTag]));
-
-        this._wasProxy = true;
       }
     } else {
       _parentObjectTag.update(tagFor(parentValue));

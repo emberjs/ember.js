@@ -6,7 +6,7 @@ import { objectAt, isEmberArray } from 'ember-runtime/mixins/array';
 import { isProxy } from 'ember-runtime/mixins/-proxy';
 import { UpdatableReference, UpdatablePrimitiveReference } from './references';
 import { isEachIn } from '../helpers/each-in';
-import { CONSTANT_TAG, CURRENT_TAG, UpdatableTag, combine } from 'glimmer-reference';
+import { CONSTANT_TAG, UpdatableTag, combine } from 'glimmer-reference';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
@@ -169,9 +169,6 @@ const EMPTY_ITERATOR = new EmptyIterator();
 
 class AbstractIterable {
   constructor(ref, keyFor) {
-    let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
-
-    this.tag = combine([ref.tag, valueTag]);
     this.ref = ref;
     this.keyFor = keyFor;
   }
@@ -198,16 +195,47 @@ class AbstractIterable {
 }
 
 class EachInIterable extends AbstractIterable {
+  constructor(ref, keyFor) {
+    super(ref, keyFor);
+
+    let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
+
+    this.wasProxy = false;
+    this.proxyWrapperTag = null;
+    this.proxyContentTag = null;
+
+    this.tag = combine([ref.tag, valueTag]);
+  }
+
   iterate() {
-    let { ref, keyFor, valueTag } = this;
+    let { ref, keyFor, valueTag, wasProxy } = this;
 
     let iterable = ref.value();
 
     if (isProxy(iterable)) {
-      valueTag.update(CURRENT_TAG);
-      iterable = get(iterable, 'content');
+      let proxy = iterable;
+      let content = get(proxy, 'content');
+
+      if (wasProxy) {
+        this.proxyWrapperTag.update(tagFor(proxy));
+        this.proxyContentTag.update(tagFor(content));
+      } else {
+        this.wasProxy = true;
+        let proxyWrapperTag = this.proxyWrapperTag = new UpdatableTag(tagFor(proxy));
+        let proxyContentTag = this.proxyContentTag = new UpdatableTag(tagFor(content));
+
+        valueTag.update(combine([proxyWrapperTag, proxyContentTag]));
+      }
+
+      iterable = content;
     } else {
       valueTag.update(tagFor(iterable));
+
+      if (wasProxy) {
+        this.wasProxy = true;
+        this.proxyWrapperTag = null;
+        this.proxyContentTag = null;
+      }
     }
 
     let typeofIterable = typeof iterable;
@@ -223,6 +251,13 @@ class EachInIterable extends AbstractIterable {
 }
 
 class ArrayIterable extends AbstractIterable {
+  constructor(ref, keyFor) {
+    super(ref, keyFor);
+
+    let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
+    this.tag = combine([ref.tag, valueTag]);
+  }
+
   iterate() {
     let { ref, keyFor, valueTag } = this;
 
