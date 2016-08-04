@@ -77,6 +77,10 @@ module.exports = function(options) {
     destDir: 'demos'
   });
 
+  var simpleDOMPath = path.dirname(require.resolve('simple-dom'));
+  var simpleDOM = find(simpleDOMPath, {
+    include: ['simple-dom.js']
+  });
   /*
    * ES6 Build
    */
@@ -128,7 +132,7 @@ module.exports = function(options) {
   var simpleHTMLTokenizerJSTree = typescript(simpleHTMLTokenizerLib, tsOptions);
   var handlebarsPath = path.join(require.resolve('handlebars'), '..', '..', 'dist', 'cjs');
 
-  cjsTree = merge([cjsTree, simpleHTMLTokenizerJSTree, handlebarsPath]);
+  cjsTree = merge([cjsTree, simpleHTMLTokenizerJSTree, handlebarsPath, simpleDOM]);
 
   // Glimmer packages require other Glimmer packages using non-relative module names
   // (e.g., `glimmer-compiler` may import `glimmer-util` instead of `../glimmer-util`),
