@@ -5,6 +5,9 @@ import { CONSTANT_TAG, PathReference, RevisionTag, combine } from 'glimmer-refer
 import { InternedString, Dict, dict } from 'glimmer-util';
 
 export abstract class CompiledNamedArgs {
+  public abstract type: string;
+  public abstract map: Dict<CompiledExpression<any>>;
+
   static create({ map }: { map: Dict<CompiledExpression<any>> }): CompiledNamedArgs {
     if (Object.keys(map).length) {
       return new CompiledNonEmptyNamedArgs({ map });
@@ -13,8 +16,6 @@ export abstract class CompiledNamedArgs {
     }
   }
 
-  public type: string;
-  public map: Dict<CompiledExpression<any>>;
   abstract evaluate(vm: VM): EvaluatedNamedArgs;
   abstract toJSON(): string;
 }
@@ -49,11 +50,11 @@ class CompiledNonEmptyNamedArgs extends CompiledNamedArgs {
   }
 }
 
-export const COMPILED_EMPTY_NAMED_ARGS = new (class extends CompiledNamedArgs {
+export const COMPILED_EMPTY_NAMED_ARGS: CompiledNamedArgs = new (class extends CompiledNamedArgs {
   public type = "empty-named-args";
   public map = dict<CompiledExpression<any>>();
 
-  evaluate(vm): EvaluatedNamedArgs {
+  evaluate(vm: VM): EvaluatedNamedArgs {
     return EvaluatedNamedArgs.empty();
   }
 
