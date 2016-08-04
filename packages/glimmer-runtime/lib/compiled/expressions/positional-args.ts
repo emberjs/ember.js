@@ -4,6 +4,10 @@ import VM from '../../vm/append';
 import { CONSTANT_TAG, PathReference, RevisionTag, combineTagged } from 'glimmer-reference';
 
 export abstract class CompiledPositionalArgs {
+  public abstract type: string;
+  public abstract values: CompiledExpression<any>[];
+  public abstract length: number;
+
   static create({ values }: { values: CompiledExpression<any>[] }): CompiledPositionalArgs {
     if (values.length) {
       return new CompiledNonEmptyPositionalArgs({ values });
@@ -12,8 +16,6 @@ export abstract class CompiledPositionalArgs {
     }
   }
 
-  public type: string;
-  public length: number;
   abstract evaluate(vm: VM): EvaluatedPositionalArgs;
   abstract toJSON(): string;
 }
@@ -21,6 +23,7 @@ export abstract class CompiledPositionalArgs {
 class CompiledNonEmptyPositionalArgs extends CompiledPositionalArgs {
   public type = "positional-args";
   public values: CompiledExpression<any>[];
+  public length: number;
 
   constructor({ values }: { values: CompiledExpression<any>[] }) {
     super();
@@ -44,12 +47,12 @@ class CompiledNonEmptyPositionalArgs extends CompiledPositionalArgs {
   }
 }
 
-export const COMPILED_EMPTY_POSITIONAL_ARGS = new (class extends CompiledPositionalArgs {
+export const COMPILED_EMPTY_POSITIONAL_ARGS: CompiledPositionalArgs = new (class extends CompiledPositionalArgs {
   public type = "empty-positional-args";
-
+  public values: CompiledExpression<any>[] = [];
   public length = 0;
 
-  evaluate(vm): EvaluatedPositionalArgs {
+  evaluate(vm: VM): EvaluatedPositionalArgs {
     return EvaluatedPositionalArgs.empty();
   }
 

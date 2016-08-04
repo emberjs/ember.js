@@ -11,9 +11,9 @@ interface CompiledArgOptions {
 }
 
 export abstract class CompiledArgs {
-  public type: string;
-  public positional: CompiledPositionalArgs;
-  public named: CompiledNamedArgs;
+  public abstract type: string;
+  public abstract positional: CompiledPositionalArgs;
+  public abstract named: CompiledNamedArgs;
 
   static create({ positional, named }: CompiledArgOptions): CompiledArgs {
     if (positional === COMPILED_EMPTY_POSITIONAL_ARGS && named ===  COMPILED_EMPTY_NAMED_ARGS) {
@@ -49,10 +49,12 @@ class CompiledNonEmptyArgs extends CompiledArgs {
   }
 }
 
-export const COMPILED_EMPTY_ARGS = new (class extends CompiledArgs {
+export const COMPILED_EMPTY_ARGS: CompiledArgs = new (class extends CompiledArgs {
   public type = "empty-args";
+  public positional: CompiledPositionalArgs = COMPILED_EMPTY_POSITIONAL_ARGS;
+  public named: CompiledNamedArgs = COMPILED_EMPTY_NAMED_ARGS;
 
-  evaluate(vm): EvaluatedArgs {
+  evaluate(vm: VM): EvaluatedArgs {
     return EvaluatedArgs.empty();
   }
 });
