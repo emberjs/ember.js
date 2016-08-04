@@ -50,7 +50,8 @@ import {
   // Misc
   ElementOperations,
   FunctionExpression,
-  OpcodeBuilderDSL
+  OpcodeBuilderDSL,
+  Simple
 } from "glimmer-runtime";
 
 import {
@@ -666,6 +667,11 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
   }
 }
 
+interface TestEnvironmentOptions {
+  document?: Simple.Document;
+  appendOperations?: DOMTreeConstruction;
+}
+
 export class TestEnvironment extends Environment {
   private helpers = dict<GlimmerHelper>();
   private modifiers = dict<ModifierManager<Opaque>>();
@@ -674,10 +680,13 @@ export class TestEnvironment extends Environment {
   private uselessAnchor: HTMLAnchorElement;
   public compiledLayouts = dict<CompiledBlock>();
 
-  constructor(dom?: IDOMChanges) {
-    super({ appendOperations: new DOMTreeConstruction(document), updateOperations: dom || new DOMChanges(document) });
+  constructor(options: TestEnvironmentOptions = {
+    document: document,
+    appendOperations: new DOMTreeConstruction(document)
+  }) {
+    super({ appendOperations: options.appendOperations, updateOperations: new DOMChanges(options.document as Document) });
 
-    this.uselessAnchor = document.createElement('a');
+    this.uselessAnchor = options.document.createElement('a') as HTMLAnchorElement;
     this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
     this.registerModifier("action", new InertModifierManager());

@@ -69,7 +69,7 @@ namespace DOM {
       this.uselessElement = document.createElement('div');
     }
 
-    createElement(tag: string, context: Element): Element {
+    createElement(tag: string, context?: Element): Element {
       let isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
       let isHTMLIntegrationPoint = SVG_INTEGRATION_POINTS[context.tagName];
 
@@ -81,10 +81,10 @@ namespace DOM {
           throw new Error(`Cannot create a ${tag} inside of a <${context.tagName}>, because it's inside an SVG context`);
         }
 
-      return this.document.createElementNS(SVG_NAMESPACE as Namespace, tag);
-    }
+        return this.document.createElementNS(SVG_NAMESPACE as Namespace, tag);
+      }
 
-    return this.document.createElement(tag);
+      return this.document.createElement(tag);
     }
 
     createElementNS(namespace: Namespace, tag: string): Element {

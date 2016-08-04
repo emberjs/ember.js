@@ -1,41 +1,37 @@
-import * as QUnit from 'qunitjs';
 import * as SimpleDOM from 'simple-dom';
 
-import { forEach } from "glimmer-util";
 import { TestEnvironment, TestDynamicScope} from "glimmer-test-helpers/lib/environment";
-import { Template, AttributeChangeList } from 'glimmer-runtime';
+import { Template, Simple } from 'glimmer-runtime';
 import { UpdatableReference } from 'glimmer-object-reference';
-import NodeDOMHelper from 'glimmer-node/lib/node-dom-helper';
+import NodeDOMTreeConstruction from 'glimmer-node/lib/node-dom-helper';
 
-let HTMLSerializer = SimpleDOM.HTMLSerializer;
 let voidMap = SimpleDOM.voidMap;
 
-let serializer = new HTMLSerializer(voidMap);
+let serializer = new SimpleDOM.HTMLSerializer(voidMap);
 
-const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
-const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
+// const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+// const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
+// const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
-let env: TestEnvironment, root: HTMLElement;
-let helper: NodeDOMHelper;
+let env: TestEnvironment, root: Simple.Element;
+let helper: NodeDOMTreeConstruction;
+let doc: Simple.Document;
 
 function compile(template: string) {
   return env.compile(template);
 }
 
-function compilesTo(html: string, expected: string=html, context: any={}) {
-  let template = compile(html);
-  root = rootElement();
-  render(template, context);
-}
-
-function rootElement(): HTMLDivElement {
-  return env.getDOM().createElement('div', new SimpleDOM.Document().body) as HTMLDivElement;
+function rootElement(): Simple.Element {
+  return env.getAppendOperations().createElement('div');
 }
 
 function commonSetup() {
-  helper = new NodeDOMHelper();
-  env = new TestEnvironment(helper); // TODO: Support SimpleDOM
+  doc = new SimpleDOM.Document();
+  helper = new NodeDOMTreeConstruction(doc);
+  env = new TestEnvironment({
+    document: doc,
+    appendOperations: helper
+  });
   root = rootElement();
 }
 
@@ -68,8 +64,6 @@ QUnit.test("HTML tags", function(assert) {
 QUnit.test("HTML tags re-rendered", function(assert) {
   let template = compile("<h1>hello!</h1><div>content</div>");
   let result = render(template, {});
-
-  let oldFirstChild = root.firstChild;
 
   env.begin();
   result.rerender();
@@ -192,4 +186,48 @@ QUnit.test("The compiler can handle unescaped HTML", function(assert) {
   render(template, { title: '<strong>hello</strong>' });
 
   assert.equal(serializer.serializeChildren(root), '<div><strong>hello</strong></div>');
+});
+
+QUnit.test("Unescaped helpers render correctly", function(assert) {
+  env.registerHelper('testing-unescaped', function(params) {
+    return params[0];
+  });
+
+  let escapedTemplate = compile('{{{testing-unescaped "<span>hi</span>"}}}');
+
+  render(escapedTemplate, {});
+
+  assert.equal(serializer.serialize(root), '<div><span>hi</span></div>');
+});
+
+QUnit.test('Null literals do not have representation in DOM', function(assert) {
+  let template = compile('{{null}}');
+
+  render(template, {});
+
+  assert.equal(serializer.serialize(root), '<div></div>');
+});
+
+QUnit.test("Attributes can be populated with helpers that generate a string", function(assert) {
+  env.registerHelper('testing', function(params) {
+    return params[0];
+  });
+
+  let escapedTemplate = compile('<a href="{{testing url}}">linky</a>');
+
+  render(escapedTemplate, { url: 'linky.html' });
+
+  assert.equal(serializer.serialize(root), '<div><a href="linky.html">linky</a></div>');
+});
+
+QUnit.test("Elements inside a yielded block", function(assert) {
+  let template = compile('{{#if true}}<div id="test">123</div>{{/if}}');
+  render(template, {});
+  assert.equal(serializer.serialize(root), '<div><div id="test">123</div></div>');
+});
+
+QUnit.test("A simple block helper can return text", function(assert) {
+  let template = compile('{{#if true}}test{{else}}not shown{{/if}}');
+  render(template, {});
+  assert.equal(serializer.serialize(root), '<div>test</div>');
 });

@@ -199,7 +199,7 @@ let isCheckedInputHTML;
 
 if (typeof document === 'undefined') {
   isCheckedInputHTML = function(element) {
-  }
+  };
 } else {
   // detect weird IE8 checked element string
   let checkedInput = document.createElement('input');
