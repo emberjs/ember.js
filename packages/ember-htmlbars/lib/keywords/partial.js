@@ -16,12 +16,12 @@ import { internal } from 'htmlbars-runtime';
   ```
 
   The above example template will render a template named
-  "_nav", which has the same context as the parent template
-  it's rendered into, so if the "_nav" template also referenced
+  "-nav", which has the same context as the parent template
+  it's rendered into, so if the "-nav" template also referenced
   `{{foo}}`, it would print the same thing as the `{{foo}}`
   in the above example.
 
-  If a "_nav" template isn't found, the `partial` helper will
+  If a "-nav" template isn't found, the `partial` helper will
   fall back to a template named "nav".
 
   ### Bound template names
