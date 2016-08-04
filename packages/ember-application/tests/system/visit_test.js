@@ -4,6 +4,7 @@ import run from 'ember-metal/run_loop';
 import RSVP, { onerrorDefault } from 'ember-runtime/ext/rsvp';
 import Application from 'ember-application/system/application';
 import ApplicationInstance from 'ember-application/system/application-instance';
+import Engine from 'ember-application/system/engine';
 import Route from 'ember-routing/system/route';
 import Router from 'ember-routing/system/router';
 import Component from 'ember-templates/component';
@@ -353,6 +354,52 @@ testModule('Ember.Application - visit() Integration Tests', {
       App = null;
     }
   }
+});
+
+test('visit() returns a promise that resolves without rendering when shouldRender is set to false', function(assert) {
+  assert.expect(3);
+
+  run(() => {
+    createApplication();
+
+    App.register('template:application', compile('<h1>Hello world</h1>'));
+  });
+
+  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+  return run(App, 'visit', '/', { shouldRender: false }).then(instance => {
+    assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+    assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are still no elements in the fixture element after visit');
+  });
+});
+
+test('visit() returns a promise that resolves without rendering when shouldRender is set to false with Engines', function(assert) {
+  assert.expect(3);
+
+  run(() => {
+    createApplication();
+
+    App.register('template:application', compile('<h1>Hello world</h1>'));
+
+    // Register engine
+    let BlogEngine = Engine.extend();
+    App.register('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let BlogMap = function() {};
+    App.register('route-map:blog', BlogMap);
+
+    App.Router.map(function() {
+      this.mount('blog');
+    });
+  });
+
+  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+  return run(App, 'visit', '/blog', { shouldRender: false }).then(instance => {
+    assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+    assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are still no elements in the fixture element after visit');
+  });
 });
 
 test('Ember Islands-style setup', function(assert) {
