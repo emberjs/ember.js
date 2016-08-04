@@ -36,13 +36,17 @@ export namespace Expressions {
   type Params = Core.Params;
   type Hash = Core.Hash;
 
+  type UndefinedStringLiteral = 'undefined';
+  type UndefinedLiteral = ['undefinedLiteral', 'undefined'];
+
   export type Unknown        = ['unknown', Path];
   export type Arg            = ['arg', Path];
   export type Get            = ['get', Path];
   export type SelfGet        = ['self-get', Path];
-  export type Value          = str | number | boolean | null | undefined; // tslint:disable-line
+  export type Value          = str | number | boolean | null; // tslint:disable-line
   export type HasBlock       = ['hasBlock', str];
   export type HasBlockParams = ['hasBlockParams', str];
+  export type Undefined      = UndefinedStringLiteral | UndefinedLiteral;
 
   export type Expression =
       Unknown
@@ -53,6 +57,7 @@ export namespace Expressions {
     | HasBlock
     | HasBlockParams
     | Helper
+    | Undefined
     | Value
     ;
 
@@ -76,6 +81,14 @@ export namespace Expressions {
   export const isHelper         = is<Helper>('helper');
   export const isHasBlock       = is<HasBlock>('hasBlock');
   export const isHasBlockParams = is<HasBlockParams>('hasBlockParams');
+
+  export function isUndefined(value: any): value is Undefined {
+    if (typeof value === 'object' && value !== null && value[0] === 'undefinedLiteral') {
+      return true;
+    }
+
+    return false;
+  }
 
   export function isPrimitiveValue(value: any): value is Value {
     if (value === null) {

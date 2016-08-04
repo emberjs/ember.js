@@ -182,7 +182,11 @@ export default class JavaScriptCompiler {
   /// Expressions
 
   literal(value: any) {
-    this.pushValue(value);
+    if (value === undefined) {
+      this.pushValue(['undefinedLiteral']);
+    } else {
+      this.pushValue(value);
+    }
   }
 
   unknown(path: string[]) {
