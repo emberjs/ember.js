@@ -10,9 +10,12 @@ import {
   IteratorSynchronizerDelegate,
 
   // Tags
+  combine,
+  Revision,
   UpdatableTag,
   combineSlice,
-  CONSTANT_TAG
+  CONSTANT_TAG,
+  INITIAL
 } from 'glimmer-reference';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { OpcodeJSON, OpSeq, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
@@ -302,31 +305,38 @@ export class ListBlockOpcode extends BlockOpcode {
   public map = dict<BlockOpcode>();
   public artifacts: IterationArtifacts;
 
+  private lastIterated: Revision = INITIAL;
   private _tag: UpdatableTag;
 
   constructor(options: ListBlockOpcodeOptions) {
     super(options);
-    this.artifacts = options.artifacts;
-    this.tag = this._tag = new UpdatableTag(CONSTANT_TAG);
+    let artifacts = this.artifacts = options.artifacts;
+    let _tag = this._tag = new UpdatableTag(CONSTANT_TAG);
+    this.tag = combine([artifacts.tag, _tag]);
   }
 
   didInitializeChildren() {
+    this.lastIterated = this.artifacts.tag.value();
     this._tag.update(combineSlice(this.children));
   }
 
   evaluate(vm: UpdatingVM) {
-    let { artifacts, bounds } = this;
-    let { dom } = vm;
+    let { artifacts, lastIterated } = this;
 
-    let marker = dom.createComment('');
-    dom.insertAfter(bounds.parentElement(), marker, bounds.lastNode());
+    if (!artifacts.tag.validate(lastIterated)) {
+      let { bounds } = this;
+      let { dom } = vm;
 
-    let target = new ListRevalidationDelegate(this, marker);
-    let synchronizer = new IteratorSynchronizer({ target, artifacts });
+      let marker = dom.createComment('');
+      dom.insertAfter(bounds.parentElement(), marker, bounds.lastNode());
 
-    synchronizer.sync();
+      let target = new ListRevalidationDelegate(this, marker);
+      let synchronizer = new IteratorSynchronizer({ target, artifacts });
 
-    this.parentElement().removeChild(marker);
+      synchronizer.sync();
+
+      this.parentElement().removeChild(marker);
+    }
 
     // Run now-updated updating opcodes
     super.evaluate(vm);
