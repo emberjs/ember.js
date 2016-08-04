@@ -141,7 +141,7 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
 
 if (isEnabled('ember-application-engines')) {
   QUnit.test('can build and boot a registered engine', function(assert) {
-    assert.expect(7);
+    assert.expect(8);
 
     let ChatEngine = Engine.extend();
     let chatEngineInstance;
@@ -150,6 +150,7 @@ if (isEnabled('ember-application-engines')) {
 
     run(() => {
       appInstance = ApplicationInstance.create({ application });
+      appInstance.setupRegistry();
       chatEngineInstance = appInstance.buildChildEngineInstance('chat');
     });
 
@@ -171,7 +172,8 @@ if (isEnabled('ember-application-engines')) {
         [
           'router:main',
           P`-bucket-cache:main`,
-          '-view-registry:main'
+          '-view-registry:main',
+          '-environment:main'
         ].forEach(key => {
           assert.strictEqual(
             chatEngineInstance.lookup(key),
