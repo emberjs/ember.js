@@ -124,6 +124,71 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
     `);
   }
 
+  [`@test it can render duplicate items`]() {
+    this.render(strip`
+      <ul>
+        {{#each-in categories key='@identity' as |category count|}}
+          <li>{{category}}: {{count}}</li>
+        {{/each-in}}
+      </ul>
+    `, {
+      categories: {
+        'Smartphones': 8203,
+        'Tablets': 8203,
+        'JavaScript Frameworks': Infinity,
+        'Bugs': Infinity
+      }
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>Tablets: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Bugs: Infinity</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      set(this.context, 'categories.Smartphones', 100);
+      set(this.context, 'categories.Tweets', 443115);
+
+      if (this.isHTMLBars) {
+        // {{#each-in}} in HTMLBars does not observe internal mutations to the
+        // hash so we manually trigger a rerender.
+        this.rerender();
+      }
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 100</li>
+        <li>Tablets: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Bugs: Infinity</li>
+        <li>Tweets: 443115</li>
+      </ul>
+    `);
+
+    this.runTask(() => set(this.context, 'categories', {
+      'Smartphones': 8203,
+      'Tablets': 8203,
+      'JavaScript Frameworks': Infinity,
+      'Bugs': Infinity
+    }));
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>Tablets: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Bugs: Infinity</li>
+      </ul>
+    `);
+  }
+
   [`@test it repeats the given block when the hash is dynamic`]() {
     this.render(strip`
       <ul>
