@@ -198,8 +198,12 @@ export class UpdatableReference extends EmberPathReference {
   }
 
   update(value) {
-    this.tag.dirty();
-    this._value = value;
+    let { _value } = this;
+
+    if (value !== _value) {
+      this.tag.dirty();
+      this._value = value;
+    }
   }
 }
 
