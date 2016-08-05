@@ -6,15 +6,32 @@ import { objectAt, isEmberArray } from 'ember-runtime/mixins/array';
 import { isProxy } from 'ember-runtime/mixins/-proxy';
 import { UpdatableReference, UpdatablePrimitiveReference } from './references';
 import { isEachIn } from '../helpers/each-in';
-import { CONSTANT_TAG, CURRENT_TAG, UpdatableTag, combine } from 'glimmer-reference';
+import { CONSTANT_TAG, UpdatableTag, combine } from 'glimmer-reference';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
 export default function iterableFor(ref, keyPath) {
-  return new Iterable(ref, keyFor(keyPath));
+  if (isEachIn(ref)) {
+    return new EachInIterable(ref, keyForEachIn(keyPath));
+  } else {
+    return new ArrayIterable(ref, keyForArray(keyPath));
+  }
 }
 
-function keyFor(keyPath) {
+function keyForEachIn(keyPath) {
+  switch (keyPath) {
+    case '@index':
+    case undefined:
+    case null:
+      return index;
+    case '@identity':
+      return identity;
+    default:
+      return (item) => get(item, keyPath);
+  }
+}
+
+function keyForArray(keyPath) {
   switch (keyPath) {
     case '@index':
       return index;
@@ -73,8 +90,8 @@ class ArrayIterator {
     if (position >= length) { return null; }
 
     let value = array[position];
-    let key = ensureUniqueKey(seen, keyFor(value, position));
     let memo = position;
+    let key = ensureUniqueKey(seen, keyFor(value, memo));
 
     this.position++;
 
@@ -101,8 +118,8 @@ class EmberArrayIterator {
     if (position >= length) { return null; }
 
     let value = objectAt(array, position);
-    let key = ensureUniqueKey(seen, keyFor(value, position));
     let memo = position;
+    let key = ensureUniqueKey(seen, keyFor(value, memo));
 
     this.position++;
 
@@ -116,6 +133,7 @@ class ObjectKeysIterator {
     this.values = values;
     this.keyFor = keyFor;
     this.position = 0;
+    this.seen = new Dict();
   }
 
   isEmpty() {
@@ -123,13 +141,13 @@ class ObjectKeysIterator {
   }
 
   next() {
-    let { keys, values, keyFor, position } = this;
+    let { keys, values, keyFor, position, seen } = this;
 
     if (position >= keys.length) { return null; }
 
     let value = values[position];
     let memo = keys[position];
-    let key = keyFor(value, memo);
+    let key = ensureUniqueKey(seen, keyFor(value, memo));
 
     this.position++;
 
@@ -149,56 +167,14 @@ class EmptyIterator {
 
 const EMPTY_ITERATOR = new EmptyIterator();
 
-class Iterable {
+class AbstractIterable {
   constructor(ref, keyFor) {
-    let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
-
-    this.tag = combine([ref.tag, valueTag]);
     this.ref = ref;
     this.keyFor = keyFor;
   }
 
   iterate() {
-    let { ref, keyFor, valueTag } = this;
-
-    let iterable = ref.value();
-
-    if (isProxy(iterable)) {
-      valueTag.update(CURRENT_TAG);
-      iterable = get(iterable, 'content');
-    } else {
-      valueTag.update(tagFor(iterable));
-    }
-
-    if (iterable === undefined || iterable === null) {
-      return EMPTY_ITERATOR;
-    }
-
-    let typeofIterable = typeof iterable;
-
-    if (typeofIterable !== 'object' && typeofIterable !== 'function') {
-      return EMPTY_ITERATOR;
-    }
-
-    if (isEachIn(ref)) {
-      let keys = Object.keys(iterable);
-      let values = keys.map(key => iterable[key]);
-      return keys.length > 0 ? new ObjectKeysIterator(keys, values, keyFor) : EMPTY_ITERATOR;
-    }
-
-    if (Array.isArray(iterable)) {
-      return iterable.length > 0 ? new ArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
-    } else if (isEmberArray(iterable)) {
-      return get(iterable, 'length') > 0 ? new EmberArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
-    } else if (typeof iterable.forEach === 'function') {
-      let array = [];
-      iterable.forEach(function(item) {
-        array.push(item);
-      });
-      return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
-    } else {
-      return EMPTY_ITERATOR;
-    }
+    throw new Error('Not implemented: iterate');
   }
 
   valueReferenceFor(item) {
@@ -215,5 +191,96 @@ class Iterable {
 
   updateMemoReference(reference, item) {
     reference.update(item.memo);
+  }
+}
+
+class EachInIterable extends AbstractIterable {
+  constructor(ref, keyFor) {
+    super(ref, keyFor);
+
+    let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
+
+    this.wasProxy = false;
+    this.proxyWrapperTag = null;
+    this.proxyContentTag = null;
+
+    this.tag = combine([ref.tag, valueTag]);
+  }
+
+  iterate() {
+    let { ref, keyFor, valueTag, wasProxy } = this;
+
+    let iterable = ref.value();
+
+    if (isProxy(iterable)) {
+      let proxy = iterable;
+      let content = get(proxy, 'content');
+
+      if (wasProxy) {
+        this.proxyWrapperTag.update(tagFor(proxy));
+        this.proxyContentTag.update(tagFor(content));
+      } else {
+        this.wasProxy = true;
+        let proxyWrapperTag = this.proxyWrapperTag = new UpdatableTag(tagFor(proxy));
+        let proxyContentTag = this.proxyContentTag = new UpdatableTag(tagFor(content));
+
+        valueTag.update(combine([proxyWrapperTag, proxyContentTag]));
+      }
+
+      iterable = content;
+    } else {
+      valueTag.update(tagFor(iterable));
+
+      if (wasProxy) {
+        this.wasProxy = true;
+        this.proxyWrapperTag = null;
+        this.proxyContentTag = null;
+      }
+    }
+
+    let typeofIterable = typeof iterable;
+
+    if (iterable && (typeofIterable === 'object' || typeofIterable === 'function')) {
+      let keys = Object.keys(iterable);
+      let values = keys.map(key => iterable[key]);
+      return keys.length > 0 ? new ObjectKeysIterator(keys, values, keyFor) : EMPTY_ITERATOR;
+    } else {
+      return EMPTY_ITERATOR;
+    }
+  }
+}
+
+class ArrayIterable extends AbstractIterable {
+  constructor(ref, keyFor) {
+    super(ref, keyFor);
+
+    let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
+    this.tag = combine([ref.tag, valueTag]);
+  }
+
+  iterate() {
+    let { ref, keyFor, valueTag } = this;
+
+    let iterable = ref.value();
+
+    valueTag.update(tagFor(iterable));
+
+    if (!iterable || typeof iterable !== 'object') {
+      return EMPTY_ITERATOR;
+    }
+
+    if (Array.isArray(iterable)) {
+      return iterable.length > 0 ? new ArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
+    } else if (isEmberArray(iterable)) {
+      return get(iterable, 'length') > 0 ? new EmberArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
+    } else if (typeof iterable.forEach === 'function') {
+      let array = [];
+      iterable.forEach(function(item) {
+        array.push(item);
+      });
+      return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
+    } else {
+      return EMPTY_ITERATOR;
+    }
   }
 }

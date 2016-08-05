@@ -3,7 +3,7 @@ import { set } from 'ember-metal/property_set';
 import { tagFor } from 'ember-metal/tags';
 import { didRender } from 'ember-metal/transaction';
 import symbol from 'ember-metal/symbol';
-import { CURRENT_TAG, CONSTANT_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst } from 'glimmer-reference';
+import { CONSTANT_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst } from 'glimmer-reference';
 import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
@@ -67,21 +67,6 @@ export class RootReference extends ConstReference {
   get(propertyKey) {
     let self = this.value();
     let ref = self[REFERENCE_FOR_KEY] && self[REFERENCE_FOR_KEY](propertyKey);
-
-    if (isEnabled('mandatory-setter')) {
-      if (ref) {
-        let _ref = ref;
-
-        ref = Object.create(ref);
-
-        ref.value = function() {
-          let meta = metaFor(self);
-          watchKey(self, propertyKey, meta);
-          return _ref.value();
-        };
-      }
-    }
-
     return ref || new PropertyReference(this, propertyKey);
   }
 }
@@ -132,6 +117,10 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
     this._parentObjectTag = parentObjectTag;
     this._propertyKey = propertyKey;
 
+    this._wasProxy = false;
+    this._proxyWrapperTag = null;
+    this._proxyContentTag = null;
+
     if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
         isEnabled('ember-glimmer-allow-backtracking-rerender')) {
       let tag = combine([parentReferenceTag, parentObjectTag]);
@@ -142,14 +131,31 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
   }
 
   compute() {
-    let { _parentReference, _parentObjectTag, _propertyKey } = this;
+    let { _parentReference, _parentObjectTag, _wasProxy, _propertyKey } = this;
 
     let parentValue = _parentReference.value();
 
     if (isProxy(parentValue)) {
-      _parentObjectTag.update(CURRENT_TAG);
+      let proxyContent = get(parentValue, 'content');
+
+      if (_wasProxy) {
+        this._proxyWrapperTag.update(tagFor(parentValue));
+        this._proxyContentTag.update(tagFor(proxyContent));
+      } else {
+        this._wasProxy = true;
+        let _proxyWrapperTag = this._proxyWrapperTag = new UpdatableTag(tagFor(parentValue));
+        let _proxyContentTag = this._proxyContentTag = new UpdatableTag(tagFor(proxyContent));
+
+        _parentObjectTag.update(combine([_proxyWrapperTag, _proxyContentTag]));
+      }
     } else {
       _parentObjectTag.update(tagFor(parentValue));
+
+      if (_wasProxy) {
+        this._wasProxy = false;
+        this._proxyWrapperTag = null;
+        this._proxyContentTag = null;
+      }
     }
 
     if (typeof parentValue === 'object' && parentValue) {
@@ -192,8 +198,12 @@ export class UpdatableReference extends EmberPathReference {
   }
 
   update(value) {
-    this.tag.dirty();
-    this._value = value;
+    let { _value } = this;
+
+    if (value !== _value) {
+      this.tag.dirty();
+      this._value = value;
+    }
   }
 }
 
@@ -224,11 +234,11 @@ export class ConditionalReference extends GlimmerConditionalReference {
   }
 
   toBool(predicate) {
+    this.objectTag.update(tagFor(predicate));
+
     if (isProxy(predicate)) {
-      this.objectTag.update(CURRENT_TAG);
       return get(predicate, 'isTruthy');
     } else {
-      this.objectTag.update(tagFor(predicate));
       return emberToBool(predicate);
     }
   }

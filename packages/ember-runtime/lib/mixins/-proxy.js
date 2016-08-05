@@ -25,7 +25,7 @@ import symbol from 'ember-metal/symbol';
 const IS_PROXY = symbol('IS_PROXY');
 
 export function isProxy(value) {
-  return value && value[IS_PROXY];
+  return typeof value === 'object' && value && value[IS_PROXY];
 }
 
 function contentPropertyWillChange(content, contentKey) {
