@@ -1,6 +1,7 @@
 import assign from 'ember-metal/assign';
 import { DirtyableTag } from 'glimmer-reference';
 import EmptyObject from 'ember-metal/empty_object';
+import { environment } from 'ember-environment';
 
 /**
 @module ember
@@ -117,13 +118,16 @@ export default class OutletView {
   }
 
   appendTo(selector) {
-    let { _environment: { options: { jQuery } } } = this;
+    let env = this._environment || environment;
+    let target;
 
-    if (jQuery) {
-      this._renderResult = this.renderer.appendOutletView(this, jQuery(selector)[0]);
+    if (env.hasDOM) {
+      target = typeof selector === 'string' ? document.querySelector(selector) : selector;
     } else {
-      this._renderResult = this.renderer.appendOutletView(this, selector);
+      target = selector;
     }
+
+    this._renderResult = this.renderer.appendOutletView(this, target);
   }
 
   appendChild(instance) {
