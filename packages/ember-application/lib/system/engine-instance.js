@@ -179,8 +179,12 @@ if (isEnabled('ember-application-engines')) {
       [
         'router:main',
         P`-bucket-cache:main`,
-        '-view-registry:main'
+        '-view-registry:main',
+        '-environment:main'
       ].forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
+
+      this.inject('view', '_environment', '-environment:main');
+      this.inject('route', '_environment', '-environment:main');
     }
   });
 }
