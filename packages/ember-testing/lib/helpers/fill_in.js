@@ -11,7 +11,7 @@ export default function fillIn(app, selector, contextOrText, text) {
   el = $el[0];
   focus(el);
 
-  $el.val(text);
+  $el.eq(0).val(text);
   fireEvent(el, 'input');
   fireEvent(el, 'change');
 

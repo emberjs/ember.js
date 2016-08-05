@@ -722,6 +722,28 @@ QUnit.test('`fillIn` fires `input` and `change` events in the proper order', fun
   return wait();
 });
 
+QUnit.test('`fillIn` only sets the value in the first matched element', function() {
+  let fillIn, find, visit, andThen, wait;
+
+  setTemplate('index', compile('<input type="text" id="first" class="in-test"><input type="text" id="second" class="in-test">'));
+  run(App, App.advanceReadiness);
+
+  fillIn = App.testHelpers.fillIn;
+  find = App.testHelpers.find;
+  visit = App.testHelpers.visit;
+  andThen = App.testHelpers.andThen;
+  wait = App.testHelpers.wait;
+
+  visit('/');
+  fillIn('input.in-test', 'new value');
+  andThen(function() {
+    equal(find('#first').val(), 'new value');
+    equal(find('#second').val(), '');
+  });
+
+  return wait();
+});
+
 QUnit.test('`triggerEvent accepts an optional options hash and context', function() {
   expect(3);
 
