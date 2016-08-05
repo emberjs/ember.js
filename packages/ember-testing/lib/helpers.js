@@ -53,8 +53,17 @@ asyncHelper('visit', visit);
   });
   ```
 
+  Accepts `context` as an optional second argument. Useful for scoping the element lookup.
+
+  ```javascript
+  click('.some-jQuery-selector', '.modal-dialog').then(function() {
+    // assert something
+  });
+  ```
+
   @method click
   @param {String} selector jQuery selector for finding element on the DOM
+  @param {String} [context] jQuery selector for scoping element lookup on the DOM
   @return {RSVP.Promise}
   @public
 */
