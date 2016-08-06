@@ -101,7 +101,7 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
 
   let cacheGet = function() {
     if (Meta.exists(this)) {
-      let slot = Meta.for(this).getSlots()[<string>accessorName];
+      let slot = Meta.for(this).getSlots()[accessorName];
       if (slot !== EMPTY_CACHE) return slot;
     }
 
@@ -118,14 +118,14 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
       let ret = originalSet.call(this, value);
 
       if (ret !== undefined) {
-        slots[<string>accessorName] = ret;
+        slots[accessorName] = ret;
       }
     };
   } else {
     cacheSet = function(value) {
       let meta = Meta.for(this);
       let slots = meta.getSlots();
-      if (value !== undefined) slots[<string>accessorName] = value;
+      if (value !== undefined) slots[accessorName] = value;
     };
   }
 

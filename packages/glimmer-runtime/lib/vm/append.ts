@@ -145,7 +145,7 @@ export default class VM implements PublicVM {
 
     let tryOpcode = new TryOpcode({ ops, state, children: updating });
 
-    this.listBlockStack.current.map[<string>key] = tryOpcode;
+    this.listBlockStack.current.map[key] = tryOpcode;
 
     this.didEnter(tryOpcode, updating);
   }

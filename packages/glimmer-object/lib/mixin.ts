@@ -167,7 +167,7 @@ export class Mixin {
     if (meta.hasAppliedMixin(this)) return;
     meta.addAppliedMixin(this);
 
-    this.mergedProperties.forEach(k => meta.addMergedProperty(k, parent[<string>k]));
+    this.mergedProperties.forEach(k => meta.addMergedProperty(k, parent[k]));
     this.concatenatedProperties.forEach(k => meta.addConcatenatedProperty(k, []));
 
     new ValueDescriptor({ value: meta.getConcatenatedProperties() }).define(target, <string>'concatenatedProperties', null);
@@ -335,7 +335,7 @@ class MethodBlueprint extends DataBlueprint {
 export function wrapMethod(home: Object, methodName: string, original: (...args) => any) {
   if (!(<string>methodName in home)) return maybeWrap(original);
 
-  let superMethod = home[<string>methodName];
+  let superMethod = home[methodName];
 
   let func = function(...args) {
     if (!this) return original.apply(this, args);

@@ -30,11 +30,11 @@ class ConstPath implements IPathReference<any> {
   notify() {}
 
   value() {
-    return this.parent[<string>this.property];
+    return this.parent[this.property];
   }
 
   get(prop: string): IPathReference<any> {
-    return new ConstPath(this.parent[<string>this.property], prop);
+    return new ConstPath(this.parent[this.property], prop);
   }
 }
 
@@ -94,11 +94,11 @@ class Meta implements IMeta, HasGuid {
 
     let MetaToUse: typeof Meta = Meta;
 
-    if (obj.constructor && obj.constructor[<string>CLASS_META]) {
-      let classMeta: ClassMeta = obj.constructor[<string>CLASS_META];
+    if (obj.constructor && obj.constructor[CLASS_META]) {
+      let classMeta: ClassMeta = obj.constructor[CLASS_META];
       MetaToUse = classMeta.InstanceMetaConstructor;
-    } else if (obj[<string>CLASS_META]) {
-      MetaToUse = obj[<string>CLASS_META].InstanceMetaConstructor;
+    } else if (obj[CLASS_META]) {
+      MetaToUse = obj[CLASS_META].InstanceMetaConstructor;
     }
 
     return (obj._meta = new MetaToUse(obj, {}));
@@ -130,23 +130,23 @@ class Meta implements IMeta, HasGuid {
 
   addReference(property: string, reference: IPathReference<any> & HasGuid) {
     let refs = this.references = this.references || dict<DictSet<IPathReference<any> & HasGuid>>();
-    let set = refs[<string>property] = refs[<string>property] || new DictSet<IPathReference<any> & HasGuid>();
+    let set = refs[property] = refs[property] || new DictSet<IPathReference<any> & HasGuid>();
     set.add(reference);
   }
 
   addReferenceTypeFor(property: string, type: PathReferenceFactory<any>) {
     this.referenceTypes = this.referenceTypes || dict<PathReferenceFactory<any>>();
-    this.referenceTypes[<string>property] = type;
+    this.referenceTypes[property] = type;
   }
 
   referenceTypeFor(property: string): InnerReferenceFactory<any> {
     if (!this.referenceTypes) return PropertyReference;
-    return this.referenceTypes[<string>property] || PropertyReference;
+    return this.referenceTypes[property] || PropertyReference;
   }
 
   removeReference(property: string, reference: IPathReference<any> & HasGuid) {
     if (!this.references) return;
-    let set = this.references[<string>property];
+    let set = this.references[property];
     set.delete(reference);
   }
 
@@ -157,7 +157,7 @@ class Meta implements IMeta, HasGuid {
 
   referencesFor(property: string): Set<IPathReference<any>> {
     if (!this.references) return;
-    return this.references[<string>property];
+    return this.references[property];
   }
 
   getSlots() {

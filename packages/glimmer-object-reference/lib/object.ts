@@ -6,7 +6,7 @@ export function setProperty(parent: any, property: string, val: any) {
 
   // let referencesToNotify = metaFor(parent).referencesFor(property));
 
-  parent[<string>property] = val;
+  parent[property] = val;
 
   // if (referencesToNotify) {
   //   referencesToNotify.forEach(function(ref) { ref.notify(); });

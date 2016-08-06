@@ -150,7 +150,7 @@ export class BindNamedArgsOpcode extends Opcode {
 
   static create(layout: Layout) {
     let named = layout['named'].reduce(
-      (obj, name) => assign(obj, { [<string>name]: layout.symbolTable.getNamed(name) }),
+      (obj, name) => assign(obj, { [name]: layout.symbolTable.getNamed(name) }),
       dict<number>()
     );
 
@@ -192,7 +192,7 @@ export class BindBlocksOpcode extends Opcode {
   static create(template: Layout) {
     let blocks = dict<number>();
     template['yields'].forEach(name => {
-      blocks[<string>name] = template.symbolTable.getYield(name);
+      blocks[name] = template.symbolTable.getYield(name);
     });
 
     return new BindBlocksOpcode({ blocks });
