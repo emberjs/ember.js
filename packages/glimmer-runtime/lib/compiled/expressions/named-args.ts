@@ -114,11 +114,11 @@ class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
   }
 
   get(key: string): PathReference<any> {
-    return this.map[<string>key] || UNDEFINED_REFERENCE;
+    return this.map[key] || UNDEFINED_REFERENCE;
   }
 
   has(key: string): boolean {
-    return !!this.map[<string>key];
+    return !!this.map[key];
   }
 
   value(): Dict<any> {

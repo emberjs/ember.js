@@ -44,7 +44,7 @@ export class CompiledKeywordRef {
   }
 
   evaluate(vm: VM): PathReference<any> {
-    let base = vm.dynamicScope()[<string>this.name] as PathReference<any>;;
+    let base = vm.dynamicScope()[this.name] as PathReference<any>;;
     return referenceFromParts(base, this.path);
   }
 

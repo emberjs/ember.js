@@ -127,7 +127,7 @@ export class IterationArtifacts {
     let { list } = this;
 
     list.remove(item);
-    delete this.map[<string>item.key];
+    delete this.map[item.key];
   }
 
   nextNode(item: ListItem) {

@@ -44,24 +44,24 @@ export default class SymbolTable {
   }
 
   initPositionals(positionals: string[]): this {
-    if (positionals) positionals.forEach(s => this.locals[<string>s] = this.top.size++);
+    if (positionals) positionals.forEach(s => this.locals[s] = this.top.size++);
     return this;
   }
 
   initNamed(named: string[]): this {
-    if (named) named.forEach(s => this.named[<string>s] = this.top.size++);
+    if (named) named.forEach(s => this.named[s] = this.top.size++);
     return this;
   }
 
   initYields(yields: string[]): this {
-    if (yields) yields.forEach(b => this.yields[<string>b] = this.top.size++);
+    if (yields) yields.forEach(b => this.yields[b] = this.top.size++);
     return this;
   }
 
   getYield(name: string): number {
     let { yields, parent } = this;
 
-    let symbol = yields[<string>name];
+    let symbol = yields[name];
 
     if (!symbol && parent) {
       symbol = parent.getYield(name);
@@ -73,7 +73,7 @@ export default class SymbolTable {
   getNamed(name: string): number {
     let { named, parent } = this;
 
-    let symbol = named[<string>name];
+    let symbol = named[name];
 
     if (!symbol && parent) {
       symbol = parent.getNamed(name);
@@ -85,7 +85,7 @@ export default class SymbolTable {
   getLocal(name: string): number {
     let { locals, parent } = this;
 
-    let symbol = locals[<string>name];
+    let symbol = locals[name];
 
     if (!symbol && parent) {
       symbol = parent.getLocal(name);
