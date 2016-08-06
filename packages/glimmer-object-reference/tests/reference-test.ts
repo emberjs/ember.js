@@ -13,10 +13,8 @@ import { metaFor, setProperty } from "glimmer-object-reference";
   //Meta.for(obj).addReferenceTypeFor(name, ComputedBlueprint(name, deps)); [>jshint +W064<]
 //}
 
-import { intern } from 'glimmer-util';
-
 function addObserver(obj: any, name: string, path: string) {
-  return metaFor(obj).root().referenceFromParts(path.split('.').map(intern));
+  return metaFor(obj).root().referenceFromParts(path.split('.'));
 }
 
 QUnit.module("references");

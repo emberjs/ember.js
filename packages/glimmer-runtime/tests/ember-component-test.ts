@@ -228,7 +228,7 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
     test(`curly: ${title}`, assert => {
       if (typeof layout !== 'string') throw new Error('Only string layouts are supported for curly tests');
 
-      env.registerEmberishCurlyComponent('test-component', EmberishCurlyComponent, layout as string);
+      env.registerEmberishCurlyComponent('test-component', EmberishCurlyComponent, layout);
       let list = ['test-component'];
 
       Object.keys(attributes).forEach(key => {
@@ -332,7 +332,7 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
       let layoutOptions: TagOptions;
 
       if (typeof layout === 'string') {
-        layoutOptions = { attributes: {}, args: {}, template: layout as string };
+        layoutOptions = { attributes: {}, args: {}, template: layout };
       } else {
         layoutOptions = layout;
       }

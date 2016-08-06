@@ -1,14 +1,5 @@
-import { intern } from 'glimmer-util';
-
 export const EMPTY_ARRAY = [];
 export const EMPTY_OBJECT = {};
-
-const KEY = intern(`__glimmer${+ new Date()}`);
-
-export function symbol(debugName): string {
-  let num = Math.floor(Math.random() * (+new Date()));
-  return intern(`${debugName} [id=${KEY}${num}]`);
-}
 
 export function turbocharge(object: Object): Object {
   // function Constructor() {}

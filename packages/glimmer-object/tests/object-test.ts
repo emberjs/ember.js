@@ -1,6 +1,5 @@
 import GlimmerObject, { computed } from 'glimmer-object';
 import { UpdatableReference, metaFor, setProperty } from 'glimmer-object-reference';
-import { intern } from 'glimmer-util';
 
 let Wrapper = <any>GlimmerObject.extend({
   fullName: computed(function() {
@@ -149,7 +148,7 @@ function root<T>(obj: T): UpdatableReference<T> {
 QUnit.test("Simple computed properties", function() {
   let name = <any>new Name({ first: "Godfrey", last: "Chan" });
 
-  let ref = metaFor(name).root().get(intern('fullName'));
+  let ref = metaFor(name).root().get('fullName');
 
   equal(name.fullName, "Godfrey Chan");
   equal(ref.value(), "Godfrey Chan");
@@ -173,7 +172,7 @@ QUnit.test("Computed properties", function() {
   });
 
   let originalPerson = obj1.model.person;
-  let ref = metaFor(obj1).root().get(intern('fullName'));
+  let ref = metaFor(obj1).root().get('fullName');
 
   equal(obj1.fullName, "Yehuda Katz");
   equal(ref.value(), "Yehuda Katz");

@@ -59,11 +59,9 @@ import {
 } from "./helpers";
 
 import {
-  FIXME,
   Destroyable,
   Opaque,
   Dict,
-  InternedString,
   assign,
   dict
 } from 'glimmer-util';
@@ -500,7 +498,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
 
     if (bindings) {
       for (let i=0; i<bindings.length; i++) {
-        let attribute = bindings[i] as InternedString;
+        let attribute = bindings[i];
         let reference = rootRef.get(attribute) as PathReference<string>;
 
         operations.addAttribute(attribute, reference, false);
@@ -557,10 +555,10 @@ class EmberishConditionalReference extends ConditionalReference {
 
 export class SimplePathReference<T> implements PathReference<T> {
   private parent: Reference<T>;
-  private property: InternedString;
+  private property: string;
   public tag = VOLATILE_TAG;
 
-  constructor(parent: Reference<T>, property: InternedString) {
+  constructor(parent: Reference<T>, property: string) {
     this.parent = parent;
     this.property = property;
   }
@@ -569,7 +567,7 @@ export class SimplePathReference<T> implements PathReference<T> {
     return this.parent.value()[<string>this.property];
   }
 
-  get(prop: InternedString): PathReference<Opaque> {
+  get(prop: string): PathReference<Opaque> {
     return new SimplePathReference(this, prop);
   }
 }
@@ -592,7 +590,7 @@ class HelperReference implements PathReference<Opaque> {
     return helper(positional.value(), named.value());
   }
 
-  get(prop: InternedString): SimplePathReference<Opaque> {
+  get(prop: string): SimplePathReference<Opaque> {
     return new SimplePathReference(this, prop);
   }
 }
@@ -779,7 +777,7 @@ export class TestEnvironment extends Environment {
     return super.refineStatement(statement, parentMeta);
   }
 
-  hasHelper(helperName: InternedString[]) {
+  hasHelper(helperName: string[]) {
     return helperName.length === 1 && (<string>helperName[0] in this.helpers);
   }
 
@@ -793,7 +791,7 @@ export class TestEnvironment extends Environment {
     return helper;
   }
 
-  hasPartial(partialName: InternedString[]) {
+  hasPartial(partialName: string[]) {
     return partialName.length === 1 && (<string>partialName[0] in this.partials);
   }
 
@@ -807,19 +805,19 @@ export class TestEnvironment extends Environment {
     return partial;
   }
 
-  hasComponentDefinition(name: InternedString[]): boolean {
+  hasComponentDefinition(name: string[]): boolean {
     return !!this.components[<string>name[0]];
   }
 
-  getComponentDefinition(name: InternedString[]): ComponentDefinition<any> {
+  getComponentDefinition(name: string[]): ComponentDefinition<any> {
     return this.components[<string>name[0]];
   }
 
-  hasModifier(modifierName: InternedString[]): boolean {
+  hasModifier(modifierName: string[]): boolean {
     return modifierName.length === 1 && (<string>modifierName[0] in this.modifiers);
   }
 
-  lookupModifier(modifierName: InternedString[]): ModifierManager<Opaque> {
+  lookupModifier(modifierName: string[]): ModifierManager<Opaque> {
     let [name] = modifierName;
 
     let modifier = this.modifiers[name];
@@ -841,7 +839,7 @@ export class TestEnvironment extends Environment {
   }
 
   iterableFor(ref: Reference<Opaque>, args: EvaluatedArgs): OpaqueIterable {
-    let keyPath = args.named.get("key" as InternedString).value();
+    let keyPath = args.named.get("key").value();
     let keyFor: KeyFor<Opaque>;
 
     if (!keyPath) {
@@ -884,7 +882,7 @@ class CurlyComponentSyntax extends StatementSyntax implements StaticComponentOpt
   public type = "curly-component";
   public definition: ComponentDefinition<any>;
   public args: ArgsSyntax;
-  public shadow: InternedString[] = null;
+  public shadow: string[] = null;
   public templates: Templates;
 
   constructor({ args, definition, templates }: { args: ArgsSyntax, definition: ComponentDefinition<any>, templates: Templates }) {
@@ -916,7 +914,7 @@ class DynamicComponentReference implements PathReference<ComponentDefinition<Opa
     let name = nameRef.value();
 
     if (typeof name === 'string') {
-      return env.getComponentDefinition([name as FIXME<'user str InternedString'> as InternedString]);
+      return env.getComponentDefinition([name]);
     } else {
       return null;
     }
@@ -939,7 +937,7 @@ class DynamicComponentSyntax extends StatementSyntax implements DynamicComponent
   public definitionArgs: ArgsSyntax;
   public definition: FunctionExpression<ComponentDefinition<Opaque>>;
   public args: ArgsSyntax;
-  public shadow: InternedString[] = null;
+  public shadow: string[] = null;
   public templates: Templates;
 
   constructor({ args, templates }: { args: ArgsSyntax, templates: Templates }) {

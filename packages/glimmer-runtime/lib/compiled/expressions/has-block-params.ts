@@ -1,14 +1,13 @@
 import VM from '../../vm/append';
 import { CompiledExpression } from '../expressions';
 import { ValueReference } from './value';
-import { InternedString } from 'glimmer-util';
 
 export default class CompiledHasBlockParams extends CompiledExpression<boolean> {
   public type = "has-block-params";
-  public blockName: InternedString;
+  public blockName: string;
   public blockSymbol: number;
 
-  constructor({ blockName, blockSymbol }: { blockName: InternedString, blockSymbol: number }) {
+  constructor({ blockName, blockSymbol }: { blockName: string, blockSymbol: number }) {
     super();
     this.blockName = blockName;
     this.blockSymbol = blockSymbol;

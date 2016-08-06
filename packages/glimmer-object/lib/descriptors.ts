@@ -1,17 +1,16 @@
 import { Blueprint, Descriptor } from './mixin';
 import { ClassMeta } from './object';
 import { ComputedBlueprint } from './computed';
-import { InternedString, intern } from 'glimmer-util';
 
 class AliasMethodDescriptor extends Descriptor {
-  private name: InternedString;
+  private name: string;
 
-  constructor(name: InternedString) {
+  constructor(name: string) {
     super();
     this.name = name;
   }
 
-  define(target: Object, key: InternedString, home: Object) {
+  define(target: Object, key: string, home: Object) {
     let name = <string>this.name;
 
     Object.defineProperty(target, key, {
@@ -25,26 +24,26 @@ class AliasMethodDescriptor extends Descriptor {
 }
 
 class AliasMethodBlueprint extends Blueprint {
-  private name: InternedString;
+  private name: string;
 
-  constructor(name: InternedString) {
+  constructor(name: string) {
     super();
     this.name = name;
   }
 
-  descriptor(target: Object, key: InternedString, meta: ClassMeta): Descriptor {
+  descriptor(target: Object, key: string, meta: ClassMeta): Descriptor {
     return new AliasMethodDescriptor(this.name);
   }
 }
 
 export function aliasMethod(name: string) {
-  return new AliasMethodBlueprint(intern(name));
+  return new AliasMethodBlueprint(name);
 }
 
 class AliasBlueprint extends ComputedBlueprint {
-  private name: InternedString[];
+  private name: string[];
 
-  constructor(name: InternedString[]) {
+  constructor(name: string[]) {
     let parent = name.slice(0, -1);
     let last = name[name.length - 1];
 
@@ -61,12 +60,12 @@ class AliasBlueprint extends ComputedBlueprint {
     this.name = name;
   }
 
-  descriptor(target: Object, key: InternedString, meta: ClassMeta): Descriptor {
+  descriptor(target: Object, key: string, meta: ClassMeta): Descriptor {
     if (this.name[0] === key) throw new Error(`Setting alias '${key}' on self`);
     return super.descriptor(target, key, meta);
   }
 }
 
 export function alias(name: string): AliasBlueprint {
-  return new AliasBlueprint(name.split('.').map(intern));
+  return new AliasBlueprint(name.split('.'));
 }

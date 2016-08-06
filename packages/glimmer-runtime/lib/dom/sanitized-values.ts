@@ -1,4 +1,5 @@
-import { FIXME, Opaque } from 'glimmer-util';
+import { Opaque } from 'glimmer-util';
+import { normalizeTextValue } from '../compiled/opcodes/content';
 import { isSafeString } from '../upsert';
 import { DOMHelper } from './helper';
 
@@ -48,7 +49,7 @@ export function requiresSanitization(tagName: string, attribute: string): boolea
   return checkURI(tagName, attribute) || checkDataURI(tagName, attribute);
 }
 
-export function sanitizeAttributeValue(dom: DOMHelper, element: Element, attribute: string, value: Opaque): Opaque {
+export function sanitizeAttributeValue(dom: DOMHelper, element: Element, attribute: string, value: Opaque): string {
   let tagName;
 
   if (isSafeString(value)) {
@@ -61,16 +62,18 @@ export function sanitizeAttributeValue(dom: DOMHelper, element: Element, attribu
     tagName = element.tagName.toUpperCase();
   }
 
+  let str = normalizeTextValue(value);
+
   if (checkURI(tagName, attribute)) {
-    let protocol = dom.protocolForURL(value as FIXME<string>);
+    let protocol = dom.protocolForURL(str);
     if (has(badProtocols, protocol)) {
-      return `unsafe:${value}`;
+      return `unsafe:${str}`;
     }
   }
 
   if (checkDataURI(tagName, attribute)) {
-    return `unsafe:${value}`;
+    return `unsafe:${str}`;
   }
 
-  return value;
+  return str;
 }

@@ -2,9 +2,9 @@
 // import { intern } from 'glimmer-util';
 
 export function setProperty(parent: any, property: string, val: any) {
-  // let rootProp = metaFor(parent).root().chainFor(intern(property));
+  // let rootProp = metaFor(parent).root().chainFor(property));
 
-  // let referencesToNotify = metaFor(parent).referencesFor(intern(property));
+  // let referencesToNotify = metaFor(parent).referencesFor(property));
 
   parent[<string>property] = val;
 
@@ -16,9 +16,9 @@ export function setProperty(parent: any, property: string, val: any) {
 }
 
 export function notifyProperty(parent: any, property: string) {
-  // let rootProp = metaFor(parent).root().chainFor(intern(property));
+  // let rootProp = metaFor(parent).root().chainFor(property));
 
-  // let referencesToNotify = metaFor(parent).referencesFor(intern(property));
+  // let referencesToNotify = metaFor(parent).referencesFor(property));
 
   // if (referencesToNotify) {
   //   referencesToNotify.forEach(function(ref) { ref.notify(); });

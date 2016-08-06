@@ -1,5 +1,4 @@
 import { HasGuid, ensureGuid } from './guid';
-import { InternedString } from './platform-utils';
 
 export interface Dict<T> {
   [index: string]: T;
@@ -36,7 +35,7 @@ export function dict<T>(): Dict<T> {
   return new EmptyObject();
 }
 
-export type SetMember = HasGuid | InternedString | string;
+export type SetMember = HasGuid | string;
 
 export class DictSet<T extends SetMember> implements Set<T> {
   private dict: Dict<T>;
@@ -61,8 +60,8 @@ export class DictSet<T extends SetMember> implements Set<T> {
     Object.keys(dict).forEach(key => callback(dict[key]));
   }
 
-  toArray(): InternedString[] {
-    return Object.keys(this.dict) as InternedString[];
+  toArray(): string[] {
+    return Object.keys(this.dict);
   }
 }
 

@@ -31,8 +31,6 @@ import {
   Dict,
   Opaque,
   HasGuid,
-  InternedString,
-  intern,
   ensureGuid
 } from 'glimmer-util';
 
@@ -137,8 +135,8 @@ export abstract class Environment {
 
   getDOM(): DOMHelper { return this.dom; }
 
-  getIdentity(object: HasGuid): InternedString {
-    return intern(ensureGuid(object) + '');
+  getIdentity(object: HasGuid): string {
+    return ensureGuid(object) + '';
   }
 
   statement(statement: StatementSyntax, blockMeta: BlockMeta): StatementSyntax {
@@ -215,24 +213,24 @@ export abstract class Environment {
     }
   }
 
-  hasKeyword(string: InternedString): boolean {
+  hasKeyword(string: string): boolean {
     return false;
   }
 
-  abstract hasHelper(helperName: InternedString[], blockMeta: BlockMeta): boolean;
-  abstract lookupHelper(helperName: InternedString[], blockMeta: BlockMeta): Helper;
+  abstract hasHelper(helperName: string[], blockMeta: BlockMeta): boolean;
+  abstract lookupHelper(helperName: string[], blockMeta: BlockMeta): Helper;
 
-  attributeFor(element: Element, attr: InternedString, reference: Reference<Opaque>, isTrusting: boolean, namespace?: InternedString): IChangeList {
+  attributeFor(element: Element, attr: string, reference: Reference<Opaque>, isTrusting: boolean, namespace?: string): IChangeList {
     return defaultChangeLists(element, attr, isTrusting, namespace);
   }
 
-  abstract hasPartial(partialName: InternedString[]): boolean;
-  abstract lookupPartial(PartialName: InternedString[]): PartialDefinition;
-  abstract hasComponentDefinition(tagName: InternedString[]): boolean;
-  abstract getComponentDefinition(tagName: InternedString[]): ComponentDefinition<Opaque>;
+  abstract hasPartial(partialName: string[]): boolean;
+  abstract lookupPartial(PartialName: string[]): PartialDefinition;
+  abstract hasComponentDefinition(tagName: string[]): boolean;
+  abstract getComponentDefinition(tagName: string[]): ComponentDefinition<Opaque>;
 
-  abstract hasModifier(modifierName: InternedString[]): boolean;
-  abstract lookupModifier(modifierName: InternedString[]): ModifierManager<Opaque>;
+  abstract hasModifier(modifierName: string[]): boolean;
+  abstract lookupModifier(modifierName: string[]): ModifierManager<Opaque>;
 }
 
 export default Environment;
@@ -246,8 +244,8 @@ export interface Helper {
 
 export interface ParsedStatement {
   isSimple: boolean;
-  path: InternedString[];
-  key: InternedString;
+  path: string[];
+  key: string;
   appendType: string;
   args: Syntax.Args;
   isInline: boolean;
@@ -266,7 +264,7 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
 
     type AppendValue = Syntax.Unknown | Syntax.Get;
     let args: Syntax.Args;
-    let path: InternedString[];
+    let path: string[];
 
     if (block) {
       args = block.args;
@@ -284,7 +282,7 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
       args = modifier.args;
     }
 
-    let key: InternedString, isSimple: boolean;
+    let key: string, isSimple: boolean;
 
     if (path) {
       isSimple = path.length === 1;
