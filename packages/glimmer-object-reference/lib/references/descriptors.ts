@@ -16,7 +16,7 @@ export class PropertyReference<T> implements Reference<T> {
     this.property = property;
   }
 
-  value() { return this.object[<string>this.property]; }
+  value() { return this.object[this.property]; }
 
   label() {
     return '[reference Property]';
@@ -51,7 +51,7 @@ export function ComputedReferenceBlueprint(property, dependencies) {
         this.installed = true;
       }
 
-      return this.object[<string>this.property];
+      return this.object[this.property];
     }
 
     label() {

@@ -21,13 +21,13 @@ export default class RootReference<T> implements IRootReference<T>, IPathReferen
 
   get<U>(prop: string): IPathReference<U> {
     let chains = this.chains;
-    if (<string>prop in chains) return chains[<string>prop];
-    return (chains[<string>prop] = new PathReference(this, prop));
+    if (<string>prop in chains) return chains[prop];
+    return (chains[prop] = new PathReference(this, prop));
   }
 
   chainFor<U>(prop: string): IPathReference<U> {
     let chains = this.chains;
-    if (<string>prop in chains) return chains[<string>prop];
+    if (<string>prop in chains) return chains[prop];
     return null;
   }
 

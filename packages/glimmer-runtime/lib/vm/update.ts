@@ -228,7 +228,7 @@ export class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     let reference = null;
 
     if (before) {
-      reference = map[<string>before];
+      reference = map[before];
       nextSibling = reference.bounds.firstNode();
     } else {
       nextSibling = this.marker;
@@ -254,7 +254,7 @@ export class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
 
     updating.insertBefore(tryOpcode, reference);
 
-    map[<string>key] = tryOpcode;
+    map[key] = tryOpcode;
 
     this.didInsert = true;
   }
@@ -265,8 +265,8 @@ export class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
   move(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: string) {
     let { map, updating } = this;
 
-    let entry = map[<string>key];
-    let reference = map[<string>before] || null;
+    let entry = map[key];
+    let reference = map[before] || null;
 
     if (before) {
       moveBounds(entry, reference.firstNode());
@@ -280,11 +280,11 @@ export class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
 
   delete(key: string) {
     let { map } = this;
-    let opcode = map[<string>key];
+    let opcode = map[key];
     clear(opcode);
     opcode.didDestroy();
     this.updating.remove(opcode);
-    delete map[<string>key];
+    delete map[key];
 
     this.didDelete = true;
   }

@@ -564,7 +564,7 @@ export class SimplePathReference<T> implements PathReference<T> {
   }
 
   value(): T {
-    return this.parent.value()[<string>this.property];
+    return this.parent.value()[this.property];
   }
 
   get(prop: string): PathReference<Opaque> {
@@ -806,11 +806,11 @@ export class TestEnvironment extends Environment {
   }
 
   hasComponentDefinition(name: string[]): boolean {
-    return !!this.components[<string>name[0]];
+    return !!this.components[name[0]];
   }
 
   getComponentDefinition(name: string[]): ComponentDefinition<any> {
-    return this.components[<string>name[0]];
+    return this.components[name[0]];
   }
 
   hasModifier(modifierName: string[]): boolean {
@@ -854,7 +854,7 @@ export class TestEnvironment extends Environment {
         keyFor = (item: Opaque) => String(item);
         break;
       default:
-        keyFor = (item: Opaque) => item[<string>keyPath];
+        keyFor = (item: Opaque) => item[keyPath];
         break;
     }
 

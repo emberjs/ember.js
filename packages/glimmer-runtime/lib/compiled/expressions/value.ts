@@ -27,10 +27,10 @@ export class ValueReference<T> extends ConstReference<T> implements PathReferenc
 
   get(key: string) {
     let { children } = this;
-    let child = children[<string>key];
+    let child = children[key];
 
     if (!child) {
-      child = children[<string>key] = new ValueReference(this.inner[<string>key]);
+      child = children[key] = new ValueReference(this.inner[key]);
     }
 
     return child;

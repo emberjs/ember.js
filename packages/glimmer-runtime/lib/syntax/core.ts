@@ -1110,15 +1110,15 @@ export class NamedArgs {
   }
 
   add(key: string, value: ExpressionSyntax<Opaque>) {
-    this.map[<string>key] = value;
+    this.map[key] = value;
   }
 
   at(key: string): ExpressionSyntax<Opaque> {
-    return this.map[<string>key];
+    return this.map[key];
   }
 
   has(key: string): boolean {
-    return !!this.map[<string>key];
+    return !!this.map[key];
   }
 
   compile(compiler: SymbolLookup, env: Environment): CompiledNamedArgs {
