@@ -258,7 +258,7 @@ import ViewMixin from 'ember-views/mixins/view_support';
   ```
 
   If the return value of an `attributeBindings` monitored property is a boolean
-  the property's value will be set as a coerced string:
+  the attribute will be present or absent depending on the value:
 
   ```javascript
   MyTextInput = Ember.View.extend({
@@ -271,7 +271,7 @@ import ViewMixin from 'ember-views/mixins/view_support';
   Will result in a view instance with an HTML representation of:
 
   ```html
-  <input id="ember1" class="ember-view" disabled="false" />
+  <input id="ember1" class="ember-view" />
   ```
 
   `attributeBindings` can refer to computed properties:
