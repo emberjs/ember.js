@@ -1,7 +1,7 @@
 import { VersionedPathReference } from './validators';
-import { InternedString, Opaque } from 'glimmer-util';
+import { Opaque } from 'glimmer-util';
 
-export function referenceFromParts(root: VersionedPathReference<Opaque>, parts: InternedString[]): VersionedPathReference<Opaque> {
+export function referenceFromParts(root: VersionedPathReference<Opaque>, parts: string[]): VersionedPathReference<Opaque> {
   let reference = root;
 
   for (let i=0; i<parts.length; i++) {

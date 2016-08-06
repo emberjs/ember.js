@@ -12,14 +12,13 @@ import {
 } from './syntax/core';
 
 import {
-  Opaque,
-  InternedString
+  Opaque
 } from 'glimmer-util';
 
 export interface StaticComponentOptions {
   definition: ComponentDefinition<Opaque>;
   args: Args;
-  shadow: InternedString[];
+  shadow: string[];
   templates: Templates;
 }
 
@@ -27,7 +26,7 @@ export interface DynamicComponentOptions {
   definitionArgs: Args;
   definition: FunctionExpression<ComponentDefinition<Opaque>>;
   args: Args;
-  shadow: InternedString[];
+  shadow: string[];
   templates: Templates;
 }
 

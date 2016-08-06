@@ -1,4 +1,3 @@
-import { InternedString, intern } from 'glimmer-util';
 import { ComputedReferenceBlueprint, Meta } from 'glimmer-object-reference';
 import { EMPTY_CACHE, ClassMeta } from './object';
 import { Descriptor, Blueprint } from './mixin';
@@ -28,16 +27,16 @@ type ComputedArgument = ComputedGetCallback | ComputedDescriptor;
 
 export class ComputedBlueprint extends Blueprint {
   private accessor: ComputedDescriptor;
-  private deps: InternedString[][];
+  private deps: string[][];
   private metadata: Object = {};
 
-  constructor(accessor: ComputedDescriptor, deps: InternedString[][] = []) {
+  constructor(accessor: ComputedDescriptor, deps: string[][] = []) {
     super();
     this.accessor = accessor;
     this.deps = deps;
   }
 
-  descriptor(target: Object, key: InternedString, classMeta: ClassMeta): Descriptor {
+  descriptor(target: Object, key: string, classMeta: ClassMeta): Descriptor {
     classMeta.addReferenceTypeFor(key, ComputedReferenceBlueprint(key, this.deps));
     classMeta.addPropertyMetadata(key, this.metadata);
     classMeta.addSlotFor(key);
@@ -45,7 +44,7 @@ export class ComputedBlueprint extends Blueprint {
   }
 
   property(...paths: string[]) {
-    this.deps = paths.map(d => d.split('.').map(intern));
+    this.deps = paths.map(d => d.split('.'));
     return this;
   }
 
@@ -70,12 +69,12 @@ class Computed implements Descriptor {
     this.accessor = accessor;
   }
 
-  define(prototype: Object, key: InternedString, home: Object) {
+  define(prototype: Object, key: string, home: Object) {
     Object.defineProperty(prototype, key, wrapAccessor(home, key, this.accessor));
   }
 }
 
-function wrapAccessor(home: Object, accessorName: InternedString, _desc: ComputedDescriptor): PropertyDescriptor {
+function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescriptor): PropertyDescriptor {
   let superDesc = getPropertyDescriptor(home, accessorName);
 
   let originalGet: ComputedGetCallback;

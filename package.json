@@ -38,7 +38,7 @@
     "handlebars": "^3.0.2",
     "qunit": "^0.7.2",
     "simple-html-tokenizer": "^0.2.5",
-    "typescript": "2.1.0-dev.20160728"
+    "typescript": "next"
   },
   "devDependencies": {
     "loader.js": "^4.0.10",

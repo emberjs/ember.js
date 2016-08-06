@@ -1,15 +1,14 @@
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
-import { InternedString } from 'glimmer-util';
 import { PathReference } from 'glimmer-reference';
 import { referenceFromParts } from 'glimmer-reference';
 
 export abstract class CompiledSymbolRef extends CompiledExpression<any> {
   protected debug: string;
   protected symbol: number;
-  protected path: InternedString[];
+  protected path: string[];
 
-  constructor({ debug, symbol, path }: { debug: string, symbol: number, path: InternedString[] }) {
+  constructor({ debug, symbol, path }: { debug: string, symbol: number, path: string[] }) {
     super();
     this.debug = debug;
     this.symbol = symbol;
@@ -36,10 +35,10 @@ export abstract class CompiledSymbolRef extends CompiledExpression<any> {
 
 export class CompiledKeywordRef {
   public type = "keyword-ref";
-  public name: InternedString;
-  public path: InternedString[];
+  public name: string;
+  public path: string[];
 
-  constructor({ name, path }: { name: InternedString, path: InternedString[] }) {
+  constructor({ name, path }: { name: string, path: string[] }) {
     this.name = name;
     this.path = path;
   }
@@ -71,9 +70,9 @@ export class CompiledLocalRef extends CompiledSymbolRef {
 
 export class CompiledSelfRef extends CompiledExpression<any> {
   public type = "self-ref";
-  private parts: InternedString[];
+  private parts: string[];
 
-  constructor({ parts }: { parts: InternedString[] }) {
+  constructor({ parts }: { parts: string[] }) {
     super();
     this.parts = parts;
   }

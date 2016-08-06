@@ -1,7 +1,7 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
 import { DynamicScope } from '../../environment';
-import { FIXME, InternedString, Opaque, Dict, dict } from 'glimmer-util';
+import { FIXME, Opaque, Dict, dict } from 'glimmer-util';
 import {
   CachedReference,
   Reference,
@@ -21,9 +21,9 @@ import { IChangeList } from '../../dom/change-lists';
 
 export class TextOpcode extends Opcode {
   public type = "text";
-  public text: InternedString;
+  public text: string;
 
-  constructor({ text }: { text: InternedString }) {
+  constructor({ text }: { text: string }) {
     super();
     this.text = text;
   }
@@ -43,9 +43,9 @@ export class TextOpcode extends Opcode {
 
 export class OpenPrimitiveElementOpcode extends Opcode {
   public type = "open-primitive-element";
-  public tag: InternedString;
+  public tag: string;
 
-  constructor({ tag }: { tag: InternedString }) {
+  constructor({ tag }: { tag: string }) {
     super();
     this.tag = tag;
   }
@@ -67,7 +67,7 @@ export class OpenDynamicPrimitiveElementOpcode extends Opcode {
   public type = "open-dynamic-primitive-element";
 
   evaluate(vm: VM) {
-    let tagName = vm.frame.getOperand().value() as FIXME<'user string to InternedString'>;
+    let tagName = vm.frame.getOperand().value();
     vm.stack().openElement(tagName);
   }
 
@@ -151,8 +151,8 @@ export class CloseElementOpcode extends Opcode {
     for (let i = 0; i < groups.length; i++) {
       for (let j = 0; j < groups[i].length; j++) {
         let op = groups[i][j];
-        let name = op['name'] as FIXME<string>;
-        let reference = op['reference'] as FIXME<Reference<string>>;
+        let name = op['name'];
+        let reference = op['reference'] as Reference<string>;
         if (name === 'class') {
           classList.append(reference);
         } else if (!flattened[name]) {
@@ -163,7 +163,7 @@ export class CloseElementOpcode extends Opcode {
     }
 
     let className = classList.toReference();
-    let attr = 'class' as InternedString;
+    let attr = 'class';
     let attributeManager = vm.env.attributeFor(element, attr, className, false);
     let attribute = new Attribute(element, attributeManager, attr, className);
     let opcode = attribute.flush(dom);
@@ -182,15 +182,15 @@ export class CloseElementOpcode extends Opcode {
 }
 
 export interface StaticAttrOptions {
-  namespace: InternedString;
-  name: InternedString;
-  value: InternedString;
+  namespace: string;
+  name: string;
+  value: string;
 }
 
 export class StaticAttrOpcode extends Opcode {
   public type = "static-attr";
-  public namespace: InternedString;
-  public name: InternedString;
+  public namespace: string;
+  public name: string;
   public value: ValueReference<string>;
 
   constructor({ namespace, name, value }: StaticAttrOptions) {
@@ -227,11 +227,11 @@ export class StaticAttrOpcode extends Opcode {
 
 export class ModifierOpcode extends Opcode {
   public type = "modifier";
-  public name: InternedString;
+  public name: string;
   public args: CompiledArgs;
   private manager: ModifierManager<Opaque>;
 
-  constructor({ name, manager, args }: { name: InternedString, manager: ModifierManager<Opaque>, args: CompiledArgs }) {
+  constructor({ name, manager, args }: { name: string, manager: ModifierManager<Opaque>, args: CompiledArgs }) {
     super();
     this.name = name;
     this.manager = manager;
@@ -320,11 +320,11 @@ export class Attribute {
   private cache: ReferenceCache<Opaque>;
   private namespace: string | undefined;
 
-  protected name: InternedString;
+  protected name: string;
 
   public tag: RevisionTag;
 
-  constructor(element: Element, changeList: IChangeList, name: InternedString, reference: Reference<Opaque>, namespace?: string) {
+  constructor(element: Element, changeList: IChangeList, name: string, reference: Reference<Opaque>, namespace?: string) {
     this.element = element;
     this.reference = reference;
     this.changeList = changeList;
@@ -389,15 +389,15 @@ function formatElement(element: Element): string {
 }
 
 export interface DynamicAttrNSOptions {
-  name: InternedString;
-  namespace: InternedString;
+  name: string;
+  namespace: string;
   isTrusting: boolean;
 }
 
 export class DynamicAttrNSOpcode extends Opcode {
   public type = "dynamic-attr";
-  public name: InternedString;
-  public namespace: InternedString;
+  public name: string;
+  public namespace: string;
   public isTrusting: boolean;
 
   constructor({ name, namespace, isTrusting }: DynamicAttrNSOptions) {
@@ -430,13 +430,13 @@ export class DynamicAttrNSOpcode extends Opcode {
 }
 
 export interface SimpleAttrOptions {
-  name: InternedString;
+  name: string;
   isTrusting: boolean;
 }
 
 export class DynamicAttrOpcode extends Opcode {
   public type = "dynamic-attr";
-  public name: InternedString;
+  public name: string;
   public isTrusting: boolean;
 
   constructor({ name, isTrusting }: SimpleAttrOptions) {
@@ -490,12 +490,12 @@ export class PatchElementOpcode extends UpdatingOpcode {
 }
 
 export interface CommentOptions {
-  comment: InternedString;
+  comment: string;
 }
 
 export class CommentOpcode extends Opcode {
   public type = "comment";
-  public comment: InternedString;
+  public comment: string;
 
   constructor({ comment }: CommentOptions) {
     super();

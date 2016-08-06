@@ -5,7 +5,7 @@ import { VM, UpdatingVM } from '../../vm';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { Templates } from '../../syntax/core';
 import { DynamicScope } from '../../environment';
-import { InternedString, Opaque } from 'glimmer-util';
+import { Opaque } from 'glimmer-util';
 import { ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
 
 export class PutDynamicComponentDefinitionOpcode extends Opcode {
@@ -57,7 +57,7 @@ export class PutComponentDefinitionOpcode extends Opcode {
 }
 
 export interface OpenComponentOptions {
-  shadow: InternedString[];
+  shadow: string[];
   templates: Templates;
 }
 
@@ -65,7 +65,7 @@ export class OpenComponentOpcode extends Opcode {
   public type = "open-component";
   public definition: ComponentDefinition<Opaque>;
   public args: CompiledArgs;
-  public shadow: InternedString[];
+  public shadow: string[];
   public templates: Templates;
 
   constructor({ shadow, templates }: OpenComponentOptions) {
@@ -183,7 +183,7 @@ export class ShadowAttributesOpcode extends Opcode {
   evaluate(vm: VM) {
     let args = vm.frame.getArgs();
     let internal = args.internal;
-    let shadow: InternedString[] = internal['shadow'] as InternedString[];
+    let shadow: string[] = internal['shadow'] as string[];
 
     let named = args.named;
 

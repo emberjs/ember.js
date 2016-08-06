@@ -1,6 +1,6 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementStack } from '../builder';
-import { Destroyable, Dict, Stack, LinkedList, ListSlice, LOGGER, InternedString, Opaque } from 'glimmer-util';
+import { Destroyable, Dict, Stack, LinkedList, ListSlice, LOGGER, Opaque } from 'glimmer-util';
 import { PathReference, ReferenceIterator, combineSlice } from 'glimmer-reference';
 import Template from '../template';
 import { Templates } from '../syntax/core';
@@ -34,13 +34,13 @@ interface Registers {
   args: EvaluatedArgs;
   condition: PathReference<boolean>;
   iterator: ReferenceIterator;
-  key: InternedString;
+  key: string;
   templates: Dict<Template>;
 }
 
 interface InvokeLayoutOptions {
   args: EvaluatedArgs;
-  shadow: InternedString[];
+  shadow: string[];
   layout: CompiledBlock;
   templates: Templates;
   callerScope: Scope;
@@ -137,7 +137,7 @@ export default class VM implements PublicVM {
     this.didEnter(tryOpcode, updating);
   }
 
-  enterWithKey(key: InternedString, ops: OpSeq) {
+  enterWithKey(key: string, ops: OpSeq) {
     let updating = new LinkedList<UpdatingOpcode>();
 
     this.stack().pushBlock();
@@ -344,7 +344,7 @@ export default class VM implements PublicVM {
     let scope = this.scope();
 
     for(let i=0; i < keys.length; i++) {
-      scope.bindSymbol(entries[keys[i]], named.get(<InternedString>keys[i]));
+      scope.bindSymbol(entries[keys[i]], named.get(<string>keys[i]));
     }
   }
 

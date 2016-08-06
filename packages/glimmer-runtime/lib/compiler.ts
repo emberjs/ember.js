@@ -1,4 +1,4 @@
-import { FIXME, Opaque, Slice, LinkedList, InternedString } from 'glimmer-util';
+import { Opaque, Slice, LinkedList } from 'glimmer-util';
 import { OpSeq, Opcode } from './opcodes';
 
 import * as Syntax from './syntax/core';
@@ -83,15 +83,15 @@ export class EntryPointCompiler extends Compiler {
     this.ops.append(op);
   }
 
-  getLocalSymbol(name: InternedString): number {
+  getLocalSymbol(name: string): number {
     return this.symbolTable.getLocal(name);
   }
 
-  getNamedSymbol(name: InternedString): number {
+  getNamedSymbol(name: string): number {
     return this.symbolTable.getNamed(name);
   }
 
-  getYieldSymbol(name: InternedString): number {
+  getYieldSymbol(name: string): number {
     return this.symbolTable.getYield(name);
   }
 }
@@ -128,13 +128,13 @@ export class InlineBlockCompiler extends Compiler {
 }
 
 export interface ComponentParts {
-  tag: InternedString;
+  tag: string;
   attrs: Slice<AttributeSyntax<Opaque>>;
   body: Slice<StatementSyntax>;
 }
 
 export interface CompiledComponentParts {
-  tag: InternedString;
+  tag: string;
   preamble: CompileIntoList;
   main: CompileIntoList;
 }
@@ -351,10 +351,10 @@ function isOpenElement(syntax: StatementSyntax): syntax is OpenElement {
 class ComponentTagBuilder implements Component.ComponentTagBuilder {
   public isDynamic = null;
   public isStatic = null;
-  public staticTagName: InternedString = null;
+  public staticTagName: string = null;
   public dynamicTagName: Expression<string> = null;
 
-  static(tagName: InternedString) {
+  static(tagName: string) {
     this.isStatic = true;
     this.staticTagName = tagName;
   }
@@ -369,11 +369,11 @@ class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
   private buffer: AttributeSyntax<string>[] = [];
 
   static(name: string, value: string) {
-    this.buffer.push(new Syntax.StaticAttr({ name: name as FIXME<'intern'>, value: value as FIXME<'intern'> }));
+    this.buffer.push(new Syntax.StaticAttr({ name, value }));
   }
 
   dynamic(name: string, value: FunctionExpression<string>) {
-    this.buffer.push(new Syntax.DynamicAttr({ name: name as FIXME<'intern'>, value: makeFunctionExpression(value), isTrusting: false }));
+    this.buffer.push(new Syntax.DynamicAttr({ name, value: makeFunctionExpression(value), isTrusting: false }));
   }
 }
 
@@ -424,31 +424,31 @@ export class CompileIntoList extends LinkedList<Opcode> implements OpcodeBuilder
     this.component = new ComponentBuilder(dsl);
   }
 
-  getLocalSymbol(name: InternedString): number {
+  getLocalSymbol(name: string): number {
     return this.block.symbolTable.getLocal(name);
   }
 
-  hasLocalSymbol(name: InternedString): boolean {
+  hasLocalSymbol(name: string): boolean {
     return typeof this.block.symbolTable.getLocal(name) === 'number';
   }
 
-  getNamedSymbol(name: InternedString): number {
+  getNamedSymbol(name: string): number {
     return this.block.symbolTable.getNamed(name);
   }
 
-  hasNamedSymbol(name: InternedString): boolean {
+  hasNamedSymbol(name: string): boolean {
     return typeof this.block.symbolTable.getNamed(name) === 'number';
   }
 
-  getBlockSymbol(name: InternedString): number {
+  getBlockSymbol(name: string): number {
     return this.block.symbolTable.getYield(name);
   }
 
-  hasBlockSymbol(name: InternedString): boolean {
+  hasBlockSymbol(name: string): boolean {
     return typeof this.block.symbolTable.getYield(name) === 'number';
   }
 
-  hasKeyword(name: InternedString): boolean {
+  hasKeyword(name: string): boolean {
     return this.env.hasKeyword(name);
   }
 

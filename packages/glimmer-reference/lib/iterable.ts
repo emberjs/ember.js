@@ -1,4 +1,4 @@
-import { FIXME, LinkedList, ListNode, InternedString, Opaque, dict } from 'glimmer-util';
+import { LinkedList, ListNode, Opaque, dict } from 'glimmer-util';
 import { VersionedPathReference as PathReference, RevisionTag } from './validators';
 
 export interface IterationItem<T, U> {
@@ -31,7 +31,7 @@ export type OpaqueIterator = AbstractIterator<Opaque, Opaque, OpaqueIterationIte
 export type OpaqueIterable = AbstractIterable<Opaque, Opaque, OpaqueIterationItem, PathReference<Opaque>, PathReference<Opaque>>;
 
 class ListItem extends ListNode<PathReference<Opaque>> implements IterationItem<PathReference<Opaque>, PathReference<Opaque>> {
-  public key: InternedString;
+  public key: string;
   public memo: PathReference<Opaque>;
   public retained: boolean = false;
   public seen: boolean = false;
@@ -39,7 +39,7 @@ class ListItem extends ListNode<PathReference<Opaque>> implements IterationItem<
 
   constructor(iterable: OpaqueIterable, result: OpaqueIterationItem) {
     super(iterable.valueReferenceFor(result));
-    this.key = result.key as FIXME<'user string to InternedString'>;
+    this.key = result.key;
     this.iterable = iterable;
     this.memo = iterable.memoReferenceFor(result);
   }
@@ -164,10 +164,10 @@ export class ReferenceIterator {
 }
 
 export interface IteratorSynchronizerDelegate {
-  retain(key: InternedString, item: PathReference<Opaque>, memo: PathReference<Opaque>);
-  insert(key: InternedString, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: InternedString);
-  move(key: InternedString, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: InternedString);
-  delete(key: InternedString);
+  retain(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>);
+  insert(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: string);
+  move(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: string);
+  delete(key: string);
   done();
 }
 
@@ -207,7 +207,7 @@ export class IteratorSynchronizer {
     }
   }
 
-  private advanceToKey(key: InternedString) {
+  private advanceToKey(key: string) {
     let { current, artifacts } = this;
 
     let seek = current;
@@ -247,7 +247,7 @@ export class IteratorSynchronizer {
 
     current.update(item);
     this.current = artifacts.nextNode(current);
-    this.target.retain(item.key as FIXME<'user string to InternedString'>, current.value, current.memo);
+    this.target.retain(item.key, current.value, current.memo);
   }
 
   private nextMove(item: OpaqueIterationItem) {
@@ -261,7 +261,7 @@ export class IteratorSynchronizer {
       artifacts.move(found, current);
       target.move(found.key, found.value, found.memo, current ? current.key : null);
     } else {
-      this.advanceToKey(key as FIXME<'user string to InternedString'>);
+      this.advanceToKey(key);
     }
   }
 
