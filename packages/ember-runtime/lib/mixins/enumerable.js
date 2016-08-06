@@ -309,7 +309,7 @@ const Enumerable = Mixin.create({
 
   /**
     Sets the value on the named property for each member. This is more
-    efficient than using other methods defined on this helper. If the object
+    ergonomic than using other methods defined on this helper. If the object
     implements Ember.Observable, the value will be changed to `set(),` otherwise
     it will be set directly. `null` objects are skipped.
 
