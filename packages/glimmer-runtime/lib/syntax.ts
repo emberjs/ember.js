@@ -1,4 +1,4 @@
-import { LinkedListNode, Slice, InternedString } from 'glimmer-util';
+import { LinkedListNode, Slice } from 'glimmer-util';
 import { BlockScanner } from './scanner';
 import { Environment } from './environment';
 import { CompiledExpression } from './compiled/expressions';
@@ -54,15 +54,15 @@ export abstract class Expression<T> {
 }
 
 export interface SymbolLookup {
-  getLocalSymbol(name: InternedString): number;
-  hasLocalSymbol(name: InternedString): boolean;
-  getNamedSymbol(name: InternedString): number;
-  hasNamedSymbol(name: InternedString): boolean;
-  getBlockSymbol(name: InternedString): number;
-  hasBlockSymbol(name: InternedString): boolean;
+  getLocalSymbol(name: string): number;
+  hasLocalSymbol(name: string): boolean;
+  getNamedSymbol(name: string): number;
+  hasNamedSymbol(name: string): boolean;
+  getBlockSymbol(name: string): number;
+  hasBlockSymbol(name: string): boolean;
 
   // only used for {{view.name}}
-  hasKeyword(name: InternedString): boolean;
+  hasKeyword(name: string): boolean;
 }
 
 export interface CompileInto {
@@ -82,15 +82,15 @@ export type Parameter<T> = Attribute<T> | Argument<T>;
 
 export abstract class Attribute<T> extends Statement {
   "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
-  name: InternedString;
-  namespace: InternedString;
+  name: string;
+  namespace: string;
   abstract valueSyntax(): Expression<T>;
 }
 
 export abstract class Argument<T> extends Statement {
   "0f3802314-d747-bbc5-0168-97875185c3rt" = true;
-  name: InternedString;
-  namespace: InternedString;
+  name: string;
+  namespace: string;
   abstract valueSyntax(): Expression<T>;
 }
 

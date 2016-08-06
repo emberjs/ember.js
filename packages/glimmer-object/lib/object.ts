@@ -3,7 +3,7 @@ import {
   InnerReferenceFactory,
   PropertyReference
 } from 'glimmer-object-reference';
-import { InternedString, Dict, dict, isArray, intern, assign, initializeGuid } from 'glimmer-util';
+import { Dict, dict, isArray, assign, initializeGuid } from 'glimmer-util';
 import {
   Mixin,
   extend as extendClass,
@@ -36,7 +36,7 @@ export interface GlimmerObjectFactory<T> {
   reopen<U>(extensions: U);
   reopenClass<U>(extensions: U);
   metaForProperty(property: string): Object;
-  eachComputedProperty(callback: (InternedString, Object) => void);
+  eachComputedProperty(callback: (string, Object) => void);
   "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": InstanceMeta;
 }
 
@@ -63,7 +63,7 @@ export class ClassMeta {
   private appliedMixins: Mixin[] = [];
   private staticMixins: Mixin[] = [];
   private subclasses: GlimmerObjectFactory<any>[] = [];
-  private slots: InternedString[] = [];
+  private slots: string[] = [];
   public InstanceMetaConstructor: typeof Meta = null;
 
   static fromParent(parent: ClassMeta) {
@@ -148,36 +148,36 @@ export class ClassMeta {
     return this.subclasses;
   }
 
-  addPropertyMetadata(property: InternedString, value: any) {
+  addPropertyMetadata(property: string, value: any) {
     this.propertyMetadata[<string>property] = value;
   }
 
-  metadataForProperty(property: InternedString): Object {
+  metadataForProperty(property: string): Object {
     return this.propertyMetadata[<string>property];
   }
 
-  addReferenceTypeFor(property: InternedString, type: InnerReferenceFactory<any>) {
+  addReferenceTypeFor(property: string, type: InnerReferenceFactory<any>) {
     this.referenceTypes[<string>property] = type;
   }
 
-  addSlotFor(property: InternedString) {
+  addSlotFor(property: string) {
     this.slots.push(property);
   }
 
-  hasConcatenatedProperty(property: InternedString): boolean {
+  hasConcatenatedProperty(property: string): boolean {
     if (!this.hasConcatenatedProperties) return false;
     return <string>property in this.concatenatedProperties;
   }
 
-  getConcatenatedProperty(property: InternedString): any[] {
+  getConcatenatedProperty(property: string): any[] {
     return this.concatenatedProperties[<string>property];
   }
 
-  getConcatenatedProperties(): InternedString[] {
-    return <InternedString[]>Object.keys(this.concatenatedProperties);
+  getConcatenatedProperties(): string[] {
+    return <string[]>Object.keys(this.concatenatedProperties);
   }
 
-  addConcatenatedProperty(property: InternedString, value: any) {
+  addConcatenatedProperty(property: string, value: any) {
     this.hasConcatenatedProperties = true;
 
     if (<string>property in this.concatenatedProperties) {
@@ -188,20 +188,20 @@ export class ClassMeta {
     }
   }
 
-  hasMergedProperty(property: InternedString): boolean {
+  hasMergedProperty(property: string): boolean {
     if (!this.hasMergedProperties) return false;
     return <string>property in this.mergedProperties;
   }
 
-  getMergedProperty(property: InternedString): Object {
+  getMergedProperty(property: string): Object {
     return this.mergedProperties[<string>property];
   }
 
-  getMergedProperties(): InternedString[] {
-    return <InternedString[]>Object.keys(this.mergedProperties);
+  getMergedProperties(): string[] {
+    return <string[]>Object.keys(this.mergedProperties);
   }
 
-  addMergedProperty(property: InternedString, value: Object) {
+  addMergedProperty(property: string, value: Object) {
     this.hasMergedProperties = true;
 
     if (isArray(value)) {
@@ -283,7 +283,7 @@ export class ClassMeta {
         return this.referenceTypes;
       }
 
-      referenceTypeFor(property: InternedString): InnerReferenceFactory<any> {
+      referenceTypeFor(property: string): InnerReferenceFactory<any> {
         return this.referenceTypes[<string>property] || PropertyReference;
       }
 
@@ -301,7 +301,7 @@ function mergeMergedProperties(attrs: Object, parent: Object) {
 
   for (let prop in attrs) {
     if (prop in parent && typeof parent[prop] === 'function' && typeof attrs[prop] === 'function') {
-      let wrapped = wrapMethod(parent, prop as InternedString, attrs[prop]);
+      let wrapped = wrapMethod(parent, prop, attrs[prop]);
       merged[prop] = wrapped;
     } else {
       merged[prop] = attrs[prop];
@@ -358,12 +358,12 @@ export default class GlimmerObject {
   }
 
   static metaForProperty(property: string): Object {
-    let value = this[CLASS_META].metadataForProperty(intern(property));
+    let value = this[CLASS_META].metadataForProperty(property);
     if (!value) throw new Error(`metaForProperty() could not find a computed property with key '${property}'.`);
     return value;
   }
 
-  static eachComputedProperty(callback: (InternedString, Object) => void) {
+  static eachComputedProperty(callback: (string, Object) => void) {
     let metadata = this[CLASS_META].getPropertyMetadata();
     if (!metadata) return;
 

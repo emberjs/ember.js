@@ -8,7 +8,7 @@ import { NULL_REFERENCE } from '../../references';
 import SymbolTable from '../../symbol-table';
 import { Reference, PathReference, ConstReference } from 'glimmer-reference';
 import { ValueReference } from '../expressions/value';
-import { ListSlice, Opaque, Slice, Dict, dict, assign, InternedString } from 'glimmer-util';
+import { ListSlice, Opaque, Slice, Dict, dict, assign } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
 import Scanner from '../../scanner';
 import Environment from '../../environment';
@@ -356,7 +356,7 @@ export class EvaluatePartialOpcode extends Opcode {
   evaluate(vm: VM) {
     let reference: PathReference<any> = this.name.evaluate(vm);
     let referenceCache = new ReferenceCache(reference);
-    let name: InternedString = referenceCache.revalidate();
+    let name: string = referenceCache.revalidate();
 
     let block = this.cache[name];
     if (!block) {
@@ -387,7 +387,7 @@ export class NameToPartialOpcode extends Opcode {
   evaluate(vm: VM) {
     let reference = vm.frame.getOperand();
     let referenceCache = new ReferenceCache(reference);
-    let name: InternedString = referenceCache.revalidate();
+    let name: string = referenceCache.revalidate();
     let partial = name && vm.env.hasPartial([name]) ? vm.env.lookupPartial([name]) : false;
     vm.frame.setOperand(new ValueReference(partial));
 

@@ -5,7 +5,7 @@ import * as lists from './lists';
 import * as vm from './vm';
 import * as Syntax from '../../syntax/core';
 
-import { Stack, Dict, Opaque, InternedString, dict } from 'glimmer-util';
+import { Stack, Dict, Opaque, dict } from 'glimmer-util';
 import { StatementCompilationBuffer } from '../../syntax';
 import { Opcode, OpSeq } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
@@ -39,32 +39,32 @@ class StatementCompilationBufferProxy implements StatementCompilationBuffer {
     this.inner.append(opcode);
   }
 
-  getLocalSymbol(name: InternedString): number {
+  getLocalSymbol(name: string): number {
     return this.inner.getLocalSymbol(name);
   }
 
-  hasLocalSymbol(name: InternedString): boolean {
+  hasLocalSymbol(name: string): boolean {
     return this.inner.hasLocalSymbol(name);
   }
 
-  getNamedSymbol(name: InternedString): number {
+  getNamedSymbol(name: string): number {
     return this.inner.getNamedSymbol(name);
   }
 
-  hasNamedSymbol(name: InternedString): boolean {
+  hasNamedSymbol(name: string): boolean {
     return this.inner.hasNamedSymbol(name);
   }
 
-  getBlockSymbol(name: InternedString): number {
+  getBlockSymbol(name: string): number {
     return this.inner.getBlockSymbol(name);
   }
 
-  hasBlockSymbol(name: InternedString): boolean {
+  hasBlockSymbol(name: string): boolean {
     return this.inner.hasBlockSymbol(name);
   }
 
   // only used for {{view.name}}
-  hasKeyword(name: InternedString): boolean {
+  hasKeyword(name: string): boolean {
     return this.inner.hasKeyword(name);
   }
 }
@@ -126,7 +126,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new component.PutDynamicComponentDefinitionOpcode({ args: this.compile(args) }));
   }
 
-  openComponent(shadow: InternedString[] = EMPTY_ARRAY) {
+  openComponent(shadow: string[] = EMPTY_ARRAY) {
     this.append(new component.OpenComponentOpcode({ shadow, templates: this.templates }));
   }
 
@@ -154,11 +154,11 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
 
   // dom
 
-  text(text: InternedString) {
+  text(text: string) {
     this.append(new dom.TextOpcode({ text }));
   }
 
-  openPrimitiveElement(tag: InternedString) {
+  openPrimitiveElement(tag: string) {
     this.append(new dom.OpenPrimitiveElementOpcode({ tag }));
   }
 
@@ -182,7 +182,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new dom.DynamicAttrOpcode(options));
   }
 
-  comment(comment: InternedString) {
+  comment(comment: string) {
     this.append(new dom.CommentOpcode({ comment }));
   }
 
