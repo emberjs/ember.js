@@ -73,10 +73,8 @@ import { Environment } from '../environment';
 
 import {
   Opaque,
-  InternedString,
   Dict,
-  dict,
-  intern,
+  dict
 } from 'glimmer-util';
 
 import {
@@ -112,8 +110,8 @@ export class Block extends StatementSyntax {
     let [, path, params, hash, templateId, inverseId] = sexp;
 
     return new Block({
-      path: path as InternedString[],
-      args: Args.fromSpec(params as InternedString[], hash),
+      path,
+      args: Args.fromSpec(params, hash),
       templates: Templates.fromSpec([templateId, inverseId], children)
     });
   }
@@ -122,11 +120,11 @@ export class Block extends StatementSyntax {
     return new this(options);
   }
 
-  path: InternedString[];
+  path: string[];
   args: Args;
   templates: Templates;
 
-  constructor(options: { path: InternedString[], args: Args, templates: Templates }) {
+  constructor(options: { path: string[], args: Args, templates: Templates }) {
     super();
     this.path = options.path;
     this.args = options.args;
@@ -153,7 +151,7 @@ export class Unknown extends ExpressionSyntax<any> {
   static fromSpec(sexp: SerializedExpressions.Unknown): Unknown {
     let [, path] = sexp;
 
-    return new Unknown({ ref: new Ref({ parts: path as InternedString[] }) });
+    return new Unknown({ ref: new Ref({ parts: path }) });
   }
 
   static build(path: string, unsafe: boolean): Unknown {
@@ -179,7 +177,7 @@ export class Unknown extends ExpressionSyntax<any> {
     }
   }
 
-  simplePath(): InternedString {
+  simplePath(): string {
     return this.ref.simplePath();
   }
 }
@@ -242,7 +240,7 @@ export class Modifier extends StatementSyntax {
   "c0420397-8ff1-4241-882b-4b7a107c9632" = true;
 
   public type: string = "modifier";
-  public path: InternedString[];
+  public path: string[];
   public args: Args;
 
   static fromSpec(node) {
@@ -285,17 +283,16 @@ export class Modifier extends StatementSyntax {
 
 export class StaticArg extends ArgumentSyntax<string> {
   public type = "static-arg";
-  name: InternedString;
-  value: InternedString;
+  name: string;
+  value: string;
 
   static fromSpec(node: SerializedStatements.StaticArg): StaticArg {
     let [, name, value] = node;
-
-    return new StaticArg({ name: name as InternedString, value: value as InternedString });
+    return new StaticArg({ name, value });
   }
 
   static build(name: string, value: string, namespace: string=null): StaticArg {
-    return new this({ name: intern(name), value: intern(value) });
+    return new this({ name, value });
   }
 
   constructor({ name, value }) {
@@ -309,7 +306,7 @@ export class StaticArg extends ArgumentSyntax<string> {
   }
 
   valueSyntax(): ExpressionSyntax<string> {
-    return Value.build(this.value as string);
+    return Value.build(this.value);
   }
 }
 
@@ -319,21 +316,20 @@ export class DynamicArg extends ArgumentSyntax<Opaque> {
     let [, name, value] = sexp;
 
     return new DynamicArg({
-      name: name as InternedString,
+      name,
       value: buildExpression(value)
     });
   }
 
-  static build(_name: string, value: ExpressionSyntax<string>): DynamicArg {
-    let name = intern(_name);
+  static build(name: string, value: ExpressionSyntax<string>): DynamicArg {
     return new this({ name, value });
   }
 
-  name: InternedString;
+  name: string;
   value: ExpressionSyntax<Opaque>;
-  namespace: InternedString;
+  namespace: string;
 
-  constructor({ name, value, namespace = null }: { name: InternedString, value: ExpressionSyntax<Opaque>, namespace?: InternedString }) {
+  constructor({ name, value, namespace = null }: { name: string, value: ExpressionSyntax<Opaque>, namespace?: string }) {
     super();
     this.name = name;
     this.value = value;
@@ -353,16 +349,14 @@ export class TrustingAttr {
   static fromSpec(sexp: SerializedStatements.TrustingAttr): DynamicAttr {
     let [, name, value, namespace] = sexp;
     return new DynamicAttr({
-      name: name as InternedString,
-      namespace: namespace as InternedString,
+      name,
+      namespace,
       isTrusting: true,
       value: buildExpression(value)
     });
   }
 
-  static build(_name: string, value: ExpressionSyntax<string>, isTrusting: boolean, _namespace: string=null): DynamicAttr {
-    let name = intern(_name);
-    let namespace = _namespace ? intern(_namespace) : null;
+  static build(name: string, value: ExpressionSyntax<string>, isTrusting: boolean, namespace: string=null): DynamicAttr {
     return new DynamicAttr({ name, value, namespace, isTrusting });
   }
 
@@ -375,19 +369,19 @@ export class StaticAttr extends AttributeSyntax<string> {
 
   static fromSpec(node: SerializedStatements.StaticAttr): StaticAttr {
     let [, name, value, namespace] = node;
-    return new StaticAttr({ name: name as InternedString, value: value as InternedString, namespace: namespace as InternedString });
+    return new StaticAttr({ name, value: value as string, namespace });
   }
 
   static build(name: string, value: string, namespace: string=null): StaticAttr {
-    return new this({ name: intern(name), value: intern(value), namespace: namespace && intern(namespace) });
+    return new this({ name, value, namespace });
   }
 
-  name: InternedString;
-  value: InternedString;
-  namespace: InternedString;
+  name: string;
+  value: string;
+  namespace: string;
   isTrusting = false;
 
-  constructor({ name, value, namespace = null }: { name: InternedString, value: InternedString, namespace?: InternedString }) {
+  constructor({ name, value, namespace = null }: { name: string, value: string, namespace?: string }) {
     super();
     this.name = name;
     this.value = value;
@@ -399,7 +393,7 @@ export class StaticAttr extends AttributeSyntax<string> {
   }
 
   valueSyntax(): ExpressionSyntax<string> {
-    return Value.build(this.value as string);
+    return Value.build(this.value);
   }
 }
 
@@ -410,24 +404,22 @@ export class DynamicAttr extends AttributeSyntax<string> {
   static fromSpec(sexp: SerializedStatements.DynamicAttr): DynamicAttr {
     let [, name, value, namespace] = sexp;
     return new DynamicAttr({
-      name: name as InternedString,
-      namespace: namespace as InternedString,
+      name,
+      namespace,
       value: buildExpression(value)
     });
   }
 
-  static build(_name: string, value: ExpressionSyntax<string>, isTrusting = false, _namespace: string=null): DynamicAttr {
-    let name = intern(_name);
-    let namespace = _namespace ? intern(_namespace) : null;
+  static build(name: string, value: ExpressionSyntax<string>, isTrusting = false, namespace: string=null): DynamicAttr {
     return new this({ name, value, namespace, isTrusting });
   }
 
-  name: InternedString;
+  name: string;
   value: ExpressionSyntax<string>;
-  namespace: InternedString;
+  namespace: string;
   isTrusting: boolean;
 
-  constructor({ name, value, isTrusting = false, namespace = null }: { name: InternedString, isTrusting?: boolean, value: ExpressionSyntax<string>, namespace?: InternedString }) {
+  constructor({ name, value, isTrusting = false, namespace = null }: { name: string, isTrusting?: boolean, value: ExpressionSyntax<string>, namespace?: string }) {
     super();
     this.name = name;
     this.value = value;
@@ -471,17 +463,16 @@ export class Text extends StatementSyntax {
 
   static fromSpec(node: SerializedStatements.Text): Text {
     let [, content] = node;
-
-    return new Text({ content: content as InternedString });
+    return new Text({ content });
   }
 
   static build(content): Text {
     return new this({ content });
   }
 
-  public content: InternedString;
+  public content: string;
 
-  constructor(options: { content: InternedString }) {
+  constructor(options: { content: string }) {
     super();
     this.content = options.content;
   }
@@ -501,10 +492,10 @@ export class Comment extends StatementSyntax {
   }
 
   static build(value: string): Comment {
-    return new this({ value: intern(value) });
+    return new this({ value: value });
   }
 
-  public comment: InternedString;
+  public comment: string;
 
   constructor(options) {
     super();
@@ -523,19 +514,19 @@ export class OpenElement extends StatementSyntax {
     let [, tag, blockParams] = sexp;
 
     return new OpenElement({
-      tag: tag as InternedString,
-      blockParams: blockParams as InternedString[]
+      tag,
+      blockParams: blockParams
     });
   }
 
   static build(tag: string, blockParams: string[]): OpenElement {
-    return new this({ tag: intern(tag), blockParams: blockParams && blockParams.map(intern) });
+    return new this({ tag, blockParams });
   }
 
-  public tag: InternedString;
-  public blockParams: InternedString[];
+  public tag: string;
+  public blockParams: string[];
 
-  constructor(options: { tag: InternedString, blockParams: InternedString[] }) {
+  constructor(options: { tag: string, blockParams: string[] }) {
     super();
     this.tag = options.tag;
     this.blockParams = options.blockParams;
@@ -564,10 +555,10 @@ export class OpenElement extends StatementSyntax {
     return new OpenPrimitiveElement({ tag });
   }
 
-  private parameters(scanner: BlockScanner): { args: Args, attrs: InternedString[] } {
+  private parameters(scanner: BlockScanner): { args: Args, attrs: string[] } {
     let current = scanner.next();
     let args = dict<ExpressionSyntax<Opaque>>();
-    let attrs: InternedString[] = [];
+    let attrs: string[] = [];
 
     while (current[ATTRIBUTE_SYNTAX] || current[MODIFIER_SYNTAX] || current[ARGUMENT_SYNTAX]) {
       if (current[MODIFIER_SYNTAX]) {
@@ -609,16 +600,16 @@ export class OpenElement extends StatementSyntax {
 }
 
 interface ComponentOptions {
-  tag: InternedString;
-  attrs: InternedString[];
+  tag: string;
+  attrs: string[];
   args: Args;
   template: InlineBlock;
 }
 
 export class Component extends StatementSyntax {
   public type = 'component';
-  public tag: InternedString;
-  public attrs: InternedString[];
+  public tag: string;
+  public attrs: string[];
   public args: Args;
   public template: InlineBlock;
 
@@ -645,13 +636,13 @@ export class Component extends StatementSyntax {
 export class OpenPrimitiveElement extends StatementSyntax {
   type = "open-primitive-element";
 
-  public tag: InternedString;
+  public tag: string;
 
   static build(tag: string): OpenPrimitiveElement {
-    return new this({ tag: intern(tag) });
+    return new this({ tag });
   }
 
-  constructor(options: { tag: InternedString }) {
+  constructor(options: { tag: string }) {
     super();
     this.tag = options.tag;
   }
@@ -667,19 +658,19 @@ export class Yield extends StatementSyntax {
 
     let args = Args.fromSpec(params, null);
 
-    return new Yield({ to: to as InternedString, args });
+    return new Yield({ to, args });
   }
 
   static build(params: ExpressionSyntax<Opaque>[], to: string): Yield {
     let args = Args.fromPositionalArgs(PositionalArgs.build(params));
-    return new this({ to: intern(to), args });
+    return new this({ to, args });
   }
 
   type = "yield";
-  public to: InternedString;
+  public to: string;
   public args: Args;
 
-  constructor({ to, args }: { to: InternedString, args: Args }) {
+  constructor({ to, args }: { to: string, args: Args }) {
     super();
     this.to = to;
     this.args = args;
@@ -696,10 +687,10 @@ export class Yield extends StatementSyntax {
 class OpenBlockOpcode extends Opcode {
   type = "open-block";
   public to: number;
-  public label: InternedString;
+  public label: string;
   public args: CompiledArgs;
 
-  constructor({ to, label, args }: { to: number, label: InternedString, args: CompiledArgs }) {
+  constructor({ to, label, args }: { to: number, label: string, args: CompiledArgs }) {
     super();
     this.to = to;
     this.label = label;
@@ -763,8 +754,7 @@ export class Get extends ExpressionSyntax<Opaque> {
 
   static fromSpec(sexp: SerializedExpressions.Get): Get {
     let [, parts] = sexp;
-
-    return new Get({ ref: new Ref({ parts: parts as InternedString[] }) });
+    return new Get({ ref: new Ref({ parts }) });
   }
 
   static build(path: string): Get {
@@ -789,7 +779,7 @@ export class SelfGet extends ExpressionSyntax<Opaque> {
   static fromSpec(sexp: SerializedExpressions.SelfGet): SelfGet {
     let [, parts] = sexp;
 
-    return new SelfGet({ ref: new Ref({ parts: parts as InternedString[] }) });
+    return new SelfGet({ ref: new Ref({ parts }) });
   }
 
   public ref: Ref;
@@ -810,16 +800,16 @@ export class GetArgument<T> extends ExpressionSyntax<T> {
   static fromSpec(sexp: SerializedExpressions.Arg): GetArgument<Opaque> {
     let [, parts] = sexp;
 
-    return new GetArgument<Opaque>({ parts: parts as InternedString[] });
+    return new GetArgument<Opaque>({ parts });
   }
 
   static build(path: string): GetArgument<Opaque> {
-    return new this<Opaque>({ parts: path.split('.').map(intern) });
+    return new this<Opaque>({ parts: path.split('.') });
   }
 
-  public parts: InternedString[];
+  public parts: string[];
 
-  constructor(options: { parts: InternedString[] }) {
+  constructor(options: { parts: string[] }) {
     super();
     this.parts = options.parts;
   }
@@ -834,23 +824,18 @@ export class GetArgument<T> extends ExpressionSyntax<T> {
   }
 }
 
-// intern paths because they will be used as keys
-function internPath(path: string): InternedString[] {
-  return path.split('.').map(intern);
-}
-
 // this is separated out from Get because Unknown also has a ref, but it
 // may turn out to be a helper
 export class Ref extends ExpressionSyntax<Opaque> {
   type = "ref";
 
   static build(path: string): Ref {
-    return new this({ parts: internPath(path) });
+    return new this({ parts: path.split('.') });
   }
 
-  public parts: InternedString[];
+  public parts: string[];
 
-  constructor({ parts }: { parts: InternedString[] }) {
+  constructor({ parts }: { parts: string[] }) {
     super();
     this.parts = parts;
   }
@@ -870,11 +855,11 @@ export class Ref extends ExpressionSyntax<Opaque> {
     }
   }
 
-  path(): InternedString[] {
+  path(): string[] {
     return this.parts;
   }
 
-  simplePath(): InternedString {
+  simplePath(): string {
     if (this.parts.length === 1) {
       return this.parts[0];
     }
@@ -888,7 +873,7 @@ export class Helper extends ExpressionSyntax<Opaque> {
     let [, path, params, hash] = sexp;
 
     return new Helper({
-      ref: new Ref({ parts: path as InternedString[] }),
+      ref: new Ref({ parts: path }),
       args: Args.fromSpec(params, hash)
     });
   }
@@ -916,7 +901,7 @@ export class Helper extends ExpressionSyntax<Opaque> {
     }
   }
 
-  simplePath(): InternedString {
+  simplePath(): string {
     return this.ref.simplePath();
   }
 }
@@ -926,19 +911,16 @@ export class HasBlock extends ExpressionSyntax<boolean> {
 
   static fromSpec(sexp: SerializedExpressions.HasBlock): HasBlock {
     let [, blockName] = sexp;
-
-    return new HasBlock({
-      blockName: blockName as InternedString
-    });
+    return new HasBlock({ blockName });
   }
 
-  static build(blockName: InternedString): HasBlock {
+  static build(blockName: string): HasBlock {
     return new this({ blockName });
   }
 
-  blockName: InternedString;
+  blockName: string;
 
-  constructor({ blockName }: { blockName: InternedString }) {
+  constructor({ blockName }: { blockName: string }) {
     super();
     this.blockName = blockName;
   }
@@ -956,19 +938,16 @@ export class HasBlockParams extends ExpressionSyntax<boolean> {
 
   static fromSpec(sexp: SerializedExpressions.HasBlockParams): HasBlockParams {
     let [, blockName] = sexp;
-
-    return new HasBlockParams({
-      blockName: blockName as InternedString
-    });
+    return new HasBlockParams({ blockName });
   }
 
-  static build(blockName: InternedString): HasBlockParams {
+  static build(blockName: string): HasBlockParams {
     return new this({ blockName });
   }
 
-  blockName: InternedString;
+  blockName: string;
 
-  constructor({ blockName }: { blockName: InternedString }) {
+  constructor({ blockName }: { blockName: string }) {
     super();
     this.blockName = blockName;
   }
@@ -1091,12 +1070,12 @@ export class NamedArgs {
 
   static fromSpec(sexp: SerializedCore.Hash): NamedArgs {
     if (sexp === null || sexp === undefined) { return NamedArgs.empty(); }
-    let keys: InternedString[] = [];
+    let keys: string[] = [];
     let values = [];
     let map = dict<ExpressionSyntax<Opaque>>();
 
     Object.keys(sexp).forEach(key => {
-      keys.push(key as InternedString);
+      keys.push(key);
       let value = map[key] = buildExpression(sexp[key]);
       values.push(value);
     });
@@ -1110,7 +1089,7 @@ export class NamedArgs {
 
     Object.keys(map).forEach(k => {
       let value = map[k];
-      keys.push(k as InternedString);
+      keys.push(k);
       values.push(value);
     });
 
@@ -1130,15 +1109,15 @@ export class NamedArgs {
     this.map = map;
   }
 
-  add(key: InternedString, value: ExpressionSyntax<Opaque>) {
+  add(key: string, value: ExpressionSyntax<Opaque>) {
     this.map[<string>key] = value;
   }
 
-  at(key: InternedString): ExpressionSyntax<Opaque> {
+  at(key: string): ExpressionSyntax<Opaque> {
     return this.map[<string>key];
   }
 
-  has(key: InternedString): boolean {
+  has(key: string): boolean {
     return !!this.map[<string>key];
   }
 

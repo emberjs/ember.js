@@ -1,4 +1,4 @@
-import { Opaque, InternedString, intern, dict } from 'glimmer-util';
+import { Opaque, dict } from 'glimmer-util';
 import { PathReference } from './path';
 import { RootReference as IRootReference } from '../types';
 import { VOLATILE_TAG, PathReference as IPathReference } from 'glimmer-reference';
@@ -19,23 +19,23 @@ export default class RootReference<T> implements IRootReference<T>, IPathReferen
     // this.notify();
   }
 
-  get<U>(prop: InternedString): IPathReference<U> {
+  get<U>(prop: string): IPathReference<U> {
     let chains = this.chains;
     if (<string>prop in chains) return chains[<string>prop];
     return (chains[<string>prop] = new PathReference(this, prop));
   }
 
-  chainFor<U>(prop: InternedString): IPathReference<U> {
+  chainFor<U>(prop: string): IPathReference<U> {
     let chains = this.chains;
     if (<string>prop in chains) return chains[<string>prop];
     return null;
   }
 
   path(string) {
-    return string.split('.').reduce((ref, part) => ref.get(intern(part)), this);
+    return string.split('.').reduce((ref, part) => ref.get(part), this);
   }
 
-  referenceFromParts(parts: InternedString[]): IPathReference<Opaque> {
+  referenceFromParts(parts: string[]): IPathReference<Opaque> {
     return parts.reduce((ref, part) => ref.get(part) as IPathReference<Opaque>, this as IPathReference<Opaque>);
   }
 

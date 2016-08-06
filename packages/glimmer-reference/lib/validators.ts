@@ -1,5 +1,5 @@
 import Reference, { PathReference } from './reference';
-import { InternedString, Opaque, Slice, LinkedListNode } from 'glimmer-util';
+import { Opaque, Slice, LinkedListNode } from 'glimmer-util';
 
 //////////
 
@@ -216,7 +216,7 @@ export const CURRENT_TAG: DirtyableTag = new (
 export interface VersionedReference<T> extends Reference<T>, Tagged<Revision> {}
 
 export interface VersionedPathReference<T> extends PathReference<T>, Tagged<Revision> {
-  get(property: InternedString): VersionedPathReference<Opaque>;
+  get(property: string): VersionedPathReference<Opaque>;
 }
 
 export abstract class CachedReference<T> implements VersionedReference<T> {

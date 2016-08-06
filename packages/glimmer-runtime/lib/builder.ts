@@ -2,7 +2,7 @@ import Bounds, { clear, Cursor } from './bounds';
 
 import { DOMHelper } from './dom/helper';
 
-import { Destroyable, InternedString, Stack, LinkedList, LinkedListNode, assert } from 'glimmer-util';
+import { Destroyable, Stack, LinkedList, LinkedListNode, assert } from 'glimmer-util';
 
 import { Environment } from './environment';
 
@@ -62,8 +62,8 @@ class BlockStackElement {
 }
 
 export interface ElementOperations {
-  addAttribute(name: InternedString, value: PathReference<string>, isTrusting: boolean);
-  addAttributeNS(namespace: InternedString, name: InternedString, value: PathReference<string>, isTrusting: boolean);
+  addAttribute(name: string, value: PathReference<string>, isTrusting: boolean);
+  addAttributeNS(namespace: string, name: string, value: PathReference<string>, isTrusting: boolean);
 }
 
 class GroupedElementOperations implements ElementOperations {
@@ -85,13 +85,13 @@ class GroupedElementOperations implements ElementOperations {
     this.groups.push(group);
   }
 
-  addAttribute(name: InternedString, reference: PathReference<string>, isTrusting: boolean) {
+  addAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
     let attributeManager = this.env.attributeFor(this.element, name, reference, isTrusting);
     let attribute = new Attribute(this.element, attributeManager, name, reference);
     this.group.push(attribute);
   }
 
-  addAttributeNS(namespace: InternedString, name: InternedString, reference: PathReference<string>, isTrusting: boolean) {
+  addAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
     let attributeManager = this.env.attributeFor(this.element, name, reference,isTrusting, namespace);
     let nsAttribute = new Attribute(this.element, attributeManager, name, reference, namespace);
 
@@ -174,7 +174,7 @@ export class ElementStack implements Cursor {
     return this.blockStack.current;
   }
 
-  private pushElement(tag: InternedString): Element {
+  private pushElement(tag: string): Element {
     let element = this.dom.createElement(tag, this.element);
     let elementOperations = new GroupedElementOperations(element, this.env);
 
@@ -240,7 +240,7 @@ export class ElementStack implements Cursor {
     return this.blockStack.pop();
   }
 
-  openElement(tag: InternedString): Element {
+  openElement(tag: string): Element {
     let element = this.pushElement(tag);
     this.blockStack.current.openElement(element);
     return element;
@@ -270,11 +270,11 @@ export class ElementStack implements Cursor {
     return comment;
   }
 
-  setAttribute(name: InternedString, reference: PathReference<string>, isTrusting: boolean) {
+  setAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
     this.elementOperations.addAttribute(name, reference, isTrusting);
   }
 
-  setAttributeNS(namespace: InternedString, name: InternedString, reference: PathReference<string>, isTrusting: boolean) {
+  setAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
     this.elementOperations.addAttributeNS(namespace, name, reference, isTrusting);
   }
 

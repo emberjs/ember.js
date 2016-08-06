@@ -1,4 +1,3 @@
-import { InternedString } from 'glimmer-util';
 import { OpSeq } from '../opcodes';
 import { Program } from '../syntax';
 import { Environment } from '../environment';
@@ -45,11 +44,11 @@ export abstract class Block {
 }
 
 export interface InlineBlockOptions extends BlockOptions {
-  locals: InternedString[];
+  locals: string[];
 }
 
 export class InlineBlock extends Block {
-  public locals: InternedString[];
+  public locals: string[];
 
   constructor(options: InlineBlockOptions) {
     super(options);
@@ -106,8 +105,8 @@ export class EntryPoint extends TopLevelTemplate {
 }
 
 export interface LayoutOptions extends BlockOptions {
-  named: InternedString[];
-  yields: InternedString[];
+  named: string[];
+  yields: string[];
   program: Program;
 }
 
@@ -118,8 +117,8 @@ export class Layout extends TopLevelTemplate {
     return layout;
   }
 
-  public named: InternedString[];
-  public yields: InternedString[];
+  public named: string[];
+  public yields: string[];
 
   constructor(options: LayoutOptions) {
     super(options);

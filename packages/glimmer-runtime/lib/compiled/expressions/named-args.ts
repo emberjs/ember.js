@@ -2,7 +2,7 @@ import { UNDEFINED_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
 import { CONSTANT_TAG, PathReference, RevisionTag, combine } from 'glimmer-reference';
-import { InternedString, Dict, dict } from 'glimmer-util';
+import { Dict, dict } from 'glimmer-util';
 
 export abstract class CompiledNamedArgs {
   public abstract type: string;
@@ -65,7 +65,7 @@ export const COMPILED_EMPTY_NAMED_ARGS: CompiledNamedArgs = new (class extends C
 
 export abstract class EvaluatedNamedArgs {
   public tag: RevisionTag;
-  public keys: InternedString[];
+  public keys: string[];
 
   static empty(): EvaluatedNamedArgs {
     return EVALUATED_EMPTY_NAMED_ARGS;
@@ -78,18 +78,18 @@ export abstract class EvaluatedNamedArgs {
   public type: string;
   public map: Dict<PathReference<any>>;
 
-  forEach(callback: (key: InternedString, value: PathReference<any>) => void) {
+  forEach(callback: (key: string, value: PathReference<any>) => void) {
     let { map } = this;
     let mapKeys = Object.keys(map);
 
     for (let i = 0; i < mapKeys.length; i++) {
       let key = mapKeys[i];
-      callback(key as InternedString, map[key]);
+      callback(key, map[key]);
     }
   }
 
-  abstract get(key: InternedString): PathReference<any>;
-  abstract has(key: InternedString): boolean;
+  abstract get(key: string): PathReference<any>;
+  abstract has(key: string): boolean;
   abstract value(): Dict<any>;
 }
 
@@ -100,7 +100,7 @@ class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
   constructor({ map }: { map: Dict<PathReference<any>> }) {
     super();
 
-    let keys = this.keys = Object.keys(map) as InternedString[];
+    let keys = this.keys = Object.keys(map);
     this.map = map;
 
     let tags = [];
@@ -113,11 +113,11 @@ class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
     this.tag = combine(tags);
   }
 
-  get(key: InternedString): PathReference<any> {
+  get(key: string): PathReference<any> {
     return this.map[<string>key] || UNDEFINED_REFERENCE;
   }
 
-  has(key: InternedString): boolean {
+  has(key: string): boolean {
     return !!this.map[<string>key];
   }
 
@@ -143,7 +143,7 @@ export const EVALUATED_EMPTY_NAMED_ARGS = new (class extends EvaluatedNamedArgs 
     return UNDEFINED_REFERENCE;
   }
 
-  has(key: InternedString): boolean {
+  has(key: string): boolean {
     return false;
   }
 

@@ -1,7 +1,6 @@
 import { alias } from 'glimmer-object';
 import { Reference } from 'glimmer-reference';
 import{ Meta } from 'glimmer-object-reference';
-import { LITERAL } from 'glimmer-util';
 import { get, set, defineProperty } from './support';
 
 let obj, count;
@@ -37,7 +36,7 @@ QUnit.test('should proxy set to alt key', function() {
 
 QUnit.test('should observe the alias', function() {
   defineProperty(obj, 'bar', alias('foo.faz'));
-  let ref = Meta.for(obj).root().get(LITERAL('bar'));
+  let ref = Meta.for(obj).root().get('bar');
   let val = ref.value();
   equal(val, 'FOO');
   shouldBeClean(ref);

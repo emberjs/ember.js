@@ -1,5 +1,5 @@
 import { EMPTY_CACHE } from '../utils';
-import { InternedString, DictSet, dict } from 'glimmer-util';
+import { DictSet, dict } from 'glimmer-util';
 import Meta from '../meta';
 import { PropertyReference } from './descriptors';
 import { VOLATILE_TAG, PathReference as IPathReference, Reference } from 'glimmer-reference';
@@ -21,7 +21,7 @@ class UnchainFromPath {
 
 export default class PathReference<T> implements IPathReference<T>, HasGuid {
   private parent: IPathReference<any>;
-  private property: InternedString;
+  private property: string;
   protected cache: any = EMPTY_CACHE;
   private inner: Reference<T> = null;
   private chains: Dict<PathReference<any>> = null;
@@ -29,7 +29,7 @@ export default class PathReference<T> implements IPathReference<T>, HasGuid {
   public _guid = null;
   public tag = VOLATILE_TAG;
 
-  constructor(parent: IPathReference<T>, property: InternedString) {
+  constructor(parent: IPathReference<T>, property: string) {
     this.parent = parent;
     this.property = property;
   }
@@ -56,7 +56,7 @@ export default class PathReference<T> implements IPathReference<T>, HasGuid {
     return (this.cache = inner.value());
   }
 
-  get(prop: InternedString): IPathReference<any> {
+  get(prop: string): IPathReference<any> {
     let chains = this._getChains();
     if (<string>prop in chains) return chains[<string>prop];
     return (chains[<string>prop] = new PathReference(this, prop));

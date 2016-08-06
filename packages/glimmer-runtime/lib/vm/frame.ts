@@ -1,5 +1,4 @@
 import { Scope } from '../environment';
-import { InternedString } from 'glimmer-util';
 import { Reference, PathReference, ReferenceIterator } from 'glimmer-reference';
 import { InlineBlock } from '../compiled/blocks';
 import { EvaluatedArgs } from '../compiled/expressions/args';
@@ -15,7 +14,7 @@ class Frame {
   blocks: Blocks = null;
   condition: Reference<boolean> = null;
   iterator: ReferenceIterator = null;
-  key: InternedString = null;
+  key: string = null;
 
   constructor(ops: OpSeq) {
     this.ops = ops;
@@ -93,11 +92,11 @@ export class FrameStack {
     return this.frames[this.frame].iterator = iterator;
   }
 
-  getKey(): InternedString {
+  getKey(): string {
     return this.frames[this.frame].key;
   }
 
-  setKey(key: InternedString): InternedString {
+  setKey(key: string): string {
     return this.frames[this.frame].key = key;
   }
 

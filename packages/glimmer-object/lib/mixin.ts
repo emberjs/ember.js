@@ -1,5 +1,5 @@
 import { CLASS_META } from 'glimmer-object-reference';
-import { InternedString, Dict, dict, isArray, intern, assign } from 'glimmer-util';
+import { Dict, dict, isArray, assign } from 'glimmer-util';
 import GlimmerObject, {
   GlimmerObjectFactory,
   ClassMeta,
@@ -14,12 +14,12 @@ export const BLUEPRINT  = "8d97cf5f-db9e-48d8-a6b2-7a75b7170805";
 
 export abstract class Descriptor {
   "5d90f84f-908e-4a42-9749-3d0f523c262c" = true;
-  abstract define(prototype: Object, key: InternedString, home: Object);
+  abstract define(prototype: Object, key: string, home: Object);
 }
 
 export abstract class Blueprint {
   "8d97cf5f-db9e-48d8-a6b2-7a75b7170805" = true;
-  abstract descriptor(target: Object, key: InternedString, classMeta: ClassMeta): Descriptor;
+  abstract descriptor(target: Object, key: string, classMeta: ClassMeta): Descriptor;
 }
 
 interface Extensions {
@@ -31,8 +31,8 @@ interface Extensions {
 
 export class Mixin {
   private extensions = null;
-  private concatenatedProperties: InternedString[] = [];
-  private mergedProperties: InternedString[] = [];
+  private concatenatedProperties: string[] = [];
+  private mergedProperties: string[] = [];
   private dependencies: Mixin[] = [];
 
   static create(...args: (Mixin | Extensions)[]) {
@@ -79,15 +79,15 @@ export class Mixin {
     }
 
     if (typeof extensions === 'object' && 'concatenatedProperties' in extensions) {
-      let concat: InternedString[];
+      let concat: string[];
       let rawConcat = extensions.concatenatedProperties;
 
       if (isArray(rawConcat)) {
-        concat = (<string[]>rawConcat).slice().map(intern);
+        concat = (<string[]>rawConcat).slice();
       } else if (rawConcat === null || rawConcat === undefined) {
         concat = [];
       } else {
-        concat = [intern(<string>rawConcat)];
+        concat = [<string>rawConcat];
       }
 
       delete extensions.concatenatedProperties;
@@ -95,15 +95,15 @@ export class Mixin {
     }
 
     if (typeof extensions === 'object' && 'mergedProperties' in extensions) {
-      let merged: InternedString[];
+      let merged: string[];
       let rawMerged = extensions.mergedProperties;
 
       if (isArray(rawMerged)) {
-        merged = (<string[]>rawMerged).slice().map(intern);
+        merged = (<string[]>rawMerged).slice();
       } else if (rawMerged === null || rawMerged === undefined) {
         merged = [];
       } else {
-        merged = [intern(<string>rawMerged)];
+        merged = [<string>rawMerged];
       }
 
       delete extensions.mergedProperties;
@@ -170,16 +170,16 @@ export class Mixin {
     this.mergedProperties.forEach(k => meta.addMergedProperty(k, parent[<string>k]));
     this.concatenatedProperties.forEach(k => meta.addConcatenatedProperty(k, []));
 
-    new ValueDescriptor({ value: meta.getConcatenatedProperties() }).define(target, <InternedString>'concatenatedProperties', null);
-    new ValueDescriptor({ value: meta.getMergedProperties() }).define(target, <InternedString>'mergedProperties', null);
+    new ValueDescriptor({ value: meta.getConcatenatedProperties() }).define(target, <string>'concatenatedProperties', null);
+    new ValueDescriptor({ value: meta.getMergedProperties() }).define(target, <string>'mergedProperties', null);
 
     Object.keys(this.extensions).forEach(key => {
       let extension: Blueprint = this.extensions[key];
-      let desc = extension.descriptor(target, <InternedString>key, meta);
-      desc.define(target, <InternedString>key, parent);
+      let desc = extension.descriptor(target, <string>key, meta);
+      desc.define(target, <string>key, parent);
     });
 
-    new ValueDescriptor({ value: ROOT }).define(target, <InternedString>'_super', null);
+    new ValueDescriptor({ value: ROOT }).define(target, <string>'_super', null);
   }
 }
 
@@ -231,7 +231,7 @@ class ValueDescriptor extends Descriptor {
     this.value = value;
   }
 
-  define(target: Object, key: InternedString, home: Object) {
+  define(target: Object, key: string, home: Object) {
     Object.defineProperty(target, key, {
       enumerable: this.enumerable,
       configurable: this.configurable,
@@ -255,7 +255,7 @@ class AccessorDescriptor extends Descriptor {
     this.set = set;
   }
 
-  define(target: Object, key: InternedString) {
+  define(target: Object, key: string) {
     Object.defineProperty(target, key, {
       enumerable: this.enumerable,
       configurable: this.configurable,
@@ -279,15 +279,15 @@ export class DataBlueprint extends Blueprint {
     this.writable = writable;
   }
 
-  descriptor(target: Object, key: InternedString, classMeta: ClassMeta): ValueDescriptor {
+  descriptor(target: Object, key: string, classMeta: ClassMeta): ValueDescriptor {
     let { enumerable, configurable, writable, value } = this;
 
-    if (classMeta.hasConcatenatedProperty(<InternedString>key)) {
-      classMeta.addConcatenatedProperty(<InternedString>key, value);
-      value = classMeta.getConcatenatedProperty(<InternedString>key);
-    } else if (classMeta.hasMergedProperty(<InternedString>key)) {
-      classMeta.addMergedProperty(<InternedString>key, value);
-      value = classMeta.getMergedProperty(<InternedString>key);
+    if (classMeta.hasConcatenatedProperty(<string>key)) {
+      classMeta.addConcatenatedProperty(<string>key, value);
+      value = classMeta.getConcatenatedProperty(<string>key);
+    } else if (classMeta.hasMergedProperty(<string>key)) {
+      classMeta.addMergedProperty(<string>key, value);
+      value = classMeta.getMergedProperty(<string>key);
     }
 
     return new ValueDescriptor({ enumerable, configurable, writable, value });
@@ -308,7 +308,7 @@ export abstract class AccessorBlueprint extends Blueprint {
     this.set = set;
   }
 
-  descriptor(target: Object, key: InternedString, classMeta: ClassMeta): Descriptor {
+  descriptor(target: Object, key: string, classMeta: ClassMeta): Descriptor {
     return new ValueDescriptor({
       enumerable: this.enumerable,
       configurable: this.configurable,
@@ -319,20 +319,20 @@ export abstract class AccessorBlueprint extends Blueprint {
 }
 
 class MethodDescriptor extends ValueDescriptor {
-  define(target: Object, key: InternedString, home: Object) {
+  define(target: Object, key: string, home: Object) {
     this.value = wrapMethod(home, key, this.value);
     super.define(target, key, home);
   }
 }
 
 class MethodBlueprint extends DataBlueprint {
-  descriptor(target: Object, key: InternedString, classMeta: ClassMeta): MethodDescriptor {
+  descriptor(target: Object, key: string, classMeta: ClassMeta): MethodDescriptor {
     let desc = super.descriptor(target, key, classMeta);
     return new MethodDescriptor(desc);
   }
 }
 
-export function wrapMethod(home: Object, methodName: InternedString, original: (...args) => any) {
+export function wrapMethod(home: Object, methodName: string, original: (...args) => any) {
   if (!(<string>methodName in home)) return maybeWrap(original);
 
   let superMethod = home[<string>methodName];

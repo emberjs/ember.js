@@ -2,7 +2,7 @@ import { Opcode, OpcodeJSON } from '../../opcodes';
 import { VM } from '../../vm';
 import { LabelOpcode } from '../../compiled/opcodes/vm';
 import { EvaluatedArgs } from '../expressions/args';
-import { FIXME, ListSlice, Slice } from 'glimmer-util';
+import { ListSlice, Slice } from 'glimmer-util';
 import { RevisionTag, Reference, ConstReference, ReferenceIterator, IterationArtifacts } from 'glimmer-reference';
 
 class IterablePresenceReference implements Reference<boolean> {
@@ -121,7 +121,7 @@ export class NextIterOpcode extends Opcode {
 
     if (item) {
       vm.frame.setCondition(TRUE_REF);
-      vm.frame.setKey(item.key as FIXME<'user str to InternedString'>);
+      vm.frame.setKey(item.key);
       vm.frame.setOperand(item.value);
       vm.frame.setArgs(EvaluatedArgs.positional([item.value, item.memo]));
     } else {

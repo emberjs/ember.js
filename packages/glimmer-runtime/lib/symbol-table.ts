@@ -1,4 +1,4 @@
-import { InternedString, dict } from 'glimmer-util';
+import { dict } from 'glimmer-util';
 import { Block, InlineBlock, Layout, EntryPoint } from './compiled/blocks';
 
 export default class SymbolTable {
@@ -32,33 +32,33 @@ export default class SymbolTable {
     return this;
   }
 
-  initBlock({ locals }: { locals: InternedString[] }): this {
+  initBlock({ locals }: { locals: string[] }): this {
     this.initPositionals(locals);
     return this;
   }
 
-  initLayout({ named, yields }: { named: InternedString[], yields: InternedString[] }): this {
+  initLayout({ named, yields }: { named: string[], yields: string[] }): this {
     this.initNamed(named);
     this.initYields(yields);
     return this;
   }
 
-  initPositionals(positionals: InternedString[]): this {
+  initPositionals(positionals: string[]): this {
     if (positionals) positionals.forEach(s => this.locals[<string>s] = this.top.size++);
     return this;
   }
 
-  initNamed(named: InternedString[]): this {
+  initNamed(named: string[]): this {
     if (named) named.forEach(s => this.named[<string>s] = this.top.size++);
     return this;
   }
 
-  initYields(yields: InternedString[]): this {
+  initYields(yields: string[]): this {
     if (yields) yields.forEach(b => this.yields[<string>b] = this.top.size++);
     return this;
   }
 
-  getYield(name: InternedString): number {
+  getYield(name: string): number {
     let { yields, parent } = this;
 
     let symbol = yields[<string>name];
@@ -70,7 +70,7 @@ export default class SymbolTable {
     return symbol;
   }
 
-  getNamed(name: InternedString): number {
+  getNamed(name: string): number {
     let { named, parent } = this;
 
     let symbol = named[<string>name];
@@ -82,7 +82,7 @@ export default class SymbolTable {
     return symbol;
   }
 
-  getLocal(name: InternedString): number {
+  getLocal(name: string): number {
     let { locals, parent } = this;
 
     let symbol = locals[<string>name];

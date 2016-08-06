@@ -1,5 +1,5 @@
 import { assert } from "glimmer-util";
-import { Stack, DictSet, InternedString, dict } from "glimmer-util";
+import { Stack, DictSet, dict } from "glimmer-util";
 
 import {
   BlockMeta,
@@ -23,7 +23,7 @@ export class Block {
   toJSON(): SerializedBlock {
     return {
       statements: this.statements,
-      locals: this.positionals as InternedString[]
+      locals: this.positionals
     };
   }
 
@@ -47,7 +47,7 @@ export class Template extends Block {
   toJSON(): SerializedTemplate {
     return {
       statements: this.statements,
-      locals: this.positionals as InternedString[],
+      locals: this.positionals,
       named: this.named.toArray(),
       yields: this.yields.toArray(),
       blocks: this.blocks.map(b => b.toJSON()),

@@ -1,7 +1,6 @@
 import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
 import { MetaOptions } from './types';
-import { InternedString } from 'glimmer-util';
 
 import { Dict, DictSet, HasGuid, Set, dict } from 'glimmer-util';
 
@@ -20,10 +19,10 @@ const NOOP_DESTROY = { destroy() {} };
 
 class ConstPath implements IPathReference<any> {
   private parent: any;
-  private property: InternedString;
+  private property: string;
   public tag = VOLATILE_TAG;
 
-  constructor(parent: any, property: InternedString) {
+  constructor(parent: any, property: string) {
     this.parent = parent;
   }
 
@@ -34,7 +33,7 @@ class ConstPath implements IPathReference<any> {
     return this.parent[<string>this.property];
   }
 
-  get(prop: InternedString): IPathReference<any> {
+  get(prop: string): IPathReference<any> {
     return new ConstPath(this.parent[<string>this.property], prop);
   }
 }
@@ -58,15 +57,15 @@ class ConstRoot implements IRootReference<any> {
     return this.inner;
   }
 
-  referenceFromParts(parts: InternedString[]): IPathReference<any> {
+  referenceFromParts(parts: string[]): IPathReference<any> {
     throw new Error("Not implemented");
   }
 
-  chainFor(prop: InternedString): IPathReference<any> {
+  chainFor(prop: string): IPathReference<any> {
     throw new Error("Not implemented");
   }
 
-  get(prop: InternedString): IPathReference<any> {
+  get(prop: string): IPathReference<any> {
     return new ConstPath(this.inner, prop);
   }
 }
@@ -109,7 +108,7 @@ class Meta implements IMeta, HasGuid {
     return typeof obj === 'object' && obj._meta;
   }
 
-  static metadataForProperty(key: InternedString): any {
+  static metadataForProperty(key: string): any {
     return null;
   }
 
@@ -129,23 +128,23 @@ class Meta implements IMeta, HasGuid {
     this.DefaultPathReferenceFactory = DefaultPathReferenceFactory || PropertyReference;
   }
 
-  addReference(property: InternedString, reference: IPathReference<any> & HasGuid) {
+  addReference(property: string, reference: IPathReference<any> & HasGuid) {
     let refs = this.references = this.references || dict<DictSet<IPathReference<any> & HasGuid>>();
     let set = refs[<string>property] = refs[<string>property] || new DictSet<IPathReference<any> & HasGuid>();
     set.add(reference);
   }
 
-  addReferenceTypeFor(property: InternedString, type: PathReferenceFactory<any>) {
+  addReferenceTypeFor(property: string, type: PathReferenceFactory<any>) {
     this.referenceTypes = this.referenceTypes || dict<PathReferenceFactory<any>>();
     this.referenceTypes[<string>property] = type;
   }
 
-  referenceTypeFor(property: InternedString): InnerReferenceFactory<any> {
+  referenceTypeFor(property: string): InnerReferenceFactory<any> {
     if (!this.referenceTypes) return PropertyReference;
     return this.referenceTypes[<string>property] || PropertyReference;
   }
 
-  removeReference(property: InternedString, reference: IPathReference<any> & HasGuid) {
+  removeReference(property: string, reference: IPathReference<any> & HasGuid) {
     if (!this.references) return;
     let set = this.references[<string>property];
     set.delete(reference);
@@ -156,7 +155,7 @@ class Meta implements IMeta, HasGuid {
     return this.referenceTypes;
   }
 
-  referencesFor(property: InternedString): Set<IPathReference<any>> {
+  referencesFor(property: string): Set<IPathReference<any>> {
     if (!this.references) return;
     return this.references[<string>property];
   }
