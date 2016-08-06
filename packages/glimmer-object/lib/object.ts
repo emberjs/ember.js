@@ -149,15 +149,15 @@ export class ClassMeta {
   }
 
   addPropertyMetadata(property: string, value: any) {
-    this.propertyMetadata[<string>property] = value;
+    this.propertyMetadata[property] = value;
   }
 
   metadataForProperty(property: string): Object {
-    return this.propertyMetadata[<string>property];
+    return this.propertyMetadata[property];
   }
 
   addReferenceTypeFor(property: string, type: InnerReferenceFactory<any>) {
-    this.referenceTypes[<string>property] = type;
+    this.referenceTypes[property] = type;
   }
 
   addSlotFor(property: string) {
@@ -170,7 +170,7 @@ export class ClassMeta {
   }
 
   getConcatenatedProperty(property: string): any[] {
-    return this.concatenatedProperties[<string>property];
+    return this.concatenatedProperties[property];
   }
 
   getConcatenatedProperties(): string[] {
@@ -181,10 +181,10 @@ export class ClassMeta {
     this.hasConcatenatedProperties = true;
 
     if (<string>property in this.concatenatedProperties) {
-      let val = this.concatenatedProperties[<string>property].concat(value);
-      this.concatenatedProperties[<string>property] = val;
+      let val = this.concatenatedProperties[property].concat(value);
+      this.concatenatedProperties[property] = val;
     } else {
-      this.concatenatedProperties[<string>property] = value;
+      this.concatenatedProperties[property] = value;
     }
   }
 
@@ -194,7 +194,7 @@ export class ClassMeta {
   }
 
   getMergedProperty(property: string): Object {
-    return this.mergedProperties[<string>property];
+    return this.mergedProperties[property];
   }
 
   getMergedProperties(): string[] {
@@ -208,11 +208,11 @@ export class ClassMeta {
       throw new Error(`You passed in \`${JSON.stringify(value)}\` as the value for \`foo\` but \`foo\` cannot be an Array`);
     }
 
-    if (<string>property in this.mergedProperties && this.mergedProperties[<string>property] && value) {
-      this.mergedProperties[<string>property] = mergeMergedProperties(value, this.mergedProperties[<string>property]);
+    if (<string>property in this.mergedProperties && this.mergedProperties[property] && value) {
+      this.mergedProperties[property] = mergeMergedProperties(value, this.mergedProperties[property]);
     } else {
       value = value === null ? value : value || {};
-      this.mergedProperties[<string>property] = value;
+      this.mergedProperties[property] = value;
     }
   }
 
@@ -270,7 +270,7 @@ export class ClassMeta {
     class Slots {
       constructor() {
         slots.forEach(name => {
-          this[<string>name] = EMPTY_CACHE;
+          this[name] = EMPTY_CACHE;
         });
       }
     }
@@ -284,7 +284,7 @@ export class ClassMeta {
       }
 
       referenceTypeFor(property: string): InnerReferenceFactory<any> {
-        return this.referenceTypes[<string>property] || PropertyReference;
+        return this.referenceTypes[property] || PropertyReference;
       }
 
       getSlots() {
