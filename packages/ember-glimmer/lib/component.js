@@ -47,6 +47,7 @@ const Component = CoreView.extend(
 
     init() {
       this._super(...arguments);
+      this[IS_DISPATCHING_ATTRS] = false;
       this[DIRTY_TAG] = new DirtyableTag();
       this[ROOT_REF] = null;
       this[REFS] = new EmptyObject();
@@ -94,8 +95,6 @@ const Component = CoreView.extend(
     __defineNonEnumerable(property) {
       this[property.name] = property.descriptor.value;
     },
-
-    [IS_DISPATCHING_ATTRS]: false,
 
     [PROPERTY_DID_CHANGE](key) {
       if (this[IS_DISPATCHING_ATTRS]) { return; }
