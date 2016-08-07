@@ -32,7 +32,7 @@ class EmberPathReference {
   // @abstract value()
 
   get(key) {
-    return new PropertyReference(this, key);
+    return PropertyReference.create(this, key);
   }
 }
 
@@ -67,7 +67,7 @@ export class RootReference extends ConstReference {
   get(propertyKey) {
     let self = this.value();
     let ref = self[REFERENCE_FOR_KEY] && self[REFERENCE_FOR_KEY](propertyKey);
-    return ref || new PropertyReference(this, propertyKey);
+    return ref || PropertyReference.create(this, propertyKey);
   }
 }
 
@@ -106,7 +106,106 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
   };
 }
 
-export class PropertyReference extends CachedReference { // jshint ignore:line
+export class PropertyReference extends CachedReference {
+  static create(parentReference, propertyKey) {
+    if (isConst(parentReference)) {
+      let parentValue = parentReference.value();
+
+      if (typeof parentValue === 'object' && parentValue) {
+        if (isProxy(parentValue)) {
+          return new ProxiedRootPropertyReference(parentValue, propertyKey);
+        } else {
+          return new RootPropertyReference(parentValue, propertyKey);
+        }
+      } else {
+        return NULL_REFERENCE;
+      }
+    } else {
+      return new NestedPropertyReference(parentReference, propertyKey);
+    }
+  }
+
+  get(key) {
+    return new NestedPropertyReference(this, key);
+  }
+}
+
+export class RootPropertyReference extends PropertyReference {
+  constructor(parentValue, propertyKey) {
+    super();
+
+    this._parentValue = parentValue;
+    this._propertyKey = propertyKey;
+
+    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
+        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      this.tag = new TwoWayFlushDetectionTag(tagFor(parentValue), propertyKey, this);
+    } else {
+      this.tag = tagFor(parentValue);
+    }
+
+    if (isEnabled('mandatory-setter')) {
+      watchKey(parentValue, propertyKey, metaFor(parentValue));
+    }
+  }
+
+  compute() {
+    let { _parentValue, _propertyKey } = this;
+
+    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
+        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      this.tag.didCompute(_parentValue);
+    }
+
+    return get(_parentValue, _propertyKey);
+  }
+
+  [UPDATE](value) {
+    set(this._parentValue, this._propertyKey, value);
+  }
+}
+
+export class ProxiedRootPropertyReference extends PropertyReference {
+  constructor(parentValue, propertyKey) {
+    super();
+
+    this._parentValue = parentValue;
+    this._propertyKey = propertyKey;
+
+    let proxyContentTag = this._proxyContentTag = new UpdatableTag(CONSTANT_TAG);
+
+    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
+        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      let tag = combine([tagFor(parentValue), proxyContentTag]);
+      this.tag = new TwoWayFlushDetectionTag(tag, propertyKey, this);
+    } else {
+      this.tag = combine([tagFor(parentValue), proxyContentTag]);
+    }
+
+    if (isEnabled('mandatory-setter')) {
+      watchKey(parentValue, propertyKey, metaFor(parentValue));
+    }
+  }
+
+  compute() {
+    let { _parentValue, _propertyKey } = this;
+
+    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
+        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      this.tag.didCompute(_parentValue);
+    }
+
+    this._proxyContentTag.update(tagFor(get(_parentValue, 'content')));
+
+    return get(_parentValue, _propertyKey);
+  }
+
+  [UPDATE](value) {
+    set(this._parentValue, this._propertyKey, value);
+  }
+}
+
+export class NestedPropertyReference extends PropertyReference {
   constructor(parentReference, propertyKey) {
     super();
 
@@ -178,10 +277,6 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
   [UPDATE](value) {
     let parent = this._parentReference.value();
     set(parent, this._propertyKey, value);
-  }
-
-  get(propertyKey) {
-    return new PropertyReference(this, propertyKey);
   }
 }
 

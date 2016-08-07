@@ -17,7 +17,7 @@ import {
   TO_ROOT_REFERENCE,
   REFERENCE_FOR_KEY,
   RootReference,
-  PropertyReference
+  RootPropertyReference
 } from './utils/references';
 import { DirtyableTag } from 'glimmer-reference';
 import { readDOMAttr } from 'glimmer-runtime';
@@ -137,7 +137,7 @@ const Component = CoreView.extend(
       if (ref) {
         return ref;
       } else {
-        return refs[key] = new PropertyReference(this[TO_ROOT_REFERENCE](), key);
+        return refs[key] = new RootPropertyReference(this, key);
       }
     }
   }
