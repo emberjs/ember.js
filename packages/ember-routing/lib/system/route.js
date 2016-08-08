@@ -2266,9 +2266,9 @@ function deprecateQueryParamDefaultValuesSetOnController(controllerName, routeNa
 
   @private
 */
-function prefixRouteNameArg(...args) {
+function prefixRouteNameArg(route, args) {
   let routeName = args[0];
-  let owner = getOwner(this);
+  let owner = getOwner(route);
   let prefix = owner.mountPoint;
 
   // only alter the routeName if it's actually referencing a route.
@@ -2296,11 +2296,11 @@ function resemblesURL(str) {
 if (isEnabled('ember-application-engines')) {
   Route.reopen({
     replaceWith(...args) {
-      return this._super.apply(this, (prefixRouteNameArg.call(this, ...args)));
+      return this._super.apply(this, prefixRouteNameArg(this, args));
     },
 
     transitionTo(...args) {
-      return this._super.apply(this, (prefixRouteNameArg.call(this, ...args)));
+      return this._super.apply(this, prefixRouteNameArg(this, args));
     },
 
     modelFor(_routeName, ...args) {
