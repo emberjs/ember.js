@@ -137,6 +137,28 @@ if (isEnabled('ember-improved-instrumentation')) {
     jQuery('#about-link', '#qunit-fixture').click();
   });
 
+  QUnit.test('The {{link-to}} helper interaction event includes the target link-to component', function(assert) {
+    assert.expect(2);
+    Router.map(function(match) {
+      this.route('about');
+    });
+
+    bootApplication();
+
+    run(() => router.handleURL('/'));
+
+    subscribe('interaction.link-to', {
+      before(name, timestamp, { target }) {
+        assert.equal(target.id, 'about-link', 'instrumentation subscriber was passed target link-to component');
+      },
+      after(name, timestamp, { target }) {
+        assert.equal(target.id, 'about-link', 'instrumentation subscriber was passed target link-to component');
+      }
+    });
+
+    jQuery('#about-link', '#qunit-fixture').click();
+  });
+
   QUnit.test('The {{link-to}} helper interaction event includes the route name', function(assert) {
     assert.expect(2);
     Router.map(function(match) {
