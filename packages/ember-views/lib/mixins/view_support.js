@@ -434,7 +434,7 @@ export default Mixin.create({
    @private
    */
   [POST_INIT]: function() {
-    this._super(...arguments);
+    this._super();
 
     assert(
       `You must call \`this._super(...arguments);\` when implementing \`init\` in a component. Please update ${this} to call \`this._super\` from \`init\`.`,
