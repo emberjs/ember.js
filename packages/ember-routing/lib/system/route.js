@@ -760,7 +760,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
       @method queryParamsDidChange
       @param changed {Object} Keys are names of query params that have changed.
-      @param totalPresent {Number}
+      @param totalPresent {Object} Keys are names of query params that are currently set.
       @param removed {Object} Keys are names of query params that have been removed.
       @returns {boolean}
       @private
