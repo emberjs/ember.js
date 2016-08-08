@@ -405,7 +405,7 @@ const LinkComponent = EmberComponent.extend({
     @property activeClass
     @type String
     @default active
-    @private
+    @public
   **/
   activeClass: 'active',
 
