@@ -112,11 +112,7 @@ export class PropertyReference extends CachedReference {
       let parentValue = parentReference.value();
 
       if (typeof parentValue === 'object' && parentValue) {
-        if (isProxy(parentValue)) {
-          return new ProxiedRootPropertyReference(parentValue, propertyKey);
-        } else {
-          return new RootPropertyReference(parentValue, propertyKey);
-        }
+        return new RootPropertyReference(parentValue, propertyKey);
       } else {
         return NULL_REFERENCE;
       }
@@ -165,46 +161,6 @@ export class RootPropertyReference extends PropertyReference {
   }
 }
 
-export class ProxiedRootPropertyReference extends PropertyReference {
-  constructor(parentValue, propertyKey) {
-    super();
-
-    this._parentValue = parentValue;
-    this._propertyKey = propertyKey;
-
-    let proxyContentTag = this._proxyContentTag = new UpdatableTag(CONSTANT_TAG);
-
-    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      let tag = combine([tagFor(parentValue), proxyContentTag]);
-      this.tag = new TwoWayFlushDetectionTag(tag, propertyKey, this);
-    } else {
-      this.tag = combine([tagFor(parentValue), proxyContentTag]);
-    }
-
-    if (isEnabled('mandatory-setter')) {
-      watchKey(parentValue, propertyKey, metaFor(parentValue));
-    }
-  }
-
-  compute() {
-    let { _parentValue, _propertyKey } = this;
-
-    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      this.tag.didCompute(_parentValue);
-    }
-
-    this._proxyContentTag.update(tagFor(get(_parentValue, 'content')));
-
-    return get(_parentValue, _propertyKey);
-  }
-
-  [UPDATE](value) {
-    set(this._parentValue, this._propertyKey, value);
-  }
-}
-
 export class NestedPropertyReference extends PropertyReference {
   constructor(parentReference, propertyKey) {
     super();
@@ -216,10 +172,6 @@ export class NestedPropertyReference extends PropertyReference {
     this._parentObjectTag = parentObjectTag;
     this._propertyKey = propertyKey;
 
-    this._wasProxy = false;
-    this._proxyWrapperTag = null;
-    this._proxyContentTag = null;
-
     if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
         isEnabled('ember-glimmer-allow-backtracking-rerender')) {
       let tag = combine([parentReferenceTag, parentObjectTag]);
@@ -230,32 +182,11 @@ export class NestedPropertyReference extends PropertyReference {
   }
 
   compute() {
-    let { _parentReference, _parentObjectTag, _wasProxy, _propertyKey } = this;
+    let { _parentReference, _parentObjectTag, _propertyKey } = this;
 
     let parentValue = _parentReference.value();
 
-    if (isProxy(parentValue)) {
-      let proxyContent = get(parentValue, 'content');
-
-      if (_wasProxy) {
-        this._proxyWrapperTag.update(tagFor(parentValue));
-        this._proxyContentTag.update(tagFor(proxyContent));
-      } else {
-        this._wasProxy = true;
-        let _proxyWrapperTag = this._proxyWrapperTag = new UpdatableTag(tagFor(parentValue));
-        let _proxyContentTag = this._proxyContentTag = new UpdatableTag(tagFor(proxyContent));
-
-        _parentObjectTag.update(combine([_proxyWrapperTag, _proxyContentTag]));
-      }
-    } else {
-      _parentObjectTag.update(tagFor(parentValue));
-
-      if (_wasProxy) {
-        this._wasProxy = false;
-        this._proxyWrapperTag = null;
-        this._proxyContentTag = null;
-      }
-    }
+    _parentObjectTag.update(tagFor(parentValue));
 
     if (typeof parentValue === 'object' && parentValue) {
       if (isEnabled('mandatory-setter')) {
@@ -313,7 +244,9 @@ export class ConditionalReference extends GlimmerConditionalReference {
     if (isConst(reference)) {
       let value = reference.value();
 
-      if (!isProxy(value)) {
+      if (isProxy(value)) {
+        return new RootPropertyReference(value, 'isTruthy');
+      } else {
         return new PrimitiveReference(emberToBool(value));
       }
     }

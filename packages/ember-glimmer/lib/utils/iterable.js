@@ -200,42 +200,18 @@ class EachInIterable extends AbstractIterable {
 
     let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
 
-    this.wasProxy = false;
-    this.proxyWrapperTag = null;
-    this.proxyContentTag = null;
-
     this.tag = combine([ref.tag, valueTag]);
   }
 
   iterate() {
-    let { ref, keyFor, valueTag, wasProxy } = this;
+    let { ref, keyFor, valueTag } = this;
 
     let iterable = ref.value();
 
+    valueTag.update(tagFor(iterable));
+
     if (isProxy(iterable)) {
-      let proxy = iterable;
-      let content = get(proxy, 'content');
-
-      if (wasProxy) {
-        this.proxyWrapperTag.update(tagFor(proxy));
-        this.proxyContentTag.update(tagFor(content));
-      } else {
-        this.wasProxy = true;
-        let proxyWrapperTag = this.proxyWrapperTag = new UpdatableTag(tagFor(proxy));
-        let proxyContentTag = this.proxyContentTag = new UpdatableTag(tagFor(content));
-
-        valueTag.update(combine([proxyWrapperTag, proxyContentTag]));
-      }
-
-      iterable = content;
-    } else {
-      valueTag.update(tagFor(iterable));
-
-      if (wasProxy) {
-        this.wasProxy = true;
-        this.proxyWrapperTag = null;
-        this.proxyContentTag = null;
-      }
+      iterable = get(iterable, 'content');
     }
 
     let typeofIterable = typeof iterable;
