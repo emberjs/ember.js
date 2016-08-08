@@ -166,19 +166,7 @@ function makeCtor() {
 
     finishPartial(this, m);
 
-    if (arguments.length === 0) {
-      this.init();
-    } else if (arguments.length === 1) {
-      this.init(arguments[0]);
-    } else {
-      // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
-      // we may want to keep this around till this ages out on mobile
-      var args = new Array(arguments.length);
-      for (var x = 0; x < arguments.length; x++) {
-        args[x] = arguments[x];
-      }
-      this.init.apply(this, args);
-    }
+    this.init.apply(this, arguments);
 
     this[POST_INIT]();
 
