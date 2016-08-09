@@ -7,7 +7,7 @@ import computed from 'ember-metal/computed';
 
 moduleFor('ClassNameBindings integration', class extends RenderingTest {
 
-  ['@test it can have class name bindings']() {
+  ['@test it can have class name bindings on the class definition']() {
     let FooBarComponent = Component.extend({
       classNameBindings: ['foo', 'isEnabled:enabled', 'isHappy:happy:sad']
     });
@@ -43,6 +43,65 @@ moduleFor('ClassNameBindings integration', class extends RenderingTest {
     });
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo enabled sad') }, content: 'hello' });
+  }
+
+  ['@test it can have class name bindings in the template']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    this.render('{{foo-bar classNameBindings="model.someInitiallyTrueProperty model.someInitiallyFalseProperty model.someInitiallyUndefinedProperty :static model.isBig:big model.isOpen:open:closed model.isUp::down model.bar:isTruthy:isFalsy"}}', {
+      model: {
+        someInitiallyTrueProperty: true,
+        someInitiallyFalseProperty: false,
+        isBig: true,
+        isOpen: false,
+        isUp: true,
+        bar: true
+      }
+    });
+
+    this.assertComponentElement(this.firstChild, {
+      attrs: { 'class': classes('ember-view some-initially-true-property static big closed isTruthy') },
+      content: 'hello'
+    });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, {
+      attrs: { 'class': classes('ember-view some-initially-true-property static big closed isTruthy') },
+      content: 'hello'
+    });
+
+    this.runTask(() => {
+      set(this.context, 'model.someInitiallyTrueProperty', false);
+      set(this.context, 'model.someInitiallyFalseProperty', true);
+      set(this.context, 'model.someInitiallyUndefinedProperty', true);
+      set(this.context, 'model.isBig', false);
+      set(this.context, 'model.isOpen', true);
+      set(this.context, 'model.isUp', false);
+      set(this.context, 'model.bar', false);
+    });
+
+    this.assertComponentElement(this.firstChild, {
+      attrs: { 'class': classes('ember-view some-initially-false-property some-initially-undefined-property static open down isFalsy') },
+      content: 'hello'
+    });
+
+    this.runTask(() => {
+      set(this.context, 'model', {
+        someInitiallyTrueProperty: true,
+        someInitiallyFalseProperty: false,
+        someInitiallyUndefinedProperty: undefined,
+        isBig: true,
+        isOpen: false,
+        isUp: true,
+        bar: true
+      });
+    });
+
+    this.assertComponentElement(this.firstChild, {
+      attrs: { 'class': classes('ember-view some-initially-true-property static big closed isTruthy') },
+      content: 'hello'
+    });
   }
 
   ['@test it can have class name bindings with nested paths']() {

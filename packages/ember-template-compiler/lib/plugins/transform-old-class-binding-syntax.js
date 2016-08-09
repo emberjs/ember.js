@@ -87,7 +87,7 @@ function buildSexprs(microsyntax, sexprs, b) {
           hash.pairs.push(b.pair('inactiveClass', b.string(inactiveClass)));
         }
 
-        params.push(b.sexpr(b.string('-normalize-class'), sexprParams, hash));
+        params.push(b.sexpr(b.path('-normalize-class'), sexprParams, hash));
       }
 
       if (inactiveClass || inactiveClass === '') {
