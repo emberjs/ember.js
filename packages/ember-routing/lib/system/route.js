@@ -1878,7 +1878,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     The string values provided for the template name, and controller
     will eventually pass through to the resolver for lookup. See
     Ember.Resolver for how these are mapped to JavaScript objects in your
-    application.
+    application. The template to render into needs to be related to  either the
+    current route or one of its ancestors.
 
     Not all options need to be passed to `render`. Default values will be used
     based on the name of the route specified in the router or the Route's
