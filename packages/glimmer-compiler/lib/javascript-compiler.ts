@@ -7,7 +7,8 @@ import {
   SerializedTemplate,
   Core,
   Statement,
-  Expression
+  Expression,
+  Expressions
 } from 'glimmer-wire-format';
 
 type str = string;
@@ -131,36 +132,36 @@ export default class JavaScriptCompiler {
   }
 
   openElement(tag: str, blockParams: string[]) {
-    this.push(['openElement', tag, blockParams]);
+    this.push(['open-element', tag, blockParams]);
   }
 
   closeElement() {
-    this.push(['closeElement']);
+    this.push(['close-element']);
   }
 
   staticAttr(name: str, namespace: str) {
     let value = this.popValue<Expression>();
-    this.push(['staticAttr', name, value, namespace]);
+    this.push(['static-attr', name, value, namespace]);
   }
 
   dynamicAttr(name: str, namespace: str) {
     let value = this.popValue<Expression>();
-    this.push(['dynamicAttr', name, value, namespace]);
+    this.push(['dynamic-attr', name, value, namespace]);
   }
 
   trustingAttr(name: str, namespace: str) {
     let value = this.popValue<Expression>();
-    this.push(['trustingAttr', name, value, namespace]);
+    this.push(['trusting-attr', name, value, namespace]);
   }
 
   staticArg(name: str) {
     let value = this.popValue<Expression>();
-    this.push(['staticArg', name.slice(1), value]);
+    this.push(['static-arg', name.slice(1), value]);
   }
 
   dynamicArg(name: str) {
     let value = this.popValue<Expression>();
-    this.push(['dynamicArg', name.slice(1), value]);
+    this.push(['dynamic-arg', name.slice(1), value]);
   }
 
   yield(to: string) {
@@ -170,51 +171,51 @@ export default class JavaScriptCompiler {
   }
 
   hasBlock(name: string) {
-    this.pushValue(['hasBlock', name]);
+    this.pushValue<Expressions.HasBlock>(['has-block', name]);
     this.template.yields.add(name);
   }
 
   hasBlockParams(name: string) {
-    this.pushValue(['hasBlockParams', name]);
+    this.pushValue<Expressions.HasBlockParams>(['has-block-params', name]);
     this.template.yields.add(name);
   }
 
   /// Expressions
 
-  literal(value: any) {
+  literal(value: Expressions.Value | undefined) {
     if (value === undefined) {
-      this.pushValue(['undefinedLiteral']);
+      this.pushValue<Expressions.Undefined>(['undefined']);
     } else {
-      this.pushValue(value);
+      this.pushValue<Expressions.Value>(value);
     }
   }
 
   unknown(path: string[]) {
-    this.pushValue(['unknown', path]);
+    this.pushValue<Expressions.Unknown>(['unknown', path]);
   }
 
   arg(path: string[]) {
     this.template.named.add(path[0]);
-    this.pushValue(['arg', path]);
+    this.pushValue<Expressions.Arg>(['arg', path]);
   }
 
   selfGet(path: string[]) {
-    this.pushValue(['self-get', path]);
+    this.pushValue<Expressions.SelfGet>(['self-get', path]);
   }
 
   get(path: string[]) {
-    this.pushValue(['get', path]);
+    this.pushValue<Expressions.Get>(['get', path]);
   }
 
   concat() {
-    this.pushValue(['concat', this.popValue<Params>()]);
+    this.pushValue<Expressions.Concat>(['concat', this.popValue<Params>()]);
   }
 
   helper(path: string[]) {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
-    this.pushValue(['helper', path, params, hash]);
+    this.pushValue<Expressions.Helper>(['helper', path, params, hash]);
   }
 
   /// Stack Management Opcodes
@@ -226,7 +227,7 @@ export default class JavaScriptCompiler {
       values.push(this.popValue());
     }
 
-    this.pushValue(values);
+    this.pushValue<Params>(values);
   }
 
   prepareObject(size: number) {
@@ -238,7 +239,7 @@ export default class JavaScriptCompiler {
       object[this.popValue<str>()] = this.popValue<Expression>();
     }
 
-    this.pushValue(object);
+    this.pushValue<Hash>(object);
   }
 
   /// Utilities
@@ -251,7 +252,7 @@ export default class JavaScriptCompiler {
     this.blocks.current.push(args);
   }
 
-  pushValue(val: Expression | Params | Hash) {
+  pushValue<S extends Expression | Params | Hash>(val: S) {
     this.values.push(val);
   }
 
