@@ -3,6 +3,7 @@ import { set } from 'ember-metal/property_set';
 import { tagFor } from 'ember-metal/tags';
 import { didRender } from 'ember-metal/transaction';
 import symbol from 'ember-metal/symbol';
+import EmptyObject from 'ember-metal/empty_object';
 import { CONSTANT_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst } from 'glimmer-reference';
 import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 import emberToBool from './to-bool';
@@ -13,8 +14,6 @@ import isEnabled from 'ember-metal/features';
 import { isProxy } from 'ember-runtime/mixins/-proxy';
 
 export const UPDATE = symbol('UPDATE');
-export const TO_ROOT_REFERENCE = symbol('TO_ROOT_REFERENCE');
-export const REFERENCE_FOR_KEY = symbol('REFERENCE_FOR_KEY');
 
 // @implements PathReference
 export class PrimitiveReference extends ConstReference {
@@ -64,10 +63,19 @@ export class CachedReference extends EmberPathReference {
 
 // @implements PathReference
 export class RootReference extends ConstReference {
+  constructor(value) {
+    super(value);
+    this.children = new EmptyObject();
+  }
+
   get(propertyKey) {
-    let self = this.value();
-    let ref = self[REFERENCE_FOR_KEY] && self[REFERENCE_FOR_KEY](propertyKey);
-    return ref || PropertyReference.create(this, propertyKey);
+    let ref = this.children[propertyKey];
+
+    if (!ref) {
+      ref = this.children[propertyKey] = new RootPropertyReference(this.inner, propertyKey);
+    }
+
+    return ref;
   }
 }
 
@@ -109,13 +117,7 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
 export class PropertyReference extends CachedReference {
   static create(parentReference, propertyKey) {
     if (isConst(parentReference)) {
-      let parentValue = parentReference.value();
-
-      if (typeof parentValue === 'object' && parentValue) {
-        return new RootPropertyReference(parentValue, propertyKey);
-      } else {
-        return NULL_REFERENCE;
-      }
+      return new RootPropertyReference(parentReference.value(), propertyKey);
     } else {
       return new NestedPropertyReference(parentReference, propertyKey);
     }
