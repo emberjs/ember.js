@@ -1114,6 +1114,7 @@ if (isEnabled('ember-runtime-enumerable-includes')) {
   Enumerable.reopen({
     /**
       Returns `true` if the passed object can be found in the enumerable.
+
       ```javascript
       [1, 2, 3].includes(2);                     // true
       [1, 2, 3].includes(4);                     // false
@@ -1121,6 +1122,7 @@ if (isEnabled('ember-runtime-enumerable-includes')) {
       [1, 2, null].includes(null);               // true
       [1, 2, NaN].includes(NaN);                 // true
       ```
+
       @method includes
       @param {Object} obj The object to search for.
       @return {Boolean} `true` if object is found in the enumerable.
