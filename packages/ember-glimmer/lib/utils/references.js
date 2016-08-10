@@ -181,6 +181,11 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
   }
 
   get(propertyKey) {
+    if (typeof propertyKey === 'number') {
+      // Allows us to get numeric keys
+      propertyKey = '' + propertyKey;
+    }
+
     return new PropertyReference(this, propertyKey);
   }
 }

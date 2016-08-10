@@ -37,6 +37,8 @@ const DynamicKeyStream = BasicStream.extend({
     let key = this.keyDep.getValue();
     if (typeof key === 'string') {
       return key;
+    } else if (typeof key === 'number') {
+      return '' + key;
     }
   },
 
