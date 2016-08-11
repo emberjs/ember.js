@@ -1,3 +1,5 @@
+import * as Simple from './dom/interfaces';
+
 export interface Bounds {
   // a method to future-proof for wormholing; may not be needed ultimately
   parentElement(): Element;
@@ -16,10 +18,14 @@ export class ConcreteBounds implements Bounds {
   private first: Node;
   private last: Node;
 
-  constructor(parent: Element, first: Node, last: Node) {
-    this.parentNode = parent;
-    this.first = first;
-    this.last = last;
+  constructor(parent: Simple.Element, first: Simple.Node, last: Simple.Node) {
+    // TODO: There should be some real mechanism for upcasting from Simple
+    // Elements and Nodes. At the moment, there are no intermediate Simple
+    // Nodes, but that will not be true forever. At the moment, this is the
+    // place where downcasting occurs.
+    this.parentNode = parent as Element;
+    this.first = first as Node;
+    this.last = last as Node;
   }
 
   parentElement() { return this.parentNode; }
@@ -31,9 +37,9 @@ export class SingleNodeBounds implements Bounds {
   private parentNode: Element;
   private node: Node;
 
-  constructor(parentNode: Element, node: Node) {
-    this.parentNode = parentNode;
-    this.node = node;
+  constructor(parentNode: Simple.Element, node: Simple.Node) {
+    this.parentNode = parentNode as Element;
+    this.node = node as Node;
   }
 
   parentElement() { return this.parentNode; }
@@ -41,11 +47,11 @@ export class SingleNodeBounds implements Bounds {
   lastNode() { return this.node; }
 }
 
-export function bounds(parent: Element, first: Node, last: Node): Bounds {
+export function bounds(parent: Simple.Element, first: Simple.Node, last: Simple.Node): Bounds {
   return new ConcreteBounds(parent, first, last);
 }
 
-export function single(parent: Element, node: Node): Bounds {
+export function single(parent: Simple.Element, node: Simple.Node): Bounds {
   return new SingleNodeBounds(parent, node);
 }
 

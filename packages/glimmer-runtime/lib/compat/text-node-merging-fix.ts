@@ -1,5 +1,5 @@
 import { Bounds } from '../bounds';
-import { DOMHelper } from '../dom/helper';
+import { DOMChanges } from '../dom/helper';
 
 // Patch:    Adjacent text node merging fix
 // Browsers: IE, Edge, Firefox w/o inspector open
@@ -13,8 +13,8 @@ import { DOMHelper } from '../dom/helper';
 //           Note that this fix must only apply to the previous text node, as
 //           the base implementation of `insertHTMLBefore` already handles
 //           following text nodes correctly.
-export default function applyTextNodeMergingFix(document: Document, DOMHelperClass: typeof DOMHelper): typeof DOMHelper {
-  if (!document) return DOMHelperClass;
+export default function applyTextNodeMergingFix(document: Document, DOMChangesClass: typeof DOMChanges): typeof DOMChanges {
+  if (!document) return DOMChangesClass;
 
   let mergingTextDiv = <HTMLElement> document.createElement('div');
 
@@ -23,12 +23,12 @@ export default function applyTextNodeMergingFix(document: Document, DOMHelperCla
 
   if (mergingTextDiv.childNodes.length === 2) {
     // It worked as expected, no fix required
-    return DOMHelperClass;
+    return DOMChangesClass;
   }
 
   mergingTextDiv = null;
 
-  return class DOMHelperWithTextNodeMergingFix extends DOMHelperClass {
+  return class DOMChangesWithTextNodeMergingFix extends DOMChangesClass {
     private uselessComment: Comment;
 
     constructor(document) {

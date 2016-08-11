@@ -1,5 +1,6 @@
-import { Opaque } from 'glimmer-util';
-import { DOMHelper } from './helper';
+import { FIXME, Opaque } from 'glimmer-util';
+import { DOMNamespace } from './helper';
+import * as Simple from './interfaces';
 import {
   sanitizeAttributeValue,
   requiresSanitization
@@ -7,10 +8,11 @@ import {
 import { normalizeProperty, normalizePropertyValue } from './props';
 import { SVG_NAMESPACE } from './helper';
 import { normalizeTextValue } from '../compiled/opcodes/content';
+import { Environment } from '../environment';
 
 export interface IChangeList {
-  setAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque, namespace?: string): void;
-  updateAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque, namespace?: string): void;
+  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: string): void;
+  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: string): void;
 }
 
 export function defaultChangeLists(element: Element, attr: string, isTrusting: boolean, namespace: string) {
@@ -65,15 +67,15 @@ export function readDOMAttr(element: Element, attr: string) {
    }
 };
 
-export const PropertyChangeList = {
-  setAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque, namespace?: string) {
+export const PropertyChangeList: IChangeList = {
+  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
     if (value !== null) {
       let normalized = attr.toLowerCase();
-      element[normalized] = normalizePropertyValue(value);
+      element[normalized] = normalizePropertyValue(value); // TODO: This doesn't work
     }
   },
 
-  updateAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque, namespace?: string) {
+  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
     if (value === null) {
       let normalized = attr.toLowerCase();
       element[normalized] = value;
@@ -83,26 +85,24 @@ export const PropertyChangeList = {
   }
 };
 
-export const AttributeChangeList = {
-  setAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque, namespace?: string) {
-    if (value !== null && value !== undefined) {
-      if (namespace) {
-        dom.setAttributeNS(element, namespace, attr, normalizeTextValue(value));
-      } else {
-        dom.setAttribute(element, attr, normalizeTextValue(value));
-      }
-    }
-  },
+export const AttributeChangeList: IChangeList = new class {
+  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
+    let dom = env.getAppendOperations();
 
-  updateAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque, namespace?: string) {
+    if (value !== null && value !== undefined) {
+      dom.setAttribute(element, attr, normalizeTextValue(value), namespace);
+    }
+  }
+
+  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
     if (value === null) {
       if (namespace) {
-        dom.removeAttributeNS(element, namespace, attr);
+        env.getDOM().removeAttributeNS(element, namespace, attr);
       } else {
-        dom.removeAttribute(element, attr);
+        env.getDOM().removeAttribute(element, attr);
       }
     } else {
-      this.setAttribute(dom, element, attr, value);
+      this.setAttribute(env, element, attr, value);
     }
   }
 };
@@ -111,36 +111,43 @@ function isUserInputValue(tagName: string, attribute: string) {
   return (tagName === 'INPUT' || tagName === 'TEXTAREA') && attribute === 'value';
 }
 
-export const InputValuePropertyChangeList = {
-  setAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
+export const InputValuePropertyChangeList: IChangeList = new class {
+  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
+    let input = element as FIXME<HTMLInputElement, "This breaks SSR">;
+    let currentValue = input.value;
+    let normalizedValue = normalizeTextValue(value);
+    if (currentValue !== normalizedValue) {
+      input.value = normalizedValue;
+    }
+  }
+
+  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
     let input = <HTMLInputElement>element;
     let currentValue = input.value;
     let normalizedValue = normalizeTextValue(value);
     if (currentValue !== normalizedValue) {
       input.value = normalizedValue;
     }
-  },
-
-  updateAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
-    this.setAttribute(dom, element, attr, value);
   }
 };
 
-export const SafeHrefPropertyChangeList = {
-  setAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
-    PropertyChangeList.setAttribute(dom, element, attr, sanitizeAttributeValue(dom, element, attr, value));
-  },
+export const SafeHrefPropertyChangeList: IChangeList = new class {
+  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
+    let tree = env.getAppendOperations();
+    PropertyChangeList.setAttribute(env, element, attr, sanitizeAttributeValue(env, element, attr, value));
+  }
 
-  updateAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
-    this.setAttribute(dom, element, attr, value);
+  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
+    this.setAttribute(env, element, attr, value);
   }
 };
 
-export const SafeHrefAttributeChangeList = {
-  setAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
-    AttributeChangeList.setAttribute(dom, element, attr, sanitizeAttributeValue(dom, element, attr, value));
-  },
-  updateAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
-    this.setAttribute(dom, element, attr, value);
+export const SafeHrefAttributeChangeList: IChangeList = new class {
+  setAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
+    AttributeChangeList.setAttribute(env, element, attr, sanitizeAttributeValue(env, element, attr, value));
+  }
+
+  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
+    this.setAttribute(env, element, attr, value);
   }
 };

@@ -1,6 +1,6 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
-import { DynamicScope } from '../../environment';
+import { Environment, DynamicScope } from '../../environment';
 import { FIXME, Opaque, Dict, dict } from 'glimmer-util';
 import {
   CachedReference,
@@ -13,7 +13,6 @@ import {
   isModified
 } from 'glimmer-reference';
 import { ModifierManager } from '../../modifier/interfaces';
-import { DOMHelper } from '../../dom/helper';
 import { NULL_REFERENCE } from '../../references';
 import { ValueReference } from '../../compiled/expressions/value';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
@@ -124,7 +123,7 @@ function toClassName(list: Reference<string>[]) {
   let ret = [];
 
   for (let i = 0; i < list.length; i++) {
-    let value: FIXME<'use Opaque and normalize'> = list[i].value();
+    let value: FIXME<Opaque, 'use Opaque and normalize'> = list[i].value();
     if (value !== false && value !== null && value !== undefined) ret.push(value);
   }
 
@@ -135,7 +134,6 @@ export class CloseElementOpcode extends Opcode {
   public type = "close-element";
 
   evaluate(vm: VM) {
-    let dom = vm.env.getDOM();
     let stack = vm.stack();
     let { element, elementOperations: { groups } } = stack;
 
@@ -166,14 +164,14 @@ export class CloseElementOpcode extends Opcode {
     let attr = 'class';
     let attributeManager = vm.env.attributeFor(element, attr, className, false);
     let attribute = new Attribute(element, attributeManager, attr, className);
-    let opcode = attribute.flush(dom);
+    let opcode = attribute.flush(vm.env);
 
     if (opcode) {
       vm.updateWith(opcode);
     }
 
     for (let k = 0; k < flattenedKeys.length; k++) {
-      let opcode = flattened[flattenedKeys[k]].flush(dom);
+      let opcode = flattened[flattenedKeys[k]].flush(vm.env);
       if (opcode) vm.updateWith(opcode);
     }
 
@@ -334,26 +332,26 @@ export class Attribute {
     this.namespace = namespace;
   }
 
-  patch(dom: DOMHelper) {
+  patch(env: Environment) {
     let { element, cache } = this;
 
     let value = cache.revalidate();
 
     if (isModified(value)) {
-      this.changeList.updateAttribute(dom, element, this.name, value, this.namespace);
+      this.changeList.updateAttribute(env, element, this.name, value, this.namespace);
     }
   }
 
-  flush(dom: DOMHelper): UpdatingOpcode {
+  flush(env: Environment): UpdatingOpcode {
     let { reference, element } = this;
 
     if (isConstReference(reference)) {
       let value = reference.value();
-      this.changeList.setAttribute(dom, element, this.name, value, this.namespace);
+      this.changeList.setAttribute(env, element, this.name, value, this.namespace);
     } else {
       let cache = this.cache = new ReferenceCache(reference);
       let value = cache.peek();
-      this.changeList.setAttribute(dom, element, this.name, value, this.namespace);
+      this.changeList.setAttribute(env, element, this.name, value, this.namespace);
       return new PatchElementOpcode(this);
     }
   }
@@ -475,7 +473,7 @@ export class PatchElementOpcode extends UpdatingOpcode {
   }
 
   evaluate(vm: UpdatingVM) {
-    this.operation.patch(vm.env.getDOM());
+    this.operation.patch(vm.env);
   }
 
   toJSON(): OpcodeJSON {

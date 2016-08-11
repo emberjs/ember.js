@@ -1,6 +1,6 @@
 import { Statement as StatementSyntax } from './syntax';
 
-import { DOMHelper } from './dom/helper';
+import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { Reference, OpaqueIterable } from 'glimmer-reference';
 import { NULL_REFERENCE, ConditionalReference } from './references';
 import {
@@ -116,15 +116,17 @@ export class Scope {
 }
 
 export abstract class Environment {
-  protected dom: DOMHelper;
+  protected updateOperations: DOMChanges;
+  protected appendOperations: DOMTreeConstruction;
   private createdComponents: Component[] = null;
   private createdManagers: ComponentManager<Component>[] = null;
   private updatedComponents: Component[] = null;
   private updatedManagers: ComponentManager<Component>[] = null;
   private destructors: Destroyable[] = null;
 
-  constructor(dom: DOMHelper) {
-    this.dom = dom;
+  constructor({ appendOperations, updateOperations }: { appendOperations: DOMTreeConstruction, updateOperations: DOMChanges }) {
+    this.appendOperations = appendOperations;
+    this.updateOperations = updateOperations;
   }
 
   toConditionalReference(reference: Reference<Opaque>): Reference<boolean> {
@@ -132,8 +134,10 @@ export abstract class Environment {
   }
 
   abstract iterableFor(reference: Reference<Opaque>, args: EvaluatedArgs): OpaqueIterable;
+  abstract protocolForURL(s: string): string;
 
-  getDOM(): DOMHelper { return this.dom; }
+  getDOM(): DOMChanges { return this.updateOperations; }
+  getAppendOperations(): DOMTreeConstruction { return this.appendOperations; }
 
   getIdentity(object: HasGuid): string {
     return ensureGuid(object) + '';

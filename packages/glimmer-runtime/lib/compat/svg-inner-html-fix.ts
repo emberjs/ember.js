@@ -1,5 +1,5 @@
 import { Bounds, ConcreteBounds } from '../bounds';
-import { moveNodesBefore, DOMHelper } from '../dom/helper';
+import { moveNodesBefore, DOMChanges } from '../dom/helper';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -14,8 +14,8 @@ const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 //           approach is used. A pre/post SVG tag is added to the string, then
 //           that whole string is added to a div. The created nodes are plucked
 //           out and applied to the target location on DOM.
-export default function applyInnerHTMLFix(document: Document, DOMHelperClass: typeof DOMHelper, svgNamespace: string): typeof DOMHelper {
-  if (!document) return DOMHelperClass;
+export default function applyInnerHTMLFix(document: Document, DOMChangesClass: typeof DOMChanges, svgNamespace: string): typeof DOMChanges {
+  if (!document) return DOMChangesClass;
 
   let svg = document.createElementNS(svgNamespace, 'svg');
 
@@ -28,14 +28,14 @@ export default function applyInnerHTMLFix(document: Document, DOMHelperClass: ty
     // FF: Old versions will create a node in the wrong namespace
     if (svg.childNodes.length === 1 && svg.firstChild.namespaceURI === SVG_NAMESPACE) {
       // The test worked as expected, no fix required
-      return DOMHelperClass;
+      return DOMChangesClass;
     }
     svg = null;
   }
 
   let div = document.createElement('div');
 
-  return class DOMHelperWithSVGInnerHTMLFix extends DOMHelperClass {
+  return class DOMChangesWithSVGInnerHTMLFix extends DOMChangesClass {
     insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
       if (html === null || html === '') {
         return super.insertHTMLBefore(parent, nextSibling, html);
@@ -55,4 +55,17 @@ export default function applyInnerHTMLFix(document: Document, DOMHelperClass: ty
       return new ConcreteBounds(parent, first, last);
     }
   };
+}
+
+
+export function fixSVG(this: void, useless: HTMLElement, _parent: Element, nextSibling: Node, html: string): Bounds { // tslint:disable-line
+  let parent = _parent as HTMLElement;
+    // IE, Edge: also do not correctly support using `innerHTML` on SVG
+  // namespaced elements. So here a wrapper is used.
+  let wrappedHtml = '<svg>' + html + '</svg>';
+
+  useless.innerHTML = wrappedHtml;
+
+  let [first, last] = moveNodesBefore(useless.firstChild, parent, nextSibling);
+  return new ConcreteBounds(parent, first, last);
 }
