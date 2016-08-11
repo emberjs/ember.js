@@ -20,13 +20,13 @@ import {
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { OpcodeJSON, OpSeq, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';
-import { DOMHelper } from '../dom/helper';
+import { DOMChanges } from '../dom/helper';
 
 import VM from './append';
 
 export default class UpdatingVM {
   public env: Environment;
-  public dom: DOMHelper;
+  public dom: DOMChanges;
   public alwaysRevalidate: boolean;
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 

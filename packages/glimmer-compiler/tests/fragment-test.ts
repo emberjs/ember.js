@@ -1,6 +1,6 @@
 //import FragmentOpcodeCompiler from "../glimmer-compiler/fragment-opcode-compiler";
 //import FragmentJavaScriptCompiler from "../glimmer-compiler/fragment-javascript-compiler";
-//import DOMHelper from "../dom-helper";
+//import DOMChanges from "../dom-helper";
 //import { preprocess } from "../glimmer-syntax/parser";
 //import { equalHTML, getTextContent } from "../glimmer-test-helpers";
 
@@ -17,7 +17,7 @@
 
   //let fn = new Function("env", 'return ' + program)();
 
-  //return fn({ dom: new DOMHelper() });
+  //return fn({ dom: new DOMChanges() });
 //}
 
 //QUnit.module('fragment');

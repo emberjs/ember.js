@@ -5,7 +5,7 @@ import { isHelper, isSelfGet } from "glimmer-syntax";
 import { assert } from "glimmer-util";
 
 export interface CompileOptions {
-  buildMeta?: FIXME<'currently does nothing'>;
+  buildMeta?: FIXME<Object, 'currently does nothing'>;
   moduleName?: string;
 }
 

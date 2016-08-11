@@ -1,6 +1,7 @@
 import { Opaque } from 'glimmer-util';
-import { DOMHelper } from './dom/helper';
-import { Bounds, Cursor, SingleNodeBounds, clear } from './bounds';
+import { DOMChanges, DOMTreeConstruction } from './dom/helper';
+import * as Simple from './dom/interfaces';
+import { Bounds, Cursor, SingleNodeBounds, single, clear } from './bounds';
 
 export interface SafeString {
   toHTML(): string;
@@ -26,12 +27,12 @@ abstract class Upsert {
   constructor(public bounds: Bounds) {
   }
 
-  abstract update(dom: DOMHelper, value: Insertion): boolean;
+  abstract update(dom: DOMChanges, value: Insertion): boolean;
 }
 
 export default Upsert;
 
-export function cautiousInsert(dom: DOMHelper, cursor: Cursor, value: CautiousInsertion): Upsert {
+export function cautiousInsert(dom: DOMTreeConstruction, cursor: Cursor, value: CautiousInsertion): Upsert {
   if (isString(value)) {
     return TextUpsert.insert(dom, cursor, value);
   }
@@ -43,7 +44,7 @@ export function cautiousInsert(dom: DOMHelper, cursor: Cursor, value: CautiousIn
   }
 }
 
-export function trustingInsert(dom: DOMHelper, cursor: Cursor, value: TrustingInsertion): Upsert {
+export function trustingInsert(dom: DOMTreeConstruction, cursor: Cursor, value: TrustingInsertion): Upsert {
   if (isString(value)) {
     return HTMLUpsert.insert(dom, cursor, value);
   }
@@ -53,17 +54,21 @@ export function trustingInsert(dom: DOMHelper, cursor: Cursor, value: TrustingIn
 }
 
 class TextUpsert extends Upsert {
-  static insert(dom: DOMHelper, cursor: Cursor, value: string): Upsert {
-    let textNode = dom.insertTextBefore(cursor.element, cursor.nextSibling, value);
+  static insert(dom: DOMTreeConstruction, cursor: Cursor, value: string): Upsert {
+    let textNode = dom.createTextNode(value);
+    dom.insertBefore(cursor.element, textNode, cursor.nextSibling);
     let bounds = new SingleNodeBounds(cursor.element, textNode);
     return new TextUpsert(bounds, textNode);
   }
 
-  constructor(bounds: Bounds, private textNode: Text) {
+  private textNode: Text;
+
+  constructor(bounds: Bounds, textNode: Simple.Text) {
     super(bounds);
+    this.textNode = textNode as Text;
   }
 
-  update(dom: DOMHelper, value: Insertion): boolean {
+  update(dom: DOMChanges, value: Insertion): boolean {
     if (isString(value)) {
       let { textNode } = this;
       textNode.nodeValue = value;
@@ -75,12 +80,12 @@ class TextUpsert extends Upsert {
 }
 
 class HTMLUpsert extends Upsert {
-  static insert(dom: DOMHelper, cursor: Cursor, value: string): Upsert {
-    let bounds = dom.insertHTMLBefore(cursor.element, cursor.nextSibling, value);
+  static insert(dom: DOMTreeConstruction, cursor: Cursor, value: string): Upsert {
+    let bounds = dom.insertHTMLBefore(cursor.element, value, cursor.nextSibling);
     return new HTMLUpsert(bounds);
   }
 
-  update(dom: DOMHelper, value: Insertion): boolean {
+  update(dom: DOMChanges, value: Insertion): boolean {
     if (isString(value)) {
       let { bounds } = this;
 
@@ -97,9 +102,9 @@ class HTMLUpsert extends Upsert {
 }
 
 class SafeStringUpsert extends Upsert {
-  static insert(dom: DOMHelper, cursor: Cursor, value: SafeString): Upsert {
+  static insert(dom: DOMTreeConstruction, cursor: Cursor, value: SafeString): Upsert {
     let stringValue = value.toHTML();
-    let bounds = dom.insertHTMLBefore(cursor.element, cursor.nextSibling, stringValue);
+    let bounds = dom.insertHTMLBefore(cursor.element, stringValue, cursor.nextSibling);
     return new SafeStringUpsert(bounds, stringValue);
   }
 
@@ -107,7 +112,7 @@ class SafeStringUpsert extends Upsert {
     super(bounds);
   }
 
-  update(dom: DOMHelper, value: Insertion): boolean {
+  update(dom: DOMChanges, value: Insertion): boolean {
     if (isSafeString(value)) {
       let stringValue = value.toHTML();
 
@@ -129,12 +134,12 @@ class SafeStringUpsert extends Upsert {
 }
 
 class NodeUpsert extends Upsert {
-  static insert(dom: DOMHelper, cursor: Cursor, node: Node): Upsert {
-    let bounds = dom.insertNodeBefore(cursor.element, node, cursor.nextSibling);
-    return new NodeUpsert(bounds);
+  static insert(dom: DOMTreeConstruction, cursor: Cursor, node: Simple.Node): Upsert {
+    dom.insertBefore(cursor.element, node, cursor.nextSibling);
+    return new NodeUpsert(single(cursor.element, node));
   }
 
-  update(dom: DOMHelper, value: Insertion): boolean {
+  update(dom: DOMChanges, value: Insertion): boolean {
     if (isNode(value)) {
       let { bounds } = this;
 

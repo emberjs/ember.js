@@ -1,6 +1,6 @@
 import Bounds, { clear, Cursor } from './bounds';
 
-import { DOMHelper } from './dom/helper';
+import { DOMChanges } from './dom/helper';
 
 import { Destroyable, Stack, LinkedList, LinkedListNode, assert } from 'glimmer-util';
 
@@ -49,7 +49,7 @@ class Last {
 interface ElementStackOptions {
   parentNode: Element;
   nextSibling: Node;
-  dom: DOMHelper;
+  dom: DOMChanges;
 }
 
 interface ElementStackClass<T extends ElementStack> {
@@ -126,18 +126,18 @@ export class Fragment implements Bounds {
 interface InitialRenderOptions {
   parentNode: Element;
   nextSibling: Node;
-  dom: DOMHelper;
+  dom: DOMChanges;
 }
 
 interface UpdateTrackerOptions {
   tracker: Tracker;
   nextSibling: Node;
-  dom: DOMHelper;
+  dom: DOMChanges;
 }
 
 export class ElementStack implements Cursor {
   public nextSibling: Node;
-  public dom: DOMHelper;
+  public dom: DOMChanges;
   public element: Element;
   public elementOperations: GroupedElementOperations = null;
   public env: Environment;
