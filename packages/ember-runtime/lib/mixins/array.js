@@ -596,6 +596,7 @@ if (isEnabled('ember-runtime-enumerable-includes')) {
       If no `startAt` argument is given, the starting location to
       search is 0. If it's negative, searches from the index of
       `this.length + startAt` by asc.
+
       ```javascript
       [1, 2, 3].includes(2);     // true
       [1, 2, 3].includes(4);     // false
@@ -606,6 +607,7 @@ if (isEnabled('ember-runtime-enumerable-includes')) {
       [1, 2, 3].includes(1, -4); // true
       [1, 2, NaN].includes(NaN); // true
       ```
+
       @method includes
       @param {Object} obj The object to search for.
       @param {Number} startAt optional starting location to search, default 0
