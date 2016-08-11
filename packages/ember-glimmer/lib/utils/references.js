@@ -340,30 +340,21 @@ export class InternalHelperReference extends CachedReference {
   }
 }
 
-const EMPTY_OBJECT = {};
-
 // @implements PathReference
-export class UnboundReference {
-  constructor(sourceRef, key = null) {
-    this.tag = CONSTANT_TAG;
-    this.sourceRef = sourceRef;
-    this.key = key;
-    this.cache = EMPTY_OBJECT;
-  }
-
-  value() {
-    let { cache } = this;
-
-    if (cache === EMPTY_OBJECT) {
-      let { key, sourceRef } = this;
-      let sourceVal = sourceRef.value();
-      cache = this.cache = key ? get(sourceVal, key) : sourceVal;
+export class UnboundReference extends ConstReference {
+  static create(value) {
+    if (value === null) {
+      return NULL_REFERENCE;
+    } else if (value === undefined) {
+      return UNDEFINED_REFERENCE;
+    } else if (typeof value === 'object') {
+      return new UnboundReference(value);
+    } else {
+      return new PrimitiveReference(value);
     }
-
-    return cache;
   }
 
   get(key) {
-    return new UnboundReference(this, key);
+    return new UnboundReference(get(this.inner, key));
   }
 }
