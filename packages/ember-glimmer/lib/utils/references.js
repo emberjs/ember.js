@@ -54,10 +54,6 @@ export class CachedReference extends EmberPathReference {
     return _lastValue;
   }
 
-  invalidate() {
-    this._lastRevision = null;
-  }
-
   // @abstract compute()
 }
 
