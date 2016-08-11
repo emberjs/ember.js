@@ -7,7 +7,7 @@ import {
   HasBlock as HasBlockSyntax,
   HasBlockParams as HasBlockParamsSyntax,
   Helper as HelperSyntax,
-  Unknown as UnknownSyntax
+  Unknown as UnknownSyntax,
 } from './core';
 
 import {
@@ -24,11 +24,13 @@ const {
   isHasBlockParams,
   isHelper,
   isUnknown,
-  isPrimitiveValue
+  isPrimitiveValue,
+  isUndefined
 } = SerializedExpressions;
 
 export default function(sexp: SerializedExpression): any {
   if (isPrimitiveValue(sexp)) return ValueSyntax.fromSpec(sexp);
+  if (isUndefined(sexp)) return ValueSyntax.build(undefined);
   if (isArg(sexp)) return ArgSyntax.fromSpec(sexp);
   if (isConcat(sexp)) return ConcatSyntax.fromSpec(sexp);
   if (isGet(sexp)) return GetSyntax.fromSpec(sexp);
@@ -37,4 +39,6 @@ export default function(sexp: SerializedExpression): any {
   if (isUnknown(sexp)) return UnknownSyntax.fromSpec(sexp);
   if (isHasBlock(sexp)) return HasBlockSyntax.fromSpec(sexp);
   if (isHasBlockParams(sexp)) return HasBlockParamsSyntax.fromSpec(sexp);
+
+  throw new Error(`Unexpected wire format: ${JSON.stringify(sexp)}`);
 };

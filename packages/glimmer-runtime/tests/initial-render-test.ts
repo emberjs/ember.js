@@ -360,6 +360,17 @@ test("GH#13999 The compiler can handle simple helpers with inline null parameter
   strictEqual(value, null, 'is null');
 });
 
+test("GH#13999 The compiler can handle simple helpers with inline string literal null parameter", function() {
+  let value;
+  env.registerHelper('say-hello', function(params) {
+    value = params[0];
+    return 'hello';
+  });
+
+  compilesTo('<div>{{say-hello "null"}}</div>', '<div>hello</div>');
+  strictEqual(value, 'null', 'is null string literal');
+});
+
 test("GH#13999 The compiler can handle simple helpers with inline undefined parameter", function() {
   let value = 'PLACEHOLDER';
   let length;
@@ -371,7 +382,43 @@ test("GH#13999 The compiler can handle simple helpers with inline undefined para
 
   compilesTo('<div>{{say-hello undefined}}</div>', '<div>hello</div>');
   strictEqual(length, 1);
-  strictEqual(value, null, 'is undefined'); // undefined is converted to null type
+  strictEqual(value, undefined, 'is undefined');
+});
+
+test("GH#13999 The compiler can handle simple helpers with positional parameter undefined string literal", function() {
+  let value = 'PLACEHOLDER';
+  let length;
+  env.registerHelper('say-hello', function(params) {
+    length = params.length;
+    value = params[0];
+    return 'hello';
+  });
+
+  compilesTo('<div>{{say-hello "undefined"}} undefined</div>', '<div>hello undefined</div>');
+  strictEqual(length, 1);
+  strictEqual(value, 'undefined', 'is undefined string literal');
+});
+
+test("GH#13999 The compiler can handle components with undefined named arguments", function() {
+  let value = 'PLACEHOLDER';
+  env.registerHelper('say-hello', function(_, hash) {
+    value = hash['foo'];
+    return 'hello';
+  });
+
+  compilesTo('<div>{{say-hello foo=undefined}}</div>', '<div>hello</div>');
+  strictEqual(value, undefined, 'is undefined');
+});
+
+test("GH#13999 The compiler can handle components with undefined string literal named arguments", function() {
+  let value = 'PLACEHOLDER';
+  env.registerHelper('say-hello', function(_, hash) {
+    value = hash['foo'];
+    return 'hello';
+  });
+
+  compilesTo('<div>{{say-hello foo="undefined"}}</div>', '<div>hello</div>');
+  strictEqual(value, 'undefined', 'is undefined string literal');
 });
 
 test("GH#13999 The compiler can handle components with null named arguments", function() {
@@ -383,6 +430,17 @@ test("GH#13999 The compiler can handle components with null named arguments", fu
 
   compilesTo('<div>{{say-hello foo=null}}</div>', '<div>hello</div>');
   strictEqual(value, null, 'is null');
+});
+
+test("GH#13999 The compiler can handle components with null string literal named arguments", function() {
+  let value;
+  env.registerHelper('say-hello', function(_, hash) {
+    value = hash['foo'];
+    return 'hello';
+  });
+
+  compilesTo('<div>{{say-hello foo="null"}}</div>', '<div>hello</div>');
+  strictEqual(value, 'null', 'is null string literal');
 });
 
 test("GH#13999 The compiler can handle components with undefined named arguments", function() {
