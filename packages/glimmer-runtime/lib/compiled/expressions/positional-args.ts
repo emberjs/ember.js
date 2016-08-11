@@ -27,8 +27,8 @@ class CompiledNonEmptyPositionalArgs extends CompiledPositionalArgs {
 
   constructor({ values }: { values: CompiledExpression<any>[] }) {
     super();
-    this.length = values.length;
     this.values = values;
+    this.length = values.length;
   }
 
   evaluate(vm: VM): EvaluatedPositionalArgs {
@@ -63,6 +63,8 @@ export const COMPILED_EMPTY_POSITIONAL_ARGS: CompiledPositionalArgs = new (class
 
 export abstract class EvaluatedPositionalArgs {
   public tag: RevisionTag;
+  public values: PathReference<any>[];
+  public length: number;
 
   static empty(): EvaluatedPositionalArgs {
     return EVALUATED_EMPTY_POSITIONAL_ARGS;
@@ -71,10 +73,6 @@ export abstract class EvaluatedPositionalArgs {
   static create({ values }: { values: PathReference<any>[] }) {
     return new NonEmptyEvaluatedPositionalArgs({ values });
   }
-
-  public type: string;
-  public values: PathReference<any>[];
-  public length: number;
 
   forEach(callback: (value: PathReference<any>) => void) {
     let values = this.values;
@@ -93,8 +91,8 @@ class NonEmptyEvaluatedPositionalArgs extends EvaluatedPositionalArgs {
   constructor({ values }: { values: PathReference<any>[] }) {
     super();
     this.tag = combineTagged(values);
-    this.length = values.length;
     this.values = values;
+    this.length = values.length;
   }
 
   at(index: number): PathReference<any> {
@@ -113,14 +111,14 @@ class NonEmptyEvaluatedPositionalArgs extends EvaluatedPositionalArgs {
 
 export const EVALUATED_EMPTY_POSITIONAL_ARGS = new (class extends EvaluatedPositionalArgs {
   public tag = CONSTANT_TAG;
-  public length = 0;
   public values = [];
+  public length = 0;
 
   at(): PathReference<any> {
     return NULL_REFERENCE;
   }
 
   value(): any[] {
-    return [];
+    return this.values;
   }
 });

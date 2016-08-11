@@ -1,7 +1,6 @@
 import { COMPILED_EMPTY_POSITIONAL_ARGS, EVALUATED_EMPTY_POSITIONAL_ARGS, CompiledPositionalArgs, EvaluatedPositionalArgs } from './positional-args';
 import { COMPILED_EMPTY_NAMED_ARGS, EVALUATED_EMPTY_NAMED_ARGS, CompiledNamedArgs, EvaluatedNamedArgs } from './named-args';
 import VM from '../../vm/append';
-import { Block  } from '../blocks';
 import { CONSTANT_TAG, RevisionTag, PathReference, combine } from 'glimmer-reference';
 import { Dict, dict, Opaque } from 'glimmer-util';
 
@@ -66,6 +65,9 @@ interface EvaluatedArgsOptions {
 
 export abstract class EvaluatedArgs {
   public tag: RevisionTag;
+  public positional: EvaluatedPositionalArgs;
+  public named: EvaluatedNamedArgs;
+  public internal: Dict<Opaque>;
 
   static empty(): EvaluatedArgs {
     return EMPTY_EVALUATED_ARGS;
@@ -78,12 +80,6 @@ export abstract class EvaluatedArgs {
   static positional(values: PathReference<any>[]): EvaluatedArgs {
     return new NonEmptyEvaluatedArgs({ positional: EvaluatedPositionalArgs.create({ values }), named: EvaluatedNamedArgs.empty() });
   }
-
-  public type: string;
-  public positional: EvaluatedPositionalArgs;
-  public named: EvaluatedNamedArgs;
-  public blocks: Block[];
-  public internal: Dict<Opaque>;
 
   public withInternal(): EvaluatedArgs {
     if (!this.internal) {
