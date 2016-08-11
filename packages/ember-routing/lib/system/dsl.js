@@ -40,7 +40,7 @@ DSL.prototype = {
 
     if (this.enableLoadingSubstates) {
       createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
-      createRoute(this, `${name}_error`, { path: dummyErrorRoute });
+      createRoute(this, `${name}_error`, { resetNamespace: options.resetNamespace, path: dummyErrorRoute });
     }
 
     if (callback) {
@@ -193,7 +193,7 @@ if (isEnabled('ember-application-engines')) {
     if (this.enableLoadingSubstates) {
       let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
       createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
-      createRoute(this, `${name}_error`, { path: dummyErrorRoute });
+      createRoute(this, `${name}_error`, { resetNamespace: options.resetNamespace, path: dummyErrorRoute });
     }
 
     let localFullName = 'application';

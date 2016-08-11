@@ -114,6 +114,33 @@ QUnit.test('should not add loading and error routes if _isRouterMapResult is fal
   ok(!router.router.recognizer.names['blork_error'], 'error route was not added');
 });
 
+QUnit.test('should reset namespace of loading and error routes for routes with resetNamespace', function() {
+  Router.map(function() {
+    this.route('blork', function() {
+      this.route('blorp');
+      this.route('bleep', { resetNamespace: true });
+    });
+  });
+
+  let router = Router.create({
+    _hasModuleBasedResolver() { return true; }
+  });
+
+  router._initRouterJs();
+
+  ok(router.router.recognizer.names['blork.blorp'], 'nested route was created');
+  ok(router.router.recognizer.names['blork.blorp_loading'], 'nested loading route was added');
+  ok(router.router.recognizer.names['blork.blorp_error'], 'nested error route was added');
+
+  ok(router.router.recognizer.names['bleep'], 'reset route was created');
+  ok(router.router.recognizer.names['bleep_loading'], 'reset loading route was added');
+  ok(router.router.recognizer.names['bleep_error'], 'reset error route was added');
+
+  ok(!router.router.recognizer.names['blork.bleep'], 'nested reset route was not created');
+  ok(!router.router.recognizer.names['blork.bleep_loading'], 'nested reset loading route was not added');
+  ok(!router.router.recognizer.names['blork.bleep_error'], 'nested reset error route was not added');
+});
+
 if (isEnabled('ember-application-engines')) {
   QUnit.test('should throw an error when defining a route serializer outside an engine', function() {
     Router.map(function() {
@@ -266,5 +293,36 @@ if (isEnabled('ember-application-engines')) {
     ok(router.router.recognizer.names['chat'], 'main route was created');
     ok(!router.router.recognizer.names['chat_loading'], 'loading route was not added');
     ok(!router.router.recognizer.names['chat_error'], 'error route was not added');
+  });
+
+  QUnit.test('should reset namespace of loading and error routes for mounts with resetNamespace', function() {
+    Router.map(function() {
+      this.route('news', function() {
+        this.mount('chat');
+        this.mount('blog', { resetNamespace: true });
+      });
+    });
+
+    let engineInstance = buildOwner({
+      routable: true
+    });
+
+    let router = Router.create({
+      _hasModuleBasedResolver() { return true; }
+    });
+    setOwner(router, engineInstance);
+    router._initRouterJs();
+
+    ok(router.router.recognizer.names['news.chat'], 'nested route was created');
+    ok(router.router.recognizer.names['news.chat_loading'], 'nested loading route was added');
+    ok(router.router.recognizer.names['news.chat_error'], 'nested error route was added');
+
+    ok(router.router.recognizer.names['blog'], 'reset route was created');
+    ok(router.router.recognizer.names['blog_loading'], 'reset loading route was added');
+    ok(router.router.recognizer.names['blog_error'], 'reset error route was added');
+
+    ok(!router.router.recognizer.names['news.blog'], 'nested reset route was not created');
+    ok(!router.router.recognizer.names['news.blog_loading'], 'nested reset loading route was not added');
+    ok(!router.router.recognizer.names['news.blog_error'], 'nested reset error route was not added');
   });
 }

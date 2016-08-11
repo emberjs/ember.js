@@ -794,7 +794,7 @@ QUnit.test('Default error event moves into nested route, prioritizing more speci
 
   templates['grandma'] = 'GRANDMA {{outlet}}';
   templates['grandma/error'] = 'ERROR: {{model.msg}}';
-  templates['grandma/mom_error'] = 'MOM ERROR: {{model.msg}}';
+  templates['mom_error'] = 'MOM ERROR: {{model.msg}}';
 
   Router.map(function() {
     this.route('grandma', function() {
@@ -842,7 +842,7 @@ QUnit.test('Prioritized substate entry works with preserved-namespace nested rou
 
   Router.map(function() {
     this.route('foo', function() {
-      this.route('foo.bar', { path: '/bar', resetNamespace: true }, function() {
+      this.route('bar', { path: '/bar' }, function() {
       });
     });
   });
@@ -859,6 +859,37 @@ QUnit.test('Prioritized substate entry works with preserved-namespace nested rou
   bootApplication('/foo/bar');
 
   equal(jQuery('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
+
+  run(deferred, 'resolve');
+
+  equal(jQuery('#app', '#qunit-fixture').text(), 'YAY');
+});
+
+QUnit.test('Prioritized substate entry works with reset-namespace nested routes', function() {
+  expect(2);
+
+  templates['bar_loading'] = 'BAR LOADING';
+  templates['bar/index'] = 'YAY';
+
+  Router.map(function() {
+    this.route('foo', function() {
+      this.route('bar', { path: '/bar', resetNamespace: true }, function() {
+      });
+    });
+  });
+
+  App.ApplicationController = Controller.extend();
+
+  let deferred = RSVP.defer();
+  App.BarRoute = Route.extend({
+    model() {
+      return deferred.promise;
+    }
+  });
+
+  bootApplication('/foo/bar');
+
+  equal(jQuery('#app', '#qunit-fixture').text(), 'BAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
 
   run(deferred, 'resolve');
 
@@ -1089,5 +1120,41 @@ if (isEnabled('ember-application-engines')) {
     bootApplication('/news/blog');
 
     equal(jQuery('#app', '#qunit-fixture').text(), 'BLOG ERROR', 'news/blog_loading was entered');
+  });
+
+  QUnit.test('Slow Promise from an Engine application route enters the mounts loading state with resetNamespace', function() {
+    expect(1);
+
+    templates['blog_loading'] = 'BLOG LOADING';
+
+    // Register engine
+    let BlogEngine = Engine.extend();
+    registry.register('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let BlogMap = function() {};
+    registry.register('route-map:blog', BlogMap);
+
+    Router.map(function() {
+      this.route('news', function() {
+        this.mount('blog', { resetNamespace: true });
+      });
+    });
+
+    let deferred = RSVP.defer();
+    let BlogRoute = Route.extend({
+      model() {
+        return deferred.promise;
+      }
+    });
+
+    var blog = container.lookup('engine:blog');
+    blog.register('route:application', BlogRoute);
+
+    bootApplication('/news/blog');
+
+    equal(jQuery('#app', '#qunit-fixture').text(), 'BLOG LOADING', 'news/blog_loading was entered');
+
+    run(deferred, 'resolve');
   });
 }
