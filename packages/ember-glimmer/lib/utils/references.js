@@ -3,6 +3,7 @@ import { set } from 'ember-metal/property_set';
 import { tagFor } from 'ember-metal/tags';
 import { didRender } from 'ember-metal/transaction';
 import symbol from 'ember-metal/symbol';
+import EmptyObject from 'ember-metal/empty_object';
 import { CONSTANT_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst } from 'glimmer-reference';
 import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 import emberToBool from './to-bool';
@@ -13,8 +14,6 @@ import isEnabled from 'ember-metal/features';
 import { isProxy } from 'ember-runtime/mixins/-proxy';
 
 export const UPDATE = symbol('UPDATE');
-export const TO_ROOT_REFERENCE = symbol('TO_ROOT_REFERENCE');
-export const REFERENCE_FOR_KEY = symbol('REFERENCE_FOR_KEY');
 
 // @implements PathReference
 export class PrimitiveReference extends ConstReference {
@@ -32,7 +31,7 @@ class EmberPathReference {
   // @abstract value()
 
   get(key) {
-    return new PropertyReference(this, key);
+    return PropertyReference.create(this, key);
   }
 }
 
@@ -64,10 +63,19 @@ export class CachedReference extends EmberPathReference {
 
 // @implements PathReference
 export class RootReference extends ConstReference {
+  constructor(value) {
+    super(value);
+    this.children = new EmptyObject();
+  }
+
   get(propertyKey) {
-    let self = this.value();
-    let ref = self[REFERENCE_FOR_KEY] && self[REFERENCE_FOR_KEY](propertyKey);
-    return ref || new PropertyReference(this, propertyKey);
+    let ref = this.children[propertyKey];
+
+    if (!ref) {
+      ref = this.children[propertyKey] = new RootPropertyReference(this.inner, propertyKey);
+    }
+
+    return ref;
   }
 }
 
@@ -106,7 +114,56 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
   };
 }
 
-export class PropertyReference extends CachedReference { // jshint ignore:line
+export class PropertyReference extends CachedReference {
+  static create(parentReference, propertyKey) {
+    if (isConst(parentReference)) {
+      return new RootPropertyReference(parentReference.value(), propertyKey);
+    } else {
+      return new NestedPropertyReference(parentReference, propertyKey);
+    }
+  }
+
+  get(key) {
+    return new NestedPropertyReference(this, key);
+  }
+}
+
+export class RootPropertyReference extends PropertyReference {
+  constructor(parentValue, propertyKey) {
+    super();
+
+    this._parentValue = parentValue;
+    this._propertyKey = propertyKey;
+
+    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
+        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      this.tag = new TwoWayFlushDetectionTag(tagFor(parentValue), propertyKey, this);
+    } else {
+      this.tag = tagFor(parentValue);
+    }
+
+    if (isEnabled('mandatory-setter')) {
+      watchKey(parentValue, propertyKey, metaFor(parentValue));
+    }
+  }
+
+  compute() {
+    let { _parentValue, _propertyKey } = this;
+
+    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
+        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      this.tag.didCompute(_parentValue);
+    }
+
+    return get(_parentValue, _propertyKey);
+  }
+
+  [UPDATE](value) {
+    set(this._parentValue, this._propertyKey, value);
+  }
+}
+
+export class NestedPropertyReference extends PropertyReference {
   constructor(parentReference, propertyKey) {
     super();
 
@@ -116,10 +173,6 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
     this._parentReference = parentReference;
     this._parentObjectTag = parentObjectTag;
     this._propertyKey = propertyKey;
-
-    this._wasProxy = false;
-    this._proxyWrapperTag = null;
-    this._proxyContentTag = null;
 
     if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
         isEnabled('ember-glimmer-allow-backtracking-rerender')) {
@@ -131,32 +184,11 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
   }
 
   compute() {
-    let { _parentReference, _parentObjectTag, _wasProxy, _propertyKey } = this;
+    let { _parentReference, _parentObjectTag, _propertyKey } = this;
 
     let parentValue = _parentReference.value();
 
-    if (isProxy(parentValue)) {
-      let proxyContent = get(parentValue, 'content');
-
-      if (_wasProxy) {
-        this._proxyWrapperTag.update(tagFor(parentValue));
-        this._proxyContentTag.update(tagFor(proxyContent));
-      } else {
-        this._wasProxy = true;
-        let _proxyWrapperTag = this._proxyWrapperTag = new UpdatableTag(tagFor(parentValue));
-        let _proxyContentTag = this._proxyContentTag = new UpdatableTag(tagFor(proxyContent));
-
-        _parentObjectTag.update(combine([_proxyWrapperTag, _proxyContentTag]));
-      }
-    } else {
-      _parentObjectTag.update(tagFor(parentValue));
-
-      if (_wasProxy) {
-        this._wasProxy = false;
-        this._proxyWrapperTag = null;
-        this._proxyContentTag = null;
-      }
-    }
+    _parentObjectTag.update(tagFor(parentValue));
 
     if (typeof parentValue === 'object' && parentValue) {
       if (isEnabled('mandatory-setter')) {
@@ -178,10 +210,6 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
   [UPDATE](value) {
     let parent = this._parentReference.value();
     set(parent, this._propertyKey, value);
-  }
-
-  get(propertyKey) {
-    return new PropertyReference(this, propertyKey);
   }
 }
 
@@ -218,7 +246,9 @@ export class ConditionalReference extends GlimmerConditionalReference {
     if (isConst(reference)) {
       let value = reference.value();
 
-      if (!isProxy(value)) {
+      if (isProxy(value)) {
+        return new RootPropertyReference(value, 'isTruthy');
+      } else {
         return new PrimitiveReference(emberToBool(value));
       }
     }

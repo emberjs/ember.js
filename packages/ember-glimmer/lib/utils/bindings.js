@@ -1,15 +1,15 @@
 import { assert } from 'ember-metal/debug';
 import { dasherize } from 'ember-runtime/system/string';
 import { CachedReference, map, referenceFromParts } from 'glimmer-reference';
-import { REFERENCE_FOR_KEY, TO_ROOT_REFERENCE } from './references';
+import { ROOT_REF } from '../component';
 import { htmlSafe, isHTMLSafe } from './string';
 
 function referenceForKey(component, key) {
-  return component[REFERENCE_FOR_KEY](key);
+  return component[ROOT_REF].get(key);
 }
 
 function referenceForParts(component, parts) {
-  return referenceFromParts(component[TO_ROOT_REFERENCE](), parts);
+  return referenceFromParts(component[ROOT_REF], parts);
 }
 
 export const AttributeBinding = {

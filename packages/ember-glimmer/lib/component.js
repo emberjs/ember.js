@@ -8,17 +8,10 @@ import ViewMixin from 'ember-views/mixins/view_support';
 import ActionSupport from 'ember-views/mixins/action_support';
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import symbol from 'ember-metal/symbol';
-import EmptyObject from 'ember-metal/empty_object';
 import { get } from 'ember-metal/property_get';
 import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
 import { getAttrFor } from 'ember-views/compat/attrs-proxy';
-import {
-  UPDATE,
-  TO_ROOT_REFERENCE,
-  REFERENCE_FOR_KEY,
-  RootReference,
-  PropertyReference
-} from './utils/references';
+import { UPDATE, RootReference } from './utils/references';
 import { DirtyableTag } from 'glimmer-reference';
 import { readDOMAttr } from 'glimmer-runtime';
 import { assert, deprecate } from 'ember-metal/debug';
@@ -28,7 +21,6 @@ import { getOwner } from 'container/owner';
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');
 export const ROOT_REF = symbol('ROOT_REF');
-export const REFS = symbol('REFS');
 export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
 export const HAS_BLOCK = symbol('HAS_BLOCK');
 
@@ -47,9 +39,9 @@ const Component = CoreView.extend(
 
     init() {
       this._super(...arguments);
+      this[IS_DISPATCHING_ATTRS] = false;
       this[DIRTY_TAG] = new DirtyableTag();
-      this[ROOT_REF] = null;
-      this[REFS] = new EmptyObject();
+      this[ROOT_REF] = new RootReference(this);
 
       // If a `defaultLayout` was specified move it to the `layout` prop.
       // `layout` is no longer a CP, so this just ensures that the `defaultLayout`
@@ -95,8 +87,6 @@ const Component = CoreView.extend(
       this[property.name] = property.descriptor.value;
     },
 
-    [IS_DISPATCHING_ATTRS]: false,
-
     [PROPERTY_DID_CHANGE](key) {
       if (this[IS_DISPATCHING_ATTRS]) { return; }
 
@@ -118,27 +108,6 @@ const Component = CoreView.extend(
 
     readDOMAttr(name) {
       return readDOMAttr(this.element, name);
-    },
-
-    [TO_ROOT_REFERENCE]() {
-      let ref = this[ROOT_REF];
-
-      if (!ref) {
-        ref = this[ROOT_REF] = new RootReference(this);
-      }
-
-      return ref;
-    },
-
-    [REFERENCE_FOR_KEY](key) {
-      let refs = this[REFS];
-      let ref = refs[key];
-
-      if (ref) {
-        return ref;
-      } else {
-        return refs[key] = new PropertyReference(this[TO_ROOT_REFERENCE](), key);
-      }
     }
   }
 );

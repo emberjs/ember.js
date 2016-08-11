@@ -1,7 +1,8 @@
 import { meta as metaFor } from './meta';
 import require, { has } from 'require';
 
-let hasGlimmer = has('glimmer-reference');
+const hasGlimmer = has('glimmer-reference');
+
 let CONSTANT_TAG, CURRENT_TAG, DirtyableTag, makeTag, run;
 
 let hasViews = () => false;

@@ -65,7 +65,7 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
           let label;
 
           if (lastRef) {
-            while (lastRef && lastRef._propertyKey && lastRef._parentReference) {
+            while (lastRef && lastRef._propertyKey) {
               parts.unshift(lastRef._propertyKey);
               lastRef = lastRef._parentReference;
             }
