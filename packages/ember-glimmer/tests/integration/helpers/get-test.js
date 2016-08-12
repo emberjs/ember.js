@@ -440,10 +440,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     assert.strictEqual(this.$('#get-input').val(), 'mcintosh');
   }
 
-  // Unspecified behavior in HTMLBars.
-  ['@htmlbars get helper value should be updatable using {{input}} and (mut) - static key'](assert) {
-    this.registerComponent('-text-field', { ComponentClass: TextField });
-
+  ['@test get helper value should be updatable using {{input}} and (mut) - static key'](assert) {
     this.render(`{{input type='text' value=(mut (get source 'banana')) id='get-input'}}`, {
       source: {
         banana: 'banana'
@@ -461,10 +458,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
 
     assert.strictEqual(this.$('#get-input').val(), 'yellow');
 
-    this.runTask(() => {
-      this.$('#get-input').val('some value');
-      this.component.childViews[0]._elementValueDidChange();
-    });
+    this.runTask(() => this.$('#get-input').val('some value').trigger('change'));
 
     assert.strictEqual(this.$('#get-input').val(), 'some value');
     assert.strictEqual(get(this.context, 'source.banana'), 'some value');
