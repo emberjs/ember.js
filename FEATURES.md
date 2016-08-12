@@ -10,11 +10,6 @@ for a detailed explanation.
   Add `isRegistered` to `Ember.libraries`. This convenience method checks whether
   a library is registered with Ember or not.
 
-* `ember-routing-routable-components`
-
-  Implements RFC https://github.com/emberjs/rfcs/pull/38, adding support for
-  routable components.
-
 * `ember-runtime-computed-uniq-by`
 
   Introduces a computed and enumerable method "uniqBy" that allows creation of a new enumerable with unique values as  determined by the given property key.
