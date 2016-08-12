@@ -1014,16 +1014,24 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
     }
   }
 
-  let targetChildRouteName = originatingChildRouteName.split('.').pop();
-  let namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
-
-  // First, try a named loading state, e.g. 'foo_loading'
-  childName = namespace + targetChildRouteName + '_' + name;
+  // First, try a named loading state of the route, e.g. 'foo_loading'
+  childName = originatingChildRouteName + '_' + name;
   if (routeHasBeenDefined(router, childName)) {
     return childName;
   }
 
-  // Second, try general loading state, e.g. 'loading'
+  // Second, try general loading state of the parent, e.g. 'loading'
+  let originatingChildRouteParts = originatingChildRouteName.split('.').slice(0, -1);
+  let namespace;
+
+  // If there is a namespace on the route, then we use that, otherwise we use
+  // the parent route as the namespace.
+  if (originatingChildRouteParts.length) {
+    namespace = originatingChildRouteParts.join('.') + '.';
+  } else {
+    namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
+  }
+
   childName = namespace + name;
   if (routeHasBeenDefined(router, childName)) {
     return childName;
