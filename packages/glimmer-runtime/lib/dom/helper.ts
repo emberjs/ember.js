@@ -1,4 +1,5 @@
 import { ConcreteBounds, SingleNodeBounds, Bounds } from '../bounds';
+<<<<<<< f90f5ec4c86b1b696baddd53470cbb39b74741da
 import {
   domChanges as domChangesTableElementFix,
   treeConstruction as treeConstructionTableElementFix
@@ -12,6 +13,12 @@ import {
   treeConstruction as treeConstructionNodeMergingFix
 } from '../compat/text-node-merging-fix';
 import * as Simple from './interfaces';
+=======
+import applyTableElementFix from '../compat/inner-html-fix';
+import applySVGElementFix from '../compat/svg-inner-html-fix';
+import applyTextNodeMergingFix from '../compat/text-node-merging-fix';
+import * as SimplifiedDOM from './interfaces';
+>>>>>>> Minor cleanup
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
