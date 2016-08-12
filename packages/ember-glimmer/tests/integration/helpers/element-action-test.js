@@ -1234,50 +1234,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
        'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).');
   }
 
-  ['@glimmer allows multiple actions on a single element']() {
-    let clickActionWasCalled = false;
-    let doubleClickActionWasCalled = false;
-
-    let ExampleComponent = Component.extend({
-      actions: {
-        clicked() {
-          clickActionWasCalled = true;
-        },
-        doubleClicked() {
-          doubleClickActionWasCalled = true;
-        }
-      }
-    });
-
-    this.registerComponent('example-component', {
-      ComponentClass: ExampleComponent,
-      template: strip`
-        <a href="#"
-          {{action "clicked" on="click"}}
-          {{action "doubleClicked" on="doubleClick"}}
-        >click me</a>`
-    });
-
-    this.render('{{example-component}}');
-
-    let actionAttrs = getActionAttributes(this.$('a').get(0));
-
-    this.assert.equal(actionAttrs.length, 2, 'two action attributes were added');
-
-    this.runTask(() => {
-      this.$('a').trigger('click');
-    });
-
-    this.assert.ok(clickActionWasCalled, 'the clicked action was called');
-
-    this.runTask(() => {
-      this.$('a').trigger('dblclick');
-    });
-
-    this.assert.ok(doubleClickActionWasCalled, 'the doubleClicked action was called');
-  }
-
-  ['@htmlbars allows multiple actions on a single element']() {
+  ['@test allows multiple actions on a single element']() {
     let clickActionWasCalled = false;
     let doubleClickActionWasCalled = false;
 
