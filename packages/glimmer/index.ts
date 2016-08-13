@@ -5,3 +5,4 @@
  *            See https://raw.githubusercontent.com/tildeio/glimmer/master/LICENSE
  * @version   VERSION_STRING_PLACEHOLDER
  */
+export { compileSpec } from 'glimmer-compiler';
