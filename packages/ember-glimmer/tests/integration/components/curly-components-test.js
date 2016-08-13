@@ -1016,103 +1016,75 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In layout - someProp: value set in instance');
   }
 
-  // Note: Hooks are not re-run for idempotent re-renders
-  ['@glimmer rerendering component with attrs from parent'](assert) {
-    let willUpdate = 0;
-    let didReceiveAttrs = 0;
+  ['@test rerendering component with attrs from parent'](assert) {
+    let willUpdateCount = 0;
+    let didReceiveAttrsCount = 0;
+
+    function expectHooks({ willUpdate, didReceiveAttrs }, callback) {
+      willUpdateCount = 0;
+      didReceiveAttrsCount = 0;
+
+      callback();
+
+      if (willUpdate) {
+        assert.strictEqual(willUpdateCount, 1, 'The willUpdate hook was fired');
+      } else {
+        assert.strictEqual(willUpdateCount, 0, 'The willUpdate hook was not fired');
+      }
+
+      if (didReceiveAttrs) {
+        assert.strictEqual(didReceiveAttrsCount, 1, 'The didReceiveAttrs hook was fired');
+      } else {
+        assert.strictEqual(didReceiveAttrsCount, 0, 'The didReceiveAttrs hook was not fired');
+      }
+    }
 
     this.registerComponent('non-block', {
       ComponentClass: Component.extend({
         didReceiveAttrs() {
-          didReceiveAttrs++;
+          didReceiveAttrsCount++;
         },
 
         willUpdate() {
-          willUpdate++;
+          willUpdateCount++;
         }
       }),
       template: 'In layout - someProp: {{someProp}}'
     });
 
-    this.render('{{non-block someProp=someProp}}', {
-      someProp: 'wycats'
+    expectHooks({ willUpdate: false, didReceiveAttrs: true }, () => {
+      this.render('{{non-block someProp=someProp}}', {
+        someProp: 'wycats'
+      });
     });
 
-    assert.equal(didReceiveAttrs, 1, 'The didReceiveAttrs hook fired');
     this.assertText('In layout - someProp: wycats');
 
-    this.runTask(() => this.rerender());
-
-    this.assertText('In layout - someProp: wycats');
-    assert.equal(didReceiveAttrs, 1, 'The didReceiveAttrs hook fired again');
-    assert.equal(willUpdate, 0, 'The willUpdate hook fired once');
-
-    this.runTask(() => this.context.set('someProp', 'tomdale'));
-
-    this.assertText('In layout - someProp: tomdale');
-    assert.equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
-    assert.equal(willUpdate, 1, 'The willUpdate hook fired again');
-
-    this.runTask(() => this.rerender());
-
-    this.assertText('In layout - someProp: tomdale');
-    assert.equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
-    assert.equal(willUpdate, 1, 'The willUpdate hook fired again');
-
-    this.runTask(() => this.context.set('someProp', 'wycats'));
-
-    this.assertText('In layout - someProp: wycats');
-    assert.equal(didReceiveAttrs, 3, 'The didReceiveAttrs hook fired again in the R step');
-    assert.equal(willUpdate, 2, 'The willUpdate hook fired again in the R step');
-  }
-
-  ['@htmlbars rerendering component with attrs from parent'](assert) {
-    let willUpdate = 0;
-    let didReceiveAttrs = 0;
-
-    this.registerComponent('non-block', {
-      ComponentClass: Component.extend({
-        didReceiveAttrs() {
-          didReceiveAttrs++;
-        },
-
-        willUpdate() {
-          willUpdate++;
-        }
-      }),
-      template: 'In layout - someProp: {{someProp}}'
+    // Note: Hooks are not fired in Glimmer for idempotent re-renders
+    expectHooks({ willUpdate: this.isHTMLBars, didReceiveAttrs: this.isHTMLBars }, () => {
+      this.runTask(() => this.rerender());
     });
 
-    this.render('{{non-block someProp=someProp}}', {
-      someProp: 'wycats'
+    this.assertText('In layout - someProp: wycats');
+
+    expectHooks({ willUpdate: true, didReceiveAttrs: true }, () => {
+      this.runTask(() => this.context.set('someProp', 'tomdale'));
     });
 
-    assert.equal(didReceiveAttrs, 1, 'The didReceiveAttrs hook fired');
-    this.assertText('In layout - someProp: wycats');
+    this.assertText('In layout - someProp: tomdale');
 
-    this.runTask(() => this.rerender());
-
-    this.assertText('In layout - someProp: wycats');
-    assert.equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
-    assert.equal(willUpdate, 1, 'The willUpdate hook fired once');
-
-    this.runTask(() => this.context.set('someProp', 'tomdale'));
+    // Note: Hooks are not fired in Glimmer for idempotent re-renders
+    expectHooks({ willUpdate: this.isHTMLBars, didReceiveAttrs: this.isHTMLBars }, () => {
+      this.runTask(() => this.rerender());
+    });
 
     this.assertText('In layout - someProp: tomdale');
-    assert.equal(didReceiveAttrs, 3, 'The didReceiveAttrs hook fired again');
-    assert.equal(willUpdate, 2, 'The willUpdate hook fired again');
 
-    this.runTask(() => this.rerender());
-
-    this.assertText('In layout - someProp: tomdale');
-    assert.equal(didReceiveAttrs, 4, 'The didReceiveAttrs hook fired again');
-    assert.equal(willUpdate, 3, 'The willUpdate hook fired again');
-
-    this.runTask(() => this.context.set('someProp', 'wycats'));
+    expectHooks({ willUpdate: true, didReceiveAttrs: true }, () => {
+      this.runTask(() => this.context.set('someProp', 'wycats'));
+    });
 
     this.assertText('In layout - someProp: wycats');
-    assert.equal(didReceiveAttrs, 5, 'The didReceiveAttrs hook fired again in the R step');
-    assert.equal(willUpdate, 4, 'The willUpdate hook fired again in the R step');
   }
 
   ['@test non-block with properties on self']() {
