@@ -143,6 +143,7 @@ module.exports = function() {
       production: getFeatures('production')
     },
     htmlbars: require('htmlbars'),
+    glimmer: require('glimmer-engine'),
     packages: getPackages(features),
     vendoredPackages: vendorPackages,
     version: version
