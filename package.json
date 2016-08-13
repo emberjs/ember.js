@@ -15,8 +15,7 @@
     "tslint": "tslint ./packages/**/*.ts",
     "vscode-build": "tslint -s ./.vscode/tslint-formatters -t vscode ./packages/**/*.ts; tsc -p . --noEmit",
     "sauce:connect": "ember sauce:connect",
-    "sauce:disconnect": "ember sauce:disconnect",
-    "postinstall": "postinstall-build dist 'npm run build'"
+    "sauce:disconnect": "ember sauce:disconnect"
   },
   "repository": {
     "type": "git",
@@ -37,7 +36,6 @@
     "exists-sync": "0.0.3",
     "git-repo-version": "^0.1.2",
     "handlebars": "^3.0.2",
-    "postinstall-build": "^0.2.1",
     "qunit": "^0.7.2",
     "simple-html-tokenizer": "^0.2.5",
     "typescript": "next"
