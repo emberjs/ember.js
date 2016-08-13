@@ -167,22 +167,19 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.assert.deepEqual(fooArgs, ['a', 'b'], 'foo has been called with an updated value');
   }
 
-  ['@htmlbars it should output a data attribute with a guid']() {
+  ['@test it should output a marker attribute with a guid']() {
     this.render('<button {{action "show"}}>me the money</button>');
 
     let button = this.$('button');
 
-    this.assert.ok(button.attr('data-ember-action').match(/\d+/), 'A data-ember-action attribute with a guid was added');
-  }
+    if (this.isGlimmer) {
+      let attributes = getActionAttributes(button.get(0));
 
-  ['@glimmer it should output a marker data attribute and a data attribute with a guid']() {
-    this.render('<button {{action "show"}}>me the money</button>');
-
-    let button = this.$('button');
-    let attributes = getActionAttributes(button.get(0));
-
-    this.assert.ok(button.attr('data-ember-action').match(''), 'An empty data-ember-action attribute was added');
-    this.assert.ok(attributes[0].match(/data-ember-action-\d+/), 'A data-ember-action-xyz attribute with a guid was added');
+      this.assert.ok(button.attr('data-ember-action').match(''), 'An empty data-ember-action attribute was added');
+      this.assert.ok(attributes[0].match(/data-ember-action-\d+/), 'A data-ember-action-xyz attribute with a guid was added');
+    } else {
+      this.assert.ok(button.attr('data-ember-action').match(/\d+/), 'A data-ember-action attribute with a guid was added');
+    }
   }
 
   ['@test it should allow alternative events to be handled']() {
