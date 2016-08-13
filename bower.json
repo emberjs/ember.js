@@ -12,7 +12,7 @@
   "devDependencies": {
     "backburner": "https://github.com/ebryn/backburner.js.git#b893c979cb38f9819f65561725907add1aed7b21",
     "rsvp": "https://github.com/tildeio/rsvp.js.git#3.0.20",
-    "router.js": "https://github.com/tildeio/router.js.git#b921fd3407064a77bd99f4f4eddc4377592ac93b",
+    "router.js": "https://github.com/tildeio/router.js.git#7f6cfdd7785bd262a3b97cf85d25226521bdf515",
     "dag-map": "https://github.com/krisselden/dag-map.git#1.0.2",
     "ember-dev": "https://github.com/emberjs/ember-dev.git#eace5340485bdb5e4223ab67fecf4aff31c1940c"
   }
