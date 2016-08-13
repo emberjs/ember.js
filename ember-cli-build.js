@@ -60,27 +60,18 @@ function getFeatures(environment) {
 
 function babelConfigFor(environment) {
   var plugins = [];
-
   var features = getFeatures(environment);
-  var featureFlagPlugin = applyFeatureFlags({
+
+  plugins.push(applyFeatureFlags({
     import: { module: 'ember-metal/features' },
     features: features
-  });
-  featureFlagPlugin._augmentCacheKey = function() {
-    return JSON.stringify(features);
-  };
-  plugins.push(featureFlagPlugin);
+  }));
 
   var isProduction = (environment === 'production');
   if (isProduction) {
-    var debugImportsConfig = {'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal']};
-    var filterDebugImportsPlugin = filterImports(debugImportsConfig);
-
-    filterDebugImportsPlugin._augmentCacheKey = function() {
-      return JSON.stringify(debugImportsConfig);
-    };
-
-    plugins.push(filterDebugImportsPlugin);
+    plugins.push(filterImports({
+      'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal']
+    }));
   }
 
   return { plugins: plugins };
