@@ -1943,8 +1943,11 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(outer.parentView, this.context, 'x-outer receives the ambient scope as its parentView');
   }
 
-  ['@htmlbars component should rerender when a property is changed during children\'s rendering'](assert) {
-    expectDeprecation(/modified value twice in a single render/);
+  ['@test when a property is changed during children\'s rendering'](assert) {
+    if (this.isHTMLBars || isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      expectDeprecation(/modified value twice in a single render/);
+    }
+
     let outer, middle;
 
     this.registerComponent('x-outer', {
@@ -1989,7 +1992,15 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
     assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
 
-    this.runTask(() => outer.set('value', 2));
+    if (this.isGlimmer && !isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      expectAssertion(() => {
+        this.runTask(() => outer.set('value', 2));
+      }, /modified value twice in a single render/);
+
+      return;
+    } else {
+      this.runTask(() => outer.set('value', 2));
+    }
 
     assert.equal(this.$('#inner-value').text(), '2', 'second render of inner');
     assert.equal(this.$('#middle-value').text(), '2', 'second render of middle');
@@ -2005,188 +2016,11 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(this.$('#middle-value').text(), '1', 'reset render of middle');
   }
 
-  ['@glimmer component should rerender when a property is changed during children\'s rendering'](assert) {
-    if (isEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      expectDeprecation(/modified value twice in a single render/);
-      let outer, middle;
-
-      this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            outer = this;
-          },
-          value: 1
-        }),
-        template: '{{#x-middle}}{{x-inner value=value}}{{/x-middle}}'
-      });
-
-      this.registerComponent('x-middle', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            middle = this;
-          },
-          value: null
-        }),
-        template: '<div id="middle-value">{{value}}</div>{{yield}}'
-      });
-
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
-          value: null,
-          pushDataUp: observer('value', function() {
-            middle.set('value', this.get('value'));
-          })
-        }),
-        template: '<div id="inner-value">{{value}}</div>'
-      });
-
-      this.render('{{x-outer}}');
-
-      assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
-      assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
-
-      this.runTask(() => this.rerender());
-
-      assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
-      assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
-
-      this.runTask(() => outer.set('value', 2));
-
-      assert.equal(this.$('#inner-value').text(), '2', 'second render of inner');
-      assert.equal(this.$('#middle-value').text(), '2', 'second render of middle');
-
-      this.runTask(() => outer.set('value', 3));
-
-      assert.equal(this.$('#inner-value').text(), '3', 'third render of inner');
-      assert.equal(this.$('#middle-value').text(), '3', 'third render of middle');
-
-      this.runTask(() => outer.set('value', 1));
-
-      assert.equal(this.$('#inner-value').text(), '1', 'reset render of inner');
-      assert.equal(this.$('#middle-value').text(), '1', 'reset render of middle');
-    }
-
-    assert.ok(true);
-  }
-
-  ['@glimmer asserts when a property is changed during children\'s rendering'](assert) {
-    if (!isEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      let outer, middle;
-
-      this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            outer = this;
-          },
-          value: 1
-        }),
-        template: '{{#x-middle}}{{x-inner value=value}}{{/x-middle}}'
-      });
-
-      this.registerComponent('x-middle', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            middle = this;
-          },
-          value: null
-        }),
-        template: '<div id="middle-value">{{value}}</div>{{yield}}'
-      });
-
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
-          value: null,
-          pushDataUp: observer('value', function() {
-            middle.set('value', this.get('value'));
-          })
-        }),
-        template: '<div id="inner-value">{{value}}</div>'
-      });
-
-      this.render('{{x-outer}}');
-
-      assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
-      assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
-
-      this.runTask(() => this.rerender());
-
-      assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
-      assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
-
-      expectAssertion(() => {
-        this.runTask(() => outer.set('value', 2));
-      }, /modified value twice in a single render/);
-    }
-
-    assert.ok(true);
-  }
-
-  ['@glimmer component should rerender when a shared dependency is changed during children\'s rendering'](assert) {
-    if (isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+  ['@test when a shared dependency is changed during children\'s rendering'](assert) {
+    if (this.isHTMLBars || isEnabled('ember-glimmer-allow-backtracking-rerender')) {
       expectDeprecation(/modified wrapper.content twice in a single render/);
-      let outer, middle;
-
-      this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            outer = this;
-          },
-          value: 1,
-          wrapper: EmberObject.create({ content: null })
-        }),
-        template: '<div id="outer-value">{{wrapper.content}}</div> {{x-inner value=value wrapper=wrapper}}'
-      });
-
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            middle = this;
-          },
-          didReceiveAttrs() {
-            this.get('wrapper').set('content', this.get('value'));
-          },
-          value: null
-        }),
-        template: '<div id="inner-value">{{wrapper.content}}</div>'
-      });
-
-      this.render('{{x-outer}}');
-
-      assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
-      assert.equal(this.$('#outer-value').text(), '1', 'initial render of outer');
-
-      this.runTask(() => this.rerender());
-
-      assert.equal(this.$('#inner-value').text(), '1', 're-render of inner');
-      assert.equal(this.$('#outer-value').text(), '1', 're-render of outer');
-
-      this.runTask(() => outer.set('value', 2));
-
-      assert.equal(this.$('#inner-value').text(), '2', 'second render of inner');
-      assert.equal(this.$('#outer-value').text(), '2', 'second render of outer');
-
-      this.runTask(() => outer.set('value', 3));
-
-      assert.equal(this.$('#inner-value').text(), '3', 'third render of inner');
-      assert.equal(this.$('#outer-value').text(), '3', 'third render of outer');
-
-      this.runTask(() => outer.set('value', 1));
-
-      assert.equal(this.$('#inner-value').text(), '1', 'reset render of inner');
-      assert.equal(this.$('#outer-value').text(), '1', 'reset render of outer');
     }
 
-    assert.ok(true);
-  }
-
-  ['@htmlbars component should rerender when a shared dependency is changed during children\'s rendering'](assert) {
-    expectDeprecation(/modified wrapper.content twice in a single render/);
     let outer, middle;
 
     this.registerComponent('x-outer', {
@@ -2215,7 +2049,15 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       template: '<div id="inner-value">{{wrapper.content}}</div>'
     });
 
-    this.render('{{x-outer}}');
+    if (this.isGlimmer && !isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      expectAssertion(() => {
+        this.render('{{x-outer}}');
+      }, /modified wrapper.content twice in a single render/);
+
+      return;
+    } else {
+      this.render('{{x-outer}}');
+    }
 
     assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
     assert.equal(this.$('#outer-value').text(), '1', 'initial render of outer');
@@ -2239,44 +2081,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     assert.equal(this.$('#inner-value').text(), '1', 'reset render of inner');
     assert.equal(this.$('#outer-value').text(), '1', 'reset render of outer');
-  }
-
-  ['@glimmer asserts when a shared dependency is changed during children\'s rendering'](assert) {
-    if (!isEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      let outer, middle;
-
-      this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            outer = this;
-          },
-          value: 1,
-          wrapper: EmberObject.create({ content: null })
-        }),
-        template: '<div id="outer-value">{{wrapper.content}}</div> {{x-inner value=value wrapper=wrapper}}'
-      });
-
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            middle = this;
-          },
-          didReceiveAttrs() {
-            this.get('wrapper').set('content', this.get('value'));
-          },
-          value: null
-        }),
-        template: '<div id="inner-value">{{wrapper.content}}</div>'
-      });
-
-      expectAssertion(() => {
-        this.render('{{x-outer}}');
-      }, /modified wrapper.content twice in a single render/);
-    }
-
-    assert.ok(true);
   }
 
   ['@test non-block with each rendering child components']() {
