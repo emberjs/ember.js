@@ -327,7 +327,7 @@ test("Static <option selected> is preserved properly", function() {
       <option>3</option>
     </select>
   `);
-  render(template);
+  render(template, {});
 
   let selectNode: any = root.childNodes[1];
 
@@ -339,14 +339,16 @@ test("Static <option selected> for multi-select is preserved properly", function
     <select multiple>
       <option selected>1</option>
       <option selected>2</option>
-      <option selected>3</option>
+      <option>3</option>
     </select>
   `);
-  render(template);
+  render(template, {});
 
   let selectNode: any = root.childNodes[1];
 
-  equal(selectNode.selectedOptions.length, 3, 'three options are selected');
+  let options = selectNode.querySelectorAll('option[selected]');
+
+  equal(options.length, 2, 'three options are selected');
 });
 
 module("Initial render - simple blocks");
@@ -957,9 +959,18 @@ QUnit.module('Style attributes', {
   }
 });
 
-test(`using an inline style on an element gives you a warning`, function(assert) {
+test(`using an inline static style on an element does not give you a warning`, function(assert) {
   let template = compile(`<div style="background: red">Thing</div>`);
   render(template, {});
+
+  assert.equal(warnings, 0);
+
+  equalTokens(root, '<div style="background: red">Thing</div>', "initial render");
+});
+
+test(`using an inline dynamic style on an element gives you a warning`, function(assert) {
+  let template = compile(`<div style="background: {{color}}">Thing</div>`);
+  render(template, { color: 'red' });
 
   assert.equal(warnings, 1);
 
@@ -975,12 +986,22 @@ test(`triple curlies are trusted`, function(assert) {
   equalTokens(root, '<div style="background: red">Thing</div>', "initial render");
 });
 
-test(`using an inline style on an namespaced element gives you a warning`, function(assert) {
+test(`using an inline dynamic style on an namespaced element gives you a warning`, function(assert) {
+  let template = compile(`<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: {{color}}" />`);
+
+  render(template, { color: 'red' });
+
+  assert.equal(warnings, 1);
+
+  equalTokens(root, '<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red"></svg>', "initial render");
+});
+
+test(`using an inline static style on an namespaced element does not give you a warning`, function(assert) {
   let template = compile(`<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red" />`);
 
   render(template, {});
 
-  assert.equal(warnings, 1);
+  assert.equal(warnings, 0);
 
   equalTokens(root, '<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red"></svg>', "initial render");
 });
