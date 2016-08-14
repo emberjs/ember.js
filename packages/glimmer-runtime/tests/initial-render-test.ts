@@ -319,6 +319,36 @@ test("Mountain range of nesting", function() {
              'FOO<span>BAR<a>BAZ<em>BOOBREW</em>BAT</a></span><span><span>FLUTE</span></span>ARGH', context);
 });
 
+test("Static <option selected> is preserved properly", function() {
+  let template = compile(`
+    <select>
+      <option>1</option>
+      <option selected>2</option>
+      <option>3</option>
+    </select>
+  `);
+  render(template);
+
+  let selectNode: any = root.childNodes[1];
+
+  equal(selectNode.selectedIndex, 1, 'second item is selected');
+});
+
+test("Static <option selected> for multi-select is preserved properly", function() {
+  let template = compile(`
+    <select multiple>
+      <option selected>1</option>
+      <option selected>2</option>
+      <option selected>3</option>
+    </select>
+  `);
+  render(template);
+
+  let selectNode: any = root.childNodes[1];
+
+  equal(selectNode.selectedOptions.length, 3, 'three options are selected');
+});
+
 module("Initial render - simple blocks");
 
 test("The compiler can handle unescaped tr in top of content", function() {
