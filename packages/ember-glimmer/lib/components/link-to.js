@@ -805,7 +805,7 @@ const LinkComponent = EmberComponent.extend({
     if (lastParam && lastParam.isQueryParams) {
       queryParams = params.pop();
     } else {
-      queryParams = {};
+      queryParams = { values: {} };
     }
     this.set('queryParams', queryParams);
 

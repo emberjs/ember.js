@@ -8,6 +8,7 @@ import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import RSVP from 'ember-runtime/ext/rsvp';
 
 let Router, App, router, registry, container;
 
@@ -875,5 +876,64 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     jQuery('#app-link').click();
     equal(router.get('location.path'), '/parent');
+  });
+
+  QUnit.test('link-to default query params while in active transition regression test', function() {
+    App.Router.map(function() {
+      this.route('foos');
+      this.route('bars');
+    });
+    let foos = RSVP.defer();
+    let bars = RSVP.defer();
+
+    setTemplate('application', compile(`
+      {{link-to 'Foos' 'foos' id='foos-link'}}
+      {{link-to 'Baz Foos' 'foos' (query-params baz=true) id='baz-foos-link'}}
+      {{link-to 'Quux Bars' 'bars' (query-params quux=true) id='bars-link'}}
+    `));
+
+    App.FoosController = Controller.extend({
+      queryParams: ['status'],
+      baz: false
+    });
+
+    App.FoosRoute = Route.extend({
+      model() {
+        return foos.promise;
+      }
+    });
+
+    App.BarsController = Controller.extend({
+      queryParams: ['status'],
+      quux: false
+    });
+
+    App.BarsRoute = Route.extend({
+      model() {
+        return bars.promise;
+      }
+    });
+
+    bootApplication();
+    equal(jQuery('#foos-link').attr('href'), '/foos');
+    equal(jQuery('#baz-foos-link').attr('href'), '/foos?baz=true');
+    equal(jQuery('#bars-link').attr('href'), '/bars?quux=true');
+
+    equal(router.get('location.path'), '');
+
+    shouldNotBeActive('#foos-link');
+    shouldNotBeActive('#baz-foos-link');
+    shouldNotBeActive('#bars-link');
+
+    run(jQuery('#bars-link'), 'click');
+    shouldNotBeActive('#bars-link');
+
+    run(jQuery('#foos-link'), 'click');
+    shouldNotBeActive('#foos-link');
+
+    run(foos, 'resolve');
+
+    equal(router.get('location.path'), '/foos');
+    shouldBeActive('#foos-link');
   });
 }
