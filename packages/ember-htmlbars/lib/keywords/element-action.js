@@ -53,7 +53,6 @@ export default {
       eventName: hash.on || 'click',
       bubbles: hash.bubbles,
       preventDefault: hash.preventDefault,
-      withKeyCode: hash.withKeyCode,
       allowedKeys: hash.allowedKeys
     });
 
