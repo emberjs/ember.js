@@ -49,16 +49,6 @@ QUnit.module('Ember.Binding', {
 });
 
 testBoth('Connecting a binding between two properties', function(get, set) {
-  var a = { foo: 'FOO', bar: 'BAR' };
-
-  // a.bar -> a.foo
-  var binding = new Binding('foo', 'bar');
-
-  expectDeprecation(() => {
-    performTest(binding, a, a, get, set);
-  }, /`Ember\.Binding` is deprecated./);
-});
-
   let a = { foo: 'FOO', bar: 'BAR', toString() { return '<custom object ID here>'; } };
 
   // a.bar -> a.foo
