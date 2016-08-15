@@ -203,9 +203,9 @@ export class StaticAttrOpcode extends Opcode {
   evaluate(vm: VM) {
     let { name, value, namespace } = this;
     if (namespace) {
-      vm.stack().setAttributeNS(namespace, name, value, false);
+      vm.stack().setStaticAttributeNS(namespace, name, value);
     } else {
-      vm.stack().setAttribute(name, value, false);
+      vm.stack().setStaticAttribute(name, value);
     }
   }
 
@@ -410,7 +410,7 @@ export class DynamicAttrNSOpcode extends Opcode {
   evaluate(vm: VM) {
     let { name, namespace, isTrusting } = this;
     let reference = vm.frame.getOperand();
-    vm.stack().setAttributeNS(namespace, name, reference, isTrusting);
+    vm.stack().setDynamicAttributeNS(namespace, name, reference, isTrusting);
   }
 
   toJSON(): OpcodeJSON {
@@ -448,7 +448,7 @@ export class DynamicAttrOpcode extends Opcode {
   evaluate(vm: VM) {
     let { name, isTrusting } = this;
     let reference = vm.frame.getOperand();
-    vm.stack().setAttribute(name, reference, isTrusting);
+    vm.stack().setDynamicAttribute(name, reference, isTrusting);
   }
 
   toJSON(): OpcodeJSON {
