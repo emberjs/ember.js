@@ -84,14 +84,11 @@ QUnit.test('value binding works properly for inputs that haven\'t been created',
   run(function() {
     textArea.destroy(); // destroy existing textarea
 
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       textArea = TextArea.create({
         valueBinding: 'TestObject.value'
       });
-    }, deprecationMessage);
+    }, /`Ember.Binding` is deprecated/);
   });
 
   equal(get(textArea, 'value'), null, 'precond - default value is null');

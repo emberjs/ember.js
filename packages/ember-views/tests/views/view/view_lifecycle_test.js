@@ -42,15 +42,12 @@ test('should create and append a DOM element after bindings have synced', functi
       fakeThing: 'controllerPropertyValue'
     });
 
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       view = EmberView.create({
         fooBinding: 'ViewTest.fakeController.fakeThing',
         template: compile('{{view.foo}}')
       });
-    }, deprecationMessage);
+    }, /`Ember.Binding` is deprecated/);
 
     ok(!view.get('element'), 'precond - does not have an element before appending');
 
