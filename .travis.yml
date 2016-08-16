@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-- '5.0'
+  - 6
 sudo: false
 before_install:
   - npm update -g npm
@@ -10,10 +10,10 @@ before_install:
   - export PATH=$PWD/travis-phantomjs:$PATH
 env:
   global:
-  - SAUCE_USERNAME=htmlbars-ci
-  - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
+    - SAUCE_USERNAME=htmlbars-ci
+    - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
   matrix:
-  - TEST_NODE=1 TEST_BROWSERS=1
+    - TEST_NODE=1 TEST_BROWSERS=1
 matrix:
   fast_finish: true
 before_script:
