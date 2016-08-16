@@ -1241,6 +1241,74 @@ test("non-standard namespaced attribute nodes w/ concat follow the normal dirtyi
   equalTokens(root, "<div epub:type='dedication backmatter'>hello</div>", "After reset");
 });
 
+test("<option selected> is normalized and updated correctly", function() {
+  function assertSelected(expectedSelected, label) {
+    let options = root.querySelectorAll('option');
+    let actualSelected = [];
+    for (let i = 0; i < options.length; i++) {
+      let option = options[i];
+      if (option.selected) {
+        actualSelected.push(option.value);
+      }
+    }
+
+    deepEqual(actualSelected, expectedSelected, label);
+  }
+
+  let template = compile(`
+    <select multiple>
+      <option>0</option>
+      <option selected={{one}}>1</option>
+      <option selected={{two}}>2</option>
+      <option selected={{three}}>3</option>
+      <option selected={{four}}>4</option>
+      <option selected={{five}}>5</option>
+    </select>`);
+
+  let object = {
+    one: true,
+    two: <any>'is-true',
+    three: undefined,
+    four: null,
+    five: false
+  };
+
+  render(template, object);
+
+  let expectedInitialTokens = `
+    <select multiple="">
+      <option>0</option>
+      <option selected="">1</option>
+      <option selected="">2</option>
+      <option>3</option>
+      <option>4</option>
+      <option>5</option>
+    </select>`;
+
+  equalTokens(root, expectedInitialTokens, 'initial render tokens');
+  assertSelected(['1', '2'], 'selection after initial render');
+
+  rerender();
+
+  object.one = false;
+  object.two = false;
+  rerender();
+
+  assertSelected([], 'selection after update to all falsey');
+
+  object.three = true;
+  object.four = 'asdf';
+  rerender();
+
+  assertSelected(['3', '4'], 'selection after update 3 & 4 to truthy');
+
+  object.three = null;
+  object.four = undefined;
+  rerender();
+
+  assertSelected([], 'selection after update 3 & 4 back to falsey');
+});
+
 test("top-level bounds are correct when swapping order", assert => {
   let template = compile("{{#each list key='key' as |item|}}{{item.name}}{{/each}}");
 
