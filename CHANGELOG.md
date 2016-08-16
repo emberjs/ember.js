@@ -1,5 +1,15 @@
 # Ember Changelog
 
+### 2.8.0-beta.3 (August 15, 2016)
+
+- [#14009](https://github.com/emberjs/ember.js/pull/14009) [BUGFIX] Fix usage of `role` when used in `attributeBindings`.
+- [#14044](https://github.com/emberjs/ember.js/pull/14044) / [#14062](https://github.com/emberjs/ember.js/pull/14062) / [#14066](https://github.com/emberjs/ember.js/pull/14066) [BUGFIX] Update `router.js` so that `getHandlers` is invoked lazily.
+- [#14054](https://github.com/emberjs/ember.js/pull/14054) [BUGFIX] Ensure substates properly work with `resetNamespace`.
+- [#14033](https://github.com/emberjs/ember.js/pull/14033) [BUGFIX] Ensure `fillIn` acceptance test helper only sets value to first matched element.
+- [#14058](https://github.com/emberjs/ember.js/pull/14058) [BUGFIX] Fix issues related to `Ember.Router.map` changes in 2.7.0.
+- [#14068](https://github.com/emberjs/ember.js/pull/14068) [BUGFIX] Prevent errors when clicking a `{{link-to}}` during an existing transition.
+
+
 ### 2.8.0-beta.2 (August 1, 2016)
 
 - [#13887](https://github.com/emberjs/ember.js/pull/13887) [BUGFIX] Add assertions for illegal component invocations.
