@@ -1,7 +1,7 @@
 import { UNDEFINED_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
-import { CONSTANT_TAG, PathReference, RevisionTag, combine } from 'glimmer-reference';
+import { CONSTANT_TAG, PathReference, RevisionTag, combineTagged } from 'glimmer-reference';
 import { Dict, dict } from 'glimmer-util';
 
 export abstract class CompiledNamedArgs {
@@ -66,6 +66,8 @@ export const COMPILED_EMPTY_NAMED_ARGS: CompiledNamedArgs = new (class extends C
 export abstract class EvaluatedNamedArgs {
   public tag: RevisionTag;
   public keys: string[];
+  public values: PathReference<any>[];
+  public map: Dict<PathReference<any>>;
 
   static empty(): EvaluatedNamedArgs {
     return EVALUATED_EMPTY_NAMED_ARGS;
@@ -74,9 +76,6 @@ export abstract class EvaluatedNamedArgs {
   static create({ map }: { map: Dict<PathReference<any>> }) {
     return new NonEmptyEvaluatedNamedArgs({ map });
   }
-
-  public type: string;
-  public map: Dict<PathReference<any>>;
 
   forEach(callback: (key: string, value: PathReference<any>) => void) {
     let { map } = this;
@@ -94,23 +93,23 @@ export abstract class EvaluatedNamedArgs {
 }
 
 class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
-  public values: PathReference<any>[];
   public map: Dict<PathReference<any>>;
+  public values: PathReference<any>[];
 
   constructor({ map }: { map: Dict<PathReference<any>> }) {
     super();
 
-    let keys = this.keys = Object.keys(map);
-    this.map = map;
-
-    let tags = [];
+    let keys = Object.keys(map);
+    let values = [];
 
     for (let i = 0; i < keys.length; i++) {
-      let key = keys[i];
-      tags.push(map[key].tag);
+      values.push(map[keys[i]]);
     }
 
-    this.tag = combine(tags);
+    this.tag = combineTagged(values);
+    this.keys = keys;
+    this.values = values;
+    this.map = map;
   }
 
   get(key: string): PathReference<any> {
@@ -118,17 +117,18 @@ class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
   }
 
   has(key: string): boolean {
-    return !!this.map[key];
+    return this.keys.indexOf(key) !== -1;
   }
 
   value(): Dict<any> {
-    let { map, keys } = this;
+    let { keys, values } = this;
 
     let out = dict();
 
     for (let i = 0; i < keys.length; i++) {
       let key = keys[i];
-      out[key] = map[key].value();
+      let ref = values[i];
+      out[key] = ref.value();
     }
 
     return out;
@@ -138,6 +138,8 @@ class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
 export const EVALUATED_EMPTY_NAMED_ARGS = new (class extends EvaluatedNamedArgs {
   public tag = CONSTANT_TAG;
   public keys = [];
+  public values = [];
+  public map = {};
 
   get(): PathReference<any> {
     return UNDEFINED_REFERENCE;
@@ -148,6 +150,6 @@ export const EVALUATED_EMPTY_NAMED_ARGS = new (class extends EvaluatedNamedArgs 
   }
 
   value(): Dict<any> {
-    return {};
+    return this.map;
   }
 });
