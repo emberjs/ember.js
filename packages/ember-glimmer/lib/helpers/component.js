@@ -126,8 +126,7 @@ function curryArgs(definition, newArgs) {
 export default {
   isInternalHelper: true,
 
-  toReference(args, env) {
-    // TODO: Need to figure out what to do about symbolTable here.
-    return ClosureComponentReference.create(args, null, env);
+  toReference(args, env, symbolTable) {
+    return ClosureComponentReference.create(args, symbolTable, env);
   }
 };
