@@ -2,31 +2,27 @@ import * as Simple from './dom/interfaces';
 
 export interface Bounds {
   // a method to future-proof for wormholing; may not be needed ultimately
-  parentElement(): Element;
-  firstNode(): Node;
-  lastNode(): Node;
+  parentElement(): Simple.Element;
+  firstNode(): Simple.Node;
+  lastNode(): Simple.Node;
 }
 
 export class Cursor {
-  constructor(public element: Element, public nextSibling: Node) {}
+  constructor(public element: Simple.Element, public nextSibling: Simple.Node) {}
 }
 
 export default Bounds;
 
-export class ConcreteBounds implements Bounds {
-  public parentNode: Element;
-  private first: Node;
-  private last: Node;
+export class RealDOMBounds implements Bounds {
+  constructor(private bounds: Bounds) {}
 
-  constructor(parent: Simple.Element, first: Simple.Node, last: Simple.Node) {
-    // TODO: There should be some real mechanism for upcasting from Simple
-    // Elements and Nodes. At the moment, there are no intermediate Simple
-    // Nodes, but that will not be true forever. At the moment, this is the
-    // place where downcasting occurs.
-    this.parentNode = parent as Element;
-    this.first = first as Node;
-    this.last = last as Node;
-  }
+  parentElement() { return this.bounds.parentElement() as Element; }
+  firstNode() { return this.bounds.firstNode() as Node; }
+  lastNode() { return this.bounds.lastNode() as Node; }
+}
+
+export class ConcreteBounds implements Bounds {
+  constructor(public parentNode: Simple.Element, private first: Simple.Node, private last: Simple.Node) {}
 
   parentElement() { return this.parentNode; }
   firstNode() { return this.first; }
@@ -55,7 +51,7 @@ export function single(parent: Simple.Element, node: Simple.Node): Bounds {
   return new SingleNodeBounds(parent, node);
 }
 
-export function move(bounds: Bounds, reference: Node) {
+export function move(bounds: Bounds, reference: Simple.Node) {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();
@@ -72,7 +68,7 @@ export function move(bounds: Bounds, reference: Node) {
   return null;
 }
 
-export function clear(bounds: Bounds): Node {
+export function clear(bounds: Bounds): Simple.Node {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();

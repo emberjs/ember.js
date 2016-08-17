@@ -5,6 +5,7 @@ import { Environment, DynamicScope } from './environment';
 import { ElementStack } from './builder';
 import { VM } from './vm';
 import Scanner from './scanner';
+import * as Simple from './dom/interfaces';
 
 interface TemplateOptions {
   raw: EntryPoint;
@@ -12,7 +13,7 @@ interface TemplateOptions {
 
 interface RenderOptions {
   dynamicScope: DynamicScope;
-  appendTo: Element;
+  appendTo: Simple.Element;
 }
 
 interface EvaluateOptions {

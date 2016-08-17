@@ -4,6 +4,7 @@ import { Layout, CompiledBlock } from '../compiled/blocks';
 
 import Environment, { DynamicScope } from '../environment';
 import { ElementOperations } from '../builder';
+import * as Simple from '../dom/interfaces';
 
 import { Destroyable, Opaque } from 'glimmer-util';
 import { PathReference, RevisionTag } from 'glimmer-reference';
@@ -36,7 +37,7 @@ export interface ComponentManager<T extends Component> {
   // The `didCreateElement` hook is meant to be used by the host to save
   // off the element. Hosts should use `didCreate`, which runs asynchronously
   // after the rendering process, to provide hooks for user code.
-  didCreateElement(component: T, element: Element, operations: ElementOperations);
+  didCreateElement(component: T, element: Simple.Element, operations: ElementOperations);
 
   // Once the whole top-down rendering process is complete, Glimmer invokes
   // the `didCreate` callbacks.

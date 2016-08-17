@@ -1,5 +1,6 @@
 import { Statement as StatementSyntax } from './syntax';
 
+import * as Simple from './dom/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { Reference, OpaqueIterable } from 'glimmer-reference';
 import { NULL_REFERENCE, ConditionalReference } from './references';
@@ -224,7 +225,7 @@ export abstract class Environment {
   abstract hasHelper(helperName: string[], blockMeta: BlockMeta): boolean;
   abstract lookupHelper(helperName: string[], blockMeta: BlockMeta): Helper;
 
-  attributeFor(element: Element, attr: string, reference: Reference<Opaque>, isTrusting: boolean, namespace?: string): IChangeList {
+  attributeFor(element: Simple.Element, attr: string, reference: Reference<Opaque>, isTrusting: boolean, namespace?: string): IChangeList {
     return defaultChangeLists(element, attr, isTrusting, namespace);
   }
 

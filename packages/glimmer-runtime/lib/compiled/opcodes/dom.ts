@@ -1,5 +1,7 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
+import * as Simple from '../../dom/interfaces';
+import { FIX_REIFICATION } from '../../dom/interfaces';
 import { Environment, DynamicScope } from '../../environment';
 import { FIXME, Opaque, Dict, dict } from 'glimmer-util';
 import {
@@ -239,11 +241,11 @@ export class ModifierOpcode extends Opcode {
   evaluate(vm: VM) {
     let { manager } = this;
     let stack = vm.stack();
-    let { element, dom } = stack;
+    let { element, updateOperations } = stack;
     let args = this.args.evaluate(vm);
     let dynamicScope = vm.dynamicScope();
 
-    let modifier = manager.install(element, args, dom, dynamicScope);
+    let modifier = manager.install(element as FIX_REIFICATION<Element>, args, updateOperations, dynamicScope);
     let destructor = manager.getDestructor(modifier);
 
     if (destructor) {
@@ -253,7 +255,7 @@ export class ModifierOpcode extends Opcode {
     vm.updateWith(new UpdateModifierOpcode({
       manager,
       modifier,
-      element,
+      element: element as FIX_REIFICATION<Element>,
       dynamicScope,
       args
     }));
@@ -312,17 +314,19 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
 }
 
 export class Attribute {
-  private changeList: IChangeList;
-  private element: Element;
-  private reference: Reference<Opaque>;
   private cache: ReferenceCache<Opaque>;
-  private namespace: string | undefined;
 
   protected name: string;
 
   public tag: RevisionTag;
 
-  constructor(element: Element, changeList: IChangeList, name: string, reference: Reference<Opaque>, namespace?: string) {
+  constructor(
+    private element: Simple.Element,
+    private changeList: IChangeList,
+    name: string,
+    private reference: Reference<Opaque>,
+    private namespace?: string
+  ) {
     this.element = element;
     this.reference = reference;
     this.changeList = changeList;
@@ -338,7 +342,7 @@ export class Attribute {
     let value = cache.revalidate();
 
     if (isModified(value)) {
-      this.changeList.updateAttribute(env, element, this.name, value, this.namespace);
+      this.changeList.updateAttribute(env, element as FIXME<Element, 'needs to be reified properly'>, this.name, value, this.namespace);
     }
   }
 
@@ -382,7 +386,7 @@ export class Attribute {
   }
 }
 
-function formatElement(element: Element): string {
+function formatElement(element: Simple.Element): string {
   return JSON.stringify(`<${element.tagName.toLowerCase()} />`);
 }
 
