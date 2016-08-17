@@ -3,7 +3,7 @@
 var path = require('path');
 var Funnel = require('broccoli-funnel');
 
-var root = path.join(__dirname, '..', 'node_modules', 'handlebars', 'lib');
+var root = path.dirname(require.resolve('handlebars'));
 
 module.exports = {
   compiler: new Funnel(root, {
