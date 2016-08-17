@@ -18,6 +18,10 @@ import {
   ExitOpcode
 } from '../../compiled/opcodes/vm';
 
+import {
+  BlockMeta
+} from 'glimmer-wire-format';
+
 import * as Syntax from '../core';
 import Environment from '../../environment';
 import { Block } from '../../compiled/blocks';
@@ -27,10 +31,12 @@ export default class PartialSyntax extends StatementSyntax {
 
   public args: Syntax.Args;
   public isStatic = false;
+  private blockMeta: BlockMeta;
 
-  constructor({ args }: { args: Syntax.Args }) {
+  constructor({ args, blockMeta }: { args: Syntax.Args, blockMeta: BlockMeta }) {
     super();
     this.args = args;
+    this.blockMeta = blockMeta;
   }
 
   compile(compiler: CompileInto & SymbolLookup, env: Environment, block: Block) {
@@ -58,13 +64,14 @@ export default class PartialSyntax extends StatementSyntax {
     compiler.append(new EnterOpcode({ begin: BEGIN, end: END }));
     compiler.append(BEGIN);
     compiler.append(new PutArgsOpcode({ args: this.args.compile(compiler, env) }));
-    compiler.append(new NameToPartialOpcode());
+    compiler.append(new NameToPartialOpcode(this.blockMeta));
     compiler.append(new TestOpcode(SimpleTest));
 
     compiler.append(new JumpUnlessOpcode({ target: END }));
     compiler.append(new EvaluatePartialOpcode({
       name: compiledPartialNameExpression,
-      symbolTable: block.symbolTable
+      symbolTable: block.symbolTable,
+      blockMeta: this.blockMeta
     }));
 
     compiler.append(END);

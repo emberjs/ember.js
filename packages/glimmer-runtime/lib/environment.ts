@@ -155,7 +155,7 @@ export abstract class Environment {
 
     if (isSimple && isInline) {
       if (key === 'partial') {
-        return new PartialSyntax({ args });
+        return new PartialSyntax({ args, blockMeta });
       }
     }
 
@@ -224,8 +224,8 @@ export abstract class Environment {
     return defaultChangeLists(element, attr, isTrusting, namespace);
   }
 
-  abstract hasPartial(partialName: string[]): boolean;
-  abstract lookupPartial(PartialName: string[]): PartialDefinition;
+  abstract hasPartial(partialName: string[], blockMeta: BlockMeta): boolean;
+  abstract lookupPartial(PartialName: string[], blockMeta: BlockMeta): PartialDefinition;
   abstract hasComponentDefinition(tagName: string[]): boolean;
   abstract getComponentDefinition(tagName: string[]): ComponentDefinition<Opaque>;
 
