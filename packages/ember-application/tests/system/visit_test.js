@@ -358,6 +358,23 @@ QUnit.test('visit() returns a promise that resolves without rendering when shoul
   });
 });
 
+QUnit.test('visit() renders a template when shouldRender is set to true', function(assert) {
+  assert.expect(3);
+
+  run(() => {
+    createApplication();
+
+    App.register('template:application', compile('<h1>Hello world</h1>'));
+  });
+
+  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+  return run(App, 'visit', '/', { shouldRender: true }).then(instance => {
+    assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+    assert.strictEqual(jQuery('#qunit-fixture').children().length, 1, 'there is 1 element in the fixture element after visit');
+  });
+});
+
 QUnit.test('visit() returns a promise that resolves without rendering when shouldRender is set to false with Engines', function(assert) {
   assert.expect(3);
 

@@ -1264,7 +1264,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     this.setupController(controller, context, transition);
 
-    if (!this._environment || this._environment.options.shouldRender) {
+    if (this._environment.options.shouldRender) {
       this.renderTemplate(controller, context);
     }
   },
