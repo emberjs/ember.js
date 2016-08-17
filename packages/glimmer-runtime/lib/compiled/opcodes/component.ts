@@ -190,7 +190,7 @@ export class ShadowAttributesOpcode extends Opcode {
     if (!shadow) return;
 
     shadow.forEach(name => {
-      vm.stack().setDynamicAttribute(name, named.get(name), false);
+      vm.stack().setAttribute(name, named.get(name), false);
     });
   }
 
