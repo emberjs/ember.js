@@ -2,6 +2,14 @@ import { Template } from 'glimmer-runtime';
 
 class Wrapper {
   constructor(id, env, spec) {
+    let { owner } = env;
+    if (spec.meta) {
+      spec.meta.owner = owner;
+    } else {
+      spec.meta = {
+        owner
+      };
+    }
     this.id = id;
     this.env = env;
     this.spec = spec;
