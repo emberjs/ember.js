@@ -4,7 +4,7 @@ import {
   GetSyntax,
   PositionalArgsSyntax
 } from 'glimmer-runtime';
-import { ConstReference, isConst, UNDEFINED_REFERENCE } from 'glimmer-reference';
+import { UNDEFINED_REFERENCE } from 'glimmer-reference';
 import { isClosureComponent } from '../helpers/component';
 import { assert } from 'ember-metal/debug';
 
@@ -14,16 +14,7 @@ function dynamicComponentFor(vm) {
   let nameRef = args.positional.at(0);
   let { parentMeta } = this;
 
-  if (isConst(nameRef)) {
-    let name = nameRef.value();
-    let definition = env.getComponentDefinition([name], parentMeta);
-
-    assert(`Could not find component named "${name}" (no component or template with that name was found)`, definition);
-
-    return new ConstReference(definition);
-  } else {
-    return new DynamicComponentReference({ nameRef, env, parentMeta });
-  }
+  return new DynamicComponentReference({ nameRef, env, parentMeta });
 }
 
 export class DynamicComponentSyntax extends StatementSyntax {
@@ -61,9 +52,9 @@ export class DynamicComponentSyntax extends StatementSyntax {
 
 class DynamicComponentReference {
   constructor({ nameRef, env, parentMeta, args }) {
+    this.tag = nameRef.tag;
     this.nameRef = nameRef;
     this.env = env;
-    this.tag = nameRef.tag;
     this.parentMeta = parentMeta;
     this.args = args;
   }
