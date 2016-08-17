@@ -11,10 +11,6 @@ import {
 } from 'glimmer-reference';
 
 import {
-  ValueReference
-} from './compiled/expressions/value';
-
-import {
   Attribute
 } from './compiled/opcodes/dom';
 
@@ -274,19 +270,11 @@ export class ElementStack implements Cursor {
     return comment;
   }
 
-  setStaticAttribute(name: string, reference: ValueReference<string>) {
-    this.dom.setAttribute(this.element, name, reference.value());
-  }
-
-  setStaticAttributeNS(namespace: string, name: string, reference: ValueReference<string>) {
-    this.dom.setAttributeNS(this.element, namespace, name, reference.value());
-  }
-
-  setDynamicAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
+  setAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
     this.elementOperations.addAttribute(name, reference, isTrusting);
   }
 
-  setDynamicAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
+  setAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
     this.elementOperations.addAttributeNS(namespace, name, reference, isTrusting);
   }
 
