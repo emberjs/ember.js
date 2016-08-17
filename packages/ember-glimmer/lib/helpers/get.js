@@ -1,4 +1,5 @@
-import { CachedReference } from '../utils/references';
+import { set } from 'ember-metal/property_set';
+import { CachedReference, UPDATE } from '../utils/references';
 import { CONSTANT_TAG, UpdatableTag, combine, isConst, referenceFromParts } from 'glimmer-reference';
 
 /**
@@ -104,5 +105,9 @@ class GetHelperReference extends CachedReference {
     }
 
     return innerReference ? innerReference.value() : null;
+  }
+
+  [UPDATE](value) {
+    set(this.sourceReference.value(), this.pathReference.value(), value);
   }
 }

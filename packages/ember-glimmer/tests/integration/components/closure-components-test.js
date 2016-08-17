@@ -331,7 +331,7 @@ moduleFor('Components test: closure components', class extends RenderingTest {
     this.assertText('Hodi Sigmundur 33');
   }
 
-  ['@skip bound outer named parameters get updated in the right scope']() {
+  ['@test bound outer named parameters get updated in the right scope']() {
     this.registerComponent('-inner-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['comp']
@@ -359,11 +359,11 @@ moduleFor('Components test: closure components', class extends RenderingTest {
 
     this.assertText('Inner 28');
 
-    this.runTask(() => this.context.set('outerAge', 29));
+    this.runTask(() => this.context.set('model.outerAge', 29));
 
     this.assertText('Inner 29');
 
-    this.runTask(() => this.context.set('outerName', 'Not outer'));
+    this.runTask(() => this.context.set('model.outerName', 'Not outer'));
 
     this.assertText('Inner 29');
 

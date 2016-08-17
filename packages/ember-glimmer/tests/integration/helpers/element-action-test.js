@@ -5,7 +5,6 @@ import { set } from 'ember-metal/property_set';
 
 import EmberObject from 'ember-runtime/system/object';
 import { A as emberA } from 'ember-runtime/system/native_array';
-import { removeAt } from 'ember-runtime/mixins/mutable_array';
 
 import ActionManager from 'ember-views/system/action_manager';
 import jQuery from 'ember-views/system/jquery';
@@ -25,6 +24,10 @@ function getActionAttributes(element) {
   }
 
   return actionAttrs;
+}
+
+function getActionIds(element) {
+  return getActionAttributes(element).map(attribute => attribute.slice('data-ember-action-'.length));
 }
 
 if (isEnabled('ember-improved-instrumentation')) {
@@ -164,22 +167,19 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.assert.deepEqual(fooArgs, ['a', 'b'], 'foo has been called with an updated value');
   }
 
-  ['@htmlbars it should output a data attribute with a guid']() {
+  ['@test it should output a marker attribute with a guid']() {
     this.render('<button {{action "show"}}>me the money</button>');
 
     let button = this.$('button');
 
-    this.assert.ok(button.attr('data-ember-action').match(/\d+/), 'A data-ember-action attribute with a guid was added');
-  }
+    if (this.isGlimmer) {
+      let attributes = getActionAttributes(button.get(0));
 
-  ['@glimmer it should output a marker data attribute and a data attribute with a guid']() {
-    this.render('<button {{action "show"}}>me the money</button>');
-
-    let button = this.$('button');
-    let attributes = getActionAttributes(button.get(0));
-
-    this.assert.ok(button.attr('data-ember-action').match(''), 'An empty data-ember-action attribute was added');
-    this.assert.ok(attributes[0].match(/data-ember-action-\d+/), 'A data-ember-action-xyz attribute with a guid was added');
+      this.assert.ok(button.attr('data-ember-action').match(''), 'An empty data-ember-action attribute was added');
+      this.assert.ok(attributes[0].match(/data-ember-action-\d+/), 'A data-ember-action-xyz attribute with a guid was added');
+    } else {
+      this.assert.ok(button.attr('data-ember-action').match(/\d+/), 'A data-ember-action attribute with a guid was added');
+    }
   }
 
   ['@test it should allow alternative events to be handled']() {
@@ -711,114 +711,55 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
   }
 
-  ['@glimmer it should unregister event handlers on teardown, but not on rerender']() {
-    let editHandlerWasCalled = false;
-    let component;
-
+  ['@test it should unregister event handlers when an element action is removed']() {
     let ExampleComponent = Component.extend({
-      init() {
-        this._super(...arguments);
-        component = this;
-      },
-      active: true,
       actions: {
-        edit() { editHandlerWasCalled = true; }
+        edit() { }
       }
     });
 
     this.registerComponent('example-component', {
       ComponentClass: ExampleComponent,
-      template: '{{#if active}}<a href="#" {{action "edit"}}>click me</a>{{/if}}'
+      template: '{{#if isActive}}<a href="#" {{action "edit"}}>click me</a>{{/if}}'
     });
 
-    this.render('{{example-component}}');
+    this.render('{{example-component isActive=isActive}}', { isActive: true });
 
-    let previousAttributes = getActionAttributes(component.$('a').get(0));
+    equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
+
+    let actionId;
+
+    if (this.isGlimmer) {
+      actionId = getActionIds(this.$('a[data-ember-action]').get(0))[0];
+    } else {
+      actionId = this.$('a[data-ember-action]').attr('data-ember-action');
+    }
+
+    ok(ActionManager.registeredActions[actionId], 'An action is registered');
 
     this.runTask(() => this.rerender());
 
-    let rerenderedAttributes = getActionAttributes(component.$('a').get(0));
+    equal(this.$('a[data-ember-action]').length, 1, 'The element is still present');
 
-    this.runTask(() => {
-      component.set('active', false);
-    });
+    ok(ActionManager.registeredActions[actionId], 'The action is still registered');
 
-    this.runTask(() => {
-      component.set('active', true);
-    });
+    this.runTask(() => set(this.context, 'isActive', false));
 
-    let newAttributes = getActionAttributes(component.$('a').get(0));
+    strictEqual(this.$('a[data-ember-action]').length, 0, 'The element is removed');
 
-    this.assert.deepEqual(previousAttributes, rerenderedAttributes, 'the same action id is used across rerenders');
-    this.assert.notDeepEqual(previousAttributes, newAttributes, 'the action id is regenerated when the action is torn down');
-  }
+    ok(!ActionManager.registeredActions[actionId], 'The action is unregistered');
 
-  ['@htmlbars it should unregister event handlers on rerender']() {
-    let component;
+    this.runTask(() => set(this.context, 'isActive', true));
 
-    let ExampleComponent = Component.extend({
-      init() {
-        this._super(...arguments);
-        component = this;
-      },
-      active: true,
-      actions: {
-        edit() { }
-      }
-    });
+    equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
 
-    this.registerComponent('example-component', {
-      ComponentClass: ExampleComponent,
-      template: '{{#if active}}<a href="#" {{action "edit"}}>click me</a>{{/if}}'
-    });
+    if (this.isGlimmer) {
+      actionId = getActionIds(this.$('a[data-ember-action]').get(0))[0];
+    } else {
+      actionId = this.$('a[data-ember-action]').attr('data-ember-action');
+    }
 
-    this.render('{{example-component}}');
-
-    var previousActionId = component.$('a[data-ember-action]').attr('data-ember-action');
-
-    this.runTask(function() {
-      set(component, 'active', false);
-    });
-
-    this.runTask(function() {
-      set(component, 'active', true);
-    });
-
-    ok(!ActionManager.registeredActions[previousActionId], 'On rerender, the event handler was removed');
-
-    var newActionId = component.$('a[data-ember-action]').attr('data-ember-action');
-
-    ok(ActionManager.registeredActions[newActionId], 'After rerender completes, a new event handler was added');
-  }
-
-  ['@htmlbars it should unregister event handlers on inside virtual views']() {
-    var things = emberA([
-      {
-        name: 'Thingy'
-      }
-    ]);
-
-    let ExampleComponent = Component.extend({
-      actions: {
-        edit() { }
-      },
-      things: things
-    });
-
-    this.registerComponent('example-component', {
-      ComponentClass: ExampleComponent,
-      template: '{{#each things as |thing|}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'
-    });
-
-    this.render('{{example-component}}');
-
-    var actionId = this.$('a[data-ember-action]').attr('data-ember-action');
-
-    this.runTask(() => {
-      removeAt(things, 0);
-    });
-
-    ok(!ActionManager.registeredActions[actionId], 'After the virtual view was destroyed, the action was unregistered');
+    ok(ActionManager.registeredActions[actionId], 'A new action is registered');
   }
 
   ['@test it should capture events from child elements and allow them to trigger the action']() {
@@ -1290,50 +1231,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
        'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).');
   }
 
-  ['@glimmer allows multiple actions on a single element']() {
-    let clickActionWasCalled = false;
-    let doubleClickActionWasCalled = false;
-
-    let ExampleComponent = Component.extend({
-      actions: {
-        clicked() {
-          clickActionWasCalled = true;
-        },
-        doubleClicked() {
-          doubleClickActionWasCalled = true;
-        }
-      }
-    });
-
-    this.registerComponent('example-component', {
-      ComponentClass: ExampleComponent,
-      template: strip`
-        <a href="#"
-          {{action "clicked" on="click"}}
-          {{action "doubleClicked" on="doubleClick"}}
-        >click me</a>`
-    });
-
-    this.render('{{example-component}}');
-
-    let actionAttrs = getActionAttributes(this.$('a').get(0));
-
-    this.assert.equal(actionAttrs.length, 2, 'two action attributes were added');
-
-    this.runTask(() => {
-      this.$('a').trigger('click');
-    });
-
-    this.assert.ok(clickActionWasCalled, 'the clicked action was called');
-
-    this.runTask(() => {
-      this.$('a').trigger('dblclick');
-    });
-
-    this.assert.ok(doubleClickActionWasCalled, 'the doubleClicked action was called');
-  }
-
-  ['@htmlbars allows multiple actions on a single element']() {
+  ['@test allows multiple actions on a single element']() {
     let clickActionWasCalled = false;
     let doubleClickActionWasCalled = false;
 

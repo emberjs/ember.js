@@ -1,6 +1,6 @@
 import { assert } from 'ember-metal/debug';
 import { dasherize } from 'ember-runtime/system/string';
-import { CachedReference, map, referenceFromParts } from 'glimmer-reference';
+import { CachedReference, ConstReference, map, referenceFromParts } from 'glimmer-reference';
 import { ROOT_REF } from '../component';
 import { htmlSafe, isHTMLSafe } from './string';
 
@@ -32,15 +32,16 @@ export const AttributeBinding = {
   apply(component, parsed, operations) {
     let [prop, attribute, isSimple] = parsed;
     let isPath = prop.indexOf('.') > -1;
-    let value = isPath ? referenceForParts(component, prop.split('.')) : referenceForKey(component, prop);
-    let reference;
+    let reference = isPath ? referenceForParts(component, prop.split('.')) : referenceForKey(component, prop);
 
     assert(`Illegal attributeBinding: '${prop}' is not a valid attribute name.`, !(isSimple && isPath));
 
     if (attribute === 'style') {
-      reference = new StyleBindingReference(value, referenceForKey(component, 'isVisible'));
+      reference = new StyleBindingReference(reference, referenceForKey(component, 'isVisible'));
+    } else if (attribute === 'id') {
+      reference = new ConstReference(this.mapAttributeValue(reference.value()));
     } else {
-      reference = map(value, this.mapAttributeValue);
+      reference = map(reference, this.mapAttributeValue);
     }
 
     operations.addAttribute(attribute, reference);

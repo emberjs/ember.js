@@ -340,8 +340,7 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'foo': 'bar' } });
   }
 
-  // Bug in both systems. Should not be able to update id post creation.
-  ['@skip can set id initially via attributeBindings ']() {
+  ['@test can set id initially via attributeBindings ']() {
     let FooBarComponent = Component.extend({
       attributeBindings: ['specialSauce:id']
     });
@@ -358,7 +357,15 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'id': 'special-sauce' } });
 
-    this.runTask(() => set(this.context, 'sauce', 'foo'));
+    // Should not be able to update id post creation. The change is correctly ignored in Glimmer, but
+    // HTMLBars does not handle that.
+    if (this.isGlimmer) {
+      this.runTask(() => set(this.context, 'sauce', 'foo'));
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'id': 'special-sauce' } });
+    }
+
+    this.runTask(() => set(this.context, 'sauce', 'special-sauce'));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'id': 'special-sauce' } });
   }
