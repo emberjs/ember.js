@@ -137,6 +137,13 @@ test("Handlebars embedded in an attribute (unquoted)", function() {
   ]));
 });
 
+test("Handlebars embedded in an attribute of a self-closing tag (unqouted)", function() {
+  let t = '<input value={{foo}}/>';
+  astEqual(t, b.program([
+    b.element("input", [ b.attr("value", b.mustache(b.path('foo'))) ], [], []),
+  ]));
+});
+
 test("Handlebars embedded in an attribute (sexprs)", function() {
   let t = 'some <div class="{{foo (foo "abc")}}">content</div> done';
   astEqual(t, b.program([

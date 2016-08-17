@@ -194,13 +194,13 @@ function assembleAttributeValue(parts, isQuoted, isDynamic, line) {
     if (isQuoted) {
       return assembleConcatenatedValue(parts);
     } else {
-      if (parts.length === 1) {
+      if (parts.length === 1 || (parts.length === 2 && parts[1] === '/')) {
         return parts[0];
       } else {
         throw new Error(
           `An unquoted attribute value must be a string or a mustache, ` +
           `preceeded by whitespace or a '=' character, and ` +
-          `followed by whitespace or a '>' character (on line ${line})`
+          `followed by whitespace, a '>' character, or '/>' (on line ${line})`
         );
       }
     }
