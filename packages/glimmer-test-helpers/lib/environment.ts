@@ -735,7 +735,7 @@ export class TestEnvironment extends Environment {
     return new EmberishConditionalReference(reference);
   }
 
-  refineStatement(statement: ParsedStatement, parentMeta: BlockMeta): StatementSyntax {
+  refineStatement(statement: ParsedStatement, blockMeta: BlockMeta): StatementSyntax {
     let {
       appendType,
       isSimple,
@@ -774,7 +774,7 @@ export class TestEnvironment extends Environment {
       return (statement.original as OptimizedAppend).deopt();
     }
 
-    return super.refineStatement(statement, parentMeta);
+    return super.refineStatement(statement, blockMeta);
   }
 
   hasHelper(helperName: string[]) {
