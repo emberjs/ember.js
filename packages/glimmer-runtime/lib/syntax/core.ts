@@ -167,11 +167,11 @@ export class Unknown extends ExpressionSyntax<any> {
     this.trustingMorph = !!options.unsafe;
   }
 
-  compile(compiler: SymbolLookup, env: Environment, parentMeta: BlockMeta): CompiledExpression<Opaque> {
+  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledExpression<Opaque> {
     let { ref } = this;
 
-    if (env.hasHelper(ref.parts, parentMeta)) {
-      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts, parentMeta), args: CompiledArgs.empty() });
+    if (env.hasHelper(ref.parts, blockMeta)) {
+      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts, blockMeta), args: CompiledArgs.empty() });
     } else {
       return this.ref.compile(compiler);
     }
@@ -892,10 +892,10 @@ export class Helper extends ExpressionSyntax<Opaque> {
     this.args = options.args;
   }
 
-  compile(compiler: SymbolLookup, env: Environment, parentMeta: BlockMeta): CompiledExpression<Opaque> {
-    if (env.hasHelper(this.ref.parts, parentMeta)) {
+  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledExpression<Opaque> {
+    if (env.hasHelper(this.ref.parts, blockMeta)) {
       let { args, ref } = this;
-      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts, parentMeta), args: args.compile(compiler, env) });
+      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts, blockMeta), args: args.compile(compiler, env) });
     } else {
       throw new Error(`Compile Error: ${this.ref.path().join('.')} is not a helper`);
     }

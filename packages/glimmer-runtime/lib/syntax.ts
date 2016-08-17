@@ -50,7 +50,7 @@ export abstract class Expression<T> {
 
   public abstract type: string;
 
-  abstract compile(compiler: SymbolLookup, env: Environment, parentMeta?: BlockMeta): CompiledExpression<T>;
+  abstract compile(compiler: SymbolLookup, env: Environment, blockMeta?: BlockMeta): CompiledExpression<T>;
 }
 
 export interface SymbolLookup {
