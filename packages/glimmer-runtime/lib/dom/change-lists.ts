@@ -15,7 +15,7 @@ export interface IChangeList {
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: string): void;
 }
 
-export function defaultChangeLists(element: Element, attr: string, isTrusting: boolean, namespace: string) {
+export function defaultChangeLists(element: Simple.Element, attr: string, isTrusting: boolean, namespace: string) {
   let tagName = element.tagName;
   let isSVG = element.namespaceURI === SVG_NAMESPACE;
 

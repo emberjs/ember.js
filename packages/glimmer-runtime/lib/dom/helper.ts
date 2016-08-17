@@ -69,8 +69,22 @@ namespace DOM {
       this.uselessElement = document.createElement('div');
     }
 
-    createElement(tag: string): Element {
-      return this.document.createElement(tag);
+    createElement(tag: string, context: Element): Element {
+      let isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
+      let isHTMLIntegrationPoint = SVG_INTEGRATION_POINTS[context.tagName];
+
+      if (isElementInSVGNamespace && !isHTMLIntegrationPoint) {
+        // FIXME: This does not properly handle <font> with color, face, or
+        // size attributes, which is also disallowed by the spec. We should fix
+        // this.
+        if (BLACKLIST_TABLE[tag]) {
+          throw new Error(`Cannot create a ${tag} inside of a <${context.tagName}>, because it's inside an SVG context`);
+        }
+
+      return this.document.createElementNS(SVG_NAMESPACE as Namespace, tag);
+    }
+
+    return this.document.createElement(tag);
     }
 
     createElementNS(namespace: Namespace, tag: string): Element {
@@ -117,7 +131,7 @@ export class DOMChanges {
   private uselessElement: HTMLElement;
   private uselessAnchor: HTMLAnchorElement;
 
-  constructor(document) {
+  constructor(document: Document) {
     this.document = document;
     this.namespace = null;
     this.uselessElement = this.document.createElement('div');
@@ -187,11 +201,11 @@ export class DOMChanges {
     return textNode;
   }
 
-  insertBefore(element: Element, node: Node, reference: Node) {
+  insertBefore(element: Simple.Element, node: Simple.Node, reference: Simple.Node) {
     element.insertBefore(node, reference);
   }
 
-  insertAfter(element: Element, node: Node, reference: Node) {
+  insertAfter(element: Simple.Element, node: Simple.Node, reference: Simple.Node) {
     this.insertBefore(element, node, reference.nextSibling);
   }
 }
