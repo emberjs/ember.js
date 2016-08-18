@@ -151,3 +151,5 @@ module.exports = function() {
 
   return emberBuild.getDistTrees();
 };
+
+module.exports.getFeatures = getFeatures;
