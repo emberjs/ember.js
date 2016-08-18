@@ -1,8 +1,17 @@
 import { ConcreteBounds, SingleNodeBounds, Bounds } from '../bounds';
-import { default as applyTableElementFix, fixInnerHTML, requiresInnerHTMLFix } from '../compat/inner-html-fix';
-import { default as applySVGElementFix, fixSVG } from '../compat/svg-inner-html-fix';
-import applyTextNodeMergingFix from '../compat/text-node-merging-fix';
-import * as SimplifiedDOM from './interfaces';
+import {
+  domChanges as domChangesTableElementFix,
+  treeConstruction as treeConstructionTableElementFix
+} from '../compat/inner-html-fix';
+import {
+  domChanges as domChangesSvgElementFix,
+  treeConstruction as treeConstructionSvgElementFix
+} from '../compat/svg-inner-html-fix';
+import {
+  domChanges as domChangesNodeMergingFix,
+  treeConstruction as treeConstructionNodeMergingFix
+} from '../compat/text-node-merging-fix';
+import * as Simple from './interfaces';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -27,6 +36,8 @@ export const BLACKLIST_TABLE = Object.create(null);
 
 const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/;
 
+let doc = typeof document === 'undefined' ? undefined : document;
+
 export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
 }
@@ -44,15 +55,19 @@ export function moveNodesBefore(source, target, nextSibling) {
 }
 
 namespace DOM {
-  type Node = SimplifiedDOM.Node;
-  type Element = SimplifiedDOM.Element;
-  type Document = SimplifiedDOM.Document;
-  type Comment = SimplifiedDOM.Comment;
-  type Text = SimplifiedDOM.Text;
-  type Namespace = SimplifiedDOM.Namespace;
+  type Node = Simple.Node;
+  type Element = Simple.Element;
+  type Document = Simple.Document;
+  type Comment = Simple.Comment;
+  type Text = Simple.Text;
+  type Namespace = Simple.Namespace;
+  type HTMLElement = Simple.HTMLElement;
 
-  export abstract class TreeConstruction {
-    constructor(private document: Document) {}
+  class TreeConstruction {
+    protected uselessElement: HTMLElement;
+    constructor(private document: Document) {
+      this.uselessElement = document.createElement('div');
+    }
 
     createElement(tag: string): Element {
       return this.document.createElement(tag);
@@ -82,8 +97,18 @@ namespace DOM {
       parent.insertBefore(node, reference);
     }
 
-    abstract insertHTMLBefore(parent: Element, html: string, reference: Node): Bounds;
+    insertHTMLBefore(parent: Element, html: string, reference: Node): Bounds {
+      return insertHTMLBefore(this.uselessElement, parent, reference, html);
+    };
   }
+
+  let appliedTreeContruction = TreeConstruction;
+  appliedTreeContruction = treeConstructionNodeMergingFix(doc, appliedTreeContruction);
+  appliedTreeContruction = treeConstructionTableElementFix(doc, appliedTreeContruction);
+  appliedTreeContruction = treeConstructionSvgElementFix(doc, appliedTreeContruction, SVG_NAMESPACE);
+
+  export const DOMTreeConstruction = appliedTreeContruction;
+  export type DOMTreeConstruction = TreeConstruction;
 }
 
 export class DOMChanges {
@@ -142,39 +167,7 @@ export class DOMChanges {
   }
 
   insertHTMLBefore(_parent: Element, nextSibling: Node, html: string): Bounds {
-    // TypeScript vendored an old version of the DOM spec where `insertAdjacentHTML`
-    // only exists on `HTMLElement` but not on `Element`. We actually work with the
-    // newer version of the DOM API here (and monkey-patch this method in `./compat`
-    // when we detect older browsers). This is a hack to work around this limitation.
-    let parent = _parent as HTMLElement;
-
-    let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
-    let last;
-
-    if (html === null || html === '') {
-      return new ConcreteBounds(parent, null, null);
-    }
-
-    if (nextSibling === null) {
-      parent.insertAdjacentHTML('beforeEnd', html);
-      last = parent.lastChild;
-    } else if (nextSibling instanceof HTMLElement) {
-      nextSibling.insertAdjacentHTML('beforeBegin', html);
-      last = nextSibling.previousSibling;
-    } else {
-      // Non-element nodes do not support insertAdjacentHTML, so add an
-      // element and call it on that element. Then remove the element.
-      //
-      // This also protects Edge, IE and Firefox w/o the inspector open
-      // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
-      parent.insertBefore(this.uselessElement, nextSibling);
-      this.uselessElement.insertAdjacentHTML('beforeBegin', html);
-      last = this.uselessElement.previousSibling;
-      parent.removeChild(this.uselessElement);
-    }
-
-    let first = prev ? prev.nextSibling : parent.firstChild;
-    return new ConcreteBounds(parent, first, last);
+    return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
   }
 
   insertNodeBefore(parent: Element, node: Node, reference: Node): Bounds {
@@ -203,12 +196,14 @@ export class DOMChanges {
   }
 }
 
-function defaultInsertHTMLBefore(this: void, useless: HTMLElement, _parent: Element, nextSibling: Node, html: string): Bounds { // tslint:disable-line
+export function insertHTMLBefore(this: void, _useless: Simple.HTMLElement, _parent: Simple.Element, _nextSibling: Simple.Node, html: string): Bounds { // tslint:disable-line
   // TypeScript vendored an old version of the DOM spec where `insertAdjacentHTML`
   // only exists on `HTMLElement` but not on `Element`. We actually work with the
   // newer version of the DOM API here (and monkey-patch this method in `./compat`
   // when we detect older browsers). This is a hack to work around this limitation.
   let parent = _parent as HTMLElement;
+  let useless = _useless as HTMLElement;
+  let nextSibling = _nextSibling as Node;
 
   let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
   let last;
@@ -239,54 +234,17 @@ function defaultInsertHTMLBefore(this: void, useless: HTMLElement, _parent: Elem
   return new ConcreteBounds(parent, first, last);
 }
 
-function fixNodeMerging(this: void, uselessElement: HTMLElement, uselessComment: Comment, _parent: Element, nextSibling: Node, html: string): Bounds { // tslint:disable-line
-  let parent = _parent as HTMLElement;
-
-  parent.insertBefore(uselessComment, nextSibling);
-
-  let bounds = insertHTMLBefore(uselessElement, uselessComment, parent, nextSibling, html);
-
-  parent.removeChild(uselessComment);
-
-  return bounds;
-}
-
-export function insertHTMLBefore(this: void, uselessElement: HTMLElement, uselessComment: Comment, _parent: Element, nextSibling: Node, html: string): Bounds { // tslint:disable-line
-  let parent = _parent as HTMLElement;
-
-  if (html === null || html === '') {
-    return defaultInsertHTMLBefore(uselessElement, parent, nextSibling, html);
-  }
-
-  let nextPrevious = nextSibling ? nextSibling.previousSibling : parent.lastChild;
-
-  if (nextPrevious && nextPrevious instanceof Text) {
-    return fixNodeMerging(uselessElement, uselessComment, parent, nextSibling, html);
-  }
-
-  if (requiresInnerHTMLFix(parent)) {
-    return fixInnerHTML(uselessElement, parent, nextSibling, html);
-  }
-
-  if (parent.namespaceURI === SVG_NAMESPACE) {
-    return fixSVG(uselessElement, parent, nextSibling, html);
-  }
-
-  return defaultInsertHTMLBefore(uselessElement, parent, nextSibling, html);
-}
-
 function isDocumentFragment(node: Node): node is DocumentFragment {
   return node.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
 }
 
 let helper = DOMChanges;
-let doc = typeof document === 'undefined' ? undefined : document;
 
-helper = applyTextNodeMergingFix(doc, helper);
-helper = applyTableElementFix(doc, helper);
-helper = applySVGElementFix(doc, helper, SVG_NAMESPACE);
+helper = domChangesNodeMergingFix(doc, helper);
+helper = domChangesTableElementFix(doc, helper);
+helper = domChangesSvgElementFix(doc, helper, SVG_NAMESPACE);
 
 export default helper;
-export const DOMTreeConstruction = DOM.TreeConstruction;
-export type DOMTreeConstruction = DOM.TreeConstruction;
+export const DOMTreeConstruction = DOM.DOMTreeConstruction;
+export type DOMTreeConstruction = DOM.DOMTreeConstruction;
 export { Namespace as DOMNamespace } from './interfaces';

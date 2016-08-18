@@ -177,6 +177,6 @@ export {
   ModifierManager
 } from './lib/modifier/interfaces';
 
-export { default as DOMChanges, DOMChanges as IDOMChanges, DOMTreeConstruction, insertHTMLBefore, isWhitespace } from './lib/dom/helper';
+export { default as DOMChanges, DOMChanges as IDOMChanges, DOMTreeConstruction, isWhitespace, insertHTMLBefore } from './lib/dom/helper';
 export { ElementStack, ElementOperations } from './lib/builder';
 export { default as Bounds } from './lib/bounds';
