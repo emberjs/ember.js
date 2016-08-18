@@ -235,7 +235,7 @@ export class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     }
 
     let vm = opcode.vmForInsertion(nextSibling);
-    let tryOpcode;
+    let tryOpcode: TryOpcode;
 
     vm.execute(opcode.ops, vm => {
       vm.frame.setArgs(EvaluatedArgs.positional([item, memo]));
@@ -251,6 +251,8 @@ export class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
         children: vm.updatingOpcodeStack.current
       });
     });
+
+    tryOpcode.didInitializeChildren();
 
     updating.insertBefore(tryOpcode, reference);
 
