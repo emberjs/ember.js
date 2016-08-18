@@ -524,6 +524,19 @@ testComponent('yield', {
   expected: 'Yes:Hello42outer'
 });
 
+testComponent('use a non-existent block param', {
+  skip: 'glimmer',
+  layout: '{{yield someValue}}',
+
+  invokeAs: {
+    args: { someValue: '42' },
+    blockParams: ['val1', 'val2'],
+    template: '{{val1}} - {{val2}}'
+  },
+
+  expected: '42 - '
+});
+
 testComponent('yield to inverse', {
   skip: 'glimmer',
   layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
