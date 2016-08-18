@@ -18,8 +18,6 @@ import {
   DOMTreeConstruction,
   DOMChanges,
   IDOMChanges,
-  insertHTMLBefore,
-  Bounds,
 
   // Partials
   PartialDefinition,
@@ -668,21 +666,6 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
   }
 }
 
-class TestTreeConstruction extends DOMTreeConstruction {
-  private uselessElement: HTMLDivElement;
-  private uselessComment: Comment;
-
-  constructor(document: Document) {
-    super(document);
-    this.uselessElement = document.createElement('div');
-    this.uselessComment = document.createComment('');
-  }
-
-  insertHTMLBefore(parent: Element, html: string, reference: Node): Bounds {
-    return insertHTMLBefore(this.uselessElement,  this.uselessComment, parent, reference, html);
-  }
-}
-
 export class TestEnvironment extends Environment {
   private helpers = dict<GlimmerHelper>();
   private modifiers = dict<ModifierManager<Opaque>>();
@@ -692,7 +675,7 @@ export class TestEnvironment extends Environment {
   public compiledLayouts = dict<CompiledBlock>();
 
   constructor(dom?: IDOMChanges) {
-    super({ appendOperations: new TestTreeConstruction(document), updateOperations: dom || new DOMChanges(document) });
+    super({ appendOperations: new DOMTreeConstruction(document), updateOperations: dom || new DOMChanges(document) });
 
     this.uselessAnchor = document.createElement('a');
     this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);

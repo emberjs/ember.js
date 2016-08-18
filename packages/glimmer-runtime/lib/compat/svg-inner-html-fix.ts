@@ -1,5 +1,5 @@
 import { Bounds, ConcreteBounds } from '../bounds';
-import { moveNodesBefore, DOMChanges } from '../dom/helper';
+import { moveNodesBefore, DOMChanges, DOMTreeConstruction } from '../dom/helper';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -14,23 +14,11 @@ const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 //           approach is used. A pre/post SVG tag is added to the string, then
 //           that whole string is added to a div. The created nodes are plucked
 //           out and applied to the target location on DOM.
-export default function applyInnerHTMLFix(document: Document, DOMChangesClass: typeof DOMChanges, svgNamespace: string): typeof DOMChanges {
+export function domChanges(document: Document, DOMChangesClass: typeof DOMChanges, svgNamespace: string): typeof DOMChanges {
   if (!document) return DOMChangesClass;
 
-  let svg = document.createElementNS(svgNamespace, 'svg');
-
-  try {
-    svg['insertAdjacentHTML']('beforeEnd', '<circle></circle>');
-  } catch (e) {
-    // IE, Edge: Will throw, insertAdjacentHTML is unsupported on SVG
-    // Safari: Will throw, insertAdjacentHTML is not present on SVG
-  } finally {
-    // FF: Old versions will create a node in the wrong namespace
-    if (svg.childNodes.length === 1 && svg.firstChild.namespaceURI === SVG_NAMESPACE) {
-      // The test worked as expected, no fix required
-      return DOMChangesClass;
-    }
-    svg = null;
+  if (!shouldApplyFix(document, svgNamespace)) {
+    return DOMChangesClass;
   }
 
   let div = document.createElement('div');
@@ -45,27 +33,62 @@ export default function applyInnerHTMLFix(document: Document, DOMChangesClass: t
         return super.insertHTMLBefore(parent, nextSibling, html);
       }
 
-      // IE, Edge: also do not correctly support using `innerHTML` on SVG
-      // namespaced elements. So here a wrapper is used.
-      let wrappedHtml = '<svg>' + html + '</svg>';
-
-      div.innerHTML = wrappedHtml;
-
-      let [first, last] = moveNodesBefore(div.firstChild, parent, nextSibling);
-      return new ConcreteBounds(parent, first, last);
+      return fixSVG(parent, div, html, nextSibling);
     }
   };
 }
 
+export function treeConstruction(document: Document, TreeConstructionClass: typeof DOMTreeConstruction, svgNamespace: string): typeof DOMTreeConstruction {
+  if (!document) return TreeConstructionClass;
 
-export function fixSVG(this: void, useless: HTMLElement, _parent: Element, nextSibling: Node, html: string): Bounds { // tslint:disable-line
-  let parent = _parent as HTMLElement;
-    // IE, Edge: also do not correctly support using `innerHTML` on SVG
+  if (!shouldApplyFix(document, svgNamespace)) {
+    return TreeConstructionClass;
+  }
+
+  let div = document.createElement('div');
+
+  return class TreeConstructionWithSVGInnerHTMLFix extends TreeConstructionClass {
+    insertHTMLBefore(parent: HTMLElement, html: string,  reference: Node,): Bounds {
+      if (html === null || html === '') {
+        return super.insertHTMLBefore(parent, html, reference);
+      }
+
+      if (parent.namespaceURI !== svgNamespace) {
+        return super.insertHTMLBefore(parent, html, reference);
+      }
+
+      return fixSVG(parent, div, html, reference);
+    }
+  };
+}
+
+function fixSVG(parent: Element, div: HTMLElement, html: string, reference: Node): Bounds {
+  // IE, Edge: also do not correctly support using `innerHTML` on SVG
   // namespaced elements. So here a wrapper is used.
   let wrappedHtml = '<svg>' + html + '</svg>';
 
-  useless.innerHTML = wrappedHtml;
+  div.innerHTML = wrappedHtml;
 
-  let [first, last] = moveNodesBefore(useless.firstChild, parent, nextSibling);
+  let [first, last] = moveNodesBefore(div.firstChild, parent, reference);
   return new ConcreteBounds(parent, first, last);
+}
+
+function shouldApplyFix(document, svgNamespace) {
+  let svg = document.createElementNS(svgNamespace, 'svg');
+
+  try {
+    svg['insertAdjacentHTML']('beforeEnd', '<circle></circle>');
+  } catch (e) {
+    // IE, Edge: Will throw, insertAdjacentHTML is unsupported on SVG
+    // Safari: Will throw, insertAdjacentHTML is not present on SVG
+  } finally {
+    // FF: Old versions will create a node in the wrong namespace
+    if (svg.childNodes.length === 1 && svg.firstChild.namespaceURI === SVG_NAMESPACE) {
+      // The test worked as expected, no fix required
+      return false;
+    }
+    svg = null;
+
+    return true;
+  }
 }

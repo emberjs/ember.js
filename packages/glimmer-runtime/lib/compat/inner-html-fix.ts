@@ -1,5 +1,11 @@
 import { Bounds, ConcreteBounds } from '../bounds';
-import { moveNodesBefore, DOMChanges } from '../dom/helper';
+import { moveNodesBefore, DOMChanges, DOMTreeConstruction } from '../dom/helper';
+
+interface Wrapper {
+  depth: number;
+  before: string;
+  after: string;
+}
 
 let innerHTMLWrapper = {
   colgroup: { depth: 2, before: '<table><colgroup>', after: '</colgroup></table>' },
@@ -17,22 +23,12 @@ let innerHTMLWrapper = {
 // Fix:      Wrap the innerHTML we are about to set in its parents, apply the
 //           wrapped innerHTML on a div, then move the unwrapped nodes into the
 //           target position.
-export default function applyInnerHTMLFix(document: Document, DOMChangesClass: typeof DOMChanges): typeof DOMChanges {
+export function domChanges(document: Document, DOMChangesClass: typeof DOMChanges): typeof DOMChanges {
   if (!document) return DOMChangesClass;
 
-  let table = document.createElement('table');
-
-  try {
-    table.innerHTML = '<tbody></tbody>';
-  } catch (e) {
-  } finally {
-    if (table.childNodes.length !== 0) {
-      // It worked as expected, no fix required
-      return DOMChangesClass;
-    }
+  if (!shouldApplyFix(document)) {
+    return DOMChangesClass;
   }
-
-  table = null;
 
   let div = document.createElement('div');
 
@@ -49,42 +45,62 @@ export default function applyInnerHTMLFix(document: Document, DOMChangesClass: t
         return super.insertHTMLBefore(parent, nextSibling, html);
       }
 
-      let wrappedHtml = wrapper.before + html + wrapper.after;
-
-      div.innerHTML = wrappedHtml;
-
-      let parentNode: Node = div;
-
-      for (let i=0; i<wrapper.depth; i++) {
-        parentNode = parentNode.childNodes[0];
-      }
-
-      let [first, last] = moveNodesBefore(parentNode, parent, nextSibling);
-      return new ConcreteBounds(parent, first, last);
+      return fixInnerHTML(parent, wrapper, div, html, nextSibling);
     }
   };
 }
 
-export function requiresInnerHTMLFix(parent: HTMLElement) {
-  let parentTag = parent.tagName.toLowerCase();
-  let wrapper = innerHTMLWrapper[parentTag];
-  return wrapper !== undefined;
+export function treeConstruction(document: Document, DOMTreeConstructionClass: typeof DOMTreeConstruction) {
+  if (!shouldApplyFix(document)) {
+    return DOMTreeConstructionClass;
+  }
+
+  let div = document.createElement('div');
+
+  return class DOMTreeConstructionWithInnerHTMLFix extends DOMTreeConstructionClass {
+    insertHTMLBefore(parent: HTMLElement, html: string, reference: Node): Bounds {
+      if (html === null || html === '') {
+        return super.insertHTMLBefore(parent, html, reference);
+      }
+
+      let parentTag = parent.tagName.toLowerCase();
+      let wrapper = innerHTMLWrapper[parentTag];
+
+      if(wrapper === undefined) {
+        return super.insertHTMLBefore(parent, html, reference);
+      }
+
+      return fixInnerHTML(parent, wrapper, div, html, reference);
+    }
+  };
 }
 
-export function fixInnerHTML(this: void, useless: HTMLElement, _parent: Element, nextSibling: Node, html: string): Bounds { // tslint:disable-line
-  let parent = _parent as HTMLElement;
-  let parentTag = parent.tagName.toLowerCase();
-  let wrapper = innerHTMLWrapper[parentTag];
+function fixInnerHTML(parent: HTMLElement, wrapper: Wrapper, div: HTMLElement, html: string, reference: Node): Bounds {
   let wrappedHtml = wrapper.before + html + wrapper.after;
 
-  useless.innerHTML = wrappedHtml;
+  div.innerHTML = wrappedHtml;
 
-  let parentNode: Node = useless;
+  let parentNode: Node = div;
 
   for (let i=0; i<wrapper.depth; i++) {
     parentNode = parentNode.childNodes[0];
   }
 
-  let [first, last] = moveNodesBefore(parentNode, parent, nextSibling);
+  let [first, last] = moveNodesBefore(parentNode, parent, reference);
   return new ConcreteBounds(parent, first, last);
+}
+
+function shouldApplyFix(document) {
+  let table = document.createElement('table');
+  try {
+    table.innerHTML = '<tbody></tbody>';
+  } catch (e) {
+  } finally {
+    if (table.childNodes.length !== 0) {
+      // It worked as expected, no fix required
+      return false;
+    }
+  }
+
+  return true;
 }
