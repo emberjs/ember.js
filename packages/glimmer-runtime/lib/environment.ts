@@ -73,8 +73,9 @@ export class Scope {
   private slots: ScopeSlot[];
   private callerScope: Scope = null;
 
-  constructor(references: ScopeSlot[]) {
+  constructor(references: ScopeSlot[], callerScope: Scope = null) {
     this.slots = references;
+    this.callerScope = callerScope;
   }
 
   init({ self }: { self: PathReference<Opaque> }): this {
@@ -111,7 +112,7 @@ export class Scope {
   }
 
   child(): Scope {
-    return new Scope(this.slots.slice());
+    return new Scope(this.slots.slice(), this.callerScope);
   }
 }
 
