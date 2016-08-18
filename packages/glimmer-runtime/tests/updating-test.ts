@@ -1632,6 +1632,8 @@ test('The each helper yields the index of the current item when using a non-@ind
   }
 });
 
+// TODO: port https://github.com/emberjs/ember.js/pull/14082
+
 function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
   testMethod(testName, function() {
     let template = compile(templateSource);
