@@ -150,7 +150,7 @@ export class ElementStack implements Cursor {
   private elementOperationsStack = new Stack<GroupedElementOperations>();
   private blockStack = new Stack<Tracker>();
 
-  static forInitialRender(env: Environment, parentNode: Simple.Element, nextSibling: Node) {
+  static forInitialRender(env: Environment, parentNode: Simple.Element, nextSibling: Simple.Node) {
     return new ElementStack(env, parentNode, nextSibling);
   }
 

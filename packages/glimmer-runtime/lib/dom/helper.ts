@@ -65,7 +65,7 @@ namespace DOM {
 
   class TreeConstruction {
     protected uselessElement: HTMLElement;
-    constructor(private document: Document) {
+    constructor(protected document: Document) {
       this.uselessElement = document.createElement('div');
     }
 
@@ -138,31 +138,31 @@ export class DOMChanges {
     this.uselessAnchor = this.document.createElement('a');
   }
 
-  setAttribute(element: Element, name: string, value: string) {
+  setAttribute(element: Simple.Element, name: string, value: string) {
     element.setAttribute(name, value);
   }
 
-  setAttributeNS(element: Element, namespace: string, name: string, value: string) {
+  setAttributeNS(element: Simple.Element, namespace: string, name: string, value: string) {
     element.setAttributeNS(namespace, name, value);
   }
 
-  removeAttribute(element: Element, name: string) {
+  removeAttribute(element: Simple.Element, name: string) {
     element.removeAttribute(name);
   }
 
-  removeAttributeNS(element: Element, namespace: string, name: string) {
+  removeAttributeNS(element: Simple.Element, namespace: string, name: string) {
     element.removeAttributeNS(namespace, name);
   }
 
-  createTextNode(text: string): Text {
+  createTextNode(text: string): Simple.Text {
     return this.document.createTextNode(text);
   }
 
-  createComment(data: string): Comment {
+  createComment(data: string): Simple.Comment {
     return this.document.createComment(data);
   }
 
-  createElement(tag: string, context: Element): Element {
+  createElement(tag: string, context: Simple.Element): Simple.Element {
     let isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
     let isHTMLIntegrationPoint = SVG_INTEGRATION_POINTS[context.tagName];
 
@@ -184,7 +184,7 @@ export class DOMChanges {
     return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
   }
 
-  insertNodeBefore(parent: Element, node: Node, reference: Node): Bounds {
+  insertNodeBefore(parent: Simple.Element, node: Simple.Node, reference: Simple.Node): Bounds {
     if (isDocumentFragment(node)) {
       let { firstChild, lastChild } = node;
       this.insertBefore(parent, node, reference);
@@ -195,7 +195,7 @@ export class DOMChanges {
     }
   }
 
-  insertTextBefore(parent: Element, nextSibling: Node, text: string): Text {
+  insertTextBefore(parent: Simple.Element, nextSibling: Simple.Node, text: string): Simple.Text {
     let textNode = this.createTextNode(text);
     this.insertBefore(parent, textNode, nextSibling);
     return textNode;
@@ -248,7 +248,7 @@ export function insertHTMLBefore(this: void, _useless: Simple.HTMLElement, _pare
   return new ConcreteBounds(parent, first, last);
 }
 
-function isDocumentFragment(node: Node): node is DocumentFragment {
+function isDocumentFragment(node: Simple.Node): node is DocumentFragment {
   return node.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
 }
 
