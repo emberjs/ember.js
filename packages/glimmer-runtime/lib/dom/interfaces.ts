@@ -56,6 +56,8 @@ export interface Element extends Node {
   tagName: string;
   firstChild: Node;
   lastChild: Node;
+  removeAttribute(name: string): void;
+  removeAttributeNS(namespaceURI: string, name: string);
   setAttribute(name: string, value: string): void;
   setAttributeNS(namespaceURI: string, qualifiedName: string, value: string): void;
   insertBefore(node: Node, reference: Node): void;
