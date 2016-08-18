@@ -653,6 +653,52 @@ class SingleEachTest extends AbstractEachTest {
     this.assertText('No Thing bar');
   }
 
+  ['@test content that are not initially present updates correctly GH#13983']() {
+    // The root cause of this bug is that Glimmer did not call `didInitializeChildren`
+    // on the inserted `TryOpcode`, causing that `TryOpcode` to have an uninitialized
+    // tag. Currently the only way to observe this the "JUMP-IF-NOT-MODIFIED", i.e. by
+    // wrapping it in an component.
+
+    this.registerComponent('x-wrapper', { template: '{{yield}}' });
+
+    this.makeList([]);
+
+    this.render(`{{#x-wrapper}}{{#each list as |obj|}}[{{obj.text}}]{{/each}}{{/x-wrapper}}`);
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    this.runTask(() => this.pushObject({ text: 'foo' }));
+
+    this.assertText('[foo]');
+
+    this.runTask(() => set(this.objectAt(0), 'text', 'FOO'));
+
+    this.assertText('[FOO]');
+
+    this.runTask(() => this.pushObject({ text: 'bar' }));
+
+    this.assertText('[FOO][bar]');
+
+    this.runTask(() => set(this.objectAt(1), 'text', 'BAR'));
+
+    this.assertText('[FOO][BAR]');
+
+    this.runTask(() => set(this.objectAt(1), 'text', 'baz'));
+
+    this.assertText('[FOO][baz]');
+
+    this.runTask(() => this.replace(1, 1, [{ text: 'BAZ' }]));
+
+    this.assertText('[FOO][BAZ]');
+
+    this.replaceList([]);
+
+    this.assertText('');
+  }
 }
 
 moduleFor('Syntax test: {{#each}} with arrays', class extends SingleEachTest {
