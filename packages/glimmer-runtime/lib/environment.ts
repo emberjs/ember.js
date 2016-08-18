@@ -2,7 +2,7 @@ import { Statement as StatementSyntax } from './syntax';
 
 import { DOMHelper } from './dom/helper';
 import { Reference, OpaqueIterable } from 'glimmer-reference';
-import { NULL_REFERENCE, ConditionalReference } from './references';
+import { UNDEFINED_REFERENCE, NULL_REFERENCE, ConditionalReference } from './references';
 import {
   defaultChangeLists,
   IChangeList
@@ -94,7 +94,7 @@ export class Scope {
     return this.slots[symbol] as InlineBlock;
   }
 
-  bindSymbol(symbol: number, value: PathReference<Opaque>) {
+  bindSymbol(symbol: number, value: PathReference<Opaque>=UNDEFINED_REFERENCE) {
     this.slots[symbol] = value;
   }
 
