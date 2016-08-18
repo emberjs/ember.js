@@ -1189,6 +1189,40 @@ QUnit.test('correct scope - complex', assert => {
     );
 });
 
+QUnit.test('correct scope - complex yield', assert => {
+  env.registerEmberishCurlyComponent('item-list', EmberishCurlyComponent.extend() as any,
+    stripTight`
+      <ul>
+        {{#each items key="id" as |item|}}
+          <li>{{item.id}}: {{yield item}}</li>
+        {{/each}}
+      </ul>`
+  );
+
+  let items = [
+    { id: '1', name: 'Foo' },
+    { id: '2', name: 'Bar' },
+    { id: '3', name: 'Baz' }
+  ];
+
+  appendViewFor(
+    stripTight`
+      {{#item-list items=items as |item|}}
+        {{item.name}}
+      {{/item-list}}`
+    , { items }
+  );
+
+  assertEmberishElement('div',
+    stripTight`
+      <ul>
+        <li>1: Foo</li>
+        <li>2: Bar</li>
+        <li>3: Baz</li>
+      </ul>`
+  );
+});
+
 QUnit.test('correct scope - self', assert => {
   class FooBar extends BasicComponent {
     public foo = 'foo';
