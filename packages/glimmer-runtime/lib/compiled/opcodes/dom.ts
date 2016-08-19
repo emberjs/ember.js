@@ -137,7 +137,7 @@ export class FlushElementOpcode extends Opcode {
 
   evaluate(vm: VM) {
     let stack = vm.stack();
-    let { constructing: element, operations: { groups } } = stack;
+    let { constructing: element, operations: { attributes } } = stack;
 
     let classList = new ClassList();
     let flattened = dict<Attribute>();
@@ -148,16 +148,14 @@ export class FlushElementOpcode extends Opcode {
     // 2. Other attributes are first-write-wins (which means invocation
     //    wins over top-level element in components)
 
-    for (let i = 0; i < groups.length; i++) {
-      for (let j = 0; j < groups[i].length; j++) {
-        let attribute = groups[i][j];
-        let name = attribute.name;
-        if (name === 'class') {
-          classList.append(attribute['reference'] || new ValueReference(attribute['value']));
-        } else if (!flattened[name]) {
-          flattenedKeys.push(name);
-          flattened[name] = attribute;
-        }
+    for (let i = 0; i < attributes.length; i++) {
+      let attribute = attributes[i];
+      let name = attribute.name;
+      if (name === 'class') {
+        classList.append(attribute['reference'] || new ValueReference(attribute['value']));
+      } else if (!flattened[name]) {
+        flattenedKeys.push(name);
+        flattened[name] = attribute;
       }
     }
 
