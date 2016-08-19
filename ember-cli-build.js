@@ -13,8 +13,8 @@ var mv = stew.mv;
 var find = stew.find;
 var rename = stew.rename;
 
-function transpile(tree, label) {
-  return transpileES6(tree, label, { sourceMaps: 'inline' });
+function transpile(tree, options, label) {
+  return transpileES6(tree, label, options);
 }
 
 function buildTSOptions(compilerOptions) {
@@ -38,11 +38,20 @@ function buildTSOptions(compilerOptions) {
   return tsOptions;
 }
 
-module.exports = function() {
+function buildBabelOptions(options) {
+  var externalHelpers = options.shouldExternalizeHelpers || false;
+  return {
+    externalHelpers: externalHelpers,
+    sourceMaps: 'inline'
+  };
+}
+
+module.exports = function(options) {
   var packages = __dirname + '/packages';
   var tslintConfig = __dirname + '/tslint.json';
   var bower = __dirname + '/bower_components';
   var hasBower = existsSync(bower);
+  var babelOptions = buildBabelOptions(options);
 
   var tsOptions = buildTSOptions();
 
@@ -96,7 +105,7 @@ module.exports = function() {
   /*
    * ES5 Named AMD Build
    */
-  libTree = transpile(libTree, 'ES5 Lib Tree');
+  libTree = transpile(libTree, babelOptions, 'ES5 Lib Tree');
   var es5LibTree = mv(libTree, 'named-amd');
 
   /*
@@ -178,7 +187,7 @@ module.exports = function() {
     find(jsTree, { include: ['glimmer-test-helpers/**/*.js'] })
   ]);
 
-  glimmerTests = transpile(glimmerTests, 'glimmer-tests');
+  glimmerTests = transpile(glimmerTests, babelOptions, 'glimmer-tests');
 
   // Test Assets
 
