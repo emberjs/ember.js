@@ -135,6 +135,10 @@ export default class JavaScriptCompiler {
     this.push(['open-element', tag, blockParams]);
   }
 
+  flushElement() {
+    this.push(['flush-element']);
+  }
+
   closeElement() {
     this.push(['close-element']);
   }

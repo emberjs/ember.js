@@ -228,7 +228,9 @@ class WrappedBuilder {
     //        OpenDynamicPrimitiveElement
     //        DidCreateElement
     //        ...attr statements...
+    //        FlushElement
     // BODY:  Noop
+    //        ...body statements...
     //        PutValue(TagExpr)
     //        Test
     //        JumpUnless(END)
@@ -240,6 +242,8 @@ class WrappedBuilder {
     //        OpenPrimitiveElementOpcode
     //        DidCreateElement
     //        ...attr statements...
+    //        FlushElement
+    //        ...body statements...
     //        CloseElement
     //        Exit
 
@@ -258,12 +262,14 @@ class WrappedBuilder {
       dsl.openDynamicPrimitiveElement();
       dsl.didCreateElement();
       this.attrs['buffer'].forEach(statement => compileStatement(env, statement, dsl, layout));
+      dsl.flushElement();
       dsl.label('BODY');
     } else if (this.tag.isStatic) {
       let tag = this.tag.staticTagName;
       dsl.openPrimitiveElement(tag);
       dsl.didCreateElement();
       this.attrs['buffer'].forEach(statement => compileStatement(env, statement, dsl, layout));
+      dsl.flushElement();
     }
 
     if (layout.hasNamedParameters()) {

@@ -41,6 +41,10 @@ export function defaultPropertyChangeLists(tagName: string, attr: string) {
     return InputValuePropertyChangeList;
   }
 
+  if (isOptionSelected(tagName, attr)) {
+    return OptionSelectedChangeList;
+  }
+
   return PropertyChangeList;
 }
 
@@ -114,11 +118,7 @@ function isUserInputValue(tagName: string, attribute: string) {
 export const InputValuePropertyChangeList: IChangeList = new class {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
     let input = element as FIXME<HTMLInputElement, "This breaks SSR">;
-    let currentValue = input.value;
-    let normalizedValue = normalizeTextValue(value);
-    if (currentValue !== normalizedValue) {
-      input.value = normalizedValue;
-    }
+    input.value = normalizeTextValue(value);
   }
 
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
@@ -127,6 +127,28 @@ export const InputValuePropertyChangeList: IChangeList = new class {
     let normalizedValue = normalizeTextValue(value);
     if (currentValue !== normalizedValue) {
       input.value = normalizedValue;
+    }
+  }
+};
+
+function isOptionSelected(tagName: string, attribute: string) {
+  return tagName === 'OPTION' && attribute === 'selected';
+}
+
+export const OptionSelectedChangeList: IChangeList = new class {
+  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
+    if (value !== null && value !== undefined && value !== false) {
+      env.getAppendOperations().setAttribute(element, 'selected', '');
+    }
+  }
+
+  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
+    let option = <HTMLOptionElement>element;
+
+    if (value === null || value === undefined || value === false) {
+      option.selected = false;
+    } else {
+      option.selected = true;
     }
   }
 };

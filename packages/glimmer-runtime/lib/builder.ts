@@ -11,7 +11,9 @@ import {
 } from 'glimmer-reference';
 
 import {
-  Attribute
+  Attribute,
+  StaticAttribute,
+  DynamicAttribute
 } from './compiled/opcodes/dom';
 
 import * as Simple from './dom/interfaces';
@@ -64,8 +66,10 @@ class BlockStackElement {
 }
 
 export interface ElementOperations {
-  addAttribute(name: string, value: PathReference<string>, isTrusting: boolean);
-  addAttributeNS(namespace: string, name: string, value: PathReference<string>, isTrusting: boolean);
+  addStaticAttribute(name: string, value: string);
+  addStaticAttributeNS(namespace: string, name: string, value: string);
+  addDynamicAttribute(name: string, value: PathReference<string>, isTrusting: boolean);
+  addDynamicAttributeNS(namespace: string, name: string, value: PathReference<string>, isTrusting: boolean);
 }
 
 class GroupedElementOperations implements ElementOperations {
@@ -87,16 +91,25 @@ class GroupedElementOperations implements ElementOperations {
     this.groups.push(group);
   }
 
-  addAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
-    let attributeManager = this.env.attributeFor(this.element, name, reference, isTrusting);
-    let attribute = new Attribute(this.element, attributeManager, name, reference);
+  addStaticAttribute(name: string, value: string) {
+    let attribute = new StaticAttribute(this.element, name, value);
     this.group.push(attribute);
   }
 
-  addAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
-    let attributeManager = this.env.attributeFor(this.element, name, reference,isTrusting, namespace);
-    let nsAttribute = new Attribute(this.element, attributeManager, name, reference, namespace);
+  addStaticAttributeNS(namespace: string, name: string, value: string) {
+    let attribute = new StaticAttribute(this.element, name, value, namespace);
+    this.group.push(attribute);
+  }
 
+  addDynamicAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
+    let attributeManager = this.env.attributeFor(this.element, name, reference, isTrusting);
+    let attribute = new DynamicAttribute(this.element, attributeManager, name, reference);
+    this.group.push(attribute);
+  }
+
+  addDynamicAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
+    let attributeManager = this.env.attributeFor(this.element, name, reference,isTrusting, namespace);
+    let nsAttribute = new DynamicAttribute(this.element, attributeManager, name, reference, namespace);
     this.group.push(nsAttribute);
   }
 }
@@ -141,13 +154,13 @@ export class ElementStack implements Cursor {
   public nextSibling: Simple.Node;
   public dom: DOMTreeConstruction;
   public updateOperations: DOMChanges;
+  public constructing: Simple.Element = null;
+  public operations: GroupedElementOperations = null;
   public element: Simple.Element;
-  public elementOperations: GroupedElementOperations = null;
   public env: Environment;
 
   private elementStack = new Stack<Simple.Element>();
   private nextSiblingStack = new Stack<Simple.Node>();
-  private elementOperationsStack = new Stack<GroupedElementOperations>();
   private blockStack = new Stack<Tracker>();
 
   static forInitialRender(env: Environment, parentNode: Simple.Element, nextSibling: Simple.Node) {
@@ -178,31 +191,14 @@ export class ElementStack implements Cursor {
     return this.blockStack.current;
   }
 
-  private pushElement(tag: string): Simple.Element {
-    let element = this.dom.createElement(tag, this.element);
-    let elementOperations = new GroupedElementOperations(element, this.env);
-
-    this.elementOperations = elementOperations;
-    this.element = element;
-    this.nextSibling = null;
-
-    this.elementStack.push(element);
-    this.elementOperationsStack.push(elementOperations);
-    this.nextSiblingStack.push(null);
-
-    return element;
-  }
-
   private popElement() {
-    let { elementStack, nextSiblingStack, elementOperationsStack }  = this;
+    let { elementStack, nextSiblingStack }  = this;
 
     let topElement = elementStack.pop();
     nextSiblingStack.pop();
-    elementOperationsStack.pop();
 
     this.element = elementStack.current;
     this.nextSibling = nextSiblingStack.current;
-    this.elementOperations = elementOperationsStack.current;
 
     return topElement;
   }
@@ -245,9 +241,27 @@ export class ElementStack implements Cursor {
   }
 
   openElement(tag: string): Simple.Element {
-    let element = this.pushElement(tag);
-    this.blockStack.current.openElement(element);
+    let element = this.dom.createElement(tag, this.element);
+    let operations = new GroupedElementOperations(element, this.env);
+
+    this.constructing = element;
+    this.operations = operations;
+
     return element;
+  }
+
+  flushElement() {
+    let parent  = this.element;
+    let element = this.element = this.constructing;
+
+    this.dom.insertBefore(parent, element, this.nextSibling);
+
+    this.constructing = null;
+    this.operations = null;
+    this.nextSibling = null;
+    this.elementStack.push(element);
+    this.nextSiblingStack.push(null);
+    this.blockStack.current.openElement(element);
   }
 
   newDestroyable(d: Destroyable) {
@@ -274,18 +288,25 @@ export class ElementStack implements Cursor {
     return comment;
   }
 
-  setAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
-    this.elementOperations.addAttribute(name, reference, isTrusting);
+  setStaticAttribute(name: string, value: string) {
+    this.operations.addStaticAttribute(name, value);
   }
 
-  setAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
-    this.elementOperations.addAttributeNS(namespace, name, reference, isTrusting);
+  setStaticAttributeNS(namespace: string, name: string, value: string) {
+    this.operations.addStaticAttributeNS(namespace, name, value);
+  }
+
+  setDynamicAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
+    this.operations.addDynamicAttribute(name, reference, isTrusting);
+  }
+
+  setDynamicAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
+    this.operations.addDynamicAttributeNS(namespace, name, reference, isTrusting);
   }
 
   closeElement() {
     this.blockStack.current.closeElement();
-    let child = this.popElement();
-    this.dom.insertBefore(this.element, child, this.nextSibling);
+    this.popElement();
   }
 }
 

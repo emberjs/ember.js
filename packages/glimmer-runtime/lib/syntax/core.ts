@@ -79,6 +79,7 @@ import {
 
 import {
   OpenPrimitiveElementOpcode,
+  FlushElementOpcode,
   CloseElementOpcode,
   StaticAttrOpcode,
   DynamicAttrOpcode,
@@ -442,6 +443,22 @@ export class DynamicAttr extends AttributeSyntax<string> {
   }
 }
 
+export class FlushElement extends StatementSyntax {
+  type = "flush-element";
+
+  static fromSpec() {
+    return new FlushElement();
+  }
+
+  static build() {
+    return new this();
+  }
+
+  compile(compiler: CompileInto) {
+    compiler.append(new FlushElementOpcode());
+  }
+}
+
 export class CloseElement extends StatementSyntax {
   type = "close-element";
 
@@ -560,7 +577,7 @@ export class OpenElement extends StatementSyntax {
     let args = dict<ExpressionSyntax<Opaque>>();
     let attrs: string[] = [];
 
-    while (current[ATTRIBUTE_SYNTAX] || current[MODIFIER_SYNTAX] || current[ARGUMENT_SYNTAX]) {
+    while (!(current instanceof FlushElement)) {
       if (current[MODIFIER_SYNTAX]) {
         throw new Error(`Compile Error: Element modifiers are not allowed in components`);
       }
@@ -569,14 +586,15 @@ export class OpenElement extends StatementSyntax {
 
       if (current[ATTRIBUTE_SYNTAX]) {
         attrs.push(param.name);
+        args[param.name] = param.valueSyntax(); // REMOVE ME
+      } else if (current[ARGUMENT_SYNTAX]) {
+        args[param.name] = param.valueSyntax();
+      } else {
+        throw new Error("Expected FlushElement, but got ${current}");
       }
-
-      args[param.name] = param.valueSyntax();
 
       current = scanner.next();
     }
-
-    scanner.unput(current);
 
     return { args: Args.fromNamedArgs(NamedArgs.build(args)), attrs };
   }

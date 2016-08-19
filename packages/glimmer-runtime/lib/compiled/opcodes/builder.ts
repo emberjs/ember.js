@@ -166,6 +166,10 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new dom.OpenDynamicPrimitiveElementOpcode());
   }
 
+  flushElement() {
+    this.append(new dom.FlushElementOpcode());
+  }
+
   closeElement() {
     this.append(new dom.CloseElementOpcode());
   }
