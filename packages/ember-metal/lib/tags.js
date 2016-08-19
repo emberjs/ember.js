@@ -41,8 +41,14 @@ if (hasGlimmer) {
   makeTag = () => new DirtyableTag();
 
   markObjectAsDirty = function(meta) {
-    ensureRunloop();
-    let tag = (meta && meta.readableTag()) || CURRENT_TAG;
+    let tag = meta && meta.readableTag();
+
+    if (tag) {
+      ensureRunloop();
+    } else {
+      tag = CURRENT_TAG;
+    }
+
     tag.dirty();
   };
 } else {
