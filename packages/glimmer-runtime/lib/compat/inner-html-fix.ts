@@ -51,6 +51,8 @@ export function domChanges(document: Document, DOMChangesClass: typeof DOMChange
 }
 
 export function treeConstruction(document: Document, DOMTreeConstructionClass: typeof DOMTreeConstruction) {
+  if (!document) return DOMTreeConstructionClass;
+
   if (!shouldApplyFix(document)) {
     return DOMTreeConstructionClass;
   }
