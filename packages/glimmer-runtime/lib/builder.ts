@@ -11,7 +11,9 @@ import {
 } from 'glimmer-reference';
 
 import {
-  Attribute
+  Attribute,
+  StaticAttribute,
+  DynamicAttribute
 } from './compiled/opcodes/dom';
 
 import * as Simple from './dom/interfaces';
@@ -64,8 +66,10 @@ class BlockStackElement {
 }
 
 export interface ElementOperations {
-  addAttribute(name: string, value: PathReference<string>, isTrusting: boolean);
-  addAttributeNS(namespace: string, name: string, value: PathReference<string>, isTrusting: boolean);
+  addStaticAttribute(name: string, value: string);
+  addStaticAttributeNS(namespace: string, name: string, value: string);
+  addDynamicAttribute(name: string, value: PathReference<string>, isTrusting: boolean);
+  addDynamicAttributeNS(namespace: string, name: string, value: PathReference<string>, isTrusting: boolean);
 }
 
 class GroupedElementOperations implements ElementOperations {
@@ -87,16 +91,25 @@ class GroupedElementOperations implements ElementOperations {
     this.groups.push(group);
   }
 
-  addAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
-    let attributeManager = this.env.attributeFor(this.element, name, reference, isTrusting);
-    let attribute = new Attribute(this.element, attributeManager, name, reference);
+  addStaticAttribute(name: string, value: string) {
+    let attribute = new StaticAttribute(this.element, name, value);
     this.group.push(attribute);
   }
 
-  addAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
-    let attributeManager = this.env.attributeFor(this.element, name, reference,isTrusting, namespace);
-    let nsAttribute = new Attribute(this.element, attributeManager, name, reference, namespace);
+  addStaticAttributeNS(namespace: string, name: string, value: string) {
+    let attribute = new StaticAttribute(this.element, name, value, namespace);
+    this.group.push(attribute);
+  }
 
+  addDynamicAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
+    let attributeManager = this.env.attributeFor(this.element, name, reference, isTrusting);
+    let attribute = new DynamicAttribute(this.element, attributeManager, name, reference);
+    this.group.push(attribute);
+  }
+
+  addDynamicAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
+    let attributeManager = this.env.attributeFor(this.element, name, reference,isTrusting, namespace);
+    let nsAttribute = new DynamicAttribute(this.element, attributeManager, name, reference, namespace);
     this.group.push(nsAttribute);
   }
 }
@@ -275,12 +288,20 @@ export class ElementStack implements Cursor {
     return comment;
   }
 
-  setAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
-    this.operations.addAttribute(name, reference, isTrusting);
+  setStaticAttribute(name: string, value: string) {
+    this.operations.addStaticAttribute(name, value);
   }
 
-  setAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
-    this.operations.addAttributeNS(namespace, name, reference, isTrusting);
+  setStaticAttributeNS(namespace: string, name: string, value: string) {
+    this.operations.addStaticAttributeNS(namespace, name, value);
+  }
+
+  setDynamicAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
+    this.operations.addDynamicAttribute(name, reference, isTrusting);
+  }
+
+  setDynamicAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
+    this.operations.addDynamicAttributeNS(namespace, name, reference, isTrusting);
   }
 
   closeElement() {
