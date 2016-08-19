@@ -1,7 +1,7 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs, EvaluatedArgs } from '../expressions/args';
-import { VM, UpdatingVM, BindDynamicScopeCallback } from '../../vm';
+import { VM, UpdatingVM } from '../../vm';
 import { CompiledBlock, Layout, InlineBlock, PartialBlock } from '../blocks';
 import { NULL_REFERENCE } from '../../references';
 import SymbolTable from '../../symbol-table';
@@ -182,20 +182,15 @@ export class BindBlocksOpcode extends BindNamedArgsOpcode {
   }
 }
 
-export { BindDynamicScopeCallback };
-
 export class BindDynamicScopeOpcode extends Opcode {
   public type = "bind-dynamic-scope";
 
-  public callback: BindDynamicScopeCallback;
-
-  constructor(callback: BindDynamicScopeCallback) {
+  constructor(private names: string[]) {
     super();
-    this.callback = callback;
   }
 
   evaluate(vm: VM) {
-    vm.bindDynamicScope(this.callback);
+    vm.bindDynamicScope(this.names);
   }
 }
 
