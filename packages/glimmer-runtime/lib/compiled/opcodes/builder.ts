@@ -246,6 +246,10 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new vm.PutArgsOpcode({ args: this.compile(args) }));
   }
 
+  bindDynamicScope(names: string[]) {
+    this.append(new vm.BindDynamicScopeOpcode(names));
+  }
+
   bindPositionalArgs(names: string[], symbols: number[]) {
     this.append(new vm.BindPositionalArgsOpcode(names, symbols));
   }
@@ -256,10 +260,6 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
 
   bindBlocks(names: string[], symbols: number[]) {
     this.append(new vm.BindBlocksOpcode(names, symbols));
-  }
-
-  bindDynamicScope(callback: vm.BindDynamicScopeCallback) {
-    this.append(new vm.BindDynamicScopeOpcode(callback));
   }
 
   enter(enter: Label, exit: Label) {
@@ -316,11 +316,6 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     } else {
       return expr;
     }
-  }
-
-  setupDynamicScope(callback: vm.BindDynamicScopeCallback) {
-    this.pushDynamicScope();
-    this.bindDynamicScope(callback);
   }
 
   bindPositionalArgsForBlock(block: InlineBlock) {

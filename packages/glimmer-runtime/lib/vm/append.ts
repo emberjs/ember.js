@@ -369,12 +369,18 @@ export default class VM implements PublicVM {
     }
   }
 
-  bindDynamicScope(callback: BindDynamicScopeCallback) {
-    callback(this, this.dynamicScope());
+  bindDynamicScope(names: string[]) {
+    let args = this.frame.getArgs();
+
+    assert(args, "Cannot bind dynamic scope");
+
+    let scope = this.dynamicScope();
+
+    for(let i=0; i < names.length; i++) {
+      scope.set(names[i], args.named.get(names[i]));
+    }
   }
 }
-
-export type BindDynamicScopeCallback = (vm: PublicVM, dynamicScope: DynamicScope) => void;
 
 interface ExceptionHandler {
   handleException(initialize?: (vm: VM) => void);
