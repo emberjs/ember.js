@@ -132,12 +132,12 @@ function toClassName(list: Reference<string>[]) {
   return (ret.length === 0) ? null : ret.join(' ');
 }
 
-export class CloseElementOpcode extends Opcode {
-  public type = "close-element";
+export class FlushElementOpcode extends Opcode {
+  public type = "flush-element";
 
   evaluate(vm: VM) {
     let stack = vm.stack();
-    let { element, elementOperations: { groups } } = stack;
+    let { constructing: element, operations: { groups } } = stack;
 
     let classList = new ClassList();
     let flattened = dict<Attribute>();
@@ -177,7 +177,15 @@ export class CloseElementOpcode extends Opcode {
       if (opcode) vm.updateWith(opcode);
     }
 
-    stack.closeElement();
+    stack.flushElement();
+  }
+}
+
+export class CloseElementOpcode extends Opcode {
+  public type = "close-element";
+
+  evaluate(vm: VM) {
+    vm.stack().closeElement();
   }
 }
 
@@ -241,7 +249,7 @@ export class ModifierOpcode extends Opcode {
   evaluate(vm: VM) {
     let { manager } = this;
     let stack = vm.stack();
-    let { element, updateOperations } = stack;
+    let { constructing: element, updateOperations } = stack;
     let args = this.args.evaluate(vm);
     let dynamicScope = vm.dynamicScope();
 

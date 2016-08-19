@@ -319,6 +319,16 @@ test("Mountain range of nesting", function() {
              'FOO<span>BAR<a>BAZ<em>BOOBREW</em>BAT</a></span><span><span>FLUTE</span></span>ARGH', context);
 });
 
+test("Static <div class> is preserved properly", function() {
+  compilesTo(`
+    <div class="hello world">1</div>
+    <div class="goodbye world">2</div>
+  `, `
+    <div class="hello world">1</div>
+    <div class="goodbye world">2</div>
+  `);
+});
+
 test("Static <option selected> is preserved properly", function() {
   let template = compile(`
     <select>
@@ -348,7 +358,7 @@ test("Static <option selected> for multi-select is preserved properly", function
 
   let options = selectNode.querySelectorAll('option[selected]');
 
-  equal(options.length, 2, 'three options are selected');
+  equal(options.length, 2, 'two options are selected');
 });
 
 test("Dynamic <option selected> is preserved properly", function() {
