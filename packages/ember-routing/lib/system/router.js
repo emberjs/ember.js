@@ -1059,7 +1059,7 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
     handlerInfo = handlerInfos[i];
     handler = handlerInfo.handler;
 
-    if (handler.actions && handler.actions[name]) {
+    if (handler && handler.actions && handler.actions[name]) {
       if (handler.actions[name].apply(handler, args) === true) {
         eventWasHandled = true;
       } else {
