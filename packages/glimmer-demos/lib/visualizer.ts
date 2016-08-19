@@ -47,7 +47,7 @@ const DEFAULT_DATA =
 const DEFAULT_TEMPLATE =
 `<div class="contacts">
   {{#each contacts key="id" as |contact|}}
-    <h-card person={{contact}} />
+    <h-card @person={{contact}} />
     <hr />
   {{/each}}
 </div>`;
@@ -137,9 +137,9 @@ const UI =
   <div id="output">
     <div id="wire-format">
       <div class="header">Wire Format (Top-Level)</div>
-      <wire-format-inspector class="content" spec={{template.wireFormat}} />
+      <wire-format-inspector class="content" @spec={{template.wireFormat}} />
       <div class="header secondary">Wire Format (&lt;h-card&gt;)</div>
-      <wire-format-inspector class="content" spec={{layout.wireFormat}} />
+      <wire-format-inspector class="content" @spec={{layout.wireFormat}} />
     </div>
     <div id="initial">
       <div class="header">Opcodes (Top-Level)</div>
@@ -147,7 +147,7 @@ const UI =
         <h3>Opcodes</h3>
         <ol>
           {{#each template.opcodes key="guid" as |opcode|}}
-            <opcode-inspector opcode={{opcode}} />
+            <opcode-inspector @opcode={{opcode}} />
           {{/each}}
         </ol>
       </div>
@@ -156,7 +156,7 @@ const UI =
         <h3>Opcodes</h3>
         <ol>
           {{#each layout.opcodes key="guid" as |opcode|}}
-            <opcode-inspector opcode={{opcode}} />
+            <opcode-inspector @opcode={{opcode}} />
           {{/each}}
         </ol>
       </div>
@@ -167,7 +167,7 @@ const UI =
         <h3>Opcodes</h3>
         <ol>
           {{#each updatingOpcodes key="guid" as |opcode|}}
-            <opcode-inspector opcode={{opcode}} />
+            <opcode-inspector @opcode={{opcode}} />
           {{/each}}
         </ol>
       </div>
@@ -262,7 +262,7 @@ function renderUI() {
       {{#each @spec.blocks key="@index" as |block|}}
         <li>
           <h3>Block</h3>
-          {{wire-format-inspector spec=block}}
+          <wire-format-inspector @spec={{block}} />
         </li>
       {{/each}}
     </ol>
@@ -303,7 +303,7 @@ function renderUI() {
   {{#if @opcode.children}}
     <ol>
       {{#each @opcode.children key="guid" as |opcode|}}
-        {{opcode-inspector opcode=opcode}}
+        <opcode-inspector @opcode={{opcode}} />
       {{/each}}
     </ol>
   {{/if}}
