@@ -319,6 +319,92 @@ test("Mountain range of nesting", function() {
              'FOO<span>BAR<a>BAZ<em>BOOBREW</em>BAT</a></span><span><span>FLUTE</span></span>ARGH', context);
 });
 
+test("Static <div class> is preserved properly", function() {
+  compilesTo(`
+    <div class="hello world">1</div>
+    <div class="goodbye world">2</div>
+  `, `
+    <div class="hello world">1</div>
+    <div class="goodbye world">2</div>
+  `);
+});
+
+test("Static <option selected> is preserved properly", function() {
+  let template = compile(`
+    <select>
+      <option>1</option>
+      <option selected>2</option>
+      <option>3</option>
+    </select>
+  `);
+  render(template, {});
+
+  let selectNode: any = root.childNodes[1];
+
+  equal(selectNode.selectedIndex, 1, 'second item is selected');
+});
+
+test("Static <option selected> for multi-select is preserved properly", function() {
+  let template = compile(`
+    <select multiple>
+      <option selected>1</option>
+      <option selected>2</option>
+      <option>3</option>
+    </select>
+  `);
+  render(template, {});
+
+  let selectNode: any = root.childNodes[1];
+
+  let options = selectNode.querySelectorAll('option[selected]');
+
+  equal(options.length, 2, 'two options are selected');
+});
+
+test("Dynamic <option selected> is preserved properly", function() {
+  let template = compile(`
+    <select>
+      <option>1</option>
+      <option selected={{selected}}>2</option>
+      <option>3</option>
+    </select>
+  `);
+  render(template, { selected: true });
+
+  let selectNode: any = root.childNodes[1];
+
+  equal(selectNode.selectedIndex, 1, 'second item is selected');
+});
+
+test("Dynamic <option selected> for multi-select is preserved properly", function() {
+  let template = compile(`
+    <select multiple>
+      <option>0</option>
+      <option selected={{somethingTrue}}>1</option>
+      <option selected={{somethingTruthy}}>2</option>
+      <option selected={{somethingUndefined}}>3</option>
+      <option selected={{somethingNull}}>4</option>
+      <option selected={{somethingFalse}}>5</option>
+    </select>
+  `);
+
+  render(template, {
+    somethingTrue: true,
+    somethingTruthy: 'is-true',
+    somethingUndefined: undefined,
+    somethingNull: null,
+    somethingFalse: false
+  });
+
+  let selectNode: any = root.childNodes[1];
+
+  let options = selectNode.querySelectorAll('option[selected]');
+
+  equal(options.length, 2, 'two options are selected');
+  equal(options[0].value, '1', 'first selected item is "1"');
+  equal(options[1].value, '2', 'second selected item is "2"');
+});
+
 module("Initial render - simple blocks");
 
 test("The compiler can handle unescaped tr in top of content", function() {
@@ -927,11 +1013,11 @@ QUnit.module('Style attributes', {
   }
 });
 
-test(`using an inline style on an element gives you a warning`, function(assert) {
+test(`using a static inline style on an element does not give you a warning`, function(assert) {
   let template = compile(`<div style="background: red">Thing</div>`);
   render(template, {});
 
-  assert.equal(warnings, 1);
+  assert.strictEqual(warnings, 0);
 
   equalTokens(root, '<div style="background: red">Thing</div>', "initial render");
 });
@@ -940,17 +1026,17 @@ test(`triple curlies are trusted`, function(assert) {
   let template = compile(`<div foo={{foo}} style={{{styles}}}>Thing</div>`);
   render(template, {styles: 'background: red'});
 
-  assert.equal(warnings, 0);
+  assert.strictEqual(warnings, 0);
 
   equalTokens(root, '<div style="background: red">Thing</div>', "initial render");
 });
 
-test(`using an inline style on an namespaced element gives you a warning`, function(assert) {
+test(`using a static inline style on an namespaced element does not give you a warning`, function(assert) {
   let template = compile(`<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red" />`);
 
   render(template, {});
 
-  assert.equal(warnings, 1);
+  assert.strictEqual(warnings, 0);
 
   equalTokens(root, '<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red"></svg>', "initial render");
 });

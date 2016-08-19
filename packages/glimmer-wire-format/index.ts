@@ -102,6 +102,7 @@ export namespace Statements {
   export type Modifier      = ['modifier', Path, Params, Hash];
   export type Block         = ['block', Path, Params, Hash, TemplateReference, TemplateReference];
   export type OpenElement   = ['open-element', str, str[]];
+  export type FlushElement  = ['flush-element'];
   export type CloseElement  = ['close-element'];
   export type StaticAttr    = ['static-attr', str, Expression, str];
   export type DynamicAttr   = ['dynamic-attr', str, Expression, str];
@@ -116,6 +117,7 @@ export namespace Statements {
   export const isModifier     = is<Modifier>('modifier');
   export const isBlock        = is<Block>('block');
   export const isOpenElement  = is<OpenElement>('open-element');
+  export const isFlushElement = is<FlushElement>('flush-element');
   export const isCloseElement = is<CloseElement>('close-element');
   export const isStaticAttr   = is<StaticAttr>('static-attr');
   export const isDynamicAttr  = is<DynamicAttr>('dynamic-attr');
@@ -131,6 +133,7 @@ export namespace Statements {
     | Modifier
     | Block
     | OpenElement
+    | FlushElement
     | CloseElement
     | StaticAttr
     | DynamicAttr
