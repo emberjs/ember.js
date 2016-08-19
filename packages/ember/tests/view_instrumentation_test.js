@@ -4,7 +4,7 @@ import Application from 'ember-application/system/application';
 import { subscribe, reset } from 'ember-metal/instrumentation';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
-import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 let App, $fixture;
 
@@ -24,7 +24,7 @@ function handleURL(path) {
   return run(router, 'handleURL', path);
 }
 
-testModule('View Instrumentation', {
+QUnit.module('View Instrumentation', {
   setup() {
     run(() => {
       App = Application.create({

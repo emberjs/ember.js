@@ -2,12 +2,12 @@ import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 
-import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 import require from 'require';
 
 let View, view, compile;
 
-testModule('EmberView - renderToElement()', {
+QUnit.module('EmberView - renderToElement()', {
   setup() {
     compile = compile || require('ember-htmlbars-template-compiler').compile;
     View = EmberView.extend({

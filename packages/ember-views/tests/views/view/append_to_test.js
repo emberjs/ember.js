@@ -8,7 +8,7 @@ import Component from 'ember-templates/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
-import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 import require from 'require';
 
 let compile, owner, View, view, otherView, willDestroyCalled;
@@ -23,7 +23,7 @@ function commonSetup() {
   compile = require('ember-htmlbars-template-compiler').compile;
 }
 
-testModule('EmberView - append() and appendTo()', {
+QUnit.module('EmberView - append() and appendTo()', {
   setup() {
     commonSetup();
     View = EmberView.extend({});
@@ -115,7 +115,7 @@ test('destroy more forcibly removes the view', function() {
   equal(willDestroyCalled, 1, 'the willDestroyElement hook was called once');
 });
 
-testModule('EmberView - append() and appendTo() in a view hierarchy', {
+QUnit.module('EmberView - append() and appendTo() in a view hierarchy', {
   setup() {
     commonSetup();
 
