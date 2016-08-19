@@ -1,26 +1,28 @@
+import * as Simple from './dom/interfaces';
+
 export interface Bounds {
   // a method to future-proof for wormholing; may not be needed ultimately
-  parentElement(): Element;
-  firstNode(): Node;
-  lastNode(): Node;
+  parentElement(): Simple.Element;
+  firstNode(): Simple.Node;
+  lastNode(): Simple.Node;
 }
 
 export class Cursor {
-  constructor(public element: Element, public nextSibling: Node) {}
+  constructor(public element: Simple.Element, public nextSibling: Simple.Node) {}
 }
 
 export default Bounds;
 
-export class ConcreteBounds implements Bounds {
-  public parentNode: Element;
-  private first: Node;
-  private last: Node;
+export class RealDOMBounds implements Bounds {
+  constructor(private bounds: Bounds) {}
 
-  constructor(parent: Element, first: Node, last: Node) {
-    this.parentNode = parent;
-    this.first = first;
-    this.last = last;
-  }
+  parentElement() { return this.bounds.parentElement() as Element; }
+  firstNode() { return this.bounds.firstNode() as Node; }
+  lastNode() { return this.bounds.lastNode() as Node; }
+}
+
+export class ConcreteBounds implements Bounds {
+  constructor(public parentNode: Simple.Element, private first: Simple.Node, private last: Simple.Node) {}
 
   parentElement() { return this.parentNode; }
   firstNode() { return this.first; }
@@ -31,9 +33,9 @@ export class SingleNodeBounds implements Bounds {
   private parentNode: Element;
   private node: Node;
 
-  constructor(parentNode: Element, node: Node) {
-    this.parentNode = parentNode;
-    this.node = node;
+  constructor(parentNode: Simple.Element, node: Simple.Node) {
+    this.parentNode = parentNode as Element;
+    this.node = node as Node;
   }
 
   parentElement() { return this.parentNode; }
@@ -41,15 +43,15 @@ export class SingleNodeBounds implements Bounds {
   lastNode() { return this.node; }
 }
 
-export function bounds(parent: Element, first: Node, last: Node): Bounds {
+export function bounds(parent: Simple.Element, first: Simple.Node, last: Simple.Node): Bounds {
   return new ConcreteBounds(parent, first, last);
 }
 
-export function single(parent: Element, node: Node): Bounds {
+export function single(parent: Simple.Element, node: Simple.Node): Bounds {
   return new SingleNodeBounds(parent, node);
 }
 
-export function move(bounds: Bounds, reference: Node) {
+export function move(bounds: Bounds, reference: Simple.Node) {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();
@@ -66,7 +68,7 @@ export function move(bounds: Bounds, reference: Node) {
   return null;
 }
 
-export function clear(bounds: Bounds): Node {
+export function clear(bounds: Bounds): Simple.Node {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();

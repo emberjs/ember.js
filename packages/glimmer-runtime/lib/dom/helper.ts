@@ -1,7 +1,17 @@
 import { ConcreteBounds, SingleNodeBounds, Bounds } from '../bounds';
-import applyTableElementFix from '../compat/inner-html-fix';
-import applySVGElementFix from '../compat/svg-inner-html-fix';
-import applyTextNodeMergingFix from '../compat/text-node-merging-fix';
+import {
+  domChanges as domChangesTableElementFix,
+  treeConstruction as treeConstructionTableElementFix
+} from '../compat/inner-html-fix';
+import {
+  domChanges as domChangesSvgElementFix,
+  treeConstruction as treeConstructionSvgElementFix
+} from '../compat/svg-inner-html-fix';
+import {
+  domChanges as domChangesNodeMergingFix,
+  treeConstruction as treeConstructionNodeMergingFix
+} from '../compat/text-node-merging-fix';
+import * as Simple from './interfaces';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -26,6 +36,8 @@ export const BLACKLIST_TABLE = Object.create(null);
 
 const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/;
 
+let doc = typeof document === 'undefined' ? undefined : document;
+
 export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
 }
@@ -42,50 +54,115 @@ export function moveNodesBefore(source, target, nextSibling) {
   return [first, last];
 }
 
-class DOMHelper {
-  private document: HTMLDocument;
-  private namespace: string;
+namespace DOM {
+  type Node = Simple.Node;
+  type Element = Simple.Element;
+  type Document = Simple.Document;
+  type Comment = Simple.Comment;
+  type Text = Simple.Text;
+  type Namespace = Simple.Namespace;
+  type HTMLElement = Simple.HTMLElement;
+
+  class TreeConstruction {
+    protected uselessElement: HTMLElement;
+    constructor(protected document: Document) {
+      this.uselessElement = document.createElement('div');
+    }
+
+    createElement(tag: string, context: Element): Element {
+      let isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
+      let isHTMLIntegrationPoint = SVG_INTEGRATION_POINTS[context.tagName];
+
+      if (isElementInSVGNamespace && !isHTMLIntegrationPoint) {
+        // FIXME: This does not properly handle <font> with color, face, or
+        // size attributes, which is also disallowed by the spec. We should fix
+        // this.
+        if (BLACKLIST_TABLE[tag]) {
+          throw new Error(`Cannot create a ${tag} inside of a <${context.tagName}>, because it's inside an SVG context`);
+        }
+
+      return this.document.createElementNS(SVG_NAMESPACE as Namespace, tag);
+    }
+
+    return this.document.createElement(tag);
+    }
+
+    createElementNS(namespace: Namespace, tag: string): Element {
+      return this.document.createElementNS(namespace, tag);
+    }
+
+    setAttribute(element: Element, name: string, value: string, namespace?: string) {
+      if (namespace) {
+        element.setAttributeNS(namespace, name, value);
+      } else {
+        element.setAttribute(name, value);
+      }
+    }
+
+    createTextNode(text: string): Text {
+      return this.document.createTextNode(text);
+    }
+
+    createComment(data: string): Comment {
+      return this.document.createComment(data);
+    }
+
+    insertBefore(parent: Element, node: Node, reference: Node) {
+      parent.insertBefore(node, reference);
+    }
+
+    insertHTMLBefore(parent: Element, html: string, reference: Node): Bounds {
+      return insertHTMLBefore(this.uselessElement, parent, reference, html);
+    };
+  }
+
+  let appliedTreeContruction = TreeConstruction;
+  appliedTreeContruction = treeConstructionNodeMergingFix(doc, appliedTreeContruction);
+  appliedTreeContruction = treeConstructionTableElementFix(doc, appliedTreeContruction);
+  appliedTreeContruction = treeConstructionSvgElementFix(doc, appliedTreeContruction, SVG_NAMESPACE);
+
+  export const DOMTreeConstruction = appliedTreeContruction;
+  export type DOMTreeConstruction = TreeConstruction;
+}
+
+export class DOMChanges {
+  protected document: HTMLDocument;
+  protected namespace: string;
   private uselessElement: HTMLElement;
   private uselessAnchor: HTMLAnchorElement;
 
-  constructor(document) {
+  constructor(document: Document) {
     this.document = document;
     this.namespace = null;
     this.uselessElement = this.document.createElement('div');
     this.uselessAnchor = this.document.createElement('a');
   }
 
-  protocolForURL(url: string): string {
-    let { uselessAnchor } = this;
-    uselessAnchor.href = url;
-    return uselessAnchor.protocol;
-  }
-
-  setAttribute(element: Element, name: string, value: string) {
+  setAttribute(element: Simple.Element, name: string, value: string) {
     element.setAttribute(name, value);
   }
 
-  setAttributeNS(element: Element, namespace: string, name: string, value: string) {
+  setAttributeNS(element: Simple.Element, namespace: string, name: string, value: string) {
     element.setAttributeNS(namespace, name, value);
   }
 
-  removeAttribute(element: Element, name: string) {
+  removeAttribute(element: Simple.Element, name: string) {
     element.removeAttribute(name);
   }
 
-  removeAttributeNS(element: Element, namespace: string, name: string) {
+  removeAttributeNS(element: Simple.Element, namespace: string, name: string) {
     element.removeAttributeNS(namespace, name);
   }
 
-  createTextNode(text: string): Text {
+  createTextNode(text: string): Simple.Text {
     return this.document.createTextNode(text);
   }
 
-  createComment(data: string): Comment {
+  createComment(data: string): Simple.Comment {
     return this.document.createComment(data);
   }
 
-  createElement(tag: string, context: Element): Element {
+  createElement(tag: string, context: Simple.Element): Simple.Element {
     let isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
     let isHTMLIntegrationPoint = SVG_INTEGRATION_POINTS[context.tagName];
 
@@ -104,42 +181,10 @@ class DOMHelper {
   }
 
   insertHTMLBefore(_parent: Element, nextSibling: Node, html: string): Bounds {
-    // TypeScript vendored an old version of the DOM spec where `insertAdjacentHTML`
-    // only exists on `HTMLElement` but not on `Element`. We actually work with the
-    // newer version of the DOM API here (and monkey-patch this method in `./compat`
-    // when we detect older browsers). This is a hack to work around this limitation.
-    let parent = _parent as HTMLElement;
-
-    let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
-    let last;
-
-    if (html === null || html === '') {
-      return new ConcreteBounds(parent, null, null);
-    }
-
-    if (nextSibling === null) {
-      parent.insertAdjacentHTML('beforeEnd', html);
-      last = parent.lastChild;
-    } else if (nextSibling instanceof HTMLElement) {
-      nextSibling.insertAdjacentHTML('beforeBegin', html);
-      last = nextSibling.previousSibling;
-    } else {
-      // Non-element nodes do not support insertAdjacentHTML, so add an
-      // element and call it on that element. Then remove the element.
-      //
-      // This also protects Edge, IE and Firefox w/o the inspector open
-      // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
-      parent.insertBefore(this.uselessElement, nextSibling);
-      this.uselessElement.insertAdjacentHTML('beforeBegin', html);
-      last = this.uselessElement.previousSibling;
-      parent.removeChild(this.uselessElement);
-    }
-
-    let first = prev ? prev.nextSibling : parent.firstChild;
-    return new ConcreteBounds(parent, first, last);
+    return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
   }
 
-  insertNodeBefore(parent: Element, node: Node, reference: Node): Bounds {
+  insertNodeBefore(parent: Simple.Element, node: Simple.Node, reference: Simple.Node): Bounds {
     if (isDocumentFragment(node)) {
       let { firstChild, lastChild } = node;
       this.insertBefore(parent, node, reference);
@@ -150,31 +195,70 @@ class DOMHelper {
     }
   }
 
-  insertTextBefore(parent: Element, nextSibling: Node, text: string): Text {
+  insertTextBefore(parent: Simple.Element, nextSibling: Simple.Node, text: string): Simple.Text {
     let textNode = this.createTextNode(text);
     this.insertBefore(parent, textNode, nextSibling);
     return textNode;
   }
 
-  insertBefore(element: Element, node: Node, reference: Node) {
+  insertBefore(element: Simple.Element, node: Simple.Node, reference: Simple.Node) {
     element.insertBefore(node, reference);
   }
 
-  insertAfter(element: Element, node: Node, reference: Node) {
+  insertAfter(element: Simple.Element, node: Simple.Node, reference: Simple.Node) {
     this.insertBefore(element, node, reference.nextSibling);
   }
 }
 
-function isDocumentFragment(node: Node): node is DocumentFragment {
+export function insertHTMLBefore(this: void, _useless: Simple.HTMLElement, _parent: Simple.Element, _nextSibling: Simple.Node, html: string): Bounds { // tslint:disable-line
+  // TypeScript vendored an old version of the DOM spec where `insertAdjacentHTML`
+  // only exists on `HTMLElement` but not on `Element`. We actually work with the
+  // newer version of the DOM API here (and monkey-patch this method in `./compat`
+  // when we detect older browsers). This is a hack to work around this limitation.
+  let parent = _parent as HTMLElement;
+  let useless = _useless as HTMLElement;
+  let nextSibling = _nextSibling as Node;
+
+  let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
+  let last;
+
+  if (html === null || html === '') {
+    return new ConcreteBounds(parent, null, null);
+  }
+
+  if (nextSibling === null) {
+    parent.insertAdjacentHTML('beforeEnd', html);
+    last = parent.lastChild;
+  } else if (nextSibling instanceof HTMLElement) {
+    nextSibling.insertAdjacentHTML('beforeBegin', html);
+    last = nextSibling.previousSibling;
+  } else {
+    // Non-element nodes do not support insertAdjacentHTML, so add an
+    // element and call it on that element. Then remove the element.
+    //
+    // This also protects Edge, IE and Firefox w/o the inspector open
+    // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
+    parent.insertBefore(useless, nextSibling);
+    useless.insertAdjacentHTML('beforeBegin', html);
+    last = useless.previousSibling;
+    parent.removeChild(useless);
+  }
+
+  let first = prev ? prev.nextSibling : parent.firstChild;
+  return new ConcreteBounds(parent, first, last);
+}
+
+function isDocumentFragment(node: Simple.Node): node is DocumentFragment {
   return node.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
 }
 
-let helper = DOMHelper;
-let doc = typeof document === 'undefined' ? undefined : document;
+let helper = DOMChanges;
 
-helper = applyTextNodeMergingFix(doc, helper);
-helper = applyTableElementFix(doc, helper);
-helper = applySVGElementFix(doc, helper, SVG_NAMESPACE);
+helper = domChangesNodeMergingFix(doc, helper);
+helper = domChangesTableElementFix(doc, helper);
+helper = domChangesSvgElementFix(doc, helper, SVG_NAMESPACE);
 
 export default helper;
-export { DOMHelper };
+export const DOMTreeConstruction = DOM.DOMTreeConstruction;
+export type DOMTreeConstruction = DOM.DOMTreeConstruction;
+export { Namespace as DOMNamespace } from './interfaces';

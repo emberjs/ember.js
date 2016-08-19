@@ -1,6 +1,6 @@
 import Bounds, { clear, Cursor } from './bounds';
 
-import { DOMHelper } from './dom/helper';
+import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 
 import { Destroyable, Stack, LinkedList, LinkedListNode, assert } from 'glimmer-util';
 
@@ -14,12 +14,14 @@ import {
   Attribute
 } from './compiled/opcodes/dom';
 
+import * as Simple from './dom/interfaces';
+
 interface FirstNode {
-  firstNode(): Node;
+  firstNode(): Simple.Node;
 }
 
 interface LastNode {
-  lastNode(): Node;
+  lastNode(): Simple.Node;
 }
 
 class First {
@@ -49,7 +51,7 @@ class Last {
 interface ElementStackOptions {
   parentNode: Element;
   nextSibling: Node;
-  dom: DOMHelper;
+  dom: DOMChanges;
 }
 
 interface ElementStackClass<T extends ElementStack> {
@@ -71,9 +73,9 @@ class GroupedElementOperations implements ElementOperations {
   public group: Attribute[];
 
   private env: Environment;
-  private element: Element;
+  private element: Simple.Element;
 
-  constructor(element: Element, env: Environment) {
+  constructor(element: Simple.Element, env: Environment) {
     this.env = env;
     this.element = element;
     let group = this.group = [];
@@ -106,15 +108,15 @@ export class Fragment implements Bounds {
     this.bounds = bounds;
   }
 
-  parentElement(): Element {
+  parentElement(): Simple.Element {
     return this.bounds.parentElement();
   }
 
-  firstNode(): Node {
+  firstNode(): Simple.Node {
     return this.bounds.firstNode();
   }
 
-  lastNode(): Node {
+  lastNode(): Simple.Node {
     return this.bounds.lastNode();
   }
 
@@ -126,28 +128,29 @@ export class Fragment implements Bounds {
 interface InitialRenderOptions {
   parentNode: Element;
   nextSibling: Node;
-  dom: DOMHelper;
+  dom: DOMChanges;
 }
 
 interface UpdateTrackerOptions {
   tracker: Tracker;
   nextSibling: Node;
-  dom: DOMHelper;
+  dom: DOMChanges;
 }
 
 export class ElementStack implements Cursor {
-  public nextSibling: Node;
-  public dom: DOMHelper;
-  public element: Element;
+  public nextSibling: Simple.Node;
+  public dom: DOMTreeConstruction;
+  public updateOperations: DOMChanges;
+  public element: Simple.Element;
   public elementOperations: GroupedElementOperations = null;
   public env: Environment;
 
-  private elementStack = new Stack<Element>();
-  private nextSiblingStack = new Stack<Node>();
+  private elementStack = new Stack<Simple.Element>();
+  private nextSiblingStack = new Stack<Simple.Node>();
   private elementOperationsStack = new Stack<GroupedElementOperations>();
   private blockStack = new Stack<Tracker>();
 
-  static forInitialRender(env: Environment, parentNode: Element, nextSibling: Node) {
+  static forInitialRender(env: Environment, parentNode: Simple.Element, nextSibling: Simple.Node) {
     return new ElementStack(env, parentNode, nextSibling);
   }
 
@@ -160,9 +163,10 @@ export class ElementStack implements Cursor {
     return stack;
   }
 
-  constructor(env: Environment, parentNode: Element, nextSibling: Node) {
+  constructor(env: Environment, parentNode: Simple.Element, nextSibling: Simple.Node) {
     this.env = env;
-    this.dom = env.getDOM();
+    this.dom = env.getAppendOperations();
+    this.updateOperations = env.getDOM();
     this.element = parentNode;
     this.nextSibling = nextSibling;
 
@@ -174,7 +178,7 @@ export class ElementStack implements Cursor {
     return this.blockStack.current;
   }
 
-  private pushElement(tag: string): Element {
+  private pushElement(tag: string): Simple.Element {
     let element = this.dom.createElement(tag, this.element);
     let elementOperations = new GroupedElementOperations(element, this.env);
 
@@ -240,7 +244,7 @@ export class ElementStack implements Cursor {
     return this.blockStack.pop();
   }
 
-  openElement(tag: string): Element {
+  openElement(tag: string): Simple.Element {
     let element = this.pushElement(tag);
     this.blockStack.current.openElement(element);
     return element;
@@ -254,7 +258,7 @@ export class ElementStack implements Cursor {
     this.blockStack.current.newBounds(bounds);
   }
 
-  appendText(string: string): Text {
+  appendText(string: string): Simple.Text {
     let { dom } = this;
     let text = dom.createTextNode(string);
     dom.insertBefore(this.element, text, this.nextSibling);
@@ -262,7 +266,7 @@ export class ElementStack implements Cursor {
     return text;
   }
 
-  appendComment(string: string): Comment {
+  appendComment(string: string): Simple.Comment {
     let { dom } = this;
     let comment = dom.createComment(string);
     dom.insertBefore(this.element, comment, this.nextSibling);
@@ -286,9 +290,9 @@ export class ElementStack implements Cursor {
 }
 
 export interface Tracker extends Bounds, Destroyable {
-  openElement(element: Element);
+  openElement(element: Simple.Element);
   closeElement();
-  newNode(node: Node);
+  newNode(node: Simple.Node);
   newBounds(bounds: Bounds);
   newDestroyable(d: Destroyable);
   finalize(stack: ElementStack);
@@ -301,9 +305,7 @@ export class BlockTracker implements Tracker {
   private destroyables: Destroyable[] = null;
   private nesting = 0;
 
-  private parent: Element;
-
-  constructor(parent: Element){
+  constructor(private parent: Simple.Element){
     this.parent = parent;
   }
 
@@ -389,10 +391,7 @@ export class BlockTracker implements Tracker {
 }
 
 class BlockListTracker implements Tracker {
-  private parent: Element;
-  private boundList: LinkedList<LinkedListNode & Bounds & Destroyable>;
-
-  constructor(parent: Element, boundList: LinkedList<LinkedListNode & Bounds & Destroyable>) {
+  constructor(private parent: Simple.Element, private boundList: LinkedList<LinkedListNode & Bounds & Destroyable>) {
     this.parent = parent;
     this.boundList = boundList;
   }

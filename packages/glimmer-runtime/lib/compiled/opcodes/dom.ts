@@ -1,6 +1,8 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
-import { DynamicScope } from '../../environment';
+import * as Simple from '../../dom/interfaces';
+import { FIX_REIFICATION } from '../../dom/interfaces';
+import { Environment, DynamicScope } from '../../environment';
 import { FIXME, Opaque, Dict, dict } from 'glimmer-util';
 import {
   CachedReference,
@@ -13,7 +15,6 @@ import {
   isModified
 } from 'glimmer-reference';
 import { ModifierManager } from '../../modifier/interfaces';
-import { DOMHelper } from '../../dom/helper';
 import { NULL_REFERENCE } from '../../references';
 import { ValueReference } from '../../compiled/expressions/value';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
@@ -124,7 +125,7 @@ function toClassName(list: Reference<string>[]) {
   let ret = [];
 
   for (let i = 0; i < list.length; i++) {
-    let value: FIXME<'use Opaque and normalize'> = list[i].value();
+    let value: FIXME<Opaque, 'use Opaque and normalize'> = list[i].value();
     if (value !== false && value !== null && value !== undefined) ret.push(value);
   }
 
@@ -135,7 +136,6 @@ export class CloseElementOpcode extends Opcode {
   public type = "close-element";
 
   evaluate(vm: VM) {
-    let dom = vm.env.getDOM();
     let stack = vm.stack();
     let { element, elementOperations: { groups } } = stack;
 
@@ -166,14 +166,14 @@ export class CloseElementOpcode extends Opcode {
     let attr = 'class';
     let attributeManager = vm.env.attributeFor(element, attr, className, false);
     let attribute = new Attribute(element, attributeManager, attr, className);
-    let opcode = attribute.flush(dom);
+    let opcode = attribute.flush(vm.env);
 
     if (opcode) {
       vm.updateWith(opcode);
     }
 
     for (let k = 0; k < flattenedKeys.length; k++) {
-      let opcode = flattened[flattenedKeys[k]].flush(dom);
+      let opcode = flattened[flattenedKeys[k]].flush(vm.env);
       if (opcode) vm.updateWith(opcode);
     }
 
@@ -241,11 +241,11 @@ export class ModifierOpcode extends Opcode {
   evaluate(vm: VM) {
     let { manager } = this;
     let stack = vm.stack();
-    let { element, dom } = stack;
+    let { element, updateOperations } = stack;
     let args = this.args.evaluate(vm);
     let dynamicScope = vm.dynamicScope();
 
-    let modifier = manager.install(element, args, dom, dynamicScope);
+    let modifier = manager.install(element as FIX_REIFICATION<Element>, args, updateOperations, dynamicScope);
     let destructor = manager.getDestructor(modifier);
 
     if (destructor) {
@@ -255,7 +255,7 @@ export class ModifierOpcode extends Opcode {
     vm.updateWith(new UpdateModifierOpcode({
       manager,
       modifier,
-      element,
+      element: element as FIX_REIFICATION<Element>,
       dynamicScope,
       args
     }));
@@ -314,17 +314,19 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
 }
 
 export class Attribute {
-  private changeList: IChangeList;
-  private element: Element;
-  private reference: Reference<Opaque>;
   private cache: ReferenceCache<Opaque>;
-  private namespace: string | undefined;
 
   protected name: string;
 
   public tag: RevisionTag;
 
-  constructor(element: Element, changeList: IChangeList, name: string, reference: Reference<Opaque>, namespace?: string) {
+  constructor(
+    private element: Simple.Element,
+    private changeList: IChangeList,
+    name: string,
+    private reference: Reference<Opaque>,
+    private namespace?: string
+  ) {
     this.element = element;
     this.reference = reference;
     this.changeList = changeList;
@@ -334,26 +336,26 @@ export class Attribute {
     this.namespace = namespace;
   }
 
-  patch(dom: DOMHelper) {
+  patch(env: Environment) {
     let { element, cache } = this;
 
     let value = cache.revalidate();
 
     if (isModified(value)) {
-      this.changeList.updateAttribute(dom, element, this.name, value, this.namespace);
+      this.changeList.updateAttribute(env, element as FIXME<Element, 'needs to be reified properly'>, this.name, value, this.namespace);
     }
   }
 
-  flush(dom: DOMHelper): UpdatingOpcode {
+  flush(env: Environment): UpdatingOpcode {
     let { reference, element } = this;
 
     if (isConstReference(reference)) {
       let value = reference.value();
-      this.changeList.setAttribute(dom, element, this.name, value, this.namespace);
+      this.changeList.setAttribute(env, element, this.name, value, this.namespace);
     } else {
       let cache = this.cache = new ReferenceCache(reference);
       let value = cache.peek();
-      this.changeList.setAttribute(dom, element, this.name, value, this.namespace);
+      this.changeList.setAttribute(env, element, this.name, value, this.namespace);
       return new PatchElementOpcode(this);
     }
   }
@@ -384,7 +386,7 @@ export class Attribute {
   }
 }
 
-function formatElement(element: Element): string {
+function formatElement(element: Simple.Element): string {
   return JSON.stringify(`<${element.tagName.toLowerCase()} />`);
 }
 
@@ -475,7 +477,7 @@ export class PatchElementOpcode extends UpdatingOpcode {
   }
 
   evaluate(vm: UpdatingVM) {
-    this.operation.patch(vm.env.getDOM());
+    this.operation.patch(vm.env);
   }
 
   toJSON(): OpcodeJSON {

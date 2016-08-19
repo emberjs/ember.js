@@ -1,4 +1,4 @@
-import { Template, RenderResult } from "glimmer-runtime";
+import { Simple, Template, RenderResult } from "glimmer-runtime";
 import {
   TestEnvironment,
   TestDynamicScope,
@@ -10,7 +10,7 @@ import {
 import { UpdatableReference } from "glimmer-object-reference";
 import { Opaque, opaque } from 'glimmer-util';
 
-let env: TestEnvironment, root: Element, result: RenderResult, self: UpdatableReference<Opaque>;
+let env: TestEnvironment, root: Simple.Element, result: RenderResult, self: UpdatableReference<Opaque>;
 
 function rootElement() {
   return env.getDOM().createElement('div', document.body);
