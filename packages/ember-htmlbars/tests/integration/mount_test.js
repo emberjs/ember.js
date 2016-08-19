@@ -10,7 +10,7 @@ import run from 'ember-metal/run_loop';
 import { OWNER, getOwner } from 'container/owner';
 import isEnabled from 'ember-metal/features';
 import { getEngineParent } from 'ember-application/system/engine-parent';
-import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 let App,
     app,
@@ -51,7 +51,7 @@ function commonTeardown() {
 }
 
 if (isEnabled('ember-application-engines')) {
-  testModule('mount keyword', {
+  QUnit.module('mount keyword', {
     setup() {
       commonSetup();
     },
