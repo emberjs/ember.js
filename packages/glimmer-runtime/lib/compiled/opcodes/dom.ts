@@ -3,7 +3,7 @@ import { VM, UpdatingVM } from '../../vm';
 import * as Simple from '../../dom/interfaces';
 import { FIX_REIFICATION } from '../../dom/interfaces';
 import { Environment, DynamicScope } from '../../environment';
-import { FIXME, Opaque, Dict, dict } from 'glimmer-util';
+import { FIXME, Option, Opaque, Dict, dict } from 'glimmer-util';
 import {
   CachedReference,
   Reference,
@@ -150,14 +150,13 @@ export class FlushElementOpcode extends Opcode {
 
     for (let i = 0; i < groups.length; i++) {
       for (let j = 0; j < groups[i].length; j++) {
-        let op = groups[i][j];
-        let name = op['name'];
-        let reference = op['reference'] as Reference<string>;
+        let attribute = groups[i][j];
+        let name = attribute.name;
         if (name === 'class') {
-          classList.append(reference);
+          classList.append(attribute['reference'] || new ValueReference(attribute['value']));
         } else if (!flattened[name]) {
           flattenedKeys.push(name);
-          flattened[name] = op;
+          flattened[name] = attribute;
         }
       }
     }
@@ -165,7 +164,7 @@ export class FlushElementOpcode extends Opcode {
     let className = classList.toReference();
     let attr = 'class';
     let attributeManager = vm.env.attributeFor(element, attr, className, false);
-    let attribute = new Attribute(element, attributeManager, attr, className);
+    let attribute = new DynamicAttribute(element, attributeManager, attr, className);
     let opcode = attribute.flush(vm.env);
 
     if (opcode) {
@@ -199,21 +198,21 @@ export class StaticAttrOpcode extends Opcode {
   public type = "static-attr";
   public namespace: string;
   public name: string;
-  public value: ValueReference<string>;
+  public value: string;
 
   constructor({ namespace, name, value }: StaticAttrOptions) {
     super();
     this.namespace = namespace;
     this.name = name;
-    this.value = new ValueReference(value);
+    this.value = value;
   }
 
   evaluate(vm: VM) {
     let { name, value, namespace } = this;
     if (namespace) {
-      vm.stack().setAttributeNS(namespace, name, value, false);
+      vm.stack().setStaticAttributeNS(namespace, name, value);
     } else {
-      vm.stack().setAttribute(name, value, false);
+      vm.stack().setStaticAttribute(name, value);
     }
   }
 
@@ -227,7 +226,7 @@ export class StaticAttrOpcode extends Opcode {
     }
 
     details["name"] = JSON.stringify(name);
-    details["value"] = JSON.stringify(value.value());
+    details["value"] = JSON.stringify(value);
 
     return { guid, type, details };
   }
@@ -321,17 +320,34 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
   }
 }
 
-export class Attribute {
-  private cache: ReferenceCache<Opaque>;
+export interface Attribute {
+  name: string;
+  flush(env: Environment): Option<UpdatingOpcode>;
+}
 
-  protected name: string;
+export class StaticAttribute implements Attribute {
+  constructor(
+    private element: Simple.Element,
+    public name: string,
+    private value: string,
+    private namespace?: string
+  ) {}
+
+  flush(env: Environment): Option<UpdatingOpcode> {
+    env.getAppendOperations().setAttribute(this.element, this.name, this.value, this.namespace);
+    return null;
+  }
+}
+
+export class DynamicAttribute implements Attribute  {
+  private cache: ReferenceCache<Opaque>;
 
   public tag: RevisionTag;
 
   constructor(
     private element: Simple.Element,
     private changeList: IChangeList,
-    name: string,
+    public name: string,
     private reference: Reference<Opaque>,
     private namespace?: string
   ) {
@@ -354,12 +370,13 @@ export class Attribute {
     }
   }
 
-  flush(env: Environment): UpdatingOpcode {
+  flush(env: Environment): Option<UpdatingOpcode> {
     let { reference, element } = this;
 
     if (isConstReference(reference)) {
       let value = reference.value();
       this.changeList.setAttribute(env, element, this.name, value, this.namespace);
+      return null;
     } else {
       let cache = this.cache = new ReferenceCache(reference);
       let value = cache.peek();
@@ -420,7 +437,7 @@ export class DynamicAttrNSOpcode extends Opcode {
   evaluate(vm: VM) {
     let { name, namespace, isTrusting } = this;
     let reference = vm.frame.getOperand();
-    vm.stack().setAttributeNS(namespace, name, reference, isTrusting);
+    vm.stack().setDynamicAttributeNS(namespace, name, reference, isTrusting);
   }
 
   toJSON(): OpcodeJSON {
@@ -458,7 +475,7 @@ export class DynamicAttrOpcode extends Opcode {
   evaluate(vm: VM) {
     let { name, isTrusting } = this;
     let reference = vm.frame.getOperand();
-    vm.stack().setAttribute(name, reference, isTrusting);
+    vm.stack().setDynamicAttribute(name, reference, isTrusting);
   }
 
   toJSON(): OpcodeJSON {
@@ -476,9 +493,9 @@ export class DynamicAttrOpcode extends Opcode {
 export class PatchElementOpcode extends UpdatingOpcode {
   public type = "patch-element";
 
-  private operation: Attribute;
+  private operation: DynamicAttribute;
 
-  constructor(operation: Attribute) {
+  constructor(operation: DynamicAttribute) {
     super();
     this.tag = operation.tag;
     this.operation = operation;

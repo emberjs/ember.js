@@ -2224,6 +2224,37 @@ QUnit.test('Setting value attributeBinding to null results in empty string value
   assert.equal(instance.element.value, '');
 });
 
+QUnit.test('Setting class attributeBinding does not clobber ember-view', function(assert) {
+  let instance;
+
+  class FooBarComponent extends EmberishCurlyComponent {
+    attributeBindings = ['class'];
+    init() {
+      instance = this;
+    }
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBarComponent, 'FOO BAR');
+
+  appendViewFor('{{foo-bar class=classes}}', { classes: "foo bar" });
+
+  assertEmberishElement('div',{ class: classes('ember-view foo bar') }, 'FOO BAR');
+
+  rerender();
+
+  assertEmberishElement('div',{ class: classes('ember-view foo bar') }, 'FOO BAR');
+
+  set(view, 'classes', 'foo bar baz');
+  rerender();
+
+  assertEmberishElement('div',{ class: classes('ember-view foo bar baz') }, 'FOO BAR');
+
+  set(view, 'classes', 'foo bar');
+  rerender();
+
+  assertEmberishElement('div',{ class: classes('ember-view foo bar') }, 'FOO BAR');
+});
+
 QUnit.test('Curly component hooks (force recompute)', function() {
   let instance;
 
