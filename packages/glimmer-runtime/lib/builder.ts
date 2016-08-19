@@ -73,8 +73,7 @@ export interface ElementOperations {
 }
 
 class GroupedElementOperations implements ElementOperations {
-  public groups: Attribute[][];
-  public group: Attribute[];
+  public attributes: Attribute[];
 
   private env: Environment;
   private element: Simple.Element;
@@ -82,35 +81,29 @@ class GroupedElementOperations implements ElementOperations {
   constructor(element: Simple.Element, env: Environment) {
     this.env = env;
     this.element = element;
-    let group = this.group = [];
-    this.groups = [group];
-  }
-
-  startGroup() {
-    let group = this.group = [];
-    this.groups.push(group);
+    this.attributes = [];
   }
 
   addStaticAttribute(name: string, value: string) {
     let attribute = new StaticAttribute(this.element, name, value);
-    this.group.push(attribute);
+    this.attributes.push(attribute);
   }
 
   addStaticAttributeNS(namespace: string, name: string, value: string) {
     let attribute = new StaticAttribute(this.element, name, value, namespace);
-    this.group.push(attribute);
+    this.attributes.push(attribute);
   }
 
   addDynamicAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
     let attributeManager = this.env.attributeFor(this.element, name, reference, isTrusting);
     let attribute = new DynamicAttribute(this.element, attributeManager, name, reference);
-    this.group.push(attribute);
+    this.attributes.push(attribute);
   }
 
   addDynamicAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
     let attributeManager = this.env.attributeFor(this.element, name, reference,isTrusting, namespace);
     let nsAttribute = new DynamicAttribute(this.element, attributeManager, name, reference, namespace);
-    this.group.push(nsAttribute);
+    this.attributes.push(nsAttribute);
   }
 }
 
