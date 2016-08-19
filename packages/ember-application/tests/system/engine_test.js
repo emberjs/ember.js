@@ -35,9 +35,7 @@ QUnit.test('builds a registry', function() {
   strictEqual(engine.resolveRegistration('application:main'), engine, `application:main is registered`);
   deepEqual(engine.registeredOptionsForType('component'), { singleton: false }, `optionsForType 'component'`);
   deepEqual(engine.registeredOptionsForType('view'), { singleton: false }, `optionsForType 'view'`);
-  verifyInjection(engine, 'renderer', 'dom', 'service:-dom-helper');
   verifyRegistration(engine, 'controller:basic');
-  verifyInjection(engine, 'service:-dom-helper', 'document', 'service:-document');
   verifyInjection(engine, 'view', '_viewRegistry', '-view-registry:main');
   verifyInjection(engine, 'route', '_topLevelViewTemplate', 'template:-outlet');
   verifyInjection(engine, 'view:-outlet', 'namespace', 'application:main');
@@ -67,6 +65,8 @@ QUnit.test('builds a registry', function() {
   verifyRegistration(engine, 'component-lookup:main');
 
   if (isEnabled('ember-glimmer')) {
+    verifyInjection(engine, 'service:-dom-changes', 'document', 'service:-document');
+    verifyInjection(engine, 'service:-dom-tree-construction', 'document', 'service:-document');
     verifyRegistration(engine, 'view:-outlet');
     verifyRegistration(engine, P`template:components/-default`);
     verifyRegistration(engine, 'template:-outlet');
@@ -75,6 +75,10 @@ QUnit.test('builds a registry', function() {
     deepEqual(engine.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
   } else {
     deepEqual(engine.registeredOptionsForType('template'), { instantiate: false }, `optionsForType 'template'`);
+
+    verifyInjection(engine, 'renderer', 'dom', 'service:-dom-helper');
+    verifyInjection(engine, 'service:-dom-helper', 'document', 'service:-document');
+
     verifyRegistration(engine, 'view:-outlet');
     verifyRegistration(engine, 'template:-outlet');
     verifyRegistration(engine, 'view:toplevel');

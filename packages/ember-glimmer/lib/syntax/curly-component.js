@@ -238,12 +238,12 @@ class CurlyComponentManager {
     }
 
     if (classRef) {
-      operations.addAttribute('class', classRef);
+      operations.addDynamicAttribute('class', classRef);
     }
 
     if (classNames && classNames.length) {
       classNames.forEach(name => {
-        operations.addAttribute('class', new ValueReference(name));
+        operations.addDynamicAttribute('class', new ValueReference(name));
       });
     }
 

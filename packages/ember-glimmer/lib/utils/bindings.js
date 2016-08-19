@@ -44,7 +44,7 @@ export const AttributeBinding = {
       reference = map(reference, this.mapAttributeValue);
     }
 
-    operations.addAttribute(attribute, reference);
+    operations.addDynamicAttribute(attribute, reference);
   },
 
   mapAttributeValue(value) {
@@ -100,7 +100,7 @@ class StyleBindingReference extends CachedReference {
 
 export const IsVisibleBinding = {
   apply(component, operations) {
-    operations.addAttribute('style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue));
+    operations.addDynamicAttribute('style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue));
   },
 
   mapStyleValue(isVisible) {
@@ -122,7 +122,7 @@ export const ClassNameBinding = {
       ref = new ColonClassNameBindingReference(value, truthy, falsy);
     }
 
-    operations.addAttribute('class', ref);
+    operations.addDynamicAttribute('class', ref);
   }
 };
 

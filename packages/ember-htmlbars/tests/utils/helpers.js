@@ -26,6 +26,7 @@ export function buildOwner(options) {
   owner.register('service:-htmlbars-environment', new Environment(), { instantiate: false });
   owner.inject('service:-htmlbars-environment', 'dom', 'service:-dom-helper');
 
+  owner.register('service:-document', document, { instantiate: false });
   owner.register('-view-registry:main', { create() { return {}; } });
   owner.inject('renderer', '_viewRegistry', '-view-registry:main');
   owner.inject('renderer', 'dom', 'service:-dom-helper');

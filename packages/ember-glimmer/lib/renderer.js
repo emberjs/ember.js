@@ -80,8 +80,7 @@ backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
 class Renderer {
-  constructor({ dom, env, _viewRegistry = fallbackViewRegistry, destinedForDOM = false }) {
-    this._dom = dom;
+  constructor({ env, _viewRegistry = fallbackViewRegistry, destinedForDOM = false }) {
     this._env = env;
     this._viewRegistry = _viewRegistry;
     this._destinedForDOM = destinedForDOM;

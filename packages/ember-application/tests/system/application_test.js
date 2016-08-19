@@ -113,9 +113,7 @@ QUnit.test('builds a registry', function() {
   strictEqual(application.resolveRegistration('application:main'), application, `application:main is registered`);
   deepEqual(application.registeredOptionsForType('component'), { singleton: false }, `optionsForType 'component'`);
   deepEqual(application.registeredOptionsForType('view'), { singleton: false }, `optionsForType 'view'`);
-  verifyInjection(application, 'renderer', 'dom', 'service:-dom-helper');
   verifyRegistration(application, 'controller:basic');
-  verifyInjection(application, 'service:-dom-helper', 'document', 'service:-document');
   verifyRegistration(application, '-view-registry:main');
   verifyInjection(application, 'view', '_viewRegistry', '-view-registry:main');
   verifyInjection(application, 'route', '_topLevelViewTemplate', 'template:-outlet');
@@ -156,12 +154,14 @@ QUnit.test('builds a registry', function() {
 
   if (isEnabled('ember-glimmer')) {
     verifyRegistration(application, 'service:-glimmer-environment');
-    verifyInjection(application, 'service:-glimmer-environment', 'dom', 'service:-dom-helper');
+    verifyRegistration(application, 'service:-dom-changes');
+    verifyRegistration(application, 'service:-dom-tree-construction');
+    verifyInjection(application, 'service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
+    verifyInjection(application, 'service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
     verifyInjection(application, 'renderer', 'env', 'service:-glimmer-environment');
     verifyRegistration(application, 'view:-outlet');
     verifyRegistration(application, 'renderer:-dom');
     verifyRegistration(application, 'renderer:-inert');
-    verifyRegistration(application, 'service:-dom-helper');
     verifyRegistration(application, P`template:components/-default`);
     verifyRegistration(application, 'template:-outlet');
     verifyInjection(application, 'view:-outlet', 'template', 'template:-outlet');
@@ -169,6 +169,9 @@ QUnit.test('builds a registry', function() {
     deepEqual(application.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
   } else {
     deepEqual(application.registeredOptionsForType('template'), { instantiate: false }, `optionsForType 'template'`);
+
+    verifyInjection(application, 'renderer', 'dom', 'service:-dom-helper');
+    verifyInjection(application, 'service:-dom-helper', 'document', 'service:-document');
     verifyRegistration(application, 'view:-outlet');
     verifyRegistration(application, 'renderer:-dom');
     verifyRegistration(application, 'renderer:-inert');

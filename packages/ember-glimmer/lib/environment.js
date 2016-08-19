@@ -127,9 +127,11 @@ export default class Environment extends GlimmerEnvironment {
     return new Environment(options);
   }
 
-  constructor({ dom, [OWNER]: owner }) {
-    super(dom);
+  constructor({ [OWNER]: owner }) {
+    super(...arguments);
     this.owner = owner;
+
+    this.uselessAnchor = document.createElement('a');
 
     this._definitionCache = new Cache(2000, ({ name, source }) => {
       let { component: ComponentClass, layout } = lookupComponent(owner, name, { source });
@@ -154,6 +156,11 @@ export default class Environment extends GlimmerEnvironment {
     this.builtInModifiers = {
       action: new ActionModifierManager()
     };
+  }
+
+  protocolForURL(url) {
+    this.uselessAnchor.href = url;
+    return this.uselessAnchor.protocol;
   }
 
   // Hello future traveler, welcome to the world of syntax refinement.

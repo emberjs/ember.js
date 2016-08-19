@@ -22,6 +22,8 @@ export function setupApplicationRegistry(registry) {
 export function setupEngineRegistry(registry) {
   registry.optionsForType('template', { instantiate: false });
   registry.register('view:-outlet', HTMLBarsOutletView);
+  registry.injection('renderer', 'dom', 'service:-dom-helper');
+  registry.injection('service:-dom-helper', 'document', 'service:-document');
 
   registry.register('template:-outlet', topLevelViewTemplate);
   registry.register('view:toplevel', EmberView.extend(TemplateSupport));

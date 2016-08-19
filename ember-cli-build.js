@@ -91,7 +91,11 @@ function babelConfigFor(environment) {
   };
 }
 
-var glimmerEngine = require('glimmer-engine/ember-cli-build')();
+var glimmerEngine = require('glimmer-engine/ember-cli-build')({
+  shouldExternalizeHelpers: true,
+  stripRuntimeChecks: true
+});
+
 var find = require('broccoli-stew').find;
 
 function addGlimmerPackage(vendoredPackages, name) {
