@@ -9,6 +9,7 @@ class LifeCycleHooksTest extends RenderingTest {
     super();
     this.hooks = [];
     this.components = {};
+    this.componentRegistry = [];
     this.teardownAssertions = [];
   }
 
@@ -42,9 +43,25 @@ class LifeCycleHooksTest extends RenderingTest {
     };
   }
 
+  assertRegisteredViews(label) {
+    let viewRegistry = this.owner.lookup('-view-registry:main');
+    let actual = Object.keys(viewRegistry).sort();
+    let expected = this.componentRegistry.slice().sort();
+
+    this.assert.deepEqual(actual, expected, 'registered views - ' + label);
+  }
+
   registerComponent(name, { template = null }) {
     let pushComponent = (instance) => {
       this.components[name] = instance;
+      this.componentRegistry.push(instance.elementId);
+    };
+
+    let removeComponent = (instance) => {
+      let index = this.componentRegistry.indexOf(instance);
+      this.componentRegistry.splice(index, 1);
+
+      delete this.components[name];
     };
 
     let pushHook = (hookName, args) => {
@@ -141,6 +158,11 @@ class LifeCycleHooksTest extends RenderingTest {
         pushHook('willClearRender');
         assertParentView('willClearRender', this);
         assertElement('willClearRender', this);
+      },
+
+      willDestroy() {
+        removeComponent(this);
+        this._super(...arguments);
       }
     });
 
@@ -179,6 +201,7 @@ class LifeCycleHooksTest extends RenderingTest {
     this.render(invoke('the-top', { twitter: expr('twitter') }), { twitter: '@tomdale' });
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
+    this.assertRegisteredViews('intial render');
 
     let topAttrs = { twitter: '@tomdale' };
     let middleAttrs = { name: 'Tom Dale' };
@@ -399,6 +422,8 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-bottom', 'willDestroyElement'],
         ['the-bottom', 'willClearRender']
       );
+
+      this.assertRegisteredViews('after destroy');
     });
   }
 
@@ -426,6 +451,7 @@ class LifeCycleHooksTest extends RenderingTest {
     this.render(invoke('the-top', { twitter: expr('twitter') }), { twitter: '@tomdale' });
 
     this.assertText('Top: Middle: Bottom: @tomdale');
+    this.assertRegisteredViews('intial render');
 
     let topAttrs = { twitter: '@tomdale' };
     let middleAttrs = { twitterTop: '@tomdale' };
@@ -574,6 +600,8 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-bottom', 'willDestroyElement'],
         ['the-bottom', 'willClearRender']
       );
+
+      this.assertRegisteredViews('after destroy');
     });
   }
 
@@ -599,6 +627,7 @@ class LifeCycleHooksTest extends RenderingTest {
     });
 
     this.assertText('Item: 1Item: 2Item: 3Item: 4Item: 5');
+    this.assertRegisteredViews('intial render');
 
     let initialHooks = (count) => {
       return [
@@ -669,6 +698,8 @@ class LifeCycleHooksTest extends RenderingTest {
         ['no-items', 'willDestroyElement'],
         ['no-items', 'willClearRender']
       );
+
+      this.assertRegisteredViews('after destroy');
     });
   }
 }
