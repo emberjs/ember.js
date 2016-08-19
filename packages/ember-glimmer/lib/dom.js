@@ -1,1 +1,1 @@
-export { DOMHelper as default } from 'glimmer-runtime';
+export { DOMChanges as default } from 'glimmer-runtime';

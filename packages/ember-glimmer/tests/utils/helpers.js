@@ -13,7 +13,7 @@ export { default as Checkbox } from 'ember-glimmer/components/checkbox';
 export { default as TextArea } from 'ember-glimmer/components/text_area';
 export { default as TextField } from 'ember-glimmer/components/text_field';
 export { default as LinkTo } from 'ember-glimmer/components/link-to';
-export { DOMHelper } from 'glimmer-runtime';
+export { DOMChanges } from 'glimmer-runtime';
 export { InteractiveRenderer, InertRenderer } from 'ember-glimmer/renderer';
 export { default as makeBoundHelper } from 'ember-glimmer/make-bound-helper';
 export { htmlSafe, SafeString } from 'ember-glimmer/utils/string';
