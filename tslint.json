@@ -15,7 +15,7 @@
     "no-trailing-whitespace": true,
     "no-unreachable": true,
     "no-unused-expression": true,
-    "semicolon": true,
+    "semicolon": [true, "always"],
     "triple-equals": true,
     "class-name": true,
     "no-require-imports": true

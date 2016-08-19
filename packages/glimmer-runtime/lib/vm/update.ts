@@ -20,13 +20,14 @@ import {
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { OpcodeJSON, OpSeq, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';
-import { DOMHelper } from '../dom/helper';
+import { DOMChanges } from '../dom/helper';
+import * as Simple from '../dom/interfaces';
 
 import VM from './append';
 
 export default class UpdatingVM {
   public env: Environment;
-  public dom: DOMHelper;
+  public dom: DOMChanges;
   public alwaysRevalidate: boolean;
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 
@@ -207,24 +208,20 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 }
 
 export class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
-  private opcode: ListBlockOpcode;
   private map: Dict<BlockOpcode>;
   private updating: LinkedList<UpdatingOpcode>;
-  private marker: Comment;
 
   private didInsert = false;
   private didDelete = false;
 
-  constructor(opcode: ListBlockOpcode, marker: Comment) {
-    this.opcode = opcode;
+  constructor(private opcode: ListBlockOpcode, private marker: Simple.Comment) {
     this.map = opcode.map;
     this.updating = opcode['children'];
-    this.marker = marker;
   }
 
   insert(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: string) {
     let { map, opcode, updating } = this;
-    let nextSibling: Node = null;
+    let nextSibling: Simple.Node = null;
     let reference = null;
 
     if (before) {
@@ -344,7 +341,7 @@ export class ListBlockOpcode extends BlockOpcode {
     super.evaluate(vm);
   }
 
-  vmForInsertion(nextSibling: Node) {
+  vmForInsertion(nextSibling: Simple.Node) {
     let { env, scope, dynamicScope } = this;
 
     let elementStack = ElementStack.forInitialRender(

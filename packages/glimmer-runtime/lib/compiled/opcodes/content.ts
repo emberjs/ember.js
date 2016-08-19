@@ -11,7 +11,7 @@ import Upsert, {
   trustingInsert
 } from '../../upsert';
 import { isComponentDefinition } from '../../component/interfaces';
-import { DOMHelper } from '../../dom/helper';
+import { DOMTreeConstruction } from '../../dom/helper';
 import { OpSeq, Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { VM, UpdatingVM } from '../../vm';
@@ -70,7 +70,7 @@ export function normalizeValue(value: Opaque): CautiousInsertion {
 
 export abstract class AppendOpcode<T extends Insertion> extends Opcode {
   protected abstract normalize(reference: Reference<Opaque>): Reference<T>;
-  protected abstract insert(dom: DOMHelper, cursor: Cursor, value: T): Upsert;
+  protected abstract insert(dom: DOMTreeConstruction, cursor: Cursor, value: T): Upsert;
   protected abstract updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<T>, bounds: Fragment, upsert: Upsert): UpdateOpcode<T>;
 
   evaluate(vm: VM) {
@@ -87,7 +87,7 @@ export abstract class AppendOpcode<T extends Insertion> extends Opcode {
     }
 
     let stack = vm.stack();
-    let upsert = this.insert(stack.dom, stack, value);
+    let upsert = this.insert(vm.env.getAppendOperations(), stack, value);
     let bounds = new Fragment(upsert.bounds);
 
     stack.newBounds(bounds);
@@ -245,7 +245,7 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
     this.tag = cache.tag;
   }
 
-  protected abstract insert(dom: DOMHelper, cursor: Cursor, value: T): Upsert;
+  protected abstract insert(dom: DOMTreeConstruction, cursor: Cursor, value: T): Upsert;
 
   evaluate(vm: UpdatingVM) {
     let value = this.cache.revalidate();
@@ -256,7 +256,7 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
 
       if(!this.upsert.update(dom, value)) {
         let cursor = new Cursor(bounds.parentElement(), clear(bounds));
-        upsert = this.upsert = this.insert(dom, cursor, value);
+        upsert = this.upsert = this.insert(vm.env.getAppendOperations(), cursor, value);
       }
 
       bounds.update(upsert.bounds);
@@ -389,7 +389,7 @@ export class OptimizedCautiousAppendOpcode extends AppendOpcode<CautiousInsertio
     return map(reference, normalizeValue);
   }
 
-  protected insert(dom: DOMHelper, cursor: Cursor, value: CautiousInsertion): Upsert {
+  protected insert(dom: DOMTreeConstruction, cursor: Cursor, value: CautiousInsertion): Upsert {
     return cautiousInsert(dom, cursor, value);
   }
 
@@ -401,7 +401,7 @@ export class OptimizedCautiousAppendOpcode extends AppendOpcode<CautiousInsertio
 class OptimizedCautiousUpdateOpcode extends UpdateOpcode<CautiousInsertion> {
   type = 'optimized-cautious-update';
 
-  protected insert(dom: DOMHelper, cursor: Cursor, value: CautiousInsertion): Upsert {
+  protected insert(dom: DOMTreeConstruction, cursor: Cursor, value: CautiousInsertion): Upsert {
     return cautiousInsert(dom, cursor, value);
   }
 }
@@ -415,7 +415,7 @@ export class GuardedCautiousAppendOpcode extends GuardedAppendOpcode<CautiousIns
     return map(reference, normalizeValue);
   }
 
-  protected insert(dom: DOMHelper, cursor: Cursor, value: CautiousInsertion): Upsert {
+  protected insert(dom: DOMTreeConstruction, cursor: Cursor, value: CautiousInsertion): Upsert {
     return cautiousInsert(dom, cursor, value);
   }
 
@@ -427,7 +427,7 @@ export class GuardedCautiousAppendOpcode extends GuardedAppendOpcode<CautiousIns
 class GuardedCautiousUpdateOpcode extends GuardedUpdateOpcode<CautiousInsertion> {
   type = 'guarded-cautious-update';
 
-  protected insert(dom: DOMHelper, cursor: Cursor, value: CautiousInsertion): Upsert {
+  protected insert(dom: DOMTreeConstruction, cursor: Cursor, value: CautiousInsertion): Upsert {
     return cautiousInsert(dom, cursor, value);
   }
 }
@@ -439,7 +439,7 @@ export class OptimizedTrustingAppendOpcode extends AppendOpcode<TrustingInsertio
     return map(reference, normalizeTrustedValue);
   }
 
-  protected insert(dom: DOMHelper, cursor: Cursor, value: TrustingInsertion): Upsert {
+  protected insert(dom: DOMTreeConstruction, cursor: Cursor, value: TrustingInsertion): Upsert {
     return trustingInsert(dom, cursor, value);
   }
 
@@ -451,7 +451,7 @@ export class OptimizedTrustingAppendOpcode extends AppendOpcode<TrustingInsertio
 class OptimizedTrustingUpdateOpcode extends UpdateOpcode<TrustingInsertion> {
   type = 'optimized-trusting-update';
 
-  protected insert(dom: DOMHelper, cursor: Cursor, value: TrustingInsertion): Upsert {
+  protected insert(dom: DOMTreeConstruction, cursor: Cursor, value: TrustingInsertion): Upsert {
     return trustingInsert(dom, cursor, value);
   }
 }
@@ -465,7 +465,7 @@ export class GuardedTrustingAppendOpcode extends GuardedAppendOpcode<TrustingIns
     return map(reference, normalizeTrustedValue);
   }
 
-  protected insert(dom: DOMHelper, cursor: Cursor, value: TrustingInsertion): Upsert {
+  protected insert(dom: DOMTreeConstruction, cursor: Cursor, value: TrustingInsertion): Upsert {
     return trustingInsert(dom, cursor, value);
   }
 
@@ -477,7 +477,7 @@ export class GuardedTrustingAppendOpcode extends GuardedAppendOpcode<TrustingIns
 class GuardedTrustingUpdateOpcode extends GuardedUpdateOpcode<TrustingInsertion> {
   type = 'trusting-update';
 
-  protected insert(dom: DOMHelper, cursor: Cursor, value: TrustingInsertion): Upsert {
+  protected insert(dom: DOMTreeConstruction, cursor: Cursor, value: TrustingInsertion): Upsert {
     return trustingInsert(dom, cursor, value);
   }
 }

@@ -1,10 +1,10 @@
-import { Template, RenderResult, readDOMAttr } from "glimmer-runtime";
+import { Simple, Template, RenderResult, readDOMAttr } from "glimmer-runtime";
 import { TestEnvironment, TestDynamicScope, equalTokens } from "glimmer-test-helpers";
 import { PathReference } from "glimmer-reference";
 import { UpdatableReference } from "glimmer-object-reference";
 import { Opaque } from "glimmer-util";
 
-let root: Element;
+let root: Simple.Element;
 let env: TestEnvironment;
 let self: UpdatableReference<any>;
 let result: RenderResult;

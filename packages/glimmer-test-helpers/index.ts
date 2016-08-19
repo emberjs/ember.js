@@ -26,3 +26,8 @@ export {
   regex,
   classes
 } from './lib/environment';
+
+export {
+  VersionedObject,
+  SimpleRootReference
+} from './lib/abstract-test-case';

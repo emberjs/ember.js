@@ -1,5 +1,5 @@
 import { Bounds } from '../bounds';
-import { DOMHelper } from '../dom/helper';
+import { DOMChanges, DOMTreeConstruction } from '../dom/helper';
 
 // Patch:    Adjacent text node merging fix
 // Browsers: IE, Edge, Firefox w/o inspector open
@@ -13,27 +13,19 @@ import { DOMHelper } from '../dom/helper';
 //           Note that this fix must only apply to the previous text node, as
 //           the base implementation of `insertHTMLBefore` already handles
 //           following text nodes correctly.
-export default function applyTextNodeMergingFix(document: Document, DOMHelperClass: typeof DOMHelper): typeof DOMHelper {
-  if (!document) return DOMHelperClass;
+export function domChanges(document: Document, DOMChangesClass: typeof DOMChanges): typeof DOMChanges {
+  if (!document) return DOMChangesClass;
 
-  let mergingTextDiv = <HTMLElement> document.createElement('div');
-
-  mergingTextDiv.innerHTML = 'first';
-  mergingTextDiv.insertAdjacentHTML('beforeEnd', 'second');
-
-  if (mergingTextDiv.childNodes.length === 2) {
-    // It worked as expected, no fix required
-    return DOMHelperClass;
+  if (!shouldApplyFix(document)) {
+    return DOMChangesClass;
   }
 
-  mergingTextDiv = null;
-
-  return class DOMHelperWithTextNodeMergingFix extends DOMHelperClass {
+  return class DOMChangesWithTextNodeMergingFix extends DOMChangesClass {
     private uselessComment: Comment;
 
     constructor(document) {
       super(document);
-      this.uselessComment = this.createComment('');
+      this.uselessComment = document.createComment('');
     }
 
     insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
@@ -58,4 +50,60 @@ export default function applyTextNodeMergingFix(document: Document, DOMHelperCla
       return bounds;
     }
   };
+}
+
+export function treeConstruction(document: Document, TreeConstructionClass: typeof DOMTreeConstruction): typeof DOMTreeConstruction {
+  if (!document) return TreeConstructionClass;
+
+  if (!shouldApplyFix(document)) {
+    return TreeConstructionClass;
+  }
+
+  return class TreeConstructionWithTextNodeMergingFix extends TreeConstructionClass {
+    private uselessComment: Comment;
+
+    constructor(document) {
+      super(document);
+      this.uselessComment = this.createComment('') as Comment;
+    }
+
+    insertHTMLBefore(parent: HTMLElement, html: string, reference: Node): Bounds {
+      if (html === null) {
+        return super.insertHTMLBefore(parent, html, reference);
+      }
+
+      let didSetUselessComment = false;
+
+      let nextPrevious = reference ? reference.previousSibling : parent.lastChild;
+      if (nextPrevious && nextPrevious instanceof Text) {
+        didSetUselessComment = true;
+        parent.insertBefore(this.uselessComment, reference);
+      }
+
+      let bounds = super.insertHTMLBefore(parent, html, reference);
+
+      if (didSetUselessComment) {
+        parent.removeChild(this.uselessComment);
+      }
+
+      return bounds;
+    }
+  };
+}
+
+function shouldApplyFix(document) {
+  let mergingTextDiv = <HTMLElement> document.createElement('div');
+
+  mergingTextDiv.innerHTML = 'first';
+  mergingTextDiv.insertAdjacentHTML('beforeEnd', 'second');
+
+  if (mergingTextDiv.childNodes.length === 2) {
+    mergingTextDiv = null;
+    // It worked as expected, no fix required
+    return false;
+  }
+
+  mergingTextDiv = null;
+
+  return true;
 }

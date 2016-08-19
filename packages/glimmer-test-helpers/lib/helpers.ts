@@ -4,10 +4,50 @@ import { SerializedTemplate } from 'glimmer-wire-format';
 import { Environment, Template, Layout } from "glimmer-runtime";
 import { TemplateSpec, compileSpec, CompileOptions } from "glimmer-compiler";
 
-const TextNode = (<any>window).Text;
-const Comment = (<any>window).Comment;
+// For Phantom
+function toObject(val) {
+  if (val === null || val === undefined) {
+    throw new TypeError('Object.assign cannot be called with null or undefined');
+  }
+
+  return Object(val);
+}
+
+if (typeof Object.assign !== 'function') {
+  Object.assign = function(target, source) {
+    let from;
+    let to = toObject(target);
+    let symbols;
+
+    for (let s = 1; s < arguments.length; s++) {
+      from = Object(arguments[s]);
+
+      for (let key in from) {
+        if (Object.prototype.hasOwnProperty.call(from, key)) {
+          to[key] = from[key];
+        }
+      }
+
+      if (Object.getOwnPropertySymbols) {
+        symbols = Object.getOwnPropertySymbols(from);
+        for (let i = 0; i < symbols.length; i++) {
+          if (Object.prototype.propertyIsEnumerable.call(from, symbols[i])) {
+            to[symbols[i]] = from[symbols[i]];
+          }
+        }
+      }
+    }
+
+    return to;
+  };
+}
+
+export const assign = Object.assign;
 
 function isMarker(node) {
+  const TextNode = (<any>window).Text;
+  const Comment = (<any>window).Comment;
+
   if (node instanceof Comment && node.textContent === '') {
     return true;
   }

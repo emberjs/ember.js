@@ -15,8 +15,9 @@ import {
   Environment,
   Helper as GlimmerHelper,
   ModifierManager,
-  DOMHelper,
-  IDOMHelper,
+  DOMTreeConstruction,
+  DOMChanges,
+  IDOMChanges,
 
   // Partials
   PartialDefinition,
@@ -596,11 +597,11 @@ class HelperReference implements PathReference<Opaque> {
 }
 
 class InertModifierManager implements ModifierManager<Opaque> {
-  install(element: Element, args: EvaluatedArgs, dom: IDOMHelper): Opaque {
+  install(element: Element, args: EvaluatedArgs, dom: IDOMChanges): Opaque {
     return;
   }
 
-  update(modifier: Opaque, element: Element, args: EvaluatedArgs, dom: IDOMHelper) {
+  update(modifier: Opaque, element: Element, args: EvaluatedArgs, dom: IDOMChanges) {
     return;
   }
 
@@ -612,7 +613,7 @@ class InertModifierManager implements ModifierManager<Opaque> {
 interface TestModifier {
   element: Element;
   args: EvaluatedArgs;
-  dom: IDOMHelper;
+  dom: IDOMChanges;
   destructor: Destroyable;
 }
 
@@ -627,7 +628,7 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
     this.destroyedModifiers = [];
   }
 
-  install(element: Element, args: EvaluatedArgs, dom: IDOMHelper): TestModifier {
+  install(element: Element, args: EvaluatedArgs, dom: IDOMChanges): TestModifier {
     let manager = this;
     this.installedElements.push(element);
 
@@ -651,7 +652,7 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
     return modifier;
   }
 
-  update(modifier: TestModifier, element: Element, args: EvaluatedArgs, dom: IDOMHelper) {
+  update(modifier: TestModifier, element: Element, args: EvaluatedArgs, dom: IDOMChanges) {
     this.updatedElements.push(modifier.element);
 
     let param = args.positional.at(0).value();
@@ -670,11 +671,13 @@ export class TestEnvironment extends Environment {
   private modifiers = dict<ModifierManager<Opaque>>();
   private partials = dict<PartialDefinition>();
   private components = dict<ComponentDefinition<any>>();
+  private uselessAnchor: HTMLAnchorElement;
   public compiledLayouts = dict<CompiledBlock>();
 
-  constructor(dom?: IDOMHelper) {
-    super(dom || new DOMHelper(document));
+  constructor(dom?: IDOMChanges) {
+    super({ appendOperations: new DOMTreeConstruction(document), updateOperations: dom || new DOMChanges(document) });
 
+    this.uselessAnchor = document.createElement('a');
     this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
     this.registerModifier("action", new InertModifierManager());
@@ -684,6 +687,11 @@ export class TestEnvironment extends Environment {
     });
 
     this.registerInternalHelper("hash", (vm, args) => args.named);
+  }
+
+  protocolForURL(url: string): string {
+    this.uselessAnchor.href = url;
+    return this.uselessAnchor.protocol;
   }
 
   registerHelper(name: string, helper: UserHelper) {

@@ -4,6 +4,7 @@
         "inlineSourceMap": true,
         "inlineSources": true,
         "moduleResolution": "node",
+        "experimentalDecorators": true,
         "rootDir": "packages",
         "baseUrl" : "./",
         "paths": {
