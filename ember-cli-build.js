@@ -61,6 +61,7 @@ function getFeatures(environment) {
 function babelConfigFor(environment) {
   var plugins = [];
   var features = getFeatures(environment);
+  var includeDevHelpers = true;
 
   plugins.push(applyFeatureFlags({
     import: { module: 'ember-metal/features' },
@@ -69,12 +70,25 @@ function babelConfigFor(environment) {
 
   var isProduction = (environment === 'production');
   if (isProduction) {
+    includeDevHelpers = false;
     plugins.push(filterImports({
       'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal']
     }));
   }
 
-  return { plugins: plugins };
+  return {
+    plugins: plugins,
+    includeDevHelpers: includeDevHelpers,
+    helperWhiteList: [
+      'inherits',
+      'class-call-check',
+      'tagged-template-literal-loose',
+      'slice',
+      'defaults',
+      'create-class',
+      'interop-export-wildcard'
+    ]
+  };
 }
 
 var glimmerEngine = require('glimmer-engine/ember-cli-build')();
@@ -103,6 +117,7 @@ module.exports = function() {
   var version = getVersion();
 
   var vendorPackages = {
+    'external-helpers':      vendoredPackage('external-helpers'),
     'loader':                vendoredPackage('loader'),
     'rsvp':                  vendoredES6Package('rsvp'),
     'backburner':            vendoredES6Package('backburner'),
