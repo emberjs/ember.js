@@ -79,6 +79,7 @@ export default class TemplateCompiler {
     for (let i = 0; i < action.modifiers.length; i++) {
       this.modifier([action.modifiers[i]]);
     }
+    this.opcode('flushElement', null);
   }
 
   closeElement() {

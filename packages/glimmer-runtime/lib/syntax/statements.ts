@@ -6,6 +6,7 @@ import {
   Text,
   Comment,
   OpenElement,
+  FlushElement,
   CloseElement,
   StaticAttr,
   Modifier,
@@ -29,6 +30,7 @@ const {
   isText,
   isComment,
   isOpenElement,
+  isFlushElement,
   isCloseElement,
   isStaticAttr,
   isModifier,
@@ -47,6 +49,7 @@ export default function(sexp: SerializedStatement, blocks: InlineBlock[]): State
   if (isText(sexp)) return Text.fromSpec(sexp);
   if (isComment(sexp)) return Comment.fromSpec(sexp);
   if (isOpenElement(sexp)) return OpenElement.fromSpec(sexp);
+  if (isFlushElement(sexp)) return FlushElement.fromSpec();
   if (isCloseElement(sexp)) return CloseElement.fromSpec();
   if (isStaticAttr(sexp)) return StaticAttr.fromSpec(sexp);
   if (isStaticArg(sexp)) return StaticArg.fromSpec(sexp);

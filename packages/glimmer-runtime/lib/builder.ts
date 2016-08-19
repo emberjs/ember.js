@@ -141,13 +141,13 @@ export class ElementStack implements Cursor {
   public nextSibling: Simple.Node;
   public dom: DOMTreeConstruction;
   public updateOperations: DOMChanges;
+  public constructing: Simple.Element = null;
+  public operations: GroupedElementOperations = null;
   public element: Simple.Element;
-  public elementOperations: GroupedElementOperations = null;
   public env: Environment;
 
   private elementStack = new Stack<Simple.Element>();
   private nextSiblingStack = new Stack<Simple.Node>();
-  private elementOperationsStack = new Stack<GroupedElementOperations>();
   private blockStack = new Stack<Tracker>();
 
   static forInitialRender(env: Environment, parentNode: Simple.Element, nextSibling: Simple.Node) {
@@ -178,31 +178,14 @@ export class ElementStack implements Cursor {
     return this.blockStack.current;
   }
 
-  private pushElement(tag: string): Simple.Element {
-    let element = this.dom.createElement(tag, this.element);
-    let elementOperations = new GroupedElementOperations(element, this.env);
-
-    this.elementOperations = elementOperations;
-    this.element = element;
-    this.nextSibling = null;
-
-    this.elementStack.push(element);
-    this.elementOperationsStack.push(elementOperations);
-    this.nextSiblingStack.push(null);
-
-    return element;
-  }
-
   private popElement() {
-    let { elementStack, nextSiblingStack, elementOperationsStack }  = this;
+    let { elementStack, nextSiblingStack }  = this;
 
     let topElement = elementStack.pop();
     nextSiblingStack.pop();
-    elementOperationsStack.pop();
 
     this.element = elementStack.current;
     this.nextSibling = nextSiblingStack.current;
-    this.elementOperations = elementOperationsStack.current;
 
     return topElement;
   }
@@ -245,9 +228,27 @@ export class ElementStack implements Cursor {
   }
 
   openElement(tag: string): Simple.Element {
-    let element = this.pushElement(tag);
-    this.blockStack.current.openElement(element);
+    let element = this.dom.createElement(tag, this.element);
+    let operations = new GroupedElementOperations(element, this.env);
+
+    this.constructing = element;
+    this.operations = operations;
+
     return element;
+  }
+
+  flushElement() {
+    let parent  = this.element;
+    let element = this.element = this.constructing;
+
+    this.dom.insertBefore(parent, element, this.nextSibling);
+
+    this.constructing = null;
+    this.operations = null;
+    this.nextSibling = null;
+    this.elementStack.push(element);
+    this.nextSiblingStack.push(null);
+    this.blockStack.current.openElement(element);
   }
 
   newDestroyable(d: Destroyable) {
@@ -275,17 +276,16 @@ export class ElementStack implements Cursor {
   }
 
   setAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
-    this.elementOperations.addAttribute(name, reference, isTrusting);
+    this.operations.addAttribute(name, reference, isTrusting);
   }
 
   setAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
-    this.elementOperations.addAttributeNS(namespace, name, reference, isTrusting);
+    this.operations.addAttributeNS(namespace, name, reference, isTrusting);
   }
 
   closeElement() {
     this.blockStack.current.closeElement();
-    let child = this.popElement();
-    this.dom.insertBefore(this.element, child, this.nextSibling);
+    this.popElement();
   }
 }
 

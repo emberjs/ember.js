@@ -1290,6 +1290,8 @@ test("<option selected> is normalized and updated correctly", function() {
 
   rerender();
 
+  assertSelected(['1', '2'], 'selection after no-op re-render');
+
   object.one = false;
   object.two = false;
   rerender();
