@@ -150,6 +150,7 @@ class Renderer {
 
   remove(view) {
     view.trigger('willDestroyElement');
+    view.trigger('willClearRender');
     view._transitionTo('destroying');
 
     if (this._root === view) {

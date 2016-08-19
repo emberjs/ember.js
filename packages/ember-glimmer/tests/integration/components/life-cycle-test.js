@@ -135,6 +135,12 @@ class LifeCycleHooksTest extends RenderingTest {
         pushHook('willDestroyElement');
         assertParentView('willDestroyElement', this);
         assertElement('willDestroyElement', this);
+      },
+
+      willClearRender() {
+        pushHook('willClearRender');
+        assertParentView('willClearRender', this);
+        assertElement('willClearRender', this);
       }
     });
 
@@ -387,8 +393,11 @@ class LifeCycleHooksTest extends RenderingTest {
       this.assertHooks(
         'destroy',
         ['the-top', 'willDestroyElement'],
+        ['the-top', 'willClearRender'],
         ['the-middle', 'willDestroyElement'],
-        ['the-bottom', 'willDestroyElement']
+        ['the-middle', 'willClearRender'],
+        ['the-bottom', 'willDestroyElement'],
+        ['the-bottom', 'willClearRender']
       );
     });
   }
@@ -559,8 +568,11 @@ class LifeCycleHooksTest extends RenderingTest {
       this.assertHooks(
         'destroy',
         ['the-top', 'willDestroyElement'],
+        ['the-top', 'willClearRender'],
         ['the-middle', 'willDestroyElement'],
-        ['the-bottom', 'willDestroyElement']
+        ['the-middle', 'willClearRender'],
+        ['the-bottom', 'willDestroyElement'],
+        ['the-bottom', 'willClearRender']
       );
     });
   }
@@ -631,10 +643,15 @@ class LifeCycleHooksTest extends RenderingTest {
       'reset to empty array',
 
       ['an-item', 'willDestroyElement'],
+      ['an-item', 'willClearRender'],
       ['an-item', 'willDestroyElement'],
+      ['an-item', 'willClearRender'],
       ['an-item', 'willDestroyElement'],
+      ['an-item', 'willClearRender'],
       ['an-item', 'willDestroyElement'],
+      ['an-item', 'willClearRender'],
       ['an-item', 'willDestroyElement'],
+      ['an-item', 'willClearRender'],
 
       ['no-items', 'init'],
       ['no-items', 'didInitAttrs',       { attrs: { } }],
@@ -649,7 +666,8 @@ class LifeCycleHooksTest extends RenderingTest {
       this.assertHooks(
         'destroy',
 
-        ['no-items', 'willDestroyElement']
+        ['no-items', 'willDestroyElement'],
+        ['no-items', 'willClearRender']
       );
     });
   }
