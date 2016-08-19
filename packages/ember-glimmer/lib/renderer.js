@@ -180,6 +180,8 @@ class Renderer {
     };
     let { _env: env } = this;
     let render = () => {
+      assert(`You cannot render \`${self.value()}\` without a template.`, template);
+
       let result = template.asEntryPoint().render(self, env, {
         appendTo: parentElement,
         dynamicScope
