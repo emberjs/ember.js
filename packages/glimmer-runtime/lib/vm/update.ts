@@ -1,7 +1,7 @@
 import { Scope, DynamicScope, Environment } from '../environment';
-import { Bounds, clear, move as moveBounds } from '../bounds';
+import { DestroyableBounds, clear, move as moveBounds } from '../bounds';
 import { ElementStack, Tracker, UpdatableTracker } from '../builder';
-import { LOGGER, Destroyable, Opaque, Stack, LinkedList, Dict, dict } from 'glimmer-util';
+import { LOGGER, Opaque, Stack, LinkedList, Dict, dict } from 'glimmer-util';
 import {
   ConstReference,
   PathReference,
@@ -87,7 +87,7 @@ export interface VMState {
   dynamicScope: DynamicScope;
 }
 
-export abstract class BlockOpcode extends UpdatingOpcode implements Bounds, Destroyable {
+export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableBounds {
   public type = "block";
   public next = null;
   public prev = null;
@@ -96,10 +96,10 @@ export abstract class BlockOpcode extends UpdatingOpcode implements Bounds, Dest
   protected scope: Scope;
   protected dynamicScope: DynamicScope;
   protected children: LinkedList<UpdatingOpcode>;
-  protected bounds: Tracker;
+  protected bounds: DestroyableBounds;
   public ops: OpSeq;
 
-  constructor(ops: OpSeq, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>) {
+  constructor(ops: OpSeq, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
     let { env, scope, dynamicScope } = state;
     this.ops = ops;

@@ -1,19 +1,19 @@
-import { Destroyable, LinkedList } from 'glimmer-util';
+import { LinkedList } from 'glimmer-util';
 import Environment from '../environment';
-import { Bounds, clear } from '../bounds';
+import { DestroyableBounds, clear } from '../bounds';
 import UpdatingVM, { ExceptionHandler } from './update';
 import { UpdatingOpcode } from '../opcodes';
 
 interface RenderResultOptions {
   env: Environment;
   updating: LinkedList<UpdatingOpcode>;
-  bounds: Bounds & Destroyable;
+  bounds: DestroyableBounds;
 }
 
-export default class RenderResult implements Bounds, Destroyable, ExceptionHandler {
+export default class RenderResult implements DestroyableBounds, ExceptionHandler {
   private env: Environment;
   private updating: LinkedList<UpdatingOpcode>;
-  private bounds: Bounds & Destroyable;
+  private bounds: DestroyableBounds;
 
   constructor({ env, updating, bounds } : RenderResultOptions) {
     this.env = env;
