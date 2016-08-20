@@ -381,11 +381,11 @@ runInDebug(() => {
     }
   };
 
-  Environment.prototype.attributeFor = function(element, attr, reference, isTrusting) {
-    if (attr === 'style' && !isTrusting) {
+  Environment.prototype.attributeFor = function(element, attribute, isTrusting, namespace) {
+    if (attribute === 'style' && !isTrusting) {
       return StyleAttributeChangeList;
     }
 
-    return GlimmerEnvironment.prototype.attributeFor.call(this, element, attr, reference, isTrusting);
+    return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
   };
 });

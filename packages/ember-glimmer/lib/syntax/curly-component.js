@@ -48,7 +48,7 @@ function aliasIdToElementId(args, props) {
 // We must traverse the attributeBindings in reverse keeping track of
 // what has already been applied. This is essentially refining the concated
 // properties applying right to left.
-function applyAttributeBindings(attributeBindings, component, operations) {
+function applyAttributeBindings(element, attributeBindings, component, operations) {
   let seen = [];
   let i = attributeBindings.length - 1;
 
@@ -59,14 +59,18 @@ function applyAttributeBindings(attributeBindings, component, operations) {
 
     if (seen.indexOf(attribute) === -1) {
       seen.push(attribute);
-      AttributeBinding.apply(component, parsed, operations);
+      AttributeBinding.apply(element, component, parsed, operations);
     }
 
     i--;
   }
 
+  if (seen.indexOf('id') === -1) {
+    operations.addStaticAttribute(element, 'id', component.elementId);
+  }
+
   if (seen.indexOf('style') === -1) {
-    IsVisibleBinding.apply(component, operations);
+    IsVisibleBinding.apply(element, component, operations);
   }
 }
 
@@ -232,24 +236,25 @@ class CurlyComponentManager {
     let { attributeBindings, classNames, classNameBindings } = component;
 
     if (attributeBindings && attributeBindings.length) {
-      applyAttributeBindings(attributeBindings, component, operations);
+      applyAttributeBindings(element, attributeBindings, component, operations);
     } else {
-      IsVisibleBinding.apply(component, operations);
+      operations.addStaticAttribute(element, 'id', component.elementId);
+      IsVisibleBinding.apply(element, component, operations);
     }
 
     if (classRef) {
-      operations.addDynamicAttribute('class', classRef);
+      operations.addDynamicAttribute(element, 'class', classRef);
     }
 
     if (classNames && classNames.length) {
       classNames.forEach(name => {
-        operations.addDynamicAttribute('class', new ValueReference(name));
+        operations.addStaticAttribute(element, 'class', name);
       });
     }
 
     if (classNameBindings && classNameBindings.length) {
       classNameBindings.forEach(binding => {
-        ClassNameBinding.apply(component, binding, operations);
+        ClassNameBinding.apply(element, component, binding, operations);
       });
     }
 
@@ -307,11 +312,6 @@ function tagName(vm) {
   return new ValueReference(tagName === '' ? null : tagName || 'div');
 }
 
-function elementId(vm) {
-  let component = vm.dynamicScope().view;
-  return new ValueReference(component.elementId);
-}
-
 function ariaRole(vm) {
   return vm.getSelf().get('ariaRole');
 }
@@ -332,7 +332,6 @@ class CurlyComponentLayoutCompiler {
   compile(builder) {
     builder.wrapLayout(this.template.asLayout());
     builder.tag.dynamic(tagName);
-    builder.attrs.dynamic('id', elementId);
     builder.attrs.dynamic('role', ariaRole);
     builder.attrs.static('class', 'ember-view');
   }
