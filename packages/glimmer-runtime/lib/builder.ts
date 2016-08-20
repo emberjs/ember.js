@@ -1,4 +1,4 @@
-import Bounds, { clear, Cursor } from './bounds';
+import Bounds, { Cursor, DestroyableBounds, clear } from './bounds';
 
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 
@@ -279,7 +279,7 @@ export class ElementStack implements Cursor {
   }
 }
 
-export interface Tracker extends Bounds, Destroyable {
+export interface Tracker extends DestroyableBounds {
   openElement(element: Simple.Element);
   closeElement();
   newNode(node: Simple.Node);
