@@ -167,8 +167,14 @@ export class ElementStack implements Cursor {
     return topElement;
   }
 
-  pushBlock(): Tracker {
-    let tracker = new BlockTracker(this.element);
+  pushSimpleBlock(): Tracker {
+    let tracker = new SimpleBlockTracker(this.element);
+    this.pushBlockTracker(tracker);
+    return tracker;
+  }
+
+  pushUpdatableBlock(): UpdatableTracker {
+    let tracker = new UpdatableBlockTracker(this.element);
     this.pushBlockTracker(tracker);
     return tracker;
   }
@@ -280,14 +286,13 @@ export interface Tracker extends Bounds, Destroyable {
   newBounds(bounds: Bounds);
   newDestroyable(d: Destroyable);
   finalize(stack: ElementStack);
-  reset(env: Environment);
 }
 
-export class BlockTracker implements Tracker {
-  private first: FirstNode = null;
-  private last: LastNode = null;
-  private destroyables: Destroyable[] = null;
-  private nesting = 0;
+export class SimpleBlockTracker implements Tracker {
+  protected first: FirstNode = null;
+  protected last: LastNode = null;
+  protected destroyables: Destroyable[] = null;
+  protected nesting = 0;
 
   constructor(private parent: Simple.Element){
     this.parent = parent;
@@ -354,7 +359,13 @@ export class BlockTracker implements Tracker {
       stack.appendComment('');
     }
   }
+}
 
+export interface UpdatableTracker extends Tracker {
+  reset(env: Environment);
+}
+
+export class UpdatableBlockTracker extends SimpleBlockTracker implements UpdatableTracker {
   reset(env: Environment) {
     let { destroyables } = this;
 
@@ -416,6 +427,4 @@ class BlockListTracker implements Tracker {
 
   finalize(stack: ElementStack) {
   }
-
-  reset() {}
 }
