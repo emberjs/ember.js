@@ -332,13 +332,14 @@ class UnwrappedBuilder {
     let attrsInserted = false;
 
     this.layout.program.forEachNode(statement => {
-      compileStatement(env, statement, dsl, layout);
-
       if (!attrsInserted && isOpenElement(statement)) {
+        dsl.openComponentElement(statement.tag);
         dsl.didCreateElement();
         dsl.shadowAttributes();
         attrs.forEach(statement => compileStatement(env, statement, dsl, layout));
         attrsInserted = true;
+      } else {
+        compileStatement(env, statement, dsl, layout);
       }
     });
 
