@@ -92,10 +92,11 @@ export class OpenComponentOpcode extends Opcode {
     preparedArgs.internal["definition"] = definition;
     preparedArgs.internal["shadow"] = shadow;
 
-    vm.beginCacheGroup();
     let layout = manager.layoutFor(definition, component, vm.env);
     let callerScope = vm.scope();
     let selfRef = manager.getSelf(component);
+
+    vm.beginCacheGroup();
     vm.pushRootScope(selfRef, layout.symbols);
     vm.invokeLayout({ templates, args: preparedArgs, shadow, layout, callerScope });
     vm.env.didCreate(component, manager);

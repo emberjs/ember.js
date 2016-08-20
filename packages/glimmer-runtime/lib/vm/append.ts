@@ -89,8 +89,7 @@ export default class VM implements PublicVM {
     return {
       env: this.env,
       scope: this.scope(),
-      dynamicScope: this.dynamicScope(),
-      block: this.stack().block()
+      dynamicScope: this.dynamicScope()
     };
   }
 
@@ -129,10 +128,10 @@ export default class VM implements PublicVM {
   enter(ops: OpSeq) {
     let updating = new LinkedList<UpdatingOpcode>();
 
-    this.stack().pushBlock();
+    let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
 
-    let tryOpcode = new TryOpcode({ ops, state, children: updating });
+    let tryOpcode = new TryOpcode(ops, state, tracker, updating);
 
     this.didEnter(tryOpcode, updating);
   }
@@ -140,10 +139,10 @@ export default class VM implements PublicVM {
   enterWithKey(key: string, ops: OpSeq) {
     let updating = new LinkedList<UpdatingOpcode>();
 
-    this.stack().pushBlock();
+    let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
 
-    let tryOpcode = new TryOpcode({ ops, state, children: updating });
+    let tryOpcode = new TryOpcode(ops, state, tracker, updating);
 
     this.listBlockStack.current.map[key] = tryOpcode;
 
@@ -153,11 +152,11 @@ export default class VM implements PublicVM {
   enterList(ops: OpSeq) {
     let updating = new LinkedList<BlockOpcode>();
 
-    this.stack().pushBlockList(updating);
+    let tracker = this.stack().pushBlockList(updating);
     let state = this.capture();
     let artifacts = this.frame.getIterator().artifacts;
 
-    let opcode = new ListBlockOpcode({ ops, state, children: updating, artifacts });
+    let opcode = new ListBlockOpcode(ops, state, tracker, updating, artifacts);
 
     this.listBlockStack.push(opcode);
 
@@ -271,7 +270,7 @@ export default class VM implements PublicVM {
 
     let { elementStack, frame, updatingOpcodeStack, env } = this;
 
-    elementStack.pushBlock();
+    elementStack.pushSimpleBlock();
 
     updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
     frame.push(opcodes);
