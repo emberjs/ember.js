@@ -94,6 +94,7 @@ export class OpenComponentOpcode extends Opcode {
     let selfRef = manager.getSelf(component);
 
     vm.beginCacheGroup();
+    vm.stack().pushSimpleBlock();
     vm.pushRootScope(selfRef, layout.symbols);
     vm.invokeLayout(preparedArgs, layout, templates, callerScope, component, manager, shadow);
     vm.env.didCreate(component, manager);
@@ -193,6 +194,18 @@ export class ShadowAttributesOpcode extends Opcode {
       type: this.type,
       args: ["$ARGS"]
     };
+  }
+}
+
+export class DidRenderLayoutOpcode extends Opcode {
+  public type = "did-render-layout";
+
+  evaluate(vm: VM) {
+    let bounds = vm.stack().popBlock();
+    let component = vm.frame.getComponent();
+    let manager = vm.frame.getManager();
+
+    manager.didRenderLayout(component, bounds);
   }
 }
 

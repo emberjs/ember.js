@@ -138,6 +138,10 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new component.ShadowAttributesOpcode());
   }
 
+  didRenderLayout() {
+    this.append(new component.DidRenderLayoutOpcode());
+  }
+
   closeComponent() {
     this.append(new component.CloseComponentOpcode());
   }

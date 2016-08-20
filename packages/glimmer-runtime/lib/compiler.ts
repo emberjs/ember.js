@@ -236,6 +236,7 @@ class WrappedBuilder {
     //        JumpUnless(END)
     //        CloseElement
     // END:   Noop
+    //        DidRenderLayout
     //        Exit
     //
     //========STATIC
@@ -245,6 +246,7 @@ class WrappedBuilder {
     //        FlushElement
     //        ...body statements...
     //        CloseElement
+    //        DidRenderLayout
     //        Exit
 
     let { env, layout } = this;
@@ -291,6 +293,7 @@ class WrappedBuilder {
       dsl.closeElement();
     }
 
+    dsl.didRenderLayout();
     dsl.stopLabels();
 
     return new CompiledBlock(dsl.toOpSeq(), symbolTable.size);
@@ -343,6 +346,7 @@ class UnwrappedBuilder {
       }
     });
 
+    dsl.didRenderLayout();
     dsl.stopLabels();
 
     return new CompiledBlock(dsl.toOpSeq(), layout.symbolTable.size);
