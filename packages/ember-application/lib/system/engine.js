@@ -485,11 +485,8 @@ function buildInitializerMethod(bucketName, humanName) {
 function commonSetupRegistry(registry) {
   registry.optionsForType('component', { singleton: false });
   registry.optionsForType('view', { singleton: false });
-  registry.injection('renderer', 'dom', 'service:-dom-helper');
 
   registry.register('controller:basic', Controller, { instantiate: false });
-
-  registry.injection('service:-dom-helper', 'document', 'service:-document');
 
   registry.injection('view', '_viewRegistry', '-view-registry:main');
   registry.injection('renderer', '_viewRegistry', '-view-registry:main');
