@@ -1,8 +1,7 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementStack } from '../builder';
 import { Destroyable, Dict, Stack, LinkedList, ListSlice, LOGGER, Opaque } from 'glimmer-util';
-import { PathReference, ReferenceIterator, combineSlice } from 'glimmer-reference';
-import Template from '../template';
+import { PathReference, combineSlice } from 'glimmer-reference';
 import { Templates } from '../syntax/core';
 import { InlineBlock, CompiledBlock } from '../compiled/blocks';
 import { CompiledExpression } from '../compiled/expressions';
@@ -10,7 +9,7 @@ import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
 import { Opcode, OpSeq, UpdatingOpcode } from '../opcodes';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { Range } from '../utils';
-
+import { Component, ComponentManager } from '../component/interfaces';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
 import { FrameStack, Blocks } from './frame';
@@ -27,23 +26,6 @@ interface VMConstructorOptions {
   scope: Scope;
   dynamicScope: DynamicScope;
   elementStack: ElementStack;
-}
-
-interface Registers {
-  operand: PathReference<any>;
-  args: EvaluatedArgs;
-  condition: PathReference<boolean>;
-  iterator: ReferenceIterator;
-  key: string;
-  templates: Dict<Template>;
-}
-
-interface InvokeLayoutOptions {
-  args: EvaluatedArgs;
-  shadow: string[];
-  layout: CompiledBlock;
-  templates: Templates;
-  callerScope: Scope;
 }
 
 interface PushFrameOptions {
@@ -206,6 +188,22 @@ export default class VM implements PublicVM {
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
+  pushComponentFrame(
+    layout: CompiledBlock,
+    args: EvaluatedArgs,
+    blocks: Blocks,
+    callerScope: Scope,
+    component: Component,
+    manager: ComponentManager<Component>,
+    shadow: string[]
+  ) {
+    this.frame.push(layout.ops, component, manager, shadow);
+
+    if (args) this.frame.setArgs(args);
+    if (blocks) this.frame.setBlocks(blocks);
+    if (callerScope) this.frame.setCallerScope(callerScope);
+  }
+
   pushEvalFrame(ops: OpSeq) {
     this.frame.push(ops);
   }
@@ -307,8 +305,16 @@ export default class VM implements PublicVM {
     this.pushFrame({ block: compiled, args });
   }
 
-  invokeLayout({ args, layout, templates, callerScope }: InvokeLayoutOptions) {
-    this.pushFrame({ block: layout, blocks: templates, callerScope, args });
+  invokeLayout(
+    args: EvaluatedArgs,
+    layout: CompiledBlock,
+    templates: Templates,
+    callerScope: Scope,
+    component: Component,
+    manager: ComponentManager<Component>,
+    shadow: string[]
+  ) {
+    this.pushComponentFrame(layout, args, templates, callerScope, component, manager, shadow);
   }
 
   evaluateOperand(expr: CompiledExpression<any>) {

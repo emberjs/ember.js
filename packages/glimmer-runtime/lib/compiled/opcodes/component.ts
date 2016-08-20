@@ -88,9 +88,6 @@ export class OpenComponentOpcode extends Opcode {
     let component = manager.create(definition, preparedArgs, dynamicScope, hasDefaultBlock);
     let destructor = manager.getDestructor(component);
     if (destructor) vm.newDestroyable(destructor);
-    preparedArgs.internal["component"] = component;
-    preparedArgs.internal["definition"] = definition;
-    preparedArgs.internal["shadow"] = shadow;
 
     let layout = manager.layoutFor(definition, component, vm.env);
     let callerScope = vm.scope();
@@ -98,7 +95,7 @@ export class OpenComponentOpcode extends Opcode {
 
     vm.beginCacheGroup();
     vm.pushRootScope(selfRef, layout.symbols);
-    vm.invokeLayout({ templates, args: preparedArgs, shadow, layout, callerScope });
+    vm.invokeLayout(preparedArgs, layout, templates, callerScope, component, manager, shadow);
     vm.env.didCreate(component, manager);
 
     vm.updateWith(new UpdateComponentOpcode({ name: definition.name, component, manager, args: preparedArgs, dynamicScope }));
@@ -158,11 +155,8 @@ export class DidCreateElementOpcode extends Opcode {
   public type = "did-create-element";
 
   evaluate(vm: VM) {
-    let args = vm.frame.getArgs();
-    let internal = args.internal;
-    let definition = internal['definition'] as ComponentDefinition<Opaque>;
-    let manager = definition.manager;
-    let component: Component = internal['component'];
+    let manager = vm.frame.getManager();
+    let component = vm.frame.getComponent();
 
     manager.didCreateElement(component, vm.stack().constructing, vm.stack().operations);
   }
@@ -182,13 +176,11 @@ export class ShadowAttributesOpcode extends Opcode {
   public type = "shadow-attributes";
 
   evaluate(vm: VM) {
-    let args = vm.frame.getArgs();
-    let internal = args.internal;
-    let shadow: string[] = internal['shadow'] as string[];
-
-    let named = args.named;
+    let shadow = vm.frame.getShadow();
 
     if (!shadow) return;
+
+    let named = vm.frame.getArgs().named;
 
     shadow.forEach(name => {
       vm.stack().setDynamicAttribute(name, named.get(name), false);

@@ -4,6 +4,7 @@ import { InlineBlock } from '../compiled/blocks';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { Opcode, OpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';
+import { Component, ComponentManager } from '../component/interfaces';
 
 class Frame {
   ops: OpSeq;
@@ -16,7 +17,12 @@ class Frame {
   iterator: ReferenceIterator = null;
   key: string = null;
 
-  constructor(ops: OpSeq) {
+  constructor(
+    ops: OpSeq,
+    public component: Component = null,
+    public manager: ComponentManager<Component> = null,
+    public shadow: string[] = null
+  ) {
     this.ops = ops;
     this.op = ops.head();
   }
@@ -31,14 +37,14 @@ export class FrameStack {
   private frames: Frame[] = [];
   private frame: number = undefined;
 
-  push(ops: OpSeq) {
+  push(ops: OpSeq, component: Component = null, manager: ComponentManager<Component> = null, shadow: string[] = null) {
     let frame = (this.frame === undefined) ? (this.frame = 0) : ++this.frame;
 
     if (this.frames.length <= frame) {
       this.frames.push(null);
     }
 
-    this.frames[frame] = new Frame(ops);
+    this.frames[frame] = new Frame(ops, component, manager, shadow);
   }
 
   pop() {
@@ -114,6 +120,18 @@ export class FrameStack {
 
   setCallerScope(callerScope: Scope): Scope {
     return this.frames[this.frame].callerScope = callerScope;
+  }
+
+  getComponent(): Component {
+    return this.frames[this.frame].component;
+  }
+
+  getManager(): ComponentManager<Component> {
+    return this.frames[this.frame].manager;
+  }
+
+  getShadow(): string[] {
+    return this.frames[this.frame].shadow;
   }
 
   goto(op: LabelOpcode) {
