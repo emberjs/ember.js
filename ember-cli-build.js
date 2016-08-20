@@ -40,8 +40,11 @@ function buildTSOptions(compilerOptions) {
 
 function buildBabelOptions(options) {
   var externalHelpers = options.shouldExternalizeHelpers || false;
+  var stripRuntimeChecks = options.stripRuntimeChecks || false;
+
   return {
     externalHelpers: externalHelpers,
+    stripRuntimeChecks: stripRuntimeChecks,
     sourceMaps: 'inline'
   };
 }
