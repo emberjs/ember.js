@@ -6,6 +6,7 @@ import fallbackViewRegistry from 'ember-views/compat/fallback-view-registry';
 import { assert } from 'ember-metal/debug';
 import _runInTransaction from 'ember-metal/transaction';
 import isEnabled from 'ember-metal/features';
+import { BOUNDS } from './component';
 
 let runInTransaction;
 
@@ -167,6 +168,10 @@ class Renderer {
     }
     this._destroyed = true;
     this._clearRoot();
+  }
+
+  getBounds(view) {
+    return view[BOUNDS];
   }
 
   _renderRoot(root, template, self, parentElement, dynamicScope) {

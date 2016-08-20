@@ -1,6 +1,6 @@
 import { StatementSyntax, ValueReference, EvaluatedArgs, EvaluatedNamedArgs, EvaluatedPositionalArgs } from 'glimmer-runtime';
 import { AttributeBinding, ClassNameBinding, IsVisibleBinding } from '../utils/bindings';
-import { ROOT_REF, DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK } from '../component';
+import { ROOT_REF, DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK, BOUNDS } from '../component';
 import { assert, runInDebug } from 'ember-metal/debug';
 import processArgs from '../utils/process-args';
 import { privatize as P } from 'container/registry';
@@ -259,6 +259,10 @@ class CurlyComponentManager {
     }
 
     component._transitionTo('hasElement');
+  }
+
+  didRenderLayout({ component }, bounds) {
+    component[BOUNDS] = bounds;
   }
 
   getTag({ component }) {

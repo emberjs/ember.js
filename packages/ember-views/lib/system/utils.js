@@ -20,13 +20,25 @@ export const STYLE_WARNING = '' +
 
 /**
   @private
+  @method getViewBounds
+  @param {Ember.View} view
+*/
+export function getViewBounds(view) {
+  return view.renderer.getBounds(view);
+}
+
+/**
+  @private
   @method getViewRange
   @param {Ember.View} view
 */
-function getViewRange(view) {
+export function getViewRange(view) {
+  let bounds = getViewBounds(view);
+
   let range = document.createRange();
-  range.setStartBefore(view._renderNode.firstNode);
-  range.setEndAfter(view._renderNode.lastNode);
+  range.setStartBefore(bounds.firstNode());
+  range.setEndAfter(bounds.lastNode());
+
   return range;
 }
 
