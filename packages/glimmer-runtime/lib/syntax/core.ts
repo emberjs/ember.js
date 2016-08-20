@@ -564,7 +564,7 @@ export class OpenElement extends StatementSyntax {
   }
 
   compile(list: CompileInto, env: Environment) {
-    list.append(new OpenPrimitiveElementOpcode(this));
+    list.append(new OpenPrimitiveElementOpcode(this.tag));
   }
 
   toIdentity(): OpenPrimitiveElement {
@@ -666,7 +666,7 @@ export class OpenPrimitiveElement extends StatementSyntax {
   }
 
   compile(compiler: CompileInto) {
-    compiler.append(new OpenPrimitiveElementOpcode({ tag: this.tag }));
+    compiler.append(new OpenPrimitiveElementOpcode(this.tag));
   }
 }
 

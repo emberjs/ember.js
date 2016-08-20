@@ -159,7 +159,11 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
   }
 
   openPrimitiveElement(tag: string) {
-    this.append(new dom.OpenPrimitiveElementOpcode({ tag }));
+    this.append(new dom.OpenPrimitiveElementOpcode(tag));
+  }
+
+  openComponentElement(tag: string) {
+    this.append(new dom.OpenComponentElementOpcode(tag));
   }
 
   openDynamicPrimitiveElement() {

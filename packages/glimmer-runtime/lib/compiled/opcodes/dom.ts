@@ -10,6 +10,7 @@ import {
   ReferenceCache,
   RevisionTag,
   Revision,
+  PathReference,
   combineTagged,
   isConst as isConstReference,
   isModified
@@ -19,6 +20,7 @@ import { NULL_REFERENCE } from '../../references';
 import { ValueReference } from '../../compiled/expressions/value';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { IChangeList } from '../../dom/change-lists';
+import { ElementOperations } from '../../builder';
 
 export class TextOpcode extends Opcode {
   public type = "text";
@@ -44,15 +46,33 @@ export class TextOpcode extends Opcode {
 
 export class OpenPrimitiveElementOpcode extends Opcode {
   public type = "open-primitive-element";
-  public tag: string;
 
-  constructor({ tag }: { tag: string }) {
+  constructor(private tag: string) {
     super();
-    this.tag = tag;
   }
 
   evaluate(vm: VM) {
     vm.stack().openElement(this.tag);
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: [JSON.stringify(this.tag)]
+    };
+  }
+}
+
+export class OpenComponentElementOpcode extends Opcode {
+  public type = "open-component-element";
+
+  constructor(private tag: string) {
+    super();
+  }
+
+  evaluate(vm: VM) {
+    vm.stack().openElement(this.tag, new ComponentElementOperations(vm.env));
   }
 
   toJSON(): OpcodeJSON {
@@ -132,48 +152,189 @@ function toClassName(list: Reference<string>[]) {
   return (ret.length === 0) ? null : ret.join(' ');
 }
 
+export class SimpleElementOperations implements ElementOperations {
+  private opcodes: UpdatingOpcode[] = null;
+  private classList: ClassList = null;
+
+  constructor(private env: Environment) {
+  }
+
+  addStaticAttribute(element: Simple.Element, name: string, value: string) {
+    if (name === 'class') {
+      this.addClass(new ValueReference(value));
+    } else {
+      this.env.getAppendOperations().setAttribute(element, name, value);
+    }
+  }
+
+  addStaticAttributeNS(element: Simple.Element, namespace: string, name: string, value: string) {
+    this.env.getAppendOperations().setAttribute(element, name, value, namespace);
+  }
+
+  addDynamicAttribute(element: Simple.Element, name: string, reference: PathReference<string>, isTrusting: boolean) {
+    if (name === 'class') {
+      this.addClass(reference);
+    } else {
+      let attributeManager = this.env.attributeFor(element, name, isTrusting);
+      let attribute = new DynamicAttribute(element, attributeManager, name, reference);
+
+      this.addAttribute(attribute);
+    }
+  }
+
+  addDynamicAttributeNS(element: Simple.Element, namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
+    let attributeManager = this.env.attributeFor(element, name,isTrusting, namespace);
+    let nsAttribute = new DynamicAttribute(element, attributeManager, name, reference, namespace);
+
+    this.addAttribute(nsAttribute);
+  }
+
+  flush(element: Simple.Element, vm: VM) {
+    let { env } = vm;
+    let { opcodes, classList } = this;
+
+    for (let i = 0; opcodes && i < opcodes.length; i++) {
+      vm.updateWith(opcodes[i]);
+    }
+
+    if (classList) {
+      let attributeManager = env.attributeFor(element, 'class', false);
+      let attribute = new DynamicAttribute(element, attributeManager, 'class', classList.toReference());
+      let opcode = attribute.flush(env);
+
+      if (opcode) {
+        vm.updateWith(opcode);
+      }
+    }
+
+    this.opcodes = null;
+    this.classList = null;
+  }
+
+  private addClass(reference: PathReference<string>) {
+    let { classList } = this;
+
+    if (!classList) {
+      classList = this.classList = new ClassList();
+    }
+
+    classList.append(reference);
+  }
+
+  private addAttribute(attribute: Attribute) {
+    let opcode = attribute.flush(this.env);
+
+    if (opcode) {
+      let { opcodes } = this;
+
+      if (!opcodes) {
+        opcodes = this.opcodes = [];
+      }
+
+      opcodes.push(opcode);
+    }
+  }
+}
+
+export class ComponentElementOperations implements ElementOperations {
+  private attributeNames = null;
+  private attributes: Attribute[] = null;
+  private classList: ClassList = null;
+
+  constructor(private env: Environment) {
+  }
+
+  addStaticAttribute(element: Simple.Element, name: string, value: string) {
+    if (name === 'class') {
+      this.addClass(new ValueReference(value));
+    } else if (this.shouldAddAttribute(name)) {
+      this.addAttribute(name, new StaticAttribute(element, name, value));
+    }
+  }
+
+  addStaticAttributeNS(element: Simple.Element, namespace: string, name: string, value: string) {
+    if (this.shouldAddAttribute(name)) {
+      this.addAttribute(name, new StaticAttribute(element, name, value, namespace));
+    }
+  }
+
+  addDynamicAttribute(element: Simple.Element, name: string, reference: PathReference<string>, isTrusting: boolean) {
+    if (name === 'class') {
+      this.addClass(reference);
+    } else if (this.shouldAddAttribute(name)) {
+      let attributeManager = this.env.attributeFor(element, name, isTrusting);
+      let attribute = new DynamicAttribute(element, attributeManager, name, reference);
+
+      this.addAttribute(name, attribute);
+    }
+  }
+
+  addDynamicAttributeNS(element: Simple.Element, namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
+    if (this.shouldAddAttribute(name)) {
+      let attributeManager = this.env.attributeFor(element, name,isTrusting, namespace);
+      let nsAttribute = new DynamicAttribute(element, attributeManager, name, reference, namespace);
+
+      this.addAttribute(name, nsAttribute);
+    }
+  }
+
+  flush(element: Simple.Element, vm: VM) {
+    let { env } = this;
+    let { attributes, classList } = this;
+
+    for (let i = 0; attributes && i < attributes.length; i++) {
+      let opcode = attributes[i].flush(env);
+
+      if (opcode) {
+        vm.updateWith(opcode);
+      }
+    }
+
+    if (classList) {
+      let attributeManager = env.attributeFor(element, 'class', false);
+      let attribute = new DynamicAttribute(element, attributeManager, 'class', classList.toReference());
+      let opcode = attribute.flush(env);
+
+      if (opcode) {
+        vm.updateWith(opcode);
+      }
+    }
+  }
+
+  private shouldAddAttribute(name: string) {
+    return !this.attributeNames || this.attributeNames.indexOf(name) === -1;
+  }
+
+  private addClass(reference: PathReference<string>) {
+    let { classList } = this;
+
+    if (!classList) {
+      classList = this.classList = new ClassList();
+    }
+
+    classList.append(reference);
+  }
+
+  private addAttribute(name: string, attribute: Attribute) {
+    let { attributeNames, attributes } = this;
+
+    if (!attributeNames) {
+      attributeNames = this.attributeNames = [];
+      attributes = this.attributes = [];
+    }
+
+    attributeNames.push(name);
+    attributes.push(attribute);
+  }
+}
+
 export class FlushElementOpcode extends Opcode {
   public type = "flush-element";
 
   evaluate(vm: VM) {
     let stack = vm.stack();
-    let { constructing: element, operations: { attributes } } = stack;
 
-    let classList = new ClassList();
-    let flattened = dict<Attribute>();
-    let flattenedKeys = [];
-
-    // This is a hardcoded merge strategy:
-    // 1. Classes are merged together split by whitespace
-    // 2. Other attributes are first-write-wins (which means invocation
-    //    wins over top-level element in components)
-
-    for (let i = 0; i < attributes.length; i++) {
-      let attribute = attributes[i];
-      let name = attribute.name;
-      if (name === 'class') {
-        classList.append(attribute['reference'] || new ValueReference(attribute['value']));
-      } else if (!flattened[name]) {
-        flattenedKeys.push(name);
-        flattened[name] = attribute;
-      }
-    }
-
-    let className = classList.toReference();
-    let attr = 'class';
-    let attributeManager = vm.env.attributeFor(element, attr, className, false);
-    let attribute = new DynamicAttribute(element, attributeManager, attr, className);
-    let opcode = attribute.flush(vm.env);
-
-    if (opcode) {
-      vm.updateWith(opcode);
-    }
-
-    for (let k = 0; k < flattenedKeys.length; k++) {
-      let opcode = flattened[flattenedKeys[k]].flush(vm.env);
-      if (opcode) vm.updateWith(opcode);
-    }
-
+    stack.operations.flush(stack.constructing, vm);
     stack.flushElement();
   }
 }

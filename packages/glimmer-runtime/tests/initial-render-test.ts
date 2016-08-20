@@ -996,12 +996,12 @@ const StyleAttribute = {
 QUnit.module('Style attributes', {
   setup() {
     class StyleEnv extends TestEnvironment {
-      attributeFor(element, attr, reference, isTrusting) {
+      attributeFor(element, attr, isTrusting) {
         if (attr === 'style' && !isTrusting) {
           return StyleAttribute;
         }
 
-        return super.attributeFor(element, attr, reference, isTrusting);
+        return super.attributeFor(element, attr, isTrusting);
       }
     }
 
