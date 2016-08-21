@@ -61,25 +61,6 @@ asyncHelper('visit', visit);
 */
 asyncHelper('click', click);
 
-/**
-  Simulates a key event, e.g. `keypress`, `keydown`, `keyup` with the desired keyCode
-
-  Example:
-
-  ```javascript
-  keyEvent('.some-jQuery-selector', 'keypress', 13).then(function() {
-   // assert something
-  });
-  ```
-
-  @method keyEvent
-  @param {String} selector jQuery selector for finding element on the DOM
-  @param {String} type the type of key event, e.g. `keypress`, `keydown`, `keyup`
-  @param {Number} keyCode the keyCode of the simulated key event
-  @return {RSVP.Promise}
-  @since 1.5.0
-  @public
-*/
 asyncHelper('keyEvent', keyEvent);
 
 /**
@@ -119,22 +100,6 @@ asyncHelper('fillIn', fillIn);
 */
 helper('find', find);
 
-/**
-  Like `find`, but throws an error if the element selector returns no results.
-
-  Example:
-
-  ```javascript
-  var $el = findWithAssert('.doesnt-exist'); // throws error
-  ```
-
-  @method findWithAssert
-  @param {String} selector jQuery selector string for finding an element within
-  the DOM
-  @return {Object} jQuery object representing the results of the query
-  @throws {Error} throws error if jQuery object returned has a length of 0
-  @public
-*/
 helper('findWithAssert', findWithAssert);
 
 /**
