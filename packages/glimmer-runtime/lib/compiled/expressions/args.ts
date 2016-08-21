@@ -2,7 +2,6 @@ import { COMPILED_EMPTY_POSITIONAL_ARGS, EVALUATED_EMPTY_POSITIONAL_ARGS, Compil
 import { COMPILED_EMPTY_NAMED_ARGS, EVALUATED_EMPTY_NAMED_ARGS, CompiledNamedArgs, EvaluatedNamedArgs } from './named-args';
 import VM from '../../vm/append';
 import { CONSTANT_TAG, RevisionTag, PathReference, combine } from 'glimmer-reference';
-import { Dict, dict, Opaque } from 'glimmer-util';
 
 interface CompiledArgOptions {
   positional: CompiledPositionalArgs;
@@ -67,7 +66,6 @@ export abstract class EvaluatedArgs {
   public tag: RevisionTag;
   public positional: EvaluatedPositionalArgs;
   public named: EvaluatedNamedArgs;
-  public internal: Dict<Opaque>;
 
   static empty(): EvaluatedArgs {
     return EMPTY_EVALUATED_ARGS;
@@ -80,13 +78,6 @@ export abstract class EvaluatedArgs {
   static positional(values: PathReference<any>[]): EvaluatedArgs {
     return new NonEmptyEvaluatedArgs({ positional: EvaluatedPositionalArgs.create({ values }), named: EvaluatedNamedArgs.empty() });
   }
-
-  public withInternal(): EvaluatedArgs {
-    if (!this.internal) {
-      this.internal = dict<Opaque>();
-    }
-    return this;
-  }
 }
 
 class NonEmptyEvaluatedArgs extends EvaluatedArgs {
@@ -95,7 +86,6 @@ class NonEmptyEvaluatedArgs extends EvaluatedArgs {
     this.tag = combine([positional.tag, named.tag]);
     this.positional = positional;
     this.named = named;
-    this.internal = null;
   }
 }
 
@@ -103,13 +93,6 @@ export const EMPTY_EVALUATED_ARGS = new (class extends EvaluatedArgs {
   public tag = CONSTANT_TAG;
   public positional = EVALUATED_EMPTY_POSITIONAL_ARGS;
   public named = EVALUATED_EMPTY_NAMED_ARGS;
-  public internal = null;
-
-  public withInternal(): EvaluatedArgs {
-    let args = new NonEmptyEvaluatedArgs(this);
-    args.internal = dict<Opaque>();
-    return args;
-  }
 });
 
 export { CompiledPositionalArgs, EvaluatedPositionalArgs, CompiledNamedArgs, EvaluatedNamedArgs };

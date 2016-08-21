@@ -4,7 +4,7 @@ import { InlineBlock } from '../compiled/blocks';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { Opcode, OpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';
-import { Component, ComponentManager } from '../component/interfaces';
+import { Component, ComponentManager, ComponentDefinition } from '../component/interfaces';
 
 class Frame {
   ops: OpSeq;
@@ -16,6 +16,7 @@ class Frame {
   condition: Reference<boolean> = null;
   iterator: ReferenceIterator = null;
   key: string = null;
+  componentDefinition: ComponentDefinition<Component> = null;
 
   constructor(
     ops: OpSeq,
@@ -104,6 +105,14 @@ export class FrameStack {
 
   setKey(key: string): string {
     return this.frames[this.frame].key = key;
+  }
+
+  getComponentDefinition(): ComponentDefinition<Component> {
+    return this.frames[this.frame].componentDefinition;
+  }
+
+  setComponentDefinition(definition: ComponentDefinition<Component>): ComponentDefinition<Component> {
+    return this.frames[this.frame].componentDefinition = definition;
   }
 
   getBlocks(): Blocks {

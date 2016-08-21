@@ -225,8 +225,10 @@ export default class VM implements PublicVM {
     this.scopeStack.push(this.scope().getCallerScope());
   }
 
-  pushDynamicScope() {
-    this.dynamicScopeStack.push(this.dynamicScopeStack.current.child());
+  pushDynamicScope(): DynamicScope {
+    let child = this.dynamicScopeStack.current.child();
+    this.dynamicScopeStack.push(child);
+    return child;
   }
 
   pushRootScope(self: PathReference<any>, size: number): Scope {

@@ -185,8 +185,8 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
       dsl.test(IsComponentDefinitionReference.create);
       dsl.jumpUnless('VALUE');
       dsl.label('COMPONENT');
-      dsl.putDynamicComponentDefinition(Args.empty());
-      dsl.openComponent();
+      dsl.putDynamicComponentDefinition();
+      dsl.openComponent(Args.empty());
       dsl.closeComponent();
       dsl.jump(END);
       dsl.label('VALUE');

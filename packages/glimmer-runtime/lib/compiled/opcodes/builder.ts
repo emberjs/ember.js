@@ -118,16 +118,16 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
 
   // components
 
-  putComponentDefinition(args: Represents<CompiledArgs>, definition: ComponentDefinition<Opaque>) {
-    this.append(new component.PutComponentDefinitionOpcode({ args: this.compile(args), definition }));
+  putComponentDefinition(definition: ComponentDefinition<Opaque>) {
+    this.append(new component.PutComponentDefinitionOpcode(definition));
   }
 
-  putDynamicComponentDefinition(args: Represents<CompiledArgs>) {
-    this.append(new component.PutDynamicComponentDefinitionOpcode({ args: this.compile(args) }));
+  putDynamicComponentDefinition() {
+    this.append(new component.PutDynamicComponentDefinitionOpcode());
   }
 
-  openComponent(shadow: string[] = EMPTY_ARRAY) {
-    this.append(new component.OpenComponentOpcode({ shadow, templates: this.templates }));
+  openComponent(args: Represents<CompiledArgs>, shadow: string[] = EMPTY_ARRAY) {
+    this.append(new component.OpenComponentOpcode(this.compile(args), shadow, this.templates));
   }
 
   didCreateElement() {
