@@ -49,7 +49,8 @@ function buildBabelOptions(options) {
   };
 }
 
-module.exports = function(options) {
+module.exports = function(_options) {
+  var options = _options || {};
   var packages = __dirname + '/packages';
   var tslintConfig = __dirname + '/tslint.json';
   var bower = __dirname + '/bower_components';
