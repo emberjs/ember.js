@@ -7,6 +7,7 @@ import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import EmberComponent, { HAS_BLOCK } from 'ember-htmlbars/component';
 import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
 import { setOwner, getOwner } from 'container/owner';
+import { guidFor } from 'ember-metal/utils';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -170,6 +171,8 @@ export function createComponent(_component, props, renderNode, env, attrs = {}) 
 
   let component = _component.create(props);
 
+  ensureElementId(component);
+
   if (props.parentView) {
     props.parentView.appendChild(component);
   }
@@ -177,7 +180,14 @@ export function createComponent(_component, props, renderNode, env, attrs = {}) 
   component._renderNode = renderNode;
   renderNode.emberView = component;
   renderNode.buildChildEnv = buildChildEnv;
+
   return component;
+}
+
+function ensureElementId(component) {
+  if (component.elementId === undefined && component.tagName !== '') {
+    component.elementId = guidFor(component);
+  }
 }
 
 function takeSnapshot(attrs) {

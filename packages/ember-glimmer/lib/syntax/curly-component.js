@@ -8,6 +8,7 @@ import assign from 'ember-metal/assign';
 import get from 'ember-metal/property_get';
 import { ComponentDefinition } from 'glimmer-runtime';
 import Component from '../component';
+import { guidFor } from 'ember-metal/utils';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -42,6 +43,12 @@ function aliasIdToElementId(args, props) {
   if (args.named.has('id')) {
     assert(`You cannot invoke a component with both 'id' and 'elementId' at the same time.`, !args.named.has('elementId'));
     props.elementId = props.id;
+  }
+}
+
+function ensureElementId(component) {
+  if (component.elementId === undefined && component.tagName !== '') {
+    component.elementId = guidFor(component);
   }
 }
 
@@ -151,6 +158,8 @@ class CurlyComponentManager {
     props._targetObject = dynamicScope.targetObject;
 
     let component = klass.create(props);
+
+    ensureElementId(component);
 
     dynamicScope.view = component;
     dynamicScope.targetObject = component;
@@ -309,6 +318,7 @@ function tagName(vm) {
 
 function elementId(vm) {
   let component = vm.dynamicScope().view;
+
   return new ValueReference(component.elementId);
 }
 

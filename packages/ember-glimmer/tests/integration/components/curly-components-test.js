@@ -2570,4 +2570,23 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     assertElement('foo');
   }
+
+  ['@test it can set `tagName` after `this._super` in `init`']() {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        tagName: '',
+
+        init() {
+          this._super(...arguments);
+          this.tagName = 'span';
+        }
+      }),
+      template: 'hello'
+    });
+
+    this.render('{{foo-bar}}{{foo-bar}}');
+
+    this.assertComponentElement(this.nthChild(0), { tagName: 'span', content: 'hello' });
+    this.assertComponentElement(this.nthChild(1), { tagName: 'span', content: 'hello' });
+  }
 });
