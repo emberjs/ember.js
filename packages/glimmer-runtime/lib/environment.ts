@@ -226,7 +226,7 @@ export abstract class Environment {
   abstract hasHelper(helperName: string[], blockMeta: BlockMeta): boolean;
   abstract lookupHelper(helperName: string[], blockMeta: BlockMeta): Helper;
 
-  attributeFor(element: Simple.Element, attr: string, reference: Reference<Opaque>, isTrusting: boolean, namespace?: string): IChangeList {
+  attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace?: string): IChangeList {
     return defaultChangeLists(element, attr, isTrusting, namespace);
   }
 

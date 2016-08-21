@@ -502,7 +502,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
         let attribute = bindings[i];
         let reference = rootRef.get(attribute) as PathReference<string>;
 
-        operations.addDynamicAttribute(attribute, reference, false);
+        operations.addDynamicAttribute(element, attribute, reference, false);
       }
     }
   }
