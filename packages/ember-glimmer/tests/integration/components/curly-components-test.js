@@ -2464,6 +2464,51 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
   }
 
+  ['@test adds isVisible binding when style binding is missing and other bindings exist'](assert) {
+    let assertStyle = (expected) => {
+      let matcher = styles(expected);
+      let actual = this.firstChild.getAttribute('style');
+
+      assert.pushResult({
+        result: matcher.match(actual),
+        message: matcher.message(),
+        actual,
+        expected
+      });
+    };
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['foo'],
+        foo: 'bar'
+      }),
+      template: `<p>foo</p>`
+    });
+
+    this.render(`{{foo-bar id="foo-bar" foo=foo isVisible=visible}}`, {
+      visible: false,
+      foo: 'baz'
+    });
+
+    assertStyle('display: none;');
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      set(this.context, 'visible', true);
+    });
+
+    assertStyle('');
+
+    this.runTask(() => {
+      set(this.context, 'visible', false);
+      set(this.context, 'foo', 'woo');
+    });
+
+    assertStyle('display: none;');
+    assert.equal(this.firstChild.getAttribute('foo'), 'woo');
+  }
+
   ['@test it can use readDOMAttr to read input value']() {
     let component;
     let assertElement = (expectedValue) => {
