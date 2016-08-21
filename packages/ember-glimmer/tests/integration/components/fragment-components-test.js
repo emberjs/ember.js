@@ -130,6 +130,41 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     }, /You cannot use `elementId` on a tag-less component/);
   }
 
+  ['@test throws an error if `tagName` is an empty string and `elementId` is specified via template']() {
+    let template = `hit dem folks`;
+    let FooBarComponent = Component.extend({
+      tagName: ''
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+    expectAssertion(() => {
+      this.render(`{{#foo-bar elementId='turntUp'}}{{/foo-bar}}`);
+    }, /You cannot use `elementId` on a tag-less component/);
+  }
+
+  ['@test does not throw an error if `tagName` is an empty string and `id` is specified via JS']() {
+    let template = `{{id}}`;
+    let FooBarComponent = Component.extend({
+      tagName: '',
+      id: 'baz'
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+    this.render(`{{#foo-bar}}{{/foo-bar}}`);
+    this.assertText('baz');
+  }
+
+  ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template']() {
+    let template = `{{id}}`;
+    let FooBarComponent = Component.extend({
+      tagName: ''
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+    this.render(`{{#foo-bar id='baz'}}{{/foo-bar}}`);
+    this.assertText('baz');
+  }
+
   ['@test throws an error if when $() is accessed on component where `tagName` is an empty string']() {
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({

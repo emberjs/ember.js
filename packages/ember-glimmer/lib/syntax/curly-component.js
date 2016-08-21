@@ -115,7 +115,7 @@ class CurlyComponentManager {
 
     assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
       let { elementId, tagName } = component;
-      return tagName !== '' || (!elementId && elementId !== '');
+      return tagName !== '' || props.id === elementId || (!elementId && elementId !== '');
     })());
 
     assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
