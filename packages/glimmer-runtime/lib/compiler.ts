@@ -397,8 +397,8 @@ class ComponentBuilder {
 
   static({ definition, args, shadow, templates }: StaticComponentOptions) {
     this.dsl.unit({ templates }, dsl => {
-      dsl.putComponentDefinition(args, definition);
-      dsl.openComponent(shadow);
+      dsl.putComponentDefinition(definition);
+      dsl.openComponent(args, shadow);
       dsl.closeComponent();
     });
   }
@@ -411,8 +411,8 @@ class ComponentBuilder {
       dsl.putValue(makeFunctionExpression(definition));
       dsl.test('simple');
       dsl.jumpUnless('END');
-      dsl.putDynamicComponentDefinition(args);
-      dsl.openComponent(shadow);
+      dsl.putDynamicComponentDefinition();
+      dsl.openComponent(args, shadow);
       dsl.closeComponent();
       dsl.label('END');
       dsl.exit();
