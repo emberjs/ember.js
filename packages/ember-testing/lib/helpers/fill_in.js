@@ -1,4 +1,33 @@
+/**
+@module ember
+@submodule ember-testing
+*/
 import { focus, fireEvent } from '../events';
+/**
+  Finds an element in the context of the app's container element. A simple alias
+  for `app.$(selector)`.
+  Example:
+  ```javascript
+  var $el = find('.my-selector');
+  ```
+  @method find
+  @param {String} selector jQuery string selector for element lookup
+  @return {Object} jQuery object representing the results of the query
+  @public
+*/
+
+/**
+  Finds an element in the context of the app's container element. A simple alias
+  for `app.$(selector)`.
+  Example:
+  ```javascript
+  var $el = find('.my-selector');
+  ```
+  @method find
+  @param {String} selector jQuery string selector for element lookup
+  @return {Object} jQuery object representing the results of the query
+  @public
+*/
 
 export default function fillIn(app, selector, contextOrText, text) {
   let $el, el, context;
