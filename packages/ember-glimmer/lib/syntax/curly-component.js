@@ -65,7 +65,7 @@ function applyAttributeBindings(attributeBindings, component, operations) {
     i--;
   }
 
-  if (!seen['style']) {
+  if (seen.indexOf('style') === -1) {
     IsVisibleBinding.apply(component, operations);
   }
 }
