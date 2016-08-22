@@ -92,7 +92,6 @@ export {
 } from './lib/compiled/opcodes/vm';
 
 export {
-  OpenComponentOptions,
   OpenComponentOpcode,
   CloseComponentOpcode,
   ShadowAttributesOpcode

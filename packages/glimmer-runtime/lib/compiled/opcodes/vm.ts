@@ -3,12 +3,11 @@ import { CompiledExpression } from '../expressions';
 import { CompiledArgs, EvaluatedArgs } from '../expressions/args';
 import { VM, UpdatingVM, BindDynamicScopeCallback } from '../../vm';
 import { CompiledBlock, Layout, InlineBlock, PartialBlock } from '../blocks';
-import { turbocharge } from '../../utils';
 import { NULL_REFERENCE } from '../../references';
 import SymbolTable from '../../symbol-table';
 import { Reference, PathReference, ConstReference } from 'glimmer-reference';
 import { ValueReference } from '../expressions/value';
-import { ListSlice, Opaque, Slice, Dict, dict, assign } from 'glimmer-util';
+import { ListSlice, Opaque, Slice, dict } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
 import Scanner from '../../scanner';
 import Environment from '../../environment';
@@ -106,29 +105,24 @@ export class PutArgsOpcode extends Opcode {
   }
 }
 
-export interface BindPositionalArgsOptions {
-  block: InlineBlock;
-}
-
 export class BindPositionalArgsOpcode extends Opcode {
   public type = "bind-positional-args";
 
-  private names: string[];
-  private positional: number[];
+  static create(block: InlineBlock): BindPositionalArgsOpcode {
+    let names = block.locals;
+    let symbols = names.map(name => block.symbolTable.getLocal(name));
+    return new this(names, symbols);
+  }
 
-  constructor({ block }: BindPositionalArgsOptions) {
+  constructor(
+    private names: string[],
+    private symbols: number[]
+  ) {
     super();
-
-    this.names = block.locals;
-    let positional = this.positional = [];
-
-    block.locals.forEach((name) => {
-      positional.push(block.symbolTable.getLocal(name));
-    });
   }
 
   evaluate(vm: VM) {
-    vm.bindPositionalArgs(this.positional);
+    vm.bindPositionalArgs(this.symbols);
   }
 
   toJSON(): OpcodeJSON {
@@ -140,38 +134,31 @@ export class BindPositionalArgsOpcode extends Opcode {
   }
 }
 
-export interface BindNamedArgsOptions {
-  named: Dict<number>;
-}
-
 export class BindNamedArgsOpcode extends Opcode {
   public type = "bind-named-args";
 
-  public named: Dict<number>;
-
   static create(layout: Layout) {
-    let named = layout['named'].reduce(
-      (obj, name) => assign(obj, { [name]: layout.symbolTable.getNamed(name) }),
-      dict<number>()
-    );
+    let names = layout.named;
+    let symbols = names.map(name => layout.symbolTable.getNamed(name));
 
-    turbocharge(named);
-    return new BindNamedArgsOpcode({ named });
+    return new BindNamedArgsOpcode(names, symbols);
   }
 
-  constructor({ named }: { named: Dict<number> }) {
+  constructor(
+    protected names: string[],
+    protected symbols: number[]
+  ) {
     super();
-    this.named = named;
   }
 
   evaluate(vm: VM) {
-    vm.bindNamedArgs(this.named);
+    vm.bindNamedArgs(this.names, this.symbols);
   }
 
   toJSON(): OpcodeJSON {
-    let args = Object.keys(this.named).map(name => {
-      return `$${this.named[name]}: $ARGS[${name}]`;
-    });
+    let { names, symbols } = this;
+
+    let args = names.map((name, i) => `$${symbols[i]}: $ARGS[${name}]`);
 
     return {
       guid: this._guid,
@@ -181,31 +168,18 @@ export class BindNamedArgsOpcode extends Opcode {
   }
 }
 
-export interface BindBlocksOptions {
-  blocks: Dict<number>;
-}
-
-export class BindBlocksOpcode extends Opcode {
+export class BindBlocksOpcode extends BindNamedArgsOpcode {
   public type = "bind-blocks";
 
-  public blocks: Dict<number>;
+  static create(layout: Layout) {
+    let names = layout.yields;
+    let symbols = names.map(name => layout.symbolTable.getYield(name));
 
-  static create(template: Layout) {
-    let blocks = dict<number>();
-    template['yields'].forEach(name => {
-      blocks[name] = template.symbolTable.getYield(name);
-    });
-
-    return new BindBlocksOpcode({ blocks });
-  }
-
-  constructor({ blocks }: { blocks: Dict<number> }) {
-    super();
-    this.blocks = blocks;
+    return new this(names, symbols);
   }
 
   evaluate(vm: VM) {
-    vm.bindBlocks(this.blocks);
+    vm.bindBlocks(this.names, this.symbols);
   }
 }
 

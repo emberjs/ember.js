@@ -3065,3 +3065,72 @@ QUnit.test('it works on unoptimized appends when initially not a component (this
 
   assertAppended('lol');
 });
+
+module('bounds tracking');
+
+QUnit.test('it works for wrapped (curly) components', function(assert) {
+  let instance: FooBar;
+
+  class FooBar extends EmberishCurlyComponent {
+    tagName = 'span';
+
+    constructor() {
+      super();
+      instance = this;
+    }
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
+
+  appendViewFor('zomg {{foo-bar}} wow');
+
+  assertEmberishElement('span', {}, 'foo bar');
+
+  assert.equal(instance.bounds.parentElement(), document.querySelector('#qunit-fixture'));
+  assert.equal(instance.bounds.firstNode(), instance.element);
+  assert.equal(instance.bounds.lastNode(), instance.element);
+});
+
+QUnit.test('it works for tagless components', function(assert) {
+  let instance: FooBar;
+
+  class FooBar extends EmberishCurlyComponent {
+    tagName = '';
+
+    constructor() {
+      super();
+      instance = this;
+    }
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, '<span id="first-node">foo</span> <span id="before-last-node">bar</span>!');
+
+  appendViewFor('zomg {{foo-bar}} wow');
+
+  assertAppended('zomg <span id="first-node">foo</span> <span id="before-last-node">bar</span>! wow');
+
+  assert.equal(instance.bounds.parentElement(), document.querySelector('#qunit-fixture'));
+  assert.equal(instance.bounds.firstNode(), document.querySelector('#first-node'));
+  assert.equal(instance.bounds.lastNode(), document.querySelector('#before-last-node').nextSibling);
+});
+
+QUnit.test('it works for unwrapped components', function(assert) {
+  let instance: FooBar;
+
+  class FooBar extends EmberishGlimmerComponent {
+    constructor() {
+      super();
+      instance = this;
+    }
+  }
+
+  env.registerEmberishGlimmerComponent('foo-bar', FooBar, '<!-- ohhh --><span>foo bar!</span>');
+
+  appendViewFor('zomg <foo-bar /> wow');
+
+  assertEmberishElement('span', {}, 'foo bar!');
+
+  assert.equal(instance.bounds.parentElement(), document.querySelector('#qunit-fixture'));
+  assert.equal(instance.bounds.firstNode(), instance.element.previousSibling);
+  assert.equal(instance.bounds.lastNode(), instance.element);
+});

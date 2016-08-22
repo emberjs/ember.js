@@ -1,4 +1,4 @@
-import Bounds, { clear, Cursor } from './bounds';
+import Bounds, { Cursor, DestroyableBounds, clear } from './bounds';
 
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 
@@ -13,8 +13,7 @@ import {
 } from 'glimmer-reference';
 
 import {
-  SimpleElementOperations,
-  // ComponentElementOperations
+  SimpleElementOperations
 } from './compiled/opcodes/dom';
 
 import * as Simple from './dom/interfaces';
@@ -51,21 +50,6 @@ class Last {
   }
 }
 
-interface ElementStackOptions {
-  parentNode: Element;
-  nextSibling: Node;
-  dom: DOMChanges;
-}
-
-interface ElementStackClass<T extends ElementStack> {
-  new (options: ElementStackOptions): T;
-}
-
-class BlockStackElement {
-  public firstNode: Node = null;
-  public lastNode: Node = null;
-}
-
 export interface ElementOperations {
   addStaticAttribute(element: Simple.Element, name: string, value: string);
   addStaticAttributeNS(element: Simple.Element, namespace: string, name: string, value: string);
@@ -96,18 +80,6 @@ export class Fragment implements Bounds {
   update(bounds: Bounds) {
     this.bounds = bounds;
   }
-}
-
-interface InitialRenderOptions {
-  parentNode: Element;
-  nextSibling: Node;
-  dom: DOMChanges;
-}
-
-interface UpdateTrackerOptions {
-  tracker: Tracker;
-  nextSibling: Node;
-  dom: DOMChanges;
 }
 
 export class ElementStack implements Cursor {
@@ -167,8 +139,14 @@ export class ElementStack implements Cursor {
     return topElement;
   }
 
-  pushBlock(): Tracker {
-    let tracker = new BlockTracker(this.element);
+  pushSimpleBlock(): Tracker {
+    let tracker = new SimpleBlockTracker(this.element);
+    this.pushBlockTracker(tracker);
+    return tracker;
+  }
+
+  pushUpdatableBlock(): UpdatableTracker {
+    let tracker = new UpdatableBlockTracker(this.element);
     this.pushBlockTracker(tracker);
     return tracker;
   }
@@ -273,21 +251,20 @@ export class ElementStack implements Cursor {
   }
 }
 
-export interface Tracker extends Bounds, Destroyable {
+export interface Tracker extends DestroyableBounds {
   openElement(element: Simple.Element);
   closeElement();
   newNode(node: Simple.Node);
   newBounds(bounds: Bounds);
   newDestroyable(d: Destroyable);
   finalize(stack: ElementStack);
-  reset(env: Environment);
 }
 
-export class BlockTracker implements Tracker {
-  private first: FirstNode = null;
-  private last: LastNode = null;
-  private destroyables: Destroyable[] = null;
-  private nesting = 0;
+export class SimpleBlockTracker implements Tracker {
+  protected first: FirstNode = null;
+  protected last: LastNode = null;
+  protected destroyables: Destroyable[] = null;
+  protected nesting = 0;
 
   constructor(private parent: Simple.Element){
     this.parent = parent;
@@ -354,7 +331,13 @@ export class BlockTracker implements Tracker {
       stack.appendComment('');
     }
   }
+}
 
+export interface UpdatableTracker extends Tracker {
+  reset(env: Environment);
+}
+
+export class UpdatableBlockTracker extends SimpleBlockTracker implements UpdatableTracker {
   reset(env: Environment) {
     let { destroyables } = this;
 
@@ -416,6 +399,4 @@ class BlockListTracker implements Tracker {
 
   finalize(stack: ElementStack) {
   }
-
-  reset() {}
 }

@@ -1,8 +1,7 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementStack } from '../builder';
-import { Destroyable, Dict, Stack, LinkedList, ListSlice, LOGGER, Opaque } from 'glimmer-util';
-import { PathReference, ReferenceIterator, combineSlice } from 'glimmer-reference';
-import Template from '../template';
+import { Destroyable, Stack, LinkedList, ListSlice, LOGGER, Opaque, assert } from 'glimmer-util';
+import { PathReference, combineSlice } from 'glimmer-reference';
 import { Templates } from '../syntax/core';
 import { InlineBlock, CompiledBlock } from '../compiled/blocks';
 import { CompiledExpression } from '../compiled/expressions';
@@ -10,7 +9,7 @@ import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
 import { Opcode, OpSeq, UpdatingOpcode } from '../opcodes';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { Range } from '../utils';
-
+import { Component, ComponentManager } from '../component/interfaces';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
 import { FrameStack, Blocks } from './frame';
@@ -27,23 +26,6 @@ interface VMConstructorOptions {
   scope: Scope;
   dynamicScope: DynamicScope;
   elementStack: ElementStack;
-}
-
-interface Registers {
-  operand: PathReference<any>;
-  args: EvaluatedArgs;
-  condition: PathReference<boolean>;
-  iterator: ReferenceIterator;
-  key: string;
-  templates: Dict<Template>;
-}
-
-interface InvokeLayoutOptions {
-  args: EvaluatedArgs;
-  shadow: string[];
-  layout: CompiledBlock;
-  templates: Templates;
-  callerScope: Scope;
 }
 
 interface PushFrameOptions {
@@ -89,8 +71,7 @@ export default class VM implements PublicVM {
     return {
       env: this.env,
       scope: this.scope(),
-      dynamicScope: this.dynamicScope(),
-      block: this.stack().block()
+      dynamicScope: this.dynamicScope()
     };
   }
 
@@ -129,10 +110,10 @@ export default class VM implements PublicVM {
   enter(ops: OpSeq) {
     let updating = new LinkedList<UpdatingOpcode>();
 
-    this.stack().pushBlock();
+    let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
 
-    let tryOpcode = new TryOpcode({ ops, state, children: updating });
+    let tryOpcode = new TryOpcode(ops, state, tracker, updating);
 
     this.didEnter(tryOpcode, updating);
   }
@@ -140,10 +121,10 @@ export default class VM implements PublicVM {
   enterWithKey(key: string, ops: OpSeq) {
     let updating = new LinkedList<UpdatingOpcode>();
 
-    this.stack().pushBlock();
+    let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
 
-    let tryOpcode = new TryOpcode({ ops, state, children: updating });
+    let tryOpcode = new TryOpcode(ops, state, tracker, updating);
 
     this.listBlockStack.current.map[key] = tryOpcode;
 
@@ -153,11 +134,11 @@ export default class VM implements PublicVM {
   enterList(ops: OpSeq) {
     let updating = new LinkedList<BlockOpcode>();
 
-    this.stack().pushBlockList(updating);
+    let tracker = this.stack().pushBlockList(updating);
     let state = this.capture();
     let artifacts = this.frame.getIterator().artifacts;
 
-    let opcode = new ListBlockOpcode({ ops, state, children: updating, artifacts });
+    let opcode = new ListBlockOpcode(ops, state, tracker, updating, artifacts);
 
     this.listBlockStack.push(opcode);
 
@@ -207,6 +188,22 @@ export default class VM implements PublicVM {
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
+  pushComponentFrame(
+    layout: CompiledBlock,
+    args: EvaluatedArgs,
+    blocks: Blocks,
+    callerScope: Scope,
+    component: Component,
+    manager: ComponentManager<Component>,
+    shadow: string[]
+  ) {
+    this.frame.push(layout.ops, component, manager, shadow);
+
+    if (args) this.frame.setArgs(args);
+    if (blocks) this.frame.setBlocks(blocks);
+    if (callerScope) this.frame.setCallerScope(callerScope);
+  }
+
   pushEvalFrame(ops: OpSeq) {
     this.frame.push(ops);
   }
@@ -228,8 +225,10 @@ export default class VM implements PublicVM {
     this.scopeStack.push(this.scope().getCallerScope());
   }
 
-  pushDynamicScope() {
-    this.dynamicScopeStack.push(this.dynamicScopeStack.current.child());
+  pushDynamicScope(): DynamicScope {
+    let child = this.dynamicScopeStack.current.child();
+    this.dynamicScopeStack.push(child);
+    return child;
   }
 
   pushRootScope(self: PathReference<any>, size: number): Scope {
@@ -271,7 +270,7 @@ export default class VM implements PublicVM {
 
     let { elementStack, frame, updatingOpcodeStack, env } = this;
 
-    elementStack.pushBlock();
+    elementStack.pushSimpleBlock();
 
     updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
     frame.push(opcodes);
@@ -308,8 +307,16 @@ export default class VM implements PublicVM {
     this.pushFrame({ block: compiled, args });
   }
 
-  invokeLayout({ args, layout, templates, callerScope }: InvokeLayoutOptions) {
-    this.pushFrame({ block: layout, blocks: templates, callerScope, args });
+  invokeLayout(
+    args: EvaluatedArgs,
+    layout: CompiledBlock,
+    templates: Templates,
+    callerScope: Scope,
+    component: Component,
+    manager: ComponentManager<Component>,
+    shadow: string[]
+  ) {
+    this.pushComponentFrame(layout, args, templates, callerScope, component, manager, shadow);
   }
 
   evaluateOperand(expr: CompiledExpression<any>) {
@@ -321,34 +328,35 @@ export default class VM implements PublicVM {
     this.frame.setOperand(evaledArgs.positional.at(0));
   }
 
-  bindPositionalArgs(entries: number[]) {
+  bindPositionalArgs(symbols: number[]) {
     let args = this.frame.getArgs();
-    if (!args) return;
+
+    assert(args, "Cannot bind positional args");
 
     let { positional } = args;
 
     let scope = this.scope();
 
-    for(let i=0; i < entries.length; i++) {
-      scope.bindSymbol(entries[i], positional.at(i));
+    for(let i=0; i < symbols.length; i++) {
+      scope.bindSymbol(symbols[i], positional.at(i));
     }
   }
 
-  bindNamedArgs(entries: Dict<number>) {
+  bindNamedArgs(names: string[], symbols: number[]) {
     let args = this.frame.getArgs();
-    if (!args) return;
+
+    assert(args, "Cannot bind named args");
 
     let { named } = args;
 
-    let keys = Object.keys(entries);
     let scope = this.scope();
 
-    for(let i=0; i < keys.length; i++) {
-      scope.bindSymbol(entries[keys[i]], named.get(<string>keys[i]));
+    for(let i=0; i < names.length; i++) {
+      scope.bindSymbol(symbols[i], named.get(names[i]));
     }
   }
 
-  bindBlocks(entries: Dict<number>) {
+  bindBlocks(names: string[], symbols: number[]) {
     let blocks = this.frame.getBlocks();
     let callerScope = this.frame.getCallerScope();
 
@@ -356,9 +364,9 @@ export default class VM implements PublicVM {
 
     scope.bindCallerScope(callerScope);
 
-    Object.keys(entries).forEach(name => {
-      scope.bindBlock(entries[name], (blocks && blocks[name]) || null);
-    });
+    for(let i=0; i < names.length; i++) {
+      scope.bindBlock(symbols[i], (blocks && blocks[names[i]]) || null);
+    }
   }
 
   bindDynamicScope(callback: BindDynamicScopeCallback) {

@@ -118,16 +118,16 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
 
   // components
 
-  putComponentDefinition(args: Represents<CompiledArgs>, definition: ComponentDefinition<Opaque>) {
-    this.append(new component.PutComponentDefinitionOpcode({ args: this.compile(args), definition }));
+  putComponentDefinition(definition: ComponentDefinition<Opaque>) {
+    this.append(new component.PutComponentDefinitionOpcode(definition));
   }
 
-  putDynamicComponentDefinition(args: Represents<CompiledArgs>) {
-    this.append(new component.PutDynamicComponentDefinitionOpcode({ args: this.compile(args) }));
+  putDynamicComponentDefinition() {
+    this.append(new component.PutDynamicComponentDefinitionOpcode());
   }
 
-  openComponent(shadow: string[] = EMPTY_ARRAY) {
-    this.append(new component.OpenComponentOpcode({ shadow, templates: this.templates }));
+  openComponent(args: Represents<CompiledArgs>, shadow: string[] = EMPTY_ARRAY) {
+    this.append(new component.OpenComponentOpcode(this.compile(args), shadow, this.templates));
   }
 
   didCreateElement() {
@@ -136,6 +136,10 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
 
   shadowAttributes() {
     this.append(new component.ShadowAttributesOpcode());
+  }
+
+  didRenderLayout() {
+    this.append(new component.DidRenderLayoutOpcode());
   }
 
   closeComponent() {
@@ -250,16 +254,16 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new vm.PutArgsOpcode({ args: this.compile(args) }));
   }
 
-  bindPositionalArgs(block: InlineBlock) {
-    this.append(new vm.BindPositionalArgsOpcode({ block }));
+  bindPositionalArgs(names: string[], symbols: number[]) {
+    this.append(new vm.BindPositionalArgsOpcode(names, symbols));
   }
 
-  bindNamedArgs(named: Dict<number>) {
-    this.append(new vm.BindNamedArgsOpcode({ named }));
+  bindNamedArgs(names: string[], symbols: number[]) {
+    this.append(new vm.BindNamedArgsOpcode(names, symbols));
   }
 
-  bindBlocks(blocks: Dict<number>) {
-    this.append(new vm.BindBlocksOpcode({ blocks }));
+  bindBlocks(names: string[], symbols: number[]) {
+    this.append(new vm.BindBlocksOpcode(names, symbols));
   }
 
   bindDynamicScope(callback: vm.BindDynamicScopeCallback) {
@@ -325,6 +329,10 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
   setupDynamicScope(callback: vm.BindDynamicScopeCallback) {
     this.pushDynamicScope();
     this.bindDynamicScope(callback);
+  }
+
+  bindPositionalArgsForBlock(block: InlineBlock) {
+    this.append(vm.BindPositionalArgsOpcode.create(block));
   }
 
   bindNamedArgsForLayout(layout: Layout) {

@@ -112,7 +112,7 @@ export class InlineBlockCompiler extends Compiler {
     let { program } = block;
 
     if (block.hasPositionalParameters()) {
-      ops.bindPositionalArgs(block);
+      ops.bindPositionalArgsForBlock(block);
     }
 
     let current = program.head();
@@ -236,6 +236,7 @@ class WrappedBuilder {
     //        JumpUnless(END)
     //        CloseElement
     // END:   Noop
+    //        DidRenderLayout
     //        Exit
     //
     //========STATIC
@@ -245,6 +246,7 @@ class WrappedBuilder {
     //        FlushElement
     //        ...body statements...
     //        CloseElement
+    //        DidRenderLayout
     //        Exit
 
     let { env, layout } = this;
@@ -291,6 +293,7 @@ class WrappedBuilder {
       dsl.closeElement();
     }
 
+    dsl.didRenderLayout();
     dsl.stopLabels();
 
     return new CompiledBlock(dsl.toOpSeq(), symbolTable.size);
@@ -343,6 +346,7 @@ class UnwrappedBuilder {
       }
     });
 
+    dsl.didRenderLayout();
     dsl.stopLabels();
 
     return new CompiledBlock(dsl.toOpSeq(), layout.symbolTable.size);
@@ -393,8 +397,8 @@ class ComponentBuilder {
 
   static({ definition, args, shadow, templates }: StaticComponentOptions) {
     this.dsl.unit({ templates }, dsl => {
-      dsl.putComponentDefinition(args, definition);
-      dsl.openComponent(shadow);
+      dsl.putComponentDefinition(definition);
+      dsl.openComponent(args, shadow);
       dsl.closeComponent();
     });
   }
@@ -407,8 +411,8 @@ class ComponentBuilder {
       dsl.putValue(makeFunctionExpression(definition));
       dsl.test('simple');
       dsl.jumpUnless('END');
-      dsl.putDynamicComponentDefinition(args);
-      dsl.openComponent(shadow);
+      dsl.putDynamicComponentDefinition();
+      dsl.openComponent(args, shadow);
       dsl.closeComponent();
       dsl.label('END');
       dsl.exit();
