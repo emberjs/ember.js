@@ -9,7 +9,16 @@ import Route from 'ember-routing/system/route';
 import Router from 'ember-routing/system/router';
 import Component from 'ember-templates/component';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
+import { helper } from 'ember-templates/helper';
 import jQuery from 'ember-views/system/jquery';
+import isEnabled from 'ember-metal/features';
+import require from 'require';
+import packageName from 'ember-glimmer/tests/utils/package-name';
+
+let PartialDefinition;
+if (packageName === 'glimmer') {
+  PartialDefinition = require('glimmer-runtime').PartialDefinition;
+}
 
 let App = null;
 let instance = null;
@@ -383,6 +392,115 @@ QUnit.test('visit() returns a promise that resolves without rendering when shoul
   return run(App, 'visit', '/blog', { shouldRender: false }).then(instance => {
     assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
     assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are still no elements in the fixture element after visit');
+  });
+});
+
+QUnit.test('visit() on engine resolves engine component', function(assert) {
+  assert.expect(2);
+
+  run(() => {
+    createApplication();
+
+    // Register engine
+    let BlogEngine = Engine.extend({
+      init(...args) {
+        this._super.apply(this, args);
+        this.register('template:application', compile('{{cache-money}}'));
+        this.register('template:components/cache-money', compile(`
+          <p>Dis cache money</p>
+        `));
+        this.register('component:cache-money', Component.extend({}));
+      }
+    });
+    App.register('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let BlogMap = function() {};
+    App.register('route-map:blog', BlogMap);
+
+    App.Router.map(function() {
+      this.mount('blog');
+    });
+  });
+
+  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+  return run(App, 'visit', '/blog', { shouldRender: true }).then(instance => {
+    assert.strictEqual(jQuery('#qunit-fixture').find('p').text(), 'Dis cache money', 'Engine component is resolved');
+  });
+});
+
+QUnit.test('visit() on engine resolves engine helper', function(assert) {
+  assert.expect(2);
+
+  run(() => {
+    createApplication();
+
+    // Register engine
+    let BlogEngine = Engine.extend({
+      init(...args) {
+        this._super.apply(this, args);
+        this.register('template:application', compile('{{swag}}'));
+        this.register('helper:swag', helper(function() {
+          return 'turnt up';
+        }));
+      }
+    });
+    App.register('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let BlogMap = function() {};
+    App.register('route-map:blog', BlogMap);
+
+    App.Router.map(function() {
+      this.mount('blog');
+    });
+  });
+
+  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+  return run(App, 'visit', '/blog', { shouldRender: true }).then(instance => {
+    assert.strictEqual(jQuery('#qunit-fixture').text(), 'turnt up', 'Engine component is resolved');
+  });
+});
+
+QUnit.test('visit() on engine resolves engine partial', function(assert) {
+  assert.expect(2);
+
+  run(() => {
+    createApplication();
+
+    // Register engine
+    let BlogEngine = Engine.extend({
+      init(...args) {
+        this._super.apply(this, args);
+        this.register('template:application', compile('{{partial "birdman"}}'));
+
+        let moduleName = `template:birdman`;
+        let template = 'put some respeck on it';
+        if (isEnabled('ember-glimmer')) {
+          let partial = new PartialDefinition(moduleName, compile(template, { moduleName, env: this.env }));
+          this.register(moduleName, partial.template);
+        } else {
+          this.register(moduleName, compile(template, { moduleName }));
+        }
+      }
+    });
+    App.register('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let BlogMap = function() {};
+    App.register('route-map:blog', BlogMap);
+
+    App.Router.map(function() {
+      this.mount('blog');
+    });
+  });
+
+  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+  return run(App, 'visit', '/blog', { shouldRender: true }).then(instance => {
+    assert.strictEqual(jQuery('#qunit-fixture').text(), 'put some respeck on it', 'Engine component is resolved');
   });
 });
 
