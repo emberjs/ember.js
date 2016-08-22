@@ -141,7 +141,7 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
 
 if (isEnabled('ember-application-engines')) {
   QUnit.test('can build and boot a registered engine', function(assert) {
-    assert.expect(8);
+    assert.expect(isEnabled('ember-glimmer') ? 10 : 9);
 
     let ChatEngine = Engine.extend();
     let chatEngineInstance;
@@ -158,23 +158,34 @@ if (isEnabled('ember-application-engines')) {
       .then(() => {
         assert.ok(true, 'boot successful');
 
-        [
+        let registrations = [
           'route:basic',
           'event_dispatcher:main',
           'service:-routing'
-        ].forEach(key => {
+        ];
+
+        if (isEnabled('ember-glimmer')) {
+          registrations.push('service:-glimmer-environment');
+        }
+
+        registrations.forEach(key => {
           assert.strictEqual(
             chatEngineInstance.resolveRegistration(key),
             appInstance.resolveRegistration(key),
             `Engine and parent app share registrations for '${key}'`);
         });
 
-        [
+        let singletons = [
           'router:main',
           P`-bucket-cache:main`,
           '-view-registry:main',
           '-environment:main'
-        ].forEach(key => {
+        ];
+
+        let env = appInstance.lookup('-environment:main');
+        singletons.push(env.isInteractive ? 'renderer:-dom' : 'renderer:-inert');
+
+        singletons.forEach(key => {
           assert.strictEqual(
             chatEngineInstance.lookup(key),
             appInstance.lookup(key),
