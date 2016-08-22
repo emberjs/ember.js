@@ -62,8 +62,9 @@ import {
 
 import {
   Destroyable,
-  Opaque,
   Dict,
+  Opaque,
+  FIXME,
   assign,
   dict
 } from 'glimmer-util';
@@ -863,7 +864,7 @@ export class TestEnvironment extends Environment {
   }
 
   iterableFor(ref: Reference<Opaque>, args: EvaluatedArgs): OpaqueIterable {
-    let keyPath = args.named.get("key").value();
+    let keyPath = args.named.get("key").value() as FIXME<any, "User value to lookup key">;
     let keyFor: KeyFor<Opaque>;
 
     if (!keyPath) {

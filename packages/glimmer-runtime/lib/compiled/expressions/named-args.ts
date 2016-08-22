@@ -1,61 +1,67 @@
 import { UNDEFINED_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
-import { CONSTANT_TAG, PathReference, RevisionTag, combineTagged } from 'glimmer-reference';
-import { Dict, dict } from 'glimmer-util';
+import { EMPTY_ARRAY, EMPTY_DICT } from '../../utils';
+import { PathReference, RevisionTag, combineTagged } from 'glimmer-reference';
+import { Dict, Opaque, assert, dict } from 'glimmer-util';
 
-export abstract class CompiledNamedArgs {
-  public abstract type: string;
-  public abstract map: Dict<CompiledExpression<any>>;
+export class CompiledNamedArgs {
+  static empty(): CompiledNamedArgs {
+    return COMPILED_EMPTY_NAMED_ARGS;
+  }
 
-  static create({ map }: { map: Dict<CompiledExpression<any>> }): CompiledNamedArgs {
-    if (Object.keys(map).length) {
-      return new CompiledNonEmptyNamedArgs({ map });
+  static create(map: Dict<CompiledExpression<Opaque>>): CompiledNamedArgs {
+    let keys = Object.keys(map);
+    let length = keys.length;
+
+    if (length > 0) {
+      let values: CompiledExpression<Opaque>[] = [];
+
+      for (let i = 0; i < length; i++) {
+        values[i] = map[keys[i]];
+      }
+
+      return new this(keys, values);
     } else {
       return COMPILED_EMPTY_NAMED_ARGS;
     }
   }
 
-  abstract evaluate(vm: VM): EvaluatedNamedArgs;
-  abstract toJSON(): string;
-}
+  public length: number;
 
-class CompiledNonEmptyNamedArgs extends CompiledNamedArgs {
-  public type = "named-args";
-  public map: Dict<CompiledExpression<any>>;
-
-  constructor({ map }: { map: Dict<CompiledExpression<any>> }) {
-    super();
-    this.map = map;
+  constructor(
+    public keys: string[],
+    public values: CompiledExpression<Opaque>[]
+  ) {
+    this.length = keys.length;
+    assert(keys.length === values.length, 'Keys and values do not have the same length');
   }
 
   evaluate(vm: VM): EvaluatedNamedArgs {
-    let { map } = this;
+    let { keys, values, length } = this;
+    let evaluated: PathReference<Opaque>[] = new Array(length);
 
-    let compiledMap = dict<PathReference<any>>();
-    let compiledKeys = Object.keys(map);
-
-    for (let i = 0; i < compiledKeys.length; i++) {
-      let key = compiledKeys[i];
-      compiledMap[key] = map[key].evaluate(vm);
+    for (let i=0; i<length; i++) {
+      evaluated[i] = values[i].evaluate(vm);
     }
 
-    return EvaluatedNamedArgs.create({ map: compiledMap });
+    return new EvaluatedNamedArgs(keys, evaluated);
   }
 
   toJSON(): string {
-    let { map } = this;
-    let inner = Object.keys(map).map(key => `${key}: ${map[key].toJSON()}`).join(", ");
+    let { keys, values } = this;
+    let inner = keys.map((key, i) => `${key}: ${values[i].toJSON()}`).join(", ");
     return `{${inner}}`;
   }
 }
 
 export const COMPILED_EMPTY_NAMED_ARGS: CompiledNamedArgs = new (class extends CompiledNamedArgs {
-  public type = "empty-named-args";
-  public map = dict<CompiledExpression<any>>();
+  constructor() {
+    super(EMPTY_ARRAY, EMPTY_ARRAY);
+  }
 
   evaluate(vm: VM): EvaluatedNamedArgs {
-    return EvaluatedNamedArgs.empty();
+    return EVALUATED_EMPTY_NAMED_ARGS;
   }
 
   toJSON(): string {
@@ -63,67 +69,73 @@ export const COMPILED_EMPTY_NAMED_ARGS: CompiledNamedArgs = new (class extends C
   }
 });
 
-export abstract class EvaluatedNamedArgs {
-  public tag: RevisionTag;
-  public keys: string[];
-  public values: PathReference<any>[];
-  public map: Dict<PathReference<any>>;
+export class EvaluatedNamedArgs {
+  static create(map: Dict<PathReference<Opaque>>) {
+    let keys = Object.keys(map);
+    let length = keys.length;
+
+    if (length > 0) {
+      let values: PathReference<Opaque>[] = new Array(length);
+
+      for (let i=0; i<length; i++) {
+        values[i] = map[keys[i]];
+      }
+
+      return new this(keys, values, map);
+    } else {
+      return EVALUATED_EMPTY_NAMED_ARGS;
+    }
+  }
 
   static empty(): EvaluatedNamedArgs {
     return EVALUATED_EMPTY_NAMED_ARGS;
   }
 
-  static create({ map }: { map: Dict<PathReference<any>> }) {
-    return new NonEmptyEvaluatedNamedArgs({ map });
-  }
+  public tag: RevisionTag;
+  public length: number;
 
-  forEach(callback: (key: string, value: PathReference<any>) => void) {
-    let { map } = this;
-    let mapKeys = Object.keys(map);
-
-    for (let i = 0; i < mapKeys.length; i++) {
-      let key = mapKeys[i];
-      callback(key, map[key]);
-    }
-  }
-
-  abstract get(key: string): PathReference<any>;
-  abstract has(key: string): boolean;
-  abstract value(): Dict<any>;
-}
-
-class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
-  public map: Dict<PathReference<any>>;
-  public values: PathReference<any>[];
-
-  constructor({ map }: { map: Dict<PathReference<any>> }) {
-    super();
-
-    let keys = Object.keys(map);
-    let values = [];
-
-    for (let i = 0; i < keys.length; i++) {
-      values.push(map[keys[i]]);
-    }
-
+  constructor(
+    public keys: string[],
+    public values: PathReference<Opaque>[],
+    private _map: Dict<PathReference<Opaque>> = undefined
+  ) {
     this.tag = combineTagged(values);
-    this.keys = keys;
-    this.values = values;
-    this.map = map;
+    this.length = keys.length;
+    assert(keys.length === values.length, 'Keys and values do not have the same length');
   }
 
-  get(key: string): PathReference<any> {
-    return this.map[key] || UNDEFINED_REFERENCE;
+  get map(): Dict<PathReference<Opaque>> {
+    let { _map: map } = this;
+
+    if (map) {
+      return map;
+    }
+
+    map = this._map = dict<PathReference<Opaque>>();
+
+    let { keys, values, length } = this;
+
+    for(let i=0; i<length; i++) {
+      map[keys[i]] = values[i];
+    }
+
+    return map;
+  }
+
+  get(key: string): PathReference<Opaque> {
+    let { keys, values } = this;
+    let index = keys.indexOf(key);
+    return (index === -1) ? UNDEFINED_REFERENCE : values[index];
   }
 
   has(key: string): boolean {
     return this.keys.indexOf(key) !== -1;
   }
 
-  value(): Dict<any> {
+  value(): Dict<Opaque> {
     let { keys, values } = this;
 
-    let out = dict();
+    let out = dict<Opaque>();
 
     for (let i = 0; i < keys.length; i++) {
       let key = keys[i];
@@ -136,12 +148,11 @@ class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
 }
 
 export const EVALUATED_EMPTY_NAMED_ARGS = new (class extends EvaluatedNamedArgs {
-  public tag = CONSTANT_TAG;
-  public keys = [];
-  public values = [];
-  public map = {};
+  constructor() {
+    super(EMPTY_ARRAY, EMPTY_ARRAY, EMPTY_DICT);
+  }
 
-  get(): PathReference<any> {
+  get(): PathReference<Opaque> {
     return UNDEFINED_REFERENCE;
   }
 
@@ -149,7 +160,7 @@ export const EVALUATED_EMPTY_NAMED_ARGS = new (class extends EvaluatedNamedArgs 
     return false;
   }
 
-  value(): Dict<any> {
-    return this.map;
+  value(): Dict<Opaque> {
+    return EMPTY_DICT;
   }
 });

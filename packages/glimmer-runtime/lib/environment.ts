@@ -3,7 +3,7 @@ import { Statement as StatementSyntax } from './syntax';
 import * as Simple from './dom/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { Reference, OpaqueIterable } from 'glimmer-reference';
-import { UNDEFINED_REFERENCE, NULL_REFERENCE, ConditionalReference } from './references';
+import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import {
   defaultChangeLists,
   IChangeList
@@ -29,7 +29,6 @@ import {
 
 import {
   Destroyable,
-  Dict,
   Opaque,
   HasGuid,
   ensureGuid
@@ -64,7 +63,7 @@ export class Scope {
     let refs: PathReference<Opaque>[] = new Array(size + 1);
 
     for (let i = 0; i <= size; i++) {
-      refs[i] = NULL_REFERENCE;
+      refs[i] = UNDEFINED_REFERENCE;
     }
 
     return new Scope(refs).init({ self });
@@ -96,7 +95,7 @@ export class Scope {
     return this.slots[symbol] as InlineBlock;
   }
 
-  bindSymbol(symbol: number, value: PathReference<Opaque>=UNDEFINED_REFERENCE) {
+  bindSymbol(symbol: number, value: PathReference<Opaque>) {
     this.slots[symbol] = value;
   }
 
@@ -240,9 +239,6 @@ export abstract class Environment {
 }
 
 export default Environment;
-
-type PositionalArguments = Opaque[];
-type KeywordArguments = Dict<Opaque>;
 
 export interface Helper {
   (vm: PublicVM, args: EvaluatedArgs): PathReference<Opaque>;

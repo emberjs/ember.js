@@ -5,7 +5,8 @@ import { VM, UpdatingVM } from '../../vm';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { Templates } from '../../syntax/core';
 import { DynamicScope } from '../../environment';
-import { ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
+import { PathReference, ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
+import { FIXME } from 'glimmer-util';
 
 export class PutDynamicComponentDefinitionOpcode extends Opcode {
   public type = "put-dynamic-component-definition";
@@ -147,10 +148,10 @@ export class ShadowAttributesOpcode extends Opcode {
 
     if (!shadow) return;
 
-    let named = vm.frame.getArgs().named;
+    let { named } = vm.frame.getArgs();
 
     shadow.forEach(name => {
-      vm.stack().setDynamicAttribute(name, named.get(name), false);
+      vm.stack().setDynamicAttribute(name, named.get(name) as FIXME<PathReference<string>, 'setDynamicAttribute should take an Ref<Opaque> instead'>, false);
     });
   }
 
