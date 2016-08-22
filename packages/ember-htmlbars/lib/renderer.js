@@ -62,7 +62,7 @@ Renderer.prototype.renderTopLevelView =
 Renderer.prototype.revalidateTopLevelView =
   function Renderer_revalidateTopLevelView(view) {
     // This guard prevents revalidation on an already-destroyed view.
-    if (view._renderNode.lastResult) {
+    if (view._renderNode && view._renderNode.lastResult) {
       view._renderNode.lastResult.revalidate(view._env);
       this.dispatchLifecycleHooks(view._env);
       this.clearRenderedViews(view._env);
@@ -241,6 +241,7 @@ Renderer.prototype.remove = function (view, shouldDestroy) {
     if (lastResult) {
       internal.clearMorph(renderNode, lastResult.env, shouldDestroy !== false);
     }
+
     if (!shouldDestroy) {
       view._transitionTo('preRender');
     }
