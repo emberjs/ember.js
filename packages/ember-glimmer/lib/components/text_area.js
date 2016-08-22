@@ -4,6 +4,7 @@
 */
 import Component from '../component';
 import TextSupport from 'ember-views/mixins/text_support';
+import layout from '../templates/empty';
 
 /**
   The internal class used to create textarea element when the `{{textarea}}`
@@ -27,6 +28,8 @@ export default Component.extend(TextSupport, {
   instrumentDisplay: '{{textarea}}',
 
   classNames: ['ember-text-area'],
+
+  layout: layout,
 
   tagName: 'textarea',
   attributeBindings: [

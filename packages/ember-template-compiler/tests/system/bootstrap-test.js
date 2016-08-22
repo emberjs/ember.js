@@ -29,7 +29,7 @@ function checkTemplate(templateName) {
   let owner = buildOwner();
   owner.register('template:-top-level', template);
   owner.register('component:-top-level', Component.extend({
-    template: owner.lookup('template:-top-level'),
+    layoutName: '-top-level',
     firstName: 'Tobias',
     drug: 'teamocil'
   }));

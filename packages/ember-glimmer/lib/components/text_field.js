@@ -5,6 +5,7 @@
 import { computed } from 'ember-metal/computed';
 import { environment } from 'ember-environment';
 import Component from '../component';
+import layout from '../templates/empty';
 import TextSupport from 'ember-views/mixins/text_support';
 import EmptyObject from 'ember-metal/empty_object';
 
@@ -54,6 +55,7 @@ function canSetTypeOfInput(type) {
   @public
 */
 export default Component.extend(TextSupport, {
+  layout,
   instrumentDisplay: '{{input type="text"}}',
 
   classNames: ['ember-text-field'],
@@ -83,8 +85,6 @@ export default Component.extend(TextSupport, {
     'value',
     'width'
   ],
-
-  defaultLayout: null,
 
   /**
     The `value` attribute of the input element. As the user inputs text, this

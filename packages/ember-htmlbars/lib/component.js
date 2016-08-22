@@ -153,10 +153,6 @@ const Component = View.extend(TargetActionSupport, ActionSupport, {
     )());
   },
 
-  template: null,
-  layoutName: null,
-  layout: null,
-
   /**
     Normally, Ember's component model is "write-only". The component takes a
     bunch of attributes that it got passed in, and uses them to render its

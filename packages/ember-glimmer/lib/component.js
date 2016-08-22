@@ -35,8 +35,6 @@ const Component = CoreView.extend(
   ActionSupport,
   ViewMixin, {
     isComponent: true,
-    layoutName: null,
-    layout: null,
 
     init() {
       this._super(...arguments);

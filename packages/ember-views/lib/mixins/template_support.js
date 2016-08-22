@@ -43,7 +43,6 @@ export default Mixin.create({
     @default null
     @private
   */
-  layoutName: null,
 
   /**
     The template used to render the view. This should be a function that

@@ -7,6 +7,7 @@ import { assert } from 'ember-metal/debug';
 import _runInTransaction from 'ember-metal/transaction';
 import isEnabled from 'ember-metal/features';
 import { BOUNDS } from './component';
+import { RootComponentDefinition } from './syntax/curly-component';
 
 let runInTransaction;
 
@@ -23,7 +24,7 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
 const { backburner } = run;
 
 class DynamicScope {
-  constructor({ view, outletState, rootOutletState, isTopLevel, targetObject }) {
+  constructor(view, outletState, rootOutletState, isTopLevel, targetObject) {
     this.view = view;
     this.outletState = outletState;
     this.rootOutletState = rootOutletState;
@@ -32,7 +33,9 @@ class DynamicScope {
   }
 
   child() {
-    return new DynamicScope(this);
+    return new DynamicScope(
+      this.view, this.outletState, this.rootOutletState, this.isTopLevel, this.targetObject
+    );
   }
 }
 
@@ -80,8 +83,9 @@ backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
 class Renderer {
-  constructor({ env, _viewRegistry = fallbackViewRegistry, destinedForDOM = false }) {
+  constructor(env, rootTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false) {
     this._env = env;
+    this._rootTemplate = rootTemplate;
     this._viewRegistry = _viewRegistry;
     this._destinedForDOM = destinedForDOM;
     this._destroyed = false;
@@ -97,30 +101,15 @@ class Renderer {
     let self = new RootReference(view);
     let targetObject = view.outletState.render.controller;
     let ref = view.toReference();
-    let dynamicScope = new DynamicScope({
-      view,
-      targetObject,
-      outletState: ref,
-      rootOutletState: ref,
-      isTopLevel: true
-    });
+    let dynamicScope = new DynamicScope(view, ref, ref, true, targetObject);
     this._renderRoot(view, view.template, self, target, dynamicScope);
   }
 
   appendTo(view, target) {
-    let self = new RootReference(view);
-    let dynamicScope = new DynamicScope({
-      view,
-      // this is generally only used for the test harness, and is not a "supported"
-      // mechanism for setting up a template/test environment. We are defaulting the
-      // targetObject to the view instance based on the assumption that it is a component
-      // instance
-      targetObject: view,
-      outletState: UNDEFINED_REFERENCE,
-      rootOutletState: UNDEFINED_REFERENCE,
-      isTopLevel: true
-    });
-    this._renderRoot(view, view.template, self, target, dynamicScope);
+    let rootDef = new RootComponentDefinition(view);
+    let self = new RootReference(rootDef);
+    let dynamicScope = new DynamicScope(view, UNDEFINED_REFERENCE, UNDEFINED_REFERENCE, true, null);
+    this._renderRoot(view, this._rootTemplate, self, target, dynamicScope);
   }
 
   rerender(view) {
@@ -190,10 +179,6 @@ class Renderer {
       this._result = result;
       this._lastRevision = CURRENT_TAG.value();
 
-      if (root._transitionTo) {
-        root._transitionTo('inDOM');
-      }
-
       render = () => {
         result.rerender(options);
         this._lastRevision = CURRENT_TAG.value();
@@ -256,13 +241,13 @@ class Renderer {
 }
 
 export const InertRenderer = {
-  create({ dom, env, _viewRegistry }) {
-    return new Renderer({ dom, env, _viewRegistry, destinedForDOM: false });
+  create({ env, rootTemplate, _viewRegistry }) {
+    return new Renderer(env, rootTemplate, _viewRegistry, false);
   }
 };
 
 export const InteractiveRenderer = {
-  create({ dom, env, _viewRegistry }) {
-    return new Renderer({ dom, env, _viewRegistry, destinedForDOM: true });
+  create({ env, rootTemplate, _viewRegistry }) {
+    return new Renderer(env, rootTemplate, _viewRegistry, true);
   }
 };

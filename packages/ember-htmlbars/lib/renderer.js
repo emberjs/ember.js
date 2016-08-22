@@ -9,6 +9,7 @@ import { internal } from 'htmlbars-runtime';
 import { renderHTMLBarsBlock } from 'ember-htmlbars/system/render-view';
 import fallbackViewRegistry from 'ember-views/compat/fallback-view-registry';
 import { assert } from 'ember-metal/debug';
+import { getOwner } from 'container/owner';
 
 export function Renderer(domHelper, { destinedForDOM, _viewRegistry } = {}) {
   this._dom = domHelper;
@@ -35,6 +36,12 @@ Renderer.prototype.prerenderTopLevelView =
     view._renderNode = renderNode;
 
     let layout = get(view, 'layout');
+    let layoutName = get(view, 'layoutName');
+    if (!layout && layoutName) {
+      let owner = getOwner(view);
+      layout = owner.lookup(`template:${layoutName}`);
+    }
+
     let template = get(view, 'template');
 
     let componentInfo = { component: view, layout: layout };
