@@ -1,6 +1,6 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementStack } from '../builder';
-import { Destroyable, Dict, Stack, LinkedList, ListSlice, LOGGER, Opaque } from 'glimmer-util';
+import { Destroyable, Stack, LinkedList, ListSlice, LOGGER, Opaque, assert } from 'glimmer-util';
 import { PathReference, combineSlice } from 'glimmer-reference';
 import { Templates } from '../syntax/core';
 import { InlineBlock, CompiledBlock } from '../compiled/blocks';
@@ -328,34 +328,35 @@ export default class VM implements PublicVM {
     this.frame.setOperand(evaledArgs.positional.at(0));
   }
 
-  bindPositionalArgs(entries: number[]) {
+  bindPositionalArgs(symbols: number[]) {
     let args = this.frame.getArgs();
-    if (!args) return;
+
+    assert(args, "Cannot bind positional args");
 
     let { positional } = args;
 
     let scope = this.scope();
 
-    for(let i=0; i < entries.length; i++) {
-      scope.bindSymbol(entries[i], positional.at(i));
+    for(let i=0; i < symbols.length; i++) {
+      scope.bindSymbol(symbols[i], positional.at(i));
     }
   }
 
-  bindNamedArgs(entries: Dict<number>) {
+  bindNamedArgs(names: string[], symbols: number[]) {
     let args = this.frame.getArgs();
-    if (!args) return;
+
+    assert(args, "Cannot bind named args");
 
     let { named } = args;
 
-    let keys = Object.keys(entries);
     let scope = this.scope();
 
-    for(let i=0; i < keys.length; i++) {
-      scope.bindSymbol(entries[keys[i]], named.get(<string>keys[i]));
+    for(let i=0; i < names.length; i++) {
+      scope.bindSymbol(symbols[i], named.get(names[i]));
     }
   }
 
-  bindBlocks(entries: Dict<number>) {
+  bindBlocks(names: string[], symbols: number[]) {
     let blocks = this.frame.getBlocks();
     let callerScope = this.frame.getCallerScope();
 
@@ -363,9 +364,9 @@ export default class VM implements PublicVM {
 
     scope.bindCallerScope(callerScope);
 
-    Object.keys(entries).forEach(name => {
-      scope.bindBlock(entries[name], (blocks && blocks[name]) || null);
-    });
+    for(let i=0; i < names.length; i++) {
+      scope.bindBlock(symbols[i], (blocks && blocks[names[i]]) || null);
+    }
   }
 
   bindDynamicScope(callback: BindDynamicScopeCallback) {

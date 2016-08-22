@@ -112,7 +112,7 @@ export class InlineBlockCompiler extends Compiler {
     let { program } = block;
 
     if (block.hasPositionalParameters()) {
-      ops.bindPositionalArgs(block);
+      ops.bindPositionalArgsForBlock(block);
     }
 
     let current = program.head();

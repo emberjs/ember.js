@@ -1,45 +1,38 @@
-import { NULL_REFERENCE } from '../../references';
+import { UNDEFINED_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
-import { CONSTANT_TAG, PathReference, RevisionTag, combineTagged } from 'glimmer-reference';
+import { EMPTY_ARRAY } from '../../utils';
+import { PathReference, RevisionTag, combineTagged } from 'glimmer-reference';
+import { Opaque } from 'glimmer-util';
 
-export abstract class CompiledPositionalArgs {
-  public abstract type: string;
-  public abstract values: CompiledExpression<any>[];
-  public abstract length: number;
-
-  static create({ values }: { values: CompiledExpression<any>[] }): CompiledPositionalArgs {
+export class CompiledPositionalArgs {
+  static create(values: CompiledExpression<Opaque>[]): CompiledPositionalArgs {
     if (values.length) {
-      return new CompiledNonEmptyPositionalArgs({ values });
+      return new this(values);
     } else {
       return COMPILED_EMPTY_POSITIONAL_ARGS;
     }
   }
 
-  abstract evaluate(vm: VM): EvaluatedPositionalArgs;
-  abstract toJSON(): string;
-}
+  static empty() {
+    return COMPILED_EMPTY_POSITIONAL_ARGS;
+  }
 
-class CompiledNonEmptyPositionalArgs extends CompiledPositionalArgs {
-  public type = "positional-args";
-  public values: CompiledExpression<any>[];
   public length: number;
 
-  constructor({ values }: { values: CompiledExpression<any>[] }) {
-    super();
-    this.values = values;
+  constructor(public values: CompiledExpression<Opaque>[]) {
     this.length = values.length;
   }
 
   evaluate(vm: VM): EvaluatedPositionalArgs {
-    let { values } = this;
-    let valueReferences = new Array<any>(values.length);
+    let { values, length } = this;
+    let references: PathReference<Opaque>[] = new Array(length);
 
-    for (let i = 0; i < values.length; i++) {
-      valueReferences[i] = <PathReference<any>>values[i].evaluate(vm);
+    for (let i = 0; i < length; i++) {
+      references[i] = values[i].evaluate(vm);
     }
 
-    return EvaluatedPositionalArgs.create({ values: valueReferences });
+    return EvaluatedPositionalArgs.create(references);
   }
 
   toJSON(): string {
@@ -48,12 +41,12 @@ class CompiledNonEmptyPositionalArgs extends CompiledPositionalArgs {
 }
 
 export const COMPILED_EMPTY_POSITIONAL_ARGS: CompiledPositionalArgs = new (class extends CompiledPositionalArgs {
-  public type = "empty-positional-args";
-  public values: CompiledExpression<any>[] = [];
-  public length = 0;
+  constructor() {
+    super(EMPTY_ARRAY);
+  }
 
   evaluate(vm: VM): EvaluatedPositionalArgs {
-    return EvaluatedPositionalArgs.empty();
+    return EVALUATED_EMPTY_POSITIONAL_ARGS;
   }
 
   toJSON(): string {
@@ -61,48 +54,34 @@ export const COMPILED_EMPTY_POSITIONAL_ARGS: CompiledPositionalArgs = new (class
   }
 });
 
-export abstract class EvaluatedPositionalArgs {
-  public tag: RevisionTag;
-  public values: PathReference<any>[];
-  public length: number;
+export class EvaluatedPositionalArgs {
+  static create(values: PathReference<Opaque>[]) {
+    return new this(values);
+  }
 
   static empty(): EvaluatedPositionalArgs {
     return EVALUATED_EMPTY_POSITIONAL_ARGS;
   }
 
-  static create({ values }: { values: PathReference<any>[] }) {
-    return new NonEmptyEvaluatedPositionalArgs({ values });
-  }
+  public tag: RevisionTag;
+  public length: number;
 
-  forEach(callback: (value: PathReference<any>) => void) {
-    let values = this.values;
-    for (let i = 0; i < values.length; i++) {
-      callback(values[i]);
-    }
-  }
-
-  abstract at(index: number): PathReference<any>;
-  abstract value(): any[];
-}
-
-class NonEmptyEvaluatedPositionalArgs extends EvaluatedPositionalArgs {
-  public values: PathReference<any>[];
-
-  constructor({ values }: { values: PathReference<any>[] }) {
-    super();
+  constructor(public values: PathReference<Opaque>[]) {
     this.tag = combineTagged(values);
-    this.values = values;
     this.length = values.length;
   }
 
-  at(index: number): PathReference<any> {
-    return this.values[index];
+  at(index: number): PathReference<Opaque> {
+    let { values, length } = this;
+    return (index < length) ? values[index] : UNDEFINED_REFERENCE;
   }
 
-  value(): any[] {
-    let ret = new Array(this.values.length);
-    for (let i = 0; i < this.values.length; i++) {
-      ret[i] = this.values[i].value();
+  value(): Opaque[] {
+    let { values, length } = this;
+    let ret: Opaque[] = new Array(length);
+
+    for (let i = 0; i < length; i++) {
+      ret[i] = values[i].value();
     }
 
     return ret;
@@ -110,15 +89,15 @@ class NonEmptyEvaluatedPositionalArgs extends EvaluatedPositionalArgs {
 }
 
 export const EVALUATED_EMPTY_POSITIONAL_ARGS = new (class extends EvaluatedPositionalArgs {
-  public tag = CONSTANT_TAG;
-  public values = [];
-  public length = 0;
-
-  at(): PathReference<any> {
-    return NULL_REFERENCE;
+  constructor() {
+    super(EMPTY_ARRAY);
   }
 
-  value(): any[] {
+  at(): PathReference<Opaque> {
+    return UNDEFINED_REFERENCE;
+  }
+
+  value(): Opaque[] {
     return this.values;
   }
 });

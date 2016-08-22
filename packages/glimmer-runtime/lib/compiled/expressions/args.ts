@@ -1,23 +1,15 @@
+import VM from '../../vm/append';
 import { COMPILED_EMPTY_POSITIONAL_ARGS, EVALUATED_EMPTY_POSITIONAL_ARGS, CompiledPositionalArgs, EvaluatedPositionalArgs } from './positional-args';
 import { COMPILED_EMPTY_NAMED_ARGS, EVALUATED_EMPTY_NAMED_ARGS, CompiledNamedArgs, EvaluatedNamedArgs } from './named-args';
-import VM from '../../vm/append';
-import { CONSTANT_TAG, RevisionTag, PathReference, combine } from 'glimmer-reference';
+import { RevisionTag, PathReference, combineTagged } from 'glimmer-reference';
+import { Opaque, Dict } from 'glimmer-util';
 
-interface CompiledArgOptions {
-  positional: CompiledPositionalArgs;
-  named: CompiledNamedArgs;
-}
-
-export abstract class CompiledArgs {
-  public abstract type: string;
-  public abstract positional: CompiledPositionalArgs;
-  public abstract named: CompiledNamedArgs;
-
-  static create({ positional, named }: CompiledArgOptions): CompiledArgs {
+export class CompiledArgs {
+  static create(positional: CompiledPositionalArgs, named: CompiledNamedArgs): CompiledArgs {
     if (positional === COMPILED_EMPTY_POSITIONAL_ARGS && named ===  COMPILED_EMPTY_NAMED_ARGS) {
-      return COMPILED_EMPTY_ARGS;
+      return this.empty();
     } else {
-      return new CompiledNonEmptyArgs({ positional, named });
+      return new this(positional, named);
     }
   }
 
@@ -25,74 +17,54 @@ export abstract class CompiledArgs {
     return COMPILED_EMPTY_ARGS;
   }
 
-  abstract evaluate(vm: VM): EvaluatedArgs;
-}
-
-class CompiledNonEmptyArgs extends CompiledArgs {
-  public type = "args";
-  public positional: CompiledPositionalArgs;
-  public named: CompiledNamedArgs;
-
-  constructor({ positional, named }: CompiledArgOptions) {
-    super();
-    this.positional = positional;
-    this.named = named;
+  constructor(
+    public positional: CompiledPositionalArgs,
+    public named: CompiledNamedArgs
+  ) {
   }
 
   evaluate(vm: VM): EvaluatedArgs {
-    return EvaluatedArgs.create({
-      positional: this.positional.evaluate(vm),
-      named: this.named.evaluate(vm)
-    });
+    return EvaluatedArgs.create(this.positional.evaluate(vm), this.named.evaluate(vm));
   }
 }
 
-export const COMPILED_EMPTY_ARGS: CompiledArgs = new (class extends CompiledArgs {
-  public type = "empty-args";
-  public positional: CompiledPositionalArgs = COMPILED_EMPTY_POSITIONAL_ARGS;
-  public named: CompiledNamedArgs = COMPILED_EMPTY_NAMED_ARGS;
+const COMPILED_EMPTY_ARGS: CompiledArgs = new (class extends CompiledArgs {
+  constructor() {
+    super(COMPILED_EMPTY_POSITIONAL_ARGS, COMPILED_EMPTY_NAMED_ARGS);
+  }
 
   evaluate(vm: VM): EvaluatedArgs {
-    return EvaluatedArgs.empty();
+    return EMPTY_EVALUATED_ARGS;
   }
 });
 
-interface EvaluatedArgsOptions {
-  positional: EvaluatedPositionalArgs;
-  named: EvaluatedNamedArgs;
-}
-
-export abstract class EvaluatedArgs {
-  public tag: RevisionTag;
-  public positional: EvaluatedPositionalArgs;
-  public named: EvaluatedNamedArgs;
-
+export class EvaluatedArgs {
   static empty(): EvaluatedArgs {
     return EMPTY_EVALUATED_ARGS;
   }
 
-  static create(options: EvaluatedArgsOptions): EvaluatedArgs {
-    return new NonEmptyEvaluatedArgs(options);
+  static create(positional: EvaluatedPositionalArgs, named: EvaluatedNamedArgs): EvaluatedArgs {
+    return new this(positional, named);
   }
 
-  static positional(values: PathReference<any>[]): EvaluatedArgs {
-    return new NonEmptyEvaluatedArgs({ positional: EvaluatedPositionalArgs.create({ values }), named: EvaluatedNamedArgs.empty() });
+  static positional(values: PathReference<Opaque>[]): EvaluatedArgs {
+    return new this(EvaluatedPositionalArgs.create(values), EVALUATED_EMPTY_NAMED_ARGS);
+  }
+
+  static named(map: Dict<PathReference<Opaque>>) {
+    return new this(EVALUATED_EMPTY_POSITIONAL_ARGS, EvaluatedNamedArgs.create(map));
+  }
+
+  public tag: RevisionTag;
+
+  constructor(
+    public positional: EvaluatedPositionalArgs,
+    public named: EvaluatedNamedArgs
+  ) {
+    this.tag = combineTagged([positional, named]);
   }
 }
 
-class NonEmptyEvaluatedArgs extends EvaluatedArgs {
-  constructor({ positional, named }: EvaluatedArgsOptions) {
-    super();
-    this.tag = combine([positional.tag, named.tag]);
-    this.positional = positional;
-    this.named = named;
-  }
-}
-
-export const EMPTY_EVALUATED_ARGS = new (class extends EvaluatedArgs {
-  public tag = CONSTANT_TAG;
-  public positional = EVALUATED_EMPTY_POSITIONAL_ARGS;
-  public named = EVALUATED_EMPTY_NAMED_ARGS;
-});
+const EMPTY_EVALUATED_ARGS = new EvaluatedArgs(EVALUATED_EMPTY_POSITIONAL_ARGS, EVALUATED_EMPTY_NAMED_ARGS);
 
 export { CompiledPositionalArgs, EvaluatedPositionalArgs, CompiledNamedArgs, EvaluatedNamedArgs };

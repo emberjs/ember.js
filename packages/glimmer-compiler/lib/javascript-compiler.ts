@@ -1,5 +1,5 @@
 import { assert } from "glimmer-util";
-import { Stack, DictSet, dict } from "glimmer-util";
+import { Stack, DictSet } from "glimmer-util";
 
 import {
   BlockMeta,
@@ -237,13 +237,15 @@ export default class JavaScriptCompiler {
   prepareObject(size: number) {
     assert(this.values.length >= size, `Expected ${size} values on the stack, found ${this.values.length}`);
 
-    let object = dict<Expression>();
+    let keys: string[] = new Array(size);
+    let values: Expression[] = new Array(size);
 
     for (let i = 0; i < size; i++) {
-      object[this.popValue<str>()] = this.popValue<Expression>();
+      keys[i] = this.popValue<str>();
+      values[i] = this.popValue<Expression>();
     }
 
-    this.pushValue<Hash>(object);
+    this.pushValue<Hash>([keys, values]);
   }
 
   /// Utilities

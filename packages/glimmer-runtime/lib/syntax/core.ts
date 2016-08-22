@@ -71,11 +71,9 @@ import {
 
 import { Environment } from '../environment';
 
-import {
-  Opaque,
-  Dict,
-  dict
-} from 'glimmer-util';
+import { EMPTY_ARRAY } from '../utils';
+
+import { Opaque } from 'glimmer-util';
 
 import {
   OpenPrimitiveElementOpcode,
@@ -574,8 +572,9 @@ export class OpenElement extends StatementSyntax {
 
   private parameters(scanner: BlockScanner): { args: Args, attrs: string[] } {
     let current = scanner.next();
-    let args = dict<ExpressionSyntax<Opaque>>();
     let attrs: string[] = [];
+    let argKeys: string[] = [];
+    let argValues: ExpressionSyntax<Opaque>[] = [];
 
     while (!(current instanceof FlushElement)) {
       if (current[MODIFIER_SYNTAX]) {
@@ -586,9 +585,13 @@ export class OpenElement extends StatementSyntax {
 
       if (current[ATTRIBUTE_SYNTAX]) {
         attrs.push(param.name);
-        args[param.name] = param.valueSyntax(); // REMOVE ME
+
+        // REMOVE ME: attributes should not be treated as args
+        argKeys.push(param.name);
+        argValues.push(param.valueSyntax());
       } else if (current[ARGUMENT_SYNTAX]) {
-        args[param.name] = param.valueSyntax();
+        argKeys.push(param.name);
+        argValues.push(param.valueSyntax());
       } else {
         throw new Error("Expected FlushElement, but got ${current}");
       }
@@ -596,7 +599,7 @@ export class OpenElement extends StatementSyntax {
       current = scanner.next();
     }
 
-    return { args: Args.fromNamedArgs(NamedArgs.build(args)), attrs };
+    return { args: Args.fromNamedArgs(NamedArgs.build(argKeys, argValues)), attrs };
   }
 
   private tagContents(scanner: BlockScanner) {
@@ -897,7 +900,7 @@ export class Helper extends ExpressionSyntax<Opaque> {
   }
 
   static build(path: string, positional: PositionalArgs, named: NamedArgs): Helper {
-    return new this({ ref: Ref.build(path), args: new Args({ positional, named }) });
+    return new this({ ref: Ref.build(path), args: Args.build(positional, named) });
   }
 
   isStatic = false;
@@ -1006,68 +1009,66 @@ export class Concat {
 export class Args {
   public type = "args";
 
-  static fromSpec(positional: SerializedCore.Params, named: SerializedCore.Hash): Args {
-    return new Args({ positional: PositionalArgs.fromSpec(positional), named: NamedArgs.fromSpec(named) });
+  static empty(): Args {
+    return EMPTY_ARGS;
   }
 
-  static _empty: Args;
-
-  static empty(): Args {
-    return (this._empty = this._empty || new Args({ positional: PositionalArgs.empty(), named: NamedArgs.empty() }));
+  static fromSpec(positional: SerializedCore.Params, named: SerializedCore.Hash): Args {
+    return new Args(PositionalArgs.fromSpec(positional), NamedArgs.fromSpec(named));
   }
 
   static fromPositionalArgs(positional: PositionalArgs): Args {
-    return new Args({ positional, named: NamedArgs.empty() });
+    return new Args(positional, EMPTY_NAMED_ARGS);
   }
 
   static fromNamedArgs(named: NamedArgs): Args {
-    return new Args({ positional: PositionalArgs.empty(), named });
+    return new Args(EMPTY_POSITIONAL_ARGS, named);
   }
 
   static build(positional: PositionalArgs, named: NamedArgs): Args {
-    return new this({ positional, named });
+    if (positional === EMPTY_POSITIONAL_ARGS && named === EMPTY_NAMED_ARGS) {
+      return EMPTY_ARGS;
+    } else {
+      return new this(positional, named);
+    }
   }
 
-  public positional: PositionalArgs;
-  public named: NamedArgs;
-  public isStatic = false;
-
-  constructor(options: { positional: PositionalArgs, named: NamedArgs }) {
-    this.positional = options.positional;
-    this.named = options.named;
+  constructor(
+    public positional: PositionalArgs,
+    public named: NamedArgs
+  ) {
   }
 
   compile(compiler: SymbolLookup, env: Environment): CompiledArgs {
     let { positional, named } = this;
-    return CompiledArgs.create({ positional: positional.compile(compiler, env), named: named.compile(compiler, env) });
+    return CompiledArgs.create(positional.compile(compiler, env), named.compile(compiler, env));
   }
 }
 
 export class PositionalArgs {
   public type = "positional";
 
+  static empty(): PositionalArgs {
+    return EMPTY_POSITIONAL_ARGS;
+  }
+
   static fromSpec(sexp: SerializedCore.Params): PositionalArgs {
-    if (!sexp || sexp.length === 0) return PositionalArgs.empty();
+    if (!sexp || sexp.length === 0) return EMPTY_POSITIONAL_ARGS;
     return new PositionalArgs(sexp.map(buildExpression));
   }
 
   static build(exprs: ExpressionSyntax<Opaque>[]): PositionalArgs {
-    return new this(exprs);
+    if (exprs.length === 0) {
+      return EMPTY_POSITIONAL_ARGS;
+    } else {
+      return new this(exprs);
+    }
   }
 
-  static _empty: PositionalArgs;
+  public length: number;
 
-  static empty(): PositionalArgs {
-    return (this._empty = this._empty || new PositionalArgs([]));
-  }
-
-  values: ExpressionSyntax<Opaque>[];
-  length: number;
-  isStatic = false;
-
-  constructor(exprs: ExpressionSyntax<Opaque>[]) {
-    this.values = exprs;
-    this.length = exprs.length;
+  constructor(public values: ExpressionSyntax<Opaque>[]) {
+    this.length = values.length;
   }
 
   slice(start?: number, end?: number): PositionalArgs {
@@ -1079,78 +1080,105 @@ export class PositionalArgs {
   }
 
   compile(compiler: SymbolLookup, env: Environment): CompiledPositionalArgs {
-    return CompiledPositionalArgs.create({ values: this.values.map(v => v.compile(compiler, env)) });
+    return CompiledPositionalArgs.create(this.values.map(v => v.compile(compiler, env)));
   }
 }
+
+const EMPTY_POSITIONAL_ARGS = new (class extends PositionalArgs {
+  constructor() {
+    super(EMPTY_ARRAY);
+  }
+
+  slice(start?: number, end?: number): PositionalArgs {
+    return this;
+  }
+
+  at(index: number): ExpressionSyntax<Opaque> {
+    return undefined; // ??!
+  }
+
+  compile(compiler: SymbolLookup, env: Environment): CompiledPositionalArgs {
+    return CompiledPositionalArgs.empty();
+  }
+});
 
 export class NamedArgs {
   public type = "named";
 
-  static fromSpec(sexp: SerializedCore.Hash): NamedArgs {
-    if (sexp === null || sexp === undefined) { return NamedArgs.empty(); }
-    let keys: string[] = [];
-    let values = [];
-    let map = dict<ExpressionSyntax<Opaque>>();
-
-    Object.keys(sexp).forEach(key => {
-      keys.push(key);
-      let value = map[key] = buildExpression(sexp[key]);
-      values.push(value);
-    });
-
-    return new this({ map });
-  }
-
-  static build(map: Dict<ExpressionSyntax<Opaque>>): NamedArgs {
-    let keys = [];
-    let values = [];
-
-    Object.keys(map).forEach(k => {
-      let value = map[k];
-      keys.push(k);
-      values.push(value);
-    });
-
-    return new NamedArgs({ map });
-  }
-
-  static _empty;
-
   static empty(): NamedArgs {
-    return (this._empty = this._empty || new NamedArgs({ map: dict<ExpressionSyntax<Opaque>>() }));
+    return EMPTY_NAMED_ARGS;
   }
 
-  public map: Dict<ExpressionSyntax<Opaque>>;
-  public isStatic = false;
+  static fromSpec(sexp: SerializedCore.Hash): NamedArgs {
+    if (sexp === null || sexp === undefined) { return EMPTY_NAMED_ARGS; }
 
-  constructor({ map }: { map: Dict<ExpressionSyntax<Opaque>> }) {
-    this.map = map;
+    let [keys, exprs] = sexp;
+
+    if (keys.length === 0) { return EMPTY_NAMED_ARGS; }
+
+    return new this(keys, exprs.map(expr => buildExpression(expr)));
   }
 
-  add(key: string, value: ExpressionSyntax<Opaque>) {
-    this.map[key] = value;
+  static build(keys: string[], values: ExpressionSyntax<Opaque>[]): NamedArgs {
+    if (keys.length === 0) {
+      return EMPTY_NAMED_ARGS;
+    } else {
+      return new this(keys, values);
+    }
+  }
+
+  public length: number;
+
+  constructor(
+    public keys: string[],
+    public values: ExpressionSyntax<Opaque>[]
+  ) {
+    this.length = keys.length;
   }
 
   at(key: string): ExpressionSyntax<Opaque> {
-    return this.map[key];
+    let { keys, values } = this;
+    let index = keys.indexOf(key);
+    return values[index];
   }
 
   has(key: string): boolean {
-    return !!this.map[key];
+    return this.keys.indexOf(key) !== -1;
   }
 
   compile(compiler: SymbolLookup, env: Environment): CompiledNamedArgs {
-    let { map } = this;
-
-    let compiledMap = dict<CompiledExpression<Opaque>>();
-
-    Object.keys(map).forEach(key => {
-      compiledMap[key] = map[key].compile(compiler, env);
-    });
-
-    return CompiledNamedArgs.create({ map: compiledMap });
+    let { keys, values } = this;
+    return new CompiledNamedArgs(keys, values.map(value => value.compile(compiler, env)));
   }
 }
+
+const EMPTY_NAMED_ARGS = new (class extends NamedArgs {
+  constructor() {
+    super(EMPTY_ARRAY, EMPTY_ARRAY);
+  }
+
+  at(key: string): ExpressionSyntax<Opaque> {
+    return undefined; // ??!
+  }
+
+  has(key: string): boolean {
+    return false;
+  }
+
+  compile(compiler: SymbolLookup, env: Environment): CompiledNamedArgs {
+    return CompiledNamedArgs.empty();
+  }
+});
+
+const EMPTY_ARGS: Args = new (class extends Args {
+  constructor() {
+    super(EMPTY_POSITIONAL_ARGS, EMPTY_NAMED_ARGS);
+  }
+
+  compile(compiler: SymbolLookup, env: Environment): CompiledArgs {
+    return CompiledArgs.empty();
+  }
+});
 
 export class Templates {
   public type = "templates";

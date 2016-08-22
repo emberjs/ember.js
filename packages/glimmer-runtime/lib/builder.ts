@@ -13,8 +13,7 @@ import {
 } from 'glimmer-reference';
 
 import {
-  SimpleElementOperations,
-  // ComponentElementOperations
+  SimpleElementOperations
 } from './compiled/opcodes/dom';
 
 import * as Simple from './dom/interfaces';
@@ -51,21 +50,6 @@ class Last {
   }
 }
 
-interface ElementStackOptions {
-  parentNode: Element;
-  nextSibling: Node;
-  dom: DOMChanges;
-}
-
-interface ElementStackClass<T extends ElementStack> {
-  new (options: ElementStackOptions): T;
-}
-
-class BlockStackElement {
-  public firstNode: Node = null;
-  public lastNode: Node = null;
-}
-
 export interface ElementOperations {
   addStaticAttribute(element: Simple.Element, name: string, value: string);
   addStaticAttributeNS(element: Simple.Element, namespace: string, name: string, value: string);
@@ -96,18 +80,6 @@ export class Fragment implements Bounds {
   update(bounds: Bounds) {
     this.bounds = bounds;
   }
-}
-
-interface InitialRenderOptions {
-  parentNode: Element;
-  nextSibling: Node;
-  dom: DOMChanges;
-}
-
-interface UpdateTrackerOptions {
-  tracker: Tracker;
-  nextSibling: Node;
-  dom: DOMChanges;
 }
 
 export class ElementStack implements Cursor {
