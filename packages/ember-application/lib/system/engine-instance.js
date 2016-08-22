@@ -180,7 +180,9 @@ if (isEnabled('ember-application-engines')) {
         'router:main',
         P`-bucket-cache:main`,
         '-view-registry:main',
-        '-environment:main'
+        '-environment:main',
+        'renderer:-dom',
+        'renderer:-inert'
       ].forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
 
       this.inject('view', '_environment', '-environment:main');
