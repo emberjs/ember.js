@@ -26,7 +26,7 @@ import OpcodeBuilderDSL from './builder';
 import { ConditionalReference } from '../../references';
 import { Args } from '../../syntax/core';
 import { Environment } from '../../environment';
-import { BlockTracker } from '../../builder';
+import { UpdatableBlockTracker } from '../../builder';
 
 function isEmpty(value: Opaque): boolean {
   return value === null || value === undefined || typeof value['toString'] !== 'function';
@@ -185,8 +185,8 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
       dsl.test(IsComponentDefinitionReference.create);
       dsl.jumpUnless('VALUE');
       dsl.label('COMPONENT');
-      dsl.putDynamicComponentDefinition(Args.empty());
-      dsl.openComponent();
+      dsl.putDynamicComponentDefinition();
+      dsl.openComponent(Args.empty());
       dsl.closeComponent();
       dsl.jump(END);
       dsl.label('VALUE');
@@ -288,7 +288,6 @@ export abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpc
   ) {
     super(cache, bounds, upsert);
     this.tag = this._tag = new UpdatableTag(this.tag);
-    this.state.block = null;
   }
 
   evaluate(vm: UpdatingVM) {
@@ -340,12 +339,12 @@ export abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpc
     let enter     = appendOps.head() as EnterOpcode;
     let ops       = enter.slice;
 
-    let tracker = state.block = new BlockTracker(bounds.parentElement());
+    let tracker = new UpdatableBlockTracker(bounds.parentElement());
     tracker.newBounds(this.bounds);
 
     let children = new LinkedList<UpdatingOpcode>();
 
-    let deopted = this.deopted = new TryOpcode({ ops, state, children });
+    let deopted = this.deopted = new TryOpcode(ops, state, tracker, children);
 
     this._tag.update(deopted.tag);
 

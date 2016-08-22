@@ -4,6 +4,7 @@ import { Layout, CompiledBlock } from '../compiled/blocks';
 
 import Environment, { DynamicScope } from '../environment';
 import { ElementOperations } from '../builder';
+import Bounds from '../bounds';
 import * as Simple from '../dom/interfaces';
 
 import { Destroyable, Opaque } from 'glimmer-util';
@@ -34,10 +35,21 @@ export interface ComponentManager<T extends Component> {
   // it should use in the layout.
   getSelf(component: T): PathReference<Opaque>;
 
-  // The `didCreateElement` hook is meant to be used by the host to save
-  // off the element. Hosts should use `didCreate`, which runs asynchronously
-  // after the rendering process, to provide hooks for user code.
+  // The `didCreateElement` hook is run for non-tagless components after the
+  // element as been created, but before it has been appended ("flushed") to
+  // the DOM. This hook allows the manager to save off the element, as well as
+  // install other dynamic attributes via the ElementOperations object.
+  //
+  // Hosts should use `didCreate`, which runs asynchronously after the rendering
+  // process, to provide hooks for user code.
   didCreateElement(component: T, element: Simple.Element, operations: ElementOperations);
+
+  // This hook is run after the entire layout has been rendered, allowing the
+  // manager to save off the rendered bounds.
+  //
+  // Hosts should use `didCreate`, which runs asynchronously after the rendering
+  // process, to provide hooks for user code.
+  didRenderLayout(component: T, bounds: Bounds);
 
   // Once the whole top-down rendering process is complete, Glimmer invokes
   // the `didCreate` callbacks.

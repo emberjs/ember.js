@@ -1,4 +1,5 @@
 import * as Simple from './dom/interfaces';
+import { Destroyable } from 'glimmer-util';
 
 export interface Bounds {
   // a method to future-proof for wormholing; may not be needed ultimately
@@ -12,6 +13,8 @@ export class Cursor {
 }
 
 export default Bounds;
+
+export interface DestroyableBounds extends Bounds, Destroyable {}
 
 export class RealDOMBounds implements Bounds {
   constructor(private bounds: Bounds) {}

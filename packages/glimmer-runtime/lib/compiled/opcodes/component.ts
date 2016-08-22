@@ -5,27 +5,18 @@ import { VM, UpdatingVM } from '../../vm';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { Templates } from '../../syntax/core';
 import { DynamicScope } from '../../environment';
-import { Opaque } from 'glimmer-util';
-import { ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
+import { PathReference, ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
+import { FIXME } from 'glimmer-util';
 
 export class PutDynamicComponentDefinitionOpcode extends Opcode {
   public type = "put-dynamic-component-definition";
 
-  private args: CompiledArgs;
-
-  constructor({ args }: { args: CompiledArgs }) {
-    super();
-    this.args = args;
-  }
-
   evaluate(vm: VM) {
-    let definitionRef = vm.frame.getOperand();
-    let cache = isConst(definitionRef) ? undefined : new ReferenceCache(definitionRef);
-    let definition = cache ? cache.peek() : definitionRef.value();
+    let reference = vm.frame.getOperand();
+    let cache = isConst(reference) ? undefined : new ReferenceCache(reference);
+    let definition = cache ? cache.peek() : reference.value();
 
-    let args = this.args.evaluate(vm).withInternal();
-    vm.frame.setArgs(args);
-    args.internal["definition"] = definition;
+    vm.frame.setComponentDefinition(definition);
 
     if (cache) {
       vm.updateWith(new Assert(cache));
@@ -33,88 +24,68 @@ export class PutDynamicComponentDefinitionOpcode extends Opcode {
   }
 }
 
-export interface PutComponentDefinitionOptions {
-  args: CompiledArgs;
-  definition: ComponentDefinition<Opaque>;
-}
-
 export class PutComponentDefinitionOpcode extends Opcode {
   public type = "put-component-definition";
-  private args: CompiledArgs;
-  private definition: ComponentDefinition<Opaque>;
 
-  constructor({ args, definition }: PutComponentDefinitionOptions) {
+  constructor(private definition: ComponentDefinition<Component>) {
     super();
-    this.args = args;
-    this.definition = definition;
   }
 
   evaluate(vm: VM) {
-    let args = this.args.evaluate(vm).withInternal();
-    args.internal["definition"] = this.definition;
-    vm.frame.setArgs(args);
+    vm.frame.setComponentDefinition(this.definition);
   }
-}
-
-export interface OpenComponentOptions {
-  shadow: string[];
-  templates: Templates;
 }
 
 export class OpenComponentOpcode extends Opcode {
   public type = "open-component";
-  public definition: ComponentDefinition<Opaque>;
-  public args: CompiledArgs;
-  public shadow: string[];
-  public templates: Templates;
 
-  constructor({ shadow, templates }: OpenComponentOptions) {
+  constructor(
+    private args: CompiledArgs,
+    private shadow: string[],
+    private templates: Templates
+  ) {
     super();
-    this.shadow = shadow;
-    this.templates = templates;
   }
 
   evaluate(vm: VM) {
-    let { shadow, templates } = this;
-    let args = vm.frame.getArgs();
-    let definition = args.internal["definition"] as ComponentDefinition<Opaque>;
+    let { args: rawArgs, shadow, templates } = this;
 
-    vm.pushDynamicScope();
-    let dynamicScope = vm.dynamicScope();
+    let definition = vm.frame.getComponentDefinition();
+    let dynamicScope = vm.pushDynamicScope();
 
     let manager = definition.manager;
     let hasDefaultBlock = templates && !!templates.default; // TODO Cleanup?
-    let preparedArgs = manager.prepareArgs(definition, args);
-    let component = manager.create(definition, preparedArgs, dynamicScope, hasDefaultBlock);
+    let args = manager.prepareArgs(definition, rawArgs.evaluate(vm));
+    let component = manager.create(definition, args, dynamicScope, hasDefaultBlock);
     let destructor = manager.getDestructor(component);
     if (destructor) vm.newDestroyable(destructor);
-    preparedArgs.internal["component"] = component;
-    preparedArgs.internal["definition"] = definition;
-    preparedArgs.internal["shadow"] = shadow;
 
-    vm.beginCacheGroup();
     let layout = manager.layoutFor(definition, component, vm.env);
     let callerScope = vm.scope();
     let selfRef = manager.getSelf(component);
+
+    vm.beginCacheGroup();
+    vm.stack().pushSimpleBlock();
     vm.pushRootScope(selfRef, layout.symbols);
-    vm.invokeLayout({ templates, args: preparedArgs, shadow, layout, callerScope });
+    vm.invokeLayout(args, layout, templates, callerScope, component, manager, shadow);
     vm.env.didCreate(component, manager);
 
-    vm.updateWith(new UpdateComponentOpcode({ name: definition.name, component, manager, args: preparedArgs, dynamicScope }));
+    vm.updateWith(new UpdateComponentOpcode(definition.name, component, manager, args, dynamicScope));
   }
 }
 
 export class UpdateComponentOpcode extends UpdatingOpcode {
   public type = "update-component";
 
-  private name: string;
-  private component: Component;
-  private manager: ComponentManager<Opaque>;
-  private args: EvaluatedArgs;
-  private dynamicScope: DynamicScope;
   private lastUpdated: Revision;
 
-  constructor({ name, component, manager, args, dynamicScope } : { name: string, component: Component, manager: ComponentManager<any>, args: EvaluatedArgs, dynamicScope: DynamicScope }) {
+  constructor(
+    private name: string,
+    private component: Component,
+    private manager: ComponentManager<Component>,
+    private args: EvaluatedArgs,
+    private dynamicScope: DynamicScope,
+  ) {
     super();
 
     let tag;
@@ -126,11 +97,6 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
       tag = this.tag = args.tag;
     }
 
-    this.name = name;
-    this.component = component;
-    this.manager = manager;
-    this.args = args;
-    this.dynamicScope = dynamicScope;
     this.lastUpdated = tag.value();
   }
 
@@ -157,11 +123,8 @@ export class DidCreateElementOpcode extends Opcode {
   public type = "did-create-element";
 
   evaluate(vm: VM) {
-    let args = vm.frame.getArgs();
-    let internal = args.internal;
-    let definition = internal['definition'] as ComponentDefinition<Opaque>;
-    let manager = definition.manager;
-    let component: Component = internal['component'];
+    let manager = vm.frame.getManager();
+    let component = vm.frame.getComponent();
 
     manager.didCreateElement(component, vm.stack().constructing, vm.stack().operations);
   }
@@ -181,16 +144,14 @@ export class ShadowAttributesOpcode extends Opcode {
   public type = "shadow-attributes";
 
   evaluate(vm: VM) {
-    let args = vm.frame.getArgs();
-    let internal = args.internal;
-    let shadow: string[] = internal['shadow'] as string[];
-
-    let named = args.named;
+    let shadow = vm.frame.getShadow();
 
     if (!shadow) return;
 
+    let { named } = vm.frame.getArgs();
+
     shadow.forEach(name => {
-      vm.stack().setDynamicAttribute(name, named.get(name), false);
+      vm.stack().setDynamicAttribute(name, named.get(name) as FIXME<PathReference<string>, 'setDynamicAttribute should take an Ref<Opaque> instead'>, false);
     });
   }
 
@@ -200,6 +161,18 @@ export class ShadowAttributesOpcode extends Opcode {
       type: this.type,
       args: ["$ARGS"]
     };
+  }
+}
+
+export class DidRenderLayoutOpcode extends Opcode {
+  public type = "did-render-layout";
+
+  evaluate(vm: VM) {
+    let bounds = vm.stack().popBlock();
+    let component = vm.frame.getComponent();
+    let manager = vm.frame.getManager();
+
+    manager.didRenderLayout(component, bounds);
   }
 }
 

@@ -1,5 +1,7 @@
+import { dict } from 'glimmer-util';
+
 export const EMPTY_ARRAY = [];
-export const EMPTY_OBJECT = {};
+export const EMPTY_DICT = dict<any>();
 
 export function turbocharge(object: Object): Object {
   // function Constructor() {}

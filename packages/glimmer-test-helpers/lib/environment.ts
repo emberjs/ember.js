@@ -48,6 +48,7 @@ import {
   ConditionalReference,
 
   // Misc
+  Bounds,
   ElementOperations,
   FunctionExpression,
   OpcodeBuilderDSL
@@ -61,8 +62,9 @@ import {
 
 import {
   Destroyable,
-  Opaque,
   Dict,
+  Opaque,
+  FIXME,
   assign,
   dict
 } from 'glimmer-util';
@@ -221,6 +223,7 @@ type AttrsDiff = { oldAttrs: Attrs, newAttrs: Attrs };
 export class BasicComponent {
   public attrs: Attrs;
   public element: Element;
+  public bounds: Bounds;
 
   constructor(attrs: Attrs) {
     this.attrs = attrs;
@@ -233,6 +236,7 @@ export class EmberishCurlyComponent extends GlimmerObject {
   public attributeBindings: string[] = null;
   public attrs: Attrs;
   public element: Element;
+  public bounds: Bounds;
   public parentView: Component = null;
   public args: ProcessedArgs;
 
@@ -259,6 +263,7 @@ export class EmberishGlimmerComponent extends GlimmerObject {
   public dirtinessTag = new DirtyableTag();
   public attrs: Attrs;
   public element: Element;
+  public bounds: Bounds;
   public parentView: Component = null;
 
   static create(args: { attrs: Attrs }): EmberishGlimmerComponent {
@@ -306,6 +311,10 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
 
   didCreateElement(component: BasicComponent, element: Element) {
     component.element = element;
+  }
+
+  didRenderLayout(component: BasicComponent, bounds: Bounds) {
+    component.bounds = bounds;
   }
 
   didCreate() {}
@@ -374,6 +383,10 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
 
   didCreateElement(component: EmberishGlimmerComponent, element: Element) {
     component.element = element;
+  }
+
+  didRenderLayout(component: EmberishGlimmerComponent, bounds: Bounds) {
+    component.bounds = bounds;
   }
 
   didCreate(component: EmberishGlimmerComponent) {
@@ -505,6 +518,10 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
         operations.addDynamicAttribute(element, attribute, reference, false);
       }
     }
+  }
+
+  didRenderLayout(component: EmberishCurlyComponent, bounds: Bounds) {
+    component.bounds = bounds;
   }
 
   didCreate(component: EmberishCurlyComponent) {
@@ -847,7 +864,7 @@ export class TestEnvironment extends Environment {
   }
 
   iterableFor(ref: Reference<Opaque>, args: EvaluatedArgs): OpaqueIterable {
-    let keyPath = args.named.get("key").value();
+    let keyPath = args.named.get("key").value() as FIXME<any, "User value to lookup key">;
     let keyFor: KeyFor<Opaque>;
 
     if (!keyPath) {
