@@ -8,6 +8,7 @@ import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import { takeLegacySnapshot } from 'ember-htmlbars/node-managers/component-node-manager';
 import { setOwner } from 'container/owner';
+import { guidFor } from 'ember-metal/utils';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -176,6 +177,7 @@ export function createOrUpdateComponent(component, options, createOptions, rende
     props.renderer = options.parentView ? options.parentView.renderer : owner && owner.lookup('renderer:-dom');
 
     component = component.create(props);
+    ensureElementId(component);
   } else {
     env.renderer.componentUpdateAttrs(component, snapshot);
     setProperties(component, props);
@@ -193,6 +195,12 @@ export function createOrUpdateComponent(component, options, createOptions, rende
 
   renderNode.emberView = component;
   return component;
+}
+
+function ensureElementId(component) {
+  if (component.elementId === undefined && component.tagName !== '') {
+    component.elementId = guidFor(component);
+  }
 }
 
 function takeSnapshot(attrs) {

@@ -411,9 +411,7 @@ export default Mixin.create({
   init() {
     this._super(...arguments);
 
-    if (!this.elementId && this.tagName !== '') {
-      this.elementId = guidFor(this);
-    }
+    this.elementId = this.elementId || undefined;
 
     this.scheduledRevalidation = false;
 
