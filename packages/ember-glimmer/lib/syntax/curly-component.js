@@ -119,17 +119,10 @@ class CurlyComponentManager {
 
       // THOUGHT: It might be nice to have a static method on EvaluatedArgs that
       // can merge two sets of args for us.
-      let mergedArgs = EvaluatedArgs.create({
-        named: EvaluatedNamedArgs.create({
-          map: mergedNamed
-        }),
-        positional: EvaluatedPositionalArgs.create({
-          values: mergedPositional
-        })
-      });
-
-      // Preserve the invocation args' `internal` storage.
-      mergedArgs.internal = args.internal;
+      let mergedArgs = EvaluatedArgs.create(
+        EvaluatedPositionalArgs.create(mergedPositional),
+        EvaluatedNamedArgs.create(mergedNamed)
+      );
 
       return mergedArgs;
     }

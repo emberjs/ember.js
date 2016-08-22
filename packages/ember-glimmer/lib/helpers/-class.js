@@ -3,20 +3,19 @@ import { dasherize } from 'ember-runtime/system/string';
 
 function classHelper({ positional }) {
   let path = positional.at(0);
-  let truthyPropName = positional.at(1);
-  let falsyPropName = positional.at(2);
+  let args = positional.length;
   let value = path.value();
 
   if (value === true) {
-    if (truthyPropName) {
-      return dasherize(truthyPropName.value());
+    if (args > 1) {
+      return dasherize(positional.at(1).value());
     }
     return null;
   }
 
   if (value === false) {
-    if (falsyPropName) {
-      return dasherize(falsyPropName.value());
+    if (args > 2) {
+      return dasherize(positional.at(2).value());
     }
     return null;
   }
