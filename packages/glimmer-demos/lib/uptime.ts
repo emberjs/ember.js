@@ -78,7 +78,7 @@ env.registerEmberishGlimmerComponent('server-uptime', ServerUptime as any, `
 
     <div class="days">
       {{#each @days key="number" as |day|}}
-        <uptime-day day={{day}} />
+        <uptime-day @day={{day}} />
       {{/each}}
     </div>
   </div>
@@ -88,7 +88,7 @@ let app = env.compile(`
   {{#if fps}}<div id="fps">{{fps}} FPS</div>{{/if}}
 
   {{#each servers key="name" as |server|}}
-    <server-uptime name={{server.name}} days={{server.days}} />
+    <server-uptime @name={{server.name}} @days={{server.days}} />
   {{/each}}
 `);
 
