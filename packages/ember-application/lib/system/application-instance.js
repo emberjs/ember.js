@@ -484,6 +484,7 @@ BootOptions.prototype.toEnvironment = function() {
   let env = assign({}, environment);
   // For compatibility with existing code
   env.hasDOM = this.isBrowser;
+  env.isInteractive = this.isInteractive;
   env.options = this;
   return env;
 };
