@@ -4,9 +4,7 @@
 */
 
 import Service from 'ember-runtime/system/service';
-import inject from 'ember-runtime/inject';
 import { readOnly } from 'ember-runtime/computed/computed_macros';
-import { computed } from 'ember-metal/computed';
 import { get } from 'ember-metal/property_get';
 import RouterDSL from '../system/dsl';
 
