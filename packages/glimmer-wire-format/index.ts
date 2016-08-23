@@ -150,16 +150,14 @@ export interface BlockMeta {
   moduleName?: string;
 }
 
-export interface SerializedTemplate {
+export interface SerializedBlock {
   statements: Statements.Statement[];
   locals: string[];
+}
+
+export interface SerializedTemplate extends SerializedBlock {
   named: string[];
   yields: string[];
   blocks: SerializedBlock[];
   meta: BlockMeta;
-}
-
-export interface SerializedBlock {
-  statements: Statements.Statement[];
-  locals: string[];
 }

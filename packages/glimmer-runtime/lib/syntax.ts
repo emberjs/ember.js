@@ -3,14 +3,14 @@ import { BlockScanner } from './scanner';
 import { Environment } from './environment';
 import { CompiledExpression } from './compiled/expressions';
 import { Opcode, OpSeq } from './opcodes';
-import { InlineBlock, Block } from './compiled/blocks';
+import { InlineBlock } from './compiled/blocks';
+import SymbolTable from './symbol-table';
 
-import OpcodeBuilder from './opcode-builder';
+import { ComponentBuilder } from './opcode-builder';
 
 import {
   Statement as SerializedStatement,
-  Expression as SerializedExpression,
-  BlockMeta
+  Expression as SerializedExpression
 } from 'glimmer-wire-format';
 
 interface StatementClass<T extends SerializedStatement, U extends Statement> {
@@ -18,7 +18,7 @@ interface StatementClass<T extends SerializedStatement, U extends Statement> {
 }
 
 export abstract class Statement implements LinkedListNode {
-  static fromSpec<T extends SerializedStatement>(spec: T, blocks?: InlineBlock[]): Statement {
+  static fromSpec<T extends SerializedStatement>(spec: T, symbolTable: SymbolTable, blocks?: InlineBlock[]): Statement {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
@@ -32,7 +32,7 @@ export abstract class Statement implements LinkedListNode {
     return new (<new (any) => any>this.constructor)(this);
   }
 
-  abstract compile(opcodes: StatementCompilationBuffer, env: Environment, block: Block);
+  abstract compile(opcodes: StatementCompilationBuffer, env: Environment, symbolTable: SymbolTable);
 
   scan(scanner: BlockScanner): Statement {
     return this;
@@ -43,14 +43,18 @@ interface ExpressionClass<T extends SerializedExpression, U extends Expression<T
   fromSpec(spec: T, blocks?: InlineBlock[]): U;
 }
 
-export abstract class Expression<T> {
+export interface CompilesInto<T> {
+  compile(dsl: SymbolLookup, env: Environment, symbolTable: SymbolTable): T;
+}
+
+export abstract class Expression<T> implements CompilesInto<CompiledExpression<T>> {
   static fromSpec<T extends SerializedExpression, U extends Expression<T>>(spec: T, blocks?: InlineBlock[]): U {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
   public abstract type: string;
 
-  abstract compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledExpression<T>;
+  abstract compile(dsl: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<T>;
 }
 
 export interface SymbolLookup {
@@ -66,7 +70,8 @@ export interface CompileInto {
   append(op: Opcode);
 }
 
-export interface StatementCompilationBuffer extends CompileInto, SymbolLookup, OpcodeBuilder {
+export interface StatementCompilationBuffer extends CompileInto, SymbolLookup {
+  component: ComponentBuilder;
   toOpSeq(): OpSeq;
 }
 

@@ -15,5 +15,5 @@ QUnit.test('moduleName option is passed into meta', function() {
     env,
     moduleName
   });
-  equal(template.raw.meta.moduleName, moduleName, 'Template has the moduleName');
+  equal(template.raw.symbolTable.getMeta().moduleName, moduleName, 'Template has the moduleName');
 });

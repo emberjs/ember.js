@@ -4,6 +4,8 @@ import {
   BlockScanner
 } from '../scanner';
 
+import SymbolTable from '../symbol-table';
+
 import {
   ATTRIBUTE as ATTRIBUTE_SYNTAX,
   ARGUMENT as ARGUMENT_SYNTAX,
@@ -17,8 +19,7 @@ import {
 } from '../syntax';
 
 import {
-  InlineBlock,
-  Block as CompiledBlock
+  InlineBlock
 } from '../compiled/blocks';
 
 import {
@@ -93,8 +94,7 @@ import {
 import {
   Statements as SerializedStatements,
   Expressions as SerializedExpressions,
-  Core as SerializedCore,
-  BlockMeta
+  Core as SerializedCore
 } from 'glimmer-wire-format';
 
 export interface BlockOptions {
@@ -104,7 +104,7 @@ export interface BlockOptions {
 export class Block extends StatementSyntax {
   public type = "block";
 
-  static fromSpec(sexp: SerializedStatements.Block, children: InlineBlock[]): Block {
+  static fromSpec(sexp: SerializedStatements.Block, symbolTable: SymbolTable, children: InlineBlock[]): Block {
     let [, path, params, hash, templateId, inverseId] = sexp;
 
     return new Block({
@@ -165,11 +165,11 @@ export class Unknown extends ExpressionSyntax<any> {
     this.trustingMorph = !!options.unsafe;
   }
 
-  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledExpression<Opaque> {
+  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<Opaque> {
     let { ref } = this;
 
-    if (env.hasHelper(ref.parts, blockMeta)) {
-      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts, blockMeta), args: CompiledArgs.empty() });
+    if (env.hasHelper(ref.parts, symbolTable)) {
+      return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), CompiledArgs.empty(), symbolTable);
     } else {
       return this.ref.compile(compiler);
     }
@@ -207,8 +207,8 @@ export class OptimizedAppend extends Append {
     return new UnoptimizedAppend(this);
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, block: CompiledBlock) {
-    compiler.append(new PutValueOpcode({ expression: this.value.compile(compiler, env, block.meta) }));
+  compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
+    compiler.append(new PutValueOpcode({ expression: this.value.compile(compiler, env, symbolTable) }));
 
     if (this.trustingMorph) {
       compiler.append(new OptimizedTrustingAppendOpcode());
@@ -221,13 +221,13 @@ export class OptimizedAppend extends Append {
 export class UnoptimizedAppend extends Append {
   public type = "unoptimized-append";
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, block: CompiledBlock) {
-    let expression = this.value.compile(compiler, env, block.meta);
+  compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
+    let expression = this.value.compile(compiler, env, symbolTable);
 
     if (this.trustingMorph) {
-      compiler.append(new GuardedTrustingAppendOpcode(expression));
+      compiler.append(new GuardedTrustingAppendOpcode(expression, symbolTable));
     } else {
-      compiler.append(new GuardedCautiousAppendOpcode(expression));
+      compiler.append(new GuardedCautiousAppendOpcode(expression, symbolTable));
     }
   }
 }
@@ -264,13 +264,13 @@ export class Modifier extends StatementSyntax {
     this.args = options.args;
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, blockMeta: BlockMeta) {
-    let args = this.args.compile(compiler, env, blockMeta);
+  compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
+    let args = this.args.compile(compiler, env, symbolTable);
 
-    if (env.hasModifier(this.path)) {
+    if (env.hasModifier(this.path, symbolTable)) {
       compiler.append(new ModifierOpcode({
         name: this.path[0],
-        manager: env.lookupModifier(this.path),
+        manager: env.lookupModifier(this.path, symbolTable),
         args
       }));
     } else {
@@ -425,9 +425,9 @@ export class DynamicAttr extends AttributeSyntax<string> {
     this.isTrusting = isTrusting;
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, blockMeta: BlockMeta) {
+  compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
     let {namespace, value} = this;
-    compiler.append(new PutValueOpcode({ expression: value.compile(compiler, env, blockMeta) }));
+    compiler.append(new PutValueOpcode({ expression: value.compile(compiler, env, symbolTable) }));
     if (namespace) {
       compiler.append(new DynamicAttrNSOpcode(this));
     } else {
@@ -524,36 +524,39 @@ export class Comment extends StatementSyntax {
 export class OpenElement extends StatementSyntax {
   type = "open-element";
 
-  static fromSpec(sexp: SerializedStatements.OpenElement): OpenElement {
+  static fromSpec(sexp: SerializedStatements.OpenElement, symbolTable: SymbolTable): OpenElement {
     let [, tag, blockParams] = sexp;
 
     return new OpenElement({
       tag,
-      blockParams: blockParams
+      blockParams,
+      symbolTable
     });
   }
 
-  static build(tag: string, blockParams: string[]): OpenElement {
-    return new this({ tag, blockParams });
+  static build(tag: string, blockParams: string[], symbolTable: SymbolTable): OpenElement {
+    return new this({ tag, blockParams, symbolTable });
   }
 
   public tag: string;
   public blockParams: string[];
+  public symbolTable: SymbolTable;
 
-  constructor(options: { tag: string, blockParams: string[] }) {
+  constructor(options: { tag: string, blockParams: string[], symbolTable: SymbolTable }) {
     super();
     this.tag = options.tag;
     this.blockParams = options.blockParams;
+    this.symbolTable = options.symbolTable;
   }
 
   scan(scanner: BlockScanner): StatementSyntax {
     let { tag } = this;
 
-    if (scanner.env.hasComponentDefinition([tag])) {
+    if (scanner.env.hasComponentDefinition([tag], this.symbolTable)) {
       let { args, attrs } = this.parameters(scanner);
-      scanner.startBlock();
+      scanner.startBlock(this.blockParams);
       this.tagContents(scanner);
-      let template = scanner.endBlock();
+      let template = scanner.endBlock(this.blockParams);
       return new Component({ tag, args, attrs, template });
     } else {
       return new OpenPrimitiveElement({ tag });
@@ -641,9 +644,9 @@ export class Component extends StatementSyntax {
     this.template = template;
   }
 
-  compile(list: CompileInto & SymbolLookup, env: Environment, blockMeta: BlockMeta) {
-    let definition = env.getComponentDefinition([this.tag]);
-    let args = this.args.compile(list as SymbolLookup, env, blockMeta);
+  compile(list: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
+    let definition = env.getComponentDefinition([this.tag], symbolTable);
+    let args = this.args.compile(list as SymbolLookup, env, symbolTable);
     let shadow = this.attrs;
     let templates = new Templates({ template: this.template, inverse: null });
 
@@ -696,11 +699,11 @@ export class Yield extends StatementSyntax {
     this.args = args;
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, blockMeta: BlockMeta) {
-    let to = compiler.getBlockSymbol(this.to);
-    let args = this.args.compile(compiler, env, blockMeta);
-    compiler.append(new OpenBlockOpcode({ to, label: this.to, args }));
-    compiler.append(new CloseBlockOpcode());
+  compile(dsl: OpcodeBuilderDSL, env: Environment, symbolTable: SymbolTable) {
+    let to = dsl.getBlockSymbol(this.to);
+    let args = this.args.compile(dsl, env, symbolTable);
+    dsl.append(new OpenBlockOpcode({ to, label: this.to, args }));
+    dsl.append(new CloseBlockOpcode());
   }
 }
 
@@ -910,10 +913,10 @@ export class Helper extends ExpressionSyntax<Opaque> {
     this.args = options.args;
   }
 
-  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledExpression<Opaque> {
-    if (env.hasHelper(this.ref.parts, blockMeta)) {
+  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<Opaque> {
+    if (env.hasHelper(this.ref.parts, symbolTable)) {
       let { args, ref } = this;
-      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts, blockMeta), args: args.compile(compiler, env, blockMeta) });
+      return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), args.compile(compiler, env, symbolTable), symbolTable);
     } else {
       throw new Error(`Compile Error: ${this.ref.path().join('.')} is not a helper`);
     }
@@ -998,8 +1001,8 @@ export class Concat {
     this.parts = parts;
   }
 
-  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledConcat {
-    return new CompiledConcat({ parts: this.parts.map(p => p.compile(compiler, env, blockMeta)) });
+  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledConcat {
+    return new CompiledConcat({ parts: this.parts.map(p => p.compile(compiler, env, symbolTable)) });
   }
 }
 
@@ -1036,9 +1039,9 @@ export class Args {
   ) {
   }
 
-  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledArgs {
+  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledArgs {
     let { positional, named } = this;
-    return CompiledArgs.create(positional.compile(compiler, env, blockMeta), named.compile(compiler, env, blockMeta));
+    return CompiledArgs.create(positional.compile(compiler, env, symbolTable), named.compile(compiler, env, symbolTable));
   }
 }
 
@@ -1076,8 +1079,8 @@ export class PositionalArgs {
     return this.values[index];
   }
 
-  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledPositionalArgs {
-    return CompiledPositionalArgs.create(this.values.map(v => v.compile(compiler, env, blockMeta)));
+  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledPositionalArgs {
+    return CompiledPositionalArgs.create(this.values.map(v => v.compile(compiler, env, symbolTable)));
   }
 }
 
@@ -1143,9 +1146,9 @@ export class NamedArgs {
     return this.keys.indexOf(key) !== -1;
   }
 
-  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledNamedArgs {
+  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledNamedArgs {
     let { keys, values } = this;
-    return new CompiledNamedArgs(keys, values.map(value => value.compile(compiler, env, blockMeta)));
+    return new CompiledNamedArgs(keys, values.map(value => value.compile(compiler, env, symbolTable)));
   }
 }
 

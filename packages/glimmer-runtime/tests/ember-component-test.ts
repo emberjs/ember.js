@@ -510,7 +510,6 @@ testComponent('yielding to an non-existent block', {
 });
 
 testComponent('yield', {
-  skip: 'glimmer',
   layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
 
   invokeAs: {
@@ -2817,7 +2816,7 @@ QUnit.test('deeply nested destructions', function(assert) {
   env.registerEmberishGlimmerComponent('destroy-me1', DestroyMe1Component as any, '<div>{{#destroy-me2 item=@item from="destroy-me1"}}{{yield}}{{/destroy-me2}}</div>');
   env.registerEmberishCurlyComponent('destroy-me2', DestroyMe2Component as any, 'Destroy me! {{yield}}');
 
-  appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me1 item={{item}}>{{#destroy-me2 from="root" item=item}}{{/destroy-me2}}</destroy-me1>{{/each}}`, { list: [1,2,3,4,5] });
+  appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me1 @item={{item}}>{{#destroy-me2 from="root" item=item}}{{/destroy-me2}}</destroy-me1>{{/each}}`, { list: [1,2,3,4,5] });
 
   assert.strictEqual(destroyed.length, 0, 'destroy should not be called');
 

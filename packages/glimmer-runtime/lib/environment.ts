@@ -1,5 +1,7 @@
 import { Statement as StatementSyntax } from './syntax';
 
+import SymbolTable from './symbol-table';
+
 import * as Simple from './dom/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { Reference, OpaqueIterable } from 'glimmer-reference';
@@ -144,11 +146,11 @@ export abstract class Environment {
     return ensureGuid(object) + '';
   }
 
-  statement(statement: StatementSyntax, blockMeta: BlockMeta): StatementSyntax {
-    return this.refineStatement(parseStatement(statement), blockMeta) || statement;
+  statement(statement: StatementSyntax, symbolTable: SymbolTable): StatementSyntax {
+    return this.refineStatement(parseStatement(statement), symbolTable) || statement;
   }
 
-  protected refineStatement(statement: ParsedStatement, blockMeta: BlockMeta): StatementSyntax {
+  protected refineStatement(statement: ParsedStatement, symbolTable: SymbolTable): StatementSyntax {
     let {
       isSimple,
       isBlock,
@@ -160,7 +162,7 @@ export abstract class Environment {
 
     if (isSimple && isInline) {
       if (key === 'partial') {
-        return new PartialSyntax({ args, blockMeta });
+        return new PartialSyntax({ args, symbolTable });
       }
     }
 
@@ -225,19 +227,19 @@ export abstract class Environment {
     return defaultChangeLists(element, attr, isTrusting, namespace);
   }
 
-  abstract hasPartial(partialName: string[], blockMeta: BlockMeta): boolean;
-  abstract lookupPartial(PartialName: string[], blockMeta: BlockMeta): PartialDefinition;
-  abstract hasComponentDefinition(tagName: string[]): boolean;
-  abstract getComponentDefinition(tagName: string[]): ComponentDefinition<Opaque>;
+  abstract hasPartial(partialName: string[], symbolTable: SymbolTable): boolean;
+  abstract lookupPartial(PartialName: string[], symbolTable: SymbolTable): PartialDefinition;
+  abstract hasComponentDefinition(tagName: string[], symbolTable: SymbolTable): boolean;
+  abstract getComponentDefinition(tagName: string[], symbolTable: SymbolTable): ComponentDefinition<Opaque>;
 
-  abstract hasModifier(modifierName: string[]): boolean;
-  abstract lookupModifier(modifierName: string[]): ModifierManager<Opaque>;
+  abstract hasModifier(modifierName: string[], blockMeta: BlockMeta): boolean;
+  abstract lookupModifier(modifierName: string[], blockMeta: BlockMeta): ModifierManager<Opaque>;
 }
 
 export default Environment;
 
 export interface Helper {
-  (vm: PublicVM, args: EvaluatedArgs): PathReference<Opaque>;
+  (vm: PublicVM, args: EvaluatedArgs, symbolTable: SymbolTable): PathReference<Opaque>;
 }
 
 export interface ParsedStatement {
