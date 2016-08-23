@@ -505,7 +505,7 @@ QUnit.skip('isActiveFor', function() {
   var camelotActive = router.isActiveTarget('camelot');
   var homepageActive = router.isActiveTarget('homepage', homepageModel);
 
-  ok(homeActive, "home would be active");
-  ok(camelotActive, "camelot would be active");
-  ok(homepageActive, "homepage would be active");
+  ok(homeActive, 'home would be active');
+  ok(camelotActive, 'camelot would be active');
+  ok(homepageActive, 'homepage would be active');
 });
