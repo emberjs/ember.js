@@ -10,7 +10,7 @@ function firstKey(path) {
 }
 
 function isObject(obj) {
-  return obj && (typeof obj === 'object');
+  return typeof obj === 'object' && obj;
 }
 
 function isVolatile(obj) {
