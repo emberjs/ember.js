@@ -265,8 +265,8 @@ export class Modifier extends StatementSyntax {
     this.args = options.args;
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment) {
-    let args = this.args.compile(compiler, env);
+  compile(compiler: CompileInto & SymbolLookup, env: Environment, blockMeta: BlockMeta) {
+    let args = this.args.compile(compiler, env, blockMeta);
 
     if (env.hasModifier(this.path)) {
       compiler.append(new ModifierOpcode({
@@ -426,9 +426,9 @@ export class DynamicAttr extends AttributeSyntax<string> {
     this.isTrusting = isTrusting;
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment) {
+  compile(compiler: CompileInto & SymbolLookup, env: Environment, blockMeta: BlockMeta) {
     let {namespace, value} = this;
-    compiler.append(new PutValueOpcode({ expression: value.compile(compiler, env) }));
+    compiler.append(new PutValueOpcode({ expression: value.compile(compiler, env, blockMeta) }));
     if (namespace) {
       compiler.append(new DynamicAttrNSOpcode(this));
     } else {
@@ -642,9 +642,9 @@ export class Component extends StatementSyntax {
     this.template = template;
   }
 
-  compile(list: CompileInto & SymbolLookup, env: Environment) {
+  compile(list: CompileInto & SymbolLookup, env: Environment, blockMeta: BlockMeta) {
     let definition = env.getComponentDefinition([this.tag]);
-    let args = this.args.compile(list as SymbolLookup, env);
+    let args = this.args.compile(list as SymbolLookup, env, blockMeta);
     let shadow = this.attrs;
     let templates = new Templates({ template: this.template, inverse: null });
 
@@ -697,9 +697,9 @@ export class Yield extends StatementSyntax {
     this.args = args;
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment) {
+  compile(compiler: CompileInto & SymbolLookup, env: Environment, blockMeta: BlockMeta) {
     let to = compiler.getBlockSymbol(this.to);
-    let args = this.args.compile(compiler, env);
+    let args = this.args.compile(compiler, env, blockMeta);
     compiler.append(new OpenBlockOpcode({ to, label: this.to, args }));
     compiler.append(new CloseBlockOpcode());
   }
@@ -916,7 +916,7 @@ export class Helper extends ExpressionSyntax<Opaque> {
   compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledExpression<Opaque> {
     if (env.hasHelper(this.ref.parts, blockMeta)) {
       let { args, ref } = this;
-      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts, blockMeta), args: args.compile(compiler, env) });
+      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts, blockMeta), args: args.compile(compiler, env, blockMeta) });
     } else {
       throw new Error(`Compile Error: ${this.ref.path().join('.')} is not a helper`);
     }
@@ -1001,8 +1001,8 @@ export class Concat {
     this.parts = parts;
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledConcat {
-    return new CompiledConcat({ parts: this.parts.map(p => p.compile(compiler, env)) });
+  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledConcat {
+    return new CompiledConcat({ parts: this.parts.map(p => p.compile(compiler, env, blockMeta)) });
   }
 }
 
@@ -1039,9 +1039,9 @@ export class Args {
   ) {
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledArgs {
+  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledArgs {
     let { positional, named } = this;
-    return CompiledArgs.create(positional.compile(compiler, env), named.compile(compiler, env));
+    return CompiledArgs.create(positional.compile(compiler, env, blockMeta), named.compile(compiler, env, blockMeta));
   }
 }
 
@@ -1079,8 +1079,8 @@ export class PositionalArgs {
     return this.values[index];
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledPositionalArgs {
-    return CompiledPositionalArgs.create(this.values.map(v => v.compile(compiler, env)));
+  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledPositionalArgs {
+    return CompiledPositionalArgs.create(this.values.map(v => v.compile(compiler, env, blockMeta)));
   }
 }
 
@@ -1146,9 +1146,9 @@ export class NamedArgs {
     return this.keys.indexOf(key) !== -1;
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledNamedArgs {
+  compile(compiler: SymbolLookup, env: Environment, blockMeta: BlockMeta): CompiledNamedArgs {
     let { keys, values } = this;
-    return new CompiledNamedArgs(keys, values.map(value => value.compile(compiler, env)));
+    return new CompiledNamedArgs(keys, values.map(value => value.compile(compiler, env, blockMeta)));
   }
 }
 

@@ -56,14 +56,14 @@ export default class PartialSyntax extends StatementSyntax {
     assert(this.args.positional.values.length > 0, `Partial found with no arguments. You must specify a template.`);
     assert(this.args.positional.values.length < 2, `Partial found with more than one argument. You can only specify a single template.`);
 
-    let compiledPartialNameExpression = this.args.positional.values[0].compile(compiler, env);
+    let compiledPartialNameExpression = this.args.positional.values[0].compile(compiler, env, block.meta);
 
     let BEGIN = new LabelOpcode("BEGIN");
     let END = new LabelOpcode("END");
 
     compiler.append(new EnterOpcode({ begin: BEGIN, end: END }));
     compiler.append(BEGIN);
-    compiler.append(new PutArgsOpcode({ args: this.args.compile(compiler, env) }));
+    compiler.append(new PutArgsOpcode({ args: this.args.compile(compiler, env, block.meta) }));
     compiler.append(new NameToPartialOpcode(this.blockMeta));
     compiler.append(new TestOpcode(SimpleTest));
 
