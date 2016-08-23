@@ -22,9 +22,8 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
 const { backburner } = run;
 
 class DynamicScope {
-  constructor({ view, controller, outletState, rootOutletState, isTopLevel, targetObject }) {
+  constructor({ view, outletState, rootOutletState, isTopLevel, targetObject }) {
     this.view = view;
-    this.controller = controller;
     this.outletState = outletState;
     this.rootOutletState = rootOutletState;
     this.isTopLevel = isTopLevel;
@@ -95,12 +94,11 @@ class Renderer {
 
   appendOutletView(view, target) {
     let self = new RootReference(view);
-    let controller = view.outletState.render.controller;
+    let targetObject = view.outletState.render.controller;
     let ref = view.toReference();
     let dynamicScope = new DynamicScope({
       view,
-      controller,
-      targetObject: controller,
+      targetObject,
       outletState: ref,
       rootOutletState: ref,
       isTopLevel: true
@@ -112,7 +110,6 @@ class Renderer {
     let self = new RootReference(view);
     let dynamicScope = new DynamicScope({
       view,
-      controller: undefined,
       // this is generally only used for the test harness, and is not a "supported"
       // mechanism for setting up a template/test environment. We are defaulting the
       // targetObject to the view instance based on the assumption that it is a component
