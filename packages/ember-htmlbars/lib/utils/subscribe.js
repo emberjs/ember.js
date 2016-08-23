@@ -21,6 +21,13 @@ export default function subscribe(node, env, scope, stream) {
       node.shouldReceiveAttrs = true;
     }
 
-    node.ownerNode.emberView.scheduleRevalidate(node, labelFor(stream));
+    // When the toplevelView (aka ownerView) is being torn
+    // down (generally in tests), `ownerNode.emberView` will be
+    // set to `null` (to prevent further work while tearing down)
+    // so we need to guard against that case here
+    let ownerView = node.ownerNode.emberView;
+    if (ownerView) {
+      ownerView.scheduleRevalidate(node, labelFor(stream));
+    }
   }));
 }

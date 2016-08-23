@@ -2570,4 +2570,74 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     assertElement('foo');
   }
+
+  ['@test child triggers revalidate during parent destruction (GH#13846)']() {
+    let select;
+
+    this.registerComponent('x-select', {
+      ComponentClass: Component.extend({
+        tagName: 'select',
+
+        init() {
+          this._super();
+          this.options = emberA([]);
+          this.value = null;
+
+          select = this;
+        },
+
+        updateValue() {
+          var newValue = this.get('options.lastObject.value');
+
+          this.set('value', newValue);
+        },
+
+        registerOption(option) {
+          this.get('options').addObject(option);
+        },
+
+        unregisterOption(option) {
+          this.get('options').removeObject(option);
+
+          this.updateValue();
+        }
+      }),
+
+      template: '{{yield this}}'
+    });
+
+    this.registerComponent('x-option', {
+      ComponentClass: Component.extend({
+        tagName: 'option',
+        attributeBindings: ['selected'],
+
+        didInsertElement() {
+          this._super(...arguments);
+
+          this.get('select').registerOption(this);
+        },
+
+        selected: computed('select.value', function() {
+          return this.get('value') === this.get('select.value');
+        }),
+
+        willDestroyElement() {
+          this._super(...arguments);
+          this.get('select').unregisterOption(this);
+        }
+      })
+    });
+
+    this.render(strip`
+      {{#x-select value=value as |select|}}
+        {{#x-option value="1" select=select}}1{{/x-option}}
+        {{#x-option value="2" select=select}}2{{/x-option}}
+      {{/x-select}}
+    `);
+
+
+    this.teardown();
+
+    this.assert.ok(true, 'no errors during teardown');
+  }
 });
