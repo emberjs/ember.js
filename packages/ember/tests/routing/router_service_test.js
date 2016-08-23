@@ -409,3 +409,54 @@ QUnit.test('replaceWith - Dynamic segment - model hook', function() {
   equal(jQuery('h3:contains(Megatroll)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
   equal(jQuery('p:contains(Homepage)', '#qunit-fixture').length, 1, 'The model was set');
 });
+
+QUnit.test('urlFor', function() {
+  Router.map(function() {
+    this.route('home', { path: '/' });
+    this.route('camelot');
+    this.route('homepage', { path: 'homepage/:post_id' });
+  });
+
+  var homepageModel = { id: 1, home: 'Homepage' };
+  var controller;
+  var router;
+
+  App.HomeRoute = Route.extend({
+  });
+
+  App.HomepageRoute = Route.extend({
+    model() {
+      return homepageModel;
+    }
+  });
+
+  App.ApplicationController = Controller.extend({
+    router: inject.service(),
+    init() {
+      this._super.apply(arguments);
+      controller = this;
+      router = get(this, 'router');
+    },
+
+    actions: {
+      moveToRoute() {
+        get(this, 'router').replaceWith('homepage', 1);
+      }
+    }
+  });
+
+  bootApplication();
+
+  run(function() {
+    controller.send('moveToRoute');
+  });
+
+  var homeUrl = router.urlFor('home');
+  var camelotUrl = router.urlFor('camelot');
+  var homepageUrl = router.urlFor('homepage', homepageModel);
+
+  equal(homeUrl, '/');
+  equal(camelotUrl, '/camelot');
+  equal(homepageUrl, '/homepage/1');
+});
+
