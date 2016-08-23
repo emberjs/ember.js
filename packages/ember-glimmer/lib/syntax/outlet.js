@@ -139,7 +139,7 @@ class OutletComponentManager extends AbstractOutletComponentManager {
   create(definition, args, dynamicScope) {
     let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get(definition.outletName);
     let outletState = outletStateReference.value();
-    dynamicScope.targetObject = dynamicScope.controller = outletState.render.controller;
+    dynamicScope.targetObject = outletState.render.controller;
     return outletState;
   }
 
