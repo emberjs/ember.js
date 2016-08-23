@@ -558,7 +558,7 @@ let LinkComponent = EmberComponent.extend({
     currentWhen = currentWhen.split(' ');
 
     for (let i = 0; i < currentWhen.length; i++) {
-      if (routing.isActive(models, resolvedQueryParams, currentWhen[i], routerState, isCurrentWhenSpecified)) {
+      if (routing.isActiveForRoute(models, resolvedQueryParams, currentWhen[i], routerState, isCurrentWhenSpecified)) {
         return get(this, 'activeClass');
       }
     }
