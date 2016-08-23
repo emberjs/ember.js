@@ -8,10 +8,13 @@ import inject from 'ember-runtime/inject';
 import { readOnly } from 'ember-runtime/computed/computed_macros';
 import { computed } from 'ember-metal/computed';
 import { get } from 'ember-metal/property_get';
+import RouterDSL from '../system/dsl';
 
-export default Service.extend({
+const RouterService = Service.extend({
   currentRouteName: readOnly('router.currentRouteName'),
   currentURL: readOnly('router.location.path'),
+  location: readOnly('router.location'),
+  rootUrL: readOnly('router.rootURL'),
 
   /**
     Transition the application into another route. The route may
@@ -59,3 +62,7 @@ export default Service.extend({
     return router.generate(...arguments);
   }
 });
+
+RouterService.map = RouterDSL.map;
+
+export default RouterService;

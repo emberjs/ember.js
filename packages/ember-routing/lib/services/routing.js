@@ -30,11 +30,11 @@ export default Service.extend({
     this._super(...arguments);
 
     if (isEnabled('ember-routing-router-service')) {
-      deprecate(
-        'The private `-routing` service has been deprecated and will be removed.',
-        false,
-        { id: 'ember-routing.-routing-service', until: '2.8.0' }
-      );
+      // deprecate(
+      //   'The private `-routing` service has been deprecated and will be removed.',
+      //   false,
+      //   { id: 'ember-routing.-routing-service', until: '2.8.0' }
+      // );
     }
   },
 

@@ -460,3 +460,52 @@ QUnit.test('urlFor', function() {
   equal(homepageUrl, '/homepage/1');
 });
 
+QUnit.skip('isActiveFor', function() {
+  Router.map(function() {
+    this.route('home', { path: '/' });
+    this.route('camelot');
+    this.route('homepage', { path: 'homepage/:post_id' });
+  });
+
+  var homepageModel = { id: 1, home: 'Homepage' };
+  var controller;
+  var router;
+
+  App.HomeRoute = Route.extend({
+  });
+
+  App.HomepageRoute = Route.extend({
+    model() {
+      return homepageModel;
+    }
+  });
+
+  App.ApplicationController = Controller.extend({
+    router: inject.service(),
+    init() {
+      this._super.apply(arguments);
+      controller = this;
+      router = get(this, 'router');
+    },
+
+    actions: {
+      moveToRoute() {
+        get(this, 'router').replaceWith('homepage', 1);
+      }
+    }
+  });
+
+  bootApplication();
+
+  run(function() {
+    controller.send('moveToRoute');
+  });
+
+  var homeActive = router.isActiveTarget('home');
+  var camelotActive = router.isActiveTarget('camelot');
+  var homepageActive = router.isActiveTarget('homepage', homepageModel);
+
+  ok(homeActive, "home would be active");
+  ok(camelotActive, "camelot would be active");
+  ok(homepageActive, "homepage would be active");
+});
