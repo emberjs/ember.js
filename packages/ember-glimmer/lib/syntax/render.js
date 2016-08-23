@@ -79,6 +79,7 @@ class AbstractRenderManager {
   }
 
   didCreateElement() {}
+  didRenderLayout() {}
   didCreate(state) {}
   update(state, args, dynamicScope) {}
   didUpdate(state) {}

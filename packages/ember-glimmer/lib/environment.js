@@ -108,17 +108,18 @@ import { default as ActionModifierManager } from './modifiers/action';
 
 // TODO we should probably do this transform at build time
 function wrapClassAttribute(args) {
-  let hasClass = args.named.has('class');
+  let { named } = args;
+  let index = named.keys.indexOf('class');
 
-  if (hasClass) {
-    let { ref, type } = args.named.at('class');
+  if (index !== -1) {
+    let { ref, type } = named.values[index];
 
     if (type === 'get') {
       let propName = ref.parts[ref.parts.length - 1];
-      let syntax = HelperSyntax.fromSpec(['helper', ['-class'], [['get', ref.parts], propName], null]);
-      args.named.add('class', syntax);
+      named.values[index] = HelperSyntax.fromSpec(['helper', ['-class'], [['get', ref.parts], propName], null]);
     }
   }
+
   return args;
 }
 
@@ -381,11 +382,11 @@ runInDebug(() => {
     }
   };
 
-  Environment.prototype.attributeFor = function(element, attr, reference, isTrusting) {
-    if (attr === 'style' && !isTrusting) {
+  Environment.prototype.attributeFor = function(element, attribute, isTrusting, namespace) {
+    if (attribute === 'style' && !isTrusting) {
       return StyleAttributeChangeList;
     }
 
-    return GlimmerEnvironment.prototype.attributeFor.call(this, element, attr, reference, isTrusting);
+    return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
   };
 });

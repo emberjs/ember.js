@@ -23,6 +23,7 @@ export const ARGS = symbol('ARGS');
 export const ROOT_REF = symbol('ROOT_REF');
 export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
 export const HAS_BLOCK = symbol('HAS_BLOCK');
+export const BOUNDS = symbol('BOUNDS');
 
 const Component = CoreView.extend(
   ChildViewsSupport,
@@ -42,6 +43,7 @@ const Component = CoreView.extend(
       this[IS_DISPATCHING_ATTRS] = false;
       this[DIRTY_TAG] = new DirtyableTag();
       this[ROOT_REF] = new RootReference(this);
+      this[BOUNDS] = null;
 
       // If a `defaultLayout` was specified move it to the `layout` prop.
       // `layout` is no longer a CP, so this just ensures that the `defaultLayout`

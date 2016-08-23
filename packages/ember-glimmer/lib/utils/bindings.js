@@ -1,6 +1,7 @@
+import get from 'ember-metal/property_get';
 import { assert } from 'ember-metal/debug';
 import { dasherize } from 'ember-runtime/system/string';
-import { CachedReference, ConstReference, map, referenceFromParts } from 'glimmer-reference';
+import { CachedReference, map, referenceFromParts } from 'glimmer-reference';
 import { ROOT_REF } from '../component';
 import { htmlSafe, isHTMLSafe } from './string';
 
@@ -29,8 +30,14 @@ export const AttributeBinding = {
     }
   },
 
-  apply(component, parsed, operations) {
+  apply(element, component, parsed, operations) {
     let [prop, attribute, isSimple] = parsed;
+
+    if (attribute === 'id') {
+      operations.addStaticAttribute(element, 'id', get(component, prop));
+      return;
+    }
+
     let isPath = prop.indexOf('.') > -1;
     let reference = isPath ? referenceForParts(component, prop.split('.')) : referenceForKey(component, prop);
 
@@ -38,13 +45,11 @@ export const AttributeBinding = {
 
     if (attribute === 'style') {
       reference = new StyleBindingReference(reference, referenceForKey(component, 'isVisible'));
-    } else if (attribute === 'id') {
-      reference = new ConstReference(this.mapAttributeValue(reference.value()));
     } else {
       reference = map(reference, this.mapAttributeValue);
     }
 
-    operations.addDynamicAttribute(attribute, reference);
+    operations.addDynamicAttribute(element, attribute, reference);
   },
 
   mapAttributeValue(value) {
@@ -99,8 +104,8 @@ class StyleBindingReference extends CachedReference {
 }
 
 export const IsVisibleBinding = {
-  apply(component, operations) {
-    operations.addDynamicAttribute('style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue));
+  apply(element, component, operations) {
+    operations.addDynamicAttribute(element, 'style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue));
   },
 
   mapStyleValue(isVisible) {
@@ -109,7 +114,7 @@ export const IsVisibleBinding = {
 };
 
 export const ClassNameBinding = {
-  apply(component, microsyntax, operations) {
+  apply(element, component, microsyntax, operations) {
     let [ prop, truthy, falsy ] = microsyntax.split(':');
     let isPath = prop.indexOf('.') > -1;
     let parts = isPath && prop.split('.');
@@ -122,7 +127,7 @@ export const ClassNameBinding = {
       ref = new ColonClassNameBindingReference(value, truthy, falsy);
     }
 
-    operations.addDynamicAttribute('class', ref);
+    operations.addDynamicAttribute(element, 'class', ref);
   }
 };
 

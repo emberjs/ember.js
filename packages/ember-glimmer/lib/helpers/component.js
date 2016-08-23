@@ -128,14 +128,10 @@ function curryArgs(definition, newArgs) {
   // Merge named maps
   let mergedNamed = assign({}, oldNamed, positionalToNamedParams, newArgs.named.map);
 
-  let mergedArgs = EvaluatedArgs.create({
-    named: EvaluatedNamedArgs.create({
-      map: mergedNamed
-    }),
-    positional: EvaluatedPositionalArgs.create({
-      values: mergedPositional
-    })
-  });
+  let mergedArgs = EvaluatedArgs.create(
+    EvaluatedPositionalArgs.create(mergedPositional),
+    EvaluatedNamedArgs.create(mergedNamed)
+  );
 
   return mergedArgs;
 }
