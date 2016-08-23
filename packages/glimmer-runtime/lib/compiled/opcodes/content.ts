@@ -27,6 +27,7 @@ import { ConditionalReference } from '../../references';
 import { Args } from '../../syntax/core';
 import { Environment } from '../../environment';
 import { UpdatableBlockTracker } from '../../builder';
+import SymbolTable from '../../symbol-table';
 
 function isEmpty(value: Opaque): boolean {
   return value === null || value === undefined || typeof value['toString'] !== 'function';
@@ -108,12 +109,10 @@ export abstract class AppendOpcode<T extends Insertion> extends Opcode {
 
 export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpcode<T> {
   protected abstract AppendOpcode: typeof OptimizedCautiousAppendOpcode | typeof OptimizedTrustingAppendOpcode;
-  private expression: CompiledExpression<any>;
   private deopted: OpSeq = null;
 
-  constructor(expression: CompiledExpression<any>) {
+  constructor(private expression: CompiledExpression<any>, private symbolTable: SymbolTable) {
     super();
-    this.expression = expression;
   }
 
   evaluate(vm: VM) {
@@ -178,7 +177,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
     // code on the update side (scroll down for the next big block of comment).
 
     let buffer = new CompileIntoList(env, null);
-    let dsl = new OpcodeBuilderDSL(buffer, null, env);
+    let dsl = new OpcodeBuilderDSL(buffer, this.symbolTable, env);
 
     dsl.block({ templates: null }, (dsl, BEGIN, END) => {
       dsl.putValue(this.expression);

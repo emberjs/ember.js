@@ -11,30 +11,16 @@ import {
   Templates,
 } from './syntax/core';
 
+import SymbolTable from './symbol-table';
+
 import {
   Opaque
 } from 'glimmer-util';
 
-export interface StaticComponentOptions {
-  definition: ComponentDefinition<Opaque>;
-  args: Args;
-  shadow: string[];
-  templates: Templates;
-}
+export type StaticDefinition = ComponentDefinition<Opaque>;
+export type DynamicDefinition = FunctionExpression<ComponentDefinition<Opaque>>;
 
-export interface DynamicComponentOptions {
-  definitionArgs: Args;
-  definition: FunctionExpression<ComponentDefinition<Opaque>>;
-  args: Args;
-  shadow: string[];
-  templates: Templates;
+export interface ComponentBuilder {
+  static(definition: ComponentDefinition<Opaque>, args: Args, templates: Templates, symbolTable: SymbolTable, shadow?: string[]);
+  dynamic(definitionArgs: Args, definition: DynamicDefinition, args: Args, templates: Templates, symbolTable: SymbolTable, shadow?: string[]);
 }
-
-interface OpcodeBuilder {
-  component: {
-    static(options: StaticComponentOptions);
-    dynamic(options: DynamicComponentOptions);
-  };
-}
-
-export default OpcodeBuilder;

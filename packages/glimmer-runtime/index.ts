@@ -44,9 +44,9 @@ export {
 } from './lib/compiler';
 
 export {
-  default as OpcodeBuilder,
-  DynamicComponentOptions,
-  StaticComponentOptions
+  ComponentBuilder,
+  StaticDefinition,
+  DynamicDefinition
 } from './lib/opcode-builder';
 
 export {
@@ -55,12 +55,9 @@ export {
 
 export {
   Block,
-  BlockOptions,
   CompiledBlock,
   Layout,
-  LayoutOptions,
   InlineBlock,
-  InlineBlockOptions,
   EntryPoint
 } from './lib/compiled/blocks';
 
