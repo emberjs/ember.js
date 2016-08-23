@@ -169,7 +169,8 @@ export {
   ComponentManager,
   ComponentDefinition,
   ComponentLayoutBuilder,
-  ComponentAttrsBuilder
+  ComponentAttrsBuilder,
+  isComponentDefinition
 } from './lib/component/interfaces';
 
 export {
