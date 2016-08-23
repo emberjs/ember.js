@@ -524,7 +524,6 @@ let LinkComponent = EmberComponent.extend({
   },
 
   _routing: inject.service('-routing'),
-  router: inject.service('router'),
 
   /**
     Accessed as a classname binding to apply the `LinkComponent`'s `disabledClass`
