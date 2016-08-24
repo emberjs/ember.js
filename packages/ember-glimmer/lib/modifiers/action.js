@@ -176,12 +176,14 @@ export default class ActionModifierManager {
       if (actionNameRef[INVOKE]) {
         actionName = actionNameRef;
       } else {
+        let actionLabel = actionNameRef._propertyKey;
         actionName = actionNameRef.value();
 
         assert(
-          'You specified a quoteless path to the {{action}} helper ' +
-            'which did not resolve to an action name (a string). ' +
-            'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).',
+          'You specified a quoteless path, `' + actionLabel + '`, to the ' +
+            '{{action}} helper which did not resolve to an action name (a ' +
+            'string). Perhaps you meant to use a quoted actionName? (e.g. ' +
+            '{{action "' + actionLabel + '"}}).',
           typeof actionName === 'string' || typeof actionName === 'function'
         );
       }

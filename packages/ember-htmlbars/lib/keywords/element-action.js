@@ -1,6 +1,6 @@
 import { assert } from 'ember-metal/debug';
 import { uuid } from 'ember-metal/utils';
-import { read } from 'ember-htmlbars/streams/utils';
+import { labelFor, read } from 'ember-htmlbars/streams/utils';
 import run from 'ember-metal/run_loop';
 import { readUnwrappedModel } from 'ember-htmlbars/streams/utils';
 import { isSimpleClick } from 'ember-views/system/utils';
@@ -13,11 +13,13 @@ export default {
     let read = env.hooks.getValue;
 
     let actionName = read(params[0]);
+    let actionLabel = labelFor(params[0]);
 
     assert(
-      'You specified a quoteless path to the {{action}} helper ' +
-      'which did not resolve to an action name (a string). ' +
-      'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).',
+      'You specified a quoteless path, `' + actionLabel + '`, to the ' +
+      '{{action}} helper which did not resolve to an action name (a ' +
+      'string). Perhaps you meant to use a quoted actionName? (e.g. ' +
+      '{{action "' + actionLabel + '"}}).',
       typeof actionName === 'string' || typeof actionName === 'function'
     );
 
