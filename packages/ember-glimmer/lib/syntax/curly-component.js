@@ -59,7 +59,7 @@ function applyAttributeBindings(element, attributeBindings, component, operation
 
     if (seen.indexOf(attribute) === -1) {
       seen.push(attribute);
-      AttributeBinding.apply(element, component, parsed, operations);
+      AttributeBinding.install(element, component, parsed, operations);
     }
 
     i--;
@@ -70,7 +70,7 @@ function applyAttributeBindings(element, attributeBindings, component, operation
   }
 
   if (seen.indexOf('style') === -1) {
-    IsVisibleBinding.apply(element, component, operations);
+    IsVisibleBinding.install(element, component, operations);
   }
 }
 
@@ -232,7 +232,7 @@ class CurlyComponentManager {
       applyAttributeBindings(element, attributeBindings, component, operations);
     } else {
       operations.addStaticAttribute(element, 'id', component.elementId);
-      IsVisibleBinding.apply(element, component, operations);
+      IsVisibleBinding.install(element, component, operations);
     }
 
     if (classRef) {
@@ -247,7 +247,7 @@ class CurlyComponentManager {
 
     if (classNameBindings && classNameBindings.length) {
       classNameBindings.forEach(binding => {
-        ClassNameBinding.apply(element, component, binding, operations);
+        ClassNameBinding.install(element, component, binding, operations);
       });
     }
 

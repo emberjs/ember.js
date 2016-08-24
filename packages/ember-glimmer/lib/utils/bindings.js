@@ -30,7 +30,7 @@ export const AttributeBinding = {
     }
   },
 
-  apply(element, component, parsed, operations) {
+  install(element, component, parsed, operations) {
     let [prop, attribute, isSimple] = parsed;
 
     if (attribute === 'id') {
@@ -104,7 +104,7 @@ class StyleBindingReference extends CachedReference {
 }
 
 export const IsVisibleBinding = {
-  apply(element, component, operations) {
+  install(element, component, operations) {
     operations.addDynamicAttribute(element, 'style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue));
   },
 
@@ -114,7 +114,7 @@ export const IsVisibleBinding = {
 };
 
 export const ClassNameBinding = {
-  apply(element, component, microsyntax, operations) {
+  install(element, component, microsyntax, operations) {
     let [ prop, truthy, falsy ] = microsyntax.split(':');
     let isPath = prop.indexOf('.') > -1;
     let parts = isPath && prop.split('.');
