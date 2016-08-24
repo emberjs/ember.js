@@ -3,7 +3,13 @@ import { setOnerror, getOnerror } from 'ember-metal/error_handler';
 import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
 
-QUnit.module('Ember.RSVP');
+const ORIGINAL_ONERROR = getOnerror();
+
+QUnit.module('Ember.RSVP', {
+  teardown() {
+    setOnerror(ORIGINAL_ONERROR);
+  }
+});
 
 QUnit.test('Ensure that errors thrown from within a promise are sent to the console', function() {
   let error = new Error('Error thrown in a promise for testing purposes.');

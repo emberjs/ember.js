@@ -1018,10 +1018,7 @@ QUnit.module('can override built-in helpers', {
   },
 
   teardown() {
-    App.removeTestHelpers();
-    jQuery('#ember-testing-container, #ember-testing').remove();
-    run(App, App.destroy);
-    App = null;
+    cleanup();
 
     Test._helpers.visit = originalVisitHelper;
     Test._helpers.find  = originalFindHelper;
