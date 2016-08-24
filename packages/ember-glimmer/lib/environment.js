@@ -134,12 +134,12 @@ export default class Environment extends GlimmerEnvironment {
 
     this.uselessAnchor = document.createElement('a');
 
-    this._definitionCache = new Cache(2000, ({ name, source }) => {
+    this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: ComponentClass, layout } = lookupComponent(owner, name, { source });
       if (ComponentClass || layout) {
         return new CurlyComponentDefinition(name, ComponentClass, layout);
       }
-    }, ({ name, source }) => {
+    }, ({ name, source, owner }) => {
       return source && owner._resolveLocalLookupName(name, source) || name;
     });
 
@@ -269,8 +269,9 @@ export default class Environment extends GlimmerEnvironment {
 
   getComponentDefinition(path, parentMeta) {
     let name = path[0];
+    let owner = !!(parentMeta && parentMeta.owner) ? parentMeta.owner : this.owner;
     let source = parentMeta && `template:${parentMeta.moduleName}`;
-    return this._definitionCache.get({ name, source });
+    return this._definitionCache.get({ name, source, owner });
   }
 
   // normally templates should be exported at the proper module name
@@ -303,17 +304,19 @@ export default class Environment extends GlimmerEnvironment {
   }
 
   hasHelper(name, parentMeta) {
+    let owner = !!(parentMeta && parentMeta.owner) ? parentMeta.owner : this.owner;
     let options = parentMeta && { source: `template:${parentMeta.moduleName}` } || {};
     return !!builtInHelpers[name[0]] ||
-      this.owner.hasRegistration(`helper:${name}`, options) ||
-      this.owner.hasRegistration(`helper:${name}`);
+      owner.hasRegistration(`helper:${name}`, options) ||
+      owner.hasRegistration(`helper:${name}`);
   }
 
   lookupHelper(name, parentMeta) {
+    let owner = !!(parentMeta && parentMeta.owner) ? parentMeta.owner : this.owner;
     let options = parentMeta && { source: `template:${parentMeta.moduleName}` } || {};
     let helper = builtInHelpers[name[0]] ||
-      this.owner.lookup(`helper:${name}`, options) ||
-      this.owner.lookup(`helper:${name}`);
+      owner.lookup(`helper:${name}`, options) ||
+      owner.lookup(`helper:${name}`);
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helper.isInternalHelper) {
       return (vm, args) => helper.toReference(args, this);

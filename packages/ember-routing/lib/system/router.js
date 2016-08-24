@@ -455,12 +455,6 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   willDestroy() {
-    if (this._toplevelView) {
-      this._toplevelView.destroy();
-      this._toplevelView = null;
-    }
-    this._super(...arguments);
-
     if (isEnabled('ember-application-engines')) {
       let instances = this._engineInstances;
       for (let name in instances) {
@@ -469,6 +463,12 @@ const EmberRouter = EmberObject.extend(Evented, {
         }
       }
     }
+
+    if (this._toplevelView) {
+      this._toplevelView.destroy();
+      this._toplevelView = null;
+    }
+    this._super(...arguments);
 
     this.reset();
   },

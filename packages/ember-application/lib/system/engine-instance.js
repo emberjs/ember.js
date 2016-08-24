@@ -170,18 +170,29 @@ if (isEnabled('ember-application-engines')) {
     cloneParentDependencies() {
       let parent = getEngineParent(this);
 
-      [
+      let registrations = [
         'route:basic',
         'event_dispatcher:main',
         'service:-routing'
-      ].forEach(key => this.register(key, parent.resolveRegistration(key)));
+      ];
 
-      [
+      if (isEnabled('ember-glimmer')) {
+        registrations.push('service:-glimmer-environment');
+      }
+
+      registrations.forEach(key => this.register(key, parent.resolveRegistration(key)));
+
+      let env = parent.lookup('-environment:main');
+      this.register('-environment:main', env, { instantiate: false });
+
+      let singletons = [
         'router:main',
         P`-bucket-cache:main`,
         '-view-registry:main',
-        '-environment:main'
-      ].forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
+        `renderer:-${env.isInteractive ? 'dom' : 'inert'}`
+      ];
+
+      singletons.forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
 
       this.inject('view', '_environment', '-environment:main');
       this.inject('route', '_environment', '-environment:main');
