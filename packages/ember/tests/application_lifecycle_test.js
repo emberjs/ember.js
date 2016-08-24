@@ -125,6 +125,34 @@ QUnit.test('Destroying the application resets the router before the appInstance 
   equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
+QUnit.test('Destroying a route after the router does create an undestroyed `toplevelView`', function() {
+  App.Router.map(function() {
+    this.route('home', { path: '/' });
+  });
+
+  setTemplates({
+    index: compile('Index!'),
+    application: compile('Application! {{outlet}}')
+  });
+
+  App.IndexRoute = Route.extend();
+  run(App, 'advanceReadiness');
+
+  handleURL('/');
+
+  let router = appInstance.lookup('router:main');
+  let route = appInstance.lookup('route:index');
+
+  run(router, 'destroy');
+  equal(router._toplevelView, null, 'the toplevelView was cleared');
+
+  run(route, 'destroy');
+  equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+
+  run(App, 'destroy');
+  equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+});
+
 QUnit.test('initializers can augment an applications customEvents hash', function(assert) {
   assert.expect(1);
 
