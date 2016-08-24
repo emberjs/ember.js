@@ -140,6 +140,10 @@ const EmberRouter = EmberObject.extend(Evented, {
       this._engineInstances = new EmptyObject();
       this._engineInfoByRoute = new EmptyObject();
     }
+
+    // avoid shaping issues with checks during `_setOutlets`
+    this.isDestroyed = false;
+    this.isDestroying = false;
   },
 
   /*
@@ -266,6 +270,11 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   _setOutlets() {
+    // This is triggered async during Ember.Route#willDestroy.
+    // If the router is also being destroyed we do not want to
+    // to create another this._toplevelView (and leak the renderer)
+    if (this.isDestroying || this.isDestroyed) { return; }
+
     let handlerInfos = this.router.currentHandlerInfos;
     let route;
     let defaultParentState;

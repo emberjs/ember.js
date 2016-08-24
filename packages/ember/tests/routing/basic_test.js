@@ -3742,4 +3742,48 @@ if (isEnabled('ember-application-engines')) {
 
     throws(() => router.transitionTo('blog.post'), /Defining a custom serialize method on an Engine route is not supported/);
   });
+
+  QUnit.test('App.destroy does not leave undestroyed views after clearing engines', function() {
+    expect(4);
+
+    let engineInstance;
+    // Register engine
+    let BlogEngine = Engine.extend();
+    registry.register('engine:blog', BlogEngine);
+    let EngineIndexRoute = Route.extend({
+      init() {
+        this._super(...arguments);
+        engineInstance = getOwner(this);
+      }
+    });
+
+    // Register engine route map
+    let BlogMap = function() {
+      this.route('post');
+    };
+    registry.register('route-map:blog', BlogMap);
+
+    Router.map(function() {
+      this.mount('blog');
+    });
+
+    bootApplication();
+
+    let engine = container.lookup('engine:blog');
+    engine.register('route:index', EngineIndexRoute);
+    engine.register('template:index', compile('Engine Post!'));
+
+    handleURL('/blog');
+
+    let route = engineInstance.lookup('route:index');
+
+    run(router, 'destroy');
+    equal(router._toplevelView, null, 'the toplevelView was cleared');
+
+    run(route, 'destroy');
+    equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+
+    run(App, 'destroy');
+    equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+  });
 }
