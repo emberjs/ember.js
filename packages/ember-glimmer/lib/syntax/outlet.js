@@ -16,17 +16,18 @@ function outletComponentFor(vm) {
 }
 
 export class OutletSyntax extends StatementSyntax {
-  constructor({ args }) {
+  constructor({ args, symbolTable }) {
     super();
     this.definitionArgs = args;
     this.definition = outletComponentFor;
     this.args = ArgsSyntax.empty();
+    this.symbolTable = symbolTable;
     this.templates = null;
     this.shadow = null;
   }
 
   compile(builder) {
-    builder.component.dynamic(this);
+    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.templates, this.symbolTable, this.shadow);
   }
 }
 

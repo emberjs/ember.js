@@ -193,7 +193,7 @@ export default class Environment extends GlimmerEnvironment {
   // isn't going to return any syntax and the Glimmer engine knows how to handle
   // this case.
 
-  refineStatement(statement, blockMeta) {
+  refineStatement(statement, symbolTable) {
     // 1. resolve any native syntax – if, unless, with, each, and partial
     let nativeSyntax = super.refineStatement(statement);
 
@@ -219,7 +219,7 @@ export default class Environment extends GlimmerEnvironment {
       // 2. built-in syntax
 
       if (key === 'component') {
-        return DynamicComponentSyntax.create({ args, templates, blockMeta });
+        return DynamicComponentSyntax.create({ args, templates, symbolTable });
       } else if (key === 'render') {
         return new RenderSyntax({ args });
       } else if (key === 'outlet') {
@@ -230,9 +230,9 @@ export default class Environment extends GlimmerEnvironment {
       let definition = null;
 
       if (internalKey) {
-        definition = this.getComponentDefinition([internalKey], blockMeta);
+        definition = this.getComponentDefinition([internalKey], symbolTable);
       } else if (key.indexOf('-') >= 0) {
-        definition = this.getComponentDefinition(path, blockMeta);
+        definition = this.getComponentDefinition(path, symbolTable);
       }
 
       if (definition) {
@@ -241,10 +241,10 @@ export default class Environment extends GlimmerEnvironment {
 
       let generateBuiltInSyntax = builtInDynamicComponents[key];
       if (generateBuiltInSyntax) {
-        return generateBuiltInSyntax(statement, (path) => this.getComponentDefinition([path], blockMeta));
+        return generateBuiltInSyntax(statement, (path) => this.getComponentDefinition([path], symbolTable));
       }
 
-      assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(key, blockMeta));
+      assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(key, symbolTable));
     }
 
     if ((!isSimple && appendType === 'unknown') || appendType === 'self-get') {
@@ -252,21 +252,21 @@ export default class Environment extends GlimmerEnvironment {
     }
 
     if (!isSimple && path) {
-      return DynamicComponentSyntax.fromPath({ path, args, templates, blockMeta });
+      return DynamicComponentSyntax.fromPath({ path, args, templates, symbolTable });
     }
 
-    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(key, blockMeta));
+    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(key, symbolTable));
 
-    assert(`Helpers may not be used in the element form.`, !nativeSyntax && key && this.hasHelper(key, blockMeta) ? !isModifier : true);
+    assert(`Helpers may not be used in the element form.`, !nativeSyntax && key && this.hasHelper(key, symbolTable) ? !isModifier : true);
   }
 
   hasComponentDefinition() {
     return false;
   }
 
-  getComponentDefinition(path, blockMeta) {
+  getComponentDefinition(path, symbolTable) {
     let name = path[0];
-    let source = blockMeta && `template:${blockMeta.moduleName}`;
+    let source = symbolTable && `template:${symbolTable.getMeta().moduleName}`;
     return this._definitionCache.get({ name, source });
   }
 
@@ -299,15 +299,15 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  hasHelper(name, blockMeta) {
-    let options = blockMeta && { source: `template:${blockMeta.moduleName}` } || {};
+  hasHelper(name, symbolTable) {
+    let options = symbolTable && { source: `template:${symbolTable.getMeta().moduleName}` } || {};
     return !!builtInHelpers[name[0]] ||
       this.owner.hasRegistration(`helper:${name}`, options) ||
       this.owner.hasRegistration(`helper:${name}`);
   }
 
-  lookupHelper(name, blockMeta) {
-    let options = blockMeta && { source: `template:${blockMeta.moduleName}` } || {};
+  lookupHelper(name, symbolTable) {
+    let options = symbolTable && { source: `template:${symbolTable.getMeta().moduleName}` } || {};
     let helper = builtInHelpers[name[0]] ||
       this.owner.lookup(`helper:${name}`, options) ||
       this.owner.lookup(`helper:${name}`);
