@@ -24,6 +24,6 @@ export default Mixin.create({
 
   instrumentDetails(hash) {
     hash.template = get(this, 'templateName');
-    this._super(hash);
+    return this._super(hash);
   }
 });

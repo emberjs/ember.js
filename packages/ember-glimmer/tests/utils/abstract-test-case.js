@@ -362,7 +362,6 @@ export class AbstractRenderingTest extends TestCase {
 
     owner.register('component:-top-level', Component.extend(attrs));
 
-
     this.component = owner.lookup('component:-top-level');
 
     runAppend(this.component);

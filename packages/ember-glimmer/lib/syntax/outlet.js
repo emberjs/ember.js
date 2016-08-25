@@ -1,5 +1,6 @@
 import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
 import { generateGuid, guidFor } from 'ember-metal/utils';
+import { _instrumentStart } from 'ember-metal/instrumentation';
 import { RootReference } from '../utils/references';
 
 function outletComponentFor(vm) {
@@ -94,6 +95,29 @@ function revalidate(definition, lastState, newState) {
   return null;
 }
 
+function instrumentationPayload({ render: { name, outlet } }) {
+  return { object: `${name}:${outlet}` };
+}
+
+function NOOP() {}
+
+class StateBucket {
+  constructor(outletState) {
+    this.outletState = outletState;
+    this.instrument();
+  }
+
+  instrument() {
+    this.finalizer = _instrumentStart('render.outlet', instrumentationPayload, this.outletState);
+  }
+
+  finalize() {
+    let { finalizer } = this;
+    finalizer();
+    this.finalizer = NOOP;
+  }
+}
+
 class AbstractOutletComponentManager {
   prepareArgs(definition, args) {
     return args;
@@ -103,29 +127,33 @@ class AbstractOutletComponentManager {
     throw new Error('Not implemented: create');
   }
 
-  getSelf(state) {
-    return new RootReference(state.render.controller);
+  getSelf({ outletState }) {
+    return new RootReference(outletState.render.controller);
   }
 
-  getTag(state) {
+  getTag() {
     return null;
   }
 
-  getDestructor(state) {
+  getDestructor() {
     return null;
+  }
+
+  didRenderLayout(bucket) {
+    bucket.finalize();
   }
 
   didCreateElement() {}
-  didRenderLayout() {}
   didCreate(state) {}
-  update(state, args, dynamicScope) {}
+  update(bucket) {}
+  didUpdateLayout(bucket) {}
   didUpdate(state) {}
 }
 
 class TopLevelOutletComponentManager extends AbstractOutletComponentManager {
   create(definition, args, dynamicScope) {
     dynamicScope.isTopLevel = false;
-    return dynamicScope.outletState.value();
+    return new StateBucket(dynamicScope.outletState.value());
   }
 
   layoutFor(definition, bucket, env) {
@@ -140,7 +168,7 @@ class OutletComponentManager extends AbstractOutletComponentManager {
     let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get(definition.outletName);
     let outletState = outletStateReference.value();
     dynamicScope.targetObject = outletState.render.controller;
-    return outletState;
+    return new StateBucket(outletState);
   }
 
   layoutFor(definition, bucket, env) {

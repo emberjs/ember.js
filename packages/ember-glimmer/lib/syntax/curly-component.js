@@ -6,6 +6,7 @@ import processArgs from '../utils/process-args';
 import { privatize as P } from 'container/registry';
 import assign from 'ember-metal/assign';
 import get from 'ember-metal/property_get';
+import { _instrumentStart } from 'ember-metal/instrumentation';
 import { ComponentDefinition } from 'glimmer-runtime';
 import Component from '../component';
 
@@ -116,13 +117,30 @@ export class CurlyComponentSyntax extends StatementSyntax {
   }
 }
 
+function NOOP() {}
+
 class ComponentStateBucket {
-  constructor(component, args) {
+  constructor(component, args, finalizer) {
     this.component = component;
     this.classRef = null;
     this.args = args;
     this.argsRevision = args.tag.value();
+    this.finalizer = finalizer;
   }
+
+  finalize() {
+    let { finalizer } = this;
+    finalizer();
+    this.finalizer = NOOP;
+  }
+}
+
+function initialRenderInstrumentDetails(component) {
+  return component.instrumentDetails({ initialRender: true });
+}
+
+function rerenderInstrumentDetails(component) {
+  return component.instrumentDetails({ initialRender: false });
 }
 
 class CurlyComponentManager {
@@ -177,6 +195,8 @@ class CurlyComponentManager {
 
     let component = klass.create(props);
 
+    let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
+
     dynamicScope.view = component;
     dynamicScope.targetObject = component;
 
@@ -187,7 +207,7 @@ class CurlyComponentManager {
     component.trigger('willInsertElement');
     component.trigger('willRender');
 
-    let bucket = new ComponentStateBucket(component, processedArgs);
+    let bucket = new ComponentStateBucket(component, processedArgs, finalizer);
 
     if (args.named.has('class')) {
       bucket.classRef = args.named.get('class');
@@ -258,8 +278,9 @@ class CurlyComponentManager {
     component._transitionTo('hasElement');
   }
 
-  didRenderLayout({ component }, bounds) {
-    component[BOUNDS] = bounds;
+  didRenderLayout(bucket, bounds) {
+    bucket.component[BOUNDS] = bounds;
+    bucket.finalize();
   }
 
   getTag({ component }) {
@@ -274,6 +295,8 @@ class CurlyComponentManager {
 
   update(bucket, _, dynamicScope) {
     let { component, args, argsRevision } = bucket;
+
+    bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
     if (!args.tag.validate(argsRevision)) {
       let { attrs, props } = args.value();
@@ -295,6 +318,10 @@ class CurlyComponentManager {
     component.trigger('willRender');
   }
 
+  didUpdateLayout(bucket) {
+    bucket.finalize();
+  }
+
   didUpdate({ component }) {
     component.trigger('didUpdate');
     component.trigger('didRender');
@@ -310,6 +337,9 @@ const MANAGER = new CurlyComponentManager();
 class TopComponentManager extends CurlyComponentManager {
   create(definition, args, dynamicScope, hasBlock) {
     let component = definition.ComponentClass;
+
+    let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
+
     dynamicScope.view = component;
     dynamicScope.targetObject = component;
 
@@ -320,7 +350,7 @@ class TopComponentManager extends CurlyComponentManager {
 
     processComponentInitializationAssertions(component, {});
 
-    return new ComponentStateBucket(component, args);
+    return new ComponentStateBucket(component, args, finalizer);
   }
 }
 
