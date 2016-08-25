@@ -1,6 +1,7 @@
 import { setupApplicationRegistry, setupEngineRegistry } from 'ember-glimmer/setup-registry';
 import { default as _buildOwner } from 'container/tests/test-helpers/build-owner';
 import jQuery from 'ember-views/system/jquery';
+import RootTemplate from 'ember-glimmer/templates/root';
 
 export {
   compile,
@@ -38,6 +39,9 @@ export function buildOwner(options) {
 
   owner.register('-view-registry:main', { create() { return {}; } });
   owner.inject('renderer', '_viewRegistry', '-view-registry:main');
+
+  owner.register('template:-root', RootTemplate);
+  owner.inject('renderer', 'rootTemplate', 'template:-root');
 
   return owner;
 }

@@ -1,6 +1,7 @@
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import EmberComponent from '../component';
+import layout from '../templates/empty';
 
 /**
 @module ember
@@ -33,6 +34,7 @@ import EmberComponent from '../component';
   @public
 */
 export default EmberComponent.extend({
+  layout,
   instrumentDisplay: '{{input type="checkbox"}}',
 
   classNames: ['ember-checkbox'],

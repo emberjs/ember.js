@@ -357,10 +357,11 @@ export class AbstractRenderingTest extends TestCase {
 
     let attrs = assign({}, context, {
       tagName: '',
-      template: owner.lookup('template:-top-level')
+      layoutName: '-top-level'
     });
 
     owner.register('component:-top-level', Component.extend(attrs));
+
 
     this.component = owner.lookup('component:-top-level');
 

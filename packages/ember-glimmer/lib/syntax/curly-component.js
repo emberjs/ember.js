@@ -11,6 +11,34 @@ import Component from '../component';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
+function processComponentInitializationAssertions(component, props) {
+  assert(`classNameBindings must not have spaces in them: ${component.toString()}`, (() => {
+    let { classNameBindings } = component;
+    for (let i = 0; i < classNameBindings.length; i++) {
+      let binding = classNameBindings[i];
+      if (binding.split(' ').length > 1) {
+        return false;
+      }
+    }
+    return true;
+  })());
+
+  assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), (() => {
+    let { classNameBindings, tagName } = component;
+    return tagName !== '' || !classNameBindings || classNameBindings.length === 0;
+  })());
+
+  assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
+    let { elementId, tagName } = component;
+    return tagName !== '' || props.id === elementId || (!elementId && elementId !== '');
+  })());
+
+  assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
+    let { attributeBindings, tagName } = component;
+    return tagName !== '' || !attributeBindings || attributeBindings.length === 0;
+  })());
+}
+
 export function validatePositionalParameters(named, positional, positionalParamsDefinition) {
   runInDebug(() => {
     if (!named || !positional || !positional.length) {
@@ -165,31 +193,7 @@ class CurlyComponentManager {
       bucket.classRef = args.named.get('class');
     }
 
-    assert(`classNameBindings must not have spaces in them: ${component.toString()}`, (() => {
-      let { classNameBindings } = component;
-      for (let i = 0; i < classNameBindings.length; i++) {
-        let binding = classNameBindings[i];
-        if (binding.split(' ').length > 1) {
-          return false;
-        }
-      }
-      return true;
-    })());
-
-    assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), (() => {
-      let { classNameBindings, tagName } = component;
-      return tagName !== '' || !classNameBindings || classNameBindings.length === 0;
-    })());
-
-    assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
-      let { elementId, tagName } = component;
-      return tagName !== '' || props.id === elementId || (!elementId && elementId !== '');
-    })());
-
-    assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
-      let { attributeBindings, tagName } = component;
-      return tagName !== '' || !attributeBindings || attributeBindings.length === 0;
-    })());
+    processComponentInitializationAssertions(component, props);
 
     return bucket;
   }
@@ -303,6 +307,25 @@ class CurlyComponentManager {
 
 const MANAGER = new CurlyComponentManager();
 
+class TopComponentManager extends CurlyComponentManager {
+  create(definition, args, dynamicScope, hasBlock) {
+    let component = definition.ComponentClass;
+    dynamicScope.view = component;
+    dynamicScope.targetObject = component;
+
+    component.trigger('didInitAttrs');
+    component.trigger('didReceiveAttrs');
+    component.trigger('willInsertElement');
+    component.trigger('willRender');
+
+    processComponentInitializationAssertions(component, {});
+
+    return new ComponentStateBucket(component, args);
+  }
+}
+
+const ROOT_MANAGER = new TopComponentManager();
+
 function tagName(vm) {
   let { tagName } = vm.dynamicScope().view;
 
@@ -318,6 +341,14 @@ export class CurlyComponentDefinition extends ComponentDefinition {
     super(name, MANAGER, ComponentClass || Component);
     this.template = template;
     this.args = args;
+  }
+}
+
+export class RootComponentDefinition extends ComponentDefinition {
+  constructor(instance) {
+    super('-root', ROOT_MANAGER, instance);
+    this.template = undefined;
+    this.args = undefined;
   }
 }
 
