@@ -4,6 +4,7 @@
 */
 import { ENV } from 'ember-environment';
 import { assert, debug } from 'ember-metal/debug';
+import dictionary from 'ember-metal/dictionary';
 import libraries from 'ember-metal/libraries';
 import { isTesting } from 'ember-metal/testing';
 import { get } from 'ember-metal/property_get';
@@ -1037,7 +1038,7 @@ Application.reopenClass({
 });
 
 function commonSetupRegistry(registry) {
-  registry.register('-view-registry:main', { create() { return {}; } });
+  registry.register('-view-registry:main', { create() { return dictionary(null); } });
 
   registry.register('route:basic', Route);
   registry.register('event_dispatcher:main', EventDispatcher);

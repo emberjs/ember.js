@@ -18,6 +18,7 @@ export { DOMChanges } from 'glimmer-runtime';
 export { InteractiveRenderer, InertRenderer } from 'ember-glimmer/renderer';
 export { default as makeBoundHelper } from 'ember-glimmer/make-bound-helper';
 export { htmlSafe, SafeString } from 'ember-glimmer/utils/string';
+import dictionary from 'ember-metal/dictionary';
 
 export function buildOwner(options) {
   let owner = _buildOwner(options);
@@ -37,7 +38,7 @@ export function buildOwner(options) {
   owner.inject('component', 'renderer', 'renderer:-dom');
   owner.inject('template', 'env', 'service:-glimmer-environment');
 
-  owner.register('-view-registry:main', { create() { return {}; } });
+  owner.register('-view-registry:main', { create() { return dictionary(null); } });
   owner.inject('renderer', '_viewRegistry', '-view-registry:main');
 
   owner.register('template:-root', RootTemplate);
