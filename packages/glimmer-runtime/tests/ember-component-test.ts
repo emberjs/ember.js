@@ -1049,6 +1049,76 @@ testComponent('correct scope - conflicting block param and attr names', {
   expected: 'Outer: from attr Inner: from attr Block: from block'
 });
 
+QUnit.test('correct scope - accessing local variable in yielded block (glimmer component)', assert => {
+  class FooBar extends BasicComponent {}
+
+  env.registerBasicComponent('foo-bar', FooBar, `[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{@foo}}]{{yield}}`);
+
+  appendViewFor(
+    stripTight`
+      <div>
+        [Outside: {{zomg}}]
+        {{#with zomg as |lol|}}
+          [Inside: {{zomg}}]
+          [Inside: {{lol}}]
+          <foo-bar @foo={{zomg}}>
+            [Block: {{zomg}}]
+            [Block: {{lol}}]
+          </foo-bar>
+        {{/with}}
+      </div>`,
+    { zomg: "zomg" }
+  );
+
+  equalsElement(view.element, 'div', {},
+      stripTight`
+        [Outside: zomg]
+        [Inside: zomg]
+        [Inside: zomg]
+        [Layout: ]
+        [Layout: ]
+        [Layout: zomg]
+        [Block: zomg]
+        [Block: zomg]`
+  );
+});
+
+QUnit.test('correct scope - accessing local variable in yielded block (curly component)', assert => {
+  class FooBar extends EmberishCurlyComponent {
+    public tagName = '';
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, `[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{foo}}]{{yield}}`);
+
+  appendViewFor(
+    stripTight`
+      <div>
+        [Outside: {{zomg}}]
+        {{#with zomg as |lol|}}
+          [Inside: {{zomg}}]
+          [Inside: {{lol}}]
+          {{#foo-bar foo=zomg}}
+            [Block: {{zomg}}]
+            [Block: {{lol}}]
+          {{/foo-bar}}
+        {{/with}}
+      </div>`,
+    { zomg: "zomg" }
+  );
+
+  equalsElement(view.element, 'div', {},
+      stripTight`
+        [Outside: zomg]
+        [Inside: zomg]
+        [Inside: zomg]
+        [Layout: ]
+        [Layout: ]
+        [Layout: zomg]
+        [Block: zomg]
+        [Block: zomg]`
+  );
+});
+
 QUnit.test('correct scope - self', assert => {
   class FooBar extends BasicComponent {
     public foo = 'foo';
