@@ -42,10 +42,11 @@ moduleFor('ember-views/system/utils', class extends RenderingTest {
 
     this.render(`{{hi-mom}}`);
 
-    let bounds = getViewBounds(component);
+    let { parentElement, firstNode, lastNode } = getViewBounds(component);
 
-    assert.equal(bounds.firstNode(), component.element, 'a regular component should have a single node that is its element');
-    assert.equal(bounds.lastNode(), component.element, 'a regular component should have a single node that is its element');
+    assert.equal(parentElement, this.element, 'a regular component should have the right parentElement');
+    assert.equal(firstNode, component.element, 'a regular component should have a single node that is its element');
+    assert.equal(lastNode, component.element, 'a regular component should have a single node that is its element');
   }
 
   ['@test getViewBounds on a tagless component'](assert) {
@@ -63,10 +64,11 @@ moduleFor('ember-views/system/utils', class extends RenderingTest {
 
     this.render(`{{hi-mom}}`);
 
-    let bounds = getViewBounds(component);
+    let { parentElement, firstNode, lastNode } = getViewBounds(component);
 
-    assert.equal(bounds.firstNode(), this.$('#start-node')[0], 'a tagless component should have a range enclosing all of its nodes');
-    assert.equal(bounds.lastNode(), this.$('#before-end-node')[0].nextSibling, 'a tagless component should have a range enclosing all of its nodes');
+    assert.equal(parentElement, this.element, 'a regular component should have the right parentElement');
+    assert.equal(firstNode, this.$('#start-node')[0], 'a tagless component should have a range enclosing all of its nodes');
+    assert.equal(lastNode, this.$('#before-end-node')[0].nextSibling, 'a tagless component should have a range enclosing all of its nodes');
   }
 
   ['@test getViewClientRects'](assert) {
@@ -91,7 +93,7 @@ moduleFor('ember-views/system/utils', class extends RenderingTest {
     assert.ok(getViewClientRects(component) instanceof ClientRectListCtor);
   }
 
-  ['@test getViewBoudningClientRect'](assert) {
+  ['@test getViewBoundingClientRect'](assert) {
     if (!hasGetBoundingClientRect || !ClientRectCtor) {
       assert.ok(true, 'The test environment does not support the DOM API required to run this test.');
       return;

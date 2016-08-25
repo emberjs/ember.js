@@ -157,7 +157,13 @@ class Renderer {
   }
 
   getBounds(view) {
-    return view[BOUNDS];
+    let bounds = view[BOUNDS];
+
+    let parentElement = bounds.parentElement();
+    let firstNode = bounds.firstNode();
+    let lastNode = bounds.lastNode();
+
+    return { parentElement, firstNode, lastNode };
   }
 
   _renderRoot(root, template, self, parentElement, dynamicScope) {
