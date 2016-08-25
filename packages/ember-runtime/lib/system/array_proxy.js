@@ -2,7 +2,7 @@ import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import {
   isArray
-} from 'ember-runtime/utils';
+} from '../utils';
 import { computed } from 'ember-metal/computed';
 import {
   _beforeObserver,
@@ -13,9 +13,9 @@ import {
   endPropertyChanges
 } from 'ember-metal/property_events';
 import EmberError from 'ember-metal/error';
-import EmberObject from 'ember-runtime/system/object';
-import MutableArray from 'ember-runtime/mixins/mutable_array';
-import Enumerable from 'ember-runtime/mixins/enumerable';
+import EmberObject from './object';
+import MutableArray from '../mixins/mutable_array';
+import Enumerable from '../mixins/enumerable';
 import alias from 'ember-metal/alias';
 import {
   addArrayObserver,
@@ -23,7 +23,7 @@ import {
   arrayContentDidChange,
   arrayContentWillChange,
   objectAt
-} from 'ember-runtime/mixins/array';
+} from '../mixins/array';
 
 /**
 @module ember

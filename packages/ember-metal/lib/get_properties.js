@@ -1,4 +1,4 @@
-import { get } from 'ember-metal/property_get';
+import { get } from './property_get';
 
 /**
   To get multiple properties at once, call `Ember.getProperties`

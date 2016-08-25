@@ -1,5 +1,5 @@
-import { warn } from 'ember-metal/debug';
-import isEnabled from 'ember-metal/features';
+import { warn } from './debug';
+import isEnabled from './features';
 
 /**
   Helper class that allows you to register your library with Ember.

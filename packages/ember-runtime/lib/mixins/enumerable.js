@@ -27,7 +27,7 @@ import {
   sendEvent,
   hasListeners
 } from 'ember-metal/events';
-import compare from 'ember-runtime/compare';
+import compare from '../compare';
 import require from 'require';
 import { assert, deprecate } from 'ember-metal/debug';
 

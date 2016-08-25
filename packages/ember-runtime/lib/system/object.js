@@ -3,8 +3,8 @@
 @submodule ember-runtime
 */
 
-import CoreObject from 'ember-runtime/system/core_object';
-import Observable from 'ember-runtime/mixins/observable';
+import CoreObject from './core_object';
+import Observable from '../mixins/observable';
 
 /**
   `Ember.Object` is the main base class for all Ember objects. It is a subclass

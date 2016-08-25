@@ -1,5 +1,5 @@
-import { get } from 'ember-metal/property_get';
-import isNone from 'ember-metal/is_none';
+import { get } from './property_get';
+import isNone from './is_none';
 
 /**
   Verifies that a value is `null` or an empty string, empty array,

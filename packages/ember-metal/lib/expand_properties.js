@@ -1,4 +1,4 @@
-import { assert } from 'ember-metal/debug';
+import { assert } from './debug';
 
 /**
 @module ember

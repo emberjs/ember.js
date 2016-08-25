@@ -1,7 +1,7 @@
-import { get } from 'ember-metal/property_get';
-import { meta as metaFor, peekMeta } from 'ember-metal/meta';
-import { watchKey, unwatchKey } from 'ember-metal/watch_key';
-import EmptyObject from 'ember-metal/empty_object';
+import { get } from './property_get';
+import { meta as metaFor, peekMeta } from './meta';
+import { watchKey, unwatchKey } from './watch_key';
+import EmptyObject from './empty_object';
 
 const FIRST_KEY = /^([^\.]+)/;
 

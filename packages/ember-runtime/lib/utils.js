@@ -1,5 +1,5 @@
-import EmberArray from 'ember-runtime/mixins/array';
-import EmberObject from 'ember-runtime/system/object';
+import EmberArray from './mixins/array';
+import EmberObject from './system/object';
 
 // ........................................
 // TYPING & ARRAY MESSAGING

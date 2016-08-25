@@ -15,7 +15,7 @@ import {
   NAME_KEY
 } from 'ember-metal/mixin';
 
-import EmberObject from 'ember-runtime/system/object';
+import EmberObject from './object';
 
 let searchDisabled = false;
 

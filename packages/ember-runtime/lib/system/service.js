@@ -1,5 +1,5 @@
-import EmberObject from 'ember-runtime/system/object';
-import { createInjectionHelper } from 'ember-runtime/inject';
+import EmberObject from './object';
+import { createInjectionHelper } from '../inject';
 
 
 /**

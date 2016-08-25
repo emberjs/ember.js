@@ -1,4 +1,4 @@
-import { GUID_KEY, intern } from 'ember-metal/utils';
+import { GUID_KEY, intern } from './utils';
 
 export default function symbol(debugName) {
   // TODO: Investigate using platform symbols, but we do not

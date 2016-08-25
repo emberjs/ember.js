@@ -1,7 +1,7 @@
 import {
   meta as metaFor
-} from 'ember-metal/meta';
-import { ChainNode } from 'ember-metal/chains';
+} from './meta';
+import { ChainNode } from './chains';
 
 // get the chains for the current object. If the current object has
 // chains inherited from the proto they will be cloned and reconfigured for

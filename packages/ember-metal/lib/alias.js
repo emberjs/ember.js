@@ -1,18 +1,18 @@
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import EmberError from 'ember-metal/error';
+import { assert } from './debug';
+import { get } from './property_get';
+import { set } from './property_set';
+import EmberError from './error';
 import {
   Descriptor,
   defineProperty
-} from 'ember-metal/properties';
-import { ComputedProperty } from 'ember-metal/computed';
-import { inspect } from 'ember-metal/utils';
-import { meta } from 'ember-metal/meta';
+} from './properties';
+import { ComputedProperty } from './computed';
+import { inspect } from './utils';
+import { meta } from './meta';
 import {
   addDependentKeys,
   removeDependentKeys
-} from 'ember-metal/dependent_keys';
+} from './dependent_keys';
 
 export default function alias(altKey) {
   return new AliasedProperty(altKey);

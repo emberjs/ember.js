@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import isEnabled from 'ember-metal/features';
+import isEnabled from './features';
 
 /**
   The purpose of the Ember Instrumentation module is

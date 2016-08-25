@@ -20,8 +20,8 @@
   Map is mocked out to look like an Ember object, so you can do
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
-import { guidFor } from 'ember-metal/utils';
-import EmptyObject from 'ember-metal/empty_object';
+import { guidFor } from './utils';
+import EmptyObject from './empty_object';
 
 function missingFunction(fn) {
   throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);

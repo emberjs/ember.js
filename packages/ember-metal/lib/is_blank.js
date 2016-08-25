@@ -1,4 +1,4 @@
-import isEmpty from 'ember-metal/is_empty';
+import isEmpty from './is_empty';
 
 /**
   A value is blank if it is empty or a whitespace string.

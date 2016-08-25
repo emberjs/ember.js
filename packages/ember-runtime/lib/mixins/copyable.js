@@ -6,7 +6,7 @@
 import { deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { Mixin } from 'ember-metal/mixin';
-import { Freezable } from 'ember-runtime/mixins/freezable';
+import { Freezable } from './freezable';
 import EmberError from 'ember-metal/error';
 
 /**

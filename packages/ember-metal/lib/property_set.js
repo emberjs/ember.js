@@ -1,23 +1,23 @@
-import { assert } from 'ember-metal/debug';
-import isEnabled from 'ember-metal/features';
-import { _getPath as getPath } from 'ember-metal/property_get';
+import { assert } from './debug';
+import isEnabled from './features';
+import { _getPath as getPath } from './property_get';
 import {
   propertyWillChange,
   propertyDidChange
-} from 'ember-metal/property_events';
+} from './property_events';
 
-import EmberError from 'ember-metal/error';
+import EmberError from './error';
 import {
   isPath,
   hasThis as pathHasThis
-} from 'ember-metal/path_cache';
+} from './path_cache';
 import {
   peekMeta
-} from 'ember-metal/meta';
+} from './meta';
 
 import {
   toString
-} from 'ember-metal/utils';
+} from './utils';
 
 /**
   Sets the value of a property on an object, respecting computed properties

@@ -1,5 +1,5 @@
-import { typeOf } from 'ember-runtime/utils';
-import Comparable from 'ember-runtime/mixins/comparable';
+import { typeOf } from './utils';
+import Comparable from './mixins/comparable';
 
 const TYPE_ORDER = {
   'undefined': 0,

@@ -17,8 +17,8 @@ import {
   propertyWillChange,
   propertyDidChange
 } from 'ember-metal/property_events';
-import { bool } from 'ember-runtime/computed/computed_macros';
-import { POST_INIT } from 'ember-runtime/system/core_object';
+import { bool } from '../computed/computed_macros';
+import { POST_INIT } from '../system/core_object';
 import { defineProperty } from 'ember-metal/properties';
 import { Mixin, observer } from 'ember-metal/mixin';
 import { tagFor } from 'ember-metal/tags';
