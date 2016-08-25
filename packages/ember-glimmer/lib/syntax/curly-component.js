@@ -11,6 +11,34 @@ import Component from '../component';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
+function processComponentInitializationAssertions(component, props) {
+  assert(`classNameBindings must not have spaces in them: ${component.toString()}`, (() => {
+    let { classNameBindings } = component;
+    for (let i = 0; i < classNameBindings.length; i++) {
+      let binding = classNameBindings[i];
+      if (binding.split(' ').length > 1) {
+        return false;
+      }
+    }
+    return true;
+  })());
+
+  assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), (() => {
+    let { classNameBindings, tagName } = component;
+    return tagName !== '' || !classNameBindings || classNameBindings.length === 0;
+  })());
+
+  assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
+    let { elementId, tagName } = component;
+    return tagName !== '' || props.id === elementId || (!elementId && elementId !== '');
+  })());
+
+  assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
+    let { attributeBindings, tagName } = component;
+    return tagName !== '' || !attributeBindings || attributeBindings.length === 0;
+  })());
+}
+
 export function validatePositionalParameters(named, positional, positionalParamsDefinition) {
   runInDebug(() => {
     if (!named || !positional || !positional.length) {
@@ -165,31 +193,7 @@ class CurlyComponentManager {
       bucket.classRef = args.named.get('class');
     }
 
-    assert(`classNameBindings must not have spaces in them: ${component.toString()}`, (() => {
-      let { classNameBindings } = component;
-      for (let i = 0; i < classNameBindings.length; i++) {
-        let binding = classNameBindings[i];
-        if (binding.split(' ').length > 1) {
-          return false;
-        }
-      }
-      return true;
-    })());
-
-    assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), (() => {
-      let { classNameBindings, tagName } = component;
-      return tagName !== '' || !classNameBindings || classNameBindings.length === 0;
-    })());
-
-    assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
-      let { elementId, tagName } = component;
-      return tagName !== '' || props.id === elementId || (!elementId && elementId !== '');
-    })());
-
-    assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
-      let { attributeBindings, tagName } = component;
-      return tagName !== '' || !attributeBindings || attributeBindings.length === 0;
-    })());
+    processComponentInitializationAssertions(component, props);
 
     return bucket;
   }
@@ -314,31 +318,7 @@ class TopComponentManager extends CurlyComponentManager {
     component.trigger('willInsertElement');
     component.trigger('willRender');
 
-    assert(`classNameBindings must not have spaces in them: ${component.toString()}`, (() => {
-      let { classNameBindings } = component;
-      for (let i = 0; i < classNameBindings.length; i++) {
-        let binding = classNameBindings[i];
-        if (binding.split(' ').length > 1) {
-          return false;
-        }
-      }
-      return true;
-    })());
-
-    assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), (() => {
-      let { classNameBindings, tagName } = component;
-      return tagName !== '' || !classNameBindings || classNameBindings.length === 0;
-    })());
-
-    assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
-      let { elementId, tagName } = component;
-      return tagName !== '' || (!elementId && elementId !== '');
-    })());
-
-    assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
-      let { attributeBindings, tagName } = component;
-      return tagName !== '' || !attributeBindings || attributeBindings.length === 0;
-    })());
+    processComponentInitializationAssertions(component, {});
 
     return new ComponentStateBucket(component, args);
   }
