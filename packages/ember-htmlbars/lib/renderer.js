@@ -282,31 +282,10 @@ Renderer.prototype.didDestroyElement = function (view) {
   }
 };
 
-class ConcreteBounds {
-  constructor(parent, first, last) {
-    this.parent = parent;
-    this.first  = first;
-    this.last   = last;
-  }
-
-  parentElement() {
-    return this.parent;
-  }
-
-  firstNode() {
-    return this.first;
-  }
-
-  lastNode() {
-    return this.last;
-  }
-}
-
 Renderer.prototype.getBounds = function (view) {
-  let first = view._renderNode.firstNode;
-  let last = view._renderNode.lastNode;
-  let parent = first.parentElement;
-  return new ConcreteBounds(parent, first, last);
+  let { firstNode, lastNode } = view._renderNode;
+  let parentElement = firstNode.parentElement;
+  return { parentElement, firstNode, lastNode };
 };
 
 Renderer.prototype.register = function Renderer_register(view) {

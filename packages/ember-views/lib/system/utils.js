@@ -36,8 +36,8 @@ export function getViewRange(view) {
   let bounds = getViewBounds(view);
 
   let range = document.createRange();
-  range.setStartBefore(bounds.firstNode());
-  range.setEndAfter(bounds.lastNode());
+  range.setStartBefore(bounds.firstNode);
+  range.setEndAfter(bounds.lastNode);
 
   return range;
 }
