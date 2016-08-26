@@ -235,7 +235,7 @@ OrderedSet.prototype = {
 
   @class Map
   @namespace Ember
-  @private
+  @public
   @constructor
 */
 function Map() {
@@ -252,7 +252,7 @@ function Map() {
 /**
   @method create
   @static
-  @private
+  @public
 */
 Map.create = function() {
   let Constructor = this;
@@ -269,7 +269,7 @@ Map.prototype = {
     @property size
     @type number
     @default 0
-    @private
+    @public
   */
   size: 0,
 
@@ -279,7 +279,7 @@ Map.prototype = {
     @method get
     @param {*} key
     @return {*} the value associated with the key, or `undefined`
-    @private
+    @public
   */
   get(key) {
     if (this.size === 0) { return; }
@@ -298,7 +298,7 @@ Map.prototype = {
     @param {*} key
     @param {*} value
     @return {Ember.Map}
-    @private
+    @public
   */
   set(key, value) {
     let keys = this._keys;
@@ -324,7 +324,7 @@ Map.prototype = {
     @method delete
     @param {*} key
     @return {Boolean} true if an item was removed, false otherwise
-    @private
+    @public
   */
   delete(key) {
     if (this.size === 0) { return false; }
@@ -349,7 +349,7 @@ Map.prototype = {
     @method has
     @param {*} key
     @return {Boolean} true if the item was present, false otherwise
-    @private
+    @public
   */
   has(key) {
     return this._keys.has(key);
@@ -366,7 +366,7 @@ Map.prototype = {
     @param {Function} callback
     @param {*} self if passed, the `this` value inside the
       callback. By default, `this` is the map.
-    @private
+    @public
   */
   forEach(callback/*, ...thisArg*/) {
     if (typeof callback !== 'function') {
@@ -390,7 +390,7 @@ Map.prototype = {
 
   /**
     @method clear
-    @private
+    @public
   */
   clear() {
     this._keys.clear();
@@ -412,7 +412,7 @@ Map.prototype = {
   @class MapWithDefault
   @namespace Ember
   @extends Ember.Map
-  @private
+  @public
   @constructor
   @param [options]
     @param {*} [options.defaultValue]
@@ -429,7 +429,7 @@ function MapWithDefault(options) {
     @param {*} [options.defaultValue]
   @return {Ember.MapWithDefault|Ember.Map} If options are passed, returns
     `Ember.MapWithDefault` otherwise returns `Ember.Map`
-  @private
+  @public
 */
 MapWithDefault.create = function(options) {
   if (options) {
@@ -450,7 +450,7 @@ MapWithDefault.prototype._super$get = Map.prototype.get;
   @method get
   @param {*} key
   @return {*} the value associated with the key, or the default value
-  @private
+  @public
 */
 MapWithDefault.prototype.get = function(key) {
   let hasValue = this.has(key);
