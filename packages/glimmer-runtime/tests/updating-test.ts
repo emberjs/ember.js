@@ -637,30 +637,6 @@ test("helpers can add destroyables", assert => {
   strictEqual(destroyable.count, 1, 'is destroyed');
 });
 
-test("dynamically scoped keywords can be passed to render, and used in curlies", assert => {
-  let template = compile("{{view.name}}");
-  let view = { name: 'Godfrey' };
-  let viewRef = new UpdatableReference(view);
-
-  render(template, {}, viewRef);
-
-  equalTokens(root, 'Godfrey', "Initial render");
-
-  rerender();
-
-  equalTokens(root, 'Godfrey', "Noop rerender");
-
-  view.name = 'Godhuda';
-  rerender();
-
-  equalTokens(root, 'Godhuda', "Update with mutation");
-
-  viewRef.update({ name: 'Godfrey' });
-  rerender();
-
-  equalTokens(root, 'Godfrey', "Reset with replacement");
-});
-
 test("updating a curly with this", () => {
   let object = { value: 'hello world' };
   let template = compile('<div><p>{{this.value}}</p></div>');
@@ -679,67 +655,6 @@ test("updating a curly with this", () => {
 
   equalTokens(root, '<div><p>goodbye world</p></div>', "After updating and dirtying");
   strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
-});
-
-test("changing dynamic scope", assert => {
-  let template = compile("{{view.name}} {{#with-keywords view=innerView}}{{view.name}}{{/with-keywords}} {{view.name}}");
-  let view = { name: 'Godfrey' };
-  let viewRef = new UpdatableReference(view);
-  let innerView = { name: 'Yehuda' };
-
-  render(template, { innerView }, viewRef);
-
-  equalTokens(root, 'Godfrey Yehuda Godfrey', "Initial render");
-
-  rerender();
-
-  equalTokens(root, 'Godfrey Yehuda Godfrey', "Noop rerender");
-
-  innerView.name = 'Tom';
-  rerender();
-
-  equalTokens(root, 'Godfrey Tom Godfrey', "Update with mutation");
-
-  view.name = 'Godhuda';
-  rerender();
-
-  equalTokens(root, 'Godhuda Tom Godhuda', "Update with mutation");
-
-  self.update({ innerView: { name: 'Yehuda' } });
-  viewRef.update({ name: 'Godfrey' });
-  rerender();
-
-  equalTokens(root, 'Godfrey Yehuda Godfrey', "Reset with replacement");
-});
-
-test("changing dynamic scope derived from another keyword from the outer scope", assert => {
-  let template = compile("{{view.name}} {{#with-keywords view=view.innerView}}{{view.name}}{{/with-keywords}} {{view.name}}");
-  let innerView = { name: 'Yehuda' };
-  let view = { name: 'Godfrey', innerView };
-  let viewRef = new UpdatableReference(view);
-
-  render(template, { innerView }, viewRef);
-
-  equalTokens(root, 'Godfrey Yehuda Godfrey', "Initial render");
-
-  rerender();
-
-  equalTokens(root, 'Godfrey Yehuda Godfrey', "Noop rerender");
-
-  innerView.name = 'Tom';
-  rerender();
-
-  equalTokens(root, 'Godfrey Tom Godfrey', "Update with mutation");
-
-  view.name = 'Godhuda';
-  rerender();
-
-  equalTokens(root, 'Godhuda Tom Godhuda', "Update with mutation");
-
-  viewRef.update({ name: 'Godfrey', innerView: { name: 'Yehuda' } });
-  rerender();
-
-  equalTokens(root, 'Godfrey Yehuda Godfrey', "Reset with replacement");
 });
 
 test("a simple implementation of a dirtying rerender", function() {

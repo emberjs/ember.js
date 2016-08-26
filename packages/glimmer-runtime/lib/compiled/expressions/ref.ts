@@ -33,33 +33,6 @@ export abstract class CompiledSymbolRef extends CompiledExpression<any> {
   }
 }
 
-export class CompiledKeywordRef {
-  public type = "keyword-ref";
-  public name: string;
-  public path: string[];
-
-  constructor({ name, path }: { name: string, path: string[] }) {
-    this.name = name;
-    this.path = path;
-  }
-
-  evaluate(vm: VM): PathReference<any> {
-    let base = vm.dynamicScope()[this.name] as PathReference<any>;;
-    return referenceFromParts(base, this.path);
-  }
-
-  toJSON(): string {
-    let { name, path } = this;
-
-    if (path.length) {
-      return `$KEYWORDS[${name}].${path.join('.')}`;
-    } else {
-      return `$KEYWORDS[${name}]`;
-    }
-  }
-
-}
-
 export class CompiledLocalRef extends CompiledSymbolRef {
   public type = "local-ref";
 
