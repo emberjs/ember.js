@@ -5,7 +5,8 @@ import { VM, UpdatingVM } from '../../vm';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { Templates } from '../../syntax/core';
 import { DynamicScope } from '../../environment';
-import { PathReference, ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
+import Bounds from '../../bounds';
+import { CONSTANT_TAG, PathReference, ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
 import { FIXME } from 'glimmer-util';
 
 export class PutDynamicComponentDefinitionOpcode extends Opcode {
@@ -168,11 +169,31 @@ export class DidRenderLayoutOpcode extends Opcode {
   public type = "did-render-layout";
 
   evaluate(vm: VM) {
-    let bounds = vm.stack().popBlock();
-    let component = vm.frame.getComponent();
     let manager = vm.frame.getManager();
+    let component = vm.frame.getComponent();
+    let bounds = vm.stack().popBlock();
 
     manager.didRenderLayout(component, bounds);
+
+    vm.updateWith(new DidUpdateLayoutOpcode(manager, component, bounds));
+  }
+}
+
+export class DidUpdateLayoutOpcode extends UpdatingOpcode {
+  public type = "did-update-layout";
+  public tag = CONSTANT_TAG;
+
+  constructor(
+    private manager: ComponentManager<Component>,
+    private component: Component,
+    private bounds: Bounds
+  ) {
+    super();
+  }
+
+  evaluate() {
+    let { manager, component, bounds } = this;
+    manager.didUpdateLayout(component, bounds);
   }
 }
 

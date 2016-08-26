@@ -328,6 +328,8 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     component.attrs = attrs.named.value();
   }
 
+  didUpdateLayout() {}
+
   didUpdate() {}
 
   getDestructor() {
@@ -409,6 +411,8 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     component.willUpdate();
     component.willRender();
   }
+
+  didUpdateLayout() {}
 
   didUpdate(component: EmberishGlimmerComponent) {
     component.didUpdate();
@@ -545,6 +549,8 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     component.willUpdate();
     component.willRender();
   }
+
+  didUpdateLayout() {}
 
   didUpdate(component: EmberishCurlyComponent) {
     component.didUpdate();
