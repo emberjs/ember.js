@@ -109,6 +109,10 @@ export class TestCase {
 
   teardown() {}
 
+  runTask(callback) {
+    run(callback);
+  }
+
   // The following methods require `this.element` to work
 
   get firstChild() {
@@ -373,10 +377,6 @@ export class AbstractRenderingTest extends TestCase {
 
   rerender() {
     this.component.rerender();
-  }
-
-  runTask(callback) {
-    run(callback);
   }
 
   registerHelper(name, funcOrClassBody) {
