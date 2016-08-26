@@ -1,9 +1,9 @@
 import { Program, Statement as StatementSyntax } from './syntax';
 import buildStatement from './syntax/statements';
-import { TopLevelTemplate, EntryPoint, InlineBlock, PartialBlock, Layout } from './compiled/blocks';
+import { EntryPoint, InlineBlock, PartialBlock, Layout } from './compiled/blocks';
 import Environment from './environment';
 import { EMPTY_SLICE, LinkedList, Stack } from 'glimmer-util';
-import { SerializedTemplate, SerializedBlock, Statement as SerializedStatement, BlockMeta } from 'glimmer-wire-format';
+import { SerializedTemplate, SerializedBlock, Statement as SerializedStatement } from 'glimmer-wire-format';
 import SymbolTable from './symbol-table';
 
 export default class Scanner {
@@ -16,59 +16,40 @@ export default class Scanner {
   }
 
   scanEntryPoint(): EntryPoint {
-    return this.scanTop<EntryPoint>(({ program, children }) => {
-      let { meta } = this.spec;
-      return EntryPoint.create({ children, program, symbolTable: null, meta });
-    });
+    let { spec } = this;
+    let { blocks, meta } = this.spec;
+
+    let symbolTable = SymbolTable.forEntryPoint(meta);
+    let program = buildStatements(spec, blocks, symbolTable, this.env);
+    return new EntryPoint(program, symbolTable);
   }
 
   scanLayout(): Layout {
-    return this.scanTop<Layout>(({ program, children }) => {
-      let { named, yields, meta } = this.spec;
-      return Layout.create({ children, program, named, yields, symbolTable: null, meta });
-    });
+    let { spec } = this;
+    let { blocks, named, yields, meta } = this.spec;
+
+    let symbolTable = SymbolTable.forLayout(named, yields, meta);
+    let program = buildStatements(spec, blocks, symbolTable, this.env);
+
+    return new Layout(program, symbolTable, named, yields);
   }
 
   scanPartial(symbolTable: SymbolTable): PartialBlock {
-    return this.scanTop<PartialBlock>(({ program, children }) => {
-      let { locals, meta } = this.spec;
-      return new PartialBlock({ children, program, locals, symbolTable, meta });
-    });
-  }
-
-  private scanTop<T extends TopLevelTemplate>(makeTop: (options: { program: Program, children: InlineBlock[] }) => T): T {
     let { spec } = this;
-    let { blocks: specBlocks, meta } = spec;
+    let { blocks, locals } = this.spec;
 
-    let blocks: InlineBlock[] = [];
+    let program = buildStatements(spec, blocks, symbolTable, this.env);
 
-    for (let i = 0, block: SerializedBlock; block = specBlocks[i]; i++) {
-      blocks.push(this.buildBlock(block, blocks, meta));
-    }
-
-    return makeTop(this.buildStatements(spec, blocks)).initBlocks();
-  }
-
-  private buildBlock(block: SerializedBlock, blocks: InlineBlock[], meta: BlockMeta): InlineBlock{
-    let { program, children } = this.buildStatements(block, blocks);
-    return new InlineBlock({ children, locals: block.locals, program, symbolTable: null, meta });
-  }
-
-  private buildStatements({ statements }: SerializedBlock, blocks: InlineBlock[]): ScanResults {
-    if (statements.length === 0) return EMPTY_PROGRAM;
-    return new BlockScanner(statements, blocks, this.env).scan();
+    return new PartialBlock(program, symbolTable, locals);
   }
 }
 
-interface ScanResults {
-  program: Program;
-  children: InlineBlock[];
+function buildStatements({ statements }: SerializedBlock, blocks: SerializedBlock[], symbolTable: SymbolTable, env: Environment): Program {
+  if (statements.length === 0) return EMPTY_PROGRAM;
+  return new BlockScanner(statements, blocks, symbolTable, env).scan();
 }
 
-const EMPTY_PROGRAM = {
-  program: EMPTY_SLICE,
-  children: []
-};
+const EMPTY_PROGRAM = EMPTY_SLICE;
 
 export class BlockScanner {
   public env: Environment;
@@ -76,29 +57,37 @@ export class BlockScanner {
   private stack = new Stack<ChildBlockScanner>();
   private reader: SyntaxReader;
 
-  constructor(statements: SerializedStatement[], blocks: InlineBlock[], env: Environment) {
-    this.stack.push(new ChildBlockScanner());
-    this.reader = new SyntaxReader(statements, blocks);
+  constructor(statements: SerializedStatement[], private blocks: SerializedBlock[], private symbolTable: SymbolTable, env: Environment) {
+    this.stack.push(new ChildBlockScanner(symbolTable));
+    this.reader = new SyntaxReader(statements, symbolTable, this);
     this.env = env;
   }
 
-  scan(): ScanResults {
+  scan(): Program {
     let statement: StatementSyntax;
 
     while (statement = this.reader.next()) {
       this.addStatement(statement);
     }
 
-    return { program: this.stack.current.program, children: this.stack.current.children };
+    return this.stack.current.program;
   }
 
-  startBlock() {
-    this.stack.push(new ChildBlockScanner());
+  blockFor(symbolTable: SymbolTable, id: number): InlineBlock {
+    let block = this.blocks[id];
+    let childTable = SymbolTable.forBlock(this.symbolTable, block.locals);
+    let program = buildStatements(block, this.blocks, childTable, this.env);
+    return new InlineBlock(program, childTable, block.locals);
   }
 
-  endBlock(): InlineBlock {
-    let { children, program } = this.stack.pop();
-    let block = new InlineBlock({ children, program, symbolTable: null, meta: null, locals: [] });
+  startBlock(locals: string[]) {
+    let childTable = SymbolTable.forBlock(this.symbolTable, locals);
+    this.stack.push(new ChildBlockScanner(childTable));
+  }
+
+  endBlock(locals: string[]): InlineBlock {
+    let { program, symbolTable } = this.stack.pop();
+    let block = new InlineBlock(program, symbolTable, locals);
     this.addChild(block);
     return block;
   }
@@ -114,15 +103,13 @@ export class BlockScanner {
   next(): StatementSyntax {
     return this.reader.next();
   }
-
-  unput(statement: StatementSyntax) {
-    this.reader.unput(statement);
-  }
 }
 
 class ChildBlockScanner {
   public children: InlineBlock[] = [];
   public program = new LinkedList<StatementSyntax>();
+
+  constructor(public symbolTable: SymbolTable) {}
 
   addChild(block: InlineBlock) {
     this.children.push(block);
@@ -134,19 +121,10 @@ class ChildBlockScanner {
 }
 
 export class SyntaxReader {
-  statements: SerializedStatement[];
   current: number = 0;
-  blocks: InlineBlock[];
   last: StatementSyntax = null;
 
-  constructor(statements: SerializedStatement[], blocks: InlineBlock[]) {
-    this.statements = statements;
-    this.blocks = blocks;
-  }
-
-  unput(statement: StatementSyntax) {
-    this.last = statement;
-  }
+  constructor(private statements: SerializedStatement[], private symbolTable: SymbolTable, private scanner: BlockScanner) {}
 
   next(): StatementSyntax {
     let last = this.last;
@@ -158,6 +136,6 @@ export class SyntaxReader {
     }
 
     let sexp = this.statements[this.current++];
-    return buildStatement(sexp, this.blocks);
+    return buildStatement(sexp, this.symbolTable, this.scanner);
   }
 }

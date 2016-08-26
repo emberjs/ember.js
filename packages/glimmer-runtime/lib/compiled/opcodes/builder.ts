@@ -6,18 +6,15 @@ import * as vm from './vm';
 import * as Syntax from '../../syntax/core';
 
 import { Stack, Dict, Opaque, dict } from 'glimmer-util';
-import { StatementCompilationBuffer } from '../../syntax';
+import { StatementCompilationBuffer, CompilesInto } from '../../syntax';
 import { Opcode, OpSeq } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
 import { CompiledExpression } from '../expressions';
 import { ComponentDefinition } from '../../component/interfaces';
 import Environment from '../../environment';
-import { InlineBlock, Layout, Block } from '../blocks';
+import { InlineBlock, Layout } from '../blocks';
 import { EMPTY_ARRAY } from '../../utils';
-
-interface CompilesInto<T> {
-  compile(dsl: OpcodeBuilder, env: Environment, block: Block): T;
-}
+import SymbolTable from '../../symbol-table';
 
 type Represents<E> = CompilesInto<E> | E;
 
@@ -68,7 +65,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
   private labelsStack = new Stack<Dict<vm.LabelOpcode>>();
   private templatesStack = new Stack<Syntax.Templates>();
 
-  constructor(inner: StatementCompilationBuffer, public _block: Block, public env: Environment) {
+  constructor(inner: StatementCompilationBuffer, protected symbolTable: SymbolTable, public env: Environment) {
     super(inner);
   }
 
@@ -315,7 +312,7 @@ const SIMPLE_BLOCK: BlockArgs = { templates: null };
 export default class OpcodeBuilder extends BasicOpcodeBuilder {
   compile<E>(expr: Represents<E>): E {
     if (isCompilableExpression(expr)) {
-      return expr.compile(this, this.env, this._block);
+      return expr.compile(this, this.env, this.symbolTable);
     } else {
       return expr;
     }

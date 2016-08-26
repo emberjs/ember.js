@@ -11,7 +11,6 @@ import { ListSlice, Opaque, Slice, dict } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
 import Scanner from '../../scanner';
 import Environment from '../../environment';
-import { BlockMeta } from 'glimmer-wire-format';
 
 export class PushChildScopeOpcode extends Opcode {
   public type = "push-child-scope";
@@ -321,13 +320,11 @@ export class EvaluatePartialOpcode extends Opcode {
   public symbolTable: SymbolTable;
   public name: CompiledExpression<any>;
   private cache = dict<PartialBlock>();
-  private blockMeta: BlockMeta;
 
-  constructor({ name, symbolTable, blockMeta }: { symbolTable: SymbolTable, name: CompiledExpression<any>, blockMeta: BlockMeta }) {
+  constructor({ name, symbolTable }: { symbolTable: SymbolTable, name: CompiledExpression<any> }) {
     super();
     this.name = name;
     this.symbolTable = symbolTable;
-    this.blockMeta = blockMeta;
   }
 
   evaluate(vm: VM) {
@@ -337,7 +334,7 @@ export class EvaluatePartialOpcode extends Opcode {
 
     let block = this.cache[name];
     if (!block) {
-      let { template } = vm.env.lookupPartial([name], this.blockMeta);
+      let { template } = vm.env.lookupPartial([name], this.symbolTable);
       let scanner = new Scanner(template, vm.env);
       block = scanner.scanPartial(this.symbolTable);
     }
@@ -360,18 +357,16 @@ export class EvaluatePartialOpcode extends Opcode {
 
 export class NameToPartialOpcode extends Opcode {
   public type = "name-to-partial";
-  private blockMeta: BlockMeta;
 
-  constructor(blockMeta: BlockMeta ) {
+  constructor(private symbolTable: SymbolTable) {
     super();
-    this.blockMeta = blockMeta;
   }
 
   evaluate(vm: VM) {
     let reference = vm.frame.getOperand();
     let referenceCache = new ReferenceCache(reference);
     let name: string = referenceCache.revalidate();
-    let partial = name && vm.env.hasPartial([name], this.blockMeta) ? vm.env.lookupPartial([name], this.blockMeta) : false;
+    let partial = name && vm.env.hasPartial([name], this.symbolTable) ? vm.env.lookupPartial([name], this.symbolTable) : false;
     vm.frame.setOperand(new ValueReference(partial));
 
     if (!isConst(reference)) {

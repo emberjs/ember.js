@@ -1,14 +1,16 @@
 import { Opaque, Slice, LinkedList } from 'glimmer-util';
 import { OpSeq, Opcode } from './opcodes';
 
+import { EMPTY_ARRAY } from './utils';
 import * as Syntax from './syntax/core';
 import { Environment } from './environment';
 import SymbolTable from './symbol-table';
 import { Block, CompiledBlock, EntryPoint, InlineBlock, Layout } from './compiled/blocks';
 
-import OpcodeBuilder, {
-  StaticComponentOptions,
-  DynamicComponentOptions
+import {
+  ComponentBuilder as IComponentBuilder,
+  DynamicDefinition,
+  StaticDefinition
 } from './opcode-builder';
 
 import {
@@ -44,12 +46,12 @@ abstract class Compiler {
   }
 
   protected compileStatement(statement: StatementSyntax, ops: OpcodeBuilderDSL) {
-    this.env.statement(statement, this.block.meta).compile(ops, this.env, this.block);
+    this.env.statement(statement, this.symbolTable).compile(ops, this.env, this.symbolTable);
   }
 }
 
 function compileStatement(env: Environment, statement: StatementSyntax, ops: OpcodeBuilderDSL, layout: Layout) {
-  env.statement(statement, layout.meta).compile(ops, env, layout);
+  env.statement(statement, layout.symbolTable).compile(ops, env, layout.symbolTable);
 }
 
 export default Compiler;
@@ -60,8 +62,8 @@ export class EntryPointCompiler extends Compiler {
 
   constructor(template: EntryPoint, env: Environment) {
     super(template, env);
-    let list = new CompileIntoList(env, template);
-    this.ops = new OpcodeBuilderDSL(list, template, env);
+    let list = new CompileIntoList(env, template.symbolTable);
+    this.ops = new OpcodeBuilderDSL(list, template.symbolTable, env);
   }
 
   compile(): OpSeq {
@@ -103,8 +105,8 @@ export class InlineBlockCompiler extends Compiler {
 
   constructor(block: InlineBlock, env: Environment) {
     super(block, env);
-    let list = new CompileIntoList(env, block);
-    this.ops = new OpcodeBuilderDSL(list, block, env);
+    let list = new CompileIntoList(env, block.symbolTable);
+    this.ops = new OpcodeBuilderDSL(list, block.symbolTable, env);
   }
 
   compile(): OpSeq {
@@ -252,8 +254,8 @@ class WrappedBuilder {
     let { env, layout } = this;
 
     let symbolTable = layout.symbolTable;
-    let buffer = new CompileIntoList(env, layout);
-    let dsl = new OpcodeBuilderDSL(buffer, layout, env);
+    let buffer = new CompileIntoList(env, layout.symbolTable);
+    let dsl = new OpcodeBuilderDSL(buffer, layout.symbolTable, env);
 
     dsl.startLabels();
 
@@ -318,8 +320,8 @@ class UnwrappedBuilder {
   compile(): CompiledBlock {
     let { env, layout } = this;
 
-    let buffer = new CompileIntoList(env, layout);
-    let dsl = new OpcodeBuilderDSL(buffer, layout, env);
+    let buffer = new CompileIntoList(env, layout.symbolTable);
+    let dsl = new OpcodeBuilderDSL(buffer, layout.symbolTable, env);
 
     dsl.startLabels();
 
@@ -388,14 +390,14 @@ class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
   }
 }
 
-class ComponentBuilder {
+class ComponentBuilder implements IComponentBuilder {
   private env: Environment;
 
   constructor(private dsl: OpcodeBuilderDSL) {
     this.env = dsl.env;
   }
 
-  static({ definition, args, shadow, templates }: StaticComponentOptions) {
+  static(definition: StaticDefinition, args: Syntax.Args, templates: Syntax.Templates, symbolTable: SymbolTable, shadow: string[] = EMPTY_ARRAY) {
     this.dsl.unit({ templates }, dsl => {
       dsl.putComponentDefinition(definition);
       dsl.openComponent(args, shadow);
@@ -403,7 +405,7 @@ class ComponentBuilder {
     });
   }
 
-  dynamic({ definitionArgs, definition, args, shadow, templates }: DynamicComponentOptions) {
+  dynamic(definitionArgs: Syntax.Args, definition: DynamicDefinition, args: Syntax.Args, templates: Syntax.Templates, symbolTable: SymbolTable, shadow: string[] = EMPTY_ARRAY) {
     this.dsl.unit({ templates }, dsl => {
       dsl.enter('BEGIN', 'END');
       dsl.label('BEGIN');
@@ -420,43 +422,38 @@ class ComponentBuilder {
   }
 }
 
-export class CompileIntoList extends LinkedList<Opcode> implements OpcodeBuilder, StatementCompilationBuffer {
-  private env: Environment;
-  private block: Block;
-
+export class CompileIntoList extends LinkedList<Opcode> implements StatementCompilationBuffer {
   public component: ComponentBuilder;
 
-  constructor(env: Environment, block: Block) {
+  constructor(private env: Environment, private symbolTable: SymbolTable) {
     super();
-    this.env = env;
-    this.block = block;
 
-    let dsl = new OpcodeBuilderDSL(this, block, env);
+    let dsl = new OpcodeBuilderDSL(this, symbolTable, env);
     this.component = new ComponentBuilder(dsl);
   }
 
   getLocalSymbol(name: string): number {
-    return this.block.symbolTable.getLocal(name);
+    return this.symbolTable.getLocal(name);
   }
 
   hasLocalSymbol(name: string): boolean {
-    return typeof this.block.symbolTable.getLocal(name) === 'number';
+    return typeof this.symbolTable.getLocal(name) === 'number';
   }
 
   getNamedSymbol(name: string): number {
-    return this.block.symbolTable.getNamed(name);
+    return this.symbolTable.getNamed(name);
   }
 
   hasNamedSymbol(name: string): boolean {
-    return typeof this.block.symbolTable.getNamed(name) === 'number';
+    return typeof this.symbolTable.getNamed(name) === 'number';
   }
 
   getBlockSymbol(name: string): number {
-    return this.block.symbolTable.getYield(name);
+    return this.symbolTable.getYield(name);
   }
 
   hasBlockSymbol(name: string): boolean {
-    return typeof this.block.symbolTable.getYield(name) === 'number';
+    return typeof this.symbolTable.getYield(name) === 'number';
   }
 
   toOpSeq(): OpSeq {

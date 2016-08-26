@@ -6,8 +6,8 @@ import {
   // Compiler
   Compilable,
   CompiledBlock,
-  OpcodeBuilder,
   SymbolLookup,
+  SymbolTable,
   compileLayout,
 
   // Environment
@@ -27,8 +27,7 @@ import {
   ComponentManager,
   ComponentDefinition,
   ComponentLayoutBuilder,
-  DynamicComponentOptions,
-  StaticComponentOptions,
+  ComponentBuilder,
 
   // Values
   EvaluatedArgs,
@@ -440,20 +439,20 @@ class ProcessedArgs {
   value() {
     let { named, positional, positionalParamNames } = this;
 
-    let result = named.value();
+    let merged = Object.assign({}, named.value());
 
     if (positionalParamNames && positionalParamNames.length) {
       for (let i = 0; i < positionalParamNames.length; i++) {
         let name = positionalParamNames[i];
         let reference = positional.at(i);
 
-        result[name] = reference.value();
+        merged[name] = reference.value();
       }
     }
 
     return {
-      attrs: result,
-      props: result
+      attrs: merged,
+      props: merged
     };
   }
 }
@@ -714,8 +713,8 @@ export class TestEnvironment extends Environment {
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
     this.registerModifier("action", new InertModifierManager());
 
-    this.registerInternalHelper("component", (vm, args) => {
-      return new DynamicComponentReference({ nameRef: args.positional.at(0), env: vm.env, args: EvaluatedArgs.empty() });
+    this.registerInternalHelper("component", (vm, args, symbolTable) => {
+      return new DynamicComponentReference(args.positional.at(0), vm.env, symbolTable);
     });
 
     this.registerInternalHelper("hash", (vm, args) => args.named);
@@ -775,7 +774,7 @@ export class TestEnvironment extends Environment {
     return new EmberishConditionalReference(reference);
   }
 
-  refineStatement(statement: ParsedStatement, blockMeta: BlockMeta): StatementSyntax {
+  refineStatement(statement: ParsedStatement, symbolTable: SymbolTable): StatementSyntax {
     let {
       appendType,
       isSimple,
@@ -798,13 +797,13 @@ export class TestEnvironment extends Environment {
 
     if (isSimple && (isInline || isBlock)) {
       if (key === 'component') {
-        return new DynamicComponentSyntax({ args, templates });
+        return new DynamicComponentSyntax({ args, templates, symbolTable });
       }
 
-      let component = this.getComponentDefinition(path);
+      let component = this.getComponentDefinition(path, symbolTable);
 
       if (component) {
-        return new CurlyComponentSyntax({ args, definition: component, templates });
+        return new CurlyComponentSyntax({ args, definition: component, templates, symbolTable });
       }
     }
 
@@ -812,7 +811,7 @@ export class TestEnvironment extends Environment {
       return (statement.original as OptimizedAppend).deopt();
     }
 
-    return super.refineStatement(statement, blockMeta);
+    return super.refineStatement(statement, symbolTable);
   }
 
   hasHelper(helperName: string[]) {
@@ -847,7 +846,7 @@ export class TestEnvironment extends Environment {
     return !!this.components[name[0]];
   }
 
-  getComponentDefinition(name: string[]): ComponentDefinition<any> {
+  getComponentDefinition(name: string[], blockMeta?: BlockMeta): ComponentDefinition<any> {
     return this.components[name[0]];
   }
 
@@ -912,34 +911,32 @@ export class TestDynamicScope implements DynamicScope {
   }
 }
 
-class CurlyComponentSyntax extends StatementSyntax implements StaticComponentOptions {
+class CurlyComponentSyntax extends StatementSyntax {
   public type = "curly-component";
   public definition: ComponentDefinition<any>;
   public args: ArgsSyntax;
   public shadow: string[] = null;
   public templates: Templates;
+  public symbolTable: SymbolTable;
 
-  constructor({ args, definition, templates }: { args: ArgsSyntax, definition: ComponentDefinition<any>, templates: Templates }) {
+  constructor({ args, definition, templates, symbolTable }: { args: ArgsSyntax, definition: ComponentDefinition<any>, templates: Templates, symbolTable: SymbolTable }) {
     super();
     this.args = args;
     this.definition = definition;
     this.templates = templates || Templates.empty();
+    this.symbolTable = symbolTable;
   }
 
-  compile(b: OpcodeBuilder & SymbolLookup, env: Environment) {
-    b.component.static(this);
+  compile(b: { component: ComponentBuilder } & SymbolLookup, env: Environment) {
+    b.component.static(this.definition, this.args, this.templates, this.symbolTable, this.shadow);
   }
 }
 
 class DynamicComponentReference implements PathReference<ComponentDefinition<Opaque>> {
-  private nameRef: PathReference<Opaque>;
-  private env: Environment;
   public tag: RevisionTag;
 
-  constructor({ nameRef, env, args }: { nameRef: PathReference<Opaque>, env: Environment, args: EvaluatedArgs }) {
-    this.nameRef = nameRef;
-    this.env = env;
-    this.tag = args.tag;
+  constructor(private nameRef: PathReference<Opaque>, private env: Environment, private symbolTable: SymbolTable) {
+    this.tag = nameRef.tag;
   }
 
   value(): ComponentDefinition<Opaque> {
@@ -948,7 +945,7 @@ class DynamicComponentReference implements PathReference<ComponentDefinition<Opa
     let name = nameRef.value();
 
     if (typeof name === 'string') {
-      return env.getComponentDefinition([name]);
+      return env.getComponentDefinition([name], this.symbolTable);
     } else {
       return null;
     }
@@ -959,31 +956,33 @@ class DynamicComponentReference implements PathReference<ComponentDefinition<Opa
   }
 }
 
-function dynamicComponentFor(vm: VM) {
+function dynamicComponentFor(vm: VM, symbolTable: SymbolTable) {
   let args = vm.getArgs();
   let nameRef = args.positional.at(0);
   let env = vm.env;
-  return new DynamicComponentReference({ nameRef, env, args });
+  return new DynamicComponentReference(nameRef, env, symbolTable);
 };
 
-class DynamicComponentSyntax extends StatementSyntax implements DynamicComponentOptions {
+class DynamicComponentSyntax extends StatementSyntax {
   public type = "dynamic-component";
   public definitionArgs: ArgsSyntax;
   public definition: FunctionExpression<ComponentDefinition<Opaque>>;
   public args: ArgsSyntax;
   public shadow: string[] = null;
   public templates: Templates;
+  public symbolTable: SymbolTable;
 
-  constructor({ args, templates }: { args: ArgsSyntax, templates: Templates }) {
+  constructor({ args, templates, symbolTable }: { args: ArgsSyntax, templates: Templates, symbolTable: SymbolTable }) {
     super();
     this.definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0,1));
     this.definition = dynamicComponentFor;
     this.args = ArgsSyntax.build(args.positional.slice(1), args.named);
     this.templates = templates || Templates.empty();
+    this.symbolTable = symbolTable;
   }
 
-  compile(b: OpcodeBuilder & SymbolLookup, env: Environment) {
-    b.component.dynamic(this);
+  compile(b: OpcodeBuilderDSL, env: Environment) {
+    b.component.dynamic(this.definitionArgs, this.definition, this.args, this.templates, this.symbolTable, this.shadow);
   }
 }
 

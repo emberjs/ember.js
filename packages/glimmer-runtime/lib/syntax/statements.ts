@@ -15,12 +15,13 @@ import {
   TrustingAttr
 } from './core';
 
-import { InlineBlock } from '../compiled/blocks';
+import SymbolTable from '../symbol-table';
 import { Statement as StatementSyntax } from '../syntax';
 import {
   Statements as SerializedStatements,
   Statement as SerializedStatement
 } from 'glimmer-wire-format';
+import { BlockScanner  } from '../scanner';
 
 const {
   isYield,
@@ -39,16 +40,16 @@ const {
   isTrustingAttr
 } = SerializedStatements;
 
-export default function(sexp: SerializedStatement, blocks: InlineBlock[]): StatementSyntax {
+export default function(sexp: SerializedStatement, symbolTable: SymbolTable, scanner: BlockScanner): StatementSyntax {
   if (isYield(sexp)) return Yield.fromSpec(sexp);
-  if (isBlock(sexp)) return Block.fromSpec(sexp, blocks);
+  if (isBlock(sexp)) return Block.fromSpec(sexp, symbolTable, scanner);
   if (isAppend(sexp)) return OptimizedAppend.fromSpec(sexp);
   if (isDynamicAttr(sexp)) return DynamicAttr.fromSpec(sexp);
   if (isDynamicArg(sexp)) return DynamicArg.fromSpec(sexp);
   if (isTrustingAttr(sexp)) return TrustingAttr.fromSpec(sexp);
   if (isText(sexp)) return Text.fromSpec(sexp);
   if (isComment(sexp)) return Comment.fromSpec(sexp);
-  if (isOpenElement(sexp)) return OpenElement.fromSpec(sexp);
+  if (isOpenElement(sexp)) return OpenElement.fromSpec(sexp, symbolTable);
   if (isFlushElement(sexp)) return FlushElement.fromSpec();
   if (isCloseElement(sexp)) return CloseElement.fromSpec();
   if (isStaticAttr(sexp)) return StaticAttr.fromSpec(sexp);

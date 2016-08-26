@@ -2,25 +2,20 @@ import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from './args';
 import VM from '../../vm/append';
 import { Helper } from '../../environment';
+import SymbolTable from '../../symbol-table';
 import { PathReference } from 'glimmer-reference';
 import { Opaque } from 'glimmer-util';
 
 export default class CompiledHelper extends CompiledExpression<Opaque> {
   public type = "helper";
-  public name: string[];
-  public helper: Helper;
-  public args: CompiledArgs;
 
-  constructor({ name, helper, args }: { name: string[], helper: Helper, args: CompiledArgs }) {
+  constructor(public name: string[], public helper: Helper, public args: CompiledArgs, public symbolTable: SymbolTable) {
     super();
-    this.name = name;
-    this.helper = helper;
-    this.args = args;
   }
 
   evaluate(vm: VM): PathReference<Opaque> {
     let { helper } = this;
-    return helper(vm, this.args.evaluate(vm));
+    return helper(vm, this.args.evaluate(vm), this.symbolTable);
   }
 
   toJSON(): string {
