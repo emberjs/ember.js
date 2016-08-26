@@ -44,8 +44,7 @@ export interface ComponentManager<T extends Component> {
   // process, to provide hooks for user code.
   didCreateElement(component: T, element: Simple.Element, operations: ElementOperations);
 
-  // This hook is run after the entire layout has been rendered, allowing the
-  // manager to save off the rendered bounds.
+  // This hook is run after the entire layout has been rendered.
   //
   // Hosts should use `didCreate`, which runs asynchronously after the rendering
   // process, to provide hooks for user code.
@@ -65,6 +64,12 @@ export interface ComponentManager<T extends Component> {
   // When the input arguments have changed, and top-down revalidation has
   // begun, the manager's `update` hook is called.
   update(component: T, args: EvaluatedArgs, dynamicScope: DynamicScope);
+
+  // This hook is run after the entire layout has been updated.
+  //
+  // Hosts should use `didUpdate`, which runs asynchronously after the rendering
+  // process, to provide hooks for user code.
+  didUpdateLayout(component: T, bounds: Bounds);
 
   // Finally, once top-down revalidation has completed, Glimmer invokes
   // the `didUpdate` callbacks on components that changed.
