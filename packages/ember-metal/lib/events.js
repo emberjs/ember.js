@@ -6,12 +6,12 @@
 @module ember
 @submodule ember-metal
 */
-import { assert } from 'ember-metal/debug';
-import { applyStr } from 'ember-metal/utils';
-import { meta as metaFor, peekMeta } from 'ember-metal/meta';
-import { deprecate } from 'ember-metal/debug';
+import { assert } from './debug';
+import { applyStr } from './utils';
+import { meta as metaFor, peekMeta } from './meta';
+import { deprecate } from './debug';
 
-import { ONCE, SUSPENDED } from 'ember-metal/meta_listeners';
+import { ONCE, SUSPENDED } from './meta_listeners';
 
 
 /*

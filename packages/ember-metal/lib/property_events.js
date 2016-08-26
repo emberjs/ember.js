@@ -1,20 +1,20 @@
 import {
   guidFor
-} from 'ember-metal/utils';
+} from './utils';
 import {
   peekMeta
-} from 'ember-metal/meta';
+} from './meta';
 import {
   sendEvent,
   accumulateListeners
-} from 'ember-metal/events';
+} from './events';
 import {
   markObjectAsDirty
 } from './tags';
-import ObserverSet from 'ember-metal/observer_set';
-import symbol from 'ember-metal/symbol';
-import isEnabled from 'ember-metal/features';
-import { assertNotRendered } from 'ember-metal/transaction';
+import ObserverSet from './observer_set';
+import symbol from './symbol';
+import isEnabled from './features';
+import { assertNotRendered } from './transaction';
 
 export let PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 

@@ -1,21 +1,21 @@
 import Logger from 'ember-console';
 import { context, ENV } from 'ember-environment';
-import run from 'ember-metal/run_loop';
-import { assert, deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { trySet } from 'ember-metal/property_set';
-import { guidFor } from 'ember-metal/utils';
-import { addListener } from 'ember-metal/events';
+import run from './run_loop';
+import { assert, deprecate } from './debug';
+import { get } from './property_get';
+import { trySet } from './property_set';
+import { guidFor } from './utils';
+import { addListener } from './events';
 import {
   addObserver,
   removeObserver,
   _suspendObserver
-} from 'ember-metal/observer';
+} from './observer';
 import {
   isGlobalPath,
   getFirstKey,
   getTailPath
-} from 'ember-metal/path_cache';
+} from './path_cache';
 
 /**
 @module ember

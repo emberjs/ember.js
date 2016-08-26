@@ -11,7 +11,7 @@ import {
   propertyWillChange
 } from 'ember-metal/property_events';
 import EmptyObject from 'ember-metal/empty_object';
-import { objectAt } from 'ember-runtime/mixins/array';
+import { objectAt } from '../mixins/array';
 
 /**
   This is the object instance returned when you get the `@each` property on an

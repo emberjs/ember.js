@@ -1,16 +1,16 @@
-import { assert } from 'ember-metal/debug';
-import { isTesting } from 'ember-metal/testing';
+import { assert } from './debug';
+import { isTesting } from './testing';
 import {
   getOnerror,
   setOnerror
-} from 'ember-metal/error_handler';
+} from './error_handler';
 import {
   GUID_KEY
-} from 'ember-metal/utils';
+} from './utils';
 import {
   beginPropertyChanges,
   endPropertyChanges
-} from 'ember-metal/property_events';
+} from './property_events';
 import Backburner from 'backburner';
 
 function onBegin(current) {

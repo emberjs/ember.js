@@ -15,7 +15,7 @@ import {
   cacheFor
 } from 'ember-metal/computed';
 import isNone from 'ember-metal/is_none';
-import Enumerable from 'ember-runtime/mixins/enumerable';
+import Enumerable from './enumerable';
 import { Mixin } from 'ember-metal/mixin';
 import {
   propertyWillChange,
@@ -29,7 +29,7 @@ import {
 } from 'ember-metal/events';
 import { meta as metaFor } from 'ember-metal/meta';
 import { markObjectAsDirty } from 'ember-metal/tags';
-import EachProxy from 'ember-runtime/system/each_proxy';
+import EachProxy from '../system/each_proxy';
 import { deprecate } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 

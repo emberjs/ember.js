@@ -33,14 +33,14 @@ import {
   REQUIRED
 } from 'ember-metal/mixin';
 import EmberError from 'ember-metal/error';
-import ActionHandler from 'ember-runtime/mixins/action_handler';
+import ActionHandler from '../mixins/action_handler';
 import { defineProperty } from 'ember-metal/properties';
 import { Binding } from 'ember-metal/binding';
 import { ComputedProperty, computed } from 'ember-metal/computed';
 import InjectedProperty from 'ember-metal/injected_property';
 import run from 'ember-metal/run_loop';
 import { destroy } from 'ember-metal/watching';
-import { validatePropertyInjections } from 'ember-runtime/inject';
+import { validatePropertyInjections } from '../inject';
 import symbol from 'ember-metal/symbol';
 
 export let POST_INIT = symbol('POST_INIT');

@@ -2,10 +2,10 @@
 @module ember-metal
 */
 
-import { assert } from 'ember-metal/debug';
-import isEnabled from 'ember-metal/features';
-import { meta as metaFor, peekMeta } from 'ember-metal/meta';
-import { overrideChains } from 'ember-metal/property_events';
+import { assert } from './debug';
+import isEnabled from './features';
+import { meta as metaFor, peekMeta } from './meta';
+import { overrideChains } from './property_events';
 // ..........................................................
 // DESCRIPTOR
 //

@@ -1,4 +1,4 @@
-import Enumerable from 'ember-runtime/mixins/enumerable';
+import Enumerable from './enumerable';
 import { Mixin } from 'ember-metal/mixin';
 import {beginPropertyChanges, endPropertyChanges} from 'ember-metal/property_events';
 

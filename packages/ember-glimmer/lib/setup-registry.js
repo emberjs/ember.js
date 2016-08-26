@@ -1,15 +1,15 @@
 import { privatize as P } from 'container/registry';
-import { InteractiveRenderer, InertRenderer } from 'ember-glimmer/renderer';
-import { DOMChanges, DOMTreeConstruction } from 'ember-glimmer/dom';
-import OutletView from 'ember-glimmer/views/outlet';
-import TextField from 'ember-glimmer/components/text_field';
-import TextArea from 'ember-glimmer/components/text_area';
-import Checkbox from 'ember-glimmer/components/checkbox';
-import LinkToComponent from 'ember-glimmer/components/link-to';
-import ComponentTemplate from 'ember-glimmer/templates/component';
-import RootTemplate from 'ember-glimmer/templates/root';
-import OutletTemplate from 'ember-glimmer/templates/outlet';
-import Environment from 'ember-glimmer/environment';
+import { InteractiveRenderer, InertRenderer } from './renderer';
+import { DOMChanges, DOMTreeConstruction } from './dom';
+import OutletView from './views/outlet';
+import TextField from './components/text_field';
+import TextArea from './components/text_area';
+import Checkbox from './components/checkbox';
+import LinkToComponent from './components/link-to';
+import ComponentTemplate from './templates/component';
+import RootTemplate from './templates/root';
+import OutletTemplate from './templates/outlet';
+import Environment from './environment';
 
 export function setupApplicationRegistry(registry) {
   registry.injection('service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');

@@ -1,21 +1,21 @@
-import { assert, warn } from 'ember-metal/debug';
-import { set } from 'ember-metal/property_set';
-import { inspect } from 'ember-metal/utils';
-import { meta as metaFor, peekMeta } from 'ember-metal/meta';
-import expandProperties from 'ember-metal/expand_properties';
-import EmberError from 'ember-metal/error';
+import { assert, warn } from './debug';
+import { set } from './property_set';
+import { inspect } from './utils';
+import { meta as metaFor, peekMeta } from './meta';
+import expandProperties from './expand_properties';
+import EmberError from './error';
 import {
   Descriptor,
   defineProperty
-} from 'ember-metal/properties';
+} from './properties';
 import {
   propertyWillChange,
   propertyDidChange
-} from 'ember-metal/property_events';
+} from './property_events';
 import {
   addDependentKeys,
   removeDependentKeys
-} from 'ember-metal/dependent_keys';
+} from './dependent_keys';
 
 /**
 @module ember

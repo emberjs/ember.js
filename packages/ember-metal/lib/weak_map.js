@@ -1,8 +1,8 @@
-import { GUID_KEY } from 'ember-metal/utils';
+import { GUID_KEY } from './utils';
 import {
   peekMeta,
   meta as metaFor
-} from 'ember-metal/meta';
+} from './meta';
 
 let id = 0;
 function UNDEFINED() {}

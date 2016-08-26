@@ -7,17 +7,17 @@
 import require, { has } from 'require';
 import { ENV, context } from 'ember-environment';
 import VERSION from 'ember/version';
-import Ember from 'ember-metal/core'; // reexports
-import { deprecate, deprecateFunc } from 'ember-metal/debug';
-import isEnabled, { FEATURES } from 'ember-metal/features';
-import assign from 'ember-metal/assign';
-import merge from 'ember-metal/merge';
+import Ember from './core'; // reexports
+import { deprecate, deprecateFunc } from './debug';
+import isEnabled, { FEATURES } from './features';
+import assign from './assign';
+import merge from './merge';
 import {
   instrument,
   reset as instrumentationReset,
   subscribe as instrumentationSubscribe,
   unsubscribe as instrumentationUnsubscribe
-} from 'ember-metal/instrumentation';
+} from './instrumentation';
 import {
   GUID_KEY,
   apply,
@@ -31,20 +31,20 @@ import {
   tryInvoke,
   uuid,
   wrap
-} from 'ember-metal/utils';
+} from './utils';
 import {
   META_DESC,
   meta
-} from 'ember-metal/meta';
-import EmberError from 'ember-metal/error';
-import Cache from 'ember-metal/cache';
+} from './meta';
+import EmberError from './error';
+import Cache from './cache';
 import Logger from 'ember-console';
 
 import {
   _getPath,
   get,
   getWithDefault
-} from 'ember-metal/property_get';
+} from './property_get';
 
 import {
   accumulateListeners,
@@ -57,9 +57,9 @@ import {
   suspendListener,
   suspendListeners,
   watchedEvents
-} from 'ember-metal/events';
+} from './events';
 
-import ObserverSet from 'ember-metal/observer_set';
+import ObserverSet from './observer_set';
 
 import {
   beginPropertyChanges,
@@ -68,53 +68,53 @@ import {
   overrideChains,
   propertyDidChange,
   propertyWillChange
-} from 'ember-metal/property_events';
+} from './property_events';
 
 import {
   defineProperty
-} from 'ember-metal/properties';
+} from './properties';
 import {
   set,
   trySet
-} from 'ember-metal/property_set';
+} from './property_set';
 
-import WeakMap from 'ember-metal/weak_map';
+import WeakMap from './weak_map';
 import {
   Map,
   MapWithDefault,
   OrderedSet
-} from 'ember-metal/map';
+} from './map';
 
-import getProperties from 'ember-metal/get_properties';
-import setProperties from 'ember-metal/set_properties';
+import getProperties from './get_properties';
+import setProperties from './set_properties';
 import {
   watchKey,
   unwatchKey
-} from 'ember-metal/watch_key';
+} from './watch_key';
 import {
   ChainNode,
   finishChains,
   removeChainWatcher
-} from 'ember-metal/chains';
+} from './chains';
 import {
   watchPath,
   unwatchPath
-} from 'ember-metal/watch_path';
+} from './watch_path';
 import {
   destroy,
   isWatching,
   rewatch,
   unwatch,
   watch
-} from 'ember-metal/watching';
-import expandProperties from 'ember-metal/expand_properties';
+} from './watching';
+import expandProperties from './expand_properties';
 import {
   ComputedProperty,
   computed,
   cacheFor
-} from 'ember-metal/computed';
+} from './computed';
 
-import alias from 'ember-metal/alias';
+import alias from './alias';
 
 computed.alias = alias;
 
@@ -124,7 +124,7 @@ import {
   addObserver,
   observersFor,
   removeObserver
-} from 'ember-metal/observer';
+} from './observer';
 import {
   NAME_KEY,
   Mixin,
@@ -133,30 +133,30 @@ import {
   mixin,
   observer,
   required
-} from 'ember-metal/mixin';
+} from './mixin';
 import {
   Binding,
   bind
-} from 'ember-metal/binding';
+} from './binding';
 import {
   isGlobalPath
-} from 'ember-metal/path_cache';
+} from './path_cache';
 
 import {
   isTesting,
   setTesting
-} from 'ember-metal/testing';
+} from './testing';
 import {
   getOnerror,
   setOnerror
-} from 'ember-metal/error_handler';
+} from './error_handler';
 
-import run from 'ember-metal/run_loop';
-import libraries from 'ember-metal/libraries';
-import isNone from 'ember-metal/is_none';
-import isEmpty from 'ember-metal/is_empty';
-import isBlank from 'ember-metal/is_blank';
-import isPresent from 'ember-metal/is_present';
+import run from './run_loop';
+import libraries from './libraries';
+import isNone from './is_none';
+import isEmpty from './is_empty';
+import isBlank from './is_blank';
+import isPresent from './is_present';
 import Backburner from 'backburner';
 
 // END IMPORTS

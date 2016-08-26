@@ -1,7 +1,7 @@
-import { assert } from 'ember-metal/debug';
-import { ComputedProperty } from 'ember-metal/computed';
-import { AliasedProperty } from 'ember-metal/alias';
-import { Descriptor } from 'ember-metal/properties';
+import { assert } from './debug';
+import { ComputedProperty } from './computed';
+import { AliasedProperty } from './alias';
+import { Descriptor } from './properties';
 import { getOwner } from 'container/owner';
 
 /**

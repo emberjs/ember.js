@@ -5,45 +5,45 @@
 
 // BEGIN IMPORTS
 import Ember from 'ember-metal'; // reexports
-import isEqual from 'ember-runtime/is-equal';
-import compare from 'ember-runtime/compare';
-import copy from 'ember-runtime/copy';
-import inject from 'ember-runtime/inject';
+import isEqual from './is-equal';
+import compare from './compare';
+import copy from './copy';
+import inject from './inject';
 
 import Namespace, {
   isSearchDisabled as isNamespaceSearchDisabled,
   setSearchDisabled as setNamespaceSearchDisabled
-} from 'ember-runtime/system/namespace';
-import EmberObject from 'ember-runtime/system/object';
-import { Container, Registry, getOwner, setOwner } from 'ember-runtime/system/container';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
-import CoreObject from 'ember-runtime/system/core_object';
+} from './system/namespace';
+import EmberObject from './system/object';
+import { Container, Registry, getOwner, setOwner } from './system/container';
+import ArrayProxy from './system/array_proxy';
+import ObjectProxy from './system/object_proxy';
+import CoreObject from './system/core_object';
 
-import NativeArray from 'ember-runtime/system/native_array';
-import EmberStringUtils from 'ember-runtime/system/string';
+import NativeArray from './system/native_array';
+import EmberStringUtils from './system/string';
 import {
   onLoad,
   runLoadHooks
-} from 'ember-runtime/system/lazy_load';
+} from './system/lazy_load';
 
-import EmberArray from 'ember-runtime/mixins/array';
-import Comparable from 'ember-runtime/mixins/comparable';
-import Copyable from 'ember-runtime/mixins/copyable';
-import Enumerable from 'ember-runtime/mixins/enumerable';
+import EmberArray from './mixins/array';
+import Comparable from './mixins/comparable';
+import Copyable from './mixins/copyable';
+import Enumerable from './mixins/enumerable';
 import {
   Freezable,
   FROZEN_ERROR
-} from 'ember-runtime/mixins/freezable';
-import _ProxyMixin from 'ember-runtime/mixins/-proxy';
+} from './mixins/freezable';
+import _ProxyMixin from './mixins/-proxy';
 
-import Observable from 'ember-runtime/mixins/observable';
-import ActionHandler from 'ember-runtime/mixins/action_handler';
-import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
-import MutableArray from 'ember-runtime/mixins/mutable_array';
-import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
-import Evented from 'ember-runtime/mixins/evented';
-import PromiseProxyMixin from 'ember-runtime/mixins/promise_proxy';
+import Observable from './mixins/observable';
+import ActionHandler from './mixins/action_handler';
+import MutableEnumerable from './mixins/mutable_enumerable';
+import MutableArray from './mixins/mutable_array';
+import TargetActionSupport from './mixins/target_action_support';
+import Evented from './mixins/evented';
+import PromiseProxyMixin from './mixins/promise_proxy';
 
 import isEnabled from 'ember-metal/features';
 
@@ -66,7 +66,7 @@ import {
   and,
   or,
   any
-} from 'ember-runtime/computed/computed_macros';
+} from './computed/computed_macros';
 
 import {
   sum,
@@ -83,26 +83,26 @@ import {
   union,
   intersect,
   collect
-} from 'ember-runtime/computed/reduce_computed_macros';
+} from './computed/reduce_computed_macros';
 
-import Controller from 'ember-runtime/controllers/controller';
-import ControllerMixin from 'ember-runtime/mixins/controller';
+import Controller from './controllers/controller';
+import ControllerMixin from './mixins/controller';
 
-import Service from 'ember-runtime/system/service';
+import Service from './system/service';
 
-import RSVP from 'ember-runtime/ext/rsvp';     // just for side effect of extending Ember.RSVP
-import 'ember-runtime/ext/string';   // just for side effect of extending String.prototype
-import 'ember-runtime/ext/function'; // just for side effect of extending Function.prototype
+import RSVP from './ext/rsvp';     // just for side effect of extending Ember.RSVP
+import './ext/string';   // just for side effect of extending String.prototype
+import './ext/function'; // just for side effect of extending Function.prototype
 
-import { isArray, typeOf } from 'ember-runtime/utils';
+import { isArray, typeOf } from './utils';
 
-import RegistryProxyMixin from 'ember-runtime/mixins/registry_proxy';
-import ContainerProxyMixin from 'ember-runtime/mixins/container_proxy';
+import RegistryProxyMixin from './mixins/registry_proxy';
+import ContainerProxyMixin from './mixins/container_proxy';
 
 import {
   getStrings,
   setStrings
-} from 'ember-runtime/string_registry';
+} from './string_registry';
 
 // END IMPORTS
 

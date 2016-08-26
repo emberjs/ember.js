@@ -5,7 +5,7 @@
 import {
   watch,
   unwatch
-} from 'ember-metal/watching';
+} from './watching';
 
 /**
 @module ember

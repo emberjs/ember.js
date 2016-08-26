@@ -6,10 +6,10 @@ import { deprecate } from 'ember-metal/debug';
 import {
   inspect as emberInspect
 } from 'ember-metal/utils';
-import { isArray } from 'ember-runtime/utils';
+import { isArray } from '../utils';
 import {
   get as getString
-} from 'ember-runtime/string_registry';
+} from '../string_registry';
 
 import Cache from 'ember-metal/cache';
 

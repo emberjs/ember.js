@@ -1,13 +1,13 @@
-import isEnabled from 'ember-metal/features';
+import isEnabled from './features';
 import {
   meta as metaFor
-} from 'ember-metal/meta';
+} from './meta';
 import {
   MANDATORY_SETTER_FUNCTION,
   DEFAULT_GETTER_FUNCTION,
   INHERITING_GETTER_FUNCTION
-} from 'ember-metal/properties';
-import { lookupDescriptor } from 'ember-metal/utils';
+} from './properties';
+import { lookupDescriptor } from './utils';
 
 let handleMandatorySetter;
 

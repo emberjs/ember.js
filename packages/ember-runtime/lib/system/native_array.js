@@ -10,12 +10,12 @@ import { Mixin } from 'ember-metal/mixin';
 import EmberArray, {
   arrayContentDidChange,
   arrayContentWillChange
-} from 'ember-runtime/mixins/array';
-import MutableArray from 'ember-runtime/mixins/mutable_array';
-import Observable from 'ember-runtime/mixins/observable';
-import Copyable from 'ember-runtime/mixins/copyable';
-import { FROZEN_ERROR } from 'ember-runtime/mixins/freezable';
-import copy from 'ember-runtime/copy';
+} from '../mixins/array';
+import MutableArray from '../mixins/mutable_array';
+import Observable from '../mixins/observable';
+import Copyable from '../mixins/copyable';
+import { FROZEN_ERROR } from '../mixins/freezable';
+import copy from '../copy';
 
 // Add Ember.Array to Array.prototype. Remove methods with native
 // implementations and supply some more optimized versions of generic methods

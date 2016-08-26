@@ -6,33 +6,33 @@
 @module ember
 @submodule ember-metal
 */
-import EmberError from 'ember-metal/error';
-import { debugSeal, assert, deprecate, runInDebug } from 'ember-metal/debug';
-import assign from 'ember-metal/assign';
+import EmberError from './error';
+import { debugSeal, assert, deprecate, runInDebug } from './debug';
+import assign from './assign';
 import {
   guidFor,
   GUID_KEY,
   wrap,
   makeArray
-} from 'ember-metal/utils';
-import { meta as metaFor, peekMeta } from 'ember-metal/meta';
-import expandProperties from 'ember-metal/expand_properties';
+} from './utils';
+import { meta as metaFor, peekMeta } from './meta';
+import expandProperties from './expand_properties';
 import {
   Descriptor,
   defineProperty
-} from 'ember-metal/properties';
-import { ComputedProperty } from 'ember-metal/computed';
-import { Binding } from 'ember-metal/binding';
+} from './properties';
+import { ComputedProperty } from './computed';
+import { Binding } from './binding';
 import {
   addObserver,
   removeObserver,
   _addBeforeObserver,
   _removeBeforeObserver
-} from 'ember-metal/observer';
+} from './observer';
 import {
   addListener,
   removeListener
-} from 'ember-metal/events';
+} from './events';
 
 function ROOT() {}
 ROOT.__hasSuper = false;

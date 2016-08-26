@@ -1,4 +1,4 @@
-import EmptyObject from 'ember-metal/empty_object';
+import EmptyObject from './empty_object';
 
 export default class Cache {
   constructor(limit, func, key, store) {

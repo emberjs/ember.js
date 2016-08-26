@@ -1,3 +1,3 @@
-import Namespace from 'ember-runtime/system/namespace';
+import Namespace from './namespace';
 
 export default Namespace.extend();
