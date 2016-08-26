@@ -41,17 +41,18 @@ function makeComponentDefinition(vm) {
 }
 
 export class RenderSyntax extends StatementSyntax {
-  constructor({ args }) {
+  constructor({ args, symbolTable }) {
     super();
     this.definitionArgs = args;
     this.definition = makeComponentDefinition;
     this.args = ArgsSyntax.fromPositionalArgs(args.positional.slice(1, 2));
     this.templates = null;
+    this.symbolTable = symbolTable;
     this.shadow = null;
   }
 
   compile(builder) {
-    builder.component.dynamic(this);
+    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.templates, this.symbolTable, this.shadow);
   }
 }
 

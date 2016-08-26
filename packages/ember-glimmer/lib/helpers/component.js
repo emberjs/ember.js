@@ -5,16 +5,16 @@ import { assert } from 'ember-metal/debug';
 import assign from 'ember-metal/assign';
 
 export class ClosureComponentReference extends CachedReference {
-  static create(args, blockMeta, env) {
-    return new ClosureComponentReference(args, blockMeta, env);
+  static create(args, symbolTable, env) {
+    return new ClosureComponentReference(args, symbolTable, env);
   }
 
-  constructor(args, blockMeta, env) {
+  constructor(args, symbolTable, env) {
     super();
     this.defRef = args.positional.at(0);
     this.env = env;
     this.tag = args.positional.at(0).tag;
-    this.blockMeta = blockMeta;
+    this.symbolTable = symbolTable;
     this.args = args;
     this.lastDefinition = undefined;
     this.lastName = undefined;
@@ -24,7 +24,7 @@ export class ClosureComponentReference extends CachedReference {
     // TODO: Figure out how to extract this because it's nearly identical to
     // DynamicComponentReference::compute(). The only differences besides
     // currying are in the assertion messages.
-    let { args, defRef, env, blockMeta, lastDefinition, lastName } = this;
+    let { args, defRef, env, symbolTable, lastDefinition, lastName } = this;
     let nameOrDef = defRef.value();
     let definition = null;
 
@@ -35,7 +35,7 @@ export class ClosureComponentReference extends CachedReference {
     this.lastName = nameOrDef;
 
     if (typeof nameOrDef === 'string') {
-      definition = env.getComponentDefinition([nameOrDef], blockMeta);
+      definition = env.getComponentDefinition([nameOrDef], symbolTable);
       assert(`The component helper cannot be used without a valid component name. You used "${nameOrDef}" via (component "${nameOrDef}")`, definition);
     } else if (isComponentDefinition(nameOrDef)) {
       definition = nameOrDef;
@@ -127,7 +127,7 @@ export default {
   isInternalHelper: true,
 
   toReference(args, env) {
-    // TODO: Need to figure out what to do about blockMeta here.
+    // TODO: Need to figure out what to do about symbolTable here.
     return ClosureComponentReference.create(args, null, env);
   }
 };
