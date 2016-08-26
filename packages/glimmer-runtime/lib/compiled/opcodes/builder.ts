@@ -62,11 +62,6 @@ class StatementCompilationBufferProxy implements StatementCompilationBuffer {
   hasBlockSymbol(name: string): boolean {
     return this.inner.hasBlockSymbol(name);
   }
-
-  // only used for {{view.name}}
-  hasKeyword(name: string): boolean {
-    return this.inner.hasKeyword(name);
-  }
 }
 
 export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy {

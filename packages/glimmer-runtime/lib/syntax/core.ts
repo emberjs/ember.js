@@ -53,7 +53,6 @@ import CompiledValue from '../compiled/expressions/value';
 
 import {
   CompiledLocalRef,
-  CompiledKeywordRef,
   CompiledSelfRef
 } from '../compiled/expressions/ref';
 
@@ -866,9 +865,7 @@ export class Ref extends ExpressionSyntax<Opaque> {
     let head = parts[0];
     let path = parts.slice(1);
 
-    if (lookup.hasKeyword(head)) {
-      return new CompiledKeywordRef({ name: head, path });
-    } if (lookup.hasLocalSymbol(head)) {
+    if (lookup.hasLocalSymbol(head)) {
       let symbol = lookup.getLocalSymbol(head);
       return new CompiledLocalRef({ debug: head, symbol, path });
     } else {

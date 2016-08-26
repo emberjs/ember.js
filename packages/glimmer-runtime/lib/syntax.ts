@@ -60,9 +60,6 @@ export interface SymbolLookup {
   hasNamedSymbol(name: string): boolean;
   getBlockSymbol(name: string): number;
   hasBlockSymbol(name: string): boolean;
-
-  // only used for {{view.name}}
-  hasKeyword(name: string): boolean;
 }
 
 export interface CompileInto {
