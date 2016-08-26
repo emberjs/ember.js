@@ -97,20 +97,19 @@ import {
   Core as SerializedCore
 } from 'glimmer-wire-format';
 
-export interface BlockOptions {
-
-}
-
 export class Block extends StatementSyntax {
   public type = "block";
 
-  static fromSpec(sexp: SerializedStatements.Block, symbolTable: SymbolTable, children: InlineBlock[]): Block {
+  static fromSpec(sexp: SerializedStatements.Block, symbolTable: SymbolTable, scanner: BlockScanner): Block {
     let [, path, params, hash, templateId, inverseId] = sexp;
+
+    let template = scanner.blockFor(symbolTable, templateId);
+    let inverse = (typeof inverseId === 'number') ? scanner.blockFor(symbolTable, inverseId) : null;
 
     return new Block({
       path,
       args: Args.fromSpec(params, hash),
-      templates: Templates.fromSpec([templateId, inverseId], children)
+      templates: Templates.fromSpec(template, inverse)
     });
   }
 
@@ -557,7 +556,7 @@ export class OpenElement extends StatementSyntax {
       scanner.startBlock(this.blockParams);
       this.tagContents(scanner);
       let template = scanner.endBlock(this.blockParams);
-      return new Component({ tag, args, attrs, template });
+      return new Component(tag, attrs, args, template);
     } else {
       return new OpenPrimitiveElement({ tag });
     }
@@ -622,33 +621,23 @@ export class OpenElement extends StatementSyntax {
   }
 }
 
-interface ComponentOptions {
-  tag: string;
-  attrs: string[];
-  args: Args;
-  template: InlineBlock;
-}
-
 export class Component extends StatementSyntax {
   public type = 'component';
-  public tag: string;
-  public attrs: string[];
-  public args: Args;
-  public template: InlineBlock;
 
-  constructor({ tag, args, attrs, template }: ComponentOptions) {
+  constructor(
+    public tag: string,
+    public attrs: string[],
+    public args: Args,
+    public template: InlineBlock
+  ) {
     super();
-    this.tag = tag;
-    this.args = args;
-    this.attrs = attrs;
-    this.template = template;
   }
 
   compile(list: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
     let definition = env.getComponentDefinition([this.tag], symbolTable);
     let args = this.args.compile(list as SymbolLookup, env, symbolTable);
     let shadow = this.attrs;
-    let templates = new Templates({ template: this.template, inverse: null });
+    let templates = new Templates(this.template);
 
     list.append(new PutComponentDefinitionOpcode(definition));
     list.append(new OpenComponentOpcode(args, shadow, templates));
@@ -1183,26 +1172,19 @@ const EMPTY_ARGS: Args = new (class extends Args {
 export class Templates {
   public type = "templates";
 
-  static fromSpec([templateId, inverseId]: [number, number], children: InlineBlock[]): Templates {
-    return new Templates({
-      template: templateId === null ? null : children[templateId],
-      inverse: inverseId === null ? null : children[inverseId],
-    });
+  static fromSpec(_default: InlineBlock, inverse: InlineBlock = null): Templates {
+    return new Templates(_default, inverse);
   }
 
   static empty(): Templates {
-    return new Templates({ template: null, inverse: null });
-  }
-
-  static build(template: InlineBlock, inverse: InlineBlock=null): Templates {
-    return new this({ template, inverse });
+    return new Templates(null, null);
   }
 
   public default: InlineBlock;
   public inverse: InlineBlock;
 
-  constructor(options: { template: InlineBlock, inverse: InlineBlock }) {
-    this.default = options.template;
-    this.inverse = options.inverse;
+  constructor(_default: InlineBlock, inverse: InlineBlock = null) {
+    this.default = _default;
+    this.inverse = inverse;
   }
 }

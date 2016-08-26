@@ -22,12 +22,12 @@ export class CompiledBlock {
 export abstract class Block {
   protected compiled: CompiledBlock = null;
 
-  constructor(public children: InlineBlock[], public program: Program, public symbolTable: SymbolTable) {}
+  constructor(public program: Program, public symbolTable: SymbolTable) {}
 }
 
 export class InlineBlock extends Block {
-  constructor(children: InlineBlock[], program: Program, symbolTable: SymbolTable, public locals: string[] = EMPTY_ARRAY) {
-    super(children, program, symbolTable);
+  constructor(program: Program, symbolTable: SymbolTable, public locals: string[] = EMPTY_ARRAY) {
+    super(program, symbolTable);
   }
 
   hasPositionalParameters(): boolean {
@@ -60,8 +60,8 @@ export class EntryPoint extends TopLevelTemplate {
 }
 
 export class Layout extends TopLevelTemplate {
-  constructor(children: InlineBlock[], program: Program, symbolTable: SymbolTable, public named: string[], public yields: string[]) {
-    super(children, program, symbolTable);
+  constructor(program: Program, symbolTable: SymbolTable, public named: string[], public yields: string[]) {
+    super(program, symbolTable);
   }
 
   hasNamedParameters(): boolean {

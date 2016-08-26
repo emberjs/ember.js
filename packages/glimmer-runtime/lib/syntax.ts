@@ -18,7 +18,7 @@ interface StatementClass<T extends SerializedStatement, U extends Statement> {
 }
 
 export abstract class Statement implements LinkedListNode {
-  static fromSpec<T extends SerializedStatement>(spec: T, symbolTable: SymbolTable, blocks?: InlineBlock[]): Statement {
+  static fromSpec<T extends SerializedStatement>(spec: T, symbolTable: SymbolTable, scanner?: BlockScanner): Statement {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
