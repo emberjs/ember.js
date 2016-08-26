@@ -131,8 +131,6 @@ export default class OutletView {
   }
 
   appendChild(instance) {
-    instance.parentView = this;
-    instance.ownerView = this;
   }
 
   rerender() {

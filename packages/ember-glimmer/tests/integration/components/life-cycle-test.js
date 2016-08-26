@@ -69,8 +69,10 @@ class LifeCycleHooksTest extends RenderingTest {
     };
 
     let assertParentView = (hookName, instance) => {
-      if (!instance.parentView) {
-        this.assert.ok(false, `parentView should be present in ${hookName}`);
+      this.assert.ok(instance.parentView, `parentView should be present in ${hookName}`);
+
+      if (this.isHTMLBars) {
+        this.assert.ok(instance.ownerView, `ownerView should be present in ${hookName}`);
       }
     };
 

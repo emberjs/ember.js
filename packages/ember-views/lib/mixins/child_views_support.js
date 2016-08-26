@@ -18,7 +18,6 @@ export default Mixin.create({
       @private
     */
     this.childViews = [];
-    this.ownerView = this.ownerView || this;
   },
 
   appendChild(view) {
@@ -30,8 +29,5 @@ export default Mixin.create({
     if (!instance[OWNER]) {
       setOwner(instance, getOwner(this));
     }
-
-    instance.parentView = this;
-    instance.ownerView = this.ownerView;
   }
 });

@@ -37,6 +37,7 @@ ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, e
 
   let createOptions = {
     parentView,
+    ownerView: parentView.ownerView,
     [HAS_BLOCK]: !!templates.default
   };
 
