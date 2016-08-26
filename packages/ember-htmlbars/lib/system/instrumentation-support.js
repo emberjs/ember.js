@@ -1,7 +1,12 @@
-import {
-  _instrumentStart,
-  subscribers
-} from 'ember-metal/instrumentation';
+import { _instrumentStart } from 'ember-metal/instrumentation';
+
+function componentInstrumentDetails(component) {
+  return component.instrumentDetails({});
+}
+
+function emptyInstrumentDetails() {
+  return {};
+}
 
 /**
   Provides instrumentation for node managers.
@@ -16,27 +21,26 @@ import {
   @private
 */
 export function instrument(component, callback, context) {
-  let instrumentName, val, details, end;
-  // Only instrument if there's at least one subscriber.
-  if (subscribers.length) {
-    if (component) {
-      instrumentName = component.instrumentName;
+  let instrumentName, payload, payloadParam, val, end;
+
+  if (typeof component === 'object' && component) {
+    if (component.instrumentName === 'component') {
+      instrumentName = 'render.component';
     } else {
-      instrumentName = 'node';
+      instrumentName = `render.${component.instrumentName}`;
     }
-    details = {};
-    if (component) {
-      component.instrumentDetails(details);
-    }
-    end = _instrumentStart('render.' + instrumentName, function viewInstrumentDetails() {
-      return details;
-    });
-    val = callback.call(context);
-    if (end) {
-      end();
-    }
-    return val;
+
+    payload = componentInstrumentDetails;
+    payloadParam = component;
   } else {
-    return callback.call(context);
+    instrumentName = 'render.node';
+    payload = emptyInstrumentDetails;
+    payloadParam = null;
   }
+
+  end = _instrumentStart(instrumentName, payload, payloadParam);
+  val = callback.call(context);
+  end();
+
+  return val;
 }

@@ -127,8 +127,14 @@ function withFinalizer(callback, finalizer, payload, binding) {
   }
 }
 
+function NOOP() {}
+
 // private for now
-export function _instrumentStart(name, _payload) {
+export function _instrumentStart(name, _payload, _payloadParam) {
+  if (subscribers.length === 0) {
+    return NOOP;
+  }
+
   let listeners = cache[name];
 
   if (!listeners) {
@@ -136,10 +142,10 @@ export function _instrumentStart(name, _payload) {
   }
 
   if (listeners.length === 0) {
-    return;
+    return NOOP;
   }
 
-  let payload = _payload();
+  let payload = _payload(_payloadParam);
 
   let STRUCTURED_PROFILE = ENV.STRUCTURED_PROFILE;
   let timeName;
