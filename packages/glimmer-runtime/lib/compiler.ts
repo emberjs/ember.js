@@ -459,10 +459,6 @@ export class CompileIntoList extends LinkedList<Opcode> implements OpcodeBuilder
     return typeof this.block.symbolTable.getYield(name) === 'number';
   }
 
-  hasKeyword(name: string): boolean {
-    return this.env.hasKeyword(name);
-  }
-
   toOpSeq(): OpSeq {
     return this;
   }

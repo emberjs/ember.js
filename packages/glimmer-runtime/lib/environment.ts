@@ -218,10 +218,6 @@ export abstract class Environment {
     }
   }
 
-  hasKeyword(string: string): boolean {
-    return false;
-  }
-
   abstract hasHelper(helperName: string[], blockMeta: BlockMeta): boolean;
   abstract lookupHelper(helperName: string[], blockMeta: BlockMeta): Helper;
 

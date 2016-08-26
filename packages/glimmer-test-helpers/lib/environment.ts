@@ -793,8 +793,6 @@ export class TestEnvironment extends Environment {
           return new IdentitySyntax({ args, templates });
         case 'render-inverse':
           return new RenderInverseIdentitySyntax({ args, templates });
-        case 'with-keywords':
-          return new WithKeywordsSyntax({ args, templates });
       }
     }
 
@@ -872,10 +870,6 @@ export class TestEnvironment extends Environment {
 
   compileLayout(template: string) {
     return rawCompileLayout(template, { env: this });
-  }
-
-  hasKeyword(name: string): boolean {
-    return name === 'view';
   }
 
   iterableFor(ref: Reference<Opaque>, args: EvaluatedArgs): OpaqueIterable {
@@ -1177,39 +1171,6 @@ class RenderInverseIdentitySyntax extends StatementSyntax {
 
   compile(dsl: OpcodeBuilderDSL) {
     dsl.evaluate('inverse', this.templates.inverse);
-  }
-}
-
-class WithKeywordsSyntax extends StatementSyntax {
-  type = "with-keywords";
-
-  public args: ArgsSyntax;
-  public templates: Templates;
-
-  constructor({ args, templates }: { args: ArgsSyntax, templates: Templates }) {
-    super();
-    this.args = args;
-    this.templates = templates;
-  }
-
-  compile(dsl: OpcodeBuilderDSL, env: Environment) {
-    let callback = (_vm: VM, _scope: DynamicScope) => {
-      let vm = _vm as any;
-      let scope = _scope as any as TestDynamicScope;
-
-      let args: EvaluatedArgs = vm.frame.getArgs();
-
-      scope.set(args.named.map);
-    };
-
-    let { args, templates } = this;
-
-    dsl.unit({ templates }, dsl => {
-      dsl.putArgs(args);
-      dsl.setupDynamicScope(callback);
-      dsl.evaluate('default');
-      dsl.popDynamicScope();
-    });
   }
 }
 
