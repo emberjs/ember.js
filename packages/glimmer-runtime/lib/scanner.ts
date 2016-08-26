@@ -17,69 +17,39 @@ export default class Scanner {
 
   scanEntryPoint(): EntryPoint {
     let { spec } = this;
-    let { blocks: specBlocks, meta } = this.spec;
+    let { blocks, meta } = this.spec;
 
     let symbolTable = SymbolTable.forEntryPoint(meta);
-    let blocks: InlineBlock[] = [];
-
-    for (let i = 0, block: SerializedBlock; block = specBlocks[i]; i++) {
-      blocks.push(this.buildBlock(block, blocks, symbolTable));
-    }
-
-    let { program, children } = this.buildStatements(spec, blocks, symbolTable);
-    return new EntryPoint(children, program, symbolTable);
+    let program = buildStatements(spec, blocks, symbolTable, this.env);
+    return new EntryPoint(program, symbolTable);
   }
 
   scanLayout(): Layout {
     let { spec } = this;
-    let { blocks: specBlocks, named, yields, meta } = this.spec;
+    let { blocks, named, yields, meta } = this.spec;
 
     let symbolTable = SymbolTable.forLayout(named, yields, meta);
-    let blocks: InlineBlock[] = [];
+    let program = buildStatements(spec, blocks, symbolTable, this.env);
 
-    for (let i = 0, block: SerializedBlock; block = specBlocks[i]; i++) {
-      blocks.push(this.buildBlock(block, blocks, symbolTable));
-    }
-
-    let { program, children } = this.buildStatements(spec, blocks, symbolTable);
-    return new Layout(children, program, symbolTable, named, yields);
+    return new Layout(program, symbolTable, named, yields);
   }
 
   scanPartial(symbolTable: SymbolTable): PartialBlock {
     let { spec } = this;
-    let { blocks: specBlocks, locals } = this.spec;
+    let { blocks, locals } = this.spec;
 
-    let blocks: InlineBlock[] = [];
+    let program = buildStatements(spec, blocks, symbolTable, this.env);
 
-    for (let i = 0, block: SerializedBlock; block = specBlocks[i]; i++) {
-      blocks.push(this.buildBlock(block, blocks, symbolTable));
-    }
-
-    let { program, children } = this.buildStatements(spec, blocks, symbolTable);
-    return new PartialBlock(children, program, symbolTable, locals);
-  }
-
-  private buildBlock(block: SerializedBlock, blocks: InlineBlock[], symbolTable: SymbolTable): InlineBlock{
-    let childTable = SymbolTable.forBlock(symbolTable, block.locals);
-    let { program, children } = this.buildStatements(block, blocks, childTable);
-    return new InlineBlock(children, program, childTable, block.locals);
-  }
-
-  private buildStatements({ statements }: SerializedBlock, blocks: InlineBlock[], symbolTable: SymbolTable): ScanResults {
-    if (statements.length === 0) return EMPTY_PROGRAM;
-    return new BlockScanner(statements, blocks, symbolTable, this.env).scan();
+    return new PartialBlock(program, symbolTable, locals);
   }
 }
 
-interface ScanResults {
-  program: Program;
-  children: InlineBlock[];
+function buildStatements({ statements }: SerializedBlock, blocks: SerializedBlock[], symbolTable: SymbolTable, env: Environment): Program {
+  if (statements.length === 0) return EMPTY_PROGRAM;
+  return new BlockScanner(statements, blocks, symbolTable, env).scan();
 }
 
-const EMPTY_PROGRAM = {
-  program: EMPTY_SLICE,
-  children: []
-};
+const EMPTY_PROGRAM = EMPTY_SLICE;
 
 export class BlockScanner {
   public env: Environment;
@@ -87,20 +57,27 @@ export class BlockScanner {
   private stack = new Stack<ChildBlockScanner>();
   private reader: SyntaxReader;
 
-  constructor(statements: SerializedStatement[], blocks: InlineBlock[], private symbolTable: SymbolTable, env: Environment) {
+  constructor(statements: SerializedStatement[], private blocks: SerializedBlock[], private symbolTable: SymbolTable, env: Environment) {
     this.stack.push(new ChildBlockScanner(symbolTable));
-    this.reader = new SyntaxReader(statements, blocks, symbolTable);
+    this.reader = new SyntaxReader(statements, symbolTable, this);
     this.env = env;
   }
 
-  scan(): ScanResults {
+  scan(): Program {
     let statement: StatementSyntax;
 
     while (statement = this.reader.next()) {
       this.addStatement(statement);
     }
 
-    return { program: this.stack.current.program, children: this.stack.current.children };
+    return this.stack.current.program;
+  }
+
+  blockFor(symbolTable: SymbolTable, id: number): InlineBlock {
+    let block = this.blocks[id];
+    let childTable = SymbolTable.forBlock(this.symbolTable, block.locals);
+    let program = buildStatements(block, this.blocks, childTable, this.env);
+    return new InlineBlock(program, childTable, block.locals);
   }
 
   startBlock(locals: string[]) {
@@ -109,8 +86,8 @@ export class BlockScanner {
   }
 
   endBlock(locals: string[]): InlineBlock {
-    let { children, program, symbolTable } = this.stack.pop();
-    let block = new InlineBlock(children, program, symbolTable, locals);
+    let { program, symbolTable } = this.stack.pop();
+    let block = new InlineBlock(program, symbolTable, locals);
     this.addChild(block);
     return block;
   }
@@ -125,10 +102,6 @@ export class BlockScanner {
 
   next(): StatementSyntax {
     return this.reader.next();
-  }
-
-  unput(statement: StatementSyntax) {
-    this.reader.unput(statement);
   }
 }
 
@@ -151,11 +124,7 @@ export class SyntaxReader {
   current: number = 0;
   last: StatementSyntax = null;
 
-  constructor(private statements: SerializedStatement[], private blocks: InlineBlock[], private symbolTable: SymbolTable) {}
-
-  unput(statement: StatementSyntax) {
-    this.last = statement;
-  }
+  constructor(private statements: SerializedStatement[], private symbolTable: SymbolTable, private scanner: BlockScanner) {}
 
   next(): StatementSyntax {
     let last = this.last;
@@ -167,6 +136,6 @@ export class SyntaxReader {
     }
 
     let sexp = this.statements[this.current++];
-    return buildStatement(sexp, this.blocks, this.symbolTable);
+    return buildStatement(sexp, this.symbolTable, this.scanner);
   }
 }

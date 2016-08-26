@@ -16,12 +16,12 @@ import {
 } from './core';
 
 import SymbolTable from '../symbol-table';
-import { InlineBlock } from '../compiled/blocks';
 import { Statement as StatementSyntax } from '../syntax';
 import {
   Statements as SerializedStatements,
   Statement as SerializedStatement
 } from 'glimmer-wire-format';
+import { BlockScanner  } from '../scanner';
 
 const {
   isYield,
@@ -40,9 +40,9 @@ const {
   isTrustingAttr
 } = SerializedStatements;
 
-export default function(sexp: SerializedStatement, blocks: InlineBlock[], symbolTable: SymbolTable): StatementSyntax {
+export default function(sexp: SerializedStatement, symbolTable: SymbolTable, scanner: BlockScanner): StatementSyntax {
   if (isYield(sexp)) return Yield.fromSpec(sexp);
-  if (isBlock(sexp)) return Block.fromSpec(sexp, symbolTable, blocks);
+  if (isBlock(sexp)) return Block.fromSpec(sexp, symbolTable, scanner);
   if (isAppend(sexp)) return OptimizedAppend.fromSpec(sexp);
   if (isDynamicAttr(sexp)) return DynamicAttr.fromSpec(sexp);
   if (isDynamicArg(sexp)) return DynamicArg.fromSpec(sexp);
