@@ -344,11 +344,43 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   mergedProperties: ['queryParams'],
 
   /**
-    Retrieves parameters, for current route using the state.params
-    variable and getQueryParamsFor, using the supplied routeName.
+    Returns a hash containing the parameters of an ancestor route.
+
+    Example
+
+    ```javascript
+    App.Router.map(function() {
+      this.route('member', { path: ':name' }, function() {
+        this.route('interest', { path: ':interest' });
+      });
+    });
+
+    App.MemberRoute = Ember.Route.extend({
+      queryParams: {
+        memberQp: { refreshModel: true }
+      }
+    });
+
+    App.MemberInterestRoute = Ember.Route.extend({
+      queryParams: {
+        interestQp: { refreshModel: true }
+      },
+
+      model() {
+        return this.paramsFor('member');
+      }
+    });
+    ```
+
+    If we visit `/turing/maths?memberQp=member&interestQp=interest` the model for
+    the `member.interest` route is hash with:
+
+    * `name`: `turing`
+    * `memberQp`: `member`
 
     @method paramsFor
     @param {String} name
+    @return {Object} hash containing the parameters of the route `name`
     @public
   */
   paramsFor(name) {
