@@ -13,6 +13,7 @@ import { getEngineParent, setEngineParent } from 'ember-application/system/engin
 import { assert } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
+import { guidFor } from 'ember-metal/utils';
 import isEnabled from 'ember-metal/features';
 
 /**
@@ -38,6 +39,8 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
   init() {
     this._super(...arguments);
+
+    guidFor(this);
 
     let base = this.base;
 

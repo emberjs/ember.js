@@ -1,8 +1,8 @@
 import { Template } from 'glimmer-runtime';
+import { OWNER } from 'container/owner';
 
 class Wrapper {
-  constructor(id, env, spec) {
-    let { owner } = env;
+  constructor(id, env, owner, spec) {
     if (spec.meta) {
       spec.meta.owner = owner;
     } else {
@@ -39,8 +39,11 @@ export default function template(json) {
   let id = ++templateId;
   return {
     id,
-    create({ env }) {
-      return new Wrapper(id, env, JSON.parse(json));
+    create(options) {
+      let env = options.env;
+      let owner = options[OWNER];
+
+      return new Wrapper(id, env, owner, JSON.parse(json));
     }
   };
 }

@@ -1,3 +1,4 @@
+import { guidFor } from 'ember-metal/utils';
 import lookupPartial, { hasPartial } from 'ember-views/system/lookup_partial';
 import {
   Environment as GlimmerEnvironment,
@@ -140,12 +141,15 @@ export default class Environment extends GlimmerEnvironment {
         return new CurlyComponentDefinition(name, ComponentClass, layout);
       }
     }, ({ name, source, owner }) => {
-      return source && owner._resolveLocalLookupName(name, source) || name;
+      let expandedName = source && owner._resolveLocalLookupName(name, source) || name;
+      let ownerGuid = guidFor(owner);
+
+      return ownerGuid + '|' + expandedName;
     });
 
-    this._templateCache = new Cache(1000, Template => {
-      return Template.create({ env: this });
-    }, template => template.id);
+    this._templateCache = new Cache(1000, ({ Template, owner }) => {
+      return Template.create({ env: this, [OWNER]: owner });
+    }, ({ Template, owner }) => guidFor(owner) + '|' + Template.id);
 
     this._compilerCache = new Cache(10, Compiler => {
       return new Cache(2000, template => {
@@ -276,14 +280,14 @@ export default class Environment extends GlimmerEnvironment {
   // normally templates should be exported at the proper module name
   // and cached in the container, but this cache supports templates
   // that have been set directly on the component's layout property
-  getTemplate(Template) {
-    return this._templateCache.get(Template);
+  getTemplate(Template, owner) {
+    return this._templateCache.get({ Template, owner });
   }
 
   // a Compiler can wrap the template so it needs its own cache
-  getCompiledBlock(Compiler, template) {
+  getCompiledBlock(Compiler, template, owner) {
     let compilerCache = this._compilerCache.get(Compiler);
-    return compilerCache.get(template);
+    return compilerCache.get(template, owner);
   }
 
   hasPartial(name) {

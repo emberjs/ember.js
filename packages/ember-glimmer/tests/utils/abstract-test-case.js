@@ -307,6 +307,10 @@ export class AbstractApplicationTest extends TestCase {
   registerController(name, controller) {
     this.application.register(`controller:${name}`, controller);
   }
+
+  registerEngine(name, engine) {
+    this.application.register(`engine:${name}`, engine);
+  }
 }
 
 export class AbstractRenderingTest extends TestCase {
