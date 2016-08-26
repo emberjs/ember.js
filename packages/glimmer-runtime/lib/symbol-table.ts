@@ -1,43 +1,39 @@
 import { dict } from 'glimmer-util';
-import { Block, InlineBlock, Layout, EntryPoint } from './compiled/blocks';
+import { BlockMeta } from 'glimmer-wire-format';
 
 export default class SymbolTable {
-  static initForEntryPoint(top: EntryPoint): SymbolTable {
-    return top.symbolTable = new SymbolTable(null, top).initEntryPoint(top);
+  static forEntryPoint(meta: BlockMeta): SymbolTable {
+    return new SymbolTable(null, meta).initEntryPoint();
   }
 
-  static initForLayout(layout: Layout): SymbolTable {
-    return layout.symbolTable = new SymbolTable(null, layout).initLayout(layout);
+  static forLayout(named: string[], yields: string[], meta: BlockMeta): SymbolTable {
+    return new SymbolTable(null, meta).initLayout(named, yields);
   }
 
-  static initForBlock({ parent, block }: { parent: SymbolTable, block: InlineBlock }): SymbolTable {
-    return block.symbolTable = new SymbolTable(parent, block).initBlock(block);
+  static forBlock(parent: SymbolTable, locals: string[]): SymbolTable {
+    return new SymbolTable(parent, null).initBlock(locals);
   }
 
-  private parent: SymbolTable;
   private top: SymbolTable;
-  private template: Block;
   private locals   = dict<number>();
   private named    = dict<number>();
   private yields   = dict<number>();
   public size = 1;
 
-  constructor(parent: SymbolTable, template: Block) {
-    this.parent = parent;
+  constructor(private parent: SymbolTable, private meta: BlockMeta = null) {
     this.top = parent ? parent.top : this;
-    this.template = template;
   }
 
-  initEntryPoint(_: any): this {
+  initEntryPoint(): this {
     return this;
   }
 
-  initBlock({ locals }: { locals: string[] }): this {
+  initBlock(locals: string[]): this {
     this.initPositionals(locals);
     return this;
   }
 
-  initLayout({ named, yields }: { named: string[], yields: string[] }): this {
+  initLayout(named: string[], yields: string[]): this {
     this.initNamed(named);
     this.initYields(yields);
     return this;
@@ -56,6 +52,16 @@ export default class SymbolTable {
   initYields(yields: string[]): this {
     if (yields) yields.forEach(b => this.yields[b] = this.top.size++);
     return this;
+  }
+
+  getMeta(): BlockMeta {
+    let { meta, parent } = this;
+
+    if (!meta && parent) {
+      meta = parent.getMeta();
+    }
+
+    return meta;
   }
 
   getYield(name: string): number {

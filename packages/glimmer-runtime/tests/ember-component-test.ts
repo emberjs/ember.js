@@ -510,7 +510,6 @@ testComponent('yielding to an non-existent block', {
 });
 
 testComponent('yield', {
-  skip: 'glimmer',
   layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
 
   invokeAs: {
@@ -1048,6 +1047,76 @@ testComponent('correct scope - conflicting block param and attr names', {
   layout: 'Outer: {{@conflict}} {{#with @item as |conflict|}}Inner: {{@conflict}} Block: {{conflict}}{{/with}}',
   invokeAs: { args: { item: '"from block"', conflict: '"from attr"' } },
   expected: 'Outer: from attr Inner: from attr Block: from block'
+});
+
+QUnit.test('correct scope - accessing local variable in yielded block (glimmer component)', assert => {
+  class FooBar extends BasicComponent {}
+
+  env.registerBasicComponent('foo-bar', FooBar, `[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{@foo}}]{{yield}}`);
+
+  appendViewFor(
+    stripTight`
+      <div>
+        [Outside: {{zomg}}]
+        {{#with zomg as |lol|}}
+          [Inside: {{zomg}}]
+          [Inside: {{lol}}]
+          <foo-bar @foo={{zomg}}>
+            [Block: {{zomg}}]
+            [Block: {{lol}}]
+          </foo-bar>
+        {{/with}}
+      </div>`,
+    { zomg: "zomg" }
+  );
+
+  equalsElement(view.element, 'div', {},
+      stripTight`
+        [Outside: zomg]
+        [Inside: zomg]
+        [Inside: zomg]
+        [Layout: ]
+        [Layout: ]
+        [Layout: zomg]
+        [Block: zomg]
+        [Block: zomg]`
+  );
+});
+
+QUnit.test('correct scope - accessing local variable in yielded block (curly component)', assert => {
+  class FooBar extends EmberishCurlyComponent {
+    public tagName = '';
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, `[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{foo}}]{{yield}}`);
+
+  appendViewFor(
+    stripTight`
+      <div>
+        [Outside: {{zomg}}]
+        {{#with zomg as |lol|}}
+          [Inside: {{zomg}}]
+          [Inside: {{lol}}]
+          {{#foo-bar foo=zomg}}
+            [Block: {{zomg}}]
+            [Block: {{lol}}]
+          {{/foo-bar}}
+        {{/with}}
+      </div>`,
+    { zomg: "zomg" }
+  );
+
+  equalsElement(view.element, 'div', {},
+      stripTight`
+        [Outside: zomg]
+        [Inside: zomg]
+        [Inside: zomg]
+        [Layout: ]
+        [Layout: ]
+        [Layout: zomg]
+        [Block: zomg]
+        [Block: zomg]`
+  );
 });
 
 QUnit.test('correct scope - self', assert => {
@@ -2817,7 +2886,7 @@ QUnit.test('deeply nested destructions', function(assert) {
   env.registerEmberishGlimmerComponent('destroy-me1', DestroyMe1Component as any, '<div>{{#destroy-me2 item=@item from="destroy-me1"}}{{yield}}{{/destroy-me2}}</div>');
   env.registerEmberishCurlyComponent('destroy-me2', DestroyMe2Component as any, 'Destroy me! {{yield}}');
 
-  appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me1 item={{item}}>{{#destroy-me2 from="root" item=item}}{{/destroy-me2}}</destroy-me1>{{/each}}`, { list: [1,2,3,4,5] });
+  appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me1 @item={{item}}>{{#destroy-me2 from="root" item=item}}{{/destroy-me2}}</destroy-me1>{{/each}}`, { list: [1,2,3,4,5] });
 
   assert.strictEqual(destroyed.length, 0, 'destroy should not be called');
 
