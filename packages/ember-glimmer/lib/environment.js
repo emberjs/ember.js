@@ -1,3 +1,4 @@
+import { guidFor } from 'ember-metal/utils';
 import lookupPartial, { hasPartial } from 'ember-views/system/lookup_partial';
 import {
   Environment as GlimmerEnvironment,
@@ -60,7 +61,7 @@ function buildTextFieldSyntax({ args, templates }, getDefinition) {
 }
 
 const builtInDynamicComponents = {
-  input({ key, args, templates }, getDefinition) {
+  input({ key, args, templates }, symbolTable, getDefinition) {
     if (args.named.has('type')) {
       let typeArg = args.named.at('type');
       if (typeArg.type === 'value') {
@@ -79,7 +80,7 @@ const builtInDynamicComponents = {
     } else {
       return buildTextFieldSyntax({ args, templates }, getDefinition);
     }
-    return DynamicComponentSyntax.create({ args, templates });
+    return DynamicComponentSyntax.create({ args, templates, symbolTable });
   }
 };
 
@@ -134,18 +135,21 @@ export default class Environment extends GlimmerEnvironment {
 
     this.uselessAnchor = document.createElement('a');
 
-    this._definitionCache = new Cache(2000, ({ name, source }) => {
+    this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: ComponentClass, layout } = lookupComponent(owner, name, { source });
       if (ComponentClass || layout) {
         return new CurlyComponentDefinition(name, ComponentClass, layout);
       }
-    }, ({ name, source }) => {
-      return source && owner._resolveLocalLookupName(name, source) || name;
+    }, ({ name, source, owner }) => {
+      let expandedName = source && owner._resolveLocalLookupName(name, source) || name;
+      let ownerGuid = guidFor(owner);
+
+      return ownerGuid + '|' + expandedName;
     });
 
-    this._templateCache = new Cache(1000, Template => {
-      return Template.create({ env: this });
-    }, template => template.id);
+    this._templateCache = new Cache(1000, ({ Template, owner }) => {
+      return Template.create({ env: this, [OWNER]: owner });
+    }, ({ Template, owner }) => guidFor(owner) + '|' + Template.id);
 
     this._compilerCache = new Cache(10, Compiler => {
       return new Cache(2000, template => {
@@ -241,7 +245,7 @@ export default class Environment extends GlimmerEnvironment {
 
       let generateBuiltInSyntax = builtInDynamicComponents[key];
       if (generateBuiltInSyntax) {
-        return generateBuiltInSyntax(statement, (path) => this.getComponentDefinition([path], symbolTable));
+        return generateBuiltInSyntax(statement, symbolTable, (path) => this.getComponentDefinition([path], symbolTable));
       }
 
       assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(key, symbolTable));
@@ -266,21 +270,24 @@ export default class Environment extends GlimmerEnvironment {
 
   getComponentDefinition(path, symbolTable) {
     let name = path[0];
-    let source = symbolTable && `template:${symbolTable.getMeta().moduleName}`;
-    return this._definitionCache.get({ name, source });
+    let blockMeta = symbolTable.getMeta();
+    let owner = blockMeta.owner;
+    let source = `template:${blockMeta.moduleName}`;
+
+    return this._definitionCache.get({ name, source, owner });
   }
 
   // normally templates should be exported at the proper module name
   // and cached in the container, but this cache supports templates
   // that have been set directly on the component's layout property
-  getTemplate(Template) {
-    return this._templateCache.get(Template);
+  getTemplate(Template, owner) {
+    return this._templateCache.get({ Template, owner });
   }
 
   // a Compiler can wrap the template so it needs its own cache
-  getCompiledBlock(Compiler, template) {
+  getCompiledBlock(Compiler, template, owner) {
     let compilerCache = this._compilerCache.get(Compiler);
-    return compilerCache.get(template);
+    return compilerCache.get(template, owner);
   }
 
   hasPartial(name) {
@@ -300,20 +307,27 @@ export default class Environment extends GlimmerEnvironment {
   }
 
   hasHelper(name, symbolTable) {
-    let options = symbolTable && { source: `template:${symbolTable.getMeta().moduleName}` } || {};
+    let blockMeta = symbolTable.getMeta();
+    let owner = blockMeta.owner;
+    let options = { source: `template:${blockMeta.moduleName}` };
+
     return !!builtInHelpers[name[0]] ||
-      this.owner.hasRegistration(`helper:${name}`, options) ||
-      this.owner.hasRegistration(`helper:${name}`);
+      owner.hasRegistration(`helper:${name}`, options) ||
+      owner.hasRegistration(`helper:${name}`);
   }
 
   lookupHelper(name, symbolTable) {
-    let options = symbolTable && { source: `template:${symbolTable.getMeta().moduleName}` } || {};
+    let blockMeta = symbolTable.getMeta();
+    let owner = blockMeta.owner;
+    let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
+
     let helper = builtInHelpers[name[0]] ||
-      this.owner.lookup(`helper:${name}`, options) ||
-      this.owner.lookup(`helper:${name}`);
+      owner.lookup(`helper:${name}`, options) ||
+      owner.lookup(`helper:${name}`);
+
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helper.isInternalHelper) {
-      return (vm, args) => helper.toReference(args, this);
+      return (vm, args) => helper.toReference(args, this, symbolTable);
     } else if (helper.isHelperInstance) {
       return (vm, args) => SimpleHelperReference.create(helper.compute, args);
     } else if (helper.isHelperFactory) {

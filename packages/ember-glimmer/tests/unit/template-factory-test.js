@@ -28,12 +28,12 @@ moduleFor('Template factory test', class extends RenderingTest {
     assert.equal(env._templateCache.misses, 0, 'misses 0');
     assert.equal(env._templateCache.hits, 0, 'hits 0');
 
-    let precompiled = env.getTemplate(Precompiled);
+    let precompiled = env.getTemplate(Precompiled, env.owner);
 
     assert.equal(env._templateCache.misses, 1, 'misses 1');
     assert.equal(env._templateCache.hits, 0, 'hits 0');
 
-    let compiled = env.getTemplate(Compiled);
+    let compiled = env.getTemplate(Compiled, env.owner);
 
     assert.equal(env._templateCache.misses, 2, 'misses 2');
     assert.equal(env._templateCache.hits, 0, 'hits 0');

@@ -9,6 +9,7 @@ import get from 'ember-metal/property_get';
 import { _instrumentStart } from 'ember-metal/instrumentation';
 import { ComponentDefinition } from 'glimmer-runtime';
 import Component from '../component';
+import { OWNER } from 'container/owner';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -230,10 +231,10 @@ class CurlyComponentManager {
 
   templateFor(component, env) {
     let Template = component.layout;
+    let owner = component[OWNER];
     if (Template) {
-      return env.getTemplate(Template);
+      return env.getTemplate(Template, owner);
     }
-    let { owner } = env;
     let layoutName = get(component, 'layoutName');
     if (layoutName) {
       let template = owner.lookup('template:' + layoutName);

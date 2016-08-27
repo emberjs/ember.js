@@ -51,7 +51,7 @@ moduleFor('Layout cache test', class extends RenderingTest {
 
   templateFor(content) {
     let Factory = this.compile(content);
-    return this.env.getTemplate(Factory);
+    return this.env.getTemplate(Factory, this.owner);
   }
 
   ['@test each template is only compiled once'](assert) {

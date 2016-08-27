@@ -13,6 +13,7 @@ import { getEngineParent, setEngineParent } from 'ember-application/system/engin
 import { assert } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
+import { guidFor } from 'ember-metal/utils';
 import isEnabled from 'ember-metal/features';
 
 /**
@@ -38,6 +39,8 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
   init() {
     this._super(...arguments);
+
+    guidFor(this);
 
     let base = this.base;
 
@@ -170,18 +173,29 @@ if (isEnabled('ember-application-engines')) {
     cloneParentDependencies() {
       let parent = getEngineParent(this);
 
-      [
+      let registrations = [
         'route:basic',
         'event_dispatcher:main',
         'service:-routing'
-      ].forEach(key => this.register(key, parent.resolveRegistration(key)));
+      ];
 
-      [
+      if (isEnabled('ember-glimmer')) {
+        registrations.push('service:-glimmer-environment');
+      }
+
+      registrations.forEach(key => this.register(key, parent.resolveRegistration(key)));
+
+      let env = parent.lookup('-environment:main');
+      this.register('-environment:main', env, { instantiate: false });
+
+      let singletons = [
         'router:main',
         P`-bucket-cache:main`,
         '-view-registry:main',
-        '-environment:main'
-      ].forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
+        `renderer:-${env.isInteractive ? 'dom' : 'inert'}`
+      ];
+
+      singletons.forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
 
       this.inject('view', '_environment', '-environment:main');
       this.inject('route', '_environment', '-environment:main');
