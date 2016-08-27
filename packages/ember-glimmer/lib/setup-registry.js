@@ -6,6 +6,7 @@ import TextField from './components/text_field';
 import TextArea from './components/text_area';
 import Checkbox from './components/checkbox';
 import LinkToComponent from './components/link-to';
+import Component from './component';
 import ComponentTemplate from './templates/component';
 import RootTemplate from './templates/root';
 import OutletTemplate from './templates/outlet';
@@ -50,4 +51,5 @@ export function setupEngineRegistry(registry) {
   registry.register('component:-text-area', TextArea);
   registry.register('component:-checkbox', Checkbox);
   registry.register('component:link-to', LinkToComponent);
+  registry.register(P`component:-default`, Component);
 }

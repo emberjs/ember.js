@@ -272,7 +272,7 @@ export default class Environment extends GlimmerEnvironment {
     let name = path[0];
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
-    let source = `template:${blockMeta.moduleName}`;
+    let source = blockMeta.moduleName && `template:${blockMeta.moduleName}`;
 
     return this._definitionCache.get({ name, source, owner });
   }

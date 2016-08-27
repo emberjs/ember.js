@@ -1,14 +1,15 @@
+import { privatize as P } from 'container/registry';
 import { InteractiveRenderer, InertRenderer } from 'ember-htmlbars/renderer';
 import HTMLBarsDOMHelper from 'ember-htmlbars/system/dom-helper';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
 import { OutletView as HTMLBarsOutletView } from 'ember-htmlbars/views/outlet';
 import EmberView from 'ember-views/views/view';
+import Component from 'ember-htmlbars/component';
 import TextField from 'ember-htmlbars/components/text_field';
 import TextArea from 'ember-htmlbars/components/text_area';
 import Checkbox from 'ember-htmlbars/components/checkbox';
 import LinkToComponent from 'ember-htmlbars/components/link-to';
 import TemplateSupport from 'ember-views/mixins/template_support';
-
 
 export function setupApplicationRegistry(registry) {
   registry.register('renderer:-dom', InteractiveRenderer);
@@ -32,4 +33,6 @@ export function setupEngineRegistry(registry) {
   registry.register('component:-text-area', TextArea);
   registry.register('component:-checkbox', Checkbox);
   registry.register('component:link-to', LinkToComponent);
+
+  registry.register(P`component:-default`, Component);
 }
