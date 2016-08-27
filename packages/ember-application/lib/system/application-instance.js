@@ -283,18 +283,9 @@ ApplicationInstance.reopenClass({
   */
   setupRegistry(registry, options = new BootOptions()) {
     registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
-    registry.injection('view', '_environment', '-environment:main');
-    registry.injection('route', '_environment', '-environment:main');
-
     registry.register('service:-document', options.document, { instantiate: false });
 
-    if (options.isInteractive) {
-      registry.injection('view', 'renderer', 'renderer:-dom');
-      registry.injection('component', 'renderer', 'renderer:-dom');
-    } else {
-      registry.injection('view', 'renderer', 'renderer:-inert');
-      registry.injection('component', 'renderer', 'renderer:-inert');
-    }
+    this._super(registry, options);
   }
 });
 

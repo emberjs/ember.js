@@ -74,7 +74,7 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     @param options {Object}
     @return {Promise<Ember.EngineInstance,Error>}
   */
-  boot(options = {}) {
+  boot(options) {
     if (this._bootPromise) { return this._bootPromise; }
 
     this._bootPromise = new RSVP.Promise(resolve => resolve(this._bootSync(options)));
@@ -105,11 +105,17 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
       this.cloneParentDependencies();
     }
 
+    this.setupRegistry(options);
+
     this.base.runInstanceInitializers(this);
 
     this._booted = true;
 
     return this;
+  },
+
+  setupRegistry(options = this.__container__.lookup('-environment:main')) {
+    this.constructor.setupRegistry(this.__registry__, options);
   },
 
   /**
@@ -133,6 +139,30 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   willDestroy() {
     this._super(...arguments);
     run(this.__container__, 'destroy');
+  }
+});
+
+EngineInstance.reopenClass({
+  /**
+   @private
+   @method setupRegistry
+   @param {Registry} registry
+   @param {BootOptions} options
+   */
+  setupRegistry(registry, options) {
+    // when no options/environment is present, do nothing
+    if (!options) { return; }
+
+    registry.injection('view', '_environment', '-environment:main');
+    registry.injection('route', '_environment', '-environment:main');
+
+    if (options.isInteractive) {
+      registry.injection('view', 'renderer', 'renderer:-dom');
+      registry.injection('component', 'renderer', 'renderer:-dom');
+    } else {
+      registry.injection('view', 'renderer', 'renderer:-inert');
+      registry.injection('component', 'renderer', 'renderer:-inert');
+    }
   }
 });
 
