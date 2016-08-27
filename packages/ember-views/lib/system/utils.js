@@ -1,5 +1,9 @@
 /* globals Element */
 
+import { guidFor } from 'ember-metal/utils';
+import { getOwner } from 'container/owner';
+import symbol from 'ember-metal/symbol';
+
 /**
 @module ember
 @submodule ember-views
@@ -17,6 +21,76 @@ export const STYLE_WARNING = '' +
   'please ensure that values being bound are properly escaped. For more information, ' +
   'including how to disable this warning, see ' +
   'http://emberjs.com/deprecations/v1.x/#toc_binding-style-attributes.';
+
+/**
+  @private
+  @method getChildViews
+  @param {Ember.View} view
+*/
+export function getRootViews(owner) {
+  let registry = owner.lookup('-view-registry:main');
+
+  let rootViews = [];
+
+  Object.keys(registry).forEach(id => {
+    let view = registry[id];
+
+    if (view.parentView === null) {
+      rootViews.push(view);
+    }
+  });
+
+  return rootViews;
+}
+
+/**
+  @private
+  @method getViewId
+  @param {Ember.View} view
+ */
+export function getViewId(view) {
+  return view.elementId || guidFor(view);
+}
+
+export const CHILD_VIEW_IDS = symbol('CHILD_VIEW_IDS');
+export const CHILD_VIEW_COUNTER = symbol('CHILD_VIEW_COUNTER');
+
+/**
+  @private
+  @method getChildViews
+  @param {Ember.View} view
+*/
+export function getChildViews(view) {
+  let owner = getOwner(view);
+  let registry = owner.lookup('-view-registry:main');
+  return collectChildViews(view, registry);
+}
+
+export function initChildViews(view) {
+  view[CHILD_VIEW_IDS] = [];
+}
+
+export function addChildView(parent, child) {
+  parent[CHILD_VIEW_IDS].push(getViewId(child));
+}
+
+export function collectChildViews(view, registry) {
+  let ids = [];
+  let views = [];
+
+  view[CHILD_VIEW_IDS].forEach(id => {
+    let view = registry[id];
+
+    if (view && !view.isDestroying && !view.isDestroyed && ids.indexOf(id) === -1) {
+      ids.push(id);
+      views.push(view);
+    }
+  });
+
+  view[CHILD_VIEW_IDS] = ids;
+
+  return views;
+}
 
 /**
   @private

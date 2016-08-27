@@ -130,9 +130,6 @@ export default class OutletView {
     this._renderResult = this.renderer.appendOutletView(this, target);
   }
 
-  appendChild(instance) {
-  }
-
   rerender() {
     if (this._renderResult) { this.renderer.rerender(this); }
   }

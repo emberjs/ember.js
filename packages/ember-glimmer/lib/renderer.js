@@ -8,6 +8,7 @@ import _runInTransaction from 'ember-metal/transaction';
 import isEnabled from 'ember-metal/features';
 import { BOUNDS } from './component';
 import { RootComponentDefinition } from './syntax/curly-component';
+import { getViewId } from 'ember-views/system/utils';
 
 let runInTransaction;
 
@@ -101,14 +102,14 @@ class Renderer {
     let self = new RootReference(view);
     let targetObject = view.outletState.render.controller;
     let ref = view.toReference();
-    let dynamicScope = new DynamicScope(view, ref, ref, true, targetObject);
+    let dynamicScope = new DynamicScope(null, ref, ref, true, targetObject);
     this._renderRoot(view, view.template, self, target, dynamicScope);
   }
 
   appendTo(view, target) {
     let rootDef = new RootComponentDefinition(view);
     let self = new RootReference(rootDef);
-    let dynamicScope = new DynamicScope(view, UNDEFINED_REFERENCE, UNDEFINED_REFERENCE, true, null);
+    let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE, UNDEFINED_REFERENCE, true, null);
     this._renderRoot(view, this._rootTemplate, self, target, dynamicScope);
   }
 
@@ -126,12 +127,13 @@ class Renderer {
   }
 
   register(view) {
-    assert('Attempted to register a view with an id already in use: ' + view.elementId, !this._viewRegistry[view.elementId]);
-    this._viewRegistry[view.elementId] = view;
+    let id = getViewId(view);
+    assert('Attempted to register a view with an id already in use: ' + id, !this._viewRegistry[id]);
+    this._viewRegistry[id] = view;
   }
 
   unregister(view) {
-    delete this._viewRegistry[view.elementId];
+    delete this._viewRegistry[getViewId(view)];
   }
 
   remove(view) {

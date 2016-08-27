@@ -2,6 +2,7 @@ import { set } from 'ember-metal/property_set';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { getViewId } from 'ember-views/system/utils';
 import run from 'ember-metal/run_loop';
 
 class LifeCycleHooksTest extends RenderingTest {
@@ -45,8 +46,9 @@ class LifeCycleHooksTest extends RenderingTest {
 
   assertRegisteredViews(label) {
     let viewRegistry = this.owner.lookup('-view-registry:main');
-    let actual = Object.keys(viewRegistry).sort();
-    let expected = this.componentRegistry.slice().sort();
+    let topLevelId = getViewId(this.component);
+    let actual = Object.keys(viewRegistry).sort().filter(id => id !== topLevelId);
+    let expected = this.componentRegistry.sort();
 
     this.assert.deepEqual(actual, expected, 'registered views - ' + label);
   }
@@ -54,7 +56,7 @@ class LifeCycleHooksTest extends RenderingTest {
   registerComponent(name, { template = null }) {
     let pushComponent = (instance) => {
       this.components[name] = instance;
-      this.componentRegistry.push(instance.elementId);
+      this.componentRegistry.push(getViewId(instance));
     };
 
     let removeComponent = (instance) => {

@@ -8,6 +8,7 @@ import { environment } from 'ember-environment';
 import { internal } from 'htmlbars-runtime';
 import { renderHTMLBarsBlock } from 'ember-htmlbars/system/render-view';
 import fallbackViewRegistry from 'ember-views/compat/fallback-view-registry';
+import { getViewId } from 'ember-views/system/utils';
 import { assert } from 'ember-metal/debug';
 import { getOwner } from 'container/owner';
 
@@ -289,12 +290,13 @@ Renderer.prototype.getBounds = function (view) {
 };
 
 Renderer.prototype.register = function Renderer_register(view) {
-  assert('Attempted to register a view with an id already in use: ' + view.elementId, !this._viewRegistry[view.elementId]);
-  this._viewRegistry[view.elementId] = view;
+  let id = getViewId(view);
+  assert('Attempted to register a view with an id already in use: ' + id, !this._viewRegistry[id]);
+  this._viewRegistry[id] = view;
 };
 
 Renderer.prototype.unregister = function Renderer_unregister(view) {
-  delete this._viewRegistry[view.elementId];
+  delete this._viewRegistry[getViewId(view)];
 };
 
 export const InertRenderer = {
