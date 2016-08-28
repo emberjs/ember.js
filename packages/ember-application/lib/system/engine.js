@@ -12,7 +12,7 @@ import { set } from 'ember-metal/property_set';
 import { assert, deprecate } from 'ember-metal/debug';
 import { canInvoke } from 'ember-metal/utils';
 import EmptyObject from 'ember-metal/empty_object';
-import DefaultResolver from 'ember-application/system/resolver';
+import DefaultResolver from './resolver';
 import EngineInstance from './engine-instance';
 import isEnabled from 'ember-metal/features';
 import symbol from 'ember-metal/symbol';

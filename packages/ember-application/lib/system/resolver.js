@@ -13,7 +13,7 @@ import {
 } from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';
-import validateType from 'ember-application/utils/validate-type';
+import validateType from '../utils/validate-type';
 import dictionary from 'ember-metal/dictionary';
 import {
   get as getTemplate
