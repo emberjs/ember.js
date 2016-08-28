@@ -15,9 +15,7 @@ assign(inDOM, {
   enter(view) {
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
-    if (view.tagName !== '') {
-      view.renderer.register(view);
-    }
+    view.renderer.register(view);
 
     runInDebug(() => {
       _addBeforeObserver(view, 'elementId', () => {
@@ -27,9 +25,7 @@ assign(inDOM, {
   },
 
   exit(view) {
-    if (view.tagName !== '') {
-      view.renderer.unregister(view);
-    }
+    view.renderer.unregister(view);
   }
 });
 

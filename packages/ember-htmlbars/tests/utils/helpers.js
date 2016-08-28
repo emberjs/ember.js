@@ -18,6 +18,7 @@ export { default as LinkTo } from 'ember-htmlbars/components/link-to';
 export { InteractiveRenderer, InertRenderer } from 'ember-htmlbars/renderer';
 export { default as makeBoundHelper } from 'ember-glimmer/make-bound-helper';
 export { htmlSafe, SafeString } from 'ember-htmlbars/utils/string';
+import dictionary from 'ember-metal/dictionary';
 
 export function buildOwner(options) {
   let owner = _buildOwner(options);
@@ -27,7 +28,7 @@ export function buildOwner(options) {
   owner.inject('service:-htmlbars-environment', 'dom', 'service:-dom-helper');
 
   owner.register('service:-document', document, { instantiate: false });
-  owner.register('-view-registry:main', { create() { return {}; } });
+  owner.register('-view-registry:main', { create() { return dictionary(null); } });
   owner.inject('renderer', '_viewRegistry', '-view-registry:main');
   owner.inject('renderer', 'dom', 'service:-dom-helper');
   owner.inject('component', 'renderer', 'renderer:-dom');

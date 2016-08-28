@@ -200,7 +200,9 @@ class CurlyComponentManager {
     dynamicScope.view = component;
     dynamicScope.targetObject = component;
 
-    parentView.appendChild(component);
+    if (parentView !== null) {
+      parentView.appendChild(component);
+    }
 
     component.trigger('didInitAttrs', { attrs });
     component.trigger('didReceiveAttrs', { newAttrs: attrs });

@@ -2,16 +2,11 @@ import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import { set } from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
 import { LinkTo } from '../../utils/helpers';
 import { classes as classMatcher } from '../../utils/test-helpers';
 import isEnabled from 'ember-metal/features';
 
 moduleFor('Link-to component', class extends ApplicationTest {
-  runTask(fn) {
-    run(fn);
-  }
-
   visitWithDeprecation(path, deprecation) {
     let p;
 
@@ -170,10 +165,6 @@ moduleFor('Link-to component with query-params', class extends ApplicationTest {
         bar: 'yes'
       }));
     }
-  }
-
-  runTask(fn) {
-    run(fn);
   }
 
   ['@test populates href with fully supplied query param values'](assert) {

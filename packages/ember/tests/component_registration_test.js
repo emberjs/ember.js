@@ -363,27 +363,29 @@ QUnit.test('Components trigger actions in the components context when called fro
   jQuery('#fizzbuzz', '#wrapper').click();
 });
 
-QUnit.test('Components receive the top-level view as their ownerView', function(assert) {
-  setTemplate('application', compile('{{outlet}}'));
-  setTemplate('index', compile('{{my-component}}'));
-  setTemplate('components/my-component', compile('<div></div>'));
+if (!isEnabled('ember-glimmer')) {
+  QUnit.test('Components receive the top-level view as their ownerView', function(assert) {
+    setTemplate('application', compile('{{outlet}}'));
+    setTemplate('index', compile('{{my-component}}'));
+    setTemplate('components/my-component', compile('<div></div>'));
 
-  let component;
+    let component;
 
-  boot(() => {
-    appInstance.register('component:my-component', Component.extend({
-      init() {
-        this._super();
-        component = this;
-      }
-    }));
+    boot(() => {
+      appInstance.register('component:my-component', Component.extend({
+        init() {
+          this._super();
+          component = this;
+        }
+      }));
+    });
+
+    // Theses tests are intended to catch a regression where the owner view was
+    // not configured properly. Future refactors may break these tests, which
+    // should not be considered a breaking change to public APIs.
+    let ownerView = component.ownerView;
+    assert.ok(ownerView, 'owner view was set');
+    assert.ok(ownerView instanceof OutletView, 'owner view has no parent view');
+    assert.notStrictEqual(component, ownerView, 'owner view is not itself');
   });
-
-  // Theses tests are intended to catch a regression where the owner view was
-  // not configured properly. Future refactors may break these tests, which
-  // should not be considered a breaking change to public APIs.
-  let ownerView = component.ownerView;
-  assert.ok(ownerView, 'owner view was set');
-  assert.ok(ownerView instanceof OutletView, 'owner view has no parent view');
-  assert.notStrictEqual(component, ownerView, 'owner view is not itself');
-});
+}
