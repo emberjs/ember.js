@@ -3,7 +3,7 @@ import assign from 'ember-metal/assign';
 import EmberError from 'ember-metal/error';
 import { _addBeforeObserver } from 'ember-metal/observer';
 
-import hasElement from 'ember-views/views/states/has_element';
+import hasElement from './has_element';
 /**
 @module ember
 @submodule ember-views

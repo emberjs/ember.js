@@ -1,6 +1,6 @@
-import _default from 'ember-views/views/states/default';
+import _default from './default';
 import assign from 'ember-metal/assign';
-import jQuery from 'ember-views/system/jquery';
+import jQuery from '../../system/jquery';
 import run from 'ember-metal/run_loop';
 import { flaggedInstrument } from 'ember-metal/instrumentation';
 

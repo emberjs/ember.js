@@ -1,9 +1,9 @@
 import assign from 'ember-metal/assign';
-import _default from 'ember-views/views/states/default';
-import preRender from 'ember-views/views/states/pre_render';
-import hasElement from 'ember-views/views/states/has_element';
-import inDOM from 'ember-views/views/states/in_dom';
-import destroying from 'ember-views/views/states/destroying';
+import _default from './states/default';
+import preRender from './states/pre_render';
+import hasElement from './states/has_element';
+import inDOM from './states/in_dom';
+import destroying from './states/destroying';
 
 export function cloneStates(from) {
   let into = {};

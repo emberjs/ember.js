@@ -5,7 +5,7 @@ import Evented from 'ember-runtime/mixins/evented';
 import ActionHandler, { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
 import { typeOf } from 'ember-runtime/utils';
 
-import { cloneStates, states } from 'ember-views/views/states';
+import { cloneStates, states } from './states';
 import require from 'require';
 
 // Normally, the renderer is injected by the container when the view is looked

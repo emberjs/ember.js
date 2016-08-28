@@ -1,6 +1,6 @@
 import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
-import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+import { MUTABLE_CELL } from '../../compat/attrs-proxy';
 
 /**
 @module ember
