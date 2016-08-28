@@ -1,14 +1,14 @@
 import Ember from 'ember-metal/core'; // reexports
-import Test from 'ember-testing/test';
-import Adapter from 'ember-testing/adapters/adapter';
-import setupForTesting from 'ember-testing/setup_for_testing';
+import Test from './test';
+import Adapter from './adapters/adapter';
+import setupForTesting from './setup_for_testing';
 import require from 'require';
 
-import 'ember-testing/support';      // to handle various edge cases
-import 'ember-testing/ext/application';
-import 'ember-testing/ext/rsvp';
-import 'ember-testing/helpers';      // adds helpers to helpers object in Test
-import 'ember-testing/initializers'; // to setup initializer
+import './support';      // to handle various edge cases
+import './ext/application';
+import './ext/rsvp';
+import './helpers';      // adds helpers to helpers object in Test
+import './initializers'; // to setup initializer
 
 /**
   @module ember

@@ -1,4 +1,4 @@
-import Adapter from 'ember-testing/adapters/adapter';
+import Adapter from './adapter';
 import { inspect } from 'ember-metal/utils';
 
 /**
