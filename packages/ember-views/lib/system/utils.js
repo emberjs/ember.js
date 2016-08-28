@@ -24,8 +24,8 @@ export const STYLE_WARNING = '' +
 
 /**
   @private
-  @method getChildViews
-  @param {Ember.View} view
+  @method getRootViews
+  @param {Object} owner
 */
 export function getRootViews(owner) {
   let registry = owner.lookup('-view-registry:main');
