@@ -25,7 +25,7 @@ import BucketCache from 'ember-routing/system/cache';
 import ApplicationInstance from './application-instance';
 import { _loaded } from 'ember-runtime/system/lazy_load';
 import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
-import { privatize as P } from 'container/registry';
+import { privatize as P } from 'container';
 import { environment } from 'ember-environment';
 import RSVP from 'ember-runtime/ext/rsvp';
 import Engine, { GLIMMER } from './engine';

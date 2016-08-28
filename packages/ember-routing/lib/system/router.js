@@ -22,7 +22,7 @@ import {
 } from '../utils';
 import { guidFor } from 'ember-metal/utils';
 import RouterState from './router_state';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 import dictionary from 'ember-metal/dictionary';
 
 /**

@@ -5,7 +5,7 @@ import EmberApplication from 'ember-application/system/application';
 import EmberObject from 'ember-runtime/system/object';
 import Router from 'ember-routing/system/router';
 import Controller from 'ember-runtime/controllers/controller';
-import Registry from 'container/registry';
+import { Registry } from 'container';
 
 let application, Application;
 

@@ -3,7 +3,7 @@ import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import Engine from 'ember-application/system/engine';
 import EmberObject from 'ember-runtime/system/object';
-import { privatize as P } from 'container/registry';
+import { privatize as P } from 'container';
 import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
 
 let engine;

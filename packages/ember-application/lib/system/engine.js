@@ -3,8 +3,10 @@
 @submodule ember-application
 */
 import Namespace from 'ember-runtime/system/namespace';
-import Registry from 'container/registry';
-import { privatize as P } from 'container/registry';
+import {
+  Registry,
+  privatize as P
+} from 'container';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
 import DAG from 'dag-map';
 import { get } from 'ember-metal/property_get';

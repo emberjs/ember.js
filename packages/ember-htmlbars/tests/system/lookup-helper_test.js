@@ -1,7 +1,7 @@
 import lookupHelper, { findHelper } from 'ember-htmlbars/system/lookup-helper';
 import ComponentLookup from 'ember-views/component_lookup';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
-import { OWNER } from 'container/owner';
+import { OWNER } from 'container';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 
 function generateEnv(helpers, owner) {
@@ -127,4 +127,3 @@ QUnit.test('fails with a useful error when resolving a function', function() {
     actual = lookupHelper('some-name', view, env);
   }, 'Expected to find an Ember.Helper with the name helper:some-name, but found an object of type function instead.');
 });
-

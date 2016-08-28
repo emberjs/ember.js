@@ -1,5 +1,5 @@
 import { Template } from 'glimmer-runtime';
-import { OWNER } from 'container/owner';
+import { OWNER } from 'container';
 
 class Wrapper {
   constructor(id, env, owner, spec) {

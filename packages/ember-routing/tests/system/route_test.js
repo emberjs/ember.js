@@ -4,7 +4,7 @@ import EmberObject from 'ember-runtime/system/object';
 import EmberRoute from 'ember-routing/system/route';
 import inject from 'ember-runtime/inject';
 import buildOwner from 'container/tests/test-helpers/build-owner';
-import { setOwner } from 'container/owner';
+import { setOwner } from 'container';
 import isEnabled from 'ember-metal/features';
 
 let route, routeOne, routeTwo, lookupHash;

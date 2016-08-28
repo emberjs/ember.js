@@ -7,7 +7,7 @@ import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import getCellOrValue from '../hooks/get-cell-or-value';
 import { instrument } from '../system/instrumentation-support';
 import { takeLegacySnapshot } from './component-node-manager';
-import { setOwner } from 'container/owner';
+import { setOwner } from 'container';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public

@@ -29,7 +29,7 @@ import {
   normalizeControllerQueryParams,
   calculateCacheKey
 } from '../utils';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 import isEmpty from 'ember-metal/is_empty';
 import symbol from 'ember-metal/symbol';
 const { slice } = Array.prototype;

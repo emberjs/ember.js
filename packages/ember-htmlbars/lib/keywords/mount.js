@@ -6,7 +6,7 @@
 import ViewNodeManager from '../node-managers/view-node-manager';
 import RenderEnv from '../system/render-env';
 import { assert } from 'ember-metal/debug';
-import { getOwner, setOwner } from 'container/owner';
+import { getOwner, setOwner } from 'container';
 import { isOutletStable } from './outlet';
 import { childOutletState } from './render';
 

@@ -5,10 +5,10 @@
 
 import EmberObject from 'ember-runtime/system/object';
 import EmberError from 'ember-metal/error';
-import Registry from 'container/registry';
+import { Registry } from 'container';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
-import { privatize as P } from 'container/registry';
+import { privatize as P } from 'container';
 import { getEngineParent, setEngineParent } from './engine-parent';
 import { assert } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';

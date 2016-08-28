@@ -43,7 +43,7 @@ import { default as queryParams } from './helpers/query-param';
 import { default as eachIn } from './helpers/each-in';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
-import { OWNER } from 'container/owner';
+import { OWNER } from 'container';
 
 const builtInComponents = {
   textarea: '-text-area'

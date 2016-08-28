@@ -8,7 +8,7 @@ import View from 'ember-views/views/view';
 
 import { computed } from 'ember-metal/computed';
 
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 import symbol from 'ember-metal/symbol';
 
 export let HAS_BLOCK = symbol('HAS_BLOCK');

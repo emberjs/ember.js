@@ -1,6 +1,6 @@
 import defaultEnv from '../env';
 import { MorphSet } from '../renderer';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 
 export default function RenderEnv(options) {
   this.lifecycleHooks = options.lifecycleHooks || [];

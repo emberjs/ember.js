@@ -1,4 +1,4 @@
-import { privatize as P } from 'container/registry';
+import { privatize as P } from 'container';
 
 function lookupComponentPair(componentLookup, owner, name, options) {
   let component = componentLookup.componentFor(name, owner, options);

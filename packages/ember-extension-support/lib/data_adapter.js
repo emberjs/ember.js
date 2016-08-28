@@ -5,7 +5,7 @@ import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import Application from 'ember-application/system/application';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 import {
   addArrayObserver,
   removeArrayObserver,
