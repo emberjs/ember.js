@@ -15,7 +15,7 @@ import {
   getQuery,
   getFullPath,
   replacePath
-} from 'ember-routing/location/util';
+} from './util';
 
 /**
 @module ember

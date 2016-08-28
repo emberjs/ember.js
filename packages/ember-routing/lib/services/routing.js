@@ -7,7 +7,7 @@ import Service from 'ember-runtime/system/service';
 
 import { get } from 'ember-metal/property_get';
 import { readOnly } from 'ember-runtime/computed/computed_macros';
-import { routeArgs } from 'ember-routing/utils';
+import { routeArgs } from '../utils';
 import assign from 'ember-metal/assign';
 
 /**
