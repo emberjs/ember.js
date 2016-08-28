@@ -3,6 +3,36 @@ import { Mixin } from 'ember-metal/mixin';
 import { defineProperty } from 'ember-metal/properties';
 import descriptor from 'ember-metal/descriptor';
 
+// IE9 soft-fails when trying to delete a non-configurable property
+const hasCompliantDelete = (function() {
+  let obj = {};
+
+  Object.defineProperty(obj, 'zomg', { configurable: false, value: 'zomg' });
+
+  try {
+    delete obj.zomg;
+  } catch(e) {
+    return true;
+  }
+
+  return false;
+})();
+
+// IE9 soft-fails when trying to assign to a non-writable property
+const hasCompliantAssign = (function() {
+  let obj = {};
+
+  Object.defineProperty(obj, 'zomg', { writable: false, value: 'zomg' });
+
+  try {
+    obj.zomg = 'lol';
+  } catch(e) {
+    return true;
+  }
+
+  return false;
+})();
+
 class DescriptorTest {
 
   /* abstract static module(title: string); */
@@ -207,9 +237,15 @@ classes.forEach(TestClass => {
 
     let source = factory.source();
 
-    assert.throws(() => delete source.foo, TypeError);
+    if (hasCompliantDelete) {
+      assert.throws(() => delete source.foo, TypeError);
+    } else {
+      delete source.foo;
+    }
 
     assert.throws(() => Object.defineProperty(source, 'foo', { configurable: true, value: 'baz' }), TypeError);
+
+    assert.equal(obj.foo, 'bar');
   });
 
   TestClass.test('defining an enumerable property', function(assert, factory) {
@@ -263,9 +299,15 @@ classes.forEach(TestClass => {
 
     let source = factory.source();
 
-    assert.throws(() => source.foo = 'baz', TypeError);
+    if (hasCompliantAssign) {
+      assert.throws(() => source.foo = 'baz', TypeError);
+      assert.throws(() => obj.foo = 'baz', TypeError);
+    } else {
+      source.foo = 'baz';
+      obj.foo = 'baz';
+    }
 
-    assert.throws(() => obj.foo = 'baz', TypeError);
+    assert.equal(obj.foo, 'bar');
   });
 
   TestClass.test('defining a getter', function(assert, factory) {
@@ -347,6 +389,12 @@ classes.forEach(TestClass => {
 
     assert.equal(obj.fooBar, 'FOO-BAR');
 
-    assert.throws(() => obj.fooBar = 'foobar', TypeError);
+    if (hasCompliantAssign) {
+      assert.throws(() => obj.fooBar = 'foobar', TypeError);
+    } else {
+      obj.fooBar = 'foobar';
+    }
+
+    assert.equal(obj.fooBar, 'FOO-BAR');
   });
 });
