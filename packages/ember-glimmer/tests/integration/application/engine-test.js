@@ -18,6 +18,32 @@ const shouldRun = isEnabled('ember-application-engines') && (
 
 if (shouldRun) {
   moduleFor('Application test: engine rendering', class extends ApplicationTest {
+    setupAppAndRoutableEngine(hooks = []) {
+      this.application.register('template:application', compile('Application{{outlet}}'));
+
+      this.router.map(function() {
+        this.mount('blog');
+      });
+      this.application.register('route-map:blog', function() { });
+      this.registerRoute('application', Route.extend({
+        model() {
+          hooks.push('application - application');
+        }
+      }));
+
+      this.registerEngine('blog', Engine.extend({
+        init() {
+          this._super(...arguments);
+          this.register('template:application', compile('Engine{{outlet}}'));
+          this.register('route:application', Route.extend({
+            model() {
+              hooks.push('engine - application');
+            }
+          }));
+        }
+      }));
+    }
+
     ['@test sharing a template between engine and application has separate refinements']() {
       this.assert.expect(1);
 
@@ -58,35 +84,33 @@ if (shouldRun) {
       });
     }
 
-    ['@test can use shouldRender: false'](assert) {
-      this.assert.expect(2);
+    ['@test visit() with `shouldRender: true` returns a promise that resolves when application and engine templates have rendered'](assert) {
+      assert.expect(2);
+
       let hooks = [];
 
-      this.registerRoute('application', Route.extend({
-        model() {
-          hooks.push('application - application');
-        }
-      }));
+      this.setupAppAndRoutableEngine(hooks);
 
-      this.router.map(function() {
-        this.mount('blog');
+      return this.visit('/blog', { shouldRender: true }).then(() => {
+        this.assertText('ApplicationEngine');
+
+        this.assert.deepEqual(hooks, [
+          'application - application',
+          'engine - application'
+        ], 'the expected model hooks were fired');
       });
-      this.application.register('route-map:blog', function() { });
+    }
 
-      this.registerEngine('blog', Engine.extend({
-        init() {
-          this._super(...arguments);
+    ['@test visit() with `shouldRender: false` returns a promise that resolves without rendering'](assert) {
+      assert.expect(2);
 
-          this.register('route:application', Route.extend({
-            model() {
-              hooks.push('engine - application');
-            }
-          }));
-        }
-      }));
+      let hooks = [];
+
+      this.setupAppAndRoutableEngine(hooks);
 
       return this.visit('/blog', { shouldRender: false }).then(() => {
         this.assertText('');
+
         this.assert.deepEqual(hooks, [
           'application - application',
           'engine - application'
