@@ -289,6 +289,10 @@ Renderer.prototype.getBounds = function (view) {
   return { parentElement, firstNode, lastNode };
 };
 
+Renderer.prototype.createElement = function(tagName) {
+  return this._dom.createElement(tagName);
+};
+
 Renderer.prototype.register = function Renderer_register(view) {
   let id = getViewId(view);
   assert('Attempted to register a view with an id already in use: ' + id, !this._viewRegistry[id]);

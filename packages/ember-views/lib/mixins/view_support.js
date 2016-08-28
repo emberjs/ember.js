@@ -208,7 +208,7 @@ export default Mixin.create({
   renderToElement(tagName) {
     tagName = tagName || 'body';
 
-    let element = this.renderer._dom.createElement(tagName);
+    let element = this.renderer.createElement(tagName);
 
     this.renderer.appendTo(this, element);
     return element;
