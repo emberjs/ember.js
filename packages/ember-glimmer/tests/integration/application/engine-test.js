@@ -4,6 +4,7 @@ import { strip } from '../../utils/abstract-test-case';
 import { compile } from '../../utils/helpers';
 import Controller from 'ember-runtime/controllers/controller';
 import Engine from 'ember-application/system/engine';
+import Route from 'ember-routing/system/route';
 import isEnabled from 'ember-metal/features';
 
 // only run these tests for ember-glimmer when the feature is enabled, or for
@@ -54,6 +55,42 @@ if (shouldRun) {
 
       return this.visit('/blog').then(() => {
         this.assertText('ApplicationController Data!EngineComponent!');
+      });
+    }
+
+    ['@test can use shouldRender: false'](assert) {
+      this.assert.expect(2);
+      let hooks = [];
+
+      this.registerRoute('application', Route.extend({
+        model() {
+          hooks.push('application - application');
+        }
+      }));
+
+      this.router.map(function() {
+        this.mount('blog');
+      });
+      this.application.register('route-map:blog', function() { });
+
+      this.registerEngine('blog', Engine.extend({
+        init() {
+          this._super(...arguments);
+
+          this.register('route:application', Route.extend({
+            model() {
+              hooks.push('engine - application');
+            }
+          }));
+        }
+      }));
+
+      return this.visit('/blog', { shouldRender: false }).then(() => {
+        this.assertText('');
+        this.assert.deepEqual(hooks, [
+          'application - application',
+          'engine - application'
+        ], 'the expected model hooks were fired');
       });
     }
   });

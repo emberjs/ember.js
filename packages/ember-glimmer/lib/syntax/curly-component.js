@@ -8,7 +8,6 @@ import assign from 'ember-metal/assign';
 import get from 'ember-metal/property_get';
 import { _instrumentStart } from 'ember-metal/instrumentation';
 import { ComponentDefinition } from 'glimmer-runtime';
-import Component from '../component';
 import { OWNER } from 'container/owner';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
@@ -188,7 +187,6 @@ class CurlyComponentManager {
     aliasIdToElementId(args, props);
 
     props.parentView = parentView;
-    props.renderer = parentView.renderer;
     props[HAS_BLOCK] = hasBlock;
 
     // dynamicScope here is inherited from the parent dynamicScope,
@@ -370,7 +368,7 @@ function ariaRole(vm) {
 
 export class CurlyComponentDefinition extends ComponentDefinition {
   constructor(name, ComponentClass, template, args) {
-    super(name, MANAGER, ComponentClass || Component);
+    super(name, MANAGER, ComponentClass);
     this.template = template;
     this.args = args;
   }

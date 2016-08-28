@@ -266,13 +266,13 @@ export class AbstractApplicationTest extends TestCase {
     runDestroy(this.application);
   }
 
-  visit(url) {
+  visit(url, options) {
     let { applicationInstance } = this;
 
     if (applicationInstance) {
-      return run(applicationInstance, 'visit', url);
+      return run(applicationInstance, 'visit', url, options);
     } else {
-      return run(this.application, 'visit', url).then(instance => {
+      return run(this.application, 'visit', url, options).then(instance => {
         this.applicationInstance = instance;
       });
     }
