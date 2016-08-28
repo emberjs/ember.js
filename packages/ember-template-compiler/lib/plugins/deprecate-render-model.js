@@ -1,6 +1,6 @@
 import { deprecate } from 'ember-metal/debug';
 import calculateLocationDisplay from
-  'ember-template-compiler/system/calculate-location-display';
+  '../system/calculate-location-display';
 
 export default function DeprecateRenderModel(options) {
   this.syntax = null;

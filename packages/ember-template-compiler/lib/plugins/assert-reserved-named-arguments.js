@@ -1,5 +1,5 @@
 import { assert } from 'ember-metal/debug';
-import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
+import calculateLocationDisplay from '../system/calculate-location-display';
 
 export default function AssertReservedNamedArguments(options) {
   this.syntax = null;
