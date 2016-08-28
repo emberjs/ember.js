@@ -1,18 +1,18 @@
 import { assert, warn } from 'ember-metal/debug';
-import buildComponentTemplate from 'ember-htmlbars/system/build-component-template';
-import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
+import buildComponentTemplate from '../system/build-component-template';
+import getCellOrValue from '../hooks/get-cell-or-value';
 import { get } from 'ember-metal/property_get';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
-import { instrument } from 'ember-htmlbars/system/instrumentation-support';
-import EmberComponent, { HAS_BLOCK } from 'ember-htmlbars/component';
-import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
+import { instrument } from '../system/instrumentation-support';
+import EmberComponent, { HAS_BLOCK } from '../component';
+import extractPositionalParams from '../utils/extract-positional-params';
 import { setOwner, getOwner } from 'container/owner';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
 // and it gets actively used in addons or other downstream
 // libraries.
-import getValue from 'ember-htmlbars/hooks/get-value';
+import getValue from '../hooks/get-value';
 
 export default function ComponentNodeManager(component, scope, renderNode, attrs, block, expectElement) {
   this.component = component;

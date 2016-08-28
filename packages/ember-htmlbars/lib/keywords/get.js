@@ -6,7 +6,7 @@
 import { assert } from 'ember-metal/debug';
 import BasicStream from '../streams/stream';
 import { isStream } from '../streams/utils';
-import subscribe from 'ember-htmlbars/utils/subscribe';
+import subscribe from '../utils/subscribe';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import {

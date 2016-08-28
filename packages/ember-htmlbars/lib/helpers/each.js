@@ -4,7 +4,7 @@
 */
 
 import shouldDisplay from '../streams/should_display';
-import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
+import decodeEachKey from '../utils/decode-each-key';
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension

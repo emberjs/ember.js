@@ -1,19 +1,19 @@
 import assign from 'ember-metal/assign';
 import { assert, warn } from 'ember-metal/debug';
-import buildComponentTemplate from 'ember-htmlbars/system/build-component-template';
+import buildComponentTemplate from '../system/build-component-template';
 import { get } from 'ember-metal/property_get';
 import setProperties from 'ember-metal/set_properties';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
-import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
-import { instrument } from 'ember-htmlbars/system/instrumentation-support';
-import { takeLegacySnapshot } from 'ember-htmlbars/node-managers/component-node-manager';
+import getCellOrValue from '../hooks/get-cell-or-value';
+import { instrument } from '../system/instrumentation-support';
+import { takeLegacySnapshot } from './component-node-manager';
 import { setOwner } from 'container/owner';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
 // and it gets actively used in addons or other downstream
 // libraries.
-import getValue from 'ember-htmlbars/hooks/get-value';
+import getValue from '../hooks/get-value';
 
 export default function ViewNodeManager(component, scope, renderNode, block, expectElement) {
   this.component = component;

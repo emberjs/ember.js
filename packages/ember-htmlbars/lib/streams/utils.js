@@ -1,4 +1,4 @@
-import getValue from 'ember-htmlbars/hooks/get-value';
+import getValue from '../hooks/get-value';
 import { assert } from 'ember-metal/debug';
 import { Stream, IS_STREAM } from './stream';
 import { get } from 'ember-metal/property_get';

@@ -3,9 +3,9 @@
 @submodule ember-htmlbars
 */
 
-import { findHelper } from 'ember-htmlbars/system/lookup-helper';
+import { findHelper } from '../system/lookup-helper';
 import { handleRedirect } from 'htmlbars-runtime/hooks';
-import { buildHelperStream } from 'ember-htmlbars/system/invoke-helper';
+import { buildHelperStream } from '../system/invoke-helper';
 
 export default function emberElement(morph, env, scope, path, params, hash, visitor) {
   if (handleRedirect(morph, env, scope, path, params, hash, null, null, visitor)) {

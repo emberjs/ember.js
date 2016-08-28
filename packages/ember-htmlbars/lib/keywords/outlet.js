@@ -3,8 +3,8 @@
 @submodule ember-templates
 */
 
-import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
-import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
+import ViewNodeManager from '../node-managers/view-node-manager';
+import topLevelViewTemplate from '../templates/top-level-view';
 import isEnabled from 'ember-metal/features';
 import VERSION from 'ember/version';
 

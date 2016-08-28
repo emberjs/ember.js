@@ -8,7 +8,7 @@ import {
   processPositionalParamsFromCell,
 } from  './closure-component';
 import lookupComponent from 'ember-views/utils/lookup-component';
-import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
+import extractPositionalParams from '../utils/extract-positional-params';
 
 export default {
   setupState(lastState, env, scope, params, hash) {

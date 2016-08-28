@@ -6,8 +6,8 @@
 import {
   CONTAINS_DASH_CACHE,
   CONTAINS_DOT_CACHE
-} from 'ember-htmlbars/system/lookup-helper';
-import { isComponentCell } from 'ember-htmlbars/keywords/closure-component';
+} from '../system/lookup-helper';
+import { isComponentCell } from '../keywords/closure-component';
 import { isStream } from '../streams/utils';
 
 function hasComponentOrTemplate(owner, path, options) {

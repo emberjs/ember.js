@@ -10,9 +10,9 @@ import symbol from 'ember-metal/symbol';
 import BasicStream from '../streams/stream';
 import EmptyObject from 'ember-metal/empty_object';
 import { read } from '../streams/utils';
-import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';
+import { labelForSubexpr } from '../hooks/subexpr';
 import assign from 'ember-metal/assign';
-import { isRestPositionalParams, processPositionalParams } from 'ember-htmlbars/utils/extract-positional-params';
+import { isRestPositionalParams, processPositionalParams } from '../utils/extract-positional-params';
 import lookupComponent from 'ember-views/utils/lookup-component';
 
 export const COMPONENT_REFERENCE = symbol('COMPONENT_REFERENCE');

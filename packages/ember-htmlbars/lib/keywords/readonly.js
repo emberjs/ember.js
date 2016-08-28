@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import { MUTABLE_REFERENCE } from 'ember-htmlbars/keywords/mut';
+import { MUTABLE_REFERENCE } from './mut';
 
 export default function readonly(morph, env, scope, originalParams, hash, template, inverse) {
   // If `morph` is `null` the keyword is being invoked as a subexpression.

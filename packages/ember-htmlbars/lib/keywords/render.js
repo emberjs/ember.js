@@ -6,10 +6,10 @@
 import { assert } from 'ember-metal/debug';
 import EmptyObject from 'ember-metal/empty_object';
 import EmberError from 'ember-metal/error';
-import { isStream, read } from 'ember-htmlbars/streams/utils';
+import { isStream, read } from '../streams/utils';
 import generateController from 'ember-routing/system/generate_controller';
 import { generateControllerFactory } from 'ember-routing/system/generate_controller';
-import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
+import ViewNodeManager from '../node-managers/view-node-manager';
 
 /**
   Calling ``{{render}}`` from within a template will insert another

@@ -1,5 +1,5 @@
-import { buildHelperStream } from 'ember-htmlbars/system/invoke-helper';
-import subscribe from 'ember-htmlbars/utils/subscribe';
+import { buildHelperStream } from '../system/invoke-helper';
+import subscribe from '../utils/subscribe';
 
 export default function invokeHelper(morph, env, scope, visitor, params, hash, helper, templates, context) {
   let helperStream = buildHelperStream(helper, params, hash, templates, env, scope);
