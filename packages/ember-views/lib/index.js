@@ -9,7 +9,9 @@ import jQuery from 'ember-views/system/jquery';
 import {
   isSimpleClick,
   getViewClientRects,
-  getViewBoundingClientRect
+  getViewBoundingClientRect,
+  getRootViews,
+  getChildViews
 } from 'ember-views/system/utils';
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
@@ -37,6 +39,8 @@ const ViewUtils = Ember.ViewUtils = {};
 ViewUtils.isSimpleClick = isSimpleClick;
 ViewUtils.getViewClientRects = getViewClientRects;
 ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
+ViewUtils.getRootViews = getRootViews;
+ViewUtils.getChildViews = getChildViews;
 
 Ember.TextSupport = TextSupport;
 Ember.ComponentLookup = ComponentLookup;
