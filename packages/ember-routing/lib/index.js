@@ -6,23 +6,23 @@
 import Ember from 'ember-metal/core'; // reexports
 
 // ES6TODO: Cleanup modules with side-effects below
-import 'ember-routing/ext/run_loop';
-import 'ember-routing/ext/controller';
+import './ext/run_loop';
+import './ext/controller';
 
-import EmberLocation from 'ember-routing/location/api';
-import NoneLocation from 'ember-routing/location/none_location';
-import HashLocation from 'ember-routing/location/hash_location';
-import HistoryLocation from 'ember-routing/location/history_location';
-import AutoLocation from 'ember-routing/location/auto_location';
+import EmberLocation from './location/api';
+import NoneLocation from './location/none_location';
+import HashLocation from './location/hash_location';
+import HistoryLocation from './location/history_location';
+import AutoLocation from './location/auto_location';
 
-import generateController from 'ember-routing/system/generate_controller';
+import generateController from './system/generate_controller';
 import {
   generateControllerFactory
-} from 'ember-routing/system/generate_controller';
-import controllerFor from 'ember-routing/system/controller_for';
-import RouterDSL from 'ember-routing/system/dsl';
-import Router from 'ember-routing/system/router';
-import Route from 'ember-routing/system/route';
+} from './system/generate_controller';
+import controllerFor from './system/controller_for';
+import RouterDSL from './system/dsl';
+import Router from './system/router';
+import Route from './system/route';
 
 Ember.Location = EmberLocation;
 Ember.AutoLocation = AutoLocation;

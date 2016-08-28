@@ -20,15 +20,15 @@ import EmberObject from 'ember-runtime/system/object';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import Evented from 'ember-runtime/mixins/evented';
 import ActionHandler, { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
-import generateController from 'ember-routing/system/generate_controller';
+import generateController from './generate_controller';
 import {
   generateControllerFactory
-} from 'ember-routing/system/generate_controller';
+} from './generate_controller';
 import {
   stashParamNames,
   normalizeControllerQueryParams,
   calculateCacheKey
-} from 'ember-routing/utils';
+} from '../utils';
 import { getOwner } from 'container/owner';
 import isEmpty from 'ember-metal/is_empty';
 import symbol from 'ember-metal/symbol';

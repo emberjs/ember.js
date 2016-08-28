@@ -9,7 +9,7 @@ import ProxyStream from '../streams/proxy-stream';
 import BasicStream from '../streams/stream';
 import { isStream } from '../streams/utils';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
-import { INVOKE, ACTION } from 'ember-htmlbars/keywords/closure-action';
+import { INVOKE, ACTION } from './closure-action';
 
 export let MUTABLE_REFERENCE = symbol('MUTABLE_REFERENCE');
 

@@ -4,7 +4,7 @@
 */
 
 import View from 'ember-views/views/view';
-import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
+import topLevelViewTemplate from '../templates/top-level-view';
 import TemplateSupport from 'ember-views/mixins/template_support';
 
 export let CoreOutletView = View.extend(TemplateSupport, {

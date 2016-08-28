@@ -1,4 +1,4 @@
-import _default from 'ember-views/views/states/default';
+import _default from './default';
 import assign from 'ember-metal/assign';
 
 /**

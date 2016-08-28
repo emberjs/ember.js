@@ -9,7 +9,7 @@ import Registry from 'container/registry';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
 import { privatize as P } from 'container/registry';
-import { getEngineParent, setEngineParent } from 'ember-application/system/engine-parent';
+import { getEngineParent, setEngineParent } from './engine-parent';
 import { assert } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';

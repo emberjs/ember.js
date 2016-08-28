@@ -4,7 +4,7 @@
 */
 
 import EmberError from 'ember-metal/error';
-import { compile } from 'ember-template-compiler';
+import { compile } from '../index';
 import {
   has as hasTemplate,
   set as registerTemplate

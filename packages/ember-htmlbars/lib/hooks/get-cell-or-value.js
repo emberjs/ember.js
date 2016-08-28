@@ -1,5 +1,5 @@
 import { read } from '../streams/utils';
-import { MUTABLE_REFERENCE } from 'ember-htmlbars/keywords/mut';
+import { MUTABLE_REFERENCE } from '../keywords/mut';
 
 export default function getCellOrValue(ref) {
   if (ref && ref[MUTABLE_REFERENCE]) {

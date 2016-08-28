@@ -98,23 +98,23 @@ import Ember from 'ember-metal/core'; // exposing Ember.HTMLBars
 
 import {
   registerHelper
-} from 'ember-htmlbars/helpers';
+} from './helpers';
 import {
   ifHelper,
   unlessHelper
-} from 'ember-htmlbars/helpers/if_unless';
-import withHelper from 'ember-htmlbars/helpers/with';
-import locHelper from 'ember-htmlbars/helpers/loc';
-import logHelper from 'ember-htmlbars/helpers/log';
-import eachHelper from 'ember-htmlbars/helpers/each';
-import eachInHelper from 'ember-htmlbars/helpers/each-in';
-import normalizeClassHelper from 'ember-htmlbars/helpers/-normalize-class';
-import concatHelper from 'ember-htmlbars/helpers/concat';
-import joinClassesHelper from 'ember-htmlbars/helpers/-join-classes';
-import htmlSafeHelper from 'ember-htmlbars/helpers/-html-safe';
-import hashHelper from 'ember-htmlbars/helpers/hash';
-import queryParamsHelper from 'ember-htmlbars/helpers/query-params';
-import DOMHelper from 'ember-htmlbars/system/dom-helper';
+} from './helpers/if_unless';
+import withHelper from './helpers/with';
+import locHelper from './helpers/loc';
+import logHelper from './helpers/log';
+import eachHelper from './helpers/each';
+import eachInHelper from './helpers/each-in';
+import normalizeClassHelper from './helpers/-normalize-class';
+import concatHelper from './helpers/concat';
+import joinClassesHelper from './helpers/-join-classes';
+import htmlSafeHelper from './helpers/-html-safe';
+import hashHelper from './helpers/hash';
+import queryParamsHelper from './helpers/query-params';
+import DOMHelper from './system/dom-helper';
 
 export { default as template } from './system/template';
 

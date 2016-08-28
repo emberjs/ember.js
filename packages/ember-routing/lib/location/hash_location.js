@@ -3,7 +3,7 @@ import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 
 import EmberObject from 'ember-runtime/system/object';
-import EmberLocation from 'ember-routing/location/api';
+import EmberLocation from './api';
 
 /**
 @module ember

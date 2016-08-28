@@ -3,13 +3,13 @@
 @submodule ember-htmlbars
 */
 
-import lookupHelper from 'ember-htmlbars/system/lookup-helper';
-import { buildHelperStream } from 'ember-htmlbars/system/invoke-helper';
+import lookupHelper from '../system/lookup-helper';
+import { buildHelperStream } from '../system/invoke-helper';
 import {
   labelsFor,
   labelFor
 } from '../streams/utils';
-import { linkParamsFor } from 'ember-htmlbars/hooks/link-render-node';
+import { linkParamsFor } from './link-render-node';
 
 export default function subexpr(env, scope, helperName, params, hash) {
   // TODO: Keywords and helper invocation should be integrated into

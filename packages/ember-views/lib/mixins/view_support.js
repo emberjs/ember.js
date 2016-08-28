@@ -5,11 +5,11 @@ import { Mixin } from 'ember-metal/mixin';
 import { POST_INIT } from 'ember-runtime/system/core_object';
 import symbol from 'ember-metal/symbol';
 import { environment } from 'ember-environment';
-import { matches } from 'ember-views/system/utils';
+import { matches } from '../system/utils';
 
 const INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
 
-import jQuery from 'ember-views/system/jquery';
+import jQuery from '../system/jquery';
 
 function K() { return this; }
 

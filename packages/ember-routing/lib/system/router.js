@@ -11,15 +11,15 @@ import assign from 'ember-metal/assign';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Evented from 'ember-runtime/mixins/evented';
-import { defaultSerialize, hasDefaultSerialize } from 'ember-routing/system/route';
-import EmberRouterDSL from 'ember-routing/system/dsl';
-import EmberLocation from 'ember-routing/location/api';
+import { defaultSerialize, hasDefaultSerialize } from './route';
+import EmberRouterDSL from './dsl';
+import EmberLocation from '../location/api';
 import {
   routeArgs,
   getActiveTargetName,
   stashParamNames,
   calculateCacheKey
-} from 'ember-routing/utils';
+} from '../utils';
 import { guidFor } from 'ember-metal/utils';
 import RouterState from './router_state';
 import { getOwner } from 'container/owner';

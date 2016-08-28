@@ -4,7 +4,7 @@
   @public
 */
 import { keyword } from 'htmlbars-runtime/hooks';
-import closureComponent from 'ember-htmlbars/keywords/closure-component';
+import closureComponent from './closure-component';
 import EmptyObject from 'ember-metal/empty_object';
 import assign from 'ember-metal/assign';
 

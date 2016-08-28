@@ -1,14 +1,14 @@
-import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
+import '../system/ext';  // for the side effect of extending Ember.run.queues
 
-import CoreView from 'ember-views/views/core_view';
-import ViewChildViewsSupport from 'ember-views/mixins/child_views_support';
-import ViewStateSupport from 'ember-views/mixins/view_state_support';
-import ClassNamesSupport from 'ember-views/mixins/class_names_support';
-import InstrumentationSupport from 'ember-views/mixins/instrumentation_support';
-import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
-import VisibilitySupport from 'ember-views/mixins/visibility_support';
-import CompatAttrsProxy from 'ember-views/compat/attrs-proxy';
-import ViewMixin from 'ember-views/mixins/view_support';
+import CoreView from './core_view';
+import ViewChildViewsSupport from '../mixins/child_views_support';
+import ViewStateSupport from '../mixins/view_state_support';
+import ClassNamesSupport from '../mixins/class_names_support';
+import InstrumentationSupport from '../mixins/instrumentation_support';
+import AriaRoleSupport from '../mixins/aria_role_support';
+import VisibilitySupport from '../mixins/visibility_support';
+import CompatAttrsProxy from '../compat/attrs-proxy';
+import ViewMixin from '../mixins/view_support';
 /**
 @module ember
 @submodule ember-views

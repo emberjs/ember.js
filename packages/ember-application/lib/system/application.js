@@ -22,7 +22,7 @@ import HistoryLocation from 'ember-routing/location/history_location';
 import AutoLocation from 'ember-routing/location/auto_location';
 import NoneLocation from 'ember-routing/location/none_location';
 import BucketCache from 'ember-routing/system/cache';
-import ApplicationInstance from 'ember-application/system/application-instance';
+import ApplicationInstance from './application-instance';
 import { _loaded } from 'ember-runtime/system/lazy_load';
 import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import { privatize as P } from 'container/registry';

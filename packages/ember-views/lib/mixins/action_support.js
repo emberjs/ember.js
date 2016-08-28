@@ -2,7 +2,7 @@ import { Mixin } from 'ember-metal/mixin';
 import { get } from 'ember-metal/property_get';
 import isNone from 'ember-metal/is_none';
 import { assert } from 'ember-metal/debug';
-import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+import { MUTABLE_CELL } from '../compat/attrs-proxy';
 import { inspect } from 'ember-metal/utils';
 
 function validateAction(component, actionName) {

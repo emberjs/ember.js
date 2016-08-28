@@ -1,12 +1,12 @@
-import { Stream } from 'ember-htmlbars/streams/stream';
+import { Stream } from '../streams/stream';
 import {
   read,
   readArray,
   labelFor
-} from 'ember-htmlbars/streams/utils';
+} from '../streams/utils';
 import symbol from 'ember-metal/symbol';
 import { get } from 'ember-metal/property_get';
-import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';
+import { labelForSubexpr } from '../hooks/subexpr';
 import EmberError from 'ember-metal/error';
 import run from 'ember-metal/run_loop';
 import { flaggedInstrument } from 'ember-metal/instrumentation';

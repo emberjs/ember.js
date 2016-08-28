@@ -3,8 +3,8 @@
 @submodule ember-templates
 */
 
-import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
-import RenderEnv from 'ember-htmlbars/system/render-env';
+import ViewNodeManager from '../node-managers/view-node-manager';
+import RenderEnv from '../system/render-env';
 import { assert } from 'ember-metal/debug';
 import { getOwner, setOwner } from 'container/owner';
 import { isOutletStable } from './outlet';

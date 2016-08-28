@@ -2,7 +2,7 @@ import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { internal, render } from 'htmlbars-runtime';
 import { buildStatement } from 'htmlbars-util/template-utils';
-import getValue from 'ember-htmlbars/hooks/get-value';
+import getValue from '../hooks/get-value';
 import { isStream } from '../streams/utils';
 
 export default function buildComponentTemplate({ component, tagName, layout, outerAttrs }, attrs, content) {

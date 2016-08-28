@@ -3,15 +3,15 @@
 @submodule ember-htmlbars
 */
 
-import subscribe from 'ember-htmlbars/utils/subscribe';
+import subscribe from '../utils/subscribe';
 import { isArray } from 'ember-runtime/utils';
 import { chain, read, isStream, addDependency } from '../streams/utils';
-import { CONTAINS_DOT_CACHE } from 'ember-htmlbars/system/lookup-helper';
+import { CONTAINS_DOT_CACHE } from '../system/lookup-helper';
 import {
   COMPONENT_HASH,
   isComponentCell,
   mergeInNewHash
-} from 'ember-htmlbars/keywords/closure-component';
+} from '../keywords/closure-component';
 
 export default function linkRenderNode(renderNode, env, scope, path, params, hash) {
   if (renderNode.streamUnsubscribers) {

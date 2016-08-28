@@ -1,7 +1,7 @@
 import { assert } from 'ember-metal/debug';
-import HelperInstanceStream from 'ember-htmlbars/streams/helper-instance';
-import HelperFactoryStream from 'ember-htmlbars/streams/helper-factory';
-import BuiltInHelperStream from 'ember-htmlbars/streams/built-in-helper';
+import HelperInstanceStream from '../streams/helper-instance';
+import HelperFactoryStream from '../streams/helper-factory';
+import BuiltInHelperStream from '../streams/built-in-helper';
 
 export function buildHelperStream(helper, params, hash, templates, env, scope, label) {
   let isAnyKindOfHelper = helper.isHelperInstance || helper.isHelperFactory;

@@ -5,7 +5,7 @@
 
 // BEGIN IMPORTS
 import Ember from 'ember-runtime';
-import jQuery from 'ember-views/system/jquery';
+import jQuery from './system/jquery';
 import {
   isSimpleClick,
   getViewBounds,
@@ -13,13 +13,13 @@ import {
   getViewBoundingClientRect,
   getRootViews,
   getChildViews
-} from 'ember-views/system/utils';
-import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
+} from './system/utils';
+import './system/ext';  // for the side effect of extending Ember.run.queues
 
-import EventDispatcher from 'ember-views/system/event_dispatcher';
-import ViewTargetActionSupport from 'ember-views/mixins/view_target_action_support';
-import ComponentLookup from 'ember-views/component_lookup';
-import TextSupport from 'ember-views/mixins/text_support';
+import EventDispatcher from './system/event_dispatcher';
+import ViewTargetActionSupport from './mixins/view_target_action_support';
+import ComponentLookup from './component_lookup';
+import TextSupport from './mixins/text_support';
 
 // END IMPORTS
 

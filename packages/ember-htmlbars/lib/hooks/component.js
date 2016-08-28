@@ -1,12 +1,12 @@
 import { assert } from 'ember-metal/debug';
-import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
+import ComponentNodeManager from '../node-managers/component-node-manager';
 import lookupComponent from 'ember-views/utils/lookup-component';
 import assign from 'ember-metal/assign';
 import EmptyObject from 'ember-metal/empty_object';
 import {
   CONTAINS_DOT_CACHE
-} from 'ember-htmlbars/system/lookup-helper';
-import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
+} from '../system/lookup-helper';
+import extractPositionalParams from '../utils/extract-positional-params';
 import {
   COMPONENT_HASH,
   COMPONENT_PATH,
@@ -14,7 +14,7 @@ import {
   isComponentCell,
   mergeInNewHash,
   processPositionalParamsFromCell,
-} from 'ember-htmlbars/keywords/closure-component';
+} from '../keywords/closure-component';
 
 export default function componentHook(renderNode, env, scope, _tagName, params, _attrs, templates, visitor) {
   let state = renderNode.getState();

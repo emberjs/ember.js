@@ -1,8 +1,8 @@
 import { assert } from 'ember-metal/debug';
 import { uuid } from 'ember-metal/utils';
-import { labelFor, read } from 'ember-htmlbars/streams/utils';
+import { labelFor, read } from '../streams/utils';
 import run from 'ember-metal/run_loop';
-import { readUnwrappedModel } from 'ember-htmlbars/streams/utils';
+import { readUnwrappedModel } from '../streams/utils';
 import { isSimpleClick } from 'ember-views/system/utils';
 import ActionManager from 'ember-views/system/action_manager';
 import { flaggedInstrument } from 'ember-metal/instrumentation';

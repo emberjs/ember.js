@@ -5,7 +5,7 @@ import Logger from 'ember-console';
 
 import { ENV } from 'ember-environment';
 
-import { registerHandler as genericRegisterHandler, invoke } from 'ember-debug/handlers';
+import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 
 export function registerHandler(handler) {
   genericRegisterHandler('deprecate', handler);
