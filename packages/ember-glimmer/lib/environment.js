@@ -10,10 +10,8 @@ import {
 import Cache from 'ember-metal/cache';
 import { assert, warn, runInDebug } from 'ember-metal/debug';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './syntax/curly-component';
+import { findSyntaxBuilder } from './syntax';
 import { DynamicComponentSyntax } from './syntax/dynamic-component';
-import { RenderSyntax } from './syntax/render';
-import { OutletSyntax } from './syntax/outlet';
-import { MountSyntax } from './syntax/mount';
 import lookupComponent from 'ember-views/utils/lookup-component';
 import { STYLE_WARNING } from 'ember-views/system/utils';
 import createIterable from './utils/iterable';
@@ -220,14 +218,9 @@ export default class Environment extends GlimmerEnvironment {
     if (isSimple && (isInline || isBlock)) {
       // 2. built-in syntax
 
-      if (key === 'component') {
-        return DynamicComponentSyntax.create({ args, templates, symbolTable });
-      } else if (key === 'render') {
-        return new RenderSyntax({ args });
-      } else if (key === 'outlet') {
-        return new OutletSyntax({ args });
-      } else if (key === 'mount') {
-        return MountSyntax.create(this, args, symbolTable);
+      let buildRefinedSyntax = findSyntaxBuilder(key);
+      if (buildRefinedSyntax) {
+        return buildRefinedSyntax({ args, templates, symbolTable });
       }
 
       let internalKey = builtInComponents[key];

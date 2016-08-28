@@ -602,6 +602,25 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'hello' });
   }
 
+  ['@test it can yield a block param named for reserved words [GH#14096]']() {
+    let instance;
+
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        instance = this;
+      },
+
+      name: 'foo-bar'
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{yield this}}' });
+
+    this.render('{{#foo-bar as |component|}}{{component.name}}{{/foo-bar}}');
+
+    this.assertComponentElement(this.firstChild, { content: 'foo-bar' });
+  }
+
   ['@test it can yield internal and external properties positionally']() {
     let instance;
 
