@@ -17,7 +17,7 @@ import Engine from 'ember-application/system/engine';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
 import HistoryLocation from 'ember-routing/location/history_location';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 import { Transition } from 'router/transition';
 import copy from 'ember-runtime/copy';
 import { addObserver } from 'ember-metal/observer';

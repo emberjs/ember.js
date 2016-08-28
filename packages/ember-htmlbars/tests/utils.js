@@ -15,7 +15,7 @@ import {
 
 import HashLocation from 'ember-routing/location/hash_location';
 import EmberObject from 'ember-runtime/system/object';
-import Registry from 'container/registry';
+import { Registry } from 'container';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import { get as getTemplate, has as hasTemplate } from 'ember-templates/template_registry';

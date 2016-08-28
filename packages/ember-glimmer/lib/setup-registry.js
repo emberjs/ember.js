@@ -1,4 +1,4 @@
-import { privatize as P } from 'container/registry';
+import { privatize as P } from 'container';
 import { InteractiveRenderer, InertRenderer } from './renderer';
 import { DOMChanges, DOMTreeConstruction } from './dom';
 import OutletView from './views/outlet';

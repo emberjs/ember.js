@@ -2,7 +2,7 @@ import { assert } from './debug';
 import { ComputedProperty } from './computed';
 import { AliasedProperty } from './alias';
 import { Descriptor } from './properties';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 
 /**
   Read-only property that returns the result of a container lookup.

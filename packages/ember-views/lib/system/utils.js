@@ -1,7 +1,7 @@
 /* globals Element */
 
 import { guidFor } from 'ember-metal/utils';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 import symbol from 'ember-metal/symbol';
 
 /**

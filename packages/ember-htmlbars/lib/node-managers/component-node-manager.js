@@ -6,7 +6,7 @@ import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { instrument } from '../system/instrumentation-support';
 import EmberComponent, { HAS_BLOCK } from '../component';
 import extractPositionalParams from '../utils/extract-positional-params';
-import { setOwner, getOwner } from 'container/owner';
+import { setOwner, getOwner } from 'container';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public

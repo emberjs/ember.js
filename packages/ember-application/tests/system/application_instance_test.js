@@ -5,7 +5,7 @@ import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import factory from 'container/tests/test-helpers/factory';
 import isEnabled from 'ember-metal/features';
-import { privatize as P } from 'container/registry';
+import { privatize as P } from 'container';
 import EmberObject from 'ember-runtime/system/object';
 
 let application, appInstance;

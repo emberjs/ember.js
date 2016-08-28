@@ -10,7 +10,7 @@ import { renderHTMLBarsBlock } from './system/render-view';
 import fallbackViewRegistry from 'ember-views/compat/fallback-view-registry';
 import { getViewId } from 'ember-views/system/utils';
 import { assert } from 'ember-metal/debug';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 
 export function Renderer(domHelper, { destinedForDOM, _viewRegistry } = {}) {
   this._dom = domHelper;

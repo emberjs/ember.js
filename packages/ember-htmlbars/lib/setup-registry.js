@@ -1,4 +1,4 @@
-import { privatize as P } from 'container/registry';
+import { privatize as P } from 'container';
 import { InteractiveRenderer, InertRenderer } from './renderer';
 import HTMLBarsDOMHelper from './system/dom-helper';
 import topLevelViewTemplate from './templates/top-level-view';

@@ -7,7 +7,7 @@ import Component from 'ember-htmlbars/component';
 import Controller from 'ember-runtime/controllers/controller';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import run from 'ember-metal/run_loop';
-import { OWNER, getOwner } from 'container/owner';
+import { OWNER, getOwner } from 'container';
 import isEnabled from 'ember-metal/features';
 import { getEngineParent } from 'ember-application/system/engine-parent';
 import { test } from 'internal-test-helpers/tests/skip-if-glimmer';

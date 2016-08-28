@@ -3,12 +3,12 @@ import { AttributeBinding, ClassNameBinding, IsVisibleBinding } from '../utils/b
 import { ROOT_REF, DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK, BOUNDS } from '../component';
 import { assert, runInDebug } from 'ember-metal/debug';
 import processArgs from '../utils/process-args';
-import { privatize as P } from 'container/registry';
+import { privatize as P } from 'container';
 import assign from 'ember-metal/assign';
 import get from 'ember-metal/property_get';
 import { _instrumentStart } from 'ember-metal/instrumentation';
 import { ComponentDefinition } from 'glimmer-runtime';
-import { OWNER } from 'container/owner';
+import { OWNER } from 'container';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 

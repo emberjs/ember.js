@@ -15,7 +15,7 @@ import { DirtyableTag } from 'glimmer-reference';
 import { readDOMAttr } from 'glimmer-runtime';
 import { assert, deprecate } from 'ember-metal/debug';
 import { NAME_KEY } from 'ember-metal/mixin';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');

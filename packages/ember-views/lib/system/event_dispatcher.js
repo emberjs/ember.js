@@ -12,7 +12,7 @@ import EmberObject from 'ember-runtime/system/object';
 import jQuery from './jquery';
 import ActionManager from './action_manager';
 import assign from 'ember-metal/assign';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 import { environment } from 'ember-environment';
 import fallbackViewRegistry from '../compat/fallback-view-registry';
 

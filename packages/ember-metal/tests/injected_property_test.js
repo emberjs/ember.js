@@ -5,7 +5,7 @@ import {
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import InjectedProperty from 'ember-metal/injected_property';
-import { setOwner } from 'container/owner';
+import { setOwner } from 'container';
 
 QUnit.module('InjectedProperty');
 

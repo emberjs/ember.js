@@ -1,5 +1,5 @@
 import EmberRouter from 'ember-routing/system/router';
-import { setOwner } from 'container/owner';
+import { setOwner } from 'container';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import isEnabled from 'ember-metal/features';
 

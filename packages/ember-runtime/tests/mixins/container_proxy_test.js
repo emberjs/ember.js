@@ -1,6 +1,8 @@
-import { OWNER } from 'container/owner';
-import Registry from 'container/registry';
-import Container from 'container/container';
+import {
+  Container,
+  Registry,
+  OWNER
+} from 'container';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import EmberObject from 'ember-runtime/system/object';
 

@@ -5,7 +5,7 @@ import NoneLocation from 'ember-routing/location/none_location';
 import Router, { triggerEvent } from 'ember-routing/system/router';
 import { runDestroy } from 'ember-runtime/tests/utils';
 import buildOwner from 'container/tests/test-helpers/build-owner';
-import { setOwner } from 'container/owner';
+import { setOwner } from 'container';
 
 let owner;
 

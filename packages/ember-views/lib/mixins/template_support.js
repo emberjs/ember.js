@@ -1,6 +1,6 @@
 import EmberError from 'ember-metal/error';
 import { computed } from 'ember-metal/computed';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'container';
 import { Mixin } from 'ember-metal/mixin';
 import { get } from 'ember-metal/property_get';
 import { assert } from 'ember-metal/debug';
