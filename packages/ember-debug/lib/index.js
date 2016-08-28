@@ -14,10 +14,10 @@ import Logger from 'ember-console';
 import { environment } from 'ember-environment';
 import _deprecate, {
   registerHandler as registerDeprecationHandler
-} from 'ember-debug/deprecate';
+} from './deprecate';
 import _warn, {
   registerHandler as registerWarnHandler
-} from 'ember-debug/warn';
+} from './warn';
 
 /**
 @module ember
