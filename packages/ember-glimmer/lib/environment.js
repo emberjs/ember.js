@@ -46,6 +46,8 @@ import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
 import { OWNER } from 'container';
 
+import installPlatformSpecificProtocolForURL from './protocol-for-url';
+
 const builtInComponents = {
   textarea: '-text-area'
 };
@@ -134,7 +136,7 @@ export default class Environment extends GlimmerEnvironment {
     super(...arguments);
     this.owner = owner;
 
-    this.uselessAnchor = this.getAppendOperations().createElement('a');
+    installPlatformSpecificProtocolForURL(this);
 
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: ComponentClass, layout } = lookupComponent(owner, name, { source });
@@ -162,11 +164,6 @@ export default class Environment extends GlimmerEnvironment {
     this.builtInModifiers = {
       action: new ActionModifierManager()
     };
-  }
-
-  protocolForURL(url) {
-    this.uselessAnchor.href = url;
-    return this.uselessAnchor.protocol;
   }
 
   // Hello future traveler, welcome to the world of syntax refinement.
