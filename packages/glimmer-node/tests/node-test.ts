@@ -231,3 +231,11 @@ QUnit.test("A simple block helper can return text", function(assert) {
   render(template, {});
   assert.equal(serializer.serialize(root), '<div>test</div>');
 });
+
+QUnit.test('can instantiate NodeDOMTreeConstruction without a document', function(assert) {
+  // this emulates what happens in Ember when using `App.visit('/', { shouldRender: false });`
+
+  helper = new NodeDOMTreeConstruction(null);
+
+  assert.ok(!!helper, 'helper was instantiated without errors');
+});
