@@ -64,9 +64,13 @@ namespace DOM {
   type HTMLElement = Simple.HTMLElement;
 
   class TreeConstruction {
-    protected uselessElement: HTMLElement;
+    protected uselessElement: HTMLElement = null;
     constructor(protected document: Document) {
-      this.uselessElement = document.createElement('div');
+      this.setupUselessElement();
+    }
+
+    protected setupUselessElement() {
+      this.uselessElement = this.document.createElement('div');
     }
 
     createElement(tag: string, context?: Element): Element {
@@ -126,16 +130,12 @@ namespace DOM {
 }
 
 export class DOMChanges {
-  protected document: HTMLDocument;
   protected namespace: string;
-  private uselessElement: HTMLElement;
-  private uselessAnchor: HTMLAnchorElement;
+  private uselessElement: HTMLElement = null;
 
-  constructor(document: Document) {
-    this.document = document;
+  constructor(protected document: HTMLDocument) {
     this.namespace = null;
     this.uselessElement = this.document.createElement('div');
-    this.uselessAnchor = this.document.createElement('a');
   }
 
   setAttribute(element: Simple.Element, name: string, value: string) {
