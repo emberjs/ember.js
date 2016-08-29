@@ -290,9 +290,11 @@ class CurlyComponentManager {
   }
 
   didCreate({ component }) {
-    component.trigger('didInsertElement');
-    component.trigger('didRender');
-    component._transitionTo('inDOM');
+    if (false) {
+      component.trigger('didInsertElement');
+      component.trigger('didRender');
+      component._transitionTo('inDOM');
+    }
   }
 
   update(bucket, _, dynamicScope) {
