@@ -14,7 +14,7 @@ function compile(template: string) {
 }
 
 function rootElement() {
-  return env.getDOM().createElement('div', document.body);
+  return env.getDOM().createElement('div');
 }
 
 function commonSetup() {

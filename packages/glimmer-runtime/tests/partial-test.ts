@@ -13,7 +13,7 @@ import { Opaque, opaque } from 'glimmer-util';
 let env: TestEnvironment, root: Simple.Element, result: RenderResult, self: UpdatableReference<Opaque>;
 
 function rootElement() {
-  return env.getDOM().createElement('div', document.body);
+  return env.getDOM().createElement('div');
 }
 
 function compile(template: string) {

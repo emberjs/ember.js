@@ -139,8 +139,8 @@ export abstract class Environment {
   abstract iterableFor(reference: Reference<Opaque>, args: EvaluatedArgs): OpaqueIterable;
   abstract protocolForURL(s: string): string;
 
-  getDOM(): DOMChanges { return this.updateOperations; }
   getAppendOperations(): DOMTreeConstruction { return this.appendOperations; }
+  getDOM(): DOMChanges { return this.updateOperations; }
 
   getIdentity(object: HasGuid): string {
     return ensureGuid(object) + '';
