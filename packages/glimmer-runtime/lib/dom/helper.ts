@@ -74,21 +74,28 @@ namespace DOM {
     }
 
     createElement(tag: string, context?: Element): Element {
-      let isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
-      let isHTMLIntegrationPoint = SVG_INTEGRATION_POINTS[context.tagName];
+      let isElementInSVGNamespace, isHTMLIntegrationPoint;
+
+      if (context) {
+        isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
+        isHTMLIntegrationPoint = SVG_INTEGRATION_POINTS[context.tagName];
+      } else {
+        isElementInSVGNamespace = tag === 'svg';
+        isHTMLIntegrationPoint = false;
+      }
 
       if (isElementInSVGNamespace && !isHTMLIntegrationPoint) {
         // FIXME: This does not properly handle <font> with color, face, or
         // size attributes, which is also disallowed by the spec. We should fix
         // this.
         if (BLACKLIST_TABLE[tag]) {
-          throw new Error(`Cannot create a ${tag} inside of a <${context.tagName}>, because it's inside an SVG context`);
+          throw new Error(`Cannot create a ${tag} inside an SVG context`);
         }
 
         return this.document.createElementNS(SVG_NAMESPACE as Namespace, tag);
+      } else {
+        return this.document.createElement(tag);
       }
-
-      return this.document.createElement(tag);
     }
 
     createElementNS(namespace: Namespace, tag: string): Element {
@@ -162,22 +169,29 @@ export class DOMChanges {
     return this.document.createComment(data);
   }
 
-  createElement(tag: string, context: Simple.Element): Simple.Element {
-    let isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
-    let isHTMLIntegrationPoint = SVG_INTEGRATION_POINTS[context.tagName];
+  createElement(tag: string, context?: Simple.Element): Simple.Element {
+    let isElementInSVGNamespace, isHTMLIntegrationPoint;
+
+    if (context) {
+      isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
+      isHTMLIntegrationPoint = SVG_INTEGRATION_POINTS[context.tagName];
+    } else {
+      isElementInSVGNamespace = tag === 'svg';
+      isHTMLIntegrationPoint = false;
+    }
 
     if (isElementInSVGNamespace && !isHTMLIntegrationPoint) {
       // FIXME: This does not properly handle <font> with color, face, or
       // size attributes, which is also disallowed by the spec. We should fix
       // this.
       if (BLACKLIST_TABLE[tag]) {
-        throw new Error(`Cannot create a ${tag} inside of a <${context.tagName}>, because it's inside an SVG context`);
+        throw new Error(`Cannot create a ${tag} inside an SVG context`);
       }
 
-      return this.document.createElementNS(SVG_NAMESPACE, tag);
+      return this.document.createElementNS(SVG_NAMESPACE as Simple.Namespace, tag);
+    } else {
+      return this.document.createElement(tag);
     }
-
-    return this.document.createElement(tag);
   }
 
   insertHTMLBefore(_parent: Element, nextSibling: Node, html: string): Bounds {
