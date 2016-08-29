@@ -73,10 +73,10 @@ QUnit.test("HTML tags re-rendered", function(assert) {
 });
 
 QUnit.test("HTML attributes", function(assert) {
-  let template = compile("<div class='foo' id='bar'>content</div>");
+  let template = compile("<div id='bar' class='foo'>content</div>");
   render(template, {});
 
-  assert.equal(serializer.serializeChildren(root), '<div class="foo" id="bar">content</div>');
+  assert.equal(serializer.serializeChildren(root), '<div id="bar" class="foo">content</div>');
 });
 
 QUnit.test("HTML tag with empty attribute", function(assert) {
