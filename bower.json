@@ -1,5 +1,6 @@
 {
   "name": "ember",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/emberjs/ember.js.git"
