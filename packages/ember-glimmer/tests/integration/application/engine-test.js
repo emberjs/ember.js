@@ -44,6 +44,28 @@ if (shouldRun) {
       }));
     }
 
+    setupAppAndRoutelessEngine(hooks) {
+      this.application.register('template:application', compile('Application{{mount "chat-engine"}}'));
+      this.registerRoute('application', Route.extend({
+        model() {
+          hooks.push('application - application');
+        }
+      }));
+
+      this.registerEngine('chat-engine', Engine.extend({
+        init() {
+          this._super(...arguments);
+          this.register('template:application', compile('Engine'));
+          this.register('controller:application', Controller.extend({
+            init() {
+              this._super(...arguments);
+              hooks.push('engine - application');
+            }
+          }));
+        }
+      }));
+    }
+
     ['@test sharing a template between engine and application has separate refinements']() {
       this.assert.expect(1);
 
@@ -115,6 +137,23 @@ if (shouldRun) {
           'application - application',
           'engine - application'
         ], 'the expected model hooks were fired');
+      });
+    }
+
+    ['@test visit() with `shouldRender: true` returns a promise that resolves when application and routeless engine templates have rendered'](assert) {
+      assert.expect(2);
+
+      let hooks = [];
+
+      this.setupAppAndRoutelessEngine(hooks);
+
+      return this.visit('/', { shouldRender: true }).then(() => {
+        this.assertText('ApplicationEngine');
+
+        this.assert.deepEqual(hooks, [
+          'application - application',
+          'engine - application'
+        ], 'the expected hooks were fired');
       });
     }
   });

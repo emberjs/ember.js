@@ -13,6 +13,7 @@ import { CurlyComponentSyntax, CurlyComponentDefinition } from './syntax/curly-c
 import { DynamicComponentSyntax } from './syntax/dynamic-component';
 import { RenderSyntax } from './syntax/render';
 import { OutletSyntax } from './syntax/outlet';
+import { MountSyntax } from './syntax/mount';
 import lookupComponent from 'ember-views/utils/lookup-component';
 import { STYLE_WARNING } from 'ember-views/system/utils';
 import createIterable from './utils/iterable';
@@ -228,6 +229,8 @@ export default class Environment extends GlimmerEnvironment {
         return new RenderSyntax({ args });
       } else if (key === 'outlet') {
         return new OutletSyntax({ args });
+      } else if (key === 'mount') {
+        return new MountSyntax({ args });
       }
 
       let internalKey = builtInComponents[key];
