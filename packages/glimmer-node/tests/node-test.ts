@@ -73,10 +73,10 @@ QUnit.test("HTML tags re-rendered", function(assert) {
 });
 
 QUnit.test("HTML attributes", function(assert) {
-  let template = compile("<div class='foo' id='bar'>content</div>");
+  let template = compile("<div id='bar' class='foo'>content</div>");
   render(template, {});
 
-  assert.equal(serializer.serializeChildren(root), '<div class="foo" id="bar">content</div>');
+  assert.equal(serializer.serializeChildren(root), '<div id="bar" class="foo">content</div>');
 });
 
 QUnit.test("HTML tag with empty attribute", function(assert) {
@@ -230,4 +230,12 @@ QUnit.test("A simple block helper can return text", function(assert) {
   let template = compile('{{#if true}}test{{else}}not shown{{/if}}');
   render(template, {});
   assert.equal(serializer.serialize(root), '<div>test</div>');
+});
+
+QUnit.test('can instantiate NodeDOMTreeConstruction without a document', function(assert) {
+  // this emulates what happens in Ember when using `App.visit('/', { shouldRender: false });`
+
+  helper = new NodeDOMTreeConstruction(null);
+
+  assert.ok(!!helper, 'helper was instantiated without errors');
 });
