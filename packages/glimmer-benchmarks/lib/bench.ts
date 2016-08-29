@@ -114,7 +114,7 @@ export abstract class TemplateBenchmarkScenario extends BenchmarkScenario {
 
     try {
       this.test(() => {
-        let parent = glimmerEnv.getDOM().createElement('div', document.body) as HTMLElement;
+        let parent = glimmerEnv.getDOM().createElement('div') as HTMLElement;
         let contextRef = new UpdatableReference(this.context);
         glimmerEnv.begin();
         this.compiled.render(contextRef, glimmerEnv, { appendTo: parent, dynamicScope: new TestDynamicScope(null) });
@@ -130,7 +130,7 @@ export abstract class TemplateBenchmarkScenario extends BenchmarkScenario {
 
   run() {
     let { glimmerEnv, compiled } = this;
-    let parent = glimmerEnv.getDOM().createElement('div', document.body);
+    let parent = glimmerEnv.getDOM().createElement('div');
     let context = new UpdatableReference(this.context);
     glimmerEnv.begin();
     compiled.render(context, glimmerEnv, { appendTo: parent, dynamicScope: new TestDynamicScope(null) });

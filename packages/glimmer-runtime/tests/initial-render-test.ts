@@ -21,7 +21,7 @@ function compilesTo(html: string, expected: string=html, context: any={}) {
 }
 
 function rootElement(): HTMLDivElement {
-  return env.getDOM().createElement('div', document.body) as HTMLDivElement;
+  return env.getDOM().createElement('div') as HTMLDivElement;
 }
 
 function commonSetup(customEnv = new TestEnvironment()) {
@@ -255,7 +255,7 @@ test("The compiler can handle top-level unescaped HTML", function() {
 });
 
 function createElement(tag) {
-  return env.getDOM().createElement(tag, document.body);
+  return env.getDOM().createElement(tag);
 }
 
 test("The compiler can handle top-level unescaped tr", function() {

@@ -30,7 +30,7 @@ function compile(template: string) {
 }
 
 function rootElement() {
-  return env.getDOM().createElement('div', document.body) as Element;
+  return env.getDOM().createElement('div') as Element;
 }
 
 function commonSetup() {
@@ -1915,7 +1915,7 @@ test("root <foreignObject> tag is SVG namespaced",  () => {
   let getDiv = () => getForeignObject().firstChild;
   let template = compile('{{#if hasForeignObject}}<foreignObject><div></div></foreignObject>{{/if}}');
   // Add an SVG node on the root that can be rendered into
-  root.appendChild(env.getDOM().createElement('svg', document.body) as Element);
+  root.appendChild(env.getDOM().createElement('svg') as Element);
   root = root.firstChild as Element;
 
   render(template, object);
