@@ -134,7 +134,7 @@ export default class Environment extends GlimmerEnvironment {
     super(...arguments);
     this.owner = owner;
 
-    this.uselessAnchor = document.createElement('a');
+    this.uselessAnchor = this.getAppendOperations().createElement('a');
 
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: ComponentClass, layout } = lookupComponent(owner, name, { source });

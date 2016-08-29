@@ -1,6 +1,8 @@
+import { environment } from 'ember-environment';
 import { privatize as P } from 'container';
 import { InteractiveRenderer, InertRenderer } from './renderer';
 import { DOMChanges, DOMTreeConstruction } from './dom';
+import { NodeDOMTreeConstruction } from './node-dom';
 import OutletView from './views/outlet';
 import TextField from './components/text_field';
 import TextArea from './components/text_area';
@@ -28,7 +30,10 @@ export function setupApplicationRegistry(registry) {
   });
 
   registry.register('service:-dom-tree-construction', {
-    create({ document }) { return new DOMTreeConstruction(document); }
+    create({ document }) {
+      var Implementation = environment.hasDOM ? DOMTreeConstruction : NodeDOMTreeConstruction;
+      return new Implementation(document);
+    }
   });
 }
 

@@ -160,6 +160,9 @@ function visit(url) {
     isBrowser: false,
     document: dom,
     rootElement: dom.body
+  })
+  .catch(function(error) {
+    console.error(error.stack);
   });
 }
 

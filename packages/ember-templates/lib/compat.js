@@ -6,6 +6,7 @@ import {
   htmlSafe,
   isHTMLSafe
 } from './string';
+import DOMHelper from './dom-helper';
 import EmberStringUtil from 'ember-runtime/system/string';
 import isEnabled from 'ember-metal/features';
 import makeBoundHelper from './make-bound-helper';
@@ -19,6 +20,7 @@ Object.defineProperty(EmberHandlebars, 'SafeString', {
 });
 
 EmberHTMLBars.template = EmberHandlebars.template = template;
+EmberHTMLBars.DOMHelper = DOMHelper;
 EmberHandleBarsUtils.escapeExpression = escapeExpression;
 EmberStringUtil.htmlSafe = htmlSafe;
 

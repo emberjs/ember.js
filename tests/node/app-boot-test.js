@@ -1,10 +1,7 @@
 /*jshint multistr:true*/
 var QUnit = require('qunitjs');
 var appModule = require('./helpers/app-module');
-
-function assertHTMLMatches(assert, actualHTML, expectedHTML) {
-  assert.ok(actualHTML.match(expectedHTML), actualHTML + " matches " + expectedHTML);
-}
+var assertHTMLMatches = require('./helpers/assert-html-matches');
 
 appModule("App Boot");
 
@@ -36,7 +33,7 @@ if (appModule.canRunTests) {
     ");
 
     return this.renderToHTML('/').then(function(html) {
-      assertHTMLMatches(assert, html, /<h1>Hello World<\/h1>\s+<div><div id="(.*)" class="ember-view">\s+<p>The files are \*inside\* the computer\?\!<\/p>\s+<\/div><\/div>/);
+      assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><div id="EMBER_ID" class="ember-view"><h1>Hello World</h1><div><div id="EMBER_ID" class="ember-view"><p>The files are *inside* the computer?!</p></div></div></div></div></body>');
     });
   });
 
@@ -47,7 +44,7 @@ if (appModule.canRunTests) {
     });
 
     return this.renderToHTML('/').then(function(html) {
-      assertHTMLMatches(assert, html, /<div id="ember\d+" class="ember-view"><h1><a id="ember\d+" href="\/photos" class="ember-view">Go to photos<\/a><\/h1><\/div>/);
+      assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><h1><a id="EMBER_ID" href="/photos" class="ember-view">Go to photos</a><\/h1></div></body>');
     });
   });
 
@@ -62,7 +59,7 @@ if (appModule.canRunTests) {
     });
 
     return this.renderToHTML('/').then(function(html) {
-      assertHTMLMatches(assert, html, /<div id="ember\d+" class="ember-view"><h1><b>Hello world<\/b><\/h1><\/div>/);
+      assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><h1><b>Hello world</b></h1></div></body>');
     });
   });
 
@@ -77,11 +74,11 @@ if (appModule.canRunTests) {
 
     var promises = [];
     promises.push(this.renderToHTML('/').then(function(html) {
-      assertHTMLMatches(assert, html, /<div id="ember(.*)" class="ember-view"><p><span>index<\/span><\/p><\/div>/);
+      assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><p><span>index</span></p></div></body>');
     }));
 
     promises.push(this.renderToHTML('/photos').then(function(html) {
-      assertHTMLMatches(assert, html, /<div id="ember(.*)" class="ember-view"><p><em>photos<\/em><\/p><\/div>/);
+      assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><p><em>photos</em></p></div></body>');
     }));
 
     return this.all(promises);
