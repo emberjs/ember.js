@@ -1,5 +1,17 @@
 # Ember Changelog
 
+### 2.8.0-beta.4 (August 29, 2016)
+
+- [#14123](https://github.com/emberjs/ember.js/pull/14123) [BUGFIX] Avoid rerendering outlet state during router destruction.
+- [#14077](https://github.com/emberjs/ember.js/pull/14077) [BUGFIX] Update route-recognizer.
+- [#14087](https://github.com/emberjs/ember.js/pull/14087) [BUGFIX] Check that route handler exists before triggering actions.
+- [#14106](https://github.com/emberjs/ember.js/pull/14106) [BUGFIX] Avoid assertion when `id=` is provided to tagless components.
+- [#14110](https://github.com/emberjs/ember.js/pull/14110) [BUGFIX] Fix issues with revalidation during teardown.
+- [#14117](https://github.com/emberjs/ember.js/pull/14117) [BUGFIX] Call ArrayProxy's content change hooks
+- [#14135](https://github.com/emberjs/ember.js/pull/14135) [BUGFIX] Fix issues around Engine setup and teardown.
+- [#14140](https://github.com/emberjs/ember.js/pull/14140) [BUGFIX] Ensure component injections happen in engine instances.
+
+
 ### 2.8.0-beta.3 (August 15, 2016)
 
 - [#14009](https://github.com/emberjs/ember.js/pull/14009) [BUGFIX] Fix usage of `role` when used in `attributeBindings`.
