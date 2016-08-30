@@ -619,6 +619,16 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.render('{{#foo-bar as |component|}}{{component.name}}{{/foo-bar}}');
 
     this.assertComponentElement(this.firstChild, { content: 'foo-bar' });
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(instance, 'name', 'derp-qux'));
+
+    this.assertComponentElement(this.firstChild, { content: 'derp-qux' });
+
+    this.runTask(() => set(instance, 'name', 'foo-bar'));
+
+    this.assertComponentElement(this.firstChild, { content: 'foo-bar' });
   }
 
   ['@test it can yield internal and external properties positionally']() {

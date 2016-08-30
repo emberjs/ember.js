@@ -2,6 +2,7 @@ import { RenderSyntax } from './syntax/render';
 import { OutletSyntax } from './syntax/outlet';
 import { MountSyntax } from './syntax/mount';
 import { DynamicComponentSyntax } from './syntax/dynamic-component';
+import { InputSyntax } from './syntax/input';
 
 let syntaxKeys = [];
 let syntaxes = [];
@@ -19,18 +20,8 @@ export function findSyntaxBuilder(key) {
   }
 }
 
-registerSyntax('render', function(options) {
-  return new RenderSyntax(options);
-});
-
-registerSyntax('outlet', function(options) {
-  return new OutletSyntax(options);
-});
-
-registerSyntax('mount', function(options) {
-  return MountSyntax.create(options);
-});
-
-registerSyntax('component', function(options) {
-  return DynamicComponentSyntax.create(options);
-});
+registerSyntax('render', RenderSyntax);
+registerSyntax('outlet', OutletSyntax);
+registerSyntax('mount', MountSyntax);
+registerSyntax('component', DynamicComponentSyntax);
+registerSyntax('input', InputSyntax);

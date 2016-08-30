@@ -2,7 +2,6 @@ import { guidFor } from 'ember-metal/utils';
 import lookupPartial, { hasPartial } from 'ember-views/system/lookup_partial';
 import {
   Environment as GlimmerEnvironment,
-  HelperSyntax,
   AttributeChangeList,
   isSafeString,
   compileLayout
@@ -25,6 +24,7 @@ import {
   inlineIf,
   inlineUnless
 } from './helpers/if-unless';
+import { wrapComponentClassAttribute } from './utils/bindings';
 
 import { default as action } from './helpers/action';
 import { default as componentHelper } from './helpers/component';
@@ -50,80 +50,7 @@ const builtInComponents = {
   textarea: '-text-area'
 };
 
-function createCurly(args, templates, definition) {
-  wrapClassAttribute(args);
-  return new CurlyComponentSyntax({ args, definition, templates });
-}
-
-function buildTextFieldSyntax({ args, templates }, getDefinition) {
-  let definition = getDefinition('-text-field');
-  wrapClassAttribute(args);
-  return new CurlyComponentSyntax({ args, definition, templates });
-}
-
-const builtInDynamicComponents = {
-  input({ key, args, templates }, symbolTable, getDefinition) {
-    if (args.named.has('type')) {
-      let typeArg = args.named.at('type');
-      if (typeArg.type === 'value') {
-        if (typeArg.value === 'checkbox') {
-          assert(
-            '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
-            'you must use `checked=someBooleanValue` instead.',
-            !args.named.has('value')
-          );
-
-          return createCurly(args, templates, getDefinition('-checkbox'));
-        } else {
-          return buildTextFieldSyntax({ args, templates }, getDefinition);
-        }
-      }
-    } else {
-      return buildTextFieldSyntax({ args, templates }, getDefinition);
-    }
-    return DynamicComponentSyntax.create({ args, templates, symbolTable });
-  }
-};
-
-const builtInHelpers = {
-  if: inlineIf,
-  action,
-  component: componentHelper,
-  concat,
-  get,
-  hash,
-  loc,
-  log,
-  mut,
-  'query-params': queryParams,
-  readonly,
-  unbound,
-  unless: inlineUnless,
-  '-class': classHelper,
-  '-each-in': eachIn,
-  '-input-type': inputTypeHelper,
-  '-normalize-class': normalizeClassHelper,
-  '-html-safe': htmlSafeHelper
-};
-
 import { default as ActionModifierManager } from './modifiers/action';
-
-// TODO we should probably do this transform at build time
-function wrapClassAttribute(args) {
-  let { named } = args;
-  let index = named.keys.indexOf('class');
-
-  if (index !== -1) {
-    let { ref, type } = named.values[index];
-
-    if (type === 'get') {
-      let propName = ref.parts[ref.parts.length - 1];
-      named.values[index] = HelperSyntax.fromSpec(['helper', ['-class'], [['get', ref.parts], propName], null]);
-    }
-  }
-
-  return args;
-}
 
 export default class Environment extends GlimmerEnvironment {
   static create(options) {
@@ -161,6 +88,27 @@ export default class Environment extends GlimmerEnvironment {
 
     this.builtInModifiers = {
       action: new ActionModifierManager()
+    };
+
+    this.builtInHelpers = {
+      if: inlineIf,
+      action,
+      component: componentHelper,
+      concat,
+      get,
+      hash,
+      loc,
+      log,
+      mut,
+      'query-params': queryParams,
+      readonly,
+      unbound,
+      unless: inlineUnless,
+      '-class': classHelper,
+      '-each-in': eachIn,
+      '-input-type': inputTypeHelper,
+      '-normalize-class': normalizeClassHelper,
+      '-html-safe': htmlSafeHelper
     };
   }
 
@@ -213,14 +161,14 @@ export default class Environment extends GlimmerEnvironment {
       templates
     } = statement;
 
-    assert(`You attempted to overwrite the built-in helper "${key}" which is not allowed. Please rename the helper.`, !(builtInHelpers[key] && this.owner.hasRegistration(`helper:${key}`)));
+    assert(`You attempted to overwrite the built-in helper "${key}" which is not allowed. Please rename the helper.`, !(this.builtInHelpers[key] && this.owner.hasRegistration(`helper:${key}`)));
 
     if (isSimple && (isInline || isBlock)) {
       // 2. built-in syntax
 
-      let buildRefinedSyntax = findSyntaxBuilder(key);
-      if (buildRefinedSyntax) {
-        return buildRefinedSyntax({ args, templates, symbolTable });
+      let RefinedSyntax = findSyntaxBuilder(key);
+      if (RefinedSyntax) {
+        return RefinedSyntax.create(this, args, templates, symbolTable);
       }
 
       let internalKey = builtInComponents[key];
@@ -233,15 +181,12 @@ export default class Environment extends GlimmerEnvironment {
       }
 
       if (definition) {
-        return createCurly(args, templates, definition);
+        wrapComponentClassAttribute(args);
+
+        return new CurlyComponentSyntax(args, definition, templates, symbolTable);
       }
 
-      let generateBuiltInSyntax = builtInDynamicComponents[key];
-      if (generateBuiltInSyntax) {
-        return generateBuiltInSyntax(statement, symbolTable, (path) => this.getComponentDefinition([path], symbolTable));
-      }
-
-      assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(key, symbolTable));
+      assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(path, symbolTable));
     }
 
     if ((!isSimple && appendType === 'unknown') || appendType === 'self-get') {
@@ -249,12 +194,21 @@ export default class Environment extends GlimmerEnvironment {
     }
 
     if (!isSimple && path) {
-      return DynamicComponentSyntax.fromPath({ path, args, templates, symbolTable });
+      return DynamicComponentSyntax.fromPath(this, path, args, templates, symbolTable);
     }
 
-    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(key, symbolTable));
+    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(path, symbolTable));
 
-    assert(`Helpers may not be used in the element form.`, !nativeSyntax && key && this.hasHelper(key, symbolTable) ? !isModifier : true);
+    assert(`Helpers may not be used in the element form.`, (() => {
+      if (nativeSyntax) { return true; }
+      if (!key) { return true; }
+
+      if (isModifier && !this.hasModifier(path, symbolTable) && this.hasHelper(path, symbolTable)) {
+        return false;
+      }
+
+      return true;
+    })());
   }
 
   hasComponentDefinition() {
@@ -299,22 +253,33 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  hasHelper(name, symbolTable) {
+  hasHelper(nameParts, symbolTable) {
+    assert('The first argument passed into `hasHelper` should be an array', Array.isArray(nameParts));
+
+    // helpers are not allowed to include a dot in their invocation
+    if (nameParts.length > 1) {
+      return false;
+    }
+
+    let name = nameParts[0];
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let options = { source: `template:${blockMeta.moduleName}` };
 
-    return !!builtInHelpers[name[0]] ||
+    return !!this.builtInHelpers[name] ||
       owner.hasRegistration(`helper:${name}`, options) ||
       owner.hasRegistration(`helper:${name}`);
   }
 
-  lookupHelper(name, symbolTable) {
+  lookupHelper(nameParts, symbolTable) {
+    assert('The first argument passed into `lookupHelper` should be an array', Array.isArray(nameParts));
+
+    let name = nameParts[0];
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
 
-    let helper = builtInHelpers[name[0]] ||
+    let helper = this.builtInHelpers[name] ||
       owner.lookup(`helper:${name}`, options) ||
       owner.lookup(`helper:${name}`);
 
@@ -326,21 +291,30 @@ export default class Environment extends GlimmerEnvironment {
     } else if (helper.isHelperFactory) {
       return (vm, args) => ClassBasedHelperReference.create(helper, vm, args);
     } else {
-      throw new Error(`${name} is not a helper`);
+      throw new Error(`${nameParts} is not a helper`);
     }
   }
 
-  hasModifier(name) {
-    return !!this.builtInModifiers[name[0]];
+  hasModifier(nameParts) {
+    assert('The first argument passed into `hasModifier` should be an array', Array.isArray(nameParts));
+
+    // modifiers are not allowed to include a dot in their invocation
+    if (nameParts.length > 1) {
+      return false;
+    }
+
+    return !!this.builtInModifiers[nameParts[0]];
   }
 
-  lookupModifier(name) {
-    let modifier = this.builtInModifiers[name[0]];
+  lookupModifier(nameParts) {
+    assert('The first argument passed into `lookupModifier` should be an array', Array.isArray(nameParts));
+
+    let modifier = this.builtInModifiers[nameParts[0]];
 
     if (modifier) {
       return modifier;
     } else {
-      throw new Error(`${name} is not a modifier`);
+      throw new Error(`${nameParts} is not a modifier`);
     }
   }
 

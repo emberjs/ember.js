@@ -105,7 +105,7 @@ function applyAttributeBindings(element, attributeBindings, component, operation
 }
 
 export class CurlyComponentSyntax extends StatementSyntax {
-  constructor({ args, definition, templates, symbolTable }) {
+  constructor(args, definition, templates, symbolTable) {
     super();
     this.args = args;
     this.definition = definition;
