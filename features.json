@@ -4,7 +4,7 @@
     "ember-routing-route-configured-query-params": null,
     "ember-libraries-isregistered": null,
     "ember-application-engines": true,
-    "ember-glimmer": null,
+    "ember-glimmer": true,
     "ember-runtime-computed-uniq-by": true,
     "ember-improved-instrumentation": null,
     "ember-runtime-enumerable-includes": true,
