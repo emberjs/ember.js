@@ -341,10 +341,14 @@ QUnit.test('visit() returns a promise that resolves when the view has rendered',
   });
 });
 
-import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-testModule('Ember.Application - visit() Integration Tests', {
+QUnit.module('Ember.Application - visit() Integration Tests', {
   teardown() {
+    RSVP.on('error', onerrorDefault);
+
+    if (instance) {
+      run(instance, 'destroy');
+    }
+
     if (instances) {
       run(instances, 'forEach', (i) => i.destroy());
       instances = [];
@@ -357,7 +361,7 @@ testModule('Ember.Application - visit() Integration Tests', {
   }
 });
 
-test('visit() returns a promise that resolves without rendering when shouldRender is set to false', function(assert) {
+QUnit.test('visit() returns a promise that resolves without rendering when shouldRender is set to false', function(assert) {
   assert.expect(3);
 
   run(() => {
@@ -374,7 +378,7 @@ test('visit() returns a promise that resolves without rendering when shouldRende
   });
 });
 
-test('visit() returns a promise that resolves without rendering when shouldRender is set to false with Engines', function(assert) {
+QUnit.test('visit() returns a promise that resolves without rendering when shouldRender is set to false with Engines', function(assert) {
   assert.expect(3);
 
   run(() => {
@@ -403,7 +407,7 @@ test('visit() returns a promise that resolves without rendering when shouldRende
   });
 });
 
-test('visit() on engine resolves engine component', function(assert) {
+QUnit.test('visit() on engine resolves engine component', function(assert) {
   assert.expect(2);
 
   run(() => {
@@ -438,7 +442,7 @@ test('visit() on engine resolves engine component', function(assert) {
   });
 });
 
-test('visit() on engine resolves engine helper', function(assert) {
+QUnit.test('visit() on engine resolves engine helper', function(assert) {
   assert.expect(2);
 
   run(() => {
@@ -472,7 +476,7 @@ test('visit() on engine resolves engine helper', function(assert) {
   });
 });
 
-test('Ember Islands-style setup', function(assert) {
+QUnit.test('Ember Islands-style setup', function(assert) {
   let xFooInitCalled = false;
   let xFooDidInsertElementCalled = false;
 
