@@ -151,13 +151,10 @@ ComponentNodeManager.prototype.rerender = function ComponentNodeManager_rerender
 };
 
 ComponentNodeManager.prototype.destroy = function ComponentNodeManager_destroy() {
-  let component = this.component;
-
   // Clear component's render node. Normally this gets cleared
   // during view destruction, but in this case we're re-assigning the
   // node to a different view and it will get cleaned up automatically.
-  component._renderNode = null;
-  component.destroy();
+  this.component.destroy();
 };
 
 export function createComponent(_component, props, renderNode, env, attrs = {}) {

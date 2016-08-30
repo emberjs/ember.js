@@ -51,17 +51,19 @@ class LifeCycleHooksTest extends RenderingTest {
     };
 
     let assertParentView = (hookName, instance) => {
-      if (!instance.parentView) {
-        this.assert.ok(false, `parentView should be present in ${hookName}`);
+      this.assert.ok(instance.parentView, `parentView should be present in ${hookName}`);
+      if (hookName === 'willDestroyElement') {
+        this.assert.ok(instance.parentView.childViews.indexOf(instance) !== -1, `view is still connected to parentView in ${hookName}`);
+      }
+      if (this.isHTMLBars) {
+        this.assert.ok(instance.ownerView, `ownerView should be present in ${hookName}`);
       }
     };
 
     let assertElement = (hookName, instance) => {
       if (instance.tagName === '') { return; }
 
-      if (!instance.element) {
-        this.assert.ok(false, `element property should be present on ${instance} during ${hookName}`);
-      }
+      this.assert.ok(instance.element && document.contains(instance.element), `element property should be present on ${instance} during ${hookName}`);
 
       let inDOM = this.$(`#${instance.elementId}`)[0];
       if (!inDOM) {
@@ -134,6 +136,14 @@ class LifeCycleHooksTest extends RenderingTest {
         pushHook('willDestroyElement');
         assertParentView('willDestroyElement', this);
         assertElement('willDestroyElement', this);
+      },
+
+      didDestroyElement() {
+        pushHook('didDestroyElement');
+      },
+
+      willDestroy() {
+        pushHook('willDestroy');
       }
     });
 
@@ -387,8 +397,26 @@ class LifeCycleHooksTest extends RenderingTest {
         'destroy',
         ['the-top', 'willDestroyElement'],
         ['the-middle', 'willDestroyElement'],
-        ['the-bottom', 'willDestroyElement']
+        ['the-bottom', 'willDestroyElement'],
+        ['the-top', 'didDestroyElement'],
+        ['the-middle', 'didDestroyElement'],
+        ['the-bottom', 'didDestroyElement'],
+        ['the-top', 'willDestroy'],
+        ['the-middle', 'willDestroy'],
+        ['the-bottom', 'willDestroy']
       );
+
+      this.assert.equal(this.components['the-top']._state, 'preRender');
+      this.assert.equal(this.components['the-top'].isDestroying, true);
+      this.assert.equal(this.components['the-top'].isDestroyed, true);
+
+      this.assert.equal(this.components['the-middle']._state, 'preRender');
+      this.assert.equal(this.components['the-middle'].isDestroying, true);
+      this.assert.equal(this.components['the-middle'].isDestroyed, true);
+
+      this.assert.equal(this.components['the-bottom']._state, 'preRender');
+      this.assert.equal(this.components['the-bottom'].isDestroying, true);
+      this.assert.equal(this.components['the-bottom'].isDestroyed, true);
     });
   }
 
@@ -559,20 +587,42 @@ class LifeCycleHooksTest extends RenderingTest {
         'destroy',
         ['the-top', 'willDestroyElement'],
         ['the-middle', 'willDestroyElement'],
-        ['the-bottom', 'willDestroyElement']
+        ['the-bottom', 'willDestroyElement'],
+        ['the-top', 'didDestroyElement'],
+        ['the-middle', 'didDestroyElement'],
+        ['the-bottom', 'didDestroyElement'],
+        ['the-top', 'willDestroy'],
+        ['the-middle', 'willDestroy'],
+        ['the-bottom', 'willDestroy']
       );
+
+      this.assert.equal(this.components['the-top']._state, 'preRender');
+      this.assert.equal(this.components['the-top'].isDestroying, true);
+      this.assert.equal(this.components['the-top'].isDestroyed, true);
+
+      this.assert.equal(this.components['the-middle']._state, 'preRender');
+      this.assert.equal(this.components['the-middle'].isDestroying, true);
+      this.assert.equal(this.components['the-middle'].isDestroyed, true);
+
+      this.assert.equal(this.components['the-bottom']._state, 'preRender');
+      this.assert.equal(this.components['the-bottom'].isDestroying, true);
+      this.assert.equal(this.components['the-bottom'].isDestroyed, true);
     });
   }
 
   ['@test components rendered from `{{each}}` have correct life-cycle hooks to be called']() {
     let { invoke } = this.boundHelpers;
 
+    this.registerComponent('nested-item', { template: strip`
+      {{yield}}
+    ` });
+
     this.registerComponent('an-item', { template: strip`
-      <div>Item: {{count}}</div>
+      {{#nested-item}}Item: {{count}}{{/nested-item}}
     ` });
 
     this.registerComponent('no-items', { template: strip`
-      <div>Nothing to see here</div>
+      {{#nested-item}}<div>Nothing to see here</div>{{/nested-item}}
     ` });
 
     this.render(strip`
@@ -592,12 +642,18 @@ class LifeCycleHooksTest extends RenderingTest {
         ['an-item', 'init'],
         ['an-item', 'didInitAttrs',       { attrs: { count } }],
         ['an-item', 'didReceiveAttrs',    { newAttrs: { count } }],
-        ['an-item', 'willRender']
+        ['an-item', 'willRender'],
+        ['nested-item', 'init'],
+        ['nested-item', 'didInitAttrs',       { attrs: { } }],
+        ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
+        ['nested-item', 'willRender']
       ];
     };
 
     let initialAfterRenderHooks = (count) => {
       return [
+        ['nested-item', 'didInsertElement'],
+        ['nested-item', 'didRender'],
         ['an-item', 'didInsertElement'],
         ['an-item', 'didRender']
       ];
@@ -622,7 +678,9 @@ class LifeCycleHooksTest extends RenderingTest {
         ...initialAfterRenderHooks(1)
     );
 
+    this.assert.equal(this.component.childViews.length, 5, 'childViews precond');
     this.runTask(() => set(this.context, 'items', []));
+    this.assert.equal(this.component.childViews.length, 1, 'childViews updated');
 
     this.assertText('Nothing to see here');
 
@@ -630,26 +688,71 @@ class LifeCycleHooksTest extends RenderingTest {
       'reset to empty array',
 
       ['an-item', 'willDestroyElement'],
+      ['nested-item', 'willDestroyElement'],
+      ['an-item', 'didDestroyElement'],
+      ['nested-item', 'didDestroyElement'],
       ['an-item', 'willDestroyElement'],
+      ['nested-item', 'willDestroyElement'],
+      ['an-item', 'didDestroyElement'],
+      ['nested-item', 'didDestroyElement'],
       ['an-item', 'willDestroyElement'],
+      ['nested-item', 'willDestroyElement'],
+      ['an-item', 'didDestroyElement'],
+      ['nested-item', 'didDestroyElement'],
       ['an-item', 'willDestroyElement'],
+      ['nested-item', 'willDestroyElement'],
+      ['an-item', 'didDestroyElement'],
+      ['nested-item', 'didDestroyElement'],
       ['an-item', 'willDestroyElement'],
+      ['nested-item', 'willDestroyElement'],
+      ['an-item', 'didDestroyElement'],
+      ['nested-item', 'didDestroyElement'],
 
       ['no-items', 'init'],
       ['no-items', 'didInitAttrs',       { attrs: { } }],
       ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
       ['no-items', 'willRender'],
 
+      ['nested-item', 'init'],
+      ['nested-item', 'didInitAttrs',       { attrs: { } }],
+      ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
+      ['nested-item', 'willRender'],
+
+      ['nested-item', 'didInsertElement'],
+      ['nested-item', 'didRender'],
       ['no-items', 'didInsertElement'],
-      ['no-items', 'didRender']
+      ['no-items', 'didRender'],
+
+      ['an-item', 'willDestroy'],
+      ['nested-item', 'willDestroy'],
+      ['an-item', 'willDestroy'],
+      ['nested-item', 'willDestroy'],
+      ['an-item', 'willDestroy'],
+      ['nested-item', 'willDestroy'],
+      ['an-item', 'willDestroy'],
+      ['nested-item', 'willDestroy'],
+      ['an-item', 'willDestroy'],
+      ['nested-item', 'willDestroy']
     );
 
     this.teardownAssertions.push(() => {
       this.assertHooks(
         'destroy',
-
-        ['no-items', 'willDestroyElement']
+        ['no-items', 'willDestroyElement'],
+        ['nested-item', 'willDestroyElement'],
+        ['no-items', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['no-items', 'willDestroy'],
+        ['nested-item', 'willDestroy']
       );
+
+      this.assert.equal(this.components['no-items']._state, 'preRender');
+      this.assert.equal(this.components['no-items'].isDestroying, true);
+      this.assert.equal(this.components['no-items'].isDestroyed, true);
+
+      this.assert.equal(this.components['nested-item']._state, 'preRender');
+      this.assert.equal(this.components['nested-item'].isDestroying, true);
+      this.assert.equal(this.components['nested-item'].isDestroyed, true);
     });
   }
 }
