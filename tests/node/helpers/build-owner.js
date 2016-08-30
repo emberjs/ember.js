@@ -1,3 +1,5 @@
+var path = require('path');
+var distPath = path.join(__dirname, '../../../dist');
 var emberPath = path.join(distPath, 'ember.debug');
 var Ember = require(emberPath);
 
@@ -8,7 +10,7 @@ module.exports = function buildOwner(resolver) {
     Resolver: { create: function() { return resolver; } }
   });
 
-  let fallbackRegistry = Ember.Application.buildRegistry(namespace)
+  var fallbackRegistry = Ember.Application.buildRegistry(namespace)
   registry = new Ember.Registry({
     fallback: fallbackRegistry
   });

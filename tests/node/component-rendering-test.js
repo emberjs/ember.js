@@ -21,51 +21,36 @@ var compile = function(templateString, options) {
 
 componentModule('Components can be rendered without a DOM dependency');
 
-// QUnit.module("Components can be rendered without a DOM dependency", {
-//   beforeEach: function() {
-//     Ember = require(emberPath);
-//     DOMHelper = Ember.HTMLBars.DOMHelper;
-//     run = Ember.run;
-//   },
-
-//   afterEach: function() {
-//     // delete global.Ember;
-
-//     // // clear the previously cached version of this module
-//     // delete require.cache[emberPath + '.js'];
-//     // delete require.cache[templateCompilerPath + '.js'];
-//   }
-// });
-
 QUnit.test("Simple component", function(assert) {
   // var component = buildComponent("<h1>Hello</h1>");
   // var html = renderComponent(component);
+  this.setupComponentTest();
 
-  this.renderComponent('<h1>Hello</h1>');
+  this.render('<h1>Hello</h1>');
 
   assert.ok(html.match(/<h1>Hello<\/h1>/));
 });
 
-// QUnit.test("Component with dynamic value", function(assert) {
-//   var component = buildComponent('<h1>Hello {{location}}</h1>', {
-//     location: "World"
-//   });
+QUnit.test("Component with dynamic value", function(assert) {
+  var component = buildComponent('<h1>Hello {{location}}</h1>', {
+    location: "World"
+  });
 
-//   var html = renderComponent(component);
+  var html = renderComponent(component);
 
-//   assert.ok(html.match(/<h1>Hello World<\/h1>/));
-// });
+  assert.ok(html.match(/<h1>Hello World<\/h1>/));
+});
 
-// QUnit.test("Ensure undefined attributes requiring protocol sanitization do not error", function(assert) {
-//   var component = buildComponent('', {
-//     tagName: 'link',
-//     attributeBindings: ['href', 'rel'],
-//     rel: 'canonical'
-//   });
+QUnit.test("Ensure undefined attributes requiring protocol sanitization do not error", function(assert) {
+  var component = buildComponent('', {
+    tagName: 'link',
+    attributeBindings: ['href', 'rel'],
+    rel: 'canonical'
+  });
 
-//   var html = renderComponent(component);
-//   assert.ok(html.match(/rel="canonical"/));
-// });
+  var html = renderComponent(component);
+  assert.ok(html.match(/rel="canonical"/));
+});
 
 // function buildComponent(template, props) {
 //   var Component = Ember.Component.extend({
