@@ -63,7 +63,7 @@ class LifeCycleHooksTest extends RenderingTest {
     let assertElement = (hookName, instance) => {
       if (instance.tagName === '') { return; }
 
-      this.assert.ok(instance.element && document.contains(instance.element), `element property should be present on ${instance} during ${hookName}`);
+      this.assert.ok(instance.element && document.body.contains(instance.element), `element property should be present on ${instance} during ${hookName}`);
 
       let inDOM = this.$(`#${instance.elementId}`)[0];
       if (!inDOM) {
