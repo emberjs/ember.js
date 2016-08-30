@@ -228,34 +228,12 @@ Renderer.prototype.rerender = function (view) {
   renderNode.ownerNode.emberView.scheduleRevalidate(renderNode, view.toString(), 'rerendering');
 };
 
-Renderer.prototype.remove = function (view, shouldDestroy) {
-  let renderNode = view._renderNode;
-  view._renderNode = null;
-  if (renderNode) {
-    renderNode.emberView = null;
-    this.willDestroyElement(view);
-    view._transitionTo('destroying');
-
-    view._renderNode = null;
-    let lastResult = renderNode.lastResult;
-    if (lastResult) {
-      internal.clearMorph(renderNode, lastResult.env, shouldDestroy !== false);
-    }
-
-    if (!shouldDestroy) {
-      view._transitionTo('preRender');
-    }
-    this.didDestroyElement(view);
-  }
-
-  // toplevel view removed, remove insertion point
+Renderer.prototype.remove = function (view) {
   let lastResult = view.lastResult;
-  if (lastResult) {
+  if (lastResult) { // toplevel only.
     view.lastResult = null;
     lastResult.destroy();
-  }
-
-  if (shouldDestroy && !view.isDestroying) {
+  } else {
     view.destroy();
   }
 };

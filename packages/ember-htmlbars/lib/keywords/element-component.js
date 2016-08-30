@@ -19,7 +19,7 @@ export default {
     });
   },
 
-  render(morph, ...rest) {
+  render(morph) {
     let state = morph.getState();
 
     if (state.manager) {
@@ -31,7 +31,7 @@ export default {
     // but the `{{component}}` helper can.
     state.manager = null;
 
-    render(morph, ...rest);
+    render(...arguments);
   },
 
   rerender: render

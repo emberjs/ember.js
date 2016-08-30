@@ -1,5 +1,5 @@
 export default function willCleanupTree(env) {
-  let view = env.view;
+  let { view } = env;
 
   // When we go to clean up the render node and all of its children, we may
   // encounter views/components associated with those nodes along the way. In
@@ -28,5 +28,5 @@ export default function willCleanupTree(env) {
   // the `childViews` array. Other parent/child view relationships are
   // untouched.  This view is then cleared once cleanup is complete in
   // `didCleanupTree`.
-  view.ownerView._destroyingSubtreeForView = view;
+  view.ownerView._destroyingSubtreeForView = [];
 }

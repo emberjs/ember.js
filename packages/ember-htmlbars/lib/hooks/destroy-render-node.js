@@ -5,13 +5,15 @@
 export default function destroyRenderNode(renderNode) {
   let view = renderNode.emberView;
   if (view) {
-    view.renderer.remove(view, true);
+    view.ownerView._destroyingSubtreeForView.push(() => {
+      view.destroy();
+    });
   }
-
   let streamUnsubscribers = renderNode.streamUnsubscribers;
   if (streamUnsubscribers) {
     for (let i = 0; i < streamUnsubscribers.length; i++) {
       streamUnsubscribers[i]();
     }
   }
+  renderNode.streamUnsubscribers = null;
 }
