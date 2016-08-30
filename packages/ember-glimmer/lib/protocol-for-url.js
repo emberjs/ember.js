@@ -29,7 +29,7 @@ export default function installProtocolForURL(environment) {
     nodeURL = module.require('url');
     environment.protocolForURL = nodeProtocolForURL;
   } else {
-    throw new Error("Could not find valid URL parsing mechanism for URL Sanitization");
+    throw new Error('Could not find valid URL parsing mechanism for URL Sanitization');
   }
 }
 

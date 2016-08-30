@@ -281,7 +281,11 @@ ApplicationInstance.reopenClass({
    @param {Registry} registry
    @param {BootOptions} options
   */
-  setupRegistry(registry, options = new BootOptions()) {
+  setupRegistry(registry, options = {}) {
+    if (!options.toEnvironment) {
+      options = new BootOptions(options);
+    }
+
     registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
     registry.register('service:-document', options.document, { instantiate: false });
 

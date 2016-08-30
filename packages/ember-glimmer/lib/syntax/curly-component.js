@@ -9,6 +9,7 @@ import get from 'ember-metal/property_get';
 import { _instrumentStart } from 'ember-metal/instrumentation';
 import { ComponentDefinition } from 'glimmer-runtime';
 import { OWNER } from 'container';
+import { environment } from 'ember-environment';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -206,7 +207,11 @@ class CurlyComponentManager {
 
     component.trigger('didInitAttrs', { attrs });
     component.trigger('didReceiveAttrs', { newAttrs: attrs });
-    component.trigger('willInsertElement');
+
+    if (environment.hasDOM) {
+      component.trigger('willInsertElement');
+    }
+
     component.trigger('willRender');
 
     let bucket = new ComponentStateBucket(component, processedArgs, finalizer);
@@ -290,7 +295,7 @@ class CurlyComponentManager {
   }
 
   didCreate({ component }) {
-    if (false) {
+    if (environment.hasDOM) {
       component.trigger('didInsertElement');
       component.trigger('didRender');
       component._transitionTo('inDOM');

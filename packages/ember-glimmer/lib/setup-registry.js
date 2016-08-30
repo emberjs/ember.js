@@ -16,7 +16,6 @@ import Environment from './environment';
 
 export function setupApplicationRegistry(registry) {
   registry.injection('service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
-  registry.injection('service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
   registry.injection('renderer', 'env', 'service:-glimmer-environment');
 
   registry.register(P`template:-root`, RootTemplate);
@@ -24,6 +23,10 @@ export function setupApplicationRegistry(registry) {
 
   registry.register('renderer:-dom', InteractiveRenderer);
   registry.register('renderer:-inert', InertRenderer);
+
+  if (environment.hasDOM) {
+    registry.injection('service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
+  }
 
   registry.register('service:-dom-changes', {
     create({ document }) { return new DOMChanges(document); }
