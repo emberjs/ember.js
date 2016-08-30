@@ -120,6 +120,22 @@ moduleFor('Helpers test: {{textarea}}', class extends TextAreaRenderingTest {
     this.assertTextArea({ value: 'A beautiful day in Seattle' });
   }
 
+  ['@test GH#14001 Should correctly handle an empty string bound value']() {
+    this.render('{{textarea value=message}}', { message: '' });
+
+    this.assert.strictEqual(this.firstChild.value, '');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'message', 'hello'));
+
+    this.assert.strictEqual(this.firstChild.value, 'hello');
+
+    this.runTask(() => set(this.context, 'message', ''));
+
+    this.assert.strictEqual(this.firstChild.value, '');
+  }
+
   ['@test should update the value for `cut` / `input` / `change` events']() {
     this.render('{{textarea value=model.val}}', {
       model: { val: 'A beautiful day in Seattle' }
