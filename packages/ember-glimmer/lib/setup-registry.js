@@ -1,6 +1,8 @@
+import { environment } from 'ember-environment';
 import { privatize as P } from 'container';
 import { InteractiveRenderer, InertRenderer } from './renderer';
 import { DOMChanges, DOMTreeConstruction } from './dom';
+import { NodeDOMTreeConstruction } from './node-dom';
 import OutletView from './views/outlet';
 import TextField from './components/text_field';
 import TextArea from './components/text_area';
@@ -14,7 +16,6 @@ import Environment from './environment';
 
 export function setupApplicationRegistry(registry) {
   registry.injection('service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
-  registry.injection('service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
   registry.injection('renderer', 'env', 'service:-glimmer-environment');
 
   registry.register(P`template:-root`, RootTemplate);
@@ -23,12 +24,19 @@ export function setupApplicationRegistry(registry) {
   registry.register('renderer:-dom', InteractiveRenderer);
   registry.register('renderer:-inert', InertRenderer);
 
+  if (environment.hasDOM) {
+    registry.injection('service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
+  }
+
   registry.register('service:-dom-changes', {
     create({ document }) { return new DOMChanges(document); }
   });
 
   registry.register('service:-dom-tree-construction', {
-    create({ document }) { return new DOMTreeConstruction(document); }
+    create({ document }) {
+      var Implementation = environment.hasDOM ? DOMTreeConstruction : NodeDOMTreeConstruction;
+      return new Implementation(document);
+    }
   });
 }
 

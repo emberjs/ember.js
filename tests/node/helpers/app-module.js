@@ -62,22 +62,6 @@ var SimpleDOM = require('simple-dom');
  *     });
 */
 
-// Server-side rendering relies on the `ember-application-visit` feature flag.
-// If the flag is enabled, or if the flag is disabled but not stripped, we can
-// run the tests. Otherwise, for builds that have the feature stripped, we just
-// skip the tests.
-var canRunTests = features['ember-application-visit'] != false;
-
-if (canRunTests) {
-  // Enable the flag if it was disabled but not stripped.
-  features['ember-application-visit'] = true;
-
-  /*jshint -W079 */
-  global.EmberENV = {
-    FEATURES: features
-  };
-}
-
 module.exports = function(moduleName) {
   QUnit.module(moduleName, {
     beforeEach: function() {
@@ -121,8 +105,6 @@ module.exports = function(moduleName) {
   });
 };
 
-module.exports.canRunTests = canRunTests;
-
 function createApplication() {
   if (this.app) return this.app;
 
@@ -160,6 +142,9 @@ function visit(url) {
     isBrowser: false,
     document: dom,
     rootElement: dom.body
+  })
+  .catch(function(error) {
+    console.error(error.stack);
   });
 }
 

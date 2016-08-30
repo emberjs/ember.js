@@ -145,6 +145,7 @@ module.exports = function() {
     addGlimmerPackage(vendorPackages, 'glimmer-compiler');
     addGlimmerPackage(vendorPackages, 'glimmer-reference');
     addGlimmerPackage(vendorPackages, 'glimmer-runtime');
+    addGlimmerPackage(vendorPackages, 'glimmer-node');
     addGlimmerPackage(vendorPackages, 'glimmer-syntax');
     addGlimmerPackage(vendorPackages, 'glimmer-test-helpers');
     addGlimmerPackage(vendorPackages, 'glimmer-util');
