@@ -1,17 +1,12 @@
-var path = require('path');
-var distPath = path.join(__dirname, '../../../dist');
-var emberPath = path.join(distPath, 'ember.debug');
-var Ember = require(emberPath);
+module.exports = function buildOwner(Ember, resolver) {
+  var Owner = Ember.Object.extend(Ember._RegistryProxyMixin, Ember._ContainerProxyMixin);
 
-const Owner = Ember.Object.extend(Ember._RegistryProxyMixin, Ember._ContainerProxyMixin);
-
-module.exports = function buildOwner(resolver) {
   var namespace = Ember.Object.create({
     Resolver: { create: function() { return resolver; } }
   });
 
-  var fallbackRegistry = Ember.Application.buildRegistry(namespace)
-  registry = new Ember.Registry({
+  var fallbackRegistry = Ember.Application.buildRegistry(namespace);
+  var registry = new Ember.Registry({
     fallback: fallbackRegistry
   });
 

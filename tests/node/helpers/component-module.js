@@ -1,37 +1,79 @@
+/* globals global */
+var path = require('path');
 var SimpleDOM = require('simple-dom');
 var buildOwner = require('./build-owner');
+
+var distPath = path.join(__dirname, '../../../dist');
+var emberPath = path.join(distPath, 'ember.debug');
+var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
+
+var templateId;
+
+function clearEmber() {
+  delete global.Ember;
+
+  // clear the previously cached version of this module
+  delete require.cache[emberPath + '.js'];
+  delete require.cache[templateCompilerPath + '.js'];
+}
 
 module.exports = function(moduleName) {
   QUnit.module(moduleName, {
     beforeEach: function() {
-        this.setupComponentTest = setupComponentTest;
-        this.render = render;
+      var precompile = require(templateCompilerPath).precompile;
+      this.compile = function compile(templateString, options) {
+        var templateSpec = precompile(templateString, options);
+        var template = new Function('return ' + templateSpec)();
 
+        return this.Ember.HTMLBars.template(template);
+      };
+
+      var Ember = this.Ember = require(emberPath);
+
+      Ember.testing = true;
+      this.run = Ember.run;
+
+      setupComponentTest.call(this);
     },
 
     afterEach: function() {
-      // tear down to avoid test leakage
+      var module = this;
+
+      if (this.component) {
+        this.run(function() {
+          module.component.destroy();
+        });
+
+        this.component = null;
+      }
+
+      this.run(this.owner, 'destroy');
+      this.owner = null;
+      this.Ember = null;
+
+      clearEmber();
     }
   });
 };
 
 function setupComponentTest() {
   var module = this;
-  
-  module.owner = buildOwner({ resolve: function(){} });
 
-  var hasRendered = false;
+  module.element = new SimpleDOM.Document();
+  module.owner = buildOwner(this.Ember, { resolve: function(){} });
+  module.owner.register('service:-document', new SimpleDOM.Document(), { instantiate: false });
+
+  this._hasRendered = false;
   var OutletView = module.owner._lookupFactory('view:-outlet');
   var OutletTemplate = module.owner.lookup('template:-outlet');
-  var toplevelView = module.component = OutletView.create();
-  var hasOutletTemplate = !!OutletTemplate;
-  var outletState = {
+  module.component = OutletView.create();
+  this._outletState = {
     render: {
       owner: module.owner || undefined,
       into: undefined,
       outlet: 'main',
       name: 'application',
-      controller: module.context,
+      controller: module,
       ViewClass: undefined,
       template: OutletTemplate
     },
@@ -39,59 +81,57 @@ function setupComponentTest() {
     outlets: { }
   };
 
-  var element = document.getElementById('ember-testing');
-  var templateId = 0;
+  templateId = 0;
 
-  if (hasOutletTemplate) {
-    Ember.run(() => {
-      toplevelView.setOutletState(outletState);
+  this.run(function() {
+    module.component.setOutletState(module._outletState);
+  });
+
+  module.render = render;
+  module.serializeElement = serializeElement;
+  module.set = function(property, value) {
+    module.run(function() {
+      module.Ember.set(module, property, value);
     });
   }
 }
 
-function render(template) {
-  if (!template) {
-    throw new Error("in a component integration test you must pass a template to `render()`");
-  }
-  if (Ember.isArray(template)) {
-    template = template.join('');
-  }
-  if (typeof template === 'string') {
-    template = Ember.Handlebars.compile(template);
-  }
+function render(_template) {
+  var module = this;
+  var template = this.compile(_template);
 
   var templateFullName = 'template:-undertest-' + (++templateId);
-  this.registry.register(templateFullName, template);
+  this.owner.register(templateFullName, template);
   var stateToRender = {
-    owner: getOwner ? getOwner(module.container) : undefined,
+    owner: this.owner,
     into: undefined,
     outlet: 'main',
     name: 'index',
-    controller: module.context,
+    controller: this,
     ViewClass: undefined,
-    template: module.container.lookup(templateFullName),
+    template: this.owner.lookup(templateFullName),
     outlets: { }
   };
 
-  if (hasOutletTemplate) {
-    stateToRender.name = 'index';
-    outletState.outlets.main = { render: stateToRender, outlets: {} };
-  } else {
-    stateToRender.name = 'application';
-    outletState = { render: stateToRender, outlets: {} };
-  }
+  stateToRender.name = 'index';
+  this._outletState.outlets.main = { render: stateToRender, outlets: {} };
 
-  Ember.run(() => {
-    toplevelView.setOutletState(outletState);
+  this.run(function() {
+    module.component.setOutletState(module._outletState);
   });
 
-  if (!hasRendered) {
-    Ember.run(module.component, 'appendTo', new SimpleDOM.Document());
-    hasRendered = true;
+  if (!this._hasRendered) {
+    this.run(function() {
+      module.component.appendTo(module.element);
+    });
+    this._hasRendered = true;
   }
 
-  // ensure the element is based on the wrapping toplevel view
-  // Ember still wraps the main application template with a
-  // normal tagged view
-  this._element = element = document.querySelector('#ember-testing > .ember-view');
-};
+  return this.serializeElement();
+}
+
+function serializeElement() {
+  var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+
+  return serializer.serialize(this.element);
+}
