@@ -168,6 +168,10 @@ class Renderer {
     return { parentElement, firstNode, lastNode };
   }
 
+  createElement(tagName) {
+    return this._env.getAppendOperations().createElement(tagName);
+  }
+
   _renderRoot(root, template, self, parentElement, dynamicScope) {
     assert('Cannot append multiple root views', !this._root);
     this._root = root;
