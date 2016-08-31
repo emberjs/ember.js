@@ -11,16 +11,16 @@ export function getTemplates() {
   return TEMPLATES;
 }
 
-export function get(name) {
+export function getTemplate(name) {
   if (TEMPLATES.hasOwnProperty(name)) {
     return TEMPLATES[name];
   }
 }
 
-export function has(name) {
+export function hasTemplate(name) {
   return TEMPLATES.hasOwnProperty(name);
 }
 
-export function set(name, template) {
+export function setTemplate(name, template) {
   return TEMPLATES[name] = template;
 }

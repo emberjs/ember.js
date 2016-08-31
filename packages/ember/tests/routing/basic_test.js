@@ -9,7 +9,7 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
 import Mixin, { observer } from 'ember-metal/mixin';
-import Component from 'ember-templates/component';
+import { Component, setTemplates, setTemplate } from 'ember-glimmer';
 import jQuery from 'ember-views/system/jquery';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Application from 'ember-application/system/application';
@@ -21,7 +21,6 @@ import { getOwner } from 'container';
 import { Transition } from 'router/transition';
 import copy from 'ember-runtime/copy';
 import { addObserver } from 'ember-metal/observer';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 let trim = jQuery.trim;
 

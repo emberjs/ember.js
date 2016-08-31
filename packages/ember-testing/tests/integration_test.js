@@ -7,7 +7,7 @@ import EmberApplication from 'ember-application/system/application';
 import { compile } from 'ember-template-compiler';
 import Controller from 'ember-runtime/controllers/controller';
 import { A as emberA } from 'ember-runtime/system/native_array';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 
 import 'ember-application';
 

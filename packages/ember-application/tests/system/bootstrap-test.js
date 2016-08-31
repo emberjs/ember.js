@@ -2,7 +2,7 @@ import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import jQuery from 'ember-views/system/jquery';
-import { setTemplates } from 'ember-templates/template_registry';
+import { setTemplates } from 'ember-glimmer';
 
 let app;
 

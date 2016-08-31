@@ -10,7 +10,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.component = CoreOutlet.create();
   }
 
-  ['@htmlbars should render the outlet when set after DOM insertion']() {
+  ['@skip should render the outlet when set after DOM insertion']() {
     // fails in glimmer because of an attempt to access `.id` on
     // the provided template (which is undefined)
     let outletState = {
@@ -156,7 +156,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertText('HIBYE');
   }
 
-  ['@htmlbars should support bound outlet name']() {
+  ['@skip should support bound outlet name']() {
     let controller = { outletName: 'foo' };
     this.registerTemplate('application', '<h1>HI</h1>{{outlet outletName}}');
     let outletState = {

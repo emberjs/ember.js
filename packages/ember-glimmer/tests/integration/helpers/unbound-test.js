@@ -144,7 +144,7 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
     this.assertHTML(escapedHtml);
   }
 
-  ['@htmlbars helper form updates on parent re-render']() {
+  ['@skip helper form updates on parent re-render']() {
     this.render(`{{unbound foo}}`, {
       foo: 'BORK'
     });

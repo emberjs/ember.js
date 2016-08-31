@@ -1,7 +1,6 @@
 /*globals EmberDev */
 import VERSION from 'ember/version';
 import { ENV, context } from 'ember-environment';
-import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import libraries from 'ember-metal/libraries';
 import Application from 'ember-application/system/application';
@@ -17,7 +16,7 @@ import jQuery from 'ember-views/system/jquery';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import { _loaded } from 'ember-runtime/system/lazy_load';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 import { privatize as P } from 'container';
 import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
 
@@ -152,33 +151,20 @@ QUnit.test('builds a registry', function() {
   verifyRegistration(application, 'container-debug-adapter:main');
   verifyRegistration(application, 'component-lookup:main');
 
-  if (isEnabled('ember-glimmer')) {
-    verifyRegistration(application, 'service:-glimmer-environment');
-    verifyRegistration(application, 'service:-dom-changes');
-    verifyRegistration(application, 'service:-dom-tree-construction');
-    verifyInjection(application, 'service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
-    verifyInjection(application, 'service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
-    verifyInjection(application, 'renderer', 'env', 'service:-glimmer-environment');
-    verifyRegistration(application, 'view:-outlet');
-    verifyRegistration(application, 'renderer:-dom');
-    verifyRegistration(application, 'renderer:-inert');
-    verifyRegistration(application, P`template:components/-default`);
-    verifyRegistration(application, 'template:-outlet');
-    verifyInjection(application, 'view:-outlet', 'template', 'template:-outlet');
-    verifyInjection(application, 'template', 'env', 'service:-glimmer-environment');
-    deepEqual(application.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
-  } else {
-    deepEqual(application.registeredOptionsForType('template'), { instantiate: false }, `optionsForType 'template'`);
-
-    verifyInjection(application, 'renderer', 'dom', 'service:-dom-helper');
-    verifyInjection(application, 'service:-dom-helper', 'document', 'service:-document');
-    verifyRegistration(application, 'view:-outlet');
-    verifyRegistration(application, 'renderer:-dom');
-    verifyRegistration(application, 'renderer:-inert');
-    verifyRegistration(application, 'service:-dom-helper');
-    verifyRegistration(application, 'template:-outlet');
-    verifyRegistration(application, 'view:toplevel');
-  }
+  verifyRegistration(application, 'service:-glimmer-environment');
+  verifyRegistration(application, 'service:-dom-changes');
+  verifyRegistration(application, 'service:-dom-tree-construction');
+  verifyInjection(application, 'service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
+  verifyInjection(application, 'service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
+  verifyInjection(application, 'renderer', 'env', 'service:-glimmer-environment');
+  verifyRegistration(application, 'view:-outlet');
+  verifyRegistration(application, 'renderer:-dom');
+  verifyRegistration(application, 'renderer:-inert');
+  verifyRegistration(application, P`template:components/-default`);
+  verifyRegistration(application, 'template:-outlet');
+  verifyInjection(application, 'view:-outlet', 'template', 'template:-outlet');
+  verifyInjection(application, 'template', 'env', 'service:-glimmer-environment');
+  deepEqual(application.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
 });
 
 const originalLogVersion = ENV.LOG_VERSION;

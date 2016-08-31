@@ -5,10 +5,6 @@
 
 import EmberError from 'ember-metal/error';
 import { compile } from '../index';
-import {
-  has as hasTemplate,
-  set as registerTemplate
-} from 'ember-templates/template_registry';
 
 /**
 @module ember
@@ -28,7 +24,11 @@ import {
   @static
   @param ctx
 */
-function bootstrap(context = document) {
+function bootstrap({ context, hasTemplate, setTemplate }) {
+  if (!context) {
+    context = document;
+  }
+
   let selector = 'script[type="text/x-handlebars"]';
 
   let elements = context.querySelectorAll(selector);
@@ -52,7 +52,7 @@ function bootstrap(context = document) {
     }
 
     // For templates which have a name, we save them and then remove them from the DOM.
-    registerTemplate(templateName, template);
+    setTemplate(templateName, template);
 
     // Remove script tag from DOM.
     script.parentNode.removeChild(script);

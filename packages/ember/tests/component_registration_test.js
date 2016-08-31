@@ -4,9 +4,8 @@ import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import { compile } from 'ember-template-compiler';
-import Component from 'ember-templates/component';
+import { Component, setTemplates, setTemplate } from 'ember-glimmer';
 import jQuery from 'ember-views/system/jquery';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 let App, appInstance;
 

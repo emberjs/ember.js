@@ -3,6 +3,8 @@
 @submodule ember-runtime
 */
 
+export { default as String } from './system/string';
+
 // BEGIN IMPORTS
 import Ember from 'ember-metal'; // reexports
 import isEqual from './is-equal';
@@ -21,7 +23,6 @@ import ObjectProxy from './system/object_proxy';
 import CoreObject from './system/core_object';
 
 import NativeArray from './system/native_array';
-import EmberStringUtils from './system/string';
 import {
   onLoad,
   runLoadHooks
@@ -176,7 +177,6 @@ EmComputed.union = union;
 EmComputed.intersect = intersect;
 EmComputed.collect = collect;
 
-Ember.String = EmberStringUtils;
 Ember.Object = EmberObject;
 Ember.Container = Container;
 Ember.Registry = Registry;

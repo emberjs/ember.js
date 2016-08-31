@@ -1,7 +1,7 @@
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Application from 'ember-application/system/application';
-import Component from 'ember-templates/component';
+import { Component } from 'ember-glimmer';
 import jQuery from 'ember-views/system/jquery';
 
 let App1, App2, actions;
