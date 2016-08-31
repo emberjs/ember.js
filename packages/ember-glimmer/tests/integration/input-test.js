@@ -85,7 +85,7 @@ moduleFor('Input element tests', class extends RenderingTest {
     this.runFalsyValueProperty([undefined, 'hello']);
   }
 
-  ['@glimmer undefined `toString` method as input value']() {
+  ['@test undefined `toString` method as input value']() {
     this.runFalsyValueProperty([Object.create(null), 'hello']);
   }
 

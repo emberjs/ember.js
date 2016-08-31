@@ -1,4 +1,3 @@
-import packageName from './package-name';
 import { compile, helper, Helper, Component } from './helpers';
 import { equalsElement, equalTokens, regex, classes, equalInnerHTML } from './test-helpers';
 import run from 'ember-metal/run_loop';
@@ -8,15 +7,7 @@ import assign from 'ember-metal/assign';
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
-import require from 'require';
 import { buildOwner } from './helpers';
-
-const packageTag = `@${packageName} `;
-
-let PartialDefinition;
-if (packageName === 'glimmer') {
-  PartialDefinition = require('glimmer-runtime').PartialDefinition;
-}
 
 function isGenerator(mixin) {
   return Array.isArray(mixin.cases) && (typeof mixin.generate === 'function');
@@ -46,11 +37,7 @@ export function applyMixins(TestClass, ...mixins) {
 export function moduleFor(description, TestClass, ...mixins) {
   let context;
 
-  let modulePackagePrefixMatch = description.match(/^@(\w*)/); //eg '@glimmer' or '@htmlbars'
-  let modulePackagePrefix = modulePackagePrefixMatch ? modulePackagePrefixMatch[1] : '';
-  let descriptionWithoutPackagePrefix = description.replace(/^@\w* /, '');
-
-  QUnit.module(`[${packageName}] ${descriptionWithoutPackagePrefix}`, {
+  QUnit.module(description, {
     setup() {
       context = new TestClass();
     },
@@ -70,14 +57,10 @@ export function moduleFor(description, TestClass, ...mixins) {
   }
 
   function generateTest(name) {
-    if (modulePackagePrefix && packageName !== modulePackagePrefix) {
-      QUnit.skip(`SKIPPED IN ${packageName.toUpperCase()} ${name.slice(5)}`, assert => context[name](assert));
-    } else if (name.indexOf('@test ') === 0) {
+    if (name.indexOf('@test ') === 0) {
       QUnit.test(name.slice(5), assert => context[name](assert));
     } else if (name.indexOf('@skip ') === 0) {
       QUnit.skip(name.slice(5), assert => context[name](assert));
-    } else if (name.indexOf(packageTag) === 0) {
-      QUnit.test(name.slice(packageTag.length), assert => context[name](assert));
     }
   }
 }
@@ -91,10 +74,6 @@ export class TestCase {
     this.element = null;
     this.snapshot = null;
     this.assert = QUnit.config.current.assert;
-  }
-
-  get isGlimmer() {
-    return packageName === 'glimmer';
   }
 
   teardown() {}

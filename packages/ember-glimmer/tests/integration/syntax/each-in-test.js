@@ -410,7 +410,7 @@ applyMixins(EachInEdgeCasesTest,
 
 );
 
-moduleFor('@glimmer Syntax test: {{#each-in}} edge cases', class extends EachInEdgeCasesTest {
+moduleFor('Syntax test: {{#each-in}} edge cases', class extends EachInEdgeCasesTest {
 
   get truthyValue() {
     return { 'Not Empty': 1 };
@@ -441,7 +441,7 @@ applyMixins(EachInProxyTest,
   ])
 );
 
-moduleFor('@glimmer Syntax test: {{#each-in}} with `ObjectProxy`', class extends EachInProxyTest {
+moduleFor('Syntax test: {{#each-in}} with `ObjectProxy`', class extends EachInProxyTest {
 
   get truthyValue() {
     return ObjectProxy.create({ content: { 'Not Empty': 1 } });

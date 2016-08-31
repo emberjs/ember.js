@@ -7,7 +7,7 @@ let assert = QUnit.assert;
 
 moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
-  ['@glimmer it cannot override built-in syntax']() {
+  ['@test it cannot override built-in syntax']() {
     this.registerHelper('if', () => 'Nope');
     expectAssertion(() => {
       this.render(`{{if foo 'LOL'}}`, { foo: true });
@@ -320,7 +320,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('true');
   }
 
-  ['@glimmer parameterless helper is usable in attributes']() {
+  ['@test parameterless helper is usable in attributes']() {
     this.registerHelper('foo-bar', () => { return 'baz'; });
 
     this.render(`<div data-foo-bar="{{foo-bar}}"></div>`);

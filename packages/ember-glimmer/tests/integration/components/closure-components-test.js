@@ -925,7 +925,7 @@ moduleFor('Components test: closure components', class extends RenderingTest {
     assert.equal(this.$().text(), 'open', 'the componet text is "open"');
   }
 
-  ['@glimmer GH#13982 contextual component ref is recomputed when component name param changes'](assert) {
+  ['@test GH#13982 contextual component ref is recomputed when component name param changes'](assert) {
     let instance, previousInstance;
     let initCount = 0;
 

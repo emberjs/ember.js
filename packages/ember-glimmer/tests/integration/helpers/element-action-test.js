@@ -172,14 +172,10 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     let button = this.$('button');
 
-    if (this.isGlimmer) {
-      let attributes = getActionAttributes(button.get(0));
+    let attributes = getActionAttributes(button.get(0));
 
-      this.assert.ok(button.attr('data-ember-action').match(''), 'An empty data-ember-action attribute was added');
-      this.assert.ok(attributes[0].match(/data-ember-action-\d+/), 'A data-ember-action-xyz attribute with a guid was added');
-    } else {
-      this.assert.ok(button.attr('data-ember-action').match(/\d+/), 'A data-ember-action attribute with a guid was added');
-    }
+    this.assert.ok(button.attr('data-ember-action').match(''), 'An empty data-ember-action attribute was added');
+    this.assert.ok(attributes[0].match(/data-ember-action-\d+/), 'A data-ember-action-xyz attribute with a guid was added');
   }
 
   ['@test it should allow alternative events to be handled']() {
@@ -729,11 +725,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     let actionId;
 
-    if (this.isGlimmer) {
-      actionId = getActionIds(this.$('a[data-ember-action]').get(0))[0];
-    } else {
-      actionId = this.$('a[data-ember-action]').attr('data-ember-action');
-    }
+    actionId = getActionIds(this.$('a[data-ember-action]').get(0))[0];
 
     ok(ActionManager.registeredActions[actionId], 'An action is registered');
 
@@ -753,11 +745,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
 
-    if (this.isGlimmer) {
-      actionId = getActionIds(this.$('a[data-ember-action]').get(0))[0];
-    } else {
-      actionId = this.$('a[data-ember-action]').attr('data-ember-action');
-    }
+    actionId = getActionIds(this.$('a[data-ember-action]').get(0))[0];
 
     ok(ActionManager.registeredActions[actionId], 'A new action is registered');
   }
@@ -1388,7 +1376,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.assert.ok(innerClickCalled, 'the click was triggered');
   }
 
-  ['@glimmer element action with (mut undefinedThing) works properly']() {
+  ['@test element action with (mut undefinedThing) works properly']() {
     let component;
 
     let ExampleComponent = Component.extend({

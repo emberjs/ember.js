@@ -49,7 +49,7 @@ moduleFor('Helpers test: {{if}} used with another helper', class extends IfUnles
 
 });
 
-moduleFor('@glimmer Helpers test: {{if}} used in attribute position', class extends IfUnlessHelperTest {
+moduleFor('Helpers test: {{if}} used in attribute position', class extends IfUnlessHelperTest {
 
   wrapperFor(templates) {
     return `<div data-foo="${templates.join('')}" />`;
@@ -93,7 +93,7 @@ moduleFor('Helpers test: inline {{unless}}', class extends IfUnlessHelperTest {
 
 });
 
-moduleFor('@glimmer Helpers test: nested {{unless}} helpers (returning truthy values)', class extends IfUnlessHelperTest {
+moduleFor('Helpers test: nested {{unless}} helpers (returning truthy values)', class extends IfUnlessHelperTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{unless (unless ${cond} false ${cond}) ${falsy} ${truthy}}}`;
@@ -101,7 +101,7 @@ moduleFor('@glimmer Helpers test: nested {{unless}} helpers (returning truthy va
 
 });
 
-moduleFor('@glimmer Helpers test: nested {{unless}} helpers (returning falsy values)', class extends IfUnlessHelperTest {
+moduleFor('Helpers test: nested {{unless}} helpers (returning falsy values)', class extends IfUnlessHelperTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{unless (unless ${cond} ${cond} true) ${falsy} ${truthy}}}`;
@@ -109,7 +109,7 @@ moduleFor('@glimmer Helpers test: nested {{unless}} helpers (returning falsy val
 
 });
 
-moduleFor('@glimmer Helpers test: {{unless}} used with another helper', class extends IfUnlessHelperTest {
+moduleFor('Helpers test: {{unless}} used with another helper', class extends IfUnlessHelperTest {
 
   wrapperFor(templates) {
     return `{{concat ${templates.join(' ')}}}`;
@@ -121,7 +121,7 @@ moduleFor('@glimmer Helpers test: {{unless}} used with another helper', class ex
 
 });
 
-moduleFor('@glimmer Helpers test: {{unless}} used in attribute position', class extends IfUnlessHelperTest {
+moduleFor('Helpers test: {{unless}} used in attribute position', class extends IfUnlessHelperTest {
 
   wrapperFor(templates) {
     return `<div data-foo="${templates.join('')}" />`;

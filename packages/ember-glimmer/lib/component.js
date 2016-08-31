@@ -1,5 +1,5 @@
 import CoreView from 'ember-views/views/core_view';
-import ClassNamesSupport from './ember-views/class-names-support';
+import ClassNamesSupport from 'ember-views/mixins/class_names_support';
 import ChildViewsSupport from 'ember-views/mixins/child_views_support';
 import ViewStateSupport from 'ember-views/mixins/view_state_support';
 import AriaRoleSupport from 'ember-views/mixins/aria_role_support';

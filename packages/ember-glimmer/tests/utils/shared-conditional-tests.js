@@ -567,7 +567,7 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     this.assertText('T1F2');
   }
 
-  ['@glimmer evaluation should be lazy'](assert) {
+  ['@test evaluation should be lazy'](assert) {
     let truthyEvaluated;
     let falsyEvaluated;
 

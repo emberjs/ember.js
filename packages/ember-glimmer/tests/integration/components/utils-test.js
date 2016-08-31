@@ -144,15 +144,11 @@ moduleFor('View tree tests', class extends ApplicationTest {
 
   assertRootViews(ids) {
     let owner = this.applicationInstance;
-    let actual = getRootViews(owner).map(view => view.id).sort();
 
-    if (this.isGlimmer) {
-      let expected = ids.sort();
-      this.assert.deepEqual(actual, expected, 'root views');
-    } else {
-      let rootView = owner.lookup('router:main')._toplevelView;
-      this.assert.deepEqual(actual, [rootView.id], 'root views');
-    }
+    let actual = getRootViews(owner).map(view => view.id).sort();
+    let expected = ids.sort();
+
+    this.assert.deepEqual(actual, expected, 'root views');
   }
 
   ['@test getChildViews'](assert) {
