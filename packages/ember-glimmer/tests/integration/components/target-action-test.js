@@ -98,7 +98,7 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
   }
 
   // TODO consolidate these next 2 tests
-  ['@glimmer Calling sendAction on a component with a reference attr calls the function with arguments']() {
+  ['@test Calling sendAction on a component with a reference attr calls the function with arguments']() {
     this.renderDelegate('{{action-delegate playing=playing}}', {
       playing: null
     });

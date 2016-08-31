@@ -108,7 +108,7 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     }, /Illegal attributeBinding: 'foo.bar' is not a valid attribute name./);
   }
 
-  ['@glimmer normalizes attributeBinding names']() {
+  ['@test normalizes attributeBinding names']() {
     let FooBarComponent = Component.extend({
       attributeBindings: ['disAbled']
     });

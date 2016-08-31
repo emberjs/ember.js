@@ -129,9 +129,6 @@ moduleFor('Components instrumentation', class extends RenderingTest {
     this.assert.equal(payload.object, component.toString(), 'payload.object');
     this.assert.equal(payload.containerKey, component._debugContainerKey, 'payload.containerKey');
     this.assert.equal(payload.view, component, 'payload.view');
-
-    if (this.isGlimmer) {
-      this.assert.strictEqual(payload.initialRender, initialRender, 'payload.initialRender');
-    }
+    this.assert.strictEqual(payload.initialRender, initialRender, 'payload.initialRender');
   }
 });

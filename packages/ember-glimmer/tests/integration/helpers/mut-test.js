@@ -110,7 +110,7 @@ moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
     }, 'You can only pass a path to mut');
   }
 
-  ['@glimmer passing the result of a helper invocation results in an assertion']() {
+  ['@test passing the result of a helper invocation results in an assertion']() {
     this.registerComponent('bottom-mut', { template: '{{setMe}}' });
 
     expectAssertion(() => {

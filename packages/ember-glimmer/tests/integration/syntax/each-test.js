@@ -158,7 +158,7 @@ applyMixins(EachEdgeCasesTest,
 
 );
 
-moduleFor('@glimmer Syntax test: toggling {{#each}}', class extends EachEdgeCasesTest {
+moduleFor('Syntax test: toggling {{#each}}', class extends EachEdgeCasesTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#each ${cond}}}${truthy}{{else}}${falsy}{{/each}}`;
@@ -166,7 +166,7 @@ moduleFor('@glimmer Syntax test: toggling {{#each}}', class extends EachEdgeCase
 
 });
 
-moduleFor('@glimmer Syntax test: toggling {{#each as}}', class extends EachEdgeCasesTest {
+moduleFor('Syntax test: toggling {{#each as}}', class extends EachEdgeCasesTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#each ${cond} as |test|}}${truthy}{{else}}${falsy}{{/each}}`;

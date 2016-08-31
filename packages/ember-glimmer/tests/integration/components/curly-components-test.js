@@ -182,7 +182,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(foundId, newFoundId);
   }
 
-  ['@glimmer cannot pass both id and elementId at the same time'](assert) {
+  ['@test cannot pass both id and elementId at the same time'](assert) {
     this.registerComponent('foo-bar', { template: '' });
 
     expectAssertion(() => {
@@ -845,9 +845,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     equalTokens(this.firstChild, expectedHtmlBold);
   }
 
-  // Glimmers implementation is different here as we cache based on
-  // <number>templateId.
-  ['@glimmer late bound layouts return the same definition'](assert) {
+  ['@test late bound layouts return the same definition'](assert) {
     let templateIds = [];
     let component;
 
@@ -991,7 +989,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In layout - someProp: something here');
   }
 
-  ['@glimmer non-block with properties overridden in init']() {
+  ['@test non-block with properties overridden in init']() {
     let instance;
     this.registerComponent('non-block', {
       ComponentClass: Component.extend({
@@ -2004,7 +2002,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
     assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
 
-    if (this.isGlimmer && !isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (!isEnabled('ember-glimmer-allow-backtracking-rerender')) {
       expectAssertion(() => {
         this.runTask(() => outer.set('value', 2));
       }, /modified value twice in a single render/);
@@ -2061,7 +2059,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       template: '<div id="inner-value">{{wrapper.content}}</div>'
     });
 
-    if (this.isGlimmer && !isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (!isEnabled('ember-glimmer-allow-backtracking-rerender')) {
       expectAssertion(() => {
         this.render('{{x-outer}}');
       }, /modified wrapper.content twice in a single render/);
@@ -2193,11 +2191,9 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('blarkporybaz- Click Me');
 
-    if (this.isGlimmer) {
-      this.runTask(() => this.rerender());
+    this.runTask(() => this.rerender());
 
-      this.assertText('blarkporybaz- Click Me');
-    }
+    this.assertText('blarkporybaz- Click Me');
   }
 
   ['@test a two way binding flows upstream when consumed in the template']() {
