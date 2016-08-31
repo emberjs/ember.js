@@ -139,7 +139,7 @@ function mutParam(read, stream, internal) {
       stream = new LiteralStream(literal);
     }
   } else {
-    assert('You can only pass a path to mut', isStream(stream));
+    assert('You can only pass a binding to mut (e.g. `mut foo`)', isStream(stream));
   }
 
   if (stream[MUTABLE_REFERENCE]) {
