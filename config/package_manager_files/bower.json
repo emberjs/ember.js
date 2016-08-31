@@ -4,8 +4,7 @@
   "license": "MIT",
   "homepage": "https://github.com/emberjs/ember.js",
   "main": [
-    "./ember.debug.js",
-    "./ember-template-compiler.js"
+    "./ember.debug.js"
   ],
   "repository": {
     "type": "git",
