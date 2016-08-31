@@ -25,7 +25,7 @@ QUnit.module(`ember-${packageName}: Registering AST Plugins`, {
   }
 });
 
-QUnit.test('registering a plugin adds it to htmlbars-compiler options', function() {
+QUnit.test('registering a plugin adds it to compiler options', function() {
   expect(2);
 
   registerPlugin('ast', TestPlugin);

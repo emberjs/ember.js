@@ -9,7 +9,7 @@
       "packages/ember-metal/lib",
       "packages/ember-runtime/lib",
       "packages/ember-views/lib",
-      "packages/ember-htmlbars/lib",
+      "packages/ember-glimmer/lib",
       "packages/ember-routing/lib",
       "packages/ember-routing-views/lib",
       "packages/ember-application/lib",

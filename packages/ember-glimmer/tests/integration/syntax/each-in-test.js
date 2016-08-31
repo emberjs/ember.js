@@ -95,12 +95,6 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
     this.runTask(() => {
       set(this.context, 'categories.Smartphones', 100);
       set(this.context, 'categories.Tweets', 443115);
-
-      if (this.isHTMLBars) {
-        // {{#each-in}} in HTMLBars does not observe internal mutations to the
-        // hash so we manually trigger a rerender.
-        this.rerender();
-      }
     });
 
     this.assertHTML(strip`
@@ -154,12 +148,6 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
     this.runTask(() => {
       set(this.context, 'categories.Smartphones', 100);
       set(this.context, 'categories.Tweets', 443115);
-
-      if (this.isHTMLBars) {
-        // {{#each-in}} in HTMLBars does not observe internal mutations to the
-        // hash so we manually trigger a rerender.
-        this.rerender();
-      }
     });
 
     this.assertHTML(strip`
@@ -270,12 +258,6 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
     this.runTask(() => {
       set(protoCategories, 'Robots', 666);
       set(categories, 'Tweets', 443115);
-
-      if (this.isHTMLBars) {
-        // {{#each-in}} in HTMLBars does not observe internal mutations to the
-        // hash so we manually trigger a rerender.
-        this.rerender();
-      }
     });
 
     this.assertHTML(strip`
@@ -402,12 +384,6 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
 
     this.runTask(() => {
       set(arr, 'zomg', 'lol');
-
-      if (this.isHTMLBars) {
-        // {{#each-in}} in HTMLBars does not observe internal mutations to the
-        // hash so we manually trigger a rerender.
-        this.rerender();
-      }
     });
 
     this.assertText('[0:1][1:2][2:3][foo:bar][zomg:lol]');

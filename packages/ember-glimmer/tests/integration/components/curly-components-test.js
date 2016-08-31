@@ -1073,7 +1073,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In layout - someProp: wycats');
 
     // Note: Hooks are not fired in Glimmer for idempotent re-renders
-    expectHooks({ willUpdate: this.isHTMLBars, didReceiveAttrs: this.isHTMLBars }, () => {
+    expectHooks({ willUpdate: false, didReceiveAttrs: false }, () => {
       this.runTask(() => this.rerender());
     });
 
@@ -1086,7 +1086,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In layout - someProp: tomdale');
 
     // Note: Hooks are not fired in Glimmer for idempotent re-renders
-    expectHooks({ willUpdate: this.isHTMLBars, didReceiveAttrs: this.isHTMLBars }, () => {
+    expectHooks({ willUpdate: false, didReceiveAttrs: false }, () => {
       this.runTask(() => this.rerender());
     });
 
@@ -1956,7 +1956,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test when a property is changed during children\'s rendering'](assert) {
-    if (this.isHTMLBars || isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (isEnabled('ember-glimmer-allow-backtracking-rerender')) {
       expectDeprecation(/modified value twice in a single render/);
     }
 
@@ -2029,7 +2029,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test when a shared dependency is changed during children\'s rendering'](assert) {
-    if (this.isHTMLBars || isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (isEnabled('ember-glimmer-allow-backtracking-rerender')) {
       expectDeprecation(/modified wrapper.content twice in a single render/);
     }
 

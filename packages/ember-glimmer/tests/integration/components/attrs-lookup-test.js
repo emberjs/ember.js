@@ -128,12 +128,7 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
   }
 
   ['@test getAttr() should return the same value as get()'](assert) {
-    if (this.isGlimmer) {
-      assert.expect(18);
-    } else {
-      // HTMLBars runs `didReceiveAttrs` on `rerender`
-      assert.expect(20);
-    }
+    assert.expect(18);
 
     let instance;
     let FooBarComponent = Component.extend({

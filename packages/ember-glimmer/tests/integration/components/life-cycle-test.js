@@ -72,10 +72,6 @@ class LifeCycleHooksTest extends RenderingTest {
 
     let assertParentView = (hookName, instance) => {
       this.assert.ok(instance.parentView, `parentView should be present in ${hookName}`);
-
-      if (this.isHTMLBars) {
-        this.assert.ok(instance.ownerView, `ownerView should be present in ${hookName}`);
-      }
     };
 
     let assertElement = (hookName, instance) => {
@@ -271,60 +267,19 @@ class LifeCycleHooksTest extends RenderingTest {
 
     bottomAttrs = { oldAttrs: { website: 'tomdale.net' }, newAttrs: { website: 'tomdale.net' } };
 
-    // The original implementation of the hooks in HTMLBars does a
-    // deeper walk than necessary (using the AlwaysDirty validator),
-    // resulting in executing the experimental "new hooks" too often.
-    //
-    // In particular, hooks were executed downstream from the original
-    // call to `rerender()` even if the rerendering component did not
-    // use `this.set()` to update the arguments of downstream components.
-    //
-    // Because Glimmer uses a pull-based model instead of a blunt
-    // push-based model, we can avoid a deeper traversal than is
-    // necessary.
+    this.assertHooks(
+      'after no-op rerender (middle)',
 
-    if (this.isHTMLBars) {
-      this.assertHooks(
+      // Sync hooks
 
-        'after no-op rerender (middle)',
+      ['the-middle', 'willUpdate'],
+      ['the-middle', 'willRender'],
 
-        // Sync hooks
+      // Async hooks
 
-        ['the-middle', 'willUpdate'],
-        ['the-middle', 'willRender'],
-
-        ['the-bottom', 'didUpdateAttrs', bottomAttrs],
-        ['the-bottom', 'didReceiveAttrs', bottomAttrs],
-
-        ['the-bottom', 'willUpdate'],
-        ['the-bottom', 'willRender'],
-
-        // Async hooks
-
-        ['the-bottom', 'didUpdate'],
-        ['the-bottom', 'didRender'],
-
-        ['the-middle', 'didUpdate'],
-        ['the-middle', 'didRender']
-
-      );
-    } else {
-      this.assertHooks(
-
-        'after no-op rerender (middle)',
-
-        // Sync hooks
-
-        ['the-middle', 'willUpdate'],
-        ['the-middle', 'willRender'],
-
-        // Async hooks
-
-        ['the-middle', 'didUpdate'],
-        ['the-middle', 'didRender']
-
-      );
-    }
+      ['the-middle', 'didUpdate'],
+      ['the-middle', 'didRender']
+    );
 
     this.runTask(() => this.components['the-top'].rerender());
 
@@ -333,57 +288,19 @@ class LifeCycleHooksTest extends RenderingTest {
     middleAttrs = { oldAttrs: { name: 'Tom Dale' }, newAttrs: { name: 'Tom Dale' } };
 
 
-    if (this.isHTMLBars) {
-      this.assertHooks(
+    this.assertHooks(
+      'after no-op rerender (top)',
 
-        'after no-op rerender (top)',
+      // Sync hooks
 
-        // Sync hooks
+      ['the-top', 'willUpdate'],
+      ['the-top', 'willRender'],
 
-        ['the-top', 'willUpdate'],
-        ['the-top', 'willRender'],
+      // Async hooks
 
-        ['the-middle', 'didUpdateAttrs', middleAttrs],
-        ['the-middle', 'didReceiveAttrs', middleAttrs],
-
-        ['the-middle', 'willUpdate'],
-        ['the-middle', 'willRender'],
-
-        ['the-bottom', 'didUpdateAttrs', bottomAttrs],
-        ['the-bottom', 'didReceiveAttrs', bottomAttrs],
-
-        ['the-bottom', 'willUpdate'],
-        ['the-bottom', 'willRender'],
-
-        // Async hooks
-
-        ['the-bottom', 'didUpdate'],
-        ['the-bottom', 'didRender'],
-
-        ['the-middle', 'didUpdate'],
-        ['the-middle', 'didRender'],
-
-        ['the-top', 'didUpdate'],
-        ['the-top', 'didRender']
-
-      );
-    } else {
-      this.assertHooks(
-
-        'after no-op rerender (top)',
-
-        // Sync hooks
-
-        ['the-top', 'willUpdate'],
-        ['the-top', 'willRender'],
-
-        // Async hooks
-
-        ['the-top', 'didUpdate'],
-        ['the-top', 'didRender']
-
-      );
-    }
+      ['the-top', 'didUpdate'],
+      ['the-top', 'didRender']
+    );
 
     this.runTask(() => set(this.context, 'twitter', '@horsetomdale'));
 
@@ -553,46 +470,7 @@ class LifeCycleHooksTest extends RenderingTest {
     middleAttrs = { oldAttrs: { twitterTop: '@horsetomdale' }, newAttrs: { twitterTop: '@horsetomdale' } };
     bottomAttrs = { oldAttrs: { twitterMiddle: '@horsetomdale' }, newAttrs: { twitterMiddle: '@horsetomdale' } };
 
-    if (this.isHTMLBars) {
-      this.assertHooks(
-
-        'after no-op rernder (root)',
-
-        // Sync hooks
-
-        ['the-top', 'didUpdateAttrs', topAttrs],
-        ['the-top', 'didReceiveAttrs', topAttrs],
-
-        ['the-top', 'willUpdate'],
-        ['the-top', 'willRender'],
-
-        ['the-middle', 'didUpdateAttrs', middleAttrs],
-        ['the-middle', 'didReceiveAttrs', middleAttrs],
-
-        ['the-middle', 'willUpdate'],
-        ['the-middle', 'willRender'],
-
-        ['the-bottom', 'didUpdateAttrs', bottomAttrs],
-        ['the-bottom', 'didReceiveAttrs', bottomAttrs],
-
-        ['the-bottom', 'willUpdate'],
-        ['the-bottom', 'willRender'],
-
-        // Async hooks
-
-        ['the-bottom', 'didUpdate'],
-        ['the-bottom', 'didRender'],
-
-        ['the-middle', 'didUpdate'],
-        ['the-middle', 'didRender'],
-
-        ['the-top', 'didUpdate'],
-        ['the-top', 'didRender']
-
-      );
-    } else {
-      this.assertHooks('after no-op rernder (root)');
-    }
+    this.assertHooks('after no-op rernder (root)');
 
     this.teardownAssertions.push(() => {
       this.assertHooks(

@@ -8,12 +8,7 @@ import 'ember-views';
 import 'ember-routing';
 import 'ember-application';
 import 'ember-extension-support';
-if (has('ember-htmlbars')) {
-  require('ember-htmlbars');
-}
-if (has('ember-glimmer')) {
-  require('ember-glimmer');
-}
+import 'ember-glimmer';
 import 'ember-templates';
 
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';

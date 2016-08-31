@@ -16,15 +16,11 @@ import { canInvoke } from 'ember-metal/utils';
 import EmptyObject from 'ember-metal/empty_object';
 import DefaultResolver from './resolver';
 import EngineInstance from './engine-instance';
-import isEnabled from 'ember-metal/features';
-import symbol from 'ember-metal/symbol';
 import Controller from 'ember-runtime/controllers/controller';
 import RoutingService from 'ember-routing/services/routing';
 import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 import ComponentLookup from 'ember-views/component_lookup';
-import require from 'require';
-
-export const GLIMMER = symbol('GLIMMER');
+import { setupEngineRegistry } from 'ember-glimmer/setup-registry';
 
 function props(obj) {
   var properties = [];
@@ -57,10 +53,6 @@ function props(obj) {
 const Engine = Namespace.extend(RegistryProxy, {
   init() {
     this._super(...arguments);
-
-    if (this[GLIMMER] === undefined) {
-      this[GLIMMER] = isEnabled('ember-glimmer');
-    }
 
     this.buildRegistry();
   },
@@ -107,9 +99,7 @@ const Engine = Namespace.extend(RegistryProxy, {
     @return {Ember.Registry} the configured registry
   */
   buildRegistry() {
-    let registry = this.__registry__ = this.constructor.buildRegistry(this, {
-      [GLIMMER]: this[GLIMMER]
-    });
+    let registry = this.__registry__ = this.constructor.buildRegistry(this);
 
     return registry;
   },
@@ -404,19 +394,7 @@ Engine.reopenClass({
     registry.register('application:main', namespace, { instantiate: false });
 
     commonSetupRegistry(registry);
-
-    if (isEnabled('ember-glimmer')) {
-      let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupEngineRegistry;
-      glimmerSetupRegistry(registry);
-    } else {
-      if (options[GLIMMER]) {
-        let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupEngineRegistry;
-        glimmerSetupRegistry(registry);
-      } else {
-        let htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupEngineRegistry;
-        htmlbarsSetupRegistry(registry);
-      }
-    }
+    setupEngineRegistry(registry);
 
     return registry;
   },

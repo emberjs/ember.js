@@ -4,16 +4,7 @@ import EmberObject from 'ember-runtime/system/object';
 import Evented from 'ember-runtime/mixins/evented';
 import ActionHandler, { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
 import { typeOf } from 'ember-runtime/utils';
-
 import { cloneStates, states } from './states';
-import require from 'require';
-
-// Normally, the renderer is injected by the container when the view is looked
-// up. However, if someone creates a view without looking it up via the
-// container (e.g. `Ember.View.create().append()`) then we create a fallback
-// DOM renderer that is shared. In general, this path should be avoided since
-// views created this way cannot run in a node environment.
-let renderer;
 
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
@@ -51,11 +42,8 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._env = null;
     this._isVisible = get(this, 'isVisible');
 
-    // Fallback for legacy cases where the view was created directly
-    // via `create()` instead of going through the container.
     if (!this.renderer) {
-      renderer = renderer || htmlbarsRenderer();
-      this.renderer = renderer;
+      throw new Error(`Cannot instantiate a component without a renderer. Please ensure that you are creating ${this} with a proper container/registry.`);
     }
   },
 
@@ -110,13 +98,5 @@ deprecateUnderscoreActions(CoreView);
 CoreView.reopenClass({
   isViewFactory: true
 });
-
-let InteractiveRenderer, DOMHelper;
-function htmlbarsRenderer() {
-  DOMHelper = DOMHelper || require('ember-htmlbars/system/dom-helper').default;
-  InteractiveRenderer = InteractiveRenderer || require('ember-htmlbars/renderer').InteractiveRenderer;
-
-  return InteractiveRenderer.create({ dom: new DOMHelper() });
-}
 
 export default CoreView;

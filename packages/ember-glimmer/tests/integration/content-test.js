@@ -215,8 +215,7 @@ class DynamicContentTest extends RenderingTest {
     this.assertInvariants();
   }
 
-  // HTMLBars fail the DOM node stability test in the last step
-  ['@glimmer it can read from a proxy object']() {
+  ['@test it can read from a proxy object']() {
     this.renderPath('proxy.name', { proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }) });
 
     this.assertContent('Tom Dale');
@@ -248,7 +247,7 @@ class DynamicContentTest extends RenderingTest {
     this.assertInvariants();
   }
 
-  ['@glimmer it can read from a nested path in a proxy object']() {
+  ['@test it can read from a nested path in a proxy object']() {
     this.renderPath('proxy.name.last', { proxy: ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } }) });
 
     this.assertContent('Dale');
@@ -289,7 +288,7 @@ class DynamicContentTest extends RenderingTest {
     this.assertInvariants();
   }
 
-  ['@glimmer it can read from a path flipping between a proxy and a real object']() {
+  ['@test it can read from a path flipping between a proxy and a real object']() {
     this.renderPath('proxyOrObject.name.last', { proxyOrObject: ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } }) });
 
     this.assertContent('Dale');
@@ -334,7 +333,7 @@ class DynamicContentTest extends RenderingTest {
     this.assertInvariants();
   }
 
-  ['@glimmer it can read from a path flipping between a real object and a proxy']() {
+  ['@test it can read from a path flipping between a real object and a proxy']() {
     this.renderPath('objectOrProxy.name.last', { objectOrProxy: { name: { first: 'Tom', last: 'Dale' } } });
 
     this.assertContent('Dale');
@@ -490,7 +489,7 @@ let GlimmerContentTestCases = new ContentTestGenerator([
 
   [Object.create(null), EMPTY, 'an object with no toString']
 
-], '@glimmer');
+]);
 
 if (typeof Symbol !== 'undefined') {
   GlimmerContentTestCases.cases.push([Symbol('debug'), 'Symbol(debug)', 'a symbol']);
@@ -834,8 +833,6 @@ moduleFor('Dynamic content tests (integration)', class extends RenderingTest {
 
     this.runTask(() => set(this.context, 'fooBar', false));
 
-    // HTMLBars differs in behavior here as it leaves the empty
-    // class attribute.
     assert.equal(this.firstChild.className, '');
 
     this.runTask(() => set(this.context, 'fooBar', true));

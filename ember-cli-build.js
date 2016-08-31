@@ -128,15 +128,7 @@ module.exports = function() {
     'router':                vendoredES6Package('router.js'),
     'dag-map':               vendoredES6Package('dag-map'),
     'route-recognizer':      htmlbarsPackage('route-recognizer', { libPath: 'node_modules/route-recognizer/dist/es6/' }),
-    'dom-helper':            htmlbarsPackage('dom-helper'),
-    'morph-range':           htmlbarsPackage('morph-range'),
-    'morph-attr':            htmlbarsPackage('morph-attr'),
-    'htmlbars-runtime':      htmlbarsPackage('htmlbars-runtime'),
-    'htmlbars-compiler':     htmlbarsPackage('htmlbars-compiler'),
-    'htmlbars-syntax':       htmlbarsPackage('htmlbars-syntax'),
-    'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
-    'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true }),
-    'htmlbars-util':         htmlbarsPackage('htmlbars-util')
+    'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer', { libPath: 'node_modules/glimmer-engine/dist/es6'})
   };
 
   var glimmerStatus = features['ember-glimmer'];
@@ -162,7 +154,6 @@ module.exports = function() {
       development: getFeatures('development'),
       production: getFeatures('production')
     },
-    htmlbars: require('htmlbars'),
     glimmer: require('glimmer-engine'),
     packages: getPackages(features),
     vendoredPackages: vendorPackages,
