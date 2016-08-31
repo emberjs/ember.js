@@ -973,9 +973,14 @@ const Application = Engine.extend({
   */
   visit(url, options) {
     return this.boot().then(() => {
-      return this.buildInstance().boot(options).then((instance) => {
-        return instance.visit(url);
-      });
+      let instance = this.buildInstance();
+
+      return instance.boot(options)
+        .then(() => instance.visit(url))
+        .catch(error => {
+          run(instance, 'destroy');
+          throw error;
+        });
     });
   }
 });

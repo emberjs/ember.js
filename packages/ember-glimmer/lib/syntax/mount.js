@@ -1,35 +1,42 @@
 import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
-import { ConstReference, isConst, UNDEFINED_REFERENCE } from 'glimmer-reference';
+import { UNDEFINED_REFERENCE } from 'glimmer-reference';
 import { assert } from 'ember-metal/debug';
 import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing/system/generate_controller';
 import { OutletLayoutCompiler } from './outlet';
 
-function makeComponentDefinition(vm) {
-  let env     = vm.env;
-  let args    = vm.getArgs();
-  let nameRef = args.positional.at(0);
-
-  assert(`The first argument of {{mount}} must be quoted, e.g. {{mount "chat-engine"}}.`, isConst(nameRef));
-
-  let name = nameRef.value();
-
-  assert(`You used \`{{mount '${name}'}}\`, but '${name}' can not be found as an engine.`, env.owner.hasRegistration(`engine:${name}`));
-
-  return new ConstReference(new MountDefinition(name, env));
-}
-
 export class MountSyntax extends StatementSyntax {
-  constructor({ args, symbolTable }) {
+  static create(env, args, symbolTable) {
+    assert(
+      'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+      args.positional.length === 1 && args.named.length === 0
+    );
+
+    assert(
+      'The first argument of {{mount}} must be quoted, e.g. {{mount "chat-engine"}}.',
+      args.positional.at(0).type === 'value' && typeof args.positional.at(0).inner() === 'string'
+    );
+
+    let name = args.positional.at(0).inner();
+
+    assert(
+      `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
+      env.owner.hasRegistration(`engine:${name}`)
+    );
+
+    let definition = new MountDefinition(name, env);
+
+    return new MountSyntax(definition, symbolTable);
+  }
+
+  constructor(definition, symbolTable) {
     super();
-    this.definitionArgs = args;
-    this.definition = makeComponentDefinition;
-    this.args = ArgsSyntax.empty();
+    this.definition = definition;
     this.symbolTable = symbolTable;
   }
 
   compile(builder) {
-    builder.component.dynamic(this.definitionArgs, this.definition, this.args, null, this.symbolTable, null);
+    builder.component.static(this.definition, ArgsSyntax.empty(), null, this.symbolTable, null);
   }
 }
 
