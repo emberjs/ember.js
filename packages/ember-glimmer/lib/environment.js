@@ -227,7 +227,7 @@ export default class Environment extends GlimmerEnvironment {
       } else if (key === 'outlet') {
         return new OutletSyntax({ args });
       } else if (key === 'mount') {
-        return new MountSyntax({ args });
+        return MountSyntax.create(this, args, symbolTable);
       }
 
       let internalKey = builtInComponents[key];
