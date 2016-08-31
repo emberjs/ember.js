@@ -7,7 +7,7 @@ import EmberApplication from 'ember-application/system/application';
 import EmberRoute from 'ember-routing/system/route';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import RSVP from 'ember-runtime/ext/rsvp';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
 

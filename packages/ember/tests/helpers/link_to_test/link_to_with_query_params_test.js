@@ -7,7 +7,7 @@ import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 import RSVP from 'ember-runtime/ext/rsvp';
 
 let Router, App, router, registry, container;

@@ -16,8 +16,8 @@ import Namespace from 'ember-runtime/system/namespace';
 import validateType from '../utils/validate-type';
 import dictionary from 'ember-metal/dictionary';
 import {
-  get as getTemplate
-} from 'ember-templates/template_registry';
+  getTemplate
+} from 'ember-glimmer';
 
 export const Resolver = EmberObject.extend({
   /*

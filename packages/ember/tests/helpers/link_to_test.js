@@ -14,7 +14,7 @@ import inject from 'ember-runtime/inject';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 
 let Router, App, router, appInstance;
 

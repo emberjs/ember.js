@@ -8,7 +8,7 @@ import Engine from 'ember-application/system/engine';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
 import DefaultResolver from 'ember-application/system/resolver';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 import isEnabled from 'ember-metal/features';
 
 let Router, App, templates, router, container, registry, counter;

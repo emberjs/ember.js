@@ -1,24 +1,25 @@
-import Ember from 'ember-templates';
+import Ember from 'ember';
 import isEnabled from 'ember-metal/features';
 import require from 'require';
 
-QUnit.module('ember-templates reexports');
+QUnit.module('ember reexports');
 
 [
-  ['_Renderer',     'ember-templates/renderer',              'Renderer'],
-  ['Component',     'ember-templates/component',             'default'],
-  ['Helper',        'ember-templates/helper',                'default'],
-  ['Helper.helper', 'ember-templates/helper',                'helper'],
-  ['Checkbox',      'ember-templates/components/checkbox',   'default'],
-  ['LinkComponent', 'ember-templates/components/link-to',    'default'],
-  ['TextArea',      'ember-templates/components/text_area',  'default'],
-  ['TextField',     'ember-templates/components/text_field', 'default'],
-  ['TEMPLATES',     'ember-templates/template_registry',     { get: 'getTemplates', set: 'setTemplates' }],
-  ['Handlebars.template', 'ember-templates/template', 'default'],
-  ['Handlebars.SafeString', 'ember-templates/string', { get: 'getSafeString' }],
-  ['Handlebars.Utils.escapeExpression', 'ember-templates/string', 'escapeExpression'],
-  ['String.htmlSafe', 'ember-templates/string', 'htmlSafe'],
-  ['HTMLBars.makeBoundHelper', 'ember-templates/make-bound-helper', 'default']
+  ['_Renderer',     'ember-glimmer', '_Renderer'],
+  ['Component',     'ember-glimmer', 'Component'],
+  ['Helper',        'ember-glimmer', 'Helper'],
+  ['Helper.helper', 'ember-glimmer', 'helper'],
+  ['Checkbox',      'ember-glimmer', 'Checkbox'],
+  ['LinkComponent', 'ember-glimmer', 'LinkComponent'],
+  ['TextArea',      'ember-glimmer', 'TextArea'],
+  ['TextField',     'ember-glimmer', 'TextField'],
+  ['TEMPLATES',     'ember-glimmer', { get: 'getTemplates', set: 'setTemplates' }],
+  ['Handlebars.template', 'ember-glimmer', 'template'],
+  ['Handlebars.SafeString', 'ember-glimmer', { get: '_getSafeString' }],
+  ['Handlebars.Utils.escapeExpression', 'ember-glimmer', 'escapeExpression'],
+  ['String.htmlSafe', 'ember-glimmer', 'htmlSafe'],
+  ['HTMLBars.makeBoundHelper', 'ember-glimmer', 'makeBoundHelper'],
+  ['String', 'ember-runtime', 'String']
 ].forEach(reexport => {
   let [path, moduleId, exportName] = reexport;
   QUnit.test(`Ember.${path} exports correctly`, assert => {
@@ -28,7 +29,7 @@ QUnit.module('ember-templates reexports');
 
 if (isEnabled('ember-string-ishtmlsafe')) {
   QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
-    confirmExport(assert, 'String.isHTMLSafe', 'ember-templates/string', 'isHTMLSafe');
+    confirmExport(assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
   });
 }
 

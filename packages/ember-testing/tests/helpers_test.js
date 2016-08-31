@@ -4,7 +4,7 @@ import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import RSVP from 'ember-runtime/ext/rsvp';
 import jQuery from 'ember-views/system/jquery';
-import Component from 'ember-templates/component';
+import { Component, setTemplates, setTemplate } from 'ember-glimmer';
 
 import Test from 'ember-testing/test';
 import 'ember-testing/helpers';  // ensure that the helpers are loaded
@@ -15,7 +15,6 @@ import EmberRoute from 'ember-routing/system/route';
 import EmberApplication from 'ember-application/system/application';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import {
   pendingRequests,
   incrementPendingRequests,

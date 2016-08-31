@@ -1,17 +1,21 @@
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
-import Component from 'ember-templates/component';
+import { Component, getTemplate, setTemplates } from 'ember-glimmer';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import bootstrap from 'ember-template-compiler/system/bootstrap';
-import { setTemplates, get as getTemplate } from 'ember-templates/template_registry';
 import { buildOwner } from 'ember-glimmer/tests/utils/helpers';
+
+import {
+  hasTemplate,
+  setTemplate
+} from 'ember-glimmer';
 
 const { trim } = jQuery;
 
 let component, fixture;
 
 function checkTemplate(templateName) {
-  run(() => bootstrap(fixture));
+  run(() => bootstrap({ context: fixture, hasTemplate, setTemplate }));
 
   let template = getTemplate(templateName);
 
@@ -65,7 +69,7 @@ if (typeof Handlebars === 'object') {
   QUnit.test('template with type text/x-raw-handlebars should be parsed', function() {
     jQuery('#qunit-fixture').html('<script type="text/x-raw-handlebars" data-template-name="funkyTemplate">{{name}}</script>');
 
-    run(() => bootstrap(fixture));
+    run(() => bootstrap({ context: fixture, hasTemplate, setTemplate }));
 
     let template = getTemplate('funkyTemplate');
 
@@ -79,7 +83,7 @@ if (typeof Handlebars === 'object') {
 QUnit.test('duplicated default application templates should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars">second</script>');
 
-  throws(() => bootstrap(fixture),
+  throws(() => bootstrap({ context: fixture, hasTemplate, setTemplate }),
          /Template named "[^"]+" already exists\./,
          'duplicate templates should not be allowed');
 });
@@ -87,7 +91,7 @@ QUnit.test('duplicated default application templates should throw exception', fu
 QUnit.test('default application template and id application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" id="application">second</script>');
 
-  throws(() => bootstrap(fixture),
+  throws(() => bootstrap({ context: fixture, hasTemplate, setTemplate }),
          /Template named "[^"]+" already exists\./,
          'duplicate templates should not be allowed');
 });
@@ -95,7 +99,7 @@ QUnit.test('default application template and id application template present sho
 QUnit.test('default application template and data-template-name application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" data-template-name="application">second</script>');
 
-  throws(() => bootstrap(fixture),
+  throws(() => bootstrap({ context: fixture, hasTemplate, setTemplate }),
          /Template named "[^"]+" already exists\./,
          'duplicate templates should not be allowed');
 });
@@ -103,7 +107,7 @@ QUnit.test('default application template and data-template-name application temp
 QUnit.test('duplicated template id should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" id="funkyTemplate">first</script><script type="text/x-handlebars" id="funkyTemplate">second</script>');
 
-  throws(() => bootstrap(fixture),
+  throws(() => bootstrap({ context: fixture, hasTemplate, setTemplate }),
          /Template named "[^"]+" already exists\./,
          'duplicate templates should not be allowed');
 });
@@ -111,7 +115,7 @@ QUnit.test('duplicated template id should throw exception', function() {
 QUnit.test('duplicated template data-template-name should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">first</script><script type="text/x-handlebars" data-template-name="funkyTemplate">second</script>');
 
-  throws(() => bootstrap(fixture),
+  throws(() => bootstrap({ context: fixture, hasTemplate, setTemplate }),
          /Template named "[^"]+" already exists\./,
          'duplicate templates should not be allowed');
 });
