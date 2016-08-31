@@ -28,9 +28,8 @@ import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry
 import { privatize as P } from 'container';
 import { environment } from 'ember-environment';
 import RSVP from 'ember-runtime/ext/rsvp';
-import Engine, { GLIMMER } from './engine';
-import require from 'require';
-import isEnabled from 'ember-metal/features';
+import Engine from './engine';
+import { setupApplicationRegistry } from 'ember-glimmer/setup-registry';
 
 let librariesRegistered = false;
 
@@ -1020,18 +1019,7 @@ Application.reopenClass({
 
     commonSetupRegistry(registry);
 
-    if (isEnabled('ember-glimmer')) {
-      let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupApplicationRegistry;
-      glimmerSetupRegistry(registry);
-    } else {
-      if (options[GLIMMER]) {
-        let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupApplicationRegistry;
-        glimmerSetupRegistry(registry);
-      } else {
-        let htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupApplicationRegistry;
-        htmlbarsSetupRegistry(registry);
-      }
-    }
+    setupApplicationRegistry(registry);
 
     return registry;
   }

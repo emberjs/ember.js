@@ -2,8 +2,6 @@ import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { set } from 'ember-metal/property_set';
-import { observersFor } from 'ember-metal/observer';
-
 
 moduleFor('Attribute bindings integration', class extends RenderingTest {
   ['@test it can have attribute bindings']() {
@@ -357,13 +355,9 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'id': 'special-sauce' } });
 
-    // Should not be able to update id post creation. The change is correctly ignored in Glimmer, but
-    // HTMLBars does not handle that.
-    if (this.isGlimmer) {
-      this.runTask(() => set(this.context, 'sauce', 'foo'));
+    this.runTask(() => set(this.context, 'sauce', 'foo'));
 
-      this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'id': 'special-sauce' } });
-    }
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'id': 'special-sauce' } });
 
     this.runTask(() => set(this.context, 'sauce', 'special-sauce'));
 
@@ -395,29 +389,6 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     this.runTask(() => set(this.context, 'href', 'cat.html'));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { href: 'cat.html' } });
-  }
-
-  // Note: There are no observers in Glimmer
-  ['@htmlbars should teardown observers'](assert) {
-    let component;
-    let FooBarComponent = Component.extend({
-      attributeBindings: ['foo'],
-      foo: 'bar',
-      init() {
-        this._super(...arguments);
-        component = this;
-      }
-    });
-
-    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
-
-    this.render('{{foo-bar}}');
-
-    assert.equal(observersFor(component, 'foo').length, 1);
-
-    this.runTask(() => this.rerender());
-
-    assert.equal(observersFor(component, 'foo').length, 1);
   }
 
   ['@test it can set attribute bindings in the constructor']() {

@@ -252,16 +252,9 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
       template: '{{inner-component submit=(action somethingThatIsUndefined)}}'
     });
 
-    // The assertion is different because in the HTMLBars case, the value is always a stream,
-    // whether or not the path read actually has value.
-    // In the Glimmer case, we're checking the value and not the reference, which could be undefined
-    // and thus throws the correct error.
     this.assert.throws(() => {
       this.render('{{outer-component}}');
-    }, this.isGlimmer ?
-      /Action passed is null or undefined in \(action[^)]*\) from .*\./ :
-      /An action could not be made for `.*` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action '.*'\)`\) or a function available in .*\./
-    );
+    }, /Action passed is null or undefined in \(action[^)]*\) from .*\./);
   }
 
   ['@test an error is triggered when bound action being passed in is a non-function']() {

@@ -51,11 +51,6 @@ export function moduleFor(description, TestClass, ...mixins) {
   let modulePackagePrefix = modulePackagePrefixMatch ? modulePackagePrefixMatch[1] : '';
   let descriptionWithoutPackagePrefix = description.replace(/^@\w* /, '');
 
-  if (isEnabled('ember-glimmer') && packageName === 'htmlbars') {
-    // disable htmlbars tests when running with the ember-glimmer feature enabled
-    return;
-  }
-
   QUnit.module(`[${packageName}] ${descriptionWithoutPackagePrefix}`, {
     setup() {
       context = new TestClass();
@@ -97,10 +92,6 @@ export class TestCase {
     this.element = null;
     this.snapshot = null;
     this.assert = QUnit.config.current.assert;
-  }
-
-  get isHTMLBars() {
-    return packageName === 'htmlbars';
   }
 
   get isGlimmer() {

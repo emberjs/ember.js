@@ -1,7 +1,6 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 
-// copied from ember-htmlbars/tests/integration/local-lookup-test.js
 function buildResolver() {
   let resolver = {
     resolve() { },

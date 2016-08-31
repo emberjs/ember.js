@@ -1,4 +1,3 @@
-import packageName from '../../utils/package-name';
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { compile } from '../../utils/helpers';
@@ -7,14 +6,7 @@ import Engine from 'ember-application/system/engine';
 import Route from 'ember-routing/system/route';
 import isEnabled from 'ember-metal/features';
 
-// only run these tests for ember-glimmer when the feature is enabled, or for
-// ember-htmlbars when the feature is not enabled
-const shouldRun = isEnabled('ember-application-engines') && (
-  (
-    (isEnabled('ember-glimmer') && packageName === 'glimmer') ||
-    (!isEnabled('ember-glimmer') && packageName === 'htmlbars')
-  )
-);
+const shouldRun = isEnabled('ember-application-engines');
 
 if (shouldRun) {
   moduleFor('Application test: engine rendering', class extends ApplicationTest {

@@ -250,11 +250,7 @@ moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
 
     this.assertStableRerender();
 
-    if (this.isHTMLBars) {
-      this.assert.deepEqual(willRender, [12, 12], 'willReceive is [12, 12]');
-    } else {
-      this.assert.deepEqual(willRender, [12], 'willReceive is [12]');
-    }
+    this.assert.deepEqual(willRender, [12], 'willReceive is [12]');
     this.assert.deepEqual(didInsert, [12], 'didInsert is [12]');
     this.assert.strictEqual(get(bottom, 'setMe'), 12, 'the data propagated');
 

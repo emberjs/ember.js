@@ -4,15 +4,7 @@ import Component from 'ember-templates/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import bootstrap from 'ember-template-compiler/system/bootstrap';
 import { setTemplates, get as getTemplate } from 'ember-templates/template_registry';
-import isEnabled from 'ember-metal/features';
-import require from 'require';
-
-let buildOwner;
-if (isEnabled('ember-glimmer')) {
-  buildOwner = require('ember-glimmer/tests/utils/helpers').buildOwner;
-} else {
-  buildOwner = require('ember-htmlbars/tests/utils/helpers').buildOwner;
-}
+import { buildOwner } from 'ember-glimmer/tests/utils/helpers';
 
 const { trim } = jQuery;
 
@@ -41,7 +33,7 @@ function checkTemplate(templateName) {
   runDestroy(component);
 }
 
-QUnit.module('ember-htmlbars: bootstrap', {
+QUnit.module('ember-templates: bootstrap', {
   setup() {
     fixture = document.getElementById('qunit-fixture');
   },
