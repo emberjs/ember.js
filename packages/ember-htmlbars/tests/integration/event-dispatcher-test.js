@@ -1,1 +1,0 @@
-../../../ember-glimmer/tests/integration/event-dispatcher-test.js

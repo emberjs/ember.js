@@ -1,1 +1,0 @@
-../../../ember-glimmer/tests/integration/binding_integration_test.js
