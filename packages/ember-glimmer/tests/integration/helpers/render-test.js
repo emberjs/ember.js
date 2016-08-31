@@ -262,7 +262,7 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     }, 'The second argument of {{render}} must be a path, e.g. {{render "post" post}}.');
   }
 
-  ['@htmlbars should render a template without a model only once']() {
+  ['@skip should render a template without a model only once']() {
     this.owner.register('controller:home', Controller.extend());
     this.owner.register('router:main', EmberRouter.extend());
     this.registerTemplate('home', '<p>BYE</p>');
