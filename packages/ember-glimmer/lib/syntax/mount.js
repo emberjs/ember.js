@@ -20,7 +20,7 @@ export class MountSyntax extends StatementSyntax {
     let name = args.positional.at(0).inner();
 
     assert(
-      `You used \`{{mount '${name}'}}\`, but '${name}' can not be found as an engine.`,
+      `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
       env.owner.hasRegistration(`engine:${name}`)
     );
 
