@@ -19,23 +19,24 @@ function dynamicComponentFor(vm) {
 
 export class DynamicComponentSyntax extends StatementSyntax {
   // for {{component componentName}}
-  static create({ args, templates, symbolTable }) {
+  static create(environment, args, templates, symbolTable) {
     let definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0, 1));
     let invocationArgs = ArgsSyntax.build(args.positional.slice(1), args.named);
-    return new this({ definitionArgs, args: invocationArgs, templates, symbolTable });
+
+    return new this(definitionArgs, invocationArgs, templates, symbolTable);
   }
 
   // Transforms {{foo.bar with=args}} or {{#foo.bar with=args}}{{/foo.bar}}
   // into {{component foo.bar with=args}} or
   // {{#component foo.bar with=args}}{{/component}}
   // with all of it's arguments
-  static fromPath({ path, args, templates, symbolTable }) {
+  static fromPath(environment, path, args, templates, symbolTable) {
     let positional = ArgsSyntax.fromPositionalArgs(PositionalArgsSyntax.build([GetSyntax.build(path.join('.'))]));
 
-    return new this({ definitionArgs: positional, args, templates, symbolTable });
+    return new this(positional, args, templates, symbolTable);
   }
 
-  constructor({ definitionArgs, args, templates, symbolTable }) {
+  constructor(definitionArgs, args, templates, symbolTable) {
     super();
     this.definition = dynamicComponentFor.bind(this);
     this.definitionArgs = definitionArgs;

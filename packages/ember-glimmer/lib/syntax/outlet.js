@@ -16,7 +16,11 @@ function outletComponentFor(vm) {
 }
 
 export class OutletSyntax extends StatementSyntax {
-  constructor({ args, symbolTable }) {
+  static create(environment, args, templates, symbolTable) {
+    return new this(environment, args, templates, symbolTable);
+  }
+
+  constructor(environment, args, templates, symbolTable) {
     super();
     this.definitionArgs = args;
     this.definition = outletComponentFor;

@@ -1,3 +1,4 @@
+import { HelperSyntax } from 'glimmer-runtime';
 import get from 'ember-metal/property_get';
 import { assert } from 'ember-metal/debug';
 import { dasherize } from 'ember-runtime/system/string';
@@ -11,6 +12,23 @@ function referenceForKey(component, key) {
 
 function referenceForParts(component, parts) {
   return referenceFromParts(component[ROOT_REF], parts);
+}
+
+// TODO we should probably do this transform at build time
+export function wrapComponentClassAttribute(args) {
+  let { named } = args;
+  let index = named.keys.indexOf('class');
+
+  if (index !== -1) {
+    let { ref, type } = named.values[index];
+
+    if (type === 'get') {
+      let propName = ref.parts[ref.parts.length - 1];
+      named.values[index] = HelperSyntax.fromSpec(['helper', ['-class'], [['get', ref.parts], propName], null]);
+    }
+  }
+
+  return args;
 }
 
 export const AttributeBinding = {

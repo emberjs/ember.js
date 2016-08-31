@@ -27,6 +27,34 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('hello | hello world');
   }
 
+  ['@test it does not resolve helpers with a `.` (period)']() {
+    this.registerHelper('hello.world', () => 'hello world');
+
+    this.render('{{hello.world}}', {
+      hello: {
+        world: ''
+      }
+    });
+
+    this.assertText('');
+
+    this.assertStableRerender();
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'hello', { world: 'hello world!' }));
+
+    this.assertText('hello world!');
+
+    this.runTask(() => {
+      set(this.context, 'hello', {
+        world: ''
+      });
+    });
+
+    this.assertText('');
+  }
+
   ['@test it can resolve custom makeBoundHelper with or without dashes [DEPRECATED]']() {
     expectDeprecation(() => {
       this.owner.register('helper:hello', makeBoundHelper(() => 'hello'));
