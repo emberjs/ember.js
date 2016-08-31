@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.8.0-beta.5 (August 30, 2016)
+
+- [#14159](https://github.com/emberjs/ember.js/pull/14159) [BUGFIX] Fix rendering system cleanup.
+
 ### 2.8.0-beta.4 (August 29, 2016)
 
 - [#14123](https://github.com/emberjs/ember.js/pull/14123) [BUGFIX] Avoid rerendering outlet state during router destruction.
