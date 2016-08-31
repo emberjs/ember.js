@@ -1,6 +1,5 @@
 import { Mixin } from 'ember-metal/mixin';
 import { meta } from 'ember-metal/meta';
-import { Component } from 'ember-glimmer';
 
 import {
   on,
@@ -260,12 +259,4 @@ QUnit.test('a listener added as part of a mixin may be overridden', function() {
 
   sendEvent(obj, 'baz');
   equal(triggered, 1, 'should invoke from subclass property');
-});
-
-QUnit.skip('DEPRECATED: adding didInitAttrs as a listener is deprecated', function() {
-  let obj = Component.create();
-
-  expectDeprecation(() => {
-    addListener(obj, 'didInitAttrs');
-  }, /didInitAttrs called in <\Ember.Component\:ember[\d+]+>\./);
 });

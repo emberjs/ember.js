@@ -3,6 +3,7 @@ import isEnabled from 'ember-metal/features';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { observer } from 'ember-metal/mixin';
+import { on } from 'ember-metal/events';
 import EmberObject from 'ember-runtime/system/object';
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { A as emberA } from 'ember-runtime/system/native_array';
@@ -2647,5 +2648,19 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.teardown();
 
     this.assert.ok(true, 'no errors during teardown');
+  }
+
+  ['@test using didInitAttrs as an event is deprecated'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        foo: on('didInitAttrs', function() {
+          assert.ok(true, 'should fire `didInitAttrs` event');
+        })
+      })
+    });
+
+    expectDeprecation(() => {
+      this.render('{{foo-bar}}');
+    }, /didInitAttrs called/);
   }
 });

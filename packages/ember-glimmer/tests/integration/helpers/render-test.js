@@ -2,8 +2,6 @@ import { observer } from 'ember-metal/mixin';
 import Controller from 'ember-runtime/controllers/controller';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { set } from 'ember-metal/property_set';
-import EmberRouter from 'ember-routing/system/router';
-
 
 moduleFor('Helpers test: {{render}}', class extends RenderingTest {
   ['@test should render given template']() {
@@ -260,16 +258,6 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
         }
       });
     }, 'The second argument of {{render}} must be a path, e.g. {{render "post" post}}.');
-  }
-
-  ['@skip should render a template without a model only once']() {
-    this.owner.register('controller:home', Controller.extend());
-    this.owner.register('router:main', EmberRouter.extend());
-    this.registerTemplate('home', '<p>BYE</p>');
-
-    expectAssertion(() => {
-      this.render(`<h1>HI</h1>{{render 'home'}}<hr/>{{render 'home'}}`);
-    }, /\{\{render\}\} helper once/i);
   }
 
   ['@test should set router as target when action not found on parentController is not found'](assert) {
