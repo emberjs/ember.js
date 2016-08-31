@@ -4,9 +4,8 @@
 */
 import { assert } from 'ember-metal/debug';
 import { Mixin } from 'ember-metal/mixin';
-import { A as emberA } from 'ember-runtime/system/native_array';
 
-const EMPTY_ARRAY = [];
+const EMPTY_ARRAY = Object.freeze([]);
 
 /**
   @class ClassNamesSupport
@@ -20,10 +19,10 @@ export default Mixin.create({
     this._super(...arguments);
 
     assert(`Only arrays are allowed for 'classNameBindings'`, Array.isArray(this.classNameBindings));
-    this.classNameBindings = emberA(this.classNameBindings.slice());
+    this.classNameBindings = this.classNameBindings.slice();
 
     assert(`Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.`, Array.isArray(this.classNames));
-    this.classNames = emberA(this.classNames.slice());
+    this.classNames = this.classNames.slice();
   },
 
   /**
@@ -36,7 +35,7 @@ export default Mixin.create({
     @default ['ember-view']
     @public
   */
-  classNames: ['ember-view'],
+  classNames: EMPTY_ARRAY,
 
   /**
     A list of properties of the view to apply as class names. If the property
