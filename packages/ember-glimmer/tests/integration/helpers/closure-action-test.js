@@ -8,8 +8,7 @@ import { Component, INVOKE } from '../../utils/helpers';
 if (isEnabled('ember-improved-instrumentation')) {
   moduleFor('Helpers test: closure {{action}} improved instrumentation', class extends RenderingTest {
 
-    // Skipped since features flags during tests are tricky.
-    ['@skip action should fire interaction event']() {
+    ['@test action should fire interaction event']() {
       let subscriberCalled = false;
       let actionCalled = false;
 
