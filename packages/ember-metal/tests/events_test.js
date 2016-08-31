@@ -262,9 +262,7 @@ QUnit.test('a listener added as part of a mixin may be overridden', function() {
   equal(triggered, 1, 'should invoke from subclass property');
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('DEPRECATED: adding didInitAttrs as a listener is deprecated', function() {
+QUnit.skip('DEPRECATED: adding didInitAttrs as a listener is deprecated', function() {
   let obj = Component.create();
 
   expectDeprecation(() => {

@@ -1,5 +1,4 @@
 import { context } from 'ember-environment';
-import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import Engine from 'ember-application/system/engine';
 import EmberObject from 'ember-runtime/system/object';
@@ -64,23 +63,12 @@ QUnit.test('builds a registry', function() {
   verifyRegistration(engine, 'container-debug-adapter:main');
   verifyRegistration(engine, 'component-lookup:main');
 
-  if (isEnabled('ember-glimmer')) {
-    verifyInjection(engine, 'service:-dom-changes', 'document', 'service:-document');
-    verifyInjection(engine, 'service:-dom-tree-construction', 'document', 'service:-document');
-    verifyRegistration(engine, 'view:-outlet');
-    verifyRegistration(engine, P`template:components/-default`);
-    verifyRegistration(engine, 'template:-outlet');
-    verifyInjection(engine, 'view:-outlet', 'template', 'template:-outlet');
-    verifyInjection(engine, 'template', 'env', 'service:-glimmer-environment');
-    deepEqual(engine.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
-  } else {
-    deepEqual(engine.registeredOptionsForType('template'), { instantiate: false }, `optionsForType 'template'`);
-
-    verifyInjection(engine, 'renderer', 'dom', 'service:-dom-helper');
-    verifyInjection(engine, 'service:-dom-helper', 'document', 'service:-document');
-
-    verifyRegistration(engine, 'view:-outlet');
-    verifyRegistration(engine, 'template:-outlet');
-    verifyRegistration(engine, 'view:toplevel');
-  }
+  verifyInjection(engine, 'service:-dom-changes', 'document', 'service:-document');
+  verifyInjection(engine, 'service:-dom-tree-construction', 'document', 'service:-document');
+  verifyRegistration(engine, 'view:-outlet');
+  verifyRegistration(engine, P`template:components/-default`);
+  verifyRegistration(engine, 'template:-outlet');
+  verifyInjection(engine, 'view:-outlet', 'template', 'template:-outlet');
+  verifyInjection(engine, 'template', 'env', 'service:-glimmer-environment');
+  deepEqual(engine.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
 });

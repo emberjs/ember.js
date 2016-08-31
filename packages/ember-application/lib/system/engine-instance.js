@@ -206,12 +206,9 @@ if (isEnabled('ember-application-engines')) {
       let registrations = [
         'route:basic',
         'event_dispatcher:main',
-        'service:-routing'
+        'service:-routing',
+        'service:-glimmer-environment'
       ];
-
-      if (isEnabled('ember-glimmer')) {
-        registrations.push('service:-glimmer-environment');
-      }
 
       registrations.forEach(key => this.register(key, parent.resolveRegistration(key)));
 

@@ -98,8 +98,8 @@ var glimmerEngine = require('glimmer-engine/ember-cli-build')({
 
 var find = require('broccoli-stew').find;
 
-function addGlimmerPackage(vendoredPackages, name) {
-  vendoredPackages[name] = find(glimmerEngine, 'named-amd/' + name + '/**/*.js');
+function glimmerPackage(name) {
+  return find(glimmerEngine, 'named-amd/' + name + '/**/*.js');
 }
 
 function getVersion() {
@@ -128,22 +128,19 @@ module.exports = function() {
     'router':                vendoredES6Package('router.js'),
     'dag-map':               vendoredES6Package('dag-map'),
     'route-recognizer':      htmlbarsPackage('route-recognizer', { libPath: 'node_modules/route-recognizer/dist/es6/' }),
-    'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer', { libPath: 'node_modules/glimmer-engine/dist/es6'})
-  };
+    'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer', { libPath: 'node_modules/glimmer-engine/dist/es6'}),
 
-  var glimmerStatus = features['ember-glimmer'];
-  if (glimmerStatus === null || glimmerStatus === true) {
-    addGlimmerPackage(vendorPackages, 'glimmer');
-    addGlimmerPackage(vendorPackages, 'glimmer-compiler');
-    addGlimmerPackage(vendorPackages, 'glimmer-reference');
-    addGlimmerPackage(vendorPackages, 'glimmer-runtime');
-    addGlimmerPackage(vendorPackages, 'glimmer-node');
-    addGlimmerPackage(vendorPackages, 'glimmer-syntax');
-    addGlimmerPackage(vendorPackages, 'glimmer-test-helpers');
-    addGlimmerPackage(vendorPackages, 'glimmer-util');
-    addGlimmerPackage(vendorPackages, 'glimmer-wire-format');
-    addGlimmerPackage(vendorPackages, 'handlebars'); // inlined parser and whatnot
-  }
+    'glimmer':              glimmerPackage('glimmer'),
+    'glimmer-compiler':     glimmerPackage('glimmer-compiler'),
+    'glimmer-reference':    glimmerPackage('glimmer-reference'),
+    'glimmer-runtime':      glimmerPackage('glimmer-runtime'),
+    'glimmer-node':         glimmerPackage('glimmer-node'),
+    'glimmer-syntax':       glimmerPackage('glimmer-syntax'),
+    'glimmer-test-helpers': glimmerPackage('glimmer-test-helpers'),
+    'glimmer-util':         glimmerPackage('glimmer-util'),
+    'glimmer-wire-format':  glimmerPackage('glimmer-wire-format'),
+    'handlebars':           glimmerPackage('handlebars') // inlined parser
+  };
 
   var emberBuild = new EmberBuild({
     babel: {

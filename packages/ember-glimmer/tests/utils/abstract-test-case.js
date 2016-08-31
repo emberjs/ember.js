@@ -7,7 +7,6 @@ import jQuery from 'ember-views/system/jquery';
 import assign from 'ember-metal/assign';
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
-import isEnabled from 'ember-metal/features';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import require from 'require';
 import { buildOwner } from './helpers';
@@ -386,12 +385,7 @@ export class AbstractRenderingTest extends TestCase {
     let owner = this.env.owner || this.owner;
     if (typeof template === 'string') {
       let moduleName = `template:${name}`;
-      if (isEnabled('ember-glimmer')) {
-        let partial = new PartialDefinition(moduleName, this.compile(template, { moduleName, env: this.env }));
-        owner.register(moduleName, partial.template);
-      } else {
-        owner.register(moduleName, this.compile(template, { moduleName }));
-      }
+      owner.register(moduleName, this.compile(template, { moduleName }));
     }
   }
 

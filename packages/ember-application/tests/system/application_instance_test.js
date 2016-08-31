@@ -141,7 +141,7 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
 
 if (isEnabled('ember-application-engines')) {
   QUnit.test('can build and boot a registered engine', function(assert) {
-    assert.expect(isEnabled('ember-glimmer') ? 10 : 9);
+    assert.expect(10);
 
     let ChatEngine = Engine.extend();
     let chatEngineInstance;
@@ -161,12 +161,9 @@ if (isEnabled('ember-application-engines')) {
         let registrations = [
           'route:basic',
           'event_dispatcher:main',
-          'service:-routing'
+          'service:-routing',
+          'service:-glimmer-environment'
         ];
-
-        if (isEnabled('ember-glimmer')) {
-          registrations.push('service:-glimmer-environment');
-        }
 
         registrations.forEach(key => {
           assert.strictEqual(
