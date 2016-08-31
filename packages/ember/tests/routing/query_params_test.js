@@ -2530,6 +2530,25 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=3', 'url is correct');
   });
 
+  QUnit.test('previously set array queryParam is preserved when a controller property is set and the route is refreshed.', function() {
+   App.ApplicationController = Controller.extend({
+     queryParams: ['array', 'foo'],
+     array: [],
+     foo: null,
+   });
+
+   startingURL = '/';
+   bootApplication();
+   let applicationRoute = container.lookup('route:application');
+   let applicationController = container.lookup('controller:application');
+   run(applicationController, 'set', 'array', [1]);
+   run(() => {
+     applicationController.set('foo', 'bar');
+     applicationRoute.refresh();
+   });
+   equal(decodeURIComponent(router.get('location.path')), `/?array=[1]&foo=bar`, 'url is correct');
+ });
+
   QUnit.test('Use Ember.get to retrieve query params \'refreshModel\' configuration', function() {
     expect(6);
     App.ApplicationController = Controller.extend({
