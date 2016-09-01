@@ -41,6 +41,7 @@ import {
   Templates,
   ArgsSyntax,
   OptimizedAppend,
+  WithDynamicVarsSyntax,
 
   // References
   ValueReference,
@@ -51,7 +52,8 @@ import {
   ElementOperations,
   FunctionExpression,
   OpcodeBuilderDSL,
-  Simple
+  Simple,
+  getDynamicVar
 } from "glimmer-runtime";
 
 import {
@@ -711,6 +713,7 @@ export class TestEnvironment extends Environment {
     this.uselessAnchor = options.document.createElement('a') as HTMLAnchorElement;
     this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
+    this.registerInternalHelper("-get-dynamic-var", getDynamicVar);
     this.registerModifier("action", new InertModifierManager());
 
     this.registerInternalHelper("component", (vm, args, symbolTable) => {
@@ -792,6 +795,8 @@ export class TestEnvironment extends Environment {
           return new IdentitySyntax({ args, templates });
         case 'render-inverse':
           return new RenderInverseIdentitySyntax({ args, templates });
+        case '-with-dynamic-vars':
+          return new WithDynamicVarsSyntax({ args, templates });
       }
     }
 
@@ -896,18 +901,19 @@ export class TestEnvironment extends Environment {
 }
 
 export class TestDynamicScope implements DynamicScope {
-  view: PathReference<Opaque>;
-
-  constructor(view: PathReference<Opaque>) {
-    this.view = view;
+  constructor() {
   }
 
-  set(assignment: Dict<PathReference<Opaque>>) {
-    assign(this, assignment);
+  get(key: string): PathReference<Opaque> {
+    return this[key];
+  }
+
+  set(key: string, reference: PathReference<Opaque>) {
+    return this[key] = reference;
   }
 
   child(): TestDynamicScope {
-    return new TestDynamicScope(this.view);
+    return new TestDynamicScope();
   }
 }
 

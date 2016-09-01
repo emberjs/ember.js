@@ -1,11 +1,5 @@
-import { TestEnvironment, SimpleRootReference, VersionedObject } from "glimmer-test-helpers";
-import { Template, DynamicScope, RenderResult } from 'glimmer-runtime';
-
-const TEST_DYNAMIC_SCOPE: DynamicScope = {
-  child(): DynamicScope {
-    return TEST_DYNAMIC_SCOPE;
-  }
-};
+import { TestEnvironment, TestDynamicScope, SimpleRootReference, VersionedObject } from "glimmer-test-helpers";
+import { Template, RenderResult } from 'glimmer-runtime';
 
 // TODO: Make DOMChanges and Glimmer understand the interface we actually need here
 type SimpleNode = Element;
@@ -26,7 +20,7 @@ class RenderingTest {
   teardown() {}
 
   render(context: Object) {
-    let dynamicScope = TEST_DYNAMIC_SCOPE;
+    let dynamicScope = new TestDynamicScope();
     let appendTo = this.appendTo;
     let rootObject = new VersionedObject(context);
     let root = new SimpleRootReference(rootObject);

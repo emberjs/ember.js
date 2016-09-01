@@ -40,7 +40,7 @@ function commonSetup() {
 }
 
 function render(template: Template, context = {}, view: PathReference<Opaque> = null) {
-  let options = { appendTo: root, dynamicScope: new TestDynamicScope(view) };
+  let options = { appendTo: root, dynamicScope: new TestDynamicScope() };
   self = new UpdatableReference(context);
   result = template.render(self, env, options);
   assertInvariants(result);

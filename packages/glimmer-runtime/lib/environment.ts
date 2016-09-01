@@ -4,7 +4,7 @@ import SymbolTable from './symbol-table';
 
 import * as Simple from './dom/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
-import { Reference, OpaqueIterable } from 'glimmer-reference';
+import { Reference, PathReference, OpaqueIterable } from 'glimmer-reference';
 import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import {
   defaultChangeLists,
@@ -24,10 +24,6 @@ import {
 import {
   ModifierManager
 } from './modifier/interfaces';
-
-import {
-  PathReference
-} from 'glimmer-reference';
 
 import {
   Destroyable,
@@ -57,6 +53,8 @@ import { PublicVM } from './vm/append';
 type ScopeSlot = PathReference<Opaque> | InlineBlock;
 
 export interface DynamicScope {
+  get(key: string): PathReference<Opaque>;
+  set(key: string, reference: PathReference<Opaque>): PathReference<Opaque>;
   child(): DynamicScope;
 }
 
