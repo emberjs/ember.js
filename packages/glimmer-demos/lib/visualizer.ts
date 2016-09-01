@@ -311,7 +311,7 @@ function renderUI() {
 
   env.begin();
   let self = new UpdatableReference(ui);
-  let res = env.compile(UI).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope(null) });
+  let res = env.compile(UI).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope() });
   env.commit();
 
   rerenderUI = () => {
@@ -372,7 +372,7 @@ function renderContent() {
     let definition = env.getComponentDefinition([component]);
 
     let manager = definition.manager;
-    let instance = manager.create(definition, EvaluatedArgs.empty(), new TestDynamicScope(null), false);
+    let instance = manager.create(definition, EvaluatedArgs.empty(), new TestDynamicScope(), false);
     let compiled = manager.layoutFor(definition, instance, env);
 
     return compiled.ops;
@@ -396,7 +396,7 @@ function renderContent() {
 
   env.begin();
   let self = new UpdatableReference(data);
-  let res = app.render(self, env, { appendTo: div, dynamicScope: new TestDynamicScope(null) });
+  let res = app.render(self, env, { appendTo: div, dynamicScope: new TestDynamicScope() });
   env.commit();
 
   let templateOps = app.raw['compiled'].ops;

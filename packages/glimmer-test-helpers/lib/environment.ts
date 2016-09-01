@@ -901,10 +901,7 @@ export class TestEnvironment extends Environment {
 }
 
 export class TestDynamicScope implements DynamicScope {
-  view: PathReference<Opaque>;
-
-  constructor(view: PathReference<Opaque>) {
-    this.view = view;
+  constructor() {
   }
 
   get(key: string): PathReference<Opaque> {

@@ -24,7 +24,7 @@ export function startGlimmer() {
   let world = getWorld();
   env.begin();
   self = new UpdatableReference({ world });
-  res = env.compile(app).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope(null) });
+  res = env.compile(app).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope() });
   env.commit();
 
   requestAnimationFrame(rerenderGlimmer);

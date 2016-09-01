@@ -37,7 +37,7 @@ class EmberishRootView extends EmberObject {
   appendTo(selector: string) {
     let element = this.parent = document.querySelector(selector);
     let self = new UpdatableReference(this);
-    this._result = this.template.render(self, this.env, { appendTo: element, dynamicScope: new TestDynamicScope(self) });
+    this._result = this.template.render(self, this.env, { appendTo: element, dynamicScope: new TestDynamicScope() });
     this.element = element.firstElementChild;
   }
 
