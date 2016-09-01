@@ -101,7 +101,7 @@ class AbstractAppendTest extends RenderingTest {
     this.assert.equal(willDestroyCalled, 1);
   }
 
-  ['@skip appending, updating and destroying multiple components'](assert) {
+  ['@test appending, updating and destroying multiple components'](assert) {
     let willDestroyCalled = 0;
 
     this.registerComponent('x-first', {

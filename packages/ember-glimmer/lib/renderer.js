@@ -16,8 +16,8 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     isEnabled('ember-glimmer-allow-backtracking-rerender')) {
   runInTransaction = _runInTransaction;
 } else {
-  runInTransaction = callback => {
-    callback();
+  runInTransaction = (context, methodName) => {
+    context[methodName]();
     return false;
   };
 }
@@ -46,6 +46,49 @@ class DynamicScope {
   set(key, value) {
     this[key] = value;
     return value;
+  }
+}
+
+class RootState {
+  constructor(root, env, template, self, parentElement, dynamicScope) {
+    assert(`You cannot render \`${self.value()}\` without a template.`, template);
+
+    this.id = getViewId(root);
+    this.root = root;
+    this.result = undefined;
+    this.shouldReflush = false;
+
+    let options = this.options = {
+      alwaysRevalidate: false
+    };
+
+    this.render = () => {
+      let result = this.result = template.asEntryPoint().render(self, env, {
+        appendTo: parentElement,
+        dynamicScope
+      });
+
+      // override .render function after initial render
+      this.render = () => {
+        result.rerender(options);
+      };
+    };
+  }
+
+  isFor(possibleRoot) {
+    return this.root === possibleRoot;
+  }
+
+  destroy() {
+    let { result } = this;
+
+    this.root = null;
+    this.result = null;
+    this.render = null;
+
+    if (result) {
+      result.destroy();
+    }
   }
 }
 
@@ -99,10 +142,8 @@ export class Renderer {
     this._viewRegistry = _viewRegistry;
     this._destinedForDOM = destinedForDOM;
     this._destroyed = false;
-    this._root = null;
-    this._result = null;
+    this._roots = [];
     this._lastRevision = null;
-    this._transaction = null;
   }
 
   // renderer HOOKS
@@ -112,14 +153,18 @@ export class Renderer {
     let targetObject = view.outletState.render.controller;
     let ref = view.toReference();
     let dynamicScope = new DynamicScope(null, ref, ref, true, targetObject);
-    this._renderRoot(view, view.template, self, target, dynamicScope);
+    let root = new RootState(view, this._env, view.template, self, target, dynamicScope);
+
+    this._renderRoot(root);
   }
 
   appendTo(view, target) {
     let rootDef = new RootComponentDefinition(view);
     let self = new RootReference(rootDef);
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE, UNDEFINED_REFERENCE, true, null);
-    this._renderRoot(view, this._rootTemplate, self, target, dynamicScope);
+    let root = new RootState(view, this._env, this._rootTemplate, self, target, dynamicScope);
+
+    this._renderRoot(root);
   }
 
   rerender(view) {
@@ -150,8 +195,22 @@ export class Renderer {
     view.trigger('willClearRender');
     view._transitionTo('destroying');
 
-    if (this._root === view) {
-      this._clearRoot();
+    let roots = this._roots;
+
+    // traverse in reverse so we can remove items
+    // without mucking up the index
+    let i = this._roots.length;
+    while (i--) {
+      let root = roots[i];
+      // check if the view being removed is a root view
+      if (root.isFor(view)) {
+        root.destroy();
+        roots.splice(i, 1);
+      }
+    }
+
+    if (this._roots.length === 0) {
+      deregister(this);
     }
 
     if (!view.isDestroying) {
@@ -164,7 +223,7 @@ export class Renderer {
       return;
     }
     this._destroyed = true;
-    this._clearRoot();
+    this._clearAllRoots();
   }
 
   getBounds(view) {
@@ -181,67 +240,75 @@ export class Renderer {
     return this._env.getAppendOperations().createElement(tagName);
   }
 
-  _renderRoot(root, template, self, parentElement, dynamicScope) {
-    assert('Cannot append multiple root views', !this._root);
-    this._root = root;
-    register(this);
+  _renderRoot(root) {
+    let { _roots: roots } = this;
 
-    let options = {
-      alwaysRevalidate: false
-    };
-    let { _env: env } = this;
-    let render = () => {
-      assert(`You cannot render \`${self.value()}\` without a template.`, template);
+    roots.push(root);
 
-      let result = template.asEntryPoint().render(self, env, {
-        appendTo: parentElement,
-        dynamicScope
-      });
-      this._result = result;
-      this._lastRevision = CURRENT_TAG.value();
-
-      render = () => {
-        result.rerender(options);
-        this._lastRevision = CURRENT_TAG.value();
-      };
-    };
-
-    let transaction = () => {
-      let shouldReflush = false;
-      do {
-        env.begin();
-        options.alwaysRevalidate = shouldReflush;
-        shouldReflush = runInTransaction(render);
-        env.commit();
-      } while (shouldReflush);
-    };
-
-    this._transaction = () => {
-      try {
-        transaction();
-      } catch (e) {
-        this.destroy();
-        throw e;
-      }
-    };
-
-    this._transaction();
-  }
-
-  _clearRoot() {
-    let root = this._root;
-    let result = this._result;
-    this._root = null;
-    this._result = null;
-    this._lastRevision = null;
-    this._transaction = null;
-
-    if (root) {
-      deregister(this);
+    if (roots.length === 1) {
+      register(this);
     }
 
-    if (result) {
-      result.destroy();
+    this._renderRootsTransaction();
+  }
+
+  _renderRoots() {
+    let { _roots: roots, _env: env } = this;
+    let globalShouldReflush;
+
+    // ensure that for the first iteration of the loop
+    // each root is processed
+    let initial = true;
+
+    do {
+      env.begin();
+      globalShouldReflush = false;
+
+      for (let i = 0; i < roots.length; i++) {
+        let root = roots[i];
+        let { shouldReflush } = root;
+
+        // when processing non-initial reflush loops,
+        // do not process more roots than needed
+        if (!initial && !shouldReflush) {
+          continue;
+        }
+
+        root.options.alwaysRevalidate = shouldReflush;
+        // track shouldReflush based on this roots render result
+        shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
+
+        // globalShouldReflush should be `true` if *any* of
+        // the roots need to reflush
+        globalShouldReflush = globalShouldReflush || shouldReflush;
+      }
+
+      this._lastRevision = CURRENT_TAG.value();
+      env.commit();
+
+      initial = false;
+    } while (globalShouldReflush);
+  }
+
+  _renderRootsTransaction() {
+    try {
+      this._renderRoots();
+    } catch (e) {
+      this.destroy();
+      throw e;
+    }
+  }
+
+  _clearAllRoots() {
+    let roots = this._roots;
+    for (let i = 0; i < roots.length; i++) {
+      let root = roots[i];
+      root.destroy();
+    }
+    this._roots = null;
+
+    if (roots.length) {
+      deregister(this);
     }
   }
 
@@ -250,14 +317,14 @@ export class Renderer {
   }
 
   _isValid() {
-    return !this._root || CURRENT_TAG.validate(this._lastRevision);
+    return this._destroyed || this._roots.length === 0 || CURRENT_TAG.validate(this._lastRevision);
   }
 
   _revalidate() {
     if (this._isValid()) {
       return;
     }
-    this._transaction();
+    this._renderRootsTransaction();
   }
 }
 

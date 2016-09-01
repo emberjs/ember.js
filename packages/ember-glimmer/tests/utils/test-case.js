@@ -18,9 +18,4 @@ export class RenderingTest extends AbstractRenderingTest {
     owner.registerOptionsForType('helper', { instantiate: false });
     owner.registerOptionsForType('component', { singleton: false });
   }
-
-  render(...args) {
-    super.render(...args);
-    this.renderer._root = this.component;
-  }
 }
