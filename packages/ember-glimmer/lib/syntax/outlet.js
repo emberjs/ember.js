@@ -58,11 +58,15 @@ class TopLevelOutletComponentReference {
   }
 
   value() {
-    let lastState = this.lastState;
-    let newState = this.outletReference.value();
+    let { lastState, outletReference, definition } = this;
+    let newState = outletReference.value();
 
-    if (lastState.render.name !== newState.render.name) {
-      return new TopLevelOutletComponentDefinition(newState.outlets.main.render.template);
+    definition = revalidate(definition, lastState, newState);
+
+    if (definition) {
+      return definition;
+    } else {
+      return new TopLevelOutletComponentDefinition(newState.render.template);
     }
 
     return this.definition;
@@ -184,7 +188,12 @@ class TopLevelOutletComponentManager extends AbstractOutletComponentManager {
   }
 
   layoutFor(definition, bucket, env) {
-    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
+    let { template } = definition;
+    if (!template) {
+      template = env.owner.lookup('template:-outlet');
+    }
+
+    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, template);
   }
 }
 

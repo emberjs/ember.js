@@ -10,9 +10,29 @@ moduleFor('outlet view', class extends RenderingTest {
     this.component = CoreOutlet.create();
   }
 
-  ['@skip should render the outlet when set after DOM insertion']() {
-    // fails in glimmer because of an attempt to access `.id` on
-    // the provided template (which is undefined)
+  ['@test should not error when initial rendered template is undefined']() {
+    let outletState = {
+      render: {
+        owner: this.owner,
+        into: undefined,
+        outlet: 'main',
+        name: 'application',
+        controller: undefined,
+        ViewClass: undefined,
+        template: undefined
+      },
+
+      outlets: Object.create(null)
+    };
+
+    this.runTask(() => this.component.setOutletState(outletState));
+
+    runAppend(this.component);
+
+    this.assertText('');
+  }
+
+  ['@test should render the outlet when set after DOM insertion']() {
     let outletState = {
       render: {
         owner: this.owner,
