@@ -156,7 +156,49 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertText('HIBYE');
   }
 
-  ['@skip should support bound outlet name']() {
+  ['@test does not default outlet name when positional argument is present']() {
+    this.registerTemplate('application', '<h1>HI</h1>{{outlet someUndefinedThing}}');
+    let outletState = {
+      render: {
+        owner: this.owner,
+        into: undefined,
+        outlet: 'main',
+        name: 'application',
+        controller: {},
+        ViewClass: undefined,
+        template: this.owner.lookup('template:application')
+      },
+      outlets: Object.create(null)
+    };
+
+    this.runTask(() => this.component.setOutletState(outletState));
+
+    runAppend(this.component);
+
+    this.assertText('HI');
+
+    this.assertStableRerender();
+
+    this.registerTemplate('special', '<p>BYE</p>');
+    outletState.outlets.main = {
+      render: {
+        owner: this.owner,
+        into: undefined,
+        outlet: 'main',
+        name: 'special',
+        controller: {},
+        ViewClass: undefined,
+        template: this.owner.lookup('template:special')
+      },
+      outlets: Object.create(null)
+    };
+
+    this.runTask(() => this.component.setOutletState(outletState));
+
+    this.assertText('HI');
+  }
+
+  ['@test should support bound outlet name']() {
     let controller = { outletName: 'foo' };
     this.registerTemplate('application', '<h1>HI</h1>{{outlet outletName}}');
     let outletState = {
@@ -165,7 +207,7 @@ moduleFor('outlet view', class extends RenderingTest {
         into: undefined,
         outlet: 'main',
         name: 'application',
-        controller: controller,
+        controller,
         ViewClass: undefined,
         template: this.owner.lookup('template:application')
       },
