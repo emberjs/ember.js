@@ -3,6 +3,12 @@ import { generateGuid, guidFor } from 'ember-metal/utils';
 import { _instrumentStart } from 'ember-metal/instrumentation';
 import { RootReference } from '../utils/references';
 
+import {
+  UpdatableTag,
+  ConstReference,
+  combine
+} from 'glimmer-reference';
+
 function outletComponentFor(vm) {
   let { outletState, isTopLevel } = vm.dynamicScope();
 
@@ -10,14 +16,22 @@ function outletComponentFor(vm) {
     return new TopLevelOutletComponentReference(outletState);
   } else {
     let args = vm.getArgs();
-    let outletName = args.positional.at(0).value() || 'main';
-    return new OutletComponentReference(outletName, outletState.get(outletName));
+    let outletNameRef;
+    if (args.positional.length === 0) {
+      outletNameRef = new ConstReference('main');
+    } else {
+      outletNameRef = args.positional.at(0);
+    }
+
+    return new OutletComponentReference(outletNameRef, outletState);
   }
 }
 
 export class OutletSyntax extends StatementSyntax {
   static create(environment, args, templates, symbolTable) {
-    return new this(environment, args, templates, symbolTable);
+    let definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0, 1));
+
+    return new this(environment, definitionArgs, templates, symbolTable);
   }
 
   constructor(environment, args, templates, symbolTable) {
@@ -44,11 +58,15 @@ class TopLevelOutletComponentReference {
   }
 
   value() {
-    let lastState = this.lastState;
-    let newState = this.outletReference.value();
+    let { lastState, outletReference, definition } = this;
+    let newState = outletReference.value();
 
-    if (lastState.render.name !== newState.render.name) {
-      return new TopLevelOutletComponentDefinition(newState.outlets.main.render.template);
+    definition = revalidate(definition, lastState, newState);
+
+    if (definition) {
+      return definition;
+    } else {
+      return new TopLevelOutletComponentDefinition(newState.render.template);
     }
 
     return this.definition;
@@ -56,17 +74,25 @@ class TopLevelOutletComponentReference {
 }
 
 class OutletComponentReference {
-  constructor(outletName, reference) {
-    this.outletName = outletName;
-    this.reference = reference;
+  constructor(outletNameRef, parentOutletStateRef) {
+    this.outletNameRef = outletNameRef;
+    this.parentOutletStateRef = parentOutletStateRef;
     this.definition = null;
     this.lastState = null;
-    this.tag = reference.tag;
+    let outletStateTag = this.outletStateTag = new UpdatableTag(parentOutletStateRef.tag);
+    this.tag = combine([outletStateTag.tag, outletNameRef.tag]);
   }
 
   value() {
-    let { outletName, reference, definition, lastState } = this;
-    let newState = this.lastState = reference.value();
+    let { outletNameRef, parentOutletStateRef, definition, lastState } = this;
+
+
+    let outletName = outletNameRef.value();
+    let outletStateRef = parentOutletStateRef.get(outletName);
+    let newState = this.lastState = outletStateRef.value();
+
+    this.outletStateTag.update(outletStateRef.tag);
+
     definition = revalidate(definition, lastState, newState);
 
     let hasTemplate = newState && newState.render.template;
@@ -162,7 +188,12 @@ class TopLevelOutletComponentManager extends AbstractOutletComponentManager {
   }
 
   layoutFor(definition, bucket, env) {
-    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
+    let { template } = definition;
+    if (!template) {
+      template = env.owner.lookup('template:-outlet');
+    }
+
+    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, template);
   }
 }
 
