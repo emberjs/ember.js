@@ -88,7 +88,7 @@ class OutletComponentReference {
 
 
     let outletName = outletNameRef.value();
-    let outletStateRef = parentOutletStateRef.get(outletName);
+    let outletStateRef = parentOutletStateRef.get('outlets').get(outletName);
     let newState = this.lastState = outletStateRef.value();
 
     this.outletStateTag.update(outletStateRef.tag);
@@ -201,7 +201,7 @@ const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
 
 class OutletComponentManager extends AbstractOutletComponentManager {
   create(definition, args, dynamicScope) {
-    let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get(definition.outletName);
+    let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get('outlets').get(definition.outletName);
     let outletState = outletStateReference.value();
     dynamicScope.targetObject = outletState.render.controller;
     return new StateBucket(outletState);

@@ -79,7 +79,7 @@ class ChildOutletStateReference {
   }
 
   value() {
-    return this.parent.value().outlets[this.key];
+    return this.parent.value()[this.key];
   }
 
   get isTopLevel() {

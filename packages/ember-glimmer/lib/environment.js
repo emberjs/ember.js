@@ -4,7 +4,8 @@ import {
   Environment as GlimmerEnvironment,
   AttributeChangeList,
   isSafeString,
-  compileLayout
+  compileLayout,
+  getDynamicVar
 } from 'glimmer-runtime';
 import Cache from 'ember-metal/cache';
 import { assert, warn, runInDebug } from 'ember-metal/debug';
@@ -108,7 +109,8 @@ export default class Environment extends GlimmerEnvironment {
       '-each-in': eachIn,
       '-input-type': inputTypeHelper,
       '-normalize-class': normalizeClassHelper,
-      '-html-safe': htmlSafeHelper
+      '-html-safe': htmlSafeHelper,
+      '-get-dynamic-var': { glimmerNativeHelper: getDynamicVar }
     };
   }
 
@@ -290,6 +292,8 @@ export default class Environment extends GlimmerEnvironment {
       return (vm, args) => SimpleHelperReference.create(helper.compute, args);
     } else if (helper.isHelperFactory) {
       return (vm, args) => ClassBasedHelperReference.create(helper, vm, args);
+    } else if (helper.glimmerNativeHelper) {
+      return helper.glimmerNativeHelper;
     } else {
       throw new Error(`${nameParts} is not a helper`);
     }
