@@ -36,7 +36,7 @@ function commonSetup() {
 }
 
 function render(template: Template, self: any) {
-  return template.render(new UpdatableReference(self), env, { appendTo: root, dynamicScope: new TestDynamicScope(null) });
+  return template.render(new UpdatableReference(self), env, { appendTo: root, dynamicScope: new TestDynamicScope() });
 }
 
 function module(name: string) {
