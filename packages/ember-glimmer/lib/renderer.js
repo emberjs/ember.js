@@ -16,8 +16,8 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     isEnabled('ember-glimmer-allow-backtracking-rerender')) {
   runInTransaction = _runInTransaction;
 } else {
-  runInTransaction = callback => {
-    callback();
+  runInTransaction = (context, methodName) => {
+    context[methodName]();
     return false;
   };
 }
@@ -49,59 +49,42 @@ class DynamicScope {
   }
 }
 
-let nextRootId = 0;
 class RootState {
-  constructor(env, root, template, self, parentElement, dynamicScope) {
-    this.id = ++nextRootId;
-    this.env = env;
-    this.root = root;
-    this.template = template;
-    this.self = self;
-    this.parentElement = parentElement;
-    this.dynamicScope = dynamicScope;
+  constructor(root, env, template, self, parentElement, dynamicScope) {
+    assert(`You cannot render \`${self.value()}\` without a template.`, template);
 
-    this.options = {
+    this.id = getViewId(root);
+    this.root = root;
+    this.result = undefined;
+    this.shouldReflush = false;
+
+    let options = this.options = {
       alwaysRevalidate: false
     };
-    this.render = this.initialRender;
-    this.lastRevision = undefined;
-    this.result = undefined;
+
+    this.render = () => {
+      let result = this.result = template.asEntryPoint().render(self, env, {
+        appendTo: parentElement,
+        dynamicScope
+      });
+
+      // override .render function after initial render
+      this.render = () => {
+        result.rerender(options);
+      };
+    };
   }
 
   isFor(possibleRoot) {
     return this.root === possibleRoot;
   }
 
-  initialRender() {
-    let { self, template, env, parentElement, dynamicScope } = this;
-    assert(`You cannot render \`${self.value()}\` without a template.`, template);
-
-    this.result = this.template.asEntryPoint().render(self, env, {
-      appendTo: parentElement,
-      dynamicScope
-    });
-    this.lastRevision = CURRENT_TAG.value();
-
-    // change next render to use `rerender`
-    this.render = this.rerender;
-  }
-
-  rerender() {
-    this.result.rerender(this.options);
-    this.lastRevision = CURRENT_TAG.value();
-  }
-
   destroy() {
     let { result } = this;
 
-    this.env = null;
     this.root = null;
-    this.template = null;
-    this.self = null;
-    this.parentElement = null;
-    this.dynamicScope = null;
-    this.lastRevision = null;
     this.result = null;
+    this.render = null;
 
     if (result) {
       result.destroy();
@@ -159,8 +142,8 @@ export class Renderer {
     this._viewRegistry = _viewRegistry;
     this._destinedForDOM = destinedForDOM;
     this._destroyed = false;
-    this._root = null;
-    this._transaction = null;
+    this._roots = [];
+    this._lastRevision = null;
   }
 
   // renderer HOOKS
@@ -170,7 +153,7 @@ export class Renderer {
     let targetObject = view.outletState.render.controller;
     let ref = view.toReference();
     let dynamicScope = new DynamicScope(null, ref, ref, true, targetObject);
-    let root = new RootState(this._env, view, view.template, self, target, dynamicScope);
+    let root = new RootState(view, this._env, view.template, self, target, dynamicScope);
 
     this._renderRoot(root);
   }
@@ -179,7 +162,7 @@ export class Renderer {
     let rootDef = new RootComponentDefinition(view);
     let self = new RootReference(rootDef);
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE, UNDEFINED_REFERENCE, true, null);
-    let root = new RootState(this._env, view, this._rootTemplate, self, target, dynamicScope);
+    let root = new RootState(view, this._env, this._rootTemplate, self, target, dynamicScope);
 
     this._renderRoot(root);
   }
@@ -212,8 +195,22 @@ export class Renderer {
     view.trigger('willClearRender');
     view._transitionTo('destroying');
 
-    if (this._root && this._root.isFor(view)) {
-      this._clearRoot();
+    let roots = this._roots;
+
+    // traverse in reverse so we can remove items
+    // without mucking up the index
+    let i = this._roots.length;
+    while (i--) {
+      let root = roots[i];
+      // check if the view being removed is a root view
+      if (root.isFor(view)) {
+        root.destroy();
+        roots.splice(i, 1);
+      }
+    }
+
+    if (this._roots.length === 0) {
+      deregister(this);
     }
 
     if (!view.isDestroying) {
@@ -226,7 +223,7 @@ export class Renderer {
       return;
     }
     this._destroyed = true;
-    this._clearRoot();
+    this._clearAllRoots();
   }
 
   getBounds(view) {
@@ -244,44 +241,74 @@ export class Renderer {
   }
 
   _renderRoot(root) {
-    assert('Cannot append multiple root views', !this._root);
+    let { _roots: roots } = this;
 
-    let { _env: env } = this;
+    roots.push(root);
 
-    this._root = root;
+    if (roots.length === 1) {
+      register(this);
+    }
 
-    register(this);
-
-    let transaction = () => {
-      let shouldReflush = false;
-      do {
-        env.begin();
-        root.options.alwaysRevalidate = shouldReflush;
-        shouldReflush = runInTransaction(root, 'render');
-        env.commit();
-      } while (shouldReflush);
-    };
-
-    this._transaction = () => {
-      try {
-        transaction();
-      } catch (e) {
-        this.destroy();
-        throw e;
-      }
-    };
-
-    this._transaction();
+    this._renderRootsTransaction();
   }
 
-  _clearRoot() {
-    let root = this._root;
-    this._root = null;
-    this._transaction = null;
+  _renderRoots() {
+    let { _roots: roots, _env: env } = this;
+    let globalShouldReflush;
 
-    if (root) {
-      deregister(this);
+    // ensure that for the first iteration of the loop
+    // each root is processed
+    let initial = true;
+
+    do {
+      env.begin();
+      globalShouldReflush = false;
+
+      for (let i = 0; i < roots.length; i++) {
+        let root = roots[i];
+        let { shouldReflush } = root;
+
+        // when processing non-initial reflush loops,
+        // do not process more roots than needed
+        if (!initial && !shouldReflush) {
+          continue;
+        }
+
+        root.options.alwaysRevalidate = shouldReflush;
+        // track shouldReflush based on this roots render result
+        shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
+
+        // globalShouldReflush should be `true` if *any* of
+        // the roots need to reflush
+        globalShouldReflush = globalShouldReflush || shouldReflush;
+      }
+
+      this._lastRevision = CURRENT_TAG.value();
+      env.commit();
+
+      initial = false;
+    } while (globalShouldReflush);
+  }
+
+  _renderRootsTransaction() {
+    try {
+      this._renderRoots();
+    } catch (e) {
+      this.destroy();
+      throw e;
+    }
+  }
+
+  _clearAllRoots() {
+    let roots = this._roots;
+    for (let i = 0; i < roots.length; i++) {
+      let root = roots[i];
       root.destroy();
+    }
+    this._roots = null;
+
+    if (roots.length) {
+      deregister(this);
     }
   }
 
@@ -290,14 +317,14 @@ export class Renderer {
   }
 
   _isValid() {
-    return !this._root || CURRENT_TAG.validate(this._root.lastRevision);
+    return this._destroyed || this._roots.length === 0 || CURRENT_TAG.validate(this._lastRevision);
   }
 
   _revalidate() {
     if (this._isValid()) {
       return;
     }
-    this._transaction();
+    this._renderRootsTransaction();
   }
 }
 
