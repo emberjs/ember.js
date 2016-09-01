@@ -49,6 +49,66 @@ class DynamicScope {
   }
 }
 
+let nextRootId = 0;
+class RootState {
+  constructor(env, root, template, self, parentElement, dynamicScope) {
+    this.id = ++nextRootId;
+    this.env = env;
+    this.root = root;
+    this.template = template;
+    this.self = self;
+    this.parentElement = parentElement;
+    this.dynamicScope = dynamicScope;
+
+    this.options = {
+      alwaysRevalidate: false
+    };
+    this.render = this.initialRender;
+    this.lastRevision = undefined;
+    this.result = undefined;
+  }
+
+  isFor(possibleRoot) {
+    return this.root === possibleRoot;
+  }
+
+  initialRender() {
+    let { self, template, env, parentElement, dynamicScope } = this;
+    assert(`You cannot render \`${self.value()}\` without a template.`, template);
+
+    this.result = this.template.asEntryPoint().render(self, env, {
+      appendTo: parentElement,
+      dynamicScope
+    });
+    this.lastRevision = CURRENT_TAG.value();
+
+    // change next render to use `rerender`
+    this.render = this.rerender;
+  }
+
+  rerender() {
+    this.result.rerender(this.options);
+    this.lastRevision = CURRENT_TAG.value();
+  }
+
+  destroy() {
+    let { result } = this;
+
+    this.env = null;
+    this.root = null;
+    this.template = null;
+    this.self = null;
+    this.parentElement = null;
+    this.dynamicScope = null;
+    this.lastRevision = null;
+    this.result = null;
+
+    if (result) {
+      result.destroy();
+    }
+  }
+}
+
 const renderers = [];
 
 setHasViews(() => renderers.length > 0);
@@ -100,8 +160,6 @@ export class Renderer {
     this._destinedForDOM = destinedForDOM;
     this._destroyed = false;
     this._root = null;
-    this._result = null;
-    this._lastRevision = null;
     this._transaction = null;
   }
 
@@ -112,14 +170,18 @@ export class Renderer {
     let targetObject = view.outletState.render.controller;
     let ref = view.toReference();
     let dynamicScope = new DynamicScope(null, ref, ref, true, targetObject);
-    this._renderRoot(view, view.template, self, target, dynamicScope);
+    let root = new RootState(this._env, view, view.template, self, target, dynamicScope);
+
+    this._renderRoot(root);
   }
 
   appendTo(view, target) {
     let rootDef = new RootComponentDefinition(view);
     let self = new RootReference(rootDef);
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE, UNDEFINED_REFERENCE, true, null);
-    this._renderRoot(view, this._rootTemplate, self, target, dynamicScope);
+    let root = new RootState(this._env, view, this._rootTemplate, self, target, dynamicScope);
+
+    this._renderRoot(root);
   }
 
   rerender(view) {
@@ -150,7 +212,7 @@ export class Renderer {
     view.trigger('willClearRender');
     view._transitionTo('destroying');
 
-    if (this._root === view) {
+    if (this._root && this._root.isFor(view)) {
       this._clearRoot();
     }
 
@@ -181,37 +243,21 @@ export class Renderer {
     return this._env.getAppendOperations().createElement(tagName);
   }
 
-  _renderRoot(root, template, self, parentElement, dynamicScope) {
+  _renderRoot(root) {
     assert('Cannot append multiple root views', !this._root);
-    this._root = root;
-    register(this);
 
-    let options = {
-      alwaysRevalidate: false
-    };
     let { _env: env } = this;
-    let render = () => {
-      assert(`You cannot render \`${self.value()}\` without a template.`, template);
 
-      let result = template.asEntryPoint().render(self, env, {
-        appendTo: parentElement,
-        dynamicScope
-      });
-      this._result = result;
-      this._lastRevision = CURRENT_TAG.value();
+    this._root = root;
 
-      render = () => {
-        result.rerender(options);
-        this._lastRevision = CURRENT_TAG.value();
-      };
-    };
+    register(this);
 
     let transaction = () => {
       let shouldReflush = false;
       do {
         env.begin();
-        options.alwaysRevalidate = shouldReflush;
-        shouldReflush = runInTransaction(render);
+        root.options.alwaysRevalidate = shouldReflush;
+        shouldReflush = runInTransaction(root, 'render');
         env.commit();
       } while (shouldReflush);
     };
@@ -230,18 +276,12 @@ export class Renderer {
 
   _clearRoot() {
     let root = this._root;
-    let result = this._result;
     this._root = null;
-    this._result = null;
-    this._lastRevision = null;
     this._transaction = null;
 
     if (root) {
       deregister(this);
-    }
-
-    if (result) {
-      result.destroy();
+      root.destroy();
     }
   }
 
@@ -250,7 +290,7 @@ export class Renderer {
   }
 
   _isValid() {
-    return !this._root || CURRENT_TAG.validate(this._lastRevision);
+    return !this._root || CURRENT_TAG.validate(this._root.lastRevision);
   }
 
   _revalidate() {

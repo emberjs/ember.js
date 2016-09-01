@@ -24,10 +24,10 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
   let inTransaction = false;
   let shouldReflush;
 
-  runInTransaction = function(callback) {
+  runInTransaction = function(context, methodName) {
     shouldReflush = false;
     inTransaction = true;
-    callback();
+    context[methodName]();
     inTransaction = false;
     counter++;
     return shouldReflush;
