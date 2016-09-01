@@ -1,4 +1,4 @@
-import { SafeString, htmlSafe, isHTMLSafe } from 'ember-glimmer/utils/string';
+import { SafeString, htmlSafe, isHTMLSafe } from './helpers';
 import isEnabled from 'ember-metal/features';
 import { TestCase } from './abstract-test-case';
 import { moduleFor } from './test-case';

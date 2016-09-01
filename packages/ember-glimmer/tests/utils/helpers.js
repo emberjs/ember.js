@@ -1,24 +1,32 @@
-import { setupApplicationRegistry, setupEngineRegistry } from 'ember-glimmer/setup-registry';
+import dictionary from 'ember-metal/dictionary';
+import {
+  setupApplicationRegistry,
+  setupEngineRegistry
+} from 'ember-glimmer';
 import { default as _buildOwner } from 'container/tests/test-helpers/build-owner';
 import jQuery from 'ember-views/system/jquery';
-import RootTemplate from 'ember-glimmer/templates/root';
 
 export {
   compile,
   precompile
 } from 'ember-glimmer-template-compiler/tests/utils/helpers';
-export { default as Helper, helper } from 'ember-glimmer/helper';
-export { INVOKE } from 'ember-glimmer/helpers/action';
-export { default as Component } from 'ember-glimmer/component';
-export { default as Checkbox } from 'ember-glimmer/components/checkbox';
-export { default as TextArea } from 'ember-glimmer/components/text_area';
-export { default as TextField } from 'ember-glimmer/components/text_field';
-export { default as LinkTo } from 'ember-glimmer/components/link-to';
-export { DOMChanges } from 'glimmer-runtime';
-export { InteractiveRenderer, InertRenderer } from 'ember-glimmer/renderer';
-export { default as makeBoundHelper } from 'ember-glimmer/make-bound-helper';
-export { htmlSafe, SafeString } from 'ember-glimmer/utils/string';
-import dictionary from 'ember-metal/dictionary';
+
+export {
+  INVOKE,
+  Helper,
+  helper,
+  Component,
+  TextArea,
+  LinkComponent,
+  TextField,
+  InteractiveRender,
+  InertRenderer,
+  makeBoundHelper,
+  htmlSafe,
+  SafeString,
+  DOMChanges,
+  isHTMLSafe
+} from 'ember-glimmer';
 
 export function buildOwner(options) {
   let owner = _buildOwner(options);
@@ -40,9 +48,6 @@ export function buildOwner(options) {
 
   owner.register('-view-registry:main', { create() { return dictionary(null); } });
   owner.inject('renderer', '_viewRegistry', '-view-registry:main');
-
-  owner.register('template:-root', RootTemplate);
-  owner.inject('renderer', 'rootTemplate', 'template:-root');
 
   return owner;
 }

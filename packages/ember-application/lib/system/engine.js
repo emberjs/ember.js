@@ -20,7 +20,7 @@ import Controller from 'ember-runtime/controllers/controller';
 import RoutingService from 'ember-routing/services/routing';
 import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 import ComponentLookup from 'ember-views/component_lookup';
-import { setupEngineRegistry } from 'ember-glimmer/setup-registry';
+import { setupEngineRegistry } from 'ember-glimmer';
 
 function props(obj) {
   var properties = [];

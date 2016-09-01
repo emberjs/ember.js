@@ -3,7 +3,7 @@ import jQuery from 'ember-views/system/jquery';
 import { Component, getTemplate, setTemplates } from 'ember-glimmer';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import bootstrap from 'ember-template-compiler/system/bootstrap';
-import { buildOwner } from 'ember-glimmer/tests/utils/helpers';
+import { buildOwner } from 'internal-test-helpers';
 
 import {
   hasTemplate,

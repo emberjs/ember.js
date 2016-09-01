@@ -7,6 +7,9 @@ import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 @submodule ember-application
 */
 
+export { default as Application } from './system/application';
+export { default as ApplicationInstance } from './system/application-instance';
+
 import DefaultResolver from './system/resolver';
 import Application from './system/application';
 import ApplicationInstance from './system/application-instance';

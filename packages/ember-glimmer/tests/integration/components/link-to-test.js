@@ -2,7 +2,7 @@ import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import { set } from 'ember-metal/property_set';
-import { LinkTo } from '../../utils/helpers';
+import { LinkComponent } from '../../utils/helpers';
 import { classes as classMatcher } from '../../utils/test-helpers';
 import isEnabled from 'ember-metal/features';
 
@@ -20,7 +20,7 @@ moduleFor('Link-to component', class extends ApplicationTest {
   ['@test accessing `currentWhen` triggers a deprecation'](assert) {
     let component;
     this.registerComponent('link-to', {
-      ComponentClass: LinkTo.extend({
+      ComponentClass: LinkComponent.extend({
         init() {
           this._super(...arguments);
           component = this;
@@ -119,7 +119,7 @@ moduleFor('Link-to component', class extends ApplicationTest {
   }
 
   ['@test able to safely extend the built-in component and use the normal path']() {
-    this.registerComponent('custom-link-to', { ComponentClass: LinkTo.extend() });
+    this.registerComponent('custom-link-to', { ComponentClass: LinkComponent.extend() });
     this.registerTemplate('application', `{{#custom-link-to 'index'}}{{title}}{{/custom-link-to}}`);
     this.registerController('application', Controller.extend({
       title: 'Hello'
@@ -131,7 +131,7 @@ moduleFor('Link-to component', class extends ApplicationTest {
   }
 
   ['@test [GH#13432] able to safely extend the built-in component and invoke it inline']() {
-    this.registerComponent('custom-link-to', { ComponentClass: LinkTo.extend() });
+    this.registerComponent('custom-link-to', { ComponentClass: LinkComponent.extend() });
     this.registerTemplate('application', `{{custom-link-to title 'index'}}`);
     this.registerController('application', Controller.extend({
       title: 'Hello'

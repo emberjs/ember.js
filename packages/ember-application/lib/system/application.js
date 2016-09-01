@@ -29,7 +29,7 @@ import { privatize as P } from 'container';
 import { environment } from 'ember-environment';
 import RSVP from 'ember-runtime/ext/rsvp';
 import Engine from './engine';
-import { setupApplicationRegistry } from 'ember-glimmer/setup-registry';
+import { setupApplicationRegistry } from 'ember-glimmer';
 
 let librariesRegistered = false;
 
