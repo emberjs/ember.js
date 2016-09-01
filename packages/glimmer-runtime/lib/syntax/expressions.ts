@@ -7,7 +7,7 @@ import {
   HasBlock as HasBlockSyntax,
   HasBlockParams as HasBlockParamsSyntax,
   Helper as HelperSyntax,
-  Unknown as UnknownSyntax,
+  Unknown as UnknownSyntax
 } from './core';
 
 import {

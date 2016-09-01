@@ -121,7 +121,7 @@ export function init() {
   env.begin();
 
   serversRef = new UpdatableReference({ model });
-  result = app.render(serversRef, env, { appendTo: output, dynamicScope: new TestDynamicScope(null) });
+  result = app.render(serversRef, env, { appendTo: output, dynamicScope: new TestDynamicScope() });
 
   console.log(env['createdComponents'].length);
   env.commit();

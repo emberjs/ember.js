@@ -144,6 +144,14 @@ export {
   NextIterOpcode
 } from './lib/compiled/opcodes/lists';
 
+export {
+  default as getDynamicVar
+} from './lib/helpers/get-dynamic-var';
+
+export {
+  default as WithDynamicVarsSyntax
+} from './lib/syntax/builtins/with-dynamic-vars';
+
 export { PublicVM as VM, UpdatingVM, RenderResult } from './lib/vm';
 
 export { SafeString, isSafeString } from './lib/upsert';

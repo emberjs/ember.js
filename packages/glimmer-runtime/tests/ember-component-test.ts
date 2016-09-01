@@ -37,7 +37,7 @@ class EmberishRootView extends EmberObject {
   appendTo(selector: string) {
     let element = this.parent = document.querySelector(selector);
     let self = new UpdatableReference(this);
-    this._result = this.template.render(self, this.env, { appendTo: element, dynamicScope: new TestDynamicScope(self) });
+    this._result = this.template.render(self, this.env, { appendTo: element, dynamicScope: new TestDynamicScope() });
     this.element = element.firstElementChild;
   }
 
@@ -691,6 +691,65 @@ testComponent('parameterized has-block (concatted attr, default) when block not 
   kind: 'curly',
   layout: '<button data-has-block="is-{{has-block}}"></button>',
   expected: '<button data-has-block="is-false"></button>'
+});
+
+module('Dynamically-scoped variable accessors');
+
+testComponent('Can get and set dynamic variable', {
+  layout: '{{#-with-dynamic-vars myKeyword=@value}}{{yield}}{{/-with-dynamic-vars}}',
+  invokeAs: {
+    template: '{{-get-dynamic-var "myKeyword"}}',
+    context: { value: "hello" },
+    args: { value: 'value' }
+  },
+  expected: 'hello',
+  updates: [{
+    expected: 'hello'
+  }, {
+    context: { value: 'goodbye' },
+    expected: 'goodbye'
+  }]
+});
+
+testComponent('Can get and set dynamic variable with bound names', {
+  layout: '{{#-with-dynamic-vars myKeyword=@value1 secondKeyword=@value2}}{{yield}}{{/-with-dynamic-vars}}',
+  invokeAs: {
+    template: '{{-get-dynamic-var keyword}}',
+    context: { value1: "hello", value2: "goodbye", keyword: "myKeyword" },
+    args: { value1: "value1", value2: "value2" }
+  },
+  expected: 'hello',
+  updates: [{
+    expected: 'hello'
+  }, {
+    context: { keyword: 'secondKeyword' },
+    expected: 'goodbye'
+  }, {
+    context: { value2: 'goodbye!' },
+    expected: 'goodbye!'
+  }, {
+    context: { value1: "hello", value2: "goodbye", keyword: "myKeyword" },
+    expected: 'hello'
+  }]
+});
+
+testComponent('Can shadow existing dynamic variable', {
+  layout: '{{#-with-dynamic-vars myKeyword=@outer}}<div>{{-get-dynamic-var "myKeyword"}}</div>{{#-with-dynamic-vars myKeyword=@inner}}{{yield}}{{/-with-dynamic-vars}}<div>{{-get-dynamic-var "myKeyword"}}</div>{{/-with-dynamic-vars}}',
+  invokeAs: {
+    template: '<div>{{-get-dynamic-var "myKeyword"}}</div>',
+    context: { outer: 'original', inner: 'shadowed' },
+    args: { outer: 'outer', inner: 'inner'}
+  },
+  expected: '<div>original</div><div>shadowed</div><div>original</div>',
+  updates: [{
+    expected: '<div>original</div><div>shadowed</div><div>original</div>'
+  }, {
+    context: { outer: 'original2', inner: 'shadowed' },
+    expected: '<div>original2</div><div>shadowed</div><div>original2</div>'
+  }, {
+    context: { outer: 'original2', inner: 'shadowed2' },
+    expected: '<div>original2</div><div>shadowed2</div><div>original2</div>'
+  }]
 });
 
 module('Components - has-block-params helper');
