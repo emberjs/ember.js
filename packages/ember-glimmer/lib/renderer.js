@@ -38,6 +38,15 @@ class DynamicScope {
       this.view, this.outletState, this.rootOutletState, this.isTopLevel, this.targetObject
     );
   }
+
+  get(key) {
+    return this[key];
+  }
+
+  set(key, value) {
+    this[key] = value;
+    return value;
+  }
 }
 
 const renderers = [];
