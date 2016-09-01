@@ -8,57 +8,22 @@ import { Component, INVOKE } from '../../utils/helpers';
 if (isEnabled('ember-improved-instrumentation')) {
   moduleFor('Helpers test: closure {{action}} improved instrumentation', class extends RenderingTest {
 
-    ['@test action should fire interaction event']() {
-      let subscriberCalled = false;
-      let actionCalled = false;
-
-      let InnerComponent = Component.extend({
-        actions: {
-          fireAction() {
-            this.attrs.submit();
-          }
-        }
-      });
-
-      let OuterComponent = Component.extend({
-        outerSubmit() {
-          actionCalled = true;
-        }
-      });
-
-      this.registerComponent('inner-component', {
-        ComponentClass: InnerComponent,
-        template: '<button id="instrument-button" {{action "fireAction"}}>What it do</button>'
-      });
-
-      this.registerComponent('outer-component', {
-        ComponentClass: OuterComponent,
-        template: '{{inner-component submit=(action outerSubmit)}}'
-      });
-
-      let subscriber = subscribe('interaction.ember-action', {
-        before() {
-          subscriberCalled = true;
-        }
-      });
-
-      this.render(`{{outer-component}}`);
-
-      this.runTask(() => {
-        this.$('#instrument-button').trigger('click');
-      });
-
-      this.assert.ok(subscriberCalled, 'instrumentation subscriber was called');
-      this.assert.ok(actionCalled, 'action is called');
-
-      unsubscribe(subscriber);
+    subscribe(eventName, options) {
+      this.subscriber = subscribe(eventName, options);
     }
 
-    // Skipped since features flags during tests are tricky.
-    ['@skip interaction event subscriber should be passed parameters']() {
+    teardown() {
+      if (this.subscriber) {
+        unsubscribe(this.subscriber);
+      }
+
+      super.teardown();
+    }
+
+    ['@test interaction event subscriber should be passed parameters']() {
       let actionParam = 'So krispy';
-      let beforeParameter;
-      let afterParameter;
+      let beforeParameters = [];
+      let afterParameters = [];
 
       let InnerComponent = Component.extend({
         actions: {
@@ -83,12 +48,12 @@ if (isEnabled('ember-improved-instrumentation')) {
         template: '{{inner-component submit=(action outerSubmit)}}'
       });
 
-      let subscriber = subscribe('interaction.ember-action', {
+      this.subscribe('interaction.ember-action', {
         before(name, timestamp, payload) {
-          beforeParameter = payload.args[0];
+          beforeParameters.push(payload.args);
         },
         after(name, timestamp, payload) {
-          afterParameter = payload.args[0];
+          afterParameters.push(payload.args);
         }
       });
 
@@ -98,16 +63,13 @@ if (isEnabled('ember-improved-instrumentation')) {
         this.$('#instrument-button').trigger('click');
       });
 
-      this.assert.equal(beforeParameter, actionParam, 'instrumentation subscriber before function was passed closure action parameters');
-      this.assert.equal(afterParameter, actionParam, 'instrumentation subscriber after function was passed closure action parameters');
-
-      unsubscribe(subscriber);
+      this.assert.deepEqual(beforeParameters, [[], [actionParam]], 'instrumentation subscriber before function was passed closure action parameters');
+      this.assert.deepEqual(afterParameters, [[actionParam], []], 'instrumentation subscriber after function was passed closure action parameters');
     }
 
-    // Skipped since features flags during tests are tricky.
-    ['@skip interaction event subscriber should be passed target']() {
-      let beforeParameter;
-      let afterParameter;
+    ['@test interaction event subscriber should be passed target']() {
+      let beforeParameters = [];
+      let afterParameters = [];
 
       let InnerComponent = Component.extend({
         myProperty: 'inner-thing',
@@ -133,12 +95,12 @@ if (isEnabled('ember-improved-instrumentation')) {
         template: '{{inner-component submit=(action outerSubmit)}}'
       });
 
-      let subscriber = subscribe('interaction.ember-action', {
+      this.subscribe('interaction.ember-action', {
         before(name, timestamp, payload) {
-          beforeParameter = payload.target.get('myProperty');
+          beforeParameters.push(payload.target.get('myProperty'));
         },
         after(name, timestamp, payload) {
-          afterParameter = payload.target.get('myProperty');
+          afterParameters.push(payload.target.get('myProperty'));
         }
       });
 
@@ -148,10 +110,8 @@ if (isEnabled('ember-improved-instrumentation')) {
         this.$('#instrument-button').trigger('click');
       });
 
-      this.assert.equal(beforeParameter, 'outer-thing', 'instrumentation subscriber before function was passed target');
-      this.assert.equal(afterParameter, 'outer-thing', 'instrumentation subscriber after function was passed target');
-
-      unsubscribe(subscriber);
+      this.assert.deepEqual(beforeParameters, ['inner-thing', 'outer-thing'], 'instrumentation subscriber before function was passed target');
+      this.assert.deepEqual(afterParameters, ['outer-thing', 'inner-thing'], 'instrumentation subscriber after function was passed target');
     }
 
     ['@test instrumented action should return value']() {
@@ -184,7 +144,7 @@ if (isEnabled('ember-improved-instrumentation')) {
         template: '{{inner-component submit=(action outerSubmit)}}'
       });
 
-      let subscriber = subscribe('interaction.ember-action', {
+      this.subscribe('interaction.ember-action', {
         before(name, timestamp, payload) {
           beforeParameter = payload.target.get('myProperty');
         },
@@ -200,8 +160,6 @@ if (isEnabled('ember-improved-instrumentation')) {
       });
 
       this.assert.equal(actualReturnedValue, returnedValue, 'action can return to caller');
-
-      unsubscribe(subscriber);
     }
   });
 }
