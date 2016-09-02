@@ -19,6 +19,33 @@ var vendoredPackage    = require('emberjs-build/lib/vendored-package');
 var htmlbarsPackage    = require('emberjs-build/lib/htmlbars-package');
 var vendoredES6Package = require('emberjs-build/lib/es6-vendored-package');
 
+var Funnel = require('broccoli-funnel');
+var Rollup = require('broccoli-rollup');
+
+var dag = new Funnel(path.dirname(require.resolve('dag-map')), {
+  files: ['dag-map.js'],
+  annotation: 'dag-map.js'
+});
+
+dag = new Rollup(dag, {
+  rollup: {
+    plugins: [{
+      transformBundle(code, options) {
+        return {
+          code: code.replace(/^define\(/, 'enifed('),
+          map: { mappings: null }
+        };
+      }
+    }],
+    entry: 'dag-map.js',
+    dest: 'dag-map.js',
+    format: 'amd',
+    moduleId: 'dag-map',
+    exports: 'named'
+  },
+  annotation: 'dag-map.js'
+});
+
 var featuresJson = fs.readFileSync('./features.json', { encoding: 'utf8' });
 
 function getFeatures(environment) {
@@ -126,7 +153,7 @@ module.exports = function() {
     'rsvp':                  vendoredES6Package('rsvp'),
     'backburner':            vendoredES6Package('backburner'),
     'router':                vendoredES6Package('router.js'),
-    'dag-map':               vendoredES6Package('dag-map'),
+    'dag-map':               dag,
     'route-recognizer':      htmlbarsPackage('route-recognizer', { libPath: 'node_modules/route-recognizer/dist/es6/' }),
     'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer', { libPath: 'node_modules/glimmer-engine/dist/es6'}),
 

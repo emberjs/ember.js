@@ -163,10 +163,10 @@ const Engine = Namespace.extend(RegistryProxy, {
 
     for (let i = 0; i < initializers.length; i++) {
       initializer = initializersByName[initializers[i]];
-      graph.addEdges(initializer.name, initializer, initializer.before, initializer.after);
+      graph.add(initializer.name, initializer, initializer.before, initializer.after);
     }
 
-    graph.topsort(vertex => cb(vertex.name, vertex.value));
+    graph.topsort(cb);
   }
 });
 
