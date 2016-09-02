@@ -35,6 +35,38 @@ QUnit.test('TransitionAborted errors are not re-thrown', function() {
   ok(true, 'did not throw an error when dealing with TransitionAborted');
 });
 
+QUnit.test('Can reject with non-Error object', function(assert) {
+  let wasEmberTesting = isTesting();
+  setTesting(false);
+  expect(1);
+
+  try {
+    run(RSVP, 'reject', 'foo');
+  } catch(e) {
+    ok(false, 'should not throw');
+  } finally {
+    setTesting(wasEmberTesting);
+  }
+
+  ok(true);
+});
+
+QUnit.test('Can reject with no arguments', function(assert) {
+  let wasEmberTesting = isTesting();
+  setTesting(false);
+  expect(1);
+
+  try {
+    run(RSVP, 'reject');
+  } catch(e) {
+    ok(false, 'should not throw');
+  } finally {
+    setTesting(wasEmberTesting);
+  }
+
+  ok(true);
+});
+
 QUnit.test('rejections like jqXHR which have errorThrown property work', function() {
   expect(2);
 
