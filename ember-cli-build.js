@@ -25,7 +25,7 @@ var Rollup = require('broccoli-rollup');
 var rollupEnifed = {
   transformBundle(code, options) {
     return {
-      code: code.replace(/^define\(/, 'enifed('),
+      code: code.replace(/\bdefine\(/, 'enifed('),
       map: { mappings: null }
     };
   }
@@ -75,7 +75,7 @@ function rsvp() {
   let rollup = new Rollup('bower_components/rsvp/lib', {
     rollup: {
       entry: 'rsvp.js',
-      plugins: [rollupEnifed],
+      plugins: [ rollupEnifed ],
       banner: banner.replace('VERSION_PLACEHOLDER_STRING', version),
       dest: 'rsvp.js',
       format: 'amd',
@@ -92,9 +92,7 @@ function routeRecognizer() {
   let es6 = new Funnel(path.join(dist, 'es6'), {
     files: ['route-recognizer.js']
   });
-  return new Rollup(new Funnel(dist, {
-    files: ['route-recognizer.js']
-  }), {
+  return new Rollup(es6, {
     rollup: {
       plugins: [rollupEnifed],
       entry: 'route-recognizer.js',
@@ -112,7 +110,9 @@ function router() {
     rollup: {
       plugins: [rollupEnifed, {
         transform(code, id) {
-          if (/\/router\/handler-info\/[^\/]+\.js$/.test(id)) {
+          if (/[^t][^e][^r]\/router\.js$/.test(id)) {
+            code += 'export { Transition } from \'./router/transition\';\n'
+          } else if (/\/router\/handler-info\/[^\/]+\.js$/.test(id)) {
             code = code.replace(/\'router\//g, '\'../');
           }
           code = code.replace(/import\ Promise\ from \'rsvp\/promise\'/g, 'import { Promise } from \'rsvp\'')
