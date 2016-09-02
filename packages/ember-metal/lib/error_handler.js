@@ -6,7 +6,7 @@ let getStack = function(error) {
   var stack = error.stack;
   var message = error.message;
 
-  if (stack.indexOf(message) === -1) {
+  if (stack && stack.indexOf(message) === -1) {
     stack = message + '\n' + stack;
   }
 
