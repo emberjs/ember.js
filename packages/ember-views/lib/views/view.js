@@ -5,7 +5,6 @@ import ViewChildViewsSupport from '../mixins/child_views_support';
 import ViewStateSupport from '../mixins/view_state_support';
 import ClassNamesSupport from '../mixins/class_names_support';
 import InstrumentationSupport from '../mixins/instrumentation_support';
-import AriaRoleSupport from '../mixins/aria_role_support';
 import VisibilitySupport from '../mixins/visibility_support';
 import CompatAttrsProxy from '../compat/attrs-proxy';
 import ViewMixin from '../mixins/view_support';
@@ -500,7 +499,6 @@ import ViewMixin from '../mixins/view_support';
   @uses Ember.AttributeBindingsSupport
   @uses Ember.InstrumentationSupport
   @uses Ember.VisibilitySupport
-  @uses Ember.AriaRoleSupport
   @public
 */
 // jscs:disable validateIndentation
@@ -511,7 +509,6 @@ var View = CoreView.extend(
   InstrumentationSupport,
   VisibilitySupport,
   CompatAttrsProxy,
-  AriaRoleSupport,
   ViewMixin);
 
 // jscs:enable validateIndentation

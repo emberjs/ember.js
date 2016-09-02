@@ -13,6 +13,11 @@ import jQuery from '../system/jquery';
 
 function K() { return this; }
 
+/**
+ @class ViewMixin
+ @namespace Ember
+ @private
+*/
 export default Mixin.create({
   concatenatedProperties: ['attributeBindings'],
 
