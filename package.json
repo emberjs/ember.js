@@ -49,7 +49,7 @@
     "rsvp": "~3.2.1",
     "serve-static": "^1.10.0",
     "simple-dom": "^0.3.0",
-    "testem": "^1.5.0"
+    "testem": "^1.8.1"
   },
   "dependencies": {
     "ember-cli-get-component-path-option": "^1.0.0",
