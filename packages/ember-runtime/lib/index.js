@@ -3,7 +3,11 @@
 @submodule ember-runtime
 */
 
+export { default as Object } from './system/object';
 export { default as String } from './system/string';
+export { default as RegistryProxyMixin } from './mixins/registry_proxy';
+export { default as ContainerProxyMixin } from './mixins/container_proxy';
+
 
 // BEGIN IMPORTS
 import Ember from 'ember-metal'; // reexports

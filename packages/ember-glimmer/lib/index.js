@@ -1,3 +1,6 @@
+export { INVOKE } from './helpers/action';
+export { default as RootTemplate } from './templates/root';
+export { registerSyntax } from './syntax';
 export { default as template } from './template';
 export { default as Checkbox } from './components/checkbox';
 export { default as TextField } from './components/text_field';
@@ -22,3 +25,5 @@ export {
   getTemplates,
   setTemplates
 } from './template_registry';
+export { setupEngineRegistry, setupApplicationRegistry } from './setup-registry';
+export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './dom';
