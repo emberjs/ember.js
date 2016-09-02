@@ -4,7 +4,7 @@
 */
 
 // BEGIN IMPORTS
-import Ember from 'ember-runtime';
+import Ember from 'ember-metal/core';
 import jQuery from './system/jquery';
 import {
   isSimpleClick,

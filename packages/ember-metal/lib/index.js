@@ -3,6 +3,14 @@
 @submodule ember-metal
 */
 
+export {
+  default as computed,
+  cacheFor,
+  ComputedProperty
+} from './computed';
+
+export { default as alias } from './alias';
+
 // BEGIN IMPORTS
 import require, { has } from 'require';
 import { ENV, context } from 'ember-environment';
@@ -108,15 +116,6 @@ import {
   watch
 } from './watching';
 import expandProperties from './expand_properties';
-import {
-  ComputedProperty,
-  computed,
-  cacheFor
-} from './computed';
-
-import alias from './alias';
-
-computed.alias = alias;
 
 import {
   _suspendObserver,
@@ -254,10 +253,6 @@ Ember.rewatch = rewatch;
 Ember.destroy = destroy;
 
 Ember.expandProperties = expandProperties;
-
-Ember.ComputedProperty = ComputedProperty;
-Ember.computed = computed;
-Ember.cacheFor = cacheFor;
 
 Ember.addObserver = addObserver;
 Ember.observersFor = observersFor;
