@@ -8,11 +8,10 @@ import {
 import { UNDEFINED_REFERENCE } from 'glimmer-reference';
 import { assert } from 'ember-metal/debug';
 
-function dynamicComponentFor(vm) {
+function dynamicComponentFor(vm, symbolTable) {
   let env     = vm.env;
   let args    = vm.getArgs();
   let nameRef = args.positional.at(0);
-  let { symbolTable } = this;
 
   return new DynamicComponentReference({ nameRef, env, symbolTable });
 }
@@ -38,7 +37,7 @@ export class DynamicComponentSyntax extends StatementSyntax {
 
   constructor(definitionArgs, args, templates, symbolTable) {
     super();
-    this.definition = dynamicComponentFor.bind(this);
+    this.definition = dynamicComponentFor;
     this.definitionArgs = definitionArgs;
     this.args = args;
     this.templates = templates;
