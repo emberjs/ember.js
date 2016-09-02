@@ -4,7 +4,6 @@ import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
 import EmberObject from 'ember-runtime/system/object';
-import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
@@ -3688,101 +3687,99 @@ QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet
   }, /You passed undefined as the outlet name/);
 });
 
-if (isEnabled('ember-application-engines')) {
-  QUnit.test('Route serializers work for Engines', function() {
-    expect(2);
+QUnit.test('Route serializers work for Engines', function() {
+  expect(2);
 
-    // Register engine
-    let BlogEngine = Engine.extend();
-    registry.register('engine:blog', BlogEngine);
+  // Register engine
+  let BlogEngine = Engine.extend();
+  registry.register('engine:blog', BlogEngine);
 
-    // Register engine route map
-    let postSerialize = function(params) {
-      ok(true, 'serialize hook runs');
-      return {
-        post_id: params.id
-      };
+  // Register engine route map
+  let postSerialize = function(params) {
+    ok(true, 'serialize hook runs');
+    return {
+      post_id: params.id
     };
-    let BlogMap = function() {
-      this.route('post', { path: '/post/:post_id', serialize: postSerialize });
-    };
-    registry.register('route-map:blog', BlogMap);
+  };
+  let BlogMap = function() {
+    this.route('post', { path: '/post/:post_id', serialize: postSerialize });
+  };
+  registry.register('route-map:blog', BlogMap);
 
-    Router.map(function() {
-      this.mount('blog');
-    });
-
-    bootApplication();
-
-    equal(router.router.generate('blog.post', { id: '13' }), '/blog/post/13', 'url is generated properly');
+  Router.map(function() {
+    this.mount('blog');
   });
 
-  QUnit.test('Defining a Route#serialize method in an Engine throws an error', function() {
-    expect(1);
+  bootApplication();
 
-    // Register engine
-    let BlogEngine = Engine.extend();
-    registry.register('engine:blog', BlogEngine);
+  equal(router.router.generate('blog.post', { id: '13' }), '/blog/post/13', 'url is generated properly');
+});
 
-    // Register engine route map
-    let BlogMap = function() {
-      this.route('post');
-    };
-    registry.register('route-map:blog', BlogMap);
+QUnit.test('Defining a Route#serialize method in an Engine throws an error', function() {
+  expect(1);
 
-    Router.map(function() {
-      this.mount('blog');
-    });
+  // Register engine
+  let BlogEngine = Engine.extend();
+  registry.register('engine:blog', BlogEngine);
 
-    bootApplication();
+  // Register engine route map
+  let BlogMap = function() {
+    this.route('post');
+  };
+  registry.register('route-map:blog', BlogMap);
 
-    let PostRoute = Route.extend({ serialize() {} });
-    container.lookup('engine:blog').register('route:post', PostRoute);
-
-    throws(() => router.transitionTo('blog.post'), /Defining a custom serialize method on an Engine route is not supported/);
+  Router.map(function() {
+    this.mount('blog');
   });
 
-  QUnit.test('App.destroy does not leave undestroyed views after clearing engines', function() {
-    expect(4);
+  bootApplication();
 
-    let engineInstance;
-    // Register engine
-    let BlogEngine = Engine.extend();
-    registry.register('engine:blog', BlogEngine);
-    let EngineIndexRoute = Route.extend({
-      init() {
-        this._super(...arguments);
-        engineInstance = getOwner(this);
-      }
-    });
+  let PostRoute = Route.extend({ serialize() {} });
+  container.lookup('engine:blog').register('route:post', PostRoute);
 
-    // Register engine route map
-    let BlogMap = function() {
-      this.route('post');
-    };
-    registry.register('route-map:blog', BlogMap);
+  throws(() => router.transitionTo('blog.post'), /Defining a custom serialize method on an Engine route is not supported/);
+});
 
-    Router.map(function() {
-      this.mount('blog');
-    });
+QUnit.test('App.destroy does not leave undestroyed views after clearing engines', function() {
+  expect(4);
 
-    bootApplication();
-
-    let engine = container.lookup('engine:blog');
-    engine.register('route:index', EngineIndexRoute);
-    engine.register('template:index', compile('Engine Post!'));
-
-    handleURL('/blog');
-
-    let route = engineInstance.lookup('route:index');
-
-    run(router, 'destroy');
-    equal(router._toplevelView, null, 'the toplevelView was cleared');
-
-    run(route, 'destroy');
-    equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
-
-    run(App, 'destroy');
-    equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+  let engineInstance;
+  // Register engine
+  let BlogEngine = Engine.extend();
+  registry.register('engine:blog', BlogEngine);
+  let EngineIndexRoute = Route.extend({
+    init() {
+      this._super(...arguments);
+      engineInstance = getOwner(this);
+    }
   });
-}
+
+  // Register engine route map
+  let BlogMap = function() {
+    this.route('post');
+  };
+  registry.register('route-map:blog', BlogMap);
+
+  Router.map(function() {
+    this.mount('blog');
+  });
+
+  bootApplication();
+
+  let engine = container.lookup('engine:blog');
+  engine.register('route:index', EngineIndexRoute);
+  engine.register('template:index', compile('Engine Post!'));
+
+  handleURL('/blog');
+
+  let route = engineInstance.lookup('route:index');
+
+  run(router, 'destroy');
+  equal(router._toplevelView, null, 'the toplevelView was cleared');
+
+  run(route, 'destroy');
+  equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+
+  run(App, 'destroy');
+  equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+});

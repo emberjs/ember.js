@@ -5,7 +5,6 @@ import EmberRoute from 'ember-routing/system/route';
 import inject from 'ember-runtime/inject';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { setOwner } from 'container';
-import isEnabled from 'ember-metal/features';
 
 let route, routeOne, routeTwo, lookupHash;
 
@@ -323,93 +322,91 @@ QUnit.test('services can be injected into routes', function() {
   equal(authService, appRoute.get('authService'), 'service.auth is injected');
 });
 
-if (isEnabled('ember-application-engines')) {
-  QUnit.module('Ember.Route with engines');
+QUnit.module('Ember.Route with engines');
 
-  QUnit.test('paramsFor considers an engine\'s mountPoint', function(assert) {
-    expect(2);
+QUnit.test('paramsFor considers an engine\'s mountPoint', function(assert) {
+  expect(2);
 
-    let router = {
-      _deserializeQueryParams() {},
-      router: {
-        state: {
-          handlerInfos: [
-            { name: 'posts' }
-          ],
-          params: {
-            'foo.bar': { a: 'b' },
-            'foo.bar.posts': { c: 'd' }
-          }
+  let router = {
+    _deserializeQueryParams() {},
+    router: {
+      state: {
+        handlerInfos: [
+          { name: 'posts' }
+        ],
+        params: {
+          'foo.bar': { a: 'b' },
+          'foo.bar.posts': { c: 'd' }
         }
       }
-    };
+    }
+  };
 
-    let engineInstance = buildOwner({
-      routable: true,
+  let engineInstance = buildOwner({
+    routable: true,
 
-      mountPoint: 'foo.bar',
+    mountPoint: 'foo.bar',
 
-      lookup(name) {
-        if (name === 'route:posts') {
-          return postsRoute;
-        } else if (name === 'route:application') {
-          return applicationRoute;
-        }
+    lookup(name) {
+      if (name === 'route:posts') {
+        return postsRoute;
+      } else if (name === 'route:application') {
+        return applicationRoute;
       }
-    });
-
-    let applicationRoute = EmberRoute.create({ router, routeName: 'application' });
-    let postsRoute = EmberRoute.create({ router, routeName: 'posts' });
-    let route = EmberRoute.create({ router });
-
-    setOwner(applicationRoute, engineInstance);
-    setOwner(postsRoute, engineInstance);
-    setOwner(route, engineInstance);
-
-    assert.deepEqual(route.paramsFor('application'), { a: 'b' }, 'params match for root `application` route in engine');
-    assert.deepEqual(route.paramsFor('posts'), { c: 'd' }, 'params match for `posts` route in engine');
+    }
   });
 
-  QUnit.test('modelFor considers an engine\'s mountPoint', function() {
-    expect(2);
+  let applicationRoute = EmberRoute.create({ router, routeName: 'application' });
+  let postsRoute = EmberRoute.create({ router, routeName: 'posts' });
+  let route = EmberRoute.create({ router });
 
-    let applicationModel = { id: '1' };
-    let postsModel = { id: '2' };
+  setOwner(applicationRoute, engineInstance);
+  setOwner(postsRoute, engineInstance);
+  setOwner(route, engineInstance);
 
-    let router = {
-      router: {
-        activeTransition: {
-          resolvedModels: {
-            'foo.bar': applicationModel,
-            'foo.bar.posts': postsModel
-          }
+  assert.deepEqual(route.paramsFor('application'), { a: 'b' }, 'params match for root `application` route in engine');
+  assert.deepEqual(route.paramsFor('posts'), { c: 'd' }, 'params match for `posts` route in engine');
+});
+
+QUnit.test('modelFor considers an engine\'s mountPoint', function() {
+  expect(2);
+
+  let applicationModel = { id: '1' };
+  let postsModel = { id: '2' };
+
+  let router = {
+    router: {
+      activeTransition: {
+        resolvedModels: {
+          'foo.bar': applicationModel,
+          'foo.bar.posts': postsModel
         }
       }
-    };
+    }
+  };
 
-    let engineInstance = buildOwner({
-      routable: true,
+  let engineInstance = buildOwner({
+    routable: true,
 
-      mountPoint: 'foo.bar',
+    mountPoint: 'foo.bar',
 
-      lookup(name) {
-        if (name === 'route:posts') {
-          return postsRoute;
-        } else if (name === 'route:application') {
-          return applicationRoute;
-        }
+    lookup(name) {
+      if (name === 'route:posts') {
+        return postsRoute;
+      } else if (name === 'route:application') {
+        return applicationRoute;
       }
-    });
-
-    let applicationRoute = EmberRoute.create({ router, routeName: 'application' });
-    let postsRoute = EmberRoute.create({ router, routeName: 'posts' });
-    let route = EmberRoute.create({ router });
-
-    setOwner(applicationRoute, engineInstance);
-    setOwner(postsRoute, engineInstance);
-    setOwner(route, engineInstance);
-
-    strictEqual(route.modelFor('application'), applicationModel);
-    strictEqual(route.modelFor('posts'), postsModel);
+    }
   });
-}
+
+  let applicationRoute = EmberRoute.create({ router, routeName: 'application' });
+  let postsRoute = EmberRoute.create({ router, routeName: 'posts' });
+  let route = EmberRoute.create({ router });
+
+  setOwner(applicationRoute, engineInstance);
+  setOwner(postsRoute, engineInstance);
+  setOwner(route, engineInstance);
+
+  strictEqual(route.modelFor('application'), applicationModel);
+  strictEqual(route.modelFor('posts'), postsModel);
+});

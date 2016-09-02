@@ -58,9 +58,7 @@ export function defaultSerialize(model, params) {
 
 const DEFAULT_SERIALIZE = symbol('DEFAULT_SERIALIZE');
 
-if (isEnabled('ember-application-engines')) {
-  defaultSerialize[DEFAULT_SERIALIZE] = true;
-}
+defaultSerialize[DEFAULT_SERIALIZE] = true;
 
 export function hasDefaultSerialize(route) {
   return !!route.serialize[DEFAULT_SERIALIZE];
@@ -394,11 +392,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let state = transition ? transition.state : this.router.router.state;
 
     let params = {};
-    let fullName = name;
-
-    if (isEnabled('ember-application-engines')) {
-      fullName = getEngineRouteName(getOwner(this), name);
-    }
+    let fullName = getEngineRouteName(getOwner(this), name);
 
     assign(params, state.params[fullName]);
 
@@ -1070,7 +1064,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
   transitionTo(name, context) {
     let router = this.router;
-    return router.transitionTo(...arguments);
+    return router.transitionTo(...prefixRouteNameArg(this, arguments));
   },
 
   /**
@@ -1154,7 +1148,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
   replaceWith() {
     let router = this.router;
-    return router.replaceWith(...arguments);
+    return router.replaceWith(...prefixRouteNameArg(this, arguments));
   },
 
   /**
@@ -1797,7 +1791,18 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @return {Object} the model object
     @public
   */
-  modelFor(name) {
+  modelFor(_name) {
+    let name;
+    let owner = getOwner(this);
+
+    // Only change the route name when there is an active transition.
+    // Otherwise, use the passed in route name.
+    if (owner.routable && this.router && this.router.router.activeTransition) {
+      name = getEngineRouteName(owner, _name);
+    } else {
+      name = _name;
+    }
+
     let route = getOwner(this).lookup(`route:${name}`);
     let transition = this.router ? this.router.router.activeTransition : null;
 
@@ -2203,9 +2208,7 @@ function getQueryParamsFor(route, state) {
   state.queryParamsFor = state.queryParamsFor || {};
   let name = route.routeName;
 
-  if (isEnabled('ember-application-engines')) {
-    name = getEngineRouteName(getOwner(route), name);
-  }
+  name = getEngineRouteName(getOwner(route), name);
 
   if (state.queryParamsFor[name]) { return state.queryParamsFor[name]; }
 
@@ -2324,33 +2327,6 @@ function prefixRouteNameArg(route, args) {
 */
 function resemblesURL(str) {
   return typeof str === 'string' && ( str === '' || str.charAt(0) === '/');
-}
-
-if (isEnabled('ember-application-engines')) {
-  Route.reopen({
-    replaceWith(...args) {
-      return this._super.apply(this, prefixRouteNameArg(this, args));
-    },
-
-    transitionTo(...args) {
-      return this._super.apply(this, prefixRouteNameArg(this, args));
-    },
-
-    modelFor(_routeName, ...args) {
-      let routeName;
-      let owner = getOwner(this);
-
-      if (owner.routable && this.router && this.router.router.activeTransition) {
-        // only change the routeName when there is an active transition.
-        // otherwise, we need the passed in route name.
-        routeName = getEngineRouteName(owner, _routeName);
-      } else {
-        routeName = _routeName;
-      }
-
-      return this._super(routeName, ...args);
-    }
-  });
 }
 
 function getEngineRouteName(engine, routeName) {

@@ -1,7 +1,6 @@
 import Logger from 'ember-console';
 import { assert, info } from 'ember-metal/debug';
 import EmberError from 'ember-metal/error';
-import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { defineProperty } from 'ember-metal/properties';
@@ -107,22 +106,20 @@ const EmberRouter = EmberObject.extend(Evented, {
       enableLoadingSubstates: !!moduleBasedResolver
     };
 
-    if (isEnabled('ember-application-engines')) {
-      let owner = getOwner(this);
-      let router = this;
+    let owner = getOwner(this);
+    let router = this;
 
-      options.enableLoadingSubstates = !!moduleBasedResolver;
+    options.enableLoadingSubstates = !!moduleBasedResolver;
 
-      options.resolveRouteMap = function(name) {
-        return owner._lookupFactory('route-map:' + name);
-      };
+    options.resolveRouteMap = function(name) {
+      return owner._lookupFactory('route-map:' + name);
+    };
 
-      options.addRouteForEngine = function(name, engineInfo) {
-        if (!router._engineInfoByRoute[name]) {
-          router._engineInfoByRoute[name] = engineInfo;
-        }
-      };
-    }
+    options.addRouteForEngine = function(name, engineInfo) {
+      if (!router._engineInfoByRoute[name]) {
+        router._engineInfoByRoute[name] = engineInfo;
+      }
+    };
 
     return new EmberRouterDSL(null, options);
   },
@@ -134,11 +131,8 @@ const EmberRouter = EmberObject.extend(Evented, {
     this._qpCache = new EmptyObject();
     this._resetQueuedQueryParameterChanges();
     this._handledErrors = dictionary(null);
-
-    if (isEnabled('ember-application-engines')) {
-      this._engineInstances = new EmptyObject();
-      this._engineInfoByRoute = new EmptyObject();
-    }
+    this._engineInstances = new EmptyObject();
+    this._engineInfoByRoute = new EmptyObject();
 
     // avoid shaping issues with checks during `_setOutlets`
     this.isDestroyed = false;
@@ -454,12 +448,10 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   willDestroy() {
-    if (isEnabled('ember-application-engines')) {
-      let instances = this._engineInstances;
-      for (let name in instances) {
-        for (let id in instances[name]) {
-          run(instances[name][id], 'destroy');
-        }
+    let instances = this._engineInstances;
+    for (let name in instances) {
+      for (let id in instances[name]) {
+        run(instances[name][id], 'destroy');
       }
     }
 
@@ -574,17 +566,13 @@ const EmberRouter = EmberObject.extend(Evented, {
     return (name) => {
       let routeName = name;
       let routeOwner = owner;
-      let engineInfo;
+      let engineInfo = this._engineInfoByRoute[routeName];
 
-      if (isEnabled('ember-application-engines')) {
-        engineInfo = this._engineInfoByRoute[routeName];
+      if (engineInfo) {
+        let engineInstance = this._getEngineInstance(engineInfo);
 
-        if (engineInfo) {
-          let engineInstance = this._getEngineInstance(engineInfo);
-
-          routeOwner = engineInstance;
-          routeName = engineInfo.localFullName;
-        }
+        routeOwner = engineInstance;
+        routeName = engineInfo.localFullName;
       }
 
       let fullRouteName = 'route:' + routeName;
@@ -636,10 +624,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let emberRouter = this;
 
     router.getHandler = this._getHandlerFunction();
-
-    if (isEnabled('ember-application-engines')) {
-      router.getSerializer = this._getSerializerFunction();
-    }
+    router.getSerializer = this._getSerializerFunction();
 
     let doUpdateURL = function() {
       location.setURL(lastURL);
@@ -893,6 +878,36 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   _clearHandledError(errorGuid) {
     delete this._handledErrors[errorGuid];
+  },
+
+  _getEngineInstance({ name, instanceId, mountPoint }) {
+    let engineInstances = this._engineInstances;
+
+    if (!engineInstances[name]) {
+      engineInstances[name] = new EmptyObject();
+    }
+
+    let engineInstance = engineInstances[name][instanceId];
+
+    if (!engineInstance) {
+      let owner = getOwner(this);
+
+      assert(
+        'You attempted to mount the engine \'' + name + '\' in your router map, but the engine can not be found.',
+        owner.hasRegistration(`engine:${name}`)
+      );
+
+      engineInstance = owner.buildChildEngineInstance(name, {
+        routable: true,
+        mountPoint
+      });
+
+      engineInstance.boot();
+
+      engineInstances[name][instanceId] = engineInstance;
+    }
+
+    return engineInstance;
   }
 });
 
@@ -1014,12 +1029,10 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
   let childName;
   let originatingChildRouteName = originatingChildRoute.routeName;
 
-  if (isEnabled('ember-application-engines')) {
-    // The only time the originatingChildRoute's name should be 'application'
-    // is if we're entering an engine
-    if (originatingChildRouteName === 'application') {
-      originatingChildRouteName = getOwner(originatingChildRoute).mountPoint;
-    }
+  // The only time the originatingChildRoute's name should be 'application'
+  // is if we're entering an engine
+  if (originatingChildRouteName === 'application') {
+    originatingChildRouteName = getOwner(originatingChildRoute).mountPoint;
   }
 
   // First, try a named loading state of the route, e.g. 'foo_loading'
@@ -1357,40 +1370,6 @@ function representEmptyRoute(liveRoutes, defaultParentState, route) {
     };
     return defaultParentState;
   }
-}
-
-if (isEnabled('ember-application-engines')) {
-  EmberRouter.reopen({
-    _getEngineInstance({ name, instanceId, mountPoint }) {
-      let engineInstances = this._engineInstances;
-
-      if (!engineInstances[name]) {
-        engineInstances[name] = new EmptyObject();
-      }
-
-      let engineInstance = engineInstances[name][instanceId];
-
-      if (!engineInstance) {
-        let owner = getOwner(this);
-
-        assert(
-          'You attempted to mount the engine \'' + name + '\' in your router map, but the engine can not be found.',
-          owner.hasRegistration(`engine:${name}`)
-        );
-
-        engineInstance = owner.buildChildEngineInstance(name, {
-          routable: true,
-          mountPoint
-        });
-
-        engineInstance.boot();
-
-        engineInstances[name][instanceId] = engineInstance;
-      }
-
-      return engineInstance;
-    }
-  });
 }
 
 export default EmberRouter;
