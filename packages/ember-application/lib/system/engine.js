@@ -47,7 +47,6 @@ function props(obj) {
   @namespace Ember
   @extends Ember.Namespace
   @uses RegistryProxy
-  @category ember-application-engines
   @public
 */
 const Engine = Namespace.extend(RegistryProxy, {

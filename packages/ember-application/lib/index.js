@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core'; // reexports
-import isEnabled from 'ember-metal/features';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 
 /**
@@ -17,16 +16,10 @@ import Engine from './system/engine';
 import EngineInstance from './system/engine-instance';
 
 Ember.Application = Application;
+Ember.ApplicationInstance = ApplicationInstance;
+Ember.Engine = Engine;
+Ember.EngineInstance = EngineInstance;
 Ember.DefaultResolver = Ember.Resolver = DefaultResolver;
-
-if (isEnabled('ember-application-engines')) {
-  Ember.Engine = Engine;
-
-  // Expose `EngineInstance` and `ApplicationInstance` for easy overriding.
-  // Reanalyze whether to continue exposing these after feature flag is removed.
-  Ember.EngineInstance = EngineInstance;
-  Ember.ApplicationInstance = ApplicationInstance;
-}
 
 // add domTemplates initializer (only does something if `ember-template-compiler`
 // is loaded already)
