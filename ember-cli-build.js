@@ -66,6 +66,73 @@ function backburner() {
   });
 }
 
+function rsvp() {
+  // TODO upstream
+  let version = require('./bower_components/rsvp/package').version;
+  let banner = fs.readFileSync(
+    path.resolve(__dirname, 'bower_components/rsvp/config/versionTemplate.txt'),
+    'utf8');
+  let rollup = new Rollup('bower_components/rsvp/lib', {
+    rollup: {
+      entry: 'rsvp.js',
+      plugins: [rollupEnifed],
+      banner: banner.replace('VERSION_PLACEHOLDER_STRING', version),
+      dest: 'rsvp.js',
+      format: 'amd',
+      exports: 'named',
+      moduleId: 'rsvp'
+    },
+    annotation: 'rsvp.js'
+  });
+  return rollup;
+}
+
+function routeRecognizer() {
+  let dist = path.dirname(require.resolve('route-recognizer'));
+  let es6 = new Funnel(path.join(dist, 'es6'), {
+    files: ['route-recognizer.js']
+  });
+  return new Rollup(new Funnel(dist, {
+    files: ['route-recognizer.js']
+  }), {
+    rollup: {
+      plugins: [rollupEnifed],
+      entry: 'route-recognizer.js',
+      dest: 'route-recognizer.js',
+      format: 'amd',
+      moduleId: 'route-recognizer',
+      exports: 'named'
+    }
+  });
+}
+
+function router() {
+  // TODO upstream this to router.js and publish on npm
+  return new Rollup('bower_components/router.js/lib', {
+    rollup: {
+      plugins: [rollupEnifed, {
+        transform(code, id) {
+          if (/\/router\/handler-info\/[^\/]+\.js$/.test(id)) {
+            code = code.replace(/\'router\//g, '\'../');
+          }
+          code = code.replace(/import\ Promise\ from \'rsvp\/promise\'/g, 'import { Promise } from \'rsvp\'')
+          return {
+            code: code,
+            map: { mappings: '' }
+          };
+        }
+      }],
+      external: ['route-recognizer', 'rsvp'],
+      entry: 'router.js',
+      dest: 'router.js',
+      format: 'amd',
+      moduleId: 'router',
+      exports: 'named'
+    },
+    annotation: 'router.js'
+  });
+}
+
 var featuresJson = fs.readFileSync('./features.json', { encoding: 'utf8' });
 
 function getFeatures(environment) {
@@ -170,11 +237,11 @@ module.exports = function() {
   var vendorPackages = {
     'external-helpers':      vendoredPackage('external-helpers'),
     'loader':                vendoredPackage('loader'),
-    'rsvp':                  vendoredES6Package('rsvp'),
+    'rsvp':                  rsvp(),
     'backburner':            backburner(),
-    'router':                vendoredES6Package('router.js'),
+    'router':                router(),
     'dag-map':               dag(),
-    'route-recognizer':      htmlbarsPackage('route-recognizer', { libPath: 'node_modules/route-recognizer/dist/es6/' }),
+    'route-recognizer':      routeRecognizer(),
     'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer', { libPath: 'node_modules/glimmer-engine/dist/es6'}),
 
     'glimmer':              glimmerPackage('glimmer'),
