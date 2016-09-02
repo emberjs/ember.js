@@ -31,7 +31,6 @@ import dictionary from 'ember-metal/dictionary';
 */
 
 import Router from 'router';
-import 'router/transition';
 
 function K() { return this; }
 
