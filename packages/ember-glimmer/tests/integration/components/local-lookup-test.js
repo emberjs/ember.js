@@ -49,6 +49,20 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.assertText('Nested template says: Hi!', 'Re-render works');
   }
 
+  ['@htmlbars moduleName remains unchanged']() {
+    this.registerComponent('x-outer/x-inner', { template: 'Nested template says: {{yield}}' });
+    this.registerComponent('x-outer', { template: '{{#x-inner}}Hi!{{/x-inner}}' });
+    this.registerComponent('x-root', { template: '{{x-outer}}' });
+
+    this.render('{{x-root}}');
+
+    let moduleName = this.owner.lookup('template:-top-level').meta.moduleName;
+
+    this.runTask(() => this.rerender());
+
+    this.assert.equal(moduleName, this.owner.lookup('template:-top-level').meta.moduleName, 'moduleName is unchanged after re-render');
+  }
+
   ['@htmlbars tagless blockless component can lookup local template'](assert) {
     this.registerComponent('x-outer/x-inner', { template: 'Nested template says: {{yield}}' });
     this.registerTemplate('components/x-outer', '{{#x-inner}}Hi!{{/x-inner}}');
