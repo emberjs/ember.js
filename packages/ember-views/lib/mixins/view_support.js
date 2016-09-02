@@ -277,10 +277,11 @@ export default Mixin.create({
 
     ```javascript
       export default Ember.Component.extend({
-        setElementId: Ember.on('init', function() {
+        init() {
+          this._super(...arguments);
           let index = this.get('index');
           this.set('elementId', 'component-id' + index);
-        })
+        }
       });
     ```
 
