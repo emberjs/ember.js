@@ -1,20 +1,248 @@
 import require, { has } from 'require';
 import isEnabled from 'ember-metal/features';
 
-import { ENV } from 'ember-environment';
+// ****ember-environment****
+import { ENV, context } from 'ember-environment';
 
-import {
-  default as Ember,
-  computed,
-  alias,
-  ComputedProperty,
-  cacheFor
-} from 'ember-metal';
 
-computed.alias = alias;
+// ****ember-metal****
+import Ember, * as metal from 'ember-metal';
+import { deprecate, deprecateFunc } from 'ember-metal';
+
+const computed = metal.computed;
+computed.alias = metal.alias;
 Ember.computed = computed;
-Ember.ComputedProperty = ComputedProperty;
-Ember.cacheFor = cacheFor;
+Ember.ComputedProperty = metal.ComputedProperty;
+Ember.cacheFor = metal.cacheFor;
+
+Ember.assert = metal.assert;
+Ember.warn = metal.warn;
+Ember.debug = metal.debug;
+Ember.deprecate = metal.deprecate;
+Ember.deprecateFunc = metal.deprecateFunc;
+Ember.runInDebug = metal.runInDebug;
+Ember.assign = Object.assign || metal.assign;
+Ember.merge = metal.merge;
+
+Ember.instrument = metal.instrument;
+Ember.subscribe = metal.instrumentationSubscribe;
+Ember.Instrumentation = {
+  instrument: metal.instrument,
+  subscribe: metal.instrumentationSubscribe,
+  unsubscribe: metal.instrumentationUnsubscribe,
+  reset: metal.instrumentationReset
+};
+
+Ember.generateGuid = metal.generateGuid;
+Ember.GUID_KEY = metal.GUID_KEY;
+Ember.guidFor = metal.guidFor;
+Ember.inspect = metal.inspect;
+
+Ember.tryCatchFinally = metal.deprecatedTryCatchFinally;
+Ember.makeArray = metal.makeArray;
+Ember.canInvoke = metal.canInvoke;
+Ember.tryInvoke = metal.tryInvoke;
+Ember.wrap = metal.wrap;
+Ember.apply = metal.apply;
+Ember.applyStr = metal.applyStr;
+Ember.uuid = metal.uuid;
+Ember.Error = metal.Error;
+Ember.META_DESC = metal.META_DESC;
+Ember.meta = metal.meta;
+Ember.get = metal.get;
+Ember.getWithDefault = metal.getWithDefault;
+Ember._getPath = metal._getPath;
+Ember.set = metal.set;
+Ember.trySet = metal.trySet;
+Ember.FEATURES = metal.FEATURES;
+Ember.FEATURES.isEnabled = metal.isFeatureEnabled;
+Ember._Cache = metal.Cache;
+Ember.on = metal.on;
+Ember.addListener = metal.addListener;
+Ember.removeListener = metal.removeListener;
+Ember._suspendListener = metal.suspendListener;
+Ember._suspendListeners = metal.suspendListeners;
+Ember.sendEvent = metal.sendEvent;
+Ember.hasListeners = metal.hasListeners;
+Ember.watchedEvents = metal.watchedEvents;
+Ember.listenersFor = metal.listenersFor;
+Ember.accumulateListeners = metal.accumulateListeners;
+Ember.isNone = metal.isNone;
+Ember.isEmpty = metal.isEmpty;
+Ember.isBlank = metal.isBlank;
+Ember.isPresent = metal.isPresent;
+Ember.run = metal.run;
+Ember._ObserverSet = metal.ObserverSet;
+Ember.propertyWillChange = metal.propertyWillChange;
+Ember.propertyDidChange = metal.propertyDidChange;
+Ember.overrideChains = metal.overrideChains;
+Ember.beginPropertyChanges = metal.beginPropertyChanges;
+Ember.endPropertyChanges = metal.endPropertyChanges;
+Ember.changeProperties = metal.changeProperties;
+Ember.platform        = {
+  defineProperty: true,
+  hasPropertyAccessors: true
+};
+Ember.defineProperty = metal.defineProperty;
+Ember.watchKey = metal.watchKey;
+Ember.unwatchKey = metal.unwatchKey;
+Ember.removeChainWatcher = metal.removeChainWatcher;
+Ember._ChainNode = metal.ChainNode;
+Ember.finishChains = metal.finishChains;
+Ember.watchPath = metal.watchPath;
+Ember.unwatchPath = metal.unwatchPath;
+Ember.watch = metal.watch;
+Ember.isWatching = metal.isWatching;
+Ember.unwatch = metal.unwatch;
+Ember.rewatch = metal.rewatch;
+Ember.destroy = metal.destroy;
+Ember.libraries = metal.libraries;
+Ember.OrderedSet = metal.OrderedSet;
+Ember.Map = metal.Map;
+Ember.MapWithDefault = metal.MapWithDefault;
+Ember.getProperties = metal.getProperties;
+Ember.setProperties = metal.setProperties;
+Ember.expandProperties = metal.expandProperties;
+Ember.NAME_KEY = metal.NAME_KEY;
+Ember.addObserver = metal.addObserver;
+Ember.observersFor = metal.observersFor;
+Ember.removeObserver = metal.removeObserver;
+Ember._suspendObserver = metal._suspendObserver;
+Ember._suspendObservers = metal._suspendObservers;
+Ember.required = metal.required;
+Ember.aliasMethod = metal.aliasMethod;
+Ember.observer = metal.observer;
+Ember.immediateObserver = metal._immediateObserver;
+Ember.mixin = metal.mixin;
+Ember.Mixin = metal.Mixin;
+Ember.bind = metal.bind;
+Ember.Binding = metal.Binding;
+Ember.isGlobalPath = metal.isGlobalPath;
+
+if (isEnabled('ember-metal-weakmap')) {
+  Ember.WeakMap = metal.WeakMap;
+}
+
+Object.defineProperty(Ember, 'ENV', {
+  get() { return ENV; },
+  enumerable: false
+});
+
+/**
+ The context that Ember searches for namespace instances on.
+
+ @private
+ */
+Object.defineProperty(Ember, 'lookup', {
+  get()      { return context.lookup; },
+  set(value) { context.lookup = value; },
+  enumerable: false
+});
+
+Ember.EXTEND_PROTOTYPES = ENV.EXTEND_PROTOTYPES;
+
+// BACKWARDS COMPAT ACCESSORS FOR ENV FLAGS
+Object.defineProperty(Ember, 'LOG_STACKTRACE_ON_DEPRECATION', {
+  get()      { return ENV.LOG_STACKTRACE_ON_DEPRECATION;    },
+  set(value) { ENV.LOG_STACKTRACE_ON_DEPRECATION = !!value; },
+  enumerable: false
+});
+
+Object.defineProperty(Ember, 'LOG_VERSION', {
+  get()      { return ENV.LOG_VERSION;   },
+  set(value) { ENV.LOG_VERSION = !!value; },
+  enumerable: false
+});
+
+Object.defineProperty(Ember, 'MODEL_FACTORY_INJECTIONS', {
+  get()      { return ENV.MODEL_FACTORY_INJECTIONS;    },
+  set(value) { ENV.MODEL_FACTORY_INJECTIONS = !!value;  },
+  enumerable: false
+});
+
+Object.defineProperty(Ember, 'LOG_BINDINGS', {
+  get()      { return ENV.LOG_BINDINGS;    },
+  set(value) { ENV.LOG_BINDINGS = !!value; },
+  enumerable: false
+});
+
+/**
+  A function may be assigned to `Ember.onerror` to be called when Ember
+  internals encounter an error. This is useful for specialized error handling
+  and reporting code.
+
+  ```javascript
+  Ember.onerror = function(error) {
+    Em.$.ajax('/report-error', 'POST', {
+      stack: error.stack,
+      otherInformation: 'whatever app state you want to provide'
+    });
+  };
+  ```
+
+  Internally, `Ember.onerror` is used as Backburner's error handler.
+
+  @event onerror
+  @for Ember
+  @param {Exception} error the error object
+  @public
+*/
+Object.defineProperty(Ember, 'onerror', {
+  get: metal.getOnerror,
+  set: metal.setOnerror,
+  enumerable: false
+});
+
+/**
+  An empty function useful for some operations. Always returns `this`.
+
+  @method K
+  @return {Object}
+  @public
+*/
+Ember.K = function K() { return this; };
+
+Object.defineProperty(Ember, 'testing', {
+  get: metal.isTesting,
+  set: metal.setTesting,
+  enumerable: false
+});
+
+if (!has('ember-debug')) {
+  Ember.Debug = {
+    registerDeprecationHandler() {},
+    registerWarnHandler() {}
+  };
+}
+
+import Backburner from 'backburner';
+
+/**
+ @class Backburner
+ @for Ember
+ @private
+ */
+Ember.Backburner = function() {
+  deprecate(
+    'Usage of Ember.Backburner is deprecated.',
+    false,
+    {
+      id: 'ember-metal.ember-backburner',
+      until: '2.8.0',
+      url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-backburner'
+    }
+  );
+
+  function BackburnerAlias(args) {
+    return Backburner.apply(this, args);
+  }
+
+  BackburnerAlias.prototype = Backburner.prototype;
+
+  return new BackburnerAlias(arguments);
+};
+
+Ember._Backburner = Backburner;
 
 import {
   Registry,
@@ -27,6 +255,12 @@ Ember.Container = Container;
 Ember.Registry = Registry;
 Ember.getOwner = getOwner;
 Ember.setOwner = setOwner;
+
+import Logger from 'ember-console';
+
+Ember.Logger = Logger;
+
+// ****ember-runtime****
 
 import {
   String as EmberString,
@@ -287,6 +521,21 @@ Object.defineProperty(Ember, 'TEMPLATES', {
   enumerable: false
 });
 
+import VERSION from './version';
+
+/**
+ The semantic version
+ @property VERSION
+ @type String
+ @public
+ */
+Ember.VERSION = VERSION;
+
+metal.libraries.registerCoreLibrary('Ember', VERSION);
+
+Ember.create = deprecateFunc('Ember.create is deprecated in favor of Object.create', { id: 'ember-metal.ember-create', until: '3.0.0' }, Object.create);
+Ember.keys = deprecateFunc('Ember.keys is deprecated in favor of Object.keys', { id: 'ember-metal.ember.keys', until: '3.0.0' }, Object.keys);
+
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly
 import 'ember-views';
@@ -310,3 +559,10 @@ runLoadHooks('Ember');
 @module ember
 */
 export default Ember;
+
+/* globals module */
+if (typeof module === 'object' && module.exports) {
+  module.exports = Ember;
+} else {
+  context.exports.Ember = context.exports.Em = Ember;
+}
