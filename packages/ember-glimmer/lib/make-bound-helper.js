@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-templates
+@submodule ember-glimmer
 */
 import { deprecate } from 'ember-metal';
 import { helper } from './helper';

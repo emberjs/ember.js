@@ -1,3 +1,7 @@
+/**
+@module ember
+@submodule ember-glimmer
+*/
 import { symbol } from 'ember-utils';
 import { assert } from 'ember-metal';
 import { UPDATE } from '../utils/references';
@@ -90,3 +94,4 @@ export default function(vm, args) {
 
   return wrappedRef;
 }
+

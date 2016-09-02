@@ -1,11 +1,10 @@
+/**
+@module ember
+@submodule ember-glimmer
+*/
 import { assign, EmptyObject } from 'ember-utils';
 import { DirtyableTag } from 'glimmer-reference';
 import { environment } from 'ember-environment';
-
-/**
-@module ember
-@submodule ember-templates
-*/
 
 class OutletStateReference {
   constructor(outletView) {

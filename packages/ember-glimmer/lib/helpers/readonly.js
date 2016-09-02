@@ -1,3 +1,7 @@
+/**
+@module ember
+@submodule ember-glimmer
+*/
 import { UPDATE } from '../utils/references';
 import { unMut } from './mut';
 
