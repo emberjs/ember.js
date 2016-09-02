@@ -5,6 +5,13 @@ import require from 'require';
 QUnit.module('ember reexports');
 
 [
+  // container
+  ['getOwner', 'container', 'getOwner'],
+  ['setOwner', 'container', 'setOwner'],
+  ['Registry', 'container', 'Registry'],
+  ['Container', 'container', 'Container'],
+
+  // ember-glimmer
   ['_Renderer',     'ember-glimmer', '_Renderer'],
   ['Component',     'ember-glimmer', 'Component'],
   ['Helper',        'ember-glimmer', 'Helper'],
@@ -19,9 +26,54 @@ QUnit.module('ember reexports');
   ['Handlebars.Utils.escapeExpression', 'ember-glimmer', 'escapeExpression'],
   ['String.htmlSafe', 'ember-glimmer', 'htmlSafe'],
   ['HTMLBars.makeBoundHelper', 'ember-glimmer', 'makeBoundHelper'],
-  ['String', 'ember-runtime', 'String']
+
+  // ember-runtime
+  ['_RegistryProxyMixin', 'ember-runtime', 'RegistryProxyMixin'],
+  ['_ContainerProxyMixin', 'ember-runtime', 'ContainerProxyMixin'],
+  ['Object', 'ember-runtime'],
+  ['String', 'ember-runtime'],
+  ['compare', 'ember-runtime'],
+  ['copy', 'ember-runtime'],
+  ['isEqual', 'ember-runtime'],
+  ['inject', 'ember-runtime'],
+  ['Array', 'ember-runtime'],
+  ['Comparable', 'ember-runtime'],
+  ['Namespace', 'ember-runtime'],
+  ['Enumerable', 'ember-runtime'],
+  ['ArrayProxy', 'ember-runtime'],
+  ['ObjectProxy', 'ember-runtime'],
+  ['ActionHandler', 'ember-runtime'],
+  ['CoreObject', 'ember-runtime'],
+  ['NativeArray', 'ember-runtime'],
+  ['Copyable', 'ember-runtime'],
+  ['Freezable', 'ember-runtime'],
+  ['FROZEN_ERROR', 'ember-runtime'],
+  ['MutableEnumerable', 'ember-runtime'],
+  ['MutableArray', 'ember-runtime'],
+  ['TargetActionSupport', 'ember-runtime'],
+  ['Evented', 'ember-runtime'],
+  ['PromiseProxyMixin', 'ember-runtime'],
+  ['Observable', 'ember-runtime'],
+  ['typeOf', 'ember-runtime'],
+  ['isArray', 'ember-runtime'],
+  ['Object', 'ember-runtime'],
+  ['onLoad', 'ember-runtime'],
+  ['runLoadHooks', 'ember-runtime'],
+  ['Controller', 'ember-runtime'],
+  ['ControllerMixin', 'ember-runtime'],
+  ['Service', 'ember-runtime'],
+  ['_ProxyMixin', 'ember-runtime'],
+  ['RSVP', 'ember-runtime'],
+  ['STRINGS', 'ember-runtime', { get: 'getStrings', set: 'setStrings' }],
+  ['BOOTED', 'ember-runtime', { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' }]
 ].forEach(reexport => {
   let [path, moduleId, exportName] = reexport;
+
+  // default path === exportName if none present
+  if (!exportName) {
+    exportName = path;
+  }
+
   QUnit.test(`Ember.${path} exports correctly`, assert => {
     confirmExport(assert, path, moduleId, exportName);
   });
