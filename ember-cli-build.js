@@ -22,29 +22,49 @@ var vendoredES6Package = require('emberjs-build/lib/es6-vendored-package');
 var Funnel = require('broccoli-funnel');
 var Rollup = require('broccoli-rollup');
 
-var dag = new Funnel(path.dirname(require.resolve('dag-map')), {
-  files: ['dag-map.js'],
-  annotation: 'dag-map.js'
-});
+var rollupEnifed = {
+  transformBundle(code, options) {
+    return {
+      code: code.replace(/^define\(/, 'enifed('),
+      map: { mappings: null }
+    };
+  }
+};
 
-dag = new Rollup(dag, {
-  rollup: {
-    plugins: [{
-      transformBundle(code, options) {
-        return {
-          code: code.replace(/^define\(/, 'enifed('),
-          map: { mappings: null }
-        };
-      }
-    }],
-    entry: 'dag-map.js',
-    dest: 'dag-map.js',
-    format: 'amd',
-    moduleId: 'dag-map',
-    exports: 'named'
-  },
-  annotation: 'dag-map.js'
-});
+function dag() {
+  var es = new Funnel(path.dirname(require.resolve('dag-map')), {
+    files: ['dag-map.js'],
+    annotation: 'dag-map.js'
+  });
+  return new Rollup(es, {
+    rollup: {
+      plugins: [rollupEnifed],
+      entry: 'dag-map.js',
+      dest: 'dag-map.js',
+      format: 'amd',
+      moduleId: 'dag-map',
+      exports: 'named'
+    },
+    annotation: 'dag-map.js'
+  });
+}
+
+function backburner() {
+  let dist = path.dirname(require.resolve('backburner.js'));
+  dist = path.join(dist, 'es6');
+  return new Rollup(new Funnel(dist, {
+    files: ['backburner.js']
+  }), {
+    rollup: {
+      plugins: [rollupEnifed],
+      entry: 'backburner.js',
+      dest: 'backburner.js',
+      format: 'amd',
+      moduleId: 'backburner',
+      exports: 'named'
+    }
+  });
+}
 
 var featuresJson = fs.readFileSync('./features.json', { encoding: 'utf8' });
 
@@ -151,9 +171,9 @@ module.exports = function() {
     'external-helpers':      vendoredPackage('external-helpers'),
     'loader':                vendoredPackage('loader'),
     'rsvp':                  vendoredES6Package('rsvp'),
-    'backburner':            vendoredES6Package('backburner'),
+    'backburner':            backburner(),
     'router':                vendoredES6Package('router.js'),
-    'dag-map':               dag,
+    'dag-map':               dag(),
     'route-recognizer':      htmlbarsPackage('route-recognizer', { libPath: 'node_modules/route-recognizer/dist/es6/' }),
     'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer', { libPath: 'node_modules/glimmer-engine/dist/es6'}),
 
