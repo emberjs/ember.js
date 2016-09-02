@@ -27,6 +27,7 @@
     "bower": "~1.7.7",
     "broccoli-stew": "^1.2.0",
     "chalk": "^1.1.1",
+    "commitplease": "^2.6.1",
     "ember-cli": "^2.6.1",
     "ember-cli-blueprint-test-helpers": "^0.12.0",
     "ember-cli-dependency-checker": "^1.2.0",
