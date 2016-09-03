@@ -539,8 +539,20 @@ Ember.keys = deprecateFunc('Ember.keys is deprecated in favor of Object.keys', {
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly
 import 'ember-views';
-import 'ember-routing';
-import 'ember-application';
+
+import * as routing from 'ember-routing';
+
+Ember.Location = routing.Location;
+Ember.AutoLocation = routing.AutoLocation;
+Ember.HashLocation = routing.HashLocation;
+Ember.HistoryLocation = routing.HistoryLocation;
+Ember.NoneLocation = routing.NoneLocation;
+Ember.controllerFor = routing.controllerFor;
+Ember.generateControllerFactory = routing.generateControllerFactory;
+Ember.generateController = routing.generateController;
+Ember.RouterDSL = routing.RouterDSL;
+Ember.Router = routing.Router;
+Ember.Route = routing.Route;
 
 import * as application from 'ember-application';
 

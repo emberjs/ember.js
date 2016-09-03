@@ -175,6 +175,19 @@ QUnit.module('ember reexports');
   ['STRINGS', 'ember-runtime', { get: 'getStrings', set: 'setStrings' }],
   ['BOOTED', 'ember-runtime', { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' }],
 
+  // ember-routing
+  ['Location', 'ember-routing'],
+  ['AutoLocation', 'ember-routing'],
+  ['HashLocation', 'ember-routing'],
+  ['HistoryLocation', 'ember-routing'],
+  ['NoneLocation', 'ember-routing'],
+  ['controllerFor', 'ember-routing'],
+  ['generateControllerFactory', 'ember-routing'],
+  ['generateController', 'ember-routing'],
+  ['RouterDSL', 'ember-routing'],
+  ['Router', 'ember-routing'],
+  ['Route', 'ember-routing'],
+
   // ember-application
   ['Application', 'ember-application'],
   ['ApplicationInstance', 'ember-application'],
