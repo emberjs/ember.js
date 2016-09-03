@@ -573,7 +573,12 @@ if (has('ember-template-compiler')) {
 // do this to ensure that Ember.Test is defined properly on the global
 // if it is present.
 if (has('ember-testing')) {
-  require('ember-testing');
+  let testing = require('ember-testing');
+
+  Ember.Test = testing.Test;
+  Ember.Test.Adapter = testing.Adapter;
+  Ember.Test.QUnitAdapter = testing.QUnitAdapter;
+  Ember.setupForTesting = testing.setupForTesting;
 }
 
 runLoadHooks('Ember');
