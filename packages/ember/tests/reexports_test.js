@@ -206,7 +206,11 @@ QUnit.module('ember reexports');
   ['Engine', 'ember-application'],
   ['EngineInstance', 'ember-application'],
   ['Resolver', 'ember-application'],
-  ['DefaultResolver', 'ember-application', 'Resolver']
+  ['DefaultResolver', 'ember-application', 'Resolver'],
+
+  // ember-extension-support
+  ['DataAdapter', 'ember-extension-support'],
+  ['ContainerDebugAdapter', 'ember-extension-support']
 ].forEach(reexport => {
   let [path, moduleId, exportName] = reexport;
 

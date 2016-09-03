@@ -587,7 +587,11 @@ Ember.DefaultResolver = Ember.Resolver = application.Resolver;
 
 runLoadHooks('Ember.Application', application.Application);
 
-import 'ember-extension-support';
+import * as extensionSupport from 'ember-extension-support';
+
+Ember.DataAdapter = extensionSupport.DataAdapter;
+Ember.ContainerDebugAdapter = extensionSupport.ContainerDebugAdapter;
+
 
 if (has('ember-template-compiler')) {
   require('ember-template-compiler');
