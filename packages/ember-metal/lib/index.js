@@ -95,7 +95,8 @@ export {
   propertyWillChange
 } from './property_events';
 export {
-  defineProperty
+  defineProperty,
+  Descriptor
 } from './properties';
 export {
   watchKey,
