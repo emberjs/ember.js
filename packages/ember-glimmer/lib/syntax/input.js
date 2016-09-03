@@ -1,4 +1,4 @@
-import { assert } from 'ember-metal/debug';
+import { assert } from 'ember-metal';
 import { CurlyComponentSyntax } from './curly-component';
 import { DynamicComponentSyntax } from './dynamic-component';
 import { wrapComponentClassAttribute } from '../utils/bindings';

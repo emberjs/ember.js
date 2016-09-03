@@ -1,10 +1,12 @@
 import { CachedReference } from '../utils/references';
-import EmberError from 'ember-metal/error';
-import symbol from 'ember-metal/symbol';
-import run from 'ember-metal/run_loop';
-import { get } from 'ember-metal/property_get';
-import { flaggedInstrument } from 'ember-metal/instrumentation';
-import isNone from 'ember-metal/is_none';
+import {
+  Error as EmberError,
+  symbol,
+  run,
+  get,
+  flaggedInstrument,
+  isNone
+} from 'ember-metal';
 
 export const INVOKE = symbol('INVOKE');
 

@@ -6,7 +6,7 @@ import {
   isComponentDefinition
 } from 'glimmer-runtime';
 import { UNDEFINED_REFERENCE } from 'glimmer-reference';
-import { assert } from 'ember-metal/debug';
+import { assert } from 'ember-metal';
 
 function dynamicComponentFor(vm, symbolTable) {
   let env     = vm.env;

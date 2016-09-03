@@ -19,3 +19,4 @@ export { default as controllerFor } from './system/controller_for';
 export { default as RouterDSL } from './system/dsl';
 export { default as Router } from './system/router';
 export { default as Route } from './system/route';
+export { default as QueryParams } from './system/query_params';

@@ -3,7 +3,7 @@
 @submodule ember-views
 */
 import Component from '../component';
-import TextSupport from 'ember-views/mixins/text_support';
+import { TextSupport } from 'ember-views';
 import layout from '../templates/empty';
 
 /**

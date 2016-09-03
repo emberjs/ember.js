@@ -1,5 +1,4 @@
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
+import { get, set } from 'ember-metal';
 import EmberComponent from '../component';
 import layout from '../templates/empty';
 

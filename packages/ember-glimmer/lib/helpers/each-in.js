@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import symbol from 'ember-metal/symbol';
+import { symbol } from 'ember-metal';
 
 /**
   The `{{each-in}}` helper loops over properties on an object.

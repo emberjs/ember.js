@@ -1,19 +1,23 @@
 import { RootReference } from './utils/references';
-import run from 'ember-metal/run_loop';
-import { setHasViews } from 'ember-metal/tags';
+import {
+  run,
+  setHasViews,
+  assert,
+  runInTransaction as _runInTransaction,
+  isFeatureEnabled
+} from 'ember-metal';
 import { CURRENT_TAG, UNDEFINED_REFERENCE } from 'glimmer-reference';
-import fallbackViewRegistry from 'ember-views/compat/fallback-view-registry';
-import { assert } from 'ember-metal/debug';
-import _runInTransaction from 'ember-metal/transaction';
-import isEnabled from 'ember-metal/features';
+import {
+  fallbackViewRegistry,
+  getViewId
+} from 'ember-views';
 import { BOUNDS } from './component';
 import { RootComponentDefinition } from './syntax/curly-component';
-import { getViewId } from 'ember-views/system/utils';
 
 let runInTransaction;
 
-if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
+    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
   runInTransaction = _runInTransaction;
 } else {
   runInTransaction = (context, methodName) => {

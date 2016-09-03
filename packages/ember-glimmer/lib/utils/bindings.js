@@ -1,7 +1,6 @@
 import { HelperSyntax } from 'glimmer-runtime';
-import get from 'ember-metal/property_get';
-import { assert } from 'ember-metal/debug';
-import { dasherize } from 'ember-runtime/system/string';
+import { get, assert } from 'ember-metal';
+import { String as StringUtils } from 'ember-runtime';
 import { CachedReference, map, referenceFromParts } from 'glimmer-reference';
 import { ROOT_REF } from '../component';
 import { htmlSafe, isHTMLSafe } from './string';
@@ -164,7 +163,7 @@ class SimpleClassNameBindingReference extends CachedReference {
 
     if (value === true) {
       let { path, dasherizedPath } = this;
-      return dasherizedPath || (this.dasherizedPath = dasherize(path));
+      return dasherizedPath || (this.dasherizedPath = StringUtils.dasherize(path));
     } else if (value || value === 0) {
       return value;
     } else {

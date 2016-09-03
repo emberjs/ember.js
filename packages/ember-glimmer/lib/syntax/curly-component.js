@@ -1,14 +1,25 @@
-import { StatementSyntax, ValueReference, EvaluatedArgs, EvaluatedNamedArgs, EvaluatedPositionalArgs } from 'glimmer-runtime';
+import {
+  StatementSyntax,
+  ValueReference,
+  EvaluatedArgs,
+  EvaluatedNamedArgs,
+  EvaluatedPositionalArgs,
+  ComponentDefinition
+} from 'glimmer-runtime';
 import { AttributeBinding, ClassNameBinding, IsVisibleBinding } from '../utils/bindings';
 import { ROOT_REF, DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK, BOUNDS } from '../component';
-import { assert, runInDebug } from 'ember-metal/debug';
+import {
+  assert,
+  runInDebug,
+  assign,
+  get,
+  _instrumentStart
+} from 'ember-metal';
 import processArgs from '../utils/process-args';
-import { privatize as P } from 'container';
-import assign from 'ember-metal/assign';
-import get from 'ember-metal/property_get';
-import { _instrumentStart } from 'ember-metal/instrumentation';
-import { ComponentDefinition } from 'glimmer-runtime';
-import { OWNER } from 'container';
+import {
+  privatize as P,
+  OWNER
+} from 'container';
 import { environment } from 'ember-environment';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;

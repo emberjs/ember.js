@@ -2,12 +2,11 @@
 @module ember
 @submodule ember-views
 */
-import { computed } from 'ember-metal/computed';
+import { computed, EmptyObject } from 'ember-metal';
 import { environment } from 'ember-environment';
 import Component from '../component';
 import layout from '../templates/empty';
-import TextSupport from 'ember-views/mixins/text_support';
-import EmptyObject from 'ember-metal/empty_object';
+import { TextSupport } from 'ember-views';
 
 let inputTypeTestElement;
 const inputTypes = new EmptyObject();

@@ -1,17 +1,19 @@
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { tagFor } from 'ember-metal/tags';
-import { didRender } from 'ember-metal/transaction';
-import symbol from 'ember-metal/symbol';
-import EmptyObject from 'ember-metal/empty_object';
+import {
+  get,
+  set,
+  tagFor,
+  didRender,
+  symbol,
+  EmptyObject,
+  meta as metaFor,
+  watchKey,
+  isFeatureEnabled
+} from 'ember-metal';
 import { CONSTANT_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst } from 'glimmer-reference';
 import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
-import { meta as metaFor } from 'ember-metal/meta';
-import { watchKey } from 'ember-metal/watch_key';
-import isEnabled from 'ember-metal/features';
-import { isProxy } from 'ember-runtime/mixins/-proxy';
+import { isProxy } from 'ember-runtime';
 
 export const UPDATE = symbol('UPDATE');
 
@@ -77,8 +79,8 @@ export class RootReference extends ConstReference {
 
 let TwoWayFlushDetectionTag;
 
-if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
+    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
   TwoWayFlushDetectionTag = class {
     constructor(tag, key, ref) {
       this.tag = tag;
@@ -131,14 +133,14 @@ export class RootPropertyReference extends PropertyReference {
     this._parentValue = parentValue;
     this._propertyKey = propertyKey;
 
-    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
+        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
       this.tag = new TwoWayFlushDetectionTag(tagFor(parentValue), propertyKey, this);
     } else {
       this.tag = tagFor(parentValue);
     }
 
-    if (isEnabled('mandatory-setter')) {
+    if (isFeatureEnabled('mandatory-setter')) {
       watchKey(parentValue, propertyKey, metaFor(parentValue));
     }
   }
@@ -146,8 +148,8 @@ export class RootPropertyReference extends PropertyReference {
   compute() {
     let { _parentValue, _propertyKey } = this;
 
-    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
+        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
       this.tag.didCompute(_parentValue);
     }
 
@@ -170,8 +172,8 @@ export class NestedPropertyReference extends PropertyReference {
     this._parentObjectTag = parentObjectTag;
     this._propertyKey = propertyKey;
 
-    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
+        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
       let tag = combine([parentReferenceTag, parentObjectTag]);
       this.tag = new TwoWayFlushDetectionTag(tag, propertyKey, this);
     } else {
@@ -187,13 +189,13 @@ export class NestedPropertyReference extends PropertyReference {
     _parentObjectTag.update(tagFor(parentValue));
 
     if (typeof parentValue === 'object' && parentValue) {
-      if (isEnabled('mandatory-setter')) {
+      if (isFeatureEnabled('mandatory-setter')) {
         let meta = metaFor(parentValue);
         watchKey(parentValue, _propertyKey, meta);
       }
 
-      if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-          isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
+          isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
         this.tag.didCompute(parentValue);
       }
 

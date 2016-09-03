@@ -1,9 +1,8 @@
 import { CONSTANT_TAG } from 'glimmer-reference';
-import symbol from 'ember-metal/symbol';
-import EmptyObject from 'ember-metal/empty_object';
+import { symbol, EmptyObject} from 'ember-metal';
 import { ARGS } from '../component';
 import { UPDATE } from './references';
-import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+import { MUTABLE_CELL } from 'ember-views';
 
 export default function processArgs(args, positionalParamsDefinition) {
   if (!positionalParamsDefinition || positionalParamsDefinition.length === 0 || args.positional.length === 0) {

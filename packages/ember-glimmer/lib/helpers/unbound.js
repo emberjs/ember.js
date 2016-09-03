@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import { assert } from 'ember-metal/debug';
+import { assert } from 'ember-metal';
 import { UnboundReference } from '../utils/references';
 
 /**

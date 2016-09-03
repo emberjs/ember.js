@@ -1,5 +1,16 @@
-import { guidFor } from 'ember-metal/utils';
-import lookupPartial, { hasPartial } from 'ember-views/system/lookup_partial';
+import {
+  guidFor,
+  Cache,
+  assert,
+  warn,
+  runInDebug
+} from 'ember-metal';
+import {
+  lookupPartial,
+  hasPartial,
+  lookupComponent,
+  STYLE_WARNING
+} from 'ember-views';
 import {
   Environment as GlimmerEnvironment,
   AttributeChangeList,
@@ -7,13 +18,9 @@ import {
   compileLayout,
   getDynamicVar
 } from 'glimmer-runtime';
-import Cache from 'ember-metal/cache';
-import { assert, warn, runInDebug } from 'ember-metal/debug';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './syntax/curly-component';
 import { findSyntaxBuilder } from './syntax';
 import { DynamicComponentSyntax } from './syntax/dynamic-component';
-import lookupComponent from 'ember-views/utils/lookup-component';
-import { STYLE_WARNING } from 'ember-views/system/utils';
 import createIterable from './utils/iterable';
 import {
   ConditionalReference,
