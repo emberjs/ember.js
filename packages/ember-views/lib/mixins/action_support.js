@@ -1,3 +1,7 @@
+/**
+ @module ember
+ @submodule ember-views
+*/
 import { Mixin } from 'ember-metal/mixin';
 import { get } from 'ember-metal/property_get';
 import isNone from 'ember-metal/is_none';
@@ -18,7 +22,11 @@ function validateAction(component, actionName) {
   return actionName;
 }
 
-
+/**
+ @class ActionSupport
+ @namespace Ember
+ @private
+*/
 export default Mixin.create({
   /**
     Calls an action passed to a component.
