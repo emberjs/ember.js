@@ -1,3 +1,3 @@
-import dict from 'ember-metal/dictionary';
+import { dictionary } from 'ember-metal';
 
-export default dict(null);
+export default dictionary(null);

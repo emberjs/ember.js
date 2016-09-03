@@ -1,15 +1,11 @@
 import _default from './default';
-import assign from 'ember-metal/assign';
+import {
+  assign,
+  run,
+  flaggedInstrument,
+  get
+} from 'ember-metal';
 import jQuery from '../../system/jquery';
-import run from 'ember-metal/run_loop';
-import { flaggedInstrument } from 'ember-metal/instrumentation';
-
-/**
-@module ember
-@submodule ember-views
-*/
-
-import { get } from 'ember-metal/property_get';
 
 const hasElement = Object.create(_default);
 

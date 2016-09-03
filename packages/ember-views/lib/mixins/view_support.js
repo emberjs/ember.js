@@ -1,9 +1,12 @@
-import { assert, deprecate } from 'ember-metal/debug';
-import run from 'ember-metal/run_loop';
-import { guidFor } from 'ember-metal/utils';
-import { Mixin } from 'ember-metal/mixin';
-import { POST_INIT } from 'ember-runtime/system/core_object';
-import symbol from 'ember-metal/symbol';
+import {
+  assert,
+  deprecate,
+  run,
+  guidFor,
+  Mixin,
+  symbol
+} from 'ember-metal';
+import { POST_INIT } from 'ember-runtime';
 import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
 

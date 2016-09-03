@@ -1,8 +1,7 @@
 /* globals Element */
 
-import { guidFor } from 'ember-metal/utils';
+import { guidFor, symbol } from 'ember-metal';
 import { getOwner } from 'container';
-import symbol from 'ember-metal/symbol';
 
 /**
 @module ember

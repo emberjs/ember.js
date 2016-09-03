@@ -1,9 +1,12 @@
-import { get } from 'ember-metal/property_get';
+import { get } from 'ember-metal';
 
-import EmberObject from 'ember-runtime/system/object';
-import Evented from 'ember-runtime/mixins/evented';
-import ActionHandler, { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
-import { typeOf } from 'ember-runtime/utils';
+import {
+  Object as EmberObject,
+  Evented,
+  ActionHandler,
+  deprecateUnderscoreActions,
+  typeOf
+} from 'ember-runtime';
 import { cloneStates, states } from './states';
 
 /**

@@ -3,15 +3,17 @@
 @submodule ember-views
 */
 
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import isNone from 'ember-metal/is_none';
-import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
+import {
+  assert,
+  get,
+  set,
+  isNone,
+  run,
+  assign
+} from 'ember-metal';
+import { Object as EmberObject } from 'ember-runtime';
 import jQuery from './jquery';
 import ActionManager from './action_manager';
-import assign from 'ember-metal/assign';
 import { getOwner } from 'container';
 import { environment } from 'ember-environment';
 import fallbackViewRegistry from '../compat/fallback-view-registry';

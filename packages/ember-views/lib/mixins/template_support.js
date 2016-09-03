@@ -1,9 +1,11 @@
-import EmberError from 'ember-metal/error';
-import { computed } from 'ember-metal/computed';
+import {
+  Error as EmberError,
+  computed,
+  Mixin,
+  get,
+  assert
+} from 'ember-metal';
 import { getOwner } from 'container';
-import { Mixin } from 'ember-metal/mixin';
-import { get } from 'ember-metal/property_get';
-import { assert } from 'ember-metal/debug';
 
 export default Mixin.create({
   /**

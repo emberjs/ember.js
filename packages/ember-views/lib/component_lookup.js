@@ -1,5 +1,5 @@
-import { assert } from 'ember-metal/debug';
-import EmberObject from 'ember-runtime/system/object';
+import { assert } from 'ember-metal';
+import { Object as EmberObject } from 'ember-runtime';
 
 export default EmberObject.extend({
   componentFor(name, owner, options) {

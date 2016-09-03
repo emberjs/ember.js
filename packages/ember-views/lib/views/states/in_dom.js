@@ -1,7 +1,9 @@
-import { runInDebug } from 'ember-metal/debug';
-import assign from 'ember-metal/assign';
-import EmberError from 'ember-metal/error';
-import { _addBeforeObserver } from 'ember-metal/observer';
+import {
+  runInDebug,
+  assign,
+  Error as EmberError,
+  _addBeforeObserver
+} from 'ember-metal';
 
 import hasElement from './has_element';
 /**
