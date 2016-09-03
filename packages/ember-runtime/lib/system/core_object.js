@@ -9,39 +9,34 @@
 
 // using ember-metal/lib/main here to ensure that ember-debug is setup
 // if present
-import { assert, runInDebug } from 'ember-metal/debug';
-import isEnabled from 'ember-metal/features';
-import assign from 'ember-metal/assign';
-
-// NOTE: this object should never be included directly. Instead use `Ember.Object`.
-// We only define this separately so that `Ember.Set` can depend on it.
-import { get } from 'ember-metal/property_get';
 import {
-  guidFor
-} from 'ember-metal/utils';
-import {
+  assert,
+  runInDebug,
+  isFeatureEnabled,
+  assign,
+  get,
+  guidFor,
   generateGuid,
   GUID_KEY_PROPERTY,
-  makeArray
-} from 'ember-metal/utils';
-import { meta } from 'ember-metal/meta';
-import { finishChains } from 'ember-metal/chains';
-import { sendEvent } from 'ember-metal/events';
-import {
+  makeArray,
+  meta,
+  finishChains,
+  sendEvent,
   detectBinding,
   Mixin,
-  REQUIRED
-} from 'ember-metal/mixin';
-import EmberError from 'ember-metal/error';
+  REQUIRED,
+  Error as EmberError,
+  defineProperty,
+  Binding,
+  ComputedProperty,
+  computed,
+  InjectedProperty,
+  run,
+  destroy,
+  symbol
+} from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
-import { defineProperty } from 'ember-metal/properties';
-import { Binding } from 'ember-metal/binding';
-import { ComputedProperty, computed } from 'ember-metal/computed';
-import InjectedProperty from 'ember-metal/injected_property';
-import run from 'ember-metal/run_loop';
-import { destroy } from 'ember-metal/watching';
 import { validatePropertyInjections } from '../inject';
-import symbol from 'ember-metal/symbol';
 
 export let POST_INIT = symbol('POST_INIT');
 var schedule = run.schedule;
@@ -153,7 +148,7 @@ function makeCtor() {
             if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
               this.setUnknownProperty(keyName, value);
             } else {
-              if (isEnabled('mandatory-setter')) {
+              if (isFeatureEnabled('mandatory-setter')) {
                 defineProperty(this, keyName, null, value); // setup mandatory setter
               } else {
                 this[keyName] = value;

@@ -3,26 +3,26 @@
 @submodule ember-runtime
 */
 
-import { assert, deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { meta } from 'ember-metal/meta';
 import {
+  assert,
+  deprecate,
+  get,
+  set,
+  meta,
   addObserver,
   removeObserver,
   _addBeforeObserver,
-  _removeBeforeObserver
-} from 'ember-metal/observer';
-import {
+  _removeBeforeObserver,
   propertyWillChange,
-  propertyDidChange
-} from 'ember-metal/property_events';
+  propertyDidChange,
+  defineProperty,
+  Mixin,
+  observer,
+  tagFor,
+  symbol
+} from 'ember-metal';
 import { bool } from '../computed/computed_macros';
 import { POST_INIT } from '../system/core_object';
-import { defineProperty } from 'ember-metal/properties';
-import { Mixin, observer } from 'ember-metal/mixin';
-import { tagFor } from 'ember-metal/tags';
-import symbol from 'ember-metal/symbol';
 import require, { has } from 'require';
 
 const hasGlimmer = has('glimmer-reference');

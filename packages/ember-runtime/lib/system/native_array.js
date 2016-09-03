@@ -2,11 +2,12 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from 'ember-metal/core'; // Ember.A circular
+import Ember, { // Ember.A circular
+  replace,
+  get,
+  Mixin
+} from 'ember-metal';
 import { ENV } from 'ember-environment';
-import replace from 'ember-metal/replace';
-import { get } from 'ember-metal/property_get';
-import { Mixin } from 'ember-metal/mixin';
 import EmberArray, {
   arrayContentDidChange,
   arrayContentWillChange

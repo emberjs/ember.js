@@ -3,19 +3,23 @@
 @submodule ember-runtime
 */
 
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import EmberError from 'ember-metal/error';
-import { ComputedProperty, computed } from 'ember-metal/computed';
-import { addObserver, removeObserver } from 'ember-metal/observer';
+import {
+  assert,
+  get,
+  Error as EmberError,
+  ComputedProperty,
+  computed,
+  addObserver,
+  removeObserver,
+  isNone,
+  getProperties,
+  EmptyObject,
+  guidFor,
+  WeakMap
+} from 'ember-metal';
 import compare from '../compare';
 import { isArray } from '../utils';
 import { A as emberA } from '../system/native_array';
-import isNone from 'ember-metal/is_none';
-import getProperties from 'ember-metal/get_properties';
-import EmptyObject from 'ember-metal/empty_object';
-import { guidFor } from 'ember-metal/utils';
-import WeakMap from 'ember-metal/weak_map';
 
 
 function reduceMacro(dependentKey, callback, initialValue) {

@@ -3,10 +3,12 @@
 @submodule ember-runtime
 */
 
-import { deprecate } from 'ember-metal/debug';
-import { Mixin } from 'ember-metal/mixin';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
+import {
+  deprecate,
+  Mixin,
+  get,
+  set
+} from 'ember-metal';
 
 /**
   The `Ember.Freezable` mixin implements some basic methods for marking an

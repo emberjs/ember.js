@@ -1,22 +1,20 @@
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
+import {
+  assert,
+  get,
+  computed,
+  _beforeObserver,
+  observer,
+  beginPropertyChanges,
+  endPropertyChanges,
+  Error as EmberError,
+  alias
+} from 'ember-metal';
 import {
   isArray
 } from '../utils';
-import { computed } from 'ember-metal/computed';
-import {
-  _beforeObserver,
-  observer
-} from 'ember-metal/mixin';
-import {
-  beginPropertyChanges,
-  endPropertyChanges
-} from 'ember-metal/property_events';
-import EmberError from 'ember-metal/error';
 import EmberObject from './object';
 import MutableArray from '../mixins/mutable_array';
 import Enumerable from '../mixins/enumerable';
-import alias from 'ember-metal/alias';
 import {
   addArrayObserver,
   removeArrayObserver,

@@ -1,4 +1,4 @@
-import { Descriptor as EmberDescriptor } from 'ember-metal/properties';
+import { Descriptor as EmberDescriptor } from './properties';
 
 export default function descriptor(desc) {
   return new Descriptor(desc);

@@ -11,13 +11,15 @@ const EMPTY = [];
 // HELPERS
 //
 
-import { get } from 'ember-metal/property_get';
-import EmberError from 'ember-metal/error';
-import { Mixin } from 'ember-metal/mixin';
+import {
+  get,
+  Error as EmberError,
+  Mixin,
+  isFeatureEnabled
+} from 'ember-metal';
 import EmberArray, { objectAt } from './array';
 import MutableEnumerable from './mutable_enumerable';
 import Enumerable from './enumerable';
-import isEnabled from 'ember-metal/features';
 
 export function removeAt(array, start, len) {
   if ('number' === typeof start) {
@@ -388,7 +390,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   addObject(obj) {
     let included;
 
-    if (isEnabled('ember-runtime-enumerable-includes')) {
+    if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
       included = this.includes(obj);
     } else {
       included = this.contains(obj);

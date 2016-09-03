@@ -28,7 +28,9 @@ export {
   unsubscribe as instrumentationUnsubscribe
 } from './instrumentation';
 export {
+  intern,
   GUID_KEY,
+  GUID_KEY_PROPERTY,
   apply,
   applyStr,
   canInvoke,
@@ -47,7 +49,8 @@ export {
 } from './testing';
 export {
   getOnerror,
-  setOnerror
+  setOnerror,
+  dispatchError
 } from './error_handler';
 export {
   META_DESC,
@@ -94,7 +97,8 @@ export {
   propertyWillChange
 } from './property_events';
 export {
-  defineProperty
+  defineProperty,
+  Descriptor
 } from './properties';
 export {
   watchKey,
@@ -131,16 +135,23 @@ export {
   _suspendObservers,
   addObserver,
   observersFor,
-  removeObserver
+  removeObserver,
+  _addBeforeObserver,
+  _removeBeforeObserver
 } from './observer';
 export {
   NAME_KEY,
   Mixin,
   aliasMethod,
   _immediateObserver,
+  _beforeObserver,
   mixin,
   observer,
-  required
+  required,
+  REQUIRED,
+  hasUnprocessedMixins,
+  clearUnprocessedMixins,
+  detectBinding
 } from './mixin';
 export {
   Binding,
@@ -149,6 +160,12 @@ export {
 export {
   isGlobalPath
 } from './path_cache';
+export { default as symbol } from './symbol';
+export { default as dictionary } from './dictionary';
+export { default as EmptyObject } from './empty_object';
+export { default as InjectedProperty } from './injected_property';
+export { tagFor, markObjectAsDirty } from './tags';
+export { default as replace } from './replace';
 
 
 // TODO: this needs to be deleted once we refactor the build tooling

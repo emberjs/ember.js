@@ -6,32 +6,27 @@
 // ..........................................................
 // HELPERS
 //
-import Ember from 'ember-metal/core'; // ES6TODO: Ember.A
-
-import symbol from 'ember-metal/symbol';
-import { get } from 'ember-metal/property_get';
-import {
+import Ember, { // ES6TODO: Ember.A
+  symbol,
+  get,
   computed,
-  cacheFor
-} from 'ember-metal/computed';
-import isNone from 'ember-metal/is_none';
-import Enumerable from './enumerable';
-import { Mixin } from 'ember-metal/mixin';
-import {
+  cacheFor,
+  isNone,
+  Mixin,
   propertyWillChange,
-  propertyDidChange
-} from 'ember-metal/property_events';
-import {
+  propertyDidChange,
   addListener,
   removeListener,
   sendEvent,
-  hasListeners
-} from 'ember-metal/events';
-import { meta as metaFor } from 'ember-metal/meta';
-import { markObjectAsDirty } from 'ember-metal/tags';
+  hasListeners,
+  meta as metaFor,
+  markObjectAsDirty,
+  deprecate,
+  isFeatureEnabled
+} from 'ember-metal';
+
+import Enumerable from './enumerable';
 import EachProxy from '../system/each_proxy';
-import { deprecate } from 'ember-metal/debug';
-import isEnabled from 'ember-metal/features';
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
   let willChange = (opts && opts.willChange) || 'arrayWillChange';
@@ -309,7 +304,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
   // optimized version from Enumerable
   contains(obj) {
-    if (isEnabled('ember-runtime-enumerable-includes')) {
+    if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
       deprecate(
         '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
         false,
@@ -588,7 +583,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   }).volatile()
 });
 
-if (isEnabled('ember-runtime-enumerable-includes')) {
+if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
   ArrayMixin.reopen({
     /**
       Returns `true` if the passed object can be found in the array.

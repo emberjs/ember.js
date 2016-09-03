@@ -6,5 +6,8 @@ The public API, specified on the application namespace should be considered the 
 */
 
 export { default as Registry, privatize } from './registry';
-export { default as Container } from './container';
+export {
+  default as Container,
+  buildFakeContainerWithDeprecations
+} from './container';
 export { OWNER, getOwner, setOwner } from './owner';

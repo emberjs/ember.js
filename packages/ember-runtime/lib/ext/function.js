@@ -4,9 +4,12 @@
 */
 
 import { ENV } from 'ember-environment';
-import { assert, deprecateFunc } from 'ember-metal/debug';
-import { computed } from 'ember-metal/computed';
-import { observer } from 'ember-metal/mixin';
+import {
+  assert,
+  deprecateFunc,
+  computed,
+  observer
+} from 'ember-metal';
 
 const a_slice = Array.prototype.slice;
 const FunctionPrototype = Function.prototype;

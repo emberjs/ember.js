@@ -1,11 +1,14 @@
-import { assert, deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { computed } from 'ember-metal/computed';
-import isEmpty from 'ember-metal/is_empty';
-import isNone from 'ember-metal/is_none';
-import alias from 'ember-metal/alias';
-import expandProperties from 'ember-metal/expand_properties';
+import {
+  assert,
+  deprecate,
+  get,
+  set,
+  computed,
+  isEmpty,
+  isNone,
+  alias,
+  expandProperties
+} from 'ember-metal';
 
 /**
 @module ember

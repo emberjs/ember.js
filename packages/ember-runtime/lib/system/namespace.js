@@ -2,18 +2,15 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from 'ember-metal/core'; // Preloaded into namespaces
-import { context } from 'ember-environment';
-import { get } from 'ember-metal/property_get';
-import {
-  guidFor
-} from 'ember-metal/utils';
-import {
+import Ember, {
+  get,
+  guidFor,
   Mixin,
   hasUnprocessedMixins,
   clearUnprocessedMixins,
   NAME_KEY
-} from 'ember-metal/mixin';
+} from 'ember-metal'; // Preloaded into namespaces
+import { context } from 'ember-environment';
 
 import EmberObject from './object';
 
