@@ -7,7 +7,6 @@ import {
   symbol
 } from 'ember-metal';
 import { setOwner, OWNER } from './owner';
-import { buildFakeContainerWithDeprecations } from 'ember-runtime';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 
@@ -443,4 +442,33 @@ function resetMember(container, fullName) {
       member.destroy();
     }
   }
+}
+
+export function buildFakeContainerWithDeprecations(container) {
+  let fakeContainer = {};
+  let propertyMappings = {
+    lookup: 'lookup',
+    lookupFactory: '_lookupFactory'
+  };
+
+  for (let containerProperty in propertyMappings) {
+    fakeContainer[containerProperty] = buildFakeContainerFunction(container, containerProperty, propertyMappings[containerProperty]);
+  }
+
+  return fakeContainer;
+}
+
+function buildFakeContainerFunction(container, containerProperty, ownerProperty) {
+  return function() {
+    deprecate(
+      `Using the injected \`container\` is deprecated. Please use the \`getOwner\` helper to access the owner of this object and then call \`${ownerProperty}\` instead.`,
+      false,
+      {
+        id: 'ember-application.injected-container',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access'
+      }
+    );
+    return container[containerProperty](...arguments);
+  };
 }

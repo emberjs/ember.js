@@ -7,8 +7,7 @@ export { default as Object } from './system/object';
 export { default as String } from './system/string';
 export { default as RegistryProxyMixin } from './mixins/registry_proxy';
 export {
-  default as ContainerProxyMixin,
-  buildFakeContainerWithDeprecations
+  default as ContainerProxyMixin
 } from './mixins/container_proxy';
 export { default as copy } from './copy';
 export { default as inject } from './inject';

@@ -1,3 +1,5 @@
+import 'container';
+
 export { default as _Ember } from 'ember-metal'; // Is this still needed
 export { default as precompile } from 'ember-template-compiler/system/precompile';
 export { default as compile } from 'ember-template-compiler/system/compile';
