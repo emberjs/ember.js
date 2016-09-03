@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 
-import { assert } from 'ember-metal/debug';
+import { assert, warn } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import EmberError from 'ember-metal/error';
 import { ComputedProperty, computed } from 'ember-metal/computed';
@@ -240,6 +240,13 @@ export function mapBy(dependentKey, propertyKey) {
     'Ember.computed.mapBy expects a property string for its second argument, ' +
     'perhaps you meant to use "map"',
     typeof propertyKey === 'string'
+  );
+
+  warn(
+    'Ember.computed.mapBy does not work with nested dependent keys. You cannot use ' +
+    'nested forms like computed.mapBy("todos", "owner.name").',
+    (propertyKey.indexOf('.') === -1),
+    { id: 'ember-runtime.computed-map-by-nested-keys' }
   );
 
   return map(`${dependentKey}.@each.${propertyKey}`, item => get(item, propertyKey));

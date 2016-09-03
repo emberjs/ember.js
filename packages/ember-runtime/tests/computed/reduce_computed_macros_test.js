@@ -219,6 +219,23 @@ QUnit.test('it is observable', function() {
   equal(calls, 1, 'mapBy is observable');
 });
 
+QUnit.test('it does not support nested dependent keys', function() {
+  var warning = 'Ember.computed.mapBy does not work with nested dependent keys. You cannot use ' +
+                'nested forms like computed.mapBy("todos", "owner.name").';
+
+  expectNoWarning(() => {
+    mapBy('array', 'k');
+  });
+
+  expectWarning(() => {
+    mapBy('array', 'k.v');
+  }, warning);
+
+  expectWarning(() => {
+    mapBy('array', 'k.v.z');
+  }, warning);
+});
+
 QUnit.module('filter', {
   setup() {
     obj = EmberObject.extend({
