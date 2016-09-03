@@ -538,10 +538,60 @@ Ember.keys = deprecateFunc('Ember.keys is deprecated in favor of Object.keys', {
 
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly
-import 'ember-views';
-import 'ember-routing';
-import 'ember-application';
-import 'ember-extension-support';
+import * as views from 'ember-views';
+/**
+ Alias for jQuery
+
+ @method $
+ @for Ember
+ @public
+ */
+Ember.$ = views.jQuery;
+
+Ember.ViewTargetActionSupport = views.ViewTargetActionSupport;
+
+Ember.ViewUtils = {
+  isSimpleClick: views.isSimpleClick,
+  getViewBounds: views.getViewBounds,
+  getViewClientRects: views.getViewClientRects,
+  getViewBoundingClientRect: views.getViewBoundingClientRect,
+  getRootViews: views.getRootViews,
+  getChildViews: views.getChildViews
+};
+
+Ember.TextSupport = views.TextSupport;
+Ember.ComponentLookup = views.ComponentLookup;
+Ember.EventDispatcher = views.EventDispatcher;
+
+import * as routing from 'ember-routing';
+
+Ember.Location = routing.Location;
+Ember.AutoLocation = routing.AutoLocation;
+Ember.HashLocation = routing.HashLocation;
+Ember.HistoryLocation = routing.HistoryLocation;
+Ember.NoneLocation = routing.NoneLocation;
+Ember.controllerFor = routing.controllerFor;
+Ember.generateControllerFactory = routing.generateControllerFactory;
+Ember.generateController = routing.generateController;
+Ember.RouterDSL = routing.RouterDSL;
+Ember.Router = routing.Router;
+Ember.Route = routing.Route;
+
+import * as application from 'ember-application';
+
+Ember.Application = application.Application;
+Ember.ApplicationInstance = application.ApplicationInstance;
+Ember.Engine = application.Engine;
+Ember.EngineInstance = application.EngineInstance;
+Ember.DefaultResolver = Ember.Resolver = application.Resolver;
+
+runLoadHooks('Ember.Application', application.Application);
+
+import * as extensionSupport from 'ember-extension-support';
+
+Ember.DataAdapter = extensionSupport.DataAdapter;
+Ember.ContainerDebugAdapter = extensionSupport.ContainerDebugAdapter;
+
 
 if (has('ember-template-compiler')) {
   require('ember-template-compiler');
@@ -550,7 +600,12 @@ if (has('ember-template-compiler')) {
 // do this to ensure that Ember.Test is defined properly on the global
 // if it is present.
 if (has('ember-testing')) {
-  require('ember-testing');
+  let testing = require('ember-testing');
+
+  Ember.Test = testing.Test;
+  Ember.Test.Adapter = testing.Adapter;
+  Ember.Test.QUnitAdapter = testing.QUnitAdapter;
+  Ember.setupForTesting = testing.setupForTesting;
 }
 
 runLoadHooks('Ember');

@@ -10,6 +10,7 @@ import {
   ContainerProxyMixin,
   Object as EmberObject
 } from 'ember-runtime';
+import require from 'require';
 
 export function buildOwner(resolver) {
   let Owner = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin);
@@ -34,4 +35,31 @@ export function buildOwner(resolver) {
   owner.__container__ = container;
 
   return owner;
+}
+
+export function confirmExport(Ember, assert, path, moduleId, exportName) {
+  let desc = getDescriptor(Ember, path);
+  assert.ok(desc, 'the property exists on the global');
+
+  let mod = require(moduleId);
+  if (typeof exportName === 'string') {
+    assert.equal(desc.value, mod[exportName], `Ember.${path} is exported correctly`);
+  } else {
+    assert.equal(desc.get, mod[exportName.get], `Ember.${path} getter is exported correctly`);
+    assert.equal(desc.set, mod[exportName.set], `Ember.${path} setter is exported correctly`);
+  }
+}
+
+function getDescriptor(obj, path) {
+  let parts = path.split('.');
+  let value = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    let part = parts[i];
+    value = value[part];
+    if (!value) {
+      return undefined;
+    }
+  }
+  let last = parts[parts.length - 1];
+  return Object.getOwnPropertyDescriptor(value, last);
 }
