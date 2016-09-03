@@ -40,7 +40,7 @@ export { default as Observable } from './mixins/observable';
 export { default as MutableEnumerable } from './mixins/mutable_enumerable';
 export { default as MutableArray } from './mixins/mutable_array';
 export { default as TargetActionSupport } from './mixins/target_action_support';
-export { defautl as Evented } from './mixins/evented';
+export { default as Evented } from './mixins/evented';
 export { default as PromiseProxyMixin } from './mixins/promise_proxy';
 
 export {
