@@ -17,7 +17,11 @@ export {
   isHTMLSafe,
   getSafeString as _getSafeString
 } from './utils/string';
-export { default as _Renderer } from './renderer';
+export {
+  Renderer,
+  InertRenderer,
+  InteractiveRenderer
+} from './renderer';
 export {
   getTemplate,
   setTemplate,

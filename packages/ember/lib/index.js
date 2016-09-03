@@ -44,12 +44,10 @@ Ember.GUID_KEY = metal.GUID_KEY;
 Ember.guidFor = metal.guidFor;
 Ember.inspect = metal.inspect;
 
-Ember.tryCatchFinally = metal.deprecatedTryCatchFinally;
 Ember.makeArray = metal.makeArray;
 Ember.canInvoke = metal.canInvoke;
 Ember.tryInvoke = metal.tryInvoke;
 Ember.wrap = metal.wrap;
-Ember.apply = metal.apply;
 Ember.applyStr = metal.applyStr;
 Ember.uuid = metal.uuid;
 Ember.Error = metal.Error;
@@ -469,7 +467,7 @@ import {
   getTemplates,
   setTemplates,
   _getSafeString,
-  _Renderer
+  Renderer
 } from 'ember-glimmer';
 
 Ember.Component = Component;
@@ -479,7 +477,7 @@ Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 Ember.LinkComponent = LinkComponent;
-Ember._Renderer = _Renderer;
+Ember._Renderer = Renderer;
 
 if (ENV.EXTEND_PROTOTYPES.String) {
   String.prototype.htmlSafe = function() {

@@ -44,9 +44,15 @@ export function confirmExport(Ember, assert, path, moduleId, exportName) {
   let mod = require(moduleId);
   if (typeof exportName === 'string') {
     assert.equal(desc.value, mod[exportName], `Ember.${path} is exported correctly`);
+    assert.notEqual(mod[exportName], undefined, `Ember.${path} is not \`undefined\``);
   } else {
     assert.equal(desc.get, mod[exportName.get], `Ember.${path} getter is exported correctly`);
-    assert.equal(desc.set, mod[exportName.set], `Ember.${path} setter is exported correctly`);
+    assert.notEqual(desc.get, undefined, `Ember.${path} getter is not undefined`);
+
+    if (exportName.set) {
+      assert.equal(desc.set, mod[exportName.set], `Ember.${path} setter is exported correctly`);
+      assert.notEqual(desc.set, undefined, `Ember.${path} setter is not undefined`);
+    }
   }
 }
 
