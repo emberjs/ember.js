@@ -4,10 +4,10 @@
 */
 import {
   Mixin,
-  observer
-} from 'ember-metal/mixin';
-import { get } from 'ember-metal/property_get';
-import run from 'ember-metal/run_loop';
+  observer,
+  get,
+  run
+} from 'ember-metal';
 
 function K() { return this; }
 

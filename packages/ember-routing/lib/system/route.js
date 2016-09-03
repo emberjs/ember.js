@@ -1,25 +1,30 @@
-import { assert, deprecate, info } from 'ember-metal/debug';
-import { isTesting } from 'ember-metal/testing';
-import isEnabled from 'ember-metal/features';
-import EmberError from 'ember-metal/error';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import getProperties from 'ember-metal/get_properties';
-import isNone from 'ember-metal/is_none';
-import { computed } from 'ember-metal/computed';
-import assign from 'ember-metal/assign';
 import {
-  typeOf
-} from 'ember-runtime/utils';
-import run from 'ember-metal/run_loop';
-import copy from 'ember-runtime/copy';
+  assert,
+  deprecate,
+  info,
+  isTesting,
+  isFeatureEnabled,
+  Error as EmberError,
+  get,
+  set,
+  getProperties,
+  isNone,
+  computed,
+  assign,
+  run,
+  isEmpty,
+  symbol
+} from 'ember-metal';
 import {
-  classify
-} from 'ember-runtime/system/string';
-import EmberObject from 'ember-runtime/system/object';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import Evented from 'ember-runtime/mixins/evented';
-import ActionHandler, { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
+  typeOf,
+  copy,
+  String as StringUtils,
+  Object as EmberObject,
+  A as emberA,
+  Evented,
+  ActionHandler,
+  deprecateUnderscoreActions
+} from 'ember-runtime';
 import generateController from './generate_controller';
 import {
   generateControllerFactory
@@ -30,8 +35,6 @@ import {
   calculateCacheKey
 } from '../utils';
 import { getOwner } from 'container';
-import isEmpty from 'ember-metal/is_empty';
-import symbol from 'ember-metal/symbol';
 const { slice } = Array.prototype;
 
 function K() { return this; }
@@ -162,7 +165,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(controllerDefinedQueryParameterConfiguration);
       combinedQueryParameterConfiguration = mergeEachQueryParams(normalizedControllerQueryParameterConfiguration, queryParameterConfiguraton);
 
-      if (isEnabled('ember-routing-route-configured-query-params')) {
+      if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
         if (controllerDefinedQueryParameterConfiguration.length) {
           deprecate(`Configuring query parameters on a controller is deprecated. Migrate the query parameters configuration from the '${controllerName}' controller to the '${this.routeName}' route: ${combinedQueryParameterConfiguration}`, false, { id: 'ember-routing.controller-configured-query-params', until: '3.0.0' });
         }
@@ -191,7 +194,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
       let desc = combinedQueryParameterConfiguration[propName];
 
-      if (isEnabled('ember-routing-route-configured-query-params')) {
+      if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
         // apply default values to controllers
         // detect that default value defined on router config
         if (desc.hasOwnProperty('defaultValue')) {
@@ -1577,11 +1580,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         let modelClass = owner._lookupFactory(`model:${name}`);
 
         assert(
-          `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${classify(name)} did not exist and you did not override your route's \`model\` hook.`, !!modelClass);
+          `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${StringUtils.classify(name)} did not exist and you did not override your route's \`model\` hook.`, !!modelClass);
 
         if (!modelClass) { return; }
 
-        assert(`${classify(name)} has no method \`find\`.`, typeof modelClass.find === 'function');
+        assert(`${StringUtils.classify(name)} has no method \`find\`.`, typeof modelClass.find === 'function');
 
         return modelClass.find(value);
       }
@@ -2248,7 +2251,7 @@ function mergeEachQueryParams(controllerQP, routeQP) {
   let keysAlreadyMergedOrSkippable;
   let qps = {};
 
-  if (isEnabled('ember-routing-route-configured-query-params')) {
+  if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
     keysAlreadyMergedOrSkippable = {};
   } else {
     keysAlreadyMergedOrSkippable = {

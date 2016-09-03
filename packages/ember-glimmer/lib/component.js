@@ -1,19 +1,24 @@
-import CoreView from 'ember-views/views/core_view';
-import ClassNamesSupport from 'ember-views/mixins/class_names_support';
-import ChildViewsSupport from 'ember-views/mixins/child_views_support';
-import ViewStateSupport from 'ember-views/mixins/view_state_support';
-import ViewMixin from 'ember-views/mixins/view_support';
-import ActionSupport from 'ember-views/mixins/action_support';
-import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
-import symbol from 'ember-metal/symbol';
-import { get } from 'ember-metal/property_get';
-import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
-import { getAttrFor } from 'ember-views/compat/attrs-proxy';
+import {
+  CoreView,
+  ClassNamesSupport,
+  ChildViewsSupport,
+  ViewStateSupport,
+  ViewMixin,
+  ActionSupport,
+  getAttrFor
+} from 'ember-views';
+import { TargetActionSupport } from 'ember-runtime';
+import {
+  symbol,
+  get,
+  PROPERTY_DID_CHANGE,
+  assert,
+  deprecate,
+  NAME_KEY
+} from 'ember-metal';
 import { UPDATE, RootReference } from './utils/references';
 import { DirtyableTag } from 'glimmer-reference';
 import { readDOMAttr } from 'glimmer-runtime';
-import { assert, deprecate } from 'ember-metal/debug';
-import { NAME_KEY } from 'ember-metal/mixin';
 import { getOwner } from 'container';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
@@ -22,7 +27,6 @@ export const ROOT_REF = symbol('ROOT_REF');
 export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
 export const HAS_BLOCK = symbol('HAS_BLOCK');
 export const BOUNDS = symbol('BOUNDS');
-
 
 /**
 @module ember

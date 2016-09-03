@@ -313,17 +313,21 @@
 
 import Logger from 'ember-console';
 
-import { assert, deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { computed } from 'ember-metal/computed';
-import { deprecatingAlias } from 'ember-runtime/computed/computed_macros';
-import { isSimpleClick } from 'ember-views/system/utils';
-import inject from 'ember-runtime/inject';
-import 'ember-runtime/system/service'; // creates inject.service
-import ControllerMixin from 'ember-runtime/mixins/controller';
+import {
+  assert,
+  deprecate,
+  get,
+  computed,
+  flaggedInstrument
+} from 'ember-metal';
+import {
+  deprecatingAlias,
+  inject,
+  ControllerMixin
+} from 'ember-runtime';
+import { isSimpleClick } from 'ember-views';
 import layout from '../templates/link-to';
 import EmberComponent, { HAS_BLOCK } from '../component';
-import { flaggedInstrument } from 'ember-metal/instrumentation';
 
 
 /**

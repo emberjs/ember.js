@@ -1,8 +1,14 @@
-import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
-import { generateGuid, guidFor } from 'ember-metal/utils';
-import { _instrumentStart } from 'ember-metal/instrumentation';
+import {
+  ArgsSyntax,
+  StatementSyntax,
+  ComponentDefinition
+} from 'glimmer-runtime';
+import {
+  generateGuid,
+  guidFor,
+  _instrumentStart
+} from 'ember-metal';
 import { RootReference } from '../utils/references';
-
 import {
   UpdatableTag,
   ConstReference,
@@ -213,8 +219,6 @@ class OutletComponentManager extends AbstractOutletComponentManager {
 }
 
 const MANAGER = new OutletComponentManager();
-
-import { ComponentDefinition } from 'glimmer-runtime';
 
 class AbstractOutletComponentDefinition extends ComponentDefinition {
   constructor(manager, outletName, template) {

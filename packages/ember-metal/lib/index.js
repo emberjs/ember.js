@@ -10,11 +10,11 @@ export {
   ComputedProperty
 } from './computed';
 export { default as alias } from './alias';
-export { deprecate } from './debug';
 export { default as assign } from './assign';
 export { default as merge } from './merge';
 export {
   assert,
+  info,
   warn,
   debug,
   deprecate,
@@ -23,6 +23,8 @@ export {
 } from './debug';
 export {
   instrument,
+  flaggedInstrument,
+  _instrumentStart,
   reset as instrumentationReset,
   subscribe as instrumentationSubscribe,
   unsubscribe as instrumentationUnsubscribe
@@ -92,7 +94,8 @@ export {
   endPropertyChanges,
   overrideChains,
   propertyDidChange,
-  propertyWillChange
+  propertyWillChange,
+  PROPERTY_DID_CHANGE
 } from './property_events';
 export {
   defineProperty,
@@ -162,8 +165,18 @@ export { default as symbol } from './symbol';
 export { default as dictionary } from './dictionary';
 export { default as EmptyObject } from './empty_object';
 export { default as InjectedProperty } from './injected_property';
-export { tagFor, markObjectAsDirty } from './tags';
+export {
+  setHasViews,
+  tagFor,
+  markObjectAsDirty
+} from './tags';
 export { default as replace } from './replace';
+export {
+  default as runInTransaction,
+  didRender,
+  assertNotRendered
+} from './transaction';
+export { default as descriptor } from './descriptor';
 
 
 // TODO: this needs to be deleted once we refactor the build tooling

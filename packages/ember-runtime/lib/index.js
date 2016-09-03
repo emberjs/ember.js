@@ -13,7 +13,11 @@ export { default as copy } from './copy';
 export { default as inject } from './inject';
 export { default as compare } from './compare';
 export { default as isEqual } from './is-equal';
-export { default as Array } from './mixins/array';
+export {
+  default as Array,
+  objectAt,
+  isEmberArray
+} from './mixins/array';
 export { default as Comparable } from './mixins/comparable';
 export {
   default as Namespace,
@@ -22,16 +26,25 @@ export {
 } from './system/namespace';
 export { default as ArrayProxy } from './system/array_proxy';
 export { default as ObjectProxy } from './system/object_proxy';
-export { default as CoreObject } from './system/core_object';
+export {
+  default as CoreObject,
+  POST_INIT
+} from './system/core_object';
 export { default as NativeArray, A } from './system/native_array';
-export { default as ActionHandler } from './mixins/action_handler';
+export {
+  default as ActionHandler,
+  deprecateUnderscoreActions
+} from './mixins/action_handler';
 export { default as Copyable } from './mixins/copyable';
 export { default as Enumerable } from './mixins/enumerable';
 export {
   Freezable,
   FROZEN_ERROR
 } from './mixins/freezable';
-export { default as _ProxyMixin } from './mixins/-proxy';
+export {
+  default as _ProxyMixin,
+  isProxy
+} from './mixins/-proxy';
 export {
   onLoad,
   runLoadHooks

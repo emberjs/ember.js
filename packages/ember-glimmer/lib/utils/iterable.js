@@ -1,9 +1,14 @@
-import { get } from 'ember-metal/property_get';
-import { guidFor } from 'ember-metal/utils';
-import { tagFor } from 'ember-metal/tags';
-import Dict from 'ember-metal/empty_object';
-import { objectAt, isEmberArray } from 'ember-runtime/mixins/array';
-import { isProxy } from 'ember-runtime/mixins/-proxy';
+import {
+  get,
+  guidFor,
+  tagFor,
+  EmptyObject
+} from 'ember-metal';
+import {
+  objectAt,
+  isEmberArray,
+  isProxy
+} from 'ember-runtime';
 import { UpdatableReference, UpdatablePrimitiveReference } from './references';
 import { isEachIn } from '../helpers/each-in';
 import { CONSTANT_TAG, UpdatableTag, combine } from 'glimmer-reference';
@@ -77,7 +82,7 @@ class ArrayIterator {
     this.length = array.length;
     this.keyFor = keyFor;
     this.position = 0;
-    this.seen = new Dict();
+    this.seen = new EmptyObject();
   }
 
   isEmpty() {
@@ -105,7 +110,7 @@ class EmberArrayIterator {
     this.length = get(array, 'length');
     this.keyFor = keyFor;
     this.position = 0;
-    this.seen = new Dict();
+    this.seen = new EmptyObject();
   }
 
   isEmpty() {
@@ -133,7 +138,7 @@ class ObjectKeysIterator {
     this.values = values;
     this.keyFor = keyFor;
     this.position = 0;
-    this.seen = new Dict();
+    this.seen = new EmptyObject();
   }
 
   isEmpty() {

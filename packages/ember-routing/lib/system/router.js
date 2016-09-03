@@ -1,15 +1,22 @@
 import Logger from 'ember-console';
-import { assert, info } from 'ember-metal/debug';
-import EmberError from 'ember-metal/error';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { defineProperty } from 'ember-metal/properties';
-import EmptyObject from 'ember-metal/empty_object';
-import { computed } from 'ember-metal/computed';
-import assign from 'ember-metal/assign';
-import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
-import Evented from 'ember-runtime/mixins/evented';
+import {
+  assert,
+  info,
+  Error as EmberError,
+  get,
+  set,
+  defineProperty,
+  EmptyObject,
+  computed,
+  assign,
+  run,
+  guidFor,
+  dictionary
+} from 'ember-metal';
+import {
+  Object as EmberObject,
+  Evented
+} from 'ember-runtime';
 import { defaultSerialize, hasDefaultSerialize } from './route';
 import EmberRouterDSL from './dsl';
 import EmberLocation from '../location/api';
@@ -19,10 +26,8 @@ import {
   stashParamNames,
   calculateCacheKey
 } from '../utils';
-import { guidFor } from 'ember-metal/utils';
 import RouterState from './router_state';
 import { getOwner } from 'container';
-import dictionary from 'ember-metal/dictionary';
 
 /**
 @module ember

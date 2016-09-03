@@ -2,8 +2,10 @@
 @module ember
 @submodule ember-views
 */
-import { Mixin } from 'ember-metal/mixin';
-import { get } from 'ember-metal/property_get';
+import {
+  Mixin,
+  get
+} from 'ember-metal';
 
 /**
   @class InstrumentationSupport

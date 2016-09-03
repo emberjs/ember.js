@@ -1,6 +1,5 @@
-import assign from 'ember-metal/assign';
+import { assign, Error as EmberError } from 'ember-metal';
 import _default from './default';
-import EmberError from 'ember-metal/error';
 /**
 @module ember
 @submodule ember-views

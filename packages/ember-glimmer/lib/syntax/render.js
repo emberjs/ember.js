@@ -1,8 +1,12 @@
-import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
+import {
+  ArgsSyntax,
+  StatementSyntax,
+  ComponentDefinition
+} from 'glimmer-runtime';
 import { ConstReference, isConst } from 'glimmer-reference';
-import { assert } from 'ember-metal/debug';
+import { assert } from 'ember-metal';
 import { RootReference } from '../utils/references';
-import { generateControllerFactory } from 'ember-routing/system/generate_controller';
+import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
 
 function makeComponentDefinition(vm) {
@@ -127,8 +131,6 @@ class NonSingletonRenderManager extends AbstractRenderManager {
 }
 
 const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
-
-import { ComponentDefinition } from 'glimmer-runtime';
 
 class RenderDefinition extends ComponentDefinition {
   constructor(name, template, env, manager) {

@@ -2,12 +2,14 @@
  @module ember
  @submodule ember-views
 */
-import { Mixin } from 'ember-metal/mixin';
-import { get } from 'ember-metal/property_get';
-import isNone from 'ember-metal/is_none';
-import { assert } from 'ember-metal/debug';
+import {
+  Mixin,
+  get,
+  isNone,
+  assert,
+  inspect
+} from 'ember-metal';
 import { MUTABLE_CELL } from '../compat/attrs-proxy';
-import { inspect } from 'ember-metal/utils';
 
 function validateAction(component, actionName) {
   if (actionName && actionName[MUTABLE_CELL]) {

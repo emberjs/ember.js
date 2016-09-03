@@ -1,9 +1,13 @@
-import { assert } from 'ember-metal/debug';
-import run from 'ember-metal/run_loop';
-import { uuid } from 'ember-metal/utils';
-import { isSimpleClick } from 'ember-views/system/utils';
-import ActionManager from 'ember-views/system/action_manager';
-import { flaggedInstrument } from 'ember-metal/instrumentation';
+import {
+  assert,
+  run,
+  uuid,
+  flaggedInstrument
+} from 'ember-metal';
+import {
+  isSimpleClick,
+  ActionManager
+} from 'ember-views';
 import { INVOKE } from '../helpers/action';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];

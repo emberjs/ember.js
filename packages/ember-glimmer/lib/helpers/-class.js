@@ -1,5 +1,5 @@
 import { InternalHelperReference } from '../utils/references';
-import { dasherize } from 'ember-runtime/system/string';
+import { String as StringUtils } from 'ember-runtime';
 
 function classHelper({ positional }) {
   let path = positional.at(0);
@@ -8,14 +8,14 @@ function classHelper({ positional }) {
 
   if (value === true) {
     if (args > 1) {
-      return dasherize(positional.at(1).value());
+      return StringUtils.dasherize(positional.at(1).value());
     }
     return null;
   }
 
   if (value === false) {
     if (args > 2) {
-      return dasherize(positional.at(2).value());
+      return StringUtils.dasherize(positional.at(2).value());
     }
     return null;
   }

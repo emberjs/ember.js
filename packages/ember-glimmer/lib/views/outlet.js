@@ -1,6 +1,5 @@
-import assign from 'ember-metal/assign';
+import { assign, EmptyObject } from 'ember-metal';
 import { DirtyableTag } from 'glimmer-reference';
-import EmptyObject from 'ember-metal/empty_object';
 import { environment } from 'ember-environment';
 
 /**

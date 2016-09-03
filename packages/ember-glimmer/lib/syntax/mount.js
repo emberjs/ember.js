@@ -1,8 +1,12 @@
-import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
+import {
+  ArgsSyntax,
+  StatementSyntax,
+  ComponentDefinition
+} from 'glimmer-runtime';
 import { UNDEFINED_REFERENCE } from 'glimmer-reference';
-import { assert } from 'ember-metal/debug';
+import { assert } from 'ember-metal';
 import { RootReference } from '../utils/references';
-import { generateControllerFactory } from 'ember-routing/system/generate_controller';
+import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
 
 export class MountSyntax extends StatementSyntax {
@@ -82,8 +86,6 @@ class MountManager {
 }
 
 const MOUNT_MANAGER = new MountManager();
-
-import { ComponentDefinition } from 'glimmer-runtime';
 
 class MountDefinition extends ComponentDefinition {
   constructor(name, env) {

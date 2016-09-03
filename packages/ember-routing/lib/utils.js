@@ -1,5 +1,4 @@
-import assign from 'ember-metal/assign';
-import { get } from 'ember-metal/property_get';
+import { assign, get } from 'ember-metal';
 
 const ALL_PERIODS_REGEX = /\./g;
 

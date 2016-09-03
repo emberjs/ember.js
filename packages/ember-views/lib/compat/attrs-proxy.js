@@ -1,6 +1,8 @@
-import { Mixin } from 'ember-metal/mixin';
-import symbol from 'ember-metal/symbol';
-import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
+import {
+  Mixin,
+  symbol,
+  PROPERTY_DID_CHANGE
+} from 'ember-metal';
 
 export function deprecation(key) {
   return `You tried to look up an attribute directly on the component. This is deprecated. Use attrs.${key} instead.`;

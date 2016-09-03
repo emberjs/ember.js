@@ -1,5 +1,5 @@
 import _default from './default';
-import assign from 'ember-metal/assign';
+import { assign } from 'ember-metal';
 
 /**
 @module ember

@@ -1,5 +1,5 @@
 import { InternalHelperReference } from '../utils/references';
-import { dasherize } from 'ember-runtime/system/string';
+import { String as StringUtils } from 'ember-runtime';
 
 function normalizeClass({ positional, named }) {
   let classNameParts = positional.at(0).value().split('.');
@@ -7,7 +7,7 @@ function normalizeClass({ positional, named }) {
   let value = positional.at(1).value();
 
   if (value === true) {
-    return dasherize(className);
+    return StringUtils.dasherize(className);
   } else if (!value && value !== 0) {
     return '';
   } else {

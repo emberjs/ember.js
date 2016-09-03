@@ -3,8 +3,7 @@
 @submodule ember-glimmer
 */
 
-import isEnabled from 'ember-metal/features';
-import { deprecate } from 'ember-metal/debug';
+import { isFeatureEnabled, deprecate } from 'ember-metal';
 
 export class SafeString {
   constructor(string) {
@@ -23,7 +22,7 @@ export class SafeString {
 export function getSafeString() {
   deprecate(
     'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe',
-    !isEnabled('ember-string-ishtmlsafe'),
+    !isFeatureEnabled('ember-string-ishtmlsafe'),
     {
       id: 'ember-htmlbars.ember-handlebars-safestring',
       until: '3.0.0',

@@ -3,9 +3,11 @@
 @submodule ember-templates
 */
 
-import symbol from 'ember-metal/symbol';
-import EmberObject from 'ember-runtime/system/object';
-import { POST_INIT } from 'ember-runtime/system/core_object';
+import { symbol } from 'ember-metal';
+import {
+  Object as EmberObject,
+  POST_INIT
+} from 'ember-runtime';
 import { DirtyableTag } from 'glimmer-reference';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');

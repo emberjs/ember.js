@@ -2,9 +2,11 @@
 @module ember
 @submodule ember-views
 */
-import { Mixin } from 'ember-metal/mixin';
+import {
+  Mixin,
+  descriptor
+} from 'ember-metal';
 import { getOwner, setOwner } from 'container';
-import descriptor from 'ember-metal/descriptor';
 import { initChildViews, getChildViews, addChildView } from '../system/utils';
 
 export default Mixin.create({

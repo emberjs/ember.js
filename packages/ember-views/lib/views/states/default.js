@@ -1,5 +1,7 @@
-import EmberError from 'ember-metal/error';
-import { get } from 'ember-metal/property_get';
+import {
+  Error as EmberError,
+  get
+} from 'ember-metal';
 import { MUTABLE_CELL } from '../../compat/attrs-proxy';
 
 /**

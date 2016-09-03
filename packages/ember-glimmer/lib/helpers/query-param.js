@@ -1,7 +1,6 @@
 import { InternalHelperReference } from '../utils/references';
-import { assert } from 'ember-metal/debug';
-import QueryParams from 'ember-routing/system/query_params';
-import assign from 'ember-metal/assign';
+import { assert, assign } from 'ember-metal';
+import { QueryParams } from 'ember-routing';
 
 function queryParams({ positional, named }) {
   assert('The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName=\'foo\') as opposed to just (query-params \'foo\')', positional.value().length === 0);

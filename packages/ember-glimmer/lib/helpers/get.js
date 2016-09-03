@@ -1,4 +1,4 @@
-import { set } from 'ember-metal/property_set';
+import { set } from 'ember-metal';
 import { CachedReference, UPDATE } from '../utils/references';
 import { CONSTANT_TAG, UpdatableTag, combine, isConst, referenceFromParts } from 'glimmer-reference';
 

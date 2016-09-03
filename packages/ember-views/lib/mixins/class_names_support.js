@@ -2,8 +2,11 @@
 @module ember
 @submodule ember-views
 */
-import { assert } from 'ember-metal/debug';
-import { Mixin } from 'ember-metal/mixin';
+
+import {
+  assert,
+  Mixin
+} from 'ember-metal';
 
 const EMPTY_ARRAY = Object.freeze([]);
 
