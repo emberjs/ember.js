@@ -119,6 +119,18 @@ QUnit.module('ember reexports');
   ['Binding', 'ember-metal'],
   ['isGlobalPath', 'ember-metal'],
 
+  // ember-views
+  ['$', 'ember-views', 'jQuery'],
+  ['ViewUtils.isSimpleClick', 'ember-views', 'isSimpleClick'],
+  ['ViewUtils.getViewBounds', 'ember-views', 'getViewBounds'],
+  ['ViewUtils.getViewClientRects', 'ember-views', 'getViewClientRects'],
+  ['ViewUtils.getViewBoundingClientRect', 'ember-views', 'getViewBoundingClientRect'],
+  ['ViewUtils.getRootViews', 'ember-views', 'getRootViews'],
+  ['ViewUtils.getChildViews', 'ember-views', 'getChildViews'],
+  ['TextSupport', 'ember-views'],
+  ['ComponentLookup', 'ember-views'],
+  ['EventDispatcher', 'ember-views'],
+
   // ember-glimmer
   ['_Renderer',     'ember-glimmer', '_Renderer'],
   ['Component',     'ember-glimmer', 'Component'],

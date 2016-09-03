@@ -538,7 +538,30 @@ Ember.keys = deprecateFunc('Ember.keys is deprecated in favor of Object.keys', {
 
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly
-import 'ember-views';
+import * as views from 'ember-views';
+/**
+ Alias for jQuery
+
+ @method $
+ @for Ember
+ @public
+ */
+Ember.$ = views.jQuery;
+
+Ember.ViewTargetActionSupport = views.ViewTargetActionSupport;
+
+Ember.ViewUtils = {
+  isSimpleClick: views.isSimpleClick,
+  getViewBounds: views.getViewBounds,
+  getViewClientRects: views.getViewClientRects,
+  getViewBoundingClientRect: views.getViewBoundingClientRect,
+  getRootViews: views.getRootViews,
+  getChildViews: views.getChildViews
+};
+
+Ember.TextSupport = views.TextSupport;
+Ember.ComponentLookup = views.ComponentLookup;
+Ember.EventDispatcher = views.EventDispatcher;
 
 import * as routing from 'ember-routing';
 

@@ -3,10 +3,8 @@
 @submodule ember-views
 */
 
-// BEGIN IMPORTS
-import Ember from 'ember-metal/core';
-import jQuery from './system/jquery';
-import {
+export { default as jQuery } from './system/jquery';
+export {
   isSimpleClick,
   getViewBounds,
   getViewClientRects,
@@ -14,37 +12,8 @@ import {
   getRootViews,
   getChildViews
 } from './system/utils';
+export { default as EventDispatcher } from './system/event_dispatcher';
+export { default as ComponentLookup } from './component_lookup';
+export { default as TextSupport } from './mixins/text_support';
+
 import './system/ext';  // for the side effect of extending Ember.run.queues
-
-import EventDispatcher from './system/event_dispatcher';
-import ComponentLookup from './component_lookup';
-import TextSupport from './mixins/text_support';
-
-// END IMPORTS
-
-/**
-  Alias for jQuery
-
-  @method $
-  @for Ember
- @public
-*/
-
-// BEGIN EXPORTS
-Ember.$ = jQuery;
-
-const ViewUtils = Ember.ViewUtils = {};
-ViewUtils.isSimpleClick = isSimpleClick;
-ViewUtils.getViewBounds = getViewBounds;
-ViewUtils.getViewClientRects = getViewClientRects;
-ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
-ViewUtils.getRootViews = getRootViews;
-ViewUtils.getChildViews = getChildViews;
-
-Ember.TextSupport = TextSupport;
-Ember.ComponentLookup = ComponentLookup;
-Ember.EventDispatcher = EventDispatcher;
-
-// END EXPORTS
-
-export default Ember;
