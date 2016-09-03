@@ -4,6 +4,12 @@ import isEnabled from 'ember-metal/features';
 // ****ember-environment****
 import { ENV, context } from 'ember-environment';
 
+import {
+  Registry,
+  Container,
+  getOwner,
+  setOwner
+} from 'container';
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
@@ -244,12 +250,6 @@ Ember.Backburner = function() {
 
 Ember._Backburner = Backburner;
 
-import {
-  Registry,
-  Container,
-  getOwner,
-  setOwner
-} from 'container';
 
 Ember.Container = Container;
 Ember.Registry = Registry;

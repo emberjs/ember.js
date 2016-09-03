@@ -7,29 +7,26 @@
 // HELPERS
 //
 
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import {
+  get,
+  set,
   Mixin,
-  aliasMethod
-} from 'ember-metal/mixin';
-import { guidFor } from 'ember-metal/utils';
-import { computed } from 'ember-metal/computed';
-import EmptyObject from 'ember-metal/empty_object';
-import isEnabled from 'ember-metal/features';
-import {
+  aliasMethod,
+  guidFor,
+  computed,
+  EmptyObject,
+  isFeatureEnabled,
   propertyWillChange,
-  propertyDidChange
-} from 'ember-metal/property_events';
-import {
+  propertyDidChange,
   addListener,
   removeListener,
   sendEvent,
-  hasListeners
-} from 'ember-metal/events';
+  hasListeners,
+  assert,
+  deprecate
+} from 'ember-metal';
 import compare from '../compare';
 import require from 'require';
-import { assert, deprecate } from 'ember-metal/debug';
 
 let _emberA;
 
@@ -233,7 +230,7 @@ const Enumerable = Mixin.create({
     @public
   */
   contains(obj) {
-    if (isEnabled('ember-runtime-enumerable-includes')) {
+    if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
       deprecate(
         '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
         false,
@@ -1077,7 +1074,7 @@ const Enumerable = Mixin.create({
 });
 
 
-if (isEnabled('ember-runtime-computed-uniq-by')) {
+if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
   Enumerable.reopen({
     /**
       Returns a new enumerable that contains only items containing a unique property value.
@@ -1110,7 +1107,7 @@ if (isEnabled('ember-runtime-computed-uniq-by')) {
   });
 }
 
-if (isEnabled('ember-runtime-enumerable-includes')) {
+if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
   Enumerable.reopen({
     /**
       Returns `true` if the passed object can be found in the enumerable.

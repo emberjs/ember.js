@@ -4,10 +4,12 @@
 */
 
 import { context } from 'ember-environment';
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { Mixin } from 'ember-metal/mixin';
-import { computed } from 'ember-metal/computed';
+import {
+  assert,
+  get,
+  Mixin,
+  computed
+} from 'ember-metal';
 
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class

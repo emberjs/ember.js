@@ -1,5 +1,4 @@
-import { Mixin } from 'ember-metal/mixin';
-import alias from 'ember-metal/alias';
+import { Mixin, alias } from 'ember-metal';
 import ActionHandler from './action_handler';
 import ControllerContentModelAliasDeprecation from './controller_content_model_alias_deprecation';
 

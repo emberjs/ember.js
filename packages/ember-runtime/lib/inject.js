@@ -1,5 +1,7 @@
-import { assert } from 'ember-metal/debug';
-import InjectedProperty from 'ember-metal/injected_property';
+import {
+  assert,
+  InjectedProperty
+} from 'ember-metal';
 
 /**
   Namespace for injection helper methods.

@@ -1,16 +1,14 @@
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
 import {
+  assert,
+  get,
   _addBeforeObserver,
   _removeBeforeObserver,
   addObserver,
-  removeObserver
-} from 'ember-metal/observer';
-import {
+  removeObserver,
   propertyDidChange,
-  propertyWillChange
-} from 'ember-metal/property_events';
-import EmptyObject from 'ember-metal/empty_object';
+  propertyWillChange,
+  EmptyObject
+} from 'ember-metal';
 import { objectAt } from '../mixins/array';
 
 /**

@@ -2,9 +2,11 @@
 @module ember
 @submodule ember-runtime
 */
-import run from 'ember-metal/run_loop';
-import { deprecate } from 'ember-metal/debug';
-import { Mixin } from 'ember-metal/mixin';
+import {
+  deprecate,
+  Mixin,
+  run
+} from 'ember-metal';
 
 
 /**

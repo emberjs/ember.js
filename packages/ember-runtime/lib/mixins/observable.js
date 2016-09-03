@@ -3,29 +3,25 @@
 @submodule ember-runtime
 */
 
-import { assert } from 'ember-metal/debug';
 import {
+  assert,
   get,
-  getWithDefault
-} from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import getProperties from 'ember-metal/get_properties';
-import setProperties from 'ember-metal/set_properties';
-import { Mixin } from 'ember-metal/mixin';
-import { hasListeners } from 'ember-metal/events';
-import {
+  getWithDefault,
+  set,
+  getProperties,
+  setProperties,
+  Mixin,
+  hasListeners,
   beginPropertyChanges,
   propertyWillChange,
   propertyDidChange,
-  endPropertyChanges
-} from 'ember-metal/property_events';
-import {
+  endPropertyChanges,
   addObserver,
   removeObserver,
-  observersFor
-} from 'ember-metal/observer';
-import { cacheFor } from 'ember-metal/computed';
-import isNone from 'ember-metal/is_none';
+  observersFor,
+  cacheFor,
+  isNone
+} from 'ember-metal';
 
 /**
   ## Overview

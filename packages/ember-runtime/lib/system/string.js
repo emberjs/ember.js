@@ -2,16 +2,15 @@
 @module ember
 @submodule ember-runtime
 */
-import { deprecate } from 'ember-metal/debug';
 import {
-  inspect as emberInspect
-} from 'ember-metal/utils';
+  deprecate,
+  inspect as emberInspect,
+  Cache
+} from 'ember-metal';
 import { isArray } from '../utils';
 import {
   get as getString
 } from '../string_registry';
-
-import Cache from 'ember-metal/cache';
 
 const STRING_DASHERIZE_REGEXP = (/[ _]/g);
 
