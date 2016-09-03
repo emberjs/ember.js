@@ -36,14 +36,16 @@ class Wrapper {
 
 let templateId = 0;
 export default function template(json) {
+  let { meta, template } = JSON.parse(json);
   let id = ++templateId;
   return {
     id,
+    meta,
     create(options) {
       let env = options.env;
       let owner = options[OWNER];
 
-      return new Wrapper(id, env, owner, JSON.parse(json));
+      return new Wrapper(id, env, owner, JSON.parse(template));
     }
   };
 }

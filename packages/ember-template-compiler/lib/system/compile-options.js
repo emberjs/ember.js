@@ -15,6 +15,13 @@ export default function compileOptions(_options) {
     options.plugins.ast = options.plugins.ast.slice().concat(pluginsToAdd);
   }
 
+  let { moduleName } = options;
+  if (!options.meta && moduleName) {
+    options.meta = {
+      moduleName
+    };
+  }
+
   return options;
 }
 
