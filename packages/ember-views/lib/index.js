@@ -17,7 +17,6 @@ import {
 import './system/ext';  // for the side effect of extending Ember.run.queues
 
 import EventDispatcher from './system/event_dispatcher';
-import ViewTargetActionSupport from './mixins/view_target_action_support';
 import ComponentLookup from './component_lookup';
 import TextSupport from './mixins/text_support';
 
@@ -33,8 +32,6 @@ import TextSupport from './mixins/text_support';
 
 // BEGIN EXPORTS
 Ember.$ = jQuery;
-
-Ember.ViewTargetActionSupport = ViewTargetActionSupport;
 
 const ViewUtils = Ember.ViewUtils = {};
 ViewUtils.isSimpleClick = isSimpleClick;
