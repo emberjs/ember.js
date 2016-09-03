@@ -1,9 +1,13 @@
 import { ENV } from 'ember-environment';
-import { assert, deprecate, runInDebug } from 'ember-metal/debug';
-import dictionary from 'ember-metal/dictionary';
+import {
+  assert,
+  deprecate,
+  runInDebug,
+  dictionary,
+  symbol
+} from 'ember-metal';
 import { setOwner, OWNER } from './owner';
-import { buildFakeContainerWithDeprecations } from 'ember-runtime/mixins/container_proxy';
-import symbol from 'ember-metal/symbol';
+import { buildFakeContainerWithDeprecations } from 'ember-runtime';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 

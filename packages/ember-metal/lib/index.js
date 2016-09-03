@@ -28,6 +28,7 @@ export {
   unsubscribe as instrumentationUnsubscribe
 } from './instrumentation';
 export {
+  intern,
   GUID_KEY,
   apply,
   applyStr,
@@ -149,6 +150,9 @@ export {
 export {
   isGlobalPath
 } from './path_cache';
+export { default as symbol } from './symbol';
+export { default as dictionary } from './dictionary';
+export { default as EmptyObject } from './empty_object';
 
 
 // TODO: this needs to be deleted once we refactor the build tooling
