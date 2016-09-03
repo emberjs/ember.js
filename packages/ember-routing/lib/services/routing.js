@@ -3,12 +3,16 @@
 @submodule ember-routing
 */
 
-import Service from 'ember-runtime/system/service';
+import {
+  Service,
+  readOnly
+} from 'ember-runtime';
 
-import { get } from 'ember-metal/property_get';
-import { readOnly } from 'ember-runtime/computed/computed_macros';
+import {
+  get,
+  assign
+} from 'ember-metal';
 import { routeArgs } from '../utils';
-import assign from 'ember-metal/assign';
 
 /**
   The Routing service is used by LinkComponent, and provides facilities for

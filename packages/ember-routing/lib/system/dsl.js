@@ -1,5 +1,8 @@
-import { assert, deprecate } from 'ember-metal/debug';
-import assign from 'ember-metal/assign';
+import {
+  assert,
+  deprecate,
+  assign
+} from 'ember-metal';
 
 /**
 @module ember

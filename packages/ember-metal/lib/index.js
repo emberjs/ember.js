@@ -10,11 +10,11 @@ export {
   ComputedProperty
 } from './computed';
 export { default as alias } from './alias';
-export { deprecate } from './debug';
 export { default as assign } from './assign';
 export { default as merge } from './merge';
 export {
   assert,
+  info,
   warn,
   debug,
   deprecate,

@@ -1,5 +1,7 @@
-import { info } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
+import {
+  info,
+  get
+} from 'ember-metal';
 
 /**
 @module ember

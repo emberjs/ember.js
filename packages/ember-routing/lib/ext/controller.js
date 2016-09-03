@@ -1,5 +1,5 @@
-import { get } from 'ember-metal/property_get';
-import ControllerMixin from 'ember-runtime/mixins/controller';
+import { get } from 'ember-metal';
+import { ControllerMixin } from 'ember-runtime';
 
 /**
 @module ember
