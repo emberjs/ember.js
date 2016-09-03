@@ -173,7 +173,15 @@ QUnit.module('ember reexports');
   ['_ProxyMixin', 'ember-runtime'],
   ['RSVP', 'ember-runtime'],
   ['STRINGS', 'ember-runtime', { get: 'getStrings', set: 'setStrings' }],
-  ['BOOTED', 'ember-runtime', { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' }]
+  ['BOOTED', 'ember-runtime', { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' }],
+
+  // ember-application
+  ['Application', 'ember-application'],
+  ['ApplicationInstance', 'ember-application'],
+  ['Engine', 'ember-application'],
+  ['EngineInstance', 'ember-application'],
+  ['Resolver', 'ember-application'],
+  ['DefaultResolver', 'ember-application', 'Resolver']
 ].forEach(reexport => {
   let [path, moduleId, exportName] = reexport;
 

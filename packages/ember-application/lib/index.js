@@ -1,6 +1,3 @@
-import Ember from 'ember-metal/core'; // reexports
-import { runLoadHooks } from 'ember-runtime/system/lazy_load';
-
 /**
 @module ember
 @submodule ember-application
@@ -8,21 +5,10 @@ import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 
 export { default as Application } from './system/application';
 export { default as ApplicationInstance } from './system/application-instance';
-
-import DefaultResolver from './system/resolver';
-import Application from './system/application';
-import ApplicationInstance from './system/application-instance';
-import Engine from './system/engine';
-import EngineInstance from './system/engine-instance';
-
-Ember.Application = Application;
-Ember.ApplicationInstance = ApplicationInstance;
-Ember.Engine = Engine;
-Ember.EngineInstance = EngineInstance;
-Ember.DefaultResolver = Ember.Resolver = DefaultResolver;
+export { default as Resolver } from './system/resolver';
+export { default as Engine } from './system/engine';
+export { default as EngineInstance } from './system/engine-instance';
 
 // add domTemplates initializer (only does something if `ember-template-compiler`
 // is loaded already)
 import './initializers/dom-templates';
-
-runLoadHooks('Ember.Application', Application);

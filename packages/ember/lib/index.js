@@ -541,6 +541,17 @@ Ember.keys = deprecateFunc('Ember.keys is deprecated in favor of Object.keys', {
 import 'ember-views';
 import 'ember-routing';
 import 'ember-application';
+
+import * as application from 'ember-application';
+
+Ember.Application = application.Application;
+Ember.ApplicationInstance = application.ApplicationInstance;
+Ember.Engine = application.Engine;
+Ember.EngineInstance = application.EngineInstance;
+Ember.DefaultResolver = Ember.Resolver = application.Resolver;
+
+runLoadHooks('Ember.Application', application.Application);
+
 import 'ember-extension-support';
 
 if (has('ember-template-compiler')) {
