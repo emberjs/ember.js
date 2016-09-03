@@ -14,10 +14,7 @@ import { computed } from 'ember-metal/computed';
 to add a `triggerAction` method with semantics similar to the Handlebars
 `{{action}}` helper. In normal Ember usage, the `{{action}}` helper is
 usually the best choice. This mixin is most often useful when you are
-doing more complex event handling in View objects.
-
-See also `Ember.ViewTargetActionSupport`, which has
-view-aware defaults for target and actionContext.
+doing more complex event handling in Components.
 
 @class TargetActionSupport
 @namespace Ember
