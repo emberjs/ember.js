@@ -12,6 +12,7 @@ import compare from '../compare';
 import { isArray } from '../utils';
 import { A as emberA } from '../system/native_array';
 import isNone from 'ember-metal/is_none';
+import isEmpty from 'ember-metal/is_empty';
 import getProperties from 'ember-metal/get_properties';
 import EmptyObject from 'ember-metal/empty_object';
 import { guidFor } from 'ember-metal/utils';
@@ -725,8 +726,12 @@ function normalizeSortProperties(sortProperties) {
   });
 }
 
-function sortByNormalizedSortProperties(items, normalizedSortProperties) {
-  return emberA(items.slice().sort((itemA, itemB) => {
+function sortByNormalizedSortProperties(_items, normalizedSortProperties) {
+  let items = _items.slice();
+  if (isEmpty(normalizedSortProperties)) {
+    return emberA(items);
+  }
+  return emberA(items.sort((itemA, itemB) => {
     for (let i = 0; i < normalizedSortProperties.length; i++) {
       let [prop, direction] = normalizedSortProperties[i];
       let result = compare(get(itemA, prop), get(itemB, prop));
