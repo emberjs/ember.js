@@ -1,6 +1,6 @@
 import Ember from 'ember';
+import { confirmExport } from 'internal-test-helpers';
 import isEnabled from 'ember-metal/features';
-import require from 'require';
 
 QUnit.module('ember reexports');
 
@@ -204,44 +204,18 @@ QUnit.module('ember reexports');
   }
 
   QUnit.test(`Ember.${path} exports correctly`, assert => {
-    confirmExport(assert, path, moduleId, exportName);
+    confirmExport(Ember, assert, path, moduleId, exportName);
   });
 });
 
 if (isEnabled('ember-string-ishtmlsafe')) {
   QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
-    confirmExport(assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
+    confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
   });
 }
 
 if (isEnabled('ember-metal-weakmap')) {
   QUnit.test('Ember.WeakMap exports correctly', function(assert) {
-    confirmExport(assert, 'WeakMap', 'ember-metal', 'WeakMap');
+    confirmExport(Ember, assert, 'WeakMap', 'ember-metal', 'WeakMap');
   });
-}
-function confirmExport(assert, path, moduleId, exportName) {
-  let desc = getDescriptor(Ember, path);
-  assert.ok(desc, 'the property exists on the global');
-
-  let mod = require(moduleId);
-  if (typeof exportName === 'string') {
-    assert.equal(desc.value, mod[exportName], `Ember.${path} is exported correctly`);
-  } else {
-    assert.equal(desc.get, mod[exportName.get], `Ember.${path} getter is exported correctly`);
-    assert.equal(desc.set, mod[exportName.set], `Ember.${path} setter is exported correctly`);
-  }
-}
-
-function getDescriptor(obj, path) {
-  let parts = path.split('.');
-  let value = obj;
-  for (let i = 0; i < parts.length - 1; i++) {
-    let part = parts[i];
-    value = value[part];
-    if (!value) {
-      return undefined;
-    }
-  }
-  let last = parts[parts.length - 1];
-  return Object.getOwnPropertyDescriptor(value, last);
 }
