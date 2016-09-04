@@ -2,32 +2,36 @@
 @module ember
 @submodule ember-application
 */
-import { ENV } from 'ember-environment';
-import { assert, debug } from 'ember-metal/debug';
-import dictionary from 'ember-metal/dictionary';
-import libraries from 'ember-metal/libraries';
-import { isTesting } from 'ember-metal/testing';
-import { get } from 'ember-metal/property_get';
-import Namespace, {
-  setSearchDisabled as setNamespaceSearchDisabled
-} from 'ember-runtime/system/namespace';
-import { runLoadHooks } from 'ember-runtime/system/lazy_load';
-import run from 'ember-metal/run_loop';
-import EventDispatcher from 'ember-views/system/event_dispatcher';
-import jQuery from 'ember-views/system/jquery';
-import Route from 'ember-routing/system/route';
-import Router from 'ember-routing/system/router';
-import HashLocation from 'ember-routing/location/hash_location';
-import HistoryLocation from 'ember-routing/location/history_location';
-import AutoLocation from 'ember-routing/location/auto_location';
-import NoneLocation from 'ember-routing/location/none_location';
-import BucketCache from 'ember-routing/system/cache';
+import { ENV, environment } from 'ember-environment';
+import {
+  assert,
+  debug,
+  dictionary,
+  libraries,
+  isTesting,
+  get,
+  run
+} from 'ember-metal';
+import {
+  Namespace,
+  setNamespaceSearchDisabled,
+  runLoadHooks,
+  _loaded,
+  buildFakeRegistryWithDeprecations,
+  RSVP
+} from 'ember-runtime';
+import { EventDispatcher, jQuery } from 'ember-views';
+import {
+  Route,
+  Router,
+  HashLocation,
+  HistoryLocation,
+  AutoLocation,
+  NoneLocation,
+  BucketCache
+} from 'ember-routing';
 import ApplicationInstance from './application-instance';
-import { _loaded } from 'ember-runtime/system/lazy_load';
-import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import { privatize as P } from 'container';
-import { environment } from 'ember-environment';
-import RSVP from 'ember-runtime/ext/rsvp';
 import Engine from './engine';
 import { setupApplicationRegistry } from 'ember-glimmer';
 

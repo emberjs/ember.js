@@ -1,5 +1,5 @@
 import Logger from 'ember-console';
-import { setDispatchOverride } from 'ember-metal/error_handler';
+import { setDispatchOverride } from 'ember-metal';
 
 let adapter;
 export function getAdapter() {

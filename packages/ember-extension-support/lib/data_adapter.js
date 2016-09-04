@@ -1,16 +1,15 @@
-import { get } from 'ember-metal/property_get';
-import run from 'ember-metal/run_loop';
-import { dasherize } from 'ember-runtime/system/string';
-import Namespace from 'ember-runtime/system/namespace';
-import EmberObject from 'ember-runtime/system/object';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import Application from 'ember-application/system/application';
-import { getOwner } from 'container';
+import { get, run } from 'ember-metal';
 import {
+  String as StringUtils,
+  Namespace,
+  Object as EmberObject,
+  A as emberA,
   addArrayObserver,
   removeArrayObserver,
   objectAt
-} from 'ember-runtime/mixins/array';
+} from 'ember-runtime';
+import { Application } from 'ember-application';
+import { getOwner } from 'container';
 
 /**
 @module ember
@@ -388,7 +387,7 @@ export default EmberObject.extend({
         // we should not call `lookupFactory` on non-models
         // (especially when `EmberENV.MODEL_FACTORY_INJECTIONS` is `true`)
         if (!this.detect(namespace[key])) { continue; }
-        let name = dasherize(key);
+        let name = StringUtils.dasherize(key);
         if (!(namespace instanceof Application) && namespace.toString()) {
           name = `${namespace}/${name}`;
         }

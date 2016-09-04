@@ -1,5 +1,5 @@
-import { setTesting } from 'ember-metal/testing';
-import jQuery from 'ember-views/system/jquery';
+import { setTesting } from 'ember-metal';
+import { jQuery } from 'ember-views';
 import {
   getAdapter,
   setAdapter
@@ -9,7 +9,7 @@ import {
   decrementPendingRequests,
   clearPendingRequests
 } from './test/pending_requests';
-import require from 'require';
+import QUnitAdapter from './adapters/qunit';
 
 /**
   Sets Ember up for testing. This is useful to perform
@@ -29,7 +29,6 @@ export default function setupForTesting() {
   let adapter = getAdapter();
   // if adapter is not manually set default to QUnit
   if (!adapter) {
-    let QUnitAdapter = require('ember-testing/adapters/qunit').default;
     setAdapter(new QUnitAdapter());
   }
 

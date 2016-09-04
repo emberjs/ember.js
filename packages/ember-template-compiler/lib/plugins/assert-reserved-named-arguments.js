@@ -1,4 +1,4 @@
-import { assert } from 'ember-metal/debug';
+import { assert } from 'ember-metal';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
 export default function AssertReservedNamedArguments(options) {

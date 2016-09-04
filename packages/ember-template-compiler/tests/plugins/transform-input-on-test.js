@@ -1,4 +1,4 @@
-import { compile } from '../utils/helpers';
+import { compile } from 'ember-template-compiler';
 
 QUnit.module('ember-template-compiler: transform-input-on');
 

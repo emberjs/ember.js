@@ -3,16 +3,17 @@
 @submodule ember-application
 */
 
-import { deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
-import { computed } from 'ember-metal/computed';
-import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
-import assign from 'ember-metal/assign';
+import {
+  deprecate,
+  get,
+  set,
+  run,
+  computed,
+  assign
+} from 'ember-metal';
+import { buildFakeRegistryWithDeprecations, RSVP } from 'ember-runtime';
 import { environment } from 'ember-environment';
-import RSVP from 'ember-runtime/ext/rsvp';
-import jQuery from 'ember-views/system/jquery';
+import { jQuery } from 'ember-views';
 import EngineInstance from './engine-instance';
 
 let BootOptions;

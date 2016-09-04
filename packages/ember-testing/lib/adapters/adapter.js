@@ -1,4 +1,4 @@
-import EmberObject from 'ember-runtime/system/object';
+import { Object as EmberObject } from 'ember-runtime';
 
 function K() { return this; }
 

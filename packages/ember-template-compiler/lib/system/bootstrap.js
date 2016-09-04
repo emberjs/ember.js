@@ -3,8 +3,8 @@
 @submodule ember-templates
 */
 
-import EmberError from 'ember-metal/error';
-import { compile } from '../index';
+import { Error as EmberError } from 'ember-metal';
+import compile from './compile';
 
 /**
 @module ember

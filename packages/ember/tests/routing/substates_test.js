@@ -2,7 +2,7 @@ import RSVP from 'ember-runtime/ext/rsvp';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
+import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import Engine from 'ember-application/system/engine';
 import jQuery from 'ember-views/system/jquery';

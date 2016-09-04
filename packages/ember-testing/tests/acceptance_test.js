@@ -5,7 +5,7 @@ import QUnitAdapter from 'ember-testing/adapters/qunit';
 import 'ember-testing/initializers'; // ensure the initializer is setup
 import EmberApplication from 'ember-application/system/application';
 import EmberRoute from 'ember-routing/system/route';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
+import { compile } from 'ember-template-compiler';
 import RSVP from 'ember-runtime/ext/rsvp';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 

@@ -3,7 +3,7 @@ import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import Mixin from 'ember-metal/mixin';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
+import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import NoneLocation from 'ember-routing/location/none_location';
 import { setTemplates, setTemplate } from 'ember-glimmer';

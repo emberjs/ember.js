@@ -13,7 +13,7 @@ import EmberObject from 'ember-runtime/system/object';
 import inject from 'ember-runtime/inject';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
+import { compile } from 'ember-template-compiler';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
 let Router, App, router, appInstance;

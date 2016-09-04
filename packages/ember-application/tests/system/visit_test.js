@@ -8,7 +8,7 @@ import Engine from 'ember-application/system/engine';
 import Route from 'ember-routing/system/route';
 import Router from 'ember-routing/system/router';
 import { Component, helper } from 'ember-glimmer';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
+import { compile } from 'ember-template-compiler';
 import jQuery from 'ember-views/system/jquery';
 
 let App = null;

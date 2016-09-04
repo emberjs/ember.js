@@ -1,17 +1,17 @@
-import Ember from 'ember-metal/core'; // reexports
-import { ENV } from 'ember-environment';
-import { isTesting } from 'ember-metal/testing';
-import {
+import Ember, { // reexports
+  isTesting,
   warn,
   deprecate,
   debug,
-  setDebugFunction
-} from 'ember-metal/debug';
-import isEnabled, { FEATURES, DEFAULT_FEATURES } from 'ember-metal/features';
-import EmberError from 'ember-metal/error';
+  setDebugFunction,
+  isFeatureEnabled,
+  FEATURES,
+  DEFAULT_FEATURES,
+  Error as EmberError
+} from 'ember-metal';
+import { ENV, environment } from 'ember-environment';
 import Logger from 'ember-console';
 
-import { environment } from 'ember-environment';
 import _deprecate, {
   registerHandler as registerDeprecationHandler
 } from './deprecate';
@@ -188,7 +188,7 @@ if (!isTesting()) {
   FEATURES['features-stripped-test'] = true;
   let featuresWereStripped = true;
 
-  if (isEnabled('features-stripped-test')) {
+  if (isFeatureEnabled('features-stripped-test')) {
     featuresWereStripped = false;
   }
 

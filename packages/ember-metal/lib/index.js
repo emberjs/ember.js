@@ -19,7 +19,9 @@ export {
   debug,
   deprecate,
   deprecateFunc,
-  runInDebug
+  runInDebug,
+  setDebugFunction,
+  getDebugFunction
 } from './debug';
 export {
   instrument,
@@ -50,7 +52,8 @@ export {
 export {
   getOnerror,
   setOnerror,
-  dispatchError
+  dispatchError,
+  setDispatchOverride
 } from './error_handler';
 export {
   META_DESC,
@@ -58,7 +61,11 @@ export {
 } from './meta';
 export { default as Error } from './error';
 export { default as Cache } from './cache';
-export { default as isFeatureEnabled, FEATURES } from './features';
+export {
+  default as isFeatureEnabled,
+  FEATURES,
+  DEFAULT_FEATURES
+} from './features';
 export {
   _getPath,
   get,

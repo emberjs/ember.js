@@ -1,4 +1,4 @@
-import { deprecate } from 'ember-metal/debug';
+import { deprecate } from 'ember-metal';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
 /**
