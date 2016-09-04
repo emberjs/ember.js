@@ -33,7 +33,6 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._state = 'preRender';
     this._currentState = this._states.preRender;
     this._willInsert = false;
-    this._renderNode = null;
     this.lastResult = null;
     this._destroyingSubtreeForView = null;
     this._isDispatchingAttrs = false;
