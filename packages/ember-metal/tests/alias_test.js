@@ -1,10 +1,10 @@
-import alias from 'ember-metal/alias';
-import { defineProperty } from 'ember-metal/properties';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { meta } from 'ember-metal/meta';
-import { isWatching } from 'ember-metal/watching';
-import { addObserver, removeObserver } from 'ember-metal/observer';
+import alias from '../alias';
+import { defineProperty } from '../properties';
+import { get } from '../property_get';
+import { set } from '../property_set';
+import { meta } from '../meta';
+import { isWatching } from '../watching';
+import { addObserver, removeObserver } from '../observer';
 
 let obj, count;
 

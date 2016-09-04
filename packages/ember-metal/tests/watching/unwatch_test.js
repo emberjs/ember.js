@@ -1,12 +1,12 @@
-import { testBoth } from 'ember-metal/tests/props_helper';
+import { testBoth } from '../props_helper';
 import {
   watch,
   unwatch
-} from 'ember-metal/watching';
-import { defineProperty } from 'ember-metal/properties';
-import { addListener } from 'ember-metal/events';
-import { computed } from 'ember-metal/computed';
-import { set } from 'ember-metal/property_set';
+} from '../../watching';
+import { defineProperty } from '../../properties';
+import { addListener } from '../../events';
+import { computed } from '../../computed';
+import { set } from '../../property_set';
 
 let willCount, didCount;
 

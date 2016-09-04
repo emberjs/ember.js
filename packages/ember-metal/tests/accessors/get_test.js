@@ -1,13 +1,13 @@
-import { testBoth } from 'ember-metal/tests/props_helper';
+import { testBoth } from '../props_helper';
 import {
   get,
   getWithDefault
-} from 'ember-metal/property_get';
+} from '../../property_get';
 import {
   Mixin,
   observer
-} from 'ember-metal/mixin';
-import { addObserver } from 'ember-metal/observer';
+} from '../../mixin';
+import { addObserver } from '../../observer';
 
 QUnit.module('Ember.get');
 

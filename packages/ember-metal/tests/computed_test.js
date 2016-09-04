@@ -1,22 +1,22 @@
-import EmberObject from 'ember-runtime/system/object';
-import { testBoth } from 'ember-metal/tests/props_helper';
+import { Object as EmberObject } from 'ember-runtime';
+import { testBoth } from './props_helper';
 import {
   ComputedProperty,
   computed,
   cacheFor
-} from 'ember-metal/computed';
+} from '../computed';
 
 import {
   Descriptor,
   defineProperty
-} from 'ember-metal/properties';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { isWatching } from 'ember-metal/watching';
+} from '../properties';
+import { get } from '../property_get';
+import { set } from '../property_set';
+import { isWatching } from '../watching';
 import {
   addObserver,
   _addBeforeObserver
-} from 'ember-metal/observer';
+} from '../observer';
 
 let obj, count;
 

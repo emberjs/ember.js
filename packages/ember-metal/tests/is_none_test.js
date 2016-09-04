@@ -1,4 +1,4 @@
-import isNone from 'ember-metal/is_none';
+import isNone from '../is_none';
 
 QUnit.module('Ember.isNone');
 

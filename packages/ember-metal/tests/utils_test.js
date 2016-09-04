@@ -3,7 +3,7 @@ import {
   inspect,
   checkHasSuper,
   toString
-} from 'ember-metal/utils';
+} from '../utils';
 
 QUnit.module('Ember Metal Utils');
 

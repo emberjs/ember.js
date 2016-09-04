@@ -1,12 +1,15 @@
-import { testBoth } from 'ember-metal/tests/props_helper';
-import run from 'ember-metal/run_loop';
+import { testBoth } from '../props_helper';
+import run from '../../run_loop';
 import {
   addObserver
-} from 'ember-metal/observer';
-import { bind } from 'ember-metal/binding';
-import { computed } from 'ember-metal/computed';
-import { defineProperty } from 'ember-metal/properties';
-import { propertyWillChange, propertyDidChange } from 'ember-metal/property_events';
+} from '../../observer';
+import { bind } from '../../binding';
+import { computed } from '../../computed';
+import { defineProperty } from '../../properties';
+import {
+  propertyWillChange,
+  propertyDidChange
+} from '../../property_events';
 
 QUnit.module('system/binding/sync_test.js');
 

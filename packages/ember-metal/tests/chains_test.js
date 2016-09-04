@@ -1,10 +1,10 @@
-import { addObserver } from 'ember-metal/observer';
-import { get } from 'ember-metal/property_get';
-import { finishChains } from 'ember-metal/chains';
-import { defineProperty } from 'ember-metal/properties';
-import computed from 'ember-metal/computed';
-import { propertyDidChange } from 'ember-metal/property_events';
-import { peekMeta } from 'ember-metal/meta';
+import { addObserver } from '../observer';
+import { get } from '../property_get';
+import { finishChains } from '../chains';
+import { defineProperty } from '../properties';
+import computed from '../computed';
+import { propertyDidChange } from '../property_events';
+import { peekMeta } from '../meta';
 
 QUnit.module('Chains');
 

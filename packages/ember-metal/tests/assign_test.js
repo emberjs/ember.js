@@ -1,4 +1,4 @@
-import assign from 'ember-metal/assign';
+import assign from '../assign';
 
 QUnit.module('Ember.assign');
 

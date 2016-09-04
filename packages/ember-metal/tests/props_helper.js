@@ -1,6 +1,9 @@
 import { ENV } from 'ember-environment';
-import { get as getFromEmberMetal, getWithDefault as getWithDefaultFromEmberMetal } from 'ember-metal/property_get';
-import { set as setFromEmberMetal } from 'ember-metal/property_set';
+import {
+  get as getFromEmberMetal,
+  getWithDefault as getWithDefaultFromEmberMetal
+} from '../property_get';
+import { set as setFromEmberMetal } from '../property_set';
 
 // used by unit tests to test both accessor mode and non-accessor mode
 export function testBoth(testname, callback) {

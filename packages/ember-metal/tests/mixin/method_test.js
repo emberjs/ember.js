@@ -1,7 +1,7 @@
 import {
   mixin,
   Mixin
-} from 'ember-metal/mixin';
+} from '../../mixin';
 
 QUnit.module('Mixin Methods');
 

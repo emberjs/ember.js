@@ -1,6 +1,6 @@
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { setHasViews } from 'ember-metal/tags';
+import { get } from '../../property_get';
+import { set } from '../../property_set';
+import { setHasViews } from '../../tags';
 
 QUnit.module('set', {
   teardown() {
