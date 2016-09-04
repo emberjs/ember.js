@@ -6,7 +6,7 @@ import Application from 'ember-application/system/application';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import RSVP from 'ember-runtime/ext/rsvp';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
+import { compile } from 'ember-template-compiler';
 
 import 'ember-routing';
 

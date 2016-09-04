@@ -3,7 +3,7 @@ import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
+import { compile } from 'ember-template-compiler';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { setTemplates, setTemplate } from 'ember-glimmer';

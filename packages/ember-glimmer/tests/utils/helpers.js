@@ -9,7 +9,7 @@ import jQuery from 'ember-views/system/jquery';
 export {
   compile,
   precompile
-} from 'ember-glimmer-template-compiler/tests/utils/helpers';
+} from 'ember-template-compiler';
 
 export {
   INVOKE,

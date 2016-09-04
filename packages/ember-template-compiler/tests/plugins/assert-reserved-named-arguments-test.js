@@ -1,4 +1,4 @@
-import { compile } from '../utils/helpers';
+import { compile } from 'ember-template-compiler';
 
 QUnit.module('ember-template-compiler: assert-reserved-named-arguments');
 
@@ -23,4 +23,3 @@ QUnit.test('Paths beginning with @ are not valid', function() {
     });
   }, `'@foo' is not a valid path. ('baz/foo-bar' @ L1:C17) `);
 });
-

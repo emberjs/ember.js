@@ -1,6 +1,6 @@
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
+import { compile } from 'ember-template-compiler';
 import { Helper, helper, setTemplates, setTemplate } from 'ember-glimmer';
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';

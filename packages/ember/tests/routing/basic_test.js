@@ -10,7 +10,7 @@ import { computed } from 'ember-metal/computed';
 import Mixin, { observer } from 'ember-metal/mixin';
 import { Component, setTemplates, setTemplate } from 'ember-glimmer';
 import jQuery from 'ember-views/system/jquery';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
+import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import Engine from 'ember-application/system/engine';
 import { A as emberA } from 'ember-runtime/system/native_array';

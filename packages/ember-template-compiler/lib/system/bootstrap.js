@@ -4,7 +4,7 @@
 */
 
 import { Error as EmberError } from 'ember-metal';
-import { compile } from '../index';
+import compile from './compile';
 
 /**
 @module ember

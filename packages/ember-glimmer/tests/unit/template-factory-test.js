@@ -1,4 +1,4 @@
-import { precompile, compile } from 'ember-glimmer-template-compiler';
+import { precompile, compile } from 'ember-template-compiler';
 import { template } from 'ember-glimmer';
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
