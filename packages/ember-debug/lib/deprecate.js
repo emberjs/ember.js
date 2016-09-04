@@ -1,6 +1,6 @@
 /*global __fail__*/
 
-import EmberError from 'ember-metal/error';
+import { Error as EmberError } from 'ember-metal';
 import Logger from 'ember-console';
 
 import { ENV } from 'ember-environment';
