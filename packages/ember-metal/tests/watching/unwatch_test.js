@@ -1,4 +1,4 @@
-import { testBoth } from '../props_helper';
+import { testBoth } from 'internal-test-helpers';
 import {
   watch,
   unwatch
@@ -114,4 +114,3 @@ testBoth('unwatching should not destroy non MANDATORY_SETTER descriptor', functi
   unwatch(obj, 'foo');
   equal(obj.foo, 'RUN', 'obj.foo after unwatch');
 });
-

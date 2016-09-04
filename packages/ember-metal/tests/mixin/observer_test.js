@@ -1,4 +1,4 @@
-import { testBoth } from '../props_helper';
+import { testBoth } from 'internal-test-helpers';
 import {
   observer,
   mixin,

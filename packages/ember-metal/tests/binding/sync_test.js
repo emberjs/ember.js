@@ -1,4 +1,4 @@
-import { testBoth } from '../props_helper';
+import { testBoth } from 'internal-test-helpers';
 import run from '../../run_loop';
 import {
   addObserver

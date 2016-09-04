@@ -4,7 +4,7 @@ import { set } from '../../property_set';
 import get from '../../property_get';
 import { computed } from '../../computed';
 import { defineProperty } from '../../properties';
-import { testBoth } from '../props_helper';
+import { testBoth } from 'internal-test-helpers';
 import { addListener } from '../../events';
 import {
   watch,
