@@ -5,7 +5,10 @@
 
 export { default as Object } from './system/object';
 export { default as String } from './system/string';
-export { default as RegistryProxyMixin } from './mixins/registry_proxy';
+export {
+  default as RegistryProxyMixin,
+  buildFakeRegistryWithDeprecations
+} from './mixins/registry_proxy';
 export {
   default as ContainerProxyMixin
 } from './mixins/container_proxy';
@@ -47,7 +50,8 @@ export {
 } from './mixins/-proxy';
 export {
   onLoad,
-  runLoadHooks
+  runLoadHooks,
+  _loaded
 } from './system/lazy_load';
 export { default as Observable } from './mixins/observable';
 export { default as MutableEnumerable } from './mixins/mutable_enumerable';

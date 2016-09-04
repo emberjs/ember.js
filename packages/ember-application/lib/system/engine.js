@@ -2,24 +2,29 @@
 @module ember
 @submodule ember-application
 */
-import Namespace from 'ember-runtime/system/namespace';
+import {
+  Namespace,
+  RegistryProxyMixin,
+  Controller
+} from 'ember-runtime';
 import {
   Registry,
   privatize as P
 } from 'container';
-import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
 import DAG from 'dag-map';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { assert, deprecate } from 'ember-metal/debug';
-import { canInvoke } from 'ember-metal/utils';
-import EmptyObject from 'ember-metal/empty_object';
+import {
+  get,
+  set,
+  assert,
+  deprecate,
+  canInvoke,
+  EmptyObject
+} from 'ember-metal';
 import DefaultResolver from './resolver';
 import EngineInstance from './engine-instance';
-import Controller from 'ember-runtime/controllers/controller';
-import RoutingService from 'ember-routing/services/routing';
-import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
-import ComponentLookup from 'ember-views/component_lookup';
+import { RoutingService } from 'ember-routing';
+import { ContainerDebugAdapter } from 'ember-extension-support';
+import { ComponentLookup } from 'ember-views';
 import { setupEngineRegistry } from 'ember-glimmer';
 
 function props(obj) {
@@ -49,7 +54,7 @@ function props(obj) {
   @uses RegistryProxy
   @public
 */
-const Engine = Namespace.extend(RegistryProxy, {
+const Engine = Namespace.extend(RegistryProxyMixin, {
   init() {
     this._super(...arguments);
 
