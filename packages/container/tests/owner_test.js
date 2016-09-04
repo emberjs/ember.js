@@ -1,4 +1,4 @@
-import { getOwner, setOwner, OWNER } from 'container';
+import { getOwner, setOwner, OWNER } from '../index';
 
 QUnit.module('Owner', {});
 

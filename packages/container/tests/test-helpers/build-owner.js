@@ -1,7 +1,9 @@
-import EmberObject from 'ember-runtime/system/object';
-import { Registry } from 'container';
-import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
-import ContainerProxy from 'ember-runtime/mixins/container_proxy';
+import {
+  Object as EmberObject,
+  RegistryProxy,
+  ContainerProxy
+} from 'ember-runtime';
+import { Registry } from '../../index';
 
 export default function buildOwner(props) {
   let Owner = EmberObject.extend(RegistryProxy, ContainerProxy, {
