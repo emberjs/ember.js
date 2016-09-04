@@ -400,6 +400,15 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
+
+    /**
+     If `false`, the view will appear hidden in DOM.
+
+     @property isVisible
+     @type Boolean
+     @default null
+     @public
+     */
   }
 );
 

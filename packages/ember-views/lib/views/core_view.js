@@ -1,5 +1,3 @@
-import { get } from 'ember-metal';
-
 import {
   Object as EmberObject,
   Evented,
@@ -40,10 +38,8 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._dispatching = null;
     this._destroyingSubtreeForView = null;
     this._isDispatchingAttrs = false;
-    this._isVisible = false;
     this.element = null;
     this._env = null;
-    this._isVisible = get(this, 'isVisible');
 
     if (!this.renderer) {
       throw new Error(`Cannot instantiate a component without a renderer. Please ensure that you are creating ${this} with a proper container/registry.`);
