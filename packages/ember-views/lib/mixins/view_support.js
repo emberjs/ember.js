@@ -467,10 +467,6 @@ export default Mixin.create({
     this[property.name] = property.descriptor.value;
   },
 
-  revalidate() {
-    this.renderer.revalidateTopLevelView(this);
-  },
-
   // .......................................................
   // EVENT HANDLING
   //
