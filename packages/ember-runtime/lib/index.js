@@ -19,7 +19,9 @@ export { default as isEqual } from './is-equal';
 export {
   default as Array,
   objectAt,
-  isEmberArray
+  isEmberArray,
+  addArrayObserver,
+  removeArrayObserver
 } from './mixins/array';
 export { default as Comparable } from './mixins/comparable';
 export {
