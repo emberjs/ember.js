@@ -1,7 +1,6 @@
 import {
   assert,
   deprecate,
-  run,
   guidFor,
   Mixin,
   symbol
@@ -424,8 +423,6 @@ export default Mixin.create({
       this.elementId = guidFor(this);
     }
 
-    this.scheduledRevalidation = false;
-
     this[INIT_WAS_CALLED] = true;
 
     if (typeof(this.didInitAttrs) === 'function') {
@@ -472,38 +469,6 @@ export default Mixin.create({
 
   revalidate() {
     this.renderer.revalidateTopLevelView(this);
-    this.scheduledRevalidation = false;
-  },
-
-  scheduleRevalidate(node, label, manualRerender) {
-    if (node && !this._dispatching && this._env.renderedNodes.has(node)) {
-      if (manualRerender) {
-        deprecate(
-          `You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 3.0`,
-          false,
-          { id: 'ember-views.manual-parent-rerender', until: '3.0.0' }
-        );
-      } else {
-        deprecate(
-          `You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 3.0`,
-          false,
-          { id: 'ember-views.render-double-modify', until: '3.0.0' }
-        );
-      }
-      run.scheduleOnce('render', this, this.revalidate);
-      return;
-    }
-
-    deprecate(
-      `A property of ${this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`,
-      !this._dispatching,
-      { id: 'ember-views.dispatching-modify-property', until: '3.0.0' }
-    );
-
-    if (!this.scheduledRevalidation || this._dispatching) {
-      this.scheduledRevalidation = true;
-      run.scheduleOnce('render', this, this.revalidate);
-    }
   },
 
   // .......................................................

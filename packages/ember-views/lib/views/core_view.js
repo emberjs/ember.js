@@ -35,7 +35,6 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._willInsert = false;
     this._renderNode = null;
     this.lastResult = null;
-    this._dispatching = null;
     this._destroyingSubtreeForView = null;
     this._isDispatchingAttrs = false;
     this.element = null;
