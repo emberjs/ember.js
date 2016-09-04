@@ -34,8 +34,6 @@ import layout from '../templates/empty';
 */
 export default EmberComponent.extend({
   layout,
-  instrumentDisplay: '{{input type="checkbox"}}',
-
   classNames: ['ember-checkbox'],
 
   tagName: 'input',

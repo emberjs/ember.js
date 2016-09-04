@@ -132,7 +132,6 @@ const EmberRouter = EmberObject.extend(Evented, {
   init() {
     this._super(...arguments);
 
-    this._activeViews = {};
     this._qpCache = new EmptyObject();
     this._resetQueuedQueryParameterChanges();
     this._handledErrors = dictionary(null);
@@ -469,10 +468,6 @@ const EmberRouter = EmberObject.extend(Evented, {
     this.reset();
   },
 
-  _lookupActiveComponentNode(templateName) {
-    return this._activeViews[templateName];
-  },
-
   /*
     Called when an active route's query parameter has changed.
     These changes are batched into a runloop run and trigger
@@ -510,18 +505,6 @@ const EmberRouter = EmberObject.extend(Evented, {
   _fireQueryParamTransition() {
     this.transitionTo({ queryParams: this._queuedQPChanges });
     this._resetQueuedQueryParameterChanges();
-  },
-
-  _connectActiveComponentNode(templateName, componentNode) {
-    assert('cannot connect an activeView that already exists', !this._activeViews[templateName]);
-
-    let _activeViews = this._activeViews;
-    function disconnectActiveView() {
-      delete _activeViews[templateName];
-    }
-
-    this._activeViews[templateName] = componentNode;
-    componentNode.renderNode.addDestruction({ destroy: disconnectActiveView });
   },
 
   _setupLocation() {

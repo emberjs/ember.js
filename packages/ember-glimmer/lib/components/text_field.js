@@ -55,8 +55,6 @@ function canSetTypeOfInput(type) {
 */
 export default Component.extend(TextSupport, {
   layout,
-  instrumentDisplay: '{{input type="text"}}',
-
   classNames: ['ember-text-field'],
   tagName: 'input',
   attributeBindings: [

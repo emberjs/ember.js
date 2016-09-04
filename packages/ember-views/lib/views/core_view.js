@@ -1,5 +1,3 @@
-import { get } from 'ember-metal';
-
 import {
   Object as EmberObject,
   Evented,
@@ -35,15 +33,11 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._state = 'preRender';
     this._currentState = this._states.preRender;
     this._willInsert = false;
-    this._renderNode = null;
     this.lastResult = null;
-    this._dispatching = null;
     this._destroyingSubtreeForView = null;
     this._isDispatchingAttrs = false;
-    this._isVisible = false;
     this.element = null;
     this._env = null;
-    this._isVisible = get(this, 'isVisible');
 
     if (!this.renderer) {
       throw new Error(`Cannot instantiate a component without a renderer. Please ensure that you are creating ${this} with a proper container/registry.`);
@@ -60,8 +54,6 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     @private
   */
   parentView: null,
-
-  instrumentName: 'core_view',
 
   instrumentDetails(hash) {
     hash.object = this.toString();

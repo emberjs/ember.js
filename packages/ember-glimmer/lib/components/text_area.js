@@ -25,8 +25,6 @@ import layout from '../templates/empty';
   @public
 */
 export default Component.extend(TextSupport, {
-  instrumentDisplay: '{{textarea}}',
-
   classNames: ['ember-text-area'],
 
   layout: layout,

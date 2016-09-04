@@ -26,7 +26,7 @@ export { default as ActionSupport } from './mixins/action_support';
 export {
   getAttrFor,
   MUTABLE_CELL
-} from './compat/attrs-proxy';
+} from './compat/attrs';
 export {
   default as lookupPartial,
   hasPartial
