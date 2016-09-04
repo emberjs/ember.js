@@ -2,7 +2,7 @@ import {
   Error as EmberError,
   get
 } from 'ember-metal';
-import { MUTABLE_CELL } from '../../compat/attrs-proxy';
+import { MUTABLE_CELL } from '../../compat/attrs';
 
 /**
 @module ember

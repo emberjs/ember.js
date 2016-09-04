@@ -9,7 +9,7 @@ import {
   assert,
   inspect
 } from 'ember-metal';
-import { MUTABLE_CELL } from '../compat/attrs-proxy';
+import { MUTABLE_CELL } from '../compat/attrs';
 
 function validateAction(component, actionName) {
   if (actionName && actionName[MUTABLE_CELL]) {

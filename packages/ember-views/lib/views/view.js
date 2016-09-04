@@ -6,8 +6,8 @@ import ViewStateSupport from '../mixins/view_state_support';
 import ClassNamesSupport from '../mixins/class_names_support';
 import InstrumentationSupport from '../mixins/instrumentation_support';
 import VisibilitySupport from '../mixins/visibility_support';
-import CompatAttrsProxy from '../compat/attrs-proxy';
 import ViewMixin from '../mixins/view_support';
+
 /**
 @module ember
 @submodule ember-views
@@ -508,7 +508,6 @@ var View = CoreView.extend(
   ClassNamesSupport,
   InstrumentationSupport,
   VisibilitySupport,
-  CompatAttrsProxy,
   ViewMixin);
 
 // jscs:enable validateIndentation
