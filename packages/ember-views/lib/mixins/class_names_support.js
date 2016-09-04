@@ -47,7 +47,7 @@ export default Mixin.create({
 
     ```javascript
     // Applies the 'high' class to the view element
-    Ember.View.extend({
+    Ember.Component.extend({
       classNameBindings: ['priority'],
       priority: 'high'
     });
@@ -58,7 +58,7 @@ export default Mixin.create({
 
     ```javascript
     // Applies the 'is-urgent' class to the view element
-    Ember.View.extend({
+    Ember.Component.extend({
       classNameBindings: ['isUrgent'],
       isUrgent: true
     });
@@ -69,13 +69,13 @@ export default Mixin.create({
 
     ```javascript
     // Applies the 'urgent' class to the view element
-    Ember.View.extend({
+    Ember.Component.extend({
       classNameBindings: ['isUrgent:urgent'],
       isUrgent: true
     });
     ```
 
-    This list of properties is inherited from the view's superclasses as well.
+    This list of properties is inherited from the component's superclasses as well.
 
     @property classNameBindings
     @type Array

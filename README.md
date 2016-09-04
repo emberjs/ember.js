@@ -62,7 +62,7 @@ example:
 
   * [Ember.js Runtime](http://localhost:4200/tests/index.html?package=ember-runtime)
   * [Ember.js Views](http://localhost:4200/tests/index.html?package=ember-views)
-  * [Ember.js Handlebars](http://localhost:4200/tests/index.html?package=ember-handlebars)
+  * [Ember.js Glimmer](http://localhost:4200/tests/index.html?package=ember-glimmer)
 
 To test multiple packages, you can separate them with commas.
 

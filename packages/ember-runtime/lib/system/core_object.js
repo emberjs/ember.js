@@ -216,13 +216,13 @@ CoreObject.PrototypeMixin = Mixin.create({
     Example:
 
     ```javascript
-    App.Person = Ember.Object.extend({
-      init: function() {
-        alert('Name is ' + this.get('name'));
+    const Person = Ember.Object.extend({
+      init() {
+        alert(`Name is ${this.get('name')}`);
       }
     });
 
-    var steve = App.Person.create({
+    let steve = Person.create({
       name: "Steve"
     });
 
@@ -262,46 +262,50 @@ CoreObject.PrototypeMixin = Mixin.create({
     property and a normal one:
 
     ```javascript
-    App.BarView = Ember.View.extend({
+    const Bar = Ember.Object.extend({
+      // Configure which properties to concatenate
+      concatenatedProperties: ['concatenatedProperty'],
+
       someNonConcatenatedProperty: ['bar'],
-      classNames: ['bar']
+      concatenatedProperty: ['bar']
     });
 
-    App.FooBarView = App.BarView.extend({
+    const FooBar = Bar.extend({
       someNonConcatenatedProperty: ['foo'],
-      classNames: ['foo']
+      concatenatedProperty: ['foo']
     });
 
-    var fooBarView = App.FooBarView.create();
-    fooBarView.get('someNonConcatenatedProperty'); // ['foo']
-    fooBarView.get('classNames'); // ['ember-view', 'bar', 'foo']
+    let fooBar = FooBar.create();
+    fooBar.get('someNonConcatenatedProperty'); // ['foo']
+    fooBar.get('concatenatedProperty'); // ['bar', 'foo']
     ```
 
     This behavior extends to object creation as well. Continuing the
     above example:
 
     ```javascript
-    var view = App.FooBarView.create({
+    let fooBar = FooBar.create({
       someNonConcatenatedProperty: ['baz'],
-      classNames: ['baz']
+      concatenatedProperty: ['baz']
     })
-    view.get('someNonConcatenatedProperty'); // ['baz']
-    view.get('classNames'); // ['ember-view', 'bar', 'foo', 'baz']
+    fooBar.get('someNonConcatenatedProperty'); // ['baz']
+    fooBar.get('concatenatedProperty'); // ['bar', 'foo', 'baz']
     ```
+
     Adding a single property that is not an array will just add it in the array:
 
     ```javascript
-    var view = App.FooBarView.create({
-      classNames: 'baz'
+    let fooBar = FooBar.create({
+      concatenatedProperty: 'baz'
     })
-    view.get('classNames'); // ['ember-view', 'bar', 'foo', 'baz']
+    view.get('concatenatedProperty'); // ['bar', 'foo', 'baz']
     ```
 
     Using the `concatenatedProperties` property, we can tell Ember to mix the
     content of the properties.
 
-    In `Ember.View` the `classNameBindings` and `attributeBindings` properties
-    are also concatenated, in addition to `classNames`.
+    In `Ember.Component` the `classNames`, `classNameBindings` and
+    `attributeBindings` properties are concatenated.
 
     This feature is available for you to use throughout the Ember object model,
     although typical app developers are likely to use it infrequently. Since
@@ -331,34 +335,37 @@ CoreObject.PrototypeMixin = Mixin.create({
     property and a normal one:
 
     ```javascript
-    App.BarRoute = Ember.Route.extend({
+    const Bar = Ember.Object.extend({
+      // Configure which properties are to be merged
+      mergedProperties: ['mergedProperty'],
+
       someNonMergedProperty: {
         nonMerged: 'superclass value of nonMerged'
       },
-      queryParams: {
+      mergedProperty: {
         page: {replace: false},
         limit: {replace: true}
       }
     });
 
-    App.FooBarRoute = App.BarRoute.extend({
+    const FooBar = Bar.extend({
       someNonMergedProperty: {
         completelyNonMerged: 'subclass value of nonMerged'
       },
-      queryParams: {
+      mergedProperty: {
         limit: {replace: false}
       }
     });
 
-    var fooBarRoute = App.FooBarRoute.create();
+    let fooBar = FooBar.create();
 
-    fooBarRoute.get('someNonMergedProperty');
+    fooBar.get('someNonMergedProperty');
     // => { completelyNonMerged: 'subclass value of nonMerged' }
     //
     // Note the entire object, including the nonMerged property of
     // the superclass object, has been replaced
 
-    fooBarRoute.get('queryParams');
+    fooBar.get('mergedProperty');
     // => {
     //   page: {replace: false},
     //   limit: {replace: false}
@@ -371,6 +378,8 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     This behavior is not available during object `create` calls. It is only
     available at `extend` time.
+
+    In `Ember.Route` the `queryParams` property is merged.
 
     This feature is available for you to use throughout the Ember object model,
     although typical app developers are likely to use it infrequently. Since
@@ -465,31 +474,31 @@ CoreObject.PrototypeMixin = Mixin.create({
     objects.
 
     ```javascript
-    App.Person = Em.Object.extend()
-    person = App.Person.create()
-    person.toString() //=> "<App.Person:ember1024>"
+    const Person = Ember.Object.extend()
+    person = Person.create()
+    person.toString() //=> "<Person:ember1024>"
     ```
 
     If the object's class is not defined on an Ember namespace, it will
     indicate it is a subclass of the registered superclass:
 
    ```javascript
-    Student = App.Person.extend()
-    student = Student.create()
-    student.toString() //=> "<(subclass of App.Person):ember1025>"
+    const Student = Person.extend()
+    let student = Student.create()
+    student.toString() //=> "<(subclass of Person):ember1025>"
     ```
 
     If the method `toStringExtension` is defined, its return value will be
     included in the output.
 
     ```javascript
-    App.Teacher = App.Person.extend({
-      toStringExtension: function() {
+    const Teacher = Person.extend({
+      toStringExtension() {
         return this.get('fullName');
       }
     });
-    teacher = App.Teacher.create()
-    teacher.toString(); //=> "<App.Teacher:ember1026:Tom Dale>"
+    teacher = Teacher.create()
+    teacher.toString(); //=> "<Teacher:ember1026:Tom Dale>"
     ```
 
     @method toString
@@ -523,20 +532,20 @@ var ClassMixinProps = {
     Creates a new subclass.
 
     ```javascript
-    App.Person = Ember.Object.extend({
-      say: function(thing) {
+    const Person = Ember.Object.extend({
+      say(thing) {
         alert(thing);
        }
     });
     ```
 
-    This defines a new subclass of Ember.Object: `App.Person`. It contains one method: `say()`.
+    This defines a new subclass of Ember.Object: `Person`. It contains one method: `say()`.
 
     You can also create a subclass from any existing class by calling its `extend()` method.
-    For example, you might want to create a subclass of Ember's built-in `Ember.View` class:
+    For example, you might want to create a subclass of Ember's built-in `Ember.Component` class:
 
     ```javascript
-    App.PersonView = Ember.View.extend({
+    const PersonComponent = Ember.Component.extend({
       tagName: 'li',
       classNameBindings: ['isAdministrator']
     });
@@ -546,56 +555,56 @@ var ClassMixinProps = {
     implementation of your parent class by calling the special `_super()` method:
 
     ```javascript
-    App.Person = Ember.Object.extend({
-      say: function(thing) {
+    const Person = Ember.Object.extend({
+      say(thing) {
         var name = this.get('name');
-        alert(name + ' says: ' + thing);
+        alert(`${name} says: ${thing}`);
       }
     });
 
-    App.Soldier = App.Person.extend({
-      say: function(thing) {
-        this._super(thing + ", sir!");
+    const Soldier = Person.extend({
+      say(thing) {
+        this._super(`${thing}, sir!`);
       },
-      march: function(numberOfHours) {
-        alert(this.get('name') + ' marches for ' + numberOfHours + ' hours.');
+      march(numberOfHours) {
+        alert(`${this.get('name')} marches for ${numberOfHours} hours.`);
       }
     });
 
-    var yehuda = App.Soldier.create({
+    let yehuda = Soldier.create({
       name: "Yehuda Katz"
     });
 
     yehuda.say("Yes");  // alerts "Yehuda Katz says: Yes, sir!"
     ```
 
-    The `create()` on line #17 creates an *instance* of the `App.Soldier` class.
-    The `extend()` on line #8 creates a *subclass* of `App.Person`. Any instance
-    of the `App.Person` class will *not* have the `march()` method.
+    The `create()` on line #17 creates an *instance* of the `Soldier` class.
+    The `extend()` on line #8 creates a *subclass* of `Person`. Any instance
+    of the `Person` class will *not* have the `march()` method.
 
     You can also pass `Mixin` classes to add additional properties to the subclass.
 
     ```javascript
-    App.Person = Ember.Object.extend({
-      say: function(thing) {
-        alert(this.get('name') + ' says: ' + thing);
+    const Person = Ember.Object.extend({
+      say(thing) {
+        alert(`${this.get('name')} says: ${thing}`);
       }
     });
 
-    App.SingingMixin = Mixin.create({
-      sing: function(thing){
-        alert(this.get('name') + ' sings: la la la ' + thing);
+    const SingingMixin = Mixin.create({
+      sing(thing){
+        alert(`${this.get('name')} sings: la la la ${thing}`);
       }
     });
 
-    App.BroadwayStar = App.Person.extend(App.SingingMixin, {
-      dance: function() {
-        alert(this.get('name') + ' dances: tap tap tap tap ');
+    const BroadwayStar = Person.extend(SingingMixin, {
+      dance() {
+        alert(`${this.get('name')} dances: tap tap tap tap `);
       }
     });
     ```
 
-    The `App.BroadwayStar` class contains three methods: `say()`, `sing()`, and `dance()`.
+    The `BroadwayStar` class contains three methods: `say()`, `sing()`, and `dance()`.
 
     @method extend
     @static
@@ -632,13 +641,13 @@ var ClassMixinProps = {
     containing values to initialize the newly instantiated object with.
 
     ```javascript
-    App.Person = Ember.Object.extend({
-      helloWorld: function() {
-        alert("Hi, my name is " + this.get('name'));
+    const Person = Ember.Object.extend({
+      helloWorld() {
+        alert(`Hi, my name is ${this.get('name')}`);
       }
     });
 
-    var tom = App.Person.create({
+    let tom = Person.create({
       name: 'Tom Dale'
     });
 
@@ -652,7 +661,7 @@ var ClassMixinProps = {
     instance during initialization:
 
     ```javascript
-    var noName = App.Person.create();
+    let noName = Person.create();
     noName.helloWorld(); // alerts undefined
     ```
 
@@ -678,7 +687,7 @@ var ClassMixinProps = {
     properties and functions:
 
     ```javascript
-    MyObject = Ember.Object.extend({
+    const MyObject = Ember.Object.extend({
       name: 'an object'
     });
 
@@ -686,7 +695,7 @@ var ClassMixinProps = {
     o.get('name'); // 'an object'
 
     MyObject.reopen({
-      say: function(msg){
+      say(msg){
         console.log(msg);
       }
     })
@@ -713,7 +722,7 @@ var ClassMixinProps = {
     Augments a constructor's own properties and functions:
 
     ```javascript
-    MyObject = Ember.Object.extend({
+    const MyObject = Ember.Object.extend({
       name: 'an object'
     });
 
@@ -729,34 +738,34 @@ var ClassMixinProps = {
     These are only available on the class and not on any instance of that class.
 
     ```javascript
-    App.Person = Ember.Object.extend({
-      name : "",
-      sayHello : function() {
+    const Person = Ember.Object.extend({
+      name: "",
+      sayHello() {
         alert("Hello. My name is " + this.get('name'));
       }
     });
 
-    App.Person.reopenClass({
-      species : "Homo sapiens",
-      createPerson: function(newPersonsName){
-        return App.Person.create({
+    Person.reopenClass({
+      species: "Homo sapiens",
+      createPerson(newPersonsName){
+        return Person.create({
           name:newPersonsName
         });
       }
     });
 
-    var tom = App.Person.create({
-      name : "Tom Dale"
+    let tom = Person.create({
+      name: "Tom Dale"
     });
-    var yehuda = App.Person.createPerson("Yehuda Katz");
+    let yehuda = Person.createPerson("Yehuda Katz");
 
     tom.sayHello(); // "Hello. My name is Tom Dale"
     yehuda.sayHello(); // "Hello. My name is Yehuda Katz"
-    alert(App.Person.species); // "Homo sapiens"
+    alert(Person.species); // "Homo sapiens"
     ```
 
     Note that `species` and `createPerson` are *not* valid on the `tom` and `yehuda`
-    variables. They are only valid on `App.Person`.
+    variables. They are only valid on `Person`.
 
     To add functions and properties to instances of
     a constructor by extending the constructor's prototype
@@ -793,10 +802,10 @@ var ClassMixinProps = {
     You can pass a hash of these values to a computed property like this:
 
     ```javascript
-    person: function() {
+    person: Ember.computed(function() {
       var personId = this.get('personId');
-      return App.Person.create({ id: personId });
-    }.property().meta({ type: App.Person })
+      return Person.create({ id: personId });
+    }).meta({ type: Person })
     ```
 
     Once you've done this, you can retrieve the values saved to the computed
