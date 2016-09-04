@@ -6,6 +6,9 @@ import {
   ApplicationInstance
 } from 'ember-application';
 import {
+  Router
+} from 'ember-routing';
+import {
   RegistryProxyMixin,
   ContainerProxyMixin,
   Object as EmberObject
@@ -27,6 +30,8 @@ export function buildOwner(resolver) {
   });
 
   let fallbackRegistry = Application.buildRegistry(namespace);
+  fallbackRegistry.register('router:main', Router);
+
   let registry = new Registry({
     fallback: fallbackRegistry
   });
