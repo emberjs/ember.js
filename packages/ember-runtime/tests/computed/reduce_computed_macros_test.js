@@ -1,14 +1,17 @@
-import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
-import { defineProperty } from 'ember-metal/properties';
-import setProperties from 'ember-metal/set_properties';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
-import isEnabled from 'ember-metal/features';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { addObserver } from 'ember-metal/observer';
-import { computed } from 'ember-metal/computed';
-import { observer } from 'ember-metal/mixin';
+import {
+  run,
+  defineProperty,
+  setProperties,
+  isFeatureEnabled,
+  get,
+  set,
+  addObserver,
+  computed,
+  observer
+} from 'ember-metal';
+import { testBoth } from 'internal-test-helpers';
+import EmberObject from '../../system/object';
+import ObjectProxy from '../../system/object_proxy';
 import {
   sum,
   min,
@@ -24,11 +27,10 @@ import {
   union,
   intersect,
   collect
-} from 'ember-runtime/computed/reduce_computed_macros';
-import { isArray } from 'ember-runtime/utils';
-import { testBoth } from 'ember-metal/tests/props_helper';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import { removeAt } from 'ember-runtime/mixins/mutable_array';
+} from '../../computed/reduce_computed_macros';
+import { isArray } from '../../utils';
+import { A as emberA } from '../../system/native_array';
+import { removeAt } from '../../mixins/mutable_array';
 
 let obj;
 QUnit.module('map', {
@@ -499,7 +501,7 @@ QUnit.test('properties values can be replaced', function() {
   });
 });
 
-if (isEnabled('ember-runtime-computed-uniq-by')) {
+if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
   QUnit.module('computed.uniqBy', {
     setup() {
       obj = EmberObject.extend({

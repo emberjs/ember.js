@@ -1,15 +1,15 @@
-import isEnabled from 'ember-metal/features';
-import run from 'ember-metal/run_loop';
-import { observer } from 'ember-metal/mixin';
-import { set } from 'ember-metal/property_set';
-import { bind } from 'ember-metal/binding';
 import {
+  isFeatureEnabled,
+  run,
+  observer,
+  set,
+  bind,
   beginPropertyChanges,
-  endPropertyChanges
-} from 'ember-metal/property_events';
-import { testBoth } from 'ember-metal/tests/props_helper';
-import EmberObject from 'ember-runtime/system/object';
-import { peekMeta } from 'ember-metal/meta';
+  endPropertyChanges,
+  peekMeta
+} from 'ember-metal';
+import { testBoth } from 'internal-test-helpers';
+import EmberObject from '../../../system/object';
 QUnit.module('ember-runtime/system/object/destroy_test');
 
 testBoth('should schedule objects to be destroyed at the end of the run loop', function(get, set) {
@@ -29,7 +29,7 @@ testBoth('should schedule objects to be destroyed at the end of the run loop', f
   ok(get(obj, 'isDestroyed'), 'object is destroyed after run loop finishes');
 });
 
-if (isEnabled('mandatory-setter')) {
+if (isFeatureEnabled('mandatory-setter')) {
   // MANDATORY_SETTER moves value to meta.values
   // a destroyed object removes meta but leaves the accessor
   // that looks it up

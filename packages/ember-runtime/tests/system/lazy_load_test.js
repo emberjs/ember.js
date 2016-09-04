@@ -1,5 +1,5 @@
-import run from 'ember-metal/run_loop';
-import {onLoad, runLoadHooks, _loaded } from 'ember-runtime/system/lazy_load';
+import { run } from 'ember-metal';
+import { onLoad, runLoadHooks, _loaded } from '../../system/lazy_load';
 
 QUnit.module('Lazy Loading', {
   teardown() {

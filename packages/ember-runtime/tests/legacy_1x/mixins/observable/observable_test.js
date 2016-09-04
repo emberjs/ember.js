@@ -1,12 +1,9 @@
 import { context } from 'ember-environment';
-import { get } from 'ember-metal/property_get';
-import { computed } from 'ember-metal/computed';
-import run from 'ember-metal/run_loop';
-import { observer } from 'ember-metal/mixin';
-import { w } from 'ember-runtime/system/string';
-import EmberObject from 'ember-runtime/system/object';
-import Observable from 'ember-runtime/mixins/observable';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { get, computed, run, observer } from 'ember-metal';
+import { w } from '../../../../system/string';
+import EmberObject from '../../../../system/object';
+import Observable from '../../../../mixins/observable';
+import { A as emberA } from '../../../../system/native_array';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests

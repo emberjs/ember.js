@@ -1,5 +1,5 @@
-import { typeOf } from 'ember-runtime/utils';
-import EmberObject from 'ember-runtime/system/object';
+import { typeOf } from '../../utils';
+import EmberObject from '../../system/object';
 
 QUnit.module('Ember Type Checking');
 

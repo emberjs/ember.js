@@ -3,8 +3,8 @@ import {
   Registry,
   OWNER
 } from 'container';
-import ContainerProxy from 'ember-runtime/mixins/container_proxy';
-import EmberObject from 'ember-runtime/system/object';
+import ContainerProxy from '../../mixins/container_proxy';
+import EmberObject from '../../system/object';
 
 QUnit.module('ember-runtime/mixins/container_proxy', {
   setup() {

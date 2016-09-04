@@ -1,5 +1,5 @@
-import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import { objectAt } from 'ember-runtime/mixins/array';
+import { SuiteModuleBuilder } from '../suite';
+import { objectAt } from '../../../mixins/array';
 
 const suite = SuiteModuleBuilder.create();
 

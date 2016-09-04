@@ -1,8 +1,7 @@
-import { set } from 'ember-metal/property_set';
-import { not } from 'ember-runtime/computed/computed_macros';
-import run from 'ember-metal/run_loop';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { set, run } from 'ember-metal';
+import { not } from '../../../computed/computed_macros';
+import ArrayProxy from '../../../system/array_proxy';
+import { A as emberA } from '../../../system/native_array';
 
 QUnit.module('ArrayProxy - content change');
 

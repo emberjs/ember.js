@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { fmt } from 'ember-runtime/system/string';
+import { fmt } from '../../../system/string';
 
 QUnit.module('EmberStringUtils.fmt');
 

@@ -17,10 +17,9 @@
 // Ember.Observable Tests
 // ========================================================================
 
-import EmberObject from 'ember-runtime/system/object';
-import Observable from 'ember-runtime/mixins/observable';
-import {computed} from 'ember-metal/computed';
-import {observer} from 'ember-metal/mixin';
+import EmberObject from '../../../../system/object';
+import Observable from '../../../../mixins/observable';
+import { computed, observer } from 'ember-metal';
 
 const ObservableObject = EmberObject.extend(Observable);
 

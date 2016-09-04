@@ -1,6 +1,5 @@
-import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
+import { SuiteModuleBuilder } from '../suite';
+import { get, set } from 'ember-metal';
 
 const suite = SuiteModuleBuilder.create();
 

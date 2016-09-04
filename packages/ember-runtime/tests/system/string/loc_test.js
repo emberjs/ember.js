@@ -1,6 +1,6 @@
-import Ember from 'ember-metal/core'; // ES6TODO Ember.STRINGS
+import Ember from 'ember-metal'; // ES6TODO Ember.STRINGS
 import { ENV } from 'ember-environment';
-import { loc } from 'ember-runtime/system/string';
+import { loc } from '../../../system/string';
 
 let oldString;
 

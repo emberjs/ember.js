@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { w } from 'ember-runtime/system/string';
+import { w } from '../../../system/string';
 
 QUnit.module('EmberStringUtils.w');
 

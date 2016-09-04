@@ -1,4 +1,4 @@
-import CoreObject from 'ember-runtime/system/core_object';
+import CoreObject from '../../system/core_object';
 
 
 QUnit.module('Ember.CoreObject');

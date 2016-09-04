@@ -1,5 +1,5 @@
-import Namespace from 'ember-runtime/system/namespace';
-import Application from 'ember-runtime/system/application';
+import Namespace from '../../../system/namespace';
+import Application from '../../../system/application';
 
 QUnit.module('Ember.Application');
 

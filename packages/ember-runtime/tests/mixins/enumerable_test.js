@@ -1,12 +1,14 @@
-import EnumerableTests from 'ember-runtime/tests/suites/enumerable';
-import EmberObject from 'ember-runtime/system/object';
-import Enumerable from 'ember-runtime/mixins/enumerable';
-import EmberArray from 'ember-runtime/mixins/array';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import { get } from 'ember-metal/property_get';
-import { computed } from 'ember-metal/computed';
-import { observer as emberObserver } from 'ember-metal/mixin';
-import isEnabled from 'ember-metal/features';
+import EnumerableTests from '../suites/enumerable';
+import EmberObject from '../../system/object';
+import Enumerable from '../../mixins/enumerable';
+import EmberArray from '../../mixins/array';
+import { A as emberA } from '../../system/native_array';
+import {
+  get,
+  computed,
+  observer as emberObserver,
+  isFeatureEnabled
+} from 'ember-metal';
 
 function K() { return this; }
 
@@ -97,7 +99,7 @@ QUnit.test('should apply Ember.Array to return value of without', function() {
     }
   });
 
-  if (isEnabled('ember-runtime-enumerable-includes')) {
+  if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
     X.reopen({
       includes() {
         return true;
@@ -170,7 +172,7 @@ QUnit.test('every', function() {
   equal(allWhite, true);
 });
 
-if (isEnabled('ember-runtime-enumerable-includes')) {
+if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
   QUnit.test('should throw an error passing a second argument to includes', function() {
     let x = EmberObject.extend(Enumerable).create();
 

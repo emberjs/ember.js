@@ -1,5 +1,5 @@
-import EmberArray from 'ember-runtime/mixins/array';
-import { A } from 'ember-runtime/system/native_array';
+import EmberArray from '../../../mixins/array';
+import { A } from '../../../system/native_array';
 
 QUnit.module('Ember.A');
 

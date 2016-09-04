@@ -1,8 +1,10 @@
-import {observer as emberObserver} from 'ember-metal/mixin';
-import run from 'ember-metal/run_loop';
-import {Binding} from 'ember-metal/binding';
-import Observable from 'ember-runtime/mixins/observable';
-import EmberObject from 'ember-runtime/system/object';
+import {
+  observer as emberObserver,
+  run,
+  Binding
+} from 'ember-metal';
+import Observable from '../../../mixins/observable';
+import EmberObject from '../../../system/object';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
