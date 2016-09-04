@@ -1,5 +1,5 @@
-import jQuery from 'ember-views/system/jquery';
-import run from 'ember-metal/run_loop';
+import { jQuery } from 'ember-views';
+import { run } from 'ember-metal';
 
 const DEFAULT_EVENT_OPTIONS = { canBubble: true, cancelable: true };
 const KEYBOARD_EVENT_TYPES = ['keydown', 'keypress', 'keyup'];

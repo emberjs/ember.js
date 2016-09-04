@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-testing
 */
-import { get } from 'ember-metal/property_get';
+import { get } from 'ember-metal';
 
 /**
   Finds an element in the context of the app's container element. A simple alias

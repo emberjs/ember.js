@@ -1,6 +1,5 @@
-import RSVP from 'ember-runtime/ext/rsvp';
-import run from 'ember-metal/run_loop';
-import { isTesting } from 'ember-metal/testing';
+import { RSVP } from 'ember-runtime';
+import { run, isTesting } from 'ember-metal';
 import {
   asyncStart,
   asyncEnd

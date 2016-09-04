@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-testing
 */
-import run from 'ember-metal/run_loop';
+import { run } from 'ember-metal';
 
 /**
   Loads a route, sets up any controllers, and renders any templates associated

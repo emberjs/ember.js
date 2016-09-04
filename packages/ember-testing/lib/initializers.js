@@ -1,4 +1,4 @@
-import { onLoad } from 'ember-runtime/system/lazy_load';
+import { onLoad } from 'ember-runtime';
 
 let name = 'deferReadiness in `testing` mode';
 

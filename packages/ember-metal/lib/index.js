@@ -52,7 +52,8 @@ export {
 export {
   getOnerror,
   setOnerror,
-  dispatchError
+  dispatchError,
+  setDispatchOverride
 } from './error_handler';
 export {
   META_DESC,

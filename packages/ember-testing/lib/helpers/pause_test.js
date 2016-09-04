@@ -2,7 +2,8 @@
 @module ember
 @submodule ember-testing
 */
-import RSVP from 'ember-runtime/ext/rsvp';
+import { RSVP } from 'ember-runtime';
+
 /**
  Pauses the current test - this is useful for debugging while testing or for test-driving.
  It allows you to inspect the state of your application at any point.

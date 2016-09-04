@@ -3,8 +3,8 @@
 @submodule ember-testing
 */
 import { checkWaiters } from '../test/waiters';
-import RSVP from 'ember-runtime/ext/rsvp';
-import run from 'ember-metal/run_loop';
+import { RSVP } from 'ember-runtime';
+import { run } from 'ember-metal';
 import { pendingRequests } from '../test/pending_requests';
 
 /**

@@ -24,7 +24,7 @@ import {
   getAdapter,
   setAdapter
 } from './test/adapter';
-import isEnabled from 'ember-metal/features';
+import { isFeatureEnabled } from 'ember-metal';
 
 /**
   This is a container for an assortment of testing related functionality:
@@ -59,7 +59,7 @@ const Test = {
   unregisterWaiter
 };
 
-if (isEnabled('ember-testing-check-waiters')) {
+if (isFeatureEnabled('ember-testing-check-waiters')) {
   Test.checkWaiters = checkWaiters;
 }
 
