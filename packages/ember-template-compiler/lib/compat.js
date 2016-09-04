@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // reexports
+import Ember from 'ember-metal'; // reexports
 import compiler from './compiler';
 
 let EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};

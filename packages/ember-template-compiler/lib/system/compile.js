@@ -4,7 +4,7 @@
 */
 import compiler from '../compiler';
 import compileOptions from './compile-options';
-import assign from 'ember-metal/assign';
+import { assign } from 'ember-metal';
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.

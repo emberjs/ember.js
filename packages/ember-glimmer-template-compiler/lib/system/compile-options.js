@@ -1,4 +1,4 @@
-import { defaultCompilePlugins } from 'ember-template-compiler';
+import { defaultPlugins } from 'ember-template-compiler';
 import TransformActionSyntax from '../plugins/transform-action-syntax';
 import TransformInputTypeSyntax from '../plugins/transform-input-type-syntax';
 import TransformAttrsIntoArgs from '../plugins/transform-attrs-into-args';
@@ -7,7 +7,7 @@ import TransformHasBlockSyntax from '../plugins/transform-has-block-syntax';
 import { assign } from 'ember-metal';
 
 export const PLUGINS = [
-  ...defaultCompilePlugins,
+  ...defaultPlugins,
   // the following are ember-glimmer specific
   TransformActionSyntax,
   TransformInputTypeSyntax,

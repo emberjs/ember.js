@@ -1,4 +1,4 @@
-import { assert, deprecate } from 'ember-metal/debug';
+import { assert, deprecate } from 'ember-metal';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
 export default function TransformOldBindingSyntax(options) {

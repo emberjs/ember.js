@@ -3,7 +3,7 @@
 @submodule ember-template-compiler
 */
 
-import assign from 'ember-metal/assign';
+import { assign } from 'ember-metal';
 import compiler from '../compiler';
 import compileOptions from './compile-options';
 
