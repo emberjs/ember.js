@@ -1,13 +1,15 @@
 /* globals EmberDev */
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { applyMixins } from '../utils/abstract-test-case';
-import { set } from 'ember-metal/property_set';
-import { computed } from 'ember-metal/computed';
-import EmberObject from 'ember-runtime/system/object';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
+import {
+  set,
+  computed,
+  getDebugFunction,
+  setDebugFunction
+} from 'ember-metal';
+import { Object as EmberObject, ObjectProxy } from 'ember-runtime';
 import { classes } from '../utils/test-helpers';
-import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
-import { STYLE_WARNING } from 'ember-views/system/utils';
+import { STYLE_WARNING } from 'ember-views';
 import { Component, SafeString } from '../utils/helpers';
 
 moduleFor('Static content tests', class extends RenderingTest {

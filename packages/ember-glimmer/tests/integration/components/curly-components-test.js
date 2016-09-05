@@ -1,19 +1,28 @@
 /* globals EmberDev */
-import isEnabled from 'ember-metal/features';
-import { set } from 'ember-metal/property_set';
-import { get } from 'ember-metal/property_get';
-import { observer } from 'ember-metal/mixin';
-import { on } from 'ember-metal/events';
-import EmberObject from 'ember-runtime/system/object';
+import {
+  isFeatureEnabled,
+  set,
+  get,
+  observer,
+  on,
+  computed,
+  run
+} from 'ember-metal';
+import {
+  Object as EmberObject,
+  A as emberA,
+  inject,
+  Service
+} from 'ember-runtime';
 import { Component, compile, htmlSafe } from '../../utils/helpers';
-import { A as emberA } from 'ember-runtime/system/native_array';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { classes, equalTokens, equalsElement, styles } from '../../utils/test-helpers';
-import { computed } from 'ember-metal/computed';
-import run from 'ember-metal/run_loop';
-import inject from 'ember-runtime/inject';
-import Service from 'ember-runtime/system/service';
+import {
+  classes,
+  equalTokens,
+  equalsElement,
+  styles
+} from '../../utils/test-helpers';
 
 moduleFor('Components test: curly components', class extends RenderingTest {
 
@@ -1984,7 +1993,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test when a property is changed during children\'s rendering'](assert) {
-    if (isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
       expectDeprecation(/modified value twice in a single render/);
     }
 
@@ -2032,7 +2041,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
     assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
 
-    if (!isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (!isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
       expectAssertion(() => {
         this.runTask(() => outer.set('value', 2));
       }, /modified value twice in a single render/);
@@ -2057,7 +2066,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test when a shared dependency is changed during children\'s rendering'](assert) {
-    if (isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
       expectDeprecation(/modified wrapper.content twice in a single render/);
     }
 
@@ -2089,7 +2098,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       template: '<div id="inner-value">{{wrapper.content}}</div>'
     });
 
-    if (!isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (!isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
       expectAssertion(() => {
         this.render('{{x-outer}}');
       }, /modified wrapper.content twice in a single render/);
@@ -2251,7 +2260,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('initial value - initial value');
 
-    if (isEnabled('mandatory-setter')) {
+    if (isFeatureEnabled('mandatory-setter')) {
       expectAssertion(() => {
         component.bar = 'foo-bar';
       }, /You must use Ember\.set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./);

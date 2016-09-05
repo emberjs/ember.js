@@ -1,7 +1,6 @@
-import { observer } from 'ember-metal/mixin';
-import Controller from 'ember-runtime/controllers/controller';
+import { observer, set } from 'ember-metal';
+import { Controller } from 'ember-runtime';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { set } from 'ember-metal/property_set';
 
 moduleFor('Helpers test: {{render}}', class extends RenderingTest {
   ['@test should render given template']() {

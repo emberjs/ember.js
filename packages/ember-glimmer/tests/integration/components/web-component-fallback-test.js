@@ -1,5 +1,5 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { set } from 'ember-metal/property_set';
+import { set } from 'ember-metal';
 
 moduleFor('Components test: web component fallback', class extends RenderingTest {
   ['@test custom elements are rendered']() {

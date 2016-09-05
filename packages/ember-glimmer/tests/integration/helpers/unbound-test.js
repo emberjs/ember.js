@@ -1,10 +1,8 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
-import { set } from 'ember-metal/property_set';
-import { get } from 'ember-metal/property_get';
-import setProperties from 'ember-metal/set_properties';
+import { set, get, setProperties } from 'ember-metal';
 import { Component } from '../../utils/helpers';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { A as emberA } from 'ember-runtime';
 
 moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
 

@@ -3,7 +3,7 @@ import {
   AbstractApplicationTest,
   AbstractRenderingTest
 } from './abstract-test-case';
-import ComponentLookup from 'ember-views/component_lookup';
+import { ComponentLookup } from 'ember-views';
 
 export class ApplicationTest extends AbstractApplicationTest {
 }

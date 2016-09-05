@@ -1,10 +1,9 @@
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import { set } from 'ember-metal/property_set';
+import { Controller } from 'ember-runtime';
+import { Route } from 'ember-routing';
+import { set, isFeatureEnabled } from 'ember-metal';
 import { LinkComponent } from '../../utils/helpers';
 import { classes as classMatcher } from '../../utils/test-helpers';
-import isEnabled from 'ember-metal/features';
 
 moduleFor('Link-to component', class extends ApplicationTest {
   visitWithDeprecation(path, deprecation) {
@@ -147,7 +146,7 @@ moduleFor('Link-to component with query-params', class extends ApplicationTest {
   constructor() {
     super(...arguments);
 
-    if (isEnabled('ember-routing-route-configured-query-params')) {
+    if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
       this.registerRoute('index', Route.extend({
         queryParams: {
           foo: {

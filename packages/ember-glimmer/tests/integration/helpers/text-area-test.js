@@ -1,7 +1,6 @@
-import { set } from 'ember-metal/property_set';
+import { set, assign } from 'ember-metal';
 import { TextArea } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import assign from 'ember-metal/assign';
 import { classes } from '../../utils/test-helpers';
 import { applyMixins } from '../../utils/abstract-test-case';
 

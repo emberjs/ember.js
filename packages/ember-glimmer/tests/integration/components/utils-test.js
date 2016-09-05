@@ -1,14 +1,18 @@
-import Controller from 'ember-runtime/controllers/controller';
-import $ from 'ember-views/system/jquery';
-import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
-import { Component } from '../../utils/helpers';
+import { Controller } from 'ember-runtime';
 import {
+  jQuery as $,
   getRootViews,
   getChildViews,
   getViewBounds,
   getViewClientRects,
   getViewBoundingClientRect
-} from 'ember-views/system/utils';
+} from 'ember-views';
+import {
+  moduleFor,
+  ApplicationTest,
+  RenderingTest
+} from '../../utils/test-case';
+import { Component } from '../../utils/helpers';
 
 moduleFor('View tree tests', class extends ApplicationTest {
 

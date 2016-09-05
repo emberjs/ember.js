@@ -1,4 +1,4 @@
-import { runDestroy } from 'ember-runtime/tests/utils';
+import { runDestroy } from 'internal-test-helpers';
 import Service from 'ember-runtime/system/service';
 import EmberObject from 'ember-runtime/system/object';
 import EmberRoute from 'ember-routing/system/route';

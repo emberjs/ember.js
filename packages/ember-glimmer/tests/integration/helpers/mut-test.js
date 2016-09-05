@@ -1,8 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
-import { set } from 'ember-metal/property_set';
-import { get } from 'ember-metal/property_get';
-import { computed } from 'ember-metal/computed';
+import { set, get, computed } from 'ember-metal';
 import { styles } from '../../utils/test-helpers';
 
 moduleFor('Helpers test: {{mut}}', class extends RenderingTest {

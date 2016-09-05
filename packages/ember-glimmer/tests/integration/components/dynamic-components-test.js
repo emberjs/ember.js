@@ -1,8 +1,7 @@
-import { set } from 'ember-metal/property_set';
+import { set, computed } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import computed from 'ember-metal/computed';
 
 moduleFor('Components test: dynamic components', class extends RenderingTest {
 

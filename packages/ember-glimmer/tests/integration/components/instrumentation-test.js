@@ -1,7 +1,10 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
-import { subscribe, reset } from 'ember-metal/instrumentation';
-import { set } from 'ember-metal/property_set';
+import {
+  instrumentationSubscribe,
+  instrumentationReset,
+  set
+} from 'ember-metal';
 
 moduleFor('Components instrumentation', class extends RenderingTest {
   constructor() {
@@ -9,7 +12,7 @@ moduleFor('Components instrumentation', class extends RenderingTest {
 
     this.resetEvents();
 
-    subscribe('render.component', {
+    instrumentationSubscribe('render.component', {
       before: (name, timestamp, payload) => {
         if (payload.view !== this.component) {
           this.actual.before.push(payload);
@@ -39,7 +42,7 @@ moduleFor('Components instrumentation', class extends RenderingTest {
     this.assert.deepEqual(this.actual.before, [], 'No unexpected events (before)');
     this.assert.deepEqual(this.actual.after, [], 'No unexpected events (after)');
     super.teardown();
-    reset();
+    instrumentationReset();
   }
 
   ['@test zomg'](assert) { assert.ok(true); }

@@ -1,7 +1,7 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { makeBoundHelper } from '../../utils/helpers';
-import { runDestroy } from 'ember-runtime/tests/utils';
-import { set } from 'ember-metal/property_set';
+import { runDestroy } from 'internal-test-helpers';
+import { set } from 'ember-metal';
 
 let assert = QUnit.assert;
 

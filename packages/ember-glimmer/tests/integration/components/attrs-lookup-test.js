@@ -1,7 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
-import { set } from 'ember-metal/property_set';
-import { computed } from 'ember-metal/computed';
+import { set, computed } from 'ember-metal';
 import { styles } from '../../utils/test-helpers';
 
 moduleFor('Components test: attrs lookup', class extends RenderingTest {

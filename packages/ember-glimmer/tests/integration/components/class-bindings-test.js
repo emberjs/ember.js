@@ -1,9 +1,8 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { classes } from '../../utils/test-helpers';
-import { set } from 'ember-metal/property_set';
+import { set, computed } from 'ember-metal';
 import { strip } from '../../utils/abstract-test-case';
-import computed from 'ember-metal/computed';
 
 moduleFor('ClassNameBindings integration', class extends RenderingTest {
 

@@ -1,11 +1,8 @@
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { get, set } from 'ember-metal';
+import { A as emberA, ObjectProxy, removeAt } from 'ember-runtime';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { IfUnlessWithSyntaxTest } from '../../utils/shared-conditional-tests';
 import { strip } from '../../utils/abstract-test-case';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
-import { removeAt } from 'ember-runtime/mixins/mutable_array';
 
 moduleFor('Syntax test: {{#with}}', class extends IfUnlessWithSyntaxTest {
 

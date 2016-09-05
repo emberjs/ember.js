@@ -1,5 +1,5 @@
-import { set } from 'ember-metal/property_set';
-import jQuery from 'ember-views/system/jquery';
+import { set } from 'ember-metal';
+import { jQuery } from 'ember-views';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 

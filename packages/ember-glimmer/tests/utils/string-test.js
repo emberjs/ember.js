@@ -1,5 +1,5 @@
 import { SafeString, htmlSafe, isHTMLSafe } from './helpers';
-import isEnabled from 'ember-metal/features';
+import { isFeatureEnabled } from 'ember-metal';
 import { TestCase } from './abstract-test-case';
 import { moduleFor } from './test-case';
 
@@ -25,7 +25,7 @@ moduleFor('SafeString', class extends TestCase {
   }
 });
 
-if (isEnabled('ember-string-ishtmlsafe')) {
+if (isFeatureEnabled('ember-string-ishtmlsafe')) {
   moduleFor('SafeString isHTMLSafe', class extends TestCase {
     ['@test isHTMLSafe should detect SafeString']() {
       let safeString = htmlSafe('<em>Emphasize</em> the important things.');

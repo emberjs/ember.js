@@ -18,7 +18,8 @@ import { ENV } from 'ember-environment';
 import {
   get as getFromEmberMetal,
   getWithDefault as getWithDefaultFromEmberMetal,
-  set as setFromEmberMetal
+  set as setFromEmberMetal,
+  run
 } from 'ember-metal';
 
 import require from 'require';
@@ -135,4 +136,14 @@ export function testWithDefault(testname, callback) {
       ok('SKIPPING ACCESSORS');
     }
   });
+}
+
+export function runAppend(view) {
+  run(view, 'appendTo', '#qunit-fixture');
+}
+
+export function runDestroy(toDestroy) {
+  if (toDestroy) {
+    run(toDestroy, 'destroy');
+  }
 }

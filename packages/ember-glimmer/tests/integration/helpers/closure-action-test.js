@@ -1,20 +1,23 @@
-import run from 'ember-metal/run_loop';
-import { computed } from 'ember-metal/computed';
-import isEnabled from 'ember-metal/features';
-import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
+import {
+  run,
+  computed,
+  isFeatureEnabled,
+  instrumentationSubscribe,
+  instrumentationUnsubscribe
+} from 'ember-metal';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component, INVOKE } from '../../utils/helpers';
 
-if (isEnabled('ember-improved-instrumentation')) {
+if (isFeatureEnabled('ember-improved-instrumentation')) {
   moduleFor('Helpers test: closure {{action}} improved instrumentation', class extends RenderingTest {
 
     subscribe(eventName, options) {
-      this.subscriber = subscribe(eventName, options);
+      this.subscriber = instrumentationSubscribe(eventName, options);
     }
 
     teardown() {
       if (this.subscriber) {
-        unsubscribe(this.subscriber);
+        instrumentationUnsubscribe(this.subscriber);
       }
 
       super.teardown();

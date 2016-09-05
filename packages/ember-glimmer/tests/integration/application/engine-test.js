@@ -1,9 +1,9 @@
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { compile } from '../../utils/helpers';
-import Controller from 'ember-runtime/controllers/controller';
-import Engine from 'ember-application/system/engine';
-import Route from 'ember-routing/system/route';
+import { Controller } from 'ember-runtime';
+import { Engine } from 'ember-application';
+import { Route } from 'ember-routing';
 
 moduleFor('Application test: engine rendering', class extends ApplicationTest {
   setupAppAndRoutableEngine(hooks = []) {

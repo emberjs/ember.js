@@ -1,7 +1,6 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
-import { set } from 'ember-metal/property_set';
-import { Binding } from 'ember-metal/binding';
+import { set, Binding } from 'ember-metal';
 
 moduleFor('Binding integration tests', class extends RenderingTest {
   ['@test should accept bindings as a string or an Ember.binding']() {

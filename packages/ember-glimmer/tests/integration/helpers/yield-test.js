@@ -1,5 +1,5 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { set } from 'ember-metal/property_set';
+import { set } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 
 moduleFor('Helpers test: {{yield}} helper', class extends RenderingTest {
