@@ -292,7 +292,7 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     return args;
   }
 
-  create(definition: BasicComponentDefinition, args: EvaluatedArgs): BasicComponent {
+  create(environment: Environment, definition: BasicComponentDefinition, args: EvaluatedArgs): BasicComponent {
     let klass = definition.ComponentClass || BasicComponent;
     return new klass(args.named.value());
   }
@@ -361,7 +361,7 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return args;
   }
 
-  create(definition: EmberishGlimmerComponentDefinition, args: EvaluatedArgs, dynamicScope, hasDefaultBlock: boolean): EmberishGlimmerComponent {
+  create(environment: Environment, definition: EmberishGlimmerComponentDefinition, args: EvaluatedArgs, dynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishGlimmerComponent {
     let klass = definition.ComponentClass || BaseEmberishGlimmerComponent;
     let attrs = args.named.value();
     let component = klass.create({ attrs });
@@ -472,11 +472,12 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     return args;
   }
 
-  create(definition: EmberishCurlyComponentDefinition, args: EvaluatedArgs): EmberishCurlyComponent {
+  create(environment: Environment, definition: EmberishCurlyComponentDefinition, args: EvaluatedArgs, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>): EmberishCurlyComponent {
     let klass = definition.ComponentClass || BaseEmberishCurlyComponent;
     let processedArgs = processArgs(args, klass['positionalParams']);
     let { attrs } = processedArgs.value();
-    let merged = assign({}, attrs, { attrs }, { args: processedArgs });
+    let self = callerSelf.value();
+    let merged = assign({}, attrs, { attrs }, { args: processedArgs }, { targetObject: self });
     let component = klass.create(merged);
 
     component.didInitAttrs({ attrs });
@@ -1015,7 +1016,7 @@ class StaticTaglessComponentDefinition extends GenericComponentDefinition<BasicC
 
 interface EmberishCurlyComponentFactory {
   positionalParams?: string[];
-  create(options: { attrs: Attrs }): EmberishCurlyComponent;
+  create(options: { attrs: Attrs, targetObject }): EmberishCurlyComponent;
 }
 
 class EmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {

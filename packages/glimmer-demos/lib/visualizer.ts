@@ -3,7 +3,6 @@ import {
   TestDynamicScope
 } from 'glimmer-test-helpers';
 import { UpdatableReference } from 'glimmer-object-reference';
-
 import { compileSpec } from 'glimmer-compiler';
 
 import { EvaluatedArgs } from 'glimmer-runtime';
@@ -372,7 +371,7 @@ function renderContent() {
     let definition = env.getComponentDefinition([component]);
 
     let manager = definition.manager;
-    let instance = manager.create(definition, EvaluatedArgs.empty(), new TestDynamicScope(), false);
+    let instance = manager.create(env, definition, EvaluatedArgs.empty(), new TestDynamicScope(), null, false);
     let compiled = manager.layoutFor(definition, instance, env);
 
     return compiled.ops;
