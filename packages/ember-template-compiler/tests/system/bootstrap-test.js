@@ -1,17 +1,18 @@
-import run from 'ember-metal/run_loop';
-import jQuery from 'ember-views/system/jquery';
-import { Component, getTemplate, setTemplates } from 'ember-glimmer';
-import bootstrap from 'ember-template-compiler/system/bootstrap';
+import { run } from 'ember-metal';
+import { jQuery } from 'ember-views';
+import {
+  Component,
+  getTemplate,
+  setTemplates,
+  hasTemplate,
+  setTemplate
+} from 'ember-glimmer';
+import bootstrap from '../../system/bootstrap';
 import {
   runAppend,
   runDestroy,
   buildOwner
 } from 'internal-test-helpers';
-
-import {
-  hasTemplate,
-  setTemplate
-} from 'ember-glimmer';
 
 const { trim } = jQuery;
 
