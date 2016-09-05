@@ -1,6 +1,5 @@
-import { set } from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
-import NoneLocation from 'ember-routing/location/none_location';
+import { set, run } from 'ember-metal';
+import NoneLocation from '../../location/none_location';
 
 let NoneTestLocation, location;
 

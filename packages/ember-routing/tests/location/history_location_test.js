@@ -1,6 +1,5 @@
-import { set } from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
-import HistoryLocation from 'ember-routing/location/history_location';
+import { set, run } from 'ember-metal';
+import HistoryLocation from '../../location/history_location';
 
 let FakeHistory, HistoryTestLocation, location;
 

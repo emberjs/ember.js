@@ -1,9 +1,10 @@
-import { runDestroy } from 'internal-test-helpers';
-import Service from 'ember-runtime/system/service';
-import EmberObject from 'ember-runtime/system/object';
-import EmberRoute from 'ember-routing/system/route';
-import inject from 'ember-runtime/inject';
-import { buildOwner } from 'internal-test-helpers';
+import { runDestroy, buildOwner } from 'internal-test-helpers';
+import {
+  Service,
+  Object as EmberObject,
+  inject
+} from 'ember-runtime';
+import EmberRoute from '../../system/route';
 import { setOwner } from 'container';
 
 let route, routeOne, routeTwo, lookupHash;

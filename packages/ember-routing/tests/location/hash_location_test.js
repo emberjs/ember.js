@@ -1,6 +1,5 @@
-import { get } from 'ember-metal/property_get';
-import run from 'ember-metal/run_loop';
-import HashLocation from 'ember-routing/location/hash_location';
+import { get, run } from 'ember-metal';
+import HashLocation from '../../location/hash_location';
 
 let HashTestLocation, location;
 

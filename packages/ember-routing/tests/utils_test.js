@@ -1,6 +1,6 @@
 import {
   normalizeControllerQueryParams
-} from 'ember-routing/utils';
+} from '../utils';
 
 
 QUnit.module('Routing query parameter utils - normalizeControllerQueryParams');
