@@ -3,6 +3,7 @@ import {
   RenderingTest,
   ApplicationTest
 } from '../../utils/test-case';
+import { strip } from '../../utils/abstract-test-case';
 import { set, assign, Mixin } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 import { Controller, Object as EmberObject } from 'ember-runtime';
@@ -201,6 +202,40 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
     this.assertSentWithArgs([firstContext, secondContext], 'multiple contexts were sent to the action');
   }
 
+  ['@test calling sendAction on a component within a block sends to the outer scope GH#14216'](assert) {
+    this.registerTemplate('components/action-delegate', strip`
+      {{#component-a}}
+        {{component-b bar="derp"}}
+      {{/component-a}}
+    `);
+
+    this.registerComponent('component-a', {
+      ComponentClass: Component.extend({
+        actions: {
+          derp() {
+            assert.ok(false, 'no! bad scoping!');
+          }
+        }
+      })
+    });
+
+    let innerChild;
+    this.registerComponent('component-b', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          innerChild = this;
+        }
+      })
+    });
+
+    this.renderDelegate();
+
+    this.runTask(() => innerChild.sendAction('bar'));
+
+    this.assertSendCount(1);
+    this.assertNamedSendCount('derp', 1);
+  }
 });
 
 moduleFor('Components test: sendAction to a controller', class extends ApplicationTest {
