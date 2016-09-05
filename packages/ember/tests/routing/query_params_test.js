@@ -1,20 +1,23 @@
-import Controller from 'ember-runtime/controllers/controller';
-import RSVP from 'ember-runtime/ext/rsvp';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import get from 'ember-metal/property_get';
-import EmberObject from 'ember-runtime/system/object';
-import isEnabled from 'ember-metal/features';
-import { computed } from 'ember-metal/computed';
+import {
+  Controller,
+  RSVP,
+  Object as EmberObject,
+  A as emberA,
+  String as StringUtils
+} from 'ember-runtime';
+import { Route, NoneLocation } from 'ember-routing';
+import {
+  run,
+  get,
+  isFeatureEnabled,
+  computed,
+  Mixin,
+  meta
+} from 'ember-metal';
 import { compile } from 'ember-template-compiler';
-import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import NoneLocation from 'ember-routing/location/none_location';
+import { Application } from 'ember-application';
+import { jQuery } from 'ember-views';
 import { setTemplates } from 'ember-glimmer';
-import { dasherize } from 'ember-runtime/system/string';
-import Mixin from 'ember-metal/mixin';
-import { meta } from 'ember-metal/meta';
 
 let App, router, container;
 
@@ -120,7 +123,7 @@ QUnit.module('Routing with Query Params', {
   }
 });
 
-if (isEnabled('ember-routing-route-configured-query-params')) {
+if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('Single query params can be set on the route', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
@@ -201,7 +204,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
           defaultValue: ''
         }
       },
-      serializeQueryParamKey: dasherize
+      serializeQueryParamKey: StringUtils.dasherize
     });
 
     bootApplication();
@@ -1000,7 +1003,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
           defaultValue: ''
         }
       },
-      serializeQueryParamKey: dasherize
+      serializeQueryParamKey: StringUtils.dasherize
     });
 
     bootApplication();
@@ -2119,7 +2122,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('Routes have overridable serializeQueryParamKey hook', function() {
     App.IndexRoute = Route.extend({
-      serializeQueryParamKey: dasherize
+      serializeQueryParamKey: StringUtils.dasherize
     });
 
     App.IndexController = Controller.extend({

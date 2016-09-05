@@ -1,10 +1,14 @@
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
+import { Controller } from 'ember-runtime';
+import { Route } from 'ember-routing';
+import { run } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
-import Application from 'ember-application/system/application';
-import { Component, setTemplates, setTemplate } from 'ember-glimmer';
-import jQuery from 'ember-views/system/jquery';
+import { Application } from 'ember-application';
+import {
+  Component,
+  setTemplates,
+  setTemplate
+} from 'ember-glimmer';
+import { jQuery } from 'ember-views';
 
 /*
  In Ember 1.x, controllers subtly affect things like template scope

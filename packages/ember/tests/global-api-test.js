@@ -1,5 +1,5 @@
-import get from 'ember-metal/property_get';
-import { isArray } from 'ember-runtime/utils';
+import { get } from 'ember-metal';
+import { isArray } from 'ember-runtime';
 
 QUnit.module('Global API Tests');
 

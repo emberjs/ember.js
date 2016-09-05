@@ -1,14 +1,10 @@
-import { set } from 'ember-metal/property_set';
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import isEnabled from 'ember-metal/features';
+import { set, run, isFeatureEnabled } from 'ember-metal';
+import { Controller, RSVP } from 'ember-runtime';
+import { Route, NoneLocation } from 'ember-routing';
 import { compile } from 'ember-template-compiler';
-import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
-import NoneLocation from 'ember-routing/location/none_location';
+import { Application } from 'ember-application';
+import { jQuery } from 'ember-views';
 import { setTemplates, setTemplate } from 'ember-glimmer';
-import RSVP from 'ember-runtime/ext/rsvp';
 
 let Router, App, router, registry, container;
 
@@ -66,7 +62,7 @@ function sharedTeardown() {
   setTemplates({});
 }
 
-if (isEnabled('ember-routing-route-configured-query-params')) {
+if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
   QUnit.module('The {{link-to}} helper: invoking with query params when defined on a route', {
     setup() {
       run(() => {

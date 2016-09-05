@@ -1,11 +1,9 @@
-import RSVP from 'ember-runtime/ext/rsvp';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import { set } from 'ember-metal/property_set';
+import { RSVP } from 'ember-runtime';
+import { Route, NoneLocation } from 'ember-routing';
+import { run, set } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
-import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
-import NoneLocation from 'ember-routing/location/none_location';
+import { Application } from 'ember-application';
+import { jQuery } from 'ember-views';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
 let Router, App, router, registry, container;

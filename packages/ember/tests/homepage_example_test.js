@@ -1,11 +1,9 @@
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import Application from 'ember-application/system/application';
-import EmberObject from 'ember-runtime/system/object';
-import { computed } from 'ember-metal/computed';
+import { Route } from 'ember-routing';
+import { run, computed } from 'ember-metal';
+import { Application } from 'ember-application';
+import { Object as EmberObject, A as emberA } from 'ember-runtime';
 import { compile } from 'ember-template-compiler';
-import jQuery from 'ember-views/system/jquery';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { jQuery } from 'ember-views';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
 let App, $fixture;

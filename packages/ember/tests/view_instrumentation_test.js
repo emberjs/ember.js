@@ -1,7 +1,10 @@
-import run from 'ember-metal/run_loop';
-import $ from 'ember-views/system/jquery';
-import Application from 'ember-application/system/application';
-import { subscribe, reset } from 'ember-metal/instrumentation';
+import {
+  run,
+  instrumentationSubscribe as subscribe,
+  instrumentationReset as reset
+} from 'ember-metal';
+import { jQuery as $ } from 'ember-views';
+import { Application } from 'ember-application';
 import { compile } from 'ember-template-compiler';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
