@@ -403,8 +403,8 @@ export const NAME_KEY = GUID_KEY + '_name';
   added to other classes. For instance,
 
   ```javascript
-  App.Editable = Ember.Mixin.create({
-    edit: function() {
+  const EditableMixin = Ember.Mixin.create({
+    edit() {
       console.log('starting to edit');
       this.set('isEditing', true);
     },
@@ -412,13 +412,13 @@ export const NAME_KEY = GUID_KEY + '_name';
   });
 
   // Mix mixins into classes by passing them as the first arguments to
-  // .extend.
-  App.CommentView = Ember.View.extend(App.Editable, {
-    template: Ember.Handlebars.compile('{{#if view.isEditing}}...{{else}}...{{/if}}')
+  // `.extend.`
+  const Comment = Ember.Object.extend(EditableMixin, {
+    post: null
   });
 
-  commentView = App.CommentView.create();
-  commentView.edit(); // outputs 'starting to edit'
+  let comment = Comment.create(post: somePost);
+  comment.edit(); // outputs 'starting to edit'
   ```
 
   Note that Mixins are created with `Ember.Mixin.create`, not
@@ -430,19 +430,21 @@ export const NAME_KEY = GUID_KEY + '_name';
   it either as a computed property or have it be created on initialization of the object.
 
   ```javascript
-  //filters array will be shared amongst any object implementing mixin
-  App.Filterable = Ember.Mixin.create({
+  // filters array will be shared amongst any object implementing mixin
+  const FilterableMixin = Ember.Mixin.create({
     filters: Ember.A()
   });
 
-  //filters will be a separate  array for every object implementing the mixin
-  App.Filterable = Ember.Mixin.create({
-    filters: Ember.computed(function() {return Ember.A();})
+  // filters will be a separate array for every object implementing the mixin
+  const FilterableMixin = Ember.Mixin.create({
+    filters: Ember.computed(function() {
+      return Ember.A();
+    })
   });
 
-  //filters will be created as a separate array during the object's initialization
-  App.Filterable = Ember.Mixin.create({
-    init: function() {
+  // filters will be created as a separate array during the object's initialization
+  const Filterable = Ember.Mixin.create({
+    init() {
       this._super(...arguments);
       this.set("filters", Ember.A());
     }
@@ -799,30 +801,6 @@ export function _immediateObserver() {
 
   A `_beforeObserver` fires before a property changes.
 
-  A `_beforeObserver` is an alternative form of `.observesBefore()`.
-
-  ```javascript
-  App.PersonView = Ember.View.extend({
-    friends: [{ name: 'Tom' }, { name: 'Stefan' }, { name: 'Kris' }],
-
-    valueDidChange: Ember.observer('content.value', function(obj, keyName) {
-        // only run if updating a value already in the DOM
-        if (this.get('state') === 'inDOM') {
-          let color = obj.get(keyName) > this.changingFrom ? 'green' : 'red';
-          // logic
-        }
-    }),
-
-    friendsDidChange: Ember.observer('friends.@each.name', function(obj, keyName) {
-      // some logic
-      // obj.get(keyName) returns friends array
-    })
-  });
-  ```
-
-  Also available as `Function.prototype.observesBefore` if prototype extensions are
-  enabled.
-
   @method beforeObserver
   @for Ember
   @param {String} propertyNames*
@@ -853,7 +831,7 @@ export function _beforeObserver(...args) {
   }
 
   if (typeof func !== 'function') {
-    throw new EmberError('Ember.beforeObserver called without a function');
+    throw new EmberError('_beforeObserver called without a function');
   }
 
   func.__ember_observesBefore__ = paths;
