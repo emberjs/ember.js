@@ -3,7 +3,6 @@ import RSVP from 'ember-runtime/ext/rsvp';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import get from 'ember-metal/property_get';
-import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
 import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
@@ -2551,11 +2550,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     let indexModelCount = 0;
     App.IndexRoute = Route.extend({
-      queryParams: EmberObject.create({
+      queryParams: {
         unknownProperty(keyName) {
           return { refreshModel: true };
         }
-      }),
+      },
       model(params) {
         indexModelCount++;
 
@@ -2745,12 +2744,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     App.ApplicationRoute = Route.extend({
-      queryParams: EmberObject.create({
+      queryParams: {
         unknownProperty(keyName) {
           // We are simulating all qps requiring refresh
           return { replace: true };
         }
-      })
+      }
     });
 
     bootApplication();
