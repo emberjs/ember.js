@@ -5,7 +5,7 @@ import {
   getOwner,
   OWNER
 } from '../index';
-import factory from './test-helpers/factory';
+import { factory } from 'internal-test-helpers';
 
 let originalModelInjections;
 

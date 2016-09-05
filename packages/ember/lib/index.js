@@ -1,5 +1,4 @@
 import require, { has } from 'require';
-import isEnabled from 'ember-metal/features';
 
 // ****ember-environment****
 import { ENV, context } from 'ember-environment';
@@ -13,7 +12,14 @@ import {
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
-import { deprecate, deprecateFunc } from 'ember-metal';
+
+// need to import this directly, to ensure the babel feature
+// flag plugin works properly
+import {
+  isFeatureEnabled,
+  deprecate,
+  deprecateFunc
+} from 'ember-metal';
 
 const computed = metal.computed;
 computed.alias = metal.alias;
@@ -123,7 +129,7 @@ Ember.bind = metal.bind;
 Ember.Binding = metal.Binding;
 Ember.isGlobalPath = metal.isGlobalPath;
 
-if (isEnabled('ember-metal-weakmap')) {
+if (isFeatureEnabled('ember-metal-weakmap')) {
   Ember.WeakMap = metal.WeakMap;
 }
 
@@ -407,7 +413,7 @@ computed.filter = filter;
 computed.filterBy = filterBy;
 computed.uniq = uniq;
 
-if (isEnabled('ember-runtime-computed-uniq-by')) {
+if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
   computed.uniqBy = uniqBy;
 }
 computed.union = union;
@@ -497,7 +503,7 @@ EmberHTMLBars.template = EmberHandlebars.template = template;
 EmberHandleBarsUtils.escapeExpression = escapeExpression;
 EmberString.htmlSafe = htmlSafe;
 
-if (isEnabled('ember-string-ishtmlsafe')) {
+if (isFeatureEnabled('ember-string-ishtmlsafe')) {
   EmberString.isHTMLSafe = isHTMLSafe;
 }
 EmberHTMLBars.makeBoundHelper = makeBoundHelper;
@@ -520,6 +526,7 @@ Object.defineProperty(Ember, 'TEMPLATES', {
 });
 
 import VERSION from './version';
+export { VERSION };
 
 /**
  The semantic version

@@ -1,3 +1,4 @@
+export { default as factory } from './factory';
 import {
   Registry
 } from 'container';

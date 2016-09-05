@@ -103,7 +103,10 @@ export {
 export { default as Controller } from './controllers/controller';
 export { default as ControllerMixin } from './mixins/controller';
 export { default as Service } from './system/service';
-export { default as RSVP } from './ext/rsvp';     // just for side effect of extending Ember.RSVP
+export {
+  default as RSVP,
+  onerrorDefault
+} from './ext/rsvp';     // just for side effect of extending Ember.RSVP
 export { isArray, typeOf } from './utils';
 export {
   getStrings,

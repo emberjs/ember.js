@@ -1,9 +1,12 @@
 import { context } from 'ember-environment';
-import run from 'ember-metal/run_loop';
-import Engine from 'ember-application/system/engine';
-import EmberObject from 'ember-runtime/system/object';
+import { run } from 'ember-metal';
+import Engine from '../../system/engine';
+import { Object as EmberObject } from 'ember-runtime';
 import { privatize as P } from 'container';
-import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
+import {
+  verifyInjection,
+  verifyRegistration
+} from '../test-helpers/registry-check';
 
 let engine;
 let originalLookup = context.lookup;
