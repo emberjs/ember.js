@@ -49,7 +49,7 @@ class MountManager {
     return args;
   }
 
-  create({ name, env }, args, dynamicScope) {
+  create(environment, { name, env }, args, dynamicScope) {
     dynamicScope.outletState = UNDEFINED_REFERENCE;
 
     let engine = env.owner.buildChildEngineInstance(name);

@@ -133,7 +133,8 @@ export class CurlyComponentSyntax extends StatementSyntax {
 function NOOP() {}
 
 class ComponentStateBucket {
-  constructor(component, args, finalizer) {
+  constructor(environment, component, args, finalizer) {
+    this.environment = environment;
     this.component = component;
     this.classRef = null;
     this.args = args;
@@ -189,7 +190,7 @@ class CurlyComponentManager {
     return args;
   }
 
-  create(definition, args, dynamicScope, hasBlock) {
+  create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
     let parentView = dynamicScope.view;
 
     let klass = definition.ComponentClass;
@@ -201,16 +202,13 @@ class CurlyComponentManager {
     props.parentView = parentView;
     props[HAS_BLOCK] = hasBlock;
 
-    // dynamicScope here is inherited from the parent dynamicScope,
-    // but is set shortly below to the new target
-    props._targetObject = dynamicScope.targetObject;
+    props._targetObject = callerSelfRef.value();
 
     let component = klass.create(props);
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
     dynamicScope.view = component;
-    dynamicScope.targetObject = component;
 
     if (parentView !== null) {
       parentView.appendChild(component);
@@ -225,7 +223,7 @@ class CurlyComponentManager {
 
     component.trigger('willRender');
 
-    let bucket = new ComponentStateBucket(component, processedArgs, finalizer);
+    let bucket = new ComponentStateBucket(environment, component, processedArgs, finalizer);
 
     if (args.named.has('class')) {
       bucket.classRef = args.named.get('class');
@@ -355,13 +353,12 @@ class CurlyComponentManager {
 const MANAGER = new CurlyComponentManager();
 
 class TopComponentManager extends CurlyComponentManager {
-  create(definition, args, dynamicScope, hasBlock) {
+  create(environment, definition, args, dynamicScope, currentScope, hasBlock) {
     let component = definition.ComponentClass;
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
     dynamicScope.view = component;
-    dynamicScope.targetObject = component;
 
     component.trigger('didInitAttrs');
     component.trigger('didReceiveAttrs');
@@ -370,7 +367,7 @@ class TopComponentManager extends CurlyComponentManager {
 
     processComponentInitializationAssertions(component, {});
 
-    return new ComponentStateBucket(component, args, finalizer);
+    return new ComponentStateBucket(environment, component, args, finalizer);
   }
 }
 

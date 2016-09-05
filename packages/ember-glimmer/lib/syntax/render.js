@@ -69,7 +69,7 @@ class AbstractRenderManager {
     return args;
   }
 
-  /* abstract create(definition, args, dynamicScope); */
+  /* abstract create(environment, definition, args, dynamicScope); */
 
   layoutFor(definition, bucket, env) {
     return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
@@ -96,7 +96,7 @@ class AbstractRenderManager {
 }
 
 class SingletonRenderManager extends AbstractRenderManager {
-  create(definition, args, dynamicScope) {
+  create(environment, definition, args, dynamicScope) {
     let { name, env } = definition;
     let controller = env.owner.lookup(`controller:${name}`);
 
@@ -111,7 +111,7 @@ class SingletonRenderManager extends AbstractRenderManager {
 const SINGLETON_RENDER_MANAGER = new SingletonRenderManager();
 
 class NonSingletonRenderManager extends AbstractRenderManager {
-  create(definition, args, dynamicScope) {
+  create(environment, definition, args, dynamicScope) {
     let { name, env } = definition;
     let modelRef = args.positional.at(0);
 

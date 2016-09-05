@@ -34,12 +34,11 @@ class DynamicScope {
     this.outletState = outletState;
     this.rootOutletState = rootOutletState;
     this.isTopLevel = isTopLevel;
-    this.targetObject = targetObject;
   }
 
   child() {
     return new DynamicScope(
-      this.view, this.outletState, this.rootOutletState, this.isTopLevel, this.targetObject
+      this.view, this.outletState, this.rootOutletState, this.isTopLevel
     );
   }
 

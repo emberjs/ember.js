@@ -24,6 +24,7 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
         init() {
           this._super();
           self.delegate = this;
+          this.name = 'action-delegate';
         }
       })
     });
@@ -211,6 +212,10 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
 
     this.registerComponent('component-a', {
       ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          this.name = 'component-a';
+        },
         actions: {
           derp() {
             assert.ok(false, 'no! bad scoping!');
@@ -225,6 +230,7 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
         init() {
           this._super(...arguments);
           innerChild = this;
+          this.name = 'component-b';
         }
       })
     });
