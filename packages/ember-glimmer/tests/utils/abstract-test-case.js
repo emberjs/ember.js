@@ -289,7 +289,7 @@ export class AbstractApplicationTest extends TestCase {
 export class AbstractRenderingTest extends TestCase {
   constructor() {
     super();
-    let owner = this.owner = buildOwner(this.getOwnerOptions());
+    let owner = this.owner = buildOwner(this.getOwnerOptions(), this.getResolver());
 
     this.renderer = this.owner.lookup('renderer:-dom');
     this.element = jQuery('#qunit-fixture')[0];
@@ -311,6 +311,8 @@ export class AbstractRenderingTest extends TestCase {
   getOwnerOptions() {
     return {};
   }
+
+  getResolver() { }
 
   teardown() {
     if (this.component) {

@@ -9,7 +9,7 @@ import {
 import HistoryLocation from 'ember-routing/location/history_location';
 import HashLocation from 'ember-routing/location/hash_location';
 import NoneLocation from 'ember-routing/location/none_location';
-import buildOwner from 'container/tests/test-helpers/build-owner';
+import { buildOwner } from 'internal-test-helpers';
 import { OWNER } from 'container';
 
 function mockBrowserLocation(overrides) {

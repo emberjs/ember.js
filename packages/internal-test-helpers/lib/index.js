@@ -22,7 +22,8 @@ import {
 
 import require from 'require';
 
-export function buildOwner(resolver) {
+export function buildOwner(_createOptions, resolver) {
+  let createOptions = _createOptions || {};
   let Owner = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin);
 
   let namespace = EmberObject.create({
@@ -41,7 +42,7 @@ export function buildOwner(resolver) {
   let owner = Owner.create({
     __registry__: registry,
     __container__: null
-  });
+  }, createOptions);
 
   let container = registry.container({ owner: owner });
   owner.__container__ = container;

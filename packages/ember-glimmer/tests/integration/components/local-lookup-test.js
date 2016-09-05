@@ -27,12 +27,8 @@ function buildResolver() {
 }
 
 moduleFor('Components test: local lookup', class extends RenderingTest {
-  getOwnerOptions() {
-    return {
-      _registryOptions: {
-        resolver: buildResolver()
-      }
-    };
+  getResolver() {
+    return buildResolver();
   }
 
   ['@test it can lookup a local template']() {

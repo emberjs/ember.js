@@ -9,7 +9,7 @@ import generateController from 'ember-routing/system/generate_controller';
 import {
   generateControllerFactory
 } from 'ember-routing/system/generate_controller';
-import buildOwner from 'container/tests/test-helpers/build-owner';
+import { buildOwner } from 'internal-test-helpers';
 
 function buildInstance(namespace) {
   let owner = buildOwner();
