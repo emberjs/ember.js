@@ -1,7 +1,11 @@
-import { isTesting, setTesting } from 'ember-metal/testing';
-import { setOnerror, getOnerror } from 'ember-metal/error_handler';
-import run from 'ember-metal/run_loop';
-import RSVP from 'ember-runtime/ext/rsvp';
+import {
+  isTesting,
+  setTesting,
+  setOnerror,
+  getOnerror,
+  run
+} from 'ember-metal';
+import RSVP from '../../ext/rsvp';
 
 const ORIGINAL_ONERROR = getOnerror();
 

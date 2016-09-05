@@ -1,7 +1,7 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
-import { set } from 'ember-metal/property_set';
+import { set } from 'ember-metal';
 
 moduleFor('Attribute bindings integration', class extends RenderingTest {
   ['@test it can have attribute bindings']() {

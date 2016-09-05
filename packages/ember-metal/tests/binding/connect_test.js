@@ -1,12 +1,12 @@
 import { context } from 'ember-environment';
-import { testBoth } from 'ember-metal/tests/props_helper';
+import { testBoth } from 'internal-test-helpers';
 import {
   Binding,
   bind
-} from 'ember-metal/binding';
-import run from 'ember-metal/run_loop';
-import { set } from 'ember-metal/property_set';
-import { get } from 'ember-metal/property_get';
+} from '../../binding';
+import run from '../../run_loop';
+import { set } from '../../property_set';
+import { get } from '../../property_get';
 
 function performTest(binding, a, b, get, set, connect) {
   if (connect === undefined) {

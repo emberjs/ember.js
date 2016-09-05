@@ -1,13 +1,9 @@
-import RSVP from 'ember-runtime/ext/rsvp';
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
+import { RSVP, Controller } from 'ember-runtime';
+import { Route, NoneLocation } from 'ember-routing';
+import { run } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
-import Application from 'ember-application/system/application';
-import Engine from 'ember-application/system/engine';
-import jQuery from 'ember-views/system/jquery';
-import NoneLocation from 'ember-routing/location/none_location';
-import DefaultResolver from 'ember-application/system/resolver';
+import { Application, Engine, Resolver } from 'ember-application';
+import { jQuery } from 'ember-views';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
 let Router, App, templates, router, container, registry, counter;
@@ -42,7 +38,7 @@ QUnit.module('Loading/Error Substates', {
         name: 'App',
         rootElement: '#qunit-fixture',
         // fake a modules resolver
-        Resolver: DefaultResolver.extend({ moduleBasedResolver: true })
+        Resolver: Resolver.extend({ moduleBasedResolver: true })
       });
 
       App.deferReadiness();

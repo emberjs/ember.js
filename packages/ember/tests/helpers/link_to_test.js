@@ -1,18 +1,22 @@
 import Logger from 'ember-console';
 
-import Controller from 'ember-runtime/controllers/controller';
-import { set } from 'ember-metal/property_set';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import { subscribe, reset } from 'ember-metal/instrumentation';
-import isEnabled from 'ember-metal/features';
-import alias from 'ember-metal/alias';
-import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
-import EmberObject from 'ember-runtime/system/object';
-import inject from 'ember-runtime/inject';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import NoneLocation from 'ember-routing/location/none_location';
+import {
+  Controller,
+  Object as EmberObject,
+  inject,
+  A as emberA
+} from 'ember-runtime';
+import {
+  set,
+  run,
+  instrumentationSubscribe as subscribe,
+  instrumentationReset as reset,
+  isFeatureEnabled,
+  alias
+} from 'ember-metal';
+import { Route, NoneLocation } from 'ember-routing';
+import { Application } from 'ember-application';
+import { jQuery } from 'ember-views';
 import { compile } from 'ember-template-compiler';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
@@ -114,7 +118,7 @@ QUnit.test('The {{link-to}} helper moves into the named route', function() {
   equal(jQuery('#home-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 });
 
-if (isEnabled('ember-improved-instrumentation')) {
+if (isFeatureEnabled('ember-improved-instrumentation')) {
   QUnit.test('The {{link-to}} helper fires an interaction event', function(assert) {
     assert.expect(2);
     Router.map(function(match) {
@@ -1296,7 +1300,7 @@ QUnit.test('{{link-to}} active property respects changing parent route context',
 
 
 QUnit.test('{{link-to}} populates href with default query param values even without query-params object', function() {
-  if (isEnabled('ember-routing-route-configured-query-params')) {
+  if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -1317,7 +1321,7 @@ QUnit.test('{{link-to}} populates href with default query param values even with
 });
 
 QUnit.test('{{link-to}} populates href with default query param values with empty query-params object', function() {
-  if (isEnabled('ember-routing-route-configured-query-params')) {
+  if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -1342,7 +1346,7 @@ QUnit.test('{{link-to}} with only query-params and a block updates when route ch
     this.route('about');
   });
 
-  if (isEnabled('ember-routing-route-configured-query-params')) {
+  if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
     App.ApplicationRoute = Route.extend({
       queryParams: {
         foo: {
@@ -1375,7 +1379,7 @@ QUnit.test('Block-less {{link-to}} with only query-params updates when route cha
     this.route('about');
   });
 
-  if (isEnabled('ember-routing-route-configured-query-params')) {
+  if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
     App.ApplicationRoute = Route.extend({
       queryParams: {
         foo: {

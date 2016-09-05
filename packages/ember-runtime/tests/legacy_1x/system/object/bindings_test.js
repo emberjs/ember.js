@@ -1,8 +1,6 @@
-import {context} from 'ember-environment';
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
+import { context } from 'ember-environment';
+import { get, set, run } from 'ember-metal';
+import EmberObject from '../../../../system/object';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests

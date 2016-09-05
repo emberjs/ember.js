@@ -1,7 +1,7 @@
-import {context} from 'ember-environment';
-import {guidFor, GUID_KEY} from 'ember-metal/utils';
-import EmberObject from 'ember-runtime/system/object';
-import Namespace from 'ember-runtime/system/namespace';
+import { context } from 'ember-environment';
+import { guidFor, GUID_KEY } from 'ember-metal';
+import EmberObject from '../../../system/object';
+import Namespace from '../../../system/namespace';
 
 let originalLookup = context.lookup;
 let lookup;

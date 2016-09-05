@@ -1,10 +1,13 @@
-import { Suite } from 'ember-runtime/tests/suites/suite';
-import EmberObject from 'ember-runtime/system/object';
-import {guidFor, generateGuid} from 'ember-metal/utils';
-import {computed} from 'ember-metal/computed';
-import {get} from 'ember-metal/property_get';
-import { _addBeforeObserver } from 'ember-metal/observer';
-import isEnabled from 'ember-metal/features';
+import { Suite } from './suite';
+import EmberObject from '../../system/object';
+import {
+  guidFor,
+  generateGuid,
+  computed,
+  get,
+  _addBeforeObserver,
+  isFeatureEnabled
+} from 'ember-metal';
 
 const ObserverClass = EmberObject.extend({
   _keysBefore: null,
@@ -276,27 +279,27 @@ const EnumerableTests = Suite.extend({
   observerClass: ObserverClass
 });
 
-import anyTests         from 'ember-runtime/tests/suites/enumerable/any';
-import isAnyTests       from 'ember-runtime/tests/suites/enumerable/is_any';
-import compactTests     from 'ember-runtime/tests/suites/enumerable/compact';
-import containsTests    from 'ember-runtime/tests/suites/enumerable/contains';
-import includesTests    from 'ember-runtime/tests/suites/enumerable/includes';
-import everyTests       from 'ember-runtime/tests/suites/enumerable/every';
-import filterTests      from 'ember-runtime/tests/suites/enumerable/filter';
-import findTests        from 'ember-runtime/tests/suites/enumerable/find';
-import firstObjectTests from 'ember-runtime/tests/suites/enumerable/firstObject';
-import forEachTests     from 'ember-runtime/tests/suites/enumerable/forEach';
-import mapByTests       from 'ember-runtime/tests/suites/enumerable/mapBy';
-import invokeTests      from 'ember-runtime/tests/suites/enumerable/invoke';
-import lastObjectTests  from 'ember-runtime/tests/suites/enumerable/lastObject';
-import mapTests         from 'ember-runtime/tests/suites/enumerable/map';
-import reduceTests      from 'ember-runtime/tests/suites/enumerable/reduce';
-import rejectTests      from 'ember-runtime/tests/suites/enumerable/reject';
-import sortByTests      from 'ember-runtime/tests/suites/enumerable/sortBy';
-import toArrayTests     from 'ember-runtime/tests/suites/enumerable/toArray';
-import uniqTests        from 'ember-runtime/tests/suites/enumerable/uniq';
-import uniqByTests      from 'ember-runtime/tests/suites/enumerable/uniqBy';
-import withoutTests     from 'ember-runtime/tests/suites/enumerable/without';
+import anyTests         from './enumerable/any';
+import isAnyTests       from './enumerable/is_any';
+import compactTests     from './enumerable/compact';
+import containsTests    from './enumerable/contains';
+import includesTests    from './enumerable/includes';
+import everyTests       from './enumerable/every';
+import filterTests      from './enumerable/filter';
+import findTests        from './enumerable/find';
+import firstObjectTests from './enumerable/firstObject';
+import forEachTests     from './enumerable/forEach';
+import mapByTests       from './enumerable/mapBy';
+import invokeTests      from './enumerable/invoke';
+import lastObjectTests  from './enumerable/lastObject';
+import mapTests         from './enumerable/map';
+import reduceTests      from './enumerable/reduce';
+import rejectTests      from './enumerable/reject';
+import sortByTests      from './enumerable/sortBy';
+import toArrayTests     from './enumerable/toArray';
+import uniqTests        from './enumerable/uniq';
+import uniqByTests      from './enumerable/uniqBy';
+import withoutTests     from './enumerable/without';
 
 EnumerableTests.importModuleTests(anyTests);
 EnumerableTests.importModuleTests(isAnyTests);
@@ -317,11 +320,11 @@ EnumerableTests.importModuleTests(sortByTests);
 EnumerableTests.importModuleTests(toArrayTests);
 EnumerableTests.importModuleTests(uniqTests);
 
-if (isEnabled('ember-runtime-computed-uniq-by')) {
+if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
   EnumerableTests.importModuleTests(uniqByTests);
 }
 
-if (isEnabled('ember-runtime-enumerable-includes')) {
+if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
   EnumerableTests.importModuleTests(includesTests);
 }
 

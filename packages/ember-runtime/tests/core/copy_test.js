@@ -1,4 +1,4 @@
-import copy from 'ember-runtime/copy';
+import copy from '../../copy';
 
 QUnit.module('Ember Copy Method');
 

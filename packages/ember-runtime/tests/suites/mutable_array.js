@@ -1,14 +1,14 @@
-import { ArrayTests } from 'ember-runtime/tests/suites/array';
+import { ArrayTests } from './array';
 
-import insertAtTests from 'ember-runtime/tests/suites/mutable_array/insertAt';
-import popObjectTests from 'ember-runtime/tests/suites/mutable_array/popObject';
-import pushObjectTests from 'ember-runtime/tests/suites/mutable_array/pushObject';
-import pushObjectsTest from 'ember-runtime/tests/suites/mutable_array/pushObjects';
-import removeAtTests from 'ember-runtime/tests/suites/mutable_array/removeAt';
-import replaceTests from 'ember-runtime/tests/suites/mutable_array/replace';
-import shiftObjectTests from 'ember-runtime/tests/suites/mutable_array/shiftObject';
-import unshiftObjectTests from 'ember-runtime/tests/suites/mutable_array/unshiftObject';
-import reverseObjectsTests from 'ember-runtime/tests/suites/mutable_array/reverseObjects';
+import insertAtTests from './mutable_array/insertAt';
+import popObjectTests from './mutable_array/popObject';
+import pushObjectTests from './mutable_array/pushObject';
+import pushObjectsTest from './mutable_array/pushObjects';
+import removeAtTests from './mutable_array/removeAt';
+import replaceTests from './mutable_array/replace';
+import shiftObjectTests from './mutable_array/shiftObject';
+import unshiftObjectTests from './mutable_array/unshiftObject';
+import reverseObjectsTests from './mutable_array/reverseObjects';
 
 const MutableArrayTests = ArrayTests.extend();
 MutableArrayTests.importModuleTests(insertAtTests);

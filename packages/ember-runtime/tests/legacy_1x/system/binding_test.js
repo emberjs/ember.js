@@ -1,10 +1,13 @@
-import {context} from 'ember-environment';
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
-import {Binding, bind } from 'ember-metal/binding';
-import {observer as emberObserver} from 'ember-metal/mixin';
-import EmberObject from 'ember-runtime/system/object';
+import { context } from 'ember-environment';
+import {
+  get,
+  set,
+  run,
+  Binding,
+  bind,
+  observer as emberObserver
+} from 'ember-metal';
+import EmberObject from '../../../system/object';
 
 
 /*

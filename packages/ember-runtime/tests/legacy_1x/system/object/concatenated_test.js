@@ -1,5 +1,5 @@
-import {get} from 'ember-metal/property_get';
-import EmberObject from 'ember-runtime/system/object';
+import { get } from 'ember-metal';
+import EmberObject from '../../../../system/object';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests

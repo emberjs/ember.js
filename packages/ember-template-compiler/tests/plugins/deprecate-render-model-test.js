@@ -1,4 +1,4 @@
-import { compile } from 'ember-template-compiler';
+import { compile } from '../../index';
 
 QUnit.module('ember-template-compiler: deprecate-model-render');
 

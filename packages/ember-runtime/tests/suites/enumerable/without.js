@@ -1,5 +1,5 @@
-import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import isEnabled from 'ember-metal/features';
+import { SuiteModuleBuilder } from '../suite';
+import { isFeatureEnabled } from 'ember-metal';
 
 const suite = SuiteModuleBuilder.create();
 
@@ -17,7 +17,7 @@ suite.test('should return new instance with item removed', function() {
   deepEqual(this.toArray(obj), before, 'should not have changed original');
 });
 
-if (isEnabled('ember-runtime-enumerable-includes')) {
+if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
   suite.test('should remove NaN value', function() {
     let before, after, obj, ret;
 

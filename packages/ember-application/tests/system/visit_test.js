@@ -1,15 +1,17 @@
-import EmberObject from 'ember-runtime/system/object';
-import inject from 'ember-runtime/inject';
-import run from 'ember-metal/run_loop';
-import RSVP, { onerrorDefault } from 'ember-runtime/ext/rsvp';
-import Application from 'ember-application/system/application';
-import ApplicationInstance from 'ember-application/system/application-instance';
-import Engine from 'ember-application/system/engine';
-import Route from 'ember-routing/system/route';
-import Router from 'ember-routing/system/router';
+import {
+  Object as EmberObject,
+  inject,
+  RSVP,
+  onerrorDefault
+} from 'ember-runtime';
+import { run } from 'ember-metal';
+import Application from '../../system/application';
+import ApplicationInstance from '../../system/application-instance';
+import Engine from '../../system/engine';
+import { Route, Router } from 'ember-routing';
 import { Component, helper } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
-import jQuery from 'ember-views/system/jquery';
+import { jQuery } from 'ember-views';
 
 let App = null;
 let instance = null;

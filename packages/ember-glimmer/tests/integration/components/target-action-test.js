@@ -1,11 +1,12 @@
-import { moduleFor, RenderingTest, ApplicationTest } from '../../utils/test-case';
-import { set } from 'ember-metal/property_set';
+import {
+  moduleFor,
+  RenderingTest,
+  ApplicationTest
+} from '../../utils/test-case';
+import { set, assign, Mixin } from 'ember-metal';
 import { Component } from '../../utils/helpers';
-import assign from 'ember-metal/assign';
-import Controller from 'ember-runtime/controllers/controller';
-import { Mixin } from 'ember-metal/mixin';
-import Route from 'ember-routing/system/route';
-import EmberObject from 'ember-runtime/system/object';
+import { Controller, Object as EmberObject } from 'ember-runtime';
+import { Route } from 'ember-routing';
 
 moduleFor('Components test: sendAction', class extends RenderingTest {
 

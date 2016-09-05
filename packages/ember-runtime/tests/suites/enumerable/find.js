@@ -1,5 +1,5 @@
-import EmberObject from 'ember-runtime/system/object';
-import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import EmberObject from '../../../system/object';
+import { SuiteModuleBuilder } from '../suite';
 
 const suite = SuiteModuleBuilder.create();
 // ..........................................................

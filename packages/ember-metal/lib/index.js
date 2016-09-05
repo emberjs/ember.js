@@ -57,7 +57,8 @@ export {
 } from './error_handler';
 export {
   META_DESC,
-  meta
+  meta,
+  peekMeta
 } from './meta';
 export { default as Error } from './error';
 export { default as Cache } from './cache';
@@ -126,7 +127,8 @@ export {
   isWatching,
   rewatch,
   unwatch,
-  watch
+  watch,
+  watcherCount
 } from './watching';
 export { default as libraries } from './libraries';
 export {

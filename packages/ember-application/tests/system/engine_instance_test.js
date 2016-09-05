@@ -1,8 +1,8 @@
-import Engine from 'ember-application/system/engine';
-import EngineInstance from 'ember-application/system/engine-instance';
-import { getEngineParent, setEngineParent } from 'ember-application/system/engine-parent';
-import run from 'ember-metal/run_loop';
-import factory from 'container/tests/test-helpers/factory';
+import Engine from '../../system/engine';
+import EngineInstance from '../../system/engine-instance';
+import { getEngineParent, setEngineParent } from '../../system/engine-parent';
+import { run } from 'ember-metal';
+import { factory } from 'internal-test-helpers';
 
 let engine, engineInstance;
 

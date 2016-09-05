@@ -1,13 +1,13 @@
 import { applyMixins } from './abstract-test-case';
 import { RenderingTest } from './test-case';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import assign from 'ember-metal/assign';
-import EmberObject from 'ember-runtime/system/object';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
-import { removeAt } from 'ember-runtime/mixins/mutable_array';
+import { get, set, assign } from 'ember-metal';
+import {
+  Object as EmberObject,
+  ObjectProxy,
+  A as emberA,
+  ArrayProxy,
+  removeAt
+} from 'ember-runtime';
 import { Component } from './helpers';
 
 class AbstractConditionalsTest extends RenderingTest {

@@ -1,5 +1,5 @@
-import { Registry } from 'container';
-import factory from 'container/tests/test-helpers/factory';
+import { Registry } from '../index';
+import { factory } from 'internal-test-helpers';
 
 QUnit.module('Registry');
 

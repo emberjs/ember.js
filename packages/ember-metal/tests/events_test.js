@@ -1,5 +1,5 @@
-import { Mixin } from 'ember-metal/mixin';
-import { meta } from 'ember-metal/meta';
+import { Mixin } from '../mixin';
+import { meta } from '../meta';
 
 import {
   on,
@@ -9,7 +9,7 @@ import {
   suspendListeners,
   sendEvent,
   hasListeners
-} from 'ember-metal/events';
+} from '../events';
 
 QUnit.module('system/props/events_test');
 

@@ -1,5 +1,5 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
-import { set } from 'ember-metal/property_set';
+import { set } from 'ember-metal';
 import { strip } from '../utils/abstract-test-case';
 
 moduleFor('SVG element tests', class extends RenderingTest {

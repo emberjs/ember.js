@@ -1,4 +1,4 @@
-import Cache from 'ember-metal/cache';
+import Cache from '../cache';
 
 QUnit.module('Cache');
 

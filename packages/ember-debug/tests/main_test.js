@@ -1,24 +1,24 @@
 import { ENV } from 'ember-environment';
-import EmberObject from 'ember-runtime/system/object';
-import { HANDLERS } from 'ember-debug/handlers';
+import { Object as EmberObject } from 'ember-runtime';
+import { HANDLERS } from '../handlers';
 import {
   registerHandler,
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
   missingOptionsUntilDeprecation
-} from 'ember-debug/deprecate';
+} from '../deprecate';
 
 import {
   missingOptionsIdDeprecation as missingWarnOptionsIdDeprecation,
   missingOptionsDeprecation as missingWarnOptionsDeprecation,
   registerHandler as registerWarnHandler
-} from 'ember-debug/warn';
+} from '../warn';
 
 import {
   deprecate,
   warn,
   assert as emberAssert
-} from 'ember-metal/debug';
+} from 'ember-metal';
 
 let originalEnvValue;
 let originalDeprecateHandler;

@@ -1,12 +1,9 @@
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import isEnabled from 'ember-metal/features';
-import run from 'ember-metal/run_loop';
-import { capitalize } from 'ember-runtime/system/string';
+import { Controller, String as StringUtils } from 'ember-runtime';
+import { Route, NoneLocation } from 'ember-routing';
+import { isFeatureEnabled, run } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
-import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
-import NoneLocation from 'ember-routing/location/none_location';
+import { Application } from 'ember-application';
+import { jQuery } from 'ember-views';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
 let App, container, router, registry;
@@ -100,7 +97,7 @@ function testParamlessLinks(routeName) {
 
     setTemplate(routeName, compile('{{link-to \'index\' \'index\' id=\'index-link\'}}'));
 
-    App[capitalize(routeName) + 'Controller'] = Controller.extend({
+    App[StringUtils.capitalize(routeName) + 'Controller'] = Controller.extend({
       queryParams: ['foo'],
       foo: 'wat'
     });
@@ -118,7 +115,7 @@ function testParamlessLinksWithRouteConfig(routeName) {
 
     setTemplate(routeName, compile('{{link-to \'index\' \'index\' id=\'index-link\'}}'));
 
-    App[capitalize(routeName) + 'Route'] = Route.extend({
+    App[StringUtils.capitalize(routeName) + 'Route'] = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'wat'
@@ -133,7 +130,7 @@ function testParamlessLinksWithRouteConfig(routeName) {
   });
 }
 
-if (isEnabled('ember-routing-route-configured-query-params')) {
+if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
   testParamlessLinksWithRouteConfig('application');
   testParamlessLinksWithRouteConfig('index');
 } else {

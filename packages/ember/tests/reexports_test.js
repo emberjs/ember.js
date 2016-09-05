@@ -1,6 +1,6 @@
-import Ember from 'ember';
+import Ember from '../index';
 import { confirmExport } from 'internal-test-helpers';
-import isEnabled from 'ember-metal/features';
+import { isFeatureEnabled } from 'ember-metal';
 
 QUnit.module('ember reexports');
 
@@ -221,13 +221,13 @@ QUnit.module('ember reexports');
   });
 });
 
-if (isEnabled('ember-string-ishtmlsafe')) {
+if (isFeatureEnabled('ember-string-ishtmlsafe')) {
   QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
     confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
   });
 }
 
-if (isEnabled('ember-metal-weakmap')) {
+if (isFeatureEnabled('ember-metal-weakmap')) {
   QUnit.test('Ember.WeakMap exports correctly', function(assert) {
     confirmExport(Ember, assert, 'WeakMap', 'ember-metal', 'WeakMap');
   });

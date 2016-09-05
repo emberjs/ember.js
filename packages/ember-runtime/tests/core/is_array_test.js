@@ -1,6 +1,6 @@
-import { isArray } from 'ember-runtime/utils';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
+import { isArray } from '../../utils';
+import { A as emberA } from '../../system/native_array';
+import ArrayProxy from '../../system/array_proxy';
 
 QUnit.module('Ember Type Checking');
 

@@ -1,11 +1,10 @@
-import {get} from 'ember-metal/property_get';
-import run from 'ember-metal/run_loop';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
-import PromiseProxyMixin from 'ember-runtime/mixins/promise_proxy';
-import EmberRSVP from 'ember-runtime/ext/rsvp';
+import { get, run } from 'ember-metal';
+import ObjectProxy from '../../system/object_proxy';
+import PromiseProxyMixin from '../../mixins/promise_proxy';
+import EmberRSVP from '../../ext/rsvp';
 import {
   onerrorDefault
-} from 'ember-runtime/ext/rsvp';
+} from '../../ext/rsvp';
 import * as RSVP from 'rsvp';
 
 let ObjectPromiseProxy;

@@ -1,6 +1,6 @@
-import { get } from 'ember-metal/property_get';
-import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { get } from 'ember-metal';
+import { SuiteModuleBuilder } from '../suite';
+import { A as emberA } from '../../../system/native_array';
 
 const suite = SuiteModuleBuilder.create();
 

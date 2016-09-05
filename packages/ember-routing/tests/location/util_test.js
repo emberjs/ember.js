@@ -1,14 +1,14 @@
-import assign from 'ember-metal/assign';
+import { assign } from 'ember-metal';
 import {
   replacePath,
   getPath,
   getQuery,
   getFullPath
-} from 'ember-routing/location/util';
+} from '../../location/util';
 import {
   supportsHistory,
   supportsHashChange
-} from 'ember-routing/location/util';
+} from '../../location/util';
 
 function mockBrowserLocation(overrides) {
   return assign({

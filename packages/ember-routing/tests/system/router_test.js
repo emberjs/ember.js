@@ -1,10 +1,9 @@
-import HashLocation from 'ember-routing/location/hash_location';
-import HistoryLocation from 'ember-routing/location/history_location';
-import AutoLocation from 'ember-routing/location/auto_location';
-import NoneLocation from 'ember-routing/location/none_location';
-import Router, { triggerEvent } from 'ember-routing/system/router';
-import { runDestroy } from 'ember-runtime/tests/utils';
-import buildOwner from 'container/tests/test-helpers/build-owner';
+import HashLocation from '../../location/hash_location';
+import HistoryLocation from '../../location/history_location';
+import AutoLocation from '../../location/auto_location';
+import NoneLocation from '../../location/none_location';
+import Router, { triggerEvent } from '../../system/router';
+import { runDestroy, buildOwner } from 'internal-test-helpers';
 import { setOwner } from 'container';
 
 let owner;

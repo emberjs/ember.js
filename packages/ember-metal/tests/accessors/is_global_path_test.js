@@ -1,4 +1,4 @@
-import { isGlobalPath } from 'ember-metal/path_cache';
+import { isGlobalPath } from '../../path_cache';
 
 QUnit.module('Ember.isGlobalPath');
 

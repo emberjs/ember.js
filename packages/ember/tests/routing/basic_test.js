@@ -1,25 +1,31 @@
 import Logger from 'ember-console';
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import RSVP from 'ember-runtime/ext/rsvp';
-import EmberObject from 'ember-runtime/system/object';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { computed } from 'ember-metal/computed';
-import Mixin, { observer } from 'ember-metal/mixin';
-import { Component, setTemplates, setTemplate } from 'ember-glimmer';
-import jQuery from 'ember-views/system/jquery';
+import {
+  Controller,
+  RSVP,
+  Object as EmberObject,
+  A as emberA,
+  copy
+} from 'ember-runtime';
+import { Route, NoneLocation, HistoryLocation } from 'ember-routing';
+import {
+  run,
+  get,
+  set,
+  computed,
+  Mixin,
+  observer,
+  addObserver
+} from 'ember-metal';
+import {
+  Component,
+  setTemplates,
+  setTemplate
+} from 'ember-glimmer';
+import { jQuery } from 'ember-views';
 import { compile } from 'ember-template-compiler';
-import Application from 'ember-application/system/application';
-import Engine from 'ember-application/system/engine';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import NoneLocation from 'ember-routing/location/none_location';
-import HistoryLocation from 'ember-routing/location/history_location';
+import { Application, Engine } from 'ember-application';
 import { getOwner } from 'container';
 import { Transition } from 'router';
-import copy from 'ember-runtime/copy';
-import { addObserver } from 'ember-metal/observer';
 
 let trim = jQuery.trim;
 

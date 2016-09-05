@@ -1,7 +1,7 @@
-import EmberObject from 'ember-runtime/system/object';
-import { Mixin } from 'ember-metal/mixin';
-import { defineProperty } from 'ember-metal/properties';
-import descriptor from 'ember-metal/descriptor';
+import { Object as EmberObject } from 'ember-runtime';
+import { Mixin } from '../mixin';
+import { defineProperty } from '../properties';
+import descriptor from '../descriptor';
 
 // IE9 soft-fails when trying to delete a non-configurable property
 const hasCompliantDelete = (function() {

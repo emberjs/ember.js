@@ -1,15 +1,16 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Component } from '../../utils/helpers';
-import { set } from 'ember-metal/property_set';
+import {
+  set,
+  isFeatureEnabled,
+  instrumentationSubscribe,
+  instrumentationReset
+} from 'ember-metal';
 
-import EmberObject from 'ember-runtime/system/object';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { Object as EmberObject, A as emberA } from 'ember-runtime';
 
-import ActionManager from 'ember-views/system/action_manager';
-import jQuery from 'ember-views/system/jquery';
-import isEnabled from 'ember-metal/features';
-import { subscribe, reset } from 'ember-metal/instrumentation';
+import { ActionManager, jQuery } from 'ember-views';
 
 function getActionAttributes(element) {
   let attributes = element.attributes;
@@ -30,11 +31,11 @@ function getActionIds(element) {
   return getActionAttributes(element).map(attribute => attribute.slice('data-ember-action-'.length));
 }
 
-if (isEnabled('ember-improved-instrumentation')) {
+if (isFeatureEnabled('ember-improved-instrumentation')) {
   moduleFor('Helpers test: element action instrumentation', class extends RenderingTest {
     teardown() {
       super.teardown();
-      reset();
+      instrumentationReset();
     }
 
     ['@test action should fire interaction event with proper params']() {
@@ -52,7 +53,7 @@ if (isEnabled('ember-improved-instrumentation')) {
         template: '<button {{action "foo" "bar"}}>Click me</button>'
       });
 
-      subscribe('interaction.ember-action', {
+      instrumentationSubscribe('interaction.ember-action', {
         before() {
           subscriberCallCount++;
         },

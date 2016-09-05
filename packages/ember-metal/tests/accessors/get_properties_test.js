@@ -1,4 +1,4 @@
-import getProperties from 'ember-metal/get_properties';
+import getProperties from '../../get_properties';
 
 QUnit.module('Ember.getProperties');
 

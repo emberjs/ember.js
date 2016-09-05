@@ -1,8 +1,7 @@
 import { Component } from '../../utils/helpers';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import assign from 'ember-metal/assign';
-import isEmpty from 'ember-metal/is_empty';
+import { assign, isEmpty } from 'ember-metal';
 
 moduleFor('Components test: closure components', class extends RenderingTest {
   ['@test renders with component helper']() {

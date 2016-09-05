@@ -1,10 +1,7 @@
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
+import { get, set, propertyDidChange } from 'ember-metal';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
-import { propertyDidChange } from 'ember-metal/property_events';
+import { A as emberA, ArrayProxy } from 'ember-runtime';
 
 import {
   TogglingSyntaxConditionalsTest,

@@ -1,4 +1,4 @@
-import isPresent from 'ember-metal/is_present';
+import isPresent from '../is_present';
 
 QUnit.module('Ember.isPresent');
 

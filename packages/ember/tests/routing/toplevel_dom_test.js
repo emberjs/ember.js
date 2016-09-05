@@ -1,8 +1,8 @@
-import run from 'ember-metal/run_loop';
+import { run } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
-import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
-import NoneLocation from 'ember-routing/location/none_location';
+import { Application } from 'ember-application';
+import { jQuery } from 'ember-views';
+import { NoneLocation } from 'ember-routing';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
 let App, templates, router, container;

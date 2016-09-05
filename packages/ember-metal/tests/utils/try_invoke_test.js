@@ -1,4 +1,4 @@
-import { tryInvoke } from 'ember-metal/utils';
+import { tryInvoke } from '../../utils';
 
 let obj;
 

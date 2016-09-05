@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { testBoth } from 'ember-metal/tests/props_helper';
+import { testBoth } from 'internal-test-helpers';
 import {
   addObserver,
   removeObserver,
@@ -7,29 +7,29 @@ import {
   _suspendObserver,
   _suspendObservers,
   _removeBeforeObserver
-} from 'ember-metal/observer';
+} from '../observer';
 import {
   propertyWillChange,
   propertyDidChange
-} from 'ember-metal/property_events';
-import { defineProperty } from 'ember-metal/properties';
+} from '../property_events';
+import { defineProperty } from '../properties';
 import {
   computed,
   cacheFor
-} from 'ember-metal/computed';
+} from '../computed';
 import {
   Mixin,
   mixin,
   observer,
   _beforeObserver,
   _immediateObserver
-} from 'ember-metal/mixin';
-import run from 'ember-metal/run_loop';
+} from '../mixin';
+import run from '../run_loop';
 import {
   beginPropertyChanges,
   endPropertyChanges,
   changeProperties
-} from 'ember-metal/property_events';
+} from '../property_events';
 
 function K() {}
 

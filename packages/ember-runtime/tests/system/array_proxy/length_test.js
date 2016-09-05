@@ -1,8 +1,7 @@
-import ArrayProxy from 'ember-runtime/system/array_proxy';
-import EmberObject from 'ember-runtime/system/object';
-import { observer } from 'ember-metal/mixin';
-import { computed } from 'ember-metal/computed';
-import { A as a } from 'ember-runtime/system/native_array';
+import ArrayProxy from '../../../system/array_proxy';
+import EmberObject from '../../../system/object';
+import { observer, computed } from 'ember-metal';
+import { A as a } from '../../../system/native_array';
 
 QUnit.module('Ember.ArrayProxy - content change (length)');
 

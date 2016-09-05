@@ -1,5 +1,5 @@
-import { compileOptions } from 'ember-template-compiler';
-import { defaultPlugins } from 'ember-template-compiler';
+import { compileOptions } from '../../index';
+import { defaultPlugins } from '../../index';
 
 QUnit.module('ember-template-compiler: default compile options');
 

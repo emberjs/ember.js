@@ -1,11 +1,8 @@
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import isEnabled from 'ember-metal/features';
-import Mixin from 'ember-metal/mixin';
+import { Controller } from 'ember-runtime';
+import { Route, NoneLocation } from 'ember-routing';
+import { run, isFeatureEnabled, Mixin } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
-import Application from 'ember-application/system/application';
-import NoneLocation from 'ember-routing/location/none_location';
+import { Application } from 'ember-application';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
 let App, router, registry, container;
@@ -88,7 +85,7 @@ function sharedTeardown() {
 }
 
 
-if (isEnabled('ember-routing-route-configured-query-params')) {
+if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
   QUnit.module('Query Params - overlapping query param property names when configured on the route', {
     setup() {
       sharedSetup();

@@ -1,10 +1,13 @@
-import Application from 'ember-application/system/application';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import { Component, setTemplates, getTemplates } from 'ember-glimmer';
-import jQuery from 'ember-views/system/jquery';
+import { Application } from 'ember-application';
+import { Route, controllerFor } from 'ember-routing';
+import { run } from 'ember-metal';
+import {
+  Component,
+  setTemplates,
+  getTemplates
+} from 'ember-glimmer';
+import { jQuery } from 'ember-views';
 import { compile } from 'ember-template-compiler';
-import controllerFor from 'ember-routing/system/controller_for';
 
 let App, TEMPLATES, appInstance, router;
 

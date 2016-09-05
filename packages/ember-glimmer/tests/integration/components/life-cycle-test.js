@@ -1,9 +1,8 @@
-import { set } from 'ember-metal/property_set';
+import { set, run } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { getViewId } from 'ember-views/system/utils';
-import run from 'ember-metal/run_loop';
+import { getViewId } from 'ember-views';
 
 class LifeCycleHooksTest extends RenderingTest {
   constructor() {

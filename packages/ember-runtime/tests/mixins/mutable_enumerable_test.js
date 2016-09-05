@@ -1,8 +1,7 @@
-import MutableEnumerableTests from 'ember-runtime/tests/suites/mutable_enumerable';
-import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
-import EmberObject from 'ember-runtime/system/object';
-import { computed } from 'ember-metal/computed';
-import { get } from 'ember-metal/property_get';
+import MutableEnumerableTests from '../suites/mutable_enumerable';
+import MutableEnumerable from '../../mixins/mutable_enumerable';
+import EmberObject from '../../system/object';
+import { computed, get } from 'ember-metal';
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native

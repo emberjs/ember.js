@@ -57,7 +57,10 @@ export {
 } from './system/lazy_load';
 export { default as Observable } from './mixins/observable';
 export { default as MutableEnumerable } from './mixins/mutable_enumerable';
-export { default as MutableArray } from './mixins/mutable_array';
+export {
+  default as MutableArray,
+  removeAt
+} from './mixins/mutable_array';
 export { default as TargetActionSupport } from './mixins/target_action_support';
 export { default as Evented } from './mixins/evented';
 export { default as PromiseProxyMixin } from './mixins/promise_proxy';
@@ -103,7 +106,10 @@ export {
 export { default as Controller } from './controllers/controller';
 export { default as ControllerMixin } from './mixins/controller';
 export { default as Service } from './system/service';
-export { default as RSVP } from './ext/rsvp';     // just for side effect of extending Ember.RSVP
+export {
+  default as RSVP,
+  onerrorDefault
+} from './ext/rsvp';     // just for side effect of extending Ember.RSVP
 export { isArray, typeOf } from './utils';
 export {
   getStrings,

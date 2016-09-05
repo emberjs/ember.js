@@ -1,8 +1,11 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
-import isEnabled from 'ember-metal/features';
-import { subscribe, reset } from 'ember-metal/instrumentation';
-import run from 'ember-metal/run_loop';
+import {
+  isFeatureEnabled,
+  instrumentationSubscribe,
+  instrumentationReset,
+  run
+} from 'ember-metal';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
 
@@ -177,11 +180,11 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
   }
 });
 
-if (isEnabled('ember-improved-instrumentation')) {
+if (isFeatureEnabled('ember-improved-instrumentation')) {
   moduleFor('EventDispatcher - Instrumentation', class extends RenderingTest {
     teardown() {
       super.teardown();
-      reset();
+      instrumentationReset();
     }
 
     ['@test instruments triggered events'](assert) {
@@ -203,7 +206,7 @@ if (isEnabled('ember-improved-instrumentation')) {
       assert.equal(clicked, 1, 'precond - the click handler was invoked');
 
       let clickInstrumented = 0;
-      subscribe('interaction.click', {
+      instrumentationSubscribe('interaction.click', {
         before() {
           clickInstrumented++;
           assert.equal(clicked, 1, 'invoked before event is handled');
@@ -215,7 +218,7 @@ if (isEnabled('ember-improved-instrumentation')) {
       });
 
       let keypressInstrumented = 0;
-      subscribe('interaction.keypress', {
+      instrumentationSubscribe('interaction.keypress', {
         before() {
           keypressInstrumented++;
         },

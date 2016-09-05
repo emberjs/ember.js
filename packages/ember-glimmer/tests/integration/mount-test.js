@@ -1,9 +1,12 @@
-import { moduleFor, ApplicationTest, RenderingTest } from '../utils/test-case';
+import {
+  moduleFor,
+  ApplicationTest,
+  RenderingTest
+} from '../utils/test-case';
 import { compile } from '../utils/helpers';
-import Controller from 'ember-runtime/controllers/controller';
-import { set } from 'ember-metal/property_set';
-import Engine from 'ember-application/system/engine';
-import { getEngineParent } from 'ember-application/system/engine-parent';
+import { Controller } from 'ember-runtime';
+import { set } from 'ember-metal';
+import { Engine, getEngineParent } from 'ember-application';
 import { getOwner } from 'container';
 
 moduleFor('{{mount}} assertions', class extends RenderingTest {

@@ -3,7 +3,7 @@ import {
   subscribe,
   unsubscribe,
   reset
-} from 'ember-metal/instrumentation';
+} from '../instrumentation';
 
 QUnit.module('Ember Instrumentation', {
   teardown() {

@@ -1,7 +1,7 @@
 import {
   collect,
   Object as EmberObject
-} from 'ember-runtime';
+} from '../index';
 
 QUnit.module('ember-runtime/main');
 

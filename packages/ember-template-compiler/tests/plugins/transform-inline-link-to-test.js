@@ -1,4 +1,4 @@
-import { compile } from 'ember-template-compiler';
+import { compile } from '../../index';
 
 QUnit.module('ember-template-compiler: assert-no-view-and-controller-paths without legacy view support');
 

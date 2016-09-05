@@ -1,4 +1,4 @@
-import { inspect } from 'ember-metal/utils';
+import { inspect } from '../../utils';
 
 QUnit.module('Ember.inspect');
 

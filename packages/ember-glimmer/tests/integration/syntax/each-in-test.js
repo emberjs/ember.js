@@ -1,10 +1,8 @@
-import { set } from 'ember-metal/property_set';
-import { get } from 'ember-metal/property_get';
+import { set, get } from 'ember-metal';
 import { strip } from '../../utils/abstract-test-case';
 import { applyMixins } from '../../utils/abstract-test-case';
 import { moduleFor } from '../../utils/test-case';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
-import EmberObject from 'ember-runtime/system/object';
+import { ObjectProxy, Object as EmberObject } from 'ember-runtime';
 
 import {
   TogglingSyntaxConditionalsTest,

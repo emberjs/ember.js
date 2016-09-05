@@ -1,6 +1,6 @@
-import EmberRouter from 'ember-routing/system/router';
+import EmberRouter from '../../system/router';
 import { setOwner } from 'container';
-import buildOwner from 'container/tests/test-helpers/build-owner';
+import { buildOwner } from 'internal-test-helpers';
 
 let Router;
 

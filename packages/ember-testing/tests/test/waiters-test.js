@@ -1,10 +1,10 @@
-import isEnabled from 'ember-metal/features';
+import { isFeatureEnabled } from 'ember-metal';
 import {
   registerWaiter,
   unregisterWaiter,
   checkWaiters,
   generateDeprecatedWaitersArray
-} from 'ember-testing/test/waiters';
+} from '../../test/waiters';
 
 class Waiters {
   constructor() {
@@ -156,7 +156,7 @@ QUnit.test('generateDeprecatedWaitersArray provides deprecated access to waiters
   this.waiters.register();
 
   let waiters;
-  if (isEnabled('ember-testing-check-waiters')) {
+  if (isFeatureEnabled('ember-testing-check-waiters')) {
     expectDeprecation(function() {
       waiters = generateDeprecatedWaitersArray();
     }, /Usage of `Ember.Test.waiters` is deprecated/);

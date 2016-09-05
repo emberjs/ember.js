@@ -1,33 +1,37 @@
-import Route from 'ember-routing/system/route';
-import Controller from 'ember-runtime/controllers/controller';
-import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
-import RSVP from 'ember-runtime/ext/rsvp';
-import jQuery from 'ember-views/system/jquery';
-import { Component, setTemplates, setTemplate } from 'ember-glimmer';
+import { Route, Router } from 'ember-routing';
+import {
+  Controller,
+  Object as EmberObject,
+  RSVP
+} from 'ember-runtime';
+import { run } from 'ember-metal';
+import { jQuery } from 'ember-views';
+import {
+  Component,
+  setTemplates,
+  setTemplate
+} from 'ember-glimmer';
 
-import Test from 'ember-testing/test';
-import 'ember-testing/helpers';  // ensure that the helpers are loaded
-import 'ember-testing/initializers'; // ensure the initializer is setup
-import setupForTesting from 'ember-testing/setup_for_testing';
-import EmberRouter from 'ember-routing/system/router';
-import EmberRoute from 'ember-routing/system/route';
-import EmberApplication from 'ember-application/system/application';
+import Test from '../test';
+import '../helpers';  // ensure that the helpers are loaded
+import '../initializers'; // ensure the initializer is setup
+import setupForTesting from '../setup_for_testing';
+import { Application as EmberApplication } from 'ember-application';
 import { compile } from 'ember-template-compiler';
 
 import {
   pendingRequests,
   incrementPendingRequests,
   clearPendingRequests
-} from 'ember-testing/test/pending_requests';
+} from '../test/pending_requests';
 import {
   setAdapter,
   getAdapter
-} from 'ember-testing/test/adapter';
+} from '../test/adapter';
 import {
   registerWaiter,
   unregisterWaiter
-} from 'ember-testing/test/waiters';
+} from '../test/waiters';
 
 var App;
 var originalAdapter = getAdapter();
@@ -781,7 +785,7 @@ QUnit.module('ember-testing debugging helpers', {
     setupApp();
 
     run(function() {
-      App.Router = EmberRouter.extend({
+      App.Router = Router.extend({
         location: 'none'
       });
     });
@@ -816,7 +820,7 @@ QUnit.module('ember-testing routing helpers', {
 
       App.injectTestHelpers();
 
-      App.Router = EmberRouter.extend({
+      App.Router = Router.extend({
         location: 'none'
       });
 
@@ -917,7 +921,7 @@ QUnit.module('ember-testing async router', {
 
     run(function() {
       App = EmberApplication.create();
-      App.Router = EmberRouter.extend({
+      App.Router = Router.extend({
         location: 'none'
       });
 
@@ -928,13 +932,13 @@ QUnit.module('ember-testing async router', {
         });
       });
 
-      App.UserRoute = EmberRoute.extend({
+      App.UserRoute = Route.extend({
         model() {
           return resolveLater();
         }
       });
 
-      App.UserProfileRoute = EmberRoute.extend({
+      App.UserProfileRoute = Route.extend({
         beforeModel() {
           var self = this;
           return resolveLater().then(function() {

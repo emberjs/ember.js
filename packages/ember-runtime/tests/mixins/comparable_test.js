@@ -1,7 +1,7 @@
-import {get} from 'ember-metal/property_get';
-import EmberObject from 'ember-runtime/system/object';
-import compare from 'ember-runtime/compare';
-import Comparable from 'ember-runtime/mixins/comparable';
+import { get } from 'ember-metal';
+import EmberObject from '../../system/object';
+import compare from '../../compare';
+import Comparable from '../../mixins/comparable';
 
 const Rectangle = EmberObject.extend(Comparable, {
   length: 0,

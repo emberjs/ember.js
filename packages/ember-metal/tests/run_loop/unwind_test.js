@@ -1,5 +1,5 @@
-import run from 'ember-metal/run_loop';
-import EmberError from 'ember-metal/error';
+import run from '../../run_loop';
+import EmberError from '../../error';
 
 QUnit.module('system/run_loop/unwind_test');
 

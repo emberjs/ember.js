@@ -1,12 +1,16 @@
 import { compile, helper, Helper, Component } from './helpers';
-import { equalsElement, equalTokens, regex, classes, equalInnerHTML } from './test-helpers';
-import run from 'ember-metal/run_loop';
-import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import jQuery from 'ember-views/system/jquery';
-import assign from 'ember-metal/assign';
-import Application from 'ember-application/system/application';
-import Router from 'ember-routing/system/router';
-import EventDispatcher from 'ember-views/system/event_dispatcher';
+import {
+  equalsElement,
+  equalTokens,
+  regex,
+  classes,
+  equalInnerHTML
+} from './test-helpers';
+import { run, assign } from 'ember-metal';
+import { runAppend, runDestroy } from 'internal-test-helpers';
+import { jQuery, EventDispatcher } from 'ember-views';
+import { Application } from 'ember-application';
+import { Router } from 'ember-routing';
 import { buildOwner } from './helpers';
 
 function isGenerator(mixin) {
@@ -289,7 +293,7 @@ export class AbstractApplicationTest extends TestCase {
 export class AbstractRenderingTest extends TestCase {
   constructor() {
     super();
-    let owner = this.owner = buildOwner(this.getOwnerOptions());
+    let owner = this.owner = buildOwner(this.getOwnerOptions(), this.getResolver());
 
     this.renderer = this.owner.lookup('renderer:-dom');
     this.element = jQuery('#qunit-fixture')[0];
@@ -311,6 +315,8 @@ export class AbstractRenderingTest extends TestCase {
   getOwnerOptions() {
     return {};
   }
+
+  getResolver() { }
 
   teardown() {
     if (this.component) {

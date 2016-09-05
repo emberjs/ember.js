@@ -1,15 +1,10 @@
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import isEnabled from 'ember-metal/features';
-import { computed } from 'ember-metal/computed';
+import { Controller, A as emberA, String as StringUtils } from 'ember-runtime';
+import { Route, NoneLocation } from 'ember-routing';
+import { run, isFeatureEnabled, computed } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
-import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import NoneLocation from 'ember-routing/location/none_location';
+import { Application } from 'ember-application';
+import { jQuery } from 'ember-views';
 import { setTemplates } from 'ember-glimmer';
-import { classify } from 'ember-runtime/system/string';
 
 let App, router, registry, container;
 
@@ -210,9 +205,9 @@ function queryParamsStickyTest3(urlPrefix, articleLookup) {
 
 function queryParamsStickyTest4(urlPrefix, articleLookup) {
   return function() {
-    let articleClass = classify(articleLookup);
+    let articleClass = StringUtils.classify(articleLookup);
 
-    if (isEnabled('ember-routing-route-configured-query-params')) {
+    if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
       App[`${articleClass}Route`].reopen({
         queryParams: { q: { scope: 'controller' } }
       });
@@ -290,7 +285,7 @@ function queryParamsStickyTest5(urlPrefix, commentsLookupKey) {
 
 function queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
   return function() {
-    let articleClass = classify(articleLookup);
+    let articleClass = StringUtils.classify(articleLookup);
 
     App[`${articleClass}Route`].reopen({
       resetController(controller, isExiting) {
@@ -359,7 +354,7 @@ QUnit.module('Model Dep Query Params', {
       }
     });
 
-    if (isEnabled('ember-routing-route-configured-query-params')) {
+    if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
       App.ArticleRoute.reopen({
         queryParams: {
           q: { defaultValue: 'wat' },
@@ -450,7 +445,7 @@ QUnit.module('Model Dep Query Params (nested)', {
       }
     });
 
-    if (isEnabled('ember-routing-route-configured-query-params')) {
+    if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
       App.SiteArticleRoute.reopen({
         queryParams: {
           q: { defaultValue: 'wat' },
@@ -563,7 +558,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
       }
     });
 
-    if (isEnabled('ember-routing-route-configured-query-params')) {
+    if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
       App.SiteRoute.reopen({
         queryParams: {
           country: { defaultValue: 'au' }

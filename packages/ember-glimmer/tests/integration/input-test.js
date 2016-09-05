@@ -1,5 +1,5 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
-import { set } from 'ember-metal/property_set';
+import { set } from 'ember-metal';
 
 moduleFor('Input element tests', class extends RenderingTest {
   runAttributeTest(attributeName, values) {

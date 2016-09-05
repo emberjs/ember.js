@@ -1,6 +1,6 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
-import { runAppend } from 'ember-runtime/tests/utils';
-import { set } from 'ember-metal/property_set';
+import { runAppend } from 'internal-test-helpers';
+import { set } from 'ember-metal';
 
 moduleFor('outlet view', class extends RenderingTest {
   constructor() {

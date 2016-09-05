@@ -1,5 +1,5 @@
-import EmberObject from 'ember-runtime/system/object';
-import Evented from 'ember-runtime/mixins/evented';
+import EmberObject from '../../../system/object';
+import Evented from '../../../mixins/evented';
 
 QUnit.module('Object events');
 

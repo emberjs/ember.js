@@ -1,10 +1,8 @@
-import CopyableTests from 'ember-runtime/tests/suites/copyable';
-import Copyable from 'ember-runtime/mixins/copyable';
-import {Freezable} from 'ember-runtime/mixins/freezable';
-import EmberObject from 'ember-runtime/system/object';
-import {generateGuid} from 'ember-metal/utils';
-import {set} from 'ember-metal/property_set';
-import {get} from 'ember-metal/property_get';
+import CopyableTests from '../suites/copyable';
+import Copyable from '../../mixins/copyable';
+import { Freezable } from '../../mixins/freezable';
+import EmberObject from '../../system/object';
+import { generateGuid, set, get } from 'ember-metal';
 
 QUnit.module('Ember.Copyable.frozenCopy');
 

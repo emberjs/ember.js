@@ -1,6 +1,6 @@
 import { context } from 'ember-environment';
-import { set, trySet } from 'ember-metal/property_set';
-import { get } from 'ember-metal/property_get';
+import { set, trySet } from '../../property_set';
+import { get } from '../../property_get';
 
 let originalLookup = context.lookup;
 let lookup;

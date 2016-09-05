@@ -1,11 +1,15 @@
-import Controller from 'ember-runtime/controllers/controller';
-import run from 'ember-metal/run_loop';
+import { Controller } from 'ember-runtime';
+import { run } from 'ember-metal';
 
-import Application from 'ember-application/system/application';
-import Router from 'ember-routing/system/router';
+import { Application } from 'ember-application';
+import { Router } from 'ember-routing';
 import { compile } from 'ember-template-compiler';
-import { Component, setTemplates, setTemplate } from 'ember-glimmer';
-import jQuery from 'ember-views/system/jquery';
+import {
+  Component,
+  setTemplates,
+  setTemplate
+} from 'ember-glimmer';
+import { jQuery } from 'ember-views';
 
 let App, appInstance;
 

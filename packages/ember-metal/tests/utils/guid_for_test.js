@@ -1,6 +1,6 @@
 import {
   guidFor
-} from 'ember-metal/utils';
+} from '../../utils';
 
 QUnit.module('guidFor');
 

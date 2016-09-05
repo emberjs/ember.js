@@ -1,11 +1,11 @@
-import Engine from 'ember-application/system/engine';
-import Application from 'ember-application/system/application';
-import ApplicationInstance from 'ember-application/system/application-instance';
-import run from 'ember-metal/run_loop';
-import jQuery from 'ember-views/system/jquery';
-import factory from 'container/tests/test-helpers/factory';
+import Engine from '../../system/engine';
+import Application from '../../system/application';
+import ApplicationInstance from '../../system/application-instance';
+import { run } from 'ember-metal';
+import { jQuery } from 'ember-views';
 import { privatize as P } from 'container';
-import EmberObject from 'ember-runtime/system/object';
+import { factory } from 'internal-test-helpers';
+import { Object as EmberObject } from 'ember-runtime';
 
 let application, appInstance;
 

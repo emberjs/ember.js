@@ -1,12 +1,12 @@
 /* global EmberDev */
 
-import InjectedProperty from 'ember-metal/injected_property';
-import inject from 'ember-runtime/inject';
+import { InjectedProperty } from 'ember-metal';
+import inject from '../inject';
 import {
   createInjectionHelper
-} from 'ember-runtime/inject';
-import EmberObject from 'ember-runtime/system/object';
-import buildOwner from 'container/tests/test-helpers/build-owner';
+} from '../inject';
+import EmberObject from '../system/object';
+import { buildOwner } from 'internal-test-helpers';
 
 QUnit.module('inject');
 

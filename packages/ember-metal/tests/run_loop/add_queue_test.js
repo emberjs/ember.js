@@ -1,4 +1,4 @@
-import run from 'ember-metal/run_loop';
+import run from '../../run_loop';
 
 const originalQueues = run.queues;
 let queues;

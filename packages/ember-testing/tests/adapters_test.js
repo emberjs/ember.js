@@ -1,8 +1,8 @@
-import run from 'ember-metal/run_loop';
-import Test from 'ember-testing/test';
-import Adapter from 'ember-testing/adapters/adapter';
-import QUnitAdapter from 'ember-testing/adapters/qunit';
-import EmberApplication from 'ember-application/system/application';
+import { run } from 'ember-metal';
+import Test from '../test';
+import Adapter from '../adapters/adapter';
+import QUnitAdapter from '../adapters/qunit';
+import { Application as EmberApplication } from 'ember-application';
 
 var App, originalAdapter;
 

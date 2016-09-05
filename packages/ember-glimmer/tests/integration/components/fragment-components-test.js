@@ -1,7 +1,7 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Component } from '../../utils/helpers';
-import { set } from 'ember-metal/property_set';
+import { set } from 'ember-metal';
 
 moduleFor('Components test: fragment components', class extends RenderingTest {
   getCustomDispatcherEvents() {

@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { camelize } from 'ember-runtime/system/string';
+import { camelize } from '../../../system/string';
 
 QUnit.module('EmberStringUtils.camelize');
 

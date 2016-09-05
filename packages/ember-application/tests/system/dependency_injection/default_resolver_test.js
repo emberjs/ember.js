@@ -1,14 +1,18 @@
 /* globals EmberDev */
 import { context } from 'ember-environment';
-import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
-import run from 'ember-metal/run_loop';
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import View from 'ember-views/views/view';
-import Service from 'ember-runtime/system/service';
-import EmberObject from 'ember-runtime/system/object';
-import Namespace from 'ember-runtime/system/namespace';
-import Application from 'ember-application/system/application';
+import {
+  getDebugFunction,
+  setDebugFunction,
+  run
+} from 'ember-metal';
+import {
+  Controller,
+  Service,
+  Object as EmberObject,
+  Namespace
+} from 'ember-runtime';
+import { Route } from 'ember-routing';
+import Application from '../../../system/application';
 import {
   Component,
   setTemplates,
@@ -235,21 +239,9 @@ QUnit.test('no deprecation warning for service factories that extend from Ember.
   registry.resolve('service:foo');
 });
 
-QUnit.test('deprecation warning for view factories without isViewFactory property', function() {
-  expectDeprecation(/view factories must have an `isViewFactory` property/);
-  application.FooView = EmberObject.extend();
-  registry.resolve('view:foo');
-});
-
-QUnit.test('no deprecation warning for view factories that extend from Ember.View', function() {
-  expectNoDeprecation();
-  application.FooView = View.extend();
-  registry.resolve('view:foo');
-});
-
 QUnit.test('deprecation warning for component factories without isComponentFactory property', function() {
   expectDeprecation(/component factories must have an `isComponentFactory` property/);
-  application.FooComponent = View.extend();
+  application.FooComponent = EmberObject.extend();
   registry.resolve('component:foo');
 });
 

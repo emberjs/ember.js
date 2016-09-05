@@ -1,24 +1,29 @@
 /*globals EmberDev */
-import VERSION from 'ember/version';
+import { VERSION } from 'ember';
 import { ENV, context } from 'ember-environment';
-import run from 'ember-metal/run_loop';
-import libraries from 'ember-metal/libraries';
-import Application from 'ember-application/system/application';
-import DefaultResolver from 'ember-application/system/resolver';
-import Router from 'ember-routing/system/router';
-import View from 'ember-views/views/view';
-import Controller from 'ember-runtime/controllers/controller';
-import NoneLocation from 'ember-routing/location/none_location';
-import EmberObject from 'ember-runtime/system/object';
-import { setSearchDisabled as setNamespaceSearchDisabled } from 'ember-runtime/system/namespace';
-import EmberRoute from 'ember-routing/system/route';
-import jQuery from 'ember-views/system/jquery';
+import {
+  run,
+  libraries,
+  getDebugFunction,
+  setDebugFunction
+} from 'ember-metal';
+import Application from '../../system/application';
+import DefaultResolver from '../../system/resolver';
+import { Router, NoneLocation, Route as EmberRoute } from 'ember-routing';
+import { jQuery } from 'ember-views';
+import {
+  Controller,
+  Object as EmberObject,
+  setNamespaceSearchDisabled,
+  _loaded
+} from 'ember-runtime';
 import { compile } from 'ember-template-compiler';
-import { _loaded } from 'ember-runtime/system/lazy_load';
-import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 import { privatize as P } from 'container';
-import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
+import {
+  verifyInjection,
+  verifyRegistration
+} from '../test-helpers/registry-check';
 
 let { trim } = jQuery;
 
@@ -243,9 +248,9 @@ QUnit.test('initialize application via initialize call', function() {
       location: 'none'
     });
 
-    app.ApplicationView = View.extend({
-      template: compile('<h1>Hello!</h1>')
-    });
+    setTemplate('application', compile(
+      '<h1>Hello!</h1>'
+    ));
   });
 
   // This is not a public way to access the container; we just

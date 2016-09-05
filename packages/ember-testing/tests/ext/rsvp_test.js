@@ -1,7 +1,6 @@
-import RSVP from 'ember-testing/ext/rsvp';
-import { getAdapter, setAdapter } from 'ember-testing/test/adapter';
-import { isTesting, setTesting } from 'ember-metal/testing';
-import run from 'ember-metal/run_loop';
+import RSVP from '../../ext/rsvp';
+import { getAdapter, setAdapter } from '../../test/adapter';
+import { isTesting, setTesting, run } from 'ember-metal';
 
 const originalTestAdapter = getAdapter();
 const originalTestingFlag = isTesting();

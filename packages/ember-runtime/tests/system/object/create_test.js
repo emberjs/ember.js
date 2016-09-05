@@ -1,8 +1,11 @@
-import isEnabled from 'ember-metal/features';
-import { meta } from 'ember-metal/meta';
-import { computed } from 'ember-metal/computed';
-import { Mixin, observer } from 'ember-metal/mixin';
-import EmberObject from 'ember-runtime/system/object';
+import {
+  isFeatureEnabled,
+  meta,
+  computed,
+  Mixin,
+  observer
+} from 'ember-metal';
+import EmberObject from '../../../system/object';
 
 QUnit.module('EmberObject.create', {});
 
@@ -27,7 +30,7 @@ QUnit.test('calls computed property setters', function() {
   equal(o.get('foo'), 'bar');
 });
 
-if (isEnabled('mandatory-setter')) {
+if (isFeatureEnabled('mandatory-setter')) {
   QUnit.test('sets up mandatory setters for watched simple properties', function() {
     let MyClass = EmberObject.extend({
       foo: null,

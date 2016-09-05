@@ -1,8 +1,8 @@
-import run from 'ember-metal/run_loop';
+import { run } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
-import Application from 'ember-application/system/application';
+import { Application } from 'ember-application';
 import { Component } from 'ember-glimmer';
-import jQuery from 'ember-views/system/jquery';
+import { jQuery } from 'ember-views';
 
 let App1, App2, actions;
 
