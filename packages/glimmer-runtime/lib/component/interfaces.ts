@@ -23,7 +23,7 @@ export interface ComponentManager<T extends Component> {
   // Then, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
-  create(definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope, hasDefaultBlock: boolean): T;
+  create(env: Environment, definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope, caller: PathReference<Opaque>, hasDefaultBlock: boolean): T;
 
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might

@@ -1178,6 +1178,43 @@ QUnit.test('correct scope - accessing local variable in yielded block (curly com
   );
 });
 
+QUnit.test('correct scope - caller self can be threaded through (curly component)', assert => {
+  // demonstrates ability for Ember to know the target object of curly component actions
+  class Base extends EmberishCurlyComponent {
+    public tagName = '';
+  }
+  class FooBar extends Base {
+    public name = 'foo-bar';
+  }
+
+  class QuxDerp extends Base {
+    public name = 'qux-derp';
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, stripTight`
+    [Name: {{name}} | Target: {{targetObject.name}}]
+    {{#qux-derp}}
+      [Name: {{name}} | Target: {{targetObject.name}}]
+    {{/qux-derp}}
+    [Name: {{name}} | Target: {{targetObject.name}}]
+  `);
+
+  env.registerEmberishCurlyComponent('qux-derp', QuxDerp, `[Name: {{name}} | Target: {{targetObject.name}}]{{yield}}`);
+
+  appendViewFor(`<div>{{foo-bar}}</div>`, {
+    name: 'outer-scope'
+  });
+
+  equalsElement(view.element, 'div', {},
+      stripTight`
+        [Name: foo-bar | Target: outer-scope]
+        [Name: qux-derp | Target: foo-bar]
+        [Name: foo-bar | Target: outer-scope]
+        [Name: foo-bar | Target: outer-scope]
+        `
+  );
+});
+
 QUnit.test('correct scope - self', assert => {
   class FooBar extends BasicComponent {
     public foo = 'foo';
