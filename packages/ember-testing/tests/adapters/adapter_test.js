@@ -1,5 +1,5 @@
-import run from 'ember-metal/run_loop';
-import Adapter from 'ember-testing/adapters/adapter';
+import { run } from 'ember-metal';
+import Adapter from '../../adapters/adapter';
 
 var adapter;
 

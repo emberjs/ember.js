@@ -1,6 +1,6 @@
-import run from 'ember-metal/run_loop';
-import Test from 'ember-testing/test';
-import EmberApplication from 'ember-application/system/application';
+import { run } from 'ember-metal';
+import Test from '../test';
+import { Application as EmberApplication } from 'ember-application';
 
 var App, appBooted, helperContainer;
 

@@ -1,12 +1,12 @@
-import run from 'ember-metal/run_loop';
-import jQuery from 'ember-views/system/jquery';
-import Test from 'ember-testing/test';
-import QUnitAdapter from 'ember-testing/adapters/qunit';
-import 'ember-testing/initializers'; // ensure the initializer is setup
-import EmberApplication from 'ember-application/system/application';
-import EmberRoute from 'ember-routing/system/route';
+import { run } from 'ember-metal';
+import { jQuery } from 'ember-views';
+import Test from '../test';
+import QUnitAdapter from '../adapters/qunit';
+import '../initializers'; // ensure the initializer is setup
+import { Application as EmberApplication } from 'ember-application';
+import { Route as EmberRoute } from 'ember-routing';
 import { compile } from 'ember-template-compiler';
-import RSVP from 'ember-runtime/ext/rsvp';
+import { RSVP } from 'ember-runtime';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
