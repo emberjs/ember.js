@@ -76,7 +76,7 @@ export function compileRealSpec(string: string, options: TestCompileOptions): Se
 }
 
 export function template(templateSpec: TemplateSpec): SerializedTemplate {
-  return JSON.parse(templateSpec);
+  return JSON.parse(templateSpec.template);
 }
 
 export function equalInnerHTML(fragment, html, msg?) {

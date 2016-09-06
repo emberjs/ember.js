@@ -404,11 +404,11 @@ function renderContent() {
   ui.rendered = true;
 
   ui.template.source = $template.value;
-  ui.template.wireFormat = JSON.parse(compileSpec($template.value, {}));
+  ui.template.wireFormat = compileSpec($template.value, {}).template;
   ui.template.opcodes = toJSON(eagerCompile(templateOps));
 
   ui.layout.source = $layout.value;
-  ui.layout.wireFormat = JSON.parse(compileSpec($layout.value, {}));
+  ui.layout.wireFormat = compileSpec($template.value, {}).template;
   ui.layout.opcodes = toJSON(eagerCompile(layoutOps));
 
   ui.updatingOpcodes = toJSON(res['updating']);
