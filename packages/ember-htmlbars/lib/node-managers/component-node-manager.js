@@ -121,7 +121,8 @@ ComponentNodeManager.prototype.rerender = function ComponentNodeManager_rerender
   let component = this.component;
 
   return instrument(component, function ComponentNodeManager_rerender_instrument() {
-    let env = _env.childWithView(component);
+    let meta = this.block && this.block.template.meta;
+    let env = _env.childWithView(component, meta);
 
     let snapshot = takeSnapshot(attrs);
 
