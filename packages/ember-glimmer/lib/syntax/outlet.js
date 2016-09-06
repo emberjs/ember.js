@@ -160,7 +160,7 @@ class AbstractOutletComponentManager {
     return args;
   }
 
-  create(definition, args, dynamicScope) {
+  create(environment, definition, args, dynamicScope) {
     throw new Error('Not implemented: create');
   }
 
@@ -188,7 +188,7 @@ class AbstractOutletComponentManager {
 }
 
 class TopLevelOutletComponentManager extends AbstractOutletComponentManager {
-  create(definition, args, dynamicScope) {
+  create(environment, definition, args, dynamicScope) {
     dynamicScope.isTopLevel = false;
     return new StateBucket(dynamicScope.outletState.value());
   }
@@ -206,10 +206,9 @@ class TopLevelOutletComponentManager extends AbstractOutletComponentManager {
 const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
 
 class OutletComponentManager extends AbstractOutletComponentManager {
-  create(definition, args, dynamicScope) {
+  create(environment, definition, args, dynamicScope) {
     let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get('outlets').get(definition.outletName);
     let outletState = outletStateReference.value();
-    dynamicScope.targetObject = outletState.render.controller;
     return new StateBucket(outletState);
   }
 
