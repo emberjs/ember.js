@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.7.3 (September 6, 2016)
+
+- [#14219](https://github.com/emberjs/ember.js/pull/14219) [BUGFIX] Fix issue with mutating template's metadata.
+
 ### 2.7.2 (August 30, 2016)
 
 - [#13895](https://github.com/emberjs/ember.js/pull/13895) [BUGFIX] Fix template meta lookup with tagless and blockless components.
