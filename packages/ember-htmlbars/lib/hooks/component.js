@@ -53,26 +53,16 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
   // Determine if this is an initial render or a re-render.
   if (state.manager) {
     let sm = state.manager;
-    let templateMeta = null;
-    if (sm.block) {
-      templateMeta = sm.block.template.meta;
-    } else if (sm.scope && sm.scope._view && sm.scope._view.template) {
-      templateMeta = sm.scope._view.template.meta;
-    }
-    env.meta.moduleName = (templateMeta && templateMeta.moduleName) || (env.meta && env.meta.moduleName);
     extractPositionalParams(renderNode, sm.component.constructor, params, attrs, false);
     state.manager.rerender(env, attrs, visitor);
     return;
   }
 
   let parentView = env.view;
-  let options = { };
-  let moduleName = env.meta && env.meta.moduleName;
-  if (moduleName) {
-    options.source = `template:${moduleName}`;
-  }
-  let { component, layout } = lookupComponent(env.owner, tagName, options);
 
+  let moduleName = env.meta && env.meta.moduleName;
+  let options = { source: moduleName && `template:${moduleName}` };
+  let { component, layout } = lookupComponent(env.owner, tagName, options);
   assert(`HTMLBars error: Could not find component named "${tagName}" (no component or template with that name was found)`, !!(component || layout));
 
   let manager = ComponentNodeManager.create(renderNode, env, {
