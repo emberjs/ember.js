@@ -30,7 +30,7 @@ assign(hasElement, {
   },
 
   destroy(view) {
-    view.renderer.remove(view, true);
+    view.renderer.remove(view);
   },
 
   // Handle events from `Ember.EventDispatcher`

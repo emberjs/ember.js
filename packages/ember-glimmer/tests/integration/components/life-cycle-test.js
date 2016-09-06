@@ -620,7 +620,17 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-second-child', 'willDestroyElement'],
         ['the-second-child', 'willClearRender'],
         ['the-last-child', 'willDestroyElement'],
-        ['the-last-child', 'willClearRender']
+        ['the-last-child', 'willClearRender'],
+
+        ['the-parent', 'didDestroyElement'],
+        ['the-first-child', 'didDestroyElement'],
+        ['the-second-child', 'didDestroyElement'],
+        ['the-last-child', 'didDestroyElement'],
+
+        ['the-parent', 'willDestroy'],
+        ['the-first-child', 'willDestroy'],
+        ['the-second-child', 'willDestroy'],
+        ['the-last-child', 'willDestroy']
       );
 
       this.assertRegisteredViews('after destroy');
@@ -871,17 +881,6 @@ class LifeCycleHooksTest extends RenderingTest {
       ['nested-item', 'willDestroyElement'],
       ['nested-item', 'willClearRender'],
 
-      ['an-item', 'didDestroyElement'],
-      ['nested-item', 'didDestroyElement'],
-      ['an-item', 'didDestroyElement'],
-      ['nested-item', 'didDestroyElement'],
-      ['an-item', 'didDestroyElement'],
-      ['nested-item', 'didDestroyElement'],
-      ['an-item', 'didDestroyElement'],
-      ['nested-item', 'didDestroyElement'],
-      ['an-item', 'didDestroyElement'],
-      ['nested-item', 'didDestroyElement'],
-
       ['no-items', 'init'],
       ['no-items', 'didInitAttrs',       { attrs: { } }],
       ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
@@ -892,6 +891,17 @@ class LifeCycleHooksTest extends RenderingTest {
       ['nested-item', 'didInitAttrs',       { attrs: { } }],
       ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
       ['nested-item', 'willRender'],
+
+      ['an-item', 'didDestroyElement'],
+      ['nested-item', 'didDestroyElement'],
+      ['an-item', 'didDestroyElement'],
+      ['nested-item', 'didDestroyElement'],
+      ['an-item', 'didDestroyElement'],
+      ['nested-item', 'didDestroyElement'],
+      ['an-item', 'didDestroyElement'],
+      ['nested-item', 'didDestroyElement'],
+      ['an-item', 'didDestroyElement'],
+      ['nested-item', 'didDestroyElement'],
 
       ['nested-item', 'didInsertElement'],
       ['nested-item', 'didRender'],
@@ -918,8 +928,10 @@ class LifeCycleHooksTest extends RenderingTest {
         ['no-items', 'willClearRender'],
         ['nested-item', 'willDestroyElement'],
         ['nested-item', 'willClearRender'],
+
         ['no-items', 'didDestroyElement'],
         ['nested-item', 'didDestroyElement'],
+
         ['no-items', 'willDestroy'],
         ['nested-item', 'willDestroy']
       );

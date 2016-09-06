@@ -142,6 +142,15 @@ class ComponentStateBucket {
     this.finalizer = finalizer;
   }
 
+  destroy() {
+    let { component, environment } = this;
+
+    component.trigger('willDestroyElement');
+    component.trigger('willClearRender');
+
+    environment.destroyedComponents.push(component);
+  }
+
   finalize() {
     let { finalizer } = this;
     finalizer();
@@ -345,8 +354,8 @@ class CurlyComponentManager {
     component.trigger('didRender');
   }
 
-  getDestructor({ component }) {
-    return component;
+  getDestructor(stateBucket) {
+    return stateBucket;
   }
 }
 
