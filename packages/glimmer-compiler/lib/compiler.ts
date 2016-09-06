@@ -1,7 +1,13 @@
 import { preprocess } from "glimmer-syntax";
+import { BlockMeta } from "glimmer-wire-format";
 import TemplateCompiler from "./template-compiler";
 
-export type TemplateSpec = string;
+export type TemplateProgram = string;
+
+export type TemplateSpec = {
+  meta: BlockMeta;
+  template: TemplateProgram;
+}
 
 /*
  * Compile a string into a template spec string. The template spec is a string
@@ -19,7 +25,11 @@ export type TemplateSpec = string;
  * @return {TemplateSpec} A template spec string
  */
 export function compileSpec(string: string, options: any): TemplateSpec {
+  let meta: BlockMeta = typeof options === 'object' ? options.meta : {};
   let ast = preprocess(string, options);
   let program = TemplateCompiler.compile(options, ast);
-  return JSON.stringify(program);
+  return {
+    meta,
+    template: JSON.stringify(program)
+  };
 }

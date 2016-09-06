@@ -6,7 +6,7 @@ import { assert } from "glimmer-util";
 
 export interface CompileOptions {
   buildMeta?: FIXME<Object, 'currently does nothing'>;
-  moduleName?: string;
+  meta?: Object;
 }
 
 function isTrustedValue(value) {
@@ -20,10 +20,7 @@ export default class TemplateCompiler {
 
     let compiler = new TemplateCompiler(options);
     let opcodes = compiler.process(templateVisitor.actions);
-    let meta = {
-      moduleName: options.moduleName
-    };
-    return JavaScriptCompiler.process(opcodes, meta);
+    return JavaScriptCompiler.process(opcodes, options.meta);
   }
 
   private options: CompileOptions;
