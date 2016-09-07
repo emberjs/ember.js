@@ -207,7 +207,7 @@ export abstract class Environment {
       manager.didCreate(component);
     }
 
-    for (let i=this.updatedComponents.length-1; i>=0; i--) {
+    for (let i=0; i<this.updatedComponents.length; i++) {
       let component = this.updatedComponents[i];
       let manager = this.updatedManagers[i];
       manager.didUpdate(component);
