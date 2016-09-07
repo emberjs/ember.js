@@ -9,7 +9,6 @@ import { Reference, PathReference, ConstReference } from 'glimmer-reference';
 import { ValueReference } from '../expressions/value';
 import { ListSlice, Opaque, Slice, dict } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
-import Scanner from '../../scanner';
 import Environment from '../../environment';
 
 export class PushChildScopeOpcode extends Opcode {
@@ -330,8 +329,7 @@ export class EvaluatePartialOpcode extends Opcode {
     let block = this.cache[name];
     if (!block) {
       let { template } = vm.env.lookupPartial([name], this.symbolTable);
-      let scanner = new Scanner(template, vm.env);
-      block = scanner.scanPartial(this.symbolTable);
+      block = template.asPartial(this.symbolTable);
     }
 
     vm.invokeBlock(block, EvaluatedArgs.empty());

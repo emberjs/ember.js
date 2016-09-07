@@ -19,9 +19,9 @@ function commonSetup() {
   root = rootElement();
 }
 
-function render(template: Template, context={}) {
+function render<T>(template: Template<T>, context={}) {
   self = new UpdatableReference(opaque(context));
-  result = template.render(self, env, { appendTo: root, dynamicScope: new TestDynamicScope() });
+  result = template.render(self, root, new TestDynamicScope());
   assertInvariants(result);
   return result;
 }

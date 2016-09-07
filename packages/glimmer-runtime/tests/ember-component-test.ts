@@ -30,14 +30,14 @@ import { CLASS_META, UpdatableReference, setProperty as set } from 'glimmer-obje
 class EmberishRootView extends EmberObject {
   private parent: Element;
   protected _result: RenderResult;
-  protected template: Template;
+  protected template: Template<{}>;
   protected env: Environment;
   public element: Element; // provided by the component definition
 
   appendTo(selector: string) {
     let element = this.parent = document.querySelector(selector);
     let self = new UpdatableReference(this);
-    this._result = this.template.render(self, this.env, { appendTo: element, dynamicScope: new TestDynamicScope() });
+    this._result = this.template.render(self, element, new TestDynamicScope());
     this.element = element.firstElementChild;
   }
 
