@@ -216,6 +216,12 @@ export abstract class Environment {
     for (let i=0; i<this.destructors.length; i++) {
       this.destructors[i].destroy();
     }
+
+    this.createdComponents = null;
+    this.createdManagers = null;
+    this.updatedComponents = null;
+    this.updatedManagers = null;
+    this.destructors = null;
   }
 
   abstract hasHelper(helperName: string[], blockMeta: BlockMeta): boolean;
