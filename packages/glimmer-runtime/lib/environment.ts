@@ -119,6 +119,10 @@ export class Scope {
 export abstract class Environment {
   protected updateOperations: DOMChanges;
   protected appendOperations: DOMTreeConstruction;
+  private scheduledInstallManagers: ModifierManager<Opaque>[] = null;
+  private scheduledInstallModifiers: Object[] = null;
+  private scheduledUpdateModifierManagers: ModifierManager<Opaque>[] = null;
+  private scheduledUpdateModifiers: Object[] = null;
   private createdComponents: Component[] = null;
   private createdManagers: ComponentManager<Component>[] = null;
   private updatedComponents: Component[] = null;
@@ -184,6 +188,10 @@ export abstract class Environment {
     this.updatedComponents = [];
     this.updatedManagers = [];
     this.destructors = [];
+    this.scheduledInstallManagers = [];
+    this.scheduledInstallModifiers = [];
+    this.scheduledUpdateModifierManagers = [];
+    this.scheduledUpdateModifiers = [];
   }
 
   didCreate<T>(component: T, manager: ComponentManager<T>) {
@@ -194,6 +202,16 @@ export abstract class Environment {
   didUpdate<T>(component: T, manager: ComponentManager<T>) {
     this.updatedComponents.push(component as any);
     this.updatedManagers.push(manager as any);
+  }
+
+  scheduleInstallModifier<T>(modifier: T, manager: ModifierManager<T>) {
+    this.scheduledInstallManagers.push(manager);
+    this.scheduledInstallModifiers.push(modifier);
+  }
+
+  scheduleUpdateModifier<T>(modifier: T, manager: ModifierManager<T>) {
+    this.scheduledUpdateModifierManagers.push(manager);
+    this.scheduledUpdateModifiers.push(modifier);
   }
 
   didDestroy(d: Destroyable) {
@@ -217,11 +235,27 @@ export abstract class Environment {
       this.destructors[i].destroy();
     }
 
+    for (let i = 0; i < this.scheduledInstallManagers.length; i++) {
+      let manager = this.scheduledInstallManagers[i];
+      let modifier = this.scheduledInstallModifiers[i];
+      manager.install(modifier);
+    }
+
+    for (let i = 0; i < this.scheduledUpdateModifierManagers.length; i++) {
+      let manager = this.scheduledUpdateModifierManagers[i];
+      let modifier = this.scheduledUpdateModifiers[i];
+      manager.update(modifier);
+    }
+
     this.createdComponents = null;
     this.createdManagers = null;
     this.updatedComponents = null;
     this.updatedManagers = null;
     this.destructors = null;
+    this.scheduledInstallManagers = null;
+    this.scheduledInstallModifiers = null;
+    this.scheduledUpdateModifierManagers = null;
+    this.scheduledUpdateModifiers = null;
   }
 
   abstract hasHelper(helperName: string[], blockMeta: BlockMeta): boolean;
