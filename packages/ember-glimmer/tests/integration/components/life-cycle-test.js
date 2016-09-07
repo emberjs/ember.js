@@ -1,4 +1,4 @@
-import { set, run } from 'ember-metal';
+import { set, setProperties, run } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
@@ -250,13 +250,25 @@ class LifeCycleHooksTest extends RenderingTest {
 
       // Sync hooks
 
+      ['the-top', 'willUpdate'],
+      ['the-top', 'willRender'],
+
+      ['the-middle', 'willUpdate'],
+      ['the-middle', 'willRender'],
+
       ['the-bottom', 'willUpdate'],
       ['the-bottom', 'willRender'],
 
       // Async hooks
 
       ['the-bottom', 'didUpdate'],
-      ['the-bottom', 'didRender']
+      ['the-bottom', 'didRender'],
+
+      ['the-middle', 'didUpdate'],
+      ['the-middle', 'didRender'],
+
+      ['the-top', 'didUpdate'],
+      ['the-top', 'didRender']
 
     );
 
@@ -264,12 +276,13 @@ class LifeCycleHooksTest extends RenderingTest {
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
-    bottomAttrs = { oldAttrs: { website: 'tomdale.net' }, newAttrs: { website: 'tomdale.net' } };
-
     this.assertHooks(
       'after no-op rerender (middle)',
 
       // Sync hooks
+
+      ['the-top', 'willUpdate'],
+      ['the-top', 'willRender'],
 
       ['the-middle', 'willUpdate'],
       ['the-middle', 'willRender'],
@@ -277,15 +290,16 @@ class LifeCycleHooksTest extends RenderingTest {
       // Async hooks
 
       ['the-middle', 'didUpdate'],
-      ['the-middle', 'didRender']
+      ['the-middle', 'didRender'],
+
+      ['the-top', 'didUpdate'],
+      ['the-top', 'didRender']
+
     );
 
     this.runTask(() => this.components['the-top'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
-
-    middleAttrs = { oldAttrs: { name: 'Tom Dale' }, newAttrs: { name: 'Tom Dale' } };
-
 
     this.assertHooks(
       'after no-op rerender (top)',
@@ -341,6 +355,260 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-middle', 'willClearRender'],
         ['the-bottom', 'willDestroyElement'],
         ['the-bottom', 'willClearRender']
+      );
+
+      this.assertRegisteredViews('after destroy');
+    });
+  }
+
+  ['@test lifecycle hooks are invoked in a correct sibling order']() {
+    let { attr, invoke } = this.boundHelpers;
+
+    this.registerComponent('the-parent', { template: strip`
+      <div>
+        ${invoke('the-first-child', { twitter: expr(attr('twitter')) })}|
+        ${invoke('the-second-child', { name: expr(attr('name')) })}|
+        ${invoke('the-last-child', { website: expr(attr('website')) })}
+      </div>`
+    });
+
+    this.registerComponent('the-first-child', { template: `Twitter: {{${attr('twitter')}}}` });
+
+    this.registerComponent('the-second-child', { template: `Name: {{${attr('name')}}}` });
+
+    this.registerComponent('the-last-child', { template: `Website: {{${attr('website')}}}` });
+
+    this.render(invoke('the-parent', {
+      twitter: expr('twitter'),
+      name: expr('name'),
+      website: expr('website')
+    }), {
+      twitter: '@tomdale',
+      name: 'Tom Dale',
+      website: 'tomdale.net'
+    });
+
+    this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
+    this.assertRegisteredViews('intial render');
+
+    let parentAttrs = { twitter: '@tomdale', name: 'Tom Dale', website: 'tomdale.net' };
+    let firstAttrs  = { twitter: '@tomdale' };
+    let secondAttrs = { name: 'Tom Dale' };
+    let lastAttrs = { website: 'tomdale.net' };
+
+    this.assertHooks(
+
+      'after initial render',
+
+      // Sync hooks
+
+      ['the-parent', 'init'],
+      ['the-parent', 'didInitAttrs',          { attrs: parentAttrs }],
+      ['the-parent', 'didReceiveAttrs',       { newAttrs: parentAttrs }],
+      ['the-parent', 'willRender'],
+
+      ['the-first-child', 'init'],
+      ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs }],
+      ['the-first-child', 'didReceiveAttrs',  { newAttrs: firstAttrs }],
+      ['the-first-child', 'willRender'],
+
+      ['the-second-child', 'init'],
+      ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs }],
+      ['the-second-child', 'didReceiveAttrs', { newAttrs: secondAttrs }],
+      ['the-second-child', 'willRender'],
+
+      ['the-last-child', 'init'],
+      ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs }],
+      ['the-last-child', 'didReceiveAttrs',   { newAttrs: lastAttrs }],
+      ['the-last-child', 'willRender'],
+
+      // Async hooks
+
+      ['the-first-child', 'didInsertElement'],
+      ['the-first-child', 'didRender'],
+
+      ['the-second-child', 'didInsertElement'],
+      ['the-second-child', 'didRender'],
+
+      ['the-last-child', 'didInsertElement'],
+      ['the-last-child', 'didRender'],
+
+      ['the-parent', 'didInsertElement'],
+      ['the-parent', 'didRender']
+
+    );
+
+    this.runTask(() => this.components['the-first-child'].rerender());
+
+    this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
+
+    this.assertHooks(
+
+      'after no-op rerender (first child)',
+
+      // Sync hooks
+
+      ['the-parent', 'willUpdate'],
+      ['the-parent', 'willRender'],
+
+      ['the-first-child', 'willUpdate'],
+      ['the-first-child', 'willRender'],
+
+      // Async hooks
+
+      ['the-first-child', 'didUpdate'],
+      ['the-first-child', 'didRender'],
+
+      ['the-parent', 'didUpdate'],
+      ['the-parent', 'didRender']
+
+    );
+
+    this.runTask(() => this.components['the-second-child'].rerender());
+
+    this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
+
+    this.assertHooks(
+
+      'after no-op rerender (second child)',
+
+      // Sync hooks
+
+      ['the-parent', 'willUpdate'],
+      ['the-parent', 'willRender'],
+
+      ['the-second-child', 'willUpdate'],
+      ['the-second-child', 'willRender'],
+
+      // Async hooks
+
+      ['the-second-child', 'didUpdate'],
+      ['the-second-child', 'didRender'],
+
+      ['the-parent', 'didUpdate'],
+      ['the-parent', 'didRender']
+
+    );
+
+    this.runTask(() => this.components['the-last-child'].rerender());
+
+    this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
+
+    this.assertHooks(
+
+      'after no-op rerender (last child)',
+
+      // Sync hooks
+
+      ['the-parent', 'willUpdate'],
+      ['the-parent', 'willRender'],
+
+      ['the-last-child', 'willUpdate'],
+      ['the-last-child', 'willRender'],
+
+      // Async hooks
+
+      ['the-last-child', 'didUpdate'],
+      ['the-last-child', 'didRender'],
+
+      ['the-parent', 'didUpdate'],
+      ['the-parent', 'didRender']
+
+    );
+
+    this.runTask(() => this.components['the-parent'].rerender());
+
+    this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
+
+    this.assertHooks(
+
+      'after no-op rerender (parent)',
+
+      // Sync hooks
+
+      ['the-parent', 'willUpdate'],
+      ['the-parent', 'willRender'],
+
+      // Async hooks
+
+      ['the-parent', 'didUpdate'],
+      ['the-parent', 'didRender']
+
+    );
+
+    this.runTask(() => setProperties(this.context, {
+      twitter: '@horsetomdale',
+      name: 'Horse Tom Dale',
+      website: 'horsetomdale.net'
+    }));
+
+    this.assertText('Twitter: @horsetomdale|Name: Horse Tom Dale|Website: horsetomdale.net');
+
+    parentAttrs = {
+      oldAttrs: { twitter: '@tomdale', name: 'Tom Dale', website: 'tomdale.net' },
+      newAttrs: { twitter: '@horsetomdale', name: 'Horse Tom Dale', website: 'horsetomdale.net' }
+    };
+    firstAttrs  = { oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@horsetomdale' } };
+    secondAttrs = { oldAttrs: { name: 'Tom Dale' }, newAttrs: { name: 'Horse Tom Dale' } };
+    lastAttrs = { oldAttrs: { website: 'tomdale.net' }, newAttrs: { website: 'horsetomdale.net' } };
+
+    this.assertHooks(
+
+      'after update',
+
+      // Sync hooks
+
+      ['the-parent', 'didUpdateAttrs', parentAttrs],
+      ['the-parent', 'didReceiveAttrs', parentAttrs],
+
+      ['the-parent', 'willUpdate'],
+      ['the-parent', 'willRender'],
+
+      ['the-first-child', 'didUpdateAttrs', firstAttrs],
+      ['the-first-child', 'didReceiveAttrs', firstAttrs],
+
+      ['the-first-child', 'willUpdate'],
+      ['the-first-child', 'willRender'],
+
+      ['the-second-child', 'didUpdateAttrs', secondAttrs],
+      ['the-second-child', 'didReceiveAttrs', secondAttrs],
+
+      ['the-second-child', 'willUpdate'],
+      ['the-second-child', 'willRender'],
+
+      ['the-last-child', 'didUpdateAttrs', lastAttrs],
+      ['the-last-child', 'didReceiveAttrs', lastAttrs],
+
+      ['the-last-child', 'willUpdate'],
+      ['the-last-child', 'willRender'],
+
+      // Async hooks
+
+      ['the-first-child', 'didUpdate'],
+      ['the-first-child', 'didRender'],
+
+      ['the-second-child', 'didUpdate'],
+      ['the-second-child', 'didRender'],
+
+      ['the-last-child', 'didUpdate'],
+      ['the-last-child', 'didRender'],
+
+      ['the-parent', 'didUpdate'],
+      ['the-parent', 'didRender']
+
+    );
+
+    this.teardownAssertions.push(() => {
+      this.assertHooks(
+        'destroy',
+        ['the-parent', 'willDestroyElement'],
+        ['the-parent', 'willClearRender'],
+        ['the-first-child', 'willDestroyElement'],
+        ['the-first-child', 'willClearRender'],
+        ['the-second-child', 'willDestroyElement'],
+        ['the-second-child', 'willClearRender'],
+        ['the-last-child', 'willDestroyElement'],
+        ['the-last-child', 'willClearRender']
       );
 
       this.assertRegisteredViews('after destroy');
