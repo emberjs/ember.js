@@ -250,13 +250,25 @@ class LifeCycleHooksTest extends RenderingTest {
 
       // Sync hooks
 
+      ['the-top', 'willUpdate'],
+      ['the-top', 'willRender'],
+
+      ['the-middle', 'willUpdate'],
+      ['the-middle', 'willRender'],
+
       ['the-bottom', 'willUpdate'],
       ['the-bottom', 'willRender'],
 
       // Async hooks
 
       ['the-bottom', 'didUpdate'],
-      ['the-bottom', 'didRender']
+      ['the-bottom', 'didRender'],
+
+      ['the-middle', 'didUpdate'],
+      ['the-middle', 'didRender'],
+
+      ['the-top', 'didUpdate'],
+      ['the-top', 'didRender']
 
     );
 
@@ -271,13 +283,20 @@ class LifeCycleHooksTest extends RenderingTest {
 
       // Sync hooks
 
+      ['the-top', 'willUpdate'],
+      ['the-top', 'willRender'],
+
       ['the-middle', 'willUpdate'],
       ['the-middle', 'willRender'],
 
       // Async hooks
 
       ['the-middle', 'didUpdate'],
-      ['the-middle', 'didRender']
+      ['the-middle', 'didRender'],
+
+      ['the-top', 'didUpdate'],
+      ['the-top', 'didRender']
+
     );
 
     this.runTask(() => this.components['the-top'].rerender());

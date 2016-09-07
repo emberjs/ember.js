@@ -338,11 +338,6 @@ export default class Environment extends GlimmerEnvironment {
     return createIterable(ref, keyPath);
   }
 
-  didCreate(component, manager) {
-    this.createdComponents.unshift(component);
-    this.createdManagers.unshift(manager);
-  }
-
   didDestroy(destroyable) {
     destroyable.destroy();
   }
