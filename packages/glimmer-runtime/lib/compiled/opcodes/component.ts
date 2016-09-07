@@ -69,7 +69,6 @@ export class OpenComponentOpcode extends Opcode {
     vm.stack().pushSimpleBlock();
     vm.pushRootScope(selfRef, layout.symbols);
     vm.invokeLayout(args, layout, templates, callerScope, component, manager, shadow);
-    vm.env.didCreate(component, manager);
 
     vm.updateWith(new UpdateComponentOpcode(definition.name, component, manager, args, dynamicScope));
   }
@@ -100,7 +99,6 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
     let { component, manager, args, dynamicScope } = this;
 
     manager.update(component, args, dynamicScope);
-    vm.env.didUpdate(component, manager);
   }
 
   toJSON(): OpcodeJSON {
@@ -167,6 +165,8 @@ export class DidRenderLayoutOpcode extends Opcode {
 
     manager.didRenderLayout(component, bounds);
 
+    vm.env.didCreate(component, manager);
+
     vm.updateWith(new DidUpdateLayoutOpcode(manager, component, bounds));
   }
 }
@@ -183,9 +183,12 @@ export class DidUpdateLayoutOpcode extends UpdatingOpcode {
     super();
   }
 
-  evaluate() {
+  evaluate(vm: UpdatingVM) {
     let { manager, component, bounds } = this;
+
     manager.didUpdateLayout(component, bounds);
+
+    vm.env.didUpdate(component, manager);
   }
 }
 
