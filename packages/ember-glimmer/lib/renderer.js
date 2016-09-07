@@ -57,6 +57,7 @@ class RootState {
     assert(`You cannot render \`${self.value()}\` without a template.`, template);
 
     this.id = getViewId(root);
+    this.env = env;
     this.root = root;
     this.result = undefined;
     this.shouldReflush = false;
@@ -83,14 +84,35 @@ class RootState {
   }
 
   destroy() {
-    let { result } = this;
+    let { result, env } = this;
 
+    this.env = null;
     this.root = null;
     this.result = null;
     this.render = null;
 
     if (result) {
+      /*
+       Handles these scenarios:
+
+       * When roots are removed during standard rendering process, a transaction exists already
+         `.begin()` / `.commit()` are not needed.
+       * When roots are being destroyed manually (`component.append(); component.destroy() case), no
+         transaction exists already.
+       * When roots are being destroyed during `Renderer#destroy`, no transaction exists
+
+       */
+      let needsTransaction = !env.inTransaction;
+
+      if (needsTransaction) {
+        env.begin();
+      }
+
       result.destroy();
+
+      if (needsTransaction) {
+        env.commit();
+      }
     }
   }
 }
@@ -194,9 +216,21 @@ export class Renderer {
   }
 
   remove(view) {
-    view.trigger('willDestroyElement');
-    view.trigger('willClearRender');
     view._transitionTo('destroying');
+
+    view.element = null;
+    view.trigger('didDestroyElement');
+
+    this.cleanupRootFor(view);
+
+    if (!view.isDestroying) {
+      view.destroy();
+    }
+  }
+
+  cleanupRootFor(view) {
+    // no need to cleanup roots if we have already been destroyed
+    if (this._destroyed) { return; }
 
     let roots = this._roots;
 
@@ -214,10 +248,6 @@ export class Renderer {
 
     if (this._roots.length === 0) {
       deregister(this);
-    }
-
-    if (!view.isDestroying) {
-      view.destroy();
     }
   }
 
@@ -308,6 +338,7 @@ export class Renderer {
       let root = roots[i];
       root.destroy();
     }
+
     this._roots = null;
 
     if (roots.length) {

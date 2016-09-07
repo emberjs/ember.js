@@ -69,6 +69,9 @@ export default class Environment extends GlimmerEnvironment {
     super(...arguments);
     this.owner = owner;
 
+    // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
+    this.destroyedComponents = undefined;
+
     installPlatformSpecificProtocolForURL(this);
 
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
@@ -340,6 +343,27 @@ export default class Environment extends GlimmerEnvironment {
 
   didDestroy(destroyable) {
     destroyable.destroy();
+  }
+
+  begin() {
+    this.inTransaction = true;
+
+    super.begin();
+
+    this.destroyedComponents = [];
+  }
+
+  commit() {
+    // components queued for destruction must be destroyed before firing
+    // `didCreate` to prevent errors when removing and adding a component
+    // with the same name (would throw an error when added to view registry)
+    for (let i = 0; i < this.destroyedComponents.length; i++) {
+      this.destroyedComponents[i].destroy();
+    }
+
+    super.commit();
+
+    this.inTransaction = false;
   }
 }
 
