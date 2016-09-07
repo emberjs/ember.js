@@ -101,3 +101,14 @@ QUnit.test("lifecycle hooks disabled", function(assert) {
 
   return this.renderToHTML('/');
 });
+
+QUnit.test("Should not attempt to render element modifiers GH#14220", function(assert) {
+  assert.expect(1);
+
+  this.template('application', "<div {{action 'foo'}}></div>");
+
+  return this.renderToHTML('/')
+    .then(function(html) {
+      assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><div></div></div></body>');
+    });
+});

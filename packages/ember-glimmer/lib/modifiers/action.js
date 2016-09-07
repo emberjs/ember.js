@@ -1,3 +1,4 @@
+import { environment } from 'ember-environment';
 import {
   assert,
   run,
@@ -168,6 +169,10 @@ export class ActionState {
 // implements ModifierManager<Action>
 export default class ActionModifierManager {
   install(element, args, dom, dynamicScope) {
+    if (!environment.hasDOM) {
+      return;
+    }
+
     let { named, positional } = args;
     let implicitTarget;
     let actionName;
@@ -213,6 +218,10 @@ export default class ActionModifierManager {
   }
 
   update(modifier, element, args, dom, dynamicScope) {
+    if (!environment.hasDOM) {
+      return;
+    }
+
     let { positional } = args;
 
     let actionNameRef = positional.at(1);
