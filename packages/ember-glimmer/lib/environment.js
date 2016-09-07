@@ -121,7 +121,7 @@ export default class Environment extends GlimmerEnvironment {
       '-input-type': inputTypeHelper,
       '-normalize-class': normalizeClassHelper,
       '-html-safe': htmlSafeHelper,
-      '-get-dynamic-var': { glimmerNativeHelper: getDynamicVar }
+      '-get-dynamic-var': getDynamicVar
     };
   }
 
@@ -288,23 +288,23 @@ export default class Environment extends GlimmerEnvironment {
     assert('The first argument passed into `lookupHelper` should be an array', Array.isArray(nameParts));
 
     let name = nameParts[0];
+    let helper = this.builtInHelpers[name];
+
+    if (helper) {
+      return helper;
+    }
+
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
 
-    let helper = this.builtInHelpers[name] ||
-      owner.lookup(`helper:${name}`, options) ||
-      owner.lookup(`helper:${name}`);
+    helper = owner.lookup(`helper:${name}`, options) || owner.lookup(`helper:${name}`);
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-    if (helper.isInternalHelper) {
-      return (vm, args) => helper.toReference(args, this, symbolTable);
-    } else if (helper.isHelperInstance) {
+    if (helper.isHelperInstance) {
       return (vm, args) => SimpleHelperReference.create(helper.compute, args);
     } else if (helper.isHelperFactory) {
       return (vm, args) => ClassBasedHelperReference.create(helper, vm, args);
-    } else if (helper.glimmerNativeHelper) {
-      return helper.glimmerNativeHelper;
     } else {
       throw new Error(`${nameParts} is not a helper`);
     }

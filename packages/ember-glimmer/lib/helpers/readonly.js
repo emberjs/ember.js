@@ -1,16 +1,12 @@
 import { UPDATE } from '../utils/references';
 import { unMut } from './mut';
 
-export default {
-  isInternalHelper: true,
+export default function(vm, args) {
+  let ref = unMut(args.positional.at(0));
 
-  toReference(args) {
-    let ref = unMut(args.positional.at(0));
+  let wrapped = Object.create(ref);
 
-    let wrapped = Object.create(ref);
+  wrapped[UPDATE] = undefined;
 
-    wrapped[UPDATE] = undefined;
-
-    return wrapped;
-  }
-};
+  return wrapped;
+}

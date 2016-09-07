@@ -81,13 +81,9 @@ export class ClosureActionReference extends CachedReference {
   }
 }
 
-export default {
-  isInternalHelper: true,
-
-  toReference(args) {
-    return ClosureActionReference.create(args);
-  }
-};
+export default function(vm, args) {
+  return ClosureActionReference.create(args);
+}
 
 export function createClosureAction(target, action, valuePath, actionArgs) {
   let closureAction;

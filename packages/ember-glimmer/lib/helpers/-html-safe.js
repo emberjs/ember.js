@@ -6,9 +6,6 @@ function htmlSafe({ positional }) {
   return new SafeString(path.value());
 }
 
-export default {
-  isInternalHelper: true,
-  toReference(args) {
-    return new InternalHelperReference(htmlSafe, args);
-  }
-};
+export default function(vm, args) {
+  return new InternalHelperReference(htmlSafe, args);
+}
