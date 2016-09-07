@@ -1,6 +1,16 @@
 import 'container';
 
-export { default as _Ember } from 'ember-metal'; // Is this still needed
+import _Ember, { FEATURES } from 'ember-metal';
+import { ENV } from 'ember-environment';
+import VERSION from 'ember/version';
+
+// private API used by ember-cli-htmlbars to setup ENV and FEATURES
+if (!_Ember.ENV) { _Ember.ENV = ENV; }
+if (!_Ember.FEATURES) { _Ember.FEATURES = FEATURES; }
+if (!_Ember.VERSION) { _Ember.VERSION = VERSION; }
+
+export { _Ember };
+
 export { default as precompile } from './system/precompile';
 export { default as compile } from './system/compile';
 export {
