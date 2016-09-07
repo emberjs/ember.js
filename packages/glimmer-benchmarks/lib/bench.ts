@@ -97,7 +97,7 @@ import { TestEnvironment, TestDynamicScope, compile } from "glimmer-test-helpers
 import { UpdatableReference } from 'glimmer-object-reference';
 
 export abstract class TemplateBenchmarkScenario extends BenchmarkScenario {
-  private compiled: Template = null;
+  private compiled: Template<{}> = null;
   private context: Object = null;
   protected glimmerEnv: TestEnvironment = new TestEnvironment();
 
@@ -117,7 +117,7 @@ export abstract class TemplateBenchmarkScenario extends BenchmarkScenario {
         let parent = glimmerEnv.getDOM().createElement('div') as HTMLElement;
         let contextRef = new UpdatableReference(this.context);
         glimmerEnv.begin();
-        this.compiled.render(contextRef, glimmerEnv, { appendTo: parent, dynamicScope: new TestDynamicScope() });
+        this.compiled.render(contextRef, parent, new TestDynamicScope());
         glimmerEnv.commit();
         return parent;
       });
@@ -133,7 +133,7 @@ export abstract class TemplateBenchmarkScenario extends BenchmarkScenario {
     let parent = glimmerEnv.getDOM().createElement('div');
     let context = new UpdatableReference(this.context);
     glimmerEnv.begin();
-    compiled.render(context, glimmerEnv, { appendTo: parent, dynamicScope: new TestDynamicScope() });
+    compiled.render(context, parent, new TestDynamicScope());
     glimmerEnv.commit();
   }
 }

@@ -33,7 +33,7 @@ import {
 } from 'glimmer-util';
 
 import {
-  BlockMeta
+  TemplateMeta
 } from 'glimmer-wire-format';
 
 import { EvaluatedArgs } from './compiled/expressions/args';
@@ -258,20 +258,20 @@ export abstract class Environment {
     this.scheduledUpdateModifiers = null;
   }
 
-  abstract hasHelper(helperName: string[], blockMeta: BlockMeta): boolean;
-  abstract lookupHelper(helperName: string[], blockMeta: BlockMeta): Helper;
+  abstract hasHelper(helperName: string[], blockMeta: TemplateMeta): boolean;
+  abstract lookupHelper(helperName: string[], blockMeta: TemplateMeta): Helper;
 
   attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace?: string): IChangeList {
     return defaultChangeLists(element, attr, isTrusting, namespace);
   }
 
   abstract hasPartial(partialName: string[], symbolTable: SymbolTable): boolean;
-  abstract lookupPartial(PartialName: string[], symbolTable: SymbolTable): PartialDefinition;
+  abstract lookupPartial(PartialName: string[], symbolTable: SymbolTable): PartialDefinition<TemplateMeta>;
   abstract hasComponentDefinition(tagName: string[], symbolTable: SymbolTable): boolean;
   abstract getComponentDefinition(tagName: string[], symbolTable: SymbolTable): ComponentDefinition<Opaque>;
 
-  abstract hasModifier(modifierName: string[], blockMeta: BlockMeta): boolean;
-  abstract lookupModifier(modifierName: string[], blockMeta: BlockMeta): ModifierManager<Opaque>;
+  abstract hasModifier(modifierName: string[], blockMeta: TemplateMeta): boolean;
+  abstract lookupModifier(modifierName: string[], blockMeta: TemplateMeta): ModifierManager<Opaque>;
 }
 
 export default Environment;

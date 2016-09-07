@@ -3,9 +3,9 @@ import {
   TestDynamicScope
 } from 'glimmer-test-helpers';
 import { UpdatableReference } from 'glimmer-object-reference';
-import { compileSpec } from 'glimmer-compiler';
+import { precompile } from 'glimmer-compiler';
 
-import { EvaluatedArgs } from 'glimmer-runtime';
+import { EvaluatedArgs, templateFactory } from 'glimmer-runtime';
 
 const DEFAULT_DATA =
 `{
@@ -180,6 +180,12 @@ const UI =
   </div>
 {{/if}}`;
 
+function compile(str: string, env: TestEnvironment) {
+  let spec = JSON.parse(precompile(str, {}));
+  let factory = templateFactory(spec);
+  return factory.create(env);
+}
+
 let $inputs:   Element,
     $data:     HTMLTextAreaElement,
     $template: HTMLTextAreaElement,
@@ -310,7 +316,7 @@ function renderUI() {
 
   env.begin();
   let self = new UpdatableReference(ui);
-  let res = env.compile(UI).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope() });
+  let res = env.compile(UI).render(self, document.body, new TestDynamicScope());
   env.commit();
 
   rerenderUI = () => {
@@ -395,20 +401,21 @@ function renderContent() {
 
   env.begin();
   let self = new UpdatableReference(data);
-  let res = app.render(self, env, { appendTo: div, dynamicScope: new TestDynamicScope() });
+  let res = app.render(self, div, new TestDynamicScope());
   env.commit();
 
-  let templateOps = app.raw['compiled'].ops;
+  let entryPoint = app.asEntryPoint();
+  let templateOps = entryPoint.compile(env).ops;
   let layoutOps = compileLayout("h-card");
 
   ui.rendered = true;
 
   ui.template.source = $template.value;
-  ui.template.wireFormat = compileSpec($template.value, {}).template;
+  ui.template.wireFormat = compile($template.value, env)._block;
   ui.template.opcodes = toJSON(eagerCompile(templateOps));
 
   ui.layout.source = $layout.value;
-  ui.layout.wireFormat = compileSpec($template.value, {}).template;
+  ui.layout.wireFormat = compile($layout.value, env)._block;
   ui.layout.opcodes = toJSON(eagerCompile(layoutOps));
 
   ui.updatingOpcodes = toJSON(res['updating']);

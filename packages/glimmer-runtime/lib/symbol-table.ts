@@ -1,12 +1,12 @@
 import { dict } from 'glimmer-util';
-import { BlockMeta } from 'glimmer-wire-format';
+import { TemplateMeta } from 'glimmer-wire-format';
 
 export default class SymbolTable {
-  static forEntryPoint(meta: BlockMeta): SymbolTable {
+  static forEntryPoint(meta: TemplateMeta): SymbolTable {
     return new SymbolTable(null, meta).initEntryPoint();
   }
 
-  static forLayout(named: string[], yields: string[], meta: BlockMeta): SymbolTable {
+  static forLayout(named: string[], yields: string[], meta: TemplateMeta): SymbolTable {
     return new SymbolTable(null, meta).initLayout(named, yields);
   }
 
@@ -20,7 +20,7 @@ export default class SymbolTable {
   private yields   = dict<number>();
   public size = 1;
 
-  constructor(private parent: SymbolTable, private meta: BlockMeta = null) {
+  constructor(private parent: SymbolTable, private meta: TemplateMeta = null) {
     this.top = parent ? parent.top : this;
   }
 
@@ -54,7 +54,7 @@ export default class SymbolTable {
     return this;
   }
 
-  getMeta(): BlockMeta {
+  getMeta(): TemplateMeta {
     let { meta, parent } = this;
 
     if (!meta && parent) {

@@ -1,12 +1,11 @@
-import { SerializedTemplate } from 'glimmer-wire-format';
+import { Template } from './template';
 
-export class PartialDefinition {
+export class PartialDefinition<T> {
   name: string;
-  template: SerializedTemplate;
+  template: Template<T>;
 
-  constructor(name: string, template: SerializedTemplate) {
+  constructor(name: string, template: Template<T>) {
     this.name = name;
     this.template = template;
   }
-
 }

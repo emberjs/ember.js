@@ -2,6 +2,7 @@ import * as SimpleDOM from 'simple-dom';
 
 import { TestEnvironment, TestDynamicScope } from "glimmer-test-helpers/lib/environment";
 import { Template, Simple } from 'glimmer-runtime';
+import { precompile } from 'glimmer-compiler';
 import { UpdatableReference } from 'glimmer-object-reference';
 import NodeDOMTreeConstruction from 'glimmer-node/lib/node-dom-helper';
 
@@ -35,8 +36,8 @@ function commonSetup() {
   root = rootElement();
 }
 
-function render(template: Template, self: any) {
-  return template.render(new UpdatableReference(self), env, { appendTo: root, dynamicScope: new TestDynamicScope() });
+function render<T>(template: Template<T>, self: any) {
+  return template.render(new UpdatableReference(self), root, new TestDynamicScope());
 }
 
 function module(name: string) {
@@ -238,4 +239,15 @@ QUnit.test('can instantiate NodeDOMTreeConstruction without a document', functio
   helper = new NodeDOMTreeConstruction(null);
 
   assert.ok(!!helper, 'helper was instantiated without errors');
+});
+
+QUnit.module('default template id');
+
+QUnit.test('generates id in node', function (assert) {
+  let template = precompile('hello');
+  let obj = JSON.parse(template);
+  assert.equal(obj.id, 'tJmwGiDc', 'short sha of template source');
+  template = precompile('hello', { meta: {moduleName: 'template/hello'} });
+  obj = JSON.parse(template);
+  assert.equal(obj.id, '27YmSQva', 'short sha of template source and meta');
 });

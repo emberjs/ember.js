@@ -1,36 +1,36 @@
 import TemplateVisitor from "./template-visitor";
-import JavaScriptCompiler from "./javascript-compiler";
-import { FIXME, getAttrNamespace } from "glimmer-util";
+import JavaScriptCompiler, { Template } from "./javascript-compiler";
+import { getAttrNamespace } from "glimmer-util";
 import { isHelper, isSelfGet } from "glimmer-syntax";
 import { assert } from "glimmer-util";
+import { TemplateMeta } from "glimmer-wire-format";
 
-export interface CompileOptions {
-  buildMeta?: FIXME<Object, 'currently does nothing'>;
-  meta?: Object;
+export interface CompileOptions<T extends TemplateMeta> {
+  meta?: T;
 }
 
 function isTrustedValue(value) {
   return value.escaped !== undefined && !value.escaped;
 }
 
-export default class TemplateCompiler {
-  static compile(options: CompileOptions, ast) {
+export default class TemplateCompiler<T extends TemplateMeta> {
+  static compile<T>(options: CompileOptions<T>, ast): Template<T> {
     let templateVisitor = new TemplateVisitor();
     templateVisitor.visit(ast);
 
     let compiler = new TemplateCompiler(options);
     let opcodes = compiler.process(templateVisitor.actions);
-    return JavaScriptCompiler.process(opcodes, options.meta);
+    return JavaScriptCompiler.process<T>(opcodes, options.meta);
   }
 
-  private options: CompileOptions;
+  private options: CompileOptions<T>;
   private templateId = 0;
   private templateIds: number[] = [];
   private opcodes: any[] = [];
   private includeMeta = false;
 
-  constructor(options: CompileOptions = {}) {
-    this.options = options;
+  constructor(options: CompileOptions<T>) {
+    this.options = options || {};
   }
 
   process(actions): any[] {

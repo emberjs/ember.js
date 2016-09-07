@@ -39,11 +39,10 @@ function commonSetup() {
   root.setAttribute('debug-root', 'true');
 }
 
-function render(template: Template, context = {}, view: PathReference<Opaque> = null) {
-  let options = { appendTo: root, dynamicScope: new TestDynamicScope() };
+function render<T>(template: Template<T>, context = {}, view: PathReference<Opaque> = null) {
   self = new UpdatableReference(context);
   env.begin();
-  result = template.render(self, env, options);
+  result = template.render(self, root, new TestDynamicScope());
   env.commit();
   assertInvariants(result);
   return result;
