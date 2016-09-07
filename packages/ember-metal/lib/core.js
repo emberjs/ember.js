@@ -1,4 +1,4 @@
-import { context, ENV } from 'ember-environment';
+import { context } from 'ember-environment';
 
 /**
 @module ember
@@ -24,7 +24,6 @@ const Ember = (typeof context.imports.Ember === 'object' && context.imports.Embe
 
 // Make sure these are set whether Ember was already defined or not
 Ember.isNamespace = true;
-Ember.ENV = ENV;
 Ember.toString = function() { return 'Ember'; };
 
 // ..........................................................
