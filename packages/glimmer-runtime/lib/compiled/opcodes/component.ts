@@ -6,7 +6,7 @@ import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { Templates } from '../../syntax/core';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
-import { CONSTANT_TAG, PathReference, ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
+import { CONSTANT_TAG, PathReference, ReferenceCache, combine, isConst } from 'glimmer-reference';
 import { FIXME } from 'glimmer-util';
 
 export class PutDynamicComponentDefinitionOpcode extends Opcode {
@@ -69,7 +69,6 @@ export class OpenComponentOpcode extends Opcode {
     vm.stack().pushSimpleBlock();
     vm.pushRootScope(selfRef, layout.symbols);
     vm.invokeLayout(args, layout, templates, callerScope, component, manager, shadow);
-    vm.env.didCreate(component, manager);
 
     vm.updateWith(new UpdateComponentOpcode(definition.name, component, manager, args, dynamicScope));
   }
@@ -77,8 +76,6 @@ export class OpenComponentOpcode extends Opcode {
 
 export class UpdateComponentOpcode extends UpdatingOpcode {
   public type = "update-component";
-
-  private lastUpdated: Revision;
 
   constructor(
     private name: string,
@@ -89,26 +86,19 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
   ) {
     super();
 
-    let tag;
     let componentTag = manager.getTag(component);
 
     if (componentTag) {
-      tag = this.tag = combine([args.tag, componentTag]);
+      this.tag = combine([args.tag, componentTag]);
     } else {
-      tag = this.tag = args.tag;
+      this.tag = args.tag;
     }
-
-    this.lastUpdated = tag.value();
   }
 
   evaluate(vm: UpdatingVM) {
-    let { component, manager, tag, args, dynamicScope, lastUpdated } = this;
+    let { component, manager, args, dynamicScope } = this;
 
-    if (!tag.validate(lastUpdated)) {
-      manager.update(component, args, dynamicScope);
-      vm.env.didUpdate(component, manager);
-      this.lastUpdated = tag.value();
-    }
+    manager.update(component, args, dynamicScope);
   }
 
   toJSON(): OpcodeJSON {
@@ -175,6 +165,8 @@ export class DidRenderLayoutOpcode extends Opcode {
 
     manager.didRenderLayout(component, bounds);
 
+    vm.env.didCreate(component, manager);
+
     vm.updateWith(new DidUpdateLayoutOpcode(manager, component, bounds));
   }
 }
@@ -191,9 +183,12 @@ export class DidUpdateLayoutOpcode extends UpdatingOpcode {
     super();
   }
 
-  evaluate() {
+  evaluate(vm: UpdatingVM) {
     let { manager, component, bounds } = this;
+
     manager.didUpdateLayout(component, bounds);
+
+    vm.env.didUpdate(component, manager);
   }
 }
 

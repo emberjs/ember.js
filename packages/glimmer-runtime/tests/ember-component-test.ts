@@ -1059,8 +1059,8 @@ QUnit.test('dynamic attribute bindings', assert => {
     attributeBindings = ['style'];
     style: string = null;
 
-    constructor() {
-      super();
+    constructor(attrs) {
+      super(attrs);
       this.style = 'color: red;';
       fooBarInstance = this;
     }
