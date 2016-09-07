@@ -1067,7 +1067,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
   transitionTo(name, context) {
     let router = this.router;
-    return router.transitionTo(...prefixRouteNameArg(this, arguments));
+    if (router.router.oldState) {
+      return router.transitionTo(...prefixRouteNameArg(this, arguments));
+    }
+    return router.replaceWith(...prefixRouteNameArg(this, arguments));
   },
 
   /**
@@ -1151,6 +1154,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
   replaceWith() {
     let router = this.router;
+    if (router.router.oldState) {
+      return router.transitionTo(...prefixRouteNameArg(this, arguments));
+    }
     return router.replaceWith(...prefixRouteNameArg(this, arguments));
   },
 
