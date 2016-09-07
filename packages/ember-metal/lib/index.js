@@ -21,7 +21,9 @@ export {
   deprecateFunc,
   runInDebug,
   setDebugFunction,
-  getDebugFunction
+  getDebugFunction,
+  debugSeal,
+  debugFreeze
 } from './debug';
 export {
   instrument,

@@ -186,8 +186,8 @@ function babelConfigFor(environment) {
   if (isProduction) {
     includeDevHelpers = false;
     plugins.push(filterImports({
-      'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal'],
-      'ember-metal': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal']
+      'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal', 'debugFreeze'],
+      'ember-metal': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal', 'debugFreeze']
     }));
   }
 
