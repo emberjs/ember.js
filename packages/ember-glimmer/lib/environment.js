@@ -68,7 +68,7 @@ export default class Environment extends GlimmerEnvironment {
   constructor({ [OWNER]: owner }) {
     super(...arguments);
     this.owner = owner;
-    this.hasDOM = owner.lookup('-environment:main').hasDOM;
+    this.isInteractive = owner.lookup('-environment:main').isInteractive;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
     this.destroyedComponents = undefined;
@@ -343,13 +343,13 @@ export default class Environment extends GlimmerEnvironment {
   }
 
   scheduleInstallModifier() {
-    if (this.hasDOM) {
+    if (this.isInteractive) {
       super.scheduleInstallModifier(...arguments);
     }
   }
 
   scheduleUpdateModifier() {
-    if (this.hasDOM) {
+    if (this.isInteractive) {
       super.scheduleUpdateModifier(...arguments);
     }
   }
