@@ -6,6 +6,7 @@ export default function template(json) {
 
   return {
     id: factory.id,
+    meta: factory.meta,
     create(props) {
       return factory.create(props.env, { owner: props[OWNER] });
     }

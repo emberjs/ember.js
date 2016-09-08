@@ -8,7 +8,7 @@ export default function compileOptions(_options) {
 
   // move `moduleName` into `meta` property
   if (options.moduleName) {
-    let meta = options.meta = options.meta || {};
+    let meta = options.meta;
     meta.moduleName = options.moduleName;
 
     delete options.moduleName;
