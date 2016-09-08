@@ -35,14 +35,16 @@ QUnit.test('default store utilizes the container to acquire the model factory', 
   });
 
   setOwner(route, buildOwner({
-    hasRegistration() {
-      return true;
-    },
+    ownerOptions: {
+      hasRegistration() {
+        return true;
+      },
 
-    _lookupFactory(fullName) {
-      equal(fullName, 'model:post', 'correct factory was looked up');
+      _lookupFactory(fullName) {
+        equal(fullName, 'model:post', 'correct factory was looked up');
 
-      return Post;
+        return Post;
+      }
     }
   }));
 
@@ -344,15 +346,17 @@ QUnit.test('paramsFor considers an engine\'s mountPoint', function(assert) {
   };
 
   let engineInstance = buildOwner({
-    routable: true,
+    ownerOptions: {
+      routable: true,
 
-    mountPoint: 'foo.bar',
+      mountPoint: 'foo.bar',
 
-    lookup(name) {
-      if (name === 'route:posts') {
-        return postsRoute;
-      } else if (name === 'route:application') {
-        return applicationRoute;
+      lookup(name) {
+        if (name === 'route:posts') {
+          return postsRoute;
+        } else if (name === 'route:application') {
+          return applicationRoute;
+        }
       }
     }
   });
@@ -387,15 +391,17 @@ QUnit.test('modelFor considers an engine\'s mountPoint', function() {
   };
 
   let engineInstance = buildOwner({
-    routable: true,
+    ownerOptions: {
+      routable: true,
 
-    mountPoint: 'foo.bar',
+      mountPoint: 'foo.bar',
 
-    lookup(name) {
-      if (name === 'route:posts') {
-        return postsRoute;
-      } else if (name === 'route:application') {
-        return applicationRoute;
+      lookup(name) {
+        if (name === 'route:posts') {
+          return postsRoute;
+        } else if (name === 'route:application') {
+          return applicationRoute;
+        }
       }
     }
   });
