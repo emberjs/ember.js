@@ -810,6 +810,36 @@ test("block arguments (ensure balanced push/pop)", assert => {
   equalTokens(root, '<div>GodfreakOuter</div>', "After updating");
 });
 
+test("block arguments cannot be accessed through {{this}}", assert => {
+  env.registerHelper('noop', params => params[0]);
+
+  let template = compile(stripTight`
+    <div>
+      [{{#with person as |name|}}{{this.name}}{{/with}}]
+      [{{#with person as |name|}}{{#with this.name as |test|}}{{test}}{{/with}}{{/with}}]
+      [{{#with person as |name|}}{{#with (noop this.name) as |test|}}{{test}}{{/with}}{{/with}}]
+    </div>`);
+
+  let object = { person: "Yehuda", name: "Godfrey" };
+  render(template, object);
+
+  equalTokens(root, '<div>[Godfrey][Godfrey][Godfrey]</div>', "Initial render");
+
+  rerender();
+
+  equalTokens(root, '<div>[Godfrey][Godfrey][Godfrey]</div>', "Initial render");
+
+  object.name = "Godfreak";
+  rerender();
+
+  equalTokens(root, '<div>[Godfreak][Godfreak][Godfreak]</div>', "After update");
+
+  object.name = "Godfrey";
+  rerender();
+
+  equalTokens(root, '<div>[Godfrey][Godfrey][Godfrey]</div>', "After reset");
+});
+
 test("The with helper should consider an empty array falsy", assert => {
   let object = { condition: [] };
   let template = compile("<div>{{#with condition as |c|}}{{c.length}}{{/with}}</div>");

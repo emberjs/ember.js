@@ -209,10 +209,6 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.pushValue<Expressions.Arg>(['arg', path]);
   }
 
-  selfGet(path: string[]) {
-    this.pushValue<Expressions.SelfGet>(['self-get', path]);
-  }
-
   get(path: string[]) {
     this.pushValue<Expressions.Get>(['get', path]);
   }
