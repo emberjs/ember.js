@@ -6,8 +6,7 @@
 */
 
 import { info } from 'ember-metal/debug';
-import { GetSyntax, CompileIntoList } from 'glimmer-runtime';
-import { UNDEFINED_REFERENCE, CONSTANT_TAG } from 'glimmer-reference';
+import { UNDEFINED_REFERENCE, GetSyntax, CompileIntoList } from 'glimmer-runtime';
 
 /**
   Execute the `debugger` statement in the current template's context.
@@ -59,60 +58,28 @@ function defaultCallback(context, get) {
   debugger;
 }
 
-export default function debuggerHelper(vm, args, symbolTable) {
-  return DebuggerReference.create(vm, args, symbolTable);
-}
-
 let callback = defaultCallback;
 
-class DebuggerReference {
-  static create(vm, args, symbolTable) {
-    let selfRef = vm.getSelf();
+export default function debuggerHelper(vm, args, symbolTable) {
+  let context = vm.getSelf().value();
 
-    // Note: this is totally an overkill since we are only compiling
-    // expressions, but this is the only kind of SymbolLookup we can
-    // construct. The symbol table itself should really be sufficient
-    // here – we should refactor the Glimmer code to make that possible.
-    let symbolLookup = new CompileIntoList(vm.env, symbolTable);
+  // Note: this is totally an overkill since we are only compiling
+  // expressions, but this is the only kind of SymbolLookup we can
+  // construct. The symbol table itself should really be sufficient
+  // here – we should refactor the Glimmer code to make that possible.
+  let symbolLookup = new CompileIntoList(vm.env, symbolTable);
 
-    return new this(selfRef, vm, symbolLookup);
+  function get(path) {
+    // Problem: technically, we are getting a `PublicVM` here, but to
+    // evaluate an expression it requires the full VM. We happen to know
+    // that they are the same thing, so this would work for now. However
+    // this might break in the future.
+    return GetSyntax.build(path).compile(symbolLookup).evaluate(vm).value();
   }
 
-  constructor(selfRef, vm, symbolLookup) {
-    // Note: this makes the helper only run once when it was first
-    // appended. Ideally, we would want to run this whenever the
-    // surrounding component's hooks are run, but we don't really
-    // have a good way to express it. Another alternative is that
-    // we make this a CURRENT_TAG, but that would causes the hooks
-    // on the surrounding component to fire all the time.
-    this.tag = CONSTANT_TAG;
+  callback(context, get);
 
-    this.selfRef = selfRef;
-    this.vm = vm;
-    this.symbolLookup = symbolLookup;
-  }
-
-  value() {
-    let { selfRef, vm, symbolLookup } = this;
-
-    let context = selfRef.value();
-
-    function get(path) {
-      // Problem: technically, we are getting a `PublicVM` here, but to
-      // evaluate an expression it requires the full VM. We happen to know
-      // that they are the same thing, so this would work for now. However
-      // this might break in the future.
-      return GetSyntax.build(path).compile(symbolLookup).evaluate(vm).value();
-    }
-
-    callback(context, get);
-
-    return undefined;
-  }
-
-  get(key) {
-    return UNDEFINED_REFERENCE;
-  }
+  return UNDEFINED_REFERENCE;
 }
 
 // These are exported for testing
