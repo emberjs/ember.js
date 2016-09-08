@@ -4,7 +4,16 @@ import { assign } from 'ember-metal';
 let USER_PLUGINS = [];
 
 export default function compileOptions(_options) {
-  let options = assign({}, _options);
+  let options = assign({ meta: { } }, _options);
+
+  // move `moduleName` into `meta` property
+  if (options.moduleName) {
+    let meta = options.meta;
+    meta.moduleName = options.moduleName;
+
+    delete options.moduleName;
+  }
+
   if (!options.plugins) {
     options.plugins = { ast: [...USER_PLUGINS, ...PLUGINS] };
   } else {

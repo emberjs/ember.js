@@ -7,7 +7,7 @@ export default function TransformOldBindingSyntax(options) {
 }
 
 TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSyntax_transform(ast) {
-  var moduleName = this.options.moduleName;
+  var moduleName = this.options.meta.moduleName;
   var b = this.syntax.builders;
   var walker = new this.syntax.Walker();
 

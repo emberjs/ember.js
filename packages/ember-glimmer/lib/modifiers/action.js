@@ -1,4 +1,3 @@
-import { environment } from 'ember-environment';
 import {
   assert,
   run,
@@ -71,12 +70,15 @@ export let ActionHelper = {
 };
 
 export class ActionState {
-  constructor(actionId, actionName, actionArgs, namedArgs, implicitTarget) {
+  constructor(element, actionId, actionName, actionArgs, namedArgs, positionalArgs, implicitTarget, dom) {
+    this.element = element;
     this.actionId = actionId;
     this.actionName = actionName;
     this.actionArgs = actionArgs;
     this.namedArgs = namedArgs;
+    this.positional = positionalArgs;
     this.implicitTarget = implicitTarget;
+    this.dom = dom;
     this.eventName = this.getEventName();
   }
 
@@ -168,16 +170,11 @@ export class ActionState {
 
 // implements ModifierManager<Action>
 export default class ActionModifierManager {
-  install(element, args, dom, dynamicScope) {
-    if (!environment.hasDOM) {
-      return;
-    }
-
+  create(element, args, dynamicScope, dom) {
     let { named, positional } = args;
     let implicitTarget;
     let actionName;
     let actionNameRef;
-
     if (positional.length > 1) {
       implicitTarget = positional.at(0);
       actionNameRef = positional.at(1);
@@ -198,7 +195,6 @@ export default class ActionModifierManager {
       }
     }
 
-
     let actionArgs = [];
     // The first two arguments are (1) `this` and (2) the action name.
     // Everything else is a param.
@@ -207,33 +203,40 @@ export default class ActionModifierManager {
     }
 
     let actionId = uuid();
-    let actionState = new ActionState(actionId, actionName, actionArgs, named, implicitTarget);
+    return new ActionState(
+      element,
+      actionId,
+      actionName,
+      actionArgs,
+      named,
+      positional,
+      implicitTarget,
+      dom
+    );
+  }
+
+  install(actionState) {
+    let { dom, element, actionId } = actionState;
 
     ActionHelper.registerAction(actionState);
 
     dom.setAttribute(element, 'data-ember-action', '');
     dom.setAttribute(element, `data-ember-action-${actionId}`, actionId);
-
-    return actionState;
   }
 
-  update(modifier, element, args, dom, dynamicScope) {
-    if (!environment.hasDOM) {
-      return;
-    }
-
-    let { positional } = args;
+  update(actionState) {
+    let { positional } = actionState;
 
     let actionNameRef = positional.at(1);
 
     if (!actionNameRef[INVOKE]) {
-      modifier.actionName = actionNameRef.value();
+      actionState.actionName = actionNameRef.value();
     }
-    modifier.eventName = modifier.getEventName();
+    actionState.eventName = actionState.getEventName();
 
     // Not sure if this is needed? If we mutate the actionState is that good enough?
-    ActionHelper.unregisterAction(modifier);
-    ActionHelper.registerAction(modifier);
+    ActionHelper.unregisterAction(actionState);
+    ActionHelper.registerAction(actionState);
   }
 
   getDestructor(modifier) {

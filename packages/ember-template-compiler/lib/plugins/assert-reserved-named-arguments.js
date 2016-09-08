@@ -7,7 +7,7 @@ export default function AssertReservedNamedArguments(options) {
 }
 
 AssertReservedNamedArguments.prototype.transform = function AssertReservedNamedArguments_transform(ast) {
-  let moduleName = this.options.moduleName;
+  let moduleName = this.options.meta.moduleName;
 
   this.syntax.traverse(ast, {
     PathExpression: function(node) {

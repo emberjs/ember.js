@@ -913,7 +913,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.render('{{foo-bar cond=true}}{{foo-bar cond=false}}{{foo-bar cond=true}}{{foo-bar cond=false}}');
 
     let [t1, t2, t3, t4] = templateIds;
-    templateIds.forEach((n) => assert.ok(typeof n === 'number'));
     assert.equal(t1, t3);
     assert.equal(t2, t4);
   }

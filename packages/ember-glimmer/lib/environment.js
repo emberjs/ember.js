@@ -68,6 +68,7 @@ export default class Environment extends GlimmerEnvironment {
   constructor({ [OWNER]: owner }) {
     super(...arguments);
     this.owner = owner;
+    this.isInteractive = owner.lookup('-environment:main').isInteractive;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
     this.destroyedComponents = undefined;
@@ -255,7 +256,7 @@ export default class Environment extends GlimmerEnvironment {
 
   lookupPartial(name) {
     let partial = {
-      template: lookupPartial(this, name[0]).spec
+      template: lookupPartial(this, name[0])
     };
 
     if (partial) {
@@ -339,6 +340,18 @@ export default class Environment extends GlimmerEnvironment {
   iterableFor(ref, args) {
     let keyPath = args.named.get('key').value();
     return createIterable(ref, keyPath);
+  }
+
+  scheduleInstallModifier() {
+    if (this.isInteractive) {
+      super.scheduleInstallModifier(...arguments);
+    }
+  }
+
+  scheduleUpdateModifier() {
+    if (this.isInteractive) {
+      super.scheduleUpdateModifier(...arguments);
+    }
   }
 
   didDestroy(destroyable) {
