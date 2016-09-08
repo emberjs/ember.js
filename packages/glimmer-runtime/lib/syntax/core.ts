@@ -148,20 +148,15 @@ export class Unknown extends ExpressionSyntax<any> {
   static fromSpec(sexp: SerializedExpressions.Unknown): Unknown {
     let [, path] = sexp;
 
-    return new Unknown({ ref: new Ref({ parts: path }) });
+    return new this(new Ref({ parts: path }));
   }
 
-  static build(path: string, unsafe: boolean): Unknown {
-    return new this({ ref: Ref.build(path), unsafe });
+  static build(path: string): Unknown {
+    return new this(Ref.build(path));
   }
 
-  ref: Ref;
-  trustingMorph: boolean;
-
-  constructor(options) {
+  constructor(public ref: Ref) {
     super();
-    this.ref = options.ref;
-    this.trustingMorph = !!options.unsafe;
   }
 
   compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<Opaque> {
