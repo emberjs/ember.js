@@ -204,7 +204,7 @@ export default class Environment extends GlimmerEnvironment {
       assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(path, symbolTable));
     }
 
-    if ((!isSimple && appendType === 'unknown') || appendType === 'self-get') {
+    if (!isSimple && appendType === 'unknown') {
       return statement.original.deopt();
     }
 
@@ -277,12 +277,16 @@ export default class Environment extends GlimmerEnvironment {
     }
 
     let name = nameParts[0];
+
+    if (this.builtInHelpers[name]) {
+      return true;
+    }
+
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let options = { source: `template:${blockMeta.moduleName}` };
 
-    return !!this.builtInHelpers[name] ||
-      owner.hasRegistration(`helper:${name}`, options) ||
+    return owner.hasRegistration(`helper:${name}`, options) ||
       owner.hasRegistration(`helper:${name}`);
   }
 
