@@ -53,9 +53,9 @@ import {
 import CompiledValue from '../compiled/expressions/value';
 
 import {
-  CompiledLocalRef,
-  CompiledSelfRef
-} from '../compiled/expressions/ref';
+  CompiledLocalLookup,
+  CompiledSelfLookup
+} from '../compiled/expressions/lookups';
 
 import CompiledHasBlock from '../compiled/expressions/has-block';
 
@@ -139,43 +139,6 @@ export class Block extends StatementSyntax {
 
   compile(ops: CompileInto) {
     throw new Error("SyntaxError");
-  }
-}
-
-export class Unknown extends ExpressionSyntax<any> {
-  public type = "unknown";
-
-  static fromSpec(sexp: SerializedExpressions.Unknown): Unknown {
-    let [, path] = sexp;
-
-    return new Unknown({ ref: new Ref({ parts: path }) });
-  }
-
-  static build(path: string, unsafe: boolean): Unknown {
-    return new this({ ref: Ref.build(path), unsafe });
-  }
-
-  ref: Ref;
-  trustingMorph: boolean;
-
-  constructor(options) {
-    super();
-    this.ref = options.ref;
-    this.trustingMorph = !!options.unsafe;
-  }
-
-  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<Opaque> {
-    let { ref } = this;
-
-    if (env.hasHelper(ref.parts, symbolTable)) {
-      return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), CompiledArgs.empty(), symbolTable);
-    } else {
-      return this.ref.compile(compiler);
-    }
-  }
-
-  simplePath(): string {
-    return this.ref.simplePath();
   }
 }
 
@@ -761,51 +724,6 @@ export class Value<T extends SerializedExpressions.Value> extends ExpressionSynt
   }
 }
 
-export class Get extends ExpressionSyntax<Opaque> {
-  type = "get";
-
-  static fromSpec(sexp: SerializedExpressions.Get): Get {
-    let [, parts] = sexp;
-    return new Get({ ref: new Ref({ parts }) });
-  }
-
-  static build(path: string): Get {
-    return new this({ ref: Ref.build(path) });
-  }
-
-  public ref: Ref;
-
-  constructor(options) {
-    super();
-    this.ref = options.ref;
-  }
-
-  compile(compiler: SymbolLookup): CompiledExpression<Opaque> {
-    return this.ref.compile(compiler);
-  }
-}
-
-export class SelfGet extends ExpressionSyntax<Opaque> {
-  type = "self-get";
-
-  static fromSpec(sexp: SerializedExpressions.SelfGet): SelfGet {
-    let [, parts] = sexp;
-
-    return new SelfGet({ ref: new Ref({ parts }) });
-  }
-
-  public ref: Ref;
-
-  constructor(options) {
-    super();
-    this.ref = options.ref;
-  }
-
-  compile(compiler: SymbolLookup): CompiledExpression<Opaque> {
-    return this.ref.compile(compiler);
-  }
-}
-
 export class GetArgument<T> extends ExpressionSyntax<T> {
   type = "get-argument";
 
@@ -832,7 +750,7 @@ export class GetArgument<T> extends ExpressionSyntax<T> {
     let symbol = lookup.getNamedSymbol(head);
 
     let path = parts.slice(1);
-    return new CompiledLocalRef({ debug: head, symbol, path });
+    return new CompiledLocalLookup(symbol, path, head);
   }
 }
 
@@ -842,12 +760,10 @@ export class Ref extends ExpressionSyntax<Opaque> {
   type = "ref";
 
   static build(path: string): Ref {
-    return new this({ parts: path.split('.') });
+    return new this(path.split('.'));
   }
 
-  public parts: string[];
-
-  constructor({ parts }: { parts: string[] }) {
+  constructor(public parts: string[]) {
     super();
     this.parts = parts;
   }
@@ -857,21 +773,62 @@ export class Ref extends ExpressionSyntax<Opaque> {
     let head = parts[0];
     let path = parts.slice(1);
 
-    if (lookup.hasLocalSymbol(head)) {
+    if (head === null) { // {{this.foo}}
+      return new CompiledSelfLookup(path);
+    } else if (lookup.hasLocalSymbol(head)) {
       let symbol = lookup.getLocalSymbol(head);
-      return new CompiledLocalRef({ debug: head, symbol, path });
+      return new CompiledLocalLookup(symbol, path, head);
     } else {
-      return new CompiledSelfRef({ parts });
+      return new CompiledSelfLookup(parts);
     }
   }
+}
 
-  path(): string[] {
-    return this.parts;
+export class Get extends ExpressionSyntax<Opaque> {
+  type = "get";
+
+  static fromSpec(sexp: SerializedExpressions.Get): Get {
+    let [, parts] = sexp;
+    return new this(new Ref(parts));
   }
 
-  simplePath(): string {
-    if (this.parts.length === 1) {
-      return this.parts[0];
+  static build(path: string): Get {
+    return new this(Ref.build(path));
+  }
+
+  constructor(public ref: Ref) {
+    super();
+  }
+
+  compile(compiler: SymbolLookup): CompiledExpression<Opaque> {
+    return this.ref.compile(compiler);
+  }
+}
+
+export class Unknown extends ExpressionSyntax<any> {
+  public type = "unknown";
+
+  static fromSpec(sexp: SerializedExpressions.Unknown): Unknown {
+    let [, path] = sexp;
+
+    return new this(new Ref(path));
+  }
+
+  static build(path: string): Unknown {
+    return new this(Ref.build(path));
+  }
+
+  constructor(public ref: Ref) {
+    super();
+  }
+
+  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<Opaque> {
+    let { ref } = this;
+
+    if (env.hasHelper(ref.parts, symbolTable)) {
+      return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), CompiledArgs.empty(), symbolTable);
+    } else {
+      return this.ref.compile(compiler);
     }
   }
 }
@@ -883,7 +840,7 @@ export class Helper extends ExpressionSyntax<Opaque> {
     let [, path, params, hash] = sexp;
 
     return new Helper({
-      ref: new Ref({ parts: path }),
+      ref: new Ref(path),
       args: Args.fromSpec(params, hash)
     });
   }
@@ -907,12 +864,8 @@ export class Helper extends ExpressionSyntax<Opaque> {
       let { args, ref } = this;
       return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), args.compile(compiler, env, symbolTable), symbolTable);
     } else {
-      throw new Error(`Compile Error: ${this.ref.path().join('.')} is not a helper`);
+      throw new Error(`Compile Error: ${this.ref.parts.join('.')} is not a helper`);
     }
-  }
-
-  simplePath(): string {
-    return this.ref.simplePath();
   }
 }
 

@@ -800,7 +800,7 @@ export class TestEnvironment extends Environment {
       }
     }
 
-    if ((!isSimple && appendType === 'unknown') || appendType === 'self-get') {
+    if (!isSimple && appendType === 'unknown') {
       return (statement.original as OptimizedAppend).deopt();
     }
 
