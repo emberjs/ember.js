@@ -53,9 +53,9 @@ import {
 import CompiledValue from '../compiled/expressions/value';
 
 import {
-  CompiledLocalRef,
-  CompiledSelfRef
-} from '../compiled/expressions/ref';
+  CompiledLocalLookup,
+  CompiledSelfLookup
+} from '../compiled/expressions/lookups';
 
 import CompiledHasBlock from '../compiled/expressions/has-block';
 
@@ -766,39 +766,15 @@ export class Get extends ExpressionSyntax<Opaque> {
 
   static fromSpec(sexp: SerializedExpressions.Get): Get {
     let [, parts] = sexp;
-    return new Get({ ref: new Ref({ parts }) });
+    return new this(new Ref({ parts }));
   }
 
   static build(path: string): Get {
-    return new this({ ref: Ref.build(path) });
+    return new this(Ref.build(path));
   }
 
-  public ref: Ref;
-
-  constructor(options) {
+  constructor(public ref: Ref) {
     super();
-    this.ref = options.ref;
-  }
-
-  compile(compiler: SymbolLookup): CompiledExpression<Opaque> {
-    return this.ref.compile(compiler);
-  }
-}
-
-export class SelfGet extends ExpressionSyntax<Opaque> {
-  type = "self-get";
-
-  static fromSpec(sexp: SerializedExpressions.SelfGet): SelfGet {
-    let [, parts] = sexp;
-
-    return new SelfGet({ ref: new Ref({ parts }) });
-  }
-
-  public ref: Ref;
-
-  constructor(options) {
-    super();
-    this.ref = options.ref;
   }
 
   compile(compiler: SymbolLookup): CompiledExpression<Opaque> {
@@ -832,7 +808,7 @@ export class GetArgument<T> extends ExpressionSyntax<T> {
     let symbol = lookup.getNamedSymbol(head);
 
     let path = parts.slice(1);
-    return new CompiledLocalRef({ debug: head, symbol, path });
+    return new CompiledLocalLookup(symbol, path, head);
   }
 }
 
@@ -857,11 +833,13 @@ export class Ref extends ExpressionSyntax<Opaque> {
     let head = parts[0];
     let path = parts.slice(1);
 
-    if (lookup.hasLocalSymbol(head)) {
+    if (head === null) { // {{this.foo}}
+      return new CompiledSelfLookup(path);
+    } else if (lookup.hasLocalSymbol(head)) {
       let symbol = lookup.getLocalSymbol(head);
-      return new CompiledLocalRef({ debug: head, symbol, path });
+      return new CompiledLocalLookup(symbol, path, head);
     } else {
-      return new CompiledSelfRef({ parts });
+      return new CompiledSelfLookup(parts);
     }
   }
 
