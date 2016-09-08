@@ -1,3 +1,4 @@
+import { environment } from 'ember-environment';
 import { get, run, assign } from 'ember-metal';
 import AutoLocation from '../../location/auto_location';
 import {
@@ -58,6 +59,13 @@ QUnit.module('Ember.AutoLocation', {
       run(location, 'destroy');
     }
   }
+});
+
+QUnit.test('AutoLocation should have the `global`', function(assert) {
+  let location = AutoLocation.create();
+
+  assert.ok(location.global, 'has a global defined');
+  assert.strictEqual(location.global, environment.window, 'has the environments window global');
 });
 
 QUnit.test('AutoLocation should return concrete implementation\'s value for `getURL`', function() {

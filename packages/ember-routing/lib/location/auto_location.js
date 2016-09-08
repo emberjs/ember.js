@@ -70,9 +70,9 @@ export default EmberObject.extend({
 
    @since 1.11
    @property global
-   @default environment.global
+   @default window
   */
-  global: environment.global,
+  global: environment.window,
 
   /**
     @private
