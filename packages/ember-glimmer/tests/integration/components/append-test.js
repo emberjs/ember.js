@@ -251,6 +251,41 @@ moduleFor('appendTo: an element', class extends AbstractAppendTest {
 
 });
 
+moduleFor('appendTo: with multiple components', class extends AbstractAppendTest {
+
+  append(component) {
+    this.runTask(() => component.appendTo('#qunit-fixture'));
+    this.didAppend(component);
+    return jQuery('#qunit-fixture')[0];
+  }
+
+  ['@test can appendTo while rendering'](assert) {
+    assert.expect(0);
+
+    let owner = this.owner;
+
+    this.registerComponent('first-component', {
+      ComponentClass: Component.extend({
+        layoutName: 'components/component-one',
+
+        didInsertElement() {
+          let SecondComponent = owner._lookupFactory('component:second-component');
+          SecondComponent.create().appendTo('#qunit-fixture');
+        }
+      })
+    });
+
+    this.registerComponent('second-component', {
+      ComponentClass: Component.extend()
+    });
+
+    let FirstComponent = this.owner._lookupFactory('component:first-component');
+
+    this.append(FirstComponent.create());
+  }
+
+});
+
 moduleFor('renderToElement: no arguments (defaults to a body context)', class extends AbstractAppendTest {
 
   append(component) {
