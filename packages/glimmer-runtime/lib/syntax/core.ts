@@ -142,38 +142,6 @@ export class Block extends StatementSyntax {
   }
 }
 
-export class Unknown extends ExpressionSyntax<any> {
-  public type = "unknown";
-
-  static fromSpec(sexp: SerializedExpressions.Unknown): Unknown {
-    let [, path] = sexp;
-
-    return new this(new Ref({ parts: path }));
-  }
-
-  static build(path: string): Unknown {
-    return new this(Ref.build(path));
-  }
-
-  constructor(public ref: Ref) {
-    super();
-  }
-
-  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<Opaque> {
-    let { ref } = this;
-
-    if (env.hasHelper(ref.parts, symbolTable)) {
-      return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), CompiledArgs.empty(), symbolTable);
-    } else {
-      return this.ref.compile(compiler);
-    }
-  }
-
-  simplePath(): string {
-    return this.ref.simplePath();
-  }
-}
-
 interface AppendOpcode {
   new(): Opcode;
 }
@@ -756,27 +724,6 @@ export class Value<T extends SerializedExpressions.Value> extends ExpressionSynt
   }
 }
 
-export class Get extends ExpressionSyntax<Opaque> {
-  type = "get";
-
-  static fromSpec(sexp: SerializedExpressions.Get): Get {
-    let [, parts] = sexp;
-    return new this(new Ref({ parts }));
-  }
-
-  static build(path: string): Get {
-    return new this(Ref.build(path));
-  }
-
-  constructor(public ref: Ref) {
-    super();
-  }
-
-  compile(compiler: SymbolLookup): CompiledExpression<Opaque> {
-    return this.ref.compile(compiler);
-  }
-}
-
 export class GetArgument<T> extends ExpressionSyntax<T> {
   type = "get-argument";
 
@@ -813,12 +760,10 @@ export class Ref extends ExpressionSyntax<Opaque> {
   type = "ref";
 
   static build(path: string): Ref {
-    return new this({ parts: path.split('.') });
+    return new this(path.split('.'));
   }
 
-  public parts: string[];
-
-  constructor({ parts }: { parts: string[] }) {
+  constructor(public parts: string[]) {
     super();
     this.parts = parts;
   }
@@ -837,14 +782,53 @@ export class Ref extends ExpressionSyntax<Opaque> {
       return new CompiledSelfLookup(parts);
     }
   }
+}
 
-  path(): string[] {
-    return this.parts;
+export class Get extends ExpressionSyntax<Opaque> {
+  type = "get";
+
+  static fromSpec(sexp: SerializedExpressions.Get): Get {
+    let [, parts] = sexp;
+    return new this(new Ref(parts));
   }
 
-  simplePath(): string {
-    if (this.parts.length === 1) {
-      return this.parts[0];
+  static build(path: string): Get {
+    return new this(Ref.build(path));
+  }
+
+  constructor(public ref: Ref) {
+    super();
+  }
+
+  compile(compiler: SymbolLookup): CompiledExpression<Opaque> {
+    return this.ref.compile(compiler);
+  }
+}
+
+export class Unknown extends ExpressionSyntax<any> {
+  public type = "unknown";
+
+  static fromSpec(sexp: SerializedExpressions.Unknown): Unknown {
+    let [, path] = sexp;
+
+    return new this(new Ref(path));
+  }
+
+  static build(path: string): Unknown {
+    return new this(Ref.build(path));
+  }
+
+  constructor(public ref: Ref) {
+    super();
+  }
+
+  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<Opaque> {
+    let { ref } = this;
+
+    if (env.hasHelper(ref.parts, symbolTable)) {
+      return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), CompiledArgs.empty(), symbolTable);
+    } else {
+      return this.ref.compile(compiler);
     }
   }
 }
@@ -856,7 +840,7 @@ export class Helper extends ExpressionSyntax<Opaque> {
     let [, path, params, hash] = sexp;
 
     return new Helper({
-      ref: new Ref({ parts: path }),
+      ref: new Ref(path),
       args: Args.fromSpec(params, hash)
     });
   }
@@ -880,12 +864,8 @@ export class Helper extends ExpressionSyntax<Opaque> {
       let { args, ref } = this;
       return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), args.compile(compiler, env, symbolTable), symbolTable);
     } else {
-      throw new Error(`Compile Error: ${this.ref.path().join('.')} is not a helper`);
+      throw new Error(`Compile Error: ${this.ref.parts.join('.')} is not a helper`);
     }
-  }
-
-  simplePath(): string {
-    return this.ref.simplePath();
   }
 }
 
