@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.9.0-beta.1 (September 8, 2012)
+
+- [#14156](https://github.com/emberjs/ember.js/pull/14156) [FEATURE ember-glimmer] Enable by default.
+
 ### 2.8.0 (September 8, 2016)
 
 - [#14229](https://github.com/emberjs/ember.js/pull/14229) [BUGFIX] Fix boot errors with `location: 'auto'` when using IE9.
