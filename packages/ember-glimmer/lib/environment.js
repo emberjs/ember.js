@@ -51,7 +51,6 @@ import { default as eachIn } from './helpers/each-in';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
 import { OWNER } from 'container';
-import { environment as emberEnvironment } from 'ember-environment';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 
@@ -69,6 +68,7 @@ export default class Environment extends GlimmerEnvironment {
   constructor({ [OWNER]: owner }) {
     super(...arguments);
     this.owner = owner;
+    this.hasDOM = owner.lookup('-environment:main').hasDOM;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
     this.destroyedComponents = undefined;
@@ -343,13 +343,13 @@ export default class Environment extends GlimmerEnvironment {
   }
 
   scheduleInstallModifier() {
-    if (emberEnvironment.hasDOM) {
+    if (this.hasDOM) {
       super.scheduleInstallModifier(...arguments);
     }
   }
 
   scheduleUpdateModifier() {
-    if (emberEnvironment.hasDOM) {
+    if (this.hasDOM) {
       super.scheduleUpdateModifier(...arguments);
     }
   }
