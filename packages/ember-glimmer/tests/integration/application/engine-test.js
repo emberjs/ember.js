@@ -227,4 +227,27 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       ], 'the expected hooks were fired');
     });
   }
+
+  ['@test deactivate should be called on Engine Routes before destruction'](assert) {
+    assert.expect(3);
+
+    this.setupAppAndRoutableEngine();
+
+    this.registerEngine('blog', Engine.extend({
+      init() {
+        this._super(...arguments);
+        this.register('template:application', compile('Engine{{outlet}}'));
+        this.register('route:application', Route.extend({
+          deactivate() {
+            assert.notOk(this.isDestroyed, 'Route is not destroyed');
+            assert.notOk(this.isDestroying, 'Route is not being destroyed');
+          }
+        }));
+      }
+    }));
+
+    return this.visit('/blog').then(() => {
+      this.assertText('ApplicationEngine');
+    });
+  }
 });
