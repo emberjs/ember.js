@@ -2,7 +2,7 @@ import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
 import * as Simple from '../../dom/interfaces';
 import { FIX_REIFICATION } from '../../dom/interfaces';
-import { Environment, DynamicScope } from '../../environment';
+import { Environment } from '../../environment';
 import { FIXME, Option, Opaque, Dict, dict } from 'glimmer-util';
 import {
   CachedReference,
@@ -393,15 +393,9 @@ export class StaticAttrOpcode extends Opcode {
 
 export class ModifierOpcode extends Opcode {
   public type = "modifier";
-  public name: string;
-  public args: CompiledArgs;
-  private manager: ModifierManager<Opaque>;
 
-  constructor({ name, manager, args }: { name: string, manager: ModifierManager<Opaque>, args: CompiledArgs }) {
+  constructor(private name: string, private manager: ModifierManager<Opaque>, private args: CompiledArgs) {
     super();
-    this.name = name;
-    this.manager = manager;
-    this.args = args;
   }
 
   evaluate(vm: VM) {
@@ -410,21 +404,20 @@ export class ModifierOpcode extends Opcode {
     let { constructing: element, updateOperations } = stack;
     let args = this.args.evaluate(vm);
     let dynamicScope = vm.dynamicScope();
+    let modifier = manager.create(element as FIX_REIFICATION<Element>, args, dynamicScope, updateOperations);
 
-    let modifier = manager.install(element as FIX_REIFICATION<Element>, args, updateOperations, dynamicScope);
+    vm.env.scheduleInstallModifier(modifier, manager);
     let destructor = manager.getDestructor(modifier);
 
     if (destructor) {
       vm.newDestroyable(destructor);
     }
 
-    vm.updateWith(new UpdateModifierOpcode({
+    vm.updateWith(new UpdateModifierOpcode(
       manager,
       modifier,
-      element: element as FIX_REIFICATION<Element>,
-      dynamicScope,
       args
-    }));
+    ));
   }
 
   toJSON(): OpcodeJSON {
@@ -442,31 +435,24 @@ export class ModifierOpcode extends Opcode {
 
 export class UpdateModifierOpcode extends UpdatingOpcode {
   public type = "update-modifier";
-
-  private element: Element;
-  private dynamicScope: DynamicScope;
-  private args: EvaluatedArgs;
-  private manager: ModifierManager<Opaque>;
-  private modifier: Opaque;
   private lastUpdated: Revision;
 
-  constructor({ manager, modifier, element, dynamicScope, args }: { manager: ModifierManager<Opaque>, modifier: Opaque, element: Element, dynamicScope: DynamicScope, args: EvaluatedArgs }) {
+  constructor(
+    private manager: ModifierManager<Opaque>,
+    private modifier: Opaque,
+    private args: EvaluatedArgs
+  ) {
     super();
-    this.modifier = modifier;
-    this.manager = manager;
-    this.element = element;
-    this.dynamicScope = dynamicScope;
-    this.args = args;
     this.tag = args.tag;
     this.lastUpdated = args.tag.value();
   }
 
   evaluate(vm: UpdatingVM) {
-    let { manager, modifier, element, dynamicScope, args, lastUpdated } = this;
+    let { manager, modifier, tag, lastUpdated } = this;
 
-    if (!args.tag.validate(lastUpdated)) {
-      manager.update(modifier, element, args, vm.dom, dynamicScope);
-      this.lastUpdated = args.tag.value();
+    if (!tag.validate(lastUpdated)) {
+      vm.env.scheduleUpdateModifier(modifier, manager);
+      this.lastUpdated = tag.value();
     }
   }
 

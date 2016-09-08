@@ -267,11 +267,11 @@ export class Modifier extends StatementSyntax {
     let args = this.args.compile(compiler, env, symbolTable);
 
     if (env.hasModifier(this.path, symbolTable)) {
-      compiler.append(new ModifierOpcode({
-        name: this.path[0],
-        manager: env.lookupModifier(this.path, symbolTable),
+      compiler.append(new ModifierOpcode(
+        this.path[0],
+        env.lookupModifier(this.path, symbolTable),
         args
-      }));
+      ));
     } else {
       throw new Error(`Compile Error: ${this.path.join('.')} is not a modifier`);
     }
