@@ -455,22 +455,21 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   willDestroy() {
-    if (isEnabled('ember-application-engines')) {
-      let instances = this._engineInstances;
-      for (let name in instances) {
-        for (let id in instances[name]) {
-          run(instances[name][id], 'destroy');
-        }
-      }
-    }
-
     if (this._toplevelView) {
       this._toplevelView.destroy();
       this._toplevelView = null;
     }
+
     this._super(...arguments);
 
     this.reset();
+
+    let instances = this._engineInstances;
+    for (let name in instances) {
+      for (let id in instances[name]) {
+        run(instances[name][id], 'destroy');
+      }
+    }
   },
 
   _lookupActiveComponentNode(templateName) {
