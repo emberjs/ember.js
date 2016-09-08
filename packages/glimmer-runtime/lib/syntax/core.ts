@@ -760,7 +760,13 @@ export class Ref extends ExpressionSyntax<Opaque> {
   type = "ref";
 
   static build(path: string): Ref {
-    return new this(path.split('.'));
+    let parts = path.split('.');
+
+    if (parts[0] === 'this') {
+      parts[0] = null;
+    }
+
+    return new this(parts);
   }
 
   constructor(public parts: string[]) {
