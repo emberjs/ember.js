@@ -62,6 +62,46 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     this.assertText(`HIIt's Simple Made Easy`);
   }
 
+  ['@test should not destroy the singleton controller on teardown'](assert) {
+    let willDestroyFired = 0;
+
+    this.owner.register('controller:post', Controller.extend({
+      init() {
+        this.set('title', `It's Simple Made Easy`);
+      },
+
+      willDestroy() {
+        this._super(...arguments);
+        willDestroyFired++;
+      }
+    }));
+
+    this.registerTemplate('post', '<p>{{title}}</p>');
+
+    this.render(`{{#if showPost}}{{render 'post'}}{{else}}Nothing here{{/if}}`, { showPost: false });
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', true));
+
+    this.assertText(`It's Simple Made Easy`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', false));
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+  }
 
   ['@test should render given template with a supplied model']() {
     this.owner.register('controller:post', Controller.extend());
@@ -88,6 +128,62 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     this.runTask(() => set(this.context, 'post', { title: `It's Simple Made Easy` }));
 
     this.assertText(`HIIt's Simple Made Easy`);
+  }
+
+  ['@test should destroy the non-singleton controllers on teardown'](assert) {
+    let willDestroyFired = 0;
+
+    this.owner.register('controller:post', Controller.extend({
+      willDestroy() {
+        this._super(...arguments);
+        willDestroyFired++;
+      }
+    }));
+
+    this.registerTemplate('post', '<p>{{model.title}}</p>');
+
+    expectDeprecation(() => {
+      this.render(`{{#if showPost}}{{render 'post' post}}{{else}}Nothing here{{/if}}`, {
+        showPost: false,
+        post: {
+          title: `It's Simple Made Easy`
+        }
+      });
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', true));
+
+    this.assertText(`It's Simple Made Easy`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', false));
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 1, 'it did destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', true));
+
+    this.assertText(`It's Simple Made Easy`);
+
+    assert.strictEqual(willDestroyFired, 1, 'it did not destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', false));
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 2, 'it did destroy the controller');
   }
 
   ['@test with a supplied model should not fire observers on the controller']() {

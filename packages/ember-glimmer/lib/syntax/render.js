@@ -79,20 +79,20 @@ class AbstractRenderManager {
     return new RootReference(controller);
   }
 
-  getTag(state) {
+  getTag() {
     return null;
   }
 
-  getDestructor(state) {
-    return state.controller;
+  getDestructor() {
+    return null;
   }
 
   didCreateElement() {}
   didRenderLayout() {}
-  didCreate(state) {}
-  update(state, args, dynamicScope) {}
+  didCreate() {}
+  update() {}
   didUpdateLayout() {}
-  didUpdate(state) {}
+  didUpdate() {}
 }
 
 class SingletonRenderManager extends AbstractRenderManager {
@@ -127,6 +127,10 @@ class NonSingletonRenderManager extends AbstractRenderManager {
 
   update({ controller }, args, dynamicScope) {
     controller.set('model', args.positional.at(0).value());
+  }
+
+  getDestructor({ controller }) {
+    return controller;
   }
 }
 
