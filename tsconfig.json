@@ -6,14 +6,12 @@
         "moduleResolution": "node",
         "experimentalDecorators": true,
         "rootDir": "packages",
-        "baseUrl" : "./",
-        "paths": {
-            "*": [
-                "packages/*",
-                "node_modules/*"
-            ]
-        }
+        "baseUrl" : "./packages"
     },
+    "filesGlob": [
+      "packages/**.d.ts",
+      "packages/**.ts"
+    ],
     "exclude": [
         "dist",
         "demos",

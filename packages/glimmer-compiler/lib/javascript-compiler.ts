@@ -2,8 +2,9 @@ import { assert } from "glimmer-util";
 import { Stack, DictSet } from "glimmer-util";
 
 import {
-  BlockMeta,
+  TemplateMeta,
   SerializedBlock,
+  SerializedTemplateBlock,
   SerializedTemplate,
   Core,
   Statement,
@@ -33,47 +34,52 @@ export class Block {
   }
 }
 
-export class Template extends Block {
-  public meta: BlockMeta = null;
-
+export class TemplateBlock extends Block {
   public yields = new DictSet();
   public named = new DictSet();
   public blocks: Block[] = [];
 
-  constructor(meta) {
-    super();
-    this.meta = meta;
-  }
-
-  toJSON(): SerializedTemplate {
+  toJSON(): SerializedTemplateBlock {
     return {
       statements: this.statements,
       locals: this.positionals,
       named: this.named.toArray(),
       yields: this.yields.toArray(),
-      blocks: this.blocks.map(b => b.toJSON()),
+      blocks: this.blocks.map(b => b.toJSON())
+    };
+  }
+}
+
+export class Template<T extends TemplateMeta> {
+  public block = new TemplateBlock();
+
+  constructor(public meta: T) {}
+
+  toJSON(): SerializedTemplate<T> {
+    return {
+      block: this.block.toJSON(),
       meta: this.meta
     };
   }
 }
 
-export default class JavaScriptCompiler {
-  static process(opcodes, meta): Template {
-    let compiler = new JavaScriptCompiler(opcodes, meta);
+export default class JavaScriptCompiler<T extends TemplateMeta> {
+  static process<T extends TemplateMeta>(opcodes, meta): Template<T> {
+    let compiler = new JavaScriptCompiler<T>(opcodes, meta);
     return compiler.process();
   }
 
-  private template: Template = null;
+  private template: Template<T>;
   private blocks = new Stack<Block>();
   private opcodes: any[];
   private values: StackValue[] = [];
 
-  constructor(opcodes, meta) {
+  constructor(opcodes, meta: T) {
     this.opcodes = opcodes;
     this.template = new Template(meta);
   }
 
-  process() {
+  process(): Template<T> {
     this.opcodes.forEach(([opcode, ...args]) => {
       if (!this[opcode]) { throw new Error(`unimplemented ${opcode} on JavaScriptCompiler`); }
       this[opcode](...args);
@@ -92,11 +98,11 @@ export default class JavaScriptCompiler {
 
   endBlock() {
     let { template, blocks } = this;
-    template.blocks.push(blocks.pop());
+    template.block.blocks.push(blocks.pop());
   }
 
   startProgram() {
-    this.blocks.push(this.template);
+    this.blocks.push(this.template.block);
   }
 
   endProgram() {
@@ -171,17 +177,17 @@ export default class JavaScriptCompiler {
   yield(to: string) {
     let params = this.popValue<Params>();
     this.push(['yield', to, params]);
-    this.template.yields.add(to);
+    this.template.block.yields.add(to);
   }
 
   hasBlock(name: string) {
     this.pushValue<Expressions.HasBlock>(['has-block', name]);
-    this.template.yields.add(name);
+    this.template.block.yields.add(name);
   }
 
   hasBlockParams(name: string) {
     this.pushValue<Expressions.HasBlockParams>(['has-block-params', name]);
-    this.template.yields.add(name);
+    this.template.block.yields.add(name);
   }
 
   /// Expressions
@@ -199,7 +205,7 @@ export default class JavaScriptCompiler {
   }
 
   arg(path: string[]) {
-    this.template.named.add(path[0]);
+    this.template.block.named.add(path[0]);
     this.pushValue<Expressions.Arg>(['arg', path]);
   }
 

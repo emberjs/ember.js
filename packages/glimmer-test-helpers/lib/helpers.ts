@@ -1,8 +1,7 @@
 import { tokenize } from "simple-html-tokenizer";
 import { forEach } from "glimmer-util";
-import { SerializedTemplate } from 'glimmer-wire-format';
-import { Environment, Template, Layout } from "glimmer-runtime";
-import { TemplateSpec, compileSpec, CompileOptions } from "glimmer-compiler";
+import { Environment, Template, Layout, templateFactory } from "glimmer-runtime";
+import { precompile, PrecompileOptions } from "glimmer-compiler";
 
 // For Phantom
 function toObject(val) {
@@ -59,24 +58,18 @@ function isMarker(node) {
   return false;
 }
 
-interface TestCompileOptions extends CompileOptions {
+interface TestCompileOptions<T> extends PrecompileOptions<T> {
   env: Environment;
 }
 
-export function compile(string: string, options: TestCompileOptions): Template {
-  return Template.fromSpec(compileRealSpec(string, options), options.env);
+export function compile<T>(string: string, options: TestCompileOptions<T>): Template<T> {
+  let js = precompile(string, options);
+  let factory = templateFactory<T>(JSON.parse(js));
+  return factory.create(options.env);
 }
 
-export function compileLayout(string: string, options: TestCompileOptions): Layout {
-  return Template.layoutFromSpec(compileRealSpec(string, options), options.env);
-}
-
-export function compileRealSpec(string: string, options: TestCompileOptions): SerializedTemplate {
-  return template(compileSpec(string, options));
-}
-
-export function template(templateSpec: TemplateSpec): SerializedTemplate {
-  return JSON.parse(templateSpec);
+export function compileLayout<T>(string: string, options: TestCompileOptions<T>): Layout {
+  return compile(string, options).asLayout();
 }
 
 export function equalInnerHTML(fragment, html, msg?) {

@@ -3,42 +3,36 @@ import buildStatement from './syntax/statements';
 import { EntryPoint, InlineBlock, PartialBlock, Layout } from './compiled/blocks';
 import Environment from './environment';
 import { EMPTY_SLICE, LinkedList, Stack } from 'glimmer-util';
-import { SerializedTemplate, SerializedBlock, Statement as SerializedStatement } from 'glimmer-wire-format';
+import { SerializedTemplateBlock, TemplateMeta, SerializedBlock, Statement as SerializedStatement } from 'glimmer-wire-format';
 import SymbolTable from './symbol-table';
 
 export default class Scanner {
-  private spec: SerializedTemplate;
-  private env: Environment;
-
-  constructor(spec: SerializedTemplate, env: Environment) {
-    this.spec = spec;
-    this.env = env;
+  constructor(private block: SerializedTemplateBlock, private meta: TemplateMeta, private env: Environment) {
   }
 
   scanEntryPoint(): EntryPoint {
-    let { spec } = this;
-    let { blocks, meta } = this.spec;
+    let { block, meta } = this;
 
     let symbolTable = SymbolTable.forEntryPoint(meta);
-    let program = buildStatements(spec, blocks, symbolTable, this.env);
+    let program = buildStatements(block, block.blocks, symbolTable, this.env);
     return new EntryPoint(program, symbolTable);
   }
 
   scanLayout(): Layout {
-    let { spec } = this;
-    let { blocks, named, yields, meta } = this.spec;
+    let { block, meta } = this;
+    let { blocks, named, yields } = block;
 
     let symbolTable = SymbolTable.forLayout(named, yields, meta);
-    let program = buildStatements(spec, blocks, symbolTable, this.env);
+    let program = buildStatements(block, blocks, symbolTable, this.env);
 
     return new Layout(program, symbolTable, named, yields);
   }
 
   scanPartial(symbolTable: SymbolTable): PartialBlock {
-    let { spec } = this;
-    let { blocks, locals } = this.spec;
+    let { block } = this;
+    let { blocks, locals } = block;
 
-    let program = buildStatements(spec, blocks, symbolTable, this.env);
+    let program = buildStatements(block, blocks, symbolTable, this.env);
 
     return new PartialBlock(program, symbolTable, locals);
   }

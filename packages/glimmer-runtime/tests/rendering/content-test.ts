@@ -5,7 +5,7 @@ import { Template, RenderResult } from 'glimmer-runtime';
 type SimpleNode = Element;
 
 class RenderingTest {
-  public template: Template;
+  public template: Template<{}>;
   protected context: VersionedObject = null;
   protected env: TestEnvironment;
   private result: RenderResult = null;
@@ -26,7 +26,7 @@ class RenderingTest {
     let root = new SimpleRootReference(rootObject);
 
     this.context = rootObject;
-    this.result = this.template.render(root, this.env, { dynamicScope, appendTo });
+    this.result = this.template.render(root, appendTo, dynamicScope);
   }
   assertContent(expected: string, message?: string) {
     let actual = document.getElementById('qunit-fixture').innerHTML;

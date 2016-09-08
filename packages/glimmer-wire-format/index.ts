@@ -146,18 +146,56 @@ export namespace Statements {
 
 export type Statement = Statements.Statement;
 
-export interface BlockMeta {
+/**
+ * A JSON object of static compile time meta for the template.
+ */
+export interface TemplateMeta {
   moduleName?: string;
 }
 
+/**
+ * A JSON object that the Block was serialized into.
+ */
 export interface SerializedBlock {
   statements: Statements.Statement[];
   locals: string[];
 }
 
-export interface SerializedTemplate extends SerializedBlock {
+/**
+ * A JSON object that the compiled TemplateBlock was serialized into.
+ */
+export interface SerializedTemplateBlock extends SerializedBlock {
   named: string[];
   yields: string[];
   blocks: SerializedBlock[];
-  meta: BlockMeta;
 }
+
+/**
+ * A JSON object that the compiled Template was serialized into.
+ */
+export interface SerializedTemplate<T extends TemplateMeta> {
+  block: SerializedTemplateBlock;
+  meta: T;
+}
+
+/**
+ * A string of JSON containing a SerializedTemplateBlock
+ * @typedef {string} SerializedTemplateBlockJSON
+ */
+export type SerializedTemplateBlockJSON = string;
+
+/**
+ * A JSON object containing the SerializedTemplateBlock as JSON and TemplateMeta.
+ */
+export interface SerializedTemplateWithLazyBlock<T extends TemplateMeta> {
+  id?: string;
+  block: SerializedTemplateBlockJSON;
+  meta: T;
+}
+
+/**
+ * A string of Javascript containing a SerializedTemplateWithLazyBlock to be
+ * concatenated into a Javascript module.
+ * @typedef {string} TemplateJavascript
+ */
+export type TemplateJavascript = string;

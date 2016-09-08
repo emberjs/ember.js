@@ -1,0 +1,1 @@
+export function tokenize(html: string): any;
