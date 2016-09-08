@@ -37,6 +37,7 @@ import { wrapComponentClassAttribute } from './utils/bindings';
 import { default as action } from './helpers/action';
 import { default as componentHelper } from './helpers/component';
 import { default as concat } from './helpers/concat';
+import { default as debuggerHelper } from './helpers/debugger';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
@@ -107,6 +108,7 @@ export default class Environment extends GlimmerEnvironment {
       action,
       component: componentHelper,
       concat,
+      debugger: debuggerHelper,
       get,
       hash,
       loc,
