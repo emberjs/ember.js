@@ -18,6 +18,10 @@ export function assign(target: any, ...sources: any[]): any;
 
 export function assign(obj, ...assignments) {
   return assignments.reduce((obj, extensions) => {
+    if (typeof extensions !== 'object' || extensions === null) {
+      return obj;
+    }
+
     Object.keys(extensions).forEach(key => obj[key] = extensions[key]);
     return obj;
   }, obj);
