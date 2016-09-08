@@ -57,6 +57,10 @@ export let ActionHelper = {
     let { actionId } = actionState;
     let actions = ActionManager.registeredActions[actionId];
 
+    if (!actions) {
+      return;
+    }
+
     let index = actions.indexOf(actionState);
 
     if (index !== -1) {
