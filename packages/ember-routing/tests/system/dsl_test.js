@@ -167,7 +167,7 @@ QUnit.test('should allow mounting of engines', function(assert) {
   });
 
   let engineInstance = buildOwner({
-    routable: true
+    ownerOptions: { routable: true }
   });
 
   let router = Router.create();
@@ -191,7 +191,7 @@ QUnit.test('should allow mounting of engines at a custom path', function(assert)
   });
 
   let engineInstance = buildOwner({
-    routable: true
+    ownerOptions: { routable: true }
   });
 
   let router = Router.create();
@@ -219,7 +219,7 @@ QUnit.test('should allow aliasing of engine names with `as`', function(assert) {
   });
 
   let engineInstance = buildOwner({
-    routable: true
+    ownerOptions: { routable: true }
   });
 
   let router = Router.create();
@@ -241,7 +241,7 @@ QUnit.test('should add loading and error routes to a mount if _isRouterMapResult
   });
 
   let engineInstance = buildOwner({
-    routable: true
+    ownerOptions: { routable: true }
   });
 
   let router = Router.create({
@@ -261,7 +261,7 @@ QUnit.test('should add loading and error routes to a mount alias if _isRouterMap
   });
 
   let engineInstance = buildOwner({
-    routable: true
+    ownerOptions: { routable: true }
   });
 
   let router = Router.create({
@@ -281,7 +281,7 @@ QUnit.test('should not add loading and error routes to a mount if _isRouterMapRe
   });
 
   let engineInstance = buildOwner({
-    routable: true
+    ownerOptions: { routable: true }
   });
 
   let router = Router.create();
@@ -302,7 +302,7 @@ QUnit.test('should reset namespace of loading and error routes for mounts with r
   });
 
   let engineInstance = buildOwner({
-    routable: true
+    ownerOptions: { routable: true }
   });
 
   let router = Router.create({

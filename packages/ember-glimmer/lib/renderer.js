@@ -216,7 +216,10 @@ export class Renderer {
     view._transitionTo('destroying');
 
     view.element = null;
-    view.trigger('didDestroyElement');
+
+    if (this._env.isInteractive) {
+      view.trigger('didDestroyElement');
+    }
 
     this.cleanupRootFor(view);
 

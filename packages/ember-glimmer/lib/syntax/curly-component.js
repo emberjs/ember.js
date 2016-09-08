@@ -20,7 +20,6 @@ import {
   privatize as P,
   OWNER
 } from 'container';
-import { environment } from 'ember-environment';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -145,8 +144,10 @@ class ComponentStateBucket {
   destroy() {
     let { component, environment } = this;
 
-    component.trigger('willDestroyElement');
-    component.trigger('willClearRender');
+    if (environment.isInteractive) {
+      component.trigger('willDestroyElement');
+      component.trigger('willClearRender');
+    }
 
     environment.destroyedComponents.push(component);
   }
@@ -226,7 +227,7 @@ class CurlyComponentManager {
     component.trigger('didInitAttrs', { attrs });
     component.trigger('didReceiveAttrs', { newAttrs: attrs });
 
-    if (environment.hasDOM) {
+    if (environment.isInteractive) {
       component.trigger('willInsertElement');
     }
 
@@ -312,8 +313,8 @@ class CurlyComponentManager {
     return component[DIRTY_TAG];
   }
 
-  didCreate({ component }) {
-    if (environment.hasDOM) {
+  didCreate({ component, environment }) {
+    if (environment.isInteractive) {
       component.trigger('didInsertElement');
       component.trigger('didRender');
       component._transitionTo('inDOM');
@@ -349,9 +350,11 @@ class CurlyComponentManager {
     bucket.finalize();
   }
 
-  didUpdate({ component }) {
-    component.trigger('didUpdate');
-    component.trigger('didRender');
+  didUpdate({ component, environment }) {
+    if (environment.isInteractive) {
+      component.trigger('didUpdate');
+      component.trigger('didRender');
+    }
   }
 
   getDestructor(stateBucket) {
@@ -371,7 +374,11 @@ class TopComponentManager extends CurlyComponentManager {
 
     component.trigger('didInitAttrs');
     component.trigger('didReceiveAttrs');
-    component.trigger('willInsertElement');
+
+    if (environment.isInteractive) {
+      component.trigger('willInsertElement');
+    }
+
     component.trigger('willRender');
 
     processComponentInitializationAssertions(component, {});

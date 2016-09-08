@@ -21,6 +21,16 @@ class LifeCycleHooksTest extends RenderingTest {
     }
   }
 
+  get isInteractive() {
+    return true;
+  }
+
+  getBootOptions() {
+    return {
+      isInteractive: this.isInteractive
+    };
+  }
+
   /* abstract */
   get ComponentClass() {
     throw new Error('Not implemented: `ComponentClass`');
@@ -47,9 +57,14 @@ class LifeCycleHooksTest extends RenderingTest {
     let viewRegistry = this.owner.lookup('-view-registry:main');
     let topLevelId = getViewId(this.component);
     let actual = Object.keys(viewRegistry).sort().filter(id => id !== topLevelId);
-    let expected = this.componentRegistry.sort();
 
-    this.assert.deepEqual(actual, expected, 'registered views - ' + label);
+    if (this.isInteractive) {
+      let expected = this.componentRegistry.sort();
+
+      this.assert.deepEqual(actual, expected, 'registered views - ' + label);
+    } else {
+      this.assert.deepEqual(actual, [], 'no views should be registered for non-interactive mode');
+    }
   }
 
   registerComponent(name, { template = null }) {
@@ -174,7 +189,8 @@ class LifeCycleHooksTest extends RenderingTest {
     super.registerComponent(name, { ComponentClass, template });
   }
 
-  assertHooks(label, ...rawHooks) {
+  assertHooks({ label, interactive, nonInteractive }) {
+    let rawHooks = this.isInteractive ? interactive : nonInteractive;
     let hooks = rawHooks.map(raw => hook(...raw));
     this.assert.deepEqual(json(this.hooks), json(hooks), label);
     this.hooks = [];
@@ -212,114 +228,161 @@ class LifeCycleHooksTest extends RenderingTest {
     let middleAttrs = { name: 'Tom Dale' };
     let bottomAttrs = { website: 'tomdale.net' };
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after initial render',
 
-      'after initial render',
+      interactive: [
+        // Sync hooks
 
-      // Sync hooks
+        ['the-top', 'init'],
+        ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
+        ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
+        ['the-top', 'willRender'],
 
-      ['the-top', 'init'],
-      ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
-      ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
-      ['the-top', 'willRender'],
+        ['the-middle', 'init'],
+        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
+        ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
+        ['the-middle', 'willRender'],
 
-      ['the-middle', 'init'],
-      ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
-      ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
-      ['the-middle', 'willRender'],
+        ['the-bottom', 'init'],
+        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
+        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
+        ['the-bottom', 'willRender'],
 
-      ['the-bottom', 'init'],
-      ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
-      ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
-      ['the-bottom', 'willRender'],
+        // Async hooks
 
-      // Async hooks
+        ['the-bottom', 'didInsertElement'],
+        ['the-bottom', 'didRender'],
 
-      ['the-bottom', 'didInsertElement'],
-      ['the-bottom', 'didRender'],
+        ['the-middle', 'didInsertElement'],
+        ['the-middle', 'didRender'],
 
-      ['the-middle', 'didInsertElement'],
-      ['the-middle', 'didRender'],
+        ['the-top', 'didInsertElement'],
+        ['the-top', 'didRender']
+      ],
 
-      ['the-top', 'didInsertElement'],
-      ['the-top', 'didRender']
+      nonInteractive: [
+        // Sync hooks
+        ['the-top', 'init'],
+        ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
+        ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
+        ['the-top', 'willRender'],
 
-    );
+        ['the-middle', 'init'],
+        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
+        ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
+        ['the-middle', 'willRender'],
+
+        ['the-bottom', 'init'],
+        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
+        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
+        ['the-bottom', 'willRender']
+      ]
+    });
 
     this.runTask(() => this.components['the-bottom'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after no-op rerender (bottom)',
 
-      'after no-op rerender (bottom)',
+      interactive: [
+        // Sync hooks
+        ['the-top', 'willUpdate'],
+        ['the-top', 'willRender'],
 
-      // Sync hooks
+        ['the-middle', 'willUpdate'],
+        ['the-middle', 'willRender'],
 
-      ['the-top', 'willUpdate'],
-      ['the-top', 'willRender'],
+        ['the-bottom', 'willUpdate'],
+        ['the-bottom', 'willRender'],
 
-      ['the-middle', 'willUpdate'],
-      ['the-middle', 'willRender'],
+        // Async hooks
 
-      ['the-bottom', 'willUpdate'],
-      ['the-bottom', 'willRender'],
+        ['the-bottom', 'didUpdate'],
+        ['the-bottom', 'didRender'],
 
-      // Async hooks
+        ['the-middle', 'didUpdate'],
+        ['the-middle', 'didRender'],
 
-      ['the-bottom', 'didUpdate'],
-      ['the-bottom', 'didRender'],
+        ['the-top', 'didUpdate'],
+        ['the-top', 'didRender']
+      ],
 
-      ['the-middle', 'didUpdate'],
-      ['the-middle', 'didRender'],
+      nonInteractive: [
+        ['the-top', 'willUpdate'],
+        ['the-top', 'willRender'],
 
-      ['the-top', 'didUpdate'],
-      ['the-top', 'didRender']
+        ['the-middle', 'willUpdate'],
+        ['the-middle', 'willRender'],
 
-    );
+        ['the-bottom', 'willUpdate'],
+        ['the-bottom', 'willRender']
+      ]
+    });
 
     this.runTask(() => this.components['the-middle'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
-    this.assertHooks(
-      'after no-op rerender (middle)',
+    this.assertHooks({
+      label: 'after no-op rerender (middle)',
 
-      // Sync hooks
+      interactive: [
+        // Sync hooks
 
-      ['the-top', 'willUpdate'],
-      ['the-top', 'willRender'],
+        ['the-top', 'willUpdate'],
+        ['the-top', 'willRender'],
 
-      ['the-middle', 'willUpdate'],
-      ['the-middle', 'willRender'],
+        ['the-middle', 'willUpdate'],
+        ['the-middle', 'willRender'],
 
-      // Async hooks
+        // Async hooks
 
-      ['the-middle', 'didUpdate'],
-      ['the-middle', 'didRender'],
+        ['the-middle', 'didUpdate'],
+        ['the-middle', 'didRender'],
 
-      ['the-top', 'didUpdate'],
-      ['the-top', 'didRender']
+        ['the-top', 'didUpdate'],
+        ['the-top', 'didRender']
+      ],
 
-    );
+      nonInteractive: [
+        // Sync hooks
+        ['the-top', 'willUpdate'],
+        ['the-top', 'willRender'],
+
+        ['the-middle', 'willUpdate'],
+        ['the-middle', 'willRender']
+      ]
+    });
 
     this.runTask(() => this.components['the-top'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
-    this.assertHooks(
-      'after no-op rerender (top)',
+    this.assertHooks({
+      label: 'after no-op rerender (top)',
 
-      // Sync hooks
+      interactive: [
+        // Sync hooks
 
-      ['the-top', 'willUpdate'],
-      ['the-top', 'willRender'],
+        ['the-top', 'willUpdate'],
+        ['the-top', 'willRender'],
 
-      // Async hooks
+        // Async hooks
 
-      ['the-top', 'didUpdate'],
-      ['the-top', 'didRender']
-    );
+        ['the-top', 'didUpdate'],
+        ['the-top', 'didRender']
+      ],
+
+      nonInteractive: [
+        // Sync hooks
+
+        ['the-top', 'willUpdate'],
+        ['the-top', 'willRender']
+      ]
+    });
 
     this.runTask(() => set(this.context, 'twitter', '@horsetomdale'));
 
@@ -333,41 +396,59 @@ class LifeCycleHooksTest extends RenderingTest {
 
     topAttrs = { oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@horsetomdale' } };
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after update',
 
-      'after update',
+      interactive: [
+        // Sync hooks
 
-      // Sync hooks
+        ['the-top', 'didUpdateAttrs', topAttrs],
+        ['the-top', 'didReceiveAttrs', topAttrs],
 
-      ['the-top', 'didUpdateAttrs', topAttrs],
-      ['the-top', 'didReceiveAttrs', topAttrs],
+        ['the-top', 'willUpdate'],
+        ['the-top', 'willRender'],
 
-      ['the-top', 'willUpdate'],
-      ['the-top', 'willRender'],
+        // Async hooks
 
-      // Async hooks
+        ['the-top', 'didUpdate'],
+        ['the-top', 'didRender']
+      ],
 
-      ['the-top', 'didUpdate'],
-      ['the-top', 'didRender']
+      nonInteractive: [
+        // Sync hooks
+        ['the-top', 'didUpdateAttrs', topAttrs],
+        ['the-top', 'didReceiveAttrs', topAttrs],
 
-    );
+        ['the-top', 'willUpdate'],
+        ['the-top', 'willRender']
+      ]
+    });
 
     this.teardownAssertions.push(() => {
-      this.assertHooks(
-        'destroy',
-        ['the-top', 'willDestroyElement'],
-        ['the-top', 'willClearRender'],
-        ['the-middle', 'willDestroyElement'],
-        ['the-middle', 'willClearRender'],
-        ['the-bottom', 'willDestroyElement'],
-        ['the-bottom', 'willClearRender'],
-        ['the-top', 'didDestroyElement'],
-        ['the-middle', 'didDestroyElement'],
-        ['the-bottom', 'didDestroyElement'],
-        ['the-top', 'willDestroy'],
-        ['the-middle', 'willDestroy'],
-        ['the-bottom', 'willDestroy']
-      );
+      this.assertHooks({
+        label: 'destroy',
+
+        interactive: [
+          ['the-top', 'willDestroyElement'],
+          ['the-top', 'willClearRender'],
+          ['the-middle', 'willDestroyElement'],
+          ['the-middle', 'willClearRender'],
+          ['the-bottom', 'willDestroyElement'],
+          ['the-bottom', 'willClearRender'],
+          ['the-top', 'didDestroyElement'],
+          ['the-middle', 'didDestroyElement'],
+          ['the-bottom', 'didDestroyElement'],
+          ['the-top', 'willDestroy'],
+          ['the-middle', 'willDestroy'],
+          ['the-bottom', 'willDestroy']
+        ],
+
+        nonInteractive: [
+          ['the-top', 'willDestroy'],
+          ['the-middle', 'willDestroy'],
+          ['the-bottom', 'willDestroy']
+        ]
+      });
 
       this.assertRegisteredViews('after destroy');
     });
@@ -408,145 +489,206 @@ class LifeCycleHooksTest extends RenderingTest {
     let secondAttrs = { name: 'Tom Dale' };
     let lastAttrs = { website: 'tomdale.net' };
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after initial render',
 
-      'after initial render',
+      interactive: [
+        // Sync hooks
 
-      // Sync hooks
+        ['the-parent', 'init'],
+        ['the-parent', 'didInitAttrs',          { attrs: parentAttrs }],
+        ['the-parent', 'didReceiveAttrs',       { newAttrs: parentAttrs }],
+        ['the-parent', 'willRender'],
 
-      ['the-parent', 'init'],
-      ['the-parent', 'didInitAttrs',          { attrs: parentAttrs }],
-      ['the-parent', 'didReceiveAttrs',       { newAttrs: parentAttrs }],
-      ['the-parent', 'willRender'],
+        ['the-first-child', 'init'],
+        ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs }],
+        ['the-first-child', 'didReceiveAttrs',  { newAttrs: firstAttrs }],
+        ['the-first-child', 'willRender'],
 
-      ['the-first-child', 'init'],
-      ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs }],
-      ['the-first-child', 'didReceiveAttrs',  { newAttrs: firstAttrs }],
-      ['the-first-child', 'willRender'],
+        ['the-second-child', 'init'],
+        ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs }],
+        ['the-second-child', 'didReceiveAttrs', { newAttrs: secondAttrs }],
+        ['the-second-child', 'willRender'],
 
-      ['the-second-child', 'init'],
-      ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs }],
-      ['the-second-child', 'didReceiveAttrs', { newAttrs: secondAttrs }],
-      ['the-second-child', 'willRender'],
+        ['the-last-child', 'init'],
+        ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs }],
+        ['the-last-child', 'didReceiveAttrs',   { newAttrs: lastAttrs }],
+        ['the-last-child', 'willRender'],
 
-      ['the-last-child', 'init'],
-      ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs }],
-      ['the-last-child', 'didReceiveAttrs',   { newAttrs: lastAttrs }],
-      ['the-last-child', 'willRender'],
+        // Async hooks
 
-      // Async hooks
+        ['the-first-child', 'didInsertElement'],
+        ['the-first-child', 'didRender'],
 
-      ['the-first-child', 'didInsertElement'],
-      ['the-first-child', 'didRender'],
+        ['the-second-child', 'didInsertElement'],
+        ['the-second-child', 'didRender'],
 
-      ['the-second-child', 'didInsertElement'],
-      ['the-second-child', 'didRender'],
+        ['the-last-child', 'didInsertElement'],
+        ['the-last-child', 'didRender'],
 
-      ['the-last-child', 'didInsertElement'],
-      ['the-last-child', 'didRender'],
+        ['the-parent', 'didInsertElement'],
+        ['the-parent', 'didRender']
+      ],
 
-      ['the-parent', 'didInsertElement'],
-      ['the-parent', 'didRender']
+      nonInteractive: [
+        // Sync hooks
 
-    );
+        ['the-parent', 'init'],
+        ['the-parent', 'didInitAttrs',          { attrs: parentAttrs }],
+        ['the-parent', 'didReceiveAttrs',       { newAttrs: parentAttrs }],
+        ['the-parent', 'willRender'],
+
+        ['the-first-child', 'init'],
+        ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs }],
+        ['the-first-child', 'didReceiveAttrs',  { newAttrs: firstAttrs }],
+        ['the-first-child', 'willRender'],
+
+        ['the-second-child', 'init'],
+        ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs }],
+        ['the-second-child', 'didReceiveAttrs', { newAttrs: secondAttrs }],
+        ['the-second-child', 'willRender'],
+
+        ['the-last-child', 'init'],
+        ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs }],
+        ['the-last-child', 'didReceiveAttrs',   { newAttrs: lastAttrs }],
+        ['the-last-child', 'willRender']
+      ]
+    });
 
     this.runTask(() => this.components['the-first-child'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after no-op rerender (first child)',
 
-      'after no-op rerender (first child)',
+      interactive: [
+        // Sync hooks
 
-      // Sync hooks
+        ['the-parent', 'willUpdate'],
+        ['the-parent', 'willRender'],
 
-      ['the-parent', 'willUpdate'],
-      ['the-parent', 'willRender'],
+        ['the-first-child', 'willUpdate'],
+        ['the-first-child', 'willRender'],
 
-      ['the-first-child', 'willUpdate'],
-      ['the-first-child', 'willRender'],
+        // Async hooks
 
-      // Async hooks
+        ['the-first-child', 'didUpdate'],
+        ['the-first-child', 'didRender'],
 
-      ['the-first-child', 'didUpdate'],
-      ['the-first-child', 'didRender'],
+        ['the-parent', 'didUpdate'],
+        ['the-parent', 'didRender']
+      ],
 
-      ['the-parent', 'didUpdate'],
-      ['the-parent', 'didRender']
+      nonInteractive: [
+        // Sync hooks
 
-    );
+        ['the-parent', 'willUpdate'],
+        ['the-parent', 'willRender'],
+
+        ['the-first-child', 'willUpdate'],
+        ['the-first-child', 'willRender']
+      ]
+    });
 
     this.runTask(() => this.components['the-second-child'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after no-op rerender (second child)',
 
-      'after no-op rerender (second child)',
+      interactive: [
+        // Sync hooks
 
-      // Sync hooks
+        ['the-parent', 'willUpdate'],
+        ['the-parent', 'willRender'],
 
-      ['the-parent', 'willUpdate'],
-      ['the-parent', 'willRender'],
+        ['the-second-child', 'willUpdate'],
+        ['the-second-child', 'willRender'],
 
-      ['the-second-child', 'willUpdate'],
-      ['the-second-child', 'willRender'],
+        // Async hooks
 
-      // Async hooks
+        ['the-second-child', 'didUpdate'],
+        ['the-second-child', 'didRender'],
 
-      ['the-second-child', 'didUpdate'],
-      ['the-second-child', 'didRender'],
+        ['the-parent', 'didUpdate'],
+        ['the-parent', 'didRender']
+      ],
 
-      ['the-parent', 'didUpdate'],
-      ['the-parent', 'didRender']
+      nonInteractive: [
+        // Sync hooks
 
-    );
+        ['the-parent', 'willUpdate'],
+        ['the-parent', 'willRender'],
+
+        ['the-second-child', 'willUpdate'],
+        ['the-second-child', 'willRender']
+      ]
+    });
 
     this.runTask(() => this.components['the-last-child'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after no-op rerender (last child)',
 
-      'after no-op rerender (last child)',
+      interactive: [
+        // Sync hooks
 
-      // Sync hooks
+        ['the-parent', 'willUpdate'],
+        ['the-parent', 'willRender'],
 
-      ['the-parent', 'willUpdate'],
-      ['the-parent', 'willRender'],
+        ['the-last-child', 'willUpdate'],
+        ['the-last-child', 'willRender'],
 
-      ['the-last-child', 'willUpdate'],
-      ['the-last-child', 'willRender'],
+        // Async hooks
 
-      // Async hooks
+        ['the-last-child', 'didUpdate'],
+        ['the-last-child', 'didRender'],
 
-      ['the-last-child', 'didUpdate'],
-      ['the-last-child', 'didRender'],
+        ['the-parent', 'didUpdate'],
+        ['the-parent', 'didRender']
+      ],
 
-      ['the-parent', 'didUpdate'],
-      ['the-parent', 'didRender']
+      nonInteractive: [
+        // Sync hooks
 
-    );
+        ['the-parent', 'willUpdate'],
+        ['the-parent', 'willRender'],
+
+        ['the-last-child', 'willUpdate'],
+        ['the-last-child', 'willRender']
+      ]
+    });
 
     this.runTask(() => this.components['the-parent'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after no-op rerender (parent)',
 
-      'after no-op rerender (parent)',
+      interactive: [
+        // Sync hooks
 
-      // Sync hooks
+        ['the-parent', 'willUpdate'],
+        ['the-parent', 'willRender'],
 
-      ['the-parent', 'willUpdate'],
-      ['the-parent', 'willRender'],
+        // Async hooks
 
-      // Async hooks
+        ['the-parent', 'didUpdate'],
+        ['the-parent', 'didRender']
+      ],
 
-      ['the-parent', 'didUpdate'],
-      ['the-parent', 'didRender']
+      nonInteractive: [
+        // Sync hooks
 
-    );
+        ['the-parent', 'willUpdate'],
+        ['the-parent', 'willRender']
+      ]
+    });
 
     this.runTask(() => setProperties(this.context, {
       twitter: '@horsetomdale',
@@ -564,74 +706,112 @@ class LifeCycleHooksTest extends RenderingTest {
     secondAttrs = { oldAttrs: { name: 'Tom Dale' }, newAttrs: { name: 'Horse Tom Dale' } };
     lastAttrs = { oldAttrs: { website: 'tomdale.net' }, newAttrs: { website: 'horsetomdale.net' } };
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after update',
 
-      'after update',
+      interactive: [
+        // Sync hooks
 
-      // Sync hooks
+        ['the-parent', 'didUpdateAttrs', parentAttrs],
+        ['the-parent', 'didReceiveAttrs', parentAttrs],
 
-      ['the-parent', 'didUpdateAttrs', parentAttrs],
-      ['the-parent', 'didReceiveAttrs', parentAttrs],
+        ['the-parent', 'willUpdate'],
+        ['the-parent', 'willRender'],
 
-      ['the-parent', 'willUpdate'],
-      ['the-parent', 'willRender'],
+        ['the-first-child', 'didUpdateAttrs', firstAttrs],
+        ['the-first-child', 'didReceiveAttrs', firstAttrs],
 
-      ['the-first-child', 'didUpdateAttrs', firstAttrs],
-      ['the-first-child', 'didReceiveAttrs', firstAttrs],
+        ['the-first-child', 'willUpdate'],
+        ['the-first-child', 'willRender'],
 
-      ['the-first-child', 'willUpdate'],
-      ['the-first-child', 'willRender'],
+        ['the-second-child', 'didUpdateAttrs', secondAttrs],
+        ['the-second-child', 'didReceiveAttrs', secondAttrs],
 
-      ['the-second-child', 'didUpdateAttrs', secondAttrs],
-      ['the-second-child', 'didReceiveAttrs', secondAttrs],
+        ['the-second-child', 'willUpdate'],
+        ['the-second-child', 'willRender'],
 
-      ['the-second-child', 'willUpdate'],
-      ['the-second-child', 'willRender'],
+        ['the-last-child', 'didUpdateAttrs', lastAttrs],
+        ['the-last-child', 'didReceiveAttrs', lastAttrs],
 
-      ['the-last-child', 'didUpdateAttrs', lastAttrs],
-      ['the-last-child', 'didReceiveAttrs', lastAttrs],
+        ['the-last-child', 'willUpdate'],
+        ['the-last-child', 'willRender'],
 
-      ['the-last-child', 'willUpdate'],
-      ['the-last-child', 'willRender'],
+        // Async hooks
 
-      // Async hooks
+        ['the-first-child', 'didUpdate'],
+        ['the-first-child', 'didRender'],
 
-      ['the-first-child', 'didUpdate'],
-      ['the-first-child', 'didRender'],
+        ['the-second-child', 'didUpdate'],
+        ['the-second-child', 'didRender'],
 
-      ['the-second-child', 'didUpdate'],
-      ['the-second-child', 'didRender'],
+        ['the-last-child', 'didUpdate'],
+        ['the-last-child', 'didRender'],
 
-      ['the-last-child', 'didUpdate'],
-      ['the-last-child', 'didRender'],
+        ['the-parent', 'didUpdate'],
+        ['the-parent', 'didRender']
+      ],
 
-      ['the-parent', 'didUpdate'],
-      ['the-parent', 'didRender']
+      nonInteractive: [
+        // Sync hooks
 
-    );
+        ['the-parent', 'didUpdateAttrs', parentAttrs],
+        ['the-parent', 'didReceiveAttrs', parentAttrs],
+
+        ['the-parent', 'willUpdate'],
+        ['the-parent', 'willRender'],
+
+        ['the-first-child', 'didUpdateAttrs', firstAttrs],
+        ['the-first-child', 'didReceiveAttrs', firstAttrs],
+
+        ['the-first-child', 'willUpdate'],
+        ['the-first-child', 'willRender'],
+
+        ['the-second-child', 'didUpdateAttrs', secondAttrs],
+        ['the-second-child', 'didReceiveAttrs', secondAttrs],
+
+        ['the-second-child', 'willUpdate'],
+        ['the-second-child', 'willRender'],
+
+        ['the-last-child', 'didUpdateAttrs', lastAttrs],
+        ['the-last-child', 'didReceiveAttrs', lastAttrs],
+
+        ['the-last-child', 'willUpdate'],
+        ['the-last-child', 'willRender']
+      ]
+    });
 
     this.teardownAssertions.push(() => {
-      this.assertHooks(
-        'destroy',
-        ['the-parent', 'willDestroyElement'],
-        ['the-parent', 'willClearRender'],
-        ['the-first-child', 'willDestroyElement'],
-        ['the-first-child', 'willClearRender'],
-        ['the-second-child', 'willDestroyElement'],
-        ['the-second-child', 'willClearRender'],
-        ['the-last-child', 'willDestroyElement'],
-        ['the-last-child', 'willClearRender'],
+      this.assertHooks({
+        label: 'destroy',
 
-        ['the-parent', 'didDestroyElement'],
-        ['the-first-child', 'didDestroyElement'],
-        ['the-second-child', 'didDestroyElement'],
-        ['the-last-child', 'didDestroyElement'],
+        interactive: [
+          ['the-parent', 'willDestroyElement'],
+          ['the-parent', 'willClearRender'],
+          ['the-first-child', 'willDestroyElement'],
+          ['the-first-child', 'willClearRender'],
+          ['the-second-child', 'willDestroyElement'],
+          ['the-second-child', 'willClearRender'],
+          ['the-last-child', 'willDestroyElement'],
+          ['the-last-child', 'willClearRender'],
 
-        ['the-parent', 'willDestroy'],
-        ['the-first-child', 'willDestroy'],
-        ['the-second-child', 'willDestroy'],
-        ['the-last-child', 'willDestroy']
-      );
+          ['the-parent', 'didDestroyElement'],
+          ['the-first-child', 'didDestroyElement'],
+          ['the-second-child', 'didDestroyElement'],
+          ['the-last-child', 'didDestroyElement'],
+
+          ['the-parent', 'willDestroy'],
+          ['the-first-child', 'willDestroy'],
+          ['the-second-child', 'willDestroy'],
+          ['the-last-child', 'willDestroy']
+        ],
+
+        nonInteractive: [
+          ['the-parent', 'willDestroy'],
+          ['the-first-child', 'willDestroy'],
+          ['the-second-child', 'willDestroy'],
+          ['the-last-child', 'willDestroy']
+        ]
+      });
 
       this.assertRegisteredViews('after destroy');
     });
@@ -667,39 +847,58 @@ class LifeCycleHooksTest extends RenderingTest {
     let middleAttrs = { twitterTop: '@tomdale' };
     let bottomAttrs = { twitterMiddle: '@tomdale' };
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after initial render',
 
-      'after initial render',
+      interactive: [
+        // Sync hooks
 
-      // Sync hooks
+        ['the-top', 'init'],
+        ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
+        ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
+        ['the-top', 'willRender'],
 
-      ['the-top', 'init'],
-      ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
-      ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
-      ['the-top', 'willRender'],
+        ['the-middle', 'init'],
+        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
+        ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
+        ['the-middle', 'willRender'],
 
-      ['the-middle', 'init'],
-      ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
-      ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
-      ['the-middle', 'willRender'],
+        ['the-bottom', 'init'],
+        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
+        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
+        ['the-bottom', 'willRender'],
 
-      ['the-bottom', 'init'],
-      ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
-      ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
-      ['the-bottom', 'willRender'],
+        // Async hooks
 
-      // Async hooks
+        ['the-bottom', 'didInsertElement'],
+        ['the-bottom', 'didRender'],
 
-      ['the-bottom', 'didInsertElement'],
-      ['the-bottom', 'didRender'],
+        ['the-middle', 'didInsertElement'],
+        ['the-middle', 'didRender'],
 
-      ['the-middle', 'didInsertElement'],
-      ['the-middle', 'didRender'],
+        ['the-top', 'didInsertElement'],
+        ['the-top', 'didRender']
+      ],
 
-      ['the-top', 'didInsertElement'],
-      ['the-top', 'didRender']
+      nonInteractive: [
+        // Sync hooks
 
-    );
+        ['the-top', 'init'],
+        ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
+        ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
+        ['the-top', 'willRender'],
+
+        ['the-middle', 'init'],
+        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
+        ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
+        ['the-middle', 'willRender'],
+
+        ['the-bottom', 'init'],
+        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
+        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
+        ['the-bottom', 'willRender']
+      ]
+    });
 
     this.runTask(() => set(this.context, 'twitter', '@horsetomdale'));
 
@@ -712,42 +911,64 @@ class LifeCycleHooksTest extends RenderingTest {
     middleAttrs = { oldAttrs: { twitterTop: '@tomdale' }, newAttrs: { twitterTop: '@horsetomdale' } };
     bottomAttrs = { oldAttrs: { twitterMiddle: '@tomdale' }, newAttrs: { twitterMiddle: '@horsetomdale' } };
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after updating (root)',
 
-      'after updating (root)',
+      interactive: [
+        // Sync hooks
 
-      // Sync hooks
+        ['the-top', 'didUpdateAttrs', topAttrs],
+        ['the-top', 'didReceiveAttrs', topAttrs],
 
-      ['the-top', 'didUpdateAttrs', topAttrs],
-      ['the-top', 'didReceiveAttrs', topAttrs],
+        ['the-top', 'willUpdate'],
+        ['the-top', 'willRender'],
 
-      ['the-top', 'willUpdate'],
-      ['the-top', 'willRender'],
+        ['the-middle', 'didUpdateAttrs', middleAttrs],
+        ['the-middle', 'didReceiveAttrs', middleAttrs],
 
-      ['the-middle', 'didUpdateAttrs', middleAttrs],
-      ['the-middle', 'didReceiveAttrs', middleAttrs],
+        ['the-middle', 'willUpdate'],
+        ['the-middle', 'willRender'],
 
-      ['the-middle', 'willUpdate'],
-      ['the-middle', 'willRender'],
+        ['the-bottom', 'didUpdateAttrs', bottomAttrs],
+        ['the-bottom', 'didReceiveAttrs', bottomAttrs],
 
-      ['the-bottom', 'didUpdateAttrs', bottomAttrs],
-      ['the-bottom', 'didReceiveAttrs', bottomAttrs],
+        ['the-bottom', 'willUpdate'],
+        ['the-bottom', 'willRender'],
 
-      ['the-bottom', 'willUpdate'],
-      ['the-bottom', 'willRender'],
+        // Async hooks
 
-      // Async hooks
+        ['the-bottom', 'didUpdate'],
+        ['the-bottom', 'didRender'],
 
-      ['the-bottom', 'didUpdate'],
-      ['the-bottom', 'didRender'],
+        ['the-middle', 'didUpdate'],
+        ['the-middle', 'didRender'],
 
-      ['the-middle', 'didUpdate'],
-      ['the-middle', 'didRender'],
+        ['the-top', 'didUpdate'],
+        ['the-top', 'didRender']
+      ],
 
-      ['the-top', 'didUpdate'],
-      ['the-top', 'didRender']
+      nonInteractive: [
+        // Sync hooks
 
-    );
+        ['the-top', 'didUpdateAttrs', topAttrs],
+        ['the-top', 'didReceiveAttrs', topAttrs],
+
+        ['the-top', 'willUpdate'],
+        ['the-top', 'willRender'],
+
+        ['the-middle', 'didUpdateAttrs', middleAttrs],
+        ['the-middle', 'didReceiveAttrs', middleAttrs],
+
+        ['the-middle', 'willUpdate'],
+        ['the-middle', 'willRender'],
+
+        ['the-bottom', 'didUpdateAttrs', bottomAttrs],
+        ['the-bottom', 'didReceiveAttrs', bottomAttrs],
+
+        ['the-bottom', 'willUpdate'],
+        ['the-bottom', 'willRender']
+      ]
+    });
 
     this.runTask(() => this.rerender());
 
@@ -759,24 +980,37 @@ class LifeCycleHooksTest extends RenderingTest {
     middleAttrs = { oldAttrs: { twitterTop: '@horsetomdale' }, newAttrs: { twitterTop: '@horsetomdale' } };
     bottomAttrs = { oldAttrs: { twitterMiddle: '@horsetomdale' }, newAttrs: { twitterMiddle: '@horsetomdale' } };
 
-    this.assertHooks('after no-op rernder (root)');
+    this.assertHooks({
+      label: 'after no-op rernder (root)',
+      interactive: [],
+      nonInteractive: []
+    });
 
     this.teardownAssertions.push(() => {
-      this.assertHooks(
-        'destroy',
-        ['the-top', 'willDestroyElement'],
-        ['the-top', 'willClearRender'],
-        ['the-middle', 'willDestroyElement'],
-        ['the-middle', 'willClearRender'],
-        ['the-bottom', 'willDestroyElement'],
-        ['the-bottom', 'willClearRender'],
-        ['the-top', 'didDestroyElement'],
-        ['the-middle', 'didDestroyElement'],
-        ['the-bottom', 'didDestroyElement'],
-        ['the-top', 'willDestroy'],
-        ['the-middle', 'willDestroy'],
-        ['the-bottom', 'willDestroy']
-      );
+      this.assertHooks({
+        label: 'destroy',
+
+        interactive: [
+          ['the-top', 'willDestroyElement'],
+          ['the-top', 'willClearRender'],
+          ['the-middle', 'willDestroyElement'],
+          ['the-middle', 'willClearRender'],
+          ['the-bottom', 'willDestroyElement'],
+          ['the-bottom', 'willClearRender'],
+          ['the-top', 'didDestroyElement'],
+          ['the-middle', 'didDestroyElement'],
+          ['the-bottom', 'didDestroyElement'],
+          ['the-top', 'willDestroy'],
+          ['the-middle', 'willDestroy'],
+          ['the-bottom', 'willDestroy']
+        ],
+
+        nonInteractive: [
+          ['the-top', 'willDestroy'],
+          ['the-middle', 'willDestroy'],
+          ['the-bottom', 'willDestroy']
+        ]
+      });
 
       this.assertRegisteredViews('after destroy');
     });
@@ -822,129 +1056,192 @@ class LifeCycleHooksTest extends RenderingTest {
     };
 
     let initialAfterRenderHooks = (count) => {
-      return [
-        ['nested-item', 'didInsertElement'],
-        ['nested-item', 'didRender'],
-        ['an-item', 'didInsertElement'],
-        ['an-item', 'didRender']
-      ];
+      if (this.isInteractive) {
+        return [
+          ['nested-item', 'didInsertElement'],
+          ['nested-item', 'didRender'],
+          ['an-item', 'didInsertElement'],
+          ['an-item', 'didRender']
+        ];
+      } else {
+        return [ ];
+      }
     };
 
-    this.assertHooks(
+    this.assertHooks({
+      label: 'after initial render',
 
-      'after initial render',
+      interactive: [
+        // Sync hooks
+          ...initialHooks(1),
+          ...initialHooks(2),
+          ...initialHooks(3),
+          ...initialHooks(4),
+          ...initialHooks(5),
 
-      // Sync hooks
-        ...initialHooks(1),
-        ...initialHooks(2),
-        ...initialHooks(3),
-        ...initialHooks(4),
-        ...initialHooks(5),
+        // Async hooks
+          ...initialAfterRenderHooks(5),
+          ...initialAfterRenderHooks(4),
+          ...initialAfterRenderHooks(3),
+          ...initialAfterRenderHooks(2),
+          ...initialAfterRenderHooks(1)
+      ],
 
-      // Async hooks
-        ...initialAfterRenderHooks(5),
-        ...initialAfterRenderHooks(4),
-        ...initialAfterRenderHooks(3),
-        ...initialAfterRenderHooks(2),
-        ...initialAfterRenderHooks(1)
-    );
+      nonInteractive: [
+        // Sync hooks
+          ...initialHooks(1),
+          ...initialHooks(2),
+          ...initialHooks(3),
+          ...initialHooks(4),
+          ...initialHooks(5),
 
-    this.assert.equal(this.component.childViews.length, 5, 'childViews precond');
+        // Async hooks
+          ...initialAfterRenderHooks(5),
+          ...initialAfterRenderHooks(4),
+          ...initialAfterRenderHooks(3),
+          ...initialAfterRenderHooks(2),
+          ...initialAfterRenderHooks(1)
+      ]
+    });
+
+    // TODO: Is this correct? Should childViews be populated in non-interactive mode?
+    if (this.isInteractive) {
+      this.assert.equal(this.component.childViews.length, 5, 'childViews precond');
+    }
 
     this.runTask(() => set(this.context, 'items', []));
 
-    this.assert.equal(this.component.childViews.length, 1, 'childViews updated');
+    // TODO: Is this correct? Should childViews be populated in non-interactive mode?
+    if (this.isInteractive) {
+      this.assert.equal(this.component.childViews.length, 1, 'childViews updated');
+    }
 
     this.assertText('Nothing to see here');
 
-    this.assertHooks(
-      'reset to empty array',
+    this.assertHooks({
+      label: 'reset to empty array',
 
-      ['an-item', 'willDestroyElement'],
-      ['an-item', 'willClearRender'],
-      ['nested-item', 'willDestroyElement'],
-      ['nested-item', 'willClearRender'],
-      ['an-item', 'willDestroyElement'],
-      ['an-item', 'willClearRender'],
-      ['nested-item', 'willDestroyElement'],
-      ['nested-item', 'willClearRender'],
-      ['an-item', 'willDestroyElement'],
-      ['an-item', 'willClearRender'],
-      ['nested-item', 'willDestroyElement'],
-      ['nested-item', 'willClearRender'],
-      ['an-item', 'willDestroyElement'],
-      ['an-item', 'willClearRender'],
-      ['nested-item', 'willDestroyElement'],
-      ['nested-item', 'willClearRender'],
-      ['an-item', 'willDestroyElement'],
-      ['an-item', 'willClearRender'],
-      ['nested-item', 'willDestroyElement'],
-      ['nested-item', 'willClearRender'],
-
-      ['no-items', 'init'],
-      ['no-items', 'didInitAttrs',       { attrs: { } }],
-      ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
-      ['no-items', 'willRender'],
-
-
-      ['nested-item', 'init'],
-      ['nested-item', 'didInitAttrs',       { attrs: { } }],
-      ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
-      ['nested-item', 'willRender'],
-
-      ['an-item', 'didDestroyElement'],
-      ['nested-item', 'didDestroyElement'],
-      ['an-item', 'didDestroyElement'],
-      ['nested-item', 'didDestroyElement'],
-      ['an-item', 'didDestroyElement'],
-      ['nested-item', 'didDestroyElement'],
-      ['an-item', 'didDestroyElement'],
-      ['nested-item', 'didDestroyElement'],
-      ['an-item', 'didDestroyElement'],
-      ['nested-item', 'didDestroyElement'],
-
-      ['nested-item', 'didInsertElement'],
-      ['nested-item', 'didRender'],
-      ['no-items', 'didInsertElement'],
-      ['no-items', 'didRender'],
-
-      ['an-item', 'willDestroy'],
-      ['nested-item', 'willDestroy'],
-      ['an-item', 'willDestroy'],
-      ['nested-item', 'willDestroy'],
-      ['an-item', 'willDestroy'],
-      ['nested-item', 'willDestroy'],
-      ['an-item', 'willDestroy'],
-      ['nested-item', 'willDestroy'],
-      ['an-item', 'willDestroy'],
-      ['nested-item', 'willDestroy']
-    );
-
-    this.teardownAssertions.push(() => {
-      this.assertHooks(
-        'destroy',
-
-        ['no-items', 'willDestroyElement'],
-        ['no-items', 'willClearRender'],
+      interactive: [
+        ['an-item', 'willDestroyElement'],
+        ['an-item', 'willClearRender'],
+        ['nested-item', 'willDestroyElement'],
+        ['nested-item', 'willClearRender'],
+        ['an-item', 'willDestroyElement'],
+        ['an-item', 'willClearRender'],
+        ['nested-item', 'willDestroyElement'],
+        ['nested-item', 'willClearRender'],
+        ['an-item', 'willDestroyElement'],
+        ['an-item', 'willClearRender'],
+        ['nested-item', 'willDestroyElement'],
+        ['nested-item', 'willClearRender'],
+        ['an-item', 'willDestroyElement'],
+        ['an-item', 'willClearRender'],
+        ['nested-item', 'willDestroyElement'],
+        ['nested-item', 'willClearRender'],
+        ['an-item', 'willDestroyElement'],
+        ['an-item', 'willClearRender'],
         ['nested-item', 'willDestroyElement'],
         ['nested-item', 'willClearRender'],
 
-        ['no-items', 'didDestroyElement'],
+        ['no-items', 'init'],
+        ['no-items', 'didInitAttrs',       { attrs: { } }],
+        ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
+        ['no-items', 'willRender'],
+
+
+        ['nested-item', 'init'],
+        ['nested-item', 'didInitAttrs',       { attrs: { } }],
+        ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
+        ['nested-item', 'willRender'],
+
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
         ['nested-item', 'didDestroyElement'],
 
-        ['no-items', 'willDestroy'],
+        ['nested-item', 'didInsertElement'],
+        ['nested-item', 'didRender'],
+        ['no-items', 'didInsertElement'],
+        ['no-items', 'didRender'],
+
+        ['an-item', 'willDestroy'],
+        ['nested-item', 'willDestroy'],
+        ['an-item', 'willDestroy'],
+        ['nested-item', 'willDestroy'],
+        ['an-item', 'willDestroy'],
+        ['nested-item', 'willDestroy'],
+        ['an-item', 'willDestroy'],
+        ['nested-item', 'willDestroy'],
+        ['an-item', 'willDestroy'],
         ['nested-item', 'willDestroy']
-      );
+      ],
+
+      nonInteractive: [
+        ['no-items', 'init'],
+        ['no-items', 'didInitAttrs',       { attrs: { } }],
+        ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
+        ['no-items', 'willRender'],
+
+        ['nested-item', 'init'],
+        ['nested-item', 'didInitAttrs',       { attrs: { } }],
+        ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
+        ['nested-item', 'willRender'],
+
+        ['an-item', 'willDestroy'],
+        ['nested-item', 'willDestroy'],
+        ['an-item', 'willDestroy'],
+        ['nested-item', 'willDestroy'],
+        ['an-item', 'willDestroy'],
+        ['nested-item', 'willDestroy'],
+        ['an-item', 'willDestroy'],
+        ['nested-item', 'willDestroy'],
+        ['an-item', 'willDestroy'],
+        ['nested-item', 'willDestroy']
+      ]
+    });
+
+    this.teardownAssertions.push(() => {
+      this.assertHooks({
+        label: 'destroy',
+
+        interactive: [
+          ['no-items', 'willDestroyElement'],
+          ['no-items', 'willClearRender'],
+          ['nested-item', 'willDestroyElement'],
+          ['nested-item', 'willClearRender'],
+
+          ['no-items', 'didDestroyElement'],
+          ['nested-item', 'didDestroyElement'],
+
+          ['no-items', 'willDestroy'],
+          ['nested-item', 'willDestroy']
+        ],
+
+        nonInteractive: [
+          ['no-items', 'willDestroy'],
+          ['nested-item', 'willDestroy']
+        ]
+      });
 
       this.assertRegisteredViews('after destroy');
     });
   }
 }
 
-moduleFor('Components test: lifecycle hooks (curly components)', class extends LifeCycleHooksTest {
+moduleFor('Components test: interactive lifecycle hooks (curly components)', class extends LifeCycleHooksTest {
 
   get ComponentClass() {
     return Component;
+  }
+
+  get isInteractive() {
+    return true;
   }
 
   invocationFor(name, namedArgs = {}) {
@@ -966,7 +1263,36 @@ moduleFor('Components test: lifecycle hooks (curly components)', class extends L
       throw new Error(`Unknown value: ${value}`);
     }
   }
+});
 
+moduleFor('Components test: non-interactive lifecycle hooks (curly components)', class extends LifeCycleHooksTest {
+  get ComponentClass() {
+    return Component;
+  }
+
+  get isInteractive() {
+    return false;
+  }
+
+  invocationFor(name, namedArgs = {}) {
+    let attrs = Object.keys(namedArgs).map(k => `${k}=${this.val(namedArgs[k])}`).join(' ');
+    return `{{${name} ${attrs}}}`;
+  }
+
+  attrFor(name) {
+    return `${name}`;
+  }
+
+  /* private */
+  val(value) {
+    if (value.isString) {
+      return JSON.stringify(value.value);
+    } else if (value.isExpr) {
+      return `(readonly ${value.value})`;
+    } else {
+      throw new Error(`Unknown value: ${value}`);
+    }
+  }
 });
 
 moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
