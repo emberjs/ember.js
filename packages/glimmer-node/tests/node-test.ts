@@ -1,6 +1,6 @@
 import * as SimpleDOM from 'simple-dom';
 
-import { TestEnvironment, TestDynamicScope} from "glimmer-test-helpers/lib/environment";
+import { TestEnvironment, TestDynamicScope } from "glimmer-test-helpers/lib/environment";
 import { Template, Simple } from 'glimmer-runtime';
 import { UpdatableReference } from 'glimmer-object-reference';
 import NodeDOMTreeConstruction from 'glimmer-node/lib/node-dom-helper';

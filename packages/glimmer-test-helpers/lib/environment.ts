@@ -623,63 +623,45 @@ class HelperReference implements PathReference<Opaque> {
 }
 
 class InertModifierManager implements ModifierManager<Opaque> {
-  install(element: Element, args: EvaluatedArgs, dom: IDOMChanges): Opaque {
-    return;
-  }
+  create() {}
 
-  update(modifier: Opaque, element: Element, args: EvaluatedArgs, dom: IDOMChanges) {
-    return;
-  }
+  install(modifier: Opaque) {}
+
+  update(modifier: Opaque) {}
 
   getDestructor(modifier: Opaque): Destroyable {
     return null;
   }
 }
 
-interface TestModifier {
-  element: Element;
-  args: EvaluatedArgs;
-  dom: IDOMChanges;
-  destructor: Destroyable;
+class TestModifier {
+  constructor(
+    public element: Element,
+    public args: EvaluatedArgs,
+    public dom: IDOMChanges
+  ) {}
 }
 
 export class TestModifierManager implements ModifierManager<TestModifier> {
-  public installedElements: Element[];
-  public updatedElements: Element[];
-  public destroyedModifiers: TestModifier[];
+  public installedElements: Element[] = [];
+  public updatedElements: Element[] = [];
+  public destroyedModifiers: TestModifier[] = [];
 
-  constructor() {
-    this.installedElements = [];
-    this.updatedElements = [];
-    this.destroyedModifiers = [];
+  create(element: Element, args: EvaluatedArgs, dynamicScope: DynamicScope, dom: IDOMChanges): TestModifier {
+    return new TestModifier(element, args, dom);
   }
 
-  install(element: Element, args: EvaluatedArgs, dom: IDOMChanges): TestModifier {
-    let manager = this;
+  install({ element, args, dom }: TestModifier) {
     this.installedElements.push(element);
 
     let param = args.positional.at(0).value();
     dom.setAttribute(element, 'data-modifier', `installed - ${param}`);
 
-    let modifier: TestModifier;
-
-    modifier = {
-      element,
-      args,
-      dom,
-      destructor: {
-        destroy() {
-          manager.destroyedModifiers.push(modifier);
-          dom.removeAttribute(element, 'data-modifier');
-        }
-      }
-    };
-
-    return modifier;
+    return;
   }
 
-  update(modifier: TestModifier, element: Element, args: EvaluatedArgs, dom: IDOMChanges) {
-    this.updatedElements.push(modifier.element);
+  update({ element, args, dom }: TestModifier) {
+    this.updatedElements.push(element);
 
     let param = args.positional.at(0).value();
     dom.setAttribute(element, 'data-modifier', `updated - ${param}`);
@@ -688,7 +670,13 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
   }
 
   getDestructor(modifier: TestModifier): Destroyable {
-    return modifier.destructor;
+    return {
+      destroy: () => {
+        this.destroyedModifiers.push(modifier);
+        let { element, dom } = modifier;
+        dom.removeAttribute(element, 'data-modifier');
+      }
+    };
   }
 }
 
