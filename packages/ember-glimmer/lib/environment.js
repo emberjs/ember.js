@@ -51,6 +51,7 @@ import { default as eachIn } from './helpers/each-in';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
 import { OWNER } from 'container';
+import { environment as emberEnvironment } from 'ember-environment';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 
@@ -339,6 +340,18 @@ export default class Environment extends GlimmerEnvironment {
   iterableFor(ref, args) {
     let keyPath = args.named.get('key').value();
     return createIterable(ref, keyPath);
+  }
+
+  scheduleInstallModifier() {
+    if (emberEnvironment.hasDOM) {
+      super.scheduleInstallModifier(...arguments);
+    }
+  }
+
+  scheduleUpdateModifier() {
+    if (emberEnvironment.hasDOM) {
+      super.scheduleUpdateModifier(...arguments);
+    }
   }
 
   didDestroy(destroyable) {
