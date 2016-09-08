@@ -140,6 +140,20 @@ export default {
 
     delete path.depth;
 
+    // This is to fix a bug in the Handlebars AST where the path expressions in
+    // `{{this.foo}}` (and similarly `{{foo-bar this.foo named=this.foo}}` etc)
+    // are simply turned into `{{foo}}`. The fix is to push it back onto the
+    // parts array and let the runtime see the difference. However, we cannot
+    // simply use the string `this` as it means literally the property called
+    // "this" in the current context (it can be expressed in the syntax as
+    // `{{[this]}}`, where the square bracket are generally for this kind of
+    // escaping – such as `{{foo.["bar.baz"]}}` would mean lookup a property
+    // named literally "bar.baz" on `this.foo`). By convention, we use `null`
+    // for this purpose.
+    if (original.match(/^this(\..+)?$/)) {
+      path.parts.unshift(null);
+    }
+
     return path;
   },
 

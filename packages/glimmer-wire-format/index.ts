@@ -39,7 +39,6 @@ export namespace Expressions {
   export type Unknown        = ['unknown', Path];
   export type Arg            = ['arg', Path];
   export type Get            = ['get', Path];
-  export type SelfGet        = ['self-get', Path];
   export type Value          = str | number | boolean | null; // tslint:disable-line
   export type HasBlock       = ['has-block', str];
   export type HasBlockParams = ['has-block-params', str];
@@ -49,7 +48,6 @@ export namespace Expressions {
       Unknown
     | Arg
     | Get
-    | SelfGet
     | Concat
     | HasBlock
     | HasBlockParams
@@ -73,7 +71,6 @@ export namespace Expressions {
   export const isUnknown        = is<Unknown>('unknown');
   export const isArg            = is<Arg>('arg');
   export const isGet            = is<Get>('get');
-  export const isSelfGet        = is<SelfGet>('self-get');
   export const isConcat         = is<Concat>('concat');
   export const isHelper         = is<Helper>('helper');
   export const isHasBlock       = is<HasBlock>('has-block');

@@ -164,6 +164,153 @@ test("null and undefined produces empty text nodes", () => {
   strictEqual(root.firstChild.lastChild.firstChild, valueNode2, "The text node was not blown away");
 });
 
+test("weird paths", function() {
+  let context = {
+    "": "empty string",
+    "1": "1",
+    "undefined": "undefined",
+    "null": "null",
+    "true": "true",
+    "false": "false",
+    "this": "this",
+    "foo.bar": "foo.bar",
+    "nested": null
+  };
+
+  context.nested = context;
+
+  let getDiv = () => root.firstChild;
+  let template = compile(stripTight`
+    <div>
+      [{{[]}}]
+      [{{[1]}}]
+      [{{[undefined]}}]
+      [{{[null]}}]
+      [{{[true]}}]
+      [{{[false]}}]
+      [{{[this]}}]
+      [{{[foo.bar]}}]
+
+      [{{nested.[]}}]
+      [{{nested.[1]}}]
+      [{{nested.[undefined]}}]
+      [{{nested.[null]}}]
+      [{{nested.[true]}}]
+      [{{nested.[false]}}]
+      [{{nested.[this]}}]
+      [{{nested.[foo.bar]}}]
+    </div>
+  `);
+  render(template, context);
+
+  equal(getDiv().textContent, stripTight`
+    [empty string]
+    [1]
+    [undefined]
+    [null]
+    [true]
+    [false]
+    [this]
+    [foo.bar]
+
+    [empty string]
+    [1]
+    [undefined]
+    [null]
+    [true]
+    [false]
+    [this]
+    [foo.bar]
+  `);
+
+  rerender();
+
+  equal(getDiv().textContent, stripTight`
+    [empty string]
+    [1]
+    [undefined]
+    [null]
+    [true]
+    [false]
+    [this]
+    [foo.bar]
+
+    [empty string]
+    [1]
+    [undefined]
+    [null]
+    [true]
+    [false]
+    [this]
+    [foo.bar]
+  `);
+
+  context[""] = "EMPTY STRING";
+  context["1"] = "ONE";
+  context["undefined"] = "UNDEFINED";
+  context["null"] = "NULL";
+  context["true"] = "TRUE";
+  context["false"] = "FALSE";
+  context["this"] = "THIS";
+  context["foo.bar"] = "FOO.BAR";
+  rerender();
+
+  equal(getDiv().textContent, stripTight`
+    [EMPTY STRING]
+    [ONE]
+    [UNDEFINED]
+    [NULL]
+    [TRUE]
+    [FALSE]
+    [THIS]
+    [FOO.BAR]
+
+    [EMPTY STRING]
+    [ONE]
+    [UNDEFINED]
+    [NULL]
+    [TRUE]
+    [FALSE]
+    [THIS]
+    [FOO.BAR]
+  `);
+
+  context = {
+    "": "empty string",
+    "1": "1",
+    "undefined": "undefined",
+    "null": "null",
+    "true": "true",
+    "false": "false",
+    "this": "this",
+    "foo.bar": "foo.bar",
+    "nested": null
+  };
+  context.nested = context;
+
+  rerender(context);
+
+  equal(getDiv().textContent, stripTight`
+    [empty string]
+    [1]
+    [undefined]
+    [null]
+    [true]
+    [false]
+    [this]
+    [foo.bar]
+
+    [empty string]
+    [1]
+    [undefined]
+    [null]
+    [true]
+    [false]
+    [this]
+    [foo.bar]
+  `);
+});
+
 test("updating a single trusting curly", () => {
   let value = '<p>hello world</p>';
   let object = { value };
@@ -808,6 +955,36 @@ test("block arguments (ensure balanced push/pop)", assert => {
   rerender();
 
   equalTokens(root, '<div>GodfreakOuter</div>', "After updating");
+});
+
+test("block arguments cannot be accessed through {{this}}", assert => {
+  env.registerHelper('noop', params => params[0]);
+
+  let template = compile(stripTight`
+    <div>
+      [{{#with person as |name|}}{{this.name}}{{/with}}]
+      [{{#with person as |name|}}{{#with this.name as |test|}}{{test}}{{/with}}{{/with}}]
+      [{{#with person as |name|}}{{#with (noop this.name) as |test|}}{{test}}{{/with}}{{/with}}]
+    </div>`);
+
+  let object = { person: "Yehuda", name: "Godfrey" };
+  render(template, object);
+
+  equalTokens(root, '<div>[Godfrey][Godfrey][Godfrey]</div>', "Initial render");
+
+  rerender();
+
+  equalTokens(root, '<div>[Godfrey][Godfrey][Godfrey]</div>', "Initial render");
+
+  object.name = "Godfreak";
+  rerender();
+
+  equalTokens(root, '<div>[Godfreak][Godfreak][Godfreak]</div>', "After update");
+
+  object.name = "Godfrey";
+  rerender();
+
+  equalTokens(root, '<div>[Godfrey][Godfrey][Godfrey]</div>', "After reset");
 });
 
 test("The with helper should consider an empty array falsy", assert => {

@@ -310,11 +310,11 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
     } else if (append && (appendType === 'unknown' || appendType === 'get')) {
       let appendValue = <AppendValue>append.value;
       args = Syntax.Args.empty();
-      path = appendValue.ref.path();
+      path = appendValue.ref.parts;
     } else if (append && append.value.type === 'helper') {
       let helper = <Syntax.Helper>append.value;
       args = helper.args;
-      path = helper.ref.path();
+      path = helper.ref.parts;
     } else if (modifier) {
       path = modifier.path;
       args = modifier.args;
