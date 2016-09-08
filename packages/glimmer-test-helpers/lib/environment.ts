@@ -57,7 +57,6 @@ import {
 } from "glimmer-runtime";
 
 import {
-  compileRealSpec,
   compile as rawCompile,
   compileLayout as rawCompileLayout
 } from "./helpers";
@@ -91,7 +90,7 @@ import {
 } from "glimmer-object-reference";
 
 import {
-  BlockMeta
+  TemplateMeta
 } from "glimmer-wire-format";
 
 type KeyFor<T> = (item: Opaque, index: T) => string;
@@ -688,7 +687,7 @@ interface TestEnvironmentOptions {
 export class TestEnvironment extends Environment {
   private helpers = dict<GlimmerHelper>();
   private modifiers = dict<ModifierManager<Opaque>>();
-  private partials = dict<PartialDefinition>();
+  private partials = dict<PartialDefinition<{}>>();
   private components = dict<ComponentDefinition<any>>();
   private uselessAnchor: HTMLAnchorElement;
   public compiledLayouts = dict<CompiledBlock>();
@@ -730,7 +729,7 @@ export class TestEnvironment extends Environment {
   }
 
   registerPartial(name: string, source: string) {
-    this.partials[name] = new PartialDefinition(name, compileRealSpec(source, { env: this }));
+    this.partials[name] = new PartialDefinition(name, rawCompile(source, { env: this }));
   }
 
   registerComponent(name: string, definition: ComponentDefinition<any>) {
@@ -840,7 +839,7 @@ export class TestEnvironment extends Environment {
     return !!this.components[name[0]];
   }
 
-  getComponentDefinition(name: string[], blockMeta?: BlockMeta): ComponentDefinition<any> {
+  getComponentDefinition(name: string[], blockMeta?: TemplateMeta): ComponentDefinition<any> {
     return this.components[name[0]];
   }
 

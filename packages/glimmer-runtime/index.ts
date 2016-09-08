@@ -9,7 +9,7 @@ export {
   isAttribute
 } from './lib/syntax';
 
-export { default as Template } from './lib/template';
+export { default as templateFactory, TemplateFactory, Template } from './lib/template';
 
 export { default as SymbolTable } from './lib/symbol-table';
 

@@ -29,8 +29,8 @@ function commonSetup(customEnv = new TestEnvironment()) {
   root = rootElement();
 }
 
-function render(template: Template, self: any) {
-  return template.render(new UpdatableReference(self), env, { appendTo: root, dynamicScope: new TestDynamicScope() });
+function render<T>(template: Template<T>, self: any) {
+  return template.render(new UpdatableReference(self), root, new TestDynamicScope());
 }
 
 function module(name: string) {
