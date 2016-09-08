@@ -30,9 +30,6 @@
    @public
  */
 
-export default {
-  isInternalHelper: true,
-  toReference(args) {
-    return args.named;
-  }
-};
+export default function(vm, args) {
+  return args.named;
+}

@@ -10,9 +10,6 @@ function queryParams({ positional, named }) {
   });
 }
 
-export default {
-  isInternalHelper: true,
-  toReference(args) {
-    return new InternalHelperReference(queryParams, args);
-  }
-};
+export default function(vm, args) {
+  return new InternalHelperReference(queryParams, args);
+}

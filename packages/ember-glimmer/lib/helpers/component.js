@@ -122,10 +122,6 @@ function curryArgs(definition, newArgs) {
   return mergedArgs;
 }
 
-export default {
-  isInternalHelper: true,
-
-  toReference(args, env, symbolTable) {
-    return ClosureComponentReference.create(args, symbolTable, env);
-  }
-};
+export default function(vm, args, symbolTable) {
+  return ClosureComponentReference.create(args, symbolTable, vm.env);
+}

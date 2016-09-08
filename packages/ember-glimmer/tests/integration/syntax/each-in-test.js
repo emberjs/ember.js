@@ -116,6 +116,55 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
     `);
   }
 
+  [`@test it can render sub-paths of each item`]() {
+    this.render(strip`
+      <ul>
+        {{#each-in categories as |category data|}}
+          <li>{{category}}: {{data.reports.unitsSold}}</li>
+        {{/each-in}}
+      </ul>
+    `, {
+      categories: {
+        'Smartphones': { reports: { unitsSold: 8203 } },
+        'JavaScript Frameworks': { reports: { unitsSold: Infinity } }
+      }
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      set(this.context, 'categories.Smartphones.reports.unitsSold', 100);
+      set(this.context, 'categories.Tweets', { reports: { unitsSold: 443115 } });
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 100</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Tweets: 443115</li>
+      </ul>
+    `);
+
+    this.runTask(() => set(this.context, 'categories', {
+      'Smartphones': { reports: { unitsSold: 8203 } },
+      'JavaScript Frameworks': { reports: { unitsSold: Infinity } }
+    }));
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+  }
+
   [`@test it can render duplicate items`]() {
     this.render(strip`
       <ul>

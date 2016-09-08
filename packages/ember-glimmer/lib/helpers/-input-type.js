@@ -8,9 +8,6 @@ function inputTypeHelper({ positional, named }) {
   return '-text-field';
 }
 
-export default {
-  isInternalHelper: true,
-  toReference(args) {
-    return new InternalHelperReference(inputTypeHelper, args);
-  }
-};
+export default function(vm, args) {
+  return new InternalHelperReference(inputTypeHelper, args);
+}

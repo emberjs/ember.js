@@ -41,11 +41,8 @@ export function isEachIn(ref) {
   return ref && ref[EACH_IN_REFERENCE];
 }
 
-export default {
-  isInternalHelper: true,
-  toReference(args) {
-    let ref = Object.create(args.positional.at(0));
-    ref[EACH_IN_REFERENCE] = true;
-    return ref;
-  }
-};
+export default function(vm, args) {
+  let ref = Object.create(args.positional.at(0));
+  ref[EACH_IN_REFERENCE] = true;
+  return ref;
+}

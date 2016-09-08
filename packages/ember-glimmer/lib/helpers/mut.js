@@ -60,36 +60,32 @@ export function unMut(ref) {
   return ref[SOURCE] || ref;
 }
 
-export default {
-  isInternalHelper: true,
+export default function(vm, args) {
+  let rawRef = args.positional.at(0);
 
-  toReference(args) {
-    let rawRef = args.positional.at(0);
-
-    if (isMut(rawRef)) {
-      return rawRef;
-    }
-
-    // TODO: Improve this error message. This covers at least two distinct
-    // cases:
-    //
-    // 1. (mut "not a path") – passing a literal, result from a helper
-    //    invocation, etc
-    //
-    // 2. (mut receivedValue) – passing a value received from the caller
-    //    that was originally derived from a literal, result from a helper
-    //    invocation, etc
-    //
-    // This message is alright for the first case, but could be quite
-    // confusing for the second case.
-    assert('You can only pass a path to mut', rawRef[UPDATE]);
-
-    let wrappedRef = Object.create(rawRef);
-
-    wrappedRef[SOURCE] = rawRef;
-    wrappedRef[INVOKE] = rawRef[UPDATE];
-    wrappedRef[MUT_REFERENCE] = true;
-
-    return wrappedRef;
+  if (isMut(rawRef)) {
+    return rawRef;
   }
-};
+
+  // TODO: Improve this error message. This covers at least two distinct
+  // cases:
+  //
+  // 1. (mut "not a path") – passing a literal, result from a helper
+  //    invocation, etc
+  //
+  // 2. (mut receivedValue) – passing a value received from the caller
+  //    that was originally derived from a literal, result from a helper
+  //    invocation, etc
+  //
+  // This message is alright for the first case, but could be quite
+  // confusing for the second case.
+  assert('You can only pass a path to mut', rawRef[UPDATE]);
+
+  let wrappedRef = Object.create(rawRef);
+
+  wrappedRef[SOURCE] = rawRef;
+  wrappedRef[INVOKE] = rawRef[UPDATE];
+  wrappedRef[MUT_REFERENCE] = true;
+
+  return wrappedRef;
+}

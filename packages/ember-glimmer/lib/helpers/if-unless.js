@@ -58,20 +58,17 @@ class ConditionalHelperReference extends CachedReference {
   @for Ember.Templates.helpers
   @public
 */
-export const inlineIf = {
-  isInternalHelper: true,
-  toReference({ positional: pargs }) {
-    switch (pargs.length) {
-      case 2: return ConditionalHelperReference.create(pargs.at(0), pargs.at(1), null);
-      case 3: return ConditionalHelperReference.create(pargs.at(0), pargs.at(1), pargs.at(2));
-      default:
-        assert(
-          'The inline form of the `if` helper expects two or three arguments, e.g. ' +
-          '`{{if trialExpired "Expired" expiryDate}}`.'
-        );
-    }
+export function inlineIf(vm, { positional }) {
+  switch (positional.length) {
+    case 2: return ConditionalHelperReference.create(positional.at(0), positional.at(1), null);
+    case 3: return ConditionalHelperReference.create(positional.at(0), positional.at(1), positional.at(2));
+    default:
+      assert(
+        'The inline form of the `if` helper expects two or three arguments, e.g. ' +
+        '`{{if trialExpired "Expired" expiryDate}}`.'
+      );
   }
-};
+}
 
 /**
   The inline `unless` helper conditionally renders a single property or string.
@@ -89,17 +86,14 @@ export const inlineIf = {
   @for Ember.Templates.helpers
   @public
 */
-export const inlineUnless = {
-  isInternalHelper: true,
-  toReference({ positional: pargs }) {
-    switch (pargs.length) {
-      case 2: return ConditionalHelperReference.create(pargs.at(0), null, pargs.at(1));
-      case 3: return ConditionalHelperReference.create(pargs.at(0), pargs.at(2), pargs.at(1));
-      default:
-        assert(
-          'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
-          '`{{unless isFirstLogin "Welcome back!"}}`.'
-        );
-    }
+export function inlineUnless(vm, { positional }) {
+  switch (positional.length) {
+    case 2: return ConditionalHelperReference.create(positional.at(0), null, positional.at(1));
+    case 3: return ConditionalHelperReference.create(positional.at(0), positional.at(2), positional.at(1));
+    default:
+      assert(
+        'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
+        '`{{unless isFirstLogin "Welcome back!"}}`.'
+      );
   }
-};
+}

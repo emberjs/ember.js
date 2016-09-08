@@ -23,9 +23,6 @@ function classHelper({ positional }) {
   return value;
 }
 
-export default {
-  isInternalHelper: true,
-  toReference(args) {
-    return new InternalHelperReference(classHelper, args);
-  }
-};
+export default function(vm, args) {
+  return new InternalHelperReference(classHelper, args);
+}

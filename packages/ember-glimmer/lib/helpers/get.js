@@ -51,13 +51,9 @@ import { CONSTANT_TAG, UpdatableTag, combine, isConst, referenceFromParts } from
   @since 2.1.0
  */
 
-export default {
-  isInternalHelper: true,
-
-  toReference(args) {
-    return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
-  }
-};
+export default function(vm, args) {
+  return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
+}
 
 class GetHelperReference extends CachedReference {
   static create(sourceReference, pathReference) {

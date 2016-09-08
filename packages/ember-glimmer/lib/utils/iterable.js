@@ -156,7 +156,7 @@ class ObjectKeysIterator {
 
     this.position++;
 
-    return { key, value: memo, memo: value };
+    return { key, value, memo };
   }
 }
 
@@ -172,36 +172,10 @@ class EmptyIterator {
 
 const EMPTY_ITERATOR = new EmptyIterator();
 
-class AbstractIterable {
+class EachInIterable {
   constructor(ref, keyFor) {
     this.ref = ref;
     this.keyFor = keyFor;
-  }
-
-  iterate() {
-    throw new Error('Not implemented: iterate');
-  }
-
-  valueReferenceFor(item) {
-    return new UpdatableReference(item.value);
-  }
-
-  updateValueReference(reference, item) {
-    reference.update(item.value);
-  }
-
-  memoReferenceFor(item) {
-    return new UpdatablePrimitiveReference(item.memo);
-  }
-
-  updateMemoReference(reference, item) {
-    reference.update(item.memo);
-  }
-}
-
-class EachInIterable extends AbstractIterable {
-  constructor(ref, keyFor) {
-    super(ref, keyFor);
 
     let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
 
@@ -229,13 +203,34 @@ class EachInIterable extends AbstractIterable {
       return EMPTY_ITERATOR;
     }
   }
+
+  // {{each-in}} yields |key value| instead of |value key|, so the memo and
+  // value are flipped
+
+  valueReferenceFor(item) {
+    return new UpdatablePrimitiveReference(item.memo);
+  }
+
+  updateValueReference(reference, item) {
+    reference.update(item.memo);
+  }
+
+  memoReferenceFor(item) {
+    return new UpdatableReference(item.value);
+  }
+
+  updateMemoReference(reference, item) {
+    reference.update(item.value);
+  }
 }
 
-class ArrayIterable extends AbstractIterable {
+class ArrayIterable {
   constructor(ref, keyFor) {
-    super(ref, keyFor);
+    this.ref = ref;
+    this.keyFor = keyFor;
 
     let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
+
     this.tag = combine([ref.tag, valueTag]);
   }
 
@@ -263,5 +258,21 @@ class ArrayIterable extends AbstractIterable {
     } else {
       return EMPTY_ITERATOR;
     }
+  }
+
+  valueReferenceFor(item) {
+    return new UpdatableReference(item.value);
+  }
+
+  updateValueReference(reference, item) {
+    reference.update(item.value);
+  }
+
+  memoReferenceFor(item) {
+    return new UpdatablePrimitiveReference(item.memo);
+  }
+
+  updateMemoReference(reference, item) {
+    reference.update(item.memo);
   }
 }

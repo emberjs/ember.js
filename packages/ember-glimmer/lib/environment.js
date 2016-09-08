@@ -37,6 +37,7 @@ import { wrapComponentClassAttribute } from './utils/bindings';
 import { default as action } from './helpers/action';
 import { default as componentHelper } from './helpers/component';
 import { default as concat } from './helpers/concat';
+import { default as debuggerHelper } from './helpers/debugger';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
@@ -107,6 +108,7 @@ export default class Environment extends GlimmerEnvironment {
       action,
       component: componentHelper,
       concat,
+      debugger: debuggerHelper,
       get,
       hash,
       loc,
@@ -121,7 +123,7 @@ export default class Environment extends GlimmerEnvironment {
       '-input-type': inputTypeHelper,
       '-normalize-class': normalizeClassHelper,
       '-html-safe': htmlSafeHelper,
-      '-get-dynamic-var': { glimmerNativeHelper: getDynamicVar }
+      '-get-dynamic-var': getDynamicVar
     };
   }
 
@@ -202,7 +204,7 @@ export default class Environment extends GlimmerEnvironment {
       assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(path, symbolTable));
     }
 
-    if ((!isSimple && appendType === 'unknown') || appendType === 'self-get') {
+    if (!isSimple && appendType === 'unknown') {
       return statement.original.deopt();
     }
 
@@ -275,12 +277,16 @@ export default class Environment extends GlimmerEnvironment {
     }
 
     let name = nameParts[0];
+
+    if (this.builtInHelpers[name]) {
+      return true;
+    }
+
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let options = { source: `template:${blockMeta.moduleName}` };
 
-    return !!this.builtInHelpers[name] ||
-      owner.hasRegistration(`helper:${name}`, options) ||
+    return owner.hasRegistration(`helper:${name}`, options) ||
       owner.hasRegistration(`helper:${name}`);
   }
 
@@ -288,23 +294,23 @@ export default class Environment extends GlimmerEnvironment {
     assert('The first argument passed into `lookupHelper` should be an array', Array.isArray(nameParts));
 
     let name = nameParts[0];
+    let helper = this.builtInHelpers[name];
+
+    if (helper) {
+      return helper;
+    }
+
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
 
-    let helper = this.builtInHelpers[name] ||
-      owner.lookup(`helper:${name}`, options) ||
-      owner.lookup(`helper:${name}`);
+    helper = owner.lookup(`helper:${name}`, options) || owner.lookup(`helper:${name}`);
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-    if (helper.isInternalHelper) {
-      return (vm, args) => helper.toReference(args, this, symbolTable);
-    } else if (helper.isHelperInstance) {
+    if (helper.isHelperInstance) {
       return (vm, args) => SimpleHelperReference.create(helper.compute, args);
     } else if (helper.isHelperFactory) {
       return (vm, args) => ClassBasedHelperReference.create(helper, vm, args);
-    } else if (helper.glimmerNativeHelper) {
-      return helper.glimmerNativeHelper;
     } else {
       throw new Error(`${nameParts} is not a helper`);
     }

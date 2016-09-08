@@ -201,7 +201,7 @@ export class NestedPropertyReference extends PropertyReference {
 
       return get(parentValue, _propertyKey);
     } else {
-      return null;
+      return undefined;
     }
   }
 

@@ -15,9 +15,6 @@ function normalizeClass({ positional, named }) {
   }
 }
 
-export default {
-  isInternalHelper: true,
-  toReference(args) {
-    return new InternalHelperReference(normalizeClass, args);
-  }
-};
+export default function(vm, args) {
+  return new InternalHelperReference(normalizeClass, args);
+}

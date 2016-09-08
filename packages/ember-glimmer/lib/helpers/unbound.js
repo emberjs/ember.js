@@ -34,14 +34,11 @@ import { UnboundReference } from '../utils/references';
   @public
 */
 
-export default {
-  isInternalHelper: true,
-  toReference(args) {
-    assert(
-      'unbound helper cannot be called with multiple params or hash params',
-      args.positional.values.length === 1 && args.named.keys.length === 0
-    );
+export default function(vm, args) {
+  assert(
+    'unbound helper cannot be called with multiple params or hash params',
+    args.positional.values.length === 1 && args.named.keys.length === 0
+  );
 
-    return UnboundReference.create(args.positional.at(0).value());
-  }
-};
+  return UnboundReference.create(args.positional.at(0).value());
+}

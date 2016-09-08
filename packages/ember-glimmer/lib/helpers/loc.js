@@ -1,4 +1,4 @@
-import { helper } from '../helper';
+import { InternalHelperReference } from '../utils/references';
 import { String as StringUtils } from 'ember-runtime';
 
 /**
@@ -38,8 +38,10 @@ import { String as StringUtils } from 'ember-runtime';
   @see {Ember.String#loc}
   @public
 */
-function locHelper(params) {
-  return StringUtils.loc.apply(null, params);
+function locHelper({ positional }) {
+  return StringUtils.loc.apply(null, positional.value());
 }
 
-export default helper(locHelper);
+export default function(vm, args) {
+  return new InternalHelperReference(locHelper, args);
+}
