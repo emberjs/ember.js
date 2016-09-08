@@ -39,7 +39,7 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
   let pluginContext = this;
   let b = pluginContext.syntax.builders;
   let walker = new pluginContext.syntax.Walker();
-  let moduleName = pluginContext.options.moduleName;
+  let moduleName = pluginContext.options.meta.moduleName;
 
   walker.visit(ast, function(node) {
     if (pluginContext.validate(node)) {

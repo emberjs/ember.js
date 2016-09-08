@@ -67,10 +67,7 @@ class RootState {
     };
 
     this.render = () => {
-      let result = this.result = template.asEntryPoint().render(self, env, {
-        appendTo: parentElement,
-        dynamicScope
-      });
+      let result = this.result = template.render(self, parentElement, dynamicScope);
 
       // override .render function after initial render
       this.render = () => {

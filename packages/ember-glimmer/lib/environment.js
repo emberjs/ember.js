@@ -256,7 +256,7 @@ export default class Environment extends GlimmerEnvironment {
 
   lookupPartial(name) {
     let partial = {
-      template: lookupPartial(this, name[0]).spec
+      template: lookupPartial(this, name[0])
     };
 
     if (partial) {

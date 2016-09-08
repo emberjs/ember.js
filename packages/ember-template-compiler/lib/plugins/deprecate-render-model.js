@@ -9,7 +9,7 @@ export default function DeprecateRenderModel(options) {
 
 DeprecateRenderModel.prototype.transform =
   function DeprecateRenderModel_transform(ast) {
-  let moduleName = this.options.moduleName;
+  let moduleName = this.options.meta.moduleName;
   let walker = new this.syntax.Walker();
 
   walker.visit(ast, function(node) {

@@ -5,7 +5,7 @@
 import require, { has } from 'require';
 import compileOptions from './compile-options';
 
-let compileSpec, template;
+let precompile, template;
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.
@@ -18,15 +18,15 @@ let compileSpec, template;
   @param {Object} options This is an options hash to augment the compiler options.
 */
 export default function compile(templateString, options) {
-  if (!compileSpec && has('glimmer-compiler')) {
-    compileSpec = require('glimmer-compiler').compileSpec;
+  if (!precompile && has('glimmer-compiler')) {
+    precompile = require('glimmer-compiler').precompile;
   }
 
   if (!template && has('ember-glimmer')) {
     template = require('ember-glimmer').template;
   }
 
-  if (!compileSpec) {
+  if (!precompile) {
     throw new Error('Cannot call `compile` without the template compiler loaded. Please load `ember-template-compiler.js` prior to calling `compile`.');
   }
 
@@ -34,5 +34,8 @@ export default function compile(templateString, options) {
     throw new Error('Cannot call `compile` with only the template compiler loaded. Please load `ember.debug.js` or `ember.prod.js` prior to calling `compile`.');
   }
 
-  return template(compileSpec(templateString, compileOptions(options)));
+  let precompiledTemplateString = precompile(templateString, compileOptions(options));
+  let templateJS = new Function(`return ${precompiledTemplateString}`)();
+
+  return template(templateJS);
 }
