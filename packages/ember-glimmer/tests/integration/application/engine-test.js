@@ -103,6 +103,30 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     }));
   }
 
+  setupEngineWithAttrs(hooks) {
+    this.application.register('template:application', compile('Application{{mount "chat-engine"}}'));
+
+    this.registerEngine('chat-engine', Engine.extend({
+      init() {
+        this._super(...arguments);
+        this.register('template:components/foo-bar', compile(`{{partial "troll"}}`));
+        this.register('template:troll', compile('{{attrs.wat}}'));
+        this.register('controller:application', Controller.extend({
+          contextType: 'Engine'
+        }));
+        this.register('template:application', compile('Engine {{foo-bar wat=contextType}}'));
+      }
+    }));
+  }
+
+  ['@test attrs in an engine']() {
+    this.setupEngineWithAttrs([]);
+
+    return this.visit('/').then(() => {
+      this.assertText('ApplicationEngine Engine');
+    });
+  }
+
   ['@test sharing a template between engine and application has separate refinements']() {
     this.assert.expect(1);
 
