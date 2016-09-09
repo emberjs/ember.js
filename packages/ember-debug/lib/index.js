@@ -153,6 +153,10 @@ setDebugFunction('debugSeal', function debugSeal(obj) {
   Object.seal(obj);
 });
 
+setDebugFunction('debugFreeze', function debugFreeze(obj) {
+  Object.freeze(obj);
+});
+
 setDebugFunction('deprecate', _deprecate);
 
 setDebugFunction('warn', _warn);

@@ -1,3 +1,4 @@
+/* globals EmberDev */
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { makeBoundHelper } from '../../utils/helpers';
 import { runDestroy } from 'internal-test-helpers';
@@ -548,5 +549,120 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
     equal(destroyCount, 1, 'destroy is called after a view is destroyed');
   }
-
 });
+
+// these feature detects prevent errors in these tests
+// on platforms (*cough* IE9 *cough*) that do not
+// property support `Object.freeze`
+let pushingIntoFrozenArrayThrows = (() => {
+  let array = [];
+  Object.freeze(array);
+
+  try {
+    array.push('foo');
+
+    return false;
+  } catch(e) {
+    return true;
+  }
+})();
+
+let assigningExistingFrozenPropertyThrows = (() => {
+  let obj = { foo: 'asdf' };
+  Object.freeze(obj);
+
+  try {
+    obj.foo = 'derp';
+
+    return false;
+  } catch(e) {
+    return true;
+  }
+})();
+
+let addingPropertyToFrozenObjectThrows = (() => {
+  let obj = { foo: 'asdf' };
+  Object.freeze(obj);
+
+  try {
+    obj.bar = 'derp';
+
+    return false;
+  } catch(e) {
+    return true;
+  }
+})();
+
+if (!EmberDev.runningProdBuild && (
+  pushingIntoFrozenArrayThrows ||
+    assigningExistingFrozenPropertyThrows ||
+    addingPropertyToFrozenObjectThrows
+)) {
+  class HelperMutatingArgsTests extends RenderingTest {
+    buildCompute() {
+      return (params, hash) => {
+        if (pushingIntoFrozenArrayThrows) {
+          this.assert.throws(() => {
+            params.push('foo');
+
+            // cannot assert error message as it varies by platform
+          });
+        }
+
+        if (assigningExistingFrozenPropertyThrows) {
+          this.assert.throws(() => {
+            hash.foo = 'bar';
+
+            // cannot assert error message as it varies by platform
+          });
+        }
+
+        if (addingPropertyToFrozenObjectThrows) {
+          this.assert.throws(() => {
+            hash.someUnusedHashProperty = 'bar';
+
+            // cannot assert error message as it varies by platform
+          });
+        }
+      };
+    }
+
+    ['@test cannot mutate params - no positional specified / named specified']() {
+      this.render('{{test-helper foo=bar}}', { bar: 'derp' });
+    }
+
+    ['@test cannot mutate params - positional specified / no named specified']() {
+      this.render('{{test-helper bar}}', { bar: 'derp' });
+    }
+
+    ['@test cannot mutate params - positional specified / named specified']() {
+      this.render('{{test-helper bar foo=qux}}', { bar: 'derp', qux: 'baz' });
+    }
+
+    ['@test cannot mutate params - no positional specified / no named specified']() {
+      this.render('{{test-helper}}', { bar: 'derp', qux: 'baz' });
+    }
+  }
+
+  moduleFor('Helpers test: mutation triggers errors - class based helper', class extends HelperMutatingArgsTests {
+    constructor() {
+      super();
+
+      let compute = this.buildCompute();
+
+      this.registerHelper('test-helper', {
+        compute
+      });
+    }
+  });
+
+  moduleFor('Helpers test: mutation triggers errors - simple helper', class extends HelperMutatingArgsTests {
+    constructor() {
+      super();
+
+      let compute = this.buildCompute();
+
+      this.registerHelper('test-helper', compute);
+    }
+  });
+}
