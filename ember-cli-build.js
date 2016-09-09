@@ -224,9 +224,13 @@ function getVersion() {
     return info.tag.replace(/^v/, '');
   }
 
+  console.log('git repo info: ', info);
+
   var packageVersion  = require(path.join(projectPath, 'package.json')).version;
   var sha = info.sha || '';
-  var prefix = packageVersion + '-' + (process.env.BUILD_TYPE || info.branch);
+  var prefix = packageVersion + '-' + (process.env.BUILD_TYPE || info.branch || process.env.TRAVIS_BRANCH);
+
+  prefix = prefix.replace('master', 'canary');
 
   return prefix + '+' + sha.slice(0, 8);
 }
