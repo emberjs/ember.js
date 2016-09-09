@@ -1,7 +1,8 @@
 import { set } from 'ember-metal';
 import { jQuery } from 'ember-views';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { Component } from '../../utils/helpers';
+import { Component, compile } from '../../utils/helpers';
+import { strip } from '../../utils/abstract-test-case';
 
 class AbstractAppendTest extends RenderingTest {
 
@@ -195,6 +196,155 @@ class AbstractAppendTest extends RenderingTest {
     this.assert.equal(willDestroyCalled, 2);
   }
 
+  ['@test can appendTo while rendering'](assert) {
+    let owner = this.owner;
+
+    let append = (component) => {
+      return this.append(component);
+    };
+
+    let wrapper1, wrapper2, element1, element2;
+    this.registerComponent('first-component', {
+      ComponentClass: Component.extend({
+        layout: compile('component-one'),
+
+        didInsertElement() {
+          element1 = this.element;
+          let SecondComponent = owner._lookupFactory('component:second-component');
+
+          wrapper2 = append(SecondComponent.create());
+        }
+      })
+    });
+
+    this.registerComponent('second-component', {
+      ComponentClass: Component.extend({
+        layout: compile(`component-two`),
+
+        didInsertElement() {
+          element2 = this.element;
+        }
+      })
+    });
+
+    let FirstComponent = this.owner._lookupFactory('component:first-component');
+
+    this.runTask(() => wrapper1 = append(FirstComponent.create()));
+
+    this.assertComponentElement(element1, { content: 'component-one' });
+    this.assertComponentElement(element2, { content: 'component-two' });
+  }
+
+  ['@test can appendTo and remove while rendering'](assert) {
+    let owner = this.owner;
+
+    let append = (component) => {
+      return this.append(component);
+    };
+
+    let element1, element2, element3, element4, component1, component2;
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        layout: compile('foo-bar'),
+
+        init() {
+          this._super(...arguments);
+          component1 = this;
+        },
+
+        didInsertElement() {
+          element1 = this.element;
+          let OtherRoot = owner._lookupFactory('component:other-root');
+
+          this._instance = OtherRoot.create({
+            didInsertElement() {
+              element2 = this.element;
+            }
+          });
+
+          append(this._instance);
+        },
+
+        willDestroy() {
+          this._instance.destroy();
+        }
+      })
+    });
+
+    this.registerComponent('baz-qux', {
+      ComponentClass: Component.extend({
+        layout: compile('baz-qux'),
+
+        init() {
+          this._super(...arguments);
+          component2 = this;
+        },
+
+        didInsertElement() {
+          element3 = this.element;
+          let OtherRoot = owner._lookupFactory('component:other-root');
+
+          this._instance = OtherRoot.create({
+            didInsertElement() {
+              element4 = this.element;
+            }
+          });
+
+          append(this._instance);
+        },
+
+        willDestroy() {
+          this._instance.destroy();
+        }
+      })
+    });
+
+    let instantiatedRoots = 0;
+    let destroyedRoots = 0;
+    this.registerComponent('other-root', {
+      ComponentClass: Component.extend({
+        layout: compile(`fake-thing: {{counter}}`),
+        init() {
+          this._super(...arguments);
+          this.counter = instantiatedRoots++;
+        },
+        willDestroy() {
+          destroyedRoots++;
+          this._super(...arguments);
+        }
+      })
+    });
+
+    this.render(strip`
+      {{#if showFooBar}}
+        {{foo-bar}}
+      {{else}}
+        {{baz-qux}}
+      {{/if}}
+    `, { showFooBar: true });
+
+    this.assertComponentElement(element1, { });
+    this.assertComponentElement(element2, { content: 'fake-thing: 0' });
+    assert.equal(instantiatedRoots, 1);
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'showFooBar', false));
+
+    assert.equal(instantiatedRoots, 2);
+    assert.equal(destroyedRoots, 1);
+
+    this.assertComponentElement(element3, { });
+    this.assertComponentElement(element4, { content: 'fake-thing: 1' });
+
+    this.runTask(() => {
+      component1.destroy();
+      component2.destroy();
+    });
+
+    assert.equal(instantiatedRoots, 2);
+    assert.equal(destroyedRoots, 2);
+  }
 }
 
 moduleFor('append: no arguments (attaching to document.body)', class extends AbstractAppendTest {
@@ -258,32 +408,6 @@ moduleFor('appendTo: with multiple components', class extends AbstractAppendTest
     this.didAppend(component);
     return jQuery('#qunit-fixture')[0];
   }
-
-  ['@test can appendTo while rendering'](assert) {
-    assert.expect(0);
-
-    let owner = this.owner;
-
-    this.registerComponent('first-component', {
-      ComponentClass: Component.extend({
-        layoutName: 'components/component-one',
-
-        didInsertElement() {
-          let SecondComponent = owner._lookupFactory('component:second-component');
-          SecondComponent.create().appendTo('#qunit-fixture');
-        }
-      })
-    });
-
-    this.registerComponent('second-component', {
-      ComponentClass: Component.extend()
-    });
-
-    let FirstComponent = this.owner._lookupFactory('component:first-component');
-
-    this.append(FirstComponent.create());
-  }
-
 });
 
 moduleFor('renderToElement: no arguments (defaults to a body context)', class extends AbstractAppendTest {
