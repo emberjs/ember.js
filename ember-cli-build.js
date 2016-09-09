@@ -50,7 +50,7 @@ function dag() {
 }
 
 function backburner() {
-  let dist = path.dirname(require.resolve('backburner.js'));
+  var dist = path.dirname(require.resolve('backburner.js'));
   dist = path.join(dist, 'es6');
   return new Rollup(new Funnel(dist, {
     files: ['backburner.js']
@@ -68,11 +68,11 @@ function backburner() {
 
 function rsvp() {
   // TODO upstream
-  let version = require('./bower_components/rsvp/package').version;
-  let banner = fs.readFileSync(
+  var version = require('./bower_components/rsvp/package').version;
+  var banner = fs.readFileSync(
     path.resolve(__dirname, 'bower_components/rsvp/config/versionTemplate.txt'),
     'utf8');
-  let rollup = new Rollup('bower_components/rsvp/lib', {
+  var rollup = new Rollup('bower_components/rsvp/lib', {
     rollup: {
       entry: 'rsvp.js',
       plugins: [ rollupEnifed ],
@@ -88,8 +88,8 @@ function rsvp() {
 }
 
 function routeRecognizer() {
-  let dist = path.dirname(require.resolve('route-recognizer'));
-  let es6 = new Funnel(path.join(dist, 'es6'), {
+  var dist = path.dirname(require.resolve('route-recognizer'));
+  var es6 = new Funnel(path.join(dist, 'es6'), {
     files: ['route-recognizer.js']
   });
   return new Rollup(es6, {
