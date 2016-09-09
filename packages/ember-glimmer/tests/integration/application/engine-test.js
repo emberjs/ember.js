@@ -33,17 +33,66 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   }
 
   setupAppAndRoutelessEngine(hooks) {
-    this.application.register('template:application', compile('Application{{mount "chat-engine"}}'));
+    this.setupRoutelessEngine(hooks);
+
+    this.registerEngine('chat-engine', Engine.extend({
+      init() {
+        this._super(...arguments);
+        this.register('template:application', compile('Engine'));
+        this.register('controller:application', Controller.extend({
+          init() {
+            this._super(...arguments);
+            hooks.push('engine - application');
+          }
+        }));
+      }
+    }));
+  }
+
+  setupAppAndRoutableEngineWithPartial(hooks) {
+    this.application.register('template:application', compile('Application{{outlet}}'));
+
+    this.router.map(function() {
+      this.mount('blog');
+    });
+    this.application.register('route-map:blog', function() { });
     this.registerRoute('application', Route.extend({
       model() {
         hooks.push('application - application');
       }
     }));
 
+    this.registerEngine('blog', Engine.extend({
+      init() {
+        this._super(...arguments);
+        this.register('template:foo', compile('foo partial'));
+        this.register('template:application', compile('Engine{{outlet}} {{partial "foo"}}'));
+        this.register('route:application', Route.extend({
+          model() {
+            hooks.push('engine - application');
+          }
+        }));
+      }
+    }));
+  }
+
+  setupRoutelessEngine(hooks) {
+    this.application.register('template:application', compile('Application{{mount "chat-engine"}}'));
+    this.registerRoute('application', Route.extend({
+      model() {
+        hooks.push('application - application');
+      }
+    }));
+  }
+
+  setupAppAndRoutlessEngineWithPartial(hooks) {
+    this.setupRoutelessEngine(hooks);
+
     this.registerEngine('chat-engine', Engine.extend({
       init() {
         this._super(...arguments);
-        this.register('template:application', compile('Engine'));
+        this.register('template:foo', compile('foo partial'));
+        this.register('template:application', compile('Engine {{partial "foo"}}'));
         this.register('controller:application', Controller.extend({
           init() {
             this._super(...arguments);
@@ -137,6 +186,40 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
 
     return this.visit('/', { shouldRender: true }).then(() => {
       this.assertText('ApplicationEngine');
+
+      this.assert.deepEqual(hooks, [
+        'application - application',
+        'engine - application'
+      ], 'the expected hooks were fired');
+    });
+  }
+
+  ['@test visit() with partials in routable engine'](assert) {
+    assert.expect(2);
+
+    let hooks = [];
+
+    this.setupAppAndRoutableEngineWithPartial(hooks);
+
+    return this.visit('/blog', { shouldRender: true }).then(() => {
+      this.assertText('ApplicationEngine foo partial');
+
+      this.assert.deepEqual(hooks, [
+        'application - application',
+        'engine - application'
+      ], 'the expected hooks were fired');
+    });
+  }
+
+  ['@test visit() with partials in non-routable engine'](assert) {
+    assert.expect(2);
+
+    let hooks = [];
+
+    this.setupAppAndRoutlessEngineWithPartial(hooks);
+
+    return this.visit('/', { shouldRender: true }).then(() => {
+      this.assertText('ApplicationEngine foo partial');
 
       this.assert.deepEqual(hooks, [
         'application - application',

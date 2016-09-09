@@ -158,7 +158,7 @@ export default class Environment extends GlimmerEnvironment {
 
   refineStatement(statement, symbolTable) {
     // 1. resolve any native syntax – if, unless, with, each, and partial
-    let nativeSyntax = super.refineStatement(statement);
+    let nativeSyntax = super.refineStatement(statement, symbolTable);
 
     if (nativeSyntax) {
       return nativeSyntax;
@@ -252,16 +252,18 @@ export default class Environment extends GlimmerEnvironment {
     return compilerCache.get(template, owner);
   }
 
-  hasPartial(name) {
-    return hasPartial(this, name[0]);
+  hasPartial(name, symbolTable) {
+    let { owner } = symbolTable.getMeta();
+    return hasPartial(name[0], owner);
   }
 
-  lookupPartial(name) {
+  lookupPartial(name, symbolTable) {
+    let { owner } = symbolTable.getMeta();
     let partial = {
-      template: lookupPartial(this, name[0])
+      template: lookupPartial(name[0], owner)
     };
 
-    if (partial) {
+    if (partial.template) {
       return partial;
     } else {
       throw new Error(`${name} is not a partial`);
