@@ -127,7 +127,7 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
   }
 
   ['@test getAttr() should return the same value as get()'](assert) {
-    assert.expect(18);
+    assert.expect(33);
 
     let instance;
     let FooBarComponent = Component.extend({
@@ -137,27 +137,39 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
       },
 
       didReceiveAttrs() {
+        let rootFirstPositional = this.get('firstPositional');
         let rootFirst = this.get('first');
         let rootSecond = this.get('second');
+        let attrFirstPositional = this.getAttr('firstPositional');
         let attrFirst = this.getAttr('first');
         let attrSecond = this.getAttr('second');
 
+        equal(rootFirstPositional, attrFirstPositional, 'root property matches attrs value');
         equal(rootFirst, attrFirst, 'root property matches attrs value');
         equal(rootSecond, attrSecond, 'root property matches attrs value');
       }
     });
+
+    FooBarComponent.reopenClass({
+      positionalParams: ['firstPositional']
+    });
+
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
-    this.render(`{{foo-bar first=first second=second}}`, {
+    this.render(`{{foo-bar firstPositional first=first second=second}}`, {
+      firstPositional: 'firstPositional',
       first: 'first',
       second: 'second'
     });
 
+
+    assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
     assert.equal(instance.get('first'), 'first', 'matches known value');
     assert.equal(instance.get('second'), 'second', 'matches known value');
 
     this.runTask(() => this.rerender());
 
+    assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
     assert.equal(instance.get('first'), 'first', 'matches known value');
     assert.equal(instance.get('second'), 'second', 'matches known value');
 
@@ -165,6 +177,7 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
       set(this.context, 'first', 'third');
     });
 
+    assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
     assert.equal(instance.get('first'), 'third', 'matches known value');
     assert.equal(instance.get('second'), 'second', 'matches known value');
 
@@ -172,14 +185,25 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
       set(this.context, 'second', 'fourth');
     });
 
+    assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
     assert.equal(instance.get('first'), 'third', 'matches known value');
     assert.equal(instance.get('second'), 'fourth', 'matches known value');
 
     this.runTask(() => {
+      set(this.context, 'firstPositional', 'fifth');
+    });
+
+    assert.equal(instance.get('firstPositional'), 'fifth', 'matches known value');
+    assert.equal(instance.get('first'), 'third', 'matches known value');
+    assert.equal(instance.get('second'), 'fourth', 'matches known value');
+
+    this.runTask(() => {
+      set(this.context, 'firstPositional', 'firstPositional');
       set(this.context, 'first', 'first');
       set(this.context, 'second', 'second');
     });
 
+    assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
     assert.equal(instance.get('first'), 'first', 'matches known value');
     assert.equal(instance.get('second'), 'second', 'matches known value');
   }
