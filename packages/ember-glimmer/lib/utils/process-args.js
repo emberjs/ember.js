@@ -64,10 +64,6 @@ class SimpleArgs {
   }
 }
 
-export function isCell(val) {
-  return val && val[MUTABLE_CELL];
-}
-
 const REF = symbol('REF');
 
 class MutableCell {
