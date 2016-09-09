@@ -7,7 +7,8 @@ import {
   EmptyObject,
   meta as metaFor,
   watchKey,
-  isFeatureEnabled
+  isFeatureEnabled,
+  runInDebug
 } from 'ember-metal';
 import { CONSTANT_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst } from 'glimmer-reference';
 import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
@@ -276,7 +277,16 @@ export class SimpleHelperReference extends CachedReference {
   static create(helper, args) {
     if (isConst(args)) {
       let { positional, named } = args;
-      let result = helper(positional.value(), named.value());
+
+      let positionalValue = positional.value();
+      let namedValue = named.value();
+
+      runInDebug(() => {
+        Object.freeze(positionalValue);
+        Object.freeze(namedValue);
+      });
+
+      let result = helper(positionalValue, namedValue);
 
       if (result === null) {
         return NULL_REFERENCE;
@@ -302,7 +312,16 @@ export class SimpleHelperReference extends CachedReference {
 
   compute() {
     let { helper, args: { positional, named } } = this;
-    return helper(positional.value(), named.value());
+
+    let positionalValue = positional.value();
+    let namedValue = named.value();
+
+    runInDebug(() => {
+      Object.freeze(positionalValue);
+      Object.freeze(namedValue);
+    });
+
+    return helper(positionalValue, namedValue);
   }
 }
 
@@ -323,7 +342,16 @@ export class ClassBasedHelperReference extends CachedReference {
 
   compute() {
     let { instance, args: { positional, named } } = this;
-    return instance.compute(positional.value(), named.value());
+
+    let positionalValue = positional.value();
+    let namedValue = named.value();
+
+    runInDebug(() => {
+      Object.freeze(positionalValue);
+      Object.freeze(namedValue);
+    });
+
+    return instance.compute(positionalValue, namedValue);
   }
 }
 
