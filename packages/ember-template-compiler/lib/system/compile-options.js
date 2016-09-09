@@ -10,8 +10,6 @@ export default function compileOptions(_options) {
   if (options.moduleName) {
     let meta = options.meta;
     meta.moduleName = options.moduleName;
-
-    delete options.moduleName;
   }
 
   if (!options.plugins) {
