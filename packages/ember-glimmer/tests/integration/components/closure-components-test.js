@@ -632,12 +632,12 @@ moduleFor('Components test: closure components', class extends RenderingTest {
     });
 
     this.render(strip`
-      {{#with (hash my-component=(component 'my-component')) as |c|}}
+      {{#with (hash my-component=(component 'my-component' first)) as |c|}}
         {{c.my-component}}
-      {{/with}}`
+      {{/with}}`, { first: 'first' }
     );
 
-    assert.ok(isEmpty(value), 'value is an empty parameter');
+    assert.equal(value, 'first', 'value is the expected parameter');
   }
 
   ['@test renders with dot path and updates attributes'](assert) {

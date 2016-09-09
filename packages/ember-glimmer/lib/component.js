@@ -4,8 +4,7 @@ import {
   ChildViewsSupport,
   ViewStateSupport,
   ViewMixin,
-  ActionSupport,
-  getAttrFor
+  ActionSupport
 } from 'ember-views';
 import { TargetActionSupport } from 'ember-runtime';
 import {
@@ -194,9 +193,7 @@ const Component = CoreView.extend(
 
     getAttr(key) {
       // TODO Intimate API should be deprecated
-      let attrs = this.attrs;
-      if (!attrs) { return; }
-      return getAttrFor(attrs, key);
+      return this.get(key);
     },
 
     /**
