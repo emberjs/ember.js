@@ -258,8 +258,8 @@ export abstract class Environment {
     this.scheduledUpdateModifiers = null;
   }
 
-  abstract hasHelper(helperName: string[], blockMeta: TemplateMeta): boolean;
-  abstract lookupHelper(helperName: string[], blockMeta: TemplateMeta): Helper;
+  abstract hasHelper(helperName: string[], symbolTable: SymbolTable): boolean;
+  abstract lookupHelper(helperName: string[], symbolTable: SymbolTable): Helper;
 
   attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace?: string): IChangeList {
     return defaultChangeLists(element, attr, isTrusting, namespace);
@@ -270,8 +270,8 @@ export abstract class Environment {
   abstract hasComponentDefinition(tagName: string[], symbolTable: SymbolTable): boolean;
   abstract getComponentDefinition(tagName: string[], symbolTable: SymbolTable): ComponentDefinition<Opaque>;
 
-  abstract hasModifier(modifierName: string[], blockMeta: TemplateMeta): boolean;
-  abstract lookupModifier(modifierName: string[], blockMeta: TemplateMeta): ModifierManager<Opaque>;
+  abstract hasModifier(modifierName: string[], symbolTable: SymbolTable): boolean;
+  abstract lookupModifier(modifierName: string[], symbolTable: SymbolTable): ModifierManager<Opaque>;
 }
 
 export default Environment;
