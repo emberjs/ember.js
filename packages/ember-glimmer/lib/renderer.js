@@ -316,7 +316,6 @@ export class Renderer {
         globalShouldReflush = globalShouldReflush || shouldReflush;
       }
 
-      this._lastRevision = CURRENT_TAG.value();
       env.commit();
 
       initial = false;
@@ -326,9 +325,8 @@ export class Renderer {
   _renderRootsTransaction() {
     try {
       this._renderRoots();
-    } catch (e) {
-      this.destroy();
-      throw e;
+    } finally {
+      this._lastRevision = CURRENT_TAG.value();
     }
   }
 
