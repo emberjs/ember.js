@@ -27,7 +27,8 @@ import {
 import {
   stashParamNames,
   normalizeControllerQueryParams,
-  calculateCacheKey
+  calculateCacheKey,
+  prefixRouteNameArg
 } from 'ember-routing/utils';
 import { getOwner } from 'container/owner';
 import isEmpty from 'ember-metal/is_empty';
@@ -2262,38 +2263,6 @@ function deprecateQueryParamDefaultValuesSetOnController(controllerName, routeNa
   deprecate(`Configuring query parameter default values on controllers is deprecated. Please move the value for the property '${propName}' from the '${controllerName}' controller to the '${routeName}' route in the format: {queryParams: ${propName}: {defaultValue: <default value> }}`, false, { id: 'ember-routing.deprecate-query-param-default-values-set-on-controller', until: '3.0.0' });
 }
 
-/*
-  Returns an arguments array where the route name arg is prefixed based on the mount point
-
-  @private
-*/
-function prefixRouteNameArg(route, args) {
-  let routeName = args[0];
-  let owner = getOwner(route);
-  let prefix = owner.mountPoint;
-
-  // only alter the routeName if it's actually referencing a route.
-  if (owner.routable && typeof routeName === 'string') {
-    if (resemblesURL(routeName)) {
-      throw new EmberError('Route#transitionTo cannot be used for URLs. Please use the route name instead.');
-    } else {
-      routeName = `${prefix}.${routeName}`;
-      args[0] = routeName;
-    }
-  }
-
-  return args;
-}
-
-/*
-  Check if a routeName resembles a url instead
-
-  @private
-*/
-function resemblesURL(str) {
-  return typeof str === 'string' && ( str === '' || str.charAt(0) === '/');
-}
-
 if (isEnabled('ember-application-engines')) {
   Route.reopen({
     replaceWith(...args) {
@@ -2301,6 +2270,10 @@ if (isEnabled('ember-application-engines')) {
     },
 
     transitionTo(...args) {
+      return this._super.apply(this, prefixRouteNameArg(this, args));
+    },
+
+    intermediateTransitionTo(...args) {
       return this._super.apply(this, prefixRouteNameArg(this, args));
     },
 

@@ -412,4 +412,85 @@ if (isEnabled('ember-application-engines')) {
     strictEqual(route.modelFor('application'), applicationModel);
     strictEqual(route.modelFor('posts'), postsModel);
   });
+
+  QUnit.test('transitionTo considers an engine\'s mountPoint', function() {
+    expect(4);
+
+    let router = {
+      transitionTo(route) {
+        return route;
+      }
+    };
+
+    let engineInstance = buildOwner({
+      routable: true,
+      mountPoint: 'foo.bar'
+    });
+
+    let route = EmberRoute.create({ router });
+    setOwner(route, engineInstance);
+
+    strictEqual(route.transitionTo('application'), 'foo.bar.application', 'properly prefixes application route');
+    strictEqual(route.transitionTo('posts'), 'foo.bar.posts', 'properly prefixes child routes');
+    throws(() => route.transitionTo('/posts'), 'throws when trying to use a url');
+
+    let queryParams = {};
+    strictEqual(route.transitionTo(queryParams), queryParams, 'passes query param only transitions through');
+  });
+
+  QUnit.test('intermediateTransitionTo considers an engine\'s mountPoint', function() {
+    expect(4);
+
+    let lastRoute;
+    let router = {
+      intermediateTransitionTo(route) {
+        lastRoute = route;
+      }
+    };
+
+    let engineInstance = buildOwner({
+      routable: true,
+      mountPoint: 'foo.bar'
+    });
+
+    let route = EmberRoute.create({ router });
+    setOwner(route, engineInstance);
+
+    route.intermediateTransitionTo('application');
+    strictEqual(lastRoute, 'foo.bar.application', 'properly prefixes application route');
+
+    route.intermediateTransitionTo('posts');
+    strictEqual(lastRoute, 'foo.bar.posts', 'properly prefixes child routes');
+
+    throws(() => route.intermediateTransitionTo('/posts'), 'throws when trying to use a url');
+
+    let queryParams = {};
+    route.intermediateTransitionTo(queryParams);
+    strictEqual(lastRoute, queryParams, 'passes query param only transitions through');
+  });
+
+  QUnit.test('replaceWith considers an engine\'s mountPoint', function() {
+    expect(4);
+
+    let router = {
+      replaceWith(route) {
+        return route;
+      }
+    };
+
+    let engineInstance = buildOwner({
+      routable: true,
+      mountPoint: 'foo.bar'
+    });
+
+    let route = EmberRoute.create({ router });
+    setOwner(route, engineInstance);
+
+    strictEqual(route.replaceWith('application'), 'foo.bar.application', 'properly prefixes application route');
+    strictEqual(route.replaceWith('posts'), 'foo.bar.posts', 'properly prefixes child routes');
+    throws(() => route.replaceWith('/posts'), 'throws when trying to use a url');
+
+    let queryParams = {};
+    strictEqual(route.replaceWith(queryParams), queryParams, 'passes query param only transitions through');
+  });
 }
