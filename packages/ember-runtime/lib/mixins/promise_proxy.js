@@ -19,16 +19,20 @@ function tap(proxy, promise) {
   });
 
   return promise.then(value => {
-    setProperties(proxy, {
-      content: value,
-      isFulfilled: true
-    });
+    if (!proxy.isDestroyed && !proxy.isDestroying) {
+      setProperties(proxy, {
+        content: value,
+        isFulfilled: true
+      });
+    }
     return value;
   }, reason => {
-    setProperties(proxy, {
-      reason: reason,
-      isRejected: true
-    });
+    if (!proxy.isDestroyed && !proxy.isDestroying) {
+      setProperties(proxy, {
+        reason: reason,
+        isRejected: true
+      });
+    }
     throw reason;
   }, 'Ember: PromiseProxy');
 }
