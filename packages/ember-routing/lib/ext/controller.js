@@ -1,5 +1,6 @@
 import { get } from 'ember-metal';
 import { ControllerMixin } from 'ember-runtime';
+import { prefixRouteNameArg } from '../utils';
 
 /**
 @module ember
@@ -110,11 +111,11 @@ ControllerMixin.reopen({
     @method transitionToRoute
     @public
   */
-  transitionToRoute() {
+  transitionToRoute(...args) {
     // target may be either another controller or a router
     let target = get(this, 'target');
     let method = target.transitionToRoute || target.transitionTo;
-    return method.apply(target, arguments);
+    return method.apply(target, prefixRouteNameArg(this, args));
   },
 
   /**
@@ -173,11 +174,11 @@ ControllerMixin.reopen({
     @method replaceRoute
     @private
   */
-  replaceRoute() {
+  replaceRoute(...args) {
     // target may be either another controller or a router
     let target = get(this, 'target');
     let method = target.replaceRoute || target.replaceWith;
-    return method.apply(target, arguments);
+    return method.apply(target, prefixRouteNameArg(target, args));
   }
 });
 
