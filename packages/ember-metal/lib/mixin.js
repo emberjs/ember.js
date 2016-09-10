@@ -217,7 +217,7 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
 }
 
 function mergeMixins(mixins, m, descs, values, base, keys) {
-  let currentMixin, props, key, concats, mergings, meta;
+  let currentMixin, props, key, concats, mergings;
 
   function removeKeys(keyName) {
     delete descs[keyName];
@@ -235,7 +235,6 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
     if (props === CONTINUE) { continue; }
 
     if (props) {
-      meta = metaFor(base);
       if (base.willMergeMixin) { base.willMergeMixin(props); }
       concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
       mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
@@ -243,7 +242,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
       for (key in props) {
         if (!props.hasOwnProperty(key)) { continue; }
         keys.push(key);
-        addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
+        addNormalizedProperty(base, key, props[key], m, descs, values, concats, mergings);
       }
 
       // manually copy toString() because some JS engines do not enumerate it
