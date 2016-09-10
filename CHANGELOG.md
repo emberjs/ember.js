@@ -1,6 +1,6 @@
 # Ember Changelog
 
-### 2.9.0-beta.1 (September 8, 2012)
+### 2.9.0-beta.1 (September 8, 2016)
 
 - [#14156](https://github.com/emberjs/ember.js/pull/14156) [FEATURE ember-glimmer] Enable by default.
 
