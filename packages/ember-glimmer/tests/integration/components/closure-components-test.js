@@ -616,6 +616,7 @@ moduleFor('Components test: closure components', class extends RenderingTest {
   }
 
   ['@test renders with dot path and rest parameter does not leak'](assert) {
+    expectDeprecation(/getAttr is deprecated/);
     // In the original implementation, positional parameters were not handled
     // correctly causing the first positional parameter to be the closure
     // component itself.
@@ -641,6 +642,7 @@ moduleFor('Components test: closure components', class extends RenderingTest {
   }
 
   ['@test renders with dot path and updates attributes'](assert) {
+    expectDeprecation(/getAttr is deprecated/);
     this.registerComponent('my-nested-component', {
       ComponentClass: Component.extend({
         didReceiveAttrs() {

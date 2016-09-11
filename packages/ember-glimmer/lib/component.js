@@ -192,7 +192,11 @@ const Component = CoreView.extend(
     },
 
     getAttr(key) {
-      // TODO Intimate API should be deprecated
+      deprecate(`getAttr is deprecated please use "this.get(${key})"`, false, {
+        id: 'ember-views.component.getAttr',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-component-get-attr'
+      });
       return this.get(key);
     },
 
