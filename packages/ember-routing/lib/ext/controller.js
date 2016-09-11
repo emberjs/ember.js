@@ -1,5 +1,7 @@
 import { get } from 'ember-metal/property_get';
 import ControllerMixin from 'ember-runtime/mixins/controller';
+import { prefixRouteNameArg } from 'ember-routing/utils';
+import isEnabled from 'ember-metal/features';
 
 /**
 @module ember
@@ -180,5 +182,17 @@ ControllerMixin.reopen({
     return method.apply(target, arguments);
   }
 });
+
+if (isEnabled('ember-application-engines')) {
+  ControllerMixin.reopen({
+    transitionToRoute(...args) {
+      return this._super.apply(this, prefixRouteNameArg(this, args));
+    },
+
+    replaceRoute(...args) {
+      return this._super.apply(this, prefixRouteNameArg(this, args));
+    }
+  });
+}
 
 export default ControllerMixin;

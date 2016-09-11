@@ -1,5 +1,7 @@
 import assign from 'ember-metal/assign';
 import { get } from 'ember-metal/property_get';
+import { getOwner } from 'container/owner';
+import EmberError from 'ember-metal/error';
 
 const ALL_PERIODS_REGEX = /\./g;
 
@@ -164,4 +166,36 @@ function accumulateQueryParamDescriptors(_desc, accum) {
 
     accum[key] = tmp;
   }
+}
+
+/*
+  Check if a routeName resembles a url instead
+
+  @private
+*/
+function resemblesURL(str) {
+  return typeof str === 'string' && ( str === '' || str.charAt(0) === '/');
+}
+
+/*
+  Returns an arguments array where the route name arg is prefixed based on the mount point
+
+  @private
+*/
+export function prefixRouteNameArg(route, args) {
+  let routeName = args[0];
+  let owner = getOwner(route);
+  let prefix = owner.mountPoint;
+
+  // only alter the routeName if it's actually referencing a route.
+  if (owner.routable && typeof routeName === 'string') {
+    if (resemblesURL(routeName)) {
+      throw new EmberError('Route#transitionTo cannot be used for URLs. Please use the route name instead.');
+    } else {
+      routeName = `${prefix}.${routeName}`;
+      args[0] = routeName;
+    }
+  }
+
+  return args;
 }
