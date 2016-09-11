@@ -127,7 +127,8 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
   }
 
   ['@test getAttr() should return the same value as get()'](assert) {
-    assert.expect(33);
+    assert.expect(34);
+    expectDeprecation(/getAttr is deprecated/);
 
     let instance;
     let FooBarComponent = Component.extend({

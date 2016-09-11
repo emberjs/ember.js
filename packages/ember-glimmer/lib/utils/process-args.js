@@ -1,5 +1,5 @@
 import { CONSTANT_TAG } from 'glimmer-reference';
-import { symbol, EmptyObject} from 'ember-metal';
+import { symbol, EmptyObject } from 'ember-metal';
 import { ARGS } from '../component';
 import { UPDATE } from './references';
 import { MUTABLE_CELL } from 'ember-views';

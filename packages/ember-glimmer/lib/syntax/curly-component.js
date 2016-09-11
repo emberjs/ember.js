@@ -214,6 +214,10 @@ class CurlyComponentManager {
 
     props._targetObject = callerSelfRef.value();
 
+    runInDebug(() => {
+      attrs = Object.freeze(attrs);
+    });
+
     let component = klass.create(props);
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
@@ -333,6 +337,10 @@ class CurlyComponentManager {
 
       let oldAttrs = component.attrs;
       let newAttrs = attrs;
+
+      runInDebug(() => {
+        newAttrs = Object.freeze(newAttrs);
+      });
 
       component[IS_DISPATCHING_ATTRS] = true;
       component.setProperties(props);
