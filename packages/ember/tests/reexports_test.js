@@ -5,12 +5,25 @@ import { isFeatureEnabled } from 'ember-metal';
 QUnit.module('ember reexports');
 
 [
+  // ember-utils
+  ['getOwner', 'ember-utils', 'getOwner'],
+  ['setOwner', 'ember-utils', 'setOwner'],
+  // ['assign', 'ember-metal'], TODO: fix this test, we use `Object.assign` if present
+  ['GUID_KEY', 'ember-utils'],
+  ['uuid', 'ember-utils'],
+  ['generateGuid', 'ember-utils'],
+  ['guidFor', 'ember-utils'],
+  ['inspect', 'ember-utils'],
+  ['makeArray', 'ember-utils'],
+  ['canInvoke', 'ember-utils'],
+  ['tryInvoke', 'ember-utils'],
+  ['wrap', 'ember-utils'],
+  ['applyStr', 'ember-utils'],
+
   // ember-environment
   // ['ENV', 'ember-environment', 'ENV'], TODO: fix this, its failing because we are hitting the getter
 
   // container
-  ['getOwner', 'container', 'getOwner'],
-  ['setOwner', 'container', 'setOwner'],
   ['Registry', 'container', 'Registry'],
   ['Container', 'container', 'Container'],
 
@@ -25,23 +38,12 @@ QUnit.module('ember reexports');
   ['warn', 'ember-metal'],
   ['debug', 'ember-metal'],
   ['runInDebug', 'ember-metal'],
-  // ['assign', 'ember-metal'], TODO: fix this test, we use `Object.assign` if present
   ['merge', 'ember-metal'],
   ['instrument', 'ember-metal'],
   ['Instrumentation.instrument', 'ember-metal', 'instrument'],
   ['Instrumentation.subscribe', 'ember-metal', 'instrumentationSubscribe'],
   ['Instrumentation.unsubscribe', 'ember-metal', 'instrumentationUnsubscribe'],
   ['Instrumentation.reset', 'ember-metal', 'instrumentationReset'],
-  ['generateGuid', 'ember-metal'],
-  ['GUID_KEY', 'ember-metal'],
-  ['guidFor', 'ember-metal'],
-  ['inspect', 'ember-metal'],
-  ['makeArray', 'ember-metal'],
-  ['canInvoke', 'ember-metal'],
-  ['tryInvoke', 'ember-metal'],
-  ['wrap', 'ember-metal'],
-  ['applyStr', 'ember-metal'],
-  ['uuid', 'ember-metal'],
   ['testing', 'ember-metal', { get: 'isTesting', set: 'setTesting' }],
   ['onerror', 'ember-metal', { get: 'getOnerror', set: 'setOnerror' }],
   // ['create'], TODO: figure out what to do here

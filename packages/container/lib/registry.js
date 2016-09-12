@@ -1,4 +1,5 @@
 import { dictionary, EmptyObject, assign, intern } from 'ember-utils';
+import { assert, deprecate } from 'ember-metal';
 import Container from './container';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;

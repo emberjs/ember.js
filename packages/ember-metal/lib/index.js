@@ -10,7 +10,6 @@ export {
   ComputedProperty
 } from './computed';
 export { default as alias } from './alias';
-export { default as assign } from './assign';
 export { default as merge } from './merge';
 export {
   assert,
@@ -33,20 +32,6 @@ export {
   subscribe as instrumentationSubscribe,
   unsubscribe as instrumentationUnsubscribe
 } from './instrumentation';
-export {
-  intern,
-  GUID_KEY,
-  GUID_KEY_PROPERTY,
-  applyStr,
-  canInvoke,
-  generateGuid,
-  guidFor,
-  inspect,
-  makeArray,
-  tryInvoke,
-  uuid,
-  wrap
-} from 'ember-utils';
 export {
   isTesting,
   setTesting
@@ -172,9 +157,6 @@ export {
 export {
   isGlobalPath
 } from './path_cache';
-export { default as symbol } from './symbol';
-export { default as dictionary } from './dictionary';
-export { default as EmptyObject } from './empty_object';
 export { default as InjectedProperty } from './injected_property';
 export {
   setHasViews,

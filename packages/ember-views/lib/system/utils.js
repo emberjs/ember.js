@@ -1,3 +1,4 @@
+/* globals Element */
 import { guidFor, symbol, getOwner } from 'ember-utils';
 
 /**
