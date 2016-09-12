@@ -208,15 +208,6 @@ export default class VM implements PublicVM {
     this.frame.push(ops);
   }
 
-  popFrame() {
-    let { frame } = this;
-
-    frame.pop();
-    let current = frame.getCurrent();
-
-    if (current === null) return;
-  }
-
   pushChildScope() {
     this.scopeStack.push(this.scopeStack.current.child());
   }
