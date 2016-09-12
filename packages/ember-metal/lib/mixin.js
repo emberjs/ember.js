@@ -14,7 +14,7 @@ import {
   GUID_KEY,
   wrap,
   makeArray
-} from './utils';
+} from 'ember-utils';
 import { meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';
 import {

@@ -6,7 +6,7 @@ import {
 } from './error_handler';
 import {
   GUID_KEY
-} from './utils';
+} from 'ember-utils';
 import {
   beginPropertyChanges,
   endPropertyChanges

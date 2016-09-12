@@ -10,4 +10,4 @@ export {
   default as Container,
   buildFakeContainerWithDeprecations
 } from './container';
-export { OWNER, getOwner, setOwner } from './owner';
+export { OWNER, getOwner, setOwner } from 'ember-utils';

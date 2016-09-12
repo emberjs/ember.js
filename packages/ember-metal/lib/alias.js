@@ -7,7 +7,7 @@ import {
   defineProperty
 } from './properties';
 import { ComputedProperty } from './computed';
-import { inspect } from './utils';
+import { inspect } from 'ember-utils';
 import { meta } from './meta';
 import {
   addDependentKeys,

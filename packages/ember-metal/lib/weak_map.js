@@ -1,4 +1,4 @@
-import { GUID_KEY } from './utils';
+import { GUID_KEY } from 'ember-utils';
 import {
   peekMeta,
   meta as metaFor

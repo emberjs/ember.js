@@ -5,7 +5,7 @@
 import isEnabled from './features';
 import { protoMethods as listenerMethods } from './meta_listeners';
 import EmptyObject from './empty_object';
-import { lookupDescriptor } from './utils';
+import { lookupDescriptor } from 'ember-utils';
 import symbol from './symbol';
 
 /**

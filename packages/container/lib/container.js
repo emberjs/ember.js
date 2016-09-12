@@ -6,7 +6,7 @@ import {
   dictionary,
   symbol
 } from 'ember-metal';
-import { setOwner, OWNER } from './owner';
+import { setOwner, OWNER } from 'ember-utils';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 

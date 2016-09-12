@@ -1,4 +1,4 @@
-import { GUID_KEY, intern } from './utils';
+import { GUID_KEY, intern } from './index';
 
 export default function symbol(debugName) {
   // TODO: Investigate using platform symbols, but we do not

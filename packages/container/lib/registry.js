@@ -5,7 +5,7 @@ import {
   EmptyObject,
   assign,
   intern,
-} from 'ember-metal';
+} from 'ember-utils';
 import Container from './container';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;

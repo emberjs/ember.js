@@ -4,7 +4,7 @@ import run from './run_loop';
 import { assert, deprecate } from './debug';
 import { get } from './property_get';
 import { trySet } from './property_set';
-import { guidFor } from './utils';
+import { guidFor } from 'ember-utils';
 import { addListener } from './events';
 import {
   addObserver,

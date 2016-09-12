@@ -17,7 +17,7 @@ import {
 
 import {
   toString
-} from './utils';
+} from 'ember-utils';
 
 /**
   Sets the value of a property on an object, respecting computed properties

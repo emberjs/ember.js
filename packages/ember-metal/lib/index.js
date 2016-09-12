@@ -46,7 +46,7 @@ export {
   tryInvoke,
   uuid,
   wrap
-} from './utils';
+} from 'ember-utils';
 export {
   isTesting,
   setTesting

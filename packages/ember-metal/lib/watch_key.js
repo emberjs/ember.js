@@ -7,7 +7,7 @@ import {
   DEFAULT_GETTER_FUNCTION,
   INHERITING_GETTER_FUNCTION
 } from './properties';
-import { lookupDescriptor } from './utils';
+import { lookupDescriptor } from 'ember-utils';
 
 let handleMandatorySetter;
 

@@ -1,6 +1,6 @@
 import {
   guidFor
-} from './utils';
+} from 'ember-utils';
 import {
   peekMeta
 } from './meta';
