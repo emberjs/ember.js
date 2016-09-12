@@ -1,7 +1,5 @@
-import {
-  isEmpty,
-  assign
-} from 'ember-metal';
+import { assign } from 'ember-utils';
+import { isEmpty } from 'ember-metal';
 import { Object as EmberObject } from 'ember-runtime';
 
 export default EmberObject.extend({

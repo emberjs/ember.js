@@ -1,10 +1,10 @@
+import { setOwner } from 'ember-utils';
 import HashLocation from '../../location/hash_location';
 import HistoryLocation from '../../location/history_location';
 import AutoLocation from '../../location/auto_location';
 import NoneLocation from '../../location/none_location';
 import Router, { triggerEvent } from '../../system/router';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
-import { setOwner } from 'container';
 
 let owner;
 

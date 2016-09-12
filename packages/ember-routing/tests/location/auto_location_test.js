@@ -1,5 +1,6 @@
+import { assign, OWNER } from 'ember-utils';
 import { environment } from 'ember-environment';
-import { get, run, assign } from 'ember-metal';
+import { get, run } from 'ember-metal';
 import AutoLocation from '../../location/auto_location';
 import {
   getHistoryPath,
@@ -9,7 +10,6 @@ import HistoryLocation from '../../location/history_location';
 import HashLocation from '../../location/hash_location';
 import NoneLocation from '../../location/none_location';
 import { buildOwner } from 'internal-test-helpers';
-import { OWNER } from 'container';
 
 function mockBrowserLocation(overrides) {
   return assign({
