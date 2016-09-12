@@ -1,10 +1,7 @@
+import { getOwner, OWNER } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
-import {
-  Registry,
-  getOwner,
-  OWNER
-} from '../index';
+import { Registry } from '../index';
 import { factory } from 'internal-test-helpers';
 
 let originalModelInjections;

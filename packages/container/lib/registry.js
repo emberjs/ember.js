@@ -1,11 +1,4 @@
-import {
-  assert,
-  deprecate,
-  dictionary,
-  EmptyObject,
-  assign,
-  intern,
-} from 'ember-utils';
+import { dictionary, EmptyObject, assign, intern } from 'ember-utils';
 import Container from './container';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
