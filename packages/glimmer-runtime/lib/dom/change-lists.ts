@@ -73,14 +73,14 @@ export function readDOMAttr(element: Element, attr: string) {
 
 export const PropertyChangeList: IChangeList = {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
-    if (value !== null) {
+    if (value !== null && value !== undefined) {
       let normalized = attr.toLowerCase();
       element[normalized] = normalizePropertyValue(value); // TODO: This doesn't work
     }
   },
 
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
-    if (value === null) {
+    if (value === null || value === undefined) {
       let normalized = attr.toLowerCase();
       element[normalized] = value;
     } else {
@@ -99,7 +99,7 @@ export const AttributeChangeList: IChangeList = new class {
   }
 
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
-    if (value === null) {
+    if (value === null || value === undefined) {
       if (namespace) {
         env.getDOM().removeAttributeNS(element, namespace, attr);
       } else {
