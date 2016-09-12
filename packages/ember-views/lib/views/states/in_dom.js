@@ -1,6 +1,6 @@
+import { assign } from 'ember-utils';
 import {
   runInDebug,
-  assign,
   Error as EmberError,
   _addBeforeObserver
 } from 'ember-metal';

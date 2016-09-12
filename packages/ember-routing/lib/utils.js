@@ -1,5 +1,5 @@
-import { assign, get } from 'ember-metal';
-import { getOwner } from 'container';
+import { assign, getOwner } from 'ember-utils';
+import { get } from 'ember-metal';
 import { Error as EmberError } from 'ember-metal';
 
 const ALL_PERIODS_REGEX = /\./g;

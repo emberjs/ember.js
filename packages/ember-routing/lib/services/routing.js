@@ -3,15 +3,13 @@
 @submodule ember-routing
 */
 
+import { assign } from 'ember-utils';
 import {
   Service,
   readOnly
 } from 'ember-runtime';
 
-import {
-  get,
-  assign
-} from 'ember-metal';
+import { get } from 'ember-metal';
 import { routeArgs } from '../utils';
 
 /**

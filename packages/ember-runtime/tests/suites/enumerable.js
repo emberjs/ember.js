@@ -1,8 +1,7 @@
+import { guidFor, generateGuid } from 'ember-utils';
 import { Suite } from './suite';
 import EmberObject from '../../system/object';
 import {
-  guidFor,
-  generateGuid,
   computed,
   get,
   _addBeforeObserver,

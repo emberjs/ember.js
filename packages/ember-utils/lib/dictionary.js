@@ -1,4 +1,4 @@
-import EmptyObject from './empty_object';
+import EmptyObject from './empty-object';
 
 // the delete is meant to hint at runtimes that this object should remain in
 // dictionary mode. This is clearly a runtime specific hack, but currently it

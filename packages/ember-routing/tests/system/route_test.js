@@ -1,3 +1,4 @@
+import { setOwner } from 'ember-utils';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
 import {
   Service,
@@ -5,7 +6,6 @@ import {
   inject
 } from 'ember-runtime';
 import EmberRoute from '../../system/route';
-import { setOwner } from 'container';
 
 let route, routeOne, routeTwo, lookupHash;
 

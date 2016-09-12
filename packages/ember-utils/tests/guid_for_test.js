@@ -1,6 +1,6 @@
 import {
   guidFor
-} from '../../utils';
+} from '../index';
 
 QUnit.module('guidFor');
 

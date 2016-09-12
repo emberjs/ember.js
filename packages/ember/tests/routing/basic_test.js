@@ -1,3 +1,4 @@
+import { getOwner } from 'ember-utils';
 import Logger from 'ember-console';
 import {
   Controller,
@@ -6,7 +7,11 @@ import {
   A as emberA,
   copy
 } from 'ember-runtime';
-import { Route, NoneLocation, HistoryLocation } from 'ember-routing';
+import {
+  Route,
+  NoneLocation,
+  HistoryLocation
+} from 'ember-routing';
 import {
   run,
   get,
@@ -24,7 +29,6 @@ import {
 import { jQuery } from 'ember-views';
 import { compile } from 'ember-template-compiler';
 import { Application, Engine } from 'ember-application';
-import { getOwner } from 'container';
 import { Transition } from 'router';
 
 let trim = jQuery.trim;

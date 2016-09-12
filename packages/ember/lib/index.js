@@ -2,16 +2,30 @@ import require, { has } from 'require';
 
 // ****ember-environment****
 import { ENV, context } from 'ember-environment';
+import * as utils from 'ember-utils';
 
-import {
-  Registry,
-  Container,
-  getOwner,
-  setOwner
-} from 'container';
+import { Registry, Container } from 'container';
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
+
+// ember-utils exports
+Ember.getOwner = utils.getOwner;
+Ember.setOwner = utils.setOwner;
+Ember.generateGuid = utils.generateGuid;
+Ember.GUID_KEY = utils.GUID_KEY;
+Ember.guidFor = utils.guidFor;
+Ember.inspect = utils.inspect;
+Ember.makeArray = utils.makeArray;
+Ember.canInvoke = utils.canInvoke;
+Ember.tryInvoke = utils.tryInvoke;
+Ember.wrap = utils.wrap;
+Ember.applyStr = utils.applyStr;
+Ember.uuid = utils.uuid;
+
+// container exports
+Ember.Container = Container;
+Ember.Registry = Registry;
 
 // need to import this directly, to ensure the babel feature
 // flag plugin works properly
@@ -45,17 +59,6 @@ Ember.Instrumentation = {
   reset: metal.instrumentationReset
 };
 
-Ember.generateGuid = metal.generateGuid;
-Ember.GUID_KEY = metal.GUID_KEY;
-Ember.guidFor = metal.guidFor;
-Ember.inspect = metal.inspect;
-
-Ember.makeArray = metal.makeArray;
-Ember.canInvoke = metal.canInvoke;
-Ember.tryInvoke = metal.tryInvoke;
-Ember.wrap = metal.wrap;
-Ember.applyStr = metal.applyStr;
-Ember.uuid = metal.uuid;
 Ember.Error = metal.Error;
 Ember.META_DESC = metal.META_DESC;
 Ember.meta = metal.meta;
@@ -254,11 +257,6 @@ Ember.Backburner = function() {
 
 Ember._Backburner = Backburner;
 
-
-Ember.Container = Container;
-Ember.Registry = Registry;
-Ember.getOwner = getOwner;
-Ember.setOwner = setOwner;
 
 import Logger from 'ember-console';
 

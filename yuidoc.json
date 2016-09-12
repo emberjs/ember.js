@@ -5,6 +5,7 @@
   "options": {
     "paths": [
       "packages/ember/lib",
+      "packages/ember-utils/lib",
       "packages/ember-debug/lib",
       "packages/ember-metal/lib",
       "packages/ember-runtime/lib",

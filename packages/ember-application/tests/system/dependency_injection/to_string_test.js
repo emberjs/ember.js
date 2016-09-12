@@ -1,5 +1,6 @@
+import { guidFor } from 'ember-utils';
 import { ENV, context } from 'ember-environment'; // lookup, etc
-import { run, guidFor } from 'ember-metal';
+import { run } from 'ember-metal';
 import Application from '../../../system/application';
 import { Object as EmberObject } from 'ember-runtime';
 import DefaultResolver from '../../../system/resolver';

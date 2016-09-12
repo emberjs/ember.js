@@ -3,15 +3,12 @@
 @submodule ember-application
 */
 
+import { assign } from 'ember-utils';
+import { deprecate, get, set, run, computed } from 'ember-metal';
 import {
-  deprecate,
-  get,
-  set,
-  run,
-  computed,
-  assign
-} from 'ember-metal';
-import { buildFakeRegistryWithDeprecations, RSVP } from 'ember-runtime';
+  buildFakeRegistryWithDeprecations,
+  RSVP
+} from 'ember-runtime';
 import { environment } from 'ember-environment';
 import { jQuery } from 'ember-views';
 import EngineInstance from './engine-instance';

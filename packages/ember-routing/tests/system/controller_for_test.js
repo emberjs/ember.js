@@ -1,5 +1,9 @@
 import { get, run } from 'ember-metal'; // A
-import { Namespace, String as StringUtils, Controller } from 'ember-runtime';
+import {
+  Namespace,
+  String as StringUtils,
+  Controller
+} from 'ember-runtime';
 import controllerFor from '../../system/controller_for';
 import generateController from '../../system/generate_controller';
 import { buildOwner } from 'internal-test-helpers';

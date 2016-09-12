@@ -3,18 +3,11 @@
 @submodule ember-views
 */
 
-import {
-  assert,
-  get,
-  set,
-  isNone,
-  run,
-  assign
-} from 'ember-metal';
+import { assign, getOwner } from 'ember-utils';
+import { assert, get, set, isNone, run } from 'ember-metal';
 import { Object as EmberObject } from 'ember-runtime';
 import jQuery from './jquery';
 import ActionManager from './action_manager';
-import { getOwner } from 'container';
 import { environment } from 'ember-environment';
 import fallbackViewRegistry from '../compat/fallback-view-registry';
 

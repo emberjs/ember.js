@@ -2,7 +2,8 @@
 @module ember
 @submodule ember-views
 */
-import { computed, EmptyObject } from 'ember-metal';
+import { EmptyObject } from 'ember-utils';
+import { computed } from 'ember-metal';
 import { environment } from 'ember-environment';
 import Component from '../component';
 import layout from '../templates/empty';

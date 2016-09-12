@@ -1,4 +1,8 @@
-import { Controller, A as emberA, String as StringUtils } from 'ember-runtime';
+import {
+  Controller,
+  A as emberA,
+  String as StringUtils
+} from 'ember-runtime';
 import { Route, NoneLocation } from 'ember-routing';
 import { run, isFeatureEnabled, computed } from 'ember-metal';
 import { compile } from 'ember-template-compiler';

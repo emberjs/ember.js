@@ -1,10 +1,5 @@
-import {
-  guidFor,
-  Cache,
-  assert,
-  warn,
-  runInDebug
-} from 'ember-metal';
+import { guidFor, OWNER } from 'ember-utils';
+import { Cache, assert, warn, runInDebug } from 'ember-metal';
 import {
   lookupPartial,
   hasPartial,
@@ -18,7 +13,10 @@ import {
   compileLayout,
   getDynamicVar
 } from 'glimmer-runtime';
-import { CurlyComponentSyntax, CurlyComponentDefinition } from './syntax/curly-component';
+import {
+  CurlyComponentSyntax,
+  CurlyComponentDefinition
+} from './syntax/curly-component';
 import { findSyntaxBuilder } from './syntax';
 import { DynamicComponentSyntax } from './syntax/dynamic-component';
 import createIterable from './utils/iterable';
@@ -51,7 +49,6 @@ import { default as queryParams } from './helpers/query-param';
 import { default as eachIn } from './helpers/each-in';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
-import { OWNER } from 'container';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 

@@ -1,6 +1,9 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
-import { setDebuggerCallback, resetDebuggerCallback } from '../../../helpers/debugger';
+import {
+  setDebuggerCallback,
+  resetDebuggerCallback
+} from '../../../helpers/debugger';
 import { set } from 'ember-metal';
 import { A as emberA } from 'ember-runtime';
 

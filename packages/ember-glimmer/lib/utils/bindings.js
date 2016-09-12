@@ -1,7 +1,11 @@
 import { HelperSyntax } from 'glimmer-runtime';
 import { get, assert } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
-import { CachedReference, map, referenceFromParts } from 'glimmer-reference';
+import {
+  CachedReference,
+  map,
+  referenceFromParts
+} from 'glimmer-reference';
 import { ROOT_REF } from '../component';
 import { htmlSafe, isHTMLSafe } from './string';
 

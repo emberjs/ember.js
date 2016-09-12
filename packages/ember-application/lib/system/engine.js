@@ -2,6 +2,7 @@
 @module ember
 @submodule ember-application
 */
+import { canInvoke, EmptyObject } from 'ember-utils';
 import {
   Namespace,
   RegistryProxyMixin,
@@ -12,14 +13,7 @@ import {
   privatize as P
 } from 'container';
 import DAG from 'dag-map';
-import {
-  get,
-  set,
-  assert,
-  deprecate,
-  canInvoke,
-  EmptyObject
-} from 'ember-metal';
+import { get, set, assert, deprecate } from 'ember-metal';
 import DefaultResolver from './resolver';
 import EngineInstance from './engine-instance';
 import { RoutingService } from 'ember-routing';

@@ -1,7 +1,16 @@
+import { assign } from 'ember-utils';
 import { CachedReference } from '../utils/references';
-import { CurlyComponentDefinition, validatePositionalParameters } from '../syntax/curly-component';
-import { EvaluatedArgs, EvaluatedNamedArgs, EvaluatedPositionalArgs, isComponentDefinition } from 'glimmer-runtime';
-import { assert, assign } from 'ember-metal';
+import {
+  CurlyComponentDefinition,
+  validatePositionalParameters
+} from '../syntax/curly-component';
+import {
+  EvaluatedArgs,
+  EvaluatedNamedArgs,
+  EvaluatedPositionalArgs,
+  isComponentDefinition
+} from 'glimmer-runtime';
+import { assert } from 'ember-metal';
 
 export class ClosureComponentReference extends CachedReference {
   static create(args, symbolTable, env) {

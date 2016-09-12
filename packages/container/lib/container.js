@@ -1,12 +1,6 @@
+import { dictionary, symbol, setOwner, OWNER } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import {
-  assert,
-  deprecate,
-  runInDebug,
-  dictionary,
-  symbol
-} from 'ember-metal';
-import { setOwner, OWNER } from './owner';
+import { assert, deprecate, runInDebug } from 'ember-metal';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 

@@ -1,4 +1,5 @@
-import { assign, Error as EmberError } from 'ember-metal';
+import { assign } from 'ember-utils';
+import { Error as EmberError } from 'ember-metal';
 import _default from './default';
 /**
 @module ember

@@ -2,7 +2,7 @@
 // as well as methods vs props.  We are just keeping these for testing; the
 // current impl doesn't care about the differences as much...
 
-import { guidFor } from '../../utils';
+import { guidFor } from 'ember-utils';
 import {
   mixin,
   Mixin

@@ -1,8 +1,5 @@
-import {
-  Container,
-  Registry,
-  OWNER
-} from 'container';
+import { OWNER } from 'ember-utils';
+import { Container, Registry } from 'container';
 import ContainerProxy from '../../mixins/container_proxy';
 import EmberObject from '../../system/object';
 

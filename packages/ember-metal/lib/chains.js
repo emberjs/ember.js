@@ -1,7 +1,7 @@
+import { EmptyObject } from 'ember-utils';
 import { get } from './property_get';
 import { meta as metaFor, peekMeta } from './meta';
 import { watchKey, unwatchKey } from './watch_key';
-import EmptyObject from './empty_object';
 
 const FIRST_KEY = /^([^\.]+)/;
 

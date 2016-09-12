@@ -1,4 +1,4 @@
-import { assign } from 'ember-metal';
+import { assign } from 'ember-utils';
 import {
   replacePath,
   getPath,

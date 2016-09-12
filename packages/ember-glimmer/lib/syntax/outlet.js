@@ -1,13 +1,10 @@
+import { generateGuid, guidFor } from 'ember-utils';
 import {
   ArgsSyntax,
   StatementSyntax,
   ComponentDefinition
 } from 'glimmer-runtime';
-import {
-  generateGuid,
-  guidFor,
-  _instrumentStart
-} from 'ember-metal';
+import { _instrumentStart } from 'ember-metal';
 import { RootReference } from '../utils/references';
 import {
   UpdatableTag,

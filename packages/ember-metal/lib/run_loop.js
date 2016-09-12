@@ -1,12 +1,10 @@
+import { GUID_KEY } from 'ember-utils';
 import { assert } from './debug';
 import { isTesting } from './testing';
 import {
   getOnerror,
   setOnerror
 } from './error_handler';
-import {
-  GUID_KEY
-} from './utils';
 import {
   beginPropertyChanges,
   endPropertyChanges

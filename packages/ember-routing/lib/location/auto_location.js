@@ -1,10 +1,5 @@
-import {
-  assert,
-  get,
-  set,
-  tryInvoke
-} from 'ember-metal';
-import { getOwner } from 'container';
+import { tryInvoke, getOwner } from 'ember-utils';
+import { assert, get, set } from 'ember-metal';
 
 import { Object as EmberObject } from 'ember-runtime';
 import { environment } from 'ember-environment';

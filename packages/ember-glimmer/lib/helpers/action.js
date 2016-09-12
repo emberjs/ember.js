@@ -1,7 +1,7 @@
+import { symbol } from 'ember-utils';
 import { CachedReference } from '../utils/references';
 import {
   Error as EmberError,
-  symbol,
   run,
   get,
   flaggedInstrument,

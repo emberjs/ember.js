@@ -3,6 +3,7 @@
 @submodule ember-runtime
 */
 
+import { symbol } from 'ember-utils';
 import {
   assert,
   deprecate,
@@ -18,8 +19,7 @@ import {
   defineProperty,
   Mixin,
   observer,
-  tagFor,
-  symbol
+  tagFor
 } from 'ember-metal';
 import { bool } from '../computed/computed_macros';
 import { POST_INIT } from '../system/core_object';

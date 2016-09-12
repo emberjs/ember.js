@@ -10,15 +10,18 @@
 // using ember-metal/lib/main here to ensure that ember-debug is setup
 // if present
 import {
-  assert,
-  runInDebug,
-  isFeatureEnabled,
   assign,
-  get,
   guidFor,
   generateGuid,
   GUID_KEY_PROPERTY,
   makeArray,
+  symbol
+} from 'ember-utils';
+import {
+  assert,
+  runInDebug,
+  isFeatureEnabled,
+  get,
   meta,
   finishChains,
   sendEvent,
@@ -32,8 +35,7 @@ import {
   computed,
   InjectedProperty,
   run,
-  destroy,
-  symbol
+  destroy
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';

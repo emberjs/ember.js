@@ -1,3 +1,4 @@
+import { assign, symbol, getOwner } from 'ember-utils';
 import {
   assert,
   deprecate,
@@ -10,10 +11,8 @@ import {
   getProperties,
   isNone,
   computed,
-  assign,
   run,
-  isEmpty,
-  symbol
+  isEmpty
 } from 'ember-metal';
 import {
   typeOf,
@@ -35,7 +34,6 @@ import {
   calculateCacheKey,
   prefixRouteNameArg
 } from '../utils';
-import { getOwner } from 'container';
 const { slice } = Array.prototype;
 
 function K() { return this; }

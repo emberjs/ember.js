@@ -1,6 +1,4 @@
-import {
-  guidFor
-} from './utils';
+import { guidFor, symbol } from 'ember-utils';
 import {
   peekMeta
 } from './meta';
@@ -12,7 +10,6 @@ import {
   markObjectAsDirty
 } from './tags';
 import ObserverSet from './observer_set';
-import symbol from './symbol';
 import isEnabled from './features';
 import { assertNotRendered } from './transaction';
 
