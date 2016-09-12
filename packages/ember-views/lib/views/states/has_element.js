@@ -1,10 +1,6 @@
+import { assign } from 'ember-utils';
 import _default from './default';
-import {
-  assign,
-  run,
-  flaggedInstrument,
-  get
-} from 'ember-metal';
+import { run, flaggedInstrument, get } from 'ember-metal';
 import jQuery from '../../system/jquery';
 
 const hasElement = Object.create(_default);
