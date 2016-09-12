@@ -255,7 +255,7 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
 
       if(!this.upsert.update(dom, value)) {
         let cursor = new Cursor(bounds.parentElement(), clear(bounds));
-        upsert = this.upsert = this.insert(vm.env.getAppendOperations(), cursor, value);
+        upsert = this.upsert = this.insert(vm.env.getAppendOperations(), cursor, value as T);
       }
 
       bounds.update(upsert.bounds);
