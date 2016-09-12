@@ -1,3 +1,13 @@
+/*
+ This package will be eagerly parsed and should have no dependencies on external
+ packages.
+
+ It is intended to be used to share utility methods that will be needed
+ by every Ember application (and is **not** a dumping ground of useful utilities).
+
+ Utility methods that are needed in < 80% of cases should be placed
+ elsewhere (so they can be lazily evaluated / parsed).
+*/
 export { default as symbol } from './symbol';
 export { getOwner, setOwner, OWNER } from './owner';
 export { default as assign } from './assign';
