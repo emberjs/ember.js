@@ -352,4 +352,24 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       this.assertComponentElement(this.firstChild, { content: '1<div>2</div>' });
     });
   }
+
+  ['@test it allows a transition during route activate'](assert) {
+    this.router.map(function() {
+      this.route('a');
+    });
+
+    this.registerRoute('index', Route.extend({
+      activate() {
+        this.transitionTo('a');
+      }
+    }));
+
+    this.registerTemplate('a', 'Hello from A!');
+
+    return this.visit('/').then(() => {
+      this.assertComponentElement(this.firstChild, {
+        content: `Hello from A!`
+      });
+    });
+  }
 });

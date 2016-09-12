@@ -302,6 +302,16 @@ const EmberRouter = EmberObject.extend(Evented, {
       }
       defaultParentState = ownState;
     }
+
+    // when a transitionTo happens after the validation phase
+    // during the initial transition _setOutlets is called
+    // when no routes are active. However, it will get called
+    // again with the correct values during the next turn of
+    // the runloop
+    if (!liveRoutes) {
+      return;
+    }
+
     if (!this._toplevelView) {
       let owner = getOwner(this);
       let OutletView = owner._lookupFactory('view:-outlet');
