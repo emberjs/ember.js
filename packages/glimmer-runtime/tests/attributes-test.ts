@@ -42,6 +42,13 @@ function rerender(context: any = null) {
   env.commit();
 }
 
+// used to obtain the resulting property value after assignment
+function nativeValueForElementProperty(tagName, property, value) {
+  let element = document.createElement(tagName);
+  element[property] = value;
+  return element[property];
+}
+
 QUnit.module("Attributes", {
   setup: commonSetup
 });
@@ -227,4 +234,126 @@ test('handles empty string textarea values', assert => {
   rerender({ name: '' });
 
   assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
+});
+
+test('does not set undefined attributes', assert => {
+  let template = compile('<div data-foo={{isUndefined}} /><div data-foo={{isNotUndefined}} />');
+
+  render(template, { isUndefined: undefined, isNotUndefined: 'hello' });
+
+  let firstElement = root.firstChild as Element;
+  let secondElement = root.lastChild as Element;
+
+  assert.ok(!firstElement.hasAttribute('data-foo'));
+  assert.ok(secondElement.hasAttribute('data-foo'));
+  assert.equal(readDOMAttr(secondElement, 'data-foo'), 'hello');
+
+  rerender({ isUndefined: 'hey', isNotUndefined: 'hello' });
+
+  assert.ok(firstElement.hasAttribute('data-foo'));
+  assert.ok(secondElement.hasAttribute('data-foo'));
+  assert.equal(readDOMAttr(secondElement, 'data-foo'), 'hello');
+
+  rerender({ isUndefined: 'hey', isNotUndefined: 'world' });
+
+  assert.ok(firstElement.hasAttribute('data-foo'));
+  assert.equal(readDOMAttr(firstElement, 'data-foo'), 'hey');
+  assert.ok(secondElement.hasAttribute('data-foo'));
+  assert.equal(readDOMAttr(secondElement, 'data-foo'), 'world');
+
+  rerender({ isUndefined: undefined, isNotUndefined: 'hello' });
+
+  assert.ok(!firstElement.hasAttribute('data-foo'));
+  assert.ok(secondElement.hasAttribute('data-foo'));
+  assert.equal(readDOMAttr(secondElement, 'data-foo'), 'hello');
+});
+
+test('does not set null attributes', assert => {
+  let template = compile('<div data-foo={{isNull}} /><div data-foo={{isNotNull}}></div>');
+
+  render(template, { isNull: null, isNotNull: 'hello' });
+
+  let firstElement = root.firstChild as Element;
+  let secondElement = root.lastChild as Element;
+
+  assert.ok(!firstElement.hasAttribute('data-foo'));
+  assert.ok(secondElement.hasAttribute('data-foo'));
+  assert.equal(readDOMAttr(secondElement, 'data-foo'), 'hello');
+
+  rerender({ isNull: 'hey', isNotNull: 'hello' });
+
+  assert.ok(firstElement.hasAttribute('data-foo'));
+  assert.equal(readDOMAttr(firstElement, 'data-foo'), 'hey');
+  assert.ok(secondElement.hasAttribute('data-foo'));
+  assert.equal(readDOMAttr(secondElement, 'data-foo'), 'hello');
+
+  rerender({ isNull: 'hey', isNotNull: 'world' });
+
+  assert.ok(firstElement.hasAttribute('data-foo'));
+  assert.equal(readDOMAttr(firstElement, 'data-foo'), 'hey');
+  assert.ok(secondElement.hasAttribute('data-foo'));
+  assert.equal(readDOMAttr(secondElement, 'data-foo'), 'world');
+
+  rerender({ isNull: null, isNotNull: 'hello' });
+
+  assert.ok(!firstElement.hasAttribute('data-foo'));
+  assert.ok(secondElement.hasAttribute('data-foo'));
+  assert.equal(readDOMAttr(secondElement, 'data-foo'), 'hello');
+});
+
+test('does not set undefined properties initially', assert => {
+  let template = compile('<div title={{isUndefined}} /><div title={{isNotUndefined}}></div>');
+
+  render(template, { isUndefined: undefined, isNotUndefined: 'hello' });
+
+  let firstElement = root.firstChild as Element;
+  let secondElement = root.lastChild as Element;
+
+  assert.ok(!firstElement.hasAttribute('title'));
+  assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
+
+  rerender({ isUndefined: 'hey', isNotUndefined: 'hello' });
+
+  assert.equal(readDOMAttr(firstElement, 'title'), 'hey');
+  assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
+
+  rerender({ isUndefined: 'hey', isNotUndefined: 'world' });
+
+  assert.equal(readDOMAttr(firstElement, 'title'), 'hey');
+  assert.equal(readDOMAttr(secondElement, 'title'), 'world');
+
+  rerender({ isUndefined: undefined, isNotUndefined: 'hello' });
+
+  assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
+  // TODO: the semantics around resetting a property with null/undefined are likely incorrect
+  assert.equal(readDOMAttr(firstElement, 'title'), nativeValueForElementProperty('div', 'title', undefined));
+});
+
+test('does not set null properties initially', assert => {
+  let template = compile('<div title={{isNull}} /><div title={{isNotNull}}></div>');
+
+  render(template, { isNull: null, isNotNull: 'hello' });
+
+  let firstElement = root.firstChild as Element;
+  let secondElement = root.lastChild as Element;
+
+  assert.ok(!firstElement.hasAttribute('title'));
+  assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
+
+  rerender({ isNull: 'hey', isNotNull: 'hello' });
+
+  assert.equal(readDOMAttr(firstElement, 'title'), 'hey');
+  assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
+
+  rerender({ isNull: 'hey', isNotNull: 'world' });
+
+  assert.equal(readDOMAttr(firstElement, 'title'), 'hey');
+  assert.equal(readDOMAttr(secondElement, 'title'), 'world');
+
+  rerender({ isNull: null, isNotNull: 'hello' });
+
+  assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
+
+  // TODO: the semantics around resetting a property with null/undefined are likely incorrect
+  assert.equal(readDOMAttr(firstElement, 'title'), nativeValueForElementProperty('div', 'title', null));
 });
