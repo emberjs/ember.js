@@ -1,4 +1,5 @@
-import { set, assign } from 'ember-metal';
+import { assign } from 'ember-utils';
+import { set } from 'ember-metal';
 import { TextArea } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';

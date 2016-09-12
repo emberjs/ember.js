@@ -1,5 +1,5 @@
+import { OWNER } from 'ember-utils';
 import { templateFactory } from 'glimmer-runtime';
-import { OWNER } from 'container';
 
 export default function template(json) {
   let factory = templateFactory(json);

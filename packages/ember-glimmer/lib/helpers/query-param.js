@@ -1,5 +1,6 @@
+import { assign } from 'ember-utils';
 import { InternalHelperReference } from '../utils/references';
-import { assert, assign } from 'ember-metal';
+import { assert } from 'ember-metal';
 import { QueryParams } from 'ember-routing';
 
 function queryParams({ positional, named }) {

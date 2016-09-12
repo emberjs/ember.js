@@ -6,7 +6,11 @@
 */
 
 import { info } from 'ember-metal/debug';
-import { UNDEFINED_REFERENCE, GetSyntax, CompileIntoList } from 'glimmer-runtime';
+import {
+  UNDEFINED_REFERENCE,
+  GetSyntax,
+  CompileIntoList
+} from 'glimmer-runtime';
 
 /**
   Execute the `debugger` statement in the current template's context.

@@ -1,3 +1,4 @@
+import { assign, OWNER } from 'ember-utils';
 import {
   StatementSyntax,
   ValueReference,
@@ -6,20 +7,26 @@ import {
   EvaluatedPositionalArgs,
   ComponentDefinition
 } from 'glimmer-runtime';
-import { AttributeBinding, ClassNameBinding, IsVisibleBinding } from '../utils/bindings';
-import { ROOT_REF, DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK, BOUNDS } from '../component';
+import {
+  AttributeBinding,
+  ClassNameBinding,
+  IsVisibleBinding
+} from '../utils/bindings';
+import {
+  ROOT_REF,
+  DIRTY_TAG,
+  IS_DISPATCHING_ATTRS,
+  HAS_BLOCK,
+  BOUNDS
+} from '../component';
 import {
   assert,
   runInDebug,
-  assign,
   get,
   _instrumentStart
 } from 'ember-metal';
 import processArgs from '../utils/process-args';
-import {
-  privatize as P,
-  OWNER
-} from 'container';
+import { privatize as P } from 'container';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 

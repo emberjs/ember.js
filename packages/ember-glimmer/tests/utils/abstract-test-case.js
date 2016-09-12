@@ -1,3 +1,4 @@
+import { assign } from 'ember-utils';
 import { compile, helper, Helper, Component } from './helpers';
 import {
   equalsElement,
@@ -6,7 +7,7 @@ import {
   classes,
   equalInnerHTML
 } from './test-helpers';
-import { run, assign } from 'ember-metal';
+import { run } from 'ember-metal';
 import { runAppend, runDestroy } from 'internal-test-helpers';
 import { jQuery, EventDispatcher } from 'ember-views';
 import { Application } from 'ember-application';

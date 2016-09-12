@@ -1,4 +1,5 @@
-import { symbol, assert } from 'ember-metal';
+import { symbol } from 'ember-utils';
+import { assert } from 'ember-metal';
 import { UPDATE } from '../utils/references';
 import { INVOKE } from './action';
 

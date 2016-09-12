@@ -1,9 +1,4 @@
-/**
-@module ember
-@submodule ember-templates
-*/
-
-import { symbol } from 'ember-metal';
+import { symbol } from 'ember-utils';
 
 /**
   The `{{each-in}}` helper loops over properties on an object.

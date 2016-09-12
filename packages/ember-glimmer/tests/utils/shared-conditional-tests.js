@@ -1,6 +1,7 @@
+import { assign } from 'ember-utils';
 import { applyMixins } from './abstract-test-case';
 import { RenderingTest } from './test-case';
-import { get, set, assign } from 'ember-metal';
+import { get, set } from 'ember-metal';
 import {
   Object as EmberObject,
   ObjectProxy,

@@ -1,5 +1,5 @@
+import { EmptyObject } from 'ember-utils';
 import { RenderingTest, moduleFor } from '../utils/test-case';
-import { EmptyObject } from 'ember-metal';
 import { CompiledBlock } from 'glimmer-runtime';
 
 class Counter {
