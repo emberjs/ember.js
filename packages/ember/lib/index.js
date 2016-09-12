@@ -1,14 +1,10 @@
+import { getOwner, setOwner } from 'ember-utils';
 import require, { has } from 'require';
 
 // ****ember-environment****
 import { ENV, context } from 'ember-environment';
 
-import {
-  Registry,
-  Container,
-  getOwner,
-  setOwner
-} from 'container';
+import { Registry, Container } from 'container';
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
