@@ -6,8 +6,8 @@
 // ..........................................................
 // HELPERS
 //
+import { symbol } from 'ember-utils';
 import Ember, { // ES6TODO: Ember.A
-  symbol,
   get,
   computed,
   cacheFor,

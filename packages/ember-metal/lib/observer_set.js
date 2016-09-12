@@ -1,4 +1,4 @@
-import { guidFor } from './utils';
+import { guidFor } from 'ember-utils';
 import { sendEvent } from './events';
 
 /*

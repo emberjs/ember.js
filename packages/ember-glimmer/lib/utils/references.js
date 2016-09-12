@@ -1,17 +1,27 @@
+import { symbol, EmptyObject } from 'ember-utils';
 import {
   get,
   set,
   tagFor,
   didRender,
-  symbol,
-  EmptyObject,
   meta as metaFor,
   watchKey,
   isFeatureEnabled,
   runInDebug
 } from 'ember-metal';
-import { CONSTANT_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst } from 'glimmer-reference';
-import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
+import {
+  CONSTANT_TAG,
+  ConstReference,
+  DirtyableTag,
+  UpdatableTag,
+  combine,
+  isConst
+} from 'glimmer-reference';
+import {
+  ConditionalReference as GlimmerConditionalReference,
+  NULL_REFERENCE,
+  UNDEFINED_REFERENCE
+} from 'glimmer-runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
 import { isProxy } from 'ember-runtime';

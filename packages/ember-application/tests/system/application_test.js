@@ -9,7 +9,11 @@ import {
 } from 'ember-metal';
 import Application from '../../system/application';
 import DefaultResolver from '../../system/resolver';
-import { Router, NoneLocation, Route as EmberRoute } from 'ember-routing';
+import {
+  Router,
+  NoneLocation,
+  Route as EmberRoute
+} from 'ember-routing';
 import { jQuery } from 'ember-views';
 import {
   Controller,

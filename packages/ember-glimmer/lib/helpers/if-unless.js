@@ -4,8 +4,17 @@
 */
 
 import { assert } from 'ember-metal';
-import { UNDEFINED_REFERENCE, CachedReference, ConditionalReference } from '../utils/references';
-import { CONSTANT_TAG, UpdatableTag, combine, isConst } from 'glimmer-reference';
+import {
+  UNDEFINED_REFERENCE,
+  CachedReference,
+  ConditionalReference
+} from '../utils/references';
+import {
+  CONSTANT_TAG,
+  UpdatableTag,
+  combine,
+  isConst
+} from 'glimmer-reference';
 
 class ConditionalHelperReference extends CachedReference {
   static create(_condRef, _truthyRef, _falsyRef) {

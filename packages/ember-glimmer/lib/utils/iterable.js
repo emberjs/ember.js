@@ -1,17 +1,20 @@
-import {
-  get,
-  guidFor,
-  tagFor,
-  EmptyObject
-} from 'ember-metal';
+import { guidFor, EmptyObject } from 'ember-utils';
+import { get, tagFor } from 'ember-metal';
 import {
   objectAt,
   isEmberArray,
   isProxy
 } from 'ember-runtime';
-import { UpdatableReference, UpdatablePrimitiveReference } from './references';
+import {
+  UpdatableReference,
+  UpdatablePrimitiveReference
+} from './references';
 import { isEachIn } from '../helpers/each-in';
-import { CONSTANT_TAG, UpdatableTag, combine } from 'glimmer-reference';
+import {
+  CONSTANT_TAG,
+  UpdatableTag,
+  combine
+} from 'glimmer-reference';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 

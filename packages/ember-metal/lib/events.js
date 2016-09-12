@@ -6,8 +6,8 @@
 @module ember
 @submodule ember-metal
 */
+import { applyStr } from 'ember-utils';
 import { assert } from './debug';
-import { applyStr } from './utils';
 import { meta as metaFor, peekMeta } from './meta';
 import { deprecate } from './debug';
 

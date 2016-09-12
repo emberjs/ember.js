@@ -1,4 +1,4 @@
-import { canInvoke } from '../../utils';
+import { canInvoke } from '../index';
 
 let obj;
 

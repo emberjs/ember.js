@@ -1,10 +1,5 @@
-import {
-  assert,
-  deprecate,
-  guidFor,
-  Mixin,
-  symbol
-} from 'ember-metal';
+import { guidFor, symbol } from 'ember-utils';
+import { assert, deprecate, Mixin } from 'ember-metal';
 import { POST_INIT } from 'ember-runtime';
 import { environment } from 'ember-environment';
 import { matches } from '../system/utils';

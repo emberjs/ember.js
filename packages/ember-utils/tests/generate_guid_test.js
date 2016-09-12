@@ -1,4 +1,4 @@
-import { generateGuid } from '../../utils';
+import { generateGuid } from '../index';
 
 QUnit.module('Ember.generateGuid');
 

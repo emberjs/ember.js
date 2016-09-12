@@ -1,4 +1,8 @@
-import { inspect } from '../../utils';
+import { inspect } from '../index';
+
+// Symbol is not defined on pre-ES2015 runtimes, so this let's us safely test
+// for it's existence (where a simple `if (Symbol)` would ReferenceError)
+const HAS_NATIVE_SYMBOL = typeof Symbol === 'function';
 
 QUnit.module('Ember.inspect');
 
@@ -50,4 +54,13 @@ QUnit.test('date', function() {
   ok(inspected.match(/Sat Apr 30/), 'The inspected date has its date');
   ok(inspected.match(/2011/), 'The inspected date has its year');
   ok(inspected.match(/13:24:11/), 'The inspected date has its time');
+});
+
+QUnit.test('inspect outputs the toString() representation of Symbols', function() {
+  if (HAS_NATIVE_SYMBOL) {
+    let symbol = Symbol('test');
+    equal(inspect(symbol), 'Symbol(test)');
+  } else {
+    expect(0);
+  }
 });

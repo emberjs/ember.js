@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 
-import { symbol } from 'ember-metal';
+import symbol from './symbol';
 
 export const OWNER = symbol('OWNER');
 

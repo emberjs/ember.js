@@ -10,4 +10,3 @@ export {
   default as Container,
   buildFakeContainerWithDeprecations
 } from './container';
-export { OWNER, getOwner, setOwner } from './owner';

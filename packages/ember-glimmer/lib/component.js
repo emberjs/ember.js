@@ -1,3 +1,4 @@
+import { symbol, getOwner } from 'ember-utils';
 import {
   CoreView,
   ClassNamesSupport,
@@ -8,7 +9,6 @@ import {
 } from 'ember-views';
 import { TargetActionSupport } from 'ember-runtime';
 import {
-  symbol,
   get,
   PROPERTY_DID_CHANGE,
   assert,
@@ -18,7 +18,6 @@ import {
 import { UPDATE, RootReference } from './utils/references';
 import { DirtyableTag } from 'glimmer-reference';
 import { readDOMAttr } from 'glimmer-runtime';
-import { getOwner } from 'container';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');

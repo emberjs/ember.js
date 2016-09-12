@@ -1,4 +1,4 @@
-import { tryInvoke } from '../../utils';
+import { tryInvoke } from '../index';
 
 let obj;
 

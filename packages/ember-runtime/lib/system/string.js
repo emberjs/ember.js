@@ -4,9 +4,9 @@
 */
 import {
   deprecate,
-  inspect as emberInspect,
   Cache
 } from 'ember-metal';
+import { inspect } from 'ember-utils';
 import { isArray } from '../utils';
 import {
   get as getString
@@ -90,7 +90,7 @@ function _fmt(str, formats) {
   return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
     argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
     s = cachedFormats[argIndex];
-    return (s === null) ? '(null)' : (s === undefined) ? '' : emberInspect(s);
+    return (s === null) ? '(null)' : (s === undefined) ? '' : inspect(s);
   });
 }
 

@@ -1,3 +1,4 @@
+import { getOwner } from 'ember-utils';
 import {
   moduleFor,
   ApplicationTest,
@@ -7,7 +8,6 @@ import { compile } from '../utils/helpers';
 import { Controller } from 'ember-runtime';
 import { set } from 'ember-metal';
 import { Engine, getEngineParent } from 'ember-application';
-import { getOwner } from 'container';
 
 moduleFor('{{mount}} assertions', class extends RenderingTest {
   ['@test it asserts that only a single param is passed']() {

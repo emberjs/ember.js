@@ -7,14 +7,13 @@
 // HELPERS
 //
 
+import { guidFor, EmptyObject } from 'ember-utils';
 import {
   get,
   set,
   Mixin,
   aliasMethod,
-  guidFor,
   computed,
-  EmptyObject,
   isFeatureEnabled,
   propertyWillChange,
   propertyDidChange,

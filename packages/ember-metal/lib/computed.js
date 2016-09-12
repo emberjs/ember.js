@@ -1,6 +1,6 @@
+import { inspect } from 'ember-utils';
 import { assert, warn } from './debug';
 import { set } from './property_set';
-import { inspect } from './utils';
 import { meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';
 import EmberError from './error';

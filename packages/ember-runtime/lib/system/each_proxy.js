@@ -1,3 +1,4 @@
+import { EmptyObject } from 'ember-utils';
 import {
   assert,
   get,
@@ -6,8 +7,7 @@ import {
   addObserver,
   removeObserver,
   propertyDidChange,
-  propertyWillChange,
-  EmptyObject
+  propertyWillChange
 } from 'ember-metal';
 import { objectAt } from '../mixins/array';
 

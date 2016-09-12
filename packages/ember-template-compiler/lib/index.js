@@ -1,5 +1,3 @@
-import 'container';
-
 import _Ember, { FEATURES } from 'ember-metal';
 import { ENV } from 'ember-environment';
 import VERSION from 'ember/version';

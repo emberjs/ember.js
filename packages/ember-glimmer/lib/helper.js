@@ -1,9 +1,4 @@
-/**
-@module ember
-@submodule ember-templates
-*/
-
-import { symbol } from 'ember-metal';
+import { symbol } from 'ember-utils';
 import {
   Object as EmberObject,
   POST_INIT

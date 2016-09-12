@@ -1,3 +1,4 @@
+import { lookupDescriptor } from 'ember-utils';
 import isEnabled from './features';
 import {
   meta as metaFor
@@ -7,7 +8,6 @@ import {
   DEFAULT_GETTER_FUNCTION,
   INHERITING_GETTER_FUNCTION
 } from './properties';
-import { lookupDescriptor } from './utils';
 
 let handleMandatorySetter;
 

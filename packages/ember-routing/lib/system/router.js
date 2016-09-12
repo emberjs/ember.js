@@ -1,3 +1,10 @@
+import {
+  EmptyObject,
+  assign,
+  guidFor,
+  dictionary,
+  getOwner
+} from 'ember-utils';
 import Logger from 'ember-console';
 import {
   assert,
@@ -6,18 +13,17 @@ import {
   get,
   set,
   defineProperty,
-  EmptyObject,
   computed,
-  assign,
-  run,
-  guidFor,
-  dictionary
+  run
 } from 'ember-metal';
 import {
   Object as EmberObject,
   Evented
 } from 'ember-runtime';
-import { defaultSerialize, hasDefaultSerialize } from './route';
+import {
+  defaultSerialize,
+  hasDefaultSerialize
+} from './route';
 import EmberRouterDSL from './dsl';
 import EmberLocation from '../location/api';
 import {
@@ -27,7 +33,6 @@ import {
   calculateCacheKey
 } from '../utils';
 import RouterState from './router_state';
-import { getOwner } from 'container';
 
 /**
 @module ember

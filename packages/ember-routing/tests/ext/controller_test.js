@@ -1,6 +1,6 @@
+import { setOwner } from 'ember-utils';
 import { buildOwner } from 'internal-test-helpers';
 import { Controller } from 'ember-runtime';
-import { setOwner } from 'container';
 
 QUnit.module('ember-routing/ext/controller');
 

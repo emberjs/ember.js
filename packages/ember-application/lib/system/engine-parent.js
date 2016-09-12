@@ -1,9 +1,4 @@
-/**
-@module ember
-@submodule ember-application
-*/
-
-import { symbol } from 'ember-metal';
+import { symbol } from 'ember-utils';
 
 export const ENGINE_PARENT = symbol('ENGINE_PARENT');
 

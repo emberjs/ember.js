@@ -2,9 +2,9 @@
 @module ember
 @submodule ember-runtime
 */
+import { guidFor } from 'ember-utils';
 import Ember, {
   get,
-  guidFor,
   Mixin,
   hasUnprocessedMixins,
   clearUnprocessedMixins,

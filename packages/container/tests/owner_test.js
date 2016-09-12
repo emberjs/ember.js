@@ -1,4 +1,4 @@
-import { getOwner, setOwner, OWNER } from '../index';
+import { getOwner, setOwner, OWNER } from 'ember-utils';
 
 QUnit.module('Owner', {});
 

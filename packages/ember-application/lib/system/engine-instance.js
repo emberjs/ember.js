@@ -3,19 +3,15 @@
 @submodule ember-application
 */
 
+import { guidFor } from 'ember-utils';
 import {
   Object as EmberObject,
   ContainerProxyMixin,
   RegistryProxyMixin,
   RSVP
 } from 'ember-runtime';
-import {
-  Error as EmberError,
-  assert,
-  run,
-  guidFor
-} from 'ember-metal';
-import {Registry, privatize as P} from 'container';
+import { Error as EmberError, assert, run } from 'ember-metal';
+import { Registry, privatize as P } from 'container';
 import { getEngineParent, setEngineParent } from './engine-parent';
 
 /**

@@ -1,5 +1,5 @@
+import { assign } from 'ember-utils';
 import PLUGINS from '../plugins';
-import { assign } from 'ember-metal';
 
 let USER_PLUGINS = [];
 

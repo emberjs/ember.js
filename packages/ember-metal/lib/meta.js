@@ -2,11 +2,9 @@
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 
+import { EmptyObject, lookupDescriptor, symbol } from 'ember-utils';
 import isEnabled from './features';
 import { protoMethods as listenerMethods } from './meta_listeners';
-import EmptyObject from './empty_object';
-import { lookupDescriptor } from './utils';
-import symbol from './symbol';
 
 /**
 @module ember-metal
