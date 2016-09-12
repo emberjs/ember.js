@@ -37,6 +37,10 @@ export {
 } from './lib/syntax/core';
 
 export {
+   default as OpcodeBuilderDSL
+} from './lib/compiled/opcodes/builder';
+
+export {
   default as Compiler,
   Compilable,
   CompileIntoList,
@@ -50,54 +54,12 @@ export {
 } from './lib/opcode-builder';
 
 export {
-  default as OpcodeBuilderDSL
-} from './lib/compiled/opcodes/builder';
-
-export {
   Block,
   CompiledBlock,
   Layout,
   InlineBlock,
   EntryPoint
 } from './lib/compiled/blocks';
-
-export {
-  Opcode,
-  OpSeq,
-  OpSeqBuilder,
-  inspect as inspectOpcodes
-} from './lib/opcodes';
-
-export {
-  PushChildScopeOpcode,
-  PopScopeOpcode,
-  PushDynamicScopeOpcode,
-  PopDynamicScopeOpcode,
-  PutValueOpcode,
-  PutNullOpcode,
-  PutArgsOpcode,
-  LabelOpcode,
-  EnterOpcode,
-  ExitOpcode,
-  EvaluateOpcode,
-  TestOpcode,
-  JumpOpcode,
-  JumpIfOpcode,
-  JumpUnlessOpcode,
-  BindNamedArgsOpcode,
-  BindDynamicScopeOpcode
-} from './lib/compiled/opcodes/vm';
-
-export {
-  OpenComponentOpcode,
-  CloseComponentOpcode,
-  ShadowAttributesOpcode
-} from './lib/compiled/opcodes/component';
-
-export {
-  OpenPrimitiveElementOpcode,
-  CloseElementOpcode
-} from './lib/compiled/opcodes/dom';
 
 export {
   IChangeList,
@@ -136,13 +98,6 @@ export {
 export {
   FunctionExpression
 } from './lib/compiled/expressions/function';
-
-export {
-  EnterListOpcode,
-  ExitListOpcode,
-  EnterWithKeyOpcode,
-  NextIterOpcode
-} from './lib/compiled/opcodes/lists';
 
 export {
   default as getDynamicVar
