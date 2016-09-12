@@ -6,15 +6,20 @@
 @module ember
 @submodule ember-metal
 */
-import EmberError from './error';
-import { debugSeal, assert, deprecate, runInDebug } from './debug';
-import assign from './assign';
 import {
+  assign,
   guidFor,
   GUID_KEY,
   wrap,
   makeArray
 } from 'ember-utils';
+import EmberError from './error';
+import {
+  debugSeal,
+  assert,
+  deprecate,
+  runInDebug
+} from './debug';
 import { meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';
 import {

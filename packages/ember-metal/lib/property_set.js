@@ -1,3 +1,4 @@
+import { toString } from 'ember-utils';
 import { assert } from './debug';
 import isEnabled from './features';
 import { _getPath as getPath } from './property_get';
@@ -14,10 +15,6 @@ import {
 import {
   peekMeta
 } from './meta';
-
-import {
-  toString
-} from 'ember-utils';
 
 /**
   Sets the value of a property on an object, respecting computed properties

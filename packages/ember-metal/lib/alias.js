@@ -1,3 +1,4 @@
+import { inspect } from 'ember-utils';
 import { assert } from './debug';
 import { get } from './property_get';
 import { set } from './property_set';
@@ -7,7 +8,6 @@ import {
   defineProperty
 } from './properties';
 import { ComputedProperty } from './computed';
-import { inspect } from 'ember-utils';
 import { meta } from './meta';
 import {
   addDependentKeys,
