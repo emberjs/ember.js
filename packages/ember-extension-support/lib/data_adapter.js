@@ -1,3 +1,4 @@
+import { getOwner } from 'ember-utils';
 import { get, run } from 'ember-metal';
 import {
   String as StringUtils,
@@ -9,7 +10,6 @@ import {
   objectAt
 } from 'ember-runtime';
 import { Application } from 'ember-application';
-import { getOwner } from 'container';
 
 /**
 @module ember
