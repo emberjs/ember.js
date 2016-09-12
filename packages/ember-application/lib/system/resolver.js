@@ -3,12 +3,8 @@
 @submodule ember-application
 */
 
-import {
-  assert,
-  info,
-  get,
-  dictionary
-} from 'ember-metal';
+import { dictionary } from 'ember-utils';
+import { assert, info, get } from 'ember-metal';
 import {
   String as StringUtils,
   Object as EmberObject,

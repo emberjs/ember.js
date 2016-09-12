@@ -2,11 +2,11 @@
 @module ember
 @submodule ember-application
 */
+import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
 import {
   assert,
   debug,
-  dictionary,
   libraries,
   isTesting,
   get,
