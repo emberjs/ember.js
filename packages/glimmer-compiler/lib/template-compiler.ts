@@ -125,6 +125,9 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     if (isYield(action)) {
       let to = assertValidYield(action);
       this.yield(to, action);
+    } else if (isPartial(action)) {
+      let params = assertValidPartial(action);
+      this.partial(params, action);
     } else {
       this.mustacheExpression(action);
       this.opcode('append', action, !action.escaped);
@@ -173,6 +176,11 @@ export default class TemplateCompiler<T extends TemplateMeta> {
 
   hasBlockParams(name: string, action) {
     this.opcode('hasBlockParams', action, name);
+  }
+
+  partial(params, action) {
+    this.prepareParams(action.params);
+    this.opcode('partial', action);
   }
 
   builtInHelper(expr) {
@@ -327,6 +335,10 @@ function isYield({ path }) {
   return path.original === 'yield';
 }
 
+function isPartial({ path }) {
+  return path.original === 'partial';
+}
+
 function isArg({ path }) {
   return path.data;
 }
@@ -366,7 +378,23 @@ function assertValidYield({ hash }): string {
   }
 }
 
-function assertValidHasBlock({ params }): string {
+function assertValidPartial({ params, hash, escaped }) /* : expr */ {
+  if (params && params.length !== 1) {
+    throw new Error(`partial takes a single positional argument: the name of the partial`);
+  } else if (hash && hash.pairs.length > 0) {
+    throw new Error(`partial does not take any named arguments`);
+  } else if (!escaped) {
+    throw new Error(`{{{partial ...}}} is not supported, please use {{partial ...}} instead`);
+  }
+
+  return params;
+}
+
+function assertValidHasBlock({ params, hash }): string {
+  if (hash && hash.pairs.length > 0) {
+    throw new Error(`has-block does not take any named arguments`);
+  }
+
   if (params.length === 0) {
     return 'default';
   } else if (params.length === 1) {
@@ -380,7 +408,11 @@ function assertValidHasBlock({ params }): string {
   }
 }
 
-function assertValidHasBlockParams({ params }): string {
+function assertValidHasBlockParams({ params, hash }): string {
+  if (hash && hash.pairs.length > 0) {
+    throw new Error(`has-block-params does not take any named arguments`);
+  }
+
   if (params.length === 0) {
     return 'default';
   } else if (params.length === 1) {

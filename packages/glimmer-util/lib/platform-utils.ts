@@ -1,9 +1,4 @@
 export type Opaque = {} | void;
-
-export function opaque(value: Opaque): Opaque {
-  return value;
-}
-
 export type Option<T> = T | null; // tslint:disable-line
 export type Maybe<T> = Option<T> | undefined; // tslint:disable-line
 

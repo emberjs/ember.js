@@ -104,6 +104,7 @@ export namespace Statements {
   export type StaticAttr    = ['static-attr', str, Expression, str];
   export type DynamicAttr   = ['dynamic-attr', str, Expression, str];
   export type Yield         = ['yield', YieldTo, Params];
+  export type Partial       = ['partial', Expression];
   export type DynamicArg    = ['dynamic-arg', str, Expression];
   export type StaticArg     = ['static-arg', str, Expression];
   export type TrustingAttr  = ['trusting-attr', str, Expression, str];
@@ -119,6 +120,7 @@ export namespace Statements {
   export const isStaticAttr   = is<StaticAttr>('static-attr');
   export const isDynamicAttr  = is<DynamicAttr>('dynamic-attr');
   export const isYield        = is<Yield>('yield');
+  export const isPartial      = is<Partial>('partial');
   export const isDynamicArg   = is<DynamicArg>('dynamic-arg');
   export const isStaticArg    = is<StaticArg>('static-arg');
   export const isTrustingAttr = is<TrustingAttr>('trusting-attr');
@@ -135,6 +137,7 @@ export namespace Statements {
     | StaticAttr
     | DynamicAttr
     | Yield
+    | Partial
     | StaticArg
     | DynamicArg
     | TrustingAttr
@@ -165,6 +168,7 @@ export interface SerializedTemplateBlock extends SerializedBlock {
   named: string[];
   yields: string[];
   blocks: SerializedBlock[];
+  hasPartials: boolean;
 }
 
 /**

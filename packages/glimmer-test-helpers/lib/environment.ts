@@ -821,16 +821,14 @@ export class TestEnvironment extends Environment {
     return helper;
   }
 
-  hasPartial(partialName: string[]) {
-    return partialName.length === 1 && (<string>partialName[0] in this.partials);
+  hasPartial(partialName: string) {
+    return partialName in this.partials;
   }
 
-  lookupPartial(partialParts: string[]) {
-    let partialName = partialParts[0];
-
+  lookupPartial(partialName: string) {
     let partial = this.partials[partialName];
 
-    if (!partial) throw new Error(`partial for ${partialParts.join('.')} not found.`);
+    if (!partial) throw new Error(`partial for ${partialName} not found.`);
 
     return partial;
   }

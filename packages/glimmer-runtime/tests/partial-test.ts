@@ -1,5 +1,6 @@
 import { Simple, Template, RenderResult } from "glimmer-runtime";
 import {
+  BasicComponent,
   TestEnvironment,
   TestDynamicScope,
   equalTokens,
@@ -8,7 +9,7 @@ import {
   strip
 } from "glimmer-test-helpers";
 import { UpdatableReference } from "glimmer-object-reference";
-import { Opaque, opaque } from 'glimmer-util';
+import { Opaque } from 'glimmer-util';
 
 let env: TestEnvironment, root: Simple.Element, result: RenderResult, self: UpdatableReference<Opaque>;
 
@@ -26,8 +27,10 @@ function commonSetup() {
 }
 
 function render<T>(template: Template<T>, context={}) {
-  self = new UpdatableReference(opaque(context));
+  self = new UpdatableReference(context);
+  env.begin();
   result = template.render(self, root, new TestDynamicScope());
+  env.commit();
   assertInvariants(result);
   return result;
 }
@@ -36,12 +39,12 @@ interface RerenderParams {
   assertStable: Boolean;
 }
 
-function rerender(context: Object = {}, params: RerenderParams = { assertStable: false }) {
+function rerender(context: any = null, params: RerenderParams = { assertStable: false }) {
   let snapshot;
   if (params.assertStable) {
     snapshot = generateSnapshot(root);
   }
-  self.update(opaque(context));
+  if (context !== null) self.update(context);
   env.begin();
   result.rerender();
   env.commit();
@@ -66,7 +69,7 @@ QUnit.test('static partial with static content', assert => {
   render(template);
 
   equalTokens(root, `Before <div>Testing</div> After`);
-  rerender({}, { assertStable: true });
+  rerender(null, { assertStable: true });
   equalTokens(root, `Before <div>Testing</div> After`);
 });
 
@@ -75,6 +78,8 @@ QUnit.test('static partial with self reference', assert => {
 
   env.registerPartial('birdman', `Respeck my {{item}}. When my {{item}} come up put some respeck on it.`);
   render(template, { item: 'name' });
+
+  rerender(null, { assertStable: true });
 
   equalTokens(root, `Respeck my name. When my name come up put some respeck on it.`);
   rerender({ item: 'name' }, { assertStable: true });
@@ -87,9 +92,42 @@ QUnit.test('static partial with local reference', assert => {
   env.registerPartial('test', `You {{quality.value}}`);
   render(template, { qualities: [{id: 1, value: 'smaht'}, {id: 2, value: 'loyal'}] });
 
+  rerender(null, { assertStable: true });
+
   equalTokens(root, `You smaht. You loyal. `);
   rerender({ qualities: [{id: 1, value: 'smaht'}, {id: 2, value: 'loyal'}] }, { assertStable: true });
   equalTokens(root, `You smaht. You loyal. `);
+});
+
+QUnit.test('static partial with named arguments', assert => {
+  env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{@foo}}-{{partial 'test'}}</p>`);
+
+  let template = compile(`<foo-bar @foo={{foo}} @bar={{bar}} />`);
+
+  env.registerPartial('test', `{{@foo}}-{{@bar}}`);
+  render(template, { foo: 'foo', bar: 'bar' });
+  equalTokens(root, `<p>foo-foo-bar</p>`);
+
+  rerender(null, { assertStable: true });
+
+  rerender({ foo: 'FOO', bar: 'BAR' }, { assertStable: true });
+  equalTokens(root, `<p>FOO-FOO-BAR</p>`);
+
+  rerender({ foo: 'foo', bar: 'bar' }, { assertStable: true });
+  equalTokens(root, `<p>foo-foo-bar</p>`);
+});
+
+QUnit.test('static partial with has-block', assert => {
+  env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{has-block}}-{{has-block 'inverse'}}-{{partial 'test'}}</p>`);
+
+  let template = compile(`<foo-bar>a block</foo-bar>`);
+
+  env.registerPartial('test', `{{has-block}}-{{has-block 'inverse'}}`);
+  render(template);
+
+  equalTokens(root, `<p>true-false-true-false</p>`);
+
+  rerender(null, { assertStable: true });
 });
 
 QUnit.test('dynamic partial with static content', assert => {
