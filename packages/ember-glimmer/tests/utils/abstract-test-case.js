@@ -152,7 +152,7 @@ export class TestCase {
   }
 
   assertText(text) {
-    this.assert.strictEqual(this.textValue(), text, '#qunit-fixture content');
+    this.assert.strictEqual(this.textValue(), text, `#qunit-fixture content should be: \`${text}\``);
   }
 
   assertInnerHTML(html) {
@@ -160,7 +160,7 @@ export class TestCase {
   }
 
   assertHTML(html) {
-    equalTokens(this.element, html, '#qunit-fixture content');
+    equalTokens(this.element, html, `#qunit-fixture content should be: \`${html}\``);
   }
 
   assertElement(node, { ElementType = HTMLElement, tagName, attrs = null, content = null }) {
