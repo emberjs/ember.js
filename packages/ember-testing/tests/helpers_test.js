@@ -485,7 +485,7 @@ QUnit.test('`click` triggers native events with specified X/Y coordinates', func
 
   return wait().then(function() {
     events = [];
-    return click('.index-wrapper', null, {screenX: 1111, screenY: 2222, clientX: 3333, clientY: 4444});
+    return click('.index-wrapper', null, { screenX: 1111, screenY: 2222, clientX: 3333, clientY: 4444 });
   }).then(function() {
     events.forEach(e => {
       ok(e instanceof window.Event, 'The event is an instance of MouseEvent');

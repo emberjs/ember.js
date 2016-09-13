@@ -43,8 +43,7 @@ export function fireEvent(element, type, options = {}) {
       clientX: options.clientX || x,
       clientY: options.clientY || y
     };
-    if (!options.button)
-    {
+    if (!options.button) {
       // default to left button
       options.button = 0;
     }

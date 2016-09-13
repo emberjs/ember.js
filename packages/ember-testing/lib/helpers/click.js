@@ -22,13 +22,13 @@ import { focus, fireEvent } from '../events';
   click('.some-jQuery-selector', null, {button: 3, clientX: 17, clientY: 40}).then(function() {
     // assert something
   });
-  ```  
+  ```
 
   @method click
   @param {String} selector jQuery selector for finding an element in the DOM. Note that only the first match will be clicked.
-  @param {Object} context A DOM Element, Document, or jQuery to use as context. 
+  @param {Object} context A DOM Element, Document, or jQuery to use as context.
     If null or undefined, default is the root application DOM element.
-  @param {Object} event An optional hash of event parameters to mock the JQuery [Event]{@link http://api.jquery.com/category/events/event-object/} object. 
+  @param {Object} event An optional hash of event parameters to mock the JQuery [Event]{@link http://api.jquery.com/category/events/event-object/} object.
     Default button (and which) is left button (1), and default screen and client coordinates
     are the top left corner of the element.
   @return {RSVP.Promise}
