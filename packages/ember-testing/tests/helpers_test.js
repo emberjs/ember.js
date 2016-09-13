@@ -528,7 +528,7 @@ QUnit.test('`click` triggers native events with specified mouse button', functio
     events.forEach(e => {
       ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
       ok(typeof e.button === 'number' && e.button === 2, 'button is correct');
-      ok(typeof e.which === 'number' && e.which === 2, 'which is correct');
+      ok(typeof e.which === 'number' && e.which === 3, 'which is correct');
     });
   });
 });
@@ -564,7 +564,7 @@ QUnit.test('`click` triggers native events with default left mouse button', func
     events.forEach(e => {
       ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
       ok(typeof e.button === 'number' && e.button === 0, 'button is correct');
-      ok(typeof e.which === 'number' && e.which === 0, 'which is correct');
+      ok(typeof e.which === 'number' && e.which === 1, 'which is correct');
     });
   });
 });
