@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-templates
+@submodule ember-glimmer
 */
 
 /**
@@ -304,11 +304,6 @@
   @return {String} HTML string
   @see {Ember.LinkComponent}
   @public
-*/
-
-/**
-@module ember
-@submodule ember-templates
 */
 
 import Logger from 'ember-console';

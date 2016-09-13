@@ -10,7 +10,7 @@ import {
 
 /**
 @module ember
-@submodule ember-templates
+@submodule ember-glimmer
 */
 
 /**

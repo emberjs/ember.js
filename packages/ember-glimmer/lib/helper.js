@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-glimmer
+*/
+
 import { symbol } from 'ember-utils';
 import {
   Object as EmberObject,

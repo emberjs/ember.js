@@ -1,3 +1,7 @@
+/**
+@module ember
+@submodule ember-glimmer
+*/
 import {
   ArgsSyntax,
   StatementSyntax,
@@ -8,7 +12,26 @@ import { assert } from 'ember-metal';
 import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
+/**
+  The `{{mount}}` helper lets you embed a routeless engine in a template.
+  Mounting an engine will cause an instance to be booted and its `application`
+  template to be rendered.
 
+  For example, the following template mounts the `ember-chat` engine:
+
+  ```handlebars
+  {{! application.hbs }}
+  {{mount "ember-chat"}}
+  ```
+
+  Currently, the engine name is the only argument that can be passed to
+  `{{mount}}`.
+
+  @method mount
+  @for Ember.Templates.helpers
+  @category ember-application-engines
+  @public
+*/
 export class MountSyntax extends StatementSyntax {
   static create(env, args, templates, symbolTable) {
     assert(

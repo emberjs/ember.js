@@ -7,11 +7,6 @@ import { Error as EmberError } from 'ember-metal';
 import compile from './compile';
 
 /**
-@module ember
-@submodule ember-templates
-*/
-
-/**
   Find templates stored in the head tag as script tags and make them available
   to `Ember.CoreView` in the global `Ember.TEMPLATES` object.
 
