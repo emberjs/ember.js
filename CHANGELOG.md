@@ -1,5 +1,18 @@
 # Ember Changelog
 
+### 2.9.0-beta.2 (September 12, 2016)
+
+- [#14237](https://github.com/emberjs/ember.js/pull/14237) [BUGFIX] Ensure Engine Routes are deactivated before destruction
+- [#14176](https://github.com/emberjs/ember.js/pull/14176) [BUGFIX] Ensure Controller#transitionToRoute and Route#intermediateTransitionTo work in Engines
+- [#14244](https://github.com/emberjs/ember.js/pull/14244) [BUGFIX] Ensure params and hash are frozen in debug builds.
+- [#14245](https://github.com/emberjs/ember.js/pull/14245) [BUGFIX] Lookup partials from the current owner when rendering an Engines templates.
+- [#14247](https://github.com/emberjs/ember.js/pull/14247) [BUGFIX] Make `this.getAttr` an alias for `this.get`.
+- [#14252](https://github.com/emberjs/ember.js/pull/14252) [BUGFIX] Don't delete moduleName from the generated template compilation options.
+- [#14253](https://github.com/emberjs/ember.js/pull/14253) [BUGFIX] Prevent duplicated `Ember.meta` invocations.
+- [#14271](https://github.com/emberjs/ember.js/pull/14271) [BUGFIX] Ensure `undefined` and `null` values are not rendered as attributes or properties on initial render.
+- [#14272](https://github.com/emberjs/ember.js/pull/14272) [BUGFIX] Fix issues with `Transition#isActive` being falsey incorrectly.
+
+
 ### 2.9.0-beta.1 (September 8, 2016)
 
 - [#14156](https://github.com/emberjs/ember.js/pull/14156) [FEATURE ember-glimmer] Enable by default.
