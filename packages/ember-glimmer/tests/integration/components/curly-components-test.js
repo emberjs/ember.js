@@ -2540,4 +2540,44 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assert.ok(true, 'no errors during teardown');
   }
+
+  ['@test setting a property in willDestroyElement does not assert (GH#14273)'](assert) {
+    assert.expect(2);
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          this.showFoo = true;
+        },
+
+        willDestroyElement() {
+          run(() => this.set('showFoo', false));
+          assert.ok(true, 'willDestroyElement was fired');
+          this._super(...arguments);
+        }
+      }),
+
+      template: `{{#if showFoo}}things{{/if}}`
+    });
+
+    this.render(`{{foo-bar}}`);
+
+    this.assertText('things');
+  }
+
+  ['@test using parentView in the template does not error during destruction']() {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        title: computed('parentView.title', function() {
+          return this.get('parentView.title');
+        })
+      }),
+      template: `{{title}}`
+    });
+
+    this.render(`{{foo-bar}}`, { title: 'things' });
+
+    this.assertText('things');
+  }
 });

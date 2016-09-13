@@ -454,6 +454,10 @@ export default Mixin.create({
   },
 
   scheduleRevalidate(node, label, manualRerender) {
+    if (this.isDestroying) {
+      return;
+    }
+
     if (node && !this._dispatching && this._env.renderedNodes.has(node)) {
       if (manualRerender) {
         deprecate(

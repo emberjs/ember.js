@@ -18,7 +18,6 @@ export default function cleanupRenderNode(renderNode) {
       if (view.parentView && view.parentView === env.view) {
         view.parentView.removeChild(view);
       }
-      view.parentView = null;
 
       view._transitionTo('preRender');
     });
