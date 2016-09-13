@@ -43,10 +43,11 @@ export function fireEvent(element, type, options = {}) {
       clientX: options.clientX || x,
       clientY: options.clientY || y
     };
-    if (options.button)
+    if (!options.button)
     {
-      options.which = options.button;
+      options.button = 1;
     }
+    options.which = options.button;
     event = buildMouseEvent(type, jQuery.extend(simulatedCoordinates, options));
   } else {
     event = buildBasicEvent(type, options);
