@@ -2565,4 +2565,19 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('things');
   }
+
+  ['@test using parentView in the template does not error during destruction']() {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        title: computed('parentView.title', function() {
+          return this.get('parentView.title');
+        })
+      }),
+      template: `{{title}}`
+    });
+
+    this.render(`{{foo-bar}}`, { title: 'things' });
+
+    this.assertText('things');
+  }
 });
