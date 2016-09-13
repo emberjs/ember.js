@@ -45,7 +45,8 @@ export function fireEvent(element, type, options = {}) {
     };
     if (!options.button)
     {
-      options.button = 1;
+      // default to left button
+      options.button = 0;
     }
     options.which = options.button;
     event = buildMouseEvent(type, jQuery.extend(simulatedCoordinates, options));
