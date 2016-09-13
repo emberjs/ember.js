@@ -68,6 +68,7 @@ function buildMouseEvent(type, options = {}) {
   try {
     event = document.createEvent('MouseEvents');
     let eventOpts = jQuery.extend({}, DEFAULT_EVENT_OPTIONS, options);
+    //todo: initMouseEvent has been deprecated https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/initMouseEvent
     event.initMouseEvent(
       type,
       eventOpts.canBubble,
