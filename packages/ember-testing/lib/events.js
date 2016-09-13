@@ -38,11 +38,15 @@ export function fireEvent(element, type, options = {}) {
     let x = rect.left + 1;
     let y = rect.top + 1;
     let simulatedCoordinates = {
-      screenX: x + 5,
-      screenY: y + 95,
-      clientX: x,
-      clientY: y
+      screenX: options.screenX || x + 5,
+      screenY: options.screenY || y + 95,
+      clientX: options.clientX || x,
+      clientY: options.clientY || y
     };
+    if (options.button)
+    {
+      options.which = options.button;
+    }
     event = buildMouseEvent(type, jQuery.extend(simulatedCoordinates, options));
   } else {
     event = buildBasicEvent(type, options);
