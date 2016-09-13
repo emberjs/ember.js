@@ -25,7 +25,9 @@ function commonSetup() {
 
 function render<T>(template: Template<T>, context = {}, view: PathReference<Opaque> = null) {
   self = new UpdatableReference(context);
+  env.begin();
   result = template.render(self, root, new TestDynamicScope());
+  env.commit();
   assertInvariants(result);
   return result;
 }

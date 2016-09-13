@@ -1,7 +1,7 @@
 import { Simple, Template, RenderResult } from "glimmer-runtime";
 import { BasicComponent, TestEnvironment, TestDynamicScope, equalTokens } from "glimmer-test-helpers";
 import { UpdatableReference } from "glimmer-object-reference";
-import { Opaque, opaque } from 'glimmer-util';
+import { Opaque } from 'glimmer-util';
 
 let env: TestEnvironment, root: Simple.Element, result: RenderResult, self: UpdatableReference<Opaque>;
 
@@ -20,14 +20,16 @@ function commonSetup() {
 }
 
 function render<T>(template: Template<T>, context={}) {
-  self = new UpdatableReference(opaque(context));
+  self = new UpdatableReference(context);
+  env.begin();
   result = template.render(self, root, new TestDynamicScope());
+  env.commit();
   assertInvariants(result);
   return result;
 }
 
-function rerender(context: Object={}) {
-  self.update(opaque(context));
+function rerender(context: any = null) {
+  if (context !== null) self.update(context);
   env.begin();
   result.rerender();
   env.commit();

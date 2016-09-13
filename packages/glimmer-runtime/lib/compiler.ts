@@ -265,13 +265,18 @@ class WrappedBuilder {
       dsl.flushElement();
     }
 
-    if (layout.hasNamedParameters()) {
+    if (layout.hasNamedParameters) {
       dsl.bindNamedArgsForLayout(layout);
     }
 
-    if (layout.hasYields()) {
+    if (layout.hasYields) {
       dsl.bindBlocksForLayout(layout);
     }
+
+    if (layout.hasPartials) {
+      dsl.bindPartialArgsForLayout(layout);
+    }
+
     layout.program.forEachNode(statement => compileStatement(env, statement, dsl, layout));
 
     if (this.tag.isDynamic) {
@@ -308,12 +313,16 @@ class UnwrappedBuilder {
 
     dsl.startLabels();
 
-    if (layout.hasNamedParameters()) {
+    if (layout.hasNamedParameters) {
       dsl.bindNamedArgsForLayout(layout);
     }
 
-    if (layout.hasYields()) {
+    if (layout.hasYields) {
       dsl.bindBlocksForLayout(layout);
+    }
+
+    if (layout.hasPartials) {
+      dsl.bindPartialArgsForLayout(layout);
     }
 
     let attrs = this.attrs['buffer'];
@@ -437,6 +446,14 @@ export class CompileIntoList extends LinkedList<Opcode> implements StatementComp
 
   hasBlockSymbol(name: string): boolean {
     return typeof this.symbolTable.getYield(name) === 'number';
+  }
+
+  getPartialArgsSymbol(): number {
+    return this.symbolTable.getPartialArgs();
+  }
+
+  hasPartialArgsSymbol(): boolean {
+    return typeof this.symbolTable.getPartialArgs() === 'number';
   }
 
   toOpSeq(): OpSeq {

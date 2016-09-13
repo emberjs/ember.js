@@ -64,6 +64,8 @@ export interface SymbolLookup {
   hasNamedSymbol(name: string): boolean;
   getBlockSymbol(name: string): number;
   hasBlockSymbol(name: string): boolean;
+  getPartialArgsSymbol(): number;
+  hasPartialArgsSymbol(): boolean;
 }
 
 export interface CompileInto {

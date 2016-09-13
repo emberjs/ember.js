@@ -46,7 +46,6 @@ import IfSyntax from './syntax/builtins/if';
 import UnlessSyntax from './syntax/builtins/unless';
 import WithSyntax from './syntax/builtins/with';
 import EachSyntax from './syntax/builtins/each';
-import PartialSyntax from './syntax/builtins/partial';
 
 import { PublicVM } from './vm/append';
 
@@ -162,12 +161,6 @@ export abstract class Environment {
       templates
     } = statement;
 
-    if (isSimple && isInline) {
-      if (key === 'partial') {
-        return new PartialSyntax({ args, symbolTable });
-      }
-    }
-
     if (isSimple && isBlock) {
       switch (key) {
         case 'each':
@@ -258,20 +251,21 @@ export abstract class Environment {
     this.scheduledUpdateModifiers = null;
   }
 
-  abstract hasHelper(helperName: string[], symbolTable: SymbolTable): boolean;
-  abstract lookupHelper(helperName: string[], symbolTable: SymbolTable): Helper;
-
   attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace?: string): IChangeList {
     return defaultChangeLists(element, attr, isTrusting, namespace);
   }
 
-  abstract hasPartial(partialName: string[], symbolTable: SymbolTable): boolean;
-  abstract lookupPartial(PartialName: string[], symbolTable: SymbolTable): PartialDefinition<TemplateMeta>;
+  abstract hasHelper(helperName: string[], blockMeta: TemplateMeta): boolean;
+  abstract lookupHelper(helperName: string[], blockMeta: TemplateMeta): Helper;
+
+  abstract hasModifier(modifierName: string[], blockMeta: TemplateMeta): boolean;
+  abstract lookupModifier(modifierName: string[], blockMeta: TemplateMeta): ModifierManager<Opaque>;
+
   abstract hasComponentDefinition(tagName: string[], symbolTable: SymbolTable): boolean;
   abstract getComponentDefinition(tagName: string[], symbolTable: SymbolTable): ComponentDefinition<Opaque>;
 
-  abstract hasModifier(modifierName: string[], symbolTable: SymbolTable): boolean;
-  abstract lookupModifier(modifierName: string[], symbolTable: SymbolTable): ModifierManager<Opaque>;
+  abstract hasPartial(partialName: string, symbolTable: SymbolTable): boolean;
+  abstract lookupPartial(PartialName: string, symbolTable: SymbolTable): PartialDefinition<TemplateMeta>;
 }
 
 export default Environment;
