@@ -5,6 +5,7 @@ import TransformInputOnToOnEvent from './transform-input-on-to-onEvent';
 import TransformTopLevelComponents from './transform-top-level-components';
 import TransformInlineLinkTo from './transform-inline-link-to';
 import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
+import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 import DeprecateRenderModel from './deprecate-render-model';
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
 import TransformActionSyntax from './transform-action-syntax';
@@ -21,6 +22,7 @@ export default Object.freeze([
   TransformTopLevelComponents,
   TransformInlineLinkTo,
   TransformOldClassBindingSyntax,
+  TransformQuotedBindingsIntoJustBindings,
   DeprecateRenderModel,
   AssertReservedNamedArguments,
   TransformActionSyntax,

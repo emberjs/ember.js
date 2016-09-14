@@ -1281,5 +1281,45 @@ if (!EmberDev.runningProdBuild) {
 
       this.assertNoWarning();
     }
+
+    ['@test no warnings are triggered when a safe string is quoted'](assert) {
+      this.render('<div style="{{userValue}}"></div>', {
+        userValue: new SafeString('width: 42px')
+      });
+
+      this.assertNoWarning();
+    }
+
+    ['@test binding warning is triggered when an unsafe string is quoted'](assert) {
+      this.render('<div style="{{userValue}}"></div>', {
+        userValue: 'width: 42px'
+      });
+
+      this.assertStyleWarning();
+    }
+
+    ['@test binding warning is triggered when a safe string for a complete property is concatenated in place'](assert) {
+      this.render('<div style="color: green; {{userValue}}"></div>', {
+        userValue: new SafeString('width: 42px')
+      });
+
+      this.assertStyleWarning();
+    }
+
+    ['@test binding warning is triggered when a safe string for a value is concatenated in place'](assert) {
+      this.render('<div style="color: green; width: {{userValue}}"></div>', {
+        userValue: new SafeString('42px')
+      });
+
+      this.assertStyleWarning();
+    }
+
+    ['@test binding warning is triggered when a safe string for a property name is concatenated in place'](assert) {
+      this.render('<div style="color: green; {{userProperty}}: 42px"></div>', {
+        userProperty: new SafeString('width')
+      });
+
+      this.assertStyleWarning();
+    }
   });
 }
