@@ -137,7 +137,7 @@ export default Mixin.create({
       if (!shouldBubble) { return; }
     }
 
-    target = get(this, 'target') || get(this, '_targetObject');
+    target = get(this, 'target');
 
     if (target) {
       assert(
