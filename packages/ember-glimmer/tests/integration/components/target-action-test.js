@@ -205,11 +205,30 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
   }
 
   ['@test calling sendAction on a component within a block sends to the outer scope GH#14216'](assert) {
-    this.registerTemplate('components/action-delegate', strip`
-      {{#component-a}}
-        {{component-b bar="derp"}}
-      {{/component-a}}
-    `);
+    let testContext = this;
+    // overrides default action-delegate so actions can be added
+    this.registerComponent('action-delegate', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super();
+          testContext.delegate = this;
+          this.name = 'action-delegate';
+        },
+
+        actions: {
+          derp(arg1) {
+            assert.ok(true, 'action called on action-delgate');
+            assert.equal(arg1, 'something special', 'argument passed through properly');
+          }
+        }
+      }),
+
+      template: strip`
+        {{#component-a}}
+          {{component-b bar="derp"}}
+        {{/component-a}}
+      `
+    });
 
     this.registerComponent('component-a', {
       ComponentClass: Component.extend({
@@ -238,10 +257,7 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
 
     this.renderDelegate();
 
-    this.runTask(() => innerChild.sendAction('bar'));
-
-    this.assertSendCount(1);
-    this.assertNamedSendCount('derp', 1);
+    this.runTask(() => innerChild.sendAction('bar', 'something special'));
   }
 });
 
