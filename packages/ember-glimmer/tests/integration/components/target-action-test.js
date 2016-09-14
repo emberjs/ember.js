@@ -199,7 +199,6 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
     this.assertNamedSendCount('didStartPlaying', 2);
     this.assertSentWithArgs([firstContext, secondContext], 'multiple contexts were sent to the action');
   }
-
 });
 
 moduleFor('Components test: sendAction to a controller', class extends ApplicationTest {
