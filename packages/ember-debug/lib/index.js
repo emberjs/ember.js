@@ -239,7 +239,7 @@ Ember.Debug = { };
       // defer to whatever handler was registered before this one
       next(message, options);
     }
-  }
+  });
   ```
 
   The handler function takes the following arguments:
