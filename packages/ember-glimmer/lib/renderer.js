@@ -61,6 +61,8 @@ class RootState {
     this.root = root;
     this.result = undefined;
     this.shouldReflush = false;
+    this.destroyed = false;
+    this._removing = false;
 
     let options = this.options = {
       alwaysRevalidate: false
@@ -82,6 +84,8 @@ class RootState {
 
   destroy() {
     let { result, env } = this;
+
+    this.destroyed = true;
 
     this.env = null;
     this.root = null;
@@ -166,6 +170,8 @@ export class Renderer {
     this._destroyed = false;
     this._roots = [];
     this._lastRevision = null;
+    this._isRenderingRoots = false;
+    this._removedRoots = [];
   }
 
   // renderer HOOKS
@@ -242,12 +248,7 @@ export class Renderer {
       // check if the view being removed is a root view
       if (root.isFor(view)) {
         root.destroy();
-        roots.splice(i, 1);
       }
-    }
-
-    if (this._roots.length === 0) {
-      deregister(this);
     }
   }
 
@@ -286,24 +287,34 @@ export class Renderer {
   }
 
   _renderRoots() {
-    let { _roots: roots, _env: env } = this;
-    let globalShouldReflush;
-
-    // ensure that for the first iteration of the loop
-    // each root is processed
-    let initial = true;
+    let { _roots: roots, _env: env, _removedRoots: removedRoots } = this;
+    let globalShouldReflush, initialRootsLength;
 
     do {
       env.begin();
+
+      // ensure that for the first iteration of the loop
+      // each root is processed
+      initialRootsLength = roots.length;
       globalShouldReflush = false;
 
       for (let i = 0; i < roots.length; i++) {
         let root = roots[i];
+
+        if (root.destroyed) {
+          // add to the list of roots to be removed
+          // they will be removed from `this._roots` later
+          removedRoots.push(root);
+
+          // skip over roots that have been marked as destroyed
+          continue;
+        }
+
         let { shouldReflush } = root;
 
         // when processing non-initial reflush loops,
         // do not process more roots than needed
-        if (!initial && !shouldReflush) {
+        if (i >= initialRootsLength && !shouldReflush) {
           continue;
         }
 
@@ -317,16 +328,37 @@ export class Renderer {
       }
 
       env.commit();
+    } while (globalShouldReflush || roots.length > initialRootsLength);
 
-      initial = false;
-    } while (globalShouldReflush);
+    // remove any roots that were destroyed during this transaction
+    while (removedRoots.length) {
+      let root = removedRoots.pop();
+
+      let rootIndex = roots.indexOf(root);
+      roots.splice(rootIndex, 1);
+    }
+
+    if (this._roots.length === 0) {
+      deregister(this);
+    }
   }
 
   _renderRootsTransaction() {
+    if (this._isRenderingRoots) {
+      // currently rendering roots, a new root was added and will
+      // be processed by the existing _renderRoots invocation
+      return;
+    }
+
+    // used to prevent calling _renderRoots again (see above)
+    // while we are actively rendering roots
+    this._isRenderingRoots = true;
+
     try {
       this._renderRoots();
     } finally {
       this._lastRevision = CURRENT_TAG.value();
+      this._isRenderingRoots = false;
     }
   }
 
@@ -337,8 +369,11 @@ export class Renderer {
       root.destroy();
     }
 
+    this._removedRoots.length = 0;
     this._roots = null;
 
+    // if roots were present before destroying
+    // deregister this renderer instance
     if (roots.length) {
       deregister(this);
     }
