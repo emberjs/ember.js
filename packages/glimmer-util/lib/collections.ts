@@ -4,10 +4,6 @@ export interface Dict<T> {
   [index: string]: T;
 }
 
-export interface DictWithNumberKeys<T> {
-  [index: number]: T;
-}
-
 export interface Set<T> {
   add(value: T): Set<T>;
   delete(value: T);

@@ -202,7 +202,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 }
 
-export class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
+class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
   private map: Dict<BlockOpcode>;
   private updating: LinkedList<UpdatingOpcode>;
 
@@ -355,7 +355,7 @@ export class ListBlockOpcode extends BlockOpcode {
   }
 }
 
-export class UpdatingVMFrame {
+class UpdatingVMFrame {
   private vm: UpdatingVM;
   private ops: UpdatingOpSeq;
   private current: UpdatingOpcode;

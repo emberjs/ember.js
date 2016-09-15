@@ -1,6 +1,4 @@
-import { parse, print, builders } from 'glimmer-syntax';
-
-const b = builders;
+import { preprocess as parse, print, builders as b } from "glimmer-syntax";
 
 function printEqual(template) {
   const ast = parse(template);

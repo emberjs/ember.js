@@ -3,12 +3,6 @@ import { dict } from 'glimmer-util';
 export const EMPTY_ARRAY = Object.freeze([]);
 export const EMPTY_DICT = Object.freeze(dict<any>());
 
-export function turbocharge(object: Object): Object {
-  // function Constructor() {}
-  // Constructor.prototype = object;
-  return object;
-}
-
 interface EnumerableCallback<T> {
   (item: T): void;
 }
