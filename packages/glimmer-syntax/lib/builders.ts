@@ -1,6 +1,6 @@
 // Statements
 
-export function buildMustache(path, params?, hash?, raw?, loc?) {
+function buildMustache(path, params?, hash?, raw?, loc?) {
   return {
     type: "MustacheStatement",
     path: buildPath(path),
@@ -11,7 +11,7 @@ export function buildMustache(path, params?, hash?, raw?, loc?) {
   };
 }
 
-export function buildBlock(path, params?, hash?, program?, inverse?, loc?) {
+function buildBlock(path, params?, hash?, program?, inverse?, loc?) {
   return {
     type: "BlockStatement",
     path: buildPath(path),
@@ -23,7 +23,7 @@ export function buildBlock(path, params?, hash?, program?, inverse?, loc?) {
   };
 }
 
-export function buildElementModifier(path, params?, hash?, loc?) {
+function buildElementModifier(path, params?, hash?, loc?) {
   return {
     type: "ElementModifierStatement",
     path: buildPath(path),
@@ -33,7 +33,7 @@ export function buildElementModifier(path, params?, hash?, loc?) {
   };
 }
 
-export function buildPartial(name, params, hash, indent) {
+function buildPartial(name, params, hash, indent) {
   return {
     type: "PartialStatement",
     name: name,
@@ -43,14 +43,14 @@ export function buildPartial(name, params, hash, indent) {
   };
 }
 
-export function buildComment(value) {
+function buildComment(value) {
   return {
     type: "CommentStatement",
     value: value
   };
 }
 
-export function buildConcat(parts) {
+function buildConcat(parts) {
   return {
     type: "ConcatStatement",
     parts: parts || []
@@ -59,7 +59,7 @@ export function buildConcat(parts) {
 
 // Nodes
 
-export function buildElement(tag, attributes?, modifiers?, children?, loc?) {
+function buildElement(tag, attributes?, modifiers?, children?, loc?) {
   return {
     type: "ElementNode",
     tag: tag || "",
@@ -71,7 +71,7 @@ export function buildElement(tag, attributes?, modifiers?, children?, loc?) {
   };
 }
 
-export function buildAttr(name, value, loc?) {
+function buildAttr(name, value, loc?) {
   return {
     type: "AttrNode",
     name: name,
@@ -80,7 +80,7 @@ export function buildAttr(name, value, loc?) {
   };
 }
 
-export function buildText(chars?, loc?) {
+function buildText(chars?, loc?) {
   return {
     type: "TextNode",
     chars: chars || "",
@@ -90,7 +90,7 @@ export function buildText(chars?, loc?) {
 
 // Expressions
 
-export function buildSexpr(path, params?, hash?, loc?) {
+function buildSexpr(path, params?, hash?, loc?) {
   return {
     type: "SubExpression",
     path: buildPath(path),
@@ -100,7 +100,7 @@ export function buildSexpr(path, params?, hash?, loc?) {
   };
 }
 
-export function buildPath(original, loc?) {
+function buildPath(original, loc?) {
   if (typeof original !== 'string') return original;
 
   return {
@@ -112,7 +112,7 @@ export function buildPath(original, loc?) {
   };
 }
 
-export function buildString(value) {
+function buildString(value) {
   return {
     type: "StringLiteral",
     value: value,
@@ -120,7 +120,7 @@ export function buildString(value) {
   };
 }
 
-export function buildBoolean(value) {
+function buildBoolean(value) {
   return {
     type: "BooleanLiteral",
     value: value,
@@ -128,7 +128,7 @@ export function buildBoolean(value) {
   };
 }
 
-export function buildNumber(value) {
+function buildNumber(value) {
   return {
     type: "NumberLiteral",
     value: value,
@@ -136,7 +136,7 @@ export function buildNumber(value) {
   };
 }
 
-export function buildNull() {
+function buildNull() {
   return {
     type: "NullLiteral",
     value: null,
@@ -144,7 +144,7 @@ export function buildNull() {
   };
 }
 
-export function buildUndefined() {
+function buildUndefined() {
   return {
     type: "UndefinedLiteral",
     value: undefined,
@@ -154,14 +154,14 @@ export function buildUndefined() {
 
 // Miscellaneous
 
-export function buildHash(pairs?) {
+function buildHash(pairs?) {
   return {
     type: "Hash",
     pairs: pairs || []
   };
 }
 
-export function buildPair(key, value) {
+function buildPair(key, value) {
   return {
     type: "HashPair",
     key: key,
@@ -169,7 +169,7 @@ export function buildPair(key, value) {
   };
 }
 
-export function buildProgram(body?, blockParams?, loc?) {
+function buildProgram(body?, blockParams?, loc?) {
   return {
     type: "Program",
     body: body || [],
@@ -182,7 +182,7 @@ function buildSource(source?) {
   return source || null;
 }
 
-export function buildPosition(line, column) {
+function buildPosition(line, column) {
   return {
     line: (typeof line === 'number') ? line : null,
     column: (typeof column === 'number') ? column : null
