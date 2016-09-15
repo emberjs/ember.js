@@ -105,6 +105,10 @@ class LifeCycleHooksTest extends RenderingTest {
       }
     };
 
+    let assertState = (hookName, expectedState, instance) => {
+      this.assert.equal(instance._state, expectedState, `within ${hookName} the expected _state is ${expectedState}`);
+    };
+
     let ComponentClass = this.ComponentClass.extend({
       init() {
         expectDeprecation(() => { this._super(...arguments); },
@@ -147,12 +151,14 @@ class LifeCycleHooksTest extends RenderingTest {
         pushHook('didRender');
         assertParentView('didRender', this);
         assertElement('didRender', this);
+        assertState('didRender', 'inDOM', this);
       },
 
       didInsertElement() {
         pushHook('didInsertElement');
         assertParentView('didInsertElement', this);
         assertElement('didInsertElement', this);
+        assertState('didInsertElement', 'inDOM', this);
       },
 
       didUpdate(options) {
@@ -165,6 +171,7 @@ class LifeCycleHooksTest extends RenderingTest {
         pushHook('willDestroyElement');
         assertParentView('willDestroyElement', this);
         assertElement('willDestroyElement', this);
+        assertState('willDestroyElement', 'inDOM', this);
       },
 
       willClearRender() {
@@ -176,6 +183,7 @@ class LifeCycleHooksTest extends RenderingTest {
       didDestroyElement() {
         pushHook('didDestroyElement');
         assertNoElement('didDestroyElement', this);
+        assertState('didDestroyElement', 'destroying', this);
       },
 
       willDestroy() {

@@ -322,9 +322,9 @@ class CurlyComponentManager {
 
   didCreate({ component, environment }) {
     if (environment.isInteractive) {
+      component._transitionTo('inDOM');
       component.trigger('didInsertElement');
       component.trigger('didRender');
-      component._transitionTo('inDOM');
     }
   }
 
