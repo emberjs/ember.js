@@ -60,15 +60,11 @@ export class EntryPoint extends TopLevelTemplate {
 }
 
 export class Layout extends TopLevelTemplate {
+  public hasNamedParameters: boolean;
+  public hasYields: boolean;
   constructor(program: Program, symbolTable: SymbolTable, public named: string[], public yields: string[], public hasPartials: boolean) {
     super(program, symbolTable);
-  }
-
-  get hasNamedParameters(): boolean {
-    return !!this.named.length;
-  }
-
-  get hasYields(): boolean {
-    return !!this.yields.length;
+    this.hasNamedParameters = !!this.named.length;
+    this.hasYields = !!this.yields.length;;
   }
 }

@@ -307,7 +307,7 @@ export default class VM implements PublicVM {
 
   invokePartial(block: PartialBlock) {
     let compiled = block.compile(this.env);
-    this.pushFrame({ block: compiled });
+    this.pushFrame(compiled);
   }
 
   invokeLayout(

@@ -738,6 +738,8 @@ export class GetArgument<T> extends ExpressionSyntax<T> {
     } else if (lookup.hasPartialArgsSymbol()) {
       let symbol = lookup.getPartialArgsSymbol();
       return new CompiledLocalLookup(symbol, parts, head);
+    } else {
+      throw new Error(`Compile Error: ${this.parts.join('.')} is not a valid lookup path.`);
     }
   }
 }

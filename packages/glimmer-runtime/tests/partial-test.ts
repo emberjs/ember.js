@@ -141,6 +141,19 @@ QUnit.test('dynamic partial with static content', assert => {
   equalTokens(root, `Before <div>Testing</div> After`);
 });
 
+QUnit.test('nested dynamic partial with dynamic content', assert => {
+  let template = compile(`Before {{partial name}} After`);
+
+  env.registerPartial('test', `<div>Testing {{wat}} {{partial nest}}</div>`);
+  env.registerPartial('nested', `<div>Nested {{lol}}</div>`);
+
+  render(template, { name: 'test', nest: 'nested', wat: 'wat are', lol: 'you doing?' });
+
+  equalTokens(root, `Before <div>Testing wat are <div>Nested you doing?</div></div> After`);
+  rerender({ name: 'test', nest: 'nested', wat: 'wat are', lol: 'you doing?' }, { assertStable: true });
+  equalTokens(root, `Before <div>Testing wat are <div>Nested you doing?</div></div> After`);
+});
+
 QUnit.test('dynamic partial with falsy value does not render', assert => {
   let template = compile(`Before {{partial name}} After`);
 
@@ -151,23 +164,20 @@ QUnit.test('dynamic partial with falsy value does not render', assert => {
   equalTokens(root, `Before <!----> After`);
 });
 
-QUnit.test('static partial that does not exist does not render', assert => {
+QUnit.test('static partial that does not exist asserts', assert => {
   let template = compile(`Before {{partial 'test'}} After`);
 
-  render(template);
-  equalTokens(root, `Before <!----> After`);
-  rerender({}, { assertStable: true });
-  equalTokens(root, `Before <!----> After`);
+  assert.throws(() => {
+    render(template);
+  }, /test is not a partial/);
 });
 
 QUnit.test('dynamic partial that does not exist does not render', assert => {
   let template = compile(`Before {{partial name}} After`);
 
-  render(template, { name: 'illuminati' });
-
-  equalTokens(root, `Before <!----> After`);
-  rerender({ name: false });
-  equalTokens(root, `Before <!----> After`);
+  assert.throws(() => {
+    render(template, { name: 'illuminati' });
+  }, /Could not find a partial named "illuminati"/);
 });
 
 QUnit.test('dynamic partial with can change from falsy to real template', assert => {
@@ -183,6 +193,18 @@ QUnit.test('dynamic partial with can change from falsy to real template', assert
   equalTokens(root, `Before <div>Testing</div> After`);
 
   rerender({ name: false });
+  equalTokens(root, `Before <!----> After`);
+
+  rerender({ name: 'test' });
+  equalTokens(root, `Before <div>Testing</div> After`);
+
+  rerender({ name: null });
+  equalTokens(root, `Before <!----> After`);
+
+  rerender({ name: 'test' });
+  equalTokens(root, `Before <div>Testing</div> After`);
+
+  rerender({ name: undefined });
   equalTokens(root, `Before <!----> After`);
 });
 
@@ -251,17 +273,13 @@ QUnit.test('dynamic partial with local reference', assert => {
 });
 
 QUnit.test('partial without arguments throws', assert => {
-  let template = compile(`Before {{partial}} After`);
-
   assert.throws(function() {
-    render(template);
-  }, strip`Partial found with no arguments. You must specify a template.`);
+    compile(`Before {{partial}} After`);
+  }, strip`Partial found with no arguments. You must specify a template name.`);
 });
 
 QUnit.test('partial with more than one argument throws', assert => {
-  let template = compile(`Before {{partial 'turnt' 'up'}} After`);
-
   assert.throws(function() {
-    render(template);
+    compile(`Before {{partial 'turnt' 'up'}} After`);
   }, strip`Partial found with more than one argument. You can only specify a single template.`);
 });

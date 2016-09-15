@@ -155,7 +155,6 @@ export abstract class Environment {
     let {
       isSimple,
       isBlock,
-      isInline,
       key,
       args,
       templates

@@ -828,8 +828,6 @@ export class TestEnvironment extends Environment {
   lookupPartial(partialName: string) {
     let partial = this.partials[partialName];
 
-    if (!partial) throw new Error(`partial for ${partialName} not found.`);
-
     return partial;
   }
 
