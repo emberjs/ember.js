@@ -23,7 +23,7 @@ const badTagsForDataURI = [
   'EMBED'
 ];
 
-export const badAttributes = [
+const badAttributes = [
   'href',
   'src',
   'background',
