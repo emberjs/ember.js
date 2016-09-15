@@ -7,7 +7,7 @@ export default class CompiledValue<T> extends CompiledExpression<T> {
   public type = "value";
   private reference: ValueReference<T>;
 
-  constructor({ value }: { value: any }) {
+  constructor(value: any) {
     super();
     this.reference = new ValueReference(value);
   }

@@ -10,11 +10,9 @@ export class PrimitiveReference extends ConstReference<any> implements PathRefer
 }
 
 export class ConditionalReference implements Reference<boolean> {
-  private inner: Reference<any>;
   public tag: RevisionTag;
 
-  constructor(inner: Reference<Opaque>) {
-    this.inner = inner;
+  constructor(private inner: Reference<Opaque>) {
     this.tag = inner.tag;
   }
 

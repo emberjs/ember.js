@@ -183,7 +183,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
       this.bounds.reset(env)
     );
 
-    let vm = new VM({ env, scope, dynamicScope, elementStack });
+    let vm = new VM(env, scope, dynamicScope, elementStack);
     let result = vm.execute(this.ops);
 
     this.children = result.opcodes();
@@ -338,7 +338,7 @@ export class ListBlockOpcode extends BlockOpcode {
       nextSibling
     );
 
-    return new VM({ env, scope, dynamicScope, elementStack });
+    return new VM(env, scope, dynamicScope, elementStack);
   }
 
   toJSON() : OpcodeJSON {

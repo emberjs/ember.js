@@ -4,13 +4,9 @@ import { ValueReference } from './value';
 
 export default class CompiledHasBlock extends CompiledExpression<boolean> {
   public type = "has-block";
-  public blockName: string;
-  public blockSymbol: number;
 
-  constructor({ blockName, blockSymbol }: { blockName: string, blockSymbol: number }) {
+  constructor(public blockName: string, public blockSymbol: number) {
     super();
-    this.blockName = blockName;
-    this.blockSymbol = blockSymbol;
   }
 
   evaluate(vm: VM): ValueReference<boolean> {

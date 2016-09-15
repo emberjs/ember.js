@@ -6,9 +6,8 @@ import { Opaque } from 'glimmer-util';
 
 export default class CompiledConcat {
   public type = "concat";
-  public parts: CompiledExpression<Opaque>[];
 
-  constructor({ parts }: { parts: CompiledExpression<Opaque>[] }) {
+  constructor(public parts: CompiledExpression<Opaque>[]) {
     this.parts = parts;
   }
 
@@ -27,12 +26,10 @@ export default class CompiledConcat {
 
 class ConcatReference extends CachedReference<string> {
   public tag: RevisionTag;
-  private parts: PathReference<Opaque>[];
 
-  constructor(parts: PathReference<Opaque>[]) {
+  constructor(private parts: PathReference<Opaque>[]) {
     super();
     this.tag = combineTagged(parts);
-    this.parts = parts;
   }
 
   protected compute(): string {
