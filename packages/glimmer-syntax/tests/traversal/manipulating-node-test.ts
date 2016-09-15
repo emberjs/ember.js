@@ -1,9 +1,6 @@
 import { astEqual } from '../support';
-import {
-  parse,
-  traverse,
-  builders as b
-} from 'glimmer-syntax';
+import { preprocess as parse, traverse, builders as b } from "glimmer-syntax";
+
 import {
   cannotRemoveNode,
   cannotReplaceNode,
