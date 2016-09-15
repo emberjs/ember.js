@@ -58,17 +58,17 @@ export default class PartialSyntax extends StatementSyntax {
     let BEGIN = new LabelOpcode("BEGIN");
     let END = new LabelOpcode("END");
 
-    compiler.append(new EnterOpcode({ begin: BEGIN, end: END }));
+    compiler.append(new EnterOpcode(BEGIN, END));
     compiler.append(BEGIN);
-    compiler.append(new PutArgsOpcode({ args: this.args.compile(compiler, env, symbolTable) }));
+    compiler.append(new PutArgsOpcode(this.args.compile(compiler, env, symbolTable)));
     compiler.append(new NameToPartialOpcode(this.symbolTable));
     compiler.append(new TestOpcode(SimpleTest));
 
-    compiler.append(new JumpUnlessOpcode({ target: END }));
-    compiler.append(new EvaluatePartialOpcode({
-      name: compiledPartialNameExpression,
+    compiler.append(new JumpUnlessOpcode(END));
+    compiler.append(new EvaluatePartialOpcode(
+      compiledPartialNameExpression,
       symbolTable
-    }));
+    ));
 
     compiler.append(END);
     compiler.append(new ExitOpcode());
