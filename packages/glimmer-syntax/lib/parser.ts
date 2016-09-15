@@ -1,10 +1,22 @@
 import { parse } from "handlebars/compiler/base";
-import * as syntax from "./syntax";
+import builders from "./builders";
+import print from "./generation/print";
+import traverse from "./traversal/traverse";
+import Walker from "./traversal/walker";
+
 import EventedTokenizer from "simple-html-tokenizer/evented-tokenizer";
 import EntityParser from "simple-html-tokenizer/entity-parser";
 import namedCharRefs from "simple-html-tokenizer/html5-named-char-refs";
 import handlebarsNodeVisitors from "./parser/handlebars-node-visitors";
 import tokenizerEventHandlers from "./parser/tokenizer-event-handlers";
+
+export const syntax = {
+  parse: preprocess,
+  builders,
+  print,
+  traverse,
+  Walker
+};
 
 export function preprocess(html, options?) {
   let ast = (typeof html === 'object') ? html : parse(html);
@@ -22,8 +34,6 @@ export function preprocess(html, options?) {
 
   return combined;
 }
-
-export default preprocess;
 
 const entityParser = new EntityParser(namedCharRefs);
 

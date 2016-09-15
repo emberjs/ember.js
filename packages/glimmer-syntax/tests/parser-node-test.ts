@@ -1,6 +1,6 @@
 import { parse as handlebarsParse } from "handlebars/compiler/base";
-import { parse } from "glimmer-syntax";
-import b from "glimmer-syntax/lib/builders";
+import { preprocess as parse, builders as b } from "glimmer-syntax";
+
 import { astEqual } from "./support";
 
 QUnit.module("[glimmer-syntax] Parser - AST");
