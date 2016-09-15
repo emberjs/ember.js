@@ -53,11 +53,9 @@ export class PutNullOpcode extends Opcode {
 
 export class PutValueOpcode extends Opcode {
   public type = "put-value";
-  private expression: CompiledExpression<any>;
 
-  constructor({ expression }: { expression: CompiledExpression<any> }) {
+  constructor(private expression: CompiledExpression<any>) {
     super();
-    this.expression = expression;
   }
 
   evaluate(vm: VM) {
@@ -73,18 +71,11 @@ export class PutValueOpcode extends Opcode {
   }
 }
 
-export interface PutArgsOptions {
-  args: CompiledArgs;
-}
-
 export class PutArgsOpcode extends Opcode {
   public type = "put-args";
 
-  private args: CompiledArgs;
-
-  constructor({ args }: PutArgsOptions) {
+  constructor(private args: CompiledArgs) {
     super();
-    this.args = args;
   }
 
   evaluate(vm: VM) {
@@ -193,16 +184,11 @@ export class BindDynamicScopeOpcode extends Opcode {
   }
 }
 
-export interface EnterOptions {
-  begin: LabelOpcode;
-  end: LabelOpcode;
-}
-
 export class EnterOpcode extends Opcode {
   public type = "enter";
   public slice: Slice<Opcode>; // Public because it's used by lazy content deopt
 
-  constructor({ begin, end }: EnterOptions) {
+  constructor(begin: LabelOpcode, end: LabelOpcode) {
     super();
     this.slice = new ListSlice(begin, end);
   }
@@ -275,13 +261,12 @@ export interface EvaluateOptions {
 
 export class EvaluateOpcode extends Opcode {
   public type = "evaluate";
-  public debug: string;
-  public block: InlineBlock;
 
-  constructor({ debug, block }: { debug: string, block: InlineBlock }) {
+  constructor(
+    public debug: string,
+    public block: InlineBlock
+  ) {
     super();
-    this.debug = debug;
-    this.block = block;
   }
 
   evaluate(vm: VM) {
@@ -311,14 +296,13 @@ export class EvaluateOpcode extends Opcode {
 
 export class EvaluatePartialOpcode extends Opcode {
   public type = "evaluate-partial";
-  public symbolTable: SymbolTable;
-  public name: CompiledExpression<any>;
   private cache = dict<PartialBlock>();
 
-  constructor({ name, symbolTable }: { symbolTable: SymbolTable, name: CompiledExpression<any> }) {
+  constructor(
+    public name: CompiledExpression<any>,
+    public symbolTable: SymbolTable
+  ) {
     super();
-    this.name = name;
-    this.symbolTable = symbolTable;
   }
 
   evaluate(vm: VM) {
@@ -417,11 +401,8 @@ export interface JumpOptions {
 export class JumpOpcode extends Opcode {
   public type = "jump";
 
-  private target: LabelOpcode;
-
-  constructor({ target }: { target: LabelOpcode }) {
+  constructor(private target: LabelOpcode) {
     super();
-    this.target = target;
   }
 
   evaluate(vm: VM) {
@@ -523,13 +504,11 @@ export class Assert extends UpdatingOpcode {
 export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
   public type = "jump-if-not-modified";
 
-  private target: LabelOpcode;
   private lastRevision: Revision;
 
-  constructor({ tag, target }: { tag: RevisionTag, target: LabelOpcode }) {
+  constructor(tag: RevisionTag, private target: LabelOpcode) {
     super();
     this.tag = tag;
-    this.target = target;
     this.lastRevision = tag.value();
   }
 
@@ -557,12 +536,9 @@ export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
 export class DidModifyOpcode extends UpdatingOpcode {
   public type = "did-modify";
 
-  private target: JumpIfNotModifiedOpcode;
-
-  constructor({ target }: { target: JumpIfNotModifiedOpcode }) {
+  constructor(private target: JumpIfNotModifiedOpcode) {
     super();
     this.tag = CONSTANT_TAG;
-    this.target = target;
   }
 
   evaluate() {

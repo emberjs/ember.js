@@ -145,6 +145,8 @@ export function toggle() {
 function start() {
   playing = true;
 
+  env.begin();
+
   let lastFrame = null;
   let fpsMeter = new ExponentialMovingAverage(2/121);
 

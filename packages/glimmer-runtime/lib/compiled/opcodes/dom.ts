@@ -24,11 +24,9 @@ import { ElementOperations } from '../../builder';
 
 export class TextOpcode extends Opcode {
   public type = "text";
-  public text: string;
 
-  constructor({ text }: { text: string }) {
+  constructor(private text: string) {
     super();
-    this.text = text;
   }
 
   evaluate(vm: VM) {
@@ -347,23 +345,15 @@ export class CloseElementOpcode extends Opcode {
   }
 }
 
-export interface StaticAttrOptions {
-  namespace: string;
-  name: string;
-  value: string;
-}
-
 export class StaticAttrOpcode extends Opcode {
   public type = "static-attr";
-  public namespace: string;
-  public name: string;
-  public value: string;
 
-  constructor({ namespace, name, value }: StaticAttrOptions) {
+  constructor(
+    public namespace: string,
+    public name: string,
+    public value: string
+  ) {
     super();
-    this.namespace = namespace;
-    this.name = name;
-    this.value = value;
   }
 
   evaluate(vm: VM) {
@@ -394,7 +384,11 @@ export class StaticAttrOpcode extends Opcode {
 export class ModifierOpcode extends Opcode {
   public type = "modifier";
 
-  constructor(private name: string, private manager: ModifierManager<Opaque>, private args: CompiledArgs) {
+  constructor(
+    private name: string,
+    private manager: ModifierManager<Opaque>,
+    private args: CompiledArgs
+  ) {
     super();
   }
 
@@ -560,23 +554,15 @@ function formatElement(element: Simple.Element): string {
   return JSON.stringify(`<${element.tagName.toLowerCase()} />`);
 }
 
-export interface DynamicAttrNSOptions {
-  name: string;
-  namespace: string;
-  isTrusting: boolean;
-}
-
 export class DynamicAttrNSOpcode extends Opcode {
   public type = "dynamic-attr";
-  public name: string;
-  public namespace: string;
-  public isTrusting: boolean;
 
-  constructor({ name, namespace, isTrusting }: DynamicAttrNSOptions) {
+  constructor(
+    public name: string,
+    public namespace: string,
+    public isTrusting: boolean
+  ) {
     super();
-    this.name = name;
-    this.namespace = namespace;
-    this.isTrusting = isTrusting;
   }
 
   evaluate(vm: VM) {
@@ -601,20 +587,14 @@ export class DynamicAttrNSOpcode extends Opcode {
   }
 }
 
-export interface SimpleAttrOptions {
-  name: string;
-  isTrusting: boolean;
-}
-
 export class DynamicAttrOpcode extends Opcode {
   public type = "dynamic-attr";
-  public name: string;
-  public isTrusting: boolean;
 
-  constructor({ name, isTrusting }: SimpleAttrOptions) {
+  constructor(
+    public name: string,
+    public isTrusting: boolean
+  ) {
     super();
-    this.name = name;
-    this.isTrusting = isTrusting;
   }
 
   evaluate(vm: VM) {
@@ -661,17 +641,11 @@ export class PatchElementOpcode extends UpdatingOpcode {
   }
 }
 
-export interface CommentOptions {
-  comment: string;
-}
-
 export class CommentOpcode extends Opcode {
   public type = "comment";
-  public comment: string;
 
-  constructor({ comment }: CommentOptions) {
+  constructor(public comment: string) {
     super();
-    this.comment = comment;
   }
 
   evaluate(vm: VM) {
