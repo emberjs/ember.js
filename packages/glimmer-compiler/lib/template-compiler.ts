@@ -185,10 +185,10 @@ export default class TemplateCompiler<T extends TemplateMeta> {
 
   builtInHelper(expr) {
     if (isHasBlock(expr)) {
-      let name = assertValidHasBlock(expr);
+      let name = assertValidHasBlockUsage(expr.path.original, expr);
       this.hasBlock(name, expr);
     } else if (isHasBlockParams(expr)) {
-      let name = assertValidHasBlockParams(expr);
+      let name = assertValidHasBlockUsage(expr.path.original, expr);
       this.hasBlockParams(name, expr);
     }
   }
@@ -378,21 +378,21 @@ function assertValidYield({ hash }): string {
   }
 }
 
-function assertValidPartial({ params, hash, escaped }) /* : expr */ {
+function assertValidPartial({ params, hash, escaped, loc }) /* : expr */ {
   if (params && params.length !== 1) {
-    throw new Error(`partial takes a single positional argument: the name of the partial`);
+    throw new Error(`Partial found with no arguments. You must specify a template name. (on line ${loc.start.line})`);
   } else if (hash && hash.pairs.length > 0) {
-    throw new Error(`partial does not take any named arguments`);
+    throw new Error(`partial does not take any named arguments (on line ${loc.start.line})`);
   } else if (!escaped) {
-    throw new Error(`{{{partial ...}}} is not supported, please use {{partial ...}} instead`);
+    throw new Error(`{{{partial ...}}} is not supported, please use {{partial ...}} instead (on line ${loc.start.line})`);
   }
 
   return params;
 }
 
-function assertValidHasBlock({ params, hash }): string {
+function assertValidHasBlockUsage(type, { params, hash, loc }): string {
   if (hash && hash.pairs.length > 0) {
-    throw new Error(`has-block does not take any named arguments`);
+    throw new Error(`${type} does not take any named arguments`);
   }
 
   if (params.length === 0) {
@@ -401,27 +401,9 @@ function assertValidHasBlock({ params, hash }): string {
     if (params[0].type === 'StringLiteral') {
       return params[0].value;
     } else {
-      throw new Error(`you can only yield to a literal value`);
+      throw new Error(`you can only yield to a literal value (on line ${loc.start.line})`);
     }
   } else {
-    throw new Error(`has-block only takes a single positional argument`);
-  }
-}
-
-function assertValidHasBlockParams({ params, hash }): string {
-  if (hash && hash.pairs.length > 0) {
-    throw new Error(`has-block-params does not take any named arguments`);
-  }
-
-  if (params.length === 0) {
-    return 'default';
-  } else if (params.length === 1) {
-    if (params[0].type === 'StringLiteral') {
-      return params[0].value;
-    } else {
-      throw new Error(`you can only yield to a literal value`);
-    }
-  } else {
-    throw new Error(`has-block-params only takes a single positional argument`);
+    throw new Error(`${type} only takes a single positional argument (on line ${loc.start.line})`);
   }
 }

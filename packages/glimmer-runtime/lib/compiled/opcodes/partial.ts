@@ -8,7 +8,7 @@ import SymbolTable from '../../symbol-table';
 import { PartialBlock } from '../blocks';
 
 export class PutDynamicPartialDefinitionOpcode extends Opcode {
-  public type = "put-dynamic-component-definition";
+  public type = "put-dynamic-partial-definition";
 
   constructor(private symbolTable: SymbolTable) {
     super();
