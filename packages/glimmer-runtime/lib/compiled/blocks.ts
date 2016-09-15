@@ -46,7 +46,7 @@ export class InlineBlock extends Block {
 export class PartialBlock extends InlineBlock {
 }
 
-export abstract class TopLevelTemplate extends Block {
+abstract class TopLevelTemplate extends Block {
 }
 
 export class EntryPoint extends TopLevelTemplate {

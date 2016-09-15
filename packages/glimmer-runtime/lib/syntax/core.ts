@@ -194,7 +194,7 @@ export class UnoptimizedAppend extends Append {
   }
 }
 
-export const MODIFIER_SYNTAX = "c0420397-8ff1-4241-882b-4b7a107c9632";
+const MODIFIER_SYNTAX = "c0420397-8ff1-4241-882b-4b7a107c9632";
 
 export class Modifier extends StatementSyntax {
   "c0420397-8ff1-4241-882b-4b7a107c9632" = true;
