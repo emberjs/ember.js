@@ -19,7 +19,9 @@ const $ = jQuery;
   @method testCheckboxClick
 */
 function testCheckboxClick(handler) {
-  $('<input type="checkbox">')
+  let input = document.createElement('input');
+  $(input)
+    .attr('type', 'checkbox')
     .css({ position: 'absolute', left: '-1000px', top: '-1000px' })
     .appendTo('body')
     .on('click', handler)
