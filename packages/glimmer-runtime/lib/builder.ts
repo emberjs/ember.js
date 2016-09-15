@@ -266,9 +266,7 @@ export class SimpleBlockTracker implements Tracker {
   protected destroyables: Destroyable[] = null;
   protected nesting = 0;
 
-  constructor(private parent: Simple.Element){
-    this.parent = parent;
-  }
+  constructor(private parent: Simple.Element){}
 
   destroy() {
     let { destroyables } = this;

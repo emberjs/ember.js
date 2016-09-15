@@ -33,15 +33,11 @@ import OpcodeBuilderDSL from './compiled/opcodes/builder';
 import * as Component from './component/interfaces';
 
 abstract class Compiler {
-  public env: Environment;
-  protected block: Block;
   protected symbolTable: SymbolTable;
   protected current: StatementSyntax;
 
-  constructor(block: Block, env: Environment) {
-    this.block = block;
+  constructor(protected block: Block, public env: Environment) {
     this.current = block.program.head();
-    this.env = env;
     this.symbolTable = block.symbolTable;
   }
 
@@ -100,10 +96,9 @@ export class EntryPointCompiler extends Compiler {
 
 export class InlineBlockCompiler extends Compiler {
   private ops: OpcodeBuilderDSL;
-  protected block: InlineBlock;
   protected current: StatementSyntax;
 
-  constructor(block: InlineBlock, env: Environment) {
+  constructor(protected block: InlineBlock, env: Environment) {
     super(block, env);
     let list = new CompileIntoList(env, block.symbolTable);
     this.ops = new OpcodeBuilderDSL(list, block.symbolTable, env);
@@ -154,13 +149,9 @@ export function compileLayout(compilable: Compilable, env: Environment): Compile
 }
 
 class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
-  public env: Environment;
-
   private inner: EmptyBuilder | WrappedBuilder | UnwrappedBuilder;
 
-  constructor(env: Environment) {
-    this.env = env;
-  }
+  constructor(public env: Environment) {}
 
   empty() {
     this.inner = new EmptyBuilder(this.env);
@@ -188,11 +179,8 @@ class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
 }
 
 class EmptyBuilder {
-  public env: Environment;
 
-  constructor(env: Environment) {
-    this.env = env;
-  }
+  constructor(public env: Environment) {}
 
   get tag(): Component.ComponentTagBuilder {
     throw new Error('Nope');
@@ -211,16 +199,10 @@ class EmptyBuilder {
 }
 
 class WrappedBuilder {
-  private layout: Layout;
-  public env: Environment;
-
   public tag = new ComponentTagBuilder();
   public attrs = new ComponentAttrsBuilder();
 
-  constructor(env: Environment, layout: Layout) {
-    this.env = env;
-    this.layout = layout;
-  }
+  constructor(public env: Environment, private layout: Layout) {}
 
   compile(): CompiledBlock {
     //========DYNAMIC
@@ -303,15 +285,9 @@ class WrappedBuilder {
 }
 
 class UnwrappedBuilder {
-  private layout: Layout;
-  public env: Environment;
-
   public attrs = new ComponentAttrsBuilder();
 
-  constructor(env: Environment, layout: Layout) {
-    this.env = env;
-    this.layout = layout;
-  }
+  constructor(public env: Environment, private layout: Layout) {}
 
   get tag(): Component.ComponentTagBuilder {
     throw new Error('BUG: Cannot call `tag` on an UnwrappedBuilder');
@@ -382,11 +358,11 @@ class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
   private buffer: AttributeSyntax<string>[] = [];
 
   static(name: string, value: string) {
-    this.buffer.push(new Syntax.StaticAttr({ name, value }));
+    this.buffer.push(new Syntax.StaticAttr(name, value, null));
   }
 
   dynamic(name: string, value: FunctionExpression<string>) {
-    this.buffer.push(new Syntax.DynamicAttr({ name, value: makeFunctionExpression(value), isTrusting: false }));
+    this.buffer.push(new Syntax.DynamicAttr(name, makeFunctionExpression(value), null, false));
   }
 }
 

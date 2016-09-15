@@ -106,26 +106,23 @@ export class Block extends StatementSyntax {
     let template = scanner.blockFor(symbolTable, templateId);
     let inverse = (typeof inverseId === 'number') ? scanner.blockFor(symbolTable, inverseId) : null;
 
-    return new Block({
+    return new Block(
       path,
-      args: Args.fromSpec(params, hash),
-      templates: Templates.fromSpec(template, inverse)
-    });
+      Args.fromSpec(params, hash),
+      Templates.fromSpec(template, inverse)
+    );
   }
 
-  static build(options): Block {
-    return new this(options);
+  static build(path: string[], args: Args, templates: Templates): Block {
+    return new this(path, args, templates);
   }
 
-  path: string[];
-  args: Args;
-  templates: Templates;
-
-  constructor(options: { path: string[], args: Args, templates: Templates }) {
+  constructor(
+    public path: string[],
+    public args: Args,
+    public templates: Templates
+  ) {
     super();
-    this.path = options.path;
-    this.args = options.args;
-    this.templates = options.templates;
   }
 
   scan(scanner: BlockScanner): StatementSyntax {
@@ -170,7 +167,7 @@ export class OptimizedAppend extends Append {
   }
 
   compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
-    compiler.append(new PutValueOpcode({ expression: this.value.compile(compiler, env, symbolTable) }));
+    compiler.append(new PutValueOpcode(this.value.compile(compiler, env, symbolTable)));
 
     if (this.trustingMorph) {
       compiler.append(new OptimizedTrustingAppendOpcode());
@@ -243,22 +240,18 @@ export class Modifier extends StatementSyntax {
 
 export class StaticArg extends ArgumentSyntax<string> {
   public type = "static-arg";
-  name: string;
-  value: string;
 
   static fromSpec(node: SerializedStatements.StaticArg): StaticArg {
     let [, name, value] = node;
-    return new StaticArg({ name, value });
+    return new StaticArg(name, value as string);
   }
 
   static build(name: string, value: string, namespace: string=null): StaticArg {
-    return new this({ name, value });
+    return new this(name, value);
   }
 
-  constructor({ name, value }) {
+  constructor(public name: string, public value: string) {
     super();
-    this.name = name;
-    this.value = value;
   }
 
   compile() {
@@ -275,25 +268,22 @@ export class DynamicArg extends ArgumentSyntax<Opaque> {
   static fromSpec(sexp: SerializedStatements.DynamicArg): DynamicArg {
     let [, name, value] = sexp;
 
-    return new DynamicArg({
+    return new DynamicArg(
       name,
-      value: buildExpression(value)
-    });
+      buildExpression(value)
+    );
   }
 
   static build(name: string, value: ExpressionSyntax<string>): DynamicArg {
-    return new this({ name, value });
+    return new this(name, value);
   }
 
-  name: string;
-  value: ExpressionSyntax<Opaque>;
-  namespace: string;
-
-  constructor({ name, value, namespace = null }: { name: string, value: ExpressionSyntax<Opaque>, namespace?: string }) {
+  constructor(
+    public name: string,
+    public value: ExpressionSyntax<Opaque>,
+    public namespace: string = null
+  ) {
     super();
-    this.name = name;
-    this.value = value;
-    this.namespace = namespace;
   }
 
   compile() {
@@ -308,16 +298,16 @@ export class DynamicArg extends ArgumentSyntax<Opaque> {
 export class TrustingAttr {
   static fromSpec(sexp: SerializedStatements.TrustingAttr): DynamicAttr {
     let [, name, value, namespace] = sexp;
-    return new DynamicAttr({
+    return new DynamicAttr(
       name,
+      buildExpression(value),
       namespace,
-      isTrusting: true,
-      value: buildExpression(value)
-    });
+      true
+    );
   }
 
   static build(name: string, value: ExpressionSyntax<string>, isTrusting: boolean, namespace: string=null): DynamicAttr {
-    return new DynamicAttr({ name, value, namespace, isTrusting });
+    return new DynamicAttr(name, value, namespace, isTrusting);
   }
 
   compile() { throw new Error('Attempting to compile a TrustingAttr which is just a delegate for DynamicAttr.'); }
@@ -329,27 +319,25 @@ export class StaticAttr extends AttributeSyntax<string> {
 
   static fromSpec(node: SerializedStatements.StaticAttr): StaticAttr {
     let [, name, value, namespace] = node;
-    return new StaticAttr({ name, value: value as string, namespace });
+    return new StaticAttr(name, value as string, namespace);
   }
 
   static build(name: string, value: string, namespace: string=null): StaticAttr {
-    return new this({ name, value, namespace });
+    return new this(name, value, namespace);
   }
 
-  name: string;
-  value: string;
-  namespace: string;
   isTrusting = false;
 
-  constructor({ name, value, namespace = null }: { name: string, value: string, namespace?: string }) {
+  constructor(
+    public name: string,
+    public value: string,
+    public namespace: string
+  ) {
     super();
-    this.name = name;
-    this.value = value;
-    this.namespace = namespace;
   }
 
   compile(compiler: CompileInto) {
-    compiler.append(new StaticAttrOpcode(this));
+    compiler.append(new StaticAttrOpcode(this.namespace, this.name, this.value));
   }
 
   valueSyntax(): ExpressionSyntax<string> {
@@ -363,37 +351,33 @@ export class DynamicAttr extends AttributeSyntax<string> {
 
   static fromSpec(sexp: SerializedStatements.DynamicAttr): DynamicAttr {
     let [, name, value, namespace] = sexp;
-    return new DynamicAttr({
+    return new DynamicAttr(
       name,
-      namespace,
-      value: buildExpression(value)
-    });
+      buildExpression(value),
+      namespace
+    );
   }
 
   static build(name: string, value: ExpressionSyntax<string>, isTrusting = false, namespace: string=null): DynamicAttr {
-    return new this({ name, value, namespace, isTrusting });
+    return new this(name, value, namespace, isTrusting);
   }
 
-  name: string;
-  value: ExpressionSyntax<string>;
-  namespace: string;
-  isTrusting: boolean;
-
-  constructor({ name, value, isTrusting = false, namespace = null }: { name: string, isTrusting?: boolean, value: ExpressionSyntax<string>, namespace?: string }) {
+  constructor(
+    public name: string,
+    public value: ExpressionSyntax<string>,
+    public namespace: string = undefined,
+    public isTrusting?: boolean,
+  ) {
     super();
-    this.name = name;
-    this.value = value;
-    this.namespace = namespace;
-    this.isTrusting = isTrusting;
   }
 
   compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
     let {namespace, value} = this;
-    compiler.append(new PutValueOpcode({ expression: value.compile(compiler, env, symbolTable) }));
+    compiler.append(new PutValueOpcode(value.compile(compiler, env, symbolTable)));
     if (namespace) {
-      compiler.append(new DynamicAttrNSOpcode(this));
+      compiler.append(new DynamicAttrNSOpcode(this.name, this.namespace, this.isTrusting));
     } else {
-      compiler.append(new DynamicAttrOpcode(this));
+      compiler.append(new DynamicAttrOpcode(this.name, this.isTrusting));
     }
   }
 
@@ -439,18 +423,15 @@ export class Text extends StatementSyntax {
 
   static fromSpec(node: SerializedStatements.Text): Text {
     let [, content] = node;
-    return new Text({ content });
+    return new Text(content);
   }
 
   static build(content): Text {
-    return new this({ content });
+    return new this(content);
   }
 
-  public content: string;
-
-  constructor(options: { content: string }) {
+  constructor(public content: string) {
     super();
-    this.content = options.content;
   }
 
   compile(dsl: OpcodeBuilderDSL) {
@@ -464,18 +445,15 @@ export class Comment extends StatementSyntax {
   static fromSpec(sexp: SerializedStatements.Comment): Comment {
     let [, value] = sexp;
 
-    return new Comment({ value });
+    return new Comment(value);
   }
 
   static build(value: string): Comment {
-    return new this({ value: value });
+    return new this(value);
   }
 
-  public comment: string;
-
-  constructor(options) {
+  constructor(public comment: string) {
     super();
-    this.comment = options.value;
   }
 
   compile(dsl: OpcodeBuilderDSL) {
@@ -489,26 +467,23 @@ export class OpenElement extends StatementSyntax {
   static fromSpec(sexp: SerializedStatements.OpenElement, symbolTable: SymbolTable): OpenElement {
     let [, tag, blockParams] = sexp;
 
-    return new OpenElement({
+    return new OpenElement(
       tag,
       blockParams,
       symbolTable
-    });
+    );
   }
 
   static build(tag: string, blockParams: string[], symbolTable: SymbolTable): OpenElement {
-    return new this({ tag, blockParams, symbolTable });
+    return new this(tag, blockParams, symbolTable);
   }
 
-  public tag: string;
-  public blockParams: string[];
-  public symbolTable: SymbolTable;
-
-  constructor(options: { tag: string, blockParams: string[], symbolTable: SymbolTable }) {
+  constructor(
+    public tag: string,
+    public blockParams: string[],
+    public symbolTable: SymbolTable
+  ) {
     super();
-    this.tag = options.tag;
-    this.blockParams = options.blockParams;
-    this.symbolTable = options.symbolTable;
   }
 
   scan(scanner: BlockScanner): StatementSyntax {
@@ -521,7 +496,7 @@ export class OpenElement extends StatementSyntax {
       let template = scanner.endBlock(this.blockParams);
       return new Component(tag, attrs, args, template);
     } else {
-      return new OpenPrimitiveElement({ tag });
+      return new OpenPrimitiveElement(tag);
     }
   }
 
@@ -531,7 +506,7 @@ export class OpenElement extends StatementSyntax {
 
   toIdentity(): OpenPrimitiveElement {
     let { tag } = this;
-    return new OpenPrimitiveElement({ tag });
+    return new OpenPrimitiveElement(tag);
   }
 
   private parameters(scanner: BlockScanner): { args: Args, attrs: string[] } {
@@ -611,15 +586,12 @@ export class Component extends StatementSyntax {
 export class OpenPrimitiveElement extends StatementSyntax {
   type = "open-primitive-element";
 
-  public tag: string;
-
   static build(tag: string): OpenPrimitiveElement {
-    return new this({ tag });
+    return new this(tag);
   }
 
-  constructor(options: { tag: string }) {
+  constructor(public tag: string) {
     super();
-    this.tag = options.tag;
   }
 
   compile(compiler: CompileInto) {
@@ -633,43 +605,37 @@ export class Yield extends StatementSyntax {
 
     let args = Args.fromSpec(params, null);
 
-    return new Yield({ to, args });
+    return new Yield(to, args);
   }
 
   static build(params: ExpressionSyntax<Opaque>[], to: string): Yield {
     let args = Args.fromPositionalArgs(PositionalArgs.build(params));
-    return new this({ to, args });
+    return new this(to, args);
   }
 
   type = "yield";
-  public to: string;
-  public args: Args;
 
-  constructor({ to, args }: { to: string, args: Args }) {
+  constructor(public to: string, public args: Args) {
     super();
-    this.to = to;
-    this.args = args;
   }
 
   compile(dsl: OpcodeBuilderDSL, env: Environment, symbolTable: SymbolTable) {
     let to = dsl.getBlockSymbol(this.to);
     let args = this.args.compile(dsl, env, symbolTable);
-    dsl.append(new OpenBlockOpcode({ to, label: this.to, args }));
+    dsl.append(new OpenBlockOpcode(to, this.to, args));
     dsl.append(new CloseBlockOpcode());
   }
 }
 
 class OpenBlockOpcode extends Opcode {
   type = "open-block";
-  public to: number;
-  public label: string;
-  public args: CompiledArgs;
 
-  constructor({ to, label, args }: { to: number, label: string, args: CompiledArgs }) {
+  constructor(
+    public to: number,
+    public label: string,
+    public args: CompiledArgs
+  ) {
     super();
-    this.to = to;
-    this.label = label;
-    this.args = args;
   }
 
   evaluate(vm: VM) {
@@ -708,11 +674,8 @@ export class Value<T extends SerializedExpressions.Value> extends ExpressionSynt
     return new this(value);
   }
 
-  public value: T;
-
-  constructor(value: T) {
+  constructor(public value: T) {
     super();
-    this.value = value;
   }
 
   inner(): T {
@@ -720,7 +683,7 @@ export class Value<T extends SerializedExpressions.Value> extends ExpressionSynt
   }
 
   compile(compiler: SymbolLookup): CompiledExpression<T> {
-    return new CompiledValue<T>(this);
+    return new CompiledValue<T>(this.value);
   }
 }
 
@@ -730,18 +693,15 @@ export class GetArgument<T> extends ExpressionSyntax<T> {
   static fromSpec(sexp: SerializedExpressions.Arg): GetArgument<Opaque> {
     let [, parts] = sexp;
 
-    return new GetArgument<Opaque>({ parts });
+    return new GetArgument<Opaque>(parts);
   }
 
   static build(path: string): GetArgument<Opaque> {
-    return new this<Opaque>({ parts: path.split('.') });
+    return new this<Opaque>(path.split('.'));
   }
 
-  public parts: string[];
-
-  constructor(options: { parts: string[] }) {
+  constructor(public parts: string[]) {
     super();
-    this.parts = options.parts;
   }
 
   compile(lookup: SymbolLookup): CompiledExpression<T> {
@@ -771,7 +731,6 @@ export class Ref extends ExpressionSyntax<Opaque> {
 
   constructor(public parts: string[]) {
     super();
-    this.parts = parts;
   }
 
   compile(lookup: SymbolLookup): CompiledExpression<Opaque> {
@@ -845,24 +804,20 @@ export class Helper extends ExpressionSyntax<Opaque> {
   static fromSpec(sexp: SerializedExpressions.Helper): Helper {
     let [, path, params, hash] = sexp;
 
-    return new Helper({
-      ref: new Ref(path),
-      args: Args.fromSpec(params, hash)
-    });
+    return new Helper(
+      new Ref(path),
+      Args.fromSpec(params, hash)
+    );
   }
 
   static build(path: string, positional: PositionalArgs, named: NamedArgs): Helper {
-    return new this({ ref: Ref.build(path), args: Args.build(positional, named) });
+    return new this(Ref.build(path), Args.build(positional, named));
   }
 
   isStatic = false;
-  ref: Ref;
-  args: Args;
 
-  constructor(options: { ref: Ref, args: Args }) {
+  constructor(public ref: Ref, public args: Args) {
     super();
-    this.ref = options.ref;
-    this.args = options.args;
   }
 
   compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<Opaque> {
@@ -880,25 +835,22 @@ export class HasBlock extends ExpressionSyntax<boolean> {
 
   static fromSpec(sexp: SerializedExpressions.HasBlock): HasBlock {
     let [, blockName] = sexp;
-    return new HasBlock({ blockName });
+    return new HasBlock(blockName);
   }
 
   static build(blockName: string): HasBlock {
-    return new this({ blockName });
+    return new this(blockName);
   }
 
-  blockName: string;
-
-  constructor({ blockName }: { blockName: string }) {
+  constructor(public blockName: string) {
     super();
-    this.blockName = blockName;
   }
 
   compile(compiler: SymbolLookup, env: Environment): CompiledHasBlock {
-    return new CompiledHasBlock({
-      blockName: this.blockName,
-      blockSymbol: compiler.getBlockSymbol(this.blockName)
-    });
+    return new CompiledHasBlock(
+      this.blockName,
+      compiler.getBlockSymbol(this.blockName)
+    );
   }
 }
 
@@ -907,25 +859,22 @@ export class HasBlockParams extends ExpressionSyntax<boolean> {
 
   static fromSpec(sexp: SerializedExpressions.HasBlockParams): HasBlockParams {
     let [, blockName] = sexp;
-    return new HasBlockParams({ blockName });
+    return new HasBlockParams(blockName);
   }
 
   static build(blockName: string): HasBlockParams {
-    return new this({ blockName });
+    return new this(blockName);
   }
 
-  blockName: string;
-
-  constructor({ blockName }: { blockName: string }) {
+  constructor(public blockName: string) {
     super();
-    this.blockName = blockName;
   }
 
   compile(compiler: SymbolLookup, env: Environment): CompiledHasBlockParams {
-    return new CompiledHasBlockParams({
-      blockName: this.blockName,
-      blockSymbol: compiler.getBlockSymbol(this.blockName)
-    });
+    return new CompiledHasBlockParams(
+      this.blockName,
+      compiler.getBlockSymbol(this.blockName)
+    );
   }
 }
 
@@ -935,22 +884,19 @@ export class Concat {
   static fromSpec(sexp: SerializedExpressions.Concat): Concat {
     let [, params] = sexp;
 
-    return new Concat({ parts: params.map(buildExpression) });
+    return new Concat(params.map(buildExpression));
   }
 
   static build(parts): Concat {
-    return new this({ parts });
+    return new this(parts);
   }
 
   isStatic = false;
-  parts: ExpressionSyntax<Opaque>[];
 
-  constructor({ parts }: { parts: ExpressionSyntax<Opaque>[] }) {
-    this.parts = parts;
-  }
+  constructor(public parts: ExpressionSyntax<Opaque>[]) {}
 
   compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledConcat {
-    return new CompiledConcat({ parts: this.parts.map(p => p.compile(compiler, env, symbolTable)) });
+    return new CompiledConcat(this.parts.map(p => p.compile(compiler, env, symbolTable)));
   }
 }
 

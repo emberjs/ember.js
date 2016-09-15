@@ -21,13 +21,6 @@ interface VMInitialOptions {
   size: number;
 }
 
-interface VMConstructorOptions {
-  env: Environment;
-  scope: Scope;
-  dynamicScope: DynamicScope;
-  elementStack: ElementStack;
-}
-
 interface PushFrameOptions {
   block: CompiledBlock;
   args?: EvaluatedArgs;
@@ -46,21 +39,30 @@ export interface PublicVM {
 type OpList = Range<Opcode>;
 
 export default class VM implements PublicVM {
-  public env: Environment;
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
-  private elementStack: ElementStack;
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<UpdatingOpcode>();
   public listBlockStack = new Stack<ListBlockOpcode>();
   public frame = new FrameStack();
 
-  static initial(env: Environment, { elementStack, self, dynamicScope, size }: VMInitialOptions) {
+  static initial(
+    env: Environment,
+    self: PathReference<Opaque>,
+    dynamicScope: DynamicScope,
+    elementStack: ElementStack,
+    size: number
+  ) {
     let scope = Scope.root(self, size);
-    return new VM({ env, scope, dynamicScope, elementStack });
+    return new VM(env, scope, dynamicScope, elementStack);
   }
 
-  constructor({ env, scope, dynamicScope, elementStack }: VMConstructorOptions) {
+  constructor(
+    public env: Environment,
+    scope: Scope,
+    dynamicScope: DynamicScope,
+    private elementStack: ElementStack,
+  ) {
     this.env = env;
     this.elementStack = elementStack;
     this.scopeStack.push(scope);
@@ -100,10 +102,10 @@ export default class VM implements PublicVM {
     let tail = opcodes.tail();
     let tag = combineSlice(new ListSlice(head, tail));
 
-    let guard = new JumpIfNotModifiedOpcode({ tag, target: END });
+    let guard = new JumpIfNotModifiedOpcode(tag, END);
 
     opcodes.insertBefore(guard, head);
-    opcodes.append(new DidModifyOpcode({ target: guard }));
+    opcodes.append(new DidModifyOpcode(guard));
     opcodes.append(END);
   }
 
@@ -180,7 +182,12 @@ export default class VM implements PublicVM {
     return this.dynamicScopeStack.current;
   }
 
-  pushFrame({ block, args, blocks, callerScope }: PushFrameOptions) {
+  pushFrame(
+    block: CompiledBlock,
+    args?: EvaluatedArgs,
+    blocks?: Blocks,
+    callerScope?: Scope
+  ) {
     this.frame.push(block.ops);
 
     if (args) this.frame.setArgs(args);
@@ -280,11 +287,11 @@ export default class VM implements PublicVM {
 
     LOGGER.debug("[VM] Completed program execution");
 
-    return new RenderResult({
+    return new RenderResult(
       env,
-      updating: updatingOpcodeStack.pop(),
-      bounds: elementStack.popBlock()
-    });
+      updatingOpcodeStack.pop(),
+      elementStack.popBlock()
+    );
   }
 
   evaluateOpcode(opcode: Opcode) {
@@ -295,7 +302,7 @@ export default class VM implements PublicVM {
   // if you need to change the scope.
   invokeBlock(block: InlineBlock, args: EvaluatedArgs) {
     let compiled = block.compile(this.env);
-    this.pushFrame({ block: compiled, args });
+    this.pushFrame(compiled, args);
   }
 
   invokeLayout(

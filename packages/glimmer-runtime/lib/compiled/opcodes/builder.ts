@@ -81,7 +81,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     return this.templatesStack.current;
   }
 
-  startBlock({ templates }: { templates: Syntax.Templates }) {
+  startBlock(templates: Syntax.Templates) {
     this.templatesStack.push(templates);
   }
 
@@ -151,7 +151,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
   // dom
 
   text(text: string) {
-    this.append(new dom.TextOpcode({ text }));
+    this.append(new dom.TextOpcode(text));
   }
 
   openPrimitiveElement(tag: string) {
@@ -174,20 +174,20 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new dom.CloseElementOpcode());
   }
 
-  staticAttr(options: dom.StaticAttrOptions) {
-    this.append(new dom.StaticAttrOpcode(options));
+  staticAttr(name: string, namespace: string, value: any) {
+    this.append(new dom.StaticAttrOpcode(name, namespace, value));
   }
 
-  dynamicAttrNS(options: dom.DynamicAttrNSOptions) {
-    this.append(new dom.DynamicAttrNSOpcode(options));
+  dynamicAttrNS(name: string, namespace: string, isTrusting: boolean) {
+    this.append(new dom.DynamicAttrNSOpcode(name, namespace, isTrusting));
   }
 
-  dynamicAttr(options: dom.SimpleAttrOptions) {
-    this.append(new dom.DynamicAttrOpcode(options));
+  dynamicAttr(name: string, isTrusting: boolean) {
+    this.append(new dom.DynamicAttrOpcode(name, isTrusting));
   }
 
   comment(comment: string) {
-    this.append(new dom.CommentOpcode({ comment }));
+    this.append(new dom.CommentOpcode(comment));
   }
 
   // lists
@@ -239,11 +239,11 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
   }
 
   putValue(expression: Represents<CompiledExpression<Opaque>>) {
-    this.append(new vm.PutValueOpcode({ expression: this.compile(expression) }));
+    this.append(new vm.PutValueOpcode(this.compile(expression)));
   }
 
   putArgs(args: Represents<CompiledArgs>) {
-    this.append(new vm.PutArgsOpcode({ args: this.compile(args) }));
+    this.append(new vm.PutArgsOpcode(this.compile(args)));
   }
 
   bindDynamicScope(names: string[]) {
@@ -263,7 +263,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
   }
 
   enter(enter: Label, exit: Label) {
-    this.append(new vm.EnterOpcode({ begin: this.labelFor(enter), end: this.labelFor(exit) }));
+    this.append(new vm.EnterOpcode(this.labelFor(enter), this.labelFor(exit)));
   }
 
   exit() {
@@ -271,7 +271,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
   }
 
   evaluate(name: string, block = this.templates[name]) {
-    this.append(new vm.EvaluateOpcode({ debug: name, block }));
+    this.append(new vm.EvaluateOpcode(name, block));
   }
 
   test(testFunc: 'const' | 'simple' | 'environment' | vm.TestFunction) {
@@ -289,15 +289,15 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
   }
 
   jump(target: string) {
-    this.append(new vm.JumpOpcode({ target: this.labelFor(target) }));
+    this.append(new vm.JumpOpcode(this.labelFor(target)));
   }
 
   jumpIf(target: string) {
-    this.append(new vm.JumpIfOpcode({ target: this.labelFor(target) }));
+    this.append(new vm.JumpIfOpcode(this.labelFor(target)));
   }
 
   jumpUnless(target: string) {
-    this.append(new vm.JumpUnlessOpcode({ target: this.labelFor(target) }));
+    this.append(new vm.JumpUnlessOpcode(this.labelFor(target)));
   }
 }
 
@@ -334,9 +334,11 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.block(SIMPLE_BLOCK, callback);
   }
 
+  // TODO
+  // come back to this
   block({ templates, args }: BlockArgs, callback: BlockCallback) {
     this.startLabels();
-    this.startBlock({ templates });
+    this.startBlock(templates);
     this.enter('BEGIN', 'END');
     this.label('BEGIN');
 
@@ -350,9 +352,11 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.stopLabels();
   }
 
+    // TODO
+  // come back to this
   iter({ templates }: { templates: Syntax.Templates }, callback: BlockCallback) {
     this.startLabels();
-    this.startBlock({ templates });
+    this.startBlock(templates);
     this.enterList('BEGIN', 'END');
     this.label('ITER');
     this.nextIter('BREAK');
@@ -370,9 +374,11 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.stopLabels();
   }
 
+    // TODO
+  // come back to this
   unit({ templates }: { templates: Syntax.Templates }, callback: (builder: OpcodeBuilder) => void) {
     this.startLabels();
-    this.startBlock({ templates });
+    this.startBlock(templates);
     callback(this);
     this.endBlock();
     this.stopLabels();
