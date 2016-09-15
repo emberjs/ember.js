@@ -114,7 +114,7 @@ class ChildBlockScanner {
   }
 }
 
-export class SyntaxReader {
+class SyntaxReader {
   current: number = 0;
   last: StatementSyntax = null;
 

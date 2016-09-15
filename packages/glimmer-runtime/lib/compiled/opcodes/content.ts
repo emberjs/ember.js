@@ -40,7 +40,7 @@ export function normalizeTextValue(value: Opaque): string {
   return String(value);
 }
 
-export function normalizeTrustedValue(value: Opaque): TrustingInsertion {
+function normalizeTrustedValue(value: Opaque): TrustingInsertion {
   if (isEmpty(value)) {
     return '';
   }
@@ -56,7 +56,7 @@ export function normalizeTrustedValue(value: Opaque): TrustingInsertion {
   return String(value);
 }
 
-export function normalizeValue(value: Opaque): CautiousInsertion {
+function normalizeValue(value: Opaque): CautiousInsertion {
   if (isEmpty(value)) {
     return '';
   }
@@ -69,7 +69,7 @@ export function normalizeValue(value: Opaque): CautiousInsertion {
   return String(value);
 }
 
-export abstract class AppendOpcode<T extends Insertion> extends Opcode {
+abstract class AppendOpcode<T extends Insertion> extends Opcode {
   protected abstract normalize(reference: Reference<Opaque>): Reference<T>;
   protected abstract insert(dom: DOMTreeConstruction, cursor: Cursor, value: T): Upsert;
   protected abstract updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<T>, bounds: Fragment, upsert: Upsert): UpdateOpcode<T>;
@@ -107,7 +107,7 @@ export abstract class AppendOpcode<T extends Insertion> extends Opcode {
   }
 }
 
-export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpcode<T> {
+abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpcode<T> {
   protected abstract AppendOpcode: typeof OptimizedCautiousAppendOpcode | typeof OptimizedTrustingAppendOpcode;
   private deopted: OpSeq = null;
 
@@ -273,7 +273,7 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
   }
 }
 
-export abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> {
+abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> {
   private _tag: UpdatableTag;
   private deopted: TryOpcode = null;
 
