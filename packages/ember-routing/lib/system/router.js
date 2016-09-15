@@ -119,8 +119,6 @@ const EmberRouter = EmberObject.extend(Evented, {
     let owner = getOwner(this);
     let router = this;
 
-    options.enableLoadingSubstates = !!moduleBasedResolver;
-
     options.resolveRouteMap = function(name) {
       return owner._lookupFactory('route-map:' + name);
     };
