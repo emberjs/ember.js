@@ -2778,4 +2778,35 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.runTask(() => this.$('button').click());
   }
+
+  ['@test component yielding in an {{#each}} has correct block values after rerendering (GH#14284)']() {
+    this.registerComponent('list-items', {
+      template: `{{#each items as |item|}}{{yield item}}{{/each}}`
+    });
+
+    this.render(strip`
+      {{#list-items items=items as |thing|}}
+        |{{thing}}|
+
+        {{#if editMode}}
+          Remove {{thing}}
+        {{/if}}
+      {{/list-items}}
+    `, {
+      editMode: false,
+      items: ['foo', 'bar', 'qux', 'baz']
+    });
+
+    this.assertText('|foo||bar||qux||baz|');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'editMode', true));
+
+    this.assertText('|foo|Remove foo|bar|Remove bar|qux|Remove qux|baz|Remove baz');
+
+    this.runTask(() => set(this.context, 'editMode', false));
+
+    this.assertText('|foo||bar||qux||baz|');
+  }
 });
