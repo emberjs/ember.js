@@ -108,7 +108,10 @@ export class InlineBlockCompiler extends Compiler {
     let { block, ops } = this;
     let { program } = block;
 
-    if (block.hasPositionalParameters()) {
+    let hasPositionalParameters = block.hasPositionalParameters();
+
+    if (hasPositionalParameters) {
+      ops.pushChildScope();
       ops.bindPositionalArgsForBlock(block);
     }
 
@@ -118,6 +121,10 @@ export class InlineBlockCompiler extends Compiler {
       let next = program.nextNode(current);
       this.compileStatement(current, ops);
       current = next;
+    }
+
+    if (hasPositionalParameters) {
+      ops.popScope();
     }
 
     return ops.toOpSeq();

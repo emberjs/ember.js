@@ -1365,25 +1365,36 @@ QUnit.test('correct scope - complex yield', assert => {
   );
 
   let items = [
-    { id: '1', name: 'Foo' },
-    { id: '2', name: 'Bar' },
-    { id: '3', name: 'Baz' }
+    { id: '1', name: 'Foo', description: 'Foo!' },
+    { id: '2', name: 'Bar', description: 'Bar!' },
+    { id: '3', name: 'Baz', description: 'Baz!' }
   ];
 
   appendViewFor(
     stripTight`
       {{#item-list items=items as |item|}}
-        {{item.name}}
+        {{item.name}}{{#if showDescription}} - {{item.description}}{{/if}}
       {{/item-list}}`
-    , { items }
+    , { items, showDescription: false }
   );
 
   assertEmberishElement('div',
     stripTight`
       <ul>
-        <li>1: Foo</li>
-        <li>2: Bar</li>
-        <li>3: Baz</li>
+        <li>1: Foo<!----></li>
+        <li>2: Bar<!----></li>
+        <li>3: Baz<!----></li>
+      </ul>`
+  );
+
+  view.rerender({ items, showDescription: true });
+
+  assertEmberishElement('div',
+    stripTight`
+      <ul>
+        <li>1: Foo - Foo!</li>
+        <li>2: Bar - Bar!</li>
+        <li>3: Baz - Baz!</li>
       </ul>`
   );
 });

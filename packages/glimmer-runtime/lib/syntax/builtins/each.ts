@@ -58,9 +58,7 @@ export default class EachSyntax extends StatementSyntax {
       }
 
       dsl.iter({ templates }, (dsl, BEGIN, END) => {
-        dsl.pushChildScope();
         dsl.evaluate('default');
-        dsl.popScope();
       });
 
       if (templates.inverse) {
