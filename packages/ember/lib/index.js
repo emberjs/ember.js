@@ -107,7 +107,6 @@ Ember.unwatchPath = metal.unwatchPath;
 Ember.watch = metal.watch;
 Ember.isWatching = metal.isWatching;
 Ember.unwatch = metal.unwatch;
-Ember.rewatch = metal.rewatch;
 Ember.destroy = metal.destroy;
 Ember.libraries = metal.libraries;
 Ember.OrderedSet = metal.OrderedSet;
@@ -319,7 +318,6 @@ import {
   lte,
   oneWay,
   readOnly,
-  defaultTo,
   deprecatingAlias,
   and,
   or,
@@ -394,7 +392,6 @@ computed.lte = lte;
 computed.oneWay = oneWay;
 computed.reads = oneWay;
 computed.readOnly = readOnly;
-computed.defaultTo = defaultTo;
 computed.deprecatingAlias = deprecatingAlias;
 computed.and = and;
 computed.or = or;

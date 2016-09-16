@@ -79,11 +79,9 @@ export {
   lte,
   oneWay,
   readOnly,
-  defaultTo,
   deprecatingAlias,
   and,
-  or,
-  any
+  or
 } from './computed/computed_macros';
 
 export {
