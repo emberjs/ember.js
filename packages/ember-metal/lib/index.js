@@ -110,7 +110,6 @@ export {
 export {
   destroy,
   isWatching,
-  rewatch,
   unwatch,
   watch,
   watcherCount

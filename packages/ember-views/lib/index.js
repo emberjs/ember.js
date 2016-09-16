@@ -24,7 +24,6 @@ export { default as ViewStateSupport } from './mixins/view_state_support';
 export { default as ViewMixin } from './mixins/view_support';
 export { default as ActionSupport } from './mixins/action_support';
 export {
-  getAttrFor,
   MUTABLE_CELL
 } from './compat/attrs';
 export {
