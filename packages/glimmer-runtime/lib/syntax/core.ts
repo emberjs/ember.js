@@ -19,6 +19,11 @@ import {
 } from '../syntax';
 
 import {
+  StaticPartialSyntax,
+  DynamicPartialSyntax
+} from './builtins/partial';
+
+import {
   InlineBlock
 } from '../compiled/blocks';
 
@@ -627,6 +632,24 @@ export class Yield extends StatementSyntax {
   }
 }
 
+function isStaticPartialName(exp: ExpressionSyntax<Opaque>): exp is Value<any> {
+  return exp.type === 'value';
+}
+
+export abstract class Partial extends StatementSyntax {
+  static fromSpec(sexp: SerializedStatements.Partial): Partial {
+    let [, exp] = sexp;
+
+    let name = buildExpression(exp) as ExpressionSyntax<Opaque>;
+
+    if (isStaticPartialName(name)) {
+      return new StaticPartialSyntax(name);
+    } else {
+      return new DynamicPartialSyntax(name);
+    }
+  }
+}
+
 class OpenBlockOpcode extends Opcode {
   type = "open-block";
 
@@ -664,7 +687,7 @@ export class CloseBlockOpcode extends Opcode {
 }
 
 export class Value<T extends SerializedExpressions.Value> extends ExpressionSyntax<T> {
-  type = "value";
+  public type = "value";
 
   static fromSpec<U extends SerializedExpressions.Value>(value: U): Value<U> {
     return new Value(value);
@@ -707,10 +730,17 @@ export class GetArgument<T> extends ExpressionSyntax<T> {
   compile(lookup: SymbolLookup): CompiledExpression<T> {
     let { parts } = this;
     let head = parts[0];
-    let symbol = lookup.getNamedSymbol(head);
 
-    let path = parts.slice(1);
-    return new CompiledLocalLookup(symbol, path, head);
+    if (lookup.hasNamedSymbol(head)) {
+      let symbol = lookup.getNamedSymbol(head);
+      let path = parts.slice(1);
+      return new CompiledLocalLookup(symbol, path, head);
+    } else if (lookup.hasPartialArgsSymbol()) {
+      let symbol = lookup.getPartialArgsSymbol();
+      return new CompiledLocalLookup(symbol, parts, head);
+    } else {
+      throw new Error(`Compile Error: ${this.parts.join('.')} is not a valid lookup path.`);
+    }
   }
 }
 
@@ -814,8 +844,6 @@ export class Helper extends ExpressionSyntax<Opaque> {
     return new this(Ref.build(path), Args.build(positional, named));
   }
 
-  isStatic = false;
-
   constructor(public ref: Ref, public args: Args) {
     super();
   }
@@ -879,7 +907,7 @@ export class HasBlockParams extends ExpressionSyntax<boolean> {
 }
 
 export class Concat {
-  type = "concat";
+  public type = "concat";
 
   static fromSpec(sexp: SerializedExpressions.Concat): Concat {
     let [, params] = sexp;
@@ -890,8 +918,6 @@ export class Concat {
   static build(parts): Concat {
     return new this(parts);
   }
-
-  isStatic = false;
 
   constructor(public parts: ExpressionSyntax<Opaque>[]) {}
 

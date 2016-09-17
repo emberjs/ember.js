@@ -1,5 +1,6 @@
 import { Simple, Template, RenderResult } from "glimmer-runtime";
 import {
+  BasicComponent,
   TestEnvironment,
   TestDynamicScope,
   equalTokens,
@@ -8,7 +9,7 @@ import {
   strip
 } from "glimmer-test-helpers";
 import { UpdatableReference } from "glimmer-object-reference";
-import { Opaque, opaque } from 'glimmer-util';
+import { Opaque } from 'glimmer-util';
 
 let env: TestEnvironment, root: Simple.Element, result: RenderResult, self: UpdatableReference<Opaque>;
 
@@ -26,8 +27,10 @@ function commonSetup() {
 }
 
 function render<T>(template: Template<T>, context={}) {
-  self = new UpdatableReference(opaque(context));
+  self = new UpdatableReference(context);
+  env.begin();
   result = template.render(self, root, new TestDynamicScope());
+  env.commit();
   assertInvariants(result);
   return result;
 }
@@ -36,12 +39,12 @@ interface RerenderParams {
   assertStable: Boolean;
 }
 
-function rerender(context: Object = {}, params: RerenderParams = { assertStable: false }) {
+function rerender(context: any = null, params: RerenderParams = { assertStable: false }) {
   let snapshot;
   if (params.assertStable) {
     snapshot = generateSnapshot(root);
   }
-  self.update(opaque(context));
+  if (context !== null) self.update(context);
   env.begin();
   result.rerender();
   env.commit();
@@ -66,7 +69,7 @@ QUnit.test('static partial with static content', assert => {
   render(template);
 
   equalTokens(root, `Before <div>Testing</div> After`);
-  rerender({}, { assertStable: true });
+  rerender(null, { assertStable: true });
   equalTokens(root, `Before <div>Testing</div> After`);
 });
 
@@ -75,6 +78,8 @@ QUnit.test('static partial with self reference', assert => {
 
   env.registerPartial('birdman', `Respeck my {{item}}. When my {{item}} come up put some respeck on it.`);
   render(template, { item: 'name' });
+
+  rerender(null, { assertStable: true });
 
   equalTokens(root, `Respeck my name. When my name come up put some respeck on it.`);
   rerender({ item: 'name' }, { assertStable: true });
@@ -87,9 +92,42 @@ QUnit.test('static partial with local reference', assert => {
   env.registerPartial('test', `You {{quality.value}}`);
   render(template, { qualities: [{id: 1, value: 'smaht'}, {id: 2, value: 'loyal'}] });
 
+  rerender(null, { assertStable: true });
+
   equalTokens(root, `You smaht. You loyal. `);
   rerender({ qualities: [{id: 1, value: 'smaht'}, {id: 2, value: 'loyal'}] }, { assertStable: true });
   equalTokens(root, `You smaht. You loyal. `);
+});
+
+QUnit.test('static partial with named arguments', assert => {
+  env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{@foo}}-{{partial 'test'}}</p>`);
+
+  let template = compile(`<foo-bar @foo={{foo}} @bar={{bar}} />`);
+
+  env.registerPartial('test', `{{@foo}}-{{@bar}}`);
+  render(template, { foo: 'foo', bar: 'bar' });
+  equalTokens(root, `<p>foo-foo-bar</p>`);
+
+  rerender(null, { assertStable: true });
+
+  rerender({ foo: 'FOO', bar: 'BAR' }, { assertStable: true });
+  equalTokens(root, `<p>FOO-FOO-BAR</p>`);
+
+  rerender({ foo: 'foo', bar: 'bar' }, { assertStable: true });
+  equalTokens(root, `<p>foo-foo-bar</p>`);
+});
+
+QUnit.test('static partial with has-block', assert => {
+  env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{has-block}}-{{has-block 'inverse'}}-{{partial 'test'}}</p>`);
+
+  let template = compile(`<foo-bar>a block</foo-bar>`);
+
+  env.registerPartial('test', `{{has-block}}-{{has-block 'inverse'}}`);
+  render(template);
+
+  equalTokens(root, `<p>true-false-true-false</p>`);
+
+  rerender(null, { assertStable: true });
 });
 
 QUnit.test('dynamic partial with static content', assert => {
@@ -103,6 +141,19 @@ QUnit.test('dynamic partial with static content', assert => {
   equalTokens(root, `Before <div>Testing</div> After`);
 });
 
+QUnit.test('nested dynamic partial with dynamic content', assert => {
+  let template = compile(`Before {{partial name}} After`);
+
+  env.registerPartial('test', `<div>Testing {{wat}} {{partial nest}}</div>`);
+  env.registerPartial('nested', `<div>Nested {{lol}}</div>`);
+
+  render(template, { name: 'test', nest: 'nested', wat: 'wat are', lol: 'you doing?' });
+
+  equalTokens(root, `Before <div>Testing wat are <div>Nested you doing?</div></div> After`);
+  rerender({ name: 'test', nest: 'nested', wat: 'wat are', lol: 'you doing?' }, { assertStable: true });
+  equalTokens(root, `Before <div>Testing wat are <div>Nested you doing?</div></div> After`);
+});
+
 QUnit.test('dynamic partial with falsy value does not render', assert => {
   let template = compile(`Before {{partial name}} After`);
 
@@ -113,23 +164,20 @@ QUnit.test('dynamic partial with falsy value does not render', assert => {
   equalTokens(root, `Before <!----> After`);
 });
 
-QUnit.test('static partial that does not exist does not render', assert => {
+QUnit.test('static partial that does not exist asserts', assert => {
   let template = compile(`Before {{partial 'test'}} After`);
 
-  render(template);
-  equalTokens(root, `Before <!----> After`);
-  rerender({}, { assertStable: true });
-  equalTokens(root, `Before <!----> After`);
+  assert.throws(() => {
+    render(template);
+  }, /test is not a partial/);
 });
 
 QUnit.test('dynamic partial that does not exist does not render', assert => {
   let template = compile(`Before {{partial name}} After`);
 
-  render(template, { name: 'illuminati' });
-
-  equalTokens(root, `Before <!----> After`);
-  rerender({ name: false });
-  equalTokens(root, `Before <!----> After`);
+  assert.throws(() => {
+    render(template, { name: 'illuminati' });
+  }, /Could not find a partial named "illuminati"/);
 });
 
 QUnit.test('dynamic partial with can change from falsy to real template', assert => {
@@ -145,6 +193,18 @@ QUnit.test('dynamic partial with can change from falsy to real template', assert
   equalTokens(root, `Before <div>Testing</div> After`);
 
   rerender({ name: false });
+  equalTokens(root, `Before <!----> After`);
+
+  rerender({ name: 'test' });
+  equalTokens(root, `Before <div>Testing</div> After`);
+
+  rerender({ name: null });
+  equalTokens(root, `Before <!----> After`);
+
+  rerender({ name: 'test' });
+  equalTokens(root, `Before <div>Testing</div> After`);
+
+  rerender({ name: undefined });
   equalTokens(root, `Before <!----> After`);
 });
 
@@ -213,17 +273,13 @@ QUnit.test('dynamic partial with local reference', assert => {
 });
 
 QUnit.test('partial without arguments throws', assert => {
-  let template = compile(`Before {{partial}} After`);
-
   assert.throws(function() {
-    render(template);
-  }, strip`Partial found with no arguments. You must specify a template.`);
+    compile(`Before {{partial}} After`);
+  }, strip`Partial found with no arguments. You must specify a template name.`);
 });
 
 QUnit.test('partial with more than one argument throws', assert => {
-  let template = compile(`Before {{partial 'turnt' 'up'}} After`);
-
   assert.throws(function() {
-    render(template);
+    compile(`Before {{partial 'turnt' 'up'}} After`);
   }, strip`Partial found with more than one argument. You can only specify a single template.`);
 });

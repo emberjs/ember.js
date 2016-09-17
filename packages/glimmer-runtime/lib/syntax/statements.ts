@@ -1,5 +1,6 @@
 import {
   Yield,
+  Partial,
   Block,
   OptimizedAppend,
   DynamicAttr,
@@ -26,6 +27,7 @@ import { BlockScanner  } from '../scanner';
 const {
   isYield,
   isBlock,
+  isPartial,
   isAppend,
   isDynamicAttr,
   isText,
@@ -42,6 +44,7 @@ const {
 
 export default function(sexp: SerializedStatement, symbolTable: SymbolTable, scanner: BlockScanner): StatementSyntax {
   if (isYield(sexp)) return Yield.fromSpec(sexp);
+  if (isPartial(sexp)) return Partial.fromSpec(sexp);
   if (isBlock(sexp)) return Block.fromSpec(sexp, symbolTable, scanner);
   if (isAppend(sexp)) return OptimizedAppend.fromSpec(sexp);
   if (isDynamicAttr(sexp)) return DynamicAttr.fromSpec(sexp);

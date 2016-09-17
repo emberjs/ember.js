@@ -125,6 +125,9 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     if (isYield(action)) {
       let to = assertValidYield(action);
       this.yield(to, action);
+    } else if (isPartial(action)) {
+      let params = assertValidPartial(action);
+      this.partial(params, action);
     } else {
       this.mustacheExpression(action);
       this.opcode('append', action, !action.escaped);
@@ -175,12 +178,17 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     this.opcode('hasBlockParams', action, name);
   }
 
+  partial(params, action) {
+    this.prepareParams(action.params);
+    this.opcode('partial', action);
+  }
+
   builtInHelper(expr) {
     if (isHasBlock(expr)) {
-      let name = assertValidHasBlock(expr);
+      let name = assertValidHasBlockUsage(expr.path.original, expr);
       this.hasBlock(name, expr);
     } else if (isHasBlockParams(expr)) {
-      let name = assertValidHasBlockParams(expr);
+      let name = assertValidHasBlockUsage(expr.path.original, expr);
       this.hasBlockParams(name, expr);
     }
   }
@@ -327,6 +335,10 @@ function isYield({ path }) {
   return path.original === 'yield';
 }
 
+function isPartial({ path }) {
+  return path.original === 'partial';
+}
+
 function isArg({ path }) {
   return path.data;
 }
@@ -366,30 +378,32 @@ function assertValidYield({ hash }): string {
   }
 }
 
-function assertValidHasBlock({ params }): string {
-  if (params.length === 0) {
-    return 'default';
-  } else if (params.length === 1) {
-    if (params[0].type === 'StringLiteral') {
-      return params[0].value;
-    } else {
-      throw new Error(`you can only yield to a literal value`);
-    }
-  } else {
-    throw new Error(`has-block only takes a single positional argument`);
+function assertValidPartial({ params, hash, escaped, loc }) /* : expr */ {
+  if (params && params.length !== 1) {
+    throw new Error(`Partial found with no arguments. You must specify a template name. (on line ${loc.start.line})`);
+  } else if (hash && hash.pairs.length > 0) {
+    throw new Error(`partial does not take any named arguments (on line ${loc.start.line})`);
+  } else if (!escaped) {
+    throw new Error(`{{{partial ...}}} is not supported, please use {{partial ...}} instead (on line ${loc.start.line})`);
   }
+
+  return params;
 }
 
-function assertValidHasBlockParams({ params }): string {
+function assertValidHasBlockUsage(type, { params, hash, loc }): string {
+  if (hash && hash.pairs.length > 0) {
+    throw new Error(`${type} does not take any named arguments`);
+  }
+
   if (params.length === 0) {
     return 'default';
   } else if (params.length === 1) {
     if (params[0].type === 'StringLiteral') {
       return params[0].value;
     } else {
-      throw new Error(`you can only yield to a literal value`);
+      throw new Error(`you can only yield to a literal value (on line ${loc.start.line})`);
     }
   } else {
-    throw new Error(`has-block-params only takes a single positional argument`);
+    throw new Error(`${type} only takes a single positional argument (on line ${loc.start.line})`);
   }
 }

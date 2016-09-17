@@ -1,13 +1,11 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
-import { CompiledArgs, EvaluatedArgs } from '../expressions/args';
+import { CompiledArgs } from '../expressions/args';
 import { VM, UpdatingVM } from '../../vm';
-import { CompiledBlock, Layout, InlineBlock, PartialBlock } from '../blocks';
+import { CompiledBlock, Layout, InlineBlock } from '../blocks';
 import { NULL_REFERENCE } from '../../references';
-import SymbolTable from '../../symbol-table';
-import { Reference, PathReference, ConstReference } from 'glimmer-reference';
-import { ValueReference } from '../expressions/value';
-import { ListSlice, Opaque, Slice, dict } from 'glimmer-util';
+import { Reference, ConstReference } from 'glimmer-reference';
+import { ListSlice, Opaque, Slice } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
 import Environment from '../../environment';
 
@@ -130,12 +128,12 @@ export class BindNamedArgsOpcode extends Opcode {
     let names = layout.named;
     let symbols = names.map(name => layout.symbolTable.getNamed(name));
 
-    return new BindNamedArgsOpcode(names, symbols);
+    return new this(names, symbols);
   }
 
   constructor(
-    protected names: string[],
-    protected symbols: number[]
+    private names: string[],
+    private symbols: number[]
   ) {
     super();
   }
@@ -157,7 +155,7 @@ export class BindNamedArgsOpcode extends Opcode {
   }
 }
 
-export class BindBlocksOpcode extends BindNamedArgsOpcode {
+export class BindBlocksOpcode extends Opcode {
   public type = "bind-blocks";
 
   static create(layout: Layout) {
@@ -167,8 +165,43 @@ export class BindBlocksOpcode extends BindNamedArgsOpcode {
     return new this(names, symbols);
   }
 
+  constructor(
+    private names: string[],
+    private symbols: number[]
+  ) {
+    super();
+  }
+
   evaluate(vm: VM) {
     vm.bindBlocks(this.names, this.symbols);
+  }
+
+  toJSON(): OpcodeJSON {
+    let { names, symbols } = this;
+
+    let args = names.map((name, i) => `$${symbols[i]}: $BLOCKS[${name}]`);
+
+    return {
+      guid: this._guid,
+      type: this.type,
+      args
+    };
+  }
+}
+
+export class BindPartialArgsOpcode extends Opcode {
+  public type = "bind-partial-args";
+
+  static create(layout: Layout) {
+    return new this(layout.symbolTable.getPartialArgs());
+  }
+
+  constructor(private symbol: number) {
+    super();
+  }
+
+  evaluate(vm: VM) {
+    vm.bindPartialArgs(this.symbol);
   }
 }
 
@@ -290,72 +323,6 @@ export class EvaluateOpcode extends Opcode {
       type,
       args: [debug],
       children
-    };
-  }
-}
-
-export class EvaluatePartialOpcode extends Opcode {
-  public type = "evaluate-partial";
-  private cache = dict<PartialBlock>();
-
-  constructor(
-    public name: CompiledExpression<any>,
-    public symbolTable: SymbolTable
-  ) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    let reference: PathReference<any> = this.name.evaluate(vm);
-    let referenceCache = new ReferenceCache(reference);
-    let name: string = referenceCache.revalidate();
-
-    let block = this.cache[name];
-    if (!block) {
-      let { template } = vm.env.lookupPartial([name], this.symbolTable);
-      block = template.asPartial(this.symbolTable);
-    }
-
-    vm.invokeBlock(block, EvaluatedArgs.empty());
-
-    if (!isConst(reference)) {
-      vm.updateWith(new Assert(referenceCache));
-    }
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [this.name.toJSON()]
-    };
-  }
-}
-
-export class NameToPartialOpcode extends Opcode {
-  public type = "name-to-partial";
-
-  constructor(private symbolTable: SymbolTable) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    let reference = vm.frame.getOperand();
-    let referenceCache = new ReferenceCache(reference);
-    let name: string = referenceCache.revalidate();
-    let partial = name && vm.env.hasPartial([name], this.symbolTable) ? vm.env.lookupPartial([name], this.symbolTable) : false;
-    vm.frame.setOperand(new ValueReference(partial));
-
-    if (!isConst(reference)) {
-      vm.updateWith(new Assert(referenceCache));
-    }
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: ["$OPERAND"]
     };
   }
 }

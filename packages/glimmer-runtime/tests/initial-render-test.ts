@@ -30,7 +30,11 @@ function commonSetup(customEnv = new TestEnvironment()) {
 }
 
 function render<T>(template: Template<T>, self: any) {
-  return template.render(new UpdatableReference(self), root, new TestDynamicScope());
+  let result;
+  env.begin();
+  result = template.render(new UpdatableReference(self), root, new TestDynamicScope());
+  env.commit();
+  return result;
 }
 
 function module(name: string) {
