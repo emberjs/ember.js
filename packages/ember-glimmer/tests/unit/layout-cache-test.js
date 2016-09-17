@@ -1,6 +1,7 @@
 import { EmptyObject } from 'ember-utils';
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { CompiledBlock } from 'glimmer-runtime';
+import { OWNER } from 'ember-utils';
 
 class Counter {
   constructor() {
@@ -123,4 +124,18 @@ moduleFor('Layout cache test', class extends RenderingTest {
     assert.strictEqual(COUNTER.total, 2);
   }
 
+  ['@test a template instance is returned (ensures templates can be injected into layout property)'](assert) {
+    let { owner, env } = this;
+
+    let templateInstanceFor = (content) => {
+      let Factory = this.compile(content);
+      return Factory.create({ [OWNER]: owner, env });
+    };
+
+    let template1 = templateInstanceFor('Hello world!');
+    let template2 = templateInstanceFor('{{foo}} {{bar}}');
+
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledBlock, 'should return a CompiledBlock');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledBlock, 'should return a CompiledBlock');
+  }
 });

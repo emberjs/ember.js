@@ -86,7 +86,13 @@ export default class Environment extends GlimmerEnvironment {
     });
 
     this._templateCache = new Cache(1000, ({ Template, owner }) => {
-      return Template.create({ env: this, [OWNER]: owner });
+      if (Template.create) {
+        // we received a factory
+        return Template.create({ env: this, [OWNER]: owner });
+      } else {
+        // we were provided an instance already
+        return Template;
+      }
     }, ({ Template, owner }) => guidFor(owner) + '|' + Template.id);
 
     this._compilerCache = new Cache(10, Compiler => {
