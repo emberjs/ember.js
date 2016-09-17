@@ -517,4 +517,54 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
 
     this.assertComponentElement(this.firstChild, { tagName: 'div' });
   }
+
+  ['@test component with an `id` attribute binding of undefined']() {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['id'],
+
+        id: undefined
+      })
+    });
+
+    this.registerComponent('baz-qux', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['somethingUndefined:id'],
+
+        somethingUndefined: undefined
+      })
+    });
+    this.render(`{{foo-bar}}{{baz-qux}}`);
+
+    this.assertComponentElement(this.nthChild(0), { content: '' });
+    this.assertComponentElement(this.nthChild(1), { content: '' });
+
+    this.assert.ok(this.nthChild(0).id.match(/ember\d+/), 'a valid `id` was used');
+    this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
+  }
+
+  ['@test component with an `id` attribute binding of null']() {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['id'],
+
+        id: null
+      })
+    });
+
+    this.registerComponent('baz-qux', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['somethingNull:id'],
+
+        somethingNull: null
+      })
+    });
+    this.render(`{{foo-bar}}{{baz-qux}}`);
+
+    this.assertComponentElement(this.nthChild(0), { content: '' });
+    this.assertComponentElement(this.nthChild(1), { content: '' });
+
+    this.assert.ok(this.nthChild(0).id.match(/ember\d+/), 'a valid `id` was used');
+    this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
+  }
 });
