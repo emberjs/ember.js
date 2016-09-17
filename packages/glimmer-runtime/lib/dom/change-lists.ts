@@ -5,7 +5,7 @@ import {
   sanitizeAttributeValue,
   requiresSanitization
 } from './sanitized-values';
-import { normalizeProperty, normalizePropertyValue } from './props';
+import { normalizeProperty } from './props';
 import { SVG_NAMESPACE } from './helper';
 import { normalizeTextValue } from '../compiled/opcodes/content';
 import { Environment } from '../environment';
@@ -33,6 +33,10 @@ export function defaultChangeLists(element: Simple.Element, attr: string, isTrus
 }
 
 export function defaultPropertyChangeLists(tagName: string, attr: string) {
+  if (attr === 'disabled' || attr === 'checked') {
+    return BooleanPropertyChangeList;
+  }
+
   if (requiresSanitization(tagName, attr)) {
     return SafeHrefPropertyChangeList;
   }
@@ -57,34 +61,66 @@ export function defaultAttributeChangeLists(tagName: string, attr: string) {
 }
 
 export function readDOMAttr(element: Element, attr: string) {
-   let isSVG = element.namespaceURI === SVG_NAMESPACE;
-   let { type, normalized } = normalizeProperty(element, attr);
+  let isSVG = element.namespaceURI === SVG_NAMESPACE;
+  let { type, normalized } = normalizeProperty(element, attr);
 
-   if (isSVG) {
-     return element.getAttribute(normalized);
-   }
+  if (isSVG) {
+    return element.getAttribute(normalized);
+  }
 
-   if (type === 'attr') {
-     return element.getAttribute(normalized);
-   } {
-     return element[normalized];
-   }
+  if (type === 'attr') {
+    return element.getAttribute(normalized);
+  } {
+    return element[normalized];
+  }
 };
 
 export const PropertyChangeList: IChangeList = {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
     if (value !== null && value !== undefined) {
       let normalized = attr.toLowerCase();
-      element[normalized] = normalizePropertyValue(value); // TODO: This doesn't work
+      element[normalized] = value;
     }
   },
 
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
     if (value === null || value === undefined) {
-      let normalized = attr.toLowerCase();
-      element[normalized] = value;
+      // TODO this sucks but to preserve properties first and to meet current
+      // semantics we must do this.
+      if (namespace) {
+        env.getDOM().removeAttributeNS(element, namespace, attr);
+      } else {
+        env.getDOM().removeAttribute(element, attr);
+      }
     } else {
       this.setAttribute(...arguments);
+    }
+  }
+};
+
+export const SafeHrefPropertyChangeList: IChangeList = new class {
+  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
+    let tree = env.getAppendOperations();
+    PropertyChangeList.setAttribute(env, element, attr, sanitizeAttributeValue(env, element, attr, value));
+  }
+
+  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
+    this.setAttribute(env, element, attr, value);
+  }
+};
+
+export const BooleanPropertyChangeList: IChangeList = new class {
+  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
+    if (value !== false ) {
+      AttributeChangeList.setAttribute(env, element, attr, value);
+    }
+  }
+
+  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
+    if (value === false || value === null || value === undefined) {
+      PropertyChangeList.updateAttribute(env, element, attr, null);
+    } else {
+      this.setAttribute(env, element, attr, value);
     }
   }
 };
@@ -150,17 +186,6 @@ export const OptionSelectedChangeList: IChangeList = new class {
     } else {
       option.selected = true;
     }
-  }
-};
-
-export const SafeHrefPropertyChangeList: IChangeList = new class {
-  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
-    let tree = env.getAppendOperations();
-    PropertyChangeList.setAttribute(env, element, attr, sanitizeAttributeValue(env, element, attr, value));
-  }
-
-  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
-    this.setAttribute(env, element, attr, value);
   }
 };
 

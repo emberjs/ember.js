@@ -1169,7 +1169,7 @@ test("attribute nodes follow the normal dirtying rules", function() {
   object.value = null;
   rerender();
 
-  equalTokens(root, "<div data-value=''>hello</div>", "Revalidating after dirtying");
+  equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
 
   object.value = "world";
   rerender();

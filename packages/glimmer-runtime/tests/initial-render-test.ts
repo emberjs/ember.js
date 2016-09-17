@@ -94,11 +94,12 @@ test("HTML boolean attribute 'disabled'", function() {
   ok(root.firstChild['disabled'], 'disabled without value set as property is true');
 });
 
-test("Quoted attribute expression is coerced to a string", function() {
+test("Quoted attribute null values do not disable", function() {
   let template = compile('<input disabled="{{isDisabled}}">');
   render(template, { isDisabled: null });
 
-  ok(root.firstChild['disabled'], 'string of "null" set as property is true');
+  equal(root.firstChild['disabled'], false);
+  equalTokens(root, '<input />');
 });
 
 test("Unquoted attribute expression with null value is not coerced", function() {
@@ -663,7 +664,7 @@ test("Attributes containing multiple helpers are treated like a block", function
 });
 
 test("Attributes containing a helper are treated like a block", function() {
-  expect(2);
+  expect(3);
 
   env.registerHelper('testing', function(params) {
     deepEqual(params, [123]);
