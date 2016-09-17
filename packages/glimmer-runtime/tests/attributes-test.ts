@@ -80,6 +80,39 @@ test("helpers shadow self", () => {
   equalTokens(root, '<div data-test="hello"></div>');
 });
 
+test("disable updates properly", () => {
+  let template = compile('<input disabled={{enabled}} />');
+
+  let context = { enabled: true };
+  render(template, context);
+
+  equalTokens(root, '<input disabled="true" />');
+
+  rerender({ enabled: false });
+
+  equalTokens(root, '<input />');
+
+  rerender({ enabled: 'wat' });
+
+  equalTokens(root, '<input disabled="wat" />');
+
+  rerender({ enabled: null });
+
+  equalTokens(root, '<input />');
+
+  rerender({ enabled: true });
+
+  equalTokens(root, '<input disabled="true" />');
+
+  rerender({ enabled: undefined });
+
+  equalTokens(root, '<input />');
+
+  rerender({ enabled: true });
+
+  equalTokens(root, '<input disabled="true" />');
+});
+
 test("a[href] marks javascript: protocol as unsafe", () => {
   let template = compile('<a href="{{foo}}"></a>');
 
@@ -313,22 +346,26 @@ test('does not set undefined properties initially', assert => {
 
   assert.ok(!firstElement.hasAttribute('title'));
   assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
+  equalTokens(root, '<div></div><div title="hello"></div>');
 
   rerender({ isUndefined: 'hey', isNotUndefined: 'hello' });
 
   assert.equal(readDOMAttr(firstElement, 'title'), 'hey');
   assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
+  equalTokens(root, '<div title="hey"></div><div title="hello"></div>');
 
   rerender({ isUndefined: 'hey', isNotUndefined: 'world' });
 
   assert.equal(readDOMAttr(firstElement, 'title'), 'hey');
   assert.equal(readDOMAttr(secondElement, 'title'), 'world');
+  equalTokens(root, '<div title="hey"></div><div title="world"></div>');
 
   rerender({ isUndefined: undefined, isNotUndefined: 'hello' });
 
   assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
-  // TODO: the semantics around resetting a property with null/undefined are likely incorrect
-  assert.equal(readDOMAttr(firstElement, 'title'), nativeValueForElementProperty('div', 'title', undefined));
+  assert.equal(readDOMAttr(firstElement, 'title'), '');
+  assert.equal(readDOMAttr(firstElement, 'title'), nativeValueForElementProperty('div', 'title', ''));
+  equalTokens(root, '<div></div><div title="hello"></div>');
 });
 
 test('does not set null properties initially', assert => {
@@ -341,21 +378,24 @@ test('does not set null properties initially', assert => {
 
   assert.ok(!firstElement.hasAttribute('title'));
   assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
+  equalTokens(root, '<div></div><div title="hello"></div>');
 
   rerender({ isNull: 'hey', isNotNull: 'hello' });
 
   assert.equal(readDOMAttr(firstElement, 'title'), 'hey');
   assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
+  equalTokens(root, '<div title="hey"></div><div title="hello"></div>');
 
   rerender({ isNull: 'hey', isNotNull: 'world' });
 
   assert.equal(readDOMAttr(firstElement, 'title'), 'hey');
   assert.equal(readDOMAttr(secondElement, 'title'), 'world');
+  equalTokens(root, '<div title="hey"></div><div title="world"></div>');
 
   rerender({ isNull: null, isNotNull: 'hello' });
 
   assert.equal(readDOMAttr(secondElement, 'title'), 'hello');
-
-  // TODO: the semantics around resetting a property with null/undefined are likely incorrect
-  assert.equal(readDOMAttr(firstElement, 'title'), nativeValueForElementProperty('div', 'title', null));
+  assert.equal(readDOMAttr(firstElement, 'title'), '');
+  assert.equal(readDOMAttr(firstElement, 'title'), nativeValueForElementProperty('div', 'title', ''));
+  equalTokens(root, '<div></div><div title="hello"></div>');
 });

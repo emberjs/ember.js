@@ -181,7 +181,7 @@ export class SimpleElementOperations implements ElementOperations {
   }
 
   addDynamicAttributeNS(element: Simple.Element, namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
-    let attributeManager = this.env.attributeFor(element, name,isTrusting, namespace);
+    let attributeManager = this.env.attributeFor(element, name, isTrusting, namespace);
     let nsAttribute = new DynamicAttribute(element, attributeManager, name, reference, namespace);
 
     this.addAttribute(nsAttribute);
