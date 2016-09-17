@@ -55,7 +55,11 @@ export const AttributeBinding = {
     let [prop, attribute, isSimple] = parsed;
 
     if (attribute === 'id') {
-      operations.addStaticAttribute(element, 'id', get(component, prop));
+      let elementId = get(component, prop);
+      if (elementId === undefined || elementId === null) {
+        elementId = component.elementId;
+      }
+      operations.addStaticAttribute(element, 'id', elementId);
       return;
     }
 
