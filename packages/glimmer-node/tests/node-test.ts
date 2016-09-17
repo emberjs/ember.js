@@ -37,7 +37,11 @@ function commonSetup() {
 }
 
 function render<T>(template: Template<T>, self: any) {
-  return template.render(new UpdatableReference(self), root, new TestDynamicScope());
+  let result;
+  env.begin();
+  result = template.render(new UpdatableReference(self), root, new TestDynamicScope());
+  env.commit();
+  return result;
 }
 
 function module(name: string) {
@@ -246,8 +250,8 @@ QUnit.module('default template id');
 QUnit.test('generates id in node', function (assert) {
   let template = precompile('hello');
   let obj = JSON.parse(template);
-  assert.equal(obj.id, 'tJmwGiDc', 'short sha of template source');
+  assert.equal(obj.id, 'tjhOuBK+', 'short sha of template source');
   template = precompile('hello', { meta: {moduleName: 'template/hello'} });
   obj = JSON.parse(template);
-  assert.equal(obj.id, '27YmSQva', 'short sha of template source and meta');
+  assert.equal(obj.id, '/0QJKO+y', 'short sha of template source and meta');
 });

@@ -6,8 +6,8 @@ export default class SymbolTable {
     return new SymbolTable(null, meta).initEntryPoint();
   }
 
-  static forLayout(named: string[], yields: string[], meta: TemplateMeta): SymbolTable {
-    return new SymbolTable(null, meta).initLayout(named, yields);
+  static forLayout(named: string[], yields: string[], hasPartials: boolean, meta: TemplateMeta): SymbolTable {
+    return new SymbolTable(null, meta).initLayout(named, yields, hasPartials);
   }
 
   static forBlock(parent: SymbolTable, locals: string[]): SymbolTable {
@@ -15,9 +15,10 @@ export default class SymbolTable {
   }
 
   private top: SymbolTable;
-  private locals   = dict<number>();
-  private named    = dict<number>();
-  private yields   = dict<number>();
+  private locals = dict<number>();
+  private named = dict<number>();
+  private yields = dict<number>();
+  private partialArgs: number = null;
   public size = 1;
 
   constructor(private parent: SymbolTable, private meta: TemplateMeta = null) {
@@ -33,9 +34,10 @@ export default class SymbolTable {
     return this;
   }
 
-  initLayout(named: string[], yields: string[]): this {
+  initLayout(named: string[], yields: string[], hasPartials: boolean): this {
     this.initNamed(named);
     this.initYields(yields);
+    this.initPartials(hasPartials);
     return this;
   }
 
@@ -51,6 +53,11 @@ export default class SymbolTable {
 
   initYields(yields: string[]): this {
     if (yields) yields.forEach(b => this.yields[b] = this.top.size++);
+    return this;
+  }
+
+  initPartials(hasPartials: boolean): this {
+    if (hasPartials) this.top.partialArgs = this.top.size++;
     return this;
   }
 
@@ -98,6 +105,10 @@ export default class SymbolTable {
     }
 
     return symbol;
+  }
+
+  getPartialArgs(): number {
+    return this.top.partialArgs;
   }
 
   isTop(): boolean {

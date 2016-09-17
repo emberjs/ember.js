@@ -59,6 +59,14 @@ class StatementCompilationBufferProxy implements StatementCompilationBuffer {
   hasBlockSymbol(name: string): boolean {
     return this.inner.hasBlockSymbol(name);
   }
+
+  getPartialArgsSymbol(): number {
+    return this.inner.getPartialArgsSymbol();
+  }
+
+  hasPartialArgsSymbol(): boolean {
+    return this.inner.hasPartialArgsSymbol();
+  }
 }
 
 export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy {
@@ -328,6 +336,10 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
   bindBlocksForLayout(layout: Layout) {
     this.append(vm.BindBlocksOpcode.create(layout));
+  }
+
+  bindPartialArgsForLayout(layout: Layout) {
+    this.append(vm.BindPartialArgsOpcode.create(layout));
   }
 
   simpleBlock(callback: BlockCallback) {

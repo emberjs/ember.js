@@ -13,15 +13,23 @@ export class PutDynamicComponentDefinitionOpcode extends Opcode {
   public type = "put-dynamic-component-definition";
 
   evaluate(vm: VM) {
-    let reference = vm.frame.getOperand();
+    let reference = vm.frame.getOperand<ComponentDefinition<Component>>();
     let cache = isConst(reference) ? undefined : new ReferenceCache(reference);
     let definition = cache ? cache.peek() : reference.value();
 
-    vm.frame.setComponentDefinition(definition);
+    vm.frame.setImmediate(definition);
 
     if (cache) {
       vm.updateWith(new Assert(cache));
     }
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: ["$OPERAND"]
+    };
   }
 }
 
@@ -33,7 +41,15 @@ export class PutComponentDefinitionOpcode extends Opcode {
   }
 
   evaluate(vm: VM) {
-    vm.frame.setComponentDefinition(this.definition);
+    vm.frame.setImmediate(this.definition);
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: [JSON.stringify(this.definition.name)]
+    };
   }
 }
 
@@ -51,7 +67,7 @@ export class OpenComponentOpcode extends Opcode {
   evaluate(vm: VM) {
     let { args: rawArgs, shadow, templates } = this;
 
-    let definition = vm.frame.getComponentDefinition();
+    let definition = vm.frame.getImmediate<ComponentDefinition<Component>>();
     let dynamicScope = vm.pushDynamicScope();
     let callerScope = vm.scope();
 
@@ -71,6 +87,14 @@ export class OpenComponentOpcode extends Opcode {
     vm.invokeLayout(args, layout, templates, callerScope, component, manager, shadow);
 
     vm.updateWith(new UpdateComponentOpcode(definition.name, component, manager, args, dynamicScope));
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: ["$OPERAND"]
+    };
   }
 }
 

@@ -3,7 +3,7 @@ import { ElementStack } from '../builder';
 import { Destroyable, Stack, LinkedList, ListSlice, LOGGER, Opaque, assert } from 'glimmer-util';
 import { PathReference, combineSlice } from 'glimmer-reference';
 import { Templates } from '../syntax/core';
-import { InlineBlock, CompiledBlock } from '../compiled/blocks';
+import { InlineBlock, PartialBlock, CompiledBlock } from '../compiled/blocks';
 import { CompiledExpression } from '../compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
 import { Opcode, OpSeq, UpdatingOpcode } from '../opcodes';
@@ -305,6 +305,11 @@ export default class VM implements PublicVM {
     this.pushFrame(compiled, args);
   }
 
+  invokePartial(block: PartialBlock) {
+    let compiled = block.compile(this.env);
+    this.pushFrame(compiled);
+  }
+
   invokeLayout(
     args: EvaluatedArgs,
     layout: CompiledBlock,
@@ -365,6 +370,14 @@ export default class VM implements PublicVM {
     for(let i=0; i < names.length; i++) {
       scope.bindBlock(symbols[i], (blocks && blocks[names[i]]) || null);
     }
+  }
+
+  bindPartialArgs(symbol: number) {
+    let args = this.frame.getArgs();
+
+    assert(args, "Cannot bind named args");
+
+    this.scope().bindSymbol(symbol, args.named);
   }
 
   bindDynamicScope(names: string[]) {

@@ -38,6 +38,7 @@ export class TemplateBlock extends Block {
   public yields = new DictSet();
   public named = new DictSet();
   public blocks: Block[] = [];
+  public hasPartials = false;
 
   toJSON(): SerializedTemplateBlock {
     return {
@@ -45,7 +46,8 @@ export class TemplateBlock extends Block {
       locals: this.positionals,
       named: this.named.toArray(),
       yields: this.yields.toArray(),
-      blocks: this.blocks.map(b => b.toJSON())
+      blocks: this.blocks.map(b => b.toJSON()),
+      hasPartials: this.hasPartials
     };
   }
 }
@@ -188,6 +190,12 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   hasBlockParams(name: string) {
     this.pushValue<Expressions.HasBlockParams>(['has-block-params', name]);
     this.template.block.yields.add(name);
+  }
+
+  partial() {
+    let params = this.popValue<Params>();
+    this.push(['partial', params[0]]);
+    this.template.block.hasPartials = true;
   }
 
   /// Expressions
