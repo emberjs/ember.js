@@ -592,7 +592,7 @@ moduleFor('Dynamic content tests (attribute position)', class extends DynamicCon
 
   assertIsEmpty() {
     this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one <div> tag');
-    this.assertElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': '' }, content: '' });
+    this.assertElement(this.firstChild, { tagName: 'div', content: '' });
   }
 
   assertContent(content) {

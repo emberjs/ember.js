@@ -125,32 +125,6 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
 
-    this.runTask(() => set(this.context, 'bool', null));
-
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });
-
-    this.runTask(() => set(this.context, 'bool', true));
-
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
-  }
-
-  ['@test normalizes attributeBinding names']() {
-    let FooBarComponent = Component.extend({
-      attributeBindings: ['disAbled']
-    });
-
-    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
-
-    this.render('{{foo-bar disAbled=bool}}', {
-      bool: true
-    });
-
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
-
-    this.runTask(() => this.rerender());
-
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
-
     this.runTask(() => set(this.context, 'bool', false));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });

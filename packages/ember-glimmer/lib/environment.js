@@ -8,7 +8,7 @@ import {
 } from 'ember-views';
 import {
   Environment as GlimmerEnvironment,
-  AttributeChangeList,
+  AttributeManager,
   isSafeString,
   compileLayout,
   getDynamicVar
@@ -400,7 +400,7 @@ runInDebug(() => {
         }
         return false;
       })(), { id: 'ember-htmlbars.style-xss-warning' });
-      AttributeChangeList.setAttribute(...arguments);
+      AttributeManager.setAttribute(...arguments);
     },
 
     updateAttribute(dom, element, attr, value) {
@@ -410,7 +410,7 @@ runInDebug(() => {
         }
         return false;
       })(), { id: 'ember-htmlbars.style-xss-warning' });
-      AttributeChangeList.updateAttribute(...arguments);
+      AttributeManager.updateAttribute(...arguments);
     }
   };
 
