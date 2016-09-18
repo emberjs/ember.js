@@ -18,7 +18,7 @@ export interface AttributeManager {
 interface PropertyManager {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: string): void;
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: string): void;
-  removeProperty(env: Environment, element: Element, attr: string, value: Opaque, namespace?: string): void;
+  removeAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: string): void;
 }
 
 export function defaultManagers(element: Simple.Element, attr: string, isTrusting: boolean, namespace: string) {
@@ -29,20 +29,16 @@ export function defaultManagers(element: Simple.Element, attr: string, isTrustin
     return defaultAttributeManagers(tagName, attr);
   }
 
-  let { type } = normalizeProperty(element, attr);
+  let { type, normalized } = normalizeProperty(element, attr);
 
   if (type === 'attr') {
-    return defaultAttributeManagers(tagName, attr);
+    return defaultAttributeManagers(tagName, normalized);
   } else {
-    return defaultPropertyManagers(tagName, attr);
+    return defaultPropertyManagers(tagName, normalized);
   }
 }
 
 export function defaultPropertyManagers(tagName: string, attr: string) {
-  if (attr === 'disabled' || attr === 'checked') {
-    return BooleanPropertyChangeList;
-  }
-
   if (requiresSanitization(tagName, attr)) {
     return SafeHrefPropertyManager;
   }
@@ -83,13 +79,12 @@ export function readDOMAttr(element: Element, attr: string) {
 
 export const PropertyManager: PropertyManager = new class {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
-    if (value !== null && value !== undefined) {
-      let normalized = attr.toLowerCase();
-      element[normalized] = value;
+    if (!isAttrRemovalValue(value)) {
+      element[attr] = value;
     }
   }
 
-  removeProperty(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
+  removeAttribute(env: Environment, element: Element, attr: string, namespace?: DOMNamespace) {
     // TODO this sucks but to preserve properties first and to meet current
     // semantics we must do this.
     if (namespace) {
@@ -100,15 +95,31 @@ export const PropertyManager: PropertyManager = new class {
   }
 
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
-    if (shouldRemoveProperty(value)) {
-      this.removeProperty(env, element, attr, value, namespace);
+    if (isAttrRemovalValue(value)) {
+      this.removeAttribute(env, element, attr, namespace);
+    } else {
+      this.setAttribute(env, element, attr, value, namespace);
     }
-    this.setAttribute(env, element, attr, value, namespace);
   }
 };
 
-function shouldRemoveProperty(value) {
-  return value === null || value === undefined || value === false;
+function normalizeAttributeValue(value) {
+  if (value === false || value === undefined || value === null) {
+    return null;
+  }
+  if (value === true) {
+    return '';
+  }
+  // onclick function etc in SSR
+  if (typeof value === 'function') {
+    return null;
+  }
+
+  return String(value);
+}
+
+function isAttrRemovalValue(value) {
+  return value === null || value === undefined;
 }
 
 export const SafeHrefPropertyManager: AttributeManager = new class {
@@ -121,34 +132,18 @@ export const SafeHrefPropertyManager: AttributeManager = new class {
   }
 };
 
-export const BooleanPropertyChangeList: AttributeManager = new class {
-  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
-    if (value !== false) {
-      AttributeManager.setAttribute(env, element, attr, value);
-    }
-  }
-
-  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
-    if (shouldRemoveProperty(value)) {
-      // Needed to support current semantics
-      PropertyManager.removeProperty(env, element, attr, false);
-    } else {
-      this.setAttribute(env, element, attr, value);
-    }
-  }
-};
-
 export const AttributeManager: AttributeManager = new class {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
     let dom = env.getAppendOperations();
+    let normalizedValue = normalizeAttributeValue(value);
 
-    if (value !== null && value !== undefined) {
-      dom.setAttribute(element, attr, normalizeTextValue(value), namespace);
+    if (!isAttrRemovalValue(normalizedValue)) {
+      dom.setAttribute(element, attr, normalizedValue, namespace);
     }
   }
 
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || value === false) {
       if (namespace) {
         env.getDOM().removeAttributeNS(element, namespace, attr);
       } else {
@@ -195,10 +190,10 @@ export const OptionSelectedManager: AttributeManager = new class {
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
     let option = <HTMLOptionElement>element;
 
-    if (shouldRemoveProperty(value)) {
-      option.selected = false;
-    } else {
+    if (value) {
       option.selected = true;
+    } else {
+      option.selected = false;
     }
   }
 };

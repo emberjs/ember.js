@@ -1228,11 +1228,11 @@ test("attributes values are normalized correctly", function() {
   object.value = false;
   rerender();
 
-  equalTokens(root, "<div data-value='false'>hello</div>", "Revalidating after dirtying");
+  equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
 
   rerender();
 
-  equalTokens(root, "<div data-value='false'>hello</div>", "Revalidating after dirtying");
+  equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
 
   object.value = { toString() { return "world"; } };
   rerender();
