@@ -257,13 +257,13 @@ export default class Environment extends GlimmerEnvironment {
 
   hasPartial(name, symbolTable) {
     let { owner } = symbolTable.getMeta();
-    return hasPartial(name[0], owner);
+    return hasPartial(name, owner);
   }
 
   lookupPartial(name, symbolTable) {
     let { owner } = symbolTable.getMeta();
     let partial = {
-      template: lookupPartial(name[0], owner)
+      template: lookupPartial(name, owner)
     };
 
     if (partial.template) {
