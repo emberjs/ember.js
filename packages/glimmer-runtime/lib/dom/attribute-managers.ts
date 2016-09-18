@@ -10,54 +10,60 @@ import { SVG_NAMESPACE } from './helper';
 import { normalizeTextValue } from '../compiled/opcodes/content';
 import { Environment } from '../environment';
 
-export interface IChangeList {
+export interface AttributeManager {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: string): void;
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: string): void;
 }
 
-export function defaultChangeLists(element: Simple.Element, attr: string, isTrusting: boolean, namespace: string) {
+interface PropertyManager {
+  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: string): void;
+  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: string): void;
+  removeProperty(env: Environment, element: Element, attr: string, value: Opaque, namespace?: string): void;
+}
+
+export function defaultManagers(element: Simple.Element, attr: string, isTrusting: boolean, namespace: string) {
   let tagName = element.tagName;
   let isSVG = element.namespaceURI === SVG_NAMESPACE;
 
   if (isSVG) {
-    return defaultAttributeChangeLists(tagName, attr);
+    return defaultAttributeManagers(tagName, attr);
   }
 
   let { type } = normalizeProperty(element, attr);
 
   if (type === 'attr') {
-    return defaultAttributeChangeLists(tagName, attr);
+    return defaultAttributeManagers(tagName, attr);
   } else {
-    return defaultPropertyChangeLists(tagName, attr);
+    return defaultPropertyManagers(tagName, attr);
   }
 }
 
-export function defaultPropertyChangeLists(tagName: string, attr: string) {
+export function defaultPropertyManagers(tagName: string, attr: string) {
   if (attr === 'disabled' || attr === 'checked') {
     return BooleanPropertyChangeList;
   }
 
   if (requiresSanitization(tagName, attr)) {
-    return SafeHrefPropertyChangeList;
+    return SafeHrefPropertyManager;
   }
 
   if (isUserInputValue(tagName, attr)) {
-    return InputValuePropertyChangeList;
+    return InputValuePropertyManager;
   }
 
   if (isOptionSelected(tagName, attr)) {
-    return OptionSelectedChangeList;
+    return OptionSelectedManager;
   }
 
-  return PropertyChangeList;
+  return PropertyManager;
 }
 
-export function defaultAttributeChangeLists(tagName: string, attr: string) {
+export function defaultAttributeManagers(tagName: string, attr: string) {
   if (requiresSanitization(tagName, attr)) {
-    return SafeHrefAttributeChangeList;
+    return SafeHrefAttributeManager;
   }
 
-  return AttributeChangeList;
+  return AttributeManager;
 }
 
 export function readDOMAttr(element: Element, attr: string) {
@@ -75,33 +81,39 @@ export function readDOMAttr(element: Element, attr: string) {
   }
 };
 
-export const PropertyChangeList: IChangeList = {
+export const PropertyManager: PropertyManager = new class {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
     if (value !== null && value !== undefined) {
       let normalized = attr.toLowerCase();
       element[normalized] = value;
     }
-  },
+  }
+
+  removeProperty(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
+    // TODO this sucks but to preserve properties first and to meet current
+    // semantics we must do this.
+    if (namespace) {
+      env.getDOM().removeAttributeNS(element, namespace, attr);
+    } else {
+      env.getDOM().removeAttribute(element, attr);
+    }
+  }
 
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
-    if (value === null || value === undefined) {
-      // TODO this sucks but to preserve properties first and to meet current
-      // semantics we must do this.
-      if (namespace) {
-        env.getDOM().removeAttributeNS(element, namespace, attr);
-      } else {
-        env.getDOM().removeAttribute(element, attr);
-      }
-    } else {
-      this.setAttribute(...arguments);
+    if (shouldRemoveProperty(value)) {
+      this.removeProperty(env, element, attr, value, namespace);
     }
+    this.setAttribute(env, element, attr, value, namespace);
   }
 };
 
-export const SafeHrefPropertyChangeList: IChangeList = new class {
+function shouldRemoveProperty(value) {
+  return value === null || value === undefined || value === false;
+}
+
+export const SafeHrefPropertyManager: AttributeManager = new class {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
-    let tree = env.getAppendOperations();
-    PropertyChangeList.setAttribute(env, element, attr, sanitizeAttributeValue(env, element, attr, value));
+    PropertyManager.setAttribute(env, element, attr, sanitizeAttributeValue(env, element, attr, value));
   }
 
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
@@ -109,23 +121,24 @@ export const SafeHrefPropertyChangeList: IChangeList = new class {
   }
 };
 
-export const BooleanPropertyChangeList: IChangeList = new class {
+export const BooleanPropertyChangeList: AttributeManager = new class {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
-    if (value !== false ) {
-      AttributeChangeList.setAttribute(env, element, attr, value);
+    if (value !== false) {
+      AttributeManager.setAttribute(env, element, attr, value);
     }
   }
 
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
-    if (value === false || value === null || value === undefined) {
-      PropertyChangeList.updateAttribute(env, element, attr, null);
+    if (shouldRemoveProperty(value)) {
+      // Needed to support current semantics
+      PropertyManager.removeProperty(env, element, attr, false);
     } else {
       this.setAttribute(env, element, attr, value);
     }
   }
 };
 
-export const AttributeChangeList: IChangeList = new class {
+export const AttributeManager: AttributeManager = new class {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
     let dom = env.getAppendOperations();
 
@@ -151,7 +164,7 @@ function isUserInputValue(tagName: string, attribute: string) {
   return (tagName === 'INPUT' || tagName === 'TEXTAREA') && attribute === 'value';
 }
 
-export const InputValuePropertyChangeList: IChangeList = new class {
+export const InputValuePropertyManager: AttributeManager = new class {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
     let input = element as FIXME<HTMLInputElement, "This breaks SSR">;
     input.value = normalizeTextValue(value);
@@ -171,17 +184,18 @@ function isOptionSelected(tagName: string, attribute: string) {
   return tagName === 'OPTION' && attribute === 'selected';
 }
 
-export const OptionSelectedChangeList: IChangeList = new class {
+export const OptionSelectedManager: AttributeManager = new class {
   setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
     if (value !== null && value !== undefined && value !== false) {
-      env.getAppendOperations().setAttribute(element, 'selected', '');
+      let option = <HTMLOptionElement>element;
+      option.selected = true;
     }
   }
 
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
     let option = <HTMLOptionElement>element;
 
-    if (value === null || value === undefined || value === false) {
+    if (shouldRemoveProperty(value)) {
       option.selected = false;
     } else {
       option.selected = true;
@@ -189,9 +203,9 @@ export const OptionSelectedChangeList: IChangeList = new class {
   }
 };
 
-export const SafeHrefAttributeChangeList: IChangeList = new class {
+export const SafeHrefAttributeManager: AttributeManager = new class {
   setAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
-    AttributeChangeList.setAttribute(env, element, attr, sanitizeAttributeValue(env, element, attr, value));
+    AttributeManager.setAttribute(env, element, attr, sanitizeAttributeValue(env, element, attr, value));
   }
 
   updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {

@@ -1371,8 +1371,8 @@ test("<option selected> is normalized and updated correctly", function() {
   let expectedInitialTokens = `
     <select multiple="">
       <option>0</option>
-      <option selected="">1</option>
-      <option selected="">2</option>
+      <option>1</option>
+      <option>2</option>
       <option>3</option>
       <option>4</option>
       <option>5</option>

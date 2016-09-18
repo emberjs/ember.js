@@ -62,17 +62,17 @@ export {
 } from './lib/compiled/blocks';
 
 export {
-  IChangeList,
-  AttributeChangeList,
-  PropertyChangeList,
-  SafeHrefAttributeChangeList,
-  SafeHrefPropertyChangeList,
-  InputValuePropertyChangeList,
-  defaultChangeLists,
-  defaultAttributeChangeLists,
-  defaultPropertyChangeLists,
+  AttributeManager as IAttributeManager,
+  AttributeManager,
+  PropertyManager,
+  SafeHrefAttributeManager,
+  SafeHrefPropertyManager,
+  InputValuePropertyManager,
+  defaultManagers,
+  defaultAttributeManagers,
+  defaultPropertyManagers,
   readDOMAttr
-} from './lib/dom/change-lists';
+} from './lib/dom/attribute-managers';
 
 export {
   normalizeTextValue

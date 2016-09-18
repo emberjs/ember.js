@@ -113,6 +113,55 @@ test("disable updates properly", () => {
   equalTokens(root, '<input disabled="true" />');
 });
 
+test("quoted disable is always disabled", () => {
+  let template = compile('<input disabled="{{enabled}}" />');
+
+  let context = { enabled: true };
+  render(template, context);
+
+  equalTokens(root, '<input disabled="true" />');
+
+  rerender({ enabled: false });
+
+  equalTokens(root, '<input disabled="false" />');
+
+  rerender({ enabled: 'wat' });
+
+  equalTokens(root, '<input disabled="wat" />');
+
+  rerender({ enabled: null });
+
+  equalTokens(root, '<input />');
+
+  rerender({ enabled: true });
+
+  equalTokens(root, '<input disabled="true" />');
+
+  rerender({ enabled: undefined });
+
+  equalTokens(root, '<input />');
+
+  rerender({ enabled: true });
+
+  equalTokens(root, '<input disabled="true" />');
+});
+
+test("disable without an explicit value is truthy", () => {
+  let template = compile('<input disabled />');
+
+  render(template, {});
+
+  equalTokens(root, '<input disabled />');
+
+  ok(readDOMAttr(root.firstChild as Element, 'disabled'));
+
+  rerender();
+
+  equalTokens(root, '<input disabled />');
+
+  ok(readDOMAttr(root.firstChild as Element, 'disabled'));
+});
+
 test("a[href] marks javascript: protocol as unsafe", () => {
   let template = compile('<a href="{{foo}}"></a>');
 

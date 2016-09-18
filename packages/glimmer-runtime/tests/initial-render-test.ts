@@ -1,6 +1,6 @@
 import { forEach } from "glimmer-util";
 import { TestEnvironment, TestDynamicScope, normalizeInnerHTML, getTextContent, equalTokens } from "glimmer-test-helpers";
-import { Template, AttributeChangeList } from 'glimmer-runtime';
+import { Template, AttributeManager } from 'glimmer-runtime';
 import { UpdatableReference } from 'glimmer-object-reference';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -402,12 +402,12 @@ test("Dynamic <option selected> for multi-select is preserved properly", functio
   });
 
   let selectNode: any = root.childNodes[1];
+  let options = Array.prototype.slice.call(selectNode.querySelectorAll('option'));
+  let selected = options.filter(option => option.selected);
 
-  let options = selectNode.querySelectorAll('option[selected]');
-
-  equal(options.length, 2, 'two options are selected');
-  equal(options[0].value, '1', 'first selected item is "1"');
-  equal(options[1].value, '2', 'second selected item is "2"');
+  equal(selected.length, 2, 'two options are selected');
+  equal(selected[0].value, '1', 'first selected item is "1"');
+  equal(selected[1].value, '2', 'second selected item is "2"');
 });
 
 module("Initial render - simple blocks");
@@ -993,7 +993,7 @@ let warnings = 0;
 const StyleAttribute = {
   setAttribute(dom, element, attr, value) {
     warnings++;
-    AttributeChangeList.setAttribute(dom, element, attr, value);
+    AttributeManager.setAttribute(dom, element, attr, value);
   },
   updateAttribute() {}
 };
