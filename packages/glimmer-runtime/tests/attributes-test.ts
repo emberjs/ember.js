@@ -86,7 +86,7 @@ test("disable updates properly", () => {
   let context = { enabled: true };
   render(template, context);
 
-  equalTokens(root, '<input disabled="true" />');
+  equalTokens(root, '<input disabled />');
 
   rerender({ enabled: false });
 
@@ -94,7 +94,7 @@ test("disable updates properly", () => {
 
   rerender({ enabled: 'wat' });
 
-  equalTokens(root, '<input disabled="wat" />');
+  equalTokens(root, '<input disabled />');
 
   rerender({ enabled: null });
 
@@ -102,7 +102,7 @@ test("disable updates properly", () => {
 
   rerender({ enabled: true });
 
-  equalTokens(root, '<input disabled="true" />');
+  equalTokens(root, '<input disabled />');
 
   rerender({ enabled: undefined });
 
@@ -110,7 +110,7 @@ test("disable updates properly", () => {
 
   rerender({ enabled: true });
 
-  equalTokens(root, '<input disabled="true" />');
+  equalTokens(root, '<input disabled />');
 });
 
 test("quoted disable is always disabled", () => {
@@ -119,15 +119,15 @@ test("quoted disable is always disabled", () => {
   let context = { enabled: true };
   render(template, context);
 
-  equalTokens(root, '<input disabled="true" />');
+  equalTokens(root, '<input disabled />');
 
   rerender({ enabled: false });
 
-  equalTokens(root, '<input disabled="false" />');
+  equalTokens(root, '<input disabled />');
 
   rerender({ enabled: 'wat' });
 
-  equalTokens(root, '<input disabled="wat" />');
+  equalTokens(root, '<input disabled />');
 
   rerender({ enabled: null });
 
@@ -135,7 +135,7 @@ test("quoted disable is always disabled", () => {
 
   rerender({ enabled: true });
 
-  equalTokens(root, '<input disabled="true" />');
+  equalTokens(root, '<input disabled />');
 
   rerender({ enabled: undefined });
 
@@ -143,7 +143,7 @@ test("quoted disable is always disabled", () => {
 
   rerender({ enabled: true });
 
-  equalTokens(root, '<input disabled="true" />');
+  equalTokens(root, '<input disabled />');
 });
 
 test("disable without an explicit value is truthy", () => {

@@ -490,13 +490,8 @@ export class DynamicAttribute implements Attribute  {
     private reference: Reference<Opaque>,
     private namespace?: string
   ) {
-    this.element = element;
-    this.reference = reference;
-    this.attributeManager = attributeManager;
     this.tag = reference.tag;
-    this.name = name;
     this.cache = null;
-    this.namespace = namespace;
   }
 
   patch(env: Environment) {
