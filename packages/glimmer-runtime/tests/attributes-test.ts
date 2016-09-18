@@ -363,6 +363,22 @@ test('handles empty string textarea values', assert => {
   assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
 });
 
+test('handles empty string input placeholders', assert => {
+  let template = compile('<input type="text" placeholder={{name}} />');
+
+  render(template, { name: '' });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'placeholder'), '');
+
+  rerender({ name: 'Alex' });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'placeholder'), 'Alex');
+
+  rerender({ name: '' });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'placeholder'), '');
+});
+
 test('does not set undefined attributes', assert => {
   let template = compile('<div data-foo={{isUndefined}} /><div data-foo={{isNotUndefined}} />');
 
