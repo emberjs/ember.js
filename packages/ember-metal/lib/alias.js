@@ -34,27 +34,15 @@ AliasedProperty.prototype.set = function AliasedProperty_set(obj, keyName, value
   return set(obj, this.altKey, value);
 };
 
-AliasedProperty.prototype.willWatch = function(obj, keyName) {
-  addDependentKeys(this, obj, keyName, meta(obj));
-};
-
-AliasedProperty.prototype.didUnwatch = function(obj, keyName) {
-  removeDependentKeys(this, obj, keyName, meta(obj));
-};
-
 AliasedProperty.prototype.setup = function(obj, keyName) {
   assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
   let m = meta(obj);
-  if (m.peekWatching(keyName)) {
-    addDependentKeys(this, obj, keyName, m);
-  }
+  addDependentKeys(this, obj, keyName, m);
 };
 
 AliasedProperty.prototype.teardown = function(obj, keyName) {
   let m = meta(obj);
-  if (m.peekWatching(keyName)) {
-    removeDependentKeys(this, obj, keyName, m);
-  }
+  removeDependentKeys(this, obj, keyName, m);
 };
 
 AliasedProperty.prototype.readOnly = function() {
