@@ -1169,7 +1169,7 @@ test("attribute nodes follow the normal dirtying rules", function() {
   object.value = null;
   rerender();
 
-  equalTokens(root, "<div data-value=''>hello</div>", "Revalidating after dirtying");
+  equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
 
   object.value = "world";
   rerender();
@@ -1228,11 +1228,11 @@ test("attributes values are normalized correctly", function() {
   object.value = false;
   rerender();
 
-  equalTokens(root, "<div data-value='false'>hello</div>", "Revalidating after dirtying");
+  equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
 
   rerender();
 
-  equalTokens(root, "<div data-value='false'>hello</div>", "Revalidating after dirtying");
+  equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
 
   object.value = { toString() { return "world"; } };
   rerender();
@@ -1371,8 +1371,8 @@ test("<option selected> is normalized and updated correctly", function() {
   let expectedInitialTokens = `
     <select multiple="">
       <option>0</option>
-      <option selected="">1</option>
-      <option selected="">2</option>
+      <option>1</option>
+      <option>2</option>
       <option>3</option>
       <option>4</option>
       <option>5</option>

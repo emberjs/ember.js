@@ -1,5 +1,5 @@
 import { CompiledExpression } from '../expressions';
-import { normalizeTextValue } from '../opcodes/content';
+import { FIXME } from 'glimmer-util';
 import VM from '../../vm/append';
 import { PathReference, CachedReference, RevisionTag, combineTagged } from 'glimmer-reference';
 import { Opaque } from 'glimmer-util';
@@ -31,10 +31,28 @@ class ConcatReference extends CachedReference<string> {
   }
 
   protected compute(): string {
-    let parts = new Array<string>(this.parts.length);
+    let parts = new Array<string>();
+
     for (let i = 0; i < this.parts.length; i++) {
-      parts[i] = normalizeTextValue(this.parts[i].value());
+      let value = this.parts[i].value();
+
+      if (value !== null && value !== undefined) {
+        parts[i] = castToString(this.parts[i].value()) as FIXME<string, 'Coerce falsy values to strings'>;
+      }
     }
-    return parts.join('');
+
+    if (parts.length > 0) {
+      return parts.join('');
+    }
+
+    return null;
   }
+}
+
+function castToString(value) {
+  if (typeof value['toString'] !== 'function') {
+    return '';
+  }
+
+  return String(value);
 }

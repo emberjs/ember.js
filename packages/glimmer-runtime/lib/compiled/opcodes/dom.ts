@@ -19,7 +19,7 @@ import { ModifierManager } from '../../modifier/interfaces';
 import { NULL_REFERENCE } from '../../references';
 import { ValueReference } from '../../compiled/expressions/value';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
-import { IChangeList } from '../../dom/change-lists';
+import { AttributeManager } from '../../dom/attribute-managers';
 import { ElementOperations } from '../../builder';
 
 export class TextOpcode extends Opcode {
@@ -181,7 +181,7 @@ export class SimpleElementOperations implements ElementOperations {
   }
 
   addDynamicAttributeNS(element: Simple.Element, namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
-    let attributeManager = this.env.attributeFor(element, name,isTrusting, namespace);
+    let attributeManager = this.env.attributeFor(element, name, isTrusting, namespace);
     let nsAttribute = new DynamicAttribute(element, attributeManager, name, reference, namespace);
 
     this.addAttribute(nsAttribute);
@@ -485,18 +485,13 @@ export class DynamicAttribute implements Attribute  {
 
   constructor(
     private element: Simple.Element,
-    private changeList: IChangeList,
+    private attributeManager: AttributeManager,
     public name: string,
     private reference: Reference<Opaque>,
     private namespace?: string
   ) {
-    this.element = element;
-    this.reference = reference;
-    this.changeList = changeList;
     this.tag = reference.tag;
-    this.name = name;
     this.cache = null;
-    this.namespace = namespace;
   }
 
   patch(env: Environment) {
@@ -505,7 +500,7 @@ export class DynamicAttribute implements Attribute  {
     let value = cache.revalidate();
 
     if (isModified(value)) {
-      this.changeList.updateAttribute(env, element as FIXME<Element, 'needs to be reified properly'>, this.name, value, this.namespace);
+      this.attributeManager.updateAttribute(env, element as FIXME<Element, 'needs to be reified properly'>, this.name, value, this.namespace);
     }
   }
 
@@ -514,12 +509,12 @@ export class DynamicAttribute implements Attribute  {
 
     if (isConstReference(reference)) {
       let value = reference.value();
-      this.changeList.setAttribute(env, element, this.name, value, this.namespace);
+      this.attributeManager.setAttribute(env, element, this.name, value, this.namespace);
       return null;
     } else {
       let cache = this.cache = new ReferenceCache(reference);
       let value = cache.peek();
-      this.changeList.setAttribute(env, element, this.name, value, this.namespace);
+      this.attributeManager.setAttribute(env, element, this.name, value, this.namespace);
       return new PatchElementOpcode(this);
     }
   }

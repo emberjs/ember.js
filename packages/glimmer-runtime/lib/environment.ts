@@ -7,9 +7,9 @@ import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { Reference, PathReference, OpaqueIterable } from 'glimmer-reference';
 import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import {
-  defaultChangeLists,
-  IChangeList
-} from './dom/change-lists';
+  defaultManagers,
+  AttributeManager
+} from './dom/attribute-managers';
 
 import {
   PartialDefinition
@@ -250,8 +250,8 @@ export abstract class Environment {
     this.scheduledUpdateModifiers = null;
   }
 
-  attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace?: string): IChangeList {
-    return defaultChangeLists(element, attr, isTrusting, namespace);
+  attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace?: string): AttributeManager {
+    return defaultManagers(element, attr, isTrusting, namespace);
   }
 
   abstract hasHelper(helperName: string[], blockMeta: TemplateMeta): boolean;
