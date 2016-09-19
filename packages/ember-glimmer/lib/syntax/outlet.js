@@ -17,21 +17,17 @@ import {
 } from 'glimmer-reference';
 
 function outletComponentFor(vm) {
-  let { outletState, isTopLevel } = vm.dynamicScope();
+  let { outletState } = vm.dynamicScope();
 
-  if (isTopLevel) {
-    return new TopLevelOutletComponentReference(outletState);
+  let args = vm.getArgs();
+  let outletNameRef;
+  if (args.positional.length === 0) {
+    outletNameRef = new ConstReference('main');
   } else {
-    let args = vm.getArgs();
-    let outletNameRef;
-    if (args.positional.length === 0) {
-      outletNameRef = new ConstReference('main');
-    } else {
-      outletNameRef = args.positional.at(0);
-    }
-
-    return new OutletComponentReference(outletNameRef, outletState);
+    outletNameRef = args.positional.at(0);
   }
+
+  return new OutletComponentReference(outletNameRef, outletState);
 }
 
 /**
@@ -102,30 +98,6 @@ export class OutletSyntax extends StatementSyntax {
 
   compile(builder) {
     builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.templates, this.symbolTable, this.shadow);
-  }
-}
-
-class TopLevelOutletComponentReference {
-  constructor(reference) {
-    this.outletReference = reference;
-    this.lastState = reference.value();
-    this.definition = new TopLevelOutletComponentDefinition(this.lastState.render.template);
-    this.tag = reference.tag;
-  }
-
-  value() {
-    let { lastState, outletReference, definition } = this;
-    let newState = outletReference.value();
-
-    definition = revalidate(definition, lastState, newState);
-
-    if (definition) {
-      return definition;
-    } else {
-      return new TopLevelOutletComponentDefinition(newState.render.template);
-    }
-
-    return this.definition;
   }
 }
 
@@ -205,13 +177,22 @@ class StateBucket {
   }
 }
 
-class AbstractOutletComponentManager {
+class OutletComponentManager {
   prepareArgs(definition, args) {
     return args;
   }
 
   create(environment, definition, args, dynamicScope) {
-    throw new Error('Not implemented: create');
+    let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get('outlets').get(definition.outletName);
+    let outletState = outletStateReference.value();
+    return new StateBucket(outletState);
+  }
+
+  layoutFor(definition, bucket, env) {
+    let { template } = definition;
+    let owner = template.meta.owner;
+
+    return env.getCompiledBlock(OutletLayoutCompiler, definition.template, owner);
   }
 
   getSelf({ outletState }) {
@@ -237,50 +218,29 @@ class AbstractOutletComponentManager {
   didUpdate(state) {}
 }
 
-class TopLevelOutletComponentManager extends AbstractOutletComponentManager {
+const MANAGER = new OutletComponentManager();
+
+class TopLevelOutletComponentManager extends OutletComponentManager {
   create(environment, definition, args, dynamicScope) {
-    dynamicScope.isTopLevel = false;
     return new StateBucket(dynamicScope.outletState.value());
   }
 
   layoutFor(definition, bucket, env) {
     let { template } = definition;
-    if (!template) {
-      template = env.owner.lookup('template:-outlet');
-    }
+    let owner = template.meta.owner;
 
-    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, template);
+    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, template, owner);
   }
 }
 
 const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
 
-class OutletComponentManager extends AbstractOutletComponentManager {
-  create(environment, definition, args, dynamicScope) {
-    let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get('outlets').get(definition.outletName);
-    let outletState = outletStateReference.value();
-    return new StateBucket(outletState);
-  }
 
-  layoutFor(definition, bucket, env) {
-    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
-  }
-}
-
-const MANAGER = new OutletComponentManager();
-
-class AbstractOutletComponentDefinition extends ComponentDefinition {
-  constructor(manager, outletName, template) {
-    super('outlet', manager, null);
-    this.outletName = outletName;
-    this.template = template;
+export class TopLevelOutletComponentDefinition extends ComponentDefinition {
+  constructor(instance) {
+    super('outlet', TOP_LEVEL_MANAGER, instance);
+    this.template = instance.template;
     generateGuid(this);
-  }
-}
-
-class TopLevelOutletComponentDefinition extends AbstractOutletComponentDefinition {
-  constructor(template) {
-    super(TOP_LEVEL_MANAGER, null, template);
   }
 }
 
@@ -299,9 +259,12 @@ class TopLevelOutletLayoutCompiler {
 
 TopLevelOutletLayoutCompiler.id = 'top-level-outlet';
 
-class OutletComponentDefinition extends AbstractOutletComponentDefinition {
+class OutletComponentDefinition extends ComponentDefinition {
   constructor(outletName, template) {
-    super(MANAGER, outletName, template);
+    super('outlet', MANAGER, null);
+    this.outletName = outletName;
+    this.template = template;
+    generateGuid(this);
   }
 }
 
