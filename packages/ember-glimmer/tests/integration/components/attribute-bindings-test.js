@@ -125,7 +125,7 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
 
-    this.runTask(() => set(this.context, 'bool', false));
+    this.runTask(() => set(this.context, 'bool', null));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });
 
