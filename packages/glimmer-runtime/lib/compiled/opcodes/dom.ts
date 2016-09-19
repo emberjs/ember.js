@@ -62,6 +62,30 @@ export class OpenPrimitiveElementOpcode extends Opcode {
   }
 }
 
+export class PushRemoteElementOpcode extends Opcode {
+  public type = "push-remote-element";
+
+  evaluate(vm: VM) {
+    let reference = vm.frame.getOperand();
+    let cache = isConst(reference) ? undefined : new ReferenceCache(reference);
+    let element = cache ? cache.peek() : reference.value();
+
+    vm.stack().pushRemoteElement(element);
+
+    if (cache) {
+      vm.updateWith(new Assert(cache));
+    }
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: [JSON.stringify(this.tag)]
+    };
+  }
+}
+
 export class OpenComponentElementOpcode extends Opcode {
   public type = "open-component-element";
 

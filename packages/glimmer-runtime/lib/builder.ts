@@ -127,7 +127,7 @@ export class ElementStack implements Cursor {
     return this.blockStack.current;
   }
 
-  private popElement() {
+  popElement() {
     let { elementStack, nextSiblingStack }  = this;
 
     let topElement = elementStack.pop();
@@ -193,16 +193,31 @@ export class ElementStack implements Cursor {
 
   flushElement() {
     let parent  = this.element;
-    let element = this.element = this.constructing;
+    let element = this.constructing;
 
     this.dom.insertBefore(parent, element, this.nextSibling);
 
     this.constructing = null;
     this.operations = null;
-    this.nextSibling = null;
-    this.elementStack.push(element);
-    this.nextSiblingStack.push(null);
+
+    this.pushElement(element);
     this.blockStack.current.openElement(element);
+  }
+
+  pushRemoteElement(element: Simple.Element) {
+    this.pushElement(element);
+
+    let tracker = new SimpleBlockTracker(this.element);
+    this.pushBlockTracker(tracker);
+    return tracker;
+  }
+
+  private pushElement(element: Simple.Element) {
+    this.element = element;
+    this.elementStack.push(element);
+
+    this.nextSibling = null;
+    this.nextSiblingStack.push(null);
   }
 
   newDestroyable(d: Destroyable) {

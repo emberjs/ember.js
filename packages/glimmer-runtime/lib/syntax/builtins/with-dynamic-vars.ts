@@ -22,12 +22,10 @@ export default class WithDynamicVarsSyntax extends StatementSyntax {
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
     let { args, templates } = this;
 
-    dsl.unit({ templates }, dsl => {
-      dsl.putArgs(args);
-      dsl.pushDynamicScope();
-      dsl.bindDynamicScope(args.named.keys);
+    dsl.block({ templates, args }, (dsl) => {
+      dsl.pushRemoteElement();
       dsl.evaluate('default');
-      dsl.popDynamicScope();
+      dsl.popElement();
     });
   }
 }
