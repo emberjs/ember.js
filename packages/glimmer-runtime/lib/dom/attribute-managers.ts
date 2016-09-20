@@ -10,17 +10,6 @@ import { SVG_NAMESPACE } from './helper';
 import { normalizeTextValue } from '../compiled/opcodes/content';
 import { Environment } from '../environment';
 
-export interface AttributeManager {
-  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: string): void;
-  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: string): void;
-}
-
-interface PropertyManager {
-  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: string): void;
-  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: string): void;
-  removeAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: string): void;
-}
-
 export function defaultManagers(element: Simple.Element, attr: string, isTrusting: boolean, namespace: string) {
   let tagName = element.tagName;
   let isSVG = element.namespaceURI === SVG_NAMESPACE;
@@ -40,26 +29,26 @@ export function defaultManagers(element: Simple.Element, attr: string, isTrustin
 
 export function defaultPropertyManagers(tagName: string, attr: string) {
   if (requiresSanitization(tagName, attr)) {
-    return SafeHrefPropertyManager;
+    return SAFE_HREF_PROPERTY_MANAGER;
   }
 
   if (isUserInputValue(tagName, attr)) {
-    return InputValuePropertyManager;
+    return INPUT_VALUE_PROPERTY_MANAGER;
   }
 
   if (isOptionSelected(tagName, attr)) {
-    return OptionSelectedManager;
+    return OPTION_SELECTED_MANAGER;
   }
 
-  return PropertyManager;
+  return new PropertyManager(attr);
 }
 
 export function defaultAttributeManagers(tagName: string, attr: string) {
   if (requiresSanitization(tagName, attr)) {
-    return SafeHrefAttributeManager;
+    return SAFE_HREF_ATTRIBUTE_MANAGER;
   }
 
-  return AttributeManager;
+  return new AttributeManager(attr);
 }
 
 export function readDOMAttr(element: Element, attr: string) {
@@ -77,16 +66,42 @@ export function readDOMAttr(element: Element, attr: string) {
   }
 };
 
-export const PropertyManager: PropertyManager = new class {
-  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
-    if (!isAttrRemovalValue(value)) {
-      element[attr] = value;
+export class AttributeManager {
+  constructor(public attr: string) {}
+
+  setAttribute(env: Environment, element: Simple.Element, value: Opaque, namespace?: DOMNamespace) {
+    let dom = env.getAppendOperations();
+    let normalizedValue = normalizeAttributeValue(value);
+
+    if (!isAttrRemovalValue(normalizedValue)) {
+      dom.setAttribute(element, this.attr, normalizedValue, namespace);
     }
   }
 
-  removeAttribute(env: Environment, element: Element, attr: string, namespace?: DOMNamespace) {
+  updateAttribute(env: Environment, element: Element, value: Opaque, namespace?: DOMNamespace) {
+    if (value === null || value === undefined || value === false) {
+      if (namespace) {
+        env.getDOM().removeAttributeNS(element, namespace, this.attr);
+      } else {
+        env.getDOM().removeAttribute(element, this.attr);
+      }
+    } else {
+      this.setAttribute(env, element, value);
+    }
+  }
+};
+
+export class PropertyManager extends AttributeManager {
+  setAttribute(env: Environment, element: Simple.Element, value: Opaque, namespace?: DOMNamespace) {
+    if (!isAttrRemovalValue(value)) {
+      element[this.attr] = value;
+    }
+  }
+
+  protected removeAttribute(env: Environment, element: Element, namespace?: DOMNamespace) {
     // TODO this sucks but to preserve properties first and to meet current
     // semantics we must do this.
+    let { attr } = this;
     if (namespace) {
       env.getDOM().removeAttributeNS(element, namespace, attr);
     } else {
@@ -94,11 +109,11 @@ export const PropertyManager: PropertyManager = new class {
     }
   }
 
-  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
+  updateAttribute(env: Environment, element: Element, value: Opaque, namespace?: DOMNamespace) {
     if (isAttrRemovalValue(value)) {
-      this.removeAttribute(env, element, attr, namespace);
+      this.removeAttribute(env, element, namespace);
     } else {
-      this.setAttribute(env, element, attr, value, namespace);
+      this.setAttribute(env, element, value, namespace);
     }
   }
 };
@@ -122,50 +137,29 @@ function isAttrRemovalValue(value) {
   return value === null || value === undefined;
 }
 
-export const SafeHrefPropertyManager: AttributeManager = new class {
-  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
-    PropertyManager.setAttribute(env, element, attr, sanitizeAttributeValue(env, element, attr, value));
+class SafeHrefPropertyManager extends PropertyManager {
+  setAttribute(env: Environment, element: Simple.Element, value: Opaque) {
+    super.setAttribute(env, element, sanitizeAttributeValue(env, element, this.attr, value));
   }
 
-  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
-    this.setAttribute(env, element, attr, value);
+  updateAttribute(env: Environment, element: Element, value: Opaque) {
+    this.setAttribute(env, element, value);
   }
-};
+}
 
-export const AttributeManager: AttributeManager = new class {
-  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
-    let dom = env.getAppendOperations();
-    let normalizedValue = normalizeAttributeValue(value);
-
-    if (!isAttrRemovalValue(normalizedValue)) {
-      dom.setAttribute(element, attr, normalizedValue, namespace);
-    }
-  }
-
-  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque, namespace?: DOMNamespace) {
-    if (value === null || value === undefined || value === false) {
-      if (namespace) {
-        env.getDOM().removeAttributeNS(element, namespace, attr);
-      } else {
-        env.getDOM().removeAttribute(element, attr);
-      }
-    } else {
-      this.setAttribute(env, element, attr, value);
-    }
-  }
-};
+export const SAFE_HREF_PROPERTY_MANAGER = new SafeHrefPropertyManager('href');
 
 function isUserInputValue(tagName: string, attribute: string) {
   return (tagName === 'INPUT' || tagName === 'TEXTAREA') && attribute === 'value';
 }
 
-export const InputValuePropertyManager: AttributeManager = new class {
-  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
+class InputValuePropertyManager extends AttributeManager {
+  setAttribute(env: Environment, element: Simple.Element, value: Opaque) {
     let input = element as FIXME<HTMLInputElement, "This breaks SSR">;
     input.value = normalizeTextValue(value);
   }
 
-  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
+  updateAttribute(env: Environment, element: Element, value: Opaque) {
     let input = <HTMLInputElement>element;
     let currentValue = input.value;
     let normalizedValue = normalizeTextValue(value);
@@ -173,21 +167,23 @@ export const InputValuePropertyManager: AttributeManager = new class {
       input.value = normalizedValue;
     }
   }
-};
+}
+
+export const INPUT_VALUE_PROPERTY_MANAGER = new InputValuePropertyManager('value');
 
 function isOptionSelected(tagName: string, attribute: string) {
   return tagName === 'OPTION' && attribute === 'selected';
 }
 
-export const OptionSelectedManager: AttributeManager = new class {
-  setAttribute(env: Environment, element: Simple.Element, attr: string, value: Opaque) {
+class OptionSelectedManager extends PropertyManager {
+  setAttribute(env: Environment, element: Simple.Element, value: Opaque) {
     if (value !== null && value !== undefined && value !== false) {
       let option = <HTMLOptionElement>element;
       option.selected = true;
     }
   }
 
-  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
+  updateAttribute(env: Environment, element: Element, value: Opaque) {
     let option = <HTMLOptionElement>element;
 
     if (value) {
@@ -196,14 +192,18 @@ export const OptionSelectedManager: AttributeManager = new class {
       option.selected = false;
     }
   }
-};
+}
 
-export const SafeHrefAttributeManager: AttributeManager = new class {
-  setAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
-    AttributeManager.setAttribute(env, element, attr, sanitizeAttributeValue(env, element, attr, value));
+export const OPTION_SELECTED_MANAGER = new OptionSelectedManager('selected');
+
+class SafeHrefAttributeManager extends AttributeManager {
+  setAttribute(env: Environment, element: Element, value: Opaque) {
+    super.setAttribute(env, element, sanitizeAttributeValue(env, element, this.attr, value));
   }
 
-  updateAttribute(env: Environment, element: Element, attr: string, value: Opaque) {
-    this.setAttribute(env, element, attr, value);
+  updateAttribute(env: Environment, element: Element, value: Opaque, namespace?: DOMNamespace) {
+    this.setAttribute(env, element, value);
   }
-};
+}
+
+export const SAFE_HREF_ATTRIBUTE_MANAGER = new SafeHrefAttributeManager('href');
