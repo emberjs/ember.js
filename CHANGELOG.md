@@ -1,5 +1,16 @@
 # Ember Changelog
 
+### 2.9.0-beta.3 (September 20, 2016)
+
+- [#14313](https://github.com/emberjs/ember.js/pull/14313) [BUGFIX] Ensure `id` attribute bindings of `undefined` are handled properly.
+- [#14291](https://github.com/emberjs/ember.js/pull/14291) [BUGFIX] Fix component action bubbling semantics.
+- [#14296](https://github.com/emberjs/ember.js/pull/14296) [BUGFIX] Prevent invalid markup when used with XHTML `doctype`.
+- [#14300](https://github.com/emberjs/ember.js/pull/14300) [BUGFIX] Ensure component is `inDOM` during `didInsertElement`.
+- [#14312](https://github.com/emberjs/ember.js/pull/14312) [BUGFIX] Allow a components `layout` to be injected.
+- [#14315](https://github.com/emberjs/ember.js/pull/14315) [BUGFIX] Fix DOM output for properties and attributes.
+- [#14319](https://github.com/emberjs/ember.js/pull/14319) [BUGFIX] Fixes rerendering issues when rendering aliased paths.
+
+
 ### 2.9.0-beta.2 (September 12, 2016)
 
 - [#14237](https://github.com/emberjs/ember.js/pull/14237) [BUGFIX] Ensure Engine Routes are deactivated before destruction
