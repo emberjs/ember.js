@@ -1,5 +1,5 @@
 import { CLASS_META } from 'glimmer-object-reference';
-import { Dict, dict, isArray, assign } from 'glimmer-util';
+import { Dict, dict, assign } from 'glimmer-util';
 import GlimmerObject, {
   GlimmerObjectFactory,
   ClassMeta,
@@ -8,6 +8,8 @@ import GlimmerObject, {
 } from './object';
 
 import { ROOT } from './utils';
+
+const { isArray } = Array;
 
 export const DESCRIPTOR = "5d90f84f-908e-4a42-9749-3d0f523c262c";
 export const BLUEPRINT  = "8d97cf5f-db9e-48d8-a6b2-7a75b7170805";

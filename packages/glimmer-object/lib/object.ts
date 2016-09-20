@@ -3,7 +3,7 @@ import {
   InnerReferenceFactory,
   PropertyReference
 } from 'glimmer-object-reference';
-import { Dict, dict, isArray, assign, initializeGuid } from 'glimmer-util';
+import { Dict, dict, assign, initializeGuid } from 'glimmer-util';
 import {
   Mixin,
   extend as extendClass,
@@ -11,6 +11,8 @@ import {
   relinkSubclasses,
   wrapMethod
 } from './mixin';
+
+const { isArray } = Array;
 
 import { ROOT } from './utils';
 

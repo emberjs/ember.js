@@ -1,4 +1,3 @@
-import { forEach } from "glimmer-util";
 import { TestEnvironment, TestDynamicScope, normalizeInnerHTML, getTextContent, equalTokens } from "glimmer-test-helpers";
 import { Template, AttributeManager } from 'glimmer-runtime';
 import { UpdatableReference } from 'glimmer-object-reference';
@@ -188,9 +187,7 @@ function shouldBeVoid(tagName) {
 test("Void elements are self-closing", function() {
   let voidElements = "area base br col command embed hr img input keygen link meta param source track wbr";
 
-  forEach(voidElements.split(" "), function(tagName) {
-    shouldBeVoid(tagName);
-  });
+  voidElements.split(" ").forEach((tagName) => shouldBeVoid(tagName));
 });
 
 test("The compiler can handle nesting", function() {

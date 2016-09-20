@@ -1,5 +1,4 @@
 import { tokenize } from "simple-html-tokenizer";
-import { forEach } from "glimmer-util";
 import { Environment, Template, Layout, templateFactory } from "glimmer-runtime";
 import { precompile, PrecompileOptions } from "glimmer-compiler";
 
@@ -123,8 +122,8 @@ export function equalTokens(fragment, html, message=null) {
     }
   }
 
-  forEach(fragTokens.tokens, normalizeTokens);
-  forEach(htmlTokens.tokens, normalizeTokens);
+  fragTokens.tokens.forEach(normalizeTokens);
+  htmlTokens.tokens.forEach(normalizeTokens);
 
   // let msg = "Expected: " + htmlTokens.html + "; Actual: " + fragTokens.html;
 

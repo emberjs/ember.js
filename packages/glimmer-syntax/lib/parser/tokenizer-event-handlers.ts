@@ -1,6 +1,14 @@
-import { voidMap } from 'glimmer-util';
 import b from "../builders";
 import { appendChild, parseElementBlockParams } from "../utils";
+
+const voidMap: {
+  [tagName: string]: boolean
+} = Object.create(null);
+
+let voidTagNames = "area base br col command embed hr img input keygen link meta param source track wbr";
+voidTagNames.split(" ").forEach(tagName => {
+  voidMap[tagName] = true;
+});
 
 export default {
   reset: function() {
@@ -87,7 +95,7 @@ export default {
     if (tag.type === 'StartTag') {
       this.finishStartTag();
 
-      if (voidMap.hasOwnProperty(tag.name) || tag.selfClosing) {
+      if (voidMap[tag.name] || tag.selfClosing) {
         this.finishEndTag(true);
       }
     } else if (tag.type === 'EndTag') {
