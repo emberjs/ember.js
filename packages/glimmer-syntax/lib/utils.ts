@@ -1,4 +1,3 @@
-import { indexOfArray } from "glimmer-util";
 // Regex to validate the identifier for block parameters.
 // Based on the ID validation regex in Handlebars.
 
@@ -21,7 +20,7 @@ function parseBlockParams(element) {
     attrNames.push(element.attributes[i].name);
   }
 
-  let asIndex = indexOfArray(attrNames, 'as');
+  let asIndex = attrNames.indexOf('as');
 
   if (asIndex !== -1 && l > asIndex && attrNames[asIndex + 1].charAt(0) === '|') {
     // Some basic validation, since we're doing the parsing ourselves
