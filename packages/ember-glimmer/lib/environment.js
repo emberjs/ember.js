@@ -392,31 +392,33 @@ export default class Environment extends GlimmerEnvironment {
 }
 
 runInDebug(() => {
-  let StyleAttributeChangeList = {
-    setAttribute(dom, element, attr, value) {
+  class StyleAttributeManager extends AttributeManager {
+    setAttribute(dom, element, value) {
       warn(STYLE_WARNING, (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
         }
         return false;
       })(), { id: 'ember-htmlbars.style-xss-warning' });
-      AttributeManager.setAttribute(...arguments);
-    },
-
-    updateAttribute(dom, element, attr, value) {
-      warn(STYLE_WARNING, (() => {
-        if (value === null || value === undefined || isSafeString(value)) {
-          return true;
-        }
-        return false;
-      })(), { id: 'ember-htmlbars.style-xss-warning' });
-      AttributeManager.updateAttribute(...arguments);
+      super.setAttribute(...arguments);
     }
-  };
+
+    updateAttribute(dom, element, value) {
+      warn(STYLE_WARNING, (() => {
+        if (value === null || value === undefined || isSafeString(value)) {
+          return true;
+        }
+        return false;
+      })(), { id: 'ember-htmlbars.style-xss-warning' });
+      super.updateAttribute(...arguments);
+    }
+  }
+
+  let STYLE_ATTRIBUTE_MANANGER = new StyleAttributeManager('style');
 
   Environment.prototype.attributeFor = function(element, attribute, isTrusting, namespace) {
     if (attribute === 'style' && !isTrusting) {
-      return StyleAttributeChangeList;
+      return STYLE_ATTRIBUTE_MANANGER;
     }
 
     return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
