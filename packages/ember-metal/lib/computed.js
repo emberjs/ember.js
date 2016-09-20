@@ -132,7 +132,6 @@ class ComputedProperty extends Descriptor {
   constructor() {
     super();
 
-    this.isDescriptor = true;
     if (typeof config === 'function') {
       this._getter = config;
     } else {
