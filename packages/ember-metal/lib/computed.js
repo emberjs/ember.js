@@ -561,36 +561,39 @@ export default function computed(func) {
   @return {Object} the cached value
   @public
 */
-function cacheFor(obj, key) {
-  let meta = peekMeta(obj);
-  let cache = meta && meta.source === obj && meta.readableCache();
-  let ret = cache && cache[key];
+class cacheFor {
+  constructor(obj, key) {
+    let meta = peekMeta(obj);
+    let cache = meta && meta.source === obj && meta.readableCache();
+    let ret = cache && cache[key];
 
-  if (ret === UNDEFINED) {
-    return undefined;
+    if (ret === UNDEFINED) {
+      return undefined;
+    }
+    return ret;
   }
-  return ret;
+
+  set(cache, key, value) {
+    if (value === undefined) {
+      cache[key] = UNDEFINED;
+    } else {
+      cache[key] = value;
+    }
+  }
+
+  get(cache, key) {
+    let ret = cache[key];
+    if (ret === UNDEFINED) {
+      return undefined;
+    }
+    return ret;
+  }
+
+  remove(cache, key) {
+    cache[key] = undefined;
+  }
 }
 
-cacheFor.set = function(cache, key, value) {
-  if (value === undefined) {
-    cache[key] = UNDEFINED;
-  } else {
-    cache[key] = value;
-  }
-};
-
-cacheFor.get = function(cache, key) {
-  let ret = cache[key];
-  if (ret === UNDEFINED) {
-    return undefined;
-  }
-  return ret;
-};
-
-cacheFor.remove = function(cache, key) {
-  cache[key] = undefined;
-};
 
 export {
   ComputedProperty,
