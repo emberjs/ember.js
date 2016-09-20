@@ -403,6 +403,45 @@ class DynamicContentTest extends RenderingTest {
     this.assertContent('hello');
     this.assertInvariants();
   }
+
+  ['@test it can render a readOnly property of a path']() {
+    let Messenger = EmberObject.extend({
+      message: computed.readOnly('a.b.c')
+    });
+
+    let messenger = Messenger.create({
+      a: {
+        b: {
+          c: 'hello'
+        }
+      }
+    });
+
+    this.renderPath('messenger.message', { messenger });
+
+    this.assertContent('hello');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(messenger, 'a.b.c', 'hi'));
+
+    this.assertContent('hi');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'messenger.a.b', {
+      c: 'goodbye'
+    }));
+
+    this.assertContent('goodbye');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'messenger', {
+      message: 'hello'
+    }));
+
+    this.assertContent('hello');
+    this.assertInvariants();
+  }
 }
 
 const EMPTY = {};
