@@ -21,7 +21,7 @@ class InputRenderingTest extends RenderingTest {
   }
 
   assertDisabled() {
-    this.assert.ok(this.$('input').is(':disabled'), 'The input is disabled');
+    this.assert.ok(this.$('input').prop('disabled'), 'The input is disabled');
   }
 
   assertNotDisabled() {

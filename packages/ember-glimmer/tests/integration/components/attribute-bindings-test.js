@@ -108,56 +108,52 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     }, /Illegal attributeBinding: 'foo.bar' is not a valid attribute name./);
   }
 
-  ['@test normalizes attributeBinding names']() {
+  ['@test normalizes attributeBindings for property names']() {
     let FooBarComponent = Component.extend({
-      attributeBindings: ['disAbled']
+      attributeBindings: ['tiTLe']
     });
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
 
-    this.render('{{foo-bar disAbled=bool}}', {
-      bool: true
+    this.render('{{foo-bar tiTLe=name}}', {
+      name: 'qux'
     });
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { title: 'qux' }, content: 'hello' });
 
-    this.runTask(() => this.rerender());
+    this.assertStableRerender();
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
-
-    this.runTask(() => set(this.context, 'bool', null));
+    this.runTask(() => set(this.context, 'name', null));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });
 
-    this.runTask(() => set(this.context, 'bool', true));
+    this.runTask(() => set(this.context, 'name', 'qux'));
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { title: 'qux' }, content: 'hello' });
   }
 
-  ['@test normalizes attributeBinding names']() {
+  ['@test normalizes attributeBindings for attribute names']() {
     let FooBarComponent = Component.extend({
-      attributeBindings: ['disAbled']
+      attributeBindings: ['foo:data-FOO']
     });
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
 
-    this.render('{{foo-bar disAbled=bool}}', {
-      bool: true
+    this.render('{{foo-bar foo=foo}}', {
+      foo: 'qux'
     });
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': 'qux' }, content: 'hello' });
 
-    this.runTask(() => this.rerender());
+    this.assertStableRerender();
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
-
-    this.runTask(() => set(this.context, 'bool', false));
+    this.runTask(() => set(this.context, 'foo', null));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });
 
-    this.runTask(() => set(this.context, 'bool', true));
+    this.runTask(() => set(this.context, 'foo', 'qux'));
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': 'qux' }, content: 'hello' });
   }
 
   ['@test attributeBindings handles null/undefined']() {
