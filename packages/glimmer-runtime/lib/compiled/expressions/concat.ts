@@ -9,7 +9,7 @@ export default class CompiledConcat {
 
   constructor(private parts: CompiledExpression<Opaque>[]) {}
 
-  evaluate(vm: VM): ConcatReference {
+  evaluate(vm: VM): CachedReference<string> {
     let parts: PathReference<Opaque>[] = new Array(this.parts.length);
     for (let i = 0; i < this.parts.length; i++) {
       parts[i] = this.parts[i].evaluate(vm);

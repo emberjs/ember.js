@@ -1,4 +1,4 @@
-import { TemplateBenchmarkScenario } from '../bench';
+import { TemplateBenchmarkScenario, BenchmarkScenario } from '../bench';
 
 class StaticPartialScenario extends TemplateBenchmarkScenario {
   name = "static partial";
@@ -77,7 +77,7 @@ class BaselineScenario extends TemplateBenchmarkScenario {
   }
 }
 
-export default [
+export default <typeof BenchmarkScenario[]>[
   StaticPartialScenario,
   DynamicPartialScenario,
   BaselineScenario

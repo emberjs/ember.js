@@ -49,7 +49,7 @@ import EachSyntax from './syntax/builtins/each';
 
 import { PublicVM } from './vm/append';
 
-type ScopeSlot = PathReference<Opaque> | InlineBlock;
+export type ScopeSlot = PathReference<Opaque> | InlineBlock;
 
 export interface DynamicScope {
   get(key: string): PathReference<Opaque>;
