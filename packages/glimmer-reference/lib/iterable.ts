@@ -26,13 +26,15 @@ export interface AbstractIterable<T, U, ItemType extends IterationItem<T, U>, Va
 export type Iterator<T, U> = AbstractIterator<T, U, IterationItem<T, U>>;
 export type Iterable<T, U> = AbstractIterable<T, U, IterationItem<T, U>, PathReference<T>, PathReference<U>>;
 
-type OpaqueIterationItem = IterationItem<Opaque, Opaque>;
+export type OpaqueIterationItem = IterationItem<Opaque, Opaque>;
 export type OpaqueIterator = AbstractIterator<Opaque, Opaque, OpaqueIterationItem>;
-export type OpaqueIterable = AbstractIterable<Opaque, Opaque, OpaqueIterationItem, PathReference<Opaque>, PathReference<Opaque>>;
+export type OpaquePathReference = PathReference<Opaque>;
+export type OpaqueIterable = AbstractIterable<Opaque, Opaque, OpaqueIterationItem, OpaquePathReference, OpaquePathReference>;
+export type OpaquePathReferenceIterationItem = IterationItem<OpaquePathReference, OpaquePathReference>;
 
-class ListItem extends ListNode<PathReference<Opaque>> implements IterationItem<PathReference<Opaque>, PathReference<Opaque>> {
+export class ListItem extends ListNode<OpaquePathReference> implements OpaqueIterationItem {
   public key: string;
-  public memo: PathReference<Opaque>;
+  public memo: OpaquePathReference;
   public retained: boolean = false;
   public seen: boolean = false;
   private iterable: OpaqueIterable;
@@ -115,7 +117,7 @@ export class IterationArtifacts {
     return node;
   }
 
-  move(item: ListItem, reference: ListItem) {
+  move(item: ListItem, reference: ListItem): void {
     let { list } = this;
 
     item.retained = true;
@@ -123,18 +125,18 @@ export class IterationArtifacts {
     list.insertBefore(item, reference);
   }
 
-  remove(item: ListItem) {
+  remove(item: ListItem): void {
     let { list } = this;
 
     list.remove(item);
     delete this.map[item.key];
   }
 
-  nextNode(item: ListItem) {
+  nextNode(item: ListItem): ListItem {
     return this.list.nextNode(item);
   }
 
-  head() {
+  head(): ListItem {
     return this.list.head();
   }
 }
@@ -171,7 +173,7 @@ export interface IteratorSynchronizerDelegate {
   done();
 }
 
-interface IteratorSynchronizerOptions {
+export interface IteratorSynchronizerOptions {
   target: IteratorSynchronizerDelegate;
   artifacts: IterationArtifacts;
 }

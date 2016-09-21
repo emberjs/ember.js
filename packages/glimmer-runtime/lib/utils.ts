@@ -1,9 +1,9 @@
-import { dict } from 'glimmer-util';
+import { Dict, dict } from 'glimmer-util';
 
 export const EMPTY_ARRAY = Object.freeze([]);
-export const EMPTY_DICT = Object.freeze(dict<any>());
+export const EMPTY_DICT: Dict<any> = Object.freeze(dict<any>());
 
-interface EnumerableCallback<T> {
+export interface EnumerableCallback<T> {
   (item: T): void;
 }
 

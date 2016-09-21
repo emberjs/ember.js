@@ -328,7 +328,6 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
     let test = skip === 'glimmer' ? QUnit.skip : QUnit.test;
 
     test(`glimmer: ${title}`, assert => {
-      eval('');
       let layoutOptions: TagOptions;
 
       if (typeof layout === 'string') {

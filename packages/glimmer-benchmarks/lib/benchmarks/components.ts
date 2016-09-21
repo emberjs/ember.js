@@ -1,4 +1,4 @@
-import { TemplateBenchmarkScenario } from '../bench';
+import { TemplateBenchmarkScenario, BenchmarkScenario } from '../bench';
 
 class NestedEmberishCurleyTaglessComponentsScenario extends TemplateBenchmarkScenario {
   name = "nested emberish curley tagless component";
@@ -54,6 +54,6 @@ class NestedEmberishCurleyTaglessComponentsScenario extends TemplateBenchmarkSce
   }
 }
 
-export default [
+export default <typeof BenchmarkScenario[]>[
   NestedEmberishCurleyTaglessComponentsScenario
 ];

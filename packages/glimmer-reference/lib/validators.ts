@@ -245,7 +245,7 @@ export abstract class CachedReference<T> implements VersionedReference<T> {
 
 //////////
 
-type Mapper<T, U> = (value: T) => U;
+export type Mapper<T, U> = (value: T) => U;
 
 class MapperReference<T, U> extends CachedReference<U> {
   public tag: RevisionTag;
@@ -266,8 +266,8 @@ class MapperReference<T, U> extends CachedReference<U> {
   }
 }
 
-export function map<T, U>(reference: VersionedReference<T>, mapper: Mapper<T, U>) {
-  return new MapperReference(reference, mapper);
+export function map<T, U>(reference: VersionedReference<T>, mapper: Mapper<T, U>): VersionedReference<U> {
+  return new MapperReference<T, U>(reference, mapper);
 }
 
 //////////
@@ -325,7 +325,7 @@ export class ReferenceCache<T> implements Tagged<Revision> {
 
 export type Validation<T> = T | NotModified;
 
-type NotModified = "adb3b78e-3d22-4e4b-877a-6317c2c5c145";
+export type NotModified = "adb3b78e-3d22-4e4b-877a-6317c2c5c145";
 
 const NOT_MODIFIED: NotModified = "adb3b78e-3d22-4e4b-877a-6317c2c5c145";
 

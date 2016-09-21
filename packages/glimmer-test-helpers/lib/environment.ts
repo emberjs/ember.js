@@ -53,7 +53,10 @@ import {
   FunctionExpression,
   OpcodeBuilderDSL,
   Simple,
-  getDynamicVar
+  getDynamicVar,
+
+  Template,
+  Layout
 } from "glimmer-runtime";
 
 import {
@@ -219,7 +222,7 @@ class Iterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque,
 }
 
 export type Attrs = Dict<any>;
-type AttrsDiff = { oldAttrs: Attrs, newAttrs: Attrs };
+export type AttrsDiff = { oldAttrs: Attrs, newAttrs: Attrs };
 
 export class BasicComponent {
   public attrs: Attrs;
@@ -424,7 +427,7 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
   }
 }
 
-class ProcessedArgs {
+export class ProcessedArgs {
   tag: RevisionTag;
   named: EvaluatedNamedArgs;
   positional: EvaluatedPositionalArgs;
@@ -598,7 +601,7 @@ export class SimplePathReference<T> implements PathReference<T> {
   }
 }
 
-type UserHelper = (args: any[], named: Dict<any>) => any;
+export type UserHelper = (args: any[], named: Dict<any>) => any;
 
 class HelperReference implements PathReference<Opaque> {
   private helper: UserHelper;
@@ -633,7 +636,7 @@ class InertModifierManager implements ModifierManager<Opaque> {
   }
 }
 
-class TestModifier {
+export class TestModifier {
   constructor(
     public element: Element,
     public args: EvaluatedArgs,
@@ -679,7 +682,7 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
   }
 }
 
-interface TestEnvironmentOptions {
+export interface TestEnvironmentOptions {
   document?: Simple.Document;
   appendOperations?: DOMTreeConstruction;
 }
@@ -852,11 +855,11 @@ export class TestEnvironment extends Environment {
     return modifier;
   }
 
-  compile(template: string) {
-    return rawCompile(template, { env: this });
+  compile(template: string): Template<undefined> {
+    return rawCompile<undefined>(template, { env: this });
   }
 
-  compileLayout(template: string) {
+  compileLayout(template: string): Layout {
     return rawCompileLayout(template, { env: this });
   }
 
@@ -976,11 +979,11 @@ class DynamicComponentSyntax extends StatementSyntax {
   }
 }
 
-interface BasicComponentFactory {
+export interface BasicComponentFactory {
   new(attrs: Dict<any>): BasicComponent;
 }
 
-abstract class GenericComponentDefinition<T> extends ComponentDefinition<T> {
+export abstract class GenericComponentDefinition<T> extends ComponentDefinition<T> {
   public layoutString : string;
 
   constructor(name: string, manager: ComponentManager<T>, ComponentClass: any, layout: string) {
@@ -989,7 +992,7 @@ abstract class GenericComponentDefinition<T> extends ComponentDefinition<T> {
   }
 }
 
-class BasicComponentDefinition extends GenericComponentDefinition<BasicComponent> {
+export class BasicComponentDefinition extends GenericComponentDefinition<BasicComponent> {
   public ComponentClass: BasicComponentFactory;
 }
 
@@ -997,20 +1000,20 @@ class StaticTaglessComponentDefinition extends GenericComponentDefinition<BasicC
   public ComponentClass: BasicComponentFactory;
 }
 
-interface EmberishCurlyComponentFactory {
+export interface EmberishCurlyComponentFactory {
   positionalParams?: string[];
   create(options: { attrs: Attrs, targetObject }): EmberishCurlyComponent;
 }
 
-class EmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {
+export class EmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {
   public ComponentClass: EmberishCurlyComponentFactory;
 }
 
-interface EmberishGlimmerComponentFactory {
+export interface EmberishGlimmerComponentFactory {
   create(options: { attrs: Attrs }): EmberishGlimmerComponent;
 }
 
-class EmberishGlimmerComponentDefinition extends GenericComponentDefinition<EmberishGlimmerComponent> {
+export class EmberishGlimmerComponentDefinition extends GenericComponentDefinition<EmberishGlimmerComponent> {
   public ComponentClass: EmberishGlimmerComponentFactory;
 }
 

@@ -147,7 +147,7 @@ export class EvaluatedNamedArgs {
   }
 }
 
-export const EVALUATED_EMPTY_NAMED_ARGS = new (class extends EvaluatedNamedArgs {
+export const EVALUATED_EMPTY_NAMED_ARGS: EvaluatedNamedArgs = new (class extends EvaluatedNamedArgs {
   constructor() {
     super(EMPTY_ARRAY, EMPTY_ARRAY, EMPTY_DICT);
   }

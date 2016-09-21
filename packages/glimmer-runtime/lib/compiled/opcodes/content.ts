@@ -69,10 +69,10 @@ function normalizeValue(value: Opaque): CautiousInsertion {
   return String(value);
 }
 
-abstract class AppendOpcode<T extends Insertion> extends Opcode {
+export abstract class AppendOpcode<T extends Insertion> extends Opcode {
   protected abstract normalize(reference: Reference<Opaque>): Reference<T>;
   protected abstract insert(dom: DOMTreeConstruction, cursor: Cursor, value: T): Upsert;
-  protected abstract updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<T>, bounds: Fragment, upsert: Upsert): UpdateOpcode<T>;
+  protected abstract updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<T>, bounds: Fragment, upsert: Upsert): UpdatingOpcode;
 
   evaluate(vm: VM) {
     let reference = vm.frame.getOperand();
@@ -107,7 +107,7 @@ abstract class AppendOpcode<T extends Insertion> extends Opcode {
   }
 }
 
-abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpcode<T> {
+export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpcode<T> {
   protected abstract AppendOpcode: typeof OptimizedCautiousAppendOpcode | typeof OptimizedTrustingAppendOpcode;
   private deopted: OpSeq = null;
 
@@ -391,7 +391,7 @@ export class OptimizedCautiousAppendOpcode extends AppendOpcode<CautiousInsertio
     return cautiousInsert(dom, cursor, value);
   }
 
-  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<CautiousInsertion>, bounds: Fragment, upsert: Upsert): OptimizedCautiousUpdateOpcode {
+  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<CautiousInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
     return new OptimizedCautiousUpdateOpcode(cache, bounds, upsert);
   }
 }
@@ -417,7 +417,7 @@ export class GuardedCautiousAppendOpcode extends GuardedAppendOpcode<CautiousIns
     return cautiousInsert(dom, cursor, value);
   }
 
-  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<CautiousInsertion>, bounds: Fragment, upsert: Upsert): GuardedCautiousUpdateOpcode {
+  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<CautiousInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
     return new GuardedCautiousUpdateOpcode(reference, cache, bounds, upsert, this, vm.capture());
   }
 }
@@ -441,7 +441,7 @@ export class OptimizedTrustingAppendOpcode extends AppendOpcode<TrustingInsertio
     return trustingInsert(dom, cursor, value);
   }
 
-  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<TrustingInsertion>, bounds: Fragment, upsert: Upsert): OptimizedTrustingUpdateOpcode {
+  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<TrustingInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
     return new OptimizedTrustingUpdateOpcode(cache, bounds, upsert);
   }
 }
@@ -467,7 +467,7 @@ export class GuardedTrustingAppendOpcode extends GuardedAppendOpcode<TrustingIns
     return trustingInsert(dom, cursor, value);
   }
 
-  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<TrustingInsertion>, bounds: Fragment, upsert: Upsert): GuardedTrustingUpdateOpcode {
+  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<TrustingInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
     return new GuardedTrustingUpdateOpcode(reference, cache, bounds, upsert, this, vm.capture());
   }
 }

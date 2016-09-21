@@ -1,7 +1,7 @@
 import { RevisionTag, ConstReference, PathReference, Reference } from 'glimmer-reference';
 import { Opaque } from 'glimmer-util';
 
-type Primitive = string | number | boolean;
+export type Primitive = string | number | boolean;
 
 export class PrimitiveReference extends ConstReference<any> implements PathReference<Primitive> {
   get(): PrimitiveReference {

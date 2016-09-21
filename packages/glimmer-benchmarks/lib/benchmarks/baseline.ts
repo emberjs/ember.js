@@ -1,8 +1,8 @@
-import { TemplateBenchmarkScenario } from '../bench';
+import { TemplateBenchmarkScenario, BenchmarkScenario } from '../bench';
 
 class SingleTextNodeScenario extends TemplateBenchmarkScenario {
-  name = "single text node";
-  description = "A simple static text template";
+  public name = "single text node";
+  public description = "A simple static text template";
 
   template() {
     return `hi`;
@@ -20,6 +20,6 @@ class SingleTextNodeScenario extends TemplateBenchmarkScenario {
   }
 }
 
-export default [
+export default <typeof BenchmarkScenario[]>[
   SingleTextNodeScenario
 ];

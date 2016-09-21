@@ -37,7 +37,7 @@ export class SimpleRootReference implements PathReference<Opaque> {
     this.tag = object.tag;
   }
 
-  get(key: string): SimplePathReference {
+  get(key: string): PathReference<Opaque> {
     return new SimplePathReference(this, key);
   }
 
