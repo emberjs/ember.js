@@ -128,6 +128,69 @@ test("Unquoted attribute expression with string value is not coerced", function(
   equal(inputNode.value, 'oh my', 'string is set to property');
 });
 
+test("Unquoted img src attribute is rendered", function() {
+  let template = compile('<img src={{someURL}}>');
+  render(template, { someURL: "http://foo.com/foo.png"});
+
+  let imgNode: any = root.firstChild;
+
+  equalTokens(root, '<img src="http://foo.com/foo.png">');
+  equal(imgNode.tagName, 'IMG', 'img tag');
+  equal(imgNode.src, 'http://foo.com/foo.png', 'string is set to property');
+});
+
+test("Unquoted img src attribute is not rendered when set to `null`", function() {
+  let template = compile('<img src={{someURL}}>');
+  render(template, { someURL: null});
+
+  equalTokens(root, '<img>');
+});
+
+test("Unquoted img src attribute is not rendered when set to `undefined`", function() {
+  let template = compile('<img src={{someURL}}>');
+  render(template, { someURL: undefined });
+
+  equalTokens(root, '<img>');
+});
+
+test("Quoted img src attribute is rendered", function() {
+  let template = compile('<img src="{{someURL}}">');
+  render(template, { someURL: "http://foo.com/foo.png"});
+
+  let imgNode: any = root.firstChild;
+
+  equal(imgNode.tagName, 'IMG', 'img tag');
+  equal(imgNode.src, 'http://foo.com/foo.png', 'string is set to property');
+});
+
+test("Quoted img src attribute is not rendered when set to `null`", function() {
+  let template = compile('<img src="{{someURL}}">');
+  render(template, { someURL: null});
+
+  equalTokens(root, '<img>');
+});
+
+test("Quoted img src attribute is not rendered when set to `undefined`", function() {
+  let template = compile('<img src="{{someURL}}">');
+  render(template, { someURL: undefined });
+
+  equalTokens(root, '<img>');
+});
+
+test("Unquoted a href attribute is not rendered when set to `null`", function() {
+  let template = compile('<a href={{someURL}}></a>');
+  render(template, { someURL: null});
+
+  equalTokens(root, '<a></a>');
+});
+
+test("Unquoted img src attribute is not rendered when set to `undefined`", function() {
+  let template = compile('<a href={{someURL}}></a>');
+  render(template, { someURL: undefined});
+
+  equalTokens(root, '<a></a>');
+});
+
 test("Attribute expression can be followed by another attribute", function() {
   let template = compile('<div foo="{{funstuff}}" name="Alice"></div>');
   render(template, {funstuff: "oh my"});

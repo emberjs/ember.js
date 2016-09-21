@@ -65,8 +65,6 @@ export {
   AttributeManager as IAttributeManager,
   AttributeManager,
   PropertyManager,
-  SAFE_HREF_ATTRIBUTE_MANAGER,
-  SAFE_HREF_PROPERTY_MANAGER,
   INPUT_VALUE_PROPERTY_MANAGER,
   defaultManagers,
   defaultAttributeManagers,
