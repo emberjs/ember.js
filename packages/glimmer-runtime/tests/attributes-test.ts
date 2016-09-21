@@ -205,6 +205,49 @@ test("a[href] marks vbscript: protocol as unsafe", () => {
   equalTokens(root, '<a href="unsafe:vbscript:foo()"></a>');
 });
 
+test("img[src] marks javascript: protocol as unsafe", () => {
+  let template = compile('<img src="{{foo}}">');
+
+  let context = { foo: 'javascript:foo()' };
+  render(template, context);
+
+  equalTokens(root, '<img src="unsafe:javascript:foo()">');
+
+  rerender();
+
+  equalTokens(root, '<img src="unsafe:javascript:foo()">');
+});
+
+test("img[src] marks javascript: protocol as unsafe, http as safe", () => {
+  let template = compile('<img src="{{foo}}">');
+
+  let context = { foo: 'javascript:foo()' };
+  render(template, context);
+
+  equalTokens(root, '<img src="unsafe:javascript:foo()">');
+
+  rerender({ foo: 'http://foo.bar' });
+
+  equalTokens(root, '<img src="http://foo.bar">');
+
+  rerender({ foo: 'javascript:foo()' });
+
+  equalTokens(root, '<img src="unsafe:javascript:foo()">');
+});
+
+test("img[src] marks vbscript: protocol as unsafe", () => {
+  let template = compile('<img src="{{foo}}">');
+
+  let context = { foo: 'vbscript:foo()' };
+  render(template, context);
+
+  equalTokens(root, '<img src="unsafe:vbscript:foo()">');
+
+  rerender();
+
+  equalTokens(root, '<img src="unsafe:vbscript:foo()">');
+});
+
 test("div[href] is not not marked as unsafe", () => {
   let template = compile('<div href="{{foo}}"></div>');
 

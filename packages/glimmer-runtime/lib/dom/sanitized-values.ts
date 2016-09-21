@@ -50,8 +50,12 @@ export function requiresSanitization(tagName: string, attribute: string): boolea
   return checkURI(tagName, attribute) || checkDataURI(tagName, attribute);
 }
 
-export function sanitizeAttributeValue(env: Environment, element: Simple.Element, attribute: string, value: Opaque): string {
+export function sanitizeAttributeValue(env: Environment, element: Simple.Element, attribute: string, value: Opaque): Opaque {
   let tagName;
+
+  if (value === null || value === undefined) {
+    return value;
+  }
 
   if (isSafeString(value)) {
     return value.toHTML();

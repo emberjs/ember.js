@@ -29,7 +29,7 @@ export function defaultManagers(element: Simple.Element, attr: string, isTrustin
 
 export function defaultPropertyManagers(tagName: string, attr: string) {
   if (requiresSanitization(tagName, attr)) {
-    return SAFE_HREF_PROPERTY_MANAGER;
+    return new SafePropertyManager(attr);
   }
 
   if (isUserInputValue(tagName, attr)) {
@@ -45,7 +45,7 @@ export function defaultPropertyManagers(tagName: string, attr: string) {
 
 export function defaultAttributeManagers(tagName: string, attr: string) {
   if (requiresSanitization(tagName, attr)) {
-    return SAFE_HREF_ATTRIBUTE_MANAGER;
+    return new SafeAttributeManager(attr);
   }
 
   return new AttributeManager(attr);
@@ -137,7 +137,7 @@ function isAttrRemovalValue(value) {
   return value === null || value === undefined;
 }
 
-class SafeHrefPropertyManager extends PropertyManager {
+class SafePropertyManager extends PropertyManager {
   setAttribute(env: Environment, element: Simple.Element, value: Opaque) {
     super.setAttribute(env, element, sanitizeAttributeValue(env, element, this.attr, value));
   }
@@ -146,8 +146,6 @@ class SafeHrefPropertyManager extends PropertyManager {
     this.setAttribute(env, element, value);
   }
 }
-
-export const SAFE_HREF_PROPERTY_MANAGER = new SafeHrefPropertyManager('href');
 
 function isUserInputValue(tagName: string, attribute: string) {
   return (tagName === 'INPUT' || tagName === 'TEXTAREA') && attribute === 'value';
@@ -196,7 +194,7 @@ class OptionSelectedManager extends PropertyManager {
 
 export const OPTION_SELECTED_MANAGER = new OptionSelectedManager('selected');
 
-class SafeHrefAttributeManager extends AttributeManager {
+class SafeAttributeManager extends AttributeManager {
   setAttribute(env: Environment, element: Element, value: Opaque) {
     super.setAttribute(env, element, sanitizeAttributeValue(env, element, this.attr, value));
   }
@@ -205,5 +203,3 @@ class SafeHrefAttributeManager extends AttributeManager {
     this.setAttribute(env, element, value);
   }
 }
-
-export const SAFE_HREF_ATTRIBUTE_MANAGER = new SafeHrefAttributeManager('href');
