@@ -62,7 +62,9 @@ export abstract class BenchmarkReporter {
 }
 
 export class BenchmarkSuite {
-  public scenarios = dict<Benchmark>();
+  public scenarios: {
+    [name: string]: Benchmark;
+  } = dict<Benchmark>();
 
   add(scenario: BenchmarkScenario) {
     let bench = new Benchmark({

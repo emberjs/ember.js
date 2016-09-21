@@ -6,7 +6,7 @@ import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { Templates } from '../../syntax/core';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
-import { CONSTANT_TAG, PathReference, ReferenceCache, combine, isConst } from 'glimmer-reference';
+import { CONSTANT_TAG, PathReference, ReferenceCache, combine, isConst, RevisionTag } from 'glimmer-reference';
 import { FIXME } from 'glimmer-util';
 
 export class PutDynamicComponentDefinitionOpcode extends Opcode {
@@ -197,7 +197,7 @@ export class DidRenderLayoutOpcode extends Opcode {
 
 export class DidUpdateLayoutOpcode extends UpdatingOpcode {
   public type = "did-update-layout";
-  public tag = CONSTANT_TAG;
+  public tag: RevisionTag = CONSTANT_TAG;
 
   constructor(
     private manager: ComponentManager<Component>,

@@ -148,7 +148,7 @@ interface AppendOpcode {
   new(): Opcode;
 }
 
-abstract class Append extends StatementSyntax {
+export abstract class Append extends StatementSyntax {
   static fromSpec(sexp: SerializedStatements.Append): Append {
     let [, value, trustingMorph] = sexp;
     return new OptimizedAppend({ value: buildExpression(value), trustingMorph });

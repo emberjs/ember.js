@@ -1,4 +1,4 @@
-import { TemplateBenchmarkScenario } from '../bench';
+import { TemplateBenchmarkScenario, BenchmarkScenario } from '../bench';
 
 abstract class IfScenario extends TemplateBenchmarkScenario {
   start() {
@@ -45,7 +45,7 @@ class BlockIfScenario extends IfScenario {
   }
 }
 
-export default [
+export default <typeof BenchmarkScenario[]>[
   InlineIfScenario,
   BlockIfScenario
 ];

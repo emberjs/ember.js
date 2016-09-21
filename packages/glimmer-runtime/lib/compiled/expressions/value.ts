@@ -1,7 +1,7 @@
 import { VM } from '../../vm';
 import { CompiledExpression } from '../expressions';
 import { ConstReference, PathReference } from 'glimmer-reference';
-import { dict } from 'glimmer-util';
+import { Dict, dict } from 'glimmer-util';
 
 export default class CompiledValue<T> extends CompiledExpression<T> {
   public type = "value";
@@ -23,7 +23,7 @@ export default class CompiledValue<T> extends CompiledExpression<T> {
 
 export class ValueReference<T> extends ConstReference<T> implements PathReference<T> {
   protected inner: T;
-  protected children = dict<ValueReference<any>>();
+  protected children: Dict<ValueReference<any>> = dict<ValueReference<any>>();
 
   get(key: string) {
     let { children } = this;

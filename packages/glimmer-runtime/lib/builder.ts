@@ -18,11 +18,11 @@ import {
 
 import * as Simple from './dom/interfaces';
 
-interface FirstNode {
+export interface FirstNode {
   firstNode(): Simple.Node;
 }
 
-interface LastNode {
+export interface LastNode {
   lastNode(): Simple.Node;
 }
 

@@ -3,6 +3,7 @@ import Environment from '../environment';
 import { DestroyableBounds, clear } from '../bounds';
 import UpdatingVM, { ExceptionHandler } from './update';
 import { UpdatingOpcode } from '../opcodes';
+import * as Simple from '../dom/interfaces';
 
 export default class RenderResult implements DestroyableBounds, ExceptionHandler {
   constructor(
@@ -17,15 +18,15 @@ export default class RenderResult implements DestroyableBounds, ExceptionHandler
     vm.execute(updating, this);
   }
 
-  parentElement() {
+  parentElement(): Simple.Element {
     return this.bounds.parentElement();
   }
 
-  firstNode() {
+  firstNode(): Simple.Node {
     return this.bounds.firstNode();
   }
 
-  lastNode() {
+  lastNode(): Simple.Node {
     return this.bounds.lastNode();
   }
 

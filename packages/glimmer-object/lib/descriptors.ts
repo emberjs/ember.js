@@ -36,7 +36,7 @@ class AliasMethodBlueprint extends Blueprint {
   }
 }
 
-export function aliasMethod(name: string) {
+export function aliasMethod(name: string): Blueprint {
   return new AliasMethodBlueprint(name);
 }
 
@@ -66,6 +66,6 @@ class AliasBlueprint extends ComputedBlueprint {
   }
 }
 
-export function alias(name: string): AliasBlueprint {
+export function alias(name: string): Blueprint {
   return new AliasBlueprint(name.split('.'));
 }
