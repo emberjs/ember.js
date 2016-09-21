@@ -54,16 +54,16 @@ export function moveNodesBefore(source, target, nextSibling) {
   return [first, last];
 }
 
-namespace DOM {
-  type Node = Simple.Node;
-  type Element = Simple.Element;
-  type Document = Simple.Document;
-  type Comment = Simple.Comment;
-  type Text = Simple.Text;
-  type Namespace = Simple.Namespace;
-  type HTMLElement = Simple.HTMLElement;
+export namespace DOM {
+  export type Node = Simple.Node;
+  export type Element = Simple.Element;
+  export type Document = Simple.Document;
+  export type Comment = Simple.Comment;
+  export type Text = Simple.Text;
+  export type Namespace = Simple.Namespace;
+  export type HTMLElement = Simple.HTMLElement;
 
-  class TreeConstruction {
+  export class TreeConstruction {
     protected uselessElement: HTMLElement = null;
     constructor(protected document: Document) {
       this.setupUselessElement();

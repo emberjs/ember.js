@@ -10,7 +10,7 @@ import { SVG_NAMESPACE } from './helper';
 import { normalizeTextValue } from '../compiled/opcodes/content';
 import { Environment } from '../environment';
 
-export function defaultManagers(element: Simple.Element, attr: string, isTrusting: boolean, namespace: string) {
+export function defaultManagers(element: Simple.Element, attr: string, isTrusting: boolean, namespace: string): AttributeManager {
   let tagName = element.tagName;
   let isSVG = element.namespaceURI === SVG_NAMESPACE;
 
@@ -27,7 +27,7 @@ export function defaultManagers(element: Simple.Element, attr: string, isTrustin
   }
 }
 
-export function defaultPropertyManagers(tagName: string, attr: string) {
+export function defaultPropertyManagers(tagName: string, attr: string): AttributeManager {
   if (requiresSanitization(tagName, attr)) {
     return new SafePropertyManager(attr);
   }
@@ -43,7 +43,7 @@ export function defaultPropertyManagers(tagName: string, attr: string) {
   return new PropertyManager(attr);
 }
 
-export function defaultAttributeManagers(tagName: string, attr: string) {
+export function defaultAttributeManagers(tagName: string, attr: string): AttributeManager {
   if (requiresSanitization(tagName, attr)) {
     return new SafeAttributeManager(attr);
   }
@@ -167,7 +167,7 @@ class InputValuePropertyManager extends AttributeManager {
   }
 }
 
-export const INPUT_VALUE_PROPERTY_MANAGER = new InputValuePropertyManager('value');
+export const INPUT_VALUE_PROPERTY_MANAGER: AttributeManager = new InputValuePropertyManager('value');
 
 function isOptionSelected(tagName: string, attribute: string) {
   return tagName === 'OPTION' && attribute === 'selected';
@@ -192,7 +192,7 @@ class OptionSelectedManager extends PropertyManager {
   }
 }
 
-export const OPTION_SELECTED_MANAGER = new OptionSelectedManager('selected');
+export const OPTION_SELECTED_MANAGER: AttributeManager = new OptionSelectedManager('selected');
 
 class SafeAttributeManager extends AttributeManager {
   setAttribute(env: Environment, element: Element, value: Opaque) {

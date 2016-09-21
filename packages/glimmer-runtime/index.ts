@@ -139,4 +139,4 @@ export { default as DOMChanges, DOMChanges as IDOMChanges, DOMTreeConstruction, 
 import  * as Simple from './lib/dom/interfaces';
 export { Simple };
 export { ElementStack, ElementOperations } from './lib/builder';
-export { default as Bounds } from './lib/bounds';
+export { default as Bounds, ConcreteBounds } from './lib/bounds';

@@ -144,7 +144,7 @@ export interface CompiledComponentParts {
 }
 
 export interface Compilable {
-  compile(builder: ComponentLayoutBuilder);
+  compile(builder: Component.ComponentLayoutBuilder);
 }
 
 export function compileLayout(compilable: Compilable, env: Environment): CompiledBlock {
@@ -415,7 +415,7 @@ class ComponentBuilder implements IComponentBuilder {
 }
 
 export class CompileIntoList extends LinkedList<Opcode> implements StatementCompilationBuffer {
-  public component: ComponentBuilder;
+  public component: IComponentBuilder;
 
   constructor(private env: Environment, private symbolTable: SymbolTable) {
     super();

@@ -24,7 +24,7 @@ function is<T extends any[]>(variant: string): (value: any[]) => value is T {
 }
 
 export namespace Core {
-  type Expression = Expressions.Expression;
+  export type Expression = Expressions.Expression;
 
   export type Path          = str[];
   export type Params        = Expression[];
@@ -32,9 +32,9 @@ export namespace Core {
 }
 
 export namespace Expressions {
-  type Path = Core.Path;
-  type Params = Core.Params;
-  type Hash = Core.Hash;
+  export type Path = Core.Path;
+  export type Params = Core.Params;
+  export type Hash = Core.Hash;
 
   export type Unknown        = ['unknown', Path];
   export type Arg            = ['arg', Path];
@@ -88,10 +88,10 @@ export namespace Expressions {
 export type Expression = Expressions.Expression;
 
 export namespace Statements {
-  type Expression = Expressions.Expression;
-  type Params = Core.Params;
-  type Hash = Core.Hash;
-  type Path = Core.Path;
+  export type Expression = Expressions.Expression;
+  export type Params = Core.Params;
+  export type Hash = Core.Hash;
+  export type Path = Core.Path;
 
   export type Text          = ['text', str];
   export type Append        = ['append', Expression, boolean];

@@ -5,7 +5,7 @@ export enum LogLevel {
   Error
 }
 
-interface Console {
+export interface Console {
   log(message: string);
   warn(message: string);
   error(message: string);

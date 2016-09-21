@@ -3,10 +3,11 @@ import builders from "./builders";
 import print from "./generation/print";
 import traverse from "./traversal/traverse";
 import Walker from "./traversal/walker";
-
-import EventedTokenizer from "simple-html-tokenizer/evented-tokenizer";
-import EntityParser from "simple-html-tokenizer/entity-parser";
-import namedCharRefs from "simple-html-tokenizer/html5-named-char-refs";
+import {
+  EventedTokenizer,
+  EntityParser,
+  HTML5NamedCharRefs as namedCharRefs
+} from "simple-html-tokenizer";
 import handlebarsNodeVisitors from "./parser/handlebars-node-visitors";
 import tokenizerEventHandlers from "./parser/tokenizer-event-handlers";
 

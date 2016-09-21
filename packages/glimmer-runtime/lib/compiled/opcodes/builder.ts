@@ -15,16 +15,17 @@ import Environment from '../../environment';
 import { InlineBlock, Layout } from '../blocks';
 import { EMPTY_ARRAY } from '../../utils';
 import SymbolTable from '../../symbol-table';
+import { ComponentBuilder } from '../../opcode-builder';
 
-type Represents<E> = CompilesInto<E> | E;
+export type Represents<E> = CompilesInto<E> | E;
 
 export type Label = string;
 
-class StatementCompilationBufferProxy implements StatementCompilationBuffer {
+export class StatementCompilationBufferProxy implements StatementCompilationBuffer {
 
   constructor(protected inner: StatementCompilationBuffer) {}
 
-  get component() {
+  get component(): ComponentBuilder {
     return this.inner.component;
   }
 
@@ -313,7 +314,7 @@ function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E>
   return expr && typeof expr['compile'] === 'function';
 }
 
-type BlockArgs = { templates: Syntax.Templates, args?: Syntax.Args };
+export type BlockArgs = { templates: Syntax.Templates, args?: Syntax.Args };
 
 const SIMPLE_BLOCK: BlockArgs = { templates: null };
 

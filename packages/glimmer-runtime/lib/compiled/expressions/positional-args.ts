@@ -88,7 +88,7 @@ export class EvaluatedPositionalArgs {
   }
 }
 
-export const EVALUATED_EMPTY_POSITIONAL_ARGS = new (class extends EvaluatedPositionalArgs {
+export const EVALUATED_EMPTY_POSITIONAL_ARGS: EvaluatedPositionalArgs = new (class extends EvaluatedPositionalArgs {
   constructor() {
     super(EMPTY_ARRAY);
   }

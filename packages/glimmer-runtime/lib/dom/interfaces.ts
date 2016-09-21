@@ -9,7 +9,7 @@ export type Namespace =
   | "http://www.w3.org/XML/1998/namespace"
   | "http://www.w3.org/2000/xmlns/";
 
-enum NodeType {
+export enum NodeType {
   Element,
   Attribute,
   Text,

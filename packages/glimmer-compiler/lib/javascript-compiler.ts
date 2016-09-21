@@ -12,11 +12,11 @@ import {
   Expressions
 } from 'glimmer-wire-format';
 
-type str = string;
-type Params = Core.Params;
-type Hash = Core.Hash;
-type Path = Core.Path;
-type StackValue = Expression | Params | Hash | str;
+export type str = string;
+export type Params = Core.Params;
+export type Hash = Core.Hash;
+export type Path = Core.Path;
+export type StackValue = Expression | Params | Hash | str;
 
 export class Block {
   statements: Statement[] = [];
@@ -35,8 +35,8 @@ export class Block {
 }
 
 export class TemplateBlock extends Block {
-  public yields = new DictSet();
-  public named = new DictSet();
+  public yields = new DictSet<string>();
+  public named = new DictSet<string>();
   public blocks: Block[] = [];
   public hasPartials = false;
 

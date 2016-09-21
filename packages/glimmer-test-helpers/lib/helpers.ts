@@ -57,7 +57,7 @@ function isMarker(node) {
   return false;
 }
 
-interface TestCompileOptions<T> extends PrecompileOptions<T> {
+export interface TestCompileOptions<T> extends PrecompileOptions<T> {
   env: Environment;
 }
 

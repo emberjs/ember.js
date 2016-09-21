@@ -24,7 +24,7 @@ export abstract class Blueprint {
   abstract descriptor(target: Object, key: string, classMeta: ClassMeta): Descriptor;
 }
 
-interface Extensions {
+export interface Extensions {
   concatenatedProperties?: string[] | string;
   mergedProperties?: string[] | string;
   _super?: Function;
@@ -185,7 +185,7 @@ export class Mixin {
   }
 }
 
-type Extension = Mixin | Extensions;
+export type Extension = Mixin | Extensions;
 
 export function extend<T extends GlimmerObject>(Parent: GlimmerObjectFactory<T>, ...extensions: Extension[]): typeof GlimmerObject {
   let Super = <typeof GlimmerObject>Parent;
@@ -281,7 +281,7 @@ export class DataBlueprint extends Blueprint {
     this.writable = writable;
   }
 
-  descriptor(target: Object, key: string, classMeta: ClassMeta): ValueDescriptor {
+  descriptor(target: Object, key: string, classMeta: ClassMeta): Descriptor {
     let { enumerable, configurable, writable, value } = this;
 
     if (classMeta.hasConcatenatedProperty(<string>key)) {
