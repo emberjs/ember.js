@@ -29,5 +29,8 @@ export {
 
 export {
   VersionedObject,
+  testModule,
+  template,
+  RenderingTest,
   SimpleRootReference
 } from './lib/abstract-test-case';
