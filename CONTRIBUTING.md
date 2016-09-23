@@ -45,6 +45,18 @@ a stab at fixing the bug yourself if you can!
 The more information you provide, the easier it is for us to validate that
 there is a bug and the faster we'll be able to take action.
 
+### Triaging policy
+
+* You might be requested to provide a reproduction or extra information. In that
+case, the issue will be labeled as _Needs Submitter Response_. If we did not
+get any response after seven days, we will ping you to remind you about it. We
+might close the issue if we do not hear from you after two weeks since the
+original notice.
+
+* If you submit a feature request as an issue, you will be invited to follow the
+[instructions in this document](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md#requesting-a-feature)
+and the issue will be closed
+
 ## Requesting a Feature
 
 1. Ember has an RFC process for feature requests. To begin the discussion either
