@@ -128,10 +128,11 @@ interface TestStartCallbackObject {
     module: string;
 }
 
+
 interface Config {
     altertitle: boolean;
     autostart: boolean;
-    current: Object;
+    current: QUnitAssert;
     reorder: boolean;
     requireExpects: boolean;
     testTimeout: number;
