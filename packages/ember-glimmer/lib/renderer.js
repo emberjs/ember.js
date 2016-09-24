@@ -43,11 +43,13 @@ class DynamicScope {
   }
 
   get(key) {
-    return this[key];
+    assert(`Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
+    return this.outletState;
   }
 
   set(key, value) {
-    this[key] = value;
+    assert(`Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
+    this.outletState = value;
     return value;
   }
 }
