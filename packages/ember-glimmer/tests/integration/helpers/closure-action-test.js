@@ -1,5 +1,6 @@
 import {
   run,
+  set,
   computed,
   isFeatureEnabled,
   instrumentationSubscribe,
@@ -1103,5 +1104,54 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     });
 
     this.assertText('Click me');
+  }
+
+  ['@test ensure closure action transform does not cause incidental rerendering [GH#14305]'](assert) {
+    let counter = 0;
+    this.registerComponent('inner-component', {
+      template: 'Max',
+
+      ComponentClass: Component.extend({
+        didReceiveAttrs() {
+          counter++;
+        }
+      })
+    });
+
+    this.registerComponent('outer-component', {
+      template: '{{foo}} {{inner-component submit=(action "bar")}}',
+
+      ComponentClass: Component.extend({
+        actions: {
+          bar() { }
+        }
+      })
+    });
+
+    this.render('{{outer-component foo=foo derp=derp}}', {
+      foo: 'hi',
+      derp: 'nope!'
+    });
+
+    this.assertText('hi Max');
+    assert.equal(counter, 1);
+
+    this.assertStableRerender();
+    assert.equal(counter, 1);
+
+    this.runTask(() => set(this.context, 'foo', 'bye'));
+
+    this.assertText('bye Max');
+    assert.equal(counter, 1);
+
+    this.runTask(() => set(this.context, 'foo', 'hi'));
+
+    this.assertText('hi Max');
+    assert.equal(counter, 1);
+
+    this.runTask(() => set(this.context, 'derp', 'yup!'));
+
+    this.assertText('hi Max');
+    assert.equal(counter, 1);
   }
 });
