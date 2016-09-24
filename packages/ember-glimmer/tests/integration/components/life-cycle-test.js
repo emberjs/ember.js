@@ -96,6 +96,11 @@ class LifeCycleHooksTest extends RenderingTest {
       if (instance.tagName === '') { return; }
 
       this.assert.ok(instance.element, `element property should be present on ${instance} during ${hookName}`);
+    };
+
+    let assertElementInDocument = (hookName, instance) => {
+      if (instance.tagName === '') { return; }
+
       this.assert.ok(document.body.contains(instance.element), `element for ${instance} should be in the DOM during ${hookName}`);
     };
 
@@ -151,13 +156,22 @@ class LifeCycleHooksTest extends RenderingTest {
         pushHook('didRender');
         assertParentView('didRender', this);
         assertElement('didRender', this);
+        assertElementInDocument('didRender', this);
         assertState('didRender', 'inDOM', this);
+      },
+
+      willInsertElement() {
+        pushHook('willInsertElement');
+        assertParentView('willInsertElement', this);
+        assertElement('willInsertElement', this);
+        assertState('willInsertElement', 'hasElement', this);
       },
 
       didInsertElement() {
         pushHook('didInsertElement');
         assertParentView('didInsertElement', this);
         assertElement('didInsertElement', this);
+        assertElementInDocument('didInsertElement', this);
         assertState('didInsertElement', 'inDOM', this);
       },
 
@@ -165,12 +179,14 @@ class LifeCycleHooksTest extends RenderingTest {
         pushHook('didUpdate', options);
         assertParentView('didUpdate', this);
         assertElement('didUpdate', this);
+        assertElementInDocument('didUpdate', this);
       },
 
       willDestroyElement() {
         pushHook('willDestroyElement');
         assertParentView('willDestroyElement', this);
         assertElement('willDestroyElement', this);
+        assertElementInDocument('willDestroyElement', this);
         assertState('willDestroyElement', 'inDOM', this);
       },
 
@@ -178,6 +194,7 @@ class LifeCycleHooksTest extends RenderingTest {
         pushHook('willClearRender');
         assertParentView('willClearRender', this);
         assertElement('willClearRender', this);
+        assertElementInDocument('willClearRender', this);
       },
 
       didDestroyElement() {
@@ -246,16 +263,19 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
         ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
         ['the-top', 'willRender'],
+        ['the-top', 'willInsertElement'],
 
         ['the-middle', 'init'],
         ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
         ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
         ['the-middle', 'willRender'],
+        ['the-middle', 'willInsertElement'],
 
         ['the-bottom', 'init'],
         ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
         ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
         ['the-bottom', 'willRender'],
+        ['the-bottom', 'willInsertElement'],
 
         // Async hooks
 
@@ -507,21 +527,25 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-parent', 'didInitAttrs',          { attrs: parentAttrs }],
         ['the-parent', 'didReceiveAttrs',       { newAttrs: parentAttrs }],
         ['the-parent', 'willRender'],
+        ['the-parent', 'willInsertElement'],
 
         ['the-first-child', 'init'],
         ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs }],
         ['the-first-child', 'didReceiveAttrs',  { newAttrs: firstAttrs }],
         ['the-first-child', 'willRender'],
+        ['the-first-child', 'willInsertElement'],
 
         ['the-second-child', 'init'],
         ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs }],
         ['the-second-child', 'didReceiveAttrs', { newAttrs: secondAttrs }],
         ['the-second-child', 'willRender'],
+        ['the-second-child', 'willInsertElement'],
 
         ['the-last-child', 'init'],
         ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs }],
         ['the-last-child', 'didReceiveAttrs',   { newAttrs: lastAttrs }],
         ['the-last-child', 'willRender'],
+        ['the-last-child', 'willInsertElement'],
 
         // Async hooks
 
@@ -865,16 +889,19 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
         ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
         ['the-top', 'willRender'],
+        ['the-top', 'willInsertElement'],
 
         ['the-middle', 'init'],
         ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
         ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
         ['the-middle', 'willRender'],
+        ['the-middle', 'willInsertElement'],
 
         ['the-bottom', 'init'],
         ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
         ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
         ['the-bottom', 'willRender'],
+        ['the-bottom', 'willInsertElement'],
 
         // Async hooks
 
@@ -1051,16 +1078,25 @@ class LifeCycleHooksTest extends RenderingTest {
     this.assertRegisteredViews('intial render');
 
     let initialHooks = (count) => {
-      return [
+      let ret = [
         ['an-item', 'init'],
         ['an-item', 'didInitAttrs',       { attrs: { count } }],
         ['an-item', 'didReceiveAttrs',    { newAttrs: { count } }],
-        ['an-item', 'willRender'],
+        ['an-item', 'willRender']
+      ];
+      if (this.isInteractive) {
+        ret.push(['an-item', 'willInsertElement']);
+      }
+      ret.push(
         ['nested-item', 'init'],
         ['nested-item', 'didInitAttrs',       { attrs: { } }],
         ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
         ['nested-item', 'willRender']
-      ];
+      );
+      if (this.isInteractive) {
+        ret.push(['nested-item', 'willInsertElement']);
+      }
+      return ret;
     };
 
     let initialAfterRenderHooks = (count) => {
@@ -1155,12 +1191,14 @@ class LifeCycleHooksTest extends RenderingTest {
         ['no-items', 'didInitAttrs',       { attrs: { } }],
         ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
         ['no-items', 'willRender'],
+        ['no-items', 'willInsertElement'],
 
 
         ['nested-item', 'init'],
         ['nested-item', 'didInitAttrs',       { attrs: { } }],
         ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
         ['nested-item', 'willRender'],
+        ['nested-item', 'willInsertElement'],
 
         ['an-item', 'didDestroyElement'],
         ['nested-item', 'didDestroyElement'],
