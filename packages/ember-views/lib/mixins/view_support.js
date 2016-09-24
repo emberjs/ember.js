@@ -319,12 +319,12 @@ export default Mixin.create({
   willInsertElement: K,
 
   /**
-    Called when the element of the view has been inserted into the DOM
-    or after the view was re-rendered. Override this function to do any
-    set up that requires an element in the document body.
+    Called when the element of the view has been inserted into the DOM.
+    Override this function to do any set up that requires an element
+    in the document body.
 
     When a view has children, didInsertElement will be called on the
-    child view(s) first, bubbling upwards through the hierarchy.
+    child view(s) first and on itself afterwards.
 
     @event didInsertElement
     @public
