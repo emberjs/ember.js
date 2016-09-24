@@ -39,6 +39,14 @@ QUnit.test('should not access a property more than once', function() {
   equal(count, 1);
 });
 
+QUnit.test('should be able to use an empty string as a property', function(assert) {
+  let obj = { '': 'empty string' };
+
+  let result = get(obj, '');
+
+  assert.equal(result, obj['']);
+});
+
 testBoth('should call unknownProperty on watched values if the value is undefined', function(get, set) {
   let obj = {
     count: 0,

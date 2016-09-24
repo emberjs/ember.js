@@ -49,11 +49,6 @@ export function get(obj, keyName) {
   assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
   assert(`'this' in paths is not supported`, !hasThis(keyName));
 
-  // Helpers that operate with 'this' within an #each
-  if (keyName === '') {
-    return obj;
-  }
-
   let value = obj[keyName];
   let desc = (value !== null && typeof value === 'object' && value.isDescriptor) ? value : undefined;
   let ret;
