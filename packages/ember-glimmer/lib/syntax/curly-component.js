@@ -234,10 +234,6 @@ class CurlyComponentManager {
     component.trigger('didInitAttrs', { attrs });
     component.trigger('didReceiveAttrs', { newAttrs: attrs });
 
-    if (environment.isInteractive) {
-      component.trigger('willInsertElement');
-    }
-
     component.trigger('willRender');
 
     let bucket = new ComponentStateBucket(environment, component, processedArgs, finalizer);
@@ -280,7 +276,7 @@ class CurlyComponentManager {
     return component[ROOT_REF];
   }
 
-  didCreateElement({ component, classRef }, element, operations) {
+  didCreateElement({ component, classRef, environment }, element, operations) {
     component.element = element;
 
     let { attributeBindings, classNames, classNameBindings } = component;
@@ -309,6 +305,10 @@ class CurlyComponentManager {
     }
 
     component._transitionTo('hasElement');
+
+    if (environment.isInteractive) {
+      component.trigger('willInsertElement');
+    }
   }
 
   didRenderLayout(bucket, bounds) {
