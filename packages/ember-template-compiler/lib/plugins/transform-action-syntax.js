@@ -63,5 +63,5 @@ function isAction(node) {
 }
 
 function insertThisAsFirstParam(node, builders) {
-  node.params.unshift(builders.path(''));
+  node.params.unshift(builders.path('this'));
 }
