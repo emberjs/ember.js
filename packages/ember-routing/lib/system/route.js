@@ -80,6 +80,7 @@ export function hasDefaultSerialize(route) {
   @extends Ember.Object
   @uses Ember.ActionHandler
   @uses Ember.Evented
+  @since 1.0.0
   @public
 */
 let Route = EmberObject.extend(ActionHandler, Evented, {
@@ -123,6 +124,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @property queryParams
     @for Ember.Route
     @type Object
+    @since 1.6.0
     @public
   */
   queryParams: {},
@@ -137,6 +139,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @property routeName
     @for Ember.Route
     @type String
+    @since 1.0.0
     @public
   */
 
@@ -381,6 +384,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @method paramsFor
     @param {String} name
     @return {Object} hash containing the parameters of the route `name`
+    @since 1.4.0
     @public
   */
   paramsFor(name) {
@@ -609,6 +613,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     @event willTransition
     @param {Transition} transition
+    @since 1.0.0
     @public
   */
 
@@ -716,6 +721,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @event error
     @param {Error} error
     @param {Transition} transition
+    @since 1.0.0
     @public
   */
 
@@ -897,6 +903,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     not executed when the model for the route changes.
 
     @method deactivate
+    @since 1.0.0
     @public
   */
   deactivate: K,
@@ -906,6 +913,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     when the model for the route changes.
 
     @method activate
+    @since 1.0.0
     @public
   */
   activate: K,
@@ -1062,6 +1070,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       containing a mapping of query parameters
     @return {Transition} the transition object associated with this
       attempted transition
+    @since 1.0.0
     @public
   */
   transitionTo(name, context) {
@@ -1146,6 +1155,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       transitioning to the route.
     @return {Transition} the transition object associated with this
       attempted transition
+    @since 1.0.0
     @public
   */
   replaceWith() {
@@ -1186,6 +1196,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @method send
     @param {String} name the name of the action to trigger
     @param {...*} args
+    @since 1.0.0
     @public
   */
   send(...args) {
@@ -1354,6 +1365,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
       utilized in any way.
+    @since 1.0.0
     @public
   */
   beforeModel: K,
@@ -1388,6 +1400,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
       utilized in any way.
+    @since 1.0.0
     @public
    */
   afterModel: K,
@@ -1415,6 +1428,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @method redirect
     @param {Object} model the model for this route
     @param {Transition} transition the transition object associated with the current transition
+    @since 1.0.0
     @public
   */
   redirect: K,
@@ -1499,6 +1513,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       a promise is returned, the transition will pause until
       the promise resolves, and the resolved value of the promise
       will be used as the model for this route.
+    @since 1.0.0
     @public
   */
   model(params, transition) {
@@ -1625,6 +1640,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @param {Array} params an Array of parameter names for the current
       route (in the example, `['post_id']`.
     @return {Object} the serialized parameters
+    @since 1.0.0
     @public
   */
   serialize: defaultSerialize,
@@ -1688,6 +1704,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @method setupController
     @param {Controller} controller instance
     @param {Object} model
+    @since 1.0.0
     @public
   */
   setupController(controller, context, transition) {
@@ -1714,6 +1731,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @method controllerFor
     @param {String} name the name of the route or controller
     @return {Ember.Controller}
+    @since 1.0.0
     @public
   */
   controllerFor(name, _skipAssert) {
@@ -1791,6 +1809,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @method modelFor
     @param {String} name the name of the route
     @return {Object} the model object
+    @since 1.0.0
     @public
   */
   modelFor(_name) {
@@ -1849,6 +1868,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @method renderTemplate
     @param {Object} controller the route's controller
     @param {Object} model the route's model
+    @since 1.0.0
     @public
   */
   renderTemplate(controller, model) {
@@ -1971,6 +1991,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
                     referenced by name or as a controller instance. Defaults to the Route's paired controller
     @param {Object} [options.model] the model object to set on `options.controller`.
                     Defaults to the return value of the Route's model hook
+    @since 1.0.0
     @public
   */
   render(_name, options) {
@@ -2034,6 +2055,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     @method disconnectOutlet
     @param {Object|String} options the options hash or outlet name
+    @since 1.0.0
     @public
   */
   disconnectOutlet(options) {
