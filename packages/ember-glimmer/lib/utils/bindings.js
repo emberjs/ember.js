@@ -116,18 +116,24 @@ export const IsVisibleBinding = {
 export const ClassNameBinding = {
   install(element, component, microsyntax, operations) {
     let [ prop, truthy, falsy ] = microsyntax.split(':');
-    let isPath = prop.indexOf('.') > -1;
-    let parts = isPath && prop.split('.');
-    let value = isPath ? referenceForParts(component, parts) : referenceForKey(component, prop);
-    let ref;
+    let isStatic = prop === '';
 
-    if (truthy === undefined) {
-      ref = new SimpleClassNameBindingReference(value, isPath ? parts[parts.length - 1] : prop);
+    if (isStatic) {
+      operations.addStaticAttribute(element, 'class', truthy);
     } else {
-      ref = new ColonClassNameBindingReference(value, truthy, falsy);
-    }
+      let isPath = prop.indexOf('.') > -1;
+      let parts = isPath && prop.split('.');
+      let value = isPath ? referenceForParts(component, parts) : referenceForKey(component, prop);
+      let ref;
 
-    operations.addDynamicAttribute(element, 'class', ref);
+      if (truthy === undefined) {
+        ref = new SimpleClassNameBindingReference(value, isPath ? parts[parts.length - 1] : prop);
+      } else {
+        ref = new ColonClassNameBindingReference(value, truthy, falsy);
+      }
+
+      operations.addDynamicAttribute(element, 'class', ref);
+    }
   }
 };
 
