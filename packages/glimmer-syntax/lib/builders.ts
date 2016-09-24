@@ -103,10 +103,16 @@ function buildSexpr(path, params?, hash?, loc?) {
 function buildPath(original, loc?) {
   if (typeof original !== 'string') return original;
 
+  let parts = original.split('.');
+
+  if (parts[0] === 'this') {
+    parts[0] = null;
+  }
+
   return {
     type: "PathExpression",
-    original: original,
-    parts: original.split('.'),
+    original,
+    parts,
     data: false,
     loc: buildLoc(loc)
   };
