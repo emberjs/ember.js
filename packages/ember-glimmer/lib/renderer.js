@@ -13,6 +13,7 @@ import {
 } from 'ember-views';
 import { BOUNDS } from './component';
 import { RootComponentDefinition } from './syntax/curly-component';
+import { TopLevelOutletComponentDefinition } from './syntax/outlet';
 
 let runInTransaction;
 
@@ -29,16 +30,15 @@ if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
 const { backburner } = run;
 
 class DynamicScope {
-  constructor(view, outletState, rootOutletState, isTopLevel, targetObject) {
+  constructor(view, outletState, rootOutletState, targetObject) {
     this.view = view;
     this.outletState = outletState;
     this.rootOutletState = rootOutletState;
-    this.isTopLevel = isTopLevel;
   }
 
   child() {
     return new DynamicScope(
-      this.view, this.outletState, this.rootOutletState, this.isTopLevel
+      this.view, this.outletState, this.rootOutletState
     );
   }
 
@@ -179,22 +179,25 @@ export class Renderer {
   // renderer HOOKS
 
   appendOutletView(view, target) {
-    let self = new RootReference(view);
+    let definition = new TopLevelOutletComponentDefinition(view);
+    let outletStateReference = view.toReference();
     let targetObject = view.outletState.render.controller;
-    let ref = view.toReference();
-    let dynamicScope = new DynamicScope(null, ref, ref, true, targetObject);
-    let root = new RootState(view, this._env, view.template, self, target, dynamicScope);
 
-    this._renderRoot(root);
+    this._appendDefinition(view, definition, target, outletStateReference, targetObject);
   }
 
   appendTo(view, target) {
     let rootDef = new RootComponentDefinition(view);
-    let self = new RootReference(rootDef);
-    let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE, UNDEFINED_REFERENCE, true, null);
-    let root = new RootState(view, this._env, this._rootTemplate, self, target, dynamicScope);
 
-    this._renderRoot(root);
+    this._appendDefinition(view, rootDef, target);
+  }
+
+  _appendDefinition(root, definition, target, outletStateReference = UNDEFINED_REFERENCE, targetObject = null) {
+    let self = new RootReference(definition);
+    let dynamicScope = new DynamicScope(null, outletStateReference, outletStateReference, true, targetObject);
+    let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
+
+    this._renderRoot(rootState);
   }
 
   rerender(view) {

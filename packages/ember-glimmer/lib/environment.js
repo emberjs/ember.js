@@ -96,10 +96,12 @@ export default class Environment extends GlimmerEnvironment {
     }, ({ Template, owner }) => guidFor(owner) + '|' + Template.id);
 
     this._compilerCache = new Cache(10, Compiler => {
-      return new Cache(2000, template => {
+      return new Cache(2000, ({ template }) => {
         let compilable = new Compiler(template);
         return compileLayout(compilable, this);
-      }, template => template.id);
+      }, ({ template, owner })=> {
+        return guidFor(owner) + '|' + template.id;
+      });
     }, Compiler => Compiler.id);
 
     this.builtInModifiers = {
@@ -252,7 +254,7 @@ export default class Environment extends GlimmerEnvironment {
   // a Compiler can wrap the template so it needs its own cache
   getCompiledBlock(Compiler, template, owner) {
     let compilerCache = this._compilerCache.get(Compiler);
-    return compilerCache.get(template, owner);
+    return compilerCache.get({ template, owner });
   }
 
   hasPartial(name, symbolTable) {
