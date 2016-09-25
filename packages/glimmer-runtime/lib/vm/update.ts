@@ -281,9 +281,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
   }
 
   done() {
-    if (this.didInsert || this.didDelete) {
-      this.opcode.didInitializeChildren();
-    }
+    this.opcode.didInitializeChildren(this.didInsert || this.didDelete);
   }
 }
 
@@ -302,9 +300,12 @@ export class ListBlockOpcode extends BlockOpcode {
     this.tag = combine([artifacts.tag, _tag]);
   }
 
-  didInitializeChildren() {
+  didInitializeChildren(listDidChange = true) {
     this.lastIterated = this.artifacts.tag.value();
-    this._tag.update(combineSlice(this.children));
+
+    if (listDidChange) {
+      this._tag.update(combineSlice(this.children));
+    }
   }
 
   evaluate(vm: UpdatingVM) {
