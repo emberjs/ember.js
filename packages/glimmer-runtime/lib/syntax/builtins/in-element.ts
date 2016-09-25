@@ -6,8 +6,8 @@ import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 import * as Syntax from '../core';
 import Environment from '../../environment';
 
-export default class WithDynamicVarsSyntax extends StatementSyntax {
-  type = "with-dynamic-vars-statement";
+export default class InElementSyntax extends StatementSyntax {
+  type = "in-element-statement";
 
   public args: Syntax.Args;
   public templates: Syntax.Templates;
@@ -22,12 +22,13 @@ export default class WithDynamicVarsSyntax extends StatementSyntax {
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
     let { args, templates } = this;
 
-    dsl.unit({ templates }, dsl => {
+    dsl.block({ templates, args }, (dsl, BEGIN, END) => {
       dsl.putArgs(args);
-      dsl.pushDynamicScope();
-      dsl.bindDynamicScope(args.named.keys);
+      dsl.test('simple');
+      dsl.jumpUnless(END);
+      dsl.pushRemoteElement();
       dsl.evaluate('default');
-      dsl.popDynamicScope();
+      dsl.popRemoteElement();
     });
   }
 }

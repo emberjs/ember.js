@@ -21,6 +21,7 @@ import { ValueReference } from '../../compiled/expressions/value';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { AttributeManager } from '../../dom/attribute-managers';
 import { ElementOperations } from '../../builder';
+import { Assert } from './vm';
 
 export class TextOpcode extends Opcode {
   public type = "text";
@@ -66,8 +67,8 @@ export class PushRemoteElementOpcode extends Opcode {
   public type = "push-remote-element";
 
   evaluate(vm: VM) {
-    let reference = vm.frame.getOperand();
-    let cache = isConst(reference) ? undefined : new ReferenceCache(reference);
+    let reference = vm.frame.getOperand<Simple.Element>();
+    let cache = isConstReference(reference) ? undefined : new ReferenceCache(reference);
     let element = cache ? cache.peek() : reference.value();
 
     vm.stack().pushRemoteElement(element);
@@ -81,8 +82,16 @@ export class PushRemoteElementOpcode extends Opcode {
     return {
       guid: this._guid,
       type: this.type,
-      args: [JSON.stringify(this.tag)]
+      args: ['$OPERAND']
     };
+  }
+}
+
+export class PopRemoteElementOpcode extends Opcode {
+  public type = "pop-remote-element";
+
+  evaluate(vm: VM) {
+    vm.stack().popRemoteElement();
   }
 }
 
@@ -367,6 +376,20 @@ export class CloseElementOpcode extends Opcode {
   evaluate(vm: VM) {
     vm.stack().closeElement();
   }
+}
+
+export class PopElementOpcode extends Opcode {
+  public type = "pop-element";
+
+  evaluate(vm: VM) {
+    vm.stack().popElement();
+  }
+}
+
+export interface StaticAttrOptions {
+  namespace: string;
+  name: string;
+  value: string;
 }
 
 export class StaticAttrOpcode extends Opcode {
