@@ -23,7 +23,8 @@ module.exports = {
   init: function() {
 		this._super.init && this._super.init.apply(this, arguments);
     if ('ember' in this.project.bowerDependencies()) {
-      throw new TypeError('Ember.js is now provided by node_module `ember-core`, please remove it from bower');
+      // TODO: move this to a throw soon.
+      this.ui.writeWarnLine('Ember.js is now provided by node_module `ember-core`, please remove it from bower');
     }
   },
 
