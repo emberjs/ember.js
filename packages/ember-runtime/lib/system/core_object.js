@@ -702,8 +702,10 @@ var ClassMixinProps = {
   */
   create() {
     var C = this;
-    if (arguments.length === 1) {
-      this._initProperties(arguments[0]);
+    if (arguments.length === 0) {
+      return new C();
+    } else if (arguments.length === 1) {
+      return new C(arguments[0]);
     } else if (arguments.length > 1) {
       let concatenatedProperties = this.concatenatedProperties;
       let mergedProperties = this.mergedProperties;
@@ -745,10 +747,8 @@ var ClassMixinProps = {
         }
       }
 
-      this._initProperties(props);
+      return new C(props);
     }
-
-    return new C();
   },
 
   /**

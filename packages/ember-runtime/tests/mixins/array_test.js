@@ -24,8 +24,8 @@ import { A as emberA } from '../../system/native_array';
 const TestArray = EmberObject.extend(EmberArray, {
   _content: null,
 
-  init(ary = []) {
-    this._content = ary;
+  init() {
+    this._content = this._content || [];
   },
 
   // some methods to modify the array so we can test changes.  Note that
@@ -60,7 +60,7 @@ ArrayTests.extend({
 
   newObject(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
-    return new TestArray(ary);
+    return TestArray.create({ _content: ary });
   },
 
   // allows for testing of the basic enumerable after an internal mutation
@@ -83,7 +83,7 @@ QUnit.test('the return value of slice has Ember.Array applied', function() {
 });
 
 QUnit.test('slice supports negative index arguments', function() {
-  let testArray = new TestArray([1, 2, 3, 4]);
+  let testArray = new TestArray({ _content: [1, 2, 3, 4] });
 
   deepEqual(testArray.slice(-2), [3, 4], 'slice(-2)');
   deepEqual(testArray.slice(-2, -1), [3], 'slice(-2, -1');
@@ -320,12 +320,14 @@ let ary;
 
 QUnit.module('EmberArray.@each support', {
   setup() {
-    ary = new TestArray([
-      { isDone: true, desc: 'Todo 1' },
-      { isDone: false, desc: 'Todo 2' },
-      { isDone: true, desc: 'Todo 3' },
-      { isDone: false, desc: 'Todo 4' }
-    ]);
+    ary = new TestArray({
+      _content: [
+        { isDone: true, desc: 'Todo 1' },
+        { isDone: false, desc: 'Todo 2' },
+        { isDone: true, desc: 'Todo 3' },
+        { isDone: false, desc: 'Todo 4' }
+      ]
+    });
   },
 
   teardown() {
