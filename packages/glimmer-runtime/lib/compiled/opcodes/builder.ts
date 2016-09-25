@@ -223,6 +223,18 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
 
   // vm
 
+  pushRemoteElement() {
+    this.append(new dom.PushRemoteElementOpcode());
+  }
+
+  popRemoteElement() {
+    this.append(new dom.PopRemoteElementOpcode());
+  }
+
+  popElement() {
+    this.append(new dom.PopElementOpcode());
+  }
+
   label(name: string) {
     this.append(this.labelFor(name));
   }

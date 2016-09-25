@@ -27,11 +27,7 @@ export interface LastNode {
 }
 
 class First {
-  private node: Node;
-
-  constructor(node) {
-    this.node = node;
-  }
+  constructor(private node: Node) { }
 
   firstNode(): Node {
     return this.node;
@@ -39,11 +35,7 @@ class First {
 }
 
 class Last {
-  private node: Node;
-
-  constructor(node) {
-    this.node = node;
-  }
+  constructor(private node: Node) { }
 
   lastNode(): Node {
     return this.node;
@@ -127,7 +119,7 @@ export class ElementStack implements Cursor {
     return this.blockStack.current;
   }
 
-  private popElement() {
+  popElement() {
     let { elementStack, nextSiblingStack }  = this;
 
     let topElement = elementStack.pop();
@@ -151,12 +143,15 @@ export class ElementStack implements Cursor {
     return tracker;
   }
 
-  private pushBlockTracker(tracker: Tracker) {
+  private pushBlockTracker(tracker: Tracker, isRemote = false) {
     let current = this.blockStack.current;
 
     if (current !== null) {
       current.newDestroyable(tracker);
-      current.newBounds(tracker);
+
+      if (!isRemote) {
+        current.newBounds(tracker);
+      }
     }
 
     this.blockStack.push(tracker);
@@ -193,16 +188,35 @@ export class ElementStack implements Cursor {
 
   flushElement() {
     let parent  = this.element;
-    let element = this.element = this.constructing;
+    let element = this.constructing;
 
     this.dom.insertBefore(parent, element, this.nextSibling);
 
     this.constructing = null;
     this.operations = null;
-    this.nextSibling = null;
-    this.elementStack.push(element);
-    this.nextSiblingStack.push(null);
+
+    this.pushElement(element);
     this.blockStack.current.openElement(element);
+  }
+
+  pushRemoteElement(element: Simple.Element) {
+    this.pushElement(element);
+
+    let tracker = new RemoteBlockTracker(element);
+    this.pushBlockTracker(tracker, true);
+  }
+
+  popRemoteElement() {
+    this.popBlock();
+    this.popElement();
+  }
+
+  private pushElement(element: Simple.Element) {
+    this.element = element;
+    this.elementStack.push(element);
+
+    this.nextSibling = null;
+    this.nextSiblingStack.push(null);
   }
 
   newDestroyable(d: Destroyable) {
@@ -328,6 +342,14 @@ export class SimpleBlockTracker implements Tracker {
     if (!this.first) {
       stack.appendComment('');
     }
+  }
+}
+
+class RemoteBlockTracker extends SimpleBlockTracker {
+  destroy() {
+    super.destroy();
+
+    clear(this);
   }
 }
 

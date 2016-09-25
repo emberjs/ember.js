@@ -105,6 +105,10 @@ export {
   default as WithDynamicVarsSyntax
 } from './lib/syntax/builtins/with-dynamic-vars';
 
+export {
+  default as InElementSyntax
+} from './lib/syntax/builtins/in-element';
+
 export { PublicVM as VM, UpdatingVM, RenderResult } from './lib/vm';
 
 export { SafeString, isSafeString } from './lib/upsert';
