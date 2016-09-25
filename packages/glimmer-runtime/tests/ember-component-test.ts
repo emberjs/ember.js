@@ -27,7 +27,7 @@ import { equalTokens, stripTight } from "glimmer-test-helpers";
 
 import { CLASS_META, UpdatableReference, setProperty as set } from 'glimmer-object-reference';
 
-class EmberishRootView extends EmberObject {
+export class EmberishRootView extends EmberObject {
   private parent: Element;
   protected _result: RenderResult;
   protected template: Template<{}>;
@@ -73,7 +73,7 @@ function module(name: string) {
 
 module("Components - generic - props");
 
-function appendViewFor(template: string, context: Object = {}) {
+export function appendViewFor(template: string, context: Object = {}) {
   class MyRootView extends EmberishRootView {
     protected env = env;
     protected template = env.compile(template);
@@ -90,7 +90,7 @@ function appendViewFor(template: string, context: Object = {}) {
   return view;
 }
 
-function assertAppended(content: string) {
+export function assertAppended(content: string) {
   equalTokens((<HTMLElement>document.querySelector('#qunit-fixture')), content);
 }
 
@@ -147,12 +147,12 @@ function assertEmberishElement(...args) {
   equalsElement(view.element, tagName, fullAttrs, contents);
 }
 
-function assertElementIsEmberishElement(element: Element, tagName: string, attrs: Object, contents: string);
-function assertElementIsEmberishElement(element: Element, tagName: string, attrs: Object);
-function assertElementIsEmberishElement(element: Element, tagName: string, contents: string);
-function assertElementIsEmberishElement(element: Element, tagName: string);
+export function assertElementIsEmberishElement(element: Element, tagName: string, attrs: Object, contents: string);
+export function assertElementIsEmberishElement(element: Element, tagName: string, attrs: Object);
+export function assertElementIsEmberishElement(element: Element, tagName: string, contents: string);
+export function assertElementIsEmberishElement(element: Element, tagName: string);
 
-function assertElementIsEmberishElement(element: Element, ...args) {
+export function assertElementIsEmberishElement(element: Element, ...args) {
   let tagName, attrs, contents;
   if (args.length === 2) {
     if (typeof args[1] === 'string') [tagName, attrs, contents] = [args[0], {}, args[1]];

@@ -27,11 +27,7 @@ export interface LastNode {
 }
 
 class First {
-  private node: Node;
-
-  constructor(node) {
-    this.node = node;
-  }
+  constructor(private node: Node) { }
 
   firstNode(): Node {
     return this.node;
@@ -39,11 +35,7 @@ class First {
 }
 
 class Last {
-  private node: Node;
-
-  constructor(node) {
-    this.node = node;
-  }
+  constructor(private node: Node) { }
 
   lastNode(): Node {
     return this.node;
@@ -151,12 +143,15 @@ export class ElementStack implements Cursor {
     return tracker;
   }
 
-  private pushBlockTracker(tracker: Tracker) {
+  private pushBlockTracker(tracker: Tracker, isRemote = false) {
     let current = this.blockStack.current;
 
     if (current !== null) {
       current.newDestroyable(tracker);
-      current.newBounds(tracker);
+
+      if (!isRemote) {
+        current.newBounds(tracker);
+      }
     }
 
     this.blockStack.push(tracker);
@@ -207,9 +202,13 @@ export class ElementStack implements Cursor {
   pushRemoteElement(element: Simple.Element) {
     this.pushElement(element);
 
-    let tracker = new SimpleBlockTracker(this.element);
-    this.pushBlockTracker(tracker);
-    return tracker;
+    let tracker = new RemoteBlockTracker(element);
+    this.pushBlockTracker(tracker, true);
+  }
+
+  popRemoteElement() {
+    this.popBlock();
+    this.popElement();
   }
 
   private pushElement(element: Simple.Element) {
@@ -343,6 +342,14 @@ export class SimpleBlockTracker implements Tracker {
     if (!this.first) {
       stack.appendComment('');
     }
+  }
+}
+
+class RemoteBlockTracker extends SimpleBlockTracker {
+  destroy() {
+    super.destroy();
+
+    clear(this);
   }
 }
 

@@ -42,6 +42,7 @@ import {
   ArgsSyntax,
   OptimizedAppend,
   WithDynamicVarsSyntax,
+  InElementSyntax,
 
   // References
   ValueReference,
@@ -788,6 +789,8 @@ export class TestEnvironment extends Environment {
           return new RenderInverseIdentitySyntax({ args, templates });
         case '-with-dynamic-vars':
           return new WithDynamicVarsSyntax({ args, templates });
+        case '-in-element':
+          return new InElementSyntax({ args, templates });
       }
     }
 
