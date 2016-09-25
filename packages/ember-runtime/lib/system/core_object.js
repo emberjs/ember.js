@@ -700,19 +700,19 @@ var ClassMixinProps = {
     @param [arguments]*
     @public
   */
-  create(...args) {
+  create() {
     var C = this;
-    if (args.length === 0) {
+    if (arguments.length === 0) {
       return new C();
-    } else if (args.length === 1) {
-      return new C(args[0]);
-    } else if (args.length > 1) {
+    } else if (arguments.length === 1) {
+      return new C(arguments[0]);
+    } else if (arguments.length > 1) {
       let concatenatedProperties = this.concatenatedProperties;
       let mergedProperties = this.mergedProperties;
       let props = {};
 
-      for (let i = 0; i < args.length; i++) {
-        let currentArg = args[i];
+      for (let i = 0; i < arguments.length; i++) {
+        let currentArg = arguments[i];
         let keyNames = Object.keys(currentArg);
 
         for (let j = 0, k = keyNames.length; j < k; j++) {
