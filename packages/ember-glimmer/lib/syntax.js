@@ -3,7 +3,10 @@ import { OutletSyntax } from './syntax/outlet';
 import { MountSyntax } from './syntax/mount';
 import { DynamicComponentSyntax } from './syntax/dynamic-component';
 import { InputSyntax } from './syntax/input';
-import { WithDynamicVarsSyntax } from 'glimmer-runtime';
+import {
+  WithDynamicVarsSyntax,
+  InElementSyntax
+} from 'glimmer-runtime';
 
 
 let syntaxKeys = [];
@@ -27,8 +30,15 @@ registerSyntax('outlet', OutletSyntax);
 registerSyntax('mount', MountSyntax);
 registerSyntax('component', DynamicComponentSyntax);
 registerSyntax('input', InputSyntax);
+
 registerSyntax('-with-dynamic-vars', class {
   static create(environment, args, templates, symbolTable) {
     return new WithDynamicVarsSyntax({ args, templates });
+  }
+});
+
+registerSyntax('-in-element', class {
+  static create(environment, args, templates, symbolTable) {
+    return new InElementSyntax({ args, templates });
   }
 });
