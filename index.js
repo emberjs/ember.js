@@ -21,6 +21,7 @@ add(absolutePaths, 'templateCompiler', __dirname + '/dist/ember-template-compile
 
 module.exports = {
   init: function() {
+		this._super.init && this._super.init.apply(this, arguments);
     if ('ember' in this.project.bowerDependencies()) {
       throw new TypeError('Ember.js is now provided by node_module `ember-core`, please remove it from bower');
     }
