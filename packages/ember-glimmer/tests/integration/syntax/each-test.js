@@ -1,7 +1,7 @@
 import { get, set, propertyDidChange } from 'ember-metal';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { A as emberA, ArrayProxy } from 'ember-runtime';
+import { A as emberA, ArrayProxy, RSVP } from 'ember-runtime';
 
 import {
   TogglingSyntaxConditionalsTest,
@@ -884,3 +884,101 @@ moduleFor('Syntax test: {{#each as}} undefined path', class extends RenderingTes
     this.assertText('');
   }
 });
+
+/* globals MutationObserver: false */
+if (typeof MutationObserver === 'function') {
+  moduleFor('Syntax test: {{#each as}} DOM mutation test', class extends RenderingTest {
+    constructor() {
+      super();
+      this.observer = null;
+    }
+
+    observe(element) {
+      let observer = this.observer = new MutationObserver(function() {});
+      observer.observe(element, { childList: true });
+    }
+
+    teardown() {
+      if (this.observer) {
+        this.observer.disconnect();
+      }
+
+      super.teardown();
+    }
+
+    assertNoMutation() {
+      this.assert.deepEqual(this.observer.takeRecords(), [], 'Expected no mutations');
+    }
+
+    expectMutations() {
+      this.assert.ok(this.observer.takeRecords().length > 0, 'Expected some mutations');
+    }
+
+    ['@test {{#each}} should not mutate a subtree when the array has not changed [GH #14332]'](assert) {
+      let page = { title: 'Blog Posts' };
+
+      let model = [
+        { title: 'Rails is omakase' },
+        { title: 'Ember is omakase' }
+      ];
+
+      this.render(strip`
+        <h1>{{page.title}}</h1>
+
+        <ul id="posts">
+          {{#each model as |post|}}
+            <li>{{post.title}}</li>
+          {{/each}}
+        </ul>
+      `, { page, model });
+
+      this.assertHTML(strip`
+        <h1>Blog Posts</h1>
+
+        <ul id="posts">
+          <li>Rails is omakase</li>
+          <li>Ember is omakase</li>
+        </ul>
+      `);
+
+      this.observe(this.$('#posts')[0]);
+
+      // MutationObserver is async
+      return RSVP.Promise.resolve(() => {
+        this.assertStableRerender();
+      }).then(() => {
+        this.assertNoMutation();
+
+        this.runTask(() => set(this.context, 'page', { title: 'Essays' }));
+
+        this.assertHTML(strip`
+          <h1>Essays</h1>
+
+          <ul id="posts">
+            <li>Rails is omakase</li>
+            <li>Ember is omakase</li>
+          </ul>
+        `);
+      }).then(() => {
+        // 'page' and 'model' is keyed off the same object, so we do expect Glimmer
+        // to re-iterate the list
+        this.expectMutations();
+
+        this.runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
+
+        this.assertHTML(strip`
+          <h1>Think Pieces™</h1>
+
+          <ul id="posts">
+            <li>Rails is omakase</li>
+            <li>Ember is omakase</li>
+          </ul>
+        `);
+      }).then(() => {
+        // The last set is localized to the `page` object, so we do not expect Glimmer
+        // to re-iterate the list
+        this.assertNoMutation();
+      });
+    }
+  });
+}
