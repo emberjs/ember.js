@@ -296,7 +296,7 @@ moduleFor('Bounds tests', class extends RenderingTest {
 
     let { parentElement, firstNode, lastNode } = getViewBounds(component);
 
-    assert.equal(parentElement, this.element, 'a regular component should have the right parentElement');
+    assert.equal(parentElement, this.element, 'a tagless component should have the right parentElement');
     assert.equal(firstNode, this.$('#start-node')[0], 'a tagless component should have a range enclosing all of its nodes');
     assert.equal(lastNode, this.$('#before-end-node')[0].nextSibling, 'a tagless component should have a range enclosing all of its nodes');
   }
