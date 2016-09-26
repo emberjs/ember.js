@@ -471,7 +471,13 @@ const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager()
 const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
 class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyComponent> {
-  prepareArgs(definition: EmberishCurlyComponentDefinition, args: EvaluatedArgs): EvaluatedArgs {
+  prepareArgs(definition: EmberishCurlyComponentDefinition, args: EvaluatedArgs, dynamicScope: DynamicScope): EvaluatedArgs {
+    let dyn = definition.ComponentClass ? definition.ComponentClass['fromDynamicScope'] : null;
+    if (dyn) {
+      let map = assign({}, args.named.map);
+      dyn.forEach(name => map[name] = dynamicScope.get(name));
+      args = EvaluatedArgs.create(args.positional, EvaluatedNamedArgs.create(map));
+    }
     return args;
   }
 
@@ -891,19 +897,26 @@ export class TestEnvironment extends Environment {
 }
 
 export class TestDynamicScope implements DynamicScope {
-  constructor() {
+  private bucket;
+
+  constructor(bucket=null) {
+    if (bucket) {
+      this.bucket = assign({}, bucket);
+    } else {
+      this.bucket = {};
+    }
   }
 
   get(key: string): PathReference<Opaque> {
-    return this[key];
+    return this.bucket[key];
   }
 
   set(key: string, reference: PathReference<Opaque>) {
-    return this[key] = reference;
+    return this.bucket[key] = reference;
   }
 
   child(): TestDynamicScope {
-    return new TestDynamicScope();
+    return new TestDynamicScope(this.bucket);
   }
 }
 
