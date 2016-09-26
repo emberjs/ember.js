@@ -1,34 +1,81 @@
-import { symbol, EmptyObject } from 'ember-utils';
-import { CONSTANT_TAG } from 'glimmer-reference';
+import {
+  assign,
+  symbol,
+  EmptyObject
+} from 'ember-utils';
+import {
+  CONSTANT_TAG
+} from 'glimmer-reference';
 import { ARGS } from '../component';
 import { UPDATE } from './references';
 import { MUTABLE_CELL } from 'ember-views';
 import { ACTION } from '../helpers/action';
+import {
+  EvaluatedArgs,
+  EvaluatedPositionalArgs
+} from 'glimmer-runtime';
 
-export default function processArgs(args, positionalParamsDefinition) {
-  if (!positionalParamsDefinition || positionalParamsDefinition.length === 0 || args.positional.length === 0) {
-    return SimpleArgs.create(args);
-  } else if (typeof positionalParamsDefinition === 'string') {
-    return RestArgs.create(args, positionalParamsDefinition);
+// Maps all variants of positional and dynamically scoped arguments
+// into the named arguments. Input `args` and return value are both
+// `EvaluatedArgs`.
+export function gatherArgs(args, definition) {
+  let namedMap = gatherNamedMap(args, definition);
+  let positionalValues = gatherPositionalValues(args, definition);
+  return mergeArgs(namedMap, positionalValues, definition.ComponentClass);
+}
+
+function gatherNamedMap(args, definition) {
+  let namedMap = args.named.map;
+  if (definition.args) {
+    return assign({}, definition.args.named.map, namedMap);
   } else {
-    return PositionalArgs.create(args, positionalParamsDefinition);
+    return namedMap;
   }
+}
+
+function gatherPositionalValues(args, definition) {
+  let positionalValues = args.positional.values;
+  if (definition.args) {
+    let oldPositional = definition.args.positional.values;
+    let newPositional = [];
+    newPositional.push(...oldPositional);
+    newPositional.splice(0, positionalValues.length, ...positionalValues);
+    return newPositional;
+  } else {
+    return positionalValues;
+  }
+}
+
+function mergeArgs(namedMap, positionalValues, componentClass) {
+  let positionalParamsDefinition = componentClass.positionalParams;
+
+  if (positionalParamsDefinition && positionalParamsDefinition.length > 0 && positionalValues.length > 0) {
+    if (typeof positionalParamsDefinition === 'string') {
+      namedMap = mergeRestArg(namedMap, positionalValues, positionalParamsDefinition);
+    } else {
+      namedMap = mergePositionalParams(namedMap, positionalValues, positionalParamsDefinition);
+    }
+  }
+  return EvaluatedArgs.named(namedMap);
 }
 
 const EMPTY_ARGS = {
   tag: CONSTANT_TAG,
-
   value() {
     return { attrs: {}, props: { attrs: {}, [ARGS]: {} } };
   }
 };
 
-class SimpleArgs {
-  static create({ named }) {
-    if (named.keys.length === 0) {
+
+// ComponentArgs takes EvaluatedNamedArgs and converts them into the
+// inputs needed by CurlyComponents (attrs and props, with mutable
+// cells, etc).
+export class ComponentArgs {
+  static create(args) {
+    if (args.named.keys.length === 0) {
       return EMPTY_ARGS;
     } else {
-      return new SimpleArgs(named);
+      return new ComponentArgs(args.named);
     }
   }
 
@@ -67,6 +114,22 @@ class SimpleArgs {
   }
 }
 
+function mergeRestArg(namedMap, positionalValues, restArgName) {
+  let mergedNamed = assign({}, namedMap);
+  mergedNamed[restArgName] = EvaluatedPositionalArgs.create(positionalValues);
+  return mergedNamed;
+}
+
+function mergePositionalParams(namedMap, values, positionalParamNames) {
+  let mergedNamed = assign({}, namedMap);
+  let length = Math.min(values.length, positionalParamNames.length);
+  for (let i = 0; i < length; i++) {
+    let name = positionalParamNames[i];
+    mergedNamed[name] = values[i];
+  }
+  return mergedNamed;
+}
+
 const REF = symbol('REF');
 
 class MutableCell {
@@ -78,61 +141,5 @@ class MutableCell {
 
   update(val) {
     this[REF][UPDATE](val);
-  }
-}
-
-class RestArgs {
-  static create(args, restArgName) {
-    return new RestArgs(args, restArgName);
-  }
-
-  constructor(args, restArgName) {
-    this.tag = args.tag;
-    this.simpleArgs = SimpleArgs.create(args);
-    this.positionalArgs = args.positional;
-    this.restArgName = restArgName;
-  }
-
-  value() {
-    let { simpleArgs, positionalArgs, restArgName } = this;
-
-    let result = simpleArgs.value();
-
-    result.props[ARGS] = positionalArgs;
-    result.attrs[restArgName] = result.props[restArgName] = positionalArgs.value();
-
-    return result;
-  }
-}
-
-
-class PositionalArgs {
-  static create(args, positionalParamNames) {
-    if (args.positional.length < positionalParamNames.length) {
-      positionalParamNames = positionalParamNames.slice(0, args.positional.length);
-    }
-
-    return new PositionalArgs(args, positionalParamNames);
-  }
-
-  constructor(args, positionalParamNames) {
-    this.tag = args.tag;
-    this.simpleArgs = SimpleArgs.create(args);
-    this.positionalArgs = args.positional;
-    this.positionalParamNames = positionalParamNames;
-  }
-
-  value() {
-    let { simpleArgs, positionalArgs, positionalParamNames } = this;
-
-    let result = simpleArgs.value();
-
-    for (let i = 0; i < positionalParamNames.length; i++) {
-      let name = positionalParamNames[i];
-      let reference = result.props[ARGS][name] = positionalArgs.at(i);
-      result.attrs[name] = result.props[name] = reference.value();
-    }
-
-    return result;
   }
 }
