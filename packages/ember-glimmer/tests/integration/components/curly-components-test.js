@@ -23,6 +23,8 @@ import {
   equalsElement,
   styles
 } from '../../utils/test-helpers';
+import { DYNAMIC_VAR_PARAMS } from 'ember-glimmer/utils/process-args';
+
 
 moduleFor('Components test: curly components', class extends RenderingTest {
 
@@ -1359,6 +1361,34 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.assertText('Foo4');
+  }
+
+  ['@test access dynamically-scoped variable parameters'](assert) {
+    this.registerComponent('sample-component', {
+      ComponentClass: Component.extend({
+        message: computed('outletState', function() {
+          return `The message is ${this.get('outletState')}`;
+        })
+      }).reopenClass({
+        [DYNAMIC_VAR_PARAMS]: ['outletState']
+      }),
+      template: strip`{{message}}`
+    });
+
+    this.render(strip`
+      {{#-with-dynamic-vars outletState=value}}
+        {{sample-component}}
+      {{/-with-dynamic-vars}}`, {
+        value: 'It works'
+      }
+    );
+
+    assert.equal(this.$().text(), 'The message is It works');
+    this.assertStableRerender();
+    this.runTask(() => {
+      set(this.context, 'value', 'new value');
+    });
+    assert.equal(this.$().text(), 'The message is new value');
   }
 
   ['@test with ariaRole specified']() {

@@ -14,13 +14,15 @@ import {
   EvaluatedPositionalArgs
 } from 'glimmer-runtime';
 
+export const DYNAMIC_VAR_PARAMS = symbol('DYNAMIC_VAR_PARAMS');
+
 // Maps all variants of positional and dynamically scoped arguments
 // into the named arguments. Input `args` and return value are both
 // `EvaluatedArgs`.
-export function gatherArgs(args, definition) {
+export function gatherArgs(args, definition, dynamicScope) {
   let namedMap = gatherNamedMap(args, definition);
   let positionalValues = gatherPositionalValues(args, definition);
-  return mergeArgs(namedMap, positionalValues, definition.ComponentClass);
+  return mergeArgs(namedMap, positionalValues, definition.ComponentClass, dynamicScope);
 }
 
 function gatherNamedMap(args, definition) {
@@ -45,8 +47,13 @@ function gatherPositionalValues(args, definition) {
   }
 }
 
-function mergeArgs(namedMap, positionalValues, componentClass) {
+function mergeArgs(namedMap, positionalValues, componentClass, dynamicScope) {
   let positionalParamsDefinition = componentClass.positionalParams;
+  let dynamicVarParamsDefinition = componentClass[DYNAMIC_VAR_PARAMS];
+
+  if (dynamicVarParamsDefinition && dynamicVarParamsDefinition.length > 0) {
+    namedMap = mergeDynamicVarParams(namedMap, dynamicVarParamsDefinition, dynamicScope);
+  }
 
   if (positionalParamsDefinition && positionalParamsDefinition.length > 0 && positionalValues.length > 0) {
     if (typeof positionalParamsDefinition === 'string') {
@@ -123,6 +130,15 @@ function mergePositionalParams(namedMap, values, positionalParamNames) {
   for (let i = 0; i < length; i++) {
     let name = positionalParamNames[i];
     mergedNamed[name] = values[i];
+  }
+  return mergedNamed;
+}
+
+function mergeDynamicVarParams(namedMap, dynamicVarParamNames, dynamicScope) {
+  let mergedNamed = assign({}, namedMap);
+  for (let i = 0; i < dynamicVarParamNames.length; i++) {
+    let name = dynamicVarParamNames[i];
+    mergedNamed[name] = dynamicScope.get(name);
   }
   return mergedNamed;
 }

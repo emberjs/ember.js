@@ -178,10 +178,10 @@ function rerenderInstrumentDetails(component) {
 }
 
 class CurlyComponentManager {
-  prepareArgs(definition, args) {
+  prepareArgs(definition, args, dynamicScope) {
     validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.positionalParams);
 
-    return gatherArgs(args, definition);
+    return gatherArgs(args, definition, dynamicScope);
   }
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
