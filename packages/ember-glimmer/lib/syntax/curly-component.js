@@ -1,10 +1,7 @@
-import { assign, OWNER } from 'ember-utils';
+import { OWNER } from 'ember-utils';
 import {
   StatementSyntax,
   ValueReference,
-  EvaluatedArgs,
-  EvaluatedNamedArgs,
-  EvaluatedPositionalArgs,
   ComponentDefinition
 } from 'glimmer-runtime';
 import {
@@ -28,7 +25,10 @@ import {
 import {
   setViewElement
 } from 'ember-views';
-import processArgs from '../utils/process-args';
+import {
+  gatherArgs,
+  ComponentArgs
+} from '../utils/process-args';
 import { privatize as P } from 'container';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
@@ -181,40 +181,14 @@ class CurlyComponentManager {
   prepareArgs(definition, args) {
     validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.positionalParams);
 
-    if (definition.args) {
-      let newNamed = args.named.map;
-      let newPositional = args.positional.values;
-
-      let oldNamed = definition.args.named.map;
-      let oldPositional = definition.args.positional.values;
-
-      // Merge positional arrays
-      let mergedPositional = [];
-
-      mergedPositional.push(...oldPositional);
-      mergedPositional.splice(0, newPositional.length, ...newPositional);
-
-      // Merge named maps
-      let mergedNamed = assign({}, oldNamed, newNamed);
-
-      // THOUGHT: It might be nice to have a static method on EvaluatedArgs that
-      // can merge two sets of args for us.
-      let mergedArgs = EvaluatedArgs.create(
-        EvaluatedPositionalArgs.create(mergedPositional),
-        EvaluatedNamedArgs.create(mergedNamed)
-      );
-
-      return mergedArgs;
-    }
-
-    return args;
+    return gatherArgs(args, definition);
   }
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
     let parentView = dynamicScope.view;
 
     let klass = definition.ComponentClass;
-    let processedArgs = processArgs(args, klass.positionalParams);
+    let processedArgs = ComponentArgs.create(args);
     let { props } = processedArgs.value();
 
     aliasIdToElementId(args, props);
