@@ -18,7 +18,7 @@ export interface ComponentManager<T extends Component> {
   // for `create`. This allows for things like closure components where the
   // args need to be curried before constructing the instance of the state
   // bucket.
-  prepareArgs(definition: ComponentDefinition<T>, args: EvaluatedArgs): EvaluatedArgs;
+  prepareArgs(definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope): EvaluatedArgs;
 
   // Then, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is

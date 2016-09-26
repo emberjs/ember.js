@@ -1428,6 +1428,22 @@ QUnit.test('correct scope - self', assert => {
   );
 });
 
+module('Curly Components - smoke test dynamicScope access');
+
+QUnit.test('component has access to dynamic scope', function() {
+  class SampleComponent extends EmberishCurlyComponent {
+    static fromDynamicScope = ['theme'];
+  }
+
+  SampleComponent[CLASS_META].seal();
+
+  env.registerEmberishCurlyComponent('sample-component', SampleComponent, '{{theme}}');
+
+  appendViewFor('{{#-with-dynamic-vars theme="light"}}{{sample-component}}{{/-with-dynamic-vars}}');
+
+  assertEmberishElement('div', 'light');
+});
+
 module('Curly Components - positional arguments');
 
 QUnit.skip('static named positional parameters', function() {
