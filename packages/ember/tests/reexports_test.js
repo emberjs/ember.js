@@ -131,7 +131,6 @@ QUnit.module('ember reexports');
   ['EventDispatcher', 'ember-views'],
 
   // ember-glimmer
-  ['_Renderer',     'ember-glimmer', 'Renderer'],
   ['Component',     'ember-glimmer', 'Component'],
   ['Helper',        'ember-glimmer', 'Helper'],
   ['Helper.helper', 'ember-glimmer', 'helper'],
