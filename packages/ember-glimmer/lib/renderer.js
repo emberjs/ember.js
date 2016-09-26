@@ -163,7 +163,7 @@ function loopEnd(current, next) {
 backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
-export class Renderer {
+class Renderer {
   constructor(env, rootTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false) {
     this._env = env;
     this._rootTemplate = rootTemplate;
@@ -228,7 +228,7 @@ export class Renderer {
 
     view.element = null;
 
-    if (this._env.isInteractive) {
+    if (this._destinedForDOM) {
       view.trigger('didDestroyElement');
     }
 
@@ -400,14 +400,16 @@ export class Renderer {
   }
 }
 
-export const InertRenderer = {
-  create({ env, rootTemplate, _viewRegistry }) {
-    return new Renderer(env, rootTemplate, _viewRegistry, false);
+export class InertRenderer extends Renderer {
+  static create({ env, rootTemplate, _viewRegistry }) {
+    return new this(env, rootTemplate, _viewRegistry, false);
   }
-};
+}
 
-export const InteractiveRenderer = {
-  create({ env, rootTemplate, _viewRegistry }) {
-    return new Renderer(env, rootTemplate, _viewRegistry, true);
+export class InteractiveRenderer extends Renderer {
+  static create({ env, rootTemplate, _viewRegistry }) {
+    return new this(env, rootTemplate, _viewRegistry, true);
   }
-};
+
+  }
+}
