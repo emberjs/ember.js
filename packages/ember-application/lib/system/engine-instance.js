@@ -162,6 +162,10 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     return engineInstance;
   },
 
+  factoryFor(fullName, options) {
+    return this.__container__.factoryFor(fullName, options);
+  },
+
   /**
     Clone dependencies shared between an engine instance and its parent.
 

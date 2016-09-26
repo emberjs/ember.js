@@ -32,7 +32,9 @@ export function setupApplicationRegistry(registry) {
   }
 
   registry.register('service:-dom-changes', {
-    create({ document }) { return new DOMChanges(document); }
+    create({ document }) {
+      return new DOMChanges(document);
+    }
   });
 
   registry.register('service:-dom-tree-construction', {

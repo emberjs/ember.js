@@ -163,7 +163,7 @@ export default EmberObject.extend({
 
   _nameToClass(type) {
     if (typeof type === 'string') {
-      type = getOwner(this)._lookupFactory(`model:${type}`);
+      type = getOwner(this).factoryFor(`model:${type}`).class;
     }
     return type;
   },

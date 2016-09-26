@@ -6,7 +6,7 @@ moduleFor('outlet view', class extends RenderingTest {
   constructor() {
     super(...arguments);
 
-    let CoreOutlet = this.owner._lookupFactory('view:-outlet');
+    let CoreOutlet = this.owner.factoryFor('view:-outlet');
     this.component = CoreOutlet.create();
   }
 

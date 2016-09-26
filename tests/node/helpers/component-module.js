@@ -64,7 +64,7 @@ function setupComponentTest() {
   module.owner.register('service:-document', new SimpleDOM.Document(), { instantiate: false });
 
   this._hasRendered = false;
-  var OutletView = module.owner._lookupFactory('view:-outlet');
+  var OutletView = module.owner.factoryFor('view:-outlet');
   var OutletTemplate = module.owner.lookup('template:-outlet');
   module.component = OutletView.create();
   this._outletState = {

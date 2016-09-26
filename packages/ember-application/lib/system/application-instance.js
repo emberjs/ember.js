@@ -128,6 +128,10 @@ const ApplicationInstance = EngineInstance.extend({
     return this;
   },
 
+  factoryFor(fullName, options) {
+    return this.__container__.factoryFor(fullName, options);
+  },
+
   setupRegistry(options) {
     this.constructor.setupRegistry(this.__registry__, options);
   },

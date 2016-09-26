@@ -1,6 +1,6 @@
 /* global EmberDev */
 
-import { InjectedProperty } from 'ember-metal';
+import { InjectedProperty, isFeatureEnabled } from 'ember-metal';
 import inject from '../inject';
 import {
   createInjectionHelper
@@ -20,8 +20,6 @@ if (!EmberDev.runningProdBuild) {
   // this check is done via an assertion which is stripped from
   // production builds
   QUnit.test('injection type validation is run when first looked up', function() {
-    expect(1);
-
     createInjectionHelper('foo', function() {
       ok(true, 'should call validation method');
     });
@@ -34,7 +32,16 @@ if (!EmberDev.runningProdBuild) {
     });
 
     owner.register('foo:main', AnObject);
-    owner._lookupFactory('foo:main');
+
+    if (isFeatureEnabled('container-factoryFor')) {
+      expect(2);
+      expectDeprecation(() => {
+        owner._lookupFactory('foo:main');
+      }, /Using "_lookupFactory" is deprecated. Please use container.factoryFor instead./);
+    } else {
+      expect(1);
+      owner._lookupFactory('foo:main');
+    }
   });
 
   QUnit.test('attempting to inject a nonexistent container key should error', function() {

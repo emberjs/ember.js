@@ -16,8 +16,8 @@ import {
   @private
 */
 
-export function generateControllerFactory(owner, controllerName) {
-  let Factory = owner._lookupFactory('controller:basic').extend({
+export function generateControllerFactory(owner, controllerName, context) {
+  let Factory = owner.factoryFor('controller:basic').class.extend({
     isGenerated: true,
     toString() {
       return `(generated ${controllerName} controller)`;

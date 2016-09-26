@@ -122,7 +122,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let router = this;
 
     options.resolveRouteMap = function(name) {
-      return owner._lookupFactory('route-map:' + name);
+      return owner.factoryFor('route-map:' + name);
     };
 
     options.addRouteForEngine = function(name, engineInfo) {
@@ -310,7 +310,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     if (!this._toplevelView) {
       let owner = getOwner(this);
-      let OutletView = owner._lookupFactory('view:-outlet');
+      let OutletView = owner.factoryFor('view:-outlet');
       this._toplevelView = OutletView.create();
       this._toplevelView.setOutletState(liveRoutes);
       let instance = owner.lookup('-application-instance:main');
@@ -586,7 +586,7 @@ const EmberRouter = EmberObject.extend(Evented, {
       seen[name] = true;
 
       if (!handler) {
-        let DefaultRoute = routeOwner._lookupFactory('route:basic');
+        let DefaultRoute = routeOwner.factoryFor('route:basic').class;
 
         routeOwner.register(fullRouteName, DefaultRoute.extend());
         handler = routeOwner.lookup(fullRouteName);

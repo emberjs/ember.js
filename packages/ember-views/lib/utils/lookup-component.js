@@ -7,7 +7,7 @@ function lookupComponentPair(componentLookup, owner, name, options) {
   let result = { layout, component };
 
   if (layout && !component) {
-    result.component = owner._lookupFactory(P`component:-default`);
+    result.component = owner.factoryFor(P`component:-default`);
   }
 
   return result;

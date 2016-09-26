@@ -6,7 +6,7 @@ export default EmberObject.extend({
     assert(`You cannot use '${name}' as a component name. Component names must contain a hyphen.`, ~name.indexOf('-'));
 
     let fullName = 'component:' + name;
-    return owner._lookupFactory(fullName, options);
+    return owner.factoryFor(fullName, options);
   },
 
   layoutFor(name, owner, options) {

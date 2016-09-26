@@ -187,7 +187,7 @@ class NonSingletonRenderManager extends AbstractRenderManager {
     let { name, env } = definition;
     let modelRef = args.positional.at(0);
 
-    let factory = env.owner._lookupFactory(`controller:${name}`) || generateControllerFactory(env.owner, name);
+    let factory = env.owner.factoryFor(`controller:${name}`) || generateControllerFactory(env.owner, name);
     let controller = factory.create({ model: modelRef.value() });
 
     if (dynamicScope.rootOutletState) {

@@ -88,7 +88,7 @@ class MountManager {
   }
 
   getSelf({ engine }) {
-    let factory = engine._lookupFactory(`controller:application`) || generateControllerFactory(engine, 'application');
+    let factory = engine.factoryFor(`controller:application`) || generateControllerFactory(engine, 'application');
     return new RootReference(factory.create());
   }
 
