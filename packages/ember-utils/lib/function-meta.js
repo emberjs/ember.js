@@ -1,4 +1,4 @@
-const FUNCTION_META_FIELD = '__ember_function_meta__';
+import { HAS_NATIVE_WEAKMAP } from './weak-map-utils';
 
 function ROOT_WRAPPED_FUNCTION () { }
 let ROOT_WRAPPED_FUNCTION_META;
@@ -72,16 +72,36 @@ function buildRootWrappedFunction() {
 // setup shared wrapped function
 ROOT_WRAPPED_FUNCTION_META = buildRootWrappedFunction();
 
-function setFunctionMeta(obj, meta) {
-  obj[FUNCTION_META_FIELD] = meta;
-}
+let setFunctionMeta, peekFunctionMeta, deleteFunctionMeta;
 
-export function peekFunctionMeta(obj) {
-  return obj[FUNCTION_META_FIELD];
-}
+if (HAS_NATIVE_WEAKMAP) {
+  let metaStore = new WeakMap();
 
-export function deleteFunctionMeta(obj) {
-  obj[FUNCTION_META_FIELD] = null;
+  setFunctionMeta = function Fallback_setFunctionMeta(obj, meta) {
+    metaStore.set(obj, meta);
+  };
+
+  peekFunctionMeta = function Fallback_peekFunctionMeta(obj) {
+    return metaStore.get(obj);
+  };
+
+  deleteFunctionMeta = function Fallback_deleteFunctionMeta(obj) {
+    metaStore.set(obj, null);
+  };
+} else {
+  let FUNCTION_META_FIELD = '__ember_function_meta__';
+
+  setFunctionMeta = function Fallback_setFunctionMeta(obj, meta) {
+    obj[FUNCTION_META_FIELD] = meta;
+  };
+
+  peekFunctionMeta = function Fallback_peekFunctionMeta(obj) {
+    return obj[FUNCTION_META_FIELD];
+  };
+
+  deleteFunctionMeta = function Fallback_deleteFunctionMeta(obj) {
+    obj[FUNCTION_META_FIELD] = null;
+  };
 }
 
 /**
@@ -105,3 +125,9 @@ export function functionMetaFor(func, wrappedFunctionMeta) {
 
   return newMeta;
 }
+
+export {
+  setFunctionMeta,
+  peekFunctionMeta,
+  deleteFunctionMeta
+};
