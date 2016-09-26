@@ -5,7 +5,10 @@
 import { EmptyObject, lookupDescriptor, symbol } from 'ember-utils';
 import isEnabled from './features';
 import { protoMethods as listenerMethods } from './meta_listeners';
-import { runInDebug } from './debug';
+import { runInDebug, assert } from './debug';
+import {
+  removeChainWatcher
+} from './chains';
 
 let counters = {
   peekCalls: 0,
@@ -55,6 +58,10 @@ let members = {
   tag: ownCustomObject
 };
 
+const SOURCE_DESTROYING = 1 << 1;
+const SOURCE_DESTROYED = 1 << 2;
+const META_DESTROYED = 1 << 3;
+
 if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     isEnabled('ember-glimmer-allow-backtracking-rerender')) {
   members.lastRendered = ownMap;
@@ -77,6 +84,10 @@ export function Meta(obj, parentMeta) {
   this._chainWatchers = undefined;
   this._chains = undefined;
   this._tag = undefined;
+
+  // initial value for all flags right now is false
+  // see FLAGS const for detailed list of flags used
+  this._flags = 0;
 
   // used only internally
   this.source = obj;
@@ -104,10 +115,78 @@ Meta.prototype.isInitialized = function(obj) {
   return this.proto !== obj;
 };
 
+const NODE_STACK = [];
+
+Meta.prototype.destroy = function() {
+  if (this.isMetaDestroyed()) { return; }
+
+  // remove chainWatchers to remove circular references that would prevent GC
+  let node, nodes, key, nodeObject;
+  node = this.readableChains();
+  if (node) {
+    NODE_STACK.push(node);
+    // process tree
+    while (NODE_STACK.length > 0) {
+      node = NODE_STACK.pop();
+      // push children
+      nodes = node._chains;
+      if (nodes) {
+        for (key in nodes) {
+          if (nodes[key] !== undefined) {
+            NODE_STACK.push(nodes[key]);
+          }
+        }
+      }
+
+      // remove chainWatcher in node object
+      if (node._watching) {
+        nodeObject = node._object;
+        if (nodeObject) {
+          let foreignMeta = peekMeta(nodeObject);
+          // avoid cleaning up chain watchers when both current and
+          // foreign objects are being destroyed
+          // if both are being destroyed manual cleanup is not needed
+          // as they will be GC'ed and no non-destroyed references will
+          // be remaining
+          if (foreignMeta && !foreignMeta.isSourceDestroying()) {
+            removeChainWatcher(nodeObject, node._key, node, foreignMeta);
+          }
+        }
+      }
+    }
+  }
+
+  this.setMetaDestroyed();
+};
+
 for (let name in listenerMethods) {
   Meta.prototype[name] = listenerMethods[name];
 }
 memberNames.forEach(name => members[name](name, Meta));
+
+Meta.prototype.isSourceDestroying = function isSourceDestroying() {
+  return (this._flags & SOURCE_DESTROYING) !== 0;
+};
+
+Meta.prototype.setSourceDestroying = function setSourceDestroying() {
+  this._flags |= SOURCE_DESTROYING;
+};
+
+Meta.prototype.isSourceDestroyed = function isSourceDestroyed() {
+  return (this._flags & SOURCE_DESTROYED) !== 0;
+};
+
+Meta.prototype.setSourceDestroyed = function setSourceDestroyed() {
+  this._flags |= SOURCE_DESTROYED;
+};
+
+Meta.prototype.isMetaDestroyed = function isMetaDestroyed() {
+  return (this._flags & META_DESTROYED) !== 0;
+};
+
+Meta.prototype.setMetaDestroyed = function setMetaDestroyed() {
+  this._flags |= META_DESTROYED;
+};
 
 // Implements a member that is a lazily created, non-inheritable
 // POJO.
@@ -135,6 +214,8 @@ function inheritedMap(name, Meta) {
   let capitalized = capitalize(name);
 
   Meta.prototype['write' + capitalized] = function(subkey, value) {
+    assert(`Cannot call write${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
+
     let map = this._getOrCreateOwnMap(key);
     map[subkey] = value;
   };
@@ -161,6 +242,8 @@ function inheritedMap(name, Meta) {
   };
 
   Meta.prototype['clear' + capitalized] = function() {
+    assert(`Cannot call clear${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
+
     this[key] = undefined;
   };
 
@@ -206,6 +289,8 @@ function inheritedMapOfMaps(name, Meta) {
   let capitalized = capitalize(name);
 
   Meta.prototype['write' + capitalized] = function(subkey, itemkey, value) {
+    assert(`Cannot call write${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
+
     let outerMap = this._getOrCreateOwnMap(key);
     let innerMap = outerMap[subkey];
     if (!innerMap) {
@@ -277,6 +362,8 @@ function ownCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
   Meta.prototype['writable' + capitalized] = function(create) {
+    assert(`Cannot call writable${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
+
     let ret = this[key];
     if (!ret) {
       ret = this[key] = create(this.source);
@@ -295,6 +382,8 @@ function inheritedCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
   Meta.prototype['writable' + capitalized] = function(create) {
+    assert(`Cannot call writable${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
+
     let ret = this[key];
     if (!ret) {
       if (this.parent) {
@@ -376,7 +465,7 @@ const HAS_NATIVE_WEAKMAP = (function() {
   return Object.prototype.toString.call(instance) === '[object WeakMap]';
 })();
 
-let setMeta, peekMeta, deleteMeta;
+let setMeta, peekMeta;
 
 // choose the one appropriate for given platform
 if (HAS_NATIVE_WEAKMAP) {
@@ -412,14 +501,6 @@ if (HAS_NATIVE_WEAKMAP) {
       runInDebug(() => counters.peakPrototypeWalks++);
     }
   };
-
-  deleteMeta = function WeakMap_deleteMeta(obj) {
-    runInDebug(() => counters.deleteCalls++);
-
-    // set value to `null` so that we can detect
-    // a deleted meta in peekMeta later
-    metaStore.set(obj, null);
-  };
 } else {
   setMeta = function Fallback_setMeta(obj, meta) {
     // if `null` already, just set it to the new value
@@ -438,13 +519,15 @@ if (HAS_NATIVE_WEAKMAP) {
   peekMeta = function Fallback_peekMeta(obj) {
     return obj[META_FIELD];
   };
+}
 
-  deleteMeta = function Fallback_deleteMeta(obj) {
-    if (typeof obj[META_FIELD] !== 'object') {
-      return;
-    }
-    obj[META_FIELD] = null;
-  };
+export function deleteMeta(obj) {
+  runInDebug(() => counters.deleteCalls++);
+
+  let meta = peekMeta(obj);
+  if (meta) {
+    meta.destroy();
+  }
 }
 
 /**
@@ -487,6 +570,5 @@ export function meta(obj) {
 export {
   peekMeta,
   setMeta,
-  deleteMeta,
   counters
 };

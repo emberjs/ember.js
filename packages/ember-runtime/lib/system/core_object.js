@@ -35,7 +35,8 @@ import {
   computed,
   InjectedProperty,
   run,
-  destroy
+  destroy,
+  descriptor
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
@@ -406,7 +407,20 @@ CoreObject.PrototypeMixin = Mixin.create({
     @default false
     @public
   */
-  isDestroyed: false,
+  isDestroyed: descriptor({
+    get() {
+      return meta(this).isSourceDestroyed();
+    },
+
+    set(value) {
+      // prevent setting while applying mixins
+      if (typeof value === 'object' && value !== null && value.isDescriptor) {
+        return;
+      }
+
+      assert(`You cannot set \`${this}.isDestroyed\` directly, please use `.destroy()`.`, false);
+    }
+  }),
 
   /**
     Destruction scheduled flag. The `destroy()` method has been called.
@@ -418,7 +432,20 @@ CoreObject.PrototypeMixin = Mixin.create({
     @default false
     @public
   */
-  isDestroying: false,
+  isDestroying: descriptor({
+    get() {
+      return meta(this).isSourceDestroying();
+    },
+
+    set(value) {
+      // prevent setting while applying mixins
+      if (typeof value === 'object' && value !== null && value.isDescriptor) {
+        return;
+      }
+
+      assert(`You cannot set \`${this}.isDestroying\` directly, please use `.destroy()`.`, false);
+    }
+  }),
 
   /**
     Destroys an object by setting the `isDestroyed` flag and removing its
@@ -435,11 +462,14 @@ CoreObject.PrototypeMixin = Mixin.create({
     @public
   */
   destroy() {
-    if (this.isDestroying) { return; }
-    this.isDestroying = true;
+    let m = meta(this);
+    if (m.isSourceDestroying()) { return; }
+
+    m.setSourceDestroying();
 
     schedule('actions', this, this.willDestroy);
-    schedule('destroy', this, this._scheduledDestroy);
+    schedule('destroy', this, this._scheduledDestroy, m);
+
     return this;
   },
 
@@ -458,10 +488,10 @@ CoreObject.PrototypeMixin = Mixin.create({
     @private
     @method _scheduledDestroy
   */
-  _scheduledDestroy() {
-    if (this.isDestroyed) { return; }
+  _scheduledDestroy(m) {
+    if (m.isSourceDestroyed()) { return; }
     destroy(this);
-    this.isDestroyed = true;
+    m.setSourceDestroyed();
   },
 
   bind(to, from) {
