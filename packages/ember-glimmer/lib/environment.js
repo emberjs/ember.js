@@ -75,7 +75,8 @@ export default class Environment extends GlimmerEnvironment {
 
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: ComponentClass, layout } = lookupComponent(owner, name, { source });
-      if (ComponentClass || layout) {
+
+      if ((ComponentClass && ComponentClass.class) || layout) {
         return new CurlyComponentDefinition(name, ComponentClass, layout);
       }
     }, ({ name, source, owner }) => {

@@ -205,7 +205,7 @@ function createCurriedDefinition(definition, args) {
 
 function curryArgs(definition, newArgs) {
   let { args, ComponentClass } = definition;
-  let { positionalParams } = ComponentClass;
+  let { positionalParams } = ComponentClass.class;
 
   // The args being passed in are from the (component ...) invocation,
   // so the first positional argument is actually the name or component

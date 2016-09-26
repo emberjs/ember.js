@@ -40,10 +40,15 @@ QUnit.test('default store utilizes the container to acquire the model factory', 
         return true;
       },
 
-      _lookupFactory(fullName) {
+      factoryFor(fullName) {
         equal(fullName, 'model:post', 'correct factory was looked up');
 
-        return Post;
+        return {
+          class: Post,
+          create() {
+            return Post.create();
+          }
+        };
       }
     }
   }));
