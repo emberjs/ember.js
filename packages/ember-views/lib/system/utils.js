@@ -49,8 +49,26 @@ export function getViewId(view) {
   return view.elementId || guidFor(view);
 }
 
-export const CHILD_VIEW_IDS = symbol('CHILD_VIEW_IDS');
-export const CHILD_VIEW_COUNTER = symbol('CHILD_VIEW_COUNTER');
+const VIEW_ELEMENT = symbol('VIEW_ELEMENT');
+
+/**
+  @private
+  @method getViewElement
+  @param {Ember.View} view
+ */
+export function getViewElement(view) {
+  return view[VIEW_ELEMENT];
+}
+
+export function initViewElement(view) {
+  view[VIEW_ELEMENT] = null;
+}
+
+export function setViewElement(view, element) {
+  return view[VIEW_ELEMENT] = element;
+}
+
+const CHILD_VIEW_IDS = symbol('CHILD_VIEW_IDS');
 
 /**
   @private

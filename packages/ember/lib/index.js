@@ -467,8 +467,7 @@ import {
   makeBoundHelper,
   getTemplates,
   setTemplates,
-  _getSafeString,
-  Renderer
+  _getSafeString
 } from 'ember-glimmer';
 
 Ember.Component = Component;
@@ -478,7 +477,6 @@ Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 Ember.LinkComponent = LinkComponent;
-Ember._Renderer = Renderer;
 
 if (ENV.EXTEND_PROTOTYPES.String) {
   String.prototype.htmlSafe = function() {
@@ -552,6 +550,7 @@ Ember.ViewTargetActionSupport = views.ViewTargetActionSupport;
 
 Ember.ViewUtils = {
   isSimpleClick: views.isSimpleClick,
+  getViewElement: views.getViewElement,
   getViewBounds: views.getViewBounds,
   getViewClientRects: views.getViewClientRects,
   getViewBoundingClientRect: views.getViewBoundingClientRect,

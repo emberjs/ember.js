@@ -1,8 +1,6 @@
 import {
-  Error as EmberError,
-  get
+  Error as EmberError
 } from 'ember-metal';
-import { MUTABLE_CELL } from '../../compat/attrs';
 
 /**
 @module ember
@@ -16,23 +14,6 @@ export default {
 
   $() {
     return undefined;
-  },
-
-  getElement() {
-    return null;
-  },
-
-  legacyPropertyDidChange(view, key) {
-    let attrs = view.attrs;
-    if (attrs && key in attrs) {
-      let possibleCell = attrs[key];
-
-      if (possibleCell && possibleCell[MUTABLE_CELL]) {
-        let value = get(view, key);
-        if (value === possibleCell.value) { return; }
-        possibleCell.update(value);
-      }
-    }
   },
 
   // Handle events from `Ember.EventDispatcher`

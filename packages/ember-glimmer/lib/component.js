@@ -5,7 +5,8 @@ import {
   ChildViewsSupport,
   ViewStateSupport,
   ViewMixin,
-  ActionSupport
+  ActionSupport,
+  getViewElement
 } from 'ember-views';
 import { TargetActionSupport } from 'ember-runtime';
 import {
@@ -227,7 +228,8 @@ const Component = CoreView.extend(
       @public
      */
     readDOMAttr(name) {
-      return readDOMAttr(this.element, name);
+      let element = getViewElement(this);
+      return readDOMAttr(element, name);
     }
 
     /**
