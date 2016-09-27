@@ -9,6 +9,8 @@ import {
 import { CURRENT_TAG, UNDEFINED_REFERENCE } from 'glimmer-reference';
 import {
   fallbackViewRegistry,
+  getViewElement,
+  setViewElement,
   getViewId
 } from 'ember-views';
 import { BOUNDS } from './component';
@@ -226,7 +228,7 @@ class Renderer {
   remove(view) {
     view._transitionTo('destroying');
 
-    view.element = null;
+    setViewElement(view, null);
 
     if (this._destinedForDOM) {
       view.trigger('didDestroyElement');
@@ -263,6 +265,10 @@ class Renderer {
     }
     this._destroyed = true;
     this._clearAllRoots();
+  }
+
+  getElement(view) {
+    // overriden in the subclasses
   }
 
   getBounds(view) {
@@ -404,6 +410,10 @@ export class InertRenderer extends Renderer {
   static create({ env, rootTemplate, _viewRegistry }) {
     return new this(env, rootTemplate, _viewRegistry, false);
   }
+
+  getElement(view) {
+    throw new Error('Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).');
+  }
 }
 
 export class InteractiveRenderer extends Renderer {
@@ -411,5 +421,7 @@ export class InteractiveRenderer extends Renderer {
     return new this(env, rootTemplate, _viewRegistry, true);
   }
 
+  getElement(view) {
+    return getViewElement(view);
   }
 }

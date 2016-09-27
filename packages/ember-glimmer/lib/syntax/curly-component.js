@@ -25,6 +25,9 @@ import {
   get,
   _instrumentStart
 } from 'ember-metal';
+import {
+  setViewElement
+} from 'ember-views';
 import processArgs from '../utils/process-args';
 import { privatize as P } from 'container';
 
@@ -277,7 +280,7 @@ class CurlyComponentManager {
   }
 
   didCreateElement({ component, classRef, environment }, element, operations) {
-    component.element = element;
+    setViewElement(component, element);
 
     let { attributeBindings, classNames, classNameBindings } = component;
 

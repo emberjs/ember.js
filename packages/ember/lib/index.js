@@ -550,6 +550,7 @@ Ember.ViewTargetActionSupport = views.ViewTargetActionSupport;
 
 Ember.ViewUtils = {
   isSimpleClick: views.isSimpleClick,
+  getViewElement: views.getViewElement,
   getViewBounds: views.getViewBounds,
   getViewClientRects: views.getViewClientRects,
   getViewBoundingClientRect: views.getViewBoundingClientRect,

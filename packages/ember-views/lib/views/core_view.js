@@ -5,6 +5,7 @@ import {
   deprecateUnderscoreActions,
   typeOf
 } from 'ember-runtime';
+import { initViewElement } from '../system/utils';
 import { cloneStates, states } from './states';
 
 /**
@@ -33,7 +34,8 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._state = 'preRender';
     this._currentState = this._states.preRender;
     this._isDispatchingAttrs = false;
-    this.element = null;
+
+    initViewElement(this);
 
     if (!this.renderer) {
       throw new Error(`Cannot instantiate a component without a renderer. Please ensure that you are creating ${this} with a proper container/registry.`);

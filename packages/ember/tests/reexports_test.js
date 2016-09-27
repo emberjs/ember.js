@@ -121,6 +121,7 @@ QUnit.module('ember reexports');
   // ember-views
   ['$', 'ember-views', 'jQuery'],
   ['ViewUtils.isSimpleClick', 'ember-views', 'isSimpleClick'],
+  ['ViewUtils.getViewElement', 'ember-views', 'getViewElement'],
   ['ViewUtils.getViewBounds', 'ember-views', 'getViewBounds'],
   ['ViewUtils.getViewClientRects', 'ember-views', 'getViewClientRects'],
   ['ViewUtils.getViewBoundingClientRect', 'ember-views', 'getViewBoundingClientRect'],
