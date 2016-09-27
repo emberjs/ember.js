@@ -46,7 +46,11 @@ export function getRootViews(owner) {
   @param {Ember.View} view
  */
 export function getViewId(view) {
-  return view.elementId || guidFor(view);
+  if (view.tagName === '') {
+    return guidFor(view);
+  } else {
+    return view.elementId || guidFor(view);
+  }
 }
 
 const VIEW_ELEMENT = symbol('VIEW_ELEMENT');

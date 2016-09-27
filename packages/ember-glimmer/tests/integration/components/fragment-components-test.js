@@ -165,6 +165,20 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     this.assertText('baz');
   }
 
+  ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template and passed to child component']() {
+    let fooBarTemplate = `{{#baz-child id=id}}{{/baz-child}}`;
+    let FooBarComponent = Component.extend({
+      tagName: ''
+    });
+    let BazChildComponent = Component.extend();
+    let bazChildTemplate = `{{id}}`;
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: fooBarTemplate });
+    this.registerComponent('baz-child', { ComponentClass: BazChildComponent, template: bazChildTemplate });
+    this.render(`{{#foo-bar id='baz'}}{{/foo-bar}}`);
+    this.assertText('baz');
+  }
+
   ['@test throws an error if when $() is accessed on component where `tagName` is an empty string']() {
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
