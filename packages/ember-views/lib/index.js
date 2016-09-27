@@ -11,8 +11,10 @@ export {
   getViewBoundingClientRect,
   getRootViews,
   getChildViews,
-  STYLE_WARNING,
-  getViewId
+  getViewId,
+  getViewElement,
+  setViewElement,
+  STYLE_WARNING
 } from './system/utils';
 export { default as EventDispatcher } from './system/event_dispatcher';
 export { default as ComponentLookup } from './component_lookup';

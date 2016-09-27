@@ -1,5 +1,5 @@
 import { guidFor, symbol } from 'ember-utils';
-import { assert, deprecate, Mixin } from 'ember-metal';
+import { assert, deprecate, descriptor, Mixin } from 'ember-metal';
 import { POST_INIT } from 'ember-runtime';
 import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
@@ -95,7 +95,13 @@ export default Mixin.create({
     @type DOMElement
     @public
   */
-  element: null,
+  element: descriptor({
+    configurable: false,
+    enumerable: false,
+    get() {
+      return this.renderer.getElement(this);
+    }
+  }),
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector

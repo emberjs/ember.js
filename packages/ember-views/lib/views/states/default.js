@@ -18,10 +18,6 @@ export default {
     return undefined;
   },
 
-  getElement() {
-    return null;
-  },
-
   legacyPropertyDidChange(view, key) {
     let attrs = view.attrs;
     if (attrs && key in attrs) {

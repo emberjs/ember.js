@@ -2,7 +2,7 @@ import { set, setProperties, run } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { getViewId } from 'ember-views';
+import { getViewId, getViewElement } from 'ember-views';
 
 class LifeCycleHooksTest extends RenderingTest {
   constructor() {
@@ -92,21 +92,26 @@ class LifeCycleHooksTest extends RenderingTest {
       }
     };
 
-    let assertElement = (hookName, instance) => {
+    let assertElement = (hookName, instance, inDOM = true) => {
       if (instance.tagName === '') { return; }
 
-      this.assert.ok(instance.element, `element property should be present on ${instance} during ${hookName}`);
-    };
+      this.assert.ok(getViewElement(instance), `element should be present on ${instance} during ${hookName}`);
 
-    let assertElementInDocument = (hookName, instance) => {
-      if (instance.tagName === '') { return; }
-
-      this.assert.ok(document.body.contains(instance.element), `element for ${instance} should be in the DOM during ${hookName}`);
+      if (this.isInteractive) {
+        this.assert.ok(instance.element, `this.element should be present on ${instance} during ${hookName}`);
+        this.assert.equal(document.body.contains(instance.element), inDOM, `element for ${instance} ${inDOM ? 'should' : 'should not'} be in the DOM during ${hookName}`);
+      } else {
+        this.assert.throws(() => instance.element, /Accessing `this.element` is not allowed in non-interactive environments/);
+      }
     };
 
     let assertNoElement = (hookName, instance) => {
-      if (instance.element) {
-        this.assert.ok(false, `element should not be present in ${hookName}`);
+      this.assert.strictEqual(getViewElement(instance), null, `element should not be present in ${hookName}`);
+
+      if (this.isInteractive) {
+        this.assert.strictEqual(instance.element, null, `this.element should not be present in ${hookName}`);
+      } else {
+        this.assert.throws(() => instance.element, /Accessing `this.element` is not allowed in non-interactive environments/);
       }
     };
 
@@ -119,51 +124,56 @@ class LifeCycleHooksTest extends RenderingTest {
         expectDeprecation(() => { this._super(...arguments); },
           /didInitAttrs called/);
 
+        this.isInitialRender = true;
         this.componentName = name;
         pushHook('init');
         pushComponent(this);
         assertParentView('init', this);
         assertNoElement('init', this);
+        assertState('init', 'preRender', this);
+
+        run.scheduleOnce('afterRender', () => {
+          this.isInitialRender = false;
+        });
       },
 
       didInitAttrs(options) {
         pushHook('didInitAttrs', options);
         assertParentView('didInitAttrs', this);
         assertNoElement('didInitAttrs', this);
-      },
-
-      didUpdateAttrs(options) {
-        pushHook('didUpdateAttrs', options);
-        assertParentView('didUpdateAttrs', this);
-      },
-
-      willUpdate(options) {
-        pushHook('willUpdate', options);
-        assertParentView('willUpdate', this);
+        assertState('didInitAttrs', 'preRender', this);
       },
 
       didReceiveAttrs(options) {
         pushHook('didReceiveAttrs', options);
         assertParentView('didReceiveAttrs', this);
+
+        if (this.isInitialRender) {
+          assertNoElement('didReceiveAttrs', this);
+          assertState('didReceiveAttrs', 'preRender', this);
+        } else {
+          assertElement('didReceiveAttrs', this);
+          assertState('didReceiveAttrs', 'inDOM', this);
+        }
       },
 
       willRender() {
         pushHook('willRender');
         assertParentView('willRender', this);
-      },
 
-      didRender() {
-        pushHook('didRender');
-        assertParentView('didRender', this);
-        assertElement('didRender', this);
-        assertElementInDocument('didRender', this);
-        assertState('didRender', 'inDOM', this);
+        if (this.isInitialRender) {
+          assertNoElement('willRender', this);
+          assertState('willRender', 'preRender', this);
+        } else {
+          assertElement('willRender', this);
+          assertState('willRender', 'inDOM', this);
+        }
       },
 
       willInsertElement() {
         pushHook('willInsertElement');
         assertParentView('willInsertElement', this);
-        assertElement('willInsertElement', this);
+        assertElement('willInsertElement', this, false);
         assertState('willInsertElement', 'hasElement', this);
       },
 
@@ -171,22 +181,41 @@ class LifeCycleHooksTest extends RenderingTest {
         pushHook('didInsertElement');
         assertParentView('didInsertElement', this);
         assertElement('didInsertElement', this);
-        assertElementInDocument('didInsertElement', this);
         assertState('didInsertElement', 'inDOM', this);
+      },
+
+      didRender() {
+        pushHook('didRender');
+        assertParentView('didRender', this);
+        assertElement('didRender', this);
+        assertState('didRender', 'inDOM', this);
+      },
+
+      didUpdateAttrs(options) {
+        pushHook('didUpdateAttrs', options);
+        assertParentView('didUpdateAttrs', this);
+        assertElement('didUpdateAttrs', this);
+        assertState('didUpdateAttrs', 'inDOM', this);
+      },
+
+      willUpdate(options) {
+        pushHook('willUpdate', options);
+        assertParentView('willUpdate', this);
+        assertElement('willUpdate', this);
+        assertState('willUpdate', 'inDOM', this);
       },
 
       didUpdate(options) {
         pushHook('didUpdate', options);
         assertParentView('didUpdate', this);
         assertElement('didUpdate', this);
-        assertElementInDocument('didUpdate', this);
+        assertState('didUpdate', 'inDOM', this);
       },
 
       willDestroyElement() {
         pushHook('willDestroyElement');
         assertParentView('willDestroyElement', this);
         assertElement('willDestroyElement', this);
-        assertElementInDocument('willDestroyElement', this);
         assertState('willDestroyElement', 'inDOM', this);
       },
 
@@ -194,7 +223,7 @@ class LifeCycleHooksTest extends RenderingTest {
         pushHook('willClearRender');
         assertParentView('willClearRender', this);
         assertElement('willClearRender', this);
-        assertElementInDocument('willClearRender', this);
+        assertState('willClearRender', 'inDOM', this);
       },
 
       didDestroyElement() {
