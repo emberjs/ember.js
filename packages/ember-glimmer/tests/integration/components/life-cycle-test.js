@@ -119,6 +119,8 @@ class LifeCycleHooksTest extends RenderingTest {
       this.assert.equal(instance._state, expectedState, `within ${hookName} the expected _state is ${expectedState}`);
     };
 
+    let { isInteractive } = this;
+
     let ComponentClass = this.ComponentClass.extend({
       init() {
         expectDeprecation(() => { this._super(...arguments); },
@@ -153,7 +155,12 @@ class LifeCycleHooksTest extends RenderingTest {
           assertState('didReceiveAttrs', 'preRender', this);
         } else {
           assertElement('didReceiveAttrs', this);
-          assertState('didReceiveAttrs', 'inDOM', this);
+
+          if (isInteractive) {
+            assertState('didReceiveAttrs', 'inDOM', this);
+          } else {
+            assertState('didReceiveAttrs', 'hasElement', this);
+          }
         }
       },
 
@@ -194,8 +201,12 @@ class LifeCycleHooksTest extends RenderingTest {
       didUpdateAttrs(options) {
         pushHook('didUpdateAttrs', options);
         assertParentView('didUpdateAttrs', this);
-        assertElement('didUpdateAttrs', this);
-        assertState('didUpdateAttrs', 'inDOM', this);
+
+        if (isInteractive) {
+          assertState('didUpdateAttrs', 'inDOM', this);
+        } else {
+          assertState('didUpdateAttrs', 'hasElement', this);
+        }
       },
 
       willUpdate(options) {
@@ -323,17 +334,14 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'init'],
         ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
         ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
-        ['the-top', 'willRender'],
 
         ['the-middle', 'init'],
         ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
         ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
-        ['the-middle', 'willRender'],
 
         ['the-bottom', 'init'],
         ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
-        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
-        ['the-bottom', 'willRender']
+        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }]
       ]
     });
 
@@ -367,16 +375,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'didRender']
       ],
 
-      nonInteractive: [
-        ['the-top', 'willUpdate'],
-        ['the-top', 'willRender'],
-
-        ['the-middle', 'willUpdate'],
-        ['the-middle', 'willRender'],
-
-        ['the-bottom', 'willUpdate'],
-        ['the-bottom', 'willRender']
-      ]
+      nonInteractive: []
     });
 
     this.runTask(() => this.components['the-middle'].rerender());
@@ -404,14 +403,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'didRender']
       ],
 
-      nonInteractive: [
-        // Sync hooks
-        ['the-top', 'willUpdate'],
-        ['the-top', 'willRender'],
-
-        ['the-middle', 'willUpdate'],
-        ['the-middle', 'willRender']
-      ]
+      nonInteractive: []
     });
 
     this.runTask(() => this.components['the-top'].rerender());
@@ -433,12 +425,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'didRender']
       ],
 
-      nonInteractive: [
-        // Sync hooks
-
-        ['the-top', 'willUpdate'],
-        ['the-top', 'willRender']
-      ]
+      nonInteractive: []
     });
 
     this.runTask(() => set(this.context, 'twitter', '@horsetomdale'));
@@ -474,10 +461,7 @@ class LifeCycleHooksTest extends RenderingTest {
       nonInteractive: [
         // Sync hooks
         ['the-top', 'didUpdateAttrs', topAttrs],
-        ['the-top', 'didReceiveAttrs', topAttrs],
-
-        ['the-top', 'willUpdate'],
-        ['the-top', 'willRender']
+        ['the-top', 'didReceiveAttrs', topAttrs]
       ]
     });
 
@@ -597,22 +581,18 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-parent', 'init'],
         ['the-parent', 'didInitAttrs',          { attrs: parentAttrs }],
         ['the-parent', 'didReceiveAttrs',       { newAttrs: parentAttrs }],
-        ['the-parent', 'willRender'],
 
         ['the-first-child', 'init'],
         ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs }],
         ['the-first-child', 'didReceiveAttrs',  { newAttrs: firstAttrs }],
-        ['the-first-child', 'willRender'],
 
         ['the-second-child', 'init'],
         ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs }],
         ['the-second-child', 'didReceiveAttrs', { newAttrs: secondAttrs }],
-        ['the-second-child', 'willRender'],
 
         ['the-last-child', 'init'],
         ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs }],
-        ['the-last-child', 'didReceiveAttrs',   { newAttrs: lastAttrs }],
-        ['the-last-child', 'willRender']
+        ['the-last-child', 'didReceiveAttrs',   { newAttrs: lastAttrs }]
       ]
     });
 
@@ -641,15 +621,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-parent', 'didRender']
       ],
 
-      nonInteractive: [
-        // Sync hooks
-
-        ['the-parent', 'willUpdate'],
-        ['the-parent', 'willRender'],
-
-        ['the-first-child', 'willUpdate'],
-        ['the-first-child', 'willRender']
-      ]
+      nonInteractive: []
     });
 
     this.runTask(() => this.components['the-second-child'].rerender());
@@ -677,15 +649,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-parent', 'didRender']
       ],
 
-      nonInteractive: [
-        // Sync hooks
-
-        ['the-parent', 'willUpdate'],
-        ['the-parent', 'willRender'],
-
-        ['the-second-child', 'willUpdate'],
-        ['the-second-child', 'willRender']
-      ]
+      nonInteractive: []
     });
 
     this.runTask(() => this.components['the-last-child'].rerender());
@@ -713,15 +677,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-parent', 'didRender']
       ],
 
-      nonInteractive: [
-        // Sync hooks
-
-        ['the-parent', 'willUpdate'],
-        ['the-parent', 'willRender'],
-
-        ['the-last-child', 'willUpdate'],
-        ['the-last-child', 'willRender']
-      ]
+      nonInteractive: []
     });
 
     this.runTask(() => this.components['the-parent'].rerender());
@@ -743,12 +699,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-parent', 'didRender']
       ],
 
-      nonInteractive: [
-        // Sync hooks
-
-        ['the-parent', 'willUpdate'],
-        ['the-parent', 'willRender']
-      ]
+      nonInteractive: []
     });
 
     this.runTask(() => setProperties(this.context, {
@@ -818,26 +769,14 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-parent', 'didUpdateAttrs', parentAttrs],
         ['the-parent', 'didReceiveAttrs', parentAttrs],
 
-        ['the-parent', 'willUpdate'],
-        ['the-parent', 'willRender'],
-
         ['the-first-child', 'didUpdateAttrs', firstAttrs],
         ['the-first-child', 'didReceiveAttrs', firstAttrs],
-
-        ['the-first-child', 'willUpdate'],
-        ['the-first-child', 'willRender'],
 
         ['the-second-child', 'didUpdateAttrs', secondAttrs],
         ['the-second-child', 'didReceiveAttrs', secondAttrs],
 
-        ['the-second-child', 'willUpdate'],
-        ['the-second-child', 'willRender'],
-
         ['the-last-child', 'didUpdateAttrs', lastAttrs],
-        ['the-last-child', 'didReceiveAttrs', lastAttrs],
-
-        ['the-last-child', 'willUpdate'],
-        ['the-last-child', 'willRender']
+        ['the-last-child', 'didReceiveAttrs', lastAttrs]
       ]
     });
 
@@ -950,17 +889,14 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'init'],
         ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
         ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
-        ['the-top', 'willRender'],
 
         ['the-middle', 'init'],
         ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
         ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
-        ['the-middle', 'willRender'],
 
         ['the-bottom', 'init'],
         ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
-        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
-        ['the-bottom', 'willRender']
+        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }]
       ]
     });
 
@@ -1017,20 +953,11 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'didUpdateAttrs', topAttrs],
         ['the-top', 'didReceiveAttrs', topAttrs],
 
-        ['the-top', 'willUpdate'],
-        ['the-top', 'willRender'],
-
         ['the-middle', 'didUpdateAttrs', middleAttrs],
         ['the-middle', 'didReceiveAttrs', middleAttrs],
 
-        ['the-middle', 'willUpdate'],
-        ['the-middle', 'willRender'],
-
         ['the-bottom', 'didUpdateAttrs', bottomAttrs],
-        ['the-bottom', 'didReceiveAttrs', bottomAttrs],
-
-        ['the-bottom', 'willUpdate'],
-        ['the-bottom', 'willRender']
+        ['the-bottom', 'didReceiveAttrs', bottomAttrs]
       ]
     });
 
@@ -1110,20 +1037,24 @@ class LifeCycleHooksTest extends RenderingTest {
       let ret = [
         ['an-item', 'init'],
         ['an-item', 'didInitAttrs',       { attrs: { count } }],
-        ['an-item', 'didReceiveAttrs',    { newAttrs: { count } }],
-        ['an-item', 'willRender']
+        ['an-item', 'didReceiveAttrs',    { newAttrs: { count } }]
       ];
       if (this.isInteractive) {
-        ret.push(['an-item', 'willInsertElement']);
+        ret.push(
+          ['an-item', 'willRender'],
+          ['an-item', 'willInsertElement']
+        );
       }
       ret.push(
         ['nested-item', 'init'],
         ['nested-item', 'didInitAttrs',       { attrs: { } }],
-        ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
-        ['nested-item', 'willRender']
+        ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }]
       );
       if (this.isInteractive) {
-        ret.push(['nested-item', 'willInsertElement']);
+        ret.push(
+          ['nested-item', 'willRender'],
+          ['nested-item', 'willInsertElement']
+        );
       }
       return ret;
     };
@@ -1137,7 +1068,7 @@ class LifeCycleHooksTest extends RenderingTest {
           ['an-item', 'didRender']
         ];
       } else {
-        return [ ];
+        return [];
       }
     };
 
@@ -1261,12 +1192,10 @@ class LifeCycleHooksTest extends RenderingTest {
         ['no-items', 'init'],
         ['no-items', 'didInitAttrs',       { attrs: { } }],
         ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
-        ['no-items', 'willRender'],
 
         ['nested-item', 'init'],
         ['nested-item', 'didInitAttrs',       { attrs: { } }],
         ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
-        ['nested-item', 'willRender'],
 
         ['an-item', 'willDestroy'],
         ['nested-item', 'willDestroy'],

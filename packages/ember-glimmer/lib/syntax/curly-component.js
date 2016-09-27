@@ -237,7 +237,9 @@ class CurlyComponentManager {
     component.trigger('didInitAttrs', { attrs });
     component.trigger('didReceiveAttrs', { newAttrs: attrs });
 
-    component.trigger('willRender');
+    if (environment.isInteractive) {
+      component.trigger('willRender');
+    }
 
     let bucket = new ComponentStateBucket(environment, component, processedArgs, finalizer);
 
@@ -332,7 +334,7 @@ class CurlyComponentManager {
   }
 
   update(bucket, _, dynamicScope) {
-    let { component, args, argsRevision } = bucket;
+    let { component, args, argsRevision, environment } = bucket;
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
@@ -352,8 +354,10 @@ class CurlyComponentManager {
       component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });
     }
 
-    component.trigger('willUpdate');
-    component.trigger('willRender');
+    if (environment.isInteractive) {
+      component.trigger('willUpdate');
+      component.trigger('willRender');
+    }
   }
 
   didUpdateLayout(bucket) {
@@ -386,10 +390,8 @@ class TopComponentManager extends CurlyComponentManager {
     component.trigger('didReceiveAttrs');
 
     if (environment.isInteractive) {
-      component.trigger('willInsertElement');
+      component.trigger('willRender');
     }
-
-    component.trigger('willRender');
 
     processComponentInitializationAssertions(component, {});
 
