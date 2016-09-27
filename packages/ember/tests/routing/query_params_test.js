@@ -3354,6 +3354,40 @@ if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
       promiseResolve();
     });
   });
+
+  QUnit.test('undefined queryParams is treated as empty object', function() {
+    expect(1);
+
+    App.Router.map(function() {
+      this.route('foo');
+      this.route('bar');
+    });
+
+    App.FooRoute = Route.extend({
+      beforeModel() {
+        this.transitionTo('bar', { queryParams: undefined });
+      }
+    });
+
+    App.BarController = Controller.extend({
+      queryParams: ['a']
+    });
+
+    App.BarRoute = Route.extend({
+      queryParams: {
+        a: {
+          defaultValue: 'xyz'
+        }
+      }
+    });
+
+    bootApplication();
+
+    run(router, 'transitionTo', 'foo', { queryParams: { a: '123' } });
+
+    let barController = container.lookup('controller:bar');
+    equal(get(barController, 'a'), '123');
+  });
 }
 
 QUnit.test('warn user that routes query params configuration must be an Object, not an Array', function() {

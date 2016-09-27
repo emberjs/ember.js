@@ -786,6 +786,10 @@ const EmberRouter = EmberObject.extend(Evented, {
     var handlerInfos = state.handlerInfos;
     stashParamNames(this, handlerInfos);
 
+    if (typeof queryParams === 'undefined') {
+      return;
+    }
+
     for (var i = 0, len = handlerInfos.length; i < len; ++i) {
       var route = handlerInfos[i].handler;
       var qpMeta = get(route, '_qp');
