@@ -1,5 +1,3 @@
-import '../system/ext';  // for the side effect of extending Ember.run.queues
-
 /**
 @module ember
 @submodule ember-views
