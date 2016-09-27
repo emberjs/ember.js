@@ -1,11 +1,5 @@
 import '../system/ext';  // for the side effect of extending Ember.run.queues
 
-import CoreView from './core_view';
-import ViewChildViewsSupport from '../mixins/child_views_support';
-import ViewStateSupport from '../mixins/view_state_support';
-import ClassNamesSupport from '../mixins/class_names_support';
-import ViewMixin from '../mixins/view_support';
-
 /**
 @module ember
 @submodule ember-views
@@ -492,47 +486,8 @@ import ViewMixin from '../mixins/view_support';
   @extends Ember.CoreView
   @deprecated See http://emberjs.com/deprecations/v1.x/#toc_ember-view
   @uses Ember.ViewSupport
-  @uses Ember.ViewChildViewsSupport
+  @uses Ember.ChildViewsSupport
   @uses Ember.ClassNamesSupport
   @uses Ember.AttributeBindingsSupport
-  @public
+  @private
 */
-// jscs:disable validateIndentation
-var View = CoreView.extend(
-  ViewChildViewsSupport,
-  ViewStateSupport,
-  ClassNamesSupport,
-  ViewMixin);
-
-// jscs:enable validateIndentation
-
-/*
-  Describe how the specified actions should behave in the various
-  states that a view can exist in. Possible states:
-
-  * preRender: when a view is first instantiated, and after its
-    element was destroyed, it is in the preRender state
-  * inBuffer: once a view has been rendered, but before it has
-    been inserted into the DOM, it is in the inBuffer state
-  * hasElement: the DOM representation of the view is created,
-    and is ready to be inserted
-  * inDOM: once a view has been inserted into the DOM it is in
-    the inDOM state. A view spends the vast majority of its
-    existence in this state.
-  * destroyed: once a view has been destroyed (using the destroy
-    method), it is in this state. No further actions can be invoked
-    on a destroyed view.
-*/
-
-// in the destroyed state, everything is illegal
-
-// before rendering has begun, all legal manipulations are noops.
-
-// inside the buffer, legal manipulations are done on the buffer
-
-// once the view has been inserted into the DOM, legal manipulations
-// are done on the DOM element.
-
-export default View;
-
-export { ViewChildViewsSupport, ViewStateSupport, ClassNamesSupport };
