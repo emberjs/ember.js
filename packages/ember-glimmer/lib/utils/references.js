@@ -4,7 +4,6 @@ import {
   set,
   tagFor,
   didRender,
-  meta as metaFor,
   watchKey,
   isFeatureEnabled,
   runInDebug
@@ -152,7 +151,7 @@ export class RootPropertyReference extends PropertyReference {
     }
 
     if (isFeatureEnabled('mandatory-setter')) {
-      watchKey(parentValue, propertyKey, metaFor(parentValue));
+      watchKey(parentValue, propertyKey);
     }
   }
 
@@ -201,8 +200,7 @@ export class NestedPropertyReference extends PropertyReference {
 
     if (typeof parentValue === 'object' && parentValue) {
       if (isFeatureEnabled('mandatory-setter')) {
-        let meta = metaFor(parentValue);
-        watchKey(parentValue, _propertyKey, meta);
+        watchKey(parentValue, _propertyKey);
       }
 
       if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
