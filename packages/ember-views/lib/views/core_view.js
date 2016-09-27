@@ -33,7 +33,6 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._super(...arguments);
     this._state = 'preRender';
     this._currentState = this._states.preRender;
-    this._isDispatchingAttrs = false;
 
     initViewElement(this);
 

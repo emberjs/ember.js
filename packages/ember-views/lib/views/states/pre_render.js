@@ -1,4 +1,3 @@
-import { assign } from 'ember-utils';
 import _default from './default';
 
 /**
@@ -6,10 +5,4 @@ import _default from './default';
 @submodule ember-views
 */
 
-let preRender = Object.create(_default);
-
-assign(preRender, {
-  legacyPropertyDidChange(view, key) {}
-});
-
-export default preRender;
+export default Object.create(_default);
