@@ -47,9 +47,9 @@ export function getRootViews(owner) {
  */
 export function getViewId(view) {
   if (view.tagName === '') {
-    return guidFor(view);
+    return 'ember' + guidFor(view);
   } else {
-    return view.elementId || guidFor(view);
+    return view.elementId;
   }
 }
 
