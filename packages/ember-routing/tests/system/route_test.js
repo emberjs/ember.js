@@ -119,7 +119,7 @@ QUnit.test('asserts if model class is not found', function() {
 
   expectAssertion(function() {
     route.model({ post_id: 1 });
-  }, /You used the dynamic segment post_id in your route undefined, but <Ember.Object:ember\d+>.Post did not exist and you did not override your route\'s `model` hook./);
+  }, /You used the dynamic segment post_id in your route undefined, but <Ember.Object:.+>.Post did not exist and you did not override your route\'s `model` hook./);
 });
 
 QUnit.test('\'store\' does not need to be injected', function() {

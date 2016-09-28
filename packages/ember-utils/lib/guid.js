@@ -21,19 +21,16 @@ export function uuid() {
   return ++_uuid;
 }
 
-/**
- Prefix used for guids through out Ember.
- @private
- @property GUID_PREFIX
- @for Ember
- @type String
- @final
- */
-const GUID_PREFIX = 'ember';
-
 // Used for guid generation...
-const numberCache  = [];
-const stringCache  = {};
+const NUMBER_CACHE = [];
+const STRING_CACHE = {};
+
+const TRUE_UUID = uuid();
+const FALSE_UUID = uuid();
+const OBJECT_UUID = uuid();
+const ARRAY_UUID = uuid();
+const NULL_UUID = uuid();
+const UNDEFINED_UUID = uuid();
 
 /**
   A unique key used to assign guids and other private metadata to objects.
@@ -88,11 +85,13 @@ export let GUID_KEY_PROPERTY = {
   @return {String} the guid
 */
 export function generateGuid(obj, prefix) {
-  if (!prefix) {
-    prefix = GUID_PREFIX;
+  let ret;
+  if (prefix) {
+    ret = prefix + uuid();
+  } else {
+    ret = uuid();
   }
 
-  let ret = (prefix + uuid());
   if (obj) {
     if (obj[GUID_KEY] === null) {
       obj[GUID_KEY] = ret;
@@ -133,11 +132,11 @@ export function guidFor(obj) {
 
   // special cases where we don't want to add a key to object
   if (obj === undefined) {
-    return '(undefined)';
+    return UNDEFINED_UUID;
   }
 
   if (obj === null) {
-    return '(null)';
+    return NULL_UUID;
   }
 
   let ret;
@@ -145,36 +144,36 @@ export function guidFor(obj) {
   // Don't allow prototype changes to String etc. to change the guidFor
   switch (type) {
     case 'number':
-      ret = numberCache[obj];
+      ret = NUMBER_CACHE[obj];
 
       if (!ret) {
-        ret = numberCache[obj] = `nu${obj}`;
+        ret = NUMBER_CACHE[obj] = uuid();
       }
 
       return ret;
 
     case 'string':
-      ret = stringCache[obj];
+      ret = STRING_CACHE[obj];
 
       if (!ret) {
-        ret = stringCache[obj] = `st${uuid()}`;
+        ret = STRING_CACHE[obj] = uuid();
       }
 
       return ret;
 
     case 'boolean':
-      return obj ? '(true)' : '(false)';
+      return obj ? TRUE_UUID : FALSE_UUID;
 
     default:
       if (obj === Object) {
-        return '(Object)';
+        return OBJECT_UUID;
       }
 
       if (obj === Array) {
-        return '(Array)';
+        return ARRAY_UUID;
       }
 
-      ret = GUID_PREFIX + uuid();
+      ret = uuid();
 
       if (obj[GUID_KEY] === null) {
         obj[GUID_KEY] = ret;

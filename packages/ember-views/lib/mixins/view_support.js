@@ -503,7 +503,7 @@ export default Mixin.create({
     this._super(...arguments);
 
     if (!this.elementId && this.tagName !== '') {
-      this.elementId = guidFor(this);
+      this.elementId = 'ember' + guidFor(this);
     }
 
     // if we find an `eventManager` property, deopt the
