@@ -91,8 +91,9 @@ QUnit.test('an observer of the alias works if added before defining the alias', 
   equal(count, 1);
 });
 
-QUnit.test('object with alias is dirtied if interior object of alias is set', function () {
+QUnit.test('object with alias is dirtied if interior object of alias is set after consumption', function () {
   defineProperty(obj, 'bar', alias('foo.faz'));
+  get(obj, 'bar');
   assertDirty(obj, () => set(obj, 'foo.faz', 'BAR'), 'setting the aliased key should dirty the object');
 });
 

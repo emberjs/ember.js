@@ -52,7 +52,6 @@ let members = {
   mixins: inheritedMap,
   bindings: inheritedMap,
   values: inheritedMap,
-  deps: inheritedMapOfMaps,
   chainWatchers: ownCustomObject,
   chains: inheritedCustomObject,
   tag: ownCustomObject
@@ -284,52 +283,47 @@ export const UNDEFINED = symbol('undefined');
 
 // Implements a member that provides a lazily created map of maps,
 // with inheritance at both levels.
-function inheritedMapOfMaps(name, Meta) {
-  let key = memberProperty(name);
-  let capitalized = capitalize(name);
+Meta.prototype.writeDeps = function writeDeps(subkey, itemkey, value) {
+  assert(`Cannot call writeDeps after the object is destroyed.`, !this.isMetaDestroyed());
 
-  Meta.prototype['write' + capitalized] = function(subkey, itemkey, value) {
-    assert(`Cannot call write${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
+  let outerMap = this._getOrCreateOwnMap('_deps');
+  let innerMap = outerMap[subkey];
+  if (!innerMap) {
+    innerMap = outerMap[subkey] = new EmptyObject();
+  }
+  innerMap[itemkey] = value;
+};
 
-    let outerMap = this._getOrCreateOwnMap(key);
-    let innerMap = outerMap[subkey];
-    if (!innerMap) {
-      innerMap = outerMap[subkey] = new EmptyObject();
-    }
-    innerMap[itemkey] = value;
-  };
-
-  Meta.prototype['peek' + capitalized] = function(subkey, itemkey) {
-    let pointer = this;
-    while (pointer !== undefined) {
-      let map = pointer[key];
-      if (map) {
-        let value = map[subkey];
-        if (value) {
-          if (value[itemkey] !== undefined) {
-            return value[itemkey];
-          }
+Meta.prototype.peekDeps = function peekDeps(subkey, itemkey) {
+  let pointer = this;
+  while (pointer !== undefined) {
+    let map = pointer._deps;
+    if (map) {
+      let value = map[subkey];
+      if (value) {
+        if (value[itemkey] !== undefined) {
+          return value[itemkey];
         }
       }
-      pointer = pointer.parent;
     }
-  };
+    pointer = pointer.parent;
+  }
+};
 
-  Meta.prototype['has' + capitalized] = function(subkey) {
-    let pointer = this;
-    while (pointer !== undefined) {
-      if (pointer[key] && pointer[key][subkey]) {
-        return true;
-      }
-      pointer = pointer.parent;
+Meta.prototype.hasDeps = function hasDeps(subkey) {
+  let pointer = this;
+  while (pointer !== undefined) {
+    if (pointer._deps && pointer._deps[subkey]) {
+      return true;
     }
-    return false;
-  };
+    pointer = pointer.parent;
+  }
+  return false;
+};
 
-  Meta.prototype['forEachIn' + capitalized] = function(subkey, fn) {
-    return this._forEachIn(key, subkey, fn);
-  };
-}
+Meta.prototype.forEachInDeps = function forEachInDeps(subkey, fn) {
+  return this._forEachIn('_deps', subkey, fn);
+};
 
 Meta.prototype._forEachIn = function(key, subkey, fn) {
   let pointer = this;
