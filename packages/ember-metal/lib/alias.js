@@ -8,7 +8,7 @@ import {
   defineProperty
 } from './properties';
 import { ComputedProperty } from './computed';
-import { meta } from './meta';
+import { meta as metaFor } from './meta';
 import {
   addDependentKeys,
   removeDependentKeys
@@ -26,23 +26,40 @@ export function AliasedProperty(altKey) {
 
 AliasedProperty.prototype = Object.create(Descriptor.prototype);
 
+AliasedProperty.prototype.setup = function(obj, keyName) {
+  assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
+  let meta = metaFor(obj);
+  if (meta.peekWatching(keyName)) {
+    addDependentKeys(this, obj, keyName, meta);
+  }
+};
+
+AliasedProperty.prototype._addDependentKeyIfMissing = function(obj, keyName) {
+  let meta = metaFor(obj);
+  if (!meta.peekDeps(this.altKey, keyName)) {
+    addDependentKeys(this, obj, keyName, meta);
+  }
+};
+
+AliasedProperty.prototype._removeDependentKeyIfAdded = function(obj, keyName) {
+  let meta = metaFor(obj);
+  if (meta.peekDeps(this.altKey, keyName)) {
+    removeDependentKeys(this, obj, keyName, meta);
+  }
+};
+
+AliasedProperty.prototype.willWatch = AliasedProperty.prototype._addDependentKeyIfMissing;
+AliasedProperty.prototype.didUnwatch = AliasedProperty.prototype._removeDependentKeyIfAdded;
+AliasedProperty.prototype.teardown = AliasedProperty.prototype._removeDependentKeyIfAdded;
+
 AliasedProperty.prototype.get = function AliasedProperty_get(obj, keyName) {
+  this._addDependentKeyIfMissing(obj, keyName);
+
   return get(obj, this.altKey);
 };
 
 AliasedProperty.prototype.set = function AliasedProperty_set(obj, keyName, value) {
   return set(obj, this.altKey, value);
-};
-
-AliasedProperty.prototype.setup = function(obj, keyName) {
-  assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
-  let m = meta(obj);
-  addDependentKeys(this, obj, keyName, m);
-};
-
-AliasedProperty.prototype.teardown = function(obj, keyName) {
-  let m = meta(obj);
-  removeDependentKeys(this, obj, keyName, m);
 };
 
 AliasedProperty.prototype.readOnly = function() {
