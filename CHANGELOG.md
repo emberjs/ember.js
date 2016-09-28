@@ -1,5 +1,17 @@
 # Ember Changelog
 
+### 2.9.0-beta.4 (September 28, 2016)
+
+- [#14361](https://github.com/emberjs/ember.js/pull/14361) [BUGFIX] Prevent usage of `this.element` when running in a non-interactive environment (i.e. FastBoot).
+- [#14361](https://github.com/emberjs/ember.js/pull/14361) [BUGFIX] Prevent `willRender` and `willUpdate` from running in FastBoot.
+- [#14344](https://github.com/emberjs/ember.js/pull/14344) [BUGFIX] Ensure `element` is present in `willInsertElement` hook.
+- [#14345](https://github.com/emberjs/ember.js/pull/14345) [BUGFIX] Fix an issue causing unneeded rerenders with closure actions.
+- [#14363](https://github.com/emberjs/ember.js/pull/14363) [BUGFIX] Always use `guidFor` for tagless component's with an `id`.
+- [#14365](https://github.com/emberjs/ember.js/pull/14365) [BUGFIX] Bump route-recognizer to fix an issue with encoding `/` in a dynamic segment.
+- [#14366](https://github.com/emberjs/ember.js/pull/14366) [BUGFIX] Fix `Ember.assign` export.
+- [#14367](https://github.com/emberjs/ember.js/pull/14367) [BUGFIX] Ensure feature flags are properly stripped.
+- [#14371](https://github.com/emberjs/ember.js/pull/14371) [BUGFIX] Lazily add `alias` dependent keys (correct a slight performance regression from [#14319](https://github.com/emberjs/ember.js/pull/14319)).
+
 ### 2.9.0-beta.3 (September 20, 2016)
 
 - [#14313](https://github.com/emberjs/ember.js/pull/14313) [BUGFIX] Ensure `id` attribute bindings of `undefined` are handled properly.
