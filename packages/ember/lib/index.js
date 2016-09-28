@@ -22,6 +22,7 @@ Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.applyStr = utils.applyStr;
 Ember.uuid = utils.uuid;
+Ember.assign = Object.assign || utils.assign;
 
 // container exports
 Ember.Container = Container;
@@ -47,7 +48,6 @@ Ember.debug = metal.debug;
 Ember.deprecate = metal.deprecate;
 Ember.deprecateFunc = metal.deprecateFunc;
 Ember.runInDebug = metal.runInDebug;
-Ember.assign = Object.assign || metal.assign;
 Ember.merge = metal.merge;
 
 Ember.instrument = metal.instrument;
