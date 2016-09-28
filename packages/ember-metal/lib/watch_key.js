@@ -85,11 +85,15 @@ if (isEnabled('mandatory-setter')) {
 
 import { UNDEFINED } from './meta';
 
-export function unwatchKey(obj, keyName, meta) {
-  let m = meta || metaFor(obj);
-  let count = m.peekWatching(keyName);
+export function unwatchKey(obj, keyName, _meta) {
+  let meta = _meta || metaFor(obj);
+
+  // do nothing of this object has already been destroyed
+  if (meta.isSourceDestroyed()) { return; }
+
+  let count = meta.peekWatching(keyName);
   if (count === 1) {
-    m.writeWatching(keyName, 0);
+    meta.writeWatching(keyName, 0);
 
     let possibleDesc = obj[keyName];
     let desc = (possibleDesc !== null &&
@@ -116,7 +120,7 @@ export function unwatchKey(obj, keyName, meta) {
 
         if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
           if (maybeMandatoryDescriptor.get && maybeMandatoryDescriptor.get.isInheritingGetter) {
-            let possibleValue = m.readInheritedValue('values', keyName);
+            let possibleValue = meta.readInheritedValue('values', keyName);
             if (possibleValue === UNDEFINED) {
               delete obj[keyName];
               return;
@@ -127,13 +131,13 @@ export function unwatchKey(obj, keyName, meta) {
             configurable: true,
             enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
             writable: true,
-            value: m.peekValues(keyName)
+            value: meta.peekValues(keyName)
           });
-          m.deleteFromValues(keyName);
+          meta.deleteFromValues(keyName);
         }
       }
     }
   } else if (count > 1) {
-    m.writeWatching(keyName, count - 1);
+    meta.writeWatching(keyName, count - 1);
   }
 }

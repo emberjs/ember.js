@@ -39,14 +39,14 @@ let deferred = 0;
   @return {void}
   @private
 */
-function propertyWillChange(obj, keyName) {
-  let m = peekMeta(obj);
+function propertyWillChange(obj, keyName, _meta) {
+  let meta = _meta || peekMeta(obj);
 
-  if (m && !m.isInitialized(obj)) {
+  if (meta && !meta.isInitialized(obj)) {
     return;
   }
 
-  let watching = m && m.peekWatching(keyName) > 0;
+  let watching = meta && meta.peekWatching(keyName) > 0;
   let possibleDesc = obj[keyName];
   let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
@@ -55,9 +55,9 @@ function propertyWillChange(obj, keyName) {
   }
 
   if (watching) {
-    dependentKeysWillChange(obj, keyName, m);
-    chainsWillChange(obj, keyName, m);
-    notifyBeforeObservers(obj, keyName);
+    dependentKeysWillChange(obj, keyName, meta);
+    chainsWillChange(obj, keyName, meta);
+    notifyBeforeObservers(obj, keyName, meta);
   }
 }
 
@@ -74,17 +74,18 @@ function propertyWillChange(obj, keyName) {
   @for Ember
   @param {Object} obj The object with the property that will change
   @param {String} keyName The property key (or path) that will change.
+  @param {Meta} meta The objects meta.
   @return {void}
   @private
 */
-function propertyDidChange(obj, keyName) {
-  let m = peekMeta(obj);
+function propertyDidChange(obj, keyName, _meta) {
+  let meta = _meta || peekMeta(obj);
 
-  if (m && !m.isInitialized(obj)) {
+  if (meta && !meta.isInitialized(obj)) {
     return;
   }
 
-  let watching = m && m.peekWatching(keyName) > 0;
+  let watching = meta && meta.peekWatching(keyName) > 0;
   let possibleDesc = obj[keyName];
   let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
@@ -94,12 +95,12 @@ function propertyDidChange(obj, keyName) {
   }
 
   if (watching) {
-    if (m.hasDeps(keyName)) {
-      dependentKeysDidChange(obj, keyName, m);
+    if (meta.hasDeps(keyName)) {
+      dependentKeysDidChange(obj, keyName, meta);
     }
 
-    chainsDidChange(obj, keyName, m, false);
-    notifyObservers(obj, keyName);
+    chainsDidChange(obj, keyName, meta, false);
+    notifyObservers(obj, keyName, meta);
   }
 
 
@@ -107,12 +108,13 @@ function propertyDidChange(obj, keyName) {
     obj[PROPERTY_DID_CHANGE](keyName);
   }
 
-  if (obj.isDestroying) { return; }
-  markObjectAsDirty(m);
+  if (meta && meta.isSourceDestroying()) { return; }
+
+  markObjectAsDirty(meta);
 
   if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
       isEnabled('ember-glimmer-allow-backtracking-rerender')) {
-    assertNotRendered(obj, keyName, m);
+    assertNotRendered(obj, keyName, meta);
   }
 }
 
@@ -120,7 +122,7 @@ function propertyDidChange(obj, keyName) {
 let WILL_SEEN, DID_SEEN;
 // called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)
 function dependentKeysWillChange(obj, depKey, meta) {
-  if (obj.isDestroying) { return; }
+  if (meta && meta.isSourceDestroying()) { return; }
 
   if (meta && meta.hasDeps(depKey)) {
     let seen = WILL_SEEN;
@@ -140,7 +142,7 @@ function dependentKeysWillChange(obj, depKey, meta) {
 
 // called whenever a property has just changed to update dependent keys
 function dependentKeysDidChange(obj, depKey, meta) {
-  if (obj.isDestroying) { return; }
+  if (meta && meta.isSourceDestroying()) { return; }
 
   if (meta && meta.hasDeps(depKey)) {
     let seen = DID_SEEN;
@@ -183,28 +185,28 @@ function iterDeps(method, obj, depKey, seen, meta) {
       return;
     }
 
-    method(obj, key);
+    method(obj, key, meta);
   });
 }
 
-function chainsWillChange(obj, keyName, m) {
-  let c = m.readableChainWatchers();
-  if (c) {
-    c.notify(keyName, false, propertyWillChange);
+function chainsWillChange(obj, keyName, meta) {
+  let chainWatchers = meta.readableChainWatchers();
+  if (chainWatchers) {
+    chainWatchers.notify(keyName, false, propertyWillChange);
   }
 }
 
-function chainsDidChange(obj, keyName, m) {
-  let c = m.readableChainWatchers();
-  if (c) {
-    c.notify(keyName, true, propertyDidChange);
+function chainsDidChange(obj, keyName, meta) {
+  let chainWatchers = meta.readableChainWatchers();
+  if (chainWatchers) {
+    chainWatchers.notify(keyName, true, propertyDidChange);
   }
 }
 
-function overrideChains(obj, keyName, m) {
-  let c = m.readableChainWatchers();
-  if (c) {
-    c.revalidate(keyName);
+function overrideChains(obj, keyName, meta) {
+  let chainWatchers = meta.readableChainWatchers();
+  if (chainWatchers) {
+    chainWatchers.revalidate(keyName);
   }
 }
 
@@ -254,8 +256,8 @@ function changeProperties(callback, binding) {
   }
 }
 
-function notifyBeforeObservers(obj, keyName) {
-  if (obj.isDestroying) { return; }
+function notifyBeforeObservers(obj, keyName, meta) {
+  if (meta && meta.isSourceDestroying()) { return; }
 
   let eventName = keyName + ':before';
   let listeners, added;
@@ -268,8 +270,8 @@ function notifyBeforeObservers(obj, keyName) {
   }
 }
 
-function notifyObservers(obj, keyName) {
-  if (obj.isDestroying) { return; }
+function notifyObservers(obj, keyName, meta) {
+  if (meta && meta.isSourceDestroying()) { return; }
 
   let eventName = keyName + ':change';
   let listeners;

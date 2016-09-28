@@ -140,10 +140,6 @@ const EmberRouter = EmberObject.extend(Evented, {
     this._handledErrors = dictionary(null);
     this._engineInstances = new EmptyObject();
     this._engineInfoByRoute = new EmptyObject();
-
-    // avoid shaping issues with checks during `_setOutlets`
-    this.isDestroyed = false;
-    this.isDestroying = false;
   },
 
   /*

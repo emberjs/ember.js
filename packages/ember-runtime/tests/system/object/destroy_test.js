@@ -25,7 +25,6 @@ testBoth('should schedule objects to be destroyed at the end of the run loop', f
   });
 
   meta = peekMeta(obj);
-  ok(!meta, 'meta is destroyed after run loop finishes');
   ok(get(obj, 'isDestroyed'), 'object is destroyed after run loop finishes');
 });
 

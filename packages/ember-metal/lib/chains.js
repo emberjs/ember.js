@@ -116,23 +116,23 @@ function addChainWatcher(obj, keyName, node) {
   watchKey(obj, keyName, m);
 }
 
-function removeChainWatcher(obj, keyName, node) {
+function removeChainWatcher(obj, keyName, node, _meta) {
   if (!isObject(obj)) {
     return;
   }
 
-  let m = peekMeta(obj);
+  let meta = _meta || peekMeta(obj);
 
-  if (!m || !m.readableChainWatchers()) {
+  if (!meta || !meta.readableChainWatchers()) {
     return;
   }
 
   // make meta writable
-  m = metaFor(obj);
+  meta = metaFor(obj);
 
-  m.readableChainWatchers().remove(keyName, node);
+  meta.readableChainWatchers().remove(keyName, node);
 
-  unwatchKey(obj, keyName, m);
+  unwatchKey(obj, keyName, meta);
 }
 
 // A ChainNode watches a single key on an object. If you provide a starting
