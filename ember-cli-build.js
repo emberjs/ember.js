@@ -178,7 +178,10 @@ function babelConfigFor(environment) {
   var includeDevHelpers = true;
 
   plugins.push(applyFeatureFlags({
-    import: { module: 'ember-metal/features' },
+    imports: [
+      { module: 'ember-metal/features' },
+      { module: 'ember-metal', name: 'isFeatureEnabled' },
+    ],
     features: features
   }));
 
