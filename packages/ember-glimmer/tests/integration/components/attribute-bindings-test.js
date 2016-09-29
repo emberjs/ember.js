@@ -34,6 +34,37 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': 'foo', 'data-bar': 'bar' }, content: 'hello' });
   }
 
+  ['@test it can have attribute bindings with attrs']() {
+    let FooBarComponent = Component.extend({
+      attributeBindings: ['attrs.foo:data-foo', 'attrs.baz.bar:data-bar']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar foo=model.foo baz=model.baz}}', {
+      model: { foo: undefined, baz: { bar: 'bar' } }
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'data-bar': 'bar' } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'data-bar': 'bar' } });
+
+    this.runTask(() => {
+      set(this.context, 'model.foo', 'foo');
+      set(this.context, 'model.baz.bar', undefined);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': 'foo' }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'model', {
+      foo: undefined, baz: { bar: 'bar' }
+    }));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'data-bar': 'bar' } });
+  }
+
   ['@test it can have attribute bindings with a nested path']() {
     let FooBarComponent = Component.extend({
       attributeBindings: ['foo.bar:data-foo-bar']

@@ -14,6 +14,17 @@ function referenceForKey(component, key) {
 }
 
 function referenceForParts(component, parts) {
+  let isAttrs = parts[0] === 'attrs';
+
+  // TODO deprecate this
+  if (isAttrs) {
+    parts.shift();
+
+    if (parts.length === 1) {
+      return referenceForKey(component, parts[0]);
+    }
+  }
+
   return referenceFromParts(component[ROOT_REF], parts);
 }
 
