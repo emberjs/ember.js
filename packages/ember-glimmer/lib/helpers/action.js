@@ -9,6 +9,7 @@ import {
 } from 'ember-metal';
 
 export const INVOKE = symbol('INVOKE');
+export const ACTION = symbol('ACTION');
 
 export class ClosureActionReference extends CachedReference {
   static create(args) {
@@ -123,5 +124,6 @@ export function createClosureAction(target, action, valuePath, actionArgs) {
     };
   }
 
+  closureAction[ACTION] = true;
   return closureAction;
 }
