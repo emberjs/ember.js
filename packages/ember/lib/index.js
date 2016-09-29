@@ -127,6 +127,7 @@ Ember.Binding = metal.Binding;
 Ember.isGlobalPath = metal.isGlobalPath;
 Ember.uuid = metal.uuid;
 Ember.generateGuid = metal.generateGuid;
+Ember.GUID_KEY = metal.GUID_KEY;
 Ember.guidFor = metal.guidFor;
 
 if (isFeatureEnabled('ember-metal-weakmap')) {

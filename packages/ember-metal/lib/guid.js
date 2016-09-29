@@ -1,4 +1,7 @@
+import { intern } from 'ember-utils';
 import { meta as metaFor } from './meta';
+
+export const GUID_KEY = intern('__ember' + (+ new Date()));
 
 /**
  Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from

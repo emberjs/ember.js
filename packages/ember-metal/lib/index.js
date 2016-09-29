@@ -171,7 +171,8 @@ export { default as descriptor } from './descriptor';
 export {
   uuid,
   generateGuid,
-  guidFor
+  guidFor,
+  GUID_KEY
 } from './guid';
 
 // TODO: this needs to be deleted once we refactor the build tooling
