@@ -1,5 +1,6 @@
-import { GUID_KEY } from './guid';
 import intern from './intern';
+
+const GUID_KEY = 'ember';
 
 export default function symbol(debugName) {
   // TODO: Investigate using platform symbols, but we do not

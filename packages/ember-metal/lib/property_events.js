@@ -1,4 +1,5 @@
-import { guidFor, symbol } from 'ember-utils';
+import { symbol } from 'ember-utils';
+import { guidFor } from './guid';
 import {
   peekMeta
 } from './meta';

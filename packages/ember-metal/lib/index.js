@@ -169,7 +169,14 @@ export {
   assertNotRendered
 } from './transaction';
 export { default as descriptor } from './descriptor';
-
+export {
+  uuid,
+  GUID_KEY,
+  GUID_DESC,
+  GUID_KEY_PROPERTY,
+  generateGuid,
+  guidFor
+} from './guid';
 
 // TODO: this needs to be deleted once we refactor the build tooling
 // do this for side-effects of updating Ember.assert, warn, etc when

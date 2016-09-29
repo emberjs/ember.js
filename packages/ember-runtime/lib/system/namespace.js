@@ -2,13 +2,13 @@
 @module ember
 @submodule ember-runtime
 */
-import { guidFor } from 'ember-utils';
 import Ember, {
   get,
   Mixin,
   hasUnprocessedMixins,
   clearUnprocessedMixins,
-  NAME_KEY
+  NAME_KEY,
+  guidFor
 } from 'ember-metal'; // Preloaded into namespaces
 import { context } from 'ember-environment';
 

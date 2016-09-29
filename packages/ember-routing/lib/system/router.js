@@ -1,7 +1,6 @@
 import {
   EmptyObject,
   assign,
-  guidFor,
   dictionary,
   getOwner
 } from 'ember-utils';
@@ -14,7 +13,8 @@ import {
   set,
   defineProperty,
   computed,
-  run
+  run,
+  guidFor
 } from 'ember-metal';
 import {
   Object as EmberObject,

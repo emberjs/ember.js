@@ -1,4 +1,4 @@
-import { guidFor, GUID_KEY } from 'ember-utils';
+import { guidFor, GUID_KEY } from 'ember-metal';
 import { context } from 'ember-environment';
 import EmberObject from '../../../system/object';
 import Namespace from '../../../system/namespace';

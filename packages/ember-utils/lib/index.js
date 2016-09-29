@@ -13,14 +13,6 @@ export { getOwner, setOwner, OWNER } from './owner';
 export { default as assign } from './assign';
 export { default as EmptyObject } from './empty-object';
 export { default as dictionary } from './dictionary';
-export {
-  uuid,
-  GUID_KEY,
-  GUID_DESC,
-  GUID_KEY_PROPERTY,
-  generateGuid,
-  guidFor
-} from './guid';
 export { default as intern } from './intern';
 export { checkHasSuper, ROOT, wrap } from './super';
 export { default as inspect } from './inspect';

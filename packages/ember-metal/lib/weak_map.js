@@ -1,10 +1,9 @@
-import { GUID_KEY } from 'ember-utils';
 import {
   peekMeta,
   meta as metaFor
 } from './meta';
+import { uuid } from './guid';
 
-let id = 0;
 function UNDEFINED() {}
 
 // Returns whether Type(value) is Object according to the terminology in the spec
@@ -30,7 +29,7 @@ export default function WeakMap(iterable) {
     throw new TypeError(`Constructor WeakMap requires 'new'`);
   }
 
-  this._id = GUID_KEY + (id++);
+  this._id = uuid();
 
   if (iterable === null || iterable === undefined) {
     return;

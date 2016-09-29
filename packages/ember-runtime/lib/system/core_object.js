@@ -11,9 +11,6 @@
 // if present
 import {
   assign,
-  guidFor,
-  generateGuid,
-  GUID_KEY_PROPERTY,
   makeArray,
   symbol
 } from 'ember-utils';
@@ -36,7 +33,10 @@ import {
   InjectedProperty,
   run,
   destroy,
-  descriptor
+  descriptor,
+  guidFor,
+  generateGuid,
+  GUID_KEY_PROPERTY,
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';

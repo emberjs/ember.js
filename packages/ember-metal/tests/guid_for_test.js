@@ -1,5 +1,6 @@
 import {
-  guidFor
+  guidFor,
+  generateGuid
 } from '../index';
 
 QUnit.module('guidFor');
@@ -69,4 +70,12 @@ QUnit.test('arrays', function() {
   sameGuid(a, a, 'same instance always yields same guid');
   diffGuid(a, aprime, 'identical arrays always yield different guids');
   diffGuid(a, b, 'different arrays yield different guids');
+});
+
+QUnit.module('Ember.generateGuid');
+
+QUnit.test('Prefix', function() {
+  let a = {};
+
+  ok(generateGuid(a, 'tyrell').indexOf('tyrell') > -1, 'guid can be prefixed');
 });

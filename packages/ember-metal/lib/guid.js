@@ -1,4 +1,4 @@
-import intern from './intern';
+import { intern } from 'ember-utils';
 
 /**
  Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from

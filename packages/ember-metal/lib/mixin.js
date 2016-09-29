@@ -8,12 +8,11 @@
 */
 import {
   assign,
-  guidFor,
-  GUID_KEY,
   wrap,
   makeArray
 } from 'ember-utils';
 import EmberError from './error';
+import { guidFor, GUID_KEY } from './guid';
 import {
   debugSeal,
   assert,

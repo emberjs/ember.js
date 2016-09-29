@@ -1,5 +1,6 @@
 /* globals Element */
-import { guidFor, symbol, getOwner } from 'ember-utils';
+import { symbol, getOwner } from 'ember-utils';
+import { guidFor } from 'ember-metal';
 
 /**
 @module ember
