@@ -43,7 +43,6 @@ export {
   setDispatchOverride
 } from './error_handler';
 export {
-  META_DESC,
   meta,
   peekMeta
 } from './meta';

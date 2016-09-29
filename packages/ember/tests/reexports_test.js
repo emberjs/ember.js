@@ -47,7 +47,6 @@ QUnit.module('ember reexports');
   ['FEATURES', 'ember-metal'],
   ['FEATURES.isEnabled', 'ember-metal', 'isFeatureEnabled'],
   ['Error', 'ember-metal'],
-  ['META_DESC', 'ember-metal'],
   ['meta', 'ember-metal'],
   ['get', 'ember-metal'],
   ['set', 'ember-metal'],

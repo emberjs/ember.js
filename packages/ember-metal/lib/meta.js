@@ -69,7 +69,6 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
 }
 
 let memberNames = Object.keys(members);
-const META_FIELD = '__ember_meta__';
 
 export function Meta(obj, parentMeta) {
   runInDebug(() => counters.metaInstantiated++);
@@ -410,18 +409,6 @@ function capitalize(name) {
   return name.replace(/^\w/, m => m.toUpperCase());
 }
 
-export var META_DESC = {
-  writable: true,
-  configurable: true,
-  enumerable: false,
-  value: null
-};
-
-const EMBER_META_PROPERTY = {
-  name: META_FIELD,
-  descriptor: META_DESC
-};
-
 if (isEnabled('mandatory-setter')) {
   Meta.prototype.readInheritedValue = function(key, subkey) {
     let internalKey = `_${key}`;
@@ -502,6 +489,20 @@ if (HAS_NATIVE_WEAKMAP) {
     }
   };
 } else {
+  let META_FIELD = '__ember_meta__';
+
+  let META_DESC = {
+    writable: true,
+    configurable: true,
+    enumerable: false,
+    value: null
+  };
+
+  let EMBER_META_PROPERTY = {
+    name: META_FIELD,
+    descriptor: META_DESC
+  };
+
   setMeta = function Fallback_setMeta(obj, meta) {
     // if `null` already, just set it to the new value
     // otherwise define property first

@@ -56,7 +56,6 @@ Ember.Instrumentation = {
 };
 
 Ember.Error = metal.Error;
-Ember.META_DESC = metal.META_DESC;
 Ember.meta = metal.meta;
 Ember.get = metal.get;
 Ember.getWithDefault = metal.getWithDefault;
