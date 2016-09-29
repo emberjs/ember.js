@@ -165,6 +165,29 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     this.assertText('baz');
   }
 
+  ['@test does not throw an error if `tagName` is an empty string and `id` is bound property specified via template']() {
+    let template = `{{id}}`;
+    let FooBarComponent = Component.extend({
+      tagName: ''
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+
+    this.render(`{{#foo-bar id=fooBarId}}{{/foo-bar}}`, { fooBarId: 'baz' });
+
+    this.assertText('baz');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'fooBarId', 'qux'));
+
+    this.assertText('qux');
+
+    this.runTask(() => set(this.context, 'fooBarId', 'baz'));
+
+    this.assertText('baz');
+  }
+
   ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template and passed to child component']() {
     let fooBarTemplate = `{{#baz-child id=id}}{{/baz-child}}`;
     let FooBarComponent = Component.extend({
