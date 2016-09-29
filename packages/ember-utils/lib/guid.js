@@ -67,6 +67,55 @@ export let GUID_KEY_PROPERTY = {
   descriptor: nullDescriptor
 };
 
+export function buildGuidFor(obj) {
+  let type = typeof obj;
+  // special cases where we don't want to add a key to object
+  if (obj === undefined) {
+    return UNDEFINED_UUID;
+  }
+
+  if (obj === null) {
+    return NULL_UUID;
+  }
+
+  let ret;
+
+  // Don't allow prototype changes to String etc. to change the guidFor
+  switch (type) {
+  case 'number':
+    ret = NUMBER_CACHE[obj];
+
+    if (!ret) {
+      ret = NUMBER_CACHE[obj] = uuid();
+    }
+
+    return ret;
+
+  case 'string':
+    ret = STRING_CACHE[obj];
+
+    if (!ret) {
+      ret = STRING_CACHE[obj] = uuid();
+    }
+
+    return ret;
+
+  case 'boolean':
+    return obj ? TRUE_UUID : FALSE_UUID;
+
+  default:
+    if (obj === Object) {
+      return OBJECT_UUID;
+    }
+
+    if (obj === Array) {
+      return ARRAY_UUID;
+    }
+
+    return uuid();
+  }
+}
+
 /**
   Generates a new guid, optionally saving the guid to the object that you
   pass in. You will rarely need to use this method. Instead you should
@@ -130,62 +179,21 @@ export function guidFor(obj) {
     return obj[GUID_KEY];
   }
 
-  // special cases where we don't want to add a key to object
-  if (obj === undefined) {
-    return UNDEFINED_UUID;
-  }
+  let ret = buildGuidFor(obj);
 
-  if (obj === null) {
-    return NULL_UUID;
-  }
+  if (isObject || isFunction) {
+    if (obj[GUID_KEY] === null) {
+      obj[GUID_KEY] = ret;
+    } else {
+      GUID_DESC.value = ret;
 
-  let ret;
-
-  // Don't allow prototype changes to String etc. to change the guidFor
-  switch (type) {
-    case 'number':
-      ret = NUMBER_CACHE[obj];
-
-      if (!ret) {
-        ret = NUMBER_CACHE[obj] = uuid();
-      }
-
-      return ret;
-
-    case 'string':
-      ret = STRING_CACHE[obj];
-
-      if (!ret) {
-        ret = STRING_CACHE[obj] = uuid();
-      }
-
-      return ret;
-
-    case 'boolean':
-      return obj ? TRUE_UUID : FALSE_UUID;
-
-    default:
-      if (obj === Object) {
-        return OBJECT_UUID;
-      }
-
-      if (obj === Array) {
-        return ARRAY_UUID;
-      }
-
-      ret = uuid();
-
-      if (obj[GUID_KEY] === null) {
-        obj[GUID_KEY] = ret;
+      if (obj.__defineNonEnumerable) {
+        obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
       } else {
-        GUID_DESC.value = ret;
-
-        if (obj.__defineNonEnumerable) {
-          obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
-        } else {
-          Object.defineProperty(obj, GUID_KEY, GUID_DESC);
-        }
+        Object.defineProperty(obj, GUID_KEY, GUID_DESC);
       }
-      return ret;
+    }
   }
+
+  return ret;
 }
