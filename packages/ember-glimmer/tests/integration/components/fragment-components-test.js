@@ -165,6 +165,19 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     this.assertText('baz');
   }
 
+  ['@test does not throw an error if `tagName` is an empty string and `id` is bound property specified via template']() {
+    let template = `{{id}}`;
+    let FooBarComponent = Component.extend({
+      tagName: ''
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+
+    this.render(`{{#foo-bar id=fooBarId}}{{/foo-bar}}`, { fooBarId: 'baz' });
+
+    this.assertText('baz');
+  }
+
   ['@test throws an error if when $() is accessed on component where `tagName` is an empty string']() {
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
