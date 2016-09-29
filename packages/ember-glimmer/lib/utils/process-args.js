@@ -3,6 +3,7 @@ import { CONSTANT_TAG } from 'glimmer-reference';
 import { ARGS } from '../component';
 import { UPDATE } from './references';
 import { MUTABLE_CELL } from 'ember-views';
+import { ACTION } from '../helpers/action';
 
 export default function processArgs(args, positionalParamsDefinition) {
   if (!positionalParamsDefinition || positionalParamsDefinition.length === 0 || args.positional.length === 0) {
@@ -50,7 +51,9 @@ class SimpleArgs {
       let ref = namedArgs.get(name);
       let value = attrs[name];
 
-      if (ref[UPDATE]) {
+      if (typeof value === 'function' && value[ACTION]) {
+        attrs[name] = value;
+      } else if (ref[UPDATE]) {
         attrs[name] = new MutableCell(ref, value);
       }
 

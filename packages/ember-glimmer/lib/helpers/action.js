@@ -13,6 +13,7 @@ import {
 } from 'ember-metal';
 
 export const INVOKE = symbol('INVOKE');
+export const ACTION = symbol('ACTION');
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually
@@ -373,5 +374,6 @@ export function createClosureAction(target, action, valuePath, actionArgs) {
     };
   }
 
+  closureAction[ACTION] = true;
   return closureAction;
 }
