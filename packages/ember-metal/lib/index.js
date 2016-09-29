@@ -171,9 +171,6 @@ export {
 export { default as descriptor } from './descriptor';
 export {
   uuid,
-  GUID_KEY,
-  GUID_DESC,
-  GUID_KEY_PROPERTY,
   generateGuid,
   guidFor
 } from './guid';

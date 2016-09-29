@@ -9,6 +9,7 @@ import { runInDebug, assert } from './debug';
 import {
   removeChainWatcher
 } from './chains';
+import { uuid } from './guid';
 
 let counters = {
   peekCalls: 0,
@@ -73,6 +74,7 @@ const META_FIELD = '__ember_meta__';
 export function Meta(obj, parentMeta) {
   runInDebug(() => counters.metaInstantiated++);
 
+  this._guid = uuid();
   this._cache = undefined;
   this._weak = undefined;
   this._watching = undefined;
@@ -185,6 +187,10 @@ Meta.prototype.isMetaDestroyed = function isMetaDestroyed() {
 
 Meta.prototype.setMetaDestroyed = function setMetaDestroyed() {
   this._flags |= META_DESTROYED;
+};
+
+Meta.prototype.sourceGuid = function sourceGuid() {
+  return this._guid;
 };
 
 // Implements a member that is a lazily created, non-inheritable

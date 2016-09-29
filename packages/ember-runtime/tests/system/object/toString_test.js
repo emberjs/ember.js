@@ -1,4 +1,4 @@
-import { guidFor, GUID_KEY } from 'ember-metal';
+import { guidFor, NAME_KEY } from 'ember-metal';
 import { context } from 'ember-environment';
 import EmberObject from '../../../system/object';
 import Namespace from '../../../system/namespace';
@@ -89,8 +89,8 @@ QUnit.test('toString includes toStringExtension if defined', function() {
   let bar = Bar.create();
 
   // simulate these classes being defined on a Namespace
-  Foo[GUID_KEY + '_name'] = 'Foo';
-  Bar[GUID_KEY + '_name'] = 'Bar';
+  Foo[NAME_KEY] = 'Foo';
+  Bar[NAME_KEY] = 'Bar';
 
   equal(bar.toString(), '<Bar:' + guidFor(bar) + '>', 'does not include toStringExtension part');
   equal(foo.toString(), '<Foo:' + guidFor(foo) + ':fooey>', 'Includes toStringExtension result');

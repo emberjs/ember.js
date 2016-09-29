@@ -1,4 +1,4 @@
-import { intern } from 'ember-utils';
+import { meta as metaFor } from './meta';
 
 /**
  Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from
@@ -31,41 +31,6 @@ const OBJECT_UUID = uuid();
 const ARRAY_UUID = uuid();
 const NULL_UUID = uuid();
 const UNDEFINED_UUID = uuid();
-
-/**
-  A unique key used to assign guids and other private metadata to objects.
-  If you inspect an object in your browser debugger you will often see these.
-  They can be safely ignored.
-
-  On browsers that support it, these properties are added with enumeration
-  disabled so they won't show up when you iterate over your properties.
-
-  @private
-  @property GUID_KEY
-  @for Ember
-  @type String
-  @final
-*/
-export const GUID_KEY = intern('__ember' + (+ new Date()));
-
-export let GUID_DESC = {
-  writable:     true,
-  configurable: true,
-  enumerable:   false,
-  value: null
-};
-
-let nullDescriptor = {
-  configurable: true,
-  writable: true,
-  enumerable: false,
-  value: null
-};
-
-export let GUID_KEY_PROPERTY = {
-  name: GUID_KEY,
-  descriptor: nullDescriptor
-};
 
 export function buildGuidFor(obj) {
   let type = typeof obj;
@@ -134,6 +99,17 @@ export function buildGuidFor(obj) {
   @return {String} the guid
 */
 export function generateGuid(obj, prefix) {
+  if (obj) {
+    let meta = metaFor(obj);
+
+    if (prefix) {
+      // TODO: this is kinda weird, we should deprecate and remove
+      meta._guid = prefix + meta._guid;
+    }
+
+    return meta.sourceGuid();
+  }
+
   let ret;
   if (prefix) {
     ret = prefix + uuid();
@@ -141,18 +117,6 @@ export function generateGuid(obj, prefix) {
     ret = uuid();
   }
 
-  if (obj) {
-    if (obj[GUID_KEY] === null) {
-      obj[GUID_KEY] = ret;
-    } else {
-      GUID_DESC.value = ret;
-      if (obj.__defineNonEnumerable) {
-        obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
-      } else {
-        Object.defineProperty(obj, GUID_KEY, GUID_DESC);
-      }
-    }
-  }
   return ret;
 }
 
@@ -175,25 +139,9 @@ export function guidFor(obj) {
   let isObject = type === 'object' && obj !== null;
   let isFunction = type === 'function';
 
-  if ((isObject || isFunction) && obj[GUID_KEY]) {
-    return obj[GUID_KEY];
+  if ((isObject || isFunction)) {
+    return metaFor(obj).sourceGuid();
+  } else {
+    return buildGuidFor(obj);
   }
-
-  let ret = buildGuidFor(obj);
-
-  if (isObject || isFunction) {
-    if (obj[GUID_KEY] === null) {
-      obj[GUID_KEY] = ret;
-    } else {
-      GUID_DESC.value = ret;
-
-      if (obj.__defineNonEnumerable) {
-        obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
-      } else {
-        Object.defineProperty(obj, GUID_KEY, GUID_DESC);
-      }
-    }
-  }
-
-  return ret;
 }

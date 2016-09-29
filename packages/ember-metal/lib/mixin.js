@@ -9,10 +9,11 @@
 import {
   assign,
   wrap,
-  makeArray
+  makeArray,
+  intern
 } from 'ember-utils';
 import EmberError from './error';
-import { guidFor, GUID_KEY } from './guid';
+import { guidFor } from './guid';
 import {
   debugSeal,
   assert,
@@ -399,7 +400,7 @@ export function mixin(obj, ...args) {
   return obj;
 }
 
-export const NAME_KEY = GUID_KEY + '_name';
+export const NAME_KEY = intern('__ember' + (+ new Date()) + '_name');
 
 /**
   The `Ember.Mixin` class allows you to create mixins, whose properties can be
@@ -481,8 +482,8 @@ export default function Mixin(args, properties) {
   }
   this.ownerConstructor = undefined;
   this._without = undefined;
-  this[GUID_KEY] = null;
   this[NAME_KEY] = null;
+  metaFor(this);
   debugSeal(this);
 }
 

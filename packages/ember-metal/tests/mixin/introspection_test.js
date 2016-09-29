@@ -42,7 +42,7 @@ QUnit.module('Basic introspection', {
 
 QUnit.test('Ember.mixins()', function() {
   function mapGuids(ary) {
-    return ary.map(x => guidFor(x));
+    return ary.map(x => guidFor(x)).sort();
   }
 
   deepEqual(mapGuids(Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');

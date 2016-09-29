@@ -113,7 +113,6 @@ QUnit.module('ember reexports');
   ['bind', 'ember-metal'],
   ['Binding', 'ember-metal'],
   ['isGlobalPath', 'ember-metal'],
-  ['GUID_KEY', 'ember-metal'],
   ['uuid', 'ember-metal'],
   ['generateGuid', 'ember-metal'],
   ['guidFor', 'ember-metal'],
