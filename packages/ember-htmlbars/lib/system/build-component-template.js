@@ -41,7 +41,7 @@ export default function buildComponentTemplate({ component, tagName, layout, out
 
     assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
       let { elementId } = component;
-      return tagName !== '' || attrs.id === elementId || (!elementId && elementId !== '');
+      return tagName !== '' || getValue(attrs.id) === elementId || (!elementId && elementId !== '');
     })());
 
     assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
