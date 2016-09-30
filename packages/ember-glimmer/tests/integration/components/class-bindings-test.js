@@ -300,7 +300,7 @@ moduleFor('ClassNameBindings integration', class extends RenderingTest {
       init() {
         this._super();
 
-        let bindings = this.classNameBindings;
+        let bindings = this.classNameBindings = this.classNameBindings.slice();
 
         if (this.get('bindIsEnabled')) {
           bindings.push('isEnabled:enabled');
