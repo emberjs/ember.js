@@ -152,6 +152,25 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('so much layout wat hey');
   }
 
+  ['@test layout supports computed property']() {
+    let FooBarComponent = Component.extend({
+      elementId: 'blahzorz',
+      layout: computed(function () {
+        return compile('so much layout wat {{lulz}}');
+      }),
+      init() {
+        this._super(...arguments);
+        this.lulz = 'heyo';
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('so much layout wat heyo');
+  }
+
   ['@test passing undefined elementId results in a default elementId'](assert) {
     let FooBarComponent = Component.extend({
       tagName: 'h1'

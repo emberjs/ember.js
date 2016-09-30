@@ -262,7 +262,7 @@ class CurlyComponentManager {
   }
 
   templateFor(component, env) {
-    let Template = component.layout;
+    let Template = get(component, 'layout');
     let owner = component[OWNER];
     if (Template) {
       return env.getTemplate(Template, owner);
