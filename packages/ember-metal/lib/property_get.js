@@ -23,6 +23,10 @@ const ALLOWABLE_TYPES = {
   the function will be invoked. If the property is not defined but the
   object implements the `unknownProperty` method then that will be invoked.
 
+  ```javascript
+  Ember.get(obj, "name");
+  ```
+
   If you plan to run on IE8 and older browsers then you should use this
   method anytime you want to retrieve a property on an object that you don't
   know for sure is private. (Properties beginning with an underscore '_'
