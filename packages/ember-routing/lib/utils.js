@@ -130,11 +130,7 @@ export function calculateCacheKey(prefix, _parts, values) {
   'Array of fully defined objects' style.
 */
 export function normalizeControllerQueryParams(queryParams) {
-  if (queryParams._qpMap) {
-    return queryParams._qpMap;
-  }
-
-  let qpMap = queryParams._qpMap = {};
+  let qpMap = {};
 
   for (let i = 0; i < queryParams.length; ++i) {
     accumulateQueryParamDescriptors(queryParams[i], qpMap);
