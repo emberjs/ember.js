@@ -53,4 +53,4 @@ to stay in line with ES standards (see [RFC](https://github.com/emberjs/rfcs/blo
 * `ember-testing-check-waiters`
 
 Expose a simple mechanism for test tooling to determine if all foreign async has been
-handled before continueing the test. Replaces the intimate API `Ember.Test.waiters` (with a deprecation).
+handled before continuing the test. Replaces the intimate API `Ember.Test.waiters` (with a deprecation).
