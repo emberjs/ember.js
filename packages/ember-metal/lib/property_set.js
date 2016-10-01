@@ -22,6 +22,10 @@ import {
   property is not defined but the object implements the `setUnknownProperty`
   method then that will be invoked as well.
 
+  ```javascript
+  Ember.set(obj, "name", value);
+  ```
+
   @method set
   @for Ember
   @param {Object} obj The object to modify.
