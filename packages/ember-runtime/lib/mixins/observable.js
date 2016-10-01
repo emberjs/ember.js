@@ -110,9 +110,9 @@ export default Mixin.create({
     declared at the end, such as:
 
     ```javascript
-    fullName: function() {
+    fullName: Ember.computed('firstName', 'lastName', function() {
       return this.get('firstName') + ' ' + this.get('lastName');
-    }.property('firstName', 'lastName')
+    })
     ```
 
     When you call `get` on a computed property, the function will be

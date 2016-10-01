@@ -44,14 +44,14 @@ import _ProxyMixin from '../mixins/-proxy';
 
   ```javascript
   ProxyWithComputedProperty = Ember.ObjectProxy.extend({
-    fullName: function() {
+    fullName: Ember.computed('firstName', 'lastName', function() {
       var firstName = this.get('firstName'),
           lastName = this.get('lastName');
       if (firstName && lastName) {
         return firstName + ' ' + lastName;
       }
       return firstName || lastName;
-    }.property('firstName', 'lastName')
+    })
   });
 
   proxy = ProxyWithComputedProperty.create();
