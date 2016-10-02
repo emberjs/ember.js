@@ -9,6 +9,7 @@ import { ENV } from 'ember-environment';
 import { assert, deprecate, runInDebug } from 'ember-metal';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
+export const HAS_PROXY = !!Proxy;
 
 /**
  A container used to instantiate and cache objects.
@@ -151,7 +152,9 @@ Container.prototype = {
 
     if (factory === undefined) { return; }
 
-    return {
+
+
+    let manager = {
       class: factory,
       create(options = {}) {
         let injections = injectionsFor(container, normalizedName);
@@ -183,6 +186,26 @@ Container.prototype = {
         return this.class.create(props);
       }
     };
+
+    runInDebug(() => {
+      if (HAS_PROXY) {
+        let validator = {
+          get(obj, prop) {
+            if (prop !== 'class' && prop !== 'create') {
+              throw new Error(`You attempted to access "${prop}" on a factory manager created by container#factoryFor. "${prop}" is not a member of a factroy manager."`);
+            }
+
+            return obj[prop];
+          },
+          set(obj, prop, value) {
+            throw new Error(`You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`);
+          }
+        };
+        manager = new Proxy(manager, validator);
+      }
+    });
+
+    return manager;
   },
 
   /**
