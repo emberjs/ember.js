@@ -164,6 +164,10 @@ export default Mixin.create({
   /**
     Sets the provided key or path to the value.
 
+    ```javascript
+    record.set("key", value);
+    ```
+
     This method is generally very similar to calling `object["key"] = value` or
     `object.key = value`, except that it provides support for computed
     properties, the `setUnknownProperty()` method and property observers.
