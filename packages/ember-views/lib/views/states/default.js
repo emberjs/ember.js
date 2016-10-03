@@ -21,9 +21,7 @@ export default {
     return true; // continue event propagation
   },
 
-  destroy() { },
+  rerender() { },
 
-  rerender(view) {
-    view.renderer.ensureViewNotRendering(view);
-  }
+  destroy() { }
 };
