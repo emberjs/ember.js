@@ -2012,7 +2012,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
   ['@test when a property is changed during children\'s rendering'](assert) {
     if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      expectDeprecation(/modified value twice in a single render/);
+      expectDeprecation(/modified value twice on <\(.+> in a single render/);
     }
 
     let outer, middle;
@@ -2062,7 +2062,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     if (!isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
       expectAssertion(() => {
         this.runTask(() => outer.set('value', 2));
-      }, /modified value twice in a single render/);
+      }, /modified value twice on <\(.+> in a single render/);
 
       return;
     } else {
@@ -2085,7 +2085,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
   ['@test when a shared dependency is changed during children\'s rendering'](assert) {
     if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      expectDeprecation(/modified wrapper.content twice in a single render/);
+      expectDeprecation(/modified wrapper.content twice on <Ember.Object.+> in a single render/);
     }
 
     let outer, middle;
@@ -2119,7 +2119,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     if (!isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
       expectAssertion(() => {
         this.render('{{x-outer}}');
-      }, /modified wrapper.content twice in a single render/);
+      }, /modified wrapper.content twice on <Ember.Object.+> in a single render/);
 
       return;
     } else {
