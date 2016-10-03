@@ -237,8 +237,14 @@ class CurlyComponentManager {
     component.trigger('didInitAttrs', { attrs });
     component.trigger('didReceiveAttrs', { newAttrs: attrs });
 
-    if (environment.isInteractive) {
-      component.trigger('willRender');
+    // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
+    if (component.tagName === '') {
+      component._transitionTo('hasElement');
+
+      if (environment.isInteractive) {
+        component.trigger('willInsertElement');
+        component.trigger('willRender');
+      }
     }
 
     let bucket = new ComponentStateBucket(environment, component, processedArgs, finalizer);
@@ -313,6 +319,7 @@ class CurlyComponentManager {
 
     if (environment.isInteractive) {
       component.trigger('willInsertElement');
+      component.trigger('willRender');
     }
   }
 
@@ -389,8 +396,14 @@ class TopComponentManager extends CurlyComponentManager {
     component.trigger('didInitAttrs');
     component.trigger('didReceiveAttrs');
 
-    if (environment.isInteractive) {
-      component.trigger('willRender');
+    // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
+    if (component.tagName === '') {
+      component._transitionTo('hasElement');
+
+      if (environment.isInteractive) {
+        component.trigger('willInsertElement');
+        component.trigger('willRender');
+      }
     }
 
     processComponentInitializationAssertions(component, {});
