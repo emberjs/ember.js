@@ -460,8 +460,6 @@ export default Mixin.create({
       `You must call \`this._super(...arguments);\` when implementing \`init\` in a component. Please update ${this} to call \`this._super\` from \`init\`.`,
       this[INIT_WAS_CALLED]
     );
-
-    this.renderer.componentInitAttrs(this, this.attrs || {});
   },
 
   __defineNonEnumerable(property) {
