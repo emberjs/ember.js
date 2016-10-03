@@ -421,17 +421,15 @@ export default Mixin.create({
       this.elementId = guidFor(this);
     }
 
-    if (typeof(this.didInitAttrs) === 'function') {
-      deprecate(
-        `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
-        false,
-        {
-          id: 'ember-views.did-init-attrs',
-          until: '3.0.0',
-          url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
-        }
-      );
-    }
+    deprecate(
+      `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
+      typeof(this.didInitAttrs) !== 'function',
+      {
+        id: 'ember-views.did-init-attrs',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+      }
+    );
 
     assert(
       'Using a custom `.render` function is no longer supported.',
