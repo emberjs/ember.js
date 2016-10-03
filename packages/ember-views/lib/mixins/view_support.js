@@ -1,10 +1,7 @@
-import { guidFor, symbol } from 'ember-utils';
+import { guidFor } from 'ember-utils';
 import { assert, deprecate, descriptor, Mixin } from 'ember-metal';
-import { POST_INIT } from 'ember-runtime';
 import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
-
-const INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
 
 import jQuery from '../system/jquery';
 
@@ -424,8 +421,6 @@ export default Mixin.create({
       this.elementId = guidFor(this);
     }
 
-    this[INIT_WAS_CALLED] = true;
-
     if (typeof(this.didInitAttrs) === 'function') {
       deprecate(
         `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
@@ -441,24 +436,6 @@ export default Mixin.create({
     assert(
       'Using a custom `.render` function is no longer supported.',
       !this.render
-    );
-  },
-
-  /*
-   This is a special hook implemented in CoreObject, that allows Views/Components
-   to have a way to ensure that `init` fires before `didInitAttrs` / `didReceiveAttrs`
-   (so that `this._super` in init does not trigger `didReceiveAttrs` before the classes
-   own `init` is finished).
-
-   @method __postInitInitialization
-   @private
-   */
-  [POST_INIT]: function() {
-    this._super();
-
-    assert(
-      `You must call \`this._super(...arguments);\` when implementing \`init\` in a component. Please update ${this} to call \`this._super\` from \`init\`.`,
-      this[INIT_WAS_CALLED]
     );
   },
 
