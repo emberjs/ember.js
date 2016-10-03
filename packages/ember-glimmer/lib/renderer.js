@@ -206,10 +206,6 @@ class Renderer {
     this._scheduleRevalidate();
   }
 
-  componentInitAttrs() {
-    // TODO: Remove me
-  }
-
   ensureViewNotRendering() {
     // TODO: Implement this
     // throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
