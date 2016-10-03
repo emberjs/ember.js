@@ -206,11 +206,6 @@ class Renderer {
     this._scheduleRevalidate();
   }
 
-  ensureViewNotRendering() {
-    // TODO: Implement this
-    // throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
-  }
-
   register(view) {
     let id = getViewId(view);
     assert('Attempted to register a view with an id already in use: ' + id, !this._viewRegistry[id]);
