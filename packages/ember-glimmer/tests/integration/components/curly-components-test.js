@@ -2458,7 +2458,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     expectAssertion(() => {
       this.render('{{foo-bar}}');
-    }, /You must call `this._super\(...arguments\);` when implementing `init` in a component. Please update .* to call `this._super` from `init`/);
+    }, /You must call `this._super\(...arguments\);` when overriding `init` on a framework object. Please update .* to call `this._super\(...arguments\);` from `init`./);
   }
 
   ['@test should toggle visibility with isVisible'](assert) {

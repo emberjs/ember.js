@@ -1,7 +1,7 @@
 import {
-  Object as EmberObject,
-  Evented,
   ActionHandler,
+  Evented,
+  FrameworkObject,
   deprecateUnderscoreActions,
   typeOf
 } from 'ember-runtime';
@@ -24,7 +24,7 @@ import { cloneStates, states } from './states';
   @uses Ember.ActionHandler
   @private
 */
-const CoreView = EmberObject.extend(Evented, ActionHandler, {
+const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
   isView: true,
 
   _states: cloneStates(states),
