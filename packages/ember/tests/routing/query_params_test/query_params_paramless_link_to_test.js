@@ -1,6 +1,6 @@
 import { Controller, String as StringUtils } from 'ember-runtime';
 import { Route, NoneLocation } from 'ember-routing';
-import { isFeatureEnabled, run } from 'ember-metal';
+import { run } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
 import { Application } from 'ember-application';
 import { jQuery } from 'ember-views';
@@ -109,31 +109,5 @@ function testParamlessLinks(routeName) {
   });
 }
 
-function testParamlessLinksWithRouteConfig(routeName) {
-  QUnit.test('param-less links in an app booted with query params in the URL don\'t reset the query params: ' + routeName, function() {
-    expect(1);
-
-    setTemplate(routeName, compile('{{link-to \'index\' \'index\' id=\'index-link\'}}'));
-
-    App[StringUtils.capitalize(routeName) + 'Route'] = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: 'wat'
-        }
-      }
-    });
-
-    startingURL = '/?foo=YEAH';
-    bootApplication();
-
-    equal(jQuery('#index-link').attr('href'), '/?foo=YEAH');
-  });
-}
-
-if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-  testParamlessLinksWithRouteConfig('application');
-  testParamlessLinksWithRouteConfig('index');
-} else {
-  testParamlessLinks('application');
-  testParamlessLinks('index');
-}
+testParamlessLinks('application');
+testParamlessLinks('index');

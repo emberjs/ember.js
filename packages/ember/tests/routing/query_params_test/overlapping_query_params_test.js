@@ -1,6 +1,6 @@
 import { Controller } from 'ember-runtime';
 import { Route, NoneLocation } from 'ember-routing';
-import { run, isFeatureEnabled, Mixin } from 'ember-metal';
+import { run, Mixin } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
 import { Application } from 'ember-application';
 import { setTemplates, setTemplate } from 'ember-glimmer';
@@ -85,212 +85,113 @@ function sharedTeardown() {
 }
 
 
-if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-  QUnit.module('Query Params - overlapping query param property names when configured on the route', {
-    setup() {
-      sharedSetup();
+QUnit.module('Query Params - overlapping query param property names', {
+  setup() {
+    sharedSetup();
 
-      App.Router.map(function() {
-        this.route('parent', function() {
-          this.route('child');
-        });
+    App.Router.map(function() {
+      this.route('parent', function() {
+        this.route('child');
       });
+    });
 
-      this.boot = function() {
-        bootApplication();
-        run(router, 'transitionTo', 'parent.child');
-      };
-    },
+    this.boot = function() {
+      bootApplication();
+      run(router, 'transitionTo', 'parent.child');
+    };
+  },
 
-    teardown() {
-      sharedTeardown();
-    }
+  teardown() {
+    sharedTeardown();
+  }
+});
+
+QUnit.test('can remap same-named qp props', function() {
+  App.ParentController = Controller.extend({
+    queryParams: { page: 'parentPage' },
+    page: 1
   });
 
-  QUnit.test('can remap same-named qp props', function() {
-    App.ParentRoute = Route.extend({
-      queryParams: {
-        page: {
-          as: 'parentPage',
-          defaultValue: 1
-        }
-      }
-    });
-
-    App.ParentChildRoute = Route.extend({
-      queryParams: {
-        page: {
-          as: 'childPage',
-          defaultValue: 1
-        }
-      }
-    });
-
-    this.boot();
-
-    equal(router.get('location.path'), '/parent/child');
-
-    let parentController = container.lookup('controller:parent');
-    let parentChildController = container.lookup('controller:parent.child');
-
-    setAndFlush(parentController, 'page', 2);
-    equal(router.get('location.path'), '/parent/child?parentPage=2');
-    setAndFlush(parentController, 'page', 1);
-    equal(router.get('location.path'), '/parent/child');
-
-    setAndFlush(parentChildController, 'page', 2);
-    equal(router.get('location.path'), '/parent/child?childPage=2');
-    setAndFlush(parentChildController, 'page', 1);
-    equal(router.get('location.path'), '/parent/child');
-
-    run(() => {
-      parentController.set('page', 2);
-      parentChildController.set('page', 2);
-    });
-
-    equal(router.get('location.path'), '/parent/child?childPage=2&parentPage=2');
-
-    run(() => {
-      parentController.set('page', 1);
-      parentChildController.set('page', 1);
-    });
-
-    equal(router.get('location.path'), '/parent/child');
+  App.ParentChildController = Controller.extend({
+    queryParams: { page: 'childPage' },
+    page: 1
   });
 
-  QUnit.test('query params in the same route hierarchy with the same url key get auto-scoped', function() {
-    App.ParentRoute = Route.extend({
-      queryParams: {
-        foo: {
-          as: 'shared',
-          defaultValue: 1
-        }
-      }
-    });
+  this.boot();
 
-    App.ParentChildRoute = Route.extend({
-      queryParams: {
-        bar: {
-          as: 'shared',
-          defaultValue: 1
-        }
-      }
-    });
+  equal(router.get('location.path'), '/parent/child');
 
-    let self = this;
-    expectAssertion(() => {
-      self.boot();
-    }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
-  });
-} else {
-  QUnit.module('Query Params - overlapping query param property names', {
-    setup() {
-      sharedSetup();
+  let parentController = container.lookup('controller:parent');
+  let parentChildController = container.lookup('controller:parent.child');
 
-      App.Router.map(function() {
-        this.route('parent', function() {
-          this.route('child');
-        });
-      });
+  setAndFlush(parentController, 'page', 2);
+  equal(router.get('location.path'), '/parent/child?parentPage=2');
+  setAndFlush(parentController, 'page', 1);
+  equal(router.get('location.path'), '/parent/child');
 
-      this.boot = function() {
-        bootApplication();
-        run(router, 'transitionTo', 'parent.child');
-      };
-    },
+  setAndFlush(parentChildController, 'page', 2);
+  equal(router.get('location.path'), '/parent/child?childPage=2');
+  setAndFlush(parentChildController, 'page', 1);
+  equal(router.get('location.path'), '/parent/child');
 
-    teardown() {
-      sharedTeardown();
-    }
+  run(() => {
+    parentController.set('page', 2);
+    parentChildController.set('page', 2);
   });
 
-  QUnit.test('can remap same-named qp props', function() {
-    App.ParentController = Controller.extend({
-      queryParams: { page: 'parentPage' },
-      page: 1
-    });
+  equal(router.get('location.path'), '/parent/child?childPage=2&parentPage=2');
 
-    App.ParentChildController = Controller.extend({
-      queryParams: { page: 'childPage' },
-      page: 1
-    });
-
-    this.boot();
-
-    equal(router.get('location.path'), '/parent/child');
-
-    let parentController = container.lookup('controller:parent');
-    let parentChildController = container.lookup('controller:parent.child');
-
-    setAndFlush(parentController, 'page', 2);
-    equal(router.get('location.path'), '/parent/child?parentPage=2');
-    setAndFlush(parentController, 'page', 1);
-    equal(router.get('location.path'), '/parent/child');
-
-    setAndFlush(parentChildController, 'page', 2);
-    equal(router.get('location.path'), '/parent/child?childPage=2');
-    setAndFlush(parentChildController, 'page', 1);
-    equal(router.get('location.path'), '/parent/child');
-
-    run(() => {
-      parentController.set('page', 2);
-      parentChildController.set('page', 2);
-    });
-
-    equal(router.get('location.path'), '/parent/child?childPage=2&parentPage=2');
-
-    run(() => {
-      parentController.set('page', 1);
-      parentChildController.set('page', 1);
-    });
-
-    equal(router.get('location.path'), '/parent/child');
+  run(() => {
+    parentController.set('page', 1);
+    parentChildController.set('page', 1);
   });
 
-  QUnit.test('query params in the same route hierarchy with the same url key get auto-scoped', function() {
-    App.ParentController = Controller.extend({
-      queryParams: { foo: 'shared' },
-      foo: 1
-    });
+  equal(router.get('location.path'), '/parent/child');
+});
 
-    App.ParentChildController = Controller.extend({
-      queryParams: { bar: 'shared' },
-      bar: 1
-    });
-
-    let self = this;
-    expectAssertion(() => {
-      self.boot();
-    }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
+QUnit.test('query params in the same route hierarchy with the same url key get auto-scoped', function() {
+  App.ParentController = Controller.extend({
+    queryParams: { foo: 'shared' },
+    foo: 1
   });
 
-  QUnit.test('Support shared but overridable mixin pattern', function() {
-    let HasPage = Mixin.create({
-      queryParams: 'page',
-      page: 1
-    });
-
-    App.ParentController = Controller.extend(HasPage, {
-      queryParams: { page: 'yespage' }
-    });
-
-    App.ParentChildController = Controller.extend(HasPage);
-
-    this.boot();
-
-    equal(router.get('location.path'), '/parent/child');
-
-    let parentController = container.lookup('controller:parent');
-    let parentChildController = container.lookup('controller:parent.child');
-
-    setAndFlush(parentChildController, 'page', 2);
-    equal(router.get('location.path'), '/parent/child?page=2');
-    equal(parentController.get('page'), 1);
-    equal(parentChildController.get('page'), 2);
-
-    setAndFlush(parentController, 'page', 2);
-    equal(router.get('location.path'), '/parent/child?page=2&yespage=2');
-    equal(parentController.get('page'), 2);
-    equal(parentChildController.get('page'), 2);
+  App.ParentChildController = Controller.extend({
+    queryParams: { bar: 'shared' },
+    bar: 1
   });
-}
+
+  let self = this;
+  expectAssertion(() => {
+    self.boot();
+  }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
+});
+
+QUnit.test('Support shared but overridable mixin pattern', function() {
+  let HasPage = Mixin.create({
+    queryParams: 'page',
+    page: 1
+  });
+
+  App.ParentController = Controller.extend(HasPage, {
+    queryParams: { page: 'yespage' }
+  });
+
+  App.ParentChildController = Controller.extend(HasPage);
+
+  this.boot();
+
+  equal(router.get('location.path'), '/parent/child');
+
+  let parentController = container.lookup('controller:parent');
+  let parentChildController = container.lookup('controller:parent.child');
+
+  setAndFlush(parentChildController, 'page', 2);
+  equal(router.get('location.path'), '/parent/child?page=2');
+  equal(parentController.get('page'), 1);
+  equal(parentChildController.get('page'), 2);
+
+  setAndFlush(parentController, 'page', 2);
+  equal(router.get('location.path'), '/parent/child?page=2&yespage=2');
+  equal(parentController.get('page'), 2);
+  equal(parentChildController.get('page'), 2);
+});

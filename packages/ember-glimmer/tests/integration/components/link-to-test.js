@@ -1,7 +1,6 @@
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { Controller } from 'ember-runtime';
-import { Route } from 'ember-routing';
-import { set, isFeatureEnabled } from 'ember-metal';
+import { set } from 'ember-metal';
 import { LinkComponent } from '../../utils/helpers';
 import { classes as classMatcher } from '../../utils/test-helpers';
 
@@ -146,24 +145,11 @@ moduleFor('Link-to component with query-params', class extends ApplicationTest {
   constructor() {
     super(...arguments);
 
-    if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-      this.registerRoute('index', Route.extend({
-        queryParams: {
-          foo: {
-            defaultValue: '123'
-          },
-          bar: {
-            defaultValue: 'yes'
-          }
-        }
-      }));
-    } else {
-      this.registerController('index', Controller.extend({
-        queryParams: ['foo'],
-        foo: '123',
-        bar: 'yes'
-      }));
-    }
+    this.registerController('index', Controller.extend({
+      queryParams: ['foo'],
+      foo: '123',
+      bar: 'yes'
+    }));
   }
 
   ['@test populates href with fully supplied query param values'](assert) {

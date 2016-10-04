@@ -4,7 +4,7 @@ import {
   String as StringUtils
 } from 'ember-runtime';
 import { Route, NoneLocation } from 'ember-routing';
-import { run, isFeatureEnabled, computed } from 'ember-metal';
+import { run, computed } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
 import { Application } from 'ember-application';
 import { jQuery } from 'ember-views';
@@ -211,15 +211,9 @@ function queryParamsStickyTest4(urlPrefix, articleLookup) {
   return function() {
     let articleClass = StringUtils.classify(articleLookup);
 
-    if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-      App[`${articleClass}Route`].reopen({
-        queryParams: { q: { scope: 'controller' } }
-      });
-    } else {
-      App[`${articleClass}Controller`].reopen({
-        queryParams: { q: { scope: 'controller' } }
-      });
-    }
+    App[`${articleClass}Controller`].reopen({
+      queryParams: { q: { scope: 'controller' } }
+    });
 
     this.boot();
 
@@ -358,31 +352,16 @@ QUnit.module('Model Dep Query Params', {
       }
     });
 
-    if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-      App.ArticleRoute.reopen({
-        queryParams: {
-          q: { defaultValue: 'wat' },
-          z: { defaultValue: 0 }
-        }
-      });
+    App.ArticleController = Controller.extend({
+      queryParams: ['q', 'z'],
+      q: 'wat',
+      z: 0
+    });
 
-      App.CommentsRoute = Route.extend({
-        queryParams: {
-          page: { defaultValue: 1 }
-        }
-      });
-    } else {
-      App.ArticleController = Controller.extend({
-        queryParams: ['q', 'z'],
-        q: 'wat',
-        z: 0
-      });
-
-      App.CommentsController = Controller.extend({
-        queryParams: 'page',
-        page: 1
-      });
-    }
+    App.CommentsController = Controller.extend({
+      queryParams: 'page',
+      page: 1
+    });
 
     registry.register('template:application', compile('{{#each articles as |a|}} {{link-to \'Article\' \'article\' a id=a.id}} {{/each}} {{outlet}}'));
 
@@ -449,31 +428,17 @@ QUnit.module('Model Dep Query Params (nested)', {
       }
     });
 
-    if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-      App.SiteArticleRoute.reopen({
-        queryParams: {
-          q: { defaultValue: 'wat' },
-          z: { defaultValue: 0 }
-        }
-      });
+    App.SiteArticleController = Controller.extend({
+      queryParams: ['q', 'z'],
+      q: 'wat',
+      z: 0
+    });
 
-      App.SiteArticleCommentsRoute = Route.extend({
-        queryParams: {
-          page: { defaultValue: 1 }
-        }
-      });
-    } else {
-      App.SiteArticleController = Controller.extend({
-        queryParams: ['q', 'z'],
-        q: 'wat',
-        z: 0
-      });
+    App.SiteArticleCommentsController = Controller.extend({
+      queryParams: 'page',
+      page: 1
+    });
 
-      App.SiteArticleCommentsController = Controller.extend({
-        queryParams: 'page',
-        page: 1
-      });
-    }
     registry.register('template:application', compile('{{#each articles as |a|}} {{link-to \'Article\' \'site.article\' a id=a.id}} {{/each}} {{outlet}}'));
 
     this.boot = function() {
@@ -562,42 +527,21 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
       }
     });
 
-    if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-      App.SiteRoute.reopen({
-        queryParams: {
-          country: { defaultValue: 'au' }
-        }
-      });
+    App.SiteController = Controller.extend({
+      queryParams: ['country'],
+      country: 'au'
+    });
 
-      App.SiteArticleRoute.reopen({
-        queryParams: {
-          q: { defaultValue: 'wat' },
-          z: { defaultValue: 0 }
-        }
-      });
+    App.SiteArticleController = Controller.extend({
+      queryParams: ['q', 'z'],
+      q: 'wat',
+      z: 0
+    });
 
-      App.SiteArticleCommentsRoute = Route.extend({
-        queryParams: {
-          page: { defaultValue: 1 }
-        }
-      });
-    } else {
-      App.SiteController = Controller.extend({
-        queryParams: ['country'],
-        country: 'au'
-      });
-
-      App.SiteArticleController = Controller.extend({
-        queryParams: ['q', 'z'],
-        q: 'wat',
-        z: 0
-      });
-
-      App.SiteArticleCommentsController = Controller.extend({
-        queryParams: ['page'],
-        page: 1
-      });
-    }
+    App.SiteArticleCommentsController = Controller.extend({
+      queryParams: ['page'],
+      page: 1
+    });
 
     registry.register('template:application', compile('{{#each allSitesAllArticles as |a|}} {{#link-to \'site.article\' a.site_id a.article_id id=a.id}}Article [{{a.site_id}}] [{{a.article_id}}]{{/link-to}} {{/each}} {{outlet}}'));
 
