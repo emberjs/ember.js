@@ -1,3 +1,4 @@
+/* globals Proxy */
 import {
   dictionary,
   symbol,
@@ -9,7 +10,7 @@ import { ENV } from 'ember-environment';
 import { assert, deprecate, runInDebug, isFeatureEnabled } from 'ember-metal';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
-export const HAS_PROXY = !!Proxy;
+const HAS_PROXY = typeof Proxy === 'function';
 
 /**
  A container used to instantiate and cache objects.

@@ -134,7 +134,7 @@ class AbstractAppendTest extends RenderingTest {
       template: '[child: {{bar}}]{{yield}}'
     });
 
-    let XParent = this.owner._lookupFactory('component:x-parent');
+    let XParent = this.owner.factoryFor('component:x-parent');
 
     this.component = XParent.create({ foo: 'zomg' });
 
