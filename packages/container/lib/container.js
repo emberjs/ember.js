@@ -6,7 +6,7 @@ import {
   assign
 } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import { assert, deprecate, runInDebug } from 'ember-metal';
+import { assert, deprecate, runInDebug, isFeatureEnabled } from 'ember-metal';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 export const HAS_PROXY = !!Proxy;
@@ -134,6 +134,11 @@ Container.prototype = {
    */
   lookupFactory(fullName, options) {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
+
+    if (isFeatureEnabled('container-factoryFor')) {
+      deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.', false, { id: 'container-lookupFactory', until: '2.12.0', url: 'TODO' });
+    }
+
     return factoryFor(this, this.registry.normalize(fullName), options);
   },
 
@@ -152,13 +157,10 @@ Container.prototype = {
 
     if (factory === undefined) { return; }
 
-
-
     let manager = {
       class: factory,
       create(options = {}) {
         let injections = injectionsFor(container, normalizedName);
-        injectDeprecatedContainer(options, container);
         let props = assign({}, injections, options);
 
         runInDebug(() => {
@@ -175,13 +177,17 @@ Container.prototype = {
           validationCache[fullName] = true;
         });
 
-        // This seems shitty
         this.class._toString = container.registry.makeToString(factory, fullName);
 
         if (!this.class.create) {
           throw new Error(`Failed to create an instance of '${normalizedName}'. Most likely an improperly defined class or` +
                       ` an invalid module export.`);
         }
+
+        if (this.class.prototype) {
+          injectDeprecatedContainer(this.class.prototype, container);
+        }
+
 
         return this.class.create(props);
       }
@@ -192,7 +198,7 @@ Container.prototype = {
         let validator = {
           get(obj, prop) {
             if (prop !== 'class' && prop !== 'create') {
-              throw new Error(`You attempted to access "${prop}" on a factory manager created by container#factoryFor. "${prop}" is not a member of a factroy manager."`);
+              throw new Error(`You attempted to access "${prop}" on a factory manager created by container#factoryFor. "${prop}" is not a member of a factory manager."`);
             }
 
             return obj[prop];
@@ -431,63 +437,6 @@ function factoryInjectionsFor(container, fullName) {
 
   return factoryInjections;
 }
-
-// TODO delete this
-// function instantiate(container, fullName) {
-//   let factory = container.factoryFor(fullName);
-//   let lazyInjections, validationCache;
-
-//   if (container.registry.getOption(fullName, 'instantiate') === false) {
-//     return factory.class;
-//   }
-
-//   if (factory) {
-//     if (typeof factory.create !== 'function') {
-//       throw new Error(`Failed to create an instance of '${fullName}'. Most likely an improperly defined class or` +
-//                       ` an invalid module export.`);
-//     }
-
-//     validationCache = container.validationCache;
-
-//     runInDebug(() => {
-//       // Ensure that all lazy injections are valid at instantiation time
-//       if (!validationCache[fullName] && factory.class && typeof factory.class._lazyInjections === 'function') {
-//         lazyInjections = factory.class._lazyInjections();
-//         lazyInjections = container.registry.normalizeInjectionsHash(lazyInjections);
-
-//         container.registry.validateInjections(lazyInjections);
-//       }
-//     });
-
-//     validationCache[fullName] = true;
-
-//     let obj;
-
-//     if (typeof factory.class.extend === 'function') {
-//       // assume the factory was extendable and is already injected
-//       obj = factory.create();
-//     } else {
-//       // assume the factory was extendable
-//       // to create time injections
-//       // TODO: support new'ing for instantiation and merge injections for pure JS Functions
-//       let injections = injectionsFor(container, fullName);
-
-//       // Ensure that a container is available to an object during instantiation.
-//       // TODO - remove when Ember reaches v3.0.0
-//       // This "fake" container will be replaced after instantiation with a
-//       // property that raises deprecations every time it is accessed.
-//       injections.container = container._fakeContainerToInject;
-//       obj = factory.create(injections);
-
-//       // TODO - remove when Ember reaches v3.0.0
-//       if (!Object.isFrozen(obj) && 'container' in obj) {
-//         injectDeprecatedContainer(obj, container);
-//       }
-//     }
-
-//     return obj;
-//   }
-// }
 
 // TODO - remove when Ember reaches v3.0.0
 function injectDeprecatedContainer(object, container) {
