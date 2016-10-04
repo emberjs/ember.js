@@ -479,7 +479,6 @@ function commonSetupRegistry(registry) {
 
   registry.injection('router', '_bucketCache', P`-bucket-cache:main`);
   registry.injection('route', '_bucketCache', P`-bucket-cache:main`);
-  registry.injection('controller', '_bucketCache', P`-bucket-cache:main`);
 
   registry.injection('route', 'router', 'router:main');
 

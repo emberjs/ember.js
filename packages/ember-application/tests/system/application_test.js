@@ -141,7 +141,6 @@ QUnit.test('builds a registry', function() {
   verifyRegistration(application, P`-bucket-cache:main`);
   verifyInjection(application, 'router', '_bucketCache', P`-bucket-cache:main`);
   verifyInjection(application, 'route', '_bucketCache', P`-bucket-cache:main`);
-  verifyInjection(application, 'controller', '_bucketCache', P`-bucket-cache:main`);
 
   verifyInjection(application, 'route', 'router', 'router:main');
 
