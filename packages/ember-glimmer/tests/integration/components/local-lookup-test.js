@@ -99,6 +99,20 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.assertText('yall finished or yall done?');
   }
 
+   ['@test it can local lookup a dynamic component from a passed named argument']() {
+    this.registerComponent('parent-foo', { template: `yall finished {{global-biz baz=(component 'local-bar')}}` });
+    this.registerComponent('global-biz', { template: 'or {{component baz}}' });
+    this.registerComponent('parent-foo/local-bar', { template: 'yall done?' });
+
+    this.render('{{parent-foo}}');
+
+    this.assertText('yall finished or yall done?');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('yall finished or yall done?');
+  }
+
   ['@test it can lookup a local helper']() {
     this.registerHelper('x-outer/x-helper', () => {
       return 'Who dis?';
