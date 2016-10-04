@@ -1300,20 +1300,10 @@ QUnit.test('{{link-to}} active property respects changing parent route context',
 
 
 QUnit.test('{{link-to}} populates href with default query param values even without query-params object', function() {
-  if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        }
-      }
-    });
-  } else {
-    App.IndexController = Controller.extend({
-      queryParams: ['foo'],
-      foo: '123'
-    });
-  }
+  App.IndexController = Controller.extend({
+    queryParams: ['foo'],
+    foo: '123'
+  });
 
   setTemplate('index', compile("{{#link-to 'index' id='the-link'}}Index{{/link-to}}"));
   bootApplication();
@@ -1321,20 +1311,10 @@ QUnit.test('{{link-to}} populates href with default query param values even with
 });
 
 QUnit.test('{{link-to}} populates href with default query param values with empty query-params object', function() {
-  if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        }
-      }
-    });
-  } else {
-    App.IndexController = Controller.extend({
-      queryParams: ['foo'],
-      foo: '123'
-    });
-  }
+  App.IndexController = Controller.extend({
+    queryParams: ['foo'],
+    foo: '123'
+  });
 
   setTemplate('index', compile("{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}"));
   bootApplication();
@@ -1346,24 +1326,11 @@ QUnit.test('{{link-to}} with only query-params and a block updates when route ch
     this.route('about');
   });
 
-  if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-    App.ApplicationRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        },
-        bar: {
-          defaultValue: 'yes'
-        }
-      }
-    });
-  } else {
-    App.ApplicationController = Controller.extend({
-      queryParams: ['foo', 'bar'],
-      foo: '123',
-      bar: 'yes'
-    });
-  }
+  App.ApplicationController = Controller.extend({
+    queryParams: ['foo', 'bar'],
+    foo: '123',
+    bar: 'yes'
+  });
 
   setTemplate('application', compile(`{{#link-to (query-params foo='456' bar='NAW') id='the-link'}}Index{{/link-to}}`));
   bootApplication();
@@ -1379,24 +1346,11 @@ QUnit.test('Block-less {{link-to}} with only query-params updates when route cha
     this.route('about');
   });
 
-  if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-    App.ApplicationRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        },
-        bar: {
-          defaultValue: 'yes'
-        }
-      }
-    });
-  } else {
-    App.ApplicationController = Controller.extend({
-      queryParams: ['foo', 'bar'],
-      foo: '123',
-      bar: 'yes'
-    });
-  }
+  App.ApplicationController = Controller.extend({
+    queryParams: ['foo', 'bar'],
+    foo: '123',
+    bar: 'yes'
+  });
 
   setTemplate('application', compile(`{{link-to "Index" (query-params foo='456' bar='NAW') id='the-link'}}`));
   bootApplication();
