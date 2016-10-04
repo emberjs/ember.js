@@ -35,8 +35,8 @@ for a detailed explanation.
 
 * `ember-runtime-enumerable-includes`
 
-Deprecates `Enumerable#contains` and `Array#contains` in favor of `Enumerable#includes` and `Array#includes`
-to stay in line with ES standards (see [RFC](https://github.com/emberjs/rfcs/blob/master/text/0136-contains-to-includes.md)).
+  Deprecates `Enumerable#contains` and `Array#contains` in favor of `Enumerable#includes` and `Array#includes`
+  to stay in line with ES standards (see [RFC](https://github.com/emberjs/rfcs/blob/master/text/0136-contains-to-includes.md)).
 
 * `ember-string-ishtmlsafe`
 
@@ -52,5 +52,5 @@ to stay in line with ES standards (see [RFC](https://github.com/emberjs/rfcs/blo
 
 * `ember-testing-check-waiters`
 
-Expose a simple mechanism for test tooling to determine if all foreign async has been
-handled before continuing the test. Replaces the intimate API `Ember.Test.waiters` (with a deprecation).
+  Expose a simple mechanism for test tooling to determine if all foreign async has been
+  handled before continuing the test. Replaces the intimate API `Ember.Test.waiters` (with a deprecation).
