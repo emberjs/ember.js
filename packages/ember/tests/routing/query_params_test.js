@@ -149,6 +149,41 @@ if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=987');
   });
 
+  QUnit.test('accessing query params before transition to route must not cause error', function() {
+    App.Router.map(function() {
+      this.route('home', { path: '/home' });
+    });
+
+    App.ApplicationRoute = Route.extend({
+      redirect() {
+        // Access query params for home
+        this.paramsFor('home');
+
+        this.transitionTo('home', {
+          queryParams: {
+            foo: 'bar'
+          }
+        });
+      }
+    });
+
+    App.HomeRoute = Route.extend({
+      queryParams: {
+        foo: {
+          defaultValue: '123'
+        }
+      }
+    });
+
+    bootApplication();
+
+    let controller = container.lookup('controller:application');
+
+    setAndFlush(controller);
+
+    equal(router.get('location.path'), '/home?foo=bar');
+  });
+
   QUnit.test('a query param can have define a `type` for type casting', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
