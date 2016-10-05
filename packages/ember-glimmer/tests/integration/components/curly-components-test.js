@@ -2784,4 +2784,13 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('|foo||bar||qux||baz|');
   }
+
+  ['@test unimplimented positionalParams do not cause an error GH#14416'](assert) {
+    this.registerComponent('foo-bar', {
+      template: 'hello'
+    });
+
+    this.render('{{foo-bar wat}}');
+    this.assertText('hello');
+  }
 });

@@ -413,7 +413,8 @@ const Component = CoreView.extend(
 Component[NAME_KEY] = 'Ember.Component';
 
 Component.reopenClass({
-  isComponentFactory: true
+  isComponentFactory: true,
+  positionalParams: []
 });
 
 export default Component;
