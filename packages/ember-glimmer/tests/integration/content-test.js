@@ -100,6 +100,46 @@ class DynamicContentTest extends RenderingTest {
     this.assertInvariants();
   }
 
+  ['@test resolves the string length properly']() {
+    this.render('<p>{{foo.length}}</p>', { foo: undefined });
+
+    this.assertHTML('<p></p>');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'foo', 'foo'));
+
+    this.assertHTML('<p>3</p>');
+
+    this.runTask(() => set(this.context, 'foo', ''));
+
+    this.assertHTML('<p>0</p>');
+
+    this.runTask(() => set(this.context, 'foo', undefined));
+
+    this.assertHTML('<p></p>');
+  }
+
+  ['@test resolves the array length properly']() {
+    this.render('<p>{{foo.length}}</p>', { foo: undefined });
+
+    this.assertHTML('<p></p>');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'foo', [1, 2, 3]));
+
+    this.assertHTML('<p>3</p>');
+
+    this.runTask(() => set(this.context, 'foo', []));
+
+    this.assertHTML('<p>0</p>');
+
+    this.runTask(() => set(this.context, 'foo', undefined));
+
+    this.assertHTML('<p></p>');
+  }
+
   ['@test it can render a capitalized path with no deprecation']() {
     expectNoDeprecation();
 
