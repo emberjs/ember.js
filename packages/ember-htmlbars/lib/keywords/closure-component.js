@@ -20,6 +20,7 @@ export const COMPONENT_CELL = symbol('COMPONENT_CELL');
 export const COMPONENT_PATH = symbol('COMPONENT_PATH');
 export const COMPONENT_POSITIONAL_PARAMS = symbol('COMPONENT_POSITIONAL_PARAMS');
 export const COMPONENT_HASH = symbol('COMPONENT_HASH');
+export const COMPONENT_SOURCE = symbol('COMPONENT_SOURCE');
 
 const ClosureComponentStream = BasicStream.extend({
   init(env, path, params, hash) {
@@ -68,7 +69,7 @@ function createClosureComponentCell(env, originalComponentPath, params, hash, la
 }
 
 function isValidComponentPath(env, path) {
-  let result = lookupComponent(env.owner, path);
+  let result = lookupComponent(env.owner, path, { source: env.meta.moduleName && `template:${env.meta.moduleName}` });
 
   return !!(result.component || result.layout);
 }
@@ -83,6 +84,7 @@ function createNestedClosureComponentCell(componentCell, params, hash) {
 
   return {
     [COMPONENT_PATH]: componentCell[COMPONENT_PATH],
+    [COMPONENT_SOURCE]: componentCell[COMPONENT_SOURCE],
     [COMPONENT_HASH]: mergeInNewHash(componentCell[COMPONENT_HASH],
                                      hash,
                                      componentCell[COMPONENT_POSITIONAL_PARAMS],
@@ -106,6 +108,7 @@ function createNewClosureComponentCell(env, componentPath, params, hash) {
 
   return {
     [COMPONENT_PATH]: componentPath,
+    [COMPONENT_SOURCE]: env.meta.moduleName,
     [COMPONENT_HASH]: hash,
     [COMPONENT_POSITIONAL_PARAMS]: positionalParams,
     [COMPONENT_CELL]: true

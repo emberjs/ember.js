@@ -118,6 +118,68 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.assertText('yall finished or yall done?');
   }
 
+  ['@test it can local lookup a dynamic component from a passed named argument']() {
+    this.registerComponent('parent-foo', { template: `yall finished {{global-biz baz=(component 'local-bar')}}` });
+    this.registerComponent('global-biz', { template: 'or {{component baz}}' });
+    this.registerComponent('parent-foo/local-bar', { template: 'yall done?' });
+
+    this.render('{{parent-foo}}');
+
+    this.assertText('yall finished or yall done?');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('yall finished or yall done?');
+  }
+
+  ['@test it can local lookup a re-wrapped dynamic component from a passed named argument']() {
+    this.registerComponent('parent-foo', { template: `yall finished {{global-x comp=(component 'local-bar')}}` });
+    this.registerComponent('global-x', { template: `or {{global-y comp=(component comp phrase='done')}}` });
+    this.registerComponent('global-y', { template: `{{component comp}}?` });
+    this.registerComponent('parent-foo/local-bar', { template: 'yall {{phrase}}' });
+
+    this.render('{{parent-foo}}');
+
+    this.assertText('yall finished or yall done?');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('yall finished or yall done?');
+  }
+
+  ['@test it can nest local lookups of dynamic components from a passed named argument']() {
+    this.registerComponent('parent-foo', { template: `yall finished {{global-x comp=(component 'local-bar')}}` });
+    this.registerComponent('global-x', { template: `or {{global-y comp=(component comp phrase='done')}}` });
+    this.registerComponent('global-y', { template: `{{component comp}}{{component 'local-bar'}}` });
+    this.registerComponent('parent-foo/local-bar', { template: 'yall {{phrase}}' });
+    this.registerComponent('global-y/local-bar', { template: `?` });
+
+    this.render('{{parent-foo}}');
+
+    this.assertText('yall finished or yall done?');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('yall finished or yall done?');
+  }
+
+  ['@test it can switch from local to global lookups of dynamic components from a passed named argument']() {
+    this.registerComponent('parent-foo', { template: `yall finished {{global-x comp=(component bar)}}` });
+    this.registerComponent('global-x', { template: `or yall {{component comp}}` });
+    this.registerComponent('parent-foo/local-bar', { template: 'done?' });
+    this.registerComponent('global-bar', { template: `ready?` });
+
+    this.render('{{parent-foo bar=bar}}', { bar: 'local-bar' });
+
+    this.assertText('yall finished or yall done?');
+
+    this.runTask(() => this.context.set('bar', 'global-bar'));
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('yall finished or yall ready?');
+  }
+
   ['@test it can lookup a local helper']() {
     this.registerHelper('x-outer/x-helper', () => {
       return 'Who dis?';
