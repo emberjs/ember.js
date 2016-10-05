@@ -9,10 +9,6 @@ export default class TestPromise extends RSVP.Promise {
     lastPromise = this;
   }
 
-  static resolve(val) {
-    return new TestPromise(resolve => resolve(val));
-  }
-
   then(onFulfillment, ...args) {
     return super.then(result => isolate(onFulfillment, result), ...args);
   }
