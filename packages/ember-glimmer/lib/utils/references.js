@@ -198,6 +198,10 @@ export class NestedPropertyReference extends PropertyReference {
 
     _parentObjectTag.update(tagFor(parentValue));
 
+    if (typeof parentValue === 'string' && _propertyKey === 'length') {
+      return parentValue.length;
+    }
+
     if (typeof parentValue === 'object' && parentValue) {
       if (isFeatureEnabled('mandatory-setter')) {
         watchKey(parentValue, _propertyKey);
