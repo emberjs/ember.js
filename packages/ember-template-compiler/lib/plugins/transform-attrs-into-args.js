@@ -27,6 +27,21 @@ export default function TransformAttrsToProps() {
   this.syntax = null;
 }
 
+function isAttrs(node) {
+  if (node.parts[0] === 'attrs') {
+    return true;
+  }
+
+  let _this = node.parts[0];
+  let attrs = node.parts[1];
+
+  if (_this === null && attrs === 'attrs') {
+    node.parts.shift();
+    node.original = node.original.slice(5);
+    return true;
+  }
+}
+
 /**
   @private
   @method transform
@@ -37,7 +52,7 @@ TransformAttrsToProps.prototype.transform = function TransformAttrsToProps_trans
 
   traverse(ast, {
     PathExpression(node) {
-      if (node.parts[0] === 'attrs') {
+      if (isAttrs(node)) {
         let path = b.path(node.original.substr(6));
         path.original = `@${path.original}`;
         path.data = true;

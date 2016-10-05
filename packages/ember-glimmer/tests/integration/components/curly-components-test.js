@@ -1135,6 +1135,43 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In layout - someProp: wycats');
   }
 
+  ['@test this.attrs.foo === attrs.foo === foo']() {
+    this.registerComponent('foo-bar', {
+      template: strip`
+        Args: {{this.attrs.value}} | {{attrs.value}} | {{value}}
+        {{#each this.attrs.items as |item|}}
+          {{item}}
+        {{/each}}
+        {{#each attrs.items as |item|}}
+          {{item}}
+        {{/each}}
+        {{#each items as |item|}}
+          {{item}}
+        {{/each}}
+      `
+    });
+
+    this.render('{{foo-bar value=model.value items=model.items}}', {
+      model: {
+        value: 'wat',
+        items: [1, 2, 3]
+      }
+    });
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      this.context.set('model.value', 'lul');
+      this.context.set('model.items', [1]);
+    });
+
+    this.assertText(strip`Args: lul | lul | lul111`);
+
+    this.runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
+
+    this.assertText('Args: wat | wat | wat123123123');
+  }
+
   ['@test non-block with properties on self']() {
     this.registerComponent('non-block', {
       template: 'In layout - someProp: {{someProp}}'
