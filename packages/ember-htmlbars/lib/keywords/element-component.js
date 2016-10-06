@@ -1,5 +1,6 @@
 import assign from 'ember-metal/assign';
 import {
+  COMPONENT_SOURCE,
   COMPONENT_HASH,
   COMPONENT_PATH,
   COMPONENT_POSITIONAL_PARAMS,
@@ -75,6 +76,9 @@ function render(morph, env, scope, [path, ...params], hash, template, inverse, v
                           closureComponent[COMPONENT_POSITIONAL_PARAMS],
                           params);
     params = [];
+    env = env.childWithMeta(assign({}, env.meta,
+      { moduleName: closureComponent[COMPONENT_SOURCE] }
+    ));
   }
 
   let templates = { default: template, inverse };
