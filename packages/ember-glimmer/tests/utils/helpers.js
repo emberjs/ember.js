@@ -19,5 +19,3 @@ export {
   DOMChanges,
   isHTMLSafe
 } from 'ember-glimmer';
-
-export { buildOwner } from 'internal-test-helpers';
