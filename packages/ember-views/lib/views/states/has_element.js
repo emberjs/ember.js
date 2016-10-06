@@ -11,10 +11,7 @@ assign(hasElement, {
     return sel ? jQuery(sel, elem) : jQuery(elem);
   },
 
-  // once the view has been inserted into the DOM, rerendering is
-  // deferred to allow bindings to synchronize.
   rerender(view) {
-    view.renderer.ensureViewNotRendering(view);
     view.renderer.rerender(view);
   },
 

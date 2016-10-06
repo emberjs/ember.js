@@ -164,25 +164,26 @@ class LifeCycleHooksTest extends RenderingTest {
         }
       },
 
-      willRender() {
-        pushHook('willRender');
-        assertParentView('willRender', this);
-
-        if (this.isInitialRender) {
-          assertNoElement('willRender', this);
-          assertState('willRender', 'preRender', this);
-        } else {
-          assertElement('willRender', this);
-          assertState('willRender', 'inDOM', this);
-        }
-      },
-
       willInsertElement() {
         pushHook('willInsertElement');
         assertParentView('willInsertElement', this);
         assertElement('willInsertElement', this, false);
         assertState('willInsertElement', 'hasElement', this);
       },
+
+      willRender() {
+        pushHook('willRender');
+        assertParentView('willRender', this);
+
+        if (this.isInitialRender) {
+          assertElement('willRender', this, false);
+          assertState('willRender', 'hasElement', this);
+        } else {
+          assertElement('willRender', this);
+          assertState('willRender', 'inDOM', this);
+        }
+      },
+
 
       didInsertElement() {
         pushHook('didInsertElement');
@@ -302,20 +303,20 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'init'],
         ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
         ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
-        ['the-top', 'willRender'],
         ['the-top', 'willInsertElement'],
+        ['the-top', 'willRender'],
 
         ['the-middle', 'init'],
         ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
         ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
-        ['the-middle', 'willRender'],
         ['the-middle', 'willInsertElement'],
+        ['the-middle', 'willRender'],
 
         ['the-bottom', 'init'],
         ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
         ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
-        ['the-bottom', 'willRender'],
         ['the-bottom', 'willInsertElement'],
+        ['the-bottom', 'willRender'],
 
         // Async hooks
 
@@ -539,26 +540,26 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-parent', 'init'],
         ['the-parent', 'didInitAttrs',          { attrs: parentAttrs }],
         ['the-parent', 'didReceiveAttrs',       { newAttrs: parentAttrs }],
-        ['the-parent', 'willRender'],
         ['the-parent', 'willInsertElement'],
+        ['the-parent', 'willRender'],
 
         ['the-first-child', 'init'],
         ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs }],
         ['the-first-child', 'didReceiveAttrs',  { newAttrs: firstAttrs }],
-        ['the-first-child', 'willRender'],
         ['the-first-child', 'willInsertElement'],
+        ['the-first-child', 'willRender'],
 
         ['the-second-child', 'init'],
         ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs }],
         ['the-second-child', 'didReceiveAttrs', { newAttrs: secondAttrs }],
-        ['the-second-child', 'willRender'],
         ['the-second-child', 'willInsertElement'],
+        ['the-second-child', 'willRender'],
 
         ['the-last-child', 'init'],
         ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs }],
         ['the-last-child', 'didReceiveAttrs',   { newAttrs: lastAttrs }],
-        ['the-last-child', 'willRender'],
         ['the-last-child', 'willInsertElement'],
+        ['the-last-child', 'willRender'],
 
         // Async hooks
 
@@ -856,20 +857,20 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'init'],
         ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
         ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
-        ['the-top', 'willRender'],
         ['the-top', 'willInsertElement'],
+        ['the-top', 'willRender'],
 
         ['the-middle', 'init'],
         ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
         ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
-        ['the-middle', 'willRender'],
         ['the-middle', 'willInsertElement'],
+        ['the-middle', 'willRender'],
 
         ['the-bottom', 'init'],
         ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
         ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
-        ['the-bottom', 'willRender'],
         ['the-bottom', 'willInsertElement'],
+        ['the-bottom', 'willRender'],
 
         // Async hooks
 
@@ -1041,8 +1042,8 @@ class LifeCycleHooksTest extends RenderingTest {
       ];
       if (this.isInteractive) {
         ret.push(
-          ['an-item', 'willRender'],
-          ['an-item', 'willInsertElement']
+          ['an-item', 'willInsertElement'],
+          ['an-item', 'willRender']
         );
       }
       ret.push(
@@ -1052,8 +1053,8 @@ class LifeCycleHooksTest extends RenderingTest {
       );
       if (this.isInteractive) {
         ret.push(
-          ['nested-item', 'willRender'],
-          ['nested-item', 'willInsertElement']
+          ['nested-item', 'willInsertElement'],
+          ['nested-item', 'willRender']
         );
       }
       return ret;
@@ -1150,15 +1151,15 @@ class LifeCycleHooksTest extends RenderingTest {
         ['no-items', 'init'],
         ['no-items', 'didInitAttrs',       { attrs: { } }],
         ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
-        ['no-items', 'willRender'],
         ['no-items', 'willInsertElement'],
+        ['no-items', 'willRender'],
 
 
         ['nested-item', 'init'],
         ['nested-item', 'didInitAttrs',       { attrs: { } }],
         ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
-        ['nested-item', 'willRender'],
         ['nested-item', 'willInsertElement'],
+        ['nested-item', 'willRender'],
 
         ['an-item', 'didDestroyElement'],
         ['nested-item', 'didDestroyElement'],
@@ -1238,65 +1239,70 @@ class LifeCycleHooksTest extends RenderingTest {
   }
 }
 
-moduleFor('Components test: interactive lifecycle hooks (curly components)', class extends LifeCycleHooksTest {
-
+class CurlyComponentsTest extends LifeCycleHooksTest {
   get ComponentClass() {
     return Component;
+  }
+
+  invocationFor(name, namedArgs = {}) {
+    let attrs = Object.keys(namedArgs).map(k => `${k}=${this.val(namedArgs[k])}`).join(' ');
+    return `{{${name} ${attrs}}}`;
+  }
+
+  attrFor(name) {
+    return `${name}`;
+  }
+
+  /* private */
+  val(value) {
+    if (value.isString) {
+      return JSON.stringify(value.value);
+    } else if (value.isExpr) {
+      return `(readonly ${value.value})`;
+    } else {
+      throw new Error(`Unknown value: ${value}`);
+    }
+  }
+}
+
+moduleFor('Components test: interactive lifecycle hooks (curly components)', class extends CurlyComponentsTest {
+
+  get isInteractive() {
+    return true;
+  }
+
+});
+
+moduleFor('Components test: non-interactive lifecycle hooks (curly components)', class extends CurlyComponentsTest {
+
+  get isInteractive() {
+    return false;
+  }
+
+});
+
+moduleFor('Components test: interactive lifecycle hooks (tagless curly components)', class extends CurlyComponentsTest {
+
+  get ComponentClass() {
+    return Component.extend({ tagName: '' });
   }
 
   get isInteractive() {
     return true;
   }
 
-  invocationFor(name, namedArgs = {}) {
-    let attrs = Object.keys(namedArgs).map(k => `${k}=${this.val(namedArgs[k])}`).join(' ');
-    return `{{${name} ${attrs}}}`;
-  }
-
-  attrFor(name) {
-    return `${name}`;
-  }
-
-  /* private */
-  val(value) {
-    if (value.isString) {
-      return JSON.stringify(value.value);
-    } else if (value.isExpr) {
-      return `(readonly ${value.value})`;
-    } else {
-      throw new Error(`Unknown value: ${value}`);
-    }
-  }
 });
 
-moduleFor('Components test: non-interactive lifecycle hooks (curly components)', class extends LifeCycleHooksTest {
+moduleFor('Components test: non-interactive lifecycle hooks (tagless curly components)', class extends CurlyComponentsTest {
+
   get ComponentClass() {
-    return Component;
+    return Component.extend({ tagName: '' });
   }
 
   get isInteractive() {
     return false;
   }
 
-  invocationFor(name, namedArgs = {}) {
-    let attrs = Object.keys(namedArgs).map(k => `${k}=${this.val(namedArgs[k])}`).join(' ');
-    return `{{${name} ${attrs}}}`;
-  }
-
-  attrFor(name) {
-    return `${name}`;
-  }
-
-  /* private */
-  val(value) {
-    if (value.isString) {
-      return JSON.stringify(value.value);
-    } else if (value.isExpr) {
-      return `(readonly ${value.value})`;
-    } else {
-      throw new Error(`Unknown value: ${value}`);
-    }
-  }
 });
 
 moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
