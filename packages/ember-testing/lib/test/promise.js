@@ -44,7 +44,7 @@ export function promise(resolver, label) {
   @since 1.2.0
 */
 export function resolve(result, label) {
-  return TestPromise.resolve(result, label)
+  return TestPromise.resolve(result, label);
 }
 
 export function getLastPromise() {
