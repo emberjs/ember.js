@@ -411,6 +411,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     // to a certain query param.
     if (defaultValueType === 'array') {
       return JSON.stringify(value);
+    } else if (defaultValueType === 'null' && value === null) {
+      return null;
     }
     return `${value}`;
   },
