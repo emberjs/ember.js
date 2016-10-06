@@ -1,5 +1,15 @@
 # Ember Changelog
 
+### 2.9.0-beta.5 (October 6, 2016)
+
+- [#14403](https://github.com/emberjs/ember.js/pull/14403) [BUGFIX] Ensure `willInsertElement` is fired for tagless components.
+- [#14384](https://github.com/emberjs/ember.js/pull/14384) [BUGFIX] Fix an issue when `attrs` is used in class name and attribute bindings.
+- [#14417](https://github.com/emberjs/ember.js/pull/14417) [BUGFIX] Fix an issue when passing unused positional params to a component.
+- [#14419](https://github.com/emberjs/ember.js/pull/14419) [BUGFIX] Fix rendering `{{string.length}}` in a template.
+- [#14425](https://github.com/emberjs/ember.js/pull/14425) [BUGFIX] Fix rendering `{{this.attrs.*}}` in a template.
+- [#14427](https://github.com/emberjs/ember.js/pull/14427) [BUGFIX] Ensure `Ember.set` in `didUpdate` hooks causes a re-render.
+- [#13996](https://github.com/emberjs/ember.js/pull/13996) [BUGFIX] Fix an issue when passing closure actions via `attrs.*` to child components.
+
 ### 2.9.0-beta.4 (September 28, 2016)
 
 - [#14361](https://github.com/emberjs/ember.js/pull/14361) [BUGFIX] Prevent usage of `this.element` when running in a non-interactive environment (i.e. FastBoot).
