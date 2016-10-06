@@ -2,6 +2,7 @@ import { get, set, propertyDidChange } from 'ember-metal';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { A as emberA, ArrayProxy } from 'ember-runtime';
+import { Component } from '../../utils/helpers';
 
 import {
   TogglingSyntaxConditionalsTest,
@@ -438,6 +439,48 @@ class SingleEachTest extends AbstractEachTest {
     this.replaceList(['a', 'a', 'a']);
 
     this.assertText('aaa');
+  }
+
+  [`@test updating and setting within #each`](assert) {
+    this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
+
+    let FooBarComponent = Component.extend({
+      init () {
+        this._super(...arguments);
+        this.isEven = true;
+        this.tagName = 'li';
+      },
+
+      _isEven() {
+        this.set('isEven', this.get('item.value') % 2 === 0);
+      },
+
+      didUpdate() {
+        this._isEven();
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{#if isEven}}{{item.value}}{{/if}}' });
+
+    this.render(strip`
+      {{#each list as |item|}}
+        <li>Prev</li>
+        {{foo-bar item=item}}
+        <li>Next</li>
+      {{/each}}
+    `);
+
+    this.assertText('Prev1NextPrev2NextPrev3Next');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context.list.objectAt(0), 'value', 3));
+
+    this.assertText('PrevNextPrev2NextPrev3Next');
+
+    this.replaceList([{ value: 1 }, { value: 2 }, { value: 3 }]);
+
+    this.assertText('Prev1NextPrev2NextPrev3Next');
   }
 
   ['@test it can render duplicate objects']() {
