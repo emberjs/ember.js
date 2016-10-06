@@ -11,9 +11,6 @@
 // if present
 import {
   assign,
-  guidFor,
-  generateGuid,
-  GUID_KEY_PROPERTY,
   makeArray,
   symbol
 } from 'ember-utils';
@@ -36,7 +33,9 @@ import {
   InjectedProperty,
   run,
   destroy,
-  descriptor
+  descriptor,
+  guidFor,
+  generateGuid,
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
@@ -65,7 +64,6 @@ function makeCtor() {
       initProperties = [arguments[0]];
     }
 
-    this.__defineNonEnumerable(GUID_KEY_PROPERTY);
     var m = meta(this);
     var proto = m.proto;
     m.proto = this;

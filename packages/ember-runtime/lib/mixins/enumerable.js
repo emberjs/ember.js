@@ -7,7 +7,7 @@
 // HELPERS
 //
 
-import { guidFor, EmptyObject } from 'ember-utils';
+import { EmptyObject } from 'ember-utils';
 import {
   get,
   set,
@@ -22,7 +22,8 @@ import {
   sendEvent,
   hasListeners,
   assert,
-  deprecate
+  deprecate,
+  guidFor
 } from 'ember-metal';
 import compare from '../compare';
 import require from 'require';

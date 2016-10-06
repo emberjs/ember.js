@@ -2,13 +2,16 @@
 @module ember
 @submodule ember-glimmer
 */
-import { generateGuid, guidFor } from 'ember-utils';
 import {
   ArgsSyntax,
   StatementSyntax,
   ComponentDefinition
 } from 'glimmer-runtime';
-import { _instrumentStart } from 'ember-metal';
+import {
+  _instrumentStart,
+  generateGuid,
+  guidFor
+} from 'ember-metal';
 import { RootReference } from '../utils/references';
 import {
   UpdatableTag,
@@ -252,7 +255,7 @@ class TopLevelOutletLayoutCompiler {
   compile(builder) {
     builder.wrapLayout(this.template.asLayout());
     builder.tag.static('div');
-    builder.attrs.static('id', guidFor(this));
+    builder.attrs.static('id', 'ember' + guidFor(this));
     builder.attrs.static('class', 'ember-view');
   }
 }

@@ -1,11 +1,12 @@
-import { guidFor, generateGuid } from 'ember-utils';
 import { Suite } from './suite';
 import EmberObject from '../../system/object';
 import {
   computed,
   get,
   _addBeforeObserver,
-  isFeatureEnabled
+  isFeatureEnabled,
+  generateGuid,
+  guidFor
 } from 'ember-metal';
 
 const ObserverClass = EmberObject.extend({

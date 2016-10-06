@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 
-import { EmptyObject, guidFor } from 'ember-utils';
+import { EmptyObject } from 'ember-utils';
 import {
   assert,
   get,
@@ -14,7 +14,8 @@ import {
   removeObserver,
   isNone,
   getProperties,
-  WeakMap
+  WeakMap,
+  guidFor
 } from 'ember-metal';
 import compare from '../compare';
 import { isArray } from '../utils';

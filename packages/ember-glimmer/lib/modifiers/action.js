@@ -1,5 +1,4 @@
-import { uuid } from 'ember-utils';
-import { assert, run, flaggedInstrument } from 'ember-metal';
+import { uuid, assert, run, flaggedInstrument } from 'ember-metal';
 import {
   isSimpleClick,
   ActionManager

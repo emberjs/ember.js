@@ -1,5 +1,6 @@
 /* globals Element */
-import { guidFor, symbol, getOwner } from 'ember-utils';
+import { symbol, getOwner } from 'ember-utils';
+import { guidFor } from 'ember-metal';
 
 /**
 @module ember
@@ -47,9 +48,9 @@ export function getRootViews(owner) {
  */
 export function getViewId(view) {
   if (view.tagName === '') {
-    return guidFor(view);
+    return 'ember' + guidFor(view);
   } else {
-    return view.elementId || guidFor(view);
+    return view.elementId;
   }
 }
 

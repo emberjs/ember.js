@@ -1,6 +1,5 @@
-import { guidFor } from 'ember-utils';
 import EmberObject from '../../system/object';
-import { get } from 'ember-metal';
+import { get, guidFor } from 'ember-metal';
 
 /*
   @class

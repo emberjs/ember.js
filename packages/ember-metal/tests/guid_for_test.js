@@ -1,5 +1,6 @@
 import {
-  guidFor
+  guidFor,
+  generateGuid
 } from '../index';
 
 QUnit.module('guidFor');
@@ -12,18 +13,12 @@ function diffGuid(a, b, message) {
   ok(guidFor(a) !== guidFor(b), message);
 }
 
-function nanGuid(obj) {
-  let type = typeof obj;
-  ok(isNaN(parseInt(guidFor(obj), 0)), 'guids for ' + type + 'don\'t parse to numbers');
-}
-
 QUnit.test('Object', function() {
   let a = {};
   let b = {};
 
   sameGuid(a, a, 'same object always yields same guid');
   diffGuid(a, b, 'different objects yield different guids');
-  nanGuid(a);
 });
 
 QUnit.test('strings', function() {
@@ -34,7 +29,6 @@ QUnit.test('strings', function() {
   sameGuid(a, a, 'same string always yields same guid');
   sameGuid(a, aprime, 'identical strings always yield the same guid');
   diffGuid(a, b, 'different strings yield different guids');
-  nanGuid(a);
 });
 
 QUnit.test('numbers', function() {
@@ -45,7 +39,6 @@ QUnit.test('numbers', function() {
   sameGuid(a, a, 'same numbers always yields same guid');
   sameGuid(a, aprime, 'identical numbers always yield the same guid');
   diffGuid(a, b, 'different numbers yield different guids');
-  nanGuid(a);
 });
 
 QUnit.test('numbers', function() {
@@ -56,8 +49,6 @@ QUnit.test('numbers', function() {
   sameGuid(a, a, 'same booleans always yields same guid');
   sameGuid(a, aprime, 'identical booleans always yield the same guid');
   diffGuid(a, b, 'different boolean yield different guids');
-  nanGuid(a);
-  nanGuid(b);
 });
 
 QUnit.test('null and undefined', function() {
@@ -69,8 +60,6 @@ QUnit.test('null and undefined', function() {
   sameGuid(b, b, 'undefined always returns the same guid');
   sameGuid(a, aprime, 'different nulls return the same guid');
   diffGuid(a, b, 'null and undefined return different guids');
-  nanGuid(a);
-  nanGuid(b);
 });
 
 QUnit.test('arrays', function() {
@@ -79,7 +68,14 @@ QUnit.test('arrays', function() {
   let b = ['1', '2', '3'];
 
   sameGuid(a, a, 'same instance always yields same guid');
-  diffGuid(a, aprime, 'identical arrays always yield the same guid');
+  diffGuid(a, aprime, 'identical arrays always yield different guids');
   diffGuid(a, b, 'different arrays yield different guids');
-  nanGuid(a);
+});
+
+QUnit.module('Ember.generateGuid');
+
+QUnit.test('Prefix', function() {
+  let a = {};
+
+  ok(generateGuid(a, 'tyrell').indexOf('tyrell') > -1, 'guid can be prefixed');
 });

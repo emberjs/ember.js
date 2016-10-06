@@ -1,6 +1,6 @@
-import { guidFor } from 'ember-utils';
 import Logger from 'ember-console';
 import { context, ENV } from 'ember-environment';
+import { guidFor } from './guid';
 import run from './run_loop';
 import { assert, deprecate } from './debug';
 import { get } from './property_get';

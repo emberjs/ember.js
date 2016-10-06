@@ -1,5 +1,5 @@
-import { guidFor, EmptyObject } from 'ember-utils';
-import { get, tagFor } from 'ember-metal';
+import { EmptyObject } from 'ember-utils';
+import { guidFor, get, tagFor } from 'ember-metal';
 import {
   objectAt,
   isEmberArray,

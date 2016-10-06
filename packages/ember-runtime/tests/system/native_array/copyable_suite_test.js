@@ -1,4 +1,4 @@
-import { generateGuid } from 'ember-utils';
+import { generateGuid } from 'ember-metal';
 import { A as emberA } from '../../../system/native_array';
 import CopyableTests from '../../suites/copyable';
 

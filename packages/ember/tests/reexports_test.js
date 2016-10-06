@@ -9,10 +9,6 @@ QUnit.module('ember reexports');
   ['getOwner', 'ember-utils', 'getOwner'],
   ['setOwner', 'ember-utils', 'setOwner'],
   // ['assign', 'ember-metal'], TODO: fix this test, we use `Object.assign` if present
-  ['GUID_KEY', 'ember-utils'],
-  ['uuid', 'ember-utils'],
-  ['generateGuid', 'ember-utils'],
-  ['guidFor', 'ember-utils'],
   ['inspect', 'ember-utils'],
   ['makeArray', 'ember-utils'],
   ['canInvoke', 'ember-utils'],
@@ -51,7 +47,6 @@ QUnit.module('ember reexports');
   ['FEATURES', 'ember-metal'],
   ['FEATURES.isEnabled', 'ember-metal', 'isFeatureEnabled'],
   ['Error', 'ember-metal'],
-  ['META_DESC', 'ember-metal'],
   ['meta', 'ember-metal'],
   ['get', 'ember-metal'],
   ['set', 'ember-metal'],
@@ -117,6 +112,10 @@ QUnit.module('ember reexports');
   ['bind', 'ember-metal'],
   ['Binding', 'ember-metal'],
   ['isGlobalPath', 'ember-metal'],
+  ['GUID_KEY', 'ember-metal'],
+  ['uuid', 'ember-metal'],
+  ['generateGuid', 'ember-metal'],
+  ['guidFor', 'ember-metal'],
 
   // ember-views
   ['$', 'ember-views', 'jQuery'],

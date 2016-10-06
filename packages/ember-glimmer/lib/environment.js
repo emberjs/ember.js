@@ -1,5 +1,5 @@
-import { guidFor, OWNER } from 'ember-utils';
-import { Cache, assert, warn, runInDebug } from 'ember-metal';
+import { OWNER } from 'ember-utils';
+import { guidFor, Cache, assert, warn, runInDebug } from 'ember-metal';
 import {
   lookupPartial,
   hasPartial,

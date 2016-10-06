@@ -1,6 +1,5 @@
-import { guidFor } from 'ember-utils';
 import { SuiteModuleBuilder } from '../suite';
-import { get } from 'ember-metal';
+import { get, guidFor } from 'ember-metal';
 
 const suite = SuiteModuleBuilder.create();
 

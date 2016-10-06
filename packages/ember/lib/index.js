@@ -12,16 +12,12 @@ import Ember, * as metal from 'ember-metal';
 // ember-utils exports
 Ember.getOwner = utils.getOwner;
 Ember.setOwner = utils.setOwner;
-Ember.generateGuid = utils.generateGuid;
-Ember.GUID_KEY = utils.GUID_KEY;
-Ember.guidFor = utils.guidFor;
 Ember.inspect = utils.inspect;
 Ember.makeArray = utils.makeArray;
 Ember.canInvoke = utils.canInvoke;
 Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.applyStr = utils.applyStr;
-Ember.uuid = utils.uuid;
 Ember.assign = Object.assign || utils.assign;
 
 // container exports
@@ -60,7 +56,6 @@ Ember.Instrumentation = {
 };
 
 Ember.Error = metal.Error;
-Ember.META_DESC = metal.META_DESC;
 Ember.meta = metal.meta;
 Ember.get = metal.get;
 Ember.getWithDefault = metal.getWithDefault;
@@ -130,6 +125,10 @@ Ember.Mixin = metal.Mixin;
 Ember.bind = metal.bind;
 Ember.Binding = metal.Binding;
 Ember.isGlobalPath = metal.isGlobalPath;
+Ember.uuid = metal.uuid;
+Ember.generateGuid = metal.generateGuid;
+Ember.GUID_KEY = metal.GUID_KEY;
+Ember.guidFor = metal.guidFor;
 
 if (isFeatureEnabled('ember-metal-weakmap')) {
   Ember.WeakMap = metal.WeakMap;

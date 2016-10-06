@@ -43,7 +43,6 @@ export {
   setDispatchOverride
 } from './error_handler';
 export {
-  META_DESC,
   meta,
   peekMeta
 } from './meta';
@@ -169,7 +168,12 @@ export {
   assertNotRendered
 } from './transaction';
 export { default as descriptor } from './descriptor';
-
+export {
+  uuid,
+  generateGuid,
+  guidFor,
+  GUID_KEY
+} from './guid';
 
 // TODO: this needs to be deleted once we refactor the build tooling
 // do this for side-effects of updating Ember.assert, warn, etc when
