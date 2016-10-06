@@ -338,6 +338,8 @@ class Renderer {
         globalShouldReflush = globalShouldReflush || shouldReflush;
       }
 
+      this._lastRevision = CURRENT_TAG.value();
+
       env.commit();
     } while (globalShouldReflush || roots.length > initialRootsLength);
 
@@ -365,10 +367,14 @@ class Renderer {
     // while we are actively rendering roots
     this._isRenderingRoots = true;
 
+    let completedWithoutError = false;
     try {
       this._renderRoots();
+      completedWithoutError = true;
     } finally {
-      this._lastRevision = CURRENT_TAG.value();
+      if (!completedWithoutError) {
+        this._lastRevision = CURRENT_TAG.value();
+      }
       this._isRenderingRoots = false;
     }
   }
