@@ -15,9 +15,7 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
 
     this.application = run(Application, 'create', this.applicationOptions);
 
-    this.router = this.application.Router = Router.extend({
-      location: 'none'
-    });
+    this.router = this.application.Router = Router.extend(this.routerOptions);
 
     this.applicationInstance = null;
   }
@@ -26,6 +24,12 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     return {
       rootElement: '#qunit-fixture',
       autoboot: false
+    };
+  }
+
+  get routerOptions() {
+    return {
+      location: 'none'
     };
   }
 

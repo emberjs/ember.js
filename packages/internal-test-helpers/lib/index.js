@@ -24,5 +24,6 @@ export {
 export { default as AbstractTestCase } from './test-cases/abstract';
 export { default as AbstractApplicationTestCase } from './test-cases/abstract-application';
 export { default as ApplicationTestCase } from './test-cases/application';
+export { default as QueryParamTestCase } from './test-cases/query-param';
 export { default as AbstractRenderingTestCase } from './test-cases/abstract-rendering';
 export { default as RenderingTestCase } from './test-cases/rendering';
