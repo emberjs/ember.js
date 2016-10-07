@@ -64,5 +64,8 @@
     "ember-cli-valid-component-name": "^1.0.0",
     "simple-dom": "^0.3.0",
     "broccoli-stew": "^1.2.0"
+  },
+  "ember-addon": {
+    "after": "ember-cli-legacy-blueprints"
   }
 }
