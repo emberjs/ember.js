@@ -50,6 +50,12 @@
 
 - [#14156](https://github.com/emberjs/ember.js/pull/14156) [FEATURE ember-glimmer] Enable by default.
 
+### 2.8.2 (October 6, 2016)
+
+- [#14365](https://github.com/emberjs/ember.js/pull/14365) [BUGFIX] Fix an issue with URLs with encoded characters and a trailing slash.
+- [#14382](https://github.com/emberjs/ember.js/pull/14382) [BUGFIX] Allow bound `id` on tagless components.
+- [#14421](https://github.com/emberjs/ember.js/pull/14421) [BUGFIX] Fix an issue with local components lookup.
+
 ### 2.8.1 (September 14, 2016)
 
 - [#14184](https://github.com/emberjs/ember.js/pull/14184) [BUGFIX] Ensure that promises that reject with non Errors (i.e. something without a `.stack`) do not trigger an error during Ember's internal error processing.
