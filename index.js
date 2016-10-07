@@ -24,11 +24,11 @@ module.exports = {
 		this._super.init && this._super.init.apply(this, arguments);
     if ('ember' in this.project.bowerDependencies()) {
       // TODO: move this to a throw soon.
-      this.ui.writeWarnLine('Ember.js is now provided by node_module `ember-core`, please remove it from bower');
+      this.ui.writeWarnLine('Ember.js is now provided by node_module `ember-source`, please remove it from bower');
     }
   },
 
-  name: 'ember-core',
+  name: 'ember-source',
   paths: paths,
   absolutePaths: absolutePaths,
   treeForVendor: function() {

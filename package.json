@@ -1,5 +1,5 @@
 {
-  "name": "ember-core",
+  "name": "ember-source",
   "license": "MIT",
   "version": "2.10.0",
   "keywords": [
@@ -64,5 +64,8 @@
     "ember-cli-valid-component-name": "^1.0.0",
     "simple-dom": "^0.3.0",
     "broccoli-stew": "^1.2.0"
+  },
+  "ember-addon": {
+    "after": "ember-cli-legacy-blueprints"
   }
 }
