@@ -54,3 +54,7 @@ for a detailed explanation.
 
   Expose a simple mechanism for test tooling to determine if all foreign async has been
   handled before continuing the test. Replaces the intimate API `Ember.Test.waiters` (with a deprecation).
+
+* `ember-testing-resume-test`
+
+  Introduces the `resumeTest` testing helper to complement the `pauseTest` helper.

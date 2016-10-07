@@ -8,6 +8,7 @@
     "ember-string-ishtmlsafe": true,
     "ember-testing-check-waiters": true,
     "ember-metal-weakmap": null,
-    "ember-glimmer-allow-backtracking-rerender": null
+    "ember-glimmer-allow-backtracking-rerender": null,
+    "ember-testing-resume-test": null
   }
 }
