@@ -44,7 +44,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.assertText('Nested template says: Hi!', 'Re-render works');
   }
 
-  ['@test tagless blockless component can lookup local template'](assert) {
+  ['@test tagless blockless component can lookup local template']() {
     this.registerComponent('x-outer/x-inner', { template: 'Nested template says: {{yield}}' });
     this.registerTemplate('components/x-outer', '{{#x-inner}}Hi!{{/x-inner}}');
     this.registerComponent('x-outer', {
