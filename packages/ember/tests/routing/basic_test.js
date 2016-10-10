@@ -2290,6 +2290,8 @@ QUnit.test('Route should tear down multiple outlets', function() {
 
 
 QUnit.test('Route will assert if you try to explicitly render {into: ...} a missing template', function () {
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -3441,7 +3443,12 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
 });
 
 QUnit.test('Can this.render({into:...}) the render helper', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
   setTemplate('bar', compile('bar'));
@@ -3468,7 +3475,12 @@ QUnit.test('Can this.render({into:...}) the render helper', function() {
 });
 
 QUnit.test('Can disconnect from the render helper', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
 
@@ -3493,7 +3505,12 @@ QUnit.test('Can disconnect from the render helper', function() {
 });
 
 QUnit.test('Can this.render({into:...}) the render helper\'s children', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
   setTemplate('other', compile('other'));
@@ -3522,7 +3539,12 @@ QUnit.test('Can this.render({into:...}) the render helper\'s children', function
 });
 
 QUnit.test('Can disconnect from the render helper\'s children', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
   setTemplate('other', compile('other'));
@@ -3549,8 +3571,16 @@ QUnit.test('Can disconnect from the render helper\'s children', function() {
 });
 
 QUnit.test('Can this.render({into:...}) nested render helpers', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
-  setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+  expectDeprecation(() => {
+    setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
   setTemplate('baz', compile('baz'));
@@ -3577,8 +3607,16 @@ QUnit.test('Can this.render({into:...}) nested render helpers', function() {
 });
 
 QUnit.test('Can disconnect from nested render helpers', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
-  setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+  expectDeprecation(() => {
+    setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
 
