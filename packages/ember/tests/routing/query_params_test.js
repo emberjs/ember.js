@@ -213,9 +213,8 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     return this.visitAndAssert('/boo?foo=baz');
   }
 
-  // FIXME: What is the correct behavior below?
-  ['@skip dynamic segment and query param have same name'](assert) {
-    assert.expect(2);
+  ['@test error is thrown if dynamic segment and query param have same name'](assert) {
+    assert.expect(1);
 
     this.router.map(function() {
       this.route('index', { path: '/:foo' });
@@ -223,13 +222,9 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('index');
 
-    this.registerRoute('index', Route.extend({
-      model(params) {
-        assert.deepEqual(params, { foo: 'boo' });
-      }
-    }));
-
-    return this.visitAndAssert('/boo?foo=baz');
+    expectAssertion(() => {
+      this.visitAndAssert('/boo?foo=baz');
+    }, `The route 'index' has both a dynamic segment and query param with name 'foo'. Please rename one to avoid collisions.`);
   }
 
   ['@test controllers won\'t be eagerly instantiated by internal query params logic'](assert) {
