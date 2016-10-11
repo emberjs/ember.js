@@ -13,8 +13,9 @@ import {
   assign,
   guidFor,
   generateGuid,
+  GUID_KEY_PROPERTY,
   makeArray,
-  GUID_KEY_PROPERTY
+  symbol
 } from 'ember-utils';
 import {
   assert,
@@ -40,6 +41,7 @@ import {
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
 
+export let POST_INIT = symbol('POST_INIT');
 var schedule = run.schedule;
 var applyMixin = Mixin._apply;
 var finishPartial = Mixin.finishPartial;
@@ -164,6 +166,8 @@ function makeCtor() {
 
     this.init.apply(this, arguments);
 
+    this[POST_INIT]();
+
     m.proto = proto;
     finishChains(this);
     sendEvent(this, 'init');
@@ -238,6 +242,8 @@ CoreObject.PrototypeMixin = Mixin.create({
     @public
   */
   init() {},
+
+  [POST_INIT]: function() { },
 
   __defineNonEnumerable(property) {
     Object.defineProperty(this, property.name, property.descriptor);

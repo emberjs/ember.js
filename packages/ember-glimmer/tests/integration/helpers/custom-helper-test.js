@@ -96,16 +96,6 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('hello | hello world');
   }
 
-  ['@test throws if `this._super` is not called from `init`']() {
-    this.registerHelper('hello-world', {
-      init() {}
-    });
-
-    expectAssertion(() => {
-      this.render('{{hello-world}}');
-    }, /You must call `this._super\(...arguments\);` when overriding `init` on a framework object. Please update .* to call `this._super\(...arguments\);` from `init`./);
-  }
-
   ['@test class-based helper can recompute a new value']() {
     let destroyCount = 0;
     let computeCount = 0;

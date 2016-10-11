@@ -11,7 +11,6 @@ import {
   get,
   set,
   meta,
-  on,
   addObserver,
   removeObserver,
   _addBeforeObserver,
@@ -24,6 +23,7 @@ import {
   tagFor
 } from 'ember-metal';
 import { bool } from '../computed/computed_macros';
+import { POST_INIT } from '../system/core_object';
 
 const IS_PROXY = symbol('IS_PROXY');
 
@@ -44,12 +44,8 @@ function contentPropertyDidChange(content, contentKey) {
 }
 
 class ProxyTag extends CachedTag {
-  constructor(proxy) {
+  constructor(proxy, content) {
     super();
-
-    let content = get(proxy, 'content');
-
-    this.proxy = proxy;
     this.proxyWrapperTag = new DirtyableTag();
     this.proxyContentTag = new UpdatableTag(tagFor(content));
   }
@@ -62,8 +58,7 @@ class ProxyTag extends CachedTag {
     this.proxyWrapperTag.dirty();
   }
 
-  contentDidChange() {
-    let content = get(this.proxy, 'content');
+  contentDidChange(content) {
     this.proxyContentTag.update(tagFor(content));
   }
 }
@@ -76,7 +71,7 @@ class ProxyTag extends CachedTag {
   @namespace Ember
   @private
 */
-export default Mixin.create({
+const PROXY_MIXIN_PROPS = {
   [IS_PROXY]: true,
 
   /**
@@ -89,13 +84,9 @@ export default Mixin.create({
   */
   content: null,
 
-  _initializeTag: on('init', function() {
-    meta(this)._tag = new ProxyTag(this);
-  }),
-
   _contentDidChange: observer('content', function() {
     assert('Can\'t set Proxy\'s content to itself', get(this, 'content') !== this);
-    tagFor(this).contentDidChange();
+    meta(this)._tag.contentDidChange(get(this, 'content'));
   }),
 
   isTruthy: bool('content'),
@@ -145,4 +136,11 @@ export default Mixin.create({
     );
     return set(content, key, value);
   }
-});
+};
+
+PROXY_MIXIN_PROPS[POST_INIT] = function postInit() {
+  this._super();
+  meta(this)._tag = new ProxyTag(this, get(this, 'content'));
+};
+
+export default Mixin.create(PROXY_MIXIN_PROPS);

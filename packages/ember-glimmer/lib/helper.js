@@ -4,7 +4,10 @@
 */
 
 import { symbol } from 'ember-utils';
-import { FrameworkObject } from 'ember-runtime';
+import {
+  Object as EmberObject,
+  POST_INIT
+} from 'ember-runtime';
 import { DirtyableTag } from 'glimmer-reference';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
@@ -49,11 +52,10 @@ export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
   @public
   @since 1.13.0
 */
-var Helper = FrameworkObject.extend({
+var Helper = EmberObject.extend({
   isHelperInstance: true,
 
-  init() {
-    this._super(...arguments);
+  [POST_INIT]() {
     this[RECOMPUTE_TAG] = new DirtyableTag();
   },
 

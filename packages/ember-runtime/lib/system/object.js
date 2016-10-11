@@ -3,8 +3,6 @@
 @submodule ember-runtime
 */
 
-import { symbol } from 'ember-utils';
-import { assert, on, runInDebug } from 'ember-metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
 
@@ -21,26 +19,5 @@ import Observable from '../mixins/observable';
 */
 const EmberObject = CoreObject.extend(Observable);
 EmberObject.toString = () => 'Ember.Object';
-
-export let FrameworkObject = EmberObject;
-
-runInDebug(() => {
-  let INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
-  let ASSERT_INIT_WAS_CALLED = symbol('ASSERT_INIT_WAS_CALLED');
-
-  FrameworkObject = EmberObject.extend({
-    init() {
-      this._super(...arguments);
-      this[INIT_WAS_CALLED] = true;
-    },
-
-    [ASSERT_INIT_WAS_CALLED]: on('init', function() {
-      assert(
-        `You must call \`this._super(...arguments);\` when overriding \`init\` on a framework object. Please update ${this} to call \`this._super(...arguments);\` from \`init\`.`,
-        this[INIT_WAS_CALLED]
-      );
-    })
-  });
-});
 
 export default EmberObject;
