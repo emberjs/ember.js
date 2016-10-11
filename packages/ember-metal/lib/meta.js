@@ -42,8 +42,8 @@ let counters = {
  peekBindings, clearBindings, writeValues,
  peekValues, clearValues, writeDeps, forEachInDeps
  writableChainWatchers, readableChainWatchers, writableChains,
- readableChains, writableTag, readableTag
-
+ readableChains, writableTag, readableTag, writableTags,
+ readableTags
 */
 let members = {
   cache: ownMap,
@@ -54,7 +54,8 @@ let members = {
   values: inheritedMap,
   chainWatchers: ownCustomObject,
   chains: inheritedCustomObject,
-  tag: ownCustomObject
+  tag: ownCustomObject,
+  tags: ownMap
 };
 
 const SOURCE_DESTROYING = 1 << 1;
@@ -83,6 +84,7 @@ export function Meta(obj, parentMeta) {
   this._chainWatchers = undefined;
   this._chains = undefined;
   this._tag = undefined;
+  this._tags = undefined;
 
   // initial value for all flags right now is false
   // see FLAGS const for detailed list of flags used

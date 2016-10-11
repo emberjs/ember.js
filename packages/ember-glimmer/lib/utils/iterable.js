@@ -1,5 +1,5 @@
 import { guidFor, EmptyObject } from 'ember-utils';
-import { get, tagFor } from 'ember-metal';
+import { get, tagFor, starTagFor } from 'ember-metal';
 import {
   objectAt,
   isEmberArray,
@@ -190,7 +190,7 @@ class EachInIterable {
 
     let iterable = ref.value();
 
-    valueTag.update(tagFor(iterable));
+    valueTag.update(starTagFor(iterable));
 
     if (isProxy(iterable)) {
       iterable = get(iterable, 'content');
@@ -242,7 +242,7 @@ class ArrayIterable {
 
     let iterable = ref.value();
 
-    valueTag.update(tagFor(iterable));
+    valueTag.update(tagFor(iterable, '[]'));
 
     if (!iterable || typeof iterable !== 'object') {
       return EMPTY_ITERATOR;

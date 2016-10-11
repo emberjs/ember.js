@@ -3,6 +3,7 @@ import {
   get,
   set,
   tagFor,
+  starTagFor,
   didRender,
   watchKey,
   isFeatureEnabled,
@@ -145,9 +146,9 @@ export class RootPropertyReference extends PropertyReference {
 
     if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
         isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      this.tag = new TwoWayFlushDetectionTag(tagFor(parentValue), propertyKey, this);
+      this.tag = new TwoWayFlushDetectionTag(tagFor(parentValue, propertyKey), propertyKey, this);
     } else {
-      this.tag = tagFor(parentValue);
+      this.tag = tagFor(parentValue, propertyKey);
     }
 
     if (isFeatureEnabled('mandatory-setter')) {
@@ -196,7 +197,7 @@ export class NestedPropertyReference extends PropertyReference {
 
     let parentValue = _parentReference.value();
 
-    _parentObjectTag.update(tagFor(parentValue));
+    _parentObjectTag.update(tagFor(parentValue, _propertyKey));
 
     if (typeof parentValue === 'string' && _propertyKey === 'length') {
       return parentValue.length;
@@ -275,11 +276,11 @@ export class ConditionalReference extends GlimmerConditionalReference {
   }
 
   toBool(predicate) {
-    this.objectTag.update(tagFor(predicate));
-
     if (isProxy(predicate)) {
+      this.objectTag.update(tagFor(predicate, 'isTruthy'));
       return get(predicate, 'isTruthy');
     } else {
+      this.objectTag.update(starTagFor(predicate));
       return emberToBool(predicate);
     }
   }

@@ -1,11 +1,12 @@
-import { HelperSyntax } from 'glimmer-runtime';
-import { get, assert } from 'ember-metal';
-import { String as StringUtils } from 'ember-runtime';
 import {
   CachedReference,
+  combine,
   map,
   referenceFromParts
 } from 'glimmer-reference';
+import { HelperSyntax } from 'glimmer-runtime';
+import { get, assert } from 'ember-metal';
+import { String as StringUtils } from 'ember-runtime';
 import { ROOT_REF } from '../component';
 import { htmlSafe, isHTMLSafe } from './string';
 
@@ -94,7 +95,7 @@ class StyleBindingReference extends CachedReference {
   constructor(inner, isVisible) {
     super();
 
-    this.tag = inner.tag;
+    this.tag = combine([inner.tag, isVisible.tag]);
     this.inner = inner;
     this.isVisible = isVisible;
   }

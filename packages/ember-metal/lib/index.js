@@ -160,6 +160,7 @@ export { default as InjectedProperty } from './injected_property';
 export {
   setHasViews,
   tagFor,
+  starTagFor,
   markObjectAsDirty
 } from './tags';
 export { default as replace } from './replace';
