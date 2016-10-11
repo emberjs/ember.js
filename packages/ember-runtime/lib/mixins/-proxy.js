@@ -21,7 +21,7 @@ import {
   defineProperty,
   Mixin,
   observer,
-  tagFor
+  starTagFor
 } from 'ember-metal';
 import { bool } from '../computed/computed_macros';
 
@@ -51,7 +51,7 @@ class ProxyTag extends CachedTag {
 
     this.proxy = proxy;
     this.proxyWrapperTag = new DirtyableTag();
-    this.proxyContentTag = new UpdatableTag(tagFor(content));
+    this.proxyContentTag = new UpdatableTag(starTagFor(content));
   }
 
   compute() {
@@ -64,7 +64,7 @@ class ProxyTag extends CachedTag {
 
   contentDidChange() {
     let content = get(this.proxy, 'content');
-    this.proxyContentTag.update(tagFor(content));
+    this.proxyContentTag.update(starTagFor(content));
   }
 }
 
@@ -95,7 +95,7 @@ export default Mixin.create({
 
   _contentDidChange: observer('content', function() {
     assert('Can\'t set Proxy\'s content to itself', get(this, 'content') !== this);
-    tagFor(this).contentDidChange();
+    starTagFor(this).contentDidChange();
   }),
 
   isTruthy: bool('content'),

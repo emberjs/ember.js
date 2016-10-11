@@ -12,7 +12,20 @@ function makeTag() {
   return new DirtyableTag();
 }
 
-export function tagFor(object, _meta) {
+export function tagFor(object, propertyKey, _meta) {
+  if (typeof object === 'object' && object) {
+    let meta = _meta || metaFor(object);
+    let tags = meta.writableTags();
+    let tag = tags[propertyKey];
+    if (tag) { return tag; }
+
+    return tags[propertyKey] = makeTag();
+  } else {
+    return CONSTANT_TAG;
+  }
+}
+
+export function starTagFor(object, _meta) {
   if (typeof object === 'object' && object) {
     let meta = _meta || metaFor(object);
     return meta.writableTag(makeTag);
@@ -21,12 +34,22 @@ export function tagFor(object, _meta) {
   }
 }
 
-export function markObjectAsDirty(meta) {
-  let tag = meta && meta.readableTag();
+export function markObjectAsDirty(meta, propertyKey) {
+  let objectTag = meta && meta.readableTag();
 
-  if (tag) {
+  if (objectTag) {
+    objectTag.dirty();
+  }
+
+  let tags = meta && meta.readableTags();
+  let propertyTag = tags && tags[propertyKey];
+
+  if (propertyTag) {
+    propertyTag.dirty();
+  }
+
+  if (objectTag || propertyTag) {
     ensureRunloop();
-    tag.dirty();
   }
 }
 

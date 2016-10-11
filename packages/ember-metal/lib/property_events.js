@@ -108,7 +108,7 @@ function propertyDidChange(obj, keyName) {
   }
 
   if (obj.isDestroying) { return; }
-  markObjectAsDirty(m);
+  markObjectAsDirty(m, keyName);
 
   if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
       isEnabled('ember-glimmer-allow-backtracking-rerender')) {
