@@ -2782,11 +2782,16 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, /didInitAttrs called/);
   }
 
-  ['@test did{Init,Receive}Attrs fires after .init() but before observers become active'](assert) {
+  // This test is a replication of the "component unit tests" scenario. When we deprecate
+  // and remove them, this test could be removed as well. This is not fully/intentionally
+  // supported, and it is unclear that this particular behavior is actually relied on.
+  // Since there is no real "invocation" here, it has other issues and inconsistencies,
+  // like there is no real "attrs" here, and there is no "update" pass.
+  ['@test did{Init,Receive}Attrs fires even if component is not rendered'](assert) {
     expectDeprecation(/didInitAttrs called/);
 
-    let fooDidChangeCount = 0;
-    let barDidChangeCount = 0;
+    let didInitAttrsCount = 0;
+    let didReceiveAttrsCount = 0;
 
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
@@ -2794,36 +2799,82 @@ moduleFor('Components test: curly components', class extends RenderingTest {
           this._super(...arguments);
           this.didInit = true;
         },
-        didInitAttrs(attrs) {
+
+        didInitAttrs() {
           assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
-          this.set('foo', attrs.foo);
+          didInitAttrsCount++;
         },
 
-        willReceieveAttrs(attrs) {
-          assert.ok(this.didInit, 'expected init to have run before willReceieveAttrs');
-          this.set('bar', attrs.bar);
+        didReceiveAttrs() {
+          assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
+          didReceiveAttrsCount++;
         },
 
-        fooDidChange: observer('foo', () => { fooDidChangeCount++; }),
-        barDidChange: observer('bar', () => { barDidChangeCount++; })
-      }),
-      template: ''
+        willRender() {
+          throw new Error('Unexpected render!');
+        }
+      })
     });
 
-    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 1 });
+    assert.strictEqual(didInitAttrsCount, 0, 'precond: didInitAttrs is not fired');
+    assert.strictEqual(didReceiveAttrsCount, 0, 'precond: didReceiveAttrs is not fired');
 
-    assert.equal(fooDidChangeCount, 0, 'expected NO observer firing for: foo');
-    assert.equal(barDidChangeCount, 0, 'expected NO observer firing for: bar');
+    this.runTask(() => this.component = this.owner.lookup('component:foo-bar'));
 
-    this.runTask(() => set(this.context, 'foo', 2));
+    assert.strictEqual(didInitAttrsCount, 1, 'precond: didInitAttrs is fired');
+    assert.strictEqual(didReceiveAttrsCount, 1, 'precond: didReceiveAttrs is fired');
+  }
 
-    assert.equal(fooDidChangeCount, 1, 'expected observer firing for: foo');
-    assert.equal(barDidChangeCount, 0, 'expected NO observer firing for: bar');
+  ['@test did{Init,Receive}Attrs fires after .init() but before observers become active'](assert) {
+    expectDeprecation(/didInitAttrs called/);
 
-    this.runTask(() => set(this.context, 'bar', 2));
+    let fooCopyDidChangeCount = 0;
+    let barCopyDidChangeCount = 0;
 
-    assert.equal(fooDidChangeCount, 1, 'expected observer firing for: foo');
-    assert.equal(barDidChangeCount, 1, 'expected observer firing for: bar');
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          this.didInit = true;
+        },
+
+        didInitAttrs({ attrs }) {
+          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
+          this.set('fooCopy', attrs.foo.value + 1);
+        },
+
+        didReceiveAttrs({ newAttrs }) {
+          assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
+          this.set('barCopy', newAttrs.bar.value + 1);
+        },
+
+        fooCopyDidChange: observer('fooCopy', () => { fooCopyDidChangeCount++; }),
+        barCopyDidChange: observer('barCopy', () => { barCopyDidChangeCount++; })
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+
+    this.assertText('1-2-3-4');
+
+    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected NO observer firing for: fooCopy');
+    assert.strictEqual(barCopyDidChangeCount, 0, 'expected NO observer firing for: barCopy');
+
+    this.runTask(() => set(this.context, 'foo', 5));
+
+    this.assertText('5-2-3-4');
+
+    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected observer firing for: fooCopy');
+    assert.strictEqual(barCopyDidChangeCount, 0, 'expected NO observer firing for: barCopy');
+
+    this.runTask(() => set(this.context, 'bar', 7));
+
+    this.assertText('5-2-7-8');
+
+    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected observer firing for: fooCopy');
+    assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
   }
 
   ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](assert) {
