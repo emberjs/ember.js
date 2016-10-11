@@ -580,7 +580,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     }
 
     return this.__each;
-  }).volatile()
+  }).volatile().readOnly()
 });
 
 if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
