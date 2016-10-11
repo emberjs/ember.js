@@ -25,6 +25,78 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     }, options));
   }
 
+  refreshModelWhileLoadingTest(loadingReturn) {
+    let assert = this.assert;
+
+    assert.expect(9);
+
+    let appModelCount = 0;
+    let promiseResolve;
+
+    this.registerRoute('application', Route.extend({
+      queryParams: {
+        appomg: {
+          defaultValue: 'applol'
+        }
+      },
+      model(params) {
+        appModelCount++;
+      }
+    }));
+
+    this.setSingleQPController('index', 'omg', undefined, {
+      omg: undefined
+    });
+
+    let actionName = typeof loadingReturn !== 'undefined' ? 'loading' : 'ignore';
+    let indexModelCount = 0;
+    this.registerRoute('index', Route.extend({
+      queryParams: {
+        omg: {
+          refreshModel: true
+        }
+      },
+      actions: {
+        [actionName]: function() {
+          return loadingReturn;
+        }
+      },
+      model(params) {
+        indexModelCount++;
+        if (indexModelCount === 2) {
+          assert.deepEqual(params, { omg: 'lex' });
+          return new RSVP.Promise(function(resolve) {
+            promiseResolve = resolve;
+            return;
+          });
+        } else if (indexModelCount === 3) {
+          assert.deepEqual(params, { omg: 'hello' }, 'Model hook reruns even if the previous one didnt finish');
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      assert.equal(appModelCount, 1, 'appModelCount is 1');
+      assert.equal(indexModelCount, 1);
+
+      let indexController = this.getController('index');
+      this.setAndFlush(indexController, 'omg', 'lex');
+
+      assert.equal(appModelCount, 1, 'appModelCount is 1');
+      assert.equal(indexModelCount, 2);
+
+      this.setAndFlush(indexController, 'omg', 'hello');
+      assert.equal(appModelCount, 1, 'appModelCount is 1');
+      assert.equal(indexModelCount, 3);
+
+      run(function() {
+        promiseResolve();
+      });
+
+      assert.equal(get(indexController, 'omg'), 'hello', 'At the end last value prevails');
+    });
+  }
+
   ['@test No replaceURL occurs on startup because default values don\'t show up in URL'](assert) {
     assert.expect(1);
 
@@ -1196,139 +1268,16 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
-  ['@test when refreshModel is true and loading action returns false, model hook will rerun when QPs change even if previous did not finish'](assert) {
-    assert.expect(9);
-
-    let appModelCount = 0;
-    let promiseResolve;
-
-    this.registerRoute('application', Route.extend({
-      queryParams: {
-        appomg: {
-          defaultValue: 'applol'
-        }
-      },
-      model(params) {
-        appModelCount++;
-      }
-    }));
-
-    this.setSingleQPController('index', 'omg', undefined, {
-      omg: undefined
-    });
-
-    let indexModelCount = 0;
-    this.registerRoute('index', Route.extend({
-      queryParams: {
-        omg: {
-          refreshModel: true
-        }
-      },
-      actions: {
-        loading: function() {
-          return false;
-        }
-      },
-      model(params) {
-        indexModelCount++;
-        if (indexModelCount === 2) {
-          assert.deepEqual(params, { omg: 'lex' });
-          return new RSVP.Promise(function(resolve) {
-            promiseResolve = resolve;
-            return;
-          });
-        } else if (indexModelCount === 3) {
-          assert.deepEqual(params, { omg: 'hello' }, 'Model hook reruns even if the previous one didnt finish');
-        }
-      }
-    }));
-
-    return this.visit('/').then(() => {
-      assert.equal(appModelCount, 1, 'appModelCount is 1');
-      assert.equal(indexModelCount, 1);
-
-      let indexController = this.getController('index');
-      this.setAndFlush(indexController, 'omg', 'lex');
-
-      assert.equal(appModelCount, 1, 'appModelCount is 1');
-      assert.equal(indexModelCount, 2);
-
-      this.setAndFlush(indexController, 'omg', 'hello');
-      assert.equal(appModelCount, 1, 'appModelCount is 1');
-      assert.equal(indexModelCount, 3);
-
-      run(function() {
-        promiseResolve();
-      });
-
-      assert.equal(get(indexController, 'omg'), 'hello', 'At the end last value prevails');
-    });
+  ['@test when refreshModel is true and loading hook is undefined, model hook will rerun when QPs change even if previous did not finish'](assert) {
+    return this.refreshModelWhileLoadingTest();
   }
 
-  ['@skip when refreshModel is true and loading action does not return false, model hook will not rerun when QPs change even if previous did not finish'](assert) {
-    assert.expect(9);
+  ['@test when refreshModel is true and loading hook returns false, model hook will rerun when QPs change even if previous did not finish'](assert) {
+    return this.refreshModelWhileLoadingTest(false);
+  }
 
-    let appModelCount = 0;
-    let promiseResolve;
-
-    this.registerRoute('application', Route.extend({
-      queryParams: {
-        'appomg': {
-          defaultValue: 'applol'
-        }
-      },
-      model(params) {
-        appModelCount++;
-      }
-    }));
-
-    this.setSingleQPController('index', 'omg', undefined, {
-      omg: undefined
-    });
-
-    let indexModelCount = 0;
-    this.registerRoute('index', Route.extend({
-      queryParams: {
-        omg: {
-          refreshModel: true
-        }
-      },
-      model(params) {
-        indexModelCount++;
-
-        if (indexModelCount === 2) {
-          assert.deepEqual(params, { omg: 'lex' }, 'params are correct');
-          return new RSVP.Promise(function(resolve) {
-            promiseResolve = resolve;
-            return;
-          });
-        } else if (indexModelCount === 3) {
-          console.log('not here!');
-          assert.ok(false, 'shouldnt get here');
-        }
-      }
-    }));
-
-    return this.visitAndAssert('/').then(() => {
-      assert.equal(appModelCount, 1, 'appModelCount is 1');
-      assert.equal(indexModelCount, 1);
-
-      let indexController = this.getController('index');
-      this.setAndFlush(indexController, 'omg', 'lex');
-
-      assert.equal(appModelCount, 1, 'appModelCount is 1');
-      assert.equal(indexModelCount, 2);
-
-      this.setAndFlush(indexController, 'omg', 'hello');
-      assert.equal(appModelCount, 1, 'appModelCount is 1');
-      assert.equal(indexModelCount, 2);
-
-      run(function() {
-        promiseResolve();
-      });
-
-      assert.equal(get(indexController, 'omg'), 'hello', 'At the end last value prevails');
-    });
+  ['@test when refreshModel is true and loading hook returns true, model hook will rerun when QPs change even if previous did not finish'](assert) {
+    return this.refreshModelWhileLoadingTest(true);
   }
 
   ['@test warn user that Route\'s queryParams configuration must be an Object, not an Array'](assert) {
