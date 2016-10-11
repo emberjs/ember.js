@@ -88,3 +88,6 @@ To run a specific browser, you can use the `--launch` flag
 
 * `ember test --server --launch SL_Firefox_Current`
 * `ember test --launch SL_Firefox_Current`
+* `ember test --launch SL_Firefox_Current,PhantomJS`
+
+To test multiple launchers, you can separate them with commas.
