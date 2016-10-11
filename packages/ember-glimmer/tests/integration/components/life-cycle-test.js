@@ -3,6 +3,7 @@ import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { getViewId, getViewElement } from 'ember-views';
+import { classes } from '../../utils/test-helpers';
 
 class LifeCycleHooksTest extends RenderingTest {
   constructor() {
@@ -178,8 +179,8 @@ class LifeCycleHooksTest extends RenderingTest {
         assertParentView('willRender', this);
 
         if (this.isInitialRender) {
-          assertElement('willRender', this, false);
-          assertState('willRender', 'hasElement', this);
+          assertNoElement('willRender', this, false);
+          assertState('willRender', 'preRender', this);
         } else {
           assertElement('willRender', this);
           assertState('willRender', 'inDOM', this);
@@ -306,22 +307,23 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
         ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
         ['the-top', 'on(init)'],
-        ['the-top', 'willInsertElement'],
         ['the-top', 'willRender'],
+        ['the-top', 'willInsertElement'],
 
         ['the-middle', 'init'],
         ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
         ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
         ['the-middle', 'on(init)'],
-        ['the-middle', 'willInsertElement'],
         ['the-middle', 'willRender'],
+        ['the-middle', 'willInsertElement'],
 
         ['the-bottom', 'init'],
         ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
         ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
         ['the-bottom', 'on(init)'],
-        ['the-bottom', 'willInsertElement'],
         ['the-bottom', 'willRender'],
+        ['the-bottom', 'willInsertElement'],
+
 
         // Async hooks
 
@@ -549,29 +551,30 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-parent', 'didInitAttrs',          { attrs: parentAttrs }],
         ['the-parent', 'didReceiveAttrs',       { newAttrs: parentAttrs }],
         ['the-parent', 'on(init)'],
-        ['the-parent', 'willInsertElement'],
         ['the-parent', 'willRender'],
+        ['the-parent', 'willInsertElement'],
+
 
         ['the-first-child', 'init'],
         ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs }],
         ['the-first-child', 'didReceiveAttrs',  { newAttrs: firstAttrs }],
         ['the-first-child', 'on(init)'],
-        ['the-first-child', 'willInsertElement'],
         ['the-first-child', 'willRender'],
+        ['the-first-child', 'willInsertElement'],
 
         ['the-second-child', 'init'],
         ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs }],
         ['the-second-child', 'didReceiveAttrs', { newAttrs: secondAttrs }],
         ['the-second-child', 'on(init)'],
-        ['the-second-child', 'willInsertElement'],
         ['the-second-child', 'willRender'],
+        ['the-second-child', 'willInsertElement'],
 
         ['the-last-child', 'init'],
         ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs }],
         ['the-last-child', 'didReceiveAttrs',   { newAttrs: lastAttrs }],
         ['the-last-child', 'on(init)'],
-        ['the-last-child', 'willInsertElement'],
         ['the-last-child', 'willRender'],
+        ['the-last-child', 'willInsertElement'],
 
         // Async hooks
 
@@ -874,22 +877,22 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
         ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
         ['the-top', 'on(init)'],
-        ['the-top', 'willInsertElement'],
         ['the-top', 'willRender'],
+        ['the-top', 'willInsertElement'],
 
         ['the-middle', 'init'],
         ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
         ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
         ['the-middle', 'on(init)'],
-        ['the-middle', 'willInsertElement'],
         ['the-middle', 'willRender'],
+        ['the-middle', 'willInsertElement'],
 
         ['the-bottom', 'init'],
         ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
         ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
         ['the-bottom', 'on(init)'],
-        ['the-bottom', 'willInsertElement'],
         ['the-bottom', 'willRender'],
+        ['the-bottom', 'willInsertElement'],
 
         // Async hooks
 
@@ -1065,8 +1068,8 @@ class LifeCycleHooksTest extends RenderingTest {
       ];
       if (this.isInteractive) {
         ret.push(
-          ['an-item', 'willInsertElement'],
-          ['an-item', 'willRender']
+          ['an-item', 'willRender'],
+          ['an-item', 'willInsertElement']
         );
       }
       ret.push(
@@ -1077,8 +1080,8 @@ class LifeCycleHooksTest extends RenderingTest {
       );
       if (this.isInteractive) {
         ret.push(
-          ['nested-item', 'willInsertElement'],
-          ['nested-item', 'willRender']
+          ['nested-item', 'willRender'],
+          ['nested-item', 'willInsertElement']
         );
       }
       return ret;
@@ -1176,16 +1179,16 @@ class LifeCycleHooksTest extends RenderingTest {
         ['no-items', 'didInitAttrs',       { attrs: { } }],
         ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
         ['no-items', 'on(init)'],
-        ['no-items', 'willInsertElement'],
         ['no-items', 'willRender'],
+        ['no-items', 'willInsertElement'],
 
 
         ['nested-item', 'init'],
         ['nested-item', 'didInitAttrs',       { attrs: { } }],
         ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
         ['nested-item', 'on(init)'],
-        ['nested-item', 'willInsertElement'],
         ['nested-item', 'willRender'],
+        ['nested-item', 'willInsertElement'],
 
         ['an-item', 'didDestroyElement'],
         ['nested-item', 'didDestroyElement'],
@@ -1378,7 +1381,35 @@ moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
 
     this.assertText('wat');
   }
+
+  ['@test `willRender` can set before render (GH#14458)'](assert) {
+    let ComponentClass = Component.extend({
+      tagName: 'a',
+      customHref: 'http://google.com',
+      attributeBindings: ['customHref:href'],
+      willRender() {
+        this.set('customHref', 'http://willRender.com');
+      }
+    });
+
+    let template = `Hello World`;
+
+    this.registerComponent('foo-bar', { ComponentClass, template });
+
+    this.render(`{{foo-bar id="foo"}}`);
+
+    this.assertElement(this.firstChild, {
+      tagName: 'a',
+      attrs: {
+        id: 'foo',
+        href: 'http://willRender.com',
+        class: classes('ember-view')
+      }
+    });
+  }
 });
+
+
 
 function bind(func, thisArg) {
   return (...args) => func.apply(thisArg, args);

@@ -210,11 +210,14 @@ class CurlyComponentManager {
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (component.tagName === '') {
+      if (environment.isInteractive) {
+        component.trigger('willRender');
+      }
+
       component._transitionTo('hasElement');
 
       if (environment.isInteractive) {
         component.trigger('willInsertElement');
-        component.trigger('willRender');
       }
     }
 
@@ -225,6 +228,10 @@ class CurlyComponentManager {
     }
 
     processComponentInitializationAssertions(component, props);
+
+    if (environment.isInteractive && component.tagName !== '') {
+      component.trigger('willRender');
+    }
 
     return bucket;
   }
@@ -290,7 +297,6 @@ class CurlyComponentManager {
 
     if (environment.isInteractive) {
       component.trigger('willInsertElement');
-      component.trigger('willRender');
     }
   }
 
@@ -366,11 +372,14 @@ class TopComponentManager extends CurlyComponentManager {
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (component.tagName === '') {
+      if (environment.isInteractive) {
+        component.trigger('willRender');
+      }
+
       component._transitionTo('hasElement');
 
       if (environment.isInteractive) {
         component.trigger('willInsertElement');
-        component.trigger('willRender');
       }
     }
 
