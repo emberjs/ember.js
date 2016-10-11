@@ -103,7 +103,7 @@ export default EmberObject.extend(MutableArray, {
     @method objectAtContent
     @param {Number} idx The index to retrieve.
     @return {Object} the value or undefined if none found
-    @private
+    @public
   */
   objectAtContent(idx) {
     return objectAt(get(this, 'arrangedContent'), idx);
