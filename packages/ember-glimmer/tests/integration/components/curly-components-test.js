@@ -2782,6 +2782,50 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, /didInitAttrs called/);
   }
 
+  ['@test did{Init,Receive}Attrs fires after .init() but before observers become active'](assert) {
+    expectDeprecation(/didInitAttrs called/);
+
+    let fooDidChangeCount = 0;
+    let barDidChangeCount = 0;
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          this.didInit = true;
+        },
+        didInitAttrs(attrs) {
+          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
+          this.set('foo', attrs.foo);
+        },
+
+        willReceieveAttrs(attrs) {
+          assert.ok(this.didInit, 'expected init to have run before willReceieveAttrs');
+          this.set('bar', attrs.bar);
+        },
+
+        fooDidChange: observer('foo', () => { fooDidChangeCount++; }),
+        barDidChange: observer('bar', () => { barDidChangeCount++; })
+      }),
+      template: ''
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 1 });
+
+    assert.equal(fooDidChangeCount, 0, 'expected NO observer firing for: foo');
+    assert.equal(barDidChangeCount, 0, 'expected NO observer firing for: bar');
+
+    this.runTask(() => set(this.context, 'foo', 2));
+
+    assert.equal(fooDidChangeCount, 1, 'expected observer firing for: foo');
+    assert.equal(barDidChangeCount, 0, 'expected NO observer firing for: bar');
+
+    this.runTask(() => set(this.context, 'bar', 2));
+
+    assert.equal(fooDidChangeCount, 1, 'expected observer firing for: foo');
+    assert.equal(barDidChangeCount, 1, 'expected observer firing for: bar');
+  }
+
   ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](assert) {
     this.registerComponent('display-toggle', {
       ComponentClass: Component.extend({
