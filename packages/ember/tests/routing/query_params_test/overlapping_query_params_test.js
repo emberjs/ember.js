@@ -56,7 +56,6 @@ moduleFor('Query Params - overlapping query param property names', class extends
     });
   }
 
-  // FIXME: The error should throw without having to do `transitionTo`.
   ['@test query params in the same route hierarchy with the same url key get auto-scoped'](assert) {
     this.registerController('parent', Controller.extend({
       queryParams: { foo: 'shared' },
@@ -68,11 +67,9 @@ moduleFor('Query Params - overlapping query param property names', class extends
       bar: 1
     }));
 
-    return this.setupBase().then((...args) => {
-      expectAssertion(() => {
-        this.transitionTo('parent.child');
-      }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
-    });
+    expectAssertion(() => {
+      this.setupBase();
+    }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
   }
 
   ['@test Support shared but overridable mixin pattern'](assert) {
