@@ -2738,6 +2738,49 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, /didInitAttrs called/);
   }
 
+  // This test is a replication of the "component unit tests" scenario. When we deprecate
+  // and remove them, this test could be removed as well. This is not fully/intentionally
+  // supported, and it is unclear that this particular behavior is actually relied on.
+  // Since there is no real "invocation" here, it has other issues and inconsistencies,
+  // like there is no real "attrs" here, and there is no "update" pass.
+  ['@test did{Init,Receive}Attrs fires even if component is not rendered'](assert) {
+    expectDeprecation(/didInitAttrs called/);
+
+    let didInitAttrsCount = 0;
+    let didReceiveAttrsCount = 0;
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          this.didInit = true;
+        },
+
+        didInitAttrs() {
+          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
+          didInitAttrsCount++;
+        },
+
+        didReceiveAttrs() {
+          assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
+          didReceiveAttrsCount++;
+        },
+
+        willRender() {
+          throw new Error('Unexpected render!');
+        }
+      })
+    });
+
+    assert.strictEqual(didInitAttrsCount, 0, 'precond: didInitAttrs is not fired');
+    assert.strictEqual(didReceiveAttrsCount, 0, 'precond: didReceiveAttrs is not fired');
+
+    this.runTask(() => this.component = this.owner.lookup('component:foo-bar'));
+
+    assert.strictEqual(didInitAttrsCount, 1, 'precond: didInitAttrs is fired');
+    assert.strictEqual(didReceiveAttrsCount, 1, 'precond: didReceiveAttrs is fired');
+  }
+
   ['@test did{Init,Receive}Attrs fires after .init() but before observers become active'](assert) {
     expectDeprecation(/didInitAttrs called/);
 
