@@ -2741,8 +2741,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   ['@test did{Init,Receive}Attrs fires after .init() but before observers become active'](assert) {
     expectDeprecation(/didInitAttrs called/);
 
-    let fooDidChangeCount = 0;
-    let barDidChangeCount = 0;
+    let fooCopyDidChangeCount = 0;
+    let barCopyDidChangeCount = 0;
 
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
@@ -2750,36 +2750,44 @@ moduleFor('Components test: curly components', class extends RenderingTest {
           this._super(...arguments);
           this.didInit = true;
         },
-        didInitAttrs(attrs) {
+
+        didInitAttrs({ attrs }) {
           assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
-          this.set('foo', attrs.foo);
+          this.set('fooCopy', attrs.foo.value + 1);
         },
 
-        willReceieveAttrs(attrs) {
-          assert.ok(this.didInit, 'expected init to have run before willReceieveAttrs');
-          this.set('bar', attrs.bar);
+        didReceiveAttrs({ newAttrs }) {
+          assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
+          this.set('barCopy', newAttrs.bar.value + 1);
         },
 
-        fooDidChange: observer('foo', () => { fooDidChangeCount++; }),
-        barDidChange: observer('bar', () => { barDidChangeCount++; })
+        fooCopyDidChange: observer('fooCopy', () => { fooCopyDidChangeCount++; }),
+        barCopyDidChange: observer('barCopy', () => { barCopyDidChangeCount++; })
       }),
-      template: ''
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
     });
 
-    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 1 });
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
 
-    assert.equal(fooDidChangeCount, 0, 'expected NO observer firing for: foo');
-    assert.equal(barDidChangeCount, 0, 'expected NO observer firing for: bar');
+    this.assertText('1-2-3-4');
 
-    this.runTask(() => set(this.context, 'foo', 2));
+    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected NO observer firing for: fooCopy');
+    assert.strictEqual(barCopyDidChangeCount, 0, 'expected NO observer firing for: barCopy');
 
-    assert.equal(fooDidChangeCount, 1, 'expected observer firing for: foo');
-    assert.equal(barDidChangeCount, 0, 'expected NO observer firing for: bar');
+    this.runTask(() => set(this.context, 'foo', 5));
 
-    this.runTask(() => set(this.context, 'bar', 2));
+    this.assertText('5-2-3-4');
 
-    assert.equal(fooDidChangeCount, 1, 'expected observer firing for: foo');
-    assert.equal(barDidChangeCount, 1, 'expected observer firing for: bar');
+    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected observer firing for: fooCopy');
+    assert.strictEqual(barCopyDidChangeCount, 0, 'expected NO observer firing for: barCopy');
+
+    this.runTask(() => set(this.context, 'bar', 7));
+
+    this.assertText('5-2-7-8');
+
+    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected observer firing for: fooCopy');
+    assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
   }
 
   ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](assert) {
