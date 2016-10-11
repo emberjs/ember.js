@@ -14,7 +14,8 @@ import {
   guidFor,
   generateGuid,
   makeArray,
-  GUID_KEY_PROPERTY
+  GUID_KEY_PROPERTY,
+  symbol
 } from 'ember-utils';
 import {
   assert,
@@ -45,6 +46,8 @@ var applyMixin = Mixin._apply;
 var finishPartial = Mixin.finishPartial;
 var reopen = Mixin.prototype.reopen;
 var hasCachedComputedProperties = false;
+
+export const POST_INIT = symbol('POST_INIT');
 
 function makeCtor() {
   // Note: avoid accessing any properties on the object since it makes the
@@ -164,6 +167,8 @@ function makeCtor() {
 
     this.init.apply(this, arguments);
 
+    this[POST_INIT]();
+
     m.proto = proto;
     finishChains(this);
     sendEvent(this, 'init');
@@ -238,6 +243,8 @@ CoreObject.PrototypeMixin = Mixin.create({
     @public
   */
   init() {},
+
+  [POST_INIT]() { }, // Private, and only for didInitAttrs willRecieveAttrs
 
   __defineNonEnumerable(property) {
     Object.defineProperty(this, property.name, property.descriptor);
@@ -553,7 +560,6 @@ var ClassMixinProps = {
   isClass: true,
 
   isMethod: false,
-
   /**
     Creates a new subclass.
 
