@@ -2918,4 +2918,19 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.render('{{foo-bar wat}}');
     this.assertText('hello');
   }
+
+  ['@test using attrs for positional params'](assert) {
+    let MyComponent = Component.extend();
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: MyComponent.reopenClass({
+        positionalParams: ['myVar']
+      }),
+      template: 'MyVar1: {{attrs.myVar}} {{myVar}} MyVar2: {{myVar2}} {{attrs.myVar2}}'
+    });
+
+    this.render('{{foo-bar 1 myVar2=2}}');
+
+    this.assertText('MyVar1: 1 1 MyVar2: 2 2');
+  }
 });
