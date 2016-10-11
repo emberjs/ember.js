@@ -215,7 +215,7 @@ class CurlyComponentManager {
 
     let klass = definition.ComponentClass;
     let processedArgs = processArgs(args, klass.positionalParams);
-    let { attrs, props } = processedArgs.value();
+    let { props } = processedArgs.value();
 
     aliasIdToElementId(args, props);
 
@@ -233,9 +233,6 @@ class CurlyComponentManager {
     if (parentView !== null) {
       parentView.appendChild(component);
     }
-
-    component.trigger('didInitAttrs', { attrs });
-    component.trigger('didReceiveAttrs', { newAttrs: attrs });
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (component.tagName === '') {
