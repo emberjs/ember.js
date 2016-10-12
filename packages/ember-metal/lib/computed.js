@@ -159,6 +159,7 @@ function ComputedProperty(config, opts) {
 }
 
 ComputedProperty.prototype = new Descriptor();
+ComputedProperty.prototype.constructor = ComputedProperty;
 
 const ComputedPropertyPrototype = ComputedProperty.prototype;
 
