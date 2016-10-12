@@ -14,7 +14,8 @@
     "test:blueprints": "node node-tests/nodetest-runner.js",
     "start": "ember serve",
     "docs": "ember ember-cli-yuidoc",
-    "sauce:launch": "ember sauce:launch"
+    "sauce:launch": "ember sauce:launch",
+    "release": "node scripts/release.js"
   },
   "repository": {
     "type": "git",
