@@ -375,14 +375,15 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let transition = this.router.router.activeTransition;
     let state = transition ? transition.state : this.router.router.state;
 
-    let params = {};
     let fullName = getEngineRouteName(getOwner(this), name);
+    let params = assign({}, state.params[fullName]);
+    let queryParams = getQueryParamsFor(route, state);
 
-    assign(params, state.params[fullName]);
-
-    assign(params, getQueryParamsFor(route, state));
-
-    return params;
+    return Object.keys(queryParams).reduce((params, key) => {
+      assert(`The route '${this.routeName}' has both a dynamic segment and query param with name '${key}'. Please rename one to avoid collisions.`, !params[key]);
+      params[key] = queryParams[key];
+      return params;
+    }, params);
   },
 
   /**

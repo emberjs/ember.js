@@ -654,26 +654,10 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   _serializeQueryParams(targetRouteName, queryParams) {
-    let groupedByUrlKey = {};
-
     forEachQueryParam(this, targetRouteName, queryParams, function(key, value, qp) {
-      let urlKey = qp.urlKey;
-      if (!groupedByUrlKey[urlKey]) {
-        groupedByUrlKey[urlKey] = [];
-      }
-      groupedByUrlKey[urlKey].push({
-        qp: qp,
-        value: value
-      });
       delete queryParams[key];
+      queryParams[qp.urlKey] = qp.route.serializeQueryParam(value, qp.urlKey, qp.type);
     });
-
-    for (let key in groupedByUrlKey) {
-      let qps = groupedByUrlKey[key];
-      assert(`You're not allowed to have more than one controller property map to the same query param key, but both \`${qps[0].qp.scopedPropertyName}\` and \`${qps[1] ? qps[1].qp.scopedPropertyName : ''}\` map to \`${qps[0].qp.urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${qps[0].qp.prop}: { as: \'other-${qps[0].qp.prop}\' }\``, qps.length <= 1);
-      let qp = qps[0].qp;
-      queryParams[qp.urlKey] = qp.route.serializeQueryParam(qps[0].value, qp.urlKey, qp.type);
-    }
   },
 
   _deserializeQueryParams(targetRouteName, queryParams) {
@@ -750,6 +734,7 @@ const EmberRouter = EmberObject.extend(Evented, {
       return this._qpCache[leafRouteName];
     }
 
+    let qpsByUrlKey = {};
     let map = {};
     let qps = [];
     this._qpCache[leafRouteName] = {
@@ -767,8 +752,21 @@ const EmberRouter = EmberObject.extend(Evented, {
 
       if (!qpMeta) { continue; }
 
+      // Loop over each QP to make sure we don't have any collisions by urlKey
+      for (let i = 0; i < qpMeta.qps.length; i++) {
+        let qp = qpMeta.qps[i];
+        let urlKey = qp.urlKey;
+
+        if (qpsByUrlKey[urlKey]) {
+          let otherQP = qpsByUrlKey[urlKey];
+          assert(`You're not allowed to have more than one controller property map to the same query param key, but both \`${otherQP.scopedPropertyName}\` and \`${qp.scopedPropertyName}\` map to \`${urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${otherQP.prop}: { as: \'other-${otherQP.prop}\' }\``, false);
+        }
+
+        qpsByUrlKey[urlKey] = qp;
+        qps.push(qp);
+      }
+
       assign(map, qpMeta.map);
-      qps.push.apply(qps, qpMeta.qps);
     }
 
     return {

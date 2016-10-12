@@ -1,197 +1,104 @@
 import { Controller } from 'ember-runtime';
-import { Route, NoneLocation } from 'ember-routing';
 import { run, Mixin } from 'ember-metal';
-import { compile } from 'ember-template-compiler';
-import { Application } from 'ember-application';
-import { setTemplates, setTemplate } from 'ember-glimmer';
+import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 
-let App, router, registry, container;
-
-function bootApplication() {
-  router = container.lookup('router:main');
-  run(App, 'advanceReadiness');
-}
-
-let startingURL = '';
-let expectedReplaceURL, expectedPushURL;
-
-function setAndFlush(obj, prop, value) {
-  run(obj, 'set', prop, value);
-}
-
-const TestLocation = NoneLocation.extend({
-  initState() {
-    this.set('path', startingURL);
-  },
-
-  setURL(path) {
-    if (expectedReplaceURL) {
-      ok(false, 'pushState occurred but a replaceState was expected');
-    }
-    if (expectedPushURL) {
-      equal(path, expectedPushURL, 'an expected pushState occurred');
-      expectedPushURL = null;
-    }
-    this.set('path', path);
-  },
-
-  replaceURL(path) {
-    if (expectedPushURL) {
-      ok(false, 'replaceState occurred but a pushState was expected');
-    }
-    if (expectedReplaceURL) {
-      equal(path, expectedReplaceURL, 'an expected replaceState occurred');
-      expectedReplaceURL = null;
-    }
-    this.set('path', path);
-  }
-});
-
-function sharedSetup() {
-  run(() => {
-    App = Application.create({
-      name: 'App',
-      rootElement: '#qunit-fixture'
-    });
-
-    App.deferReadiness();
-
-    registry = App.__registry__;
-    container = App.__container__;
-
-    registry.register('location:test', TestLocation);
-
-    startingURL = expectedReplaceURL = expectedPushURL = '';
-
-    App.Router.reopen({
-      location: 'test'
-    });
-
-    App.LoadingRoute = Route.extend({
-    });
-
-    setTemplate('application', compile('{{outlet}}'));
-    setTemplate('home', compile('<h3>Hours</h3>'));
-  });
-}
-
-function sharedTeardown() {
-  run(() => {
-    App.destroy();
-    App = null;
-
-    setTemplates({});
-  });
-}
-
-
-QUnit.module('Query Params - overlapping query param property names', {
-  setup() {
-    sharedSetup();
-
-    App.Router.map(function() {
+moduleFor('Query Params - overlapping query param property names', class extends QueryParamTestCase {
+  setupBase() {
+    this.router.map(function() {
       this.route('parent', function() {
         this.route('child');
       });
     });
 
-    this.boot = function() {
-      bootApplication();
-      run(router, 'transitionTo', 'parent.child');
-    };
-  },
-
-  teardown() {
-    sharedTeardown();
+    return this.visit('/parent/child');
   }
-});
 
-QUnit.test('can remap same-named qp props', function() {
-  App.ParentController = Controller.extend({
-    queryParams: { page: 'parentPage' },
-    page: 1
-  });
+  ['@test can remap same-named qp props'](assert) {
+    this.registerController('parent', Controller.extend({
+      queryParams: { page: 'parentPage' },
+      page: 1
+    }));
 
-  App.ParentChildController = Controller.extend({
-    queryParams: { page: 'childPage' },
-    page: 1
-  });
+    this.registerController('parent.child', Controller.extend({
+      queryParams: { page: 'childPage' },
+      page: 1
+    }));
 
-  this.boot();
+    return this.setupBase().then(() => {
+      this.assertCurrentPath('/parent/child');
 
-  equal(router.get('location.path'), '/parent/child');
+      let parentController = this.getController('parent');
+      let parentChildController = this.getController('parent.child');
 
-  let parentController = container.lookup('controller:parent');
-  let parentChildController = container.lookup('controller:parent.child');
+      this.setAndFlush(parentController, 'page', 2);
+      this.assertCurrentPath('/parent/child?parentPage=2');
+      this.setAndFlush(parentController, 'page', 1);
+      this.assertCurrentPath('/parent/child');
 
-  setAndFlush(parentController, 'page', 2);
-  equal(router.get('location.path'), '/parent/child?parentPage=2');
-  setAndFlush(parentController, 'page', 1);
-  equal(router.get('location.path'), '/parent/child');
+      this.setAndFlush(parentChildController, 'page', 2);
+      this.assertCurrentPath('/parent/child?childPage=2');
+      this.setAndFlush(parentChildController, 'page', 1);
+      this.assertCurrentPath('/parent/child');
 
-  setAndFlush(parentChildController, 'page', 2);
-  equal(router.get('location.path'), '/parent/child?childPage=2');
-  setAndFlush(parentChildController, 'page', 1);
-  equal(router.get('location.path'), '/parent/child');
+      run(() => {
+        parentController.set('page', 2);
+        parentChildController.set('page', 2);
+      });
 
-  run(() => {
-    parentController.set('page', 2);
-    parentChildController.set('page', 2);
-  });
+      this.assertCurrentPath('/parent/child?childPage=2&parentPage=2');
 
-  equal(router.get('location.path'), '/parent/child?childPage=2&parentPage=2');
+      run(() => {
+        parentController.set('page', 1);
+        parentChildController.set('page', 1);
+      });
 
-  run(() => {
-    parentController.set('page', 1);
-    parentChildController.set('page', 1);
-  });
+      this.assertCurrentPath('/parent/child');
+    });
+  }
 
-  equal(router.get('location.path'), '/parent/child');
-});
+  ['@test query params in the same route hierarchy with the same url key get auto-scoped'](assert) {
+    this.registerController('parent', Controller.extend({
+      queryParams: { foo: 'shared' },
+      foo: 1
+    }));
 
-QUnit.test('query params in the same route hierarchy with the same url key get auto-scoped', function() {
-  App.ParentController = Controller.extend({
-    queryParams: { foo: 'shared' },
-    foo: 1
-  });
+    this.registerController('parent.child', Controller.extend({
+      queryParams: { bar: 'shared' },
+      bar: 1
+    }));
 
-  App.ParentChildController = Controller.extend({
-    queryParams: { bar: 'shared' },
-    bar: 1
-  });
+    expectAssertion(() => {
+      this.setupBase();
+    }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
+  }
 
-  let self = this;
-  expectAssertion(() => {
-    self.boot();
-  }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
-});
+  ['@test Support shared but overridable mixin pattern'](assert) {
+    let HasPage = Mixin.create({
+      queryParams: 'page',
+      page: 1
+    });
 
-QUnit.test('Support shared but overridable mixin pattern', function() {
-  let HasPage = Mixin.create({
-    queryParams: 'page',
-    page: 1
-  });
+    this.registerController('parent', Controller.extend(HasPage, {
+      queryParams: { page: 'yespage' }
+    }));
 
-  App.ParentController = Controller.extend(HasPage, {
-    queryParams: { page: 'yespage' }
-  });
+    this.registerController('parent.child', Controller.extend(HasPage));
 
-  App.ParentChildController = Controller.extend(HasPage);
+    return this.setupBase().then(() => {
+      this.assertCurrentPath('/parent/child');
 
-  this.boot();
+      let parentController = this.getController('parent');
+      let parentChildController = this.getController('parent.child');
 
-  equal(router.get('location.path'), '/parent/child');
+      this.setAndFlush(parentChildController, 'page', 2);
+      this.assertCurrentPath('/parent/child?page=2');
+      assert.equal(parentController.get('page'), 1);
+      assert.equal(parentChildController.get('page'), 2);
 
-  let parentController = container.lookup('controller:parent');
-  let parentChildController = container.lookup('controller:parent.child');
-
-  setAndFlush(parentChildController, 'page', 2);
-  equal(router.get('location.path'), '/parent/child?page=2');
-  equal(parentController.get('page'), 1);
-  equal(parentChildController.get('page'), 2);
-
-  setAndFlush(parentController, 'page', 2);
-  equal(router.get('location.path'), '/parent/child?page=2&yespage=2');
-  equal(parentController.get('page'), 2);
-  equal(parentChildController.get('page'), 2);
+      this.setAndFlush(parentController, 'page', 2);
+      this.assertCurrentPath('/parent/child?page=2&yespage=2');
+      assert.equal(parentController.get('page'), 2);
+      assert.equal(parentChildController.get('page'), 2);
+    });
+  }
 });
