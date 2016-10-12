@@ -13,16 +13,20 @@ moduleFor('Query Params - overlapping query param property names', class extends
     return this.visit('/parent/child');
   }
 
-  ['@test can remap same-named qp props'](assert) {
-    this.registerController('parent', Controller.extend({
-      queryParams: { page: 'parentPage' },
-      page: 1
-    }));
+  setMappedQPController(routeName, prop = 'page', urlKey = 'parentPage', defaultValue = 1, options = {}) {
+    this.registerController(routeName, Controller.extend({
+      queryParams: {
+        [prop]: urlKey
+      },
+      [prop]: defaultValue
+    }, options));
+  }
 
-    this.registerController('parent.child', Controller.extend({
-      queryParams: { page: 'childPage' },
-      page: 1
-    }));
+  ['@test can remap same-named qp props'](assert) {
+    assert.expect(7);
+
+    this.setMappedQPController('parent');
+    this.setMappedQPController('parent.child', 'page', 'childPage');
 
     return this.setupBase().then(() => {
       this.assertCurrentPath('/parent/child');
@@ -56,23 +60,75 @@ moduleFor('Query Params - overlapping query param property names', class extends
     });
   }
 
-  ['@test query params in the same route hierarchy with the same url key get auto-scoped'](assert) {
-    this.registerController('parent', Controller.extend({
-      queryParams: { foo: 'shared' },
-      foo: 1
-    }));
+  ['@test query params can be either controller property or url key'](assert) {
+    assert.expect(3);
 
-    this.registerController('parent.child', Controller.extend({
-      queryParams: { bar: 'shared' },
-      bar: 1
-    }));
+    this.setMappedQPController('parent');
+
+    return this.setupBase().then(() => {
+      this.assertCurrentPath('/parent/child');
+
+      this.transitionTo('parent.child', { queryParams: { page: 2 } });
+      this.assertCurrentPath('/parent/child?parentPage=2');
+
+      this.transitionTo('parent.child', { queryParams: { parentPage: 3 } });
+      this.assertCurrentPath('/parent/child?parentPage=3');
+    });
+  }
+
+  ['@test query param matching a url key and controller property'](assert) {
+    assert.expect(3);
+
+    this.setMappedQPController('parent', 'page', 'parentPage');
+    this.setMappedQPController('parent.child', 'index', 'page');
+
+    return this.setupBase().then(() => {
+      this.transitionTo('parent.child', { queryParams: { page: 2 } });
+      this.assertCurrentPath('/parent/child?parentPage=2');
+
+      this.transitionTo('parent.child', { queryParams: { parentPage: 3 } });
+      this.assertCurrentPath('/parent/child?parentPage=3');
+
+      this.transitionTo('parent.child', { queryParams: { index: 2, page: 2 } });
+      this.assertCurrentPath('/parent/child?page=2&parentPage=2');
+    });
+  }
+
+  ['@test query param matching same property on two controllers use the urlKey higher in the chain'](assert) {
+    assert.expect(4);
+
+    this.setMappedQPController('parent', 'page', 'parentPage');
+    this.setMappedQPController('parent.child', 'page', 'childPage');
+
+    return this.setupBase().then(() => {
+      this.transitionTo('parent.child', { queryParams: { page: 2 } });
+      this.assertCurrentPath('/parent/child?parentPage=2');
+
+      this.transitionTo('parent.child', { queryParams: { parentPage: 3 } });
+      this.assertCurrentPath('/parent/child?parentPage=3');
+
+      this.transitionTo('parent.child', { queryParams: { childPage: 2, page: 2 } });
+      this.assertCurrentPath('/parent/child?childPage=2&parentPage=2');
+
+      this.transitionTo('parent.child', { queryParams: { childPage: 3, parentPage: 4 } });
+      this.assertCurrentPath('/parent/child?childPage=3&parentPage=4');
+    });
+  }
+
+  ['@test query params in the same route hierarchy with the same url key get auto-scoped'](assert) {
+    assert.expect(1);
+
+    this.setMappedQPController('parent');
+    this.setMappedQPController('parent.child');
 
     expectAssertion(() => {
       this.setupBase();
-    }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
+    }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:page` and `parent.child:page` map to `parentPage`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `page: { as: \'other-page\' }`');
   }
 
   ['@test Support shared but overridable mixin pattern'](assert) {
+    assert.expect(7);
+
     let HasPage = Mixin.create({
       queryParams: 'page',
       page: 1
