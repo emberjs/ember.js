@@ -1,9 +1,8 @@
 import { guidFor, EmptyObject } from 'ember-utils';
-import { get, tagForProperty, tagFor } from 'ember-metal';
+import { get, tagForProperty, tagFor, isProxy } from 'ember-metal';
 import {
   objectAt,
-  isEmberArray,
-  isProxy
+  isEmberArray
 } from 'ember-runtime';
 import {
   UpdatableReference,
