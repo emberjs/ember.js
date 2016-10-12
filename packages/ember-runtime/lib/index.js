@@ -44,8 +44,7 @@ export {
   FROZEN_ERROR
 } from './mixins/freezable';
 export {
-  default as _ProxyMixin,
-  isProxy
+  default as _ProxyMixin
 } from './mixins/-proxy';
 export {
   onLoad,
