@@ -35,13 +35,235 @@ class AbstractAppendTest extends RenderingTest {
     this.ids.push(component.elementId);
   }
 
+  ['@test lifecycle hooks during component append'](assert) {
+    let hooks = [];
+
+    let oldRegisterComponent = this.registerComponent;
+    let componentsByName = {};
+
+    // TODO: refactor/combine with other life-cycle tests
+    this.registerComponent = function(name, _options) {
+      function pushHook(hookName) {
+        hooks.push([name, hookName]);
+      }
+
+      let options = {
+        ComponentClass: _options.ComponentClass.extend({
+          init() {
+            expectDeprecation(() => { this._super(...arguments); }, /didInitAttrs called/);
+            if (name in componentsByName) {
+              throw new TypeError('Component named: ` ' + name + ' ` already registered');
+            }
+            componentsByName[name] = this;
+            pushHook('init');
+            this.on('init', () => pushHook('on(init)'));
+          },
+
+          didInitAttrs(options) {
+            pushHook('didInitAttrs', options);
+          },
+
+          didReceiveAttrs() {
+            pushHook('didReceiveAttrs');
+          },
+
+          willInsertElement() {
+            pushHook('willInsertElement');
+          },
+
+          willRender() {
+            pushHook('willRender');
+          },
+
+          didInsertElement() {
+            pushHook('didInsertElement');
+          },
+
+          didRender() {
+            pushHook('didRender');
+          },
+
+          didUpdateAttrs() {
+            pushHook('didUpdateAttrs');
+          },
+
+          willUpdate() {
+            pushHook('willUpdate');
+          },
+
+          didUpdate() {
+            pushHook('didUpdate');
+          },
+
+          willDestroyElement() {
+            pushHook('willDestroyElement');
+          },
+
+          willClearRender() {
+            pushHook('willClearRender');
+          },
+
+          didDestroyElement() {
+            pushHook('didDestroyElement');
+          },
+
+          willDestroy() {
+            pushHook('willDestroy');
+            this._super(...arguments);
+          }
+        }),
+        template: _options.template
+      };
+
+      oldRegisterComponent.call(this, name, options);
+    };
+
+    this.registerComponent('x-parent', {
+      ComponentClass: Component.extend({
+        layoutName: 'components/x-parent'
+      }),
+
+      template: '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}'
+    });
+
+    this.registerComponent('x-child', {
+      ComponentClass: Component.extend({
+        tagName: ''
+      }),
+
+      template: '[child: {{bar}}]{{yield}}'
+    });
+
+    let XParent = this.owner._lookupFactory('component:x-parent');
+
+    this.component = XParent.create({ foo: 'zomg' });
+
+    assert.deepEqual(hooks, [
+      ['x-parent', 'init'],
+      ['x-parent', 'didInitAttrs'],
+      ['x-parent', 'didReceiveAttrs'],
+      ['x-parent', 'on(init)']
+    ], 'creation of x-parent');
+
+    hooks.length = 0;
+
+    this.element = this.append(this.component);
+
+    assert.deepEqual(hooks, [
+      ['x-parent', 'willInsertElement'],
+      ['x-parent', 'willRender'],
+
+      ['x-child', 'init'],
+      ['x-child', 'didInitAttrs'],
+      ['x-child', 'didReceiveAttrs'],
+      ['x-child', 'on(init)'],
+      ['x-child', 'willInsertElement'],
+      ['x-child', 'willRender'],
+
+      ['x-child', 'didInsertElement'],
+      ['x-child', 'didRender'],
+
+      ['x-parent', 'didInsertElement'],
+      ['x-parent', 'didRender']
+    ], 'appending of x-parent');
+
+    hooks.length = 0;
+
+    this.runTask(() => componentsByName['x-parent'].rerender());
+
+    assert.deepEqual(hooks, [
+      ['x-parent', 'willUpdate'],
+      ['x-parent', 'willRender'],
+
+      ['x-parent', 'didUpdate'],
+      ['x-parent', 'didRender']
+    ], 'rerender x-parent');
+
+    hooks.length = 0;
+
+    this.runTask(() => componentsByName['x-child'].rerender());
+
+    assert.deepEqual(hooks, [
+      ['x-parent', 'willUpdate'],
+      ['x-parent', 'willRender'],
+
+      ['x-child', 'willUpdate'],
+      ['x-child', 'willRender'],
+
+      ['x-child', 'didUpdate'],
+      ['x-child', 'didRender'],
+
+      ['x-parent', 'didUpdate'],
+      ['x-parent', 'didRender']
+    ], 'rerender x-child');
+
+    hooks.length = 0;
+
+    this.runTask(() => set(this.component, 'foo', 'wow'));
+
+    assert.deepEqual(hooks, [
+      ['x-parent', 'willUpdate'],
+      ['x-parent', 'willRender'],
+
+      ['x-child', 'didUpdateAttrs'],
+      ['x-child', 'didReceiveAttrs'],
+
+      ['x-child', 'willUpdate'],
+      ['x-child', 'willRender'],
+
+      ['x-child', 'didUpdate'],
+      ['x-child', 'didRender'],
+
+      ['x-parent', 'didUpdate'],
+      ['x-parent', 'didRender']
+    ], 'set foo = wow');
+
+    hooks.length = 0;
+
+    this.runTask(() => set(this.component, 'foo', 'zomg'));
+
+    assert.deepEqual(hooks, [
+      ['x-parent', 'willUpdate'],
+      ['x-parent', 'willRender'],
+
+      ['x-child', 'didUpdateAttrs'],
+      ['x-child', 'didReceiveAttrs'],
+
+      ['x-child', 'willUpdate'],
+      ['x-child', 'willRender'],
+
+      ['x-child', 'didUpdate'],
+      ['x-child', 'didRender'],
+
+      ['x-parent', 'didUpdate'],
+      ['x-parent', 'didRender']
+    ], 'set foo = zomg');
+
+    hooks.length = 0;
+
+    // TODO: deletion needs to be tested, but has other issues and will join us in a later PR
+    // this.runTask(() => this.component.destroy());
+
+    // assert.deepEqual(hooks, [
+    //   [ 'x-parent', 'didDestroyElement' ],
+    //   [ 'x-parent', 'willDestroyElement' ],
+    //   [ 'x-parent', 'willClearRender' ],
+
+    //   [ 'x-child', 'willDestroyElement' ],
+    //   [ 'x-child', 'willClearRender' ],
+    //   [ 'x-child', 'didDestroyElement' ],
+
+    //   [ 'x-parent', 'willDestroy' ],
+    //   [ 'x-child', 'willDestroy' ]
+    // ], 'destroy');
+  }
+
   ['@test appending, updating and destroying a single component'](assert) {
     let willDestroyCalled = 0;
 
     this.registerComponent('x-parent', {
       ComponentClass: Component.extend({
         layoutName: 'components/x-parent',
-
         willDestroyElement() {
           willDestroyCalled++;
         }
@@ -345,6 +567,7 @@ class AbstractAppendTest extends RenderingTest {
     assert.equal(instantiatedRoots, 2);
     assert.equal(destroyedRoots, 2);
   }
+
 }
 
 moduleFor('append: no arguments (attaching to document.body)', class extends AbstractAppendTest {

@@ -364,9 +364,6 @@ class TopComponentManager extends CurlyComponentManager {
 
     dynamicScope.view = component;
 
-    component.trigger('didInitAttrs');
-    component.trigger('didReceiveAttrs');
-
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (component.tagName === '') {
       component._transitionTo('hasElement');
