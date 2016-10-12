@@ -157,8 +157,8 @@ export {
 export { default as InjectedProperty } from './injected_property';
 export {
   setHasViews,
+  tagForProperty,
   tagFor,
-  starTagFor,
   markObjectAsDirty
 } from './tags';
 export { default as replace } from './replace';

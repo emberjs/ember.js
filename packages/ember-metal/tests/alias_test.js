@@ -5,7 +5,7 @@ import { set } from '../property_set';
 import { meta } from '../meta';
 import { isWatching } from '../watching';
 import { addObserver, removeObserver } from '../observer';
-import { starTagFor } from '../tags';
+import { tagFor } from '../tags';
 
 let obj, count;
 
@@ -102,7 +102,7 @@ QUnit.test('setting alias on self should fail assertion', function() {
 });
 
 function assertDirty(obj, callback, label) {
-  let tag = starTagFor(obj);
+  let tag = tagFor(obj);
   let tagValue = tag.value();
   callback();
   ok(!tag.validate(tagValue), label);

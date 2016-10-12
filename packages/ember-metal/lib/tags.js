@@ -12,7 +12,7 @@ function makeTag() {
   return new DirtyableTag();
 }
 
-export function tagFor(object, propertyKey, _meta) {
+export function tagForProperty(object, propertyKey, _meta) {
   if (typeof object === 'object' && object) {
     let meta = _meta || metaFor(object);
     let tags = meta.writableTags();
@@ -25,7 +25,7 @@ export function tagFor(object, propertyKey, _meta) {
   }
 }
 
-export function starTagFor(object, _meta) {
+export function tagFor(object, _meta) {
   if (typeof object === 'object' && object) {
     let meta = _meta || metaFor(object);
     return meta.writableTag(makeTag);
