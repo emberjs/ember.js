@@ -151,14 +151,13 @@ class AbstractAppendTest extends RenderingTest {
 
     assert.deepEqual(hooks, [
       ['x-parent', 'willInsertElement'],
-      ['x-parent', 'willRender'],
 
       ['x-child', 'init'],
       ['x-child', 'didInitAttrs'],
       ['x-child', 'didReceiveAttrs'],
       ['x-child', 'on(init)'],
-      ['x-child', 'willInsertElement'],
       ['x-child', 'willRender'],
+      ['x-child', 'willInsertElement'],
 
       ['x-child', 'didInsertElement'],
       ['x-child', 'didRender'],
