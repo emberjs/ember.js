@@ -1,7 +1,7 @@
 import { inspect } from 'ember-utils';
 import { assert, warn } from './debug';
 import { set } from './property_set';
-import { meta as metaFor, peekMeta } from './meta';
+import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import expandProperties from './expand_properties';
 import EmberError from './error';
 import {
@@ -21,9 +21,6 @@ import {
 @module ember
 @submodule ember-metal
 */
-
-
-function UNDEFINED() { }
 
 const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
