@@ -439,6 +439,21 @@ QUnit.test('Route#paramsFor fetches query params', function() {
   bootApplication();
 });
 
+QUnit.test('query paramater with a default value of null should be able to get set to a string of null', function() {
+  expect(1);
+
+  App.IndexController = Controller.extend({
+    queryParams: ['foo'],
+    foo: null
+  });
+
+  startingURL = '/';
+  bootApplication();
+  run(router, 'transitionTo', { queryParams: { foo: 'null' } });
+  equal(router.get('location.path'), '/?foo=null', 'foo can be set to a string of null');
+});
+
+
 QUnit.test('model hook can query prefix-less application params (overridden by incoming url value)', function() {
   App.ApplicationController = Controller.extend({
     queryParams: ['appomg'],
