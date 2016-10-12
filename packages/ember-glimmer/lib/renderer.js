@@ -92,6 +92,7 @@ class RootState {
     this.destroyed = true;
 
     this.env = null;
+    let root = this.root;
     this.root = null;
     this.result = null;
     this.render = null;
@@ -116,6 +117,10 @@ class RootState {
       result.destroy();
 
       if (needsTransaction) {
+        if (typeof root.trigger === 'function') {
+          // when in append mode, the root is the component we must trigger destroy on.
+          root.trigger('didDestroyElement');
+        }
         env.commit();
       }
     }
@@ -221,7 +226,9 @@ class Renderer {
 
     setViewElement(view, null);
 
-    if (this._destinedForDOM) {
+    if (this._destinedForDOM && view.parentView !== null) {
+      // trigger only for non root views, if the root is a view (during
+      // appendTo) env.commit() handles this...
       view.trigger('didDestroyElement');
     }
 
@@ -243,7 +250,6 @@ class Renderer {
     let i = this._roots.length;
     while (i--) {
       let root = roots[i];
-      // check if the view being removed is a root view
       if (root.isFor(view)) {
         root.destroy();
       }
