@@ -58,9 +58,11 @@ let members = {
   tags: ownMap
 };
 
+// FLAGS
 const SOURCE_DESTROYING = 1 << 1;
 const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
+const IS_PROXY = 1 << 4;
 
 if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     isEnabled('ember-glimmer-allow-backtracking-rerender')) {
@@ -187,6 +189,14 @@ Meta.prototype.isMetaDestroyed = function isMetaDestroyed() {
 
 Meta.prototype.setMetaDestroyed = function setMetaDestroyed() {
   this._flags |= META_DESTROYED;
+};
+
+Meta.prototype.isProxy = function isProxy() {
+  return (this._flags & IS_PROXY) !== 0;
+};
+
+Meta.prototype.setProxy = function setProxy() {
+  this._flags |= IS_PROXY;
 };
 
 // Implements a member that is a lazily created, non-inheritable
