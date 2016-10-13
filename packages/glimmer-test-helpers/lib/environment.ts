@@ -424,7 +424,11 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
   }
 
   getDestructor(component: EmberishGlimmerComponent): Destroyable {
-    return component;
+    return {
+      destroy() {
+        component.destroy();
+      }
+    };
   }
 }
 
@@ -569,7 +573,11 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
   }
 
   getDestructor(component: EmberishCurlyComponent): Destroyable {
-    return component;
+    return {
+      destroy () {
+        component.destroy();
+      }
+    };
   }
 }
 
