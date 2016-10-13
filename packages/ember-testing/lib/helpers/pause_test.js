@@ -28,7 +28,7 @@ export function resumeTest() {
  Pauses the current test - this is useful for debugging while testing or for test-driving.
  It allows you to inspect the state of your application at any point.
  Example (The test will pause before clicking the button):
- 
+
  ```javascript
  visit('/')
  return pauseTest();
