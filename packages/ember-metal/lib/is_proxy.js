@@ -1,7 +1,10 @@
-import { symbol } from 'ember-utils';
-
-export const IS_PROXY = symbol('IS_PROXY');
+import { peekMeta } from './meta';
 
 export function isProxy(value) {
-  return typeof value === 'object' && value && value[IS_PROXY];
+  if (typeof value === 'object' && value) {
+    let meta = peekMeta(value);
+    return meta && meta.isProxy();
+  }
+
+  return false;
 }
