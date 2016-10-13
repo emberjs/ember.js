@@ -157,6 +157,7 @@ export {
 export { default as InjectedProperty } from './injected_property';
 export {
   setHasViews,
+  tagForProperty,
   tagFor,
   markObjectAsDirty
 } from './tags';
@@ -166,6 +167,10 @@ export {
   didRender,
   assertNotRendered
 } from './transaction';
+export {
+  IS_PROXY,
+  isProxy
+} from './is_proxy';
 export { default as descriptor } from './descriptor';
 
 

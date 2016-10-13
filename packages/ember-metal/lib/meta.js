@@ -28,8 +28,8 @@ import { protoMethods as listenerMethods } from './meta_listeners';
  peekBindings, clearBindings, writeValues,
  peekValues, clearValues, writeDeps, forEachInDeps
  writableChainWatchers, readableChainWatchers, writableChains,
- readableChains, writableTag, readableTag
-
+ readableChains, writableTag, readableTag, writableTags,
+ readableTags
 */
 let members = {
   cache: ownMap,
@@ -41,7 +41,8 @@ let members = {
   deps: inheritedMapOfMaps,
   chainWatchers: ownCustomObject,
   chains: inheritedCustomObject,
-  tag: ownCustomObject
+  tag: ownCustomObject,
+  tags: ownMap
 };
 
 if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
@@ -64,6 +65,7 @@ function Meta(obj, parentMeta) {
   this._chainWatchers = undefined;
   this._chains = undefined;
   this._tag = undefined;
+  this._tags = undefined;
 
   // used only internally
   this.source = obj;

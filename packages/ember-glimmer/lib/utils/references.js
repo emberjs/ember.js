@@ -2,12 +2,14 @@ import { symbol, EmptyObject } from 'ember-utils';
 import {
   get,
   set,
+  tagForProperty,
   tagFor,
   didRender,
   meta as metaFor,
   watchKey,
   isFeatureEnabled,
-  runInDebug
+  runInDebug,
+  isProxy
 } from 'ember-metal';
 import {
   CONSTANT_TAG,
@@ -24,7 +26,6 @@ import {
 } from 'glimmer-runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
-import { isProxy } from 'ember-runtime';
 
 export const UPDATE = symbol('UPDATE');
 
@@ -146,9 +147,9 @@ export class RootPropertyReference extends PropertyReference {
 
     if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
         isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      this.tag = new TwoWayFlushDetectionTag(tagFor(parentValue), propertyKey, this);
+      this.tag = new TwoWayFlushDetectionTag(tagForProperty(parentValue, propertyKey), propertyKey, this);
     } else {
-      this.tag = tagFor(parentValue);
+      this.tag = tagForProperty(parentValue, propertyKey);
     }
 
     if (isFeatureEnabled('mandatory-setter')) {
@@ -197,7 +198,7 @@ export class NestedPropertyReference extends PropertyReference {
 
     let parentValue = _parentReference.value();
 
-    _parentObjectTag.update(tagFor(parentValue));
+    _parentObjectTag.update(tagForProperty(parentValue, _propertyKey));
 
     if (typeof parentValue === 'string' && _propertyKey === 'length') {
       return parentValue.length;
@@ -277,11 +278,11 @@ export class ConditionalReference extends GlimmerConditionalReference {
   }
 
   toBool(predicate) {
-    this.objectTag.update(tagFor(predicate));
-
     if (isProxy(predicate)) {
+      this.objectTag.update(tagForProperty(predicate, 'isTruthy'));
       return get(predicate, 'isTruthy');
     } else {
+      this.objectTag.update(tagFor(predicate));
       return emberToBool(predicate);
     }
   }
