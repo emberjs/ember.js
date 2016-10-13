@@ -1,6 +1,9 @@
 import { PathReference, Tagged, Revision, RevisionTag, DirtyableTag } from 'glimmer-reference';
 import { Template, RenderResult, Simple } from 'glimmer-runtime';
-import { TestEnvironment, TestDynamicScope } from './environment';
+import {
+  TestEnvironment,
+  TestDynamicScope
+} from './environment';
 import { Opaque } from 'glimmer-util';
 import { assign } from './helpers';
 
@@ -92,6 +95,7 @@ export class RenderingTest {
   teardown() {}
 
   render(context: Object) {
+    this.env.begin();
     let dynamicScope = new TestDynamicScope();
     let appendTo = this.appendTo;
     let rootObject = new VersionedObject(context);
@@ -99,6 +103,7 @@ export class RenderingTest {
 
     this.context = rootObject;
     this.result = this.template.render(root, appendTo, dynamicScope);
+    this.env.commit();
     this.element = document.getElementById('qunit-fixture').firstChild;
   }
   assertContent(expected: string, message?: string) {
@@ -148,7 +153,9 @@ export class RenderingTest {
 
   runTask(callback: () => void) {
     callback();
+    this.env.begin();
     this.result.rerender();
+    this.env.commit();
   }
 }
 
