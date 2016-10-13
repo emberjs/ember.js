@@ -215,12 +215,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         urlKey: urlKey,
         prop: propName,
         scopedPropertyName: scopedPropertyName,
-        ctrl: controllerName,
+        controllerName: controllerName,
         route: this,
         parts: parts, // provided later when stashNames is called if 'model' scope
         values: null, // provided later when setup is called. no idea why.
-        scope: scope,
-        prefix: ''
+        scope: scope
       };
 
       map[propName] = map[urlKey] = map[scopedPropertyName] = qp;
@@ -299,7 +298,6 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       if (qp.scope === 'model') {
         qp.parts = namePaths;
       }
-      qp.prefix = qp.ctrl;
     }
   },
 
@@ -1232,7 +1230,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         let aQp = queryParams.map[prop];
 
         aQp.values = params;
-        let cacheKey = calculateCacheKey(aQp.prefix, aQp.parts, aQp.values);
+        let cacheKey = calculateCacheKey(aQp.controllerName, aQp.parts, aQp.values);
 
         if (cache) {
           let value = cache.lookup(cacheKey, prop, aQp.undecoratedDefaultValue);
@@ -1263,7 +1261,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   _qpChanged(prop, value, qp) {
     if (!qp) { return; }
 
-    let cacheKey = calculateCacheKey(qp.prefix || '', qp.parts, qp.values);
+    let cacheKey = calculateCacheKey(qp.controllerName, qp.parts, qp.values);
 
     // Update model-dep cache
     let cache = this._bucketCache;
