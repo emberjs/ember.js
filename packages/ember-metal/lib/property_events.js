@@ -110,7 +110,7 @@ function propertyDidChange(obj, keyName, _meta) {
 
   if (meta && meta.isSourceDestroying()) { return; }
 
-  markObjectAsDirty(meta);
+  markObjectAsDirty(meta, keyName);
 
   if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
       isEnabled('ember-glimmer-allow-backtracking-rerender')) {

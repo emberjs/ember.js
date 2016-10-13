@@ -1,9 +1,8 @@
 import { guidFor, EmptyObject } from 'ember-utils';
-import { get, tagFor } from 'ember-metal';
+import { get, tagForProperty, tagFor, isProxy } from 'ember-metal';
 import {
   objectAt,
-  isEmberArray,
-  isProxy
+  isEmberArray
 } from 'ember-runtime';
 import {
   UpdatableReference,
@@ -242,7 +241,7 @@ class ArrayIterable {
 
     let iterable = ref.value();
 
-    valueTag.update(tagFor(iterable));
+    valueTag.update(tagForProperty(iterable, '[]'));
 
     if (!iterable || typeof iterable !== 'object') {
       return EMPTY_ITERATOR;

@@ -19,8 +19,6 @@ import Ember, { // ES6TODO: Ember.A
   removeListener,
   sendEvent,
   hasListeners,
-  meta as metaFor,
-  markObjectAsDirty,
   deprecate,
   isFeatureEnabled
 } from 'ember-metal';
@@ -103,8 +101,6 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
 }
 
 export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
-  markObjectAsDirty(metaFor(array));
-
   // if no args are passed assume everything changes
   if (startIdx === undefined) {
     startIdx = 0;

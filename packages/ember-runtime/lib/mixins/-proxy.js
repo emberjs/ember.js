@@ -4,7 +4,6 @@
 */
 
 import { CachedTag, DirtyableTag, UpdatableTag } from 'glimmer-reference';
-import { symbol } from 'ember-utils';
 import {
   assert,
   deprecate,
@@ -21,15 +20,10 @@ import {
   defineProperty,
   Mixin,
   observer,
-  tagFor
+  tagFor,
+  IS_PROXY
 } from 'ember-metal';
 import { bool } from '../computed/computed_macros';
-
-const IS_PROXY = symbol('IS_PROXY');
-
-export function isProxy(value) {
-  return typeof value === 'object' && value && value[IS_PROXY];
-}
 
 function contentPropertyWillChange(content, contentKey) {
   let key = contentKey.slice(8); // remove "content."
