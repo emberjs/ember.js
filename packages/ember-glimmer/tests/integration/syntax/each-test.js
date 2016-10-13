@@ -938,7 +938,7 @@ if (typeof MutationObserver === 'function') {
 
     observe(element) {
       let observer = this.observer = new MutationObserver(function() {});
-      observer.observe(element, { childList: true });
+      observer.observe(element, { childList: true, characterData: true });
     }
 
     teardown() {
@@ -1003,9 +1003,7 @@ if (typeof MutationObserver === 'function') {
           </ul>
         `);
       }).then(() => {
-        // 'page' and 'model' is keyed off the same object, so we do expect Glimmer
-        // to re-iterate the list
-        this.expectMutations();
+        this.assertNoMutation();
 
         this.runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
 
