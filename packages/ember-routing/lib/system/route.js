@@ -811,7 +811,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
       let handlerInfos = transition.state.handlerInfos;
       let router = this.router;
-      let qpMeta = router._queryParamsFor(handlerInfos[handlerInfos.length - 1].name);
+      let qpMeta = router._queryParamsFor(handlerInfos);
       let changes = router._qpUpdates;
       let replaceUrl;
 
@@ -2213,8 +2213,7 @@ function getFullQueryParams(router, state) {
   state.fullQueryParams = {};
   assign(state.fullQueryParams, state.queryParams);
 
-  let targetRouteName = state.handlerInfos[state.handlerInfos.length - 1].name;
-  router._deserializeQueryParams(targetRouteName, state.fullQueryParams);
+  router._deserializeQueryParams(state.handlerInfos, state.fullQueryParams);
   return state.fullQueryParams;
 }
 
