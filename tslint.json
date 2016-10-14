@@ -9,7 +9,6 @@
     "no-consecutive-blank-lines": true,
     "no-construct": true,
     "no-debugger": true,
-    "no-duplicate-key": true,
     "no-duplicate-variable": true,
     "no-inferrable-types": true,
     "no-trailing-whitespace": true,
