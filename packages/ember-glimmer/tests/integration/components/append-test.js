@@ -240,21 +240,21 @@ class AbstractAppendTest extends RenderingTest {
 
     hooks.length = 0;
 
-    // TODO: deletion needs to be tested, but has other issues and will join us in a later PR
-    // this.runTask(() => this.component.destroy());
+    this.runTask(() => this.component.destroy());
 
-    // assert.deepEqual(hooks, [
-    //   [ 'x-parent', 'didDestroyElement' ],
-    //   [ 'x-parent', 'willDestroyElement' ],
-    //   [ 'x-parent', 'willClearRender' ],
+    assert.deepEqual(hooks, [
+      ['x-parent', 'willDestroyElement'],
+      ['x-parent', 'willClearRender'],
 
-    //   [ 'x-child', 'willDestroyElement' ],
-    //   [ 'x-child', 'willClearRender' ],
-    //   [ 'x-child', 'didDestroyElement' ],
+      ['x-child', 'willDestroyElement'],
+      ['x-child', 'willClearRender'],
 
-    //   [ 'x-parent', 'willDestroy' ],
-    //   [ 'x-child', 'willDestroy' ]
-    // ], 'destroy');
+      ['x-parent', 'didDestroyElement'],
+      ['x-child', 'didDestroyElement'],
+
+      ['x-parent', 'willDestroy'],
+      ['x-child', 'willDestroy']
+    ], 'destroy');
   }
 
   ['@test appending, updating and destroying a single component'](assert) {
