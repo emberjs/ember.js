@@ -142,6 +142,19 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
 
   /**
+    Sets the name for this route, including a fully resolved name for routes
+    inside engines.
+
+    @private
+    @method _setRouteName
+    @param {String} name
+  */
+  _setRouteName(name) {
+    this.routeName = name;
+    this.fullRouteName = getEngineRouteName(getOwner(this), name);
+  },
+
+  /**
     @private
 
     @property _qp
@@ -149,7 +162,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   _qp: computed(function() {
     let controllerProto, combinedQueryParameterConfiguration;
 
-    let controllerName = this.controllerName || this.routeName;
+    let controllerName = this.controllerName || this.fullRouteName;
     let definedControllerClass = getOwner(this)._lookupFactory(`controller:${controllerName}`);
     let queryParameterConfiguraton = get(this, 'queryParams');
     let hasRouterDefinedQueryParams = !!Object.keys(queryParameterConfiguraton).length;
@@ -373,7 +386,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let transition = this.router.router.activeTransition;
     let state = transition ? transition.state : this.router.router.state;
 
-    let fullName = getEngineRouteName(getOwner(this), name);
+    let fullName = route.fullRouteName;
     let params = assign({}, state.params[fullName]);
     let queryParams = getQueryParamsFor(route, state);
 
@@ -791,7 +804,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     },
 
     finalizeQueryParamChange(params, finalParams, transition) {
-      if (this.routeName !== 'application') { return true; }
+      if (this.fullRouteName !== 'application') { return true; }
 
       // Transition object is absent for intermediate transitions.
       if (!transition) { return; }
@@ -2207,9 +2220,7 @@ function getFullQueryParams(router, state) {
 
 function getQueryParamsFor(route, state) {
   state.queryParamsFor = state.queryParamsFor || {};
-  let name = route.routeName;
-
-  name = getEngineRouteName(getOwner(route), name);
+  let name = route.fullRouteName;
 
   if (state.queryParamsFor[name]) { return state.queryParamsFor[name]; }
 
