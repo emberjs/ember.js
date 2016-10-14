@@ -13,15 +13,6 @@ moduleFor('Query Params - overlapping query param property names', class extends
     return this.visit('/parent/child');
   }
 
-  setMappedQPController(routeName, prop = 'page', urlKey = 'parentPage', defaultValue = 1, options = {}) {
-    this.registerController(routeName, Controller.extend({
-      queryParams: {
-        [prop]: urlKey
-      },
-      [prop]: defaultValue
-    }, options));
-  }
-
   ['@test can remap same-named qp props'](assert) {
     assert.expect(7);
 

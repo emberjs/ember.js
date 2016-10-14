@@ -17,14 +17,6 @@ import { jQuery } from 'ember-views';
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 
 moduleFor('Query Params - main', class extends QueryParamTestCase {
-  // Sets up a controller with a single query param
-  setSingleQPController(routeName, param = 'foo', defaultValue = 'bar', options = {}) {
-    this.registerController(routeName, Controller.extend({
-      queryParams: [param],
-      [param]: defaultValue
-    }, options));
-  }
-
   refreshModelWhileLoadingTest(loadingReturn) {
     let assert = this.assert;
 
