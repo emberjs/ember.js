@@ -29,7 +29,6 @@ import EmberLocation from '../location/api';
 import {
   routeArgs,
   getActiveTargetName,
-  stashParamNames,
   calculateCacheKey
 } from '../utils';
 import RouterState from './router_state';
@@ -764,6 +763,20 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   /**
+    Returns the meta information for the query params of a given route. This
+    will be overriden to allow support for lazy routes.
+
+    @private
+    @method _getQPMeta
+    @param {HandlerInfo} handlerInfo
+    @return {Object}
+  */
+  _getQPMeta(handlerInfo) {
+    let route = handlerInfo.handler;
+    return route && get(route, '_qp');
+  },
+
+  /**
     Returns a merged query params meta object for a given set of handlerInfos.
     Useful for knowing what query params are available for a given route hierarchy.
 
@@ -778,19 +791,18 @@ const EmberRouter = EmberObject.extend(Evented, {
       return this._qpCache[leafRouteName];
     }
 
+    let shouldCache = true;
     let qpsByUrlKey = {};
     let map = {};
     let qps = [];
-    this._qpCache[leafRouteName] = {
-      map: map,
-      qps: qps
-    };
 
     for (let i = 0; i < handlerInfos.length; ++i) {
-      let route = handlerInfos[i].handler;
-      let qpMeta = get(route, '_qp');
+      let qpMeta = this._getQPMeta(handlerInfos[i]);
 
-      if (!qpMeta) { continue; }
+      if (!qpMeta) {
+        shouldCache = false;
+        continue;
+      }
 
       // Loop over each QP to make sure we don't have any collisions by urlKey
       for (let i = 0; i < qpMeta.qps.length; i++) {
@@ -809,10 +821,16 @@ const EmberRouter = EmberObject.extend(Evented, {
       assign(map, qpMeta.map);
     }
 
-    return {
+    let finalQPMeta = {
       qps: qps,
       map: map
     };
+
+    if (shouldCache) {
+      this._qpCache[leafRouteName] = finalQPMeta;
+    }
+
+    return finalQPMeta;
   },
 
   /**
@@ -829,11 +847,11 @@ const EmberRouter = EmberObject.extend(Evented, {
   _fullyScopeQueryParams(leafRouteName, contexts, queryParams) {
     var state = calculatePostTransitionState(this, leafRouteName, contexts);
     var handlerInfos = state.handlerInfos;
-    stashParamNames(this, handlerInfos);
 
     for (var i = 0, len = handlerInfos.length; i < len; ++i) {
-      var route = handlerInfos[i].handler;
-      var qpMeta = get(route, '_qp');
+      var qpMeta = this._getQPMeta(handlerInfos[i]);
+
+      if (!qpMeta) { continue; }
 
       for (var j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
         var qp = qpMeta.qps[j];
@@ -866,11 +884,11 @@ const EmberRouter = EmberObject.extend(Evented, {
   _hydrateUnsuppliedQueryParams(state, queryParams) {
     let handlerInfos = state.handlerInfos;
     let appCache = this._bucketCache;
-    stashParamNames(this, handlerInfos);
 
     for (let i = 0; i < handlerInfos.length; ++i) {
-      let route = handlerInfos[i].handler;
-      let qpMeta = get(route, '_qp');
+      let qpMeta = this._getQPMeta(handlerInfos[i]);
+
+      if (!qpMeta) { continue; }
 
       for (let j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
         let qp = qpMeta.qps[j];
