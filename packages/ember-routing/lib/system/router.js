@@ -18,7 +18,9 @@ import {
 } from 'ember-metal';
 import {
   Object as EmberObject,
-  Evented
+  Evented,
+  typeOf,
+  A as emberA
 } from 'ember-runtime';
 import {
   defaultSerialize,
@@ -662,10 +664,30 @@ const EmberRouter = EmberObject.extend(Evented, {
     @return {Void}
   */
   _serializeQueryParams(handlerInfos, queryParams) {
-    forEachQueryParam(this, handlerInfos, queryParams, function(key, value, qp) {
-      delete queryParams[key];
-      queryParams[qp.urlKey] = qp.route.serializeQueryParam(value, qp.urlKey, qp.type);
+    forEachQueryParam(this, handlerInfos, queryParams, (key, value, qp) => {
+      if (qp) {
+        delete queryParams[key];
+        queryParams[qp.urlKey] = qp.route.serializeQueryParam(value, qp.urlKey, qp.type);
+      } else {
+        queryParams[key] = this._serializeQueryParam(value, typeOf(value));
+      }
     });
+  },
+
+  /**
+    Serializes the value of a query parameter based on a type
+
+    @private
+    @method _serializeQueryParam
+    @param {Object} value
+    @param {String} type
+  */
+  _serializeQueryParam(value, type) {
+    if (type === 'array') {
+      return JSON.stringify(value);
+    }
+
+    return `${value}`;
   },
 
   /**
@@ -678,10 +700,34 @@ const EmberRouter = EmberObject.extend(Evented, {
     @return {Void}
   */
   _deserializeQueryParams(handlerInfos, queryParams) {
-    forEachQueryParam(this, handlerInfos, queryParams, function(key, value, qp) {
-      delete queryParams[key];
-      queryParams[qp.prop] = qp.route.deserializeQueryParam(value, qp.urlKey, qp.type);
+    forEachQueryParam(this, handlerInfos, queryParams, (key, value, qp) => {
+      // If we don't have QP meta info for a given key, then we do nothing
+      // because all values will be treated as strings
+      if (qp) {
+        delete queryParams[key];
+        queryParams[qp.prop] = qp.route.deserializeQueryParam(value, qp.urlKey, qp.type);
+      }
     });
+  },
+
+  /**
+    Deserializes the value of a query parameter based on a default type
+
+    @private
+    @method _deserializeQueryParam
+    @param {Object} value
+    @param {String} defaultType
+  */
+  _deserializeQueryParam(value, defaultType) {
+    if (defaultType === 'boolean') {
+      return (value === 'true') ? true : false;
+    } else if (defaultType === 'number') {
+      return (Number(value)).valueOf();
+    } else if (defaultType === 'array') {
+      return emberA(JSON.parse(value));
+    }
+
+    return value;
   },
 
   /**
@@ -1356,9 +1402,7 @@ function forEachQueryParam(router, handlerInfos, queryParams, callback) {
     let value = queryParams[key];
     let qp = qpCache.map[key];
 
-    if (qp) {
-      callback(key, value, qp);
-    }
+    callback(key, value, qp);
   }
 }
 

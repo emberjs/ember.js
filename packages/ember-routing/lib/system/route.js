@@ -421,10 +421,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     // urlKey isn't used here, but anyone overriding
     // can use it to provide serialization specific
     // to a certain query param.
-    if (defaultValueType === 'array') {
-      return JSON.stringify(value);
-    }
-    return `${value}`;
+    return this.router._serializeQueryParam(value, defaultValueType);
   },
 
   /**
@@ -440,17 +437,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     // urlKey isn't used here, but anyone overriding
     // can use it to provide deserialization specific
     // to a certain query param.
-
-    // Use the defaultValueType of the default value (the initial value assigned to a
-    // controller query param property), to intelligently deserialize and cast.
-    if (defaultValueType === 'boolean') {
-      return (value === 'true') ? true : false;
-    } else if (defaultValueType === 'number') {
-      return (Number(value)).valueOf();
-    } else if (defaultValueType === 'array') {
-      return emberA(JSON.parse(value));
-    }
-    return value;
+    return this.router._deserializeQueryParam(value, defaultValueType);
   },
 
   /**
