@@ -1,3 +1,4 @@
+import { Controller } from 'ember-runtime';
 import { NoneLocation } from 'ember-routing';
 import { run } from 'ember-metal';
 
@@ -73,5 +74,34 @@ export default class QueryParamTestCase extends ApplicationTestCase {
 
   transitionTo() {
     return run(this.appRouter, 'transitionTo', ...arguments);
+  }
+
+  /**
+    Sets up a Controller for a given route with a single query param and default
+    value. Can optionally extend the controller with an object.
+
+    @public
+    @method setSingleQPController
+  */
+  setSingleQPController(routeName, param = 'foo', defaultValue = 'bar', options = {}) {
+    this.registerController(routeName, Controller.extend({
+      queryParams: [param],
+      [param]: defaultValue
+    }, options));
+  }
+
+  /**
+    Sets up a Controller for a given route with a custom property/url key mapping.
+
+    @public
+    @method setMappedQPController
+  */
+  setMappedQPController(routeName, prop = 'page', urlKey = 'parentPage', defaultValue = 1, options = {}) {
+    this.registerController(routeName, Controller.extend({
+      queryParams: {
+        [prop]: urlKey
+      },
+      [prop]: defaultValue
+    }, options));
   }
 }
