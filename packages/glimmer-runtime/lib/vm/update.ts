@@ -272,8 +272,8 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
   delete(key: string) {
     let { map } = this;
     let opcode = map[key];
-    clear(opcode);
     opcode.didDestroy();
+    clear(opcode);
     this.updating.remove(opcode);
     delete map[key];
 
