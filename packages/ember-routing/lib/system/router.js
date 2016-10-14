@@ -1169,10 +1169,13 @@ function calculatePostTransitionState(emberRouter, leafRouteName, contexts) {
 
   for (let i = 0; i < handlerInfos.length; ++i) {
     let handlerInfo = handlerInfos[i];
+
+    // If the handlerInfo is not resolved, we serialize the context into params
     if (!handlerInfo.isResolved) {
-      handlerInfo = handlerInfo.becomeResolved(null, handlerInfo.context);
+      params[handlerInfo.name] = handlerInfo.serialize(handlerInfo.context);
+    } else {
+      params[handlerInfo.name] = handlerInfo.params;
     }
-    params[handlerInfo.name] = handlerInfo.params;
   }
   return state;
 }
