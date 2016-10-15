@@ -18,7 +18,9 @@ import {
 } from 'ember-metal';
 import {
   Object as EmberObject,
-  Evented
+  Evented,
+  typeOf,
+  A as emberA
 } from 'ember-runtime';
 import {
   defaultSerialize,
@@ -29,7 +31,6 @@ import EmberLocation from '../location/api';
 import {
   routeArgs,
   getActiveTargetName,
-  stashParamNames,
   calculateCacheKey
 } from '../utils';
 import RouterState from './router_state';
@@ -594,7 +595,8 @@ const EmberRouter = EmberObject.extend(Evented, {
         }
       }
 
-      handler.routeName = routeName;
+      handler._setRouteName(routeName);
+      handler._populateQPMeta();
 
       if (engineInfo && !hasDefaultSerialize(handler)) {
         throw new Error('Defining a custom serialize method on an Engine route is not supported.');
@@ -653,22 +655,94 @@ const EmberRouter = EmberObject.extend(Evented, {
     };
   },
 
-  _serializeQueryParams(targetRouteName, queryParams) {
-    forEachQueryParam(this, targetRouteName, queryParams, function(key, value, qp) {
-      delete queryParams[key];
-      queryParams[qp.urlKey] = qp.route.serializeQueryParam(value, qp.urlKey, qp.type);
+  /**
+    Serializes the given query params according to their QP meta information.
+
+    @private
+    @method _serializeQueryParams
+    @param {Arrray<HandlerInfo>} handlerInfos
+    @param {Object} queryParams
+    @return {Void}
+  */
+  _serializeQueryParams(handlerInfos, queryParams) {
+    forEachQueryParam(this, handlerInfos, queryParams, (key, value, qp) => {
+      if (qp) {
+        delete queryParams[key];
+        queryParams[qp.urlKey] = qp.route.serializeQueryParam(value, qp.urlKey, qp.type);
+      } else {
+        queryParams[key] = this._serializeQueryParam(value, typeOf(value));
+      }
     });
   },
 
-  _deserializeQueryParams(targetRouteName, queryParams) {
-    forEachQueryParam(this, targetRouteName, queryParams, function(key, value, qp) {
-      delete queryParams[key];
-      queryParams[qp.prop] = qp.route.deserializeQueryParam(value, qp.urlKey, qp.type);
+  /**
+    Serializes the value of a query parameter based on a type
+
+    @private
+    @method _serializeQueryParam
+    @param {Object} value
+    @param {String} type
+  */
+  _serializeQueryParam(value, type) {
+    if (type === 'array') {
+      return JSON.stringify(value);
+    }
+
+    return `${value}`;
+  },
+
+  /**
+    Deserializes the given query params according to their QP meta information.
+
+    @private
+    @method _deserializeQueryParams
+    @param {Array<HandlerInfo>} handlerInfos
+    @param {Object} queryParams
+    @return {Void}
+  */
+  _deserializeQueryParams(handlerInfos, queryParams) {
+    forEachQueryParam(this, handlerInfos, queryParams, (key, value, qp) => {
+      // If we don't have QP meta info for a given key, then we do nothing
+      // because all values will be treated as strings
+      if (qp) {
+        delete queryParams[key];
+        queryParams[qp.prop] = qp.route.deserializeQueryParam(value, qp.urlKey, qp.type);
+      }
     });
   },
 
-  _pruneDefaultQueryParamValues(targetRouteName, queryParams) {
-    let qps = this._queryParamsFor(targetRouteName);
+  /**
+    Deserializes the value of a query parameter based on a default type
+
+    @private
+    @method _deserializeQueryParam
+    @param {Object} value
+    @param {String} defaultType
+  */
+  _deserializeQueryParam(value, defaultType) {
+    if (defaultType === 'boolean') {
+      return (value === 'true') ? true : false;
+    } else if (defaultType === 'number') {
+      return (Number(value)).valueOf();
+    } else if (defaultType === 'array') {
+      return emberA(JSON.parse(value));
+    }
+
+    return value;
+  },
+
+  /**
+    Removes (prunes) any query params with default values from the given QP
+    object. Default values are determined from the QP meta information per key.
+
+    @private
+    @method _pruneDefaultQueryParamValues
+    @param {Array<HandlerInfo>} handlerInfos
+    @param {Object} queryParams
+    @return {Void}
+  */
+  _pruneDefaultQueryParamValues(handlerInfos, queryParams) {
+    let qps = this._queryParamsFor(handlerInfos);
     for (let key in queryParams) {
       let qp = qps.map[key];
       if (qp && qp.serializedDefaultValue === queryParams[key]) {
@@ -717,40 +791,65 @@ const EmberRouter = EmberObject.extend(Evented, {
     assign(queryParams, unchangedQPs);
   },
 
+  /**
+    Prepares the query params for a URL or Transition. Restores any undefined QP
+    keys/values, serializes all values, and then prunes any default values.
+
+    @private
+    @method _prepareQueryParams
+    @param {String} targetRouteName
+    @param {Array<Object>} models
+    @param {Object} queryParams
+    @return {Void}
+  */
   _prepareQueryParams(targetRouteName, models, queryParams) {
-    this._hydrateUnsuppliedQueryParams(targetRouteName, models, queryParams);
-    this._serializeQueryParams(targetRouteName, queryParams);
-    this._pruneDefaultQueryParamValues(targetRouteName, queryParams);
+    let state = calculatePostTransitionState(this, targetRouteName, models);
+    this._hydrateUnsuppliedQueryParams(state, queryParams);
+    this._serializeQueryParams(state.handlerInfos, queryParams);
+    this._pruneDefaultQueryParamValues(state.handlerInfos, queryParams);
   },
 
   /**
-    Returns a merged query params meta object for a given route.
-    Useful for asking a route what its known query params are.
+    Returns the meta information for the query params of a given route. This
+    will be overriden to allow support for lazy routes.
 
     @private
+    @method _getQPMeta
+    @param {HandlerInfo} handlerInfo
+    @return {Object}
+  */
+  _getQPMeta(handlerInfo) {
+    let route = handlerInfo.handler;
+    return route && get(route, '_qp');
+  },
+
+  /**
+    Returns a merged query params meta object for a given set of handlerInfos.
+    Useful for knowing what query params are available for a given route hierarchy.
+
+    @private
+    @method _queryParamsFor
+    @param {Array<HandlerInfo>} handlerInfos
+    @return {Object}
    */
-  _queryParamsFor(leafRouteName) {
+  _queryParamsFor(handlerInfos) {
+    let leafRouteName = handlerInfos[handlerInfos.length - 1].name;
     if (this._qpCache[leafRouteName]) {
       return this._qpCache[leafRouteName];
     }
 
+    let shouldCache = true;
     let qpsByUrlKey = {};
     let map = {};
     let qps = [];
-    this._qpCache[leafRouteName] = {
-      map: map,
-      qps: qps
-    };
 
-    let routerjs = this.router;
-    let recogHandlerInfos = routerjs.recognizer.handlersFor(leafRouteName);
+    for (let i = 0; i < handlerInfos.length; ++i) {
+      let qpMeta = this._getQPMeta(handlerInfos[i]);
 
-    for (let i = 0; i < recogHandlerInfos.length; ++i) {
-      let recogHandler = recogHandlerInfos[i];
-      let route = routerjs.getHandler(recogHandler.handler);
-      let qpMeta = get(route, '_qp');
-
-      if (!qpMeta) { continue; }
+      if (!qpMeta) {
+        shouldCache = false;
+        continue;
+      }
 
       // Loop over each QP to make sure we don't have any collisions by urlKey
       for (let i = 0; i < qpMeta.qps.length; i++) {
@@ -769,20 +868,37 @@ const EmberRouter = EmberObject.extend(Evented, {
       assign(map, qpMeta.map);
     }
 
-    return {
+    let finalQPMeta = {
       qps: qps,
       map: map
     };
+
+    if (shouldCache) {
+      this._qpCache[leafRouteName] = finalQPMeta;
+    }
+
+    return finalQPMeta;
   },
 
+  /**
+    Maps all query param keys to their fully scoped property name of the form
+    `controllerName:propName`.
+
+    @private
+    @method _fullyScopeQueryParams
+    @param {String} leafRouteName
+    @param {Array<Object>} contexts
+    @param {Object} queryParams
+    @return {Void}
+  */
   _fullyScopeQueryParams(leafRouteName, contexts, queryParams) {
     var state = calculatePostTransitionState(this, leafRouteName, contexts);
     var handlerInfos = state.handlerInfos;
-    stashParamNames(this, handlerInfos);
 
     for (var i = 0, len = handlerInfos.length; i < len; ++i) {
-      var route = handlerInfos[i].handler;
-      var qpMeta = get(route, '_qp');
+      var qpMeta = this._getQPMeta(handlerInfos[i]);
+
+      if (!qpMeta) { continue; }
 
       for (var j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
         var qp = qpMeta.qps[j];
@@ -801,15 +917,25 @@ const EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  _hydrateUnsuppliedQueryParams(leafRouteName, contexts, queryParams) {
-    let state = calculatePostTransitionState(this, leafRouteName, contexts);
+  /**
+    Hydrates (adds/restores) any query params that have pre-existing values into
+    the given queryParams hash. This is what allows query params to be "sticky"
+    and restore their last known values for their scope.
+
+    @private
+    @method _hydrateUnsuppliedQueryParams
+    @param {TransitionState} state
+    @param {Object} queryParams
+    @return {Void}
+  */
+  _hydrateUnsuppliedQueryParams(state, queryParams) {
     let handlerInfos = state.handlerInfos;
     let appCache = this._bucketCache;
-    stashParamNames(this, handlerInfos);
 
     for (let i = 0; i < handlerInfos.length; ++i) {
-      let route = handlerInfos[i].handler;
-      let qpMeta = get(route, '_qp');
+      let qpMeta = this._getQPMeta(handlerInfos[i]);
+
+      if (!qpMeta) { continue; }
 
       for (let j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
         let qp = qpMeta.qps[j];
@@ -1108,10 +1234,13 @@ function calculatePostTransitionState(emberRouter, leafRouteName, contexts) {
 
   for (let i = 0; i < handlerInfos.length; ++i) {
     let handlerInfo = handlerInfos[i];
+
+    // If the handlerInfo is not resolved, we serialize the context into params
     if (!handlerInfo.isResolved) {
-      handlerInfo = handlerInfo.becomeResolved(null, handlerInfo.context);
+      params[handlerInfo.name] = handlerInfo.serialize(handlerInfo.context);
+    } else {
+      params[handlerInfo.name] = handlerInfo.params;
     }
-    params[handlerInfo.name] = handlerInfo.params;
   }
   return state;
 }
@@ -1266,17 +1395,15 @@ function resemblesURL(str) {
   return typeof str === 'string' && ( str === '' || str.charAt(0) === '/');
 }
 
-function forEachQueryParam(router, targetRouteName, queryParams, callback) {
-  let qpCache = router._queryParamsFor(targetRouteName);
+function forEachQueryParam(router, handlerInfos, queryParams, callback) {
+  let qpCache = router._queryParamsFor(handlerInfos);
 
   for (let key in queryParams) {
     if (!queryParams.hasOwnProperty(key)) { continue; }
     let value = queryParams[key];
     let qp = qpCache.map[key];
 
-    if (qp) {
-      callback(key, value, qp);
-    }
+    callback(key, value, qp);
   }
 }
 

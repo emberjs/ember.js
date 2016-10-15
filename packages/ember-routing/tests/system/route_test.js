@@ -361,8 +361,8 @@ QUnit.test('paramsFor considers an engine\'s mountPoint', function(assert) {
     }
   });
 
-  let applicationRoute = EmberRoute.create({ router, routeName: 'application' });
-  let postsRoute = EmberRoute.create({ router, routeName: 'posts' });
+  let applicationRoute = EmberRoute.create({ router, routeName: 'application', fullRouteName: 'foo.bar' });
+  let postsRoute = EmberRoute.create({ router, routeName: 'posts', fullRouteName: 'foo.bar.posts' });
   let route = EmberRoute.create({ router });
 
   setOwner(applicationRoute, engineInstance);
