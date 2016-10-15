@@ -1,4 +1,5 @@
 import { set, setProperties, run } from 'ember-metal';
+import { A as emberA } from 'ember-runtime';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
@@ -1407,9 +1408,177 @@ moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
       }
     });
   }
+
+  ['@test that thing about destroying'](assert) {
+    let ParentDestroyedElements = [];
+    let ChildDestroyedElements = [];
+
+    let ParentComponent = Component.extend({
+      willDestroyElement() {
+        ParentDestroyedElements.push({
+          id: this.itemId,
+          name: 'parent-component',
+          hasParent: !!this.element.parentNode,
+          nextSibling: !!this.element.nextSibling,
+          previousSibling: !!this.element.previousSibling
+        });
+      }
+    });
+
+    let PartentTemplate = strip`
+      {{yield}}
+      <ul>
+        {{#nested-component nestedId=(concat itemId '-A')}}A{{/nested-component}}
+        {{#nested-component nestedId=(concat itemId '-B')}}B{{/nested-component}}
+      </ul>
+    `;
+
+    let NestedComponent = Component.extend({
+      willDestroyElement() {
+        ChildDestroyedElements.push({
+          id: this.nestedId,
+          name: 'nested-component',
+          hasParent: !!this.element.parentNode,
+          nextSibling: !!this.element.nextSibling,
+          previousSibling: !!this.element.previousSibling
+        });
+      }
+    });
+
+    let NestedTemplate = `{{yield}}`;
+
+    this.registerComponent('parent-component', {
+      ComponentClass: ParentComponent,
+      template: PartentTemplate
+    });
+
+    this.registerComponent('nested-component', {
+      ComponentClass: NestedComponent,
+      template: NestedTemplate
+    });
+
+    let array = emberA([
+        { id: 1 },
+        { id: 2 },
+        { id: 3 },
+        { id: 4 },
+        { id: 5 }
+      ]);
+
+    this.render(strip`
+      {{#each items as |item|}}
+        {{#parent-component itemId=item.id}}{{item.id}}{{/parent-component}}
+      {{/each}}
+      {{#if model.shouldShow}}
+        {{#parent-component itemId=6}}6{{/parent-component}}
+      {{/if}}
+      {{#if model.shouldShow}}
+        {{#parent-component itemId=7}}7{{/parent-component}}
+      {{/if}}
+    `, {
+      items: array,
+      model: { shouldShow: true }
+    });
+
+    this.assertText('1AB2AB3AB4AB5AB6AB7AB');
+
+    this.runTask(() => {
+      array.removeAt(2);
+      array.removeAt(2);
+      set(this.context, 'model.shouldShow', false);
+    });
+
+    this.assertText('1AB2AB5AB');
+
+    assertDestroyHooks(assert, [...ParentDestroyedElements], [
+      {
+        id: 3,
+        hasParent: true,
+        nextSibling: true,
+        previousSibling: true
+      },
+      {
+        id: 4,
+        hasParent: true,
+        nextSibling: true,
+        previousSibling: true
+      },
+      {
+        id: 6,
+        hasParent: true,
+        nextSibling: true,
+        previousSibling: true
+      },
+      {
+        id: 7,
+        hasParent: true,
+        nextSibling: false,
+        previousSibling: true
+      }
+    ]);
+
+    assertDestroyHooks(assert, [...ChildDestroyedElements], [
+      {
+        id: '3-A',
+        hasParent: true,
+        nextSibling: true,
+        previousSibling: false
+      },
+      {
+        id: '3-B',
+        hasParent: true,
+        nextSibling: false,
+        previousSibling: true
+      },
+      {
+        id: '4-A',
+        hasParent: true,
+        nextSibling: true,
+        previousSibling: false
+      },
+      {
+        id: '4-B',
+        hasParent: true,
+        nextSibling: false,
+        previousSibling: true
+      },
+      {
+        id: '6-A',
+        hasParent: true,
+        nextSibling: true,
+        previousSibling: false
+      },
+      {
+        id: '6-B',
+        hasParent: true,
+        nextSibling: false,
+        previousSibling: true
+      },
+      {
+        id: '7-A',
+        hasParent: true,
+        nextSibling: true,
+        previousSibling: false
+      },
+      {
+        id: '7-B',
+        hasParent: true,
+        nextSibling: false,
+        previousSibling: true
+      }
+    ]);
+  }
 });
 
-
+function assertDestroyHooks(assert, _actual, _expected) {
+  _expected.forEach((expected, i) => {
+    let name = expected.name;
+    assert.equal(expected.id, _actual[i].id, `${name} id is the same`);
+    assert.equal(expected.hasParent, _actual[i].hasParent, `${name} has parent node`);
+    assert.equal(expected.nextSibling, _actual[i].nextSibling, `${name} has next sibling node`);
+    assert.equal(expected.previousSibling, _actual[i].previousSibling, `${name} has previous sibling node`);
+  });
+}
 
 function bind(func, thisArg) {
   return (...args) => func.apply(thisArg, args);
