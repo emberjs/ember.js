@@ -34,6 +34,13 @@ Ember.js also provides access to the most advanced features of Javascript, HTML 
 6. Run `bower install` to ensure required web dependencies are installed.
 7. Run `npm run build` to build Ember.js. The builds will be placed in the `dist/` directory.
 
+If you edit the `feature.json` file, you may also need to clear the async disk
+cache to get a proper build:
+
+```js
+rm -rf tmp $TMPDIR/async-disk-cache/
+```
+
 ## npm install troubleshooting
 
 If you encounter a problem with downloading dependencies like:
