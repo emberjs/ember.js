@@ -777,6 +777,53 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     this.assert.ok(actionCalled, 'action called on otherComponent');
   }
 
+  ['@test closure actions support a target [GH#14469]']() {
+    let innerComponent;
+    let actionCalled = false;
+    let actualName;
+    let expectedName = 'the foobar';
+
+    let InnerComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        innerComponent = this;
+      },
+      fireAction() {
+        this.attrs.submit();
+      }
+    });
+
+    let OuterComponent = Component.extend({
+      name: 'outer',
+      foobar: {
+        name: 'the foobar',
+        myName() {
+          actionCalled = true;
+          actualName = this.name;
+        }
+      }
+    });
+
+    this.registerComponent('inner-component', {
+      ComponentClass: InnerComponent,
+      template: 'inner'
+    });
+
+    this.registerComponent('outer-component', {
+      ComponentClass: OuterComponent,
+      template: `{{inner-component submit=(action foobar.myName target=foobar)}}`
+    });
+
+    this.render('{{outer-component}}');
+
+    this.runTask(() => {
+      innerComponent.fireAction();
+    });
+
+    this.assert.ok(actionCalled, 'action called on OuterComponent\'s foobar object');
+    this.assert.equal(actualName, expectedName, 'the foobar is the context');
+  }
+
   ['@test value can be used with action over actions']() {
     let newValue = 'yelping yehuda';
 
