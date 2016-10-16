@@ -15,10 +15,12 @@
   with
 
   ```handlebars
- <button {{action this 'foo'}}>
- <button onblur={{action this 'foo'}}>
- <button onblur={{action this (action this 'foo') 'bar'}}>
+ <button {{action target=this 'foo'}}>
+ <button onblur={{action target=this 'foo'}}>
+ <button onblur={{action target=this (action target=this 'foo') 'bar'}}>
   ```
+
+  If an action already has a target it is left unmodified.
 
   @private
   @class TransformActionSyntax
@@ -41,16 +43,19 @@ TransformActionSyntax.prototype.transform = function TransformActionSyntax_trans
     ElementModifierStatement(node) {
       if (isAction(node)) {
         insertThisAsFirstParam(node, b);
+        ensureTarget(node, b);
       }
     },
     MustacheStatement(node) {
       if (isAction(node)) {
         insertThisAsFirstParam(node, b);
+        ensureTarget(node, b);
       }
     },
     SubExpression(node) {
       if (isAction(node)) {
         insertThisAsFirstParam(node, b);
+        ensureTarget(node, b);
       }
     }
   });
@@ -60,6 +65,24 @@ TransformActionSyntax.prototype.transform = function TransformActionSyntax_trans
 
 function isAction(node) {
   return node.path.original === 'action';
+}
+
+function ensureTarget(node, builders) {
+  if (!hashPairForKey(node.hash, 'target')) {
+    let thisTarget = builders.pair('target', builders.path('this'));
+    node.hash.pairs.push(thisTarget);
+  }
+}
+
+function hashPairForKey(hash, key) {
+  for (let i = 0; i < hash.pairs.length; i++) {
+    let pair = hash.pairs[i];
+    if (pair.key === key) {
+      return pair;
+    }
+  }
+
+  return false;
 }
 
 function insertThisAsFirstParam(node, builders) {

@@ -278,7 +278,7 @@ export class ClosureActionReference extends CachedReference {
     let { named, positional } = this.args;
     let positionalValues = positional.value();
 
-    let target = positionalValues[0];
+    let target = named.get('target').value();
     let rawActionRef = positional.at(1);
     let rawAction = positionalValues[1];
 
@@ -304,11 +304,6 @@ export class ClosureActionReference extends CachedReference {
       let actionName = rawAction;
 
       action = null;
-
-      if (named.has('target')) {
-        // on-change={{action 'setName' target=alternativeComponent}}
-        target = named.get('target').value();
-      }
 
       if (target['actions']) {
         action = target.actions[actionName];
