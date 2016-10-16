@@ -1,6 +1,6 @@
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
-import { compile } from '../../utils/helpers';
+import { compile, Component } from '../../utils/helpers';
 import { Controller } from 'ember-runtime';
 import { Engine } from 'ember-application';
 import { Route } from 'ember-routing';
