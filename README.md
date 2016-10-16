@@ -24,6 +24,19 @@ Ember.js also provides access to the most advanced features of Javascript, HTML 
 - [Blog](http://emberjs.com/blog)
 - [Builds](http://emberjs.com/builds)
 
+###What to Use Ember.js for and When to Use It
+*A javascript "framework", or "library", is a collection of javascript files comprising features and functionality that can be incorporated into a web-development project, thereby enhancing the project's capabilities and feature set. The best frameworks are modular, creating flexibility by allowing the developer to use as little or as much of the library as the project requires.*
+
+The Ember.js framework enables developers to build scalable, single-page web applications gracefully and efficiently; it does so by providing a set of useful and easily incorporated functionality, functionality commonly found on dynamic, feature-rich web pages. Useful features and benefits of Ember include:
+
+* **Built-in best practices:** all code conforms to industry-standard best practices
+
+* **Rich feature set:**  Ember-specific features such as the Router Ember Command Line Interface emhance productivity and functionality   
+
+* **Extensive addon collection:** Ember has a large selection of available addons and plugins (over 1,500 at the time of this writing)
+
+Ember is perfect for larger-scale, functionality-intensive web applications incorporating larger, legacy code bases or entirely new material. Furthermore, it allows for seamless collaboration across large and small teams alike, making it ideal for a project of any size.
+
 # Building Ember.js
 
 1. Ensure that [Node.js](http://nodejs.org/) and [bower](http://bower.io/) are installed.
