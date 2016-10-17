@@ -137,10 +137,10 @@ Container.prototype = {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
 
     if (isFeatureEnabled('container-factoryFor')) {
-      deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.', false, { id: 'container-lookupFactory', until: '2.12.0', url: 'TODO' });
+      deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.', false, { id: 'container-lookupFactory', until: '2.13.0', url: 'TODO' });
     }
 
-    return factoryFor(this, this.registry.normalize(fullName), options);
+    return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
   },
 
   factoryFor(fullName, options = {}) {
@@ -284,19 +284,23 @@ function lookup(container, fullName, options = {}) {
 }
 
 function isSingletonClass(container, fullName, { instantiate, singleton }) {
-  return (isSingleton(container, fullName) && singleton !== false) && (!shouldInstantiate(container, fullName) && !instantiate);
+  return (singleton !== false && isSingleton(container, fullName)) &&
+         (!instantiate && !shouldInstantiate(container, fullName));
 }
 
 function isSingletonInstance(container, fullName, { instantiate, singleton }) {
-  return (isSingleton(container, fullName) && singleton !== false) && (shouldInstantiate(container, fullName) && instantiate !== false);
+  return (singleton !== false && isSingleton(container, fullName)) &&
+         (instantiate !== false && shouldInstantiate(container, fullName));
 }
 
 function isFactoryClass(container, fullname, { instantiate, singleton }) {
-  return (!isSingleton(container, fullname) || singleton === false) && (!shouldInstantiate(container, fullname) && instantiate === false);
+  return (singleton === false || !isSingleton(container, fullname)) &&
+         (instantiate === false && !shouldInstantiate(container, fullname));
 }
 
 function isFactoryInstance(container, fullName, { instantiate, singleton }) {
-  return (isSingleton(container, fullName) || singleton !== false) && (shouldInstantiate(container, fullName) && instantiate !== false);
+  return (singleton !== false || isSingleton(container, fullName)) &&
+         (instantiate !== false && shouldInstantiate(container, fullName));
 }
 
 function instantiateFactory(container, fullName, options) {
@@ -359,7 +363,7 @@ function buildInjections(/* container, ...injections */) {
   return hash;
 }
 
-function factoryFor(container, fullName, options = {}) {
+function deprecatedFactoryFor(container, fullName, options = {}) {
   let registry = container.registry;
 
   if (options.source) {

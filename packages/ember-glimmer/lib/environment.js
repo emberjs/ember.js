@@ -74,10 +74,10 @@ export default class Environment extends GlimmerEnvironment {
     installPlatformSpecificProtocolForURL(this);
 
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
-      let { component: ComponentClass, layout } = lookupComponent(owner, name, { source });
+      let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
 
-      if ((ComponentClass && ComponentClass.class) || layout) {
-        return new CurlyComponentDefinition(name, ComponentClass, layout);
+      if ((componentFactory && componentFactory.class) || layout) {
+        return new CurlyComponentDefinition(name, componentFactory, layout);
       }
     }, ({ name, source, owner }) => {
       let expandedName = source && owner._resolveLocalLookupName(name, source) || name;
