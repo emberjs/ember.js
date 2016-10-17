@@ -582,8 +582,13 @@ QUnit.test('A deprecated `container` property is appended to every object instan
 });
 
 // This is testing that container was passed as an option
-QUnit.skip('A deprecated `container` property is appended to every object instantiated from a non-extendable factory, and a fake container is available during instantiation.', function() {
-  expect(8);
+QUnit.test('A deprecated `container` property is appended to every object instantiated from a non-extendable factory, and a fake container is available during instantiation.', function() {
+  if (!isFeatureEnabled('container-factoryFor')) {
+    expect(8);
+  } else {
+    expect(1);
+    ok(true, '[SKIPPED] This will be removed when `factoryFor` lands.');
+  }
 
   let owner = {};
   let registry = new Registry();
@@ -620,16 +625,19 @@ QUnit.skip('A deprecated `container` property is appended to every object instan
   };
 
   registry.register('controller:post', PostController);
-  let postController = container.lookup('controller:post');
 
-  expectDeprecation(() => {
-    get(postController, 'container');
-  }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
+  if (!isFeatureEnabled('container-factoryFor')) {
+    let postController = container.lookup('controller:post');
 
-  expectDeprecation(() => {
-    let c = postController.container;
-    strictEqual(c, container, 'Injected container is now regular (not fake) container, but access is still deprecated.');
-  }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
+    expectDeprecation(() => {
+      get(postController, 'container');
+    }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
+
+    expectDeprecation(() => {
+      let c = postController.container;
+      strictEqual(c, container, 'Injected container is now regular (not fake) container, but access is still deprecated.');
+    }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
+  }
 });
 
 // We're now setting this on the prototype
@@ -764,7 +772,11 @@ QUnit.test('#factoryFor class returns the factory function', (assert) => {
   registry.register('component:foo-bar', Component);
 
   let factoryCreator = container.factoryFor('component:foo-bar');
-  assert.deepEqual(factoryCreator.class, Component);
+  if (isFeatureEnabled('container-factoryFor')) {
+    assert.deepEqual(factoryCreator.class, Component, 'No double extend');
+  } else {
+    assert.notDeepEqual(factoryCreator.class, Component, 'Double extended class');
+  }
 });
 
 QUnit.test('#factoryFor instance have a common parent', (assert) => {

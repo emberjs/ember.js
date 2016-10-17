@@ -4,7 +4,8 @@ import {
   symbol,
   setOwner,
   OWNER,
-  assign
+  assign,
+  NAME_KEY
 } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import { assert, deprecate, runInDebug, isFeatureEnabled } from 'ember-metal';
@@ -145,54 +146,66 @@ Container.prototype = {
 
   factoryFor(fullName, options = {}) {
     let container = this;
-    let normalizedName = this.registry.normalize(fullName);
-    assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
+    let manager;
+    if (isFeatureEnabled('container-factoryFor')) {
+      let normalizedName = this.registry.normalize(fullName);
+      assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
 
-    if (options.source) {
-      normalizedName = this.registry.expandLocalLookup(fullName, options);
-      // if expandLocalLookup returns falsey, we do not support local lookup
-      if (!normalizedName) { return; }
-    }
+      if (options.source) {
+        normalizedName = this.registry.expandLocalLookup(fullName, options);
+        // if expandLocalLookup returns falsey, we do not support local lookup
+        if (!normalizedName) { return; }
+      }
 
-    let factory = this.registry.resolve(normalizedName);
+      let factory = this.registry.resolve(normalizedName);
 
-    if (factory === undefined) { return; }
+      if (factory === undefined) { return; }
 
-    let manager = {
-      class: factory,
-      create(options = {}) {
-        let injections = injectionsFor(container, normalizedName);
-        let props = assign({}, injections, options);
+      manager = {
+        class: factory,
+        create(options = {}) {
+          let injections = injectionsFor(container, normalizedName);
+          let props = assign({}, injections, options);
 
-        runInDebug(() => {
-          let lazyInjections;
-          let validationCache = container.validationCache;
-          // Ensure that all lazy injections are valid at instantiation time
-          if (!validationCache[fullName] && factory && typeof factory._lazyInjections === 'function') {
-            lazyInjections = factory._lazyInjections();
-            lazyInjections = container.registry.normalizeInjectionsHash(lazyInjections);
+          runInDebug(() => {
+            let lazyInjections;
+            let validationCache = container.validationCache;
+            // Ensure that all lazy injections are valid at instantiation time
+            if (!validationCache[fullName] && factory && typeof factory._lazyInjections === 'function') {
+              lazyInjections = factory._lazyInjections();
+              lazyInjections = container.registry.normalizeInjectionsHash(lazyInjections);
 
-            container.registry.validateInjections(lazyInjections);
+              container.registry.validateInjections(lazyInjections);
+            }
+
+            validationCache[fullName] = true;
+          });
+
+          this.class[NAME_KEY] = container.registry.makeToString(factory, fullName);
+
+          if (!this.class.create) {
+            throw new Error(`Failed to create an instance of '${normalizedName}'. Most likely an improperly defined class or` +
+                        ` an invalid module export.`);
           }
 
-          validationCache[fullName] = true;
-        });
+          if (this.class.prototype) {
+            injectDeprecatedContainer(this.class.prototype, container);
+          }
 
-        this.class._toString = container.registry.makeToString(factory, fullName);
-
-        if (!this.class.create) {
-          throw new Error(`Failed to create an instance of '${normalizedName}'. Most likely an improperly defined class or` +
-                      ` an invalid module export.`);
+          return this.class.create(props);
         }
+      };
+    } else {
+      let factory = this.lookupFactory(fullName, options);
+      if (factory === undefined) { return; }
 
-        if (this.class.prototype) {
-          injectDeprecatedContainer(this.class.prototype, container);
+      manager = {
+        class: factory,
+        create(props = {}) {
+          return instantiate(factory, props, container, fullName);
         }
-
-
-        return this.class.create(props);
-      }
-    };
+      };
+    }
 
     runInDebug(() => {
       if (HAS_PROXY) {
@@ -428,6 +441,61 @@ function injectionsFor(container, fullName) {
   setOwner(injections, container.owner);
 
   return injections;
+}
+
+function instantiate(factory, props, container, fullName) {
+  let lazyInjections, validationCache;
+
+  if (container.registry.getOption(fullName, 'instantiate') === false) {
+    return factory;
+  }
+
+  if (factory) {
+    if (typeof factory.create !== 'function') {
+      throw new Error(`Failed to create an instance of '${fullName}'. Most likely an improperly defined class or` +
+                      ` an invalid module export.`);
+    }
+
+    validationCache = container.validationCache;
+
+    runInDebug(() => {
+      // Ensure that all lazy injections are valid at instantiation time
+      if (!validationCache[fullName] && typeof factory._lazyInjections === 'function') {
+        lazyInjections = factory._lazyInjections();
+        lazyInjections = container.registry.normalizeInjectionsHash(lazyInjections);
+
+        container.registry.validateInjections(lazyInjections);
+      }
+    });
+
+    validationCache[fullName] = true;
+
+    let obj;
+
+    if (typeof factory.extend === 'function') {
+      // assume the factory was extendable and is already injected
+      obj = factory.create(props);
+    } else {
+      // assume the factory was extendable
+      // to create time injections
+      // TODO: support new'ing for instantiation and merge injections for pure JS Functions
+      let injections = injectionsFor(container, fullName);
+
+      // Ensure that a container is available to an object during instantiation.
+      // TODO - remove when Ember reaches v3.0.0
+      // This "fake" container will be replaced after instantiation with a
+      // property that raises deprecations every time it is accessed.
+      injections.container = container._fakeContainerToInject;
+      obj = factory.create(assign({}, injections, props));
+
+      // TODO - remove when Ember reaches v3.0.0
+      if (!Object.isFrozen(obj) && 'container' in obj) {
+        injectDeprecatedContainer(obj, container);
+      }
+    }
+
+    return obj;
+  }
 }
 
 function factoryInjectionsFor(container, fullName) {
