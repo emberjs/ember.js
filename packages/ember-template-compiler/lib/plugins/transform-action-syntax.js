@@ -63,5 +63,35 @@ function isAction(node) {
 }
 
 function insertThisAsFirstParam(node, builders) {
-  node.params.unshift(builders.path('this'));
+  let contextPath = builders.path('this');
+  let target = hashPairForKey(node.hash, 'target');
+  if (target) {
+    contextPath = target.value;
+    removeFromHash(node.hash, target);
+  }
+  node.params.unshift(contextPath);
+}
+
+function hashPairForKey(hash, key) {
+  for (let i = 0; i < hash.pairs.length; i++) {
+    let pair = hash.pairs[i];
+    if (pair.key === key) {
+      return pair;
+    }
+  }
+
+  return false;
+}
+
+function removeFromHash(hash, pairToRemove) {
+  let newPairs = [];
+  for (let i = 0; i < hash.pairs.length; i++) {
+    let pair = hash.pairs[i];
+
+    if (pair !== pairToRemove) {
+      newPairs.push(pair);
+    }
+  }
+
+  hash.pairs = newPairs;
 }
