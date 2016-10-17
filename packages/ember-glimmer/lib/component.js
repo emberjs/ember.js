@@ -1,4 +1,4 @@
-import { symbol, getOwner } from 'ember-utils';
+import { symbol, getOwner, NAME_KEY } from 'ember-utils';
 import {
   CoreView,
   ClassNamesSupport,
@@ -13,8 +13,7 @@ import {
   get,
   PROPERTY_DID_CHANGE,
   assert,
-  deprecate,
-  NAME_KEY
+  deprecate
 } from 'ember-metal';
 import { UPDATE, RootReference } from './utils/references';
 import { DirtyableTag } from 'glimmer-reference';

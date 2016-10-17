@@ -1,4 +1,4 @@
-import { dictionary, symbol, setOwner, OWNER } from 'ember-utils';
+import { dictionary, symbol, setOwner, OWNER, NAME_KEY } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import { assert, deprecate, runInDebug } from 'ember-metal';
 
@@ -270,7 +270,7 @@ function factoryFor(container, fullName, options = {}) {
     let factoryInjections = factoryInjectionsFor(container, fullName);
     let cacheable = !areInjectionsDynamic(injections) && !areInjectionsDynamic(factoryInjections);
 
-    factoryInjections._toString = registry.makeToString(factory, fullName);
+    factoryInjections[NAME_KEY] = registry.makeToString(factory, fullName);
 
     let injectedFactory = factory.extend(injections);
 

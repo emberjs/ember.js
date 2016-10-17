@@ -10,6 +10,7 @@ import {
   assign,
   guidFor,
   GUID_KEY,
+  NAME_KEY,
   wrap,
   makeArray
 } from 'ember-utils';
@@ -399,8 +400,6 @@ export function mixin(obj, ...args) {
   applyMixin(obj, args, false);
   return obj;
 }
-
-export const NAME_KEY = GUID_KEY + '_name';
 
 /**
   The `Ember.Mixin` class allows you to create mixins, whose properties can be

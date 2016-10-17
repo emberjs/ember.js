@@ -102,7 +102,7 @@ QUnit.module('ember reexports');
   ['getProperties', 'ember-metal'],
   ['setProperties', 'ember-metal'],
   ['expandProperties', 'ember-metal'],
-  ['NAME_KEY', 'ember-metal'],
+  ['NAME_KEY', 'ember-utils'],
   ['addObserver', 'ember-metal'],
   ['observersFor', 'ember-metal'],
   ['removeObserver', 'ember-metal'],
