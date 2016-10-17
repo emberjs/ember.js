@@ -172,7 +172,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   _qp: computed(function() {
     let controllerProto, combinedQueryParameterConfiguration;
 
-    let controllerName = this.controllerName || this.fullRouteName;
+    let controllerName = this.controllerName || this.routeName;
     let definedControllerClass = getOwner(this)._lookupFactory(`controller:${controllerName}`);
     let queryParameterConfiguraton = get(this, 'queryParams');
     let hasRouterDefinedQueryParams = !!Object.keys(queryParameterConfiguraton).length;

@@ -22,7 +22,11 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this.registerEngine('blog', Engine.extend({
       init() {
         this._super(...arguments);
-        this.register('template:application', compile('Engine{{outlet}}'));
+        this.register('controller:application', Controller.extend({
+          queryParams: ['lang'],
+          lang: ''
+        }));
+        this.register('template:application', compile('Engine{{lang}}{{outlet}}'));
         this.register('route:application', Route.extend({
           model() {
             hooks.push('engine - application');
@@ -272,6 +276,14 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
 
     return this.visit('/blog').then(() => {
       this.assertText('ApplicationEngine');
+    });
+  }
+
+  ['@test engine should lookup and use correct controller'](assert) {
+    this.setupAppAndRoutableEngine();
+
+    return this.visit('/blog?lang=English').then(() => {
+      this.assertText('ApplicationEngineEnglish');
     });
   }
 });
