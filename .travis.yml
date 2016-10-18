@@ -20,12 +20,6 @@ before_install:
 after_success:
   - "./bin/publish_builds"
 
-branches:
-  only:
-    - master
-    - beta
-    - stable
-
 env:
   global:
     - SAUCE_USERNAME=ember-ci
