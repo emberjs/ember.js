@@ -1,5 +1,6 @@
 import { Controller } from 'ember-runtime';
-import { moduleFor, ApplicationTest } from '../../utils/test-case';
+import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
+import { Component } from '../../utils/helpers';
 
 moduleFor('Application test: actions', class extends ApplicationTest {
   ['@test actions in top level template application template target application controller'](assert) {
@@ -46,5 +47,30 @@ moduleFor('Application test: actions', class extends ApplicationTest {
       .then(() => {
         this.runTask(() => this.$('#handle-it').click());
       });
+  }
+});
+
+moduleFor('Rendering test: non-interactive actions', class extends RenderingTest {
+  getBootOptions() {
+    return { isInteractive: false };
+  }
+
+  [`@test doesn't attatch actions`](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        actions: {
+          fire() {
+            assert.ok(false);
+          }
+        }
+      }),
+      template: `<button {{action 'fire'}}>Fire!</button>`
+    });
+
+    this.render('{{foo-bar tagName=""}}');
+
+    this.assertHTML('<button>Fire!</button>');
+
+    this.$('button').click();
   }
 });
