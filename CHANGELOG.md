@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.9.0 (October 17, 2016)
+
+- No changes from 2.8.2.
+
 ### 2.8.2 (October 6, 2016)
 
 - [#14365](https://github.com/emberjs/ember.js/pull/14365) [BUGFIX] Fix an issue with URLs with encoded characters and a trailing slash.
