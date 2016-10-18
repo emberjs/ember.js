@@ -37,6 +37,8 @@ case $TRAVIS_BRANCH in
     CHANNEL="release" ;;
   "lts-2-4" )
     CHANNEL="lts-2-4" ;;
+  "lts-2-8" )
+    CHANNEL="lts-2-8" ;;
   "release-1-13" )
     CHANNEL="release-1-13" ;;
   "metal-views" )

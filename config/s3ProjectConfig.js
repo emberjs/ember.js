@@ -39,6 +39,16 @@ function fileObject(baseName, extension, contentType, currentRevision, tag, date
         "release-1-13/daily/" + date + fullName,
         "release-1-13/shas/" + currentRevision + fullName
       ],
+      'lts-2-4': [
+        "lts-2-4" + fullName,
+        "lts-2-4/daily/" + date + fullName,
+        "lts-2-4/shas/" + currentRevision + fullName
+      ],
+      'lts-2-8': [
+        "lts-2-8" + fullName,
+        "lts-2-8/daily/" + date + fullName,
+        "lts-2-8/shas/" + currentRevision + fullName
+      ],
       beta: [
         "beta" + fullName,
         "beta/daily/" + date + fullName,
