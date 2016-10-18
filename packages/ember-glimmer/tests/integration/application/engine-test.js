@@ -2,6 +2,7 @@ import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { compile } from '../../utils/helpers';
 import { Controller } from 'ember-runtime';
+import { Component } from 'ember-glimmer';
 import { Engine } from 'ember-application';
 import { Route } from 'ember-routing';
 
@@ -168,6 +169,50 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
 
     return this.visit('/blog').then(() => {
       this.assertText('ApplicationController Data!EngineComponent!');
+    });
+  }
+
+  ['@test sharing a layout between engine and application has separate refinements']() {
+    this.assert.expect(1);
+
+    let sharedLayout = compile(strip`
+      {{ambiguous-curlies}}
+    `);
+
+    let sharedComponent = Component.extend({
+      layout: sharedLayout
+    });
+
+    this.application.register('template:application', compile(strip`
+      <h1>Application</h1>
+      {{my-component ambiguous-curlies="Local Data!"}}
+      {{outlet}}
+    `));
+
+    this.application.register('component:my-component', sharedComponent);
+
+    this.router.map(function() {
+      this.mount('blog');
+    });
+    this.application.register('route-map:blog', function() { });
+
+    this.registerEngine('blog', Engine.extend({
+      init() {
+        this._super(...arguments);
+        this.register('template:application', compile(strip`
+          <h1>Engine</h1>
+          {{my-component}}
+          {{outlet}}
+        `));
+        this.register('component:my-component', sharedComponent);
+        this.register('template:components/ambiguous-curlies', compile(strip`
+          <p>Component!</p>
+        `));
+      }
+    }));
+
+    return this.visit('/blog').then(() => {
+      this.assertText('ApplicationLocal Data!EngineComponent!');
     });
   }
 
