@@ -84,7 +84,7 @@ class MountManager {
 
   layoutFor(definition, { engine }, env) {
     let template = engine.lookup(`template:application`);
-    return env.getCompiledBlock(OutletLayoutCompiler, template, engine);
+    return env.getCompiledBlock(OutletLayoutCompiler, template);
   }
 
   getSelf({ engine }) {

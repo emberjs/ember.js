@@ -189,10 +189,7 @@ class OutletComponentManager {
   }
 
   layoutFor(definition, bucket, env) {
-    let { template } = definition;
-    let owner = template.meta.owner;
-
-    return env.getCompiledBlock(OutletLayoutCompiler, definition.template, owner);
+    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 
   getSelf({ outletState }) {
@@ -226,10 +223,7 @@ class TopLevelOutletComponentManager extends OutletComponentManager {
   }
 
   layoutFor(definition, bucket, env) {
-    let { template } = definition;
-    let owner = template.meta.owner;
-
-    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, template, owner);
+    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
   }
 }
 
