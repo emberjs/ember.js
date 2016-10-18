@@ -1,52 +1,6 @@
 # Ember Changelog
 
-### 2.9.0-beta.5 (October 6, 2016)
-
-- [#14403](https://github.com/emberjs/ember.js/pull/14403) [BUGFIX] Ensure `willInsertElement` is fired for tagless components.
-- [#14384](https://github.com/emberjs/ember.js/pull/14384) [BUGFIX] Fix an issue when `attrs` is used in class name and attribute bindings.
-- [#14417](https://github.com/emberjs/ember.js/pull/14417) [BUGFIX] Fix an issue when passing unused positional params to a component.
-- [#14419](https://github.com/emberjs/ember.js/pull/14419) [BUGFIX] Fix rendering `{{string.length}}` in a template.
-- [#14425](https://github.com/emberjs/ember.js/pull/14425) [BUGFIX] Fix rendering `{{this.attrs.*}}` in a template.
-- [#14427](https://github.com/emberjs/ember.js/pull/14427) [BUGFIX] Ensure `Ember.set` in `didUpdate` hooks causes a re-render.
-- [#13996](https://github.com/emberjs/ember.js/pull/13996) [BUGFIX] Fix an issue when passing closure actions via `attrs.*` to child components.
-
-### 2.9.0-beta.4 (September 28, 2016)
-
-- [#14361](https://github.com/emberjs/ember.js/pull/14361) [BUGFIX] Prevent usage of `this.element` when running in a non-interactive environment (i.e. FastBoot).
-- [#14361](https://github.com/emberjs/ember.js/pull/14361) [BUGFIX] Prevent `willRender` and `willUpdate` from running in FastBoot.
-- [#14344](https://github.com/emberjs/ember.js/pull/14344) [BUGFIX] Ensure `element` is present in `willInsertElement` hook.
-- [#14345](https://github.com/emberjs/ember.js/pull/14345) [BUGFIX] Fix an issue causing unneeded rerenders with closure actions.
-- [#14363](https://github.com/emberjs/ember.js/pull/14363) [BUGFIX] Always use `guidFor` for tagless component's with an `id`.
-- [#14365](https://github.com/emberjs/ember.js/pull/14365) [BUGFIX] Bump route-recognizer to fix an issue with encoding `/` in a dynamic segment.
-- [#14366](https://github.com/emberjs/ember.js/pull/14366) [BUGFIX] Fix `Ember.assign` export.
-- [#14367](https://github.com/emberjs/ember.js/pull/14367) [BUGFIX] Ensure feature flags are properly stripped.
-- [#14371](https://github.com/emberjs/ember.js/pull/14371) [BUGFIX] Lazily add `alias` dependent keys (correct a slight performance regression from [#14319](https://github.com/emberjs/ember.js/pull/14319)).
-
-### 2.9.0-beta.3 (September 20, 2016)
-
-- [#14313](https://github.com/emberjs/ember.js/pull/14313) [BUGFIX] Ensure `id` attribute bindings of `undefined` are handled properly.
-- [#14291](https://github.com/emberjs/ember.js/pull/14291) [BUGFIX] Fix component action bubbling semantics.
-- [#14296](https://github.com/emberjs/ember.js/pull/14296) [BUGFIX] Prevent invalid markup when used with XHTML `doctype`.
-- [#14300](https://github.com/emberjs/ember.js/pull/14300) [BUGFIX] Ensure component is `inDOM` during `didInsertElement`.
-- [#14312](https://github.com/emberjs/ember.js/pull/14312) [BUGFIX] Allow a components `layout` to be injected.
-- [#14315](https://github.com/emberjs/ember.js/pull/14315) [BUGFIX] Fix DOM output for properties and attributes.
-- [#14319](https://github.com/emberjs/ember.js/pull/14319) [BUGFIX] Fixes rerendering issues when rendering aliased paths.
-
-
-### 2.9.0-beta.2 (September 12, 2016)
-
-- [#14237](https://github.com/emberjs/ember.js/pull/14237) [BUGFIX] Ensure Engine Routes are deactivated before destruction
-- [#14176](https://github.com/emberjs/ember.js/pull/14176) [BUGFIX] Ensure Controller#transitionToRoute and Route#intermediateTransitionTo work in Engines
-- [#14244](https://github.com/emberjs/ember.js/pull/14244) [BUGFIX] Ensure params and hash are frozen in debug builds.
-- [#14245](https://github.com/emberjs/ember.js/pull/14245) [BUGFIX] Lookup partials from the current owner when rendering an Engines templates.
-- [#14247](https://github.com/emberjs/ember.js/pull/14247) [BUGFIX] Make `this.getAttr` an alias for `this.get`.
-- [#14252](https://github.com/emberjs/ember.js/pull/14252) [BUGFIX] Don't delete moduleName from the generated template compilation options.
-- [#14253](https://github.com/emberjs/ember.js/pull/14253) [BUGFIX] Prevent duplicated `Ember.meta` invocations.
-- [#14271](https://github.com/emberjs/ember.js/pull/14271) [BUGFIX] Ensure `undefined` and `null` values are not rendered as attributes or properties on initial render.
-- [#14272](https://github.com/emberjs/ember.js/pull/14272) [BUGFIX] Fix issues with `Transition#isActive` being falsey incorrectly.
-
-
-### 2.9.0-beta.1 (September 8, 2016)
+### 2.10.0-beta.1 (October 17, 2016)
 
 - [#14156](https://github.com/emberjs/ember.js/pull/14156) [FEATURE ember-glimmer] Enable by default.
 
