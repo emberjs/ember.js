@@ -21,7 +21,6 @@ import {
   Mixin,
   observer,
   tagFor,
-  IS_PROXY
 } from 'ember-metal';
 import { bool } from '../computed/computed_macros';
 
@@ -71,8 +70,6 @@ class ProxyTag extends CachedTag {
   @private
 */
 export default Mixin.create({
-  [IS_PROXY]: true,
-
   /**
     The object whose properties will be forwarded.
 
@@ -82,6 +79,11 @@ export default Mixin.create({
     @private
   */
   content: null,
+
+  init() {
+    this._super(...arguments);
+    meta(this).setProxy();
+  },
 
   _initializeTag: on('init', function() {
     meta(this)._tag = new ProxyTag(this);
