@@ -1,7 +1,6 @@
-import TemplateVisitor from "./template-visitor";
+import TemplateVisitor, { SymbolTable } from "./template-visitor";
 import JavaScriptCompiler, { Template } from "./javascript-compiler";
 import { getAttrNamespace } from "glimmer-util";
-import { isHelper } from "glimmer-syntax";
 import { assert } from "glimmer-util";
 import { TemplateMeta } from "glimmer-wire-format";
 
@@ -26,6 +25,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   private options: CompileOptions<T>;
   private templateId = 0;
   private templateIds: number[] = [];
+  private symbols: SymbolTable = null;
   private opcodes: any[] = [];
   private includeMeta = false;
 
@@ -50,11 +50,13 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   }
 
   startBlock(program) {
+    this.symbols = program[0].symbols;
     this.templateId++;
     this.opcode('startBlock', program, program);
   }
 
   endBlock() {
+    this.symbols = null;
     this.templateIds.push(this.templateId - 1);
     this.opcode('endBlock', null);
   }
@@ -155,9 +157,11 @@ export default class TemplateCompiler<T extends TemplateMeta> {
       this.opcode('literal', expr, expr.path.value);
     } else if (isArg(expr)) {
       this.arg([expr.path]);
-    } else if (isHelper(expr)) {
+    } else if (isHelperInvocation(expr)) {
       this.prepareHelper(expr);
       this.opcode('helper', expr, expr.path.parts);
+    } else if (isLocalVariable(expr, this.symbols)) {
+      this.opcode('get', expr, expr.path.parts);
     } else {
       this.opcode('unknown', expr, expr.path.parts);
     }
@@ -329,6 +333,16 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     let { source, start, end } = loc;
     return [ 'loc', [source || null, [start.line, start.column], [end.line, end.column]] ];
   }
+}
+
+function isHelperInvocation(mustache) {
+  return (mustache.params && mustache.params.length > 0) ||
+    (mustache.hash && mustache.hash.pairs.length > 0);
+}
+
+function isLocalVariable(mustache, symbols) {
+  let { parts } = mustache.path;
+  return parts.length === 1 && symbols && symbols.hasLocalVariable(parts[0]);
 }
 
 function isYield({ path }) {

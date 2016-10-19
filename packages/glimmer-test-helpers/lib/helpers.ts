@@ -223,3 +223,7 @@ export function strip(strings: TemplateStringsArray) {
 export function stripTight(strings: TemplateStringsArray) {
   return strings[0].split('\n').map(s => s.trim()).join('');
 }
+
+export function trimLines(strings: TemplateStringsArray) {
+  return strings[0].trim().split('\n').map(s => s.trim()).join('\n');
+}

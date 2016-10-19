@@ -9,6 +9,19 @@ class Frame {
   public mustacheCount: number = 0;
   public actions: any[] = [];
   public blankChildTextNodes: number[] = null;
+  public symbols: SymbolTable = null;
+}
+
+export class SymbolTable {
+  constructor(
+    private symbols: string[],
+    private parent: SymbolTable = null
+  ) {}
+
+  hasLocalVariable(name: string): boolean {
+    let { symbols, parent } = this;
+    return symbols.indexOf(name) >= 0 || (parent && parent.hasLocalVariable(name));
+  }
 }
 
 /**
@@ -79,6 +92,12 @@ TemplateVisitor.prototype.Program = function(program) {
   let parentFrame = this.getCurrentFrame();
   let programFrame = this.pushFrame();
 
+  if (parentFrame) {
+    program.symbols = new SymbolTable(program.blockParams, parentFrame.symbols);
+  } else {
+    program.symbols = new SymbolTable(program.blockParams);
+  }
+
   let startType, endType;
 
   if (this.programDepth === 0) {
@@ -94,6 +113,7 @@ TemplateVisitor.prototype.Program = function(program) {
   programFrame.childCount = program.body.length;
   programFrame.blankChildTextNodes = [];
   programFrame.actions.push([endType, [program, this.programDepth]]);
+  programFrame.symbols = program.symbols;
 
   for (let i = program.body.length - 1; i >= 0; i--) {
     programFrame.childIndex = i;
@@ -122,6 +142,7 @@ TemplateVisitor.prototype.ElementNode = function(element) {
   elementFrame.childCount = element.children.length;
   elementFrame.mustacheCount += element.modifiers.length;
   elementFrame.blankChildTextNodes = [];
+  elementFrame.symbols = parentFrame.symbols;
 
   let actionArgs = [
     element,

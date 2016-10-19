@@ -10,7 +10,8 @@ export {
   isCheckedInputHTML,
   getTextContent,
   strip,
-  stripTight
+  stripTight,
+  trimLines
 } from './lib/helpers';
 
 export {
