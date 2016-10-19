@@ -111,6 +111,7 @@ export default Mixin.create({
   },
 
   unknownProperty(key) {
+    key = key.replace(/^content\./, '');
     let content = get(this, 'content');
     if (content) {
       deprecate(
