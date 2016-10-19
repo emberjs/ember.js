@@ -15,7 +15,9 @@ import {
   generateGuid,
   makeArray,
   GUID_KEY_PROPERTY,
-  symbol
+  symbol,
+  NAME_KEY,
+  GUID_KEY
 } from 'ember-utils';
 import {
   assert,
@@ -560,6 +562,8 @@ var ClassMixinProps = {
   isClass: true,
 
   isMethod: false,
+  [NAME_KEY]: null,
+  [GUID_KEY]: null,
   /**
     Creates a new subclass.
 

@@ -136,7 +136,6 @@ export {
   _removeBeforeObserver
 } from './observer';
 export {
-  NAME_KEY,
   Mixin,
   aliasMethod,
   _immediateObserver,
