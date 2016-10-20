@@ -19,6 +19,16 @@ QUnit.test('finishChains should properly copy chains from prototypes to instance
   ok(peekMeta(obj) !== peekMeta(childObj).readableChains(), 'The chains object is copied');
 });
 
+QUnit.test('does not observe primative values', function(assert) {
+  let obj = {
+    foo: { bar: 'STRING' }
+  };
+
+  addObserver(obj, 'foo.bar.baz', null, function() {});
+  let meta = peekMeta(obj);
+  assert.notOk(meta._object);
+});
+
 
 QUnit.test('observer and CP chains', function() {
   let obj = { };

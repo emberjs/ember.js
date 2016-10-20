@@ -107,10 +107,6 @@ function makeChainWatcher() {
 }
 
 function addChainWatcher(obj, keyName, node) {
-  if (!isObject(obj)) {
-    return;
-  }
-
   let m = metaFor(obj);
   m.writableChainWatchers(makeChainWatcher).add(keyName, node);
   watchKey(obj, keyName, m);
@@ -157,10 +153,15 @@ function ChainNode(parent, key, value) {
   this._value = value;
   this._paths = {};
   if (this._watching) {
-    this._object = parent.value();
-    if (this._object) {
-      addChainWatcher(this._object, this._key, this);
+    let obj = parent.value();
+
+    if (!isObject(obj)) {
+      return;
     }
+
+    this._object = obj;
+
+    addChainWatcher(this._object, this._key, this);
   }
 }
 
@@ -293,11 +294,19 @@ ChainNode.prototype = {
 
   notify(revalidate, affected) {
     if (revalidate && this._watching) {
-      let obj = this._parent.value();
-      if (obj !== this._object) {
-        removeChainWatcher(this._object, this._key, this);
-        this._object = obj;
-        addChainWatcher(obj, this._key, this);
+      let parentValue = this._parent.value();
+
+      if (parentValue !== this._object) {
+        if (this._object) {
+          removeChainWatcher(this._object, this._key, this);
+        }
+
+        if (isObject(parentValue)) {
+          this._object = parentValue;
+          addChainWatcher(parentValue, this._key, this);
+        } else {
+          this._object = undefined;
+        }
       }
       this._value  = undefined;
     }
