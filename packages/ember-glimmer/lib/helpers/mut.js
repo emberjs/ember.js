@@ -42,7 +42,7 @@ import { INVOKE } from './action';
   // my-child.js
   export default Component.extend({
     click() {
-      this.get('clickCountChange')(this.get('childClickCount') + 1);
+      this.set('childClickCountChange')(this.get('childClickCount') + 1);
     }
   });
   ```
