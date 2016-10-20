@@ -29,6 +29,9 @@ import { INVOKE } from './action';
   });
   ```
 
+  Note that for curly components (`{{my-component}}`) the bindings are already mutable,
+  making the `mut` unnecessary.
+
   Additionally, the `mut` helper can be combined with the `action` helper to
   mutate a value. For example:
 
@@ -42,7 +45,7 @@ import { INVOKE } from './action';
   // my-child.js
   export default Component.extend({
     click() {
-      this.get('clickCountChange')(this.get('childClickCount') + 1);
+      this.get('click-count-change')(this.get('childClickCount') + 1);
     }
   });
   ```
