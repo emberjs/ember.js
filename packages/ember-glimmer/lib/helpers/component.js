@@ -73,7 +73,7 @@ import { assert } from 'ember-metal';
 
   ```
   {{#person-form as |form|}}
-    {{component form.nameInput placeholder="Username"}}
+    {{form.nameInput placeholder="Username"}}
   {{/person-form}}
   ```
 
