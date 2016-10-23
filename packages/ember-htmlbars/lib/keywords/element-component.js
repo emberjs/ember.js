@@ -73,6 +73,7 @@ function render(morph, env, scope, [path, ...params], hash, template, inverse, v
     processPositionalParamsFromCell(closureComponent, params, hash);
     hash = mergeInNewHash(closureComponent[COMPONENT_HASH],
                           hash,
+                          env,
                           closureComponent[COMPONENT_POSITIONAL_PARAMS],
                           params);
     params = [];

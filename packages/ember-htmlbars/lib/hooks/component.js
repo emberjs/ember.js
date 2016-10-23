@@ -44,6 +44,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
       processPositionalParamsFromCell(componentCell, params, newAttrs);
       attrs = mergeInNewHash(componentCell[COMPONENT_HASH],
                              newAttrs,
+                             env,
                              componentCell[COMPONENT_POSITIONAL_PARAMS],
                              params);
       params = [];
