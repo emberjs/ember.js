@@ -66,19 +66,34 @@ import { assert } from 'ember-metal';
 
   ```handlebars
   {{yield (hash
-      nameInput=(component "my-input-component" value=model.name placeholder="First Name"))}}
+    nameInput=(component "my-input-component" value=model.name placeholder="First Name")
+  )}}
   ```
 
-  The following snippet:
+  When yielding the component via the `hash` helper, the component is invocked directly.
+  See the following snippet:
 
   ```
   {{#person-form as |form|}}
-    {{component form.nameInput placeholder="Username"}}
+    {{form.nameInput placeholder="Username"}}
   {{/person-form}}
   ```
 
-  would output an input whose value is already bound to `model.name` and `placeholder`
+  Which outputs an input whose value is already bound to `model.name` and `placeholder`
   is "Username".
+
+  When yielding the component without the hash helper use the `component` helper.
+  For example, below is a `full-name` component template:
+
+  ```handlebars
+  {{yield (component "my-input-component" value=model.name placeholder="Name")}}
+  ```
+
+  ```
+  {{#full-name as |field|}}
+    {{component field placeholder="Full name"}}
+  {{/full-name}}
+  ```
 
   @method component
   @since 1.11.0
