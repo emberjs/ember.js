@@ -60,12 +60,12 @@ export class DynamicPartialSyntax extends StatementSyntax {
     let name = this.name.compile(compiler, env, symbolTable);
 
     /*
-    //        PutArgs
+    //        PutValue(name)
+    //        Test(Simple)
     //        Enter(BEGIN, END)
     // BEGIN: Noop
-    //        NameToPartial
-    //        Test
     //        JumpUnless(END)
+    //        PutDynamicPartialDefinition
     //        EvaluatePartial
     // END:   Noop
     //        Exit
@@ -75,9 +75,9 @@ export class DynamicPartialSyntax extends StatementSyntax {
     let END = new LabelOpcode("END");
 
     compiler.append(new PutValueOpcode(name));
+    compiler.append(new TestOpcode(SimpleTest));
     compiler.append(new EnterOpcode(BEGIN, END));
     compiler.append(BEGIN);
-    compiler.append(new TestOpcode(SimpleTest));
     compiler.append(new JumpUnlessOpcode(END));
     compiler.append(new PutDynamicPartialDefinitionOpcode(symbolTable));
     compiler.append(new EvaluatePartialOpcode(symbolTable));

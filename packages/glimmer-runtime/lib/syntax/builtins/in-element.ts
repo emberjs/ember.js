@@ -22,8 +22,10 @@ export default class InElementSyntax extends StatementSyntax {
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
     let { args, templates } = this;
 
-    dsl.block({ templates, args }, (dsl, BEGIN, END) => {
-      dsl.test('simple');
+    dsl.putArgs(args);
+    dsl.test('simple');
+
+    dsl.block({ templates }, (dsl, BEGIN, END) => {
       dsl.jumpUnless(END);
       dsl.pushRemoteElement();
       dsl.evaluate('default');
