@@ -73,7 +73,9 @@ export default class VM implements PublicVM {
     return {
       env: this.env,
       scope: this.scope(),
-      dynamicScope: this.dynamicScope()
+      dynamicScope: this.dynamicScope(),
+      operand: this.frame.getOperand(),
+      args: this.frame.getArgs()
     };
   }
 

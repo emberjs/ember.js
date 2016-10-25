@@ -21,9 +21,9 @@ export default class WithSyntax extends StatementSyntax {
   }
 
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
+    //        PutArgs
     //        Enter(BEGIN, END)
     // BEGIN: Noop
-    //        PutArgs
     //        Test(Environment)
     //        JumpUnless(ELSE)
     //        Evaluate(default)

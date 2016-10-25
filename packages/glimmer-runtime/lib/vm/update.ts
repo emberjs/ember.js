@@ -85,6 +85,8 @@ export interface VMState {
   env: Environment;
   scope: Scope;
   dynamicScope: DynamicScope;
+  operand: PathReference<Opaque>;
+  args: EvaluatedArgs;
 }
 
 export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableBounds {
@@ -95,18 +97,22 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   protected env: Environment;
   protected scope: Scope;
   protected dynamicScope: DynamicScope;
+  protected operand: PathReference<Opaque>;
+  protected args: EvaluatedArgs;
   protected children: LinkedList<UpdatingOpcode>;
   protected bounds: DestroyableBounds;
   public ops: OpSeq;
 
   constructor(ops: OpSeq, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
-    let { env, scope, dynamicScope } = state;
+    let { env, scope, dynamicScope, operand, args } = state;
     this.ops = ops;
     this.children = children;
     this.env = env;
     this.scope = scope;
     this.dynamicScope = dynamicScope;
+    this.operand = operand;
+    this.args = args;
     this.bounds = bounds;
   }
 
@@ -175,7 +181,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 
   handleException() {
-    let { env, scope, dynamicScope } = this;
+    let { env, scope, dynamicScope, operand, args } = this;
 
     let elementStack = ElementStack.resume(
       this.env,
@@ -184,7 +190,10 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     );
 
     let vm = new VM(env, scope, dynamicScope, elementStack);
-    let result = vm.execute(this.ops);
+    let result = vm.execute(this.ops, vm => {
+      vm.frame.setOperand(operand);
+      vm.frame.setArgs(args);
+    });
 
     this.children = result.opcodes();
     this.didInitializeChildren();

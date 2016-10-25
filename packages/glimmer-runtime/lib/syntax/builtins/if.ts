@@ -20,9 +20,9 @@ export default class IfSyntax extends StatementSyntax {
   }
 
   compile(dsl: OpcodeBuilderDSL) {
+    //        PutArgs
     //        Enter(BEGIN, END)
     // BEGIN: Noop
-    //        PutArgs
     //        Test(Environment)
     //        JumpUnless(ELSE)
     //        Evaluate(default)
