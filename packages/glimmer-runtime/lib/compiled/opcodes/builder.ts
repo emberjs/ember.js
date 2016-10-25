@@ -362,12 +362,12 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
   // TODO
   // come back to this
   block({ templates, args }: BlockArgs, callback: BlockCallback) {
+    if (args) this.putArgs(args);
+
     this.startLabels();
     this.startBlock(templates);
     this.enter('BEGIN', 'END');
     this.label('BEGIN');
-
-    if (args) this.putArgs(args);
 
     callback(this, 'BEGIN', 'END');
 
