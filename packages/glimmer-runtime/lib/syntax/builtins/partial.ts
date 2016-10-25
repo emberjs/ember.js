@@ -1,29 +1,13 @@
 import { Opaque } from "glimmer-util";
 
 import {
-  CompileInto,
-  SymbolLookup,
   Statement as StatementSyntax,
   Expression as ExpressionSyntax
 } from '../../syntax';
 
 import SymbolTable from '../../symbol-table';
 
-import {
-  LabelOpcode,
-  EnterOpcode,
-  PutValueOpcode,
-  SimpleTest,
-  TestOpcode,
-  JumpUnlessOpcode,
-  ExitOpcode
-} from '../../compiled/opcodes/vm';
-
-import {
-  PutPartialDefinitionOpcode,
-  PutDynamicPartialDefinitionOpcode,
-  EvaluatePartialOpcode
-} from '../../compiled/opcodes/partial';
+import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 
 import * as Syntax from '../core';
 import Environment from '../../environment';
@@ -35,7 +19,7 @@ export class StaticPartialSyntax extends StatementSyntax {
     super();
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
+  compile(dsl: OpcodeBuilderDSL, env: Environment, symbolTable: SymbolTable) {
     let name = String(this.name.inner());
 
     if (!env.hasPartial(name, symbolTable)) {
@@ -44,8 +28,8 @@ export class StaticPartialSyntax extends StatementSyntax {
 
     let definition = env.lookupPartial(name, symbolTable);
 
-    compiler.append(new PutPartialDefinitionOpcode(definition));
-    compiler.append(new EvaluatePartialOpcode(symbolTable));
+    dsl.putPartialDefinition(definition);
+    dsl.evaluatePartial();
   }
 }
 
@@ -56,32 +40,21 @@ export class DynamicPartialSyntax extends StatementSyntax {
     super();
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
-    let name = this.name.compile(compiler, env, symbolTable);
+  compile(dsl: OpcodeBuilderDSL) {
+    let { name } = this;
 
-    /*
-    //        PutValue(name)
-    //        Test(Simple)
-    //        Enter(BEGIN, END)
-    // BEGIN: Noop
-    //        JumpUnless(END)
-    //        PutDynamicPartialDefinition
-    //        EvaluatePartial
-    // END:   Noop
-    //        Exit
-    */
+    dsl.startLabels();
 
-    let BEGIN = new LabelOpcode("BEGIN");
-    let END = new LabelOpcode("END");
+    dsl.putValue(name);
+    dsl.test('simple');
+    dsl.enter('BEGIN', 'END');
+    dsl.label('BEGIN');
+    dsl.jumpUnless('END');
+    dsl.putDynamicPartialDefinition();
+    dsl.evaluatePartial();
+    dsl.label('END');
+    dsl.exit();
 
-    compiler.append(new PutValueOpcode(name));
-    compiler.append(new TestOpcode(SimpleTest));
-    compiler.append(new EnterOpcode(BEGIN, END));
-    compiler.append(BEGIN);
-    compiler.append(new JumpUnlessOpcode(END));
-    compiler.append(new PutDynamicPartialDefinitionOpcode(symbolTable));
-    compiler.append(new EvaluatePartialOpcode(symbolTable));
-    compiler.append(END);
-    compiler.append(new ExitOpcode());
+    dsl.stopLabels();
   }
 }

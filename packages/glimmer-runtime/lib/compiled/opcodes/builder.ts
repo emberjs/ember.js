@@ -1,4 +1,5 @@
 import * as component from './component';
+import * as partial from '../../compiled/opcodes/partial';
 import * as content from './content';
 import * as dom from './dom';
 import * as lists from './lists';
@@ -11,6 +12,7 @@ import { Opcode, OpSeq } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
 import { CompiledExpression } from '../expressions';
 import { ComponentDefinition } from '../../component/interfaces';
+import { PartialDefinition } from '../../partial';
 import Environment from '../../environment';
 import { InlineBlock, Layout } from '../blocks';
 import { EMPTY_ARRAY } from '../../utils';
@@ -115,6 +117,20 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     }
 
     return label;
+  }
+
+  // partials
+
+  putPartialDefinition(definition: PartialDefinition<Opaque>) {
+    this.append(new partial.PutPartialDefinitionOpcode(definition));
+  }
+
+  putDynamicPartialDefinition() {
+    this.append(new partial.PutDynamicPartialDefinitionOpcode(this.symbolTable));
+  }
+
+  evaluatePartial() {
+    this.append(new partial.EvaluatePartialOpcode(this.symbolTable));
   }
 
   // components
