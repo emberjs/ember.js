@@ -6,10 +6,12 @@ import { Opcode, OpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';
 import { Component, ComponentManager } from '../component/interfaces';
 
-export interface CapturedFrame {
-  operand: PathReference<any>;
-  args: EvaluatedArgs;
-  condition: Reference<boolean>;
+export class CapturedFrame {
+  constructor(
+    private operand: PathReference<any>,
+    private args: EvaluatedArgs,
+    private condition: Reference<boolean>
+  ) {}
 }
 
 class Frame {
@@ -35,17 +37,13 @@ class Frame {
   }
 
   capture(): CapturedFrame {
-    return {
-      operand: this.operand,
-      args: this.args,
-      condition: this.condition
-    };
+    return new CapturedFrame(this.operand, this.args, this.condition);
   }
 
   restore(frame: CapturedFrame) {
-    this.operand = frame.operand;
-    this.args = frame.args;
-    this.condition = frame.condition;
+    this.operand = frame['operand'];
+    this.args = frame['args'];
+    this.condition = frame['condition'];
   }
 }
 
