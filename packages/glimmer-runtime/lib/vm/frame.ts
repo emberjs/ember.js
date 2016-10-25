@@ -6,6 +6,12 @@ import { Opcode, OpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';
 import { Component, ComponentManager } from '../component/interfaces';
 
+export interface CapturedFrame {
+  operand: PathReference<any>;
+  args: EvaluatedArgs;
+  condition: Reference<boolean>;
+}
+
 class Frame {
   ops: OpSeq;
   op: Opcode;
@@ -26,6 +32,20 @@ class Frame {
   ) {
     this.ops = ops;
     this.op = ops.head();
+  }
+
+  capture(): CapturedFrame {
+    return {
+      operand: this.operand,
+      args: this.args,
+      condition: this.condition
+    };
+  }
+
+  restore(frame: CapturedFrame) {
+    this.operand = frame.operand;
+    this.args = frame.args;
+    this.condition = frame.condition;
   }
 }
 
@@ -52,6 +72,14 @@ export class FrameStack {
     let { frames, frame } = this;
     frames[frame] = null;
     this.frame = frame === 0 ? undefined : frame - 1;
+  }
+
+  capture(): CapturedFrame {
+    return this.frames[this.frame].capture();
+  }
+
+  restore(frame: CapturedFrame) {
+    this.frames[this.frame].restore(frame);
   }
 
   getOps(): OpSeq {
