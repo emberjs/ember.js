@@ -5,6 +5,7 @@ import { LOGGER, Opaque, Stack, LinkedList, Dict, dict } from 'glimmer-util';
 import {
   ConstReference,
   PathReference,
+  Reference,
   IterationArtifacts,
   IteratorSynchronizer,
   IteratorSynchronizerDelegate,
@@ -87,6 +88,7 @@ export interface VMState {
   dynamicScope: DynamicScope;
   operand: PathReference<Opaque>;
   args: EvaluatedArgs;
+  condition: Reference<boolean>;
 }
 
 export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableBounds {
@@ -99,13 +101,14 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   protected dynamicScope: DynamicScope;
   protected operand: PathReference<Opaque>;
   protected args: EvaluatedArgs;
+  protected condition: Reference<boolean>;
   protected children: LinkedList<UpdatingOpcode>;
   protected bounds: DestroyableBounds;
   public ops: OpSeq;
 
   constructor(ops: OpSeq, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
-    let { env, scope, dynamicScope, operand, args } = state;
+    let { env, scope, dynamicScope, operand, args, condition } = state;
     this.ops = ops;
     this.children = children;
     this.env = env;
@@ -113,6 +116,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
     this.dynamicScope = dynamicScope;
     this.operand = operand;
     this.args = args;
+    this.condition = condition;
     this.bounds = bounds;
   }
 
@@ -181,7 +185,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 
   handleException() {
-    let { env, scope, dynamicScope, operand, args } = this;
+    let { env, scope, dynamicScope, operand, args, condition } = this;
 
     let elementStack = ElementStack.resume(
       this.env,
@@ -193,6 +197,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     let result = vm.execute(this.ops, vm => {
       vm.frame.setOperand(operand);
       vm.frame.setArgs(args);
+      vm.frame.setCondition(condition);
     });
 
     this.children = result.opcodes();

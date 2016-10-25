@@ -401,9 +401,9 @@ class ComponentBuilder implements IComponentBuilder {
     this.dsl.unit({ templates }, dsl => {
       dsl.putArgs(definitionArgs);
       dsl.putValue(makeFunctionExpression(definition));
+      dsl.test('simple');
       dsl.enter('BEGIN', 'END');
       dsl.label('BEGIN');
-      dsl.test('simple');
       dsl.jumpUnless('END');
       dsl.putDynamicComponentDefinition();
       dsl.openComponent(args, shadow);
