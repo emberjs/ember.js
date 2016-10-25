@@ -5,7 +5,6 @@ import { LOGGER, Opaque, Stack, LinkedList, Dict, dict } from 'glimmer-util';
 import {
   ConstReference,
   PathReference,
-  Reference,
   IterationArtifacts,
   IteratorSynchronizer,
   IteratorSynchronizerDelegate,
@@ -23,6 +22,7 @@ import { OpcodeJSON, OpSeq, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';
 import { DOMChanges } from '../dom/helper';
 import * as Simple from '../dom/interfaces';
+import { CapturedFrame } from './frame';
 
 import VM from './append';
 
@@ -86,9 +86,7 @@ export interface VMState {
   env: Environment;
   scope: Scope;
   dynamicScope: DynamicScope;
-  operand: PathReference<Opaque>;
-  args: EvaluatedArgs;
-  condition: Reference<boolean>;
+  frame: CapturedFrame;
 }
 
 export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableBounds {
@@ -99,24 +97,20 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   protected env: Environment;
   protected scope: Scope;
   protected dynamicScope: DynamicScope;
-  protected operand: PathReference<Opaque>;
-  protected args: EvaluatedArgs;
-  protected condition: Reference<boolean>;
+  protected frame: CapturedFrame;
   protected children: LinkedList<UpdatingOpcode>;
   protected bounds: DestroyableBounds;
   public ops: OpSeq;
 
   constructor(ops: OpSeq, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
-    let { env, scope, dynamicScope, operand, args, condition } = state;
+    let { env, scope, dynamicScope, frame } = state;
     this.ops = ops;
     this.children = children;
     this.env = env;
     this.scope = scope;
     this.dynamicScope = dynamicScope;
-    this.operand = operand;
-    this.args = args;
-    this.condition = condition;
+    this.frame = frame;
     this.bounds = bounds;
   }
 
@@ -185,7 +179,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 
   handleException() {
-    let { env, scope, dynamicScope, operand, args, condition } = this;
+    let { env, scope, ops, dynamicScope, frame } = this;
 
     let elementStack = ElementStack.resume(
       this.env,
@@ -194,11 +188,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     );
 
     let vm = new VM(env, scope, dynamicScope, elementStack);
-    let result = vm.execute(this.ops, vm => {
-      vm.frame.setOperand(operand);
-      vm.frame.setArgs(args);
-      vm.frame.setCondition(condition);
-    });
+    let result = vm.resume(ops, frame);
 
     this.children = result.opcodes();
     this.didInitializeChildren();

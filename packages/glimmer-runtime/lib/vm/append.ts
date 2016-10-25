@@ -12,7 +12,7 @@ import { Range } from '../utils';
 import { Component, ComponentManager } from '../component/interfaces';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
-import { FrameStack, Blocks } from './frame';
+import { CapturedFrame, FrameStack, Blocks } from './frame';
 
 interface VMInitialOptions {
   self: PathReference<Opaque>;
@@ -74,9 +74,7 @@ export default class VM implements PublicVM {
       env: this.env,
       scope: this.scope(),
       dynamicScope: this.dynamicScope(),
-      operand: this.frame.getOperand(),
-      args: this.frame.getArgs(),
-      condition: this.frame.getCondition()
+      frame: this.frame.capture()
     };
   }
 
@@ -265,6 +263,10 @@ export default class VM implements PublicVM {
   }
 
   /// EXECUTION
+
+  resume(opcodes: OpSeq, frame: CapturedFrame): RenderResult {
+    return this.execute(opcodes, vm => vm.frame.restore(frame));
+  }
 
   execute(opcodes: OpSeq, initialize?: (vm: VM) => void): RenderResult {
     LOGGER.debug("[VM] Begin program execution");
