@@ -6,6 +6,7 @@ import { assign, EmptyObject } from 'ember-utils';
 import { DirtyableTag } from 'glimmer-reference';
 import { environment } from 'ember-environment';
 import { OWNER } from 'ember-utils';
+import { run } from 'ember-metal';
 
 class OutletStateReference {
   constructor(outletView) {
@@ -107,7 +108,6 @@ export default class OutletView {
     this.owner = owner;
     this.template = template;
     this.outletState = null;
-    this._renderResult = null;
     this._tag = new DirtyableTag();
   }
 
@@ -121,12 +121,10 @@ export default class OutletView {
       target = selector;
     }
 
-    this._renderResult = this.renderer.appendOutletView(this, target);
+    run.schedule('render', this.renderer, 'appendOutletView', this, target);
   }
 
-  rerender() {
-    if (this._renderResult) { this.renderer.rerender(this); }
-  }
+  rerender() { }
 
   setOutletState(state) {
     this.outletState = {
@@ -150,11 +148,5 @@ export default class OutletView {
     return new OutletStateReference(this);
   }
 
-  destroy() {
-    if (this._renderResult) {
-      let renderResult = this._renderResult;
-      this._renderResult = null;
-      renderResult.destroy();
-    }
-  }
+  destroy() { }
 }
