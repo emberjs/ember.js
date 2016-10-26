@@ -1,5 +1,5 @@
 import { EvaluatedArgs, Template, RenderResult, SafeString, ValueReference, VM } from "glimmer-runtime";
-import { BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight } from "glimmer-test-helpers";
+import { BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "glimmer-test-helpers";
 import { PathReference } from "glimmer-reference";
 import { UpdatableReference } from "glimmer-object-reference";
 import { Opaque } from "glimmer-util";
@@ -1066,6 +1066,218 @@ test("block arguments", assert => {
   rerender();
 
   equalTokens(root, '<div>Godfreak</div>', "After updating");
+
+  rerender({ person: { name: { first: "Godfrey", last: "Chan" } } });
+
+  equalTokens(root, '<div>Godfrey</div>', "After reset");
+});
+
+test("block arguments should have higher presedence than helpers", assert => {
+  env.registerHelper('foo', () => 'foo-helper');
+  env.registerHelper('bar', () => 'bar-helper');
+  env.registerHelper('echo', args => args[0]);
+
+  let template = compile(trimLines`
+    <div>
+      foo: "{{foo}}";
+      bar: "{{bar}}";
+      value: "{{value}}";
+      echo foo: "{{echo foo}}";
+      echo bar: "{{echo bar}}";
+      echo value: "{{echo value}}";
+
+      -----
+
+      {{#with value as |foo|}}
+        foo: "{{foo}}";
+        bar: "{{bar}}";
+        value: "{{value}}";
+        echo foo: "{{echo foo}}";
+        echo bar: "{{echo bar}}";
+        echo value: "{{echo value}}";
+
+        -----
+
+        {{#with foo as |bar|}}
+          foo: "{{foo}}";
+          bar: "{{bar}}";
+          value: "{{value}}";
+          echo foo: "{{echo foo}}";
+          echo bar: "{{echo bar}}";
+          echo value: "{{echo value}}";
+        {{/with}}
+      {{/with}}
+
+      -----
+
+      {{#with value as |bar|}}
+        foo: "{{foo}}";
+        bar: "{{bar}}";
+        value: "{{value}}";
+        echo foo: "{{echo foo}}";
+        echo bar: "{{echo bar}}";
+        echo value: "{{echo value}}";
+      {{/with}}
+    </div>
+  `);
+
+  let object = { foo: 'foo-value', bar: 'bar-value', value: 'value-value' };
+  render(template, object);
+
+  equalTokens(root, trimLines`
+    <div>
+      foo: "foo-helper";
+      bar: "bar-helper";
+      value: "value-value";
+      echo foo: "foo-value";
+      echo bar: "bar-value";
+      echo value: "value-value";
+
+      -----
+
+      foo: "value-value";
+      bar: "bar-helper";
+      value: "value-value";
+      echo foo: "value-value";
+      echo bar: "bar-value";
+      echo value: "value-value";
+
+      -----
+
+      foo: "value-value";
+      bar: "value-value";
+      value: "value-value";
+      echo foo: "value-value";
+      echo bar: "value-value";
+      echo value: "value-value";
+
+      -----
+
+      foo: "foo-helper";
+      bar: "value-value";
+      value: "value-value";
+      echo foo: "foo-value";
+      echo bar: "value-value";
+      echo value: "value-value";
+    </div>`, 'Initial render');
+
+  rerender();
+
+  equalTokens(root, trimLines`
+    <div>
+      foo: "foo-helper";
+      bar: "bar-helper";
+      value: "value-value";
+      echo foo: "foo-value";
+      echo bar: "bar-value";
+      echo value: "value-value";
+
+      -----
+
+      foo: "value-value";
+      bar: "bar-helper";
+      value: "value-value";
+      echo foo: "value-value";
+      echo bar: "bar-value";
+      echo value: "value-value";
+
+      -----
+
+      foo: "value-value";
+      bar: "value-value";
+      value: "value-value";
+      echo foo: "value-value";
+      echo bar: "value-value";
+      echo value: "value-value";
+
+      -----
+
+      foo: "foo-helper";
+      bar: "value-value";
+      value: "value-value";
+      echo foo: "foo-value";
+      echo bar: "value-value";
+      echo value: "value-value";
+    </div>`, 'After no-op re-render');
+
+  object.value = 'NEW-VALUE';
+  rerender();
+
+  equalTokens(root, trimLines`
+    <div>
+      foo: "foo-helper";
+      bar: "bar-helper";
+      value: "NEW-VALUE";
+      echo foo: "foo-value";
+      echo bar: "bar-value";
+      echo value: "NEW-VALUE";
+
+      -----
+
+      foo: "NEW-VALUE";
+      bar: "bar-helper";
+      value: "NEW-VALUE";
+      echo foo: "NEW-VALUE";
+      echo bar: "bar-value";
+      echo value: "NEW-VALUE";
+
+      -----
+
+      foo: "NEW-VALUE";
+      bar: "NEW-VALUE";
+      value: "NEW-VALUE";
+      echo foo: "NEW-VALUE";
+      echo bar: "NEW-VALUE";
+      echo value: "NEW-VALUE";
+
+      -----
+
+      foo: "foo-helper";
+      bar: "NEW-VALUE";
+      value: "NEW-VALUE";
+      echo foo: "foo-value";
+      echo bar: "NEW-VALUE";
+      echo value: "NEW-VALUE";
+    </div>`, 'After update');
+
+  rerender({ foo: 'foo-value', bar: 'bar-value', value: 'value-value' });
+
+  equalTokens(root, trimLines`
+    <div>
+      foo: "foo-helper";
+      bar: "bar-helper";
+      value: "value-value";
+      echo foo: "foo-value";
+      echo bar: "bar-value";
+      echo value: "value-value";
+
+      -----
+
+      foo: "value-value";
+      bar: "bar-helper";
+      value: "value-value";
+      echo foo: "value-value";
+      echo bar: "bar-value";
+      echo value: "value-value";
+
+      -----
+
+      foo: "value-value";
+      bar: "value-value";
+      value: "value-value";
+      echo foo: "value-value";
+      echo bar: "value-value";
+      echo value: "value-value";
+
+      -----
+
+      foo: "foo-helper";
+      bar: "value-value";
+      value: "value-value";
+      echo foo: "foo-value";
+      echo bar: "value-value";
+      echo value: "value-value";
+    </div>`, 'After reset');
 });
 
 test("block arguments (ensure balanced push/pop)", assert => {

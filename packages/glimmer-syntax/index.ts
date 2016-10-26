@@ -1,5 +1,4 @@
 // used by ember-compiler
-export { isHelper } from './lib/utils';
 export { preprocess } from './lib/parser';
 
 // needed for tests only
