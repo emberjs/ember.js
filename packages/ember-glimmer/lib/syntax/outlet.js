@@ -114,7 +114,6 @@ class OutletComponentReference {
   value() {
     let { outletNameRef, parentOutletStateRef, definition, lastState } = this;
 
-
     let outletName = outletNameRef.value();
     let outletStateRef = parentOutletStateRef.get('outlets').get(outletName);
     let newState = this.lastState = outletStateRef.value();
@@ -130,7 +129,7 @@ class OutletComponentReference {
     } else if (hasTemplate) {
       return this.definition = new OutletComponentDefinition(outletName, newState.render.template);
     } else {
-      return null;
+      return this.definition = null;
     }
   }
 }
