@@ -156,11 +156,11 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
     // expanded version that handles both cases. The compilation would look
     // like this:
     //
+    //               PutValue(expression)
+    //               Test(is-component-definition)
     //               Enter(BEGIN, END)
     //   BEGIN:      Noop
-    //               Test(is-component-definition)
     //               JumpUnless(VALUE)
-    //   COMPONENT:  Noop
     //               PutDynamicComponentDefinitionOpcode
     //               OpenComponent
     //               CloseComponent
@@ -179,11 +179,11 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
     let buffer = new CompileIntoList(env, null);
     let dsl = new OpcodeBuilderDSL(buffer, this.symbolTable, env);
 
-    dsl.block({ templates: null }, (dsl, BEGIN, END) => {
-      dsl.putValue(this.expression);
-      dsl.test(IsComponentDefinitionReference.create);
+    dsl.putValue(this.expression);
+    dsl.test(IsComponentDefinitionReference.create);
+
+    dsl.simpleBlock((dsl, BEGIN, END) => {
       dsl.jumpUnless('VALUE');
-      dsl.label('COMPONENT');
       dsl.putDynamicComponentDefinition();
       dsl.openComponent(Args.empty());
       dsl.closeComponent();
@@ -335,13 +335,15 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
     let { bounds, appendOpcode, state } = this;
 
     let appendOps = appendOpcode.deopt(vm.env);
-    let enter     = appendOps.head() as EnterOpcode;
+    let enter     = appendOps.head().next.next as EnterOpcode;
     let ops       = enter.slice;
 
     let tracker = new UpdatableBlockTracker(bounds.parentElement());
     tracker.newBounds(this.bounds);
 
     let children = new LinkedList<UpdatingOpcode>();
+
+    state.frame['condition'] = IsComponentDefinitionReference.create(state.frame['operand']);
 
     let deopted = this.deopted = new TryOpcode(ops, state, tracker, children);
 
