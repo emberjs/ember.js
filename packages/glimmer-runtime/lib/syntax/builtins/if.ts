@@ -20,10 +20,10 @@ export default class IfSyntax extends StatementSyntax {
   }
 
   compile(dsl: OpcodeBuilderDSL) {
-    //        Enter(BEGIN, END)
-    // BEGIN: Noop
     //        PutArgs
     //        Test(Environment)
+    //        Enter(BEGIN, END)
+    // BEGIN: Noop
     //        JumpUnless(ELSE)
     //        Evaluate(default)
     //        Jump(END)
@@ -34,9 +34,10 @@ export default class IfSyntax extends StatementSyntax {
 
     let { args, templates } = this;
 
-    dsl.block({ templates, args }, (dsl, BEGIN, END) => {
-      dsl.test('environment');
+    dsl.putArgs(args);
+    dsl.test('environment');
 
+    dsl.block({ templates }, (dsl, BEGIN, END) => {
       if (templates.inverse) {
         dsl.jumpUnless('ELSE');
         dsl.evaluate('default');

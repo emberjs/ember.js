@@ -1,5 +1,5 @@
 import { EvaluatedArgs, Template, RenderResult, SafeString, ValueReference, VM } from "glimmer-runtime";
-import { TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight } from "glimmer-test-helpers";
+import { BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight } from "glimmer-test-helpers";
 import { PathReference } from "glimmer-reference";
 import { UpdatableReference } from "glimmer-object-reference";
 import { Opaque } from "glimmer-util";
@@ -784,6 +784,131 @@ test("helpers can add destroyables", assert => {
 
   strictEqual(destroyable.count, 1, 'is destroyed');
 });
+
+test(`helpers passed as arguments to {{#if}} are not torn down when switching between blocks`, assert => {
+  let options = {
+    template: '{{#if (stateful-foo)}}Yes{{/if}}',
+    truthyValue: true,
+    falsyValue: false
+  };
+
+  testStatefulHelper(assert, options);
+});
+
+test(`helpers passed as arguments to {{#unless}} are not torn down when switching between blocks`, assert => {
+  let options = {
+    template: '{{#unless (stateful-foo)}}Yes{{/unless}}',
+    truthyValue: false,
+    falsyValue: true
+  };
+
+  testStatefulHelper(assert, options);
+});
+
+test(`helpers passed as arguments to {{#with}} are not torn down when switching between blocks`, assert => {
+  let options = {
+    template: '{{#with (stateful-foo) as |unused|}}Yes{{/with}}',
+    truthyValue: {},
+    falsyValue: null
+  };
+
+  testStatefulHelper(assert, options);
+});
+
+test(`helpers passed as arguments to {{#each}} are not torn down when switching between blocks`, assert => {
+  let options = {
+    template: '{{#each (stateful-foo) key="@index" as |unused|}}Yes{{/each}}',
+    truthyValue: [1],
+    falsyValue: null
+  };
+
+  testStatefulHelper(assert, options);
+});
+
+test(`helpers passed as arguments to {{partial}} are not torn down when switching between blocks`, assert => {
+  env.registerPartial('yasss', 'Yes');
+  env.registerPartial('noooo', '');
+
+  let options = {
+    template: '{{partial (stateful-foo)}}',
+    truthyValue: 'yasss',
+    falsyValue: 'noooo'
+  };
+
+  testStatefulHelper(assert, options);
+});
+
+test(`helpers passed as arguments to {{component}} are not torn down when switching between blocks`, assert => {
+  env.registerBasicComponent('x-yasss', BasicComponent, 'Yes');
+
+  let options = {
+    template: '{{component (stateful-foo)}}',
+    truthyValue: 'x-yasss',
+    falsyValue: null
+  };
+
+  testStatefulHelper(assert, options);
+});
+
+test(`helpers passed as arguments to {{#-in-element}} are not torn down when switching between blocks`, assert => {
+  let externalElement = document.createElement('div');
+
+  let options = {
+    template: '{{#-in-element (stateful-foo)}}Yes{{/-in-element}}',
+    truthyValue: externalElement,
+    falsyValue: null,
+    element: externalElement
+  };
+
+  testStatefulHelper(assert, options);
+});
+
+function testStatefulHelper(assert, { template, truthyValue, falsyValue, element = root }) {
+  let didCreate = 0;
+  let didDestroy = 0;
+  let reference;
+
+  env.registerInternalHelper('stateful-foo', (vm: VM, args: EvaluatedArgs) => {
+    didCreate++;
+
+    vm.newDestroyable({
+      destroy() {
+        didDestroy++;
+      }
+    });
+
+    return reference = new UpdatableReference(truthyValue);
+  });
+
+  assert.strictEqual(didCreate, 0, 'didCreate: before render');
+  assert.strictEqual(didDestroy, 0, 'didDestroy: before render');
+
+  render(compile(template), {});
+
+  assert.equal(element.textContent, 'Yes', 'initial render');
+  assert.strictEqual(didCreate, 1, 'didCreate: after initial render');
+  assert.strictEqual(didDestroy, 0, 'didDestroy: after initial render');
+
+  rerender();
+
+  assert.equal(element.textContent, 'Yes', 'after no-op re-render');
+  assert.strictEqual(didCreate, 1, 'didCreate: after no-op re-render');
+  assert.strictEqual(didDestroy, 0, 'didDestroy: after no-op re-render');
+
+  reference.update(falsyValue);
+  rerender();
+
+  assert.strictEqual(element.textContent, '', 'after switching to falsy');
+  assert.strictEqual(didCreate, 1, 'didCreate: after switching to falsy');
+  assert.strictEqual(didDestroy, 0, 'didDestroy: after switching to falsy');
+
+  reference.update(truthyValue);
+  rerender();
+
+  assert.equal(element.textContent, 'Yes', 'after reset');
+  assert.strictEqual(didCreate, 1, 'didCreate: after reset');
+  assert.strictEqual(didDestroy, 0, 'didDestroy: after reset');
+}
 
 test("updating a curly with this", () => {
   let object = { value: 'hello world' };

@@ -399,11 +399,11 @@ class ComponentBuilder implements IComponentBuilder {
 
   dynamic(definitionArgs: Syntax.Args, definition: DynamicDefinition, args: Syntax.Args, templates: Syntax.Templates, symbolTable: SymbolTable, shadow: string[] = EMPTY_ARRAY) {
     this.dsl.unit({ templates }, dsl => {
-      dsl.enter('BEGIN', 'END');
-      dsl.label('BEGIN');
       dsl.putArgs(definitionArgs);
       dsl.putValue(makeFunctionExpression(definition));
       dsl.test('simple');
+      dsl.enter('BEGIN', 'END');
+      dsl.label('BEGIN');
       dsl.jumpUnless('END');
       dsl.putDynamicComponentDefinition();
       dsl.openComponent(args, shadow);
