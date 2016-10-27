@@ -11,6 +11,7 @@ addons:
 cache:
   directories:
     - $HOME/.npm
+    - $HOME/.yarn-cache
     - $HOME/.cache # includes bowers cache
 
 before_install:
@@ -22,7 +23,8 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 
 install:
-  - "npm install"
+  - "npm install -g yarn bower"
+  - "yarn"
   - "bower install"
 
 after_success:
