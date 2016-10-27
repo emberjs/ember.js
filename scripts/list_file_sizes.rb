@@ -17,7 +17,6 @@ def gzip(string)
   end
 end
 
-
 all_files = ""
 sizes = []
 
