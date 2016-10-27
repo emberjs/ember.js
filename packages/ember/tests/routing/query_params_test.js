@@ -1231,14 +1231,14 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
-  ['@test Undefined isn\'t deserialized into a string'](assert) {
-    assert.expect(3);
+  ['@test undefined isn\'t serialized or deserialized into a string'](assert) {
+    assert.expect(4);
 
     this.router.map(function() {
       this.route('example');
     });
 
-    this.registerTemplate('application', '{{link-to \'Example\' \'example\' id=\'the-link\'}}');
+    this.registerTemplate('application', '{{link-to \'Example\' \'example\' (query-params foo=undefined) id=\'the-link\'}}');
 
     this.setSingleQPController('example', 'foo', undefined, {
       foo: undefined
@@ -1250,13 +1250,12 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       }
     }));
 
-    return this.visit('/').then(() => {
-      let $link = jQuery('#the-link');
-      assert.equal($link.attr('href'), '/example');
-      run($link, 'click');
+    return this.visitAndAssert('/').then(() => {
+      assert.equal(this.$('#the-link').attr('href'), '/example', 'renders without undefined qp serialized');
 
-      let controller = this.getController('example');
-      assert.equal(get(controller, 'foo'), undefined);
+      return this.transitionTo('example', { queryParams: { foo: undefined } }).then(() => {
+        this.assertCurrentPath('/example');
+      });
     });
   }
 

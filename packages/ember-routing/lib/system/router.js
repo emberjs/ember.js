@@ -669,6 +669,8 @@ const EmberRouter = EmberObject.extend(Evented, {
       if (qp) {
         delete queryParams[key];
         queryParams[qp.urlKey] = qp.route.serializeQueryParam(value, qp.urlKey, qp.type);
+      } else if (value === undefined) {
+        return; // We don't serialize undefined values
       } else {
         queryParams[key] = this._serializeQueryParam(value, typeOf(value));
       }
