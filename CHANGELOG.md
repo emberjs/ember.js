@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### 2.10.0-beta.2 (October 26, 2016)
+
+- [#14499](https://github.com/emberjs/ember.js/pull/14499) [BUGFIX] Fix "Invalid value used as weak map key" error in old versions of Node.js.
+- [#14519](https://github.com/emberjs/ember.js/pull/14519) [BUGFIX] Ensure `didTransition` is fired before rendering.
+- [#14520](https://github.com/emberjs/ember.js/pull/14520) [BUGFIX] Ensure local variables (block params) have higher precedence over helpers.
+- [#14520](https://github.com/emberjs/ember.js/pull/14520) [BUGFIX] Fix an issue where class-based helpers are destroyed unexpectedly.
+
 ### 2.10.0-beta.1 (October 17, 2016)
 
 - [#14156](https://github.com/emberjs/ember.js/pull/14156) [FEATURE ember-glimmer] Enable by default.
