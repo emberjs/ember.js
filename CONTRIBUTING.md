@@ -95,13 +95,58 @@ clone the latest ember.js directory from github
 cd to the cloned ember.js directory
  - cd ember.js
 
-ensure Node.js, npm, and bower are installed
+ensure Node.js, yarn, and bower are installed
 
 follow these commands to build ember.js
  - bower install
- - npm run-script build
+ - yarn run build
 ```
 
+# How to Run Unit Tests
+
+Pull requests should pass the Ember.js unit tests. Do the following to run these tests.
+
+1. Follow the setup steps listed above under [Building Ember.js](#building-emberjs).
+
+2. To start the development server, run `npm start`.
+
+3. To run all tests, visit <http://localhost:4200/>.
+
+4. To test a specific package, visit `http://localhost:4200/tests/index.html?package=PACKAGE_NAME`. Replace
+`PACKAGE_NAME` with the name of the package you want to test. For
+example:
+
+  * [Ember.js Runtime](http://localhost:4200/tests/index.html?package=ember-runtime)
+  * [Ember.js Views](http://localhost:4200/tests/index.html?package=ember-views)
+  * [Ember.js Glimmer](http://localhost:4200/tests/index.html?package=ember-glimmer)
+
+To test multiple packages, you can separate them with commas.
+
+You can also pass `jquery=VERSION` in the test URL to test different
+versions of jQuery.
+
+## From the CLI
+
+1. Install phantomjs from http://phantomjs.org.
+
+2. Run `npm test` to run a basic test suite or run `TEST_SUITE=all npm test` to
+   run a more comprehensive suite.
+
+## From ember-cli
+
+1. `ember test --server`
+
+2. Connect the browsers you want.
+
+3. If phantom didn't connect automatically, you can run `./bin/connect-phantom-to <optional-port>`.
+
+To run a specific browser, you can use the `--launch` flag
+
+* `ember test --server --launch SL_Firefox_Current`
+* `ember test --launch SL_Firefox_Current`
+* `ember test --launch SL_Firefox_Current,PhantomJS`
+
+To test multiple launchers, you can separate them with commas.
 # Pull Requests
 
 We love pull requests. Here's a quick guide:
@@ -109,8 +154,8 @@ We love pull requests. Here's a quick guide:
 1. Fork the repo.
 
 2. Run the tests. We only take pull requests with passing tests, and it's great
-to know that you have a clean slate: `npm install && bower install && npm test`.
-(To see tests in the browser, run `npm start` and open `http://localhost:4200/tests/index.html`.)
+to know that you have a clean slate: `yarn install && bower install && yarn test`.
+(To see tests in the browser, run `yarn start` and open `http://localhost:4200/tests/index.html`.)
 
 3. Add a test for your change. Only refactoring and documentation changes
 require no new tests. If you are adding functionality or fixing a bug, we need
