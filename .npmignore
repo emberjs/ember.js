@@ -1,1 +1,33 @@
 node-tests/
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+FEATURES.md
+STYLEGUIDE.md
+VERSION
+bin
+blueprints
+bower.json
+bower_components
+config
+ember-cli-build.js
+ember-source.gemspec
+features.json
+generators
+lib
+node-tests
+node_modules
+packages
+scripts
+server
+testem.dist.json
+testem.json
+testem.travis-browsers.js
+tests
+tmp
+vendor
+!vendor/ember/
+yarn.lock
+yuidoc.json
+
+# In the future we will likely want to restrict exactly
+# which parts of `/dist` we want to include.
