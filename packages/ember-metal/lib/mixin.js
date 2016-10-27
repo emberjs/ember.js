@@ -144,20 +144,32 @@ function giveMethodSuper(obj, key, method, values, descs) {
 
 function applyConcatenatedProperties(obj, key, value, values) {
   let baseValue = values[key] || obj[key];
+  let ret;
 
   if (baseValue) {
     if ('function' === typeof baseValue.concat) {
       if (value === null || value === undefined) {
-        return baseValue;
+        ret = baseValue;
       } else {
-        return baseValue.concat(value);
+        ret = baseValue.concat(value);
       }
     } else {
-      return makeArray(baseValue).concat(value);
+      ret = makeArray(baseValue).concat(value);
     }
   } else {
-    return makeArray(value);
+    ret = makeArray(value);
   }
+
+  runInDebug(() => {
+    // it is possible to use concatenatedProperties with strings (which cannot be frozen)
+    // only freeze objects...
+    if (typeof ret === 'object' && ret !== null) {
+      // prevent mutating `concatenatedProperties` array after it is applied
+      Object.freeze(ret);
+    }
+  });
+
+  return ret;
 }
 
 function applyMergedProperties(obj, key, value, values) {

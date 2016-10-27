@@ -359,6 +359,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     let FooBarComponent = Component.extend({
       init() {
         this._super();
+        this.classNames = this.classNames.slice();
         this.classNames.push('foo', 'bar', `outside-${this.get('extraClass')}`);
       }
     });
