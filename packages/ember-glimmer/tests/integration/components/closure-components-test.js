@@ -3,6 +3,7 @@ import { Component } from '../../utils/helpers';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { isEmpty } from 'ember-metal';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 moduleFor('Components test: closure components', class extends RenderingTest {
   ['@test renders with component helper']() {
@@ -999,6 +1000,84 @@ moduleFor('Components test: closure components', class extends RenderingTest {
     assert.notEqual(instance, previousInstance, 'the instance and previous instance are not the same object');
     assert.equal(initCount, 3, 'the component was constructed exactly 3 times (rerender)');
     assert.equal(this.$().text(), 'my-comp: open');
+  }
+
+  ['@test GH#14508 rest positional params are received when passed as named parameter']() {
+    this.registerComponent('my-link', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'params'
+      }),
+      template: '{{#each params as |p|}}{{p}}{{/each}}'
+    });
+
+    this.render('{{component (component "my-link") params=allParams}}', {
+      allParams: emberA(['a', 'b'])
+    });
+
+    this.assertText('ab');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('ab');
+
+    this.runTask(() => this.context.get('allParams').pushObject('c'));
+
+    this.assertText('abc');
+
+    this.runTask(() => this.context.get('allParams').popObject());
+
+    this.assertText('ab');
+
+    this.runTask(() => this.context.get('allParams').clear());
+
+    this.assertText('');
+
+    this.runTask(() => this.context.set('allParams', emberA(['1', '2'])));
+
+    this.assertText('12');
+
+    this.runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
+
+    this.assertText('ab');
+  }
+
+  ['@test GH#14508 rest positional params are received when passed as named parameter with dot notation']() {
+    this.registerComponent('my-link', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'params'
+      }),
+      template: '{{#each params as |p|}}{{p}}{{/each}}'
+    });
+
+    this.render('{{#with (hash link=(component "my-link")) as |c|}}{{c.link params=allParams}}{{/with}}', {
+      allParams: emberA(['a', 'b'])
+    });
+
+    this.assertText('ab');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('ab');
+
+    this.runTask(() => this.context.get('allParams').pushObject('c'));
+
+    this.assertText('abc');
+
+    this.runTask(() => this.context.get('allParams').popObject());
+
+    this.assertText('ab');
+
+    this.runTask(() => this.context.get('allParams').clear());
+
+    this.assertText('');
+
+    this.runTask(() => this.context.set('allParams', emberA(['1', '2'])));
+
+    this.assertText('12');
+
+    this.runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
+
+    this.assertText('ab');
   }
 });
 
