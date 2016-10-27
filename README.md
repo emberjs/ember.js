@@ -17,21 +17,21 @@ to build any web application. It is focused on making you, the developer, as pro
 
 Ember.js also provides access to the most advanced features of Javascript, HTML and the Browser giving you everything you need to create your next killer web app.
 
-- [Website](http://emberjs.com)
-- [Guides](http://guides.emberjs.com)
-- [API](http://emberjs.com/api)
-- [Community](http://emberjs.com/community)
-- [Blog](http://emberjs.com/blog)
-- [Builds](http://emberjs.com/builds)
+- [Website](http://emberjs.com);
+- [Guides](http://guides.emberjs.com);
+- [API](http://emberjs.com/api);
+- [Community](http://emberjs.com/community);
+- [Blog](http://emberjs.com/blog);
+- [Builds](http://emberjs.com/builds).
 
 # Building Ember.js
 
-1. Ensure that [Node.js](http://nodejs.org/) and [bower](http://bower.io/) are installed.
-2. Run `git clone https://github.com/emberjs/ember.js.git && cd ember.js`.
-3. Run `git config core.symlinks true` to ensure that symlinks are enabled.
-4. Run `git reset --hard HEAD` to reset to HEAD with symlinks.
-5. Run `npm install` to ensure the required dependencies are installed.
-6. Run `bower install` to ensure required web dependencies are installed.
+1. Ensure that [Node.js](http://nodejs.org/) and [bower](http://bower.io/) are installed;
+2. Run `git clone https://github.com/emberjs/ember.js.git && cd ember.js`;
+3. Run `git config core.symlinks true` to ensure that symlinks are enabled;
+4. Run `git reset --hard HEAD` to reset to HEAD with symlinks;
+5. Run `npm install` to ensure the required dependencies are installed;
+6. Run `bower install` to ensure required web dependencies are installed;
 7. Run `npm run build` to build Ember.js. The builds will be placed in the `dist/` directory.
 
 ## npm install troubleshooting
