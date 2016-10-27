@@ -24,7 +24,7 @@ before_install:
 
 install:
   - "npm install -g yarn bower"
-  - "yarn"
+  - "yarn install --prefer-offline"
   - "bower install"
 
 after_success:
