@@ -60,7 +60,7 @@ function createClosureComponentCell(env, originalComponentPath, params, hash, la
   let newHash = assign(new EmptyObject(), hash);
 
   if (isComponentCell(componentPath)) {
-    return createNestedClosureComponentCell(componentPath, params, newHash);
+    return createNestedClosureComponentCell(componentPath, params, newHash, env);
   } else {
     assert(`The component helper cannot be used without a valid component name. You used "${componentPath}" via ${label}`,
           isValidComponentPath(env, componentPath));
@@ -78,7 +78,7 @@ export function isComponentCell(component) {
   return component && component[COMPONENT_CELL];
 }
 
-function createNestedClosureComponentCell(componentCell, params, hash) {
+function createNestedClosureComponentCell(componentCell, params, hash, env) {
   // This needs to be done in each nesting level to avoid raising assertions.
   processPositionalParamsFromCell(componentCell, params, hash);
 
@@ -87,6 +87,7 @@ function createNestedClosureComponentCell(componentCell, params, hash) {
     [COMPONENT_SOURCE]: componentCell[COMPONENT_SOURCE],
     [COMPONENT_HASH]: mergeInNewHash(componentCell[COMPONENT_HASH],
                                      hash,
+                                     env,
                                      componentCell[COMPONENT_POSITIONAL_PARAMS],
                                      params),
     [COMPONENT_POSITIONAL_PARAMS]: componentCell[COMPONENT_POSITIONAL_PARAMS],
@@ -167,11 +168,14 @@ function getPositionalParams(container, componentPath) {
  * a string (rest positional parameters), we keep the parameters from the
  * `original` hash.
  *
+ * Now we need to consider also the case where the positional params are being
+ * passed as a named parameter.
+ *
  */
-export function mergeInNewHash(original, updates, positionalParams=[], params=[]) {
+export function mergeInNewHash(original, updates, env, positionalParams=[], params=[]) {
   let newHash = assign({}, original, updates);
 
-  if (isRestPositionalParams(positionalParams) && isEmpty(params)) {
+  if (isRestPositionalParams(positionalParams) && isEmpty(params) && isEmpty(env.hooks.getValue(updates[positionalParams]))) {
     let propName = positionalParams;
     newHash[propName] = original[propName];
   }

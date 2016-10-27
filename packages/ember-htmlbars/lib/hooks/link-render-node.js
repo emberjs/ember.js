@@ -35,7 +35,7 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
     let componentCell = stream.value();
 
     if (isComponentCell(componentCell)) {
-      let closureAttrs = mergeInNewHash(componentCell[COMPONENT_HASH], hash);
+      let closureAttrs = mergeInNewHash(componentCell[COMPONENT_HASH], hash, env);
 
       for (let key in closureAttrs) {
         subscribe(renderNode, env, scope, closureAttrs[key]);
