@@ -218,12 +218,12 @@ class Renderer {
   }
 
   _register(view) {
-    assert('Attempted to register a view with an id already in use: ' + view.elementId, !this._viewRegistry[this.elementId]);
+    assert('Attempted to register a view with an id already in use: ' + view.elementId, !view._viewRegistry[this.elementId]);
     this._viewRegistry[view.elementId] = view;
   }
 
   _unregister(view) {
-    delete this._viewRegistry[this.elementId];
+    delete this._viewRegistry[view.elementId];
   }
 }
 
