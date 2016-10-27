@@ -255,12 +255,12 @@ Renderer.prototype.didDestroyElement = function (view) {
 
 
 Renderer.prototype._register = function Renderer_register(view) {
-  assert('Attempted to register a view with an id already in use: ' + view.elementId, !this._viewRegistry[this.elementId]);
+  assert('Attempted to register a view with an id already in use: ' + view.elementId, !this._viewRegistry[view.elementId]);
   this._viewRegistry[view.elementId] = view;
 };
 
 Renderer.prototype._unregister = function Renderer_unregister(view) {
-  delete this._viewRegistry[this.elementId];
+  delete this._viewRegistry[view.elementId];
 };
 
 export const InertRenderer = {
