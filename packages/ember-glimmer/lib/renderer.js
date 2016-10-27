@@ -223,7 +223,7 @@ class Renderer {
   }
 
   _unregister(view) {
-    delete this._viewRegistry[this.elementId];
+    delete this._viewRegistry[view.elementId];
   }
 }
 
