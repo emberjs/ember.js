@@ -49,6 +49,25 @@ import { INVOKE } from './action';
 
   The `mut` helper changes the `totalClicks` value to what was provided as the action argument.
 
+  The `mut` helper, when used with `action`, will return a function that
+  sets the value passed to `mut` to its first argument. This works like any other
+  closure action and interacts with the other features `action` provides.
+  As an example, we can create a button that increments a value passing the value
+  directly to the `action`:
+
+  ```handlebars
+  {{! inc helper is not provided by Ember }}
+  <button onclick={{action (mut count) (inc count)}}>
+    Increment count
+  </button>
+  ```
+
+  You can also use the `value` option:
+
+  ```handlebars
+  <input value={{name}} oninput={{action (mut name) value="target.value"}}>
+  ```
+
   @method mut
   @param {Object} [attr] the "two-way" attribute that can be modified.
   @for Ember.Templates.helpers
