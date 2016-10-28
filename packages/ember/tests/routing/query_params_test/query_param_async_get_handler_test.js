@@ -1,4 +1,5 @@
 import { RSVP } from 'ember-runtime';
+import { Route } from 'ember-routing';
 
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 
@@ -173,6 +174,34 @@ moduleFor('Query Params - async get handler', class extends QueryParamTestCase {
         assert.equal(postController.get('foo'), 'bar', 'simple QP is correctly deserialized with default value');
         assert.equal(postIndexController.get('comment'), 6, 'mapped QP retains value scoped to model');
         this.assertCurrentPath('/post/1337?note=6');
+      });
+    });
+  }
+
+  ['@test undefined isn\'t serialized or deserialized into a string'](assert) {
+    assert.expect(4);
+
+    this.router.map(function() {
+      this.route('example');
+    });
+
+    this.registerTemplate('application', '{{link-to \'Example\' \'example\' (query-params foo=undefined) id=\'the-link\'}}');
+
+    this.setSingleQPController('example', 'foo', undefined, {
+      foo: undefined
+    });
+
+    this.registerRoute('example', Route.extend({
+      model(params) {
+        assert.deepEqual(params, { foo: undefined });
+      }
+    }));
+
+    return this.visitAndAssert('/').then(() => {
+      assert.equal(this.$('#the-link').attr('href'), '/example', 'renders without undefined qp serialized');
+
+      return this.transitionTo('example', { queryParams: { foo: undefined } }).then(() => {
+        this.assertCurrentPath('/example');
       });
     });
   }
