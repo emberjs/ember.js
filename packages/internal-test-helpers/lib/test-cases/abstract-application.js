@@ -33,6 +33,10 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     };
   }
 
+  get appRouter() {
+    return this.applicationInstance.lookup('router:main');
+  }
+
   teardown() {
     if (this.applicationInstance) {
       runDestroy(this.applicationInstance);
@@ -51,6 +55,10 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
         this.applicationInstance = instance;
       });
     }
+  }
+
+  transitionTo() {
+    return run(this.appRouter, 'transitionTo', ...arguments);
   }
 
   compile(string, options) {

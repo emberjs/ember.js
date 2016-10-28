@@ -54,10 +54,6 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     return this.applicationInstance.lookup(`route:${name}`);
   }
 
-  get appRouter() {
-    return this.applicationInstance.lookup('router:main');
-  }
-
   get routerOptions() {
     return {
       location: 'test'
@@ -70,10 +66,6 @@ export default class QueryParamTestCase extends ApplicationTestCase {
 
   assertCurrentPath(path, message = `current path equals '${path}'`) {
     this.assert.equal(this.appRouter.get('location.path'), path, message);
-  }
-
-  transitionTo() {
-    return run(this.appRouter, 'transitionTo', ...arguments);
   }
 
   /**
