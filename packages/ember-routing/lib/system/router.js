@@ -665,6 +665,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     @return {Void}
   */
   _serializeQueryParams(handlerInfos, queryParams) {
+    queryParams = JSON.parse(JSON.stringify(queryParams));
     forEachQueryParam(this, handlerInfos, queryParams, (key, value, qp) => {
       if (qp) {
         delete queryParams[key];
