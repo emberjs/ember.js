@@ -2,7 +2,7 @@ import { RSVP, Controller } from 'ember-runtime';
 import { Route, NoneLocation } from 'ember-routing';
 import { run } from 'ember-metal';
 import { compile } from 'ember-template-compiler';
-import { Application, Engine, Resolver } from 'ember-application';
+import { Application, Resolver } from 'ember-application';
 import { jQuery } from 'ember-views';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
@@ -1045,109 +1045,4 @@ QUnit.test('Rejected promises returned from ApplicationRoute transition into top
   run(router, 'transitionTo', 'index');
 
   equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
-});
-
-QUnit.test('Slow Promise from an Engine application route enters the mounts loading state', function() {
-  expect(1);
-
-  templates['news/blog_loading'] = 'BLOG LOADING';
-
-  // Register engine
-  let BlogEngine = Engine.extend();
-  registry.register('engine:blog', BlogEngine);
-
-  // Register engine route map
-  let BlogMap = function() {};
-  registry.register('route-map:blog', BlogMap);
-
-  Router.map(function() {
-    this.route('news', function() {
-      this.mount('blog');
-    });
-  });
-
-  let deferred = RSVP.defer();
-  let BlogRoute = Route.extend({
-    model() {
-      return deferred.promise;
-    }
-  });
-
-  var blog = container.lookup('engine:blog');
-  blog.register('route:application', BlogRoute);
-
-  bootApplication('/news/blog');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'BLOG LOADING', 'news/blog_loading was entered');
-
-  run(deferred, 'resolve');
-});
-
-QUnit.test('Rejected Promise from an Engine application route enters the mounts error state', function() {
-  expect(1);
-
-  templates['news/blog_error'] = 'BLOG ERROR';
-
-  // Register engine
-  let BlogEngine = Engine.extend();
-  registry.register('engine:blog', BlogEngine);
-
-  // Register engine route map
-  let BlogMap = function() {};
-  registry.register('route-map:blog', BlogMap);
-
-  Router.map(function() {
-    this.route('news', function() {
-      this.mount('blog');
-    });
-  });
-
-  let BlogRoute = Route.extend({
-    model() {
-      return RSVP.Promise.reject();
-    }
-  });
-
-  var blog = container.lookup('engine:blog');
-  blog.register('route:application', BlogRoute);
-
-  bootApplication('/news/blog');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'BLOG ERROR', 'news/blog_loading was entered');
-});
-
-QUnit.test('Slow Promise from an Engine application route enters the mounts loading state with resetNamespace', function() {
-  expect(1);
-
-  templates['blog_loading'] = 'BLOG LOADING';
-
-  // Register engine
-  let BlogEngine = Engine.extend();
-  registry.register('engine:blog', BlogEngine);
-
-  // Register engine route map
-  let BlogMap = function() {};
-  registry.register('route-map:blog', BlogMap);
-
-  Router.map(function() {
-    this.route('news', function() {
-      this.mount('blog', { resetNamespace: true });
-    });
-  });
-
-  let deferred = RSVP.defer();
-  let BlogRoute = Route.extend({
-    model() {
-      return deferred.promise;
-    }
-  });
-
-  var blog = container.lookup('engine:blog');
-  blog.register('route:application', BlogRoute);
-
-  bootApplication('/news/blog');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'BLOG LOADING', 'news/blog_loading was entered');
-
-  run(deferred, 'resolve');
 });

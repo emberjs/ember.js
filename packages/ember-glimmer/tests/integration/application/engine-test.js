@@ -1,19 +1,26 @@
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { compile } from '../../utils/helpers';
-import { Controller } from 'ember-runtime';
+import { Controller, RSVP } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import { Engine } from 'ember-application';
 import { Route } from 'ember-routing';
 
 moduleFor('Application test: engine rendering', class extends ApplicationTest {
   setupAppAndRoutableEngine(hooks = []) {
+    let self = this;
+
     this.application.register('template:application', compile('Application{{outlet}}'));
 
     this.router.map(function() {
       this.mount('blog');
     });
-    this.application.register('route-map:blog', function() { });
+    this.application.register('route-map:blog', function() {
+      this.route('post', function() {
+        this.route('comments');
+        this.route('likes');
+      });
+    });
     this.registerRoute('application', Route.extend({
       model() {
         hooks.push('application - application');
@@ -33,6 +40,10 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
             hooks.push('engine - application');
           }
         }));
+
+        if (self._additionalEngineRegistrations) {
+          self._additionalEngineRegistrations.call(this);
+        }
       }
     }));
   }
@@ -106,6 +117,10 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
         }));
       }
     }));
+  }
+
+  additionalEngineRegistrations(callback) {
+    this._additionalEngineRegistrations = callback;
   }
 
   setupEngineWithAttrs(hooks) {
@@ -329,6 +344,232 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
 
     return this.visit('/blog?lang=English').then(() => {
       this.assertText('ApplicationEngineEnglish');
+    });
+  }
+
+  ['@test error substate route works for the application route of an Engine'](assert) {
+    assert.expect(2);
+
+    this.setupAppAndRoutableEngine();
+    this.application.__registry__.resolver.moduleBasedResolver = true;
+    this.additionalEngineRegistrations(function() {
+      this.register('template:application_error', compile('Error! {{model.message}}'));
+      this.register('route:post', Route.extend({
+        model() {
+          return RSVP.reject(new Error('Oh, noes!'));
+        }
+      }));
+    });
+
+    return this.visit('/').then(() => {
+      this.assertText('Application');
+      return this.transitionTo('blog.post');
+    }).catch(() => {
+      this.assertText('ApplicationError! Oh, noes!');
+    });
+  }
+
+  ['@test error route works for the application route of an Engine'](assert) {
+    assert.expect(2);
+
+    this.setupAppAndRoutableEngine();
+    this.application.__registry__.resolver.moduleBasedResolver = true;
+    this.additionalEngineRegistrations(function() {
+      this.register('template:error', compile('Error! {{model.message}}'));
+      this.register('route:post', Route.extend({
+        model() {
+          return RSVP.reject(new Error('Oh, noes!'));
+        }
+      }));
+    });
+
+    return this.visit('/').then(() => {
+      this.assertText('Application');
+      return this.transitionTo('blog.post');
+    }).catch(() => {
+      this.assertText('ApplicationEngineError! Oh, noes!');
+    });
+  }
+
+  ['@test error substate route works for a child route of an Engine'](assert) {
+    assert.expect(2);
+
+    this.setupAppAndRoutableEngine();
+    this.application.__registry__.resolver.moduleBasedResolver = true;
+    this.additionalEngineRegistrations(function() {
+      this.register('template:post_error', compile('Error! {{model.message}}'));
+      this.register('route:post', Route.extend({
+        model() {
+          return RSVP.reject(new Error('Oh, noes!'));
+        }
+      }));
+    });
+
+    return this.visit('/').then(() => {
+      this.assertText('Application');
+      return this.transitionTo('blog.post');
+    }).catch(() => {
+      this.assertText('ApplicationEngineError! Oh, noes!');
+    });
+  }
+
+  ['@test error route works for a child route of an Engine'](assert) {
+    assert.expect(2);
+
+    this.setupAppAndRoutableEngine();
+    this.application.__registry__.resolver.moduleBasedResolver = true;
+    this.additionalEngineRegistrations(function() {
+      this.register('template:post.error', compile('Error! {{model.message}}'));
+      this.register('route:post.comments', Route.extend({
+        model() {
+          return RSVP.reject(new Error('Oh, noes!'));
+        }
+      }));
+    });
+
+    return this.visit('/').then(() => {
+      this.assertText('Application');
+      return this.transitionTo('blog.post.comments');
+    }).catch(() => {
+      this.assertText('ApplicationEngineError! Oh, noes!');
+    });
+  }
+
+  ['@test loading substate route works for the application route of an Engine'](assert) {
+    assert.expect(3);
+
+    let resolveLoading;
+
+    this.setupAppAndRoutableEngine();
+    this.application.__registry__.resolver.moduleBasedResolver = true;
+    this.additionalEngineRegistrations(function() {
+      this.register('template:application_loading', compile('Loading'));
+      this.register('template:post', compile('Post'));
+      this.register('route:post', Route.extend({
+        model() {
+          return new RSVP.Promise((resolve) => {
+            resolveLoading = resolve;
+          });
+        }
+      }));
+    });
+
+    return this.visit('/').then(() => {
+      this.assertText('Application');
+      let transition = this.transitionTo('blog.post');
+
+      this.runTaskNext(() => {
+        this.assertText('ApplicationLoading');
+        resolveLoading();
+      });
+
+      return transition.then(() => {
+        this.runTaskNext(() => this.assertText('ApplicationEnginePost'));
+      });
+    });
+  }
+
+  ['@test loading route works for the application route of an Engine'](assert) {
+    assert.expect(3);
+
+    let resolveLoading;
+
+    this.setupAppAndRoutableEngine();
+    this.additionalEngineRegistrations(function() {
+      this.register('template:loading', compile('Loading'));
+      this.register('template:post', compile('Post'));
+      this.register('route:post', Route.extend({
+        model() {
+          return new RSVP.Promise((resolve) => {
+            resolveLoading = resolve;
+          });
+        }
+      }));
+    });
+
+    return this.visit('/').then(() => {
+      this.assertText('Application');
+      let transition = this.transitionTo('blog.post');
+
+      this.runTaskNext(() => {
+        this.assertText('ApplicationEngineLoading');
+        resolveLoading();
+      });
+
+      return transition.then(() => {
+        this.runTaskNext(() => this.assertText('ApplicationEnginePost'));
+      });
+    });
+  }
+
+  ['@test loading substate route works for a child route of an Engine'](assert) {
+    assert.expect(3);
+
+    let resolveLoading;
+
+    this.setupAppAndRoutableEngine();
+    this.application.__registry__.resolver.moduleBasedResolver = true;
+    this.additionalEngineRegistrations(function() {
+      this.register('template:post', compile('{{outlet}}'));
+      this.register('template:post.comments', compile('Comments'));
+      this.register('template:post.likes_loading', compile('Loading'));
+      this.register('template:post.likes', compile('Likes'));
+      this.register('route:post.likes', Route.extend({
+        model() {
+          return new RSVP.Promise((resolve) => {
+            resolveLoading = resolve;
+          });
+        }
+      }));
+    });
+
+    return this.visit('/blog/post/comments').then(() => {
+      this.assertText('ApplicationEngineComments');
+      let transition = this.transitionTo('blog.post.likes');
+
+      this.runTaskNext(() => {
+        this.assertText('ApplicationEngineLoading');
+        resolveLoading();
+      });
+
+      return transition.then(() => {
+        this.runTaskNext(() => this.assertText('ApplicationEngineLikes'));
+      });
+    });
+  }
+
+  ['@test loading route works for a child route of an Engine'](assert) {
+    assert.expect(3);
+
+    let resolveLoading;
+
+    this.setupAppAndRoutableEngine();
+    this.additionalEngineRegistrations(function() {
+      this.register('template:post', compile('{{outlet}}'));
+      this.register('template:post.comments', compile('Comments'));
+      this.register('template:post.loading', compile('Loading'));
+      this.register('template:post.likes', compile('Likes'));
+      this.register('route:post.likes', Route.extend({
+        model() {
+          return new RSVP.Promise((resolve) => {
+            resolveLoading = resolve;
+          });
+        }
+      }));
+    });
+
+    return this.visit('/blog/post/comments').then(() => {
+      this.assertText('ApplicationEngineComments');
+      let transition = this.transitionTo('blog.post.likes');
+
+      this.runTaskNext(() => {
+        this.assertText('ApplicationEngineLoading');
+        resolveLoading();
+      });
+
+      return transition.then(() => {
+        this.runTaskNext(() => this.assertText('ApplicationEngineLikes'));
+      });
     });
   }
 });
