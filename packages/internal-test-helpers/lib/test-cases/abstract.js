@@ -39,6 +39,10 @@ export default class AbstractTestCase {
     run(callback);
   }
 
+  runTaskNext(callback) {
+    run.next(callback);
+  }
+
   // The following methods require `this.element` to work
 
   get firstChild() {
