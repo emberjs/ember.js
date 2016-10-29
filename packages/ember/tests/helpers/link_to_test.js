@@ -1252,15 +1252,23 @@ QUnit.test('the {{link-to}} helper does not call preventDefault if `preventDefau
 QUnit.test('the {{link-to}} helper does not throw an error if its route has exited', function() {
   expect(0);
 
-  setTemplate('application', compile("{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'post' defaultPost id='default-post-link'}}Default Post{{/link-to}}{{#if currentPost}}{{#link-to 'post' id='post-link'}}Post{{/link-to}}{{/if}}"));
+  setTemplate('application', compile("{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'post' defaultPost id='default-post-link'}}Default Post{{/link-to}}{{#if currentPost}}{{#link-to 'post' currentPost id='current-post-link'}}Current Post{{/link-to}}{{/if}}"));
 
   App.ApplicationController = Controller.extend({
+    defaultPost: { id: 1 },
     postController: inject.controller('post'),
     currentPost: alias('postController.model')
   });
 
-  App.PostController = Controller.extend({
-    model: { id: 1 }
+  App.PostController = Controller.extend();
+
+  App.PostRoute = Route.extend({
+    model: function() {
+      return { id: 2 };
+    },
+    serialize: function(model) {
+      return { post_id: model.id };
+    }
   });
 
   Router.map(function() {
@@ -1272,6 +1280,8 @@ QUnit.test('the {{link-to}} helper does not throw an error if its route has exit
   run(router, 'handleURL', '/');
 
   run(() => jQuery('#default-post-link', '#qunit-fixture').click());
+  run(() => jQuery('#home-link', '#qunit-fixture').click());
+  run(() => jQuery('#current-post-link', '#qunit-fixture').click());
   run(() => jQuery('#home-link', '#qunit-fixture').click());
 });
 
