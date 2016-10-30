@@ -12,18 +12,20 @@ import { pendingRequests } from '../test/pending_requests';
   any async operations from other helpers (or your assertions) have been processed.
 
   This is most often used as the return value for the helper functions (see 'click',
-  'fillIn','visit',etc).
+  'fillIn','visit',etc). However, there is a method to register a test helper which
+  utilizes this method without the need to actually call `wait()` in your helpers.
+
+  The `wait` helper is built into `registerAsyncHelper` by default. You will not need
+  to `return app.testHelpers.wait();` - the wait behavior is provided for you.
 
   Example:
 
   ```javascript
   Ember.Test.registerAsyncHelper('loginUser', function(app, username, password) {
     visit('secured/path/here')
-    .fillIn('#username', username)
-    .fillIn('#password', password)
-    .click('.submit')
-
-    return app.testHelpers.wait();
+      .fillIn('#username', username)
+      .fillIn('#password', password)
+      .click('.submit');
   });
 
   @method wait
