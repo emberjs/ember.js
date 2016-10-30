@@ -14,6 +14,17 @@ QUnit.test('scheduling item in queue should defer until finished', function() {
   equal(cnt, 2, 'should flush actions now');
 });
 
+QUnit.test('a scheduled item can be canceled', function(assert) {
+  let hasRan = false;
+
+  run(() => {
+    let cancelId = run.schedule('actions', () => hasRan = true);
+    run.cancel(cancelId);
+  });
+
+  assert.notOk(hasRan, 'should not have ran callback run');
+});
+
 QUnit.test('nested runs should queue each phase independently', function() {
   let cnt = 0;
 
