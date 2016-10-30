@@ -262,7 +262,7 @@ run.end = function() {
     will be resolved on the target object at the time the scheduled item is
     invoked allowing you to change the target function.
   @param {Object} [arguments*] Optional arguments to be passed to the queued method.
-  @return {void}
+  @return {*} Timer information for use in cancelling, see `run.cancel`.
   @public
 */
 run.schedule = function(/* queue, target, method */) {
@@ -271,7 +271,8 @@ run.schedule = function(/* queue, target, method */) {
     `You will need to wrap any code with asynchronous side-effects in a run`,
     run.currentRunLoop || !isTesting()
   );
-  backburner.schedule(...arguments);
+
+  return backburner.schedule(...arguments);
 };
 
 // Used by global test teardown
