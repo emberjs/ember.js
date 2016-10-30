@@ -1850,6 +1850,10 @@ QUnit.test('Parent route context change', function() {
       return { id: params.postId };
     },
 
+    serialize(model) {
+      return { postId: model.id };
+    },
+
     actions: {
       editPost(context) {
         this.transitionTo('post.edit');
