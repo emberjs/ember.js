@@ -1,14 +1,14 @@
 {
   "features": {
-    "features-stripped-test": null,
-    "ember-libraries-isregistered": null,
+    "features-stripped-test": false,
+    "ember-libraries-isregistered": false,
     "ember-runtime-computed-uniq-by": true,
-    "ember-improved-instrumentation": null,
+    "ember-improved-instrumentation": false,
     "ember-runtime-enumerable-includes": true,
     "ember-string-ishtmlsafe": true,
     "ember-testing-check-waiters": true,
-    "ember-metal-weakmap": null,
-    "ember-glimmer-allow-backtracking-rerender": null,
-    "ember-testing-resume-test": null
+    "ember-metal-weakmap": false,
+    "ember-glimmer-allow-backtracking-rerender": false,
+    "ember-testing-resume-test": false
   }
 }
