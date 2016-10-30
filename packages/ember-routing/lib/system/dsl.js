@@ -166,6 +166,7 @@ DSL.prototype.mount = function(_name, _options) {
   }
 
   let callback;
+  let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
   if (engineRouteMap) {
     let shouldResetEngineInfo = false;
     let oldEngineInfo = this.options.engineInfo;
@@ -177,6 +178,9 @@ DSL.prototype.mount = function(_name, _options) {
     let optionsForChild = assign({ engineInfo }, this.options);
     let childDSL = new DSL(fullName, optionsForChild);
 
+    createRoute(childDSL, 'loading');
+    createRoute(childDSL, 'error', { path: dummyErrorRoute });
+
     engineRouteMap.call(childDSL);
 
     callback = childDSL.generate();
@@ -186,14 +190,24 @@ DSL.prototype.mount = function(_name, _options) {
     }
   }
 
-  if (this.enableLoadingSubstates) {
-    let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
-    createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
-    createRoute(this, `${name}_error`, { resetNamespace: options.resetNamespace, path: dummyErrorRoute });
-  }
-
   let localFullName = 'application';
   let routeInfo = assign({ localFullName }, engineInfo);
+
+  if (this.enableLoadingSubstates) {
+    // These values are important to register the loading routes under their
+    // proper names for the Router and within the Engine's registry.
+    let substateName = `${name}_loading`;
+    let localFullName = `application_loading`;
+    let routeInfo = assign({ localFullName }, engineInfo);
+    createRoute(this, substateName, { resetNamespace: options.resetNamespace });
+    this.options.addRouteForEngine(substateName, routeInfo);
+
+    substateName = `${name}_error`;
+    localFullName = `application_error`;
+    routeInfo = assign({ localFullName }, engineInfo);
+    createRoute(this, substateName, { resetNamespace: options.resetNamespace, path: dummyErrorRoute });
+    this.options.addRouteForEngine(substateName, routeInfo);
+  }
 
   this.options.addRouteForEngine(fullName, routeInfo);
 

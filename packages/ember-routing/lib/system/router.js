@@ -1036,35 +1036,39 @@ const EmberRouter = EmberObject.extend(Evented, {
 });
 
 /*
-  Helper function for iterating root-ward, starting
-  from (but not including) the provided `originRoute`.
+  Helper function for iterating over routes in a set of handlerInfos that are
+  at or above the given origin route. Example: if `originRoute` === 'foo.bar'
+  and the handlerInfos given were for 'foo.bar.baz', then the given callback
+  will be invoked with the routes for 'foo.bar', 'foo', and 'application'
+  individually.
 
-  Returns true if the last callback fired requested
-  to bubble upward.
+  If the callback returns anything other than `true`, then iteration will stop.
 
   @private
+  @param {Route} originRoute
+  @param {Array<HandlerInfo>} handlerInfos
+  @param {Function} callback
+  @return {Void}
  */
-function forEachRouteAbove(originRoute, transition, callback) {
-  let handlerInfos = transition.state.handlerInfos;
+function forEachRouteAbove(originRoute, handlerInfos, callback) {
   let originRouteFound = false;
-  let handlerInfo, route;
 
   for (let i = handlerInfos.length - 1; i >= 0; --i) {
-    handlerInfo = handlerInfos[i];
-    route = handlerInfo.handler;
+    let handlerInfo = handlerInfos[i];
+    let route = handlerInfo.handler;
+
+    if (originRoute === route) {
+      originRouteFound = true;
+    }
 
     if (!originRouteFound) {
-      if (originRoute === route) {
-        originRouteFound = true;
-      }
       continue;
     }
 
-    if (callback(route, handlerInfos[i + 1].handler) !== true) {
-      return false;
+    if (callback(route) !== true) {
+      return;
     }
   }
-  return true;
 }
 
 // These get invoked when an action bubbles above ApplicationRoute
@@ -1075,55 +1079,63 @@ let defaultActionHandlers = {
     originRoute.router._scheduleLoadingEvent(transition, originRoute);
   },
 
+  // Attempt to find an appropriate error route or substate to enter.
   error(error, transition, originRoute) {
-    // Attempt to find an appropriate error substate to enter.
+    let handlerInfos = transition.state.handlerInfos;
     let router = originRoute.router;
 
-    let tryTopLevel = forEachRouteAbove(originRoute, transition, function(route, childRoute) {
-      let childErrorRouteName = findChildRouteName(route, childRoute, 'error');
-      if (childErrorRouteName) {
-        router.intermediateTransitionTo(childErrorRouteName, error);
-        return;
+    forEachRouteAbove(originRoute, handlerInfos, function(route) {
+      // Check for the existence of an 'error' route.
+      // We don't check for an 'error' route on the originRoute, since that would
+      // technically be below where we're at in the route hierarchy.
+      if (originRoute !== route) {
+        let errorRouteName = findRouteStateName(route, 'error');
+        if (errorRouteName) {
+          router.intermediateTransitionTo(errorRouteName, error);
+          return false;
+        }
       }
+
+      // Check for an 'error' substate route
+      let errorSubstateName = findRouteSubstateName(route, 'error');
+      if (errorSubstateName) {
+        router.intermediateTransitionTo(errorSubstateName, error);
+        return false;
+      }
+
       return true;
     });
-
-    if (tryTopLevel) {
-      // Check for top-level error state to enter.
-      if (routeHasBeenDefined(originRoute.router, 'application_error')) {
-        router.intermediateTransitionTo('application_error', error);
-        return;
-      }
-    }
 
     logError(error, 'Error while processing route: ' + transition.targetName);
   },
 
+  // Attempt to find an appropriate loading route or substate to enter.
   loading(transition, originRoute) {
-    // Attempt to find an appropriate loading substate to enter.
+    let handlerInfos = transition.state.handlerInfos;
     let router = originRoute.router;
 
-    let tryTopLevel = forEachRouteAbove(originRoute, transition, function(route, childRoute) {
-      let childLoadingRouteName = findChildRouteName(route, childRoute, 'loading');
+    forEachRouteAbove(originRoute, handlerInfos, function(route) {
+      // Check for the existence of a 'loading' route.
+      // We don't check for a 'loading' route on the originRoute, since that would
+      // technically be below where we're at in the route hierarchy.
+      if (originRoute !== route) {
+        let loadingRouteName = findRouteStateName(route, 'loading');
+        if (loadingRouteName) {
+          router.intermediateTransitionTo(loadingRouteName);
+          return false;
+        }
+      }
 
-      if (childLoadingRouteName) {
-        router.intermediateTransitionTo(childLoadingRouteName);
-        return;
+      // Check for loading substate
+      let loadingSubstateName = findRouteSubstateName(route, 'loading');
+      if (loadingSubstateName) {
+        router.intermediateTransitionTo(loadingSubstateName);
+        return false;
       }
 
       // Don't bubble above pivot route.
-      if (transition.pivotHandler !== route) {
-        return true;
-      }
+      return transition.pivotHandler !== route;
     });
-
-    if (tryTopLevel) {
-      // Check for top-level loading state to enter.
-      if (routeHasBeenDefined(originRoute.router, 'application_loading')) {
-        router.intermediateTransitionTo('application_loading');
-        return;
-      }
-    }
   }
 };
 
@@ -1148,45 +1160,70 @@ function logError(_error, initialMessage) {
   Logger.error.apply(this, errorArgs);
 }
 
-function findChildRouteName(parentRoute, originatingChildRoute, name) {
-  let router = parentRoute.router;
-  let childName;
-  let originatingChildRouteName = originatingChildRoute.routeName;
+/**
+  Finds the name of the substate route if it exists for the given route. A
+  substate route is of the form `route_state`, such as `foo_loading`.
 
-  // The only time the originatingChildRoute's name should be 'application'
-  // is if we're entering an engine
-  if (originatingChildRouteName === 'application') {
-    originatingChildRouteName = getOwner(originatingChildRoute).mountPoint;
-  }
+  @private
+  @param {Route} route
+  @param {String} state
+  @return {String}
+*/
+function findRouteSubstateName(route, state) {
+  let router = route.router;
+  let owner = getOwner(route);
 
-  // First, try a named loading state of the route, e.g. 'foo_loading'
-  childName = originatingChildRouteName + '_' + name;
-  if (routeHasBeenDefined(router, childName)) {
-    return childName;
-  }
+  let routeName = route.routeName;
+  let substateName = routeName + '_' + state;
 
-  // Second, try general loading state of the parent, e.g. 'loading'
-  let originatingChildRouteParts = originatingChildRouteName.split('.').slice(0, -1);
-  let namespace;
+  let routeNameFull = route.fullRouteName;
+  let substateNameFull = routeNameFull + '_' + state;
 
-  // If there is a namespace on the route, then we use that, otherwise we use
-  // the parent route as the namespace.
-  if (originatingChildRouteParts.length) {
-    namespace = originatingChildRouteParts.join('.') + '.';
-  } else {
-    namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
-  }
-
-  childName = namespace + name;
-  if (routeHasBeenDefined(router, childName)) {
-    return childName;
-  }
+  return routeHasBeenDefined(owner, router, substateName, substateNameFull) ?
+    substateNameFull :
+    '';
 }
 
-function routeHasBeenDefined(router, name) {
-  let owner = getOwner(router);
-  return router.hasRoute(name) &&
-         (owner.hasRegistration(`template:${name}`) || owner.hasRegistration(`route:${name}`));
+/**
+  Finds the name of the state route if it exists for the given route. A state
+  route is of the form `route.state`, such as `foo.loading`. Properly Handles
+  `application` named routes.
+
+  @private
+  @param {Route} route
+  @param {String} state
+  @return {String}
+*/
+function findRouteStateName(route, state) {
+  let router = route.router;
+  let owner = getOwner(route);
+
+  let routeName = route.routeName;
+  let stateName = routeName === 'application' ? state : routeName + '.' + state;
+
+  let routeNameFull = route.fullRouteName;
+  let stateNameFull = routeNameFull === 'application' ? state : routeNameFull + '.' + state;
+
+  return routeHasBeenDefined(owner, router, stateName, stateNameFull) ?
+    stateNameFull :
+    '';
+}
+
+/**
+  Determines whether or not a route has been defined by checking that the route
+  is in the Router's map and the owner has a registration for that route.
+
+  @private
+  @param {Owner} owner
+  @param {Ember.Router} router
+  @param {String} localName
+  @param {String} fullName
+  @return {Boolean}
+*/
+function routeHasBeenDefined(owner, router, localName, fullName) {
+  let routerHasRoute = router.hasRoute(fullName);
+  let ownerHasRoute = owner.hasRegistration(`template:${localName}`) || owner.hasRegistration(`route:${localName}`);
+  return routerHasRoute && ownerHasRoute;
 }
 
 export function triggerEvent(handlerInfos, ignoreFailure, args) {
