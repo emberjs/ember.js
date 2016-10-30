@@ -313,7 +313,8 @@ import {
   deprecate,
   get,
   computed,
-  flaggedInstrument
+  flaggedInstrument,
+  runInDebug
 } from 'ember-metal';
 import {
   deprecatingAlias,
@@ -711,6 +712,26 @@ const LinkComponent = EmberComponent.extend({
 
     let routing = get(this, '_routing');
     let queryParams = get(this, 'queryParams.values');
+
+    runInDebug(() => {
+      /*
+       * Unfortunately, to get decent error messages, we need to do this.
+       * In some future state we should be able to use a "feature flag"
+       * which allows us to strip this without needing to call it twice.
+       *
+       * if (isDebugBuild()) {
+       *   // Do the useful debug thing, probably including try/catch.
+       * } else {
+       *   // Do the performant thing.
+       * }
+       */
+      try {
+        routing.generateURL(qualifiedRouteName, models, queryParams);
+      } catch (e) {
+        assert('You attempted to define a `{{link-to "' + qualifiedRouteName + '"}}` but did not pass the parameters required for generating its dynamic segments. ' + e.message);
+      }
+    });
+
     return routing.generateURL(qualifiedRouteName, models, queryParams);
   }),
 

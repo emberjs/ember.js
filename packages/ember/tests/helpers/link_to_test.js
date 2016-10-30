@@ -1249,6 +1249,20 @@ QUnit.test('the {{link-to}} helper does not call preventDefault if `preventDefau
   equal(event.isDefaultPrevented(), false, 'should not preventDefault');
 });
 
+QUnit.test('the {{link-to}} helper throws a useful error if you invoke it wrong', function() {
+  expect(1);
+
+  setTemplate('application', compile("{{#link-to 'post'}}Post{{/link-to}}"));
+
+  Router.map(function() {
+    this.route('post', { path: 'post/:post_id' });
+  });
+
+  QUnit.throws(function() {
+    bootApplication();
+  }, /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/);
+});
+
 QUnit.test('the {{link-to}} helper does not throw an error if its route has exited', function() {
   expect(0);
 
