@@ -62,29 +62,23 @@ function backburner() {
       format: 'amd',
       moduleId: 'backburner',
       exports: 'named'
-    }
+    },
+    annotation: 'backburner.js'
   });
 }
 
 function rsvp() {
-  // TODO upstream
-  var version = require('./bower_components/rsvp/package').version;
-  var banner = fs.readFileSync(
-    path.resolve(__dirname, 'bower_components/rsvp/config/versionTemplate.txt'),
-    'utf8');
-  var rollup = new Rollup('bower_components/rsvp/lib', {
+  var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
+  var lib = path.resolve(path.dirname(require.resolve('rsvp')), '../lib');
+  var rollup = new Rollup(lib, {
     rollup: {
       entry: 'rsvp.js',
-      plugins: [ rollupEnifed ],
-      banner: banner.replace('VERSION_PLACEHOLDER_STRING', version),
       dest: 'rsvp.js',
-      format: 'amd',
-      exports: 'named',
-      moduleId: 'rsvp'
+      format: 'es'
     },
     annotation: 'rsvp.js'
   });
-  return rollup;
+  return transpileES6(rollup);
 }
 
 function routeRecognizer() {
@@ -100,7 +94,8 @@ function routeRecognizer() {
       format: 'amd',
       moduleId: 'route-recognizer',
       exports: 'named'
-    }
+    },
+    annotation: 'route-recognizer.js'
   });
 }
 
