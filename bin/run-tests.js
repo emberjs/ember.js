@@ -32,7 +32,7 @@ function run(queryString) {
 }
 
 function runInPhantom(url, retries, resolve, reject) {
-  var args = ['bower_components/qunit-phantom-runner/runner.js', url];
+  var args = [require.resolve('qunit-phantomjs-runner'), url, '900'];
 
   console.log('Running: phantomjs ' + args.join(' '));
 
