@@ -1,6 +1,6 @@
 /* jshint node: true */
 'use strict';
-var stew = require('broccoli-stew');
+var stews = require('broccoli-stew');
 
 var paths = {};
 var absolutePaths = {};
@@ -32,7 +32,7 @@ module.exports = {
   paths: paths,
   absolutePaths: absolutePaths,
   treeForVendor: function() {
-    var ember = stew.find(__dirname + '/dist', {
+    var ember = stews.find(__dirname + '/dist', {
       destDir: 'ember',
       files: [
         'ember-runtime.js',
@@ -45,12 +45,12 @@ module.exports = {
       ]
     });
 
-    var shims = stew.find(__dirname + '/vendor/ember', {
+    var shims = stews.find(__dirname + '/vendor/ember', {
       destDir: 'ember',
       files: [ 'shims.js' ]
     });
 
-    return stew.find([
+    return stews.find([
       ember,
       shims
     ]);
