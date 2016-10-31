@@ -37,7 +37,6 @@
 // begin MISC setup;
 const global = new Function('return this;')();
 global.self = global;
-global.window = {};
 function loadFile(file) {
   print('load: ' + file);
   load(file);
@@ -54,17 +53,18 @@ global.setTimeout = function(callback) {
   Promise.resolve().then(callback).catch(e => print('error' + e));
 };
 loadFile('./node_modules/simple-dom/dist/simple-dom.js');
-const document = new SimpleDOM.Document();
-document.createElementNS = document.createElement; // TODO:wat
-global.document = document;
-SimpleDOM.Node.prototype.insertAdjacentHTML = function( ) {};
+
+// url protocol
+global.URL = {};
 
 // end MISC setup
 
 // Load the ember you want
-loadFile('./dist/ember.js'); // prod build === no asserts and dev related code
+loadFile('./dist/ember.prod.js'); // prod build === no asserts and dev related code
 // loadFile('/dist/ember.min.js'); // prod build + minified
 // loadFile('/dist/ember.debug.js'); // debug build === asserts and stuff, has perf issues
 
+
 // do what you want
-console.log(Ember);
+
+// try running `d8 d8-runner.js d8-app.js`
