@@ -4728,6 +4728,10 @@ qunit-extras@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/qunit-extras/-/qunit-extras-1.5.0.tgz#a64d1c5088ab20c01c0e1b04c72132c397b3964c"
 
+qunit-phantomjs-runner:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/qunit-phantomjs-runner/-/qunit-phantomjs-runner-2.2.0.tgz#557a0f55d7d83c315312d1b7048ed972ffea4549"
+
 qunit@^0.7.2:
   version "0.7.7"
   resolved "https://registry.yarnpkg.com/qunit/-/qunit-0.7.7.tgz#f0006f60b31a91c41e58aba92147576879b425bd"
