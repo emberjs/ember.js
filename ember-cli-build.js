@@ -274,6 +274,20 @@ module.exports = function() {
     version: version
   });
 
+  var origMinify = emberBuild._minifySourceTree;
+
+  emberBuild._minifySourceTree = function (input, options) {
+    console.log('_minifySourceTree', arguments);
+    if (options.compress === true) {
+      options.compress = {
+        // disable these have performance issues
+        negate_iife: false,
+        sequences: false
+      };
+    }
+    return origMinify(input, options);
+  };
+
   return emberBuild.getDistTrees();
 };
 
