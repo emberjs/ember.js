@@ -7,7 +7,7 @@
   "dependencies": {
     "jquery": ">=1.11.1 <4.0.0",
     "qunit": "^1.20.0",
-    "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#1.2.0"
+    "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#2.2.0"
   },
   "devDependencies": {
     "rsvp": "https://github.com/tildeio/rsvp.js.git#v3.2.1",
