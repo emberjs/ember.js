@@ -18,9 +18,11 @@ var filterImports = require('babel-plugin-filter-imports');
 var vendoredPackage    = require('emberjs-build/lib/vendored-package');
 var htmlbarsPackage    = require('emberjs-build/lib/htmlbars-package');
 var vendoredES6Package = require('emberjs-build/lib/es6-vendored-package');
+var replaceVersion = require('emberjs-build/lib/utils/replace-version');
 
 var Funnel = require('broccoli-funnel');
 var Rollup = require('broccoli-rollup');
+var mergeTrees = require('broccoli-merge-trees');
 
 var rollupEnifed = {
   transformBundle(code, options) {
@@ -74,7 +76,8 @@ function rsvp() {
     rollup: {
       entry: 'rsvp.js',
       dest: 'rsvp.js',
-      format: 'es'
+      format: 'es',
+      exports: 'named'
     },
     annotation: 'rsvp.js'
   });
@@ -233,6 +236,26 @@ function getVersion() {
   return prefix + '+' + sha.slice(0, 8);
 }
 
+// non bundled vendor
+function jquery() {
+  let jquery = require.resolve('jquery');
+  return new Funnel(path.dirname(jquery), {
+    files: ['jquery.js'],
+    destDir: 'jquery',
+    annotation: 'jquery/jquery.js'
+  });
+}
+
+// TEST files
+function qunit() {
+  var qunitjs = require.resolve('qunitjs');
+  return new Funnel(path.dirname(qunitjs), {
+    files: ['qunit.js', 'qunit.css'],
+    destDir: 'qunit',
+    annotation: 'qunit/qunit.{js|css}'
+  });
+}
+
 module.exports = function() {
   var features = getFeatures();
   var version = getVersion();
@@ -257,6 +280,19 @@ module.exports = function() {
     'glimmer-util':         glimmerPackage('glimmer-util'),
     'glimmer-wire-format':  glimmerPackage('glimmer-wire-format'),
     'handlebars':           glimmerPackage('handlebars') // inlined parser
+  };
+
+  // Replace _getBowerTree with one from npm
+  EmberBuild.prototype._getBowerTree = function getBowerTree() {
+    return mergeTrees([
+      qunit(),
+      jquery(),
+      replaceVersion(new Funnel('config/package_manager_files', {
+        destDir: '/'
+      }), {
+        version: version
+      })
+    ]);
   };
 
   var emberBuild = new EmberBuild({
