@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### 2.8.3 (November 1, 2016)
+
+- [#14528](https://github.com/emberjs/ember.js/pull/14528) [BUGFIX] Fix memory leak (leaking component instances in the component registry).
+- [#14509](https://github.com/emberjs/ember.js/pull/14509) [BUGFIX] Fix overwriting rest positional parameters when passed as named parameters. Allows `link-to` to be used as a contextual component.
+- [#14550](https://github.com/emberjs/ember.js/pull/14550) [BUGFIX lts-2-8] Allow canceling items queued by `run.schedule`.
+
+
 ### 2.8.2 (October 6, 2016)
 
 - [#14365](https://github.com/emberjs/ember.js/pull/14365) [BUGFIX] Fix an issue with URLs with encoded characters and a trailing slash.
