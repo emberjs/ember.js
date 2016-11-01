@@ -12,6 +12,9 @@ import {
 let handleMandatorySetter;
 
 export function watchKey(obj, keyName, meta) {
+  if (typeof obj !== 'object' || obj === null) {
+    return;
+  }
   let m = meta || metaFor(obj);
 
   // activate watching first time
@@ -86,6 +89,9 @@ if (isEnabled('mandatory-setter')) {
 import { UNDEFINED } from './meta';
 
 export function unwatchKey(obj, keyName, _meta) {
+  if (typeof obj !== 'object' || obj === null) {
+    return;
+  }
   let meta = _meta || metaFor(obj);
 
   // do nothing of this object has already been destroyed

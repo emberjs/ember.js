@@ -42,6 +42,9 @@ function watch(obj, _keyPath, m) {
 export { watch };
 
 export function isWatching(obj, key) {
+  if (typeof obj !== 'object' || obj === null) {
+    return false;
+  }
   let meta = peekMeta(obj);
   return (meta && meta.peekWatching(key)) > 0;
 }
