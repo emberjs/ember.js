@@ -40,3 +40,9 @@ test('can access _Ember.FEATURES (private API used by ember-cli-htmlbars)', func
 test('can access _Ember.VERSION (private API used by ember-cli-htmlbars)', function(assert) {
   assert.equal(typeof templateCompiler._Ember.VERSION, 'string', '_Ember.VERSION is present');
 });
+
+test('can generate a template with a server side generated `id`', function(assert) {
+  var TemplateJSON = JSON.parse(templateCompiler.precompile('<div>simple text</div>'));
+
+  assert.ok(TemplateJSON.id, 'an `id` was generated');
+});
