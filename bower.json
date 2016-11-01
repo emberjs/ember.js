@@ -5,7 +5,6 @@
     "url": "https://github.com/emberjs/ember.js.git"
   },
   "devDependencies": {
-    "ember-dev": "https://github.com/emberjs/ember-dev.git#eace5340485bdb5e4223ab67fecf4aff31c1940c",
-    "router.js": "https://github.com/tildeio/router.js.git#9172bc81a46d6620df6023bc2b51d12fdd40e36f"
+    "ember-dev": "https://github.com/emberjs/ember-dev.git#eace5340485bdb5e4223ab67fecf4aff31c1940c"
   }
 }
