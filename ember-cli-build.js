@@ -108,20 +108,7 @@ function router() {
   // TODO upstream this to router.js and publish on npm
   return new Rollup('bower_components/router.js/lib', {
     rollup: {
-      plugins: [rollupEnifed, {
-        transform(code, id) {
-          if (/[^t][^e][^r]\/router\.js$/.test(id)) {
-            code += 'export { Transition } from \'./router/transition\';\n'
-          } else if (/\/router\/handler-info\/[^\/]+\.js$/.test(id)) {
-            code = code.replace(/\'router\//g, '\'../');
-          }
-          code = code.replace(/import\ Promise\ from \'rsvp\/promise\'/g, 'import { Promise } from \'rsvp\'')
-          return {
-            code: code,
-            map: { mappings: '' }
-          };
-        }
-      }],
+      plugins: [rollupEnifed],
       external: ['route-recognizer', 'rsvp'],
       entry: 'router.js',
       dest: 'router.js',
