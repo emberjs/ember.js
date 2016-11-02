@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### 2.10.0-beta.3 (November 2, 2016)
+
+- [#14537](https://github.com/emberjs/ember.js/pull/14537) [BUGFIX] Improve behavior for QPs with undefined values
+- [#14545](https://github.com/emberjs/ember.js/pull/14545) [BUGFIX] Refactor loading/error substates. Fixes a number of issues with substate usage with ember-engines.
+- [#14571](https://github.com/emberjs/ember.js/pull/14571) [BUGFIX] Prevent errors in watching infrastructure for non-object paths.
+- [tildeio/router.js#197](https://github.com/tildeio/router.js/pull/197) [BUGFIX] Fix redirects performed during the routers validation stages. Properly handles `replaceWith` / `transitionTo` for initial and subsequent transitions.
+
 ### 2.10.0-beta.2 (October 26, 2016)
 
 - [#14499](https://github.com/emberjs/ember.js/pull/14499) [BUGFIX] Fix "Invalid value used as weak map key" error in old versions of Node.js.
