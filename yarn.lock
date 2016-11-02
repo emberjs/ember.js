@@ -5136,6 +5136,10 @@ route-recognizer@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.2.8.tgz#931e2629b09f351ac8e577aea03ad0151781e625"
 
+router_js:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/router_js/-/router_js-1.2.4.tgz#1fc43a3e406334fc244c136c9c2e7198b2bd2ef5"
+
 rsvp, rsvp@^3.0.14, rsvp@^3.0.16, rsvp@^3.0.17, rsvp@^3.0.18, rsvp@^3.0.21, rsvp@^3.0.6, rsvp@^3.1.0, rsvp@^3.2.1:
   version "3.3.3"
   resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-3.3.3.tgz#34633caaf8bc66ceff4be3c2e1dffd032538a813"

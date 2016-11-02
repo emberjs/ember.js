@@ -5,20 +5,20 @@
 //
 // DISABLE_ES3=true DISABLE_JSCS=true DISABLE_JSHINT=true DISABLE_MIN=true DISABLE_DEREQUIRE=true ember serve --environment=production
 
-var fs = require('fs');
+var fs   = require('fs');
 var path = require('path');
 
-var EmberBuild = require('emberjs-build');
-var getPackages   = require('./lib/packages');
-var getGitInfo = require('git-repo-info');
+var EmberBuild  = require('emberjs-build');
+var getPackages = require('./lib/packages');
+var getGitInfo  = require('git-repo-info');
 
 var applyFeatureFlags = require('babel-plugin-feature-flags');
-var filterImports = require('babel-plugin-filter-imports');
+var filterImports     = require('babel-plugin-filter-imports');
 
 var vendoredPackage    = require('emberjs-build/lib/vendored-package');
 var htmlbarsPackage    = require('emberjs-build/lib/htmlbars-package');
 var vendoredES6Package = require('emberjs-build/lib/es6-vendored-package');
-var replaceVersion = require('emberjs-build/lib/utils/replace-version');
+var replaceVersion     = require('emberjs-build/lib/utils/replace-version');
 
 var Funnel = require('broccoli-funnel');
 var Rollup = require('broccoli-rollup');
@@ -103,23 +103,9 @@ function routeRecognizer() {
 }
 
 function router() {
-  // TODO upstream this to router.js and publish on npm
-  return new Rollup('bower_components/router.js/lib', {
+  return new Rollup(path.resolve(path.dirname(require.resolve('router_js')), '../lib'), {
     rollup: {
-      plugins: [rollupEnifed, {
-        transform(code, id) {
-          if (/[^t][^e][^r]\/router\.js$/.test(id)) {
-            code += 'export { Transition } from \'./router/transition\';\n'
-          } else if (/\/router\/handler-info\/[^\/]+\.js$/.test(id)) {
-            code = code.replace(/\'router\//g, '\'../');
-          }
-          code = code.replace(/import\ Promise\ from \'rsvp\/promise\'/g, 'import { Promise } from \'rsvp\'')
-          return {
-            code: code,
-            map: { mappings: '' }
-          };
-        }
-      }],
+      plugins: [rollupEnifed],
       external: ['route-recognizer', 'rsvp'],
       entry: 'router.js',
       dest: 'router.js',
