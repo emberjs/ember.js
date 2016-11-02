@@ -166,7 +166,7 @@ function ChainNode(parent, key, value) {
 }
 
 function lazyGet(obj, key) {
-  if (!obj) {
+  if (!isObject(obj)) {
     return;
   }
 
