@@ -41,6 +41,27 @@ export default function expandProperties(pattern, callback) {
     'Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"',
     pattern.indexOf(' ') === -1
   );
+  assert(
+    `Brace expanded properties have to be balanced and cannot be nested, pattern: ${pattern}`,
+    ((str) => {
+      let inBrace = 0;
+      let char;
+      for (let i = 0; i < str.length; i++) {
+        char = str.charAt(i);
+
+        if (char === '{') {
+          inBrace++;
+        } else if (char === '}') {
+          inBrace--;
+        }
+
+        if (inBrace > 1 || inBrace < 0) {
+          return false;
+        }
+      }
+
+      return true;
+    })(pattern));
 
   let parts = pattern.split(SPLIT_REGEX);
   let properties = [parts];
