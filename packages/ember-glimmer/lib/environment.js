@@ -1,5 +1,5 @@
 import { guidFor, OWNER } from 'ember-utils';
-import { Cache, assert, warn, runInDebug } from 'ember-metal';
+import { Cache, assert, warn, runInDebug, isFeatureEnabled } from 'ember-metal';
 import {
   lookupPartial,
   hasPartial,
@@ -74,9 +74,10 @@ export default class Environment extends GlimmerEnvironment {
     installPlatformSpecificProtocolForURL(this);
 
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
-      let { component: ComponentClass, layout } = lookupComponent(owner, name, { source });
-      if (ComponentClass || layout) {
-        return new CurlyComponentDefinition(name, ComponentClass, layout);
+      let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
+
+      if ((componentFactory && componentFactory.class) || layout) {
+        return new CurlyComponentDefinition(name, componentFactory, layout);
       }
     }, ({ name, source, owner }) => {
       let expandedName = source && owner._resolveLocalLookupName(name, source) || name;
@@ -312,15 +313,28 @@ export default class Environment extends GlimmerEnvironment {
     let owner = blockMeta.owner;
     let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
 
-    helper = owner.lookup(`helper:${name}`, options) || owner.lookup(`helper:${name}`);
+    if (isFeatureEnabled('container-factoryFor')) {
+      let helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
 
-    // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-    if (helper.isHelperInstance) {
-      return (vm, args) => SimpleHelperReference.create(helper.compute, args);
-    } else if (helper.isHelperFactory) {
-      return (vm, args) => ClassBasedHelperReference.create(helper, vm, args);
+      // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
+      if (helperFactory.class.isHelperInstance) {
+        return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
+      } else if (helperFactory.class.isHelperFactory) {
+        return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
+      } else {
+        throw new Error(`${nameParts} is not a helper`);
+      }
     } else {
-      throw new Error(`${nameParts} is not a helper`);
+      let helperFactory = owner.lookup(`helper:${name}`, options) || owner.lookup(`helper:${name}`);
+
+      // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
+      if (helperFactory.isHelperInstance) {
+        return (vm, args) => SimpleHelperReference.create(helperFactory.compute, args);
+      } else if (helperFactory.isHelperFactory) {
+        return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
+      } else {
+        throw new Error(`${nameParts} is not a helper`);
+      }
     }
   }
 

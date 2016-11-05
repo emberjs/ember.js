@@ -172,11 +172,12 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let controllerProto, combinedQueryParameterConfiguration;
 
     let controllerName = this.controllerName || this.routeName;
-    let definedControllerClass = getOwner(this)._lookupFactory(`controller:${controllerName}`);
+    let definedControllerClass = getOwner(this).factoryFor(`controller:${controllerName}`);
     let queryParameterConfiguraton = get(this, 'queryParams');
     let hasRouterDefinedQueryParams = !!Object.keys(queryParameterConfiguraton).length;
 
     if (definedControllerClass) {
+      definedControllerClass = definedControllerClass.class;
       // the developer has authored a controller class in their application for this route
       // access the prototype, find its query params and normalize their object shape
       // them merge in the query params for the route. As a mergedProperty, Route#queryParams is always
@@ -1631,16 +1632,15 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     return {
       find(name, value) {
-        let modelClass = owner._lookupFactory(`model:${name}`);
-
+        let modelClass = owner.factoryFor(`model:${name}`);
         assert(
           `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${StringUtils.classify(name)} did not exist and you did not override your route's \`model\` hook.`, !!modelClass);
 
         if (!modelClass) { return; }
 
-        assert(`${StringUtils.classify(name)} has no method \`find\`.`, typeof modelClass.find === 'function');
+        assert(`${StringUtils.classify(name)} has no method \`find\`.`, typeof modelClass.class.find === 'function');
 
-        return modelClass.find(value);
+        return modelClass.class.find(value);
       }
     };
   }),

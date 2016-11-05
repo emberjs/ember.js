@@ -9,6 +9,7 @@
     "ember-testing-check-waiters": true,
     "ember-metal-weakmap": null,
     "ember-glimmer-allow-backtracking-rerender": null,
-    "ember-testing-resume-test": null
+    "ember-testing-resume-test": null,
+    "container-factoryFor": null
   }
 }

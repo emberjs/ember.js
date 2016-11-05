@@ -1,8 +1,17 @@
-import { dictionary, symbol, setOwner, OWNER, NAME_KEY } from 'ember-utils';
+/* globals Proxy */
+import {
+  dictionary,
+  symbol,
+  setOwner,
+  OWNER,
+  assign,
+  NAME_KEY
+} from 'ember-utils';
 import { ENV } from 'ember-environment';
-import { assert, deprecate, runInDebug } from 'ember-metal';
+import { assert, deprecate, runInDebug, isFeatureEnabled } from 'ember-metal';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
+const HAS_PROXY = typeof Proxy === 'function';
 
 /**
  A container used to instantiate and cache objects.
@@ -127,7 +136,96 @@ Container.prototype = {
    */
   lookupFactory(fullName, options) {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
-    return factoryFor(this, this.registry.normalize(fullName), options);
+
+    if (isFeatureEnabled('container-factoryFor')) {
+      deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.', false, { id: 'container-lookupFactory', until: '2.13.0', url: 'TODO' });
+    }
+
+    return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
+  },
+
+  factoryFor(fullName, options = {}) {
+    let container = this;
+    let manager;
+    if (isFeatureEnabled('container-factoryFor')) {
+      let normalizedName = this.registry.normalize(fullName);
+      assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
+
+      if (options.source) {
+        normalizedName = this.registry.expandLocalLookup(fullName, options);
+        // if expandLocalLookup returns falsey, we do not support local lookup
+        if (!normalizedName) { return; }
+      }
+
+      let factory = this.registry.resolve(normalizedName);
+
+      if (factory === undefined) { return; }
+
+      manager = {
+        class: factory,
+        create(options = {}) {
+          let injections = injectionsFor(container, normalizedName);
+          let props = assign({}, injections, options);
+
+          runInDebug(() => {
+            let lazyInjections;
+            let validationCache = container.validationCache;
+            // Ensure that all lazy injections are valid at instantiation time
+            if (!validationCache[fullName] && factory && typeof factory._lazyInjections === 'function') {
+              lazyInjections = factory._lazyInjections();
+              lazyInjections = container.registry.normalizeInjectionsHash(lazyInjections);
+
+              container.registry.validateInjections(lazyInjections);
+            }
+
+            validationCache[fullName] = true;
+          });
+
+          this.class[NAME_KEY] = container.registry.makeToString(factory, fullName);
+
+          if (!this.class.create) {
+            throw new Error(`Failed to create an instance of '${normalizedName}'. Most likely an improperly defined class or` +
+                        ` an invalid module export.`);
+          }
+
+          if (this.class.prototype) {
+            injectDeprecatedContainer(this.class.prototype, container);
+          }
+
+          return this.class.create(props);
+        }
+      };
+    } else {
+      let factory = this.lookupFactory(fullName, options);
+      if (factory === undefined) { return; }
+
+      manager = {
+        class: factory,
+        create(props = {}) {
+          return instantiate(factory, props, container, fullName);
+        }
+      };
+    }
+
+    runInDebug(() => {
+      if (HAS_PROXY) {
+        let validator = {
+          get(obj, prop) {
+            if (prop !== 'class' && prop !== 'create') {
+              throw new Error(`You attempted to access "${prop}" on a factory manager created by container#factoryFor. "${prop}" is not a member of a factory manager."`);
+            }
+
+            return obj[prop];
+          },
+          set(obj, prop, value) {
+            throw new Error(`You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`);
+          }
+        };
+        manager = new Proxy(manager, validator);
+      }
+    });
+
+    return manager;
   },
 
   /**
@@ -179,6 +277,10 @@ function isSingleton(container, fullName) {
   return container.registry.getOption(fullName, 'singleton') !== false;
 }
 
+function shouldInstantiate(container, fullName) {
+  return container.registry.getOption(fullName, 'instantiate') !== false;
+}
+
 function lookup(container, fullName, options = {}) {
   if (options.source) {
     fullName = container.registry.expandLocalLookup(fullName, options);
@@ -191,15 +293,51 @@ function lookup(container, fullName, options = {}) {
     return container.cache[fullName];
   }
 
-  let value = instantiate(container, fullName);
+  return instantiateFactory(container, fullName, options);
+}
 
-  if (value === undefined) { return; }
+function isSingletonClass(container, fullName, { instantiate, singleton }) {
+  return (singleton !== false && isSingleton(container, fullName)) &&
+         (!instantiate && !shouldInstantiate(container, fullName));
+}
 
-  if (isSingleton(container, fullName) && options.singleton !== false) {
-    container.cache[fullName] = value;
+function isSingletonInstance(container, fullName, { instantiate, singleton }) {
+  return (singleton !== false && isSingleton(container, fullName)) &&
+         (instantiate !== false && shouldInstantiate(container, fullName));
+}
+
+function isFactoryClass(container, fullname, { instantiate, singleton }) {
+  return (singleton === false || !isSingleton(container, fullname)) &&
+         (instantiate === false && !shouldInstantiate(container, fullname));
+}
+
+function isFactoryInstance(container, fullName, { instantiate, singleton }) {
+  return (singleton !== false || isSingleton(container, fullName)) &&
+         (instantiate !== false && shouldInstantiate(container, fullName));
+}
+
+function instantiateFactory(container, fullName, options) {
+  let factoryManager = container.factoryFor(fullName);
+
+  if (factoryManager === undefined) { return; }
+
+  // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
+  // By default majority of objects fall into this case
+  if (isSingletonInstance(container, fullName, options)) {
+    return container.cache[fullName] = factoryManager.create();
   }
 
-  return value;
+  // SomeClass { singleton: false, instantiate: true }
+  if (isFactoryInstance(container, fullName, options)) {
+    return factoryManager.create();
+  }
+
+  // SomeClass { singleton: true, instantiate: false } | { instantiate: false } | { singleton: false, instantiation: false }
+  if (isSingletonClass(container, fullName, options) || isFactoryClass(container, fullName, options)) {
+    return factoryManager.class;
+  }
+
+  throw new Error('Could not create factory');
 }
 
 function markInjectionsAsDynamic(injections) {
@@ -238,7 +376,7 @@ function buildInjections(/* container, ...injections */) {
   return hash;
 }
 
-function factoryFor(container, fullName, options = {}) {
+function deprecatedFactoryFor(container, fullName, options = {}) {
   let registry = container.registry;
 
   if (options.source) {
@@ -305,21 +443,7 @@ function injectionsFor(container, fullName) {
   return injections;
 }
 
-function factoryInjectionsFor(container, fullName) {
-  let registry = container.registry;
-  let splitName = fullName.split(':');
-  let type = splitName[0];
-
-  let factoryInjections = buildInjections(container,
-                                          registry.getFactoryTypeInjections(type),
-                                          registry.getFactoryInjections(fullName));
-  factoryInjections._debugContainerKey = fullName;
-
-  return factoryInjections;
-}
-
-function instantiate(container, fullName) {
-  let factory = factoryFor(container, fullName);
+function instantiate(factory, props, container, fullName) {
   let lazyInjections, validationCache;
 
   if (container.registry.getOption(fullName, 'instantiate') === false) {
@@ -350,7 +474,7 @@ function instantiate(container, fullName) {
 
     if (typeof factory.extend === 'function') {
       // assume the factory was extendable and is already injected
-      obj = factory.create();
+      obj = factory.create(props);
     } else {
       // assume the factory was extendable
       // to create time injections
@@ -362,7 +486,7 @@ function instantiate(container, fullName) {
       // This "fake" container will be replaced after instantiation with a
       // property that raises deprecations every time it is accessed.
       injections.container = container._fakeContainerToInject;
-      obj = factory.create(injections);
+      obj = factory.create(assign({}, injections, props));
 
       // TODO - remove when Ember reaches v3.0.0
       if (!Object.isFrozen(obj) && 'container' in obj) {
@@ -372,6 +496,19 @@ function instantiate(container, fullName) {
 
     return obj;
   }
+}
+
+function factoryInjectionsFor(container, fullName) {
+  let registry = container.registry;
+  let splitName = fullName.split(':');
+  let type = splitName[0];
+
+  let factoryInjections = buildInjections(container,
+                                          registry.getFactoryTypeInjections(type),
+                                          registry.getFactoryInjections(fullName));
+  factoryInjections._debugContainerKey = fullName;
+
+  return factoryInjections;
 }
 
 // TODO - remove when Ember reaches v3.0.0
