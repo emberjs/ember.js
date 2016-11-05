@@ -640,47 +640,6 @@ QUnit.test('A deprecated `container` property is appended to every object instan
   }
 });
 
-// We're now setting this on the prototype
-QUnit.skip('A deprecated `container` property is only set on a non-extendable factory instance if `container` is present and writable.', function() {
-  expect(2);
-
-  let owner = {};
-  let registry = new Registry();
-  let container = registry.container({ owner });
-
-  // Define a non-extendable factory that is frozen after `create`
-  let PostController = function() {};
-  PostController.create = function() {
-    let instance = new PostController();
-
-    Object.seal(instance);
-
-    return instance;
-  };
-
-  registry.register('controller:post', PostController);
-  let postController = container.lookup('controller:post');
-
-  equal(postController.container, undefined, 'container was not added');
-
-  let OtherController = function() {
-    this.container = 'foo';
-  };
-
-  OtherController.create = function() {
-    let instance = new OtherController();
-
-    Object.freeze(instance);
-
-    return instance;
-  };
-
-  registry.register('controller:other', OtherController);
-  let otherController = container.lookup('controller:other');
-
-  equal(otherController.container, 'foo', 'container was not added');
-});
-
 QUnit.test('An extendable factory can provide `container` upon create, with a deprecation', function(assert) {
   let registry = new Registry();
   let container = registry.container();
