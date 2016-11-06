@@ -161,7 +161,7 @@ if (!EmberDev.runningProdBuild) {
 
       owner.register('foo:main', AnObject);
 
-      if (isFeatureEnabled('container-factoryFor')) {
+      if (isFeatureEnabled('ember-factory-for')) {
         expectDeprecation(() => {
           owner._lookupFactory('foo:main');
         }, /Using "_lookupFactory" is deprecated. Please use container.factoryFor instead./);

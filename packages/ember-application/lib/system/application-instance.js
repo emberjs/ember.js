@@ -4,7 +4,7 @@
 */
 
 import { assign } from 'ember-utils';
-import { deprecate, get, set, run, computed } from 'ember-metal';
+import { deprecate, get, set, run, computed, isFeatureEnabled } from 'ember-metal';
 import {
   buildFakeRegistryWithDeprecations,
   RSVP
@@ -12,6 +12,7 @@ import {
 import { environment } from 'ember-environment';
 import { jQuery } from 'ember-views';
 import EngineInstance from './engine-instance';
+import { FACTORY_FOR, LOOKUP_FACTORY } from 'container';
 
 let BootOptions;
 
@@ -126,10 +127,6 @@ const ApplicationInstance = EngineInstance.extend({
     this._booted = true;
 
     return this;
-  },
-
-  factoryFor(fullName, options) {
-    return this.__container__.factoryFor(fullName, options);
   },
 
   setupRegistry(options) {
@@ -282,8 +279,24 @@ const ApplicationInstance = EngineInstance.extend({
 
     // getURL returns the set url with the rootURL stripped off
     return router.handleURL(location.getURL()).then(handleTransitionResolve, handleTransitionReject);
+  },
+
+  [FACTORY_FOR](fullName, options) {
+    return this.__container__[FACTORY_FOR](fullName, options);
+  },
+
+  [LOOKUP_FACTORY](fullName, options) {
+    return this.__container__[LOOKUP_FACTORY](fullName, options);
   }
 });
+
+if (isFeatureEnabled('ember-factory-for')) {
+  ApplicationInstance.reopen({
+    factoryFor(fullName, options) {
+      return this.__container__.factoryFor(fullName, options);
+    }
+  });
+}
 
 ApplicationInstance.reopenClass({
   /**

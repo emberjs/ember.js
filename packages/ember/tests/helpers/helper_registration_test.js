@@ -90,8 +90,7 @@ QUnit.test('Undashed helpers registered on the container can be invoked', functi
   equal(jQuery('#wrapper').text(), 'OMG|boo|ya', 'The helper was invoked from the container');
 });
 
-// This fails with: Assertion Failed: Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.
-QUnit.skip('Helpers can receive injections', function() {
+QUnit.test('Helpers can receive injections', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{full-name}}</div>'));
 
   let serviceCalled = false;

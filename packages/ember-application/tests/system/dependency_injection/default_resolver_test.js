@@ -3,7 +3,8 @@ import { context } from 'ember-environment';
 import {
   getDebugFunction,
   setDebugFunction,
-  run
+  run,
+  isFeatureEnabled
 } from 'ember-metal';
 import {
   Controller,
@@ -64,9 +65,15 @@ QUnit.test('the default resolver looks up templates in Ember.TEMPLATES', functio
   setTemplate('fooBar', fooBarTemplate);
   setTemplate('fooBar/baz', fooBarBazTemplate);
 
-  equal(locator.factoryFor('template:foo').class, fooTemplate, 'resolves template:foo');
-  equal(locator.factoryFor('template:fooBar').class, fooBarTemplate, 'resolves template:foo_bar');
-  equal(locator.factoryFor('template:fooBar.baz').class, fooBarBazTemplate, 'resolves template:foo_bar.baz');
+  if (isFeatureEnabled('ember-factory-for')) {
+    equal(locator.factoryFor('template:foo').class, fooTemplate, 'resolves template:foo');
+    equal(locator.factoryFor('template:fooBar').class, fooBarTemplate, 'resolves template:foo_bar');
+    equal(locator.factoryFor('template:fooBar.baz').class, fooBarBazTemplate, 'resolves template:foo_bar.baz');
+  } else {
+    equal(locator.lookupFactory('template:foo'), fooTemplate, 'resolves template:foo');
+    equal(locator.lookupFactory('template:fooBar'), fooBarTemplate, 'resolves template:foo_bar');
+    equal(locator.lookupFactory('template:fooBar.baz'), fooBarBazTemplate, 'resolves template:foo_bar.baz');
+  }
 });
 
 QUnit.test('the default resolver looks up basic name as no prefix', function() {
@@ -86,13 +93,21 @@ QUnit.test('the default resolver looks up arbitrary types on the namespace', fun
 QUnit.test('the default resolver resolves models on the namespace', function() {
   application.Post = EmberObject.extend({});
 
-  detectEqual(application.Post, locator.factoryFor('model:post').class, 'looks up Post model on application');
+  if (isFeatureEnabled('ember-factory-for')) {
+    detectEqual(application.Post, locator.factoryFor('model:post').class, 'looks up Post model on application');
+  } else {
+    detectEqual(application.Post, locator.lookupFactory('model:post'), 'looks up Post model on application');
+  }
 });
 
 QUnit.test('the default resolver resolves *:main on the namespace', function() {
   application.FooBar = EmberObject.extend({});
 
-  detectEqual(application.FooBar, locator.factoryFor('foo-bar:main').class, 'looks up FooBar type without name on application');
+  if (isFeatureEnabled('ember-factory-for')) {
+    detectEqual(application.FooBar, locator.factoryFor('foo-bar:main').class, 'looks up FooBar type without name on application');
+  } else {
+    detectEqual(application.FooBar, locator.lookupFactory('foo-bar:main'), 'looks up FooBar type without name on application');
+  }
 });
 
 QUnit.test('the default resolver resolves container-registered helpers', function() {
@@ -102,10 +117,22 @@ QUnit.test('the default resolver resolves container-registered helpers', functio
   application.register('helper:shorthand', shorthandHelper);
   application.register('helper:complete', helper);
 
-  let lookedUpShorthandHelper = locator.factoryFor('helper:shorthand').class;
+  let lookedUpShorthandHelper;
+  if (isFeatureEnabled('ember-factory-for')) {
+    lookedUpShorthandHelper = locator.factoryFor('helper:shorthand').class;
+  } else {
+    lookedUpShorthandHelper = locator.lookupFactory('helper:shorthand');
+  }
+
   ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
 
-  let lookedUpHelper = locator.factoryFor('helper:complete').class;
+  let lookedUpHelper;
+  if (isFeatureEnabled('ember-factory-for')) {
+    lookedUpHelper = locator.factoryFor('helper:complete').class;
+  } else {
+    lookedUpHelper = locator.lookupFactory('helper:complete');
+  }
+
   ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
   ok(helper.detect(lookedUpHelper), 'looked up complete helper');
 });

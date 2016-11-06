@@ -6,6 +6,7 @@
     "ember-metal-weakmap": null,
     "ember-glimmer-allow-backtracking-rerender": null,
     "ember-testing-resume-test": null,
-    "container-factoryFor": null
+    "ember-factory-for": null,
+    "ember-no-double-extend": null
   }
 }

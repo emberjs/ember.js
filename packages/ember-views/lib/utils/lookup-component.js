@@ -1,4 +1,4 @@
-import { privatize as P } from 'container';
+import { privatize as P, FACTORY_FOR } from 'container';
 
 function lookupComponentPair(componentLookup, owner, name, options) {
   let component = componentLookup.componentFor(name, owner, options);
@@ -7,7 +7,7 @@ function lookupComponentPair(componentLookup, owner, name, options) {
   let result = { layout, component };
 
   if (layout && !component) {
-    result.component = owner.factoryFor(P`component:-default`);
+    result.component = owner[FACTORY_FOR](P`component:-default`);
   }
 
   return result;

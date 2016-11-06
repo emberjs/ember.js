@@ -17,7 +17,7 @@ QUnit.module('Container', {
 
 function lookupFactory(name, container, options) {
   let factory;
-  if (isFeatureEnabled('container-factoryFor')) {
+  if (isFeatureEnabled('ember-no-double-extend')) {
     expectDeprecation(() => {
       factory = container.lookupFactory(name, options);
     });
@@ -489,7 +489,7 @@ QUnit.test('factory for non extendables resolves are cached', function() {
 });
 
 QUnit.test('The `_onLookup` hook is called on factories when looked up the first time', function() {
-  if (isFeatureEnabled('container-factoryFor')) {
+  if (isFeatureEnabled('ember-factory-for') && isFeatureEnabled('ember-no-double-extend')) {
     expect(4);
   } else {
     expect(2);
@@ -583,7 +583,7 @@ QUnit.test('A deprecated `container` property is appended to every object instan
 
 // This is testing that container was passed as an option
 QUnit.test('A deprecated `container` property is appended to every object instantiated from a non-extendable factory, and a fake container is available during instantiation.', function() {
-  if (!isFeatureEnabled('container-factoryFor')) {
+  if (!isFeatureEnabled('ember-factory-for')) {
     expect(8);
   } else {
     expect(1);
@@ -626,7 +626,7 @@ QUnit.test('A deprecated `container` property is appended to every object instan
 
   registry.register('controller:post', PostController);
 
-  if (!isFeatureEnabled('container-factoryFor')) {
+  if (!isFeatureEnabled('ember-factory-for')) {
     let postController = container.lookup('controller:post');
 
     expectDeprecation(() => {
@@ -688,7 +688,6 @@ QUnit.test('lookup passes options through to expandlocallookup', function(assert
   let PostController = factory();
 
   registry.register('controller:post', PostController);
-
   registry.expandLocalLookup = function(fullName, options) {
     assert.ok(true, 'expandLocalLookup was called');
     assert.equal(fullName, 'foo:bar');
@@ -703,86 +702,88 @@ QUnit.test('lookup passes options through to expandlocallookup', function(assert
 });
 
 
-QUnit.test('#factoryFor must supply a fullname', (assert) => {
-  let registry = new Registry();
-  let container = registry.container();
-  assert.throws(() => {
-    container.factoryFor('chad-bar');
-  }, /Invalid Fullname, expected: 'type:name' got: chad-bar/);
-});
+if (isFeatureEnabled('ember-factory-for')) {
+  QUnit.test('#factoryFor must supply a fullname', (assert) => {
+    let registry = new Registry();
+    let container = registry.container();
+    assert.throws(() => {
+      container.factoryFor('chad-bar');
+    }, /Invalid Fullname, expected: 'type:name' got: chad-bar/);
+  });
 
-QUnit.test('#factoryFor returns a factory creator', (assert) => {
-  let registry = new Registry();
-  let container = registry.container();
+  QUnit.test('#factoryFor returns a factory creator', (assert) => {
+    let registry = new Registry();
+    let container = registry.container();
 
-  let Component = factory();
-  registry.register('component:foo-bar', Component);
+    let Component = factory();
+    registry.register('component:foo-bar', Component);
 
-  let factoryCreator = container.factoryFor('component:foo-bar');
-  assert.ok(factoryCreator.create);
-  assert.ok(factoryCreator.class);
-});
+    let factoryCreator = container.factoryFor('component:foo-bar');
+    assert.ok(factoryCreator.create);
+    assert.ok(factoryCreator.class);
+  });
 
-QUnit.test('#factoryFor class returns the factory function', (assert) => {
-  let registry = new Registry();
-  let container = registry.container();
+  QUnit.test('#factoryFor class returns the factory function', (assert) => {
+    let registry = new Registry();
+    let container = registry.container();
 
-  let Component = factory();
-  registry.register('component:foo-bar', Component);
+    let Component = factory();
+    registry.register('component:foo-bar', Component);
 
-  let factoryCreator = container.factoryFor('component:foo-bar');
-  if (isFeatureEnabled('container-factoryFor')) {
-    assert.deepEqual(factoryCreator.class, Component, 'No double extend');
-  } else {
-    assert.notDeepEqual(factoryCreator.class, Component, 'Double extended class');
-  }
-});
+    let factoryCreator = container.factoryFor('component:foo-bar');
+    if (isFeatureEnabled('ember-no-double-extend')) {
+      assert.deepEqual(factoryCreator.class, Component, 'No double extend');
+    } else {
+      assert.notDeepEqual(factoryCreator.class, Component, 'Double extended class');
+    }
+  });
 
-QUnit.test('#factoryFor instance have a common parent', (assert) => {
-  let registry = new Registry();
-  let container = registry.container();
+  QUnit.test('#factoryFor instance have a common parent', (assert) => {
+    let registry = new Registry();
+    let container = registry.container();
 
-  let Component = factory();
-  registry.register('component:foo-bar', Component);
+    let Component = factory();
+    registry.register('component:foo-bar', Component);
 
-  let factoryCreator1 = container.factoryFor('component:foo-bar');
-  let factoryCreator2 = container.factoryFor('component:foo-bar');
-  let instance1 = factoryCreator1.create({ foo: 'foo' });
-  let instance2 = factoryCreator2.create({ bar: 'bar' });
+    let factoryCreator1 = container.factoryFor('component:foo-bar');
+    let factoryCreator2 = container.factoryFor('component:foo-bar');
+    let instance1 = factoryCreator1.create({ foo: 'foo' });
+    let instance2 = factoryCreator2.create({ bar: 'bar' });
 
-  assert.deepEqual(instance1.constructor, instance2.constructor);
-});
+    assert.deepEqual(instance1.constructor, instance2.constructor);
+  });
 
-QUnit.test('#factoryFor created instances come with instance injections', (assert) => {
-  let registry = new Registry();
-  let container = registry.container();
+  QUnit.test('#factoryFor created instances come with instance injections', (assert) => {
+    let registry = new Registry();
+    let container = registry.container();
 
-  let Component = factory();
-  let Ajax = factory();
-  registry.register('component:foo-bar', Component);
-  registry.register('util:ajax', Ajax);
-  registry.injection('component:foo-bar', 'ajax', 'util:ajax');
+    let Component = factory();
+    let Ajax = factory();
+    registry.register('component:foo-bar', Component);
+    registry.register('util:ajax', Ajax);
+    registry.injection('component:foo-bar', 'ajax', 'util:ajax');
 
-  let componentFactory = container.factoryFor('component:foo-bar');
-  let component = componentFactory.create();
+    let componentFactory = container.factoryFor('component:foo-bar');
+    let component = componentFactory.create();
 
-  assert.ok(component.ajax);
-  assert.ok(component.ajax instanceof Ajax);
-});
+    assert.ok(component.ajax);
+    assert.ok(component.ajax instanceof Ajax);
+  });
 
-QUnit.test('#factoryFor options passed to create clobber injections', (assert) => {
-  let registry = new Registry();
-  let container = registry.container();
+  QUnit.test('#factoryFor options passed to create clobber injections', (assert) => {
+    let registry = new Registry();
+    let container = registry.container();
 
-  let Component = factory();
-  let Ajax = factory();
-  registry.register('component:foo-bar', Component);
-  registry.register('util:ajax', Ajax);
-  registry.injection('component:foo-bar', 'ajax', 'util:ajax');
+    let Component = factory();
+    let Ajax = factory();
+    registry.register('component:foo-bar', Component);
+    registry.register('util:ajax', Ajax);
+    registry.injection('component:foo-bar', 'ajax', 'util:ajax');
 
-  let componentFactory = container.factoryFor('component:foo-bar');
+    let componentFactory = container.factoryFor('component:foo-bar');
 
-  let instrance = componentFactory.create({ ajax: 'fetch' });
+    let instrance = componentFactory.create({ ajax: 'fetch' });
 
-  assert.equal(instrance.ajax, 'fetch');
-});
+    assert.equal(instrance.ajax, 'fetch');
+  });
+}

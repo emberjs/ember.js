@@ -181,6 +181,7 @@ DSL.prototype.mount = function(_name, _options) {
     createRoute(childDSL, 'loading');
     createRoute(childDSL, 'error', { path: dummyErrorRoute });
 
+
     engineRouteMap.class.call(childDSL);
 
     callback = childDSL.generate();

@@ -543,7 +543,7 @@ CoreObject.PrototypeMixin = Mixin.create({
   toString() {
     var hasToStringExtension = typeof this.toStringExtension === 'function';
     var extension = hasToStringExtension ? ':' + this.toStringExtension() : '';
-    var ret = '<' + this.constructor.toString() + ':' + guidFor(this) + extension + '>';
+    var ret = '<' + (this[NAME_KEY] || this.constructor.toString()) + ':' + guidFor(this) + extension + '>';
 
     return ret;
   }

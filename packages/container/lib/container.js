@@ -12,6 +12,8 @@ import { assert, deprecate, runInDebug, isFeatureEnabled } from 'ember-metal';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 const HAS_PROXY = typeof Proxy === 'function';
+export const FACTORY_FOR = symbol('FACTORY_FOR');
+export const LOOKUP_FACTORY = symbol('LOOKUP_FACTORY');
 
 /**
  A container used to instantiate and cache objects.
@@ -36,6 +38,9 @@ export default function Container(registry, options) {
   this[CONTAINER_OVERRIDE] = undefined;
   this.isDestroyed = false;
 }
+
+Container.__FACTORY_FOR__ = FACTORY_FOR;
+Container.__LOOKUP_FACTORY__ = LOOKUP_FACTORY;
 
 Container.prototype = {
   /**
@@ -137,17 +142,21 @@ Container.prototype = {
   lookupFactory(fullName, options) {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
 
-    if (isFeatureEnabled('container-factoryFor')) {
+    if (isFeatureEnabled('ember-no-double-extend')) {
       deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.', false, { id: 'container-lookupFactory', until: '2.13.0', url: 'TODO' });
     }
 
     return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
   },
 
-  factoryFor(fullName, options = {}) {
-    let container = this;
+  [LOOKUP_FACTORY](fullName, options) {
+    assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
+    return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
+  },
+
+  [FACTORY_FOR](fullName, options = {}) {
     let manager;
-    if (isFeatureEnabled('container-factoryFor')) {
+    if (isFeatureEnabled('ember-no-double-extend')) {
       let normalizedName = this.registry.normalize(fullName);
       assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
 
@@ -161,50 +170,11 @@ Container.prototype = {
 
       if (factory === undefined) { return; }
 
-      manager = {
-        class: factory,
-        create(options = {}) {
-          let injections = injectionsFor(container, normalizedName);
-          let props = assign({}, injections, options);
-
-          runInDebug(() => {
-            let lazyInjections;
-            let validationCache = container.validationCache;
-            // Ensure that all lazy injections are valid at instantiation time
-            if (!validationCache[fullName] && factory && typeof factory._lazyInjections === 'function') {
-              lazyInjections = factory._lazyInjections();
-              lazyInjections = container.registry.normalizeInjectionsHash(lazyInjections);
-
-              container.registry.validateInjections(lazyInjections);
-            }
-
-            validationCache[fullName] = true;
-          });
-
-          this.class[NAME_KEY] = container.registry.makeToString(factory, fullName);
-
-          if (!this.class.create) {
-            throw new Error(`Failed to create an instance of '${normalizedName}'. Most likely an improperly defined class or` +
-                        ` an invalid module export.`);
-          }
-
-          if (this.class.prototype) {
-            injectDeprecatedContainer(this.class.prototype, container);
-          }
-
-          return this.class.create(props);
-        }
-      };
+      manager = new FactoryManager(this, factory, fullName, normalizedName);
     } else {
       let factory = this.lookupFactory(fullName, options);
       if (factory === undefined) { return; }
-
-      manager = {
-        class: factory,
-        create(props = {}) {
-          return instantiate(factory, props, container, fullName);
-        }
-      };
+      manager = new DeprecatedFactoryManager(this, factory, fullName);
     }
 
     runInDebug(() => {
@@ -221,7 +191,19 @@ Container.prototype = {
             throw new Error(`You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`);
           }
         };
-        manager = new Proxy(manager, validator);
+
+        // Note:
+        // We have to proxy access to the manager here so that private property
+        // access doesn't cause the above errors to occur.
+        let m = manager;
+        let proxiedManager = {
+          class: m.class,
+          create(props) {
+            return m.create(props);
+          }
+        };
+
+        manager = new Proxy(proxiedManager, validator);
       }
     });
 
@@ -273,6 +255,23 @@ Container.prototype = {
   }
 };
 
+if (isFeatureEnabled('ember-factory-for')) {
+  /**
+   Given a fullName, return the corresponding factory. The consumer of factory is repsonsible
+   for the destruction of the factory as there is no way to understand the objects lifecycle.
+
+   @public
+   @method factoryFor
+   @param {String} fullName
+   @param {Object} [options]
+   @param {String} [options.source] The fullname of the request source (used for local lookup)
+   @return {any}
+   */
+  Container.prototype.factoryFor = function _factoryFor() {
+    return this[FACTORY_FOR](...arguments);
+  };
+}
+
 function isSingleton(container, fullName) {
   return container.registry.getOption(fullName, 'singleton') !== false;
 }
@@ -293,7 +292,20 @@ function lookup(container, fullName, options = {}) {
     return container.cache[fullName];
   }
 
-  return instantiateFactory(container, fullName, options);
+  if (isFeatureEnabled('ember-factory-for')) {
+    return instantiateFactory(container, fullName, options);
+  } else {
+    let factory = deprecatedFactoryFor(container, fullName);
+    let value = instantiate(factory, {}, container, fullName);
+
+    if (value === undefined) { return; }
+
+    if (isSingleton(container, fullName) && options.singleton !== false) {
+      container.cache[fullName] = value;
+    }
+
+    return value;
+  }
 }
 
 function isSingletonClass(container, fullName, { instantiate, singleton }) {
@@ -317,7 +329,7 @@ function isFactoryInstance(container, fullName, { instantiate, singleton }) {
 }
 
 function instantiateFactory(container, fullName, options) {
-  let factoryManager = container.factoryFor(fullName);
+  let factoryManager = container[FACTORY_FOR](fullName);
 
   if (factoryManager === undefined) { return; }
 
@@ -381,7 +393,6 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
 
   if (options.source) {
     fullName = registry.expandLocalLookup(fullName, options);
-
     // if expandLocalLookup returns falsey, we do not support local lookup
     if (!fullName) { return; }
   }
@@ -445,6 +456,8 @@ function injectionsFor(container, fullName) {
 
 function instantiate(factory, props, container, fullName) {
   let lazyInjections, validationCache;
+
+  props = props || {};
 
   if (container.registry.getOption(fullName, 'instantiate') === false) {
     return factory;
@@ -602,4 +615,57 @@ function buildFakeContainerFunction(container, containerProperty, ownerProperty)
     );
     return container[containerProperty](...arguments);
   };
+}
+
+class DeprecatedFactoryManager {
+  constructor(container, factory, fullName) {
+    this.container = container;
+    this.class = factory;
+    this.fullName = fullName;
+  }
+
+  create(props = {}) {
+    return instantiate(this.class, props, this.container, this.fullName);
+  }
+}
+
+class FactoryManager {
+  constructor(container, factory, fullName, normalizedName) {
+    this.container = container;
+    this.class = factory;
+    this.fullName = fullName;
+    this.normalizedName = normalizedName;
+  }
+
+  create(options = {}) {
+    let injections = injectionsFor(this.container, this.normalizedName);
+    let props = assign({}, injections, options);
+
+    props[NAME_KEY] = this.container.registry.makeToString(this.class, this.fullName);
+
+    runInDebug(() => {
+      let lazyInjections;
+      let validationCache = this.container.validationCache;
+      // Ensure that all lazy injections are valid at instantiation time
+      if (!validationCache[this.fullName] && this.class && typeof this.class._lazyInjections === 'function') {
+        lazyInjections = this.class._lazyInjections();
+        lazyInjections = this.container.registry.normalizeInjectionsHash(lazyInjections);
+
+        this.container.registry.validateInjections(lazyInjections);
+      }
+
+      validationCache[this.fullName] = true;
+    });
+
+    if (!this.class.create) {
+      throw new Error(`Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or` +
+                  ` an invalid module export.`);
+    }
+
+    if (this.class.prototype) {
+      injectDeprecatedContainer(this.class.prototype, this.container);
+    }
+
+    return this.class.create(props);
+  }
 }

@@ -51,6 +51,7 @@ import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
+import { FACTORY_FOR } from 'container';
 
 const builtInComponents = {
   textarea: '-text-area'
@@ -76,7 +77,7 @@ export default class Environment extends GlimmerEnvironment {
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
 
-      if ((componentFactory && componentFactory.class) || layout) {
+      if (componentFactory || layout) {
         return new CurlyComponentDefinition(name, componentFactory, layout);
       }
     }, ({ name, source, owner }) => {
@@ -312,8 +313,8 @@ export default class Environment extends GlimmerEnvironment {
     let owner = blockMeta.owner;
     let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
 
-    if (isFeatureEnabled('container-factoryFor')) {
-      let helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
+    if (isFeatureEnabled('ember-factory-for')) {
+      let helperFactory = owner[FACTORY_FOR](`helper:${name}`, options) || owner[FACTORY_FOR](`helper:${name}`);
 
       // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
       if (helperFactory.class.isHelperInstance) {

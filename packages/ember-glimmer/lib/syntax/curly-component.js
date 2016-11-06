@@ -178,10 +178,9 @@ function rerenderInstrumentDetails(component) {
 
 class CurlyComponentManager {
   prepareArgs(definition, args) {
-    if (definition.ComponentClass && definition.ComponentClass.class) {
+    if (definition.ComponentClass) {
       validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.class.positionalParams);
     }
-
 
     return gatherArgs(args, definition);
   }

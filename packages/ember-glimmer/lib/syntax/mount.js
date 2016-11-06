@@ -12,6 +12,7 @@ import { assert } from 'ember-metal';
 import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
+import { FACTORY_FOR } from 'container';
 /**
   The `{{mount}}` helper lets you embed a routeless engine in a template.
   Mounting an engine will cause an instance to be booted and its `application`
@@ -88,7 +89,8 @@ class MountManager {
   }
 
   getSelf({ engine }) {
-    let factory = engine.factoryFor(`controller:application`) || generateControllerFactory(engine, 'application');
+    let applicationFactory = engine[FACTORY_FOR](`controller:application`);
+    let factory = applicationFactory || generateControllerFactory(engine, 'application');
     return new RootReference(factory.create());
   }
 

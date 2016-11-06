@@ -9,6 +9,7 @@ import {
   removeArrayObserver,
   objectAt
 } from 'ember-runtime';
+import { FACTORY_FOR } from 'container';
 import { Application } from 'ember-application';
 
 /**
@@ -163,7 +164,8 @@ export default EmberObject.extend({
 
   _nameToClass(type) {
     if (typeof type === 'string') {
-      type = getOwner(this).factoryFor(`model:${type}`).class;
+      let owner = getOwner(this);
+      type = owner[FACTORY_FOR](`model:${type}`).class;
     }
     return type;
   },

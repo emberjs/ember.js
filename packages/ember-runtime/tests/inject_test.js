@@ -33,7 +33,7 @@ if (!EmberDev.runningProdBuild) {
 
     owner.register('foo:main', AnObject);
 
-    if (isFeatureEnabled('container-factoryFor')) {
+    if (isFeatureEnabled('ember-factory-for')) {
       expect(2);
       expectDeprecation(() => {
         owner._lookupFactory('foo:main');
