@@ -1300,7 +1300,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let definedController = this.controllerFor(controllerName, true);
 
     if (!definedController) {
-      controller =  this.generateController(controllerName, context);
+      controller =  this.generateController(controllerName);
     } else {
       controller = definedController;
     }
@@ -1822,22 +1822,19 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     export default Ember.Route.extend({
       setupController(controller, post) {
         this._super(controller, post);
-        this.generateController('posts', post);
+        this.generateController('posts');
       }
     });
     ```
 
     @method generateController
     @param {String} name the name of the controller
-    @param {Object} model the model to infer the type of the controller (optional)
     @private
   */
-  generateController(name, model) {
+  generateController(name) {
     let owner = getOwner(this);
 
-    model = model || this.modelFor(name);
-
-    return generateController(owner, name, model);
+    return generateController(owner, name);
   },
 
   /**
