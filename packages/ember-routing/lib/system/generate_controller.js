@@ -16,7 +16,7 @@ import {
   @private
 */
 
-export function generateControllerFactory(owner, controllerName, context) {
+export function generateControllerFactory(owner, controllerName) {
   let Factory = owner._lookupFactory('controller:basic').extend({
     isGenerated: true,
     toString() {
@@ -32,20 +32,16 @@ export function generateControllerFactory(owner, controllerName, context) {
 }
 
 /**
-  Generates and instantiates a controller.
-
-  The type of the generated controller factory is derived
-  from the context. If the context is an array an array controller
-  is generated, if an object, an object controller otherwise, a basic
-  controller is generated.
+  Generates and instantiates a controller extending from `controller:basic`
+  if present, or `Ember.Controller` if not.
 
   @for Ember
   @method generateController
   @private
   @since 1.3.0
 */
-export default function generateController(owner, controllerName, context) {
-  generateControllerFactory(owner, controllerName, context);
+export default function generateController(owner, controllerName) {
+  generateControllerFactory(owner, controllerName);
 
   let fullName = `controller:${controllerName}`;
   let instance = owner.lookup(fullName);
