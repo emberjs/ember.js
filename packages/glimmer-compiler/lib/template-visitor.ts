@@ -206,6 +206,10 @@ TemplateVisitor.prototype.CommentStatement = function(text) {
   frame.actions.push(['comment', [text, frame.childIndex, frame.childCount]]);
 };
 
+TemplateVisitor.prototype.MustacheCommentStatement = function() {
+  // Intentional empty: Handlebars comments should not affect output.
+};
+
 TemplateVisitor.prototype.MustacheStatement = function(mustache) {
   let frame = this.getCurrentFrame();
   frame.mustacheCount++;

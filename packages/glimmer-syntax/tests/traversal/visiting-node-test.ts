@@ -255,9 +255,8 @@ test('Comments', function() {
     ['enter', ast],
     ['enter', ast.body[0]],
     ['exit',  ast.body[0]],
-    // TODO: Ensure Handlebars comments are in the AST.
-    // ['enter', ast.body[1]],
-    // ['exit',  ast.body[1]],
+    ['enter', ast.body[1]],
+    ['exit',  ast.body[1]],
     ['exit',  ast]
   ]);
 });

@@ -108,8 +108,11 @@ export default {
     this.tokenizer.flushData();
   },
 
-  CommentStatement: function(comment) {
-    return comment;
+  CommentStatement: function(rawComment) {
+    let { value, loc } = rawComment;
+    let comment = b.mustacheComment(value, loc);
+
+    appendChild(this.currentElement(), comment);
   },
 
   PartialStatement: function(partial) {
