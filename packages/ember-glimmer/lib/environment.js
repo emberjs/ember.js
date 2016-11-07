@@ -197,7 +197,7 @@ export default class Environment extends GlimmerEnvironment {
 
       if (internalKey) {
         definition = this.getComponentDefinition([internalKey], symbolTable);
-      } else if (key.indexOf('-') >= 0) {
+      } else if (typeof key === 'string' && key.indexOf('-') >= 0) {
         definition = this.getComponentDefinition(path, symbolTable);
       }
 

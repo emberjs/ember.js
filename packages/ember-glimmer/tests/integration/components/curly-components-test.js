@@ -2985,4 +2985,53 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('MyVar1: 1 1 MyVar2: 2 2');
   }
+
+  ['@test can use `{{this}}` to emit the component\'s toString value [GH#14581]'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        toString() {
+          return 'special sauce goes here!';
+        }
+      }),
+      template: '{{this}}'
+    });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('special sauce goes here!');
+  }
+
+  ['@test can use `{{this` to access paths on current context [GH#14581]'](assert) {
+    let instance;
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+
+          instance = this;
+        },
+
+        foo: {
+          bar: {
+            baz: 'huzzah!'
+          }
+        }
+      }),
+      template: '{{this.foo.bar.baz}}'
+    });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('huzzah!');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(instance, 'foo.bar.baz', 'yippie!'));
+
+    this.assertText('yippie!');
+
+    this.runTask(() => set(instance, 'foo.bar.baz', 'huzzah!'));
+
+    this.assertText('huzzah!');
+  }
 });
