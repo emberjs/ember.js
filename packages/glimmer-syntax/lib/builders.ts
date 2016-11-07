@@ -43,10 +43,19 @@ function buildPartial(name, params, hash, indent) {
   };
 }
 
-function buildComment(value) {
+function buildComment(value, loc?) {
   return {
     type: "CommentStatement",
-    value: value
+    value: value,
+    loc: buildLoc(loc)
+  };
+}
+
+function buildMustacheComment(value, loc?) {
+  return {
+    type: "MustacheCommentStatement",
+    value: value,
+    loc: buildLoc(loc)
   };
 }
 
@@ -226,6 +235,7 @@ export default {
   block: buildBlock,
   partial: buildPartial,
   comment: buildComment,
+  mustacheComment: buildMustacheComment,
   element: buildElement,
   elementModifier: buildElementModifier,
   attr: buildAttr,

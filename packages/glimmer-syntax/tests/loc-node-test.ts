@@ -201,6 +201,21 @@ test("comment", function() {
   locEqual(trailingDiv, 3, 25, 3, 36);
 });
 
+test("handlebars comment", function() {
+  let ast = parse(`
+    <div>{{!-- blah blah blah blah --}}
+      {{!-- derp herky --}}<div></div>
+    </div>
+  `);
+
+  let [,div] = ast.body;
+  let [comment1,,comment2,trailingDiv] = div.children;
+
+  locEqual(comment1, 2, 9, 2, 39);
+  locEqual(comment2, 3, 6, 3, 27);
+  locEqual(trailingDiv, 3, 27, 3, 38);
+});
+
 test("element attribute", function() {
   let ast = parse(`
     <div data-foo="blah"

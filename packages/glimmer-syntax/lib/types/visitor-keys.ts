@@ -6,6 +6,7 @@ export default {
   ElementModifierStatement: ['path', 'params', 'hash'],
   PartialStatement:         ['name', 'params', 'hash'],
   CommentStatement:         [],
+  MustacheCommentStatement: [],
   ElementNode:              ['attributes', 'modifiers', 'children'],
   AttrNode:                 ['value'],
   TextNode:                 [],
