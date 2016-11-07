@@ -10,7 +10,7 @@ import {
 import { ConstReference, isConst } from 'glimmer-reference';
 import { assert } from 'ember-metal';
 import { RootReference } from '../utils/references';
-import { generateControllerFactory } from 'ember-routing';
+import { generateController, generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
 
 function makeComponentDefinition(vm) {
@@ -171,7 +171,7 @@ class AbstractRenderManager {
 class SingletonRenderManager extends AbstractRenderManager {
   create(environment, definition, args, dynamicScope) {
     let { name, env } = definition;
-    let controller = env.owner.lookup(`controller:${name}`);
+    let controller = env.owner.lookup(`controller:${name}`) || generateController(env.owner, name);
 
     if (dynamicScope.rootOutletState) {
       dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
