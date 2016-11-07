@@ -4,12 +4,39 @@ import { RenderingTest, moduleFor } from '../../utils/test-case';
 
 moduleFor('Helpers test: {{render}}', class extends RenderingTest {
   ['@test should render given template']() {
-    this.owner.register('controller:home', Controller.extend());
     this.registerTemplate('home', '<p>BYE</p>');
 
     this.render(`<h1>HI</h1>{{render 'home'}}`);
 
     this.assertText('HIBYE');
+  }
+
+  ['@test uses `controller:basic` as the basis for a generated controller when none exists for specified name']() {
+    this.owner.register('controller:basic', Controller.extend({
+      isBasicController: true
+    }));
+    this.registerTemplate('home', '{{isBasicController}}');
+
+    this.render(`{{render 'home'}}`);
+
+    this.assertText('true');
+  }
+
+  ['@test generates a controller if none exists']() {
+    this.registerTemplate('home', '<p>{{this}}</p>');
+
+    this.render(`<h1>HI</h1>{{render 'home'}}`);
+
+    this.assertText('HI(generated home controller)');
+  }
+
+  ['@test should use controller with the same name as template if present']() {
+    this.owner.register('controller:home', Controller.extend({ name: 'home' }));
+    this.registerTemplate('home', '{{name}}<p>BYE</p>');
+
+    this.render(`<h1>HI</h1>{{render 'home'}}`);
+
+    this.assertText('HIhomeBYE');
   }
 
   ['@test should render nested helpers']() {
