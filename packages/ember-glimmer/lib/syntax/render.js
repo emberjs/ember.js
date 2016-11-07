@@ -8,7 +8,7 @@ import {
   ComponentDefinition
 } from 'glimmer-runtime';
 import { ConstReference, isConst } from 'glimmer-reference';
-import { assert } from 'ember-metal';
+import { assert, deprecate } from 'ember-metal';
 import { RootReference } from '../utils/references';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
@@ -212,7 +212,15 @@ const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
 class RenderDefinition extends ComponentDefinition {
   constructor(name, template, env, manager) {
     super('render', manager, null);
-
+    deprecate(
+      `{{render}} is deprecated, please consider using a component.`,
+      false,
+      {
+        id: 'ember-glimmer.render-helper',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-render-helper'
+      }
+    );
     this.name = name;
     this.template = template;
     this.env = env;

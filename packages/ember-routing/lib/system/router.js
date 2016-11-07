@@ -14,7 +14,8 @@ import {
   set,
   defineProperty,
   computed,
-  run
+  run,
+  deprecate
 } from 'ember-metal';
 import {
   Object as EmberObject,
@@ -1477,6 +1478,16 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
     set(target.outlets, renderOptions.outlet, myState);
   } else {
     if (renderOptions.into) {
+      deprecate(
+        `Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated.`,
+        false,
+        {
+          id: 'ember-routing.top-level-render-helper',
+          until: '3.0.0',
+          url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-top-levelrender-helper'
+        }
+      );
+
       // Megahax time. Post-3.0-breaking-changes, we will just assert
       // right here that the user tried to target a nonexistent
       // thing. But for now we still need to support the `render`
