@@ -13,8 +13,10 @@ export { default as HashLocation } from './location/hash_location';
 export { default as HistoryLocation } from './location/history_location';
 export { default as AutoLocation } from './location/auto_location';
 
-export { default as generateController } from './system/generate_controller';
-export { generateControllerFactory } from './system/generate_controller';
+export {
+  default as generateController,
+  generateControllerFactory
+} from './system/generate_controller';
 export { default as controllerFor } from './system/controller_for';
 export { default as RouterDSL } from './system/dsl';
 export { default as Router } from './system/router';
