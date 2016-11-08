@@ -23,7 +23,13 @@ export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
     return new ConcreteBounds(parent, first, last);
   }
 
+  // override to avoid SVG detection/work when in node (this is not needed in SSR)
   createElement(tag: string) {
     return this.document.createElement(tag);
+  }
+
+  // override to avoid namespace shenanigans when in node (this is not needed in SSR)
+  setAttribute(element: Element, name: string, value: string) {
+    element.setAttribute(name, value);
   }
 }
