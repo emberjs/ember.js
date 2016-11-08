@@ -68,13 +68,20 @@ function buildConcat(parts) {
 
 // Nodes
 
-function buildElement(tag, attributes?, modifiers?, children?, loc?) {
+function buildElement(tag, attributes?, modifiers?, children?, comments?, loc?) {
+  // this is used for backwards compat prior to `comments` being added to the AST
+  if (!Array.isArray(comments)) {
+    loc = comments;
+    comments = [];
+  }
+
   return {
     type: "ElementNode",
     tag: tag || "",
     attributes: attributes || [],
     blockParams: [],
     modifiers: modifiers || [],
+    comments: comments || [],
     children: children || [],
     loc: buildLoc(loc)
   };

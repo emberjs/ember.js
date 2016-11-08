@@ -379,6 +379,52 @@ test("an HTML comment", function() {
   ]));
 });
 
+test("a Handlebars comment inside an HTML comment", function() {
+  let t = 'before <!-- some {{! nested thing }} comment --> after';
+  astEqual(t, b.program([
+    b.text("before "),
+    b.comment(" some {{! nested thing }} comment "),
+    b.text(" after")
+  ]));
+});
+
+test("a Handlebars comment", function() {
+  let t = 'before {{! some comment }} after';
+  astEqual(t, b.program([
+    b.text("before "),
+    b.mustacheComment(" some comment "),
+    b.text(" after")
+  ]));
+});
+
+test("a Handlebars comment in proper element space", function() {
+  let t = 'before <div {{! some comment }} data-foo="bar" {{! other comment }}></div> after';
+  astEqual(t, b.program([
+    b.text("before "),
+    b.element('div', [
+      b.attr('data-foo', b.text('bar'))
+    ], [], [], [
+      b.mustacheComment(" some comment "),
+      b.mustacheComment(" other comment "),
+    ]),
+    b.text(" after")
+  ]));
+});
+
+test("a Handlebars comment in invalid element space", function(assert) {
+  assert.throws(() => {
+    parse('\nbefore <div \n  a{{! some comment }} data-foo="bar"></div> after');
+  }, /Using a Handlebars comment when in the `attributeName` state is not supported: " some comment " on line 3:3/);
+
+  assert.throws(() => {
+    parse('\nbefore <div \n  a={{! some comment }} data-foo="bar"></div> after');
+  }, /Using a Handlebars comment when in the `beforeAttributeValue` state is not supported: " some comment " on line 3:4/);
+
+  assert.throws(() => {
+    parse('\nbefore <div \n  a="{{! some comment }}" data-foo="bar"></div> after');
+  }, /Using a Handlebars comment when in the `attributeValueDoubleQuoted` state is not supported: " some comment " on line 3:5/);
+});
+
 test("allow {{null}} to be passed as helper name", function() {
   let ast = parse("{{null}}");
 

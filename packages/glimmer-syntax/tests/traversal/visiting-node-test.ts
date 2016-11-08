@@ -249,7 +249,7 @@ test('Nested helpers', function() {
 });
 
 test('Comments', function() {
-  let ast = parse(`<!-- HTML comment -->{{!-- Handlebars comment --}}`);
+  let ast = parse(`<!-- HTML comment -->{{!-- Handlebars comment --}}<div {{! Other Comment }}></div>`);
 
   traversalEqual(ast, [
     ['enter', ast],
@@ -257,6 +257,10 @@ test('Comments', function() {
     ['exit',  ast.body[0]],
     ['enter', ast.body[1]],
     ['exit',  ast.body[1]],
+    ['enter', ast.body[2]],
+    ['enter', ast.body[2].comments[0]],
+    ['exit', ast.body[2].comments[0]],
+    ['exit', ast.body[2]],
     ['exit',  ast]
   ]);
 });

@@ -49,7 +49,7 @@ export default {
   },
 
   MustacheStatement: function(rawMustache) {
-    let tokenizer = this.tokenizer;
+    let { tokenizer } = this;
     let { path, params, hash, escaped, loc } = rawMustache;
     let mustache = b.mustache(path, params, hash, !escaped, loc);
 
@@ -109,10 +109,30 @@ export default {
   },
 
   CommentStatement: function(rawComment) {
+    let { tokenizer } = this;
     let { value, loc } = rawComment;
     let comment = b.mustacheComment(value, loc);
 
-    appendChild(this.currentElement(), comment);
+    if (tokenizer.state === 'comment') {
+      this.appendToCommentData('{{' + this.sourceForMustache(comment) + '}}');
+      return;
+    }
+
+    switch (tokenizer.state) {
+      case "beforeAttributeName":
+        this.currentNode.comments.push(comment);
+        break;
+
+      case 'beforeData':
+      case 'data':
+        appendChild(this.currentElement(), comment);
+        break;
+
+      default:
+        throw new Error(`Using a Handlebars comment when in the \`${tokenizer.state}\` state is not supported: "${comment.value}" on line ${loc.start.line}:${loc.start.column}`);
+    }
+
+    return comment;
   },
 
   PartialStatement: function(partial) {

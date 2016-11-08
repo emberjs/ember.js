@@ -7,7 +7,7 @@ export default {
   PartialStatement:         ['name', 'params', 'hash'],
   CommentStatement:         [],
   MustacheCommentStatement: [],
-  ElementNode:              ['attributes', 'modifiers', 'children'],
+  ElementNode:              ['attributes', 'modifiers', 'children', 'comments'],
   AttrNode:                 ['value'],
   TextNode:                 [],
 

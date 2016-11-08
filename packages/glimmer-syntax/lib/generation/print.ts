@@ -22,6 +22,9 @@ export default function build(ast) {
       if(ast.modifiers.length) {
         output.push(' ', buildEach(ast.modifiers).join(' '));
       }
+      if(ast.comments.length) {
+        output.push(' ', buildEach(ast.comments).join(' '));
+      }
       output.push('>');
       output.push.apply(output, buildEach(ast.children));
       output.push('</', ast.tag, '>');
@@ -51,6 +54,10 @@ export default function build(ast) {
     break;
     case 'MustacheStatement': {
       output.push(compactJoin(['{{', pathParams(ast), '}}']));
+    }
+    break;
+    case 'MustacheCommentStatement': {
+      output.push(compactJoin(['{{!', ast.value, '}}']));
     }
     break;
     case 'ElementModifierStatement': {

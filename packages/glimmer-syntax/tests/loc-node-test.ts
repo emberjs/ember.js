@@ -2,7 +2,7 @@ import { preprocess as parse } from "glimmer-syntax";
 
 QUnit.module("[glimmer-syntax] Parser - Location Info");
 
-function locEqual(node, startLine, startColumn, endLine, endColumn, message?) {
+function locEqual(node, startLine, startColumn, endLine, endColumn, message = JSON.stringify(node)) {
 
   let expected = {
     source: null,
@@ -206,14 +206,18 @@ test("handlebars comment", function() {
     <div>{{!-- blah blah blah blah --}}
       {{!-- derp herky --}}<div></div>
     </div>
+    <span {{! derpy }}></span>
   `);
 
-  let [,div] = ast.body;
+  let [,div,,span] = ast.body;
   let [comment1,,comment2,trailingDiv] = div.children;
+  let [comment3] = span.comments;
 
   locEqual(comment1, 2, 9, 2, 39);
   locEqual(comment2, 3, 6, 3, 27);
   locEqual(trailingDiv, 3, 27, 3, 38);
+  locEqual(span, 5, 4, 5, 30);
+  locEqual(comment3, 5, 10, 5, 22);
 });
 
 test("element attribute", function() {
