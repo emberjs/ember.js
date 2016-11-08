@@ -245,7 +245,32 @@ QUnit.test('can instantiate NodeDOMTreeConstruction without a document', functio
   assert.ok(!!helper, 'helper was instantiated without errors');
 });
 
-QUnit.module('default template id');
+QUnit.test("SVG: basic element", function(assert) {
+  let template = `
+    <svg xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="10" height="100" width="100" style="stroke:#ff0000; fill: #0000ff"></rect>
+    </svg>
+  `;
+  render(compile(template), {});
+
+  assert.equal(serializer.serializeChildren(root), template);
+});
+
+QUnit.test("SVG: element with xlink:href", function(assert) {
+  let template = `
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <rect x=".01" y=".01" width="4.98" height="2.98" fill="none" stroke="blue" stroke-width=".03"></rect>
+      <a xlink:href="http://www.w3.org">
+        <ellipse cx="2.5" cy="1.5" rx="2" ry="1" fill="red"></ellipse>
+      </a>
+    </svg>
+  `;
+  render(compile(template), {});
+
+  assert.equal(serializer.serializeChildren(root), template);
+});
+
+module('default template id');
 
 QUnit.test('generates id in node', function (assert) {
   let template = precompile('hello');
