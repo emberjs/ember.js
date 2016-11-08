@@ -132,3 +132,21 @@ test("comment", function() {
     ['endProgram', [0]]
   ]);
 });
+
+test("handlebars comment", function() {
+  let input = "{{! some comment }}";
+  actionsEqual(input, [
+    ['startProgram', [0, []]],
+    ['endProgram', [0]]
+  ]);
+});
+
+test("handlebars comment in element space", function() {
+  let input = "<div {{! some comment }}></div>";
+  actionsEqual(input, [
+    ['startProgram', [0, []]],
+    ['openElement', [0, 1, 0, []]],
+    ['closeElement', [0, 1]],
+    ['endProgram', [0]]
+  ]);
+});
