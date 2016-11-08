@@ -43,10 +43,19 @@ function buildPartial(name, params, hash, indent) {
   };
 }
 
-function buildComment(value) {
+function buildComment(value, loc?) {
   return {
     type: "CommentStatement",
-    value: value
+    value: value,
+    loc: buildLoc(loc)
+  };
+}
+
+function buildMustacheComment(value, loc?) {
+  return {
+    type: "MustacheCommentStatement",
+    value: value,
+    loc: buildLoc(loc)
   };
 }
 
@@ -59,13 +68,20 @@ function buildConcat(parts) {
 
 // Nodes
 
-function buildElement(tag, attributes?, modifiers?, children?, loc?) {
+function buildElement(tag, attributes?, modifiers?, children?, comments?, loc?) {
+  // this is used for backwards compat prior to `comments` being added to the AST
+  if (!Array.isArray(comments)) {
+    loc = comments;
+    comments = [];
+  }
+
   return {
     type: "ElementNode",
     tag: tag || "",
     attributes: attributes || [],
     blockParams: [],
     modifiers: modifiers || [],
+    comments: comments || [],
     children: children || [],
     loc: buildLoc(loc)
   };
@@ -226,6 +242,7 @@ export default {
   block: buildBlock,
   partial: buildPartial,
   comment: buildComment,
+  mustacheComment: buildMustacheComment,
   element: buildElement,
   elementModifier: buildElementModifier,
   attr: buildAttr,
