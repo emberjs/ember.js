@@ -207,7 +207,7 @@ export default class Environment extends GlimmerEnvironment {
         return new CurlyComponentSyntax(args, definition, templates, symbolTable);
       }
 
-      assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(path, symbolTable));
+      assert(`A component or helper named "${key}" could not be found`, !isBlock || this.hasHelper(path, symbolTable));
     }
 
     if (!isSimple && appendType === 'unknown') {
