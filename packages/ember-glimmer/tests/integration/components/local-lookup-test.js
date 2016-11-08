@@ -201,7 +201,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
 
     expectAssertion(() => {
       this.render('{{x-outer}}');
-    }, /A helper named "x-inner" could not be found/);
+    }, /A component or helper named "x-inner" could not be found/);
   }
 
   ['@test overrides global lookup']() {
