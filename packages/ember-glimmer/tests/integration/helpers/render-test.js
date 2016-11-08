@@ -19,7 +19,9 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     }));
     this.registerTemplate('home', '{{isBasicController}}');
 
-    this.render(`{{render 'home'}}`);
+    expectDeprecation(() => {
+      this.render(`{{render 'home'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
 
     this.assertText('true');
   }
@@ -27,7 +29,9 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
   ['@test generates a controller if none exists']() {
     this.registerTemplate('home', '<p>{{this}}</p>');
 
-    this.render(`<h1>HI</h1>{{render 'home'}}`);
+    expectDeprecation(() => {
+      this.render(`<h1>HI</h1>{{render 'home'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
 
     this.assertText('HI(generated home controller)');
   }
@@ -36,7 +40,9 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     this.owner.register('controller:home', Controller.extend({ name: 'home' }));
     this.registerTemplate('home', '{{name}}<p>BYE</p>');
 
-    this.render(`<h1>HI</h1>{{render 'home'}}`);
+    expectDeprecation(() => {
+      this.render(`<h1>HI</h1>{{render 'home'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
 
     this.assertText('HIhomeBYE');
   }
