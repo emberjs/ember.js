@@ -2699,9 +2699,9 @@ github@^0.2.3:
   dependencies:
     mime "^1.2.11"
 
-glimmer-engine@^0.17.6:
-  version "0.17.6"
-  resolved "https://registry.yarnpkg.com/glimmer-engine/-/glimmer-engine-0.17.6.tgz#edca3676c21a42f9bf389a8707ff4cc12c66d347"
+glimmer-engine:
+  version "0.17.7"
+  resolved "https://registry.yarnpkg.com/glimmer-engine/-/glimmer-engine-0.17.7.tgz#d0657a23fc49fa0ec4ff73e68132ac6d38c70787"
   dependencies:
     broccoli-concat "^2.1.0"
     broccoli-funnel "^1.0.1"
