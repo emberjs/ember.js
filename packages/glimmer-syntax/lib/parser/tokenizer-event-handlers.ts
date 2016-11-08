@@ -70,6 +70,7 @@ export default {
       name: "",
       attributes: [],
       modifiers: [],
+      comments: [],
       selfClosing: false,
       loc: null
     };
@@ -81,6 +82,7 @@ export default {
       name: "",
       attributes: [],
       modifiers: [],
+      comments: [],
       selfClosing: false,
       loc: null
     };
@@ -104,10 +106,10 @@ export default {
   },
 
   finishStartTag: function() {
-    let { name, attributes, modifiers } = this.currentNode;
+    let { name, attributes, modifiers, comments } = this.currentNode;
 
     let loc = b.loc(this.tagOpenLine, this.tagOpenColumn);
-    let element = b.element(name, attributes, modifiers, [], loc);
+    let element = b.element(name, attributes, modifiers, [], comments, loc);
     this.elementStack.push(element);
   },
 

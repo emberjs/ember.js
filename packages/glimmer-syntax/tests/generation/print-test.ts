@@ -97,3 +97,15 @@ test('BooleanLiteral', function() {
 test('HTML comment', function() {
   printEqual('<!-- foo -->');
 });
+
+test('Handlebars comment', function() {
+  printEqual('{{! foo }}');
+});
+
+test('Handlebars comment: in ElementNode', function() {
+  printEqual('<div {{! foo }}></div>');
+});
+
+test('Handlebars comment: in ElementNode children', function() {
+  printEqual('<div>{{! foo bar}}<b></b></div>');
+});
