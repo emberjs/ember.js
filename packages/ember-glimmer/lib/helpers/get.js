@@ -44,8 +44,8 @@ import {
 
   ```handlebars
   {{input value=(mut (get person factName)) type="text"}}
-  <button {{action (mut factName) "height"}}>Show height</button>
-  <button {{action (mut factName) "weight"}}>Show weight</button>
+  <button {{action (action (mut factName)) "height"}}>Show height</button>
+  <button {{action (action (mut factName)) "weight"}}>Show weight</button>
   ```
 
   Would allow the user to swap what fact is being displayed, and also edit
