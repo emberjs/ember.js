@@ -160,7 +160,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     } else if (isHelperInvocation(expr)) {
       this.prepareHelper(expr);
       this.opcode('helper', expr, expr.path.parts);
-    } else if (isLocalVariable(expr, this.symbols)) {
+    } else if (isSelfGet(expr) || isLocalVariable(expr, this.symbols)) {
       this.opcode('get', expr, expr.path.parts);
     } else {
       this.opcode('unknown', expr, expr.path.parts);
@@ -338,6 +338,11 @@ export default class TemplateCompiler<T extends TemplateMeta> {
 function isHelperInvocation(mustache) {
   return (mustache.params && mustache.params.length > 0) ||
     (mustache.hash && mustache.hash.pairs.length > 0);
+}
+
+function isSelfGet(mustache) {
+  let { parts } = mustache.path;
+  return parts[0] === null;
 }
 
 function isLocalVariable(mustache, symbols) {
