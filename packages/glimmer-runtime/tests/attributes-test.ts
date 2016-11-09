@@ -192,6 +192,23 @@ test("a[href] marks javascript: protocol as unsafe, http as safe", () => {
   equalTokens(root, '<a href="unsafe:javascript:foo()"></a>');
 });
 
+test("a[href] marks javascript: protocol as unsafe on updates", () => {
+  let template = compile('<a href="{{foo}}"></a>');
+
+  let context = { foo: 'http://foo.bar' };
+  render(template, context);
+
+  equalTokens(root, '<a href="http://foo.bar"></a>');
+
+  rerender({ foo: 'javascript:foo()' });
+
+  equalTokens(root, '<a href="unsafe:javascript:foo()"></a>');
+
+  rerender({ foo: 'http://foo.bar' });
+
+  equalTokens(root, '<a href="http://foo.bar"></a>');
+});
+
 test("a[href] marks vbscript: protocol as unsafe", () => {
   let template = compile('<a href="{{foo}}"></a>');
 
@@ -205,11 +222,54 @@ test("a[href] marks vbscript: protocol as unsafe", () => {
   equalTokens(root, '<a href="unsafe:vbscript:foo()"></a>');
 });
 
+test("a[href] can be removed by setting to `null`", () => {
+  let template = compile('<a href={{foo}}></a>');
+
+  let context = { foo: 'http://foo.bar/derp.jpg' };
+  render(template, context);
+
+  equalTokens(root, '<a href="http://foo.bar/derp.jpg"></a>');
+
+  rerender({ foo: null });
+
+  equalTokens(root, '<a></a>');
+});
+
+test("a[href] can be removed by setting to `undefined`", () => {
+  let template = compile('<a href={{foo}}></a>');
+
+  let context = { foo: 'http://foo.bar/derp.jpg' };
+  render(template, context);
+
+  equalTokens(root, '<a href="http://foo.bar/derp.jpg"></a>');
+
+  rerender({ foo: undefined });
+
+  equalTokens(root, '<a></a>');
+});
+
 test("img[src] marks javascript: protocol as unsafe", () => {
   let template = compile('<img src="{{foo}}">');
 
   let context = { foo: 'javascript:foo()' };
   render(template, context);
+
+  equalTokens(root, '<img src="unsafe:javascript:foo()">');
+
+  rerender();
+
+  equalTokens(root, '<img src="unsafe:javascript:foo()">');
+});
+
+test("img[src] marks javascript: protocol as unsafe on updates", () => {
+  let template = compile('<img src="{{foo}}">');
+
+  let context = { foo: 'http://foo.bar/derp.jpg' };
+  render(template, context);
+
+  equalTokens(root, '<img src="http://foo.bar/derp.jpg">');
+
+  rerender({ foo: 'javascript:foo()' });
 
   equalTokens(root, '<img src="unsafe:javascript:foo()">');
 
@@ -246,6 +306,32 @@ test("img[src] marks vbscript: protocol as unsafe", () => {
   rerender();
 
   equalTokens(root, '<img src="unsafe:vbscript:foo()">');
+});
+
+test("img[src] can be removed by setting to `null`", () => {
+  let template = compile('<img src={{foo}}>');
+
+  let context = { foo: 'http://foo.bar/derp.jpg' };
+  render(template, context);
+
+  equalTokens(root, '<img src="http://foo.bar/derp.jpg">');
+
+  rerender({ foo: null });
+
+  equalTokens(root, '<img>');
+});
+
+test("img[src] can be removed by setting to `undefined`", () => {
+  let template = compile('<img src={{foo}}>');
+
+  let context = { foo: 'http://foo.bar/derp.jpg' };
+  render(template, context);
+
+  equalTokens(root, '<img src="http://foo.bar/derp.jpg">');
+
+  rerender({ foo: undefined });
+
+  equalTokens(root, '<img>');
 });
 
 test("div[href] is not not marked as unsafe", () => {

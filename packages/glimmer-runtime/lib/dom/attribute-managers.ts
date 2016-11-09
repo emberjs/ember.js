@@ -143,7 +143,7 @@ class SafePropertyManager extends PropertyManager {
   }
 
   updateAttribute(env: Environment, element: Element, value: Opaque) {
-    this.setAttribute(env, element, value);
+    super.updateAttribute(env, element, sanitizeAttributeValue(env, element, this.attr, value));
   }
 }
 
@@ -200,6 +200,6 @@ class SafeAttributeManager extends AttributeManager {
   }
 
   updateAttribute(env: Environment, element: Element, value: Opaque, namespace?: DOMNamespace) {
-    this.setAttribute(env, element, value);
+    super.updateAttribute(env, element, sanitizeAttributeValue(env, element, this.attr, value));
   }
 }
