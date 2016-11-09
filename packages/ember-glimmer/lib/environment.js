@@ -184,7 +184,7 @@ export default class Environment extends GlimmerEnvironment {
 
     assert(`You attempted to overwrite the built-in helper "${key}" which is not allowed. Please rename the helper.`, !(this.builtInHelpers[key] && this.owner.hasRegistration(`helper:${key}`)));
 
-    if (isSimple && (isInline || isBlock)) {
+    if (isSimple && (isInline || isBlock) && appendType !== 'get') {
       // 2. built-in syntax
 
       let RefinedSyntax = findSyntaxBuilder(key);
@@ -197,7 +197,7 @@ export default class Environment extends GlimmerEnvironment {
 
       if (internalKey) {
         definition = this.getComponentDefinition([internalKey], symbolTable);
-      } else if (typeof key === 'string' && key.indexOf('-') >= 0) {
+      } else if (key.indexOf('-') >= 0) {
         definition = this.getComponentDefinition(path, symbolTable);
       }
 
@@ -210,7 +210,7 @@ export default class Environment extends GlimmerEnvironment {
       assert(`A component or helper named "${key}" could not be found`, !isBlock || this.hasHelper(path, symbolTable));
     }
 
-    if (!isSimple && appendType === 'unknown') {
+    if (isInline && !isSimple && appendType !== 'helper') {
       return statement.original.deopt();
     }
 
