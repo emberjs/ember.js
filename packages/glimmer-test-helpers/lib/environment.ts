@@ -820,7 +820,7 @@ export class TestEnvironment extends Environment {
       }
     }
 
-    if (!isSimple && appendType === 'unknown') {
+    if (isInline && !isSimple && appendType !== 'helper') {
       return (statement.original as OptimizedAppend).deopt();
     }
 
