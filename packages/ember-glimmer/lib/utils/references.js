@@ -20,6 +20,7 @@ import {
 } from 'glimmer-reference';
 import {
   ConditionalReference as GlimmerConditionalReference,
+  PrimitiveReference,
   NULL_REFERENCE,
   UNDEFINED_REFERENCE
 } from 'glimmer-runtime';
@@ -27,13 +28,6 @@ import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
 
 export const UPDATE = symbol('UPDATE');
-
-// @implements PathReference
-export class PrimitiveReference extends ConstReference {
-  get() {
-    return UNDEFINED_REFERENCE;
-  }
-}
 
 export { NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 
@@ -261,7 +255,7 @@ export class ConditionalReference extends GlimmerConditionalReference {
       if (isProxy(value)) {
         return new RootPropertyReference(value, 'isTruthy');
       } else {
-        return new PrimitiveReference(emberToBool(value));
+        return PrimitiveReference.create(emberToBool(value));
       }
     }
 
@@ -308,7 +302,7 @@ export class SimpleHelperReference extends CachedReference {
       } else if (typeof result === 'object') {
         return new RootReference(result);
       } else {
-        return new PrimitiveReference(result);
+        return PrimitiveReference.create(result);
       }
     } else {
       return new SimpleHelperReference(helper, args);
@@ -393,7 +387,7 @@ export class UnboundReference extends ConstReference {
     } else if (typeof value === 'object') {
       return new UnboundReference(value);
     } else {
-      return new PrimitiveReference(value);
+      return PrimitiveReference.create(value);
     }
   }
 
