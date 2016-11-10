@@ -1,6 +1,6 @@
 {
   "name": "glimmer-engine",
-  "version": "0.17.10",
+  "version": "0.18.0",
   "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
   "esnext:main": "dist/es6/glimmer/index.js",
   "main": "dist/node_modules/glimmer/index.js",
