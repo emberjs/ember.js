@@ -16,8 +16,7 @@ import {
   isModified
 } from 'glimmer-reference';
 import { ModifierManager } from '../../modifier/interfaces';
-import { NULL_REFERENCE } from '../../references';
-import { ValueReference } from '../../compiled/expressions/value';
+import { NULL_REFERENCE, PrimitiveReference } from '../../references';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { AttributeManager } from '../../dom/attribute-managers';
 import { ElementOperations } from '../../builder';
@@ -150,7 +149,7 @@ class ClassList {
 
     if (!list) return NULL_REFERENCE;
 
-    if (isConst) return new ValueReference(toClassName(list));
+    if (isConst) return PrimitiveReference.create(toClassName(list));
 
     return new ClassListReference(list);
   }
@@ -192,7 +191,7 @@ export class SimpleElementOperations implements ElementOperations {
 
   addStaticAttribute(element: Simple.Element, name: string, value: string) {
     if (name === 'class') {
-      this.addClass(new ValueReference(value));
+      this.addClass(PrimitiveReference.create(value));
     } else {
       this.env.getAppendOperations().setAttribute(element, name, value);
     }
@@ -277,7 +276,7 @@ export class ComponentElementOperations implements ElementOperations {
 
   addStaticAttribute(element: Simple.Element, name: string, value: string) {
     if (name === 'class') {
-      this.addClass(new ValueReference(value));
+      this.addClass(PrimitiveReference.create(value));
     } else if (this.shouldAddAttribute(name)) {
       this.addAttribute(name, new StaticAttribute(element, name, value));
     }
