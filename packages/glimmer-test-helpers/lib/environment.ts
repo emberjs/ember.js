@@ -45,7 +45,7 @@ import {
   InElementSyntax,
 
   // References
-  ValueReference,
+  PrimitiveReference,
   ConditionalReference,
 
   // Misc
@@ -777,7 +777,7 @@ export class TestEnvironment extends Environment {
 
   toConditionalReference(reference: Reference<any>): Reference<boolean> {
     if (isConst(reference)) {
-      return new ValueReference(emberToBool(reference.value()));
+      return PrimitiveReference.create(emberToBool(reference.value()));
     }
 
     return new EmberishConditionalReference(reference);
@@ -1065,14 +1065,14 @@ class StaticTaglessComponentLayoutCompiler extends GenericComponentLayoutCompile
 
 function EmberTagName(vm: VM): PathReference<string> {
   let self = vm.getSelf().value();
-  let tagName = self['tagName'];
+  let tagName: string = self['tagName'];
   tagName = tagName === '' ? null : self['tagName'] || 'div';
-  return new ValueReference(tagName);
+  return PrimitiveReference.create(tagName);
 }
 
 function EmberID(vm: VM): PathReference<string> {
   let self = vm.getSelf().value() as { _guid: string };
-  return new ValueReference(`ember${self._guid}`);
+  return PrimitiveReference.create(`ember${self._guid}`);
 }
 
 class EmberishCurlyComponentLayoutCompiler extends GenericComponentLayoutCompiler {

@@ -1,6 +1,7 @@
+import { PathReference } from 'glimmer-reference';
 import VM from '../../vm/append';
 import { CompiledExpression } from '../expressions';
-import { ValueReference } from './value';
+import { PrimitiveReference } from '../../references';
 
 export default class CompiledHasBlockParams extends CompiledExpression<boolean> {
   public type = "has-block-params";
@@ -9,9 +10,9 @@ export default class CompiledHasBlockParams extends CompiledExpression<boolean> 
     super();
   }
 
-  evaluate(vm: VM): ValueReference<boolean> {
+  evaluate(vm: VM): PathReference<boolean> {
     let blockRef = vm.scope().getBlock(this.blockSymbol);
-    return new ValueReference(!!(blockRef && blockRef.locals.length > 0));
+    return PrimitiveReference.create(!!(blockRef && blockRef.locals.length > 0));
   }
 
   toJSON(): string {
