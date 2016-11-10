@@ -1,6 +1,6 @@
-import { EvaluatedArgs, Template, RenderResult, SafeString, ValueReference, VM } from "glimmer-runtime";
+import { UNDEFINED_REFERENCE, EvaluatedArgs, Template, RenderResult, SafeString, PrimitiveReference, VM } from "glimmer-runtime";
 import { BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "glimmer-test-helpers";
-import { PathReference } from "glimmer-reference";
+import { ConstReference, PathReference } from "glimmer-reference";
 import { UpdatableReference } from "glimmer-object-reference";
 import { Opaque } from "glimmer-util";
 
@@ -671,6 +671,12 @@ test("triple curlies with empty string initial value", assert => {
   equalTokens(root, '<div></div>', "back to empty string");
 });
 
+class ValueReference<T> extends ConstReference<T> {
+  get(): PrimitiveReference<undefined> {
+    return UNDEFINED_REFERENCE;
+  }
+}
+
 test("double curlies with const SafeString", assert => {
   let rawString = '<b>bold</b> and spicy';
 
@@ -765,7 +771,7 @@ test("helpers can add destroyables", assert => {
 
   env.registerInternalHelper('destroy-me', (vm: VM, args: EvaluatedArgs) => {
     vm.newDestroyable(destroyable);
-    return new ValueReference<Opaque>('destroy me!');
+    return PrimitiveReference.create('destroy me!');
   });
 
   let template = compile('<div>{{destroy-me}}</div>');

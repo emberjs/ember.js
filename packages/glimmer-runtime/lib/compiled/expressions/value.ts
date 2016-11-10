@@ -1,40 +1,21 @@
 import { VM } from '../../vm';
 import { CompiledExpression } from '../expressions';
-import { ConstReference, PathReference } from 'glimmer-reference';
-import { Dict, dict } from 'glimmer-util';
+import { Primitive, PrimitiveReference } from '../../references';
 
-export default class CompiledValue<T> extends CompiledExpression<T> {
+export default class CompiledValue<T extends Primitive> extends CompiledExpression<T> {
   public type = "value";
-  private reference: ValueReference<T>;
+  private reference: PrimitiveReference<T>;
 
-  constructor(value: any) {
+  constructor(value: T) {
     super();
-    this.reference = new ValueReference(value);
+    this.reference = PrimitiveReference.create(value as any);
   }
 
-  evaluate(vm: VM): PathReference<T> {
+  evaluate(vm: VM): PrimitiveReference<T> {
     return this.reference;
   }
 
   toJSON(): string {
     return JSON.stringify(this.reference.value());
   }
-}
-
-export class ValueReference<T> extends ConstReference<T> implements PathReference<T> {
-  protected inner: T;
-  protected children: Dict<ValueReference<any>> = dict<ValueReference<any>>();
-
-  get(key: string) {
-    let { children } = this;
-    let child = children[key];
-
-    if (!child) {
-      child = children[key] = new ValueReference(this.inner[key]);
-    }
-
-    return child;
-  }
-
-  value(): any { return this.inner; }
 }

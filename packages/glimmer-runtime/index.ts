@@ -13,7 +13,7 @@ export { default as templateFactory, TemplateFactory, Template } from './lib/tem
 
 export { default as SymbolTable } from './lib/symbol-table';
 
-export { ConditionalReference, NULL_REFERENCE, UNDEFINED_REFERENCE } from './lib/references';
+export { NULL_REFERENCE, UNDEFINED_REFERENCE, PrimitiveReference, ConditionalReference } from './lib/references';
 
 export {
   Templates,
@@ -88,10 +88,6 @@ export {
   EvaluatedNamedArgs,
   EvaluatedPositionalArgs
 } from './lib/compiled/expressions/args';
-
-export {
-  ValueReference
-} from './lib/compiled/expressions/value';
 
 export {
   FunctionExpression
