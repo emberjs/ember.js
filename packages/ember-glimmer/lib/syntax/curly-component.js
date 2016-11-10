@@ -1,7 +1,7 @@
 import { OWNER } from 'ember-utils';
 import {
   StatementSyntax,
-  ValueReference,
+  PrimitiveReference,
   ComponentDefinition
 } from 'glimmer-runtime';
 import {
@@ -394,7 +394,7 @@ const ROOT_MANAGER = new TopComponentManager();
 function tagName(vm) {
   let { tagName } = vm.dynamicScope().view;
 
-  return new ValueReference(tagName === '' ? null : tagName || 'div');
+  return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
 }
 
 function ariaRole(vm) {
