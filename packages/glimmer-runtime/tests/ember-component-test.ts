@@ -522,6 +522,50 @@ testComponent('yield', {
   expected: 'Yes:Hello42outer'
 });
 
+[
+  {
+    value: 'true',
+    output: 'true'
+  }, {
+    value: 'false',
+    output: 'false'
+  }, {
+    value: 'null',
+    output: ''
+  }, {
+    value: 'undefined',
+    output: ''
+  }, {
+    value: '1',
+    output: '1'
+  }, {
+    value: '"foo"',
+    output: 'foo'
+  }
+].forEach(({ value, output }) => {
+  testComponent(`yielding ${value}`, {
+    layout: `{{yield ${value}}}`,
+
+    invokeAs: {
+      blockParams: ['yielded'],
+      template: '{{yielded}}-{{yielded.foo.bar}}'
+    },
+
+    expected: `${output}-`
+  });
+});
+
+testComponent(`yielding a string and rendering its length`, {
+  layout: `{{yield "foo"}}-{{yield ""}}`,
+
+  invokeAs: {
+    blockParams: ['yielded'],
+    template: '{{yielded}}-{{yielded.length}}'
+  },
+
+  expected: `foo-3--0`
+});
+
 testComponent('use a non-existent block param', {
   skip: 'glimmer',
   layout: '{{yield someValue}}',
