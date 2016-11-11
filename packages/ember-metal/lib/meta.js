@@ -111,6 +111,10 @@ export function Meta(obj, parentMeta) {
     this._lastRenderedFrom = undefined; // FIXME: not used in production, remove me from prod builds
   }
 
+  if (isEnabled('ember-metal-meta-destructors')) {
+    this._destructors = undefined;
+  }
+
   this._initializeListeners();
 }
 
@@ -122,6 +126,14 @@ const NODE_STACK = [];
 
 Meta.prototype.destroy = function() {
   if (this.isMetaDestroyed()) { return; }
+
+  if (isEnabled('ember-metal-meta-destructors')) {
+    if (this._destructors) {
+      for (let i = 0; i < this._destructors.length; i++) {
+        this._destructors[i]();
+      }
+    }
+  }
 
   // remove chainWatchers to remove circular references that would prevent GC
   let node, nodes, key, nodeObject;
@@ -161,6 +173,18 @@ Meta.prototype.destroy = function() {
 
   this.setMetaDestroyed();
 };
+
+if (isEnabled('ember-metal-meta-destructors')) {
+  Meta.prototype.addDestructor = function addDestructor(destructor) {
+    assert(`Cannot call addDestructor after the object is destroyed.`, !this.isMetaDestroyed());
+
+    if (!this._destructors) {
+      this._destructors = [];
+    }
+
+    this._destructors.push(destructor);
+  };
+}
 
 for (let name in listenerMethods) {
   Meta.prototype[name] = listenerMethods[name];

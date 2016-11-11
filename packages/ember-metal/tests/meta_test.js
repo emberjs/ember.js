@@ -1,6 +1,7 @@
 import {
   meta
 } from '../meta';
+import isEnabled from '../features';
 
 QUnit.module('Ember.meta');
 
@@ -75,3 +76,28 @@ QUnit.test('meta.listeners deduplication', function(assert) {
   assert.equal(matching.length, 3);
   assert.equal(matching[0], t);
 });
+
+if (isEnabled('ember-metal-meta-destructors')) {
+  QUnit.test('destructors added are invoked during destroy', function(assert) {
+    let m = meta({});
+
+    let calledDestructor;
+    m.addDestructor(() => {
+      calledDestructor = true;
+    });
+
+    m.destroy();
+
+    assert.ok(calledDestructor, 'expected destructor to be called');
+  });
+
+  QUnit.test('cannot add destructors after destroy', function(assert) {
+    let m = meta({});
+
+    m.destroy();
+
+    expectAssertion(() => {
+      m.addDestructor(() => {});
+    }, /Cannot call addDestructor after the object is destroyed/);
+  });
+}
