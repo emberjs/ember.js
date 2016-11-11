@@ -6,8 +6,7 @@ export default function DeprecateRender(options) {
   this.options = options;
 }
 
-DeprecateRender.prototype.transform =
-  function DeprecateRender_transform(ast) {
+DeprecateRender.prototype.transform = function DeprecateRender_transform(ast) {
   let moduleName = this.options.meta.moduleName;
   let walker = new this.syntax.Walker();
 

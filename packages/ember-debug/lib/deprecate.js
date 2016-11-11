@@ -39,7 +39,7 @@ if (new Error().stack) {
   };
 } else {
   captureErrorForStack = function() {
-    try { __fail__.fail(); } catch(e) { return e; }
+    try { __fail__.fail(); } catch (e) { return e; }
   };
 }
 

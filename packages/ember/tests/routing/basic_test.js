@@ -1374,7 +1374,6 @@ QUnit.test('Route inherits model from parent route', function() {
   let post1 = {};
   let post2 = {};
   let post3 = {};
-  let currentPost;
   let share1 = {};
   let share2 = {};
   let share3 = {};
@@ -1420,15 +1419,12 @@ QUnit.test('Route inherits model from parent route', function() {
 
   bootApplication();
 
-  currentPost = post1;
   handleURL('/posts/1/comments');
   handleURL('/posts/1/shares/1');
 
-  currentPost = post2;
   handleURL('/posts/2/comments');
   handleURL('/posts/2/shares/2');
 
-  currentPost = post3;
   handleURL('/posts/3/comments');
   handleURL('/posts/3/shares/3');
 });
@@ -1446,7 +1442,6 @@ QUnit.test('Routes with { resetNamespace: true } inherits model from parent rout
   let post1 = {};
   let post2 = {};
   let post3 = {};
-  let currentPost;
 
   let posts = {
     1: post1,
@@ -1470,13 +1465,8 @@ QUnit.test('Routes with { resetNamespace: true } inherits model from parent rout
 
   bootApplication();
 
-  currentPost = post1;
   handleURL('/posts/1/comments');
-
-  currentPost = post2;
   handleURL('/posts/2/comments');
-
-  currentPost = post3;
   handleURL('/posts/3/comments');
 });
 
@@ -2871,7 +2861,7 @@ QUnit.test('Specifying non-existent controller name in route#render throws', fun
     renderTemplate() {
       try {
         this.render('homepage', { controller: 'stefanpenneristhemanforme' });
-      } catch(e) {
+      } catch (e) {
         equal(e.message, 'You passed `controller: \'stefanpenneristhemanforme\'` into the `render` method, but no such controller could be found.');
       }
     }

@@ -37,15 +37,6 @@ import { setupApplicationRegistry } from 'ember-glimmer';
 
 let librariesRegistered = false;
 
-let warnedAboutLegacyViewAddon = false;
-let warnedAboutLegacyControllerAddon = false;
-
-// For testing
-export function _resetLegacyAddonWarnings() {
-  warnedAboutLegacyViewAddon = false;
-  warnedAboutLegacyControllerAddon = false;
-}
-
 /**
   An instance of `Ember.Application` is the starting point for every Ember
   application. It helps to instantiate, initialize and coordinate the many
@@ -563,7 +554,7 @@ const Application = Engine.extend({
 
     try {
       this._bootSync();
-    } catch(_) {
+    } catch (_) {
       // Ignore th error: in the asynchronous boot path, the error is already reflected
       // in the promise rejection
     }
@@ -601,7 +592,7 @@ const Application = Engine.extend({
       runLoadHooks('application', this);
       this.advanceReadiness();
       // Continues to `didBecomeReady`
-    } catch(error) {
+    } catch (error) {
       // For the asynchronous boot path
       defer.reject(error);
 
@@ -743,7 +734,7 @@ const Application = Engine.extend({
 
       // For the synchronous boot path
       this._booted = true;
-    } catch(error) {
+    } catch (error) {
       // For the asynchronous boot path
       this._bootResolver.reject(error);
 

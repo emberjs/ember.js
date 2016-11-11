@@ -9,7 +9,7 @@ QUnit.module('mandatory-setters');
 function hasMandatorySetter(object, property) {
   try {
     return Object.getOwnPropertyDescriptor(object, property).set.isMandatorySetter === true;
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }
@@ -373,15 +373,15 @@ if (isEnabled('mandatory-setter')) {
 
     let child = new Parent();
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
     watch(child, 'food');
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
     Parent.prototype.food  = 'icecreame';
 
-    equal(child.food , 'icecreame');
+    equal(child.food, 'icecreame');
 
     unwatch(child, 'food');
 
@@ -406,15 +406,15 @@ if (isEnabled('mandatory-setter')) {
 
     let child = new Parent('chips');
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
     watch(child, 'food');
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
-    child._food  = 'icecreame';
+    child._food = 'icecreame';
 
-    equal(child.food , 'icecreame');
+    equal(child.food, 'icecreame');
 
     unwatch(child, 'food');
 

@@ -252,7 +252,7 @@ QUnit.test('should have reason when isRejected is set', function() {
 
   try {
     run(deferred, 'reject', error);
-  } catch(e) {
+  } catch (e) {
     equal(e, error);
   }
 });

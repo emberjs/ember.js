@@ -225,7 +225,7 @@ function beginPropertyChanges() {
 */
 function endPropertyChanges() {
   deferred--;
-  if (deferred<=0) {
+  if (deferred <= 0) {
     beforeObserverSet.clear();
     observerSet.flush();
   }

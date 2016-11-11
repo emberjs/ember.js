@@ -36,7 +36,7 @@ QUnit.module('Application Lifecycle - Component Registration', {
   teardown: cleanup
 });
 
-function boot(callback, startURL='/') {
+function boot(callback, startURL = '/') {
   run(() => {
     App = Application.create({
       name: 'App',

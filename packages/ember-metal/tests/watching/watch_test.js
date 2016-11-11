@@ -12,9 +12,7 @@ import {
   destroy
 } from '../../watching';
 
-let willCount, didCount,
-    willKeys, didKeys,
-    originalLookup, lookup;
+let willCount, didCount, willKeys, didKeys, originalLookup;
 
 QUnit.module('watch', {
   setup() {
@@ -23,7 +21,7 @@ QUnit.module('watch', {
     didKeys = [];
 
     originalLookup = context.lookup;
-    context.lookup = lookup = {};
+    context.lookup = {};
   },
 
   teardown() {

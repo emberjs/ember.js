@@ -3,9 +3,7 @@ import Engine from '../../system/engine';
 import EngineInstance from '../../system/engine-instance';
 import { setEngineParent } from '../../system/engine-parent';
 
-let MyEngine,
-    myEngine,
-    myEngineInstance;
+let MyEngine, myEngine, myEngineInstance;
 
 function buildEngineInstance(EngineClass) {
   let engineInstance = EngineClass.buildInstance();

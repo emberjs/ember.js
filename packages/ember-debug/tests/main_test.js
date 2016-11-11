@@ -46,7 +46,7 @@ QUnit.test('Ember.deprecate does not throw if RAISE_ON_DEPRECATION is false', fu
   try {
     deprecate('Should not throw', false, { id: 'test', until: 'forever' });
     assert.ok(true, 'Ember.deprecate did not throw');
-  } catch(e) {
+  } catch (e) {
     assert.ok(false, `Expected deprecate not to throw but it did: ${e.message}`);
   }
 });
@@ -59,7 +59,7 @@ QUnit.test('Ember.deprecate resets deprecation level to RAISE if ENV.RAISE_ON_DE
   try {
     deprecate('Should not throw', false, { id: 'test', until: 'forever' });
     assert.ok(true, 'Ember.deprecate did not throw');
-  } catch(e) {
+  } catch (e) {
     assert.ok(false, `Expected deprecate not to throw but it did: ${e.message}`);
   }
 
@@ -83,7 +83,7 @@ QUnit.test('When ENV.RAISE_ON_DEPRECATION is true, it is still possible to silen
   try {
     deprecate('should be silenced with matching id', false, { id: 'my-deprecation', until: 'forever' });
     assert.ok(true, 'Did not throw when level is set by id');
-  } catch(e) {
+  } catch (e) {
     assert.ok(false, `Expected deprecate not to throw but it did: ${e.message}`);
   }
 
@@ -177,14 +177,14 @@ QUnit.test('Ember.deprecate does not throw a deprecation at log and silence leve
   try {
     deprecate('Deprecation for testing purposes', false, { id, until });
     ok(true, 'Deprecation did not throw');
-  } catch(e) {
+  } catch (e) {
     ok(false, 'Deprecation was thrown despite being added to blacklist');
   }
 
   try {
     deprecate('Deprecation for testing purposes', false, { id, until });
     ok(true, 'Deprecation did not throw');
-  } catch(e) {
+  } catch (e) {
     ok(false, 'Deprecation was thrown despite being added to blacklist');
   }
 

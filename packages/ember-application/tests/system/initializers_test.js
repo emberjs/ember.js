@@ -55,7 +55,7 @@ QUnit.test('initializers that throw errors cause the boot promise to reject with
         equal(err.message, 'boot failure');
       }
     );
-  } catch(e) {
+  } catch (e) {
     QUnit.start();
     ok(false, 'The boot method should not throw');
     throw e;

@@ -5,13 +5,13 @@ import { jQuery } from 'ember-views';
 import { NoneLocation } from 'ember-routing';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
-let App, templates, router, container;
+let App, templates, container;
 
 function bootApplication() {
   for (let name in templates) {
     setTemplate(name, compile(templates[name]));
   }
-  router = container.lookup('router:main');
+  container.lookup('router:main');
   run(App, 'advanceReadiness');
 }
 

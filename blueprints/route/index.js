@@ -45,7 +45,7 @@ module.exports = {
         }
 
         if (options.inDummy) {
-          return path.join('tests','dummy','app');
+          return path.join('tests', 'dummy', 'app');
         }
 
         if (options.inAddon) {

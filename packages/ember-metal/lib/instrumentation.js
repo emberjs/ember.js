@@ -118,7 +118,7 @@ function withFinalizer(callback, finalizer, payload, binding) {
   let result;
   try {
     result = callback.call(binding);
-  } catch(e) {
+  } catch (e) {
     payload.exception = e;
     result = payload;
   } finally {

@@ -551,7 +551,7 @@ moduleFor('Components test: send', class extends RenderingTest {
     this.runTask(() => component.send('poke'));
   }
 
-   ['@test action can be handled by a superclass\' actions object'](assert) {
+  ['@test action can be handled by a superclass\' actions object'](assert) {
     this.assert.expect(4);
 
     let component;

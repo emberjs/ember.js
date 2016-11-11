@@ -115,11 +115,11 @@ QUnit.test('extending an ES subclass of EmberObject', function(assert) {
 
   class MyObject extends SubEmberObject {}
 
-  let myObject = MyObject.create();
+  MyObject.create();
   assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
 
   calls = [];
-  myObject = new MyObject();
+  new MyObject();
   assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
 });
 
@@ -141,10 +141,10 @@ QUnit.skip('calling extend on an ES subclass of EmberObject', function(assert) {
 
   let MyObject = SubEmberObject.extend({});
 
-  let myObject = MyObject.create();
+  MyObject.create();
   assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
 
   calls = [];
-  myObject = new MyObject();
+  new MyObject();
   assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
 });

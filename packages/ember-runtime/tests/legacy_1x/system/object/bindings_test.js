@@ -20,7 +20,7 @@ import EmberObject from '../../../../system/object';
 // ========================================================================
 
 let originalLookup = context.lookup;
-let testObject, fromObject, extraObject, TestObject;
+let testObject, fromObject, TestObject;
 let TestNamespace, lookup;
 
 QUnit.module('bind() method', {
@@ -38,10 +38,6 @@ QUnit.module('bind() method', {
       extraObject: null
     });
 
-    extraObject = EmberObject.create({
-      foo: 'extraObjectValue'
-    });
-
     lookup['TestNamespace'] = TestNamespace = {
       fromObject: fromObject,
       testObject: testObject
@@ -49,7 +45,7 @@ QUnit.module('bind() method', {
   },
 
   teardown() {
-    testObject = fromObject = extraObject = null;
+    testObject = fromObject = null;
     context.lookup = originalLookup;
   }
 });
@@ -97,10 +93,6 @@ QUnit.module('fooBinding method', {
       extraObject: null
     });
 
-    extraObject = EmberObject.create({
-      foo: 'extraObjectValue'
-    });
-
     lookup['TestNamespace'] = TestNamespace = {
       fromObject: fromObject,
       testObject: TestObject
@@ -109,7 +101,7 @@ QUnit.module('fooBinding method', {
 
   teardown() {
     context.lookup = originalLookup;
-    TestObject = fromObject = extraObject = null;
+    TestObject = fromObject = null;
     //  delete TestNamespace;
   }
 });

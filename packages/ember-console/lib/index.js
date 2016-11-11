@@ -1,6 +1,6 @@
 import { context } from 'ember-environment';
 
-function K(){}
+function K() {}
 
 function consoleMethod(name) {
   let consoleObj;
@@ -30,7 +30,7 @@ function assertPolyfill(test, message) {
     try {
       // attempt to preserve the stack
       throw new Error('assertion failed: ' + message);
-    } catch(error) {
+    } catch (error) {
       setTimeout(() => {
         throw error;
       }, 0);

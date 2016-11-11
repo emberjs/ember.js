@@ -24,7 +24,7 @@ const TestEnumerable = EmberObject.extend(Enumerable, {
   },
 
   addObject(obj) {
-    if (this._content.indexOf(obj)>=0) {
+    if (this._content.indexOf(obj) >= 0) {
       return this;
     }
 

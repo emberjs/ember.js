@@ -519,7 +519,8 @@ const Enumerable = Mixin.create({
     for (let idx = 0; idx < len && !found; idx++) {
       next = this.nextObject(idx, last, context);
 
-      if (found = callback.call(target, next, idx, this)) {
+      found = callback.call(target, next, idx, this);
+      if (found) {
         ret = next;
       }
 

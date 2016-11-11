@@ -123,7 +123,7 @@ moduleFor('Components instrumentation', class extends RenderingTest {
   }
 
   _assertEvents(label, actual, expected, initialRender) {
-    this.assert.equal(actual.length, expected.length , `${label}: expected ${expected.length} and got ${actual.length}`);
+    this.assert.equal(actual.length, expected.length, `${label}: expected ${expected.length} and got ${actual.length}`);
 
     actual.forEach((payload, i) => this.assertPayload(payload, expected[i], initialRender));
   }

@@ -11,7 +11,7 @@ const hasCompliantDelete = (function() {
 
   try {
     delete obj.zomg;
-  } catch(e) {
+  } catch (e) {
     return true;
   }
 
@@ -26,7 +26,7 @@ const hasCompliantAssign = (function() {
 
   try {
     obj.zomg = 'lol';
-  } catch(e) {
+  } catch (e) {
     return true;
   }
 

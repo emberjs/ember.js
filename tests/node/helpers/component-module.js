@@ -60,7 +60,7 @@ function setupComponentTest() {
   var module = this;
 
   module.element = new SimpleDOM.Document();
-  module.owner = buildOwner(this.Ember, { resolve: function(){} });
+  module.owner = buildOwner(this.Ember, { resolve: function() {} });
   module.owner.register('service:-document', new SimpleDOM.Document(), { instantiate: false });
 
   this._hasRendered = false;

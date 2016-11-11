@@ -9,7 +9,7 @@ var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 var module = QUnit.module;
 var test = QUnit.test;
 
-var compile;
+var templateCompiler;
 
 module('ember-template-compiler.js', {
   setup: function() {

@@ -424,7 +424,7 @@ class AbstractAppendTest extends RenderingTest {
       return this.append(component);
     };
 
-    let wrapper1, wrapper2, element1, element2;
+    let element1, element2;
     this.registerComponent('first-component', {
       ComponentClass: Component.extend({
         layout: compile('component-one'),
@@ -433,7 +433,7 @@ class AbstractAppendTest extends RenderingTest {
           element1 = this.element;
           let SecondComponent = owner._lookupFactory('component:second-component');
 
-          wrapper2 = append(SecondComponent.create());
+          append(SecondComponent.create());
         }
       })
     });
@@ -450,7 +450,7 @@ class AbstractAppendTest extends RenderingTest {
 
     let FirstComponent = this.owner._lookupFactory('component:first-component');
 
-    this.runTask(() => wrapper1 = append(FirstComponent.create()));
+    this.runTask(() => append(FirstComponent.create()));
 
     this.assertComponentElement(element1, { content: 'component-one' });
     this.assertComponentElement(element2, { content: 'component-two' });

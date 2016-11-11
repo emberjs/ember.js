@@ -170,8 +170,8 @@ describe('Acceptance: ember generate and destroy service', function() {
 
     return emberNew()
       .then(() => modifyPackages([
-        {name: 'ember-cli-qunit', delete: true},
-        {name: 'ember-cli-mocha', dev: true}
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
       ]))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/unit/services/foo-test.js'))

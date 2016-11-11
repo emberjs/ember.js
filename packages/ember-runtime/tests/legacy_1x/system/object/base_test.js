@@ -23,7 +23,7 @@ import EmberObject from '../../../../system/object';
 // EmberObject Base Tests
 // ========================================================================
 
-let obj, obj1, don; // global variables
+let obj, obj1; // global variables
 
 QUnit.module('A new EmberObject instance', {
 
@@ -68,17 +68,11 @@ QUnit.module('EmberObject superclass and subclasses', {
       }
     });
     obj1 = obj.extend();
-    don = obj1.create({
-      method2() {
-        return this.superclass();
-      }
-    });
   },
 
   teardown() {
     obj = undefined;
     obj1 = undefined;
-    don = undefined;
   }
 });
 

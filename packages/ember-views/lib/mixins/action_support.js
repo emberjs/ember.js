@@ -129,7 +129,6 @@ export default Mixin.create({
   },
 
   send(actionName, ...args) {
-    let target;
     let action = this.actions && this.actions[actionName];
 
     if (action) {
@@ -137,8 +136,7 @@ export default Mixin.create({
       if (!shouldBubble) { return; }
     }
 
-    target = get(this, 'target');
-
+    let target = get(this, 'target');
     if (target) {
       assert(
         'The `target` for ' + this + ' (' + target +

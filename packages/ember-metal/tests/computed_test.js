@@ -653,7 +653,7 @@ QUnit.test('adding a computed property should show up in key iteration', functio
   for (let key in obj) {
     found.push(key);
   }
-  ok(found.indexOf('foo')>=0, 'should find computed property in iteration found=' + found);
+  ok(found.indexOf('foo') >= 0, 'should find computed property in iteration found=' + found);
   ok('foo' in obj, 'foo in obj should pass');
 });
 
@@ -684,16 +684,17 @@ testBoth('setting a watched computed property', function(get, set) {
     firstName: 'Yehuda',
     lastName: 'Katz'
   };
+
   defineProperty(obj, 'fullName', computed({
-      get() { return get(this, 'firstName') + ' ' + get(this, 'lastName'); },
-      set(key, value) {
-        let values = value.split(' ');
-        set(this, 'firstName', values[0]);
-        set(this, 'lastName', values[1]);
-        return value;
-      }
-    }).property('firstName', 'lastName')
-  );
+    get() { return get(this, 'firstName') + ' ' + get(this, 'lastName'); },
+    set(key, value) {
+      let values = value.split(' ');
+      set(this, 'firstName', values[0]);
+      set(this, 'lastName', values[1]);
+      return value;
+    }
+  }).property('firstName', 'lastName'));
+
   let fullNameWillChange = 0;
   let fullNameDidChange = 0;
   let firstNameWillChange = 0;
@@ -741,14 +742,15 @@ testBoth('setting a cached computed property that modifies the value you give it
   let obj = {
     foo: 0
   };
+
   defineProperty(obj, 'plusOne', computed({
-      get(key) { return get(this, 'foo') + 1; },
-      set(key, value) {
-        set(this, 'foo', value);
-        return value + 1;
-      }
-    }).property('foo')
-  );
+    get(key) { return get(this, 'foo') + 1; },
+    set(key, value) {
+      set(this, 'foo', value);
+      return value + 1;
+    }
+  }).property('foo'));
+
   let plusOneWillChange = 0;
   let plusOneDidChange = 0;
   _addBeforeObserver(obj, 'plusOne', function () {
@@ -822,7 +824,7 @@ testBoth('protects against setting', function(get, set) {
 
   throws(() => {
     set(obj, 'bar', 'newBar');
-  }, /Cannot set read\-only property "bar" on object:/ );
+  }, /Cannot set read\-only property "bar" on object:/);
 
   equal(get(obj, 'bar'), 'barValue');
 });

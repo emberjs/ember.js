@@ -252,7 +252,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     This returns the objects at the specified indexes, using `objectAt`.
 
     ```javascript
-    let arr = ['a', 'b', 'c', 'd'];
+    let arr = ['a', 'b', 'c', 'd'];
 
     arr.objectsAt([0, 1, 2]);  // ['a', 'b', 'c']
     arr.objectsAt([2, 3, 4]);  // ['c', 'd', undefined]

@@ -23,7 +23,6 @@ import { computed, observer } from 'ember-metal';
 
 const ObservableObject = EmberObject.extend(Observable);
 
-let revMatches = false;
 let ObjectA;
 
 QUnit.module('object.propertyChanges', {
@@ -41,16 +40,15 @@ QUnit.module('object.propertyChanges', {
       }),
 
       starObserver(target, key, value, rev) {
-        revMatches = (rev === target.propertyRevision);
         this.starProp = key;
       }
     }).create({
       starProp: null,
 
-      foo  : 'fooValue',
-      prop : 'propValue',
+      foo: 'fooValue',
+      prop: 'propValue',
 
-      newFoo : 'newFooValue',
+      newFoo: 'newFooValue',
       newProp: 'newPropValue'
     });
   }

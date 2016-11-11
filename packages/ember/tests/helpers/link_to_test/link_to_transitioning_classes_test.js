@@ -6,12 +6,12 @@ import { Application } from 'ember-application';
 import { jQuery } from 'ember-views';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
-let Router, App, router, registry, container;
+let Router, App, registry, container;
 
 let aboutDefer, otherDefer;
 
 function bootApplication() {
-  router = container.lookup('router:main');
+  container.lookup('router:main');
   run(App, 'advanceReadiness');
 }
 

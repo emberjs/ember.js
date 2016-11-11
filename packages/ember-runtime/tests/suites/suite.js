@@ -138,6 +138,6 @@ const SuiteModuleBuilder = EmberObject.extend({
   }
 });
 
-export {SuiteModuleBuilder, Suite};
+export { SuiteModuleBuilder, Suite };
 
 export default Suite;

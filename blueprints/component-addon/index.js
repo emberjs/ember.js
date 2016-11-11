@@ -45,7 +45,7 @@ module.exports = {
     var importPathName       = [addonName, 'components', fileName].join('/');
 
     if (options.pod) {
-      importPathName = [addonName, 'components', fileName,'component'].join('/');
+      importPathName = [addonName, 'components', fileName, 'component'].join('/');
     }
 
     return {

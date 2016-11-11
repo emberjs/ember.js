@@ -12,7 +12,7 @@ const ObserverClass = EmberObject.extend({
   _keysBefore: null,
   _keys: null,
   _values: null,
-  _before : null,
+  _before: null,
   _after: null,
 
   isEnabled: true,
@@ -55,7 +55,7 @@ const ObserverClass = EmberObject.extend({
   observeBefore(obj) {
     let keys = Array.prototype.slice.call(arguments, 1);
     let loc  = keys.length;
-    while (--loc>=0) {
+    while (--loc >= 0) {
       _addBeforeObserver(obj, keys[loc], this, 'propertyWillChange');
     }
 
@@ -330,4 +330,4 @@ if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
 EnumerableTests.importModuleTests(withoutTests);
 
 export default EnumerableTests;
-export {EnumerableTests, ObserverClass};
+export { EnumerableTests, ObserverClass };

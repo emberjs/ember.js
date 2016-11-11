@@ -1432,7 +1432,7 @@ function didBeginTransition(transition, router) {
 }
 
 function resemblesURL(str) {
-  return typeof str === 'string' && ( str === '' || str.charAt(0) === '/');
+  return typeof str === 'string' && (str === '' || str.charAt(0) === '/');
 }
 
 function forEachQueryParam(router, handlerInfos, queryParams, callback) {
