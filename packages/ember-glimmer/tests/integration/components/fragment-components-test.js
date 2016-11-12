@@ -47,14 +47,9 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
   }
 
   ['@test throws an error if an event function is defined in a tagless component']() {
-    let instance;
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
       tagName: '',
-      init() {
-        this._super();
-        instance = this;
-      },
       click() { }
     });
 
@@ -66,14 +61,9 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
   }
 
   ['@test throws an error if a custom defined event function is defined in a tagless component']() {
-    let instance;
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
       tagName: '',
-      init() {
-        this._super();
-        instance = this;
-      },
       folks() { }
     });
 
@@ -85,14 +75,9 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
   }
 
   ['@test throws an error if `tagName` is an empty string and `classNameBindings` are specified']() {
-    let instance;
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
       tagName: '',
-      init() {
-        this._super();
-        instance = this;
-      },
       foo: true,
       classNameBindings: ['foo:is-foo:is-bar']
     });

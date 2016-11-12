@@ -642,7 +642,7 @@ QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() 
 
 QUnit.test('`fillIn` takes context into consideration', function() {
   expect(2);
-  var fillIn, find, visit, andThen, wait;
+  var fillIn, find, visit, andThen;
 
   setTemplate('index', compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}'));
 
@@ -652,7 +652,6 @@ QUnit.test('`fillIn` takes context into consideration', function() {
   find = App.testHelpers.find;
   visit = App.testHelpers.visit;
   andThen = App.testHelpers.andThen;
-  wait = App.testHelpers.wait;
 
   visit('/');
   fillIn('.current', '#parent', 'current value');

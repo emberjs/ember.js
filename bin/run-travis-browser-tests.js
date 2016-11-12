@@ -2,7 +2,6 @@
 
 var RSVP  = require('rsvp');
 var spawn = require('child_process').spawn;
-var execSync = require('child_process').execSync;
 
 function run(command, _args) {
   var args = _args || [];

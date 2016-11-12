@@ -139,12 +139,11 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[yellow-redish] [yellow-redish]');
 
     this.runTask(() => set(this.context, 'colors', {
-        apple: {
-          gala: 'red and yellow',
-          mcintosh: 'red'
-        }
-      })
-    );
+      apple: {
+        gala: 'red and yellow',
+        mcintosh: 'red'
+      }
+    }));
 
     this.assertText('[red and yellow] [red and yellow]');
   }

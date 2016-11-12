@@ -139,14 +139,14 @@ QUnit.test('the default resolver resolves to the same instance, no matter the no
 });
 
 QUnit.test('the default resolver throws an error if the fullName to resolve is invalid', function() {
-  throws(() => { registry.resolve(undefined);}, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve(null);     }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve(':');      }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve('model');  }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve('model:'); }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve(':type');  }, TypeError, /Invalid fullName/ );
+  throws(() => { registry.resolve(undefined);}, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve(null);     }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve(':');      }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve('model');  }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve('model:'); }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve(':type');  }, TypeError, /Invalid fullName/);
 });
 
 QUnit.test('the default resolver logs hits if `LOG_RESOLVER` is set', function() {
@@ -200,7 +200,7 @@ QUnit.test('doesn\'t log without LOG_RESOLVER', function() {
 
   application.ScoobyDoo = EmberObject.extend();
 
-  setDebugFunction('info', (symbol, name) => infoCount = infoCount + 1 );
+  setDebugFunction('info', (symbol, name) => infoCount = infoCount + 1);
 
   registry.resolve('doo:scooby');
   registry.resolve('doo:scrappy');

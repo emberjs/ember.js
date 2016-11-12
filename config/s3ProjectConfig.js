@@ -1,4 +1,4 @@
-function fileMap(revision,tag,date) {
+function fileMap(revision, tag, date) {
   return {
     "ember.js":                   fileObject("ember",                   ".js",   "text/javascript",  revision, tag, date),
     "ember.debug.js":             fileObject("ember.debug",             ".js",   "text/javascript",  revision, tag, date),
@@ -15,7 +15,7 @@ function fileMap(revision,tag,date) {
     "composer.json":              fileObject("composer",                ".json", "application/json", revision, tag, date),
     "package.json":               fileObject("package",                 ".json", "application/json", revision, tag, date),
   };
-};
+}
 
 function fileObject(baseName, extension, contentType, currentRevision, tag, date) {
   var fullName = "/" + baseName + extension;

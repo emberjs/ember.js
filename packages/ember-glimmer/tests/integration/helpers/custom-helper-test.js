@@ -328,9 +328,8 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
                    (join-words "overcomes" "by")
                    model.reason
                    (join-words (join-words "hath overcome but" "half"))
-                   (join-words "his" (join-words "foe"))}}`, {
-      model: { reason: 'force' }
-    });
+                   (join-words "his" (join-words "foe"))}}`,
+      { model: { reason: 'force' } });
 
     this.assertText('Who overcomes by force hath overcome but half his foe');
 
@@ -572,7 +571,7 @@ let pushingIntoFrozenArrayThrows = (() => {
     array.push('foo');
 
     return false;
-  } catch(e) {
+  } catch (e) {
     return true;
   }
 })();
@@ -585,7 +584,7 @@ let assigningExistingFrozenPropertyThrows = (() => {
     obj.foo = 'derp';
 
     return false;
-  } catch(e) {
+  } catch (e) {
     return true;
   }
 })();
@@ -598,7 +597,7 @@ let addingPropertyToFrozenObjectThrows = (() => {
     obj.bar = 'derp';
 
     return false;
-  } catch(e) {
+  } catch (e) {
     return true;
   }
 })();

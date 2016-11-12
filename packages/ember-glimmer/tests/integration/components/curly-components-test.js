@@ -906,7 +906,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
   ['@test late bound layouts return the same definition'](assert) {
     let templateIds = [];
-    let component;
 
     // This is testing the scenario where you import a template and
     // set it to the layout property:
@@ -923,7 +922,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       init() {
         this._super(...arguments);
         this.layout = this.cond ? hello : bye;
-        component = this;
         templateIds.push(this.layout.id);
       }
     });
@@ -2126,7 +2124,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       expectDeprecation(/modified wrapper.content twice on <Ember.Object.+> in a single render/);
     }
 
-    let outer, middle;
+    let outer;
 
     this.registerComponent('x-outer', {
       ComponentClass: Component.extend({
@@ -2142,10 +2140,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.registerComponent('x-inner', {
       ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          middle = this;
-        },
         didReceiveAttrs() {
           this.get('wrapper').set('content', this.get('value'));
         },
@@ -2224,16 +2218,10 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test specifying classNames results in correct class'](assert) {
-    let clickyThing;
-
     this.registerComponent('some-clicky-thing', {
       ComponentClass: Component.extend({
         tagName: 'button',
-        classNames: ['foo', 'bar'],
-        init() {
-          this._super(...arguments);
-          clickyThing = this;
-        }
+        classNames: ['foo', 'bar']
       })
     });
 
@@ -2261,15 +2249,10 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test specifying custom concatenatedProperties avoids clobbering'](assert) {
-    let clickyThing;
     this.registerComponent('some-clicky-thing', {
       ComponentClass: Component.extend({
         concatenatedProperties: ['blahzz'],
-        blahzz: ['blark', 'pory'],
-        init() {
-          this._super(...arguments);
-          clickyThing = this;
-        }
+        blahzz: ['blark', 'pory']
       }),
       template: strip`
         {{#each blahzz as |p|}}
@@ -2675,8 +2658,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test child triggers revalidate during parent destruction (GH#13846)']() {
-    let select;
-
     this.registerComponent('x-select', {
       ComponentClass: Component.extend({
         tagName: 'select',
@@ -2685,8 +2666,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
           this._super();
           this.options = emberA([]);
           this.value = null;
-
-          select = this;
         },
 
         updateValue() {

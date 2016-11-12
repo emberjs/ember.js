@@ -37,7 +37,7 @@ function indexOf(array, target, method) {
   // hashes are added to the end of the event array
   // so it makes sense to start searching at the end
   // of the array and search in reverse
-  for (let i = array.length - 3 ; i >=0; i -= 3) {
+  for (let i = array.length - 3; i >= 0; i -= 3) {
     if (target === array[i] && method === array[i + 1]) {
       index = i;
       break;

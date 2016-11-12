@@ -445,7 +445,7 @@ class SingleEachTest extends AbstractEachTest {
     this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
     let FooBarComponent = Component.extend({
-      init () {
+      init() {
         this._super(...arguments);
         this.isEven = true;
         this.tagName = 'li';
@@ -818,9 +818,9 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
         {{/each}}
       {{/each}}
       `, {
-      content: emberA(['X', 'Y']),
-      options: emberA([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }])
-    });
+        content: emberA(['X', 'Y']),
+        options: emberA([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }])
+      });
 
     this.assertText('X-1:One2:TwoY-1:One2:Two');
 

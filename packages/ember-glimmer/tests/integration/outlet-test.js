@@ -315,7 +315,7 @@ moduleFor('outlet view', class extends RenderingTest {
       }
     };
 
-    this.runTask(() => this.component.setOutletState(outletState) );
+    this.runTask(() => this.component.setOutletState(outletState));
 
     runAppend(this.component);
 

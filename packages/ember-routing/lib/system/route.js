@@ -1558,7 +1558,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   model(params, transition) {
-    let match, name, sawParams, value;
+    let name, sawParams, value;
     let queryParams = get(this, '_qp.map');
 
     for (let prop in params) {
@@ -1566,7 +1566,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         continue;
       }
 
-      if (match = prop.match(/^(.*)_id$/)) {
+      let match = prop.match(/^(.*)_id$/);
+      if (match) {
         name = match[1];
         value = params[prop];
       }
@@ -2280,7 +2281,7 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
   let template = owner.lookup(`template:${templateName}`);
 
   let parent;
-  if (into && (parent = parentRoute(route)) && into === parentRoute(route).routeName) {
+  if (into && (parent = parentRoute(route)) && into === parent.routeName) {
     into = undefined;
   }
 

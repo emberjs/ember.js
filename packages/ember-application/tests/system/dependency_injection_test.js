@@ -6,7 +6,7 @@ import Application from '../../system/application';
 let EmberApplication = Application;
 
 let originalLookup = context.lookup;
-let registry, locator, lookup, application, originalModelInjections;
+let registry, locator, application, originalModelInjections;
 
 QUnit.module('Ember.Application Dependency Injection', {
   setup() {
@@ -30,7 +30,7 @@ QUnit.module('Ember.Application Dependency Injection', {
     registry = application.__registry__;
     locator = application.__container__;
 
-    lookup = context.lookup = {};
+    context.lookup = {};
   },
   teardown() {
     run(application, 'destroy');

@@ -120,8 +120,6 @@ if (isFeatureEnabled('ember-improved-instrumentation')) {
 
     ['@test instrumented action should return value']() {
       let returnedValue = 'Chris P is so krispy';
-      let beforeParameter;
-      let afterParameter;
       let actualReturnedValue;
 
       let InnerComponent = Component.extend({
@@ -150,10 +148,8 @@ if (isFeatureEnabled('ember-improved-instrumentation')) {
 
       this.subscribe('interaction.ember-action', {
         before(name, timestamp, payload) {
-          beforeParameter = payload.target.get('myProperty');
         },
         after(name, timestamp, payload) {
-          afterParameter = payload.target.get('myProperty');
         }
       });
 
@@ -634,7 +630,6 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     let actualReturnedValue;
 
     let innerComponent;
-    let outerComponent;
 
     let InnerComponent = Component.extend({
       init() {
@@ -647,10 +642,6 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     });
 
     let OuterComponent = Component.extend({
-      init() {
-        this._super(...arguments);
-        outerComponent = this;
-      },
       actions: {
         outerAction(incomingFirst, incomingSecond) {
           actualFirst = incomingFirst;

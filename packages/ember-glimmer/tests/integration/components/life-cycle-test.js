@@ -1106,34 +1106,34 @@ class LifeCycleHooksTest extends RenderingTest {
 
       interactive: [
         // Sync hooks
-          ...initialHooks(1),
-          ...initialHooks(2),
-          ...initialHooks(3),
-          ...initialHooks(4),
-          ...initialHooks(5),
+        ...initialHooks(1),
+        ...initialHooks(2),
+        ...initialHooks(3),
+        ...initialHooks(4),
+        ...initialHooks(5),
 
         // Async hooks
-          ...initialAfterRenderHooks(5),
-          ...initialAfterRenderHooks(4),
-          ...initialAfterRenderHooks(3),
-          ...initialAfterRenderHooks(2),
-          ...initialAfterRenderHooks(1)
+        ...initialAfterRenderHooks(5),
+        ...initialAfterRenderHooks(4),
+        ...initialAfterRenderHooks(3),
+        ...initialAfterRenderHooks(2),
+        ...initialAfterRenderHooks(1)
       ],
 
       nonInteractive: [
         // Sync hooks
-          ...initialHooks(1),
-          ...initialHooks(2),
-          ...initialHooks(3),
-          ...initialHooks(4),
-          ...initialHooks(5),
+        ...initialHooks(1),
+        ...initialHooks(2),
+        ...initialHooks(3),
+        ...initialHooks(4),
+        ...initialHooks(5),
 
         // Async hooks
-          ...initialAfterRenderHooks(5),
-          ...initialAfterRenderHooks(4),
-          ...initialAfterRenderHooks(3),
-          ...initialAfterRenderHooks(2),
-          ...initialAfterRenderHooks(1)
+        ...initialAfterRenderHooks(5),
+        ...initialAfterRenderHooks(4),
+        ...initialAfterRenderHooks(3),
+        ...initialAfterRenderHooks(2),
+        ...initialAfterRenderHooks(1)
       ]
     });
 
@@ -1458,12 +1458,12 @@ moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
     });
 
     let array = emberA([
-        { id: 1 },
-        { id: 2 },
-        { id: 3 },
-        { id: 4 },
-        { id: 5 }
-      ]);
+      { id: 1 },
+      { id: 2 },
+      { id: 3 },
+      { id: 4 },
+      { id: 5 }
+    ]);
 
     this.render(strip`
       {{#each items as |item|}}

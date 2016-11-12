@@ -6,7 +6,7 @@ import { Application, Resolver } from 'ember-application';
 import { jQuery } from 'ember-views';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 
-let Router, App, templates, router, container, registry, counter;
+let Router, App, templates, router, container, counter;
 
 function step(expectedValue, description) {
   equal(counter, expectedValue, 'Step ' + expectedValue + ': ' + description);
@@ -50,7 +50,6 @@ QUnit.module('Loading/Error Substates', {
       Router = App.Router;
 
       container = App.__container__;
-      registry = App.__registry__;
 
       templates = {
         application: '<div id="app">{{outlet}}</div>',
@@ -590,8 +589,6 @@ QUnit.test('Handled errors that bubble can be handled at a higher level', functi
 QUnit.test('errors that are bubbled are thrown at a higher level if not handled', function() {
   expect(3);
 
-  let handledError;
-
   templates['grandma'] = 'GRANDMA {{outlet}}';
 
   Router.map(function() {
@@ -616,9 +613,6 @@ QUnit.test('errors that are bubbled are thrown at a higher level if not handled'
     actions: {
       error(err) {
         step(2, 'MomSallyRoute#error');
-
-        handledError = err;
-
         return true;
       }
     }

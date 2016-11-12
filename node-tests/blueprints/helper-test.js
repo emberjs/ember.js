@@ -249,8 +249,8 @@ describe('Acceptance: ember generate and destroy helper', function() {
 
     return emberNew()
       .then(() => modifyPackages([
-        {name: 'ember-cli-qunit', delete: true},
-        {name: 'ember-cli-mocha', dev: true}
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
       ]))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
@@ -264,8 +264,8 @@ describe('Acceptance: ember generate and destroy helper', function() {
 
     return emberNew()
       .then(() => modifyPackages([
-        {name: 'ember-cli-qunit', delete: true},
-        {name: 'ember-cli-mocha', dev: true}
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
       ]))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))

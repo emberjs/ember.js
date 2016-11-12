@@ -235,8 +235,8 @@ describe('Acceptance: ember generate and destroy mixin', function() {
 
     return emberNew()
       .then(() => modifyPackages([
-        {name: 'ember-cli-qunit', delete: true},
-        {name: 'ember-cli-mocha', dev: true}
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
       ]))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/unit/mixins/foo-test.js'))

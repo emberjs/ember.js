@@ -25,7 +25,7 @@ QUnit.test('Ensure that errors thrown from within a promise are sent to the cons
       });
     });
     ok(false, 'expected assertion to be thrown');
-  } catch(e) {
+  } catch (e) {
     equal(e, error, 'error was re-thrown');
   }
 });
@@ -46,7 +46,7 @@ QUnit.test('Can reject with non-Error object', function(assert) {
 
   try {
     run(RSVP, 'reject', 'foo');
-  } catch(e) {
+  } catch (e) {
     ok(false, 'should not throw');
   } finally {
     setTesting(wasEmberTesting);
@@ -62,7 +62,7 @@ QUnit.test('Can reject with no arguments', function(assert) {
 
   try {
     run(RSVP, 'reject');
-  } catch(e) {
+  } catch (e) {
     ok(false, 'should not throw');
   } finally {
     setTesting(wasEmberTesting);
@@ -249,7 +249,7 @@ QUnit.test('handled in the next microTask queue flush (ajax example)', function(
     run(function() {
       let rejection = RSVP.Promise.reject(reason);
       ajax('/something/').then(() => {
-        rejection.catch(function() { });
+        rejection.catch(function() {});
         ok(true, 'reached end of test');
       });
     });

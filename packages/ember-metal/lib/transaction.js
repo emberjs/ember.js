@@ -69,7 +69,7 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
             label = 'the same value';
           }
 
-          return `You modified ${parts.join('.')} twice on ${object} in a single render. This was unreliable and slow in Ember 1.x and ${implication}`;
+          return `You modified ${label} twice on ${object} in a single render. This was unreliable and slow in Ember 1.x and ${implication}`;
         }()),
         false);
 

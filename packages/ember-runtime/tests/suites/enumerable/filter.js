@@ -19,7 +19,7 @@ suite.test('filter should invoke on each item', function() {
   // return true on all but the last two
   result = obj.filter(function(i) {
     found.push(i);
-    return --cnt>=0;
+    return --cnt >= 0;
   });
   deepEqual(found, ary, 'should have invoked on each item');
   deepEqual(result, ary.slice(0, -2), 'filtered array should exclude items');

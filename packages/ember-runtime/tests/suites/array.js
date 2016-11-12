@@ -48,4 +48,4 @@ if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
   ArrayTests.importModuleTests(includesTests);
 }
 
-export {ArrayTests, ObserverClass};
+export { ArrayTests, ObserverClass };

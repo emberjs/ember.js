@@ -17,7 +17,6 @@ var filterImports     = require('babel-plugin-filter-imports');
 
 var vendoredPackage    = require('emberjs-build/lib/vendored-package');
 var htmlbarsPackage    = require('emberjs-build/lib/htmlbars-package');
-var vendoredES6Package = require('emberjs-build/lib/es6-vendored-package');
 var replaceVersion     = require('emberjs-build/lib/utils/replace-version');
 
 var Funnel = require('broccoli-funnel');
@@ -254,7 +253,7 @@ module.exports = function() {
     'router':                router(),
     'dag-map':               dag(),
     'route-recognizer':      routeRecognizer(),
-    'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer', { libPath: 'node_modules/glimmer-engine/dist/es6'}),
+    'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer', { libPath: 'node_modules/glimmer-engine/dist/es6' }),
 
     'glimmer':              glimmerPackage('glimmer'),
     'glimmer-compiler':     glimmerPackage('glimmer-compiler'),

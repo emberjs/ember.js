@@ -202,7 +202,7 @@
       'default': Ember.computed
     };
     var computedMacros = [
-      "empty","notEmpty", "none", "not", "bool", "match", "equal", "gt", "gte",
+      "empty", "notEmpty", "none", "not", "bool", "match", "equal", "gt", "gte",
       "lt", "lte", "alias", "oneWay", "reads", "readOnly", "deprecatingAlias",
       "and", "or", "collect", "sum", "min", "max", "map", "sort", "setDiff",
       "mapBy", "filter", "filterBy", "uniq", "union", "intersect"

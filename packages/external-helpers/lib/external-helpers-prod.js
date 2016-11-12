@@ -1,5 +1,3 @@
-var babelHelpers;
-
 function inherits(subClass, superClass) {
   subClass.prototype = Object.create(superClass && superClass.prototype, {
     constructor: {

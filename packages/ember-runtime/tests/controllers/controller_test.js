@@ -127,10 +127,9 @@ QUnit.test('`content` is moved to `model` when `model` is unset', function() {
 
 QUnit.test('specifying `content` (without `model` specified) results in deprecation', function() {
   expect(1);
-  let controller;
 
   expectDeprecation(function() {
-    controller = Controller.extend({
+    Controller.extend({
       content: 'foo-bar'
     }).create();
   }, 'Do not specify `content` on a Controller, use `model` instead.');
