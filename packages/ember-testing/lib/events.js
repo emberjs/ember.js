@@ -26,6 +26,10 @@ export function focus(el) {
   }
 }
 
+function isNullOrUndefined(obj) {
+  return obj === undefined || obj === null;
+}
+
 export function fireEvent(element, type, options = {}) {
   if (!element) {
     return;
@@ -38,10 +42,10 @@ export function fireEvent(element, type, options = {}) {
     let x = rect.left + 1;
     let y = rect.top + 1;
     let simulatedCoordinates = {
-      screenX: options.screenX || x + 5,
-      screenY: options.screenY || y + 95,
-      clientX: options.clientX || x,
-      clientY: options.clientY || y
+      screenX: isNullOrUndefined(options.screenX) ? x + 5 : options.screenX,
+      screenY: isNullOrUndefined(options.screenY) ? y + 95 : options.screenY,
+      clientX: isNullOrUndefined(options.clientX) ? x : options.clientX,
+      clientY: isNullOrUndefined(options.clientY) ? y : options.clientY
     };
     if (!options.button) {
       // default to left button
