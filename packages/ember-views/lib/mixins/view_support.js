@@ -215,10 +215,21 @@ export default Mixin.create({
     @method renderToElement
     @param {String} tagName The tag of the element to create and render into. Defaults to "body".
     @return {HTMLBodyElement} element
+    @deprecated Use appendTo instead.
     @private
   */
   renderToElement(tagName) {
     tagName = tagName || 'body';
+
+    deprecate(
+      `Using the \`renderToElement\` is deprecated in favor of \`appendTo\`. Called in ${this.toString()}`,
+      false,
+      {
+        id: 'ember-views.render-to-element',
+        until: '2.12.0',
+        url: 'http://emberjs.com/deprecations/v2.x#toc_code-rendertoelement-code'
+      }
+    );
 
     let element = this.renderer.createElement(tagName);
 

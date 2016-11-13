@@ -635,6 +635,7 @@ moduleFor('appendTo: with multiple components', class extends AbstractAppendTest
 moduleFor('renderToElement: no arguments (defaults to a body context)', class extends AbstractAppendTest {
 
   append(component) {
+    expectDeprecation(/Using the `renderToElement` is deprecated in favor of `appendTo`. Called in/);
     let wrapper;
 
     this.runTask(() => wrapper = component.renderToElement());
@@ -652,6 +653,7 @@ moduleFor('renderToElement: no arguments (defaults to a body context)', class ex
 moduleFor('renderToElement: a div', class extends AbstractAppendTest {
 
   append(component) {
+    expectDeprecation(/Using the `renderToElement` is deprecated in favor of `appendTo`. Called in/);
     let wrapper;
 
     this.runTask(() => wrapper = component.renderToElement('div'));
