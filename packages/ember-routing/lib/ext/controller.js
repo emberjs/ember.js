@@ -22,12 +22,36 @@ ControllerMixin.reopen({
   queryParams: null,
 
   /**
-    @property _qpDelegate
+   This property is updated to various different callback functions depending on
+   the current "state" of the backing route. It is used by
+   `Ember.Controller.prototype._qpChanged`.
+
+   The methods backing each state can be found in the `Ember.Route.prototype._qp` computed
+   property return value (the `.states` property). The current values are listed here for
+   the sanity of future travelers:
+
+   * `inactive` - This state is used when this controller instance is not part of the active
+     route heirarchy. Set in `Ember.Route.prototype._reset` (a `router.js` microlib hook) and
+     `Ember.Route.prototype.actions.finalizeQueryParamChange`.
+   * `active` - This state is used when this controller instance is part of the active
+     route heirarchy. Set in `Ember.Route.prototype.actions.finalizeQueryParamChange`.
+   * `allowOverrides` - This state is used in `Ember.Route.prototype.setup` (`route.js` microlib hook).
+
+    @method _qpDelegate
     @private
   */
   _qpDelegate: null, // set by route
 
   /**
+   During `Ember.Route#setup` observers are created to invoke this method
+   when any of the query params declared in `Ember.Controller#queryParams` property
+   are changed.
+
+
+   When invoked this method uses the currently active query param update delegate
+   (see `Ember.Controller.prototype._qpDelegate` for details) and invokes it with
+   the QP key/value being changed.
+
     @method _qpChanged
     @private
   */
