@@ -1,6 +1,7 @@
 import { Simple, Template, RenderResult } from "glimmer-runtime";
 import {
   BasicComponent,
+  EmberishCurlyComponent,
   TestEnvironment,
   TestDynamicScope,
   equalTokens,
@@ -117,15 +118,54 @@ QUnit.test('static partial with named arguments', assert => {
   equalTokens(root, `<p>foo-foo-bar</p>`);
 });
 
-QUnit.test('static partial with has-block', assert => {
-  env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{has-block}}-{{has-block 'inverse'}}-{{partial 'test'}}</p>`);
-
-  let template = compile(`<foo-bar>a block</foo-bar>`);
-
+QUnit.test('static partial with has-block in basic component', assert => {
+  env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{partial 'test'}}</p>`);
+  env.registerBasicComponent('foo-bar-baz', BasicComponent, `<p>{{partial 'test'}}-{{has-block}}-{{has-block 'inverse'}}</p>`);
   env.registerPartial('test', `{{has-block}}-{{has-block 'inverse'}}`);
-  render(template);
 
-  equalTokens(root, `<p>true-false-true-false</p>`);
+  render(compile(strip`
+    <foo-bar>a block</foo-bar>
+    <foo-bar />
+    <foo-bar-baz>a block</foo-bar-baz>
+    <foo-bar-baz />
+  `));
+
+  equalTokens(root, strip`
+    <p>true-false</p>
+    <p>true-false-true-false</p>
+    <p>true-false</p>
+    <p>true-false-true-false</p>
+  `);
+
+  rerender(null, { assertStable: true });
+});
+
+QUnit.test('static partial with has-block in curly component', assert => {
+  class TaglessComponent extends EmberishCurlyComponent {
+    tagName = '';
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', TaglessComponent as any, `<p>{{partial 'test'}}</p>`);
+  env.registerEmberishCurlyComponent('foo-bar-baz', TaglessComponent as any, `<p>{{partial 'test'}}-{{has-block}}-{{has-block 'inverse'}}</p>`);
+  env.registerPartial('test', `{{has-block}}-{{has-block 'inverse'}}`);
+
+  render(compile(strip`
+    {{#foo-bar}}a block{{/foo-bar}}
+    {{#foo-bar}}a block{{else}}inverse{{/foo-bar}}
+    {{foo-bar}}
+    {{#foo-bar-baz}}a block{{/foo-bar-baz}}
+    {{#foo-bar-baz}}a block{{else}}inverse{{/foo-bar-baz}}
+    {{foo-bar-baz}}
+  `));
+
+  equalTokens(root, strip`
+    <p>true-false</p>
+    <p>true-true</p>
+    <p>false-false</p>
+    <p>true-false-true-false</p>
+    <p>true-true-true-true</p>
+    <p>false-false-false-false</p>
+  `);
 
   rerender(null, { assertStable: true });
 });
