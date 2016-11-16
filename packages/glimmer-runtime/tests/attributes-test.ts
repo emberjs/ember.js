@@ -433,6 +433,30 @@ test('handles undefined `toString` input values', assert => {
   assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
 });
 
+test('props update when used with helpers', assert => {
+  let template = compile('<input checked={{if foo true undefined}} />');
+
+  env.registerHelper('if', (params) => {
+    if (params[0]) {
+      return params[1];
+    } else {
+      return params[2];
+    }
+  });
+
+  render(template, { foo: true });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'checked'), true);
+
+  rerender({ foo: false });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'checked'), false);
+
+  rerender({ foo: true });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'checked'), true);
+});
+
 test('handles empty string textarea values', assert => {
   let template = compile('<textarea value={{name}} />');
 

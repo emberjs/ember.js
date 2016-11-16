@@ -18,6 +18,10 @@ export function defaultManagers(element: Simple.Element, attr: string, isTrustin
     return defaultAttributeManagers(tagName, attr);
   }
 
+  if (attr === 'href' || attr === 'src') {
+    return defaultAttributeManagers(tagName, attr);
+  }
+
   let { type, normalized } = normalizeProperty(element, attr);
 
   if (type === 'attr') {
@@ -110,10 +114,19 @@ export class PropertyManager extends AttributeManager {
   }
 
   updateAttribute(env: Environment, element: Element, value: Opaque, namespace?: DOMNamespace) {
+    let attr = this.attr;
+    if (value === undefined) {
+      value = null;
+    }
+
+    if (value === null && (attr === 'value' || attr === 'type')) {
+      value = '';
+    }
+
+    element[attr] = value;
+
     if (isAttrRemovalValue(value)) {
       this.removeAttribute(env, element, namespace);
-    } else {
-      this.setAttribute(env, element, value, namespace);
     }
   }
 };
