@@ -144,7 +144,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
   }
 
   openComponent(args: Represents<CompiledArgs>, shadow: string[] = EMPTY_ARRAY) {
-    this.append(new component.OpenComponentOpcode(this.compile(args), shadow, this.templates));
+    this.append(new component.OpenComponentOpcode(this.compile(args), shadow));
   }
 
   didCreateElement() {
@@ -307,7 +307,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new vm.ExitOpcode());
   }
 
-  evaluate(name: string, block = this.templates[name]) {
+  evaluate(name: string, block: InlineBlock) {
     this.append(new vm.EvaluateOpcode(name, block));
   }
 

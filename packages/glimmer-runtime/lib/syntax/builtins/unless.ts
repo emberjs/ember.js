@@ -11,14 +11,8 @@ import Environment from '../../environment';
 export default class UnlessSyntax extends StatementSyntax {
   type = "unless-statement";
 
-  public args: Syntax.Args;
-  public templates: Syntax.Templates;
-  public isStatic = false;
-
-  constructor({ args, templates }: { args: Syntax.Args, templates: Syntax.Templates }) {
+  constructor(public args: Syntax.Args) {
     super();
-    this.args = args;
-    this.templates = templates;
   }
 
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
@@ -34,7 +28,7 @@ export default class UnlessSyntax extends StatementSyntax {
     // END:   Noop
     //        Exit
 
-    let { args, templates } = this;
+    let { args, args: { templates } } = this;
 
     dsl.putArgs(args);
     dsl.test('environment');
@@ -42,13 +36,13 @@ export default class UnlessSyntax extends StatementSyntax {
     dsl.block({ templates }, dsl => {
       if (templates.inverse) {
         dsl.jumpIf('ELSE');
-        dsl.evaluate('default');
+        dsl.evaluate('default', templates.default);
         dsl.jump('END');
         dsl.label('ELSE');
-        dsl.evaluate('inverse');
+        dsl.evaluate('inverse', templates.inverse);
       } else {
         dsl.jumpIf('END');
-        dsl.evaluate('default');
+        dsl.evaluate('default', templates.default);
       }
     });
   }

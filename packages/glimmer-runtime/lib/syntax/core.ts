@@ -1,3 +1,4 @@
+import { CompiledPartialHasBlock } from '../compiled/expressions/has-block';
 import { VM } from '../vm';
 
 import {
@@ -33,9 +34,7 @@ import {
 
 import OpcodeBuilderDSL from '../compiled/opcodes/builder';
 
-import {
-  PutValueOpcode
-} from '../compiled/opcodes/vm';
+import { PutValueOpcode } from '../compiled/opcodes/vm';
 
 import {
   PutComponentDefinitionOpcode,
@@ -111,27 +110,27 @@ export class Block extends StatementSyntax {
     let template = scanner.blockFor(symbolTable, templateId);
     let inverse = (typeof inverseId === 'number') ? scanner.blockFor(symbolTable, inverseId) : null;
 
+    let templates = Templates.fromSpec(template, inverse);
+
     return new Block(
       path,
-      Args.fromSpec(params, hash),
-      Templates.fromSpec(template, inverse)
+      Args.fromSpec(params, hash, templates)
     );
   }
 
-  static build(path: string[], args: Args, templates: Templates): Block {
-    return new this(path, args, templates);
+  static build(path: string[], args: Args): Block {
+    return new this(path, args);
   }
 
   constructor(
     public path: string[],
-    public args: Args,
-    public templates: Templates
+    public args: Args
   ) {
     super();
   }
 
   scan(scanner: BlockScanner): StatementSyntax {
-    let { default: _default, inverse } = this.templates;
+    let { default: _default, inverse } = this.args.templates;
 
     if (_default) scanner.addChild(_default);
     if (inverse)  scanner.addChild(inverse);
@@ -210,7 +209,7 @@ export class Modifier extends StatementSyntax {
 
     return new Modifier({
       path,
-      args: Args.fromSpec(params, hash)
+      args: Args.fromSpec(params, hash, EMPTY_TEMPLATES)
     });
   }
 
@@ -499,7 +498,8 @@ export class OpenElement extends StatementSyntax {
       scanner.startBlock(this.blockParams);
       this.tagContents(scanner);
       let template = scanner.endBlock(this.blockParams);
-      return new Component(tag, attrs, args, template);
+      args.templates = Templates.fromSpec(template);
+      return new Component(tag, attrs, args);
     } else {
       return new OpenPrimitiveElement(tag);
     }
@@ -543,7 +543,7 @@ export class OpenElement extends StatementSyntax {
       current = scanner.next();
     }
 
-    return { args: Args.fromNamedArgs(NamedArgs.build(argKeys, argValues)), attrs };
+    return { args: Args.fromNamedArgs(NamedArgs.build(argKeys, argValues), EMPTY_TEMPLATES), attrs };
   }
 
   private tagContents(scanner: BlockScanner) {
@@ -570,8 +570,7 @@ export class Component extends StatementSyntax {
   constructor(
     public tag: string,
     public attrs: string[],
-    public args: Args,
-    public template: InlineBlock
+    public args: Args
   ) {
     super();
   }
@@ -580,10 +579,9 @@ export class Component extends StatementSyntax {
     let definition = env.getComponentDefinition([this.tag], symbolTable);
     let args = this.args.compile(list as SymbolLookup, env, symbolTable);
     let shadow = this.attrs;
-    let templates = new Templates(this.template);
 
     list.append(new PutComponentDefinitionOpcode(definition));
-    list.append(new OpenComponentOpcode(args, shadow, templates));
+    list.append(new OpenComponentOpcode(args, shadow));
     list.append(new CloseComponentOpcode());
   }
 }
@@ -608,13 +606,13 @@ export class Yield extends StatementSyntax {
   static fromSpec(sexp: SerializedStatements.Yield): Yield {
     let [, to, params] = sexp;
 
-    let args = Args.fromSpec(params, null);
+    let args = Args.fromSpec(params, null, EMPTY_TEMPLATES);
 
     return new Yield(to, args);
   }
 
   static build(params: ExpressionSyntax<Opaque>[], to: string): Yield {
-    let args = Args.fromPositionalArgs(PositionalArgs.build(params));
+    let args = Args.fromPositionalArgs(PositionalArgs.build(params), EMPTY_TEMPLATES);
     return new this(to, args);
   }
 
@@ -836,12 +834,12 @@ export class Helper extends ExpressionSyntax<Opaque> {
 
     return new Helper(
       new Ref(path),
-      Args.fromSpec(params, hash)
+      Args.fromSpec(params, hash, EMPTY_TEMPLATES)
     );
   }
 
   static build(path: string, positional: PositionalArgs, named: NamedArgs): Helper {
-    return new this(Ref.build(path), Args.build(positional, named));
+    return new this(Ref.build(path), Args.build(positional, named, EMPTY_TEMPLATES));
   }
 
   constructor(public ref: Ref, public args: Args) {
@@ -874,11 +872,16 @@ export class HasBlock extends ExpressionSyntax<boolean> {
     super();
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledHasBlock {
-    return new CompiledHasBlock(
-      this.blockName,
-      compiler.getBlockSymbol(this.blockName)
-    );
+  compile(compiler: SymbolLookup, env: Environment): CompiledExpression<boolean> {
+    let { blockName } = this;
+
+    if (compiler.hasBlockSymbol(this.blockName)) {
+      return new CompiledHasBlock(blockName, compiler.getBlockSymbol(blockName));
+    } else if (compiler.hasPartialArgsSymbol()) {
+      return new CompiledPartialHasBlock(blockName, compiler.getPartialArgsSymbol());
+    } else {
+      throw new Error('Unreachable');
+    }
   }
 }
 
@@ -933,35 +936,36 @@ export class Args {
     return EMPTY_ARGS;
   }
 
-  static fromSpec(positional: SerializedCore.Params, named: SerializedCore.Hash): Args {
-    return new Args(PositionalArgs.fromSpec(positional), NamedArgs.fromSpec(named));
+  static fromSpec(positional: SerializedCore.Params, named: SerializedCore.Hash, templates: Templates): Args {
+    return new Args(PositionalArgs.fromSpec(positional), NamedArgs.fromSpec(named), templates);
   }
 
-  static fromPositionalArgs(positional: PositionalArgs): Args {
-    return new Args(positional, EMPTY_NAMED_ARGS);
+  static fromPositionalArgs(positional: PositionalArgs, templates: Templates): Args {
+    return new Args(positional, EMPTY_NAMED_ARGS, templates);
   }
 
-  static fromNamedArgs(named: NamedArgs): Args {
-    return new Args(EMPTY_POSITIONAL_ARGS, named);
+  static fromNamedArgs(named: NamedArgs, templates: Templates): Args {
+    return new Args(EMPTY_POSITIONAL_ARGS, named, templates);
   }
 
-  static build(positional: PositionalArgs, named: NamedArgs): Args {
-    if (positional === EMPTY_POSITIONAL_ARGS && named === EMPTY_NAMED_ARGS) {
+  static build(positional: PositionalArgs, named: NamedArgs, templates: Templates): Args {
+    if (positional === EMPTY_POSITIONAL_ARGS && named === EMPTY_NAMED_ARGS && templates === EMPTY_TEMPLATES) {
       return EMPTY_ARGS;
     } else {
-      return new this(positional, named);
+      return new this(positional, named, templates);
     }
   }
 
   constructor(
     public positional: PositionalArgs,
-    public named: NamedArgs
+    public named: NamedArgs,
+    public templates: Templates
   ) {
   }
 
   compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledArgs {
-    let { positional, named } = this;
-    return CompiledArgs.create(positional.compile(compiler, env, symbolTable), named.compile(compiler, env, symbolTable));
+    let { positional, named, templates } = this;
+    return CompiledArgs.create(positional.compile(compiler, env, symbolTable), named.compile(compiler, env, symbolTable), templates);
   }
 }
 
@@ -1092,7 +1096,7 @@ const EMPTY_NAMED_ARGS = new (class extends NamedArgs {
 
 const EMPTY_ARGS: Args = new (class extends Args {
   constructor() {
-    super(EMPTY_POSITIONAL_ARGS, EMPTY_NAMED_ARGS);
+    super(EMPTY_POSITIONAL_ARGS, EMPTY_NAMED_ARGS, EMPTY_TEMPLATES);
   }
 
   compile(compiler: SymbolLookup, env: Environment): CompiledArgs {
@@ -1108,7 +1112,7 @@ export class Templates {
   }
 
   static empty(): Templates {
-    return new Templates(null, null);
+    return EMPTY_TEMPLATES;
   }
 
   public default: InlineBlock;
@@ -1119,3 +1123,9 @@ export class Templates {
     this.inverse = inverse;
   }
 }
+
+export const EMPTY_TEMPLATES: Templates = new (class extends Templates {
+  constructor() {
+    super(null, null);
+  }
+});

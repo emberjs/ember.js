@@ -480,7 +480,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     if (dyn) {
       let map = assign({}, args.named.map);
       dyn.forEach(name => map[name] = dynamicScope.get(name));
-      args = EvaluatedArgs.create(args.positional, EvaluatedNamedArgs.create(map));
+      args = EvaluatedArgs.create(args.positional, EvaluatedNamedArgs.create(map), args.templates);
     }
     return args;
   }
@@ -791,32 +791,31 @@ export class TestEnvironment extends Environment {
       isInline,
       key,
       args,
-      path,
-      templates
+      path
     } = statement;
 
     if (isSimple && isBlock) {
       switch (key) {
         case 'identity':
-          return new IdentitySyntax({ args, templates });
+          return new IdentitySyntax({ args, templates: args.templates });
         case 'render-inverse':
-          return new RenderInverseIdentitySyntax({ args, templates });
+          return new RenderInverseIdentitySyntax({ args, templates: args.templates });
         case '-with-dynamic-vars':
-          return new WithDynamicVarsSyntax({ args, templates });
+          return new WithDynamicVarsSyntax({ args, templates: args.templates });
         case '-in-element':
-          return new InElementSyntax({ args, templates });
+          return new InElementSyntax({ args, templates: args.templates });
       }
     }
 
     if (isSimple && (isInline || isBlock)) {
       if (key === 'component') {
-        return new DynamicComponentSyntax({ args, templates, symbolTable });
+        return new DynamicComponentSyntax({ args, templates: args.templates, symbolTable });
       }
 
       let component = this.getComponentDefinition(path, symbolTable);
 
       if (component) {
-        return new CurlyComponentSyntax({ args, definition: component, templates, symbolTable });
+        return new CurlyComponentSyntax({ args, definition: component, templates: args.templates, symbolTable });
       }
     }
 
@@ -991,10 +990,9 @@ class DynamicComponentSyntax extends StatementSyntax {
 
   constructor({ args, templates, symbolTable }: { args: ArgsSyntax, templates: Templates, symbolTable: SymbolTable }) {
     super();
-    this.definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0,1));
+    this.definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0,1), Templates.empty());
     this.definition = dynamicComponentFor;
-    this.args = ArgsSyntax.build(args.positional.slice(1), args.named);
-    this.templates = templates || Templates.empty();
+    this.args = ArgsSyntax.build(args.positional.slice(1), args.named, templates || Templates.empty());
     this.symbolTable = symbolTable;
   }
 
