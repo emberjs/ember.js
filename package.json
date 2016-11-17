@@ -36,7 +36,7 @@
     "exists-sync": "0.0.3",
     "git-repo-version": "^0.1.2",
     "handlebars": "^3.0.2",
-    "qunit": "^0.7.2",
+    "qunit": "^0.9.1",
     "simple-dom": "^0.3.0",
     "simple-html-tokenizer": "^0.2.5",
     "typescript": "^2.0.0"
