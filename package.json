@@ -39,7 +39,7 @@
     "qunit": "^0.7.2",
     "simple-dom": "^0.3.0",
     "simple-html-tokenizer": "^0.2.5",
-    "typescript": "^2.0.0"
+    "typescript": "^2.0.9"
   },
   "devDependencies": {
     "benchmark": "^1.0.0",

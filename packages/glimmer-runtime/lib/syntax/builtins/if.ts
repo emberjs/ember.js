@@ -9,14 +9,8 @@ import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 export default class IfSyntax extends StatementSyntax {
   type = "if-statement";
 
-  public args: Syntax.Args;
-  public templates: Syntax.Templates;
-  public isStatic = false;
-
-  constructor({ args, templates }: { args: Syntax.Args, templates: Syntax.Templates }) {
+  constructor(public args: Syntax.Args) {
     super();
-    this.args = args;
-    this.templates = templates;
   }
 
   compile(dsl: OpcodeBuilderDSL) {
@@ -32,7 +26,7 @@ export default class IfSyntax extends StatementSyntax {
     // END:   Noop
     //        Exit
 
-    let { args, templates } = this;
+    let { args, args: { templates } } = this;
 
     dsl.putArgs(args);
     dsl.test('environment');
@@ -40,13 +34,13 @@ export default class IfSyntax extends StatementSyntax {
     dsl.block({ templates }, (dsl, BEGIN, END) => {
       if (templates.inverse) {
         dsl.jumpUnless('ELSE');
-        dsl.evaluate('default');
+        dsl.evaluate('default', templates.default);
         dsl.jump(END);
         dsl.label('ELSE');
-        dsl.evaluate('inverse');
+        dsl.evaluate('inverse', templates.inverse);
       } else {
         dsl.jumpUnless(END);
-        dsl.evaluate('default');
+        dsl.evaluate('default', templates.default);
       }
     });
   }

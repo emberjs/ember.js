@@ -28,7 +28,7 @@ export default class InElementSyntax extends StatementSyntax {
     dsl.block({ templates }, (dsl, BEGIN, END) => {
       dsl.jumpUnless(END);
       dsl.pushRemoteElement();
-      dsl.evaluate('default');
+      dsl.evaluate('default', templates.default);
       dsl.popRemoteElement();
     });
   }

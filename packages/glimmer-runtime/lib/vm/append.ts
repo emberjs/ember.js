@@ -2,7 +2,6 @@ import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementStack } from '../builder';
 import { Destroyable, Stack, LinkedList, ListSlice, LOGGER, Opaque, assert } from 'glimmer-util';
 import { PathReference, combineSlice } from 'glimmer-reference';
-import { Templates } from '../syntax/core';
 import { InlineBlock, PartialBlock, CompiledBlock } from '../compiled/blocks';
 import { CompiledExpression } from '../compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
@@ -186,20 +185,18 @@ export default class VM implements PublicVM {
   pushFrame(
     block: CompiledBlock,
     args?: EvaluatedArgs,
-    blocks?: Blocks,
     callerScope?: Scope
   ) {
     this.frame.push(block.ops);
 
     if (args) this.frame.setArgs(args);
-    if (blocks) this.frame.setBlocks(blocks);
+    if (args && args.templates) this.frame.setBlocks(args.templates);
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
   pushComponentFrame(
     layout: CompiledBlock,
     args: EvaluatedArgs,
-    blocks: Blocks,
     callerScope: Scope,
     component: Component,
     manager: ComponentManager<Component>,
@@ -208,7 +205,7 @@ export default class VM implements PublicVM {
     this.frame.push(layout.ops, component, manager, shadow);
 
     if (args) this.frame.setArgs(args);
-    if (blocks) this.frame.setBlocks(blocks);
+    if (args && args.templates) this.frame.setBlocks(args.templates);
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
@@ -318,13 +315,12 @@ export default class VM implements PublicVM {
   invokeLayout(
     args: EvaluatedArgs,
     layout: CompiledBlock,
-    templates: Templates,
     callerScope: Scope,
     component: Component,
     manager: ComponentManager<Component>,
     shadow: string[]
   ) {
-    this.pushComponentFrame(layout, args, templates, callerScope, component, manager, shadow);
+    this.pushComponentFrame(layout, args, callerScope, component, manager, shadow);
   }
 
   evaluateOperand(expr: CompiledExpression<any>) {

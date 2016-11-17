@@ -26,7 +26,7 @@ export default class WithDynamicVarsSyntax extends StatementSyntax {
       dsl.putArgs(args);
       dsl.pushDynamicScope();
       dsl.bindDynamicScope(args.named.keys);
-      dsl.evaluate('default');
+      dsl.evaluate('default', templates.default);
       dsl.popDynamicScope();
     });
   }

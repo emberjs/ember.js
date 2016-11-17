@@ -157,19 +157,18 @@ export abstract class Environment {
       isBlock,
       key,
       args,
-      templates
     } = statement;
 
     if (isSimple && isBlock) {
       switch (key) {
         case 'each':
-          return new EachSyntax({ args, templates });
+          return new EachSyntax(args);
         case 'if':
-          return new IfSyntax({ args, templates });
+          return new IfSyntax(args);
         case 'with':
-          return new WithSyntax({ args, templates });
+          return new WithSyntax(args);
         case 'unless':
-          return new UnlessSyntax({ args, templates });
+          return new UnlessSyntax(args);
       }
     }
   }
@@ -282,7 +281,6 @@ export interface ParsedStatement {
   isInline: boolean;
   isBlock: boolean;
   isModifier: boolean;
-  templates: Syntax.Templates;
   original: StatementSyntax;
 }
 
@@ -329,7 +327,6 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
       original: statement,
       isInline: !!append,
       isBlock: !!block,
-      isModifier: !!modifier,
-      templates: block && block.templates
+      isModifier: !!modifier
     };
 }
