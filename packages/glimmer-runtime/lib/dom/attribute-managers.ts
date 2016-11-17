@@ -110,10 +110,11 @@ export class PropertyManager extends AttributeManager {
   }
 
   updateAttribute(env: Environment, element: Element, value: Opaque, namespace?: DOMNamespace) {
+    // ensure the property is always updated
+    element[this.attr] = value;
+
     if (isAttrRemovalValue(value)) {
       this.removeAttribute(env, element, namespace);
-    } else {
-      this.setAttribute(env, element, value, namespace);
     }
   }
 };
