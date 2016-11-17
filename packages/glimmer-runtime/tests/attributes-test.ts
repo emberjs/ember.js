@@ -433,7 +433,7 @@ test('handles undefined `toString` input values', assert => {
   assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
 });
 
-test('props update when used with helpers', assert => {
+test('input[checked] prop updates when set to undefined', assert => {
   let template = compile('<input checked={{if foo true undefined}} />');
 
   env.registerHelper('if', (params) => {
@@ -455,6 +455,40 @@ test('props update when used with helpers', assert => {
   rerender({ foo: true });
 
   assert.equal(readDOMAttr(root.firstChild as Element, 'checked'), true);
+});
+
+test('input[checked] prop updates when set to null', assert => {
+  let template = compile('<input checked={{foo}} />');
+
+  render(template, { foo: true });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'checked'), true);
+
+  rerender({ foo: null });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'checked'), false);
+
+  rerender({ foo: true });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'checked'), true);
+});
+
+test('select[value] prop updates when set to undefined', assert => {
+  let template = compile('<select value={{foo}}><option></option><option value="us" selected>us</option></select>');
+
+  // setting `select[value]` only works after initial render, just use `undefined` here but it doesn't really matter
+  render(template, { foo: undefined });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), 'us');
+
+  // now setting the `value` property will have an effect
+  rerender({ foo: null });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
+
+  rerender({ foo: 'us' });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), 'us');
 });
 
 test('handles empty string textarea values', assert => {
