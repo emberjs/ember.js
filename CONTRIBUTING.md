@@ -98,6 +98,7 @@ cd to the cloned ember.js directory
 ensure Node.js, yarn, and bower are installed
 
 follow these commands to build ember.js
+ - yarn install
  - bower install
  - yarn run build
 ```
