@@ -36,7 +36,7 @@
     "ember-cli": "^2.6.1",
     "ember-cli-blueprint-test-helpers": "^0.12.0",
     "ember-cli-dependency-checker": "^1.2.0",
-    "ember-cli-sauce": "^1.4.2",
+    "ember-cli-sauce": "^1.8.0",
     "ember-cli-yuidoc": "0.8.4",
     "ember-publisher": "0.0.7",
     "emberjs-build": "0.18.0",
