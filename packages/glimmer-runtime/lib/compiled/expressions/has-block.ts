@@ -1,4 +1,3 @@
-import { EvaluatedArgs } from './args';
 import { PathReference } from 'glimmer-reference';
 import VM from '../../vm/append';
 import { CompiledExpression } from '../expressions';
@@ -12,8 +11,8 @@ export default class CompiledHasBlock extends CompiledExpression<boolean> {
   }
 
   evaluate(vm: VM): PathReference<boolean> {
-    let blockRef = vm.scope().getBlock(this.blockSymbol);
-    return PrimitiveReference.create(!!blockRef);
+    let block = vm.scope().getBlock(this.blockSymbol);
+    return PrimitiveReference.create(!!block);
   }
 
   toJSON(): string {
@@ -30,7 +29,7 @@ export class CompiledPartialHasBlock extends CompiledExpression<boolean> {
 
   evaluate(vm: VM): PathReference<boolean> {
     let { blockName, partialArgsSymbol } = this;
-    let args: EvaluatedArgs = vm.scope().getSymbol(partialArgsSymbol) as any;
+    let args = vm.scope().getPartialArgs(partialArgsSymbol);
     return PrimitiveReference.create(!!args.templates[blockName]);
   }
 

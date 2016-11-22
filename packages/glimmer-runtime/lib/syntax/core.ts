@@ -56,14 +56,14 @@ import {
 
 import CompiledValue from '../compiled/expressions/value';
 
-import {
-  CompiledLocalLookup,
-  CompiledSelfLookup
-} from '../compiled/expressions/lookups';
+import { CompiledLocalLookup, CompiledPartialLocalLookup, CompiledSelfLookup } from '../compiled/expressions/lookups';
 
 import CompiledHasBlock from '../compiled/expressions/has-block';
 
-import CompiledHasBlockParams from '../compiled/expressions/has-block-params';
+import {
+  CompiledPartialHasBlockParams,
+  default as CompiledHasBlockParams
+} from '../compiled/expressions/has-block-params';
 
 import CompiledHelper from '../compiled/expressions/helper';
 
@@ -618,15 +618,25 @@ export class Yield extends StatementSyntax {
 
   type = "yield";
 
-  constructor(public to: string, public args: Args) {
+  constructor(private to: string, private args: Args) {
     super();
   }
 
   compile(dsl: OpcodeBuilderDSL, env: Environment, symbolTable: SymbolTable) {
-    let to = dsl.getBlockSymbol(this.to);
+    let { to } = this;
     let args = this.args.compile(dsl, env, symbolTable);
-    dsl.append(new OpenBlockOpcode(to, this.to, args));
-    dsl.append(new CloseBlockOpcode());
+
+    if (dsl.hasBlockSymbol(to)) {
+      let symbol = dsl.getBlockSymbol(to);
+      dsl.append(new OpenBlockOpcode(symbol, to, args));
+      dsl.append(new CloseBlockOpcode());
+    } else if (dsl.hasPartialArgsSymbol()) {
+      let symbol = dsl.getPartialArgsSymbol();
+      dsl.append(new InPartialOpenBlockOpcode(symbol, to, args));
+      dsl.append(new CloseBlockOpcode());
+    } else {
+      throw new Error('Unreachable');
+    }
   }
 }
 
@@ -652,9 +662,9 @@ class OpenBlockOpcode extends Opcode {
   type = "open-block";
 
   constructor(
-    public to: number,
-    public label: string,
-    public args: CompiledArgs
+    private to: number,
+    private label: string,
+    private args: CompiledArgs
   ) {
     super();
   }
@@ -662,6 +672,36 @@ class OpenBlockOpcode extends Opcode {
   evaluate(vm: VM) {
     let block = vm.scope().getBlock(this.to);
     let args;
+
+    if (block) {
+      args = this.args.evaluate(vm);
+    }
+
+    // FIXME: can we avoid doing this when we don't have a block?
+    vm.pushCallerScope();
+
+    if (block) {
+      vm.invokeBlock(block, args);
+    }
+  }
+}
+
+class InPartialOpenBlockOpcode extends Opcode {
+  type = "open-block";
+
+  constructor(
+    private symbol: number,
+    private to: string,
+    private args: CompiledArgs
+  ) {
+    super();
+  }
+
+  evaluate(vm: VM) {
+    let { symbol, to } = this;
+    let args;
+
+    let block = vm.scope().getPartialArgs(symbol).templates[to];
 
     if (block) {
       args = this.args.evaluate(vm);
@@ -735,7 +775,8 @@ export class GetArgument<T> extends ExpressionSyntax<T> {
       return new CompiledLocalLookup(symbol, path, head);
     } else if (lookup.hasPartialArgsSymbol()) {
       let symbol = lookup.getPartialArgsSymbol();
-      return new CompiledLocalLookup(symbol, parts, head);
+      let path = parts.slice(1);
+      return new CompiledPartialLocalLookup(symbol, head, path);
     } else {
       throw new Error(`Compile Error: ${this.parts.join('.')} is not a valid lookup path.`);
     }
@@ -901,11 +942,16 @@ export class HasBlockParams extends ExpressionSyntax<boolean> {
     super();
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledHasBlockParams {
-    return new CompiledHasBlockParams(
-      this.blockName,
-      compiler.getBlockSymbol(this.blockName)
-    );
+  compile(compiler: SymbolLookup, env: Environment): CompiledExpression<boolean> {
+    let { blockName } = this;
+
+    if (compiler.hasBlockSymbol(blockName)) {
+      return new CompiledHasBlockParams(blockName, compiler.getBlockSymbol(blockName));
+    } else if (compiler.hasPartialArgsSymbol()) {
+      return new CompiledPartialHasBlockParams(blockName, compiler.getPartialArgsSymbol());
+    } else {
+      throw new Error('Unreachable');
+    }
   }
 }
 

@@ -15,8 +15,9 @@ export class CompiledLocalLookup extends CompiledExpression<any> {
   }
 
   evaluate(vm: VM): PathReference<any> {
-    let base = vm.referenceForSymbol(this.symbol);
-    return referenceFromParts(base, this.path);
+    let { symbol, path } = this;
+    let base = vm.referenceForSymbol(symbol);
+    return referenceFromParts(base, path);
   }
 
   toJSON(): string {
@@ -26,6 +27,35 @@ export class CompiledLocalLookup extends CompiledExpression<any> {
       return `$${symbol}(${debug}).${path.join('.')}`;
     } else {
       return `$${symbol}(${debug})`;
+    }
+  }
+}
+
+export class CompiledPartialLocalLookup extends CompiledExpression<any> {
+  public type = "partial-local-lookup";
+
+  constructor(
+    private symbol: number,
+    private name: string,
+    private path: string[],
+  ) {
+    super();
+  }
+
+  evaluate(vm: VM): PathReference<any> {
+    let { symbol, name, path } = this;
+    let args = vm.scope().getPartialArgs(symbol);
+    let base = args.named.get(name);
+    return referenceFromParts(base, path);
+  }
+
+  toJSON(): string {
+    let { symbol, name, path } = this;
+
+    if (path.length) {
+      return `$${symbol}(ARGS).@${name}.${path.join('.')}`;
+    } else {
+      return `$${symbol}(ARGS).@${name}`;
     }
   }
 }

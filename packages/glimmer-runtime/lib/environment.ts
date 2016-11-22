@@ -49,7 +49,7 @@ import EachSyntax from './syntax/builtins/each';
 
 import { PublicVM } from './vm/append';
 
-export type ScopeSlot = PathReference<Opaque> | InlineBlock;
+export type ScopeSlot = PathReference<Opaque> | InlineBlock | EvaluatedArgs;
 
 export interface DynamicScope {
   get(key: string): PathReference<Opaque>;
@@ -94,11 +94,19 @@ export class Scope {
     return this.slots[symbol] as InlineBlock;
   }
 
+  getPartialArgs(symbol: number): EvaluatedArgs {
+    return this.slots[symbol] as EvaluatedArgs;
+  }
+
   bindSymbol(symbol: number, value: PathReference<Opaque>) {
     this.slots[symbol] = value;
   }
 
   bindBlock(symbol: number, value: InlineBlock) {
+    this.slots[symbol] = value;
+  }
+
+  bindPartialArgs(symbol: number, value: EvaluatedArgs) {
     this.slots[symbol] = value;
   }
 
