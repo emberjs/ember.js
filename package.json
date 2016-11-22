@@ -12,8 +12,8 @@
     "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json && bin/run-node-tests.js",
     "start": "ember serve --port=7357",
     "tsc": "tsc -p . --noEmit",
-    "tslint": "tslint ./packages/**.ts",
-    "vscode-build": "tslint -s ./.vscode/tslint-formatters -t vscode ./packages/**.ts; tsc -p . --noEmit",
+    "tslint": "tslint ./packages/**/*.ts",
+    "vscode-build": "tslint -s ./.vscode/tslint-formatters -t vscode ./packages/**/*.ts; tsc -p . --noEmit",
     "sauce:connect": "ember sauce:connect",
     "sauce:disconnect": "ember sauce:disconnect"
   },
@@ -39,7 +39,7 @@
     "qunit": "^0.7.2",
     "simple-dom": "^0.3.0",
     "simple-html-tokenizer": "^0.2.5",
-    "typescript": "^2.0.9"
+    "typescript": "~2.0.9"
   },
   "devDependencies": {
     "benchmark": "^1.0.0",
