@@ -378,7 +378,7 @@ export default class VM implements PublicVM {
 
     assert(args, "Cannot bind named args");
 
-    this.scope().bindSymbol(symbol, args.named);
+    this.scope().bindPartialArgs(symbol, args);
   }
 
   bindDynamicScope(names: string[]) {
