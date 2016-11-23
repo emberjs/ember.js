@@ -27,21 +27,21 @@ export default class WithSyntax extends StatementSyntax {
     // END:   Noop
     //        Exit
 
-    let { args, args: { templates } } = this;
+    let { args, args: { blocks } } = this;
 
     dsl.putArgs(args);
     dsl.test('environment');
 
-    dsl.block({ templates }, (dsl, BEGIN, END) => {
-      if (templates.inverse) {
+    dsl.block(null, (dsl, BEGIN, END) => {
+      if (blocks.inverse) {
         dsl.jumpUnless('ELSE');
-        dsl.evaluate('default', templates.default);
+        dsl.evaluate('default', blocks.default);
         dsl.jump(END);
         dsl.label('ELSE');
-        dsl.evaluate('inverse', templates.inverse);
+        dsl.evaluate('inverse', blocks.inverse);
       } else {
         dsl.jumpUnless(END);
-        dsl.evaluate('default', templates.default);
+        dsl.evaluate('default', blocks.default);
       }
     });
   }

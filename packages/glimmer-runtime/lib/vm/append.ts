@@ -11,21 +11,7 @@ import { Range } from '../utils';
 import { Component, ComponentManager } from '../component/interfaces';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
-import { CapturedFrame, FrameStack, Blocks } from './frame';
-
-interface VMInitialOptions {
-  self: PathReference<Opaque>;
-  dynamicScope: DynamicScope;
-  elementStack: ElementStack;
-  size: number;
-}
-
-interface PushFrameOptions {
-  block: CompiledBlock;
-  args?: EvaluatedArgs;
-  blocks?: Blocks;
-  callerScope?: Scope;
-}
+import { CapturedFrame, FrameStack } from './frame';
 
 export interface PublicVM {
   env: Environment;
@@ -190,7 +176,7 @@ export default class VM implements PublicVM {
     this.frame.push(block.ops);
 
     if (args) this.frame.setArgs(args);
-    if (args && args.templates) this.frame.setBlocks(args.templates);
+    if (args && args.blocks) this.frame.setBlocks(args.blocks);
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
@@ -205,7 +191,7 @@ export default class VM implements PublicVM {
     this.frame.push(layout.ops, component, manager, shadow);
 
     if (args) this.frame.setArgs(args);
-    if (args && args.templates) this.frame.setBlocks(args.templates);
+    if (args && args.blocks) this.frame.setBlocks(args.blocks);
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 

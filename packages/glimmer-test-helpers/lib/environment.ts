@@ -38,7 +38,7 @@ import {
   StatementSyntax,
 
   // Concrete Syntax
-  Templates,
+  Blocks,
   ArgsSyntax,
   OptimizedAppend,
   WithDynamicVarsSyntax,
@@ -480,7 +480,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     if (dyn) {
       let map = assign({}, args.named.map);
       dyn.forEach(name => map[name] = dynamicScope.get(name));
-      args = EvaluatedArgs.create(args.positional, EvaluatedNamedArgs.create(map), args.templates);
+      args = EvaluatedArgs.create(args.positional, EvaluatedNamedArgs.create(map), args.blocks);
     }
     return args;
   }
@@ -797,25 +797,25 @@ export class TestEnvironment extends Environment {
     if (isSimple && isBlock) {
       switch (key) {
         case 'identity':
-          return new IdentitySyntax({ args, templates: args.templates });
+          return new IdentitySyntax(args);
         case 'render-inverse':
-          return new RenderInverseIdentitySyntax({ args, templates: args.templates });
+          return new RenderInverseIdentitySyntax(args);
         case '-with-dynamic-vars':
-          return new WithDynamicVarsSyntax({ args, templates: args.templates });
+          return new WithDynamicVarsSyntax(args);
         case '-in-element':
-          return new InElementSyntax({ args, templates: args.templates });
+          return new InElementSyntax(args);
       }
     }
 
     if (isSimple && (isInline || isBlock)) {
       if (key === 'component') {
-        return new DynamicComponentSyntax({ args, templates: args.templates, symbolTable });
+        return new DynamicComponentSyntax({ args, symbolTable });
       }
 
       let component = this.getComponentDefinition(path, symbolTable);
 
       if (component) {
-        return new CurlyComponentSyntax({ args, definition: component, templates: args.templates, symbolTable });
+        return new CurlyComponentSyntax({ args, definition: component, symbolTable });
       }
     }
 
@@ -932,19 +932,17 @@ class CurlyComponentSyntax extends StatementSyntax {
   public definition: ComponentDefinition<any>;
   public args: ArgsSyntax;
   public shadow: string[] = null;
-  public templates: Templates;
   public symbolTable: SymbolTable;
 
-  constructor({ args, definition, templates, symbolTable }: { args: ArgsSyntax, definition: ComponentDefinition<any>, templates: Templates, symbolTable: SymbolTable }) {
+  constructor({ args, definition, symbolTable }: { args: ArgsSyntax, definition: ComponentDefinition<any>, symbolTable: SymbolTable }) {
     super();
     this.args = args;
     this.definition = definition;
-    this.templates = templates || Templates.empty();
     this.symbolTable = symbolTable;
   }
 
   compile(b: { component: ComponentBuilder } & SymbolLookup, env: Environment) {
-    b.component.static(this.definition, this.args, this.templates, this.symbolTable, this.shadow);
+    b.component.static(this.definition, this.args, this.symbolTable, this.shadow);
   }
 }
 
@@ -985,19 +983,19 @@ class DynamicComponentSyntax extends StatementSyntax {
   public definition: FunctionExpression<ComponentDefinition<Opaque>>;
   public args: ArgsSyntax;
   public shadow: string[] = null;
-  public templates: Templates;
+
   public symbolTable: SymbolTable;
 
-  constructor({ args, templates, symbolTable }: { args: ArgsSyntax, templates: Templates, symbolTable: SymbolTable }) {
+  constructor({ args, symbolTable }: { args: ArgsSyntax, symbolTable: SymbolTable }) {
     super();
-    this.definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0,1), Templates.empty());
+    this.definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0,1), Blocks.empty());
     this.definition = dynamicComponentFor;
-    this.args = ArgsSyntax.build(args.positional.slice(1), args.named, templates || Templates.empty());
+    this.args = ArgsSyntax.build(args.positional.slice(1), args.named, args.blocks);
     this.symbolTable = symbolTable;
   }
 
   compile(b: OpcodeBuilderDSL, env: Environment) {
-    b.component.dynamic(this.definitionArgs, this.definition, this.args, this.templates, this.symbolTable, this.shadow);
+    b.component.dynamic(this.definitionArgs, this.definition, this.args, this.symbolTable, this.shadow);
   }
 }
 
@@ -1157,34 +1155,24 @@ export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectF
 class IdentitySyntax extends StatementSyntax {
   type = "identity";
 
-  public args: ArgsSyntax;
-  public templates: Templates;
-
-  constructor({ args, templates }: { args: ArgsSyntax, templates: Templates }) {
+  constructor(private args: ArgsSyntax) {
     super();
-    this.args = args;
-    this.templates = templates;
   }
 
   compile(dsl: OpcodeBuilderDSL) {
-    dsl.evaluate('default', this.templates.default);
+    dsl.evaluate('default', this.args.blocks.default);
   }
 }
 
 class RenderInverseIdentitySyntax extends StatementSyntax {
   type = "render-inverse-identity";
 
-  public args: ArgsSyntax;
-  public templates: Templates;
-
-  constructor({ args, templates }: { args: ArgsSyntax, templates: Templates }) {
+  constructor(private args: ArgsSyntax) {
     super();
-    this.args = args;
-    this.templates = templates;
   }
 
   compile(dsl: OpcodeBuilderDSL) {
-    dsl.evaluate('inverse', this.templates.inverse);
+    dsl.evaluate('inverse', this.args.blocks.inverse);
   }
 }
 

@@ -389,16 +389,16 @@ class ComponentBuilder implements IComponentBuilder {
     this.env = dsl.env;
   }
 
-  static(definition: StaticDefinition, args: Syntax.Args, templates: Syntax.Templates, symbolTable: SymbolTable, shadow: string[] = EMPTY_ARRAY) {
-    this.dsl.unit({ templates }, dsl => {
+  static(definition: StaticDefinition, args: Syntax.Args, symbolTable: SymbolTable, shadow: string[] = EMPTY_ARRAY) {
+    this.dsl.unit(dsl => {
       dsl.putComponentDefinition(definition);
       dsl.openComponent(args, shadow);
       dsl.closeComponent();
     });
   }
 
-  dynamic(definitionArgs: Syntax.Args, definition: DynamicDefinition, args: Syntax.Args, templates: Syntax.Templates, symbolTable: SymbolTable, shadow: string[] = EMPTY_ARRAY) {
-    this.dsl.unit({ templates }, dsl => {
+  dynamic(definitionArgs: Syntax.Args, definition: DynamicDefinition, args: Syntax.Args, symbolTable: SymbolTable, shadow: string[] = EMPTY_ARRAY) {
+    this.dsl.unit(dsl => {
       dsl.putArgs(definitionArgs);
       dsl.putValue(makeFunctionExpression(definition));
       dsl.test('simple');

@@ -40,25 +40,25 @@ export default class EachSyntax extends StatementSyntax {
     // END:    Noop
     //         Exit
 
-    let { args, args: { templates } } = this;
+    let { args, args: { blocks } } = this;
 
-    dsl.block({ templates, args }, (dsl, BEGIN, END) => {
+    dsl.block(args, (dsl, BEGIN, END) => {
       dsl.putIterator();
 
-      if (templates.inverse) {
+      if (blocks.inverse) {
         dsl.jumpUnless('ELSE');
       } else {
         dsl.jumpUnless(END);
       }
 
-      dsl.iter({ templates }, (dsl, BEGIN, END) => {
-        dsl.evaluate('default', templates.default);
+      dsl.iter((dsl, BEGIN, END) => {
+        dsl.evaluate('default', blocks.default);
       });
 
-      if (templates.inverse) {
+      if (blocks.inverse) {
         dsl.jump(END);
         dsl.label('ELSE');
-        dsl.evaluate('inverse', templates.inverse);
+        dsl.evaluate('inverse', blocks.inverse);
       }
     });
   }

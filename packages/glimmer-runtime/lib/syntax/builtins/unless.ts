@@ -28,21 +28,21 @@ export default class UnlessSyntax extends StatementSyntax {
     // END:   Noop
     //        Exit
 
-    let { args, args: { templates } } = this;
+    let { args, args: { blocks } } = this;
 
     dsl.putArgs(args);
     dsl.test('environment');
 
-    dsl.block({ templates }, dsl => {
-      if (templates.inverse) {
+    dsl.block(null, dsl => {
+      if (blocks.inverse) {
         dsl.jumpIf('ELSE');
-        dsl.evaluate('default', templates.default);
+        dsl.evaluate('default', blocks.default);
         dsl.jump('END');
         dsl.label('ELSE');
-        dsl.evaluate('inverse', templates.inverse);
+        dsl.evaluate('inverse', blocks.inverse);
       } else {
         dsl.jumpIf('END');
-        dsl.evaluate('default', templates.default);
+        dsl.evaluate('default', blocks.default);
       }
     });
   }

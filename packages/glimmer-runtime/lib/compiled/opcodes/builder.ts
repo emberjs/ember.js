@@ -74,7 +74,6 @@ export class StatementCompilationBufferProxy implements StatementCompilationBuff
 
 export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy {
   private labelsStack = new Stack<Dict<vm.LabelOpcode>>();
-  private templatesStack = new Stack<Syntax.Templates>();
 
   constructor(inner: StatementCompilationBuffer, protected symbolTable: SymbolTable, public env: Environment) {
     super(inner);
@@ -86,18 +85,6 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
 
   get labels() {
     return this.labelsStack.current;
-  }
-
-  get templates() {
-    return this.templatesStack.current;
-  }
-
-  startBlock(templates: Syntax.Templates) {
-    this.templatesStack.push(templates);
-  }
-
-  endBlock() {
-    this.templatesStack.pop();
   }
 
   startLabels() {
@@ -342,10 +329,6 @@ function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E>
   return expr && typeof expr['compile'] === 'function';
 }
 
-export type BlockArgs = { templates: Syntax.Templates, args?: Syntax.Args };
-
-const SIMPLE_BLOCK: BlockArgs = { templates: null };
-
 export default class OpcodeBuilder extends BasicOpcodeBuilder {
   compile<E>(expr: Represents<E>): E {
     if (isCompilableExpression(expr)) {
@@ -371,17 +354,12 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.append(vm.BindPartialArgsOpcode.create(layout));
   }
 
-  simpleBlock(callback: BlockCallback) {
-    this.block(SIMPLE_BLOCK, callback);
-  }
-
   // TODO
   // come back to this
-  block({ templates, args }: BlockArgs, callback: BlockCallback) {
+  block(args: Syntax.Args, callback: BlockCallback) {
     if (args) this.putArgs(args);
 
     this.startLabels();
-    this.startBlock(templates);
     this.enter('BEGIN', 'END');
     this.label('BEGIN');
 
@@ -389,15 +367,13 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
     this.label('END');
     this.exit();
-    this.endBlock();
     this.stopLabels();
   }
 
-    // TODO
+  // TODO
   // come back to this
-  iter({ templates }: { templates: Syntax.Templates }, callback: BlockCallback) {
+  iter(callback: BlockCallback) {
     this.startLabels();
-    this.startBlock(templates);
     this.enterList('BEGIN', 'END');
     this.label('ITER');
     this.nextIter('BREAK');
@@ -411,26 +387,16 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.jump('ITER');
     this.label('BREAK');
     this.exitList();
-    this.endBlock();
     this.stopLabels();
   }
 
-    // TODO
+  // TODO
   // come back to this
-  unit({ templates }: { templates: Syntax.Templates }, callback: (builder: OpcodeBuilder) => void) {
+  unit(callback: (builder: OpcodeBuilder) => void) {
     this.startLabels();
-    this.startBlock(templates);
     callback(this);
-    this.endBlock();
     this.stopLabels();
   }
 }
 
-export interface UnitOptions {
-  templates: Syntax.Templates;
-}
-
-export interface BlockOptions extends UnitOptions {
-  args: Syntax.Args;
-}
 export type BlockCallback = (dsl: OpcodeBuilder, BEGIN: Label, END: Label) => void;
