@@ -7,8 +7,7 @@ import {
 } from './compiled/expressions/function';
 
 import {
-  Args,
-  Templates,
+  Args
 } from './syntax/core';
 
 import SymbolTable from './symbol-table';
@@ -21,6 +20,6 @@ export type StaticDefinition = ComponentDefinition<Opaque>;
 export type DynamicDefinition = FunctionExpression<ComponentDefinition<Opaque>>;
 
 export interface ComponentBuilder {
-  static(definition: ComponentDefinition<Opaque>, args: Args, templates: Templates, symbolTable: SymbolTable, shadow?: string[]);
-  dynamic(definitionArgs: Args, definition: DynamicDefinition, args: Args, templates: Templates, symbolTable: SymbolTable, shadow?: string[]);
+  static(definition: ComponentDefinition<Opaque>, args: Args, symbolTable: SymbolTable, shadow?: string[]);
+  dynamic(definitionArgs: Args, definition: DynamicDefinition, args: Args, symbolTable: SymbolTable, shadow?: string[]);
 }

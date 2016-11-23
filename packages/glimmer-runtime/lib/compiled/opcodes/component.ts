@@ -71,7 +71,7 @@ export class OpenComponentOpcode extends Opcode {
 
     let manager = definition.manager;
     let args = manager.prepareArgs(definition, rawArgs.evaluate(vm), dynamicScope);
-    let hasDefaultBlock = !!args.templates.default; // TODO Cleanup?
+    let hasDefaultBlock = !!args.blocks.default; // TODO Cleanup?
     let component = manager.create(vm.env, definition, args, dynamicScope, vm.getSelf(), hasDefaultBlock);
     let destructor = manager.getDestructor(component);
     if (destructor) vm.newDestroyable(destructor);

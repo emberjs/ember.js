@@ -63,7 +63,7 @@ export class CompiledInPartialGetBlock implements CompiledGetBlock {
   evaluate(vm: VM): InlineBlock {
     let { symbol, name } = this;
     let args = vm.scope().getPartialArgs(symbol);
-    return args.templates[name];
+    return args.blocks[name];
   }
 
   toJSON(): string {

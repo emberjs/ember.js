@@ -16,7 +16,7 @@ export { default as SymbolTable } from './lib/symbol-table';
 export { NULL_REFERENCE, UNDEFINED_REFERENCE, PrimitiveReference, ConditionalReference } from './lib/references';
 
 export {
-  Templates,
+  Blocks,
   OptimizedAppend,
   UnoptimizedAppend,
   Unknown,
