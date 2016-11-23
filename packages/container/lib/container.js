@@ -35,7 +35,7 @@ Container.prototype = {
    @type Object
    */
   owner: null,
-
+  
   /**
    @private
    @property registry
@@ -43,31 +43,30 @@ Container.prototype = {
    @since 1.11.0
    */
   registry: null,
-
+  
   /**
    @private
    @property cache
    @type InheritingDict
    */
   cache: null,
-
+  
   /**
    @private
    @property factoryCache
    @type InheritingDict
    */
   factoryCache: null,
-
+  
   /**
    @private
    @property validationCache
    @type InheritingDict
    */
   validationCache: null,
-
+  
   /**
    Given a fullName return a corresponding instance.
-
    The default behaviour is for lookup to return a singleton instance.
    The singleton is scoped to the container, allowing multiple containers
    to all have their own locally scoped singletons.
@@ -114,7 +113,6 @@ Container.prototype = {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
   },
-
   /**
    Given a fullName, return the corresponding factory.
 
@@ -178,29 +176,30 @@ Container.prototype = {
 function isSingleton(container, fullName) {
   return container.registry.getOption(fullName, 'singleton') !== false;
 }
-
-function lookup(container, fullName, options = {}) {
+/** 
+@Descrition  In this function the search of the data in the container is done. If the data is found then returned the data otherwise create a new object and validate its properties. 
+ @param container;
+ @param {String} fullName
+ @param options{} its an array
+returns {any}
+*/
+function lookup(container, fullName, options = {}) { // if the lookup is not supported then it is returning the null value. 
   if (options.source) {
     fullName = container.registry.expandLocalLookup(fullName, options);
-
-    // if expandLocalLookup returns falsey, we do not support local lookup
+        // if expandLocalLookup returns falsey, we do not support local lookup
     if (!fullName) { return; }
   }
-
   if (container.cache[fullName] !== undefined && options.singleton !== false) {
-    return container.cache[fullName];
+    return container.cache[fullName];      // if its already available in the cache then returning it.
   }
-
-  let value = instantiate(container, fullName);
-
-  if (value === undefined) { return; }
-
-  if (isSingleton(container, fullName) && options.singleton !== false) {
+  let value = instantiate(container, fullName);    // if not available then create a new cache object in the container.
+  if (value === undefined) { return; } // if the value object is not created then return null.
+  if (isSingleton(container, fullName) && options.singleton !== false) { /*validating the new created object. */
     container.cache[fullName] = value;
   }
-
   return value;
 }
+
 
 function markInjectionsAsDynamic(injections) {
   injections._dynamic = true;
@@ -209,32 +208,32 @@ function markInjectionsAsDynamic(injections) {
 function areInjectionsDynamic(injections) {
   return !!injections._dynamic;
 }
-
+/**
+ @Description 
+Creating a hash using the arguments provided. Injections provided in the arguments are concatenated and validated. After validations injections are checked to be Singleton and then marked as dynamic. 
+@private
+returns {hash table}
+*/
 function buildInjections(/* container, ...injections */) {
-  let hash = {};
-
-  if (arguments.length > 1) {
+  let hash = {};        // created a hash table
+  if (arguments.length > 1) {   // if the length of argument is greater than 1 then set first element of  argument array as container
     let container = arguments[0];
-    let injections = [];
+    let injections = [];           //created a new array called injections
     let injection;
-
     for (let i = 1; i < arguments.length; i++) {
       if (arguments[i]) {
-        injections = injections.concat(arguments[i]);
+        injections = injections.concat(arguments[i]); // appending all the elements of the arguments array in injection array
       }
     }
-
-    container.registry.validateInjections(injections);
-
+    container.registry.validateInjections(injections);     // to validate the elements in injection array
     for (let i = 0; i < injections.length; i++) {
-      injection = injections[i];
+      injection = injections[i];   // mapping the returned look up value with the injection property.
       hash[injection.property] = lookup(container, injection.fullName);
-      if (!isSingleton(container, injection.fullName)) {
+      if (!isSingleton(container, injection.fullName)) {      // if it’s available then using the function isSingleton then marking the  injections as dynamic
         markInjectionsAsDynamic(hash);
       }
     }
   }
-
   return hash;
 }
 
@@ -243,7 +242,6 @@ function factoryFor(container, fullName, options = {}) {
 
   if (options.source) {
     fullName = registry.expandLocalLookup(fullName, options);
-
     // if expandLocalLookup returns falsey, we do not support local lookup
     if (!fullName) { return; }
   }
