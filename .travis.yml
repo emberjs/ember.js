@@ -19,7 +19,8 @@ matrix:
 before_script:
   - npm run sauce:connect
 script:
-  - npm run vscode-build
+  - npm run tsc
+  - npm run tslint
   - npm run test:ci
 after_script:
   - sleep 10
