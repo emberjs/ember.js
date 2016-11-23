@@ -487,7 +487,7 @@ testBoth('throws assertion if brace expansion notation has spaces', function (ge
       count++;
       return 'roo ' + count;
     }).property('fee.{bar, baz,bop , }'));
-  }, /cannot contain spaces/);
+  }, /Dependent keys passed to Ember\.computed\.or\(\) cannot contain spaces/);
 });
 
 // ..........................................................

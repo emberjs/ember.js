@@ -102,5 +102,5 @@ QUnit.test('A pattern must not contain a space', function() {
 
   expectAssertion(() => {
     expandProperties('a, b', addProperty);
-  }, /Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"/);
+  }, /Dependent keys passed to Ember\.computed\.or\(\) cannot contain spaces/);
 });

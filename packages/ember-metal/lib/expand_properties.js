@@ -38,7 +38,8 @@ const END_WITH_EACH_REGEX = /\.@each$/;
 export default function expandProperties(pattern, callback) {
   assert('A computed property key must be a string', typeof pattern === 'string');
   assert(
-    'Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"',
+    'Dependent keys passed to Ember.computed.or() cannot contain spaces,' +
+      ' e.g. Ember.computed.or("foo bar", "baz") should be Ember.computed.or("foobar", "baz")',
     pattern.indexOf(' ') === -1
   );
   assert(
