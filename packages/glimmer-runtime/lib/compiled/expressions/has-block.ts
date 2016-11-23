@@ -1,39 +1,72 @@
 import { PathReference } from 'glimmer-reference';
 import VM from '../../vm/append';
+import { InlineBlock } from '../blocks';
 import { CompiledExpression } from '../expressions';
 import { PrimitiveReference } from '../../references';
 
 export default class CompiledHasBlock extends CompiledExpression<boolean> {
   public type = "has-block";
 
-  constructor(private blockName: string, private blockSymbol: number) {
+  constructor(private inner: CompiledGetBlock) {
     super();
   }
 
   evaluate(vm: VM): PathReference<boolean> {
-    let block = vm.scope().getBlock(this.blockSymbol);
+    let block = this.inner.evaluate(vm);
     return PrimitiveReference.create(!!block);
   }
 
   toJSON(): string {
-    return `has-block(${this.blockName})`;
+    return `has-block(${this.inner.toJSON()})`;
   }
 }
 
-export class CompiledPartialHasBlock extends CompiledExpression<boolean> {
-  public type = "has-block";
+export class CompiledHasBlockParams extends CompiledExpression<boolean> {
+  public type = "has-block-params";
 
-  constructor(private blockName: string, private partialArgsSymbol: number) {
+  constructor(private inner: CompiledGetBlock) {
     super();
   }
 
   evaluate(vm: VM): PathReference<boolean> {
-    let { blockName, partialArgsSymbol } = this;
-    let args = vm.scope().getPartialArgs(partialArgsSymbol);
-    return PrimitiveReference.create(!!args.templates[blockName]);
+    let block = this.inner.evaluate(vm);
+    return PrimitiveReference.create(!!(block && block.locals.length > 0));
   }
 
   toJSON(): string {
-    return `has-block(${this.blockName})`;
+    return `has-block-params(${this.inner.toJSON()})`;
+  }
+}
+
+export interface CompiledGetBlock {
+  evaluate(vm: VM): InlineBlock;
+  toJSON(): string;
+}
+
+export class CompiledGetBlockBySymbol implements CompiledGetBlock {
+  constructor(private symbol: number, private debug: string) {
+  }
+
+  evaluate(vm: VM): InlineBlock {
+    return vm.scope().getBlock(this.symbol);
+  }
+
+  toJSON(): string {
+    return `get-block($${this.symbol}(${this.debug}))`;
+  }
+}
+
+export class CompiledInPartialGetBlock implements CompiledGetBlock {
+  constructor(private symbol: number, private name: string) {
+  }
+
+  evaluate(vm: VM): InlineBlock {
+    let { symbol, name } = this;
+    let args = vm.scope().getPartialArgs(symbol);
+    return args.templates[name];
+  }
+
+  toJSON(): string {
+    return `get-block($${this.symbol}($ARGS).${this.name}))`;
   }
 }

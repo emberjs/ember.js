@@ -1,4 +1,3 @@
-import { CompiledPartialHasBlock } from '../compiled/expressions/has-block';
 import { VM } from '../vm';
 
 import {
@@ -28,9 +27,7 @@ import {
   InlineBlock
 } from '../compiled/blocks';
 
-import {
-  Opcode
-} from '../opcodes';
+import { Opcode, OpcodeJSON } from '../opcodes';
 
 import OpcodeBuilderDSL from '../compiled/opcodes/builder';
 
@@ -56,14 +53,20 @@ import {
 
 import CompiledValue from '../compiled/expressions/value';
 
-import { CompiledLocalLookup, CompiledPartialLocalLookup, CompiledSelfLookup } from '../compiled/expressions/lookups';
-
-import CompiledHasBlock from '../compiled/expressions/has-block';
+import {
+  default as CompiledLookup,
+  CompiledInPartialName,
+  CompiledSelf,
+  CompiledSymbol
+} from '../compiled/expressions/lookups';
 
 import {
-  CompiledPartialHasBlockParams,
-  default as CompiledHasBlockParams
-} from '../compiled/expressions/has-block-params';
+  CompiledGetBlock,
+  CompiledGetBlockBySymbol,
+  CompiledHasBlockParams,
+  CompiledInPartialGetBlock,
+  default as CompiledHasBlock
+} from '../compiled/expressions/has-block';
 
 import CompiledHelper from '../compiled/expressions/helper';
 
@@ -628,14 +631,16 @@ export class Yield extends StatementSyntax {
 
     if (dsl.hasBlockSymbol(to)) {
       let symbol = dsl.getBlockSymbol(to);
-      dsl.append(new OpenBlockOpcode(symbol, to, args));
+      let inner = new CompiledGetBlockBySymbol(symbol, to);
+      dsl.append(new OpenBlockOpcode(inner, args));
       dsl.append(new CloseBlockOpcode());
     } else if (dsl.hasPartialArgsSymbol()) {
       let symbol = dsl.getPartialArgsSymbol();
-      dsl.append(new InPartialOpenBlockOpcode(symbol, to, args));
+      let inner = new CompiledInPartialGetBlock(symbol, to);
+      dsl.append(new OpenBlockOpcode(inner, args));
       dsl.append(new CloseBlockOpcode());
     } else {
-      throw new Error('Unreachable');
+      throw new Error('[BUG] ${to} is not a valid block name.');
     }
   }
 }
@@ -662,15 +667,14 @@ class OpenBlockOpcode extends Opcode {
   type = "open-block";
 
   constructor(
-    private to: number,
-    private label: string,
+    private inner: CompiledGetBlock,
     private args: CompiledArgs
   ) {
     super();
   }
 
   evaluate(vm: VM) {
-    let block = vm.scope().getBlock(this.to);
+    let block = this.inner.evaluate(vm);
     let args;
 
     if (block) {
@@ -684,35 +688,17 @@ class OpenBlockOpcode extends Opcode {
       vm.invokeBlock(block, args);
     }
   }
-}
 
-class InPartialOpenBlockOpcode extends Opcode {
-  type = "open-block";
-
-  constructor(
-    private symbol: number,
-    private to: string,
-    private args: CompiledArgs
-  ) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    let { symbol, to } = this;
-    let args;
-
-    let block = vm.scope().getPartialArgs(symbol).templates[to];
-
-    if (block) {
-      args = this.args.evaluate(vm);
-    }
-
-    // FIXME: can we avoid doing this when we don't have a block?
-    vm.pushCallerScope();
-
-    if (block) {
-      vm.invokeBlock(block, args);
-    }
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      details: {
+        "block": this.inner.toJSON(),
+        "positional": this.args.positional.toJSON(),
+        "named": this.args.named.toJSON()
+      }
+    };
   }
 }
 
@@ -748,37 +734,39 @@ export class Value<T extends SerializedExpressions.Value> extends ExpressionSynt
   }
 }
 
-export class GetArgument<T> extends ExpressionSyntax<T> {
+export class GetArgument extends ExpressionSyntax<Opaque> {
   type = "get-argument";
 
-  static fromSpec(sexp: SerializedExpressions.Arg): GetArgument<Opaque> {
+  static fromSpec(sexp: SerializedExpressions.Arg): GetArgument {
     let [, parts] = sexp;
 
-    return new GetArgument<Opaque>(parts);
+    return new GetArgument(parts);
   }
 
-  static build(path: string): GetArgument<Opaque> {
-    return new this<Opaque>(path.split('.'));
+  static build(path: string): GetArgument {
+    return new this(path.split('.'));
   }
 
   constructor(public parts: string[]) {
     super();
   }
 
-  compile(lookup: SymbolLookup): CompiledExpression<T> {
+  compile(lookup: SymbolLookup): CompiledExpression<Opaque> {
     let { parts } = this;
     let head = parts[0];
 
     if (lookup.hasNamedSymbol(head)) {
       let symbol = lookup.getNamedSymbol(head);
       let path = parts.slice(1);
-      return new CompiledLocalLookup(symbol, path, head);
+      let inner = new CompiledSymbol(symbol, head);
+      return CompiledLookup.create(inner, path);
     } else if (lookup.hasPartialArgsSymbol()) {
       let symbol = lookup.getPartialArgsSymbol();
       let path = parts.slice(1);
-      return new CompiledPartialLocalLookup(symbol, head, path);
+      let inner = new CompiledInPartialName(symbol, head);
+      return CompiledLookup.create(inner, path);
     } else {
-      throw new Error(`Compile Error: ${this.parts.join('.')} is not a valid lookup path.`);
+      throw new Error(`[BUG] @${this.parts.join('.')} is not a valid lookup path.`);
     }
   }
 }
@@ -805,15 +793,19 @@ export class Ref extends ExpressionSyntax<Opaque> {
   compile(lookup: SymbolLookup): CompiledExpression<Opaque> {
     let { parts } = this;
     let head = parts[0];
-    let path = parts.slice(1);
 
     if (head === null) { // {{this.foo}}
-      return new CompiledSelfLookup(path);
+      let inner = new CompiledSelf();
+      let path = parts.slice(1);
+      return CompiledLookup.create(inner, path);
     } else if (lookup.hasLocalSymbol(head)) {
       let symbol = lookup.getLocalSymbol(head);
-      return new CompiledLocalLookup(symbol, path, head);
+      let path = parts.slice(1);
+      let inner = new CompiledSymbol(symbol, head);
+      return CompiledLookup.create(inner, path);
     } else {
-      return new CompiledSelfLookup(parts);
+      let inner = new CompiledSelf();
+      return CompiledLookup.create(inner, parts);
     }
   }
 }
@@ -916,12 +908,16 @@ export class HasBlock extends ExpressionSyntax<boolean> {
   compile(compiler: SymbolLookup, env: Environment): CompiledExpression<boolean> {
     let { blockName } = this;
 
-    if (compiler.hasBlockSymbol(this.blockName)) {
-      return new CompiledHasBlock(blockName, compiler.getBlockSymbol(blockName));
+    if (compiler.hasBlockSymbol(blockName)) {
+      let symbol = compiler.getBlockSymbol(blockName);
+      let inner = new CompiledGetBlockBySymbol(symbol, blockName);
+      return new CompiledHasBlock(inner);
     } else if (compiler.hasPartialArgsSymbol()) {
-      return new CompiledPartialHasBlock(blockName, compiler.getPartialArgsSymbol());
+      let symbol = compiler.getPartialArgsSymbol();
+      let inner = new CompiledInPartialGetBlock(symbol, blockName);
+      return new CompiledHasBlock(inner);
     } else {
-      throw new Error('Unreachable');
+      throw new Error('[BUG] ${blockName} is not a valid block name.');
     }
   }
 }
@@ -946,11 +942,15 @@ export class HasBlockParams extends ExpressionSyntax<boolean> {
     let { blockName } = this;
 
     if (compiler.hasBlockSymbol(blockName)) {
-      return new CompiledHasBlockParams(blockName, compiler.getBlockSymbol(blockName));
+      let symbol = compiler.getBlockSymbol(blockName);
+      let inner = new CompiledGetBlockBySymbol(symbol, blockName);
+      return new CompiledHasBlockParams(inner);
     } else if (compiler.hasPartialArgsSymbol()) {
-      return new CompiledPartialHasBlockParams(blockName, compiler.getPartialArgsSymbol());
+      let symbol = compiler.getPartialArgsSymbol();
+      let inner = new CompiledInPartialGetBlock(symbol, blockName);
+      return new CompiledHasBlockParams(inner);
     } else {
-      throw new Error('Unreachable');
+      throw new Error('[BUG] ${blockName} is not a valid block name.');
     }
   }
 }
