@@ -38,7 +38,6 @@ import {
   StatementSyntax,
 
   // Concrete Syntax
-  Blocks,
   ArgsSyntax,
   OptimizedAppend,
   WithDynamicVarsSyntax,
@@ -988,7 +987,7 @@ class DynamicComponentSyntax extends StatementSyntax {
 
   constructor({ args, symbolTable }: { args: ArgsSyntax, symbolTable: SymbolTable }) {
     super();
-    this.definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0,1), Blocks.empty());
+    this.definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0,1));
     this.definition = dynamicComponentFor;
     this.args = ArgsSyntax.build(args.positional.slice(1), args.named, args.blocks);
     this.symbolTable = symbolTable;

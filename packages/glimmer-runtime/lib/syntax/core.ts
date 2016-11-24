@@ -546,7 +546,7 @@ export class OpenElement extends StatementSyntax {
       current = scanner.next();
     }
 
-    return { args: Args.fromNamedArgs(NamedArgs.build(argKeys, argValues), EMPTY_BLOCKS), attrs };
+    return { args: Args.fromNamedArgs(NamedArgs.build(argKeys, argValues)), attrs };
   }
 
   private tagContents(scanner: BlockScanner) {
@@ -615,7 +615,7 @@ export class Yield extends StatementSyntax {
   }
 
   static build(params: ExpressionSyntax<Opaque>[], to: string): Yield {
-    let args = Args.fromPositionalArgs(PositionalArgs.build(params), EMPTY_BLOCKS);
+    let args = Args.fromPositionalArgs(PositionalArgs.build(params));
     return new this(to, args);
   }
 
@@ -975,6 +975,32 @@ export class Concat {
   }
 }
 
+export class Blocks {
+  public type = "blocks";
+
+  static fromSpec(_default: InlineBlock, inverse: InlineBlock = null): Blocks {
+    return new Blocks(_default, inverse);
+  }
+
+  static empty(): Blocks {
+    return EMPTY_BLOCKS;
+  }
+
+  public default: InlineBlock;
+  public inverse: InlineBlock;
+
+  constructor(_default: InlineBlock, inverse: InlineBlock = null) {
+    this.default = _default;
+    this.inverse = inverse;
+  }
+}
+
+export const EMPTY_BLOCKS: Blocks = new (class extends Blocks {
+  constructor() {
+    super(null, null);
+  }
+});
+
 export class Args {
   public type = "args";
 
@@ -986,11 +1012,11 @@ export class Args {
     return new Args(PositionalArgs.fromSpec(positional), NamedArgs.fromSpec(named), blocks);
   }
 
-  static fromPositionalArgs(positional: PositionalArgs, blocks: Blocks): Args {
+  static fromPositionalArgs(positional: PositionalArgs, blocks: Blocks = EMPTY_BLOCKS): Args {
     return new Args(positional, EMPTY_NAMED_ARGS, blocks);
   }
 
-  static fromNamedArgs(named: NamedArgs, blocks: Blocks): Args {
+  static fromNamedArgs(named: NamedArgs, blocks: Blocks = EMPTY_BLOCKS): Args {
     return new Args(EMPTY_POSITIONAL_ARGS, named, blocks);
   }
 
@@ -1147,31 +1173,5 @@ const EMPTY_ARGS: Args = new (class extends Args {
 
   compile(compiler: SymbolLookup, env: Environment): CompiledArgs {
     return CompiledArgs.empty();
-  }
-});
-
-export class Blocks {
-  public type = "blocks";
-
-  static fromSpec(_default: InlineBlock, inverse: InlineBlock = null): Blocks {
-    return new Blocks(_default, inverse);
-  }
-
-  static empty(): Blocks {
-    return EMPTY_BLOCKS;
-  }
-
-  public default: InlineBlock;
-  public inverse: InlineBlock;
-
-  constructor(_default: InlineBlock, inverse: InlineBlock = null) {
-    this.default = _default;
-    this.inverse = inverse;
-  }
-}
-
-export const EMPTY_BLOCKS: Blocks = new (class extends Blocks {
-  constructor() {
-    super(null, null);
   }
 });
