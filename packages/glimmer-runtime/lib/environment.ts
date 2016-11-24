@@ -49,7 +49,7 @@ import EachSyntax from './syntax/builtins/each';
 
 import { PublicVM } from './vm/append';
 
-export type ScopeSlot = PathReference<Opaque> | InlineBlock;
+export type ScopeSlot = PathReference<Opaque> | InlineBlock | EvaluatedArgs;
 
 export interface DynamicScope {
   get(key: string): PathReference<Opaque>;
@@ -94,11 +94,19 @@ export class Scope {
     return this.slots[symbol] as InlineBlock;
   }
 
+  getPartialArgs(symbol: number): EvaluatedArgs {
+    return this.slots[symbol] as EvaluatedArgs;
+  }
+
   bindSymbol(symbol: number, value: PathReference<Opaque>) {
     this.slots[symbol] = value;
   }
 
   bindBlock(symbol: number, value: InlineBlock) {
+    this.slots[symbol] = value;
+  }
+
+  bindPartialArgs(symbol: number, value: EvaluatedArgs) {
     this.slots[symbol] = value;
   }
 
@@ -157,19 +165,18 @@ export abstract class Environment {
       isBlock,
       key,
       args,
-      templates
     } = statement;
 
     if (isSimple && isBlock) {
       switch (key) {
         case 'each':
-          return new EachSyntax({ args, templates });
+          return new EachSyntax(args);
         case 'if':
-          return new IfSyntax({ args, templates });
+          return new IfSyntax(args);
         case 'with':
-          return new WithSyntax({ args, templates });
+          return new WithSyntax(args);
         case 'unless':
-          return new UnlessSyntax({ args, templates });
+          return new UnlessSyntax(args);
       }
     }
   }
@@ -282,7 +289,6 @@ export interface ParsedStatement {
   isInline: boolean;
   isBlock: boolean;
   isModifier: boolean;
-  templates: Syntax.Templates;
   original: StatementSyntax;
 }
 
@@ -329,7 +335,6 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
       original: statement,
       isInline: !!append,
       isBlock: !!block,
-      isModifier: !!modifier,
-      templates: block && block.templates
+      isModifier: !!modifier
     };
 }

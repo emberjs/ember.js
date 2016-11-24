@@ -3,7 +3,6 @@ import { Assert } from './vm';
 import { Component, ComponentManager, ComponentDefinition } from '../../component/interfaces';
 import { VM, UpdatingVM } from '../../vm';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
-import { Templates } from '../../syntax/core';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
 import { CONSTANT_TAG, PathReference, ReferenceCache, combine, isConst, RevisionTag } from 'glimmer-reference';
@@ -58,22 +57,21 @@ export class OpenComponentOpcode extends Opcode {
 
   constructor(
     private args: CompiledArgs,
-    private shadow: string[],
-    private templates: Templates
+    private shadow: string[]
   ) {
     super();
   }
 
   evaluate(vm: VM) {
-    let { args: rawArgs, shadow, templates } = this;
+    let { args: rawArgs, shadow } = this;
 
     let definition = vm.frame.getImmediate<ComponentDefinition<Component>>();
     let dynamicScope = vm.pushDynamicScope();
     let callerScope = vm.scope();
 
     let manager = definition.manager;
-    let hasDefaultBlock = templates && !!templates.default; // TODO Cleanup?
     let args = manager.prepareArgs(definition, rawArgs.evaluate(vm), dynamicScope);
+    let hasDefaultBlock = !!args.blocks.default; // TODO Cleanup?
     let component = manager.create(vm.env, definition, args, dynamicScope, vm.getSelf(), hasDefaultBlock);
     let destructor = manager.getDestructor(component);
     if (destructor) vm.newDestroyable(destructor);
@@ -84,7 +82,7 @@ export class OpenComponentOpcode extends Opcode {
     vm.beginCacheGroup();
     vm.stack().pushSimpleBlock();
     vm.pushRootScope(selfRef, layout.symbols);
-    vm.invokeLayout(args, layout, templates, callerScope, component, manager, shadow);
+    vm.invokeLayout(args, layout, callerScope, component, manager, shadow);
 
     vm.updateWith(new UpdateComponentOpcode(definition.name, component, manager, args, dynamicScope));
   }

@@ -11,14 +11,8 @@ import Environment from '../../environment';
 export default class EachSyntax extends StatementSyntax {
   type = "each-statement";
 
-  public args: Syntax.Args;
-  public templates: Syntax.Templates;
-  public isStatic = false;
-
-  constructor({ args, templates }: { args: Syntax.Args, templates: Syntax.Templates }) {
+  constructor(public args: Syntax.Args) {
     super();
-    this.args = args;
-    this.templates = templates;
   }
 
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
@@ -46,25 +40,25 @@ export default class EachSyntax extends StatementSyntax {
     // END:    Noop
     //         Exit
 
-    let { args, templates } = this;
+    let { args, args: { blocks } } = this;
 
-    dsl.block({ templates, args }, (dsl, BEGIN, END) => {
+    dsl.block(args, (dsl, BEGIN, END) => {
       dsl.putIterator();
 
-      if (templates.inverse) {
+      if (blocks.inverse) {
         dsl.jumpUnless('ELSE');
       } else {
         dsl.jumpUnless(END);
       }
 
-      dsl.iter({ templates }, (dsl, BEGIN, END) => {
-        dsl.evaluate('default');
+      dsl.iter((dsl, BEGIN, END) => {
+        dsl.evaluate('default', blocks.default);
       });
 
-      if (templates.inverse) {
+      if (blocks.inverse) {
         dsl.jump(END);
         dsl.label('ELSE');
-        dsl.evaluate('inverse');
+        dsl.evaluate('inverse', blocks.inverse);
       }
     });
   }

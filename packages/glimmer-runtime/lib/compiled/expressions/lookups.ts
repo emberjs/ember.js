@@ -1,49 +1,73 @@
+import { Opaque } from 'glimmer-util';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
 import { PathReference } from 'glimmer-reference';
 import { referenceFromParts } from 'glimmer-reference';
 
-export class CompiledLocalLookup extends CompiledExpression<any> {
-  public type = "local-lookup";
+export default class CompiledLookup extends CompiledExpression<Opaque> {
+  public type = "lookup";
 
-  constructor(
-    private symbol: number,
-    private path: string[],
-    private debug: string
+  static create(base: CompiledExpression<Opaque>, path: string[]): CompiledExpression<Opaque> {
+    if (path.length === 0) {
+      return base;
+    } else {
+      return new this(base, path);
+    }
+  }
+
+  private constructor(
+    private base: CompiledExpression<Opaque>,
+    private path: string[]
   ) {
     super();
   }
 
-  evaluate(vm: VM): PathReference<any> {
-    let base = vm.referenceForSymbol(this.symbol);
-    return referenceFromParts(base, this.path);
+  evaluate(vm: VM): PathReference<Opaque> {
+    let { base, path } = this;
+    return referenceFromParts(base.evaluate(vm), path);
   }
 
   toJSON(): string {
-    let { debug, symbol, path } = this;
-
-    if (path.length) {
-      return `$${symbol}(${debug}).${path.join('.')}`;
-    } else {
-      return `$${symbol}(${debug})`;
-    }
+    return `${this.base.toJSON()}.${this.path.join('.')}`;
   }
 }
 
-export class CompiledSelfLookup extends CompiledExpression<any> {
-  public type = "self-lookup";
-
-  constructor(private parts: string[]) {
-    super();
-  }
-
-  evaluate(vm: VM): PathReference<any> {
-    return referenceFromParts(vm.getSelf(), this.parts);
+export class CompiledSelf extends CompiledExpression<Opaque> {
+  evaluate(vm: VM): PathReference<Opaque> {
+    return vm.getSelf();
   }
 
   toJSON(): string {
-    let path = ['self'];
-    path.push(...this.parts);
-    return path.join('.');
+    return 'self';
+  }
+}
+
+export class CompiledSymbol extends CompiledExpression<Opaque> {
+  constructor(private symbol: number, private debug: string) {
+    super();
+  }
+
+  evaluate(vm: VM): PathReference<Opaque> {
+    return vm.referenceForSymbol(this.symbol);
+  }
+
+  toJSON(): string {
+    return `$${this.symbol}(${this.debug})`;
+  }
+}
+
+export class CompiledInPartialName extends CompiledExpression<Opaque> {
+  constructor(private symbol: number, private name: string) {
+    super();
+  }
+
+  evaluate(vm: VM): PathReference<Opaque> {
+    let { symbol, name } = this;
+    let args = vm.scope().getPartialArgs(symbol);
+    return args.named.get(name);
+  }
+
+  toJSON(): string {
+    return `$${this.symbol}($ARGS).${this.name}`;
   }
 }

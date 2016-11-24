@@ -9,24 +9,18 @@ import Environment from '../../environment';
 export default class WithDynamicVarsSyntax extends StatementSyntax {
   type = "with-dynamic-vars-statement";
 
-  public args: Syntax.Args;
-  public templates: Syntax.Templates;
-  public isStatic = false;
-
-  constructor({ args, templates }: { args: Syntax.Args, templates: Syntax.Templates }) {
+  constructor(private args: Syntax.Args) {
     super();
-    this.args = args;
-    this.templates = templates;
   }
 
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
-    let { args, templates } = this;
+    let { args, args: { blocks } } = this;
 
-    dsl.unit({ templates }, dsl => {
+    dsl.unit(dsl => {
       dsl.putArgs(args);
       dsl.pushDynamicScope();
       dsl.bindDynamicScope(args.named.keys);
-      dsl.evaluate('default');
+      dsl.evaluate('default', blocks.default);
       dsl.popDynamicScope();
     });
   }

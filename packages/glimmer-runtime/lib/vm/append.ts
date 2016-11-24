@@ -2,7 +2,6 @@ import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementStack } from '../builder';
 import { Destroyable, Stack, LinkedList, ListSlice, LOGGER, Opaque, assert } from 'glimmer-util';
 import { PathReference, combineSlice } from 'glimmer-reference';
-import { Templates } from '../syntax/core';
 import { InlineBlock, PartialBlock, CompiledBlock } from '../compiled/blocks';
 import { CompiledExpression } from '../compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
@@ -12,21 +11,7 @@ import { Range } from '../utils';
 import { Component, ComponentManager } from '../component/interfaces';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
-import { CapturedFrame, FrameStack, Blocks } from './frame';
-
-interface VMInitialOptions {
-  self: PathReference<Opaque>;
-  dynamicScope: DynamicScope;
-  elementStack: ElementStack;
-  size: number;
-}
-
-interface PushFrameOptions {
-  block: CompiledBlock;
-  args?: EvaluatedArgs;
-  blocks?: Blocks;
-  callerScope?: Scope;
-}
+import { CapturedFrame, FrameStack } from './frame';
 
 export interface PublicVM {
   env: Environment;
@@ -186,20 +171,18 @@ export default class VM implements PublicVM {
   pushFrame(
     block: CompiledBlock,
     args?: EvaluatedArgs,
-    blocks?: Blocks,
     callerScope?: Scope
   ) {
     this.frame.push(block.ops);
 
     if (args) this.frame.setArgs(args);
-    if (blocks) this.frame.setBlocks(blocks);
+    if (args && args.blocks) this.frame.setBlocks(args.blocks);
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
   pushComponentFrame(
     layout: CompiledBlock,
     args: EvaluatedArgs,
-    blocks: Blocks,
     callerScope: Scope,
     component: Component,
     manager: ComponentManager<Component>,
@@ -208,7 +191,7 @@ export default class VM implements PublicVM {
     this.frame.push(layout.ops, component, manager, shadow);
 
     if (args) this.frame.setArgs(args);
-    if (blocks) this.frame.setBlocks(blocks);
+    if (args && args.blocks) this.frame.setBlocks(args.blocks);
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
@@ -318,13 +301,12 @@ export default class VM implements PublicVM {
   invokeLayout(
     args: EvaluatedArgs,
     layout: CompiledBlock,
-    templates: Templates,
     callerScope: Scope,
     component: Component,
     manager: ComponentManager<Component>,
     shadow: string[]
   ) {
-    this.pushComponentFrame(layout, args, templates, callerScope, component, manager, shadow);
+    this.pushComponentFrame(layout, args, callerScope, component, manager, shadow);
   }
 
   evaluateOperand(expr: CompiledExpression<any>) {
@@ -382,7 +364,7 @@ export default class VM implements PublicVM {
 
     assert(args, "Cannot bind named args");
 
-    this.scope().bindSymbol(symbol, args.named);
+    this.scope().bindPartialArgs(symbol, args);
   }
 
   bindDynamicScope(names: string[]) {
