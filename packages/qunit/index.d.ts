@@ -128,7 +128,6 @@ interface TestStartCallbackObject {
     module: string;
 }
 
-
 interface Config {
     altertitle: boolean;
     autostart: boolean;
