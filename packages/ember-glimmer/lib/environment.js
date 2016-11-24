@@ -178,8 +178,7 @@ export default class Environment extends GlimmerEnvironment {
       isModifier,
       key,
       path,
-      args,
-      templates
+      args
     } = statement;
 
     assert(`You attempted to overwrite the built-in helper "${key}" which is not allowed. Please rename the helper.`, !(this.builtInHelpers[key] && this.owner.hasRegistration(`helper:${key}`)));
@@ -189,7 +188,7 @@ export default class Environment extends GlimmerEnvironment {
 
       let RefinedSyntax = findSyntaxBuilder(key);
       if (RefinedSyntax) {
-        return RefinedSyntax.create(this, args, templates, symbolTable);
+        return RefinedSyntax.create(this, args, symbolTable);
       }
 
       let internalKey = builtInComponents[key];
@@ -204,7 +203,7 @@ export default class Environment extends GlimmerEnvironment {
       if (definition) {
         wrapComponentClassAttribute(args);
 
-        return new CurlyComponentSyntax(args, definition, templates, symbolTable);
+        return new CurlyComponentSyntax(args, definition, symbolTable);
       }
 
       assert(`A component or helper named "${key}" could not be found`, !isBlock || this.hasHelper(path, symbolTable));
@@ -215,7 +214,7 @@ export default class Environment extends GlimmerEnvironment {
     }
 
     if (!isSimple && path) {
-      return DynamicComponentSyntax.fromPath(this, path, args, templates, symbolTable);
+      return DynamicComponentSyntax.fromPath(this, path, args, symbolTable);
     }
 
     assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(path, symbolTable));

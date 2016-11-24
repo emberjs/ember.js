@@ -21,7 +21,7 @@ import {
 export function gatherArgs(args, definition) {
   let namedMap = gatherNamedMap(args, definition);
   let positionalValues = gatherPositionalValues(args, definition);
-  return mergeArgs(namedMap, positionalValues, definition.ComponentClass);
+  return mergeArgs(namedMap, positionalValues, args.blocks, definition.ComponentClass);
 }
 
 function gatherNamedMap(args, definition) {
@@ -46,7 +46,7 @@ function gatherPositionalValues(args, definition) {
   }
 }
 
-function mergeArgs(namedMap, positionalValues, componentClass) {
+function mergeArgs(namedMap, positionalValues, blocks, componentClass) {
   let positionalParamsDefinition = componentClass.positionalParams;
 
   if (positionalParamsDefinition && positionalParamsDefinition.length > 0 && positionalValues.length > 0) {
@@ -56,7 +56,7 @@ function mergeArgs(namedMap, positionalValues, componentClass) {
       namedMap = mergePositionalParams(namedMap, positionalValues, positionalParamsDefinition);
     }
   }
-  return EvaluatedArgs.named(namedMap);
+  return EvaluatedArgs.named(namedMap, blocks);
 }
 
 const EMPTY_ARGS = {
