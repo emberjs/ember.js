@@ -50,12 +50,12 @@ export class EvaluatedArgs {
     return new this(positional, named, blocks);
   }
 
-  static positional(values: PathReference<Opaque>[]): EvaluatedArgs {
-    return new this(EvaluatedPositionalArgs.create(values), EVALUATED_EMPTY_NAMED_ARGS, EMPTY_BLOCKS);
+  static positional(values: PathReference<Opaque>[], blocks = EMPTY_BLOCKS): EvaluatedArgs {
+    return new this(EvaluatedPositionalArgs.create(values), EVALUATED_EMPTY_NAMED_ARGS, blocks);
   }
 
-  static named(map: Dict<PathReference<Opaque>>) {
-    return new this(EVALUATED_EMPTY_POSITIONAL_ARGS, EvaluatedNamedArgs.create(map), EMPTY_BLOCKS);
+  static named(map: Dict<PathReference<Opaque>>, blocks = EMPTY_BLOCKS) {
+    return new this(EVALUATED_EMPTY_POSITIONAL_ARGS, EvaluatedNamedArgs.create(map), blocks);
   }
 
   public tag: RevisionTag;
