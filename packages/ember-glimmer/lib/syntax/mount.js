@@ -33,7 +33,7 @@ import { OutletLayoutCompiler } from './outlet';
   @public
 */
 export class MountSyntax extends StatementSyntax {
-  static create(env, args, templates, symbolTable) {
+  static create(env, args, symbolTable) {
     assert(
       'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
       args.positional.length === 1 && args.named.length === 0

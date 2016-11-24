@@ -32,13 +32,13 @@ registerSyntax('component', DynamicComponentSyntax);
 registerSyntax('input', InputSyntax);
 
 registerSyntax('-with-dynamic-vars', class {
-  static create(environment, args, templates, symbolTable) {
-    return new WithDynamicVarsSyntax({ args, templates });
+  static create(environment, args, symbolTable) {
+    return new WithDynamicVarsSyntax(args);
   }
 });
 
 registerSyntax('-in-element', class {
-  static create(environment, args, templates, symbolTable) {
-    return new InElementSyntax({ args, templates });
+  static create(environment, args, symbolTable) {
+    return new InElementSyntax(args);
   }
 });

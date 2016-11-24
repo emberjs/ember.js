@@ -80,24 +80,22 @@ function outletComponentFor(vm) {
   @public
 */
 export class OutletSyntax extends StatementSyntax {
-  static create(environment, args, templates, symbolTable) {
+  static create(environment, args, symbolTable) {
     let definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0, 1));
-
-    return new this(environment, definitionArgs, templates, symbolTable);
+    return new this(environment, definitionArgs, symbolTable);
   }
 
-  constructor(environment, args, templates, symbolTable) {
+  constructor(environment, args, symbolTable) {
     super();
     this.definitionArgs = args;
     this.definition = outletComponentFor;
     this.args = ArgsSyntax.empty();
     this.symbolTable = symbolTable;
-    this.templates = null;
     this.shadow = null;
   }
 
   compile(builder) {
-    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.templates, this.symbolTable, this.shadow);
+    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.symbolTable, this.shadow);
   }
 }
 

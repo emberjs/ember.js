@@ -9,6 +9,7 @@ import {
   validatePositionalParameters
 } from '../syntax/curly-component';
 import {
+  Blocks,
   EvaluatedArgs,
   EvaluatedNamedArgs,
   EvaluatedPositionalArgs,
@@ -198,7 +199,8 @@ function curryArgs(definition, newArgs) {
 
   let mergedArgs = EvaluatedArgs.create(
     EvaluatedPositionalArgs.create(mergedPositional),
-    EvaluatedNamedArgs.create(mergedNamed)
+    EvaluatedNamedArgs.create(mergedNamed),
+    Blocks.empty()
   );
 
   return mergedArgs;
