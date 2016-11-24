@@ -5,7 +5,7 @@ import { DynamicComponentSyntax } from './syntax/dynamic-component';
 import { InputSyntax } from './syntax/input';
 import {
   WithDynamicVarsSyntax,
-  InElementSyntax
+  RenderPortalSyntax
 } from 'glimmer-runtime';
 
 
@@ -37,8 +37,8 @@ registerSyntax('-with-dynamic-vars', class {
   }
 });
 
-registerSyntax('-in-element', class {
+registerSyntax('-render-portal', class {
   static create(environment, args, templates, symbolTable) {
-    return new InElementSyntax({ args, templates });
+    return new RenderPortalSyntax({ args, templates });
   }
 });

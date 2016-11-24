@@ -4,33 +4,59 @@ import { strip } from '../../utils/abstract-test-case';
 import Component from '../../../component';
 import { set } from 'ember-metal';
 
-moduleFor('{{-in-element}}', class extends RenderingTest {
+moduleFor('{{-render-portal}}', class extends RenderingTest {
   ['@test allows rendering into an external element'](assert) {
     let someElement = document.createElement('div');
 
     this.render(strip`
-      {{#-in-element someElement}}
+      {{#-render-portal someElement}}
         {{text}}
-      {{/-in-element}}
+      {{/-render-portal}}
     `, {
       someElement,
       text: 'Whoop!'
     });
 
-    equalTokens(this.element, '<!---->');
+    equalTokens(this.element, '<!--portal-->');
     equalTokens(someElement, 'Whoop!');
 
     this.assertStableRerender();
 
     this.runTask(() => set(this.context, 'text', 'Huzzah!!'));
 
-    equalTokens(this.element, '<!---->');
+    equalTokens(this.element, '<!--portal-->');
     equalTokens(someElement, 'Huzzah!!');
 
     this.runTask(() => set(this.context, 'text', 'Whoop!'));
 
-    equalTokens(this.element, '<!---->');
+    equalTokens(this.element, '<!--portal-->');
     equalTokens(someElement, 'Whoop!');
+  }
+
+  ['@test allows rendering in place'](assert) {
+    let someElement = document.createElement('div');
+
+    this.render(strip`
+      {{#-render-portal someElement}}
+        {{text}}
+      {{/-render-portal}}
+    `, {
+      someElement: null,
+      text: 'Whoop!'
+    });
+
+    equalTokens(this.element, '<!--portal-->Whoop!');
+    equalTokens(someElement, '');
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      set(this.context, 'text', 'Huzzah!!');
+      set(this.context, 'someElement', someElement);
+    });
+
+    equalTokens(this.element, '<!--portal-->');
+    equalTokens(someElement, 'Huzzah!!');
   }
 
   ['@test components are cleaned up properly'](assert) {
@@ -54,9 +80,9 @@ moduleFor('{{-in-element}}', class extends RenderingTest {
 
     this.render(strip`
       {{#if showModal}}
-        {{#-in-element someElement}}
+        {{#-render-portal someElement}}
           {{modal-display text=text}}
-        {{/-in-element}}
+        {{/-render-portal}}
       {{/if}}
     `, {
       someElement,
@@ -71,17 +97,17 @@ moduleFor('{{-in-element}}', class extends RenderingTest {
 
     this.runTask(() => set(this.context, 'showModal', true));
 
-    equalTokens(this.element, '<!---->');
+    equalTokens(this.element, '<!--portal-->');
     this.assertComponentElement(someElement.firstChild, { content: 'Whoop!' });
 
     this.runTask(() => set(this.context, 'text', 'Huzzah!'));
 
-    equalTokens(this.element, '<!---->');
+    equalTokens(this.element, '<!--portal-->');
     this.assertComponentElement(someElement.firstChild, { content: 'Huzzah!' });
 
     this.runTask(() => set(this.context, 'text', 'Whoop!'));
 
-    equalTokens(this.element, '<!---->');
+    equalTokens(this.element, '<!--portal-->');
     this.assertComponentElement(someElement.firstChild, { content: 'Whoop!' });
 
     this.runTask(() => set(this.context, 'showModal', false));
