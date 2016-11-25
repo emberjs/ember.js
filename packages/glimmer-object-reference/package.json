@@ -1,11 +1,11 @@
 {
-  "name": "glimmer-wire-format",
+  "name": "glimmer-object-reference",
   "version": "0.5.0",
-  "description": "",
+  "description": "References for a Glimmer-compatible object model",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
-  "typings": "dist/commonjs/index.d.ts",
   "jsnext:main": "dist/modules/index.js",
+  "typings": "dist/commonjs/index.d.ts",
   "directories": {
     "test": "tests"
   },
@@ -16,7 +16,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "glimmer-util": "0.5.0"
+    "glimmer-util": "0.5.0",
+    "glimmer-reference": "0.5.0"
   },
   "files": [
     "dist"

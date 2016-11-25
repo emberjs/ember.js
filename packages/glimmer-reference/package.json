@@ -1,11 +1,11 @@
 {
-  "name": "glimmer-wire-format",
+  "name": "glimmer-reference",
   "version": "0.5.0",
-  "description": "",
+  "description": "Objects used to track values and their dirtiness in Glimmer",
   "main": "dist/commonjs/index.js",
+  "jsnext:main": "dist/modules/index.js",
   "module": "dist/modules/index.js",
   "typings": "dist/commonjs/index.d.ts",
-  "jsnext:main": "dist/modules/index.js",
   "directories": {
     "test": "tests"
   },
