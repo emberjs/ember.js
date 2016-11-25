@@ -5,10 +5,10 @@
   "esnext:main": "dist/es6/glimmer/index.js",
   "main": "dist/node_modules/glimmer/index.js",
   "scripts": {
-    "prepublish": "bower install && ember build",
+    "prepublish": "lerna bootstrap && bower install && ember build",
     "build": "ember build",
     "pretest": "ember build",
-    "test": "ember test",
+    "test": "ember test && lerna run test",
     "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json && bin/run-node-tests.js",
     "start": "ember serve --port=7357",
     "tsc": "tsc -p . --noEmit",
