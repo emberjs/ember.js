@@ -223,7 +223,7 @@ function getVersion() {
 
 // non bundled vendor
 function jquery() {
-  let jquery = require.resolve('jquery');
+  var jquery = require.resolve('jquery');
   return new Funnel(path.dirname(jquery), {
     files: ['jquery.js'],
     destDir: 'jquery',
