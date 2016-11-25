@@ -1,9 +1,10 @@
 dist
 bower_components
-/node_modules
+node_modules
 tmp
 
 npm-debug.log
+lerna-debug.log
 sauce-example.log
 
 testem.log
