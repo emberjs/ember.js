@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "build/build.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node -e 'require(\".\")'",
     "prepublish": "npm run build"
   },
   "license": "MIT",
