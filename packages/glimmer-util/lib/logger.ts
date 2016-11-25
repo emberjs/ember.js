@@ -60,7 +60,7 @@ export class Logger {
 
 let _console = (typeof console === 'undefined') ? new NullConsole() : console;
 
-const ALWAYS = new Logger({ console: _console, level: LogLevel.Trace });
+var ALWAYS = new Logger({ console: _console, level: LogLevel.Trace });
 const LOG_LEVEL = LogLevel.Warn;
 
 export default new Logger({ console: _console, level: LOG_LEVEL });
