@@ -16,10 +16,10 @@
   },
   "license": "MIT",
   "dependencies": {
-    "glimmer-util": "0.5.0",
-    "glimmer-reference": "0.5.0",
-    "glimmer-object-reference": "0.5.0",
-    "glimmer-wire-format": "0.5.0"
+    "glimmer-util": "^0.5.0",
+    "glimmer-reference": "^0.5.0",
+    "glimmer-object-reference": "^0.5.0",
+    "glimmer-wire-format": "^0.5.0"
   },
   "files": [
     "dist"
