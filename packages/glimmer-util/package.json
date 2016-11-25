@@ -1,14 +1,21 @@
 {
   "name": "glimmer-util",
   "version": "0.5.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Common utilities used in Glimmer",
+  "main": "dist/commonjs/index.js",
+  "module": "dist/modules/index.js",
+  "typings": "dist/commonjs/index.d.ts",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "build/build.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "npm run build"
   },
-  "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "jsnext:main": "dist/modules/index.js",
+  "files": [
+    "dist"
+  ]
 }
