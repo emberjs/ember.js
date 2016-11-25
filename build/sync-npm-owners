@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# This script fetches the npm owners of the root package (glimmer-engine) and
+# makes them owners of all of the Lerna-published subpackages. Note that the
+# script will add new people, but won't remove anyone who has been removed from
+# glimmer-engine.
+
+cd -P -- "$(dirname -- "$0")/.."
+
+OWNERS=$(npm owner ls | awk '{print $1}')
+cd packages
+PACKAGES=$(find . -name package.json -type f -exec dirname {} \;  | sort -u | cut -c 3-)
+
+for owner in $OWNERS
+do
+  for package in $PACKAGES
+  do
+    echo "Adding $owner to $package..."
+    npm owner add "$owner" "$package"
+  done
+done
+
+exit 0
