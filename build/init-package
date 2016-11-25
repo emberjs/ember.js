@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Make sure we're operating from the root repo directory
+BASEDIR=$(dirname $0)
+cd "$BASEDIR/.."
+
+package="$1"
+
+if [ -z "$package" ]
+then
+  echo "You must pass a package name as the first argument:"
+  echo
+  echo "  $0 <package-name>"
+  exit 1
+fi
+
+echo "Creating packages/$package..."
+mkdir -p "packages/$package"
+
+echo "Symlinking build script and configuration..."
+# Symlink shared tsconfig.json
+ln -s ../../build/tsconfig.json "packages/$package/tsconfig.json"
+# Symlink additional build-related scripts
+mkdir "packages/$package/build"
+ln -s ../../../build/tsconfig.modules.json "packages/$package/build/tsconfig.modules.json"
+ln -s ../../../build/tsconfig.commonjs.json "packages/$package/build/tsconfig.commonjs.json"
+ln -s ../../../build/build.js "packages/$package/build/build.js"
+
+echo "Configuring package.json..."
+# Create or update package's package.json to include correct configuration
+build/configure-package-json "packages/$package/package.json"
+
+echo "Done initializing $package"

@@ -8,6 +8,5 @@ function exec(command) {
   });
 }
 
-exec("rm -rf dist");
 exec("tsc -p build/tsconfig.commonjs.json");
 exec("tsc -p build/tsconfig.modules.json");
