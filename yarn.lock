@@ -236,10 +236,6 @@ ast-types@0.8.12:
   version "0.8.12"
   resolved "https://registry.yarnpkg.com/ast-types/-/ast-types-0.8.12.tgz#a0d90e4351bb887716c83fd637ebf818af4adfcc"
 
-ast-types@0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/ast-types/-/ast-types-0.9.0.tgz#c8721c8747ae4d5b29b929e99c5317b4e8745623"
-
 ast-types@0.9.2:
   version "0.9.2"
   resolved "https://registry.yarnpkg.com/ast-types/-/ast-types-0.9.2.tgz#2cc19979d15c655108bf565323b8e7ee38751f6b"
@@ -2680,9 +2676,9 @@ github@^0.2.3:
   dependencies:
     mime "^1.2.11"
 
-glimmer-engine@^0.18.2:
-  version "0.18.2"
-  resolved "https://registry.yarnpkg.com/glimmer-engine/-/glimmer-engine-0.18.2.tgz#97d16b35d89623fdcad43924af7c8735652e323b"
+glimmer-engine@^0.19.1:
+  version "0.19.1"
+  resolved "https://registry.yarnpkg.com/glimmer-engine/-/glimmer-engine-0.19.1.tgz#4dc6ab45598defd61459d5fceeb483fe7a1e2701"
   dependencies:
     broccoli-concat "^2.1.0"
     broccoli-funnel "^1.0.1"
@@ -2695,10 +2691,10 @@ glimmer-engine@^0.18.2:
     exists-sync "0.0.3"
     git-repo-version "^0.1.2"
     handlebars "^3.0.2"
-    qunit "^0.7.2"
+    qunit "^0.9.1"
     simple-dom "^0.3.0"
     simple-html-tokenizer "^0.2.5"
-    typescript "^2.0.0"
+    typescript "~2.0.9"
 
 glob-base@^0.3.0:
   version "0.3.0"
@@ -2727,7 +2723,7 @@ glob@3.2.8:
     inherits "2"
     minimatch "~0.2.11"
 
-glob@7.0.6, glob@^7.0.3, glob@^7.0.4, glob@^7.0.5, glob@~7.0.3:
+glob@7.0.6, glob@^7.0.0, glob@^7.0.4, glob@^7.0.5, glob@~7.0.3:
   version "7.0.6"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.0.6.tgz#211bafaf49e525b8cd93260d14ab136152b3f57a"
   dependencies:
@@ -2758,7 +2754,7 @@ glob@^6.0.0, glob@^6.0.1:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^7.0.0, glob@^7.1.1:
+glob@^7.0.3, glob@^7.1.1:
   version "7.1.1"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.1.1.tgz#805211df04faaf1c63a3600306cdf5ade50b2ec8"
   dependencies:
@@ -3988,19 +3984,19 @@ minimist@^1.1.0, minimist@^1.1.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.0.tgz#a35008b20f41383eec1fb914f4cd5df79a264284"
 
-mkdirp@0.3.0, mkdirp@0.3.x:
+mkdirp@0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.0.tgz#1bbf5ab1ba827af23575143490426455f481fe1e"
+
+mkdirp@0.3.x, mkdirp@^0.3.5, mkdirp@~0.3.5:
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.5.tgz#de3e5f8961c88c787ee1368df849ac4413eca8d7"
 
 mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
-
-mkdirp@^0.3.5, mkdirp@~0.3.5:
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.5.tgz#de3e5f8961c88c787ee1368df849ac4413eca8d7"
 
 mkdirp@~0.4.0:
   version "0.4.2"
@@ -4628,9 +4624,9 @@ qunit-phantomjs-runner@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/qunit-phantomjs-runner/-/qunit-phantomjs-runner-2.2.0.tgz#557a0f55d7d83c315312d1b7048ed972ffea4549"
 
-qunit@^0.7.2:
-  version "0.7.7"
-  resolved "https://registry.yarnpkg.com/qunit/-/qunit-0.7.7.tgz#f0006f60b31a91c41e58aba92147576879b425bd"
+qunit@^0.9.1:
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/qunit/-/qunit-0.9.1.tgz#a985244d140fa5715c1b88b42dc4ebed8519a265"
   dependencies:
     argsparser "^0.0.6"
     cli-table "^0.3.0"
@@ -4763,20 +4759,11 @@ recast@0.10.33, recast@^0.10.0, recast@^0.10.10:
     private "~0.1.5"
     source-map "~0.5.0"
 
-recast@^0.11.17:
+recast@^0.11.17, recast@^0.11.3:
   version "0.11.17"
   resolved "https://registry.yarnpkg.com/recast/-/recast-0.11.17.tgz#67e829df49ef8ea822381cc516d305411e60bad8"
   dependencies:
     ast-types "0.9.2"
-    esprima "~3.1.0"
-    private "~0.1.5"
-    source-map "~0.5.0"
-
-recast@^0.11.3:
-  version "0.11.15"
-  resolved "https://registry.yarnpkg.com/recast/-/recast-0.11.15.tgz#3d03ee4f74b2ef4aa2f6ea2059d92db843d1316c"
-  dependencies:
-    ast-types "0.9.0"
     esprima "~3.1.0"
     private "~0.1.5"
     source-map "~0.5.0"
@@ -5562,15 +5549,15 @@ to-single-quotes@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/to-single-quotes/-/to-single-quotes-2.0.1.tgz#7cc29151f0f5f2c41946f119f5932fe554170125"
 
-tough-cookie@>=0.12.0, tough-cookie@~2.2.0:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/tough-cookie/-/tough-cookie-2.2.2.tgz#c83a1830f4e5ef0b93ef2a3488e724f8de016ac7"
-
-tough-cookie@~2.3.0:
+tough-cookie@>=0.12.0, tough-cookie@~2.3.0:
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/tough-cookie/-/tough-cookie-2.3.2.tgz#f081f76e4c85720e6c37a5faced737150d84072a"
   dependencies:
     punycode "^1.4.1"
+
+tough-cookie@~2.2.0:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/tough-cookie/-/tough-cookie-2.2.2.tgz#c83a1830f4e5ef0b93ef2a3488e724f8de016ac7"
 
 tracejs@^0.1.8:
   version "0.1.8"
@@ -5641,9 +5628,9 @@ typescript@^1.8.7:
   version "1.8.10"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-1.8.10.tgz#b475d6e0dff0bf50f296e5ca6ef9fbb5c7320f1e"
 
-typescript@^2.0.0:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.1.1.tgz#41c2b64472f529331b2055c0424862b44ce58d42"
+typescript@~2.0.9:
+  version "2.0.10"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.0.10.tgz#ccdd4ed86fd5550a407101a0814012e1b3fac3dd"
 
 uc.micro@^1.0.0, uc.micro@^1.0.1:
   version "1.0.3"

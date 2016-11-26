@@ -7,10 +7,10 @@ import { CurlyComponentSyntax } from './curly-component';
 import { DynamicComponentSyntax } from './dynamic-component';
 import { wrapComponentClassAttribute } from '../utils/bindings';
 
-function buildTextFieldSyntax(args, templates, getDefinition, symbolTable) {
+function buildTextFieldSyntax(args, getDefinition, symbolTable) {
   let definition = getDefinition('-text-field');
   wrapComponentClassAttribute(args);
-  return new CurlyComponentSyntax(args, definition, templates, symbolTable);
+  return new CurlyComponentSyntax(args, definition, symbolTable);
 }
 
 /**
@@ -146,7 +146,7 @@ function buildTextFieldSyntax(args, templates, getDefinition, symbolTable) {
   @public
 */
 export const InputSyntax = {
-  create(environment, args, templates, symbolTable) {
+  create(environment, args, symbolTable) {
     let getDefinition = (path) => environment.getComponentDefinition([path], symbolTable);
 
     if (args.named.has('type')) {
@@ -161,15 +161,15 @@ export const InputSyntax = {
 
           wrapComponentClassAttribute(args);
           let definition = getDefinition('-checkbox');
-          return new CurlyComponentSyntax(args, definition, templates, symbolTable);
+          return new CurlyComponentSyntax(args, definition, symbolTable);
         } else {
-          return buildTextFieldSyntax(args, templates, getDefinition, symbolTable);
+          return buildTextFieldSyntax(args, getDefinition, symbolTable);
         }
       }
     } else {
-      return buildTextFieldSyntax(args, templates, getDefinition, symbolTable);
+      return buildTextFieldSyntax(args, getDefinition, symbolTable);
     }
 
-    return DynamicComponentSyntax.create(environment, args, templates, symbolTable);
+    return DynamicComponentSyntax.create(environment, args, symbolTable);
   }
 };
