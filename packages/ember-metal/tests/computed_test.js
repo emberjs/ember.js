@@ -89,10 +89,6 @@ QUnit.test('defining a computed property with a dependent key ending with @each 
 });
 
 QUnit.test('defining a computed property with a dependent key more than one level deep beyond @each is not supported', function() {
-  let warning = `Dependent keys containing @each only work one level deep. ` +
-                `You cannot use nested forms like todos.@each.owner.name or todos.@each.owner.@each.name. ` +
-                `Please create an intermediary computed property.`;
-
   expectNoWarning(() => {
     computed('todos', () => {});
   });
@@ -103,11 +99,11 @@ QUnit.test('defining a computed property with a dependent key more than one leve
 
   expectWarning(() => {
     computed('todos.@each.owner.name', () => {});
-  }, warning);
+  }, /You used the key "todos\.@each\.owner\.name" which is invalid\. /);
 
   expectWarning(() => {
     computed('todos.@each.owner.@each.name', () => {});
-  }, warning);
+  }, /You used the key "todos\.@each\.owner\.@each\.name" which is invalid\. /);
 });
 
 let objA, objB;
