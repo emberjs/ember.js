@@ -11,7 +11,7 @@ import { cloneStates, states } from './states';
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
   to both Ember's main view class `Ember.Component` and other classes that don't need
-  the fully functionaltiy of `Ember.Component`.
+  the full functionality of `Ember.Component`.
 
   Unless you have specific needs for `CoreView`, you will use `Ember.Component`
   in your applications.
