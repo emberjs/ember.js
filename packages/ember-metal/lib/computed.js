@@ -249,7 +249,7 @@ ComputedPropertyPrototype.property = function() {
   function addArg(property) {
     warn(
       `Dependent keys containing @each only work one level deep. ` +
-        `You cannot use nested forms like todos.@each.owner.name or todos.@each.owner.@each.name. ` +
+        `You used the key "${property}" which is invalid. ` +
           `Please create an intermediary computed property.`,
       DEEP_EACH_REGEX.test(property) === false,
       { id: 'ember-metal.computed-deep-each' }
