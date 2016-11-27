@@ -265,17 +265,7 @@ class WrappedBuilder {
       dsl.flushElement();
     }
 
-    if (layout.hasNamedParameters) {
-      dsl.bindNamedArgsForLayout(layout);
-    }
-
-    if (layout.hasYields) {
-      dsl.bindBlocksForLayout(layout);
-    }
-
-    if (layout.hasPartials) {
-      dsl.bindPartialArgsForLayout(layout);
-    }
+    dsl.preludeForLayout(layout);
 
     layout.program.forEachNode(statement => compileStatement(env, statement, dsl, layout));
 
@@ -313,17 +303,7 @@ class UnwrappedBuilder {
 
     dsl.startLabels();
 
-    if (layout.hasNamedParameters) {
-      dsl.bindNamedArgsForLayout(layout);
-    }
-
-    if (layout.hasYields) {
-      dsl.bindBlocksForLayout(layout);
-    }
-
-    if (layout.hasPartials) {
-      dsl.bindPartialArgsForLayout(layout);
-    }
+    dsl.preludeForLayout(layout);
 
     let attrs = this.attrs['buffer'];
     let attrsInserted = false;
