@@ -342,16 +342,22 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.append(vm.BindPositionalArgsOpcode.create(block));
   }
 
-  bindNamedArgsForLayout(layout: Layout) {
-    this.append(vm.BindNamedArgsOpcode.create(layout));
-  }
+  preludeForLayout(layout: Layout) {
+    if (layout.hasNamedParameters) {
+      this.append(vm.BindNamedArgsOpcode.create(layout));
+    }
 
-  bindBlocksForLayout(layout: Layout) {
-    this.append(vm.BindBlocksOpcode.create(layout));
-  }
+    if (layout.hasYields || layout.hasPartials) {
+      this.append(new vm.BindCallerScopeOpcode());
+    }
 
-  bindPartialArgsForLayout(layout: Layout) {
-    this.append(vm.BindPartialArgsOpcode.create(layout));
+    if (layout.hasYields) {
+      this.append(vm.BindBlocksOpcode.create(layout));
+    }
+
+    if (layout.hasPartials) {
+      this.append(vm.BindPartialArgsOpcode.create(layout));
+    }
   }
 
   // TODO

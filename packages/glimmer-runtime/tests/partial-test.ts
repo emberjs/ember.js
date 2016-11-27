@@ -232,20 +232,20 @@ QUnit.test('static partial with has-block-params in curly component', assert => 
 
 QUnit.test('static partial with yield in basic component', assert => {
   env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{partial 'test'}}</p>`);
-  env.registerBasicComponent('foo-bar-baz', BasicComponent, `<p>{{partial 'test'}}-{{yield}}-{{yield to='inverse'}}</p>`);
-  env.registerPartial('test', `{{yield}}-{{yield to='inverse'}}`);
+  env.registerBasicComponent('foo-bar-baz', BasicComponent, `<p>{{partial 'test'}}-{{yield "layout"}}-{{yield to='inverse'}}</p>`);
+  env.registerPartial('test', `{{yield "partial"}}-{{yield to='inverse'}}`);
 
   render(compile(strip`
-    <foo-bar>a block</foo-bar>
+    <foo-bar as |source|>from {{source}}</foo-bar>
     <foo-bar />
-    <foo-bar-baz>a block</foo-bar-baz>
+    <foo-bar-baz as |source|>from {{source}}</foo-bar-baz>
     <foo-bar-baz />
   `));
 
   equalTokens(root, strip`
-    <p>a block-</p>
+    <p>from partial-</p>
     <p>-</p>
-    <p>a block--a block-</p>
+    <p>from partial--from layout-</p>
     <p>---</p>
   `);
 
@@ -258,24 +258,24 @@ QUnit.test('static partial with yield in curly component', assert => {
   }
 
   env.registerEmberishCurlyComponent('foo-bar', TaglessComponent as any, `<p>{{partial 'test'}}</p>`);
-  env.registerEmberishCurlyComponent('foo-bar-baz', TaglessComponent as any, `<p>{{partial 'test'}}-{{yield}}-{{yield to='inverse'}}</p>`);
-  env.registerPartial('test', `{{yield}}-{{yield to='inverse'}}`);
+  env.registerEmberishCurlyComponent('foo-bar-baz', TaglessComponent as any, `<p>{{partial 'test'}}-{{yield "layout"}}-{{yield to='inverse'}}</p>`);
+  env.registerPartial('test', `{{yield "partial"}}-{{yield to='inverse'}}`);
 
   render(compile(strip`
-    {{#foo-bar}}a block{{/foo-bar}}
-    {{#foo-bar}}a block{{else}}inverse{{/foo-bar}}
+    {{#foo-bar as |source|}}from {{source}}{{/foo-bar}}
+    {{#foo-bar as |source|}}from {{source}}{{else}}inverse{{/foo-bar}}
     {{foo-bar}}
-    {{#foo-bar-baz}}a block{{/foo-bar-baz}}
-    {{#foo-bar-baz}}a block{{else}}inverse{{/foo-bar-baz}}
+    {{#foo-bar-baz as |source|}}from {{source}}{{/foo-bar-baz}}
+    {{#foo-bar-baz as |source|}}from {{source}}{{else}}inverse{{/foo-bar-baz}}
     {{foo-bar-baz}}
   `));
 
   equalTokens(root, strip`
-    <p>a block-</p>
-    <p>a block-inverse</p>
+    <p>from partial-</p>
+    <p>from partial-inverse</p>
     <p>-</p>
-    <p>a block--a block-</p>
-    <p>a block-inverse-a block-inverse</p>
+    <p>from partial--from layout-</p>
+    <p>from partial-inverse-from layout-inverse</p>
     <p>---</p>
   `);
 
