@@ -205,6 +205,14 @@ export class BindPartialArgsOpcode extends Opcode {
   }
 }
 
+export class BindCallerScopeOpcode extends Opcode {
+  public type = "bind-caller-scope";
+
+  evaluate(vm: VM) {
+    vm.bindCallerScope();
+  }
+}
+
 export class BindDynamicScopeOpcode extends Opcode {
   public type = "bind-dynamic-scope";
 
