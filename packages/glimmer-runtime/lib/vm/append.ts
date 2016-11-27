@@ -334,12 +334,11 @@ export default class VM implements PublicVM {
 
   bindNamedArgs(names: string[], symbols: number[]) {
     let args = this.frame.getArgs();
+    let scope = this.scope();
 
     assert(args, "Cannot bind named args");
 
     let { named } = args;
-
-    let scope = this.scope();
 
     for(let i=0; i < names.length; i++) {
       scope.bindSymbol(symbols[i], named.get(names[i]));
@@ -348,11 +347,7 @@ export default class VM implements PublicVM {
 
   bindBlocks(names: string[], symbols: number[]) {
     let blocks = this.frame.getBlocks();
-    let callerScope = this.frame.getCallerScope();
-
     let scope = this.scope();
-
-    scope.bindCallerScope(callerScope);
 
     for(let i=0; i < names.length; i++) {
       scope.bindBlock(symbols[i], (blocks && blocks[names[i]]) || null);
@@ -361,18 +356,27 @@ export default class VM implements PublicVM {
 
   bindPartialArgs(symbol: number) {
     let args = this.frame.getArgs();
+    let scope = this.scope();
 
     assert(args, "Cannot bind named args");
 
-    this.scope().bindPartialArgs(symbol, args);
+    scope.bindPartialArgs(symbol, args);
+  }
+
+  bindCallerScope() {
+    let callerScope = this.frame.getCallerScope();
+    let scope = this.scope();
+
+    assert(callerScope, "Cannot bind caller scope");
+
+    scope.bindCallerScope(callerScope);
   }
 
   bindDynamicScope(names: string[]) {
     let args = this.frame.getArgs();
+    let scope = this.dynamicScope();
 
     assert(args, "Cannot bind dynamic scope");
-
-    let scope = this.dynamicScope();
 
     for(let i=0; i < names.length; i++) {
       scope.set(names[i], args.named.get(names[i]));
