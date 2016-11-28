@@ -166,6 +166,7 @@ module.exports = function(_options) {
         'glimmer-syntax/**/*.js',
         'glimmer-compiler/**/*.js',
         'simple-html-tokenizer/**/*.js',
+        'handlebars.js',
         'handlebars/**/*.js'
       ]
     })
