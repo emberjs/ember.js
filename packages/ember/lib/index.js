@@ -408,9 +408,7 @@ computed.filter = filter;
 computed.filterBy = filterBy;
 computed.uniq = uniq;
 
-if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
-  computed.uniqBy = uniqBy;
-}
+computed.uniqBy = uniqBy;
 computed.union = union;
 computed.intersect = intersect;
 computed.collect = collect;

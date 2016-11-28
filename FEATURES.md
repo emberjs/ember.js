@@ -10,21 +10,6 @@ for a detailed explanation.
   Add `isRegistered` to `Ember.libraries`. This convenience method checks whether
   a library is registered with Ember or not.
 
-* `ember-runtime-computed-uniq-by`
-
-  Introduces a computed and enumerable method "uniqBy" that allows creation of a new enumerable with unique values as  determined by the given property key.
-
-  Example:
-
-  ```javascript
-  comments: [
-    {id: 1, comment: 'I\'m a duplicate comment!'},
-    {id: 2, comment: 'Then you should be fixed!'},
-    {id: 1, comment: 'I\'m a duplicate comment!'}
-  ],
-  dedupedComments: Ember.computed.uniqBy('comments', 'id')
-  ```
-
 * `ember-improved-instrumentation`
 
   Adds additional instrumentation to Ember:
