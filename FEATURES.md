@@ -18,18 +18,6 @@ for a detailed explanation.
   - `interaction.ember-action` for closure actions.
   - `interaction.link-to` for link-to execution.
 
-* `ember-string-ishtmlsafe`
-
-  Introduces an API to detect if strings are decorated as htmlSafe. Example:
-
-  ```javascript
-  var plainString = 'plain string',
-      safeString = Ember.String.htmlSafe('<div>someValue</div>');
-
-  Ember.String.isHTMLSafe(plainString); // false
-  Ember.String.isHTMLSafe(safeString);  // true
-  ```
-
 * `ember-testing-check-waiters`
 
   Expose a simple mechanism for test tooling to determine if all foreign async has been

@@ -494,9 +494,7 @@ EmberHTMLBars.template = EmberHandlebars.template = template;
 EmberHandleBarsUtils.escapeExpression = escapeExpression;
 EmberString.htmlSafe = htmlSafe;
 
-if (isFeatureEnabled('ember-string-ishtmlsafe')) {
-  EmberString.isHTMLSafe = isHTMLSafe;
-}
+EmberString.isHTMLSafe = isHTMLSafe;
 EmberHTMLBars.makeBoundHelper = makeBoundHelper;
 
 /**
