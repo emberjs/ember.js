@@ -3,7 +3,6 @@
     "features-stripped-test": null,
     "ember-libraries-isregistered": null,
     "ember-improved-instrumentation": null,
-    "ember-testing-check-waiters": true,
     "ember-metal-weakmap": null,
     "ember-glimmer-allow-backtracking-rerender": null,
     "ember-testing-resume-test": null

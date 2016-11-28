@@ -24,7 +24,6 @@ import {
   getAdapter,
   setAdapter
 } from './test/adapter';
-import { isFeatureEnabled } from 'ember-metal';
 
 /**
   This is a container for an assortment of testing related functionality:
@@ -56,12 +55,9 @@ const Test = {
   promise,
   resolve,
   registerWaiter,
-  unregisterWaiter
+  unregisterWaiter,
+  checkWaiters
 };
-
-if (isFeatureEnabled('ember-testing-check-waiters')) {
-  Test.checkWaiters = checkWaiters;
-}
 
 /**
  Used to allow ember-testing to communicate with a specific testing
