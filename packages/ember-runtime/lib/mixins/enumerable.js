@@ -14,7 +14,6 @@ import {
   Mixin,
   aliasMethod,
   computed,
-  isFeatureEnabled,
   propertyWillChange,
   propertyDidChange,
   addListener,
@@ -229,13 +228,11 @@ const Enumerable = Mixin.create({
     @public
   */
   contains(obj) {
-    if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-      deprecate(
-        '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
-        false,
-        { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
-      );
-    }
+    deprecate(
+      '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
+      false,
+      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
+    );
 
     let found = this.find(item => item === obj);
 
@@ -800,14 +797,15 @@ const Enumerable = Mixin.create({
     @public
   */
   without(value) {
-    if (!this.contains(value)) {
+    if (!this.includes(value)) {
       return this; // nothing to do
     }
 
     let ret = emberA();
 
     this.forEach(k => {
-      if (k !== value) {
+      // SameValueZero comparison (NaN !== NaN)
+      if (!(k === value || k !== k && value !== value)) {
         ret[ret.length] = k;
       }
     });
@@ -1070,102 +1068,76 @@ const Enumerable = Mixin.create({
       }
       return 0;
     });
+  },
+
+  /**
+    Returns a new enumerable that contains only items containing a unique property value.
+    The default implementation returns an array regardless of the receiver type.
+
+    ```javascript
+    let arr = [{ value: 'a' }, { value: 'a' }, { value: 'b' }, { value: 'b' }];
+    arr.uniqBy('value');  // [{ value: 'a' }, { value: 'b' }]
+    ```
+
+    @method uniqBy
+    @return {Ember.Enumerable}
+    @public
+  */
+
+  uniqBy(key) {
+    let ret = emberA();
+    let seen = new EmptyObject();
+
+    this.forEach((item) => {
+      let guid = guidFor(get(item, key));
+      if (!(guid in seen)) {
+        seen[guid] = true;
+        ret.push(item);
+      }
+    });
+
+    return ret;
+  },
+
+  /**
+    Returns `true` if the passed object can be found in the enumerable.
+
+    ```javascript
+    [1, 2, 3].includes(2);                     // true
+    [1, 2, 3].includes(4);                     // false
+    [1, 2, undefined].includes(undefined);     // true
+    [1, 2, null].includes(null);               // true
+    [1, 2, NaN].includes(NaN);                 // true
+    ```
+
+    @method includes
+    @param {Object} obj The object to search for.
+    @return {Boolean} `true` if object is found in the enumerable.
+    @public
+  */
+  includes(obj) {
+    assert('Enumerable#includes cannot accept a second argument "startAt" as enumerable items are unordered.', arguments.length === 1);
+
+    let len = get(this, 'length');
+    let idx, next;
+    let last = null;
+    let found = false;
+
+    let context = popCtx();
+
+    for (idx = 0; idx < len && !found; idx++) {
+      next = this.nextObject(idx, last, context);
+
+      found = obj === next || (obj !== obj && next !== next);
+
+      last = next;
+    }
+
+    next = last = null;
+    context = pushCtx(context);
+
+    return found;
   }
 });
-
-
-if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
-  Enumerable.reopen({
-    /**
-      Returns a new enumerable that contains only items containing a unique property value.
-      The default implementation returns an array regardless of the receiver type.
-
-      ```javascript
-      let arr = [{ value: 'a' }, { value: 'a' }, { value: 'b' }, { value: 'b' }];
-      arr.uniqBy('value');  // [{ value: 'a' }, { value: 'b' }]
-      ```
-
-      @method uniqBy
-      @return {Ember.Enumerable}
-      @public
-    */
-
-    uniqBy(key) {
-      let ret = emberA();
-      let seen = new EmptyObject();
-
-      this.forEach((item) => {
-        let guid = guidFor(get(item, key));
-        if (!(guid in seen)) {
-          seen[guid] = true;
-          ret.push(item);
-        }
-      });
-
-      return ret;
-    }
-  });
-}
-
-if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-  Enumerable.reopen({
-    /**
-      Returns `true` if the passed object can be found in the enumerable.
-
-      ```javascript
-      [1, 2, 3].includes(2);                     // true
-      [1, 2, 3].includes(4);                     // false
-      [1, 2, undefined].includes(undefined);     // true
-      [1, 2, null].includes(null);               // true
-      [1, 2, NaN].includes(NaN);                 // true
-      ```
-
-      @method includes
-      @param {Object} obj The object to search for.
-      @return {Boolean} `true` if object is found in the enumerable.
-      @public
-    */
-    includes(obj) {
-      assert('Enumerable#includes cannot accept a second argument "startAt" as enumerable items are unordered.', arguments.length === 1);
-
-      let len = get(this, 'length');
-      let idx, next;
-      let last = null;
-      let found = false;
-
-      let context = popCtx();
-
-      for (idx = 0; idx < len && !found; idx++) {
-        next = this.nextObject(idx, last, context);
-
-        found = obj === next || (obj !== obj && next !== next);
-
-        last = next;
-      }
-
-      next = last = null;
-      context = pushCtx(context);
-
-      return found;
-    },
-
-    without(value) {
-      if (!this.includes(value)) {
-        return this; // nothing to do
-      }
-
-      let ret = emberA();
-
-      this.forEach(k => {
-        // SameValueZero comparison (NaN !== NaN)
-        if (!(k === value || k !== k && value !== value)) {
-          ret[ret.length] = k;
-        }
-      });
-
-      return ret;
-    }
-  });
-}
 
 export default Enumerable;

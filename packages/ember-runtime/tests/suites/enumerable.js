@@ -323,9 +323,7 @@ if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
   EnumerableTests.importModuleTests(uniqByTests);
 }
 
-if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-  EnumerableTests.importModuleTests(includesTests);
-}
+EnumerableTests.importModuleTests(includesTests);
 
 EnumerableTests.importModuleTests(withoutTests);
 

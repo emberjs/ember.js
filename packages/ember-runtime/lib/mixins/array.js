@@ -21,8 +21,7 @@ import Ember, { // ES6TODO: Ember.A
   removeListener,
   sendEvent,
   hasListeners,
-  deprecate,
-  isFeatureEnabled
+  deprecate
 } from 'ember-metal';
 
 import Enumerable from './enumerable';
@@ -303,13 +302,11 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
   // optimized version from Enumerable
   contains(obj) {
-    if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-      deprecate(
-        '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
-        false,
-        { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
-      );
-    }
+    deprecate(
+      '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
+      false,
+      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
+    );
 
     return this.indexOf(obj) >= 0;
   },
@@ -547,6 +544,53 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
+    Returns `true` if the passed object can be found in the array.
+    This method is a Polyfill for ES 2016 Array.includes.
+    If no `startAt` argument is given, the starting location to
+    search is 0. If it's negative, searches from the index of
+    `this.length + startAt` by asc.
+
+    ```javascript
+    [1, 2, 3].includes(2);     // true
+    [1, 2, 3].includes(4);     // false
+    [1, 2, 3].includes(3, 2);  // true
+    [1, 2, 3].includes(3, 3);  // false
+    [1, 2, 3].includes(3, -1); // true
+    [1, 2, 3].includes(1, -1); // false
+    [1, 2, 3].includes(1, -4); // true
+    [1, 2, NaN].includes(NaN); // true
+    ```
+
+    @method includes
+    @param {Object} obj The object to search for.
+    @param {Number} startAt optional starting location to search, default 0
+    @return {Boolean} `true` if object is found in the array.
+    @public
+  */
+  includes(obj, startAt) {
+    let len = get(this, 'length');
+
+    if (startAt === undefined) {
+      startAt = 0;
+    }
+
+    if (startAt < 0) {
+      startAt += len;
+    }
+
+    for (let idx = startAt; idx < len; idx++) {
+      let currentObj = objectAt(this, idx);
+
+      // SameValueZero comparison (NaN !== NaN)
+      if (obj === currentObj || (obj !== obj && currentObj !== currentObj)) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+
+  /**
     Returns a special object that can be used to observe individual properties
     on the array. Just get an equivalent property on this object and it will
     return an enumerable that maps automatically to the named key on the
@@ -581,56 +625,5 @@ const ArrayMixin = Mixin.create(Enumerable, {
     return this.__each;
   }).volatile().readOnly()
 });
-
-if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-  ArrayMixin.reopen({
-    /**
-      Returns `true` if the passed object can be found in the array.
-      This method is a Polyfill for ES 2016 Array.includes.
-      If no `startAt` argument is given, the starting location to
-      search is 0. If it's negative, searches from the index of
-      `this.length + startAt` by asc.
-
-      ```javascript
-      [1, 2, 3].includes(2);     // true
-      [1, 2, 3].includes(4);     // false
-      [1, 2, 3].includes(3, 2);  // true
-      [1, 2, 3].includes(3, 3);  // false
-      [1, 2, 3].includes(3, -1); // true
-      [1, 2, 3].includes(1, -1); // false
-      [1, 2, 3].includes(1, -4); // true
-      [1, 2, NaN].includes(NaN); // true
-      ```
-
-      @method includes
-      @param {Object} obj The object to search for.
-      @param {Number} startAt optional starting location to search, default 0
-      @return {Boolean} `true` if object is found in the array.
-      @public
-    */
-    includes(obj, startAt) {
-      let len = get(this, 'length');
-
-      if (startAt === undefined) {
-        startAt = 0;
-      }
-
-      if (startAt < 0) {
-        startAt += len;
-      }
-
-      for (let idx = startAt; idx < len; idx++) {
-        let currentObj = objectAt(this, idx);
-
-        // SameValueZero comparison (NaN !== NaN)
-        if (obj === currentObj || (obj !== obj && currentObj !== currentObj)) {
-          return true;
-        }
-      }
-
-      return false;
-    }
-  });
-}
 
 export default ArrayMixin;

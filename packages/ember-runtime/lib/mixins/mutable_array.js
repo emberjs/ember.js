@@ -14,8 +14,7 @@ const EMPTY = [];
 import {
   get,
   Error as EmberError,
-  Mixin,
-  isFeatureEnabled
+  Mixin
 } from 'ember-metal';
 import EmberArray, { objectAt } from './array';
 import MutableEnumerable from './mutable_enumerable';
@@ -388,13 +387,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   addObject(obj) {
-    let included;
-
-    if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-      included = this.includes(obj);
-    } else {
-      included = this.contains(obj);
-    }
+    let included = this.includes(obj);
 
     if (!included) {
       this.pushObject(obj);
