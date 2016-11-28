@@ -1,21 +1,17 @@
 # Ember Changelog
 
-### 2.10.0-beta.3 (November 2, 2016)
+### 2.10.0 (November 28, 2016)
 
-- [#14537](https://github.com/emberjs/ember.js/pull/14537) [BUGFIX] Improve behavior for QPs with undefined values
-- [#14545](https://github.com/emberjs/ember.js/pull/14545) [BUGFIX] Refactor loading/error substates. Fixes a number of issues with substate usage with ember-engines.
+- [#14293](https://github.com/emberjs/ember.js/pull/14293) [BUGFIX] Remove style warning when the binding is quoted.
+- [#12708](https://github.com/emberjs/ember.js/pull/12708) [BUGFIX] Improve compatibility between `Ember.isArray` and the native `Array.isArray` for `FileList`.
+- [#14546](https://github.com/emberjs/ember.js/pull/14546) [BUGFIX] Update route-recognizer to v0.2.8.
+- [#14575](https://github.com/emberjs/ember.js/pull/14575) [BUGFIX] Disallow calling `Ember.get` with empty paths.
+- [#14591](https://github.com/emberjs/ember.js/pull/14591) [BUGFIX] Avoid run.next in `app.visit` resolve handler.
+- [#14537](https://github.com/emberjs/ember.js/pull/14537) [BUGFIX] Improve behavior for query params with undefined values.
+- [#14545](https://github.com/emberjs/ember.js/pull/14545) [BUGFIX] Fixes a number of issues with loading/error substates in ember-engines.
 - [#14571](https://github.com/emberjs/ember.js/pull/14571) [BUGFIX] Prevent errors in watching infrastructure for non-object paths.
 - [tildeio/router.js#197](https://github.com/tildeio/router.js/pull/197) [BUGFIX] Fix redirects performed during the routers validation stages. Properly handles `replaceWith` / `transitionTo` for initial and subsequent transitions.
-
-### 2.10.0-beta.2 (October 26, 2016)
-
-- [#14499](https://github.com/emberjs/ember.js/pull/14499) [BUGFIX] Fix "Invalid value used as weak map key" error in old versions of Node.js.
-- [#14519](https://github.com/emberjs/ember.js/pull/14519) [BUGFIX] Ensure `didTransition` is fired before rendering.
 - [#14520](https://github.com/emberjs/ember.js/pull/14520) [BUGFIX] Ensure local variables (block params) have higher precedence over helpers.
-- [#14520](https://github.com/emberjs/ember.js/pull/14520) [BUGFIX] Fix an issue where class-based helpers are destroyed unexpectedly.
-
-### 2.10.0-beta.1 (October 17, 2016)
-
 - [#14156](https://github.com/emberjs/ember.js/pull/14156) [FEATURE ember-glimmer] Enable by default.
 
 ### 2.9.1 (November 1, 2016)
