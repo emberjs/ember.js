@@ -1,3 +1,4 @@
+'use strict';
 /* jshint node: true */
 
 // To create fast production builds (without ES3 support, minification, derequire, or JSHint)
@@ -147,7 +148,6 @@ function getFeatures(environment) {
   }
 
   var isDevelopment = (environment === 'development');
-  var isProduction = (environment === 'production');
 
   features['mandatory-setter'] = isDevelopment;
   features['ember-glimmer-detect-backtracking-rerender'] = isDevelopment;
