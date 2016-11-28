@@ -1,6 +1,6 @@
 {
   "name": "glimmer-util",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Common utilities used in Glimmer",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",

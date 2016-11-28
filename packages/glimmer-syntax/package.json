@@ -1,0 +1,19 @@
+{
+  "name": "glimmer-syntax",
+  "version": "0.5.1",
+  "main": "dist/commonjs/index.js",
+  "module": "dist/modules/index.js",
+  "jsnext:main": "dist/modules/index.js",
+  "typings": "dist/commonjs/index.d.ts",
+  "scripts": {
+    "build": "build/build.js",
+    "prepublish": "npm run build",
+    "test": "node -e 'require(\".\")'"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "handlebars": "^3.0.3"
+  }
+}
