@@ -9,7 +9,7 @@
     "build": "ember build",
     "pretest": "ember build",
     "test": "ember test && lerna run test",
-    "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json && bin/run-node-tests.js",
+    "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json && lerna run test && bin/run-node-tests.js",
     "start": "ember serve --port=7357",
     "tsc": "tsc -p . --noEmit",
     "tslint": "tslint ./packages/**/*.ts",
