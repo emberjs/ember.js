@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### 2.11.0-beta.1 (November 28, 2016)
+
+- [#14389](https://github.com/emberjs/ember.js/pull/14389) [BUGFIX] Move `classNames` and `classNameBindings` properties into the component's prototype.
+- [#14389](https://github.com/emberjs/ember.js/pull/14389) [BUGFIX] Disallow mutation of shared concatenatedProperties, such as `classNames` and `classNameBindings`.
+- [#14441](https://github.com/emberjs/ember.js/pull/14441) [DEPRECATION] Deprecate remaining usage of the `{{render}}` helper.
+- [#14482](https://github.com/emberjs/ember.js/pull/14482) [DEPRECATION] Deprecate `Component#renderToElement`.
+
 ### 2.10.0 (November 28, 2016)
 
 - [#14293](https://github.com/emberjs/ember.js/pull/14293) [BUGFIX] Remove style warning when the binding is quoted.
