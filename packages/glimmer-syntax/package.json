@@ -15,5 +15,8 @@
   ],
   "dependencies": {
     "handlebars": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/handlebars": "^4.0.31"
   }
 }
