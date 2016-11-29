@@ -1,4 +1,8 @@
-import { symbol, EmptyObject } from 'ember-utils';
+import {
+  HAS_NATIVE_WEAKMAP,
+  symbol,
+  EmptyObject
+} from 'ember-utils';
 import {
   get,
   set,
@@ -289,8 +293,10 @@ export class SimpleHelperReference extends CachedReference {
       let namedValue = named.value();
 
       runInDebug(() => {
-        Object.freeze(positionalValue);
-        Object.freeze(namedValue);
+        if (HAS_NATIVE_WEAKMAP) {
+          Object.freeze(positionalValue);
+          Object.freeze(namedValue);
+        }
       });
 
       let result = helper(positionalValue, namedValue);
@@ -324,8 +330,10 @@ export class SimpleHelperReference extends CachedReference {
     let namedValue = named.value();
 
     runInDebug(() => {
-      Object.freeze(positionalValue);
-      Object.freeze(namedValue);
+      if (HAS_NATIVE_WEAKMAP) {
+        Object.freeze(positionalValue);
+        Object.freeze(namedValue);
+      }
     });
 
     return helper(positionalValue, namedValue);
@@ -354,8 +362,10 @@ export class ClassBasedHelperReference extends CachedReference {
     let namedValue = named.value();
 
     runInDebug(() => {
-      Object.freeze(positionalValue);
-      Object.freeze(namedValue);
+      if (HAS_NATIVE_WEAKMAP) {
+        Object.freeze(positionalValue);
+        Object.freeze(namedValue);
+      }
     });
 
     return instance.compute(positionalValue, namedValue);

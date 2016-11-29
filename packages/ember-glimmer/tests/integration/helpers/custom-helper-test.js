@@ -3,6 +3,7 @@ import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { makeBoundHelper } from '../../utils/helpers';
 import { runDestroy } from 'internal-test-helpers';
 import { set } from 'ember-metal';
+import { HAS_NATIVE_WEAKMAP } from 'ember-utils';
 
 let assert = QUnit.assert;
 
@@ -172,6 +173,30 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('2');
 
     assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
+  }
+
+  ['@test helper params can be returned']() {
+    this.registerHelper('hello-world', values => {
+      return values;
+    });
+
+    this.render('{{#each (hello-world model) as |item|}}({{item}}){{/each}}', {
+      model: ['bob']
+    });
+
+    this.assertText('(bob)');
+  }
+
+  ['@test helper hash can be returned']() {
+    this.registerHelper('hello-world', (_, hash) => {
+      return hash.model;
+    });
+
+    this.render(`{{get (hello-world model=model) 'name'}}`, {
+      model: { name: 'bob' }
+    });
+
+    this.assertText('bob');
   }
 
   ['@test simple helper is called for param changes']() {
@@ -602,7 +627,7 @@ let addingPropertyToFrozenObjectThrows = (() => {
   }
 })();
 
-if (!EmberDev.runningProdBuild && (
+if (!EmberDev.runningProdBuild && HAS_NATIVE_WEAKMAP && (
   pushingIntoFrozenArrayThrows ||
     assigningExistingFrozenPropertyThrows ||
     addingPropertyToFrozenObjectThrows
