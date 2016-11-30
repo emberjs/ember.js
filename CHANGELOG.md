@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.11.0-beta.2 (November 29, 2016)
+
+- [#14658](https://github.com/emberjs/ember.js/pull/14658) [BUGFIX] Make the ember-source build work.
+
 ### 2.11.0-beta.1 (November 28, 2016)
 
 - [#14389](https://github.com/emberjs/ember.js/pull/14389) [BUGFIX] Move `classNames` and `classNameBindings` properties into the component's prototype.
