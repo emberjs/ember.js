@@ -1,6 +1,8 @@
 /* jshint node: true */
 'use strict';
 var stew = require('broccoli-stew');
+var path = require('path');
+var resolve = require('resolve');
 
 var paths = {};
 var absolutePaths = {};
@@ -32,6 +34,19 @@ module.exports = {
   paths: paths,
   absolutePaths: absolutePaths,
   treeForVendor: function() {
+
+    var jqueryPath;
+    try {
+      jqueryPath = path.dirname(resolve.sync('jquery/package.json', { basedir: this.project.root }));
+    } catch (error) {
+      jqueryPath = path.dirname(require.resolve('jquery/package.json'));
+    }
+
+    var jquery = stew.find(jqueryPath + '/dist', {
+      destDir: 'ember/jquery',
+      files: [ 'jquery.js' ]
+    });
+
     var ember = stew.find(__dirname + '/dist', {
       destDir: 'ember',
       files: [
@@ -40,8 +55,7 @@ module.exports = {
         'ember-testing.js',
         'ember.debug.js',
         'ember.min.js',
-        'ember.prod.js',
-        'jquery/jquery.js'
+        'ember.prod.js'
       ]
     });
 
@@ -52,7 +66,8 @@ module.exports = {
 
     return stew.find([
       ember,
-      shims
+      shims,
+      jquery
     ]);
   }
 };
