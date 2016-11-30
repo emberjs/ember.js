@@ -16,6 +16,7 @@
   "dependencies": {
     "glimmer-syntax": "^0.5.1",
     "glimmer-util": "^0.5.1",
-    "glimmer-wire-format": "^0.5.1"
+    "glimmer-wire-format": "^0.5.1",
+    "simple-html-tokenizer": "^0.2.5"
   }
 }
