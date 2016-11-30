@@ -1,6 +1,6 @@
 {
   "name": "glimmer-reference",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Objects used to track values and their dirtiness in Glimmer",
   "main": "dist/commonjs/index.js",
   "jsnext:main": "dist/modules/index.js",
@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "glimmer-util": "^0.5.1"
+    "glimmer-util": "^0.5.2"
   },
   "files": [
     "dist"
