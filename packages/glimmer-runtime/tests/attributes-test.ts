@@ -651,3 +651,20 @@ test('does not set null properties initially', assert => {
   assert.equal(readDOMAttr(firstElement, 'title'), nativeValueForElementProperty('div', 'title', ''));
   equalTokens(root, '<div></div><div title="hello"></div>');
 });
+
+test("input list attribute updates properly", () => {
+  let template = compile('<input list="{{foo}}" />');
+
+  let context = { foo: "bar" };
+  render(template, context);
+
+  equalTokens(root, '<input list="bar" />');
+
+  rerender({ foo: "baz" });
+
+  equalTokens(root, '<input list="baz" />');
+
+  rerender({ foo: "bar" });
+
+  equalTokens(root, '<input list="bar" />');
+});
