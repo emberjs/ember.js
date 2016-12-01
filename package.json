@@ -1,25 +1,43 @@
 {
   "name": "ember-source",
-  "license": "MIT",
   "version": "2.11.0-beta.2",
+  "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
   ],
-  "scripts": {
-    "build": "ember build --environment production",
-    "pretest": "ember build",
-    "test": "node bin/run-tests.js",
-    "test:sauce": "node bin/run-sauce-tests.js",
-    "test:testem": "testem -f testem.dist.json",
-    "test:blueprints": "node node-tests/nodetest-runner.js",
-    "start": "ember serve",
-    "docs": "ember ember-cli-yuidoc",
-    "sauce:launch": "ember sauce:launch",
-    "release": "node scripts/release.js"
+  "homepage": "http://emberjs.com/",
+  "bugs": {
+    "url": "https://github.com/emberjs/ember.js/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/emberjs/ember.js.git"
+    "url": "git+https://github.com/emberjs/ember.js.git"
+  },
+  "scripts": {
+    "build": "ember build --environment production",
+    "docs": "ember ember-cli-yuidoc",
+    "release": "node scripts/release.js",
+    "sauce:launch": "ember sauce:launch",
+    "start": "ember serve",
+    "pretest": "ember build",
+    "test": "node bin/run-tests.js",
+    "test:blueprints": "node node-tests/nodetest-runner.js",
+    "test:sauce": "node bin/run-sauce-tests.js",
+    "test:testem": "testem -f testem.dist.json"
+  },
+  "dependencies": {
+    "broccoli-stew": "^1.2.0",
+    "ember-cli-get-component-path-option": "^1.0.0",
+    "ember-cli-normalize-entity-name": "^1.0.0",
+    "ember-cli-path-utils": "^1.0.0",
+    "ember-cli-string-utils": "^1.0.0",
+    "ember-cli-test-info": "^1.0.0",
+    "ember-cli-valid-component-name": "^1.0.0",
+    "jquery": "^3.1.1",
+    "resolve": "^1.1.7",
+    "rsvp": "^3.3.3",
+    "simple-dom": "^0.3.0"
   },
   "devDependencies": {
     "aws-sdk": "~2.2.43",
@@ -56,19 +74,6 @@
     "serve-static": "^1.10.0",
     "simple-dom": "^0.3.0",
     "testem": "^1.8.1"
-  },
-  "dependencies": {
-    "broccoli-stew": "^1.2.0",
-    "ember-cli-get-component-path-option": "^1.0.0",
-    "ember-cli-normalize-entity-name": "^1.0.0",
-    "ember-cli-path-utils": "^1.0.0",
-    "ember-cli-string-utils": "^1.0.0",
-    "ember-cli-test-info": "^1.0.0",
-    "ember-cli-valid-component-name": "^1.0.0",
-    "jquery": "^3.1.1",
-    "rsvp": "^3.3.3",
-    "resolve": "^1.1.7",
-    "simple-dom": "^0.3.0"
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"
