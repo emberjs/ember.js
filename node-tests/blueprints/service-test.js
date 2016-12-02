@@ -10,6 +10,8 @@ var setupPodConfig = blueprintHelpers.setupPodConfig;
 var chai = require('ember-cli-blueprint-test-helpers/chai');
 var expect = chai.expect;
 
+var generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+
 describe('Acceptance: ember generate and destroy service', function() {
   setupTestHooks(this);
 
@@ -173,10 +175,29 @@ describe('Acceptance: ember generate and destroy service', function() {
         { name: 'ember-cli-qunit', delete: true },
         { name: 'ember-cli-mocha', dev: true }
       ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.11.0'))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/unit/services/foo-test.js'))
           .to.contain("import { describeModule, it } from 'ember-mocha';")
           .to.contain("describeModule('service:foo', 'Unit | Service | foo'");
+      }));
+  });
+
+  it('service-test foo for mocha v0.12+', function() {
+    var args = ['service-test', 'foo'];
+
+    return emberNew()
+      .then(() => modifyPackages([
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.12.0'))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/unit/services/foo-test.js'))
+          .to.contain("import { describe, it } from 'mocha';")
+          .to.contain("import { setupTest } from 'ember-mocha';")
+          .to.contain("describe('Unit | Service | foo', function() {")
+          .to.contain("setupTest('service:foo',");
       }));
   });
 });

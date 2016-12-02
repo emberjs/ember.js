@@ -34,6 +34,7 @@
     "ember-cli-string-utils": "^1.0.0",
     "ember-cli-test-info": "^1.0.0",
     "ember-cli-valid-component-name": "^1.0.0",
+    "ember-cli-version-checker": "^1.1.7",
     "jquery": "^3.1.1",
     "resolve": "^1.1.7",
     "rsvp": "^3.3.3",
