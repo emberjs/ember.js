@@ -1144,7 +1144,13 @@ export class NamedArgs {
 
   compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledNamedArgs {
     let { keys, values } = this;
-    return new CompiledNamedArgs(keys, values.map(value => value.compile(compiler, env, symbolTable)));
+    let compiledValues = new Array(values.length);
+
+    for (let i = 0; i < compiledValues.length; i++) {
+      compiledValues[i] = values[i].compile(compiler, env, symbolTable);
+    }
+
+    return new CompiledNamedArgs(keys, compiledValues);
   }
 }
 
