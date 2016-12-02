@@ -4,8 +4,7 @@ import EmberObject from '../../system/object';
 import {
   computed,
   get,
-  _addBeforeObserver,
-  isFeatureEnabled
+  _addBeforeObserver
 } from 'ember-metal';
 
 const ObserverClass = EmberObject.extend({
@@ -319,13 +318,9 @@ EnumerableTests.importModuleTests(sortByTests);
 EnumerableTests.importModuleTests(toArrayTests);
 EnumerableTests.importModuleTests(uniqTests);
 
-if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
-  EnumerableTests.importModuleTests(uniqByTests);
-}
+EnumerableTests.importModuleTests(uniqByTests);
 
-if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-  EnumerableTests.importModuleTests(includesTests);
-}
+EnumerableTests.importModuleTests(includesTests);
 
 EnumerableTests.importModuleTests(withoutTests);
 

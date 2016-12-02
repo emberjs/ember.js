@@ -1,4 +1,4 @@
-import { isFeatureEnabled, deprecate } from 'ember-metal';
+import { deprecate } from 'ember-metal';
 
 const contexts = [];
 const callbacks = [];
@@ -112,7 +112,7 @@ function indexOf(context, callback) {
 export function generateDeprecatedWaitersArray() {
   deprecate(
     'Usage of `Ember.Test.waiters` is deprecated. Please refactor to `Ember.Test.checkWaiters`.',
-    !isFeatureEnabled('ember-testing-check-waiters'),
+    false,
     { until: '2.8.0', id: 'ember-testing.test-waiters' }
   );
 

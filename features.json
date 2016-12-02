@@ -2,11 +2,7 @@
   "features": {
     "features-stripped-test": null,
     "ember-libraries-isregistered": null,
-    "ember-runtime-computed-uniq-by": true,
     "ember-improved-instrumentation": null,
-    "ember-runtime-enumerable-includes": true,
-    "ember-string-ishtmlsafe": true,
-    "ember-testing-check-waiters": true,
     "ember-metal-weakmap": null,
     "ember-glimmer-allow-backtracking-rerender": null,
     "ember-testing-resume-test": null

@@ -223,11 +223,9 @@ QUnit.module('ember reexports');
   });
 });
 
-if (isFeatureEnabled('ember-string-ishtmlsafe')) {
-  QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
-    confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
-  });
-}
+QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
+  confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
+});
 
 if (isFeatureEnabled('ember-metal-weakmap')) {
   QUnit.test('Ember.WeakMap exports correctly', function(assert) {

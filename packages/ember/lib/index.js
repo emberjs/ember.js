@@ -408,9 +408,7 @@ computed.filter = filter;
 computed.filterBy = filterBy;
 computed.uniq = uniq;
 
-if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
-  computed.uniqBy = uniqBy;
-}
+computed.uniqBy = uniqBy;
 computed.union = union;
 computed.intersect = intersect;
 computed.collect = collect;
@@ -496,9 +494,7 @@ EmberHTMLBars.template = EmberHandlebars.template = template;
 EmberHandleBarsUtils.escapeExpression = escapeExpression;
 EmberString.htmlSafe = htmlSafe;
 
-if (isFeatureEnabled('ember-string-ishtmlsafe')) {
-  EmberString.isHTMLSafe = isHTMLSafe;
-}
+EmberString.isHTMLSafe = isHTMLSafe;
 EmberHTMLBars.makeBoundHelper = makeBoundHelper;
 
 /**
