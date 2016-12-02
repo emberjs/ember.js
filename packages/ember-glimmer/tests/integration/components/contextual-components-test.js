@@ -5,7 +5,7 @@ import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { isEmpty } from 'ember-metal';
 import { A as emberA } from 'ember-runtime/system/native_array';
 
-moduleFor('Components test: closure components', class extends RenderingTest {
+moduleFor('Components test: contextual components', class extends RenderingTest {
   ['@test renders with component helper']() {
     let expectedText = 'Hodi';
 
@@ -421,7 +421,7 @@ moduleFor('Components test: closure components', class extends RenderingTest {
     this.assertText('Inner 28');
   }
 
-  ['@test conflicting positional and hash parameters raise and assertion if in the same closure']() {
+  ['@test conflicting positional and hash parameters raise and assertion if in the same component context']() {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name']
@@ -465,7 +465,7 @@ moduleFor('Components test: closure components', class extends RenderingTest {
     this.assertText('Hodi Hodari');
   }
 
-  ['@test conflicting positional and hash parameters does not raise an assertion if in different closure']() {
+  ['@test conflicting positional and hash parameters does not raise an assertion if in different component context']() {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name']
@@ -619,7 +619,7 @@ moduleFor('Components test: closure components', class extends RenderingTest {
 
   ['@test renders with dot path and rest parameter does not leak'](assert) {
     // In the original implementation, positional parameters were not handled
-    // correctly causing the first positional parameter to be the closure
+    // correctly causing the first positional parameter to be the contextual
     // component itself.
     let value = false;
 
@@ -695,7 +695,7 @@ moduleFor('Components test: closure components', class extends RenderingTest {
     assert.equal(this.$('#nested-prop').text(), '1');
   }
 
-  ['@test adding parameters to a closure component\'s instance does not add it to other instances']() {
+  ['@test adding parameters to a contextual component\'s instance does not add it to other instances']() {
     // If parameters and attributes are not handled correctly, setting a value
     // in an invokation can leak to others invocation.
     this.registerComponent('select-box', {
@@ -719,7 +719,7 @@ moduleFor('Components test: closure components', class extends RenderingTest {
     this.assertText('Foo');
   }
 
-  ['@test parameters in a closure are mutable when closure is a param'](assert) {
+  ['@test parameters in a contextual component are mutable when value is a param'](assert) {
     // This checks that a `(mut)` is added to parameters and attributes to
     // contextual components when it is a param.
 
@@ -1081,7 +1081,7 @@ moduleFor('Components test: closure components', class extends RenderingTest {
   }
 });
 
-class ClosureComponentMutableParamsTest extends RenderingTest {
+class ContextualComponentMutableParamsTest extends RenderingTest {
   render(templateStr, context = {}) {
     super.render(`${templateStr}<span class="value">{{model.val2}}</span>`, assign(context, { model: { val2: 8 } }));
   }
@@ -1094,7 +1094,7 @@ class MutableParamTestGenerator {
 
   generate({ title, setup }) {
     return {
-      [`@test parameters in a closure are mutable when closure is a ${title}`](assert) {
+      [`@test parameters in a contextual component are mutable when value is a ${title}`](assert) {
         this.registerComponent('change-button', {
           ComponentClass: Component.extend().reopenClass({
             positionalParams: ['val']
@@ -1125,7 +1125,7 @@ class MutableParamTestGenerator {
   }
 }
 
-applyMixins(ClosureComponentMutableParamsTest,
+applyMixins(ContextualComponentMutableParamsTest,
   new MutableParamTestGenerator([
     {
       title: 'param',
@@ -1172,4 +1172,4 @@ applyMixins(ClosureComponentMutableParamsTest,
   ])
 );
 
-moduleFor('Components test: closure components -- mutable params', ClosureComponentMutableParamsTest);
+moduleFor('Components test: contextual components -- mutable params', ContextualComponentMutableParamsTest);
