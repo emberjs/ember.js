@@ -17,8 +17,29 @@ import { overrideChains } from './property_events';
   @class Descriptor
   @private
 */
-export function Descriptor() {
-  this.isDescriptor = true;
+export class Descriptor {
+  constructor() {
+    this.isDescriptor = true;
+  }
+
+  setup(obj, key, isWatching) {
+    if (isEnabled('mandatory-setter')) {
+      if (isWatching) {
+        Object.defineProperty(obj, key, {
+          configurable: true,
+          enumerable: true,
+          writable: true,
+          value: this
+        });
+      } else {
+        obj[key] = this;
+      }
+    } else {
+      obj[key] = this;
+    }
+  }
+
+  teardown(obj, key, isWatching) {}
 }
 
 const REDEFINE_SUPPORTED = (function () {
@@ -139,58 +160,41 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   watching = watchEntry !== undefined && watchEntry > 0;
 
   if (existingDesc) {
-    existingDesc.teardown(obj, keyName);
+    existingDesc.teardown(obj, keyName, watching, meta);
   }
 
-  if (desc instanceof Descriptor) {
-    value = desc;
+  if (desc === null || desc === undefined) {
+    value = data;
+
     if (isEnabled('mandatory-setter')) {
       if (watching) {
-        Object.defineProperty(obj, keyName, {
+        meta.writeValues(keyName, data);
+
+        let defaultDescriptor = {
           configurable: true,
           enumerable: true,
-          writable: true,
-          value: value
-        });
-      } else {
-        obj[keyName] = value;
-      }
-    } else {
-      obj[keyName] = value;
-    }
-    if (desc.setup) { desc.setup(obj, keyName); }
-  } else {
-    if (desc == null) {
-      value = data;
+          set: MANDATORY_SETTER_FUNCTION(keyName),
+          get: DEFAULT_GETTER_FUNCTION(keyName)
+        };
 
-      if (isEnabled('mandatory-setter')) {
-        if (watching) {
-          meta.writeValues(keyName, data);
-
-          let defaultDescriptor = {
-            configurable: true,
-            enumerable: true,
-            set: MANDATORY_SETTER_FUNCTION(keyName),
-            get: DEFAULT_GETTER_FUNCTION(keyName)
-          };
-
-          if (REDEFINE_SUPPORTED) {
-            Object.defineProperty(obj, keyName, defaultDescriptor);
-          } else {
-            handleBrokenPhantomDefineProperty(obj, keyName, defaultDescriptor);
-          }
+        if (REDEFINE_SUPPORTED) {
+          Object.defineProperty(obj, keyName, defaultDescriptor);
         } else {
-          obj[keyName] = data;
+          handleBrokenPhantomDefineProperty(obj, keyName, defaultDescriptor);
         }
       } else {
         obj[keyName] = data;
       }
     } else {
-      value = desc;
-
-      // fallback to ES5
-      Object.defineProperty(obj, keyName, desc);
+      obj[keyName] = data;
     }
+  } else if (desc.isDescriptor) {
+    value = desc;
+    desc.setup(obj, keyName, watching, meta);
+  } else {
+    // fallback to ES5
+    value = desc;
+    Object.defineProperty(obj, keyName, desc);
   }
 
   // if key is being watched, override chains that

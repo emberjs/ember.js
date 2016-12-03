@@ -207,7 +207,7 @@ function applyMergedProperties(obj, key, value, values) {
 }
 
 function addNormalizedProperty(base, key, value, meta, descs, values, concats, mergings) {
-  if (value instanceof Descriptor) {
+  if (typeof value === 'object' && value && value.isDescriptor) {
     if (value === REQUIRED && descs[key]) { return CONTINUE; }
 
     // Wrap descriptor function to implement
@@ -661,8 +661,11 @@ Mixin.mixins = function(obj) {
   return ret;
 };
 
-const REQUIRED = new Descriptor();
-REQUIRED.toString = function() { return '(Required Property)'; };
+const REQUIRED = new (class extends Descriptor {
+  toString() {
+    return '(Required Property)';
+  }
+});
 
 /**
   Denotes a required property for a mixin
@@ -680,12 +683,12 @@ export function required() {
   return REQUIRED;
 }
 
-function Alias(methodName) {
-  this.isDescriptor = true;
-  this.methodName = methodName;
+class Alias extends Descriptor {
+  constructor() {
+    super();
+    this.methodName = methodName;
+  }
 }
-
-Alias.prototype = new Descriptor();
 
 /**
   Makes a method available via an additional name.
