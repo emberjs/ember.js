@@ -1,3 +1,4 @@
+import { GlimmerDescriptor, ValueBlueprint } from './blueprint';
 export type GlimmerObjectClass = typeof GlimmerObject;
 
 export interface Constructor<T extends GlimmerObject> {
@@ -28,7 +29,16 @@ export default class GlimmerObject {
     let sub = class extends (this as any as ObjectConstructor) {};
 
     if (extensions !== undefined) {
-      Object.assign(sub.prototype, extensions);
+      let blueprints = Object.keys(extensions).map(k => {
+        let extension = extensions[k];
+        if (extension instanceof GlimmerDescriptor) {
+          return extension.blueprint(k);
+        } else {
+          return new ValueBlueprint(k, extensions[k]);
+        }
+      });
+
+      blueprints.forEach(b => b.define(sub.prototype));
     }
 
     return sub as any;
