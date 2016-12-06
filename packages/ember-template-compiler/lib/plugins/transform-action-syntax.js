@@ -1,3 +1,5 @@
+import hashPairForKey from '../system/hash-pair-for-key';
+
 /**
  @module ember
  @submodule ember-glimmer
@@ -15,10 +17,12 @@
   with
 
   ```handlebars
- <button {{action this 'foo'}}>
- <button onblur={{action this 'foo'}}>
- <button onblur={{action this (action this 'foo') 'bar'}}>
+ <button {{action 'foo' target=this}}>
+ <button onblur={{action 'foo' target=this}}>
+ <button onblur={{action (action 'foo' target=this) 'bar' target=this}}>
   ```
+
+  If an action already has a target it is left unmodified.
 
   @private
   @class TransformActionSyntax
@@ -40,17 +44,17 @@ TransformActionSyntax.prototype.transform = function TransformActionSyntax_trans
   traverse(ast, {
     ElementModifierStatement(node) {
       if (isAction(node)) {
-        insertThisAsFirstParam(node, b);
+        ensureTarget(node, b);
       }
     },
     MustacheStatement(node) {
       if (isAction(node)) {
-        insertThisAsFirstParam(node, b);
+        ensureTarget(node, b);
       }
     },
     SubExpression(node) {
       if (isAction(node)) {
-        insertThisAsFirstParam(node, b);
+        ensureTarget(node, b);
       }
     }
   });
@@ -62,6 +66,9 @@ function isAction(node) {
   return node.path.original === 'action';
 }
 
-function insertThisAsFirstParam(node, builders) {
-  node.params.unshift(builders.path('this'));
+function ensureTarget(node, builders) {
+  if (!hashPairForKey(node.hash, 'target')) {
+    let thisTarget = builders.pair('target', builders.path('this'));
+    node.hash.pairs.push(thisTarget);
+  }
 }

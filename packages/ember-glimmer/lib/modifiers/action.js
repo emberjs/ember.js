@@ -70,14 +70,13 @@ export let ActionHelper = {
 };
 
 export class ActionState {
-  constructor(element, actionId, actionName, actionArgs, namedArgs, positionalArgs, implicitTarget, dom) {
+  constructor(element, actionId, actionName, actionArgs, namedArgs, positionalArgs, dom) {
     this.element = element;
     this.actionId = actionId;
     this.actionName = actionName;
     this.actionArgs = actionArgs;
     this.namedArgs = namedArgs;
     this.positional = positionalArgs;
-    this.implicitTarget = implicitTarget;
     this.dom = dom;
     this.eventName = this.getEventName();
   }
@@ -96,25 +95,12 @@ export class ActionState {
     return result;
   }
 
-  getTarget() {
-    let { implicitTarget, namedArgs } = this;
-    let target;
-
-    if (namedArgs.has('target')) {
-      target = namedArgs.get('target').value();
-    } else {
-      target = implicitTarget.value();
-    }
-
-    return target;
-  }
-
   handler(event) {
     let { actionName, namedArgs } = this;
     let bubbles = namedArgs.get('bubbles');
     let preventDefault = namedArgs.get('preventDefault');
     let allowedKeys = namedArgs.get('allowedKeys');
-    let target = this.getTarget();
+    let target = namedArgs.get('target').value();
 
     if (!isAllowedEvent(event, allowedKeys.value())) {
       return true;
@@ -172,12 +158,10 @@ export class ActionState {
 export default class ActionModifierManager {
   create(element, args, dynamicScope, dom) {
     let { named, positional } = args;
-    let implicitTarget;
     let actionName;
     let actionNameRef;
-    if (positional.length > 1) {
-      implicitTarget = positional.at(0);
-      actionNameRef = positional.at(1);
+    if (positional.length > 0) {
+      actionNameRef = positional.at(0);
 
       if (actionNameRef[INVOKE]) {
         actionName = actionNameRef;
@@ -196,9 +180,9 @@ export default class ActionModifierManager {
     }
 
     let actionArgs = [];
-    // The first two arguments are (1) `this` and (2) the action name.
+    // The first argument is the action name.
     // Everything else is a param.
-    for (let i = 2; i < positional.length; i++) {
+    for (let i = 1; i < positional.length; i++) {
       actionArgs.push(positional.at(i));
     }
 
@@ -210,7 +194,6 @@ export default class ActionModifierManager {
       actionArgs,
       named,
       positional,
-      implicitTarget,
       dom
     );
   }
@@ -227,7 +210,7 @@ export default class ActionModifierManager {
   update(actionState) {
     let { positional } = actionState;
 
-    let actionNameRef = positional.at(1);
+    let actionNameRef = positional.at(0);
 
     if (!actionNameRef[INVOKE]) {
       actionState.actionName = actionNameRef.value();

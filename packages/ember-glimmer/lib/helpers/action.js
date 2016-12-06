@@ -278,15 +278,14 @@ export class ClosureActionReference extends CachedReference {
     let { named, positional } = this.args;
     let positionalValues = positional.value();
 
-    let target = positionalValues[0];
-    let rawActionRef = positional.at(1);
-    let rawAction = positionalValues[1];
+    let target = named.get('target').value();
+    let rawActionRef = positional.at(0);
+    let rawAction = positionalValues[0];
 
-    // The first two argument slots are reserved.
-    // pos[0] is the context (or `this`)
-    // pos[1] is the action name or function
+    // The first argument slot is reserved.
+    // pos[0] is the action name or function
     // Anything else is an action argument.
-    let actionArgs = positionalValues.slice(2);
+    let actionArgs = positionalValues.slice(1);
 
     // on-change={{action setName}}
     // element-space actions look to "controller" then target. Here we only
@@ -304,11 +303,6 @@ export class ClosureActionReference extends CachedReference {
       let actionName = rawAction;
 
       action = null;
-
-      if (named.has('target')) {
-        // on-change={{action 'setName' target=alternativeComponent}}
-        target = named.get('target').value();
-      }
 
       if (target['actions']) {
         action = target.actions[actionName];
