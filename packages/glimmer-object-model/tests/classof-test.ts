@@ -1,4 +1,4 @@
-import GlimmerObject, { classof } from '../index';
+import GlimmerObject, { classof } from 'glimmer-object-model';
 
 QUnit.module('[glimmer-object-model] classof');
 
