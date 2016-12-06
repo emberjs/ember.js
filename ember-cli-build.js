@@ -152,6 +152,7 @@ module.exports = function(_options) {
     include: [
       'glimmer/**/*.js',
       'glimmer-object/**/*.js',
+      'glimmer-object-model/**/*.js',
       'glimmer-object-reference/**/*.js',
       'glimmer-reference/**/*.js',
       'glimmer-util/**/*.js',
