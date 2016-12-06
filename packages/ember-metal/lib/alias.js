@@ -14,6 +14,8 @@ import {
   removeDependentKeys
 } from './dependent_keys';
 
+const CONSUMED = {};
+
 export default function alias(altKey) {
   return new AliasedProperty(altKey);
 }
@@ -34,28 +36,30 @@ AliasedProperty.prototype.setup = function(obj, keyName) {
   }
 };
 
-AliasedProperty.prototype._addDependentKeyIfMissing = function(obj, keyName) {
+AliasedProperty.prototype.teardown = function(obj, keyName) {
   let meta = metaFor(obj);
-  if (!meta.peekDeps(this.altKey, keyName)) {
-    addDependentKeys(this, obj, keyName, meta);
-  }
-};
-
-AliasedProperty.prototype._removeDependentKeyIfAdded = function(obj, keyName) {
-  let meta = metaFor(obj);
-  if (meta.peekDeps(this.altKey, keyName)) {
+  if (meta.peekWatching(keyName)) {
     removeDependentKeys(this, obj, keyName, meta);
   }
 };
 
-AliasedProperty.prototype.willWatch = AliasedProperty.prototype._addDependentKeyIfMissing;
-AliasedProperty.prototype.didUnwatch = AliasedProperty.prototype._removeDependentKeyIfAdded;
-AliasedProperty.prototype.teardown = AliasedProperty.prototype._removeDependentKeyIfAdded;
+AliasedProperty.prototype.willWatch = function(obj, keyName) {
+  addDependentKeys(this, obj, keyName, metaFor(obj));
+};
+
+AliasedProperty.prototype.didUnwatch = function(obj, keyName) {
+  removeDependentKeys(this, obj, keyName, metaFor(obj));
+};
 
 AliasedProperty.prototype.get = function AliasedProperty_get(obj, keyName) {
-  this._addDependentKeyIfMissing(obj, keyName);
-
-  return get(obj, this.altKey);
+  let ret = get(obj, this.altKey);
+  let meta = metaFor(obj);
+  let cache = meta.writableCache();
+  if (cache[keyName] !== CONSUMED) {
+    cache[keyName] = CONSUMED;
+    addDependentKeys(this, obj, keyName, meta);
+  }
+  return ret;
 };
 
 AliasedProperty.prototype.set = function AliasedProperty_set(obj, keyName, value) {
