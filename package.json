@@ -29,6 +29,8 @@
     "broccoli-funnel": "^1.0.6",
     "broccoli-rollup": "^1.0.3",
     "broccoli-stew": "^1.2.0",
+    "broccoli-string-replace": "^0.1.1",
+    "broccoli-uglify-sourcemap": "^1.4.2",
     "chalk": "^1.1.1",
     "dag-map": "^2.0.1",
     "ember-cli": "^2.6.1",
