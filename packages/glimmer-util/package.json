@@ -17,5 +17,8 @@
   "jsnext:main": "dist/modules/index.js",
   "files": [
     "dist"
-  ]
+  ],
+  "devDependencies": {
+    "typescript": "^2.0.10"
+  }
 }
