@@ -262,19 +262,6 @@ module.exports = function() {
     'handlebars':           glimmerPackage('handlebars') // inlined parser
   };
 
-  // Replace _getBowerTree with one from npm
-  EmberBuild.prototype._getBowerTree = function getBowerTree() {
-    return mergeTrees([
-      qunit(),
-      jquery(),
-      replaceVersion(new Funnel('config/package_manager_files', {
-        destDir: '/'
-      }), {
-        version: version
-      })
-    ]);
-  };
-
   EmberBuild.prototype._minifySourceTree = function (tree, options) {
     var srcFile = options.srcFile;
     var destFile = options.destFile;
