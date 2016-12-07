@@ -20,6 +20,6 @@
     "simple-html-tokenizer": "^0.2.5"
   },
   "devDependencies": {
-    "typescript": "^2.0.10"
+    "typescript": "^2.1.4"
   }
 }

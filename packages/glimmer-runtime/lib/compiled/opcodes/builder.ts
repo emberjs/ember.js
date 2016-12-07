@@ -130,7 +130,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new component.PutDynamicComponentDefinitionOpcode());
   }
 
-  openComponent(args: Represents<CompiledArgs>, shadow: string[] = EMPTY_ARRAY) {
+  openComponent(args: Represents<CompiledArgs>, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
     this.append(new component.OpenComponentOpcode(this.compile(args), shadow));
   }
 
@@ -270,7 +270,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new vm.PutArgsOpcode(this.compile(args)));
   }
 
-  bindDynamicScope(names: string[]) {
+  bindDynamicScope(names: ReadonlyArray<string>) {
     this.append(new vm.BindDynamicScopeOpcode(names));
   }
 

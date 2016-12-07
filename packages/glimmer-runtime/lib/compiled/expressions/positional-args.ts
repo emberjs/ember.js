@@ -20,7 +20,7 @@ export class CompiledPositionalArgs {
 
   public length: number;
 
-  constructor(public values: CompiledExpression<Opaque>[]) {
+  constructor(public values: ReadonlyArray<CompiledExpression<Opaque>>) {
     this.length = values.length;
   }
 
@@ -55,7 +55,7 @@ export const COMPILED_EMPTY_POSITIONAL_ARGS: CompiledPositionalArgs = new (class
 });
 
 export class EvaluatedPositionalArgs {
-  static create(values: PathReference<Opaque>[]) {
+  static create(values: ReadonlyArray<PathReference<Opaque>>) {
     return new this(values);
   }
 
@@ -66,7 +66,7 @@ export class EvaluatedPositionalArgs {
   public tag: RevisionTag;
   public length: number;
 
-  constructor(public values: PathReference<Opaque>[]) {
+  constructor(public values: ReadonlyArray<PathReference<Opaque>>) {
     this.tag = combineTagged(values);
     this.length = values.length;
   }
@@ -76,7 +76,7 @@ export class EvaluatedPositionalArgs {
     return (index < length) ? values[index] : UNDEFINED_REFERENCE;
   }
 
-  value(): Opaque[] {
+  value(): ReadonlyArray<Opaque> {
     let { values, length } = this;
     let ret: Opaque[] = new Array(length);
 
@@ -97,7 +97,7 @@ export const EVALUATED_EMPTY_POSITIONAL_ARGS: EvaluatedPositionalArgs = new (cla
     return UNDEFINED_REFERENCE;
   }
 
-  value(): Opaque[] {
+  value(): ReadonlyArray<Opaque> {
     return this.values;
   }
 });

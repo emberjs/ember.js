@@ -369,7 +369,7 @@ class ComponentBuilder implements IComponentBuilder {
     this.env = dsl.env;
   }
 
-  static(definition: StaticDefinition, args: Syntax.Args, symbolTable: SymbolTable, shadow: string[] = EMPTY_ARRAY) {
+  static(definition: StaticDefinition, args: Syntax.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
     this.dsl.unit(dsl => {
       dsl.putComponentDefinition(definition);
       dsl.openComponent(args, shadow);
@@ -377,7 +377,7 @@ class ComponentBuilder implements IComponentBuilder {
     });
   }
 
-  dynamic(definitionArgs: Syntax.Args, definition: DynamicDefinition, args: Syntax.Args, symbolTable: SymbolTable, shadow: string[] = EMPTY_ARRAY) {
+  dynamic(definitionArgs: Syntax.Args, definition: DynamicDefinition, args: Syntax.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
     this.dsl.unit(dsl => {
       dsl.putArgs(definitionArgs);
       dsl.putValue(makeFunctionExpression(definition));
