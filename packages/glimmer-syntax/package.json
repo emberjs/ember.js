@@ -17,6 +17,7 @@
     "handlebars": "^3.0.3"
   },
   "devDependencies": {
-    "@types/handlebars": "^4.0.31"
+    "@types/handlebars": "^4.0.31",
+    "typescript": "^2.0.10"
   }
 }

@@ -18,5 +18,8 @@
     "glimmer-util": "^0.5.2",
     "glimmer-wire-format": "^0.5.2",
     "simple-html-tokenizer": "^0.2.5"
+  },
+  "devDependencies": {
+    "typescript": "^2.0.10"
   }
 }
