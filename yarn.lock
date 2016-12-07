@@ -858,7 +858,7 @@ broccoli-stew@^1.1.1, broccoli-stew@^1.2.0, broccoli-stew@^1.3.3:
     rsvp "^3.0.16"
     walk-sync "^0.3.0"
 
-broccoli-string-replace@0.1.1:
+broccoli-string-replace@0.1.1, broccoli-string-replace@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/broccoli-string-replace/-/broccoli-string-replace-0.1.1.tgz#e560d20db3569a336043110b4048210fa6f1478b"
   dependencies:
@@ -895,7 +895,7 @@ broccoli-uglify-js@~0.1.3:
     broccoli-filter "^0.1.6"
     uglify-js "~2.4.11"
 
-broccoli-uglify-sourcemap@^1.0.1:
+broccoli-uglify-sourcemap@^1.0.1, broccoli-uglify-sourcemap@^1.4.2:
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-1.4.2.tgz#1e280afbdfaa700b2f42155f6c4a036c37e61ca7"
   dependencies:

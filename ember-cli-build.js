@@ -22,6 +22,8 @@ var replaceVersion     = require('emberjs-build/lib/utils/replace-version');
 var Funnel = require('broccoli-funnel');
 var Rollup = require('broccoli-rollup');
 var mergeTrees = require('broccoli-merge-trees');
+var replace = require('broccoli-string-replace');
+var uglify = require('broccoli-uglify-sourcemap');
 
 var rollupEnifed = {
   transformBundle(code, options) {
@@ -200,7 +202,14 @@ var glimmerEngine = require('glimmer-engine/ember-cli-build')({
 var find = require('broccoli-stew').find;
 
 function glimmerPackage(name) {
-  return find(glimmerEngine, 'named-amd/' + name + '/**/*.js');
+  return replace(find(glimmerEngine, 'named-amd/' + name + '/**/*.js'), {
+    files: ['**/*.js'],
+    pattern: {
+      match: /\/\/#\s+sourceMappingURL.*/g,
+      replacement: ''
+    },
+    annotation: 'strip sourceMappingURL'
+  });
 }
 
 function getVersion() {
@@ -276,6 +285,52 @@ module.exports = function() {
         version: version
       })
     ]);
+  };
+
+  EmberBuild.prototype._minifySourceTree = function (tree, options) {
+    var srcFile = options.srcFile;
+    var destFile = options.destFile;
+    var files = [ srcFile ];
+    var mapSrcFile = srcFile.slice(0, -2) + 'map';
+    var mapDestFile = destFile.slice(0, -2) + 'map';
+    if (options.enableSourceMaps) {
+      files.push(mapSrcFile);
+    }
+    // because broccoli-uglify-sourcemap doesn't use persistent filter
+    var reducedTree = new Funnel(tree, {
+      annotation: 'reduce for minify',
+      files: files
+    });
+    var minifiedTree = new uglify(reducedTree, {
+      sourceMapConfig: {
+        enabled: options.enableSourceMaps
+      },
+      mangle: true,
+      compress: {
+        // this is adversely affects heuristics for IIFE eval
+        negate_iife: false,
+        // limit sequences because of memory issues during parsing
+        sequences: 30
+      },
+      output: {
+        // no difference in size
+        // and much easier to debug
+        semicolons: false
+      }
+    });
+    return new Funnel(minifiedTree, {
+      annotation: 'rename minified',
+      files: files,
+      getDestinationPath: function(relativePath) {
+        if (relativePath === srcFile) {
+          return destFile;
+        }
+        if (relativePath === mapSrcFile) {
+          return mapDestFile;
+        }
+        return relativePath;
+      }
+    });
   };
 
   var emberBuild = new EmberBuild({
