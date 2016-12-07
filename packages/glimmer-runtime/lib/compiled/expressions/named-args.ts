@@ -30,8 +30,8 @@ export class CompiledNamedArgs {
   public length: number;
 
   constructor(
-    public keys: string[],
-    public values: CompiledExpression<Opaque>[]
+    public keys: ReadonlyArray<string>,
+    public values: ReadonlyArray<CompiledExpression<Opaque>>
   ) {
     this.length = keys.length;
     assert(keys.length === values.length, 'Keys and values do not have the same length');
@@ -95,8 +95,8 @@ export class EvaluatedNamedArgs {
   public length: number;
 
   constructor(
-    public keys: string[],
-    public values: PathReference<Opaque>[],
+    public keys: ReadonlyArray<string>,
+    public values: ReadonlyArray<PathReference<Opaque>>,
     private _map: Dict<PathReference<Opaque>> = undefined
   ) {
     this.tag = combineTagged(values);
