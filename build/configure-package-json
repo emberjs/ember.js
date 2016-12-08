@@ -23,6 +23,8 @@ try {
 }
 
 let version = require("../lerna.json").version;
+let typescriptVersion = require("../package.json").devDependencies.typescript;
+
 pkg.name = pkg.name || path.basename(path.dirname(packagePath));
 pkg.version = version;
 pkg.main = "dist/commonjs/index.js";
@@ -35,5 +37,7 @@ pkg.scripts.prepublish = "npm run build";
 // Verify that we can load the package in Node without errors.
 pkg.scripts.test = "node -e 'require(\".\")'";
 pkg.files = ["dist"];
+pkg.devDependencies = pkg.devDependencies || {};
+pkg.devDependencies.typescript = typescriptVersion;
 
 fs.writeFileSync(packagePath, JSON.stringify(pkg, null, 2));

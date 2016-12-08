@@ -40,8 +40,7 @@
     "handlebars": "^3.0.2",
     "qunit": "^0.9.1",
     "simple-dom": "^0.3.0",
-    "simple-html-tokenizer": "^0.2.5",
-    "typescript": "^2.1.4"
+    "simple-html-tokenizer": "^0.2.5"
   },
   "devDependencies": {
     "benchmark": "^1.0.0",
@@ -54,6 +53,7 @@
     "loader.js": "^4.0.10",
     "qunit-tap": "^1.5.1",
     "qunitjs": "^2.0.1",
-    "tslint": "^4.0.2"
+    "tslint": "^4.0.2",
+    "typescript": "^2.1.4"
   }
 }
