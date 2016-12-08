@@ -32,6 +32,7 @@ import { pendingRequests } from '../test/pending_requests';
   @param {Object} value The value to be returned.
   @return {RSVP.Promise}
   @public
+  @since 1.0.0
 */
 export default function wait(app, value) {
   return new RSVP.Promise(function(resolve) {
