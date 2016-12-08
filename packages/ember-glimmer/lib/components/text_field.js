@@ -30,7 +30,9 @@ function canSetTypeOfInput(type) {
 
   try {
     inputTypeTestElement.type = type;
-  } catch (e) { }
+  } catch (e) {
+    // ignored
+  }
 
   return inputTypes[type] = inputTypeTestElement.type === type;
 }
