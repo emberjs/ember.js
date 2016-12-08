@@ -1,4 +1,4 @@
-import GlimmerObject, { computed } from 'glimmer-object-model';
+import GlimmerObject, { computed, root, set } from 'glimmer-object-model';
 QUnit.module('[glimmer-object-model] - computed properties');
 
 QUnit.test('basic computed properties', assert => {
@@ -18,7 +18,44 @@ QUnit.test('basic computed properties', assert => {
     })
   });
 
-  let obj = Person.create();
+  let FancyPerson = Person.extend({
+    sal: 'Mr.'
+  });
+
+  let obj = FancyPerson.create();
 
   assert.equal(obj.full, 'Dan Gebhardt');
+  assert.equal(obj.sal, 'Mr.');
+});
+
+QUnit.test('references for computed properties', assert => {
+  let Person = GlimmerObject.extend({
+    first: 'Dan',
+    last: 'Gebhardt',
+
+    full: computed('first', 'last', {
+      get() {
+        return `${this.first} ${this.last}`;
+      },
+      set(value: string) {
+        let [first, last] = value.split(' ');
+        this.first = first;
+        this.last = last;
+      }
+    })
+  });
+
+  let obj = Person.create();
+  let ref = root(obj).get('full');
+
+  let name = ref.value();
+  let snapshot = ref.tag.value();
+
+  QUnit.strictEqual(obj.full, 'Dan Gebhardt');
+
+  set(obj, 'first', 'Daniel');
+
+  QUnit.strictEqual(obj.full, 'Daniel Gebhardt');
+  QUnit.strictEqual(ref.tag.validate(snapshot), false);
+  QUnit.strictEqual(ref.value(), 'Daniel Gebhardt');
 });
