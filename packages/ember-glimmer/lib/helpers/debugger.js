@@ -1,3 +1,4 @@
+/* eslint no-debugger:off */
 /*jshint debug:true*/
 
 /**

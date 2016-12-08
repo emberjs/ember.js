@@ -1,3 +1,4 @@
+/* eslint no-console:off */
 /* global console */
 
 import { ENV } from 'ember-environment';
