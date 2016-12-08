@@ -11,7 +11,7 @@
     "test": "ember test && lerna run test",
     "test:packages": "bin/run-package-tests.sh",
     "test:node": "bin/run-node-tests.js",
-    "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json && npm run test:pacakges && npm run test:node",
+    "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json && npm run test:packages && npm run test:node",
     "start": "ember serve --port=7357",
     "tsc": "tsc -p . --noEmit",
     "tslint": "tslint ./packages/**/*.ts",
