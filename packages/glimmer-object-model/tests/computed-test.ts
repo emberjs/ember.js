@@ -1,4 +1,4 @@
-import GlimmerObject, { computed, root, set } from '..';
+import GlimmerObject, { computed, root, set } from '../index';
 QUnit.module('[glimmer-object-model] - computed properties');
 
 QUnit.test('basic computed properties', assert => {

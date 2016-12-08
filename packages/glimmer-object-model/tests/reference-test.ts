@@ -1,4 +1,4 @@
-import GlimmerObject, { VersionedRootReference, classof, root as rootFor, set } from '..';
+import GlimmerObject, { VersionedRootReference, classof, root as rootFor, set } from '../index';
 import { VersionedPathReference, RevisionTag } from 'glimmer-reference';
 
 QUnit.module('[glimmer-object-model] reference');
