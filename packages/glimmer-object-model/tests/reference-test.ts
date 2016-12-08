@@ -1,4 +1,4 @@
-import GlimmerObject, { VersionedRootReference, classof, root as rootFor, set } from 'glimmer-object-model';
+import GlimmerObject, { VersionedRootReference, classof, root as rootFor, set } from '..';
 import { VersionedPathReference, RevisionTag } from 'glimmer-reference';
 
 QUnit.module('[glimmer-object-model] reference');
@@ -124,16 +124,16 @@ class State {
   }
 
   validateTags({ name = true, sal = true, loud = true }) {
-    QUnit.strictEqual(this.tags.name.validate(this.snapshot.name), name, `valid(name) != ${name}`);
-    QUnit.strictEqual(this.tags.sal.validate(this.snapshot.sal), sal, `valid(sal) != ${sal}`);
-    QUnit.strictEqual(this.tags.loud.validate(this.snapshot.loud), loud, `valid(loud) != ${loud}`);
+    QUnit.assert.strictEqual(this.tags.name.validate(this.snapshot.name), name, `valid(name) != ${name}`);
+    QUnit.assert.strictEqual(this.tags.sal.validate(this.snapshot.sal), sal, `valid(sal) != ${sal}`);
+    QUnit.assert.strictEqual(this.tags.loud.validate(this.snapshot.loud), loud, `valid(loud) != ${loud}`);
     this.updateTags();
   }
 
   validateValues({ name = this.values.name, sal = this.values.sal, loud = this.values.loud }) {
-    QUnit.strictEqual(this.references.name.value(), name, `name != ${name}`);
-    QUnit.strictEqual(this.references.sal.value(), sal, `sal != ${sal}`);
-    QUnit.strictEqual(this.references.loud.value(), loud, `loud != ${loud}`);
+    QUnit.assert.strictEqual(this.references.name.value(), name, `name != ${name}`);
+    QUnit.assert.strictEqual(this.references.sal.value(), sal, `sal != ${sal}`);
+    QUnit.assert.strictEqual(this.references.loud.value(), loud, `loud != ${loud}`);
     this.updateValues();
   }
 }
@@ -194,5 +194,5 @@ QUnit.test('works with ES6 subclassing', assert => {
 });
 
 function step(desc: string) {
-  QUnit.ok(true, desc);
+  QUnit.assert.ok(true, desc);
 }
