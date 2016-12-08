@@ -1,13 +1,10 @@
-import RSVP from 'ember-runtime/ext/rsvp';
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
-import NoneLocation from 'ember-routing/location/none_location';
-import DefaultResolver from 'ember-application/system/resolver';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import { RSVP, Controller } from 'ember-runtime';
+import { Route, NoneLocation } from 'ember-routing';
+import { run } from 'ember-metal';
+import { compile } from 'ember-template-compiler';
+import { Application, Resolver } from 'ember-application';
+import { jQuery } from 'ember-views';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 
 let Router, App, templates, router, container, counter;
 
@@ -41,7 +38,7 @@ QUnit.module('Loading/Error Substates', {
         name: 'App',
         rootElement: '#qunit-fixture',
         // fake a modules resolver
-        Resolver: DefaultResolver.extend({ moduleBasedResolver: true })
+        Resolver: Resolver.extend({ moduleBasedResolver: true })
       });
 
       App.deferReadiness();
@@ -592,8 +589,6 @@ QUnit.test('Handled errors that bubble can be handled at a higher level', functi
 QUnit.test('errors that are bubbled are thrown at a higher level if not handled', function() {
   expect(3);
 
-  let handledError;
-
   templates['grandma'] = 'GRANDMA {{outlet}}';
 
   Router.map(function() {
@@ -618,9 +613,6 @@ QUnit.test('errors that are bubbled are thrown at a higher level if not handled'
     actions: {
       error(err) {
         step(2, 'MomSallyRoute#error');
-
-        handledError = err;
-
         return true;
       }
     }
@@ -738,9 +730,7 @@ QUnit.test('Setting a query param during a slow transition should work', functio
   equal(appController.get('currentPath'), 'grandma.index', 'Transition should be complete');
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
+QUnit.test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
   expect(2);
 
   let appDeferred = RSVP.defer();
@@ -766,7 +756,7 @@ test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadin
   equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
 });
 
-test('Slow promises returned from ApplicationRoute#model enter application_loading if template present', function() {
+QUnit.test('Slow promises returned from ApplicationRoute#model enter application_loading if template present', function() {
   expect(3);
 
   templates['application_loading'] = '<div id="toplevel-loading">TOPLEVEL LOADING</div>';
@@ -793,7 +783,7 @@ QUnit.test('Default error event moves into nested route, prioritizing more speci
 
   templates['grandma'] = 'GRANDMA {{outlet}}';
   templates['grandma/error'] = 'ERROR: {{model.msg}}';
-  templates['grandma/mom_error'] = 'MOM ERROR: {{model.msg}}';
+  templates['mom_error'] = 'MOM ERROR: {{model.msg}}';
 
   Router.map(function() {
     this.route('grandma', function() {
@@ -841,7 +831,7 @@ QUnit.test('Prioritized substate entry works with preserved-namespace nested rou
 
   Router.map(function() {
     this.route('foo', function() {
-      this.route('foo.bar', { path: '/bar', resetNamespace: true }, function() {
+      this.route('bar', { path: '/bar' }, function() {
       });
     });
   });
@@ -858,6 +848,37 @@ QUnit.test('Prioritized substate entry works with preserved-namespace nested rou
   bootApplication('/foo/bar');
 
   equal(jQuery('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
+
+  run(deferred, 'resolve');
+
+  equal(jQuery('#app', '#qunit-fixture').text(), 'YAY');
+});
+
+QUnit.test('Prioritized substate entry works with reset-namespace nested routes', function() {
+  expect(2);
+
+  templates['bar_loading'] = 'BAR LOADING';
+  templates['bar/index'] = 'YAY';
+
+  Router.map(function() {
+    this.route('foo', function() {
+      this.route('bar', { path: '/bar', resetNamespace: true }, function() {
+      });
+    });
+  });
+
+  App.ApplicationController = Controller.extend();
+
+  let deferred = RSVP.defer();
+  App.BarRoute = Route.extend({
+    model() {
+      return deferred.promise;
+    }
+  });
+
+  bootApplication('/foo/bar');
+
+  equal(jQuery('#app', '#qunit-fixture').text(), 'BAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
 
   run(deferred, 'resolve');
 
@@ -993,7 +1014,7 @@ QUnit.test('Prioritized error substate entry works with auto-generated index rou
   equal(jQuery('#app', '#qunit-fixture').text(), 'FOO ERROR: did it broke?', 'foo.index_error was entered');
 });
 
-test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
+QUnit.test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
   expect(3);
 
   templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';

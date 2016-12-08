@@ -1,10 +1,7 @@
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { tryInvoke } from 'ember-metal/utils';
-import { getOwner } from 'container/owner';
+import { tryInvoke, getOwner } from 'ember-utils';
+import { assert, get, set } from 'ember-metal';
 
-import EmberObject from 'ember-runtime/system/object';
+import { Object as EmberObject } from 'ember-runtime';
 import { environment } from 'ember-environment';
 
 import {
@@ -15,7 +12,7 @@ import {
   getQuery,
   getFullPath,
   replacePath
-} from 'ember-routing/location/util';
+} from './util';
 
 /**
 @module ember
@@ -68,9 +65,9 @@ export default EmberObject.extend({
 
    @since 1.11
    @property global
-   @default environment.global
+   @default window
   */
-  global: environment.global,
+  global: environment.window,
 
   /**
     @private

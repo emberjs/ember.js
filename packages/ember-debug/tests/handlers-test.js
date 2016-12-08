@@ -2,7 +2,7 @@ import {
   HANDLERS,
   registerHandler,
   invoke
-} from 'ember-debug/handlers';
+} from '../handlers';
 
 QUnit.module('ember-debug/handlers', {
   teardown() {

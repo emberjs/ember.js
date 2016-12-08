@@ -1,11 +1,11 @@
+import { setOwner } from 'ember-utils';
 import {
   Descriptor,
   defineProperty
-} from 'ember-metal/properties';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import InjectedProperty from 'ember-metal/injected_property';
-import { setOwner } from 'container/owner';
+} from '../properties';
+import { get } from '../property_get';
+import { set } from '../property_set';
+import InjectedProperty from '../injected_property';
 
 QUnit.module('InjectedProperty');
 

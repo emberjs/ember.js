@@ -2,20 +2,16 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from 'ember-metal/core'; // Preloaded into namespaces
-import { context } from 'ember-environment';
-import { get } from 'ember-metal/property_get';
-import {
-  guidFor
-} from 'ember-metal/utils';
-import {
+import { guidFor } from 'ember-utils';
+import Ember, {
+  get,
   Mixin,
   hasUnprocessedMixins,
   clearUnprocessedMixins,
-  NAME_KEY
-} from 'ember-metal/mixin';
-
-import EmberObject from 'ember-runtime/system/object';
+} from 'ember-metal'; // Preloaded into namespaces
+import { context } from 'ember-environment';
+import { NAME_KEY } from 'ember-utils';
+import EmberObject from './object';
 
 let searchDisabled = false;
 
@@ -178,28 +174,32 @@ function superClassString(mixin) {
   }
 }
 
-function classToString() {
-  if (!searchDisabled && !this[NAME_KEY]) {
+function calculateToString(target) {
+  let str;
+
+  if (!searchDisabled) {
     processAllNamespaces();
-  }
-
-  let ret;
-
-  if (this[NAME_KEY]) {
-    ret = this[NAME_KEY];
-  } else if (this._toString) {
-    ret = this._toString;
-  } else {
-    let str = superClassString(this);
+    // can also be set by processAllNamespaces
+    str = target[NAME_KEY];
     if (str) {
-      ret = '(subclass of ' + str + ')';
+      return str;
     } else {
-      ret = '(unknown mixin)';
+      str = superClassString(target);
+      str = str ? '(subclass of ' + str + ')' : str;
     }
-    this.toString = makeToString(ret);
   }
+  if (str) {
+    return str;
+  } else {
+    return '(unknown mixin)';
+  }
+}
 
-  return ret;
+function classToString() {
+  let name = this[NAME_KEY];
+  if (name) { return name; }
+
+  return (this[NAME_KEY] = calculateToString(this));
 }
 
 function processAllNamespaces() {
@@ -222,10 +222,6 @@ function processAllNamespaces() {
 
     clearUnprocessedMixins();
   }
-}
-
-function makeToString(ret) {
-  return () => ret;
 }
 
 Mixin.prototype.toString = classToString; // ES6TODO: altering imported objects. SBB.

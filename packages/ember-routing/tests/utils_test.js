@@ -1,18 +1,9 @@
 import {
   normalizeControllerQueryParams
-} from 'ember-routing/utils';
+} from '../utils';
 
 
 QUnit.module('Routing query parameter utils - normalizeControllerQueryParams');
-
-QUnit.test('returns the cached value if that has been previously set', function(assert) {
-  let cached = {};
-  let params = ['foo'];
-  params._qpMap = cached;
-
-  let normalized = normalizeControllerQueryParams(params);
-  equal(cached, normalized, 'cached value returned if previously set');
-});
 
 QUnit.test('converts array style into verbose object style', function(assert) {
   let paramName = 'foo';

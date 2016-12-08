@@ -1,5 +1,5 @@
+import { assign } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import assign from 'ember-metal/assign';
 import DEFAULT_FEATURES from 'ember/features';
 
 /**

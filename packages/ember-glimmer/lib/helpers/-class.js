@@ -1,22 +1,21 @@
 import { InternalHelperReference } from '../utils/references';
-import { dasherize } from 'ember-runtime/system/string';
+import { String as StringUtils } from 'ember-runtime';
 
 function classHelper({ positional }) {
   let path = positional.at(0);
-  let truthyPropName = positional.at(1);
-  let falsyPropName = positional.at(2);
+  let args = positional.length;
   let value = path.value();
 
   if (value === true) {
-    if (truthyPropName) {
-      return dasherize(truthyPropName.value());
+    if (args > 1) {
+      return StringUtils.dasherize(positional.at(1).value());
     }
     return null;
   }
 
   if (value === false) {
-    if (falsyPropName) {
-      return dasherize(falsyPropName.value());
+    if (args > 2) {
+      return StringUtils.dasherize(positional.at(2).value());
     }
     return null;
   }
@@ -24,9 +23,6 @@ function classHelper({ positional }) {
   return value;
 }
 
-export default {
-  isInternalHelper: true,
-  toReference(args) {
-    return new InternalHelperReference(classHelper, args);
-  }
-};
+export default function(vm, args) {
+  return new InternalHelperReference(classHelper, args);
+}

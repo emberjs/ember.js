@@ -1,7 +1,7 @@
-import { get } from 'ember-metal/property_get';
-import { meta as metaFor, peekMeta } from 'ember-metal/meta';
-import { watchKey, unwatchKey } from 'ember-metal/watch_key';
-import EmptyObject from 'ember-metal/empty_object';
+import { EmptyObject } from 'ember-utils';
+import { get } from './property_get';
+import { meta as metaFor, peekMeta } from './meta';
+import { watchKey, unwatchKey } from './watch_key';
 
 const FIRST_KEY = /^([^\.]+)/;
 
@@ -10,7 +10,7 @@ function firstKey(path) {
 }
 
 function isObject(obj) {
-  return obj && (typeof obj === 'object');
+  return typeof obj === 'object' && obj;
 }
 
 function isVolatile(obj) {
@@ -107,32 +107,28 @@ function makeChainWatcher() {
 }
 
 function addChainWatcher(obj, keyName, node) {
-  if (!isObject(obj)) {
-    return;
-  }
-
   let m = metaFor(obj);
   m.writableChainWatchers(makeChainWatcher).add(keyName, node);
   watchKey(obj, keyName, m);
 }
 
-function removeChainWatcher(obj, keyName, node) {
+function removeChainWatcher(obj, keyName, node, _meta) {
   if (!isObject(obj)) {
     return;
   }
 
-  let m = peekMeta(obj);
+  let meta = _meta || peekMeta(obj);
 
-  if (!m || !m.readableChainWatchers()) {
+  if (!meta || !meta.readableChainWatchers()) {
     return;
   }
 
   // make meta writable
-  m = metaFor(obj);
+  meta = metaFor(obj);
 
-  m.readableChainWatchers().remove(keyName, node);
+  meta.readableChainWatchers().remove(keyName, node);
 
-  unwatchKey(obj, keyName, m);
+  unwatchKey(obj, keyName, meta);
 }
 
 // A ChainNode watches a single key on an object. If you provide a starting
@@ -157,15 +153,20 @@ function ChainNode(parent, key, value) {
   this._value = value;
   this._paths = {};
   if (this._watching) {
-    this._object = parent.value();
-    if (this._object) {
-      addChainWatcher(this._object, this._key, this);
+    let obj = parent.value();
+
+    if (!isObject(obj)) {
+      return;
     }
+
+    this._object = obj;
+
+    addChainWatcher(this._object, this._key, this);
   }
 }
 
 function lazyGet(obj, key) {
-  if (!obj) {
+  if (!isObject(obj)) {
     return;
   }
 
@@ -293,11 +294,19 @@ ChainNode.prototype = {
 
   notify(revalidate, affected) {
     if (revalidate && this._watching) {
-      let obj = this._parent.value();
-      if (obj !== this._object) {
-        removeChainWatcher(this._object, this._key, this);
-        this._object = obj;
-        addChainWatcher(obj, this._key, this);
+      let parentValue = this._parent.value();
+
+      if (parentValue !== this._object) {
+        if (this._object) {
+          removeChainWatcher(this._object, this._key, this);
+        }
+
+        if (isObject(parentValue)) {
+          this._object = parentValue;
+          addChainWatcher(parentValue, this._key, this);
+        } else {
+          this._object = undefined;
+        }
       }
       this._value  = undefined;
     }

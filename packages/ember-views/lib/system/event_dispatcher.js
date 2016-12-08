@@ -3,18 +3,13 @@
 @submodule ember-views
 */
 
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import isNone from 'ember-metal/is_none';
-import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
-import jQuery from 'ember-views/system/jquery';
-import ActionManager from 'ember-views/system/action_manager';
-import View from 'ember-views/views/view';
-import assign from 'ember-metal/assign';
-import { getOwner } from 'container/owner';
+import { assign, getOwner } from 'ember-utils';
+import { assert, get, set, isNone, run } from 'ember-metal';
+import { Object as EmberObject } from 'ember-runtime';
+import jQuery from './jquery';
+import ActionManager from './action_manager';
 import { environment } from 'ember-environment';
+import fallbackViewRegistry from '../compat/fallback-view-registry';
 
 const ROOT_ELEMENT_CLASS = 'ember-application';
 const ROOT_ELEMENT_SELECTOR = '.' + ROOT_ELEMENT_CLASS;
@@ -62,33 +57,33 @@ export default EmberObject.extend({
     @private
   */
   events: {
-    touchstart  : 'touchStart',
-    touchmove   : 'touchMove',
-    touchend    : 'touchEnd',
-    touchcancel : 'touchCancel',
-    keydown     : 'keyDown',
-    keyup       : 'keyUp',
-    keypress    : 'keyPress',
-    mousedown   : 'mouseDown',
-    mouseup     : 'mouseUp',
-    contextmenu : 'contextMenu',
-    click       : 'click',
-    dblclick    : 'doubleClick',
-    mousemove   : 'mouseMove',
-    focusin     : 'focusIn',
-    focusout    : 'focusOut',
-    mouseenter  : 'mouseEnter',
-    mouseleave  : 'mouseLeave',
-    submit      : 'submit',
-    input       : 'input',
-    change      : 'change',
-    dragstart   : 'dragStart',
-    drag        : 'drag',
-    dragenter   : 'dragEnter',
-    dragleave   : 'dragLeave',
-    dragover    : 'dragOver',
-    drop        : 'drop',
-    dragend     : 'dragEnd'
+    touchstart:  'touchStart',
+    touchmove:   'touchMove',
+    touchend:    'touchEnd',
+    touchcancel: 'touchCancel',
+    keydown:     'keyDown',
+    keyup:       'keyUp',
+    keypress:    'keyPress',
+    mousedown:   'mouseDown',
+    mouseup:     'mouseUp',
+    contextmenu: 'contextMenu',
+    click:       'click',
+    dblclick:    'doubleClick',
+    mousemove:   'mouseMove',
+    focusin:     'focusIn',
+    focusout:    'focusOut',
+    mouseenter:  'mouseEnter',
+    mouseleave:  'mouseLeave',
+    submit:      'submit',
+    input:       'input',
+    change:      'change',
+    dragstart:   'dragStart',
+    drag:        'drag',
+    dragenter:   'dragEnter',
+    dragleave:   'dragLeave',
+    dragover:    'dragOver',
+    drop:        'drop',
+    dragend:     'dragEnd'
   },
 
   /**
@@ -170,7 +165,9 @@ export default EmberObject.extend({
 
     rootElement.addClass(ROOT_ELEMENT_CLASS);
 
-    assert(`Unable to add '${ROOT_ELEMENT_CLASS}' class to rootElement. Make sure you set rootElement to the body or an element in the body.`, rootElement.is(ROOT_ELEMENT_SELECTOR));
+    if (!rootElement.is(ROOT_ELEMENT_SELECTOR)) {
+      throw new TypeError(`Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${rootElement.selector || rootElement[0].tagName}). Make sure you set rootElement to the body or an element in the body.`);
+    }
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {
@@ -197,7 +194,7 @@ export default EmberObject.extend({
     let self = this;
 
     let owner = getOwner(this);
-    let viewRegistry = owner && owner.lookup('-view-registry:main') || View.views;
+    let viewRegistry = owner && owner.lookup('-view-registry:main') || fallbackViewRegistry;
 
     if (eventName === null) {
       return;

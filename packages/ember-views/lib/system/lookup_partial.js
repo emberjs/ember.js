@@ -1,5 +1,7 @@
-import { assert } from 'ember-metal/debug';
-import EmberError from 'ember-metal/error';
+import {
+  assert,
+  Error as EmberError
+} from 'ember-metal';
 
 function parseUnderscoredName(templateName) {
   let nameParts = templateName.split('/');
@@ -10,10 +12,10 @@ function parseUnderscoredName(templateName) {
   return nameParts.join('/');
 }
 
-export default function lookupPartial(env, templateName) {
+export default function lookupPartial(templateName, owner) {
   if (templateName == null) { return; }
 
-  let template = templateFor(env, parseUnderscoredName(templateName), templateName);
+  let template = templateFor(owner, parseUnderscoredName(templateName), templateName);
 
   assert(
     'Unable to find partial with name "' + templateName + '"',
@@ -23,25 +25,25 @@ export default function lookupPartial(env, templateName) {
   return template;
 }
 
-export function hasPartial(env, name) {
-  if (!env.owner) {
+export function hasPartial(name, owner) {
+  if (!owner) {
     throw new EmberError('Container was not found when looking up a views template. ' +
                'This is most likely due to manually instantiating an Ember.View. ' +
                'See: http://git.io/EKPpnA');
   }
 
-  return env.owner.hasRegistration('template:' + parseUnderscoredName(name)) || env.owner.hasRegistration('template:' + name);
+  return owner.hasRegistration('template:' + parseUnderscoredName(name)) || owner.hasRegistration('template:' + name);
 }
 
-function templateFor(env, underscored, name) {
+function templateFor(owner, underscored, name) {
   if (!name) { return; }
   assert('templateNames are not allowed to contain periods: ' + name, name.indexOf('.') === -1);
 
-  if (!env.owner) {
+  if (!owner) {
     throw new EmberError('Container was not found when looking up a views template. ' +
                'This is most likely due to manually instantiating an Ember.View. ' +
                'See: http://git.io/EKPpnA');
   }
 
-  return env.owner.lookup('template:' + underscored) || env.owner.lookup('template:' + name);
+  return owner.lookup('template:' + underscored) || owner.lookup('template:' + name);
 }

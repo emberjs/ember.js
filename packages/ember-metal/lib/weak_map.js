@@ -1,16 +1,21 @@
-import { assert } from 'ember-metal/debug';
-import { GUID_KEY } from 'ember-metal/utils';
+import { GUID_KEY } from 'ember-utils';
 import {
   peekMeta,
-  meta as metaFor
-} from 'ember-metal/meta';
+  meta as metaFor,
+  UNDEFINED
+} from './meta';
 
 let id = 0;
-function UNDEFINED() {}
+
+// Returns whether Type(value) is Object according to the terminology in the spec
+function isObject(value) {
+  return (typeof value === 'object' && value !== null) || typeof value === 'function';
+}
 
 /*
- * @private
  * @class Ember.WeakMap
+ * @public
+ * @category ember-metal-weakmap
  *
  * A partial polyfill for [WeakMap](http://www.ecma-international.org/ecma-262/6.0/#sec-weakmap-objects).
  *
@@ -20,13 +25,23 @@ function UNDEFINED() {}
  * practice, most use cases satisfy this limitation which is why it is included
  * in ember-metal.
  */
-export default function WeakMap() {
-  assert(
-    'Invoking the WeakMap constructor with arguments is not supported at this time',
-    arguments.length === 0
-  );
+export default function WeakMap(iterable) {
+  if (!(this instanceof WeakMap)) {
+    throw new TypeError(`Constructor WeakMap requires 'new'`);
+  }
 
   this._id = GUID_KEY + (id++);
+
+  if (iterable === null || iterable === undefined) {
+    return;
+  } else if (Array.isArray(iterable)) {
+    for (let i = 0; i < iterable.length; i++) {
+      let [key, value] = iterable[i];
+      this.set(key, value);
+    }
+  } else {
+    throw new TypeError('The weak map constructor polyfill only supports an array argument');
+  }
 }
 
 /*
@@ -35,6 +50,10 @@ export default function WeakMap() {
  * @return {Any} stored value
  */
 WeakMap.prototype.get = function(obj) {
+  if (!isObject(obj)) {
+    return undefined;
+  }
+
   let meta = peekMeta(obj);
   if (meta) {
     let map = meta.readableWeak();
@@ -55,10 +74,9 @@ WeakMap.prototype.get = function(obj) {
  * @return {WeakMap} the weak map
  */
 WeakMap.prototype.set = function(obj, value) {
-  assert(
-    'Uncaught TypeError: Invalid value used as weak map key',
-    obj && (typeof obj === 'object' || typeof obj === 'function')
-  );
+  if (!isObject(obj)) {
+    throw new TypeError('Invalid value used as weak map key');
+  }
 
   if (value === undefined) {
     value = UNDEFINED;
@@ -75,6 +93,10 @@ WeakMap.prototype.set = function(obj, value) {
  * @return {boolean} if the key exists
  */
 WeakMap.prototype.has = function(obj) {
+  if (!isObject(obj)) {
+    return false;
+  }
+
   let meta = peekMeta(obj);
   if (meta) {
     let map = meta.readableWeak();
@@ -98,4 +120,12 @@ WeakMap.prototype.delete = function(obj) {
   } else {
     return false;
   }
+};
+
+/*
+ * @method toString
+ * @return {String}
+ */
+WeakMap.prototype.toString = function() {
+  return '[object WeakMap]';
 };

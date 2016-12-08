@@ -1,6 +1,6 @@
-import run from 'ember-metal/run_loop';
-import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
+import { run } from 'ember-metal';
+import Application from '../../system/application';
+import { jQuery } from 'ember-views';
 
 let app;
 
@@ -55,7 +55,7 @@ QUnit.test('initializers that throw errors cause the boot promise to reject with
         equal(err.message, 'boot failure');
       }
     );
-  } catch(e) {
+  } catch (e) {
     QUnit.start();
     ok(false, 'The boot method should not throw');
     throw e;

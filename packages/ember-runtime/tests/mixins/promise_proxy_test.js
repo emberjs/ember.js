@@ -1,11 +1,10 @@
-import {get} from 'ember-metal/property_get';
-import run from 'ember-metal/run_loop';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
-import PromiseProxyMixin from 'ember-runtime/mixins/promise_proxy';
-import EmberRSVP from 'ember-runtime/ext/rsvp';
+import { get, run } from 'ember-metal';
+import ObjectProxy from '../../system/object_proxy';
+import PromiseProxyMixin from '../../mixins/promise_proxy';
+import EmberRSVP from '../../ext/rsvp';
 import {
   onerrorDefault
-} from 'ember-runtime/ext/rsvp';
+} from '../../ext/rsvp';
 import * as RSVP from 'rsvp';
 
 let ObjectPromiseProxy;
@@ -17,6 +16,10 @@ QUnit.test('present on ember namespace', function() {
 QUnit.module('Ember.PromiseProxy - ObjectProxy', {
   setup() {
     ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
+  },
+
+  teardown() {
+    RSVP.on('error', onerrorDefault);
   }
 });
 
@@ -249,7 +252,87 @@ QUnit.test('should have reason when isRejected is set', function() {
 
   try {
     run(deferred, 'reject', error);
-  } catch(e) {
+  } catch (e) {
     equal(e, error);
   }
+});
+
+QUnit.test('should not error if promise is resolved after proxy has been destroyed', function() {
+  let deferred = EmberRSVP.defer();
+
+  let proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  proxy.then(() => {}, () => {});
+
+  run(proxy, 'destroy');
+
+  run(deferred, 'resolve', true);
+
+  ok(true, 'resolving the promise after the proxy has been destroyed does not raise an error');
+});
+
+QUnit.test('should not error if promise is rejected after proxy has been destroyed', function() {
+  let deferred = EmberRSVP.defer();
+
+  let proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  proxy.then(() => {}, () => {});
+
+  run(proxy, 'destroy');
+
+  run(deferred, 'reject', 'some reason');
+
+  ok(true, 'rejecting the promise after the proxy has been destroyed does not raise an error');
+});
+
+QUnit.test('promise chain is not broken if promised is resolved after proxy has been destroyed', function() {
+  let deferred = EmberRSVP.defer();
+  let expectedValue = {};
+  let receivedValue;
+  let didResolveCount = 0;
+
+  let proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  proxy.then((value) => {
+    receivedValue = value;
+    didResolveCount++;
+  }, () => {});
+
+  run(proxy, 'destroy');
+
+  run(deferred, 'resolve', expectedValue);
+
+  equal(didResolveCount, 1, 'callback called');
+  equal(receivedValue, expectedValue, 'passed value is the value the promise was resolved with');
+});
+
+QUnit.test('promise chain is not broken if promised is rejected after proxy has been destroyed', function() {
+  let deferred = EmberRSVP.defer();
+  let expectedReason = 'some reason';
+  let receivedReason;
+  let didRejectCount = 0;
+
+  let proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  proxy.then(
+    () => {},
+    (reason) => {
+      receivedReason = reason;
+      didRejectCount++;
+    });
+
+  run(proxy, 'destroy');
+
+  run(deferred, 'reject', expectedReason);
+
+  equal(didRejectCount, 1, 'callback called');
+  equal(receivedReason, expectedReason, 'passed reason is the reason the promise was rejected for');
 });

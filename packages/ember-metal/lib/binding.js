@@ -1,21 +1,21 @@
+import { guidFor } from 'ember-utils';
 import Logger from 'ember-console';
 import { context, ENV } from 'ember-environment';
-import run from 'ember-metal/run_loop';
-import { assert, deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { trySet } from 'ember-metal/property_set';
-import { guidFor } from 'ember-metal/utils';
-import { addListener } from 'ember-metal/events';
+import run from './run_loop';
+import { assert, deprecate } from './debug';
+import { get } from './property_get';
+import { trySet } from './property_set';
+import { addListener } from './events';
 import {
   addObserver,
   removeObserver,
   _suspendObserver
-} from 'ember-metal/observer';
+} from './observer';
 import {
   isGlobalPath,
   getFirstKey,
   getTailPath
-} from 'ember-metal/path_cache';
+} from './path_cache';
 
 /**
 @module ember
@@ -176,9 +176,14 @@ Binding.prototype = {
 
     addListener(obj, 'willDestroy', this, 'disconnect');
 
-    fireDeprecations(possibleGlobal,
-                     this._oneWay,
-                     (!possibleGlobal && !this._oneWay));
+    fireDeprecations(
+      obj,
+      this._to,
+      this._from,
+      possibleGlobal,
+      this._oneWay,
+      (!possibleGlobal && !this._oneWay)
+    );
 
     this._readyToSync = true;
     this._fromObj = fromObj;
@@ -286,7 +291,7 @@ Binding.prototype = {
 
 };
 
-function fireDeprecations(deprecateGlobal, deprecateOneWay, deprecateAlias) {
+function fireDeprecations(obj, toPath, fromPath, deprecateGlobal, deprecateOneWay, deprecateAlias) {
   let deprecateGlobalMessage = '`Ember.Binding` is deprecated. Since you' +
     ' are binding to a global consider using a service instead.';
   let deprecateOneWayMessage = '`Ember.Binding` is deprecated. Since you' +
@@ -295,17 +300,18 @@ function fireDeprecations(deprecateGlobal, deprecateOneWay, deprecateAlias) {
   let deprecateAliasMessage = '`Ember.Binding` is deprecated. Consider' +
     ' using an `alias` computed property instead.';
 
-  deprecate(deprecateGlobalMessage, !deprecateGlobal, {
+  let objectInfo = `The \`${toPath}\` property of \`${obj}\` is an \`Ember.Binding\` connected to \`${fromPath}\`, but `;
+  deprecate(objectInfo + deprecateGlobalMessage, !deprecateGlobal, {
     id: 'ember-metal.binding',
     until: '3.0.0',
     url: 'http://emberjs.com/deprecations/v2.x#toc_ember-binding'
   });
-  deprecate(deprecateOneWayMessage, !deprecateOneWay, {
+  deprecate(objectInfo + deprecateOneWayMessage, !deprecateOneWay, {
     id: 'ember-metal.binding',
     until: '3.0.0',
     url: 'http://emberjs.com/deprecations/v2.x#toc_ember-binding'
   });
-  deprecate(deprecateAliasMessage, !deprecateAlias, {
+  deprecate(objectInfo + deprecateAliasMessage, !deprecateAlias, {
     id: 'ember-metal.binding',
     until: '3.0.0',
     url: 'http://emberjs.com/deprecations/v2.x#toc_ember-binding'

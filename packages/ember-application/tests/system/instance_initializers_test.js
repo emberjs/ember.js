@@ -1,7 +1,7 @@
-import run from 'ember-metal/run_loop';
-import Application from 'ember-application/system/application';
-import ApplicationInstance from 'ember-application/system/application-instance';
-import jQuery from 'ember-views/system/jquery';
+import { run } from 'ember-metal';
+import Application from '../../system/application';
+import ApplicationInstance from '../../system/application-instance';
+import { jQuery } from 'ember-views';
 
 let app;
 

@@ -2,11 +2,11 @@
 // as well as methods vs props.  We are just keeping these for testing; the
 // current impl doesn't care about the differences as much...
 
-import { guidFor } from 'ember-metal/utils';
+import { guidFor } from 'ember-utils';
 import {
   mixin,
   Mixin
-} from 'ember-metal/mixin';
+} from '../../mixin';
 
 const PrivateProperty = Mixin.create({
   _foo: '_FOO'

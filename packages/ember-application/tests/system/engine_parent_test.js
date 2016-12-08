@@ -1,4 +1,8 @@
-import { getEngineParent, setEngineParent, ENGINE_PARENT } from 'ember-application/system/engine-parent';
+import {
+  getEngineParent,
+  setEngineParent,
+  ENGINE_PARENT
+} from '../../system/engine-parent';
 
 QUnit.module('EngineParent', {});
 

@@ -1,7 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
-import { set } from 'ember-metal/property_set';
-import { computed } from 'ember-metal/computed';
+import { set, computed } from 'ember-metal';
 import { styles } from '../../utils/test-helpers';
 
 moduleFor('Components test: attrs lookup', class extends RenderingTest {
@@ -58,7 +57,7 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
     this.assertText('first attr');
   }
 
-  ['@htmlbars should be able to modify a provided attr into local state #11571 / #11559'](assert) {
+  ['@test should be able to modify a provided attr into local state #11571 / #11559'](assert) {
     let instance;
     let FooBarComponent = Component.extend({
       init() {
@@ -67,14 +66,12 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
       },
 
       didReceiveAttrs() {
-        this.set('first', this.getAttr('first').toUpperCase());
+        this.set('first', this.get('first').toUpperCase());
       }
     });
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{first}}' });
 
-    this.render(`{{foo-bar first=firstAttr}}`, {
-      firstAttr: 'first attr'
-    });
+    this.render(`{{foo-bar first="first attr"}}`);
 
     assert.equal(instance.get('first'), 'FIRST ATTR', 'component lookup uses local state');
     this.assertText('FIRST ATTR');
@@ -84,16 +81,8 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
     assert.equal(instance.get('first'), 'FIRST ATTR', 'component lookup uses local state during rerender');
     this.assertText('FIRST ATTR');
 
-    // TODO: For some reason didReceiveAttrs is not called after this mutation occurs,
-    // See https://github.com/emberjs/ember.js/pull/13203
-    // this.runTask(() => set(this.context, 'firstAttr', 'second attr'));
-    // assert.equal(instance.get('first'), 'SECOND ATTR', 'component lookup uses modified local state');
-    // this.assertText('SECOND ATTR');
-
-    this.runTask(() => set(this.context, 'firstAttr', 'first attr'));
-
-    assert.equal(instance.get('first'), 'FIRST ATTR', 'component lookup uses reset local state');
-    this.assertText('FIRST ATTR');
+    // This is testing that passing string literals for use as initial values,
+    // so there is no update step
   }
 
   ['@test should be able to access unspecified attr #12035'](assert) {
@@ -137,8 +126,9 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
     assert.equal(instance.get('woot'), 'yes', 'component found attr after reset');
   }
 
-  ['@htmlbars getAttr() should return the same value as get()'](assert) {
-    assert.expect(20);
+  ['@test getAttr() should return the same value as get()'](assert) {
+    assert.expect(33);
+
     let instance;
     let FooBarComponent = Component.extend({
       init() {
@@ -147,27 +137,39 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
       },
 
       didReceiveAttrs() {
+        let rootFirstPositional = this.get('firstPositional');
         let rootFirst = this.get('first');
         let rootSecond = this.get('second');
+        let attrFirstPositional = this.getAttr('firstPositional');
         let attrFirst = this.getAttr('first');
         let attrSecond = this.getAttr('second');
 
+        equal(rootFirstPositional, attrFirstPositional, 'root property matches attrs value');
         equal(rootFirst, attrFirst, 'root property matches attrs value');
         equal(rootSecond, attrSecond, 'root property matches attrs value');
       }
     });
+
+    FooBarComponent.reopenClass({
+      positionalParams: ['firstPositional']
+    });
+
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
-    this.render(`{{foo-bar first=first second=second}}`, {
+    this.render(`{{foo-bar firstPositional first=first second=second}}`, {
+      firstPositional: 'firstPositional',
       first: 'first',
       second: 'second'
     });
 
+
+    assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
     assert.equal(instance.get('first'), 'first', 'matches known value');
     assert.equal(instance.get('second'), 'second', 'matches known value');
 
     this.runTask(() => this.rerender());
 
+    assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
     assert.equal(instance.get('first'), 'first', 'matches known value');
     assert.equal(instance.get('second'), 'second', 'matches known value');
 
@@ -175,6 +177,7 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
       set(this.context, 'first', 'third');
     });
 
+    assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
     assert.equal(instance.get('first'), 'third', 'matches known value');
     assert.equal(instance.get('second'), 'second', 'matches known value');
 
@@ -182,14 +185,25 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
       set(this.context, 'second', 'fourth');
     });
 
+    assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
     assert.equal(instance.get('first'), 'third', 'matches known value');
     assert.equal(instance.get('second'), 'fourth', 'matches known value');
 
     this.runTask(() => {
+      set(this.context, 'firstPositional', 'fifth');
+    });
+
+    assert.equal(instance.get('firstPositional'), 'fifth', 'matches known value');
+    assert.equal(instance.get('first'), 'third', 'matches known value');
+    assert.equal(instance.get('second'), 'fourth', 'matches known value');
+
+    this.runTask(() => {
+      set(this.context, 'firstPositional', 'firstPositional');
       set(this.context, 'first', 'first');
       set(this.context, 'second', 'second');
     });
 
+    assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
     assert.equal(instance.get('first'), 'first', 'matches known value');
     assert.equal(instance.get('second'), 'second', 'matches known value');
   }

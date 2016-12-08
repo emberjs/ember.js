@@ -3,58 +3,37 @@
 @submodule ember-views
 */
 
-// BEGIN IMPORTS
-import Ember from 'ember-runtime';
-import jQuery from 'ember-views/system/jquery';
-import {
+export { default as jQuery } from './system/jquery';
+export {
   isSimpleClick,
+  getViewBounds,
   getViewClientRects,
-  getViewBoundingClientRect
-} from 'ember-views/system/utils';
-import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
+  getViewBoundingClientRect,
+  getRootViews,
+  getChildViews,
+  getViewId,
+  getViewElement,
+  setViewElement,
+  STYLE_WARNING
+} from './system/utils';
+export { default as EventDispatcher } from './system/event_dispatcher';
+export { default as ComponentLookup } from './component_lookup';
+export { default as TextSupport } from './mixins/text_support';
+export { default as CoreView } from './views/core_view';
+export { default as ClassNamesSupport } from './mixins/class_names_support';
+export { default as ChildViewsSupport } from './mixins/child_views_support';
+export { default as ViewStateSupport } from './mixins/view_state_support';
+export { default as ViewMixin } from './mixins/view_support';
+export { default as ActionSupport } from './mixins/action_support';
+export {
+  MUTABLE_CELL
+} from './compat/attrs';
+export {
+  default as lookupPartial,
+  hasPartial
+} from './system/lookup_partial';
+export { default as lookupComponent } from './utils/lookup-component';
+export { default as ActionManager } from './system/action_manager';
+export { default as fallbackViewRegistry } from './compat/fallback-view-registry';
 
-import { Renderer } from 'ember-htmlbars/renderer';
-import Component from 'ember-htmlbars/component';
-
-import EventDispatcher from 'ember-views/system/event_dispatcher';
-import ViewTargetActionSupport from 'ember-views/mixins/view_target_action_support';
-import ComponentLookup from 'ember-views/component_lookup';
-import Checkbox from 'ember-htmlbars/components/checkbox';
-import TextSupport from 'ember-views/mixins/text_support';
-import TextField from 'ember-htmlbars/components/text_field';
-import TextArea from 'ember-htmlbars/components/text_area';
-
-// END IMPORTS
-
-/**
-  Alias for jQuery
-
-  @method $
-  @for Ember
- @public
-*/
-
-// BEGIN EXPORTS
-Ember.$ = jQuery;
-
-Ember.ViewTargetActionSupport = ViewTargetActionSupport;
-
-const ViewUtils = Ember.ViewUtils = {};
-ViewUtils.isSimpleClick = isSimpleClick;
-ViewUtils.getViewClientRects = getViewClientRects;
-ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
-
-Ember._Renderer = Renderer;
-
-Ember.Checkbox = Checkbox;
-Ember.TextField = TextField;
-Ember.TextArea = TextArea;
-
-Ember.TextSupport = TextSupport;
-Ember.ComponentLookup = ComponentLookup;
-Ember.Component = Component;
-Ember.EventDispatcher = EventDispatcher;
-
-// END EXPORTS
-
-export default Ember;
+import './system/ext';  // for the side effect of extending Ember.run.queues

@@ -1,9 +1,6 @@
+import { dictionary, symbol, setOwner, OWNER, NAME_KEY } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import { assert, deprecate, runInDebug } from 'ember-metal/debug';
-import dictionary from 'ember-metal/dictionary';
-import { setOwner, OWNER } from './owner';
-import { buildFakeContainerWithDeprecations } from 'ember-runtime/mixins/container_proxy';
-import symbol from 'ember-metal/symbol';
+import { assert, deprecate, runInDebug } from 'ember-metal';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 
@@ -273,7 +270,7 @@ function factoryFor(container, fullName, options = {}) {
     let factoryInjections = factoryInjectionsFor(container, fullName);
     let cacheable = !areInjectionsDynamic(injections) && !areInjectionsDynamic(factoryInjections);
 
-    factoryInjections._toString = registry.makeToString(factory, fullName);
+    factoryInjections[NAME_KEY] = registry.makeToString(factory, fullName);
 
     let injectedFactory = factory.extend(injections);
 
@@ -439,4 +436,33 @@ function resetMember(container, fullName) {
       member.destroy();
     }
   }
+}
+
+export function buildFakeContainerWithDeprecations(container) {
+  let fakeContainer = {};
+  let propertyMappings = {
+    lookup: 'lookup',
+    lookupFactory: '_lookupFactory'
+  };
+
+  for (let containerProperty in propertyMappings) {
+    fakeContainer[containerProperty] = buildFakeContainerFunction(container, containerProperty, propertyMappings[containerProperty]);
+  }
+
+  return fakeContainer;
+}
+
+function buildFakeContainerFunction(container, containerProperty, ownerProperty) {
+  return function() {
+    deprecate(
+      `Using the injected \`container\` is deprecated. Please use the \`getOwner\` helper to access the owner of this object and then call \`${ownerProperty}\` instead.`,
+      false,
+      {
+        id: 'ember-application.injected-container',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access'
+      }
+    );
+    return container[containerProperty](...arguments);
+  };
 }

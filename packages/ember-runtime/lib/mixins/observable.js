@@ -3,29 +3,25 @@
 @submodule ember-runtime
 */
 
-import { assert } from 'ember-metal/debug';
 import {
+  assert,
   get,
-  getWithDefault
-} from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import getProperties from 'ember-metal/get_properties';
-import setProperties from 'ember-metal/set_properties';
-import { Mixin } from 'ember-metal/mixin';
-import { hasListeners } from 'ember-metal/events';
-import {
+  getWithDefault,
+  set,
+  getProperties,
+  setProperties,
+  Mixin,
+  hasListeners,
   beginPropertyChanges,
   propertyWillChange,
   propertyDidChange,
-  endPropertyChanges
-} from 'ember-metal/property_events';
-import {
+  endPropertyChanges,
   addObserver,
   removeObserver,
-  observersFor
-} from 'ember-metal/observer';
-import { cacheFor } from 'ember-metal/computed';
-import isNone from 'ember-metal/is_none';
+  observersFor,
+  cacheFor,
+  isNone
+} from 'ember-metal';
 
 /**
   ## Overview
@@ -114,9 +110,9 @@ export default Mixin.create({
     declared at the end, such as:
 
     ```javascript
-    fullName: function() {
+    fullName: Ember.computed('firstName', 'lastName', function() {
       return this.get('firstName') + ' ' + this.get('lastName');
-    }.property('firstName', 'lastName')
+    })
     ```
 
     When you call `get` on a computed property, the function will be
@@ -168,7 +164,11 @@ export default Mixin.create({
   /**
     Sets the provided key or path to the value.
 
-    This method is generally very similar to calling `object[key] = value` or
+    ```javascript
+    record.set("key", value);
+    ```
+
+    This method is generally very similar to calling `object["key"] = value` or
     `object.key = value`, except that it provides support for computed
     properties, the `setUnknownProperty()` method and property observers.
 

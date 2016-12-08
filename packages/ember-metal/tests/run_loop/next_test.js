@@ -1,4 +1,4 @@
-import run from 'ember-metal/run_loop';
+import run from '../../run_loop';
 
 QUnit.module('run.next');
 
@@ -31,9 +31,8 @@ asyncTest('callback should be called from within separate loop', function() {
 });
 
 asyncTest('multiple calls to run.next share coalesce callbacks into same run loop', function() {
-  let firstRunLoop, secondRunLoop, thirdRunLoop;
+  let secondRunLoop, thirdRunLoop;
   run(() => {
-    firstRunLoop = run.currentRunLoop;
     run.next(() => secondRunLoop = run.currentRunLoop);
     run.next(() => thirdRunLoop  = run.currentRunLoop);
   });

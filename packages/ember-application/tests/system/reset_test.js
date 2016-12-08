@@ -1,12 +1,8 @@
-import run from 'ember-metal/run_loop';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import EmberApplication from 'ember-application/system/application';
-import EmberObject from 'ember-runtime/system/object';
-import Router from 'ember-routing/system/router';
-import Controller from 'ember-runtime/controllers/controller';
-import jQuery from 'ember-views/system/jquery';
-import Registry from 'container/registry';
+import { run, get, set } from 'ember-metal';
+import EmberApplication from '../../system/application';
+import { Object as EmberObject, Controller } from 'ember-runtime';
+import { Router } from 'ember-routing';
+import { Registry } from 'container';
 
 let application, Application;
 
@@ -197,10 +193,6 @@ QUnit.test('When an application with advance/deferReadiness is reset, the app do
 });
 
 QUnit.test('With ember-data like initializer and constant', function() {
-  let readyCallCount;
-
-  readyCallCount = 0;
-
   let DS = {
     Store: EmberObject.extend({
       init() {
@@ -239,20 +231,4 @@ QUnit.test('With ember-data like initializer and constant', function() {
 
   ok(DS.defaultStore, 'still has defaultStore');
   ok(application.__container__.lookup('store:main'), 'store is still present');
-});
-
-QUnit.test('Ensure that the hashchange event listener is removed', function() {
-  let listeners;
-
-  jQuery(window).off('hashchange'); // ensure that any previous listeners are cleared
-
-  application = run(() => Application.create());
-
-  listeners = jQuery._data(jQuery(window)[0], 'events');
-  equal(listeners['hashchange'].length, 1, 'hashchange event listener was set up');
-
-  application.reset();
-
-  listeners = jQuery._data(jQuery(window)[0], 'events');
-  equal(listeners['hashchange'].length, 1, 'hashchange event only exists once');
 });

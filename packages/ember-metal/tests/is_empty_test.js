@@ -1,8 +1,8 @@
-import isEmpty from 'ember-metal/is_empty';
+import isEmpty from '../is_empty';
 import {
   Map,
   OrderedSet
-} from 'ember-metal/map';
+} from '../map';
 
 QUnit.module('Ember.isEmpty');
 

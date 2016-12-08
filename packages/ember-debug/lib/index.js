@@ -1,23 +1,23 @@
-import Ember from 'ember-metal/core'; // reexports
-import { ENV } from 'ember-environment';
-import { isTesting } from 'ember-metal/testing';
-import {
+import Ember, { // reexports
+  isTesting,
   warn,
   deprecate,
   debug,
-  setDebugFunction
-} from 'ember-metal/debug';
-import isEnabled, { FEATURES, DEFAULT_FEATURES } from 'ember-metal/features';
-import EmberError from 'ember-metal/error';
+  setDebugFunction,
+  isFeatureEnabled,
+  FEATURES,
+  DEFAULT_FEATURES,
+  Error as EmberError
+} from 'ember-metal';
+import { ENV, environment } from 'ember-environment';
 import Logger from 'ember-console';
 
-import { environment } from 'ember-environment';
 import _deprecate, {
   registerHandler as registerDeprecationHandler
-} from 'ember-debug/deprecate';
+} from './deprecate';
 import _warn, {
   registerHandler as registerWarnHandler
-} from 'ember-debug/warn';
+} from './warn';
 
 /**
 @module ember
@@ -153,6 +153,10 @@ setDebugFunction('debugSeal', function debugSeal(obj) {
   Object.seal(obj);
 });
 
+setDebugFunction('debugFreeze', function debugFreeze(obj) {
+  Object.freeze(obj);
+});
+
 setDebugFunction('deprecate', _deprecate);
 
 setDebugFunction('warn', _warn);
@@ -188,7 +192,7 @@ if (!isTesting()) {
   FEATURES['features-stripped-test'] = true;
   let featuresWereStripped = true;
 
-  if (isEnabled('features-stripped-test')) {
+  if (isFeatureEnabled('features-stripped-test')) {
     featuresWereStripped = false;
   }
 
@@ -235,7 +239,7 @@ Ember.Debug = { };
       // defer to whatever handler was registered before this one
       next(message, options);
     }
-  }
+  });
   ```
 
   The handler function takes the following arguments:

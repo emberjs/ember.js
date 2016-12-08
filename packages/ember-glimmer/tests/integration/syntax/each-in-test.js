@@ -1,57 +1,70 @@
-import { set } from 'ember-metal/property_set';
-import { get } from 'ember-metal/property_get';
+import { set, get } from 'ember-metal';
 import { strip } from '../../utils/abstract-test-case';
 import { applyMixins } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
-import EmberObject from 'ember-runtime/system/object';
+import { moduleFor } from '../../utils/test-case';
+import { ObjectProxy, Object as EmberObject } from 'ember-runtime';
 
 import {
-  BasicConditionalsTest,
-  SyntaxCondtionalTestHelpers,
+  TogglingSyntaxConditionalsTest,
   TruthyGenerator,
   FalsyGenerator
 } from '../../utils/shared-conditional-tests';
 
-class EachInTest extends BasicConditionalsTest {
-
-  get truthyValue() { return { 'Not Empty': 1 }; }
-  get falsyValue() { return {}; }
-
-}
-
-applyMixins(EachInTest,
-
-  SyntaxCondtionalTestHelpers,
-
-  new TruthyGenerator([
-    // TODO: figure out what the rest of the cases are
-    { foo: 1 },
-    EmberObject.create({ 'Not Empty': 1 }),
-    ObjectProxy.create({ content: { 'Not empty': 1 } }),
-    ObjectProxy.create({ content: Object.create({}) }),
-    ObjectProxy.create({ content: EmberObject.create() })
-  ]),
-
-  new FalsyGenerator([
-    // TODO: figure out what the rest of the cases are
-    {},
-    Object.create({ 'Not Empty': 1 }),
-    Object.create({}),
-    EmberObject.create(),
-    ObjectProxy.create({}),
-    // TODO: These 2 should be falsy but are returning true
-    //ObjectProxy.create({ content: null }),
-    //ObjectProxy.create({ content: {} }),
-    undefined,
-    null
-  ])
-);
-
-moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
+class EachInTest extends TogglingSyntaxConditionalsTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#each-in ${cond} as |key|}}${truthy}{{else}}${falsy}{{/each-in}}`;
+  }
+
+}
+
+function EmptyFunction() {}
+
+function NonEmptyFunction() {}
+NonEmptyFunction.foo = 'bar';
+
+class EmptyConstructor {}
+
+class NonEmptyConstructor {}
+NonEmptyConstructor.foo = 'bar';
+
+class BasicEachInTest extends EachInTest {}
+
+applyMixins(BasicEachInTest,
+
+  new TruthyGenerator([
+    { foo: 1 },
+    EmberObject.create({ 'Not Empty': 1 }),
+    [1],
+    NonEmptyFunction,
+    NonEmptyConstructor
+  ]),
+
+  new FalsyGenerator([
+    null,
+    undefined,
+    false,
+    '',
+    0,
+    [],
+    EmptyFunction,
+    EmptyConstructor,
+    {},
+    Object.create(null),
+    Object.create({}),
+    Object.create({ 'Not Empty': 1 }),
+    EmberObject.create()
+  ])
+);
+
+moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
+
+  get truthyValue() {
+    return { 'Not Empty': 1 };
+  }
+
+  get falsyValue() {
+    return {};
   }
 
   [`@test it repeats the given block for each item in the hash`]() {
@@ -80,10 +93,6 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
     this.runTask(() => {
       set(this.context, 'categories.Smartphones', 100);
       set(this.context, 'categories.Tweets', 443115);
-
-      // {{#each-in}} does not currently observe internal mutations to the hash
-      // so we manually trigger a rerender. This behavior may change in the future.
-      this.rerender();
     });
 
     this.assertHTML(strip`
@@ -103,6 +112,114 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
       <ul>
         <li>Smartphones: 8203</li>
         <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+  }
+
+  [`@test it can render sub-paths of each item`]() {
+    this.render(strip`
+      <ul>
+        {{#each-in categories as |category data|}}
+          <li>{{category}}: {{data.reports.unitsSold}}</li>
+        {{/each-in}}
+      </ul>
+    `, {
+      categories: {
+        'Smartphones': { reports: { unitsSold: 8203 } },
+        'JavaScript Frameworks': { reports: { unitsSold: Infinity } }
+      }
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      set(this.context, 'categories.Smartphones.reports.unitsSold', 100);
+      set(this.context, 'categories.Tweets', { reports: { unitsSold: 443115 } });
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 100</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Tweets: 443115</li>
+      </ul>
+    `);
+
+    this.runTask(() => set(this.context, 'categories', {
+      'Smartphones': { reports: { unitsSold: 8203 } },
+      'JavaScript Frameworks': { reports: { unitsSold: Infinity } }
+    }));
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+  }
+
+  [`@test it can render duplicate items`]() {
+    this.render(strip`
+      <ul>
+        {{#each-in categories key='@identity' as |category count|}}
+          <li>{{category}}: {{count}}</li>
+        {{/each-in}}
+      </ul>
+    `, {
+      categories: {
+        'Smartphones': 8203,
+        'Tablets': 8203,
+        'JavaScript Frameworks': Infinity,
+        'Bugs': Infinity
+      }
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>Tablets: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Bugs: Infinity</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      set(this.context, 'categories.Smartphones', 100);
+      set(this.context, 'categories.Tweets', 443115);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 100</li>
+        <li>Tablets: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Bugs: Infinity</li>
+        <li>Tweets: 443115</li>
+      </ul>
+    `);
+
+    this.runTask(() => set(this.context, 'categories', {
+      'Smartphones': 8203,
+      'Tablets': 8203,
+      'JavaScript Frameworks': Infinity,
+      'Bugs': Infinity
+    }));
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>Tablets: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Bugs: Infinity</li>
       </ul>
     `);
   }
@@ -188,10 +305,6 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
     this.runTask(() => {
       set(protoCategories, 'Robots', 666);
       set(categories, 'Tweets', 443115);
-
-      // {{#each-in}} does not currently observe internal mutations to the hash
-      // so we manually trigger a rerender. This behavior may change in the future.
-      this.rerender();
     });
 
     this.assertHTML(strip`
@@ -216,7 +329,7 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
     `);
   }
 
-  [`@test it does not observe property mutations on the object`]() {
+  [`@test it does not observe direct property mutations (not going through set) on the object`]() {
     this.render(strip`
       <ul>
         {{#each-in categories as |category count|}}
@@ -270,7 +383,6 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
         'Smartphones': 8203,
         'JavaScript Frameworks': Infinity
       });
-      this.rerender();
     });
 
     this.assertHTML(strip`
@@ -281,9 +393,6 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
     `);
   }
 
-});
-
-moduleFor('Syntax test: {{#each-in}} undefined path', class extends RenderingTest {
   ['@test keying off of `undefined` does not render'](assert) {
     this.render(strip`
       {{#each-in foo.bar.baz as |thing|}}
@@ -304,4 +413,159 @@ moduleFor('Syntax test: {{#each-in}} undefined path', class extends RenderingTes
 
     this.assertText('');
   }
+
+  ['@test it iterate over array with `in` instead of walking over elements'](assert) {
+    let arr = [1, 2, 3];
+    arr.foo = 'bar';
+
+    this.render(strip`
+      {{#each-in arr as |key value|}}
+        [{{key}}:{{value}}]
+      {{/each-in}}`, { arr });
+
+    this.assertText('[0:1][1:2][2:3][foo:bar]');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('[0:1][1:2][2:3][foo:bar]');
+
+    this.runTask(() => {
+      set(arr, 'zomg', 'lol');
+    });
+
+    this.assertText('[0:1][1:2][2:3][foo:bar][zomg:lol]');
+
+    arr = [1, 2, 3];
+    arr.foo = 'bar';
+
+    this.runTask(() => set(this.context, 'arr', arr));
+
+    this.assertText('[0:1][1:2][2:3][foo:bar]');
+  }
+
+});
+
+class EachInEdgeCasesTest extends EachInTest {}
+
+applyMixins(EachInEdgeCasesTest,
+
+  new FalsyGenerator([
+    true,
+    1,
+    'hello'
+  ])
+
+);
+
+moduleFor('Syntax test: {{#each-in}} edge cases', class extends EachInEdgeCasesTest {
+
+  get truthyValue() {
+    return { 'Not Empty': 1 };
+  }
+
+  get falsyValue() {
+    return {};
+  }
+
+});
+
+class EachInProxyTest extends EachInTest {}
+
+applyMixins(EachInProxyTest,
+
+  new TruthyGenerator([
+    ObjectProxy.create({ content: { 'Not empty': 1 } })
+  ]),
+
+  new FalsyGenerator([
+    ObjectProxy.create(),
+    ObjectProxy.create({ content: null }),
+    ObjectProxy.create({ content: {} }),
+    ObjectProxy.create({ content: Object.create(null) }),
+    ObjectProxy.create({ content: Object.create({}) }),
+    ObjectProxy.create({ content: Object.create({ 'Not Empty': 1 }) }),
+    ObjectProxy.create({ content: EmberObject.create() })
+  ])
+);
+
+moduleFor('Syntax test: {{#each-in}} with `ObjectProxy`', class extends EachInProxyTest {
+
+  get truthyValue() {
+    return ObjectProxy.create({ content: { 'Not Empty': 1 } });
+  }
+
+  get falsyValue() {
+    return ObjectProxy.create({ content: null });
+  }
+
+  ['@test it iterates over the content, not the proxy']() {
+    let content = {
+      'Smartphones': 8203,
+      'JavaScript Frameworks': Infinity
+    };
+
+    let proxy = ObjectProxy.create({
+      content,
+      foo: 'bar'
+    });
+
+    this.render(strip`
+      <ul>
+        {{#each-in categories as |category count|}}
+          <li>{{category}}: {{count}}</li>
+        {{/each-in}}
+      </ul>
+    `, { categories: proxy });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      set(proxy, 'content.Smartphones', 100);
+      set(proxy, 'content.Tweets', 443115);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 100</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Tweets: 443115</li>
+      </ul>
+    `);
+
+    this.runTask(() => {
+      set(proxy, 'content', {
+        'Smartphones': 100,
+        'Tablets': 20
+      });
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 100</li>
+        <li>Tablets: 20</li>
+      </ul>
+    `);
+
+    this.runTask(() => set(this.context, 'categories', ObjectProxy.create({
+      content: {
+        'Smartphones': 8203,
+        'JavaScript Frameworks': Infinity
+      }
+    })));
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+  }
+
 });

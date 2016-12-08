@@ -1,21 +1,23 @@
 import Ember from 'ember';
-import <%= classifiedModuleName %>Initializer from '<%= dasherizedModulePrefix %>/initializers/<%= dasherizedModuleName %>';
+import { initialize } from '<%= dasherizedModulePrefix %>/initializers/<%= dasherizedModuleName %>';
 import { module, test } from 'qunit';
-
-let application;
+import destroyApp from '../../helpers/destroy-app';
 
 module('<%= friendlyTestName %>', {
   beforeEach() {
-    Ember.run(function() {
-      application = Ember.Application.create();
-      application.deferReadiness();
+    Ember.run(() => {
+      this.application = Ember.Application.create();
+      this.application.deferReadiness();
     });
+  },
+  afterEach() {
+    destroyApp(this.application);
   }
 });
 
 // Replace this with your real tests.
 test('it works', function(assert) {
-  <%= classifiedModuleName %>Initializer.initialize(application);
+  initialize(this.application);
 
   // you would normally confirm the results of the initializer here
   assert.ok(true);

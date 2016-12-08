@@ -192,7 +192,7 @@ while (true) {
 
 try {
   // code that throws an error
-} catch(e) {
+} catch (e) {
   // code that handles an error
 }
 ```

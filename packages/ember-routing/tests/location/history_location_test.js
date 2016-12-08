@@ -1,6 +1,5 @@
-import { set } from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
-import HistoryLocation from 'ember-routing/location/history_location';
+import { set, run } from 'ember-metal';
+import HistoryLocation from '../../location/history_location';
 
 let FakeHistory, HistoryTestLocation, location;
 
@@ -189,6 +188,22 @@ QUnit.test('HistoryLocation.getURL() returns the current url, does not remove ro
   equal(location.getURL(), '/foo/bar/baz');
 });
 
+QUnit.test('HistoryLocation.getURL() will not remove the rootURL when only a partial match', function() {
+  expect(1);
+
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+      set(this, 'location', mockBrowserLocation('/bars/baz'));
+      set(this, 'rootURL', '/bar/');
+    }
+  });
+
+  createLocation();
+
+  equal(location.getURL(), '/bars/baz');
+});
+
 QUnit.test('HistoryLocation.getURL() returns the current url, does not remove baseURL if its not at start of url', function() {
   expect(1);
 
@@ -204,6 +219,22 @@ QUnit.test('HistoryLocation.getURL() returns the current url, does not remove ba
   createLocation();
 
   equal(location.getURL(), '/foo/bar/baz');
+});
+
+QUnit.test('HistoryLocation.getURL() will not remove the baseURL when only a partial match', function() {
+  expect(1);
+
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+      set(this, 'location', mockBrowserLocation('/bars/baz'));
+      set(this, 'baseURL', '/bar/');
+    }
+  });
+
+  createLocation();
+
+  equal(location.getURL(), '/bars/baz');
 });
 
 QUnit.test('HistoryLocation.getURL() includes location.search', function() {

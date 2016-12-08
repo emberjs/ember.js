@@ -15,9 +15,9 @@ module.exports = useTestFrameworkDetector({
       name: 'test-type',
       type: ['integration', 'unit'],
       default: 'integration',
-      aliases:[
-        { 'i': 'integration'},
-        { 'u': 'unit'},
+      aliases: [
+        { 'i': 'integration' },
+        { 'u': 'unit' },
         { 'integration': 'integration' },
         { 'unit': 'unit' }
       ]

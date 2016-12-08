@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { decamelize } from 'ember-runtime/system/string';
+import { decamelize } from '../../../system/string';
 
 QUnit.module('EmberStringUtils.decamelize');
 

@@ -1,45 +1,127 @@
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
+import { get, set, propertyDidChange } from 'ember-metal';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import { removeAt } from 'ember-runtime/mixins/mutable_array';
+import { A as emberA, ArrayProxy, RSVP } from 'ember-runtime';
+import { Component } from '../../utils/helpers';
 
 import {
-  BasicConditionalsTest,
-  SyntaxCondtionalTestHelpers,
+  TogglingSyntaxConditionalsTest,
   TruthyGenerator,
   FalsyGenerator,
   ArrayTestCases
 } from '../../utils/shared-conditional-tests';
 
-class EachTest extends BasicConditionalsTest {
+class ArrayLike {
+  constructor(content) {
+    this._array = content;
+  }
+
+  get length() {
+    return this._array.length;
+  }
+
+  forEach(callback) {
+    this._array.forEach(callback);
+  }
+
+  // The following methods are APIs used by the tests
+
+  objectAt(idx) {
+    return this._array[idx];
+  }
+
+  clear() {
+    this._array.length = 0;
+    this.arrayContentDidChange();
+  }
+
+  replace(idx, del, ins) {
+    this._array.splice(idx, del, ...ins);
+    this.arrayContentDidChange();
+  }
+
+  unshiftObject(obj) {
+    this._array.unshift(obj);
+    this.arrayContentDidChange();
+  }
+
+  unshiftObjects(arr) {
+    this._array.unshift(...arr);
+    this.arrayContentDidChange();
+  }
+
+  pushObject(obj) {
+    this._array.push(obj);
+    this.arrayContentDidChange();
+  }
+
+  pushObjects(arr) {
+    this._array.push(...arr);
+    this.arrayContentDidChange();
+  }
+
+  shiftObject() {
+    let obj = this._array.shift();
+    this.arrayContentDidChange();
+    return obj;
+  }
+
+  popObject() {
+    let obj = this._array.pop();
+    this.arrayContentDidChange();
+    return obj;
+  }
+
+  insertAt(idx, obj) {
+    this._array.splice(idx, 0, obj);
+    this.arrayContentDidChange();
+  }
+
+  removeAt(idx, len = 1) {
+    this._array.splice(idx, len);
+    this.arrayContentDidChange();
+  }
+
+  arrayContentDidChange() {
+    propertyDidChange(this, '[]');
+    propertyDidChange(this, 'length');
+  }
+
+}
+
+class TogglingEachTest extends TogglingSyntaxConditionalsTest {
 
   get truthyValue() { return ['non-empty']; }
   get falsyValue() { return []; }
 
 }
 
-applyMixins(EachTest,
+class BasicEachTest extends TogglingEachTest {}
 
-  SyntaxCondtionalTestHelpers,
+applyMixins(BasicEachTest,
 
   new TruthyGenerator([
-    // TODO: figure out what the rest of the cases are
-    ['hello']
+    ['hello'],
+    emberA(['hello']),
+    new ArrayLike(['hello']),
+    ArrayProxy.create({ content: ['hello'] }),
+    ArrayProxy.create({ content: emberA(['hello']) })
   ]),
 
   new FalsyGenerator([
-    // TODO: figure out what the rest of the cases are
-    [],
-    undefined
+    null,
+    undefined,
+    false,
+    '',
+    0,
+    []
   ]),
 
   ArrayTestCases
 
 );
 
-moduleFor('Syntax test: {{#each}}', class extends EachTest {
+moduleFor('Syntax test: toggling {{#each}}', class extends BasicEachTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#each ${cond}}}${truthy}{{else}}${falsy}{{/each}}`;
@@ -47,16 +129,127 @@ moduleFor('Syntax test: {{#each}}', class extends EachTest {
 
 });
 
-moduleFor('Syntax test: {{#each as}}', class extends EachTest {
+moduleFor('Syntax test: toggling {{#each as}}', class extends BasicEachTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#each ${cond} as |test|}}${truthy}{{else}}${falsy}{{/each}}`;
   }
 
+});
+
+class EachEdgeCasesTest extends TogglingEachTest {}
+
+applyMixins(EachEdgeCasesTest,
+
+  new FalsyGenerator([
+    true,
+    'hello',
+    1,
+    Object,
+    function() {},
+    {},
+    { foo: 'bar' },
+    Object.create(null),
+    Object.create({}),
+    Object.create({ foo: 'bar' })
+  ])
+
+);
+
+moduleFor('Syntax test: toggling {{#each}}', class extends EachEdgeCasesTest {
+
+  templateFor({ cond, truthy, falsy }) {
+    return `{{#each ${cond}}}${truthy}{{else}}${falsy}{{/each}}`;
+  }
+
+});
+
+moduleFor('Syntax test: toggling {{#each as}}', class extends EachEdgeCasesTest {
+
+  templateFor({ cond, truthy, falsy }) {
+    return `{{#each ${cond} as |test|}}${truthy}{{else}}${falsy}{{/each}}`;
+  }
+
+});
+
+class AbstractEachTest extends RenderingTest {
+
+  /* abstract */
+  makeList() {
+    // this.list = this.delegate = ...;
+    throw new Error('Not implemented: `makeList`');
+  }
+
+  replaceList(list) {
+    this.runTask(() => set(this.context, 'list', this.makeList(list)));
+  }
+
+  forEach(callback) {
+    return this.delegate.forEach(callback);
+  }
+
+  objectAt(idx) {
+    return this.delegate.objectAt(idx);
+  }
+
+  clear() {
+    return this.delegate.clear();
+  }
+
+  replace(idx, del, ins) {
+    return this.delegate.replace(idx, del, ins);
+  }
+
+  unshiftObject(obj) {
+    return this.delegate.unshiftObject(obj);
+  }
+
+  unshiftObjects(arr) {
+    return this.delegate.unshiftObjects(arr);
+  }
+
+  pushObject(obj) {
+    return this.delegate.pushObject(obj);
+  }
+
+  pushObjects(arr) {
+    return this.delegate.pushObjects(arr);
+  }
+
+  shiftObject() {
+    return this.delegate.shiftObject();
+  }
+
+  popObject() {
+    return this.delegate.popObject();
+  }
+
+  insertAt(idx, obj) {
+    return this.delegate.insertAt(idx, obj);
+  }
+
+  removeAt(idx, len) {
+    return this.delegate.removeAt(idx, len);
+  }
+
+  render(template, context = {}) {
+    if (this.list === undefined) {
+      throw new Error('Must call `this.makeList()` before calling this.render()');
+    }
+
+    context.list = this.list;
+
+    return super.render(template, context);
+  }
+
+}
+
+class SingleEachTest extends AbstractEachTest {
+
   ['@test it repeats the given block for each item in the array']() {
-    this.render(`{{#each list as |item|}}{{item.text}}{{else}}Empty{{/each}}`, {
-      list: emberA([{ text: 'hello' }])
-    });
+    this.makeList([{ text: 'hello' }]);
+
+    this.render(`{{#each list as |item|}}{{item.text}}{{else}}Empty{{/each}}`);
 
     this.assertText('hello');
 
@@ -64,239 +257,277 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
 
     this.assertText('hello');
 
-    this.runTask(() => set(get(this.context, 'list').objectAt(0), 'text', 'Hello'));
+    this.runTask(() => set(this.objectAt(0), 'text', 'Hello'));
 
     this.assertText('Hello');
 
     this.runTask(() => {
-      let list = get(this.context, 'list');
-      list.pushObject({ text: ' ' });
-      list.pushObject({ text: 'World' });
+      this.pushObject({ text: ' ' });
+      this.pushObject({ text: 'World' });
     });
 
     this.assertText('Hello World');
 
     this.runTask(() => {
-      let list = get(this.context, 'list');
-      list.pushObject({ text: 'Earth' });
-      removeAt(list, 1);
-      list.insertAt(1, { text: 'Globe' });
+      this.pushObject({ text: 'Earth' });
+      this.removeAt(1);
+      this.insertAt(1, { text: 'Globe' });
     });
 
     this.assertText('HelloGlobeWorldEarth');
 
     this.runTask(() => {
-      let list = get(this.context, 'list');
-      list.pushObject({ text: 'Planet' });
-      removeAt(list, 1);
-      list.insertAt(1, { text: ' ' });
-      list.pushObject({ text: ' ' });
-      list.pushObject({ text: 'Earth' });
-      removeAt(list, 3);
+      this.pushObject({ text: 'Planet' });
+      this.removeAt(1);
+      this.insertAt(1, { text: ' ' });
+      this.pushObject({ text: ' ' });
+      this.pushObject({ text: 'Earth' });
+      this.removeAt(3);
     });
 
     this.assertText('Hello WorldPlanet Earth');
 
     this.runTask(() => {
-      let list = get(this.context, 'list');
-      list.pushObject({ text: 'Globe' });
-      removeAt(list, 1);
-      list.insertAt(1, { text: ' ' });
-      list.pushObject({ text: ' ' });
-      list.pushObject({ text: 'World' });
-      removeAt(list, 2);
+      this.pushObject({ text: 'Globe' });
+      this.removeAt(1);
+      this.insertAt(1, { text: ' ' });
+      this.pushObject({ text: ' ' });
+      this.pushObject({ text: 'World' });
+      this.removeAt(2);
     });
 
     this.assertText('Hello Planet EarthGlobe World');
 
-    this.runTask(() => get(this.context, 'list').replace(2, 4, { text: 'my' }));
+    this.runTask(() => this.replace(2, 4, { text: 'my' }));
 
     this.assertText('Hello my World');
 
-    this.runTask(() => get(this.context, 'list').clear());
+    this.runTask(() => this.clear());
 
     this.assertText('Empty');
 
-    this.runTask(() => set(this.context, 'list', [{ text: 'hello' }]));
+    this.replaceList([{ text: 'hello' }]);
 
     this.assertText('hello');
   }
 
   ['@test it receives the index as the second parameter']() {
-    this.render(`{{#each list as |item index|}}{{index}}. {{item.text}}{{/each}}`, {
-      list: emberA([{ text: 'hello' }, { text: 'world' }])
-    });
+    this.makeList([{ text: 'hello' }, { text: 'world' }]);
 
-    this.assertText('0. hello1. world');
+    this.render(`{{#each list as |item index|}}[{{index}}. {{item.text}}]{{/each}}`);
+
+    this.assertText('[0. hello][1. world]');
 
     this.assertStableRerender();
 
-    this.runTask(() => get(this.context, 'list').insertAt(1, { text: 'my' }));
+    this.runTask(() => this.insertAt(1, { text: 'my' }));
 
-    this.assertText('0. hello1. my2. world');
+    this.assertText('[0. hello][1. my][2. world]');
 
-    this.runTask(() => set(this.context, 'list', [{ text: 'hello' }, { text: 'world' }]));
+    this.replaceList([{ text: 'hello' }, { text: 'world' }]);
 
-    this.assertText('0. hello1. world');
+    this.assertText('[0. hello][1. world]');
   }
 
   ['@test it accepts a string key']() {
-    this.render(`{{#each list key='text' as |item|}}{{item.text}}{{/each}}`, {
-      list: emberA([{ text: 'hello' }, { text: 'world' }])
-    });
+    this.makeList([{ text: 'hello' }, { text: 'world' }]);
+
+    this.render(`{{#each list key='text' as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('helloworld');
 
     this.assertStableRerender();
 
-    this.runTask(() => get(this.context, 'list').pushObject({ text: 'again' }));
+    this.runTask(() => this.pushObject({ text: 'again' }));
 
     this.assertText('helloworldagain');
 
-    this.runTask(() => set(this.context, 'list', [{ text: 'hello' }, { text: 'world' }]));
+    this.replaceList([{ text: 'hello' }, { text: 'world' }]);
 
     this.assertText('helloworld');
   }
 
   ['@test it accepts a numeric key']() {
-    this.render(`{{#each list key='id' as |item|}}{{item.id}}{{/each}}`, {
-      list: emberA([{ id: 1 }, { id: 2 }])
-    });
+    this.makeList([{ id: 1 }, { id: 2 }]);
+
+    this.render(`{{#each list key='id' as |item|}}{{item.id}}{{/each}}`);
 
     this.assertText('12');
 
     this.assertStableRerender();
 
-    this.runTask(() => get(this.context, 'list').pushObject({ id: 3 }));
+    this.runTask(() => this.pushObject({ id: 3 }));
 
     this.assertText('123');
 
-    this.runTask(() => set(this.context, 'list', [{ id: 1 }, { id: 2 }]));
+    this.replaceList([{ id: 1 }, { id: 2 }]);
 
     this.assertText('12');
   }
 
   ['@test it can specify @index as the key']() {
-    this.render(`{{#each list key='@index' as |item|}}{{item.id}}{{/each}}`, {
-      list: emberA([{ id: 1 }, { id: 2 }])
-    });
+    this.makeList([{ id: 1 }, { id: 2 }]);
+
+    this.render(`{{#each list key='@index' as |item|}}{{item.id}}{{/each}}`);
 
     this.assertText('12');
 
     this.assertStableRerender();
 
-    this.runTask(() => get(this.context, 'list').pushObject({ id: 3 }));
+    this.runTask(() => this.pushObject({ id: 3 }));
 
     this.assertText('123');
 
-    this.runTask(() => set(this.context, 'list', [{ id: 1 }, { id: 2 }]));
+    this.replaceList([{ id: 1 }, { id: 2 }]);
 
     this.assertText('12');
   }
 
   ['@test it can specify @identity as the key for arrays of primitives']() {
-    this.render(`{{#each list key='@identity' as |item|}}{{item}}{{/each}}`, {
-      list: emberA([1, 2])
-    });
+    this.makeList([1, 2]);
+
+    this.render(`{{#each list key='@identity' as |item|}}{{item}}{{/each}}`);
 
     this.assertText('12');
 
     this.assertStableRerender();
 
-    this.runTask(() => get(this.context, 'list').pushObject(3));
+    this.runTask(() => this.pushObject(3));
 
     this.assertText('123');
 
-    this.runTask(() => set(this.context, 'list', [1, 2]));
+    this.replaceList([1, 2]);
 
     this.assertText('12');
   }
 
   ['@test it can specify @identity as the key for mixed arrays of objects and primitives']() {
-    this.render(`{{#each list key='@identity' as |item|}}{{if item.id item.id item}}{{/each}}`, {
-      list: emberA([1, { id: 2 }, 3])
-    });
+    this.makeList([1, { id: 2 }, 3]);
+
+    this.render(`{{#each list key='@identity' as |item|}}{{if item.id item.id item}}{{/each}}`);
 
     this.assertText('123');
 
     this.assertStableRerender();
 
-    this.runTask(() => get(this.context, 'list').insertAt(2, { id: 4 }));
+    this.runTask(() => this.insertAt(2, { id: 4 }));
 
     this.assertText('1243');
 
-    this.runTask(() => set(this.context, 'list', [1, { id: 2 }, 3]));
+    this.replaceList([1, { id: 2 }, 3]);
 
     this.assertText('123');
   }
 
-  ['@htmlbars it can render duplicate primitive items']() {
-    this.render(`{{#each list as |item|}}{{item}}{{/each}}`, {
-      list: emberA(['a', 'a', 'a'])
-    });
+  ['@test it can render duplicate primitive items']() {
+    this.makeList(['a', 'a', 'a']);
+
+    this.render(`{{#each list as |item|}}{{item}}{{/each}}`);
 
     this.assertText('aaa');
 
     this.assertStableRerender();
 
-    this.runTask(() => get(this.context, 'list').pushObject('a'));
+    this.runTask(() => this.pushObject('a'));
 
     this.assertText('aaaa');
 
-    this.runTask(() => get(this.context, 'list').pushObject('a'));
+    this.runTask(() => this.pushObject('a'));
 
     this.assertText('aaaaa');
 
-    this.runTask(() => set(this.context, 'list', ['a', 'a', 'a']));
+    this.replaceList(['a', 'a', 'a']);
 
     this.assertText('aaa');
   }
 
-  ['@htmlbars it can render duplicate objects']() {
-    let duplicateItem = { text: 'foo' };
-    this.render(`{{#each list as |item|}}{{item.text}}{{/each}}`, {
-      list: emberA([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }])
+  [`@test updating and setting within #each`](assert) {
+    this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
+
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        this.isEven = true;
+        this.tagName = 'li';
+      },
+
+      _isEven() {
+        this.set('isEven', this.get('item.value') % 2 === 0);
+      },
+
+      didUpdate() {
+        this._isEven();
+      }
     });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{#if isEven}}{{item.value}}{{/if}}' });
+
+    this.render(strip`
+      {{#each list as |item|}}
+        <li>Prev</li>
+        {{foo-bar item=item}}
+        <li>Next</li>
+      {{/each}}
+    `);
+
+    this.assertText('Prev1NextPrev2NextPrev3Next');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context.list.objectAt(0), 'value', 3));
+
+    this.assertText('PrevNextPrev2NextPrev3Next');
+
+    this.replaceList([{ value: 1 }, { value: 2 }, { value: 3 }]);
+
+    this.assertText('Prev1NextPrev2NextPrev3Next');
+  }
+
+  ['@test it can render duplicate objects']() {
+    let duplicateItem = { text: 'foo' };
+
+    this.makeList([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }]);
+
+    this.render(`{{#each list as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('foofoobarbaz');
 
     this.assertStableRerender();
 
-    this.runTask(() => get(this.context, 'list').pushObject(duplicateItem));
+    this.runTask(() => this.pushObject(duplicateItem));
 
     this.assertText('foofoobarbazfoo');
 
-    this.runTask(() => get(this.context, 'list').pushObject(duplicateItem));
+    this.runTask(() => this.pushObject(duplicateItem));
 
     this.assertText('foofoobarbazfoofoo');
 
-    this.runTask(() => set(this.context, 'list', [duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }]));
+    this.replaceList([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }]);
 
     this.assertText('foofoobarbaz');
   }
 
   [`@test it maintains DOM stability when condition changes between objects with the same keys`]() {
-    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`, {
-      list: emberA([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }])
-    });
+    this.makeList([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]);
+
+    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('Hello world');
 
     this.takeSnapshot();
 
     this.runTask(() => {
-      let list = get(this.context, 'list');
-      list.popObject();
-      list.popObject();
-      list.pushObject({ text: ' ' });
-      list.pushObject({ text: 'world' });
+      this.popObject();
+      this.popObject();
+      this.pushObject({ text: ' ' });
+      this.pushObject({ text: 'world' });
     });
 
     this.assertText('Hello world');
 
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'list', [{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]));
+    this.replaceList([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]);
 
     this.assertText('Hello world');
 
@@ -304,61 +535,64 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
   }
 
   [`@test it maintains DOM stability for stable keys when list is updated`]() {
-    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`, {
-      list: emberA([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }])
-    });
+    this.makeList([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]);
+
+    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('Hello world');
 
     this.assertStableRerender();
 
-    let oldSnapshot = this.snapshot;
+    let oldSnapshot = this.takeSnapshot();
 
     this.runTask(() => {
-      let list = get(this.context, 'list');
-      list.unshiftObject({ text: ', ' });
-      list.unshiftObject({ text: 'Hi' });
-      list.pushObject({ text: '!' });
-      list.pushObject({ text: 'earth' });
+      this.unshiftObject({ text: ', ' });
+      this.unshiftObject({ text: 'Hi' });
+      this.pushObject({ text: '!' });
+      this.pushObject({ text: 'earth' });
     });
 
     this.assertText('Hi, Hello world!earth');
 
     this.assertPartialInvariants(2, 5);
 
-    this.runTask(() => set(this.context, 'list', [{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]));
+    this.replaceList([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]);
 
     this.assertText('Hello world');
+
     this.assertInvariants(oldSnapshot, this.takeSnapshot());
   }
 
-  [`@htmlbars it renders all items with duplicate key values`]() {
-    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`, {
-      list: emberA([{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }])
-    });
+  [`@test it renders all items with duplicate key values`]() {
+    this.makeList([{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }]);
+
+    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('HelloHelloHello');
 
-    let list = get(this.context, 'list');
-
     this.runTask(() => {
-      list.forEach(hash => set(hash, 'text', 'Goodbye'));
+      this.forEach(hash => set(hash, 'text', 'Goodbye'));
     });
 
     this.assertText('GoodbyeGoodbyeGoodbye');
+
+    this.replaceList([{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }]);
+
+    this.assertText('HelloHelloHello');
   }
 
   ['@test context is not changed to the inner scope inside an {{#each as}} block']() {
-    this.render(`{{name}}-{{#each people as |person|}}{{name}}{{/each}}-{{name}}`, {
-      name: 'Joel',
-      people: emberA([{ name: 'Chad' }, { name: 'Zack' }, { name: 'Asa' }])
+    this.makeList([{ name: 'Chad' }, { name: 'Zack' }, { name: 'Asa' }]);
+
+    this.render(`{{name}}-{{#each list as |person|}}{{name}}{{/each}}-{{name}}`, {
+      name: 'Joel'
     });
 
     this.assertText('Joel-JoelJoelJoel-Joel');
 
     this.assertStableRerender();
 
-    this.runTask(() => get(this.context, 'people').shiftObject());
+    this.runTask(() => this.shiftObject());
 
     this.assertText('Joel-JoelJoel-Joel');
 
@@ -366,18 +600,17 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
 
     this.assertText('Godfrey-GodfreyGodfrey-Godfrey');
 
-    this.runTask(() => {
-      set(this.context, 'name', 'Joel');
-      set(this.context, 'people', [{ name: 'Chad' }, { name: 'Zack' }, { name: 'Asa' }]);
-    });
+    this.runTask(() => set(this.context, 'name', 'Joel'));
+    this.replaceList([{ name: 'Chad' }, { name: 'Zack' }, { name: 'Asa' }]);
 
     this.assertText('Joel-JoelJoelJoel-Joel');
   }
 
   ['@test can access the item and the original scope']() {
-    this.render(`{{#each people key="name" as |person|}}[{{title}}: {{person.name}}]{{/each}}`, {
-      title: 'Señor Engineer',
-      people: emberA([{ name: 'Tom Dale' }, { name: 'Yehuda Katz' }, { name: 'Godfrey Chan' }])
+    this.makeList([{ name: 'Tom Dale' }, { name: 'Yehuda Katz' }, { name: 'Godfrey Chan' }]);
+
+    this.render(`{{#each list key="name" as |person|}}[{{title}}: {{person.name}}]{{/each}}`, {
+      title: 'Señor Engineer'
     });
 
     this.assertText('[Señor Engineer: Tom Dale][Señor Engineer: Yehuda Katz][Señor Engineer: Godfrey Chan]');
@@ -387,28 +620,26 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.assertText('[Señor Engineer: Tom Dale][Señor Engineer: Yehuda Katz][Señor Engineer: Godfrey Chan]');
 
     this.runTask(() => {
-      let people = get(this.context, 'people');
-      set(people.objectAt(1), 'name', 'Stefan Penner');
-      removeAt(people, 0);
-      people.pushObject({ name: 'Tom Dale' });
-      people.insertAt(1, { name: 'Chad Hietala' });
+      set(this.objectAt(1), 'name', 'Stefan Penner');
+      this.removeAt(0);
+      this.pushObject({ name: 'Tom Dale' });
+      this.insertAt(1, { name: 'Chad Hietala' });
       set(this.context, 'title', 'Principal Engineer');
     });
 
     this.assertText('[Principal Engineer: Stefan Penner][Principal Engineer: Chad Hietala][Principal Engineer: Godfrey Chan][Principal Engineer: Tom Dale]');
 
-    this.runTask(() => {
-      set(this.context, 'people', [{ name: 'Tom Dale' }, { name: 'Yehuda Katz' }, { name: 'Godfrey Chan' }]);
-      set(this.context, 'title', 'Señor Engineer');
-    });
+    this.runTask(() => set(this.context, 'title', 'Señor Engineer'));
+    this.replaceList([{ name: 'Tom Dale' }, { name: 'Yehuda Katz' }, { name: 'Godfrey Chan' }]);
 
     this.assertText('[Señor Engineer: Tom Dale][Señor Engineer: Yehuda Katz][Señor Engineer: Godfrey Chan]');
   }
 
   ['@test the scoped variable is not available outside the {{#each}} block.']() {
-    this.render(`{{name}}-{{#each other as |name|}}{{name}}{{/each}}-{{name}}`, {
-      name: 'Stef',
-      other: emberA(['Yehuda'])
+    this.makeList(['Yehuda']);
+
+    this.render(`{{name}}-{{#each list as |name|}}{{name}}{{/each}}-{{name}}`, {
+      name: 'Stef'
     });
 
     this.assertText('Stef-Yehuda-Stef');
@@ -417,7 +648,7 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
 
     this.assertText('Stef-Yehuda-Stef');
 
-    this.runTask(() => get(this.context, 'other').pushObjects([' ', 'Katz']));
+    this.runTask(() => this.pushObjects([' ', 'Katz']));
 
     this.assertText('Stef-Yehuda Katz-Stef');
 
@@ -425,17 +656,16 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
 
     this.assertText('Tom-Yehuda Katz-Tom');
 
-    this.runTask(() => {
-      set(this.context, 'name', 'Stef');
-      set(this.context, 'other', ['Yehuda']);
-    });
+    this.runTask(() => set(this.context, 'name', 'Stef'));
+    this.replaceList(['Yehuda']);
 
     this.assertText('Stef-Yehuda-Stef');
   }
 
   ['@test inverse template is displayed with context']() {
-    this.render(`{{#each falsyThing as |thing|}}Has Thing{{else}}No Thing {{otherThing}}{{/each}}`, {
-      falsyThing: [],
+    this.makeList([]);
+
+    this.render(`{{#each list as |thing|}}Has Thing{{else}}No Thing {{otherThing}}{{/each}}`, {
       otherThing: 'bar'
     });
 
@@ -449,7 +679,7 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
 
     this.assertText('No Thing biz');
 
-    this.runTask(() => set(this.context, 'falsyThing', ['non-empty']));
+    this.runTask(() => this.pushObject('non-empty'));
 
     this.assertText('Has Thing');
 
@@ -457,15 +687,98 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
 
     this.assertText('Has Thing');
 
-    this.runTask(() => {
-      set(this.context, 'otherThing', 'bar');
-      set(this.context, 'falsyThing', null);
-    });
+    this.runTask(() => set(this.context, 'otherThing', 'bar'));
+    this.replaceList([]);
 
     this.assertText('No Thing bar');
   }
 
+  ['@test content that are not initially present updates correctly GH#13983']() {
+    // The root cause of this bug is that Glimmer did not call `didInitializeChildren`
+    // on the inserted `TryOpcode`, causing that `TryOpcode` to have an uninitialized
+    // tag. Currently the only way to observe this the "JUMP-IF-NOT-MODIFIED", i.e. by
+    // wrapping it in an component.
+
+    this.registerComponent('x-wrapper', { template: '{{yield}}' });
+
+    this.makeList([]);
+
+    this.render(`{{#x-wrapper}}{{#each list as |obj|}}[{{obj.text}}]{{/each}}{{/x-wrapper}}`);
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    this.runTask(() => this.pushObject({ text: 'foo' }));
+
+    this.assertText('[foo]');
+
+    this.runTask(() => set(this.objectAt(0), 'text', 'FOO'));
+
+    this.assertText('[FOO]');
+
+    this.runTask(() => this.pushObject({ text: 'bar' }));
+
+    this.assertText('[FOO][bar]');
+
+    this.runTask(() => set(this.objectAt(1), 'text', 'BAR'));
+
+    this.assertText('[FOO][BAR]');
+
+    this.runTask(() => set(this.objectAt(1), 'text', 'baz'));
+
+    this.assertText('[FOO][baz]');
+
+    this.runTask(() => this.replace(1, 1, [{ text: 'BAZ' }]));
+
+    this.assertText('[FOO][BAZ]');
+
+    this.replaceList([]);
+
+    this.assertText('');
+  }
+}
+
+moduleFor('Syntax test: {{#each}} with arrays', class extends SingleEachTest {
+
+  makeList(list) {
+    return this.list = this.delegate = emberA(list);
+  }
+
 });
+
+moduleFor('Syntax test: {{#each}} with array-like objects', class extends SingleEachTest {
+
+  makeList(list) {
+    return this.list = this.delegate = new ArrayLike(list);
+  }
+
+});
+
+moduleFor('Syntax test: {{#each}} with array proxies, modifying itself', class extends SingleEachTest {
+
+  makeList(list) {
+    return this.list = this.delegate = ArrayProxy.create({ content: emberA(list) });
+  }
+
+});
+
+moduleFor('Syntax test: {{#each}} with array proxies, replacing its content', class extends SingleEachTest {
+
+  makeList(list) {
+    let content = this.delegate = emberA(list);
+    return this.list = ArrayProxy.create({ content });
+  }
+
+  replaceList(list) {
+    this.runTask(() => this.list.set('content', emberA(list)));
+  }
+
+});
+
+// TODO: Refactor the following tests so we can run them against different kind of arrays
 
 moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingTest {
 
@@ -505,9 +818,9 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
         {{/each}}
       {{/each}}
       `, {
-      content: emberA(['X', 'Y']),
-      options: emberA([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }])
-    });
+        content: emberA(['X', 'Y']),
+        options: emberA([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }])
+      });
 
     this.assertText('X-1:One2:TwoY-1:One2:Two');
 
@@ -614,3 +927,99 @@ moduleFor('Syntax test: {{#each as}} undefined path', class extends RenderingTes
     this.assertText('');
   }
 });
+
+/* globals MutationObserver: false */
+if (typeof MutationObserver === 'function') {
+  moduleFor('Syntax test: {{#each as}} DOM mutation test', class extends RenderingTest {
+    constructor() {
+      super();
+      this.observer = null;
+    }
+
+    observe(element) {
+      let observer = this.observer = new MutationObserver(function() {});
+      observer.observe(element, { childList: true, characterData: true });
+    }
+
+    teardown() {
+      if (this.observer) {
+        this.observer.disconnect();
+      }
+
+      super.teardown();
+    }
+
+    assertNoMutation() {
+      this.assert.deepEqual(this.observer.takeRecords(), [], 'Expected no mutations');
+    }
+
+    expectMutations() {
+      this.assert.ok(this.observer.takeRecords().length > 0, 'Expected some mutations');
+    }
+
+    ['@test {{#each}} should not mutate a subtree when the array has not changed [GH #14332]'](assert) {
+      let page = { title: 'Blog Posts' };
+
+      let model = [
+        { title: 'Rails is omakase' },
+        { title: 'Ember is omakase' }
+      ];
+
+      this.render(strip`
+        <h1>{{page.title}}</h1>
+
+        <ul id="posts">
+          {{#each model as |post|}}
+            <li>{{post.title}}</li>
+          {{/each}}
+        </ul>
+      `, { page, model });
+
+      this.assertHTML(strip`
+        <h1>Blog Posts</h1>
+
+        <ul id="posts">
+          <li>Rails is omakase</li>
+          <li>Ember is omakase</li>
+        </ul>
+      `);
+
+      this.observe(this.$('#posts')[0]);
+
+      // MutationObserver is async
+      return RSVP.Promise.resolve(() => {
+        this.assertStableRerender();
+      }).then(() => {
+        this.assertNoMutation();
+
+        this.runTask(() => set(this.context, 'page', { title: 'Essays' }));
+
+        this.assertHTML(strip`
+          <h1>Essays</h1>
+
+          <ul id="posts">
+            <li>Rails is omakase</li>
+            <li>Ember is omakase</li>
+          </ul>
+        `);
+      }).then(() => {
+        this.assertNoMutation();
+
+        this.runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
+
+        this.assertHTML(strip`
+          <h1>Think Pieces™</h1>
+
+          <ul id="posts">
+            <li>Rails is omakase</li>
+            <li>Ember is omakase</li>
+          </ul>
+        `);
+      }).then(() => {
+        // The last set is localized to the `page` object, so we do not expect Glimmer
+        // to re-iterate the list
+        this.assertNoMutation();
+      });
+    }
+  });
+}

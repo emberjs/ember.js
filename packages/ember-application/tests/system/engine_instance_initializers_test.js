@@ -1,11 +1,9 @@
-import run from 'ember-metal/run_loop';
-import Engine from 'ember-application/system/engine';
-import EngineInstance from 'ember-application/system/engine-instance';
-import { setEngineParent } from 'ember-application/system/engine-parent';
+import { run } from 'ember-metal';
+import Engine from '../../system/engine';
+import EngineInstance from '../../system/engine-instance';
+import { setEngineParent } from '../../system/engine-parent';
 
-let MyEngine,
-    myEngine,
-    myEngineInstance;
+let MyEngine, myEngine, myEngineInstance;
 
 function buildEngineInstance(EngineClass) {
   let engineInstance = EngineClass.buildInstance();

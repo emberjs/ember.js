@@ -1,4 +1,4 @@
-import EmberObject from 'ember-runtime/system/object';
+import { Object as EmberObject } from 'ember-runtime';
 
 export default EmberObject.extend({
   isQueryParams: true,

@@ -1,8 +1,7 @@
-import MutableEnumerableTests from 'ember-runtime/tests/suites/mutable_enumerable';
-import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
-import EmberObject from 'ember-runtime/system/object';
-import { computed } from 'ember-metal/computed';
-import { get } from 'ember-metal/property_get';
+import MutableEnumerableTests from '../suites/mutable_enumerable';
+import MutableEnumerable from '../../mixins/mutable_enumerable';
+import EmberObject from '../../system/object';
+import { computed, get } from 'ember-metal';
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
@@ -12,7 +11,7 @@ const TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
   _content: null,
 
   addObject(obj) {
-    if (this._content.indexOf(obj)>=0) {
+    if (this._content.indexOf(obj) >= 0) {
       return this;
     }
 
@@ -38,7 +37,7 @@ const TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
   },
 
   nextObject(idx) {
-    return idx>=get(this, 'length') ? undefined : this._content[idx];
+    return idx >= get(this, 'length') ? undefined : this._content[idx];
   },
 
   length: computed(function() {

@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { capitalize } from 'ember-runtime/system/string';
+import { capitalize } from '../../../system/string';
 
 QUnit.module('EmberStringUtils.capitalize');
 

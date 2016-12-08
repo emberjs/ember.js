@@ -3,7 +3,7 @@
 @submodule ember-application
 */
 
-import { assert, deprecate } from 'ember-metal/debug';
+import { assert, deprecate } from 'ember-metal';
 
 const VALIDATED_TYPES = {
   route:     ['assert',    'isRouteFactory',     'Ember.Route'],

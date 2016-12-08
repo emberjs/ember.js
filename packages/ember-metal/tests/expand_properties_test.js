@@ -1,4 +1,4 @@
-import expandProperties from 'ember-metal/expand_properties';
+import expandProperties from '../expand_properties';
 
 let foundProperties = [];
 
@@ -73,6 +73,20 @@ QUnit.test('A property with only brace expansions expands correctly', function()
 
   let expected = ['a.d.e', 'a.d.f', 'b.d.e', 'b.d.f', 'c.d.e', 'c.d.f'];
   deepEqual(expected.sort(), foundProperties.sort());
+});
+
+QUnit.test('Nested brace expansions are not allowed', function() {
+  let nestedBraceProperties = [
+    'a.{b.{c,d}}',
+    'a.{{b}.c}',
+    'a.{b,c}.{d.{e,f}.g',
+    'a.{b.{c}',
+    'a.{b,c}}'
+  ];
+
+  nestedBraceProperties.forEach((invalidProperties) => {
+    expectAssertion(() => expandProperties(invalidProperties, addProperty));
+  }, /Brace expanded properties have to be balanced and cannot be nested/);
 });
 
 QUnit.test('A pattern must be a string', function() {

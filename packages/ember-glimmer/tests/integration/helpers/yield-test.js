@@ -1,5 +1,5 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { set } from 'ember-metal/property_set';
+import { set } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 
 moduleFor('Helpers test: {{yield}} helper', class extends RenderingTest {
@@ -12,7 +12,7 @@ moduleFor('Helpers test: {{yield}} helper', class extends RenderingTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'object.title', 'Vancouver') );
+    this.runTask(() => set(this.context, 'object.title', 'Vancouver'));
     this.assertText('[In layout:] [In Block:] Vancouver');
 
     this.runTask(() => set(this.context, 'object', { title: 'Seattle' }));
@@ -28,7 +28,7 @@ moduleFor('Helpers test: {{yield}} helper', class extends RenderingTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'object.title', 'Vancouver') );
+    this.runTask(() => set(this.context, 'object.title', 'Vancouver'));
     this.assertText('[In layout:] [In Block:] Vancouver');
 
     this.runTask(() => set(this.context, 'object', { title: 'Seattle' }));

@@ -1,5 +1,6 @@
-import assign from 'ember-metal/assign';
-import { get } from 'ember-metal/property_get';
+import { assign, getOwner } from 'ember-utils';
+import { get } from 'ember-metal';
+import { Error as EmberError } from 'ember-metal';
 
 const ALL_PERIODS_REGEX = /\./g;
 
@@ -129,11 +130,7 @@ export function calculateCacheKey(prefix, _parts, values) {
   'Array of fully defined objects' style.
 */
 export function normalizeControllerQueryParams(queryParams) {
-  if (queryParams._qpMap) {
-    return queryParams._qpMap;
-  }
-
-  let qpMap = queryParams._qpMap = {};
+  let qpMap = {};
 
   for (let i = 0; i < queryParams.length; ++i) {
     accumulateQueryParamDescriptors(queryParams[i], qpMap);
@@ -164,4 +161,36 @@ function accumulateQueryParamDescriptors(_desc, accum) {
 
     accum[key] = tmp;
   }
+}
+
+/*
+  Check if a routeName resembles a url instead
+
+  @private
+*/
+function resemblesURL(str) {
+  return typeof str === 'string' && (str === '' || str.charAt(0) === '/');
+}
+
+/*
+  Returns an arguments array where the route name arg is prefixed based on the mount point
+
+  @private
+*/
+export function prefixRouteNameArg(route, args) {
+  let routeName = args[0];
+  let owner = getOwner(route);
+  let prefix = owner.mountPoint;
+
+  // only alter the routeName if it's actually referencing a route.
+  if (owner.routable && typeof routeName === 'string') {
+    if (resemblesURL(routeName)) {
+      throw new EmberError('Programmatic transitions by URL cannot be used within an Engine. Please use the route name instead.');
+    } else {
+      routeName = `${prefix}.${routeName}`;
+      args[0] = routeName;
+    }
+  }
+
+  return args;
 }

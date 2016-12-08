@@ -1,4 +1,4 @@
-import isBlank from 'ember-metal/is_blank';
+import isBlank from './is_blank';
 
 /**
   A value is present if it not `isBlank`.

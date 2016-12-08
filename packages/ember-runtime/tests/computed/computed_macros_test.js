@@ -1,4 +1,8 @@
-import { computed } from 'ember-metal/computed';
+import {
+  computed,
+  alias,
+  defineProperty,
+} from 'ember-metal';
 import {
   empty,
   notEmpty,
@@ -15,13 +19,11 @@ import {
   deprecatingAlias,
   and,
   or,
-} from 'ember-runtime/computed/computed_macros';
+} from '../../computed/computed_macros';
+import { testBoth } from 'internal-test-helpers';
 
-import alias from 'ember-metal/alias';
-import { defineProperty } from 'ember-metal/properties';
-import EmberObject from 'ember-runtime/system/object';
-import { testBoth } from 'ember-metal/tests/props_helper';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import EmberObject from '../../system/object';
+import { A as emberA } from '../../system/native_array';
 
 QUnit.module('CP macros');
 

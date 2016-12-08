@@ -1,7 +1,5 @@
-import { assert, deprecate } from 'ember-metal/debug';
-import dictionary from 'ember-metal/dictionary';
-import EmptyObject from 'ember-metal/empty_object';
-import assign from 'ember-metal/assign';
+import { dictionary, EmptyObject, assign, intern } from 'ember-utils';
+import { assert, deprecate } from 'ember-metal';
 import Container from './container';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
@@ -864,10 +862,7 @@ function has(registry, fullName, source) {
   return registry.resolve(fullName, { source }) !== undefined;
 }
 
-import { intern } from 'ember-metal/utils';
-import dict from 'ember-metal/dictionary';
-
-const privateNames = dict(null);
+const privateNames = dictionary(null);
 const privateSuffix = `${Math.random()}${Date.now()}`;
 
 export function privatize([fullName]) {

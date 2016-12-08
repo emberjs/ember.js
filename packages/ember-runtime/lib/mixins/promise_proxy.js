@@ -1,9 +1,11 @@
-import { get } from 'ember-metal/property_get';
-import setProperties from 'ember-metal/set_properties';
-import { computed } from 'ember-metal/computed';
-import { not, or } from 'ember-runtime/computed/computed_macros';
-import { Mixin } from 'ember-metal/mixin';
-import EmberError from 'ember-metal/error';
+import {
+  get,
+  setProperties,
+  computed,
+  Mixin,
+  Error as EmberError
+} from 'ember-metal';
+import { not, or } from '../computed/computed_macros';
 
 /**
   @module ember
@@ -17,16 +19,20 @@ function tap(proxy, promise) {
   });
 
   return promise.then(value => {
-    setProperties(proxy, {
-      content: value,
-      isFulfilled: true
-    });
+    if (!proxy.isDestroyed && !proxy.isDestroying) {
+      setProperties(proxy, {
+        content: value,
+        isFulfilled: true
+      });
+    }
     return value;
   }, reason => {
-    setProperties(proxy, {
-      reason: reason,
-      isRejected: true
-    });
+    if (!proxy.isDestroyed && !proxy.isDestroying) {
+      setProperties(proxy, {
+        reason: reason,
+        isRejected: true
+      });
+    }
     throw reason;
   }, 'Ember: PromiseProxy');
 }
@@ -38,7 +44,7 @@ function tap(proxy, promise) {
   let ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
 
   let proxy = ObjectPromiseProxy.create({
-    promise: $.getJSON('/some/remote/data.json')
+    promise: Ember.RSVP.cast($.getJSON('/some/remote/data.json'))
   });
 
   proxy.then(function(json){
@@ -60,6 +66,9 @@ function tap(proxy, promise) {
 
   When the $.getJSON completes, and the promise is fulfilled
   with json, the life cycle attributes will update accordingly.
+  Note that $.getJSON doesn't return an ECMA specified promise,
+  it is useful to wrap this with an `RSVP.cast` so that it behaves
+  as a spec compliant promise.
 
   ```javascript
   proxy.get('isPending')   //=> false

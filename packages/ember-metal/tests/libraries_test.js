@@ -1,7 +1,7 @@
 /* globals EmberDev */
-import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
-import isEnabled from 'ember-metal/features';
-import { Libraries } from 'ember-metal/libraries';
+import { getDebugFunction, setDebugFunction } from '../debug';
+import isEnabled from '../features';
+import { Libraries } from '../libraries';
 
 let libs, registry;
 let originalWarn = getDebugFunction('warn');

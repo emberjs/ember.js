@@ -1,58 +1,122 @@
-import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
-import { ConstReference } from 'glimmer-reference';
-import { generateGuid, guidFor } from 'ember-metal/utils';
-import { RootReference, NULL_REFERENCE } from '../utils/references';
+/**
+@module ember
+@submodule ember-glimmer
+*/
+import { generateGuid, guidFor } from 'ember-utils';
+import {
+  ArgsSyntax,
+  StatementSyntax,
+  ComponentDefinition
+} from 'glimmer-runtime';
+import { _instrumentStart } from 'ember-metal';
+import { RootReference } from '../utils/references';
+import {
+  UpdatableTag,
+  ConstReference,
+  combine
+} from 'glimmer-reference';
 
 function outletComponentFor(vm) {
-  let { outletState, isTopLevel } = vm.dynamicScope();
+  let { outletState } = vm.dynamicScope();
 
-  if (isTopLevel) {
-    return new TopLevelOutletComponentReference(outletState);
+  let args = vm.getArgs();
+  let outletNameRef;
+  if (args.positional.length === 0) {
+    outletNameRef = new ConstReference('main');
   } else {
-    let args = vm.getArgs();
-    let outletName = args.positional.at(0).value() || 'main';
-    return new OutletComponentReference(outletName, outletState.get(outletName));
+    outletNameRef = args.positional.at(0);
   }
+
+  return new OutletComponentReference(outletNameRef, outletState);
 }
 
+/**
+  The `{{outlet}}` helper lets you specify where a child route will render in
+  your template. An important use of the `{{outlet}}` helper is in your
+  application's `application.hbs` file:
+
+  ```handlebars
+  {{! app/templates/application.hbs }}
+  <!-- header content goes here, and will always display -->
+  {{my-header}}
+  <div class="my-dynamic-content">
+    <!-- this content will change based on the current route, which depends on the current URL -->
+    {{outlet}}
+  </div>
+  <!-- footer content goes here, and will always display -->
+  {{my-footer}}
+  ```
+
+  See [templates guide](http://emberjs.com/guides/templates/the-application-template/) for
+  additional information on using `{{outlet}}` in `application.hbs`.
+  You may also specify a name for the `{{outlet}}`, which is useful when using more than one
+  `{{outlet}}` in a template:
+
+  ```handlebars
+  {{outlet "menu"}}
+  {{outlet "sidebar"}}
+  {{outlet "main"}}
+  ```
+
+  Your routes can then render into a specific one of these `outlet`s by specifying the `outlet`
+  attribute in your `renderTemplate` function:
+
+  ```javascript
+  // app/routes/menu.js
+  export default Ember.Route.extend({
+    renderTemplate() {
+      this.render({ outlet: 'menu' });
+    }
+  });
+  ```
+
+  See the [routing guide](http://emberjs.com/guides/routing/rendering-a-template/) for more
+  information on how your `route` interacts with the `{{outlet}}` helper.
+  Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
+
+  @method outlet
+  @param {String} [name]
+  @for Ember.Templates.helpers
+  @public
+*/
 export class OutletSyntax extends StatementSyntax {
-  constructor({ args }) {
+  static create(environment, args, symbolTable) {
+    let definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0, 1));
+    return new this(environment, definitionArgs, symbolTable);
+  }
+
+  constructor(environment, args, symbolTable) {
     super();
     this.definitionArgs = args;
     this.definition = outletComponentFor;
     this.args = ArgsSyntax.empty();
-    this.templates = null;
+    this.symbolTable = symbolTable;
     this.shadow = null;
   }
 
   compile(builder) {
-    builder.component.dynamic(this);
+    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.symbolTable, this.shadow);
   }
 }
-
-class TopLevelOutletComponentReference extends ConstReference {
-  constructor(reference) {
-    let outletState = reference.value();
-    let definition = new TopLevelOutletComponentDefinition(outletState.render.template);
-
-    super(definition);
-  }
-}
-
-const INVALIDATE = null;
 
 class OutletComponentReference {
-  constructor(outletName, reference) {
-    this.outletName = outletName;
-    this.reference = reference;
+  constructor(outletNameRef, parentOutletStateRef) {
+    this.outletNameRef = outletNameRef;
+    this.parentOutletStateRef = parentOutletStateRef;
     this.definition = null;
     this.lastState = null;
-    this.tag = reference.tag;
+    let outletStateTag = this.outletStateTag = new UpdatableTag(parentOutletStateRef.tag);
+    this.tag = combine([outletStateTag.tag, outletNameRef.tag]);
   }
 
   value() {
-    let { outletName, reference, definition, lastState } = this;
-    let newState = reference.value();
+    let { outletNameRef, parentOutletStateRef, definition, lastState } = this;
+
+    let outletName = outletNameRef.value();
+    let outletStateRef = parentOutletStateRef.get('outlets').get(outletName);
+    let newState = this.lastState = outletStateRef.value();
+
+    this.outletStateTag.update(outletStateRef.tag);
 
     definition = revalidate(definition, lastState, newState);
 
@@ -63,11 +127,9 @@ class OutletComponentReference {
     } else if (hasTemplate) {
       return this.definition = new OutletComponentDefinition(outletName, newState.render.template);
     } else {
-      return this.definition = EMPTY_OUTLET_DEFINITION;
+      return this.definition = null;
     }
   }
-
-  destroy() {}
 }
 
 function revalidate(definition, lastState, newState) {
@@ -76,96 +138,106 @@ function revalidate(definition, lastState, newState) {
   }
 
   if (!lastState && newState || lastState && !newState) {
-    return INVALIDATE;
+    return null;
   }
 
   if (
-    newState.template === lastState.template &&
-    newState.controller === lastState.controller
+    newState.render.template === lastState.render.template &&
+    newState.render.controller === lastState.render.controller
   ) {
     return definition;
   }
 
-  return INVALIDATE;
+  return null;
 }
 
+function instrumentationPayload({ render: { name, outlet } }) {
+  return { object: `${name}:${outlet}` };
+}
 
-class AbstractOutletComponentManager {
-  create(definition, args, dynamicScope) {
-    throw new Error('Not implemented: create');
+function NOOP() {}
+
+class StateBucket {
+  constructor(outletState) {
+    this.outletState = outletState;
+    this.instrument();
   }
 
-  ensureCompilable(definition) {
-    return definition;
+  instrument() {
+    this.finalizer = _instrumentStart('render.outlet', instrumentationPayload, this.outletState);
   }
 
-  getSelf(state) {
-    return new RootReference(state.render.controller);
+  finalize() {
+    let { finalizer } = this;
+    finalizer();
+    this.finalizer = NOOP;
+  }
+}
+
+class OutletComponentManager {
+  prepareArgs(definition, args) {
+    return args;
   }
 
-  getTag(state) {
+  create(environment, definition, args, dynamicScope) {
+    let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get('outlets').get(definition.outletName);
+    let outletState = outletStateReference.value();
+    return new StateBucket(outletState);
+  }
+
+  layoutFor(definition, bucket, env) {
+    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
+  }
+
+  getSelf({ outletState }) {
+    return new RootReference(outletState.render.controller);
+  }
+
+  getTag() {
     return null;
   }
 
-  getDestructor(state) {
+  getDestructor() {
     return null;
+  }
+
+  didRenderLayout(bucket) {
+    bucket.finalize();
   }
 
   didCreateElement() {}
   didCreate(state) {}
-  update(state, args, dynamicScope) {}
+  update(bucket) {}
+  didUpdateLayout(bucket) {}
   didUpdate(state) {}
 }
 
-class TopLevelOutletComponentManager extends AbstractOutletComponentManager {
-  create(definition, args, dynamicScope) {
-    dynamicScope.isTopLevel = false;
-    return dynamicScope.outletState.value();
+const MANAGER = new OutletComponentManager();
+
+class TopLevelOutletComponentManager extends OutletComponentManager {
+  create(environment, definition, args, dynamicScope) {
+    return new StateBucket(dynamicScope.outletState.value());
+  }
+
+  layoutFor(definition, bucket, env) {
+    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
   }
 }
 
 const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
 
-class OutletComponentManager extends AbstractOutletComponentManager {
-  create(definition, args, dynamicScope) {
-    let outletState = dynamicScope.outletState = dynamicScope.outletState.get(definition.outletName);
-    return outletState.value();
-  }
-}
 
-const MANAGER = new OutletComponentManager();
-
-class EmptyOutletComponentManager extends AbstractOutletComponentManager {
-  create(definition, args, dynamicScope) {
-    dynamicScope.outletState = null;
-    return null;
-  }
-
-  getSelf(state) {
-    return NULL_REFERENCE;
-  }
-}
-
-const EMPTY_MANAGER = new EmptyOutletComponentManager();
-
-import { ComponentDefinition } from 'glimmer-runtime';
-
-class AbstractOutletComponentDefinition extends ComponentDefinition {
-  constructor(manager, outletName, template) {
-    super('outlet', manager, null);
-    this.outletName = outletName;
-    this.template = template;
+export class TopLevelOutletComponentDefinition extends ComponentDefinition {
+  constructor(instance) {
+    super('outlet', TOP_LEVEL_MANAGER, instance);
+    this.template = instance.template;
     generateGuid(this);
   }
-
-  compile() {
-    throw new Error('Unimplemented: compile');
-  }
 }
 
-class TopLevelOutletComponentDefinition extends AbstractOutletComponentDefinition {
+class TopLevelOutletLayoutCompiler {
   constructor(template) {
-    super(TOP_LEVEL_MANAGER, null, template);
+    this.template = template;
   }
 
   compile(builder) {
@@ -176,9 +248,20 @@ class TopLevelOutletComponentDefinition extends AbstractOutletComponentDefinitio
   }
 }
 
-class OutletComponentDefinition extends AbstractOutletComponentDefinition {
+TopLevelOutletLayoutCompiler.id = 'top-level-outlet';
+
+class OutletComponentDefinition extends ComponentDefinition {
   constructor(outletName, template) {
-    super(MANAGER, outletName, template);
+    super('outlet', MANAGER, null);
+    this.outletName = outletName;
+    this.template = template;
+    generateGuid(this);
+  }
+}
+
+export class OutletLayoutCompiler {
+  constructor(template) {
+    this.template = template;
   }
 
   compile(builder) {
@@ -186,14 +269,4 @@ class OutletComponentDefinition extends AbstractOutletComponentDefinition {
   }
 }
 
-class EmptyOutletComponentDefinition extends AbstractOutletComponentDefinition {
-  constructor() {
-    super(EMPTY_MANAGER, null, null);
-  }
-
-  compile(builder) {
-    builder.empty();
-  }
-}
-
-const EMPTY_OUTLET_DEFINITION = new EmptyOutletComponentDefinition();
+OutletLayoutCompiler.id = 'outlet';

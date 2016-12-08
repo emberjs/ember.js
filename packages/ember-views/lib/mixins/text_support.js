@@ -3,10 +3,12 @@
 @submodule ember-views
 */
 
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { Mixin } from 'ember-metal/mixin';
-import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
+import {
+  get,
+  set,
+  Mixin
+} from 'ember-metal';
+import { TargetActionSupport } from 'ember-runtime';
 
 const KEY_EVENTS = {
   13: 'insertNewline',
@@ -196,9 +198,7 @@ export default Mixin.create(TargetActionSupport, {
   },
 
   _elementValueDidChange() {
-    // Using readDOMAttr will ensure that HTMLBars knows the last
-    // value.
-    set(this, 'value', this.readDOMAttr('value'));
+    set(this, 'value', this.element.value);
   },
 
   change(event) {

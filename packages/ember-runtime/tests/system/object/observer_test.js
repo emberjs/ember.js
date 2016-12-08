@@ -1,7 +1,6 @@
-import { observer } from 'ember-metal/mixin';
-import run from 'ember-metal/run_loop';
-import { testBoth } from 'ember-metal/tests/props_helper';
-import EmberObject from 'ember-runtime/system/object';
+import { observer, run } from 'ember-metal';
+import { testBoth } from 'internal-test-helpers';
+import EmberObject from '../../../system/object';
 
 QUnit.module('EmberObject observer');
 

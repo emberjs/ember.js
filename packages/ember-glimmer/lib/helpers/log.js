@@ -1,7 +1,7 @@
-import { helper } from '../helper';
+import { InternalHelperReference } from '../utils/references';
 /**
 @module ember
-@submodule ember-templates
+@submodule ember-glimmer
 */
 
 import Logger from 'ember-console';
@@ -19,8 +19,10 @@ import Logger from 'ember-console';
   @param {Array} params
   @public
 */
-function log(params) {
-  Logger.log.apply(null, params);
+function log({ positional }) {
+  Logger.log.apply(null, positional.value());
 }
 
-export default helper(log);
+export default function(vm, args) {
+  return new InternalHelperReference(log, args);
+}

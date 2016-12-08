@@ -1,16 +1,15 @@
-import { get } from 'ember-metal/property_get';
-import run from 'ember-metal/run_loop';
-import assign from 'ember-metal/assign';
-import AutoLocation from 'ember-routing/location/auto_location';
+import { assign, OWNER } from 'ember-utils';
+import { environment } from 'ember-environment';
+import { get, run } from 'ember-metal';
+import AutoLocation from '../../location/auto_location';
 import {
   getHistoryPath,
   getHashPath
-} from 'ember-routing/location/auto_location';
-import HistoryLocation from 'ember-routing/location/history_location';
-import HashLocation from 'ember-routing/location/hash_location';
-import NoneLocation from 'ember-routing/location/none_location';
-import buildOwner from 'container/tests/test-helpers/build-owner';
-import { OWNER } from 'container/owner';
+} from '../../location/auto_location';
+import HistoryLocation from '../../location/history_location';
+import HashLocation from '../../location/hash_location';
+import NoneLocation from '../../location/none_location';
+import { buildOwner } from 'internal-test-helpers';
 
 function mockBrowserLocation(overrides) {
   return assign({
@@ -60,6 +59,13 @@ QUnit.module('Ember.AutoLocation', {
       run(location, 'destroy');
     }
   }
+});
+
+QUnit.test('AutoLocation should have the `global`', function(assert) {
+  let location = AutoLocation.create();
+
+  assert.ok(location.global, 'has a global defined');
+  assert.strictEqual(location.global, environment.window, 'has the environments window global');
 });
 
 QUnit.test('AutoLocation should return concrete implementation\'s value for `getURL`', function() {

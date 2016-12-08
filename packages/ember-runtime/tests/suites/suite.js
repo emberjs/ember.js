@@ -1,8 +1,6 @@
-import EmberObject from 'ember-runtime/system/object';
-import {
-  guidFor
-} from 'ember-metal/utils';
-import { get } from 'ember-metal/property_get';
+import { guidFor } from 'ember-utils';
+import EmberObject from '../../system/object';
+import { get } from 'ember-metal';
 
 /*
   @class
@@ -140,6 +138,6 @@ const SuiteModuleBuilder = EmberObject.extend({
   }
 });
 
-export {SuiteModuleBuilder, Suite};
+export { SuiteModuleBuilder, Suite };
 
 export default Suite;

@@ -2,16 +2,15 @@
 @module ember
 @submodule ember-runtime
 */
-import { deprecate } from 'ember-metal/debug';
 import {
-  inspect as emberInspect
-} from 'ember-metal/utils';
-import { isArray } from 'ember-runtime/utils';
+  deprecate,
+  Cache
+} from 'ember-metal';
+import { inspect } from 'ember-utils';
+import { isArray } from '../utils';
 import {
   get as getString
-} from 'ember-runtime/string_registry';
-
-import Cache from 'ember-metal/cache';
+} from '../string_registry';
 
 const STRING_DASHERIZE_REGEXP = (/[ _]/g);
 
@@ -91,7 +90,7 @@ function _fmt(str, formats) {
   return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
     argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
     s = cachedFormats[argIndex];
-    return (s === null) ? '(null)' : (s === undefined) ? '' : emberInspect(s);
+    return (s === null) ? '(null)' : (s === undefined) ? '' : inspect(s);
   });
 }
 

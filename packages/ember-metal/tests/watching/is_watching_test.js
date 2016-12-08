@@ -1,15 +1,15 @@
-import { computed } from 'ember-metal/computed';
-import { get } from 'ember-metal/property_get';
-import { defineProperty } from 'ember-metal/properties';
+import { computed } from '../../computed';
+import { get } from '../../property_get';
+import { defineProperty } from '../../properties';
 import {
   Mixin,
   observer
-} from 'ember-metal/mixin';
+} from '../../mixin';
 import {
   addObserver,
   removeObserver
-} from 'ember-metal/observer';
-import { isWatching } from 'ember-metal/watching';
+} from '../../observer';
+import { isWatching } from '../../watching';
 
 QUnit.module('isWatching');
 

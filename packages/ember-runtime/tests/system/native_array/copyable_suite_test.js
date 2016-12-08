@@ -1,6 +1,6 @@
-import { generateGuid } from 'ember-metal/utils';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import CopyableTests from 'ember-runtime/tests/suites/copyable';
+import { generateGuid } from 'ember-utils';
+import { A as emberA } from '../../../system/native_array';
+import CopyableTests from '../../suites/copyable';
 
 CopyableTests.extend({
   name: 'NativeArray Copyable',

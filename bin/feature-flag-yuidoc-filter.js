@@ -11,19 +11,19 @@ function isClassToBeIncluded(item, featuresToFilter) {
     }
   }
   return true;
-};
+}
 
 function gatherFeatures() {
-    var featuresJson = JSON.parse(fs.readFileSync('features.json'));
-    var featuresObj = featuresJson.features;
-    var featuresToFilter = [];
-    for (var feature in featuresObj) {
-        if (featuresObj[feature] === null || featuresObj[feature] === false) {
-            featuresToFilter.push(feature);
-        }
+  var featuresJson = JSON.parse(fs.readFileSync('features.json'));
+  var featuresObj = featuresJson.features;
+  var featuresToFilter = [];
+  for (var feature in featuresObj) {
+    if (featuresObj[feature] === null || featuresObj[feature] === false) {
+      featuresToFilter.push(feature);
     }
-    return featuresToFilter;
-};
+  }
+  return featuresToFilter;
+}
 
 function gatherClassesToDocument(data, featuresToFilter) {
   var classesToDocument = {};
@@ -34,24 +34,23 @@ function gatherClassesToDocument(data, featuresToFilter) {
     }
   }
   return classesToDocument;
-};
+}
 
 function updateClassReferencesInNamespaces(data) {
   for (var namespace in data.modules) {
     var namespaceClasses = {};
     var originalClasses = data.modules[namespace].classes;
-    for(var className in originalClasses) {
+    for (var className in originalClasses) {
       if (data.classes.hasOwnProperty(className)) {
         namespaceClasses[className] = originalClasses[className]
       }
     }
     data.modules[namespace].classes = namespaceClasses;
   }
-
-};
+}
 
 module.exports = function (data, options) {
-    var featuresToFilter = gatherFeatures();
-    data.classes = gatherClassesToDocument(data, featuresToFilter);
-    updateClassReferencesInNamespaces(data);
+  var featuresToFilter = gatherFeatures();
+  data.classes = gatherClassesToDocument(data, featuresToFilter);
+  updateClassReferencesInNamespaces(data);
 };

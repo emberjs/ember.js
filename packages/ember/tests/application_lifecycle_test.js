@@ -1,11 +1,13 @@
-import Application from 'ember-application/system/application';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import Component from 'ember-templates/component';
-import jQuery from 'ember-views/system/jquery';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import { getTemplates, setTemplates } from 'ember-templates/template_registry';
-import controllerFor from 'ember-routing/system/controller_for';
+import { Application } from 'ember-application';
+import { Route, controllerFor } from 'ember-routing';
+import { run } from 'ember-metal';
+import {
+  Component,
+  setTemplates,
+  getTemplates
+} from 'ember-glimmer';
+import { jQuery } from 'ember-views';
+import { compile } from 'ember-template-compiler';
 
 let App, TEMPLATES, appInstance, router;
 
@@ -123,6 +125,34 @@ QUnit.test('Destroying the application resets the router before the appInstance 
 
   equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
   equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
+});
+
+QUnit.test('Destroying a route after the router does create an undestroyed `toplevelView`', function() {
+  App.Router.map(function() {
+    this.route('home', { path: '/' });
+  });
+
+  setTemplates({
+    index: compile('Index!'),
+    application: compile('Application! {{outlet}}')
+  });
+
+  App.IndexRoute = Route.extend();
+  run(App, 'advanceReadiness');
+
+  handleURL('/');
+
+  let router = appInstance.lookup('router:main');
+  let route = appInstance.lookup('route:index');
+
+  run(router, 'destroy');
+  equal(router._toplevelView, null, 'the toplevelView was cleared');
+
+  run(route, 'destroy');
+  equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+
+  run(App, 'destroy');
+  equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
 });
 
 QUnit.test('initializers can augment an applications customEvents hash', function(assert) {

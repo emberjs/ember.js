@@ -2,20 +2,21 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from 'ember-metal/core'; // Ember.A circular
+import Ember, { // Ember.A circular
+  replace,
+  get,
+  Mixin
+} from 'ember-metal';
 import { ENV } from 'ember-environment';
-import { _replace as replace } from 'ember-metal/replace';
-import { get } from 'ember-metal/property_get';
-import { Mixin } from 'ember-metal/mixin';
 import EmberArray, {
   arrayContentDidChange,
   arrayContentWillChange
-} from 'ember-runtime/mixins/array';
-import MutableArray from 'ember-runtime/mixins/mutable_array';
-import Observable from 'ember-runtime/mixins/observable';
-import Copyable from 'ember-runtime/mixins/copyable';
-import { FROZEN_ERROR } from 'ember-runtime/mixins/freezable';
-import copy from 'ember-runtime/copy';
+} from '../mixins/array';
+import MutableArray from '../mixins/mutable_array';
+import Observable from '../mixins/observable';
+import Copyable from '../mixins/copyable';
+import { FROZEN_ERROR } from '../mixins/freezable';
+import copy from '../copy';
 
 // Add Ember.Array to Array.prototype. Remove methods with native
 // implementations and supply some more optimized versions of generic methods
@@ -147,7 +148,7 @@ if (ENV.EXTEND_PROTOTYPES.Array) {
   };
 }
 
-Ember.A = A; // ES6TODO: Setting A onto the object returned by ember-metal/core to avoid circles
+Ember.A = A;
 export {
   A,
   NativeArray // TODO: only use default export

@@ -1,4 +1,4 @@
-import { Suite } from 'ember-runtime/tests/suites/suite';
+import { Suite } from './suite';
 
 const CopyableTests = Suite.extend({
 
@@ -39,8 +39,8 @@ const CopyableTests = Suite.extend({
 
 });
 
-import copyTests from 'ember-runtime/tests/suites/copyable/copy';
-import frozenCopyTests from 'ember-runtime/tests/suites/copyable/frozenCopy';
+import copyTests from './copyable/copy';
+import frozenCopyTests from './copyable/frozenCopy';
 
 CopyableTests.importModuleTests(copyTests);
 CopyableTests.importModuleTests(frozenCopyTests);

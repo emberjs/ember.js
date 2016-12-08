@@ -1,7 +1,7 @@
-import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
-import { get } from 'ember-metal/property_get';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import MutableArrayTests from '../../suites/mutable_array';
+import ArrayProxy from '../../../system/array_proxy';
+import { get } from 'ember-metal';
+import { A as emberA } from '../../../system/native_array';
 
 MutableArrayTests.extend({
   name: 'Ember.ArrayProxy',

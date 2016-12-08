@@ -1,29 +1,30 @@
-import { assert } from 'ember-metal/debug';
-import isEnabled from 'ember-metal/features';
-import { _getPath as getPath } from 'ember-metal/property_get';
+import { toString } from 'ember-utils';
+import { assert } from './debug';
+import isEnabled from './features';
+import { _getPath as getPath } from './property_get';
 import {
   propertyWillChange,
   propertyDidChange
-} from 'ember-metal/property_events';
+} from './property_events';
 
-import EmberError from 'ember-metal/error';
+import EmberError from './error';
 import {
   isPath,
   hasThis as pathHasThis
-} from 'ember-metal/path_cache';
+} from './path_cache';
 import {
   peekMeta
-} from 'ember-metal/meta';
-
-import {
-  toString
-} from 'ember-metal/utils';
+} from './meta';
 
 /**
   Sets the value of a property on an object, respecting computed properties
   and notifying observers and other listeners of the change. If the
   property is not defined but the object implements the `setUnknownProperty`
   method then that will be invoked as well.
+
+  ```javascript
+  Ember.set(obj, "name", value);
+  ```
 
   @method set
   @for Ember

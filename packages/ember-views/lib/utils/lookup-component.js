@@ -1,10 +1,16 @@
+import { privatize as P } from 'container';
+
 function lookupComponentPair(componentLookup, owner, name, options) {
   let component = componentLookup.componentFor(name, owner, options);
   let layout = componentLookup.layoutFor(name, owner, options);
-  return {
-    component,
-    layout
-  };
+
+  let result = { layout, component };
+
+  if (layout && !component) {
+    result.component = owner._lookupFactory(P`component:-default`);
+  }
+
+  return result;
 }
 
 export default function lookupComponent(owner, name, options) {

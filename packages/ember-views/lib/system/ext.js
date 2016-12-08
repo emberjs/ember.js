@@ -3,7 +3,7 @@
 @submodule ember-views
 */
 
-import run from 'ember-metal/run_loop';
+import { run } from 'ember-metal';
 
 // Add a new named queue for rendering views that happens
 // after bindings have synced, and a queue for scheduling actions

@@ -14,7 +14,7 @@ import {
   underscore,
   capitalize,
   classify
-} from 'ember-runtime/system/string';
+} from '../system/string';
 
 const StringPrototype = String.prototype;
 

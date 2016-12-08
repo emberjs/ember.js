@@ -6,11 +6,11 @@
   "disable_watching": true,
   "launchers": {
     "SL_Chrome_Current": {
-      "command": "npm run sauce:launch -- -b chrome --no-ct -u '<url>'",
+      "command": "npm run sauce:launch -- -p 'Windows 10' -b chrome -v latest --no-ct -u '<url>'",
       "protocol": "tap"
     },
     "SL_Firefox_Current": {
-      "command": "npm run sauce:launch -- -b firefox -v 45 --no-ct -u '<url>'",
+      "command": "npm run sauce:launch -- -p 'Windows 10' -b firefox -v latest --no-ct -u '<url>'",
       "protocol": "tap"
     },
     "SL_Safari_Current": {
@@ -22,7 +22,7 @@
       "protocol": "tap"
     },
     "SL_MS_Edge": {
-      "command": "npm run sauce:launch -- -b 'microsoftedge' --no-ct -u '<url>'",
+      "command": "npm run sauce:launch -- -p 'Windows 10' -b 'microsoftedge' -v latest --no-ct -u '<url>'",
       "protocol": "tap"
     },
     "SL_IE_11": {
@@ -40,12 +40,10 @@
   },
   "launch_in_dev": ["PhantomJS"],
   "launch_in_ci": [
-    "SL_Chrome_Current",
     "SL_Safari_Current",
     "SL_MS_Edge",
     "SL_IE_11",
     "SL_IE_10",
-    "SL_IE_9",
-    "SL_Firefox_Current"
+    "SL_IE_9"
   ]
 }

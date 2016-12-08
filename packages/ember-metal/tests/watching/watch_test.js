@@ -1,20 +1,18 @@
 import { context } from 'ember-environment';
-import { meta } from 'ember-metal/meta';
-import { set } from 'ember-metal/property_set';
-import get from 'ember-metal/property_get';
-import { computed } from 'ember-metal/computed';
-import { defineProperty } from 'ember-metal/properties';
-import { testBoth } from 'ember-metal/tests/props_helper';
-import { addListener } from 'ember-metal/events';
+import { meta } from '../../meta';
+import { set } from '../../property_set';
+import get from '../../property_get';
+import { computed } from '../../computed';
+import { defineProperty } from '../../properties';
+import { testBoth } from 'internal-test-helpers';
+import { addListener } from '../../events';
 import {
   watch,
   unwatch,
   destroy
-} from 'ember-metal/watching';
+} from '../../watching';
 
-let willCount, didCount,
-    willKeys, didKeys,
-    originalLookup, lookup;
+let willCount, didCount, willKeys, didKeys, originalLookup;
 
 QUnit.module('watch', {
   setup() {
@@ -23,7 +21,7 @@ QUnit.module('watch', {
     didKeys = [];
 
     originalLookup = context.lookup;
-    context.lookup = lookup = {};
+    context.lookup = {};
   },
 
   teardown() {

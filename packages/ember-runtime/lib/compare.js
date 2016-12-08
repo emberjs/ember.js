@@ -1,5 +1,5 @@
-import { typeOf } from 'ember-runtime/utils';
-import Comparable from 'ember-runtime/mixins/comparable';
+import { typeOf } from './utils';
+import Comparable from './mixins/comparable';
 
 const TYPE_ORDER = {
   'undefined': 0,
@@ -25,7 +25,7 @@ const TYPE_ORDER = {
 // ,'________________                          \`-._`-','
 //  `._              ```````````------...___   '-.._'-:
 //     ```--.._      ,.                     ````--...__\-.
-//             `.--. `-` "INFINTIY IS LESS     ____    |  |`
+//             `.--. `-` "INFINITY IS LESS     ____    |  |`
 //               `. `.   THAN BEYOND"        ,'`````.  ;  ;`
 //                 `._`.        __________   `.      \'__/`
 //                    `-:._____/______/___/____`.     \  `

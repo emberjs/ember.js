@@ -1,10 +1,10 @@
-import { helper } from '../helper';
-import { loc } from 'ember-runtime/system/string';
 
 /**
 @module ember
-@submodule ember-templates
+@submodule ember-glimmer
 */
+import { InternalHelperReference } from '../utils/references';
+import { String as StringUtils } from 'ember-runtime';
 
 /**
   Calls [Ember.String.loc](/api/classes/Ember.String.html#method_loc) with the
@@ -38,8 +38,10 @@ import { loc } from 'ember-runtime/system/string';
   @see {Ember.String#loc}
   @public
 */
-function locHelper(params) {
-  return loc.apply(null, params);
+function locHelper({ positional }) {
+  return StringUtils.loc.apply(null, positional.value());
 }
 
-export default helper(locHelper);
+export default function(vm, args) {
+  return new InternalHelperReference(locHelper, args);
+}

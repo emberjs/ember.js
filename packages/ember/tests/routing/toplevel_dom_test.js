@@ -1,17 +1,17 @@
-import run from 'ember-metal/run_loop';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
-import NoneLocation from 'ember-routing/location/none_location';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import { run } from 'ember-metal';
+import { compile } from 'ember-template-compiler';
+import { Application } from 'ember-application';
+import { jQuery } from 'ember-views';
+import { NoneLocation } from 'ember-routing';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 
-let App, templates, router, container;
+let App, templates, container;
 
 function bootApplication() {
   for (let name in templates) {
     setTemplate(name, compile(templates[name]));
   }
-  router = container.lookup('router:main');
+  container.lookup('router:main');
   run(App, 'advanceReadiness');
 }
 

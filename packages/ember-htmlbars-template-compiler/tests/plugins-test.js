@@ -1,1 +1,0 @@
-../../ember-glimmer-template-compiler/tests/plugins-test.js

@@ -1,11 +1,14 @@
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import Application from 'ember-application/system/application';
-import Component from 'ember-templates/component';
-import jQuery from 'ember-views/system/jquery';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import { Controller } from 'ember-runtime';
+import { Route } from 'ember-routing';
+import { run } from 'ember-metal';
+import { compile } from 'ember-template-compiler';
+import { Application } from 'ember-application';
+import {
+  Component,
+  setTemplates,
+  setTemplate
+} from 'ember-glimmer';
+import { jQuery } from 'ember-views';
 
 /*
  In Ember 1.x, controllers subtly affect things like template scope
@@ -45,9 +48,7 @@ QUnit.module('Template scoping examples', {
   }
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('Actions inside an outlet go to the associated controller', function() {
+QUnit.test('Actions inside an outlet go to the associated controller', function() {
   expect(1);
 
   setTemplate('index', compile('{{component-with-action action=\'componentAction\'}}'));

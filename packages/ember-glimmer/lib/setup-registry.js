@@ -1,36 +1,59 @@
-import require from 'require';
-import { privatize as P } from 'container/registry';
-import TextField from 'ember-glimmer/components/text_field';
-import TextArea from 'ember-glimmer/components/text_area';
-import Checkbox from 'ember-glimmer/components/checkbox';
-import LinkToComponent from 'ember-glimmer/components/link-to';
+import { environment } from 'ember-environment';
+import { privatize as P } from 'container';
+import { InteractiveRenderer, InertRenderer } from './renderer';
+import {
+  DOMChanges,
+  DOMTreeConstruction,
+  NodeDOMTreeConstruction
+} from './dom';
+import OutletView from './views/outlet';
+import TextField from './components/text_field';
+import TextArea from './components/text_area';
+import Checkbox from './components/checkbox';
+import LinkToComponent from './components/link-to';
+import Component from './component';
+import ComponentTemplate from './templates/component';
+import RootTemplate from './templates/root';
+import OutletTemplate from './templates/outlet';
+import Environment from './environment';
 
 export function setupApplicationRegistry(registry) {
-  let Environment = require('ember-glimmer/environment').default;
-  registry.register('service:-glimmer-environment', Environment);
-  registry.injection('service:-glimmer-environment', 'dom', 'service:-dom-helper');
+  registry.injection('service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
   registry.injection('renderer', 'env', 'service:-glimmer-environment');
 
-  let { InteractiveRenderer, InertRenderer } = require('ember-glimmer/renderer');
+  registry.register(P`template:-root`, RootTemplate);
+  registry.injection('renderer', 'rootTemplate', P`template:-root`);
+
   registry.register('renderer:-dom', InteractiveRenderer);
   registry.register('renderer:-inert', InertRenderer);
 
-  let DOMHelper = require('ember-glimmer/dom').default;
+  if (environment.hasDOM) {
+    registry.injection('service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
+  }
 
-  registry.register('service:-dom-helper', {
-    create({ document }) { return new DOMHelper(document); }
+  registry.register('service:-dom-changes', {
+    create({ document }) { return new DOMChanges(document); }
+  });
+
+  registry.register('service:-dom-tree-construction', {
+    create({ document }) {
+      var Implementation = environment.hasDOM ? DOMTreeConstruction : NodeDOMTreeConstruction;
+      return new Implementation(document);
+    }
   });
 }
 
 export function setupEngineRegistry(registry) {
-  let OutletView = require('ember-glimmer/views/outlet').default;
   registry.register('view:-outlet', OutletView);
-
-  let glimmerOutletTemplate = require('ember-glimmer/templates/outlet').default;
-  let glimmerComponentTemplate = require('ember-glimmer/templates/component').default;
-  registry.register(P`template:components/-default`, glimmerComponentTemplate);
-  registry.register('template:-outlet', glimmerOutletTemplate);
+  registry.register('template:-outlet', OutletTemplate);
   registry.injection('view:-outlet', 'template', 'template:-outlet');
+
+  registry.injection('service:-dom-changes', 'document', 'service:-document');
+  registry.injection('service:-dom-tree-construction', 'document', 'service:-document');
+
+  registry.register(P`template:components/-default`, ComponentTemplate);
+
+  registry.register('service:-glimmer-environment', Environment);
   registry.injection('template', 'env', 'service:-glimmer-environment');
 
   registry.optionsForType('helper', { instantiate: false });
@@ -39,4 +62,5 @@ export function setupEngineRegistry(registry) {
   registry.register('component:-text-area', TextArea);
   registry.register('component:-checkbox', Checkbox);
   registry.register('component:link-to', LinkToComponent);
+  registry.register(P`component:-default`, Component);
 }

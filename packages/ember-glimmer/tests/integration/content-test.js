@@ -1,15 +1,16 @@
 /* globals EmberDev */
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { applyMixins } from '../utils/abstract-test-case';
-import { set } from 'ember-metal/property_set';
-import { computed } from 'ember-metal/computed';
-import EmberObject from 'ember-runtime/system/object';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
+import {
+  set,
+  computed,
+  getDebugFunction,
+  setDebugFunction
+} from 'ember-metal';
+import { Object as EmberObject, ObjectProxy } from 'ember-runtime';
 import { classes } from '../utils/test-helpers';
-import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
-import { createStyleWarning } from 'ember-htmlbars/morphs/attr-morph';
-import { Component } from '../utils/helpers';
-import { SafeString } from 'ember-htmlbars/utils/string';
+import { STYLE_WARNING } from 'ember-views';
+import { Component, SafeString } from '../utils/helpers';
 
 moduleFor('Static content tests', class extends RenderingTest {
 
@@ -67,7 +68,6 @@ moduleFor('Static content tests', class extends RenderingTest {
 });
 
 class DynamicContentTest extends RenderingTest {
-
   /* abstract */
   renderPath(path, context = {}) {
     throw new Error('Not implemented: `renderValues`');
@@ -98,6 +98,46 @@ class DynamicContentTest extends RenderingTest {
 
     this.assertContent('hello');
     this.assertInvariants();
+  }
+
+  ['@test resolves the string length properly']() {
+    this.render('<p>{{foo.length}}</p>', { foo: undefined });
+
+    this.assertHTML('<p></p>');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'foo', 'foo'));
+
+    this.assertHTML('<p>3</p>');
+
+    this.runTask(() => set(this.context, 'foo', ''));
+
+    this.assertHTML('<p>0</p>');
+
+    this.runTask(() => set(this.context, 'foo', undefined));
+
+    this.assertHTML('<p></p>');
+  }
+
+  ['@test resolves the array length properly']() {
+    this.render('<p>{{foo.length}}</p>', { foo: undefined });
+
+    this.assertHTML('<p></p>');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'foo', [1, 2, 3]));
+
+    this.assertHTML('<p>3</p>');
+
+    this.runTask(() => set(this.context, 'foo', []));
+
+    this.assertHTML('<p>0</p>');
+
+    this.runTask(() => set(this.context, 'foo', undefined));
+
+    this.assertHTML('<p></p>');
   }
 
   ['@test it can render a capitalized path with no deprecation']() {
@@ -217,15 +257,14 @@ class DynamicContentTest extends RenderingTest {
     this.assertInvariants();
   }
 
-  // HTMLBars fail the DOM node stability test in the last step
-  ['@glimmer it can read from a proxy object']() {
+  ['@test it can read from a proxy object']() {
     this.renderPath('proxy.name', { proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }) });
 
     this.assertContent('Tom Dale');
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'proxy.name', 'Yehuda Katz'));
+    this.runTask(() => set(this.context, 'proxy.content.name', 'Yehuda Katz'));
 
     this.assertContent('Yehuda Katz');
     this.assertInvariants();
@@ -235,7 +274,7 @@ class DynamicContentTest extends RenderingTest {
     this.assertContent('Godfrey Chan');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'proxy.content.name', 'Stefan Penner'));
+    this.runTask(() => set(this.context, 'proxy.name', 'Stefan Penner'));
 
     this.assertContent('Stefan Penner');
     this.assertInvariants();
@@ -247,6 +286,137 @@ class DynamicContentTest extends RenderingTest {
     this.runTask(() => set(this.context, 'proxy', ObjectProxy.create({ content: { name: 'Tom Dale' } })));
 
     this.assertContent('Tom Dale');
+    this.assertInvariants();
+  }
+
+  ['@test it can read from a nested path in a proxy object']() {
+    this.renderPath('proxy.name.last', { proxy: ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } }) });
+
+    this.assertContent('Dale');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'proxy.content.name.last', 'Cruise'));
+
+    this.assertContent('Cruise');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxy.content.name.first', 'Suri'));
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'proxy.content.name', { first: 'Yehuda', last: 'Katz' }));
+
+    this.assertContent('Katz');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxy.content', { name: { first: 'Godfrey', last: 'Chan' } }));
+
+    this.assertContent('Chan');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxy.name', { first: 'Stefan', last: 'Penner' }));
+
+    this.assertContent('Penner');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxy', null));
+
+    this.assertIsEmpty();
+
+    this.runTask(() => set(this.context, 'proxy', ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } })));
+
+    this.assertContent('Dale');
+    this.assertInvariants();
+  }
+
+  ['@test it can read from a path flipping between a proxy and a real object']() {
+    this.renderPath('proxyOrObject.name.last', { proxyOrObject: ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } }) });
+
+    this.assertContent('Dale');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'proxyOrObject', { name: { first: 'Tom', last: 'Dale' } }));
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'proxyOrObject.name.last', 'Cruise'));
+
+    this.assertContent('Cruise');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxyOrObject.name.first', 'Suri'));
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'proxyOrObject', { name: { first: 'Yehuda', last: 'Katz' } }));
+
+    this.assertContent('Katz');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxyOrObject', ObjectProxy.create({ content: { name: { first: 'Godfrey', last: 'Chan' } } })));
+
+    this.assertContent('Chan');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxyOrObject.content.name', { first: 'Stefan', last: 'Penner' }));
+
+    this.assertContent('Penner');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxyOrObject', null));
+
+    this.assertIsEmpty();
+
+    this.runTask(() => set(this.context, 'proxyOrObject', ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } })));
+
+    this.assertContent('Dale');
+    this.assertInvariants();
+  }
+
+  ['@test it can read from a path flipping between a real object and a proxy']() {
+    this.renderPath('objectOrProxy.name.last', { objectOrProxy: { name: { first: 'Tom', last: 'Dale' } } });
+
+    this.assertContent('Dale');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'objectOrProxy', ObjectProxy.create({ content: { name: { first: 'Tom', last: 'Dale' } } })));
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'objectOrProxy.content.name.last', 'Cruise'));
+
+    this.assertContent('Cruise');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'objectOrProxy.content.name.first', 'Suri'));
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'objectOrProxy.content', { name: { first: 'Yehuda', last: 'Katz' } }));
+
+    this.assertContent('Katz');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'objectOrProxy', { name: { first: 'Godfrey', last: 'Chan' } }));
+
+    this.assertContent('Chan');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'objectOrProxy.name', { first: 'Stefan', last: 'Penner' }));
+
+    this.assertContent('Penner');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'objectOrProxy', null));
+
+    this.assertIsEmpty();
+
+    this.runTask(() => set(this.context, 'objectOrProxy', { name: { first: 'Tom', last: 'Dale' } }));
+
+    this.assertContent('Dale');
     this.assertInvariants();
   }
 
@@ -274,6 +444,44 @@ class DynamicContentTest extends RenderingTest {
     this.assertInvariants();
   }
 
+  ['@test it can render a readOnly property of a path']() {
+    let Messenger = EmberObject.extend({
+      message: computed.readOnly('a.b.c')
+    });
+
+    let messenger = Messenger.create({
+      a: {
+        b: {
+          c: 'hello'
+        }
+      }
+    });
+
+    this.renderPath('messenger.message', { messenger });
+
+    this.assertContent('hello');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(messenger, 'a.b.c', 'hi'));
+
+    this.assertContent('hi');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'messenger.a.b', {
+      c: 'goodbye'
+    }));
+
+    this.assertContent('goodbye');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'messenger', {
+      message: 'hello'
+    }));
+
+    this.assertContent('hello');
+    this.assertInvariants();
+  }
 }
 
 const EMPTY = {};
@@ -362,7 +570,7 @@ let GlimmerContentTestCases = new ContentTestGenerator([
 
   [Object.create(null), EMPTY, 'an object with no toString']
 
-], '@glimmer');
+]);
 
 if (typeof Symbol !== 'undefined') {
   GlimmerContentTestCases.cases.push([Symbol('debug'), 'Symbol(debug)', 'a symbol']);
@@ -424,7 +632,7 @@ moduleFor('Dynamic content tests (attribute position)', class extends DynamicCon
 
   assertIsEmpty() {
     this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one <div> tag');
-    this.assertElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': '' }, content: '' });
+    this.assertElement(this.firstChild, { tagName: 'div', content: '' });
   }
 
   assertContent(content) {
@@ -706,8 +914,6 @@ moduleFor('Dynamic content tests (integration)', class extends RenderingTest {
 
     this.runTask(() => set(this.context, 'fooBar', false));
 
-    // HTMLBars differs in behavior here as it leaves the empty
-    // class attribute.
     assert.equal(this.firstChild.className, '');
 
     this.runTask(() => set(this.context, 'fooBar', true));
@@ -934,34 +1140,94 @@ moduleFor('Dynamic content tests (integration)', class extends RenderingTest {
 
     this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': 'foo  static   bar' } });
   }
+
+});
+
+let warnings, originalWarn;
+class StyleTest extends RenderingTest {
+  constructor() {
+    super(...arguments);
+    warnings = [];
+    originalWarn = getDebugFunction('warn');
+    setDebugFunction('warn', function(message, test) {
+      if (!test) {
+        warnings.push(message);
+      }
+    });
+  }
+
+  teardown() {
+    super.teardown(...arguments);
+    setDebugFunction('warn', originalWarn);
+  }
+
+  assertStyleWarning() {
+    this.assert.deepEqual(warnings, [STYLE_WARNING]);
+  }
+
+  assertNoWarning() {
+    this.assert.deepEqual(warnings, []);
+  }
+}
+
+moduleFor('Inline style tests', class extends StyleTest {
+  ['@test can set dynamic style']() {
+    this.render('<div style={{model.style}}></div>', {
+      model: {
+        style: 'width: 60px;'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+
+    this.runTask(() => set(this.context, 'model.style', 'height: 60px;'));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'height: 60px;' } });
+
+    this.runTask(() => set(this.context, 'model.style', null));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { } });
+
+    this.runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+  }
+
+  ['@test can set dynamic style with -html-safe']() {
+    this.render('<div style={{-html-safe model.style}}></div>', {
+      model: {
+        style: 'width: 60px;'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+
+    this.runTask(() => set(this.context, 'model.style', 'height: 60px;'));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'height: 60px;' } });
+
+    this.runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+  }
 });
 
 if (!EmberDev.runningProdBuild) {
-  let warnings, originalWarn;
-
-  moduleFor('@htmlbars Inline style tests', class extends RenderingTest {
-    constructor() {
-      super(...arguments);
-      warnings = [];
-      originalWarn = getDebugFunction('warn');
-      setDebugFunction('warn', function(message, test) {
-        if (!test) {
-          warnings.push(message);
-        }
-      });
-    }
-
-    teardown() {
-      super(...arguments);
-      setDebugFunction('warn', originalWarn);
-    }
-
+  moduleFor('Inline style tests - warnings', class extends StyleTest {
     ['@test specifying <div style={{userValue}}></div> generates a warning'](assert) {
       this.render('<div style={{userValue}}></div>', {
         userValue: 'width: 42px'
       });
 
-      assert.deepEqual(warnings, [createStyleWarning('width: 42px')]);
+      this.assertStyleWarning();
     }
 
     ['@test specifying `attributeBindings: ["style"]` generates a warning'](assert) {
@@ -975,7 +1241,7 @@ if (!EmberDev.runningProdBuild) {
         userValue: 'width: 42px'
       });
 
-      assert.deepEqual(warnings, [createStyleWarning('width: 42px')]);
+      this.assertStyleWarning();
     }
 
     ['@test specifying `<div style={{{userValue}}}></div>` works properly without a warning'](assert) {
@@ -983,7 +1249,7 @@ if (!EmberDev.runningProdBuild) {
         userValue: 'width: 42px'
       });
 
-      assert.deepEqual(warnings, []);
+      this.assertNoWarning();
     }
 
     ['@test specifying `<div style={{userValue}}></div>` works properly with a SafeString'](assert) {
@@ -991,7 +1257,7 @@ if (!EmberDev.runningProdBuild) {
         userValue: new SafeString('width: 42px')
       });
 
-      assert.deepEqual(warnings, []);
+      this.assertNoWarning();
     }
 
     ['@test null value do not generate htmlsafe warning'](assert) {
@@ -999,14 +1265,61 @@ if (!EmberDev.runningProdBuild) {
         userValue: null
       });
 
-      assert.deepEqual(warnings, []);
+      this.assertNoWarning();
     }
 
     ['@test undefined value do not generate htmlsafe warning'](assert) {
       this.render('<div style={{userValue}}></div>');
 
-      assert.deepEqual(warnings, []);
+      this.assertNoWarning();
     }
 
+    ['@test no warnings are triggered when using `-html-safe`'](assert) {
+      this.render('<div style={{-html-safe userValue}}></div>', {
+        userValue: 'width: 42px'
+      });
+
+      this.assertNoWarning();
+    }
+
+    ['@test no warnings are triggered when a safe string is quoted'](assert) {
+      this.render('<div style="{{userValue}}"></div>', {
+        userValue: new SafeString('width: 42px')
+      });
+
+      this.assertNoWarning();
+    }
+
+    ['@test binding warning is triggered when an unsafe string is quoted'](assert) {
+      this.render('<div style="{{userValue}}"></div>', {
+        userValue: 'width: 42px'
+      });
+
+      this.assertStyleWarning();
+    }
+
+    ['@test binding warning is triggered when a safe string for a complete property is concatenated in place'](assert) {
+      this.render('<div style="color: green; {{userValue}}"></div>', {
+        userValue: new SafeString('width: 42px')
+      });
+
+      this.assertStyleWarning();
+    }
+
+    ['@test binding warning is triggered when a safe string for a value is concatenated in place'](assert) {
+      this.render('<div style="color: green; width: {{userValue}}"></div>', {
+        userValue: new SafeString('42px')
+      });
+
+      this.assertStyleWarning();
+    }
+
+    ['@test binding warning is triggered when a safe string for a property name is concatenated in place'](assert) {
+      this.render('<div style="color: green; {{userProperty}}: 42px"></div>', {
+        userProperty: new SafeString('width')
+      });
+
+      this.assertStyleWarning();
+    }
   });
 }

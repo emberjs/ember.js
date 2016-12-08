@@ -1,9 +1,140 @@
 # Ember Changelog
 
-### 2.7.0-beta.1 (June 8, 2016)
+### 2.11.0-beta.3 (December 7, 2016)
 
+- [#14671](https://github.com/emberjs/ember.js/pull/14671) [BUGFIX] Fix an issue with the `list` attribute in `<input>` elements.
+- [#14681](https://github.com/emberjs/ember.js/pull/14681) [BUGFIX] Fix an issue with computed properties when using aliases as dependent keys.
+- [#14682](https://github.com/emberjs/ember.js/pull/14682) [BUGFIX] Ensure closure actions do not trigger unnecessary re-renders.
+
+### 2.11.0-beta.2 (November 29, 2016)
+
+- [#14658](https://github.com/emberjs/ember.js/pull/14658) [BUGFIX] Make the ember-source build work.
+
+### 2.11.0-beta.1 (November 28, 2016)
+
+- [#14389](https://github.com/emberjs/ember.js/pull/14389) [BUGFIX] Move `classNames` and `classNameBindings` properties into the component's prototype.
+- [#14389](https://github.com/emberjs/ember.js/pull/14389) [BUGFIX] Disallow mutation of shared concatenatedProperties, such as `classNames` and `classNameBindings`.
+- [#14441](https://github.com/emberjs/ember.js/pull/14441) [DEPRECATION] Deprecate remaining usage of the `{{render}}` helper.
+- [#14482](https://github.com/emberjs/ember.js/pull/14482) [DEPRECATION] Deprecate `Component#renderToElement`.
+
+### 2.10.0 (November 28, 2016)
+
+- [#14293](https://github.com/emberjs/ember.js/pull/14293) [BUGFIX] Remove style warning when the binding is quoted.
+- [#12708](https://github.com/emberjs/ember.js/pull/12708) [BUGFIX] Improve compatibility between `Ember.isArray` and the native `Array.isArray` for `FileList`.
+- [#14546](https://github.com/emberjs/ember.js/pull/14546) [BUGFIX] Update route-recognizer to v0.2.8.
+- [#14575](https://github.com/emberjs/ember.js/pull/14575) [BUGFIX] Disallow calling `Ember.get` with empty paths.
+- [#14591](https://github.com/emberjs/ember.js/pull/14591) [BUGFIX] Avoid run.next in `app.visit` resolve handler.
+- [#14537](https://github.com/emberjs/ember.js/pull/14537) [BUGFIX] Improve behavior for query params with undefined values.
+- [#14545](https://github.com/emberjs/ember.js/pull/14545) [BUGFIX] Fixes a number of issues with loading/error substates in ember-engines.
+- [#14571](https://github.com/emberjs/ember.js/pull/14571) [BUGFIX] Prevent errors in watching infrastructure for non-object paths.
+- [tildeio/router.js#197](https://github.com/tildeio/router.js/pull/197) [BUGFIX] Fix redirects performed during the routers validation stages. Properly handles `replaceWith` / `transitionTo` for initial and subsequent transitions.
+- [#14520](https://github.com/emberjs/ember.js/pull/14520) [BUGFIX] Ensure local variables (block params) have higher precedence over helpers.
+- [#14156](https://github.com/emberjs/ember.js/pull/14156) [FEATURE ember-glimmer] Enable by default.
+
+### 2.9.1 (November 1, 2016)
+
+- [#14528](https://github.com/emberjs/ember.js/pull/14528) [BUGFIX] Fix memory leak (leaking component instances in the component registry).
+- [#14509](https://github.com/emberjs/ember.js/pull/14509) [BUGFIX] Fix overwriting rest positional parameters when passed as named parameters. Allows `link-to` to be used as a contextual component.
+- [#14550](https://github.com/emberjs/ember.js/pull/14550) [BUGFIX] Allow canceling items queued by `run.schedule`.
+
+### 2.9.0 (October 17, 2016)
+
+- No changes from 2.8.2.
+
+### 2.8.3 (November 1, 2016)
+
+- [#14528](https://github.com/emberjs/ember.js/pull/14528) [BUGFIX] Fix memory leak (leaking component instances in the component registry).
+- [#14509](https://github.com/emberjs/ember.js/pull/14509) [BUGFIX] Fix overwriting rest positional parameters when passed as named parameters. Allows `link-to` to be used as a contextual component.
+- [#14550](https://github.com/emberjs/ember.js/pull/14550) [BUGFIX] Allow canceling items queued by `run.schedule`.
+
+### 2.8.2 (October 6, 2016)
+
+- [#14365](https://github.com/emberjs/ember.js/pull/14365) [BUGFIX] Fix an issue with URLs with encoded characters and a trailing slash.
+- [#14382](https://github.com/emberjs/ember.js/pull/14382) [BUGFIX] Allow bound `id` on tagless components.
+- [#14421](https://github.com/emberjs/ember.js/pull/14421) [BUGFIX] Fix an issue with local components lookup.
+
+### 2.8.1 (September 14, 2016)
+
+- [#14184](https://github.com/emberjs/ember.js/pull/14184) [BUGFIX] Ensure that promises that reject with non Errors (i.e. something without a `.stack`) do not trigger an error during Ember's internal error processing.
+- [#14237](https://github.com/emberjs/ember.js/pull/14237) [BUGFIX] Ensure Engine Routes are deactivated before destruction.
+- [#14262](https://github.com/emberjs/ember.js/pull/14262) [BUGFIX] Ensure Controller#transitionToRoute and Route#intermediateTransitionTo work in Engines.
+- [#14272](https://github.com/emberjs/ember.js/pull/14272) [BUGFIX] Bump router.js to v1.2.1.
+- [#14281](https://github.com/emberjs/ember.js/pull/14281) [BUGFIX] Ensure referencing `parentView` in a computed property / observer dependent key (or in the template) does not cause an error during teardown.
+- [#14281](https://github.com/emberjs/ember.js/pull/14281) [BUGFIX] Prevent errors from scheduling a rerender (by setting a property in `willDestroyElement`) after a component is destroyed.
+- [#14291](https://github.com/emberjs/ember.js/pull/14291) [BUGFIX] Fix component action bubbling semantics. Actions should not bubble out of a component when returning `true`.
+
+### 2.8.0 (September 8, 2016)
+
+- [#14229](https://github.com/emberjs/ember.js/pull/14229) [BUGFIX] Fix boot errors with `location: 'auto'` when using IE9.
+- [#14219](https://github.com/emberjs/ember.js/pull/14219) [BUGFIX] Fix issue with template meta (i.e. compiled template `moduleName`) was being mutated during the rendering process.
+- [#14159](https://github.com/emberjs/ember.js/pull/14159) [BUGFIX] Fix rendering system cleanup.
+- [#14123](https://github.com/emberjs/ember.js/pull/14123) [BUGFIX] Avoid rerendering outlet state during router destruction.
+- [#14077](https://github.com/emberjs/ember.js/pull/14077) [BUGFIX] Update route-recognizer.
+- [#14087](https://github.com/emberjs/ember.js/pull/14087) [BUGFIX] Check that route handler exists before triggering actions.
+- [#14106](https://github.com/emberjs/ember.js/pull/14106) [BUGFIX] Avoid assertion when `id=` is provided to tagless components.
+- [#14110](https://github.com/emberjs/ember.js/pull/14110) [BUGFIX] Fix issues with revalidation during teardown.
+- [#14117](https://github.com/emberjs/ember.js/pull/14117) [BUGFIX] Call ArrayProxy's content change hooks
+- [#14135](https://github.com/emberjs/ember.js/pull/14135) [BUGFIX] Fix issues around Engine setup and teardown.
+- [#14140](https://github.com/emberjs/ember.js/pull/14140) [BUGFIX] Ensure component injections happen in engine instances.
+- [#14009](https://github.com/emberjs/ember.js/pull/14009) [BUGFIX] Fix usage of `role` when used in `attributeBindings`.
+- [#14044](https://github.com/emberjs/ember.js/pull/14044) / [#14062](https://github.com/emberjs/ember.js/pull/14062) / [#14066](https://github.com/emberjs/ember.js/pull/14066) [BUGFIX] Update `router.js` so that `getHandlers` is invoked lazily.
+- [#14054](https://github.com/emberjs/ember.js/pull/14054) [BUGFIX] Ensure substates properly work with `resetNamespace`.
+- [#14033](https://github.com/emberjs/ember.js/pull/14033) [BUGFIX] Ensure `fillIn` acceptance test helper only sets value to first matched element.
+- [#14058](https://github.com/emberjs/ember.js/pull/14058) [BUGFIX] Fix issues related to `Ember.Router.map` changes in 2.7.0.
+- [#14068](https://github.com/emberjs/ember.js/pull/14068) [BUGFIX] Prevent errors when clicking a `{{link-to}}` during an existing transition.
+- [#13887](https://github.com/emberjs/ember.js/pull/13887) [BUGFIX] Add assertions for illegal component invocations.
+- [#13892](https://github.com/emberjs/ember.js/pull/13892) [CLEANUP] Remove `View#createElement` / `View#destroyElement`.
+- [#13895](https://github.com/emberjs/ember.js/pull/13895) [BUGFIX] Fix template meta lookup for nested tagless and blockless components.
+- [#13911](https://github.com/emberjs/ember.js/pull/13911) [BUGFIX] Avoid using clobbering `.env` property on components.
+- [#13913](https://github.com/emberjs/ember.js/pull/13913) [BUGFIX] Disallow paths beginning with @ in templates.
+- [#13920](https://github.com/emberjs/ember.js/pull/13920) [BUGFIX] Add more info to the `Ember.Binding` deprecation.
+- [#13757](https://github.com/emberjs/ember.js/pull/13757) / [#13773](https://github.com/emberjs/ember.js/pull/13773) [CLEANUP] Remove legacy view layer features.
+- [#13819](https://github.com/emberjs/ember.js/pull/13819) [DOC] Add documentation for container (getOwner, etc.)
+- [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-string-ishtmlsafe] Enable by defaut.
+- [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-application-engines] Enable by default.
+- [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-runtime-enumerable-includes] Enable by default.
+- [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-testing-check-waiters] Enable by default.
+
+### 2.7.3 (September 6, 2016)
+
+- [#14219](https://github.com/emberjs/ember.js/pull/14219) [BUGFIX] Fix issue with mutating template's metadata.
+
+### 2.7.2 (August 30, 2016)
+
+- [#13895](https://github.com/emberjs/ember.js/pull/13895) [BUGFIX] Fix template meta lookup with tagless and blockless components.
+- [#14075](https://github.com/emberjs/ember.js/pull/14075) [BUGFIX] In which we revert route-recognizer to the version used in Ember 2.6. 😢
+
+### 2.7.1 (August 15, 2016)
+
+- [#13920](https://github.com/emberjs/ember.js/pull/13920) [BUGFIX] Add more info to the `Ember.Binding` deprecation.
+- [#14058](https://github.com/emberjs/ember.js/pull/14058) [BUGFIX] Fix issues related to `Ember.Router.map` changes in 2.7.0.
+- [#14068](https://github.com/emberjs/ember.js/pull/14068) [BUGFIX] Prevent errors when clicking a `{{link-to}}` during an existing transition.
+
+### 2.7.0 (July 25, 2016)
+
+- [#13764](https://github.com/emberjs/ember.js/pull/13764) [BUGFIX] Keep rest positional parameters when nesting contextual components if needed.
+- [#13781](https://github.com/emberjs/ember.js/pull/13781) [BUGFIX] Fix NoneLocation#getURL
+- [#13797](https://github.com/emberjs/ember.js/pull/13797) [BUGFIX] Ensure didInitAttrs deprecation is stripped in prod.
+- [#13768](https://github.com/emberjs/ember.js/pull/13768) [BUGFIX] Update route-recognizer to v0.2.0. This addresses a large number of per-existing bugs related to URL encoding. However, in doing so, it might inevitably break existing workarounds in this area. Please refer to the linked pull request for more details.
+- [#13634](https://github.com/emberjs/ember.js/pull/13634) [BUGFIX] Fix issues with rerendering blockless and tagless components.
+- [#13605](https://github.com/emberjs/ember.js/pull/13605) [BUGFIX] Ensure `pauseTest` runs after other async helpers.
+- [#13655](https://github.com/emberjs/ember.js/pull/13655) [BUGFIX] Make debugging `this._super` much easier (remove manual `.call` / `.apply` optimizations).
+- [#13672](https://github.com/emberjs/ember.js/pull/13672) [BUGFIX] Fix issue with `this.render` and `this.disconnectOutlet` in routes.
+- [#13716](https://github.com/emberjs/ember.js/pull/13716) [BUGFIX] Ensure that `Ember.Test.waiters` allows access to configured test waiters.
+- [#13273](https://github.com/emberjs/ember.js/pull/13273) [BUGFIX] Fix a number of query param related issues reported.
 - [#13424](https://github.com/emberjs/ember.js/pull/13424) [DEPRECATE] Deprecate Ember.Binding. See [the deprecation guide](http://emberjs.com/deprecations/v2.x/#toc_ember-binding) for more details.
 - [#13599](https://github.com/emberjs/ember.js/pull/13599) [FEATURE] Enable `ember-runtime-computed-uniq-by` feature.
+
+### 2.6.2 (July 11, 2016)
+
+- [#13781](https://github.com/emberjs/ember.js/pull/13781) [BUGFIX] Fix NoneLocation#getURL
+- [#13797](https://github.com/emberjs/ember.js/pull/13797) [BUGFIX] Ensure didInitAttrs deprecation is stripped in prod.
+
+### 2.6.1 (June 27, 2016)
+
+- [#13634](https://github.com/emberjs/ember.js/pull/13634) [BUGFIX] Fix issues with rerendering blockless and tagless components.
+- [#13655](https://github.com/emberjs/ember.js/pull/13655) [BUGFIX] Make debugging `this._super` much easier (remove manual `.call` / `.apply` optimizations).
+- [#13672](https://github.com/emberjs/ember.js/pull/13672) [BUGFIX] Fix issue with `this.render` and `this.disconnectOutlet` in routes.
 
 ### 2.6.0 (June 8, 2016)
 
@@ -229,6 +360,7 @@
 
 ### 2.0.0 (August 13, 2015)
 
+- [#11213](https://github.com/emberjs/ember.js/pull/11213) [BREAKING] Remove chaining in Observable.set
 - [#12036](https://github.com/emberjs/ember.js/pull/12036) Cleanup CP Set and  Volatile
 - [#11993](https://github.com/emberjs/ember.js/pull/11993) [CLEANUP] Remove `Ember.TrackedArray` and `Ember.SubArray`.
 - [#11550](https://github.com/emberjs/ember.js/pull/11550) [BUGFIX] Ensure that specifying an observer in a child class only observes changes to the childs dependent keys.
@@ -320,7 +452,6 @@
 - [#11807](https://github.com/emberjs/ember.js/pull/11807) [CLEANUP] Remove deprecated `Ember.Handlebars.get`.
 - [#11808](https://github.com/emberjs/ember.js/pull/11808) [CLEANUP] Remove deprecated `Binding#oneWay`.
 - [#11809](https://github.com/emberjs/ember.js/pull/11809) [CLEANUP] Remove deprecated `Map#remove`.
-- [#11213](https://github.com/emberjs/ember.js/pull/11213) [CLEANUP] Remove chaining in Observable.set
 - [#11438](https://github.com/emberjs/ember.js/pull/11438) [CLEANUP] Remove CP semantics
 - [#11447](https://github.com/emberjs/ember.js/pull/11447) [CLEANUP] Remove `Ember.Set` (**not** `Ember.set`).
 - [#11443](https://github.com/emberjs/ember.js/pull/11443) [CLEANUP] Remove `Ember.LinkView`.

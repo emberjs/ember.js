@@ -1,8 +1,8 @@
 import { ENV } from 'ember-environment';
-import { Mixin, mixin } from 'ember-metal/mixin';
-import EmberObject from 'ember-runtime/system/object';
-import Evented from 'ember-runtime/mixins/evented';
-import { testBoth } from 'ember-metal/tests/props_helper';
+import { Mixin, mixin } from 'ember-metal';
+import { testBoth } from 'internal-test-helpers';
+import EmberObject from '../../system/object';
+import Evented from '../../mixins/evented';
 
 QUnit.module('Function.prototype.observes() helper');
 

@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 import { describe, it, beforeEach } from 'mocha';
 import Ember from 'ember';
-import <%= classifiedModuleName %>Initializer from '<%= dasherizedModulePrefix %>/initializers/<%= dasherizedModuleName %>';
+import { initialize } from '<%= dasherizedModulePrefix %>/initializers/<%= dasherizedModuleName %>';
+import destroyApp from '../../helpers/destroy-app';
 
 describe('<%= friendlyTestName %>', function() {
   let application;
@@ -13,9 +14,13 @@ describe('<%= friendlyTestName %>', function() {
     });
   });
 
+  afterEach(function() {
+    destroyApp(application);
+  });
+
   // Replace this with your real tests.
   it('works', function() {
-    <%= classifiedModuleName %>Initializer.initialize(application);
+    initialize(application);
 
     // you would normally confirm the results of the initializer here
     expect(true).to.be.ok;

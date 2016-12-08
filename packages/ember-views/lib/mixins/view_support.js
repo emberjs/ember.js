@@ -1,19 +1,26 @@
-import { assert, deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import run from 'ember-metal/run_loop';
-import { guidFor } from 'ember-metal/utils';
-import { Mixin } from 'ember-metal/mixin';
+import { guidFor } from 'ember-utils';
+import { assert, deprecate, descriptor, Mixin } from 'ember-metal';
+import { environment } from 'ember-environment';
+import { matches } from '../system/utils';
 import { POST_INIT } from 'ember-runtime/system/core_object';
-import symbol from 'ember-metal/symbol';
 
-const INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
 
-import jQuery from 'ember-views/system/jquery';
+import jQuery from '../system/jquery';
 
 function K() { return this; }
 
+/**
+ @class ViewMixin
+ @namespace Ember
+ @private
+*/
 export default Mixin.create({
   concatenatedProperties: ['attributeBindings'],
+  [POST_INIT]() {
+    this.trigger('didInitAttrs', { attrs: this.attrs });
+    this.trigger('didReceiveAttrs', { newAttrs: this.attrs });
+  },
+
 
   // ..........................................................
   // TEMPLATE SUPPORT
@@ -27,17 +34,18 @@ export default Mixin.create({
     @param {Class,Mixin} klass Subclass of Ember.View (or Ember.View itself),
            or an instance of Ember.Mixin.
     @return Ember.View
+    @deprecated use `yield` and contextual components for composition instead.
     @private
   */
   nearestOfType(klass) {
-    let view = get(this, 'parentView');
+    let view = this.parentView;
     let isOfType = klass instanceof Mixin ?
                    view => klass.detect(view) :
                    view => klass.detect(view.constructor);
 
     while (view) {
       if (isOfType(view)) { return view; }
-      view = get(view, 'parentView');
+      view = view.parentView;
     }
   },
 
@@ -47,14 +55,15 @@ export default Mixin.create({
     @method nearestWithProperty
     @param {String} property A property name
     @return Ember.View
+    @deprecated use `yield` and contextual components for composition instead.
     @private
   */
   nearestWithProperty(property) {
-    let view = get(this, 'parentView');
+    let view = this.parentView;
 
     while (view) {
       if (property in view) { return view; }
-      view = get(view, 'parentView');
+      view = view.parentView;
     }
   },
 
@@ -90,7 +99,13 @@ export default Mixin.create({
     @type DOMElement
     @public
   */
-  element: null,
+  element: descriptor({
+    configurable: false,
+    enumerable: false,
+    get() {
+      return this.renderer.getElement(this);
+    }
+  }),
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector
@@ -110,26 +125,8 @@ export default Mixin.create({
     return this._currentState.$(this, sel);
   },
 
-  forEachChildView(callback) {
-    let childViews = this.childViews;
-
-    if (!childViews) { return this; }
-
-    let view, idx;
-
-    for (idx = 0; idx < childViews.length; idx++) {
-      view = childViews[idx];
-      callback(view);
-    }
-
-    return this;
-  },
-
   /**
     Appends the view's element to the specified parent element.
-
-    If the view does not have an HTML representation yet, `createElement()`
-    will be called automatically.
 
     Note that this method just schedules the view to be appended; the DOM
     element will not be appended to the given element until all bindings have
@@ -146,23 +143,34 @@ export default Mixin.create({
     @private
   */
   appendTo(selector) {
-    let $ = this._environment ? this._environment.options.jQuery : jQuery;
+    let env = this._environment || environment;
+    let target;
 
-    if ($) {
-      let target = $(selector);
+    if (env.hasDOM) {
+      target = typeof selector === 'string' ? document.querySelector(selector) : selector;
 
-      assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target.length > 0);
-      assert('You cannot append to an existing Ember.View.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
+      assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target);
+      assert('You cannot append to an existing Ember.View.', !matches(target, '.ember-view'));
+      assert('You cannot append to an existing Ember.View.', (function() {
+        let node = target.parentNode;
+        while (node) {
+          if (node.nodeType !== 9 && matches(node, '.ember-view')) {
+            return false;
+          }
 
-      this.renderer.appendTo(this, target[0]);
+          node = node.parentNode;
+        }
+
+        return true;
+      })());
     } else {
-      let target = selector;
+      target = selector;
 
       assert('You tried to append to a selector string (' + selector + ') in an environment without jQuery', typeof target !== 'string');
       assert('You tried to append to a non-Element (' + selector + ') in an environment without jQuery', typeof selector.appendChild === 'function');
-
-      this.renderer.appendTo(this, target);
     }
+
+    this.renderer.appendTo(this, target);
 
     return this;
   },
@@ -207,12 +215,23 @@ export default Mixin.create({
     @method renderToElement
     @param {String} tagName The tag of the element to create and render into. Defaults to "body".
     @return {HTMLBodyElement} element
+    @deprecated Use appendTo instead.
     @private
   */
   renderToElement(tagName) {
     tagName = tagName || 'body';
 
-    let element = this.renderer._dom.createElement(tagName);
+    deprecate(
+      `Using the \`renderToElement\` is deprecated in favor of \`appendTo\`. Called in ${this.toString()}`,
+      false,
+      {
+        id: 'ember-views.render-to-element',
+        until: '2.12.0',
+        url: 'http://emberjs.com/deprecations/v2.x#toc_code-rendertoelement-code'
+      }
+    );
+
+    let element = this.renderer.createElement(tagName);
 
     this.renderer.appendTo(this, element);
     return element;
@@ -265,25 +284,6 @@ export default Mixin.create({
   },
 
   /**
-    Removes the view's element from the element to which it is attached.
-
-    @method remove
-    @return {Ember.View} receiver
-    @private
-  */
-  remove() {
-    // What we should really do here is wait until the end of the run loop
-    // to determine if the element has been re-appended to a different
-    // element.
-    // In the interim, we will just re-render if that happens. It is more
-    // important than elements get garbage collected.
-    if (!this.removedFromDOM) { this.destroyElement(); }
-
-    // Set flag to avoid future renders
-    this._willInsert = false;
-  },
-
-  /**
     The HTML `id` of the view's element in the DOM. You can provide this
     value yourself but it must be unique (just as in HTML):
 
@@ -300,10 +300,11 @@ export default Mixin.create({
 
     ```javascript
       export default Ember.Component.extend({
-        setElementId: Ember.on('init', function() {
+        init() {
+          this._super(...arguments);
           let index = this.get('index');
           this.set('elementId', 'component-id' + index);
-        })
+        }
       });
     ```
 
@@ -331,26 +332,6 @@ export default Mixin.create({
   },
 
   /**
-    Creates a DOM representation of the view and all of its child views by
-    recursively calling the `render()` method. Once the element is created,
-    it sets the `element` property of the view to the rendered element.
-
-    After the element has been inserted into the DOM, `didInsertElement` will
-    be called on this view and all of its child views.
-
-    @method createElement
-    @return {Ember.View} receiver
-    @private
-  */
-  createElement() {
-    if (this.element) { return this; }
-
-    this.renderer.createElement(this);
-
-    return this;
-  },
-
-  /**
     Called when a view is going to insert an element into the DOM.
 
     @event willInsertElement
@@ -359,12 +340,12 @@ export default Mixin.create({
   willInsertElement: K,
 
   /**
-    Called when the element of the view has been inserted into the DOM
-    or after the view was re-rendered. Override this function to do any
-    set up that requires an element in the document body.
+    Called when the element of the view has been inserted into the DOM.
+    Override this function to do any set up that requires an element
+    in the document body.
 
     When a view has children, didInsertElement will be called on the
-    child view(s) first, bubbling upwards through the hierarchy.
+    child view(s) first and on itself afterwards.
 
     @event didInsertElement
     @public
@@ -382,26 +363,17 @@ export default Mixin.create({
   willClearRender: K,
 
   /**
-    Destroys any existing element along with the element for any child views
-    as well. If the view does not currently have a element, then this method
-    will do nothing.
+    You must call `destroy` on a view to destroy the view (and all of its
+    child views). This will remove the view from any parent node, then make
+    sure that the DOM element managed by the view can be released by the
+    memory manager.
 
-    If you implement `willDestroyElement()` on your view, then this method will
-    be invoked on your view before your element is destroyed to give you a
-    chance to clean up any event handlers, etc.
-
-    If you write a `willDestroyElement()` handler, you can assume that your
-    `didInsertElement()` handler was called earlier for the same element.
-
-    You should not call or override this method yourself, but you may
-    want to implement the above callbacks.
-
-    @method destroyElement
-    @return {Ember.View} receiver
+    @method destroy
     @private
   */
-  destroyElement() {
-    return this._currentState.destroyElement(this);
+  destroy() {
+    this._super(...arguments);
+    this._currentState.destroy(this);
   },
 
   /**
@@ -446,52 +418,6 @@ export default Mixin.create({
   // the default case and a user-specified tag.
   tagName: null,
 
-  /*
-    Used to specify a default tagName that can be overridden when extending
-    or invoking from a template.
-
-    @property _defaultTagName
-    @private
-  */
-
-  /**
-    Normally, Ember's component model is "write-only". The component takes a
-    bunch of attributes that it got passed in, and uses them to render its
-    template.
-
-    One nice thing about this model is that if you try to set a value to the
-    same thing as last time, Ember (through HTMLBars) will avoid doing any
-    work on the DOM.
-
-    This is not just a performance optimization. If an attribute has not
-    changed, it is important not to clobber the element's "hidden state".
-    For example, if you set an input's `value` to the same value as before,
-    it will clobber selection state and cursor position. In other words,
-    setting an attribute is not **always** idempotent.
-
-    This method provides a way to read an element's attribute and also
-    update the last value Ember knows about at the same time. This makes
-    setting an attribute idempotent.
-
-    In particular, what this means is that if you get an `<input>` element's
-    `value` attribute and then re-render the template with the same value,
-    it will avoid clobbering the cursor and selection position.
-
-    Since most attribute sets are idempotent in the browser, you typically
-    can get away with reading attributes using jQuery, but the most reliable
-    way to do so is through this method.
-
-    @method readDOMAttr
-    @param {String} name the name of the attribute
-    @return String
-    @public
-  */
-  readDOMAttr(name) {
-    let attr = this._renderNode.childNodes.filter(node => node.attrName === name)[0];
-    if (!attr) { return null; }
-    return attr.getContent();
-  },
-
   // .......................................................
   // CORE DISPLAY METHODS
   //
@@ -513,21 +439,15 @@ export default Mixin.create({
       this.elementId = guidFor(this);
     }
 
-    this.scheduledRevalidation = false;
-
-    this[INIT_WAS_CALLED] = true;
-
-    if (typeof(this.didInitAttrs) === 'function') {
-      deprecate(
-        `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
-        false,
-        {
-          id: 'ember-views.did-init-attrs',
-          until: '3.0.0',
-          url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
-        }
-      );
-    }
+    deprecate(
+      `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
+      typeof(this.didInitAttrs) !== 'function',
+      {
+        id: 'ember-views.did-init-attrs',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+      }
+    );
 
     assert(
       'Using a custom `.render` function is no longer supported.',
@@ -535,111 +455,8 @@ export default Mixin.create({
     );
   },
 
-  /*
-   This is a special hook implemented in CoreObject, that allows Views/Components
-   to have a way to ensure that `init` fires before `didInitAttrs` / `didReceiveAttrs`
-   (so that `this._super` in init does not trigger `didReceiveAttrs` before the classes
-   own `init` is finished).
-
-   @method __postInitInitialization
-   @private
-   */
-  [POST_INIT]: function() {
-    this._super(...arguments);
-
-    assert(
-      `You must call \`this._super(...arguments);\` when implementing \`init\` in a component. Please update ${this} to call \`this._super\` from \`init\`.`,
-      this[INIT_WAS_CALLED]
-    );
-
-    this.renderer.componentInitAttrs(this, this.attrs || {});
-  },
-
   __defineNonEnumerable(property) {
     this[property.name] = property.descriptor.value;
-  },
-
-  revalidate() {
-    this.renderer.revalidateTopLevelView(this);
-    this.scheduledRevalidation = false;
-  },
-
-  scheduleRevalidate(node, label, manualRerender) {
-    if (node && !this._dispatching && this.env.renderedNodes.has(node)) {
-      if (manualRerender) {
-        deprecate(
-          `You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 3.0`,
-          false,
-          { id: 'ember-views.manual-parent-rerender', until: '3.0.0' }
-        );
-      } else {
-        deprecate(
-          `You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 3.0`,
-          false,
-          { id: 'ember-views.render-double-modify', until: '3.0.0' }
-        );
-      }
-      run.scheduleOnce('render', this, this.revalidate);
-      return;
-    }
-
-    deprecate(
-      `A property of ${this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`,
-      !this._dispatching,
-      { id: 'ember-views.dispatching-modify-property', until: '3.0.0' }
-    );
-
-    if (!this.scheduledRevalidation || this._dispatching) {
-      this.scheduledRevalidation = true;
-      run.scheduleOnce('render', this, this.revalidate);
-    }
-  },
-
-  /**
-    Removes the view from its `parentView`, if one is found. Otherwise
-    does nothing.
-
-    @method removeFromParent
-    @return {Ember.View} receiver
-    @private
-  */
-  removeFromParent() {
-    let parent = this.parentView;
-
-    // Remove DOM element from parent
-    this.remove();
-
-    if (parent) { parent.removeChild(this); }
-    return this;
-  },
-
-  /**
-    You must call `destroy` on a view to destroy the view (and all of its
-    child views). This will remove the view from any parent node, then make
-    sure that the DOM element managed by the view can be released by the
-    memory manager.
-
-    @method destroy
-    @private
-  */
-  destroy() {
-    // get parentView before calling super because it'll be destroyed
-    let parentView = this.parentView;
-    let viewName = this.viewName;
-
-    if (!this._super(...arguments)) { return; }
-
-    // remove from non-virtual parent view if viewName was specified
-    if (viewName && parentView) {
-      parentView.set(viewName, null);
-    }
-
-    // Destroy HTMLbars template
-    if (this.lastResult) {
-      this.lastResult.destroy();
-    }
-
-    return this;
   },
 
   // .......................................................
@@ -656,32 +473,5 @@ export default Mixin.create({
   */
   handleEvent(eventName, evt) {
     return this._currentState.handleEvent(this, eventName, evt);
-  },
-
-  /**
-    Registers the view in the view registry, keyed on the view's `elementId`.
-    This is used by the EventDispatcher to locate the view in response to
-    events.
-
-    This method should only be called once the view has been inserted into the
-    DOM.
-
-    @method _register
-    @private
-  */
-  _register() {
-    assert('Attempted to register a view with an id already in use: ' + this.elementId, !this._viewRegistry[this.elementId]);
-    this._viewRegistry[this.elementId] = this;
-  },
-
-  /**
-    Removes the view from the view registry. This should be called when the
-    view is removed from DOM.
-
-    @method _unregister
-    @private
-  */
-  _unregister() {
-    delete this._viewRegistry[this.elementId];
   }
 });

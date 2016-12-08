@@ -3,8 +3,10 @@
 @submodule ember-runtime
 */
 
-import { deprecate } from 'ember-metal/debug';
-import { Mixin } from 'ember-metal/mixin';
+import {
+  deprecate,
+  Mixin
+} from 'ember-metal';
 
 /**
   RegistryProxyMixin is used to provide public access to specific

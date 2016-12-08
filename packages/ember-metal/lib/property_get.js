@@ -2,8 +2,8 @@
 @module ember-metal
 */
 
-import { assert } from 'ember-metal/debug';
-import { isPath, hasThis } from 'ember-metal/path_cache';
+import { assert } from './debug';
+import { isPath, hasThis } from './path_cache';
 
 const ALLOWABLE_TYPES = {
   object: true,
@@ -22,6 +22,10 @@ const ALLOWABLE_TYPES = {
   Gets the value of a property on an object. If the property is computed,
   the function will be invoked. If the property is not defined but the
   object implements the `unknownProperty` method then that will be invoked.
+
+  ```javascript
+  Ember.get(obj, "name");
+  ```
 
   If you plan to run on IE8 and older browsers then you should use this
   method anytime you want to retrieve a property on an object that you don't
@@ -48,11 +52,7 @@ export function get(obj, keyName) {
   assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
   assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
   assert(`'this' in paths is not supported`, !hasThis(keyName));
-
-  // Helpers that operate with 'this' within an #each
-  if (keyName === '') {
-    return obj;
-  }
+  assert('Cannot call `Ember.get` with an empty string', keyName !== '');
 
   let value = obj[keyName];
   let desc = (value !== null && typeof value === 'object' && value.isDescriptor) ? value : undefined;

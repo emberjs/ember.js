@@ -1,25 +1,33 @@
 /*globals EmberDev */
-import VERSION from 'ember/version';
+import { VERSION } from 'ember';
 import { ENV, context } from 'ember-environment';
-import isEnabled from 'ember-metal/features';
-import run from 'ember-metal/run_loop';
-import libraries from 'ember-metal/libraries';
-import Application from 'ember-application/system/application';
-import DefaultResolver from 'ember-application/system/resolver';
-import Router from 'ember-routing/system/router';
-import View from 'ember-views/views/view';
-import Controller from 'ember-runtime/controllers/controller';
-import NoneLocation from 'ember-routing/location/none_location';
-import EmberObject from 'ember-runtime/system/object';
-import { setSearchDisabled as setNamespaceSearchDisabled } from 'ember-runtime/system/namespace';
-import EmberRoute from 'ember-routing/system/route';
-import jQuery from 'ember-views/system/jquery';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import { _loaded } from 'ember-runtime/system/lazy_load';
-import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
-import { privatize as P } from 'container/registry';
-import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
+import {
+  run,
+  libraries,
+  getDebugFunction,
+  setDebugFunction
+} from 'ember-metal';
+import Application from '../../system/application';
+import DefaultResolver from '../../system/resolver';
+import {
+  Router,
+  NoneLocation,
+  Route as EmberRoute
+} from 'ember-routing';
+import { jQuery } from 'ember-views';
+import {
+  Controller,
+  Object as EmberObject,
+  setNamespaceSearchDisabled,
+  _loaded
+} from 'ember-runtime';
+import { compile } from 'ember-template-compiler';
+import { setTemplates, setTemplate } from 'ember-glimmer';
+import { privatize as P } from 'container';
+import {
+  verifyInjection,
+  verifyRegistration
+} from '../test-helpers/registry-check';
 
 let { trim } = jQuery;
 
@@ -113,9 +121,7 @@ QUnit.test('builds a registry', function() {
   strictEqual(application.resolveRegistration('application:main'), application, `application:main is registered`);
   deepEqual(application.registeredOptionsForType('component'), { singleton: false }, `optionsForType 'component'`);
   deepEqual(application.registeredOptionsForType('view'), { singleton: false }, `optionsForType 'view'`);
-  verifyInjection(application, 'renderer', 'dom', 'service:-dom-helper');
   verifyRegistration(application, 'controller:basic');
-  verifyInjection(application, 'service:-dom-helper', 'document', 'service:-document');
   verifyRegistration(application, '-view-registry:main');
   verifyInjection(application, 'view', '_viewRegistry', '-view-registry:main');
   verifyInjection(application, 'route', '_topLevelViewTemplate', 'template:-outlet');
@@ -135,7 +141,6 @@ QUnit.test('builds a registry', function() {
   verifyRegistration(application, P`-bucket-cache:main`);
   verifyInjection(application, 'router', '_bucketCache', P`-bucket-cache:main`);
   verifyInjection(application, 'route', '_bucketCache', P`-bucket-cache:main`);
-  verifyInjection(application, 'controller', '_bucketCache', P`-bucket-cache:main`);
 
   verifyInjection(application, 'route', 'router', 'router:main');
 
@@ -152,29 +157,22 @@ QUnit.test('builds a registry', function() {
   verifyInjection(application, 'container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
   verifyInjection(application, 'data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
   verifyRegistration(application, 'container-debug-adapter:main');
+  verifyRegistration(application, 'component-lookup:main');
 
-  if (isEnabled('ember-glimmer')) {
-    verifyRegistration(application, 'service:-glimmer-environment');
-    verifyInjection(application, 'service:-glimmer-environment', 'dom', 'service:-dom-helper');
-    verifyInjection(application, 'renderer', 'env', 'service:-glimmer-environment');
-    verifyRegistration(application, 'view:-outlet');
-    verifyRegistration(application, 'renderer:-dom');
-    verifyRegistration(application, 'renderer:-inert');
-    verifyRegistration(application, 'service:-dom-helper');
-    verifyRegistration(application, P`template:components/-default`);
-    verifyRegistration(application, 'template:-outlet');
-    verifyInjection(application, 'view:-outlet', 'template', 'template:-outlet');
-    verifyInjection(application, 'template', 'env', 'service:-glimmer-environment');
-    deepEqual(application.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
-  } else {
-    deepEqual(application.registeredOptionsForType('template'), { instantiate: false }, `optionsForType 'template'`);
-    verifyRegistration(application, 'view:-outlet');
-    verifyRegistration(application, 'renderer:-dom');
-    verifyRegistration(application, 'renderer:-inert');
-    verifyRegistration(application, 'service:-dom-helper');
-    verifyRegistration(application, 'template:-outlet');
-    verifyRegistration(application, 'view:toplevel');
-  }
+  verifyRegistration(application, 'service:-glimmer-environment');
+  verifyRegistration(application, 'service:-dom-changes');
+  verifyRegistration(application, 'service:-dom-tree-construction');
+  verifyInjection(application, 'service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
+  verifyInjection(application, 'service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
+  verifyInjection(application, 'renderer', 'env', 'service:-glimmer-environment');
+  verifyRegistration(application, 'view:-outlet');
+  verifyRegistration(application, 'renderer:-dom');
+  verifyRegistration(application, 'renderer:-inert');
+  verifyRegistration(application, P`template:components/-default`);
+  verifyRegistration(application, 'template:-outlet');
+  verifyInjection(application, 'view:-outlet', 'template', 'template:-outlet');
+  verifyInjection(application, 'template', 'env', 'service:-glimmer-environment');
+  deepEqual(application.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
 });
 
 const originalLogVersion = ENV.LOG_VERSION;
@@ -253,9 +251,9 @@ QUnit.test('initialize application via initialize call', function() {
       location: 'none'
     });
 
-    app.ApplicationView = View.extend({
-      template: compile('<h1>Hello!</h1>')
-    });
+    setTemplate('application', compile(
+      '<h1>Hello!</h1>'
+    ));
   });
 
   // This is not a public way to access the container; we just
@@ -399,4 +397,14 @@ QUnit.test('does not leak itself in onLoad._loaded', function() {
   equal(_loaded.application, app);
   run(app, 'destroy');
   equal(_loaded.application, undefined);
+});
+
+QUnit.test('can build a registry via Ember.Application.buildRegistry() --- simulates ember-test-helpers', function(assert) {
+  let namespace = EmberObject.create({
+    Resolver: { create: function() { } }
+  });
+
+  let registry = Application.buildRegistry(namespace);
+
+  assert.equal(registry.resolve('application:main'), namespace);
 });

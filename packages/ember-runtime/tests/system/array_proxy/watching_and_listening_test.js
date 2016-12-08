@@ -1,11 +1,13 @@
-import { get } from 'ember-metal/property_get';
-import { listenersFor } from 'ember-metal/events';
-import { addObserver } from 'ember-metal/observer';
-import { defineProperty } from 'ember-metal/properties';
-import { watcherCount } from 'ember-metal/watching';
-import computed from 'ember-metal/computed';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
-import { A } from 'ember-runtime/system/native_array';
+import {
+  get,
+  listenersFor,
+  addObserver,
+  defineProperty,
+  watcherCount,
+  computed
+} from 'ember-metal';
+import ArrayProxy from '../../../system/array_proxy';
+import { A } from '../../../system/native_array';
 
 function sortedListenersFor(obj, eventName) {
   return listenersFor(obj, eventName).sort((listener1, listener2) => {

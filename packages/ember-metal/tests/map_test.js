@@ -2,7 +2,7 @@ import {
   Map,
   MapWithDefault,
   OrderedSet
-} from 'ember-metal/map';
+} from '../map';
 
 let object, number, string, map, variety;
 const varieties = [['Map', Map], ['MapWithDefault', MapWithDefault]];

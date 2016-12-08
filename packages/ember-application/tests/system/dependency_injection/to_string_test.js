@@ -1,9 +1,9 @@
+import { guidFor } from 'ember-utils';
 import { ENV, context } from 'ember-environment'; // lookup, etc
-import run from 'ember-metal/run_loop';
-import Application from 'ember-application/system/application';
-import EmberObject from 'ember-runtime/system/object';
-import DefaultResolver from 'ember-application/system/resolver';
-import { guidFor } from 'ember-metal/utils';
+import { run } from 'ember-metal';
+import Application from '../../../system/application';
+import { Object as EmberObject } from 'ember-runtime';
+import DefaultResolver from '../../../system/resolver';
 
 let originalLookup, App, originalModelInjections;
 

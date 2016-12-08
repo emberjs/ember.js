@@ -1,10 +1,12 @@
 import { context } from 'ember-environment';
-import isEnabled from 'ember-metal/features';
-import run from 'ember-metal/run_loop';
-import Engine from 'ember-application/system/engine';
-import EmberObject from 'ember-runtime/system/object';
-import { privatize as P } from 'container/registry';
-import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
+import { run } from 'ember-metal';
+import Engine from '../../system/engine';
+import { Object as EmberObject } from 'ember-runtime';
+import { privatize as P } from 'container';
+import {
+  verifyInjection,
+  verifyRegistration
+} from '../test-helpers/registry-check';
 
 let engine;
 let originalLookup = context.lookup;
@@ -35,9 +37,7 @@ QUnit.test('builds a registry', function() {
   strictEqual(engine.resolveRegistration('application:main'), engine, `application:main is registered`);
   deepEqual(engine.registeredOptionsForType('component'), { singleton: false }, `optionsForType 'component'`);
   deepEqual(engine.registeredOptionsForType('view'), { singleton: false }, `optionsForType 'view'`);
-  verifyInjection(engine, 'renderer', 'dom', 'service:-dom-helper');
   verifyRegistration(engine, 'controller:basic');
-  verifyInjection(engine, 'service:-dom-helper', 'document', 'service:-document');
   verifyInjection(engine, 'view', '_viewRegistry', '-view-registry:main');
   verifyInjection(engine, 'route', '_topLevelViewTemplate', 'template:-outlet');
   verifyInjection(engine, 'view:-outlet', 'namespace', 'application:main');
@@ -47,7 +47,6 @@ QUnit.test('builds a registry', function() {
 
   verifyInjection(engine, 'router', '_bucketCache', P`-bucket-cache:main`);
   verifyInjection(engine, 'route', '_bucketCache', P`-bucket-cache:main`);
-  verifyInjection(engine, 'controller', '_bucketCache', P`-bucket-cache:main`);
 
   verifyInjection(engine, 'route', 'router', 'router:main');
 
@@ -64,18 +63,14 @@ QUnit.test('builds a registry', function() {
   verifyInjection(engine, 'container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
   verifyInjection(engine, 'data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
   verifyRegistration(engine, 'container-debug-adapter:main');
+  verifyRegistration(engine, 'component-lookup:main');
 
-  if (isEnabled('ember-glimmer')) {
-    verifyRegistration(engine, 'view:-outlet');
-    verifyRegistration(engine, P`template:components/-default`);
-    verifyRegistration(engine, 'template:-outlet');
-    verifyInjection(engine, 'view:-outlet', 'template', 'template:-outlet');
-    verifyInjection(engine, 'template', 'env', 'service:-glimmer-environment');
-    deepEqual(engine.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
-  } else {
-    deepEqual(engine.registeredOptionsForType('template'), { instantiate: false }, `optionsForType 'template'`);
-    verifyRegistration(engine, 'view:-outlet');
-    verifyRegistration(engine, 'template:-outlet');
-    verifyRegistration(engine, 'view:toplevel');
-  }
+  verifyInjection(engine, 'service:-dom-changes', 'document', 'service:-document');
+  verifyInjection(engine, 'service:-dom-tree-construction', 'document', 'service:-document');
+  verifyRegistration(engine, 'view:-outlet');
+  verifyRegistration(engine, P`template:components/-default`);
+  verifyRegistration(engine, 'template:-outlet');
+  verifyInjection(engine, 'view:-outlet', 'template', 'template:-outlet');
+  verifyInjection(engine, 'template', 'env', 'service:-glimmer-environment');
+  deepEqual(engine.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
 });

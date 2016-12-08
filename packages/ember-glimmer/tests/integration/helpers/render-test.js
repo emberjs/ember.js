@@ -1,18 +1,50 @@
-import { observer } from 'ember-metal/mixin';
-import Controller from 'ember-runtime/controllers/controller';
+import { observer, set } from 'ember-metal';
+import { Controller } from 'ember-runtime';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { set } from 'ember-metal/property_set';
-import EmberRouter from 'ember-routing/system/router';
 
-
-moduleFor('@htmlbars Helpers test: {{render}}', class extends RenderingTest {
+moduleFor('Helpers test: {{render}}', class extends RenderingTest {
   ['@test should render given template']() {
-    this.owner.register('controller:home', Controller.extend());
     this.registerTemplate('home', '<p>BYE</p>');
 
-    this.render(`<h1>HI</h1>{{render 'home'}}`);
+    expectDeprecation(() => {
+      this.render(`<h1>HI</h1>{{render 'home'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
 
     this.assertText('HIBYE');
+  }
+
+  ['@test uses `controller:basic` as the basis for a generated controller when none exists for specified name']() {
+    this.owner.register('controller:basic', Controller.extend({
+      isBasicController: true
+    }));
+    this.registerTemplate('home', '{{isBasicController}}');
+
+    expectDeprecation(() => {
+      this.render(`{{render 'home'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    this.assertText('true');
+  }
+
+  ['@test generates a controller if none exists']() {
+    this.registerTemplate('home', '<p>{{this}}</p>');
+
+    expectDeprecation(() => {
+      this.render(`<h1>HI</h1>{{render 'home'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    this.assertText('HI(generated home controller)');
+  }
+
+  ['@test should use controller with the same name as template if present']() {
+    this.owner.register('controller:home', Controller.extend({ name: 'home' }));
+    this.registerTemplate('home', '{{name}}<p>BYE</p>');
+
+    expectDeprecation(() => {
+      this.render(`<h1>HI</h1>{{render 'home'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    this.assertText('HIhomeBYE');
   }
 
   ['@test should render nested helpers']() {
@@ -22,20 +54,97 @@ moduleFor('@htmlbars Helpers test: {{render}}', class extends RenderingTest {
     this.owner.register('controller:baz', Controller.extend());
 
     this.registerTemplate('home', '<p>BYE</p>');
-    this.registerTemplate('foo', `<p>FOO</p>{{render 'bar'}}`);
-    this.registerTemplate('bar', `<p>BAR</p>{{render 'baz'}}`);
     this.registerTemplate('baz', `<p>BAZ</p>`);
 
-    this.render('<h1>HI</h1>{{render \'foo\'}}');
+    expectDeprecation(() => {
+      this.registerTemplate('foo', `<p>FOO</p>{{render 'bar'}}`);
+      this.registerTemplate('bar', `<p>BAR</p>{{render 'baz'}}`);
+      this.render('<h1>HI</h1>{{render \'foo\'}}');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
     this.assertText('HIFOOBARBAZ');
   }
 
   ['@test should have assertion if the template does not exist']() {
     this.owner.register('controller:oops', Controller.extend());
 
-    expectAssertion(() => {
-      this.render(`<h1>HI</h1>{{render 'oops'}}`);
-    }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as a template.');
+    expectDeprecation(() => {
+      expectAssertion(() => {
+        this.render(`<h1>HI</h1>{{render 'oops'}}`);
+      }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as a template.');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+  }
+
+  ['@test should render given template with the singleton controller as its context']() {
+    this.owner.register('controller:post', Controller.extend({
+      init() {
+        this.set('title', `It's Simple Made Easy`);
+      }
+    }));
+    this.registerTemplate('post', '<p>{{title}}</p>');
+
+    expectDeprecation(() => {
+      this.render(`<h1>HI</h1>{{render 'post'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    this.assertText(`HIIt's Simple Made Easy`);
+
+    this.runTask(() => this.rerender());
+
+    this.assertText(`HIIt's Simple Made Easy`);
+
+    let controller = this.owner.lookup('controller:post');
+
+    this.runTask(() => set(controller, 'title', `Rails is omakase`));
+
+    this.assertText(`HIRails is omakase`);
+
+    this.runTask(() => set(controller, 'title', `It's Simple Made Easy`));
+
+    this.assertText(`HIIt's Simple Made Easy`);
+  }
+
+  ['@test should not destroy the singleton controller on teardown'](assert) {
+    let willDestroyFired = 0;
+
+    this.owner.register('controller:post', Controller.extend({
+      init() {
+        this.set('title', `It's Simple Made Easy`);
+      },
+
+      willDestroy() {
+        this._super(...arguments);
+        willDestroyFired++;
+      }
+    }));
+
+    this.registerTemplate('post', '<p>{{title}}</p>');
+
+    expectDeprecation(() => {
+      this.render(`{{#if showPost}}{{render 'post'}}{{else}}Nothing here{{/if}}`, { showPost: false });
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', true));
+
+    this.assertText(`It's Simple Made Easy`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', false));
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
   }
 
   ['@test should render given template with a supplied model']() {
@@ -65,6 +174,62 @@ moduleFor('@htmlbars Helpers test: {{render}}', class extends RenderingTest {
     this.assertText(`HIIt's Simple Made Easy`);
   }
 
+  ['@test should destroy the non-singleton controllers on teardown'](assert) {
+    let willDestroyFired = 0;
+
+    this.owner.register('controller:post', Controller.extend({
+      willDestroy() {
+        this._super(...arguments);
+        willDestroyFired++;
+      }
+    }));
+
+    this.registerTemplate('post', '<p>{{model.title}}</p>');
+
+    expectDeprecation(() => {
+      this.render(`{{#if showPost}}{{render 'post' post}}{{else}}Nothing here{{/if}}`, {
+        showPost: false,
+        post: {
+          title: `It's Simple Made Easy`
+        }
+      });
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', true));
+
+    this.assertText(`It's Simple Made Easy`);
+
+    assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', false));
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 1, 'it did destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', true));
+
+    this.assertText(`It's Simple Made Easy`);
+
+    assert.strictEqual(willDestroyFired, 1, 'it did not destroy the controller');
+
+    this.runTask(() => set(this.context, 'showPost', false));
+
+    this.assertText(`Nothing here`);
+
+    assert.strictEqual(willDestroyFired, 2, 'it did destroy the controller');
+  }
+
   ['@test with a supplied model should not fire observers on the controller']() {
     this.owner.register('controller:post', Controller.extend());
     this.registerTemplate('post', '<p>{{model.title}}</p>');
@@ -91,9 +256,12 @@ moduleFor('@htmlbars Helpers test: {{render}}', class extends RenderingTest {
   ['@test should raise an error when a given controller name does not resolve to a controller']() {
     this.registerTemplate('home', '<p>BYE</p>');
     this.owner.register('controller:posts', Controller.extend());
-    expectAssertion(() => {
-      this.render(`<h1>HI</h1>{{render "home" controller="postss"}}`);
-    }, /The controller name you supplied \'postss\' did not resolve to a controller./);
+
+    expectDeprecation(() => {
+      expectAssertion(() => {
+        this.render(`<h1>HI</h1>{{render "home" controller="postss"}}`);
+      }, /The controller name you supplied \'postss\' did not resolve to a controller./);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
   }
 
   ['@test should render with given controller'](assert) {
@@ -110,7 +278,10 @@ moduleFor('@htmlbars Helpers test: {{render}}', class extends RenderingTest {
       }
     }));
 
-    this.render('{{render "home" controller="posts"}}');
+    expectDeprecation(() => {
+      this.render('{{render "home" controller="posts"}}');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
     let renderedController = this.owner.lookup('controller:posts');
     let uniqueId = renderedController.get('uniqueId');
     let renderedModel = renderedController.get('model');
@@ -210,7 +381,9 @@ moduleFor('@htmlbars Helpers test: {{render}}', class extends RenderingTest {
       }
     }));
 
-    this.render('{{render "blog.post"}}');
+    expectDeprecation(() => {
+      this.render('{{render "blog.post"}}');
+    }, /Please refactor [\w\.{\}"` ]+ to a component/);
 
     this.assertText(`0`);
   }
@@ -232,16 +405,6 @@ moduleFor('@htmlbars Helpers test: {{render}}', class extends RenderingTest {
         }
       });
     }, 'The second argument of {{render}} must be a path, e.g. {{render "post" post}}.');
-  }
-
-  ['@test should render a template without a model only once']() {
-    this.owner.register('controller:home', Controller.extend());
-    this.owner.register('router:main', EmberRouter.extend());
-    this.registerTemplate('home', '<p>BYE</p>');
-
-    expectAssertion(() => {
-      this.render(`<h1>HI</h1>{{render 'home'}}<hr/>{{render 'home'}}`);
-    }, /\{\{render\}\} helper once/i);
   }
 
   ['@test should set router as target when action not found on parentController is not found'](assert) {

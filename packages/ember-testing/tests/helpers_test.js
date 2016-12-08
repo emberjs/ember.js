@@ -1,34 +1,40 @@
-import Route from 'ember-routing/system/route';
-import Controller from 'ember-runtime/controllers/controller';
-import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
-import RSVP from 'ember-runtime/ext/rsvp';
-import jQuery from 'ember-views/system/jquery';
-import Component from 'ember-templates/component';
+import { Route, Router } from 'ember-routing';
+import {
+  Controller,
+  Object as EmberObject,
+  RSVP
+} from 'ember-runtime';
+import {
+  run,
+  isFeatureEnabled
+} from 'ember-metal';
+import { jQuery } from 'ember-views';
+import {
+  Component,
+  setTemplates,
+  setTemplate
+} from 'ember-glimmer';
 
-import Test from 'ember-testing/test';
-import 'ember-testing/helpers';  // ensure that the helpers are loaded
-import 'ember-testing/initializers'; // ensure the initializer is setup
-import setupForTesting from 'ember-testing/setup_for_testing';
-import EmberRouter from 'ember-routing/system/router';
-import EmberRoute from 'ember-routing/system/route';
-import EmberApplication from 'ember-application/system/application';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
+import Test from '../test';
+import '../helpers';  // ensure that the helpers are loaded
+import '../initializers'; // ensure the initializer is setup
+import setupForTesting from '../setup_for_testing';
+import { Application as EmberApplication } from 'ember-application';
+import { compile } from 'ember-template-compiler';
 
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import {
   pendingRequests,
   incrementPendingRequests,
   clearPendingRequests
-} from 'ember-testing/test/pending_requests';
+} from '../test/pending_requests';
 import {
   setAdapter,
   getAdapter
-} from 'ember-testing/test/adapter';
+} from '../test/adapter';
 import {
   registerWaiter,
   unregisterWaiter
-} from 'ember-testing/test/waiters';
+} from '../test/waiters';
 
 var App;
 var originalAdapter = getAdapter();
@@ -302,7 +308,10 @@ QUnit.test('`wait` respects registerWaiters', function(assert) {
       equal(counter, 0, 'unregistered waiter was not checked');
       equal(otherWaiter(), true, 'other waiter is still registered');
     })
-    .finally(done);
+    .finally(() => {
+      unregisterWaiter(otherWaiter);
+      done();
+    });
 });
 
 QUnit.test('`visit` advances readiness.', function() {
@@ -342,9 +351,7 @@ QUnit.test('`wait` helper can be passed a resolution value', function() {
   });
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('`click` triggers appropriate events in order', function() {
+QUnit.test('`click` triggers appropriate events in order', function() {
   expect(5);
 
   var click, wait, events;
@@ -455,7 +462,7 @@ QUnit.test('`click` triggers native events with simulated X/Y coordinates', func
   });
 });
 
-test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
+QUnit.test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
   expect(5);
 
   var triggerEvent, wait, evt;
@@ -530,7 +537,10 @@ QUnit.test('`wait` respects registerWaiters with optional context', function() {
   }).then(function() {
     equal(obj.counter, 0, 'the unregistered waiter should still be at 0');
     equal(otherWaiter(), true, 'other waiter should still be registered');
-  });
+  })
+    .finally(() => {
+      unregisterWaiter(otherWaiter);
+    });
 });
 
 QUnit.test('`wait` does not error if routing has not begun', function() {
@@ -541,7 +551,7 @@ QUnit.test('`wait` does not error if routing has not begun', function() {
   });
 });
 
-test('`triggerEvent accepts an optional options hash without context', function() {
+QUnit.test('`triggerEvent accepts an optional options hash without context', function() {
   expect(3);
 
   var triggerEvent, wait, event;
@@ -571,7 +581,7 @@ test('`triggerEvent accepts an optional options hash without context', function(
   });
 });
 
-test('`triggerEvent can limit searching for a selector to a scope', function() {
+QUnit.test('`triggerEvent can limit searching for a selector to a scope', function() {
   expect(2);
 
   var triggerEvent, wait, event;
@@ -601,7 +611,7 @@ test('`triggerEvent can limit searching for a selector to a scope', function() {
   });
 });
 
-test('`triggerEvent` can be used to trigger arbitrary events', function() {
+QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() {
   expect(2);
 
   var triggerEvent, wait, event;
@@ -630,9 +640,9 @@ test('`triggerEvent` can be used to trigger arbitrary events', function() {
   });
 });
 
-test('`fillIn` takes context into consideration', function() {
+QUnit.test('`fillIn` takes context into consideration', function() {
   expect(2);
-  var fillIn, find, visit, andThen, wait;
+  var fillIn, find, visit, andThen;
 
   setTemplate('index', compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}'));
 
@@ -642,19 +652,17 @@ test('`fillIn` takes context into consideration', function() {
   find = App.testHelpers.find;
   visit = App.testHelpers.visit;
   andThen = App.testHelpers.andThen;
-  wait = App.testHelpers.wait;
 
   visit('/');
   fillIn('.current', '#parent', 'current value');
-  andThen(function() {
+
+  return andThen(function() {
     equal(find('#first').val(), 'current value');
     equal(find('#second').val(), '');
   });
-
-  return wait();
 });
 
-test('`fillIn` focuses on the element', function() {
+QUnit.test('`fillIn` focuses on the element', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
@@ -719,7 +727,29 @@ QUnit.test('`fillIn` fires `input` and `change` events in the proper order', fun
   return wait();
 });
 
-test('`triggerEvent accepts an optional options hash and context', function() {
+QUnit.test('`fillIn` only sets the value in the first matched element', function() {
+  let fillIn, find, visit, andThen, wait;
+
+  setTemplate('index', compile('<input type="text" id="first" class="in-test"><input type="text" id="second" class="in-test">'));
+  run(App, App.advanceReadiness);
+
+  fillIn = App.testHelpers.fillIn;
+  find = App.testHelpers.find;
+  visit = App.testHelpers.visit;
+  andThen = App.testHelpers.andThen;
+  wait = App.testHelpers.wait;
+
+  visit('/');
+  fillIn('input.in-test', 'new value');
+  andThen(function() {
+    equal(find('#first').val(), 'new value');
+    equal(find('#second').val(), '');
+  });
+
+  return wait();
+});
+
+QUnit.test('`triggerEvent accepts an optional options hash and context', function() {
   expect(3);
 
   var triggerEvent, wait, event;
@@ -757,7 +787,7 @@ QUnit.module('ember-testing debugging helpers', {
     setupApp();
 
     run(function() {
-      App.Router = EmberRouter.extend({
+      App.Router = Router.extend({
         location: 'none'
       });
     });
@@ -784,6 +814,23 @@ QUnit.test('pauseTest pauses', function() {
   App.testHelpers.pauseTest();
 });
 
+if (isFeatureEnabled('ember-testing-resume-test')) {
+  QUnit.test('resumeTest resumes paused tests', function() {
+    expect(1);
+
+    let pausePromise = App.testHelpers.pauseTest();
+    setTimeout(() => App.testHelpers.resumeTest(), 0);
+
+    return pausePromise.then(() => ok(true, 'pauseTest promise was resolved'));
+  });
+
+  QUnit.test('resumeTest throws if nothing to resume', function() {
+    expect(1);
+
+    throws(() => App.testHelpers.resumeTest(), /Testing has not been paused. There is nothing to resume./);
+  });
+}
+
 QUnit.module('ember-testing routing helpers', {
   setup() {
     run(function() {
@@ -792,7 +839,7 @@ QUnit.module('ember-testing routing helpers', {
 
       App.injectTestHelpers();
 
-      App.Router = EmberRouter.extend({
+      App.Router = Router.extend({
         location: 'none'
       });
 
@@ -893,7 +940,7 @@ QUnit.module('ember-testing async router', {
 
     run(function() {
       App = EmberApplication.create();
-      App.Router = EmberRouter.extend({
+      App.Router = Router.extend({
         location: 'none'
       });
 
@@ -904,13 +951,13 @@ QUnit.module('ember-testing async router', {
         });
       });
 
-      App.UserRoute = EmberRoute.extend({
+      App.UserRoute = Route.extend({
         model() {
           return resolveLater();
         }
       });
 
-      App.UserProfileRoute = EmberRoute.extend({
+      App.UserProfileRoute = Route.extend({
         beforeModel() {
           var self = this;
           return resolveLater().then(function() {
@@ -993,10 +1040,7 @@ QUnit.module('can override built-in helpers', {
   },
 
   teardown() {
-    App.removeTestHelpers();
-    jQuery('#ember-testing-container, #ember-testing').remove();
-    run(App, App.destroy);
-    App = null;
+    cleanup();
 
     Test._helpers.visit = originalVisitHelper;
     Test._helpers.find  = originalFindHelper;

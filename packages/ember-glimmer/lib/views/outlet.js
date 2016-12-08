@@ -1,10 +1,12 @@
-import assign from 'ember-metal/assign';
-import { DirtyableTag } from 'glimmer-reference';
-
 /**
 @module ember
-@submodule ember-templates
+@submodule ember-glimmer
 */
+import { assign, EmptyObject } from 'ember-utils';
+import { DirtyableTag } from 'glimmer-reference';
+import { environment } from 'ember-environment';
+import { OWNER } from 'ember-utils';
+import { run } from 'ember-metal';
 
 class OutletStateReference {
   constructor(outletView) {
@@ -20,8 +22,44 @@ class OutletStateReference {
     return this.outletView.outletState;
   }
 
-  get isTopLevel() {
-    return true;
+  getOrphan(name) {
+    return new OrphanedOutletStateReference(this, name);
+  }
+
+  update(state) {
+    this.outletView.setOutletState(state);
+  }
+}
+
+// So this is a relic of the past that SHOULD go away
+// in 3.0. Preferably it is deprecated in the release that
+// follows the Glimmer release.
+class OrphanedOutletStateReference extends OutletStateReference {
+  constructor(root, name) {
+    super(root.outletView);
+    this.root = root;
+    this.name = name;
+  }
+
+  value() {
+    let rootState = this.root.value();
+
+    let orphans = rootState.outlets.main.outlets.__ember_orphans__;
+
+    if (!orphans) {
+      return null;
+    }
+
+    let matched = orphans.outlets[this.name];
+
+    if (!matched) {
+      return null;
+    }
+
+    let state = new EmptyObject();
+    state[matched.render.outlet] = matched;
+    matched.wasUsed = true;
+    return { outlets: state };
   }
 }
 
@@ -37,11 +75,7 @@ class ChildOutletStateReference {
   }
 
   value() {
-    return this.parent.value().outlets[this.key];
-  }
-
-  get isTopLevel() {
-    return false;
+    return this.parent.value()[this.key];
   }
 }
 
@@ -62,40 +96,51 @@ export default class OutletView {
     assign(this, injections);
   }
 
-  static create({ _environment, renderer, template }) {
-    return new OutletView(_environment, renderer, template);
+  static create(options) {
+    let { _environment, renderer, template } = options;
+    let owner = options[OWNER];
+    return new OutletView(_environment, renderer, owner, template);
   }
 
-  constructor(_environment, renderer, template) {
+  constructor(_environment, renderer, owner, template) {
     this._environment = _environment;
     this.renderer = renderer;
+    this.owner = owner;
     this.template = template;
     this.outletState = null;
-    this._renderResult = null;
     this._tag = new DirtyableTag();
   }
 
   appendTo(selector) {
-    let { _environment: { options: { jQuery } } } = this;
+    let env = this._environment || environment;
+    let target;
 
-    if (jQuery) {
-      this._renderResult = this.renderer.appendOutletView(this, jQuery(selector)[0]);
+    if (env.hasDOM) {
+      target = typeof selector === 'string' ? document.querySelector(selector) : selector;
     } else {
-      this._renderResult = this.renderer.appendOutletView(this, selector);
+      target = selector;
     }
+
+    run.schedule('render', this.renderer, 'appendOutletView', this, target);
   }
 
-  appendChild(instance) {
-    instance.parentView = this;
-    instance.ownerView = this;
-  }
-
-  rerender() {
-    if (this._renderResult) { this.renderer.rerender(this); }
-  }
+  rerender() { }
 
   setOutletState(state) {
-    this.outletState = state;
+    this.outletState = {
+      outlets: {
+        main: state
+      },
+      render: {
+        owner: undefined,
+        into: undefined,
+        outlet: 'main',
+        name: '-top-level',
+        controller: undefined,
+        ViewClass: undefined,
+        template: undefined
+      }
+    };
     this._tag.dirty();
   }
 
@@ -103,7 +148,5 @@ export default class OutletView {
     return new OutletStateReference(this);
   }
 
-  destroy() {
-    if (this._renderResult) { this._renderResult.destroy(); }
-  }
+  destroy() { }
 }

@@ -5,8 +5,8 @@ The public API, specified on the application namespace should be considered the 
   @private
 */
 
-import Registry from 'container/registry';
-import Container from 'container/container';
-import { getOwner, setOwner } from 'container/owner';
-
-export { Registry, Container, getOwner, setOwner };
+export { default as Registry, privatize } from './registry';
+export {
+  default as Container,
+  buildFakeContainerWithDeprecations
+} from './container';

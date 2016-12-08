@@ -1,8 +1,8 @@
-import { assert } from 'ember-metal/debug';
-import EmberObject from 'ember-runtime/system/object';
-import Mixin from 'ember-runtime/mixins/controller';
-import { createInjectionHelper } from 'ember-runtime/inject';
-import { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
+import { assert } from 'ember-metal';
+import EmberObject from '../system/object';
+import Mixin from '../mixins/controller';
+import { createInjectionHelper } from '../inject';
+import { deprecateUnderscoreActions } from '../mixins/action_handler';
 
 /**
 @module ember

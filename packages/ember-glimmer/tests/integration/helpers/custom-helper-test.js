@@ -1,12 +1,14 @@
+/* globals EmberDev */
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { runDestroy } from 'ember-runtime/tests/utils';
-import { set } from 'ember-metal/property_set';
+import { makeBoundHelper } from '../../utils/helpers';
+import { runDestroy } from 'internal-test-helpers';
+import { set } from 'ember-metal';
 
 let assert = QUnit.assert;
 
 moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
-  ['@glimmer it cannot override built-in syntax']() {
+  ['@test it cannot override built-in syntax']() {
     this.registerHelper('if', () => 'Nope');
     expectAssertion(() => {
       this.render(`{{if foo 'LOL'}}`, { foo: true });
@@ -16,6 +18,52 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
   ['@test it can resolve custom simple helpers with or without dashes']() {
     this.registerHelper('hello', () => 'hello');
     this.registerHelper('hello-world', () => 'hello world');
+
+    this.render('{{hello}} | {{hello-world}}');
+
+    this.assertText('hello | hello world');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('hello | hello world');
+  }
+
+  ['@test it does not resolve helpers with a `.` (period)']() {
+    this.registerHelper('hello.world', () => 'hello world');
+
+    this.render('{{hello.world}}', {
+      hello: {
+        world: ''
+      }
+    });
+
+    this.assertText('');
+
+    this.assertStableRerender();
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'hello', { world: 'hello world!' }));
+
+    this.assertText('hello world!');
+
+    this.runTask(() => {
+      set(this.context, 'hello', {
+        world: ''
+      });
+    });
+
+    this.assertText('');
+  }
+
+  ['@test it can resolve custom makeBoundHelper with or without dashes [DEPRECATED]']() {
+    expectDeprecation(() => {
+      this.owner.register('helper:hello', makeBoundHelper(() => 'hello'));
+    }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.');
+
+    expectDeprecation(() => {
+      this.owner.register('helper:hello-world', makeBoundHelper(() => 'hello world'));
+    }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.');
 
     this.render('{{hello}} | {{hello-world}}');
 
@@ -46,6 +94,16 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.runTask(() => this.rerender());
 
     this.assertText('hello | hello world');
+  }
+
+  ['@test throws if `this._super` is not called from `init`']() {
+    this.registerHelper('hello-world', {
+      init() {}
+    });
+
+    expectAssertion(() => {
+      this.render('{{hello-world}}');
+    }, /You must call `this._super\(...arguments\);` when overriding `init` on a framework object. Please update .* to call `this._super\(...arguments\);` from `init`./);
   }
 
   ['@test class-based helper can recompute a new value']() {
@@ -270,9 +328,8 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
                    (join-words "overcomes" "by")
                    model.reason
                    (join-words (join-words "hath overcome but" "half"))
-                   (join-words "his" (join-words "foe"))}}`, {
-      model: { reason: 'force' }
-    });
+                   (join-words "his" (join-words "foe"))}}`,
+      { model: { reason: 'force' } });
 
     this.assertText('Who overcomes by force hath overcome but half his foe');
 
@@ -301,7 +358,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('true');
   }
 
-  ['@glimmer parameterless helper is usable in attributes']() {
+  ['@test parameterless helper is usable in attributes']() {
     this.registerHelper('foo-bar', () => { return 'baz'; });
 
     this.render(`<div data-foo-bar="{{foo-bar}}"></div>`);
@@ -351,7 +408,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     }, /Helpers may not be used in the element form/);
   }
 
-  ['@htmlbars class-based helper is torn down']() {
+  ['@test class-based helper is torn down']() {
     let destroyCalled = 0;
 
     this.registerHelper('some-helper', {
@@ -467,7 +524,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('Who overcomes by force hath overcome but half his foe');
   }
 
-  ['@htmlbars class-based helper used in subexpression is destroyed']() {
+  ['@test class-based helper used in subexpression is destroyed']() {
     let destroyCount = 0;
 
     this.registerHelper('dynamic-segment', {
@@ -501,5 +558,120 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
     equal(destroyCount, 1, 'destroy is called after a view is destroyed');
   }
-
 });
+
+// these feature detects prevent errors in these tests
+// on platforms (*cough* IE9 *cough*) that do not
+// property support `Object.freeze`
+let pushingIntoFrozenArrayThrows = (() => {
+  let array = [];
+  Object.freeze(array);
+
+  try {
+    array.push('foo');
+
+    return false;
+  } catch (e) {
+    return true;
+  }
+})();
+
+let assigningExistingFrozenPropertyThrows = (() => {
+  let obj = { foo: 'asdf' };
+  Object.freeze(obj);
+
+  try {
+    obj.foo = 'derp';
+
+    return false;
+  } catch (e) {
+    return true;
+  }
+})();
+
+let addingPropertyToFrozenObjectThrows = (() => {
+  let obj = { foo: 'asdf' };
+  Object.freeze(obj);
+
+  try {
+    obj.bar = 'derp';
+
+    return false;
+  } catch (e) {
+    return true;
+  }
+})();
+
+if (!EmberDev.runningProdBuild && (
+  pushingIntoFrozenArrayThrows ||
+    assigningExistingFrozenPropertyThrows ||
+    addingPropertyToFrozenObjectThrows
+)) {
+  class HelperMutatingArgsTests extends RenderingTest {
+    buildCompute() {
+      return (params, hash) => {
+        if (pushingIntoFrozenArrayThrows) {
+          this.assert.throws(() => {
+            params.push('foo');
+
+            // cannot assert error message as it varies by platform
+          });
+        }
+
+        if (assigningExistingFrozenPropertyThrows) {
+          this.assert.throws(() => {
+            hash.foo = 'bar';
+
+            // cannot assert error message as it varies by platform
+          });
+        }
+
+        if (addingPropertyToFrozenObjectThrows) {
+          this.assert.throws(() => {
+            hash.someUnusedHashProperty = 'bar';
+
+            // cannot assert error message as it varies by platform
+          });
+        }
+      };
+    }
+
+    ['@test cannot mutate params - no positional specified / named specified']() {
+      this.render('{{test-helper foo=bar}}', { bar: 'derp' });
+    }
+
+    ['@test cannot mutate params - positional specified / no named specified']() {
+      this.render('{{test-helper bar}}', { bar: 'derp' });
+    }
+
+    ['@test cannot mutate params - positional specified / named specified']() {
+      this.render('{{test-helper bar foo=qux}}', { bar: 'derp', qux: 'baz' });
+    }
+
+    ['@test cannot mutate params - no positional specified / no named specified']() {
+      this.render('{{test-helper}}', { bar: 'derp', qux: 'baz' });
+    }
+  }
+
+  moduleFor('Helpers test: mutation triggers errors - class based helper', class extends HelperMutatingArgsTests {
+    constructor() {
+      super();
+
+      let compute = this.buildCompute();
+
+      this.registerHelper('test-helper', {
+        compute
+      });
+    }
+  });
+
+  moduleFor('Helpers test: mutation triggers errors - simple helper', class extends HelperMutatingArgsTests {
+    constructor() {
+      super();
+
+      let compute = this.buildCompute();
+
+      this.registerHelper('test-helper', compute);
+    }
+  });
+}

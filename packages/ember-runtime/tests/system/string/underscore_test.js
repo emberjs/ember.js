@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { underscore } from 'ember-runtime/system/string';
+import { underscore } from '../../../system/string';
 
 QUnit.module('EmberStringUtils.underscore');
 

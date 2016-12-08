@@ -2,8 +2,8 @@ import {
   mixin,
   Mixin,
   required
-} from 'ember-metal/mixin';
-import { get } from 'ember-metal/property_get';
+} from '../../mixin';
+import { get } from '../../property_get';
 
 let PartialMixin, FinalMixin, obj;
 

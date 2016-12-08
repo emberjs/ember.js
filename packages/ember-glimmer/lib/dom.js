@@ -1,1 +1,2 @@
-export { DOMHelper as default } from 'glimmer-runtime';
+export { DOMChanges, DOMTreeConstruction } from 'glimmer-runtime';
+export { NodeDOMTreeConstruction } from 'glimmer-node';

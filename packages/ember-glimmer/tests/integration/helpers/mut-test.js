@@ -1,8 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
-import { set } from 'ember-metal/property_set';
-import { get } from 'ember-metal/property_get';
-import { computed } from 'ember-metal/computed';
+import { set, get, computed } from 'ember-metal';
 import { styles } from '../../utils/test-helpers';
 
 moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
@@ -110,31 +108,11 @@ moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
     }, 'You can only pass a path to mut');
   }
 
-  ['@glimmer passing the result of a helper invocation results in an assertion']() {
+  ['@test passing the result of a helper invocation results in an assertion']() {
     this.registerComponent('bottom-mut', { template: '{{setMe}}' });
 
     expectAssertion(() => {
       this.render('{{bottom-mut setMe=(mut (concat "foo" " " "bar"))}}');
-    }, 'You can only pass a path to mut');
-  }
-
-  ['@glimmer passing a literal indirectly results in an assertion']() {
-    this.registerComponent('bottom-mut', { template: '{{setMe}}' });
-
-    this.registerComponent('middle-mut', { template: '{{bottom-mut setMe=(mut value)}}' });
-
-    expectAssertion(() => {
-      this.render('{{middle-mut value="foo bar"}}');
-    }, 'You can only pass a path to mut');
-  }
-
-  ['@glimmer passing the result of a helper invocation indirectly results in an assertion']() {
-    this.registerComponent('bottom-mut', { template: '{{setMe}}' });
-
-    this.registerComponent('middle-mut', { template: '{{bottom-mut setMe=(mut value)}}' });
-
-    expectAssertion(() => {
-      this.render('{{middle-mut value=(concat "foo" " " "bar")}}');
     }, 'You can only pass a path to mut');
   }
 
@@ -270,11 +248,7 @@ moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
 
     this.assertStableRerender();
 
-    if (this.isHTMLBars) {
-      this.assert.deepEqual(willRender, [12, 12], 'willReceive is [12, 12]');
-    } else {
-      this.assert.deepEqual(willRender, [12], 'willReceive is [12]');
-    }
+    this.assert.deepEqual(willRender, [12], 'willReceive is [12]');
     this.assert.deepEqual(didInsert, [12], 'didInsert is [12]');
     this.assert.strictEqual(get(bottom, 'setMe'), 12, 'the data propagated');
 
@@ -406,9 +380,7 @@ moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
     this.assertText('');
   }
 
-  // TODO: This is not really consistent with how the rest of the system works. Investigate if we need to
-  // support this, if not then this test can be deleted.
-  ['@htmlbars automatic mutable bindings tolerate constant non-stream inputs and attempts to set them']() {
+  ['@test automatic mutable bindings tolerate constant non-stream inputs and attempts to set them']() {
     let inner;
 
     this.registerComponent('x-inner', {

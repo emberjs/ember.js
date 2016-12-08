@@ -6,32 +6,26 @@
 // ..........................................................
 // HELPERS
 //
-import Ember from 'ember-metal/core'; // ES6TODO: Ember.A
+import { symbol } from 'ember-utils';
 
-import symbol from 'ember-metal/symbol';
-import { get } from 'ember-metal/property_get';
-import {
+import { peekMeta } from 'ember-metal';
+import Ember, { // ES6TODO: Ember.A
+  get,
   computed,
-  cacheFor
-} from 'ember-metal/computed';
-import isNone from 'ember-metal/is_none';
-import Enumerable from 'ember-runtime/mixins/enumerable';
-import { Mixin } from 'ember-metal/mixin';
-import {
+  cacheFor,
+  isNone,
+  Mixin,
   propertyWillChange,
-  propertyDidChange
-} from 'ember-metal/property_events';
-import {
+  propertyDidChange,
   addListener,
   removeListener,
   sendEvent,
-  hasListeners
-} from 'ember-metal/events';
-import { meta as metaFor } from 'ember-metal/meta';
-import { markObjectAsDirty } from 'ember-metal/tags';
-import EachProxy from 'ember-runtime/system/each_proxy';
-import { deprecate } from 'ember-metal/debug';
-import isEnabled from 'ember-metal/features';
+  hasListeners,
+  deprecate
+} from 'ember-metal';
+
+import Enumerable from './enumerable';
+import EachProxy from '../system/each_proxy';
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
   let willChange = (opts && opts.willChange) || 'arrayWillChange';
@@ -108,8 +102,6 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
 }
 
 export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
-  markObjectAsDirty(metaFor(array));
-
   // if no args are passed assume everything changes
   if (startIdx === undefined) {
     startIdx = 0;
@@ -144,20 +136,21 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
-  let length = get(array, 'length');
-  let cachedFirst = cacheFor(array, 'firstObject');
-  let cachedLast = cacheFor(array, 'lastObject');
+  let meta = peekMeta(array);
+  let cache = meta && meta.readableCache();
 
-  if (objectAt(array, 0) !== cachedFirst) {
-    propertyWillChange(array, 'firstObject');
-    propertyDidChange(array, 'firstObject');
+  if (cache) {
+    if (cache.firstObject !== undefined &&
+        objectAt(array, 0) !== cacheFor.get(cache, 'firstObject')) {
+      propertyWillChange(array, 'firstObject');
+      propertyDidChange(array, 'firstObject');
+    }
+    if (cache.lastObject !== undefined &&
+        objectAt(array, get(array, 'length') - 1) !== cacheFor.get(cache, 'lastObject')) {
+      propertyWillChange(array, 'lastObject');
+      propertyDidChange(array, 'lastObject');
+    }
   }
-
-  if (objectAt(array, length - 1) !== cachedLast) {
-    propertyWillChange(array, 'lastObject');
-    propertyDidChange(array, 'lastObject');
-  }
-
   return array;
 }
 
@@ -258,7 +251,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     This returns the objects at the specified indexes, using `objectAt`.
 
     ```javascript
-    let arr = ['a', 'b', 'c', 'd'];
+    let arr = ['a', 'b', 'c', 'd'];
 
     arr.objectsAt([0, 1, 2]);  // ['a', 'b', 'c']
     arr.objectsAt([2, 3, 4]);  // ['c', 'd', undefined]
@@ -309,13 +302,11 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
   // optimized version from Enumerable
   contains(obj) {
-    if (isEnabled('ember-runtime-enumerable-includes')) {
-      deprecate(
-        '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
-        false,
-        { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
-      );
-    }
+    deprecate(
+      '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
+      false,
+      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
+    );
 
     return this.indexOf(obj) >= 0;
   },
@@ -553,6 +544,53 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
+    Returns `true` if the passed object can be found in the array.
+    This method is a Polyfill for ES 2016 Array.includes.
+    If no `startAt` argument is given, the starting location to
+    search is 0. If it's negative, searches from the index of
+    `this.length + startAt` by asc.
+
+    ```javascript
+    [1, 2, 3].includes(2);     // true
+    [1, 2, 3].includes(4);     // false
+    [1, 2, 3].includes(3, 2);  // true
+    [1, 2, 3].includes(3, 3);  // false
+    [1, 2, 3].includes(3, -1); // true
+    [1, 2, 3].includes(1, -1); // false
+    [1, 2, 3].includes(1, -4); // true
+    [1, 2, NaN].includes(NaN); // true
+    ```
+
+    @method includes
+    @param {Object} obj The object to search for.
+    @param {Number} startAt optional starting location to search, default 0
+    @return {Boolean} `true` if object is found in the array.
+    @public
+  */
+  includes(obj, startAt) {
+    let len = get(this, 'length');
+
+    if (startAt === undefined) {
+      startAt = 0;
+    }
+
+    if (startAt < 0) {
+      startAt += len;
+    }
+
+    for (let idx = startAt; idx < len; idx++) {
+      let currentObj = objectAt(this, idx);
+
+      // SameValueZero comparison (NaN !== NaN)
+      if (obj === currentObj || (obj !== obj && currentObj !== currentObj)) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+
+  /**
     Returns a special object that can be used to observe individual properties
     on the array. Just get an equivalent property on this object and it will
     return an enumerable that maps automatically to the named key on the
@@ -585,56 +623,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     }
 
     return this.__each;
-  }).volatile()
+  }).volatile().readOnly()
 });
-
-if (isEnabled('ember-runtime-enumerable-includes')) {
-  ArrayMixin.reopen({
-    /**
-      Returns `true` if the passed object can be found in the array.
-      This method is a Polyfill for ES 2016 Array.includes.
-      If no `startAt` argument is given, the starting location to
-      search is 0. If it's negative, searches from the index of
-      `this.length + startAt` by asc.
-      ```javascript
-      [1, 2, 3].includes(2);     // true
-      [1, 2, 3].includes(4);     // false
-      [1, 2, 3].includes(3, 2);  // true
-      [1, 2, 3].includes(3, 3);  // false
-      [1, 2, 3].includes(3, -1); // true
-      [1, 2, 3].includes(1, -1); // false
-      [1, 2, 3].includes(1, -4); // true
-      [1, 2, NaN].includes(NaN); // true
-      ```
-      @method includes
-      @param {Object} obj The object to search for.
-      @param {Number} startAt optional starting location to search, default 0
-      @return {Boolean} `true` if object is found in the array.
-      @public
-    */
-    includes(obj, startAt) {
-      let len = get(this, 'length');
-
-      if (startAt === undefined) {
-        startAt = 0;
-      }
-
-      if (startAt < 0) {
-        startAt += len;
-      }
-
-      for (let idx = startAt; idx < len; idx++) {
-        let currentObj = objectAt(this, idx);
-
-        // SameValueZero comparison (NaN !== NaN)
-        if (obj === currentObj || (obj !== obj && currentObj !== currentObj)) {
-          return true;
-        }
-      }
-
-      return false;
-    }
-  });
-}
 
 export default ArrayMixin;

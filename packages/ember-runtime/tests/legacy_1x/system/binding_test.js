@@ -1,10 +1,13 @@
-import {context} from 'ember-environment';
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
-import {Binding, bind } from 'ember-metal/binding';
-import {observer as emberObserver} from 'ember-metal/mixin';
-import EmberObject from 'ember-runtime/system/object';
+import { context } from 'ember-environment';
+import {
+  get,
+  set,
+  run,
+  Binding,
+  bind,
+  observer as emberObserver
+} from 'ember-metal';
+import EmberObject from '../../../system/object';
 
 
 /*
@@ -54,12 +57,9 @@ QUnit.module('basic object binding', {
     toObject = EmberObject.create({ value: 'end' });
     root = { fromObject: fromObject, toObject: toObject };
     run(() => {
-      let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-        ' using an `alias` computed property instead.';
-
       expectDeprecation(() => {
         binding = bind(root, 'toObject.value', 'fromObject.value');
-      }, deprecationMessage);
+      }, /`Ember\.Binding` is deprecated./);
     });
   }
 });
@@ -106,16 +106,13 @@ QUnit.test('deferred observing during bindings', function() {
 
   let root = { fromObject: fromObject, toObject: toObject };
   run(function () {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-      ' using an `alias` computed property instead.';
-
     expectDeprecation(() => {
       bind(root, 'toObject.value1', 'fromObject.value1');
-    }, deprecationMessage);
+    }, /`Ember\.Binding` is deprecated./);
 
     expectDeprecation(() => {
       bind(root, 'toObject.value2', 'fromObject.value2');
-    }, deprecationMessage);
+    }, /`Ember\.Binding` is deprecated./);
 
     // change both value1 + value2, then  flush bindings.  observer should only
     // fire after bindings are done flushing.
@@ -134,7 +131,7 @@ QUnit.test('binding disconnection actually works', function() {
   equal(get(toObject, 'value'), 'start');
 });
 
-let first, second, third, binding1, binding2; // global variables
+let first, second, third; // global variables
 
 // ..........................................................
 // chained binding
@@ -159,16 +156,13 @@ QUnit.module('chained binding', {
 
       root = { first: first, second: second, third: third };
 
-      let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-        ' using an `alias` computed property instead.';
+      expectDeprecation(() => {
+        bind(root, 'second.input', 'first.output');
+      }, /`Ember\.Binding` is deprecated./);
 
       expectDeprecation(() => {
-        binding1 = bind(root, 'second.input', 'first.output');
-      }, deprecationMessage);
-
-      expectDeprecation(() => {
-        binding2 = bind(root, 'second.output', 'third.input');
-      }, deprecationMessage);
+        bind(root, 'second.output', 'third.input');
+      }, /`Ember\.Binding` is deprecated./);
     });
   },
   teardown() {
@@ -240,16 +234,13 @@ QUnit.test('two bindings to the same value should sync in the order they are ini
     }
   });
 
-  let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-    ' using an `alias` computed property instead.';
-
   expectDeprecation(() => {
     b = b.create({
       foo: 'baz',
       fooBinding: 'a.foo',
       a: a
     });
-  }, deprecationMessage);
+  }, /`Ember\.Binding` is deprecated./);
 
   run.end();
 
@@ -272,9 +263,6 @@ QUnit.module('propertyNameBinding with longhand', {
         value: 'originalValue'
       });
 
-      let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-        ' using an `alias` computed property instead.';
-
       expectDeprecation(() => {
         TestNamespace.toObject = EmberObject.extend({
           valueBinding: Binding.from('TestNamespace.fromObject.value'),
@@ -282,7 +270,7 @@ QUnit.module('propertyNameBinding with longhand', {
         }).create({
           localValue: 'originalLocal'
         });
-      }, deprecationMessage);
+      }, /`Ember\.Binding` is deprecated./);
     });
   },
   teardown() {

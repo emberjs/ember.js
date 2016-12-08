@@ -3,9 +3,5 @@
 @submodule ember-extension-support
 */
 
-import Ember from 'ember-metal/core'; // reexports
-import DataAdapter from 'ember-extension-support/data_adapter';
-import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
-
-Ember.DataAdapter = DataAdapter;
-Ember.ContainerDebugAdapter = ContainerDebugAdapter;
+export { default as DataAdapter } from './data_adapter';
+export { default as ContainerDebugAdapter } from './container_debug_adapter';

@@ -4,20 +4,19 @@
 */
 
 import { context } from 'ember-environment';
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { Mixin } from 'ember-metal/mixin';
-import { computed } from 'ember-metal/computed';
+import {
+  assert,
+  get,
+  Mixin,
+  computed
+} from 'ember-metal';
 
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class
 to add a `triggerAction` method with semantics similar to the Handlebars
 `{{action}}` helper. In normal Ember usage, the `{{action}}` helper is
 usually the best choice. This mixin is most often useful when you are
-doing more complex event handling in View objects.
-
-See also `Ember.ViewTargetActionSupport`, which has
-view-aware defaults for target and actionContext.
+doing more complex event handling in Components.
 
 @class TargetActionSupport
 @namespace Ember
@@ -28,25 +27,6 @@ export default Mixin.create({
   target: null,
   action: null,
   actionContext: null,
-
-  targetObject: computed('target', function() {
-    if (this._targetObject) {
-      return this._targetObject;
-    }
-
-    let target = get(this, 'target');
-
-    if (typeof target === 'string') {
-      let value = get(this, target);
-      if (value === undefined) {
-        value = get(context.lookup, target);
-      }
-
-      return value;
-    } else {
-      return target;
-    }
-  }),
 
   actionContextObject: computed('actionContext', function() {
     let actionContext = get(this, 'actionContext');
@@ -115,7 +95,12 @@ export default Mixin.create({
   */
   triggerAction(opts = {}) {
     let action = opts.action || get(this, 'action');
-    let target = opts.target || get(this, 'targetObject');
+    let target = opts.target;
+
+    if (!target) {
+      target = getTarget(this);
+    }
+
     let actionContext = opts.actionContext;
 
     function args(options, actionName) {
@@ -149,3 +134,30 @@ export default Mixin.create({
     }
   }
 });
+
+function getTarget(instance) {
+  // TODO: Deprecate specifying `targetObject`
+  let target = get(instance, 'targetObject');
+
+  // if a `targetObject` CP was provided, use it
+  if (target) { return target; }
+
+  // if _targetObject use it
+  if (instance._targetObject) { return instance._targetObject; }
+
+  target = get(instance, 'target');
+  if (target) {
+    if (typeof target === 'string') {
+      let value = get(instance, target);
+      if (value === undefined) {
+        value = get(context.lookup, target);
+      }
+
+      return value;
+    } else {
+      return target;
+    }
+  }
+
+  return null;
+}

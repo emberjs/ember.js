@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { testBoth } from 'ember-metal/tests/props_helper';
+import { testBoth } from 'internal-test-helpers';
 import {
   addObserver,
   removeObserver,
@@ -7,29 +7,29 @@ import {
   _suspendObserver,
   _suspendObservers,
   _removeBeforeObserver
-} from 'ember-metal/observer';
+} from '../observer';
 import {
   propertyWillChange,
   propertyDidChange
-} from 'ember-metal/property_events';
-import { defineProperty } from 'ember-metal/properties';
+} from '../property_events';
+import { defineProperty } from '../properties';
 import {
   computed,
   cacheFor
-} from 'ember-metal/computed';
+} from '../computed';
 import {
   Mixin,
   mixin,
   observer,
   _beforeObserver,
   _immediateObserver
-} from 'ember-metal/mixin';
-import run from 'ember-metal/run_loop';
+} from '../mixin';
+import run from '../run_loop';
 import {
   beginPropertyChanges,
   endPropertyChanges,
   changeProperties
-} from 'ember-metal/property_events';
+} from '../property_events';
 
 function K() {}
 
@@ -223,10 +223,10 @@ testBoth('removing an chain observer on change should not fail', function(get, s
   }
   function observer4() { count4++; }
 
-  addObserver(obj1, 'foo.bar' , observer1);
-  addObserver(obj2, 'foo.bar' , observer2);
-  addObserver(obj3, 'foo.bar' , observer3);
-  addObserver(obj4, 'foo.bar' , observer4);
+  addObserver(obj1, 'foo.bar', observer1);
+  addObserver(obj2, 'foo.bar', observer2);
+  addObserver(obj3, 'foo.bar', observer3);
+  addObserver(obj4, 'foo.bar', observer4);
 
   set(foo, 'bar', 'baz');
 
@@ -257,10 +257,10 @@ testBoth('removing an chain before observer on change should not fail', function
   }
   function observer4() { count4++; }
 
-  _addBeforeObserver(obj1, 'foo.bar' , observer1);
-  _addBeforeObserver(obj2, 'foo.bar' , observer2);
-  _addBeforeObserver(obj3, 'foo.bar' , observer3);
-  _addBeforeObserver(obj4, 'foo.bar' , observer4);
+  _addBeforeObserver(obj1, 'foo.bar', observer1);
+  _addBeforeObserver(obj2, 'foo.bar', observer2);
+  _addBeforeObserver(obj3, 'foo.bar', observer3);
+  _addBeforeObserver(obj4, 'foo.bar', observer4);
 
   set(foo, 'bar', 'baz');
 
@@ -448,7 +448,7 @@ testBoth('deferring property change notifications safely despite exceptions', fu
       set(obj, 'foo', 'BAZ');
       throw exc;
     });
-  } catch(err) {
+  } catch (err) {
     if (err !== exc) {
       throw err;
     }

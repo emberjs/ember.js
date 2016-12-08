@@ -1,4 +1,4 @@
-import emberRun from 'ember-metal/run_loop';
+import { run as emberRun } from 'ember-metal';
 
 export default function run(fn) {
   if (!emberRun.currentRunLoop) {

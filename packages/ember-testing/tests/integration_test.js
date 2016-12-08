@@ -1,15 +1,15 @@
-import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
-import jQuery from 'ember-views/system/jquery';
-import Test from 'ember-testing/test';
-import EmberRoute from 'ember-routing/system/route';
-import EmberApplication from 'ember-application/system/application';
+import { run } from 'ember-metal';
+import {
+  Object as EmberObject,
+  Controller,
+  A as emberA
+} from 'ember-runtime';
+import { jQuery } from 'ember-views';
+import Test from '../test';
+import { Route as EmberRoute } from 'ember-routing';
+import { Application as EmberApplication } from 'ember-application';
 import { compile } from 'ember-template-compiler';
-import Controller from 'ember-runtime/controllers/controller';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
-
-import 'ember-application';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 
 var App, find, visit;
 var originalAdapter = Test.adapter;

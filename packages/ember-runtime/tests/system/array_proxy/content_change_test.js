@@ -1,8 +1,7 @@
-import { set } from 'ember-metal/property_set';
-import { not } from 'ember-runtime/computed/computed_macros';
-import run from 'ember-metal/run_loop';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { set, run } from 'ember-metal';
+import { not } from '../../../computed/computed_macros';
+import ArrayProxy from '../../../system/array_proxy';
+import { A as emberA } from '../../../system/native_array';
 
 QUnit.module('ArrayProxy - content change');
 
@@ -93,4 +92,33 @@ QUnit.test('The ArrayProxy doesn\'t explode when assigned a destroyed object', f
   set(proxy2, 'content', proxy1);
 
   ok(true, 'No exception was raised');
+});
+
+QUnit.test('arrayContent{Will,Did}Change are called when the content changes', function() {
+  // The behaviour covered by this test may change in the future if we decide
+  // that built-in array methods are not overridable.
+
+  let willChangeCallCount = 0;
+  let didChangeCallCount = 0;
+
+  let content = emberA([1, 2, 3]);
+  ArrayProxy.extend({
+    arrayContentWillChange() {
+      willChangeCallCount++;
+      this._super(...arguments);
+    },
+    arrayContentDidChange() {
+      didChangeCallCount++;
+      this._super(...arguments);
+    }
+  }).create({ content });
+
+  equal(willChangeCallCount, 0);
+  equal(didChangeCallCount, 0);
+
+  content.pushObject(4);
+  content.pushObject(5);
+
+  equal(willChangeCallCount, 2);
+  equal(didChangeCallCount, 2);
 });

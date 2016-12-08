@@ -2,26 +2,24 @@
 @module ember
 @submodule ember-application
 */
-import Namespace from 'ember-runtime/system/namespace';
-import Registry from 'container/registry';
-import { privatize as P } from 'container/registry';
-import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
+import { canInvoke, EmptyObject } from 'ember-utils';
+import {
+  Namespace,
+  RegistryProxyMixin,
+  Controller
+} from 'ember-runtime';
+import {
+  Registry,
+  privatize as P
+} from 'container';
 import DAG from 'dag-map';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { assert, deprecate } from 'ember-metal/debug';
-import { canInvoke } from 'ember-metal/utils';
-import EmptyObject from 'ember-metal/empty_object';
-import DefaultResolver from 'ember-application/system/resolver';
+import { get, set, assert, deprecate } from 'ember-metal';
+import DefaultResolver from './resolver';
 import EngineInstance from './engine-instance';
-import isEnabled from 'ember-metal/features';
-import symbol from 'ember-metal/symbol';
-import Controller from 'ember-runtime/controllers/controller';
-import RoutingService from 'ember-routing/services/routing';
-import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
-import require from 'require';
-
-export const GLIMMER = symbol('GLIMMER');
+import { RoutingService } from 'ember-routing';
+import { ContainerDebugAdapter } from 'ember-extension-support';
+import { ComponentLookup } from 'ember-views';
+import { setupEngineRegistry } from 'ember-glimmer';
 
 function props(obj) {
   var properties = [];
@@ -48,16 +46,11 @@ function props(obj) {
   @namespace Ember
   @extends Ember.Namespace
   @uses RegistryProxy
-  @category ember-application-engines
   @public
 */
-const Engine = Namespace.extend(RegistryProxy, {
+const Engine = Namespace.extend(RegistryProxyMixin, {
   init() {
     this._super(...arguments);
-
-    if (this[GLIMMER] === undefined) {
-      this[GLIMMER] = isEnabled('ember-glimmer');
-    }
 
     this.buildRegistry();
   },
@@ -104,9 +97,7 @@ const Engine = Namespace.extend(RegistryProxy, {
     @return {Ember.Registry} the configured registry
   */
   buildRegistry() {
-    let registry = this.__registry__ = this.constructor.buildRegistry(this, {
-      [GLIMMER]: this[GLIMMER]
-    });
+    let registry = this.__registry__ = this.constructor.buildRegistry(this);
 
     return registry;
   },
@@ -136,12 +127,11 @@ const Engine = Namespace.extend(RegistryProxy, {
       assert('No application initializer named \'' + name + '\'', !!initializer);
       if (initializer.initialize.length === 2) {
         deprecate('The `initialize` method for Application initializer \'' + name + '\' should take only one argument - `App`, an instance of an `Application`.',
-                  false,
-                  {
-                    id: 'ember-application.app-initializer-initialize-arguments',
-                    until: '3.0.0',
-                    url: 'http://emberjs.com/deprecations/v2.x/#toc_initializer-arity'
-                  });
+          false, {
+            id: 'ember-application.app-initializer-initialize-arguments',
+            until: '3.0.0',
+            url: 'http://emberjs.com/deprecations/v2.x/#toc_initializer-arity'
+          });
 
         initializer.initialize(this.__registry__, this);
       } else {
@@ -170,10 +160,10 @@ const Engine = Namespace.extend(RegistryProxy, {
 
     for (let i = 0; i < initializers.length; i++) {
       initializer = initializersByName[initializers[i]];
-      graph.addEdges(initializer.name, initializer, initializer.before, initializer.after);
+      graph.add(initializer.name, initializer, initializer.before, initializer.after);
     }
 
-    graph.topsort(vertex => cb(vertex.name, vertex.value));
+    graph.topsort(cb);
   }
 });
 
@@ -401,14 +391,7 @@ Engine.reopenClass({
     registry.register('application:main', namespace, { instantiate: false });
 
     commonSetupRegistry(registry);
-
-    if (options[GLIMMER]) {
-      let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupEngineRegistry;
-      glimmerSetupRegistry(registry);
-    } else {
-      let htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupEngineRegistry;
-      htmlbarsSetupRegistry(registry);
-    }
+    setupEngineRegistry(registry);
 
     return registry;
   },
@@ -479,13 +462,12 @@ function buildInitializerMethod(bucketName, humanName) {
 function commonSetupRegistry(registry) {
   registry.optionsForType('component', { singleton: false });
   registry.optionsForType('view', { singleton: false });
-  registry.injection('renderer', 'dom', 'service:-dom-helper');
 
   registry.register('controller:basic', Controller, { instantiate: false });
 
-  registry.injection('service:-dom-helper', 'document', 'service:-document');
-
   registry.injection('view', '_viewRegistry', '-view-registry:main');
+  registry.injection('renderer', '_viewRegistry', '-view-registry:main');
+  registry.injection('event_dispatcher:main', '_viewRegistry', '-view-registry:main');
 
   registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
 
@@ -496,7 +478,6 @@ function commonSetupRegistry(registry) {
 
   registry.injection('router', '_bucketCache', P`-bucket-cache:main`);
   registry.injection('route', '_bucketCache', P`-bucket-cache:main`);
-  registry.injection('controller', '_bucketCache', P`-bucket-cache:main`);
 
   registry.injection('route', 'router', 'router:main');
 
@@ -512,6 +493,8 @@ function commonSetupRegistry(registry) {
   // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);
+
+  registry.register('component-lookup:main', ComponentLookup);
 }
 
 export default Engine;

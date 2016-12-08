@@ -1,7 +1,9 @@
 import * as RSVP from 'rsvp';
-import run from 'ember-metal/run_loop';
-import { assert } from 'ember-metal/debug';
-import { dispatchError } from 'ember-metal/error_handler';
+import {
+  run,
+  assert,
+  dispatchError
+} from 'ember-metal';
 
 const backburner = run.backburner;
 run._addQueue('rsvpAfter', 'destroy');

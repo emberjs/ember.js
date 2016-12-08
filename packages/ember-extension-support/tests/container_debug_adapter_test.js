@@ -1,7 +1,7 @@
-import run from 'ember-metal/run_loop';
-import EmberController from 'ember-runtime/controllers/controller';
-import 'ember-extension-support'; // Must be required to export Ember.ContainerDebugAdapter.
-import Application from 'ember-application/system/application';
+import { run } from 'ember-metal';
+import { Controller as EmberController } from 'ember-runtime';
+import '../index'; // Must be required to export Ember.ContainerDebugAdapter.
+import { Application } from 'ember-application';
 
 let adapter, App, appInstance;
 

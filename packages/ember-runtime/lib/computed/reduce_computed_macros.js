@@ -3,19 +3,22 @@
 @submodule ember-runtime
 */
 
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import EmberError from 'ember-metal/error';
-import { ComputedProperty, computed } from 'ember-metal/computed';
-import { addObserver, removeObserver } from 'ember-metal/observer';
-import compare from 'ember-runtime/compare';
-import { isArray } from 'ember-runtime/utils';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import isNone from 'ember-metal/is_none';
-import getProperties from 'ember-metal/get_properties';
-import EmptyObject from 'ember-metal/empty_object';
-import { guidFor } from 'ember-metal/utils';
-import WeakMap from 'ember-metal/weak_map';
+import { EmptyObject, guidFor } from 'ember-utils';
+import {
+  assert,
+  get,
+  Error as EmberError,
+  ComputedProperty,
+  computed,
+  addObserver,
+  removeObserver,
+  isNone,
+  getProperties,
+  WeakMap
+} from 'ember-metal';
+import compare from '../compare';
+import { isArray } from '../utils';
+import { A as emberA } from '../system/native_array';
 
 
 function reduceMacro(dependentKey, callback, initialValue) {
@@ -379,7 +382,9 @@ export function uniq(...args) {
 /**
   A computed property which returns a new array with all the unique
   elements from an array, with uniqueness determined by specific key.
+
   Example
+
   ```javascript
   let Hamster = Ember.Object.extend({
     uniqueFruits: Ember.computed.uniqBy('fruits', 'id')
@@ -394,6 +399,7 @@ export function uniq(...args) {
   });
   hamster.get('uniqueFruits'); // [ { id: 1, 'banana' }, { id: 2, 'grape' }, { id: 3, 'peach' }]
   ```
+
   @method uniqBy
   @for Ember.computed
   @param {String} dependentKey

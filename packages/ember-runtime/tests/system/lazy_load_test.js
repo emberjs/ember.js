@@ -1,7 +1,14 @@
-import run from 'ember-metal/run_loop';
-import {onLoad, runLoadHooks} from 'ember-runtime/system/lazy_load';
+import { run } from 'ember-metal';
+import { onLoad, runLoadHooks, _loaded } from '../../system/lazy_load';
 
-QUnit.module('Lazy Loading');
+QUnit.module('Lazy Loading', {
+  teardown() {
+    let keys = Object.keys(_loaded);
+    for (let i = 0; i < keys.length; i++) {
+      delete _loaded[keys[i]];
+    }
+  }
+});
 
 QUnit.test('if a load hook is registered, it is executed when runLoadHooks are exected', function() {
   let count = 0;

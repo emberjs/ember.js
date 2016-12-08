@@ -1,12 +1,11 @@
 /* global EmberDev */
 
-import Controller from 'ember-runtime/controllers/controller';
-import Service from 'ember-runtime/system/service';
-import Mixin from 'ember-metal/mixin';
-import Object from 'ember-runtime/system/object';
-import inject from 'ember-runtime/inject';
-import { get } from 'ember-metal/property_get';
-import buildOwner from 'container/tests/test-helpers/build-owner';
+import Controller from '../../controllers/controller';
+import Service from '../../system/service';
+import { Mixin, get } from 'ember-metal';
+import EmberObject from '../../system/object';
+import inject from '../../inject';
+import { buildOwner } from 'internal-test-helpers';
 
 QUnit.module('Controller event handling');
 
@@ -128,10 +127,9 @@ QUnit.test('`content` is moved to `model` when `model` is unset', function() {
 
 QUnit.test('specifying `content` (without `model` specified) results in deprecation', function() {
   expect(1);
-  let controller;
 
   expectDeprecation(function() {
-    controller = Controller.extend({
+    Controller.extend({
       content: 'foo-bar'
     }).create();
   }, 'Do not specify `content` on a Controller, use `model` instead.');
@@ -157,7 +155,7 @@ if (!EmberDev.runningProdBuild) {
     expectAssertion(function() {
       let owner = buildOwner();
 
-      let AnObject = Object.extend({
+      let AnObject = EmberObject.extend({
         foo: inject.controller('bar')
       });
 

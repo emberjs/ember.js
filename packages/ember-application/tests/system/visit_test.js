@@ -1,14 +1,17 @@
-import EmberObject from 'ember-runtime/system/object';
-import inject from 'ember-runtime/inject';
-import run from 'ember-metal/run_loop';
-import RSVP, { onerrorDefault } from 'ember-runtime/ext/rsvp';
-import Application from 'ember-application/system/application';
-import ApplicationInstance from 'ember-application/system/application-instance';
-import Route from 'ember-routing/system/route';
-import Router from 'ember-routing/system/router';
-import Component from 'ember-htmlbars/component';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import jQuery from 'ember-views/system/jquery';
+import {
+  Object as EmberObject,
+  inject,
+  RSVP,
+  onerrorDefault
+} from 'ember-runtime';
+import { run } from 'ember-metal';
+import Application from '../../system/application';
+import ApplicationInstance from '../../system/application-instance';
+import Engine from '../../system/engine';
+import { Route, Router } from 'ember-routing';
+import { Component, helper } from 'ember-glimmer';
+import { compile } from 'ember-template-compiler';
+import { jQuery } from 'ember-views';
 
 let App = null;
 let instance = null;
@@ -339,9 +342,139 @@ QUnit.test('visit() returns a promise that resolves when the view has rendered',
   });
 });
 
-import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
+QUnit.test('visit() returns a promise that resolves without rendering when shouldRender is set to false', function(assert) {
+  assert.expect(3);
 
-testModule('Ember.Application - visit() Integration Tests', {
+  run(() => {
+    createApplication();
+
+    App.register('template:application', compile('<h1>Hello world</h1>'));
+  });
+
+  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+  return run(App, 'visit', '/', { shouldRender: false }).then(instance => {
+    assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+    assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are still no elements in the fixture element after visit');
+  });
+});
+
+QUnit.test('visit() renders a template when shouldRender is set to true', function(assert) {
+  assert.expect(3);
+
+  run(() => {
+    createApplication();
+
+    App.register('template:application', compile('<h1>Hello world</h1>'));
+  });
+
+  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+  return run(App, 'visit', '/', { shouldRender: true }).then(instance => {
+    assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+    assert.strictEqual(jQuery('#qunit-fixture').children().length, 1, 'there is 1 element in the fixture element after visit');
+  });
+});
+
+QUnit.test('visit() returns a promise that resolves without rendering when shouldRender is set to false with Engines', function(assert) {
+  assert.expect(3);
+
+  run(() => {
+    createApplication();
+
+    App.register('template:application', compile('<h1>Hello world</h1>'));
+
+    // Register engine
+    let BlogEngine = Engine.extend();
+    App.register('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let BlogMap = function() {};
+    App.register('route-map:blog', BlogMap);
+
+    App.Router.map(function() {
+      this.mount('blog');
+    });
+  });
+
+  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+  return run(App, 'visit', '/blog', { shouldRender: false }).then(instance => {
+    assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+    assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are still no elements in the fixture element after visit');
+  });
+});
+
+QUnit.test('visit() on engine resolves engine component', function(assert) {
+  assert.expect(2);
+
+  run(() => {
+    createApplication();
+
+    // Register engine
+    let BlogEngine = Engine.extend({
+      init(...args) {
+        this._super.apply(this, args);
+        this.register('template:application', compile('{{cache-money}}'));
+        this.register('template:components/cache-money', compile(`
+          <p>Dis cache money</p>
+        `));
+        this.register('component:cache-money', Component.extend({}));
+      }
+    });
+    App.register('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let BlogMap = function() {};
+    App.register('route-map:blog', BlogMap);
+
+    App.Router.map(function() {
+      this.mount('blog');
+    });
+  });
+
+  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+  return run(App, 'visit', '/blog', { shouldRender: true }).then(instance => {
+    assert.strictEqual(jQuery('#qunit-fixture').find('p').text(), 'Dis cache money', 'Engine component is resolved');
+  });
+});
+
+QUnit.test('visit() on engine resolves engine helper', function(assert) {
+  assert.expect(2);
+
+  run(() => {
+    createApplication();
+
+    // Register engine
+    let BlogEngine = Engine.extend({
+      init(...args) {
+        this._super.apply(this, args);
+        this.register('template:application', compile('{{swag}}'));
+        this.register('helper:swag', helper(function() {
+          return 'turnt up';
+        }));
+      }
+    });
+    App.register('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let BlogMap = function() {};
+    App.register('route-map:blog', BlogMap);
+
+    App.Router.map(function() {
+      this.mount('blog');
+    });
+  });
+
+  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+  return run(App, 'visit', '/blog', { shouldRender: true }).then(instance => {
+    assert.strictEqual(jQuery('#qunit-fixture').text(), 'turnt up', 'Engine component is resolved');
+  });
+});
+
+QUnit.module('Ember.Application - visit() Integration Tests', {
   teardown() {
     if (instances) {
       run(instances, 'forEach', (i) => i.destroy());
@@ -355,7 +488,7 @@ testModule('Ember.Application - visit() Integration Tests', {
   }
 });
 
-test('Ember Islands-style setup', function(assert) {
+QUnit.test('Ember Islands-style setup', function(assert) {
   let xFooInitCalled = false;
   let xFooDidInsertElementCalled = false;
 

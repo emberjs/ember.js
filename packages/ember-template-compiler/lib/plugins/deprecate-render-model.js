@@ -1,15 +1,14 @@
-import { deprecate } from 'ember-metal/debug';
+import { deprecate } from 'ember-metal';
 import calculateLocationDisplay from
-  'ember-template-compiler/system/calculate-location-display';
+  '../system/calculate-location-display';
 
 export default function DeprecateRenderModel(options) {
   this.syntax = null;
   this.options = options;
 }
 
-DeprecateRenderModel.prototype.transform =
-  function DeprecateRenderModel_transform(ast) {
-  let moduleName = this.options.moduleName;
+DeprecateRenderModel.prototype.transform = function DeprecateRenderModel_transform(ast) {
+  let moduleName = this.options.meta.moduleName;
   let walker = new this.syntax.Walker();
 
   walker.visit(ast, function(node) {

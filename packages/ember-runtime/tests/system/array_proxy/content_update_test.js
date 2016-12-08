@@ -1,6 +1,6 @@
-import { computed } from 'ember-metal/computed';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { computed } from 'ember-metal';
+import ArrayProxy from '../../../system/array_proxy';
+import { A as emberA } from '../../../system/native_array';
 
 QUnit.module('Ember.ArrayProxy - content update');
 

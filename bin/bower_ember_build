@@ -39,15 +39,16 @@ case $TRAVIS_BRANCH in
     CHANNEL="lts-2-4" ;;
   "release-1-13" )
     CHANNEL="release-1-13" ;;
-  "metal-views" )
-    CHANNEL="metal-views" ;;
-  "idempotent-rerender" )
-    CHANNEL="glimmer" ;;
   * )
     echo "Not a bower release branch.  Exiting!"
     exit 0 ;;
 esac
 echo -e "CHANNEL: ${CHANNEL}\n"
+
+if [[ -n $BUILD_TYPE ]]; then
+  CHANNEL=$BUILD_TYPE
+  echo -e "CHANNEL OVERRIDE: ${CHANNEL}\n"
+fi
 
 # Sending output to /dev/null to prevent GH_TOKEN leak on error.
 git clone --branch ${CHANNEL} https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_REPO_SLUG}.git bower_ember &> /dev/null
@@ -59,7 +60,7 @@ git remote rm origin
 # Sending output to /dev/null to prevent GH_TOKEN leak on error.
 git remote add origin https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_REPO_SLUG}.git &> /dev/null
 git add -A
-git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/commits/${TRAVIS_COMMIT}."
+git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/commit/${TRAVIS_COMMIT}."
 
 # Sending output to /dev/null to prevent GH_TOKEN leak on error.
 git push -fq origin ${CHANNEL} &> /dev/null

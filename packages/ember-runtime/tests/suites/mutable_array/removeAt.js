@@ -1,6 +1,6 @@
-import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import {get} from 'ember-metal/property_get';
-import { removeAt } from 'ember-runtime/mixins/mutable_array';
+import { SuiteModuleBuilder } from '../suite';
+import { get } from 'ember-metal';
+import { removeAt } from '../../../mixins/mutable_array';
 
 const suite = SuiteModuleBuilder.create();
 

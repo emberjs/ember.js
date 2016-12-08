@@ -1,5 +1,5 @@
-import { warn } from 'ember-metal/debug';
-import jQuery from 'ember-views/system/jquery';
+import { warn } from 'ember-metal';
+import { jQuery } from 'ember-views';
 
 import { environment } from 'ember-environment';
 
@@ -19,7 +19,9 @@ const $ = jQuery;
   @method testCheckboxClick
 */
 function testCheckboxClick(handler) {
-  $('<input type="checkbox">')
+  let input = document.createElement('input');
+  $(input)
+    .attr('type', 'checkbox')
     .css({ position: 'absolute', left: '-1000px', top: '-1000px' })
     .appendTo('body')
     .on('click', handler)
@@ -27,7 +29,7 @@ function testCheckboxClick(handler) {
     .remove();
 }
 
-if (environment.hasDOM) {
+if (environment.hasDOM && typeof $ === 'function') {
   $(function() {
     /*
       Determine whether a checkbox checked using jQuery's "click" method will have

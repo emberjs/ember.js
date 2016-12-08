@@ -10,6 +10,8 @@ var setupPodConfig = blueprintHelpers.setupPodConfig;
 var chai = require('ember-cli-blueprint-test-helpers/chai');
 var expect = chai.expect;
 
+var generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+
 describe('Acceptance: ember generate and destroy helper', function() {
   setupTestHooks(this);
 
@@ -249,13 +251,32 @@ describe('Acceptance: ember generate and destroy helper', function() {
 
     return emberNew()
       .then(() => modifyPackages([
-        {name: 'ember-cli-qunit', delete: true},
-        {name: 'ember-cli-mocha', dev: true}
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
       ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.11.0'))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.contain("import { describeComponent, it } from 'ember-mocha';")
           .to.contain("import hbs from 'htmlbars-inline-precompile';");
+      }));
+  });
+
+  it('helper-test foo/bar-baz --integration for mocha v0.12+', function() {
+    var args = ['helper-test', 'foo/bar-baz', '--integration'];
+
+    return emberNew()
+      .then(() => modifyPackages([
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.12.0'))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
+          .to.contain("import { describe, it } from 'mocha';")
+          .to.contain("import { setupComponentTest } from 'ember-mocha';")
+          .to.contain("import hbs from 'htmlbars-inline-precompile';")
+          .to.contain("describe('Integration | Helper | foo/bar baz', function() {");
       }));
   });
 
@@ -264,9 +285,10 @@ describe('Acceptance: ember generate and destroy helper', function() {
 
     return emberNew()
       .then(() => modifyPackages([
-        {name: 'ember-cli-qunit', delete: true},
-        {name: 'ember-cli-mocha', dev: true}
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
       ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.12.0'))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
           .to.contain("import { describe, it } from 'mocha';")

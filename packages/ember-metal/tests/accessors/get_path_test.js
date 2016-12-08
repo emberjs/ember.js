@@ -1,4 +1,4 @@
-import { get } from 'ember-metal/property_get';
+import { get } from '../../property_get';
 
 let obj;
 const moduleOpts = {

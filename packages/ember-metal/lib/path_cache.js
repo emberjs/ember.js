@@ -1,4 +1,4 @@
-import Cache from 'ember-metal/cache';
+import Cache from './cache';
 
 const IS_GLOBAL      = /^[A-Z$]/;
 const IS_GLOBAL_PATH = /^[A-Z$].*[\.]/;

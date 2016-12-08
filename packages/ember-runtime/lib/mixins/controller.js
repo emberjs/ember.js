@@ -1,7 +1,6 @@
-import { Mixin } from 'ember-metal/mixin';
-import alias from 'ember-metal/alias';
-import ActionHandler from 'ember-runtime/mixins/action_handler';
-import ControllerContentModelAliasDeprecation from 'ember-runtime/mixins/controller_content_model_alias_deprecation';
+import { Mixin, alias } from 'ember-metal';
+import ActionHandler from './action_handler';
+import ControllerContentModelAliasDeprecation from './controller_content_model_alias_deprecation';
 
 /**
   @class ControllerMixin
@@ -30,8 +29,6 @@ export default Mixin.create(ActionHandler, ControllerContentModelAliasDeprecatio
     @public
   */
   target: null,
-
-  parentController: null,
 
   store: null,
 

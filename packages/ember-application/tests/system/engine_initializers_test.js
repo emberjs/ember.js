@@ -1,5 +1,5 @@
-import run from 'ember-metal/run_loop';
-import Engine from 'ember-application/system/engine';
+import { run } from 'ember-metal';
+import Engine from '../../system/engine';
 
 let MyEngine, myEngine, myEngineInstance;
 

@@ -1,12 +1,9 @@
 import { context } from 'ember-environment';
-import { get } from 'ember-metal/property_get';
-import { computed } from 'ember-metal/computed';
-import run from 'ember-metal/run_loop';
-import { observer } from 'ember-metal/mixin';
-import { w } from 'ember-runtime/system/string';
-import EmberObject from 'ember-runtime/system/object';
-import Observable from 'ember-runtime/mixins/observable';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { get, computed, run, observer } from 'ember-metal';
+import { w } from '../../../../system/string';
+import EmberObject from '../../../../system/object';
+import Observable from '../../../../mixins/observable';
+import { A as emberA } from '../../../../system/native_array';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -409,7 +406,7 @@ QUnit.test('setting values should call function return value', function() {
     // property. Other properties blindly call set.
     expectedLength = 3;
     equal(calls.length, expectedLength, `set(${key}) should be called the right amount of times`);
-    for (idx = 0;idx < 2;idx++) {
+    for (idx = 0; idx < 2; idx++) {
       equal(calls[idx], values[idx], `call #${idx + 1} to set(${key}) should have passed value ${values[idx]}`);
     }
   });
@@ -528,14 +525,11 @@ QUnit.test('nested dependent keys should propagate after they update', function(
       })
     });
 
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       bindObj = ObservableObject.extend({
         priceBinding: 'DepObj.price'
       }).create();
-    }, deprecationMessage);
+    }, /`Ember.Binding` is deprecated/);
   });
 
   equal(bindObj.get('price'), 5, 'precond - binding propagates');
@@ -617,7 +611,7 @@ QUnit.module('Observable objects & object properties ', {
       getEach() {
         var keys = ['normal', 'abnormal'];
         var ret = [];
-        for (var idx = 0; idx < keys.length;idx++) {
+        for (var idx = 0; idx < keys.length; idx++) {
           ret[ret.length] = this.get(keys[idx]);
         }
         return ret;
@@ -831,8 +825,7 @@ QUnit.test('removing an observer inside of an observer shouldn’t cause any pro
     run(function() {
       ObjectD.set('observableValue', 'hi world');
     });
-  }
-  catch(e) {
+  } catch (e) {
     encounteredError = true;
   }
   equal(encounteredError, false);
@@ -870,12 +863,9 @@ QUnit.module('Bind function', {
 QUnit.test('should bind property with method parameter as undefined', function() {
   // creating binding
   run(function() {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       objectA.bind('name', 'Namespace.objectB.normal', undefined);
-    }, deprecationMessage);
+    }, /`Ember.Binding` is deprecated/);
   });
 
   // now make a change to see if the binding triggers.

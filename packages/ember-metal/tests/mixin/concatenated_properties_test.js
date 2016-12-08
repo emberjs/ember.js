@@ -1,8 +1,8 @@
-import get from 'ember-metal/property_get';
+import get from '../../property_get';
 import {
   Mixin,
   mixin
-} from 'ember-metal/mixin';
+} from '../../mixin';
 
 QUnit.module('Mixin concatenatedProperties');
 

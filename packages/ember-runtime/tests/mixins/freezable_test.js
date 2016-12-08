@@ -1,5 +1,5 @@
-import EmberObject from 'ember-runtime/system/object';
-import {Freezable} from 'ember-runtime/mixins/freezable';
+import EmberObject from '../../system/object';
+import { Freezable } from '../../mixins/freezable';
 
 QUnit.module('Ember.Freezable');
 

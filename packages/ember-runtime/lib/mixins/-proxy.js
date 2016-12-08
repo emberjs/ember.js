@@ -3,30 +3,26 @@
 @submodule ember-runtime
 */
 
-import { assert, deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { meta } from 'ember-metal/meta';
+import { CachedTag, DirtyableTag, UpdatableTag } from 'glimmer-reference';
 import {
+  assert,
+  deprecate,
+  get,
+  set,
+  meta,
+  on,
   addObserver,
   removeObserver,
   _addBeforeObserver,
-  _removeBeforeObserver
-} from 'ember-metal/observer';
-import {
+  _removeBeforeObserver,
   propertyWillChange,
-  propertyDidChange
-} from 'ember-metal/property_events';
-import { bool } from 'ember-runtime/computed/computed_macros';
-import { defineProperty } from 'ember-metal/properties';
-import { Mixin, observer } from 'ember-metal/mixin';
-import symbol from 'ember-metal/symbol';
-
-const IS_PROXY = symbol('IS_PROXY');
-
-export function isProxy(value) {
-  return value && value[IS_PROXY];
-}
+  propertyDidChange,
+  defineProperty,
+  Mixin,
+  observer,
+  tagFor,
+} from 'ember-metal';
+import { bool } from '../computed/computed_macros';
 
 function contentPropertyWillChange(content, contentKey) {
   let key = contentKey.slice(8); // remove "content."
@@ -40,6 +36,31 @@ function contentPropertyDidChange(content, contentKey) {
   propertyDidChange(this, key);
 }
 
+class ProxyTag extends CachedTag {
+  constructor(proxy) {
+    super();
+
+    let content = get(proxy, 'content');
+
+    this.proxy = proxy;
+    this.proxyWrapperTag = new DirtyableTag();
+    this.proxyContentTag = new UpdatableTag(tagFor(content));
+  }
+
+  compute() {
+    return Math.max(this.proxyWrapperTag.value(), this.proxyContentTag.value());
+  }
+
+  dirty() {
+    this.proxyWrapperTag.dirty();
+  }
+
+  contentDidChange() {
+    let content = get(this.proxy, 'content');
+    this.proxyContentTag.update(tagFor(content));
+  }
+}
+
 /**
   `Ember.ProxyMixin` forwards all properties not defined by the proxy itself
   to a proxied `content` object.  See Ember.ObjectProxy for more details.
@@ -49,8 +70,6 @@ function contentPropertyDidChange(content, contentKey) {
   @private
 */
 export default Mixin.create({
-  [IS_PROXY]: true,
-
   /**
     The object whose properties will be forwarded.
 
@@ -60,8 +79,19 @@ export default Mixin.create({
     @private
   */
   content: null,
+
+  init() {
+    this._super(...arguments);
+    meta(this).setProxy();
+  },
+
+  _initializeTag: on('init', function() {
+    meta(this)._tag = new ProxyTag(this);
+  }),
+
   _contentDidChange: observer('content', function() {
     assert('Can\'t set Proxy\'s content to itself', get(this, 'content') !== this);
+    tagFor(this).contentDidChange();
   }),
 
   isTruthy: bool('content'),

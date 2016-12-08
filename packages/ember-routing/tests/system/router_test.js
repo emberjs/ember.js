@@ -1,11 +1,10 @@
-import HashLocation from 'ember-routing/location/hash_location';
-import HistoryLocation from 'ember-routing/location/history_location';
-import AutoLocation from 'ember-routing/location/auto_location';
-import NoneLocation from 'ember-routing/location/none_location';
-import Router from 'ember-routing/system/router';
-import { runDestroy } from 'ember-runtime/tests/utils';
-import buildOwner from 'container/tests/test-helpers/build-owner';
-import { setOwner } from 'container/owner';
+import { setOwner } from 'ember-utils';
+import HashLocation from '../../location/hash_location';
+import HistoryLocation from '../../location/history_location';
+import AutoLocation from '../../location/auto_location';
+import NoneLocation from '../../location/none_location';
+import Router, { triggerEvent } from '../../system/router';
+import { runDestroy, buildOwner } from 'internal-test-helpers';
 
 let owner;
 
@@ -191,4 +190,68 @@ QUnit.test('Router#handleURL should remove any #hashes before doing URL transiti
   });
 
   router.handleURL('/foo/bar?time=morphin#pink-power-ranger');
+});
+
+QUnit.test('Router#triggerEvent allows actions to bubble when returning true', function(assert) {
+  assert.expect(2);
+
+  let handlerInfos = [
+    {
+      name: 'application',
+      handler: {
+        actions: {
+          loading() {
+            assert.ok(false, 'loading not handled by application route');
+          }
+        }
+      }
+    },
+    {
+      name: 'about',
+      handler: {
+        actions: {
+          loading() {
+            assert.ok(true, 'loading handled by about route');
+            return false;
+          }
+        }
+      }
+    },
+    {
+      name: 'about.me',
+      handler: {
+        actions: {
+          loading() {
+            assert.ok(true, 'loading handled by about.me route');
+            return true;
+          }
+        }
+      }
+    }
+  ];
+
+  triggerEvent(handlerInfos, false, ['loading']);
+});
+
+QUnit.test('Router#triggerEvent ignores handlers that have not loaded yet', function(assert) {
+  assert.expect(1);
+
+  let handlerInfos = [
+    {
+      name: 'about',
+      handler: {
+        actions: {
+          loading() {
+            assert.ok(true, 'loading handled by about route');
+          }
+        }
+      }
+    },
+    {
+      name: 'about.me',
+      handler: undefined
+    }
+  ];
+
+  triggerEvent(handlerInfos, false, ['loading']);
 });

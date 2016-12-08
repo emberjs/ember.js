@@ -1,13 +1,9 @@
 import { context, environment } from 'ember-environment';
-import require from 'require';
 
 let jQuery;
 
 if (environment.hasDOM) {
   jQuery = context.imports.jQuery;
-  if (!jQuery && typeof require === 'function') {
-    jQuery = require('jquery');
-  }
 
   if (jQuery) {
     if (jQuery.event.addProp) {

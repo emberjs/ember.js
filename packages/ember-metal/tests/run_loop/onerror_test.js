@@ -1,5 +1,5 @@
-import run from 'ember-metal/run_loop';
-import { setOnerror, getOnerror } from 'ember-metal/error_handler';
+import run from '../../run_loop';
+import { setOnerror, getOnerror } from '../../error_handler';
 
 QUnit.module('system/run_loop/onerror_test');
 

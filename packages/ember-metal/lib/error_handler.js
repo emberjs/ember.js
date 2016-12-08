@@ -1,6 +1,18 @@
 import Logger from 'ember-console';
 import { isTesting } from './testing';
 
+// To maintain stacktrace consistency across browsers
+let getStack = function(error) {
+  var stack = error.stack;
+  var message = error.message;
+
+  if (stack && stack.indexOf(message) === -1) {
+    stack = message + '\n' + stack;
+  }
+
+  return stack;
+};
+
 let onerror;
 // Ember.onerror getter
 export function getOnerror() {
@@ -33,6 +45,6 @@ function defaultDispatch(error) {
   if (onerror) {
     onerror(error);
   } else {
-    Logger.error(error.stack);
+    Logger.error(getStack(error));
   }
 }

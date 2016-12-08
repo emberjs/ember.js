@@ -5,7 +5,7 @@
 import {
   watch,
   unwatch
-} from 'ember-metal/watching';
+} from './watching';
 
 /**
 @module ember
@@ -28,7 +28,7 @@ export function addDependentKeys(desc, obj, keyName, meta) {
   for (idx = 0; idx < depKeys.length; idx++) {
     depKey = depKeys[idx];
     // Increment the number of times depKey depends on keyName.
-    meta.writeDeps(depKey, keyName, (meta.peekDeps(depKey, keyName)|| 0) + 1);
+    meta.writeDeps(depKey, keyName, (meta.peekDeps(depKey, keyName) || 0) + 1);
     // Watch the depKey
     watch(obj, depKey, meta);
   }

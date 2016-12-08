@@ -1,14 +1,11 @@
 /*globals EmberDev */
 
 import Logger from 'ember-console';
-import run from 'ember-metal/run_loop';
-import Application from 'ember-application/system/application';
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import RSVP from 'ember-runtime/ext/rsvp';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
-
-import 'ember-routing';
+import { run } from 'ember-metal';
+import Application from '../../system/application';
+import { Controller, RSVP } from 'ember-runtime';
+import { Route } from 'ember-routing';
+import { compile } from 'ember-template-compiler';
 
 let App, logs, originalLogger;
 

@@ -1,15 +1,13 @@
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
 import {
+  get,
+  set,
+  run,
   addObserver,
   removeObserver
-} from 'ember-metal/observer';
-import EmberObject from 'ember-runtime/system/object';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import EmberDataAdapter from 'ember-extension-support/data_adapter';
-import EmberApplication from 'ember-application/system/application';
-import DefaultResolver from 'ember-application/system/resolver';
+} from 'ember-metal';
+import { Object as EmberObject, A as emberA } from 'ember-runtime';
+import EmberDataAdapter from '../data_adapter';
+import { Application as EmberApplication, Resolver as DefaultResolver } from 'ember-application';
 
 let adapter, App;
 const Model = EmberObject.extend();

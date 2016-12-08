@@ -4,13 +4,13 @@ import { module, test } from 'qunit';
 import destroyApp from '../../helpers/destroy-app';
 
 module('<%= friendlyTestName %>', {
-  beforeEach: function() {
+  beforeEach() {
     Ember.run(() => {
       this.application = Ember.Application.create();
       this.appInstance = this.application.buildInstance();
     });
   },
-  afterEach: function() {
+  afterEach() {
     Ember.run(this.appInstance, 'destroy');
     destroyApp(this.application);
   }

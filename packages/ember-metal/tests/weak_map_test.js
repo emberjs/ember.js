@@ -1,4 +1,4 @@
-import WeakMap from 'ember-metal/weak_map';
+import WeakMap from '../weak_map';
 
 QUnit.module('Ember.WeakMap');
 
@@ -47,20 +47,42 @@ QUnit.test('has weakMap like qualities', function(assert) {
   assert.strictEqual(map.get(b), undefined);
 });
 
-QUnit.test('invoking the WeakMap constructor with arguments is not supported at this time', function(assert) {
-  expectAssertion(function() {
-    new WeakMap([[{}, 1]]);
-  }, /Invoking the WeakMap constructor with arguments is not supported at this time/);
+QUnit.test('WeakMap constructor requres new', function(assert) {
+  let expectedError = new TypeError(`Constructor WeakMap requires 'new'`);
+
+  assert.throws(() => {
+    // jshint newcap: false
+    WeakMap();
+  }, expectedError);
+});
+
+QUnit.test('constructing a WeakMap with an invalid iterator throws an error', function(assert) {
+  let expectedError = new TypeError('The weak map constructor polyfill only supports an array argument');
+
+  assert.throws(() => { new WeakMap({ a: 1 }); }, expectedError);
+});
+
+QUnit.test('constructing a WeakMap with a valid iterator inserts the entries', function(assert) {
+  let a = {};
+  let b = {};
+  let c = {};
+
+  let map = new WeakMap([[a, 1], [b, 2], [c, 3]]);
+
+  assert.strictEqual(map.get(a), 1);
+  assert.strictEqual(map.get(b), 2);
+  assert.strictEqual(map.get(c), 3);
 });
 
 QUnit.test('that error is thrown when using a primitive key', function(assert) {
+  let expectedError = new TypeError('Invalid value used as weak map key');
   let map = new WeakMap();
 
-  expectAssertion(() => map.set('a', 1),       /Uncaught TypeError: Invalid value used as weak map key/);
-  expectAssertion(() => map.set(1, 1),         /Uncaught TypeError: Invalid value used as weak map key/);
-  expectAssertion(() => map.set(true, 1),      /Uncaught TypeError: Invalid value used as weak map key/);
-  expectAssertion(() => map.set(null, 1),      /Uncaught TypeError: Invalid value used as weak map key/);
-  expectAssertion(() => map.set(undefined, 1), /Uncaught TypeError: Invalid value used as weak map key/);
+  assert.throws(() => map.set('a', 1), expectedError);
+  assert.throws(() => map.set(1, 1), expectedError);
+  assert.throws(() => map.set(true, 1), expectedError);
+  assert.throws(() => map.set(null, 1), expectedError);
+  assert.throws(() => map.set(undefined, 1), expectedError);
 });
 
 QUnit.test('that .has and .delete work as expected', function(assert) {
@@ -81,4 +103,10 @@ QUnit.test('that .has and .delete work as expected', function(assert) {
   assert.strictEqual(map.delete(a), true);
   assert.strictEqual(map.delete(a), false);
   assert.strictEqual(map.has(a), false);
+});
+
+QUnit.test('that .toString works as expected', function(assert) {
+  let map = new WeakMap();
+
+  assert.strictEqual(map.toString(), '[object WeakMap]');
 });

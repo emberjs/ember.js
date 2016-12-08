@@ -1,10 +1,13 @@
-import Ember from 'ember-runtime';
+import {
+  collect,
+  Object as EmberObject
+} from '../index';
 
 QUnit.module('ember-runtime/main');
 
 QUnit.test('Ember.computed.collect', function() {
-  let MyObj = Ember.Object.extend({
-    props: Ember.computed.collect('foo', 'bar', 'baz')
+  let MyObj = EmberObject.extend({
+    props: collect('foo', 'bar', 'baz')
   });
 
   let myObj = MyObj.create({

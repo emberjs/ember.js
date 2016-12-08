@@ -1,29 +1,25 @@
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
+import {
+  assert,
+  get,
+  computed,
+  _beforeObserver,
+  observer,
+  beginPropertyChanges,
+  endPropertyChanges,
+  Error as EmberError,
+  alias
+} from 'ember-metal';
 import {
   isArray
-} from 'ember-runtime/utils';
-import { computed } from 'ember-metal/computed';
-import {
-  _beforeObserver,
-  observer
-} from 'ember-metal/mixin';
-import {
-  beginPropertyChanges,
-  endPropertyChanges
-} from 'ember-metal/property_events';
-import EmberError from 'ember-metal/error';
-import EmberObject from 'ember-runtime/system/object';
-import MutableArray from 'ember-runtime/mixins/mutable_array';
-import Enumerable from 'ember-runtime/mixins/enumerable';
-import alias from 'ember-metal/alias';
+} from '../utils';
+import EmberObject from './object';
+import MutableArray from '../mixins/mutable_array';
+import Enumerable from '../mixins/enumerable';
 import {
   addArrayObserver,
   removeArrayObserver,
-  arrayContentDidChange,
-  arrayContentWillChange,
   objectAt
-} from 'ember-runtime/mixins/array';
+} from '../mixins/array';
 
 /**
 @module ember
@@ -107,7 +103,7 @@ export default EmberObject.extend(MutableArray, {
     @method objectAtContent
     @param {Number} idx The index to retrieve.
     @return {Object} the value or undefined if none found
-    @private
+    @public
   */
   objectAtContent(idx) {
     return objectAt(get(this, 'arrangedContent'), idx);
@@ -374,11 +370,11 @@ export default EmberObject.extend(MutableArray, {
   },
 
   arrangedContentArrayWillChange(item, idx, removedCnt, addedCnt) {
-    arrayContentWillChange(this, idx, removedCnt, addedCnt);
+    this.arrayContentWillChange(idx, removedCnt, addedCnt);
   },
 
   arrangedContentArrayDidChange(item, idx, removedCnt, addedCnt) {
-    arrayContentDidChange(this, idx, removedCnt, addedCnt);
+    this.arrayContentDidChange(idx, removedCnt, addedCnt);
   },
 
   init() {

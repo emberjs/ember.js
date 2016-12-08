@@ -1,7 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { Component, TextField } from '../../utils/helpers';
-import { set } from 'ember-metal/property_set';
-import { get } from 'ember-metal/property_get';
+import { Component } from '../../utils/helpers';
+import { set, get } from 'ember-metal';
 
 moduleFor('Helpers test: {{get}}', class extends RenderingTest {
 
@@ -140,12 +139,11 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[yellow-redish] [yellow-redish]');
 
     this.runTask(() => set(this.context, 'colors', {
-        apple: {
-          gala: 'red and yellow',
-          mcintosh: 'red'
-        }
-      })
-    );
+      apple: {
+        gala: 'red and yellow',
+        mcintosh: 'red'
+      }
+    }));
 
     this.assertText('[red and yellow] [red and yellow]');
   }
@@ -361,11 +359,37 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[] []');
   }
 
-  ['@htmlbars get helper value should be updatable using {{input}} and (mut) - dynamic key'](assert) {
-    this.registerComponent('-text-field', { ComponentClass: TextField });
+  ['@test get helper value should be updatable using {{input}} and (mut) - static key'](assert) {
+    this.render(`{{input type='text' value=(mut (get source 'banana')) id='get-input'}}`, {
+      source: {
+        banana: 'banana'
+      }
+    });
 
+    assert.strictEqual(this.$('#get-input').val(), 'banana');
+
+    this.runTask(() => this.rerender());
+
+    assert.strictEqual(this.$('#get-input').val(), 'banana');
+
+    this.runTask(() => set(this.context, 'source.banana', 'yellow'));
+
+    assert.strictEqual(this.$('#get-input').val(), 'yellow');
+
+    this.runTask(() => this.$('#get-input').val('some value').trigger('change'));
+
+    assert.strictEqual(this.$('#get-input').val(), 'some value');
+    assert.strictEqual(get(this.context, 'source.banana'), 'some value');
+
+    this.runTask(() => set(this.context, 'source', { banana: 'banana' }));
+
+    assert.strictEqual(this.$('#get-input').val(), 'banana');
+  }
+
+  ['@test get helper value should be updatable using {{input}} and (mut) - dynamic key'](assert) {
     this.render(`{{input type='text' value=(mut (get source key)) id='get-input'}}`, {
       source: {
+        apple: 'apple',
         banana: 'banana'
       },
       key: 'banana'
@@ -381,36 +405,36 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
 
     assert.strictEqual(this.$('#get-input').val(), 'yellow');
 
-    this.runTask(() => {
-      this.$('#get-input').val('some value');
-
-      // have tried to fire _elementValueDidChange via events but no luck
-      // so looks like the only option is to call _elementValueDidChange manually
-      // which I suspect doesn't seem to work for glimmer once it's implemented
-      //
-      // this.$('#get-input').trigger('input');
-      // this.$('#get-input').trigger('paste');
-      // this.$('#get-input').trigger('change');
-      // this.$('#get-input').triggerHandler('input');
-      this.component.childViews[0]._elementValueDidChange();
-    });
+    this.runTask(() => this.$('#get-input').val('some value').trigger('change'));
 
     assert.strictEqual(this.$('#get-input').val(), 'some value');
     assert.strictEqual(get(this.context, 'source.banana'), 'some value');
 
-    this.runTask(() => set(this.context, 'source', { banana: 'banana' }));
+    this.runTask(() => set(this.context, 'key', 'apple'));
+
+    assert.strictEqual(this.$('#get-input').val(), 'apple');
+
+    this.runTask(() => this.$('#get-input').val('some other value').trigger('change'));
+
+    assert.strictEqual(this.$('#get-input').val(), 'some other value');
+    assert.strictEqual(get(this.context, 'source.apple'), 'some other value');
+
+    this.runTask(() => {
+      set(this.context, 'key', 'banana');
+      set(this.context, 'source', { banana: 'banana' });
+    });
 
     assert.strictEqual(this.$('#get-input').val(), 'banana');
   }
 
-  ['@htmlbars get helper value should be updatable using {{input}} and (mut) - dynamic nested key'](assert) {
-    this.registerComponent('-text-field', { ComponentClass: TextField });
-
+  ['@test get helper value should be updatable using {{input}} and (mut) - dynamic nested key'](assert) {
     this.render(`{{input type='text' value=(mut (get source key)) id='get-input'}}`, {
       source: {
         apple: {
+          gala: 'gala',
           mcintosh: 'mcintosh'
-        }
+        },
+        banana: 'banana'
       },
       key: 'apple.mcintosh'
     });
@@ -425,49 +449,40 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
 
     assert.strictEqual(this.$('#get-input').val(), 'red');
 
-    this.runTask(() => {
-      this.$('#get-input').val('some value');
-      this.component.childViews[0]._elementValueDidChange();
-    });
+    this.runTask(() => this.$('#get-input').val('some value').trigger('change'));
 
     assert.strictEqual(this.$('#get-input').val(), 'some value');
     assert.strictEqual(get(this.context, 'source.apple.mcintosh'), 'some value');
 
-    this.runTask(() => set(this.context, 'source', { apple: { mcintosh: 'mcintosh' } }));
+    this.runTask(() => set(this.context, 'key', 'apple.gala'));
 
-    assert.strictEqual(this.$('#get-input').val(), 'mcintosh');
-  }
+    assert.strictEqual(this.$('#get-input').val(), 'gala');
 
-  ['@htmlbars get helper value should be updatable using {{input}} and (mut) - static key'](assert) {
-    this.registerComponent('-text-field', { ComponentClass: TextField });
+    this.runTask(() => this.$('#get-input').val('some other value').trigger('change'));
 
-    this.render(`{{input type='text' value=(mut (get source 'banana')) id='get-input'}}`, {
-      source: {
-        banana: 'banana'
-      },
-      key: 'banana'
-    });
+    assert.strictEqual(this.$('#get-input').val(), 'some other value');
+    assert.strictEqual(get(this.context, 'source.apple.gala'), 'some other value');
+
+    this.runTask(() => set(this.context, 'key', 'banana'));
 
     assert.strictEqual(this.$('#get-input').val(), 'banana');
 
-    this.runTask(() => this.rerender());
+    this.runTask(() => this.$('#get-input').val('yet another value').trigger('change'));
 
-    assert.strictEqual(this.$('#get-input').val(), 'banana');
-
-    this.runTask(() => set(this.context, 'context.source.banana', 'yellow'));
-
-    assert.strictEqual(this.$('#get-input').val(), 'yellow');
+    assert.strictEqual(this.$('#get-input').val(), 'yet another value');
+    assert.strictEqual(get(this.context, 'source.banana'), 'yet another value');
 
     this.runTask(() => {
-      this.$('#get-input').val('some value');
-      this.component.childViews[0]._elementValueDidChange();
+      set(this.context, 'key', 'apple.mcintosh');
+      set(this.context, 'source', {
+        apple: {
+          gala: 'gala',
+          mcintosh: 'mcintosh'
+        },
+        banana: 'banana'
+      });
     });
 
-    assert.strictEqual(this.$('#get-input').val(), 'some value');
-    assert.strictEqual(get(this.context, 'source.banana'), 'some value');
-
-    this.runTask(() => set(this.context, 'source', { banana: 'banana' }));
-
-    assert.strictEqual(this.$('#get-input').val(), 'banana');
+    assert.strictEqual(this.$('#get-input').val(), 'mcintosh');
   }
 });

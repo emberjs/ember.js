@@ -3,13 +3,16 @@
 @submodule ember-runtime
 */
 
-import { assert, deprecate } from 'ember-metal/debug';
-import { Mixin } from 'ember-metal/mixin';
-import { get } from 'ember-metal/property_get';
+import {
+  assert,
+  deprecate,
+  Mixin,
+  get
+} from 'ember-metal';
 
 /**
   `Ember.ActionHandler` is available on some familiar classes including
-  `Ember.Route`, `Ember.View`, `Ember.Component`, and `Ember.Controller`.
+  `Ember.Route`, `Ember.Component`, and `Ember.Controller`.
   (Internally the mixin is used by `Ember.CoreView`, `Ember.ControllerMixin`,
   and `Ember.Route` and available to the above classes through
   inheritance.)
@@ -59,8 +62,8 @@ const ActionHandler = Mixin.create({
     this.send('playMusic');
     ```
 
-    Within a Controller, Route, View or Component's action handler,
-    the value of the `this` context is the Controller, Route, View or
+    Within a Controller, Route or Component's action handler,
+    the value of the `this` context is the Controller, Route or
     Component object:
 
     ```js
@@ -173,14 +176,13 @@ const ActionHandler = Mixin.create({
     @public
   */
   send(actionName, ...args) {
-    let target;
-
     if (this.actions && this.actions[actionName]) {
       let shouldBubble = this.actions[actionName].apply(this, args) === true;
       if (!shouldBubble) { return; }
     }
 
-    if (target = get(this, 'target')) {
+    let target = get(this, 'target');
+    if (target) {
       assert(
         'The `target` for ' + this + ' (' + target + ') does not have a `send` method',
         typeof target.send === 'function'

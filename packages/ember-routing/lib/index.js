@@ -3,38 +3,24 @@
 @submodule ember-routing
 */
 
-import Ember from 'ember-metal/core'; // reexports
-
 // ES6TODO: Cleanup modules with side-effects below
-import 'ember-routing/ext/run_loop';
-import 'ember-routing/ext/controller';
+import './ext/run_loop';
+import './ext/controller';
 
-import EmberLocation from 'ember-routing/location/api';
-import NoneLocation from 'ember-routing/location/none_location';
-import HashLocation from 'ember-routing/location/hash_location';
-import HistoryLocation from 'ember-routing/location/history_location';
-import AutoLocation from 'ember-routing/location/auto_location';
+export { default as Location } from './location/api';
+export { default as NoneLocation } from './location/none_location';
+export { default as HashLocation } from './location/hash_location';
+export { default as HistoryLocation } from './location/history_location';
+export { default as AutoLocation } from './location/auto_location';
 
-import generateController from 'ember-routing/system/generate_controller';
-import {
+export {
+  default as generateController,
   generateControllerFactory
-} from 'ember-routing/system/generate_controller';
-import controllerFor from 'ember-routing/system/controller_for';
-import RouterDSL from 'ember-routing/system/dsl';
-import Router from 'ember-routing/system/router';
-import Route from 'ember-routing/system/route';
-
-Ember.Location = EmberLocation;
-Ember.AutoLocation = AutoLocation;
-Ember.HashLocation = HashLocation;
-Ember.HistoryLocation = HistoryLocation;
-Ember.NoneLocation = NoneLocation;
-
-Ember.controllerFor = controllerFor;
-Ember.generateControllerFactory = generateControllerFactory;
-Ember.generateController = generateController;
-Ember.RouterDSL = RouterDSL;
-Ember.Router = Router;
-Ember.Route = Route;
-
-export default Ember;
+} from './system/generate_controller';
+export { default as controllerFor } from './system/controller_for';
+export { default as RouterDSL } from './system/dsl';
+export { default as Router } from './system/router';
+export { default as Route } from './system/route';
+export { default as QueryParams } from './system/query_params';
+export { default as RoutingService } from './services/routing';
+export { default as BucketCache } from './system/cache';

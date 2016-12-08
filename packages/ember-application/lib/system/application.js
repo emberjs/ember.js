@@ -2,45 +2,40 @@
 @module ember
 @submodule ember-application
 */
-import { ENV } from 'ember-environment';
-import { assert, debug } from 'ember-metal/debug';
-import libraries from 'ember-metal/libraries';
-import { isTesting } from 'ember-metal/testing';
-import { get } from 'ember-metal/property_get';
-import Namespace, {
-  setSearchDisabled as setNamespaceSearchDisabled
-} from 'ember-runtime/system/namespace';
-import { runLoadHooks } from 'ember-runtime/system/lazy_load';
-import run from 'ember-metal/run_loop';
-import EmberView from 'ember-views/views/view';
-import EventDispatcher from 'ember-views/system/event_dispatcher';
-import jQuery from 'ember-views/system/jquery';
-import Route from 'ember-routing/system/route';
-import Router from 'ember-routing/system/router';
-import HashLocation from 'ember-routing/location/hash_location';
-import HistoryLocation from 'ember-routing/location/history_location';
-import AutoLocation from 'ember-routing/location/auto_location';
-import NoneLocation from 'ember-routing/location/none_location';
-import BucketCache from 'ember-routing/system/cache';
-import ApplicationInstance from 'ember-application/system/application-instance';
-import { _loaded } from 'ember-runtime/system/lazy_load';
-import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
-import { privatize as P } from 'container/registry';
-import { environment } from 'ember-environment';
-import RSVP from 'ember-runtime/ext/rsvp';
-import Engine, { GLIMMER } from './engine';
-import require from 'require';
+import { dictionary } from 'ember-utils';
+import { ENV, environment } from 'ember-environment';
+import {
+  assert,
+  debug,
+  libraries,
+  isTesting,
+  get,
+  run
+} from 'ember-metal';
+import {
+  Namespace,
+  setNamespaceSearchDisabled,
+  runLoadHooks,
+  _loaded,
+  buildFakeRegistryWithDeprecations,
+  RSVP
+} from 'ember-runtime';
+import { EventDispatcher, jQuery } from 'ember-views';
+import {
+  Route,
+  Router,
+  HashLocation,
+  HistoryLocation,
+  AutoLocation,
+  NoneLocation,
+  BucketCache
+} from 'ember-routing';
+import ApplicationInstance from './application-instance';
+import { privatize as P } from 'container';
+import Engine from './engine';
+import { setupApplicationRegistry } from 'ember-glimmer';
 
 let librariesRegistered = false;
-
-let warnedAboutLegacyViewAddon = false;
-let warnedAboutLegacyControllerAddon = false;
-
-// For testing
-export function _resetLegacyAddonWarnings() {
-  warnedAboutLegacyViewAddon = false;
-  warnedAboutLegacyControllerAddon = false;
-}
 
 /**
   An instance of `Ember.Application` is the starting point for every Ember
@@ -403,10 +398,10 @@ const Application = Engine.extend({
 
     This is orthogonal to autoboot: the deprecated instance needs to
     be created at Application construction (not boot) time to expose
-    App.__container__ and the global Ember.View.views registry. If
-    autoboot sees that this instance exists, it will continue booting
-    it to avoid doing unncessary work (as opposed to building a new
-    instance at boot time), but they are otherwise unrelated.
+    App.__container__. If autoboot sees that this instance exists,
+    it will continue booting it to avoid doing unncessary work (as
+    opposed to building a new instance at boot time), but they are
+    otherwise unrelated.
 
     @private
     @method _buildDeprecatedInstance
@@ -419,10 +414,6 @@ const Application = Engine.extend({
     // on App that rely on a single, default instance.
     this.__deprecatedInstance__ = instance;
     this.__container__ = instance.__container__;
-
-    // For the default instance only, set the view registry to the global
-    // Ember.View.views hash for backwards-compatibility.
-    EmberView.views = instance.lookup('-view-registry:main');
   },
 
   /**
@@ -563,7 +554,7 @@ const Application = Engine.extend({
 
     try {
       this._bootSync();
-    } catch(_) {
+    } catch (_) {
       // Ignore th error: in the asynchronous boot path, the error is already reflected
       // in the promise rejection
     }
@@ -601,7 +592,7 @@ const Application = Engine.extend({
       runLoadHooks('application', this);
       this.advanceReadiness();
       // Continues to `didBecomeReady`
-    } catch(error) {
+    } catch (error) {
       // For the asynchronous boot path
       defer.reject(error);
 
@@ -743,7 +734,7 @@ const Application = Engine.extend({
 
       // For the synchronous boot path
       this._booted = true;
-    } catch(error) {
+    } catch (error) {
       // For the asynchronous boot path
       this._bootResolver.reject(error);
 
@@ -977,9 +968,14 @@ const Application = Engine.extend({
   */
   visit(url, options) {
     return this.boot().then(() => {
-      return this.buildInstance().boot(options).then((instance) => {
-        return instance.visit(url);
-      });
+      let instance = this.buildInstance();
+
+      return instance.boot(options)
+        .then(() => instance.visit(url))
+        .catch(error => {
+          run(instance, 'destroy');
+          throw error;
+        });
     });
   }
 });
@@ -1023,20 +1019,14 @@ Application.reopenClass({
 
     commonSetupRegistry(registry);
 
-    if (options[GLIMMER]) {
-      let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupApplicationRegistry;
-      glimmerSetupRegistry(registry);
-    } else {
-      let htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupApplicationRegistry;
-      htmlbarsSetupRegistry(registry);
-    }
+    setupApplicationRegistry(registry);
 
     return registry;
   }
 });
 
 function commonSetupRegistry(registry) {
-  registry.register('-view-registry:main', { create() { return {}; } });
+  registry.register('-view-registry:main', { create() { return dictionary(null); } });
 
   registry.register('route:basic', Route);
   registry.register('event_dispatcher:main', EventDispatcher);
@@ -1055,7 +1045,7 @@ function registerLibraries() {
   if (!librariesRegistered) {
     librariesRegistered = true;
 
-    if (environment.hasDOM) {
+    if (environment.hasDOM && typeof jQuery === 'function') {
       libraries.registerCoreLibrary('jQuery', jQuery().jquery);
     }
   }

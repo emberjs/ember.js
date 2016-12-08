@@ -1,29 +1,40 @@
+import {
+  EmptyObject,
+  assign,
+  guidFor,
+  dictionary,
+  getOwner
+} from 'ember-utils';
 import Logger from 'ember-console';
-import { assert, info, deprecate } from 'ember-metal/debug';
-import EmberError from 'ember-metal/error';
-import isEnabled from 'ember-metal/features';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { defineProperty } from 'ember-metal/properties';
-import EmptyObject from 'ember-metal/empty_object';
-import { computed } from 'ember-metal/computed';
-import assign from 'ember-metal/assign';
-import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
-import Evented from 'ember-runtime/mixins/evented';
-import { hasDefaultSerialize } from 'ember-routing/system/route';
-import EmberRouterDSL from 'ember-routing/system/dsl';
-import EmberLocation from 'ember-routing/location/api';
+import {
+  assert,
+  info,
+  Error as EmberError,
+  get,
+  set,
+  defineProperty,
+  computed,
+  run,
+  deprecate
+} from 'ember-metal';
+import {
+  Object as EmberObject,
+  Evented,
+  typeOf,
+  A as emberA
+} from 'ember-runtime';
+import {
+  defaultSerialize,
+  hasDefaultSerialize
+} from './route';
+import EmberRouterDSL from './dsl';
+import EmberLocation from '../location/api';
 import {
   routeArgs,
   getActiveTargetName,
-  stashParamNames,
   calculateCacheKey
-} from 'ember-routing/utils';
-import { guidFor } from 'ember-metal/utils';
+} from '../utils';
 import RouterState from './router_state';
-import { getOwner } from 'container/owner';
-import dictionary from 'ember-metal/dictionary';
 
 /**
 @module ember
@@ -31,7 +42,6 @@ import dictionary from 'ember-metal/dictionary';
 */
 
 import Router from 'router';
-import 'router/transition';
 
 function K() { return this; }
 
@@ -108,9 +118,18 @@ const EmberRouter = EmberObject.extend(Evented, {
       enableLoadingSubstates: !!moduleBasedResolver
     };
 
-    if (isEnabled('ember-route-serializers')) {
-      options.router = this;
-    }
+    let owner = getOwner(this);
+    let router = this;
+
+    options.resolveRouteMap = function(name) {
+      return owner._lookupFactory('route-map:' + name);
+    };
+
+    options.addRouteForEngine = function(name, engineInfo) {
+      if (!router._engineInfoByRoute[name]) {
+        router._engineInfoByRoute[name] = engineInfo;
+      }
+    };
 
     return new EmberRouterDSL(null, options);
   },
@@ -118,14 +137,11 @@ const EmberRouter = EmberObject.extend(Evented, {
   init() {
     this._super(...arguments);
 
-    this._activeViews = {};
     this._qpCache = new EmptyObject();
     this._resetQueuedQueryParameterChanges();
     this._handledErrors = dictionary(null);
-
-    if (isEnabled('ember-route-serializers')) {
-      this._serializeMethods = new EmptyObject();
-    }
+    this._engineInstances = new EmptyObject();
+    this._engineInfoByRoute = new EmptyObject();
   },
 
   /*
@@ -252,6 +268,11 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   _setOutlets() {
+    // This is triggered async during Ember.Route#willDestroy.
+    // If the router is also being destroyed we do not want to
+    // to create another this._toplevelView (and leak the renderer)
+    if (this.isDestroying || this.isDestroyed) { return; }
+
     let handlerInfos = this.router.currentHandlerInfos;
     let route;
     let defaultParentState;
@@ -277,6 +298,16 @@ const EmberRouter = EmberObject.extend(Evented, {
       }
       defaultParentState = ownState;
     }
+
+    // when a transitionTo happens after the validation phase
+    // during the initial transition _setOutlets is called
+    // when no routes are active. However, it will get called
+    // again with the correct values during the next turn of
+    // the runloop
+    if (!liveRoutes) {
+      return;
+    }
+
     if (!this._toplevelView) {
       let owner = getOwner(this);
       let OutletView = owner._lookupFactory('view:-outlet');
@@ -436,12 +467,17 @@ const EmberRouter = EmberObject.extend(Evented, {
       this._toplevelView.destroy();
       this._toplevelView = null;
     }
-    this._super(...arguments);
-    this.reset();
-  },
 
-  _lookupActiveComponentNode(templateName) {
-    return this._activeViews[templateName];
+    this._super(...arguments);
+
+    this.reset();
+
+    let instances = this._engineInstances;
+    for (let name in instances) {
+      for (let id in instances[name]) {
+        run(instances[name][id], 'destroy');
+      }
+    }
   },
 
   /*
@@ -469,9 +505,9 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     if these methods are called in succession:
     this._activeQPChanged('foo', '10');
-      // results in _queuedQPChanges = {foo: '10'}
+      // results in _queuedQPChanges = { foo: '10' }
     this._activeQPChanged('bar', false);
-      // results in _queuedQPChanges = {foo: '10', bar: false}
+      // results in _queuedQPChanges = { foo: '10', bar: false }
 
 
     _queuedQPChanges will represent both of these changes
@@ -481,18 +517,6 @@ const EmberRouter = EmberObject.extend(Evented, {
   _fireQueryParamTransition() {
     this.transitionTo({ queryParams: this._queuedQPChanges });
     this._resetQueuedQueryParameterChanges();
-  },
-
-  _connectActiveComponentNode(templateName, componentNode) {
-    assert('cannot connect an activeView that already exists', !this._activeViews[templateName]);
-
-    let _activeViews = this._activeViews;
-    function disconnectActiveView() {
-      delete _activeViews[templateName];
-    }
-
-    this._activeViews[templateName] = componentNode;
-    componentNode.renderNode.addDestruction({ destroy: disconnectActiveView });
   },
 
   _setupLocation() {
@@ -538,11 +562,22 @@ const EmberRouter = EmberObject.extend(Evented, {
   _getHandlerFunction() {
     let seen = new EmptyObject();
     let owner = getOwner(this);
-    let DefaultRoute = owner._lookupFactory('route:basic');
 
     return (name) => {
-      let routeName = 'route:' + name;
-      let handler = owner.lookup(routeName);
+      let routeName = name;
+      let routeOwner = owner;
+      let engineInfo = this._engineInfoByRoute[routeName];
+
+      if (engineInfo) {
+        let engineInstance = this._getEngineInstance(engineInfo);
+
+        routeOwner = engineInstance;
+        routeName = engineInfo.localFullName;
+      }
+
+      let fullRouteName = 'route:' + routeName;
+
+      let handler = routeOwner.lookup(fullRouteName);
 
       if (seen[name]) {
         return handler;
@@ -551,36 +586,37 @@ const EmberRouter = EmberObject.extend(Evented, {
       seen[name] = true;
 
       if (!handler) {
-        owner.register(routeName, DefaultRoute.extend());
-        handler = owner.lookup(routeName);
+        let DefaultRoute = routeOwner._lookupFactory('route:basic');
+
+        routeOwner.register(fullRouteName, DefaultRoute.extend());
+        handler = routeOwner.lookup(fullRouteName);
 
         if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
-          info(`generated -> ${routeName}`, { fullName: routeName });
+          info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
         }
       }
 
-      handler.routeName = name;
+      handler._setRouteName(routeName);
+      handler._populateQPMeta();
+
+      if (engineInfo && !hasDefaultSerialize(handler)) {
+        throw new Error('Defining a custom serialize method on an Engine route is not supported.');
+      }
+
       return handler;
     };
   },
 
   _getSerializerFunction() {
     return (name) => {
-      let serializer = this._serializeMethods[name];
+      let engineInfo = this._engineInfoByRoute[name];
 
-      if (!serializer) {
-        let handler = this.router.getHandler(name);
-
-        deprecate(
-          `Defining a serialize function on route '${name}' is deprecated. Instead, define it in the router's map as an option.`,
-          hasDefaultSerialize(handler),
-          { id: 'ember-routing.serialize-function', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_route-serialize' }
-        );
-
-        this._serializeMethods[name] = handler.serialize;
+      // If this is not an Engine route, we fall back to the handler for serialization
+      if (!engineInfo) {
+        return;
       }
 
-      return serializer;
+      return engineInfo.serializeMethod || defaultSerialize;
     };
   },
 
@@ -589,10 +625,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let emberRouter = this;
 
     router.getHandler = this._getHandlerFunction();
-
-    if (isEnabled('ember-route-serializers')) {
-      router.getSerializer = this._getSerializerFunction();
-    }
+    router.getSerializer = this._getSerializerFunction();
 
     let doUpdateURL = function() {
       location.setURL(lastURL);
@@ -623,38 +656,96 @@ const EmberRouter = EmberObject.extend(Evented, {
     };
   },
 
-  _serializeQueryParams(targetRouteName, queryParams) {
-    let groupedByUrlKey = {};
+  /**
+    Serializes the given query params according to their QP meta information.
 
-    forEachQueryParam(this, targetRouteName, queryParams, function(key, value, qp) {
-      let urlKey = qp.urlKey;
-      if (!groupedByUrlKey[urlKey]) {
-        groupedByUrlKey[urlKey] = [];
+    @private
+    @method _serializeQueryParams
+    @param {Arrray<HandlerInfo>} handlerInfos
+    @param {Object} queryParams
+    @return {Void}
+  */
+  _serializeQueryParams(handlerInfos, queryParams) {
+    forEachQueryParam(this, handlerInfos, queryParams, (key, value, qp) => {
+      if (qp) {
+        delete queryParams[key];
+        queryParams[qp.urlKey] = qp.route.serializeQueryParam(value, qp.urlKey, qp.type);
+      } else if (value === undefined) {
+        return; // We don't serialize undefined values
+      } else {
+        queryParams[key] = this._serializeQueryParam(value, typeOf(value));
       }
-      groupedByUrlKey[urlKey].push({
-        qp: qp,
-        value: value
-      });
-      delete queryParams[key];
     });
+  },
 
-    for (let key in groupedByUrlKey) {
-      let qps = groupedByUrlKey[key];
-      assert(`You're not allowed to have more than one controller property map to the same query param key, but both \`${qps[0].qp.scopedPropertyName}\` and \`${qps[1] ? qps[1].qp.scopedPropertyName : ''}\` map to \`${qps[0].qp.urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${qps[0].qp.prop}: { as: \'other-${qps[0].qp.prop}\' }\``, qps.length <= 1);
-      let qp = qps[0].qp;
-      queryParams[qp.urlKey] = qp.route.serializeQueryParam(qps[0].value, qp.urlKey, qp.type);
+  /**
+    Serializes the value of a query parameter based on a type
+
+    @private
+    @method _serializeQueryParam
+    @param {Object} value
+    @param {String} type
+  */
+  _serializeQueryParam(value, type) {
+    if (type === 'array') {
+      return JSON.stringify(value);
     }
+
+    return `${value}`;
   },
 
-  _deserializeQueryParams(targetRouteName, queryParams) {
-    forEachQueryParam(this, targetRouteName, queryParams, function(key, value, qp) {
-      delete queryParams[key];
-      queryParams[qp.prop] = qp.route.deserializeQueryParam(value, qp.urlKey, qp.type);
+  /**
+    Deserializes the given query params according to their QP meta information.
+
+    @private
+    @method _deserializeQueryParams
+    @param {Array<HandlerInfo>} handlerInfos
+    @param {Object} queryParams
+    @return {Void}
+  */
+  _deserializeQueryParams(handlerInfos, queryParams) {
+    forEachQueryParam(this, handlerInfos, queryParams, (key, value, qp) => {
+      // If we don't have QP meta info for a given key, then we do nothing
+      // because all values will be treated as strings
+      if (qp) {
+        delete queryParams[key];
+        queryParams[qp.prop] = qp.route.deserializeQueryParam(value, qp.urlKey, qp.type);
+      }
     });
   },
 
-  _pruneDefaultQueryParamValues(targetRouteName, queryParams) {
-    let qps = this._queryParamsFor(targetRouteName);
+  /**
+    Deserializes the value of a query parameter based on a default type
+
+    @private
+    @method _deserializeQueryParam
+    @param {Object} value
+    @param {String} defaultType
+  */
+  _deserializeQueryParam(value, defaultType) {
+    if (defaultType === 'boolean') {
+      return (value === 'true') ? true : false;
+    } else if (defaultType === 'number') {
+      return (Number(value)).valueOf();
+    } else if (defaultType === 'array') {
+      return emberA(JSON.parse(value));
+    }
+
+    return value;
+  },
+
+  /**
+    Removes (prunes) any query params with default values from the given QP
+    object. Default values are determined from the QP meta information per key.
+
+    @private
+    @method _pruneDefaultQueryParamValues
+    @param {Array<HandlerInfo>} handlerInfos
+    @param {Object} queryParams
+    @return {Void}
+  */
+  _pruneDefaultQueryParamValues(handlerInfos, queryParams) {
+    let qps = this._queryParamsFor(handlerInfos);
     for (let key in queryParams) {
       let qp = qps.map[key];
       if (qp && qp.serializedDefaultValue === queryParams[key]) {
@@ -668,11 +759,8 @@ const EmberRouter = EmberObject.extend(Evented, {
     assert(`The route ${targetRouteName} was not found`, targetRouteName && this.router.hasRoute(targetRouteName));
 
     let queryParams = {};
-    // merge in any queryParams from the active transition which could include
-    // queryparams from the url on initial load.
-    if (this.router.activeTransition) {
-      assign(queryParams, this.router.activeTransition.queryParams);
-    }
+
+    this._processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams);
 
     assign(queryParams, _queryParams);
     this._prepareQueryParams(targetRouteName, models, queryParams);
@@ -685,65 +773,179 @@ const EmberRouter = EmberObject.extend(Evented, {
     return transition;
   },
 
-  _prepareQueryParams(targetRouteName, models, queryParams) {
-    this._hydrateUnsuppliedQueryParams(targetRouteName, models, queryParams);
-    this._serializeQueryParams(targetRouteName, queryParams);
-    this._pruneDefaultQueryParamValues(targetRouteName, queryParams);
+  _processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams) {
+    // merge in any queryParams from the active transition which could include
+    // queryParams from the url on initial load.
+    if (!this.router.activeTransition) { return; }
+
+    var unchangedQPs = {};
+    var qpUpdates = this._qpUpdates || {};
+    for (var key in this.router.activeTransition.queryParams) {
+      if (!qpUpdates[key]) {
+        unchangedQPs[key] = this.router.activeTransition.queryParams[key];
+      }
+    }
+
+    // We need to fully scope queryParams so that we can create one object
+    // that represents both pased in queryParams and ones that aren't changed
+    // from the active transition.
+    this._fullyScopeQueryParams(targetRouteName, models, _queryParams);
+    this._fullyScopeQueryParams(targetRouteName, models, unchangedQPs);
+    assign(queryParams, unchangedQPs);
   },
 
   /**
-    Returns a merged query params meta object for a given route.
-    Useful for asking a route what its known query params are.
+    Prepares the query params for a URL or Transition. Restores any undefined QP
+    keys/values, serializes all values, and then prunes any default values.
 
     @private
+    @method _prepareQueryParams
+    @param {String} targetRouteName
+    @param {Array<Object>} models
+    @param {Object} queryParams
+    @return {Void}
+  */
+  _prepareQueryParams(targetRouteName, models, queryParams) {
+    let state = calculatePostTransitionState(this, targetRouteName, models);
+    this._hydrateUnsuppliedQueryParams(state, queryParams);
+    this._serializeQueryParams(state.handlerInfos, queryParams);
+    this._pruneDefaultQueryParamValues(state.handlerInfos, queryParams);
+  },
+
+  /**
+    Returns the meta information for the query params of a given route. This
+    will be overriden to allow support for lazy routes.
+
+    @private
+    @method _getQPMeta
+    @param {HandlerInfo} handlerInfo
+    @return {Object}
+  */
+  _getQPMeta(handlerInfo) {
+    let route = handlerInfo.handler;
+    return route && get(route, '_qp');
+  },
+
+  /**
+    Returns a merged query params meta object for a given set of handlerInfos.
+    Useful for knowing what query params are available for a given route hierarchy.
+
+    @private
+    @method _queryParamsFor
+    @param {Array<HandlerInfo>} handlerInfos
+    @return {Object}
    */
-  _queryParamsFor(leafRouteName) {
+  _queryParamsFor(handlerInfos) {
+    let leafRouteName = handlerInfos[handlerInfos.length - 1].name;
     if (this._qpCache[leafRouteName]) {
       return this._qpCache[leafRouteName];
     }
 
+    let shouldCache = true;
+    let qpsByUrlKey = {};
     let map = {};
     let qps = [];
-    this._qpCache[leafRouteName] = {
-      map: map,
-      qps: qps
-    };
 
-    let routerjs = this.router;
-    let recogHandlerInfos = routerjs.recognizer.handlersFor(leafRouteName);
+    for (let i = 0; i < handlerInfos.length; ++i) {
+      let qpMeta = this._getQPMeta(handlerInfos[i]);
 
-    for (let i = 0; i < recogHandlerInfos.length; ++i) {
-      let recogHandler = recogHandlerInfos[i];
-      let route = routerjs.getHandler(recogHandler.handler);
-      let qpMeta = get(route, '_qp');
+      if (!qpMeta) {
+        shouldCache = false;
+        continue;
+      }
 
-      if (!qpMeta) { continue; }
+      // Loop over each QP to make sure we don't have any collisions by urlKey
+      for (let i = 0; i < qpMeta.qps.length; i++) {
+        let qp = qpMeta.qps[i];
+        let urlKey = qp.urlKey;
+
+        if (qpsByUrlKey[urlKey]) {
+          let otherQP = qpsByUrlKey[urlKey];
+          assert(`You're not allowed to have more than one controller property map to the same query param key, but both \`${otherQP.scopedPropertyName}\` and \`${qp.scopedPropertyName}\` map to \`${urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${otherQP.prop}: { as: \'other-${otherQP.prop}\' }\``, false);
+        }
+
+        qpsByUrlKey[urlKey] = qp;
+        qps.push(qp);
+      }
 
       assign(map, qpMeta.map);
-      qps.push.apply(qps, qpMeta.qps);
     }
 
-    return {
+    let finalQPMeta = {
       qps: qps,
       map: map
     };
+
+    if (shouldCache) {
+      this._qpCache[leafRouteName] = finalQPMeta;
+    }
+
+    return finalQPMeta;
   },
 
-  _hydrateUnsuppliedQueryParams(leafRouteName, contexts, queryParams) {
-    let state = calculatePostTransitionState(this, leafRouteName, contexts);
+  /**
+    Maps all query param keys to their fully scoped property name of the form
+    `controllerName:propName`.
+
+    @private
+    @method _fullyScopeQueryParams
+    @param {String} leafRouteName
+    @param {Array<Object>} contexts
+    @param {Object} queryParams
+    @return {Void}
+  */
+  _fullyScopeQueryParams(leafRouteName, contexts, queryParams) {
+    var state = calculatePostTransitionState(this, leafRouteName, contexts);
+    var handlerInfos = state.handlerInfos;
+
+    for (var i = 0, len = handlerInfos.length; i < len; ++i) {
+      var qpMeta = this._getQPMeta(handlerInfos[i]);
+
+      if (!qpMeta) { continue; }
+
+      for (var j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
+        var qp = qpMeta.qps[j];
+
+        var presentProp = qp.prop in queryParams  && qp.prop ||
+                          qp.scopedPropertyName in queryParams && qp.scopedPropertyName ||
+                          qp.urlKey in queryParams && qp.urlKey;
+
+        if (presentProp) {
+          if (presentProp !== qp.scopedPropertyName) {
+            queryParams[qp.scopedPropertyName] = queryParams[presentProp];
+            delete queryParams[presentProp];
+          }
+        }
+      }
+    }
+  },
+
+  /**
+    Hydrates (adds/restores) any query params that have pre-existing values into
+    the given queryParams hash. This is what allows query params to be "sticky"
+    and restore their last known values for their scope.
+
+    @private
+    @method _hydrateUnsuppliedQueryParams
+    @param {TransitionState} state
+    @param {Object} queryParams
+    @return {Void}
+  */
+  _hydrateUnsuppliedQueryParams(state, queryParams) {
     let handlerInfos = state.handlerInfos;
     let appCache = this._bucketCache;
-    stashParamNames(this, handlerInfos);
 
     for (let i = 0; i < handlerInfos.length; ++i) {
-      let route = handlerInfos[i].handler;
-      let qpMeta = get(route, '_qp');
+      let qpMeta = this._getQPMeta(handlerInfos[i]);
+
+      if (!qpMeta) { continue; }
 
       for (let j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
         let qp = qpMeta.qps[j];
 
         let presentProp = qp.prop in queryParams  && qp.prop ||
-                          qp.scopedPropertyName in queryParams && qp.scopedPropertyName;
+                          qp.scopedPropertyName in queryParams && qp.scopedPropertyName ||
+                          qp.urlKey in queryParams && qp.urlKey;
 
         if (presentProp) {
           if (presentProp !== qp.scopedPropertyName) {
@@ -751,7 +953,7 @@ const EmberRouter = EmberObject.extend(Evented, {
             delete queryParams[presentProp];
           }
         } else {
-          let cacheKey = calculateCacheKey(qp.ctrl, qp.parts, state.params);
+          let cacheKey = calculateCacheKey(qp.controllerName, qp.parts, state.params);
           queryParams[qp.scopedPropertyName] = appCache.lookup(cacheKey, qp.prop, qp.defaultValue);
         }
       }
@@ -801,39 +1003,73 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   _clearHandledError(errorGuid) {
     delete this._handledErrors[errorGuid];
+  },
+
+  _getEngineInstance({ name, instanceId, mountPoint }) {
+    let engineInstances = this._engineInstances;
+
+    if (!engineInstances[name]) {
+      engineInstances[name] = new EmptyObject();
+    }
+
+    let engineInstance = engineInstances[name][instanceId];
+
+    if (!engineInstance) {
+      let owner = getOwner(this);
+
+      assert(
+        'You attempted to mount the engine \'' + name + '\' in your router map, but the engine can not be found.',
+        owner.hasRegistration(`engine:${name}`)
+      );
+
+      engineInstance = owner.buildChildEngineInstance(name, {
+        routable: true,
+        mountPoint
+      });
+
+      engineInstance.boot();
+
+      engineInstances[name][instanceId] = engineInstance;
+    }
+
+    return engineInstance;
   }
 });
 
 /*
-  Helper function for iterating root-ward, starting
-  from (but not including) the provided `originRoute`.
+  Helper function for iterating over routes in a set of handlerInfos that are
+  at or above the given origin route. Example: if `originRoute` === 'foo.bar'
+  and the handlerInfos given were for 'foo.bar.baz', then the given callback
+  will be invoked with the routes for 'foo.bar', 'foo', and 'application'
+  individually.
 
-  Returns true if the last callback fired requested
-  to bubble upward.
+  If the callback returns anything other than `true`, then iteration will stop.
 
   @private
+  @param {Route} originRoute
+  @param {Array<HandlerInfo>} handlerInfos
+  @param {Function} callback
+  @return {Void}
  */
-function forEachRouteAbove(originRoute, transition, callback) {
-  let handlerInfos = transition.state.handlerInfos;
+function forEachRouteAbove(originRoute, handlerInfos, callback) {
   let originRouteFound = false;
-  let handlerInfo, route;
 
   for (let i = handlerInfos.length - 1; i >= 0; --i) {
-    handlerInfo = handlerInfos[i];
-    route = handlerInfo.handler;
+    let handlerInfo = handlerInfos[i];
+    let route = handlerInfo.handler;
+
+    if (originRoute === route) {
+      originRouteFound = true;
+    }
 
     if (!originRouteFound) {
-      if (originRoute === route) {
-        originRouteFound = true;
-      }
       continue;
     }
 
-    if (callback(route, handlerInfos[i + 1].handler) !== true) {
-      return false;
+    if (callback(route) !== true) {
+      return;
     }
   }
-  return true;
 }
 
 // These get invoked when an action bubbles above ApplicationRoute
@@ -844,55 +1080,63 @@ let defaultActionHandlers = {
     originRoute.router._scheduleLoadingEvent(transition, originRoute);
   },
 
+  // Attempt to find an appropriate error route or substate to enter.
   error(error, transition, originRoute) {
-    // Attempt to find an appropriate error substate to enter.
+    let handlerInfos = transition.state.handlerInfos;
     let router = originRoute.router;
 
-    let tryTopLevel = forEachRouteAbove(originRoute, transition, function(route, childRoute) {
-      let childErrorRouteName = findChildRouteName(route, childRoute, 'error');
-      if (childErrorRouteName) {
-        router.intermediateTransitionTo(childErrorRouteName, error);
-        return;
+    forEachRouteAbove(originRoute, handlerInfos, function(route) {
+      // Check for the existence of an 'error' route.
+      // We don't check for an 'error' route on the originRoute, since that would
+      // technically be below where we're at in the route hierarchy.
+      if (originRoute !== route) {
+        let errorRouteName = findRouteStateName(route, 'error');
+        if (errorRouteName) {
+          router.intermediateTransitionTo(errorRouteName, error);
+          return false;
+        }
       }
+
+      // Check for an 'error' substate route
+      let errorSubstateName = findRouteSubstateName(route, 'error');
+      if (errorSubstateName) {
+        router.intermediateTransitionTo(errorSubstateName, error);
+        return false;
+      }
+
       return true;
     });
-
-    if (tryTopLevel) {
-      // Check for top-level error state to enter.
-      if (routeHasBeenDefined(originRoute.router, 'application_error')) {
-        router.intermediateTransitionTo('application_error', error);
-        return;
-      }
-    }
 
     logError(error, 'Error while processing route: ' + transition.targetName);
   },
 
+  // Attempt to find an appropriate loading route or substate to enter.
   loading(transition, originRoute) {
-    // Attempt to find an appropriate loading substate to enter.
+    let handlerInfos = transition.state.handlerInfos;
     let router = originRoute.router;
 
-    let tryTopLevel = forEachRouteAbove(originRoute, transition, function(route, childRoute) {
-      let childLoadingRouteName = findChildRouteName(route, childRoute, 'loading');
+    forEachRouteAbove(originRoute, handlerInfos, function(route) {
+      // Check for the existence of a 'loading' route.
+      // We don't check for a 'loading' route on the originRoute, since that would
+      // technically be below where we're at in the route hierarchy.
+      if (originRoute !== route) {
+        let loadingRouteName = findRouteStateName(route, 'loading');
+        if (loadingRouteName) {
+          router.intermediateTransitionTo(loadingRouteName);
+          return false;
+        }
+      }
 
-      if (childLoadingRouteName) {
-        router.intermediateTransitionTo(childLoadingRouteName);
-        return;
+      // Check for loading substate
+      let loadingSubstateName = findRouteSubstateName(route, 'loading');
+      if (loadingSubstateName) {
+        router.intermediateTransitionTo(loadingSubstateName);
+        return false;
       }
 
       // Don't bubble above pivot route.
-      if (transition.pivotHandler !== route) {
-        return true;
-      }
+      return transition.pivotHandler !== route;
     });
-
-    if (tryTopLevel) {
-      // Check for top-level loading state to enter.
-      if (routeHasBeenDefined(originRoute.router, 'application_loading')) {
-        router.intermediateTransitionTo('application_loading');
-        return;
-      }
-    }
   }
 };
 
@@ -917,29 +1161,70 @@ function logError(_error, initialMessage) {
   Logger.error.apply(this, errorArgs);
 }
 
-function findChildRouteName(parentRoute, originatingChildRoute, name) {
-  let router = parentRoute.router;
-  let childName;
-  let targetChildRouteName = originatingChildRoute.routeName.split('.').pop();
-  let namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
+/**
+  Finds the name of the substate route if it exists for the given route. A
+  substate route is of the form `route_state`, such as `foo_loading`.
 
-  // First, try a named loading state, e.g. 'foo_loading'
-  childName = namespace + targetChildRouteName + '_' + name;
-  if (routeHasBeenDefined(router, childName)) {
-    return childName;
-  }
+  @private
+  @param {Route} route
+  @param {String} state
+  @return {String}
+*/
+function findRouteSubstateName(route, state) {
+  let router = route.router;
+  let owner = getOwner(route);
 
-  // Second, try general loading state, e.g. 'loading'
-  childName = namespace + name;
-  if (routeHasBeenDefined(router, childName)) {
-    return childName;
-  }
+  let routeName = route.routeName;
+  let substateName = routeName + '_' + state;
+
+  let routeNameFull = route.fullRouteName;
+  let substateNameFull = routeNameFull + '_' + state;
+
+  return routeHasBeenDefined(owner, router, substateName, substateNameFull) ?
+    substateNameFull :
+    '';
 }
 
-function routeHasBeenDefined(router, name) {
-  let owner = getOwner(router);
-  return router.hasRoute(name) &&
-         (owner.hasRegistration(`template:${name}`) || owner.hasRegistration(`route:${name}`));
+/**
+  Finds the name of the state route if it exists for the given route. A state
+  route is of the form `route.state`, such as `foo.loading`. Properly Handles
+  `application` named routes.
+
+  @private
+  @param {Route} route
+  @param {String} state
+  @return {String}
+*/
+function findRouteStateName(route, state) {
+  let router = route.router;
+  let owner = getOwner(route);
+
+  let routeName = route.routeName;
+  let stateName = routeName === 'application' ? state : routeName + '.' + state;
+
+  let routeNameFull = route.fullRouteName;
+  let stateNameFull = routeNameFull === 'application' ? state : routeNameFull + '.' + state;
+
+  return routeHasBeenDefined(owner, router, stateName, stateNameFull) ?
+    stateNameFull :
+    '';
+}
+
+/**
+  Determines whether or not a route has been defined by checking that the route
+  is in the Router's map and the owner has a registration for that route.
+
+  @private
+  @param {Owner} owner
+  @param {Ember.Router} router
+  @param {String} localName
+  @param {String} fullName
+  @return {Boolean}
+*/
+function routeHasBeenDefined(owner, router, localName, fullName) {
+  let routerHasRoute = router.hasRoute(fullName);
+  let ownerHasRoute = owner.hasRegistration(`template:${localName}`) || owner.hasRegistration(`route:${localName}`);
+  return routerHasRoute && ownerHasRoute;
 }
 
 export function triggerEvent(handlerInfos, ignoreFailure, args) {
@@ -957,7 +1242,7 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
     handlerInfo = handlerInfos[i];
     handler = handlerInfo.handler;
 
-    if (handler.actions && handler.actions[name]) {
+    if (handler && handler.actions && handler.actions[name]) {
       if (handler.actions[name].apply(handler, args) === true) {
         eventWasHandled = true;
       } else {
@@ -989,16 +1274,21 @@ function calculatePostTransitionState(emberRouter, leafRouteName, contexts) {
 
   for (let i = 0; i < handlerInfos.length; ++i) {
     let handlerInfo = handlerInfos[i];
+
+    // If the handlerInfo is not resolved, we serialize the context into params
     if (!handlerInfo.isResolved) {
-      handlerInfo = handlerInfo.becomeResolved(null, handlerInfo.context);
+      params[handlerInfo.name] = handlerInfo.serialize(handlerInfo.context);
+    } else {
+      params[handlerInfo.name] = handlerInfo.params;
     }
-    params[handlerInfo.name] = handlerInfo.params;
   }
   return state;
 }
 
 function updatePaths(router) {
   let infos = router.router.currentHandlerInfos;
+  if (infos.length === 0) { return; }
+
   let path = EmberRouter._routePath(infos);
   let currentRouteName = infos[infos.length - 1].name;
 
@@ -1142,20 +1432,18 @@ function didBeginTransition(transition, router) {
 }
 
 function resemblesURL(str) {
-  return typeof str === 'string' && ( str === '' || str.charAt(0) === '/');
+  return typeof str === 'string' && (str === '' || str.charAt(0) === '/');
 }
 
-function forEachQueryParam(router, targetRouteName, queryParams, callback) {
-  let qpCache = router._queryParamsFor(targetRouteName);
+function forEachQueryParam(router, handlerInfos, queryParams, callback) {
+  let qpCache = router._queryParamsFor(handlerInfos);
 
   for (let key in queryParams) {
     if (!queryParams.hasOwnProperty(key)) { continue; }
     let value = queryParams[key];
     let qp = qpCache.map[key];
 
-    if (qp) {
-      callback(key, value, qp);
-    }
+    callback(key, value, qp);
   }
 }
 
@@ -1178,7 +1466,8 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
   let target;
   let myState = {
     render: renderOptions,
-    outlets: new EmptyObject()
+    outlets: new EmptyObject(),
+    wasUsed: false
   };
   if (renderOptions.into) {
     target = findLiveRoute(liveRoutes, renderOptions.into);
@@ -1189,7 +1478,17 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
     set(target.outlets, renderOptions.outlet, myState);
   } else {
     if (renderOptions.into) {
-      // Megahax time. Post-2.0-breaking-changes, we will just assert
+      deprecate(
+        `Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated.`,
+        false,
+        {
+          id: 'ember-routing.top-level-render-helper',
+          until: '3.0.0',
+          url: 'http://emberjs.com/deprecations/v2.x/#toc_rendering-into-a-render-helper-that-resolves-to-an-outlet'
+        }
+      );
+
+      // Megahax time. Post-3.0-breaking-changes, we will just assert
       // right here that the user tried to target a nonexistent
       // thing. But for now we still need to support the `render`
       // helper, and people are allowed to target templates rendered
@@ -1217,8 +1516,7 @@ function appendOrphan(liveRoutes, into, myState) {
   }
   liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
   run.schedule('afterRender', function() {
-    // `wasUsed` gets set by the render helper. See the function
-    // `impersonateAnOutlet`.
+    // `wasUsed` gets set by the render helper.
     assert('You attempted to render into \'' + into + '\' but it was not found',
                  liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
   });

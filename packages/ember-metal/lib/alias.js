@@ -1,18 +1,20 @@
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import EmberError from 'ember-metal/error';
+import { inspect } from 'ember-utils';
+import { assert } from './debug';
+import { get } from './property_get';
+import { set } from './property_set';
+import EmberError from './error';
 import {
   Descriptor,
   defineProperty
-} from 'ember-metal/properties';
-import { ComputedProperty } from 'ember-metal/computed';
-import { inspect } from 'ember-metal/utils';
-import { meta } from 'ember-metal/meta';
+} from './properties';
+import { ComputedProperty } from './computed';
+import { meta as metaFor } from './meta';
 import {
   addDependentKeys,
   removeDependentKeys
-} from 'ember-metal/dependent_keys';
+} from './dependent_keys';
+
+const CONSUMED = {};
 
 export default function alias(altKey) {
   return new AliasedProperty(altKey);
@@ -26,35 +28,42 @@ export function AliasedProperty(altKey) {
 
 AliasedProperty.prototype = Object.create(Descriptor.prototype);
 
-AliasedProperty.prototype.get = function AliasedProperty_get(obj, keyName) {
-  return get(obj, this.altKey);
-};
-
-AliasedProperty.prototype.set = function AliasedProperty_set(obj, keyName, value) {
-  return set(obj, this.altKey, value);
-};
-
-AliasedProperty.prototype.willWatch = function(obj, keyName) {
-  addDependentKeys(this, obj, keyName, meta(obj));
-};
-
-AliasedProperty.prototype.didUnwatch = function(obj, keyName) {
-  removeDependentKeys(this, obj, keyName, meta(obj));
-};
-
 AliasedProperty.prototype.setup = function(obj, keyName) {
   assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
-  let m = meta(obj);
-  if (m.peekWatching(keyName)) {
-    addDependentKeys(this, obj, keyName, m);
+  let meta = metaFor(obj);
+  if (meta.peekWatching(keyName)) {
+    addDependentKeys(this, obj, keyName, meta);
   }
 };
 
 AliasedProperty.prototype.teardown = function(obj, keyName) {
-  let m = meta(obj);
-  if (m.peekWatching(keyName)) {
-    removeDependentKeys(this, obj, keyName, m);
+  let meta = metaFor(obj);
+  if (meta.peekWatching(keyName)) {
+    removeDependentKeys(this, obj, keyName, meta);
   }
+};
+
+AliasedProperty.prototype.willWatch = function(obj, keyName) {
+  addDependentKeys(this, obj, keyName, metaFor(obj));
+};
+
+AliasedProperty.prototype.didUnwatch = function(obj, keyName) {
+  removeDependentKeys(this, obj, keyName, metaFor(obj));
+};
+
+AliasedProperty.prototype.get = function AliasedProperty_get(obj, keyName) {
+  let ret = get(obj, this.altKey);
+  let meta = metaFor(obj);
+  let cache = meta.writableCache();
+  if (cache[keyName] !== CONSUMED) {
+    cache[keyName] = CONSUMED;
+    addDependentKeys(this, obj, keyName, meta);
+  }
+  return ret;
+};
+
+AliasedProperty.prototype.set = function AliasedProperty_set(obj, keyName, value) {
+  return set(obj, this.altKey, value);
 };
 
 AliasedProperty.prototype.readOnly = function() {

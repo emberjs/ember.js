@@ -1,17 +1,15 @@
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
+import { EmptyObject } from 'ember-utils';
 import {
+  assert,
+  get,
   _addBeforeObserver,
   _removeBeforeObserver,
   addObserver,
-  removeObserver
-} from 'ember-metal/observer';
-import {
+  removeObserver,
   propertyDidChange,
   propertyWillChange
-} from 'ember-metal/property_events';
-import EmptyObject from 'ember-metal/empty_object';
-import { objectAt } from 'ember-runtime/mixins/array';
+} from 'ember-metal';
+import { objectAt } from '../mixins/array';
 
 /**
   This is the object instance returned when you get the `@each` property on an

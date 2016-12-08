@@ -1,6 +1,6 @@
 import { context } from 'ember-environment';
-import EmberObject from 'ember-runtime/system/object';
-import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
+import EmberObject from '../../system/object';
+import TargetActionSupport from '../../mixins/target_action_support';
 
 let originalLookup = context.lookup;
 let lookup;

@@ -1,8 +1,6 @@
-import {context} from 'ember-environment';
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
+import { context } from 'ember-environment';
+import { get, set, run } from 'ember-metal';
+import EmberObject from '../../../../system/object';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -22,7 +20,7 @@ import EmberObject from 'ember-runtime/system/object';
 // ========================================================================
 
 let originalLookup = context.lookup;
-let testObject, fromObject, extraObject, TestObject;
+let testObject, fromObject, TestObject;
 let TestNamespace, lookup;
 
 QUnit.module('bind() method', {
@@ -40,10 +38,6 @@ QUnit.module('bind() method', {
       extraObject: null
     });
 
-    extraObject = EmberObject.create({
-      foo: 'extraObjectValue'
-    });
-
     lookup['TestNamespace'] = TestNamespace = {
       fromObject: fromObject,
       testObject: testObject
@@ -51,20 +45,17 @@ QUnit.module('bind() method', {
   },
 
   teardown() {
-    testObject = fromObject = extraObject = null;
+    testObject = fromObject = null;
     context.lookup = originalLookup;
   }
 });
 
 QUnit.test('bind(TestNamespace.fromObject.bar) should follow absolute path', function() {
   run(() => {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       // create binding
       testObject.bind('foo', 'TestNamespace.fromObject.bar');
-    }, deprecationMessage);
+    }, /`Ember.Binding` is deprecated/);
 
     // now make a change to see if the binding triggers.
     set(fromObject, 'bar', 'changedValue');
@@ -75,13 +66,10 @@ QUnit.test('bind(TestNamespace.fromObject.bar) should follow absolute path', fun
 
 QUnit.test('bind(.bar) should bind to relative path', function() {
   run(() => {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-      ' using an `alias` computed property instead.';
-
     expectDeprecation(() => {
       // create binding
       testObject.bind('foo', 'bar');
-    }, deprecationMessage);
+    }, /`Ember.Binding` is deprecated/);
 
     // now make a change to see if the binding triggers.
     set(testObject, 'bar', 'changedValue');
@@ -105,10 +93,6 @@ QUnit.module('fooBinding method', {
       extraObject: null
     });
 
-    extraObject = EmberObject.create({
-      foo: 'extraObjectValue'
-    });
-
     lookup['TestNamespace'] = TestNamespace = {
       fromObject: fromObject,
       testObject: TestObject
@@ -117,16 +101,15 @@ QUnit.module('fooBinding method', {
 
   teardown() {
     context.lookup = originalLookup;
-    TestObject = fromObject = extraObject = null;
+    TestObject = fromObject = null;
     //  delete TestNamespace;
   }
 });
 
+let deprecationMessage = /`Ember.Binding` is deprecated/;
+
 QUnit.test('fooBinding: TestNamespace.fromObject.bar should follow absolute path', function() {
   run(() => {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       // create binding
       testObject = TestObject.extend({
@@ -143,9 +126,6 @@ QUnit.test('fooBinding: TestNamespace.fromObject.bar should follow absolute path
 
 QUnit.test('fooBinding: .bar should bind to relative path', function() {
   run(() => {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-      ' using an `alias` computed property instead.';
-
     expectDeprecation(() => {
       // create binding
       testObject = TestObject.extend({
@@ -162,9 +142,6 @@ QUnit.test('fooBinding: .bar should bind to relative path', function() {
 
 QUnit.test('fooBinding: should disconnect bindings when destroyed', function () {
   run(() => {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       // create binding
       testObject = TestObject.extend({

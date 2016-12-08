@@ -3,17 +3,16 @@
 @submodule ember-application
 */
 
-import EmberObject from 'ember-runtime/system/object';
-import EmberError from 'ember-metal/error';
-import Registry from 'container/registry';
-import ContainerProxy from 'ember-runtime/mixins/container_proxy';
-import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
-import { privatize as P } from 'container/registry';
-import { getEngineParent, setEngineParent } from 'ember-application/system/engine-parent';
-import { assert } from 'ember-metal/debug';
-import run from 'ember-metal/run_loop';
-import RSVP from 'ember-runtime/ext/rsvp';
-import isEnabled from 'ember-metal/features';
+import { guidFor } from 'ember-utils';
+import {
+  Object as EmberObject,
+  ContainerProxyMixin,
+  RegistryProxyMixin,
+  RSVP
+} from 'ember-runtime';
+import { Error as EmberError, assert, run } from 'ember-metal';
+import { Registry, privatize as P } from 'container';
+import { getEngineParent, setEngineParent } from './engine-parent';
 
 /**
   The `EngineInstance` encapsulates all of the stateful aspects of a
@@ -24,10 +23,9 @@ import isEnabled from 'ember-metal/features';
   @extends Ember.Object
   @uses RegistryProxyMixin
   @uses ContainerProxyMixin
-  @category ember-application-engines
 */
 
-const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
+const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin, {
   /**
     The base `Engine` for which this is an instance.
 
@@ -38,6 +36,8 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
   init() {
     this._super(...arguments);
+
+    guidFor(this);
 
     let base = this.base;
 
@@ -71,7 +71,7 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     @param options {Object}
     @return {Promise<Ember.EngineInstance,Error>}
   */
-  boot(options = {}) {
+  boot(options) {
     if (this._bootPromise) { return this._bootPromise; }
 
     this._bootPromise = new RSVP.Promise(resolve => resolve(this._bootSync(options)));
@@ -98,15 +98,19 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
     assert('An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.', getEngineParent(this));
 
-    if (isEnabled('ember-application-engines')) {
-      this.cloneParentDependencies();
-    }
+    this.cloneParentDependencies();
+
+    this.setupRegistry(options);
 
     this.base.runInstanceInitializers(this);
 
     this._booted = true;
 
     return this;
+  },
+
+  setupRegistry(options = this.__container__.lookup('-environment:main')) {
+    this.constructor.setupRegistry(this.__registry__, options);
   },
 
   /**
@@ -130,59 +134,91 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   willDestroy() {
     this._super(...arguments);
     run(this.__container__, 'destroy');
+  },
+
+  /**
+    Build a new `Ember.EngineInstance` that's a child of this instance.
+
+    Engines must be registered by name with their parent engine
+    (or application).
+
+    @private
+    @method buildChildEngineInstance
+    @param name {String} the registered name of the engine.
+    @param options {Object} options provided to the engine instance.
+    @return {Ember.EngineInstance,Error}
+  */
+  buildChildEngineInstance(name, options = {}) {
+    let Engine = this.lookup(`engine:${name}`);
+
+    if (!Engine) {
+      throw new EmberError(`You attempted to mount the engine '${name}', but it is not registered with its parent.`);
+    }
+
+    let engineInstance = Engine.buildInstance(options);
+
+    setEngineParent(engineInstance, this);
+
+    return engineInstance;
+  },
+
+  /**
+    Clone dependencies shared between an engine instance and its parent.
+
+    @private
+    @method cloneParentDependencies
+  */
+  cloneParentDependencies() {
+    let parent = getEngineParent(this);
+
+    let registrations = [
+      'route:basic',
+      'event_dispatcher:main',
+      'service:-routing',
+      'service:-glimmer-environment'
+    ];
+
+    registrations.forEach(key => this.register(key, parent.resolveRegistration(key)));
+
+    let env = parent.lookup('-environment:main');
+    this.register('-environment:main', env, { instantiate: false });
+
+    let singletons = [
+      'router:main',
+      P`-bucket-cache:main`,
+      '-view-registry:main',
+      `renderer:-${env.isInteractive ? 'dom' : 'inert'}`
+    ];
+
+    singletons.forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
+
+    this.inject('view', '_environment', '-environment:main');
+    this.inject('route', '_environment', '-environment:main');
   }
 });
 
-if (isEnabled('ember-application-engines')) {
-  EngineInstance.reopen({
-    /**
-      Build a new `Ember.EngineInstance` that's a child of this instance.
+EngineInstance.reopenClass({
+  /**
+   @private
+   @method setupRegistry
+   @param {Registry} registry
+   @param {BootOptions} options
+   */
+  setupRegistry(registry, options) {
+    // when no options/environment is present, do nothing
+    if (!options) { return; }
 
-      Engines must be registered by name with their parent engine
-      (or application).
+    registry.injection('view', '_environment', '-environment:main');
+    registry.injection('route', '_environment', '-environment:main');
 
-      @private
-      @method buildChildEngineInstance
-      @param name {String} the registered name of the engine.
-      @param options {Object} options provided to the engine instance.
-      @return {Ember.EngineInstance,Error}
-    */
-    buildChildEngineInstance(name, options = {}) {
-      let Engine = this.lookup(`engine:${name}`);
-
-      if (!Engine) {
-        throw new EmberError(`You attempted to mount the engine '${name}', but it is not registered with its parent.`);
-      }
-
-      let engineInstance = Engine.buildInstance(options);
-
-      setEngineParent(engineInstance, this);
-
-      return engineInstance;
-    },
-
-    /**
-      Clone dependencies shared between an engine instance and its parent.
-
-      @private
-      @method cloneParentDependencies
-    */
-    cloneParentDependencies() {
-      let parent = getEngineParent(this);
-
-      [
-        'route:basic',
-        'event_dispatcher:main',
-        P`-bucket-cache:main`,
-        'service:-routing'
-      ].forEach(key => this.register(key, parent.resolveRegistration(key)));
-
-      [
-        'router:main',
-        '-view-registry:main'
-      ].forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
+    if (options.isInteractive) {
+      registry.injection('view', 'renderer', 'renderer:-dom');
+      registry.injection('component', 'renderer', 'renderer:-dom');
+    } else {
+      registry.injection('view', 'renderer', 'renderer:-inert');
+      registry.injection('component', 'renderer', 'renderer:-inert');
     }
-  });
-}
+  }
+});
 
 export default EngineInstance;

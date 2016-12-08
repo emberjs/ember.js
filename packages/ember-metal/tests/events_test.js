@@ -1,6 +1,5 @@
-import { Mixin } from 'ember-metal/mixin';
-import { meta } from 'ember-metal/meta';
-import Component from 'ember-htmlbars/component';
+import { Mixin } from '../mixin';
+import { meta } from '../meta';
 
 import {
   on,
@@ -10,7 +9,7 @@ import {
   suspendListeners,
   sendEvent,
   hasListeners
-} from 'ember-metal/events';
+} from '../events';
 
 QUnit.module('system/props/events_test');
 
@@ -260,12 +259,4 @@ QUnit.test('a listener added as part of a mixin may be overridden', function() {
 
   sendEvent(obj, 'baz');
   equal(triggered, 1, 'should invoke from subclass property');
-});
-
-QUnit.test('DEPRECATED: adding didInitAttrs as a listener is deprecated', function() {
-  let obj = Component.create();
-
-  expectDeprecation(() => {
-    addListener(obj, 'didInitAttrs');
-  }, /\[DEPRECATED\] didInitAttrs called in <\Ember.Component\:ember[\d+]+>\./);
 });

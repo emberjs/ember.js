@@ -1,6 +1,5 @@
-import run from 'ember-metal/run_loop';
-import {computed} from 'ember-metal/computed';
-import EmberObject from 'ember-runtime/system/object';
+import { run, computed } from 'ember-metal';
+import EmberObject from '../../../system/object';
 
 QUnit.module('system/object/subclasses');
 
@@ -15,8 +14,8 @@ QUnit.test('chains should copy forward to subclasses when prototype created', fu
       aBinding: 'obj.a' // add chain
     });
 
-    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-      ' using an `alias` computed property instead.';
+
+    let deprecationMessage = /`Ember.Binding` is deprecated/;
 
     expectDeprecation(() => {
       // realize prototype

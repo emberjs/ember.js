@@ -1,34 +1,21 @@
-import Controller from 'ember-runtime/controllers/controller';
-import run from 'ember-metal/run_loop';
+import { Controller } from 'ember-runtime';
+import { run } from 'ember-metal';
 
-import Application from 'ember-application/system/application';
-import Router from 'ember-routing/system/router';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import helpers from 'ember-htmlbars/helpers';
-import Component from 'ember-templates/component';
-import jQuery from 'ember-views/system/jquery';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
-import isEnabled from 'ember-metal/features';
-import require from 'require';
-
-let OutletView;
-if (isEnabled('ember-glimmer')) {
-  OutletView = require('ember-glimmer/views/outlet').default;
-} else {
-  OutletView = require('ember-htmlbars/views/outlet').OutletView;
-}
+import { Application } from 'ember-application';
+import { Router } from 'ember-routing';
+import { compile } from 'ember-template-compiler';
+import {
+  Component,
+  setTemplates,
+  setTemplate
+} from 'ember-glimmer';
+import { jQuery } from 'ember-views';
 
 let App, appInstance;
-let originalHelpers;
-
-const { keys } = Object;
 
 function prepare() {
   setTemplate('components/expand-it', compile('<p>hello {{yield}}</p>'));
   setTemplate('application', compile('Hello world {{#expand-it}}world{{/expand-it}}'));
-
-  originalHelpers = emberA(keys(helpers));
 }
 
 function cleanup() {
@@ -40,26 +27,8 @@ function cleanup() {
       App = appInstance = null;
     } finally {
       setTemplates({});
-      cleanupHelpers();
     }
   });
-}
-
-function cleanupHelpers() {
-  let included;
-
-  keys(helpers).
-    forEach(name => {
-      if (isEnabled('ember-runtime-enumerable-includes')) {
-        included = originalHelpers.includes(name);
-      } else {
-        included = originalHelpers.contains(name);
-      }
-
-      if (!included) {
-        delete helpers[name];
-      }
-    });
 }
 
 QUnit.module('Application Lifecycle - Component Registration', {
@@ -67,7 +36,7 @@ QUnit.module('Application Lifecycle - Component Registration', {
   teardown: cleanup
 });
 
-function boot(callback, startURL='/') {
+function boot(callback, startURL = '/') {
   run(() => {
     App = Application.create({
       name: 'App',
@@ -117,7 +86,6 @@ QUnit.test('Late-registered components can be rendered with custom `layout` prop
   });
 
   equal(jQuery('#wrapper').text(), 'there goes watch him as he GOES', 'The component is composed correctly');
-  ok(!helpers['my-hero'], 'Component wasn\'t saved to global helpers hash');
 });
 
 QUnit.test('Late-registered components can be rendered with template registered on the container', function() {
@@ -129,7 +97,6 @@ QUnit.test('Late-registered components can be rendered with template registered 
   });
 
   equal(jQuery('#wrapper').text(), 'hello world funkytowny-funkytowny!!!', 'The component is composed correctly');
-  ok(!helpers['sally-rutherford'], 'Component wasn\'t saved to global helpers hash');
 });
 
 QUnit.test('Late-registered components can be rendered with ONLY the template registered on the container', function() {
@@ -140,7 +107,6 @@ QUnit.test('Late-registered components can be rendered with ONLY the template re
   });
 
   equal(jQuery('#wrapper').text(), 'hello world goodfreakingTIMES-goodfreakingTIMES!!!', 'The component is composed correctly');
-  ok(!helpers['borf-snorlax'], 'Component wasn\'t saved to global helpers hash');
 });
 
 QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {
@@ -389,29 +355,4 @@ QUnit.test('Components trigger actions in the components context when called fro
   });
 
   jQuery('#fizzbuzz', '#wrapper').click();
-});
-
-QUnit.test('Components receive the top-level view as their ownerView', function(assert) {
-  setTemplate('application', compile('{{outlet}}'));
-  setTemplate('index', compile('{{my-component}}'));
-  setTemplate('components/my-component', compile('<div></div>'));
-
-  let component;
-
-  boot(() => {
-    appInstance.register('component:my-component', Component.extend({
-      init() {
-        this._super();
-        component = this;
-      }
-    }));
-  });
-
-  // Theses tests are intended to catch a regression where the owner view was
-  // not configured properly. Future refactors may break these tests, which
-  // should not be considered a breaking change to public APIs.
-  let ownerView = component.ownerView;
-  assert.ok(ownerView, 'owner view was set');
-  assert.ok(ownerView instanceof OutletView, 'owner view has no parent view');
-  assert.notStrictEqual(component, ownerView, 'owner view is not itself');
 });

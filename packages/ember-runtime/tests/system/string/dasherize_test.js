@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { dasherize } from 'ember-runtime/system/string';
+import { dasherize } from '../../../system/string';
 
 QUnit.module('EmberStringUtils.dasherize');
 

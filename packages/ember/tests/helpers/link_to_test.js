@@ -1,20 +1,24 @@
 import Logger from 'ember-console';
 
-import Controller from 'ember-runtime/controllers/controller';
-import { set } from 'ember-metal/property_set';
-import Route from 'ember-routing/system/route';
-import run from 'ember-metal/run_loop';
-import { subscribe, reset } from 'ember-metal/instrumentation';
-import isEnabled from 'ember-metal/features';
-import alias from 'ember-metal/alias';
-import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
-import EmberObject from 'ember-runtime/system/object';
-import inject from 'ember-runtime/inject';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import NoneLocation from 'ember-routing/location/none_location';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import {
+  Controller,
+  Object as EmberObject,
+  inject,
+  A as emberA
+} from 'ember-runtime';
+import {
+  set,
+  run,
+  instrumentationSubscribe as subscribe,
+  instrumentationReset as reset,
+  isFeatureEnabled,
+  alias
+} from 'ember-metal';
+import { Route, NoneLocation } from 'ember-routing';
+import { Application } from 'ember-application';
+import { jQuery } from 'ember-views';
+import { compile } from 'ember-template-compiler';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 
 let Router, App, router, appInstance;
 
@@ -76,8 +80,6 @@ function sharedTeardown() {
   reset();
 }
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
 QUnit.module('The {{link-to}} helper', {
   setup() {
     run(() => {
@@ -116,7 +118,7 @@ QUnit.test('The {{link-to}} helper moves into the named route', function() {
   equal(jQuery('#home-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 });
 
-if (isEnabled('ember-improved-instrumentation')) {
+if (isFeatureEnabled('ember-improved-instrumentation')) {
   QUnit.test('The {{link-to}} helper fires an interaction event', function(assert) {
     assert.expect(2);
     Router.map(function(match) {
@@ -417,7 +419,7 @@ QUnit.test('The {{link-to}} helper supports a custom activeClass from a bound pa
   equal(jQuery('#about-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 });
 
-test("The {{link-to}} helper supports 'classNameBindings' with custom values [GH #11699]", function() {
+QUnit.test("The {{link-to}} helper supports 'classNameBindings' with custom values [GH #11699]", function() {
   setTemplate('index', compile(`<h3>Home</h3>{{#link-to 'about' id='about-link' classNameBindings='foo:foo-is-true:foo-is-false'}}About{{/link-to}}`));
 
   Router.map(function() {
@@ -1247,18 +1249,40 @@ QUnit.test('the {{link-to}} helper does not call preventDefault if `preventDefau
   equal(event.isDefaultPrevented(), false, 'should not preventDefault');
 });
 
+QUnit.test('the {{link-to}} helper throws a useful error if you invoke it wrong', function() {
+  expect(1);
+
+  setTemplate('application', compile("{{#link-to 'post'}}Post{{/link-to}}"));
+
+  Router.map(function() {
+    this.route('post', { path: 'post/:post_id' });
+  });
+
+  QUnit.throws(function() {
+    bootApplication();
+  }, /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/);
+});
+
 QUnit.test('the {{link-to}} helper does not throw an error if its route has exited', function() {
   expect(0);
 
-  setTemplate('application', compile("{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'post' defaultPost id='default-post-link'}}Default Post{{/link-to}}{{#if currentPost}}{{#link-to 'post' id='post-link'}}Post{{/link-to}}{{/if}}"));
+  setTemplate('application', compile("{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'post' defaultPost id='default-post-link'}}Default Post{{/link-to}}{{#if currentPost}}{{#link-to 'post' currentPost id='current-post-link'}}Current Post{{/link-to}}{{/if}}"));
 
   App.ApplicationController = Controller.extend({
+    defaultPost: { id: 1 },
     postController: inject.controller('post'),
     currentPost: alias('postController.model')
   });
 
-  App.PostController = Controller.extend({
-    model: { id: 1 }
+  App.PostController = Controller.extend();
+
+  App.PostRoute = Route.extend({
+    model: function() {
+      return { id: 2 };
+    },
+    serialize: function(model) {
+      return { post_id: model.id };
+    }
   });
 
   Router.map(function() {
@@ -1270,6 +1294,8 @@ QUnit.test('the {{link-to}} helper does not throw an error if its route has exit
   run(router, 'handleURL', '/');
 
   run(() => jQuery('#default-post-link', '#qunit-fixture').click());
+  run(() => jQuery('#home-link', '#qunit-fixture').click());
+  run(() => jQuery('#current-post-link', '#qunit-fixture').click());
   run(() => jQuery('#home-link', '#qunit-fixture').click());
 });
 
@@ -1298,20 +1324,10 @@ QUnit.test('{{link-to}} active property respects changing parent route context',
 
 
 QUnit.test('{{link-to}} populates href with default query param values even without query-params object', function() {
-  if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        }
-      }
-    });
-  } else {
-    App.IndexController = Controller.extend({
-      queryParams: ['foo'],
-      foo: '123'
-    });
-  }
+  App.IndexController = Controller.extend({
+    queryParams: ['foo'],
+    foo: '123'
+  });
 
   setTemplate('index', compile("{{#link-to 'index' id='the-link'}}Index{{/link-to}}"));
   bootApplication();
@@ -1319,116 +1335,14 @@ QUnit.test('{{link-to}} populates href with default query param values even with
 });
 
 QUnit.test('{{link-to}} populates href with default query param values with empty query-params object', function() {
-  if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        }
-      }
-    });
-  } else {
-    App.IndexController = Controller.extend({
-      queryParams: ['foo'],
-      foo: '123'
-    });
-  }
+  App.IndexController = Controller.extend({
+    queryParams: ['foo'],
+    foo: '123'
+  });
 
   setTemplate('index', compile("{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}"));
   bootApplication();
   equal(jQuery('#the-link').attr('href'), '/', 'link has right href');
-});
-
-QUnit.test('{{link-to}} populates href with supplied query param values', function() {
-  if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        }
-      }
-    });
-  } else {
-    App.IndexController = Controller.extend({
-      queryParams: ['foo'],
-      foo: '123'
-    });
-  }
-
-  setTemplate('index', compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}"));
-  bootApplication();
-  equal(jQuery('#the-link').attr('href'), '/?foo=456', 'link has right href');
-});
-
-QUnit.test('{{link-to}} populates href with partially supplied query param values', function() {
-  if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        },
-        bar: {
-          defaultValue: 'yes'
-        }
-      }
-    });
-  } else {
-    App.IndexController = Controller.extend({
-      queryParams: ['foo'],
-      foo: '123',
-      bar: 'yes'
-    });
-  }
-
-  setTemplate('index', compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}"));
-  bootApplication();
-  equal(jQuery('#the-link').attr('href'), '/?foo=456', 'link has right href');
-});
-
-QUnit.test('{{link-to}} populates href with partially supplied query param values, but omits if value is default value', function() {
-  if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        }
-      }
-    });
-  } else {
-    App.IndexController = Controller.extend({
-      queryParams: ['foo'],
-      foo: '123'
-    });
-  }
-
-  setTemplate('index', compile("{{#link-to 'index' (query-params foo='123') id='the-link'}}Index{{/link-to}}"));
-  bootApplication();
-  equal(jQuery('#the-link').attr('href'), '/', 'link has right href');
-});
-
-QUnit.test('{{link-to}} populates href with fully supplied query param values', function() {
-  if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        },
-        bar: {
-          defaultValue: 'yes'
-        }
-      }
-    });
-  } else {
-    App.IndexController = Controller.extend({
-      queryParams: ['foo', 'bar'],
-      foo: '123',
-      bar: 'yes'
-    });
-  }
-
-  setTemplate('index', compile(`{{#link-to 'index' (query-params foo='456' bar='NAW') id='the-link'}}Index{{/link-to}}`));
-  bootApplication();
-  equal(jQuery('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
 });
 
 QUnit.test('{{link-to}} with only query-params and a block updates when route changes', function() {
@@ -1436,24 +1350,11 @@ QUnit.test('{{link-to}} with only query-params and a block updates when route ch
     this.route('about');
   });
 
-  if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.ApplicationRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        },
-        bar: {
-          defaultValue: 'yes'
-        }
-      }
-    });
-  } else {
-    App.ApplicationController = Controller.extend({
-      queryParams: ['foo', 'bar'],
-      foo: '123',
-      bar: 'yes'
-    });
-  }
+  App.ApplicationController = Controller.extend({
+    queryParams: ['foo', 'bar'],
+    foo: '123',
+    bar: 'yes'
+  });
 
   setTemplate('application', compile(`{{#link-to (query-params foo='456' bar='NAW') id='the-link'}}Index{{/link-to}}`));
   bootApplication();
@@ -1469,24 +1370,11 @@ QUnit.test('Block-less {{link-to}} with only query-params updates when route cha
     this.route('about');
   });
 
-  if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.ApplicationRoute = Route.extend({
-      queryParams: {
-        foo: {
-          defaultValue: '123'
-        },
-        bar: {
-          defaultValue: 'yes'
-        }
-      }
-    });
-  } else {
-    App.ApplicationController = Controller.extend({
-      queryParams: ['foo', 'bar'],
-      foo: '123',
-      bar: 'yes'
-    });
-  }
+  App.ApplicationController = Controller.extend({
+    queryParams: ['foo', 'bar'],
+    foo: '123',
+    bar: 'yes'
+  });
 
   setTemplate('application', compile(`{{link-to "Index" (query-params foo='456' bar='NAW') id='the-link'}}`));
   bootApplication();

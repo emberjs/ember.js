@@ -3,21 +3,28 @@ sudo: required
 dist: trusty
 
 node_js:
-  - "5"
-  
+  - "6"
+
+addons:
+  firefox: "latest"
+
 cache:
   directories:
-    - node_modules
-    - bower_components
+    - $HOME/.npm
+    - $HOME/.yarn-cache
+    - $HOME/.cache # includes bowers cache
 
 before_install:
   - "npm config set spin false"
   - "npm --version"
   - "phantomjs --version"
   - "rm -f /tmp/*.dmp"
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
 
 install:
-  - "npm install"
+  - "npm install -g yarn bower"
+  - "yarn install --prefer-offline"
   - "bower install"
 
 after_success:
@@ -51,7 +58,10 @@ env:
   matrix:
     - TEST_SUITE=each-package-tests
     - TEST_SUITE=built-tests EMBER_ENV=production DISABLE_JSCS=true DISABLE_JSHINT=true
-    - TEST_SUITE=old-jquery-and-extend-prototypes
+    - TEST_SUITE=old-jquery-and-extend-prototypes DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=node DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=blueprints
+    - TEST_SUITE=travis-browsers DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=sauce
+    - TEST_SUITE=allow-backtracking-rerender ALLOW_BACKTRACKING=true DISABLE_PUBLISHING=true
+    - TEST_SUITE=each-package-tests BUILD_TYPE=alpha

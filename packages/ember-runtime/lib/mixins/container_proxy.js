@@ -2,10 +2,10 @@
 @module ember
 @submodule ember-runtime
 */
-import run from 'ember-metal/run_loop';
-import { deprecate } from 'ember-metal/debug';
-import { Mixin } from 'ember-metal/mixin';
-
+import {
+  Mixin,
+  run
+} from 'ember-metal';
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -107,6 +107,21 @@ export default Mixin.create({
   },
 
   /**
+   Given a name and a source path, resolve the fullName
+
+   @private
+   @method _resolveLocalLookupName
+   @param {String} fullName
+   @param {String} source
+   @return {String}
+   */
+  _resolveLocalLookupName(name, source) {
+    return this.__container__.registry.expandLocalLookup(`component:${name}`, {
+      source
+    });
+  },
+
+  /**
    @private
    */
   willDestroy() {
@@ -117,32 +132,3 @@ export default Mixin.create({
     }
   }
 });
-
-export function buildFakeContainerWithDeprecations(container) {
-  let fakeContainer = {};
-  let propertyMappings = {
-    lookup: 'lookup',
-    lookupFactory: '_lookupFactory'
-  };
-
-  for (let containerProperty in propertyMappings) {
-    fakeContainer[containerProperty] = buildFakeContainerFunction(container, containerProperty, propertyMappings[containerProperty]);
-  }
-
-  return fakeContainer;
-}
-
-function buildFakeContainerFunction(container, containerProperty, ownerProperty) {
-  return function() {
-    deprecate(
-      `Using the injected \`container\` is deprecated. Please use the \`getOwner\` helper to access the owner of this object and then call \`${ownerProperty}\` instead.`,
-      false,
-      {
-        id: 'ember-application.injected-container',
-        until: '3.0.0',
-        url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access'
-      }
-    );
-    return container[containerProperty](...arguments);
-  };
-}

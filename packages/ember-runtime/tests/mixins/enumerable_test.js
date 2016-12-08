@@ -1,12 +1,13 @@
-import EnumerableTests from 'ember-runtime/tests/suites/enumerable';
-import EmberObject from 'ember-runtime/system/object';
-import Enumerable from 'ember-runtime/mixins/enumerable';
-import EmberArray from 'ember-runtime/mixins/array';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import { get } from 'ember-metal/property_get';
-import { computed } from 'ember-metal/computed';
-import { observer as emberObserver } from 'ember-metal/mixin';
-import isEnabled from 'ember-metal/features';
+import EnumerableTests from '../suites/enumerable';
+import EmberObject from '../../system/object';
+import Enumerable from '../../mixins/enumerable';
+import EmberArray from '../../mixins/array';
+import { A as emberA } from '../../system/native_array';
+import {
+  get,
+  computed,
+  observer as emberObserver
+} from 'ember-metal';
 
 function K() { return this; }
 
@@ -22,7 +23,7 @@ const TestEnumerable = EmberObject.extend(Enumerable, {
   },
 
   addObject(obj) {
-    if (this._content.indexOf(obj)>=0) {
+    if (this._content.indexOf(obj) >= 0) {
       return this;
     }
 
@@ -94,16 +95,11 @@ QUnit.test('should apply Ember.Array to return value of without', function() {
   let X = EmberObject.extend(Enumerable, {
     contains() {
       return true;
+    },
+    includes() {
+      return true;
     }
   });
-
-  if (isEnabled('ember-runtime-enumerable-includes')) {
-    X.reopen({
-      includes() {
-        return true;
-      }
-    });
-  }
 
   let x = X.create();
   let y = x.without(K);
@@ -170,16 +166,14 @@ QUnit.test('every', function() {
   equal(allWhite, true);
 });
 
-if (isEnabled('ember-runtime-enumerable-includes')) {
-  QUnit.test('should throw an error passing a second argument to includes', function() {
-    let x = EmberObject.extend(Enumerable).create();
+QUnit.test('should throw an error passing a second argument to includes', function() {
+  let x = EmberObject.extend(Enumerable).create();
 
-    equal(x.includes('any'), false);
-    expectAssertion(() => {
-      x.includes('any', 1);
-    }, /Enumerable#includes cannot accept a second argument "startAt" as enumerable items are unordered./);
-  });
-}
+  equal(x.includes('any'), false);
+  expectAssertion(() => {
+    x.includes('any', 1);
+  }, /Enumerable#includes cannot accept a second argument "startAt" as enumerable items are unordered./);
+});
 
 // ..........................................................
 // CONTENT DID CHANGE

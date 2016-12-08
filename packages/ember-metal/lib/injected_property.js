@@ -1,8 +1,8 @@
-import { assert } from 'ember-metal/debug';
-import { ComputedProperty } from 'ember-metal/computed';
-import { AliasedProperty } from 'ember-metal/alias';
-import { Descriptor } from 'ember-metal/properties';
-import { getOwner } from 'container/owner';
+import { getOwner } from 'ember-utils';
+import { assert } from './debug';
+import { ComputedProperty } from './computed';
+import { AliasedProperty } from './alias';
+import { Descriptor } from './properties';
 
 /**
   Read-only property that returns the result of a container lookup.

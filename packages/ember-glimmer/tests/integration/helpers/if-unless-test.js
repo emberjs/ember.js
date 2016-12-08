@@ -1,7 +1,7 @@
 import { moduleFor } from '../../utils/test-case';
-import { TogglingHelperConditionalsTest } from '../../utils/shared-conditional-tests';
+import { IfUnlessHelperTest } from '../../utils/shared-conditional-tests';
 
-moduleFor('Helpers test: inline {{if}}', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: inline {{if}}', class extends IfUnlessHelperTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{if ${cond} ${truthy} ${falsy}}}`;
@@ -21,7 +21,7 @@ moduleFor('Helpers test: inline {{if}}', class extends TogglingHelperConditional
 
 });
 
-moduleFor('Helpers test: nested {{if}} helpers (returning truthy values)', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: nested {{if}} helpers (returning truthy values)', class extends IfUnlessHelperTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{if (if ${cond} ${cond} false) ${truthy} ${falsy}}}`;
@@ -29,7 +29,7 @@ moduleFor('Helpers test: nested {{if}} helpers (returning truthy values)', class
 
 });
 
-moduleFor('Helpers test: nested {{if}} helpers (returning falsy values)', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: nested {{if}} helpers (returning falsy values)', class extends IfUnlessHelperTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{if (if ${cond} true ${cond}) ${truthy} ${falsy}}}`;
@@ -37,7 +37,7 @@ moduleFor('Helpers test: nested {{if}} helpers (returning falsy values)', class 
 
 });
 
-moduleFor('Helpers test: {{if}} used with another helper', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: {{if}} used with another helper', class extends IfUnlessHelperTest {
 
   wrapperFor(templates) {
     return `{{concat ${templates.join(' ')}}}`;
@@ -49,7 +49,7 @@ moduleFor('Helpers test: {{if}} used with another helper', class extends Togglin
 
 });
 
-moduleFor('@glimmer Helpers test: {{if}} used in attribute position', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: {{if}} used in attribute position', class extends IfUnlessHelperTest {
 
   wrapperFor(templates) {
     return `<div data-foo="${templates.join('')}" />`;
@@ -65,7 +65,7 @@ moduleFor('@glimmer Helpers test: {{if}} used in attribute position', class exte
 
 });
 
-moduleFor('Helpers test: inline {{if}} and {{unless}} without the inverse argument', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: inline {{if}} and {{unless}} without the inverse argument', class extends IfUnlessHelperTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{if ${cond} ${truthy}}}{{unless ${cond} ${falsy}}}`;
@@ -73,7 +73,7 @@ moduleFor('Helpers test: inline {{if}} and {{unless}} without the inverse argume
 
 });
 
-moduleFor('Helpers test: inline {{unless}}', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: inline {{unless}}', class extends IfUnlessHelperTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{unless ${cond} ${falsy} ${truthy}}}`;
@@ -93,7 +93,7 @@ moduleFor('Helpers test: inline {{unless}}', class extends TogglingHelperConditi
 
 });
 
-moduleFor('@glimmer Helpers test: nested {{unless}} helpers (returning truthy values)', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: nested {{unless}} helpers (returning truthy values)', class extends IfUnlessHelperTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{unless (unless ${cond} false ${cond}) ${falsy} ${truthy}}}`;
@@ -101,7 +101,7 @@ moduleFor('@glimmer Helpers test: nested {{unless}} helpers (returning truthy va
 
 });
 
-moduleFor('@glimmer Helpers test: nested {{unless}} helpers (returning falsy values)', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: nested {{unless}} helpers (returning falsy values)', class extends IfUnlessHelperTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{unless (unless ${cond} ${cond} true) ${falsy} ${truthy}}}`;
@@ -109,7 +109,7 @@ moduleFor('@glimmer Helpers test: nested {{unless}} helpers (returning falsy val
 
 });
 
-moduleFor('@glimmer Helpers test: {{unless}} used with another helper', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: {{unless}} used with another helper', class extends IfUnlessHelperTest {
 
   wrapperFor(templates) {
     return `{{concat ${templates.join(' ')}}}`;
@@ -121,7 +121,7 @@ moduleFor('@glimmer Helpers test: {{unless}} used with another helper', class ex
 
 });
 
-moduleFor('@glimmer Helpers test: {{unless}} used in attribute position', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: {{unless}} used in attribute position', class extends IfUnlessHelperTest {
 
   wrapperFor(templates) {
     return `<div data-foo="${templates.join('')}" />`;

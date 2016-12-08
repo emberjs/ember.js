@@ -1,9 +1,16 @@
-import { CachedReference } from '../utils/references';
-import { CURRENT_TAG, CONSTANT_TAG, UpdatableTag, combine, isConst, referenceFromParts } from 'glimmer-reference';
+import { set } from 'ember-metal';
+import { CachedReference, UPDATE } from '../utils/references';
+import {
+  CONSTANT_TAG,
+  UpdatableTag,
+  combine,
+  isConst,
+  referenceFromParts
+} from 'glimmer-reference';
 
 /**
 @module ember
-@submodule ember-templates
+@submodule ember-glimmer
 */
 
 /**
@@ -37,8 +44,8 @@ import { CURRENT_TAG, CONSTANT_TAG, UpdatableTag, combine, isConst, referenceFro
 
   ```handlebars
   {{input value=(mut (get person factName)) type="text"}}
-  <button {{action (mut factName) "height"}}>Show height</button>
-  <button {{action (mut factName) "weight"}}>Show weight</button>
+  <button {{action (action (mut factName)) "height"}}>Show height</button>
+  <button {{action (action (mut factName)) "weight"}}>Show weight</button>
   ```
 
   Would allow the user to swap what fact is being displayed, and also edit
@@ -50,14 +57,9 @@ import { CURRENT_TAG, CONSTANT_TAG, UpdatableTag, combine, isConst, referenceFro
   @since 2.1.0
  */
 
-export default {
-  isInternalHelper: true,
-
-  toReference(args) {
-    return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
-  }
-};
-
+export default function(vm, args) {
+  return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
+}
 
 class GetHelperReference extends CachedReference {
   static create(sourceReference, pathReference) {
@@ -77,7 +79,7 @@ class GetHelperReference extends CachedReference {
     this.lastPath = null;
     this.innerReference = null;
 
-    let innerTag = this.innerTag = new UpdatableTag(CURRENT_TAG);
+    let innerTag = this.innerTag = new UpdatableTag(CONSTANT_TAG);
 
     this.tag = combine([sourceReference.tag, pathReference.tag, innerTag]);
   }
@@ -105,5 +107,9 @@ class GetHelperReference extends CachedReference {
     }
 
     return innerReference ? innerReference.value() : null;
+  }
+
+  [UPDATE](value) {
+    set(this.sourceReference.value(), this.pathReference.value(), value);
   }
 }

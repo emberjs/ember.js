@@ -1,5 +1,5 @@
-import run from 'ember-metal/run_loop';
-import EmberApplication from 'ember-application/system/application';
+import { run } from 'ember-metal';
+import EmberApplication from '../../system/application';
 
 let jQuery, application, Application;
 let readyWasCalled, domReady, readyCallbacks;

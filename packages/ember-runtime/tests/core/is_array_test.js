@@ -1,6 +1,7 @@
-import { isArray } from 'ember-runtime/utils';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
+import { isArray } from '../../utils';
+import { A as emberA } from '../../system/native_array';
+import ArrayProxy from '../../system/array_proxy';
+import { environment } from 'ember-environment';
 
 QUnit.module('Ember Type Checking');
 
@@ -26,3 +27,12 @@ QUnit.test('Ember.isArray', function() {
   equal(isArray(fn), false, 'function() {}');
   equal(isArray(arrayProxy), true, '[]');
 });
+
+if (environment.window && typeof environment.window.FileList === 'function') {
+  QUnit.test('Ember.isArray(fileList)', function() {
+    let fileListElement = document.createElement('input');
+    fileListElement.type = 'file';
+    let fileList = fileListElement.files;
+    equal(isArray(fileList), false, 'fileList');
+  });
+}

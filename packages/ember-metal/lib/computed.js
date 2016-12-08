@@ -1,29 +1,26 @@
-import { assert, warn } from 'ember-metal/debug';
-import { set } from 'ember-metal/property_set';
-import { inspect } from 'ember-metal/utils';
-import { meta as metaFor, peekMeta } from 'ember-metal/meta';
-import expandProperties from 'ember-metal/expand_properties';
-import EmberError from 'ember-metal/error';
+import { inspect } from 'ember-utils';
+import { assert, warn } from './debug';
+import { set } from './property_set';
+import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
+import expandProperties from './expand_properties';
+import EmberError from './error';
 import {
   Descriptor,
   defineProperty
-} from 'ember-metal/properties';
+} from './properties';
 import {
   propertyWillChange,
   propertyDidChange
-} from 'ember-metal/property_events';
+} from './property_events';
 import {
   addDependentKeys,
   removeDependentKeys
-} from 'ember-metal/dependent_keys';
+} from './dependent_keys';
 
 /**
 @module ember
 @submodule ember-metal
 */
-
-
-function UNDEFINED() { }
 
 const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
@@ -159,6 +156,7 @@ function ComputedProperty(config, opts) {
 }
 
 ComputedProperty.prototype = new Descriptor();
+ComputedProperty.prototype.constructor = ComputedProperty;
 
 const ComputedPropertyPrototype = ComputedProperty.prototype;
 
@@ -251,7 +249,7 @@ ComputedPropertyPrototype.property = function() {
   function addArg(property) {
     warn(
       `Dependent keys containing @each only work one level deep. ` +
-        `You cannot use nested forms like todos.@each.owner.name or todos.@each.owner.@each.name. ` +
+        `You used the key "${property}" which is invalid. ` +
           `Please create an intermediary computed property.`,
       DEEP_EACH_REGEX.test(property) === false,
       { id: 'ember-metal.computed-deep-each' }

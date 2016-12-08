@@ -1,7 +1,12 @@
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
+import { get } from '../../property_get';
+import { set } from '../../property_set';
+import { setHasViews } from '../../tags';
 
-QUnit.module('set');
+QUnit.module('set', {
+  teardown() {
+    setHasViews(() => false);
+  }
+});
 
 QUnit.test('should set arbitrary properties on an object', function() {
   let obj = {
@@ -68,4 +73,13 @@ QUnit.test('warn on attempts of calling set on a destroyed object', function() {
   let obj = { isDestroyed: true };
 
   expectAssertion(() => set(obj, 'favoriteFood', 'hot dogs'), 'calling set on destroyed object: [object Object].favoriteFood = hot dogs');
+});
+
+QUnit.test('does not trigger auto-run assertion for objects that have not been tagged', function(assert) {
+  setHasViews(() => true);
+  let obj = {};
+
+  set(obj, 'foo', 'bar');
+
+  assert.equal(obj.foo, 'bar');
 });

@@ -1,10 +1,11 @@
-import alias from 'ember-metal/alias';
-import { defineProperty } from 'ember-metal/properties';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { meta } from 'ember-metal/meta';
-import { isWatching } from 'ember-metal/watching';
-import { addObserver, removeObserver } from 'ember-metal/observer';
+import alias from '../alias';
+import { defineProperty } from '../properties';
+import { get } from '../property_get';
+import { set } from '../property_set';
+import { meta } from '../meta';
+import { isWatching } from '../watching';
+import { addObserver, removeObserver } from '../observer';
+import { tagFor } from '../tags';
 
 let obj, count;
 
@@ -33,15 +34,6 @@ QUnit.test('should proxy set to alt key', function() {
   equal(get(obj, 'foo.faz'), 'BAR');
 });
 
-QUnit.test('basic lifecycle', function() {
-  defineProperty(obj, 'bar', alias('foo.faz'));
-  let m = meta(obj);
-  addObserver(obj, 'bar', incrementCount);
-  equal(m.peekDeps('foo.faz', 'bar'), 1);
-  removeObserver(obj, 'bar', incrementCount);
-  equal(m.peekDeps('foo.faz', 'bar'), 0);
-});
-
 QUnit.test('old dependent keys should not trigger property changes', function() {
   let obj1 = Object.create(null);
   defineProperty(obj1, 'foo', null, null);
@@ -59,8 +51,13 @@ QUnit.test('old dependent keys should not trigger property changes', function() 
   equal(count, 1);
 });
 
-QUnit.test('overridden dependent keys should not trigger property changes', function() {
+QUnit.test(`inheriting an observer of the alias from the prototype then
+            redefining the alias on the instance to another property dependent on same key
+            does not call the observer twice`, function() {
   let obj1 = Object.create(null);
+
+  meta(obj1).proto = obj1;
+
   defineProperty(obj1, 'foo', null, null);
   defineProperty(obj1, 'bar', alias('foo'));
   defineProperty(obj1, 'baz', alias('foo'));
@@ -78,7 +75,7 @@ QUnit.test('overridden dependent keys should not trigger property changes', func
   equal(count, 1);
 });
 
-QUnit.test('begins watching alt key as soon as alias is watched', function() {
+QUnit.test('an observer of the alias works if added after defining the alias', function() {
   defineProperty(obj, 'bar', alias('foo.faz'));
   addObserver(obj, 'bar', incrementCount);
   ok(isWatching(obj, 'foo.faz'));
@@ -86,14 +83,27 @@ QUnit.test('begins watching alt key as soon as alias is watched', function() {
   equal(count, 1);
 });
 
-QUnit.test('immediately sets up dependencies if already being watched', function() {
+QUnit.test('an observer of the alias works if added before defining the alias', function() {
   addObserver(obj, 'bar', incrementCount);
   defineProperty(obj, 'bar', alias('foo.faz'));
   ok(isWatching(obj, 'foo.faz'));
   set(obj, 'foo.faz', 'BAR');
   equal(count, 1);
+});
+
+QUnit.test('object with alias is dirtied if interior object of alias is set after consumption', function () {
+  defineProperty(obj, 'bar', alias('foo.faz'));
+  get(obj, 'bar');
+  assertDirty(obj, () => set(obj, 'foo.faz', 'BAR'), 'setting the aliased key should dirty the object');
 });
 
 QUnit.test('setting alias on self should fail assertion', function() {
   expectAssertion(() => defineProperty(obj, 'bar', alias('bar')), 'Setting alias \'bar\' on self');
 });
+
+function assertDirty(obj, callback, label) {
+  let tag = tagFor(obj);
+  let tagValue = tag.value();
+  callback();
+  ok(!tag.validate(tagValue), label);
+}

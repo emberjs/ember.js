@@ -1,6 +1,6 @@
-import isEmpty from 'ember-metal/is_empty';
-import EmberObject from 'ember-runtime/system/object';
-import assign from 'ember-metal/assign';
+import { assign } from 'ember-utils';
+import { isEmpty } from 'ember-metal';
+import { Object as EmberObject } from 'ember-runtime';
 
 export default EmberObject.extend({
   emberRouter: null,

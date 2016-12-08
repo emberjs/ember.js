@@ -1,4 +1,4 @@
-import isEqual from 'ember-runtime/is-equal';
+import isEqual from '../../is-equal';
 
 QUnit.module('isEqual');
 

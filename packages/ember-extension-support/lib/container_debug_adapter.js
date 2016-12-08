@@ -1,12 +1,11 @@
-import Ember from 'ember-metal/core'; // Ember as namespace
-import { A as emberA } from 'ember-runtime/system/native_array';
-import { typeOf } from 'ember-runtime/utils';
+import Ember from 'ember-metal'; // Ember as namespace
 import {
-  dasherize,
-  classify
-} from 'ember-runtime/system/string';
-import Namespace from 'ember-runtime/system/namespace';
-import EmberObject from 'ember-runtime/system/object';
+  A as emberA,
+  typeOf,
+  String as StringUtils,
+  Namespace,
+  Object as EmberObject
+} from 'ember-runtime';
 
 /**
 @module ember
@@ -88,7 +87,7 @@ export default EmberObject.extend({
   catalogEntriesByType(type) {
     let namespaces = emberA(Namespace.NAMESPACES);
     let types = emberA();
-    let typeSuffixRegex = new RegExp(`${classify(type)}$`);
+    let typeSuffixRegex = new RegExp(`${StringUtils.classify(type)}$`);
 
     namespaces.forEach(namespace => {
       if (namespace !== Ember) {
@@ -97,7 +96,7 @@ export default EmberObject.extend({
           if (typeSuffixRegex.test(key)) {
             let klass = namespace[key];
             if (typeOf(klass) === 'class') {
-              types.push(dasherize(key.replace(typeSuffixRegex, '')));
+              types.push(StringUtils.dasherize(key.replace(typeSuffixRegex, '')));
             }
           }
         }

@@ -1,26 +1,40 @@
-import EmberObject from 'ember-runtime/system/object';
+import { EmptyObject } from 'ember-utils';
+import { Object as EmberObject } from 'ember-runtime';
 
+/**
+  A two-tiered cache with support for fallback values when doing lookups.
+  Uses "buckets" and then "keys" to cache values.
+
+  @private
+  @class BucketCache
+*/
 export default EmberObject.extend({
   init() {
-    this.cache = {};
+    this.cache = new EmptyObject();
   },
+
   has(bucketKey) {
-    return bucketKey in this.cache;
+    return !!this.cache[bucketKey];
   },
+
   stash(bucketKey, key, value) {
     let bucket = this.cache[bucketKey];
+
     if (!bucket) {
-      bucket = this.cache[bucketKey] = {};
+      bucket = this.cache[bucketKey] = new EmptyObject();
     }
+
     bucket[key] = value;
   },
+
   lookup(bucketKey, prop, defaultValue) {
     let cache = this.cache;
-    if (!(bucketKey in cache)) {
+    if (!this.has(bucketKey)) {
       return defaultValue;
     }
+
     let bucket = cache[bucketKey];
-    if (prop in bucket) {
+    if (prop in bucket && bucket[prop] !== undefined) {
       return bucket[prop];
     } else {
       return defaultValue;

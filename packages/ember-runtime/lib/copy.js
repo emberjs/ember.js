@@ -1,6 +1,6 @@
-import { assert } from 'ember-metal/debug';
-import EmberObject from 'ember-runtime/system/object';
-import Copyable from 'ember-runtime/mixins/copyable';
+import { assert } from 'ember-metal';
+import EmberObject from './system/object';
+import Copyable from './mixins/copyable';
 
 function _copy(obj, deep, seen, copies) {
   let ret, loc, key;

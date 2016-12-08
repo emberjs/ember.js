@@ -1,7 +1,6 @@
-import { computed } from 'ember-metal/computed';
-import { addObserver } from 'ember-metal/observer';
-import EmberObject from 'ember-runtime/system/object';
-import { testBoth } from 'ember-metal/tests/props_helper';
+import { computed, addObserver } from 'ember-metal';
+import { testBoth } from 'internal-test-helpers';
+import EmberObject from '../../system/object';
 
 QUnit.module('mixins/observable');
 
@@ -63,7 +62,7 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
       lastName: 'Cook',
       companyName: 'Fruit Co., Inc.'
     });
-  } catch(err) {
+  } catch (err) {
     if (err !== exc) {
       throw err;
     }

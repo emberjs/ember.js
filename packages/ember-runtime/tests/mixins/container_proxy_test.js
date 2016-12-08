@@ -1,8 +1,7 @@
-import { OWNER } from 'container/owner';
-import Registry from 'container/registry';
-import Container from 'container/container';
-import ContainerProxy from 'ember-runtime/mixins/container_proxy';
-import EmberObject from 'ember-runtime/system/object';
+import { OWNER } from 'ember-utils';
+import { Container, Registry } from 'container';
+import ContainerProxy from '../../mixins/container_proxy';
+import EmberObject from '../../system/object';
 
 QUnit.module('ember-runtime/mixins/container_proxy', {
   setup() {

@@ -1,9 +1,19 @@
-import { isTesting, setTesting } from 'ember-metal/testing';
-import { setOnerror, getOnerror } from 'ember-metal/error_handler';
-import run from 'ember-metal/run_loop';
-import RSVP from 'ember-runtime/ext/rsvp';
+import {
+  isTesting,
+  setTesting,
+  setOnerror,
+  getOnerror,
+  run
+} from 'ember-metal';
+import RSVP from '../../ext/rsvp';
 
-QUnit.module('Ember.RSVP');
+const ORIGINAL_ONERROR = getOnerror();
+
+QUnit.module('Ember.RSVP', {
+  teardown() {
+    setOnerror(ORIGINAL_ONERROR);
+  }
+});
 
 QUnit.test('Ensure that errors thrown from within a promise are sent to the console', function() {
   let error = new Error('Error thrown in a promise for testing purposes.');
@@ -15,7 +25,7 @@ QUnit.test('Ensure that errors thrown from within a promise are sent to the cons
       });
     });
     ok(false, 'expected assertion to be thrown');
-  } catch(e) {
+  } catch (e) {
     equal(e, error, 'error was re-thrown');
   }
 });
@@ -27,6 +37,38 @@ QUnit.test('TransitionAborted errors are not re-thrown', function() {
   run(RSVP, 'reject', fakeTransitionAbort);
 
   ok(true, 'did not throw an error when dealing with TransitionAborted');
+});
+
+QUnit.test('Can reject with non-Error object', function(assert) {
+  let wasEmberTesting = isTesting();
+  setTesting(false);
+  expect(1);
+
+  try {
+    run(RSVP, 'reject', 'foo');
+  } catch (e) {
+    ok(false, 'should not throw');
+  } finally {
+    setTesting(wasEmberTesting);
+  }
+
+  ok(true);
+});
+
+QUnit.test('Can reject with no arguments', function(assert) {
+  let wasEmberTesting = isTesting();
+  setTesting(false);
+  expect(1);
+
+  try {
+    run(RSVP, 'reject');
+  } catch (e) {
+    ok(false, 'should not throw');
+  } finally {
+    setTesting(wasEmberTesting);
+  }
+
+  ok(true);
 });
 
 QUnit.test('rejections like jqXHR which have errorThrown property work', function() {
@@ -207,7 +249,7 @@ QUnit.test('handled in the next microTask queue flush (ajax example)', function(
     run(function() {
       let rejection = RSVP.Promise.reject(reason);
       ajax('/something/').then(() => {
-        rejection.catch(function() { });
+        rejection.catch(function() {});
         ok(true, 'reached end of test');
       });
     });

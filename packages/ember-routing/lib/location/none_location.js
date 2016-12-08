@@ -1,7 +1,9 @@
-import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import EmberObject from 'ember-runtime/system/object';
+import {
+  assert,
+  get,
+  set
+} from 'ember-metal';
+import { Object as EmberObject } from 'ember-runtime';
 
 /**
 @module ember
@@ -54,7 +56,7 @@ export default EmberObject.extend({
     rootURL = rootURL.replace(/\/$/, '');
 
     // remove rootURL from url
-    return path.replace(new RegExp('^' + rootURL), '');
+    return path.replace(new RegExp('^' + rootURL + '(?=/|$)'), '');
   },
 
   /**

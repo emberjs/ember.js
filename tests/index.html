@@ -162,6 +162,10 @@
         QUnit.config.urlConfig.push('nojshint');
         QUnit.config.urlConfig.push('forceskip');
 
+        if (QUnit.config.seed) {
+          QUnit.config.reorder = false;
+        }
+
         QUnit.begin(function() {
           if (QUnit.urlParams.hideskipped) {
             $('#qunit-tests').addClass('hideskipped');

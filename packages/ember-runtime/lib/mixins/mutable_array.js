@@ -4,13 +4,6 @@
 */
 
 
-// require('ember-runtime/mixins/array');
-// require('ember-runtime/mixins/mutable_enumerable');
-
-// ..........................................................
-// CONSTANTS
-//
-
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 const EMPTY = [];
 
@@ -18,13 +11,14 @@ const EMPTY = [];
 // HELPERS
 //
 
-import { get } from 'ember-metal/property_get';
-import EmberError from 'ember-metal/error';
-import { Mixin } from 'ember-metal/mixin';
-import EmberArray, { objectAt } from 'ember-runtime/mixins/array';
-import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
-import Enumerable from 'ember-runtime/mixins/enumerable';
-import isEnabled from 'ember-metal/features';
+import {
+  get,
+  Error as EmberError,
+  Mixin
+} from 'ember-metal';
+import EmberArray, { objectAt } from './array';
+import MutableEnumerable from './mutable_enumerable';
+import Enumerable from './enumerable';
 
 export function removeAt(array, start, len) {
   if ('number' === typeof start) {
@@ -393,13 +387,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   addObject(obj) {
-    let included;
-
-    if (isEnabled('ember-runtime-enumerable-includes')) {
-      included = this.includes(obj);
-    } else {
-      included = this.contains(obj);
-    }
+    let included = this.includes(obj);
 
     if (!included) {
       this.pushObject(obj);

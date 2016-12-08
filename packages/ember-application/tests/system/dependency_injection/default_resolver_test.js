@@ -1,22 +1,27 @@
 /* globals EmberDev */
 import { context } from 'ember-environment';
-import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
-import run from 'ember-metal/run_loop';
-import Controller from 'ember-runtime/controllers/controller';
-import Route from 'ember-routing/system/route';
-import Component from 'ember-htmlbars/component';
-import View from 'ember-views/views/view';
-import Service from 'ember-runtime/system/service';
-import EmberObject from 'ember-runtime/system/object';
-import Namespace from 'ember-runtime/system/namespace';
-import Application from 'ember-application/system/application';
-import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
-import makeHTMLBarsBoundHelper from 'ember-htmlbars/system/make_bound_helper';
 import {
-  registerHelper
-} from 'ember-htmlbars/helpers';
+  getDebugFunction,
+  setDebugFunction,
+  run
+} from 'ember-metal';
+import {
+  Controller,
+  Service,
+  Object as EmberObject,
+  Namespace
+} from 'ember-runtime';
+import { Route } from 'ember-routing';
+import Application from '../../../system/application';
+import {
+  Component,
+  setTemplates,
+  setTemplate,
+  Helper,
+  helper as makeHelper,
+  makeBoundHelper as makeHTMLBarsBoundHelper
+} from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 let registry, locator, application, originalLookup, originalInfo;
 
@@ -90,22 +95,6 @@ QUnit.test('the default resolver resolves *:main on the namespace', function() {
   detectEqual(application.FooBar, locator.lookupFactory('foo-bar:main'), 'looks up FooBar type without name on application');
 });
 
-QUnit.test('the default resolver resolves helpers', function() {
-  expect(2);
-
-  function fooresolvertestHelper() {
-    ok(true, 'found fooresolvertestHelper');
-  }
-  function barBazResolverTestHelper() {
-    ok(true, 'found barBazResolverTestHelper');
-  }
-  registerHelper('fooresolvertest', fooresolvertestHelper);
-  registerHelper('bar-baz-resolver-test', barBazResolverTestHelper);
-
-  fooresolvertestHelper();
-  barBazResolverTestHelper();
-});
-
 QUnit.test('the default resolver resolves container-registered helpers', function() {
   let shorthandHelper = makeHelper(() => {});
   let helper = Helper.extend();
@@ -150,14 +139,14 @@ QUnit.test('the default resolver resolves to the same instance, no matter the no
 });
 
 QUnit.test('the default resolver throws an error if the fullName to resolve is invalid', function() {
-  throws(() => { registry.resolve(undefined);}, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve(null);     }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve(':');      }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve('model');  }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve('model:'); }, TypeError, /Invalid fullName/ );
-  throws(() => { registry.resolve(':type');  }, TypeError, /Invalid fullName/ );
+  throws(() => { registry.resolve(undefined);}, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve(null);     }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve(':');      }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve('model');  }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve('model:'); }, TypeError, /Invalid fullName/);
+  throws(() => { registry.resolve(':type');  }, TypeError, /Invalid fullName/);
 });
 
 QUnit.test('the default resolver logs hits if `LOG_RESOLVER` is set', function() {
@@ -211,7 +200,7 @@ QUnit.test('doesn\'t log without LOG_RESOLVER', function() {
 
   application.ScoobyDoo = EmberObject.extend();
 
-  setDebugFunction('info', (symbol, name) => infoCount = infoCount + 1 );
+  setDebugFunction('info', (symbol, name) => infoCount = infoCount + 1);
 
   registry.resolve('doo:scooby');
   registry.resolve('doo:scrappy');
@@ -250,21 +239,9 @@ QUnit.test('no deprecation warning for service factories that extend from Ember.
   registry.resolve('service:foo');
 });
 
-QUnit.test('deprecation warning for view factories without isViewFactory property', function() {
-  expectDeprecation(/view factories must have an `isViewFactory` property/);
-  application.FooView = EmberObject.extend();
-  registry.resolve('view:foo');
-});
-
-QUnit.test('no deprecation warning for view factories that extend from Ember.View', function() {
-  expectNoDeprecation();
-  application.FooView = View.extend();
-  registry.resolve('view:foo');
-});
-
 QUnit.test('deprecation warning for component factories without isComponentFactory property', function() {
   expectDeprecation(/component factories must have an `isComponentFactory` property/);
-  application.FooComponent = View.extend();
+  application.FooComponent = EmberObject.extend();
   registry.resolve('component:foo');
 });
 

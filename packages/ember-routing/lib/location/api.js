@@ -1,6 +1,6 @@
-import { assert } from 'ember-metal/debug';
+import { assert } from 'ember-metal';
 import { environment } from 'ember-environment';
-import { getHash } from 'ember-routing/location/util';
+import { getHash } from './util';
 
 /**
 @module ember

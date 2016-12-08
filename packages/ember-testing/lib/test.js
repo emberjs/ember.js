@@ -14,8 +14,10 @@ import TestPromise, {
   resolve
 } from './test/promise';
 import {
+  checkWaiters,
   registerWaiter,
-  unregisterWaiter
+  unregisterWaiter,
+  generateDeprecatedWaitersArray
 } from './test/waiters';
 
 import {
@@ -53,7 +55,8 @@ const Test = {
   promise,
   resolve,
   registerWaiter,
-  unregisterWaiter
+  unregisterWaiter,
+  checkWaiters
 };
 
 /**
@@ -79,6 +82,10 @@ const Test = {
 Object.defineProperty(Test, 'adapter', {
   get: getAdapter,
   set: setAdapter
+});
+
+Object.defineProperty(Test, 'waiters', {
+  get: generateDeprecatedWaitersArray
 });
 
 export default Test;

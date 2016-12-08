@@ -1,12 +1,12 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { classes } from '../../utils/test-helpers';
-import { set } from 'ember-metal/property_set';
+import { set, computed } from 'ember-metal';
 import { strip } from '../../utils/abstract-test-case';
 
-moduleFor('ClassNameBindings intigration', class extends RenderingTest {
+moduleFor('ClassNameBindings integration', class extends RenderingTest {
 
-  ['@test it can have class name bindings']() {
+  ['@test it can have class name bindings on the class definition']() {
     let FooBarComponent = Component.extend({
       classNameBindings: ['foo', 'isEnabled:enabled', 'isHappy:happy:sad']
     });
@@ -42,6 +42,203 @@ moduleFor('ClassNameBindings intigration', class extends RenderingTest {
     });
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo enabled sad') }, content: 'hello' });
+  }
+
+  ['@test attrs in classNameBindings']() {
+    let FooBarComponent = Component.extend({
+      classNameBindings: ['attrs.joker:purple:green', 'attrs.batman.robin:black:red']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar joker=model.wat batman=model.super}}', {
+      model: { wat: false, super: { robin: true } }
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view green black') }, content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view green black') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'model.wat', true);
+      set(this.context, 'model.super.robin', false);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view purple red') }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'model', {
+      wat: false, super: { robin: true }
+    }));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view green black') }, content: 'hello' });
+  }
+
+  ['@test it can have class name bindings in the template']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    this.render('{{foo-bar classNameBindings="model.someInitiallyTrueProperty model.someInitiallyFalseProperty model.someInitiallyUndefinedProperty :static model.isBig:big model.isOpen:open:closed model.isUp::down model.bar:isTruthy:isFalsy"}}', {
+      model: {
+        someInitiallyTrueProperty: true,
+        someInitiallyFalseProperty: false,
+        isBig: true,
+        isOpen: false,
+        isUp: true,
+        bar: true
+      }
+    });
+
+    this.assertComponentElement(this.firstChild, {
+      attrs: { 'class': classes('ember-view some-initially-true-property static big closed isTruthy') },
+      content: 'hello'
+    });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, {
+      attrs: { 'class': classes('ember-view some-initially-true-property static big closed isTruthy') },
+      content: 'hello'
+    });
+
+    this.runTask(() => {
+      set(this.context, 'model.someInitiallyTrueProperty', false);
+      set(this.context, 'model.someInitiallyFalseProperty', true);
+      set(this.context, 'model.someInitiallyUndefinedProperty', true);
+      set(this.context, 'model.isBig', false);
+      set(this.context, 'model.isOpen', true);
+      set(this.context, 'model.isUp', false);
+      set(this.context, 'model.bar', false);
+    });
+
+    this.assertComponentElement(this.firstChild, {
+      attrs: { 'class': classes('ember-view some-initially-false-property some-initially-undefined-property static open down isFalsy') },
+      content: 'hello'
+    });
+
+    this.runTask(() => {
+      set(this.context, 'model', {
+        someInitiallyTrueProperty: true,
+        someInitiallyFalseProperty: false,
+        someInitiallyUndefinedProperty: undefined,
+        isBig: true,
+        isOpen: false,
+        isUp: true,
+        bar: true
+      });
+    });
+
+    this.assertComponentElement(this.firstChild, {
+      attrs: { 'class': classes('ember-view some-initially-true-property static big closed isTruthy') },
+      content: 'hello'
+    });
+  }
+
+  ['@test it can have class name bindings with nested paths']() {
+    let FooBarComponent = Component.extend({
+      classNameBindings: ['foo.bar', 'is.enabled:enabled', 'is.happy:happy:sad']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar foo=foo is=is}}', { foo: { bar: 'foo-bar' }, is: { enabled: true, happy: false } });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar enabled sad') }, content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar enabled sad') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'foo.bar', 'FOO-BAR');
+      set(this.context, 'is.enabled', false);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view FOO-BAR sad') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'foo.bar', null);
+      set(this.context, 'is.happy', true);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view happy') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'foo', null);
+      set(this.context, 'is', null);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view sad') }, content: 'hello' });
+
+
+    this.runTask(() => {
+      set(this.context, 'foo', { bar: 'foo-bar' });
+      set(this.context, 'is', { enabled: true, happy: false });
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar enabled sad') }, content: 'hello' });
+  }
+
+  ['@test it should dasherize the path when the it resolves to true']() {
+    let FooBarComponent = Component.extend({
+      classNameBindings: ['fooBar', 'nested.fooBarBaz']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar fooBar=fooBar nested=nested}}', { fooBar: true, nested: { fooBarBaz: false } });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar') }, content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'fooBar', false);
+      set(this.context, 'nested.fooBarBaz', true);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar-baz') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'fooBar', 'FOO-BAR');
+      set(this.context, 'nested.fooBarBaz', null);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view FOO-BAR') }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'nested', null));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view FOO-BAR') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'fooBar', true);
+      set(this.context, 'nested', { fooBarBaz: false });
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar') }, content: 'hello' });
+  }
+
+  ['@test const bindings can be set as attrs']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+    this.render('{{foo-bar classNameBindings="foo:enabled:disabled"}}', {
+      foo: true
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view enabled') }, content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view enabled') }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'foo', false));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view disabled') }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'foo', true));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view enabled') }, content: 'hello' });
   }
 
   ['@test :: class name syntax works with an empty true class']() {
@@ -103,7 +300,7 @@ moduleFor('ClassNameBindings intigration', class extends RenderingTest {
       init() {
         this._super();
 
-        let bindings = this.classNameBindings;
+        let bindings = this.classNameBindings = this.classNameBindings.slice();
 
         if (this.get('bindIsEnabled')) {
           bindings.push('isEnabled:enabled');
@@ -168,13 +365,23 @@ moduleFor('ClassNameBindings intigration', class extends RenderingTest {
     this.assertComponentElement(this.nthChild(3), { tagName: 'div', attrs: { 'class': classes('ember-view foo') }, content: 'hello' });
   }
 
+  ['@test using a computed property for classNameBindings triggers an assertion']() {
+    let FooBarComponent = Component.extend({
+      classNameBindings: computed(function() {
+        return ['isHappy:happy:sad'];
+      })
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, /Only arrays are allowed/);
+  }
 });
 
-const bindingDeprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-  ' using an `alias` computed property instead.';
-
-moduleFor('ClassBinding intigration', class extends RenderingTest {
-  ['@htmlbars it should apply classBinding without condition always']() {
+moduleFor('ClassBinding integration', class extends RenderingTest {
+  ['@test it should apply classBinding without condition always']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding=":foo"}}');
@@ -186,9 +393,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
   }
 
-  ['@glimmer it should merge classBinding with class']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should merge classBinding with class']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="birdman:respeck" class="myName"}}', { birdman: true });
@@ -200,23 +405,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('respeck myName ember-view') } });
   }
 
-  ['@glimmer in glimmer it should apply classBinding without condition always']() {
-    expectDeprecation(bindingDeprecationMessage);
-
-    this.registerComponent('foo-bar', { template: 'hello' });
-
-    this.render('{{foo-bar classBinding=":foo"}}');
-
-    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
-
-    this.runTask(() => this.rerender());
-
-    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
-  }
-
-  ['@glimmer it should apply classBinding with only truthy condition']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply classBinding with only truthy condition']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="myName:respeck"}}', { myName: true });
@@ -228,9 +417,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('respeck  ember-view') } });
   }
 
-  ['@glimmer it should apply classBinding with only falsy condition']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply classBinding with only falsy condition']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="myName::shade"}}', { myName: false });
@@ -242,9 +429,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('shade  ember-view') } });
   }
 
-  ['@glimmer it should apply nothing when classBinding is falsy but only supplies truthy class']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply nothing when classBinding is falsy but only supplies truthy class']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="myName:respeck"}}', { myName: false });
@@ -256,9 +441,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('ember-view') } });
   }
 
-  ['@glimmer it should apply nothing when classBinding is truthy but only supplies falsy class']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply nothing when classBinding is truthy but only supplies falsy class']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="myName::shade"}}', { myName: true });
@@ -270,9 +453,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('ember-view') } });
   }
 
-  ['@glimmer it should apply classBinding with falsy condition']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply classBinding with falsy condition']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="swag:fresh:scrub"}}', { swag: false });
@@ -284,9 +465,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('scrub  ember-view') } });
   }
 
-  ['@glimmer it should apply classBinding with truthy condition']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply classBinding with truthy condition']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="swag:fresh:scrub"}}', { swag: true });

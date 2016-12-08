@@ -3,16 +3,14 @@
 @submodule ember-application
 */
 
-import { deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import run from 'ember-metal/run_loop';
-import { computed } from 'ember-metal/computed';
-import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
-import assign from 'ember-metal/assign';
+import { assign } from 'ember-utils';
+import { deprecate, get, set, run, computed } from 'ember-metal';
+import {
+  buildFakeRegistryWithDeprecations,
+  RSVP
+} from 'ember-runtime';
 import { environment } from 'ember-environment';
-import RSVP from 'ember-runtime/ext/rsvp';
-import jQuery from 'ember-views/system/jquery';
+import { jQuery } from 'ember-views';
 import EngineInstance from './engine-instance';
 
 let BootOptions;
@@ -131,21 +129,7 @@ const ApplicationInstance = EngineInstance.extend({
   },
 
   setupRegistry(options) {
-    let registry = this.__registry__;
-
-    registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
-    registry.injection('view', '_environment', '-environment:main');
-    registry.injection('route', '_environment', '-environment:main');
-
-    registry.register('service:-document', options.document, { instantiate: false });
-
-    if (options.isInteractive) {
-      registry.injection('view', 'renderer', 'renderer:-dom');
-      registry.injection('component', 'renderer', 'renderer:-dom');
-    } else {
-      registry.injection('view', 'renderer', 'renderer:-inert');
-      registry.injection('component', 'renderer', 'renderer:-inert');
-    }
+    this.constructor.setupRegistry(this.__registry__, options);
   },
 
   router: computed(function() {
@@ -255,22 +239,31 @@ const ApplicationInstance = EngineInstance.extend({
   visit(url) {
     this.setupRouter();
 
+    let bootOptions = this.__container__.lookup('-environment:main');
+
     let router = get(this, 'router');
 
-    let handleResolve = () => {
-      // Resolve only after rendering is complete
-      return new RSVP.Promise((resolve) => {
-        // TODO: why is this necessary? Shouldn't 'actions' queue be enough?
-        // Also, aren't proimses supposed to be async anyway?
-        run.next(null, resolve, this);
-      });
+    let handleTransitionResolve = () => {
+      if (!bootOptions.options.shouldRender) {
+        // No rendering is needed, and routing has completed, simply return.
+        return this;
+      } else {
+        return new RSVP.Promise((resolve) => {
+          // Resolve once rendering is completed. `router.handleURL` returns the transition (as a thennable)
+          // which resolves once the transition is completed, but the transition completion only queues up
+          // a scheduled revalidation (into the `render` queue) in the Renderer.
+          //
+          // This uses `run.schedule('afterRender', ....)` to resolve after that rendering has completed.
+          run.schedule('afterRender', null, resolve, this);
+        });
+      }
     };
 
-    let handleReject = (error) => {
+    let handleTransitionReject = (error) => {
       if (error.error) {
         throw error.error;
       } else if (error.name === 'TransitionAborted' && router.router.activeTransition) {
-        return router.router.activeTransition.then(handleResolve, handleReject);
+        return router.router.activeTransition.then(handleTransitionResolve, handleTransitionReject);
       } else if (error.name === 'TransitionAborted') {
         throw new Error(error.message);
       } else {
@@ -284,7 +277,26 @@ const ApplicationInstance = EngineInstance.extend({
     location.setURL(url);
 
     // getURL returns the set url with the rootURL stripped off
-    return router.handleURL(location.getURL()).then(handleResolve, handleReject);
+    return router.handleURL(location.getURL()).then(handleTransitionResolve, handleTransitionReject);
+  }
+});
+
+ApplicationInstance.reopenClass({
+  /**
+   @private
+   @method setupRegistry
+   @param {Registry} registry
+   @param {BootOptions} options
+  */
+  setupRegistry(registry, options = {}) {
+    if (!options.toEnvironment) {
+      options = new BootOptions(options);
+    }
+
+    registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
+    registry.register('service:-document', options.document, { instantiate: false });
+
+    this._super(registry, options);
   }
 });
 
@@ -474,6 +486,7 @@ BootOptions.prototype.toEnvironment = function() {
   let env = assign({}, environment);
   // For compatibility with existing code
   env.hasDOM = this.isBrowser;
+  env.isInteractive = this.isInteractive;
   env.options = this;
   return env;
 };

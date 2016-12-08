@@ -2,10 +2,10 @@
   Merge the contents of two objects together into the first object.
 
   ```javascript
-  Ember.merge({first: 'Tom'}, {last: 'Dale'}); // {first: 'Tom', last: 'Dale'}
-  let a = {first: 'Yehuda'};
-  let b = {last: 'Katz'};
-  Ember.merge(a, b); // a == {first: 'Yehuda', last: 'Katz'}, b == {last: 'Katz'}
+  Ember.merge({ first: 'Tom' }, { last: 'Dale' }); // { first: 'Tom', last: 'Dale' }
+  var a = { first: 'Yehuda' };
+  var b = { last: 'Katz' };
+  Ember.merge(a, b); // a == { first: 'Yehuda', last: 'Katz' }, b == { last: 'Katz' }
   ```
 
   @method merge

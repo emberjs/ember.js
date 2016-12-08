@@ -1,4 +1,4 @@
-import EmberObject from 'ember-runtime/system/object';
+import EmberObject from '../../../system/object';
 
 QUnit.module('system/object/detect');
 

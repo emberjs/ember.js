@@ -1,9 +1,8 @@
-import Engine from 'ember-application/system/engine';
-import EngineInstance from 'ember-application/system/engine-instance';
-import { getEngineParent, setEngineParent } from 'ember-application/system/engine-parent';
-import run from 'ember-metal/run_loop';
-import factory from 'container/tests/test-helpers/factory';
-import isEnabled from 'ember-metal/features';
+import Engine from '../../system/engine';
+import EngineInstance from '../../system/engine-instance';
+import { getEngineParent, setEngineParent } from '../../system/engine-parent';
+import { run } from 'ember-metal';
+import { factory } from 'internal-test-helpers';
 
 let engine, engineInstance;
 
@@ -55,49 +54,47 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
   assert.notStrictEqual(postComponent1, postComponent2, 'lookup creates a brand new instance because previous one was reset');
 });
 
-if (isEnabled('ember-application-engines')) {
-  QUnit.test('can be booted when its parent has been set', function(assert) {
-    assert.expect(3);
+QUnit.test('can be booted when its parent has been set', function(assert) {
+  assert.expect(3);
 
-    engineInstance = run(() => EngineInstance.create({ base: engine }));
+  engineInstance = run(() => EngineInstance.create({ base: engine }));
 
-    expectAssertion(() => {
-      engineInstance._bootSync();
-    }, 'An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.');
+  expectAssertion(() => {
+    engineInstance._bootSync();
+  }, 'An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.');
 
-    setEngineParent(engineInstance, {});
+  setEngineParent(engineInstance, {});
 
-    // Stub `cloneParentDependencies`, the internals of which are tested along
-    // with application instances.
-    engineInstance.cloneParentDependencies = function() {
-      assert.ok(true, 'parent dependencies are cloned');
-    };
+  // Stub `cloneParentDependencies`, the internals of which are tested along
+  // with application instances.
+  engineInstance.cloneParentDependencies = function() {
+    assert.ok(true, 'parent dependencies are cloned');
+  };
 
-    return engineInstance.boot().then(() => {
-      assert.ok(true, 'boot successful');
-    });
+  return engineInstance.boot().then(() => {
+    assert.ok(true, 'boot successful');
+  });
+});
+
+QUnit.test('can build a child instance of a registered engine', function(assert) {
+  let ChatEngine = Engine.extend();
+  let chatEngineInstance;
+
+  engine.register('engine:chat', ChatEngine);
+
+  run(() => {
+    engineInstance = EngineInstance.create({ base: engine });
+
+    // Try to build an unregistered engine.
+    throws(() => {
+      engineInstance.buildChildEngineInstance('fake');
+    }, `You attempted to mount the engine 'fake', but it is not registered with its parent.`);
+
+    // Build the `chat` engine, registered above.
+    chatEngineInstance = engineInstance.buildChildEngineInstance('chat');
   });
 
-  QUnit.test('can build a child instance of a registered engine', function(assert) {
-    let ChatEngine = Engine.extend();
-    let chatEngineInstance;
+  assert.ok(chatEngineInstance, 'child engine instance successfully created');
 
-    engine.register('engine:chat', ChatEngine);
-
-    run(() => {
-      engineInstance = EngineInstance.create({ base: engine });
-
-      // Try to build an unregistered engine.
-      throws(() => {
-        engineInstance.buildChildEngineInstance('fake');
-      }, `You attempted to mount the engine 'fake', but it is not registered with its parent.`);
-
-      // Build the `chat` engine, registered above.
-      chatEngineInstance = engineInstance.buildChildEngineInstance('chat');
-    });
-
-    assert.ok(chatEngineInstance, 'child engine instance successfully created');
-
-    assert.strictEqual(getEngineParent(chatEngineInstance), engineInstance, 'child engine instance is assigned the correct parent');
-  });
-}
+  assert.strictEqual(getEngineParent(chatEngineInstance), engineInstance, 'child engine instance is assigned the correct parent');
+});

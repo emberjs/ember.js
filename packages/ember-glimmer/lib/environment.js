@@ -1,14 +1,24 @@
-import lookupPartial, { hasPartial } from 'ember-views/system/lookup_partial';
+import { guidFor, OWNER } from 'ember-utils';
+import { Cache, assert, warn, runInDebug } from 'ember-metal';
+import {
+  lookupPartial,
+  hasPartial,
+  lookupComponent,
+  STYLE_WARNING
+} from 'ember-views';
 import {
   Environment as GlimmerEnvironment,
-  HelperSyntax
+  AttributeManager,
+  isSafeString,
+  compileLayout,
+  getDynamicVar
 } from 'glimmer-runtime';
-import Dict from 'ember-metal/empty_object';
-import { assert } from 'ember-metal/debug';
-import { CurlyComponentSyntax, CurlyComponentDefinition } from './syntax/curly-component';
+import {
+  CurlyComponentSyntax,
+  CurlyComponentDefinition
+} from './syntax/curly-component';
+import { findSyntaxBuilder } from './syntax';
 import { DynamicComponentSyntax } from './syntax/dynamic-component';
-import { OutletSyntax } from './syntax/outlet';
-import lookupComponent from 'ember-views/utils/lookup-component';
 import createIterable from './utils/iterable';
 import {
   ConditionalReference,
@@ -20,9 +30,12 @@ import {
   inlineIf,
   inlineUnless
 } from './helpers/if-unless';
+import { wrapComponentClassAttribute } from './utils/bindings';
 
 import { default as action } from './helpers/action';
+import { default as componentHelper } from './helpers/component';
 import { default as concat } from './helpers/concat';
+import { default as debuggerHelper } from './helpers/debugger';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
@@ -31,241 +44,305 @@ import { default as mut } from './helpers/mut';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import { default as classHelper } from './helpers/-class';
+import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as queryParams } from './helpers/query-param';
 import { default as eachIn } from './helpers/each-in';
-import { OWNER } from 'container/owner';
+import { default as normalizeClassHelper } from './helpers/-normalize-class';
+import { default as htmlSafeHelper } from './helpers/-html-safe';
+
+import installPlatformSpecificProtocolForURL from './protocol-for-url';
 
 const builtInComponents = {
   textarea: '-text-area'
 };
 
-const builtInHelpers = {
-  if: inlineIf,
-  action,
-  concat,
-  get,
-  hash,
-  loc,
-  log,
-  mut,
-  'query-params': queryParams,
-  readonly,
-  unbound,
-  unless: inlineUnless,
-  '-class': classHelper,
-  '-each-in': eachIn
-};
-
 import { default as ActionModifierManager } from './modifiers/action';
-
-function wrapClassAttribute(args) {
-  let hasClass = args.named.has('class');
-
-  if (hasClass) {
-    let { ref, type } = args.named.at('class');
-
-    if (type === 'get') {
-      let propName = ref.parts[ref.parts.length - 1];
-      let syntax = HelperSyntax.fromSpec(['helper', ['-class'], [['get', ref.parts], propName], null]);
-      args.named.add('class', syntax);
-    }
-  }
-  return args;
-}
-
-function wrapClassBindingAttribute(args) {
-  let hasClassBinding = args.named.has('classBinding');
-
-  if (hasClassBinding) {
-    let { value , type } = args.named.at('classBinding');
-    if (type === 'value') {
-      let [ prop, truthy, falsy ] = value.split(':');
-      let spec;
-      if (prop === '') {
-        spec = ['helper', ['-class'], [truthy], null];
-      } else if (falsy) {
-        let parts = prop.split('.');
-        spec = ['helper', ['-class'], [['get', parts], truthy, falsy], null];
-      } else if (truthy) {
-        let parts = prop.split('.');
-        spec = ['helper', ['-class'], [['get', parts], truthy], null];
-      }
-
-      if (spec) {
-        let syntax;
-        if (args.named.has('class')) {
-          // If class already exists, merge
-          let classValue = args.named.at('class').value;
-          syntax = HelperSyntax.fromSpec(['helper', ['concat'], [classValue, ' ', spec]]);
-        } else {
-          syntax = HelperSyntax.fromSpec(spec);
-        }
-        args.named.add('class', syntax);
-      }
-    }
-  }
-}
 
 export default class Environment extends GlimmerEnvironment {
   static create(options) {
     return new Environment(options);
   }
 
-  constructor({ dom, [OWNER]: owner }) {
-    super(dom);
+  constructor({ [OWNER]: owner }) {
+    super(...arguments);
     this.owner = owner;
-    this._components = new Dict();
-    this._templateCache = new Dict();
+    this.isInteractive = owner.lookup('-environment:main').isInteractive;
+
+    // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
+    this.destroyedComponents = undefined;
+
+    installPlatformSpecificProtocolForURL(this);
+
+    this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
+      let { component: ComponentClass, layout } = lookupComponent(owner, name, { source });
+      if (ComponentClass || layout) {
+        return new CurlyComponentDefinition(name, ComponentClass, layout);
+      }
+    }, ({ name, source, owner }) => {
+      let expandedName = source && owner._resolveLocalLookupName(name, source) || name;
+      let ownerGuid = guidFor(owner);
+
+      return ownerGuid + '|' + expandedName;
+    });
+
+    this._templateCache = new Cache(1000, ({ Template, owner }) => {
+      if (Template.create) {
+        // we received a factory
+        return Template.create({ env: this, [OWNER]: owner });
+      } else {
+        // we were provided an instance already
+        return Template;
+      }
+    }, ({ Template, owner }) => guidFor(owner) + '|' + Template.id);
+
+    this._compilerCache = new Cache(10, Compiler => {
+      return new Cache(2000, (template) => {
+        let compilable = new Compiler(template);
+        return compileLayout(compilable, this);
+      }, (template)=> {
+        let owner = template.meta.owner;
+        return guidFor(owner) + '|' + template.id;
+      });
+    }, Compiler => Compiler.id);
+
     this.builtInModifiers = {
       action: new ActionModifierManager()
     };
+
+    this.builtInHelpers = {
+      if: inlineIf,
+      action,
+      component: componentHelper,
+      concat,
+      debugger: debuggerHelper,
+      get,
+      hash,
+      loc,
+      log,
+      mut,
+      'query-params': queryParams,
+      readonly,
+      unbound,
+      unless: inlineUnless,
+      '-class': classHelper,
+      '-each-in': eachIn,
+      '-input-type': inputTypeHelper,
+      '-normalize-class': normalizeClassHelper,
+      '-html-safe': htmlSafeHelper,
+      '-get-dynamic-var': getDynamicVar
+    };
   }
 
-   // Hello future traveler, welcome to the world of syntax refinement.
-   // The method below is called by Glimmer's runtime compiler to allow
-   // us to take generic statement syntax and refine it to more meaniful
-   // syntax for Ember's use case. This on the fly switch-a-roo sounds fine
-   // and dandy, however Ember has precedence on statement refinement that you
-   // need to be aware of. The presendence for language constructs is as follows:
-   //
-   // ------------------------
-   // Native & Built-in Syntax
-   // ------------------------
-   //   User-land components
-   // ------------------------
-   //     User-land helpers
-   // ------------------------
-   //
-   // The one caveat here is that Ember also allows for dashed references that are
-   // not a component or helper:
-   //
-   // export default Component.extend({
-   //   'foo-bar': 'LAME'
-   // });
-   //
-   // {{foo-bar}}
-   //
-   // The heuristic for the above situation is a dashed "key" in inline form
-   // that does not resolve to a defintion. In this case refine statement simply
-   // isn't going to return any syntax and the Glimmer engine knows how to handle
-   // this case.
+  // Hello future traveler, welcome to the world of syntax refinement.
+  // The method below is called by Glimmer's runtime compiler to allow
+  // us to take generic statement syntax and refine it to more meaniful
+  // syntax for Ember's use case. This on the fly switch-a-roo sounds fine
+  // and dandy, however Ember has precedence on statement refinement that you
+  // need to be aware of. The presendence for language constructs is as follows:
+  //
+  // ------------------------
+  // Native & Built-in Syntax
+  // ------------------------
+  //   User-land components
+  // ------------------------
+  //     User-land helpers
+  // ------------------------
+  //
+  // The one caveat here is that Ember also allows for dashed references that are
+  // not a component or helper:
+  //
+  // export default Component.extend({
+  //   'foo-bar': 'LAME'
+  // });
+  //
+  // {{foo-bar}}
+  //
+  // The heuristic for the above situation is a dashed "key" in inline form
+  // that does not resolve to a defintion. In this case refine statement simply
+  // isn't going to return any syntax and the Glimmer engine knows how to handle
+  // this case.
 
-  refineStatement(statement) {
+  refineStatement(statement, symbolTable) {
     // 1. resolve any native syntax – if, unless, with, each, and partial
-    let nativeSyntax = super.refineStatement(statement);
+    let nativeSyntax = super.refineStatement(statement, symbolTable);
 
     if (nativeSyntax) {
       return nativeSyntax;
     }
 
     let {
+      appendType,
       isSimple,
       isInline,
       isBlock,
       isModifier,
       key,
       path,
-      args,
-      templates
+      args
     } = statement;
 
-    assert(`You attempted to overwrite the built-in helper "${key}" which is not allowed. Please rename the helper.`, !(builtInHelpers[key] && this.owner.hasRegistration(`helper:${key}`)));
+    assert(`You attempted to overwrite the built-in helper "${key}" which is not allowed. Please rename the helper.`, !(this.builtInHelpers[key] && this.owner.hasRegistration(`helper:${key}`)));
 
-    if (isSimple && (isInline || isBlock)) {
+    if (isSimple && (isInline || isBlock) && appendType !== 'get') {
       // 2. built-in syntax
-      if (key === 'component') {
-        return new DynamicComponentSyntax({ args, templates });
-      } else if (key === 'outlet') {
-        return new OutletSyntax({ args });
+
+      let RefinedSyntax = findSyntaxBuilder(key);
+      if (RefinedSyntax) {
+        return RefinedSyntax.create(this, args, symbolTable);
       }
 
       let internalKey = builtInComponents[key];
       let definition = null;
 
       if (internalKey) {
-        definition = this.getComponentDefinition([internalKey]);
+        definition = this.getComponentDefinition([internalKey], symbolTable);
       } else if (key.indexOf('-') >= 0) {
-        definition = this.getComponentDefinition(path);
+        definition = this.getComponentDefinition(path, symbolTable);
       }
 
       if (definition) {
-        wrapClassBindingAttribute(args);
-        wrapClassAttribute(args);
-        return new CurlyComponentSyntax({ args, definition, templates });
+        wrapComponentClassAttribute(args);
+
+        return new CurlyComponentSyntax(args, definition, symbolTable);
       }
 
-      assert(`Could not find component named "${key}" (no component or template with that name was found)`, !isBlock || this.hasHelper(key));
+      assert(`A component or helper named "${key}" could not be found`, !isBlock || this.hasHelper(path, symbolTable));
     }
 
-    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(key));
+    if (isInline && !isSimple && appendType !== 'helper') {
+      return statement.original.deopt();
+    }
 
-    assert(`Helpers may not be used in the element form.`, !nativeSyntax && key && this.hasHelper(key) ? !isModifier : true);
+    if (!isSimple && path) {
+      return DynamicComponentSyntax.fromPath(this, path, args, symbolTable);
+    }
+
+    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(path, symbolTable));
+
+    assert(`Helpers may not be used in the element form.`, (() => {
+      if (nativeSyntax) { return true; }
+      if (!key) { return true; }
+
+      if (isModifier && !this.hasModifier(path, symbolTable) && this.hasHelper(path, symbolTable)) {
+        return false;
+      }
+
+      return true;
+    })());
   }
 
   hasComponentDefinition() {
     return false;
   }
 
-  getComponentDefinition(path) {
+  getComponentDefinition(path, symbolTable) {
     let name = path[0];
-    let definition = this._components[name];
+    let blockMeta = symbolTable.getMeta();
+    let owner = blockMeta.owner;
+    let source = blockMeta.moduleName && `template:${blockMeta.moduleName}`;
 
-    if (!definition) {
-      let { component: ComponentClass, layout } = lookupComponent(this.owner, name);
-
-      if (ComponentClass || layout) {
-        definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout);
-      }
-    }
-
-    return definition;
+    return this._definitionCache.get({ name, source, owner });
   }
 
-  hasPartial(name) {
-    return hasPartial(this, name[0]);
+  // normally templates should be exported at the proper module name
+  // and cached in the container, but this cache supports templates
+  // that have been set directly on the component's layout property
+  getTemplate(Template, owner) {
+    return this._templateCache.get({ Template, owner });
   }
 
-  lookupPartial(name) {
+  // a Compiler can wrap the template so it needs its own cache
+  getCompiledBlock(Compiler, template) {
+    let compilerCache = this._compilerCache.get(Compiler);
+    return compilerCache.get(template);
+  }
+
+  hasPartial(name, symbolTable) {
+    let { owner } = symbolTable.getMeta();
+    return hasPartial(name, owner);
+  }
+
+  lookupPartial(name, symbolTable) {
+    let { owner } = symbolTable.getMeta();
     let partial = {
-      template: lookupPartial(this, name[0]).spec
+      template: lookupPartial(name, owner)
     };
 
-    if (partial) {
+    if (partial.template) {
       return partial;
     } else {
       throw new Error(`${name} is not a partial`);
     }
   }
 
-  hasHelper(name) {
-    return !!builtInHelpers[name[0]] || this.owner.hasRegistration(`helper:${name}`);
+  hasHelper(nameParts, symbolTable) {
+    assert('The first argument passed into `hasHelper` should be an array', Array.isArray(nameParts));
+
+    // helpers are not allowed to include a dot in their invocation
+    if (nameParts.length > 1) {
+      return false;
+    }
+
+    let name = nameParts[0];
+
+    if (this.builtInHelpers[name]) {
+      return true;
+    }
+
+    let blockMeta = symbolTable.getMeta();
+    let owner = blockMeta.owner;
+    let options = { source: `template:${blockMeta.moduleName}` };
+
+    return owner.hasRegistration(`helper:${name}`, options) ||
+      owner.hasRegistration(`helper:${name}`);
   }
 
-  lookupHelper(name) {
-    let helper = builtInHelpers[name[0]] || this.owner.lookup(`helper:${name}`);
+  lookupHelper(nameParts, symbolTable) {
+    assert('The first argument passed into `lookupHelper` should be an array', Array.isArray(nameParts));
+
+    let name = nameParts[0];
+    let helper = this.builtInHelpers[name];
+
+    if (helper) {
+      return helper;
+    }
+
+    let blockMeta = symbolTable.getMeta();
+    let owner = blockMeta.owner;
+    let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
+
+    helper = owner.lookup(`helper:${name}`, options) || owner.lookup(`helper:${name}`);
+
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-    if (helper.isInternalHelper) {
-      return (args) => helper.toReference(args);
-    } else if (helper.isHelperInstance) {
-      return (args) => SimpleHelperReference.create(helper.compute, args);
+    if (helper.isHelperInstance) {
+      return (vm, args) => SimpleHelperReference.create(helper.compute, args);
     } else if (helper.isHelperFactory) {
-      return (args) => ClassBasedHelperReference.create(helper, args);
+      return (vm, args) => ClassBasedHelperReference.create(helper, vm, args);
     } else {
-      throw new Error(`${name} is not a helper`);
+      throw new Error(`${nameParts} is not a helper`);
     }
   }
 
-  hasModifier(name) {
-    return !!this.builtInModifiers[name[0]];
+  hasModifier(nameParts) {
+    assert('The first argument passed into `hasModifier` should be an array', Array.isArray(nameParts));
+
+    // modifiers are not allowed to include a dot in their invocation
+    if (nameParts.length > 1) {
+      return false;
+    }
+
+    return !!this.builtInModifiers[nameParts[0]];
   }
 
-  lookupModifier(name) {
-    let modifier = this.builtInModifiers[name[0]];
+  lookupModifier(nameParts) {
+    assert('The first argument passed into `lookupModifier` should be an array', Array.isArray(nameParts));
+
+    let modifier = this.builtInModifiers[nameParts[0]];
 
     if (modifier) {
       return modifier;
     } else {
-      throw new Error(`${name} is not a modifier`);
+      throw new Error(`${nameParts} is not a modifier`);
     }
   }
 
@@ -278,12 +355,74 @@ export default class Environment extends GlimmerEnvironment {
     return createIterable(ref, keyPath);
   }
 
-  didCreate(component, manager) {
-    this.createdComponents.unshift(component);
-    this.createdManagers.unshift(manager);
+  scheduleInstallModifier() {
+    if (this.isInteractive) {
+      super.scheduleInstallModifier(...arguments);
+    }
+  }
+
+  scheduleUpdateModifier() {
+    if (this.isInteractive) {
+      super.scheduleUpdateModifier(...arguments);
+    }
   }
 
   didDestroy(destroyable) {
     destroyable.destroy();
   }
+
+  begin() {
+    this.inTransaction = true;
+
+    super.begin();
+
+    this.destroyedComponents = [];
+  }
+
+  commit() {
+    // components queued for destruction must be destroyed before firing
+    // `didCreate` to prevent errors when removing and adding a component
+    // with the same name (would throw an error when added to view registry)
+    for (let i = 0; i < this.destroyedComponents.length; i++) {
+      this.destroyedComponents[i].destroy();
+    }
+
+    super.commit();
+
+    this.inTransaction = false;
+  }
 }
+
+runInDebug(() => {
+  class StyleAttributeManager extends AttributeManager {
+    setAttribute(dom, element, value) {
+      warn(STYLE_WARNING, (() => {
+        if (value === null || value === undefined || isSafeString(value)) {
+          return true;
+        }
+        return false;
+      })(), { id: 'ember-htmlbars.style-xss-warning' });
+      super.setAttribute(...arguments);
+    }
+
+    updateAttribute(dom, element, value) {
+      warn(STYLE_WARNING, (() => {
+        if (value === null || value === undefined || isSafeString(value)) {
+          return true;
+        }
+        return false;
+      })(), { id: 'ember-htmlbars.style-xss-warning' });
+      super.updateAttribute(...arguments);
+    }
+  }
+
+  let STYLE_ATTRIBUTE_MANANGER = new StyleAttributeManager('style');
+
+  Environment.prototype.attributeFor = function(element, attribute, isTrusting, namespace) {
+    if (attribute === 'style' && !isTrusting) {
+      return STYLE_ATTRIBUTE_MANANGER;
+    }
+
+    return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
+  };
+});

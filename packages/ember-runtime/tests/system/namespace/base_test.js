@@ -1,10 +1,9 @@
 import { context } from 'ember-environment';
-import run from 'ember-metal/run_loop';
-import {get} from 'ember-metal/property_get';
-import EmberObject from 'ember-runtime/system/object';
+import { run, get } from 'ember-metal';
+import EmberObject from '../../../system/object';
 import Namespace, {
   setSearchDisabled as setNamespaceSearchDisabled
-} from 'ember-runtime/system/namespace';
+} from '../../../system/namespace';
 
 const originalLookup = context.lookup;
 let lookup;

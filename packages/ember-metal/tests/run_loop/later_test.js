@@ -1,5 +1,5 @@
-import isNone from 'ember-metal/is_none';
-import run from 'ember-metal/run_loop';
+import isNone from '../../is_none';
+import run from '../../run_loop';
 
 const originalSetTimeout = window.setTimeout;
 const originalDateValueOf = Date.prototype.valueOf;

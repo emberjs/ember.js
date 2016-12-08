@@ -45,6 +45,18 @@ a stab at fixing the bug yourself if you can!
 The more information you provide, the easier it is for us to validate that
 there is a bug and the faster we'll be able to take action.
 
+### Triaging policy
+
+* You might be requested to provide a reproduction or extra information. In that
+case, the issue will be labeled as _Needs Submitter Response_. If we did not
+get any response after seven days, we will ping you to remind you about it. We
+might close the issue if we do not hear from you after two weeks since the
+original notice.
+
+* If you submit a feature request as an issue, you will be invited to follow the
+[instructions in this document](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md#requesting-a-feature)
+and the issue will be closed
+
 ## Requesting a Feature
 
 1. Ember has an RFC process for feature requests. To begin the discussion either
@@ -83,13 +95,59 @@ clone the latest ember.js directory from github
 cd to the cloned ember.js directory
  - cd ember.js
 
-ensure Node.js, npm, and bower are installed
+ensure Node.js, yarn, and bower are installed
 
 follow these commands to build ember.js
+ - yarn install
  - bower install
- - npm run-script build
+ - yarn run build
 ```
 
+# How to Run Unit Tests
+
+Pull requests should pass the Ember.js unit tests. Do the following to run these tests.
+
+1. Follow the setup steps listed above under [Building Ember.js](#building-emberjs).
+
+2. To start the development server, run `npm start`.
+
+3. To run all tests, visit <http://localhost:4200/>.
+
+4. To test a specific package, visit `http://localhost:4200/tests/index.html?package=PACKAGE_NAME`. Replace
+`PACKAGE_NAME` with the name of the package you want to test. For
+example:
+
+  * [Ember.js Runtime](http://localhost:4200/tests/index.html?package=ember-runtime)
+  * [Ember.js Views](http://localhost:4200/tests/index.html?package=ember-views)
+  * [Ember.js Glimmer](http://localhost:4200/tests/index.html?package=ember-glimmer)
+
+To test multiple packages, you can separate them with commas.
+
+You can also pass `jquery=VERSION` in the test URL to test different
+versions of jQuery.
+
+## From the CLI
+
+1. Install phantomjs from http://phantomjs.org.
+
+2. Run `npm test` to run a basic test suite or run `TEST_SUITE=all npm test` to
+   run a more comprehensive suite.
+
+## From ember-cli
+
+1. `ember test --server`
+
+2. Connect the browsers you want.
+
+3. If phantom didn't connect automatically, you can run `./bin/connect-phantom-to <optional-port>`.
+
+To run a specific browser, you can use the `--launch` flag
+
+* `ember test --server --launch SL_Firefox_Current`
+* `ember test --launch SL_Firefox_Current`
+* `ember test --launch SL_Firefox_Current,PhantomJS`
+
+To test multiple launchers, you can separate them with commas.
 # Pull Requests
 
 We love pull requests. Here's a quick guide:
@@ -97,8 +155,8 @@ We love pull requests. Here's a quick guide:
 1. Fork the repo.
 
 2. Run the tests. We only take pull requests with passing tests, and it's great
-to know that you have a clean slate: `npm install && bower install && npm test`.
-(To see tests in the browser, run `npm start` and open `http://localhost:4200/tests/index.html`.)
+to know that you have a clean slate: `yarn install && bower install && yarn test`.
+(To see tests in the browser, run `yarn start` and open `http://localhost:4200/tests/index.html`.)
 
 3. Add a test for your change. Only refactoring and documentation changes
 require no new tests. If you are adding functionality or fixing a bug, we need
@@ -198,7 +256,7 @@ If your build is failing on the 'production' suite, you may be relying on a debu
 There are helpers for many of these functions, which will resolve this for you: `expectDeprecation`, `expectAssertion`, etc.  Please use these helpers when dealing with these functions.
 
 If your tests can't aren't covered a helper, one common solution is the use of `EmberDev.runningProdBuild`.  Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
-```
+```javascript
 if (EmberDev && !EmberDev.runningProdBuild) {
   // Development-only test goes here
 }

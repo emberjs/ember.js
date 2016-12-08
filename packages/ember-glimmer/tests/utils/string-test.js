@@ -1,6 +1,4 @@
-import SafeString from 'htmlbars-util/safe-string';
-import { htmlSafe, isHtmlSafe } from 'ember-htmlbars/utils/string';
-import isEnabled from 'ember-metal/features';
+import { SafeString, htmlSafe, isHTMLSafe } from './helpers';
 import { TestCase } from './abstract-test-case';
 import { moduleFor } from './test-case';
 
@@ -26,20 +24,18 @@ moduleFor('SafeString', class extends TestCase {
   }
 });
 
-if (isEnabled('ember-string-ishtmlsafe')) {
-  moduleFor('SafeString isHtmlSafe', class extends TestCase {
-    ['@test isHtmlSafe should detect SafeString']() {
-      let safeString = htmlSafe('<em>Emphasize</em> the important things.');
+moduleFor('SafeString isHTMLSafe', class extends TestCase {
+  ['@test isHTMLSafe should detect SafeString']() {
+    let safeString = htmlSafe('<em>Emphasize</em> the important things.');
 
-      this.assert.ok(isHtmlSafe(safeString));
-    }
+    this.assert.ok(isHTMLSafe(safeString));
+  }
 
-    ['@test isHtmlSafe should not detect SafeString on primatives']() {
-      this.assert.notOk(isHtmlSafe('Hello World'));
-      this.assert.notOk(isHtmlSafe({}));
-      this.assert.notOk(isHtmlSafe([]));
-      this.assert.notOk(isHtmlSafe(10));
-      this.assert.notOk(isHtmlSafe(null));
-    }
-  });
-}
+  ['@test isHTMLSafe should not detect SafeString on primatives']() {
+    this.assert.notOk(isHTMLSafe('Hello World'));
+    this.assert.notOk(isHTMLSafe({}));
+    this.assert.notOk(isHTMLSafe([]));
+    this.assert.notOk(isHTMLSafe(10));
+    this.assert.notOk(isHTMLSafe(null));
+  }
+});

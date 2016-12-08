@@ -1,4 +1,4 @@
-import RSVP from 'ember-runtime/ext/rsvp';
+import { RSVP } from 'ember-runtime';
 import run from './run';
 
 let lastPromise;
@@ -9,12 +9,8 @@ export default class TestPromise extends RSVP.Promise {
     lastPromise = this;
   }
 
-  static resolve(val) {
-    return new TestPromise(resolve => resolve(val));
-  }
-
   then(onFulfillment, ...args) {
-    return super(result => isolate(onFulfillment, result), ...args);
+    return super.then(result => isolate(onFulfillment, result), ...args);
   }
 }
 
@@ -47,8 +43,8 @@ export function promise(resolver, label) {
   @param {Mixed} The value to resolve
   @since 1.2.0
 */
-export function resolve(result) {
-  return new TestPromise(resolve => resolve(result));
+export function resolve(result, label) {
+  return TestPromise.resolve(result, label);
 }
 
 export function getLastPromise() {

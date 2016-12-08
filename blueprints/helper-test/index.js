@@ -13,9 +13,9 @@ module.exports = useTestFrameworkDetector({
       name: 'test-type',
       type: ['integration', 'unit'],
       default: 'unit',
-      aliases:[
-        { 'i': 'integration'},
-        { 'u': 'unit'},
+      aliases: [
+        { 'i': 'integration' },
+        { 'u': 'unit' },
         { 'integration': 'integration' },
         { 'unit': 'unit' }
       ]
@@ -38,7 +38,7 @@ module.exports = useTestFrameworkDetector({
     return {
       friendlyTestName: friendlyTestName,
       dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix),
-      testType:testType
+      testType: testType
     };
   },
 

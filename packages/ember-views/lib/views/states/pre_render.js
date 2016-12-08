@@ -1,15 +1,8 @@
-import _default from 'ember-views/views/states/default';
-import assign from 'ember-metal/assign';
+import _default from './default';
 
 /**
 @module ember
 @submodule ember-views
 */
 
-let preRender = Object.create(_default);
-
-assign(preRender, {
-  legacyPropertyDidChange(view, key) {}
-});
-
-export default preRender;
+export default Object.create(_default);

@@ -1,8 +1,7 @@
-import { set } from 'ember-metal/property_set';
+import { set, computed } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import computed from 'ember-metal/computed';
 
 moduleFor('Components test: dynamic components', class extends RenderingTest {
 
@@ -310,10 +309,15 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
 
   ['@test component helper destroys underlying component when it is swapped out'](assert) {
     let destroyed = { 'foo-bar': 0, 'foo-bar-baz': 0 };
+    let testContext = this;
 
     this.registerComponent('foo-bar', {
       template: 'hello from foo-bar',
       ComponentClass: Component.extend({
+        willDestroyElement() {
+          assert.equal(testContext.$(`#${this.elementId}`).length, 1, 'element is still attached to the document');
+        },
+
         willDestroy() {
           this._super();
           destroyed['foo-bar']++;
@@ -399,7 +403,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('foo-bar Caracas Caracas arepas!');
   }
 
-  ['@htmlbars component helper with actions'](assert) {
+  ['@test component helper with actions'](assert) {
     this.registerComponent('inner-component', {
       template: 'inner-component {{yield}}',
       ComponentClass: Component.extend({

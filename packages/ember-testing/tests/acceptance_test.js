@@ -1,24 +1,25 @@
-import run from 'ember-metal/run_loop';
-import jQuery from 'ember-views/system/jquery';
-import Test from 'ember-testing/test';
-import QUnitAdapter from 'ember-testing/adapters/qunit';
-import 'ember-testing/initializers'; // ensure the initializer is setup
-import EmberApplication from 'ember-application/system/application';
-import EmberRoute from 'ember-routing/system/route';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import RSVP from 'ember-runtime/ext/rsvp';
-import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
+import { run } from 'ember-metal';
+import { jQuery } from 'ember-views';
+import Test from '../test';
+import QUnitAdapter from '../adapters/qunit';
+import '../initializers'; // ensure the initializer is setup
+import { Application as EmberApplication } from 'ember-application';
+import { Route as EmberRoute } from 'ember-routing';
+import { compile } from 'ember-template-compiler';
+import { RSVP } from 'ember-runtime';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
 
 var App, find, click, fillIn, currentRoute, currentURL, visit, originalAdapter, andThen, indexHitCount;
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
 QUnit.module('ember-testing Acceptance', {
   setup() {
     jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
+
+    originalAdapter = Test.adapter;
+
     run(function() {
       indexHitCount = 0;
 
@@ -88,8 +89,6 @@ QUnit.module('ember-testing Acceptance', {
     visit = window.visit;
     andThen = window.andThen;
     currentURL = window.currentURL;
-
-    originalAdapter = Test.adapter;
   },
 
   teardown() {
@@ -103,7 +102,7 @@ QUnit.module('ember-testing Acceptance', {
   }
 });
 
-test('helpers can be chained with then', function() {
+QUnit.test('helpers can be chained with then', function() {
   expect(6);
 
   currentRoute = 'index';
@@ -130,7 +129,7 @@ test('helpers can be chained with then', function() {
 
 // Keep this for backwards compatibility
 
-test('helpers can be chained to each other', function() {
+QUnit.test('helpers can be chained to each other', function() {
   expect(7);
 
   currentRoute = 'index';
@@ -155,7 +154,7 @@ test('helpers can be chained to each other', function() {
   });
 });
 
-test('helpers don\'t need to be chained', function() {
+QUnit.test('helpers don\'t need to be chained', function() {
   expect(5);
 
   currentRoute = 'index';
@@ -180,7 +179,7 @@ test('helpers don\'t need to be chained', function() {
   });
 });
 
-test('Nested async helpers', function() {
+QUnit.test('Nested async helpers', function() {
   expect(5);
 
   currentRoute = 'index';
@@ -207,7 +206,7 @@ test('Nested async helpers', function() {
   });
 });
 
-test('Multiple nested async helpers', function() {
+QUnit.test('Multiple nested async helpers', function() {
   expect(3);
 
   visit('/posts');
@@ -226,7 +225,7 @@ test('Multiple nested async helpers', function() {
   });
 });
 
-test('Helpers nested in thens', function() {
+QUnit.test('Helpers nested in thens', function() {
   expect(5);
 
   currentRoute = 'index';
@@ -360,7 +359,7 @@ QUnit.test('test must not finish while asyncHelpers are pending', function () {
   }
 });
 
-test('visiting a URL that causes another transition should yield the correct URL', function () {
+QUnit.test('visiting a URL that causes another transition should yield the correct URL', function () {
   expect(1);
 
   visit('/redirect');
@@ -370,7 +369,7 @@ test('visiting a URL that causes another transition should yield the correct URL
   });
 });
 
-test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {
+QUnit.test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {
   expect(2);
 
   visit('/posts');

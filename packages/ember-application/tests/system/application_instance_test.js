@@ -1,11 +1,11 @@
-import Engine from 'ember-application/system/engine';
-import Application from 'ember-application/system/application';
-import ApplicationInstance from 'ember-application/system/application-instance';
-import run from 'ember-metal/run_loop';
-import jQuery from 'ember-views/system/jquery';
-import factory from 'container/tests/test-helpers/factory';
-import isEnabled from 'ember-metal/features';
-import { privatize as P } from 'container/registry';
+import Engine from '../../system/engine';
+import Application from '../../system/application';
+import ApplicationInstance from '../../system/application-instance';
+import { run } from 'ember-metal';
+import { jQuery } from 'ember-views';
+import { privatize as P } from 'container';
+import { factory } from 'internal-test-helpers';
+import { Object as EmberObject } from 'ember-runtime';
 
 let application, appInstance;
 
@@ -138,45 +138,65 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
   assert.notStrictEqual(postController1, postController2, 'lookup creates a brand new instance, because the previous one was reset');
 });
 
-if (isEnabled('ember-application-engines')) {
-  QUnit.test('can build and boot a registered engine', function(assert) {
-    assert.expect(7);
+QUnit.test('can build and boot a registered engine', function(assert) {
+  assert.expect(10);
 
-    let ChatEngine = Engine.extend();
-    let chatEngineInstance;
+  let ChatEngine = Engine.extend();
+  let chatEngineInstance;
 
-    application.register('engine:chat', ChatEngine);
+  application.register('engine:chat', ChatEngine);
 
-    run(() => {
-      appInstance = ApplicationInstance.create({ application });
-      chatEngineInstance = appInstance.buildChildEngineInstance('chat');
-    });
-
-    return chatEngineInstance.boot()
-      .then(() => {
-        assert.ok(true, 'boot successful');
-
-        [
-          'route:basic',
-          'event_dispatcher:main',
-          P`-bucket-cache:main`,
-          'service:-routing'
-        ].forEach(key => {
-          assert.strictEqual(
-            chatEngineInstance.resolveRegistration(key),
-            appInstance.resolveRegistration(key),
-            `Engine and parent app share registrations for '${key}'`);
-        });
-
-        [
-          'router:main',
-          '-view-registry:main'
-        ].forEach(key => {
-          assert.strictEqual(
-            chatEngineInstance.lookup(key),
-            appInstance.lookup(key),
-            `Engine and parent app share singleton '${key}'`);
-        });
-      });
+  run(() => {
+    appInstance = ApplicationInstance.create({ application });
+    appInstance.setupRegistry();
+    chatEngineInstance = appInstance.buildChildEngineInstance('chat');
   });
-}
+
+  return chatEngineInstance.boot()
+    .then(() => {
+      assert.ok(true, 'boot successful');
+
+      let registrations = [
+        'route:basic',
+        'event_dispatcher:main',
+        'service:-routing',
+        'service:-glimmer-environment'
+      ];
+
+      registrations.forEach(key => {
+        assert.strictEqual(
+          chatEngineInstance.resolveRegistration(key),
+          appInstance.resolveRegistration(key),
+          `Engine and parent app share registrations for '${key}'`);
+      });
+
+      let singletons = [
+        'router:main',
+        P`-bucket-cache:main`,
+        '-view-registry:main',
+        '-environment:main'
+      ];
+
+      let env = appInstance.lookup('-environment:main');
+      singletons.push(env.isInteractive ? 'renderer:-dom' : 'renderer:-inert');
+
+      singletons.forEach(key => {
+        assert.strictEqual(
+          chatEngineInstance.lookup(key),
+          appInstance.lookup(key),
+          `Engine and parent app share singleton '${key}'`);
+      });
+    });
+});
+
+QUnit.test('can build a registry via Ember.ApplicationInstance.setupRegistry() -- simulates ember-test-helpers', function(assert) {
+  let namespace = EmberObject.create({
+    Resolver: { create: function() { } }
+  });
+
+  let registry = Application.buildRegistry(namespace);
+
+  ApplicationInstance.setupRegistry(registry);
+
+  assert.equal(registry.resolve('service:-document'), document);
+});

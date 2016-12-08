@@ -1,11 +1,9 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
-import { set } from 'ember-metal/property_set';
-import { Binding } from 'ember-metal/binding';
+import { set, Binding } from 'ember-metal';
 
 moduleFor('Binding integration tests', class extends RenderingTest {
-
-  ['@htmlbars should accept bindings as a string or an Ember.binding']() {
+  ['@test should accept bindings as a string or an Ember.binding']() {
     let FooBarComponent = Component.extend({
       twoWayTestBinding: Binding.from('direction'),
       stringTestBinding: 'direction',
@@ -18,9 +16,6 @@ moduleFor('Binding integration tests', class extends RenderingTest {
       template: 'two way: {{twoWayTest}}, string: {{stringTest}}, object: {{twoWayObjectTest}}, string object: {{stringObjectTest}}'
     });
 
-    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-      ' using an `alias` computed property instead.';
-
     expectDeprecation(() => {
       this.render('{{foo-bar direction=direction displacement=displacement}}', {
         direction: 'down',
@@ -28,7 +23,7 @@ moduleFor('Binding integration tests', class extends RenderingTest {
           distance: 10
         }
       });
-    }, deprecationMessage);
+    }, /`Ember\.Binding` is deprecated/);
 
     this.assertText('two way: down, string: down, object: 10, string object: 10');
 

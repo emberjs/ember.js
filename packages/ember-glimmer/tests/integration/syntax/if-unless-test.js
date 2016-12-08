@@ -1,12 +1,12 @@
 import { Component } from '../../utils/helpers';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import { set } from 'ember-metal/property_set';
+import { A as emberA } from 'ember-runtime';
+import { set } from 'ember-metal';
 import { strip } from '../../utils/abstract-test-case';
 
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { TogglingSyntaxConditionalsTest } from '../../utils/shared-conditional-tests';
+import { IfUnlessWithSyntaxTest } from '../../utils/shared-conditional-tests';
 
-moduleFor('Syntax test: {{#if}} with inverse', class extends TogglingSyntaxConditionalsTest {
+moduleFor('Syntax test: {{#if}} with inverse', class extends IfUnlessWithSyntaxTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#if ${cond}}}${truthy}{{else}}${falsy}{{/if}}`;
@@ -14,7 +14,7 @@ moduleFor('Syntax test: {{#if}} with inverse', class extends TogglingSyntaxCondi
 
 });
 
-moduleFor('Syntax test: {{#unless}} with inverse', class extends TogglingSyntaxConditionalsTest {
+moduleFor('Syntax test: {{#unless}} with inverse', class extends IfUnlessWithSyntaxTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#unless ${cond}}}${falsy}{{else}}${truthy}{{/unless}}`;
@@ -22,7 +22,7 @@ moduleFor('Syntax test: {{#unless}} with inverse', class extends TogglingSyntaxC
 
 });
 
-moduleFor('Syntax test: {{#if}} and {{#unless}} without inverse', class extends TogglingSyntaxConditionalsTest {
+moduleFor('Syntax test: {{#if}} and {{#unless}} without inverse', class extends IfUnlessWithSyntaxTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#if ${cond}}}${truthy}{{/if}}{{#unless ${cond}}}${falsy}{{/unless}}`;

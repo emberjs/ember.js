@@ -1,5 +1,5 @@
-import run from 'ember-metal/run_loop';
-import QUnitAdapter from 'ember-testing/adapters/qunit';
+import { run } from 'ember-metal';
+import QUnitAdapter from '../../adapters/qunit';
 
 var adapter;
 

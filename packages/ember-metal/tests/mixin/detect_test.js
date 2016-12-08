@@ -1,4 +1,4 @@
-import { Mixin } from 'ember-metal/mixin';
+import { Mixin } from '../../mixin';
 
 QUnit.module('Mixin.detect');
 

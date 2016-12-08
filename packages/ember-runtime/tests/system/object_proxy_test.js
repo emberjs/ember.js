@@ -1,8 +1,11 @@
-import { addObserver, removeObserver } from 'ember-metal/observer';
-import { computed } from 'ember-metal/computed';
-import { isWatching } from 'ember-metal/watching';
-import { testBoth } from 'ember-metal/tests/props_helper';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
+import {
+  addObserver,
+  removeObserver,
+  computed,
+  isWatching
+} from 'ember-metal';
+import { testBoth } from 'internal-test-helpers';
+import ObjectProxy from '../../system/object_proxy';
 
 QUnit.module('ObjectProxy');
 
@@ -27,10 +30,10 @@ testBoth('should not proxy properties passed to create', function (get, set) {
 
 testBoth('should proxy properties to content', function(get, set) {
   let content = {
-        firstName: 'Tom',
-        lastName: 'Dale',
-        unknownProperty(key) { return key + ' unknown';}
-      };
+    firstName: 'Tom',
+    lastName: 'Dale',
+    unknownProperty(key) { return key + ' unknown';}
+  };
   let proxy = ObjectProxy.create();
 
   equal(get(proxy, 'firstName'), undefined, 'get on proxy without content should return undefined');

@@ -3,7 +3,8 @@
 var RSVP  = require('rsvp');
 var spawn = require('child_process').spawn;
 var chalk = require('chalk');
-var packages = require('../lib/packages');
+var getFeatures = require('../ember-cli-build').getFeatures;
+var getPackages = require('../lib/packages');
 var runInSequence = require('../lib/run-in-sequence');
 
 var finalhandler = require('finalhandler');
@@ -31,7 +32,7 @@ function run(queryString) {
 }
 
 function runInPhantom(url, retries, resolve, reject) {
-  var args = ['bower_components/qunit-phantom-runner/runner.js', url];
+  var args = [require.resolve('qunit-phantomjs-runner'), url, '900'];
 
   console.log('Running: phantomjs ' + args.join(' '));
 
@@ -89,6 +90,9 @@ function runInPhantom(url, retries, resolve, reject) {
 var testFunctions = [];
 
 function generateEachPackageTests() {
+  var features = getFeatures();
+  var packages = getPackages(features);
+
   Object.keys(packages).forEach(function(packageName) {
     if (packages[packageName].skipTests) { return; }
 
@@ -166,6 +170,11 @@ switch (process.env.TEST_SUITE) {
     require('../node-tests/nodetest-runner');
     server.close();
     return;
+  case 'travis-browsers':
+    console.log('suite: sauce');
+    require('./run-travis-browser-tests');
+    return;
+
   case 'sauce':
     console.log('suite: sauce');
     require('./run-sauce-tests');

@@ -1,8 +1,4 @@
-import {set} from 'ember-metal/property_set';
-import {get} from 'ember-metal/property_get';
-import {Mixin} from 'ember-metal/mixin';
-import { Binding } from 'ember-metal/binding';
-import run from 'ember-metal/run_loop';
+import { set, get, Mixin, Binding, run } from 'ember-metal';
 
 QUnit.module('system/mixin/binding_test');
 
@@ -14,8 +10,7 @@ QUnit.test('Defining a property ending in Binding should setup binding when appl
   let obj = { bar: { baz: 'BIFF' } };
 
   run(() => {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-      ' using an `alias` computed property instead.';
+    let deprecationMessage = /`Ember.Binding` is deprecated/;
 
     expectDeprecation(() => {
       MyMixin.apply(obj);
@@ -36,8 +31,7 @@ QUnit.test('Defining a property ending in Binding should apply to prototype chil
   let obj = { bar: { baz: 'BIFF' } };
 
   run(function() {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-      ' using an `alias` computed property instead.';
+    let deprecationMessage = /`Ember.Binding` is deprecated/;
 
     expectDeprecation(() => {
       MyMixin.apply(obj);

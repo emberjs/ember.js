@@ -1,17 +1,3 @@
-import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
-
-import CoreView from 'ember-views/views/core_view';
-import ViewContextSupport from 'ember-views/mixins/view_context_support';
-import ViewChildViewsSupport from 'ember-views/mixins/view_child_views_support';
-import ViewLegacyChildViewsSupport from 'ember-views/mixins/legacy_child_views_support';
-import ViewStateSupport from 'ember-views/mixins/view_state_support';
-import ClassNamesSupport from 'ember-views/mixins/class_names_support';
-import LegacyViewSupport from 'ember-views/mixins/legacy_view_support';
-import InstrumentationSupport from 'ember-views/mixins/instrumentation_support';
-import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
-import VisibilitySupport from 'ember-views/mixins/visibility_support';
-import CompatAttrsProxy from 'ember-views/compat/attrs-proxy';
-import ViewMixin from 'ember-views/mixins/view_support';
 /**
 @module ember
 @submodule ember-views
@@ -258,7 +244,7 @@ import ViewMixin from 'ember-views/mixins/view_support';
   ```
 
   If the return value of an `attributeBindings` monitored property is a boolean
-  the property's value will be set as a coerced string:
+  the attribute will be present or absent depending on the value:
 
   ```javascript
   MyTextInput = Ember.View.extend({
@@ -271,7 +257,7 @@ import ViewMixin from 'ember-views/mixins/view_support';
   Will result in a view instance with an HTML representation of:
 
   ```html
-  <input id="ember1" class="ember-view" disabled="false" />
+  <input id="ember1" class="ember-view" />
   ```
 
   `attributeBindings` can refer to computed properties:
@@ -498,96 +484,8 @@ import ViewMixin from 'ember-views/mixins/view_support';
   @extends Ember.CoreView
   @deprecated See http://emberjs.com/deprecations/v1.x/#toc_ember-view
   @uses Ember.ViewSupport
-  @uses Ember.ViewContextSupport
-  @uses Ember.ViewChildViewsSupport
+  @uses Ember.ChildViewsSupport
   @uses Ember.ClassNamesSupport
   @uses Ember.AttributeBindingsSupport
-  @uses Ember.LegacyViewSupport
-  @uses Ember.InstrumentationSupport
-  @uses Ember.VisibilitySupport
-  @uses Ember.AriaRoleSupport
-  @public
+  @private
 */
-// jscs:disable validateIndentation
-var View = CoreView.extend(
-  ViewContextSupport,
-  ViewChildViewsSupport,
-  ViewLegacyChildViewsSupport,
-  ViewStateSupport,
-  ClassNamesSupport,
-  LegacyViewSupport,
-  InstrumentationSupport,
-  VisibilitySupport,
-  CompatAttrsProxy,
-  AriaRoleSupport,
-  ViewMixin, {
-    attributeBindings: ['ariaRole:role'],
-
-    init() {
-      this._super(...arguments);
-
-      if (!this._viewRegistry) {
-        this._viewRegistry = View.views;
-      }
-    },
-
-    /**
-      Given a property name, returns a dasherized version of that
-      property name if the property evaluates to a non-falsy value.
-
-      For example, if the view has property `isUrgent` that evaluates to true,
-      passing `isUrgent` to this method will return `"is-urgent"`.
-
-      @method _classStringForProperty
-      @param property
-      @private
-    */
-    _classStringForProperty(parsedPath) {
-      return View._classStringForValue(parsedPath.path, parsedPath.stream.value(), parsedPath.className, parsedPath.falsyClassName);
-    }
-  });
-
-// jscs:enable validateIndentation
-
-/*
-  Describe how the specified actions should behave in the various
-  states that a view can exist in. Possible states:
-
-  * preRender: when a view is first instantiated, and after its
-    element was destroyed, it is in the preRender state
-  * inBuffer: once a view has been rendered, but before it has
-    been inserted into the DOM, it is in the inBuffer state
-  * hasElement: the DOM representation of the view is created,
-    and is ready to be inserted
-  * inDOM: once a view has been inserted into the DOM it is in
-    the inDOM state. A view spends the vast majority of its
-    existence in this state.
-  * destroyed: once a view has been destroyed (using the destroy
-    method), it is in this state. No further actions can be invoked
-    on a destroyed view.
-*/
-
-// in the destroyed state, everything is illegal
-
-// before rendering has begun, all legal manipulations are noops.
-
-// inside the buffer, legal manipulations are done on the buffer
-
-// once the view has been inserted into the DOM, legal manipulations
-// are done on the DOM element.
-
-View.reopenClass({
-  /**
-    Global views hash
-
-    @property views
-    @static
-    @type Object
-    @private
-  */
-  views: {}
-});
-
-export default View;
-
-export { ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, ClassNamesSupport };

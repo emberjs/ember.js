@@ -3,11 +3,13 @@
 @submodule ember-runtime
 */
 
-import { deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { Mixin } from 'ember-metal/mixin';
-import { Freezable } from 'ember-runtime/mixins/freezable';
-import EmberError from 'ember-metal/error';
+import {
+  deprecate,
+  get,
+  Mixin,
+  Error as EmberError
+} from 'ember-metal';
+import { Freezable } from './freezable';
 
 /**
   Implements some standard methods for copying an object. Add this mixin to

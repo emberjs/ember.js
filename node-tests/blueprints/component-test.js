@@ -10,6 +10,8 @@ var setupPodConfig = blueprintHelpers.setupPodConfig;
 var chai = require('ember-cli-blueprint-test-helpers/chai');
 var expect = chai.expect;
 
+var generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+
 describe('Acceptance: ember generate component', function() {
   setupTestHooks(this);
 
@@ -791,9 +793,10 @@ describe('Acceptance: ember generate component', function() {
 
     return emberNew()
       .then(() => modifyPackages([
-        {name: 'ember-cli-qunit', delete: true},
-        {name: 'ember-cli-mocha', dev: true}
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
       ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.11.0'))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/integration/components/x-foo-test.js'))
           .to.contain("import { describeComponent, it } from 'ember-mocha';")
@@ -810,13 +813,55 @@ describe('Acceptance: ember generate component', function() {
 
     return emberNew()
       .then(() => modifyPackages([
-        {name: 'ember-cli-qunit', delete: true},
-        {name: 'ember-cli-mocha', dev: true}
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
       ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.11.0'))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/unit/components/x-foo-test.js'))
           .to.contain("import { describeComponent, it } from 'ember-mocha';")
           .to.contain("describeComponent('x-foo', 'Unit | Component | x foo")
+          .to.contain("unit: true");
+      }));
+  });
+
+  it('component-test x-foo for mocha v0.12+', function() {
+    var args = ['component-test', 'x-foo'];
+
+    return emberNew()
+      .then(() => modifyPackages([
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.12.0'))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/integration/components/x-foo-test.js'))
+          .to.contain("import { describe, it } from 'mocha';")
+          .to.contain("import { setupComponentTest } from 'ember-mocha';")
+          .to.contain("import hbs from 'htmlbars-inline-precompile';")
+          .to.contain("describe('Integration | Component | x foo'")
+          .to.contain("setupComponentTest('x-foo',")
+          .to.contain("integration: true")
+          .to.contain("{{x-foo}}")
+          .to.contain("{{#x-foo}}");
+      }));
+  });
+
+  it('component-test x-foo --unit for mocha v0.12+', function() {
+    var args = ['component-test', 'x-foo', '--unit'];
+
+    return emberNew()
+      .then(() => modifyPackages([
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.12.0'))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/unit/components/x-foo-test.js'))
+          .to.contain("import { describe, it } from 'mocha';")
+          .to.contain("import { setupComponentTest } from 'ember-mocha';")
+          .to.contain("describe('Unit | Component | x foo'")
+          .to.contain("setupComponentTest('x-foo',")
           .to.contain("unit: true");
       }));
   });

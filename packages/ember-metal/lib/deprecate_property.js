@@ -3,9 +3,9 @@
 @submodule ember-metal
 */
 
-import { deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
+import { deprecate } from './debug';
+import { get } from './property_get';
+import { set } from './property_set';
 
 
 /**

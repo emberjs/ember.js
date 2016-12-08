@@ -6,12 +6,12 @@
 @module ember
 @submodule ember-metal
 */
-import { assert } from 'ember-metal/debug';
-import { applyStr } from 'ember-metal/utils';
-import { meta as metaFor, peekMeta } from 'ember-metal/meta';
-import { deprecate } from 'ember-metal/debug';
+import { applyStr } from 'ember-utils';
+import { assert } from './debug';
+import { meta as metaFor, peekMeta } from './meta';
+import { deprecate } from './debug';
 
-import { ONCE, SUSPENDED } from 'ember-metal/meta_listeners';
+import { ONCE, SUSPENDED } from './meta_listeners';
 
 
 /*
@@ -37,7 +37,7 @@ function indexOf(array, target, method) {
   // hashes are added to the end of the event array
   // so it makes sense to start searching at the end
   // of the array and search in reverse
-  for (let i = array.length - 3 ; i >=0; i -= 3) {
+  for (let i = array.length - 3; i >= 0; i -= 3) {
     if (target === array[i] && method === array[i + 1]) {
       index = i;
       break;
@@ -82,17 +82,15 @@ export function accumulateListeners(obj, eventName, otherActions) {
 export function addListener(obj, eventName, target, method, once) {
   assert('You must pass at least an object and event name to Ember.addListener', !!obj && !!eventName);
 
-  if (eventName === 'didInitAttrs' && obj.isComponent) {
-    deprecate(
-      `[DEPRECATED] didInitAttrs called in ${obj.toString()}.`,
-      false,
-      {
-        id: 'ember-views.did-init-attrs',
-        until: '3.0.0',
-        url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
-      }
-    );
-  }
+  deprecate(
+    `didInitAttrs called in ${obj && obj.toString && obj.toString()}.`,
+    eventName !== 'didInitAttrs',
+    {
+      id: 'ember-views.did-init-attrs',
+      until: '3.0.0',
+      url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+    }
+  );
 
   if (!method && 'function' === typeof target) {
     method = target;

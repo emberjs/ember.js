@@ -1,8 +1,10 @@
-import { assert } from 'ember-metal/debug';
-import run from 'ember-metal/run_loop';
-import { uuid } from 'ember-metal/utils';
-import { isSimpleClick } from 'ember-views/system/utils';
-import ActionManager from 'ember-views/system/action_manager';
+import { uuid } from 'ember-utils';
+import { assert, run, flaggedInstrument } from 'ember-metal';
+import {
+  isSimpleClick,
+  ActionManager
+} from 'ember-views';
+import { INVOKE } from '../helpers/action';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
@@ -51,6 +53,10 @@ export let ActionHelper = {
     let { actionId } = actionState;
     let actions = ActionManager.registeredActions[actionId];
 
+    if (!actions) {
+      return;
+    }
+
     let index = actions.indexOf(actionState);
 
     if (index !== -1) {
@@ -64,12 +70,15 @@ export let ActionHelper = {
 };
 
 export class ActionState {
-  constructor(actionId, actionName, actionArgs, namedArgs, implicitTarget) {
+  constructor(element, actionId, actionName, actionArgs, namedArgs, positionalArgs, implicitTarget, dom) {
+    this.element = element;
     this.actionId = actionId;
     this.actionName = actionName;
     this.actionArgs = actionArgs;
     this.namedArgs = namedArgs;
+    this.positional = positionalArgs;
     this.implicitTarget = implicitTarget;
+    this.dom = dom;
     this.eventName = this.getEventName();
   }
 
@@ -120,19 +129,36 @@ export class ActionState {
     }
 
     run(() => {
-      if (typeof actionName === 'function') {
-        actionName.apply(target, this.getActionArgs());
+      let args = this.getActionArgs();
+      let payload = {
+        args,
+        target
+      };
+      if (typeof actionName[INVOKE] === 'function') {
+        flaggedInstrument('interaction.ember-action', payload, () => {
+          actionName[INVOKE].apply(actionName, args);
+        });
         return;
       }
+      if (typeof actionName === 'function') {
+        flaggedInstrument('interaction.ember-action', payload, () => {
+          actionName.apply(target, args);
+        });
+        return;
+      }
+      payload.name = actionName;
       if (target.send) {
-        target.send.apply(target, [actionName, ...this.getActionArgs()]);
+        flaggedInstrument('interaction.ember-action', payload, () => {
+          target.send.apply(target, [actionName, ...args]);
+        });
       } else {
         assert(
           `The action '${actionName}' did not exist on ${target}`,
           typeof target[actionName] === 'function'
         );
-
-        target[actionName].apply(target, this.getActionArgs());
+        flaggedInstrument('interaction.ember-action', payload, () => {
+          target[actionName].apply(target, args);
+        });
       }
     });
   }
@@ -144,22 +170,30 @@ export class ActionState {
 
 // implements ModifierManager<Action>
 export default class ActionModifierManager {
-  install(element, args, dom, dynamicScope) {
+  create(element, args, dynamicScope, dom) {
     let { named, positional } = args;
     let implicitTarget;
     let actionName;
-
+    let actionNameRef;
     if (positional.length > 1) {
       implicitTarget = positional.at(0);
-      actionName = positional.at(1).value();
-    }
+      actionNameRef = positional.at(1);
 
-    assert(
-      'You specified a quoteless path to the {{action}} helper ' +
-      'which did not resolve to an action name (a string). ' +
-      'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).',
-      typeof actionName === 'string' || typeof actionName === 'function'
-    );
+      if (actionNameRef[INVOKE]) {
+        actionName = actionNameRef;
+      } else {
+        let actionLabel = actionNameRef._propertyKey;
+        actionName = actionNameRef.value();
+
+        assert(
+          'You specified a quoteless path, `' + actionLabel + '`, to the ' +
+            '{{action}} helper which did not resolve to an action name (a ' +
+            'string). Perhaps you meant to use a quoted actionName? (e.g. ' +
+            '{{action "' + actionLabel + '"}}).',
+          typeof actionName === 'string' || typeof actionName === 'function'
+        );
+      }
+    }
 
     let actionArgs = [];
     // The first two arguments are (1) `this` and (2) the action name.
@@ -169,25 +203,40 @@ export default class ActionModifierManager {
     }
 
     let actionId = uuid();
-    let actionState = new ActionState(actionId, actionName, actionArgs, named, implicitTarget);
+    return new ActionState(
+      element,
+      actionId,
+      actionName,
+      actionArgs,
+      named,
+      positional,
+      implicitTarget,
+      dom
+    );
+  }
+
+  install(actionState) {
+    let { dom, element, actionId } = actionState;
 
     ActionHelper.registerAction(actionState);
 
     dom.setAttribute(element, 'data-ember-action', '');
     dom.setAttribute(element, `data-ember-action-${actionId}`, actionId);
-
-    return actionState;
   }
 
-  update(modifier, element, args, dom, dynamicScope) {
-    let { positional } = args;
+  update(actionState) {
+    let { positional } = actionState;
 
-    modifier.actionName = positional.at(1).value();
-    modifier.eventName = modifier.getEventName();
+    let actionNameRef = positional.at(1);
+
+    if (!actionNameRef[INVOKE]) {
+      actionState.actionName = actionNameRef.value();
+    }
+    actionState.eventName = actionState.getEventName();
 
     // Not sure if this is needed? If we mutate the actionState is that good enough?
-    ActionHelper.unregisterAction(modifier);
-    ActionHelper.registerAction(modifier);
+    ActionHelper.unregisterAction(actionState);
+    ActionHelper.registerAction(actionState);
   }
 
   getDestructor(modifier) {

@@ -1,7 +1,7 @@
-import Controller from 'ember-runtime/controllers/controller';
+import { Controller } from 'ember-runtime';
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
-import Route from 'ember-routing/system/route';
+import { Route } from 'ember-routing';
 
 moduleFor('Application test: rendering', class extends ApplicationTest {
 
@@ -241,6 +241,29 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
+  ['@test it should have the right controller in scope for the route template']() {
+    this.router.map(function() {
+      this.route('a');
+      this.route('b');
+    });
+
+    this.registerController('a', Controller.extend({
+      value: 'a'
+    }));
+
+    this.registerController('b', Controller.extend({
+      value: 'b'
+    }));
+
+    this.registerTemplate('a', '{{value}}');
+    this.registerTemplate('b', '{{value}}');
+
+    return this.visit('/a').then(() => {
+      this.assertText('a');
+      return this.visit('/b');
+    }).then(() => this.assertText('b'));
+  }
+
   ['@test it should update correctly when the controller changes'](assert) {
     this.router.map(function() {
       this.route('color', { path: '/colors/:color' });
@@ -327,6 +350,26 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     this.registerTemplate('index', '{{#if true}}1{{/if}}<div>2</div>');
     return this.visit('/').then(() => {
       this.assertComponentElement(this.firstChild, { content: '1<div>2</div>' });
+    });
+  }
+
+  ['@test it allows a transition during route activate'](assert) {
+    this.router.map(function() {
+      this.route('a');
+    });
+
+    this.registerRoute('index', Route.extend({
+      activate() {
+        this.transitionTo('a');
+      }
+    }));
+
+    this.registerTemplate('a', 'Hello from A!');
+
+    return this.visit('/').then(() => {
+      this.assertComponentElement(this.firstChild, {
+        content: `Hello from A!`
+      });
     });
   }
 });

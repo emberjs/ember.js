@@ -1,4 +1,4 @@
-import EmberError from 'ember-metal/error';
+import EmberError from '../error';
 
 QUnit.module('Ember Error Throwing');
 

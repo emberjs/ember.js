@@ -1,13 +1,14 @@
+import { assign } from 'ember-utils';
 import { applyMixins } from './abstract-test-case';
 import { RenderingTest } from './test-case';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import assign from 'ember-metal/assign';
-import EmberObject from 'ember-runtime/system/object';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
-import { A as emberA } from 'ember-runtime/system/native_array';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
-import { removeAt } from 'ember-runtime/mixins/mutable_array';
+import { get, set } from 'ember-metal';
+import {
+  Object as EmberObject,
+  ObjectProxy,
+  A as emberA,
+  ArrayProxy,
+  removeAt
+} from 'ember-runtime';
 import { Component } from './helpers';
 
 class AbstractConditionalsTest extends RenderingTest {
@@ -44,7 +45,7 @@ class AbstractGenerator {
   }
 
   /* abstract */
-  generate(value) {
+  generate(value, idx) {
     throw new Error('Not implemented: `generate`');
   }
 
@@ -62,9 +63,9 @@ class AbstractGenerator {
 
 export class TruthyGenerator extends AbstractGenerator {
 
-  generate(value) {
+  generate(value, idx) {
     return {
-      [`@test it should consider ${JSON.stringify(value)} truthy`]() {
+      [`@test it should consider ${JSON.stringify(value)} truthy [${idx}]`]() {
         this.renderValues(value);
 
         this.assertText('T1');
@@ -88,9 +89,9 @@ export class TruthyGenerator extends AbstractGenerator {
 
 export class FalsyGenerator extends AbstractGenerator {
 
-  generate(value) {
+  generate(value, idx) {
     return {
-      [`@test it should consider ${JSON.stringify(value)} falsy`]() {
+      [`@test it should consider ${JSON.stringify(value)} falsy [${idx}]`]() {
         this.renderValues(value);
 
         this.assertText('F1');
@@ -114,9 +115,9 @@ export class FalsyGenerator extends AbstractGenerator {
 
 export class StableTruthyGenerator extends TruthyGenerator {
 
-  generate(value) {
-    return assign(super.generate(value), {
-      [`@test it maintains DOM stability when condition changes from ${value} to another truthy value and back`]() {
+  generate(value, idx) {
+    return assign(super.generate(value, idx), {
+      [`@test it maintains DOM stability when condition changes from ${value} to another truthy value and back [${idx}]`]() {
         this.renderValues(value);
 
         this.assertText('T1');
@@ -142,9 +143,9 @@ export class StableTruthyGenerator extends TruthyGenerator {
 
 export class StableFalsyGenerator extends FalsyGenerator {
 
-  generate(value) {
+  generate(value, idx) {
     return assign(super.generate(value), {
-      [`@test it maintains DOM stability when condition changes from ${value} to another falsy value and back`]() {
+      [`@test it maintains DOM stability when condition changes from ${value} to another falsy value and back [${idx}]`]() {
         this.renderValues(value);
 
         this.assertText('F1');
@@ -170,12 +171,12 @@ export class StableFalsyGenerator extends FalsyGenerator {
 
 class ObjectProxyGenerator extends AbstractGenerator {
 
-  generate(value) {
+  generate(value, idx) {
     // This is inconsistent with our usual to-bool policy, but the current proxy implementation
     // simply uses !!content to determine truthiness
     if (value) {
       return {
-        [`@test it should consider an object proxy with \`${JSON.stringify(value)}\` truthy`]() {
+        [`@test it should consider an object proxy with \`${JSON.stringify(value)}\` truthy [${idx}]`]() {
           this.renderValues(ObjectProxy.create({ content: value }));
 
           this.assertText('T1');
@@ -195,7 +196,7 @@ class ObjectProxyGenerator extends AbstractGenerator {
       };
     } else {
       return {
-        [`@test it should consider an object proxy with \`${JSON.stringify(value)}\` falsy`]() {
+        [`@test it should consider an object proxy with \`${JSON.stringify(value)}\` falsy [${idx}]`]() {
           this.renderValues(ObjectProxy.create({ content: value }));
 
           this.assertText('F1');
@@ -395,11 +396,7 @@ export const ArrayTestCases = {
 
 };
 
-// Testing behaviors shared across the "toggling" conditionals, i.e. {{#if}},
-// {{#unless}}, {{#with}}, (if) and (unless)
-export class TogglingConditionalsTest extends BasicConditionalsTest {}
-
-applyMixins(TogglingConditionalsTest,
+const IfUnlessWithTestCases = [
 
   new StableTruthyGenerator([
     true,
@@ -416,6 +413,8 @@ applyMixins(TogglingConditionalsTest,
     EmberObject.create(),
     EmberObject.create({ foo: 'bar' }),
     ObjectProxy.create({ content: true }),
+    Object,
+    function() {},
     /*jshint -W053 */
     new String('hello'),
     new String(''),
@@ -474,7 +473,11 @@ applyMixins(TogglingConditionalsTest,
 
   ArrayTestCases
 
-);
+];
+
+// Testing behaviors shared across the "toggling" conditionals, i.e. {{#if}},
+// {{#unless}}, {{#with}}, {{#each}}, {{#each-in}}, (if) and (unless)
+export class TogglingConditionalsTest extends BasicConditionalsTest {}
 
 // Testing behaviors shared across the (if) and (unless) helpers
 export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
@@ -492,6 +495,44 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
     let wrappedTemplate = this.wrapperFor(templates);
     this.render(wrappedTemplate, context);
+  }
+
+  ['@test it has access to the outer scope from both templates']() {
+    let template = this.wrapperFor([
+      this.templateFor({ cond: 'cond1', truthy: 'truthy', falsy: 'falsy' }),
+      this.templateFor({ cond: 'cond2', truthy: 'truthy', falsy: 'falsy' })
+    ]);
+
+    this.render(template, { cond1: this.truthyValue, cond2: this.falsyValue, truthy: 'YES', falsy: 'NO' });
+
+    this.assertText('YESNO');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('YESNO');
+
+    this.runTask(() => {
+      set(this.context, 'truthy', 'YASS');
+      set(this.context, 'falsy', 'NOPE');
+    });
+
+    this.assertText('YASSNOPE');
+
+    this.runTask(() => {
+      set(this.context, 'cond1', this.falsyValue);
+      set(this.context, 'cond2', this.truthyValue);
+    });
+
+    this.assertText('NOPEYASS');
+
+    this.runTask(() => {
+      set(this.context, 'truthy', 'YES');
+      set(this.context, 'falsy', 'NO');
+      set(this.context, 'cond1', this.truthyValue);
+      set(this.context, 'cond2', this.falsyValue);
+    });
+
+    this.assertText('YESNO');
   }
 
   ['@test it does not update when the unbound helper is used']() {
@@ -527,7 +568,7 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     this.assertText('T1F2');
   }
 
-  ['@glimmer evaluation should be lazy'](assert) {
+  ['@test evaluation should be lazy'](assert) {
     let truthyEvaluated;
     let falsyEvaluated;
 
@@ -582,7 +623,13 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
 }
 
-export const SyntaxCondtionalTestHelpers = {
+export class IfUnlessHelperTest extends TogglingHelperConditionalsTest {}
+
+applyMixins(IfUnlessHelperTest, ...IfUnlessWithTestCases);
+
+// Testing behaviors shared across the "toggling" syntatical constructs,
+// i.e. {{#if}}, {{#unless}}, {{#with}}, {{#each}} and {{#each-in}}
+export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
   renderValues(...values) {
     let templates = [];
@@ -597,12 +644,6 @@ export const SyntaxCondtionalTestHelpers = {
     this.render(wrappedTemplate, assign({ t: 'T', f: 'F' }, context));
   }
 
-};
-
-// Testing behaviors shared across the "toggling" syntatical constructs,
-// i.e. {{#if}}, {{#unless}} and {{#with}}
-export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
-
   ['@test it does not update when the unbound helper is used']() {
     let template = `${
       this.templateFor({ cond: '(unbound cond1)', truthy: 'T1', falsy: 'F1' })
@@ -610,7 +651,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
       this.templateFor({ cond: '(unbound cond2)', truthy: 'T2', falsy: 'F2' })
     }`;
 
-    this.render(template, { cond1: true, cond2: this.falsyValue });
+    this.render(template, { cond1: this.truthyValue, cond2: this.falsyValue });
 
     this.assertText('T1F2');
 
@@ -637,9 +678,48 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.assertText('T1F2');
   }
 
+  ['@test it has access to the outer scope from both templates']() {
+    let template = this.wrapperFor([
+      this.templateFor({ cond: 'cond1', truthy: '{{truthy}}', falsy: '{{falsy}}' }),
+      this.templateFor({ cond: 'cond2', truthy: '{{truthy}}', falsy: '{{falsy}}' })
+    ]);
+
+    this.render(template, { cond1: this.truthyValue, cond2: this.falsyValue, truthy: 'YES', falsy: 'NO' });
+
+    this.assertText('YESNO');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('YESNO');
+
+    this.runTask(() => {
+      set(this.context, 'truthy', 'YASS');
+      set(this.context, 'falsy', 'NOPE');
+    });
+
+    this.assertText('YASSNOPE');
+
+    this.runTask(() => {
+      set(this.context, 'cond1', this.falsyValue);
+      set(this.context, 'cond2', this.truthyValue);
+    });
+
+    this.assertText('NOPEYASS');
+
+    this.runTask(() => {
+      set(this.context, 'truthy', 'YES');
+      set(this.context, 'falsy', 'NO');
+      set(this.context, 'cond1', this.truthyValue);
+      set(this.context, 'cond2', this.falsyValue);
+    });
+
+    this.assertText('YESNO');
+  }
+
   ['@test it updates correctly when enclosing another conditional']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
-    let template = this.wrappedTemplateFor({ cond: 'outer', truthy: '{{#if inner}}T-inner{{else}}F-inner{{/if}}', falsy: 'F-outer' });
+    let inner = this.templateFor({ cond: 'inner', truthy: 'T-inner', falsy: 'F-inner' });
+    let template = this.wrappedTemplateFor({ cond: 'outer', truthy: inner, falsy: 'F-outer' });
 
     this.render(template, { outer: this.truthyValue, inner: this.truthyValue });
 
@@ -822,4 +902,6 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
 }
 
-applyMixins(TogglingSyntaxConditionalsTest, SyntaxCondtionalTestHelpers);
+export class IfUnlessWithSyntaxTest extends TogglingSyntaxConditionalsTest {}
+
+applyMixins(IfUnlessWithSyntaxTest, ...IfUnlessWithTestCases);

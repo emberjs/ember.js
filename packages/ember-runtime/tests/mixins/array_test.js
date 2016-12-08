@@ -1,19 +1,21 @@
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
-import { addObserver } from 'ember-metal/observer';
-import { observer as emberObserver } from 'ember-metal/mixin';
-import { computed } from 'ember-metal/computed';
-import { testBoth } from 'ember-metal/tests/props_helper';
-import { ArrayTests } from 'ember-runtime/tests/suites/array';
-import EmberObject from 'ember-runtime/system/object';
+import {
+  get,
+  set,
+  addObserver,
+  observer as emberObserver,
+  computed
+} from 'ember-metal';
+import { testBoth } from 'internal-test-helpers';
+import { ArrayTests } from '../suites/array';
+import EmberObject from '../../system/object';
 import EmberArray, {
   addArrayObserver,
   removeArrayObserver,
   arrayContentDidChange,
   arrayContentWillChange,
   objectAt
-} from 'ember-runtime/mixins/array';
-import { A as emberA } from 'ember-runtime/system/native_array';
+} from '../../mixins/array';
+import { A as emberA } from '../../system/native_array';
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
@@ -348,6 +350,14 @@ QUnit.test('adding an object should notify (@each.isDone)', function() {
   }));
 
   equal(called, 1, 'calls observer when object is pushed');
+});
+
+QUnit.test('@each is readOnly', function() {
+  expect(1);
+
+  throws(function() {
+    set(ary, '@each', 'foo');
+  }, /Cannot set read-only property "@each"/);
 });
 
 QUnit.test('using @each to observe arrays that does not return objects raise error', function() {

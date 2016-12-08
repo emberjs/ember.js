@@ -1,10 +1,8 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
-import { set } from 'ember-metal/property_set';
-import { get } from 'ember-metal/property_get';
-import setProperties from 'ember-metal/set_properties';
+import { set, get, setProperties } from 'ember-metal';
 import { Component } from '../../utils/helpers';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { A as emberA } from 'ember-runtime';
 
 moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
 
@@ -95,7 +93,7 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
     this.assertHTML('<a href="BORK"></a>');
   }
 
-  ['@htmlbars should property escape unsafe hrefs']() {
+  ['@test should property escape unsafe hrefs']() {
     let unsafeUrls = emberA([
       {
         name: 'Bob',
@@ -144,7 +142,7 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
     this.assertHTML(escapedHtml);
   }
 
-  ['@htmlbars helper form updates on parent re-render']() {
+  ['@skip helper form updates on parent re-render']() {
     this.render(`{{unbound foo}}`, {
       foo: 'BORK'
     });
@@ -276,12 +274,12 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
 
     this.render(strip`
       {{unbound (surround model.prefix model.value "bar")}} {{surround model.prefix model.value "bar"}} {{unbound (surround "bar" model.value model.suffix)}} {{surround "bar" model.value model.suffix}}`, {
-      model: {
-        prefix: 'before',
-        value: 'core',
-        suffix: 'after'
-      }
-    });
+        model: {
+          prefix: 'before',
+          value: 'core',
+          suffix: 'after'
+        }
+      });
 
     this.assertText('before-core-bar before-core-bar bar-core-after bar-core-after');
 
@@ -515,12 +513,12 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
         {{#if model.bar}}true{{/if}}
         {{#unless model.bar}}false{{/unless}}
       {{/unless}}`, {
-      model: {
-        foo: true,
-        notfoo: false,
-        bar: true
-      }
-    });
+        model: {
+          foo: true,
+          notfoo: false,
+          bar: true
+        }
+      });
 
     this.assertText('truetrue');
 

@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { classify } from 'ember-runtime/system/string';
+import { classify } from '../../../system/string';
 
 QUnit.module('EmberStringUtils.classify');
 

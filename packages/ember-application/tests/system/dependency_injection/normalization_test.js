@@ -1,5 +1,5 @@
-import run from 'ember-metal/run_loop';
-import Application from 'ember-application/system/application';
+import { run } from 'ember-metal';
+import Application from '../../../system/application';
 
 let application, registry;
 

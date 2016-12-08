@@ -1,6 +1,6 @@
-import EmberError from 'ember-metal/error';
-import { get } from 'ember-metal/property_get';
-import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+import {
+  Error as EmberError
+} from 'ember-metal';
 
 /**
 @module ember
@@ -16,32 +16,12 @@ export default {
     return undefined;
   },
 
-  getElement() {
-    return null;
-  },
-
-  legacyPropertyDidChange(view, key) {
-    let attrs = view.attrs;
-    if (attrs && key in attrs) {
-      let possibleCell = attrs[key];
-
-      if (possibleCell && possibleCell[MUTABLE_CELL]) {
-        let value = get(view, key);
-        if (value === possibleCell.value) { return; }
-        possibleCell.update(value);
-      }
-    }
-  },
-
   // Handle events from `Ember.EventDispatcher`
   handleEvent() {
     return true; // continue event propagation
   },
 
-  cleanup() { } ,
-  destroyElement() { },
+  rerender() { },
 
-  rerender(view) {
-    view.renderer.ensureViewNotRendering(view);
-  }
+  destroy() { }
 };

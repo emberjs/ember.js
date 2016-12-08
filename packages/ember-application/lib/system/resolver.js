@@ -3,21 +3,15 @@
 @submodule ember-application
 */
 
-import { assert, info } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
+import { dictionary } from 'ember-utils';
+import { assert, info, get } from 'ember-metal';
 import {
-  classify,
-  capitalize,
-  dasherize,
-  decamelize
-} from 'ember-runtime/system/string';
-import EmberObject from 'ember-runtime/system/object';
-import Namespace from 'ember-runtime/system/namespace';
-import validateType from 'ember-application/utils/validate-type';
-import dictionary from 'ember-metal/dictionary';
-import {
-  get as getTemplate
-} from 'ember-templates/template_registry';
+  String as StringUtils,
+  Object as EmberObject,
+  Namespace
+} from 'ember-runtime';
+import validateType from '../utils/validate-type';
+import { getTemplate } from 'ember-glimmer';
 
 export const Resolver = EmberObject.extend({
   /*
@@ -225,7 +219,7 @@ export default EmberObject.extend({
     if (type !== 'template' && lastSlashIndex !== -1) {
       let parts = name.split('/');
       name = parts[parts.length - 1];
-      let namespaceName = capitalize(parts.slice(0, -1).join('.'));
+      let namespaceName = StringUtils.capitalize(parts.slice(0, -1).join('.'));
       root = Namespace.byName(namespaceName);
 
       assert(
@@ -235,7 +229,7 @@ export default EmberObject.extend({
       );
     }
 
-    let resolveMethodName = fullNameWithoutType === 'main' ? 'Main' : classify(type);
+    let resolveMethodName = fullNameWithoutType === 'main' ? 'Main' : StringUtils.classify(type);
 
     if (!(name && type)) {
       throw new TypeError('Invalid fullName: `' + fullName + '`, must be of the form `type:name` ');
@@ -270,10 +264,10 @@ export default EmberObject.extend({
       return 'template at ' + parsedName.fullNameWithoutType.replace(/\./g, '/');
     }
 
-    description = parsedName.root + '.' + classify(parsedName.name).replace(/\./g, '');
+    description = parsedName.root + '.' + StringUtils.classify(parsedName.name).replace(/\./g, '');
 
     if (parsedName.type !== 'model') {
-      description += classify(parsedName.type);
+      description += StringUtils.classify(parsedName.type);
     }
 
     return description;
@@ -309,7 +303,7 @@ export default EmberObject.extend({
   resolveTemplate(parsedName) {
     let templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
 
-    return getTemplate(templateName) || getTemplate(decamelize(templateName));
+    return getTemplate(templateName) || getTemplate(StringUtils.decamelize(templateName));
   },
 
   /**
@@ -359,7 +353,7 @@ export default EmberObject.extend({
     @protected
   */
   resolveModel(parsedName) {
-    let className = classify(parsedName.name);
+    let className = StringUtils.classify(parsedName.name);
     let factory = get(parsedName.root, className);
 
     return factory;
@@ -386,13 +380,13 @@ export default EmberObject.extend({
     @protected
   */
   resolveOther(parsedName) {
-    let className = classify(parsedName.name) + classify(parsedName.type);
+    let className = StringUtils.classify(parsedName.name) + StringUtils.classify(parsedName.type);
     let factory = get(parsedName.root, className);
     return factory;
   },
 
   resolveMain(parsedName) {
-    let className = classify(parsedName.type);
+    let className = StringUtils.classify(parsedName.type);
     return get(parsedName.root, className);
   },
 
@@ -429,7 +423,7 @@ export default EmberObject.extend({
    */
   knownForType(type) {
     let namespace = get(this, 'namespace');
-    let suffix = classify(type);
+    let suffix = StringUtils.classify(type);
     let typeRegexp = new RegExp(`${suffix}$`);
 
     let known = dictionary(null);
@@ -462,9 +456,9 @@ export default EmberObject.extend({
    */
 
   translateToContainerFullname(type, name) {
-    let suffix = classify(type);
+    let suffix = StringUtils.classify(type);
     let namePrefix = name.slice(0, suffix.length * -1);
-    let dasherizedName = dasherize(namePrefix);
+    let dasherizedName = StringUtils.dasherize(namePrefix);
 
     return `${type}:${dasherizedName}`;
   }
