@@ -1,3 +1,5 @@
+/* global console */
+
 import { ENV } from 'ember-environment';
 import isEnabled from './features';
 
