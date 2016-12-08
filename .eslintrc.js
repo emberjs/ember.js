@@ -29,6 +29,9 @@ module.exports = {
     'WeakMap': true,
   },
   rules: {
+    'require-yuidoc-access': 'error',
+    'no-const-outside-module-scope': 'error',
+
     // temporarily disabled
     'no-unused-vars': 'off',
     'comma-dangle': 'off',
