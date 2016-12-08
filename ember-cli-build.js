@@ -91,7 +91,10 @@ module.exports = function(_options) {
 
   var tsTree = find(packages, {
     include: ['**/*.ts'],
-    exclude: ['**/*.d.ts']
+    exclude: [
+      '**/*.d.ts',
+      '*/node_modules/**'
+    ]
   });
 
   var tsLintTree = new TSLint(tsTree, {
