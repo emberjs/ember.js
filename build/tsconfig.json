@@ -12,7 +12,6 @@
 
     // Compilation Configuration
     "target": "es6",
-    "module": "es6",
     "inlineSourceMap": true,
     "declaration": true
   }
