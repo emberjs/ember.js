@@ -8,7 +8,8 @@
   "scripts": {
     "build": "build/build.js",
     "prepublish": "npm run build",
-    "test": "node -e 'require(\".\")' && mocha --opts tests/mocha.opts"
+    "test": "npm run build && node -e 'require(\".\")' && mocha --opts tests/mocha.opts",
+    "test:watch": "mocha --opts tests/mocha.opts --watch"
   },
   "files": [
     "dist"
