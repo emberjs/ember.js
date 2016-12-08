@@ -1,0 +1,3 @@
+--compilers .ts:ts-node/register
+--ui tomdale-mocha-qunit-ui
+tests/**/*.ts

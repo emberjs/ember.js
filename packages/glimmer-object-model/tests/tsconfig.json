@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json",
+
+  "compilerOptions": {
+    // Compilation Configuration
+    "module": "commonjs",
+    "target": "es6",
+    "inlineSourceMap": true,
+    "declaration": true,
+    "rootDir": "."
+  },
+
+  "include": [
+    "*-test.ts"
+  ]
+}

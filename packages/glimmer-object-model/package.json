@@ -1,0 +1,27 @@
+{
+  "name": "glimmer-object-model",
+  "version": "0.5.2",
+  "main": "dist/commonjs/index.js",
+  "module": "dist/modules/index.js",
+  "jsnext:main": "dist/modules/index.js",
+  "typings": "dist/commonjs/index.d.ts",
+  "scripts": {
+    "build": "build/build.js",
+    "prepublish": "npm run build",
+    "test": "node -e 'require(\".\")' && mocha --opts tests/mocha.opts"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "glimmer-util": "0.5.2",
+    "glimmer-reference": "0.5.2"
+  },
+  "devDependencies": {
+    "@types/qunit": "^2.0.31",
+    "mocha": "^3.2.0",
+    "tomdale-mocha-qunit-ui": "^0.1.2",
+    "ts-node": "^1.7.0",
+    "typescript": "^2.1.4"
+  }
+}
