@@ -19,3 +19,7 @@ export {
   DOMChanges,
   isHTMLSafe
 } from 'ember-glimmer';
+
+export {
+  copy
+} from 'ember-runtime';

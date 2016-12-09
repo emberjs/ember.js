@@ -1,4 +1,4 @@
-import { SafeString, htmlSafe, isHTMLSafe } from './helpers';
+import { SafeString, htmlSafe, isHTMLSafe, copy } from './helpers';
 import { TestCase } from './abstract-test-case';
 import { moduleFor } from './test-case';
 
@@ -21,6 +21,14 @@ moduleFor('SafeString', class extends TestCase {
 
     this.assert.equal(safeString instanceof SafeString, true, 'should be a SafeString');
     this.assert.equal(safeString.toString(), '', 'should return an empty string');
+  }
+
+  ['@test htmlSafe should be copyable']() {
+    let safeString = htmlSafe('Copyable');
+    let safeStringCopy = copy(safeString);
+
+    this.assert.equal(safeStringCopy instanceof SafeString, true, 'should be a SafeString');
+    this.assert.equal(safeString.toString(), 'Copyable', 'should return correct string');
   }
 });
 
