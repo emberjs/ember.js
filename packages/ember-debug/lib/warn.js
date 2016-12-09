@@ -39,6 +39,7 @@ export let missingOptionsIdDeprecation = 'When calling `Ember.warn` you must pro
     The `id` should be namespaced by dots, e.g. "ember-debug.feature-flag-with-features-stripped"
   @for Ember
   @public
+  @since 1.0.0
 */
 export default function warn(message, test, options) {
   if (!options) {

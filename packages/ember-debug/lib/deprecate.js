@@ -115,6 +115,7 @@ export let missingOptionsUntilDeprecation = 'When calling `Ember.deprecate` you 
     emberjs.com website.
   @for Ember
   @public
+  @since 1.0.0
 */
 export default function deprecate(message, test, options) {
   if (!options || (!options.id && !options.until)) {
