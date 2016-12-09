@@ -278,6 +278,28 @@ export function mapBy(dependentKey, propertyKey) {
   hamster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
   ```
 
+  You can also use `@each.property` in your dependent key, the callback will still use the underlying array:
+
+  ```javascript
+  let Hamster = Ember.Object.extend({
+    remainingChores: Ember.computed.filter('chores.@each.done', function(chore, index, array) {
+      return !chore.get('done');
+    })
+  });
+
+  let hamster = Hamster.create({
+    chores: Ember.A([
+      Ember.Object.create({ name: 'cook', done: true }),
+      Ember.Object.create({ name: 'clean', done: true }),
+      Ember.Object.create({ name: 'write more unit tests', done: false })
+    ])
+  });
+  hamster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
+  hamster.get('chores').objectAt(2).set('done', true);
+  hamster.get('remainingChores'); // []
+  ```
+
+
   @method filter
   @for Ember.computed
   @param {String} dependentKey
