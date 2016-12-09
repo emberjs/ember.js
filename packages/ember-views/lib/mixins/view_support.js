@@ -122,7 +122,9 @@ export default Mixin.create({
   */
   $(sel) {
     assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
-    return this._currentState.$(this, sel);
+    if (this.element) {
+      return sel ? jQuery(sel, this.element) : jQuery(this.element);
+    }
   },
 
   /**
