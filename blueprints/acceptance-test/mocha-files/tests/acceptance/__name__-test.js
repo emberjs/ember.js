@@ -17,7 +17,7 @@ describe('<%= friendlyTestName %>', function() {
   it('can visit /<%= dasherizedModuleName %>', function() {
     visit('/<%= dasherizedModuleName %>');
 
-    andThen(function() {
+    return andThen(() => {
       expect(currentURL()).to.equal('/<%= dasherizedModuleName %>');
     });
   });
