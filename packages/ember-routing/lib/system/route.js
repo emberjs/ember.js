@@ -1855,9 +1855,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     // ...
 
     Router.map(function() {
-        this.route('post', { path: '/post/:post_id' }, function() {
-          this.route('comments', { resetNamespace: true });
-        });
+      this.route('post', { path: '/posts/:post_id' }, function() {
+        this.route('comments');
+      });
     });
 
     export default Router;
@@ -1867,9 +1867,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     import Ember from 'ember';
 
     export default Ember.Route.extend({
-        afterModel() {
-          this.set('post', this.modelFor('post'));
-        }
+      model() {
+        let post = this.modelFor('post');
+        return post.get('comments');
+      }
     });
     ```
 
