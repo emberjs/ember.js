@@ -1,18 +1,32 @@
 import GlimmerInstance from './object';
-import Meta from './meta';
+import Meta, { ClassMeta } from './meta';
+import { Computed } from './blueprint';
 
 import {
+  CURRENT_TAG,
+  CONSTANT_TAG,
   VersionedPathReference,
   RevisionTag,
-  CURRENT_TAG,
-  CONSTANT_TAG
+  combine
 } from 'glimmer-reference';
 
-import { Opaque } from 'glimmer-util';
+import { Opaque, Option } from 'glimmer-util';
 
 const META = new WeakMap();
+const CLASS_META = new WeakMap();
 
-export function meta(object: GlimmerInstance) {
+export function classMeta(object: GlimmerInstance): ClassMeta {
+  let m = CLASS_META.get(object);
+
+  if (m === undefined) {
+    m = new ClassMeta();
+    CLASS_META.set(object, m);
+  }
+
+  return m;
+}
+
+export function meta(object: GlimmerInstance): Meta {
   let m = META.get(object);
 
   if (m === undefined) {
@@ -56,11 +70,23 @@ export class VersionedObjectReference implements VersionedPathReference<Opaque> 
   value() {
     let { parent, key } = this;
     let parentObject = this.parent.value() as GlimmerInstance;
-    this.tag = meta(parentObject).tag(key);
+
+    let computed = classMeta(Object.getPrototypeOf(parentObject)).getComputed(key);
+    let tags: RevisionTag[] = [meta(parentObject).tag(key)];
+
+    if (computed) {
+      tags.push(...computed.dependentKeys.map(key => path(this, key).tag));
+    }
+
+    this.tag = combine(tags);
     return parentObject[key];
   }
 
   get(key: PropertyKey): VersionedPathReference<Opaque> {
     return new VersionedObjectReference(this, key);
   }
+}
+
+function path(parent: VersionedPathReference<Opaque>, key: string): VersionedPathReference<Opaque> {
+  return key.split('.').reduce((ref, part) => ref.get(part), parent);
 }

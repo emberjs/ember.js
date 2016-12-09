@@ -1,4 +1,6 @@
 import { Opaque } from 'glimmer-util';
+import { classMeta } from './reference';
+import GlimmerObject from './object';
 
 export abstract class Blueprint {
   constructor(protected key: PropertyKey) {}
@@ -41,7 +43,7 @@ export abstract class GlimmerDescriptor {
 }
 
 export class Computed<T> extends GlimmerDescriptor {
-  constructor(private dependentKeys: string[], private accessor: Accessor<T>) {
+  constructor(public dependentKeys: string[], private accessor: Accessor<T>) {
     super();
   }
 
@@ -49,7 +51,13 @@ export class Computed<T> extends GlimmerDescriptor {
     return new ComputedBlueprint(key, this);
   }
 
+  reference(root: GlimmerObject, key: PropertyKey) {
+
+  }
+
   define(home: Object, key: PropertyKey) {
+    classMeta(home).defineComputed(key, this);
+
     ACCESSOR_DESCRIPTOR.get = this.accessor.get;
     ACCESSOR_DESCRIPTOR.set = this.accessor.set;
     Object.defineProperty(home, key, ACCESSOR_DESCRIPTOR);
@@ -62,7 +70,7 @@ export function computed<T>(dep1: string, dep2: string, dep3: string, accessor: 
 export function computed<T>(dep1: string, dep2: string, dep3: string, dep4: string, accessor: Accessor<T>): T;
 
 export function computed(...args: any[]): Opaque {
-  let depKeys: string[] = args.slice(0, -2);
+  let depKeys: string[] = args.slice(0, -1);
   let accessor: Accessor<Opaque> = args[args.length - 1];
 
   return new Computed(depKeys, accessor);
