@@ -50,6 +50,7 @@ import _warn, {
   @param {Boolean} test Must be truthy for the assertion to pass. If
     falsy, an exception will be thrown.
   @public
+  @since 1.0.0
 */
 setDebugFunction('assert', function assert(desc, test) {
   if (!test) {
