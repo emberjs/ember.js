@@ -78,7 +78,7 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
           .to.contain("describe('Acceptance | foo', function() {")
           .to.contain("it('can visit /foo', function() {")
           .to.contain("visit('/foo');")
-          .to.contain("andThen(function() {")
+          .to.contain("return andThen(() => {")
           .to.contain("expect(currentURL()).to.equal('/foo');");
       }));
   });
