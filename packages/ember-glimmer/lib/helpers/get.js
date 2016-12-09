@@ -36,8 +36,8 @@ import {
 
   ```handlebars
   {{get person factName}}
-  <button {{action (mut factName) "height"}}>Show height</button>
-  <button {{action (mut factName) "weight"}}>Show weight</button>
+  <button {{action (action (mut factName)) "height"}}>Show height</button>
+  <button {{action (action (mut factName)) "weight"}}>Show weight</button>
   ```
 
   The `{{get}}` helper can also respect mutable values itself. For example:
