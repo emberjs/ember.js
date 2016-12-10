@@ -2,7 +2,7 @@ import Bounds, { Cursor, DestroyableBounds, clear } from './bounds';
 
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 
-import { Destroyable, Stack, LinkedList, LinkedListNode, assert } from 'glimmer-util';
+import { Option, Destroyable, Stack, LinkedList, LinkedListNode, assert, expect } from 'glimmer-util';
 
 import { Environment } from './environment';
 
@@ -19,11 +19,11 @@ import {
 import * as Simple from './dom/interfaces';
 
 export interface FirstNode {
-  firstNode(): Simple.Node;
+  firstNode(): Option<Simple.Node>;
 }
 
 export interface LastNode {
-  lastNode(): Simple.Node;
+  lastNode(): Option<Simple.Node>;
 }
 
 class First {
@@ -61,11 +61,11 @@ export class Fragment implements Bounds {
     return this.bounds.parentElement();
   }
 
-  firstNode(): Simple.Node {
+  firstNode(): Option<Simple.Node> {
     return this.bounds.firstNode();
   }
 
-  lastNode(): Simple.Node {
+  lastNode(): Option<Simple.Node> {
     return this.bounds.lastNode();
   }
 
@@ -75,21 +75,21 @@ export class Fragment implements Bounds {
 }
 
 export class ElementStack implements Cursor {
-  public nextSibling: Simple.Node;
+  public nextSibling: Option<Simple.Node>;
   public dom: DOMTreeConstruction;
   public updateOperations: DOMChanges;
-  public constructing: Simple.Element = null;
-  public operations: ElementOperations = null;
+  public constructing: Option<Simple.Element> = null;
+  public operations: Option<ElementOperations> = null;
   public element: Simple.Element;
   public env: Environment;
 
   private elementStack = new Stack<Simple.Element>();
-  private nextSiblingStack = new Stack<Simple.Node>();
+  private nextSiblingStack = new Stack<Option<Simple.Node>>();
   private blockStack = new Stack<Tracker>();
 
   private defaultOperations: ElementOperations;
 
-  static forInitialRender(env: Environment, parentNode: Simple.Element, nextSibling: Simple.Node) {
+  static forInitialRender(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
     return new ElementStack(env, parentNode, nextSibling);
   }
 
@@ -102,7 +102,7 @@ export class ElementStack implements Cursor {
     return stack;
   }
 
-  constructor(env: Environment, parentNode: Simple.Element, nextSibling: Simple.Node) {
+  constructor(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
     this.env = env;
     this.dom = env.getAppendOperations();
     this.updateOperations = env.getDOM();
@@ -113,6 +113,14 @@ export class ElementStack implements Cursor {
 
     this.elementStack.push(this.element);
     this.nextSiblingStack.push(this.nextSibling);
+  }
+
+  expectConstructing(method: string): Simple.Element {
+    return expect(this.constructing, `${method} should only be called while constructing an element`);
+  }
+
+  expectOperations(method: string): ElementOperations {
+    return expect(this.operations, `${method} should only be called while constructing an element`);
   }
 
   block(): Tracker {
@@ -188,7 +196,7 @@ export class ElementStack implements Cursor {
 
   flushElement() {
     let parent  = this.element;
-    let element = this.constructing;
+    let element = expect(this.constructing, `flushElement should only be called when constructing an element`);
 
     this.dom.insertBefore(parent, element, this.nextSibling);
 
@@ -244,19 +252,19 @@ export class ElementStack implements Cursor {
   }
 
   setStaticAttribute(name: string, value: string) {
-    this.operations.addStaticAttribute(this.constructing, name, value);
+    this.expectOperations('setStaticAttribute').addStaticAttribute(this.expectConstructing('setStaticAttribute'), name, value);
   }
 
   setStaticAttributeNS(namespace: string, name: string, value: string) {
-    this.operations.addStaticAttributeNS(this.constructing, namespace, name, value);
+    this.expectOperations('setStaticAttributeNS').addStaticAttributeNS(this.expectConstructing('setStaticAttributeNS'), namespace, name, value);
   }
 
   setDynamicAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
-    this.operations.addDynamicAttribute(this.constructing, name, reference, isTrusting);
+    this.expectOperations('setDynamicAttribute').addDynamicAttribute(this.expectConstructing('setDynamicAttribute'), name, reference, isTrusting);
   }
 
   setDynamicAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
-    this.operations.addDynamicAttributeNS(this.constructing, namespace, name, reference, isTrusting);
+    this.expectOperations('setDynamicAttributeNS').addDynamicAttributeNS(this.expectConstructing('setDynamicAttributeNS'), namespace, name, reference, isTrusting);
   }
 
   closeElement() {
@@ -275,9 +283,9 @@ export interface Tracker extends DestroyableBounds {
 }
 
 export class SimpleBlockTracker implements Tracker {
-  protected first: FirstNode = null;
-  protected last: LastNode = null;
-  protected destroyables: Destroyable[] = null;
+  protected first: Option<FirstNode> = null;
+  protected last: Option<LastNode> = null;
+  protected destroyables: Option<Destroyable[]> = null;
   protected nesting = 0;
 
   constructor(private parent: Simple.Element){}
@@ -296,11 +304,11 @@ export class SimpleBlockTracker implements Tracker {
     return this.parent;
   }
 
-  firstNode() {
+  firstNode(): Option<Simple.Node> {
     return this.first && this.first.firstNode();
   }
 
-  lastNode() {
+  lastNode(): Option<Simple.Node> {
     return this.last && this.last.lastNode();
   }
 

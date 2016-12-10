@@ -1,4 +1,4 @@
-import { Opaque } from 'glimmer-util';
+import { Opaque, unreachable } from 'glimmer-util';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import * as Simple from './dom/interfaces';
 import { FIX_REIFICATION } from './dom/interfaces';
@@ -9,7 +9,7 @@ export interface SafeString {
 }
 
 export function isSafeString(value: Opaque): value is SafeString {
-  return value && typeof value['toHTML'] === 'function';
+  return !!value && typeof value['toHTML'] === 'function';
 }
 
 export function isNode(value: Opaque): value is Node {
@@ -43,6 +43,8 @@ export function cautiousInsert(dom: DOMTreeConstruction, cursor: Cursor, value: 
   if (isNode(value)) {
     return NodeUpsert.insert(dom, cursor, value);
   }
+
+  throw unreachable();
 }
 
 export function trustingInsert(dom: DOMTreeConstruction, cursor: Cursor, value: TrustingInsertion): Upsert {
@@ -52,6 +54,8 @@ export function trustingInsert(dom: DOMTreeConstruction, cursor: Cursor, value: 
   if (isNode(value)) {
     return NodeUpsert.insert(dom, cursor, value);
   }
+
+  throw unreachable();
 }
 
 class TextUpsert extends Upsert {

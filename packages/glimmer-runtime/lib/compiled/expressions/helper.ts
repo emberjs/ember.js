@@ -4,12 +4,12 @@ import VM from '../../vm/append';
 import { Helper } from '../../environment';
 import SymbolTable from '../../symbol-table';
 import { PathReference } from 'glimmer-reference';
-import { Opaque } from 'glimmer-util';
+import { Opaque, Option } from 'glimmer-util';
 
 export default class CompiledHelper extends CompiledExpression<Opaque> {
   public type = "helper";
 
-  constructor(public name: string[], public helper: Helper, public args: CompiledArgs, public symbolTable: SymbolTable) {
+  constructor(public name: Option<string>[], public helper: Helper, public args: CompiledArgs, public symbolTable: SymbolTable) {
     super();
   }
 

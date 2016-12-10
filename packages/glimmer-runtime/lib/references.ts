@@ -1,27 +1,22 @@
 import { RevisionTag, ConstReference, PathReference, Reference } from 'glimmer-reference';
-import { Opaque } from 'glimmer-util';
+import { Option, Opaque } from 'glimmer-util';
 
 export type Primitive = undefined | null | boolean | number | string;
 
 export class PrimitiveReference<T extends Primitive> extends ConstReference<T> implements PathReference<T> {
-  static create(value: undefined): PrimitiveReference<undefined>;
-  static create(value: null): PrimitiveReference<null>;
-  static create(value: boolean): PrimitiveReference<boolean>;
-  static create(value: number): PrimitiveReference<number>;
-  static create(value: string): PrimitiveReference<string>;
-  static create(value: Primitive): PrimitiveReference<Primitive> {
+  static create<T extends Primitive>(value: T): PrimitiveReference<T> {
     if (value === undefined) {
-      return UNDEFINED_REFERENCE;
+      return UNDEFINED_REFERENCE as PrimitiveReference<T>;
     } else if (value === null) {
-      return NULL_REFERENCE;
+      return NULL_REFERENCE as PrimitiveReference<T>;
     } else if (value === true) {
-      return TRUE_REFERENCE;
+      return TRUE_REFERENCE as PrimitiveReference<T>;
     } else if (value === false) {
-      return FALSE_REFERENCE;
+      return FALSE_REFERENCE as PrimitiveReference<T>;
     } else if (typeof value === 'number') {
-      return new ValueReference(value);
+      return new ValueReference(value as number) as PrimitiveReference<T>;
     } else {
-      return new StringReference(value);
+      return new StringReference(value as string) as any as PrimitiveReference<T>;
     }
   }
 
@@ -35,7 +30,7 @@ export class PrimitiveReference<T extends Primitive> extends ConstReference<T> i
 }
 
 class StringReference extends PrimitiveReference<string> {
-  private lengthReference: PrimitiveReference<number> = null;
+  private lengthReference: Option<PrimitiveReference<number>> = null;
 
   get(key: string): PrimitiveReference<Primitive> {
     if (key === 'length') {

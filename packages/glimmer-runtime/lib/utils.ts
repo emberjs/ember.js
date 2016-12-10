@@ -1,4 +1,4 @@
-import { Dict, dict } from 'glimmer-util';
+import { Option, Dict, dict } from 'glimmer-util';
 
 const HAS_NATIVE_WEAKMAP = (function() {
   // detect if `WeakMap` is even present
@@ -29,7 +29,7 @@ export interface Destroyable {
 export interface Range<T> {
   min(): number;
   max(): number;
-  at(index: number): T;
+  at(index: number): Option<T>;
 }
 
 export class ListRange<T> implements Range<T> {
@@ -45,7 +45,7 @@ export class ListRange<T> implements Range<T> {
     this.end = end;
   }
 
-  at(index: number): T {
+  at(index: number): Option<T> {
     if (index >= this.list.length) return null;
     return this.list[index];
   }

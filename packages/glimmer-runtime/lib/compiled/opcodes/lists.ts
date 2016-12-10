@@ -1,8 +1,9 @@
+import { ListItem } from '../../../../glimmer-reference/lib/iterable';
 import { Opcode, OpcodeJSON } from '../../opcodes';
 import { VM } from '../../vm';
 import { LabelOpcode } from '../../compiled/opcodes/vm';
 import { EvaluatedArgs } from '../expressions/args';
-import { ListSlice, Slice } from 'glimmer-util';
+import { ListSlice, Slice, expect } from 'glimmer-util';
 import { RevisionTag, Reference, ConstReference, ReferenceIterator, IterationArtifacts } from 'glimmer-reference';
 
 class IterablePresenceReference implements Reference<boolean> {
@@ -24,7 +25,7 @@ export class PutIteratorOpcode extends Opcode {
 
   evaluate(vm: VM) {
     let listRef = vm.frame.getOperand();
-    let args = vm.frame.getArgs();
+    let args = expect(vm.frame.getArgs(), 'PutIteratorOpcode expects a populated args register');
     let iterable = vm.env.iterableFor(listRef, args);
     let iterator = new ReferenceIterator(iterable);
 
@@ -83,7 +84,8 @@ export class EnterWithKeyOpcode extends Opcode {
   }
 
   evaluate(vm: VM) {
-    vm.enterWithKey(vm.frame.getKey(), this.slice);
+    let key = expect(vm.frame.getKey(), 'EnterWithKeyOpcode expects a populated key register');
+    vm.enterWithKey(key, this.slice);
   }
 
   toJSON(): OpcodeJSON {
@@ -117,7 +119,7 @@ export class NextIterOpcode extends Opcode {
   }
 
   evaluate(vm: VM) {
-    let item = vm.frame.getIterator().next();
+    let item: ListItem = vm.frame.getIterator().next();
 
     if (item) {
       vm.frame.setCondition(TRUE_REF);

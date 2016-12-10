@@ -1,6 +1,6 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementStack } from '../builder';
-import { Destroyable, Stack, LinkedList, ListSlice, LOGGER, Opaque, assert } from 'glimmer-util';
+import { Option, Destroyable, Stack, LinkedList, ListSlice, LOGGER, Opaque, assert, expect } from 'glimmer-util';
 import { PathReference, combineSlice } from 'glimmer-reference';
 import { InlineBlock, PartialBlock, CompiledBlock } from '../compiled/blocks';
 import { CompiledExpression } from '../compiled/expressions';
@@ -15,7 +15,7 @@ import { CapturedFrame, FrameStack } from './frame';
 
 export interface PublicVM {
   env: Environment;
-  getArgs(): EvaluatedArgs;
+  getArgs(): Option<EvaluatedArgs>;
   dynamicScope(): DynamicScope;
   getSelf(): PathReference<Opaque>;
   newDestroyable(d: Destroyable);
@@ -170,7 +170,7 @@ export default class VM implements PublicVM {
 
   pushFrame(
     block: CompiledBlock,
-    args?: EvaluatedArgs,
+    args?: Option<EvaluatedArgs>,
     callerScope?: Scope
   ) {
     this.frame.push(block.ops);
@@ -204,7 +204,7 @@ export default class VM implements PublicVM {
   }
 
   pushCallerScope() {
-    this.scopeStack.push(this.scope().getCallerScope());
+    this.scopeStack.push(expect(this.scope().getCallerScope(), 'pushCallerScope is called when a caller scope is present'));
   }
 
   pushDynamicScope(): DynamicScope {
@@ -241,7 +241,7 @@ export default class VM implements PublicVM {
     return this.scope().getSymbol(symbol);
   }
 
-  getArgs(): EvaluatedArgs {
+  getArgs(): Option<EvaluatedArgs> {
     return this.frame.getArgs();
   }
 
@@ -263,7 +263,7 @@ export default class VM implements PublicVM {
 
     if (initialize) initialize(this);
 
-    let opcode: Opcode;
+    let opcode: Option<Opcode>;
 
     while (frame.hasOpcodes()) {
       if (opcode = frame.nextStatement()) {
@@ -288,7 +288,7 @@ export default class VM implements PublicVM {
 
   // Make sure you have opcodes that push and pop a scope around this opcode
   // if you need to change the scope.
-  invokeBlock(block: InlineBlock, args: EvaluatedArgs) {
+  invokeBlock(block: InlineBlock, args: Option<EvaluatedArgs>) {
     let compiled = block.compile(this.env);
     this.pushFrame(compiled, args);
   }
@@ -319,9 +319,7 @@ export default class VM implements PublicVM {
   }
 
   bindPositionalArgs(symbols: number[]) {
-    let args = this.frame.getArgs();
-
-    assert(args, "Cannot bind positional args");
+    let args = expect(this.frame.getArgs(), 'bindPositionalArgs assumes a previous setArgs');
 
     let { positional } = args;
 
@@ -333,10 +331,8 @@ export default class VM implements PublicVM {
   }
 
   bindNamedArgs(names: string[], symbols: number[]) {
-    let args = this.frame.getArgs();
+    let args = expect(this.frame.getArgs(), 'bindNamedArgs assumes a previous setArgs');
     let scope = this.scope();
-
-    assert(args, "Cannot bind named args");
 
     let { named } = args;
 
@@ -355,7 +351,7 @@ export default class VM implements PublicVM {
   }
 
   bindPartialArgs(symbol: number) {
-    let args = this.frame.getArgs();
+    let args = expect(this.frame.getArgs(), 'bindPartialArgs assumes a previous setArgs');
     let scope = this.scope();
 
     assert(args, "Cannot bind named args");
@@ -373,7 +369,7 @@ export default class VM implements PublicVM {
   }
 
   bindDynamicScope(names: ReadonlyArray<string>) {
-    let args = this.frame.getArgs();
+    let args = expect(this.frame.getArgs(), 'bindDynamicScope assumes a previous setArgs');
     let scope = this.dynamicScope();
 
     assert(args, "Cannot bind dynamic scope");

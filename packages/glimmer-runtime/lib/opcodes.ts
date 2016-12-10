@@ -1,13 +1,13 @@
-import { Dict, LinkedList, LinkedListNode, Slice, initializeGuid } from 'glimmer-util';
+import { Option, Dict, LinkedList, LinkedListNode, Slice, initializeGuid } from 'glimmer-util';
 import { RevisionTag } from 'glimmer-reference';
 import { VM, UpdatingVM } from './vm';
 
 export interface OpcodeJSON {
-  guid: number;
+  guid: Option<number>;
   type: string;
   deopted?: boolean;
   args?: string[];
-  details?: Dict<string>;
+  details?: Dict<Option<string>>;
   children?: OpcodeJSON[];
 }
 
@@ -15,8 +15,8 @@ export abstract class AbstractOpcode implements LinkedListNode {
   public type: string;
   public _guid: number;
 
-  prev: AbstractOpcode;
-  next: AbstractOpcode;
+  prev: Option<AbstractOpcode>;
+  next: Option<AbstractOpcode>;
 
   constructor() {
     initializeGuid(this);
@@ -28,8 +28,8 @@ export abstract class AbstractOpcode implements LinkedListNode {
 }
 
 export abstract class Opcode extends AbstractOpcode {
-  next: Opcode = null;
-  prev: Opcode = null;
+  next: Option<Opcode> = null;
+  prev: Option<Opcode> = null;
 
   abstract evaluate(vm: VM);
 }
@@ -40,8 +40,8 @@ export type OpSeqBuilder = LinkedList<Opcode>;
 export abstract class UpdatingOpcode extends AbstractOpcode {
   public tag: RevisionTag;
 
-  next: UpdatingOpcode = null;
-  prev: UpdatingOpcode = null;
+  next: Option<UpdatingOpcode> = null;
+  prev: Option<UpdatingOpcode> = null;
 
   abstract evaluate(vm: UpdatingVM);
 }
@@ -63,7 +63,7 @@ export function inspect(opcodes: LinkedList<AbstractOpcode>): string {
 }
 
 function _inspect(opcode: OpcodeJSON, buffer: string[], level: number, index: number) {
-  let indentation = [];
+  let indentation: string[] = [];
 
   for (let i=0; i<level; i++) {
     indentation.push('  ');
@@ -87,7 +87,7 @@ function _inspect(opcode: OpcodeJSON, buffer: string[], level: number, index: nu
           buffer.push(', ');
         }
 
-        buffer.push(keys.map(key => `${key}=${opcode.details[key]}`).join(', '));
+        buffer.push(keys.map(key => `${key}=${opcode.details && opcode.details[key]}`).join(', '));
       }
     }
 

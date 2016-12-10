@@ -1,4 +1,4 @@
-import { LinkedListNode, Slice } from 'glimmer-util';
+import { LinkedListNode, Slice, Option } from 'glimmer-util';
 import { BlockScanner } from './scanner';
 import { Environment } from './environment';
 import { CompiledExpression } from './compiled/expressions';
@@ -23,8 +23,8 @@ export abstract class Statement implements LinkedListNode {
   }
 
   public abstract type: string;
-  public next: Statement = null;
-  public prev: Statement = null;
+  public next: Option<Statement> = null;
+  public prev: Option<Statement> = null;
 
   clone(): this {
     // not type safe but the alternative is extreme boilerplate per
@@ -87,14 +87,14 @@ export type Parameter<T> = Attribute<T> | Argument<T>;
 export abstract class Attribute<T> extends Statement {
   "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   name: string;
-  namespace: string;
+  namespace: Option<string>;
   abstract valueSyntax(): Expression<T>;
 }
 
 export abstract class Argument<T> extends Statement {
   "0f3802314-d747-bbc5-0168-97875185c3rt" = true;
   name: string;
-  namespace: string;
+  namespace: Option<string>;
   abstract valueSyntax(): Expression<T>;
 }
 

@@ -2,7 +2,7 @@ import { Program, Statement as StatementSyntax } from './syntax';
 import buildStatement from './syntax/statements';
 import { EntryPoint, InlineBlock, PartialBlock, Layout } from './compiled/blocks';
 import Environment from './environment';
-import { EMPTY_SLICE, LinkedList, Stack } from 'glimmer-util';
+import { EMPTY_SLICE, Option, LinkedList, Stack } from 'glimmer-util';
 import { SerializedTemplateBlock, TemplateMeta, SerializedBlock, Statement as SerializedStatement } from 'glimmer-wire-format';
 import SymbolTable from './symbol-table';
 
@@ -58,7 +58,7 @@ export class BlockScanner {
   }
 
   scan(): Program {
-    let statement: StatementSyntax;
+    let statement: Option<StatementSyntax>;
 
     while (statement = this.reader.next()) {
       this.addStatement(statement);
@@ -94,7 +94,7 @@ export class BlockScanner {
     this.stack.current.addStatement(statement.scan(this));
   }
 
-  next(): StatementSyntax {
+  next(): Option<StatementSyntax> {
     return this.reader.next();
   }
 }
@@ -116,11 +116,11 @@ class ChildBlockScanner {
 
 class SyntaxReader {
   current: number = 0;
-  last: StatementSyntax = null;
+  last: Option<StatementSyntax> = null;
 
   constructor(private statements: SerializedStatement[], private symbolTable: SymbolTable, private scanner: BlockScanner) {}
 
-  next(): StatementSyntax {
+  next(): Option<StatementSyntax> {
     let last = this.last;
     if (last) {
       this.last = null;

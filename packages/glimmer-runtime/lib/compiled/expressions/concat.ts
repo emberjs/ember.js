@@ -2,14 +2,14 @@ import { CompiledExpression } from '../expressions';
 import { FIXME } from 'glimmer-util';
 import VM from '../../vm/append';
 import { PathReference, CachedReference, RevisionTag, combineTagged } from 'glimmer-reference';
-import { Opaque } from 'glimmer-util';
+import { Option, Opaque } from 'glimmer-util';
 
 export default class CompiledConcat {
   public type = "concat";
 
   constructor(private parts: CompiledExpression<Opaque>[]) {}
 
-  evaluate(vm: VM): CachedReference<string> {
+  evaluate(vm: VM): CachedReference<Option<string>> {
     let parts: PathReference<Opaque>[] = new Array(this.parts.length);
     for (let i = 0; i < this.parts.length; i++) {
       parts[i] = this.parts[i].evaluate(vm);
@@ -22,7 +22,7 @@ export default class CompiledConcat {
   }
 }
 
-class ConcatReference extends CachedReference<string> {
+class ConcatReference extends CachedReference<Option<string>> {
   public tag: RevisionTag;
 
   constructor(private parts: PathReference<Opaque>[]) {
@@ -30,7 +30,7 @@ class ConcatReference extends CachedReference<string> {
     this.tag = combineTagged(parts);
   }
 
-  protected compute(): string {
+  protected compute(): Option<string> {
     let parts = new Array<string>();
 
     for (let i = 0; i < this.parts.length; i++) {

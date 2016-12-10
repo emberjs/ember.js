@@ -1,7 +1,7 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { DestroyableBounds, clear, move as moveBounds } from '../bounds';
 import { ElementStack, Tracker, UpdatableTracker } from '../builder';
-import { LOGGER, Opaque, Stack, LinkedList, Dict, dict } from 'glimmer-util';
+import { TSISSUE, LOGGER, Option, Opaque, Stack, LinkedList, Dict, dict, expect, unwrap } from 'glimmer-util';
 import {
   ConstReference,
   PathReference,
@@ -64,7 +64,7 @@ export default class UpdatingVM {
     this.frameStack.current.goto(op);
   }
 
-  try(ops: UpdatingOpSeq, handler: ExceptionHandler) {
+  try(ops: UpdatingOpSeq, handler: Option<ExceptionHandler>) {
     this.frameStack.push(new UpdatingVMFrame(this, ops, handler));
   }
 
@@ -199,8 +199,13 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     let begin = this.ops.head() as LabelOpcode;
     let end = this.ops.tail() as LabelOpcode;
 
-    json["details"]["begin"] = JSON.stringify(begin.inspect());
-    json["details"]["end"] = JSON.stringify(end.inspect());
+    let details = json["details"];
+    if (!details) {
+      details = json["details"] = {};
+    }
+
+    details["begin"] = JSON.stringify(begin.inspect());
+    details["end"] = JSON.stringify(end.inspect());
 
     return super.toJSON();
   }
@@ -220,8 +225,8 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
 
   insert(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: string) {
     let { map, opcode, updating } = this;
-    let nextSibling: Simple.Node = null;
-    let reference = null;
+    let nextSibling: Option<Simple.Node> = null;
+    let reference: Option<BlockOpcode> = null;
 
     if (before) {
       reference = map[before];
@@ -320,7 +325,7 @@ export class ListBlockOpcode extends BlockOpcode {
       let { dom } = vm;
 
       let marker = dom.createComment('');
-      dom.insertAfter(bounds.parentElement(), marker, bounds.lastNode());
+      dom.insertAfter(bounds.parentElement(), marker, expect(bounds.lastNode(), "can't insert after an empty bounds"));
 
       let target = new ListRevalidationDelegate(this, marker);
       let synchronizer = new IteratorSynchronizer({ target, artifacts });
@@ -334,7 +339,7 @@ export class ListBlockOpcode extends BlockOpcode {
     super.evaluate(vm);
   }
 
-  vmForInsertion(nextSibling: Simple.Node) {
+  vmForInsertion(nextSibling: Option<Simple.Node>) {
     let { env, scope, dynamicScope } = this;
 
     let elementStack = ElementStack.forInitialRender(
@@ -354,23 +359,24 @@ export class ListBlockOpcode extends BlockOpcode {
       return `${JSON.stringify(key)}: ${map[key]._guid}`;
     }).join(", ");
 
-    json["details"]["map"] = `{${inner}}`;
+    let details = json["details"];
+    if (!details) {
+      details = json["details"] = {};
+    }
+
+    details["map"] = `{${inner}}`;
 
     return json;
   }
 }
 
 class UpdatingVMFrame {
-  private vm: UpdatingVM;
-  private ops: UpdatingOpSeq;
   private current: UpdatingOpcode;
-  private exceptionHandler: ExceptionHandler;
 
-  constructor(vm: UpdatingVM, ops: UpdatingOpSeq, handler: ExceptionHandler) {
+  constructor(private vm: UpdatingVM, private ops: UpdatingOpSeq, private exceptionHandler: Option<ExceptionHandler>) {
     this.vm = vm;
     this.ops = ops;
     this.current = ops.head();
-    this.exceptionHandler = handler;
   }
 
   goto(op: UpdatingOpcode) {
@@ -384,6 +390,8 @@ class UpdatingVMFrame {
   }
 
   handleException() {
-    this.exceptionHandler.handleException();
+    if (this.exceptionHandler) {
+      this.exceptionHandler.handleException();
+    }
   }
 }

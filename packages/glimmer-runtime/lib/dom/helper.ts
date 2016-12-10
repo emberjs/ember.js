@@ -13,6 +13,8 @@ import {
 } from '../compat/text-node-merging-fix';
 import * as Simple from './interfaces';
 
+import { Option } from 'glimmer-util';
+
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 // http://www.w3.org/TR/html/syntax.html#html-integration-point
@@ -36,7 +38,7 @@ export const BLACKLIST_TABLE = Object.create(null);
 
 const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/;
 
-let doc = typeof document === 'undefined' ? undefined : document;
+let doc: Option<Document> = typeof document === 'undefined' ? null : document;
 
 export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
@@ -64,7 +66,7 @@ export namespace DOM {
   export type HTMLElement = Simple.HTMLElement;
 
   export class TreeConstruction {
-    protected uselessElement: HTMLElement = null;
+    protected uselessElement: HTMLElement;
     constructor(protected document: Document) {
       this.setupUselessElement();
     }
@@ -118,11 +120,11 @@ export namespace DOM {
       return this.document.createComment(data);
     }
 
-    insertBefore(parent: Element, node: Node, reference: Node) {
+    insertBefore(parent: Element, node: Node, reference: Option<Node>) {
       parent.insertBefore(node, reference);
     }
 
-    insertHTMLBefore(parent: Element, html: string, reference: Node): Bounds {
+    insertHTMLBefore(parent: Element, html: string, reference: Option<Node>): Bounds {
       return insertHTMLBefore(this.uselessElement, parent, reference, html);
     };
   }
@@ -137,8 +139,8 @@ export namespace DOM {
 }
 
 export class DOMChanges {
-  protected namespace: string;
-  private uselessElement: HTMLElement = null;
+  protected namespace: Option<string>;
+  private uselessElement: HTMLElement;
 
   constructor(protected document: HTMLDocument) {
     this.namespace = null;
@@ -215,7 +217,7 @@ export class DOMChanges {
     return textNode;
   }
 
-  insertBefore(element: Simple.Element, node: Simple.Node, reference: Simple.Node) {
+  insertBefore(element: Simple.Element, node: Simple.Node, reference: Option<Simple.Node>) {
     element.insertBefore(node, reference);
   }
 
@@ -224,7 +226,7 @@ export class DOMChanges {
   }
 }
 
-export function insertHTMLBefore(this: void, _useless: Simple.HTMLElement, _parent: Simple.Element, _nextSibling: Simple.Node, html: string): Bounds { // tslint:disable-line
+export function insertHTMLBefore(this: void, _useless: Simple.HTMLElement, _parent: Simple.Element, _nextSibling: Option<Simple.Node>, html: string): Bounds { // tslint:disable-line
   // TypeScript vendored an old version of the DOM spec where `insertAdjacentHTML`
   // only exists on `HTMLElement` but not on `Element`. We actually work with the
   // newer version of the DOM API here (and monkey-patch this method in `./compat`

@@ -3,7 +3,7 @@ import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
 import { EMPTY_ARRAY, EMPTY_DICT } from '../../utils';
 import { PathReference, RevisionTag, combineTagged } from 'glimmer-reference';
-import { Dict, Opaque, assert, dict } from 'glimmer-util';
+import { Option, Dict, Opaque, assert, dict } from 'glimmer-util';
 
 export class CompiledNamedArgs {
   static empty(): CompiledNamedArgs {
@@ -97,7 +97,7 @@ export class EvaluatedNamedArgs {
   constructor(
     public keys: ReadonlyArray<string>,
     public values: ReadonlyArray<PathReference<Opaque>>,
-    private _map: Dict<PathReference<Opaque>> = undefined
+    private _map: Option<Dict<PathReference<Opaque>>> = null
   ) {
     this.tag = combineTagged(values);
     this.length = keys.length;

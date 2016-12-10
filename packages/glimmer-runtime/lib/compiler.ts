@@ -1,4 +1,5 @@
-import { Opaque, Slice, LinkedList } from 'glimmer-util';
+import { EMPTY_SYMBOL_TABLE } from './symbol-table';
+import { Opaque, Slice, LinkedList, Option, Maybe } from 'glimmer-util';
 import { OpSeq, Opcode } from './opcodes';
 
 import { EMPTY_ARRAY } from './utils';
@@ -200,7 +201,7 @@ class EmptyBuilder {
   compile(): CompiledBlock {
     let { env } = this;
 
-    let list = new CompileIntoList(env, null);
+    let list = new CompileIntoList(env, EMPTY_SYMBOL_TABLE);
     return new CompiledBlock(list, 0);
   }
 }
@@ -248,8 +249,11 @@ class WrappedBuilder {
 
     dsl.startLabels();
 
-    if (this.tag.isDynamic) {
-      dsl.putValue(this.tag.dynamicTagName);
+    let dynamicTag = this.tag.getDynamic();
+    let staticTag: Maybe<string>;
+
+    if (dynamicTag) {
+      dsl.putValue(dynamicTag);
       dsl.test('simple');
       dsl.jumpUnless('BODY');
       dsl.openDynamicPrimitiveElement();
@@ -257,9 +261,9 @@ class WrappedBuilder {
       this.attrs['buffer'].forEach(statement => compileStatement(env, statement, dsl, layout));
       dsl.flushElement();
       dsl.label('BODY');
-    } else if (this.tag.isStatic) {
+    } else if (staticTag = this.tag.getStatic()) {
       let tag = this.tag.staticTagName;
-      dsl.openPrimitiveElement(tag);
+      dsl.openPrimitiveElement(staticTag);
       dsl.didCreateElement();
       this.attrs['buffer'].forEach(statement => compileStatement(env, statement, dsl, layout));
       dsl.flushElement();
@@ -269,13 +273,13 @@ class WrappedBuilder {
 
     layout.program.forEachNode(statement => compileStatement(env, statement, dsl, layout));
 
-    if (this.tag.isDynamic) {
-      dsl.putValue(this.tag.dynamicTagName);
+    if (dynamicTag) {
+      dsl.putValue(dynamicTag);
       dsl.test('simple');
       dsl.jumpUnless('END');
       dsl.closeElement();
       dsl.label('END');
-    } else if (this.tag.isStatic) {
+    } else if (staticTag) {
       dsl.closeElement();
     }
 
@@ -334,10 +338,22 @@ function isOpenElement(syntax: StatementSyntax): syntax is OpenElement {
 }
 
 class ComponentTagBuilder implements Component.ComponentTagBuilder {
-  public isDynamic = null;
-  public isStatic = null;
-  public staticTagName: string = null;
-  public dynamicTagName: Expression<string> = null;
+  public isDynamic: Option<boolean> = null;
+  public isStatic: Option<boolean> = null;
+  public staticTagName: Option<string> = null;
+  public dynamicTagName: Option<Expression<string>> = null;
+
+  getDynamic(): Maybe<Expression<string>> {
+    if (this.isDynamic) {
+      return this.dynamicTagName;
+    }
+  }
+
+  getStatic(): Maybe<string> {
+    if (this.isStatic) {
+      return this.staticTagName;
+    }
+  }
 
   static(tagName: string) {
     this.isStatic = true;

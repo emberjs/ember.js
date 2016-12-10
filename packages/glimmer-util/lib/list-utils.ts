@@ -1,15 +1,17 @@
+import { Option } from './platform-utils';
+
 export interface Destroyable {
   destroy();
 }
 
 export interface LinkedListNode {
-  next: LinkedListNode;
-  prev: LinkedListNode;
+  next: Option<LinkedListNode>;
+  prev: Option<LinkedListNode>;
 }
 
 export class ListNode<T> implements LinkedListNode {
-  public next: ListNode<T> = null;
-  public prev: ListNode<T> = null;
+  public next: Option<ListNode<T>> = null;
+  public prev: Option<ListNode<T>> = null;
   public value: T;
 
   constructor(value: T) {
@@ -108,7 +110,7 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
     return false;
   }
 
-  insertBefore(node: T, reference: T = null): T {
+  insertBefore(node: T, reference: Option<T> = null): T {
     if (reference === null) return this.append(node);
 
     if (reference.prev) reference.prev.next = node;

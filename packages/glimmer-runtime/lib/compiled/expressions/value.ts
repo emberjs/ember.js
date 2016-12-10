@@ -8,7 +8,7 @@ export default class CompiledValue<T extends Primitive> extends CompiledExpressi
 
   constructor(value: T) {
     super();
-    this.reference = PrimitiveReference.create(value as any);
+    this.reference = PrimitiveReference.create(value);
   }
 
   evaluate(vm: VM): PrimitiveReference<T> {
