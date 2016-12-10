@@ -6,7 +6,7 @@ import * as lists from './lists';
 import * as vm from './vm';
 import * as Syntax from '../../syntax/core';
 
-import { Stack, Dict, Opaque, dict } from 'glimmer-util';
+import { Option, Stack, Dict, Opaque, dict } from 'glimmer-util';
 import { StatementCompilationBuffer, CompilesInto } from '../../syntax';
 import { Opcode, OpSeq } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
@@ -362,7 +362,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
   // TODO
   // come back to this
-  block(args: Syntax.Args, callback: BlockCallback) {
+  block(args: Option<Syntax.Args>, callback: BlockCallback) {
     if (args) this.putArgs(args);
 
     this.startLabels();

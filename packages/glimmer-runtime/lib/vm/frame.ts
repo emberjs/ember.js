@@ -1,5 +1,6 @@
 import { Scope } from '../environment';
 import { Reference, PathReference, ReferenceIterator } from 'glimmer-reference';
+import { TRUST, Option, unwrap, expect } from 'glimmer-util';
 import { InlineBlock } from '../compiled/blocks';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { Opcode, OpSeq } from '../opcodes';
@@ -8,29 +9,29 @@ import { Component, ComponentManager } from '../component/interfaces';
 
 export class CapturedFrame {
   constructor(
-    private operand: PathReference<any>,
-    private args: EvaluatedArgs,
-    private condition: Reference<boolean>
+    private operand: Option<PathReference<any>>,
+    private args: Option<EvaluatedArgs>,
+    private condition: Option<Reference<boolean>>
   ) {}
 }
 
 class Frame {
   ops: OpSeq;
   op: Opcode;
-  operand: PathReference<any> = null;
+  operand: Option<PathReference<any>> = null;
   immediate: any = null;
-  args: EvaluatedArgs = null;
-  callerScope: Scope = null;
-  blocks: Blocks = null;
-  condition: Reference<boolean> = null;
-  iterator: ReferenceIterator = null;
-  key: string = null;
+  args: Option<EvaluatedArgs> = null;
+  callerScope: Option<Scope> = null;
+  blocks: Option<Blocks> = null;
+  condition: Option<Reference<boolean>> = null;
+  iterator: Option<ReferenceIterator> = null;
+  key: Option<string> = null;
 
   constructor(
     ops: OpSeq,
     public component: Component = null,
-    public manager: ComponentManager<Component> = null,
-    public shadow: ReadonlyArray<string> = null
+    public manager: Option<ComponentManager<Component>> = null,
+    public shadow: Option<ReadonlyArray<string>> = null
   ) {
     this.ops = ops;
     this.op = ops.head();
@@ -48,19 +49,23 @@ class Frame {
 }
 
 export interface Blocks {
-  default: InlineBlock;
-  inverse: InlineBlock;
+  default: Option<InlineBlock>;
+  inverse: Option<InlineBlock>;
 }
 
 export class FrameStack {
   private frames: Frame[] = [];
-  private frame: number = undefined;
+  private frame: Option<number> = null;
 
-  push(ops: OpSeq, component: Component = null, manager: ComponentManager<Component> = null, shadow: ReadonlyArray<string> = null) {
-    let frame = (this.frame === undefined) ? (this.frame = 0) : ++this.frame;
+  private get currentFrame(): Frame {
+    return this.frames[unwrap(this.frame)];
+  }
+
+  push(ops: OpSeq, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<ReadonlyArray<string>> = null) {
+    let frame = (this.frame === null) ? (this.frame = 0) : ++this.frame;
 
     if (this.frames.length <= frame) {
-      this.frames.push(null);
+      this.frames.push(null as TRUST<Frame, 'the null is replaced on the next line'>);
     }
 
     this.frames[frame] = new Frame(ops, component, manager, shadow);
@@ -68,105 +73,107 @@ export class FrameStack {
 
   pop() {
     let { frames, frame } = this;
-    frames[frame] = null;
-    this.frame = frame === 0 ? undefined : frame - 1;
+    frames[expect(frame, 'only pop after pushing')] = null as TRUST<Frame, "this frame won't be accessed anymore">;
+    this.frame = frame === 0 ? null : frame - 1;
   }
 
   capture(): CapturedFrame {
-    return this.frames[this.frame].capture();
+    return this.currentFrame.capture();
   }
 
   restore(frame: CapturedFrame) {
-    this.frames[this.frame].restore(frame);
+    this.currentFrame.restore(frame);
   }
 
   getOps(): OpSeq {
-    return this.frames[this.frame].ops;
+    return this.currentFrame.ops;
   }
 
   getCurrent(): Opcode {
-    return this.frames[this.frame].op;
+    return this.currentFrame.op;
   }
 
   setCurrent(op: Opcode): Opcode {
-    return this.frames[this.frame].op = op;
+    return this.currentFrame.op = op;
   }
 
   getOperand<T>(): PathReference<T> {
-    return this.frames[this.frame].operand;
+    return unwrap(this.currentFrame.operand);
   }
 
   setOperand<T>(operand: PathReference<T>): PathReference<T> {
-    return this.frames[this.frame].operand = operand;
+    return this.currentFrame.operand = operand;
   }
 
   getImmediate<T>(): T {
-    return this.frames[this.frame].immediate;
+    return this.currentFrame.immediate;
   }
 
   setImmediate<T>(value: T): T {
-    return this.frames[this.frame].immediate = value;
+    return this.currentFrame.immediate = value;
   }
 
-  getArgs(): EvaluatedArgs {
-    return this.frames[this.frame].args;
+  // FIXME: These options are required in practice by the existing code, but
+  // figure out why.
+
+  getArgs(): Option<EvaluatedArgs> {
+    return this.currentFrame.args;
   }
 
   setArgs(args: EvaluatedArgs): EvaluatedArgs {
-    let frame = this.frames[this.frame];
-    return frame.args = args;
+    return this.currentFrame.args = args;
   }
 
   getCondition(): Reference<boolean> {
-    return this.frames[this.frame].condition;
+    return unwrap(this.currentFrame.condition);
   }
 
   setCondition(condition: Reference<boolean>): Reference<boolean> {
-    return this.frames[this.frame].condition = condition;
+    return this.currentFrame.condition = condition;
   }
 
   getIterator(): ReferenceIterator {
-    return this.frames[this.frame].iterator;
+    return unwrap(this.currentFrame.iterator);
   }
 
   setIterator(iterator: ReferenceIterator): ReferenceIterator {
-    return this.frames[this.frame].iterator = iterator;
+    return this.currentFrame.iterator = iterator;
   }
 
-  getKey(): string {
-    return this.frames[this.frame].key;
+  getKey(): Option<string> {
+    return this.currentFrame.key;
   }
 
   setKey(key: string): string {
-    return this.frames[this.frame].key = key;
+    return this.currentFrame.key = key;
   }
 
   getBlocks(): Blocks {
-    return this.frames[this.frame].blocks;
+    return unwrap(this.currentFrame.blocks);
   }
 
   setBlocks(blocks: Blocks): Blocks {
-    return this.frames[this.frame].blocks = blocks;
+    return this.currentFrame.blocks = blocks;
   }
 
   getCallerScope(): Scope {
-    return this.frames[this.frame].callerScope;
+    return unwrap(this.currentFrame.callerScope);
   }
 
   setCallerScope(callerScope: Scope): Scope {
-    return this.frames[this.frame].callerScope = callerScope;
+    return this.currentFrame.callerScope = callerScope;
   }
 
   getComponent(): Component {
-    return this.frames[this.frame].component;
+    return unwrap(this.currentFrame.component);
   }
 
   getManager(): ComponentManager<Component> {
-    return this.frames[this.frame].manager;
+    return unwrap(this.currentFrame.manager);
   }
 
-  getShadow(): ReadonlyArray<string> {
-    return this.frames[this.frame].shadow;
+  getShadow(): Option<ReadonlyArray<string>> {
+    return this.currentFrame.shadow;
   }
 
   goto(op: LabelOpcode) {
@@ -174,11 +181,11 @@ export class FrameStack {
   }
 
   hasOpcodes(): boolean {
-    return this.frame !== undefined;
+    return this.frame !== null;
   }
 
-  nextStatement(): Opcode {
-    let op = this.frames[this.frame].op;
+  nextStatement(): Option<Opcode> {
+    let op = this.frames[unwrap(this.frame)].op;
     let ops = this.getOps();
 
     if (op) {

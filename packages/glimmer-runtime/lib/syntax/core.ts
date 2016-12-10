@@ -80,7 +80,7 @@ import { Environment } from '../environment';
 
 import { EMPTY_ARRAY } from '../utils';
 
-import { Opaque } from 'glimmer-util';
+import { Opaque, Option, Maybe, expect } from 'glimmer-util';
 
 import {
   OpenPrimitiveElementOpcode,
@@ -253,7 +253,7 @@ export class StaticArg extends ArgumentSyntax<string> {
     return new StaticArg(name, value as string);
   }
 
-  static build(name: string, value: string, namespace: string=null): StaticArg {
+  static build(name: string, value: string, namespace: Option<string> = null): StaticArg {
     return new this(name, value);
   }
 
@@ -288,7 +288,7 @@ export class DynamicArg extends ArgumentSyntax<Opaque> {
   constructor(
     public name: string,
     public value: ExpressionSyntax<Opaque>,
-    public namespace: string = null
+    public namespace: Option<string> = null
   ) {
     super();
   }
@@ -313,7 +313,7 @@ export class TrustingAttr {
     );
   }
 
-  static build(name: string, value: ExpressionSyntax<string>, isTrusting: boolean, namespace: string=null): DynamicAttr {
+  static build(name: string, value: ExpressionSyntax<string>, isTrusting: boolean, namespace: Option<string> = null): DynamicAttr {
     return new DynamicAttr(name, value, namespace, isTrusting);
   }
 
@@ -329,7 +329,7 @@ export class StaticAttr extends AttributeSyntax<string> {
     return new StaticAttr(name, value as string, namespace);
   }
 
-  static build(name: string, value: string, namespace: string=null): StaticAttr {
+  static build(name: string, value: string, namespace: Option<string> = null): StaticAttr {
     return new this(name, value, namespace);
   }
 
@@ -338,7 +338,7 @@ export class StaticAttr extends AttributeSyntax<string> {
   constructor(
     public name: string,
     public value: string,
-    public namespace: string
+    public namespace: Option<string>
   ) {
     super();
   }
@@ -365,15 +365,15 @@ export class DynamicAttr extends AttributeSyntax<string> {
     );
   }
 
-  static build(name: string, value: ExpressionSyntax<string>, isTrusting = false, namespace: string=null): DynamicAttr {
+  static build(name: string, value: ExpressionSyntax<string>, isTrusting = false, namespace: Option<string> = null): DynamicAttr {
     return new this(name, value, namespace, isTrusting);
   }
 
   constructor(
     public name: string,
     public value: ExpressionSyntax<string>,
-    public namespace: string = undefined,
-    public isTrusting?: boolean,
+    public namespace: Option<string> = null,
+    public isTrusting?: Maybe<boolean>,
   ) {
     super();
   }
@@ -382,7 +382,7 @@ export class DynamicAttr extends AttributeSyntax<string> {
     let {namespace, value} = this;
     compiler.append(new PutValueOpcode(value.compile(compiler, env, symbolTable)));
     if (namespace) {
-      compiler.append(new DynamicAttrNSOpcode(this.name, this.namespace, this.isTrusting));
+      compiler.append(new DynamicAttrNSOpcode(this.name, namespace, this.isTrusting));
     } else {
       compiler.append(new DynamicAttrOpcode(this.name, this.isTrusting));
     }
@@ -524,19 +524,19 @@ export class OpenElement extends StatementSyntax {
     let argValues: ExpressionSyntax<Opaque>[] = [];
 
     while (!(current instanceof FlushElement)) {
-      if (current[MODIFIER_SYNTAX]) {
+      if (current && current[MODIFIER_SYNTAX]) {
         throw new Error(`Compile Error: Element modifiers are not allowed in components`);
       }
 
-      let param = <ParameterSyntax<Opaque>>current;
+      let param = current as ParameterSyntax<Opaque>;
 
-      if (current[ATTRIBUTE_SYNTAX]) {
+      if (param[ATTRIBUTE_SYNTAX]) {
         attrs.push(param.name);
 
         // REMOVE ME: attributes should not be treated as args
         argKeys.push(param.name);
         argValues.push(param.valueSyntax());
-      } else if (current[ARGUMENT_SYNTAX]) {
+      } else if (param[ARGUMENT_SYNTAX]) {
         argKeys.push(param.name);
         argValues.push(param.valueSyntax());
       } else {
@@ -558,7 +558,7 @@ export class OpenElement extends StatementSyntax {
         break;
       }
 
-      scanner.addStatement(current);
+      scanner.addStatement(expect(current, 'when scanning tag contents, the next scanned production cannot be null'));
 
       if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
         nesting++;
@@ -710,14 +710,14 @@ export class CloseBlockOpcode extends Opcode {
   }
 }
 
-export class Value<T extends SerializedExpressions.Value> extends ExpressionSyntax<T> {
+export class Value<T extends SerializedExpressions.Value | undefined> extends ExpressionSyntax<T> {
   public type = "value";
 
   static fromSpec<U extends SerializedExpressions.Value>(value: U): Value<U> {
     return new Value(value);
   }
 
-  static build<U extends SerializedExpressions.Value>(value: U): Value<U> {
+  static build<U extends SerializedExpressions.Value | undefined>(value: U): Value<U> {
     return new this(value);
   }
 
@@ -733,6 +733,8 @@ export class Value<T extends SerializedExpressions.Value> extends ExpressionSynt
     return new CompiledValue<T>(this.value);
   }
 }
+
+export const UNDEFINED_SYNTAX = Value.build(undefined);
 
 export class GetArgument extends ExpressionSyntax<Opaque> {
   type = "get-argument";
@@ -777,7 +779,7 @@ export class Ref extends ExpressionSyntax<Opaque> {
   type = "ref";
 
   static build(path: string): Ref {
-    let parts = path.split('.');
+    let parts: Option<string>[] = path.split('.');
 
     if (parts[0] === 'this') {
       parts[0] = null;
@@ -786,7 +788,7 @@ export class Ref extends ExpressionSyntax<Opaque> {
     return new this(parts);
   }
 
-  constructor(public parts: string[]) {
+  constructor(public parts: Option<string>[]) {
     super();
   }
 
@@ -796,16 +798,16 @@ export class Ref extends ExpressionSyntax<Opaque> {
 
     if (head === null) { // {{this.foo}}
       let inner = new CompiledSelf();
-      let path = parts.slice(1);
+      let path = parts.slice(1) as string[];
       return CompiledLookup.create(inner, path);
     } else if (lookup.hasLocalSymbol(head)) {
       let symbol = lookup.getLocalSymbol(head);
-      let path = parts.slice(1);
+      let path = parts.slice(1) as string[];
       let inner = new CompiledSymbol(symbol, head);
       return CompiledLookup.create(inner, path);
     } else {
       let inner = new CompiledSelf();
-      return CompiledLookup.create(inner, parts);
+      return CompiledLookup.create(inner, parts as string[]);
     }
   }
 }
@@ -850,6 +852,10 @@ export class Unknown extends ExpressionSyntax<any> {
 
   compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<Opaque> {
     let { ref } = this;
+
+    if (ref.parts.some(p => p === null)) {
+      throw new Error('hi');
+    }
 
     if (env.hasHelper(ref.parts, symbolTable)) {
       return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), CompiledArgs.empty(), symbolTable);
@@ -978,7 +984,7 @@ export class Concat {
 export class Blocks {
   public type = "blocks";
 
-  static fromSpec(_default: InlineBlock, inverse: InlineBlock = null): Blocks {
+  static fromSpec(_default: InlineBlock, inverse: Option<InlineBlock> = null): Blocks {
     return new Blocks(_default, inverse);
   }
 
@@ -986,10 +992,10 @@ export class Blocks {
     return EMPTY_BLOCKS;
   }
 
-  public default: InlineBlock;
-  public inverse: InlineBlock;
+  public default: Option<InlineBlock>;
+  public inverse: Option<InlineBlock>;
 
-  constructor(_default: InlineBlock, inverse: InlineBlock = null) {
+  constructor(_default: Option<InlineBlock>, inverse: Option<InlineBlock> = null) {
     this.default = _default;
     this.inverse = inverse;
   }
@@ -1008,7 +1014,7 @@ export class Args {
     return EMPTY_ARGS;
   }
 
-  static fromSpec(positional: SerializedCore.Params, named: SerializedCore.Hash, blocks: Blocks): Args {
+  static fromSpec(positional: SerializedCore.Params, named: Option<SerializedCore.Hash>, blocks: Blocks): Args {
     return new Args(PositionalArgs.fromSpec(positional), NamedArgs.fromSpec(named), blocks);
   }
 
@@ -1090,7 +1096,7 @@ const EMPTY_POSITIONAL_ARGS = new (class extends PositionalArgs {
   }
 
   at(index: number): ExpressionSyntax<Opaque> {
-    return undefined; // ??!
+    return UNDEFINED_SYNTAX;
   }
 
   compile(compiler: SymbolLookup, env: Environment): CompiledPositionalArgs {
@@ -1105,7 +1111,7 @@ export class NamedArgs {
     return EMPTY_NAMED_ARGS;
   }
 
-  static fromSpec(sexp: SerializedCore.Hash): NamedArgs {
+  static fromSpec(sexp: Option<SerializedCore.Hash>): NamedArgs {
     if (sexp === null || sexp === undefined) { return EMPTY_NAMED_ARGS; }
 
     let [keys, exprs] = sexp;
@@ -1160,7 +1166,7 @@ const EMPTY_NAMED_ARGS = new (class extends NamedArgs {
   }
 
   at(key: string): ExpressionSyntax<Opaque> {
-    return undefined; // ??!
+    return Value.build(undefined); // ??!
   }
 
   has(key: string): boolean {

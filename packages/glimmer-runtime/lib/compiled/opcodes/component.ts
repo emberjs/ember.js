@@ -6,7 +6,7 @@ import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
 import { CONSTANT_TAG, PathReference, ReferenceCache, combine, isConst, RevisionTag } from 'glimmer-reference';
-import { FIXME } from 'glimmer-util';
+import { FIXME, expect } from 'glimmer-util';
 
 export class PutDynamicComponentDefinitionOpcode extends Opcode {
   public type = "put-dynamic-component-definition";
@@ -139,7 +139,8 @@ export class DidCreateElementOpcode extends Opcode {
     let manager = vm.frame.getManager();
     let component = vm.frame.getComponent();
 
-    manager.didCreateElement(component, vm.stack().constructing, vm.stack().operations);
+    let action = 'DidCreateElementOpcode#evaluate';
+    manager.didCreateElement(component, vm.stack().expectConstructing(action), vm.stack().expectOperations(action));
   }
 
   toJSON(): OpcodeJSON {
@@ -161,7 +162,7 @@ export class ShadowAttributesOpcode extends Opcode {
 
     if (!shadow) return;
 
-    let { named } = vm.frame.getArgs();
+    let { named } = expect(vm.frame.getArgs(), 'ShadowAttributesOpcode expects a populated args register');
 
     shadow.forEach(name => {
       vm.stack().setDynamicAttribute(name, named.get(name) as FIXME<PathReference<string>, 'setDynamicAttribute should take an Ref<Opaque> instead'>, false);

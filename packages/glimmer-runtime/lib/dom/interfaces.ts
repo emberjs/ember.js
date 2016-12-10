@@ -1,4 +1,4 @@
-import { FIXME } from 'glimmer-util';
+import { FIXME, Option } from 'glimmer-util';
 export type FIX_REIFICATION<T> = FIXME<T, 'needs to be reified properly'>;
 
 export type Namespace =
@@ -28,12 +28,12 @@ export enum NodeType {
 // meant to be efficient to use on the server and all operations
 // must be fully serializable to HTML as a transport.
 export interface Node {
-  nextSibling: Node;
-  previousSibling: Node;
-  parentNode: Node;
+  nextSibling: Option<Node>;
+  previousSibling: Option<Node>;
+  parentNode: Option<Node>;
   nodeType: NodeType | number;
-  nodeValue: string;
-  firstChild: Node;
+  nodeValue: Option<string>;
+  firstChild: Option<Node>;
 }
 
 export interface Document extends Node {
@@ -52,15 +52,15 @@ export interface Text extends CharacterData {}
 export interface Comment extends CharacterData {}
 
 export interface Element extends Node {
-  namespaceURI: string;
+  namespaceURI: Option<string>;
   tagName: string;
-  firstChild: Node;
-  lastChild: Node;
+  firstChild: Option<Node>;
+  lastChild: Option<Node>;
   removeAttribute(name: string): void;
   removeAttributeNS(namespaceURI: string, name: string);
   setAttribute(name: string, value: string): void;
   setAttributeNS(namespaceURI: string, qualifiedName: string, value: string): void;
-  insertBefore(node: Node, reference: Node): void;
+  insertBefore(node: Node, reference: Option<Node>): void;
   removeChild(node: Node): void;
 }
 

@@ -9,6 +9,8 @@ import {
   InlineBlockCompiler
 } from '../compiler';
 
+import { Option } from 'glimmer-util';
+
 export class CompiledBlock {
   public ops: OpSeq;
   public symbols: number;
@@ -20,7 +22,7 @@ export class CompiledBlock {
 }
 
 export abstract class Block {
-  protected compiled: CompiledBlock = null;
+  protected compiled: Option<CompiledBlock> = null;
 
   constructor(public program: Program, public symbolTable: SymbolTable) {}
 }

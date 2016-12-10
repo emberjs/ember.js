@@ -1,3 +1,4 @@
+import { EMPTY_SYMBOL_TABLE } from '../../symbol-table';
 import Upsert, {
   Insertion,
   CautiousInsertion,
@@ -18,7 +19,7 @@ import { VM, UpdatingVM } from '../../vm';
 import { TryOpcode, VMState } from '../../vm/update';
 import { EnterOpcode } from './vm';
 import { Reference, ReferenceCache, UpdatableTag, isModified, isConst, map } from 'glimmer-reference';
-import { Opaque, LinkedList } from 'glimmer-util';
+import { Option, Opaque, LinkedList, expect } from 'glimmer-util';
 import { Cursor, clear } from '../../bounds';
 import { Fragment } from '../../builder';
 import { CompileIntoList } from '../../compiler';
@@ -109,7 +110,7 @@ export abstract class AppendOpcode<T extends Insertion> extends Opcode {
 
 export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpcode<T> {
   protected abstract AppendOpcode: typeof OptimizedCautiousAppendOpcode | typeof OptimizedTrustingAppendOpcode;
-  private deopted: OpSeq = null;
+  private deopted: Option<OpSeq> = null;
 
   constructor(private expression: CompiledExpression<any>, private symbolTable: SymbolTable) {
     super();
@@ -176,7 +177,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
     // definition object at update time. That is handled by the "lazy deopt"
     // code on the update side (scroll down for the next big block of comment).
 
-    let buffer = new CompileIntoList(env, null);
+    let buffer = new CompileIntoList(env, EMPTY_SYMBOL_TABLE);
     let dsl = new OpcodeBuilderDSL(buffer, this.symbolTable, env);
 
     dsl.putValue(this.expression);
@@ -194,10 +195,12 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
 
     let deopted = this.deopted = dsl.toOpSeq();
 
-    // From this point on, we have essentially replaced ourselve with a new set
+    // From this point on, we have essentially replaced ourselves with a new set
     // of opcodes. Since we will always be executing the new/deopted code, it's
     // a good idea (as a pattern) to null out any unneeded fields here to avoid
     // holding on to unneeded/stale objects:
+
+    // QUESTION: Shouldn't this whole object be GCed? If not, why not?
 
     this.expression = null;
 
@@ -275,7 +278,7 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
 
 abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> {
   private _tag: UpdatableTag;
-  private deopted: TryOpcode = null;
+  private deopted: Option<TryOpcode> = null;
 
   constructor(
     private reference: Reference<Opaque>,
@@ -335,7 +338,7 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
     let { bounds, appendOpcode, state } = this;
 
     let appendOps = appendOpcode.deopt(vm.env);
-    let enter     = appendOps.head().next.next as EnterOpcode;
+    let enter     = expect(appendOps.head().next, 'hardcoded deopt logic').next as EnterOpcode;
     let ops       = enter.slice;
 
     let tracker = new UpdatableBlockTracker(bounds.parentElement());
@@ -356,6 +359,8 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
     // opcode. Since we will always be executing the new/deopted code, it's a
     // good idea (as a pattern) to null out any unneeded fields here to avoid
     // holding on to unneeded/stale objects:
+
+    // QUESTION: Shouldn't this whole object be GCed? If not, why not?
 
     this._tag         = null;
     this.reference    = null;

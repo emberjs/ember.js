@@ -1,5 +1,6 @@
 import { Bounds } from '../bounds';
 import { DOMChanges, DOMTreeConstruction } from '../dom/helper';
+import { Option } from 'glimmer-util';
 
 // Patch:    Adjacent text node merging fix
 // Browsers: IE, Edge, Firefox w/o inspector open
@@ -13,7 +14,7 @@ import { DOMChanges, DOMTreeConstruction } from '../dom/helper';
 //           Note that this fix must only apply to the previous text node, as
 //           the base implementation of `insertHTMLBefore` already handles
 //           following text nodes correctly.
-export function domChanges(document: Document, DOMChangesClass: typeof DOMChanges): typeof DOMChanges {
+export function domChanges(document: Option<Document>, DOMChangesClass: typeof DOMChanges): typeof DOMChanges {
   if (!document) return DOMChangesClass;
 
   if (!shouldApplyFix(document)) {
@@ -52,7 +53,7 @@ export function domChanges(document: Document, DOMChangesClass: typeof DOMChange
   };
 }
 
-export function treeConstruction(document: Document, TreeConstructionClass: typeof DOMTreeConstruction): typeof DOMTreeConstruction {
+export function treeConstruction(document: Option<Document>, TreeConstructionClass: typeof DOMTreeConstruction): typeof DOMTreeConstruction {
   if (!document) return TreeConstructionClass;
 
   if (!shouldApplyFix(document)) {
@@ -92,18 +93,15 @@ export function treeConstruction(document: Document, TreeConstructionClass: type
 }
 
 function shouldApplyFix(document) {
-  let mergingTextDiv = <HTMLElement> document.createElement('div');
+  let mergingTextDiv: HTMLDivElement = document.createElement('div');
 
   mergingTextDiv.innerHTML = 'first';
   mergingTextDiv.insertAdjacentHTML('beforeEnd', 'second');
 
   if (mergingTextDiv.childNodes.length === 2) {
-    mergingTextDiv = null;
     // It worked as expected, no fix required
     return false;
   }
-
-  mergingTextDiv = null;
 
   return true;
 }

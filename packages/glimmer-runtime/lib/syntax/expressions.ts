@@ -1,12 +1,13 @@
 import {
-  Value as ValueSyntax,
-  GetArgument as ArgSyntax,
+  UNDEFINED_SYNTAX,
   Concat as ConcatSyntax,
   Get as GetSyntax,
+  GetArgument as ArgSyntax,
   HasBlock as HasBlockSyntax,
   HasBlockParams as HasBlockParamsSyntax,
   Helper as HelperSyntax,
-  Unknown as UnknownSyntax
+  Unknown as UnknownSyntax,
+  Value as ValueSyntax
 } from './core';
 
 import {
@@ -28,7 +29,7 @@ const {
 
 export default function(sexp: SerializedExpression): any {
   if (isPrimitiveValue(sexp)) return ValueSyntax.fromSpec(sexp);
-  if (isUndefined(sexp)) return ValueSyntax.build(undefined);
+  if (isUndefined(sexp)) return UNDEFINED_SYNTAX;
   if (isArg(sexp)) return ArgSyntax.fromSpec(sexp);
   if (isConcat(sexp)) return ConcatSyntax.fromSpec(sexp);
   if (isGet(sexp)) return GetSyntax.fromSpec(sexp);

@@ -1,4 +1,4 @@
-import { FIXME, Opaque } from 'glimmer-util';
+import { FIXME, Opaque, Option, Maybe } from 'glimmer-util';
 import { DOMNamespace } from './helper';
 import * as Simple from './interfaces';
 import {
@@ -10,7 +10,7 @@ import { SVG_NAMESPACE } from './helper';
 import { normalizeTextValue } from '../compiled/opcodes/content';
 import { Environment } from '../environment';
 
-export function defaultManagers(element: Simple.Element, attr: string, isTrusting: boolean, namespace: string): AttributeManager {
+export function defaultManagers(element: Simple.Element, attr: string, isTrusting: boolean, namespace: Option<string>): AttributeManager {
   let tagName = element.tagName;
   let isSVG = element.namespaceURI === SVG_NAMESPACE;
 
@@ -119,7 +119,7 @@ export class PropertyManager extends AttributeManager {
   }
 };
 
-function normalizeAttributeValue(value) {
+function normalizeAttributeValue(value): Option<string> {
   if (value === false || value === undefined || value === null) {
     return null;
   }
@@ -134,7 +134,7 @@ function normalizeAttributeValue(value) {
   return String(value);
 }
 
-function isAttrRemovalValue(value) {
+function isAttrRemovalValue<T>(value: Maybe<T>): value is (null | undefined) {
   return value === null || value === undefined;
 }
 

@@ -1,5 +1,6 @@
 import { Bounds, ConcreteBounds } from '../bounds';
 import { moveNodesBefore, DOMChanges, DOMTreeConstruction } from '../dom/helper';
+import { Option } from 'glimmer-util';
 
 interface Wrapper {
   depth: number;
@@ -23,7 +24,7 @@ let innerHTMLWrapper = {
 // Fix:      Wrap the innerHTML we are about to set in its parents, apply the
 //           wrapped innerHTML on a div, then move the unwrapped nodes into the
 //           target position.
-export function domChanges(document: Document, DOMChangesClass: typeof DOMChanges): typeof DOMChanges {
+export function domChanges(document: Option<Document>, DOMChangesClass: typeof DOMChanges): typeof DOMChanges {
   if (!document) return DOMChangesClass;
 
   if (!shouldApplyFix(document)) {
@@ -50,7 +51,7 @@ export function domChanges(document: Document, DOMChangesClass: typeof DOMChange
   };
 }
 
-export function treeConstruction(document: Document, DOMTreeConstructionClass: typeof DOMTreeConstruction): typeof DOMTreeConstruction {
+export function treeConstruction(document: Option<Document>, DOMTreeConstructionClass: typeof DOMTreeConstruction): typeof DOMTreeConstruction {
   if (!document) return DOMTreeConstructionClass;
 
   if (!shouldApplyFix(document)) {

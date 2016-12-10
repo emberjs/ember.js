@@ -1,4 +1,4 @@
-import { dict } from 'glimmer-util';
+import { Option, dict } from 'glimmer-util';
 import { TemplateMeta } from 'glimmer-wire-format';
 
 export default class SymbolTable {
@@ -18,10 +18,10 @@ export default class SymbolTable {
   private locals = dict<number>();
   private named = dict<number>();
   private yields = dict<number>();
-  private partialArgs: number = null;
+  private partialArgs: Option<number> = null;
   public size = 1;
 
-  constructor(private parent: SymbolTable, private meta: TemplateMeta = null) {
+  constructor(private parent: Option<SymbolTable>, private meta: Option<TemplateMeta> = null) {
     this.top = parent ? parent.top : this;
   }
 
@@ -61,7 +61,7 @@ export default class SymbolTable {
     return this;
   }
 
-  getMeta(): TemplateMeta {
+  getMeta(): Option<TemplateMeta> {
     let { meta, parent } = this;
 
     if (!meta && parent) {
@@ -108,10 +108,12 @@ export default class SymbolTable {
   }
 
   getPartialArgs(): number {
-    return this.top.partialArgs;
+    return this.top.partialArgs || 0;
   }
 
   isTop(): boolean {
     return this.top === this;
   }
 }
+
+export const EMPTY_SYMBOL_TABLE = new SymbolTable(null);

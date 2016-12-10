@@ -80,11 +80,9 @@ let clientId = 0;
  */
 export default function templateFactory<T>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T, T>;
 export default function templateFactory<T, U>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T, U>;
-export default function templateFactory({ id, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}, {}> {
+export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}, {}> {
   let parsedBlock: SerializedTemplateBlock;
-  if (!id) {
-    id = `client-${clientId ++}`;
-  }
+  let id = templateId || `client-${clientId++}`;
   let create = (env: Environment, envMeta?: {}) => {
     let newMeta = envMeta ? assign({}, envMeta, meta) : meta;
     if (!parsedBlock) {

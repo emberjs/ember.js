@@ -5,7 +5,7 @@ import { VM, UpdatingVM } from '../../vm';
 import { CompiledBlock, Layout, InlineBlock } from '../blocks';
 import { NULL_REFERENCE } from '../../references';
 import { Reference, ConstReference } from 'glimmer-reference';
-import { ListSlice, Opaque, Slice } from 'glimmer-util';
+import { Option, ListSlice, Opaque, Slice, expect } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
 import Environment from '../../environment';
 
@@ -270,7 +270,7 @@ export interface LabelOptions {
 export class LabelOpcode extends Opcode implements UpdatingOpcode {
   public tag = CONSTANT_TAG;
   public type = "label";
-  public label: string = null;
+  public label: Option<string> = null;
 
   prev: any = null;
   next: any = null;
@@ -311,13 +311,14 @@ export class EvaluateOpcode extends Opcode {
   }
 
   evaluate(vm: VM) {
-    vm.invokeBlock(this.block, vm.frame.getArgs());
+    let args = vm.frame.getArgs();
+    vm.invokeBlock(this.block, args);
   }
 
   toJSON(): OpcodeJSON {
     let { _guid: guid, type, debug, block } = this;
 
-    let compiled: CompiledBlock = block['compiled'];
+    let compiled: Option<CompiledBlock> = block['compiled'];
     let children: OpcodeJSON[];
 
     if (compiled) {

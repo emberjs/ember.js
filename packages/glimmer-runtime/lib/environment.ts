@@ -26,10 +26,13 @@ import {
 } from './modifier/interfaces';
 
 import {
+  Option,
   Destroyable,
   Opaque,
   HasGuid,
-  ensureGuid
+  ensureGuid,
+  expect,
+  assert
 } from 'glimmer-util';
 
 import {
@@ -70,9 +73,9 @@ export class Scope {
 
   // the 0th slot is `self`
   private slots: ScopeSlot[];
-  private callerScope: Scope = null;
+  private callerScope: Option<Scope> = null;
 
-  constructor(references: ScopeSlot[], callerScope: Scope = null) {
+  constructor(references: ScopeSlot[], callerScope: Option<Scope> = null) {
     this.slots = references;
     this.callerScope = callerScope;
   }
@@ -114,7 +117,7 @@ export class Scope {
     this.callerScope = scope;
   }
 
-  getCallerScope(): Scope {
+  getCallerScope(): Option<Scope> {
     return this.callerScope;
   }
 
@@ -123,18 +126,86 @@ export class Scope {
   }
 }
 
+class Transaction {
+  public scheduledInstallManagers: ModifierManager<Opaque>[] = [];
+  public scheduledInstallModifiers: Object[] = [];
+  public scheduledUpdateModifierManagers: ModifierManager<Opaque>[] = [];
+  public scheduledUpdateModifiers: Object[] = [];
+  public createdComponents: Component[] = [];
+  public createdManagers: ComponentManager<Component>[] = [];
+  public updatedComponents: Component[] = [];
+  public updatedManagers: ComponentManager<Component>[] = [];
+  public destructors: Destroyable[] = [];
+
+  didCreate<T>(component: T, manager: ComponentManager<T>) {
+    this.createdComponents.push(component);
+    this.createdManagers.push(manager);
+  }
+
+  didUpdate<T>(component: T, manager: ComponentManager<T>) {
+    this.updatedComponents.push(component);
+    this.updatedManagers.push(manager);
+  }
+
+  scheduleInstallModifier<T>(modifier: T, manager: ModifierManager<T>) {
+    this.scheduledInstallManagers.push(manager);
+    this.scheduledInstallModifiers.push(modifier);
+  }
+
+  scheduleUpdateModifier<T>(modifier: T, manager: ModifierManager<T>) {
+    this.scheduledUpdateModifierManagers.push(manager);
+    this.scheduledUpdateModifiers.push(modifier);
+  }
+
+  didDestroy(d: Destroyable) {
+    this.destructors.push(d);
+  }
+
+  commit() {
+    let { createdComponents, createdManagers } = this;
+
+    for (let i=0; i<createdComponents.length; i++) {
+      let component = createdComponents[i];
+      let manager = createdManagers[i];
+      manager.didCreate(component);
+    }
+
+    let { updatedComponents, updatedManagers } = this;
+
+    for (let i=0; i<updatedComponents.length; i++) {
+      let component = updatedComponents[i];
+      let manager = updatedManagers[i];
+      manager.didUpdate(component);
+    }
+
+    let { destructors } = this;
+
+    for (let i=0; i<destructors.length; i++) {
+      destructors[i].destroy();
+    }
+
+    let { scheduledInstallManagers, scheduledInstallModifiers } = this;
+
+    for (let i = 0; i < scheduledInstallManagers.length; i++) {
+      let manager = scheduledInstallManagers[i];
+      let modifier = scheduledInstallModifiers[i];
+      manager.install(modifier);
+    }
+
+    let { scheduledUpdateModifierManagers, scheduledUpdateModifiers } = this;
+
+    for (let i = 0; i < scheduledUpdateModifierManagers.length; i++) {
+      let manager = scheduledUpdateModifierManagers[i];
+      let modifier = scheduledUpdateModifiers[i];
+      manager.update(modifier);
+    }
+  }
+}
+
 export abstract class Environment {
   protected updateOperations: DOMChanges;
   protected appendOperations: DOMTreeConstruction;
-  private scheduledInstallManagers: ModifierManager<Opaque>[] = null;
-  private scheduledInstallModifiers: Object[] = null;
-  private scheduledUpdateModifierManagers: ModifierManager<Opaque>[] = null;
-  private scheduledUpdateModifiers: Object[] = null;
-  private createdComponents: Component[] = null;
-  private createdManagers: ComponentManager<Component>[] = null;
-  private updatedComponents: Component[] = null;
-  private updatedManagers: ComponentManager<Component>[] = null;
-  private destructors: Destroyable[] = null;
+  private _transaction: Option<Transaction> = null;
 
   constructor({ appendOperations, updateOperations }: { appendOperations: DOMTreeConstruction, updateOperations: DOMChanges }) {
     this.appendOperations = appendOperations;
@@ -159,7 +230,7 @@ export abstract class Environment {
     return this.refineStatement(parseStatement(statement), symbolTable) || statement;
   }
 
-  protected refineStatement(statement: ParsedStatement, symbolTable: SymbolTable): StatementSyntax {
+  protected refineStatement(statement: ParsedStatement, symbolTable: SymbolTable): Option<StatementSyntax> {
     let {
       isSimple,
       isBlock,
@@ -167,7 +238,7 @@ export abstract class Environment {
       args,
     } = statement;
 
-    if (isSimple && isBlock) {
+    if (isSimple && isBlock && args) {
       switch (key) {
         case 'each':
           return new EachSyntax(args);
@@ -179,90 +250,50 @@ export abstract class Environment {
           return new UnlessSyntax(args);
       }
     }
+
+    return null;
   }
 
   begin() {
-    this.createdComponents = [];
-    this.createdManagers = [];
-    this.updatedComponents = [];
-    this.updatedManagers = [];
-    this.destructors = [];
-    this.scheduledInstallManagers = [];
-    this.scheduledInstallModifiers = [];
-    this.scheduledUpdateModifierManagers = [];
-    this.scheduledUpdateModifiers = [];
+    assert(!this._transaction, 'Cannot start a nested transaction');
+    this._transaction = new Transaction();
+  }
+
+  private get transaction(): Transaction {
+    return expect(this._transaction, 'must be in a transaction');
   }
 
   didCreate<T>(component: T, manager: ComponentManager<T>) {
-    this.createdComponents.push(component as any);
-    this.createdManagers.push(manager as any);
+    this.transaction.didCreate(component, manager);
   }
 
   didUpdate<T>(component: T, manager: ComponentManager<T>) {
-    this.updatedComponents.push(component as any);
-    this.updatedManagers.push(manager as any);
+    this.transaction.didUpdate(component, manager);
   }
 
   scheduleInstallModifier<T>(modifier: T, manager: ModifierManager<T>) {
-    this.scheduledInstallManagers.push(manager);
-    this.scheduledInstallModifiers.push(modifier);
+    this.transaction.scheduleInstallModifier(modifier, manager);
   }
 
   scheduleUpdateModifier<T>(modifier: T, manager: ModifierManager<T>) {
-    this.scheduledUpdateModifierManagers.push(manager);
-    this.scheduledUpdateModifiers.push(modifier);
+    this.transaction.scheduleUpdateModifier(modifier, manager);
   }
 
   didDestroy(d: Destroyable) {
-    this.destructors.push(d);
+    this.transaction.didDestroy(d);
   }
 
   commit() {
-    for (let i=0; i<this.createdComponents.length; i++) {
-      let component = this.createdComponents[i];
-      let manager = this.createdManagers[i];
-      manager.didCreate(component);
-    }
-
-    for (let i=0; i<this.updatedComponents.length; i++) {
-      let component = this.updatedComponents[i];
-      let manager = this.updatedManagers[i];
-      manager.didUpdate(component);
-    }
-
-    for (let i=0; i<this.destructors.length; i++) {
-      this.destructors[i].destroy();
-    }
-
-    for (let i = 0; i < this.scheduledInstallManagers.length; i++) {
-      let manager = this.scheduledInstallManagers[i];
-      let modifier = this.scheduledInstallModifiers[i];
-      manager.install(modifier);
-    }
-
-    for (let i = 0; i < this.scheduledUpdateModifierManagers.length; i++) {
-      let manager = this.scheduledUpdateModifierManagers[i];
-      let modifier = this.scheduledUpdateModifiers[i];
-      manager.update(modifier);
-    }
-
-    this.createdComponents = null;
-    this.createdManagers = null;
-    this.updatedComponents = null;
-    this.updatedManagers = null;
-    this.destructors = null;
-    this.scheduledInstallManagers = null;
-    this.scheduledInstallModifiers = null;
-    this.scheduledUpdateModifierManagers = null;
-    this.scheduledUpdateModifiers = null;
+    this.transaction.commit();
+    this._transaction = null;
   }
 
   attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace?: string): AttributeManager {
-    return defaultManagers(element, attr, isTrusting, namespace);
+    return defaultManagers(element, attr, isTrusting, namespace === undefined ? null : namespace);
   }
 
-  abstract hasHelper(helperName: string[], blockMeta: TemplateMeta): boolean;
-  abstract lookupHelper(helperName: string[], blockMeta: TemplateMeta): Helper;
+  abstract hasHelper(helperName: Option<string>[], blockMeta: TemplateMeta): boolean;
+  abstract lookupHelper(helperName: Option<string>[], blockMeta: TemplateMeta): Helper;
 
   abstract hasModifier(modifierName: string[], blockMeta: TemplateMeta): boolean;
   abstract lookupModifier(modifierName: string[], blockMeta: TemplateMeta): ModifierManager<Opaque>;
@@ -282,10 +313,10 @@ export interface Helper {
 
 export interface ParsedStatement {
   isSimple: boolean;
-  path: string[];
-  key: string;
-  appendType: string;
-  args: Syntax.Args;
+  path: Option<Option<string>[]>;
+  key: Option<string>;
+  appendType: Option<string>;
+  args: Option<Syntax.Args>;
   isInline: boolean;
   isBlock: boolean;
   isModifier: boolean;
@@ -300,8 +331,8 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
     let appendType = append && append.value.type;
 
     type AppendValue = Syntax.Unknown | Syntax.Get;
-    let args: Syntax.Args;
-    let path: string[];
+    let args: Option<Syntax.Args>;
+    let path: Option<Option<string>[]>;
 
     if (block) {
       args = block.args;
@@ -317,9 +348,14 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
     } else if (modifier) {
       path = modifier.path;
       args = modifier.args;
+    } else {
+      // TODO: Process this case better
+      path = null;
+      args = null;
     }
 
-    let key: string, isSimple: boolean;
+    let key: Option<string> = null;
+    let isSimple = false;
 
     if (path) {
       isSimple = path.length === 1;

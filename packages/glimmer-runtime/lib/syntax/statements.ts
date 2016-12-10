@@ -1,3 +1,4 @@
+import { unreachable } from 'glimmer-util';
 import {
   Yield,
   Partial,
@@ -58,4 +59,6 @@ export default function(sexp: SerializedStatement, symbolTable: SymbolTable, sca
   if (isStaticAttr(sexp)) return StaticAttr.fromSpec(sexp);
   if (isStaticArg(sexp)) return StaticArg.fromSpec(sexp);
   if (isModifier(sexp)) return Modifier.fromSpec(sexp);
+
+  throw unreachable();
 };
