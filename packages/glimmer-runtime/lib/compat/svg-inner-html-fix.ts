@@ -1,6 +1,6 @@
 import { Bounds, ConcreteBounds } from '../bounds';
 import { moveNodesBefore, DOMChanges, DOMTreeConstruction } from '../dom/helper';
-import { Option, unwrap } from 'glimmer-util';
+import { Option } from 'glimmer-util';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
@@ -16,7 +16,7 @@ export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
 //           approach is used. A pre/post SVG tag is added to the string, then
 //           that whole string is added to a div. The created nodes are plucked
 //           out and applied to the target location on DOM.
-export function domChanges(document: Option<Document>, DOMChangesClass: typeof DOMChanges, svgNamespace: SVG_NAMESPACE): typeof DOMChanges {
+export function domChanges(document: Option<Document>, DOMChangesClass: typeof DOMChanges, svgNamespace: string): typeof DOMChanges {
   if (!document) return DOMChangesClass;
 
   if (!shouldApplyFix(document, svgNamespace)) {
@@ -40,7 +40,7 @@ export function domChanges(document: Option<Document>, DOMChangesClass: typeof D
   };
 }
 
-export function treeConstruction(document: Option<Document>, TreeConstructionClass: typeof DOMTreeConstruction, svgNamespace: SVG_NAMESPACE): typeof DOMTreeConstruction {
+export function treeConstruction(document: Option<Document>, TreeConstructionClass: typeof DOMTreeConstruction, svgNamespace: string): typeof DOMTreeConstruction {
   if (!document) return TreeConstructionClass;
 
   if (!shouldApplyFix(document, svgNamespace)) {

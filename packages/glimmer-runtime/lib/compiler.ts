@@ -190,7 +190,7 @@ class EmptyBuilder {
     let { env } = this;
 
     let list = new CompileIntoList(env, EMPTY_SYMBOL_TABLE);
-    return new CompiledBlock(list);
+    return new CompiledBlock(list, 0);
   }
 }
 
