@@ -1,4 +1,4 @@
-import { ListItem } from 'glimmer-reference';
+import { ListItem } from '../../../../glimmer-reference/lib/iterable';
 import { Opcode, OpcodeJSON } from '../../opcodes';
 import { VM } from '../../vm';
 import { LabelOpcode } from '../../compiled/opcodes/vm';
@@ -119,7 +119,7 @@ export class NextIterOpcode extends Opcode {
   }
 
   evaluate(vm: VM) {
-    let item = vm.frame.getIterator().next();
+    let item: ListItem = vm.frame.getIterator().next();
 
     if (item) {
       vm.frame.setCondition(TRUE_REF);

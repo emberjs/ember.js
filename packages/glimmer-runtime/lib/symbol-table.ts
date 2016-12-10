@@ -1,4 +1,4 @@
-import { Option, Dict, dict } from 'glimmer-util';
+import { Option, dict } from 'glimmer-util';
 import { TemplateMeta } from 'glimmer-wire-format';
 import {
   SymbolTable,
@@ -26,10 +26,16 @@ function symbols(named: string[], yields: string[], hasPartials: boolean): { nam
   let yieldMap = dict<number>();
   let namedMap = dict<number>();
 
-  let size = 1;
+  private top: SymbolTable;
+  private locals = dict<number>();
+  private named = dict<number>();
+  private yields = dict<number>();
+  private partialArgs: Option<number> = null;
+  public size = 1;
 
-  yields.forEach(y => yieldMap[y] = size++);
-  named.forEach(n => namedMap[n] = size++);
+  constructor(private parent: Option<SymbolTable>, private meta: Option<TemplateMeta> = null) {
+    this.top = parent ? parent.top : this;
+  }
 
   let partialSymbol: Option<number> = hasPartials ? size++ : null;
 
@@ -65,8 +71,14 @@ export class ProgramSymbolTable implements IProgramSymbolTable {
   }
 }
 
-export class BlockSymbolTable implements IBlockSymbolTable {
-  constructor(private parent: SymbolTable, protected program: ProgramSymbolTable, private locals: Dict<number>) {
+  getMeta(): Option<TemplateMeta> {
+    let { meta, parent } = this;
+
+    if (!meta && parent) {
+      meta = parent.getMeta();
+    }
+
+    return meta;
   }
 
   getMeta(): Option<TemplateMeta> {
@@ -93,8 +105,8 @@ export class BlockSymbolTable implements IBlockSymbolTable {
     return symbol;
   }
 
-  getPartialArgs(): Option<number> {
-    return this.program.getPartialArgs();
+  getPartialArgs(): number {
+    return this.top.partialArgs || 0;
   }
 }
 
@@ -110,4 +122,6 @@ export const EMPTY_SYMBOL_TABLE: SymbolTable = {
   getPartialArgs(): Option<number> {
     return null;
   }
-};
+}
+
+export const EMPTY_SYMBOL_TABLE = new SymbolTable(null);
