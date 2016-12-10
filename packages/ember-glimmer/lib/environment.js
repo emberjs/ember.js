@@ -4,7 +4,7 @@ import {
   lookupPartial,
   hasPartial,
   lookupComponent,
-  STYLE_WARNING
+  constructStyleDeprecationMessage
 } from 'ember-views';
 import {
   Environment as GlimmerEnvironment,
@@ -417,7 +417,7 @@ export default class Environment extends GlimmerEnvironment {
 runInDebug(() => {
   class StyleAttributeManager extends AttributeManager {
     setAttribute(dom, element, value) {
-      warn(STYLE_WARNING, (() => {
+      warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
         }
@@ -427,7 +427,7 @@ runInDebug(() => {
     }
 
     updateAttribute(dom, element, value) {
-      warn(STYLE_WARNING, (() => {
+      warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
         }
