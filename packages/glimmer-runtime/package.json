@@ -10,7 +10,7 @@
     "test": "tests"
   },
   "scripts": {
-    "build": "node ../../build/build",
+    "build": "sh ../../build/build",
     "test": "node -e 'require(\".\")'",
     "prepublish": "npm run build"
   },
