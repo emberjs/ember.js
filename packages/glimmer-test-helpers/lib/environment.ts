@@ -618,7 +618,7 @@ export class SimplePathReference<T> implements PathReference<T> {
   }
 }
 
-export type UserHelper = (args: any[], named: Dict<any>) => any;
+export type UserHelper = (args: ReadonlyArray<Opaque>, named: Dict<Opaque>) => any;
 
 class HelperReference implements PathReference<Opaque> {
   private helper: UserHelper;

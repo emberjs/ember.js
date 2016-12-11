@@ -24,7 +24,7 @@ export function domChanges(document: Option<Document>, DOMChangesClass: typeof D
   return class DOMChangesWithTextNodeMergingFix extends DOMChangesClass {
     private uselessComment: Comment;
 
-    constructor(document) {
+    constructor(document: Document) {
       super(document);
       this.uselessComment = document.createComment('');
     }
@@ -63,7 +63,7 @@ export function treeConstruction(document: Option<Document>, TreeConstructionCla
   return class TreeConstructionWithTextNodeMergingFix extends TreeConstructionClass {
     private uselessComment: Comment;
 
-    constructor(document) {
+    constructor(document: Document) {
       super(document);
       this.uselessComment = this.createComment('') as Comment;
     }
@@ -92,7 +92,7 @@ export function treeConstruction(document: Option<Document>, TreeConstructionCla
   };
 }
 
-function shouldApplyFix(document) {
+function shouldApplyFix(document: Document) {
   let mergingTextDiv: HTMLDivElement = document.createElement('div');
 
   mergingTextDiv.innerHTML = 'first';

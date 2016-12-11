@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+
+  "compilerOptions": {
+    // Input/output paths
+    "outDir": "../dist/commonjs",
+    "module": "commonjs"
+  }
+}

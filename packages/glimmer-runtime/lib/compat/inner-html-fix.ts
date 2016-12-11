@@ -93,7 +93,7 @@ function fixInnerHTML(parent: HTMLElement, wrapper: Wrapper, div: HTMLElement, h
   return new ConcreteBounds(parent, first, last);
 }
 
-function shouldApplyFix(document) {
+function shouldApplyFix(document: Document) {
   let table = document.createElement('table');
   try {
     table.innerHTML = '<tbody></tbody>';

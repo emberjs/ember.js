@@ -724,7 +724,7 @@ test("Attributes containing multiple helpers are treated like a block", function
 });
 
 test("Attributes containing a helper are treated like a block", function() {
-  expect(3);
+  expect(2);
 
   env.registerHelper('testing', function(params) {
     deepEqual(params, [123]);
