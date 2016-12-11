@@ -11,6 +11,7 @@
     "url": "https://github.com/tildeio/glimmer.git"
   },
   "scripts": {
+    "bootstrap": "lerna bootstrap",
     "build": "ember build",
     "prepublish": "lerna bootstrap && bower install && ember build",
     "sauce:connect": "ember sauce:connect",

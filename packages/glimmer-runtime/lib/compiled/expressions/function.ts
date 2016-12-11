@@ -1,7 +1,9 @@
 import { PathReference } from 'glimmer-reference';
+import { Opaque } from 'glimmer-util';
 import { Expression as ExpressionSyntax } from '../../syntax';
 import { CompiledExpression } from '../expressions';
 import { PublicVM as VM } from '../../vm';
+import Environment from '../../environment';
 import SymbolTable from '../../symbol-table';
 
 export type FunctionExpression<T> = (VM: VM, symbolTable: SymbolTable) => PathReference<T>;
@@ -19,7 +21,7 @@ class FunctionExpressionSyntax<T> extends ExpressionSyntax<T> {
     this.func = func;
   }
 
-  compile(lookup, env, symbolTable: SymbolTable): CompiledExpression<T> {
+  compile(lookup: Opaque, env: Environment, symbolTable: SymbolTable): CompiledExpression<T> {
     return new CompiledFunctionExpression(this.func, symbolTable);
   }
 }

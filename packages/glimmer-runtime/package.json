@@ -10,7 +10,7 @@
     "test": "tests"
   },
   "scripts": {
-    "build": "../../build/build",
+    "build": "node ../../build/build",
     "test": "node -e 'require(\".\")'",
     "prepublish": "npm run build"
   },
@@ -25,6 +25,8 @@
     "dist"
   ],
   "devDependencies": {
-    "typescript": "^2.1.4"
+    "@types/qunit": "^2.0.31",
+    "typescript": "^2.1.4",
+    "glimmer-test-helpers": "^0.5.2"
   }
 }

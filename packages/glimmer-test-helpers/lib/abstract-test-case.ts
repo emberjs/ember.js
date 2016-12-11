@@ -85,7 +85,7 @@ export class RenderingTest {
   private result: RenderResult = null;
   public snapshot: Element[];
   public element: Node;
-  public assert: QUnitAssert;
+  public assert: QUnit['assert'];
 
   constructor(protected env: TestEnvironment = new TestEnvironment(), template: string, private appendTo: Simple.Element) {
     this.template = this.env.compile(template);
@@ -168,7 +168,7 @@ export function testModule(description?: string) {
     let context: RenderingTest;
 
     QUnit.module(`[Browser] ${description || TestClass.name}`, {
-      teardown() {
+      afterEach() {
         context.teardown();
       }
     });

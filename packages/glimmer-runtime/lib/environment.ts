@@ -15,6 +15,8 @@ import {
   PartialDefinition
 } from './partial';
 
+type Q = Record<string, string>;
+
 import {
   Component,
   ComponentManager,

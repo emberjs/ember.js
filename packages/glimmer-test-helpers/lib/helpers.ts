@@ -132,7 +132,7 @@ export function equalTokens(fragment, html, message=null) {
   let equiv = QUnit.equiv(fragTokens.tokens, htmlTokens.tokens);
 
   if (equiv && fragTokens.html !== htmlTokens.html) {
-    deepEqual(fragTokens.tokens, htmlTokens.tokens, message);
+    QUnit.deepEqual(fragTokens.tokens, htmlTokens.tokens, message);
   } else {
     QUnit.push(QUnit.equiv(fragTokens.tokens, htmlTokens.tokens), fragTokens.html, htmlTokens.html, message);
   }
@@ -155,9 +155,9 @@ export function generateSnapshot(element) {
 }
 
 export function equalSnapshots(a, b) {
-  strictEqual(a.length, b.length, 'Same number of nodes');
+  QUnit.strictEqual(a.length, b.length, 'Same number of nodes');
   for (let i = 0; i < b.length; i++) {
-    strictEqual(a[i], b[i], 'Nodes are the same');
+    QUnit.strictEqual(a[i], b[i], 'Nodes are the same');
   }
 }
 
@@ -199,7 +199,7 @@ if (typeof document === 'undefined') {
   let checkedInputString = checkedInput.outerHTML;
 
   isCheckedInputHTML = function(element) {
-    equal(element.outerHTML, checkedInputString);
+    QUnit.equal(element.outerHTML, checkedInputString);
   };
 }
 

@@ -5,6 +5,7 @@
         "experimentalDecorators": true,
         "allowUnreachableCode": false,
         "noUnusedLocals": true,
+        "strictNullChecks": false,
         "inlineSources": true,
         "inlineSourceMap": true,
         "declaration": true,

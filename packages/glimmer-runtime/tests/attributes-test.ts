@@ -1,4 +1,4 @@
-import { Simple, Template, RenderResult, readDOMAttr } from "glimmer-runtime";
+import { Simple, Template, RenderResult, readDOMAttr } from "../index";
 import { TestEnvironment, TestDynamicScope, equalTokens } from "glimmer-test-helpers";
 import { PathReference } from "glimmer-reference";
 import { UpdatableReference } from "glimmer-object-reference";

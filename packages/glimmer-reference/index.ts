@@ -8,6 +8,10 @@ export {
   isConst
 } from './lib/const';
 
+export {
+  ListItem
+} from './lib/iterable';
+
 export * from './lib/validators';
 
 export {
