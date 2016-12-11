@@ -6,9 +6,9 @@
   "jsnext:main": "dist/modules/index.js",
   "typings": "dist/commonjs/index.d.ts",
   "scripts": {
-    "build": "build/build.js",
+    "build": "../../build/build",
     "prepublish": "npm run build",
-    "test": "npm run build && node -e 'require(\".\")' && mocha --opts tests/mocha.opts",
+    "test": "node -e 'require(\".\")'",
     "test:watch": "mocha --opts tests/mocha.opts --watch"
   },
   "files": [
