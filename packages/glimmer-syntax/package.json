@@ -14,7 +14,8 @@
     "dist"
   ],
   "dependencies": {
-    "handlebars": "^3.0.3"
+    "handlebars": "^3.0.3",
+    "simple-html-tokenizer": "^0.2.5"
   },
   "devDependencies": {
     "@types/handlebars": "^4.0.31",
