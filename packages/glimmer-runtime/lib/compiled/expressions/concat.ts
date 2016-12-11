@@ -37,7 +37,7 @@ class ConcatReference extends CachedReference<Option<string>> {
       let value = this.parts[i].value();
 
       if (value !== null && value !== undefined) {
-        parts[i] = castToString(value as FIXME<any, 'This works with strict null checks'>) as FIXME<string, 'Coerce falsy values to strings'>;
+        parts[i] = castToString(value) as FIXME<string, 'Coerce falsy values to strings'>;
       }
     }
 

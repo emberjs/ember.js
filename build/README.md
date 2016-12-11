@@ -103,7 +103,7 @@ Each package has its own `package.json` with the following fields:
 
   "scripts": {
     // Runs TypeScript compiler once per output format
-    "build": "../../build/build",
+    "build": "sh ../../build/build",
     // Runs the build before publishing to npm
     "prepublish": "npm run build",
     // Verifies the build succeeded by requiring the package from Node.

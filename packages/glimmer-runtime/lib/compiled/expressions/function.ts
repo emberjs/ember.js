@@ -4,7 +4,7 @@ import { Expression as ExpressionSyntax } from '../../syntax';
 import { CompiledExpression } from '../expressions';
 import { PublicVM as VM } from '../../vm';
 import Environment from '../../environment';
-import { SymbolTable } from 'glimmer-interfaces';
+import SymbolTable from '../../symbol-table';
 
 export type FunctionExpression<T> = (VM: VM, symbolTable: SymbolTable) => PathReference<T>;
 

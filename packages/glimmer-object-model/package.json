@@ -6,7 +6,7 @@
   "jsnext:main": "dist/modules/index.js",
   "typings": "dist/commonjs/index.d.ts",
   "scripts": {
-    "build": "../../build/build",
+    "build": "../../build/build.js",
     "prepublish": "npm run build",
     "test": "node -e 'require(\".\")'",
     "test:watch": "mocha --opts tests/mocha.opts --watch"
@@ -23,6 +23,7 @@
     "mocha": "^3.2.0",
     "tomdale-mocha-qunit-ui": "^0.1.2",
     "ts-node": "^1.7.0",
-    "typescript": "^2.1.4"
+    "typescript": "^2.1.4",
+    "glimmer-test-helpers": "^0.5.2"
   }
 }

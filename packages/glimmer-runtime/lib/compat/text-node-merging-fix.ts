@@ -92,7 +92,7 @@ export function treeConstruction(document: Option<Document>, TreeConstructionCla
   };
 }
 
-function shouldApplyFix(document) {
+function shouldApplyFix(document: Document) {
   let mergingTextDiv: HTMLDivElement = document.createElement('div');
 
   mergingTextDiv.innerHTML = 'first';
