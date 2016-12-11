@@ -92,7 +92,7 @@ function iter(key, value) {
   @since Ember 0.9
   @private
 */
-const Enumerable = Mixin.create({
+export default Mixin.create({
 
   /**
     __Required.__ You must implement this method to apply this mixin.
@@ -872,6 +872,12 @@ const Enumerable = Mixin.create({
     @private
   */
   addEnumerableObserver(target, opts) {
+    deprecate(
+      'Usage of `Enumerable.prototype.addEnumerableObserver` is deprecated.',
+      false,
+      { until: '2.12.0', id: 'ember-metal.enumerable.addEnumerableObserver' }
+    );
+
     let willChange = (opts && opts.willChange) || 'enumerableWillChange';
     let didChange  = (opts && opts.didChange) || 'enumerableDidChange';
     let hasObservers = get(this, 'hasEnumerableObservers');
@@ -900,6 +906,12 @@ const Enumerable = Mixin.create({
     @private
   */
   removeEnumerableObserver(target, opts) {
+    deprecate(
+      'Usage of `Enumerable.prototype.removeEnumerableObserver is deprecated.',
+      false,
+      { until: '2.12.0', id: 'ember-metal.enumerable.removeEnumerableObserver' }
+    );
+
     let willChange = (opts && opts.willChange) || 'enumerableWillChange';
     let didChange  = (opts && opts.didChange) || 'enumerableDidChange';
     let hasObservers = get(this, 'hasEnumerableObservers');
@@ -927,6 +939,12 @@ const Enumerable = Mixin.create({
     @private
   */
   hasEnumerableObservers: computed(function() {
+    deprecate(
+      'Usage of `Enumerable.prototype.hasEnumerableObservers` is deprecated.',
+      false,
+      { until: '2.12.0', id: 'ember-metal.enumerable.hasEnumerableObservers' }
+    );
+
     return hasListeners(this, '@enumerable:change') || hasListeners(this, '@enumerable:before');
   }),
 
@@ -1139,5 +1157,3 @@ const Enumerable = Mixin.create({
     return found;
   }
 });
-
-export default Enumerable;
