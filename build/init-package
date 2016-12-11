@@ -17,14 +17,9 @@ fi
 echo "Creating packages/$package..."
 mkdir -p "packages/$package"
 
-echo "Symlinking build script and configuration..."
+echo "Copying tsconfig.json..."
 # Symlink shared tsconfig.json
-ln -s ../../build/tsconfig.json "packages/$package/tsconfig.json"
-# Symlink additional build-related scripts
-mkdir "packages/$package/build"
-ln -s ../../../build/tsconfig.modules.json "packages/$package/build/tsconfig.modules.json"
-ln -s ../../../build/tsconfig.commonjs.json "packages/$package/build/tsconfig.commonjs.json"
-ln -s ../../../build/build.js "packages/$package/build/build.js"
+cp "$(dirname $0)/tsconfig.tmpl.json" "packages/$package/tsconfig.json"
 
 echo "Configuring package.json..."
 # Create or update package's package.json to include correct configuration
