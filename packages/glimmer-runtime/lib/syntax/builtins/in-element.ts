@@ -5,6 +5,7 @@ import {
 import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 import * as Syntax from '../core';
 import Environment from '../../environment';
+import { unwrap } from 'glimmer-util';
 
 export default class InElementSyntax extends StatementSyntax {
   type = "in-element-statement";
@@ -22,7 +23,7 @@ export default class InElementSyntax extends StatementSyntax {
     dsl.block(null, (dsl, BEGIN, END) => {
       dsl.jumpUnless(END);
       dsl.pushRemoteElement();
-      dsl.evaluate('default', blocks.default);
+      dsl.evaluate('default', unwrap(blocks.default));
       dsl.popRemoteElement();
     });
   }

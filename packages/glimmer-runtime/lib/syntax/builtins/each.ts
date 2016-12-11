@@ -8,6 +8,8 @@ import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 
 import Environment from '../../environment';
 
+import { unwrap } from 'glimmer-util';
+
 export default class EachSyntax extends StatementSyntax {
   type = "each-statement";
 
@@ -52,7 +54,7 @@ export default class EachSyntax extends StatementSyntax {
       }
 
       dsl.iter((dsl, BEGIN, END) => {
-        dsl.evaluate('default', blocks.default);
+        dsl.evaluate('default', unwrap(blocks.default));
       });
 
       if (blocks.inverse) {

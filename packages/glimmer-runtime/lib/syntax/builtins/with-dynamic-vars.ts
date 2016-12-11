@@ -5,6 +5,7 @@ import {
 import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 import * as Syntax from '../core';
 import Environment from '../../environment';
+import { unwrap } from 'glimmer-util';
 
 export default class WithDynamicVarsSyntax extends StatementSyntax {
   type = "with-dynamic-vars-statement";
@@ -20,7 +21,7 @@ export default class WithDynamicVarsSyntax extends StatementSyntax {
       dsl.putArgs(args);
       dsl.pushDynamicScope();
       dsl.bindDynamicScope(args.named.keys);
-      dsl.evaluate('default', blocks.default);
+      dsl.evaluate('default', unwrap(blocks.default));
       dsl.popDynamicScope();
     });
   }

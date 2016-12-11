@@ -19,7 +19,7 @@ import { VM, UpdatingVM } from '../../vm';
 import { TryOpcode, VMState } from '../../vm/update';
 import { EnterOpcode } from './vm';
 import { Reference, ReferenceCache, UpdatableTag, isModified, isConst, map } from 'glimmer-reference';
-import { Option, Opaque, LinkedList, expect } from 'glimmer-util';
+import { FIXME, Option, Opaque, LinkedList, expect } from 'glimmer-util';
 import { Cursor, clear } from '../../bounds';
 import { Fragment } from '../../builder';
 import { CompileIntoList } from '../../compiler';
@@ -202,7 +202,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
 
     // QUESTION: Shouldn't this whole object be GCed? If not, why not?
 
-    this.expression = null;
+    this.expression = null as FIXME<any, 'QUESTION'>;
 
     return deopted;
   }
@@ -346,7 +346,7 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
 
     let children = new LinkedList<UpdatingOpcode>();
 
-    state.frame['condition'] = IsComponentDefinitionReference.create(state.frame['operand']);
+    state.frame['condition'] = IsComponentDefinitionReference.create(expect(state.frame['operand'], 'operand should be populated'));
 
     let deopted = this.deopted = new TryOpcode(ops, state, tracker, children);
 
@@ -362,13 +362,13 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
 
     // QUESTION: Shouldn't this whole object be GCed? If not, why not?
 
-    this._tag         = null;
-    this.reference    = null;
-    this.cache        = null;
-    this.bounds       = null;
-    this.upsert       = null;
-    this.appendOpcode = null;
-    this.state        = null;
+    this._tag         = null as FIXME<any, 'QUESTION'>;
+    this.reference    = null as FIXME<any, 'QUESTION'>;
+    this.cache        = null as FIXME<any, 'QUESTION'>;
+    this.bounds       = null as FIXME<any, 'QUESTION'>;
+    this.upsert       = null as FIXME<any, 'QUESTION'>;
+    this.appendOpcode = null as FIXME<any, 'QUESTION'>;
+    this.state        = null as FIXME<any, 'QUESTION'>;
   }
 
   toJSON(): OpcodeJSON {
