@@ -8,6 +8,8 @@ import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 
 import Environment from '../../environment';
 
+import { unreachable } from 'glimmer-util';
+
 export default class UnlessSyntax extends StatementSyntax {
   type = "unless-statement";
 
@@ -34,15 +36,17 @@ export default class UnlessSyntax extends StatementSyntax {
     dsl.test('environment');
 
     dsl.block(null, dsl => {
-      if (blocks.inverse) {
+      if (blocks.default && blocks.inverse) {
         dsl.jumpIf('ELSE');
         dsl.evaluate('default', blocks.default);
         dsl.jump('END');
         dsl.label('ELSE');
         dsl.evaluate('inverse', blocks.inverse);
-      } else {
+      } else if (blocks.default) {
         dsl.jumpIf('END');
         dsl.evaluate('default', blocks.default);
+      } else {
+        throw unreachable();
       }
     });
   }

@@ -7,6 +7,8 @@ import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 import * as Syntax from '../core';
 import Environment from '../../environment';
 
+import { unreachable } from 'glimmer-util';
+
 export default class WithSyntax extends StatementSyntax {
   type = "with-statement";
 
@@ -33,15 +35,17 @@ export default class WithSyntax extends StatementSyntax {
     dsl.test('environment');
 
     dsl.block(null, (dsl, BEGIN, END) => {
-      if (blocks.inverse) {
+      if (blocks.default && blocks.inverse) {
         dsl.jumpUnless('ELSE');
         dsl.evaluate('default', blocks.default);
         dsl.jump(END);
         dsl.label('ELSE');
         dsl.evaluate('inverse', blocks.inverse);
-      } else {
+      } else if (blocks.default) {
         dsl.jumpUnless(END);
         dsl.evaluate('default', blocks.default);
+      } else {
+        throw unreachable();
       }
     });
   }

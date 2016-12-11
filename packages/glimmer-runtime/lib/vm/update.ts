@@ -236,7 +236,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     }
 
     let vm = opcode.vmForInsertion(nextSibling);
-    let tryOpcode: TryOpcode;
+    let tryOpcode: Option<TryOpcode> = null;
 
     vm.execute(opcode.ops, vm => {
       vm.frame.setArgs(EvaluatedArgs.positional([item, memo]));
@@ -250,11 +250,11 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
       tryOpcode = new TryOpcode(opcode.ops, state, tracker, vm.updatingOpcodeStack.current);
     });
 
-    tryOpcode.didInitializeChildren();
+    tryOpcode!.didInitializeChildren();
 
-    updating.insertBefore(tryOpcode, reference);
+    updating.insertBefore(tryOpcode!, reference);
 
-    map[key] = tryOpcode;
+    map[key] = tryOpcode!;
 
     this.didInsert = true;
   }
