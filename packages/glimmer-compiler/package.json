@@ -1,6 +1,6 @@
 {
   "name": "glimmer-compiler",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
   "jsnext:main": "dist/modules/index.js",
@@ -14,9 +14,9 @@
     "dist"
   ],
   "dependencies": {
-    "glimmer-syntax": "^0.5.2",
-    "glimmer-util": "^0.5.2",
-    "glimmer-wire-format": "^0.5.2",
+    "glimmer-syntax": "^0.5.3",
+    "glimmer-util": "^0.5.3",
+    "glimmer-wire-format": "^0.5.3",
     "simple-html-tokenizer": "^0.2.5"
   },
   "devDependencies": {

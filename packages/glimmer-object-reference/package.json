@@ -1,6 +1,6 @@
 {
   "name": "glimmer-object-reference",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "References for a Glimmer-compatible object model",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
@@ -16,8 +16,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "glimmer-util": "^0.5.2",
-    "glimmer-reference": "^0.5.2"
+    "glimmer-util": "^0.5.3",
+    "glimmer-reference": "^0.5.3"
   },
   "files": [
     "dist"
