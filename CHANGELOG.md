@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### 2.10.1 (December 13, 2016)
+
+- [#14671](https://github.com/emberjs/ember.js/pull/14671) [BUGFIX] Fix an issue with the list attribute in <input> elements.
+- [#14681](https://github.com/emberjs/ember.js/pull/14681) [BUGFIX] Fix an issue with computed properties when using aliases as dependent keys.
+- [#14682](https://github.com/emberjs/ember.js/pull/14682) [BUGFIX] Ensure closure actions do not trigger unnecessary re-renders.
+
 ### 2.10.0 (November 28, 2016)
 
 - [#14293](https://github.com/emberjs/ember.js/pull/14293) [BUGFIX] Remove style warning when the binding is quoted.
