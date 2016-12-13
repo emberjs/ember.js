@@ -27,19 +27,24 @@ export default function TransformAttrsToProps() {
   this.syntax = null;
 }
 
-function isAttrs(node) {
-  if (node.parts[0] === 'attrs') {
+function isAttrs(node, symbols) {
+  let name = node.parts[0];
+
+  if (symbols.indexOf(name) !== -1) {
+    return false;
+  }
+
+  if (name === 'attrs') {
     return true;
   }
 
-  let _this = node.parts[0];
-  let attrs = node.parts[1];
-
-  if (_this === null && attrs === 'attrs') {
+  if (name === null && node.parts[1] === 'attrs') {
     node.parts.shift();
     node.original = node.original.slice(5);
     return true;
   }
+
+  return false;
 }
 
 /**
@@ -50,9 +55,21 @@ function isAttrs(node) {
 TransformAttrsToProps.prototype.transform = function TransformAttrsToProps_transform(ast) {
   let { traverse, builders: b } = this.syntax;
 
+  let stack = [[]];
+
   traverse(ast, {
+    Program: {
+      enter(node) {
+        let parent = stack[stack.length - 1];
+        stack.push(parent.concat(node.blockParams));
+      },
+      exit(node) {
+        stack.pop();
+      }
+    },
+
     PathExpression(node) {
-      if (isAttrs(node)) {
+      if (isAttrs(node, stack[stack.length - 1])) {
         let path = b.path(node.original.substr(6));
         path.original = `@${path.original}`;
         path.data = true;
