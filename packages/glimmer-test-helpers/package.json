@@ -1,6 +1,6 @@
 {
   "name": "glimmer-test-helpers",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
   "jsnext:main": "dist/modules/index.js",
@@ -14,14 +14,14 @@
     "dist"
   ],
   "dependencies": {
-    "glimmer-reference": "^0.5.2",
-    "glimmer-runtime": "^0.5.2",
-    "glimmer-compiler": "^0.5.2",
-    "glimmer-util": "^0.5.2",
-    "glimmer-object": "^0.5.2",
-    "glimmer-object-reference": "^0.5.2",
-    "glimmer-object-model": "^0.5.2",
-    "glimmer-wire-format": "^0.5.2"
+    "glimmer-reference": "^0.5.3",
+    "glimmer-runtime": "^0.5.3",
+    "glimmer-compiler": "^0.5.3",
+    "glimmer-util": "^0.5.3",
+    "glimmer-object": "^0.5.3",
+    "glimmer-object-reference": "^0.5.3",
+    "glimmer-object-model": "^0.5.3",
+    "glimmer-wire-format": "^0.5.3"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
