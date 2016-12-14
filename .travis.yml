@@ -58,4 +58,3 @@ env:
     - TEST_SUITE=travis-browsers DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=sauce
     - TEST_SUITE=allow-backtracking-rerender ALLOW_BACKTRACKING=true DISABLE_PUBLISHING=true
-    - TEST_SUITE=each-package-tests BUILD_TYPE=alpha
