@@ -26,7 +26,6 @@
   ],
   "devDependencies": {
     "@types/qunit": "^2.0.31",
-    "typescript": "^2.1.4",
-    "glimmer-test-helpers": "^0.5.2"
+    "typescript": "^2.1.4"
   }
 }

@@ -4,7 +4,7 @@ import { EntryPoint, InlineBlock, PartialBlock, Layout } from './compiled/blocks
 import Environment from './environment';
 import { EMPTY_SLICE, Option, LinkedList, Stack } from 'glimmer-util';
 import { SerializedTemplateBlock, TemplateMeta, SerializedBlock, Statement as SerializedStatement } from 'glimmer-wire-format';
-import SymbolTable from './symbol-table';
+import { SymbolTable, entryPoint as entryPointTable, layout as layoutTable, block as blockTable } from './symbol-table';
 
 export default class Scanner {
   constructor(private block: SerializedTemplateBlock, private meta: TemplateMeta, private env: Environment) {
@@ -13,7 +13,7 @@ export default class Scanner {
   scanEntryPoint(): EntryPoint {
     let { block, meta } = this;
 
-    let symbolTable = SymbolTable.forEntryPoint(meta);
+    let symbolTable = entryPointTable(meta);
     let program = buildStatements(block, block.blocks, symbolTable, this.env);
     return new EntryPoint(program, symbolTable);
   }
@@ -22,7 +22,7 @@ export default class Scanner {
     let { block, meta } = this;
     let { blocks, named, yields, hasPartials } = block;
 
-    let symbolTable = SymbolTable.forLayout(named, yields, hasPartials, meta);
+    let symbolTable = layoutTable(meta, named, yields, hasPartials);
     let program = buildStatements(block, blocks, symbolTable, this.env);
 
     return new Layout(program, symbolTable, named, yields, hasPartials);
@@ -69,13 +69,13 @@ export class BlockScanner {
 
   blockFor(symbolTable: SymbolTable, id: number): InlineBlock {
     let block = this.blocks[id];
-    let childTable = SymbolTable.forBlock(this.symbolTable, block.locals);
+    let childTable = blockTable(this.symbolTable, block.locals);
     let program = buildStatements(block, this.blocks, childTable, this.env);
     return new InlineBlock(program, childTable, block.locals);
   }
 
   startBlock(locals: string[]) {
-    let childTable = SymbolTable.forBlock(this.symbolTable, locals);
+    let childTable = blockTable(this.symbolTable, locals);
     this.stack.push(new ChildBlockScanner(childTable));
   }
 

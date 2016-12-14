@@ -97,7 +97,7 @@ export class BindPositionalArgsOpcode extends Opcode {
 
   static create(block: InlineBlock): BindPositionalArgsOpcode {
     let names = block.locals;
-    let symbols = names.map(name => block.symbolTable.getLocal(name));
+    let symbols = names.map(name => block.symbolTable.getSymbol('local', name)) as number[];
     return new this(names, symbols);
   }
 
@@ -126,7 +126,7 @@ export class BindNamedArgsOpcode extends Opcode {
 
   static create(layout: Layout) {
     let names = layout.named;
-    let symbols = names.map(name => layout.symbolTable.getNamed(name));
+    let symbols = names.map(name => layout.symbolTable.getSymbol('named', name)) as number[];
 
     return new this(names, symbols);
   }
@@ -160,7 +160,7 @@ export class BindBlocksOpcode extends Opcode {
 
   static create(layout: Layout) {
     let names = layout.yields;
-    let symbols = names.map(name => layout.symbolTable.getYield(name));
+    let symbols = names.map(name => layout.symbolTable.getSymbol('yields', name)) as number[];
 
     return new this(names, symbols);
   }

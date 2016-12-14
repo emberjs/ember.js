@@ -25,7 +25,7 @@ export type Label = string;
 
 export class StatementCompilationBufferProxy implements StatementCompilationBuffer {
 
-  constructor(protected inner: StatementCompilationBuffer) {}
+  constructor(protected inner: StatementCompilationBuffer, public symbolTable: SymbolTable = inner.symbolTable) {}
 
   get component(): ComponentBuilder {
     return this.inner.component;
@@ -38,44 +38,12 @@ export class StatementCompilationBufferProxy implements StatementCompilationBuff
   append<T extends Opcode>(opcode: T) {
     this.inner.append(opcode);
   }
-
-  getLocalSymbol(name: string): number {
-    return this.inner.getLocalSymbol(name);
-  }
-
-  hasLocalSymbol(name: string): boolean {
-    return this.inner.hasLocalSymbol(name);
-  }
-
-  getNamedSymbol(name: string): number {
-    return this.inner.getNamedSymbol(name);
-  }
-
-  hasNamedSymbol(name: string): boolean {
-    return this.inner.hasNamedSymbol(name);
-  }
-
-  getBlockSymbol(name: string): number {
-    return this.inner.getBlockSymbol(name);
-  }
-
-  hasBlockSymbol(name: string): boolean {
-    return this.inner.hasBlockSymbol(name);
-  }
-
-  getPartialArgsSymbol(): number {
-    return this.inner.getPartialArgsSymbol();
-  }
-
-  hasPartialArgsSymbol(): boolean {
-    return this.inner.hasPartialArgsSymbol();
-  }
 }
 
 export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy {
   private labelsStack = new Stack<Dict<vm.LabelOpcode>>();
 
-  constructor(inner: StatementCompilationBuffer, protected symbolTable: SymbolTable, public env: Environment) {
+  constructor(inner: StatementCompilationBuffer, public symbolTable: SymbolTable, public env: Environment) {
     super(inner);
   }
 
@@ -329,7 +297,7 @@ function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E>
   return expr && typeof expr['compile'] === 'function';
 }
 
-export default class OpcodeBuilder extends BasicOpcodeBuilder {
+export default class OpcodeBuilder extends BasicOpcodeBuilder implements StatementCompilationBuffer {
   compile<E>(expr: Represents<E>): E {
     if (isCompilableExpression(expr)) {
       return expr.compile(this, this.env, this.symbolTable);
