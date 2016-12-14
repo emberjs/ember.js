@@ -10,20 +10,18 @@ addons:
 
 cache:
   directories:
-    - $HOME/.npm
+    - $HOME/.yarn
     - $HOME/.yarn-cache
     - $HOME/.cache # includes bowers cache
 
 before_install:
-  - "npm config set spin false"
-  - "npm --version"
+  - curl -o- -L https://yarnpkg.com/install.sh | bash
   - "phantomjs --version"
-  - "rm -f /tmp/*.dmp"
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
 
 install:
-  - "npm install -g yarn bower"
+  - "yarn global add bower"
   - "yarn install --prefer-offline"
   - "bower install"
 
