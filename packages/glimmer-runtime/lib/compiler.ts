@@ -5,7 +5,7 @@ import { OpSeq, Opcode } from './opcodes';
 import { EMPTY_ARRAY } from './utils';
 import * as Syntax from './syntax/core';
 import { Environment } from './environment';
-import { SymbolTable, ProgramSymbolTable } from 'glimmer-interfaces';
+import SymbolTable, { ProgramSymbolTable } from './symbol-table';
 import { Block, CompiledBlock, CompiledProgram,  EntryPoint, InlineBlock, Layout } from './compiled/blocks';
 
 import {
@@ -190,7 +190,7 @@ class EmptyBuilder {
     let { env } = this;
 
     let list = new CompileIntoList(env, EMPTY_SYMBOL_TABLE);
-    return new CompiledBlock(list, 0);
+    return new CompiledBlock(list);
   }
 }
 

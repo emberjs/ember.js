@@ -799,10 +799,9 @@ export class Ref extends ExpressionSyntax<Opaque> {
       let inner = new CompiledSelf();
       let path = parts.slice(1) as string[];
       return CompiledLookup.create(inner, path);
-    } else if (lookup.hasLocalSymbol(head)) {
-      let symbol = lookup.getLocalSymbol(head);
+    } else if (local = lookup.symbolTable.getSymbol('local', head)) {
       let path = parts.slice(1) as string[];
-      let inner = new CompiledSymbol(symbol, head);
+      let inner = new CompiledSymbol(local, head);
       return CompiledLookup.create(inner, path);
     } else {
       let inner = new CompiledSelf();
