@@ -12,10 +12,6 @@ export default {
     throw new EmberError('You can\'t use appendChild outside of the rendering process');
   },
 
-  $() {
-    return undefined;
-  },
-
   // Handle events from `Ember.EventDispatcher`
   handleEvent() {
     return true; // continue event propagation

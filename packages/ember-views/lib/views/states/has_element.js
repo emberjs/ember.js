@@ -1,15 +1,10 @@
 import { assign } from 'ember-utils';
 import _default from './default';
 import { run, flaggedInstrument } from 'ember-metal';
-import jQuery from '../../system/jquery';
 
 const hasElement = Object.create(_default);
 
 assign(hasElement, {
-  $(view, sel) {
-    let elem = view.element;
-    return sel ? jQuery(sel, elem) : jQuery(elem);
-  },
 
   rerender(view) {
     view.renderer.rerender(view);

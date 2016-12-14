@@ -5,6 +5,8 @@ import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { getViewId, getViewElement } from 'ember-views';
 import { classes } from '../../utils/test-helpers';
+import { tryInvoke } from 'ember-utils';
+import { runAppend } from 'internal-test-helpers';
 
 class LifeCycleHooksTest extends RenderingTest {
   constructor() {
@@ -1567,6 +1569,36 @@ moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
         previousSibling: true
       }
     ]);
+  }
+  ['@test lifecycle hooks have proper access to this.$()'](assert) {
+    assert.expect(6);
+    let component;
+    let FooBarComponent = Component.extend({
+      tagName: 'div',
+      init() {
+        assert.notOk(this.$(), 'no access to element via this.$() on init() enter');
+        this._super(...arguments);
+        assert.notOk(this.$(), 'no access to element via this.$() after init() finished');
+      },
+      willInsertElement() {
+        component = this;
+        assert.ok(this.$(), 'willInsertElement has access to element via this.$()');
+      },
+      didInsertElement() {
+        assert.ok(this.$(), 'didInsertElement has access to element via this.$()');
+      },
+      willDestroyElement() {
+        assert.ok(this.$(), 'willDestroyElement has access to element via this.$()');
+      },
+      didDestroyElement() {
+        assert.notOk(this.$(), 'didDestroyElement does not have access to element via this.$()');
+      }
+    });
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+    let { owner } = this;
+    let comp = owner.lookup('component:foo-bar');
+    runAppend(comp);
+    this.runTask(() => tryInvoke(component, 'destroy'));
   }
 });
 
