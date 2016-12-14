@@ -10,37 +10,6 @@ export function entryPoint(meta: Option<TemplateMeta>): ProgramSymbolTable {
   return new ProgramSymbolTable(meta);
 }
 
-export interface SymbolTable {
-  getMeta(): Option<TemplateMeta>;
-  getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number>;
-  getPartialArgs(): Option<number>;
-  isTop(): boolean;
-}
-
-export interface ProgramSymbolTable extends SymbolTable {
-  size: number;
-  getSymbol(kind: 'local', name: string): null;
-  getSymbol(kind: 'named' | 'yields', name: string): Option<number>;
-}
-
-export interface BlockSymbolTable extends SymbolTable {
-  getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number>;
-}
-
-export default SymbolTable;
-
-export abstract class BaseSymbolTable implements SymbolTable {
-  protected abstract program: SymbolTable;
-  abstract getMeta(): Option<TemplateMeta>;
-  abstract getSymbol(kind: never, name: string): Option<number>;
-  abstract getPartialArgs(): Option<number>;
-  abstract isTop(): boolean;
-}
-
-export function entryPoint(meta: Option<TemplateMeta>): ProgramSymbolTable {
-  return new ProgramSymbolTable(meta);
-}
-
 export function layout(meta: TemplateMeta, wireNamed: string[], wireYields: string[], hasPartials: boolean): ProgramSymbolTable {
   let { named, yields, partialSymbol, size } = symbols(wireNamed, wireYields, hasPartials);
   return new ProgramSymbolTable(meta, named, yields, partialSymbol, size);
@@ -67,7 +36,7 @@ function symbols(named: string[], yields: string[], hasPartials: boolean): { nam
   return { named: namedMap, yields: yieldMap, partialSymbol, size };
 }
 
-export class ProgramSymbolTable extends BaseSymbolTable {
+export class ProgramSymbolTable implements IProgramSymbolTable {
   program: this;
 
   constructor(
@@ -77,7 +46,6 @@ export class ProgramSymbolTable extends BaseSymbolTable {
     private partialArgs: Option<number> = null,
     public size = 1
   ) {
-    super();
     this.program = this;
   }
 
@@ -86,7 +54,8 @@ export class ProgramSymbolTable extends BaseSymbolTable {
   }
 
   getSymbol(kind: 'local', name: string): null;
-  getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number> {
+  getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number>;
+  getSymbol(kind: string, name: string): Option<number> {
     if (kind === 'local') return null;
     return this[kind][name];
   }
@@ -94,15 +63,10 @@ export class ProgramSymbolTable extends BaseSymbolTable {
   getPartialArgs(): number {
     return this.partialArgs || 0;
   }
-
-  isTop(): true {
-    return true;
-  }
 }
 
-export class BlockSymbolTable extends BaseSymbolTable {
+export class BlockSymbolTable implements IBlockSymbolTable {
   constructor(private parent: SymbolTable, protected program: ProgramSymbolTable, private locals: Dict<number>) {
-    super();
   }
 
   getMeta(): Option<TemplateMeta> {
@@ -143,25 +107,7 @@ export const EMPTY_SYMBOL_TABLE: SymbolTable = {
     throw new Error("BUG: Calling getSymbol on EMPTY_SYMBOL_TABLE");
   },
 
-  isTop(): false {
-    return false;
-  }
-}
-
-export const EMPTY_SYMBOL_TABLE: SymbolTable = {
-  getMeta() {
-    return null;
-  },
-
-  getSymbol(kind: never, name: string): number {
-    throw new Error("BUG: Calling getSymbol on EMPTY_SYMBOL_TABLE");
-  },
-
   getPartialArgs(): Option<number> {
     return null;
-  },
-
-  isTop(): boolean {
-    return false;
   }
 };
