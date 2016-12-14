@@ -14,7 +14,7 @@
     "tmp": true
   },
   "files.trimTrailingWhitespace": true,
-  "editor.renderWhitespace": true,
+  "editor.renderWhitespace": "boundary",
   "editor.insertSpaces": true,
   "editor.tabSize": 2
 }
