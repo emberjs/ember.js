@@ -1,6 +1,6 @@
 import { Statement as StatementSyntax } from './syntax';
 
-import SymbolTable from './symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 
 import * as Simple from './dom/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';

@@ -5,7 +5,7 @@ import {
   Expression as ExpressionSyntax
 } from '../../syntax';
 
-import SymbolTable from '../../symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 
 import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 

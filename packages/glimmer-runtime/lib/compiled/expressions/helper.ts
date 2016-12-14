@@ -2,7 +2,7 @@ import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from './args';
 import VM from '../../vm/append';
 import { Helper } from '../../environment';
-import SymbolTable from '../../symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 import { PathReference } from 'glimmer-reference';
 import { Opaque, Option } from 'glimmer-util';
 

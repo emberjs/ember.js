@@ -4,7 +4,7 @@ import { Environment } from './environment';
 import { CompiledExpression } from './compiled/expressions';
 import { Opcode, OpSeq } from './opcodes';
 import { InlineBlock } from './compiled/blocks';
-import SymbolTable from './symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 
 import { ComponentBuilder } from './opcode-builder';
 

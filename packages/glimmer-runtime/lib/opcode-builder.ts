@@ -10,7 +10,7 @@ import {
   Args
 } from './syntax/core';
 
-import SymbolTable from './symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 
 import {
   Opaque

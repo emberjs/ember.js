@@ -193,7 +193,7 @@ export class BindPartialArgsOpcode extends Opcode {
   public type = "bind-partial-args";
 
   static create(layout: Layout) {
-    return new this(layout.symbolTable.getPartialArgs());
+    return new this(layout.symbolTable.getPartialArgs() as number);
   }
 
   constructor(private symbol: number) {
