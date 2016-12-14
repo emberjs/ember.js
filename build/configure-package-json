@@ -30,13 +30,13 @@ pkg.version = version;
 pkg.main = "dist/commonjs/index.js";
 pkg.module = "dist/modules/index.js";
 pkg["jsnext:main"] = "dist/modules/index.js";
-pkg.typings = "dist/commonjs/index.d.ts";
+pkg.typings = "index.ts";
 pkg.scripts = pkg.scripts || {};
 pkg.scripts.build = "../../build/build";
 pkg.scripts.prepublish = "npm run build";
 // Verify that we can load the package in Node without errors.
 pkg.scripts.test = "node -e 'require(\".\")'";
-pkg.files = ["dist"];
+pkg.files = ["dist", "lib", "index.ts"];
 pkg.devDependencies = pkg.devDependencies || {};
 pkg.devDependencies.typescript = typescriptVersion;
 

@@ -21,10 +21,9 @@ At a high level, each package is built for two output formats:
 1. ES6 module format, for use by tools like Webpack and Rollup.
 2. CommonJS format, for use from Node.js.
 
-Both formats are built into a package's `dist` directory. Each package has a
-`build/` directory that contains TypeScript configuration files and a build
-script. Each package's `package.json` is configured to point to the correct
-builds in `dist` depending on how it is consumed.
+Both formats are built into a package's `dist` directory. Each package's
+`package.json` is configured to point to the correct builds in `dist` depending
+on how it is consumed.
 
 ### Lerna
 
@@ -60,12 +59,10 @@ build/init-package glimmer-syntax
 This will:
 
 1. Symlink a `tsconfig.json` into the package root.
-2. Create a `build` directory and symlink CommonJS and module `tsconfig`s and
-   the `build.js` build script.
-3. Update the package's version to the current Lerna version.
-4. Configure `main`, `jsnext:main`, `module` and `typings` fields.
-5. Configure `build`, `prepublish` and `test` npm scripts.
-6. Restrict published files to `dist` via the `files` field.
+2. Update the package's version to the current Lerna version.
+3. Configure `main`, `jsnext:main`, `module` and `typings` fields.
+4. Configure `build`, `prepublish` and `test` npm scripts.
+5. Restrict published files to `dist` and `lib` via the `files` field.
 
 To verify the script worked correctly, `cd` into the package directory and run
 `npm run build` followed by `npm run test`.
@@ -78,13 +75,11 @@ symlink the dependencies by running `lerna bootstrap`.
 
 ### Shared Configuration
 
-To keep everything in sync, build configuration and scripts are shared and
-symlinked into each package.
+To keep everything in sync, build configuration and scripts are shared. Each
+package has its own `tsconfig.json` that extends the base configuration.
 
-1. `build/build.js` - Build script invoked by `npm run build`
+1. `build/build` - Build script invoked by `npm run build`
 2. `build/tsconfig.json` - Base TypeScript compiler configuration
-3. `build/tsconfig.commonjs.json` - TypeScript compiler configuration for CommonJS
-3. `build/tsconfig.modules.json` - TypeScript compiler configuration for ES6 modules
 
 ### `package.json`
 
@@ -101,14 +96,14 @@ Each package has its own `package.json` with the following fields:
   "module": "dist/modules/index.js",
   "jsnext:main": "dist/modules/index.js",
   // Tells TypeScript where to find type declarations for the package.
-  "typings": "dist/commonjs/index.d.ts",
+  "typings": "index.ts",
   // Omits TypeScript source and other files from the npm package by restricting published files
   // to only the `dist` directory.
-  "files": ["dist"],
+  "files": ["dist", "index.ts", "lib"],
 
   "scripts": {
     // Runs TypeScript compiler once per output format
-    "build": "build/build.js",
+    "build": "../../build/build",
     // Runs the build before publishing to npm
     "prepublish": "npm run build",
     // Verifies the build succeeded by requiring the package from Node.
