@@ -4,7 +4,7 @@ import { Opcode, OpcodeJSON } from '../../opcodes';
 import { Assert } from './vm';
 import { VM } from '../../vm';
 import { PartialDefinition } from '../../partial';
-import SymbolTable from '../../symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 import { PartialBlock } from '../blocks';
 
 export class PutDynamicPartialDefinitionOpcode extends Opcode {

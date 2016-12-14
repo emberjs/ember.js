@@ -4,7 +4,8 @@ import { EntryPoint, InlineBlock, PartialBlock, Layout } from './compiled/blocks
 import Environment from './environment';
 import { EMPTY_SLICE, Option, LinkedList, Stack } from 'glimmer-util';
 import { SerializedTemplateBlock, TemplateMeta, SerializedBlock, Statement as SerializedStatement } from 'glimmer-wire-format';
-import { SymbolTable, entryPoint as entryPointTable, layout as layoutTable, block as blockTable } from './symbol-table';
+import { entryPoint as entryPointTable, layout as layoutTable, block as blockTable } from './symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 
 export default class Scanner {
   constructor(private block: SerializedTemplateBlock, private meta: TemplateMeta, private env: Environment) {

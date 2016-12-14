@@ -16,7 +16,7 @@ import { PartialDefinition } from '../../partial';
 import Environment from '../../environment';
 import { InlineBlock, Layout } from '../blocks';
 import { EMPTY_ARRAY } from '../../utils';
-import SymbolTable from '../../symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 import { ComponentBuilder } from '../../opcode-builder';
 
 export type Represents<E> = CompilesInto<E> | E;

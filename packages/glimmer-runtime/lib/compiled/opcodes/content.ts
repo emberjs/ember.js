@@ -28,7 +28,7 @@ import { ConditionalReference } from '../../references';
 import { Args } from '../../syntax/core';
 import { Environment } from '../../environment';
 import { UpdatableBlockTracker } from '../../builder';
-import SymbolTable from '../../symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 
 function isEmpty(value: Opaque): boolean {
   return value === null || value === undefined || typeof value['toString'] !== 'function';

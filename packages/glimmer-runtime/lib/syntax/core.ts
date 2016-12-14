@@ -4,7 +4,7 @@ import {
   BlockScanner
 } from '../scanner';
 
-import SymbolTable from '../symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 
 import {
   ATTRIBUTE as ATTRIBUTE_SYNTAX,

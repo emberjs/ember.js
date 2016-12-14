@@ -5,7 +5,7 @@ import {
 import { PathReference } from 'glimmer-reference';
 import { assign } from 'glimmer-util';
 import { EntryPoint, Layout, PartialBlock } from './compiled/blocks';
-import SymbolTable from './symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 import { Environment, DynamicScope } from './environment';
 import { ElementStack } from './builder';
 import { VM } from './vm';

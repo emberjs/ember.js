@@ -17,7 +17,7 @@ import {
   TrustingAttr
 } from './core';
 
-import SymbolTable from '../symbol-table';
+import { SymbolTable } from 'glimmer-interfaces';
 import { Statement as StatementSyntax } from '../syntax';
 import {
   Statements as SerializedStatements,
