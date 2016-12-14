@@ -1,7 +1,7 @@
 import { OpSeq } from '../opcodes';
 import { Program } from '../syntax';
 import { Environment } from '../environment';
-import { SymbolTable, ProgramSymbolTable } from 'glimmer-interfaces';
+import SymbolTable, { ProgramSymbolTable } from '../symbol-table';
 import { EMPTY_ARRAY } from '../utils';
 
 import {
