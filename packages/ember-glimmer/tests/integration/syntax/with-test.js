@@ -208,6 +208,26 @@ moduleFor('Syntax test: {{#with as}}', class extends IfUnlessWithSyntaxTest {
     this.assertText('Hello world');
   }
 
+  ['@test `attrs` can be used as a block param [GH#14678]']() {
+    this.render('{{#with hash as |attrs|}}[{{hash.foo}}-{{attrs.foo}}]{{/with}}', {
+      hash: { foo: 'foo' }
+    });
+
+    this.assertText('[foo-foo]');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('[foo-foo]');
+
+    this.runTask(() => this.context.set('hash.foo', 'FOO'));
+
+    this.assertText('[FOO-FOO]');
+
+    this.runTask(() => this.context.set('hash.foo', 'foo'));
+
+    this.assertText('[foo-foo]');
+  }
+
 });
 
 moduleFor('Syntax test: Multiple {{#with as}} helpers', class extends RenderingTest {
