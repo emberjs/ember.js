@@ -1,7 +1,7 @@
 import { OpSeq } from '../opcodes';
 import { Program } from '../syntax';
 import { Environment } from '../environment';
-import SymbolTable from '../symbol-table';
+import SymbolTable, { ProgramSymbolTable } from '../symbol-table';
 import { EMPTY_ARRAY } from '../utils';
 
 import {
@@ -13,11 +13,15 @@ import { Option } from 'glimmer-util';
 
 export class CompiledBlock {
   public ops: OpSeq;
-  public symbols: number;
 
-  constructor(ops: OpSeq, symbols: number) {
+  constructor(ops: OpSeq) {
     this.ops = ops;
-    this.symbols = symbols;
+  }
+}
+
+export class CompiledProgram extends CompiledBlock {
+  constructor(ops: OpSeq, public symbols: number) {
+    super(ops);
   }
 }
 
@@ -41,7 +45,7 @@ export class InlineBlock extends Block {
     if (compiled) return compiled;
 
     let ops = new InlineBlockCompiler(this, env).compile();
-    return this.compiled = new CompiledBlock(ops, this.symbolTable.size);
+    return this.compiled = new CompiledBlock(ops);
   }
 }
 
@@ -49,15 +53,19 @@ export class PartialBlock extends InlineBlock {
 }
 
 export abstract class TopLevelTemplate extends Block {
+  public symbolTable: ProgramSymbolTable;
+  public symbols: number;
 }
 
 export class EntryPoint extends TopLevelTemplate {
-  compile(env: Environment) {
+  protected compiled: Option<CompiledProgram> = null;
+
+  compile(env: Environment): CompiledProgram {
     let compiled = this.compiled;
     if (compiled) return compiled;
 
     let ops = new EntryPointCompiler(this, env).compile();
-    return this.compiled = new CompiledBlock(ops, this.symbolTable.size);
+    return this.compiled = new CompiledProgram(ops, this.symbolTable.size);
   }
 }
 

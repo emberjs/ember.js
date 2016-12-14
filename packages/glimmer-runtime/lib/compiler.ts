@@ -5,8 +5,8 @@ import { OpSeq, Opcode } from './opcodes';
 import { EMPTY_ARRAY } from './utils';
 import * as Syntax from './syntax/core';
 import { Environment } from './environment';
-import SymbolTable from './symbol-table';
-import { Block, CompiledBlock, EntryPoint, InlineBlock, Layout } from './compiled/blocks';
+import SymbolTable, { ProgramSymbolTable } from './symbol-table';
+import { Block, CompiledBlock, CompiledProgram,  EntryPoint, InlineBlock, Layout } from './compiled/blocks';
 
 import {
   ComponentBuilder as IComponentBuilder,
@@ -56,6 +56,7 @@ export default Compiler;
 export class EntryPointCompiler extends Compiler {
   private ops: OpcodeBuilderDSL;
   protected block: EntryPoint;
+  protected symbolTable: ProgramSymbolTable;
 
   constructor(template: EntryPoint, env: Environment) {
     super(template, env);
@@ -80,18 +81,6 @@ export class EntryPointCompiler extends Compiler {
 
   append(op: Opcode) {
     this.ops.append(op);
-  }
-
-  getLocalSymbol(name: string): number {
-    return this.symbolTable.getLocal(name);
-  }
-
-  getNamedSymbol(name: string): number {
-    return this.symbolTable.getNamed(name);
-  }
-
-  getYieldSymbol(name: string): number {
-    return this.symbolTable.getYield(name);
   }
 }
 
@@ -140,8 +129,8 @@ export interface ComponentParts {
 
 export interface CompiledComponentParts {
   tag: string;
-  preamble: CompileIntoList;
-  main: CompileIntoList;
+  preamble: CompileIntoList<ProgramSymbolTable>;
+  main: CompileIntoList<ProgramSymbolTable>;
 }
 
 export interface Compilable {
@@ -187,7 +176,6 @@ class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
 }
 
 class EmptyBuilder {
-
   constructor(public env: Environment) {}
 
   get tag(): Component.ComponentTagBuilder {
@@ -202,7 +190,7 @@ class EmptyBuilder {
     let { env } = this;
 
     let list = new CompileIntoList(env, EMPTY_SYMBOL_TABLE);
-    return new CompiledBlock(list, 0);
+    return new CompiledBlock(list);
   }
 }
 
@@ -286,7 +274,7 @@ class WrappedBuilder {
     dsl.didRenderLayout();
     dsl.stopLabels();
 
-    return new CompiledBlock(dsl.toOpSeq(), symbolTable.size);
+    return new CompiledProgram(dsl.toOpSeq(), symbolTable.size);
   }
 }
 
@@ -327,7 +315,7 @@ class UnwrappedBuilder {
     dsl.didRenderLayout();
     dsl.stopLabels();
 
-    return new CompiledBlock(dsl.toOpSeq(), layout.symbolTable.size);
+    return new CompiledProgram(dsl.toOpSeq(), layout.symbolTable.size);
   }
 }
 
@@ -410,46 +398,14 @@ class ComponentBuilder implements IComponentBuilder {
   }
 }
 
-export class CompileIntoList extends LinkedList<Opcode> implements StatementCompilationBuffer {
+export class CompileIntoList<T extends SymbolTable> extends LinkedList<Opcode> implements StatementCompilationBuffer {
   public component: IComponentBuilder;
 
-  constructor(private env: Environment, private symbolTable: SymbolTable) {
+  constructor(private env: Environment, public symbolTable: SymbolTable) {
     super();
 
     let dsl = new OpcodeBuilderDSL(this, symbolTable, env);
     this.component = new ComponentBuilder(dsl);
-  }
-
-  getLocalSymbol(name: string): number {
-    return this.symbolTable.getLocal(name);
-  }
-
-  hasLocalSymbol(name: string): boolean {
-    return typeof this.symbolTable.getLocal(name) === 'number';
-  }
-
-  getNamedSymbol(name: string): number {
-    return this.symbolTable.getNamed(name);
-  }
-
-  hasNamedSymbol(name: string): boolean {
-    return typeof this.symbolTable.getNamed(name) === 'number';
-  }
-
-  getBlockSymbol(name: string): number {
-    return this.symbolTable.getYield(name);
-  }
-
-  hasBlockSymbol(name: string): boolean {
-    return typeof this.symbolTable.getYield(name) === 'number';
-  }
-
-  getPartialArgsSymbol(): number {
-    return this.symbolTable.getPartialArgs();
-  }
-
-  hasPartialArgsSymbol(): boolean {
-    return typeof this.symbolTable.getPartialArgs() === 'number';
   }
 
   toOpSeq(): OpSeq {

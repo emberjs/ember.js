@@ -1,119 +1,149 @@
-import { Option, dict } from 'glimmer-util';
+import { Option, Dict, dict } from 'glimmer-util';
 import { TemplateMeta } from 'glimmer-wire-format';
 
-export default class SymbolTable {
-  static forEntryPoint(meta: TemplateMeta): SymbolTable {
-    return new SymbolTable(null, meta).initEntryPoint();
-  }
+export interface SymbolTable {
+  getMeta(): Option<TemplateMeta>;
+  getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number>;
+  getPartialArgs(): Option<number>;
+  isTop(): boolean;
+}
 
-  static forLayout(named: string[], yields: string[], hasPartials: boolean, meta: TemplateMeta): SymbolTable {
-    return new SymbolTable(null, meta).initLayout(named, yields, hasPartials);
-  }
+export interface ProgramSymbolTable extends SymbolTable {
+  size: number;
+  getSymbol(kind: 'local', name: string): null;
+  getSymbol(kind: 'named' | 'yields', name: string): Option<number>;
+}
 
-  static forBlock(parent: SymbolTable, locals: string[]): SymbolTable {
-    return new SymbolTable(parent, null).initBlock(locals);
-  }
+export interface BlockSymbolTable extends SymbolTable {
+  getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number>;
+}
 
-  private top: SymbolTable;
-  private locals = dict<number>();
-  private named = dict<number>();
-  private yields = dict<number>();
-  private partialArgs: Option<number> = null;
-  public size = 1;
+export default SymbolTable;
 
-  constructor(private parent: Option<SymbolTable>, private meta: Option<TemplateMeta> = null) {
-    this.top = parent ? parent.top : this;
-  }
+export abstract class BaseSymbolTable implements SymbolTable {
+  protected abstract program: SymbolTable;
 
-  initEntryPoint(): this {
-    return this;
-  }
+  abstract getMeta(): Option<TemplateMeta>;
+  abstract getSymbol(kind: never, name: string): Option<number>;
+  abstract getPartialArgs(): Option<number>;
+  abstract isTop(): boolean;
+}
 
-  initBlock(locals: string[]): this {
-    this.initPositionals(locals);
-    return this;
-  }
+export function entryPoint(meta: Option<TemplateMeta>): ProgramSymbolTable {
+  return new ProgramSymbolTable(meta);
+}
 
-  initLayout(named: string[], yields: string[], hasPartials: boolean): this {
-    this.initNamed(named);
-    this.initYields(yields);
-    this.initPartials(hasPartials);
-    return this;
-  }
+export function layout(meta: TemplateMeta, wireNamed: string[], wireYields: string[], hasPartials: boolean): ProgramSymbolTable {
+  let { named, yields, partialSymbol, size } = symbols(wireNamed, wireYields, hasPartials);
+  return new ProgramSymbolTable(meta, named, yields, partialSymbol, size);
+}
 
-  initPositionals(positionals: string[]): this {
-    if (positionals) positionals.forEach(s => this.locals[s] = this.top.size++);
-    return this;
-  }
+export function block(parent: SymbolTable, locals: string[]): SymbolTable {
+  let localsMap = dict<number>();
+  let program = parent['program'];
+  locals.forEach(l => localsMap[l] = program.size++);
+  return new BlockSymbolTable(parent, program, localsMap);
+}
 
-  initNamed(named: string[]): this {
-    if (named) named.forEach(s => this.named[s] = this.top.size++);
-    return this;
-  }
+function symbols(named: string[], yields: string[], hasPartials: boolean): { named: Dict<number>, yields: Dict<number>, partialSymbol: Option<number>, size: number } {
+  let yieldMap = dict<number>();
+  let namedMap = dict<number>();
 
-  initYields(yields: string[]): this {
-    if (yields) yields.forEach(b => this.yields[b] = this.top.size++);
-    return this;
-  }
+  let size = 1;
 
-  initPartials(hasPartials: boolean): this {
-    if (hasPartials) this.top.partialArgs = this.top.size++;
-    return this;
+  yields.forEach(y => yieldMap[y] = size++);
+  named.forEach(n => namedMap[n] = size++);
+
+  let partialSymbol: Option<number> = hasPartials ? size++ : null;
+
+  return { named: namedMap, yields: yieldMap, partialSymbol, size };
+}
+
+export class ProgramSymbolTable extends BaseSymbolTable {
+  program: this;
+
+  constructor(
+    private meta: Option<TemplateMeta>,
+    private named = dict<number>(),
+    private yields = dict<number>(),
+    private partialArgs: Option<number> = null,
+    public size = 1
+  ) {
+    super();
+    this.program = this;
   }
 
   getMeta(): Option<TemplateMeta> {
-    let { meta, parent } = this;
-
-    if (!meta && parent) {
-      meta = parent.getMeta();
-    }
-
-    return meta;
+    return this.meta;
   }
 
-  getYield(name: string): number {
-    let { yields, parent } = this;
-
-    let symbol = yields[name];
-
-    if (!symbol && parent) {
-      symbol = parent.getYield(name);
-    }
-
-    return symbol;
-  }
-
-  getNamed(name: string): number {
-    let { named, parent } = this;
-
-    let symbol = named[name];
-
-    if (!symbol && parent) {
-      symbol = parent.getNamed(name);
-    }
-
-    return symbol;
-  }
-
-  getLocal(name: string): number {
-    let { locals, parent } = this;
-
-    let symbol = locals[name];
-
-    if (!symbol && parent) {
-      symbol = parent.getLocal(name);
-    }
-
-    return symbol;
+  getSymbol(kind: 'local', name: string): null;
+  getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number> {
+    if (kind === 'local') return null;
+    return this[kind][name];
   }
 
   getPartialArgs(): number {
-    return this.top.partialArgs || 0;
+    return this.partialArgs || 0;
   }
 
-  isTop(): boolean {
-    return this.top === this;
+  isTop(): true {
+    return true;
   }
 }
 
-export const EMPTY_SYMBOL_TABLE = new SymbolTable(null);
+export class BlockSymbolTable extends BaseSymbolTable {
+  constructor(private parent: SymbolTable, protected program: ProgramSymbolTable, private locals: Dict<number>) {
+    super();
+  }
+
+  getMeta(): Option<TemplateMeta> {
+    return this.program.getMeta();
+  }
+
+  getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number> {
+    if (kind === 'local') {
+      return this.getLocal(name);
+    } else {
+      return this.program.getSymbol(kind, name);
+    }
+  }
+
+  private getLocal(name: string): Option<number> {
+    let { locals, parent } = this;
+
+    let symbol: Option<number> = locals[name];
+
+    if (!symbol && parent) {
+      symbol = parent.getSymbol('local', name);
+    }
+
+    return symbol;
+  }
+
+  getPartialArgs(): Option<number> {
+    return this.program.getPartialArgs();
+  }
+
+  isTop(): false {
+    return false;
+  }
+}
+
+export const EMPTY_SYMBOL_TABLE: SymbolTable = {
+  getMeta() {
+    return null;
+  },
+
+  getSymbol(kind: never, name: string): number {
+    throw new Error("BUG: Calling getSymbol on EMPTY_SYMBOL_TABLE");
+  },
+
+  getPartialArgs(): Option<number> {
+    return null;
+  },
+
+  isTop(): boolean {
+    return false;
+  }
+};

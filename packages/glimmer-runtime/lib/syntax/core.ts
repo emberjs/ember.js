@@ -628,15 +628,14 @@ export class Yield extends StatementSyntax {
   compile(dsl: OpcodeBuilderDSL, env: Environment, symbolTable: SymbolTable) {
     let { to } = this;
     let args = this.args.compile(dsl, env, symbolTable);
+    let yields: Option<number>, partial: Option<number>;
 
-    if (dsl.hasBlockSymbol(to)) {
-      let symbol = dsl.getBlockSymbol(to);
-      let inner = new CompiledGetBlockBySymbol(symbol, to);
+    if (yields = dsl.symbolTable.getSymbol('yields', to)) {
+      let inner = new CompiledGetBlockBySymbol(yields, to);
       dsl.append(new OpenBlockOpcode(inner, args));
       dsl.append(new CloseBlockOpcode());
-    } else if (dsl.hasPartialArgsSymbol()) {
-      let symbol = dsl.getPartialArgsSymbol();
-      let inner = new CompiledInPartialGetBlock(symbol, to);
+    } else if (partial = dsl.symbolTable.getPartialArgs()) {
+      let inner = new CompiledInPartialGetBlock(partial, to);
       dsl.append(new OpenBlockOpcode(inner, args));
       dsl.append(new CloseBlockOpcode());
     } else {
@@ -756,16 +755,15 @@ export class GetArgument extends ExpressionSyntax<Opaque> {
   compile(lookup: SymbolLookup): CompiledExpression<Opaque> {
     let { parts } = this;
     let head = parts[0];
+    let named: Option<number>, partial: Option<number>;
 
-    if (lookup.hasNamedSymbol(head)) {
-      let symbol = lookup.getNamedSymbol(head);
+    if (named = lookup.symbolTable.getSymbol('named', head)) {
       let path = parts.slice(1);
-      let inner = new CompiledSymbol(symbol, head);
+      let inner = new CompiledSymbol(named, head);
       return CompiledLookup.create(inner, path);
-    } else if (lookup.hasPartialArgsSymbol()) {
-      let symbol = lookup.getPartialArgsSymbol();
+    } else if (partial = lookup.symbolTable.getPartialArgs()) {
       let path = parts.slice(1);
-      let inner = new CompiledInPartialName(symbol, head);
+      let inner = new CompiledInPartialName(partial, head);
       return CompiledLookup.create(inner, path);
     } else {
       throw new Error(`[BUG] @${this.parts.join('.')} is not a valid lookup path.`);
@@ -795,15 +793,15 @@ export class Ref extends ExpressionSyntax<Opaque> {
   compile(lookup: SymbolLookup): CompiledExpression<Opaque> {
     let { parts } = this;
     let head = parts[0];
+    let local: Option<number>;
 
     if (head === null) { // {{this.foo}}
       let inner = new CompiledSelf();
       let path = parts.slice(1) as string[];
       return CompiledLookup.create(inner, path);
-    } else if (lookup.hasLocalSymbol(head)) {
-      let symbol = lookup.getLocalSymbol(head);
+    } else if (local = lookup.symbolTable.getSymbol('local', head)) {
       let path = parts.slice(1) as string[];
-      let inner = new CompiledSymbol(symbol, head);
+      let inner = new CompiledSymbol(local, head);
       return CompiledLookup.create(inner, path);
     } else {
       let inner = new CompiledSelf();
@@ -913,14 +911,13 @@ export class HasBlock extends ExpressionSyntax<boolean> {
 
   compile(compiler: SymbolLookup, env: Environment): CompiledExpression<boolean> {
     let { blockName } = this;
+    let yields: Option<number>, partial: Option<number>;
 
-    if (compiler.hasBlockSymbol(blockName)) {
-      let symbol = compiler.getBlockSymbol(blockName);
-      let inner = new CompiledGetBlockBySymbol(symbol, blockName);
+    if (yields = compiler.symbolTable.getSymbol('yields', blockName)) {
+      let inner = new CompiledGetBlockBySymbol(yields, blockName);
       return new CompiledHasBlock(inner);
-    } else if (compiler.hasPartialArgsSymbol()) {
-      let symbol = compiler.getPartialArgsSymbol();
-      let inner = new CompiledInPartialGetBlock(symbol, blockName);
+    } else if (partial = compiler.symbolTable.getPartialArgs()) {
+      let inner = new CompiledInPartialGetBlock(partial, blockName);
       return new CompiledHasBlock(inner);
     } else {
       throw new Error('[BUG] ${blockName} is not a valid block name.');
@@ -946,14 +943,13 @@ export class HasBlockParams extends ExpressionSyntax<boolean> {
 
   compile(compiler: SymbolLookup, env: Environment): CompiledExpression<boolean> {
     let { blockName } = this;
+    let yields: Option<number>, partial: Option<number>;
 
-    if (compiler.hasBlockSymbol(blockName)) {
-      let symbol = compiler.getBlockSymbol(blockName);
-      let inner = new CompiledGetBlockBySymbol(symbol, blockName);
+    if (yields = compiler.symbolTable.getSymbol('yields', blockName)) {
+      let inner = new CompiledGetBlockBySymbol(yields, blockName);
       return new CompiledHasBlockParams(inner);
-    } else if (compiler.hasPartialArgsSymbol()) {
-      let symbol = compiler.getPartialArgsSymbol();
-      let inner = new CompiledInPartialGetBlock(symbol, blockName);
+    } else if (partial = compiler.symbolTable.getPartialArgs()) {
+      let inner = new CompiledInPartialGetBlock(partial, blockName);
       return new CompiledHasBlockParams(inner);
     } else {
       throw new Error('[BUG] ${blockName} is not a valid block name.');

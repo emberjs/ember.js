@@ -58,14 +58,7 @@ export abstract class Expression<T> implements CompilesInto<CompiledExpression<T
 }
 
 export interface SymbolLookup {
-  getLocalSymbol(name: string): number;
-  hasLocalSymbol(name: string): boolean;
-  getNamedSymbol(name: string): number;
-  hasNamedSymbol(name: string): boolean;
-  getBlockSymbol(name: string): number;
-  hasBlockSymbol(name: string): boolean;
-  getPartialArgsSymbol(): number;
-  hasPartialArgsSymbol(): boolean;
+  symbolTable: SymbolTable;
 }
 
 export interface CompileInto {
