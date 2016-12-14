@@ -33,92 +33,43 @@ import OpcodeBuilderDSL from './compiled/opcodes/builder';
 
 import * as Component from './component/interfaces';
 
-abstract class Compiler {
-  protected symbolTable: SymbolTable;
-  protected current: StatementSyntax;
-
-  constructor(protected block: Block, public env: Environment) {
-    this.current = block.program.head();
-    this.symbolTable = block.symbolTable;
-  }
-
-  protected compileStatement(statement: StatementSyntax, ops: OpcodeBuilderDSL) {
-    this.env.statement(statement, this.symbolTable).compile(ops, this.env, this.symbolTable);
-  }
-}
-
 function compileStatement(env: Environment, statement: StatementSyntax, ops: OpcodeBuilderDSL, layout: Layout) {
   env.statement(statement, layout.symbolTable).compile(ops, env, layout.symbolTable);
 }
 
-export default Compiler;
+function compileBlock({ program: statements }: Block, env: Environment, symbolTable: SymbolTable, ops: OpcodeBuilderDSL) {
+  let current = statements.head();
 
-export class EntryPointCompiler extends Compiler {
-  private ops: OpcodeBuilderDSL;
-  protected block: EntryPoint;
-  protected symbolTable: ProgramSymbolTable;
-
-  constructor(template: EntryPoint, env: Environment) {
-    super(template, env);
-    let list = new CompileIntoList(env, template.symbolTable);
-    this.ops = new OpcodeBuilderDSL(list, template.symbolTable, env);
+  while (current) {
+    let next = statements.nextNode(current);
+    env.statement(current, symbolTable).compile(ops, env, symbolTable);
+    current = next;
   }
 
-  compile(): OpSeq {
-    let { block, ops } = this;
-    let { program } = block;
-
-    let current = program.head();
-
-    while (current) {
-      let next = program.nextNode(current);
-      this.compileStatement(current, ops);
-      current = next;
-    }
-
-    return ops.toOpSeq();
-  }
-
-  append(op: Opcode) {
-    this.ops.append(op);
-  }
+  return ops;
 }
 
-export class InlineBlockCompiler extends Compiler {
-  private ops: OpcodeBuilderDSL;
-  protected current: StatementSyntax;
+export function compileEntryPoint(block: Block, env: Environment): OpSeq {
+  let ops = builder(env, block.symbolTable);
+  return compileBlock(block, env, block.symbolTable, ops).toOpSeq();
+}
 
-  constructor(protected block: InlineBlock, env: Environment) {
-    super(block, env);
-    let list = new CompileIntoList(env, block.symbolTable);
-    this.ops = new OpcodeBuilderDSL(list, block.symbolTable, env);
+export function compileInlineBlock(block: InlineBlock, env: Environment): OpSeq {
+  let ops = builder(env, block.symbolTable);
+  let hasPositionalParameters = block.hasPositionalParameters();
+
+  if (hasPositionalParameters) {
+    ops.pushChildScope();
+    ops.bindPositionalArgsForBlock(block);
   }
 
-  compile(): OpSeq {
-    let { block, ops } = this;
-    let { program } = block;
+  compileBlock(block, env, block.symbolTable, ops);
 
-    let hasPositionalParameters = block.hasPositionalParameters();
-
-    if (hasPositionalParameters) {
-      ops.pushChildScope();
-      ops.bindPositionalArgsForBlock(block);
-    }
-
-    let current = program.head();
-
-    while (current) {
-      let next = program.nextNode(current);
-      this.compileStatement(current, ops);
-      current = next;
-    }
-
-    if (hasPositionalParameters) {
-      ops.popScope();
-    }
-
-    return ops.toOpSeq();
+  if (hasPositionalParameters) {
+    ops.popScope();
   }
+
+  return ops.toOpSeq();
 }
 
 export interface ComponentParts {
@@ -232,8 +183,7 @@ class WrappedBuilder {
     let { env, layout } = this;
 
     let symbolTable = layout.symbolTable;
-    let buffer = new CompileIntoList(env, layout.symbolTable);
-    let dsl = new OpcodeBuilderDSL(buffer, layout.symbolTable, env);
+    let dsl = builder(env, layout.symbolTable);
 
     dsl.startLabels();
 
@@ -290,8 +240,7 @@ class UnwrappedBuilder {
   compile(): CompiledBlock {
     let { env, layout } = this;
 
-    let buffer = new CompileIntoList(env, layout.symbolTable);
-    let dsl = new OpcodeBuilderDSL(buffer, layout.symbolTable, env);
+    let dsl = builder(env, layout.symbolTable);
 
     dsl.startLabels();
 
@@ -396,6 +345,11 @@ class ComponentBuilder implements IComponentBuilder {
       dsl.exit();
     });
   }
+}
+
+function builder<S extends SymbolTable>(env: Environment, symbolTable: S) {
+  let list = new CompileIntoList(env, symbolTable);
+  return new OpcodeBuilderDSL(list, symbolTable, env);
 }
 
 export class CompileIntoList<T extends SymbolTable> extends LinkedList<Opcode> implements StatementCompilationBuffer {

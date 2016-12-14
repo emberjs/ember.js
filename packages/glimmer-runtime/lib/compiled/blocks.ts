@@ -5,8 +5,8 @@ import { SymbolTable, ProgramSymbolTable } from 'glimmer-interfaces';
 import { EMPTY_ARRAY } from '../utils';
 
 import {
-  EntryPointCompiler,
-  InlineBlockCompiler
+  compileInlineBlock,
+  compileEntryPoint
 } from '../compiler';
 
 import { Option } from 'glimmer-util';
@@ -44,7 +44,7 @@ export class InlineBlock extends Block {
     let compiled = this.compiled;
     if (compiled) return compiled;
 
-    let ops = new InlineBlockCompiler(this, env).compile();
+    let ops = compileInlineBlock(this, env);
     return this.compiled = new CompiledBlock(ops);
   }
 }
@@ -64,7 +64,7 @@ export class EntryPoint extends TopLevelTemplate {
     let compiled = this.compiled;
     if (compiled) return compiled;
 
-    let ops = new EntryPointCompiler(this, env).compile();
+    let ops = compileEntryPoint(this, env);
     return this.compiled = new CompiledProgram(ops, this.symbolTable.size);
   }
 }

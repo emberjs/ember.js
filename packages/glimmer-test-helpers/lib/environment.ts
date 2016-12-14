@@ -4,7 +4,6 @@ import {
   DynamicScope,
 
   // Compiler
-  Compilable,
   CompiledBlock,
   SymbolLookup,
   SymbolTable,
