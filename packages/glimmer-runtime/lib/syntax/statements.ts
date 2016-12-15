@@ -17,11 +17,15 @@ import {
   TrustingAttr
 } from './core';
 
-import { SymbolTable } from 'glimmer-interfaces';
-import { Statement as StatementSyntax } from '../syntax';
+import { SymbolTable, Opaque } from 'glimmer-interfaces';
+import {
+  Statement as StatementSyntax,
+  Argument as ArgumentSyntax,
+  Attribute as AttributeSyntax
+} from '../syntax';
 import {
   Statements as SerializedStatements,
-  Statement as SerializedStatement
+  Statement as SerializedStatement,
 } from 'glimmer-wire-format';
 import { BlockScanner  } from '../scanner';
 
@@ -43,7 +47,7 @@ const {
   isTrustingAttr
 } = SerializedStatements;
 
-export default function(sexp: SerializedStatement, symbolTable: SymbolTable, scanner: BlockScanner): StatementSyntax {
+export default function(sexp: SerializedStatement, symbolTable: SymbolTable, scanner: BlockScanner): StatementSyntax | ArgumentSyntax<Opaque> | AttributeSyntax<Opaque> {
   if (isYield(sexp)) return Yield.fromSpec(sexp);
   if (isPartial(sexp)) return Partial.fromSpec(sexp);
   if (isBlock(sexp)) return Block.fromSpec(sexp, symbolTable, scanner);

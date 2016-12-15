@@ -17,7 +17,7 @@ export default class UnlessSyntax extends StatementSyntax {
     super();
   }
 
-  compile(dsl: OpcodeBuilderDSL, env: Environment) {
+  compile(dsl: OpcodeBuilderDSL) {
     //        PutArgs
     //        Enter(BEGIN, END)
     // BEGIN: Noop

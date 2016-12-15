@@ -70,20 +70,20 @@ export const ARGUMENT = "0f3802314-d747-bbc5-0168-97875185c3rt";
 
 export type Parameter<T> = Attribute<T> | Argument<T>;
 
-export abstract class Attribute<T> extends Statement {
+export abstract class Attribute<T> {
   "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   name: string;
   namespace: Option<string>;
   abstract valueSyntax(): Expression<T>;
 }
 
-export abstract class Argument<T> extends Statement {
+export abstract class Argument<T> {
   "0f3802314-d747-bbc5-0168-97875185c3rt" = true;
   name: string;
   namespace: Option<string>;
   abstract valueSyntax(): Expression<T>;
 }
 
-export function isAttribute(value: Statement): value is Attribute<any> {
+export function isAttribute(value: Object): value is Attribute<any> {
   return value && value[ATTRIBUTE] === true;
 }

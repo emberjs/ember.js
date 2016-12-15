@@ -16,7 +16,7 @@ export default class WithSyntax extends StatementSyntax {
     super();
   }
 
-  compile(dsl: OpcodeBuilderDSL, env: Environment) {
+  compile(dsl: OpcodeBuilderDSL) {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)

@@ -348,8 +348,8 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
       args = helper.args;
       path = helper.ref.parts;
     } else if (modifier) {
-      path = modifier.path;
-      args = modifier.args;
+      path = modifier.sexp[1];
+      args = [modifier.sexp[2], modifier.sexp[3]];
     } else {
       // TODO: Process this case better
       path = null;

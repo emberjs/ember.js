@@ -1,4 +1,5 @@
 import { HasGuid, ensureGuid } from './guid';
+import { Option } from './platform-utils';
 
 export interface Dict<T> {
   [index: string]: T;
@@ -63,19 +64,19 @@ export class DictSet<T extends SetMember> implements Set<T> {
 
 export class Stack<T> {
   private stack: T[] = [];
-  public current: T = null;
+  public current: Option<T> = null;
 
   push(item: T) {
     this.current = item;
     this.stack.push(item);
   }
 
-  pop(): T {
+  pop(): Option<T> {
     let item = this.stack.pop();
     let len = this.stack.length;
     this.current = len === 0 ? null : this.stack[len - 1];
 
-    return item;
+    return item === undefined ? null : item;
   }
 
   isEmpty(): boolean {
