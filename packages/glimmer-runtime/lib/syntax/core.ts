@@ -104,6 +104,48 @@ import {
   Core as SerializedCore
 } from 'glimmer-wire-format';
 
+namespace CompileSyntax {
+  export function OptimizedAppend(sexp: SerializedStatements.Append, builder: OpcodeBuilderDSL) {
+    let [, value, trustingMorph] = sexp;
+
+    builder.putValue(buildExpression(value));
+
+    if (trustingMorph) {
+      builder.append(new OptimizedTrustingAppendOpcode());
+    } else {
+      builder.append(new OptimizedCautiousAppendOpcode());
+    }
+  }
+
+  export function UnoptimizedAppend(sexp: SerializedStatements.Append, builder: OpcodeBuilderDSL) {
+    let [, value, trustingMorph] = sexp;
+
+    let expression = buildExpression(value).compile(builder);
+
+    if (this.trustingMorph) {
+      builder.append(new GuardedTrustingAppendOpcode(expression, builder.symbolTable));
+    } else {
+      builder.append(new GuardedCautiousAppendOpcode(expression, builder.symbolTable));
+    }
+  }
+
+  export function Modifier(sexp: SerializedStatements.Modifier, builder: OpcodeBuilderDSL) {
+    let [, path, params, hash] = sexp;
+
+    let args = Args.fromSpec(params, hash, EMPTY_BLOCKS).compile(builder);
+
+    if (builder.env.hasModifier(path, builder.symbolTable)) {
+      builder.append(new ModifierOpcode(
+        path[0],
+        builder.env.lookupModifier(path, builder.symbolTable),
+        args
+      ));
+    } else {
+      throw new Error(`Compile Error: ${path.join('.')} is not a modifier`);
+    }
+  }
+}
+
 export class Block extends StatementSyntax {
   public type = "block";
 
@@ -128,15 +170,6 @@ export class Block extends StatementSyntax {
     super();
   }
 
-  scan(scanner: BlockScanner): StatementSyntax {
-    let { default: _default, inverse } = this.args.blocks;
-
-    if (_default) scanner.addChild(_default);
-    if (inverse)  scanner.addChild(inverse);
-
-    return this;
-  }
-
   compile(ops: CompileInto) {
     throw new Error("SyntaxError");
   }
@@ -148,17 +181,15 @@ interface AppendOpcode {
 
 export abstract class Append extends StatementSyntax {
   static fromSpec(sexp: SerializedStatements.Append): Append {
-    let [, value, trustingMorph] = sexp;
-    return new OptimizedAppend({ value: buildExpression(value), trustingMorph });
+    return new OptimizedAppend(sexp);
   }
 
-  value: ExpressionSyntax<any>;
-  trustingMorph: boolean;
+  get value() {
+    return buildExpression(this.sexp[1]);
+  }
 
-  constructor({ value, trustingMorph }: { value: ExpressionSyntax<any>, trustingMorph: boolean }) {
+  constructor(public sexp: SerializedStatements.Append) {
     super();
-    this.value = value;
-    this.trustingMorph = trustingMorph;
   }
 }
 
@@ -166,17 +197,11 @@ export class OptimizedAppend extends Append {
   public type = "optimized-append";
 
   deopt(): UnoptimizedAppend {
-    return new UnoptimizedAppend(this);
+    return new UnoptimizedAppend(this.sexp);
   }
 
-  compile(compiler: OpcodeBuilderDSL) {
-    compiler.append(new PutValueOpcode(this.value.compile(compiler)));
-
-    if (this.trustingMorph) {
-      compiler.append(new OptimizedTrustingAppendOpcode());
-    } else {
-      compiler.append(new OptimizedCautiousAppendOpcode());
-    }
+  compile(builder: OpcodeBuilderDSL) {
+    CompileSyntax.OptimizedAppend(this.sexp, builder);
   }
 }
 
@@ -184,52 +209,26 @@ export class UnoptimizedAppend extends Append {
   public type = "unoptimized-append";
 
   compile(builder: OpcodeBuilderDSL) {
-    let expression = this.value.compile(builder);
-
-    if (this.trustingMorph) {
-      builder.append(new GuardedTrustingAppendOpcode(expression, builder.symbolTable));
-    } else {
-      builder.append(new GuardedCautiousAppendOpcode(expression, builder.symbolTable));
-    }
+    CompileSyntax.UnoptimizedAppend(this.sexp, builder);
   }
 }
 
-const MODIFIER_SYNTAX = "c0420397-8ff1-4241-882b-4b7a107c9632";
+export const MODIFIER_SYNTAX = "c0420397-8ff1-4241-882b-4b7a107c9632";
 
 export class Modifier extends StatementSyntax {
+  type = "modifier";
   "c0420397-8ff1-4241-882b-4b7a107c9632" = true;
 
-  public type: string = "modifier";
-  public path: string[];
-  public args: Args;
-
-  static fromSpec(node) {
-    let [, path, params, hash] = node;
-
-    return new Modifier({
-      path,
-      args: Args.fromSpec(params, hash, EMPTY_BLOCKS)
-    });
+  static fromSpec(sexp: SerializedStatements.Modifier) {
+    return new Modifier(sexp);
   }
 
-  constructor(options) {
+  constructor(public sexp: SerializedStatements.Modifier) {
     super();
-    this.path = options.path;
-    this.args = options.args;
   }
 
   compile(builder: OpcodeBuilderDSL) {
-    let args = this.args.compile(builder);
-
-    if (builder.env.hasModifier(this.path, builder.symbolTable)) {
-      builder.append(new ModifierOpcode(
-        this.path[0],
-        builder.env.lookupModifier(this.path, builder.symbolTable),
-        args
-      ));
-    } else {
-      throw new Error(`Compile Error: ${this.path.join('.')} is not a modifier`);
-    }
+    CompileSyntax.Modifier(this.sexp, builder);
   }
 }
 
@@ -243,10 +242,6 @@ export class StaticArg extends ArgumentSyntax<string> {
 
   constructor(public name: string, public value: string) {
     super();
-  }
-
-  compile() {
-    throw new Error(`Cannot compiler StaticArg "${this.name}" as it is a delegate for ValueSyntax<string>.`);
   }
 
   valueSyntax(): ExpressionSyntax<string> {
@@ -271,10 +266,6 @@ export class DynamicArg extends ArgumentSyntax<Opaque> {
     public namespace: Option<string> = null
   ) {
     super();
-  }
-
-  compile() {
-    throw new Error(`Cannot compile DynamicArg for "${this.name}" as it is delegate for ExpressionSyntax<Opaque>.`);
   }
 
   valueSyntax() {
@@ -441,21 +432,6 @@ export class OpenElement extends StatementSyntax {
     super();
   }
 
-  scan(scanner: BlockScanner): StatementSyntax {
-    let { tag } = this;
-
-    if (scanner.env.hasComponentDefinition([tag], this.symbolTable)) {
-      let { args, attrs } = this.parameters(scanner);
-      scanner.startBlock(this.blockParams);
-      this.tagContents(scanner);
-      let template = scanner.endBlock(this.blockParams);
-      args.blocks = Blocks.fromSpec(template);
-      return new Component(tag, attrs, args);
-    } else {
-      return new OpenPrimitiveElement(tag);
-    }
-  }
-
   compile(builder: OpcodeBuilderDSL) {
     builder.openPrimitiveElement(this.tag);
   }
@@ -463,55 +439,6 @@ export class OpenElement extends StatementSyntax {
   toIdentity(): OpenPrimitiveElement {
     let { tag } = this;
     return new OpenPrimitiveElement(tag);
-  }
-
-  private parameters(scanner: BlockScanner): { args: Args, attrs: string[] } {
-    let current: Option<StatementSyntax> = scanner.next();
-    let attrs: string[] = [];
-    let argKeys: string[] = [];
-    let argValues: ExpressionSyntax<Opaque>[] = [];
-
-    while (!(current instanceof FlushElement)) {
-      if (current && current[MODIFIER_SYNTAX]) {
-        throw new Error(`Compile Error: Element modifiers are not allowed in components`);
-      }
-
-      let param = current as any as ParameterSyntax<Opaque>;
-
-      if (param[ATTRIBUTE_SYNTAX]) {
-        attrs.push(param.name);
-
-        // REMOVE ME: attributes should not be treated as args
-        argKeys.push(param.name);
-        argValues.push(param.valueSyntax());
-      } else if (param[ARGUMENT_SYNTAX]) {
-        argKeys.push(param.name);
-        argValues.push(param.valueSyntax());
-      } else {
-        throw new Error("Expected FlushElement, but got ${current}");
-      }
-
-      current = scanner.next();
-    }
-
-    return { args: Args.fromNamedArgs(new NamedArgs(argKeys, argValues)), attrs };
-  }
-
-  private tagContents(scanner: BlockScanner) {
-    let nesting = 1;
-
-    while (true) {
-      let current = scanner.next();
-      if (current instanceof CloseElement && --nesting === 0) {
-        break;
-      }
-
-      scanner.addStatement(expect(current, 'when scanning tag contents, the next scanned production cannot be null'));
-
-      if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
-        nesting++;
-      }
-    }
   }
 }
 

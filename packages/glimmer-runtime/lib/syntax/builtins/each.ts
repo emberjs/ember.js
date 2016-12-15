@@ -17,7 +17,7 @@ export default class EachSyntax extends StatementSyntax {
     super();
   }
 
-  compile(dsl: OpcodeBuilderDSL, env: Environment) {
+  compile(dsl: OpcodeBuilderDSL) {
     //         Enter(BEGIN, END)
     // BEGIN:  Noop
     //         PutArgs
