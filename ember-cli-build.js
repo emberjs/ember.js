@@ -161,7 +161,7 @@ module.exports = function(_options) {
   });
 
   var glimmerRuntime = find(libTree, {
-    include: ['glimmer-runtime/**/*']
+    include: ['glimmer-runtime/**/*', 'glimmer-public-runtime/**/*']
   });
 
   var glimmerCompiler = merge([

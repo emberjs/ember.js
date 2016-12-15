@@ -19,14 +19,14 @@ export class StaticPartialSyntax extends StatementSyntax {
     super();
   }
 
-  compile(dsl: OpcodeBuilderDSL, env: Environment, symbolTable: SymbolTable) {
+  compile(dsl: OpcodeBuilderDSL) {
     let name = String(this.name.inner());
 
-    if (!env.hasPartial(name, symbolTable)) {
+    if (!dsl.env.hasPartial(name, dsl.symbolTable)) {
       throw new Error(`Compile Error: ${name} is not a partial`);
     }
 
-    let definition = env.lookupPartial(name, symbolTable);
+    let definition = dsl.env.lookupPartial(name, dsl.symbolTable);
 
     dsl.putPartialDefinition(definition);
     dsl.evaluatePartial();

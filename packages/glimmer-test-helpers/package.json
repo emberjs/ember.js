@@ -21,7 +21,8 @@
     "glimmer-object": "^0.5.3",
     "glimmer-object-reference": "^0.5.3",
     "glimmer-object-model": "^0.5.3",
-    "glimmer-wire-format": "^0.5.3"
+    "glimmer-wire-format": "^0.5.3",
+    "glimmer-interfaces": "^0.5.3"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",

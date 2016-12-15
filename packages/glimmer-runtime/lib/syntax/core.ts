@@ -173,8 +173,8 @@ export class OptimizedAppend extends Append {
     return new UnoptimizedAppend(this);
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
-    compiler.append(new PutValueOpcode(this.value.compile(compiler, env, symbolTable)));
+  compile(compiler: OpcodeBuilderDSL) {
+    compiler.append(new PutValueOpcode(this.value.compile(compiler)));
 
     if (this.trustingMorph) {
       compiler.append(new OptimizedTrustingAppendOpcode());
@@ -187,13 +187,13 @@ export class OptimizedAppend extends Append {
 export class UnoptimizedAppend extends Append {
   public type = "unoptimized-append";
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
-    let expression = this.value.compile(compiler, env, symbolTable);
+  compile(builder: OpcodeBuilderDSL) {
+    let expression = this.value.compile(builder);
 
     if (this.trustingMorph) {
-      compiler.append(new GuardedTrustingAppendOpcode(expression, symbolTable));
+      builder.append(new GuardedTrustingAppendOpcode(expression, builder.symbolTable));
     } else {
-      compiler.append(new GuardedCautiousAppendOpcode(expression, symbolTable));
+      builder.append(new GuardedCautiousAppendOpcode(expression, builder.symbolTable));
     }
   }
 }
@@ -230,13 +230,13 @@ export class Modifier extends StatementSyntax {
     this.args = options.args;
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
-    let args = this.args.compile(compiler, env, symbolTable);
+  compile(builder: OpcodeBuilderDSL) {
+    let args = this.args.compile(builder);
 
-    if (env.hasModifier(this.path, symbolTable)) {
-      compiler.append(new ModifierOpcode(
+    if (builder.env.hasModifier(this.path, builder.symbolTable)) {
+      builder.append(new ModifierOpcode(
         this.path[0],
-        env.lookupModifier(this.path, symbolTable),
+        builder.env.lookupModifier(this.path, builder.symbolTable),
         args
       ));
     } else {
@@ -378,13 +378,13 @@ export class DynamicAttr extends AttributeSyntax<string> {
     super();
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
+  compile(builder: OpcodeBuilderDSL) {
     let {namespace, value} = this;
-    compiler.append(new PutValueOpcode(value.compile(compiler, env, symbolTable)));
+    builder.putValue(value);
     if (namespace) {
-      compiler.append(new DynamicAttrNSOpcode(this.name, namespace, this.isTrusting));
+      builder.dynamicAttrNS(this.name, namespace, !!this.isTrusting);
     } else {
-      compiler.append(new DynamicAttrOpcode(this.name, this.isTrusting));
+      builder.dynamicAttr(this.name, !!this.isTrusting);
     }
   }
 
@@ -404,8 +404,8 @@ export class FlushElement extends StatementSyntax {
     return new this();
   }
 
-  compile(compiler: CompileInto) {
-    compiler.append(new FlushElementOpcode());
+  compile(builder: OpcodeBuilderDSL) {
+    builder.flushElement();
   }
 }
 
@@ -508,8 +508,8 @@ export class OpenElement extends StatementSyntax {
     }
   }
 
-  compile(list: CompileInto, env: Environment) {
-    list.append(new OpenPrimitiveElementOpcode(this.tag));
+  compile(builder: OpcodeBuilderDSL) {
+    builder.openPrimitiveElement(this.tag);
   }
 
   toIdentity(): OpenPrimitiveElement {
@@ -518,7 +518,7 @@ export class OpenElement extends StatementSyntax {
   }
 
   private parameters(scanner: BlockScanner): { args: Args, attrs: string[] } {
-    let current = scanner.next();
+    let current: Option<StatementSyntax> = scanner.next();
     let attrs: string[] = [];
     let argKeys: string[] = [];
     let argValues: ExpressionSyntax<Opaque>[] = [];
@@ -528,7 +528,7 @@ export class OpenElement extends StatementSyntax {
         throw new Error(`Compile Error: Element modifiers are not allowed in components`);
       }
 
-      let param = current as ParameterSyntax<Opaque>;
+      let param = current as any as ParameterSyntax<Opaque>;
 
       if (param[ATTRIBUTE_SYNTAX]) {
         attrs.push(param.name);
@@ -578,9 +578,9 @@ export class Component extends StatementSyntax {
     super();
   }
 
-  compile(list: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
-    let definition = env.getComponentDefinition([this.tag], symbolTable);
-    let args = this.args.compile(list as SymbolLookup, env, symbolTable);
+  compile(list: OpcodeBuilderDSL) {
+    let definition = list.env.getComponentDefinition([this.tag], list.symbolTable);
+    let args = this.args.compile(list);
     let shadow = this.attrs;
 
     list.append(new PutComponentDefinitionOpcode(definition));
@@ -625,9 +625,9 @@ export class Yield extends StatementSyntax {
     super();
   }
 
-  compile(dsl: OpcodeBuilderDSL, env: Environment, symbolTable: SymbolTable) {
+  compile(dsl: OpcodeBuilderDSL) {
     let { to } = this;
-    let args = this.args.compile(dsl, env, symbolTable);
+    let args = this.args.compile(dsl);
     let yields: Option<number>, partial: Option<number>;
 
     if (yields = dsl.symbolTable.getSymbol('yields', to)) {
@@ -848,17 +848,17 @@ export class Unknown extends ExpressionSyntax<any> {
     super();
   }
 
-  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<Opaque> {
+  compile(builder: OpcodeBuilderDSL): CompiledExpression<Opaque> {
     let { ref } = this;
 
     if (ref.parts.some(p => p === null)) {
       throw new Error('hi');
     }
 
-    if (env.hasHelper(ref.parts, symbolTable)) {
-      return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), CompiledArgs.empty(), symbolTable);
+    if (builder.env.hasHelper(ref.parts, builder.symbolTable)) {
+      return new CompiledHelper(ref.parts, builder.env.lookupHelper(ref.parts, builder.symbolTable), CompiledArgs.empty(), builder.symbolTable);
     } else {
-      return this.ref.compile(compiler);
+      return this.ref.compile(builder);
     }
   }
 }
@@ -883,10 +883,12 @@ export class Helper extends ExpressionSyntax<Opaque> {
     super();
   }
 
-  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<Opaque> {
+  compile(builder: OpcodeBuilderDSL): CompiledExpression<Opaque> {
+    let { env, symbolTable } = builder;
+
     if (env.hasHelper(this.ref.parts, symbolTable)) {
       let { args, ref } = this;
-      return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), args.compile(compiler, env, symbolTable), symbolTable);
+      return new CompiledHelper(ref.parts, env.lookupHelper(ref.parts, symbolTable), args.compile(builder), symbolTable);
     } else {
       throw new Error(`Compile Error: ${this.ref.parts.join('.')} is not a helper`);
     }
@@ -909,14 +911,14 @@ export class HasBlock extends ExpressionSyntax<boolean> {
     super();
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledExpression<boolean> {
+  compile(builder: OpcodeBuilderDSL): CompiledExpression<boolean> {
     let { blockName } = this;
     let yields: Option<number>, partial: Option<number>;
 
-    if (yields = compiler.symbolTable.getSymbol('yields', blockName)) {
+    if (yields = builder.symbolTable.getSymbol('yields', blockName)) {
       let inner = new CompiledGetBlockBySymbol(yields, blockName);
       return new CompiledHasBlock(inner);
-    } else if (partial = compiler.symbolTable.getPartialArgs()) {
+    } else if (partial = builder.symbolTable.getPartialArgs()) {
       let inner = new CompiledInPartialGetBlock(partial, blockName);
       return new CompiledHasBlock(inner);
     } else {
@@ -941,14 +943,14 @@ export class HasBlockParams extends ExpressionSyntax<boolean> {
     super();
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledExpression<boolean> {
+  compile(builder: OpcodeBuilderDSL): CompiledExpression<boolean> {
     let { blockName } = this;
     let yields: Option<number>, partial: Option<number>;
 
-    if (yields = compiler.symbolTable.getSymbol('yields', blockName)) {
+    if (yields = builder.symbolTable.getSymbol('yields', blockName)) {
       let inner = new CompiledGetBlockBySymbol(yields, blockName);
       return new CompiledHasBlockParams(inner);
-    } else if (partial = compiler.symbolTable.getPartialArgs()) {
+    } else if (partial = builder.symbolTable.getPartialArgs()) {
       let inner = new CompiledInPartialGetBlock(partial, blockName);
       return new CompiledHasBlockParams(inner);
     } else {
@@ -972,8 +974,8 @@ export class Concat {
 
   constructor(public parts: ExpressionSyntax<Opaque>[]) {}
 
-  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledConcat {
-    return new CompiledConcat(this.parts.map(p => p.compile(compiler, env, symbolTable)));
+  compile(builder: OpcodeBuilderDSL): CompiledConcat {
+    return new CompiledConcat(this.parts.map(p => p.compile(builder)));
   }
 }
 
@@ -1037,9 +1039,9 @@ export class Args {
   ) {
   }
 
-  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledArgs {
+  compile(builder: OpcodeBuilderDSL): CompiledArgs {
     let { positional, named, blocks } = this;
-    return CompiledArgs.create(positional.compile(compiler, env, symbolTable), named.compile(compiler, env, symbolTable), blocks);
+    return CompiledArgs.create(positional.compile(builder), named.compile(builder), blocks);
   }
 }
 
@@ -1077,8 +1079,8 @@ export class PositionalArgs {
     return this.values[index];
   }
 
-  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledPositionalArgs {
-    return CompiledPositionalArgs.create(this.values.map(v => v.compile(compiler, env, symbolTable)));
+  compile(builder: OpcodeBuilderDSL): CompiledPositionalArgs {
+    return CompiledPositionalArgs.create(this.values.map(v => v.compile(builder)));
   }
 }
 
@@ -1095,7 +1097,7 @@ const EMPTY_POSITIONAL_ARGS = new (class extends PositionalArgs {
     return UNDEFINED_SYNTAX;
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledPositionalArgs {
+  compile(builder: OpcodeBuilderDSL): CompiledPositionalArgs {
     return CompiledPositionalArgs.empty();
   }
 });
@@ -1144,12 +1146,12 @@ export class NamedArgs {
     return this.keys.indexOf(key) !== -1;
   }
 
-  compile(compiler: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledNamedArgs {
+  compile(builder: OpcodeBuilderDSL): CompiledNamedArgs {
     let { keys, values } = this;
     let compiledValues = new Array(values.length);
 
     for (let i = 0; i < compiledValues.length; i++) {
-      compiledValues[i] = values[i].compile(compiler, env, symbolTable);
+      compiledValues[i] = values[i].compile(builder);
     }
 
     return new CompiledNamedArgs(keys, compiledValues);
@@ -1169,7 +1171,7 @@ const EMPTY_NAMED_ARGS = new (class extends NamedArgs {
     return false;
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledNamedArgs {
+  compile(compiler: OpcodeBuilderDSL): CompiledNamedArgs {
     return CompiledNamedArgs.empty();
   }
 });
@@ -1179,7 +1181,7 @@ const EMPTY_ARGS: Args = new (class extends Args {
     super(EMPTY_POSITIONAL_ARGS, EMPTY_NAMED_ARGS, EMPTY_BLOCKS);
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledArgs {
+  compile(compiler: OpcodeBuilderDSL): CompiledArgs {
     return CompiledArgs.empty();
   }
 });

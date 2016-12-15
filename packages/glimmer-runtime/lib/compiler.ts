@@ -17,7 +17,6 @@ import {
 import {
   Statement as StatementSyntax,
   Attribute as AttributeSyntax,
-  StatementCompilationBuffer,
 } from './syntax';
 
 import {
@@ -33,20 +32,20 @@ import OpcodeBuilderDSL from './compiled/opcodes/builder';
 
 import * as Component from './component/interfaces';
 
-function compileStatement(env: Environment, statement: StatementSyntax, ops: OpcodeBuilderDSL, layout: Layout) {
-  env.statement(statement, layout.symbolTable).compile(ops, env, layout.symbolTable);
+function compileStatement(env: Environment, statement: StatementSyntax, builder: OpcodeBuilderDSL, layout: Layout) {
+  env.statement(statement, layout.symbolTable).compile(builder);
 }
 
-function compileBlock({ program: statements }: Block, env: Environment, symbolTable: SymbolTable, ops: OpcodeBuilderDSL) {
+function compileBlock({ program: statements }: Block, env: Environment, symbolTable: SymbolTable, builder: OpcodeBuilderDSL) {
   let current = statements.head();
 
   while (current) {
     let next = statements.nextNode(current);
-    env.statement(current, symbolTable).compile(ops, env, symbolTable);
+    env.statement(current, symbolTable).compile(builder);
     current = next;
   }
 
-  return ops;
+  return builder;
 }
 
 export function compileEntryPoint(block: Block, env: Environment): OpSeq {
@@ -72,23 +71,11 @@ export function compileInlineBlock(block: InlineBlock, env: Environment): OpSeq 
   return ops.toOpSeq();
 }
 
-export interface ComponentParts {
-  tag: string;
-  attrs: Slice<AttributeSyntax<Opaque>>;
-  body: Slice<StatementSyntax>;
-}
-
-export interface CompiledComponentParts {
-  tag: string;
-  preamble: CompileIntoList<ProgramSymbolTable>;
-  main: CompileIntoList<ProgramSymbolTable>;
-}
-
-export interface Compilable {
+export interface CompilableLayout {
   compile(builder: Component.ComponentLayoutBuilder);
 }
 
-export function compileLayout(compilable: Compilable, env: Environment): CompiledBlock {
+export function compileLayout(compilable: CompilableLayout, env: Environment): CompiledProgram {
   let builder = new ComponentLayoutBuilder(env);
 
   compilable.compile(builder);
@@ -113,7 +100,7 @@ class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
     this.inner = new UnwrappedBuilder(this.env, layout);
   }
 
-  compile(): CompiledBlock {
+  compile(): CompiledProgram {
     return this.inner.compile();
   }
 
@@ -137,11 +124,11 @@ class EmptyBuilder {
     throw new Error('Nope');
   }
 
-  compile(): CompiledBlock {
+  compile(): CompiledProgram {
     let { env } = this;
 
     let list = new CompileIntoList(env, EMPTY_SYMBOL_TABLE);
-    return new CompiledBlock(list);
+    return new CompiledProgram(list, 1);
   }
 }
 
@@ -151,7 +138,7 @@ class WrappedBuilder {
 
   constructor(public env: Environment, private layout: Layout) {}
 
-  compile(): CompiledBlock {
+  compile(): CompiledProgram {
     //========DYNAMIC
     //        PutValue(TagExpr)
     //        Test
@@ -237,7 +224,7 @@ class UnwrappedBuilder {
     throw new Error('BUG: Cannot call `tag` on an UnwrappedBuilder');
   }
 
-  compile(): CompiledBlock {
+  compile(): CompiledProgram {
     let { env, layout } = this;
 
     let dsl = builder(env, layout.symbolTable);
@@ -352,10 +339,10 @@ function builder<S extends SymbolTable>(env: Environment, symbolTable: S) {
   return new OpcodeBuilderDSL(list, symbolTable, env);
 }
 
-export class CompileIntoList<T extends SymbolTable> extends LinkedList<Opcode> implements StatementCompilationBuffer {
+export class CompileIntoList<T extends SymbolTable> extends LinkedList<Opcode> {
   public component: IComponentBuilder;
 
-  constructor(private env: Environment, public symbolTable: SymbolTable) {
+  constructor(public env: Environment, public symbolTable: SymbolTable) {
     super();
 
     let dsl = new OpcodeBuilderDSL(this, symbolTable, env);
@@ -366,3 +353,5 @@ export class CompileIntoList<T extends SymbolTable> extends LinkedList<Opcode> i
     return this;
   }
 }
+
+export type ProgramBuffer = CompileIntoList<ProgramSymbolTable>;

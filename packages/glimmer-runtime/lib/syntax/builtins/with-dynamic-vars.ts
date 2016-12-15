@@ -14,7 +14,7 @@ export default class WithDynamicVarsSyntax extends StatementSyntax {
     super();
   }
 
-  compile(dsl: OpcodeBuilderDSL, env: Environment) {
+  compile(dsl: OpcodeBuilderDSL) {
     let { args, args: { blocks } } = this;
 
     dsl.unit(dsl => {
