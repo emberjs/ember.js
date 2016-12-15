@@ -1,0 +1,28 @@
+{
+  "name": "glimmer-public-runtime",
+  "version": "0.5.3",
+  "main": "dist/commonjs/index.js",
+  "module": "dist/modules/index.js",
+  "jsnext:main": "dist/modules/index.js",
+  "typings": "index.ts",
+  "scripts": {
+    "build": "sh ../../build/build",
+    "prepublish": "npm run build",
+    "test": "node -e 'require(\".\")'"
+  },
+  "files": [
+    "dist",
+    "lib",
+    "index.ts"
+  ],
+  "dependencies": {
+    "glimmer-runtime": "^0.5.3",
+    "glimmer-util": "^0.5.3",
+    "glimmer-reference": "^0.5.3",
+    "glimmer-wire-format": "^0.5.3",
+    "glimmer-interfaces": "^0.5.3"
+  },
+  "devDependencies": {
+    "typescript": "^2.1.4"
+  }
+}

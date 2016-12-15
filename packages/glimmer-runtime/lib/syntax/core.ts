@@ -121,10 +121,6 @@ export class Block extends StatementSyntax {
     );
   }
 
-  static build(path: string[], args: Args): Block {
-    return new this(path, args);
-  }
-
   constructor(
     public path: string[],
     public args: Args
@@ -216,14 +212,6 @@ export class Modifier extends StatementSyntax {
     });
   }
 
-  static build(path, options) {
-    return new Modifier({
-      path,
-      params: options.params,
-      hash: options.hash
-    });
-  }
-
   constructor(options) {
     super();
     this.path = options.path;
@@ -253,10 +241,6 @@ export class StaticArg extends ArgumentSyntax<string> {
     return new StaticArg(name, value as string);
   }
 
-  static build(name: string, value: string, namespace: Option<string> = null): StaticArg {
-    return new this(name, value);
-  }
-
   constructor(public name: string, public value: string) {
     super();
   }
@@ -266,7 +250,7 @@ export class StaticArg extends ArgumentSyntax<string> {
   }
 
   valueSyntax(): ExpressionSyntax<string> {
-    return Value.build(this.value);
+    return new Value(this.value);
   }
 }
 
@@ -279,10 +263,6 @@ export class DynamicArg extends ArgumentSyntax<Opaque> {
       name,
       buildExpression(value)
     );
-  }
-
-  static build(name: string, value: ExpressionSyntax<string>): DynamicArg {
-    return new this(name, value);
   }
 
   constructor(
@@ -313,10 +293,6 @@ export class TrustingAttr {
     );
   }
 
-  static build(name: string, value: ExpressionSyntax<string>, isTrusting: boolean, namespace: Option<string> = null): DynamicAttr {
-    return new DynamicAttr(name, value, namespace, isTrusting);
-  }
-
   compile() { throw new Error('Attempting to compile a TrustingAttr which is just a delegate for DynamicAttr.'); }
 }
 
@@ -327,10 +303,6 @@ export class StaticAttr extends AttributeSyntax<string> {
   static fromSpec(node: SerializedStatements.StaticAttr): StaticAttr {
     let [, name, value, namespace] = node;
     return new StaticAttr(name, value as string, namespace);
-  }
-
-  static build(name: string, value: string, namespace: Option<string> = null): StaticAttr {
-    return new this(name, value, namespace);
   }
 
   isTrusting = false;
@@ -348,7 +320,7 @@ export class StaticAttr extends AttributeSyntax<string> {
   }
 
   valueSyntax(): ExpressionSyntax<string> {
-    return Value.build(this.value);
+    return new Value(this.value);
   }
 }
 
@@ -363,10 +335,6 @@ export class DynamicAttr extends AttributeSyntax<string> {
       buildExpression(value),
       namespace
     );
-  }
-
-  static build(name: string, value: ExpressionSyntax<string>, isTrusting = false, namespace: Option<string> = null): DynamicAttr {
-    return new this(name, value, namespace, isTrusting);
   }
 
   constructor(
@@ -400,10 +368,6 @@ export class FlushElement extends StatementSyntax {
     return new FlushElement();
   }
 
-  static build() {
-    return new this();
-  }
-
   compile(builder: OpcodeBuilderDSL) {
     builder.flushElement();
   }
@@ -414,10 +378,6 @@ export class CloseElement extends StatementSyntax {
 
   static fromSpec() {
     return new CloseElement();
-  }
-
-  static build() {
-    return new this();
   }
 
   compile(compiler: CompileInto) {
@@ -431,10 +391,6 @@ export class Text extends StatementSyntax {
   static fromSpec(node: SerializedStatements.Text): Text {
     let [, content] = node;
     return new Text(content);
-  }
-
-  static build(content): Text {
-    return new this(content);
   }
 
   constructor(public content: string) {
@@ -453,10 +409,6 @@ export class Comment extends StatementSyntax {
     let [, value] = sexp;
 
     return new Comment(value);
-  }
-
-  static build(value: string): Comment {
-    return new this(value);
   }
 
   constructor(public comment: string) {
@@ -479,10 +431,6 @@ export class OpenElement extends StatementSyntax {
       blockParams,
       symbolTable
     );
-  }
-
-  static build(tag: string, blockParams: string[], symbolTable: SymbolTable): OpenElement {
-    return new this(tag, blockParams, symbolTable);
   }
 
   constructor(
@@ -546,7 +494,7 @@ export class OpenElement extends StatementSyntax {
       current = scanner.next();
     }
 
-    return { args: Args.fromNamedArgs(NamedArgs.build(argKeys, argValues)), attrs };
+    return { args: Args.fromNamedArgs(new NamedArgs(argKeys, argValues)), attrs };
   }
 
   private tagContents(scanner: BlockScanner) {
@@ -592,10 +540,6 @@ export class Component extends StatementSyntax {
 export class OpenPrimitiveElement extends StatementSyntax {
   type = "open-primitive-element";
 
-  static build(tag: string): OpenPrimitiveElement {
-    return new this(tag);
-  }
-
   constructor(public tag: string) {
     super();
   }
@@ -612,11 +556,6 @@ export class Yield extends StatementSyntax {
     let args = Args.fromSpec(params, null, EMPTY_BLOCKS);
 
     return new Yield(to, args);
-  }
-
-  static build(params: ExpressionSyntax<Opaque>[], to: string): Yield {
-    let args = Args.fromPositionalArgs(PositionalArgs.build(params));
-    return new this(to, args);
   }
 
   type = "yield";
@@ -716,10 +655,6 @@ export class Value<T extends SerializedExpressions.Value | undefined> extends Ex
     return new Value(value);
   }
 
-  static build<U extends SerializedExpressions.Value | undefined>(value: U): Value<U> {
-    return new this(value);
-  }
-
   constructor(public value: T) {
     super();
   }
@@ -733,7 +668,7 @@ export class Value<T extends SerializedExpressions.Value | undefined> extends Ex
   }
 }
 
-export const UNDEFINED_SYNTAX = Value.build(undefined);
+export const UNDEFINED_SYNTAX = new Value(undefined);
 
 export class GetArgument extends ExpressionSyntax<Opaque> {
   type = "get-argument";
@@ -742,10 +677,6 @@ export class GetArgument extends ExpressionSyntax<Opaque> {
     let [, parts] = sexp;
 
     return new GetArgument(parts);
-  }
-
-  static build(path: string): GetArgument {
-    return new this(path.split('.'));
   }
 
   constructor(public parts: string[]) {
@@ -775,16 +706,6 @@ export class GetArgument extends ExpressionSyntax<Opaque> {
 // may turn out to be a helper
 export class Ref extends ExpressionSyntax<Opaque> {
   type = "ref";
-
-  static build(path: string): Ref {
-    let parts: Option<string>[] = path.split('.');
-
-    if (parts[0] === 'this') {
-      parts[0] = null;
-    }
-
-    return new this(parts);
-  }
 
   constructor(public parts: Option<string>[]) {
     super();
@@ -818,10 +739,6 @@ export class Get extends ExpressionSyntax<Opaque> {
     return new this(new Ref(parts));
   }
 
-  static build(path: string): Get {
-    return new this(Ref.build(path));
-  }
-
   constructor(public ref: Ref) {
     super();
   }
@@ -838,10 +755,6 @@ export class Unknown extends ExpressionSyntax<any> {
     let [, path] = sexp;
 
     return new this(new Ref(path));
-  }
-
-  static build(path: string): Unknown {
-    return new this(Ref.build(path));
   }
 
   constructor(public ref: Ref) {
@@ -875,10 +788,6 @@ export class Helper extends ExpressionSyntax<Opaque> {
     );
   }
 
-  static build(path: string, positional: PositionalArgs, named: NamedArgs): Helper {
-    return new this(Ref.build(path), Args.build(positional, named, EMPTY_BLOCKS));
-  }
-
   constructor(public ref: Ref, public args: Args) {
     super();
   }
@@ -901,10 +810,6 @@ export class HasBlock extends ExpressionSyntax<boolean> {
   static fromSpec(sexp: SerializedExpressions.HasBlock): HasBlock {
     let [, blockName] = sexp;
     return new HasBlock(blockName);
-  }
-
-  static build(blockName: string): HasBlock {
-    return new this(blockName);
   }
 
   constructor(public blockName: string) {
@@ -935,10 +840,6 @@ export class HasBlockParams extends ExpressionSyntax<boolean> {
     return new HasBlockParams(blockName);
   }
 
-  static build(blockName: string): HasBlockParams {
-    return new this(blockName);
-  }
-
   constructor(public blockName: string) {
     super();
   }
@@ -966,10 +867,6 @@ export class Concat {
     let [, params] = sexp;
 
     return new Concat(params.map(buildExpression));
-  }
-
-  static build(parts): Concat {
-    return new this(parts);
   }
 
   constructor(public parts: ExpressionSyntax<Opaque>[]) {}
@@ -1024,14 +921,6 @@ export class Args {
     return new Args(EMPTY_POSITIONAL_ARGS, named, blocks);
   }
 
-  static build(positional: PositionalArgs, named: NamedArgs, blocks: Blocks): Args {
-    if (positional === EMPTY_POSITIONAL_ARGS && named === EMPTY_NAMED_ARGS && blocks === EMPTY_BLOCKS) {
-      return EMPTY_ARGS;
-    } else {
-      return new this(positional, named, blocks);
-    }
-  }
-
   constructor(
     public positional: PositionalArgs,
     public named: NamedArgs,
@@ -1072,7 +961,7 @@ export class PositionalArgs {
   }
 
   slice(start?: number, end?: number): PositionalArgs {
-    return PositionalArgs.build(this.values.slice(start, end));
+    return new PositionalArgs(this.values.slice(start, end));
   }
 
   at(index: number): ExpressionSyntax<Opaque> {
@@ -1119,14 +1008,6 @@ export class NamedArgs {
     return new this(keys, exprs.map(expr => buildExpression(expr)));
   }
 
-  static build(keys: string[], values: ExpressionSyntax<Opaque>[]): NamedArgs {
-    if (keys.length === 0) {
-      return EMPTY_NAMED_ARGS;
-    } else {
-      return new this(keys, values);
-    }
-  }
-
   public length: number;
 
   constructor(
@@ -1164,7 +1045,7 @@ const EMPTY_NAMED_ARGS = new (class extends NamedArgs {
   }
 
   at(key: string): ExpressionSyntax<Opaque> {
-    return Value.build(undefined); // ??!
+    return new Value(undefined); // ??!
   }
 
   has(key: string): boolean {
