@@ -89,7 +89,7 @@ function rsvp() {
 function routeRecognizer() {
   var packageJson = require('route-recognizer/package');
   var packageDir = path.dirname(require.resolve('route-recognizer/package'));
-  var entry = path.join(packageDir, packageJson['module'] || packageJson['js:next']);
+  var entry = path.join(packageDir, packageJson['module'] || packageJson['js:next'] || packageJson['main'].replace(/dist\//, 'dist/es6/'));
   var basename = path.basename(entry);
   var es6 = new Funnel(path.dirname(entry), {
     files: [ basename ]
