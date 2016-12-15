@@ -11,6 +11,8 @@ import {
   ATTRIBUTE as ATTRIBUTE_SYNTAX,
   Parameter as ParameterSyntax,
   Program,
+  Argument as ArgumentSyntax,
+  Attribute as AttributeSyntax,
   Statement as StatementSyntax,
   Expression as ExpressionSyntax
 } from './syntax';
@@ -27,6 +29,8 @@ import {
   NamedArgs,
   CloseElement
 } from './syntax/core';
+
+export type DeserializedStatement = StatementSyntax | ArgumentSyntax<Opaque> | AttributeSyntax<Opaque>;
 
 export default class Scanner {
   constructor(private block: SerializedTemplateBlock, private meta: TemplateMeta, private env: Environment) {
@@ -84,7 +88,7 @@ export class BlockScanner {
   }
 
   scan(): Program {
-    let statement: Option<StatementSyntax>;
+    let statement: Option<DeserializedStatement>;
 
     while (statement = this.reader.next()) {
       this.addStatement(statement);
@@ -116,7 +120,7 @@ export class BlockScanner {
     this.blockScanner.addChild(block);
   }
 
-  addStatement(statement: StatementSyntax) {
+  addStatement(statement: DeserializedStatement) {
     switch (statement.type) {
       case 'block':
         this.blockScanner.addStatement(this.scanBlock(statement as Block));
@@ -129,7 +133,7 @@ export class BlockScanner {
     }
   }
 
-  next(): Option<StatementSyntax> {
+  next(): Option<DeserializedStatement> {
     return this.reader.next();
   }
 
@@ -158,7 +162,7 @@ export class BlockScanner {
   }
 
   private parameters(openElement: OpenElement): { args: Args, attrs: string[] } {
-    let current: Option<StatementSyntax> = this.next();
+    let current: Option<DeserializedStatement> = this.next();
     let attrs: string[] = [];
     let argKeys: string[] = [];
     let argValues: ExpressionSyntax<Opaque>[] = [];
@@ -209,7 +213,7 @@ export class BlockScanner {
 
 class ChildBlockScanner {
   public children: InlineBlock[] = [];
-  public program = new LinkedList<StatementSyntax>();
+  public program = new LinkedList<DeserializedStatement>();
 
   constructor(public symbolTable: SymbolTable) {}
 
@@ -217,7 +221,7 @@ class ChildBlockScanner {
     this.children.push(block);
   }
 
-  addStatement(statement: StatementSyntax) {
+  addStatement(statement: DeserializedStatement) {
     this.program.append(statement);
   }
 }
@@ -228,7 +232,7 @@ class SyntaxReader {
 
   constructor(private statements: SerializedStatement[], private symbolTable: SymbolTable, private scanner: BlockScanner) {}
 
-  next(): Option<StatementSyntax> {
+  next(): Option<StatementSyntax | ArgumentSyntax<Opaque> | AttributeSyntax<Opaque>> {
     let last = this.last;
     if (last) {
       this.last = null;

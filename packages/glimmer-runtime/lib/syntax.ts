@@ -1,4 +1,4 @@
-import { LinkedListNode, Slice, Option } from 'glimmer-util';
+import { LinkedListNode, Slice, Option, Opaque } from 'glimmer-util';
 import { BlockScanner } from './scanner';
 import { Environment } from './environment';
 import { CompiledExpression } from './compiled/expressions';
@@ -63,24 +63,31 @@ export interface CompileInto {
   append(op: Opcode);
 }
 
-export type Program = Slice<Statement>;
+export type Program = Slice<DeserializedStatement>;
 
 export const ATTRIBUTE = "e1185d30-7cac-4b12-b26a-35327d905d92";
 export const ARGUMENT = "0f3802314-d747-bbc5-0168-97875185c3rt";
 
 export type Parameter<T> = Attribute<T> | Argument<T>;
+export type DeserializedStatement = Statement | Parameter<Opaque>;
 
-export abstract class Attribute<T> {
+export abstract class Attribute<T> implements LinkedListNode {
   "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
+  type: string;
   name: string;
   namespace: Option<string>;
+  next: Option<Statement>;
+  prev: Option<Statement>;
   abstract valueSyntax(): Expression<T>;
 }
 
 export abstract class Argument<T> {
   "0f3802314-d747-bbc5-0168-97875185c3rt" = true;
+  type: string;
   name: string;
   namespace: Option<string>;
+  next: Option<Statement>;
+  prev: Option<Statement>;
   abstract valueSyntax(): Expression<T>;
 }
 
