@@ -413,7 +413,7 @@ QUnit.test('changing dynamic partial and changing references', assert => {
   equalTokens(root, `Respeck my name. When my name come up put some respeck on it.`);
 });
 
-QUnit.test('FIXME (bug?) dynamic partial with local reference', assert => {
+QUnit.skip('FIXME (bug?) dynamic partial with local reference', assert => {
   let template = compile(`{{#each qualities key='id' as |quality|}}{{partial name}}. {{/each}}`);
 
   env.registerPartial('test', `You {{quality}}`);

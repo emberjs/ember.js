@@ -7,7 +7,6 @@ import * as vm from './vm';
 import * as Syntax from '../../syntax/core';
 
 import { Option, Stack, Dict, Opaque, dict } from 'glimmer-util';
-import { StatementCompilationBuffer, CompilesInto } from '../../syntax';
 import { Opcode, OpSeq } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
 import { CompiledExpression } from '../expressions';
@@ -18,36 +17,58 @@ import { InlineBlock, Layout } from '../blocks';
 import { EMPTY_ARRAY } from '../../utils';
 import { SymbolTable } from 'glimmer-interfaces';
 import { ComponentBuilder } from '../../opcode-builder';
+import { ProgramBuffer } from '../../compiler';
+
+export interface CompilesInto<E> {
+  compile(builder: OpcodeBuilder): E;
+}
 
 export type Represents<E> = CompilesInto<E> | E;
 
 export type Label = string;
 
-export class StatementCompilationBufferProxy implements StatementCompilationBuffer {
+// export class StatementCompilationBufferProxy implements StatementCompilationBuffer {
 
-  constructor(protected inner: StatementCompilationBuffer, public symbolTable: SymbolTable = inner.symbolTable) {}
+//   constructor(protected inner: StatementCompilationBuffer, public symbolTable: SymbolTable = inner.symbolTable) {}
 
-  get component(): ComponentBuilder {
-    return this.inner.component;
-  }
+//   get component(): ComponentBuilder {
+//     return this.inner.component;
+//   }
 
-  toOpSeq(): OpSeq {
-    return this.inner.toOpSeq();
-  }
+//   toOpSeq(): OpSeq {
+//     return this.inner.toOpSeq();
+//   }
 
-  append<T extends Opcode>(opcode: T) {
-    this.inner.append(opcode);
-  }
+//   append<T extends Opcode>(opcode: T) {
+//     this.inner.append(opcode);
+//   }
+// }
+
+export interface SymbolLookup {
+  symbolTable: SymbolTable;
 }
 
-export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy {
-  private labelsStack = new Stack<Dict<vm.LabelOpcode>>();
+export interface CompileInto {
+  append(op: Opcode);
+}
 
-  constructor(inner: StatementCompilationBuffer, public symbolTable: SymbolTable, public env: Environment) {
-    super(inner);
+export abstract class BasicOpcodeBuilder implements SymbolLookup, CompileInto {
+  private labelsStack = new Stack<Dict<vm.LabelOpcode>>();
+  public component: ComponentBuilder;
+
+  constructor(private inner: ProgramBuffer, public symbolTable: SymbolTable, public env: Environment) {
+    this.component = inner.component;
   }
 
   abstract compile<E>(expr: Represents<E>): E;
+
+  append(op: Opcode) {
+    this.inner.append(op);
+  }
+
+  toOpSeq(): OpSeq {
+    return this.inner;
+  }
 
   // helpers
 
@@ -297,10 +318,10 @@ function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E>
   return expr && typeof expr['compile'] === 'function';
 }
 
-export default class OpcodeBuilder extends BasicOpcodeBuilder implements StatementCompilationBuffer {
+export default class OpcodeBuilder extends BasicOpcodeBuilder {
   compile<E>(expr: Represents<E>): E {
     if (isCompilableExpression(expr)) {
-      return expr.compile(this, this.env, this.symbolTable);
+      return expr.compile(this);
     } else {
       return expr;
     }

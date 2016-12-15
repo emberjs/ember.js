@@ -3,7 +3,6 @@ export {
   Statement as StatementSyntax,
   Expression as ExpressionSyntax,
   Attribute as AttributeSyntax,
-  StatementCompilationBuffer,
   SymbolLookup,
   CompileInto,
   isAttribute
@@ -39,9 +38,7 @@ export {
 } from './lib/compiled/opcodes/builder';
 
 export {
-  default as Compiler,
-  Compilable,
-  CompileIntoList,
+  CompilableLayout,
   compileLayout
 } from './lib/compiler';
 
@@ -54,6 +51,7 @@ export {
 export {
   Block,
   CompiledBlock,
+  CompiledProgram,
   Layout,
   InlineBlock,
   EntryPoint

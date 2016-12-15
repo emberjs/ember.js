@@ -8,6 +8,8 @@ import { SymbolTable } from 'glimmer-interfaces';
 
 import { ComponentBuilder } from './opcode-builder';
 
+import OpcodeBuilderDSL, { CompilesInto } from './compiled/opcodes/builder';
+
 import {
   Statement as SerializedStatement,
   Expression as SerializedExpression
@@ -32,7 +34,7 @@ export abstract class Statement implements LinkedListNode {
     return new (<new (any) => any>this.constructor)(this);
   }
 
-  abstract compile(opcodes: StatementCompilationBuffer, env: Environment, symbolTable: SymbolTable);
+  abstract compile(builder: OpcodeBuilderDSL);
 
   scan(scanner: BlockScanner): Statement {
     return this;
@@ -43,10 +45,6 @@ interface ExpressionClass<T extends SerializedExpression, U extends Expression<T
   fromSpec(spec: T, blocks?: InlineBlock[]): U;
 }
 
-export interface CompilesInto<T> {
-  compile(dsl: SymbolLookup, env: Environment, symbolTable: SymbolTable): T;
-}
-
 export abstract class Expression<T> implements CompilesInto<CompiledExpression<T>> {
   static fromSpec<T extends SerializedExpression, U extends Expression<T>>(spec: T, blocks?: InlineBlock[]): U {
     throw new Error(`You need to implement fromSpec on ${this}`);
@@ -54,7 +52,7 @@ export abstract class Expression<T> implements CompilesInto<CompiledExpression<T
 
   public abstract type: string;
 
-  abstract compile(dsl: SymbolLookup, env: Environment, symbolTable: SymbolTable): CompiledExpression<T>;
+  abstract compile(dsl: OpcodeBuilderDSL): CompiledExpression<T>;
 }
 
 export interface SymbolLookup {
@@ -63,11 +61,6 @@ export interface SymbolLookup {
 
 export interface CompileInto {
   append(op: Opcode);
-}
-
-export interface StatementCompilationBuffer extends CompileInto, SymbolLookup {
-  component: ComponentBuilder;
-  toOpSeq(): OpSeq;
 }
 
 export type Program = Slice<Statement>;
