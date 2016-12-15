@@ -1,5 +1,7 @@
 import { unreachable } from 'glimmer-util';
 import {
+  FLUSH_ELEMENT,
+  CLOSE_ELEMENT,
   Yield,
   Partial,
   Block,
@@ -51,15 +53,15 @@ export default function(sexp: SerializedStatement, symbolTable: SymbolTable, sca
   if (isYield(sexp)) return Yield.fromSpec(sexp);
   if (isPartial(sexp)) return Partial.fromSpec(sexp);
   if (isBlock(sexp)) return Block.fromSpec(sexp, symbolTable, scanner);
-  if (isAppend(sexp)) return OptimizedAppend.fromSpec(sexp);
+  if (isAppend(sexp)) return new OptimizedAppend(sexp);
   if (isDynamicAttr(sexp)) return DynamicAttr.fromSpec(sexp);
   if (isDynamicArg(sexp)) return DynamicArg.fromSpec(sexp);
   if (isTrustingAttr(sexp)) return TrustingAttr.fromSpec(sexp);
-  if (isText(sexp)) return Text.fromSpec(sexp);
+  if (isText(sexp)) return new Text(sexp);
   if (isComment(sexp)) return Comment.fromSpec(sexp);
   if (isOpenElement(sexp)) return OpenElement.fromSpec(sexp, symbolTable);
-  if (isFlushElement(sexp)) return FlushElement.fromSpec();
-  if (isCloseElement(sexp)) return CloseElement.fromSpec();
+  if (isFlushElement(sexp)) return new FlushElement();
+  if (isCloseElement(sexp)) return new CloseElement();
   if (isStaticAttr(sexp)) return StaticAttr.fromSpec(sexp);
   if (isStaticArg(sexp)) return StaticArg.fromSpec(sexp);
   if (isModifier(sexp)) return Modifier.fromSpec(sexp);

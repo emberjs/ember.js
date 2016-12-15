@@ -144,6 +144,18 @@ namespace CompileSyntax {
       throw new Error(`Compile Error: ${path.join('.')} is not a modifier`);
     }
   }
+
+  export function FlushElement(builder: OpcodeBuilderDSL) {
+    builder.flushElement();
+  }
+
+  export function CloseElement(builder: OpcodeBuilderDSL) {
+    builder.closeElement();
+  }
+
+  export function Text(sexp: SerializedStatements.Text, builder: OpcodeBuilderDSL) {
+    builder.text(sexp[1]);
+  }
 }
 
 export class Block extends StatementSyntax {
@@ -355,41 +367,36 @@ export class DynamicAttr extends AttributeSyntax<string> {
 export class FlushElement extends StatementSyntax {
   type = "flush-element";
 
-  static fromSpec() {
-    return new FlushElement();
-  }
-
   compile(builder: OpcodeBuilderDSL) {
-    builder.flushElement();
+    CompileSyntax.FlushElement(builder);
   }
 }
+
+export const FLUSH_ELEMENT = new FlushElement();
 
 export class CloseElement extends StatementSyntax {
   type = "close-element";
 
-  static fromSpec() {
-    return new CloseElement();
-  }
-
-  compile(compiler: CompileInto) {
-    compiler.append(new CloseElementOpcode());
+  compile(builder: OpcodeBuilderDSL) {
+    CompileSyntax.CloseElement(builder);
   }
 }
+
+export const CLOSE_ELEMENT = new CloseElement();
 
 export class Text extends StatementSyntax {
   type = "text";
 
   static fromSpec(node: SerializedStatements.Text): Text {
-    let [, content] = node;
-    return new Text(content);
+    return new Text(node);
   }
 
-  constructor(public content: string) {
+  constructor(public sexp: SerializedStatements.Text) {
     super();
   }
 
-  compile(dsl: OpcodeBuilderDSL) {
-    dsl.text(this.content);
+  compile(builder: OpcodeBuilderDSL) {
+    CompileSyntax.Text(this.sexp, builder);
   }
 }
 
@@ -453,14 +460,12 @@ export class Component extends StatementSyntax {
     super();
   }
 
-  compile(list: OpcodeBuilderDSL) {
-    let definition = list.env.getComponentDefinition([this.tag], list.symbolTable);
-    let args = this.args.compile(list);
-    let shadow = this.attrs;
+  compile(builder: OpcodeBuilderDSL) {
+    let definition = builder.env.getComponentDefinition([this.tag], builder.symbolTable);
 
-    list.append(new PutComponentDefinitionOpcode(definition));
-    list.append(new OpenComponentOpcode(args, shadow));
-    list.append(new CloseComponentOpcode());
+    builder.putComponentDefinition(definition);
+    builder.openComponent(this.args, this.attrs);
+    builder.closeComponent();
   }
 }
 
@@ -491,19 +496,19 @@ export class Yield extends StatementSyntax {
     super();
   }
 
-  compile(dsl: OpcodeBuilderDSL) {
+  compile(builder: OpcodeBuilderDSL) {
     let { to } = this;
-    let args = this.args.compile(dsl);
+    let args = this.args.compile(builder);
     let yields: Option<number>, partial: Option<number>;
 
-    if (yields = dsl.symbolTable.getSymbol('yields', to)) {
+    if (yields = builder.symbolTable.getSymbol('yields', to)) {
       let inner = new CompiledGetBlockBySymbol(yields, to);
-      dsl.append(new OpenBlockOpcode(inner, args));
-      dsl.append(new CloseBlockOpcode());
-    } else if (partial = dsl.symbolTable.getPartialArgs()) {
+      builder.append(new OpenBlockOpcode(inner, args));
+      builder.append(new CloseBlockOpcode());
+    } else if (partial = builder.symbolTable.getPartialArgs()) {
       let inner = new CompiledInPartialGetBlock(partial, to);
-      dsl.append(new OpenBlockOpcode(inner, args));
-      dsl.append(new CloseBlockOpcode());
+      builder.append(new OpenBlockOpcode(inner, args));
+      builder.append(new CloseBlockOpcode());
     } else {
       throw new Error('[BUG] ${to} is not a valid block name.');
     }
