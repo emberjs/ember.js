@@ -186,6 +186,8 @@ class CurlyComponentManager {
   }
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
+    runInDebug(() => this._pushToDebugStack(`component:${definition.name}`, environment));
+
     let parentView = dynamicScope.view;
 
     let factory = definition.ComponentClass;
@@ -305,6 +307,8 @@ class CurlyComponentManager {
   didRenderLayout(bucket, bounds) {
     bucket.component[BOUNDS] = bounds;
     bucket.finalize();
+
+    runInDebug(() => this.debugStack.pop());
   }
 
   getTag({ component }) {
@@ -321,6 +325,8 @@ class CurlyComponentManager {
 
   update(bucket, _, dynamicScope) {
     let { component, args, argsRevision, environment } = bucket;
+
+    runInDebug(() => this._pushToDebugStack(component._debugContainerKey, environment));
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
@@ -348,6 +354,8 @@ class CurlyComponentManager {
 
   didUpdateLayout(bucket) {
     bucket.finalize();
+
+    runInDebug(() => this.debugStack.pop());
   }
 
   didUpdate({ component, environment }) {
@@ -362,11 +370,20 @@ class CurlyComponentManager {
   }
 }
 
+runInDebug(() => {
+  CurlyComponentManager.prototype._pushToDebugStack = function(name, environment) {
+    this.debugStack = environment.debugStack;
+    this.debugStack.push(name);
+  };
+});
+
 const MANAGER = new CurlyComponentManager();
 
 class TopComponentManager extends CurlyComponentManager {
   create(environment, definition, args, dynamicScope, currentScope, hasBlock) {
     let component = definition.ComponentClass.create();
+
+    runInDebug(() => this._pushToDebugStack(component._debugContainerKey, environment));
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
