@@ -87,14 +87,17 @@ function rsvp() {
 }
 
 function routeRecognizer() {
-  var dist = path.dirname(require.resolve('route-recognizer'));
-  var es6 = new Funnel(path.join(dist, 'es6'), {
-    files: ['route-recognizer.js']
+  var packageJson = require('route-recognizer/package');
+  var packageDir = path.dirname(require.resolve('route-recognizer/package'));
+  var entry = path.join(packageDir, packageJson['module'] || packageJson['js:next'] || packageJson['main'].replace(/dist\//, 'dist/es6/'));
+  var basename = path.basename(entry);
+  var es6 = new Funnel(path.dirname(entry), {
+    files: [ basename ]
   });
   return new Rollup(es6, {
     rollup: {
       plugins: [rollupEnifed],
-      entry: 'route-recognizer.js',
+      entry: basename,
       dest: 'route-recognizer.js',
       format: 'amd',
       moduleId: 'route-recognizer',
