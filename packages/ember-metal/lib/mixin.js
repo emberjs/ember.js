@@ -12,7 +12,10 @@ import {
   GUID_KEY,
   NAME_KEY,
   wrap,
-  makeArray
+  makeArray,
+  ROOT,
+  functionMetaFor,
+  peekFunctionMeta
 } from 'ember-utils';
 import EmberError from './error';
 import {
@@ -39,9 +42,6 @@ import {
   addListener,
   removeListener
 } from './events';
-
-function ROOT() {}
-ROOT.__hasSuper = false;
 
 const a_slice = [].slice;
 
@@ -323,29 +323,26 @@ function followAlias(obj, desc, m, descs, values) {
   return { desc: desc, value: value };
 }
 
-function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, updateMethod) {
-  let paths = observerOrListener[pathsKey];
-
-  if (paths) {
-    for (let i = 0; i < paths.length; i++) {
-      updateMethod(obj, paths[i], null, key);
-    }
+function updateObserversAndListeners(obj, key, observerOrListener, paths, updateMethod) {
+  for (let i = 0; i < paths.length; i++) {
+    updateMethod(obj, paths[i], null, key);
   }
 }
 
 function replaceObserversAndListeners(obj, key, observerOrListener) {
   let prev = obj[key];
+  let m;
 
-  if ('function' === typeof prev) {
-    updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', _removeBeforeObserver);
-    updateObserversAndListeners(obj, key, prev, '__ember_observes__', removeObserver);
-    updateObserversAndListeners(obj, key, prev, '__ember_listens__', removeListener);
+  if ('function' === typeof prev && (m = peekFunctionMeta(prev))) {
+    updateObserversAndListeners(obj, key, prev, m.peekBeforeObservers(), _removeBeforeObserver);
+    updateObserversAndListeners(obj, key, prev, m.peekObservers(), removeObserver);
+    updateObserversAndListeners(obj, key, prev, m.peekListeners(), removeListener);
   }
 
-  if ('function' === typeof observerOrListener) {
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', _addBeforeObserver);
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observes__', addObserver);
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_listens__', addListener);
+  if ('function' === typeof observerOrListener && (m = peekFunctionMeta(observerOrListener))) {
+    updateObserversAndListeners(obj, key, observerOrListener, m.peekBeforeObservers(), _addBeforeObserver);
+    updateObserversAndListeners(obj, key, observerOrListener, m.peekObservers(), addObserver);
+    updateObserversAndListeners(obj, key, observerOrListener, m.peekListeners(), addListener);
   }
 }
 
@@ -765,7 +762,9 @@ export function observer(...args) {
     throw new EmberError('Ember.observer called without a function');
   }
 
-  func.__ember_observes__ = paths;
+  let meta = functionMetaFor(func);
+  meta.writeObservers(paths);
+
   return func;
 }
 
@@ -849,7 +848,9 @@ export function _beforeObserver(...args) {
     throw new EmberError('_beforeObserver called without a function');
   }
 
-  func.__ember_observesBefore__ = paths;
+  let meta = functionMetaFor(func);
+  meta.writeBeforeObservers(paths);
+
   return func;
 }
 

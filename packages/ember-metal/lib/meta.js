@@ -2,7 +2,12 @@
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 
-import { EmptyObject, lookupDescriptor, symbol } from 'ember-utils';
+import {
+  EmptyObject,
+  lookupDescriptor,
+  symbol,
+  HAS_NATIVE_WEAKMAP
+} from 'ember-utils';
 import isEnabled from './features';
 import { protoMethods as listenerMethods } from './meta_listeners';
 import { runInDebug, assert } from './debug';
@@ -460,17 +465,6 @@ if (isEnabled('mandatory-setter')) {
   };
 }
 
-const HAS_NATIVE_WEAKMAP = (function() {
-  // detect if `WeakMap` is even present
-  let hasWeakMap = typeof WeakMap === 'function';
-  if (!hasWeakMap) { return false; }
-
-  let instance = new WeakMap();
-  // use `Object`'s `.toString` directly to prevent us from detecting
-  // polyfills as native weakmaps
-  return Object.prototype.toString.call(instance) === '[object WeakMap]';
-})();
-
 let setMeta, peekMeta;
 
 // choose the one appropriate for given platform
@@ -484,12 +478,6 @@ if (HAS_NATIVE_WEAKMAP) {
   };
 
   peekMeta = function WeakMap_peekMeta(obj) {
-    runInDebug(() => counters.peekCalls++);
-
-    return metaStore.get(obj);
-  };
-
-  peekMeta = function WeakMap_peekParentMeta(obj) {
     let pointer = obj;
     let meta;
     while (pointer) {
