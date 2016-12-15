@@ -250,7 +250,7 @@ export class StaticArg extends ArgumentSyntax<string> {
   }
 
   valueSyntax(): ExpressionSyntax<string> {
-    return new Value(this.value);
+    return Value.fromSpec(this.value);
   }
 }
 
@@ -320,7 +320,7 @@ export class StaticAttr extends AttributeSyntax<string> {
   }
 
   valueSyntax(): ExpressionSyntax<string> {
-    return new Value(this.value);
+    return Value.fromSpec(this.value);
   }
 }
 
@@ -583,18 +583,14 @@ export class Yield extends StatementSyntax {
   }
 }
 
-function isStaticPartialName(exp: ExpressionSyntax<Opaque>): exp is Value<any> {
-  return exp.type === 'value';
-}
-
 export abstract class Partial extends StatementSyntax {
   static fromSpec(sexp: SerializedStatements.Partial): Partial {
     let [, exp] = sexp;
 
     let name = buildExpression(exp) as ExpressionSyntax<Opaque>;
 
-    if (isStaticPartialName(name)) {
-      return new StaticPartialSyntax(name);
+    if (isValue(name, 'string')) {
+      return new StaticPartialSyntax(name.value);
     } else {
       return new DynamicPartialSyntax(name);
     }
@@ -648,27 +644,48 @@ export class CloseBlockOpcode extends Opcode {
   }
 }
 
-export class Value<T extends SerializedExpressions.Value | undefined> extends ExpressionSyntax<T> {
-  public type = "value";
+// export class Value<T extends SerializedExpressions.Value | undefined> extends ExpressionSyntax<T> {
+//   public type = "value";
 
-  static fromSpec<U extends SerializedExpressions.Value>(value: U): Value<U> {
-    return new Value(value);
-  }
+//   static fromSpec<U extends SerializedExpressions.Value>(value: U): Value<U> {
+//     return new Value(value);
+//   }
 
-  constructor(public value: T) {
-    super();
-  }
+//   constructor(public value: T) {
+//     super();
+//   }
 
-  inner(): T {
-    return this.value;
-  }
+//   inner(): T {
+//     return this.value;
+//   }
 
-  compile(compiler: SymbolLookup): CompiledExpression<T> {
-    return new CompiledValue<T>(this.value);
-  }
+//   compile(compiler: SymbolLookup): CompiledExpression<T> {
+//     return new CompiledValue<T>(this.value);
+//   }
+// }
+
+interface Typeof {
+  string: string;
 }
 
-export const UNDEFINED_SYNTAX = new Value(undefined);
+function isValue<T extends 'string'>(v: any, primitive: T): v is { value: Typeof[T] } {
+  return v.type === 'value' && typeof v === primitive;
+}
+
+export const Value = {
+  fromSpec<T extends SerializedExpressions.Value | undefined>(value: T): ExpressionSyntax<T> & { value: T, primitive: string } {
+    return {
+      type: 'value',
+      primitive: typeof value,
+      value,
+      compile(compiler: SymbolLookup): CompiledExpression<T> {
+        return new CompiledValue(value);
+      }
+    };
+  }
+};
+
+export const UNDEFINED_SYNTAX = Value.fromSpec(undefined);
 
 export class GetArgument extends ExpressionSyntax<Opaque> {
   type = "get-argument";
@@ -1045,7 +1062,7 @@ const EMPTY_NAMED_ARGS = new (class extends NamedArgs {
   }
 
   at(key: string): ExpressionSyntax<Opaque> {
-    return new Value(undefined); // ??!
+    return UNDEFINED_SYNTAX; // ??!
   }
 
   has(key: string): boolean {
