@@ -15,15 +15,16 @@ import Environment from '../../environment';
 export class StaticPartialSyntax extends StatementSyntax {
   public type = "static-partial";
 
-  constructor(private name: Syntax.Value<any>) {
+  constructor(private name: string) {
     super();
   }
 
   compile(dsl: OpcodeBuilderDSL) {
-    let name = String(this.name.inner());
+    let name = this.name;
 
     if (!dsl.env.hasPartial(name, dsl.symbolTable)) {
-      throw new Error(`Compile Error: ${name} is not a partial`);
+      console.log(name);
+      throw new Error(`Compile Error: Could not find a partial named "${name}"`);
     }
 
     let definition = dsl.env.lookupPartial(name, dsl.symbolTable);

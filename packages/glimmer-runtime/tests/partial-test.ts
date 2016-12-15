@@ -321,7 +321,7 @@ QUnit.test('static partial that does not exist asserts', assert => {
 
   assert.throws(() => {
     render(template);
-  }, /test is not a partial/);
+  }, /Could not find a partial named "test"/);
 });
 
 QUnit.test('dynamic partial that does not exist does not render', assert => {
