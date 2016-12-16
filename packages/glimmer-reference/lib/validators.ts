@@ -47,7 +47,7 @@ export class DirtyableTag extends RevisionTag {
   }
 }
 
-export function combineTagged(tagged: Tagged<Revision>[]): RevisionTag {
+export function combineTagged(tagged: ReadonlyArray<Tagged<Revision>>): RevisionTag {
   let optimized = [];
 
   for (let i=0, l=tagged.length; i<l; i++) {

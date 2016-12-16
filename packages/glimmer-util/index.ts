@@ -13,4 +13,4 @@ export { ensureGuid, initializeGuid, HasGuid } from './lib/guid';
 export { Stack, Dict, Set, DictSet, dict } from './lib/collections';
 export { EMPTY_SLICE, LinkedList, LinkedListNode, ListNode, CloneableListNode, ListSlice, Slice } from './lib/list-utils';
 
-export type FIXME<T, string> = T;
+export type FIXME<T, S extends string> = T;

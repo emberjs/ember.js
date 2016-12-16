@@ -3,6 +3,8 @@
         "target": "es2015",
         "moduleResolution": "node",
         "experimentalDecorators": true,
+        "allowUnreachableCode": false,
+        "noUnusedLocals": true,
         "inlineSources": true,
         "inlineSourceMap": true,
         "declaration": true,

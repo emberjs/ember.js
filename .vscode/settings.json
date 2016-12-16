@@ -2,18 +2,19 @@
 {
   "typescript.tsdk": "./node_modules/typescript/lib",
   "search.exclude": {
-    "**/node_modules": false
+    "**/node_modules": true
   },
   "files.exclude": {
     "**/.git": true,
     "**/.DS_Store": true,
-    "node_modules": true,
+    "**/node_modules": true,
+    "**/dist": true,
     "bower_components": true,
     "dist": true,
     "tmp": true
   },
   "files.trimTrailingWhitespace": true,
-  "editor.renderWhitespace": true,
+  "editor.renderWhitespace": "boundary",
   "editor.insertSpaces": true,
   "editor.tabSize": 2
 }

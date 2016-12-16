@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -rf dist
+tsc --outDir dist/commonjs --module commonjs
+tsc --outDir dist/modules --module es2015

@@ -26,7 +26,7 @@ export abstract class Block {
 }
 
 export class InlineBlock extends Block {
-  constructor(program: Program, symbolTable: SymbolTable, public locals: string[] = EMPTY_ARRAY) {
+  constructor(program: Program, symbolTable: SymbolTable, public locals: ReadonlyArray<string> = EMPTY_ARRAY) {
     super(program, symbolTable);
   }
 

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    // Enhance Strictness
+    "noImplicitAny": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+
+    // Environment Configuration
+    "experimentalDecorators": false,
+    "moduleResolution": "node",
+
+    // Compilation Configuration
+    "target": "es6",
+    "module": "es6",
+    "inlineSourceMap": true,
+    "declaration": true
+  }
+}

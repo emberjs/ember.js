@@ -1,0 +1,43 @@
+#!/usr/bin/env node
+
+const fs = require("fs");
+const path = require("path");
+
+let packagePath = process.argv[2];
+if (!packagePath) {
+  console.error("You must pass a path to a package.json as the first argument:");
+  console.error("\n  " + path.relative(process.cwd(), process.argv[1]) + " packages/<package-name>/package.json");
+  process.exit(1);
+}
+
+let pkg;
+
+try {
+  pkg = JSON.parse(fs.readFileSync(packagePath));
+} catch (err) {
+  if (err.code === "ENOENT") {
+    pkg = {};
+  } else {
+    throw err;
+  }
+}
+
+let version = require("../lerna.json").version;
+let typescriptVersion = require("../package.json").devDependencies.typescript;
+
+pkg.name = pkg.name || path.basename(path.dirname(packagePath));
+pkg.version = version;
+pkg.main = "dist/commonjs/index.js";
+pkg.module = "dist/modules/index.js";
+pkg["jsnext:main"] = "dist/modules/index.js";
+pkg.typings = "index.ts";
+pkg.scripts = pkg.scripts || {};
+pkg.scripts.build = "../../build/build";
+pkg.scripts.prepublish = "npm run build";
+// Verify that we can load the package in Node without errors.
+pkg.scripts.test = "node -e 'require(\".\")'";
+pkg.files = ["dist", "lib", "index.ts"];
+pkg.devDependencies = pkg.devDependencies || {};
+pkg.devDependencies.typescript = typescriptVersion;
+
+fs.writeFileSync(packagePath, JSON.stringify(pkg, null, 2));

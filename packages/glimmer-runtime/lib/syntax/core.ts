@@ -1063,7 +1063,7 @@ export class PositionalArgs {
 
   public length: number;
 
-  constructor(public values: ExpressionSyntax<Opaque>[]) {
+  constructor(public values: ReadonlyArray<ExpressionSyntax<Opaque>>) {
     this.length = values.length;
   }
 
@@ -1126,8 +1126,8 @@ export class NamedArgs {
   public length: number;
 
   constructor(
-    public keys: string[],
-    public values: ExpressionSyntax<Opaque>[]
+    public keys: ReadonlyArray<string>,
+    public values: ReadonlyArray<ExpressionSyntax<Opaque>>
   ) {
     this.length = keys.length;
   }

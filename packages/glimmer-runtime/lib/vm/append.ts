@@ -186,7 +186,7 @@ export default class VM implements PublicVM {
     callerScope: Scope,
     component: Component,
     manager: ComponentManager<Component>,
-    shadow: string[]
+    shadow: ReadonlyArray<string>
   ) {
     this.frame.push(layout.ops, component, manager, shadow);
 
@@ -304,7 +304,7 @@ export default class VM implements PublicVM {
     callerScope: Scope,
     component: Component,
     manager: ComponentManager<Component>,
-    shadow: string[]
+    shadow: ReadonlyArray<string>
   ) {
     this.pushComponentFrame(layout, args, callerScope, component, manager, shadow);
   }
@@ -372,7 +372,7 @@ export default class VM implements PublicVM {
     scope.bindCallerScope(callerScope);
   }
 
-  bindDynamicScope(names: string[]) {
+  bindDynamicScope(names: ReadonlyArray<string>) {
     let args = this.frame.getArgs();
     let scope = this.dynamicScope();
 

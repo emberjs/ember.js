@@ -1,11 +1,11 @@
 {
-  "name": "glimmer-wire-format",
+  "name": "glimmer-runtime",
   "version": "0.5.3",
-  "description": "",
+  "description": "Minimal runtime needed to render Glimmer templates",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
-  "typings": "index.ts",
   "jsnext:main": "dist/modules/index.js",
+  "typings": "index.ts",
   "directories": {
     "test": "tests"
   },
@@ -16,7 +16,10 @@
   },
   "license": "MIT",
   "dependencies": {
-    "glimmer-util": "^0.5.3"
+    "glimmer-util": "^0.5.3",
+    "glimmer-reference": "^0.5.3",
+    "glimmer-object-reference": "^0.5.3",
+    "glimmer-wire-format": "^0.5.3"
   },
   "files": [
     "dist"
