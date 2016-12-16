@@ -1,5 +1,5 @@
 {
-  "name": "glimmer-wire-format",
+  "name": "@glimmer/wire-format",
   "version": "0.5.3",
   "description": "",
   "main": "dist/commonjs/index.js",

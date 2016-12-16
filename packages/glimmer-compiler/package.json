@@ -1,5 +1,5 @@
 {
-  "name": "glimmer-compiler",
+  "name": "@glimmer/compiler",
   "version": "0.5.3",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",

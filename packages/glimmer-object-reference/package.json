@@ -1,5 +1,5 @@
 {
-  "name": "glimmer-object-reference",
+  "name": "@glimmer/object-reference",
   "version": "0.5.3",
   "description": "References for a Glimmer-compatible object model",
   "main": "dist/commonjs/index.js",
