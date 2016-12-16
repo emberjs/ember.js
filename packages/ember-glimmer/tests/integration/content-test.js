@@ -484,6 +484,29 @@ class DynamicContentTest extends RenderingTest {
     this.assertContent('hello');
     this.assertInvariants();
   }
+
+  ['@test it can render a property on a function']() {
+    let func = () => {};
+    func.aProp = 'this is a property on a function';
+
+    this.renderPath('func.aProp', { func });
+
+    this.assertContent('this is a property on a function');
+
+    this.assertStableRerender();
+
+    // this.runTask(() => set(func, 'aProp', 'still a property on a function'));
+    // this.assertContent('still a property on a function');
+    // this.assertInvariants();
+
+    // func = () => {};
+    // func.aProp = 'a prop on a new function';
+
+    // this.runTask(() => set(this.context, 'func', func));
+
+    // this.assertContent('a prop on a new function');
+    // this.assertInvariants();
+  }
 }
 
 const EMPTY = {};
