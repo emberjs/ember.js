@@ -4,13 +4,16 @@ import {
 } from 'glimmer-wire-format';
 import { PathReference } from 'glimmer-reference';
 import { assign } from 'glimmer-util';
-import { EntryPoint, Layout, PartialBlock } from './compiled/blocks';
 import { SymbolTable } from 'glimmer-interfaces';
 import { Environment, DynamicScope } from './environment';
 import { ElementStack } from './builder';
 import { VM } from './vm';
 import RenderResult from './vm/render-result';
-import Scanner from './scanner';
+import Scanner, {
+  EntryPoint,
+  Layout,
+  PartialBlock
+} from './scanner';
 import * as Simple from './dom/interfaces';
 
 /**

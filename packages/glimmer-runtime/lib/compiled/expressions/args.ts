@@ -5,6 +5,8 @@ import { Blocks, EMPTY_BLOCKS } from '../../syntax/core';
 import { RevisionTag, PathReference, combineTagged } from 'glimmer-reference';
 import { Opaque, Dict } from 'glimmer-util';
 
+export { COMPILED_EMPTY_POSITIONAL_ARGS, COMPILED_EMPTY_NAMED_ARGS, EMPTY_BLOCKS };
+
 export class CompiledArgs {
   static create(positional: CompiledPositionalArgs, named: CompiledNamedArgs, blocks: Blocks): CompiledArgs {
     if (positional === COMPILED_EMPTY_POSITIONAL_ARGS && named === COMPILED_EMPTY_NAMED_ARGS && blocks === EMPTY_BLOCKS) {
