@@ -30,7 +30,7 @@ class Frame {
     ops: OpSeq,
     public component: Component = null,
     public manager: ComponentManager<Component> = null,
-    public shadow: string[] = null
+    public shadow: ReadonlyArray<string> = null
   ) {
     this.ops = ops;
     this.op = ops.head();
@@ -56,7 +56,7 @@ export class FrameStack {
   private frames: Frame[] = [];
   private frame: number = undefined;
 
-  push(ops: OpSeq, component: Component = null, manager: ComponentManager<Component> = null, shadow: string[] = null) {
+  push(ops: OpSeq, component: Component = null, manager: ComponentManager<Component> = null, shadow: ReadonlyArray<string> = null) {
     let frame = (this.frame === undefined) ? (this.frame = 0) : ++this.frame;
 
     if (this.frames.length <= frame) {
@@ -165,7 +165,7 @@ export class FrameStack {
     return this.frames[this.frame].manager;
   }
 
-  getShadow(): string[] {
+  getShadow(): ReadonlyArray<string> {
     return this.frames[this.frame].shadow;
   }
 

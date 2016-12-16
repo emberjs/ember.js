@@ -102,7 +102,7 @@ export class BindPositionalArgsOpcode extends Opcode {
   }
 
   constructor(
-    private names: string[],
+    private names: ReadonlyArray<string>,
     private symbols: number[]
   ) {
     super();
@@ -216,7 +216,7 @@ export class BindCallerScopeOpcode extends Opcode {
 export class BindDynamicScopeOpcode extends Opcode {
   public type = "bind-dynamic-scope";
 
-  constructor(private names: string[]) {
+  constructor(private names: ReadonlyArray<string>) {
     super();
   }
 

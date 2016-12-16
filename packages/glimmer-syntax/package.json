@@ -1,27 +1,24 @@
 {
-  "name": "glimmer-wire-format",
+  "name": "glimmer-syntax",
   "version": "0.5.3",
-  "description": "",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
-  "typings": "index.ts",
   "jsnext:main": "dist/modules/index.js",
-  "directories": {
-    "test": "tests"
-  },
+  "typings": "index.ts",
   "scripts": {
     "build": "../../build/build",
-    "test": "node -e 'require(\".\")'",
-    "prepublish": "npm run build"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "glimmer-util": "^0.5.3"
+    "prepublish": "npm run build",
+    "test": "node -e 'require(\".\")'"
   },
   "files": [
     "dist"
   ],
+  "dependencies": {
+    "handlebars": "^3.0.3",
+    "simple-html-tokenizer": "^0.2.5"
+  },
   "devDependencies": {
+    "@types/handlebars": "^4.0.31",
     "typescript": "^2.1.4"
   }
 }

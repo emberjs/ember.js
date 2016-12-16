@@ -225,7 +225,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
 
     if (before) {
       reference = map[before];
-      nextSibling = reference.bounds.firstNode();
+      nextSibling = reference['bounds'].firstNode();
     } else {
       nextSibling = this.marker;
     }

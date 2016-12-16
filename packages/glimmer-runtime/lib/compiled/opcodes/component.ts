@@ -57,7 +57,7 @@ export class OpenComponentOpcode extends Opcode {
 
   constructor(
     private args: CompiledArgs,
-    private shadow: string[]
+    private shadow: ReadonlyArray<string>
   ) {
     super();
   }
