@@ -1,5 +1,5 @@
 {
-  "name": "glimmer-util",
+  "name": "@glimmer/util",
   "version": "0.5.3",
   "description": "Common utilities used in Glimmer",
   "main": "dist/commonjs/index.js",

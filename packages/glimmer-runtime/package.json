@@ -1,5 +1,5 @@
 {
-  "name": "glimmer-runtime",
+  "name": "@glimmer/runtime",
   "version": "0.5.3",
   "description": "Minimal runtime needed to render Glimmer templates",
   "main": "dist/commonjs/index.js",

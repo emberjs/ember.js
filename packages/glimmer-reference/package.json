@@ -1,5 +1,5 @@
 {
-  "name": "glimmer-reference",
+  "name": "@glimmer/reference",
   "version": "0.5.3",
   "description": "Objects used to track values and their dirtiness in Glimmer",
   "main": "dist/commonjs/index.js",
