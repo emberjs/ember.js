@@ -17,7 +17,7 @@ export type str = string;
 export type TemplateReference = number;
 export type YieldTo = str;
 
-function is<T extends any[]>(variant: string): (value: any[]) => value is T {
+export function is<T extends any[]>(variant: string): (value: any[]) => value is T {
   return function(value: any[]): value is T {
     return value[0] === variant;
   };
@@ -142,9 +142,38 @@ export namespace Statements {
     | DynamicArg
     | TrustingAttr
     ;
+
+  export type Attribute =
+      Statements.StaticAttr
+    | Statements.DynamicAttr
+    ;
+
+  export function isAttribute(val: Statement): val is Attribute {
+    return val[0] === 'static-attr' || val[0] === 'dynamic-attr';
+  }
+
+  export type Argument =
+      Statements.StaticArg
+    | Statements.DynamicArg
+    ;
+
+  export function isArgument(val: Statement): val is Argument {
+    return val[0] === 'static-arg' || val[0] === 'dynamic-arg';
+  }
+
+  export type Parameter = Attribute | Argument;
+
+  export function isParameter(val: Statement): val is Parameter {
+    return isAttribute(val) || isArgument(val);
+  }
+
+  export function getParameterName(s: Parameter): string {
+    return s[1];
+  }
 }
 
 export type Statement = Statements.Statement;
+
 
 /**
  * A JSON object of static compile time meta for the template.

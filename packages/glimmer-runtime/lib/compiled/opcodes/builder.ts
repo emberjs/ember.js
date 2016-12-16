@@ -176,7 +176,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup, CompileInto {
   }
 
   staticAttr(name: string, namespace: string, value: any) {
-    this.append(new dom.StaticAttrOpcode(name, namespace, value));
+    this.append(new dom.StaticAttrOpcode(namespace, name, value));
   }
 
   dynamicAttrNS(name: string, namespace: string, isTrusting: boolean) {

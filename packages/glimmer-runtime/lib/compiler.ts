@@ -334,7 +334,7 @@ class ComponentBuilder implements IComponentBuilder {
   }
 }
 
-function builder<S extends SymbolTable>(env: Environment, symbolTable: S) {
+export function builder<S extends SymbolTable>(env: Environment, symbolTable: S) {
   let list = new CompileIntoList(env, symbolTable);
   return new OpcodeBuilderDSL(list, symbolTable, env);
 }
