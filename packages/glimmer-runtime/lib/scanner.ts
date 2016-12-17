@@ -21,7 +21,7 @@ import {
 export type DeserializedStatement = WireFormat.Statement | WireFormat.Statements.Attribute | WireFormat.Statements.Argument;
 
 export abstract class Template {
-  abstract compile(env: Environment): CompiledProgram;
+  abstract compile(env: Environment): CompiledBlock;
 
   constructor(protected statements: BaselineSyntax.AnyStatement[], protected symbolTable: SymbolTable) {}
 }
@@ -38,6 +38,31 @@ export class EntryPoint extends Template {
       STATEMENTS.compile(refined, b);
     }
     return new CompiledProgram(b.toOpSeq(), this.symbolTable.size);
+  }
+}
+
+export class InlineBlock extends Template {
+  compile(env: Environment): CompiledBlock {
+    let table = this.symbolTable;
+    let b = builder(env, table);
+
+    let locals = table.getSymbols().locals;
+
+    if (locals) {
+      b.pushChildScope();
+      b.bindPositionalArgsForLocals(locals);
+    }
+
+    for (let statement of this.statements) {
+      let refined = SPECIALIZE.specialize(statement, table);
+      STATEMENTS.compile(refined, b);
+    }
+
+    if (locals) {
+      b.popScope();
+    }
+
+    return new CompiledBlock(b.toOpSeq());
   }
 }
 
@@ -97,7 +122,7 @@ export namespace BaselineSyntax {
   export type Component = ['component', string[], WireFormat.Core.Hash, Block];
   export const isComponent = WireFormat.is<Component>('component');
 
-  export type Block = { statements: AnyStatement[], table: SymbolTable };
+  export type Block = InlineBlock;
 
   export type OpenPrimitiveElement = ['open-primitive-element', string, string[]];
   export const isPrimitiveElement = WireFormat.is<OpenPrimitiveElement>('open-primitive-element');
@@ -108,11 +133,15 @@ export namespace BaselineSyntax {
   export type AnyDynamicAttr = ['any-dynamic-attr', string, WireFormat.Expression, string, boolean];
   export const isAnyAttr = WireFormat.is<AnyDynamicAttr>('any-dynamic-attr');
 
+  export type NestedBlock = ['nested-block', WireFormat.Core.Path, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
+  export const isNestedBlock = WireFormat.is<NestedBlock>('nested-block');
+
   export type Statement =
       Component
     | OpenPrimitiveElement
     | OptimizedAppend
     | AnyDynamicAttr
+    | NestedBlock
     ;
 
   export type AnyStatement = Statement | WireFormat.Statement;
@@ -153,7 +182,7 @@ export class BlockScanner {
 
   endBlock(locals: string[]): BaselineSyntax.Block {
     let { program: statements, symbolTable: table } = expect(this.stack.pop(), 'ending a block requires a block on the stack');
-    let block = { statements, table };
+    let block = new InlineBlock(statements, table);
     this.addChild(block);
     return block;
   }
@@ -179,14 +208,21 @@ export class BlockScanner {
     return this.reader.next();
   }
 
-  private scanBlock(block: WireFormat.Statements.Block): WireFormat.Statements.Block {
-    let _default = block[4];
-    let inverse = block[5];
+  private scanBlock(block: WireFormat.Statements.Block): BaselineSyntax.NestedBlock {
+    let [, path, params, hash, _default, inverse] = block;
 
-    if (_default) this.blockScanner.addSerializedChild(this.blocks[_default]);
-    if (inverse)  this.blockScanner.addSerializedChild(this.blocks[inverse]);
+    let defaultBlock = typeof _default === 'number' ? this.scanBlockStatements(this.blocks[_default]) : null;
+    let inverseBlock = typeof inverse === 'number' ? this.scanBlockStatements(this.blocks[inverse]) : null;
 
-    return block;
+    return ['nested-block', path, params, hash, defaultBlock, inverseBlock];
+  }
+
+  private scanBlockStatements(block: SerializedBlock): InlineBlock {
+    this.startBlock(block.locals);
+    for (let statement of block.statements) {
+      this.addStatement(statement);
+    }
+    return this.endBlock(block.locals);
   }
 
   private scanOpenElement(openElement: WireFormat.Statements.OpenElement): BaselineSyntax.Component | BaselineSyntax.OpenPrimitiveElement {
@@ -254,13 +290,16 @@ class ChildBlockScanner {
 
   constructor(public symbolTable: SymbolTable) {}
 
-  addSerializedChild({ statements, locals }: SerializedBlock) {
+  addSerializedChild({ statements, locals }: SerializedBlock): BaselineSyntax.Block {
     let table = blockTable(this.symbolTable, locals);
-    this.children.push({ statements, table });
+    let block = new InlineBlock(statements, table);
+    this.children.push(block);
+    return block;
   }
 
   addChild(block: BaselineSyntax.Block) {
     this.children.push(block);
+    return block;
   }
 
   addStatement(statement: WireFormat.Statement | BaselineSyntax.Statement) {

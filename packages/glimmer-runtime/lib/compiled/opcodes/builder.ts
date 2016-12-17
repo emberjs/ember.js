@@ -13,11 +13,11 @@ import { CompiledExpression } from '../expressions';
 import { ComponentDefinition } from '../../component/interfaces';
 import { PartialDefinition } from '../../partial';
 import Environment from '../../environment';
-import { InlineBlock, Layout } from '../blocks';
 import { EMPTY_ARRAY } from '../../utils';
 import { SymbolTable } from 'glimmer-interfaces';
 import { ComponentBuilder } from '../../opcode-builder';
 import { ProgramBuffer } from '../../compiler';
+import { InlineBlock, Layout } from '../../scanner';
 
 export interface CompilesInto<E> {
   compile(builder: OpcodeBuilder): E;
@@ -327,8 +327,8 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     }
   }
 
-  bindPositionalArgsForBlock(block: InlineBlock) {
-    this.append(vm.BindPositionalArgsOpcode.create(block));
+  bindPositionalArgsForLocals(locals: Dict<number>) {
+    this.append(vm.BindPositionalArgsOpcode.create(locals));
   }
 
   preludeForLayout(layout: Layout) {
@@ -351,7 +351,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
   // TODO
   // come back to this
-  block(args: Option<Syntax.Args>, callback: BlockCallback) {
+  block(args: Option<Represents<CompiledArgs>>, callback: BlockCallback) {
     if (args) this.putArgs(args);
 
     this.startLabels();

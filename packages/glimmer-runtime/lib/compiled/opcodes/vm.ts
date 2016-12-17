@@ -2,12 +2,14 @@ import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from '../expressions/args';
 import { VM, UpdatingVM } from '../../vm';
-import { CompiledBlock, Layout, InlineBlock } from '../blocks';
+import { InlineBlock, Layout } from '../../scanner';
+import { CompiledBlock } from '../../compiled/blocks';
 import { NULL_REFERENCE } from '../../references';
 import { Reference, ConstReference } from 'glimmer-reference';
-import { Option, ListSlice, Opaque, Slice, expect } from 'glimmer-util';
+import { Dict, Option, ListSlice, Opaque, Slice, expect } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
 import Environment from '../../environment';
+import { SymbolTable } from 'glimmer-interfaces';
 
 export class PushChildScopeOpcode extends Opcode {
   public type = "push-child-scope";
@@ -95,9 +97,9 @@ export class PutArgsOpcode extends Opcode {
 export class BindPositionalArgsOpcode extends Opcode {
   public type = "bind-positional-args";
 
-  static create(block: InlineBlock): BindPositionalArgsOpcode {
-    let names = block.locals;
-    let symbols = names.map(name => block.symbolTable.getSymbol('local', name)) as number[];
+  static create(locals: Dict<number>): BindPositionalArgsOpcode {
+    let names = Object.keys(locals);
+    let symbols = names.map(name => locals[name]);
     return new this(names, symbols);
   }
 

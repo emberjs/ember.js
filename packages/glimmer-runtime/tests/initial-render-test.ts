@@ -606,7 +606,7 @@ test("Null curly in attributes", function() {
   compilesTo('<div class="foo {{null}}">hello</div>', '<div class="foo ">hello</div>');
 });
 
-test("Null in primative synatx", function() {
+test("Null in primitive syntax", function() {
   compilesTo('{{#if null}}NOPE{{else}}YUP{{/if}}', 'YUP');
 });
 
