@@ -61,6 +61,8 @@ class MyComponent extends BasicComponent {
   }
 }
 
+class MyOtherComponent extends BasicComponent {}
+
 QUnit.test('creating a new component', assert => {
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
   render(template, { color: 'red' });
@@ -88,6 +90,16 @@ QUnit.test('attrs are available in the layout', assert => {
   equalTokens(root, "<div color='red'><p>red</p>hello!</div>");
   rerender({ color: 'green' });
   equalTokens(root, "<div color='green'><p>green</p>hello!</div>");
+});
+
+QUnit.test('nested components', assert => {
+  env.registerBasicComponent('my-other-component', MyOtherComponent, '<p>{{yield}}</p>');
+  let template = compile('<my-component><my-other-component>{{color}}</my-other-component></my-component>');
+  render(template, { color: 'red' });
+
+  equalTokens(root, '<div><p>red</p></div>');
+  rerender({ color: 'green' });
+  equalTokens(root, '<div><p>green</p></div>');
 });
 
 function testError(layout: string, expected: RegExp) {
