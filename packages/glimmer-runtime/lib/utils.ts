@@ -1,7 +1,18 @@
 import { Dict, dict } from 'glimmer-util';
 
-export const EMPTY_ARRAY = Object.freeze([]);
-export const EMPTY_DICT: Dict<any> = Object.freeze(dict<any>());
+const HAS_NATIVE_WEAKMAP = (function() {
+  // detect if `WeakMap` is even present
+  let hasWeakMap = typeof WeakMap === 'function';
+  if (!hasWeakMap) { return false; }
+
+  let instance = new WeakMap();
+  // use `Object`'s `.toString` directly to prevent us from detecting
+  // polyfills as native weakmaps
+  return Object.prototype.toString.call(instance) === '[object WeakMap]';
+})();
+
+export const EMPTY_ARRAY = HAS_NATIVE_WEAKMAP ? Object.freeze([]) : [];
+export const EMPTY_DICT: Dict<any> = HAS_NATIVE_WEAKMAP ? Object.freeze(dict<any>()) : dict<any>();
 
 export interface EnumerableCallback<T> {
   (item: T): void;
