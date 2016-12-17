@@ -2578,6 +2578,49 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
   }
 
+  ['@test isVisible does not overwrite component style with DOM style changes (#14704)'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['style'],
+        style: htmlSafe('color: blue;')
+      }),
+
+      template: `<p>foo</p>`
+    });
+
+    this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
+      visible: false
+    });
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { id: 'foo-bar',  style: styles('color: blue; display: none;') }
+    });
+
+    this.firstChild.style.padding = '20px';
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { id: 'foo-bar',  style: styles('color: blue; display: none; padding: 20px') }
+    });
+
+    this.assertStableRerender();
+
+    this.runTask(() => { set(this.context, 'visible', true); });
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { id: 'foo-bar', style: styles('color: blue; padding: 20px') }
+    });
+
+    this.runTask(() => { set(this.context, 'visible', false); });
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { id: 'foo-bar',  style: styles('color: blue; display: none; padding: 20px') }
+    });
+  }
+
   ['@test adds isVisible binding when style binding is missing and other bindings exist'](assert) {
     let assertStyle = (expected) => {
       let matcher = styles(expected);
