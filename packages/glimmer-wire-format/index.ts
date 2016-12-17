@@ -174,7 +174,6 @@ export namespace Statements {
 
 export type Statement = Statements.Statement;
 
-
 /**
  * A JSON object of static compile time meta for the template.
  */
