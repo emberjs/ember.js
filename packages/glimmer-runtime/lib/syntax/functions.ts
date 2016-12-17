@@ -49,6 +49,10 @@ STATEMENTS.add('text', (sexp: S.Text, builder: OpcodeBuilder) => {
   builder.text(sexp[1]);
 });
 
+STATEMENTS.add('comment', (sexp: S.Comment, builder: OpcodeBuilder) => {
+  builder.comment(sexp[1]);
+});
+
 STATEMENTS.add('close-element', (sexp: S.CloseElement, builder: OpcodeBuilder) => {
   builder.closeElement();
 });
