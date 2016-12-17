@@ -3,7 +3,8 @@ import { TemplateMeta } from 'glimmer-wire-format';
 import {
   SymbolTable,
   ProgramSymbolTable as IProgramSymbolTable,
-  BlockSymbolTable as IBlockSymbolTable
+  BlockSymbolTable as IBlockSymbolTable,
+  Symbols
 } from 'glimmer-interfaces';
 
 export function entryPoint(meta: Option<TemplateMeta>): ProgramSymbolTable {
@@ -16,24 +17,36 @@ export function layout(meta: TemplateMeta, wireNamed: string[], wireYields: stri
 }
 
 export function block(parent: SymbolTable, locals: string[]): SymbolTable {
-  let localsMap = dict<number>();
+  let localsMap: Option<Dict<number>> = null;
   let program = parent['program'];
-  locals.forEach(l => localsMap[l] = program.size++);
+
+  if (locals.length !== 0) {
+    let map = localsMap = dict<number>();
+    locals.forEach(l => map[l] = program.size++);
+  }
+
   return new BlockSymbolTable(parent, program, localsMap);
 }
 
-function symbols(named: string[], yields: string[], hasPartials: boolean): { named: Dict<number>, yields: Dict<number>, partialSymbol: Option<number>, size: number } {
-  let yieldMap = dict<number>();
-  let namedMap = dict<number>();
+function symbols(named: string[], yields: string[], hasPartials: boolean): { named: Option<Dict<number>>, yields: Option<Dict<number>>, partialSymbol: Option<number>, size: number } {
+  let yieldsMap: Option<Dict<number>> = null;
+  let namedMap: Option<Dict<number>> = null;
 
   let size = 1;
 
-  yields.forEach(y => yieldMap[y] = size++);
-  named.forEach(n => namedMap[n] = size++);
+  if (yields.length !== 0) {
+    let map = yieldsMap = dict<number>();
+    yields.forEach(y => map[y] = size++);
+  }
+
+  if (named.length !== 0) {
+    let map = namedMap = dict<number>();
+    named.forEach(y => map[y] = size++);
+  }
 
   let partialSymbol: Option<number> = hasPartials ? size++ : null;
 
-  return { named: namedMap, yields: yieldMap, partialSymbol, size };
+  return { named: namedMap, yields: yieldsMap, partialSymbol, size };
 }
 
 export class ProgramSymbolTable implements IProgramSymbolTable {
@@ -41,8 +54,8 @@ export class ProgramSymbolTable implements IProgramSymbolTable {
 
   constructor(
     private meta: Option<TemplateMeta>,
-    private named = dict<number>(),
-    private yields = dict<number>(),
+    private named: Option<Dict<number>> = null,
+    private yields: Option<Dict<number>> = null,
     private partialArgs: Option<number> = null,
     public size = 1
   ) {
@@ -53,11 +66,20 @@ export class ProgramSymbolTable implements IProgramSymbolTable {
     return this.meta;
   }
 
+  getSymbols(): Symbols {
+    return {
+      named: this.named,
+      yields: this.yields,
+      locals: null,
+      partialArgs: this.partialArgs
+    };
+  }
+
   getSymbol(kind: 'local', name: string): null;
   getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number>;
   getSymbol(kind: string, name: string): Option<number> {
     if (kind === 'local') return null;
-    return this[kind][name];
+    return this[kind] && this[kind][name];
   }
 
   getPartialArgs(): number {
@@ -66,11 +88,20 @@ export class ProgramSymbolTable implements IProgramSymbolTable {
 }
 
 export class BlockSymbolTable implements IBlockSymbolTable {
-  constructor(private parent: SymbolTable, protected program: ProgramSymbolTable, private locals: Dict<number>) {
+  constructor(private parent: SymbolTable, protected program: ProgramSymbolTable, private locals: Option<Dict<number>>) {
   }
 
   getMeta(): Option<TemplateMeta> {
     return this.program.getMeta();
+  }
+
+  getSymbols(): Symbols {
+    return {
+      named: null,
+      yields: null,
+      locals: this.locals,
+      partialArgs: null
+    };
   }
 
   getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number> {
@@ -84,7 +115,7 @@ export class BlockSymbolTable implements IBlockSymbolTable {
   private getLocal(name: string): Option<number> {
     let { locals, parent } = this;
 
-    let symbol: Option<number> = locals[name];
+    let symbol: Option<number> = locals && locals[name];
 
     if (!symbol && parent) {
       symbol = parent.getSymbol('local', name);
@@ -101,6 +132,15 @@ export class BlockSymbolTable implements IBlockSymbolTable {
 export const EMPTY_SYMBOL_TABLE: SymbolTable = {
   getMeta() {
     return null;
+  },
+
+  getSymbols(): Symbols {
+    return {
+      named: null,
+      yields: null,
+      locals: null,
+      partialArgs: null
+    };
   },
 
   getSymbol(kind: never, name: string): number {

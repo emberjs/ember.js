@@ -3,7 +3,7 @@ import OpcodeBuilder from '../compiled/opcodes/builder';
 import { CompiledExpression } from '../compiled/expressions';
 import CompiledValue from '../compiled/expressions/value';
 import { BaselineSyntax } from '../scanner';
-import { Opaque, Option, dict, assert } from 'glimmer-util';
+import { Opaque, Option, dict, assert, unwrap, unreachable } from 'glimmer-util';
 import { ModifierOpcode } from '../compiled/opcodes/dom';
 import CompiledLookup, { CompiledSelf, CompiledSymbol } from '../compiled/expressions/lookups';
 import { OptimizedTrustingAppendOpcode, OptimizedCautiousAppendOpcode } from '../compiled/opcodes/content';
@@ -111,6 +111,10 @@ STATEMENTS.add('optimized-append', (sexp: BaselineSyntax.OptimizedAppend, builde
   }
 });
 
+STATEMENTS.add('nested-block', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+  BLOCKS.compile(sexp, builder);
+});
+
 let EXPRESSIONS = new Compilers<SexpExpression, CompiledExpression<Opaque>>();
 
 import E = WireFormat.Expressions;
@@ -164,8 +168,8 @@ function compileArgs(params: WireFormat.Core.Params, hash: WireFormat.Core.Hash,
   return CompiledArgs.create(compiledParams, compiledHash, EMPTY_BLOCKS);
 }
 
-function compileParams(params: WireFormat.Core.Params, builder: OpcodeBuilder): CompiledPositionalArgs {
-  if (params.length === 0) return COMPILED_EMPTY_POSITIONAL_ARGS;
+function compileParams(params: Option<WireFormat.Core.Params>, builder: OpcodeBuilder): CompiledPositionalArgs {
+  if (!params || params.length === 0) return COMPILED_EMPTY_POSITIONAL_ARGS;
   let compiled = params.map(p => expr(p, builder));
   return CompiledPositionalArgs.create(compiled);
 }
@@ -196,3 +200,183 @@ function compileRef(parts: string[], builder: OpcodeBuilder) {
     return CompiledLookup.create(inner, parts as string[]);
   }
 }
+
+export type BlockCompileFunction = (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => void;
+
+export class Blocks {
+  private names = dict<number>();
+  private funcs: BlockCompileFunction[] = [];
+
+  add(name: string, func: BlockCompileFunction) {
+    this.funcs.push(func);
+    this.names[name] = this.funcs.length - 1;
+  }
+
+  compile(sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder): void {
+    assert(sexp[1].length === 1, 'paths in blocks are not supported');
+
+    let name: string = sexp[1][0];
+    let index = this.names[name];
+
+    assert(index !== undefined, `${name} is not supported as a block`);
+
+    let func = this.funcs[index];
+    func(sexp, builder);
+  }
+}
+
+export const BLOCKS = new Blocks();
+
+BLOCKS.add('if', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+  //        PutArgs
+  //        Test(Environment)
+  //        Enter(BEGIN, END)
+  // BEGIN: Noop
+  //        JumpUnless(ELSE)
+  //        Evaluate(default)
+  //        Jump(END)
+  // ELSE:  Noop
+  //        Evalulate(inverse)
+  // END:   Noop
+  //        Exit
+
+  let [, path, params, hash, _default, inverse] = sexp;
+  let args = compileArgs(params, hash, builder);
+
+  builder.putArgs(args);
+  builder.test('environment');
+
+  builder.block(null, b => {
+    if (_default && inverse) {
+      b.jumpUnless('ELSE');
+      b.evaluate('default', _default);
+      b.jump('END');
+      b.label('ELSE');
+      b.evaluate('inverse', inverse);
+    } else if (_default) {
+      b.jumpUnless('END');
+      b.evaluate('default', _default);
+    } else {
+      throw unreachable();
+    }
+  });
+});
+
+BLOCKS.add('unless', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+  //        PutArgs
+  //        Test(Environment)
+  //        Enter(BEGIN, END)
+  // BEGIN: Noop
+  //        JumpUnless(ELSE)
+  //        Evaluate(default)
+  //        Jump(END)
+  // ELSE:  Noop
+  //        Evalulate(inverse)
+  // END:   Noop
+  //        Exit
+
+  let [, path, params, hash, _default, inverse] = sexp;
+  let args = compileArgs(params, hash, builder);
+
+  builder.putArgs(args);
+  builder.test('environment');
+
+  builder.block(null, b => {
+    if (_default && inverse) {
+      b.jumpIf('ELSE');
+      b.evaluate('default', _default);
+      b.jump('END');
+      b.label('ELSE');
+      b.evaluate('inverse', inverse);
+    } else if (_default) {
+      b.jumpIf('END');
+      b.evaluate('default', _default);
+    } else {
+      throw unreachable();
+    }
+  });
+});
+
+BLOCKS.add('with', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+  //        PutArgs
+  //        Test(Environment)
+  //        Enter(BEGIN, END)
+  // BEGIN: Noop
+  //        JumpUnless(ELSE)
+  //        Evaluate(default)
+  //        Jump(END)
+  // ELSE:  Noop
+  //        Evalulate(inverse)
+  // END:   Noop
+  //        Exit
+
+  let [, path, params, hash, _default, inverse] = sexp;
+  let args = compileArgs(params, hash, builder);
+
+  builder.putArgs(args);
+  builder.test('environment');
+
+  builder.block(null, b => {
+    if (_default && inverse) {
+      b.jumpUnless('ELSE');
+      b.evaluate('default', _default);
+      b.jump('END');
+      b.label('ELSE');
+      b.evaluate('inverse', inverse);
+    } else if (_default) {
+      b.jumpUnless('END');
+      b.evaluate('default', _default);
+    } else {
+      throw unreachable();
+    }
+  });
+});
+
+BLOCKS.add('each', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+  //         Enter(BEGIN, END)
+  // BEGIN:  Noop
+  //         PutArgs
+  //         PutIterable
+  //         JumpUnless(ELSE)
+  //         EnterList(BEGIN2, END2)
+  // ITER:   Noop
+  //         NextIter(BREAK)
+  //         EnterWithKey(BEGIN2, END2)
+  // BEGIN2: Noop
+  //         PushChildScope
+  //         Evaluate(default)
+  //         PopScope
+  // END2:   Noop
+  //         Exit
+  //         Jump(ITER)
+  // BREAK:  Noop
+  //         ExitList
+  //         Jump(END)
+  // ELSE:   Noop
+  //         Evalulate(inverse)
+  // END:    Noop
+  //         Exit
+
+  let [, path, params, hash, _default, inverse] = sexp;
+  let args = compileArgs(params, hash, builder);
+
+  builder.block(args, b => {
+    b.putIterator();
+
+    if (inverse) {
+      b.jumpUnless('ELSE');
+    } else {
+      b.jumpUnless('END');
+    }
+
+    b.iter(b => {
+      b.evaluate('default', unwrap(_default));
+    });
+
+    if (inverse) {
+      b.jump('END');
+      b.label('ELSE');
+      b.evaluate('inverse', inverse);
+    }
+  });
+});
