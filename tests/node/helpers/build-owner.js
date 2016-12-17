@@ -1,6 +1,6 @@
 module.exports = function buildOwner(Ember, resolver) {
   var FACTORY_FOR = Ember.Container.__FACTORY_FOR__;
-  var LOOKUP_FACTORY = Ember.Container.LOOKUP_FACTORY;
+  var LOOKUP_FACTORY = Ember.Container.__LOOKUP_FACTORY__;
   var Owner = Ember.Object.extend(Ember._RegistryProxyMixin, Ember._ContainerProxyMixin, {
     [FACTORY_FOR]() {
       return this.__container__[FACTORY_FOR](...arguments);

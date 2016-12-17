@@ -142,9 +142,11 @@ Container.prototype = {
   lookupFactory(fullName, options) {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
 
-    if (isFeatureEnabled('ember-no-double-extend')) {
-      deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.', false, { id: 'container-lookupFactory', until: '2.13.0', url: 'TODO' });
-    }
+    deprecate(
+      'Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.',
+      !isFeatureEnabled('ember-factory-for'),
+      { id: 'container-lookupFactory', until: '2.13.0', url: 'TODO' }
+    );
 
     return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
   },
@@ -154,57 +156,27 @@ Container.prototype = {
     return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
   },
 
+  /*
+   * This internal version of factoryFor swaps between the public API for
+   * factoryFor (class is the registered class) and a transition implementation
+   * (class is the double-extended class). It is *not* the public API version
+   * of factoryFor, which always returns the registered class.
+   */
   [FACTORY_FOR](fullName, options = {}) {
-    let manager;
     if (isFeatureEnabled('ember-no-double-extend')) {
-      let normalizedName = this.registry.normalize(fullName);
-      assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
-
-      if (options.source) {
-        normalizedName = this.registry.expandLocalLookup(fullName, options);
-        // if expandLocalLookup returns falsey, we do not support local lookup
-        if (!normalizedName) { return; }
+      if (isFeatureEnabled('ember-factory-for')) {
+        return this.factoryFor(fullName, options);
+      } else {
+        /* This throws in case of a poorly designed build */
+        throw new Error('If ember-no-double-extend is enabled, ember-factory-for must also be enabled');
       }
-
-      let factory = this.registry.resolve(normalizedName);
-
-      if (factory === undefined) { return; }
-
-      manager = new FactoryManager(this, factory, fullName, normalizedName);
-    } else {
-      let factory = this.lookupFactory(fullName, options);
-      if (factory === undefined) { return; }
-      manager = new DeprecatedFactoryManager(this, factory, fullName);
     }
+    let factory = this.lookupFactory(fullName, options);
+    if (factory === undefined) { return; }
+    let manager = new DeprecatedFactoryManager(this, factory, fullName);
 
     runInDebug(() => {
-      if (HAS_PROXY) {
-        let validator = {
-          get(obj, prop) {
-            if (prop !== 'class' && prop !== 'create') {
-              throw new Error(`You attempted to access "${prop}" on a factory manager created by container#factoryFor. "${prop}" is not a member of a factory manager."`);
-            }
-
-            return obj[prop];
-          },
-          set(obj, prop, value) {
-            throw new Error(`You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`);
-          }
-        };
-
-        // Note:
-        // We have to proxy access to the manager here so that private property
-        // access doesn't cause the above errors to occur.
-        let m = manager;
-        let proxiedManager = {
-          class: m.class,
-          create(props) {
-            return m.create(props);
-          }
-        };
-
-        manager = new Proxy(proxiedManager, validator);
-      }
+      manager = wrapManagerInDeprecationProxy(manager);
     });
 
     return manager;
@@ -255,10 +227,48 @@ Container.prototype = {
   }
 };
 
+/*
+ * Wrap a factory manager in a proxy which will not permit properties to be
+ * set on the manager.
+ */
+function wrapManagerInDeprecationProxy(manager) {
+  if (HAS_PROXY) {
+    let validator = {
+      get(obj, prop) {
+        if (prop !== 'class' && prop !== 'create') {
+          throw new Error(`You attempted to access "${prop}" on a factory manager created by container#factoryFor. "${prop}" is not a member of a factory manager."`);
+        }
+
+        return obj[prop];
+      },
+      set(obj, prop, value) {
+        throw new Error(`You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`);
+      }
+    };
+
+    // Note:
+    // We have to proxy access to the manager here so that private property
+    // access doesn't cause the above errors to occur.
+    let m = manager;
+    let proxiedManager = {
+      class: m.class,
+      create(props) {
+        return m.create(props);
+      }
+    };
+
+    return new Proxy(proxiedManager, validator);
+  }
+
+  return manager;
+}
+
 if (isFeatureEnabled('ember-factory-for')) {
   /**
-   Given a fullName, return the corresponding factory. The consumer of factory is repsonsible
-   for the destruction of the factory as there is no way to understand the objects lifecycle.
+   Given a fullName, return the corresponding factory. The consumer of the factory
+   is responsible for the destruction of any factory instances, as there is no
+   way for the container to ensure instances are destroyed when it itself is
+   destroyed.
 
    @public
    @method factoryFor
@@ -267,8 +277,27 @@ if (isFeatureEnabled('ember-factory-for')) {
    @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
-  Container.prototype.factoryFor = function _factoryFor() {
-    return this[FACTORY_FOR](...arguments);
+  Container.prototype.factoryFor = function _factoryFor(fullName, options = {}) {
+    let normalizedName = this.registry.normalize(fullName);
+    assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
+
+    if (options.source) {
+      normalizedName = this.registry.expandLocalLookup(fullName, options);
+      // if expandLocalLookup returns falsey, we do not support local lookup
+      if (!normalizedName) { return; }
+    }
+
+    let factory = this.registry.resolve(normalizedName);
+
+    if (factory === undefined) { return; }
+
+    let manager = new FactoryManager(this, factory, fullName, normalizedName);
+
+    runInDebug(() => {
+      manager = wrapManagerInDeprecationProxy(manager);
+    });
+
+    return manager;
   };
 }
 

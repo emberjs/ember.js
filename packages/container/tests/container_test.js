@@ -3,6 +3,7 @@ import { ENV } from 'ember-environment';
 import { get, isFeatureEnabled } from 'ember-metal';
 import { Registry } from '../index';
 import { factory } from 'internal-test-helpers';
+import { FACTORY_FOR } from 'container';
 
 let originalModelInjections;
 
@@ -18,7 +19,7 @@ QUnit.module('Container', {
 function lookupFactory(name, container, options) {
   let factory;
   if (isFeatureEnabled('ember-no-double-extend')) {
-    expectDeprecation(() => {
+    ignoreDeprecation(() => {
       factory = container.lookupFactory(name, options);
     });
   } else {
@@ -489,11 +490,7 @@ QUnit.test('factory for non extendables resolves are cached', function() {
 });
 
 QUnit.test('The `_onLookup` hook is called on factories when looked up the first time', function() {
-  if (isFeatureEnabled('ember-factory-for') && isFeatureEnabled('ember-no-double-extend')) {
-    expect(4);
-  } else {
-    expect(2);
-  }
+  expect(2);
 
   let registry = new Registry();
   let container = registry.container();
@@ -701,6 +698,20 @@ QUnit.test('lookup passes options through to expandlocallookup', function(assert
   assert.ok(PostControllerLookupResult instanceof PostController);
 });
 
+QUnit.test('#[FACTORY_FOR] class is the injected factory', (assert) => {
+  let registry = new Registry();
+  let container = registry.container();
+
+  let Component = factory();
+  registry.register('component:foo-bar', Component);
+
+  let factoryCreator = container[FACTORY_FOR]('component:foo-bar');
+  if (isFeatureEnabled('ember-no-double-extend')) {
+    assert.deepEqual(factoryCreator.class, Component, 'No double extend');
+  } else {
+    assert.deepEqual(factoryCreator.class, container.lookupFactory('component:foo-bar'), 'Double extended class');
+  }
+});
 
 if (isFeatureEnabled('ember-factory-for')) {
   QUnit.test('#factoryFor must supply a fullname', (assert) => {
@@ -731,11 +742,7 @@ if (isFeatureEnabled('ember-factory-for')) {
     registry.register('component:foo-bar', Component);
 
     let factoryCreator = container.factoryFor('component:foo-bar');
-    if (isFeatureEnabled('ember-no-double-extend')) {
-      assert.deepEqual(factoryCreator.class, Component, 'No double extend');
-    } else {
-      assert.notDeepEqual(factoryCreator.class, Component, 'Double extended class');
-    }
+    assert.deepEqual(factoryCreator.class, Component, 'No double extend');
   });
 
   QUnit.test('#factoryFor instance have a common parent', (assert) => {
