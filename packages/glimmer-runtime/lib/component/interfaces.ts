@@ -1,6 +1,7 @@
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { FunctionExpression } from '../compiled/expressions/function';
-import { Layout, CompiledProgram } from '../compiled/blocks';
+import { CompiledProgram } from '../compiled/blocks';
+import { Layout } from '../scanner';
 
 import Environment, { DynamicScope } from '../environment';
 import { ElementOperations } from '../builder';

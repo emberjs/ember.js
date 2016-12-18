@@ -175,7 +175,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup, CompileInto {
     this.append(new dom.CloseElementOpcode());
   }
 
-  staticAttr(name: string, namespace: string, value: any) {
+  staticAttr(name: string, namespace: Option<string>, value: any) {
     this.append(new dom.StaticAttrOpcode(namespace, name, value));
   }
 
@@ -332,19 +332,21 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
   }
 
   preludeForLayout(layout: Layout) {
-    if (layout.hasNamedParameters) {
+    let symbols = layout.symbolTable.getSymbols();
+
+    if (symbols.named) {
       this.append(vm.BindNamedArgsOpcode.create(layout));
     }
 
-    if (layout.hasYields || layout.hasPartials) {
+    if (symbols.yields || symbols.partialArgs) {
       this.append(new vm.BindCallerScopeOpcode());
     }
 
-    if (layout.hasYields) {
+    if (symbols.yields) {
       this.append(vm.BindBlocksOpcode.create(layout));
     }
 
-    if (layout.hasPartials) {
+    if (symbols.partialArgs) {
       this.append(vm.BindPartialArgsOpcode.create(layout));
     }
   }

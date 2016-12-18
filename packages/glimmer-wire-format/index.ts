@@ -1,4 +1,4 @@
-import { Dict } from 'glimmer-util';
+import { Dict, Option } from 'glimmer-util';
 
 type JsonValue =
     string
@@ -29,6 +29,7 @@ export namespace Core {
   export type Path          = str[];
   export type Params        = Expression[];
   export type Hash          = [str[], Expression[]];
+  export type Args          = [Params, Hash];
 }
 
 export namespace Expressions {
@@ -101,8 +102,8 @@ export namespace Statements {
   export type OpenElement   = ['open-element', str, str[]];
   export type FlushElement  = ['flush-element'];
   export type CloseElement  = ['close-element'];
-  export type StaticAttr    = ['static-attr', str, Expression, str];
-  export type DynamicAttr   = ['dynamic-attr', str, Expression, str];
+  export type StaticAttr    = ['static-attr', str, Expression, Option<str>];
+  export type DynamicAttr   = ['dynamic-attr', str, Expression, Option<str>];
   export type Yield         = ['yield', YieldTo, Params];
   export type Partial       = ['partial', Expression];
   export type DynamicArg    = ['dynamic-arg', str, Expression];

@@ -20,14 +20,19 @@ import {
 
 export type DeserializedStatement = WireFormat.Statement | WireFormat.Statements.Attribute | WireFormat.Statements.Argument;
 
+export function compileStatement(statement: BaselineSyntax.AnyStatement, builder: OpcodeBuilder) {
+  let refined = SPECIALIZE.specialize(statement, builder.symbolTable);
+  STATEMENTS.compile(refined, builder);
+}
+
 export abstract class Template {
   abstract compile(env: Environment): CompiledBlock;
 
-  constructor(protected statements: BaselineSyntax.AnyStatement[], protected symbolTable: SymbolTable) {}
+  constructor(public statements: BaselineSyntax.AnyStatement[], public symbolTable: SymbolTable) {}
 }
 
 export class EntryPoint extends Template {
-  protected symbolTable: ProgramSymbolTable;
+  public symbolTable: ProgramSymbolTable;
 
   compile(env: Environment): CompiledProgram {
     let table = this.symbolTable;
@@ -67,13 +72,15 @@ export class InlineBlock extends Template {
 }
 
 export class Layout extends Template {
+  public symbolTable: ProgramSymbolTable;
+
   compile(env: Environment): CompiledProgram {
     return new CompiledProgram(new LinkedList<Opcode>(), 0);
   }
 }
 
 export class PartialBlock extends Layout {
-  protected symbolTable: ProgramSymbolTable;
+  public symbolTable: ProgramSymbolTable;
 
   compile(env: Environment): CompiledProgram {
     let table = this.symbolTable;
@@ -127,9 +134,12 @@ function buildStatements({ statements }: SerializedBlock, blocks: SerializedBloc
 
 const EMPTY_PROGRAM: BaselineSyntax.Program = [];
 
+import { PublicVM } from './vm';
+import { PathReference } from 'glimmer-reference';
+
 export namespace BaselineSyntax {
   // TODO: use symbols for sexp[0]?
-  export type Component = ['component', string[], WireFormat.Core.Hash, Block];
+  export type Component = ['component', string, string[], WireFormat.Core.Hash, Block];
   export const isComponent = WireFormat.is<Component>('component');
 
   export type Block = InlineBlock;
@@ -147,6 +157,10 @@ export namespace BaselineSyntax {
   export const isStaticPartial = WireFormat.is<StaticPartial>('static-partial');
   export type DynamicPartial = ['dynamic-partial', WireFormat.Expression];
   export const isDynamicPartial = WireFormat.is<DynamicPartial>('dynamic-partial');
+
+  export type FunctionExpressionCallback<T> = (VM: PublicVM, symbolTable: SymbolTable) => PathReference<T>;
+  export type FunctionExpression = ['function', FunctionExpressionCallback<Opaque>];
+  export const isFunctionExpression = WireFormat.is<FunctionExpression>('function');
 
   export type NestedBlock = ['nested-block', WireFormat.Core.Path, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
   export const isNestedBlock = WireFormat.is<NestedBlock>('nested-block');
@@ -180,6 +194,7 @@ export namespace BaselineSyntax {
     ;
 
   export type AnyStatement = Statement | WireFormat.Statement;
+  export type AnyExpression = FunctionExpression | WireFormat.Expression;
 
   export type Program = AnyStatement[];
 }
@@ -269,7 +284,7 @@ export class BlockScanner {
       this.startBlock(blockParams);
       this.tagContents(openElement);
       let template = this.endBlock(blockParams);
-      return ['component', attrs, args, template];
+      return ['component', tag, attrs, args, template];
     } else {
       return ['open-primitive-element', tag, []];
     }

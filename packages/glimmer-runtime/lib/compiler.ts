@@ -3,10 +3,16 @@ import { Opaque, Slice, LinkedList, Option, Maybe } from 'glimmer-util';
 import { OpSeq, Opcode } from './opcodes';
 
 import { EMPTY_ARRAY } from './utils';
-import * as Syntax from './syntax/core';
 import { Environment } from './environment';
 import { SymbolTable, ProgramSymbolTable } from 'glimmer-interfaces';
-import { Block, CompiledBlock, CompiledProgram,  EntryPoint, InlineBlock, Layout } from './compiled/blocks';
+import { CompiledBlock, CompiledProgram } from './compiled/blocks';
+
+import {
+  BaselineSyntax,
+  Layout,
+  InlineBlock,
+  compileStatement
+} from './scanner';
 
 import {
   ComponentBuilder as IComponentBuilder,
@@ -17,11 +23,12 @@ import {
 import {
   Statement as StatementSyntax,
   Attribute as AttributeSyntax,
+  Expression
 } from './syntax';
 
 import {
-  Expression
-} from './syntax';
+  compileArgs
+} from './syntax/functions';
 
 import {
   FunctionExpression,
@@ -32,44 +39,7 @@ import OpcodeBuilderDSL from './compiled/opcodes/builder';
 
 import * as Component from './component/interfaces';
 
-function compileStatement(env: Environment, statement: StatementSyntax, builder: OpcodeBuilderDSL, layout: Layout) {
-  env.statement(statement, layout.symbolTable).compile(builder);
-}
-
-function compileBlock({ program: statements }: Block, env: Environment, symbolTable: SymbolTable, builder: OpcodeBuilderDSL) {
-  let current = statements.head();
-
-  while (current) {
-    let next = statements.nextNode(current);
-    env.statement(current, symbolTable).compile(builder);
-    current = next;
-  }
-
-  return builder;
-}
-
-export function compileEntryPoint(block: Block, env: Environment): OpSeq {
-  let ops = builder(env, block.symbolTable);
-  return compileBlock(block, env, block.symbolTable, ops).toOpSeq();
-}
-
-export function compileInlineBlock(block: InlineBlock, env: Environment): OpSeq {
-  let ops = builder(env, block.symbolTable);
-  let hasPositionalParameters = block.hasPositionalParameters();
-
-  if (hasPositionalParameters) {
-    ops.pushChildScope();
-    ops.bindPositionalArgsForBlock(block);
-  }
-
-  compileBlock(block, env, block.symbolTable, ops);
-
-  if (hasPositionalParameters) {
-    ops.popScope();
-  }
-
-  return ops.toOpSeq();
-}
+import * as WireFormat from 'glimmer-wire-format';
 
 export interface CompilableLayout {
   compile(builder: Component.ComponentLayoutBuilder);
@@ -183,20 +153,20 @@ class WrappedBuilder {
       dsl.jumpUnless('BODY');
       dsl.openDynamicPrimitiveElement();
       dsl.didCreateElement();
-      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, dsl, layout));
+      this.attrs['buffer'].forEach(statement => compileStatement(statement, dsl));
       dsl.flushElement();
       dsl.label('BODY');
     } else if (staticTag = this.tag.getStatic()) {
       let tag = this.tag.staticTagName;
       dsl.openPrimitiveElement(staticTag);
       dsl.didCreateElement();
-      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, dsl, layout));
+      this.attrs['buffer'].forEach(statement => compileStatement(statement, dsl));
       dsl.flushElement();
     }
 
     dsl.preludeForLayout(layout);
 
-    layout.program.forEachNode(statement => compileStatement(env, statement, dsl, layout));
+    layout.statements.forEach(statement => compileStatement(statement, dsl));
 
     if (dynamicTag) {
       dsl.putValue(dynamicTag);
@@ -215,6 +185,11 @@ class WrappedBuilder {
   }
 }
 
+function isOpenElement(value: BaselineSyntax.AnyStatement): value is (BaselineSyntax.OpenPrimitiveElement | WireFormat.Statements.OpenElement) {
+  let type = value[0];
+  return type === 'open-element' || type === 'open-primitive-element';
+}
+
 class UnwrappedBuilder {
   public attrs = new ComponentAttrsBuilder();
 
@@ -227,38 +202,32 @@ class UnwrappedBuilder {
   compile(): CompiledProgram {
     let { env, layout } = this;
 
-    let dsl = builder(env, layout.symbolTable);
+    let b = builder(env, layout.symbolTable);
 
-    dsl.startLabels();
+    b.startLabels();
 
-    dsl.preludeForLayout(layout);
+    b.preludeForLayout(layout);
 
     let attrs = this.attrs['buffer'];
     let attrsInserted = false;
 
-    this.layout.program.forEachNode(statement => {
+    this.layout.statements.forEach(statement => {
       if (!attrsInserted && isOpenElement(statement)) {
-        dsl.openComponentElement(statement.tag);
-        dsl.didCreateElement();
-        dsl.shadowAttributes();
-        attrs.forEach(statement => compileStatement(env, statement, dsl, layout));
+        b.openComponentElement(statement[1]);
+        b.didCreateElement();
+        b.shadowAttributes();
+        attrs.forEach(statement => compileStatement(statement, b));
         attrsInserted = true;
       } else {
-        compileStatement(env, statement, dsl, layout);
+        compileStatement(statement, b);
       }
     });
 
-    dsl.didRenderLayout();
-    dsl.stopLabels();
+    b.didRenderLayout();
+    b.stopLabels();
 
-    return new CompiledProgram(dsl.toOpSeq(), layout.symbolTable.size);
+    return new CompiledProgram(b.toOpSeq(), layout.symbolTable.size);
   }
-}
-
-type OpenElement = Syntax.OpenElement | Syntax.OpenPrimitiveElement;
-
-function isOpenElement(syntax: StatementSyntax): syntax is OpenElement {
-  return syntax instanceof Syntax.OpenElement || syntax instanceof Syntax.OpenPrimitiveElement;
 }
 
 class ComponentTagBuilder implements Component.ComponentTagBuilder {
@@ -291,45 +260,45 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
 }
 
 class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
-  private buffer: AttributeSyntax<string>[] = [];
+  private buffer: WireFormat.Statements.Attribute[] = [];
 
   static(name: string, value: string) {
-    this.buffer.push(new Syntax.StaticAttr(name, value, null));
+    this.buffer.push(['static-attr', name, value, null]);
   }
 
   dynamic(name: string, value: FunctionExpression<string>) {
-    this.buffer.push(new Syntax.DynamicAttr(name, makeFunctionExpression(value), null, false));
+    this.buffer.push(['dynamic-attr', name, ['function', value], null]);
   }
 }
 
 class ComponentBuilder implements IComponentBuilder {
   private env: Environment;
 
-  constructor(private dsl: OpcodeBuilderDSL) {
-    this.env = dsl.env;
+  constructor(private builder: OpcodeBuilderDSL) {
+    this.env = builder.env;
   }
 
-  static(definition: StaticDefinition, args: Syntax.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
-    this.dsl.unit(dsl => {
-      dsl.putComponentDefinition(definition);
-      dsl.openComponent(args, shadow);
-      dsl.closeComponent();
+  static(definition: StaticDefinition, args: WireFormat.Core.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
+    this.builder.unit(b => {
+      b.putComponentDefinition(definition);
+      b.openComponent(compileArgs(args[0], args[1], b), shadow);
+      b.closeComponent();
     });
   }
 
-  dynamic(definitionArgs: Syntax.Args, definition: DynamicDefinition, args: Syntax.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
-    this.dsl.unit(dsl => {
-      dsl.putArgs(definitionArgs);
-      dsl.putValue(makeFunctionExpression(definition));
-      dsl.test('simple');
-      dsl.enter('BEGIN', 'END');
-      dsl.label('BEGIN');
-      dsl.jumpUnless('END');
-      dsl.putDynamicComponentDefinition();
-      dsl.openComponent(args, shadow);
-      dsl.closeComponent();
-      dsl.label('END');
-      dsl.exit();
+  dynamic(definitionArgs: WireFormat.Core.Args, definition: DynamicDefinition, args: WireFormat.Core.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
+    this.builder.unit(b => {
+      b.putArgs(compileArgs(definitionArgs[0], definitionArgs[1], b));
+      b.putValue(makeFunctionExpression(definition));
+      b.test('simple');
+      b.enter('BEGIN', 'END');
+      b.label('BEGIN');
+      b.jumpUnless('END');
+      b.putDynamicComponentDefinition();
+      b.openComponent(compileArgs(args[0], args[1], b), shadow);
+      b.closeComponent();
+      b.label('END');
+      b.exit();
     });
   }
 }

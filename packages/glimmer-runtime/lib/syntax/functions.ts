@@ -1,11 +1,16 @@
 import * as WireFormat from 'glimmer-wire-format';
+import { SymbolTable } from 'glimmer-interfaces';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { CompiledExpression } from '../compiled/expressions';
 import CompiledValue from '../compiled/expressions/value';
 import { BaselineSyntax } from '../scanner';
 import { Opaque, Option, dict, assert, unwrap, unreachable } from 'glimmer-util';
 import { ModifierOpcode } from '../compiled/opcodes/dom';
-import CompiledLookup, { CompiledSelf, CompiledSymbol } from '../compiled/expressions/lookups';
+import CompiledLookup, {
+  CompiledSelf,
+  CompiledSymbol,
+  CompiledInPartialName
+} from '../compiled/expressions/lookups';
 import { OptimizedTrustingAppendOpcode, OptimizedCautiousAppendOpcode } from '../compiled/opcodes/content';
 import CompiledHelper from '../compiled/expressions/helper';
 import CompiledConcat from '../compiled/expressions/concat';
@@ -17,8 +22,9 @@ import {
   CompiledPositionalArgs,
   CompiledNamedArgs
 } from '../compiled/expressions/args';
+import { CompiledFunctionExpression } from '../compiled/expressions/function';
 
-export type SexpExpression = WireFormat.Expression & { 0: string };
+export type SexpExpression = BaselineSyntax.AnyExpression & { 0: string };
 export type Syntax = SexpExpression | BaselineSyntax.AnyStatement;
 export type CompilerFunction<T extends Syntax, U> = (sexp: T, builder: OpcodeBuilder) => U;
 export type Name = BaselineSyntax.AnyStatement[0];
@@ -120,6 +126,16 @@ STATEMENTS.add('nested-block', (sexp: BaselineSyntax.NestedBlock, builder: Opcod
   blocks.compile(sexp, builder);
 });
 
+STATEMENTS.add('component', (sexp: BaselineSyntax.Component, builder) => {
+  let [, tag, attrs, args, block] = sexp;
+  let definition = builder.env.getComponentDefinition([tag], builder.symbolTable);
+
+  builder.putComponentDefinition(definition);
+  builder.openComponent(compileArgs(null, args, builder), attrs);
+  builder.closeComponent();
+
+});
+
 STATEMENTS.add('static-partial', (sexp: BaselineSyntax.StaticPartial, builder) => {
   let [, name] = sexp;
 
@@ -178,6 +194,13 @@ EXPRESSIONS.add('concat', (sexp: E.Concat, builder: OpcodeBuilder) => {
   return new CompiledConcat(params);
 });
 
+EXPRESSIONS.add('function', (sexp: BaselineSyntax.FunctionExpression, builder: OpcodeBuilder) => {
+  return new CompiledFunctionExpression(sexp[1], builder.symbolTable);
+});
+
+import { PublicVM } from '../vm';
+import { PathReference } from 'glimmer-reference';
+
 EXPRESSIONS.add('helper', (sexp: E.Helper, builder: OpcodeBuilder) => {
   let { env, symbolTable } = builder;
   let [, path, params, hash] = sexp;
@@ -198,7 +221,25 @@ EXPRESSIONS.add('undefined', (sexp: E.Undefined, builder: OpcodeBuilder) => {
   return new CompiledValue(undefined);
 });
 
-export function compileArgs(params: WireFormat.Core.Params, hash: WireFormat.Core.Hash, builder: OpcodeBuilder): CompiledArgs {
+EXPRESSIONS.add('arg', (sexp: E.Arg, builder: OpcodeBuilder) => {
+  let [, parts] = sexp;
+  let head = parts[0];
+  let named: Option<number>, partial: Option<number>;
+
+  if (named = builder.symbolTable.getSymbol('named', head)) {
+    let path = parts.slice(1);
+    let inner = new CompiledSymbol(named, head);
+    return CompiledLookup.create(inner, path);
+  } else if (partial = builder.symbolTable.getPartialArgs()) {
+    let path = parts.slice(1);
+    let inner = new CompiledInPartialName(partial, head);
+    return CompiledLookup.create(inner, path);
+  } else {
+    throw new Error(`[BUG] @${parts.join('.')} is not a valid lookup path.`);
+  }
+});
+
+export function compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder): CompiledArgs {
   let compiledParams = compileParams(params, builder);
   let compiledHash = compileHash(hash, builder);
   return CompiledArgs.create(compiledParams, compiledHash, EMPTY_BLOCKS);
