@@ -8,25 +8,7 @@ import { SymbolTable } from 'glimmer-interfaces';
 
 export type FunctionExpression<T> = (VM: VM, symbolTable: SymbolTable) => PathReference<T>;
 
-export default function make<T>(func: FunctionExpression<T>): ExpressionSyntax<T> {
-  return new FunctionExpressionSyntax(func);
-}
-
-class FunctionExpressionSyntax<T> extends ExpressionSyntax<T> {
-  public type = "function-expression";
-  private func: FunctionExpression<T>;
-
-  constructor(func: FunctionExpression<T>) {
-    super();
-    this.func = func;
-  }
-
-  compile(lookup: Opaque, env: Environment, symbolTable: SymbolTable): CompiledExpression<T> {
-    return new CompiledFunctionExpression(this.func, symbolTable);
-  }
-}
-
-class CompiledFunctionExpression<T> extends CompiledExpression<T> {
+export class CompiledFunctionExpression<T> extends CompiledExpression<T> {
   public type = "function";
 
   constructor(private func: FunctionExpression<T>, private symbolTable: SymbolTable) {

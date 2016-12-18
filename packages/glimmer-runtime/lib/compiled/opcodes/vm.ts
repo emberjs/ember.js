@@ -127,8 +127,10 @@ export class BindNamedArgsOpcode extends Opcode {
   public type = "bind-named-args";
 
   static create(layout: Layout) {
-    let names = layout.named;
-    let symbols = names.map(name => layout.symbolTable.getSymbol('named', name)) as number[];
+    let named = layout.symbolTable.getSymbols().named as Dict<number>;
+
+    let names = Object.keys(named);
+    let symbols = names.map(n => named[n]);
 
     return new this(names, symbols);
   }
@@ -161,8 +163,10 @@ export class BindBlocksOpcode extends Opcode {
   public type = "bind-blocks";
 
   static create(layout: Layout) {
-    let names = layout.yields;
-    let symbols = names.map(name => layout.symbolTable.getSymbol('yields', name)) as number[];
+    let yields = layout.symbolTable.getSymbols().yields as Dict<number>;
+
+    let names = Object.keys(yields);
+    let symbols = names.map(n => yields[n]);
 
     return new this(names, symbols);
   }

@@ -16,10 +16,12 @@ import {
   Opaque
 } from 'glimmer-util';
 
+import * as WireFormat from 'glimmer-wire-format';
+
 export type StaticDefinition = ComponentDefinition<Opaque>;
 export type DynamicDefinition = FunctionExpression<ComponentDefinition<Opaque>>;
 
 export interface ComponentBuilder {
-  static(definition: ComponentDefinition<Opaque>, args: Args, symbolTable: SymbolTable, shadow?: string[]);
-  dynamic(definitionArgs: Args, definition: DynamicDefinition, args: Args, symbolTable: SymbolTable, shadow?: string[]);
+  static(definition: ComponentDefinition<Opaque>, args: WireFormat.Core.Args, symbolTable: SymbolTable, shadow?: string[]);
+  dynamic(definitionArgs: WireFormat.Core.Args, definition: DynamicDefinition, args: WireFormat.Core.Args, symbolTable: SymbolTable, shadow?: string[]);
 }
