@@ -43,3 +43,13 @@ SPECIALIZE.add('dynamic-attr', (sexp: S.DynamicAttr, symbolTable: SymbolTable) =
 SPECIALIZE.add('trusting-attr', (sexp: S.TrustingAttr, symbolTable: SymbolTable) => {
   return ['any-dynamic-attr', sexp[1], sexp[2], sexp[3], true];
 });
+
+SPECIALIZE.add('partial', (sexp: S.Partial, table) => {
+  let expression = sexp[1];
+
+  if (typeof expression === 'string') {
+    return ['static-partial', expression];
+  } else {
+    return ['dynamic-partial', expression];
+  }
+});

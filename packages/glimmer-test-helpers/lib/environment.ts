@@ -8,6 +8,7 @@ import {
   SymbolLookup,
   CompilableLayout,
   compileLayout,
+  compileArgs,
 
   // Environment
   ParsedStatement,
@@ -35,6 +36,10 @@ import {
 
   // Syntax Classes
   StatementSyntax,
+  BlockMacros,
+  NestedBlockSyntax,
+  CompileBlockMacro,
+  BaselineSyntax,
 
   // Concrete Syntax
   ArgsSyntax,
@@ -72,7 +77,8 @@ import {
   Opaque,
   FIXME,
   assign,
-  dict
+  dict,
+  unwrap
 } from 'glimmer-util';
 
 import GlimmerObject, { GlimmerObjectFactory } from "glimmer-object";
@@ -788,6 +794,12 @@ export class TestEnvironment extends Environment {
     return new EmberishConditionalReference(reference);
   }
 
+  macros(): { blocks: BlockMacros } {
+    let macros = super.macros();
+    populateBlocks(macros.blocks);
+    return macros;
+  }
+
   refineStatement(statement: ParsedStatement, symbolTable: SymbolTable): StatementSyntax {
     let {
       appendType,
@@ -1168,28 +1180,46 @@ export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectF
   });
 }
 
-class IdentitySyntax extends StatementSyntax {
-  type = "identity";
+const { defaultBlock, inverseBlock, params, hash } = BaselineSyntax.NestedBlock;
 
-  constructor(private args: ArgsSyntax) {
-    super();
-  }
+function populateBlocks(blocks: BlockMacros): BlockMacros {
+  blocks.add('identity', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
+    builder.evaluate('default', sexp[4]);
+  });
 
-  compile(dsl: OpcodeBuilderDSL) {
-    dsl.evaluate('default', this.args.blocks.default);
-  }
-}
+  blocks.add('render-inverse', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
+    builder.evaluate('inverse', sexp[5]);
+  });
 
-class RenderInverseIdentitySyntax extends StatementSyntax {
-  type = "render-inverse-identity";
+  blocks.add('-with-dynamic-vars', (sexp, builder) => {
+    let block = defaultBlock(sexp);
+    let args = compileArgs(params(sexp), hash(sexp), builder);
 
-  constructor(private args: ArgsSyntax) {
-    super();
-  }
+    builder.unit(b => {
+      b.putArgs(args);
+      b.pushDynamicScope();
+      b.bindDynamicScope(args.named.keys);
+      b.evaluate('default', unwrap(block));
+      b.popDynamicScope();
+    });
+  });
 
-  compile(dsl: OpcodeBuilderDSL) {
-    dsl.evaluate('inverse', this.args.blocks.inverse);
-  }
+  blocks.add('-in-element', (sexp, builder) => {
+    let block = defaultBlock(sexp);
+    let args = compileArgs(params(sexp), hash(sexp), builder);
+
+    builder.putArgs(args);
+    builder.test('simple');
+
+    builder.block(null, b => {
+      b.jumpUnless('END');
+      b.pushRemoteElement();
+      b.evaluate('default', unwrap(block));
+      b.popRemoteElement();
+    });
+  });
+
+  return blocks;
 }
 
 export function equalsElement(element: Element, tagName: string, attributes: Object, content: string) {

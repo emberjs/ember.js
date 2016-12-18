@@ -2,6 +2,8 @@ import { Statement as StatementSyntax } from './syntax';
 
 import { SymbolTable } from 'glimmer-interfaces';
 
+import { Blocks, populateBuiltins } from './syntax/functions';
+
 import * as Simple from './dom/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { Reference, PathReference, OpaqueIterable } from 'glimmer-reference';
@@ -207,6 +209,7 @@ class Transaction {
 export abstract class Environment {
   protected updateOperations: DOMChanges;
   protected appendOperations: DOMTreeConstruction;
+  private _macros: Option<{ blocks: Blocks }> = null;
   private _transaction: Option<Transaction> = null;
 
   constructor({ appendOperations, updateOperations }: { appendOperations: DOMTreeConstruction, updateOperations: DOMChanges }) {
@@ -292,6 +295,15 @@ export abstract class Environment {
 
   attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace?: string): AttributeManager {
     return defaultManagers(element, attr, isTrusting, namespace === undefined ? null : namespace);
+  }
+
+  macros(): { blocks: Blocks } {
+    let macros = this._macros;
+    if (!macros) {
+      this._macros = macros = { blocks: populateBuiltins() };
+    }
+
+    return macros;
   }
 
   abstract hasHelper(helperName: Option<string>[], blockMeta: TemplateMeta): boolean;
