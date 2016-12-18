@@ -39,6 +39,7 @@ function boot(callback) {
       location: 'none'
     });
 
+    // We shouldn't be testing this
     appInstance = App.__deprecatedInstance__;
 
     if (callback) { callback(); }

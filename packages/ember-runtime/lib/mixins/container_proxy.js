@@ -6,6 +6,11 @@ import {
   Mixin,
   run
 } from 'ember-metal';
+import {
+  FACTORY_FOR,
+  LOOKUP_FACTORY
+} from 'container';
+import { isFeatureEnabled } from 'ember-metal';
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -14,7 +19,7 @@ import {
   @class ContainerProxyMixin
   @private
 */
-export default Mixin.create({
+let containerProxyMixin = {
   /**
    The container stores state.
 
@@ -106,6 +111,14 @@ export default Mixin.create({
     return this.__container__.lookupFactory(fullName, options);
   },
 
+  [FACTORY_FOR]() {
+    return this.__container__[FACTORY_FOR](...arguments);
+  },
+
+  [LOOKUP_FACTORY]() {
+    return this.__container__[LOOKUP_FACTORY](...arguments);
+  },
+
   /**
    Given a name and a source path, resolve the fullName
 
@@ -131,4 +144,12 @@ export default Mixin.create({
       run(this.__container__, 'destroy');
     }
   }
-});
+};
+
+if (isFeatureEnabled('ember-factory-for')) {
+  containerProxyMixin.factoryFor = function ContainerProxyMixin_factoryFor(fullName, options = {}) {
+    return this.__container__.factoryFor(fullName, options);
+  };
+}
+
+export default Mixin.create(containerProxyMixin);

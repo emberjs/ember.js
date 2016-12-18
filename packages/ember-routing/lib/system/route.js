@@ -32,6 +32,7 @@ import {
   calculateCacheKey,
   prefixRouteNameArg
 } from '../utils';
+import { FACTORY_FOR, LOOKUP_FACTORY } from 'container';
 const { slice } = Array.prototype;
 
 function K() { return this; }
@@ -172,7 +173,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let controllerProto, combinedQueryParameterConfiguration;
 
     let controllerName = this.controllerName || this.routeName;
-    let definedControllerClass = getOwner(this)._lookupFactory(`controller:${controllerName}`);
+    let owner = getOwner(this);
+    let definedControllerClass = owner[LOOKUP_FACTORY](`controller:${controllerName}`);
     let queryParameterConfiguraton = get(this, 'queryParams');
     let hasRouterDefinedQueryParams = !!Object.keys(queryParameterConfiguraton).length;
 
@@ -1633,12 +1635,14 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     return {
       find(name, value) {
-        let modelClass = owner._lookupFactory(`model:${name}`);
+        let modelClass = owner[FACTORY_FOR](`model:${name}`);
 
         assert(
           `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${StringUtils.classify(name)} did not exist and you did not override your route's \`model\` hook.`, !!modelClass);
 
         if (!modelClass) { return; }
+
+        modelClass = modelClass.class;
 
         assert(`${StringUtils.classify(name)} has no method \`find\`.`, typeof modelClass.find === 'function');
 

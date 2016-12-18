@@ -12,6 +12,7 @@ import { assert } from 'ember-metal';
 import { RootReference } from '../utils/references';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
+import { FACTORY_FOR } from 'container';
 
 function makeComponentDefinition(vm) {
   let env     = vm.env;
@@ -186,8 +187,9 @@ class NonSingletonRenderManager extends AbstractRenderManager {
   create(environment, definition, args, dynamicScope) {
     let { name, env } = definition;
     let modelRef = args.positional.at(0);
+    let controllerFactory = env.owner[FACTORY_FOR](`controller:${name}`);
 
-    let factory = env.owner._lookupFactory(`controller:${name}`) || generateControllerFactory(env.owner, name);
+    let factory = controllerFactory || generateControllerFactory(env.owner, name);
     let controller = factory.create({ model: modelRef.value() });
 
     if (dynamicScope.rootOutletState) {

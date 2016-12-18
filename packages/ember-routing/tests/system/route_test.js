@@ -6,6 +6,7 @@ import {
   inject
 } from 'ember-runtime';
 import EmberRoute from '../../system/route';
+import { FACTORY_FOR } from 'container';
 
 let route, routeOne, routeTwo, lookupHash;
 
@@ -34,19 +35,25 @@ QUnit.test('default store utilizes the container to acquire the model factory', 
     }
   });
 
-  setOwner(route, buildOwner({
+  let ownerOptions = {
     ownerOptions: {
       hasRegistration() {
         return true;
       },
-
-      _lookupFactory(fullName) {
+      [FACTORY_FOR](fullName) {
         equal(fullName, 'model:post', 'correct factory was looked up');
 
-        return Post;
+        return {
+          class: Post,
+          create() {
+            return Post.create();
+          }
+        };
       }
     }
-  }));
+  };
+
+  setOwner(route, buildOwner(ownerOptions));
 
   route.set('_qp', null);
 

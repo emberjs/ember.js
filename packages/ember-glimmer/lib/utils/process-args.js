@@ -21,7 +21,7 @@ import {
 export function gatherArgs(args, definition) {
   let namedMap = gatherNamedMap(args, definition);
   let positionalValues = gatherPositionalValues(args, definition);
-  return mergeArgs(namedMap, positionalValues, args.blocks, definition.ComponentClass);
+  return mergeArgs(namedMap, positionalValues, args.blocks, definition.ComponentClass.class);
 }
 
 function gatherNamedMap(args, definition) {

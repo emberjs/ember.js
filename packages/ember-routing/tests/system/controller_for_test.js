@@ -7,6 +7,7 @@ import {
 import controllerFor from '../../system/controller_for';
 import generateController from '../../system/generate_controller';
 import { buildOwner } from 'internal-test-helpers';
+import { isFeatureEnabled } from 'ember-metal';
 
 function buildInstance(namespace) {
   let owner = buildOwner();
@@ -75,18 +76,33 @@ QUnit.module('Ember.generateController', {
   }
 });
 
-QUnit.test('generateController should create Ember.Controller', function() {
+QUnit.test('generateController should return Ember.Controller', function() {
   let controller = generateController(appInstance, 'home');
 
-  ok(controller instanceof Controller, 'should create controller');
+  ok(controller instanceof Controller, 'should return controller');
 });
 
 
-QUnit.test('generateController should create App.Controller if provided', function() {
+QUnit.test('generateController should return App.Controller if provided', function() {
   let controller;
   namespace.Controller = Controller.extend();
 
   controller = generateController(appInstance, 'home');
 
-  ok(controller instanceof namespace.Controller, 'should create controller');
+  ok(controller instanceof namespace.Controller, 'should return controller');
+});
+
+QUnit.test('generateController should return controller:basic if provided', function() {
+  let controller;
+
+  let BasicController = Controller.extend();
+  appInstance.register('controller:basic', BasicController);
+
+  controller = generateController(appInstance, 'home');
+
+  if (isFeatureEnabled('ember-no-double-extend')) {
+    ok(controller instanceof BasicController, 'should return base class of controller');
+  } else {
+    ok(controller instanceof appInstance._lookupFactory('controller:basic'), 'should return double-extended controller');
+  }
 });

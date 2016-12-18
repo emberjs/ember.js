@@ -162,7 +162,6 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
       second: 'second'
     });
 
-
     assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
     assert.equal(instance.get('first'), 'first', 'matches known value');
     assert.equal(instance.get('second'), 'second', 'matches known value');

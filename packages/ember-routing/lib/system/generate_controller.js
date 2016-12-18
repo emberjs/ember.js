@@ -2,6 +2,7 @@ import {
   info,
   get
 } from 'ember-metal';
+import { FACTORY_FOR } from 'container';
 
 /**
 @module ember
@@ -16,9 +17,10 @@ import {
   @private
 */
 
-export function generateControllerFactory(owner, controllerName) {
-  let Factory = owner._lookupFactory('controller:basic').extend({
-    isGenerated: true,
+export function generateControllerFactory(owner, controllerName, context) {
+  let Factory = owner[FACTORY_FOR]('controller:basic').class;
+
+  Factory = Factory.extend({
     toString() {
       return `(generated ${controllerName} controller)`;
     }

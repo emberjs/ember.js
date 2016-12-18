@@ -178,7 +178,9 @@ function rerenderInstrumentDetails(component) {
 
 class CurlyComponentManager {
   prepareArgs(definition, args) {
-    validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.positionalParams);
+    if (definition.ComponentClass) {
+      validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.class.positionalParams);
+    }
 
     return gatherArgs(args, definition);
   }
@@ -186,7 +188,8 @@ class CurlyComponentManager {
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
     let parentView = dynamicScope.view;
 
-    let klass = definition.ComponentClass;
+    let factory = definition.ComponentClass;
+
     let processedArgs = ComponentArgs.create(args);
     let { props } = processedArgs.value();
 
@@ -197,7 +200,7 @@ class CurlyComponentManager {
 
     props._targetObject = callerSelfRef.value();
 
-    let component = klass.create(props);
+    let component = factory.create(props);
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
@@ -363,7 +366,7 @@ const MANAGER = new CurlyComponentManager();
 
 class TopComponentManager extends CurlyComponentManager {
   create(environment, definition, args, dynamicScope, currentScope, hasBlock) {
-    let component = definition.ComponentClass;
+    let component = definition.ComponentClass.create();
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
@@ -410,7 +413,12 @@ export class CurlyComponentDefinition extends ComponentDefinition {
 
 export class RootComponentDefinition extends ComponentDefinition {
   constructor(instance) {
-    super('-root', ROOT_MANAGER, instance);
+    super('-root', ROOT_MANAGER, {
+      class: instance.constructor,
+      create() {
+        return instance;
+      }
+    });
     this.template = undefined;
     this.args = undefined;
   }
