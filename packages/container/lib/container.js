@@ -5,13 +5,18 @@ import {
   setOwner,
   OWNER,
   assign,
-  NAME_KEY
+  NAME_KEY,
+  HAS_NATIVE_PROXY
 } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import { assert, deprecate, runInDebug, isFeatureEnabled } from 'ember-metal';
+import {
+  assert,
+  deprecate,
+  runInDebug,
+  isFeatureEnabled
+} from 'ember-metal';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
-const HAS_PROXY = typeof Proxy === 'function';
 export const FACTORY_FOR = symbol('FACTORY_FOR');
 export const LOOKUP_FACTORY = symbol('LOOKUP_FACTORY');
 
@@ -38,9 +43,6 @@ export default function Container(registry, options) {
   this[CONTAINER_OVERRIDE] = undefined;
   this.isDestroyed = false;
 }
-
-Container.__FACTORY_FOR__ = FACTORY_FOR;
-Container.__LOOKUP_FACTORY__ = LOOKUP_FACTORY;
 
 Container.prototype = {
   /**
@@ -232,7 +234,7 @@ Container.prototype = {
  * set on the manager.
  */
 function wrapManagerInDeprecationProxy(manager) {
-  if (HAS_PROXY) {
+  if (HAS_NATIVE_PROXY) {
     let validator = {
       get(obj, prop) {
         if (prop !== 'class' && prop !== 'create') {

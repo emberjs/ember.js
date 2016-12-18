@@ -320,6 +320,9 @@ export default class Environment extends GlimmerEnvironment {
       if (helperFactory.class.isHelperInstance) {
         return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
       } else if (helperFactory.class.isHelperFactory) {
+        if (!isFeatureEnabled('ember-no-double-extend')) {
+          helperFactory = helperFactory.create();
+        }
         return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
       } else {
         throw new Error(`${nameParts} is not a helper`);

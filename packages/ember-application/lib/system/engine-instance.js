@@ -10,7 +10,7 @@ import {
   RegistryProxyMixin,
   RSVP
 } from 'ember-runtime';
-import { Error as EmberError, assert, run, isFeatureEnabled } from 'ember-metal';
+import { Error as EmberError, assert, run } from 'ember-metal';
 import { Registry, FACTORY_FOR, LOOKUP_FACTORY, privatize as P } from 'container';
 import { getEngineParent, setEngineParent } from './engine-parent';
 
@@ -204,14 +204,6 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     return this.__container__[LOOKUP_FACTORY](fullName, options);
   }
 });
-
-if (isFeatureEnabled('ember-factory-for')) {
-  EngineInstance.reopen({
-    factoryFor(fullName, options) {
-      return this.__container__.factoryFor(fullName, options);
-    }
-  });
-}
 
 EngineInstance.reopenClass({
   /**
