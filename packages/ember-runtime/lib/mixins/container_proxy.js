@@ -10,6 +10,7 @@ import {
   FACTORY_FOR,
   LOOKUP_FACTORY
 } from 'container';
+import { isFeatureEnabled } from 'ember-metal';
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -18,7 +19,7 @@ import {
   @class ContainerProxyMixin
   @private
 */
-export default Mixin.create({
+let containerProxyMixin = {
   /**
    The container stores state.
 
@@ -142,9 +143,13 @@ export default Mixin.create({
     if (this.__container__) {
       run(this.__container__, 'destroy');
     }
-  },
-
-  factoryFor(fullName, options = {}) {
-    return this.__container__.factoryFor(fullName, options);
   }
-});
+};
+
+if (isFeatureEnabled('ember-factory-for')) {
+  containerProxyMixin.factoryFor = function ContainerProxyMixin_factoryFor(fullName, options = {}) {
+    return this.__container__.factoryFor(fullName, options);
+  };
+}
+
+export default Mixin.create(containerProxyMixin);
