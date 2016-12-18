@@ -116,7 +116,39 @@ STATEMENTS.add('optimized-append', (sexp: BaselineSyntax.OptimizedAppend, builde
 });
 
 STATEMENTS.add('nested-block', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
-  BLOCKS.compile(sexp, builder);
+  let { blocks } = builder.env.macros();
+  blocks.compile(sexp, builder);
+});
+
+STATEMENTS.add('static-partial', (sexp: BaselineSyntax.StaticPartial, builder) => {
+  let [, name] = sexp;
+
+  if (!builder.env.hasPartial(name, builder.symbolTable)) {
+    throw new Error(`Compile Error: Could not find a partial named "${name}"`);
+  }
+
+  let definition = builder.env.lookupPartial(name, builder.symbolTable);
+
+  builder.putPartialDefinition(definition);
+  builder.evaluatePartial();
+});
+
+STATEMENTS.add('dynamic-partial', (sexp: BaselineSyntax.DynamicPartial, builder) => {
+  let [, name] = sexp;
+
+    builder.startLabels();
+
+    builder.putValue(expr(name, builder));
+    builder.test('simple');
+    builder.enter('BEGIN', 'END');
+    builder.label('BEGIN');
+    builder.jumpUnless('END');
+    builder.putDynamicPartialDefinition();
+    builder.evaluatePartial();
+    builder.label('END');
+    builder.exit();
+
+    builder.stopLabels();
 });
 
 let EXPRESSIONS = new Compilers<SexpExpression, CompiledExpression<Opaque>>();
@@ -166,7 +198,7 @@ EXPRESSIONS.add('undefined', (sexp: E.Undefined, builder: OpcodeBuilder) => {
   return new CompiledValue(undefined);
 });
 
-function compileArgs(params: WireFormat.Core.Params, hash: WireFormat.Core.Hash, builder: OpcodeBuilder): CompiledArgs {
+export function compileArgs(params: WireFormat.Core.Params, hash: WireFormat.Core.Hash, builder: OpcodeBuilder): CompiledArgs {
   let compiledParams = compileParams(params, builder);
   let compiledHash = compileHash(hash, builder);
   return CompiledArgs.create(compiledParams, compiledHash, EMPTY_BLOCKS);
@@ -205,13 +237,14 @@ function compileRef(parts: string[], builder: OpcodeBuilder) {
   }
 }
 
-export type BlockCompileFunction = (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => void;
+export type NestedBlockSyntax = BaselineSyntax.NestedBlock;
+export type CompileBlockMacro = (sexp: NestedBlockSyntax, builder: OpcodeBuilder) => void;
 
 export class Blocks {
   private names = dict<number>();
-  private funcs: BlockCompileFunction[] = [];
+  private funcs: CompileBlockMacro[] = [];
 
-  add(name: string, func: BlockCompileFunction) {
+  add(name: string, func: CompileBlockMacro) {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
@@ -231,156 +264,162 @@ export class Blocks {
 
 export const BLOCKS = new Blocks();
 
-BLOCKS.add('if', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
-  //        PutArgs
-  //        Test(Environment)
-  //        Enter(BEGIN, END)
-  // BEGIN: Noop
-  //        JumpUnless(ELSE)
-  //        Evaluate(default)
-  //        Jump(END)
-  // ELSE:  Noop
-  //        Evalulate(inverse)
-  // END:   Noop
-  //        Exit
+populateBuiltins(BLOCKS);
 
-  let [, path, params, hash, _default, inverse] = sexp;
-  let args = compileArgs(params, hash, builder);
+export function populateBuiltins(blocks: Blocks = new Blocks()): Blocks {
+  blocks.add('if', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+    //        PutArgs
+    //        Test(Environment)
+    //        Enter(BEGIN, END)
+    // BEGIN: Noop
+    //        JumpUnless(ELSE)
+    //        Evaluate(default)
+    //        Jump(END)
+    // ELSE:  Noop
+    //        Evalulate(inverse)
+    // END:   Noop
+    //        Exit
 
-  builder.putArgs(args);
-  builder.test('environment');
+    let [, path, params, hash, _default, inverse] = sexp;
+    let args = compileArgs(params, hash, builder);
 
-  builder.block(null, b => {
-    if (_default && inverse) {
-      b.jumpUnless('ELSE');
-      b.evaluate('default', _default);
-      b.jump('END');
-      b.label('ELSE');
-      b.evaluate('inverse', inverse);
-    } else if (_default) {
-      b.jumpUnless('END');
-      b.evaluate('default', _default);
-    } else {
-      throw unreachable();
-    }
-  });
-});
+    builder.putArgs(args);
+    builder.test('environment');
 
-BLOCKS.add('unless', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
-  //        PutArgs
-  //        Test(Environment)
-  //        Enter(BEGIN, END)
-  // BEGIN: Noop
-  //        JumpUnless(ELSE)
-  //        Evaluate(default)
-  //        Jump(END)
-  // ELSE:  Noop
-  //        Evalulate(inverse)
-  // END:   Noop
-  //        Exit
-
-  let [, path, params, hash, _default, inverse] = sexp;
-  let args = compileArgs(params, hash, builder);
-
-  builder.putArgs(args);
-  builder.test('environment');
-
-  builder.block(null, b => {
-    if (_default && inverse) {
-      b.jumpIf('ELSE');
-      b.evaluate('default', _default);
-      b.jump('END');
-      b.label('ELSE');
-      b.evaluate('inverse', inverse);
-    } else if (_default) {
-      b.jumpIf('END');
-      b.evaluate('default', _default);
-    } else {
-      throw unreachable();
-    }
-  });
-});
-
-BLOCKS.add('with', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
-  //        PutArgs
-  //        Test(Environment)
-  //        Enter(BEGIN, END)
-  // BEGIN: Noop
-  //        JumpUnless(ELSE)
-  //        Evaluate(default)
-  //        Jump(END)
-  // ELSE:  Noop
-  //        Evalulate(inverse)
-  // END:   Noop
-  //        Exit
-
-  let [, path, params, hash, _default, inverse] = sexp;
-  let args = compileArgs(params, hash, builder);
-
-  builder.putArgs(args);
-  builder.test('environment');
-
-  builder.block(null, b => {
-    if (_default && inverse) {
-      b.jumpUnless('ELSE');
-      b.evaluate('default', _default);
-      b.jump('END');
-      b.label('ELSE');
-      b.evaluate('inverse', inverse);
-    } else if (_default) {
-      b.jumpUnless('END');
-      b.evaluate('default', _default);
-    } else {
-      throw unreachable();
-    }
-  });
-});
-
-BLOCKS.add('each', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
-  //         Enter(BEGIN, END)
-  // BEGIN:  Noop
-  //         PutArgs
-  //         PutIterable
-  //         JumpUnless(ELSE)
-  //         EnterList(BEGIN2, END2)
-  // ITER:   Noop
-  //         NextIter(BREAK)
-  //         EnterWithKey(BEGIN2, END2)
-  // BEGIN2: Noop
-  //         PushChildScope
-  //         Evaluate(default)
-  //         PopScope
-  // END2:   Noop
-  //         Exit
-  //         Jump(ITER)
-  // BREAK:  Noop
-  //         ExitList
-  //         Jump(END)
-  // ELSE:   Noop
-  //         Evalulate(inverse)
-  // END:    Noop
-  //         Exit
-
-  let [, path, params, hash, _default, inverse] = sexp;
-  let args = compileArgs(params, hash, builder);
-
-  builder.block(args, b => {
-    b.putIterator();
-
-    if (inverse) {
-      b.jumpUnless('ELSE');
-    } else {
-      b.jumpUnless('END');
-    }
-
-    b.iter(b => {
-      b.evaluate('default', unwrap(_default));
+    builder.block(null, b => {
+      if (_default && inverse) {
+        b.jumpUnless('ELSE');
+        b.evaluate('default', _default);
+        b.jump('END');
+        b.label('ELSE');
+        b.evaluate('inverse', inverse);
+      } else if (_default) {
+        b.jumpUnless('END');
+        b.evaluate('default', _default);
+      } else {
+        throw unreachable();
+      }
     });
-
-    if (inverse) {
-      b.jump('END');
-      b.label('ELSE');
-      b.evaluate('inverse', inverse);
-    }
   });
-});
+
+  blocks.add('unless', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+    //        PutArgs
+    //        Test(Environment)
+    //        Enter(BEGIN, END)
+    // BEGIN: Noop
+    //        JumpUnless(ELSE)
+    //        Evaluate(default)
+    //        Jump(END)
+    // ELSE:  Noop
+    //        Evalulate(inverse)
+    // END:   Noop
+    //        Exit
+
+    let [, path, params, hash, _default, inverse] = sexp;
+    let args = compileArgs(params, hash, builder);
+
+    builder.putArgs(args);
+    builder.test('environment');
+
+    builder.block(null, b => {
+      if (_default && inverse) {
+        b.jumpIf('ELSE');
+        b.evaluate('default', _default);
+        b.jump('END');
+        b.label('ELSE');
+        b.evaluate('inverse', inverse);
+      } else if (_default) {
+        b.jumpIf('END');
+        b.evaluate('default', _default);
+      } else {
+        throw unreachable();
+      }
+    });
+  });
+
+  blocks.add('with', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+    //        PutArgs
+    //        Test(Environment)
+    //        Enter(BEGIN, END)
+    // BEGIN: Noop
+    //        JumpUnless(ELSE)
+    //        Evaluate(default)
+    //        Jump(END)
+    // ELSE:  Noop
+    //        Evalulate(inverse)
+    // END:   Noop
+    //        Exit
+
+    let [, path, params, hash, _default, inverse] = sexp;
+    let args = compileArgs(params, hash, builder);
+
+    builder.putArgs(args);
+    builder.test('environment');
+
+    builder.block(null, b => {
+      if (_default && inverse) {
+        b.jumpUnless('ELSE');
+        b.evaluate('default', _default);
+        b.jump('END');
+        b.label('ELSE');
+        b.evaluate('inverse', inverse);
+      } else if (_default) {
+        b.jumpUnless('END');
+        b.evaluate('default', _default);
+      } else {
+        throw unreachable();
+      }
+    });
+  });
+
+  blocks.add('each', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+    //         Enter(BEGIN, END)
+    // BEGIN:  Noop
+    //         PutArgs
+    //         PutIterable
+    //         JumpUnless(ELSE)
+    //         EnterList(BEGIN2, END2)
+    // ITER:   Noop
+    //         NextIter(BREAK)
+    //         EnterWithKey(BEGIN2, END2)
+    // BEGIN2: Noop
+    //         PushChildScope
+    //         Evaluate(default)
+    //         PopScope
+    // END2:   Noop
+    //         Exit
+    //         Jump(ITER)
+    // BREAK:  Noop
+    //         ExitList
+    //         Jump(END)
+    // ELSE:   Noop
+    //         Evalulate(inverse)
+    // END:    Noop
+    //         Exit
+
+    let [, path, params, hash, _default, inverse] = sexp;
+    let args = compileArgs(params, hash, builder);
+
+    builder.block(args, b => {
+      b.putIterator();
+
+      if (inverse) {
+        b.jumpUnless('ELSE');
+      } else {
+        b.jumpUnless('END');
+      }
+
+      b.iter(b => {
+        b.evaluate('default', unwrap(_default));
+      });
+
+      if (inverse) {
+        b.jump('END');
+        b.label('ELSE');
+        b.evaluate('inverse', inverse);
+      }
+    });
+  });
+
+  return blocks;
+}

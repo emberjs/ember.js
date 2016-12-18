@@ -73,8 +73,18 @@ export class Layout extends Template {
 }
 
 export class PartialBlock extends Layout {
+  protected symbolTable: ProgramSymbolTable;
+
   compile(env: Environment): CompiledProgram {
-    return new CompiledProgram(new LinkedList<Opcode>(), 0);
+    let table = this.symbolTable;
+    let b = builder(env, table);
+
+    for (let statement of this.statements) {
+      let refined = SPECIALIZE.specialize(statement, table);
+      STATEMENTS.compile(refined, b);
+    }
+
+    return new CompiledProgram(b.toOpSeq(), table.size);
   }
 }
 
@@ -133,13 +143,38 @@ export namespace BaselineSyntax {
   export type AnyDynamicAttr = ['any-dynamic-attr', string, WireFormat.Expression, string, boolean];
   export const isAnyAttr = WireFormat.is<AnyDynamicAttr>('any-dynamic-attr');
 
+  export type StaticPartial = ['static-partial', string];
+  export const isStaticPartial = WireFormat.is<StaticPartial>('static-partial');
+  export type DynamicPartial = ['dynamic-partial', WireFormat.Expression];
+  export const isDynamicPartial = WireFormat.is<DynamicPartial>('dynamic-partial');
+
   export type NestedBlock = ['nested-block', WireFormat.Core.Path, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
   export const isNestedBlock = WireFormat.is<NestedBlock>('nested-block');
+
+  export namespace NestedBlock {
+    export function defaultBlock(sexp: NestedBlock): Option<InlineBlock> {
+      return sexp[4];
+    }
+
+    export function inverseBlock(sexp: NestedBlock): Option<InlineBlock> {
+      return sexp[5];
+    }
+
+    export function params(sexp: NestedBlock): WireFormat.Core.Params {
+      return sexp[2];
+    }
+
+    export function hash(sexp: NestedBlock): WireFormat.Core.Hash {
+      return sexp[3];
+    }
+  }
 
   export type Statement =
       Component
     | OpenPrimitiveElement
     | OptimizedAppend
+    | StaticPartial
+    | DynamicPartial
     | AnyDynamicAttr
     | NestedBlock
     ;

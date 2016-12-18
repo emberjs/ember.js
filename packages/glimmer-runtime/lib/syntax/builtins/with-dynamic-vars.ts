@@ -4,6 +4,8 @@ import {
 
 import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 import * as Syntax from '../core';
+import { BaselineSyntax } from '../../scanner';
+import {  } from '../../syntax/functions';
 import Environment from '../../environment';
 import { unwrap } from 'glimmer-util';
 
