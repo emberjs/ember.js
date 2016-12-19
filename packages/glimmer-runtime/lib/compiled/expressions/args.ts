@@ -1,11 +1,21 @@
 import VM from '../../vm/append';
 import { COMPILED_EMPTY_POSITIONAL_ARGS, EVALUATED_EMPTY_POSITIONAL_ARGS, CompiledPositionalArgs, EvaluatedPositionalArgs } from './positional-args';
 import { COMPILED_EMPTY_NAMED_ARGS, EVALUATED_EMPTY_NAMED_ARGS, CompiledNamedArgs, EvaluatedNamedArgs } from './named-args';
-import { Blocks, EMPTY_BLOCKS } from '../../syntax/core';
 import { RevisionTag, PathReference, combineTagged } from 'glimmer-reference';
-import { Opaque, Dict } from 'glimmer-util';
+import { InlineBlock } from '../../scanner';
+import { Opaque, Option, Dict } from 'glimmer-util';
 
-export { COMPILED_EMPTY_POSITIONAL_ARGS, COMPILED_EMPTY_NAMED_ARGS, EMPTY_BLOCKS };
+export { COMPILED_EMPTY_POSITIONAL_ARGS, COMPILED_EMPTY_NAMED_ARGS };
+
+export interface Blocks {
+  default: Option<InlineBlock>;
+  inverse: Option<InlineBlock>;
+}
+
+export const EMPTY_BLOCKS: Blocks = {
+  default: null,
+  inverse: null
+};
 
 export class CompiledArgs {
   static create(positional: CompiledPositionalArgs, named: CompiledNamedArgs, blocks: Blocks): CompiledArgs {

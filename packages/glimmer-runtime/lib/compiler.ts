@@ -27,12 +27,13 @@ import {
 } from './syntax';
 
 import {
-  compileArgs
+  compileArgs,
+  compileBlockArgs,
+  compileBaselineArgs
 } from './syntax/functions';
 
 import {
-  FunctionExpression,
-  default as makeFunctionExpression
+  FunctionExpression
 } from './compiled/expressions/function';
 
 import OpcodeBuilderDSL from './compiled/opcodes/builder';
@@ -140,48 +141,48 @@ class WrappedBuilder {
     let { env, layout } = this;
 
     let symbolTable = layout.symbolTable;
-    let dsl = builder(env, layout.symbolTable);
+    let b = builder(env, layout.symbolTable);
 
-    dsl.startLabels();
+    b.startLabels();
 
     let dynamicTag = this.tag.getDynamic();
     let staticTag: Maybe<string>;
 
     if (dynamicTag) {
-      dsl.putValue(dynamicTag);
-      dsl.test('simple');
-      dsl.jumpUnless('BODY');
-      dsl.openDynamicPrimitiveElement();
-      dsl.didCreateElement();
-      this.attrs['buffer'].forEach(statement => compileStatement(statement, dsl));
-      dsl.flushElement();
-      dsl.label('BODY');
+      b.putValue(dynamicTag);
+      b.test('simple');
+      b.jumpUnless('BODY');
+      b.openDynamicPrimitiveElement();
+      b.didCreateElement();
+      this.attrs['buffer'].forEach(statement => compileStatement(statement, b));
+      b.flushElement();
+      b.label('BODY');
     } else if (staticTag = this.tag.getStatic()) {
       let tag = this.tag.staticTagName;
-      dsl.openPrimitiveElement(staticTag);
-      dsl.didCreateElement();
-      this.attrs['buffer'].forEach(statement => compileStatement(statement, dsl));
-      dsl.flushElement();
+      b.openPrimitiveElement(staticTag);
+      b.didCreateElement();
+      this.attrs['buffer'].forEach(statement => compileStatement(statement, b));
+      b.flushElement();
     }
 
-    dsl.preludeForLayout(layout);
+    b.preludeForLayout(layout);
 
-    layout.statements.forEach(statement => compileStatement(statement, dsl));
+    layout.statements.forEach(statement => compileStatement(statement, b));
 
     if (dynamicTag) {
-      dsl.putValue(dynamicTag);
-      dsl.test('simple');
-      dsl.jumpUnless('END');
-      dsl.closeElement();
-      dsl.label('END');
+      b.putValue(dynamicTag);
+      b.test('simple');
+      b.jumpUnless('END');
+      b.closeElement();
+      b.label('END');
     } else if (staticTag) {
-      dsl.closeElement();
+      b.closeElement();
     }
 
-    dsl.didRenderLayout();
-    dsl.stopLabels();
+    b.didRenderLayout();
+    b.stopLabels();
 
-    return new CompiledProgram(dsl.toOpSeq(), symbolTable.size);
+    return new CompiledProgram(b.toOpSeq(), symbolTable.size);
   }
 }
 
@@ -211,7 +212,7 @@ class UnwrappedBuilder {
     let attrs = this.attrs['buffer'];
     let attrsInserted = false;
 
-    this.layout.statements.forEach(statement => {
+    for (let statement of layout.statements) {
       if (!attrsInserted && isOpenElement(statement)) {
         b.openComponentElement(statement[1]);
         b.didCreateElement();
@@ -221,7 +222,7 @@ class UnwrappedBuilder {
       } else {
         compileStatement(statement, b);
       }
-    });
+    }
 
     b.didRenderLayout();
     b.stopLabels();
@@ -234,9 +235,9 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
   public isDynamic: Option<boolean> = null;
   public isStatic: Option<boolean> = null;
   public staticTagName: Option<string> = null;
-  public dynamicTagName: Option<Expression<string>> = null;
+  public dynamicTagName: Option<BaselineSyntax.AnyExpression> = null;
 
-  getDynamic(): Maybe<Expression<string>> {
+  getDynamic(): Maybe<BaselineSyntax.AnyExpression> {
     if (this.isDynamic) {
       return this.dynamicTagName;
     }
@@ -255,7 +256,7 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
 
   dynamic(tagName: FunctionExpression<string>) {
     this.isDynamic = true;
-    this.dynamicTagName = makeFunctionExpression(tagName);
+    this.dynamicTagName = ['function', tagName];
   }
 }
 
@@ -278,24 +279,24 @@ class ComponentBuilder implements IComponentBuilder {
     this.env = builder.env;
   }
 
-  static(definition: StaticDefinition, args: WireFormat.Core.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
+  static(definition: StaticDefinition, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
     this.builder.unit(b => {
       b.putComponentDefinition(definition);
-      b.openComponent(compileArgs(args[0], args[1], b), shadow);
+      b.openComponent(compileBaselineArgs(args, b), shadow);
       b.closeComponent();
     });
   }
 
-  dynamic(definitionArgs: WireFormat.Core.Args, definition: DynamicDefinition, args: WireFormat.Core.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
+  dynamic(definitionArgs: BaselineSyntax.Args, definition: DynamicDefinition, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
     this.builder.unit(b => {
       b.putArgs(compileArgs(definitionArgs[0], definitionArgs[1], b));
-      b.putValue(makeFunctionExpression(definition));
+      b.putValue(['function', definition]);
       b.test('simple');
       b.enter('BEGIN', 'END');
       b.label('BEGIN');
       b.jumpUnless('END');
       b.putDynamicComponentDefinition();
-      b.openComponent(compileArgs(args[0], args[1], b), shadow);
+      b.openComponent(compileBaselineArgs(args, b), shadow);
       b.closeComponent();
       b.label('END');
       b.exit();

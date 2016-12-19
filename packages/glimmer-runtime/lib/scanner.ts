@@ -142,6 +142,8 @@ export namespace BaselineSyntax {
   export type Component = ['component', string, string[], WireFormat.Core.Hash, Block];
   export const isComponent = WireFormat.is<Component>('component');
 
+  import Params = WireFormat.Core.Params;
+  import Hash = WireFormat.Core.Hash;
   export type Block = InlineBlock;
 
   export type OpenPrimitiveElement = ['open-primitive-element', string, string[]];
@@ -164,6 +166,8 @@ export namespace BaselineSyntax {
 
   export type NestedBlock = ['nested-block', WireFormat.Core.Path, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
   export const isNestedBlock = WireFormat.is<NestedBlock>('nested-block');
+
+  export type Args = [Params, Hash, Option<Block>, Option<Block>];
 
   export namespace NestedBlock {
     export function defaultBlock(sexp: NestedBlock): Option<InlineBlock> {
@@ -226,7 +230,7 @@ export class BlockScanner {
   }
 
   startBlock(locals: string[]) {
-    let childTable = blockTable(this.symbolTable, locals);
+    let childTable = blockTable(this.blockScanner.symbolTable, locals);
     this.stack.push(new ChildBlockScanner(childTable));
   }
 

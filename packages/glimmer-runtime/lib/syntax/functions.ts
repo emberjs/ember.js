@@ -3,7 +3,8 @@ import { SymbolTable } from 'glimmer-interfaces';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { CompiledExpression } from '../compiled/expressions';
 import CompiledValue from '../compiled/expressions/value';
-import { BaselineSyntax } from '../scanner';
+import CompiledHasBlock, { CompiledHasBlockParams } from '../compiled/expressions/has-block';
+import { BaselineSyntax, InlineBlock } from '../scanner';
 import { Opaque, Option, dict, assert, unwrap, unreachable } from 'glimmer-util';
 import { ModifierOpcode } from '../compiled/opcodes/dom';
 import CompiledLookup, {
@@ -20,8 +21,18 @@ import {
   EMPTY_BLOCKS,
   CompiledArgs,
   CompiledPositionalArgs,
-  CompiledNamedArgs
+  CompiledNamedArgs,
+  Blocks as BlocksSyntax
 } from '../compiled/expressions/args';
+import {
+  CompiledGetBlockBySymbol,
+  CompiledInPartialGetBlock
+} from '../compiled/expressions/has-block';
+import {
+  OpenBlockOpcode,
+  CloseBlockOpcode
+} from './core';
+
 import { CompiledFunctionExpression } from '../compiled/expressions/function';
 
 export type SexpExpression = BaselineSyntax.AnyExpression & { 0: string };
@@ -131,9 +142,8 @@ STATEMENTS.add('component', (sexp: BaselineSyntax.Component, builder) => {
   let definition = builder.env.getComponentDefinition([tag], builder.symbolTable);
 
   builder.putComponentDefinition(definition);
-  builder.openComponent(compileArgs(null, args, builder), attrs);
+  builder.openComponent(compileBlockArgs(null, args, { default: block, inverse: null }, builder), attrs);
   builder.closeComponent();
-
 });
 
 STATEMENTS.add('static-partial', (sexp: BaselineSyntax.StaticPartial, builder) => {
@@ -167,11 +177,30 @@ STATEMENTS.add('dynamic-partial', (sexp: BaselineSyntax.DynamicPartial, builder)
     builder.stopLabels();
 });
 
+STATEMENTS.add('yield', function(this: undefined, sexp: WireFormat.Statements.Yield, builder) {
+  let [, to, params] = sexp;
+
+  let args = compileArgs(params, null, builder);
+  let yields: Option<number>, partial: Option<number>;
+
+  if (yields = builder.symbolTable.getSymbol('yields', to)) {
+    let inner = new CompiledGetBlockBySymbol(yields, to);
+    builder.append(new OpenBlockOpcode(inner, args));
+    builder.append(new CloseBlockOpcode());
+  } else if (partial = builder.symbolTable.getPartialArgs()) {
+    let inner = new CompiledInPartialGetBlock(partial, to);
+    builder.append(new OpenBlockOpcode(inner, args));
+    builder.append(new CloseBlockOpcode());
+  } else {
+    throw new Error('[BUG] ${to} is not a valid block name.');
+  }
+});
+
 let EXPRESSIONS = new Compilers<SexpExpression, CompiledExpression<Opaque>>();
 
 import E = WireFormat.Expressions;
 
-export function expr(expression: WireFormat.Expression, builder: OpcodeBuilder): CompiledExpression<Opaque> {
+export function expr(expression: BaselineSyntax.AnyExpression, builder: OpcodeBuilder): CompiledExpression<Opaque> {
   if (Array.isArray(expression)) {
     return EXPRESSIONS.compile(expression, builder);
   } else {
@@ -239,10 +268,53 @@ EXPRESSIONS.add('arg', (sexp: E.Arg, builder: OpcodeBuilder) => {
   }
 });
 
+EXPRESSIONS.add('has-block', (sexp: E.HasBlock, builder) => {
+  let blockName = sexp[1];
+
+  let yields: Option<number>, partial: Option<number>;
+
+  if (yields = builder.symbolTable.getSymbol('yields', blockName)) {
+    let inner = new CompiledGetBlockBySymbol(yields, blockName);
+    return new CompiledHasBlock(inner);
+  } else if (partial = builder.symbolTable.getPartialArgs()) {
+    let inner = new CompiledInPartialGetBlock(partial, blockName);
+    return new CompiledHasBlock(inner);
+  } else {
+    throw new Error('[BUG] ${blockName} is not a valid block name.');
+  }
+});
+
+EXPRESSIONS.add('has-block-params', (sexp: E.HasBlockParams, builder) => {
+  let blockName = sexp[1];
+  let yields: Option<number>, partial: Option<number>;
+
+  if (yields = builder.symbolTable.getSymbol('yields', blockName)) {
+    let inner = new CompiledGetBlockBySymbol(yields, blockName);
+    return new CompiledHasBlockParams(inner);
+  } else if (partial = builder.symbolTable.getPartialArgs()) {
+    let inner = new CompiledInPartialGetBlock(partial, blockName);
+    return new CompiledHasBlockParams(inner);
+  } else {
+    throw new Error('[BUG] ${blockName} is not a valid block name.');
+  }
+
+});
+
 export function compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder): CompiledArgs {
   let compiledParams = compileParams(params, builder);
   let compiledHash = compileHash(hash, builder);
   return CompiledArgs.create(compiledParams, compiledHash, EMPTY_BLOCKS);
+}
+
+export function compileBlockArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, blocks: BlocksSyntax, builder: OpcodeBuilder): CompiledArgs {
+  let compiledParams = compileParams(params, builder);
+  let compiledHash = compileHash(hash, builder);
+  return CompiledArgs.create(compiledParams, compiledHash, blocks);
+}
+
+export function compileBaselineArgs(args: BaselineSyntax.Args, builder: OpcodeBuilder): CompiledArgs {
+  let [params, hash, _default, inverse] = args;
+  return CompiledArgs.create(compileParams(params, builder), compileHash(hash, builder), { default: _default, inverse });
 }
 
 function compileParams(params: Option<WireFormat.Core.Params>, builder: OpcodeBuilder): CompiledPositionalArgs {
@@ -284,10 +356,15 @@ export type CompileBlockMacro = (sexp: NestedBlockSyntax, builder: OpcodeBuilder
 export class Blocks {
   private names = dict<number>();
   private funcs: CompileBlockMacro[] = [];
+  private missing: CompileBlockMacro;
 
   add(name: string, func: CompileBlockMacro) {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
+  }
+
+  addMissing(func: CompileBlockMacro) {
+    this.missing = func;
   }
 
   compile(sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder): void {
@@ -296,10 +373,15 @@ export class Blocks {
     let name: string = sexp[1][0];
     let index = this.names[name];
 
-    assert(index !== undefined, `${name} is not supported as a block`);
-
-    let func = this.funcs[index];
-    func(sexp, builder);
+    if (index === undefined) {
+      assert(!!this.missing, `${name} not found, and no catch-all block handler was registered`);
+      let func = this.missing;
+      let handled = func(sexp, builder);
+      assert(!!handled, `${name} not found, and the catch-all block handler didn't handle it`);
+    } else {
+      let func = this.funcs[index];
+      func(sexp, builder);
+    }
   }
 }
 

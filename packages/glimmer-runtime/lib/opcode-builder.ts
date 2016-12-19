@@ -10,6 +10,8 @@ import {
   Args
 } from './syntax/core';
 
+import { BaselineSyntax } from './scanner';
+
 import { SymbolTable } from 'glimmer-interfaces';
 
 import {
@@ -22,6 +24,6 @@ export type StaticDefinition = ComponentDefinition<Opaque>;
 export type DynamicDefinition = FunctionExpression<ComponentDefinition<Opaque>>;
 
 export interface ComponentBuilder {
-  static(definition: ComponentDefinition<Opaque>, args: WireFormat.Core.Args, symbolTable: SymbolTable, shadow?: string[]);
-  dynamic(definitionArgs: WireFormat.Core.Args, definition: DynamicDefinition, args: WireFormat.Core.Args, symbolTable: SymbolTable, shadow?: string[]);
+  static(definition: ComponentDefinition<Opaque>, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow?: string[]);
+  dynamic(definitionArgs: BaselineSyntax.Args, definition: DynamicDefinition, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow?: string[]);
 }
