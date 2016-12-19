@@ -14,7 +14,7 @@ import Upsert, {
 import { isComponentDefinition } from '../../component/interfaces';
 import { DOMTreeConstruction } from '../../dom/helper';
 import { OpSeq, Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { CompiledExpression } from '../expressions';
+import { CompiledExpression, CompiledArgs } from '../expressions';
 import { VM, UpdatingVM } from '../../vm';
 import { TryOpcode, VMState } from '../../vm/update';
 import { EnterOpcode } from './vm';
@@ -25,7 +25,6 @@ import { Fragment } from '../../builder';
 import { CompileIntoList } from '../../compiler';
 import OpcodeBuilderDSL from './builder';
 import { ConditionalReference } from '../../references';
-import { Args } from '../../syntax/core';
 import { Environment } from '../../environment';
 import { UpdatableBlockTracker } from '../../builder';
 import { SymbolTable } from 'glimmer-interfaces';
@@ -186,7 +185,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
     dsl.block(null, (dsl, BEGIN, END) => {
       dsl.jumpUnless('VALUE');
       dsl.putDynamicComponentDefinition();
-      dsl.openComponent(Args.empty());
+      dsl.openComponent(CompiledArgs.empty());
       dsl.closeComponent();
       dsl.jump(END);
       dsl.label('VALUE');
