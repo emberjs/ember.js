@@ -23,7 +23,6 @@ export class StaticPartialSyntax extends StatementSyntax {
     let name = this.name;
 
     if (!dsl.env.hasPartial(name, dsl.symbolTable)) {
-      console.log(name);
       throw new Error(`Compile Error: Could not find a partial named "${name}"`);
     }
 

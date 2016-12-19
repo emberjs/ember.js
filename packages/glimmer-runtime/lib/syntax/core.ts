@@ -529,7 +529,7 @@ export abstract class Partial extends StatementSyntax {
   }
 }
 
-class OpenBlockOpcode extends Opcode {
+export class OpenBlockOpcode extends Opcode {
   type = "open-block";
 
   constructor(

@@ -7,6 +7,7 @@ import * as vm from './vm';
 import * as Syntax from '../../syntax/core';
 
 import { Option, Stack, Dict, Opaque, dict } from 'glimmer-util';
+import { expr } from '../../syntax/functions';
 import { Opcode, OpSeq } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
 import { CompiledExpression } from '../expressions';
@@ -17,11 +18,13 @@ import { EMPTY_ARRAY } from '../../utils';
 import { SymbolTable } from 'glimmer-interfaces';
 import { ComponentBuilder } from '../../opcode-builder';
 import { ProgramBuffer } from '../../compiler';
-import { InlineBlock, Layout } from '../../scanner';
+import { BaselineSyntax, InlineBlock, Layout } from '../../scanner';
 
 export interface CompilesInto<E> {
   compile(builder: OpcodeBuilder): E;
 }
+
+export type RepresentsExpression = BaselineSyntax.AnyExpression | CompiledExpression<Opaque>;
 
 export type Represents<E> = CompilesInto<E> | E;
 
@@ -61,6 +64,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup, CompileInto {
   }
 
   abstract compile<E>(expr: Represents<E>): E;
+  abstract compileExpression(expr: RepresentsExpression): CompiledExpression<Opaque>;
 
   append(op: Opcode) {
     this.inner.append(op);
@@ -251,8 +255,8 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup, CompileInto {
     this.append(new vm.PutNullOpcode());
   }
 
-  putValue(expression: Represents<CompiledExpression<Opaque>>) {
-    this.append(new vm.PutValueOpcode(this.compile(expression)));
+  putValue(expression: RepresentsExpression) {
+    this.append(new vm.PutValueOpcode(this.compileExpression(expression)));
   }
 
   putArgs(args: Represents<CompiledArgs>) {
@@ -324,6 +328,14 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
       return expr.compile(this);
     } else {
       return expr;
+    }
+  }
+
+  compileExpression(expression: RepresentsExpression): CompiledExpression<Opaque> {
+    if (expression instanceof CompiledExpression) {
+      return expression;
+    } else {
+      return expr(expression, this);
     }
   }
 
