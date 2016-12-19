@@ -261,16 +261,16 @@ export function match(dependentKey, regexp) {
 
   ```javascript
   let Hamster = Ember.Object.extend({
-    napTime: Ember.computed.equal('state', 'sleepy')
+    satisfied: Ember.computed.equal('percentCarrotsEaten', 100)
   });
 
   let hamster = Hamster.create();
 
-  hamster.get('napTime'); // false
-  hamster.set('state', 'sleepy');
-  hamster.get('napTime'); // true
-  hamster.set('state', 'hungry');
-  hamster.get('napTime'); // false
+  hamster.get('satisfied'); // false
+  hamster.set('percentCarrotsEaten', 100);
+  hamster.get('satisfied'); // true
+  hamster.set('percentCarrotsEaten', 50);
+  hamster.get('satisfied'); // false
   ```
 
   @method equal
