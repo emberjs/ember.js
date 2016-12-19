@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### 2.10.2 (December 19, 2016)
+
+- [#14685](https://github.com/emberjs/ember.js/pull/14685) [BUGFIX] Fix `this.$()` returning `undefined` in `willDestroyElement`.
+- [#14717](https://github.com/emberjs/ember.js/pull/14717) [BUGFIX] Fix an issue with block params named `attrs`.
+
 ### 2.10.1 (December 13, 2016)
 
 - [#14671](https://github.com/emberjs/ember.js/pull/14671) [BUGFIX] Fix an issue with the list attribute in <input> elements.
