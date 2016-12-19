@@ -498,8 +498,8 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
         this.setProperties({ firstName, lastName });
         return value;
       }
-    });
-  })
+    })
+  });
 
   let client = Person.create();
   client.get('firstName'); // 'Betty'
