@@ -1,37 +1,6 @@
-export {
-  ATTRIBUTE as ATTRIBUTE_SYNTAX,
-  Statement as StatementSyntax,
-  Expression as ExpressionSyntax,
-  Attribute as AttributeSyntax,
-  SymbolLookup,
-  CompileInto,
-  isAttribute
-} from './lib/syntax';
-
 export { default as templateFactory, TemplateFactory, Template } from './lib/template';
 
 export { NULL_REFERENCE, UNDEFINED_REFERENCE, PrimitiveReference, ConditionalReference } from './lib/references';
-
-export {
-  Blocks,
-  OptimizedAppend,
-  UnoptimizedAppend,
-  Unknown,
-  StaticAttr,
-  DynamicAttr,
-  Args as ArgsSyntax,
-  NamedArgs as NamedArgsSyntax,
-  PositionalArgs as PositionalArgsSyntax,
-  Ref as RefSyntax,
-  GetArgument as GetNamedParameterSyntax,
-  Get as GetSyntax,
-  Value as ValueSyntax,
-  OpenElement,
-  Helper as HelperSyntax,
-  Block as BlockSyntax,
-  OpenPrimitiveElement as OpenPrimitiveElementSyntax,
-  CloseElement as CloseElementSyntax
-} from './lib/syntax/core';
 
 export {
    default as OpcodeBuilderDSL
@@ -49,12 +18,8 @@ export {
 } from './lib/opcode-builder';
 
 export {
-  Block,
   CompiledBlock,
-  CompiledProgram,
-  Layout,
-  InlineBlock,
-  EntryPoint
+  CompiledProgram
 } from './lib/compiled/blocks';
 
 export {
@@ -94,14 +59,6 @@ export {
 } from './lib/helpers/get-dynamic-var';
 
 export {
-  default as WithDynamicVarsSyntax
-} from './lib/syntax/builtins/with-dynamic-vars';
-
-export {
-  default as InElementSyntax
-} from './lib/syntax/builtins/in-element';
-
-export {
   Blocks as BlockMacros,
   NestedBlockSyntax,
   CompileBlockMacro,
@@ -109,7 +66,8 @@ export {
 } from './lib/syntax/functions';
 
 export {
-  BaselineSyntax
+  BaselineSyntax,
+  Layout
 } from './lib/scanner';
 
 export { PublicVM as VM, UpdatingVM, RenderResult } from './lib/vm';
@@ -120,7 +78,6 @@ export {
   Scope,
   default as Environment,
   Helper,
-  ParsedStatement,
   DynamicScope,
 } from './lib/environment';
 

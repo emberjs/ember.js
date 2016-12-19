@@ -5,13 +5,11 @@ import {
 
   // Compiler
   CompiledProgram,
-  SymbolLookup,
   CompilableLayout,
   compileLayout,
   compileArgs,
 
   // Environment
-  ParsedStatement,
   Environment,
   Helper as GlimmerHelper,
   ModifierManager,
@@ -35,17 +33,10 @@ import {
   EvaluatedPositionalArgs,
 
   // Syntax Classes
-  StatementSyntax,
   BlockMacros,
   NestedBlockSyntax,
   CompileBlockMacro,
   BaselineSyntax,
-
-  // Concrete Syntax
-  ArgsSyntax,
-  OptimizedAppend,
-  WithDynamicVarsSyntax,
-  InElementSyntax,
 
   // References
   PrimitiveReference,
@@ -901,25 +892,6 @@ export class TestDynamicScope implements DynamicScope {
   }
 }
 
-class CurlyComponentSyntax extends StatementSyntax {
-  public type = "curly-component";
-  public definition: ComponentDefinition<any>;
-  public args: BaselineSyntax.Args;
-  public shadow: string[] = null;
-  public symbolTable: SymbolTable;
-
-  constructor({ args, definition, symbolTable }: { args: BaselineSyntax.Args, definition: ComponentDefinition<any>, symbolTable: SymbolTable }) {
-    super();
-    this.args = args;
-    this.definition = definition;
-    this.symbolTable = symbolTable;
-  }
-
-  compile(b: OpcodeBuilderDSL) {
-    b.component.static(this.definition, this.args, this.symbolTable, this.shadow);
-  }
-}
-
 class DynamicComponentReference implements PathReference<ComponentDefinition<Opaque>> {
   public tag: RevisionTag;
 
@@ -952,29 +924,6 @@ function dynamicComponentFor(vm: VM, symbolTable: SymbolTable) {
   let env = vm.env;
   return new DynamicComponentReference(nameRef, env, symbolTable);
 };
-
-class DynamicComponentSyntax extends StatementSyntax {
-  public type = "dynamic-component";
-  public definitionArgs: BaselineSyntax.Args;
-  public definition: FunctionExpression<ComponentDefinition<Opaque>>;
-  public args: BaselineSyntax.Args;
-  public shadow: string[] = null;
-
-  public symbolTable: SymbolTable;
-
-  constructor({ args, symbolTable }: { args: BaselineSyntax.Args, symbolTable: SymbolTable }) {
-    super();
-    let [params, hash, _default, inverse] = args;
-    this.definitionArgs = args;
-    this.definition = dynamicComponentFor;
-    this.args = [params.slice(1), hash, _default, inverse];
-    this.symbolTable = symbolTable;
-  }
-
-  compile(b: OpcodeBuilderDSL) {
-    b.component.dynamic(this.definitionArgs, this.definition, this.args, this.symbolTable, this.shadow);
-  }
-}
 
 export interface BasicComponentFactory {
   new(attrs: Dict<any>): BasicComponent;

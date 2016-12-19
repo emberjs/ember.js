@@ -31,7 +31,7 @@ import {
 import {
   OpenBlockOpcode,
   CloseBlockOpcode
-} from './core';
+} from '../compiled/opcodes/blocks';
 
 import { CompiledFunctionExpression } from '../compiled/expressions/function';
 

@@ -45,9 +45,7 @@ import {
 
 import { EvaluatedArgs } from './compiled/expressions/args';
 
-import { InlineBlock } from './compiled/blocks';
-
-import * as Syntax from './syntax/core';
+import { InlineBlock } from './scanner';
 
 import IfSyntax from './syntax/builtins/if';
 import UnlessSyntax from './syntax/builtins/unless';
@@ -231,34 +229,6 @@ export abstract class Environment {
     return ensureGuid(object) + '';
   }
 
-  statement(statement: StatementSyntax, symbolTable: SymbolTable): StatementSyntax {
-    return this.refineStatement(parseStatement(statement), symbolTable) || statement;
-  }
-
-  protected refineStatement(statement: ParsedStatement, symbolTable: SymbolTable): Option<StatementSyntax> {
-    let {
-      isSimple,
-      isBlock,
-      key,
-      args,
-    } = statement;
-
-    if (isSimple && isBlock && args) {
-      switch (key) {
-        case 'each':
-          return new EachSyntax(args);
-        case 'if':
-          return new IfSyntax(args);
-        case 'with':
-          return new WithSyntax(args);
-        case 'unless':
-          return new UnlessSyntax(args);
-      }
-    }
-
-    return null;
-  }
-
   begin() {
     assert(!this._transaction, 'Cannot start a nested transaction');
     this._transaction = new Transaction();
@@ -323,68 +293,4 @@ export default Environment;
 
 export interface Helper {
   (vm: PublicVM, args: EvaluatedArgs, symbolTable: SymbolTable): PathReference<Opaque>;
-}
-
-export interface ParsedStatement {
-  isSimple: boolean;
-  path: Option<Option<string>[]>;
-  key: Option<string>;
-  appendType: Option<string>;
-  args: Option<Syntax.Args>;
-  isInline: boolean;
-  isBlock: boolean;
-  isModifier: boolean;
-  original: StatementSyntax;
-}
-
-function parseStatement(statement: StatementSyntax): ParsedStatement {
-    let type = statement.type;
-    let block = type === 'block' ? <Syntax.Block>statement : null;
-    let append = type === 'optimized-append' ? <Syntax.OptimizedAppend>statement : null;
-    let modifier = type === 'modifier' ? <Syntax.Modifier>statement : null;
-    let appendType = append && append.value.type;
-
-    type AppendValue = Syntax.Unknown | Syntax.Get;
-    let args: Option<Syntax.Args>;
-    let path: Option<Option<string>[]>;
-
-    if (block) {
-      args = block.args;
-      path = block.path;
-    } else if (append && (appendType === 'unknown' || appendType === 'get')) {
-      let appendValue = <AppendValue>append.value;
-      args = Syntax.Args.empty();
-      path = appendValue.ref.parts;
-    } else if (append && append.value.type === 'helper') {
-      let helper = <Syntax.Helper>append.value;
-      args = helper.args;
-      path = helper.ref.parts;
-    } else if (modifier) {
-      path = modifier.sexp[1];
-      args = [modifier.sexp[2], modifier.sexp[3]];
-    } else {
-      // TODO: Process this case better
-      path = null;
-      args = null;
-    }
-
-    let key: Option<string> = null;
-    let isSimple = false;
-
-    if (path) {
-      isSimple = path.length === 1;
-      key = path[0];
-    }
-
-    return {
-      isSimple,
-      path,
-      key,
-      args,
-      appendType,
-      original: statement,
-      isInline: !!append,
-      isBlock: !!block,
-      isModifier: !!modifier
-    };
 }
