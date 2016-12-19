@@ -61,7 +61,7 @@ class MyComponent extends BasicComponent {
   }
 }
 
-QUnit.skip('creating a new component', assert => {
+QUnit.test('creating a new component', assert => {
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
   render(template, { color: 'red' });
 
@@ -70,7 +70,7 @@ QUnit.skip('creating a new component', assert => {
   equalTokens(root, "<div color='green'>hello!</div>");
 });
 
-QUnit.skip('the component class is its context', assert => {
+QUnit.test('the component class is its context', assert => {
   env.registerBasicComponent('my-component', MyComponent, '<div><p>{{testing}}</p>{{yield}}</div>');
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
   render(template, { color: 'red' });
@@ -80,7 +80,7 @@ QUnit.skip('the component class is its context', assert => {
   equalTokens(root, "<div color='green'><p>456</p>hello!</div>");
 });
 
-QUnit.skip('attrs are available in the layout', assert => {
+QUnit.test('attrs are available in the layout', assert => {
   env.registerBasicComponent('my-component', MyComponent, '<div><p>{{attrs.color}}</p>{{yield}}</div>');
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
   render(template, { color: 'red' });
