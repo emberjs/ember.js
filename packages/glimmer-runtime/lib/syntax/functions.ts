@@ -102,7 +102,7 @@ STATEMENTS.add('static-attr', (sexp: S.StaticAttr, builder: OpcodeBuilder) => {
 STATEMENTS.add('any-dynamic-attr', (sexp: BaselineSyntax.AnyDynamicAttr, builder: OpcodeBuilder) => {
   let [, name, value, namespace, trusting] = sexp;
 
-  builder.putValue(expr(value, builder));
+  builder.putValue(value);
 
   if (namespace) {
     builder.dynamicAttrNS(name, namespace, trusting);
@@ -118,7 +118,7 @@ STATEMENTS.add('open-primitive-element', (sexp: BaselineSyntax.OpenPrimitiveElem
 STATEMENTS.add('optimized-append', (sexp: BaselineSyntax.OptimizedAppend, builder: OpcodeBuilder) => {
   let [, value, trustingMorph] = sexp;
 
-  builder.putValue(expr(value, builder));
+  builder.putValue(value);
   if (Array.isArray(value)) {
     builder.putValue(EXPRESSIONS.compile(value, builder));
   } else {
@@ -164,7 +164,7 @@ STATEMENTS.add('dynamic-partial', (sexp: BaselineSyntax.DynamicPartial, builder)
 
     builder.startLabels();
 
-    builder.putValue(expr(name, builder));
+    builder.putValue(name);
     builder.test('simple');
     builder.enter('BEGIN', 'END');
     builder.label('BEGIN');
