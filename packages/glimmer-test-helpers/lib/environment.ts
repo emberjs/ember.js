@@ -96,8 +96,10 @@ import {
   SymbolTable
 } from 'glimmer-interfaces';
 
+import * as WireFormat from 'glimmer-wire-format';
+
 import {
-  TemplateMeta
+  TemplateMeta,
 } from "glimmer-wire-format";
 
 type KeyFor<T> = (item: Opaque, index: T) => string;
@@ -1118,6 +1120,15 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     });
   });
 
+  blocks.add('component', (sexp, builder) => {
+    let [, path, params, hash, _default, inverse] = sexp;
+    let definitionArgs: BaselineSyntax.Args = [params.slice(0, 1), null, null, null];
+    let args: BaselineSyntax.Args = [params.slice(1), hash, _default, inverse];
+    builder.component.dynamic(definitionArgs, dynamicComponentFor, args, builder.symbolTable);
+    return true;
+  });
+
+
   blocks.addMissing((sexp, builder) => {
     let [, path, params, hash, _default, inverse] = sexp;
     let table = builder.symbolTable;
@@ -1130,6 +1141,13 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     }
 
     return false;
+  });
+
+  inlines.add('component', (path, params, hash, builder) => {
+    let definitionArgs: BaselineSyntax.Args = [params.slice(0, 1), null, null, null];
+    let args: BaselineSyntax.Args = [params.slice(1), hash, null, null];
+    builder.component.dynamic(definitionArgs, dynamicComponentFor, args, builder.symbolTable);
+    return true;
   });
 
   inlines.addMissing((path, params, hash, builder) => {

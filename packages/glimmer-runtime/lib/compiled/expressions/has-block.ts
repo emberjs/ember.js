@@ -1,6 +1,7 @@
 import { PathReference } from 'glimmer-reference';
+import { Option } from 'glimmer-util';
 import VM from '../../vm/append';
-import { InlineBlock } from '../blocks';
+import { InlineBlock } from '../../scanner';
 import { CompiledExpression } from '../expressions';
 import { PrimitiveReference } from '../../references';
 
@@ -30,7 +31,8 @@ export class CompiledHasBlockParams extends CompiledExpression<boolean> {
 
   evaluate(vm: VM): PathReference<boolean> {
     let block = this.inner.evaluate(vm);
-    return PrimitiveReference.create(!!(block && block.locals.length > 0));
+    let hasLocals = block && block.symbolTable.getSymbols().locals;
+    return PrimitiveReference.create(!!hasLocals);
   }
 
   toJSON(): string {
@@ -39,7 +41,7 @@ export class CompiledHasBlockParams extends CompiledExpression<boolean> {
 }
 
 export interface CompiledGetBlock {
-  evaluate(vm: VM): InlineBlock;
+  evaluate(vm: VM): Option<InlineBlock>;
   toJSON(): string;
 }
 
