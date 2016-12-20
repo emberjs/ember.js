@@ -60,6 +60,7 @@ export {
 
 export {
   Blocks as BlockMacros,
+  Inlines as InlineMacros,
   NestedBlockSyntax,
   CompileBlockMacro,
   compileArgs

@@ -1,8 +1,6 @@
-import { Statement as StatementSyntax } from './syntax';
-
 import { SymbolTable } from 'glimmer-interfaces';
 
-import { Blocks, populateBuiltins } from './syntax/functions';
+import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
 import * as Simple from './dom/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
@@ -46,11 +44,6 @@ import {
 import { EvaluatedArgs } from './compiled/expressions/args';
 
 import { InlineBlock } from './scanner';
-
-import IfSyntax from './syntax/builtins/if';
-import UnlessSyntax from './syntax/builtins/unless';
-import WithSyntax from './syntax/builtins/with';
-import EachSyntax from './syntax/builtins/each';
 
 import { PublicVM } from './vm/append';
 
@@ -207,7 +200,7 @@ class Transaction {
 export abstract class Environment {
   protected updateOperations: DOMChanges;
   protected appendOperations: DOMTreeConstruction;
-  private _macros: Option<{ blocks: Blocks }> = null;
+  private _macros: Option<{ blocks: Blocks, inlines: Inlines }> = null;
   private _transaction: Option<Transaction> = null;
 
   constructor({ appendOperations, updateOperations }: { appendOperations: DOMTreeConstruction, updateOperations: DOMChanges }) {
@@ -267,10 +260,10 @@ export abstract class Environment {
     return defaultManagers(element, attr, isTrusting, namespace === undefined ? null : namespace);
   }
 
-  macros(): { blocks: Blocks } {
+  macros(): { blocks: Blocks, inlines: Inlines } {
     let macros = this._macros;
     if (!macros) {
-      this._macros = macros = { blocks: populateBuiltins() };
+      this._macros = macros = populateBuiltins();
     }
 
     return macros;
