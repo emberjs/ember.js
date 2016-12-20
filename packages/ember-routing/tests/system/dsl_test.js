@@ -202,7 +202,7 @@ QUnit.test('should allow mounting of engines at a custom path', function(assert)
     router.router.recognizer.names['bleep.bloop.chat']
       .segments
       .slice(1, 4)
-      .map(s => s.string),
+      .map(s => s.value),
     ['bleep', 'bloop', 'custom-chat'],
     'segments are properly associated with mounted engine');
 });
@@ -230,7 +230,7 @@ QUnit.test('should allow aliasing of engine names with `as`', function(assert) {
     router.router.recognizer.names['bleep.bloop.blork']
       .segments
       .slice(1, 4)
-      .map(s => s.string),
+      .map(s => s.value),
     ['bleep', 'bloop', 'blork'],
     'segments are properly associated with mounted engine with aliased name');
 });
