@@ -34,6 +34,7 @@ import {
 
   // Syntax Classes
   BlockMacros,
+  InlineMacros,
   NestedBlockSyntax,
   CompileBlockMacro,
   BaselineSyntax,
@@ -785,9 +786,9 @@ export class TestEnvironment extends Environment {
     return new EmberishConditionalReference(reference);
   }
 
-  macros(): { blocks: BlockMacros } {
+  macros(): { blocks: BlockMacros, inlines: InlineMacros } {
     let macros = super.macros();
-    populateBlocks(macros.blocks);
+    populateBlocks(macros.blocks, macros.inlines);
     return macros;
   }
 
@@ -1080,7 +1081,7 @@ export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectF
 
 const { defaultBlock, inverseBlock, params, hash } = BaselineSyntax.NestedBlock;
 
-function populateBlocks(blocks: BlockMacros): BlockMacros {
+function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: BlockMacros, inlines: InlineMacros } {
   blocks.add('identity', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
     builder.evaluate('default', sexp[4]);
   });
@@ -1131,7 +1132,20 @@ function populateBlocks(blocks: BlockMacros): BlockMacros {
     return false;
   });
 
-  return blocks;
+  inlines.addMissing((path, params, hash, builder) => {
+    let table = builder.symbolTable;
+
+    let definition = builder.env.getComponentDefinition(path, builder.symbolTable);
+
+    if (definition) {
+      builder.component.static(definition, [params, hash, null, null], table, []);
+      return true;
+    }
+
+    return false;
+  });
+
+  return { blocks, inlines };
 }
 
 export function equalsElement(element: Element, tagName: string, attributes: Object, content: string) {

@@ -5,7 +5,7 @@ import { CompiledExpression } from '../compiled/expressions';
 import CompiledValue from '../compiled/expressions/value';
 import CompiledHasBlock, { CompiledHasBlockParams } from '../compiled/expressions/has-block';
 import { BaselineSyntax, InlineBlock } from '../scanner';
-import { Opaque, Option, dict, assert, unwrap, unreachable } from 'glimmer-util';
+import { Opaque, Option, Maybe, dict, assert, unwrap, unreachable } from 'glimmer-util';
 import { ModifierOpcode } from '../compiled/opcodes/dom';
 import CompiledLookup, {
   CompiledSelf,
@@ -118,12 +118,12 @@ STATEMENTS.add('open-primitive-element', (sexp: BaselineSyntax.OpenPrimitiveElem
 STATEMENTS.add('optimized-append', (sexp: BaselineSyntax.OptimizedAppend, builder: OpcodeBuilder) => {
   let [, value, trustingMorph] = sexp;
 
-  builder.putValue(value);
-  if (Array.isArray(value)) {
-    builder.putValue(EXPRESSIONS.compile(value, builder));
-  } else {
-    builder.putValue(new CompiledValue(value));
-  }
+  let { inlines } = builder.env.macros();
+  let returned = inlines.compile(sexp, builder) || value;
+
+  if (returned === true) return;
+
+  builder.putValue(returned[1]);
 
   if (trustingMorph) {
     builder.append(new OptimizedTrustingAppendOpcode());
@@ -199,6 +199,7 @@ STATEMENTS.add('yield', function(this: undefined, sexp: WireFormat.Statements.Yi
 let EXPRESSIONS = new Compilers<SexpExpression, CompiledExpression<Opaque>>();
 
 import E = WireFormat.Expressions;
+import C = WireFormat.Core;
 
 export function expr(expression: BaselineSyntax.AnyExpression, builder: OpcodeBuilder): CompiledExpression<Opaque> {
   if (Array.isArray(expression)) {
@@ -387,9 +388,71 @@ export class Blocks {
 
 export const BLOCKS = new Blocks();
 
-populateBuiltins(BLOCKS);
+export type AppendSyntax = BaselineSyntax.OptimizedAppend;
+export type AppendMacro = (sexp: AppendSyntax, builder: OpcodeBuilder) => BaselineSyntax.AnyExpression;
+export type MissingAppendMacro = (path: C.Path, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder) => ['expr', BaselineSyntax.AnyExpression] | true | false;
 
-export function populateBuiltins(blocks: Blocks = new Blocks()): Blocks {
+export class Inlines {
+  private names = dict<number>();
+  private funcs: AppendMacro[] = [];
+  private missing: MissingAppendMacro;
+
+  add(name: string, func: AppendMacro) {
+    this.funcs.push(func);
+    this.names[name] = this.funcs.length - 1;
+  }
+
+  addMissing(func: MissingAppendMacro) {
+    this.missing = func;
+  }
+
+  compile(sexp: AppendSyntax, builder: OpcodeBuilder): ['expr', BaselineSyntax.AnyExpression] | true {
+    let value = sexp[1];
+
+    // TODO: Fix this so that expression macros can return
+    // things like components, so that {{component foo}}
+    // is the same as {{(component foo)}}
+
+    if (!Array.isArray(value)) return ['expr', value];
+
+    let path: C.Path;
+    let params: Option<C.Params>;
+    let hash: Option<C.Hash>;
+
+    if (value[0] === 'helper') {
+      path = value[1];
+      params = value[2];
+      hash = value[3];
+    } else if (value[0] === 'unknown') {
+      path = value[1];
+      params = hash = null;
+    } else {
+      return ['expr', value];
+    }
+
+    if (path.length > 1) return ['expr', value];
+
+    let name = path[0];
+    let index = this.names[name];
+
+    if (index === undefined && this.missing) {
+      let func = this.missing;
+      let returned = func(path, params, hash, builder);
+      return returned === false ? ['expr', value] : returned;
+    } else if (index !== undefined) {
+      let func = this.funcs[index];
+      return ['expr', func(sexp, builder)];
+    } else {
+      return ['expr', value];
+    }
+  }
+}
+
+export const INLINES = new Inlines();
+
+populateBuiltins(BLOCKS, INLINES);
+
+export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines = new Inlines()): { blocks: Blocks, inlines: Inlines } {
   blocks.add('if', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
     //        PutArgs
     //        Test(Environment)
@@ -544,5 +607,5 @@ export function populateBuiltins(blocks: Blocks = new Blocks()): Blocks {
     });
   });
 
-  return blocks;
+  return { blocks, inlines };
 }
