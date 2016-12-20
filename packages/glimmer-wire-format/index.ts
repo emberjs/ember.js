@@ -28,7 +28,7 @@ export namespace Core {
 
   export type Path          = str[];
   export type Params        = Expression[];
-  export type Hash          = [str[], Expression[]];
+  export type Hash          = Option<[str[], Expression[]]>;
   export type Args          = [Params, Hash];
 }
 

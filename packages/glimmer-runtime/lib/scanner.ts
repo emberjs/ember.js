@@ -1,4 +1,3 @@
-import buildStatement from './syntax/statements';
 import { CompiledProgram, CompiledBlock } from './compiled/blocks';
 import { Opcode } from './opcodes';
 import { builder } from './compiler';
@@ -311,7 +310,7 @@ export class BlockScanner {
         keys.push(current[1]);
         values.push(current[2]);
       } else {
-        throw new Error("Expected FlushElement, but got ${current}");
+        throw new Error(`Expected FlushElement, but got ${current}`);
       }
 
       current = this.next();

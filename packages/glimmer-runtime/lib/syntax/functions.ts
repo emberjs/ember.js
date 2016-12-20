@@ -389,20 +389,19 @@ export class Blocks {
 export const BLOCKS = new Blocks();
 
 export type AppendSyntax = BaselineSyntax.OptimizedAppend;
-export type AppendMacro = (sexp: AppendSyntax, builder: OpcodeBuilder) => BaselineSyntax.AnyExpression;
-export type MissingAppendMacro = (path: C.Path, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder) => ['expr', BaselineSyntax.AnyExpression] | true | false;
+export type AppendMacro = (path: C.Path, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder) => ['expr', BaselineSyntax.AnyExpression] | true | false;
 
 export class Inlines {
   private names = dict<number>();
   private funcs: AppendMacro[] = [];
-  private missing: MissingAppendMacro;
+  private missing: AppendMacro;
 
   add(name: string, func: AppendMacro) {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
-  addMissing(func: MissingAppendMacro) {
+  addMissing(func: AppendMacro) {
     this.missing = func;
   }
 
@@ -441,7 +440,8 @@ export class Inlines {
       return returned === false ? ['expr', value] : returned;
     } else if (index !== undefined) {
       let func = this.funcs[index];
-      return ['expr', func(sexp, builder)];
+      let returned = func(path, params, hash, builder);
+      return returned === false ? ['expr', value] : returned;
     } else {
       return ['expr', value];
     }
