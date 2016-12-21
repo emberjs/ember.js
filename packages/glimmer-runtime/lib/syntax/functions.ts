@@ -4,15 +4,20 @@ import OpcodeBuilder from '../compiled/opcodes/builder';
 import { CompiledExpression } from '../compiled/expressions';
 import CompiledValue from '../compiled/expressions/value';
 import CompiledHasBlock, { CompiledHasBlockParams } from '../compiled/expressions/has-block';
-import { BaselineSyntax, InlineBlock } from '../scanner';
-import { Opaque, Option, Maybe, dict, assert, unwrap, unreachable } from 'glimmer-util';
+import { BaselineSyntax, InlineBlock, scanBlock } from '../scanner';
+import { LOGGER, Opaque, Option, Maybe, dict, assert, unwrap, unreachable } from 'glimmer-util';
 import { ModifierOpcode } from '../compiled/opcodes/dom';
 import CompiledLookup, {
   CompiledSelf,
   CompiledSymbol,
   CompiledInPartialName
 } from '../compiled/expressions/lookups';
-import { OptimizedTrustingAppendOpcode, OptimizedCautiousAppendOpcode } from '../compiled/opcodes/content';
+import {
+  OptimizedTrustingAppendOpcode,
+  OptimizedCautiousAppendOpcode,
+  GuardedTrustingAppendOpcode,
+  GuardedCautiousAppendOpcode
+} from '../compiled/opcodes/content';
 import CompiledHelper from '../compiled/expressions/helper';
 import CompiledConcat from '../compiled/expressions/concat';
 import {
@@ -71,6 +76,7 @@ STATEMENTS.add('comment', (sexp: S.Comment, builder: OpcodeBuilder) => {
 });
 
 STATEMENTS.add('close-element', (sexp: S.CloseElement, builder: OpcodeBuilder) => {
+  LOGGER.trace('close-element statement');
   builder.closeElement();
 });
 
@@ -111,7 +117,8 @@ STATEMENTS.add('any-dynamic-attr', (sexp: BaselineSyntax.AnyDynamicAttr, builder
   }
 });
 
-STATEMENTS.add('open-primitive-element', (sexp: BaselineSyntax.OpenPrimitiveElement, builder: OpcodeBuilder) => {
+STATEMENTS.add('open-element', (sexp: BaselineSyntax.OpenPrimitiveElement, builder: OpcodeBuilder) => {
+  LOGGER.trace('open-element statement');
   builder.openPrimitiveElement(sexp[1]);
 });
 
@@ -132,17 +139,48 @@ STATEMENTS.add('optimized-append', (sexp: BaselineSyntax.OptimizedAppend, builde
   }
 });
 
+STATEMENTS.add('unoptimized-append', (sexp: BaselineSyntax.UnoptimizedAppend, builder) => {
+  let [, value, trustingMorph] = sexp;
+
+  let { inlines } = builder.env.macros();
+  let returned = inlines.compile(sexp, builder) || value;
+
+  if (returned === true) return;
+
+  let expression = expr(returned[1], builder);
+
+  if (trustingMorph) {
+    builder.append(new GuardedTrustingAppendOpcode(expression, builder.symbolTable));
+  } else {
+    builder.append(new GuardedCautiousAppendOpcode(expression, builder.symbolTable));
+  }
+});
+
 STATEMENTS.add('nested-block', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
   let { blocks } = builder.env.macros();
   blocks.compile(sexp, builder);
 });
 
-STATEMENTS.add('component', (sexp: BaselineSyntax.Component, builder) => {
-  let [, tag, attrs, args, block] = sexp;
+STATEMENTS.add('scanned-block', (sexp: BaselineSyntax.ScannedBlock, builder) => {
+  let [, path, params, hash, template, inverse] = sexp;
+
+  let templateBlock = template && template.scan();
+  let inverseBlock = inverse && inverse.scan();
+
+  let { blocks } = builder.env.macros();
+  blocks.compile(['nested-block', path, params, hash, templateBlock, inverseBlock], builder);
+});
+
+STATEMENTS.add('scanned-component', (sexp: BaselineSyntax.ScannedComponent, builder) => {
+  let [, tag, attrs, rawArgs, rawBlock] = sexp;
+  let block = rawBlock && rawBlock.scan();
+
+  let args = compileBlockArgs(null, rawArgs, { default: block, inverse: null }, builder);
+
   let definition = builder.env.getComponentDefinition([tag], builder.symbolTable);
 
   builder.putComponentDefinition(definition);
-  builder.openComponent(compileBlockArgs(null, args, { default: block, inverse: null }, builder), attrs);
+  builder.openComponent(args, attrs.scan());
   builder.closeComponent();
 });
 
@@ -388,7 +426,7 @@ export class Blocks {
 
 export const BLOCKS = new Blocks();
 
-export type AppendSyntax = BaselineSyntax.OptimizedAppend;
+export type AppendSyntax = BaselineSyntax.OptimizedAppend | BaselineSyntax.UnoptimizedAppend;
 export type AppendMacro = (path: C.Path, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder) => ['expr', BaselineSyntax.AnyExpression] | true | false;
 
 export class Inlines {

@@ -6,7 +6,7 @@ import { CompiledBlock } from '../compiled/blocks';
 import { InlineBlock } from '../scanner';
 import { CompiledExpression } from '../compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
-import { Opcode, OpSeq, UpdatingOpcode } from '../opcodes';
+import { Opcode, OpSeq, UpdatingOpcode, pretty } from '../opcodes';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { Range } from '../utils';
 import { Component, ComponentManager } from '../component/interfaces';
@@ -70,7 +70,7 @@ export default class VM implements PublicVM {
   }
 
   beginCacheGroup() {
-    this.cacheGroups.push(this.updatingOpcodeStack.current.tail());
+    this.cacheGroups.push(this.updating().tail());
   }
 
   commitCacheGroup() {
@@ -83,7 +83,7 @@ export default class VM implements PublicVM {
 
     let END = new LabelOpcode("END");
 
-    let opcodes = this.updatingOpcodeStack.current;
+    let opcodes = this.updating();
     let marker = this.cacheGroups.pop();
     let head = marker ? opcodes.nextNode(marker) : opcodes.head();
     let tail = opcodes.tail();
@@ -115,7 +115,7 @@ export default class VM implements PublicVM {
 
     let tryOpcode = new TryOpcode(ops, state, tracker, updating);
 
-    this.listBlockStack.current.map[key] = tryOpcode;
+    this.listBlock().map[key] = tryOpcode;
 
     this.didEnter(tryOpcode, updating);
   }
@@ -143,7 +143,7 @@ export default class VM implements PublicVM {
     this.stack().popBlock();
     this.updatingOpcodeStack.pop();
 
-    let parent = this.updatingOpcodeStack.current.tail() as BlockOpcode;
+    let parent = this.updating().tail() as BlockOpcode;
 
     parent.didInitializeChildren();
   }
@@ -154,7 +154,15 @@ export default class VM implements PublicVM {
   }
 
   updateWith(opcode: UpdatingOpcode) {
-    this.updatingOpcodeStack.current.append(opcode);
+    this.updating().append(opcode);
+  }
+
+  listBlock(): ListBlockOpcode {
+    return expect(this.listBlockStack.current, 'expected a list block');
+  }
+
+  updating(): LinkedList<UpdatingOpcode> {
+    return expect(this.updatingOpcodeStack.current, 'expected updating opcode on the updating opcode stack');
   }
 
   stack(): ElementStack {
@@ -162,11 +170,11 @@ export default class VM implements PublicVM {
   }
 
   scope(): Scope {
-    return this.scopeStack.current;
+    return expect(this.scopeStack.current, 'expected scope on the scope stack');
   }
 
   dynamicScope(): DynamicScope {
-    return this.dynamicScopeStack.current;
+    return expect(this.dynamicScopeStack.current, 'expected dynamic scope on the dynamic scope stack');
   }
 
   pushFrame(
@@ -187,7 +195,7 @@ export default class VM implements PublicVM {
     callerScope: Scope,
     component: Component,
     manager: ComponentManager<Component>,
-    shadow: ReadonlyArray<string>
+    shadow: Option<InlineBlock>
   ) {
     this.frame.push(layout.ops, component, manager, shadow);
 
@@ -201,7 +209,7 @@ export default class VM implements PublicVM {
   }
 
   pushChildScope() {
-    this.scopeStack.push(this.scopeStack.current.child());
+    this.scopeStack.push(this.scope().child());
   }
 
   pushCallerScope() {
@@ -209,7 +217,7 @@ export default class VM implements PublicVM {
   }
 
   pushDynamicScope(): DynamicScope {
-    let child = this.dynamicScopeStack.current.child();
+    let child = this.dynamicScope().child();
     this.dynamicScopeStack.push(child);
     return child;
   }
@@ -268,7 +276,7 @@ export default class VM implements PublicVM {
 
     while (frame.hasOpcodes()) {
       if (opcode = frame.nextStatement()) {
-        LOGGER.debug(`[VM] OP ${opcode.type}`);
+        LOGGER.debug(`[VM] OP ${pretty(opcode.toJSON())}`);
         LOGGER.trace(opcode);
         opcode.evaluate(this);
       }
@@ -278,7 +286,7 @@ export default class VM implements PublicVM {
 
     return new RenderResult(
       env,
-      updatingOpcodeStack.pop(),
+      expect(updatingOpcodeStack.pop(), 'there should be a final updating opcode stack'),
       elementStack.popBlock()
     );
   }
@@ -305,7 +313,7 @@ export default class VM implements PublicVM {
     callerScope: Scope,
     component: Component,
     manager: ComponentManager<Component>,
-    shadow: ReadonlyArray<string>
+    shadow: Option<InlineBlock>
   ) {
     this.pushComponentFrame(layout, args, callerScope, component, manager, shadow);
   }

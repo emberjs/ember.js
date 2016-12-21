@@ -66,6 +66,10 @@ export class Stack<T> {
   private stack: T[] = [];
   public current: Option<T> = null;
 
+  toArray(): T[] {
+    return this.stack;
+  }
+
   push(item: T) {
     this.current = item;
     this.stack.push(item);

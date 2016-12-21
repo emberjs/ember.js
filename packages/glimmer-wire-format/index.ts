@@ -14,7 +14,7 @@ interface JsonArray extends Array<JsonValue> {}
 // This entire file is serialized to disk, so all strings
 // end up being interned.
 export type str = string;
-export type TemplateReference = number;
+export type TemplateReference = Option<SerializedBlock>;
 export type YieldTo = str;
 
 export function is<T extends any[]>(variant: string): (value: any[]) => value is T {
@@ -98,7 +98,8 @@ export namespace Statements {
   export type Append        = ['append', Expression, boolean];
   export type Comment       = ['comment', str];
   export type Modifier      = ['modifier', Path, Params, Hash];
-  export type Block         = ['block', Path, Params, Hash, TemplateReference, TemplateReference];
+  export type Block         = ['block', Path, Params, Hash, Option<SerializedBlock>, Option<SerializedBlock>];
+  export type Component     = ['component', str, SerializedComponent];
   export type OpenElement   = ['open-element', str, str[]];
   export type FlushElement  = ['flush-element'];
   export type CloseElement  = ['close-element'];
@@ -115,6 +116,7 @@ export namespace Statements {
   export const isComment      = is<Comment>('comment');
   export const isModifier     = is<Modifier>('modifier');
   export const isBlock        = is<Block>('block');
+  export const isComponent    = is<Component>('component');
   export const isOpenElement  = is<OpenElement>('open-element');
   export const isFlushElement = is<FlushElement>('flush-element');
   export const isCloseElement = is<CloseElement>('close-element');
@@ -132,6 +134,7 @@ export namespace Statements {
     | Comment
     | Modifier
     | Block
+    | Component
     | OpenElement
     | FlushElement
     | CloseElement
@@ -190,13 +193,17 @@ export interface SerializedBlock {
   locals: string[];
 }
 
+export interface SerializedComponent extends SerializedBlock {
+  attrs: Statements.Attribute[];
+  args: Core.Hash;
+}
+
 /**
  * A JSON object that the compiled TemplateBlock was serialized into.
  */
 export interface SerializedTemplateBlock extends SerializedBlock {
   named: string[];
   yields: string[];
-  blocks: SerializedBlock[];
   hasPartials: boolean;
 }
 

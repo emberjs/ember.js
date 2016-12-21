@@ -4,7 +4,7 @@ import * as content from './content';
 import * as dom from './dom';
 import * as lists from './lists';
 import * as vm from './vm';
-import * as Syntax from '../../syntax/core';
+import * as blocks from './blocks';
 
 import { Option, Stack, Dict, Opaque, dict } from 'glimmer-util';
 import { expr } from '../../syntax/functions';
@@ -123,8 +123,8 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup, CompileInto {
     this.append(new component.PutDynamicComponentDefinitionOpcode());
   }
 
-  openComponent(args: Represents<CompiledArgs>, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
-    this.append(new component.OpenComponentOpcode(this.compile(args), shadow));
+  openComponent(args: Represents<CompiledArgs>, shadow?: InlineBlock) {
+    this.append(new component.OpenComponentOpcode(this.compile(args), shadow || null));
   }
 
   didCreateElement() {
@@ -133,6 +133,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup, CompileInto {
 
   shadowAttributes() {
     this.append(new component.ShadowAttributesOpcode());
+    this.append(new blocks.CloseBlockOpcode());
   }
 
   didRenderLayout() {
@@ -350,9 +351,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
       this.append(vm.BindNamedArgsOpcode.create(layout));
     }
 
-    if (symbols.yields || symbols.partialArgs) {
-      this.append(new vm.BindCallerScopeOpcode());
-    }
+    this.append(new vm.BindCallerScopeOpcode());
 
     if (symbols.yields) {
       this.append(vm.BindBlocksOpcode.create(layout));

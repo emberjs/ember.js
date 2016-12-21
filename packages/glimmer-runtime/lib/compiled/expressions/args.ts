@@ -43,7 +43,7 @@ export class CompiledArgs {
   }
 }
 
-const COMPILED_EMPTY_ARGS: CompiledArgs = new (class extends CompiledArgs {
+export const COMPILED_EMPTY_ARGS: CompiledArgs = new (class extends CompiledArgs {
   constructor() {
     super(COMPILED_EMPTY_POSITIONAL_ARGS, COMPILED_EMPTY_NAMED_ARGS, EMPTY_BLOCKS);
   }

@@ -6,8 +6,10 @@ import {
   SerializedBlock,
   SerializedTemplateBlock,
   SerializedTemplate,
+  SerializedComponent,
   Core,
   Statement,
+  Statements,
   Expression,
   Expressions
 } from 'glimmer-wire-format';
@@ -19,6 +21,7 @@ export type Path = Core.Path;
 export type StackValue = Expression | Params | Hash | str;
 
 export class Block {
+  public type = "block";
   statements: Statement[] = [];
   positionals: string[] = [];
 
@@ -35,9 +38,10 @@ export class Block {
 }
 
 export class TemplateBlock extends Block {
+  public type = "template";
   public yields = new DictSet<string>();
   public named = new DictSet<string>();
-  public blocks: Block[] = [];
+  public blocks: SerializedBlock[] = [];
   public hasPartials = false;
 
   toJSON(): SerializedTemplateBlock {
@@ -46,8 +50,45 @@ export class TemplateBlock extends Block {
       locals: this.positionals,
       named: this.named.toArray(),
       yields: this.yields.toArray(),
-      blocks: this.blocks.map(b => b.toJSON()),
       hasPartials: this.hasPartials
+    };
+  }
+}
+
+export class ComponentBlock extends Block {
+  public type = "component";
+  public attributes: Statements.Attribute[] = [];
+  public arguments: Statements.Argument[] = [];
+  private inParams = true;
+
+  push(statement: Statement) {
+    if (this.inParams) {
+      if (Statements.isFlushElement(statement)) {
+        this.inParams = false;
+      } else if (Statements.isArgument(statement)) {
+        this.arguments.push(statement);
+      } else if (Statements.isAttribute(statement)) {
+        this.attributes.push(statement);
+      } else if (Statements.isModifier(statement)) {
+        throw new Error('Compile Error: Element modifiers are not allowed in components');
+      } else {
+        throw new Error('Compile Error: only parameters allowed before flush-element');
+      }
+    } else {
+      this.statements.push(statement);
+    }
+  }
+
+  toJSON(): SerializedComponent {
+    let args = this.arguments;
+    let keys = args.map(arg => arg[1]);
+    let values = args.map(arg => arg[2]);
+
+    return {
+      attrs: this.attributes,
+      args: [keys, values],
+      locals: this.positionals,
+      statements: this.statements
     };
   }
 }
@@ -100,7 +141,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
 
   endBlock() {
     let { template, blocks } = this;
-    template.block.blocks.push(blocks.pop());
+    template.block.blocks.push(blocks.pop().toJSON());
   }
 
   startProgram() {
@@ -136,19 +177,32 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
-    this.push(['block', path, params, hash, template, inverse]);
+    let blocks = this.template.block.blocks;
+    assert(typeof template !== 'number' || blocks[template] !== null, 'missing block in the compiler');
+    assert(typeof inverse !== 'number' || blocks[inverse] !== null, 'missing block in the compiler');
+
+    this.push(['block', path, params, hash, blocks[template], blocks[inverse]]);
   }
 
   openElement(tag: str, blockParams: string[]) {
-    this.push(['open-element', tag, blockParams]);
+    if (tag.indexOf('-') !== -1) {
+      this.startComponent(blockParams);
+    } else {
+      this.push(['open-element', tag, blockParams]);
+    }
   }
 
   flushElement() {
     this.push(['flush-element']);
   }
 
-  closeElement() {
-    this.push(['close-element']);
+  closeElement(tag: str) {
+    if (tag.indexOf('-') !== -1) {
+      let component = this.endComponent();
+      this.push(['component', tag, component]);
+    } else {
+      this.push(['close-element']);
+    }
   }
 
   staticAttr(name: str, namespace: str) {
@@ -233,6 +287,18 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   }
 
   /// Stack Management Opcodes
+
+  startComponent(blockParams: string[]) {
+    let component = new ComponentBlock();
+    component.positionals = blockParams;
+    this.blocks.push(component);
+  }
+
+  endComponent(): SerializedComponent {
+    let component = this.blocks.pop();
+    assert(component.type === 'component', "Compiler bug: endComponent() should end a component");
+    return (component as ComponentBlock).toJSON();
+  }
 
   prepareArray(size: number) {
     let values = [];
