@@ -31,8 +31,17 @@ export class Specialize {
 export const SPECIALIZE = new Specialize();
 
 import S = WireFormat.Statements;
+import E = WireFormat.Expressions;
 
 SPECIALIZE.add('append', (sexp: S.Append, symbolTable: SymbolTable) => {
+  let path = sexp[1];
+
+  if (Array.isArray(path) && (E.isUnknown(path) || E.isGet(path))) {
+    if (path[1].length !== 1) {
+      return ['unoptimized-append', sexp[1], sexp[2]];
+    }
+  }
+
   return ['optimized-append', sexp[1], sexp[2]];
 });
 

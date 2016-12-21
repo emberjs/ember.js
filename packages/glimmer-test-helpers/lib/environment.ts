@@ -1128,7 +1128,6 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     return true;
   });
 
-
   blocks.addMissing((sexp, builder) => {
     let [, path, params, hash, _default, inverse] = sexp;
     let table = builder.symbolTable;
@@ -1136,7 +1135,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     let definition = builder.env.getComponentDefinition(path, builder.symbolTable);
 
     if (definition) {
-      builder.component.static(definition, [params, hash, _default, inverse], table, []);
+      builder.component.static(definition, [params, hash, _default, inverse], table);
       return true;
     }
 
@@ -1156,7 +1155,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     let definition = builder.env.getComponentDefinition(path, builder.symbolTable);
 
     if (definition) {
-      builder.component.static(definition, [params, hash, null, null], table, []);
+      builder.component.static(definition, [params, hash, null, null], table);
       return true;
     }
 

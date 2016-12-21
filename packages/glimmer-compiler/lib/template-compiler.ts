@@ -81,8 +81,8 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     this.opcode('flushElement', null);
   }
 
-  closeElement() {
-    this.opcode('closeElement', null);
+  closeElement([action]) {
+    this.opcode('closeElement', null, action.tag);
   }
 
   attribute([action]) {

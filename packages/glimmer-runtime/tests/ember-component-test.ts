@@ -2032,8 +2032,8 @@ module("Glimmer Component - shadowing");
 testComponent('shadowing: normal outer attributes are reflected', {
   kind: 'glimmer',
   layout: 'In layout - someProp: {{@someProp}}',
-  invokeAs: { attributes: { someProp: 'something here' } },
-  expected: { attrs: { someProp: 'something here' }, content: 'In layout - someProp: something here' }
+  invokeAs: { args: { someProp: '"something here"' } },
+  expected: { attrs: {}, content: 'In layout - someProp: something here' }
 });
 
 testComponent('shadowing - normal outer attributes clobber inner attributes', {
@@ -2048,20 +2048,20 @@ testComponent('shadowing: outer attributes with concat are reflected', {
   layout: 'In layout - someProp: {{@someProp}}',
   invokeAs: {
     context: { someProp: 'something here' },
-    attributes: { someProp: '{{someProp}}' }
+    args: { someProp: 'someProp' }
   },
-  expected: { attrs: { someProp: 'something here' }, content: 'In layout - someProp: something here' },
+  expected: { attrs: {}, content: 'In layout - someProp: something here' },
   updates: [{
-    expected: { attrs: { someProp: 'something here' }, content: 'In layout - someProp: something here' }
+    expected: { attrs: {}, content: 'In layout - someProp: something here' }
   }, {
     context: { someProp: 'something else' },
-    expected: { attrs: { someProp: 'something else' }, content: 'In layout - someProp: something else' }
+    expected: { attrs: {}, content: 'In layout - someProp: something else' }
   }, {
     context: { someProp: '' },
-    expected: { attrs: { someProp: '' }, content: 'In layout - someProp: ' }
+    expected: { attrs: { }, content: 'In layout - someProp: ' }
   }, {
     context: { someProp: 'something here' },
-    expected: { attrs: { someProp: 'something here' }, content: 'In layout - someProp: something here' }
+    expected: { attrs: {}, content: 'In layout - someProp: something here' }
   }]
 });
 
@@ -3066,7 +3066,7 @@ QUnit.test('components inside a list are destroyed', function(assert) {
 
   env.registerEmberishGlimmerComponent('destroy-me', DestroyMeComponent as any, 'destroy me!');
 
-  appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me item={{item}} />{{/each}}`, { list: [1,2,3,4,5] });
+  appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me @item={{item}} />{{/each}}`, { list: [1,2,3,4,5] });
 
   assert.strictEqual(destroyed.length, 0, 'destroy should not be called');
 

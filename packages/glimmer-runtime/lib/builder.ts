@@ -2,7 +2,7 @@ import Bounds, { Cursor, DestroyableBounds, clear } from './bounds';
 
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 
-import { Option, Destroyable, Stack, LinkedList, LinkedListNode, assert, expect } from 'glimmer-util';
+import { LOGGER, Option, Destroyable, Stack, LinkedList, LinkedListNode, assert, expect } from 'glimmer-util';
 
 import { Environment } from './environment';
 
@@ -124,7 +124,7 @@ export class ElementStack implements Cursor {
   }
 
   block(): Tracker {
-    return this.blockStack.current;
+    return expect(this.blockStack.current, "Expected a current block tracker");
   }
 
   popElement() {
@@ -132,8 +132,9 @@ export class ElementStack implements Cursor {
 
     let topElement = elementStack.pop();
     nextSiblingStack.pop();
+    LOGGER.debug(`-> element stack ${this.elementStack.toArray().map(e => e.tagName).join(', ')}`);
 
-    this.element = elementStack.current;
+    this.element = expect(elementStack.current, "can't pop past the last element");
     this.nextSibling = nextSiblingStack.current;
 
     return topElement;
@@ -180,9 +181,9 @@ export class ElementStack implements Cursor {
   }
 
   popBlock(): Tracker {
-    this.blockStack.current.finalize(this);
+    this.block().finalize(this);
 
-    return this.blockStack.pop();
+    return expect(this.blockStack.pop(), "Expected popBlock to return a block");
   }
 
   openElement(tag: string, operations = this.defaultOperations): Simple.Element {
@@ -204,7 +205,7 @@ export class ElementStack implements Cursor {
     this.operations = null;
 
     this.pushElement(element);
-    this.blockStack.current.openElement(element);
+    this.block().openElement(element);
   }
 
   pushRemoteElement(element: Simple.Element) {
@@ -222,24 +223,25 @@ export class ElementStack implements Cursor {
   private pushElement(element: Simple.Element) {
     this.element = element;
     this.elementStack.push(element);
+    LOGGER.debug(`-> element stack ${this.elementStack.toArray().map(e => e.tagName).join(', ')}`);
 
     this.nextSibling = null;
     this.nextSiblingStack.push(null);
   }
 
   newDestroyable(d: Destroyable) {
-    this.blockStack.current.newDestroyable(d);
+    this.block().newDestroyable(d);
   }
 
   newBounds(bounds: Bounds) {
-    this.blockStack.current.newBounds(bounds);
+    this.block().newBounds(bounds);
   }
 
   appendText(string: string): Simple.Text {
     let { dom } = this;
     let text = dom.createTextNode(string);
     dom.insertBefore(this.element, text, this.nextSibling);
-    this.blockStack.current.newNode(text);
+    this.block().newNode(text);
     return text;
   }
 
@@ -247,7 +249,7 @@ export class ElementStack implements Cursor {
     let { dom } = this;
     let comment = dom.createComment(string);
     dom.insertBefore(this.element, comment, this.nextSibling);
-    this.blockStack.current.newNode(comment);
+    this.block().newNode(comment);
     return comment;
   }
 
@@ -268,7 +270,7 @@ export class ElementStack implements Cursor {
   }
 
   closeElement() {
-    this.blockStack.current.closeElement();
+    this.block().closeElement();
     this.popElement();
   }
 }

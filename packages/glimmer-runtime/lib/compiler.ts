@@ -21,12 +21,6 @@ import {
 } from './opcode-builder';
 
 import {
-  Statement as StatementSyntax,
-  Attribute as AttributeSyntax,
-  Expression
-} from './syntax';
-
-import {
   compileArgs,
   compileBlockArgs,
   compileBaselineArgs
@@ -279,7 +273,7 @@ class ComponentBuilder implements IComponentBuilder {
     this.env = builder.env;
   }
 
-  static(definition: StaticDefinition, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
+  static(definition: StaticDefinition, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow: InlineBlock) {
     this.builder.unit(b => {
       b.putComponentDefinition(definition);
       b.openComponent(compileBaselineArgs(args, b), shadow);
@@ -287,7 +281,7 @@ class ComponentBuilder implements IComponentBuilder {
     });
   }
 
-  dynamic(definitionArgs: BaselineSyntax.Args, definition: DynamicDefinition, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow: ReadonlyArray<string> = EMPTY_ARRAY) {
+  dynamic(definitionArgs: BaselineSyntax.Args, definition: DynamicDefinition, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow: InlineBlock) {
     this.builder.unit(b => {
       b.putArgs(compileArgs(definitionArgs[0], definitionArgs[1], b));
       b.putValue(['function', definition]);

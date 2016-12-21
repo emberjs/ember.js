@@ -1,7 +1,7 @@
 import { Scope } from '../environment';
 import { Reference, PathReference, ReferenceIterator } from 'glimmer-reference';
 import { TRUST, Option, unwrap, expect } from 'glimmer-util';
-import { InlineBlock } from '../compiled/blocks';
+import { InlineBlock } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { Opcode, OpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';
@@ -31,7 +31,7 @@ class Frame {
     ops: OpSeq,
     public component: Component = null,
     public manager: Option<ComponentManager<Component>> = null,
-    public shadow: Option<ReadonlyArray<string>> = null
+    public shadow: Option<InlineBlock> = null
   ) {
     this.ops = ops;
     this.op = ops.head();
@@ -61,7 +61,7 @@ export class FrameStack {
     return this.frames[unwrap(this.frame)];
   }
 
-  push(ops: OpSeq, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<ReadonlyArray<string>> = null) {
+  push(ops: OpSeq, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<InlineBlock> = null) {
     let frame = (this.frame === null) ? (this.frame = 0) : ++this.frame;
 
     if (this.frames.length <= frame) {
@@ -172,7 +172,7 @@ export class FrameStack {
     return unwrap(this.currentFrame.manager);
   }
 
-  getShadow(): Option<ReadonlyArray<string>> {
+  getShadow(): Option<InlineBlock> {
     return this.currentFrame.shadow;
   }
 

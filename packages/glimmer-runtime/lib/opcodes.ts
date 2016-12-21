@@ -11,6 +11,10 @@ export interface OpcodeJSON {
   children?: OpcodeJSON[];
 }
 
+export function pretty(json: OpcodeJSON): string {
+  return `${json.type.toUpperCase()}(${json.args ? json.args.join(', ') : ''})`;
+}
+
 export abstract class AbstractOpcode implements LinkedListNode {
   public type: string;
   public _guid: number;
