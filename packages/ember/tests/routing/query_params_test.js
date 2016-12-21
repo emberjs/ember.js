@@ -567,6 +567,34 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
+  ['@test multiple QP value changes only cause a single model refresh'](assert) {
+    assert.expect(2);
+
+    this.setSingleQPController('index', 'alex', 'lol');
+    this.setSingleQPController('index', 'steely', 'lel');
+
+    let refreshCount = 0;
+    this.registerRoute('index', Route.extend({
+      queryParams: {
+        alex: {
+          refreshModel: true
+        },
+        steely: {
+          refreshModel: true
+        }
+      },
+      refresh() {
+        refreshCount++;
+      }
+    }));
+
+    return this.visitAndAssert('/').then(() => {
+      let indexController = this.getController('index');
+      run(indexController, 'setProperties', { alex: 'fran', steely: 'david' });
+      assert.equal(refreshCount, 1, 'index refresh hook only run once');
+    });
+  }
+
   ['@test refreshModel does not cause a second transition during app boot '](assert) {
     assert.expect(1);
 

@@ -826,6 +826,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         let qp = qpMap[totalChanged[i]];
         if (qp && get(this._optionsForQueryParam(qp), 'refreshModel') && this.router.currentState) {
           this.refresh();
+          break;
         }
       }
 
