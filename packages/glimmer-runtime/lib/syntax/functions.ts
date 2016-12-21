@@ -92,11 +92,7 @@ STATEMENTS.add('modifier', (sexp: S.Modifier, builder: OpcodeBuilder) => {
   let args = compileArgs(params, hash, builder);
 
   if (builder.env.hasModifier(path, builder.symbolTable)) {
-    builder.append(new ModifierOpcode(
-      path[0],
-      builder.env.lookupModifier(path, builder.symbolTable),
-      args
-    ));
+    builder.modifier(path[0], args);
   } else {
     throw new Error(`Compile Error: ${path.join('.')} is not a modifier`);
   }
@@ -135,9 +131,9 @@ STATEMENTS.add('optimized-append', (sexp: BaselineSyntax.OptimizedAppend, builde
   builder.putValue(returned[1]);
 
   if (trustingMorph) {
-    builder.append(new OptimizedTrustingAppendOpcode());
+    builder.trustingAppend();
   } else {
-    builder.append(new OptimizedCautiousAppendOpcode());
+    builder.cautiousAppend();
   }
 });
 
@@ -149,12 +145,10 @@ STATEMENTS.add('unoptimized-append', (sexp: BaselineSyntax.UnoptimizedAppend, bu
 
   if (returned === true) return;
 
-  let expression = expr(returned[1], builder);
-
   if (trustingMorph) {
-    builder.append(new GuardedTrustingAppendOpcode(expression, builder.symbolTable));
+    builder.guardedTrustingAppend(returned[1]);
   } else {
-    builder.append(new GuardedCautiousAppendOpcode(expression, builder.symbolTable));
+    builder.guardedCautiousAppend(returned[1]);
   }
 });
 
@@ -221,19 +215,7 @@ STATEMENTS.add('yield', function(this: undefined, sexp: WireFormat.Statements.Yi
   let [, to, params] = sexp;
 
   let args = compileArgs(params, null, builder);
-  let yields: Option<number>, partial: Option<number>;
-
-  if (yields = builder.symbolTable.getSymbol('yields', to)) {
-    let inner = new CompiledGetBlockBySymbol(yields, to);
-    builder.append(new OpenBlockOpcode(inner, args));
-    builder.append(new CloseBlockOpcode());
-  } else if (partial = builder.symbolTable.getPartialArgs()) {
-    let inner = new CompiledInPartialGetBlock(partial, to);
-    builder.append(new OpenBlockOpcode(inner, args));
-    builder.append(new CloseBlockOpcode());
-  } else {
-    throw new Error('[BUG] ${to} is not a valid block name.');
-  }
+  builder.yield(args, to);
 });
 
 let EXPRESSIONS = new Compilers<SexpExpression, CompiledExpression<Opaque>>();

@@ -6,6 +6,17 @@ import * as lists from './lists';
 import * as vm from './vm';
 import * as blocks from './blocks';
 
+import {
+  CompiledGetBlock,
+  CompiledGetBlockBySymbol,
+  CompiledInPartialGetBlock
+} from '../../compiled/expressions/has-block';
+
+import {
+  OpenBlockOpcode,
+  CloseBlockOpcode
+} from '../../compiled/opcodes/blocks';
+
 import { Option, Stack, Dict, Opaque, dict, expect } from 'glimmer-util';
 import { expr } from '../../syntax/functions';
 import { Opcode, OpSeq } from '../../opcodes';
@@ -55,7 +66,7 @@ export interface CompileInto {
   append(op: Opcode);
 }
 
-export abstract class BasicOpcodeBuilder implements SymbolLookup, CompileInto {
+export abstract class BasicOpcodeBuilder implements SymbolLookup {
   private labelsStack = new Stack<Dict<vm.LabelOpcode>>();
   public component: ComponentBuilder;
 
@@ -66,7 +77,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup, CompileInto {
   abstract compile<E>(expr: Represents<E>): E;
   abstract compileExpression(expr: RepresentsExpression): CompiledExpression<Opaque>;
 
-  append(op: Opcode) {
+  push(op: Opcode) {
     this.inner.append(op);
   }
 
@@ -102,220 +113,241 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup, CompileInto {
   // partials
 
   putPartialDefinition(definition: PartialDefinition<Opaque>) {
-    this.append(new partial.PutPartialDefinitionOpcode(definition));
+    this.push(new partial.PutPartialDefinitionOpcode(definition));
   }
 
   putDynamicPartialDefinition() {
-    this.append(new partial.PutDynamicPartialDefinitionOpcode(this.symbolTable));
+    this.push(new partial.PutDynamicPartialDefinitionOpcode(this.symbolTable));
   }
 
   evaluatePartial() {
-    this.append(new partial.EvaluatePartialOpcode(this.symbolTable));
+    this.push(new partial.EvaluatePartialOpcode(this.symbolTable));
   }
 
   // components
 
   putComponentDefinition(definition: ComponentDefinition<Opaque>) {
-    this.append(new component.PutComponentDefinitionOpcode(definition));
+    this.push(new component.PutComponentDefinitionOpcode(definition));
   }
 
   putDynamicComponentDefinition() {
-    this.append(new component.PutDynamicComponentDefinitionOpcode());
+    this.push(new component.PutDynamicComponentDefinitionOpcode());
   }
 
   openComponent(args: Represents<CompiledArgs>, shadow?: InlineBlock) {
-    this.append(new component.OpenComponentOpcode(this.compile(args), shadow || null));
+    this.push(new component.OpenComponentOpcode(this.compile(args), shadow || null));
   }
 
   didCreateElement() {
-    this.append(new component.DidCreateElementOpcode());
+    this.push(new component.DidCreateElementOpcode());
   }
 
   shadowAttributes() {
-    this.append(new component.ShadowAttributesOpcode());
-    this.append(new blocks.CloseBlockOpcode());
+    this.push(new component.ShadowAttributesOpcode());
+    this.push(new blocks.CloseBlockOpcode());
   }
 
   didRenderLayout() {
-    this.append(new component.DidRenderLayoutOpcode());
+    this.push(new component.DidRenderLayoutOpcode());
   }
 
   closeComponent() {
-    this.append(new component.CloseComponentOpcode());
+    this.push(new component.CloseComponentOpcode());
   }
 
   // content
 
   cautiousAppend() {
-    this.append(new content.OptimizedCautiousAppendOpcode());
+    this.push(new content.OptimizedCautiousAppendOpcode());
   }
 
   trustingAppend() {
-    this.append(new content.OptimizedTrustingAppendOpcode());
+    this.push(new content.OptimizedTrustingAppendOpcode());
+  }
+
+  guardedCautiousAppend(expression: RepresentsExpression) {
+    this.push(new content.GuardedCautiousAppendOpcode(this.compileExpression(expression), this.symbolTable));
+  }
+
+  guardedTrustingAppend(expression: RepresentsExpression) {
+    this.push(new content.GuardedTrustingAppendOpcode(this.compileExpression(expression), this.symbolTable));
   }
 
   // dom
 
   text(text: string) {
-    this.append(new dom.TextOpcode(text));
+    this.push(new dom.TextOpcode(text));
   }
 
   openPrimitiveElement(tag: string) {
-    this.append(new dom.OpenPrimitiveElementOpcode(tag));
+    this.push(new dom.OpenPrimitiveElementOpcode(tag));
   }
 
   openComponentElement(tag: string) {
-    this.append(new dom.OpenComponentElementOpcode(tag));
+    this.push(new dom.OpenComponentElementOpcode(tag));
   }
 
   openDynamicPrimitiveElement() {
-    this.append(new dom.OpenDynamicPrimitiveElementOpcode());
+    this.push(new dom.OpenDynamicPrimitiveElementOpcode());
   }
 
   flushElement() {
-    this.append(new dom.FlushElementOpcode());
+    this.push(new dom.FlushElementOpcode());
   }
 
   closeElement() {
-    this.append(new dom.CloseElementOpcode());
+    this.push(new dom.CloseElementOpcode());
   }
 
   staticAttr(name: string, namespace: Option<string>, value: any) {
-    this.append(new dom.StaticAttrOpcode(namespace, name, value));
+    this.push(new dom.StaticAttrOpcode(namespace, name, value));
   }
 
   dynamicAttrNS(name: string, namespace: string, isTrusting: boolean) {
-    this.append(new dom.DynamicAttrNSOpcode(name, namespace, isTrusting));
+    this.push(new dom.DynamicAttrNSOpcode(name, namespace, isTrusting));
   }
 
   dynamicAttr(name: string, isTrusting: boolean) {
-    this.append(new dom.DynamicAttrOpcode(name, isTrusting));
+    this.push(new dom.DynamicAttrOpcode(name, isTrusting));
   }
 
   comment(comment: string) {
-    this.append(new dom.CommentOpcode(comment));
+    this.push(new dom.CommentOpcode(comment));
+  }
+
+  modifier(name: string, args: Represents<CompiledArgs>) {
+    let modifierManager = this.env.lookupModifier([name], this.symbolTable);
+    this.push(new dom.ModifierOpcode(name, modifierManager, this.compile(args)));
   }
 
   // lists
 
   putIterator() {
-    this.append(new lists.PutIteratorOpcode());
+    this.push(new lists.PutIteratorOpcode());
   }
 
   enterList(start: string, end: string) {
-    this.append(new lists.EnterListOpcode(this.labelFor(start), this.labelFor(end)));
+    this.push(new lists.EnterListOpcode(this.labelFor(start), this.labelFor(end)));
   }
 
   exitList() {
-    this.append(new lists.ExitListOpcode());
+    this.push(new lists.ExitListOpcode());
   }
 
   enterWithKey(start: string, end: string) {
-    this.append(new lists.EnterWithKeyOpcode(this.labelFor(start), this.labelFor(end)));
+    this.push(new lists.EnterWithKeyOpcode(this.labelFor(start), this.labelFor(end)));
   }
 
   nextIter(end: string) {
-    this.append(new lists.NextIterOpcode(this.labelFor(end)));
+    this.push(new lists.NextIterOpcode(this.labelFor(end)));
   }
 
   // vm
 
+  openBlock(args: Represents<CompiledArgs>, inner: CompiledGetBlock) {
+    this.push(new OpenBlockOpcode(inner, this.compile(args)));
+  }
+
+  closeBlock() {
+    this.push(new CloseBlockOpcode());
+  }
+
   pushRemoteElement() {
-    this.append(new dom.PushRemoteElementOpcode());
+    this.push(new dom.PushRemoteElementOpcode());
   }
 
   popRemoteElement() {
-    this.append(new dom.PopRemoteElementOpcode());
+    this.push(new dom.PopRemoteElementOpcode());
   }
 
   popElement() {
-    this.append(new dom.PopElementOpcode());
+    this.push(new dom.PopElementOpcode());
   }
 
   label(name: string) {
-    this.append(this.labelFor(name));
+    this.push(this.labelFor(name));
   }
 
   pushChildScope() {
-    this.append(new vm.PushChildScopeOpcode());
+    this.push(new vm.PushChildScopeOpcode());
   }
 
   popScope() {
-    this.append(new vm.PopScopeOpcode());
+    this.push(new vm.PopScopeOpcode());
   }
 
   pushDynamicScope() {
-    this.append(new vm.PushDynamicScopeOpcode());
+    this.push(new vm.PushDynamicScopeOpcode());
   }
 
   popDynamicScope() {
-    this.append(new vm.PopDynamicScopeOpcode());
+    this.push(new vm.PopDynamicScopeOpcode());
   }
 
   putNull() {
-    this.append(new vm.PutNullOpcode());
+    this.push(new vm.PutNullOpcode());
   }
 
   putValue(expression: RepresentsExpression) {
-    this.append(new vm.PutValueOpcode(this.compileExpression(expression)));
+    this.push(new vm.PutValueOpcode(this.compileExpression(expression)));
   }
 
   putArgs(args: Represents<CompiledArgs>) {
-    this.append(new vm.PutArgsOpcode(this.compile(args)));
+    this.push(new vm.PutArgsOpcode(this.compile(args)));
   }
 
   bindDynamicScope(names: ReadonlyArray<string>) {
-    this.append(new vm.BindDynamicScopeOpcode(names));
+    this.push(new vm.BindDynamicScopeOpcode(names));
   }
 
   bindPositionalArgs(names: string[], symbols: number[]) {
-    this.append(new vm.BindPositionalArgsOpcode(names, symbols));
+    this.push(new vm.BindPositionalArgsOpcode(names, symbols));
   }
 
   bindNamedArgs(names: string[], symbols: number[]) {
-    this.append(new vm.BindNamedArgsOpcode(names, symbols));
+    this.push(new vm.BindNamedArgsOpcode(names, symbols));
   }
 
   bindBlocks(names: string[], symbols: number[]) {
-    this.append(new vm.BindBlocksOpcode(names, symbols));
+    this.push(new vm.BindBlocksOpcode(names, symbols));
   }
 
   enter(enter: Label, exit: Label) {
-    this.append(new vm.EnterOpcode(this.labelFor(enter), this.labelFor(exit)));
+    this.push(new vm.EnterOpcode(this.labelFor(enter), this.labelFor(exit)));
   }
 
   exit() {
-    this.append(new vm.ExitOpcode());
+    this.push(new vm.ExitOpcode());
   }
 
   evaluate(name: string, block: InlineBlock) {
-    this.append(new vm.EvaluateOpcode(name, block));
+    this.push(new vm.EvaluateOpcode(name, block));
   }
 
   test(testFunc: 'const' | 'simple' | 'environment' | vm.TestFunction) {
     if (testFunc === 'const') {
-      this.append(new vm.TestOpcode(vm.ConstTest));
+      this.push(new vm.TestOpcode(vm.ConstTest));
     } else if (testFunc === 'simple') {
-      this.append(new vm.TestOpcode(vm.SimpleTest));
+      this.push(new vm.TestOpcode(vm.SimpleTest));
     } else if (testFunc === 'environment') {
-      this.append(new vm.TestOpcode(vm.EnvironmentTest));
+      this.push(new vm.TestOpcode(vm.EnvironmentTest));
     } else if (typeof testFunc === 'function') {
-      this.append(new vm.TestOpcode(testFunc));
+      this.push(new vm.TestOpcode(testFunc));
     } else {
       throw new Error('unreachable');
     }
   }
 
   jump(target: string) {
-    this.append(new vm.JumpOpcode(this.labelFor(target)));
+    this.push(new vm.JumpOpcode(this.labelFor(target)));
   }
 
   jumpIf(target: string) {
-    this.append(new vm.JumpIfOpcode(this.labelFor(target)));
+    this.push(new vm.JumpIfOpcode(this.labelFor(target)));
   }
 
   jumpUnless(target: string) {
-    this.append(new vm.JumpUnlessOpcode(this.labelFor(target)));
+    this.push(new vm.JumpUnlessOpcode(this.labelFor(target)));
   }
 }
 
@@ -341,25 +373,41 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
   }
 
   bindPositionalArgsForLocals(locals: Dict<number>) {
-    this.append(vm.BindPositionalArgsOpcode.create(locals));
+    this.push(vm.BindPositionalArgsOpcode.create(locals));
   }
 
   preludeForLayout(layout: Layout) {
     let symbols = layout.symbolTable.getSymbols();
 
     if (symbols.named) {
-      this.append(vm.BindNamedArgsOpcode.create(layout));
+      this.push(vm.BindNamedArgsOpcode.create(layout));
     }
 
-    this.append(new vm.BindCallerScopeOpcode());
+    this.push(new vm.BindCallerScopeOpcode());
 
     if (symbols.yields) {
-      this.append(vm.BindBlocksOpcode.create(layout));
+      this.push(vm.BindBlocksOpcode.create(layout));
     }
 
     if (symbols.partialArgs) {
-      this.append(vm.BindPartialArgsOpcode.create(layout));
+      this.push(vm.BindPartialArgsOpcode.create(layout));
     }
+  }
+
+  yield(args: Represents<CompiledArgs>, to: string) {
+    let yields: Option<number>, partial: Option<number>;
+    let inner: CompiledGetBlock;
+
+    if (yields = this.symbolTable.getSymbol('yields', to)) {
+      inner = new CompiledGetBlockBySymbol(yields, to);
+    } else if (partial = this.symbolTable.getPartialArgs()) {
+      inner = new CompiledInPartialGetBlock(partial, to);
+    } else {
+      throw new Error('[BUG] ${to} is not a valid block name.');
+    }
+
+    this.openBlock(args, inner);
+    this.closeBlock();
   }
 
   // TODO
