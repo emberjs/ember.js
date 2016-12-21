@@ -189,7 +189,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
       dsl.closeComponent();
       dsl.jump(END);
       dsl.label('VALUE');
-      dsl.append(new this.AppendOpcode());
+      dsl.push(new this.AppendOpcode());
     });
 
     let deopted = this.deopted = dsl.toOpSeq();
