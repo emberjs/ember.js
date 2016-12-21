@@ -1,7 +1,7 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { DestroyableBounds, clear, move as moveBounds } from '../bounds';
 import { ElementStack, Tracker, UpdatableTracker } from '../builder';
-import { TSISSUE, LOGGER, Option, Opaque, Stack, LinkedList, Dict, dict, expect, unwrap } from 'glimmer-util';
+import { LOGGER, Option, Opaque, Stack, LinkedList, Dict, dict, expect } from 'glimmer-util';
 import {
   ConstReference,
   PathReference,
@@ -18,8 +18,7 @@ import {
   INITIAL
 } from 'glimmer-reference';
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { OpcodeJSON, OpSeq, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
-import { LabelOpcode } from '../compiled/opcodes/vm';
+import { OpcodeJSON, UpdatingOpcode, UpdatingOpSeq, Slice } from '../opcodes';
 import { DOMChanges } from '../dom/helper';
 import * as Simple from '../dom/interfaces';
 import { CapturedFrame } from './frame';
@@ -104,12 +103,10 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   protected frame: CapturedFrame;
   protected children: LinkedList<UpdatingOpcode>;
   protected bounds: DestroyableBounds;
-  public ops: OpSeq;
 
-  constructor(ops: OpSeq, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
+  constructor(public ops: Slice, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
     let { env, scope, dynamicScope, frame } = state;
-    this.ops = ops;
     this.children = children;
     this.env = env;
     this.scope = scope;
@@ -145,13 +142,9 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   }
 
   toJSON() : OpcodeJSON {
-    let begin = this.ops.head() as LabelOpcode;
-    let end = this.ops.tail() as LabelOpcode;
     let details = dict<string>();
 
     details["guid"] = `${this._guid}`;
-    details["begin"] = begin.inspect();
-    details["end"] = end.inspect();
 
     return {
       guid: this._guid,
@@ -169,7 +162,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   protected bounds: UpdatableTracker;
 
-  constructor(ops: OpSeq, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
+  constructor(ops: Slice, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
     super(ops, state, bounds, children);
     this.tag = this._tag = new UpdatableTag(CONSTANT_TAG);
   }
@@ -200,16 +193,11 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   toJSON() : OpcodeJSON {
     let json = super.toJSON();
-    let begin = this.ops.head() as LabelOpcode;
-    let end = this.ops.tail() as LabelOpcode;
 
     let details = json["details"];
     if (!details) {
       details = json["details"] = {};
     }
-
-    details["begin"] = JSON.stringify(begin.inspect());
-    details["end"] = JSON.stringify(end.inspect());
 
     return super.toJSON();
   }
@@ -263,10 +251,10 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     this.didInsert = true;
   }
 
-  retain(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>) {
+  retain(_key: string, _item: PathReference<Opaque>, _memo: PathReference<Opaque>) {
   }
 
-  move(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: string) {
+  move(key: string, _item: PathReference<Opaque>, _memo: PathReference<Opaque>, before: string) {
     let { map, updating } = this;
 
     let entry = map[key];
@@ -306,7 +294,7 @@ export class ListBlockOpcode extends BlockOpcode {
   private lastIterated: Revision = INITIAL;
   private _tag: UpdatableTag;
 
-  constructor(ops: OpSeq, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
+  constructor(ops: Slice, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
     super(ops, state, bounds, children);
     this.artifacts = artifacts;
     let _tag = this._tag = new UpdatableTag(CONSTANT_TAG);

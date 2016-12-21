@@ -1,9 +1,8 @@
 import { CompiledProgram, CompiledBlock } from './compiled/blocks';
-import { Opcode } from './opcodes';
 import { builder } from './compiler';
 import OpcodeBuilder from './compiled/opcodes/builder';
 import Environment from './environment';
-import { EMPTY_SLICE, Slice, Option, LinkedList, Stack, expect } from 'glimmer-util';
+import { Option } from 'glimmer-util';
 import { SerializedTemplateBlock, TemplateMeta, SerializedBlock, Statement as SerializedStatement } from 'glimmer-wire-format';
 import * as WireFormat from 'glimmer-wire-format';
 import { entryPoint as entryPointTable, layout as layoutTable, block as blockTable } from './symbol-table';
@@ -79,8 +78,8 @@ export class InlineBlock extends Template {
 export class Layout extends Template {
   public symbolTable: ProgramSymbolTable;
 
-  compile(env: Environment): CompiledProgram {
-    return new CompiledProgram(new LinkedList<Opcode>(), 0);
+  compile(_env: Environment): CompiledProgram {
+    return new CompiledProgram([], 1);
   }
 }
 
@@ -123,7 +122,7 @@ export default class Scanner {
   }
 
   scanPartial(symbolTable: SymbolTable): PartialBlock {
-    let { block, block: { locals } } = this;
+    let { block } = this;
 
     let child = scanBlock(block, symbolTable, this.env);
 
@@ -134,8 +133,6 @@ export default class Scanner {
 export function scanBlock({ statements }: SerializedBlock, symbolTable: SymbolTable, env: Environment): InlineBlock {
   return new RawInlineBlock(env, symbolTable, statements).scan();
 }
-
-const EMPTY_PROGRAM: BaselineSyntax.Program = [];
 
 import { PublicVM } from './vm';
 import { PathReference } from 'glimmer-reference';

@@ -1,9 +1,4 @@
 import { OpSeq } from '../opcodes';
-import { Environment } from '../environment';
-import { SymbolTable, ProgramSymbolTable } from 'glimmer-interfaces';
-import { EMPTY_ARRAY } from '../utils';
-
-import { Option } from 'glimmer-util';
 
 export class CompiledBlock {
   public ops: OpSeq;

@@ -6,9 +6,8 @@ import { CompiledBlock } from '../compiled/blocks';
 import { InlineBlock, PartialBlock } from '../scanner';
 import { CompiledExpression } from '../compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
-import { Opcode, OpSeq, UpdatingOpcode, pretty } from '../opcodes';
+import { Opcode, OpSeq, Slice, UpdatingOpcode, pretty } from '../opcodes';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
-import { Range } from '../utils';
 import { Component, ComponentManager } from '../component/interfaces';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
@@ -21,8 +20,6 @@ export interface PublicVM {
   getSelf(): PathReference<Opaque>;
   newDestroyable(d: Destroyable);
 }
-
-type OpList = Range<Opcode>;
 
 export default class VM implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
@@ -64,9 +61,9 @@ export default class VM implements PublicVM {
     };
   }
 
-  goto(op: LabelOpcode) {
+  goto(ip: number) {
     // assert(this.frame.getOps().contains(op), `Illegal jump to ${op.label}`);
-    this.frame.goto(op);
+    this.frame.goto(ip);
   }
 
   beginCacheGroup() {
@@ -96,18 +93,19 @@ export default class VM implements PublicVM {
     opcodes.append(END);
   }
 
-  enter(ops: OpSeq) {
+  enter(ops: Slice) {
     let updating = new LinkedList<UpdatingOpcode>();
 
     let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
 
+    console.log(ops);
     let tryOpcode = new TryOpcode(ops, state, tracker, updating);
 
     this.didEnter(tryOpcode, updating);
   }
 
-  enterWithKey(key: string, ops: OpSeq) {
+  enterWithKey(key: string, ops: Slice) {
     let updating = new LinkedList<UpdatingOpcode>();
 
     let tracker = this.stack().pushUpdatableBlock();
@@ -120,7 +118,7 @@ export default class VM implements PublicVM {
     this.didEnter(tryOpcode, updating);
   }
 
-  enterList(ops: OpSeq) {
+  enterList(ops: Slice) {
     let updating = new LinkedList<BlockOpcode>();
 
     let tracker = this.stack().pushBlockList(updating);
@@ -182,7 +180,8 @@ export default class VM implements PublicVM {
     args?: Option<EvaluatedArgs>,
     callerScope?: Scope
   ) {
-    this.frame.push(block.ops);
+    let ops = block.ops;
+    this.frame.push({ ops, start: 0, end: ops.length - 1 });
 
     if (args) this.frame.setArgs(args);
     if (args && args.blocks) this.frame.setBlocks(args.blocks);
@@ -197,7 +196,8 @@ export default class VM implements PublicVM {
     manager: ComponentManager<Component>,
     shadow: Option<InlineBlock>
   ) {
-    this.frame.push(layout.ops, component, manager, shadow);
+    let slice = { ops: layout.ops, start: 0, end: layout.ops.length - 1 };
+    this.frame.push(slice, component, manager, shadow);
 
     if (args) this.frame.setArgs(args);
     if (args && args.blocks) this.frame.setBlocks(args.blocks);
@@ -205,7 +205,7 @@ export default class VM implements PublicVM {
   }
 
   pushEvalFrame(ops: OpSeq) {
-    this.frame.push(ops);
+    this.frame.push({ ops, start: 0, end: ops.length - 1 });
   }
 
   pushChildScope() {
@@ -256,11 +256,11 @@ export default class VM implements PublicVM {
 
   /// EXECUTION
 
-  resume(opcodes: OpSeq, frame: CapturedFrame): RenderResult {
+  resume(opcodes: Slice, frame: CapturedFrame): RenderResult {
     return this.execute(opcodes, vm => vm.frame.restore(frame));
   }
 
-  execute(opcodes: OpSeq, initialize?: (vm: VM) => void): RenderResult {
+  execute(opcodes: Slice, initialize?: (vm: VM) => void): RenderResult {
     LOGGER.debug("[VM] Begin program execution");
 
     let { elementStack, frame, updatingOpcodeStack, env } = this;
@@ -387,12 +387,4 @@ export default class VM implements PublicVM {
       scope.set(names[i], args.named.get(names[i]));
     }
   }
-}
-
-interface ExceptionHandler {
-  handleException(initialize?: (vm: VM) => void);
-}
-
-interface ReturnHandler {
-  setRenderResult(renderResult: RenderResult);
 }

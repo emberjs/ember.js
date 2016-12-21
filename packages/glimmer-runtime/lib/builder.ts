@@ -409,7 +409,7 @@ class BlockListTracker implements Tracker {
     return this.boundList.tail().lastNode();
   }
 
-  openElement(element: Element) {
+  openElement(_element: Element) {
     assert(false, 'Cannot openElement directly inside a block list');
   }
 
@@ -417,16 +417,16 @@ class BlockListTracker implements Tracker {
     assert(false, 'Cannot closeElement directly inside a block list');
   }
 
-  newNode(node: Node) {
+  newNode(_node: Node) {
     assert(false, 'Cannot create a new node directly inside a block list');
   }
 
-  newBounds(bounds: Bounds) {
+  newBounds(_bounds: Bounds) {
   }
 
-  newDestroyable(d: Destroyable) {
+  newDestroyable(_d: Destroyable) {
   }
 
-  finalize(stack: ElementStack) {
+  finalize(_stack: ElementStack) {
   }
 }

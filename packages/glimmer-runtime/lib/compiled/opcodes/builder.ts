@@ -17,18 +17,17 @@ import {
   CloseBlockOpcode
 } from '../../compiled/opcodes/blocks';
 
-import { Option, Stack, Dict, Opaque, dict, expect } from 'glimmer-util';
+import { Option, Stack, Dict, Opaque, dict, assert, expect } from 'glimmer-util';
 import { expr } from '../../syntax/functions';
-import { Opcode, OpSeq } from '../../opcodes';
+import { Opcode, OpSeq, inspect } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
 import { CompiledExpression } from '../expressions';
 import { ComponentDefinition } from '../../component/interfaces';
 import { PartialDefinition } from '../../partial';
 import Environment from '../../environment';
-import { EMPTY_ARRAY } from '../../utils';
 import { SymbolTable } from 'glimmer-interfaces';
-import { ComponentBuilder } from '../../opcode-builder';
-import { ProgramBuffer } from '../../compiler';
+import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
+import { ComponentBuilder } from '../../compiler';
 import { BaselineSyntax, InlineBlock, Layout } from '../../scanner';
 
 export interface CompilesInto<E> {
@@ -66,48 +65,94 @@ export interface CompileInto {
   append(op: Opcode);
 }
 
-export abstract class BasicOpcodeBuilder implements SymbolLookup {
-  private labelsStack = new Stack<Dict<vm.LabelOpcode>>();
-  public component: ComponentBuilder;
+interface RangeOpcodeConstructor {
+  new(slice: Slice): Opcode;
+}
 
-  constructor(private inner: ProgramBuffer, public symbolTable: SymbolTable, public env: Environment) {
-    this.component = inner.component;
+interface TargetOpcodeConstructor {
+  new(target: number): Opcode;
+}
+
+export class Slice {
+  constructor(
+    public ops: OpSeq,
+    public start: number,
+    public end: number
+  ) {}
+}
+
+class Labels {
+  labels = dict<number>();
+  jumps: { at: number, target: string, TargetConstructor: TargetOpcodeConstructor }[] = [];
+  ranges: { at: number, start: string, end: string, RangeConstructor: RangeOpcodeConstructor }[] = [];
+
+  label(name: string, index: number) {
+    this.labels[name] = index;
+  }
+
+  jump(at: number, TargetConstructor: TargetOpcodeConstructor, target: string) {
+    this.jumps.push({ at, target, TargetConstructor });
+  }
+
+  range(at: number, RangeConstructor: RangeOpcodeConstructor, start: string, end: string) {
+    this.ranges.push({ at, start, end, RangeConstructor });
+  }
+
+  patch(opcodes: Option<Opcode>[]): void {
+    for (let { at, target, TargetConstructor } of this.jumps) {
+      opcodes[at] = new TargetConstructor(this.labels[target]);
+    }
+
+    for (let { at, start, end, RangeConstructor } of this.ranges) {
+      let slice = new Slice(opcodes as OpSeq, this.labels[start], this.labels[end] - 1);
+      opcodes[at] = new RangeConstructor(slice);
+    }
+  }
+}
+
+export abstract class BasicOpcodeBuilder implements SymbolLookup {
+  private labelsStack = new Stack<Labels>();
+
+  constructor(public symbolTable: SymbolTable, public env: Environment) {
   }
 
   abstract compile<E>(expr: Represents<E>): E;
   abstract compileExpression(expr: RepresentsExpression): CompiledExpression<Opaque>;
 
-  push(op: Opcode) {
-    this.inner.append(op);
+  private ops: Option<Opcode>[] = [];
+
+  private get pos() {
+    return this.ops.length - 1;
+  }
+
+  private get nextPos() {
+    return this.ops.length;
+  }
+
+  push(op: Option<Opcode>) {
+    console.log(`pushing ${op && op.type}`);
+    this.ops.push(op);
   }
 
   toOpSeq(): OpSeq {
-    return this.inner;
+    console.log(inspect(this.ops as OpSeq));
+    assert(this.ops.every(op => op !== null), 'bug: holes left in the opseq');
+    return this.ops as OpSeq;
   }
 
   // helpers
 
-  get labels() {
+  private get labels(): Labels {
     return expect(this.labelsStack.current, 'bug: not in a label stack');
   }
 
   startLabels() {
-    this.labelsStack.push(dict<vm.LabelOpcode>());
+    this.labelsStack.push(new Labels());
   }
 
   stopLabels() {
-    this.labelsStack.pop();
-  }
-
-  labelFor(name: string): vm.LabelOpcode {
-    let labels = this.labels;
-    let label = labels[name];
-
-    if (!label) {
-      label = labels[name] = new vm.LabelOpcode(name);
-    }
-
-    return label;
+    let label = expect(this.labelsStack.pop(), 'unbalanced push and pop labels');
+    label.patch(this.ops);
   }
 
   // partials
@@ -227,7 +272,8 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   }
 
   enterList(start: string, end: string) {
-    this.push(new lists.EnterListOpcode(this.labelFor(start), this.labelFor(end)));
+    this.push(null);
+    this.labels.range(this.pos, lists.EnterListOpcode, start, end);
   }
 
   exitList() {
@@ -235,11 +281,13 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   }
 
   enterWithKey(start: string, end: string) {
-    this.push(new lists.EnterWithKeyOpcode(this.labelFor(start), this.labelFor(end)));
+    this.push(null);
+    this.labels.range(this.pos, lists.EnterWithKeyOpcode, start, end);
   }
 
   nextIter(end: string) {
-    this.push(new lists.NextIterOpcode(this.labelFor(end)));
+    this.push(null);
+    this.labels.jump(this.pos, lists.NextIterOpcode, end);
   }
 
   // vm
@@ -265,7 +313,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   }
 
   label(name: string) {
-    this.push(this.labelFor(name));
+    this.labels.label(name, this.nextPos);
   }
 
   pushChildScope() {
@@ -312,8 +360,9 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(new vm.BindBlocksOpcode(names, symbols));
   }
 
-  enter(enter: Label, exit: Label) {
-    this.push(new vm.EnterOpcode(this.labelFor(enter), this.labelFor(exit)));
+  enter(enter: string, exit: string) {
+    this.push(null);
+    this.labels.range(this.pos, vm.EnterOpcode, enter, exit);
   }
 
   exit() {
@@ -339,15 +388,18 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   }
 
   jump(target: string) {
-    this.push(new vm.JumpOpcode(this.labelFor(target)));
+    this.push(null);
+    this.labels.jump(this.pos, vm.JumpOpcode, target);
   }
 
   jumpIf(target: string) {
-    this.push(new vm.JumpIfOpcode(this.labelFor(target)));
+    this.push(null);
+    this.labels.jump(this.pos, vm.JumpIfOpcode, target);
   }
 
   jumpUnless(target: string) {
-    this.push(new vm.JumpUnlessOpcode(this.labelFor(target)));
+    this.push(null);
+    this.labels.jump(this.pos, vm.JumpUnlessOpcode, target);
   }
 }
 
@@ -356,6 +408,13 @@ function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E>
 }
 
 export default class OpcodeBuilder extends BasicOpcodeBuilder {
+  public component: IComponentBuilder;
+
+  constructor(symbolTable: SymbolTable, env: Environment) {
+    super(symbolTable, env);
+    this.component = new ComponentBuilder(this);
+  }
+
   compile<E>(expr: Represents<E>): E {
     if (isCompilableExpression(expr)) {
       return expr.compile(this);

@@ -10,7 +10,7 @@ import { SVG_NAMESPACE } from './helper';
 import { normalizeTextValue } from '../compiled/opcodes/content';
 import { Environment } from '../environment';
 
-export function defaultManagers(element: Simple.Element, attr: string, isTrusting: boolean, namespace: Option<string>): AttributeManager {
+export function defaultManagers(element: Simple.Element, attr: string, _isTrusting: boolean, _namespace: Option<string>): AttributeManager {
   let tagName = element.tagName;
   let isSVG = element.namespaceURI === SVG_NAMESPACE;
 
@@ -92,7 +92,7 @@ export class AttributeManager {
 };
 
 export class PropertyManager extends AttributeManager {
-  setAttribute(env: Environment, element: Simple.Element, value: Opaque, namespace?: DOMNamespace) {
+  setAttribute(_env: Environment, element: Simple.Element, value: Opaque, _namespace?: DOMNamespace) {
     if (!isAttrRemovalValue(value)) {
       element[this.attr] = value;
     }
@@ -153,12 +153,12 @@ function isUserInputValue(tagName: string, attribute: string) {
 }
 
 class InputValuePropertyManager extends AttributeManager {
-  setAttribute(env: Environment, element: Simple.Element, value: Opaque) {
+  setAttribute(_env: Environment, element: Simple.Element, value: Opaque) {
     let input = element as FIXME<HTMLInputElement, "This breaks SSR">;
     input.value = normalizeTextValue(value);
   }
 
-  updateAttribute(env: Environment, element: Element, value: Opaque) {
+  updateAttribute(_env: Environment, element: Element, value: Opaque) {
     let input = <HTMLInputElement>element;
     let currentValue = input.value;
     let normalizedValue = normalizeTextValue(value);
@@ -175,14 +175,14 @@ function isOptionSelected(tagName: string, attribute: string) {
 }
 
 class OptionSelectedManager extends PropertyManager {
-  setAttribute(env: Environment, element: Simple.Element, value: Opaque) {
+  setAttribute(_env: Environment, element: Simple.Element, value: Opaque) {
     if (value !== null && value !== undefined && value !== false) {
       let option = <HTMLOptionElement>element;
       option.selected = true;
     }
   }
 
-  updateAttribute(env: Environment, element: Element, value: Opaque) {
+  updateAttribute(_env: Environment, element: Element, value: Opaque) {
     let option = <HTMLOptionElement>element;
 
     if (value) {
@@ -200,7 +200,7 @@ class SafeAttributeManager extends AttributeManager {
     super.setAttribute(env, element, sanitizeAttributeValue(env, element, this.attr, value));
   }
 
-  updateAttribute(env: Environment, element: Element, value: Opaque, namespace?: DOMNamespace) {
+  updateAttribute(env: Environment, element: Element, value: Opaque, _namespace?: DOMNamespace) {
     super.updateAttribute(env, element, sanitizeAttributeValue(env, element, this.attr, value));
   }
 }

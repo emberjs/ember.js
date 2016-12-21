@@ -2,7 +2,9 @@
   "extends": "../../build/tsconfig.json",
 
   "compilerOptions": {
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
 
   "include": [

@@ -11,7 +11,7 @@ export default class CompiledValue<T extends Primitive> extends CompiledExpressi
     this.reference = PrimitiveReference.create(value);
   }
 
-  evaluate(vm: VM): PrimitiveReference<T> {
+  evaluate(_vm: VM): PrimitiveReference<T> {
     return this.reference;
   }
 

@@ -1,9 +1,7 @@
-import { ListItem } from 'glimmer-reference';
-import { Opcode, OpcodeJSON } from '../../opcodes';
+import { Opcode, OpcodeJSON, Slice } from '../../opcodes';
 import { VM } from '../../vm';
-import { LabelOpcode } from '../../compiled/opcodes/vm';
 import { EvaluatedArgs } from '../expressions/args';
-import { ListSlice, Slice, expect } from 'glimmer-util';
+import { expect } from 'glimmer-util';
 import { RevisionTag, Reference, ConstReference, ReferenceIterator, IterationArtifacts } from 'glimmer-reference';
 
 class IterablePresenceReference implements Reference<boolean> {
@@ -37,11 +35,8 @@ export class PutIteratorOpcode extends Opcode {
 export class EnterListOpcode extends Opcode {
   public type = "enter-list";
 
-  public slice: Slice<Opcode>;
-
-  constructor(start: LabelOpcode, end: LabelOpcode) {
+  constructor(private slice: Slice) {
     super();
-    this.slice = new ListSlice(start, end);
   }
 
   evaluate(vm: VM) {
@@ -49,17 +44,13 @@ export class EnterListOpcode extends Opcode {
   }
 
   toJSON(): OpcodeJSON {
-    let { slice, type, _guid } = this;
-
-    let begin = slice.head() as LabelOpcode;
-    let end = slice.tail() as LabelOpcode;
+    let { type, _guid } = this;
 
     return {
       guid: _guid,
       type,
       args: [
-        JSON.stringify(begin.inspect()),
-        JSON.stringify(end.inspect())
+
       ]
     };
   }
@@ -76,11 +67,8 @@ export class ExitListOpcode extends Opcode {
 export class EnterWithKeyOpcode extends Opcode {
   public type = "enter-with-key";
 
-  private slice: Slice<Opcode>;
-
-  constructor(start: LabelOpcode, end: LabelOpcode) {
+  constructor(private slice: Slice) {
     super();
-    this.slice = new ListSlice(start, end);
   }
 
   evaluate(vm: VM) {
@@ -89,17 +77,13 @@ export class EnterWithKeyOpcode extends Opcode {
   }
 
   toJSON(): OpcodeJSON {
-    let { slice, _guid, type } = this;
-
-    let begin = slice.head() as LabelOpcode;
-    let end = slice.tail() as LabelOpcode;
+    let { _guid, type } = this;
 
     return {
       guid: _guid,
       type,
       args: [
-        JSON.stringify(begin.inspect()),
-        JSON.stringify(end.inspect())
+
       ]
     };
   }
@@ -111,9 +95,9 @@ const FALSE_REF = new ConstReference(false);
 export class NextIterOpcode extends Opcode {
   public type = "next-iter";
 
-  private end: LabelOpcode;
+  private end: number;
 
-  constructor(end: LabelOpcode) {
+  constructor(end: number) {
     super();
     this.end = end;
   }

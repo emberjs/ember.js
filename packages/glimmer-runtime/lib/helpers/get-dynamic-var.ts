@@ -32,7 +32,7 @@ class DynamicVarReference implements PathReference<Opaque> {
   }
 }
 
-function getDynamicVar(vm: PublicVM, args: EvaluatedArgs, symbolTable: SymbolTable): PathReference<Opaque> {
+function getDynamicVar(vm: PublicVM, args: EvaluatedArgs, _symbolTable: SymbolTable): PathReference<Opaque> {
   let scope = vm.dynamicScope();
   let nameRef = args.positional.at(0);
 

@@ -60,7 +60,7 @@ export const COMPILED_EMPTY_NAMED_ARGS: CompiledNamedArgs = new (class extends C
     super(EMPTY_ARRAY, EMPTY_ARRAY);
   }
 
-  evaluate(vm: VM): EvaluatedNamedArgs {
+  evaluate(_vm: VM): EvaluatedNamedArgs {
     return EVALUATED_EMPTY_NAMED_ARGS;
   }
 
@@ -156,7 +156,7 @@ export const EVALUATED_EMPTY_NAMED_ARGS: EvaluatedNamedArgs = new (class extends
     return UNDEFINED_REFERENCE;
   }
 
-  has(key: string): boolean {
+  has(_key: string): boolean {
     return false;
   }
 

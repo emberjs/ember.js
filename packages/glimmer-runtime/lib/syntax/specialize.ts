@@ -33,7 +33,7 @@ export const SPECIALIZE = new Specialize();
 import S = WireFormat.Statements;
 import E = WireFormat.Expressions;
 
-SPECIALIZE.add('append', (sexp: S.Append, symbolTable: SymbolTable) => {
+SPECIALIZE.add('append', (sexp: S.Append, _symbolTable) => {
   let path = sexp[1];
 
   if (Array.isArray(path) && (E.isUnknown(path) || E.isGet(path))) {
@@ -45,15 +45,15 @@ SPECIALIZE.add('append', (sexp: S.Append, symbolTable: SymbolTable) => {
   return ['optimized-append', sexp[1], sexp[2]];
 });
 
-SPECIALIZE.add('dynamic-attr', (sexp: S.DynamicAttr, symbolTable: SymbolTable) => {
+SPECIALIZE.add('dynamic-attr', (sexp: S.DynamicAttr, _symbolTable) => {
   return ['any-dynamic-attr', sexp[1], sexp[2], sexp[3], false];
 });
 
-SPECIALIZE.add('trusting-attr', (sexp: S.TrustingAttr, symbolTable: SymbolTable) => {
+SPECIALIZE.add('trusting-attr', (sexp: S.TrustingAttr, _symbolTable) => {
   return ['any-dynamic-attr', sexp[1], sexp[2], sexp[3], true];
 });
 
-SPECIALIZE.add('partial', (sexp: S.Partial, table) => {
+SPECIALIZE.add('partial', (sexp: S.Partial, _table) => {
   let expression = sexp[1];
 
   if (typeof expression === 'string') {

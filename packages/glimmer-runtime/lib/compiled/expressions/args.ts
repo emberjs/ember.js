@@ -48,7 +48,7 @@ export const COMPILED_EMPTY_ARGS: CompiledArgs = new (class extends CompiledArgs
     super(COMPILED_EMPTY_POSITIONAL_ARGS, COMPILED_EMPTY_NAMED_ARGS, EMPTY_BLOCKS);
   }
 
-  evaluate(vm: VM): EvaluatedArgs {
+  evaluate(_vm: VM): EvaluatedArgs {
     return EMPTY_EVALUATED_ARGS;
   }
 });

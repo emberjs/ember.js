@@ -14,8 +14,6 @@ import {
   Opaque
 } from 'glimmer-util';
 
-import * as WireFormat from 'glimmer-wire-format';
-
 export type StaticDefinition = ComponentDefinition<Opaque>;
 export type DynamicDefinition = FunctionExpression<ComponentDefinition<Opaque>>;
 
