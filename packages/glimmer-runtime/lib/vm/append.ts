@@ -3,7 +3,7 @@ import { ElementStack } from '../builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, LOGGER, Opaque, assert, expect } from 'glimmer-util';
 import { PathReference, combineSlice } from 'glimmer-reference';
 import { CompiledBlock } from '../compiled/blocks';
-import { InlineBlock } from '../scanner';
+import { InlineBlock, PartialBlock } from '../scanner';
 import { CompiledExpression } from '../compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
 import { Opcode, OpSeq, UpdatingOpcode, pretty } from '../opcodes';

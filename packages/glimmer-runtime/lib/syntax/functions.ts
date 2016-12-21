@@ -19,7 +19,7 @@ import {
   GuardedCautiousAppendOpcode
 } from '../compiled/opcodes/content';
 import CompiledHelper from '../compiled/expressions/helper';
-import CompiledConcat from '../compiled/expressions/concat';
+import CompiledConcat, { ConcatReference } from '../compiled/expressions/concat';
 import {
   COMPILED_EMPTY_POSITIONAL_ARGS,
   COMPILED_EMPTY_NAMED_ARGS,
@@ -49,7 +49,9 @@ export class Compilers<T extends Syntax, CompileTo> {
   private names = dict<number>();
   private funcs: CompilerFunction<T, CompileTo>[] = [];
 
-  add(name: T[0], func: CompilerFunction<T, CompileTo>) {
+  add(name: 'concat', func: CompilerFunction<E.Concat, CompiledConcat>);
+  add(name: T[0], func: CompilerFunction<T, CompileTo>);
+  add(name, func) {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }

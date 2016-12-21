@@ -160,7 +160,7 @@ export namespace BaselineSyntax {
   export type UnoptimizedAppend = ['unoptimized-append', WireFormat.Expression, boolean];
   export const isUnoptimizedAppend = WireFormat.is<UnoptimizedAppend>('unoptimized-append');
 
-  export type AnyDynamicAttr = ['any-dynamic-attr', string, WireFormat.Expression, string, boolean];
+  export type AnyDynamicAttr = ['any-dynamic-attr', string, WireFormat.Expression, Option<string>, boolean];
   export const isAnyAttr = WireFormat.is<AnyDynamicAttr>('any-dynamic-attr');
 
   export type StaticPartial = ['static-partial', string];

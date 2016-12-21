@@ -6,7 +6,7 @@ import {
   Template,
   Environment,
   RenderResult,
-} from "glimmer-runtime";
+} from "../index";
 
 import {
   Attrs,
@@ -18,12 +18,12 @@ import {
   equalsElement,
   inspectHooks,
   regex,
-  classes
+  classes,
+  equalTokens,
+  stripTight
  } from "glimmer-test-helpers";
 
 import { assign } from "glimmer-util";
-
-import { equalTokens, stripTight } from "glimmer-test-helpers";
 
 import { CLASS_META, UpdatableReference, setProperty as set } from 'glimmer-object-reference';
 

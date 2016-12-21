@@ -6,7 +6,7 @@ import * as lists from './lists';
 import * as vm from './vm';
 import * as blocks from './blocks';
 
-import { Option, Stack, Dict, Opaque, dict } from 'glimmer-util';
+import { Option, Stack, Dict, Opaque, dict, expect } from 'glimmer-util';
 import { expr } from '../../syntax/functions';
 import { Opcode, OpSeq } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
@@ -77,7 +77,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup, CompileInto {
   // helpers
 
   get labels() {
-    return this.labelsStack.current;
+    return expect(this.labelsStack.current, 'bug: not in a label stack');
   }
 
   startLabels() {

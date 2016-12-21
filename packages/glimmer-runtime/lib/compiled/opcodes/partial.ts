@@ -5,7 +5,7 @@ import { Assert } from './vm';
 import { VM } from '../../vm';
 import { PartialDefinition } from '../../partial';
 import { SymbolTable } from 'glimmer-interfaces';
-import { PartialBlock } from '../blocks';
+import { PartialBlock } from '../../scanner';
 
 export class PutDynamicPartialDefinitionOpcode extends Opcode {
   public type = "put-dynamic-partial-definition";

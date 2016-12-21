@@ -18,6 +18,7 @@
   "dependencies": {
     "glimmer-util": "^0.5.3",
     "glimmer-reference": "^0.5.3",
+    "glimmer-object": "^0.5.3",
     "glimmer-object-reference": "^0.5.3",
     "glimmer-wire-format": "^0.5.3",
     "glimmer-interfaces": "^0.5.3"

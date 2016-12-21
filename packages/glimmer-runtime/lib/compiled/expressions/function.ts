@@ -1,6 +1,5 @@
 import { PathReference } from 'glimmer-reference';
 import { Opaque } from 'glimmer-util';
-import { Expression as ExpressionSyntax } from '../../syntax';
 import { CompiledExpression } from '../expressions';
 import { PublicVM as VM } from '../../vm';
 import Environment from '../../environment';

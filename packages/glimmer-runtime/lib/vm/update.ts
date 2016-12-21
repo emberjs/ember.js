@@ -46,7 +46,7 @@ export default class UpdatingVM {
     while (true) {
       if (frameStack.isEmpty()) break;
 
-      let opcode = this.frameStack.current.nextStatement();
+      let opcode = this.frame.nextStatement();
 
       if (opcode === null) {
         this.frameStack.pop();
@@ -60,8 +60,12 @@ export default class UpdatingVM {
     }
   }
 
+  private get frame() {
+    return expect(this.frameStack.current, 'bug: expected a frame');
+  }
+
   goto(op: UpdatingOpcode) {
-    this.frameStack.current.goto(op);
+    this.frame.goto(op);
   }
 
   try(ops: UpdatingOpSeq, handler: Option<ExceptionHandler>) {
@@ -69,7 +73,7 @@ export default class UpdatingVM {
   }
 
   throw() {
-    this.frameStack.current.handleException();
+    this.frame.handleException();
     this.frameStack.pop();
   }
 
@@ -247,7 +251,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
       let state = vm.capture();
       let tracker = vm.stack().pushUpdatableBlock();
 
-      tryOpcode = new TryOpcode(opcode.ops, state, tracker, vm.updatingOpcodeStack.current);
+      tryOpcode = new TryOpcode(opcode.ops, state, tracker, vm.updating());
     });
 
     tryOpcode!.didInitializeChildren();
