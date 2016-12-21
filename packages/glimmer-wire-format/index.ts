@@ -44,6 +44,7 @@ export namespace Expressions {
   export type HasBlock       = ['has-block', str];
   export type HasBlockParams = ['has-block-params', str];
   export type Undefined      = ['undefined'];
+  export type ClientSide     = ['function', Function];
 
   export type Expression =
       Unknown
@@ -55,6 +56,7 @@ export namespace Expressions {
     | Helper
     | Undefined
     | Value
+    | ClientSide
     ;
 
   export interface Concat extends Array<any> {

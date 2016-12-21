@@ -1,5 +1,4 @@
 import { OpSeq } from '../opcodes';
-import { Program } from '../syntax';
 import { Environment } from '../environment';
 import { SymbolTable, ProgramSymbolTable } from 'glimmer-interfaces';
 import { EMPTY_ARRAY } from '../utils';

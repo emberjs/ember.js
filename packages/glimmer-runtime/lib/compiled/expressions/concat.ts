@@ -22,7 +22,7 @@ export default class CompiledConcat {
   }
 }
 
-class ConcatReference extends CachedReference<Option<string>> {
+export class ConcatReference extends CachedReference<Option<string>> {
   public tag: RevisionTag;
 
   constructor(private parts: PathReference<Opaque>[]) {
