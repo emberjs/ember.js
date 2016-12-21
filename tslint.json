@@ -4,7 +4,9 @@
     "no-var-keyword": true,
     "indent": [true, "spaces"],
     "label-position": true,
-    "no-consecutive-blank-lines": true,
+    "no-consecutive-blank-lines": [
+      true
+    ],
     "no-construct": true,
     "no-debugger": true,
     "no-duplicate-variable": true,

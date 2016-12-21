@@ -2,14 +2,14 @@ import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from '../expressions/args';
 import { VM, UpdatingVM } from '../../vm';
+import { Slice } from './builder';
 import { InlineBlock, Layout } from '../../scanner';
 import { CompiledBlock } from '../../compiled/blocks';
 import { NULL_REFERENCE } from '../../references';
 import { Reference, ConstReference } from 'glimmer-reference';
-import { Dict, Option, ListSlice, Opaque, Slice, expect } from 'glimmer-util';
+import { Dict, Option, Opaque } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
 import Environment from '../../environment';
-import { SymbolTable } from 'glimmer-interfaces';
 
 export class PushChildScopeOpcode extends Opcode {
   public type = "push-child-scope";
@@ -233,11 +233,10 @@ export class BindDynamicScopeOpcode extends Opcode {
 
 export class EnterOpcode extends Opcode {
   public type = "enter";
-  public slice: Slice<Opcode>; // Public because it's used by lazy content deopt
 
-  constructor(begin: LabelOpcode, end: LabelOpcode) {
+  // slice is public because it's used by lazy content deopt
+  constructor(public slice: Slice) {
     super();
-    this.slice = new ListSlice(begin, end);
   }
 
   evaluate(vm: VM) {
@@ -245,17 +244,13 @@ export class EnterOpcode extends Opcode {
   }
 
   toJSON(): OpcodeJSON {
-    let { slice, type, _guid } = this;
-
-    let begin = slice.head() as LabelOpcode;
-    let end = slice.tail() as LabelOpcode;
+    let { type, _guid } = this;
 
     return {
       guid: _guid,
       type,
       args: [
-        JSON.stringify(begin.inspect()),
-        JSON.stringify(end.inspect())
+
       ]
     };
   }
@@ -271,6 +266,13 @@ export class ExitOpcode extends Opcode {
 
 export interface LabelOptions {
   label?: string;
+}
+
+export class AppendLabelOpcode extends Opcode {
+  public type = "label";
+  public label: Option<string> = null;
+
+  evaluate() {}
 }
 
 export class LabelOpcode extends Opcode implements UpdatingOpcode {
@@ -328,7 +330,7 @@ export class EvaluateOpcode extends Opcode {
     let children: OpcodeJSON[];
 
     if (compiled) {
-      children = compiled.ops.toArray().map(op => op.toJSON());
+      children = compiled.ops.map(op => op.toJSON());
     } else {
       children = [{ guid: null, type: '[ UNCOMPILED BLOCK ]' }];
     }
@@ -344,11 +346,11 @@ export class EvaluateOpcode extends Opcode {
 
 export type TestFunction = (ref: Reference<Opaque>, env: Environment) => Reference<boolean>;
 
-export const ConstTest: TestFunction = function(ref: Reference<Opaque>, env: Environment): Reference<boolean> {
+export const ConstTest: TestFunction = function(ref: Reference<Opaque>, _env: Environment): Reference<boolean> {
   return new ConstReference(!!ref.value());
 };
 
-export const SimpleTest: TestFunction = function(ref: Reference<Opaque>, env: Environment): Reference<boolean> {
+export const SimpleTest: TestFunction = function(ref: Reference<Opaque>, _env: Environment): Reference<boolean> {
   return ref as Reference<boolean>;
 };
 
@@ -376,14 +378,10 @@ export class TestOpcode extends Opcode {
   }
 }
 
-export interface JumpOptions {
-  target: LabelOpcode;
-}
-
 export class JumpOpcode extends Opcode {
   public type = "jump";
 
-  constructor(private target: LabelOpcode) {
+  constructor(private target: number) {
     super();
   }
 
@@ -395,7 +393,7 @@ export class JumpOpcode extends Opcode {
     return {
       guid: this._guid,
       type: this.type,
-      args: [JSON.stringify(this.target.inspect())]
+      args: [JSON.stringify(this.target)]
     };
   }
 }

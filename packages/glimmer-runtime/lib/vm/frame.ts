@@ -3,21 +3,19 @@ import { Reference, PathReference, ReferenceIterator } from 'glimmer-reference';
 import { TRUST, Option, unwrap, expect } from 'glimmer-util';
 import { InlineBlock } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { Opcode, OpSeq } from '../opcodes';
-import { LabelOpcode } from '../compiled/opcodes/vm';
+import { Opcode, Slice } from '../opcodes';
 import { Component, ComponentManager } from '../component/interfaces';
 
 export class CapturedFrame {
   constructor(
-    private operand: Option<PathReference<any>>,
-    private args: Option<EvaluatedArgs>,
-    private condition: Option<Reference<boolean>>
+    public operand: Option<PathReference<any>>,
+    public args: Option<EvaluatedArgs>,
+    public condition: Option<Reference<boolean>>
   ) {}
 }
 
 class Frame {
-  ops: OpSeq;
-  op: Opcode;
+  ip: number;
   operand: Option<PathReference<any>> = null;
   immediate: any = null;
   args: Option<EvaluatedArgs> = null;
@@ -28,13 +26,12 @@ class Frame {
   key: Option<string> = null;
 
   constructor(
-    ops: OpSeq,
+    public ops: Slice,
     public component: Component = null,
     public manager: Option<ComponentManager<Component>> = null,
     public shadow: Option<InlineBlock> = null
   ) {
-    this.ops = ops;
-    this.op = ops.head();
+    this.ip = ops.start;
   }
 
   capture(): CapturedFrame {
@@ -61,7 +58,7 @@ export class FrameStack {
     return this.frames[unwrap(this.frame)];
   }
 
-  push(ops: OpSeq, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<InlineBlock> = null) {
+  push(ops: Slice, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<InlineBlock> = null) {
     let frame = (this.frame === null) ? (this.frame = 0) : ++this.frame;
 
     if (this.frames.length <= frame) {
@@ -85,16 +82,16 @@ export class FrameStack {
     this.currentFrame.restore(frame);
   }
 
-  getOps(): OpSeq {
+  getOps(): Slice {
     return this.currentFrame.ops;
   }
 
-  getCurrent(): Opcode {
-    return this.currentFrame.op;
+  getCurrent(): number {
+    return this.currentFrame.ip;
   }
 
-  setCurrent(op: Opcode): Opcode {
-    return this.currentFrame.op = op;
+  setCurrent(ip: number): number {
+    return this.currentFrame.ip = ip;
   }
 
   getOperand<T>(): PathReference<T> {
@@ -176,8 +173,8 @@ export class FrameStack {
     return this.currentFrame.shadow;
   }
 
-  goto(op: LabelOpcode) {
-    this.setCurrent(op);
+  goto(ip: number) {
+    this.setCurrent(ip);
   }
 
   hasOpcodes(): boolean {
@@ -185,12 +182,12 @@ export class FrameStack {
   }
 
   nextStatement(): Option<Opcode> {
-    let op = this.frames[unwrap(this.frame)].op;
+    let ip = this.frames[unwrap(this.frame)].ip;
     let ops = this.getOps();
 
-    if (op) {
-      this.setCurrent(ops.nextNode(op));
-      return op;
+    if (ip <= ops.end) {
+      this.setCurrent(ip + 1);
+      return ops.ops[ip];
     } else {
       this.pop();
       return null;

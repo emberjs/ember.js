@@ -24,7 +24,7 @@ export class PrimitiveReference<T extends Primitive> extends ConstReference<T> i
     super(value);
   }
 
-  get(key: string): PrimitiveReference<Primitive> {
+  get(_key: string): PrimitiveReference<Primitive> {
     return UNDEFINED_REFERENCE;
   }
 }

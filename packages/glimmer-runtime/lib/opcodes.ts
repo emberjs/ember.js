@@ -1,4 +1,4 @@
-import { Option, Dict, LinkedList, LinkedListNode, Slice, initializeGuid } from 'glimmer-util';
+import { Option, Dict, LinkedList, Slice, initializeGuid } from 'glimmer-util';
 import { RevisionTag } from 'glimmer-reference';
 import { VM, UpdatingVM } from './vm';
 
@@ -15,12 +15,9 @@ export function pretty(json: OpcodeJSON): string {
   return `${json.type.toUpperCase()}(${json.args ? json.args.join(', ') : ''})`;
 }
 
-export abstract class AbstractOpcode implements LinkedListNode {
+export abstract class AbstractOpcode {
   public type: string;
   public _guid: number;
-
-  prev: Option<AbstractOpcode>;
-  next: Option<AbstractOpcode>;
 
   constructor() {
     initializeGuid(this);
@@ -38,8 +35,14 @@ export abstract class Opcode extends AbstractOpcode {
   abstract evaluate(vm: VM);
 }
 
-export type OpSeq = Slice<Opcode>;
+export type OpSeq = ReadonlyArray<Opcode>;
 export type OpSeqBuilder = LinkedList<Opcode>;
+
+export interface Slice {
+  ops: OpSeq;
+  start: number;
+  end: number;
+}
 
 export abstract class UpdatingOpcode extends AbstractOpcode {
   public tag: RevisionTag;
@@ -52,14 +55,10 @@ export abstract class UpdatingOpcode extends AbstractOpcode {
 
 export type UpdatingOpSeq = Slice<UpdatingOpcode>;
 
-interface OpcodeFactory<T extends Opcode> {
-  new(options: T): T;
-}
-
-export function inspect(opcodes: LinkedList<AbstractOpcode>): string {
+export function inspect(opcodes: ReadonlyArray<AbstractOpcode>): string {
   let buffer = [];
 
-  opcodes.toArray().forEach((opcode, i) => {
+  opcodes.forEach((opcode, i) => {
     _inspect(opcode.toJSON(), buffer, 0, i);
   });
 
@@ -74,7 +73,7 @@ function _inspect(opcode: OpcodeJSON, buffer: string[], level: number, index: nu
   }
 
   buffer.push(...indentation);
-  buffer.push(`${index+1}. ${opcode.type.toUpperCase()}`);
+  buffer.push(`${index}. ${opcode.type.toUpperCase()}`);
 
   if (opcode.args || opcode.details) {
     buffer.push('(');

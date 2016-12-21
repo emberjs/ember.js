@@ -13,9 +13,9 @@ export interface Console {
 }
 
 class NullConsole {
-  log(message: string) {}
-  warn(message: string) {}
-  error(message: string) {}
+  log(_message: string) {}
+  warn(_message: string) {}
+  error(_message: string) {}
   trace() {}
 }
 

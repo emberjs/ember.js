@@ -73,7 +73,7 @@ class TextUpsert extends Upsert {
     this.textNode = textNode as Text;
   }
 
-  update(dom: DOMChanges, value: Insertion): boolean {
+  update(_dom: DOMChanges, value: Insertion): boolean {
     if (isString(value)) {
       let { textNode } = this;
       textNode.nodeValue = value;

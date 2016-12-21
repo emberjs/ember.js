@@ -1,4 +1,3 @@
-import { EMPTY_SYMBOL_TABLE } from '../../symbol-table';
 import Upsert, {
   Insertion,
   CautiousInsertion,
@@ -22,7 +21,6 @@ import { Reference, ReferenceCache, UpdatableTag, isModified, isConst, map } fro
 import { FIXME, Option, Opaque, LinkedList, expect } from 'glimmer-util';
 import { Cursor, clear } from '../../bounds';
 import { Fragment } from '../../builder';
-import { CompileIntoList } from '../../compiler';
 import OpcodeBuilderDSL from './builder';
 import { ConditionalReference } from '../../references';
 import { Environment } from '../../environment';
@@ -176,13 +174,12 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
     // definition object at update time. That is handled by the "lazy deopt"
     // code on the update side (scroll down for the next big block of comment).
 
-    let buffer = new CompileIntoList(env, EMPTY_SYMBOL_TABLE);
-    let dsl = new OpcodeBuilderDSL(buffer, this.symbolTable, env);
+    let dsl = new OpcodeBuilderDSL(this.symbolTable, env);
 
     dsl.putValue(this.expression);
     dsl.test(IsComponentDefinitionReference.create);
 
-    dsl.block(null, (dsl, BEGIN, END) => {
+    dsl.block(null, (dsl, _BEGIN, END) => {
       dsl.jumpUnless('VALUE');
       dsl.putDynamicComponentDefinition();
       dsl.openComponent(CompiledArgs.empty());
@@ -214,7 +211,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
         guid,
         type,
         deopted: true,
-        children: deopted.toArray().map(op => op.toJSON())
+        children: deopted.map(op => op.toJSON())
       };
     } else {
       return {
@@ -337,7 +334,7 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
     let { bounds, appendOpcode, state } = this;
 
     let appendOps = appendOpcode.deopt(vm.env);
-    let enter     = expect(appendOps.head().next, 'hardcoded deopt logic').next as EnterOpcode;
+    let enter     = expect(appendOps[2], 'hardcoded deopt logic') as EnterOpcode;
     let ops       = enter.slice;
 
     let tracker = new UpdatableBlockTracker(bounds.parentElement());
@@ -397,7 +394,7 @@ export class OptimizedCautiousAppendOpcode extends AppendOpcode<CautiousInsertio
     return cautiousInsert(dom, cursor, value);
   }
 
-  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<CautiousInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
+  protected updateWith(_vm: VM, _reference: Reference<Opaque>, cache: ReferenceCache<CautiousInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
     return new OptimizedCautiousUpdateOpcode(cache, bounds, upsert);
   }
 }
@@ -447,7 +444,7 @@ export class OptimizedTrustingAppendOpcode extends AppendOpcode<TrustingInsertio
     return trustingInsert(dom, cursor, value);
   }
 
-  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<TrustingInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
+  protected updateWith(_vm: VM, _reference: Reference<Opaque>, cache: ReferenceCache<TrustingInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
     return new OptimizedTrustingUpdateOpcode(cache, bounds, upsert);
   }
 }

@@ -143,7 +143,7 @@ export const EMPTY_SYMBOL_TABLE: SymbolTable = {
     };
   },
 
-  getSymbol(kind: never, name: string): number {
+  getSymbol(_kind: never, _name: string): number {
     throw new Error("BUG: Calling getSymbol on EMPTY_SYMBOL_TABLE");
   },
 

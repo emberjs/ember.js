@@ -1,11 +1,7 @@
-import { EMPTY_SYMBOL_TABLE } from './symbol-table';
-import { Opaque, Slice, LinkedList, Option, Maybe } from 'glimmer-util';
-import { OpSeq, Opcode } from './opcodes';
-
-import { EMPTY_ARRAY } from './utils';
 import { Environment } from './environment';
-import { SymbolTable, ProgramSymbolTable } from 'glimmer-interfaces';
-import { CompiledBlock, CompiledProgram } from './compiled/blocks';
+import { SymbolTable } from 'glimmer-interfaces';
+import { CompiledProgram } from './compiled/blocks';
+import { Maybe, Option } from 'glimmer-util';
 
 import {
   BaselineSyntax,
@@ -22,7 +18,6 @@ import {
 
 import {
   compileArgs,
-  compileBlockArgs,
   compileBaselineArgs
 } from './syntax/functions';
 
@@ -90,10 +85,7 @@ class EmptyBuilder {
   }
 
   compile(): CompiledProgram {
-    let { env } = this;
-
-    let list = new CompileIntoList(env, EMPTY_SYMBOL_TABLE);
-    return new CompiledProgram(list, 1);
+    return new CompiledProgram([], 1);
   }
 }
 
@@ -152,7 +144,6 @@ class WrappedBuilder {
       b.flushElement();
       b.label('BODY');
     } else if (staticTag = this.tag.getStatic()) {
-      let tag = this.tag.staticTagName;
       b.openPrimitiveElement(staticTag);
       b.didCreateElement();
       this.attrs['buffer'].forEach(statement => compileStatement(statement, b));
@@ -266,14 +257,14 @@ class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
   }
 }
 
-class ComponentBuilder implements IComponentBuilder {
+export class ComponentBuilder implements IComponentBuilder {
   private env: Environment;
 
   constructor(private builder: OpcodeBuilderDSL) {
     this.env = builder.env;
   }
 
-  static(definition: StaticDefinition, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow: InlineBlock) {
+  static(definition: StaticDefinition, args: BaselineSyntax.Args, _symbolTable: SymbolTable, shadow: InlineBlock) {
     this.builder.unit(b => {
       b.putComponentDefinition(definition);
       b.openComponent(compileBaselineArgs(args, b), shadow);
@@ -281,7 +272,7 @@ class ComponentBuilder implements IComponentBuilder {
     });
   }
 
-  dynamic(definitionArgs: BaselineSyntax.Args, definition: DynamicDefinition, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow: InlineBlock) {
+  dynamic(definitionArgs: BaselineSyntax.Args, definition: DynamicDefinition, args: BaselineSyntax.Args, _symbolTable: SymbolTable, shadow: InlineBlock) {
     this.builder.unit(b => {
       b.putArgs(compileArgs(definitionArgs[0], definitionArgs[1], b));
       b.putValue(['function', definition]);
@@ -299,23 +290,5 @@ class ComponentBuilder implements IComponentBuilder {
 }
 
 export function builder<S extends SymbolTable>(env: Environment, symbolTable: S) {
-  let list = new CompileIntoList(env, symbolTable);
-  return new OpcodeBuilderDSL(list, symbolTable, env);
+  return new OpcodeBuilderDSL(symbolTable, env);
 }
-
-export class CompileIntoList<T extends SymbolTable> extends LinkedList<Opcode> {
-  public component: IComponentBuilder;
-
-  constructor(public env: Environment, public symbolTable: SymbolTable) {
-    super();
-
-    let dsl = new OpcodeBuilderDSL(this, symbolTable, env);
-    this.component = new ComponentBuilder(dsl);
-  }
-
-  toOpSeq(): OpSeq {
-    return this;
-  }
-}
-
-export type ProgramBuffer = CompileIntoList<ProgramSymbolTable>;

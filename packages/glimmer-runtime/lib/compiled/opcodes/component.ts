@@ -6,8 +6,8 @@ import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
 import { InlineBlock } from '../../scanner';
-import { CONSTANT_TAG, PathReference, ReferenceCache, combine, isConst, RevisionTag } from 'glimmer-reference';
-import { FIXME, Option, expect } from 'glimmer-util';
+import { CONSTANT_TAG, ReferenceCache, combine, isConst, RevisionTag } from 'glimmer-reference';
+import { Option } from 'glimmer-util';
 
 export class PutDynamicComponentDefinitionOpcode extends Opcode {
   public type = "put-dynamic-component-definition";
@@ -118,7 +118,7 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
     }
   }
 
-  evaluate(vm: UpdatingVM) {
+  evaluate(_vm: UpdatingVM) {
     let { component, manager, args, dynamicScope } = this;
 
     manager.update(component, args, dynamicScope);

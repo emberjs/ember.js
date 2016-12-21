@@ -1,25 +1,17 @@
 import * as WireFormat from 'glimmer-wire-format';
-import { SymbolTable } from 'glimmer-interfaces';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { CompiledExpression } from '../compiled/expressions';
 import CompiledValue from '../compiled/expressions/value';
 import CompiledHasBlock, { CompiledHasBlockParams } from '../compiled/expressions/has-block';
-import { BaselineSyntax, InlineBlock, scanBlock } from '../scanner';
-import { LOGGER, Opaque, Option, Maybe, dict, assert, unwrap, unreachable } from 'glimmer-util';
-import { ModifierOpcode } from '../compiled/opcodes/dom';
+import { BaselineSyntax } from '../scanner';
+import { LOGGER, Opaque, Option, dict, assert, unwrap, unreachable } from 'glimmer-util';
 import CompiledLookup, {
   CompiledSelf,
   CompiledSymbol,
   CompiledInPartialName
 } from '../compiled/expressions/lookups';
-import {
-  OptimizedTrustingAppendOpcode,
-  OptimizedCautiousAppendOpcode,
-  GuardedTrustingAppendOpcode,
-  GuardedCautiousAppendOpcode
-} from '../compiled/opcodes/content';
 import CompiledHelper from '../compiled/expressions/helper';
-import CompiledConcat, { ConcatReference } from '../compiled/expressions/concat';
+import CompiledConcat from '../compiled/expressions/concat';
 import {
   COMPILED_EMPTY_POSITIONAL_ARGS,
   COMPILED_EMPTY_NAMED_ARGS,
@@ -33,10 +25,6 @@ import {
   CompiledGetBlockBySymbol,
   CompiledInPartialGetBlock
 } from '../compiled/expressions/has-block';
-import {
-  OpenBlockOpcode,
-  CloseBlockOpcode
-} from '../compiled/opcodes/blocks';
 
 import { CompiledFunctionExpression } from '../compiled/expressions/function';
 
@@ -77,12 +65,12 @@ STATEMENTS.add('comment', (sexp: S.Comment, builder: OpcodeBuilder) => {
   builder.comment(sexp[1]);
 });
 
-STATEMENTS.add('close-element', (sexp: S.CloseElement, builder: OpcodeBuilder) => {
+STATEMENTS.add('close-element', (_sexp, builder: OpcodeBuilder) => {
   LOGGER.trace('close-element statement');
   builder.closeElement();
 });
 
-STATEMENTS.add('flush-element', (sexp: S.FlushElement, builder: OpcodeBuilder) => {
+STATEMENTS.add('flush-element', (_sexp, builder: OpcodeBuilder) => {
   builder.flushElement();
 });
 
@@ -250,9 +238,6 @@ EXPRESSIONS.add('function', (sexp: BaselineSyntax.FunctionExpression, builder: O
   return new CompiledFunctionExpression(sexp[1], builder.symbolTable);
 });
 
-import { PublicVM } from '../vm';
-import { PathReference } from 'glimmer-reference';
-
 EXPRESSIONS.add('helper', (sexp: E.Helper, builder: OpcodeBuilder) => {
   let { env, symbolTable } = builder;
   let [, path, params, hash] = sexp;
@@ -269,7 +254,7 @@ EXPRESSIONS.add('get', (sexp: E.Get, builder: OpcodeBuilder) => {
   return compileRef(sexp[1], builder);
 });
 
-EXPRESSIONS.add('undefined', (sexp: E.Undefined, builder: OpcodeBuilder) => {
+EXPRESSIONS.add('undefined', (_sexp, _builder) => {
   return new CompiledValue(undefined);
 });
 
@@ -488,7 +473,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // END:   Noop
     //        Exit
 
-    let [, path, params, hash, _default, inverse] = sexp;
+    let [,, params, hash, _default, inverse] = sexp;
     let args = compileArgs(params, hash, builder);
 
     builder.putArgs(args);
@@ -523,7 +508,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // END:   Noop
     //        Exit
 
-    let [, path, params, hash, _default, inverse] = sexp;
+    let [,, params, hash, _default, inverse] = sexp;
     let args = compileArgs(params, hash, builder);
 
     builder.putArgs(args);
@@ -558,7 +543,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // END:   Noop
     //        Exit
 
-    let [, path, params, hash, _default, inverse] = sexp;
+    let [,, params, hash, _default, inverse] = sexp;
     let args = compileArgs(params, hash, builder);
 
     builder.putArgs(args);
@@ -605,7 +590,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // END:    Noop
     //         Exit
 
-    let [, path, params, hash, _default, inverse] = sexp;
+    let [,, params, hash, _default, inverse] = sexp;
     let args = compileArgs(params, hash, builder);
 
     builder.block(args, b => {

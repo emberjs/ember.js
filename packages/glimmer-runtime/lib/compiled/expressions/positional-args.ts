@@ -45,7 +45,7 @@ export const COMPILED_EMPTY_POSITIONAL_ARGS: CompiledPositionalArgs = new (class
     super(EMPTY_ARRAY);
   }
 
-  evaluate(vm: VM): EvaluatedPositionalArgs {
+  evaluate(_vm: VM): EvaluatedPositionalArgs {
     return EVALUATED_EMPTY_POSITIONAL_ARGS;
   }
 
