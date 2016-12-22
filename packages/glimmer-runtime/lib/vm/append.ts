@@ -191,8 +191,7 @@ export default class VM implements PublicVM {
     args?: Option<EvaluatedArgs>,
     callerScope?: Scope
   ) {
-    let ops = block.ops;
-    this.frame.push({ ops, start: 0, end: ops.length - 1 });
+    this.frame.push(block.slice);
 
     if (args) this.frame.setArgs(args);
     if (args && args.blocks) this.frame.setBlocks(args.blocks);
@@ -207,16 +206,15 @@ export default class VM implements PublicVM {
     manager: ComponentManager<Component>,
     shadow: Option<InlineBlock>
   ) {
-    let slice = { ops: layout.ops, start: 0, end: layout.ops.length - 1 };
-    this.frame.push(slice, component, manager, shadow);
+    this.frame.push(layout.slice, component, manager, shadow);
 
     if (args) this.frame.setArgs(args);
     if (args && args.blocks) this.frame.setBlocks(args.blocks);
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
-  pushEvalFrame(ops: AppendOpcode[]) {
-    this.frame.push({ ops, start: 0, end: ops.length - 1 });
+  pushEvalFrame(slice: Slice) {
+    this.frame.push(slice);
   }
 
   pushChildScope() {
@@ -286,7 +284,7 @@ export default class VM implements PublicVM {
     let opcode: Option<AppendOpcode>;
 
     while (frame.hasOpcodes()) {
-      if (opcode = frame.nextStatement()) {
+      if (opcode = frame.nextStatement(this.env)) {
         LOGGER.trace(opcode);
         APPEND_OPCODES.evaluate(this, opcode);
       }

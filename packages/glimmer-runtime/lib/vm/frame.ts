@@ -1,4 +1,4 @@
-import { Scope } from '../environment';
+import { Scope, Environment } from '../environment';
 import { Reference, PathReference, ReferenceIterator } from 'glimmer-reference';
 import { TRUST, Option, unwrap, expect } from 'glimmer-util';
 import { InlineBlock } from '../scanner';
@@ -31,7 +31,7 @@ class Frame {
     public manager: Option<ComponentManager<Component>> = null,
     public shadow: Option<InlineBlock> = null
   ) {
-    this.ip = ops.start;
+    this.ip = ops[0];
   }
 
   capture(): CapturedFrame {
@@ -181,13 +181,14 @@ export class FrameStack {
     return this.frame !== null;
   }
 
-  nextStatement(): Option<AppendOpcode> {
+  nextStatement(env: Environment): Option<AppendOpcode> {
     let ip = this.frames[unwrap(this.frame)].ip;
     let ops = this.getOps();
 
-    if (ip <= ops.end) {
+    if (ip <= ops[1]) {
+      let program = env.program;
       this.setCurrent(ip + 1);
-      return ops.ops[ip];
+      return program[ip];
     } else {
       this.pop();
       return null;
