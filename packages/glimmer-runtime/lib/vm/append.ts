@@ -1,4 +1,4 @@
-import { Scope, DynamicScope, Environment } from '../environment';
+import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, LOGGER, Opaque, assert, expect } from 'glimmer-util';
 import { PathReference, combineSlice } from 'glimmer-reference';
@@ -14,7 +14,6 @@ import { CapturedFrame, FrameStack } from './frame';
 
 import {
   APPEND_OPCODES,
-  AppendOpcode,
   Slice,
   UpdatingOpcode,
   Constants,
@@ -281,7 +280,7 @@ export default class VM implements PublicVM {
 
     if (initialize) initialize(this);
 
-    let opcode: Option<AppendOpcode>;
+    let opcode: Option<Opcode>;
 
     while (frame.hasOpcodes()) {
       if (opcode = frame.nextStatement(this.env)) {
@@ -299,7 +298,7 @@ export default class VM implements PublicVM {
     );
   }
 
-  evaluateOpcode(opcode: AppendOpcode) {
+  evaluateOpcode(opcode: Opcode) {
     APPEND_OPCODES.evaluate(this, opcode);
   }
 

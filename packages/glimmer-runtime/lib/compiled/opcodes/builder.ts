@@ -16,7 +16,7 @@ import { CompiledArgs } from '../expressions/args';
 import { CompiledExpression } from '../expressions';
 import { ComponentDefinition } from '../../component/interfaces';
 import { PartialDefinition } from '../../partial';
-import Environment from '../../environment';
+import Environment, { Program } from '../../environment';
 import { SymbolTable } from 'glimmer-interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
@@ -70,14 +70,14 @@ class Labels {
     this.ranges.push({ at, start, end, Range });
   }
 
-  patch(constants: Constants, opcodes: Option<AppendOpcode>[]): void {
+  patch(constants: Constants, opcodes: Program): void {
     for (let { at, target, Target } of this.jumps) {
-      opcodes[at] = APPEND_OPCODES.construct(Target, null, this.labels[target]);
+      opcodes.set(at, APPEND_OPCODES.construct(Target, null, this.labels[target]));
     }
 
     for (let { at, start, end, Range } of this.ranges) {
       let slice = constants.slice([this.labels[start], this.labels[end] - 1]);
-      opcodes[at] = APPEND_OPCODES.construct(Range, null, slice);
+      opcodes.set(at, APPEND_OPCODES.construct(Range, null, slice));
     }
   }
 }
@@ -87,29 +87,33 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   public constants: Constants;
   private start: number;
 
-  constructor(public symbolTable: SymbolTable, public env: Environment, public program: Option<AppendOpcode>[]) {
+  constructor(public symbolTable: SymbolTable, public env: Environment, public program: Program) {
     this.constants = env.constants;
-    this.start = program.length;
+    this.start = program.next;
   }
 
   abstract compile<E>(expr: Represents<E>): E;
   abstract compileExpression(expr: RepresentsExpression): CompiledExpression<Opaque>;
 
   private get pos() {
-    return this.program.length - 1;
+    return this.program.current;
   }
 
   private get nextPos() {
-    return this.program.length;
+    return this.program.next;
   }
 
   push(op: Option<AppendOpcode>) {
     // console.log(`pushing ${op && op.type}`);
-    this.program.push(op);
+    if (op === null) {
+      this.program.push([0, 0, 0, 0]);
+    } else {
+      this.program.push(op);
+    }
   }
 
   toSlice(): Slice {
-    return [this.start, this.program.length - 1];
+    return [this.start, this.program.current];
   }
 
   // helpers
@@ -430,7 +434,7 @@ function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E>
 export default class OpcodeBuilder extends BasicOpcodeBuilder {
   public component: IComponentBuilder;
 
-  constructor(symbolTable: SymbolTable, env: Environment, program: AppendOpcode[] = env.program) {
+  constructor(symbolTable: SymbolTable, env: Environment, program: Program = env.program) {
     super(symbolTable, env, program);
     this.component = new ComponentBuilder(this);
   }

@@ -16,60 +16,60 @@ APPEND_OPCODES.add("PushDynamicScope", vm => vm.pushDynamicScope());
 
 APPEND_OPCODES.add("PopDynamicScope", vm => vm.popDynamicScope());
 
-APPEND_OPCODES.add("Put", (vm, reference) => {
+APPEND_OPCODES.add("Put", (vm, { op1: reference }) => {
   vm.frame.setOperand(vm.constants.getReference(reference));
 });
 
-APPEND_OPCODES.add("EvaluatePut", (vm, expression) => {
+APPEND_OPCODES.add("EvaluatePut", (vm, { op1: expression }) => {
   let expr = vm.constants.getExpression<CompiledExpression<Opaque>>(expression);
   vm.evaluateOperand(expr);
 });
 
-APPEND_OPCODES.add("PutArgs", (vm, args) => {
+APPEND_OPCODES.add("PutArgs", (vm, { op1: args }) => {
   vm.evaluateArgs(vm.constants.getExpression<CompiledArgs>(args));
 });
 
-APPEND_OPCODES.add('BindPositionalArgs', (vm, _symbols) => {
+APPEND_OPCODES.add('BindPositionalArgs', (vm, { op1: _symbols }) => {
   let symbols = vm.constants.getArray(_symbols);
   vm.bindPositionalArgs(symbols);
 });
 
-APPEND_OPCODES.add('BindNamedArgs', (vm, _names, _symbols) => {
+APPEND_OPCODES.add('BindNamedArgs', (vm, { op1: _names, op2: _symbols }) => {
   let names = vm.constants.getArray(_names);
   let symbols = vm.constants.getArray(_symbols);
   vm.bindNamedArgs(names, symbols);
 });
 
-APPEND_OPCODES.add('BindBlocks', (vm, _names, _symbols) => {
+APPEND_OPCODES.add('BindBlocks', (vm, { op1: _names, op2: _symbols }) => {
   let names = vm.constants.getArray(_names);
   let symbols = vm.constants.getArray(_symbols);
   vm.bindBlocks(names, symbols);
 });
 
-APPEND_OPCODES.add('BindPartialArgs', (vm, symbol) => {
+APPEND_OPCODES.add('BindPartialArgs', (vm, { op1: symbol }) => {
   vm.bindPartialArgs(symbol);
 });
 
 APPEND_OPCODES.add('BindCallerScope', vm => vm.bindCallerScope());
 
-APPEND_OPCODES.add('BindDynamicScope', (vm, _names) => {
+APPEND_OPCODES.add('BindDynamicScope', (vm, { op1: _names }) => {
   let names = vm.constants.getArray(_names);
   vm.bindDynamicScope(names);
 });
 
-APPEND_OPCODES.add('Enter', (vm, slice) => vm.enter(slice));
+APPEND_OPCODES.add('Enter', (vm, { op1: slice }) => vm.enter(slice));
 
 APPEND_OPCODES.add('Exit', (vm) => vm.exit());
 
-APPEND_OPCODES.add('Evaluate', (vm, _block) => {
+APPEND_OPCODES.add('Evaluate', (vm, { op1: _block }) => {
   let block = vm.constants.getBlock(_block);
   let args = vm.frame.getArgs();
   vm.invokeBlock(block, args);
 });
 
-APPEND_OPCODES.add('Jump', (vm, target) => vm.goto(target));
+APPEND_OPCODES.add('Jump', (vm, { op1: target }) => vm.goto(target));
 
-APPEND_OPCODES.add('JumpIf', (vm, target) => {
+APPEND_OPCODES.add('JumpIf', (vm, { op1: target }) => {
   let reference = vm.frame.getCondition();
 
   if (isConst(reference)) {
@@ -87,7 +87,7 @@ APPEND_OPCODES.add('JumpIf', (vm, target) => {
   }
 });
 
-APPEND_OPCODES.add('JumpUnless', (vm, target) => {
+APPEND_OPCODES.add('JumpUnless', (vm, { op1: target }) => {
   let reference = vm.frame.getCondition();
 
   if (isConst(reference)) {
@@ -119,7 +119,7 @@ export const EnvironmentTest: TestFunction = function(ref: Reference<Opaque>, en
   return env.toConditionalReference(ref);
 };
 
-APPEND_OPCODES.add('Test', (vm, _func) => {
+APPEND_OPCODES.add('Test', (vm, { op1: _func }) => {
   let operand = vm.frame.getOperand();
   let func = vm.constants.getFunction(_func);
   vm.frame.setCondition(func(operand, vm.env));

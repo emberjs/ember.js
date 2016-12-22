@@ -3,7 +3,7 @@ import { CompiledArgs, EvaluatedArgs } from '../expressions/args';
 import { APPEND_OPCODES } from '../../opcodes';
 import { Option } from 'glimmer-util';
 
-APPEND_OPCODES.add('OpenBlock', (vm, _getBlock, _args) => {
+APPEND_OPCODES.add('OpenBlock', (vm, { op1: _getBlock, op2: _args }) => {
   let inner = vm.constants.getOther<CompiledGetBlock>(_getBlock);
   let rawArgs = vm.constants.getExpression<CompiledArgs>(_args);
   let args: Option<EvaluatedArgs> = null;

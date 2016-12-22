@@ -6,7 +6,7 @@ import { SymbolTable } from 'glimmer-interfaces';
 import { PartialBlock } from '../../scanner';
 import { APPEND_OPCODES } from '../../opcodes';
 
-APPEND_OPCODES.add('PutDynamicPartial', (vm, _symbolTable) => {
+APPEND_OPCODES.add('PutDynamicPartial', (vm, { op1: _symbolTable }) => {
   let env = vm.env;
   let symbolTable = vm.constants.getOther<SymbolTable>(_symbolTable);
 
@@ -31,12 +31,12 @@ APPEND_OPCODES.add('PutDynamicPartial', (vm, _symbolTable) => {
   }
 });
 
-APPEND_OPCODES.add('PutPartial', (vm, _definition) => {
+APPEND_OPCODES.add('PutPartial', (vm, { op1: _definition }) => {
   let definition = vm.constants.getOther<PartialDefinition<Opaque>>(_definition);
   vm.frame.setImmediate(definition);
 });
 
-APPEND_OPCODES.add('EvaluatePartial', (vm, _symbolTable, _cache) => {
+APPEND_OPCODES.add('EvaluatePartial', (vm, { op1: _symbolTable, op2: _cache }) => {
   let symbolTable = vm.constants.getOther<SymbolTable>(_symbolTable);
   let cache = vm.constants.getOther<Dict<PartialBlock>>(_cache);
 

@@ -1,9 +1,9 @@
-import { Scope, Environment } from '../environment';
+import { Scope, Environment, Opcode } from '../environment';
 import { Reference, PathReference, ReferenceIterator } from 'glimmer-reference';
 import { TRUST, Option, unwrap, expect } from 'glimmer-util';
 import { InlineBlock } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { AppendOpcode, Slice } from '../opcodes';
+import { Slice } from '../opcodes';
 import { Component, ComponentManager } from '../component/interfaces';
 
 export class CapturedFrame {
@@ -181,14 +181,14 @@ export class FrameStack {
     return this.frame !== null;
   }
 
-  nextStatement(env: Environment): Option<AppendOpcode> {
+  nextStatement(env: Environment): Option<Opcode> {
     let ip = this.frames[unwrap(this.frame)].ip;
     let ops = this.getOps();
 
     if (ip <= ops[1]) {
       let program = env.program;
-      this.setCurrent(ip + 1);
-      return program[ip];
+      this.setCurrent(ip + 4);
+      return program.opcode(ip);
     } else {
       this.pop();
       return null;

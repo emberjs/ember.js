@@ -5,7 +5,8 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true
   },
 
   "include": [

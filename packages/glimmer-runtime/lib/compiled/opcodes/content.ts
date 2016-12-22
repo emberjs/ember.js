@@ -27,7 +27,7 @@ import { UpdatableBlockTracker } from '../../builder';
 import { SymbolTable } from 'glimmer-interfaces';
 import { APPEND_OPCODES, Slice } from '../../opcodes';
 
-APPEND_OPCODES.add('DynamicContent', (vm, append) => {
+APPEND_OPCODES.add('DynamicContent', (vm, { op1: append }) => {
   let opcode = vm.constants.getOther(append) as AppendDynamicOpcode<Insertion>;
   opcode.evaluate(vm);
 });
@@ -315,8 +315,8 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
     let env = vm.env;
 
     let slice     = appendOpcode.deopt(env);
-    let enter     = expect(env.program[slice[0] + 2], 'hardcoded deopt location');
-    let ops       = vm.constants.getSlice(enter.data[0]);
+    let enter     = expect(env.program.opcode(slice[0] + 8), 'hardcoded deopt location');
+    let ops       = vm.constants.getSlice(enter.op1);
 
     let tracker = new UpdatableBlockTracker(bounds.parentElement());
     tracker.newBounds(this.bounds);
