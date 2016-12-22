@@ -1,7 +1,7 @@
 import { Option } from './platform-utils';
 
 export interface Destroyable {
-  destroy();
+  destroy(): void;
 }
 
 export interface LinkedListNode {
@@ -30,18 +30,18 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
     return list;
   }
 
-  private _head: T;
-  private _tail: T;
+  private _head: Option<T>;
+  private _tail: Option<T>;
 
   constructor() {
     this.clear();
   }
 
-  head(): T {
+  head(): Option<T> {
     return this._head;
   }
 
-  tail(): T {
+  tail(): Option<T> {
     return this._tail;
   }
 
@@ -54,13 +54,13 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
   }
 
   toArray(): T[] {
-    let out = [];
+    let out: T[] = [];
     this.forEachNode(n => out.push(n));
     return out;
   }
 
   splice(start: T, end: T, reference: T) {
-    let before: T;
+    let before: Option<T>;
 
     if (reference === null) {
       before = this._tail;
@@ -75,11 +75,6 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
       before.next = start;
       start.prev = before;
     }
-  }
-
-  spliceList(list: LinkedList<T>, reference: T) {
-    if (list.isEmpty()) return;
-    this.splice(list.head(), list.tail(), reference);
   }
 
   nextNode(node: T): T {
@@ -137,7 +132,7 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
     return (this._tail = node);
   }
 
-  pop(): T {
+  pop(): Option<T> {
     if (this._tail) return this.remove(this._tail);
     return null;
   }
@@ -158,26 +153,12 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
   }
 }
 
-class LinkedListRemover implements Destroyable {
-  private node: LinkedListNode;
-
-  constructor(node: LinkedListNode) {
-    this.node = node;
-  }
-
-  destroy() {
-    let { prev, next } = this.node;
-    prev.next = next;
-    next.prev = prev;
-  }
-}
-
 export interface Slice<T extends LinkedListNode> {
-  head(): T;
-  tail(): T;
-  nextNode(node: T): T;
-  prevNode(node: T): T;
-  forEachNode(callback: (node: T) => void);
+  head(): Option<T>;
+  tail(): Option<T>;
+  nextNode(node: T): Option<T>;
+  prevNode(node: T): Option<T>;
+  forEachNode(callback: (node: T) => void): void;
   toArray(): T[];
   isEmpty(): boolean;
   contains(needle: T): boolean;
@@ -194,10 +175,10 @@ export class ListSlice<T extends LinkedListNode> implements Slice<T> {
     return list;
   }
 
-  private _head: T;
-  private _tail: T;
+  private _head: Option<T>;
+  private _tail: Option<T>;
 
-  constructor(head: T, tail: T) {
+  constructor(head: Option<T>, tail: Option<T>) {
     this._head = head;
     this._tail = tail;
   }
@@ -222,28 +203,28 @@ export class ListSlice<T extends LinkedListNode> implements Slice<T> {
     return false;
   }
 
-  head(): T {
+  head(): Option<T> {
     return this._head;
   }
 
-  tail(): T {
+  tail(): Option<T> {
     return this._tail;
   }
 
   toArray(): T[] {
-    let out = [];
+    let out: T[] = [];
     this.forEachNode(n => out.push(n));
     return out;
   }
 
-  nextNode(node: T): T {
+  nextNode(node: T): Option<T> {
     if (node === this._tail) return null;
-    return <T>node.next;
+    return node.next as T;
   }
 
-  prevNode(node: T): T {
+  prevNode(node: T): Option<T> {
     if (node === this._head) return null;
-    return <T>node.prev;
+    return node.prev as T;
   }
 
   isEmpty() {

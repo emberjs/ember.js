@@ -1,11 +1,11 @@
 import Reference, { PathReference } from './reference';
-import { Opaque, Slice, LinkedListNode } from 'glimmer-util';
+import { Opaque, Option, Slice, LinkedListNode } from 'glimmer-util';
 
 //////////
 
 export interface EntityTag<T> extends Reference<T> {
   value(): T;
-  validate(snapshot: T);
+  validate(snapshot: T): boolean;
 }
 
 export interface Tagged<T> {
@@ -20,7 +20,7 @@ export const CONSTANT: Revision = 0;
 export const INITIAL:  Revision = 1;
 export const VOLATILE: Revision = NaN;
 
-export abstract class RevisionTag implements RevisionTag {
+export abstract class RevisionTag implements EntityTag<Revision> {
   abstract value(): Revision;
 
   validate(snapshot: Revision): boolean {
@@ -48,10 +48,10 @@ export class DirtyableTag extends RevisionTag {
 }
 
 export function combineTagged(tagged: ReadonlyArray<Tagged<Revision>>): RevisionTag {
-  let optimized = [];
+  let optimized: EntityTag<Revision>[] = [];
 
   for (let i=0, l=tagged.length; i<l; i++) {
-    let tag = tagged[i].tag;
+    let tag: EntityTag<Revision> = tagged[i].tag;
     if (tag === VOLATILE_TAG) return VOLATILE_TAG;
     if (tag === CONSTANT_TAG) continue;
     optimized.push(tag);
@@ -90,12 +90,12 @@ export function combine(tags: RevisionTag[]): RevisionTag {
   return _combine(optimized);
 }
 
-function _combine(tags: RevisionTag[]): RevisionTag {
+function _combine(tags: EntityTag<Revision>[]): RevisionTag {
   switch (tags.length) {
     case 0:
       return CONSTANT_TAG;
     case 1:
-      return tags[0];
+      return tags[0] as EntityTag<Revision>;
     case 2:
       return new TagsPair(tags[0], tags[1]);
     default:
@@ -104,8 +104,8 @@ function _combine(tags: RevisionTag[]): RevisionTag {
 }
 
 export abstract class CachedTag extends RevisionTag {
-  private lastChecked: Revision = null;
-  private lastValue: Revision = null;
+  private lastChecked: Option<Revision> = null;
+  private lastValue: Option<Revision> = null;
 
   value(): Revision {
     let { lastChecked, lastValue } = this;
@@ -115,7 +115,7 @@ export abstract class CachedTag extends RevisionTag {
       this.lastValue = lastValue = this.compute();
     }
 
-    return this.lastValue;
+    return this.lastValue as Revision;
   }
 
   protected invalidate() {
@@ -222,8 +222,8 @@ export interface VersionedPathReference<T> extends PathReference<T>, Tagged<Revi
 export abstract class CachedReference<T> implements VersionedReference<T> {
   public abstract tag: RevisionTag;
 
-  private lastRevision: Revision = null;
-  private lastValue: T = null;
+  private lastRevision: Option<Revision> = null;
+  private lastValue: Option<T> = null;
 
   value(): T {
     let { tag, lastRevision, lastValue } = this;
@@ -233,7 +233,7 @@ export abstract class CachedReference<T> implements VersionedReference<T> {
       this.lastRevision = tag.value();
     }
 
-    return lastValue;
+    return lastValue as T;
   }
 
   protected abstract compute(): T;
@@ -276,8 +276,8 @@ export class ReferenceCache<T> implements Tagged<Revision> {
   public tag: RevisionTag;
 
   private reference: VersionedReference<T>;
-  private lastValue: T = null;
-  private lastRevision: Revision = null;
+  private lastValue: Option<T> = null;
+  private lastRevision: Option<Revision> = null;
   private initialized: boolean = false;
 
   constructor(reference: VersionedReference<T>) {
@@ -290,7 +290,7 @@ export class ReferenceCache<T> implements Tagged<Revision> {
       return this.initialize();
     }
 
-    return this.lastValue;
+    return this.lastValue as T;
   }
 
   revalidate(): Validation<T> {
@@ -301,7 +301,7 @@ export class ReferenceCache<T> implements Tagged<Revision> {
     let { reference, lastRevision } = this;
     let tag = reference.tag;
 
-    if (tag.validate(lastRevision)) return NOT_MODIFIED;
+    if (tag.validate(lastRevision as number)) return NOT_MODIFIED;
     this.lastRevision = tag.value();
 
     let { lastValue } = this;

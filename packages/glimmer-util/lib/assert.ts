@@ -2,7 +2,7 @@
 
 // let alreadyWarned = false;
 
-export function debugAssert(test, msg) {
+export function debugAssert(test: any, msg: string) {
   // if (!alreadyWarned) {
   //   alreadyWarned = true;
   //   Logger.warn("Don't leave debug assertions on in public builds");

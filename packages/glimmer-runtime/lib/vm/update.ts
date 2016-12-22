@@ -82,7 +82,7 @@ export default class UpdatingVM {
 }
 
 export interface ExceptionHandler {
-  handleException();
+  handleException(): void;
 }
 
 export interface VMState {
@@ -115,7 +115,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
     this.bounds = bounds;
   }
 
-  abstract didInitializeChildren();
+  abstract didInitializeChildren(): void;
 
   parentElement() {
     return this.bounds.parentElement();
@@ -363,7 +363,7 @@ export class ListBlockOpcode extends BlockOpcode {
 }
 
 class UpdatingVMFrame {
-  private current: UpdatingOpcode;
+  private current: Option<UpdatingOpcode>;
 
   constructor(private vm: UpdatingVM, private ops: UpdatingOpSeq, private exceptionHandler: Option<ExceptionHandler>) {
     this.vm = vm;
@@ -375,7 +375,7 @@ class UpdatingVMFrame {
     this.current = op;
   }
 
-  nextStatement(): UpdatingOpcode {
+  nextStatement(): Option<UpdatingOpcode> {
     let { current, ops } = this;
     if (current) this.current = ops.nextNode(current);
     return current;

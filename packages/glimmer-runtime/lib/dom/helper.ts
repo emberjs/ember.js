@@ -44,7 +44,7 @@ export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
 }
 
-export function moveNodesBefore(source, target, nextSibling) {
+export function moveNodesBefore(source: Simple.Node, target: Simple.Element, nextSibling: Simple.Node) {
   let first = source.firstChild;
   let last = null;
   let current = first;

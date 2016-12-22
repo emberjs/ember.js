@@ -31,6 +31,6 @@ const WHITELIST = {
   'xmlns:xlink': XMLNS
 };
 
-export function getAttrNamespace(attrName) {
+export function getAttrNamespace(attrName: string) {
   return WHITELIST[attrName] || null;
 }

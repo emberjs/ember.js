@@ -1,5 +1,5 @@
 export interface Destroyable {
-  destroy();
+  destroy(): void;
 }
 
 export { getAttrNamespace } from './lib/namespaces';

@@ -4,7 +4,8 @@
   "compilerOptions": {
     "strictNullChecks": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "noImplicitAny": true
   },
 
   "include": [

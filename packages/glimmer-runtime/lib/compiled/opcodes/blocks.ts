@@ -25,7 +25,7 @@ export class OpenBlockOpcode extends Opcode {
     vm.pushCallerScope();
 
     if (block) {
-      vm.invokeBlock(block, args);
+      vm.invokeBlock(block, args || null);
     }
   }
 

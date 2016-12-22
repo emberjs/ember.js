@@ -119,7 +119,7 @@ export class PropertyManager extends AttributeManager {
   }
 };
 
-function normalizeAttributeValue(value): Option<string> {
+function normalizeAttributeValue(value: Opaque): Option<string> {
   if (value === false || value === undefined || value === null) {
     return null;
   }

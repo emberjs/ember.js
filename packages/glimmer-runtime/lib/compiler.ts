@@ -32,7 +32,7 @@ import * as Component from './component/interfaces';
 import * as WireFormat from 'glimmer-wire-format';
 
 export interface CompilableLayout {
-  compile(builder: Component.ComponentLayoutBuilder);
+  compile(builder: Component.ComponentLayoutBuilder): void;
 }
 
 export function compileLayout(compilable: CompilableLayout, env: Environment): CompiledProgram {

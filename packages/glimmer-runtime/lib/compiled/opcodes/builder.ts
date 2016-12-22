@@ -62,7 +62,7 @@ export interface SymbolLookup {
 }
 
 export interface CompileInto {
-  append(op: Opcode);
+  append(op: Opcode): void;
 }
 
 interface RangeOpcodeConstructor {

@@ -1,10 +1,13 @@
+import { Opaque } from 'glimmer-util';
+import { Simple } from 'glimmer-interfaces';
+
 /*
  * @method normalizeProperty
  * @param element {HTMLElement}
  * @param slotName {String}
  * @returns {Object} { name, type }
  */
-export function normalizeProperty(element, slotName) {
+export function normalizeProperty(element: Simple.Element, slotName: string) {
   let type, normalized;
 
   if (slotName in element) {
@@ -30,7 +33,7 @@ export function normalizeProperty(element, slotName) {
   return { normalized, type };
 }
 
-export function normalizePropertyValue(value) {
+export function normalizePropertyValue(value: Opaque): Opaque {
   if (value === '') {
     return true;
   }
@@ -72,7 +75,7 @@ const ATTR_OVERRIDES = {
   OBJECT:   { form: true }
 };
 
-function preferAttr(tagName, propName) {
+function preferAttr(tagName: string, propName: string) {
   let tag = ATTR_OVERRIDES[tagName.toUpperCase()];
   return tag && tag[propName.toLowerCase()] || false;
 }

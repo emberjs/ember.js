@@ -57,7 +57,7 @@ export interface Element extends Node {
   firstChild: Option<Node>;
   lastChild: Option<Node>;
   removeAttribute(name: string): void;
-  removeAttributeNS(namespaceURI: string, name: string);
+  removeAttributeNS(namespaceURI: string, name: string): void;
   setAttribute(name: string, value: string): void;
   setAttributeNS(namespaceURI: string, qualifiedName: string, value: string): void;
   insertBefore(node: Node, reference: Option<Node>): void;

@@ -7,8 +7,8 @@ export interface Dict<T> {
 
 export interface Set<T> {
   add(value: T): Set<T>;
-  delete(value: T);
-  forEach(callback: (T) => void);
+  delete(value: T): void;
+  forEach(callback: (item: T) => void): void;
 }
 
 let proto = Object.create(null, {
@@ -29,7 +29,7 @@ export function dict<T>(): Dict<T> {
   // d.x = 1;
   // delete d.x;
   // return d;
-  return new EmptyObject();
+  return new (EmptyObject as any)();
 }
 
 export type SetMember = HasGuid | string;
@@ -52,7 +52,7 @@ export class DictSet<T extends SetMember> implements Set<T> {
     else if ((obj as any)._guid) delete this.dict[(obj as any)._guid];
   }
 
-  forEach(callback: (T) => void) {
+  forEach(callback: (item: T) => void) {
     let { dict } = this;
     Object.keys(dict).forEach(key => callback(dict[key]));
   }

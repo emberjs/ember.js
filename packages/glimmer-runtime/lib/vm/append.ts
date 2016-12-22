@@ -18,14 +18,14 @@ export interface PublicVM {
   getArgs(): Option<EvaluatedArgs>;
   dynamicScope(): DynamicScope;
   getSelf(): PathReference<Opaque>;
-  newDestroyable(d: Destroyable);
+  newDestroyable(d: Destroyable): void;
 }
 
 export default class VM implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
-  public cacheGroups = new Stack<UpdatingOpcode>();
+  public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
   public frame = new FrameStack();
 

@@ -1,4 +1,4 @@
-import { LinkedList, ListNode, Opaque, dict } from 'glimmer-util';
+import { LinkedList, ListNode, Opaque, Option, dict, expect } from 'glimmer-util';
 import { VersionedPathReference as PathReference, RevisionTag } from './validators';
 
 export interface IterationItem<T, U> {
@@ -17,10 +17,10 @@ export interface AbstractIterable<T, U, ItemType extends IterationItem<T, U>, Va
   iterate(): AbstractIterator<T, U, ItemType>;
 
   valueReferenceFor(item: ItemType): ValueReferenceType;
-  updateValueReference(reference: ValueReferenceType, item: ItemType);
+  updateValueReference(reference: ValueReferenceType, item: ItemType): void;
 
   memoReferenceFor(item: ItemType): MemoReferenceType;
-  updateMemoReference(reference: MemoReferenceType, item: ItemType);
+  updateMemoReference(reference: MemoReferenceType, item: ItemType): void;
 }
 
 export type Iterator<T, U> = AbstractIterator<T, U, IterationItem<T, U>>;
@@ -66,7 +66,7 @@ export class IterationArtifacts {
   public tag: RevisionTag;
 
   private iterable: OpaqueIterable;
-  private iterator: OpaqueIterator;
+  private iterator: Option<OpaqueIterator>;
   private map = dict<ListItem>();
   private list = new LinkedList<ListItem>();
 
@@ -108,7 +108,7 @@ export class IterationArtifacts {
     return node;
   }
 
-  insertBefore(item: OpaqueIterationItem, reference: ListItem): ListItem {
+  insertBefore(item: OpaqueIterationItem, reference: Option<ListItem>): ListItem {
     let { map, list, iterable } = this;
 
     let node = map[item.key] = new ListItem(iterable, item);
@@ -117,7 +117,7 @@ export class IterationArtifacts {
     return node;
   }
 
-  move(item: ListItem, reference: ListItem): void {
+  move(item: ListItem, reference: Option<ListItem>): void {
     let { list } = this;
 
     item.retained = true;
@@ -136,14 +136,14 @@ export class IterationArtifacts {
     return this.list.nextNode(item);
   }
 
-  head(): ListItem {
+  head(): Option<ListItem> {
     return this.list.head();
   }
 }
 
 export class ReferenceIterator {
   public artifacts: IterationArtifacts;
-  private iterator: OpaqueIterator = null;
+  private iterator: Option<OpaqueIterator> = null;
 
   // if anyone needs to construct this object with something other than
   // an iterable, let @wycats know.
@@ -152,7 +152,7 @@ export class ReferenceIterator {
     this.artifacts = artifacts;
   }
 
-  next(): ListItem {
+  next(): Option<ListItem> {
     let { artifacts } = this;
 
     let iterator = (this.iterator = this.iterator || artifacts.iterate());
@@ -166,11 +166,11 @@ export class ReferenceIterator {
 }
 
 export interface IteratorSynchronizerDelegate {
-  retain(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>);
-  insert(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: string);
-  move(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: string);
-  delete(key: string);
-  done();
+  retain(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>): void;
+  insert(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: Option<string>): void;
+  move(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: Option<string>): void;
+  delete(key: string): void;
+  done(): void;
 }
 
 export interface IteratorSynchronizerOptions {
@@ -187,7 +187,7 @@ enum Phase {
 export class IteratorSynchronizer {
   private target: IteratorSynchronizerDelegate;
   private iterator: OpaqueIterator;
-  private current: ListItem;
+  private current: Option<ListItem>;
   private artifacts: IterationArtifacts;
 
   constructor({ target, artifacts }: IteratorSynchronizerOptions) {
@@ -246,6 +246,8 @@ export class IteratorSynchronizer {
 
   private nextRetain(item: OpaqueIterationItem) {
     let { artifacts, current } = this;
+
+    current = expect(current, 'BUG: current is empty');
 
     current.update(item);
     this.current = artifacts.nextNode(current);
