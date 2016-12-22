@@ -6,12 +6,21 @@ import { CompiledBlock } from '../compiled/blocks';
 import { InlineBlock, PartialBlock } from '../scanner';
 import { CompiledExpression } from '../compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
-import { Opcode, OpSeq, Slice, UpdatingOpcode, pretty } from '../opcodes';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { Component, ComponentManager } from '../component/interfaces';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
 import { CapturedFrame, FrameStack } from './frame';
+
+import {
+  APPEND_OPCODES,
+  AppendOpcode,
+  Slice,
+  UpdatingOpcode,
+  Constants,
+  ConstantString,
+  ConstantSlice,
+} from '../opcodes';
 
 export interface PublicVM {
   env: Environment;
@@ -28,6 +37,7 @@ export default class VM implements PublicVM {
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
   public frame = new FrameStack();
+  public constants: Constants;
 
   static initial(
     env: Environment,
@@ -47,6 +57,7 @@ export default class VM implements PublicVM {
     private elementStack: ElementStack,
   ) {
     this.env = env;
+    this.constants = env.constants;
     this.elementStack = elementStack;
     this.scopeStack.push(scope);
     this.dynamicScopeStack.push(dynamicScope);
@@ -93,14 +104,14 @@ export default class VM implements PublicVM {
     opcodes.append(END);
   }
 
-  enter(ops: Slice) {
+  enter(sliceId: ConstantSlice) {
     let updating = new LinkedList<UpdatingOpcode>();
 
     let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
 
-    console.log(ops);
-    let tryOpcode = new TryOpcode(ops, state, tracker, updating);
+    let slice = this.constants.getSlice(sliceId);
+    let tryOpcode = new TryOpcode(slice, state, tracker, updating);
 
     this.didEnter(tryOpcode, updating);
   }
@@ -204,7 +215,7 @@ export default class VM implements PublicVM {
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
-  pushEvalFrame(ops: OpSeq) {
+  pushEvalFrame(ops: AppendOpcode[]) {
     this.frame.push({ ops, start: 0, end: ops.length - 1 });
   }
 
@@ -272,13 +283,12 @@ export default class VM implements PublicVM {
 
     if (initialize) initialize(this);
 
-    let opcode: Option<Opcode>;
+    let opcode: Option<AppendOpcode>;
 
     while (frame.hasOpcodes()) {
       if (opcode = frame.nextStatement()) {
-        LOGGER.debug(`[VM] OP ${pretty(opcode.toJSON())}`);
         LOGGER.trace(opcode);
-        opcode.evaluate(this);
+        APPEND_OPCODES.evaluate(this, opcode);
       }
     }
 
@@ -291,8 +301,8 @@ export default class VM implements PublicVM {
     );
   }
 
-  evaluateOpcode(opcode: Opcode) {
-    opcode.evaluate(this);
+  evaluateOpcode(opcode: AppendOpcode) {
+    APPEND_OPCODES.evaluate(this, opcode);
   }
 
   // Make sure you have opcodes that push and pop a scope around this opcode
@@ -339,23 +349,25 @@ export default class VM implements PublicVM {
     }
   }
 
-  bindNamedArgs(names: string[], symbols: number[]) {
+  bindNamedArgs(names: ConstantString[], symbols: number[]) {
     let args = expect(this.frame.getArgs(), 'bindNamedArgs assumes a previous setArgs');
     let scope = this.scope();
 
     let { named } = args;
 
     for(let i=0; i < names.length; i++) {
-      scope.bindSymbol(symbols[i], named.get(names[i]));
+      let name = this.constants.getString(names[i]);
+      scope.bindSymbol(symbols[i], named.get(name));
     }
   }
 
-  bindBlocks(names: string[], symbols: number[]) {
+  bindBlocks(names: ConstantString[], symbols: number[]) {
     let blocks = this.frame.getBlocks();
     let scope = this.scope();
 
     for(let i=0; i < names.length; i++) {
-      scope.bindBlock(symbols[i], (blocks && blocks[names[i]]) || null);
+      let name = this.constants.getString(names[i]);
+      scope.bindBlock(symbols[i], (blocks && blocks[name]) || null);
     }
   }
 
@@ -377,14 +389,15 @@ export default class VM implements PublicVM {
     scope.bindCallerScope(callerScope);
   }
 
-  bindDynamicScope(names: ReadonlyArray<string>) {
+  bindDynamicScope(names: ConstantString[]) {
     let args = expect(this.frame.getArgs(), 'bindDynamicScope assumes a previous setArgs');
     let scope = this.dynamicScope();
 
     assert(args, "Cannot bind dynamic scope");
 
     for(let i=0; i < names.length; i++) {
-      scope.set(names[i], args.named.get(names[i]));
+      let name = this.constants.getString(names[i]);
+      scope.set(name, args.named.get(name));
     }
   }
 }

@@ -1,9 +1,9 @@
-import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
 import * as Simple from '../../dom/interfaces';
 import { FIX_REIFICATION } from '../../dom/interfaces';
 import { Environment } from '../../environment';
-import { FIXME, Option, Maybe, Opaque, Dict, dict, unwrap, expect } from 'glimmer-util';
+import { FIXME, Option, Opaque, Dict, unwrap, expect } from 'glimmer-util';
 import {
   CachedReference,
   Reference,
@@ -21,115 +21,43 @@ import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { AttributeManager } from '../../dom/attribute-managers';
 import { ElementOperations } from '../../builder';
 import { Assert } from './vm';
+import { APPEND_OPCODES } from '../../opcodes';
 
-export class TextOpcode extends Opcode {
-  public type = "text";
+APPEND_OPCODES.add('Text', (vm, text) => {
+  vm.stack().appendText(vm.constants.getString(text));
+});
 
-  constructor(private text: string) {
-    super();
+APPEND_OPCODES.add('Comment', (vm, text) => {
+  vm.stack().appendComment(vm.constants.getString(text));
+});
+
+APPEND_OPCODES.add('OpenElement', (vm, tag) => {
+  vm.stack().openElement(vm.constants.getString(tag));
+});
+
+APPEND_OPCODES.add('PushRemoteElement', vm => {
+  let reference = vm.frame.getOperand<Simple.Element>();
+  let cache = isConstReference(reference) ? undefined : new ReferenceCache(reference);
+  let element = cache ? cache.peek() : reference.value();
+
+  vm.stack().pushRemoteElement(element);
+
+  if (cache) {
+    vm.updateWith(new Assert(cache));
   }
+});
 
-  evaluate(vm: VM) {
-    vm.stack().appendText(this.text);
-  }
+APPEND_OPCODES.add('PopRemoteElement', vm => vm.stack().popRemoteElement());
 
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [JSON.stringify(this.text)]
-    };
-  }
-}
+APPEND_OPCODES.add('OpenComponentElement', (vm, _tag) => {
+  let tag = vm.constants.getString(_tag);
+  vm.stack().openElement(tag, new ComponentElementOperations(vm.env));
+});
 
-export class OpenPrimitiveElementOpcode extends Opcode {
-  public type = "open-primitive-element";
-
-  constructor(private tag: string) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.stack().openElement(this.tag);
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [JSON.stringify(this.tag)]
-    };
-  }
-}
-
-export class PushRemoteElementOpcode extends Opcode {
-  public type = "push-remote-element";
-
-  evaluate(vm: VM) {
-    let reference = vm.frame.getOperand<Simple.Element>();
-    let cache = isConstReference(reference) ? undefined : new ReferenceCache(reference);
-    let element = cache ? cache.peek() : reference.value();
-
-    vm.stack().pushRemoteElement(element);
-
-    if (cache) {
-      vm.updateWith(new Assert(cache));
-    }
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: ['$OPERAND']
-    };
-  }
-}
-
-export class PopRemoteElementOpcode extends Opcode {
-  public type = "pop-remote-element";
-
-  evaluate(vm: VM) {
-    vm.stack().popRemoteElement();
-  }
-}
-
-export class OpenComponentElementOpcode extends Opcode {
-  public type = "open-component-element";
-
-  constructor(private tag: string) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.stack().openElement(this.tag, new ComponentElementOperations(vm.env));
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [JSON.stringify(this.tag)]
-    };
-  }
-}
-
-export class OpenDynamicPrimitiveElementOpcode extends Opcode {
-  public type = "open-dynamic-primitive-element";
-
-  evaluate(vm: VM) {
-    let tagName = vm.frame.getOperand<string>().value();
-    vm.stack().openElement(tagName);
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: ["$OPERAND"]
-    };
-  }
-}
+APPEND_OPCODES.add('OpenDynamicElement', vm => {
+  let tagName = vm.frame.getOperand<string>().value();
+  vm.stack().openElement(tagName);
+});
 
 class ClassList {
   private list: Option<Reference<string>[]> = null;
@@ -358,121 +286,52 @@ export class ComponentElementOperations implements ElementOperations {
   }
 }
 
-export class FlushElementOpcode extends Opcode {
-  public type = "flush-element";
+APPEND_OPCODES.add('FlushElement', vm => {
+  let stack = vm.stack();
 
-  evaluate(vm: VM) {
-    let stack = vm.stack();
+  let action = 'FlushElementOpcode#evaluate';
+  stack.expectOperations(action).flush(stack.expectConstructing(action), vm);
+  stack.flushElement();
+});
 
-    let action = 'FlushElementOpcode#evaluate';
-    stack.expectOperations(action).flush(stack.expectConstructing(action), vm);
-    stack.flushElement();
+APPEND_OPCODES.add('CloseElement', vm => vm.stack().closeElement());
+
+APPEND_OPCODES.add('PopElement', vm => vm.stack().popElement());
+
+APPEND_OPCODES.add('StaticAttr', (vm, _name, _value, _namespace) => {
+  let name = vm.constants.getString(_name);
+  let value = vm.constants.getString(_value);
+
+  if (_namespace) {
+    let namespace = vm.constants.getString(_namespace);
+    vm.stack().setStaticAttributeNS(namespace, name, value);
+  } else {
+    vm.stack().setStaticAttribute(name, value);
   }
-}
+});
 
-export class CloseElementOpcode extends Opcode {
-  public type = "close-element";
+APPEND_OPCODES.add('Modifier', (vm, _name, _manager, _args) => {
+  let manager = vm.constants.getOther<ModifierManager<Opaque>>(_manager);
+  let rawArgs = vm.constants.getExpression<CompiledArgs>(_args);
+  let stack = vm.stack();
+  let { constructing: element, updateOperations } = stack;
+  let args = rawArgs.evaluate(vm);
+  let dynamicScope = vm.dynamicScope();
+  let modifier = manager.create(element as FIX_REIFICATION<Element>, args, dynamicScope, updateOperations);
 
-  evaluate(vm: VM) {
-    vm.stack().closeElement();
-  }
-}
+  vm.env.scheduleInstallModifier(modifier, manager);
+  let destructor = manager.getDestructor(modifier);
 
-export class PopElementOpcode extends Opcode {
-  public type = "pop-element";
-
-  evaluate(vm: VM) {
-    vm.stack().popElement();
-  }
-}
-
-export interface StaticAttrOptions {
-  namespace: string;
-  name: string;
-  value: string;
-}
-
-export class StaticAttrOpcode extends Opcode {
-  public type = "static-attr";
-
-  constructor(
-    public namespace: Option<string>,
-    public name: string,
-    public value: string
-  ) {
-    super();
+  if (destructor) {
+    vm.newDestroyable(destructor);
   }
 
-  evaluate(vm: VM) {
-    let { name, value, namespace } = this;
-    if (namespace) {
-      vm.stack().setStaticAttributeNS(namespace, name, value);
-    } else {
-      vm.stack().setStaticAttribute(name, value);
-    }
-  }
-
-  toJSON(): OpcodeJSON {
-    let { _guid: guid, type, namespace, name, value } = this;
-
-    let details = dict<string>();
-
-    if (namespace) {
-      details["namespace"] = JSON.stringify(namespace);
-    }
-
-    details["name"] = JSON.stringify(name);
-    details["value"] = JSON.stringify(value);
-
-    return { guid, type, details };
-  }
-}
-
-export class ModifierOpcode extends Opcode {
-  public type = "modifier";
-
-  constructor(
-    private name: string,
-    private manager: ModifierManager<Opaque>,
-    private args: CompiledArgs
-  ) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    let { manager } = this;
-    let stack = vm.stack();
-    let { constructing: element, updateOperations } = stack;
-    let args = this.args.evaluate(vm);
-    let dynamicScope = vm.dynamicScope();
-    let modifier = manager.create(element as FIX_REIFICATION<Element>, args, dynamicScope, updateOperations);
-
-    vm.env.scheduleInstallModifier(modifier, manager);
-    let destructor = manager.getDestructor(modifier);
-
-    if (destructor) {
-      vm.newDestroyable(destructor);
-    }
-
-    vm.updateWith(new UpdateModifierOpcode(
-      manager,
-      modifier,
-      args
-    ));
-  }
-
-  toJSON(): OpcodeJSON {
-    let { _guid: guid, type, name, args } = this;
-
-    let details = dict<string>();
-
-    details["type"] = JSON.stringify(type);
-    details["name"] = JSON.stringify(name);
-    details["args"] = JSON.stringify(args);
-
-    return { guid, type, details };
-  }
-}
+  vm.updateWith(new UpdateModifierOpcode(
+    manager,
+    modifier,
+    args
+  ));
+});
 
 export class UpdateModifierOpcode extends UpdatingOpcode {
   public type = "update-modifier";
@@ -595,66 +454,18 @@ function formatElement(element: Simple.Element): string {
   return JSON.stringify(`<${element.tagName.toLowerCase()} />`);
 }
 
-export class DynamicAttrNSOpcode extends Opcode {
-  public type = "dynamic-attr";
+APPEND_OPCODES.add('DynamicAttrNS', (vm, _name, _namespace, trusting) => {
+  let name = vm.constants.getString(_name);
+  let namespace = vm.constants.getString(_namespace);
+  let reference = vm.frame.getOperand<string>();
+  vm.stack().setDynamicAttributeNS(namespace, name, reference, !!trusting);
+});
 
-  constructor(
-    public name: string,
-    public namespace: string,
-    public isTrusting: Maybe<boolean>
-  ) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    let { name, namespace, isTrusting } = this;
-    let reference = vm.frame.getOperand<string>();
-    vm.stack().setDynamicAttributeNS(namespace, name, reference, !!isTrusting);
-  }
-
-  toJSON(): OpcodeJSON {
-    let { _guid: guid, type, name, namespace } = this;
-
-    let details = dict<string>();
-
-    details["name"] = JSON.stringify(name);
-    details["value"] = "$OPERAND";
-
-    if (namespace) {
-      details["namespace"] = JSON.stringify(namespace);
-    }
-
-    return { guid, type, details };
-  }
-}
-
-export class DynamicAttrOpcode extends Opcode {
-  public type = "dynamic-attr";
-
-  constructor(
-    public name: string,
-    public isTrusting: Maybe<boolean>
-  ) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    let { name, isTrusting } = this;
-    let reference = vm.frame.getOperand<string>();
-    vm.stack().setDynamicAttribute(name, reference, !!isTrusting);
-  }
-
-  toJSON(): OpcodeJSON {
-    let { _guid: guid, type, name } = this;
-
-    let details = dict<string>();
-
-    details["name"] = JSON.stringify(name);
-    details["value"] = "$OPERAND";
-
-    return { guid, type, details };
-  }
-}
+APPEND_OPCODES.add('DynamicAttr', (vm, _name, trusting) => {
+  let name = vm.constants.getString(_name);
+  let reference = vm.frame.getOperand<string>();
+  vm.stack().setDynamicAttribute(name, reference, !!trusting);
+});
 
 export class PatchElementOpcode extends UpdatingOpcode {
   public type = "patch-element";
@@ -678,26 +489,6 @@ export class PatchElementOpcode extends UpdatingOpcode {
       guid: _guid,
       type,
       details: operation.toJSON()
-    };
-  }
-}
-
-export class CommentOpcode extends Opcode {
-  public type = "comment";
-
-  constructor(public comment: string) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.stack().appendComment(this.comment);
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [JSON.stringify(this.comment)]
     };
   }
 }

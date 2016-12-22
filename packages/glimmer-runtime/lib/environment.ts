@@ -2,6 +2,8 @@ import { SymbolTable } from 'glimmer-interfaces';
 
 import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
+import { Constants } from './opcodes';
+
 import * as Simple from './dom/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { Reference, PathReference, OpaqueIterable } from 'glimmer-reference';
@@ -200,6 +202,7 @@ export abstract class Environment {
   protected appendOperations: DOMTreeConstruction;
   private _macros: Option<{ blocks: Blocks, inlines: Inlines }> = null;
   private _transaction: Option<Transaction> = null;
+  public constants: Constants = new Constants();
 
   constructor({ appendOperations, updateOperations }: { appendOperations: DOMTreeConstruction, updateOperations: DOMChanges }) {
     this.appendOperations = appendOperations;

@@ -1,348 +1,110 @@
-import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from '../expressions/args';
-import { VM, UpdatingVM } from '../../vm';
-import { Slice } from './builder';
-import { InlineBlock, Layout } from '../../scanner';
-import { CompiledBlock } from '../../compiled/blocks';
-import { NULL_REFERENCE } from '../../references';
+import { UpdatingVM } from '../../vm';
 import { Reference, ConstReference } from 'glimmer-reference';
-import { Dict, Option, Opaque } from 'glimmer-util';
+import { Option, Opaque, initializeGuid } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
 import Environment from '../../environment';
+import { APPEND_OPCODES } from '../../opcodes';
 
-export class PushChildScopeOpcode extends Opcode {
-  public type = "push-child-scope";
-
-  evaluate(vm: VM) {
-    vm.pushChildScope();
-  }
-}
-
-export class PopScopeOpcode extends Opcode {
-  public type = "pop-scope";
-
-  evaluate(vm: VM) {
-    vm.popScope();
-  }
-}
-
-export class PushDynamicScopeOpcode extends Opcode {
-  public type = "push-dynamic-scope";
-
-  evaluate(vm: VM) {
-    vm.pushDynamicScope();
-  }
-}
-
-export class PopDynamicScopeOpcode extends Opcode {
-  public type = "pop-dynamic-scope";
-
-  evaluate(vm: VM) {
-    vm.popDynamicScope();
-  }
-}
-
-export class PutNullOpcode extends Opcode {
-  public type = "put-null";
-
-  evaluate(vm: VM) {
-    vm.frame.setOperand(NULL_REFERENCE);
-  }
-}
-
-export class PutValueOpcode extends Opcode {
-  public type = "put-value";
-
-  constructor(private expression: CompiledExpression<any>) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.evaluateOperand(this.expression);
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [this.expression.toJSON()]
-    };
-  }
-}
-
-export class PutArgsOpcode extends Opcode {
-  public type = "put-args";
-
-  constructor(private args: CompiledArgs) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.evaluateArgs(this.args);
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      details: {
-        "positional": this.args.positional.toJSON(),
-        "named": this.args.named.toJSON()
-      }
-    };
-  }
-}
-
-export class BindPositionalArgsOpcode extends Opcode {
-  public type = "bind-positional-args";
-
-  static create(locals: Dict<number>): BindPositionalArgsOpcode {
-    let names = Object.keys(locals);
-    let symbols = names.map(name => locals[name]);
-    return new this(names, symbols);
-  }
-
-  constructor(
-    private names: ReadonlyArray<string>,
-    private symbols: number[]
-  ) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.bindPositionalArgs(this.symbols);
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [`[${this.names.map(name => JSON.stringify(name)).join(", ")}]`]
-    };
-  }
-}
-
-export class BindNamedArgsOpcode extends Opcode {
-  public type = "bind-named-args";
-
-  static create(layout: Layout) {
-    let named = layout.symbolTable.getSymbols().named as Dict<number>;
-
-    let names = Object.keys(named);
-    let symbols = names.map(n => named[n]);
-
-    return new this(names, symbols);
-  }
-
-  constructor(
-    private names: string[],
-    private symbols: number[]
-  ) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.bindNamedArgs(this.names, this.symbols);
-  }
-
-  toJSON(): OpcodeJSON {
-    let { names, symbols } = this;
-
-    let args = names.map((name, i) => `$${symbols[i]}: $ARGS[${name}]`);
-
-    return {
-      guid: this._guid,
-      type: this.type,
-      args
-    };
-  }
-}
-
-export class BindBlocksOpcode extends Opcode {
-  public type = "bind-blocks";
-
-  static create(layout: Layout) {
-    let yields = layout.symbolTable.getSymbols().yields as Dict<number>;
-
-    let names = Object.keys(yields);
-    let symbols = names.map(n => yields[n]);
-
-    return new this(names, symbols);
-  }
-
-  constructor(
-    private names: string[],
-    private symbols: number[]
-  ) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.bindBlocks(this.names, this.symbols);
-  }
-
-  toJSON(): OpcodeJSON {
-    let { names, symbols } = this;
-
-    let args = names.map((name, i) => `$${symbols[i]}: $BLOCKS[${name}]`);
-
-    return {
-      guid: this._guid,
-      type: this.type,
-      args
-    };
-  }
-}
-
-export class BindPartialArgsOpcode extends Opcode {
-  public type = "bind-partial-args";
-
-  static create(layout: Layout) {
-    return new this(layout.symbolTable.getPartialArgs() as number);
-  }
-
-  constructor(private symbol: number) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.bindPartialArgs(this.symbol);
-  }
-}
-
-export class BindCallerScopeOpcode extends Opcode {
-  public type = "bind-caller-scope";
-
-  evaluate(vm: VM) {
-    vm.bindCallerScope();
-  }
-}
-
-export class BindDynamicScopeOpcode extends Opcode {
-  public type = "bind-dynamic-scope";
-
-  constructor(private names: ReadonlyArray<string>) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.bindDynamicScope(this.names);
-  }
-}
-
-export class EnterOpcode extends Opcode {
-  public type = "enter";
-
-  // slice is public because it's used by lazy content deopt
-  constructor(public slice: Slice) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.enter(this.slice);
-  }
-
-  toJSON(): OpcodeJSON {
-    let { type, _guid } = this;
-
-    return {
-      guid: _guid,
-      type,
-      args: [
-
-      ]
-    };
-  }
-}
-
-export class ExitOpcode extends Opcode {
-  public type = "exit";
-
-  evaluate(vm: VM) {
-    vm.exit();
-  }
-}
-
-export interface LabelOptions {
-  label?: string;
-}
-
-export class AppendLabelOpcode extends Opcode {
-  public type = "label";
-  public label: Option<string> = null;
-
-  evaluate() {}
-}
-
-export class LabelOpcode extends Opcode implements UpdatingOpcode {
-  public tag = CONSTANT_TAG;
-  public type = "label";
-  public label: Option<string> = null;
-
-  prev: any = null;
-  next: any = null;
-
-  constructor(label: string) {
-    super();
-    if (label) this.label = label;
-  }
-
-  evaluate() {}
-
-  inspect(): string {
-    return `${this.label} [${this._guid}]`;
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [JSON.stringify(this.inspect())]
-    };
-  }
-}
-
-export interface EvaluateOptions {
-  debug: string;
-  block: InlineBlock;
-}
-
-export class EvaluateOpcode extends Opcode {
-  public type = "evaluate";
-
-  constructor(
-    public debug: string,
-    public block: InlineBlock
-  ) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    let args = vm.frame.getArgs();
-    vm.invokeBlock(this.block, args);
-  }
-
-  toJSON(): OpcodeJSON {
-    let { _guid: guid, type, debug, block } = this;
-
-    let compiled: Option<CompiledBlock> = block['compiled'];
-    let children: OpcodeJSON[];
-
-    if (compiled) {
-      children = compiled.ops.map(op => op.toJSON());
-    } else {
-      children = [{ guid: null, type: '[ UNCOMPILED BLOCK ]' }];
+APPEND_OPCODES.add("PushChildScope", vm => vm.pushChildScope());
+
+APPEND_OPCODES.add("PopScope", vm => vm.popScope());
+
+APPEND_OPCODES.add("PushDynamicScope", vm => vm.pushDynamicScope());
+
+APPEND_OPCODES.add("PopDynamicScope", vm => vm.popDynamicScope());
+
+APPEND_OPCODES.add("Put", (vm, reference) => {
+  vm.frame.setOperand(vm.constants.getReference(reference));
+});
+
+APPEND_OPCODES.add("EvaluatePut", (vm, expression) => {
+  let expr = vm.constants.getExpression<CompiledExpression<Opaque>>(expression);
+  vm.evaluateOperand(expr);
+});
+
+APPEND_OPCODES.add("PutArgs", (vm, args) => {
+  vm.evaluateArgs(vm.constants.getExpression<CompiledArgs>(args));
+});
+
+APPEND_OPCODES.add('BindPositionalArgs', (vm, _symbols) => {
+  let symbols = vm.constants.getArray(_symbols);
+  vm.bindPositionalArgs(symbols);
+});
+
+APPEND_OPCODES.add('BindNamedArgs', (vm, _names, _symbols) => {
+  let names = vm.constants.getArray(_names);
+  let symbols = vm.constants.getArray(_symbols);
+  vm.bindNamedArgs(names, symbols);
+});
+
+APPEND_OPCODES.add('BindBlocks', (vm, _names, _symbols) => {
+  let names = vm.constants.getArray(_names);
+  let symbols = vm.constants.getArray(_symbols);
+  console.log(`[VM] OPCODE: BindBlocks ${names.join(',')} ${symbols.join(',')}`);
+  vm.bindBlocks(names, symbols);
+});
+
+APPEND_OPCODES.add('BindPartialArgs', (vm, symbol) => {
+  vm.bindPartialArgs(symbol);
+});
+
+APPEND_OPCODES.add('BindCallerScope', vm => vm.bindCallerScope());
+
+APPEND_OPCODES.add('BindDynamicScope', (vm, _names) => {
+  let names = vm.constants.getArray(_names);
+  vm.bindDynamicScope(names);
+});
+
+APPEND_OPCODES.add('Enter', (vm, slice) => vm.enter(slice));
+
+APPEND_OPCODES.add('Exit', (vm) => vm.exit());
+
+APPEND_OPCODES.add('Evaluate', (vm, _block) => {
+  let block = vm.constants.getBlock(_block);
+  let args = vm.frame.getArgs();
+  vm.invokeBlock(block, args);
+});
+
+APPEND_OPCODES.add('Jump', (vm, target) => vm.goto(target));
+
+APPEND_OPCODES.add('JumpIf', (vm, target) => {
+  let reference = vm.frame.getCondition();
+
+  if (isConst(reference)) {
+    if (reference.value()) {
+      vm.goto(target);
+    }
+  } else {
+    let cache = new ReferenceCache(reference);
+
+    if (cache.peek()) {
+      vm.goto(target);
     }
 
-    return {
-      guid,
-      type,
-      args: [debug],
-      children
-    };
+    vm.updateWith(new Assert(cache));
   }
-}
+});
+
+APPEND_OPCODES.add('JumpUnless', (vm, target) => {
+  let reference = vm.frame.getCondition();
+
+  if (isConst(reference)) {
+    if (!reference.value()) {
+      vm.goto(target);
+    }
+  } else {
+    let cache = new ReferenceCache(reference);
+
+    if (!cache.peek()) {
+      vm.goto(target);
+    }
+
+    vm.updateWith(new Assert(cache));
+  }
+});
 
 export type TestFunction = (ref: Reference<Opaque>, env: Environment) => Reference<boolean>;
 
@@ -358,89 +120,11 @@ export const EnvironmentTest: TestFunction = function(ref: Reference<Opaque>, en
   return env.toConditionalReference(ref);
 };
 
-export class TestOpcode extends Opcode {
-  public type = "test";
-
-  constructor(private testFunc: TestFunction) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.frame.setCondition(this.testFunc(vm.frame.getOperand(), vm.env));
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: ["$OPERAND", this.testFunc.name]
-    };
-  }
-}
-
-export class JumpOpcode extends Opcode {
-  public type = "jump";
-
-  constructor(private target: number) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.goto(this.target);
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [JSON.stringify(this.target)]
-    };
-  }
-}
-
-export class JumpIfOpcode extends JumpOpcode {
-  public type = "jump-if";
-
-  evaluate(vm: VM) {
-    let reference = vm.frame.getCondition();
-
-    if (isConst(reference)) {
-      if (reference.value()) {
-        super.evaluate(vm);
-      }
-    } else {
-      let cache = new ReferenceCache(reference);
-
-      if (cache.peek()) {
-        super.evaluate(vm);
-      }
-
-      vm.updateWith(new Assert(cache));
-    }
-  }
-}
-
-export class JumpUnlessOpcode extends JumpOpcode {
-  public type = "jump-unless";
-
-  evaluate(vm: VM) {
-    let reference = vm.frame.getCondition();
-
-    if (isConst(reference)) {
-      if (!reference.value()) {
-        super.evaluate(vm);
-      }
-    } else {
-      let cache = new ReferenceCache(reference);
-
-      if (!cache.peek()) {
-        super.evaluate(vm);
-      }
-
-      vm.updateWith(new Assert(cache));
-    }
-  }
-}
+APPEND_OPCODES.add('Test', (vm, _func) => {
+  let operand = vm.frame.getOperand();
+  let func = vm.constants.getFunction(_func);
+  vm.frame.setCondition(func(operand, vm.env));
+});
 
 export class Assert extends UpdatingOpcode {
   public type = "assert";
@@ -523,5 +207,34 @@ export class DidModifyOpcode extends UpdatingOpcode {
 
   evaluate() {
     this.target.didModify();
+  }
+}
+
+export class LabelOpcode implements UpdatingOpcode {
+  public tag = CONSTANT_TAG;
+  public type = "label";
+  public label: Option<string> = null;
+  public _guid: number;
+
+  prev: any = null;
+  next: any = null;
+
+  constructor(label: string) {
+    initializeGuid(this);
+    if (label) this.label = label;
+  }
+
+  evaluate() {}
+
+  inspect(): string {
+    return `${this.label} [${this._guid}]`;
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: [JSON.stringify(this.inspect())]
+    };
   }
 }

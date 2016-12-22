@@ -1,3 +1,5 @@
+import './lib/bootstrap';
+
 export { default as templateFactory, TemplateFactory, Template } from './lib/template';
 
 export { NULL_REFERENCE, UNDEFINED_REFERENCE, PrimitiveReference, ConditionalReference } from './lib/references';

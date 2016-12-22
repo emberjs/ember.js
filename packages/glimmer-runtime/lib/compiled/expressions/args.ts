@@ -30,6 +30,8 @@ export class CompiledArgs {
     return COMPILED_EMPTY_ARGS;
   }
 
+  public type = "compiled-args";
+
   constructor(
     public positional: CompiledPositionalArgs,
     public named: CompiledNamedArgs,

@@ -1,98 +1,52 @@
-import { Opaque, dict } from 'glimmer-util';
+import { Opaque, Dict } from 'glimmer-util';
 import { ReferenceCache, isConst, map } from 'glimmer-reference';
-import { Opcode, OpcodeJSON } from '../../opcodes';
 import { Assert } from './vm';
-import { VM } from '../../vm';
 import { PartialDefinition } from '../../partial';
 import { SymbolTable } from 'glimmer-interfaces';
 import { PartialBlock } from '../../scanner';
+import { APPEND_OPCODES } from '../../opcodes';
 
-export class PutDynamicPartialDefinitionOpcode extends Opcode {
-  public type = "put-dynamic-partial-definition";
+APPEND_OPCODES.add('PutDynamicPartial', (vm, _symbolTable) => {
+  let env = vm.env;
+  let symbolTable = vm.constants.getOther<SymbolTable>(_symbolTable);
 
-  constructor(private symbolTable: SymbolTable) {
-    super();
-  }
+  function lookupPartial(name: Opaque) {
+    let normalized = String(name);
 
-  evaluate(vm: VM) {
-    let env = vm.env;
-    let { symbolTable } = this;
-
-    function lookupPartial(name: Opaque) {
-      let normalized = String(name);
-
-      if (!env.hasPartial(normalized, symbolTable)) {
-        throw new Error(`Could not find a partial named "${normalized}"`);
-      }
-
-      return env.lookupPartial(normalized, symbolTable);
+    if (!env.hasPartial(normalized, symbolTable)) {
+      throw new Error(`Could not find a partial named "${normalized}"`);
     }
 
-    let reference = map(vm.frame.getOperand<Opaque>(), lookupPartial);
-    let cache = isConst(reference) ? undefined : new ReferenceCache(reference);
-    let definition = cache ? cache.peek() : reference.value();
-
-    vm.frame.setImmediate(definition);
-
-    if (cache) {
-      vm.updateWith(new Assert(cache));
-    }
+    return env.lookupPartial(normalized, symbolTable);
   }
 
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: ["$OPERAND"]
-    };
+  let reference = map(vm.frame.getOperand<Opaque>(), lookupPartial);
+  let cache = isConst(reference) ? undefined : new ReferenceCache(reference);
+  let definition = cache ? cache.peek() : reference.value();
+
+  vm.frame.setImmediate(definition);
+
+  if (cache) {
+    vm.updateWith(new Assert(cache));
   }
-}
+});
 
-export class PutPartialDefinitionOpcode extends Opcode {
-  public type = "put-partial-definition";
+APPEND_OPCODES.add('PutPartial', (vm, _definition) => {
+  let definition = vm.constants.getOther<PartialDefinition<Opaque>>(_definition);
+  vm.frame.setImmediate(definition);
+});
 
-  constructor(private definition: PartialDefinition<Opaque>) {
-    super();
-  }
+APPEND_OPCODES.add('EvaluatePartial', (vm, _symbolTable, _cache) => {
+  let symbolTable = vm.constants.getOther<SymbolTable>(_symbolTable);
+  let cache = vm.constants.getOther<Dict<PartialBlock>>(_cache);
 
-  evaluate(vm: VM) {
-    vm.frame.setImmediate(this.definition);
-  }
+  let { template } = vm.frame.getImmediate<PartialDefinition<Opaque>>();
 
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [JSON.stringify(this.definition.name)]
-    };
-  }
-}
+  let block = cache[template.id];
 
-export class EvaluatePartialOpcode extends Opcode {
-  public type = "evaluate-partial";
-  private cache = dict<PartialBlock>();
-
-  constructor(private symbolTable: SymbolTable) {
-    super();
+  if (!block) {
+    block = template.asPartial(symbolTable);
   }
 
-  evaluate(vm: VM) {
-    let { template } = vm.frame.getImmediate<PartialDefinition<Opaque>>();
-
-    let block = this.cache[template.id];
-
-    if (!block) {
-      block = template.asPartial(this.symbolTable);
-    }
-
-    vm.invokePartial(block);
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: ["$OPERAND"]
-    };
-  }
-}
+  vm.invokePartial(block);
+});

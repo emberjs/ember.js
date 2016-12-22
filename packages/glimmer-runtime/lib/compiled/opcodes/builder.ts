@@ -1,10 +1,7 @@
-import * as component from './component';
-import * as partial from '../../compiled/opcodes/partial';
 import * as content from './content';
-import * as dom from './dom';
-import * as lists from './lists';
 import * as vm from './vm';
-import * as blocks from './blocks';
+
+import { Insertion } from '../../upsert';
 
 import {
   CompiledGetBlock,
@@ -12,14 +9,9 @@ import {
   CompiledInPartialGetBlock
 } from '../../compiled/expressions/has-block';
 
-import {
-  OpenBlockOpcode,
-  CloseBlockOpcode
-} from '../../compiled/opcodes/blocks';
-
 import { Option, Stack, Dict, Opaque, dict, assert, expect } from 'glimmer-util';
 import { expr } from '../../syntax/functions';
-import { Opcode, OpSeq, inspect } from '../../opcodes';
+import { Constants } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
 import { CompiledExpression } from '../expressions';
 import { ComponentDefinition } from '../../component/interfaces';
@@ -29,6 +21,20 @@ import { SymbolTable } from 'glimmer-interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
 import { BaselineSyntax, InlineBlock, Layout } from '../../scanner';
+
+import {
+  APPEND_OPCODES,
+  OpcodeName,
+  AppendOpcode,
+  ConstantArray,
+  ConstantOther,
+  ConstantExpression,
+  ConstantBlock
+} from '../../opcodes';
+
+function opcode(name: OpcodeName, op1?: number, op2?: number, op3?: number): AppendOpcode {
+  return APPEND_OPCODES.construct(name, null, op1, op2, op3);
+}
 
 export interface CompilesInto<E> {
   compile(builder: OpcodeBuilder): E;
@@ -40,86 +46,63 @@ export type Represents<E> = CompilesInto<E> | E;
 
 export type Label = string;
 
-// export class StatementCompilationBufferProxy implements StatementCompilationBuffer {
-
-//   constructor(protected inner: StatementCompilationBuffer, public symbolTable: SymbolTable = inner.symbolTable) {}
-
-//   get component(): ComponentBuilder {
-//     return this.inner.component;
-//   }
-
-//   toOpSeq(): OpSeq {
-//     return this.inner.toOpSeq();
-//   }
-
-//   append<T extends Opcode>(opcode: T) {
-//     this.inner.append(opcode);
-//   }
-// }
-
 export interface SymbolLookup {
   symbolTable: SymbolTable;
 }
 
-export interface CompileInto {
-  append(op: Opcode): void;
-}
-
-interface RangeOpcodeConstructor {
-  new(slice: Slice): Opcode;
-}
-
-interface TargetOpcodeConstructor {
-  new(target: number): Opcode;
-}
-
 export class Slice {
   constructor(
-    public ops: OpSeq,
+    public ops: AppendOpcode[],
     public start: number,
     public end: number
   ) {}
 }
 
+type TargetOpcode = 'Jump' | 'JumpIf' | 'JumpUnless' | 'NextIter';
+type RangeOpcode = 'Enter' | 'EnterList' | 'EnterWithKey' | 'NextIter';
+
 class Labels {
   labels = dict<number>();
-  jumps: { at: number, target: string, TargetConstructor: TargetOpcodeConstructor }[] = [];
-  ranges: { at: number, start: string, end: string, RangeConstructor: RangeOpcodeConstructor }[] = [];
+  jumps: { at: number, target: string, Target: TargetOpcode }[] = [];
+  ranges: { at: number, start: string, end: string, Range: RangeOpcode }[] = [];
 
   label(name: string, index: number) {
     this.labels[name] = index;
   }
 
-  jump(at: number, TargetConstructor: TargetOpcodeConstructor, target: string) {
-    this.jumps.push({ at, target, TargetConstructor });
+  jump(at: number, Target: TargetOpcode, target: string) {
+    this.jumps.push({ at, target, Target });
   }
 
-  range(at: number, RangeConstructor: RangeOpcodeConstructor, start: string, end: string) {
-    this.ranges.push({ at, start, end, RangeConstructor });
+  range(at: number, Range: RangeOpcode, start: string, end: string) {
+    this.ranges.push({ at, start, end, Range });
   }
 
-  patch(opcodes: Option<Opcode>[]): void {
-    for (let { at, target, TargetConstructor } of this.jumps) {
-      opcodes[at] = new TargetConstructor(this.labels[target]);
+  patch(constants: Constants, opcodes: Option<AppendOpcode>[]): void {
+    for (let { at, target, Target } of this.jumps) {
+      opcodes[at] = APPEND_OPCODES.construct(Target, null, this.labels[target]);
     }
 
-    for (let { at, start, end, RangeConstructor } of this.ranges) {
-      let slice = new Slice(opcodes as OpSeq, this.labels[start], this.labels[end] - 1);
-      opcodes[at] = new RangeConstructor(slice);
+    for (let { at, start, end, Range } of this.ranges) {
+      let _slice = new Slice(opcodes as AppendOpcode[], this.labels[start], this.labels[end] - 1);
+      let slice = constants.slice(_slice);
+      opcodes[at] = APPEND_OPCODES.construct(Range, null, slice);
     }
   }
 }
 
 export abstract class BasicOpcodeBuilder implements SymbolLookup {
   private labelsStack = new Stack<Labels>();
+  public constants: Constants;
 
   constructor(public symbolTable: SymbolTable, public env: Environment) {
+    this.constants = env.constants;
   }
 
   abstract compile<E>(expr: Represents<E>): E;
   abstract compileExpression(expr: RepresentsExpression): CompiledExpression<Opaque>;
 
-  private ops: Option<Opcode>[] = [];
+  private ops: Option<AppendOpcode>[] = [];
 
   private get pos() {
     return this.ops.length - 1;
@@ -129,15 +112,14 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     return this.ops.length;
   }
 
-  push(op: Option<Opcode>) {
-    console.log(`pushing ${op && op.type}`);
+  push(op: Option<AppendOpcode>) {
+    // console.log(`pushing ${op && op.type}`);
     this.ops.push(op);
   }
 
-  toOpSeq(): OpSeq {
-    console.log(inspect(this.ops as OpSeq));
+  toOpSeq(): AppendOpcode[] {
     assert(this.ops.every(op => op !== null), 'bug: holes left in the opseq');
-    return this.ops as OpSeq;
+    return this.ops as AppendOpcode[];
   }
 
   // helpers
@@ -152,164 +134,183 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
 
   stopLabels() {
     let label = expect(this.labelsStack.pop(), 'unbalanced push and pop labels');
-    label.patch(this.ops);
+    label.patch(this.constants, this.ops);
   }
 
   // partials
 
-  putPartialDefinition(definition: PartialDefinition<Opaque>) {
-    this.push(new partial.PutPartialDefinitionOpcode(definition));
+  putPartialDefinition(_definition: PartialDefinition<Opaque>) {
+    let definition = this.constants.other(_definition);
+    this.push(opcode('PutPartial', definition));
   }
 
   putDynamicPartialDefinition() {
-    this.push(new partial.PutDynamicPartialDefinitionOpcode(this.symbolTable));
+    this.push(opcode('PutDynamicPartial', this.constants.other(this.symbolTable)));
   }
 
   evaluatePartial() {
-    this.push(new partial.EvaluatePartialOpcode(this.symbolTable));
+    this.push(opcode('EvaluatePartial', this.constants.other(this.symbolTable), this.constants.other(dict())));
   }
 
   // components
 
   putComponentDefinition(definition: ComponentDefinition<Opaque>) {
-    this.push(new component.PutComponentDefinitionOpcode(definition));
+    this.push(opcode('PutComponent', this.other(definition)));
   }
 
   putDynamicComponentDefinition() {
-    this.push(new component.PutDynamicComponentDefinitionOpcode());
+    this.push(opcode('PutDynamicComponent'));
   }
 
   openComponent(args: Represents<CompiledArgs>, shadow?: InlineBlock) {
-    this.push(new component.OpenComponentOpcode(this.compile(args), shadow || null));
+    this.push(opcode('OpenComponent', this.args(args), shadow ? this.block(shadow) : 0));
   }
 
   didCreateElement() {
-    this.push(new component.DidCreateElementOpcode());
+    this.push(opcode('DidCreateElement'));
   }
 
   shadowAttributes() {
-    this.push(new component.ShadowAttributesOpcode());
-    this.push(new blocks.CloseBlockOpcode());
+    this.push(opcode('ShadowAttributes'));
+    this.push(opcode('CloseBlock'));
   }
 
   didRenderLayout() {
-    this.push(new component.DidRenderLayoutOpcode());
+    this.push(opcode('DidRenderLayout'));
   }
 
   closeComponent() {
-    this.push(new component.CloseComponentOpcode());
+    this.push(opcode('CloseComponent'));
   }
 
   // content
 
+  dynamicContent(Opcode: content.AppendDynamicOpcode<Insertion>) {
+    this.push(opcode('DynamicContent', this.other(Opcode)));
+  }
+
   cautiousAppend() {
-    this.push(new content.OptimizedCautiousAppendOpcode());
+    this.dynamicContent(new content.OptimizedCautiousAppendOpcode());
   }
 
   trustingAppend() {
-    this.push(new content.OptimizedTrustingAppendOpcode());
+    this.dynamicContent(new content.OptimizedTrustingAppendOpcode());
   }
 
   guardedCautiousAppend(expression: RepresentsExpression) {
-    this.push(new content.GuardedCautiousAppendOpcode(this.compileExpression(expression), this.symbolTable));
+    this.dynamicContent(new content.GuardedCautiousAppendOpcode(this.compileExpression(expression), this.symbolTable));
   }
 
   guardedTrustingAppend(expression: RepresentsExpression) {
-    this.push(new content.GuardedTrustingAppendOpcode(this.compileExpression(expression), this.symbolTable));
+    this.dynamicContent(new content.GuardedTrustingAppendOpcode(this.compileExpression(expression), this.symbolTable));
   }
 
   // dom
 
   text(text: string) {
-    this.push(new dom.TextOpcode(text));
+    this.push(opcode('Text', this.constants.string(text)));
   }
 
   openPrimitiveElement(tag: string) {
-    this.push(new dom.OpenPrimitiveElementOpcode(tag));
+    this.push(opcode('OpenElement', this.constants.string(tag)));
   }
 
   openComponentElement(tag: string) {
-    this.push(new dom.OpenComponentElementOpcode(tag));
+    this.push(opcode('OpenComponentElement', this.constants.string(tag)));
   }
 
   openDynamicPrimitiveElement() {
-    this.push(new dom.OpenDynamicPrimitiveElementOpcode());
+    this.push(opcode('OpenDynamicElement'));
   }
 
   flushElement() {
-    this.push(new dom.FlushElementOpcode());
+    this.push(opcode('FlushElement'));
   }
 
   closeElement() {
-    this.push(new dom.CloseElementOpcode());
+    this.push(opcode('CloseElement'));
   }
 
-  staticAttr(name: string, namespace: Option<string>, value: any) {
-    this.push(new dom.StaticAttrOpcode(namespace, name, value));
+  staticAttr(_name: string, _namespace: Option<string>, _value: string) {
+    let name = this.constants.string(_name);
+    let namespace = _namespace ? this.constants.string(_namespace) : 0;
+    let value = this.constants.string(_value);
+
+    this.push(opcode('StaticAttr', name, value, namespace));
   }
 
-  dynamicAttrNS(name: string, namespace: string, isTrusting: boolean) {
-    this.push(new dom.DynamicAttrNSOpcode(name, namespace, isTrusting));
+  dynamicAttrNS(_name: string, _namespace: string, trusting: boolean) {
+    let name = this.constants.string(_name);
+    let namespace = this.constants.string(_namespace);
+
+    this.push(opcode('DynamicAttrNS', name, namespace, (trusting as any)|0));
   }
 
-  dynamicAttr(name: string, isTrusting: boolean) {
-    this.push(new dom.DynamicAttrOpcode(name, isTrusting));
+  dynamicAttr(_name: string, trusting: boolean) {
+    let name = this.constants.string(_name);
+    this.push(opcode('DynamicAttr', name, (trusting as any)|0));
   }
 
-  comment(comment: string) {
-    this.push(new dom.CommentOpcode(comment));
+  comment(_comment: string) {
+    let comment = this.constants.string(_comment);
+    this.push(opcode('Comment', comment));
   }
 
-  modifier(name: string, args: Represents<CompiledArgs>) {
-    let modifierManager = this.env.lookupModifier([name], this.symbolTable);
-    this.push(new dom.ModifierOpcode(name, modifierManager, this.compile(args)));
+  modifier(_name: string, _args: Represents<CompiledArgs>) {
+    let args = this.constants.expression(this.compile(_args));
+    let _modifierManager = this.env.lookupModifier([_name], this.symbolTable);
+    let modifierManager = this.constants.other(_modifierManager);
+    let name = this.constants.string(_name);
+    this.push(opcode('Modifier', name, modifierManager, args));
   }
 
   // lists
 
   putIterator() {
-    this.push(new lists.PutIteratorOpcode());
+    this.push(opcode('PutIterator'));
   }
 
   enterList(start: string, end: string) {
     this.push(null);
-    this.labels.range(this.pos, lists.EnterListOpcode, start, end);
+    this.labels.range(this.pos, 'EnterList', start, end);
   }
 
   exitList() {
-    this.push(new lists.ExitListOpcode());
+    this.push(opcode('ExitList'));
   }
 
   enterWithKey(start: string, end: string) {
     this.push(null);
-    this.labels.range(this.pos, lists.EnterWithKeyOpcode, start, end);
+    this.labels.range(this.pos, 'EnterWithKey', start, end);
   }
 
   nextIter(end: string) {
     this.push(null);
-    this.labels.jump(this.pos, lists.NextIterOpcode, end);
+    this.labels.jump(this.pos, 'NextIter', end);
   }
 
   // vm
 
-  openBlock(args: Represents<CompiledArgs>, inner: CompiledGetBlock) {
-    this.push(new OpenBlockOpcode(inner, this.compile(args)));
+  openBlock(_args: Represents<CompiledArgs>, _inner: CompiledGetBlock) {
+    let args = this.constants.expression(this.compile(_args));
+    let inner = this.constants.other(_inner);
+    this.push(opcode('OpenBlock', inner, args));
   }
 
   closeBlock() {
-    this.push(new CloseBlockOpcode());
+    this.push(opcode('CloseBlock'));
   }
 
   pushRemoteElement() {
-    this.push(new dom.PushRemoteElementOpcode());
+    this.push(opcode('PushRemoteElement'));
   }
 
   popRemoteElement() {
-    this.push(new dom.PopRemoteElementOpcode());
+    this.push(opcode('PopRemoteElement'));
   }
 
   popElement() {
-    this.push(new dom.PopElementOpcode());
+    this.push(opcode('PopElement'));
   }
 
   label(name: string) {
@@ -317,89 +318,118 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   }
 
   pushChildScope() {
-    this.push(new vm.PushChildScopeOpcode());
+    this.push(opcode('PushChildScope'));
   }
 
   popScope() {
-    this.push(new vm.PopScopeOpcode());
+    this.push(opcode('PopScope'));
   }
 
   pushDynamicScope() {
-    this.push(new vm.PushDynamicScopeOpcode());
+    this.push(opcode('PushDynamicScope'));
   }
 
   popDynamicScope() {
-    this.push(new vm.PopDynamicScopeOpcode());
+    this.push(opcode('PopDynamicScope'));
   }
 
   putNull() {
-    this.push(new vm.PutNullOpcode());
+    this.push(opcode('Put', this.constants.NULL_REFERENCE));
   }
 
-  putValue(expression: RepresentsExpression) {
-    this.push(new vm.PutValueOpcode(this.compileExpression(expression)));
+  putValue(_expression: RepresentsExpression) {
+    let expr = this.constants.expression(this.compileExpression(_expression));
+    this.push(opcode('EvaluatePut', expr));
   }
 
-  putArgs(args: Represents<CompiledArgs>) {
-    this.push(new vm.PutArgsOpcode(this.compile(args)));
+  putArgs(_args: Represents<CompiledArgs>) {
+    let args = this.constants.expression(this.compile(_args));
+    this.push(opcode('PutArgs', args));
   }
 
-  bindDynamicScope(names: ReadonlyArray<string>) {
-    this.push(new vm.BindDynamicScopeOpcode(names));
+  bindDynamicScope(_names: string[]) {
+    this.push(opcode('BindDynamicScope', this.names(_names)));
   }
 
-  bindPositionalArgs(names: string[], symbols: number[]) {
-    this.push(new vm.BindPositionalArgsOpcode(names, symbols));
+  bindPositionalArgs(_names: string[], _symbols: number[]) {
+    this.push(opcode('BindPositionalArgs', this.names(_names), this.symbols(_symbols)));
   }
 
-  bindNamedArgs(names: string[], symbols: number[]) {
-    this.push(new vm.BindNamedArgsOpcode(names, symbols));
+  bindNamedArgs(_names: string[], _symbols: number[]) {
+    this.push(opcode('BindNamedArgs', this.names(_names), this.symbols(_symbols)));
   }
 
-  bindBlocks(names: string[], symbols: number[]) {
-    this.push(new vm.BindBlocksOpcode(names, symbols));
+  bindBlocks(_names: string[], _symbols: number[]) {
+    this.push(opcode('BindBlocks', this.names(_names), this.symbols(_symbols)));
   }
 
   enter(enter: string, exit: string) {
     this.push(null);
-    this.labels.range(this.pos, vm.EnterOpcode, enter, exit);
+    this.labels.range(this.pos, 'Enter', enter, exit);
   }
 
   exit() {
-    this.push(new vm.ExitOpcode());
+    this.push(opcode('Exit'));
   }
 
-  evaluate(name: string, block: InlineBlock) {
-    this.push(new vm.EvaluateOpcode(name, block));
+  evaluate(_block: InlineBlock) {
+    let block = this.constants.block(_block);
+    this.push(opcode('Evaluate', block));
   }
 
   test(testFunc: 'const' | 'simple' | 'environment' | vm.TestFunction) {
+    let _func: vm.TestFunction;
+
     if (testFunc === 'const') {
-      this.push(new vm.TestOpcode(vm.ConstTest));
+      _func = vm.ConstTest;
     } else if (testFunc === 'simple') {
-      this.push(new vm.TestOpcode(vm.SimpleTest));
+      _func = vm.SimpleTest;
     } else if (testFunc === 'environment') {
-      this.push(new vm.TestOpcode(vm.EnvironmentTest));
+      _func = vm.EnvironmentTest;
     } else if (typeof testFunc === 'function') {
-      this.push(new vm.TestOpcode(testFunc));
+      _func = testFunc;
     } else {
       throw new Error('unreachable');
     }
+
+    let func = this.constants.function(_func);
+    this.push(opcode('Test', func));
   }
 
   jump(target: string) {
     this.push(null);
-    this.labels.jump(this.pos, vm.JumpOpcode, target);
+    this.labels.jump(this.pos, 'Jump', target);
   }
 
   jumpIf(target: string) {
     this.push(null);
-    this.labels.jump(this.pos, vm.JumpIfOpcode, target);
+    this.labels.jump(this.pos, 'JumpIf', target);
   }
 
   jumpUnless(target: string) {
     this.push(null);
-    this.labels.jump(this.pos, vm.JumpUnlessOpcode, target);
+    this.labels.jump(this.pos, 'JumpUnless', target);
+  }
+
+  protected names(_names: string[]): ConstantArray {
+    let names = _names.map(n => this.constants.string(n));
+    return this.constants.array(names);
+  }
+
+  protected symbols(symbols: number[]): ConstantArray {
+    return this.constants.array(symbols);
+  }
+
+  protected other(value: Opaque): ConstantOther {
+    return this.constants.other(value);
+  }
+
+  protected args(args: Represents<CompiledArgs>): ConstantExpression {
+    return this.constants.expression(this.compile(args));
+  }
+
+  protected block(block: InlineBlock): ConstantBlock {
+    return this.constants.block(block);
   }
 }
 
@@ -432,24 +462,31 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
   }
 
   bindPositionalArgsForLocals(locals: Dict<number>) {
-    this.push(vm.BindPositionalArgsOpcode.create(locals));
+    let symbols = Object.keys(locals).map(name => locals[name]);
+    this.push(opcode('BindPositionalArgs', this.symbols(symbols)));
   }
 
   preludeForLayout(layout: Layout) {
     let symbols = layout.symbolTable.getSymbols();
 
     if (symbols.named) {
-      this.push(vm.BindNamedArgsOpcode.create(layout));
+      let named = symbols.named;
+      let namedNames = Object.keys(named);
+      let namedSymbols = namedNames.map(n => named[n]);
+      this.push(opcode('BindNamedArgs', this.names(namedNames), this.symbols(namedSymbols)));
     }
 
-    this.push(new vm.BindCallerScopeOpcode());
+    this.push(opcode('BindCallerScope'));
 
     if (symbols.yields) {
-      this.push(vm.BindBlocksOpcode.create(layout));
+      let yields = symbols.yields;
+      let yieldNames = Object.keys(yields);
+      let yieldSymbols = yieldNames.map(n => yields[n]);
+      this.push(opcode('BindBlocks', this.names(yieldNames), this.symbols(yieldSymbols)));
     }
 
     if (symbols.partialArgs) {
-      this.push(vm.BindPartialArgsOpcode.create(layout));
+      this.push(opcode('BindPartialArgs', symbols.partialArgs));
     }
   }
 
@@ -471,7 +508,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
   // TODO
   // come back to this
-  block(args: Option<Represents<CompiledArgs>>, callback: BlockCallback) {
+  labelled(args: Option<Represents<CompiledArgs>>, callback: BlockCallback) {
     if (args) this.putArgs(args);
 
     this.startLabels();
