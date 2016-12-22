@@ -8,7 +8,6 @@ import Component from '../component';
 import layout from '../templates/empty';
 import { TextSupport } from 'ember-views';
 
-let inputTypeTestElement;
 const inputTypes = Object.create(null);
 function canSetTypeOfInput(type) {
   if (type in inputTypes) {
@@ -23,9 +22,7 @@ function canSetTypeOfInput(type) {
     return type;
   }
 
-  if (!inputTypeTestElement) {
-    inputTypeTestElement = document.createElement('input');
-  }
+  let inputTypeTestElement = document.createElement('input');
 
   try {
     inputTypeTestElement.type = type;
