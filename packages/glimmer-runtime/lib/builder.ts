@@ -43,11 +43,11 @@ class Last {
 }
 
 export interface ElementOperations {
-  addStaticAttribute(element: Simple.Element, name: string, value: string);
-  addStaticAttributeNS(element: Simple.Element, namespace: string, name: string, value: string);
-  addDynamicAttribute(element: Simple.Element, name: string, value: PathReference<string>, isTrusting: boolean);
-  addDynamicAttributeNS(element: Simple.Element, namespace: string, name: string, value: PathReference<string>, isTrusting: boolean);
-  flush(element: Simple.Element, vm: VM);
+  addStaticAttribute(element: Simple.Element, name: string, value: string): void;
+  addStaticAttributeNS(element: Simple.Element, namespace: string, name: string, value: string): void;
+  addDynamicAttribute(element: Simple.Element, name: string, value: PathReference<string>, isTrusting: boolean): void;
+  addDynamicAttributeNS(element: Simple.Element, namespace: string, name: string, value: PathReference<string>, isTrusting: boolean): void;
+  flush(element: Simple.Element, vm: VM): void;
 }
 
 export class Fragment implements Bounds {
@@ -93,7 +93,7 @@ export class ElementStack implements Cursor {
     return new ElementStack(env, parentNode, nextSibling);
   }
 
-  static resume(env: Environment, tracker: Tracker, nextSibling: Node) {
+  static resume(env: Environment, tracker: Tracker, nextSibling: Option<Simple.Node>) {
     let parentNode = tracker.parentElement();
 
     let stack = new ElementStack(env, parentNode, nextSibling);
@@ -276,12 +276,12 @@ export class ElementStack implements Cursor {
 }
 
 export interface Tracker extends DestroyableBounds {
-  openElement(element: Simple.Element);
-  closeElement();
-  newNode(node: Simple.Node);
-  newBounds(bounds: Bounds);
-  newDestroyable(d: Destroyable);
-  finalize(stack: ElementStack);
+  openElement(element: Simple.Element): void;
+  closeElement(): void;
+  newNode(node: Simple.Node): void;
+  newBounds(bounds: Bounds): void;
+  newDestroyable(d: Destroyable): void;
+  finalize(stack: ElementStack): void;
 }
 
 export class SimpleBlockTracker implements Tracker {
@@ -364,11 +364,11 @@ class RemoteBlockTracker extends SimpleBlockTracker {
 }
 
 export interface UpdatableTracker extends Tracker {
-  reset(env: Environment);
+  reset(env: Environment): Option<Simple.Node>;
 }
 
 export class UpdatableBlockTracker extends SimpleBlockTracker implements UpdatableTracker {
-  reset(env: Environment) {
+  reset(env: Environment): Option<Simple.Node> {
     let { destroyables } = this;
 
     if (destroyables && destroyables.length) {
@@ -401,12 +401,14 @@ class BlockListTracker implements Tracker {
     return this.parent;
   }
 
-  firstNode() {
-    return this.boundList.head().firstNode();
+  firstNode(): Option<Simple.Node> {
+    let head = this.boundList.head();
+    return head && head.firstNode();
   }
 
-  lastNode() {
-    return this.boundList.tail().lastNode();
+  lastNode(): Option<Simple.Node> {
+    let tail = this.boundList.tail();
+    return tail && tail.lastNode();
   }
 
   openElement(_element: Element) {

@@ -63,7 +63,7 @@ export interface TemplateFactory<T, U> {
    *
    * @param {Environment} env glimmer Environment
    */
-  create(env): Template<T>;
+  create(env: Environment): Template<T>;
   /**
    * Used to create an environment specific singleton instance
    * of the template.
@@ -71,7 +71,7 @@ export interface TemplateFactory<T, U> {
    * @param {Environment} env glimmer Environment
    * @param {Object} meta environment specific injections into meta
    */
-  create(env, meta: U): Template<T & U>;
+  create(env: Environment, meta: U): Template<T & U>;
 }
 
 let clientId = 0;
@@ -108,7 +108,7 @@ function template<T>(block: SerializedTemplateBlock, id: string, meta: T, env: E
     if (!layout) layout = scanner.scanLayout();
     return layout;
   };
-  let asPartial = symbols => scanner.scanPartial(symbols);
+  let asPartial = (symbols: SymbolTable) => scanner.scanPartial(symbols);
   let render = (self: PathReference<any>, appendTo: Simple.Element, dynamicScope: DynamicScope) => {
     let elementStack = ElementStack.forInitialRender(env, appendTo, null);
     let compiled = asEntryPoint().compile(env);

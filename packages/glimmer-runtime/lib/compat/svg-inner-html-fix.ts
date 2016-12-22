@@ -71,7 +71,7 @@ function fixSVG(parent: Element, div: HTMLElement, html: string, reference: Node
 
   div.innerHTML = wrappedHtml;
 
-  let [first, last] = moveNodesBefore(div.firstChild, parent, reference);
+  let [first, last] = moveNodesBefore(div.firstChild as Node, parent, reference);
   return new ConcreteBounds(parent, first, last);
 }
 

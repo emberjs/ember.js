@@ -1,6 +1,11 @@
 {
   "extends": "../../build/tsconfig.json",
 
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "noImplicitAny": true
+  },
+
   "include": [
     "index.ts",
     "lib/**/*.ts"

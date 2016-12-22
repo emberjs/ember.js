@@ -6,10 +6,10 @@ export enum LogLevel {
 }
 
 export interface Console {
-  log(message: string);
-  warn(message: string);
-  error(message: string);
-  trace();
+  log(message: string): void;
+  warn(message: string): void;
+  error(message: string): void;
+  trace(): void;
 }
 
 class NullConsole {

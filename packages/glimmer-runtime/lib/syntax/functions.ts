@@ -30,16 +30,14 @@ import { CompiledFunctionExpression } from '../compiled/expressions/function';
 
 export type SexpExpression = BaselineSyntax.AnyExpression & { 0: string };
 export type Syntax = SexpExpression | BaselineSyntax.AnyStatement;
-export type CompilerFunction<T extends Syntax, U> = (sexp: T, builder: OpcodeBuilder) => U;
+export type CompilerFunction<T extends Syntax, U> = ((sexp: T, builder: OpcodeBuilder) => U);
 export type Name = BaselineSyntax.AnyStatement[0];
 
 export class Compilers<T extends Syntax, CompileTo> {
   private names = dict<number>();
   private funcs: CompilerFunction<T, CompileTo>[] = [];
 
-  add(name: 'concat', func: CompilerFunction<E.Concat, CompiledConcat>);
-  add(name: T[0], func: CompilerFunction<T, CompileTo>);
-  add(name, func) {
+  add(name: T[0], func: CompilerFunction<T, CompileTo>): void {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
@@ -229,10 +227,10 @@ EXPRESSIONS.add('unknown', (sexp: E.Unknown, builder: OpcodeBuilder) => {
   }
 });
 
-EXPRESSIONS.add('concat', (sexp: E.Concat, builder: OpcodeBuilder) => {
+EXPRESSIONS.add('concat', ((sexp: E.Concat, builder: OpcodeBuilder) => {
   let params = sexp[1].map(p => expr(p, builder));
   return new CompiledConcat(params);
-});
+}) as any);
 
 EXPRESSIONS.add('function', (sexp: BaselineSyntax.FunctionExpression, builder: OpcodeBuilder) => {
   return new CompiledFunctionExpression(sexp[1], builder.symbolTable);

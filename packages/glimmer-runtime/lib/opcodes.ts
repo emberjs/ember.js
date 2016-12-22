@@ -1,4 +1,4 @@
-import { Option, Dict, LinkedList, Slice, initializeGuid } from 'glimmer-util';
+import { Opaque, Option, Dict, LinkedList, Slice, initializeGuid } from 'glimmer-util';
 import { RevisionTag } from 'glimmer-reference';
 import { VM, UpdatingVM } from './vm';
 
@@ -13,6 +13,31 @@ export interface OpcodeJSON {
 
 export function pretty(json: OpcodeJSON): string {
   return `${json.type.toUpperCase()}(${json.args ? json.args.join(', ') : ''})`;
+}
+
+export const enum OpcodeNames {
+
+}
+
+export type OpcodeToJSON = (data: AppendOpcodeData) => OpcodeJSON;
+export type EvaluateOpcode = (data: AppendOpcodeData) => void;
+
+export class AppendOpcodes {
+  // TODO: prefill
+  private opcodeToJSON: OpcodeToJSON[] = [];
+  private evaluateOpcode: EvaluateOpcode[] = [];
+
+  add(name: OpcodeNames, { toJSON, evaluate }: { toJSON: OpcodeToJSON, evaluate: EvaluateOpcode }) {
+    this.opcodeToJSON[name] = toJSON;
+    this.evaluateOpcode[name] = evaluate;
+  }
+}
+
+export type AppendOpcodeData = [Opaque, Opaque, Opaque];
+
+export interface AppendOpcode {
+  type: OpcodeNames;
+  data: [Opaque, Opaque, Opaque];
 }
 
 export abstract class AbstractOpcode {
@@ -32,7 +57,7 @@ export abstract class Opcode extends AbstractOpcode {
   next: Option<Opcode> = null;
   prev: Option<Opcode> = null;
 
-  abstract evaluate(vm: VM);
+  abstract evaluate(vm: VM): void;
 }
 
 export type OpSeq = ReadonlyArray<Opcode>;
@@ -50,13 +75,13 @@ export abstract class UpdatingOpcode extends AbstractOpcode {
   next: Option<UpdatingOpcode> = null;
   prev: Option<UpdatingOpcode> = null;
 
-  abstract evaluate(vm: UpdatingVM);
+  abstract evaluate(vm: UpdatingVM): void;
 }
 
 export type UpdatingOpSeq = Slice<UpdatingOpcode>;
 
 export function inspect(opcodes: ReadonlyArray<AbstractOpcode>): string {
-  let buffer = [];
+  let buffer: string[] = [];
 
   opcodes.forEach((opcode, i) => {
     _inspect(opcode.toJSON(), buffer, 0, i);

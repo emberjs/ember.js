@@ -19,11 +19,11 @@ export interface EnumerableCallback<T> {
 }
 
 export interface Enumerable<T> {
-  forEach(callback: EnumerableCallback<T>);
+  forEach(callback: EnumerableCallback<T>): void;
 }
 
 export interface Destroyable {
-  destroy();
+  destroy(): void;
 }
 
 export interface Range<T> {

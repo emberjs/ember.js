@@ -10,11 +10,11 @@ export interface ModifierManager<T> {
   // element it is managing. It can also return a bucket of state that
   // it could use at update time. From the perspective of Glimmer, this
   // is an opaque token.
-  install(modifier: T);
+  install(modifier: T): void;
 
   // When the args have changed, the modifier's `update` hook is called
   // with its state bucket as well as the updated args.
-  update(modifier: T);
+  update(modifier: T): void;
 
   // Convert the opaque token into an object that implements Destroyable.
   // If it returns null, the modifier will not be destroyed.

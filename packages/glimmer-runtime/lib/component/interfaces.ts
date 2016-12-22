@@ -43,17 +43,17 @@ export interface ComponentManager<T extends Component> {
   //
   // Hosts should use `didCreate`, which runs asynchronously after the rendering
   // process, to provide hooks for user code.
-  didCreateElement(component: T, element: Simple.Element, operations: ElementOperations);
+  didCreateElement(component: T, element: Simple.Element, operations: ElementOperations): void;
 
   // This hook is run after the entire layout has been rendered.
   //
   // Hosts should use `didCreate`, which runs asynchronously after the rendering
   // process, to provide hooks for user code.
-  didRenderLayout(component: T, bounds: Bounds);
+  didRenderLayout(component: T, bounds: Bounds): void;
 
   // Once the whole top-down rendering process is complete, Glimmer invokes
   // the `didCreate` callbacks.
-  didCreate(component: T);
+  didCreate(component: T): void;
 
   // Convert the opaque component into a `RevisionTag` that determins when
   // the component's update hooks need to be called, in addition to any
@@ -64,17 +64,17 @@ export interface ComponentManager<T extends Component> {
 
   // When the input arguments have changed, and top-down revalidation has
   // begun, the manager's `update` hook is called.
-  update(component: T, args: EvaluatedArgs, dynamicScope: DynamicScope);
+  update(component: T, args: EvaluatedArgs, dynamicScope: DynamicScope): void;
 
   // This hook is run after the entire layout has been updated.
   //
   // Hosts should use `didUpdate`, which runs asynchronously after the rendering
   // process, to provide hooks for user code.
-  didUpdateLayout(component: T, bounds: Bounds);
+  didUpdateLayout(component: T, bounds: Bounds): void;
 
   // Finally, once top-down revalidation has completed, Glimmer invokes
   // the `didUpdate` callbacks on components that changed.
-  didUpdate(component: T);
+  didUpdate(component: T): void;
 
   // Convert the opaque component into an object that implements Destroyable.
   // If it returns null, the component will not be destroyed.
@@ -86,18 +86,18 @@ export interface ComponentLayoutBuilder {
   tag: ComponentTagBuilder;
   attrs: ComponentAttrsBuilder;
 
-  wrapLayout(layout: Layout);
-  fromLayout(layout: Layout);
+  wrapLayout(layout: Layout): void;
+  fromLayout(layout: Layout): void;
 }
 
 export interface ComponentTagBuilder {
-  static(tagName: string);
-  dynamic(tagName: FunctionExpression<string>);
+  static(tagName: string): void;
+  dynamic(tagName: FunctionExpression<string>): void;
 }
 
 export interface ComponentAttrsBuilder {
-  static(name: string, value: string);
-  dynamic(name: string, value: FunctionExpression<string>);
+  static(name: string, value: string): void;
+  dynamic(name: string, value: FunctionExpression<string>): void;
 }
 
 const COMPONENT_DEFINITION_BRAND = 'COMPONENT DEFINITION [id=e59c754e-61eb-4392-8c4a-2c0ac72bfcd4]';
@@ -111,9 +111,8 @@ export abstract class ComponentDefinition<T> {
   public manager: ComponentManager<T>;
   public ComponentClass: ComponentClass;
 
-  private ['COMPONENT DEFINITION [id=e59c754e-61eb-4392-8c4a-2c0ac72bfcd4]'] = true;
-
   constructor(name: string, manager: ComponentManager<T>, ComponentClass: ComponentClass) {
+    this[COMPONENT_DEFINITION_BRAND] = true;
     this.name = name;
     this.manager = manager;
     this.ComponentClass = ComponentClass;
