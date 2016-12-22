@@ -4,6 +4,7 @@ import { VM, UpdatingVM } from './vm';
 import { CompiledExpression, CompiledArgs } from './compiled/expressions';
 import { NULL_REFERENCE, UNDEFINED_REFERENCE } from './references';
 import { InlineBlock } from './scanner';
+import { Opcode } from './environment';
 
 export type Slice = [number, number];
 
@@ -21,7 +22,7 @@ export function pretty(json: OpcodeJSON): string {
 }
 
 export function defaultToJSON(opcode: AppendOpcode): OpcodeJSON {
-  return { type: opcode.type };
+  return { type: opcode[0] };
 }
 
 export type OpcodeName =
@@ -197,7 +198,7 @@ export type Operand3 = number;
 
 export type AppendOpcodeData = [Operand1, Operand2, Operand3];
 export type OpcodeToJSON = (data: AppendOpcode, constants: Constants) => OpcodeJSON;
-export type EvaluateOpcode<T extends AppendOpcodeData> = (vm: VM, op1: Operand1, op2: Operand2, op3: Operand3) => void;
+export type EvaluateOpcode<T extends AppendOpcodeData> = (vm: VM, opcode: Opcode) => void;
 
 export class AppendOpcodes {
   private map = dict<number>();
@@ -211,30 +212,18 @@ export class AppendOpcodes {
     this.evaluateOpcode.push(evaluate);
   }
 
-  construct<Name extends OpcodeName>(name: Name, debug: Option<Object>, op1?: Operand1, op2?: Operand2, op3?: Operand3): AppendOpcode {
-    return {
-      type: this.map[name] as any as number,
-      name: name,
-      debug,
-      data: [op1 || 0, op2 || 0, op3 || 0]
-    };
+  construct<Name extends OpcodeName>(name: Name, _debug: Option<Object>, op1?: Operand1, op2?: Operand2, op3?: Operand3): AppendOpcode {
+    return [(this.map[name] as any)|0, (op1 || 0)|0, (op2 || 0)|0, (op3 || 0)|0];
   }
 
-  evaluate(vm: VM, { type, data }: AppendOpcode) {
-    LOGGER.debug(`[VM] OPCODE: ${this.names[type]}`);
-    let func = this.evaluateOpcode[type];
-    func(vm, data[0], data[1], data[2]);
+  evaluate(vm: VM, opcode: Opcode) {
+    LOGGER.debug(`[VM] OPCODE: ${this.names[opcode.type]}`);
+    let func = this.evaluateOpcode[opcode.type];
+    func(vm, opcode);
   }
 }
 
-export interface AppendOpcode {
-  type: number;
-  data: AppendOpcodeData;
-
-  // debug, should be stripped from prod builds
-  name: OpcodeName;
-  debug: Option<Object>;
-}
+export type AppendOpcode = [number, number, number, number];
 
 export const APPEND_OPCODES = new AppendOpcodes();
 

@@ -197,13 +197,77 @@ class Transaction {
   }
 }
 
+export class Opcode {
+  public offset = 0;
+  constructor(private array: Uint32Array) {}
+
+  get type() {
+    return this.array[this.offset];
+  }
+
+  get op1() {
+    return this.array[this.offset + 1];
+  }
+
+  get op2() {
+    return this.array[this.offset + 2];
+  }
+
+  get op3() {
+    return this.array[this.offset + 3];
+  }
+}
+
+export class Program {
+  [key: number]: never;
+
+  private opcodes = new Uint32Array(0x100000);
+  private _offset = 0;
+  private _opcode: Opcode;
+
+  constructor() {
+    this._opcode = new Opcode(this.opcodes);
+  }
+
+  get next(): number {
+    return this._offset;
+  }
+
+  get current(): number {
+    return this._offset - 4;
+  }
+
+  opcode(offset: number): Opcode {
+    this._opcode.offset = offset;
+    return this._opcode;
+  }
+
+  set(pos: number, opcode: AppendOpcode) {
+    let [type, op1, op2, op3] = opcode;
+    this.opcodes[pos] = type;
+    this.opcodes[pos + 1] = op1;
+    this.opcodes[pos + 2] = op2;
+    this.opcodes[pos + 3] = op3;
+  }
+
+  push(opcode: AppendOpcode): number {
+    let offset = this._offset;
+    let [type, op1, op2, op3] = opcode;
+    this.opcodes[this._offset++] = type;
+    this.opcodes[this._offset++] = op1;
+    this.opcodes[this._offset++] = op2;
+    this.opcodes[this._offset++] = op3;
+    return offset;
+  }
+}
+
 export abstract class Environment {
   protected updateOperations: DOMChanges;
   protected appendOperations: DOMTreeConstruction;
   private _macros: Option<{ blocks: Blocks, inlines: Inlines }> = null;
   private _transaction: Option<Transaction> = null;
   public constants: Constants = new Constants();
-  public program: AppendOpcode[] = [];
+  public program = new Program();
 
   constructor({ appendOperations, updateOperations }: { appendOperations: DOMTreeConstruction, updateOperations: DOMChanges }) {
     this.appendOperations = appendOperations;

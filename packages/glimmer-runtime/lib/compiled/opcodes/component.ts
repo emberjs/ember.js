@@ -20,12 +20,12 @@ APPEND_OPCODES.add('PutDynamicComponent', vm => {
   }
 });
 
-APPEND_OPCODES.add('PutComponent', (vm, _component) => {
+APPEND_OPCODES.add('PutComponent', (vm, { op1: _component }) => {
   let definition = vm.constants.getOther<ComponentDefinition<Component>>(_component);
   vm.frame.setImmediate(definition);
 });
 
-APPEND_OPCODES.add('OpenComponent', (vm, _args, _shadow) => {
+APPEND_OPCODES.add('OpenComponent', (vm, { op1: _args, op2: _shadow }) => {
   let rawArgs = vm.constants.getExpression<CompiledArgs>(_args);
   let shadow = vm.constants.getBlock(_shadow);
 

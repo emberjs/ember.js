@@ -23,15 +23,15 @@ import { ElementOperations } from '../../builder';
 import { Assert } from './vm';
 import { APPEND_OPCODES } from '../../opcodes';
 
-APPEND_OPCODES.add('Text', (vm, text) => {
+APPEND_OPCODES.add('Text', (vm, { op1: text }) => {
   vm.stack().appendText(vm.constants.getString(text));
 });
 
-APPEND_OPCODES.add('Comment', (vm, text) => {
+APPEND_OPCODES.add('Comment', (vm, { op1: text }) => {
   vm.stack().appendComment(vm.constants.getString(text));
 });
 
-APPEND_OPCODES.add('OpenElement', (vm, tag) => {
+APPEND_OPCODES.add('OpenElement', (vm, { op1: tag }) => {
   vm.stack().openElement(vm.constants.getString(tag));
 });
 
@@ -49,7 +49,7 @@ APPEND_OPCODES.add('PushRemoteElement', vm => {
 
 APPEND_OPCODES.add('PopRemoteElement', vm => vm.stack().popRemoteElement());
 
-APPEND_OPCODES.add('OpenComponentElement', (vm, _tag) => {
+APPEND_OPCODES.add('OpenComponentElement', (vm, { op1: _tag }) => {
   let tag = vm.constants.getString(_tag);
   vm.stack().openElement(tag, new ComponentElementOperations(vm.env));
 });
@@ -298,7 +298,7 @@ APPEND_OPCODES.add('CloseElement', vm => vm.stack().closeElement());
 
 APPEND_OPCODES.add('PopElement', vm => vm.stack().popElement());
 
-APPEND_OPCODES.add('StaticAttr', (vm, _name, _value, _namespace) => {
+APPEND_OPCODES.add('StaticAttr', (vm, { op1: _name, op2: _value, op3: _namespace }) => {
   let name = vm.constants.getString(_name);
   let value = vm.constants.getString(_value);
 
@@ -310,7 +310,7 @@ APPEND_OPCODES.add('StaticAttr', (vm, _name, _value, _namespace) => {
   }
 });
 
-APPEND_OPCODES.add('Modifier', (vm, _name, _manager, _args) => {
+APPEND_OPCODES.add('Modifier', (vm, { op1: _name, op2: _manager, op3: _args }) => {
   let manager = vm.constants.getOther<ModifierManager<Opaque>>(_manager);
   let rawArgs = vm.constants.getExpression<CompiledArgs>(_args);
   let stack = vm.stack();
@@ -454,14 +454,14 @@ function formatElement(element: Simple.Element): string {
   return JSON.stringify(`<${element.tagName.toLowerCase()} />`);
 }
 
-APPEND_OPCODES.add('DynamicAttrNS', (vm, _name, _namespace, trusting) => {
+APPEND_OPCODES.add('DynamicAttrNS', (vm, { op1: _name, op2: _namespace, op3: trusting }) => {
   let name = vm.constants.getString(_name);
   let namespace = vm.constants.getString(_namespace);
   let reference = vm.frame.getOperand<string>();
   vm.stack().setDynamicAttributeNS(namespace, name, reference, !!trusting);
 });
 
-APPEND_OPCODES.add('DynamicAttr', (vm, _name, trusting) => {
+APPEND_OPCODES.add('DynamicAttr', (vm, { op1: _name, op2: trusting }) => {
   let name = vm.constants.getString(_name);
   let reference = vm.frame.getOperand<string>();
   vm.stack().setDynamicAttribute(name, reference, !!trusting);
