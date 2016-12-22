@@ -1,51 +1,25 @@
-import { Opcode, OpcodeJSON } from '../../opcodes';
 import { CompiledGetBlock } from '../expressions/has-block';
-import { CompiledArgs } from '../expressions/args';
-import { VM } from '../../vm';
+import { CompiledArgs, EvaluatedArgs } from '../expressions/args';
+import { APPEND_OPCODES } from '../../opcodes';
+import { Option } from 'glimmer-util';
 
-export class OpenBlockOpcode extends Opcode {
-  type = "open-block";
+APPEND_OPCODES.add('OpenBlock', (vm, _getBlock, _args) => {
+  let inner = vm.constants.getOther<CompiledGetBlock>(_getBlock);
+  let rawArgs = vm.constants.getExpression<CompiledArgs>(_args);
+  let args: Option<EvaluatedArgs> = null;
 
-  constructor(
-    private inner: CompiledGetBlock,
-    private args: CompiledArgs
-  ) {
-    super();
+  let block = inner.evaluate(vm);
+
+  if (block) {
+    args = rawArgs.evaluate(vm);
   }
 
-  evaluate(vm: VM) {
-    let block = this.inner.evaluate(vm);
-    let args;
+  // FIXME: can we avoid doing this when we don't have a block?
+  vm.pushCallerScope();
 
-    if (block) {
-      args = this.args.evaluate(vm);
-    }
-
-    // FIXME: can we avoid doing this when we don't have a block?
-    vm.pushCallerScope();
-
-    if (block) {
-      vm.invokeBlock(block, args || null);
-    }
+  if (block) {
+    vm.invokeBlock(block, args || null);
   }
+});
 
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      details: {
-        "block": this.inner.toJSON(),
-        "positional": this.args.positional.toJSON(),
-        "named": this.args.named.toJSON()
-      }
-    };
-  }
-}
-
-export class CloseBlockOpcode extends Opcode {
-  public type = "close-block";
-
-  evaluate(vm: VM) {
-    vm.popScope();
-  }
-}
+APPEND_OPCODES.add('CloseBlock', vm => vm.popScope());

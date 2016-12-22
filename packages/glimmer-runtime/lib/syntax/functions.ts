@@ -86,7 +86,7 @@ STATEMENTS.add('modifier', (sexp: S.Modifier, builder: OpcodeBuilder) => {
 
 STATEMENTS.add('static-attr', (sexp: S.StaticAttr, builder: OpcodeBuilder) => {
   let [, name, value, namespace] = sexp;
-  builder.staticAttr(name, namespace, value);
+  builder.staticAttr(name, namespace, value as string);
 });
 
 STATEMENTS.add('any-dynamic-attr', (sexp: BaselineSyntax.AnyDynamicAttr, builder: OpcodeBuilder) => {
@@ -477,16 +477,16 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.putArgs(args);
     builder.test('environment');
 
-    builder.block(null, b => {
+    builder.labelled(null, b => {
       if (_default && inverse) {
         b.jumpUnless('ELSE');
-        b.evaluate('default', _default);
+        b.evaluate(_default);
         b.jump('END');
         b.label('ELSE');
-        b.evaluate('inverse', inverse);
+        b.evaluate(inverse);
       } else if (_default) {
         b.jumpUnless('END');
-        b.evaluate('default', _default);
+        b.evaluate(_default);
       } else {
         throw unreachable();
       }
@@ -512,16 +512,16 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.putArgs(args);
     builder.test('environment');
 
-    builder.block(null, b => {
+    builder.labelled(null, b => {
       if (_default && inverse) {
         b.jumpIf('ELSE');
-        b.evaluate('default', _default);
+        b.evaluate(_default);
         b.jump('END');
         b.label('ELSE');
-        b.evaluate('inverse', inverse);
+        b.evaluate( inverse);
       } else if (_default) {
         b.jumpIf('END');
-        b.evaluate('default', _default);
+        b.evaluate(_default);
       } else {
         throw unreachable();
       }
@@ -547,16 +547,16 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.putArgs(args);
     builder.test('environment');
 
-    builder.block(null, b => {
+    builder.labelled(null, b => {
       if (_default && inverse) {
         b.jumpUnless('ELSE');
-        b.evaluate('default', _default);
+        b.evaluate(_default);
         b.jump('END');
         b.label('ELSE');
-        b.evaluate('inverse', inverse);
+        b.evaluate(inverse);
       } else if (_default) {
         b.jumpUnless('END');
-        b.evaluate('default', _default);
+        b.evaluate(_default);
       } else {
         throw unreachable();
       }
@@ -591,7 +591,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     let [,, params, hash, _default, inverse] = sexp;
     let args = compileArgs(params, hash, builder);
 
-    builder.block(args, b => {
+    builder.labelled(args, b => {
       b.putIterator();
 
       if (inverse) {
@@ -601,13 +601,13 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       }
 
       b.iter(b => {
-        b.evaluate('default', unwrap(_default));
+        b.evaluate(unwrap(_default));
       });
 
       if (inverse) {
         b.jump('END');
         b.label('ELSE');
-        b.evaluate('inverse', inverse);
+        b.evaluate(inverse);
       }
     });
   });

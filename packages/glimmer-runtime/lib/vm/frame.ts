@@ -3,7 +3,7 @@ import { Reference, PathReference, ReferenceIterator } from 'glimmer-reference';
 import { TRUST, Option, unwrap, expect } from 'glimmer-util';
 import { InlineBlock } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { Opcode, Slice } from '../opcodes';
+import { AppendOpcode, Slice } from '../opcodes';
 import { Component, ComponentManager } from '../component/interfaces';
 
 export class CapturedFrame {
@@ -181,7 +181,7 @@ export class FrameStack {
     return this.frame !== null;
   }
 
-  nextStatement(): Option<Opcode> {
+  nextStatement(): Option<AppendOpcode> {
     let ip = this.frames[unwrap(this.frame)].ip;
     let ops = this.getOps();
 

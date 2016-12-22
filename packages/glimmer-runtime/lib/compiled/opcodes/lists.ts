@@ -1,8 +1,7 @@
-import { Opcode, OpcodeJSON, Slice } from '../../opcodes';
-import { VM } from '../../vm';
 import { EvaluatedArgs } from '../expressions/args';
 import { expect } from 'glimmer-util';
 import { RevisionTag, Reference, ConstReference, ReferenceIterator, IterationArtifacts } from 'glimmer-reference';
+import { APPEND_OPCODES } from '../../opcodes';
 
 class IterablePresenceReference implements Reference<boolean> {
   public tag: RevisionTag;
@@ -18,101 +17,41 @@ class IterablePresenceReference implements Reference<boolean> {
   }
 }
 
-export class PutIteratorOpcode extends Opcode {
-  public type = "put-iterator";
+APPEND_OPCODES.add('PutIterator', vm => {
+  let listRef = vm.frame.getOperand();
+  let args = expect(vm.frame.getArgs(), 'PutIteratorOpcode expects a populated args register');
+  let iterable = vm.env.iterableFor(listRef, args);
+  let iterator = new ReferenceIterator(iterable);
 
-  evaluate(vm: VM) {
-    let listRef = vm.frame.getOperand();
-    let args = expect(vm.frame.getArgs(), 'PutIteratorOpcode expects a populated args register');
-    let iterable = vm.env.iterableFor(listRef, args);
-    let iterator = new ReferenceIterator(iterable);
+  vm.frame.setIterator(iterator);
+  vm.frame.setCondition(new IterablePresenceReference(iterator.artifacts));
+});
 
-    vm.frame.setIterator(iterator);
-    vm.frame.setCondition(new IterablePresenceReference(iterator.artifacts));
-  }
-}
+APPEND_OPCODES.add('EnterList', (vm, _slice) => {
+  vm.enterList(vm.constants.getSlice(_slice));
+});
 
-export class EnterListOpcode extends Opcode {
-  public type = "enter-list";
+APPEND_OPCODES.add('ExitList', vm => vm.exitList());
 
-  constructor(private slice: Slice) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    vm.enterList(this.slice);
-  }
-
-  toJSON(): OpcodeJSON {
-    let { type, _guid } = this;
-
-    return {
-      guid: _guid,
-      type,
-      args: [
-
-      ]
-    };
-  }
-}
-
-export class ExitListOpcode extends Opcode {
-  public type = "exit-list";
-
-  evaluate(vm: VM) {
-    vm.exitList();
-  }
-}
-
-export class EnterWithKeyOpcode extends Opcode {
-  public type = "enter-with-key";
-
-  constructor(private slice: Slice) {
-    super();
-  }
-
-  evaluate(vm: VM) {
-    let key = expect(vm.frame.getKey(), 'EnterWithKeyOpcode expects a populated key register');
-    vm.enterWithKey(key, this.slice);
-  }
-
-  toJSON(): OpcodeJSON {
-    let { _guid, type } = this;
-
-    return {
-      guid: _guid,
-      type,
-      args: [
-
-      ]
-    };
-  }
-}
+APPEND_OPCODES.add('EnterWithKey', (vm, _slice) => {
+  let key = expect(vm.frame.getKey(), 'EnterWithKeyOpcode expects a populated key register');
+  let slice = vm.constants.getSlice(_slice);
+  vm.enterWithKey(key, slice);
+});
 
 const TRUE_REF = new ConstReference(true);
 const FALSE_REF = new ConstReference(false);
 
-export class NextIterOpcode extends Opcode {
-  public type = "next-iter";
+APPEND_OPCODES.add('NextIter', (vm, end) => {
+  let item = vm.frame.getIterator().next();
 
-  private end: number;
-
-  constructor(end: number) {
-    super();
-    this.end = end;
+  if (item) {
+    vm.frame.setCondition(TRUE_REF);
+    vm.frame.setKey(item.key);
+    vm.frame.setOperand(item.value);
+    vm.frame.setArgs(EvaluatedArgs.positional([item.value, item.memo]));
+  } else {
+    vm.frame.setCondition(FALSE_REF);
+    vm.goto(end);
   }
-
-  evaluate(vm: VM) {
-    let item = vm.frame.getIterator().next();
-
-    if (item) {
-      vm.frame.setCondition(TRUE_REF);
-      vm.frame.setKey(item.key);
-      vm.frame.setOperand(item.value);
-      vm.frame.setArgs(EvaluatedArgs.positional([item.value, item.memo]));
-    } else {
-      vm.frame.setCondition(FALSE_REF);
-      vm.goto(this.end);
-    }
-  }
-}
+});

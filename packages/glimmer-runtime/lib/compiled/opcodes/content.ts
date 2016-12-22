@@ -12,11 +12,10 @@ import Upsert, {
 } from '../../upsert';
 import { isComponentDefinition } from '../../component/interfaces';
 import { DOMTreeConstruction } from '../../dom/helper';
-import { OpSeq, Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression, CompiledArgs } from '../expressions';
 import { VM, UpdatingVM } from '../../vm';
 import { TryOpcode, VMState } from '../../vm/update';
-import { EnterOpcode } from './vm';
 import { Reference, ReferenceCache, UpdatableTag, isModified, isConst, map } from 'glimmer-reference';
 import { FIXME, Option, Opaque, LinkedList, expect } from 'glimmer-util';
 import { Cursor, clear } from '../../bounds';
@@ -26,6 +25,12 @@ import { ConditionalReference } from '../../references';
 import { Environment } from '../../environment';
 import { UpdatableBlockTracker } from '../../builder';
 import { SymbolTable } from 'glimmer-interfaces';
+import { APPEND_OPCODES, AppendOpcode } from '../../opcodes';
+
+APPEND_OPCODES.add('DynamicContent', (vm, append) => {
+  let opcode = vm.constants.getOther(append) as AppendDynamicOpcode<Insertion>;
+  opcode.evaluate(vm);
+});
 
 function isEmpty(value: Opaque): boolean {
   return value === null || value === undefined || typeof value['toString'] !== 'function';
@@ -67,7 +72,9 @@ function normalizeValue(value: Opaque): CautiousInsertion {
   return String(value);
 }
 
-export abstract class AppendOpcode<T extends Insertion> extends Opcode {
+export type AppendDynamicOpcodeConstructor =  typeof OptimizedCautiousAppendOpcode | typeof OptimizedTrustingAppendOpcode;
+
+export abstract class AppendDynamicOpcode<T extends Insertion> {
   protected abstract normalize(reference: Reference<Opaque>): Reference<T>;
   protected abstract insert(dom: DOMTreeConstruction, cursor: Cursor, value: T): Upsert;
   protected abstract updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<T>, bounds: Fragment, upsert: Upsert): UpdatingOpcode;
@@ -95,19 +102,11 @@ export abstract class AppendOpcode<T extends Insertion> extends Opcode {
       vm.updateWith(this.updateWith(vm, reference, cache, bounds, upsert));
     }
   }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: ["$OPERAND"]
-    };
-  }
 }
 
-export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpcode<T> {
+export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDynamicOpcode<T> {
   protected abstract AppendOpcode: typeof OptimizedCautiousAppendOpcode | typeof OptimizedTrustingAppendOpcode;
-  private deopted: Option<OpSeq> = null;
+  private deopted: Option<AppendOpcode[]> = null;
 
   constructor(private expression: CompiledExpression<any>, private symbolTable: SymbolTable) {
     super();
@@ -129,7 +128,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
     }
   }
 
-  public deopt(env: Environment): OpSeq { // Public because it's used in the lazy deopt
+  public deopt(env: Environment): AppendOpcode[] { // Public because it's used in the lazy deopt
     // At compile time, we determined that this append callsite might refer
     // to a local variable/property lookup that resolves to a component
     // definition at runtime.
@@ -179,14 +178,14 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
     dsl.putValue(this.expression);
     dsl.test(IsComponentDefinitionReference.create);
 
-    dsl.block(null, (dsl, _BEGIN, END) => {
+    dsl.labelled(null, (dsl, _BEGIN, END) => {
       dsl.jumpUnless('VALUE');
       dsl.putDynamicComponentDefinition();
       dsl.openComponent(CompiledArgs.empty());
       dsl.closeComponent();
       dsl.jump(END);
       dsl.label('VALUE');
-      dsl.push(new this.AppendOpcode());
+      dsl.dynamicContent(new this.AppendOpcode());
     });
 
     let deopted = this.deopted = dsl.toOpSeq();
@@ -201,25 +200,6 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
     this.expression = null as FIXME<any, 'QUESTION'>;
 
     return deopted;
-  }
-
-  toJSON(): OpcodeJSON {
-    let { _guid: guid, type, deopted } = this;
-
-    if (deopted) {
-      return {
-        guid,
-        type,
-        deopted: true,
-        children: deopted.map(op => op.toJSON())
-      };
-    } else {
-      return {
-        guid,
-        type,
-        args: [this.expression.toJSON()]
-      };
-    }
   }
 }
 
@@ -334,8 +314,8 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
     let { bounds, appendOpcode, state } = this;
 
     let appendOps = appendOpcode.deopt(vm.env);
-    let enter     = expect(appendOps[2], 'hardcoded deopt logic') as EnterOpcode;
-    let ops       = enter.slice;
+    let enter     = expect(appendOps[2], 'hardcoded deopt logic');
+    let ops       = vm.constants.getSlice(enter.data[0]);
 
     let tracker = new UpdatableBlockTracker(bounds.parentElement());
     tracker.newBounds(this.bounds);
@@ -383,7 +363,7 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
   }
 }
 
-export class OptimizedCautiousAppendOpcode extends AppendOpcode<CautiousInsertion> {
+export class OptimizedCautiousAppendOpcode extends AppendDynamicOpcode<CautiousInsertion> {
   type = 'optimized-cautious-append';
 
   protected normalize(reference: Reference<Opaque>): Reference<CautiousInsertion> {
@@ -433,7 +413,7 @@ class GuardedCautiousUpdateOpcode extends GuardedUpdateOpcode<CautiousInsertion>
   }
 }
 
-export class OptimizedTrustingAppendOpcode extends AppendOpcode<TrustingInsertion> {
+export class OptimizedTrustingAppendOpcode extends AppendDynamicOpcode<TrustingInsertion> {
   type = 'optimized-trusting-append';
 
   protected normalize(reference: Reference<Opaque>): Reference<TrustingInsertion> {

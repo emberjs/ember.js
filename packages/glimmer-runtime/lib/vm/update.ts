@@ -18,7 +18,7 @@ import {
   INITIAL
 } from 'glimmer-reference';
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { OpcodeJSON, UpdatingOpcode, UpdatingOpSeq, Slice } from '../opcodes';
+import { Constants, OpcodeJSON, UpdatingOpcode, UpdatingOpSeq, Slice } from '../opcodes';
 import { DOMChanges } from '../dom/helper';
 import * as Simple from '../dom/interfaces';
 import { CapturedFrame } from './frame';
@@ -29,10 +29,13 @@ export default class UpdatingVM {
   public env: Environment;
   public dom: DOMChanges;
   public alwaysRevalidate: boolean;
+  public constants: Constants;
+
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 
   constructor(env: Environment, { alwaysRevalidate = false }) {
     this.env = env;
+    this.constants = env.constants;
     this.dom = env.getDOM();
     this.alwaysRevalidate = alwaysRevalidate;
   }
@@ -331,7 +334,7 @@ export class ListBlockOpcode extends BlockOpcode {
     super.evaluate(vm);
   }
 
-  vmForInsertion(nextSibling: Option<Simple.Node>) {
+  vmForInsertion(nextSibling: Option<Simple.Node>): VM {
     let { env, scope, dynamicScope } = this;
 
     let elementStack = ElementStack.forInitialRender(
