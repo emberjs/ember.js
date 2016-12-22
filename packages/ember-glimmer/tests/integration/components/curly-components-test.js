@@ -266,6 +266,20 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
   }
 
+  ['@test tagName can not be a computed property'](assert) {
+    let FooBarComponent = Component.extend({
+      tagName: computed(function() {
+        return 'foo-bar';
+      })
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, /You cannot use a computed property for the component's `tagName` \(<\(.+>\)\./);
+  }
+
   ['@test class is applied before didInsertElement'](assert) {
     let componentClass;
     let FooBarComponent = Component.extend({
