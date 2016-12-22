@@ -25,7 +25,7 @@ import { ConditionalReference } from '../../references';
 import { Environment } from '../../environment';
 import { UpdatableBlockTracker } from '../../builder';
 import { SymbolTable } from 'glimmer-interfaces';
-import { APPEND_OPCODES, AppendOpcode } from '../../opcodes';
+import { APPEND_OPCODES, Slice } from '../../opcodes';
 
 APPEND_OPCODES.add('DynamicContent', (vm, append) => {
   let opcode = vm.constants.getOther(append) as AppendDynamicOpcode<Insertion>;
@@ -106,7 +106,7 @@ export abstract class AppendDynamicOpcode<T extends Insertion> {
 
 export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDynamicOpcode<T> {
   protected abstract AppendOpcode: typeof OptimizedCautiousAppendOpcode | typeof OptimizedTrustingAppendOpcode;
-  private deopted: Option<AppendOpcode[]> = null;
+  private deopted: Option<Slice> = null;
 
   constructor(private expression: CompiledExpression<any>, private symbolTable: SymbolTable) {
     super();
@@ -128,7 +128,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDyn
     }
   }
 
-  public deopt(env: Environment): AppendOpcode[] { // Public because it's used in the lazy deopt
+  public deopt(env: Environment): Slice { // Public because it's used in the lazy deopt
     // At compile time, we determined that this append callsite might refer
     // to a local variable/property lookup that resolves to a component
     // definition at runtime.
@@ -188,7 +188,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDyn
       dsl.dynamicContent(new this.AppendOpcode());
     });
 
-    let deopted = this.deopted = dsl.toOpSeq();
+    let deopted = this.deopted = dsl.toSlice();
 
     // From this point on, we have essentially replaced ourselves with a new set
     // of opcodes. Since we will always be executing the new/deopted code, it's
@@ -312,9 +312,10 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
     // execute the Try opcode and immediately throw.
 
     let { bounds, appendOpcode, state } = this;
+    let env = vm.env;
 
-    let appendOps = appendOpcode.deopt(vm.env);
-    let enter     = expect(appendOps[2], 'hardcoded deopt logic');
+    let slice     = appendOpcode.deopt(env);
+    let enter     = expect(env.program[slice[0] + 2], 'hardcoded deopt location');
     let ops       = vm.constants.getSlice(enter.data[0]);
 
     let tracker = new UpdatableBlockTracker(bounds.parentElement());

@@ -1,10 +1,11 @@
-import { Opaque, Option, Dict, Slice as ListSlice, initializeGuid, dict } from 'glimmer-util';
+import { LOGGER, Opaque, Option, Dict, Slice as ListSlice, initializeGuid, dict } from 'glimmer-util';
 import { RevisionTag, VersionedPathReference } from 'glimmer-reference';
 import { VM, UpdatingVM } from './vm';
 import { CompiledExpression, CompiledArgs } from './compiled/expressions';
 import { NULL_REFERENCE, UNDEFINED_REFERENCE } from './references';
-import { Slice } from './compiled/opcodes/builder';
 import { InlineBlock } from './scanner';
+
+export type Slice = [number, number];
 
 export interface OpcodeJSON {
   type: number | string;
@@ -220,7 +221,7 @@ export class AppendOpcodes {
   }
 
   evaluate(vm: VM, { type, data }: AppendOpcode) {
-    console.log(`[VM] OPCODE: ${this.names[type]}`);
+    LOGGER.debug(`[VM] OPCODE: ${this.names[type]}`);
     let func = this.evaluateOpcode[type];
     func(vm, data[0], data[1], data[2]);
   }
@@ -248,12 +249,6 @@ export abstract class AbstractOpcode {
   toJSON(): OpcodeJSON {
     return { guid: this._guid, type: this.type };
   }
-}
-
-export interface Slice {
-  ops: AppendOpcode[];
-  start: number;
-  end: number;
 }
 
 export abstract class UpdatingOpcode extends AbstractOpcode {

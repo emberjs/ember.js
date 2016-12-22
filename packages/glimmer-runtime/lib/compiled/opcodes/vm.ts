@@ -43,7 +43,6 @@ APPEND_OPCODES.add('BindNamedArgs', (vm, _names, _symbols) => {
 APPEND_OPCODES.add('BindBlocks', (vm, _names, _symbols) => {
   let names = vm.constants.getArray(_names);
   let symbols = vm.constants.getArray(_symbols);
-  console.log(`[VM] OPCODE: BindBlocks ${names.join(',')} ${symbols.join(',')}`);
   vm.bindBlocks(names, symbols);
 });
 

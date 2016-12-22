@@ -9,9 +9,9 @@ import {
   CompiledInPartialGetBlock
 } from '../../compiled/expressions/has-block';
 
-import { Option, Stack, Dict, Opaque, dict, assert, expect } from 'glimmer-util';
+import { Option, Stack, Dict, Opaque, dict, expect } from 'glimmer-util';
 import { expr } from '../../syntax/functions';
-import { Constants } from '../../opcodes';
+import { Constants, Slice } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
 import { CompiledExpression } from '../expressions';
 import { ComponentDefinition } from '../../component/interfaces';
@@ -20,7 +20,7 @@ import Environment from '../../environment';
 import { SymbolTable } from 'glimmer-interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
-import { BaselineSyntax, InlineBlock, Layout } from '../../scanner';
+import { BaselineSyntax, InlineBlock, Template } from '../../scanner';
 
 import {
   APPEND_OPCODES,
@@ -50,14 +50,6 @@ export interface SymbolLookup {
   symbolTable: SymbolTable;
 }
 
-export class Slice {
-  constructor(
-    public ops: AppendOpcode[],
-    public start: number,
-    public end: number
-  ) {}
-}
-
 type TargetOpcode = 'Jump' | 'JumpIf' | 'JumpUnless' | 'NextIter';
 type RangeOpcode = 'Enter' | 'EnterList' | 'EnterWithKey' | 'NextIter';
 
@@ -84,8 +76,7 @@ class Labels {
     }
 
     for (let { at, start, end, Range } of this.ranges) {
-      let _slice = new Slice(opcodes as AppendOpcode[], this.labels[start], this.labels[end] - 1);
-      let slice = constants.slice(_slice);
+      let slice = constants.slice([this.labels[start], this.labels[end] - 1]);
       opcodes[at] = APPEND_OPCODES.construct(Range, null, slice);
     }
   }
@@ -94,32 +85,31 @@ class Labels {
 export abstract class BasicOpcodeBuilder implements SymbolLookup {
   private labelsStack = new Stack<Labels>();
   public constants: Constants;
+  private start: number;
 
-  constructor(public symbolTable: SymbolTable, public env: Environment) {
+  constructor(public symbolTable: SymbolTable, public env: Environment, public program: Option<AppendOpcode>[]) {
     this.constants = env.constants;
+    this.start = program.length;
   }
 
   abstract compile<E>(expr: Represents<E>): E;
   abstract compileExpression(expr: RepresentsExpression): CompiledExpression<Opaque>;
 
-  private ops: Option<AppendOpcode>[] = [];
-
   private get pos() {
-    return this.ops.length - 1;
+    return this.program.length - 1;
   }
 
   private get nextPos() {
-    return this.ops.length;
+    return this.program.length;
   }
 
   push(op: Option<AppendOpcode>) {
     // console.log(`pushing ${op && op.type}`);
-    this.ops.push(op);
+    this.program.push(op);
   }
 
-  toOpSeq(): AppendOpcode[] {
-    assert(this.ops.every(op => op !== null), 'bug: holes left in the opseq');
-    return this.ops as AppendOpcode[];
+  toSlice(): Slice {
+    return [this.start, this.program.length - 1];
   }
 
   // helpers
@@ -134,7 +124,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
 
   stopLabels() {
     let label = expect(this.labelsStack.pop(), 'unbalanced push and pop labels');
-    label.patch(this.constants, this.ops);
+    label.patch(this.constants, this.program);
   }
 
   // partials
@@ -440,8 +430,8 @@ function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E>
 export default class OpcodeBuilder extends BasicOpcodeBuilder {
   public component: IComponentBuilder;
 
-  constructor(symbolTable: SymbolTable, env: Environment) {
-    super(symbolTable, env);
+  constructor(symbolTable: SymbolTable, env: Environment, program: AppendOpcode[] = env.program) {
+    super(symbolTable, env, program);
     this.component = new ComponentBuilder(this);
   }
 
@@ -466,7 +456,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.push(opcode('BindPositionalArgs', this.symbols(symbols)));
   }
 
-  preludeForLayout(layout: Layout) {
+  preludeForLayout(layout: Template) {
     let symbols = layout.symbolTable.getSymbols();
 
     if (symbols.named) {

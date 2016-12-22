@@ -44,13 +44,9 @@ export function compileLayout(compilable: CompilableLayout, env: Environment): C
 }
 
 class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
-  private inner: EmptyBuilder | WrappedBuilder | UnwrappedBuilder;
+  private inner: WrappedBuilder | UnwrappedBuilder;
 
   constructor(public env: Environment) {}
-
-  empty() {
-    this.inner = new EmptyBuilder(this.env);
-  }
 
   wrapLayout(layout: Layout) {
     this.inner = new WrappedBuilder(this.env, layout);
@@ -70,22 +66,6 @@ class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
 
   get attrs(): Component.ComponentAttrsBuilder {
     return this.inner.attrs;
-  }
-}
-
-class EmptyBuilder {
-  constructor(public env: Environment) {}
-
-  get tag(): Component.ComponentTagBuilder {
-    throw new Error('Nope');
-  }
-
-  get attrs(): Component.ComponentAttrsBuilder {
-    throw new Error('Nope');
-  }
-
-  compile(): CompiledProgram {
-    return new CompiledProgram([], 1);
   }
 }
 
@@ -167,7 +147,7 @@ class WrappedBuilder {
     b.didRenderLayout();
     b.stopLabels();
 
-    return new CompiledProgram(b.toOpSeq(), symbolTable.size);
+    return new CompiledProgram(b.toSlice(), symbolTable.size);
   }
 }
 
@@ -212,7 +192,7 @@ class UnwrappedBuilder {
     b.didRenderLayout();
     b.stopLabels();
 
-    return new CompiledProgram(b.toOpSeq(), layout.symbolTable.size);
+    return new CompiledProgram(b.toSlice(), layout.symbolTable.size);
   }
 }
 

@@ -23,10 +23,12 @@ export function compileStatement(statement: BaselineSyntax.AnyStatement, builder
   STATEMENTS.compile(refined, builder);
 }
 
-export abstract class Template {
-  abstract compile(env: Environment): CompiledBlock;
-
+export class Template {
   constructor(public statements: BaselineSyntax.AnyStatement[], public symbolTable: SymbolTable) {}
+}
+
+export class Layout extends Template {
+  public symbolTable: ProgramSymbolTable;
 }
 
 export class EntryPoint extends Template {
@@ -40,7 +42,8 @@ export class EntryPoint extends Template {
       let refined = SPECIALIZE.specialize(statement, table);
       STATEMENTS.compile(refined, b);
     }
-    return new CompiledProgram(b.toOpSeq(), this.symbolTable.size);
+
+    return new CompiledProgram(b.toSlice(), this.symbolTable.size);
   }
 }
 
@@ -71,19 +74,11 @@ export class InlineBlock extends Template {
 
     this.splat(b);
 
-    return new CompiledBlock(b.toOpSeq());
+    return new CompiledBlock(b.toSlice());
   }
 }
 
-export class Layout extends Template {
-  public symbolTable: ProgramSymbolTable;
-
-  compile(_env: Environment): CompiledProgram {
-    return new CompiledProgram([], 1);
-  }
-}
-
-export class PartialBlock extends Layout {
+export class PartialBlock extends Template {
   public symbolTable: ProgramSymbolTable;
 
   compile(env: Environment): CompiledProgram {
@@ -95,7 +90,7 @@ export class PartialBlock extends Layout {
       STATEMENTS.compile(refined, b);
     }
 
-    return new CompiledProgram(b.toOpSeq(), table.size);
+    return new CompiledProgram(b.toSlice(), table.size);
   }
 }
 
