@@ -21,21 +21,21 @@ import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { AttributeManager } from '../../dom/attribute-managers';
 import { ElementOperations } from '../../builder';
 import { Assert } from './vm';
-import { APPEND_OPCODES } from '../../opcodes';
+import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
 
-APPEND_OPCODES.add('Text', (vm, { op1: text }) => {
+APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.stack().appendText(vm.constants.getString(text));
 });
 
-APPEND_OPCODES.add('Comment', (vm, { op1: text }) => {
+APPEND_OPCODES.add(Op.Comment, (vm, { op1: text }) => {
   vm.stack().appendComment(vm.constants.getString(text));
 });
 
-APPEND_OPCODES.add('OpenElement', (vm, { op1: tag }) => {
+APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
   vm.stack().openElement(vm.constants.getString(tag));
 });
 
-APPEND_OPCODES.add('PushRemoteElement', vm => {
+APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   let reference = vm.frame.getOperand<Simple.Element>();
   let cache = isConstReference(reference) ? undefined : new ReferenceCache(reference);
   let element = cache ? cache.peek() : reference.value();
@@ -47,14 +47,14 @@ APPEND_OPCODES.add('PushRemoteElement', vm => {
   }
 });
 
-APPEND_OPCODES.add('PopRemoteElement', vm => vm.stack().popRemoteElement());
+APPEND_OPCODES.add(Op.PopRemoteElement, vm => vm.stack().popRemoteElement());
 
-APPEND_OPCODES.add('OpenComponentElement', (vm, { op1: _tag }) => {
+APPEND_OPCODES.add(Op.OpenComponentElement, (vm, { op1: _tag }) => {
   let tag = vm.constants.getString(_tag);
   vm.stack().openElement(tag, new ComponentElementOperations(vm.env));
 });
 
-APPEND_OPCODES.add('OpenDynamicElement', vm => {
+APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
   let tagName = vm.frame.getOperand<string>().value();
   vm.stack().openElement(tagName);
 });
@@ -286,7 +286,7 @@ export class ComponentElementOperations implements ElementOperations {
   }
 }
 
-APPEND_OPCODES.add('FlushElement', vm => {
+APPEND_OPCODES.add(Op.FlushElement, vm => {
   let stack = vm.stack();
 
   let action = 'FlushElementOpcode#evaluate';
@@ -294,11 +294,11 @@ APPEND_OPCODES.add('FlushElement', vm => {
   stack.flushElement();
 });
 
-APPEND_OPCODES.add('CloseElement', vm => vm.stack().closeElement());
+APPEND_OPCODES.add(Op.CloseElement, vm => vm.stack().closeElement());
 
-APPEND_OPCODES.add('PopElement', vm => vm.stack().popElement());
+APPEND_OPCODES.add(Op.PopElement, vm => vm.stack().popElement());
 
-APPEND_OPCODES.add('StaticAttr', (vm, { op1: _name, op2: _value, op3: _namespace }) => {
+APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespace }) => {
   let name = vm.constants.getString(_name);
   let value = vm.constants.getString(_value);
 
@@ -310,7 +310,7 @@ APPEND_OPCODES.add('StaticAttr', (vm, { op1: _name, op2: _value, op3: _namespace
   }
 });
 
-APPEND_OPCODES.add('Modifier', (vm, { op1: _name, op2: _manager, op3: _args }) => {
+APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _name, op2: _manager, op3: _args }) => {
   let manager = vm.constants.getOther<ModifierManager<Opaque>>(_manager);
   let rawArgs = vm.constants.getExpression<CompiledArgs>(_args);
   let stack = vm.stack();
@@ -454,14 +454,14 @@ function formatElement(element: Simple.Element): string {
   return JSON.stringify(`<${element.tagName.toLowerCase()} />`);
 }
 
-APPEND_OPCODES.add('DynamicAttrNS', (vm, { op1: _name, op2: _namespace, op3: trusting }) => {
+APPEND_OPCODES.add(Op.DynamicAttrNS, (vm, { op1: _name, op2: _namespace, op3: trusting }) => {
   let name = vm.constants.getString(_name);
   let namespace = vm.constants.getString(_namespace);
   let reference = vm.frame.getOperand<string>();
   vm.stack().setDynamicAttributeNS(namespace, name, reference, !!trusting);
 });
 
-APPEND_OPCODES.add('DynamicAttr', (vm, { op1: _name, op2: trusting }) => {
+APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting }) => {
   let name = vm.constants.getString(_name);
   let reference = vm.frame.getOperand<string>();
   vm.stack().setDynamicAttribute(name, reference, !!trusting);

@@ -24,7 +24,7 @@ import { BaselineSyntax, InlineBlock, Template } from '../../scanner';
 
 import {
   APPEND_OPCODES,
-  OpcodeName,
+  OpcodeName as Op,
   AppendOpcode,
   ConstantArray,
   ConstantOther,
@@ -32,7 +32,7 @@ import {
   ConstantBlock
 } from '../../opcodes';
 
-function opcode(name: OpcodeName, op1?: number, op2?: number, op3?: number): AppendOpcode {
+function opcode(name: Op, op1?: number, op2?: number, op3?: number): AppendOpcode {
   return APPEND_OPCODES.construct(name, null, op1, op2, op3);
 }
 
@@ -50,8 +50,8 @@ export interface SymbolLookup {
   symbolTable: SymbolTable;
 }
 
-type TargetOpcode = 'Jump' | 'JumpIf' | 'JumpUnless' | 'NextIter';
-type RangeOpcode = 'Enter' | 'EnterList' | 'EnterWithKey' | 'NextIter';
+type TargetOpcode = Op.Jump | Op.JumpIf | Op.JumpUnless | Op.NextIter;
+type RangeOpcode = Op.Enter | Op.EnterList | Op.EnterWithKey | Op.NextIter;
 
 class Labels {
   labels = dict<number>();
@@ -103,6 +103,10 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     return this.program.next;
   }
 
+  protected opcode(name: Op, op1?: number, op2?: number, op3?: number) {
+    this.push(opcode(name, op1, op2, op3));
+  }
+
   push(op: Option<AppendOpcode>) {
     // console.log(`pushing ${op && op.type}`);
     if (op === null) {
@@ -135,52 +139,52 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
 
   putPartialDefinition(_definition: PartialDefinition<Opaque>) {
     let definition = this.constants.other(_definition);
-    this.push(opcode('PutPartial', definition));
+    this.opcode(Op.PutPartial, definition);
   }
 
   putDynamicPartialDefinition() {
-    this.push(opcode('PutDynamicPartial', this.constants.other(this.symbolTable)));
+    this.opcode(Op.PutDynamicPartial, this.constants.other(this.symbolTable));
   }
 
   evaluatePartial() {
-    this.push(opcode('EvaluatePartial', this.constants.other(this.symbolTable), this.constants.other(dict())));
+    this.opcode(Op.EvaluatePartial, this.constants.other(this.symbolTable), this.constants.other(dict()));
   }
 
   // components
 
   putComponentDefinition(definition: ComponentDefinition<Opaque>) {
-    this.push(opcode('PutComponent', this.other(definition)));
+    this.opcode(Op.PutComponent, this.other(definition));
   }
 
   putDynamicComponentDefinition() {
-    this.push(opcode('PutDynamicComponent'));
+    this.opcode(Op.PutDynamicComponent);
   }
 
   openComponent(args: Represents<CompiledArgs>, shadow?: InlineBlock) {
-    this.push(opcode('OpenComponent', this.args(args), shadow ? this.block(shadow) : 0));
+    this.opcode(Op.OpenComponent, this.args(args), shadow ? this.block(shadow) : 0);
   }
 
   didCreateElement() {
-    this.push(opcode('DidCreateElement'));
+    this.opcode(Op.DidCreateElement);
   }
 
   shadowAttributes() {
-    this.push(opcode('ShadowAttributes'));
-    this.push(opcode('CloseBlock'));
+    this.opcode(Op.ShadowAttributes);
+    this.opcode(Op.CloseBlock);
   }
 
   didRenderLayout() {
-    this.push(opcode('DidRenderLayout'));
+    this.opcode(Op.DidRenderLayout);
   }
 
   closeComponent() {
-    this.push(opcode('CloseComponent'));
+    this.opcode(Op.CloseComponent);
   }
 
   // content
 
   dynamicContent(Opcode: content.AppendDynamicOpcode<Insertion>) {
-    this.push(opcode('DynamicContent', this.other(Opcode)));
+    this.opcode(Op.DynamicContent, this.other(Opcode));
   }
 
   cautiousAppend() {
@@ -202,27 +206,27 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   // dom
 
   text(text: string) {
-    this.push(opcode('Text', this.constants.string(text)));
+    this.opcode(Op.Text, this.constants.string(text));
   }
 
   openPrimitiveElement(tag: string) {
-    this.push(opcode('OpenElement', this.constants.string(tag)));
+    this.opcode(Op.OpenElement, this.constants.string(tag));
   }
 
   openComponentElement(tag: string) {
-    this.push(opcode('OpenComponentElement', this.constants.string(tag)));
+    this.opcode(Op.OpenComponentElement, this.constants.string(tag));
   }
 
   openDynamicPrimitiveElement() {
-    this.push(opcode('OpenDynamicElement'));
+    this.opcode(Op.OpenDynamicElement);
   }
 
   flushElement() {
-    this.push(opcode('FlushElement'));
+    this.opcode(Op.FlushElement);
   }
 
   closeElement() {
-    this.push(opcode('CloseElement'));
+    this.opcode(Op.CloseElement);
   }
 
   staticAttr(_name: string, _namespace: Option<string>, _value: string) {
@@ -230,24 +234,24 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     let namespace = _namespace ? this.constants.string(_namespace) : 0;
     let value = this.constants.string(_value);
 
-    this.push(opcode('StaticAttr', name, value, namespace));
+    this.opcode(Op.StaticAttr, name, value, namespace);
   }
 
   dynamicAttrNS(_name: string, _namespace: string, trusting: boolean) {
     let name = this.constants.string(_name);
     let namespace = this.constants.string(_namespace);
 
-    this.push(opcode('DynamicAttrNS', name, namespace, (trusting as any)|0));
+    this.opcode(Op.DynamicAttrNS, name, namespace, (trusting as any)|0);
   }
 
   dynamicAttr(_name: string, trusting: boolean) {
     let name = this.constants.string(_name);
-    this.push(opcode('DynamicAttr', name, (trusting as any)|0));
+    this.opcode(Op.DynamicAttr, name, (trusting as any)|0);
   }
 
   comment(_comment: string) {
     let comment = this.constants.string(_comment);
-    this.push(opcode('Comment', comment));
+    this.opcode(Op.Comment, comment);
   }
 
   modifier(_name: string, _args: Represents<CompiledArgs>) {
@@ -255,32 +259,32 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     let _modifierManager = this.env.lookupModifier([_name], this.symbolTable);
     let modifierManager = this.constants.other(_modifierManager);
     let name = this.constants.string(_name);
-    this.push(opcode('Modifier', name, modifierManager, args));
+    this.opcode(Op.Modifier, name, modifierManager, args);
   }
 
   // lists
 
   putIterator() {
-    this.push(opcode('PutIterator'));
+    this.opcode(Op.PutIterator);
   }
 
   enterList(start: string, end: string) {
     this.push(null);
-    this.labels.range(this.pos, 'EnterList', start, end);
+    this.labels.range(this.pos, Op.EnterList, start, end);
   }
 
   exitList() {
-    this.push(opcode('ExitList'));
+    this.opcode(Op.ExitList);
   }
 
   enterWithKey(start: string, end: string) {
     this.push(null);
-    this.labels.range(this.pos, 'EnterWithKey', start, end);
+    this.labels.range(this.pos, Op.EnterWithKey, start, end);
   }
 
   nextIter(end: string) {
     this.push(null);
-    this.labels.jump(this.pos, 'NextIter', end);
+    this.labels.jump(this.pos, Op.NextIter, end);
   }
 
   // vm
@@ -288,23 +292,23 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   openBlock(_args: Represents<CompiledArgs>, _inner: CompiledGetBlock) {
     let args = this.constants.expression(this.compile(_args));
     let inner = this.constants.other(_inner);
-    this.push(opcode('OpenBlock', inner, args));
+    this.opcode(Op.OpenBlock, inner, args);
   }
 
   closeBlock() {
-    this.push(opcode('CloseBlock'));
+    this.opcode(Op.CloseBlock);
   }
 
   pushRemoteElement() {
-    this.push(opcode('PushRemoteElement'));
+    this.opcode(Op.PushRemoteElement);
   }
 
   popRemoteElement() {
-    this.push(opcode('PopRemoteElement'));
+    this.opcode(Op.PopRemoteElement);
   }
 
   popElement() {
-    this.push(opcode('PopElement'));
+    this.opcode(Op.PopElement);
   }
 
   label(name: string) {
@@ -312,63 +316,63 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   }
 
   pushChildScope() {
-    this.push(opcode('PushChildScope'));
+    this.opcode(Op.PushChildScope);
   }
 
   popScope() {
-    this.push(opcode('PopScope'));
+    this.opcode(Op.PopScope);
   }
 
   pushDynamicScope() {
-    this.push(opcode('PushDynamicScope'));
+    this.opcode(Op.PushDynamicScope);
   }
 
   popDynamicScope() {
-    this.push(opcode('PopDynamicScope'));
+    this.opcode(Op.PopDynamicScope);
   }
 
   putNull() {
-    this.push(opcode('Put', this.constants.NULL_REFERENCE));
+    this.opcode(Op.Put, this.constants.NULL_REFERENCE);
   }
 
   putValue(_expression: RepresentsExpression) {
     let expr = this.constants.expression(this.compileExpression(_expression));
-    this.push(opcode('EvaluatePut', expr));
+    this.opcode(Op.EvaluatePut, expr);
   }
 
   putArgs(_args: Represents<CompiledArgs>) {
     let args = this.constants.expression(this.compile(_args));
-    this.push(opcode('PutArgs', args));
+    this.opcode(Op.PutArgs, args);
   }
 
   bindDynamicScope(_names: string[]) {
-    this.push(opcode('BindDynamicScope', this.names(_names)));
+    this.opcode(Op.BindDynamicScope, this.names(_names));
   }
 
   bindPositionalArgs(_names: string[], _symbols: number[]) {
-    this.push(opcode('BindPositionalArgs', this.names(_names), this.symbols(_symbols)));
+    this.opcode(Op.BindPositionalArgs, this.names(_names), this.symbols(_symbols));
   }
 
   bindNamedArgs(_names: string[], _symbols: number[]) {
-    this.push(opcode('BindNamedArgs', this.names(_names), this.symbols(_symbols)));
+    this.opcode(Op.BindNamedArgs, this.names(_names), this.symbols(_symbols));
   }
 
   bindBlocks(_names: string[], _symbols: number[]) {
-    this.push(opcode('BindBlocks', this.names(_names), this.symbols(_symbols)));
+    this.opcode(Op.BindBlocks, this.names(_names), this.symbols(_symbols));
   }
 
   enter(enter: string, exit: string) {
     this.push(null);
-    this.labels.range(this.pos, 'Enter', enter, exit);
+    this.labels.range(this.pos, Op.Enter, enter, exit);
   }
 
   exit() {
-    this.push(opcode('Exit'));
+    this.opcode(Op.Exit);
   }
 
   evaluate(_block: InlineBlock) {
     let block = this.constants.block(_block);
-    this.push(opcode('Evaluate', block));
+    this.opcode(Op.Evaluate, block);
   }
 
   test(testFunc: 'const' | 'simple' | 'environment' | vm.TestFunction) {
@@ -387,22 +391,22 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     }
 
     let func = this.constants.function(_func);
-    this.push(opcode('Test', func));
+    this.opcode(Op.Test, func);
   }
 
   jump(target: string) {
     this.push(null);
-    this.labels.jump(this.pos, 'Jump', target);
+    this.labels.jump(this.pos, Op.Jump, target);
   }
 
   jumpIf(target: string) {
     this.push(null);
-    this.labels.jump(this.pos, 'JumpIf', target);
+    this.labels.jump(this.pos, Op.JumpIf, target);
   }
 
   jumpUnless(target: string) {
     this.push(null);
-    this.labels.jump(this.pos, 'JumpUnless', target);
+    this.labels.jump(this.pos, Op.JumpUnless, target);
   }
 
   protected names(_names: string[]): ConstantArray {
@@ -457,7 +461,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
   bindPositionalArgsForLocals(locals: Dict<number>) {
     let symbols = Object.keys(locals).map(name => locals[name]);
-    this.push(opcode('BindPositionalArgs', this.symbols(symbols)));
+    this.opcode(Op.BindPositionalArgs, this.symbols(symbols));
   }
 
   preludeForLayout(layout: Template) {
@@ -467,20 +471,20 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
       let named = symbols.named;
       let namedNames = Object.keys(named);
       let namedSymbols = namedNames.map(n => named[n]);
-      this.push(opcode('BindNamedArgs', this.names(namedNames), this.symbols(namedSymbols)));
+      this.opcode(Op.BindNamedArgs, this.names(namedNames), this.symbols(namedSymbols));
     }
 
-    this.push(opcode('BindCallerScope'));
+    this.opcode(Op.BindCallerScope);
 
     if (symbols.yields) {
       let yields = symbols.yields;
       let yieldNames = Object.keys(yields);
       let yieldSymbols = yieldNames.map(n => yields[n]);
-      this.push(opcode('BindBlocks', this.names(yieldNames), this.symbols(yieldSymbols)));
+      this.opcode(Op.BindBlocks, this.names(yieldNames), this.symbols(yieldSymbols));
     }
 
     if (symbols.partialArgs) {
-      this.push(opcode('BindPartialArgs', symbols.partialArgs));
+      this.opcode(Op.BindPartialArgs, symbols.partialArgs);
     }
   }
 

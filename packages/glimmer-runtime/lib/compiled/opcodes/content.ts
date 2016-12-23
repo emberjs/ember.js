@@ -25,9 +25,9 @@ import { ConditionalReference } from '../../references';
 import { Environment } from '../../environment';
 import { UpdatableBlockTracker } from '../../builder';
 import { SymbolTable } from 'glimmer-interfaces';
-import { APPEND_OPCODES, Slice } from '../../opcodes';
+import { APPEND_OPCODES, OpcodeName as Op, Slice } from '../../opcodes';
 
-APPEND_OPCODES.add('DynamicContent', (vm, { op1: append }) => {
+APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: append }) => {
   let opcode = vm.constants.getOther(append) as AppendDynamicOpcode<Insertion>;
   opcode.evaluate(vm);
 });

@@ -1,4 +1,4 @@
-import { LOGGER, Opaque, Option, Dict, Slice as ListSlice, initializeGuid, dict } from 'glimmer-util';
+import { LOGGER, Opaque, Option, Dict, Slice as ListSlice, initializeGuid, fillNulls } from 'glimmer-util';
 import { RevisionTag, VersionedPathReference } from 'glimmer-reference';
 import { VM, UpdatingVM } from './vm';
 import { CompiledExpression, CompiledArgs } from './compiled/expressions';
@@ -25,60 +25,115 @@ export function defaultToJSON(opcode: AppendOpcode): OpcodeJSON {
   return { type: opcode[0] };
 }
 
-export type OpcodeName =
-    "PushChildScope"            // ()
-  | "PopScope"                  // ()
-  | "PushDynamicScope"          // ()
-  | "PopDynamicScope"           // ()
-  | "Put"                       // (ConstantReference)
-  | "EvaluatePut"               // (ConstantExpression)
-  | "PutArgs"                   // (ConstantExpression)
-  | "BindPositionalArgs"        //
-  | "BindNamedArgs"             // (ConstantArray<string>, ConstantArray<number>)
-  | "BindBlocks"                // (ConstantArray<string>, ConstantArray<number>)
-  | "BindPartialArgs"           // (number)
-  | "BindCallerScope"           // ()
-  | "BindDynamicScope"          // (ConstantArray<string>)
-  | "Enter"                     // (ConstantSlice)
-  | "Exit"                      // ()
-  | "Evaluate"                  // (ConstantBlock)
-  | "Jump"                      // (number)
-  | "JumpIf"                    // (number)
-  | "JumpUnless"                // (number)
-  | "Test"                      // (ConstantFunction)
-  | "OpenBlock"                 // (Other<CompiledGetBlock>, ConstantExpression)
-  | "CloseBlock"                // ()
-  | "PutDynamicComponent"       // ()
-  | "PutComponent"              // (Other<ComponentDefinition>)
-  | "OpenComponent"             // (ConstantExpression, ConstantBlock)
-  | "DidCreateElement"          //
-  | "ShadowAttributes"          // ()
-  | "DidRenderLayout"           // ()
-  | "CloseComponent"            // ()
-  | "Text"                      // (ConstantString)
-  | "Comment"                   // (ConstantString)
-  | "DynamicContent"            // (Other<AppendDynamicOpcode>)
-  | "OpenElement"               // (ConstantString)
-  | "PushRemoteElement"         // ()
-  | "PopRemoteElement"          // ()
-  | "OpenComponentElement"      // (ConstantString)
-  | "OpenDynamicElement"        // ()
-  | "FlushElement"              // ()
-  | "CloseElement"              // ()
-  | "PopElement"                // ()
-  | "StaticAttr"                // (ConstantString, ConstantString, ConstantString)
-  | "Modifier"                  // (ConstantString, ConstantOther<ModifierManager>, ConstantExpression)
-  | "DynamicAttrNS"             // (ConstantString, ConstantString, number)
-  | "DynamicAttr"               // (ConstantString, number)
-  | "PutIterator"               // ()
-  | "EnterList"                 // (ConstantSlice)
-  | "ExitList"                  // ()
-  | "EnterWithKey"              // (ConstantSlice)
-  | "NextIter"                  // (number)
-  | "PutDynamicPartial"         // (Other<SymbolTable>)
-  | "PutPartial"                // (Other<PartialDefinition>)
-  | "EvaluatePartial"           // (Other<SymbolTable>, Other<Dict<PartialBlock>>)
-  ;
+export const enum OpcodeName {
+  PushChildScope,            // ()
+  PopScope,                  // ()
+  PushDynamicScope,          // ()
+  PopDynamicScope,           // ()
+  Put,                       // (ConstantReference)
+  EvaluatePut,               // (ConstantExpression)
+  PutArgs,                   // (ConstantExpression)
+  BindPositionalArgs,        //
+  BindNamedArgs,             // (ConstantArray<string>, ConstantArray<number>)
+  BindBlocks,                // (ConstantArray<string>, ConstantArray<number>)
+  BindPartialArgs,           // (number)
+  BindCallerScope,           // ()
+  BindDynamicScope,          // (ConstantArray<string>)
+  Enter,                     // (ConstantSlice)
+  Exit,                      // ()
+  Evaluate,                  // (ConstantBlock)
+  Jump,                      // (number)
+  JumpIf,                    // (number)
+  JumpUnless,                // (number)
+  Test,                      // (ConstantFunction)
+  OpenBlock,                 // (Other<CompiledGetBlock>, ConstantExpression)
+  CloseBlock,                // ()
+  PutDynamicComponent,       // ()
+  PutComponent,              // (Other<ComponentDefinition>)
+  OpenComponent,             // (ConstantExpression, ConstantBlock)
+  DidCreateElement,          //
+  ShadowAttributes,          // ()
+  DidRenderLayout,           // ()
+  CloseComponent,            // ()
+  Text,                      // (ConstantString)
+  Comment,                   // (ConstantString)
+  DynamicContent,            // (Other<AppendDynamicOpcode>)
+  OpenElement,               // (ConstantString)
+  PushRemoteElement,         // ()
+  PopRemoteElement,          // ()
+  OpenComponentElement,      // (ConstantString)
+  OpenDynamicElement,        // ()
+  FlushElement,              // ()
+  CloseElement,              // ()
+  PopElement,                // ()
+  StaticAttr,                // (ConstantString, ConstantString, ConstantString)
+  Modifier,                  // (ConstantString, ConstantOther<ModifierManager>, ConstantExpression)
+  DynamicAttrNS,             // (ConstantString, ConstantString, number)
+  DynamicAttr,               // (ConstantString, number)
+  PutIterator,               // ()
+  EnterList,                 // (ConstantSlice)
+  ExitList,                  // ()
+  EnterWithKey,              // (ConstantSlice)
+  NextIter,                  // (number)
+  PutDynamicPartial,         // (Other<SymbolTable>)
+  PutPartial,                // (Other<PartialDefinition>)
+  EvaluatePartial            // (Other<SymbolTable>, Other<Dict<PartialBlock>>)
+}
+
+// export type OpcodeName =
+//     "PushChildScope"            // ()
+//   | "PopScope"                  // ()
+//   | "PushDynamicScope"          // ()
+//   | "PopDynamicScope"           // ()
+//   | "Put"                       // (ConstantReference)
+//   | "EvaluatePut"               // (ConstantExpression)
+//   | "PutArgs"                   // (ConstantExpression)
+//   | "BindPositionalArgs"        //
+//   | "BindNamedArgs"             // (ConstantArray<string>, ConstantArray<number>)
+//   | "BindBlocks"                // (ConstantArray<string>, ConstantArray<number>)
+//   | "BindPartialArgs"           // (number)
+//   | "BindCallerScope"           // ()
+//   | "BindDynamicScope"          // (ConstantArray<string>)
+//   | "Enter"                     // (ConstantSlice)
+//   | "Exit"                      // ()
+//   | "Evaluate"                  // (ConstantBlock)
+//   | "Jump"                      // (number)
+//   | "JumpIf"                    // (number)
+//   | "JumpUnless"                // (number)
+//   | "Test"                      // (ConstantFunction)
+//   | "OpenBlock"                 // (Other<CompiledGetBlock>, ConstantExpression)
+//   | "CloseBlock"                // ()
+//   | "PutDynamicComponent"       // ()
+//   | "PutComponent"              // (Other<ComponentDefinition>)
+//   | "OpenComponent"             // (ConstantExpression, ConstantBlock)
+//   | "DidCreateElement"          //
+//   | "ShadowAttributes"          // ()
+//   | "DidRenderLayout"           // ()
+//   | "CloseComponent"            // ()
+//   | "Text"                      // (ConstantString)
+//   | "Comment"                   // (ConstantString)
+//   | "DynamicContent"            // (Other<AppendDynamicOpcode>)
+//   | "OpenElement"               // (ConstantString)
+//   | "PushRemoteElement"         // ()
+//   | "PopRemoteElement"          // ()
+//   | "OpenComponentElement"      // (ConstantString)
+//   | "OpenDynamicElement"        // ()
+//   | "FlushElement"              // ()
+//   | "CloseElement"              // ()
+//   | "PopElement"                // ()
+//   | "StaticAttr"                // (ConstantString, ConstantString, ConstantString)
+//   | "Modifier"                  // (ConstantString, ConstantOther<ModifierManager>, ConstantExpression)
+//   | "DynamicAttrNS"             // (ConstantString, ConstantString, number)
+//   | "DynamicAttr"               // (ConstantString, number)
+//   | "PutIterator"               // ()
+//   | "EnterList"                 // (ConstantSlice)
+//   | "ExitList"                  // ()
+//   | "EnterWithKey"              // (ConstantSlice)
+//   | "NextIter"                  // (number)
+//   | "PutDynamicPartial"         // (Other<SymbolTable>)
+//   | "PutPartial"                // (Other<PartialDefinition>)
+//   | "EvaluatePartial"           // (Other<SymbolTable>, Other<Dict<PartialBlock>>)
+//   ;
 
 export type ConstantType = 'slice' | 'block' | 'reference' | 'string' | 'number' | 'expression';
 export type ConstantReference =  number;
@@ -196,28 +251,22 @@ export type Operand1 = number;
 export type Operand2 = number;
 export type Operand3 = number;
 
-export type AppendOpcodeData = [Operand1, Operand2, Operand3];
 export type OpcodeToJSON = (data: AppendOpcode, constants: Constants) => OpcodeJSON;
-export type EvaluateOpcode<T extends AppendOpcodeData> = (vm: VM, opcode: Opcode) => void;
+export type EvaluateOpcode = (vm: VM, opcode: Opcode) => void;
 
 export class AppendOpcodes {
-  private map = dict<number>();
-  private names = dict<string>();
-  private evaluateOpcode: EvaluateOpcode<AppendOpcodeData>[] = [];
+  private evaluateOpcode: EvaluateOpcode[] = fillNulls<EvaluateOpcode>(OpcodeName.EvaluatePartial + 1);
 
-  add<Name extends OpcodeName>(name: Name, evaluate: EvaluateOpcode<AppendOpcodeData>) {
-    let index = this.evaluateOpcode.length;
-    this.map[name as string] = index;
-    this.names[index] = name;
-    this.evaluateOpcode.push(evaluate);
+  add<Name extends OpcodeName>(name: Name, evaluate: EvaluateOpcode): void {
+    this.evaluateOpcode[name as number] = evaluate;
   }
 
   construct<Name extends OpcodeName>(name: Name, _debug: Option<Object>, op1?: Operand1, op2?: Operand2, op3?: Operand3): AppendOpcode {
-    return [(this.map[name] as any)|0, (op1 || 0)|0, (op2 || 0)|0, (op3 || 0)|0];
+    return [(name as number)|0, (op1 || 0)|0, (op2 || 0)|0, (op3 || 0)|0];
   }
 
   evaluate(vm: VM, opcode: Opcode) {
-    LOGGER.debug(`[VM] OPCODE: ${this.names[opcode.type]}`);
+    LOGGER.debug(`[VM] OPCODE: ${opcode.type}`);
     let func = this.evaluateOpcode[opcode.type];
     func(vm, opcode);
   }
