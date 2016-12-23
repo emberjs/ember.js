@@ -19,3 +19,13 @@ export function assign(obj: any) {
   }
   return obj;
 }
+
+export function fillNulls<T>(count: number): T[] {
+  let arr = new Array(count);
+
+  for (let i=0; i<count; i++) {
+    arr[i] = null;
+  }
+
+  return arr;
+}

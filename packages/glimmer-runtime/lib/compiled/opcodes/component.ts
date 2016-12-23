@@ -6,9 +6,9 @@ import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
 import { CONSTANT_TAG, ReferenceCache, combine, isConst, RevisionTag } from 'glimmer-reference';
-import { APPEND_OPCODES } from '../../opcodes';
+import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
 
-APPEND_OPCODES.add('PutDynamicComponent', vm => {
+APPEND_OPCODES.add(Op.PutDynamicComponent, vm => {
   let reference = vm.frame.getOperand<ComponentDefinition<Component>>();
   let cache = isConst(reference) ? undefined : new ReferenceCache(reference);
   let definition = cache ? cache.peek() : reference.value();
@@ -20,12 +20,12 @@ APPEND_OPCODES.add('PutDynamicComponent', vm => {
   }
 });
 
-APPEND_OPCODES.add('PutComponent', (vm, { op1: _component }) => {
+APPEND_OPCODES.add(Op.PutComponent, (vm, { op1: _component }) => {
   let definition = vm.constants.getOther<ComponentDefinition<Component>>(_component);
   vm.frame.setImmediate(definition);
 });
 
-APPEND_OPCODES.add('OpenComponent', (vm, { op1: _args, op2: _shadow }) => {
+APPEND_OPCODES.add(Op.OpenComponent, (vm, { op1: _args, op2: _shadow }) => {
   let rawArgs = vm.constants.getExpression<CompiledArgs>(_args);
   let shadow = vm.constants.getBlock(_shadow);
 
@@ -71,7 +71,7 @@ APPEND_OPCODES.add('OpenComponent', (vm, { op1: _args, op2: _shadow }) => {
 //   }
 // }
 
-APPEND_OPCODES.add('DidCreateElement', vm => {
+APPEND_OPCODES.add(Op.DidCreateElement, vm => {
   let manager = vm.frame.getManager();
   let component = vm.frame.getComponent();
 
@@ -102,7 +102,7 @@ APPEND_OPCODES.add('DidCreateElement', vm => {
 
 // Slow path for non-specialized component invocations. Uses an internal
 // named lookup on the args.
-APPEND_OPCODES.add('ShadowAttributes', vm => {
+APPEND_OPCODES.add(Op.ShadowAttributes, vm => {
   let shadow = vm.frame.getShadow();
 
   vm.pushCallerScope();
@@ -127,7 +127,7 @@ APPEND_OPCODES.add('ShadowAttributes', vm => {
 //   }
 // }
 
-APPEND_OPCODES.add('DidRenderLayout', vm => {
+APPEND_OPCODES.add(Op.DidRenderLayout, vm => {
   let manager = vm.frame.getManager();
   let component = vm.frame.getComponent();
   let bounds = vm.stack().popBlock();
@@ -149,7 +149,7 @@ APPEND_OPCODES.add('DidRenderLayout', vm => {
 //   }
 // }
 
-APPEND_OPCODES.add('CloseComponent', vm => {
+APPEND_OPCODES.add(Op.CloseComponent, vm => {
   vm.popScope();
   vm.popDynamicScope();
   vm.commitCacheGroup();
