@@ -9,12 +9,11 @@ import {
   validatePositionalParameters
 } from '../syntax/curly-component';
 import {
-  Blocks,
   EvaluatedArgs,
   EvaluatedNamedArgs,
   EvaluatedPositionalArgs,
   isComponentDefinition
-} from 'glimmer-runtime';
+} from '@glimmer/runtime';
 import { assert } from 'ember-metal';
 
 /**
@@ -206,6 +205,11 @@ function createCurriedDefinition(definition, args) {
   );
 }
 
+const EMPTY_BLOCKS = {
+  default: null,
+  inverse: null
+};
+
 function curryArgs(definition, newArgs) {
   let { args, ComponentClass } = definition;
   let positionalParams = ComponentClass.class.positionalParams;
@@ -258,7 +262,7 @@ function curryArgs(definition, newArgs) {
   let mergedArgs = EvaluatedArgs.create(
     EvaluatedPositionalArgs.create(mergedPositional),
     EvaluatedNamedArgs.create(mergedNamed),
-    Blocks.empty()
+    EMPTY_BLOCKS
   );
 
   return mergedArgs;

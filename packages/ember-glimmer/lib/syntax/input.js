@@ -3,14 +3,13 @@
 @submodule ember-glimmer
 */
 import { assert } from 'ember-metal';
-import { CurlyComponentSyntax } from './curly-component';
-import { DynamicComponentSyntax } from './dynamic-component';
 import { wrapComponentClassAttribute } from '../utils/bindings';
+import { dynamicComponentMacro } from './dynamic-component';
 
-function buildTextFieldSyntax(args, getDefinition, symbolTable) {
-  let definition = getDefinition('-text-field');
-  wrapComponentClassAttribute(args);
-  return new CurlyComponentSyntax(args, definition, symbolTable);
+function buildTextFieldSyntax(params, hash, builder) {
+  let definition = builder.env.getComponentDefinition(['-text-field'], builder.symbolTable);
+  builder.component.static(definition, [params, hash, null, null], builder.symbolTable);
+  return true;
 }
 
 /**
@@ -145,31 +144,47 @@ function buildTextFieldSyntax(args, getDefinition, symbolTable) {
   @param {Hash} options
   @public
 */
-export const InputSyntax = {
-  create(environment, args, symbolTable) {
-    let getDefinition = (path) => environment.getComponentDefinition([path], symbolTable);
 
-    if (args.named.has('type')) {
-      let typeArg = args.named.at('type');
-      if (typeArg.type === 'value') {
-        if (typeArg.value === 'checkbox') {
-          assert(
-            '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
-              'you must use `checked=someBooleanValue` instead.',
-            !args.named.has('value')
-          );
+export function inputMacro(path, params, hash, builder) {
+  let keys;
+  let values;
+  let typeIndex = -1;
+  let valueIndex = -1;
 
-          wrapComponentClassAttribute(args);
-          let definition = getDefinition('-checkbox');
-          return new CurlyComponentSyntax(args, definition, symbolTable);
-        } else {
-          return buildTextFieldSyntax(args, getDefinition, symbolTable);
-        }
-      }
-    } else {
-      return buildTextFieldSyntax(args, getDefinition, symbolTable);
-    }
-
-    return DynamicComponentSyntax.create(environment, args, symbolTable);
+  if (hash) {
+    keys = hash[0];
+    values = hash[1];
+    typeIndex = keys.indexOf('type');
+    valueIndex = keys.indexOf('value');
   }
-};
+
+  if (!params) {
+    params = [];
+  }
+
+  if (typeIndex > -1) {
+    let typeArg = values[typeIndex];
+    if (!Array.isArray(typeArg)) {
+      if (typeArg === 'checkbox') {
+        assert(
+          '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
+            'you must use `checked=someBooleanValue` instead.',
+          valueIndex === -1
+        );
+
+        wrapComponentClassAttribute(hash);
+
+        let definition = builder.env.getComponentDefinition(['-checkbox'], builder.symbolTable);
+        builder.component.static(definition, [params, hash, null, null], builder.symbolTable);
+        return true;
+      } else {
+        return buildTextFieldSyntax(params, hash, builder);
+      }
+    }
+  } else {
+    return buildTextFieldSyntax(params, hash, builder);
+  }
+
+
+  return dynamicComponentMacro(params, hash, null, null, builder);
+}

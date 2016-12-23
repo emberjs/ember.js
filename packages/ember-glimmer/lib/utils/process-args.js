@@ -5,7 +5,7 @@ import {
 } from 'ember-utils';
 import {
   CONSTANT_TAG
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 import { ARGS } from '../component';
 import { UPDATE } from './references';
 import { MUTABLE_CELL } from 'ember-views';
@@ -13,7 +13,7 @@ import { ACTION } from '../helpers/action';
 import {
   EvaluatedArgs,
   EvaluatedPositionalArgs
-} from 'glimmer-runtime';
+} from '@glimmer/runtime';
 
 // Maps all variants of positional and dynamically scoped arguments
 // into the named arguments. Input `args` and return value are both

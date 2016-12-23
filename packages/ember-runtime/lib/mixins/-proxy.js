@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 
-import { CachedTag, DirtyableTag, UpdatableTag } from 'glimmer-reference';
+import { CachedTag, DirtyableTag, UpdatableTag } from '@glimmer/reference';
 import {
   assert,
   deprecate,

@@ -5,7 +5,7 @@
 
 import { symbol } from 'ember-utils';
 import { FrameworkObject } from 'ember-runtime';
-import { DirtyableTag } from 'glimmer-reference';
+import { DirtyableTag } from '@glimmer/reference';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 

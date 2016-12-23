@@ -107,6 +107,46 @@ function routeRecognizer() {
   });
 }
 
+function buildPackage(name, options) {
+  options = options ? options : {};
+  var packageJson = require(name + '/package');
+  var packageDir = path.dirname(require.resolve(name + '/package'));
+
+  if (options.entry && !options.srcDir) {
+    throw new Error('If resolving from a non-package.json entry point, you must supply the srcDirectory.');
+  }
+
+  var entryModule = packageJson['module'] || packageJson['js:next'] || packageJson['main'].replace(/dist\//, 'dist/es6/');
+  var funnelDir = path.join(packageDir, options.entry ? options.srcDir : path.dirname(entryModule));
+  var sourceEntry = options.entry ? options.entry : path.basename(entryModule);
+
+  var es6 = new Funnel(funnelDir, {
+    include: ['**/*.js' ]
+  });
+  var moduleId = options.moduleId ? options.moduleId : name;
+  var destination = options.dest ? options.dest + '.js': moduleId + '.js';
+  var external = options.external ? options.external : [];
+  var plugins = options.plugins ? options.plugins : [];
+  var rolledUp = new Rollup(es6, {
+    rollup: {
+      external: external,
+      entry: sourceEntry,
+      dest: destination,
+      plugins: plugins,
+      format: 'es',
+      moduleId: moduleId,
+      exports: 'named'
+    },
+    annotation: destination
+  });
+
+  var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
+
+  return transpileES6(rolledUp, name, {
+    stripRuntimeChecks: true
+  });
+}
+
 function router() {
   return new Rollup(path.resolve(path.dirname(require.resolve('router_js')), '../lib'), {
     rollup: {
@@ -197,27 +237,6 @@ function babelConfigFor(environment) {
   };
 }
 
-var glimmerEngine = require('glimmer-engine/ember-cli-build')({
-  shouldExternalizeHelpers: true,
-  stripRuntimeChecks: true
-});
-
-function glimmerPackage(name) {
-  return replace(new Funnel(glimmerEngine, {
-    include: [
-      'named-amd/' + name + '.js',
-      'named-amd/' + name + '/**/*.js'
-    ]
-  }), {
-    files: ['**/*.js'],
-    pattern: {
-      match: /\/\/#\s+sourceMappingURL.*/g,
-      replacement: ''
-    },
-    annotation: 'strip sourceMappingURL'
-  });
-}
-
 function getVersion() {
   var projectPath = process.cwd();
   var info = getGitInfo(projectPath);
@@ -254,6 +273,21 @@ function qunit() {
   });
 }
 
+function handlebarsFix() {
+  var HANDLEBARS_UTIL = /\/utils.js$/;
+  return {
+    load: function(id) {
+      if (HANDLEBARS_UTIL.test(id)) {
+        var code = fs.readFileSync(id, 'utf8');
+        return {
+          code: code.replace(/export var isFunction/, 'export { isFunction }'),
+          map: { mappings: null }
+        };
+      }
+    }
+  }
+}
+
 module.exports = function() {
   var features = getFeatures();
   var version = getVersion();
@@ -268,16 +302,26 @@ module.exports = function() {
     'route-recognizer':      routeRecognizer(),
     'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer', { libPath: 'node_modules/glimmer-engine/dist/es6' }),
 
-    'glimmer':              glimmerPackage('glimmer'),
-    'glimmer-compiler':     glimmerPackage('glimmer-compiler'),
-    'glimmer-reference':    glimmerPackage('glimmer-reference'),
-    'glimmer-runtime':      glimmerPackage('glimmer-runtime'),
-    'glimmer-node':         glimmerPackage('glimmer-node'),
-    'glimmer-syntax':       glimmerPackage('glimmer-syntax'),
-    'glimmer-test-helpers': glimmerPackage('glimmer-test-helpers'),
-    'glimmer-util':         glimmerPackage('glimmer-util'),
-    'glimmer-wire-format':  glimmerPackage('glimmer-wire-format'),
-    'handlebars':           glimmerPackage('handlebars') // inlined parser
+    '@glimmer/compiler':     buildPackage('@glimmer/compiler', {
+                               external: ['@glimmer/syntax', '@glimmer/wire-format', '@glimmer/util']
+                             }),
+    '@glimmer/reference':    buildPackage('@glimmer/reference', { external: ['@glimmer/util'] }),
+    '@glimmer/runtime':      buildPackage('@glimmer/runtime', {
+                               external: ['@glimmer/util',
+                                          '@glimmer/reference',
+                                          '@glimmer/wire-format',
+                                          '@glimmer/syntax']
+                             }),
+    '@glimmer/node':         buildPackage('@glimmer/node', { external: ['@glimmer/runtime'] }),
+    '@glimmer/syntax':       buildPackage('@glimmer/syntax', { external: ['handlebars', 'simple-html-tokenizer'] }),
+    '@glimmer/test-helpers': buildPackage('@glimmer/test-helpers'),
+    '@glimmer/util':         buildPackage('@glimmer/util', { external: [] }),
+    '@glimmer/wire-format':  buildPackage('@glimmer/wire-format', { external: ['@glimmer/util'] }),
+    'handlebars':            buildPackage('handlebars', {
+                               srcDir: 'lib',
+                               entry: 'handlebars/compiler/base.js',
+                               plugins: [handlebarsFix()]
+                             }) // inlined parser
   };
 
   // Replace _getBowerTree with one from npm
@@ -349,7 +393,7 @@ module.exports = function() {
       development: getFeatures('development'),
       production: getFeatures('production')
     },
-    glimmer: require('glimmer-engine'),
+    glimmer: require('@glimmer/compiler'),
     packages: getPackages(features),
     vendoredPackages: vendorPackages,
     version: version

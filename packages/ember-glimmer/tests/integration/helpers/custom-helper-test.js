@@ -417,9 +417,9 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
   ['@test simple helper not usable within element']() {
     this.registerHelper('some-helper', () => {});
 
-    expectAssertion(() => {
+    this.assert.throws(() => {
       this.render(`<div {{some-helper}}></div>`);
-    }, /Helpers may not be used in the element form/);
+    }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
   }
 
   ['@test class-based helper not usable within element']() {
@@ -428,9 +428,9 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
       }
     });
 
-    expectAssertion(() => {
+    this.assert.throws(() => {
       this.render(`<div {{some-helper}}></div>`);
-    }, /Helpers may not be used in the element form/);
+    }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
   }
 
   ['@test class-based helper is torn down']() {
