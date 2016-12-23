@@ -167,6 +167,8 @@ const Component = CoreView.extend(
           }
         }
       )());
+
+      assert(`You cannot use a computed property for the component's \`tagName\` (${this}).`, !(this.tagName && this.tagName.isDescriptor));
     },
 
     rerender() {
