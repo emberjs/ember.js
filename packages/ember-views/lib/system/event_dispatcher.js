@@ -126,11 +126,11 @@ export default EmberObject.extend({
 
     @property canDispatchToEventManager
     @type boolean
-    @default 'true'
+    @default false
     @since 1.7.0
     @private
   */
-  canDispatchToEventManager: true,
+  canDispatchToEventManager: null,
 
   init() {
     this._super();
