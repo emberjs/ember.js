@@ -170,7 +170,7 @@ function compactJoin(array, delimiter?) {
 function blockParams(block) {
   const params = block.program.blockParams;
   if(params.length) {
-    return ` as |${params.join(',')}|`;
+    return ` as |${params.join(' ')}|`;
   }
 }
 
