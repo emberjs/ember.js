@@ -125,7 +125,6 @@ STATEMENTS.add('optimized-append', (sexp: BaselineSyntax.OptimizedAppend, builde
 
 STATEMENTS.add('unoptimized-append', (sexp: BaselineSyntax.UnoptimizedAppend, builder) => {
   let [, value, trustingMorph] = sexp;
-
   let { inlines } = builder.env.macros();
   let returned = inlines.compile(sexp, builder) || value;
 
@@ -374,7 +373,7 @@ export class Blocks {
   }
 
   compile(sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder): void {
-    assert(sexp[1].length === 1, 'paths in blocks are not supported');
+    // assert(sexp[1].length === 1, 'paths in blocks are not supported');
 
     let name: string = sexp[1][0];
     let index = this.names[name];
@@ -434,7 +433,9 @@ export class Inlines {
       return ['expr', value];
     }
 
-    if (path.length > 1) return ['expr', value];
+    if (path.length > 1 && !params && !hash) {
+      return ['expr', value];
+    }
 
     let name = path[0];
     let index = this.names[name];
