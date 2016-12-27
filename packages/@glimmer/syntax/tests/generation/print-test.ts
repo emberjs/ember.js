@@ -64,7 +64,7 @@ test('SubExpression', function() {
 });
 
 test('BlockStatement: multiline', function() {
-  printEqual('<ul>{{#each foos as |foo|}}\n  {{foo}}\n{{/each}}</ul>');
+  printEqual('<ul>{{#each foos as |foo index|}}\n  <li>{{foo}}: {{index}}</li>\n{{/each}}</ul>');
 });
 
 test('BlockStatement: inline', function() {
