@@ -53,9 +53,7 @@ import {
 
   Template,
   Layout,
-  isComponentDefinition,
-  PositionalArgsSyntax,
-  GetSyntax
+  isComponentDefinition
 } from "glimmer-runtime";
 
 import {
@@ -1132,6 +1130,17 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     let [, path, params, hash, _default, inverse] = sexp;
     let table = builder.symbolTable;
 
+    if (!params) {
+      params = [];
+    }
+
+    if (path.length > 1) {
+      let definitionArgs: BaselineSyntax.Args = [[['get', path]], hash, _default, inverse];
+      let args: BaselineSyntax.Args = [params, hash, _default, inverse];
+      builder.component.dynamic(definitionArgs, dynamicComponentFor, args, table);
+      return true;
+    }
+
     let definition = builder.env.getComponentDefinition(path, builder.symbolTable);
 
     if (definition) {
@@ -1153,6 +1162,13 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     let table = builder.symbolTable;
 
     let definition = builder.env.getComponentDefinition(path, builder.symbolTable);
+
+    if (path.length > 1) {
+      let definitionArgs: BaselineSyntax.Args = [[['get', path]], hash, null, null];
+      let args: BaselineSyntax.Args = [params, hash, null, null];
+      builder.component.dynamic(definitionArgs, dynamicComponentFor, args, table);
+      return true;
+    }
 
     if (definition) {
       builder.component.static(definition, [params, hash, null, null], table);

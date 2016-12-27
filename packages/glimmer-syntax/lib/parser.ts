@@ -1,4 +1,4 @@
-import { parse } from "handlebars";
+import { parse } from "handlebars/compiler/base";
 import builders from "./builders";
 import print from "./generation/print";
 import traverse from "./traversal/traverse";

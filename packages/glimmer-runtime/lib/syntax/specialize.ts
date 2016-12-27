@@ -38,6 +38,7 @@ SPECIALIZE.add('append', (sexp: S.Append, _symbolTable) => {
 
   if (Array.isArray(path) && (E.isUnknown(path) || E.isGet(path))) {
     if (path[1].length !== 1) {
+
       return ['unoptimized-append', sexp[1], sexp[2]];
     }
   }
