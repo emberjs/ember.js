@@ -928,6 +928,30 @@ moduleFor('Syntax test: {{#each as}} undefined path', class extends RenderingTes
   }
 });
 
+moduleFor('Syntax test: {{#each}} with sparse arrays', class extends RenderingTest {
+  ['@test it should itterate over holes'](assert) {
+    let sparseArray = [];
+    sparseArray[3] = 'foo';
+    sparseArray[4] = 'bar';
+
+    this.render(strip`
+      {{#each list as |value key|}}
+        [{{key}}:{{value}}]
+      {{/each}}`, { list: emberA(sparseArray) });
+
+    this.assertText('[0:][1:][2:][3:foo][4:bar]');
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let list = get(this.context, 'list');
+      list.pushObject('baz');
+    });
+
+    this.assertText('[0:][1:][2:][3:foo][4:bar][5:baz]');
+  }
+});
+
 /* globals MutationObserver: false */
 if (typeof MutationObserver === 'function') {
   moduleFor('Syntax test: {{#each as}} DOM mutation test', class extends RenderingTest {
