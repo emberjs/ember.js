@@ -80,7 +80,7 @@ STATEMENTS.add('modifier', (sexp: S.Modifier, builder: OpcodeBuilder) => {
   if (builder.env.hasModifier(path, builder.symbolTable)) {
     builder.modifier(path[0], args);
   } else {
-    throw new Error(`Compile Error: ${path.join('.')} is not a modifier`);
+    throw new Error(`Compile Error ${path.join('.')} is not a modifier: Helpers may not be used in the element form.`);
   }
 });
 
