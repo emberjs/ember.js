@@ -52,7 +52,7 @@
     "broccoli-uglify-sourcemap": "^1.4.2",
     "chalk": "^1.1.1",
     "dag-map": "^2.0.1",
-    "ember-cli": "^2.6.1",
+    "ember-cli": "2.10.0",
     "ember-cli-blueprint-test-helpers": "^0.12.0",
     "ember-cli-dependency-checker": "^1.2.0",
     "ember-cli-sauce": "^1.8.0",
@@ -75,7 +75,7 @@
     "router_js": "^1.2.4",
     "serve-static": "^1.10.0",
     "simple-dom": "^0.3.0",
-    "testem": "^1.8.1"
+    "testem": "^1.14.2"
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"
