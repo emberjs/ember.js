@@ -60,7 +60,7 @@ const UNDERSCORE_CACHE = new Cache(1000, function(str) {
     replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase();
 });
 
-const STRING_CAPITALIZE_REGEXP = (/(^|\/)([a-z])/g);
+const STRING_CAPITALIZE_REGEXP = (/(^|\/)([a-z\u00C0-\u024F])/g);
 
 const CAPITALIZE_CACHE = new Cache(1000, function(str) {
   return str.replace(STRING_CAPITALIZE_REGEXP, function(match, separator, chr) {
