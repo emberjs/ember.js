@@ -443,6 +443,21 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
     this.assertText('[0:1][1:2][2:3][foo:bar]');
   }
 
+  ['@test it skips holes in sparse arrays'](assert) {
+    let arr = [];
+    arr[5] = 'foo';
+    arr[6] = 'bar';
+
+    this.render(strip`
+      {{#each-in arr as |key value|}}
+        [{{key}}:{{value}}]
+      {{/each-in}}`, { arr });
+
+    this.assertText('[5:foo][6:bar]');
+
+    this.assertStableRerender();
+  }
+
 });
 
 class EachInEdgeCasesTest extends EachInTest {}
