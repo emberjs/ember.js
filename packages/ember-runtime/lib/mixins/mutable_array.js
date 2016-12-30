@@ -86,9 +86,9 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```javascript
     let colors = ['red', 'green', 'blue'];
 
-    color.length();   //  3
-    colors.clear();   //  []
-    colors.length();  //  0
+    colors.length;  // 3
+    colors.clear(); // []
+    colors.length;  // 0
     ```
 
     @method clear
