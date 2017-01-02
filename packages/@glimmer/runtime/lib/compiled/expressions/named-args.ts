@@ -2,7 +2,7 @@ import { UNDEFINED_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
 import { EMPTY_ARRAY, EMPTY_DICT } from '../../utils';
-import { PathReference, RevisionTag, combineTagged } from '@glimmer/reference';
+import { PathReference, Tag, combineTagged } from '@glimmer/reference';
 import { Option, Dict, Opaque, assert, dict } from '@glimmer/util';
 
 export class CompiledNamedArgs {
@@ -91,7 +91,7 @@ export class EvaluatedNamedArgs {
     return EVALUATED_EMPTY_NAMED_ARGS;
   }
 
-  public tag: RevisionTag;
+  public tag: Tag;
   public length: number;
 
   constructor(

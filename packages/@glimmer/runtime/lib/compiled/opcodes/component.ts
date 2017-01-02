@@ -2,39 +2,47 @@ import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { Assert } from './vm';
 import { Component, ComponentManager, ComponentDefinition } from '../../component/interfaces';
 import { UpdatingVM } from '../../vm';
-import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
+import { EvaluatedArgs } from '../../compiled/expressions/args';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
-import { CONSTANT_TAG, ReferenceCache, combine, isConst, RevisionTag } from '@glimmer/reference';
-import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
+import { APPEND_OPCODES, Op as Op } from '../../opcodes';
+import { Opaque } from '@glimmer/util';
+import {
+  CONSTANT_TAG,
+  ReferenceCache,
+  VersionedPathReference,
+  Tag,
+  combine,
+  isConst
+} from '@glimmer/reference';
 
-APPEND_OPCODES.add(Op.PutDynamicComponent, vm => {
-  let reference = vm.frame.getOperand<ComponentDefinition<Component>>();
-  let cache = isConst(reference) ? undefined : new ReferenceCache(reference);
+APPEND_OPCODES.add(Op.PushDynamicComponent, vm => {
+  let reference = vm.evalStack.pop<VersionedPathReference<ComponentDefinition<Opaque>>>();
+  let cache = isConst(reference) ? undefined : new ReferenceCache<ComponentDefinition<Opaque>>(reference);
   let definition = cache ? cache.peek() : reference.value();
 
-  vm.frame.setImmediate(definition);
+  vm.evalStack.push(definition);
 
   if (cache) {
     vm.updateWith(new Assert(cache));
   }
 });
 
-APPEND_OPCODES.add(Op.PutComponent, (vm, { op1: _component }) => {
+APPEND_OPCODES.add(Op.PushComponent, (vm, { op1: _component }) => {
   let definition = vm.constants.getOther<ComponentDefinition<Component>>(_component);
-  vm.frame.setImmediate(definition);
+  vm.evalStack.push(definition);
 });
 
-APPEND_OPCODES.add(Op.OpenComponent, (vm, { op1: _args, op2: _shadow }) => {
-  let rawArgs = vm.constants.getExpression<CompiledArgs>(_args);
+APPEND_OPCODES.add(Op.OpenComponent, (vm, { op1: _shadow }) => {
+  let hash = vm.evalStack.pop<EvaluatedArgs>();
+  let definition = vm.evalStack.pop<ComponentDefinition<Opaque>>();
   let shadow = vm.constants.getBlock(_shadow);
 
-  let definition = vm.frame.getImmediate<ComponentDefinition<Component>>();
   let dynamicScope = vm.pushDynamicScope();
   let callerScope = vm.scope();
 
   let manager = definition.manager;
-  let args = manager.prepareArgs(definition, rawArgs.evaluate(vm), dynamicScope);
+  let args = manager.prepareArgs(definition, hash, dynamicScope);
   let hasDefaultBlock = !!args.blocks.default; // TODO Cleanup?
   let component = manager.create(vm.env, definition, args, dynamicScope, vm.getSelf(), hasDefaultBlock);
   let destructor = manager.getDestructor(component);
@@ -193,7 +201,7 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
 
 export class DidUpdateLayoutOpcode extends UpdatingOpcode {
   public type = "did-update-layout";
-  public tag: RevisionTag = CONSTANT_TAG;
+  public tag: Tag = CONSTANT_TAG;
 
   constructor(
     private manager: ComponentManager<Component>,

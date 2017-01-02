@@ -1,5 +1,5 @@
 import * as SimpleDOM from 'simple-dom';
-import { TestEnvironment, TestDynamicScope } from '@glimmer/test-helpers';
+import { TestEnvironment, TestDynamicScope } from "@glimmer/test-helpers";
 import { Template, Simple } from '@glimmer/runtime';
 import { precompile } from '@glimmer/compiler';
 import { UpdatableReference } from '@glimmer/object-reference';

@@ -26,7 +26,7 @@ export function init() {
   }
 
   /* tslint:disable:no-require-imports */
-  let scenarios: ScenarioClass[] = require('glimmer-benchmarks').Suites[options['suite']];
+  let scenarios: ScenarioClass[] = require('@glimmer/benchmarks').Suites[options['suite']];
   /* tslint:enable:no-require-imports */
   let suite = new BenchmarkSuite();
   let env = new TestBenchmarkEnvironment();

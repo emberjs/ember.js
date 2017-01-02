@@ -2,7 +2,7 @@ import { UNDEFINED_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
 import { EMPTY_ARRAY } from '../../utils';
-import { PathReference, RevisionTag, combineTagged } from '@glimmer/reference';
+import { PathReference, Tag, combineTagged } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
 
 export class CompiledPositionalArgs {
@@ -63,7 +63,7 @@ export class EvaluatedPositionalArgs {
     return EVALUATED_EMPTY_POSITIONAL_ARGS;
   }
 
-  public tag: RevisionTag;
+  public tag: Tag;
   public length: number;
 
   constructor(public values: ReadonlyArray<PathReference<Opaque>>) {

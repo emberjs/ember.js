@@ -1,7 +1,7 @@
 import { CompiledExpression } from '../expressions';
 import { FIXME } from '@glimmer/util';
 import VM from '../../vm/append';
-import { PathReference, CachedReference, RevisionTag, combineTagged } from '@glimmer/reference';
+import { PathReference, CachedReference, Tag, combineTagged } from '@glimmer/reference';
 import { Option, Opaque } from '@glimmer/util';
 
 export default class CompiledConcat {
@@ -23,7 +23,7 @@ export default class CompiledConcat {
 }
 
 export class ConcatReference extends CachedReference<Option<string>> {
-  public tag: RevisionTag;
+  public tag: Tag;
 
   constructor(private parts: PathReference<Opaque>[]) {
     super();

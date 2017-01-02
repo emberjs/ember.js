@@ -13,35 +13,77 @@ export class CapturedFrame {
   ) {}
 }
 
+interface VolatileRegisters {
+  immediate: any;
+  callerScope: Option<Scope>;
+  blocks: Option<Blocks>;
+  iterator: Option<ReferenceIterator>;
+  key: Option<string>;
+  component: Component;
+  manager: Option<ComponentManager<Component>>;
+  shadow: Option<InlineBlock>;
+}
+
+interface SavedRegisters {
+  operand: Option<PathReference<any>>;
+  args: Option<EvaluatedArgs>;
+  condition: Option<Reference<boolean>>;
+}
+
+function volatileRegisters(component: Component, manager: Option<ComponentManager<Component>>, shadow: Option<InlineBlock>): VolatileRegisters {
+  return {
+    immediate: null,
+    callerScope: null,
+    blocks: null,
+    iterator: null,
+    key: null,
+    component,
+    manager,
+    shadow
+  };
+}
+
+function savedRegisters(): SavedRegisters {
+  return {
+    operand: null,
+    args: null,
+    condition: null
+  };
+}
+
+const FREED: any = null;
+
 class Frame {
   ip: number;
-  operand: Option<PathReference<any>> = null;
-  immediate: any = null;
-  args: Option<EvaluatedArgs> = null;
-  callerScope: Option<Scope> = null;
-  blocks: Option<Blocks> = null;
-  condition: Option<Reference<boolean>> = null;
-  iterator: Option<ReferenceIterator> = null;
-  key: Option<string> = null;
+  volatile: VolatileRegisters;
+  saved: SavedRegisters;
 
   constructor(
     public start: number,
     public end: number,
-    public component: Component = null,
-    public manager: Option<ComponentManager<Component>> = null,
-    public shadow: Option<InlineBlock> = null
+    component: Component = null,
+    manager: Option<ComponentManager<Component>> = null,
+    shadow: Option<InlineBlock> = null
   ) {
     this.ip = start;
+    this.volatile = volatileRegisters(component, manager, shadow);
+    this.saved = savedRegisters();
   }
 
   capture(): CapturedFrame {
-    return new CapturedFrame(this.operand, this.args, this.condition);
+    let { operand, args, condition } = this.saved;
+    return new CapturedFrame(operand, args, condition);
   }
 
   restore(frame: CapturedFrame) {
-    this.operand = frame.operand;
-    this.args = frame.args;
-    this.condition = frame.condition;
+    this.saved.operand = frame.operand;
+    this.saved.args = frame.args;
+    this.saved.condition = frame.condition;
+  }
+
+  dealloc() {
+    this.volatile = FREED;
+    this.saved = FREED;
   }
 }
 
@@ -60,27 +102,17 @@ export class FrameStack {
 
   push(start: number, end: number, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<InlineBlock> = null) {
     let pos = ++this.frame;
+
     if (pos < this.frames.length) {
       let frame = this.frames[pos];
-      frame.start = frame.ip = start;
-      frame.end = end;
-      frame.component = component;
-      frame.manager = manager;
-      frame.shadow = shadow;
-      frame.operand = null;
-      frame.immediate = null;
-      frame.args = null;
-      frame.callerScope = null;
-      frame.blocks = null;
-      frame.condition = null;
-      frame.iterator = null;
-      frame.key = null;
+      Frame.call(frame, start, end, component, manager, shadow);
     } else {
       this.frames[pos] = new Frame(start, end, component, manager, shadow);
     }
   }
 
   pop() {
+    this.currentFrame.dealloc();
     this.frame--;
   }
 
@@ -109,82 +141,82 @@ export class FrameStack {
   }
 
   getOperand<T>(): PathReference<T> {
-    return unwrap(this.currentFrame.operand);
+    return unwrap(this.currentFrame.saved.operand);
   }
 
   setOperand<T>(operand: PathReference<T>): PathReference<T> {
-    return this.currentFrame.operand = operand;
+    return this.currentFrame.saved.operand = operand;
   }
 
   getImmediate<T>(): T {
-    return this.currentFrame.immediate;
+    return this.currentFrame.volatile.immediate;
   }
 
   setImmediate<T>(value: T): T {
-    return this.currentFrame.immediate = value;
+    return this.currentFrame.volatile.immediate = value;
   }
 
   // FIXME: These options are required in practice by the existing code, but
   // figure out why.
 
   getArgs(): Option<EvaluatedArgs> {
-    return this.currentFrame.args;
+    return this.currentFrame.saved.args;
   }
 
   setArgs(args: EvaluatedArgs): EvaluatedArgs {
-    return this.currentFrame.args = args;
+    return this.currentFrame.saved.args = args;
   }
 
   getCondition(): Reference<boolean> {
-    return unwrap(this.currentFrame.condition);
+    return unwrap(this.currentFrame.saved.condition);
   }
 
   setCondition(condition: Reference<boolean>): Reference<boolean> {
-    return this.currentFrame.condition = condition;
+    return this.currentFrame.saved.condition = condition;
   }
 
   getIterator(): ReferenceIterator {
-    return unwrap(this.currentFrame.iterator);
+    return unwrap(this.currentFrame.volatile.iterator);
   }
 
   setIterator(iterator: ReferenceIterator): ReferenceIterator {
-    return this.currentFrame.iterator = iterator;
+    return this.currentFrame.volatile.iterator = iterator;
   }
 
   getKey(): Option<string> {
-    return this.currentFrame.key;
+    return this.currentFrame.volatile.key;
   }
 
   setKey(key: string): string {
-    return this.currentFrame.key = key;
+    return this.currentFrame.volatile.key = key;
   }
 
   getBlocks(): Blocks {
-    return unwrap(this.currentFrame.blocks);
+    return unwrap(this.currentFrame.volatile.blocks);
   }
 
   setBlocks(blocks: Blocks): Blocks {
-    return this.currentFrame.blocks = blocks;
+    return this.currentFrame.volatile.blocks = blocks;
   }
 
   getCallerScope(): Scope {
-    return unwrap(this.currentFrame.callerScope);
+    return unwrap(this.currentFrame.volatile.callerScope);
   }
 
   setCallerScope(callerScope: Scope): Scope {
-    return this.currentFrame.callerScope = callerScope;
+    return this.currentFrame.volatile.callerScope = callerScope;
   }
 
   getComponent(): Component {
-    return unwrap(this.currentFrame.component);
+    return unwrap(this.currentFrame.volatile.component);
   }
 
   getManager(): ComponentManager<Component> {
-    return unwrap(this.currentFrame.manager);
+    return unwrap(this.currentFrame.volatile.manager);
   }
 
   getShadow(): Option<InlineBlock> {
-    return this.currentFrame.shadow;
+    return this.currentFrame.volatile.shadow;
   }
 
   goto(ip: number) {
@@ -196,11 +228,11 @@ export class FrameStack {
   }
 
   nextStatement(env: Environment): Option<Opcode> {
-    let frame = this.frames[this.frame];
+    let frame = this.currentFrame;
     let ip = frame.ip;
     let end = frame.end;
 
-    if (ip < end) {
+    if (ip <= end) {
       let program = env.program;
       frame.ip += 4;
       return program.opcode(ip);

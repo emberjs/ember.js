@@ -38,6 +38,7 @@ export class EntryPoint extends Template {
 
   compile(env: Environment): CompiledProgram {
     let compiled = this.compiled;
+
     if (!compiled) {
       let table = this.symbolTable;
 
@@ -49,8 +50,12 @@ export class EntryPoint extends Template {
         STATEMENTS.compile(refined, b);
       }
 
-      compiled = this.compiled = new CompiledProgram(b.start, b.end, this.symbolTable.size);
+      let start = b.start;
+      let end = b.finalize();
+
+      compiled = this.compiled = new CompiledProgram(start, end, this.symbolTable.size);
     }
+
     return compiled;
   }
 }
@@ -61,34 +66,28 @@ export class InlineBlock extends Template {
   splat(builder: OpcodeBuilder) {
     let table = builder.symbolTable;
 
-    let locals = table.getSymbols().locals;
-
-    if (locals) {
-      builder.pushChildScope();
-      builder.bindPositionalArgsForLocals(locals);
-    }
-
     for (let i = 0; i < this.statements.length; i++) {
       let statement = this.statements[i];
       let refined = SPECIALIZE.specialize(statement, table);
       STATEMENTS.compile(refined, builder);
     }
-
-    if (locals) {
-      builder.popScope();
-    }
   }
 
   compile(env: Environment): CompiledBlock {
-    let compiled = this.compiled;
+    let { compiled } = this;
+
     if (!compiled) {
       let table = this.symbolTable;
       let b = builder(env, table);
 
       this.splat(b);
 
-      compiled = this.compiled = new CompiledBlock(b.start, b.end);
+      let start = b.start;
+      let end = b.finalize();
+
+      compiled = this.compiled = new CompiledBlock(start, end);
     }
+
     return compiled;
   }
 }
@@ -100,6 +99,7 @@ export class PartialBlock extends Template {
 
   compile(env: Environment): CompiledProgram {
     let compiled = this.compiled;
+
     if (!compiled) {
       let table = this.symbolTable;
       let b = builder(env, table);
@@ -110,8 +110,12 @@ export class PartialBlock extends Template {
         STATEMENTS.compile(refined, b);
       }
 
-      compiled = this.compiled = new CompiledProgram(b.start, b.end, table.size);
+      let start = b.start;
+      let end = b.finalize();
+
+      compiled = this.compiled = new CompiledProgram(start, end, table.size);
     }
+
     return compiled;
   }
 }
@@ -152,7 +156,7 @@ export function scanBlock({ statements }: SerializedBlock, symbolTable: SymbolTa
 }
 
 import { PublicVM } from './vm';
-import { PathReference } from '@glimmer/reference';
+import { VersionedPathReference } from '@glimmer/reference';
 
 export namespace BaselineSyntax {
   import Core = WireFormat.Core;
@@ -184,7 +188,7 @@ export namespace BaselineSyntax {
   export type DynamicPartial = [number, WireFormat.Expression];
   export const isDynamicPartial = WireFormat.is<DynamicPartial>(Ops.DynamicPartial);
 
-  export type FunctionExpressionCallback<T> = (VM: PublicVM, symbolTable: SymbolTable) => PathReference<T>;
+  export type FunctionExpressionCallback<T> = (VM: PublicVM, symbolTable: SymbolTable) => VersionedPathReference<T>;
   export type FunctionExpression = [number, FunctionExpressionCallback<Opaque>];
   export const isFunctionExpression = WireFormat.is<FunctionExpression>(Ops.Function);
 

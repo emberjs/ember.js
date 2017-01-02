@@ -31,19 +31,18 @@ export class Specialize {
 export const SPECIALIZE = new Specialize();
 
 import S = WireFormat.Statements;
-import E = WireFormat.Expressions;
+// import E = WireFormat.Expressions;
 
 const { Ops } = WireFormat;
 
 SPECIALIZE.add(Ops.Append, (sexp: S.Append, _symbolTable) => {
-  let path = sexp[1];
+  // let path = sexp[1];
 
-  if (Array.isArray(path) && (E.isUnknown(path) || E.isGet(path))) {
-    if (path[1].length !== 1) {
-
-      return [Ops.UnoptimizedAppend, sexp[1], sexp[2]];
-    }
-  }
+  // if (Array.isArray(path) && (E.isUnknown(path) || E.isGet(path))) {
+  //   if (path[1].length !== 1) {
+  //     return [Ops.UnoptimizedAppend, sexp[1], sexp[2]];
+  //   }
+  // }
 
   return [Ops.OptimizedAppend, sexp[1], sexp[2]];
 });

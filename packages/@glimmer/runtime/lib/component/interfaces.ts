@@ -9,7 +9,7 @@ import Bounds from '../bounds';
 import * as Simple from '../dom/interfaces';
 
 import { Destroyable, Opaque } from '@glimmer/util';
-import { PathReference, RevisionTag } from '@glimmer/reference';
+import { PathReference, Tag } from '@glimmer/reference';
 
 export type Component = Opaque;
 export type ComponentClass = any;
@@ -60,7 +60,7 @@ export interface ComponentManager<T extends Component> {
   // outside changes captured in the input arguments. If it returns null,
   // the update hooks will only be called when one or more of the input
   // arguments has changed.
-  getTag(component: T): RevisionTag;
+  getTag(component: T): Tag;
 
   // When the input arguments have changed, and top-down revalidation has
   // begun, the manager's `update` hook is called.

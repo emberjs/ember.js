@@ -61,44 +61,50 @@ class UptimeDay extends Component {
   }
 }
 
-let env = new TestEnvironment();
-
-env.registerEmberishGlimmerComponent('uptime-day', UptimeDay as any, `
-  <div class="uptime-day">
-    <span class="uptime-day-status" style="background-color: {{color}}" />
-    <span class="hover">{{@day.number}}: {{memo}}</span>
-  </div>
-`);
-
-env.registerEmberishGlimmerComponent('server-uptime', ServerUptime as any, `
-  <div class="server-uptime">
-    <h1>{{@name}}</h1>
-    <h2>{{upDays}} Days Up</h2>
-    <h2>Biggest Streak: {{streak}}</h2>
-
-    <div class="days">
-      {{#each @days key="number" as |day|}}
-        <uptime-day @day={{day}} />
-      {{/each}}
-    </div>
-  </div>
-`);
-
-let app = env.compile(`
-  {{#if fps}}<div id="fps">{{fps}} FPS</div>{{/if}}
-
-  {{#each servers key="name" as |server|}}
-    <server-uptime @name={{server.name}} @days={{server.days}} />
-  {{/each}}
-`);
-
 let serversRef;
 let result;
 let clear;
 let fps;
 let playing = false;
 
-export function init() {
+export function compile(env = new TestEnvironment()) {
+  env.registerEmberishGlimmerComponent('uptime-day', UptimeDay as any, `
+    <div class="uptime-day">
+      <span class="uptime-day-status" style="background-color: {{color}}" />
+      <span class="hover">{{@day.number}}: {{memo}}</span>
+    </div>
+  `);
+
+  env.registerEmberishGlimmerComponent('server-uptime', ServerUptime as any, `
+    <div class="server-uptime">
+      <h1>{{@name}}</h1>
+      <h2>{{upDays}} Days Up</h2>
+      <h2>Biggest Streak: {{streak}}</h2>
+
+      <div class="days">
+        {{#each @days key="number" as |day|}}
+          <uptime-day @day={{day}} />
+        {{/each}}
+      </div>
+    </div>
+  `);
+
+  let app = env.compile(`
+    {{#if fps}}<div id="fps">{{fps}} FPS</div>{{/if}}
+
+    {{#each servers key="name" as |server|}}
+      <server-uptime @name={{server.name}} @days={{server.days}} />
+    {{/each}}
+  `);
+
+  return { app, env };
+}
+
+let environment: TestEnvironment;
+
+export function init({ app, env } = compile()) {
+  environment = env;
+
   let output = document.getElementById('output');
 
   console.time('initial render');
@@ -140,9 +146,9 @@ function start() {
 
     onFrame();
 
-    env.begin();
+    environment.begin();
     result.rerender();
-    env.commit();
+    environment.commit();
 
     clear = requestAnimationFrame(callback);
 
@@ -169,7 +175,7 @@ function generateServer(name: string) {
   return { name, days };
 }
 
-function generateServers() {
+export function generateServers() {
   return [
     generateServer("Stefan's Server"),
     generateServer("Godfrey's Server"),

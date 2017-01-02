@@ -17,15 +17,21 @@ export function layout(meta: TemplateMeta, wireNamed: string[], wireYields: stri
 }
 
 export function block(parent: SymbolTable, locals: string[]): SymbolTable {
-  let localsMap: Option<Dict<number>> = null;
+  let localsList: Option<number[]>;
+  let localsMap: Option<Dict<number>>;
   let program = parent['program'];
 
-  if (locals.length !== 0) {
-    let map = localsMap = dict<number>();
-    locals.forEach(l => map[l] = program.size++);
+  if (locals.length === 0) {
+    localsList = null;
+    localsMap = null;
+  } else {
+    localsMap = dict<number>();
+    localsList = locals.map(l => {
+      return localsMap![l] = program.size++;
+    });
   }
 
-  return new BlockSymbolTable(parent, program, localsMap);
+  return new BlockSymbolTable(parent, program, localsList, localsMap);
 }
 
 function symbols(named: string[], yields: string[], hasPartials: boolean): { named: Option<Dict<number>>, yields: Option<Dict<number>>, partialSymbol: Option<number>, size: number } {
@@ -51,6 +57,7 @@ function symbols(named: string[], yields: string[], hasPartials: boolean): { nam
 
 export class ProgramSymbolTable implements IProgramSymbolTable {
   program: this;
+  private sizes: { local: number, named: number, yields: number };
 
   constructor(
     private meta: Option<TemplateMeta>,
@@ -60,6 +67,11 @@ export class ProgramSymbolTable implements IProgramSymbolTable {
     public size = 1
   ) {
     this.program = this;
+    this.sizes = {
+      local: 0,
+      named: named ? Object.keys(named).length : 0,
+      yields: yields ? Object.keys(yields).length : 0
+    };
   }
 
   getMeta(): Option<TemplateMeta> {
@@ -75,6 +87,10 @@ export class ProgramSymbolTable implements IProgramSymbolTable {
     };
   }
 
+  getSymbolSize(kind: 'local' | 'named' | 'yields'): number {
+    return this.sizes[kind];
+  }
+
   getSymbol(kind: 'local', name: string): null;
   getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number>;
   getSymbol(kind: string, name: string): Option<number> {
@@ -88,18 +104,29 @@ export class ProgramSymbolTable implements IProgramSymbolTable {
 }
 
 export class BlockSymbolTable implements IBlockSymbolTable {
-  constructor(private parent: SymbolTable, protected program: ProgramSymbolTable, private locals: Option<Dict<number>>) {
+  private sizes: { local: number, named: number, yields: number };
+
+  constructor(private parent: SymbolTable, protected program: ProgramSymbolTable, private localsList: number[], private locals: Option<Dict<number>>) {
+    this.sizes = {
+      local: locals ? Object.keys(locals).length : 0,
+      named: 0,
+      yields: 0
+    };
   }
 
   getMeta(): Option<TemplateMeta> {
     return this.program.getMeta();
   }
 
+  getSymbolSize(kind: 'local' | 'named' | 'yields'): number {
+    return this.sizes[kind];
+  }
+
   getSymbols(): Symbols {
     return {
       named: null,
       yields: null,
-      locals: this.locals,
+      locals: this.localsList,
       partialArgs: null
     };
   }
@@ -141,6 +168,10 @@ export const EMPTY_SYMBOL_TABLE: SymbolTable = {
       locals: null,
       partialArgs: null
     };
+  },
+
+  getSymbolSize() {
+    return 0;
   },
 
   getSymbol(_kind: never, _name: string): number {

@@ -2,15 +2,15 @@ import { Helper, DynamicScope } from '../environment';
 import { PublicVM } from '../vm/append';
 import { SymbolTable } from '@glimmer/interfaces';
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { CONSTANT_TAG, RevisionTag, PathReference, UpdatableTag, combine } from '@glimmer/reference';
+import { CONSTANT_TAG, Tag, PathReference, UpdatableTag, TagWrapper, combine } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
 
 class DynamicVarReference implements PathReference<Opaque> {
-  public tag: RevisionTag;
-  private varTag: UpdatableTag;
+  public tag: Tag;
+  private varTag: TagWrapper<UpdatableTag>;
 
   constructor(private scope: DynamicScope, private nameRef: PathReference<Opaque>) {
-    let varTag = this.varTag = new UpdatableTag(CONSTANT_TAG);
+    let varTag = this.varTag = UpdatableTag.create(CONSTANT_TAG);
     this.tag = combine([nameRef.tag, varTag]);
   }
 
@@ -26,7 +26,7 @@ class DynamicVarReference implements PathReference<Opaque> {
     let name = String(this.nameRef.value());
     let ref = this.scope.get(name);
 
-    this.varTag.update(ref.tag);
+    this.varTag.inner.update(ref.tag);
 
     return ref;
   }
