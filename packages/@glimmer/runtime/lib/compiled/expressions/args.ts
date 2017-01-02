@@ -1,7 +1,7 @@
 import VM from '../../vm/append';
 import { COMPILED_EMPTY_POSITIONAL_ARGS, EVALUATED_EMPTY_POSITIONAL_ARGS, CompiledPositionalArgs, EvaluatedPositionalArgs } from './positional-args';
 import { COMPILED_EMPTY_NAMED_ARGS, EVALUATED_EMPTY_NAMED_ARGS, CompiledNamedArgs, EvaluatedNamedArgs } from './named-args';
-import { RevisionTag, PathReference, combineTagged } from '@glimmer/reference';
+import { Tag, PathReference, combineTagged } from '@glimmer/reference';
 import { InlineBlock } from '../../scanner';
 import { Opaque, Option, Dict } from '@glimmer/util';
 
@@ -72,12 +72,12 @@ export class EvaluatedArgs {
     return new this(EVALUATED_EMPTY_POSITIONAL_ARGS, EvaluatedNamedArgs.create(map), blocks);
   }
 
-  public tag: RevisionTag;
+  public tag: Tag;
 
   constructor(
     public positional: EvaluatedPositionalArgs,
     public named: EvaluatedNamedArgs,
-    public blocks: Blocks
+    public blocks: Blocks = EMPTY_BLOCKS
   ) {
     this.tag = combineTagged([positional, named]);
   }

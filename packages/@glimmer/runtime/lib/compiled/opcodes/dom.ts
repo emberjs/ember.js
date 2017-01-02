@@ -7,8 +7,9 @@ import { FIXME, Option, Opaque, Dict, unwrap, expect } from '@glimmer/util';
 import {
   CachedReference,
   Reference,
+  VersionedReference,
   ReferenceCache,
-  RevisionTag,
+  Tag,
   Revision,
   PathReference,
   combineTagged,
@@ -21,7 +22,7 @@ import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { AttributeManager } from '../../dom/attribute-managers';
 import { ElementOperations } from '../../builder';
 import { Assert } from './vm';
-import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
+import { APPEND_OPCODES, Op as Op } from '../../opcodes';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.stack().appendText(vm.constants.getString(text));
@@ -55,8 +56,8 @@ APPEND_OPCODES.add(Op.OpenComponentElement, (vm, { op1: _tag }) => {
 });
 
 APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
-  let tagName = vm.frame.getOperand<string>().value();
-  vm.stack().openElement(tagName);
+  let tagName = vm.evalStack.pop<Reference<string>>();
+  vm.stack().openElement(tagName.value());
 });
 
 class ClassList {
@@ -85,7 +86,7 @@ class ClassList {
 }
 
 class ClassListReference extends CachedReference<Option<string>> {
-  public tag: RevisionTag;
+  public tag: Tag;
   private list: Reference<string>[] = [];
 
   constructor(list: Reference<string>[]) {
@@ -129,7 +130,7 @@ export class SimpleElementOperations implements ElementOperations {
     this.env.getAppendOperations().setAttribute(element, name, value, namespace);
   }
 
-  addDynamicAttribute(element: Simple.Element, name: string, reference: PathReference<string>, isTrusting: boolean) {
+  addDynamicAttribute(element: Simple.Element, name: string, reference: Reference<string>, isTrusting: boolean) {
     if (name === 'class') {
       this.addClass(reference);
     } else {
@@ -169,7 +170,7 @@ export class SimpleElementOperations implements ElementOperations {
     this.classList = null;
   }
 
-  private addClass(reference: PathReference<string>) {
+  private addClass(reference: Reference<string>) {
     let { classList } = this;
 
     if (!classList) {
@@ -387,7 +388,7 @@ export class StaticAttribute implements Attribute {
 export class DynamicAttribute implements Attribute  {
   private cache: Option<ReferenceCache<Opaque>> = null;
 
-  public tag: RevisionTag;
+  public tag: Tag;
 
   constructor(
     private element: Simple.Element,
@@ -457,13 +458,13 @@ function formatElement(element: Simple.Element): string {
 APPEND_OPCODES.add(Op.DynamicAttrNS, (vm, { op1: _name, op2: _namespace, op3: trusting }) => {
   let name = vm.constants.getString(_name);
   let namespace = vm.constants.getString(_namespace);
-  let reference = vm.frame.getOperand<string>();
+  let reference = vm.evalStack.pop<VersionedReference<string>>();
   vm.stack().setDynamicAttributeNS(namespace, name, reference, !!trusting);
 });
 
 APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting }) => {
   let name = vm.constants.getString(_name);
-  let reference = vm.frame.getOperand<string>();
+  let reference = vm.evalStack.pop<VersionedReference<string>>();
   vm.stack().setDynamicAttribute(name, reference, !!trusting);
 });
 

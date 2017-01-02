@@ -1,4 +1,5 @@
 import './opcodes';
+import './compiled/opcodes/expressions';
 import './compiled/opcodes/blocks';
 import './compiled/opcodes/component';
 import './compiled/opcodes/content';

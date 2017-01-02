@@ -766,22 +766,22 @@ testComponent('Can get and set dynamic variable', {
 testComponent('Can get and set dynamic variable with bound names', {
   layout: '{{#-with-dynamic-vars myKeyword=@value1 secondKeyword=@value2}}{{yield}}{{/-with-dynamic-vars}}',
   invokeAs: {
-    template: '{{-get-dynamic-var keyword}}',
+    template: '{{keyword}}-{{-get-dynamic-var keyword}}',
     context: { value1: "hello", value2: "goodbye", keyword: "myKeyword" },
     args: { value1: "value1", value2: "value2" }
   },
-  expected: 'hello',
+  expected: 'myKeyword-hello',
   updates: [{
-    expected: 'hello'
+    expected: 'myKeyword-hello'
   }, {
     context: { keyword: 'secondKeyword' },
-    expected: 'goodbye'
+    expected: 'secondKeyword-goodbye'
   }, {
     context: { value2: 'goodbye!' },
-    expected: 'goodbye!'
+    expected: 'secondKeyword-goodbye!'
   }, {
     context: { value1: "hello", value2: "goodbye", keyword: "myKeyword" },
-    expected: 'hello'
+    expected: 'myKeyword-hello'
   }]
 });
 

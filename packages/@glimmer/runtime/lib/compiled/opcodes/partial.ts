@@ -4,7 +4,7 @@ import { Assert } from './vm';
 import { PartialDefinition } from '../../partial';
 import { SymbolTable } from '@glimmer/interfaces';
 import { PartialBlock } from '../../scanner';
-import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
+import { APPEND_OPCODES, Op as Op } from '../../opcodes';
 
 APPEND_OPCODES.add(Op.PutDynamicPartial, (vm, { op1: _symbolTable }) => {
   let env = vm.env;

@@ -40,10 +40,11 @@
 
   <script>
     var testMatch;
+    var tests = QUnit.urlParams.nojshint ? '(-test)$' : '(-test|.tslint)$';
     if (packagesToTest) {
-      testMatch = new RegExp("^(" + packagesToTest.join("|") + ").*(-test|.tslint)$");
+      testMatch = new RegExp("^(" + packagesToTest.join("|") + ").*" + tests);
     } else {
-      testMatch = /(\-test|.tslint)$/;
+      testMatch = new RegExp(tests);
     }
 
     Object.keys(requireModule.entries).forEach(function(entry) {

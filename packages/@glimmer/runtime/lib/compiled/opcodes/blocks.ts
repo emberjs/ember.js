@@ -1,25 +1,25 @@
-import { CompiledGetBlock } from '../expressions/has-block';
-import { CompiledArgs, EvaluatedArgs } from '../expressions/args';
-import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
-import { Option } from '@glimmer/util';
+import { EvaluatedArgs } from '../expressions/args';
+import { APPEND_OPCODES, Op as Op } from '../../opcodes';
+import { InlineBlock } from '../../scanner';
+import { Option, Opaque, fillNulls } from '@glimmer/util';
+import { VersionedPathReference } from '@glimmer/reference';
 
-APPEND_OPCODES.add(Op.OpenBlock, (vm, { op1: _getBlock, op2: _args }) => {
-  let inner = vm.constants.getOther<CompiledGetBlock>(_getBlock);
-  let rawArgs = vm.constants.getExpression<CompiledArgs>(_args);
-  let args: Option<EvaluatedArgs> = null;
+APPEND_OPCODES.add(Op.InvokeBlock, (vm, { op1: positional }) => {
+  let stack = vm.evalStack;
+  let block = stack.pop<Option<InlineBlock>>();
 
-  let block = inner.evaluate(vm);
+  let refs = fillNulls<VersionedPathReference<Opaque>>(positional);
 
-  if (block) {
-    args = rawArgs.evaluate(vm);
+  for (let i=positional; i>0; i--) {
+    refs[positional - 1] = vm.evalStack.pop<VersionedPathReference<Opaque>>();
   }
 
   // FIXME: can we avoid doing this when we don't have a block?
   vm.pushCallerScope();
 
   if (block) {
-    vm.invokeBlock(block, args || null);
+    vm.invokeBlock(block, EvaluatedArgs.positional(refs));
   }
 });
 
-APPEND_OPCODES.add(Op.CloseBlock, vm => vm.popScope());
+APPEND_OPCODES.add(Op.DoneBlock, vm => vm.popScope());

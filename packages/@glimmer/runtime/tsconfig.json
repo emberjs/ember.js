@@ -6,6 +6,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitAny": true,
+    "experimentalDecorators": true,
     "suppressImplicitAnyIndexErrors": true,
     "diagnostics": true,
     "baseUrl": ".",
@@ -17,6 +18,7 @@
 
   "include": [
     "index.ts",
-    "lib/**/*.ts"
+    "lib/**/*.ts",
+    "node_modules/@types/qunit/**/*.ts"
   ]
 }

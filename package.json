@@ -43,6 +43,7 @@
     "simple-html-tokenizer": "^0.4.0"
   },
   "devDependencies": {
+    "@types/qunit": "^2.0.31",
     "benchmark": "^1.0.0",
     "bower": "~1.3.3",
     "ember-cli": "^2.4.2",

@@ -36,6 +36,10 @@ export {
 } from './lib/dom/attribute-managers';
 
 export {
+  debugSlice
+} from './lib/opcodes';
+
+export {
   normalizeTextValue
 } from './lib/compiled/opcodes/content';
 

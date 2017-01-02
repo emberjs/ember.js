@@ -1,16 +1,15 @@
 import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
-import { PathReference, combineSlice } from '@glimmer/reference';
+import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { CompiledBlock } from '../compiled/blocks';
 import { InlineBlock, PartialBlock } from '../scanner';
-import { CompiledExpression } from '../compiled/expressions';
-import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
+import { EvaluatedArgs } from '../compiled/expressions/args';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { Component, ComponentManager } from '../component/interfaces';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
-import { CapturedFrame, FrameStack } from './frame';
+import { FrameStack } from './frame';
 
 import {
   APPEND_OPCODES,
@@ -27,14 +26,55 @@ export interface PublicVM {
   newDestroyable(d: Destroyable): void;
 }
 
+export class EvaluationStack {
+  constructor(private stack: Opaque[] = []) {
+    Object.seal(this);
+  }
+
+  get pos() {
+    return this.stack.length;
+  }
+
+  snapshot(): EvaluationStack {
+    return new EvaluationStack(this.stack.slice());
+  }
+
+  restore(bp: number): number {
+    this.stack.length = bp;
+    return this.pop<number>();
+  }
+
+  set(pos: number, value: Opaque) {
+    this.stack[pos] = value;
+  }
+
+  get(pos: number): Opaque {
+    return this.stack[pos];
+  }
+
+  push(value: Opaque) {
+    this.stack.push(value);
+  }
+
+  pop<T>(): T {
+    return this.stack.pop() as T;
+  }
+
+  top<T>(): T {
+    return this.stack[this.stack.length - 1] as T;
+  }
+}
+
 export default class VM implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
+  private bp = 0;
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
   public frame = new FrameStack();
   public constants: Constants;
+  public evalStack = new EvaluationStack();
 
   static initial(
     env: Environment,
@@ -65,8 +105,33 @@ export default class VM implements PublicVM {
       env: this.env,
       scope: this.scope(),
       dynamicScope: this.dynamicScope(),
-      frame: this.frame.capture()
+      stack: this.evalStack.snapshot(),
+      bp: this.bp
     };
+  }
+
+  reserveLocals(size: number) {
+    let { evalStack: stack, bp } = this;
+
+    stack.push(bp);
+    this.bp = stack.pos;
+
+    for (let i=0; i<size; i++) {
+      stack.push(null);
+    }
+  }
+
+  releaseLocals() {
+    let { evalStack: stack, bp } = this;
+    this.bp = stack.restore(bp);
+  }
+
+  setLocal(position: number, value: Opaque) {
+    this.evalStack.set(this.bp + position, value);
+  }
+
+  getLocal(position: number) {
+    return this.evalStack.get(this.bp + position);
   }
 
   goto(ip: number) {
@@ -103,44 +168,47 @@ export default class VM implements PublicVM {
   enter(start: number, end: number) {
     let updating = new LinkedList<UpdatingOpcode>();
 
-    let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
+    let tracker = this.stack().pushUpdatableBlock();
 
     let tryOpcode = new TryOpcode(start, end, state, tracker, updating);
 
-    this.didEnter(tryOpcode, updating);
+    this.didEnter(tryOpcode);
   }
 
-  enterWithKey(key: string, start: number, end: number) {
-    let updating = new LinkedList<UpdatingOpcode>();
+  iterate(start: number, end: number, memo: VersionedPathReference<Opaque>, value: VersionedPathReference<Opaque>, updating = new LinkedList<UpdatingOpcode>()): TryOpcode {
+    let stack = this.evalStack;
+    stack.push(memo);
+    stack.push(value);
 
-    let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
+    let tracker = this.stack().pushUpdatableBlock();
 
-    let tryOpcode = new TryOpcode(start, end, state, tracker, updating);
+    return new TryOpcode(start, end, state, tracker, updating);
+  }
 
-    this.listBlock().map[key] = tryOpcode;
-
-    this.didEnter(tryOpcode, updating);
+  enterItem(key: string, opcode: TryOpcode) {
+    this.listBlock().map[key] = opcode;
+    this.didEnter(opcode);
   }
 
   enterList(start: number, end: number) {
     let updating = new LinkedList<BlockOpcode>();
 
-    let tracker = this.stack().pushBlockList(updating);
     let state = this.capture();
-    let artifacts = this.frame.getIterator().artifacts;
+    let tracker = this.stack().pushBlockList(updating);
+    let artifacts = this.evalStack.top<ReferenceIterator>().artifacts;
 
     let opcode = new ListBlockOpcode(start, end, state, tracker, updating, artifacts);
 
     this.listBlockStack.push(opcode);
 
-    this.didEnter(opcode, updating);
+    this.didEnter(opcode);
   }
 
-  private didEnter(opcode: BlockOpcode, updating: LinkedList<UpdatingOpcode>) {
+  private didEnter(opcode: BlockOpcode) {
     this.updateWith(opcode);
-    this.updatingOpcodeStack.push(updating);
+    this.updatingOpcodeStack.push(opcode.children);
   }
 
   exit() {
@@ -255,13 +323,16 @@ export default class VM implements PublicVM {
   }
 
   getArgs(): Option<EvaluatedArgs> {
-    return this.frame.getArgs();
+    return this.evalStack.pop<Option<EvaluatedArgs>>();
   }
 
   /// EXECUTION
 
-  resume(start: number, end: number, frame: CapturedFrame): RenderResult {
-    return this.execute(start, end, vm => vm.frame.restore(frame));
+  resume(start: number, end: number, stack: EvaluationStack, bp: number): RenderResult {
+    return this.execute(start, end, vm => {
+      vm.evalStack = stack;
+      vm.bp = bp;
+    });
   }
 
   execute(start: number, end: number, initialize?: (vm: VM) => void): RenderResult {
@@ -278,7 +349,7 @@ export default class VM implements PublicVM {
 
     while (frame.hasOpcodes()) {
       if (opcode = frame.nextStatement(this.env)) {
-        APPEND_OPCODES.evaluate(this, opcode);
+        APPEND_OPCODES.evaluate(this, opcode, opcode.type);
       }
     }
 
@@ -290,7 +361,7 @@ export default class VM implements PublicVM {
   }
 
   evaluateOpcode(opcode: Opcode) {
-    APPEND_OPCODES.evaluate(this, opcode);
+    APPEND_OPCODES.evaluate(this, opcode, opcode.type);
   }
 
   // Make sure you have opcodes that push and pop a scope around this opcode
@@ -314,15 +385,6 @@ export default class VM implements PublicVM {
     shadow: Option<InlineBlock>
   ) {
     this.pushComponentFrame(layout, args, callerScope, component, manager, shadow);
-  }
-
-  evaluateOperand(expr: CompiledExpression<any>) {
-    this.frame.setOperand(expr.evaluate(this));
-  }
-
-  evaluateArgs(args: CompiledArgs) {
-    let evaledArgs = this.frame.setArgs(args.evaluate(this));
-    this.frame.setOperand(evaledArgs.positional.at(0));
   }
 
   bindPositionalArgs(symbols: number[]) {
