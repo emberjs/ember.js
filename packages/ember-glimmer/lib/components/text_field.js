@@ -28,9 +28,7 @@ function canSetTypeOfInput(type) {
     inputTypeTestElement = document.createElement('input');
   }
 
-  try {
-    inputTypeTestElement.type = type;
-  } catch (e) { }
+  inputTypeTestElement.type = type;
 
   return inputTypes[type] = inputTypeTestElement.type === type;
 }
