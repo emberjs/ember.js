@@ -126,8 +126,8 @@ function withFinalizer(callback, finalizer, payload, binding) {
     result = payload;
   } finally {
     finalizer();
-    return result;
   }
+  return result;
 }
 
 function NOOP() {}
