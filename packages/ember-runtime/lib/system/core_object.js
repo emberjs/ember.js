@@ -173,6 +173,30 @@ function makeCtor() {
 
     m.proto = proto;
     finishChains(this);
+
+    /**
+      This event is sent when objects are instantiated. This way, you can
+      execute functions when the object is created without having to override
+      `init` (the [method](#method_init)).
+
+      Example:
+
+      ```javascript
+      App.Person = Ember.Object.extend({
+        doSomethingAtCreation: function() {
+          alert('Name is ' + this.get('name'));
+        }.on('init')
+      });
+
+      var steve = App.Person.create({
+        name: "Steve"
+      });
+
+      // alerts 'Name is Steve'.
+      ```
+
+      @event init
+    */
     sendEvent(this, 'init');
   };
 
@@ -239,7 +263,8 @@ CoreObject.PrototypeMixin = Mixin.create({
     be sure to call `this._super(...arguments)` in your
     `init` declaration! If you don't, Ember may not have an opportunity to
     do important setup work, and you'll see strange behavior in your
-    application.
+    application. This is why in most cases, you should consider using the
+    [event of the same name](#event_init) instead of overriding this method.
 
     @method init
     @public
