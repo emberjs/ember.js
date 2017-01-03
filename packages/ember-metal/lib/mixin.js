@@ -855,6 +855,5 @@ export function _beforeObserver(...args) {
 
 export {
   Mixin,
-  required,
   REQUIRED
 };
