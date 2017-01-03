@@ -345,6 +345,11 @@ export default Mixin.create({
     Note that if you add the same target/method pair on a key multiple times
     with different context parameters, your observer will only be called once
     with the last context you passed.
+    
+    The `target` object is optional, you can intuitively pass in an observer method like so:
+    ```javascript
+    SERVICE.addObserver('data', YourObserverMethod)
+    ```
 
     ### Observer Methods
 
