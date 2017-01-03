@@ -112,6 +112,7 @@ export namespace Statements {
   export type DynamicArg    = ['dynamic-arg', str, Expression];
   export type StaticArg     = ['static-arg', str, Expression];
   export type TrustingAttr  = ['trusting-attr', str, Expression, str];
+  export type Debugger      = ['debugger'];
 
   export const isText         = is<Text>('text');
   export const isAppend       = is<Append>('append');
@@ -129,6 +130,7 @@ export namespace Statements {
   export const isDynamicArg   = is<DynamicArg>('dynamic-arg');
   export const isStaticArg    = is<StaticArg>('static-arg');
   export const isTrustingAttr = is<TrustingAttr>('trusting-attr');
+  export const isDebugger     = is<Debugger>('debugger');
 
   export type Statement =
       Text
@@ -147,6 +149,7 @@ export namespace Statements {
     | StaticArg
     | DynamicArg
     | TrustingAttr
+    | Debugger
     ;
 
   export type Attribute =

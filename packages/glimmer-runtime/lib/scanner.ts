@@ -170,6 +170,9 @@ export namespace BaselineSyntax {
   export type ScannedBlock = ['scanned-block', Core.Path, Core.Params, Core.Hash, Option<RawInlineBlock>, Option<RawInlineBlock>];
   export const isScannedBlock = WireFormat.is<ScannedBlock>('scanned-block');
 
+  export type Debugger = ['debugger'];
+  export const isDebugger = WireFormat.is<Debugger>('debugger');
+
   export type Args = [Params, Hash, Option<Block>, Option<Block>];
 
   export namespace NestedBlock {
@@ -200,6 +203,7 @@ export namespace BaselineSyntax {
     | AnyDynamicAttr
     | NestedBlock
     | ScannedBlock
+    | Debugger
     ;
 
   export type AnyStatement = Statement | WireFormat.Statement;
@@ -214,7 +218,6 @@ export class RawInlineBlock {
   scan(): InlineBlock {
     let buffer: BaselineSyntax.AnyStatement[] = [];
     let statements = this.statements;
-
     for (let statement of statements) {
       if (WireFormat.Statements.isBlock(statement)) {
         buffer.push(this.specializeBlock(statement));

@@ -25,6 +25,8 @@ import {
   CompiledGetBlockBySymbol,
   CompiledInPartialGetBlock
 } from '../compiled/expressions/has-block';
+import { PublicVM as VM } from '../vm';
+import AppendVM from '../vm/append';
 
 import { CompiledFunctionExpression } from '../compiled/expressions/function';
 
@@ -32,6 +34,45 @@ export type SexpExpression = BaselineSyntax.AnyExpression & { 0: string };
 export type Syntax = SexpExpression | BaselineSyntax.AnyStatement;
 export type CompilerFunction<T extends Syntax, U> = ((sexp: T, builder: OpcodeBuilder) => U);
 export type Name = BaselineSyntax.AnyStatement[0];
+export type debugGet = ((path: string) => any);
+
+export interface DebugContext {
+  context: Opaque;
+  get: debugGet;
+}
+
+export type debugCallback = ((context: Opaque, get: debugGet) => DebugContext);
+
+function debugCallback(context: Opaque, get: debugGet) {
+  console.info('Use `context`, and `get(<path>)` to debug this template.');
+  /* tslint:disable */
+  debugger;
+  /* tslint:enable */
+  return { context, get };
+}
+
+function getter(vm: VM, builder: OpcodeBuilder) {
+  return (path: string) => {
+    let parts = path.split('.') as any;
+
+    if (parts[0] === 'this') {
+      parts[0] = null;
+    }
+
+    return compileRef(parts, builder).evaluate(vm as AppendVM);
+  };
+}
+
+let callback = debugCallback;
+
+// For testing purposes
+export function setDebuggerCallback(cb: debugCallback) {
+  callback = cb;
+}
+
+export function resetDebuggerCallback() {
+  callback = debugCallback;
+}
 
 export class Compilers<T extends Syntax, CompileTo> {
   private names = dict<number>();
@@ -201,6 +242,19 @@ STATEMENTS.add('yield', function(this: undefined, sexp: WireFormat.Statements.Yi
 
   let args = compileArgs(params, null, builder);
   builder.yield(args, to);
+});
+
+STATEMENTS.add('debugger', (sexp: BaselineSyntax.Debugger, builder: OpcodeBuilder) => {
+
+  builder.putValue(['function', (vm: VM) => {
+    let context = vm.getSelf().value();
+    let get = (path: string) => {
+      return getter(vm, builder)(path).value();
+    };
+    callback(context, get);
+  }]);
+
+  return sexp;
 });
 
 let EXPRESSIONS = new Compilers<SexpExpression, CompiledExpression<Opaque>>();

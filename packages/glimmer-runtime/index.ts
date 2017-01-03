@@ -65,7 +65,10 @@ export {
   Inlines as InlineMacros,
   NestedBlockSyntax,
   CompileBlockMacro,
-  compileArgs
+  compileArgs,
+  setDebuggerCallback,
+  resetDebuggerCallback,
+  debugCallback
 } from './lib/syntax/functions';
 
 export {

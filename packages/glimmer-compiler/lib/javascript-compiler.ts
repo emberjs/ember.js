@@ -236,6 +236,10 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.template.block.yields.add(to);
   }
 
+  debugger() {
+    this.push(['debugger', null, null]);
+  }
+
   hasBlock(name: string) {
     this.pushValue<Expressions.HasBlock>(['has-block', name]);
     this.template.block.yields.add(name);

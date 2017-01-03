@@ -130,6 +130,9 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     } else if (isPartial(action)) {
       let params = assertValidPartial(action);
       this.partial(params, action);
+    }else if (isDebugger(action)) {
+      assertValidDebuggerUsage(action);
+      this.debugger('debugger', action);
     } else {
       this.mustacheExpression(action);
       this.opcode('append', action, !action.escaped);
@@ -172,6 +175,10 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   yield(to: string, action) {
     this.prepareParams(action.params);
     this.opcode('yield', action, to);
+  }
+
+  debugger(name, action) {
+    this.opcode('debugger', null);
   }
 
   hasBlock(name: string, action) {
@@ -358,6 +365,10 @@ function isPartial({ path }) {
   return path.original === 'partial';
 }
 
+function isDebugger({ path }) {
+  return path.original === 'debugger';
+}
+
 function isArg({ path }) {
   return path.data;
 }
@@ -424,5 +435,17 @@ function assertValidHasBlockUsage(type, { params, hash, loc }): string {
     }
   } else {
     throw new Error(`${type} only takes a single positional argument (on line ${loc.start.line})`);
+  }
+}
+
+function assertValidDebuggerUsage({ params, hash }) {
+  if (hash && hash.pairs.length > 0) {
+    throw new Error(`debugger does not take any named arguments`);
+  }
+
+  if (params.length === 0) {
+    return 'default';
+  } else {
+    throw new Error(`debugger does not take any positional arguments`);
   }
 }
