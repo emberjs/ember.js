@@ -194,8 +194,6 @@ let librariesRegistered = false;
 */
 
 const Application = Engine.extend({
-  _suppressDeferredDeprecation: true,
-
   /**
     The root DOM element of the Application. This can be specified as an
     element or a
