@@ -519,7 +519,7 @@ QUnit.test('The {{link-to}} helper supports custom, nested, current-when with ro
 
   run(() => router.handleURL('/foo/1/bar/2'));
 
-  ok(jQuery("a[href='/foo/1']", '#qunit-fixture').is('.active'), 'The link should be current when on foo.index');
+  ok(jQuery("a[href='/foo/1']", '#qunit-fixture').is('.active'), 'The link should be current when on foo.bar');
   ok(jQuery("a[href='/foo/1/bar/2']", '#qunit-fixture').is('.active'), 'The link should be current when on foo.bar');
 });
 
