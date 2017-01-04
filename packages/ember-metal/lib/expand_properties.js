@@ -40,28 +40,8 @@ export default function expandProperties(pattern, callback) {
     'Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"',
     pattern.indexOf(' ') === -1
   );
-  assert(
-    `Brace expanded properties have to be balanced and cannot be nested, pattern: ${pattern}`,
-    ((str) => {
-      let inBrace = 0;
-      let char;
-      for (let i = 0; i < str.length; i++) {
-        char = str.charAt(i);
 
-        if (char === '{') {
-          inBrace++;
-        } else if (char === '}') {
-          inBrace--;
-        }
-
-        if (inBrace > 1 || inBrace < 0) {
-          return false;
-        }
-      }
-
-      return true;
-    })(pattern));
-
+  let unbalancedNestedError = `Brace expanded properties have to be balanced and cannot be nested, pattern: ${pattern}`;
   let properties = [pattern];
 
   // Iterating backward over the pattern makes dealing with indices easier.
@@ -77,6 +57,8 @@ export default function expandProperties(pattern, callback) {
         if (!inside) {
           bookmark = i - 1;
           inside = true;
+        } else {
+          assert(unbalancedNestedError, false);
         }
         break;
       // Opening curly brace will be the last character of the brace expansion we encounter.
@@ -96,9 +78,14 @@ export default function expandProperties(pattern, callback) {
             }
           }
           inside = false;
+        } else {
+          assert(unbalancedNestedError, false);
         }
         break;
     }
+  }
+  if (inside) {
+    assert(unbalancedNestedError, false);
   }
 
   for (let i = 0; i < properties.length; i++) {
