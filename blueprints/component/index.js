@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/* eslint-env node */
 
 var stringUtil         = require('ember-cli-string-utils');
 var pathUtil           = require('ember-cli-path-utils');
