@@ -501,6 +501,28 @@ QUnit.test('The {{link-to}} helper supports custom, nested, current-when', funct
   equal(jQuery('#other-link.active', '#qunit-fixture').length, 1, 'The link is active since current-when is a parent route');
 });
 
+QUnit.test('The {{link-to}} helper supports custom, nested, current-when with route params', function() {
+  expect(2);
+
+  Router.map(function() {
+    this.route('index', { path: '/' });
+    this.route('foo', { path: '/foo/:fooId' }, function() {
+      this.route('bar', { path: '/bar/:barId' });
+    });
+  });
+
+  setTemplate('index', compile('{{outlet}}'));
+  setTemplate('foo', compile("{{#link-to 'foo.index' 1 current-when='foo.index foo.bar'}}Foo Index{{/link-to}} {{outlet}}"));
+  setTemplate('foo/bar', compile("{{#link-to 'foo.bar' 1 2}}Foo Bar{{/link-to}}"));
+
+  bootApplication();
+
+  run(() => router.handleURL('/foo/1/bar/2'));
+
+  ok(jQuery("a[href='/foo/1']", '#qunit-fixture').is('.active'), 'The link should be current when on foo.index');
+  ok(jQuery("a[href='/foo/1/bar/2']", '#qunit-fixture').is('.active'), 'The link should be current when on foo.bar');
+});
+
 QUnit.test('The {{link-to}} helper does not disregard current-when when it is given explicitly for a route', function() {
   Router.map(function(match) {
     this.route('index', { path: '/' }, function() {
