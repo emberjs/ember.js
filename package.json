@@ -58,7 +58,7 @@
     "ember-cli-sauce": "^1.8.0",
     "ember-cli-yuidoc": "0.8.4",
     "ember-publisher": "0.0.7",
-    "emberjs-build": "0.18.0",
+    "emberjs-build": "0.19.0",
     "express": "^4.5.0",
     "finalhandler": "^0.4.0",
     "git-repo-info": "^1.1.4",
