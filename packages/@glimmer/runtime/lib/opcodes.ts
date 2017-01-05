@@ -723,6 +723,18 @@ export const enum Op {
    */
   PushComponentManager,
 
+
+  /**
+   * Operation: Set component metadata into a local.
+   *
+   * Format:
+   *   (SetComponentLocal local:u32)
+   * Operand Stack:
+   *   ..., ComponentDefinition<T>, ComponentManager<T>, T →
+   *   ...
+   */
+  SetComponentLocal,
+
   /**
    * Operation: Perform any post-call cleanup.
    *
@@ -733,6 +745,17 @@ export const enum Op {
    *   ..., ComponentManager
    */
   PrepareComponentArgs,
+
+  /**
+   * Operation: Push a user representation of args onto the stack.
+   *
+   * Format:
+   *   (PushComponentArgs positional:u32 named:u32 namedDict:#Dict<number>)
+   * Operand Stack:
+   *   ..., ComponentManager →
+   *   ..., ComponentManager
+   */
+  PushComponentArgs,
 
   /**
    * Operation: Create the component and push it onto the stack.

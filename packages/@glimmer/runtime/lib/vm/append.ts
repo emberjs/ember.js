@@ -63,6 +63,10 @@ export class EvaluationStack {
   top<T>(): T {
     return this.stack[this.stack.length - 1] as T;
   }
+
+  fromTop<T>(pos: number): T {
+    return this.stack[this.stack.length - 1 - pos] as T;
+  }
 }
 
 export default class VM implements PublicVM {
