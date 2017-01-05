@@ -858,8 +858,9 @@ const EmberRouter = EmberObject.extend(Evented, {
       for (let i = 0; i < qpMeta.qps.length; i++) {
         let qp = qpMeta.qps[i];
         let urlKey = qp.urlKey;
+        let qpOther = qpsByUrlKey[urlKey];
 
-        if (qpsByUrlKey[urlKey]) {
+        if (qpOther && qpOther.controllerName !== qp.controllerName) {
           let otherQP = qpsByUrlKey[urlKey];
           assert(`You're not allowed to have more than one controller property map to the same query param key, but both \`${otherQP.scopedPropertyName}\` and \`${qp.scopedPropertyName}\` map to \`${urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${otherQP.prop}: { as: \'other-${otherQP.prop}\' }\``, false);
         }
