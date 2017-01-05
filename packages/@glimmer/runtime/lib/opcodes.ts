@@ -259,9 +259,57 @@ export const enum Op {
   ReleaseLocals,
 
   /**
+   * Operation: Push a new root scope onto the scope stack.
+   *
+   * Format:
+   *   (RootScope symbols:u32)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   * Description:
+   *   A root scope has no parent scope, and therefore inherits no lexical
+   *   variables.
+   */
+  RootScope,
+
+  /**
+   * Operation: Push a new child scope onto the scope stack.
+   *
+   * Format:
+   *   (ChildScope)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   * Description:
+   *   A child scope inherits from the current parent scope, and therefore
+   *   shares its lexical variables.
+   */
+  ChildScope,
+
+  /**
+   * Operation: Pop the current scope from the scope stack.
+   * Format:
+   *   (PopScope)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
+  PopScope,
+
+  /**
+   * Operation: Bind `self` from the stack into the current scope.
+   * Format:
+   *   (BindSelf)
+   * Operand Stack:
+   *   ..., VersionedPathReference →
+   *   ...
+   */
+  BindSelf,
+
+  /**
    * Operation:
    *   Bind `count` positional args from the stack into the
-   *   specified symbols.
+   *   specified symbols in the current scope.
    * Format:
    *   (BindPositionalArgs count:u32)
    * Operand Stack:
@@ -274,7 +322,7 @@ export const enum Op {
    * Operation:
    *  Bind `count` named args from the stack into the
    *  specified symbols and associate them with the
-   *  same-index name.
+   *  same-index name in the current scope.
    * Format:
    *   (BindNamedArgs names:#Array<#string>, symbols:#Array<u32>)
    * Operand Stack:
@@ -287,7 +335,7 @@ export const enum Op {
    * Operation:
    *  Bind `count` blocks from the stack into the
    *  specified symbols and associate them with the
-   *  same-index name.
+   *  same-index name in the current scope.
    * Format:
    *   (BindBlocks names:#Array<#string>, symbols:#Array<u32>)
    * Operand Stack:
@@ -297,15 +345,17 @@ export const enum Op {
   BindBlocks,
 
   /**
-   * Operation: Bind the caller's scope into the scope.
+   * Operation:
+   *   Bind the caller's scope into the current scope before pushing
+   *   a new scope onto the scope stack.
    * Format:
    *   (BindCallerScope)
    * Operand Stack:
    *   ... →
    *   ...
    * Description:
-   *   This should change to using the caller's bp, and shouldn't
-   *   be necessary, since the caller's bp is already saved off.
+   *   Should this change to using the caller's bp, which is already
+   *   saved off?
    */
   BindCallerScope,
 
@@ -359,6 +409,18 @@ export const enum Op {
    *   ...
    */
   OpenElement,
+
+  /**
+   * Operation:
+   *   Open a new Element named `tag` with special operations provided
+   *   on the stack.
+   * Format:
+   *   (OpenElementWithOperations tag:#string)
+   * Operand Stack:
+   *   ..., ElementOperations →
+   *   ...
+   */
+  OpenElementWithOperations,
 
   /**
    * Operation: Add an attribute to the current Element.
@@ -451,6 +513,14 @@ export const enum Op {
 
   /// VM
 
+  /**
+   * Operation: Evaluate the specified block.
+   * Format:
+   *   (Evaluate #InlineBlock)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
   Evaluate,                  // (ConstantBlock)
 
   /**
@@ -642,19 +712,120 @@ export const enum Op {
 
   /// COMPONENTS
 
+  /**
+   * Operation: Push an appropriate component manager onto the stack.
+   *
+   * Format:
+   *   (PushComponentManager #ComponentDefinition)
+   * Operand Stack:
+   *   ... →
+   *   ..., ComponentManager
+   */
+  PushComponentManager,
+
+  /**
+   * Operation: Perform any post-call cleanup.
+   *
+   * Format:
+   *   (PrepareComponentArgs)
+   * Operand Stack:
+   *   ..., ComponentManager →
+   *   ..., ComponentManager
+   */
+  PrepareComponentArgs,
+
+  /**
+   * Operation: Create the component and push it onto the stack.
+   * Format:
+   *   (PushCreatedComponent flags:u32)
+   * Operand Stack:
+   *   ..., ComponentManager →
+   *   ..., ComponentManager<T>, T
+   * Description:
+   *   Flags:
+   *
+   *   * 0b001: Has a default block
+   *   * 0b010: Has an inverse block
+   */
+  PushCreatedComponent,
+
+  /**
+   * Operation: Register a destructor for the current component
+   *
+   * Format:
+   *   (RegisterComponentDestructor)
+   * Operand Stack:
+   *   ..., ComponentManager<T>, T →
+   *   ..., ComponentManager<T>, T
+   */
+  RegisterComponentDestructor,
+
+  /**
+   * Operation: Get a slice of opcodes to invoke.
+   *
+   * Format:
+   *   (GetComponentLayout)
+   * Operand Stack:
+   *   ..., ComponentManager<T>, T →
+   *   ..., ComponentManager<T>, T, start:u32, end:u32
+   */
+  GetComponentLayout,
+
+  /**
+   * Operation: Begin a new cache group
+   *
+   * Format:
+   *   (BeginComponentTransaction)
+   * Operand Stack:
+   *   ..., ComponentManager<T>, T →
+   *   ..., ComponentManager<T>, T
+   */
+  BeginComponentTransaction,
+
+  /**
+   * Operation: Commit the current cache group
+   *
+   * Format:
+   *   (CommitComponentTransaction)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
+  CommitComponentTransaction,
+
+  /**
+   * Operation: Invoke didCreateElement on the current component manager
+   *
+   * Format:
+   *   (DidCreateElement manager:u32 component:u32)
+   * Operand Stack:
+   *   ..., →
+   *   ...
+   * Description:
+   *   Expect the component manager and component instance to be stored
+   *   in locals at offsets `manager` and `component`.
+   */
+  DidCreateElement,
+
+  /**
+   * Operation: Invoke didRenderLayout on the current component manager
+   *
+   * Format:
+   *   (DidRenderLayout manager:u32 component:u32)
+   * Operand Stack:
+   *   ..., →
+   *   ...
+   * Description:
+   *   Expect the component manager and component instance to be stored
+   *   in locals at offsets `manager` and `component`.
+   */
+  DidRenderLayout,
+
   PushDynamicComponent,       // ()
-  PushComponent,              // (Other<ComponentDefinition>)
-  OpenComponent,             // (ConstantBlock)
-  OpenComponentElement,      // (ConstantString)
   OpenDynamicElement,        // ()
-  DidCreateElement,          //
-  ShadowAttributes,          // ()
-  DidRenderLayout,           // ()
-  CloseComponent,            // ()
 
   /// TODO
-  PushChildScope,            // ()
-  PopScope,                  // ()
+  ShadowAttributes,          // Identical to `evaluate`
 
   /** The size of the opcode list */
   Size
@@ -674,10 +845,22 @@ function logOpcode(type: string, params: Option<Object>): string {
   let out = type;
 
   if (params) {
-    let args = Object.keys(params).map(p => `${p}=${JSON.stringify(params[p])}`).join(' ');
+    let args = Object.keys(params).map(p => `${p}=${json(params[p])}`).join(' ');
     out += ` ${args}`;
   }
   return `(${out})`;
+}
+
+function json(param: Opaque) {
+  let string = JSON.stringify(param);
+  if (string === undefined) return 'undefined';
+
+  let debug = JSON.parse(string);
+  if (typeof debug === 'object' && debug && debug['GlimmerDebug']) {
+    return debug['GlimmerDebug'];
+  }
+
+  return string;
 }
 
 function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any[] {
@@ -708,7 +891,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.ReleaseLocals: return ['ReleaseLocals', { count: op1 }];
     case Op.SetLocal: return ['SetLocal', { position: op1 }];
     case Op.GetLocal: return ['GetLocal', { position: op1 }];
-    case Op.PushChildScope: return ['PushChildScope'];
+    case Op.ChildScope: return ['PushChildScope'];
     case Op.PopScope: return ['PopScope'];
     case Op.PushDynamicScope: return ['PushDynamicScope'];
     case Op.PopDynamicScope: return ['PopDynamicScope'];
@@ -728,19 +911,15 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.InvokeBlock: return ['InvokeBlock'];
     case Op.DoneBlock: return ['DoneBlock'];
     case Op.PushDynamicComponent: return ['PushDynamicComponent'];
-    case Op.PushComponent: return ['PushComponent', { component: c.getOther(op1) }];
-    case Op.OpenComponent: return ['OpenComponent', { shadow: op1 ? c.getBlock(op1) : null }];
     case Op.DidCreateElement: return ['DidCreateElement'];
     case Op.ShadowAttributes: return ['ShadowAttributes'];
     case Op.DidRenderLayout: return ['DidRenderLayout'];
-    case Op.CloseComponent: return ['CloseComponent'];
     case Op.Text: return ['Text', { text: c.getString(op1) }];
     case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
     case Op.DynamicContent: return ['DynamicContent', { value: c.getOther(op1) }];
     case Op.OpenElement: return ['OpenElement'];
     case Op.PushRemoteElement: return ['PushRemoteElement'];
     case Op.PopRemoteElement: return ['PopRemoteElement'];
-    case Op.OpenComponentElement: return ['OpenComponentElement', { tag: c.getString(op1) }];
     case Op.OpenDynamicElement: return ['OpenDynamicElement'];
     case Op.FlushElement: return ['FlushElement'];
     case Op.CloseElement: return ['CloseElement'];

@@ -116,7 +116,7 @@ APPEND_OPCODES.add(Op.ShadowAttributes, vm => {
   vm.pushCallerScope();
   if (!shadow) return;
 
-  vm.invokeBlock(shadow, EvaluatedArgs.empty());
+  vm.invokeBlock(shadow);
 });
 
 // export class DidRenderLayoutOpcode extends Opcode {
