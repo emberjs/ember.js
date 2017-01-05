@@ -2,6 +2,7 @@ import { EmptyObject } from 'ember-utils';
 import { get } from './property_get';
 import { meta as metaFor, peekMeta } from './meta';
 import { watchKey, unwatchKey } from './watch_key';
+import { cacheFor } from './computed';
 
 const FIRST_KEY = /^([^\.]+)/;
 
@@ -183,8 +184,8 @@ function lazyGet(obj, key) {
   // Otherwise attempt to get the cached value of the computed property
   } else {
     let cache = meta.readableCache();
-    if (cache && key in cache) {
-      return cache[key];
+    if (cache) {
+      return cacheFor.get(cache, key);
     }
   }
 }
