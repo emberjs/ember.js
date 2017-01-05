@@ -192,7 +192,27 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   let [, tag, attrs, rawArgs, rawBlock] = sexp;
   let block = rawBlock && rawBlock.scan();
 
+  // (PushComponentManager #definition)       ; stack: [..., mgr, component]
+  // (PushDynamicScope)                       ; NOTE: Early because of mgr.create() 🤔
+  // (PushCreatedComponent 0b01)              ; stack: [..., mgr, component]
+  // (RegisterComponentDestructor)
+  // (SetLocal offset:N)                      ; stack: [..., mgr, component]
+  // (BeginComponentTransaction)
+  // (PushComponentOperations)                ; stack: [..., mgr, component, operations]
+  // (OpenElementWithOperations tag:#string)  ; stack: [..., mgr, component]
+  // (DidCreateElement)
+  // (Evaluate #attrs)                        ; NOTE: Still original scope
+  // ... args                                 ; stack: [..., mgr, component, ...args]
+  // (PushBlock #block)                       ; stack: [..., mgr, component, ...args, block]
+  // (RootScope symbols:u32)
+  // (SetVariable symbol:<default block>)     ; stack: [..., mgr, component, ...args]
+  // (SetVariable symbol:<named arg>) ...     ; stack: [..., mgr, component]
+  // (BindCallerScope)                        ; TODO: Pass on stack?
+  // (Evaluate #layout)
+  // (DidRenderLayout)                        ; stack: [..., mgr, component]
+
   let definition = builder.env.getComponentDefinition([tag], builder.symbolTable);
+
   builder.putComponentDefinition(definition);
   compileList(rawArgs && rawArgs[1], builder);
   compileBlocks(block, null, builder);

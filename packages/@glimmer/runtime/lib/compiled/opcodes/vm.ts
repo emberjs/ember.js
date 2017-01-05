@@ -144,8 +144,7 @@ APPEND_OPCODES.add(Op.Exit, (vm) => vm.exit());
 
 APPEND_OPCODES.add(Op.Evaluate, (vm, { op1: _block }) => {
   let block = vm.constants.getBlock(_block);
-  let args = vm.frame.getArgs();
-  vm.invokeBlock(block, args);
+  vm.invokeBlock(block);
 });
 
 APPEND_OPCODES.add(Op.Jump, (vm, { op1: target }) => vm.goto(target));
