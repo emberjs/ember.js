@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/* eslint-env node */
 
 var path          = require('path');
 var testInfo      = require('ember-cli-test-info');

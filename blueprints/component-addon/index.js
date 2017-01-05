@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/* eslint-env node */
 
 var stringUtil         = require('ember-cli-string-utils');
 var validComponentName = require('ember-cli-valid-component-name');

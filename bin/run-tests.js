@@ -110,7 +110,7 @@ function generateBuiltTests() {
   // ember-testing/ember-debug are stripped from prod/min.
   var common = 'skipPackage=container,ember-testing,ember-debug';
   testFunctions.push(function() {
-    return run(common + '&nojshint=true');
+    return run(common + '&nolint=true');
   });
   testFunctions.push(function() {
     return run(common + '&dist=min&prod=true');
@@ -125,22 +125,22 @@ function generateBuiltTests() {
 
 function generateOldJQueryTests() {
   testFunctions.push(function() {
-    return run('jquery=1.8.3&nojshint=true');
+    return run('jquery=1.8.3&nolint=true');
   });
   testFunctions.push(function() {
-    return run('jquery=1.10.2&nojshint=true');
+    return run('jquery=1.10.2&nolint=true');
   });
   testFunctions.push(function() {
-    return run('jquery=2.2.4&nojshint=true');
+    return run('jquery=2.2.4&nolint=true');
   });
 }
 
 function generateExtendPrototypeTests() {
   testFunctions.push(function() {
-    return run('extendprototypes=true&nojshint=true');
+    return run('extendprototypes=true&nolint=true');
   });
   testFunctions.push(function() {
-    return run('extendprototypes=true&nojshint=true&enableoptionalfeatures=true');
+    return run('extendprototypes=true&nolint=true&enableoptionalfeatures=true');
   });
 }
 

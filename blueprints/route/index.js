@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/* eslint-env node */
 
 var fs          = require('fs-extra');
 var path        = require('path');
