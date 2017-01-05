@@ -192,24 +192,28 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   let [, tag, attrs, rawArgs, rawBlock] = sexp;
   let block = rawBlock && rawBlock.scan();
 
-  // (PushComponentManager #definition)       ; stack: [..., mgr, component]
-  // (PushDynamicScope)                       ; NOTE: Early because of mgr.create() 🤔
-  // (PushCreatedComponent 0b01)              ; stack: [..., mgr, component]
-  // (RegisterComponentDestructor)
-  // (SetLocal offset:N)                      ; stack: [..., mgr, component]
+  // `local` is a temporary we store component state throughout this algorithm
+
+  // (PushComponentManager #definition)       ; stack: [..., definition, mgr]
+  // (SetComponentLocal local:u32)            ; stack: [...]
+  // ... args                                 ; stack: [..., ...args]
+  // (PushBlock #block)                       ; stack: [..., ...args, block]
+  // (PushDynamicScope)                       ; stack: [..., ...args, block] NOTE: Early because of mgr.create() 🤔
+  // (PushComponentArgs N N #Dict<number>)    ; stack: [..., ...args, block, userArgs]
+  // (PushCreatedComponent 0b01)              ; stack: [..., ...args, block, component]
+  // (UpdateComponentLocal local:u32)         ; stack: [..., ...args, block]
+  // (RegisterComponentDestructor local:u32)
   // (BeginComponentTransaction)
-  // (PushComponentOperations)                ; stack: [..., mgr, component, operations]
-  // (OpenElementWithOperations tag:#string)  ; stack: [..., mgr, component]
-  // (DidCreateElement)
+  // (PushComponentOperations)                ; stack: [..., ...args, block, operations]
+  // (OpenElementWithOperations tag:#string)  ; stack: [..., ...args, block]
+  // (DidCreateElement local:u32)
   // (Evaluate #attrs)                        ; NOTE: Still original scope
-  // ... args                                 ; stack: [..., mgr, component, ...args]
-  // (PushBlock #block)                       ; stack: [..., mgr, component, ...args, block]
   // (RootScope symbols:u32)
-  // (SetVariable symbol:<default block>)     ; stack: [..., mgr, component, ...args]
-  // (SetVariable symbol:<named arg>) ...     ; stack: [..., mgr, component]
+  // (SetVariable symbol:<default block>)     ; stack: [..., ...args]
+  // (SetVariable symbol:<named arg>) ...     ; stack: [...]
   // (BindCallerScope)                        ; TODO: Pass on stack?
   // (Evaluate #layout)
-  // (DidRenderLayout)                        ; stack: [..., mgr, component]
+  // (DidRenderLayout local:u32)              ; stack: [...]
 
   let definition = builder.env.getComponentDefinition([tag], builder.symbolTable);
 

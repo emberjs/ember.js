@@ -1,12 +1,12 @@
 import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { Assert } from './vm';
 import { Component, ComponentManager, ComponentDefinition } from '../../component/interfaces';
-import { UpdatingVM } from '../../vm';
+import { UpdatingVM, VM } from '../../vm';
 import { EvaluatedArgs } from '../../compiled/expressions/args';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
 import { APPEND_OPCODES, Op as Op } from '../../opcodes';
-import { Opaque } from '@glimmer/util';
+import { Opaque, Dict, Option } from '@glimmer/util';
 import {
   CONSTANT_TAG,
   ReferenceCache,
@@ -26,6 +26,90 @@ APPEND_OPCODES.add(Op.PushDynamicComponent, vm => {
   if (cache) {
     vm.updateWith(new Assert(cache));
   }
+});
+
+APPEND_OPCODES.add(Op.PushComponentManager, (vm, { op1: definition }) => {
+  vm.evalStack.push(vm.constants.other(definition));
+});
+
+export class Arguments {
+  private positional: number = 0;
+  private named: number = 0;
+  private start: number = 0;
+  private namedDict: Dict<number> = null as any;
+  private vm: VM = null as any;
+
+  setup(positional: number, named: number, namedDict: Dict<number>, vm: VM) {
+    this.positional = positional;
+    this.named = named;
+    this.namedDict = namedDict;
+    this.start = positional + named;
+    this.vm = vm;
+  }
+
+  at<T extends VersionedPathReference<Opaque>>(pos: number): T {
+    // stack: pos1, pos2, pos3, named1, named2
+    // start: 4 (top - 4)
+    //
+    // at(0) === pos1 === top - start
+    // at(1) === pos2 === top - (start - 1)
+    // at(2) === pos3 === top - (start - 2)
+    let fromTop = this.start - pos;
+    return this.vm.evalStack.fromTop<T>(fromTop);
+  }
+
+  get<T extends VersionedPathReference<Opaque>>(name: string): T {
+    // stack: pos1, pos2, pos3, named1, named2
+    // start: 4 (top - 4)
+    // namedDict: { named1: 1, named2: 0 };
+    //
+    // get('named1') === named1 === top - (start - 1)
+    // get('named2') === named2 === top - start
+    let fromTop = this.namedDict[name];
+    return this.vm.evalStack.fromTop<T>(fromTop);
+  }
+}
+
+const ARGS = new Arguments();
+
+interface InitialComponentState<T> {
+  definition: ComponentDefinition<T>,
+  manager: ComponentManager<T>,
+  component: null
+}
+
+interface ComponentState<T> {
+  definition: ComponentDefinition<T>,
+  manager: ComponentManager<T>,
+  component: null
+}
+
+APPEND_OPCODES.add(Op.SetComponentLocal, (vm, { op1: local }) => {
+  let stack = vm.evalStack;
+
+  let manager = stack.pop();
+  let definition = stack.pop();
+
+  vm.setLocal(local, { definition, manager, component: null });
+});
+
+APPEND_OPCODES.add(Op.PushComponentArgs, (vm, { op1: positional, op2: named, op3: _namedDict }) => {
+  let namedDict = vm.constants.getOther<Dict<number>>(_namedDict);
+  ARGS.setup(positional, named, namedDict, vm);
+});
+
+APPEND_OPCODES.add(Op.PushCreatedComponent, (vm, { op1: flags }) => {
+  let manager = vm.evalStack.top<ComponentManager<Opaque>>();
+  let definition = vm.evalStack.fromTop<ComponentDefinition<Opaque>>(1);
+  let env = vm.env;
+
+  let dynamicScope = vm.dynamicScope();
+  let self = vm.getSelf();
+  let hasDefaultBlock = flags & 0b01;
+
+  ARGS.setup()
+
+  vm.evalStack.push(manager.create(env, definition, null, dynamicScope, self, hasDefaultBlock))
 });
 
 APPEND_OPCODES.add(Op.PushComponent, (vm, { op1: _component }) => {
