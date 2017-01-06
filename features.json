@@ -7,6 +7,7 @@
     "ember-glimmer-allow-backtracking-rerender": null,
     "ember-testing-resume-test": null,
     "ember-factory-for": true,
-    "ember-no-double-extend": null
+    "ember-no-double-extend": null,
+    "ember-routing-router-service": null
   }
 }

@@ -23,4 +23,5 @@ export { default as Router } from './system/router';
 export { default as Route } from './system/route';
 export { default as QueryParams } from './system/query_params';
 export { default as RoutingService } from './services/routing';
+export { default as RouterService } from './services/router';
 export { default as BucketCache } from './system/cache';
