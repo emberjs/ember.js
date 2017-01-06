@@ -20,6 +20,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
         this.route('comments');
         this.route('likes');
       });
+      this.route('category', {path: 'category/:id'});
     });
     this.registerRoute('application', Route.extend({
       model() {
@@ -33,6 +34,9 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
         this.register('controller:application', Controller.extend({
           queryParams: ['lang'],
           lang: ''
+        }));
+        this.register('controller:category', Controller.extend({
+          queryParams: ['type'],
         }));
         this.register('template:application', compile('Engine{{lang}}{{outlet}}'));
         this.register('route:application', Route.extend({
@@ -570,6 +574,20 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       return transition.then(() => {
         this.runTaskNext(() => this.assertText('ApplicationEngineLikes'));
       });
+    });
+  }
+
+  ['@test query params don\'t have stickiness by default between model'](assert) {
+    assert.expect(1);
+
+    this.setupAppAndRoutableEngine();
+    this.additionalEngineRegistrations(function() {
+      this.register('template:category', compile('{{#link-to "blog.category" 1337}}Category 1337{{/link-to}}'))
+    });
+
+    return this.visit('/blog/category/1?type=news').then(() => {
+      let href = this.element.querySelector('a').href;
+      assert.equal(href.match(/type=news/), null);
     });
   }
 });
