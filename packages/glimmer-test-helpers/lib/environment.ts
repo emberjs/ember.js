@@ -56,7 +56,10 @@ import {
   getDynamicVar,
 
   Template,
-  Layout
+  Layout,
+  isComponentDefinition,
+  PositionalArgsSyntax,
+  GetSyntax
 } from "glimmer-runtime";
 
 import {
@@ -822,6 +825,10 @@ export class TestEnvironment extends Environment {
       return (statement.original as OptimizedAppend).deopt();
     }
 
+    if (!isSimple && path) {
+      return DynamicComponentSyntax.fromPath(path, args, symbolTable);
+    }
+
     return super.refineStatement(statement, symbolTable);
   }
 
@@ -955,13 +962,15 @@ class DynamicComponentReference implements PathReference<ComponentDefinition<Opa
   value(): ComponentDefinition<Opaque> {
     let { env, nameRef } = this;
 
-    let name = nameRef.value();
+    let nameOrDef = nameRef.value();
 
-    if (typeof name === 'string') {
-      return env.getComponentDefinition([name], this.symbolTable);
-    } else {
-      return null;
+    if (typeof nameOrDef === 'string') {
+      return env.getComponentDefinition([nameOrDef], this.symbolTable);
+    } else if (isComponentDefinition(nameOrDef)) {
+      return nameOrDef;
     }
+
+    return null;
   }
 
   get() {
@@ -985,9 +994,14 @@ class DynamicComponentSyntax extends StatementSyntax {
 
   public symbolTable: SymbolTable;
 
-  constructor({ args, symbolTable }: { args: ArgsSyntax, symbolTable: SymbolTable }) {
+  static fromPath(path: string[], args: ArgsSyntax, symbolTable: SymbolTable) {
+    let definitionArgs = ArgsSyntax.fromPositionalArgs(PositionalArgsSyntax.build([GetSyntax.build(path.join('.'))]));
+    return new this({ args, symbolTable, definitionArgs });
+  }
+
+  constructor({ args, symbolTable, definitionArgs }: { args: ArgsSyntax, symbolTable: SymbolTable }) {
     super();
-    this.definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0,1));
+    this.definitionArgs = definitionArgs || ArgsSyntax.fromPositionalArgs(args.positional.slice(0,1));
     this.definition = dynamicComponentFor;
     this.args = ArgsSyntax.build(args.positional.slice(1), args.named, args.blocks);
     this.symbolTable = symbolTable;
