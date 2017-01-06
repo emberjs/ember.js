@@ -1334,7 +1334,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         let aQp = queryParams.map[prop];
 
         aQp.values = params;
-        let cacheKey = calculateCacheKey(aQp.controllerName, aQp.parts, aQp.values);
+        let cacheKey = calculateCacheKey(aQp.route.fullRouteName, aQp.parts, aQp.values);
 
         if (cache) {
           let value = cache.lookup(cacheKey, prop, aQp.undecoratedDefaultValue);
@@ -1363,7 +1363,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   _qpChanged(prop, value, qp) {
     if (!qp) { return; }
 
-    let cacheKey = calculateCacheKey(qp.controllerName, qp.parts, qp.values);
+    let cacheKey = calculateCacheKey(qp.route.fullRouteName, qp.parts, qp.values);
 
     // Update model-dep cache
     let cache = this._bucketCache;
