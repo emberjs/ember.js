@@ -196,6 +196,10 @@ export default {
     let attribute = b.attr(name, value, loc);
 
     this.currentNode.attributes.push(attribute);
+  },
+
+  reportSyntaxError: function(message) {
+    throw new Error(`Syntax error at line ${this.tokenizer.line} col ${this.tokenizer.column}: ${message}`);
   }
 };
 
