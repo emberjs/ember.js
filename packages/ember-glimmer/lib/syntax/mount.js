@@ -8,7 +8,7 @@ import {
   ComponentDefinition
 } from 'glimmer-runtime';
 import { UNDEFINED_REFERENCE } from 'glimmer-reference';
-import { assert } from 'ember-metal';
+import { assert, runInDebug } from 'ember-metal';
 import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
@@ -74,6 +74,8 @@ class MountManager {
   }
 
   create(environment, { name, env }, args, dynamicScope) {
+    runInDebug(() => this._pushToDebugStack(`engine:${name}`, env));
+
     dynamicScope.outletState = UNDEFINED_REFERENCE;
 
     let engine = env.owner.buildChildEngineInstance(name);
@@ -103,12 +105,23 @@ class MountManager {
   }
 
   didCreateElement() {}
-  didRenderLayout() {}
+
+  didRenderLayout() {
+    runInDebug(() => this.debugStack.pop());
+  }
+
   didCreate(state) {}
   update(state, args, dynamicScope) {}
   didUpdateLayout() {}
   didUpdate(state) {}
 }
+
+runInDebug(() => {
+  MountManager.prototype._pushToDebugStack = function(name, environment) {
+    this.debugStack = environment.debugStack;
+    this.debugStack.pushEngine(name);
+  };
+});
 
 const MOUNT_MANAGER = new MountManager();
 
