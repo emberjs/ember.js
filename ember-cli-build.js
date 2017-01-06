@@ -202,10 +202,13 @@ var glimmerEngine = require('glimmer-engine/ember-cli-build')({
   stripRuntimeChecks: true
 });
 
-var find = require('broccoli-stew').find;
-
 function glimmerPackage(name) {
-  return replace(find(glimmerEngine, 'named-amd/' + name + '/**/*.js'), {
+  return replace(new Funnel(glimmerEngine, {
+    include: [
+      'named-amd/' + name + '.js',
+      'named-amd/' + name + '/**/*.js'
+    ]
+  }), {
     files: ['**/*.js'],
     pattern: {
       match: /\/\/#\s+sourceMappingURL.*/g,
