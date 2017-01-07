@@ -13,6 +13,8 @@ import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
 import { FACTORY_FOR } from 'container';
+import AbstractManager from './abstract-manager';
+
 /**
   The `{{mount}}` helper lets you embed a routeless engine in a template.
   Mounting an engine will cause an instance to be booted and its `application`
@@ -68,13 +70,13 @@ export class MountSyntax extends StatementSyntax {
   }
 }
 
-class MountManager {
+class MountManager extends AbstractManager {
   prepareArgs(definition, args) {
     return args;
   }
 
   create(environment, { name, env }, args, dynamicScope) {
-    runInDebug(() => this._pushToDebugStack(`engine:${name}`, env));
+    runInDebug(() => this._pushEngineToDebugStack(`engine:${name}`, env));
 
     dynamicScope.outletState = UNDEFINED_REFERENCE;
 
@@ -115,13 +117,6 @@ class MountManager {
   didUpdateLayout() {}
   didUpdate(state) {}
 }
-
-runInDebug(() => {
-  MountManager.prototype._pushToDebugStack = function(name, environment) {
-    this.debugStack = environment.debugStack;
-    this.debugStack.pushEngine(name);
-  };
-});
 
 const MOUNT_MANAGER = new MountManager();
 

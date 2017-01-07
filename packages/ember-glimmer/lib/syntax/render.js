@@ -13,6 +13,7 @@ import { RootReference } from '../utils/references';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
 import { FACTORY_FOR } from 'container';
+import AbstractManager from './abstract-manager';
 
 function makeComponentDefinition(vm) {
   let env     = vm.env;
@@ -137,7 +138,7 @@ export class RenderSyntax extends StatementSyntax {
   }
 }
 
-class AbstractRenderManager {
+class AbstractRenderManager extends AbstractManager {
   prepareArgs(definition, args) {
     return args;
   }
@@ -171,11 +172,6 @@ class AbstractRenderManager {
 runInDebug(() => {
   AbstractRenderManager.prototype.didRenderLayout = function() {
     this.debugStack.pop();
-  };
-
-  AbstractRenderManager.prototype._pushToDebugStack = function(name, environment) {
-    this.debugStack = environment.debugStack;
-    this.debugStack.push(name);
   };
 });
 
