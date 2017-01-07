@@ -27,7 +27,7 @@ runInDebug(() => {
       deprecate(this._message, false, {
         id: 'ember-views.lifecycle-hook-arguments',
         until: '2.13.0',
-        url: 'TODO'
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       });
 
       return this._oldAttrs;
@@ -37,7 +37,7 @@ runInDebug(() => {
       deprecate(this._message, false, {
         id: 'ember-views.lifecycle-hook-arguments',
         until: '2.13.0',
-        url: 'TODO'
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       });
 
       return this._newAttrs;
@@ -513,7 +513,7 @@ export default Mixin.create({
       {
         id: 'ember-views.lifecycle-hook-arguments',
         until: '2.13.0',
-        url: 'TODO'
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       }
     );
 
@@ -523,7 +523,7 @@ export default Mixin.create({
       {
         id: 'ember-views.lifecycle-hook-arguments',
         until: '2.13.0',
-        url: 'TODO'
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       }
     );
 
@@ -533,7 +533,7 @@ export default Mixin.create({
       {
         id: 'ember-views.lifecycle-hook-arguments',
         until: '2.13.0',
-        url: 'TODO'
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       }
     );
 

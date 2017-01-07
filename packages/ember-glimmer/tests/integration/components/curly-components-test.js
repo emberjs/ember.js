@@ -2897,6 +2897,59 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
   }
 
+  ['@test can access didInitAttrs arguments [DEPRECATED]'](assert) {
+    expectDeprecation(/didInitAttrs called/);
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+        },
+
+        didInitAttrs({ attrs }) {
+          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
+          this.set('fooCopy', attrs.foo.value + 1);
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+  }
+
+  ['@test can access did{Receive,Update}Attrs arguments [DEPRECATED]'](assert) {
+    // expectDeprecation(/didInitAttrs called/);
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          this.didInit = true;
+        },
+
+        didReceiveAttrs({ attrs }) {
+          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
+          this.set('fooCopy', attrs.foo.value + 1);
+        },
+
+        didReceiveAttrs({ newAttrs }) {
+          assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
+          this.set('barCopy', newAttrs.bar.value + 1);
+        },
+
+        fooCopyDidChange: observer('fooCopy', () => { fooCopyDidChangeCount++; }),
+        barCopyDidChange: observer('barCopy', () => { barCopyDidChangeCount++; })
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+
+    this.runTask(() => set(this.context, 'foo', 5));
+  }
+
   ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](assert) {
     this.registerComponent('display-toggle', {
       ComponentClass: Component.extend({
