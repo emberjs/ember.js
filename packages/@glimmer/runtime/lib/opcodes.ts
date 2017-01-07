@@ -99,6 +99,16 @@ export const enum Op {
   GetProperty,
 
   /**
+   * Operation: Push the specified constant block onto the stack.
+   * Format:
+   *   (PushBlock block:Option<#InlineBlock>)
+   * Operand Stack:
+   *   ... →
+   *   ..., Option<InlineBlock>
+   */
+  PushBlock,
+
+  /**
    * Operation: Push the specified constant blocks onto the stack.
    * Format:
    *   (PushBlocks default:Option<#InlineBlock> inverse:Option<#InlineBlock>)
@@ -262,13 +272,14 @@ export const enum Op {
    * Operation: Push a new root scope onto the scope stack.
    *
    * Format:
-   *   (RootScope symbols:u32)
+   *   (RootScope symbols:u32 bindCallerScope:bool)
    * Operand Stack:
    *   ... →
    *   ...
    * Description:
    *   A root scope has no parent scope, and therefore inherits no lexical
-   *   variables.
+   *   variables. If `bindCallerScope` is `true`, the current scope remembers
+   *   the caller scope (for yielding blocks).
    */
   RootScope,
 
@@ -728,12 +739,12 @@ export const enum Op {
    * Operation: Set component metadata into a local.
    *
    * Format:
-   *   (SetComponentLocal local:u32)
+   *   (SetComponentState local:u32)
    * Operand Stack:
    *   ..., ComponentDefinition<T>, ComponentManager<T>, T →
    *   ...
    */
-  SetComponentLocal,
+  SetComponentState,
 
   /**
    * Operation: Perform any post-call cleanup.
@@ -749,28 +760,36 @@ export const enum Op {
   /**
    * Operation: Push a user representation of args onto the stack.
    *
-   * Format:
+   * @Format:
    *   (PushComponentArgs positional:u32 named:u32 namedDict:#Dict<number>)
+   *
    * Operand Stack:
-   *   ..., ComponentManager →
-   *   ..., ComponentManager
+   *   ... →
+   *   ..., Arguments
+   *
+   * Description:
+   *   This arguments object is only necessary when calling into
+   *   user-specified hooks. It is meant to be implemented as a
+   *   transient proxy that reads into the stack as needed.
+   *   Holding onto the Arguments after the call has completed is
+   *   illegal.
    */
   PushComponentArgs,
 
   /**
    * Operation: Create the component and push it onto the stack.
    * Format:
-   *   (PushCreatedComponent flags:u32)
+   *   (CreateComponent flags:u32 state:u32)
    * Operand Stack:
-   *   ..., ComponentManager →
-   *   ..., ComponentManager<T>, T
+   *   ... →
+   *   ...
    * Description:
    *   Flags:
    *
    *   * 0b001: Has a default block
    *   * 0b010: Has an inverse block
    */
-  PushCreatedComponent,
+  CreateComponent,
 
   /**
    * Operation: Register a destructor for the current component
@@ -778,10 +797,22 @@ export const enum Op {
    * Format:
    *   (RegisterComponentDestructor)
    * Operand Stack:
-   *   ..., ComponentManager<T>, T →
-   *   ..., ComponentManager<T>, T
+   *   ... →
+   *   ...
    */
   RegisterComponentDestructor,
+
+  /**
+   * Operation: Push a new ElementOperations for the current component.
+   *
+   * Format:
+   *   (PushComponentOperations)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
+  PushComponentOperations,
+
 
   /**
    * Operation: Get a slice of opcodes to invoke.
@@ -820,13 +851,10 @@ export const enum Op {
    * Operation: Invoke didCreateElement on the current component manager
    *
    * Format:
-   *   (DidCreateElement manager:u32 component:u32)
+   *   (DidCreateElement state:u32)
    * Operand Stack:
    *   ..., →
    *   ...
-   * Description:
-   *   Expect the component manager and component instance to be stored
-   *   in locals at offsets `manager` and `component`.
    */
   DidCreateElement,
 
@@ -898,6 +926,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.GetBlock: return ['GetBlock', { symbol: op1 }];
     case Op.HasBlock: return ['HasBlock'];
     case Op.HasBlockParams: return ['HasBlockParams'];
+    case Op.PushBlock: return ['PushBlock', { block: c.getBlock(op1) }];
     case Op.PushBlocks: return ['PushBlocks', { default: c.getBlock(op1), inverse: c.getBlock(op2), flags: op3 }];
     case Op.GetProperty: return ['GetKey', { key: c.getString(op1) }];
     case Op.Concat: return ['Concat', { size: op1 }];
@@ -909,9 +938,14 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.Primitive: return ['Primitive', { primitive: op1 }];
     case Op.Pop: return ['Pop'];
 
+    /// COMPONENTS
+
+    case Op.SetComponentState: return ['SetComponentState', { local: op1 }];
+
     /// STATEMENTS
     case Op.ReserveLocals: return ['ReserveLocals', { count: op1 }];
     case Op.ReleaseLocals: return ['ReleaseLocals', { count: op1 }];
+    case Op.RootScope: return ['RootScope', { symbols: op1, bindCallerScope: !!op2 }];
     case Op.SetLocal: return ['SetLocal', { position: op1 }];
     case Op.GetLocal: return ['GetLocal', { position: op1 }];
     case Op.ChildScope: return ['PushChildScope'];
@@ -937,6 +971,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.DidCreateElement: return ['DidCreateElement'];
     case Op.ShadowAttributes: return ['ShadowAttributes'];
     case Op.DidRenderLayout: return ['DidRenderLayout'];
+    case Op.CommitComponentTransaction: return ['CommitComponentTransaction'];
     case Op.Text: return ['Text', { text: c.getString(op1) }];
     case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
     case Op.DynamicContent: return ['DynamicContent', { value: c.getOther(op1) }];

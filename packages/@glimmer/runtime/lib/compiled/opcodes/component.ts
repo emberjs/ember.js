@@ -1,18 +1,20 @@
 import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { Assert } from './vm';
-import { Component, ComponentManager, ComponentDefinition } from '../../component/interfaces';
+import { Component, ComponentManager, ComponentDefinition, Arguments as IArguments } from '../../component/interfaces';
 import { UpdatingVM, VM } from '../../vm';
 import { EvaluatedArgs } from '../../compiled/expressions/args';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
 import { APPEND_OPCODES, Op as Op } from '../../opcodes';
-import { Opaque, Dict, Option } from '@glimmer/util';
+import { ComponentElementOperations } from './dom';
+import { Opaque, Dict } from '@glimmer/util';
 import {
   CONSTANT_TAG,
   ReferenceCache,
   VersionedPathReference,
   Tag,
   combine,
+  combineTagged,
   isConst
 } from '@glimmer/reference';
 
@@ -32,19 +34,24 @@ APPEND_OPCODES.add(Op.PushComponentManager, (vm, { op1: definition }) => {
   vm.evalStack.push(vm.constants.other(definition));
 });
 
-export class Arguments {
-  private positional: number = 0;
-  private named: number = 0;
+export class Arguments implements IArguments {
+  private positionalCount: number = 0;
+  private namedCount: number = 0;
   private start: number = 0;
   private namedDict: Dict<number> = null as any;
   private vm: VM = null as any;
 
+  public tag: Tag = null as any;
+
   setup(positional: number, named: number, namedDict: Dict<number>, vm: VM) {
-    this.positional = positional;
-    this.named = named;
+    this.positionalCount = positional;
+    this.namedCount = named;
     this.namedDict = namedDict;
     this.start = positional + named;
     this.vm = vm;
+
+    let references = vm.evalStack.slice<VersionedPathReference<Opaque>[]>(positional + named);
+    this.tag = combineTagged(references);
   }
 
   at<T extends VersionedPathReference<Opaque>>(pos: number): T {
@@ -81,10 +88,10 @@ interface InitialComponentState<T> {
 interface ComponentState<T> {
   definition: ComponentDefinition<T>,
   manager: ComponentManager<T>,
-  component: null
+  component: T
 }
 
-APPEND_OPCODES.add(Op.SetComponentLocal, (vm, { op1: local }) => {
+APPEND_OPCODES.add(Op.SetComponentState, (vm, { op1: local }) => {
   let stack = vm.evalStack;
 
   let manager = stack.pop();
@@ -96,101 +103,42 @@ APPEND_OPCODES.add(Op.SetComponentLocal, (vm, { op1: local }) => {
 APPEND_OPCODES.add(Op.PushComponentArgs, (vm, { op1: positional, op2: named, op3: _namedDict }) => {
   let namedDict = vm.constants.getOther<Dict<number>>(_namedDict);
   ARGS.setup(positional, named, namedDict, vm);
+  vm.evalStack.push(ARGS);
 });
 
-APPEND_OPCODES.add(Op.PushCreatedComponent, (vm, { op1: flags }) => {
-  let manager = vm.evalStack.top<ComponentManager<Opaque>>();
-  let definition = vm.evalStack.fromTop<ComponentDefinition<Opaque>>(1);
-  let env = vm.env;
+APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
+  let definition, manager;
+  let args = vm.evalStack.pop<Arguments>();
+  let state = { definition, manager } = vm.getLocal<InitialComponentState<Opaque>>(_state);
 
-  let dynamicScope = vm.dynamicScope();
-  let self = vm.getSelf();
   let hasDefaultBlock = flags & 0b01;
 
-  ARGS.setup()
-
-  vm.evalStack.push(manager.create(env, definition, null, dynamicScope, self, hasDefaultBlock))
+  let component = manager.create(vm.env, definition, args, vm.dynamicScope(), vm.getSelf(), !!hasDefaultBlock);
+  (state as ComponentState<typeof component>).component = component;
 });
 
-APPEND_OPCODES.add(Op.PushComponent, (vm, { op1: _component }) => {
-  let definition = vm.constants.getOther<ComponentDefinition<Component>>(_component);
-  vm.evalStack.push(definition);
-});
+APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
+  let { manager, component } = vm.getLocal<ComponentState<Opaque>>(_state);
 
-APPEND_OPCODES.add(Op.OpenComponent, (vm, { op1: _shadow }) => {
-  let hash = vm.evalStack.pop<EvaluatedArgs>();
-  let definition = vm.evalStack.pop<ComponentDefinition<Opaque>>();
-  let shadow = vm.constants.getBlock(_shadow);
-
-  let dynamicScope = vm.pushDynamicScope();
-  let callerScope = vm.scope();
-
-  let manager = definition.manager;
-  let args = manager.prepareArgs(definition, hash, dynamicScope);
-  let hasDefaultBlock = !!args.blocks.default; // TODO Cleanup?
-  let component = manager.create(vm.env, definition, args, dynamicScope, vm.getSelf(), hasDefaultBlock);
   let destructor = manager.getDestructor(component);
   if (destructor) vm.newDestroyable(destructor);
-
-  let layout = manager.layoutFor(definition, component, vm.env);
-  let selfRef = manager.getSelf(component);
-
-  vm.beginCacheGroup();
-  vm.stack().pushSimpleBlock();
-  vm.pushRootScope(selfRef, layout.symbols);
-  vm.invokeLayout(args, layout, callerScope, component, manager, shadow);
-
-  vm.updateWith(new UpdateComponentOpcode(definition.name, component, manager, args, dynamicScope));
 });
 
-// export class DidCreateElementOpcode extends Opcode {
-//   public type = "did-create-element";
+APPEND_OPCODES.add(Op.BeginComponentTransaction, vm => {
+  vm.beginCacheGroup();
+  vm.stack().pushSimpleBlock();
+});
 
-//   evaluate(vm: VM) {
-//     let manager = vm.frame.getManager();
-//     let component = vm.frame.getComponent();
+APPEND_OPCODES.add(Op.PushComponentOperations, vm => {
+  vm.evalStack.push(new ComponentElementOperations(vm.env));
+});
 
-//     let action = 'DidCreateElementOpcode#evaluate';
-//     manager.didCreateElement(component, vm.stack().expectConstructing(action), vm.stack().expectOperations(action));
-//   }
-
-//   toJSON(): OpcodeJSON {
-//     return {
-//       guid: this._guid,
-//       type: this.type,
-//       args: ["$ARGS"]
-//     };
-//   }
-// }
-
-APPEND_OPCODES.add(Op.DidCreateElement, vm => {
-  let manager = vm.frame.getManager();
-  let component = vm.frame.getComponent();
+APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
+  let { manager, component } = vm.getLocal<ComponentState<Opaque>>(_state);
 
   let action = 'DidCreateElementOpcode#evaluate';
   manager.didCreateElement(component, vm.stack().expectConstructing(action), vm.stack().expectOperations(action));
 });
-
-// export class ShadowAttributesOpcode extends Opcode {
-//   public type = "shadow-attributes";
-
-//   evaluate(vm: VM) {
-//     let shadow = vm.frame.getShadow();
-
-//     vm.pushCallerScope();
-//     if (!shadow) return;
-
-//     vm.invokeBlock(shadow, EvaluatedArgs.empty());
-//   }
-
-//   toJSON(): OpcodeJSON {
-//     return {
-//       guid: this._guid,
-//       type: this.type,
-//       args: ["$ARGS"]
-//     };
-//   }
-// }
 
 // Slow path for non-specialized component invocations. Uses an internal
 // named lookup on the args.
@@ -203,25 +151,8 @@ APPEND_OPCODES.add(Op.ShadowAttributes, vm => {
   vm.invokeBlock(shadow);
 });
 
-// export class DidRenderLayoutOpcode extends Opcode {
-//   public type = "did-render-layout";
-
-//   evaluate(vm: VM) {
-//     let manager = vm.frame.getManager();
-//     let component = vm.frame.getComponent();
-//     let bounds = vm.stack().popBlock();
-
-//     manager.didRenderLayout(component, bounds);
-
-//     vm.env.didCreate(component, manager);
-
-//     vm.updateWith(new DidUpdateLayoutOpcode(manager, component, bounds));
-//   }
-// }
-
-APPEND_OPCODES.add(Op.DidRenderLayout, vm => {
-  let manager = vm.frame.getManager();
-  let component = vm.frame.getComponent();
+APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
+  let { manager, component } = vm.getLocal<ComponentState<Opaque>>(_state);
   let bounds = vm.stack().popBlock();
 
   manager.didRenderLayout(component, bounds);
@@ -231,21 +162,7 @@ APPEND_OPCODES.add(Op.DidRenderLayout, vm => {
   vm.updateWith(new DidUpdateLayoutOpcode(manager, component, bounds));
 });
 
-// export class CloseComponentOpcode extends Opcode {
-//   public type = "close-component";
-
-//   evaluate(vm: VM) {
-//     vm.popScope();
-//     vm.popDynamicScope();
-//     vm.commitCacheGroup();
-//   }
-// }
-
-APPEND_OPCODES.add(Op.CloseComponent, vm => {
-  vm.popScope();
-  vm.popDynamicScope();
-  vm.commitCacheGroup();
-});
+APPEND_OPCODES.add(Op.CommitComponentTransaction, vm => vm.commitCacheGroup());
 
 export class UpdateComponentOpcode extends UpdatingOpcode {
   public type = "update-component";

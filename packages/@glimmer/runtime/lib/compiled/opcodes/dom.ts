@@ -36,6 +36,10 @@ APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
   vm.stack().openElement(vm.constants.getString(tag));
 });
 
+APPEND_OPCODES.add(Op.OpenElementWithOperations, (vm, { op1: tag }) => {
+  vm.stack().openElement(vm.constants.getString(tag), vm.evalStack.pop<ElementOperations>());
+});
+
 APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   let reference = vm.frame.getOperand<Simple.Element>();
   let cache = isConstReference(reference) ? undefined : new ReferenceCache(reference);
