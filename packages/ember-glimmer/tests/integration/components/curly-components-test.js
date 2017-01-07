@@ -2897,18 +2897,11 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
   }
 
-  ['@test can access didInitAttrs arguments [DEPRECATED]'](assert) {
-    expectDeprecation(/didInitAttrs called/);
-
+  ['@test overriding didReceiveAttrs does not trigger deprecation'](assert) {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-        },
-
-        didInitAttrs({ attrs }) {
-          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
-          this.set('fooCopy', attrs.foo.value + 1);
+        didReceiveAttrs() {
+          assert.equal(1, this.get('foo'), 'expected attrs to have correct value')
         }
       }),
 
@@ -2918,28 +2911,46 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
   }
 
-  ['@test can access did{Receive,Update}Attrs arguments [DEPRECATED]'](assert) {
-    // expectDeprecation(/didInitAttrs called/);
+  ['@test can access didReceiveAttrs arguments [DEPRECATED]'](assert) {
+    expectDeprecation(/didReceiveAttrs.*stop taking arguments/);
 
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          this.didInit = true;
-        },
-
         didReceiveAttrs({ attrs }) {
-          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
-          this.set('fooCopy', attrs.foo.value + 1);
-        },
+          assert.equal(1, attrs.foo.value, 'expected attrs to have correct value')
+        }
+      }),
 
-        didReceiveAttrs({ newAttrs }) {
-          assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
-          this.set('barCopy', newAttrs.bar.value + 1);
-        },
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
 
-        fooCopyDidChange: observer('fooCopy', () => { fooCopyDidChangeCount++; }),
-        barCopyDidChange: observer('barCopy', () => { barCopyDidChangeCount++; })
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+  }
+
+  ['@test can access didUpdateAttrs arguments [DEPRECATED]'](assert) {
+    expectDeprecation(/didUpdateAttrs.*stop taking arguments/);
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didUpdateAttrs({ newAttrs }) {
+          assert.equal(5, newAttrs.foo.value, "expected newAttrs to have new value");
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+
+    this.runTask(() => set(this.context, 'foo', 5));
+  }
+
+  ['@test overriding didUpdateAttrs does not trigger deprecation'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didUpdateAttrs() {
+          assert.equal(5, this.get('foo'), "expected newAttrs to have new value");
+        }
       }),
 
       template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
