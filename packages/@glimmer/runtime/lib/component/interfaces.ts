@@ -9,22 +9,28 @@ import Bounds from '../bounds';
 import * as Simple from '../dom/interfaces';
 
 import { Destroyable, Opaque } from '@glimmer/util';
-import { PathReference, Tag } from '@glimmer/reference';
+import { VersionedPathReference, Tag } from '@glimmer/reference';
 
 export type Component = Opaque;
 export type ComponentClass = any;
+
+export interface Arguments {
+  tag: Tag;
+  at<T extends VersionedPathReference<Opaque>>(pos: number): T;
+  get<T extends VersionedPathReference<Opaque>>(name: string): T;
+}
 
 export interface ComponentManager<T extends Component> {
   // First, the component manager is asked to prepare the arguments needed
   // for `create`. This allows for things like closure components where the
   // args need to be curried before constructing the instance of the state
   // bucket.
-  prepareArgs(definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope): EvaluatedArgs;
+  prepareArgs(definition: ComponentDefinition<T>, args: Arguments, dynamicScope: DynamicScope): EvaluatedArgs;
 
   // Then, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
-  create(env: Environment, definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope, caller: PathReference<Opaque>, hasDefaultBlock: boolean): T;
+  create(env: Environment, definition: ComponentDefinition<T>, args: Arguments, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): T;
 
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might
@@ -34,7 +40,7 @@ export interface ComponentManager<T extends Component> {
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.
-  getSelf(component: T): PathReference<Opaque>;
+  getSelf(component: T): VersionedPathReference<Opaque>;
 
   // The `didCreateElement` hook is run for non-tagless components after the
   // element as been created, but before it has been appended ("flushed") to

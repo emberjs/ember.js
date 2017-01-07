@@ -31,10 +31,20 @@ APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
   vm.scope().bindSymbol(symbol, expr);
 });
 
+APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols, op2: bindCallerScope }) => {
+  vm.pushRootScope(symbols, !!bindCallerScope);
+});
+
 APPEND_OPCODES.add(Op.GetProperty, (vm, { op1: _key }) => {
   let key = vm.constants.getString(_key);
   let expr = vm.evalStack.pop<VersionedPathReference<Opaque>>();
   vm.evalStack.push(expr.get(key));
+});
+
+
+APPEND_OPCODES.add(Op.PushBlock, (vm, { op1: _block }) => {
+  let block = _block ? vm.constants.getBlock(_block) : null;
+  vm.evalStack.push(block);
 });
 
 APPEND_OPCODES.add(Op.PushBlocks, (vm, { op1: defaultBlock, op2: inverseBlock }) => {

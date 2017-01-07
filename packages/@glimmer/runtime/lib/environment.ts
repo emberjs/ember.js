@@ -66,6 +66,16 @@ export class Scope {
     return new Scope(refs).init({ self });
   }
 
+  static sized(size = 0) {
+    let refs: PathReference<Opaque>[] = new Array(size + 1);
+
+    for (let i = 0; i <= size; i++) {
+      refs[i] = UNDEFINED_REFERENCE;
+    }
+
+    return new Scope(refs);
+  }
+
   // the 0th slot is `self`
   private slots: ScopeSlot[];
   private callerScope: Option<Scope> = null;

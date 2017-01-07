@@ -11,13 +11,15 @@ import { PublicVM as VM } from '../vm';
 import AppendVM from '../vm/append';
 
 import {
-  EMPTY_ARRAY
+  EMPTY_ARRAY,
+  EMPTY_DICT
 } from '../utils';
 
 import {
   LOGGER,
   Opaque,
   Option,
+  Dict,
   dict,
   assert,
   unwrap,
@@ -195,27 +197,53 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   // `local` is a temporary we store component state throughout this algorithm
 
   // (PushComponentManager #definition)       ; stack: [..., definition, mgr]
-  // (SetComponentLocal local:u32)            ; stack: [...]
+  // (SetComponentState local:u32)            ; stack: [...]
   // ... args                                 ; stack: [..., ...args]
   // (PushBlock #block)                       ; stack: [..., ...args, block]
   // (PushDynamicScope)                       ; stack: [..., ...args, block] NOTE: Early because of mgr.create() 🤔
   // (PushComponentArgs N N #Dict<number>)    ; stack: [..., ...args, block, userArgs]
-  // (PushCreatedComponent 0b01)              ; stack: [..., ...args, block, component]
-  // (UpdateComponentLocal local:u32)         ; stack: [..., ...args, block]
+  // (CreateComponent 0b01 local:u32)         ; stack: [..., ...args, block, component]
   // (RegisterComponentDestructor local:u32)
   // (BeginComponentTransaction)
   // (PushComponentOperations)                ; stack: [..., ...args, block, operations]
   // (OpenElementWithOperations tag:#string)  ; stack: [..., ...args, block]
   // (DidCreateElement local:u32)
   // (Evaluate #attrs)                        ; NOTE: Still original scope
-  // (RootScope symbols:u32)
+  // (RootScope symbols:u32 caller:true)
+  // (BindSelf local:u32)
   // (SetVariable symbol:<default block>)     ; stack: [..., ...args]
   // (SetVariable symbol:<named arg>) ...     ; stack: [...]
-  // (BindCallerScope)                        ; TODO: Pass on stack?
   // (Evaluate #layout)
   // (DidRenderLayout local:u32)              ; stack: [...]
+  // (PopScope)
+  // (PopDynamicScope)
+  // (CommitComponentTransaction)
 
   let definition = builder.env.getComponentDefinition([tag], builder.symbolTable);
+
+  let state = builder.local();
+  builder.pushComponentManager(definition);
+  builder.setComponentState(state);
+
+  let count: number, slots: Dict<number>;
+  if (rawArgs) {
+    count = compileList(rawArgs[1], builder);
+    slots = dict<number>();
+    rawArgs[0].forEach((name, i) => slots[name] = count - i - 1)
+  } else {
+    slots = EMPTY_DICT;
+    count = 0;
+  }
+
+  builder.pushBlock(block);
+  builder.pushDynamicScope();
+  builder.pushComponentArgs(0, count, slots);
+  builder.createComponent(state, true, false);
+  builder.registerComponentDestructor(state);
+  builder.beginComponentTransaction();
+  builder.pushComponentOperations();
+  builder.openElementWithOperations(tag);
+  builder.didCreateElement(state);
 
   builder.putComponentDefinition(definition);
   compileList(rawArgs && rawArgs[1], builder);
@@ -389,9 +417,10 @@ export function compileArgs(params: Option<WireFormat.Core.Params>, hash: Option
   return { positional, named };
 }
 
-export function compileList(params: Option<WireFormat.Core.Expression[]>, builder: OpcodeBuilder) {
-  if (!params) return;
+export function compileList(params: Option<WireFormat.Core.Expression[]>, builder: OpcodeBuilder): number {
+  if (!params) return 0;
   params.forEach(p => expr(p, builder));
+  return params.length;
 }
 
 const EMPTY_BLOCKS = { default: false, inverse: false };

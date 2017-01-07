@@ -169,8 +169,33 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
 
   // components
 
-  putComponentDefinition(definition: ComponentDefinition<Opaque>) {
-    this.push(Op.PushComponent, this.other(definition));
+  pushComponentManager(definition: ComponentDefinition<Opaque>) {
+    this.push(Op.PushComponentManager, this.other(definition));
+  }
+
+  setComponentState(local: number) {
+    this.push(Op.SetComponentState, local);
+  }
+
+  pushComponentArgs(positional: number, named: number, namedDict: Dict<number>) {
+    this.push(Op.PushComponentArgs, positional, named, this.constants.other(namedDict));
+  }
+
+  createComponent(state: number, hasDefault: boolean, hasInverse: boolean) {
+    let flag = (<any>hasDefault|0) | ((<any>hasInverse|0) << 1);
+    this.push(Op.CreateComponent, flag, state);
+  }
+
+  registerComponentDestructor(state: number) {
+    this.push(Op.RegisterComponentDestructor, state);
+  }
+
+  beginComponentTransaction() {
+    this.push(Op.BeginComponentTransaction);
+  }
+
+  pushComponentOperations() {
+    this.push(Op.PushComponentOperations);
   }
 
   putDynamicComponentDefinition() {
@@ -181,8 +206,8 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.OpenComponent, shadow ? this.block(shadow) : 0);
   }
 
-  didCreateElement() {
-    this.push(Op.DidCreateElement);
+  didCreateElement(state: number) {
+    this.push(Op.DidCreateElement, state);
   }
 
   shadowAttributes() {
@@ -228,6 +253,10 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
 
   openPrimitiveElement(tag: string) {
     this.push(Op.OpenElement, this.constants.string(tag));
+  }
+
+  openElementWithOperations(tag: string) {
+    this.push(Op.OpenElementWithOperations, this.constants.string(tag));
   }
 
   openComponentElement(tag: string) {
@@ -455,6 +484,10 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     throw new Error('removing PutArgs');
   }
 
+  pushBlock(block: Option<InlineBlock>) {
+    this.push(Op.PushBlock, this.block(block));
+  }
+
   pushBlocks(_default: Option<InlineBlock>, inverse: Option<InlineBlock>) {
     let flag = 0;
     let defaultBlock: ConstantBlock = 0;
@@ -586,8 +619,8 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     return this.constants.other(value);
   }
 
-  protected block(block: InlineBlock): ConstantBlock {
-    return this.constants.block(block);
+  protected block(block: Option<InlineBlock>): ConstantBlock {
+    return block ? this.constants.block(block) : 0;
   }
 
   protected func(func: Function): ConstantFunction {
