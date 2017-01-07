@@ -30,6 +30,7 @@ import {
   ComponentArgs
 } from '../utils/process-args';
 import { privatize as P } from 'container';
+import AbstractManager from './abstract-manager';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -176,7 +177,7 @@ function rerenderInstrumentDetails(component) {
   return component.instrumentDetails({ initialRender: false });
 }
 
-class CurlyComponentManager {
+class CurlyComponentManager extends AbstractManager {
   prepareArgs(definition, args) {
     validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.positionalParams);
 
@@ -366,13 +367,6 @@ class CurlyComponentManager {
     return stateBucket;
   }
 }
-
-runInDebug(() => {
-  CurlyComponentManager.prototype._pushToDebugStack = function(name, environment) {
-    this.debugStack = environment.debugStack;
-    this.debugStack.push(name);
-  };
-});
 
 const MANAGER = new CurlyComponentManager();
 

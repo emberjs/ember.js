@@ -15,6 +15,7 @@ import {
   ConstReference,
   combine
 } from 'glimmer-reference';
+import AbstractManager from './abstract-manager';
 
 function outletComponentFor(vm) {
   let { outletState } = vm.dynamicScope();
@@ -174,7 +175,7 @@ class StateBucket {
   }
 }
 
-class OutletComponentManager {
+class OutletComponentManager extends AbstractManager {
   prepareArgs(definition, args) {
     return args;
   }
@@ -215,13 +216,6 @@ class OutletComponentManager {
   didUpdateLayout(bucket) {}
   didUpdate(state) {}
 }
-
-runInDebug(() => {
-  OutletComponentManager.prototype._pushToDebugStack = function(name, environment) {
-    this.debugStack = environment.debugStack;
-    this.debugStack.push(name);
-  };
-});
 
 const MANAGER = new OutletComponentManager();
 
