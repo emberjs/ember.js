@@ -6,35 +6,35 @@
   "disable_watching": true,
   "launchers": {
     "SL_Chrome_Current": {
-      "command": "npm run sauce:launch -- -p 'Windows 10' -b chrome -v latest --no-ct -u '<url>'",
+      "command": "npm run sauce:launch -- -p 'Windows 10' -b chrome -v latest --no-connect -u '<url>'",
       "protocol": "tap"
     },
     "SL_Firefox_Current": {
-      "command": "npm run sauce:launch -- -p 'Windows 10' -b firefox -v latest --no-ct -u '<url>'",
+      "command": "npm run sauce:launch -- -p 'Windows 10' -b firefox -v latest --no-connect -u '<url>'",
       "protocol": "tap"
     },
     "SL_Safari_Current": {
-      "command": "npm run sauce:launch -- -b safari -v 9 --no-ct -u '<url>'",
+      "command": "npm run sauce:launch -- -b safari -v 9 --no-connect -u '<url>'",
       "protocol": "tap"
     },
     "SL_Safari_Last": {
-      "command": "npm run sauce:launch -- -b safari -v 8 --no-ct -u '<url>'",
+      "command": "npm run sauce:launch -- -b safari -v 8 --no-connect -u '<url>'",
       "protocol": "tap"
     },
     "SL_MS_Edge": {
-      "command": "npm run sauce:launch -- -p 'Windows 10' -b 'microsoftedge' -v latest --no-ct -u '<url>'",
+      "command": "npm run sauce:launch -- -p 'Windows 10' -b 'microsoftedge' -v latest --no-connect -u '<url>'",
       "protocol": "tap"
     },
     "SL_IE_11": {
-      "command": "npm run sauce:launch -- -b 'internet explorer' -v 11 --no-ct -u '<url>'",
+      "command": "npm run sauce:launch -- -b 'internet explorer' -v 11 --no-connect -u '<url>'",
       "protocol": "tap"
     },
     "SL_IE_10": {
-      "command": "npm run sauce:launch -- -b 'internet explorer' -v 10 --no-ct -u '<url>'",
+      "command": "npm run sauce:launch -- -b 'internet explorer' -v 10 --no-connect -u '<url>'",
       "protocol": "tap"
     },
     "SL_IE_9": {
-      "command": "npm run sauce:launch  -- -b 'internet explorer' -v 9 --no-ct -u '<url>'",
+      "command": "npm run sauce:launch  -- -b 'internet explorer' -v 9 --no-connect -u '<url>'",
       "protocol": "tap"
     }
   },
