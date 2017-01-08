@@ -1874,13 +1874,13 @@ ember-cli-preprocess-registry@^3.0.0:
     process-relative-require "^1.0.0"
     silent-error "^1.0.0"
 
-ember-cli-sauce@^1.8.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-sauce/-/ember-cli-sauce-1.8.0.tgz#79fb2af82254a5f3966cdc511c169db4060cc9ae"
+ember-cli-sauce@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-sauce/-/ember-cli-sauce-2.0.0.tgz#35efa76597732dd8e273815d1fe78a45c3d4cd3c"
   dependencies:
     recast "^0.11.17"
     rsvp "^3.1.0"
-    saucie "^2.0.1"
+    saucie "^3.0.0"
 
 ember-cli-string-utils@^1.0.0:
   version "1.0.0"
@@ -4608,7 +4608,7 @@ opener@~1.4.1:
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/opener/-/opener-1.4.2.tgz#b32582080042af8680c389a499175b4c54fff523"
 
-optimist@^0.6.0, optimist@^0.6.1, optimist@~0.6.0:
+optimist@^0.6.1, optimist@~0.6.0:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/optimist/-/optimist-0.6.1.tgz#da3ea74686fa21a19a111c326e90eb15a0196686"
   dependencies:
@@ -5347,9 +5347,9 @@ sane@^1.1.1:
     walker "~1.0.5"
     watch "~0.10.0"
 
-sauce-connect-launcher@^1.1.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/sauce-connect-launcher/-/sauce-connect-launcher-1.1.1.tgz#c648067efc579be694acb03c575b43f6fabfd521"
+sauce-connect-launcher@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/sauce-connect-launcher/-/sauce-connect-launcher-1.2.0.tgz#6dc26611ef23428abe8b8f49e0044d7c752b8a6c"
   dependencies:
     adm-zip "~0.4.3"
     async "^2.1.2"
@@ -5357,15 +5357,14 @@ sauce-connect-launcher@^1.1.0:
     lodash "^4.16.6"
     rimraf "^2.5.4"
 
-saucie@^2.0.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/saucie/-/saucie-2.1.1.tgz#dca983486dfd2840c2099c96a3c9315277c5c2a9"
+saucie@^3.0.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/saucie/-/saucie-3.1.0.tgz#757ea4a740a0e1071877dc5723d03a79ae40c3f4"
   dependencies:
     bluebird "^3.1.1"
-    extend "^3.0.0"
-    optimist "^0.6.0"
+    commander "^2.9.0"
     request "^2.51.0"
-    sauce-connect-launcher "^1.1.0"
+    sauce-connect-launcher "^1.2.0"
     wd "^1.0.0"
 
 sax@1.1.5, sax@>=0.6.0:
