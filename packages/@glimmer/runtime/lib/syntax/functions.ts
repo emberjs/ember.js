@@ -196,25 +196,28 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
 
   // `local` is a temporary we store component state throughout this algorithm
 
-  // (PushComponentManager #definition)       ; stack: [..., definition, mgr]
-  // (SetComponentState local:u32)            ; stack: [...]
-  // ... args                                 ; stack: [..., ...args]
-  // (PushBlock #block)                       ; stack: [..., ...args, block]
-  // (PushDynamicScope)                       ; stack: [..., ...args, block] NOTE: Early because of mgr.create() 🤔
-  // (PushComponentArgs N N #Dict<number>)    ; stack: [..., ...args, block, userArgs]
-  // (CreateComponent 0b01 local:u32)         ; stack: [..., ...args, block, component]
+  // (PushComponentManager #definition)           ; stack: [..., definition, mgr]
+  // (SetComponentState local:u32)                ; stack: [...]
+  // ... args                                     ; stack: [..., ...args]
+  // (PushBlock #block)                           ; stack: [..., ...args, block]
+  // (PushDynamicScope)                           ; stack: [..., ...args, block] NOTE: Early because of mgr.create() 🤔
+  // (PushComponentArgs N N #Dict<number>)        ; stack: [..., ...args, block, userArgs]
+  // (CreateComponent 0b01 local:u32)             ; stack: [..., ...args, block, component]
   // (RegisterComponentDestructor local:u32)
   // (BeginComponentTransaction)
-  // (PushComponentOperations)                ; stack: [..., ...args, block, operations]
-  // (OpenElementWithOperations tag:#string)  ; stack: [..., ...args, block]
+  // (PushComponentOperations)                    ; stack: [..., ...args, block, operations]
+  // (OpenElementWithOperations tag:#string)      ; stack: [..., ...args, block]
   // (DidCreateElement local:u32)
-  // (Evaluate #attrs)                        ; NOTE: Still original scope
-  // (RootScope symbols:u32 caller:true)
-  // (BindSelf local:u32)
-  // (SetVariable symbol:<default block>)     ; stack: [..., ...args]
-  // (SetVariable symbol:<named arg>) ...     ; stack: [...]
-  // (Evaluate #layout)
-  // (DidRenderLayout local:u32)              ; stack: [...]
+  // (InvokeStatic #attrs)                        ; NOTE: Still original scope
+  // (GetComponentLayout state:u32, layout: u32)  ; stack: [..., ...args, block, InlineBlock]
+  // (VirtualRootScope caller:true)               ; stack: [..., ...args, block]
+  // (GetComponentSelf)                           ; stack: [..., ...args, block, VersionedPathReference]
+  // (BindSelf)                                   ; stack: [..., ...args, block]
+  // (BindVirtualBlock layout:u32 block:0)        ; stack: [..., ...args]
+  // (BindVirtualNamed layout:u32 symbol:#string) ... ; stack: [...]
+  // (GetLocal local:u32)                         ; stack: [..., Layout]
+  // (InvokeVirtual)                              ; stack: [...]
+  // (DidRenderLayout local:u32)                  ; stack: [...]
   // (PopScope)
   // (PopDynamicScope)
   // (CommitComponentTransaction)
@@ -222,14 +225,19 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   let definition = builder.env.getComponentDefinition([tag], builder.symbolTable);
 
   let state = builder.local();
+  let layout = builder.local();
   builder.pushComponentManager(definition);
   builder.setComponentState(state);
 
   let count: number, slots: Dict<number>;
+  let names: string[] = [];
   if (rawArgs) {
     count = compileList(rawArgs[1], builder);
     slots = dict<number>();
-    rawArgs[0].forEach((name, i) => slots[name] = count - i - 1)
+    rawArgs[0].forEach((name, i) => {
+      slots[name] = count - i - 1;
+      names.push(name);
+    })
   } else {
     slots = EMPTY_DICT;
     count = 0;
@@ -244,6 +252,18 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   builder.pushComponentOperations();
   builder.openElementWithOperations(tag);
   builder.didCreateElement(state);
+
+  builder.invokeStatic(attrs.scan(), null);
+
+  builder.getComponentLayout(state);
+  builder.pushVirtualRootScope(true);
+
+  builder.bindVirtualBlock();
+
+  for (let name of names.reverse()) {
+    builder.bindVirtualNamedArg(name);
+  }
+  builder.
 
   builder.putComponentDefinition(definition);
   compileList(rawArgs && rawArgs[1], builder);
@@ -582,13 +602,13 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.labelled(b => {
       if (_default && inverse) {
         b.jumpUnless('ELSE');
-        b.evaluate(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default, [builder.GetLocal(condition)]);
         b.jump('END');
         b.label('ELSE');
-        b.evaluate(inverse, null);
+        b.invokeStatic(inverse, null);
       } else if (_default) {
         b.jumpUnless('END');
-        b.evaluate(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default, [builder.GetLocal(condition)]);
       } else {
         throw unreachable();
       }
@@ -624,13 +644,13 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.labelled(b => {
       if (_default && inverse) {
         b.jumpIf('ELSE');
-        b.evaluate(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default, [builder.GetLocal(condition)]);
         b.jump('END');
         b.label('ELSE');
-        b.evaluate(inverse, null);
+        b.invokeStatic(inverse, null);
       } else if (_default) {
         b.jumpIf('END');
-        b.evaluate(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default, [builder.GetLocal(condition)]);
       } else {
         throw unreachable();
       }
@@ -667,13 +687,13 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       if (_default && inverse) {
         b.jumpUnless('ELSE');
         builder.getLocal(condition);
-        b.evaluate(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default, [builder.GetLocal(condition)]);
         b.jump('END');
         b.label('ELSE');
-        b.evaluate(inverse, null);
+        b.invokeStatic(inverse, null);
       } else if (_default) {
         b.jumpUnless('END');
-        b.evaluate(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default, [builder.GetLocal(condition)]);
       } else {
         throw unreachable();
       }
@@ -732,13 +752,13 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       }
 
       b.iter(b => {
-        b.evaluate(unwrap(_default), 2);
+        b.invokeStatic(unwrap(_default), 2);
       });
 
       if (inverse) {
         b.jump('END');
         b.label('ELSE');
-        b.evaluate(inverse, null);
+        b.invokeStatic(inverse, null);
       }
     });
 

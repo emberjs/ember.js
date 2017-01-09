@@ -106,6 +106,10 @@ export class Scope {
     return this.slots[symbol] as EvaluatedArgs;
   }
 
+  bindSelf(self: PathReference<Opaque>) {
+    this.slots[0] = self;
+  }
+
   bindSymbol(symbol: number, value: PathReference<Opaque>) {
     this.slots[symbol] = value;
   }

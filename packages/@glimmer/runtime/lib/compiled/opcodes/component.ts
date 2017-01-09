@@ -140,6 +140,16 @@ APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
   manager.didCreateElement(component, vm.stack().expectConstructing(action), vm.stack().expectOperations(action));
 });
 
+APPEND_OPCODES.add(Op.ComponentLayoutScope, (vm, { op1: _state }) => {
+  let { manager, definition, component } = vm.getLocal<ComponentState<Opaque>>(_state);
+  let layout = manager.layoutFor(definition, component, vm.env);
+
+  let scope = vm.pushRootScope(layout.symbols, true);
+  scope.bindSelf(manager.getSelf(component));
+
+  vm.evalStack.push(layout);
+});
+
 // Slow path for non-specialized component invocations. Uses an internal
 // named lookup on the args.
 APPEND_OPCODES.add(Op.ShadowAttributes, vm => {

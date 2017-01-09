@@ -13,7 +13,8 @@ import {
 } from '../expressions/args';
 
 import {
-  InlineBlock
+  InlineBlock,
+  Layout
 } from '../../scanner';
 
 import {
@@ -121,6 +122,19 @@ APPEND_OPCODES.add(Op.BindNamedArgs, (vm, { op1: _names, op2: _symbols }) => {
   vm.bindNamedArgs(names, symbols);
 });
 
+APPEND_OPCODES.add(Op.BindVirtualBlock, (vm, { op1: _layout, op2: _block }) => {
+  let layout = vm.getLocal<Layout>(_layout);
+  let symbol = layout.symbolTable.getSymbol('yields', _block ? 'inverse' : 'default')!;
+  vm.scope().bindBlock(symbol, vm.evalStack.pop<InlineBlock>());
+});
+
+APPEND_OPCODES.add(Op.BindVirtualNamed, (vm, { op1: _layout, op2: _name }) => {
+  let expr = vm.evalStack.pop<VersionedPathReference<Opaque>>();
+  let layout = vm.getLocal<Layout>(_layout);
+  let symbol = layout.symbolTable.getSymbol('named', vm.constants.getString(_name))!;
+  vm.scope().bindSymbol(symbol, expr);
+});
+
 APPEND_OPCODES.add(Op.BindBlocks, (vm, { op1: _names, op2: _symbols }) => {
   let names = vm.constants.getArray(_names);
   let symbols = vm.constants.getArray(_symbols);
@@ -142,8 +156,13 @@ APPEND_OPCODES.add(Op.Enter, (vm, { op1: start, op2: end }) => vm.enter(start, e
 
 APPEND_OPCODES.add(Op.Exit, (vm) => vm.exit());
 
-APPEND_OPCODES.add(Op.Evaluate, (vm, { op1: _block }) => {
+APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: _block }) => {
   let block = vm.constants.getBlock(_block);
+  vm.invokeBlock(block);
+});
+
+APPEND_OPCODES.add(Op.InvokeVirtual, vm => {
+  let block = vm.evalStack.pop<InlineBlock>();
   vm.invokeBlock(block);
 });
 
