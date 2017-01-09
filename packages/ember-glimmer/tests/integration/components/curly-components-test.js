@@ -2897,6 +2897,70 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
   }
 
+  ['@test overriding didReceiveAttrs does not trigger deprecation'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didReceiveAttrs() {
+          assert.equal(1, this.get('foo'), 'expected attrs to have correct value')
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+  }
+
+  ['@test can access didReceiveAttrs arguments [DEPRECATED]'](assert) {
+    expectDeprecation(/didReceiveAttrs.*stop taking arguments/);
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didReceiveAttrs({ attrs }) {
+          assert.equal(1, attrs.foo.value, 'expected attrs to have correct value')
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+  }
+
+  ['@test can access didUpdateAttrs arguments [DEPRECATED]'](assert) {
+    expectDeprecation(/didUpdateAttrs.*stop taking arguments/);
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didUpdateAttrs({ newAttrs }) {
+          assert.equal(5, newAttrs.foo.value, "expected newAttrs to have new value");
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+
+    this.runTask(() => set(this.context, 'foo', 5));
+  }
+
+  ['@test overriding didUpdateAttrs does not trigger deprecation'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didUpdateAttrs() {
+          assert.equal(5, this.get('foo'), "expected newAttrs to have new value");
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+
+    this.runTask(() => set(this.context, 'foo', 5));
+  }
+
   ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](assert) {
     this.registerComponent('display-toggle', {
       ComponentClass: Component.extend({

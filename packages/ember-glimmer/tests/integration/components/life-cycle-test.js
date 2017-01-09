@@ -307,22 +307,22 @@ class LifeCycleHooksTest extends RenderingTest {
         // Sync hooks
 
         ['the-top', 'init'],
-        ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
-        ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
+        ['the-top', 'didInitAttrs',       { attrs: topAttrs, newAttrs: topAttrs }],
+        ['the-top', 'didReceiveAttrs',    { attrs: topAttrs, newAttrs: topAttrs }],
         ['the-top', 'on(init)'],
         ['the-top', 'willRender'],
         ['the-top', 'willInsertElement'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
-        ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
+        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs, newAttrs: middleAttrs }],
+        ['the-middle', 'didReceiveAttrs', { attrs: middleAttrs, newAttrs: middleAttrs }],
         ['the-middle', 'on(init)'],
         ['the-middle', 'willRender'],
         ['the-middle', 'willInsertElement'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
-        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
+        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs, newAttrs: bottomAttrs }],
+        ['the-bottom', 'didReceiveAttrs', { attrs: bottomAttrs, newAttrs: bottomAttrs }],
         ['the-bottom', 'on(init)'],
         ['the-bottom', 'willRender'],
         ['the-bottom', 'willInsertElement'],
@@ -343,18 +343,18 @@ class LifeCycleHooksTest extends RenderingTest {
       nonInteractive: [
         // Sync hooks
         ['the-top', 'init'],
-        ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
-        ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
+        ['the-top', 'didInitAttrs',       { attrs: topAttrs, newAttrs: topAttrs }],
+        ['the-top', 'didReceiveAttrs',    { attrs: topAttrs, newAttrs: topAttrs }],
         ['the-top', 'on(init)'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
-        ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
+        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs, newAttrs: middleAttrs }],
+        ['the-middle', 'didReceiveAttrs', { attrs: middleAttrs, newAttrs: middleAttrs }],
         ['the-middle', 'on(init)'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
-        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
+        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs, newAttrs: bottomAttrs }],
+        ['the-bottom', 'didReceiveAttrs', { attrs: bottomAttrs, newAttrs: bottomAttrs }],
         ['the-bottom', 'on(init)']
       ]
     });
@@ -452,7 +452,7 @@ class LifeCycleHooksTest extends RenderingTest {
     // the new attribute to rerender itself imperatively, that would result
     // in lifecycle hooks being invoked for the child.
 
-    topAttrs = { oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@horsetomdale' } };
+    topAttrs = { attrs: { twitter: '@horsetomdale' }, oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@horsetomdale' } };
 
     this.assertHooks({
       label: 'after update',
@@ -551,30 +551,30 @@ class LifeCycleHooksTest extends RenderingTest {
         // Sync hooks
 
         ['the-parent', 'init'],
-        ['the-parent', 'didInitAttrs',          { attrs: parentAttrs }],
-        ['the-parent', 'didReceiveAttrs',       { newAttrs: parentAttrs }],
+        ['the-parent', 'didInitAttrs',          { attrs: parentAttrs, newAttrs: parentAttrs }],
+        ['the-parent', 'didReceiveAttrs',       { attrs: parentAttrs, newAttrs: parentAttrs }],
         ['the-parent', 'on(init)'],
         ['the-parent', 'willRender'],
         ['the-parent', 'willInsertElement'],
 
 
         ['the-first-child', 'init'],
-        ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs }],
-        ['the-first-child', 'didReceiveAttrs',  { newAttrs: firstAttrs }],
+        ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs, newAttrs: firstAttrs }],
+        ['the-first-child', 'didReceiveAttrs',  { attrs: firstAttrs, newAttrs: firstAttrs }],
         ['the-first-child', 'on(init)'],
         ['the-first-child', 'willRender'],
         ['the-first-child', 'willInsertElement'],
 
         ['the-second-child', 'init'],
-        ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs }],
-        ['the-second-child', 'didReceiveAttrs', { newAttrs: secondAttrs }],
+        ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs, newAttrs: secondAttrs }],
+        ['the-second-child', 'didReceiveAttrs', { attrs: secondAttrs, newAttrs: secondAttrs }],
         ['the-second-child', 'on(init)'],
         ['the-second-child', 'willRender'],
         ['the-second-child', 'willInsertElement'],
 
         ['the-last-child', 'init'],
-        ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs }],
-        ['the-last-child', 'didReceiveAttrs',   { newAttrs: lastAttrs }],
+        ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs, newAttrs: lastAttrs }],
+        ['the-last-child', 'didReceiveAttrs',   { attrs: lastAttrs, newAttrs: lastAttrs }],
         ['the-last-child', 'on(init)'],
         ['the-last-child', 'willRender'],
         ['the-last-child', 'willInsertElement'],
@@ -598,23 +598,23 @@ class LifeCycleHooksTest extends RenderingTest {
         // Sync hooks
 
         ['the-parent', 'init'],
-        ['the-parent', 'didInitAttrs',          { attrs: parentAttrs }],
-        ['the-parent', 'didReceiveAttrs',       { newAttrs: parentAttrs }],
+        ['the-parent', 'didInitAttrs',          { attrs: parentAttrs, newAttrs: parentAttrs }],
+        ['the-parent', 'didReceiveAttrs',       { attrs: parentAttrs, newAttrs: parentAttrs }],
         ['the-parent', 'on(init)'],
 
         ['the-first-child', 'init'],
-        ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs }],
-        ['the-first-child', 'didReceiveAttrs',  { newAttrs: firstAttrs }],
+        ['the-first-child', 'didInitAttrs',     { attrs: firstAttrs, newAttrs: firstAttrs }],
+        ['the-first-child', 'didReceiveAttrs',  { attrs: firstAttrs, newAttrs: firstAttrs }],
         ['the-first-child', 'on(init)'],
 
         ['the-second-child', 'init'],
-        ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs }],
-        ['the-second-child', 'didReceiveAttrs', { newAttrs: secondAttrs }],
+        ['the-second-child', 'didInitAttrs',    { attrs: secondAttrs, newAttrs: secondAttrs }],
+        ['the-second-child', 'didReceiveAttrs', { attrs: secondAttrs, newAttrs: secondAttrs }],
         ['the-second-child', 'on(init)'],
 
         ['the-last-child', 'init'],
-        ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs }],
-        ['the-last-child', 'didReceiveAttrs',   { newAttrs: lastAttrs }],
+        ['the-last-child', 'didInitAttrs',      { attrs: lastAttrs, newAttrs: lastAttrs }],
+        ['the-last-child', 'didReceiveAttrs',   { attrs: lastAttrs, newAttrs: lastAttrs }],
         ['the-last-child', 'on(init)']
       ]
     });
@@ -734,12 +734,13 @@ class LifeCycleHooksTest extends RenderingTest {
     this.assertText('Twitter: @horsetomdale|Name: Horse Tom Dale|Website: horsetomdale.net');
 
     parentAttrs = {
+      attrs:    { twitter: '@horsetomdale', name: 'Horse Tom Dale', website: 'horsetomdale.net' },
       oldAttrs: { twitter: '@tomdale', name: 'Tom Dale', website: 'tomdale.net' },
       newAttrs: { twitter: '@horsetomdale', name: 'Horse Tom Dale', website: 'horsetomdale.net' }
     };
-    firstAttrs  = { oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@horsetomdale' } };
-    secondAttrs = { oldAttrs: { name: 'Tom Dale' }, newAttrs: { name: 'Horse Tom Dale' } };
-    lastAttrs = { oldAttrs: { website: 'tomdale.net' }, newAttrs: { website: 'horsetomdale.net' } };
+    firstAttrs  = { attrs: { twitter: '@horsetomdale' }, oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@horsetomdale' } };
+    secondAttrs = { attrs: { name: 'Horse Tom Dale' }, oldAttrs: { name: 'Tom Dale' }, newAttrs: { name: 'Horse Tom Dale' } };
+    lastAttrs = { attrs: { website: 'horsetomdale.net' }, oldAttrs: { website: 'tomdale.net' }, newAttrs: { website: 'horsetomdale.net' } };
 
     this.assertHooks({
       label: 'after update',
@@ -877,22 +878,22 @@ class LifeCycleHooksTest extends RenderingTest {
         // Sync hooks
 
         ['the-top', 'init'],
-        ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
-        ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
+        ['the-top', 'didInitAttrs',       { attrs: topAttrs, newAttrs: topAttrs }],
+        ['the-top', 'didReceiveAttrs',    { attrs: topAttrs, newAttrs: topAttrs }],
         ['the-top', 'on(init)'],
         ['the-top', 'willRender'],
         ['the-top', 'willInsertElement'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
-        ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
+        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs, newAttrs: middleAttrs }],
+        ['the-middle', 'didReceiveAttrs', { attrs: middleAttrs, newAttrs: middleAttrs }],
         ['the-middle', 'on(init)'],
         ['the-middle', 'willRender'],
         ['the-middle', 'willInsertElement'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
-        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
+        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs, newAttrs: bottomAttrs }],
+        ['the-bottom', 'didReceiveAttrs', { attrs: bottomAttrs, newAttrs: bottomAttrs }],
         ['the-bottom', 'on(init)'],
         ['the-bottom', 'willRender'],
         ['the-bottom', 'willInsertElement'],
@@ -913,18 +914,18 @@ class LifeCycleHooksTest extends RenderingTest {
         // Sync hooks
 
         ['the-top', 'init'],
-        ['the-top', 'didInitAttrs',       { attrs: topAttrs }],
-        ['the-top', 'didReceiveAttrs',    { newAttrs: topAttrs }],
+        ['the-top', 'didInitAttrs',       { attrs: topAttrs, newAttrs: topAttrs }],
+        ['the-top', 'didReceiveAttrs',    { attrs: topAttrs, newAttrs: topAttrs }],
         ['the-top', 'on(init)'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs }],
-        ['the-middle', 'didReceiveAttrs', { newAttrs: middleAttrs }],
+        ['the-middle', 'didInitAttrs',    { attrs: middleAttrs, newAttrs: middleAttrs }],
+        ['the-middle', 'didReceiveAttrs', { attrs: middleAttrs, newAttrs: middleAttrs }],
         ['the-middle', 'on(init)'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs }],
-        ['the-bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }],
+        ['the-bottom', 'didInitAttrs',    { attrs: bottomAttrs, newAttrs: bottomAttrs }],
+        ['the-bottom', 'didReceiveAttrs', { attrs: bottomAttrs, newAttrs: bottomAttrs }],
         ['the-bottom', 'on(init)']
       ]
     });
@@ -936,9 +937,9 @@ class LifeCycleHooksTest extends RenderingTest {
     // Because the `twitter` attr is used by the all of the components,
     // the lifecycle hooks are invoked for all components.
 
-    topAttrs = { oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@horsetomdale' } };
-    middleAttrs = { oldAttrs: { twitterTop: '@tomdale' }, newAttrs: { twitterTop: '@horsetomdale' } };
-    bottomAttrs = { oldAttrs: { twitterMiddle: '@tomdale' }, newAttrs: { twitterMiddle: '@horsetomdale' } };
+    topAttrs = { attrs: { twitter: '@horsetomdale' }, oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@horsetomdale' } };
+    middleAttrs = { attrs: { twitterTop: '@horsetomdale' }, oldAttrs: { twitterTop: '@tomdale' }, newAttrs: { twitterTop: '@horsetomdale' } };
+    bottomAttrs = { attrs: { twitterMiddle: '@horsetomdale' }, oldAttrs: { twitterMiddle: '@tomdale' }, newAttrs: { twitterMiddle: '@horsetomdale' } };
 
     this.assertHooks({
       label: 'after updating (root)',
@@ -996,9 +997,9 @@ class LifeCycleHooksTest extends RenderingTest {
 
     // In this case, because the attrs are passed down, all child components are invoked.
 
-    topAttrs = { oldAttrs: { twitter: '@horsetomdale' }, newAttrs: { twitter: '@horsetomdale' } };
-    middleAttrs = { oldAttrs: { twitterTop: '@horsetomdale' }, newAttrs: { twitterTop: '@horsetomdale' } };
-    bottomAttrs = { oldAttrs: { twitterMiddle: '@horsetomdale' }, newAttrs: { twitterMiddle: '@horsetomdale' } };
+    topAttrs = { attrs: { twitter: '@horsetomdale' }, oldAttrs: { twitter: '@horsetomdale' }, newAttrs: { twitter: '@horsetomdale' } };
+    middleAttrs = { attrs: { twitterTop: '@horsetomdale' }, oldAttrs: { twitterTop: '@horsetomdale' }, newAttrs: { twitterTop: '@horsetomdale' } };
+    bottomAttrs = { attrs: { twitterMiddle: '@horsetomdale' }, oldAttrs: { twitterMiddle: '@horsetomdale' }, newAttrs: { twitterMiddle: '@horsetomdale' } };
 
     this.assertHooks({
       label: 'after no-op rernder (root)',
@@ -1065,8 +1066,8 @@ class LifeCycleHooksTest extends RenderingTest {
     let initialHooks = (count) => {
       let ret = [
         ['an-item', 'init'],
-        ['an-item', 'didInitAttrs',       { attrs: { count } }],
-        ['an-item', 'didReceiveAttrs',    { newAttrs: { count } }],
+        ['an-item', 'didInitAttrs',       { attrs: { count }, newAttrs: { count } }],
+        ['an-item', 'didReceiveAttrs',    { attrs: { count }, newAttrs: { count } }],
         ['an-item', 'on(init)']
       ];
       if (this.isInteractive) {
@@ -1077,8 +1078,8 @@ class LifeCycleHooksTest extends RenderingTest {
       }
       ret.push(
         ['nested-item', 'init'],
-        ['nested-item', 'didInitAttrs',       { attrs: { } }],
-        ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
+        ['nested-item', 'didInitAttrs',       { attrs: { }, newAttrs: { } }],
+        ['nested-item', 'didReceiveAttrs',    { attrs: { }, newAttrs: { } }],
         ['nested-item', 'on(init)']
       );
       if (this.isInteractive) {
@@ -1179,16 +1180,16 @@ class LifeCycleHooksTest extends RenderingTest {
         ['nested-item', 'willClearRender'],
 
         ['no-items', 'init'],
-        ['no-items', 'didInitAttrs',       { attrs: { } }],
-        ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
+        ['no-items', 'didInitAttrs',       { attrs: { }, newAttrs: { } }],
+        ['no-items', 'didReceiveAttrs',    { attrs: { }, newAttrs: { } }],
         ['no-items', 'on(init)'],
         ['no-items', 'willRender'],
         ['no-items', 'willInsertElement'],
 
 
         ['nested-item', 'init'],
-        ['nested-item', 'didInitAttrs',       { attrs: { } }],
-        ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
+        ['nested-item', 'didInitAttrs',       { attrs: { }, newAttrs: { } }],
+        ['nested-item', 'didReceiveAttrs',    { attrs: { }, newAttrs: { } }],
         ['nested-item', 'on(init)'],
         ['nested-item', 'willRender'],
         ['nested-item', 'willInsertElement'],
@@ -1223,13 +1224,13 @@ class LifeCycleHooksTest extends RenderingTest {
 
       nonInteractive: [
         ['no-items', 'init'],
-        ['no-items', 'didInitAttrs',       { attrs: { } }],
-        ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
+        ['no-items', 'didInitAttrs',       { attrs: { }, newAttrs: { } }],
+        ['no-items', 'didReceiveAttrs',    { attrs: { }, newAttrs: { } }],
         ['no-items', 'on(init)'],
 
         ['nested-item', 'init'],
-        ['nested-item', 'didInitAttrs',       { attrs: { } }],
-        ['nested-item', 'didReceiveAttrs',    { newAttrs: { } }],
+        ['nested-item', 'didInitAttrs',       { attrs: { }, newAttrs: { } }],
+        ['nested-item', 'didReceiveAttrs',    { attrs: { }, newAttrs: { } }],
         ['nested-item', 'on(init)'],
 
         ['an-item', 'willDestroy'],
@@ -1624,8 +1625,8 @@ function expr(value) {
   return { isExpr: true, value };
 }
 
-function hook(name, hook, args) {
-  return { name, hook, args };
+function hook(name, hook, { attrs, oldAttrs, newAttrs } = {}) {
+  return { name, hook, args: { attrs, oldAttrs, newAttrs } };
 }
 
 function json(serializable) {

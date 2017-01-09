@@ -23,7 +23,7 @@ export { default as CoreView } from './views/core_view';
 export { default as ClassNamesSupport } from './mixins/class_names_support';
 export { default as ChildViewsSupport } from './mixins/child_views_support';
 export { default as ViewStateSupport } from './mixins/view_state_support';
-export { default as ViewMixin } from './mixins/view_support';
+export { default as ViewMixin, dispatchLifeCycleHook } from './mixins/view_support';
 export { default as ActionSupport } from './mixins/action_support';
 export {
   MUTABLE_CELL
