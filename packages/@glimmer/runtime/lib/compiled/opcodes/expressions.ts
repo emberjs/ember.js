@@ -4,6 +4,7 @@ import { Helper } from '../../environment';
 import { EvaluatedArgs } from '../expressions/args';
 import { FunctionExpression } from '../expressions/function';
 import { TRUE_REFERENCE, FALSE_REFERENCE } from '../../references';
+import { Layout } from '../../scanner';
 import { VersionedPathReference } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
 
@@ -33,6 +34,10 @@ APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
 
 APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols, op2: bindCallerScope }) => {
   vm.pushRootScope(symbols, !!bindCallerScope);
+});
+
+APPEND_OPCODES.add(Op.VirtualRootScope, (vm, { op1: bindCallerScope }) => {
+  let layout = vm.evalStack.top<Layout>();
 });
 
 APPEND_OPCODES.add(Op.GetProperty, (vm, { op1: _key }) => {

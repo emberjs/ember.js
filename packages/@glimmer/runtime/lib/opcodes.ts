@@ -284,6 +284,23 @@ export const enum Op {
   RootScope,
 
   /**
+   * Operation:
+   *   Push a new root scope onto the scope stack for a layout that is
+   *   on the stack.
+   *
+   * Format:
+   *   (VirtualRootScope bindCallerScope:bool)
+   * Operand Stack:
+   *   ..., Layout →
+   *   ..., Layout
+   * Description:
+   *   A root scope has no parent scope, and therefore inherits no lexical
+   *   variables. If `bindCallerScope` is `true`, the current scope remembers
+   *   the caller scope (for yielding blocks).
+   */
+  VirtualRootScope,
+
+  /**
    * Operation: Push a new child scope onto the scope stack.
    *
    * Format:
@@ -341,6 +358,29 @@ export const enum Op {
    *   ...
    */
   BindNamedArgs,
+
+  /**
+   * Operation: Bind a named argument to the layout on the stack.
+   * Format:
+   *   (BindVirtualNamed layout:local symbol:#string)
+   * Operand Stack:
+   *   ..., VersionedPathReference →
+   *   ...
+   */
+  BindVirtualNamed,
+
+  /**
+   * Operation: Bind a block to the layout on the stack.
+   * Format:
+   *   (BindVirtualBlock layout:local block:u32)
+   * Operand Stack:
+   *   ..., InlineBlock →
+   *   ...
+   * Description:
+   *   0: default
+   *   1: inverse
+   */
+  BindVirtualBlock,
 
   /**
    * Operation:
@@ -527,12 +567,23 @@ export const enum Op {
   /**
    * Operation: Evaluate the specified block.
    * Format:
-   *   (Evaluate #InlineBlock)
+   *   (InvokeStatic #InlineBlock)
    * Operand Stack:
    *   ... →
    *   ...
    */
-  Evaluate,                  // (ConstantBlock)
+  InvokeStatic,
+
+  /**
+   * Operation: Evaluate the block at the top of the stack.
+   * Format:
+   *   (InvokeVirtual)
+   * Operand Stack:
+   *   ..., InlineBlock →
+   *   ...
+   */
+  InvokeVirtual,
+
 
   /**
    * Operation: Jump to the specified offset.
@@ -734,7 +785,6 @@ export const enum Op {
    */
   PushComponentManager,
 
-
   /**
    * Operation: Set component metadata into a local.
    *
@@ -820,8 +870,8 @@ export const enum Op {
    * Format:
    *   (GetComponentLayout)
    * Operand Stack:
-   *   ..., ComponentManager<T>, T →
-   *   ..., ComponentManager<T>, T, start:u32, end:u32
+   *   ... →
+   *   ..., Layout
    */
   GetComponentLayout,
 
@@ -853,10 +903,23 @@ export const enum Op {
    * Format:
    *   (DidCreateElement state:u32)
    * Operand Stack:
-   *   ..., →
+   *   ... →
    *   ...
    */
   DidCreateElement,
+
+  /**
+   * Operation:
+   *   Push the layout for the current component onto
+   *   the stack.
+   *
+   * Format:
+   *   (ComponentLayoutScope state:u32)
+   * Operand Stack:
+   *   ... →
+   *   ..., InlineBlock
+   */
+  ComponentLayoutScope,
 
   /**
    * Operation: Invoke didRenderLayout on the current component manager
@@ -946,6 +1009,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.ReserveLocals: return ['ReserveLocals', { count: op1 }];
     case Op.ReleaseLocals: return ['ReleaseLocals', { count: op1 }];
     case Op.RootScope: return ['RootScope', { symbols: op1, bindCallerScope: !!op2 }];
+    case Op.VirtualRootScope: return ['VirtualRootScope', { bindCallerScope: !!op1 }];
     case Op.SetLocal: return ['SetLocal', { position: op1 }];
     case Op.GetLocal: return ['GetLocal', { position: op1 }];
     case Op.ChildScope: return ['PushChildScope'];
@@ -953,6 +1017,9 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.PushDynamicScope: return ['PushDynamicScope'];
     case Op.PopDynamicScope: return ['PopDynamicScope'];
     case Op.BindPositionalArgs: return ['BindPositionalArgs'];
+    case Op.BindSelf: return ['BindSelf'];
+    case Op.BindVirtualBlock: return ['BindVirtualBlock', { name: c.getString(op1) }];
+    case Op.BindVirtualNamed: return ['BindVirtualNamed', { name: c.getString(op1) }];
     case Op.BindNamedArgs: return ['BindNamedArgs'];
     case Op.BindBlocks: return ['BindBlocks', { names: c.getNames(op1), symbols: c.getArray(op2) }];
     case Op.BindPartialArgs: return ['BindPartialArgs'];
@@ -960,7 +1027,8 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.BindDynamicScope: return ['BindDynamicScope'];
     case Op.Enter: return ['Enter', { start: op1, end: op2 }];
     case Op.Exit: return ['Exit'];
-    case Op.Evaluate: return ['Evaluate'];
+    case Op.InvokeStatic: return ['Evaluate', { block: c.getBlock(op1) }];
+    case Op.InvokeVirtual: return ['EvaluateDynamic'];
     case Op.Jump: return ['Jump', { to: op1 }];
     case Op.JumpIf: return ['JumpIf', { to: op1 }];
     case Op.JumpUnless: return ['JumpUnless', { to: op1 }];
