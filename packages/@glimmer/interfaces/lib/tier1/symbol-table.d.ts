@@ -1,7 +1,6 @@
 import { Option, Dict } from '../core';
 import { TemplateMeta } from '@glimmer/wire-format';
 
-
 export interface Symbols {
   named: Option<Dict<number>>;
   yields: Option<Dict<number>>;
@@ -24,6 +23,7 @@ export interface ProgramSymbolTable extends SymbolTable {
 }
 
 export interface BlockSymbolTable extends SymbolTable {
+  getLocals(): number[];
   getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number>;
 }
 

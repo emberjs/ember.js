@@ -28,6 +28,11 @@ export const enum Op {
     block stack.
    */
 
+  /**
+   * This opcode should never be reached.
+   */
+  Bug,
+
   /// EXPRESSIONS
 
   /**
@@ -282,23 +287,6 @@ export const enum Op {
    *   the caller scope (for yielding blocks).
    */
   RootScope,
-
-  /**
-   * Operation:
-   *   Push a new root scope onto the scope stack for a layout that is
-   *   on the stack.
-   *
-   * Format:
-   *   (VirtualRootScope bindCallerScope:bool)
-   * Operand Stack:
-   *   ..., Layout →
-   *   ..., Layout
-   * Description:
-   *   A root scope has no parent scope, and therefore inherits no lexical
-   *   variables. If `bindCallerScope` is `true`, the current scope remembers
-   *   the caller scope (for yielding blocks).
-   */
-  VirtualRootScope,
 
   /**
    * Operation: Push a new child scope onto the scope stack.
@@ -577,13 +565,12 @@ export const enum Op {
   /**
    * Operation: Evaluate the block at the top of the stack.
    * Format:
-   *   (InvokeVirtual)
+   *   (InvokeDynamic invoker:#FunctionInvoker)
    * Operand Stack:
-   *   ..., InlineBlock →
+   *   ..., ...VersionedPathReference, InlineBlock, VersionedPathReference →
    *   ...
    */
-  InvokeVirtual,
-
+  InvokeDynamic,
 
   /**
    * Operation: Jump to the specified offset.
@@ -845,7 +832,7 @@ export const enum Op {
    * Operation: Register a destructor for the current component
    *
    * Format:
-   *   (RegisterComponentDestructor)
+   *   (RegisterComponentDestructor state:u32)
    * Operand Stack:
    *   ... →
    *   ...
@@ -863,12 +850,22 @@ export const enum Op {
    */
   PushComponentOperations,
 
+  /**
+   * Operation: Push the component's `self` onto the stack.
+   *
+   * Format:
+   *   (GetComponentSelf state:u32)
+   * Operand Stack:
+   *   ... →
+   *   ..., VersionedPathReference
+   */
+  GetComponentSelf,
 
   /**
    * Operation: Get a slice of opcodes to invoke.
    *
    * Format:
-   *   (GetComponentLayout)
+   *   (GetComponentLayout state:u32)
    * Operand Stack:
    *   ... →
    *   ..., Layout
@@ -966,6 +963,10 @@ function logOpcode(type: string, params: Option<Object>): string {
 }
 
 function json(param: Opaque) {
+  if (typeof param === 'function') {
+    return '<function>';
+  }
+
   let string = JSON.stringify(param);
   if (string === undefined) return 'undefined';
 
@@ -979,6 +980,8 @@ function json(param: Opaque) {
 
 function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any[] {
   switch (op) {
+    case Op.Bug: return ['Bug', { description: 'This opcode should never be reached' }];
+
     case Op.Helper: return ['Helper', { helper: c.getFunction(op1) }];
     case Op.Self: return ['Self'];
     case Op.GetVariable: return ['GetVariable', { symbol: op1 }];
@@ -1003,16 +1006,26 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
 
     /// COMPONENTS
 
+    case Op.PushComponentManager: return ['PushComponentManager', { definition: c.getOther(op1) }];
     case Op.SetComponentState: return ['SetComponentState', { local: op1 }];
+    case Op.PushComponentArgs: return ['PushComponentArgs', { positional: op1, named: op2, dict: c.getOther(op3) }];
+    case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: op2 }];
+    case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor']
+    case Op.BeginComponentTransaction: return ['BeginComponentTransaction'];
+    case Op.PushComponentOperations: return ['PushComponentOperations'];
+    case Op.DidCreateElement: return ['DidCreateElement', { state: op1 }];
+    case Op.GetComponentSelf: return ['GetComponentSelf', { state: op1 }];
+    case Op.GetComponentLayout: return ['GetComponentSelf', { state: op1 }];
+    case Op.DidRenderLayout: return ['DidRenderLayout'];
+    case Op.CommitComponentTransaction: return ['CommitComponentTransaction'];
 
     /// STATEMENTS
     case Op.ReserveLocals: return ['ReserveLocals', { count: op1 }];
     case Op.ReleaseLocals: return ['ReleaseLocals', { count: op1 }];
     case Op.RootScope: return ['RootScope', { symbols: op1, bindCallerScope: !!op2 }];
-    case Op.VirtualRootScope: return ['VirtualRootScope', { bindCallerScope: !!op1 }];
     case Op.SetLocal: return ['SetLocal', { position: op1 }];
     case Op.GetLocal: return ['GetLocal', { position: op1 }];
-    case Op.ChildScope: return ['PushChildScope'];
+    case Op.ChildScope: return ['ChildScope'];
     case Op.PopScope: return ['PopScope'];
     case Op.PushDynamicScope: return ['PushDynamicScope'];
     case Op.PopDynamicScope: return ['PopDynamicScope'];
@@ -1027,8 +1040,8 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.BindDynamicScope: return ['BindDynamicScope'];
     case Op.Enter: return ['Enter', { start: op1, end: op2 }];
     case Op.Exit: return ['Exit'];
-    case Op.InvokeStatic: return ['Evaluate', { block: c.getBlock(op1) }];
-    case Op.InvokeVirtual: return ['EvaluateDynamic'];
+    case Op.InvokeStatic: return ['InvokeStatic', { block: c.getBlock(op1) }];
+    case Op.InvokeDynamic: return ['InvokeDynamic', { invoker: c.getOther(op1) }];
     case Op.Jump: return ['Jump', { to: op1 }];
     case Op.JumpIf: return ['JumpIf', { to: op1 }];
     case Op.JumpUnless: return ['JumpUnless', { to: op1 }];
@@ -1036,14 +1049,11 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.InvokeBlock: return ['InvokeBlock'];
     case Op.DoneBlock: return ['DoneBlock'];
     case Op.PushDynamicComponent: return ['PushDynamicComponent'];
-    case Op.DidCreateElement: return ['DidCreateElement'];
-    case Op.ShadowAttributes: return ['ShadowAttributes'];
-    case Op.DidRenderLayout: return ['DidRenderLayout'];
-    case Op.CommitComponentTransaction: return ['CommitComponentTransaction'];
     case Op.Text: return ['Text', { text: c.getString(op1) }];
     case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
     case Op.DynamicContent: return ['DynamicContent', { value: c.getOther(op1) }];
-    case Op.OpenElement: return ['OpenElement'];
+    case Op.OpenElement: return ['OpenElement', { tag: c.getString(op1) }];
+    case Op.OpenElementWithOperations: return ['OpenElementWithOperations', { tag: c.getString(op1) }];
     case Op.PushRemoteElement: return ['PushRemoteElement'];
     case Op.PopRemoteElement: return ['PopRemoteElement'];
     case Op.OpenDynamicElement: return ['OpenDynamicElement'];

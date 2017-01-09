@@ -194,12 +194,20 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.BeginComponentTransaction);
   }
 
+  commitComponentTransaction() {
+    this.push(Op.CommitComponentTransaction);
+  }
+
   pushComponentOperations() {
     this.push(Op.PushComponentOperations);
   }
 
   putDynamicComponentDefinition() {
     this.push(Op.PushDynamicComponent);
+  }
+
+  getComponentSelf(state: number) {
+    this.push(Op.GetComponentSelf, state);
   }
 
   getComponentLayout(state: number ) {
@@ -423,12 +431,8 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.RootScope, symbols, <any>bindCallerScope|0);
   }
 
-  pushVirtualRootScope(bindCallerScope: boolean) {
-    this.push(Op.VirtualRootScope, <any>bindCallerScope|0);
-  }
-
   pushChildScope() {
-    this.push(Op.PushChildScope);
+    this.push(Op.ChildScope);
   }
 
   popScope() {
@@ -555,8 +559,8 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.Exit);
   }
 
-  invokeVirtual(): void {
-    this.push(Op.InvokeVirtual);
+  invokeDynamic(invoker: vm.LayoutInvoker): void {
+    this.push(Op.InvokeDynamic, this.other(invoker));
   }
 
   // invokeStatic(_block: InlineBlock, args: Option<AppendOpcode[]>): void;

@@ -42,12 +42,28 @@ export class TemplateBlock extends Block {
   public type = "template";
   public yields = new DictSet<string>();
   public named = new DictSet<string>();
+  public prelude: Statement[] = [];
   public blocks: SerializedBlock[] = [];
   public hasPartials = false;
+  private inParams = true;
+  private sawElement = false;
+
+  push(statement: Statement) {
+    if (this.inParams) {
+      if (Statements.isFlushElement(statement)) {
+        this.inParams = false;
+      } else {
+        this.prelude.push(statement);
+      }
+    } else {
+      this.statements.push(statement);
+    }
+  }
 
   toJSON(): SerializedTemplateBlock {
     return {
-      statements: this.statements,
+      prelude: this.inParams ? null : this.prelude,
+      statements: this.inParams ? this.prelude : this.statements,
       locals: this.positionals,
       named: this.named.toArray(),
       yields: this.yields.toArray(),

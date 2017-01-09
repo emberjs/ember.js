@@ -8,7 +8,7 @@ import { ElementOperations } from '../builder';
 import Bounds from '../bounds';
 import * as Simple from '../dom/interfaces';
 
-import { Destroyable, Opaque } from '@glimmer/util';
+import { Destroyable, Dict, Opaque } from '@glimmer/util';
 import { VersionedPathReference, Tag } from '@glimmer/reference';
 
 export type Component = Opaque;
@@ -16,8 +16,15 @@ export type ComponentClass = any;
 
 export interface Arguments {
   tag: Tag;
+  named: NamedArguments;
   at<T extends VersionedPathReference<Opaque>>(pos: number): T;
   get<T extends VersionedPathReference<Opaque>>(name: string): T;
+}
+
+export interface NamedArguments {
+  tag: Tag;
+  value(): Dict<VersionedPathReference<Opaque>>;
+  get(name: string): VersionedPathReference<Opaque>;
 }
 
 export interface ComponentManager<T extends Component> {
@@ -36,7 +43,7 @@ export interface ComponentManager<T extends Component> {
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
   // or to implement features like Ember's "late-bound" layouts.
-  layoutFor(definition: ComponentDefinition<T>, component: T, env: Environment): CompiledProgram;
+  layoutFor(definition: ComponentDefinition<T>, component: T, env: Environment): Layout;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.
