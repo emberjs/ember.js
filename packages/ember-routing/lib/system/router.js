@@ -418,6 +418,12 @@ const EmberRouter = EmberObject.extend(Evented, {
     return router.isActive(...arguments);
   },
 
+  isActiveTarget(routeName, ...args) {
+    let [ models, queryParams ] = extractQueryParams(args);
+
+    return this.targetState && this.targetState.isActiveIntent(routeName, models, queryParams);
+  },
+
   /**
     An alternative form of `isActive` that doesn't require
     manual concatenation of the arguments into a single

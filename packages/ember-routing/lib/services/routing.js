@@ -11,6 +11,8 @@ import {
 
 import { get } from 'ember-metal';
 import { routeArgs } from '../utils';
+import isEnabled from '../features';
+import { deprecate } from '../debug';
 
 /**
   The Routing service is used by LinkComponent, and provides facilities for
@@ -24,6 +26,18 @@ import { routeArgs } from '../utils';
   @class RoutingService
 */
 export default Service.extend({
+  init() {
+    this._super(...arguments);
+
+    if (isEnabled('ember-routing-router-service')) {
+      // deprecate(
+      //   'The private `-routing` service has been deprecated and will be removed.',
+      //   false,
+      //   { id: 'ember-routing.-routing-service', until: '2.8.0' }
+      // );
+    }
+  },
+
   router: null,
 
   targetState: readOnly('router.targetState'),
