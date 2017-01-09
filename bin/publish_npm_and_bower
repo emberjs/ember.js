@@ -52,7 +52,7 @@ case $TRAVIS_BRANCH in
       esac
     else
       echo "Not a bower release branch or tag.  Exiting!"
-      exit 0 ;;
+      exit 0
     fi
 esac
 echo -e "CHANNEL: ${CHANNEL}\n"
@@ -63,10 +63,23 @@ if [[ -n $BUILD_TYPE ]]; then
   echo -e "CHANNEL OVERRIDE: ${CHANNEL}\n"
 fi
 
+#### NPM PUBLISHING
+if [[ "$TRAVIS_TAG" != "" ]]; then
+  echo $NPM_AUTH_TOKEN > ~/.npmrc
+  if [[ "$CHANNEL" == "release" ]]; then
+    echo "npm publish"
+  else
+    echo "npm publish --tag $CHANNEL"
+  fi
+fi
+
+#### BOWER PUBLISHING
+
 # Sending output to /dev/null to prevent GH_TOKEN leak on error.
 git clone --branch ${CHANNEL} https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_REPO_SLUG}.git bower_ember &> /dev/null
 rm -rf bower_ember/*
-cp -r ${INCLUDED_FILES} bower_ember/
+cp ${INCLUDED_FILES} bower_ember/
+cp docs/data.json bower_ember/ember-docs.json
 cd bower_ember
 git remote rm origin
 
@@ -75,8 +88,8 @@ git remote add origin https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_
 git add -A
 git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/commit/${TRAVIS_COMMIT}."
 
-
 if [[ "$TRAVIS_TAG" != "" ]]; then
+  echo -e "Creating tag $TRAVIS_TAG"
   git tag $TRAVIS_TAG
   PUSH_TARGET=$TRAVIS_TAG
 fi
