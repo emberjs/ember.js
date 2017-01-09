@@ -352,7 +352,16 @@ export default Mixin.create({
     you do not pass a `context` parameter:
 
     ```javascript
-    fooDidChange: function(sender, key, value, rev) { };
+    export default Ember.Component.extend({
+      init() {
+        this._super(...arguments);
+        this.addObserver('foo', this, 'fooDidChange');
+      },
+
+      fooDidChange(sender, key, value, rev) {
+        // your code
+      }
+    });
     ```
 
     The sender is the object that changed. The key is the property that
@@ -364,7 +373,16 @@ export default Mixin.create({
     revision like so:
 
     ```javascript
-    fooDidChange: function(sender, key, value, context, rev) { };
+    export default Ember.Component.extend({
+      init() {
+        this._super(...arguments);
+        this.addObserver('foo', this, 'fooDidChange');
+      },
+
+      fooDidChange(sender, key, value, context, rev) {
+        // your code
+      }
+    });
     ```
 
     Usually you will not need the value, context or revision parameters at
