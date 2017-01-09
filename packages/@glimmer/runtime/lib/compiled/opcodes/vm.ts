@@ -1,7 +1,7 @@
 import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { UpdatingVM } from '../../vm';
+import { UpdatingVM, VM } from '../../vm';
 import { Reference, ConstReference, VersionedPathReference } from '@glimmer/reference';
-import { Option, Opaque, initializeGuid } from '@glimmer/util';
+import { Dict, Option, Opaque, initializeGuid } from '@glimmer/util';
 import { CONSTANT_TAG, ReferenceCache, Revision, Tag, isConst, isModified } from '@glimmer/reference';
 import Environment from '../../environment';
 import { APPEND_OPCODES, Op as Op } from '../../opcodes';
@@ -25,6 +25,10 @@ import {
   PrimitiveReference
 } from '../../references';
 
+import {
+  CompiledProgram
+} from '../blocks';
+
 APPEND_OPCODES.add(Op.ReserveLocals, (vm, { op1: amount }) => {
   vm.reserveLocals(amount);
 });
@@ -39,7 +43,7 @@ APPEND_OPCODES.add(Op.GetLocal, (vm, { op1: position }) => {
   vm.evalStack.push(vm.getLocal(position));
 });
 
-APPEND_OPCODES.add(Op.PushChildScope, vm => vm.pushChildScope());
+APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
 
 APPEND_OPCODES.add(Op.PopScope, vm => vm.popScope());
 
@@ -161,9 +165,14 @@ APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: _block }) => {
   vm.invokeBlock(block);
 });
 
-APPEND_OPCODES.add(Op.InvokeVirtual, vm => {
-  let block = vm.evalStack.pop<InlineBlock>();
-  vm.invokeBlock(block);
+export interface LayoutInvoker {
+  invoke(vm: VM, block: Layout): void;
+}
+
+APPEND_OPCODES.add(Op.InvokeDynamic, (vm, { op1: _invoker }) => {
+  let invoker = vm.constants.getOther<LayoutInvoker>(_invoker);
+  let block = vm.evalStack.pop<Layout>();
+  invoker.invoke(vm, block);
 });
 
 APPEND_OPCODES.add(Op.Jump, (vm, { op1: target }) => vm.goto(target));

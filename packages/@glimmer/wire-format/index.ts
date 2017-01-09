@@ -210,6 +210,7 @@ export interface SerializedComponent extends SerializedBlock {
  * A JSON object that the compiled TemplateBlock was serialized into.
  */
 export interface SerializedTemplateBlock extends SerializedBlock {
+  prelude: Option<Statements.Statement[]>;
   named: string[];
   yields: string[];
   hasPartials: boolean;

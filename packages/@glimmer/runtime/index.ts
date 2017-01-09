@@ -77,7 +77,8 @@ export {
 
 export {
   BaselineSyntax,
-  Layout
+  Layout,
+  EntryPoint
 } from './lib/scanner';
 
 export { PublicVM as VM, UpdatingVM, RenderResult } from './lib/vm';

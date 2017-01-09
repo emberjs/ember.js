@@ -18,7 +18,7 @@ APPEND_OPCODES.add(Op.InvokeBlock, (vm, { op1: positional }) => {
   vm.pushCallerScope();
 
   if (block) {
-    vm.invokeBlock(block, EvaluatedArgs.positional(refs));
+    vm.invokeBlock(block);
   }
 });
 

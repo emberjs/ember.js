@@ -3,7 +3,9 @@ import * as WireFormat from '@glimmer/wire-format';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { CompiledExpression } from '../compiled/expressions';
 import CompiledHasBlock, { CompiledHasBlockParams } from '../compiled/expressions/has-block';
-import { BaselineSyntax, InlineBlock } from '../scanner';
+import { LayoutInvoker } from '../compiled/opcodes/vm';
+import { VM } from '../vm';
+import { BaselineSyntax, InlineBlock, Layout } from '../scanner';
 import {
   CompiledInPartialGetBlock
 } from '../compiled/expressions/has-block';
@@ -25,6 +27,10 @@ import {
   unwrap,
   unreachable
 } from '@glimmer/util';
+
+import {
+  VersionedPathReference
+} from '@glimmer/reference';
 
 export type SexpExpression = BaselineSyntax.AnyExpression & { 0: number };
 export type Syntax = SexpExpression | BaselineSyntax.AnyStatement;
@@ -190,6 +196,53 @@ STATEMENTS.add(Ops.ScannedBlock, (sexp: BaselineSyntax.ScannedBlock, builder) =>
   blocks.compile([Ops.NestedBlock, path, params, hash, templateBlock, inverseBlock], builder);
 });
 
+class InvokeDynamicLayout implements LayoutInvoker {
+  constructor(private attrs: InlineBlock, private names: string[], private hasBlock: boolean) {}
+
+  invoke(vm: VM, layout: Layout) {
+    let table = layout.symbolTable;
+    let stack = vm.evalStack;
+    let { names: callerNames, hasBlock } = this;
+
+    let scope = vm.pushRootScope(table.size, true);
+    scope.bindSelf(stack.pop<VersionedPathReference<Opaque>>());
+
+    scope.bindBlock(table.getSymbol('yields', '%attrs%')!, this.attrs);
+
+    if (hasBlock) {
+      scope.bindBlock(table.getSymbol('yields', 'default')!, stack.pop<InlineBlock>());
+    }
+
+    if (table.getSymbolSize('named') !== 0) {
+      let calleeNames = table.getSymbols().named!;
+
+      for (let i=callerNames.length; i>0; i--) {
+        let symbol = calleeNames[callerNames[i]]!;
+        scope.bindSymbol(symbol, stack.pop<VersionedPathReference<Opaque>>());
+      }
+    }
+
+    vm.invokeBlock(layout);
+  }
+}
+
+function compileComponentArgs(args: Option<C.Hash>, builder: OpcodeBuilder) {
+  let count: number, slots: Dict<number>, names: string[];
+
+  if (args) {
+    names = args[0];
+    count = compileList(args[1], builder);
+    slots = dict<number>();
+    names.forEach((name, i) => slots[name] = count - i - 1);
+  } else {
+    slots = EMPTY_DICT;
+    count = 0;
+    names = [];
+  }
+
+  return { slots, count, names };
+}
+
 STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, builder) => {
   let [, tag, attrs, rawArgs, rawBlock] = sexp;
   let block = rawBlock && rawBlock.scan();
@@ -209,14 +262,11 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   // (OpenElementWithOperations tag:#string)      ; stack: [..., ...args, block]
   // (DidCreateElement local:u32)
   // (InvokeStatic #attrs)                        ; NOTE: Still original scope
-  // (GetComponentLayout state:u32, layout: u32)  ; stack: [..., ...args, block, InlineBlock]
-  // (VirtualRootScope caller:true)               ; stack: [..., ...args, block]
   // (GetComponentSelf)                           ; stack: [..., ...args, block, VersionedPathReference]
   // (BindSelf)                                   ; stack: [..., ...args, block]
-  // (BindVirtualBlock layout:u32 block:0)        ; stack: [..., ...args]
-  // (BindVirtualNamed layout:u32 symbol:#string) ... ; stack: [...]
   // (GetLocal local:u32)                         ; stack: [..., Layout]
-  // (InvokeVirtual)                              ; stack: [...]
+  // (GetComponentLayout state:u32, layout: u32)  ; stack: [..., ...args, block, VersionedPathReference, Layout]
+  // (InvokeDynamic invoker:#LayoutInvoker)       ; stack: [...]
   // (DidRenderLayout local:u32)                  ; stack: [...]
   // (PopScope)
   // (PopDynamicScope)
@@ -225,25 +275,14 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   let definition = builder.env.getComponentDefinition([tag], builder.symbolTable);
 
   let state = builder.local();
-  let layout = builder.local();
+
   builder.pushComponentManager(definition);
   builder.setComponentState(state);
 
-  let count: number, slots: Dict<number>;
-  let names: string[] = [];
-  if (rawArgs) {
-    count = compileList(rawArgs[1], builder);
-    slots = dict<number>();
-    rawArgs[0].forEach((name, i) => {
-      slots[name] = count - i - 1;
-      names.push(name);
-    })
-  } else {
-    slots = EMPTY_DICT;
-    count = 0;
-  }
+  let { slots, count, names } = compileComponentArgs(rawArgs, builder);
 
   builder.pushBlock(block);
+
   builder.pushDynamicScope();
   builder.pushComponentArgs(0, count, slots);
   builder.createComponent(state, true, false);
@@ -253,25 +292,14 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   builder.openElementWithOperations(tag);
   builder.didCreateElement(state);
 
-  builder.invokeStatic(attrs.scan(), null);
-
+  builder.getComponentSelf(state);
   builder.getComponentLayout(state);
-  builder.pushVirtualRootScope(true);
+  builder.invokeDynamic(new InvokeDynamicLayout(attrs.scan(), names, !!block));
 
-  builder.bindVirtualBlock();
-
-  for (let name of names.reverse()) {
-    builder.bindVirtualNamedArg(name);
-  }
-  builder.
-
-  builder.putComponentDefinition(definition);
-  compileList(rawArgs && rawArgs[1], builder);
-  compileBlocks(block, null, builder);
-  builder.pushReifiedArgs(0, rawArgs ? rawArgs[0] : EMPTY_ARRAY, !!block, false);
-
-  builder.openComponent(attrs.scan());
-  builder.closeComponent();
+  builder.didRenderLayout();
+  builder.popScope();
+  builder.popDynamicScope();
+  builder.commitComponentTransaction();
 });
 
 STATEMENTS.add(Ops.StaticPartial, (sexp: BaselineSyntax.StaticPartial, builder) => {
@@ -686,7 +714,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.labelled(b => {
       if (_default && inverse) {
         b.jumpUnless('ELSE');
-        builder.getLocal(condition);
         b.invokeStatic(_default, [builder.GetLocal(condition)]);
         b.jump('END');
         b.label('ELSE');

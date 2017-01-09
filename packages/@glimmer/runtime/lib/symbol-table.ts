@@ -13,6 +13,10 @@ export function entryPoint(meta: Option<TemplateMeta>): ProgramSymbolTable {
 
 export function layout(meta: TemplateMeta, wireNamed: string[], wireYields: string[], hasPartials: boolean): ProgramSymbolTable {
   let { named, yields, partialSymbol, size } = symbols(wireNamed, wireYields, hasPartials);
+
+  if (!yields) yields = dict<number>();
+  yields['%attrs%'] = size++;
+
   return new ProgramSymbolTable(meta, named, yields, partialSymbol, size);
 }
 
@@ -22,7 +26,7 @@ export function block(parent: SymbolTable, locals: string[]): SymbolTable {
   let program = parent['program'];
 
   if (locals.length === 0) {
-    localsList = null;
+    localsList = [];
     localsMap = null;
   } else {
     localsMap = dict<number>();
@@ -57,7 +61,7 @@ function symbols(named: string[], yields: string[], hasPartials: boolean): { nam
 
 export class ProgramSymbolTable implements IProgramSymbolTable {
   program: this;
-  private sizes: { local: number, named: number, yields: number };
+  protected sizes: { local: number, named: number, yields: number };
 
   constructor(
     private meta: Option<TemplateMeta>,
@@ -116,6 +120,10 @@ export class BlockSymbolTable implements IBlockSymbolTable {
 
   getMeta(): Option<TemplateMeta> {
     return this.program.getMeta();
+  }
+
+  getLocals(): number[] {
+    return this.localsList;
   }
 
   getSymbolSize(kind: 'local' | 'named' | 'yields'): number {

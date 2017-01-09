@@ -40,7 +40,7 @@ function assertInvariants(result) {
   strictEqual(result.lastNode(), root.lastChild, "The lastNode of the result is the same as the root's lastChild");
 }
 
-QUnit.module("Components", {
+QUnit.module("[glimmer-runtime] Simple Components", {
   setup: commonSetup
 });
 

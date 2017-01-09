@@ -3,6 +3,7 @@ import { builder } from './compiler';
 import OpcodeBuilder from './compiled/opcodes/builder';
 import Environment from './environment';
 import { Option } from '@glimmer/util';
+import { EMPTY_ARRAY } from './utils';
 import { SerializedTemplateBlock, TemplateMeta, SerializedBlock, Statement as SerializedStatement } from '@glimmer/wire-format';
 import * as WireFormat from '@glimmer/wire-format';
 import { entryPoint as entryPointTable, layout as layoutTable, block as blockTable } from './symbol-table';
@@ -23,12 +24,20 @@ export function compileStatement(statement: BaselineSyntax.AnyStatement, builder
   STATEMENTS.compile(refined, builder);
 }
 
-export class Template {
-  constructor(public statements: BaselineSyntax.AnyStatement[], public symbolTable: SymbolTable) {}
+export abstract class Template {
+  constructor(public symbolTable: SymbolTable) {}
+
+  abstract compile(env: Environment): CompiledBlock;
 }
 
-export class Layout extends Template {
-  public symbolTable: ProgramSymbolTable;
+function compileStatements(statements: BaselineSyntax.AnyStatement[], env: Environment, table: SymbolTable) {
+  let b = builder(env, table);
+  for (let statement of statements) {
+    let refined = SPECIALIZE.specialize(statement, table);
+    STATEMENTS.compile(refined, b);
+  }
+
+  return b;
 }
 
 export class EntryPoint extends Template {
@@ -36,38 +45,46 @@ export class EntryPoint extends Template {
 
   public symbolTable: ProgramSymbolTable;
 
+  constructor(public statements: BaselineSyntax.AnyStatement[], symbolTable: ProgramSymbolTable) {
+    super(symbolTable);
+  }
+
   compile(env: Environment): CompiledProgram {
     let compiled = this.compiled;
 
     if (!compiled) {
-      let table = this.symbolTable;
+      let builder = compileStatements(this.statements, env, this.symbolTable);
 
-      let b = builder(env, table);
+      let start = builder.start;
+      let end = builder.finalize();
 
-      for (let i = 0; i < this.statements.length; i++) {
-        let statement = this.statements[i];
-        let refined = SPECIALIZE.specialize(statement, table);
-        STATEMENTS.compile(refined, b);
-      }
-
-      let start = b.start;
-      let end = b.finalize();
-
-      compiled = this.compiled = new CompiledProgram(start, end, this.symbolTable.size);
+       compiled = this.compiled = new CompiledProgram(start, end, this.symbolTable.size);
     }
 
     return compiled;
   }
 }
 
+export class Layout extends EntryPoint {
+  public symbolTable: ProgramSymbolTable;
+
+  constructor(prelude: BaselineSyntax.AnyStatement[], body: BaselineSyntax.AnyStatement[], symbolTable: ProgramSymbolTable) {
+    let statements = prelude.concat([['yield', '%attrs%', EMPTY_ARRAY], ['flush-element']]).concat(body);
+    super(statements, symbolTable);
+  }
+}
+
 export class InlineBlock extends Template {
   private compiled: Option<CompiledBlock> = null;
+
+  constructor(public statements: BaselineSyntax.AnyStatement[], symbolTable: SymbolTable) {
+    super(symbolTable);
+  }
 
   splat(builder: OpcodeBuilder) {
     let table = builder.symbolTable;
 
-    for (let i = 0; i < this.statements.length; i++) {
-      let statement = this.statements[i];
+    for (let statement of this.statements) {
       let refined = SPECIALIZE.specialize(statement, table);
       STATEMENTS.compile(refined, builder);
     }
@@ -77,15 +94,12 @@ export class InlineBlock extends Template {
     let { compiled } = this;
 
     if (!compiled) {
-      let table = this.symbolTable;
-      let b = builder(env, table);
+      let builder = compileStatements(this.statements, env, this.symbolTable);
 
-      this.splat(b);
+      let start = builder.start;
+      let end = builder.finalize();
 
-      let start = b.start;
-      let end = b.finalize();
-
-      compiled = this.compiled = new CompiledBlock(start, end);
+       compiled = this.compiled = new CompiledBlock(start, end);
     }
 
     return compiled;
@@ -96,34 +110,6 @@ export class InlineBlock extends Template {
   }
 }
 
-export class PartialBlock extends Template {
-  private compiled: Option<CompiledProgram> = null;
-
-  public symbolTable: ProgramSymbolTable;
-
-  compile(env: Environment): CompiledProgram {
-    let compiled = this.compiled;
-
-    if (!compiled) {
-      let table = this.symbolTable;
-      let b = builder(env, table);
-
-      for (let i = 0; i < this.statements.length; i++) {
-        let statement = this.statements[i];
-        let refined = SPECIALIZE.specialize(statement, table);
-        STATEMENTS.compile(refined, b);
-      }
-
-      let start = b.start;
-      let end = b.finalize();
-
-      compiled = this.compiled = new CompiledProgram(start, end, table.size);
-    }
-
-    return compiled;
-  }
-}
-
 export default class Scanner {
   constructor(private block: SerializedTemplateBlock, private meta: TemplateMeta, private env: Environment) {
   }
@@ -131,8 +117,15 @@ export default class Scanner {
   scanEntryPoint(): EntryPoint {
     let { block, meta } = this;
 
+    let statements;
+    if (block.prelude) {
+      statements = block.prelude.concat([['flush-element']]).concat(block.statements);
+    } else {
+      statements = block.statements;
+    }
+
     let symbolTable = entryPointTable(meta);
-    let child = scanBlock(block, symbolTable, this.env);
+    let child = scanBlock(statements, symbolTable, this.env);
     return new EntryPoint(child.statements, symbolTable);
   }
 
@@ -141,21 +134,22 @@ export default class Scanner {
     let { named, yields, hasPartials } = block;
 
     let symbolTable = layoutTable(meta, named, yields, hasPartials);
-    let child = scanBlock(block, symbolTable, this.env);
+    let { statements: prelude } = scanBlock(block.prelude, symbolTable, this.env);
+    let { statements: body } = scanBlock(block.statements, symbolTable, this.env);
 
-    return new Layout(child.statements, symbolTable);
+    return new Layout(prelude, body, symbolTable);
   }
 
-  scanPartial(symbolTable: SymbolTable): PartialBlock {
+  scanPartial(symbolTable: SymbolTable): EntryPoint {
     let { block } = this;
 
-    let child = scanBlock(block, symbolTable, this.env);
+    let child = scanBlock(block.statements, symbolTable, this.env);
 
-    return new PartialBlock(child.statements, symbolTable);
+    return new EntryPoint(child.statements, symbolTable);
   }
 }
 
-export function scanBlock({ statements }: SerializedBlock, symbolTable: SymbolTable, env: Environment): InlineBlock {
+export function scanBlock(statements: WireFormat.Statement[], symbolTable: SymbolTable, env: Environment): InlineBlock {
   return new RawInlineBlock(env, symbolTable, statements).scan();
 }
 
@@ -251,9 +245,8 @@ export class RawInlineBlock {
 
   scan(): InlineBlock {
     let buffer: BaselineSyntax.AnyStatement[] = [];
-
-    for(let i = 0; i < this.statements.length; i++) {
-      let statement = this.statements[i];
+    let statements = this.statements;
+    for (let statement of statements) {
       if (WireFormat.Statements.isBlock(statement)) {
         buffer.push(this.specializeBlock(statement));
       } else if (WireFormat.Statements.isComponent(statement)) {
@@ -279,13 +272,13 @@ export class RawInlineBlock {
       let attrs = new RawInlineBlock(this.env, this.table, component.attrs);
       return [[Ops.ScannedComponent, tag, attrs, component.args, child]];
     } else {
-      let buf: BaselineSyntax.AnyStatement[] = [];
-      buf.push([Ops.OpenElement, tag, []]);
-      buf.push(...component.attrs);
-      buf.push([Ops.FlushElement]);
-      buf.push(...component.statements);
-      buf.push([Ops.CloseElement]);
-      return buf;
+      return [
+        [Ops.OpenElement, tag, EMPTY_ARRAY],
+        ...component.attrs,
+        [Ops.FlushElement],
+        ...component.statements,
+        [Ops.CloseElement]
+      ];
     }
   }
 

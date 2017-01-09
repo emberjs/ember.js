@@ -7,7 +7,7 @@ import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
 import { APPEND_OPCODES, Op as Op } from '../../opcodes';
 import { ComponentElementOperations } from './dom';
-import { Opaque, Dict } from '@glimmer/util';
+import { Opaque, Dict, dict } from '@glimmer/util';
 import {
   CONSTANT_TAG,
   ReferenceCache,
@@ -30,9 +30,38 @@ APPEND_OPCODES.add(Op.PushDynamicComponent, vm => {
   }
 });
 
-APPEND_OPCODES.add(Op.PushComponentManager, (vm, { op1: definition }) => {
-  vm.evalStack.push(vm.constants.other(definition));
+APPEND_OPCODES.add(Op.PushComponentManager, (vm, { op1: _definition }) => {
+  let definition = vm.constants.getOther<ComponentDefinition<Opaque>>(_definition);
+  let stack = vm.evalStack;
+
+  stack.push(definition);
+  stack.push(definition.manager);
 });
+
+export class NamedArguments {
+  private named: string[] = null as any;
+  public tag: Tag = null as any;
+
+  constructor(private args: Arguments) {}
+
+  setup(named: string[]) {
+    this.named = named;
+    this.tag = this.args.tag;
+  }
+
+  value(): Dict<VersionedPathReference<Opaque>> {
+    let out = dict<VersionedPathReference<Opaque>>();
+    let args = this.args;
+
+    this.named.forEach(n => out[n] = args.get(n));
+
+    return out;
+  }
+
+  get(name: string): VersionedPathReference<Opaque> {
+    return this.args.get(name);
+  }
+}
 
 export class Arguments implements IArguments {
   private positionalCount: number = 0;
@@ -41,6 +70,7 @@ export class Arguments implements IArguments {
   private namedDict: Dict<number> = null as any;
   private vm: VM = null as any;
 
+  public named = new NamedArguments(this);
   public tag: Tag = null as any;
 
   setup(positional: number, named: number, namedDict: Dict<number>, vm: VM) {
@@ -52,6 +82,8 @@ export class Arguments implements IArguments {
 
     let references = vm.evalStack.slice<VersionedPathReference<Opaque>[]>(positional + named);
     this.tag = combineTagged(references);
+
+    this.named.setup(Object.keys(namedDict));
   }
 
   at<T extends VersionedPathReference<Opaque>>(pos: number): T {
@@ -138,6 +170,16 @@ APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
 
   let action = 'DidCreateElementOpcode#evaluate';
   manager.didCreateElement(component, vm.stack().expectConstructing(action), vm.stack().expectOperations(action));
+});
+
+APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state }) => {
+  let state = vm.getLocal<ComponentState<Opaque>>(_state);
+  vm.evalStack.push(state.manager.getSelf(state.component));
+});
+
+APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
+  let { manager, definition, component } = vm.getLocal<ComponentState<Opaque>>(_state);
+  vm.evalStack.push(manager.layoutFor(definition, component, vm.env));
 });
 
 APPEND_OPCODES.add(Op.ComponentLayoutScope, (vm, { op1: _state }) => {

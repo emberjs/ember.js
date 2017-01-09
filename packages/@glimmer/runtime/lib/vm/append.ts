@@ -3,7 +3,7 @@ import { ElementStack } from '../builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { CompiledBlock } from '../compiled/blocks';
-import { InlineBlock, PartialBlock } from '../scanner';
+import { InlineBlock, PartialBlock, Template } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { Component, ComponentManager } from '../component/interfaces';
@@ -367,7 +367,7 @@ export default class VM implements PublicVM {
 
   // Make sure you have opcodes that push and pop a scope around this opcode
   // if you need to change the scope.
-  invokeBlock(block: InlineBlock) {
+  invokeBlock(block: Template) {
     let compiled = block.compile(this.env);
     this.pushFrame(compiled);
   }
