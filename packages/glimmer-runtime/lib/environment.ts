@@ -1,4 +1,5 @@
 import { SymbolTable } from 'glimmer-interfaces';
+import { A } from 'glimmer-util';
 
 import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
@@ -199,7 +200,7 @@ class Transaction {
 
 export class Opcode {
   public offset = 0;
-  constructor(private array: Uint32Array) {}
+  constructor(private array: Uint32Array | Array<number>) {}
 
   get type() {
     return this.array[this.offset];
@@ -221,7 +222,7 @@ export class Opcode {
 export class Program {
   [key: number]: never;
 
-  private opcodes = new Uint32Array(0x100000);
+  private opcodes = new A(0x100000);
   private _offset = 0;
   private _opcode: Opcode;
 

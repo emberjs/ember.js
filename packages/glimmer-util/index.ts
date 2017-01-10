@@ -12,6 +12,7 @@ export { ensureGuid, initializeGuid, HasGuid } from './lib/guid';
 
 export { Stack, Dict, Set, DictSet, dict } from './lib/collections';
 export { EMPTY_SLICE, LinkedList, LinkedListNode, ListNode, CloneableListNode, ListSlice, Slice } from './lib/list-utils';
+export { default as A } from './lib/array-utils';
 
 export type TSISSUE<T, S extends string> = T;
 export type FIXME<T, S extends string> = T;
