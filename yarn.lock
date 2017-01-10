@@ -2849,9 +2849,9 @@ github@^0.2.3:
   dependencies:
     mime "^1.2.11"
 
-glimmer-engine@^0.19.3:
-  version "0.19.3"
-  resolved "https://registry.yarnpkg.com/glimmer-engine/-/glimmer-engine-0.19.3.tgz#584c266773251edabb89b57cddfd0b158d66b8e3"
+glimmer-engine@^0.19.4:
+  version "0.19.4"
+  resolved "https://registry.yarnpkg.com/glimmer-engine/-/glimmer-engine-0.19.4.tgz#7dc29f30efa4ab4682e8131e0418dcc3ba3dc8e3"
   dependencies:
     broccoli-concat "^2.1.0"
     broccoli-funnel "^1.0.1"
@@ -4231,19 +4231,19 @@ minimist@^1.1.0, minimist@^1.1.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.0.tgz#a35008b20f41383eec1fb914f4cd5df79a264284"
 
-mkdirp@0.3.0, mkdirp@0.3.x:
+mkdirp@0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.0.tgz#1bbf5ab1ba827af23575143490426455f481fe1e"
+
+mkdirp@0.3.x, mkdirp@^0.3.5, mkdirp@~0.3.5:
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.5.tgz#de3e5f8961c88c787ee1368df849ac4413eca8d7"
 
 mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
-
-mkdirp@^0.3.5, mkdirp@~0.3.5:
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.5.tgz#de3e5f8961c88c787ee1368df849ac4413eca8d7"
 
 mkdirp@~0.4.0:
   version "0.4.2"
