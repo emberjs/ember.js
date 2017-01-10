@@ -64,12 +64,16 @@ if [[ -n $BUILD_TYPE ]]; then
 fi
 
 #### NPM PUBLISHING
-if [[ "$TRAVIS_TAG" != "" ]]; then
+
+if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+$ ]]; then
+  echo -e "Publishing to npm...\n"
+
   echo $NPM_AUTH_TOKEN > ~/.npmrc
+
   if [[ "$CHANNEL" == "release" ]]; then
-    echo "npm publish"
+    npm publish
   else
-    echo "npm publish --tag $CHANNEL"
+    npm publish --tag $CHANNEL
   fi
 fi
 
@@ -88,10 +92,10 @@ git remote add origin https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_
 git add -A
 git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/commit/${TRAVIS_COMMIT}."
 
-if [[ "$TRAVIS_TAG" != "" ]]; then
-  echo -e "Creating tag $TRAVIS_TAG"
-  git tag $TRAVIS_TAG
-  PUSH_TARGET=$TRAVIS_TAG
+if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+$ ]]; then
+  echo -e "Creating tag ${TRAVIS_TAG:1}"
+  git tag ${TRAVIS_TAG:1}
+  PUSH_TARGET=${TRAVIS_TAG:1}
 fi
 
 echo -e "PUSH_TARGET: ${PUSH_TARGET}\n"
