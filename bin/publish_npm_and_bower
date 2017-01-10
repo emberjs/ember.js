@@ -77,6 +77,18 @@ if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+$ ]]; then
   fi
 fi
 
+#### RUBYGEMS PUBLISHING
+
+if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+$ ]]; then
+  echo -e "Publishing to RubyGems...\n"
+
+  mkdir -p ~/.gem
+  echo $RUBYGEMS_AUTH_TOKEN > ~/.gem/credentials
+
+  gem build ember-source.gemspec
+  gem push ember-source-${TRAVIS_TAG:1}.gem
+fi
+
 #### BOWER PUBLISHING
 
 # Sending output to /dev/null to prevent GH_TOKEN leak on error.
