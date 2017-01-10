@@ -15,7 +15,6 @@ function add(paths, name, path) {
 
 add(paths, 'prod',  'vendor/ember/ember.prod.js');
 add(paths, 'debug', 'vendor/ember/ember.debug.js');
-add(paths, 'shims', 'vendor/ember/shims.js');
 add(paths, 'jquery', 'vendor/ember/jquery/jquery.js');
 
 add(absolutePaths, 'templateCompiler', __dirname + '/dist/ember-template-compiler.js');
@@ -60,14 +59,8 @@ module.exports = {
       ]
     });
 
-    var shims = stew.find(__dirname + '/vendor/ember', {
-      destDir: 'ember',
-      files: [ 'shims.js' ]
-    });
-
     return stew.find([
       ember,
-      shims,
       jquery
     ]);
   }
