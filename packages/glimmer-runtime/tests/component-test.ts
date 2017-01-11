@@ -72,7 +72,7 @@ QUnit.test('creating a new component', assert => {
 
 QUnit.test('the component class is its context', assert => {
   env.registerBasicComponent('my-component', MyComponent, '<div><p>{{testing}}</p>{{yield}}</div>');
-  let template = compile("<my-component color='{{color}}'>hello!</my-component>");
+  let template = compile("<my-component @color={{color}} color='{{color}}'>hello!</my-component>");
   render(template, { color: 'red' });
 
   equalTokens(root, "<div color='red'><p>123</p>hello!</div>");
