@@ -93,7 +93,8 @@ module.exports = function(_options) {
     include: ['**/*.ts'],
     exclude: [
       '**/*.d.ts',
-      '*/node_modules/**'
+      '*/node_modules/**',
+      '@glimmer/*/node_modules/**'
     ]
   });
 
@@ -106,7 +107,7 @@ module.exports = function(_options) {
   var jsTree = typescript(tsTree, tsOptions);
 
   var libTree = find(jsTree, {
-    include: ['*/index.js', '*/lib/**/*.js']
+    include: ['*/index.js', '@glimmer/*/index.js', '@glimmer/*/lib/**/*.js']
   });
 
   libTree = merge([libTree, HTMLTokenizer, handlebarsInlinedTrees.compiler]);
@@ -151,24 +152,24 @@ module.exports = function(_options) {
   var glimmerCommon = find(libTree, {
     include: [
       'glimmer/**/*.js',
-      'glimmer-object/**/*.js',
-      'glimmer-object-model/**/*.js',
-      'glimmer-object-reference/**/*.js',
-      'glimmer-reference/**/*.js',
-      'glimmer-util/**/*.js',
-      'glimmer-wire-format/**/*.js'
+      '@glimmer/object/**/*.js',
+      '@glimmer/object-model/**/*.js',
+      '@glimmer/object-reference/**/*.js',
+      '@glimmer/reference/**/*.js',
+      '@glimmer/util/**/*.js',
+      '@glimmer/wire-format/**/*.js'
     ]
   });
 
   var glimmerRuntime = find(libTree, {
-    include: ['glimmer-runtime/**/*', 'glimmer-public-runtime/**/*']
+    include: ['@glimmer/runtime/**/*', '@glimmer/public-runtime/**/*']
   });
 
   var glimmerCompiler = merge([
     find(libTree, {
       include: [
-        'glimmer-syntax/**/*.js',
-        'glimmer-compiler/**/*.js',
+        '@glimmer/syntax/**/*.js',
+        '@glimmer/compiler/**/*.js',
         'simple-html-tokenizer/**/*.js',
         'handlebars.js',
         'handlebars/**/*.js'
@@ -179,7 +180,7 @@ module.exports = function(_options) {
   var glimmerDemos = merge([
     find(libTree, {
       include: [
-        'glimmer-test-helpers/**/*.js',
+        '@glimmer/test-helpers/**/*.js',
         'glimmer-demos/**/*.js',
       ]
     })
@@ -188,7 +189,7 @@ module.exports = function(_options) {
   var glimmerBenchmarks = merge([
     find(libTree, {
       include: [
-        'glimmer-test-helpers/**/*.js',
+        '@glimmer/test-helpers/**/*.js',
         'glimmer-benchmarks/**/*.js',
       ]
     })
@@ -196,8 +197,8 @@ module.exports = function(_options) {
 
   var glimmerTests = merge([
     transpiledTSLintTree,
-    find(jsTree, { include: ['*/tests/**/*.js'], exclude: ['glimmer-node/tests/**/*.js'] }),
-    find(jsTree, { include: ['glimmer-test-helpers/**/*.js'] })
+    find(jsTree, { include: ['*/tests/**/*.js', '@glimmer/*/tests/**/*.js'], exclude: ['glimmer-node/tests/**/*.js'] }),
+    find(jsTree, { include: ['@glimmer/test-helpers/**/*.js'] })
   ]);
 
   glimmerTests = transpile(glimmerTests, babelOptions, 'glimmer-tests');
