@@ -1,5 +1,5 @@
-import { LOGGER, Opaque, Option, Dict, Slice as ListSlice, initializeGuid, fillNulls } from 'glimmer-util';
-import { RevisionTag, VersionedPathReference } from 'glimmer-reference';
+import { LOGGER, Opaque, Option, Dict, Slice as ListSlice, initializeGuid, fillNulls } from '@glimmer/util';
+import { RevisionTag, VersionedPathReference } from '@glimmer/reference';
 import { VM, UpdatingVM } from './vm';
 import { CompiledExpression, CompiledArgs } from './compiled/expressions';
 import { NULL_REFERENCE, UNDEFINED_REFERENCE } from './references';

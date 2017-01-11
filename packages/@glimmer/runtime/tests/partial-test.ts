@@ -1,4 +1,4 @@
-import { Simple, Template, RenderResult } from "glimmer-runtime";
+import { Simple, Template, RenderResult } from "@glimmer/runtime";
 import {
   BasicComponent,
   EmberishCurlyComponent,
@@ -8,9 +8,9 @@ import {
   equalSnapshots,
   generateSnapshot,
   strip
-} from "glimmer-test-helpers";
-import { UpdatableReference } from "glimmer-object-reference";
-import { Opaque } from 'glimmer-util';
+} from "@glimmer/test-helpers";
+import { UpdatableReference } from "@glimmer/object-reference";
+import { Opaque } from '@glimmer/util';
 
 let env: TestEnvironment, root: Simple.Element, result: RenderResult, self: UpdatableReference<Opaque>;
 

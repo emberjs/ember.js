@@ -1,10 +1,10 @@
-import * as WireFormat from 'glimmer-wire-format';
+import * as WireFormat from '@glimmer/wire-format';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { CompiledExpression } from '../compiled/expressions';
 import CompiledValue from '../compiled/expressions/value';
 import CompiledHasBlock, { CompiledHasBlockParams } from '../compiled/expressions/has-block';
 import { BaselineSyntax } from '../scanner';
-import { LOGGER, Opaque, Option, dict, assert, unwrap, unreachable } from 'glimmer-util';
+import { LOGGER, Opaque, Option, dict, assert, unwrap, unreachable } from '@glimmer/util';
 import CompiledLookup, {
   CompiledSelf,
   CompiledSymbol,

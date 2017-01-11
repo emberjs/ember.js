@@ -1,9 +1,9 @@
 import { EMPTY_CACHE } from '../utils';
-import { DictSet, dict } from 'glimmer-util';
+import { DictSet, dict } from '@glimmer/util';
 import Meta from '../meta';
 import { PropertyReference } from './descriptors';
-import { VOLATILE_TAG, PathReference as IPathReference, Reference, RevisionTag } from 'glimmer-reference';
-import { Dict, HasGuid } from 'glimmer-util';
+import { VOLATILE_TAG, PathReference as IPathReference, Reference, RevisionTag } from '@glimmer/reference';
+import { Dict, HasGuid } from '@glimmer/util';
 
 class UnchainFromPath {
   private set: DictSet<PathReference<any> & HasGuid>;

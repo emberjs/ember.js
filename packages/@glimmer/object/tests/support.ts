@@ -1,5 +1,5 @@
-import { Mixin, Blueprint, toMixin } from 'glimmer-object';
-import { setProperty } from 'glimmer-object-reference';
+import { Mixin, Blueprint, toMixin } from '@glimmer/object';
+import { setProperty } from '@glimmer/object-reference';
 export { Mixin };
 
 export function get(obj, key) {

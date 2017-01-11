@@ -8,8 +8,8 @@ import { ElementOperations } from '../builder';
 import Bounds from '../bounds';
 import * as Simple from '../dom/interfaces';
 
-import { Destroyable, Opaque } from 'glimmer-util';
-import { PathReference, RevisionTag } from 'glimmer-reference';
+import { Destroyable, Opaque } from '@glimmer/util';
+import { PathReference, RevisionTag } from '@glimmer/reference';
 
 export type Component = Opaque;
 export type ComponentClass = any;

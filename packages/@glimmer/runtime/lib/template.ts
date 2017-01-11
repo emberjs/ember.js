@@ -1,10 +1,10 @@
 import {
   SerializedTemplateWithLazyBlock,
   SerializedTemplateBlock
-} from 'glimmer-wire-format';
-import { PathReference } from 'glimmer-reference';
-import { assign } from 'glimmer-util';
-import { SymbolTable } from 'glimmer-interfaces';
+} from '@glimmer/wire-format';
+import { PathReference } from '@glimmer/reference';
+import { assign } from '@glimmer/util';
+import { SymbolTable } from '@glimmer/interfaces';
 import { Environment, DynamicScope } from './environment';
 import { ElementStack } from './builder';
 import { VM } from './vm';

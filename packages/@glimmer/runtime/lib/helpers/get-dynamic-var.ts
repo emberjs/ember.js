@@ -1,9 +1,9 @@
 import { Helper, DynamicScope } from '../environment';
 import { PublicVM } from '../vm/append';
-import { SymbolTable } from 'glimmer-interfaces';
+import { SymbolTable } from '@glimmer/interfaces';
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { CONSTANT_TAG, RevisionTag, PathReference, UpdatableTag, combine } from 'glimmer-reference';
-import { Opaque } from 'glimmer-util';
+import { CONSTANT_TAG, RevisionTag, PathReference, UpdatableTag, combine } from '@glimmer/reference';
+import { Opaque } from '@glimmer/util';
 
 class DynamicVarReference implements PathReference<Opaque> {
   public tag: RevisionTag;

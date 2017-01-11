@@ -9,7 +9,7 @@ import {
   CompiledInPartialGetBlock
 } from '../../compiled/expressions/has-block';
 
-import { Option, Stack, Dict, Opaque, dict, expect } from 'glimmer-util';
+import { Option, Stack, Dict, Opaque, dict, expect } from '@glimmer/util';
 import { expr } from '../../syntax/functions';
 import { Constants, Slice } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
@@ -17,7 +17,7 @@ import { CompiledExpression } from '../expressions';
 import { ComponentDefinition } from '../../component/interfaces';
 import { PartialDefinition } from '../../partial';
 import Environment, { Program } from '../../environment';
-import { SymbolTable } from 'glimmer-interfaces';
+import { SymbolTable } from '@glimmer/interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
 import { BaselineSyntax, InlineBlock, Template } from '../../scanner';

@@ -1,8 +1,8 @@
 import { CompiledExpression } from '../expressions';
-import { FIXME } from 'glimmer-util';
+import { FIXME } from '@glimmer/util';
 import VM from '../../vm/append';
-import { PathReference, CachedReference, RevisionTag, combineTagged } from 'glimmer-reference';
-import { Option, Opaque } from 'glimmer-util';
+import { PathReference, CachedReference, RevisionTag, combineTagged } from '@glimmer/reference';
+import { Option, Opaque } from '@glimmer/util';
 
 export default class CompiledConcat {
   public type = "concat";

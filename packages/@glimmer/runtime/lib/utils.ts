@@ -1,4 +1,4 @@
-import { Option, Dict, dict } from 'glimmer-util';
+import { Option, Dict, dict } from '@glimmer/util';
 
 const HAS_NATIVE_WEAKMAP = (function() {
   // detect if `WeakMap` is even present

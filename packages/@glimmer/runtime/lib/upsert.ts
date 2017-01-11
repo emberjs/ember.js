@@ -1,4 +1,4 @@
-import { Opaque, unreachable } from 'glimmer-util';
+import { Opaque, unreachable } from '@glimmer/util';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import * as Simple from './dom/interfaces';
 import { FIX_REIFICATION } from './dom/interfaces';

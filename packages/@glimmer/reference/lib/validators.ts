@@ -1,5 +1,5 @@
 import Reference, { PathReference } from './reference';
-import { Opaque, Option, Slice, LinkedListNode } from 'glimmer-util';
+import { Opaque, Option, Slice, LinkedListNode } from '@glimmer/util';
 
 //////////
 

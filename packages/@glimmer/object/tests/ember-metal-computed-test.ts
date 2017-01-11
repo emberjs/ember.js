@@ -1,5 +1,5 @@
 import { Mixin, get, set, mixin } from './support';
-import { computed } from 'glimmer-object';
+import { computed } from '@glimmer/object';
 
 function K() { return this; }
 

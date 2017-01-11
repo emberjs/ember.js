@@ -1,5 +1,5 @@
 import { get, mixin } from './support';
-import { Mixin } from 'glimmer-object';
+import { Mixin } from '@glimmer/object';
 
 QUnit.module('Mixin.concatenatedProperties');
 

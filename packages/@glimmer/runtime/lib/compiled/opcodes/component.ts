@@ -5,7 +5,7 @@ import { UpdatingVM } from '../../vm';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
-import { CONSTANT_TAG, ReferenceCache, combine, isConst, RevisionTag } from 'glimmer-reference';
+import { CONSTANT_TAG, ReferenceCache, combine, isConst, RevisionTag } from '@glimmer/reference';
 import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
 
 APPEND_OPCODES.add(Op.PutDynamicComponent, vm => {

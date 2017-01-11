@@ -1,6 +1,6 @@
 import { Bounds, ConcreteBounds } from '../bounds';
 import { moveNodesBefore, DOMChanges, DOMTreeConstruction } from '../dom/helper';
-import { Option } from 'glimmer-util';
+import { Option } from '@glimmer/util';
 
 interface Wrapper {
   depth: number;

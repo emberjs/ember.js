@@ -1,7 +1,7 @@
 import { Environment } from './environment';
-import { SymbolTable } from 'glimmer-interfaces';
+import { SymbolTable } from '@glimmer/interfaces';
 import { CompiledProgram } from './compiled/blocks';
-import { Maybe, Option } from 'glimmer-util';
+import { Maybe, Option } from '@glimmer/util';
 
 import {
   BaselineSyntax,
@@ -29,7 +29,7 @@ import OpcodeBuilderDSL from './compiled/opcodes/builder';
 
 import * as Component from './component/interfaces';
 
-import * as WireFormat from 'glimmer-wire-format';
+import * as WireFormat from '@glimmer/wire-format';
 
 export interface CompilableLayout {
   compile(builder: Component.ComponentLayoutBuilder): void;

@@ -10,11 +10,11 @@ import {
   ReferenceIterator,
   IteratorSynchronizer,
   IteratorSynchronizerDelegate
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
-import { UpdatableReference } from 'glimmer-object-reference';
+import { UpdatableReference } from '@glimmer/object-reference';
 
-import { Opaque, LinkedList, ListNode, dict } from 'glimmer-util';
+import { Opaque, LinkedList, ListNode, dict } from '@glimmer/util';
 
 QUnit.module("Reference iterables");
 

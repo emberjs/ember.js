@@ -1,5 +1,5 @@
 import { CONSTANT_TAG, VersionedReference, RevisionTag } from './validators';
-import { Opaque } from 'glimmer-util';
+import { Opaque } from '@glimmer/util';
 
 export class ConstReference<T> implements VersionedReference<T> {
   public tag: RevisionTag = CONSTANT_TAG;

@@ -1,5 +1,5 @@
-import GlimmerObject, { computed } from 'glimmer-object';
-import { UpdatableReference, metaFor, setProperty } from 'glimmer-object-reference';
+import GlimmerObject, { computed } from '@glimmer/object';
+import { UpdatableReference, metaFor, setProperty } from '@glimmer/object-reference';
 
 let Wrapper = <any>GlimmerObject.extend({
   fullName: computed(function() {

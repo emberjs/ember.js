@@ -3,7 +3,7 @@
 // current impl doesn't care about the differences as much...
 
 import { mixin } from './support';
-import { Mixin } from 'glimmer-object';
+import { Mixin } from '@glimmer/object';
 
 let PrivateProperty = Mixin.create({
   _foo: '_FOO'

@@ -1,5 +1,5 @@
 import { VersionedPathReference } from './validators';
-import { Opaque } from 'glimmer-util';
+import { Opaque } from '@glimmer/util';
 
 export function referenceFromParts(root: VersionedPathReference<Opaque>, parts: string[]): VersionedPathReference<Opaque> {
   let reference = root;

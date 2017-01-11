@@ -1,5 +1,5 @@
 import { Option, Dict } from '../core';
-import { TemplateMeta } from 'glimmer-wire-format';
+import { TemplateMeta } from '@glimmer/wire-format';
 
 
 export interface Symbols {

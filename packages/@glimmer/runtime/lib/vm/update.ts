@@ -1,7 +1,7 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { DestroyableBounds, clear, move as moveBounds } from '../bounds';
 import { ElementStack, Tracker, UpdatableTracker } from '../builder';
-import { LOGGER, Option, Opaque, Stack, LinkedList, Dict, dict, expect } from 'glimmer-util';
+import { LOGGER, Option, Opaque, Stack, LinkedList, Dict, dict, expect } from '@glimmer/util';
 import {
   ConstReference,
   PathReference,
@@ -16,7 +16,7 @@ import {
   combineSlice,
   CONSTANT_TAG,
   INITIAL
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { Constants, OpcodeJSON, UpdatingOpcode, UpdatingOpSeq, Slice } from '../opcodes';
 import { DOMChanges } from '../dom/helper';

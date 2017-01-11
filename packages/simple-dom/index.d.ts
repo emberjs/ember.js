@@ -1,5 +1,5 @@
-import { Simple } from 'glimmer-runtime';
-import { Dict } from 'glimmer-util';
+import { Simple } from '@glimmer/runtime';
+import { Dict } from '@glimmer/util';
 
 interface DocumentConstructor {
   new(): Document;

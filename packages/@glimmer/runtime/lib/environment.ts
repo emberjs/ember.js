@@ -1,5 +1,5 @@
-import { SymbolTable } from 'glimmer-interfaces';
-import { A } from 'glimmer-util';
+import { SymbolTable } from '@glimmer/interfaces';
+import { A } from '@glimmer/util';
 
 import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
@@ -7,7 +7,7 @@ import { Constants, AppendOpcode } from './opcodes';
 
 import * as Simple from './dom/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
-import { Reference, PathReference, OpaqueIterable } from 'glimmer-reference';
+import { Reference, PathReference, OpaqueIterable } from '@glimmer/reference';
 import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import {
   defaultManagers,
@@ -36,11 +36,11 @@ import {
   ensureGuid,
   expect,
   assert
-} from 'glimmer-util';
+} from '@glimmer/util';
 
 import {
   TemplateMeta
-} from 'glimmer-wire-format';
+} from '@glimmer/wire-format';
 
 import { EvaluatedArgs } from './compiled/expressions/args';
 

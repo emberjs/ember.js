@@ -1,5 +1,5 @@
 import VM from '../vm/append';
-import { PathReference } from 'glimmer-reference';
+import { PathReference } from '@glimmer/reference';
 
 export { CompiledArgs } from './expressions/args';
 

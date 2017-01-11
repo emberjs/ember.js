@@ -3,7 +3,7 @@ import { VM, UpdatingVM } from '../../vm';
 import * as Simple from '../../dom/interfaces';
 import { FIX_REIFICATION } from '../../dom/interfaces';
 import { Environment } from '../../environment';
-import { FIXME, Option, Opaque, Dict, unwrap, expect } from 'glimmer-util';
+import { FIXME, Option, Opaque, Dict, unwrap, expect } from '@glimmer/util';
 import {
   CachedReference,
   Reference,
@@ -14,7 +14,7 @@ import {
   combineTagged,
   isConst as isConstReference,
   isModified
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 import { ModifierManager } from '../../modifier/interfaces';
 import { NULL_REFERENCE, PrimitiveReference } from '../../references';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';

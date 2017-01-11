@@ -1,5 +1,5 @@
 import Meta from '../meta';
-import { Reference, VOLATILE_TAG, RevisionTag } from 'glimmer-reference';
+import { Reference, VOLATILE_TAG, RevisionTag } from '@glimmer/reference';
 import { NotifiableReference } from '../types';
 
 export interface InnerReferenceFactory<T> {

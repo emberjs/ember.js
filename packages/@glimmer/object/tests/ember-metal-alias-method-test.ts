@@ -1,5 +1,5 @@
 import { Mixin, get, mixin } from './support';
-import { aliasMethod } from 'glimmer-object';
+import { aliasMethod } from '@glimmer/object';
 
 QUnit.module('Mixin.aliasMethod');
 

@@ -2,8 +2,8 @@ import { UNDEFINED_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
 import { EMPTY_ARRAY } from '../../utils';
-import { PathReference, RevisionTag, combineTagged } from 'glimmer-reference';
-import { Opaque } from 'glimmer-util';
+import { PathReference, RevisionTag, combineTagged } from '@glimmer/reference';
+import { Opaque } from '@glimmer/util';
 
 export class CompiledPositionalArgs {
   static create(values: CompiledExpression<Opaque>[]): CompiledPositionalArgs {

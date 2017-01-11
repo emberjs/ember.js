@@ -1,5 +1,5 @@
-import { Opaque, Dict, Set } from 'glimmer-util';
-import { Reference, PathReference } from 'glimmer-reference';
+import { Opaque, Dict, Set } from '@glimmer/util';
+import { Reference, PathReference } from '@glimmer/reference';
 
 export interface NotifiableReference<T> extends Reference<T> {
   // notify();

@@ -1,4 +1,4 @@
-import { ComputedReferenceBlueprint, Meta } from 'glimmer-object-reference';
+import { ComputedReferenceBlueprint, Meta } from '@glimmer/object-reference';
 import { EMPTY_CACHE, ClassMeta } from './object';
 import { Descriptor, Blueprint } from './mixin';
 

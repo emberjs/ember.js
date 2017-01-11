@@ -1,6 +1,6 @@
-import { compile } from "glimmer-test-helpers";
-import { TestEnvironment } from "glimmer-test-helpers";
-import { precompile } from "glimmer-compiler";
+import { compile } from "@glimmer/test-helpers";
+import { TestEnvironment } from "@glimmer/test-helpers";
+import { precompile } from "@glimmer/compiler";
 
 let env: TestEnvironment;
 

@@ -1,5 +1,5 @@
-import { preprocess } from "glimmer-syntax";
-import { TemplateVisitor } from "glimmer-compiler";
+import { preprocess } from "@glimmer/syntax";
+import { TemplateVisitor } from "@glimmer/compiler";
 
 function actionsEqual(input, expectedActions) {
   let ast = preprocess(input);

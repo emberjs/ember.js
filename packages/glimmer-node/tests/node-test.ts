@@ -1,10 +1,10 @@
 import * as SimpleDOM from 'simple-dom';
 
-import { TestEnvironment, TestDynamicScope } from "glimmer-test-helpers/lib/environment";
-import { Template, Simple } from 'glimmer-runtime';
-import { precompile } from 'glimmer-compiler';
-import { UpdatableReference } from 'glimmer-object-reference';
-import NodeDOMTreeConstruction from 'glimmer-node/lib/node-dom-helper';
+import { TestEnvironment, TestDynamicScope } from '@glimmer/test-helpers/lib/environment';
+import { Template, Simple } from '@glimmer/runtime';
+import { precompile } from '@glimmer/compiler';
+import { UpdatableReference } from '@glimmer/object-reference';
+import NodeDOMTreeConstruction from '@glimmer/node/lib/node-dom-helper';
 
 let voidMap = SimpleDOM.voidMap;
 

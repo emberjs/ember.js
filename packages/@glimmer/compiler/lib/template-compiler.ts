@@ -1,8 +1,8 @@
 import TemplateVisitor, { SymbolTable } from "./template-visitor";
 import JavaScriptCompiler, { Template } from "./javascript-compiler";
-import { getAttrNamespace } from "glimmer-util";
-import { assert } from "glimmer-util";
-import { TemplateMeta } from "glimmer-wire-format";
+import { getAttrNamespace } from "@glimmer/util";
+import { assert } from "@glimmer/util";
+import { TemplateMeta } from "@glimmer/wire-format";
 
 export interface CompileOptions<T extends TemplateMeta> {
   meta?: T;
