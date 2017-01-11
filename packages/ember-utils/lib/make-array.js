@@ -1,4 +1,4 @@
-const isArray = Array.isArray;
+const { isArray } = Array;
 
 /**
  Forces the passed object to be part of an array. If the object is already

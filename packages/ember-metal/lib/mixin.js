@@ -45,7 +45,7 @@ ROOT.__hasSuper = false;
 
 const a_slice = Array.prototype.slice;
 const a_concat = Array.prototype.concat;
-const isArray = Array.isArray;
+const { isArray } = Array;
 
 function isMethod(obj) {
   return 'function' === typeof obj &&
