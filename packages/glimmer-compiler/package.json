@@ -14,9 +14,9 @@
     "dist"
   ],
   "dependencies": {
-    "glimmer-syntax": "^0.5.3",
-    "glimmer-util": "^0.5.3",
-    "glimmer-wire-format": "^0.5.3",
+    "@glimmer/syntax": "^0.5.3",
+    "@glimmer/util": "^0.5.3",
+    "@glimmer/wire-format": "^0.5.3",
     "simple-html-tokenizer": "^0.2.5"
   },
   "devDependencies": {

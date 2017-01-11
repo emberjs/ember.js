@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "glimmer-util": "^0.5.3"
+    "@glimmer/util": "^0.5.3"
   },
   "files": [
     "dist"
