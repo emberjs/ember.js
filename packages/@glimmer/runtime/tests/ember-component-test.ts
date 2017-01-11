@@ -96,9 +96,10 @@ export function assertAppended(content: string) {
 
 function assertText(expected: string) {
   let rawText = document.querySelector('#qunit-fixture').innerText;
-  let text = rawText.split(/[\r\n]/g)
-             .map((part) => part.trim())
-             .filter((part) => part !== '').join(' ');
+  let text = rawText.split(/[\r\n]/g).map((part) => {
+               let p = part.replace(/\s+/g, ' ');
+               return p.trim();
+             }).filter((part) => part !== '').join(' ');
   QUnit.assert.strictEqual(text, expected, `#qunit-fixture content should be: \`${expected}\``);
 }
 
@@ -386,14 +387,6 @@ function glimmerTag(tagName: string, { blockParams = null, attributes = {}, args
   } else {
     return `<${tag} />`;
   }
-}
-
-function assertText(expected: string) {
-  let rawText = document.querySelector('#qunit-fixture').innerText;
-  let text = rawText.split(/[\r\n]/g)
-             .map((part) => part.trim())
-             .filter((part) => part !== '').join(' ');
-  QUnit.assert.strictEqual(text, expected, `#qunit-fixture content should be: \`${expected}\``);
 }
 
 function assertExpected(tagName: string, expected: string | Expected, defaultAttrs: Object = {}) {
