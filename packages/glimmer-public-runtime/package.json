@@ -1,5 +1,5 @@
 {
-  "name": "glimmer-public-runtime",
+  "name": "@glimmer/public-runtime",
   "version": "0.5.3",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
@@ -16,11 +16,11 @@
     "index.ts"
   ],
   "dependencies": {
-    "glimmer-runtime": "^0.5.3",
-    "glimmer-util": "^0.5.3",
-    "glimmer-reference": "^0.5.3",
-    "glimmer-wire-format": "^0.5.3",
-    "glimmer-interfaces": "^0.5.3"
+    "@glimmer/runtime": "^0.5.3",
+    "@glimmer/util": "^0.5.3",
+    "@glimmer/reference": "^0.5.3",
+    "@glimmer/wire-format": "^0.5.3",
+    "@glimmer/interfaces": "^0.5.3"
   },
   "devDependencies": {
     "typescript": "^2.1.4"

@@ -1,5 +1,5 @@
 {
-  "name": "glimmer-object",
+  "name": "@glimmer/object",
   "version": "0.5.3",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
@@ -14,8 +14,8 @@
     "dist"
   ],
   "dependencies": {
-    "glimmer-object-reference": "^0.5.3",
-    "glimmer-util": "^0.5.3"
+    "@glimmer/object-reference": "^0.5.3",
+    "@glimmer/util": "^0.5.3"
   },
   "devDependencies": {
     "typescript": "^2.1.4"
