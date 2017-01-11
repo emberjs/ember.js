@@ -197,7 +197,7 @@ module.exports = function(_options) {
 
   var glimmerTests = merge([
     transpiledTSLintTree,
-    find(jsTree, { include: ['*/tests/**/*.js', '@glimmer/*/tests/**/*.js'], exclude: ['glimmer-node/tests/**/*.js'] }),
+    find(jsTree, { include: ['*/tests/**/*.js', '@glimmer/*/tests/**/*.js'], exclude: ['@glimmer/node/tests/**/*.js'] }),
     find(jsTree, { include: ['@glimmer/test-helpers/**/*.js'] })
   ]);
 

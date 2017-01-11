@@ -12,7 +12,7 @@ tap.done = function(results) {
   }
 }
 
-glob.sync('./dist/node_modules/glimmer-node/tests/**/*-test.js').forEach(function(file) {
+glob.sync('./dist/node_modules/@glimmer/node/tests/**/*-test.js').forEach(function(file) {
   require(path.resolve(file));
 });
 
