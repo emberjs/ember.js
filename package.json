@@ -34,7 +34,7 @@
     "broccoli-tslinter": "^2.0.0",
     "broccoli-typescript-compiler": "^0.6.0",
     "broccoli-uglify-js": "~0.1.3",
-    "emberjs-build": "^0.15.0",
+    "emberjs-build": "chadhietala/emberjs-build#allow-interators",
     "exists-sync": "0.0.3",
     "git-repo-version": "^0.1.2",
     "handlebars": "^3.0.2",
