@@ -82,7 +82,7 @@ QUnit.test('the component class is its context', assert => {
 
 QUnit.test('attrs are available in the layout', assert => {
   env.registerBasicComponent('my-component', MyComponent, '<div><p>{{attrs.color}}</p>{{yield}}</div>');
-  let template = compile("<my-component color='{{color}}'>hello!</my-component>");
+  let template = compile("<my-component color='{{color}}' @color={{color}}>hello!</my-component>");
   render(template, { color: 'red' });
 
   equalTokens(root, "<div color='red'><p>red</p>hello!</div>");
