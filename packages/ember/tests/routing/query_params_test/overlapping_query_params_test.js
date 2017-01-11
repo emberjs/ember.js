@@ -1,4 +1,5 @@
 import { Controller } from 'ember-runtime';
+import { Route } from 'ember-routing';
 import { run, Mixin } from 'ember-metal';
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 
@@ -106,6 +107,20 @@ moduleFor('Query Params - overlapping query param property names', class extends
     });
   }
 
+  ['@test query params does not error when a query parameter exists for route instances that share a controller'](assert) {
+    assert.expect(1);
+
+    let parentController = Controller.extend({
+      queryParams: { page: 'page' }
+    });
+    this.registerController('parent', parentController);
+    this.registerRoute('parent.child', Route.extend({controllerName: 'parent'}));
+
+    return this.setupBase('/parent').then(() => {
+      this.transitionTo('parent.child', { queryParams: { page: 2 } });
+      this.assertCurrentPath('/parent/child?page=2');
+    });
+  }
   ['@test query params in the same route hierarchy with the same url key get auto-scoped'](assert) {
     assert.expect(1);
 
