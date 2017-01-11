@@ -1,6 +1,6 @@
 import { Scope, Environment, Opcode } from '../environment';
-import { Reference, PathReference, ReferenceIterator } from 'glimmer-reference';
-import { TRUST, Option, unwrap, expect } from 'glimmer-util';
+import { Reference, PathReference, ReferenceIterator } from '@glimmer/reference';
+import { TRUST, Option, unwrap, expect } from '@glimmer/util';
 import { InlineBlock } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { Slice } from '../opcodes';

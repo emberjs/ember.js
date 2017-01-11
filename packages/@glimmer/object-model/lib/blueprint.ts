@@ -1,4 +1,4 @@
-import { Opaque } from 'glimmer-util';
+import { Opaque } from '@glimmer/util';
 import { classMeta } from './reference';
 import GlimmerObject from './object';
 

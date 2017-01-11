@@ -1,6 +1,6 @@
-import { alias } from 'glimmer-object';
-import { Reference } from 'glimmer-reference';
-import{ Meta } from 'glimmer-object-reference';
+import { alias } from '@glimmer/object';
+import { Reference } from '@glimmer/reference';
+import{ Meta } from '@glimmer/object-reference';
 import { get, set, defineProperty } from './support';
 
 let obj, count;

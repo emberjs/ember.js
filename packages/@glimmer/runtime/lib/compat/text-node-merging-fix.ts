@@ -1,6 +1,6 @@
 import { Bounds } from '../bounds';
 import { DOMChanges, DOMTreeConstruction } from '../dom/helper';
-import { Option } from 'glimmer-util';
+import { Option } from '@glimmer/util';
 
 // Patch:    Adjacent text node merging fix
 // Browsers: IE, Edge, Firefox w/o inspector open

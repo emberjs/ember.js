@@ -1,4 +1,4 @@
-import { TestEnvironment } from "glimmer-test-helpers";
+import { TestEnvironment } from "@glimmer/test-helpers";
 
 let env: TestEnvironment;
 

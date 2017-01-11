@@ -4,7 +4,7 @@ import {
   template,
   testModule,
   RenderingTest
-} from "glimmer-test-helpers";
+} from "@glimmer/test-helpers";
 
 @testModule('Static Content Tests')
 class StaticContentTests extends RenderingTest {

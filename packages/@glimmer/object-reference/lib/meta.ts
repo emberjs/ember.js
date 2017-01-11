@@ -2,7 +2,7 @@ import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
 import { MetaOptions } from './types';
 
-import { Dict, DictSet, HasGuid, Set, dict } from 'glimmer-util';
+import { Dict, DictSet, HasGuid, Set, dict } from '@glimmer/util';
 
 import {
   RootReferenceFactory,
@@ -11,7 +11,7 @@ import {
   RootReference as IRootReference
 } from './types';
 
-import { PathReference as IPathReference, VOLATILE_TAG } from 'glimmer-reference';
+import { PathReference as IPathReference, VOLATILE_TAG } from '@glimmer/reference';
 
 import { InnerReferenceFactory } from './references/descriptors';
 

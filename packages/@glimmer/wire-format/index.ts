@@ -1,4 +1,4 @@
-import { Dict, Option } from 'glimmer-util';
+import { Dict, Option } from '@glimmer/util';
 
 type JsonValue =
     string

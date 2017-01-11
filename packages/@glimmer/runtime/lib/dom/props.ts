@@ -1,5 +1,5 @@
-import { Opaque } from 'glimmer-util';
-import { Simple } from 'glimmer-interfaces';
+import { Opaque } from '@glimmer/util';
+import { Simple } from '@glimmer/interfaces';
 
 /*
  * @method normalizeProperty

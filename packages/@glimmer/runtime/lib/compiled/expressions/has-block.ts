@@ -1,5 +1,5 @@
-import { PathReference } from 'glimmer-reference';
-import { Option } from 'glimmer-util';
+import { PathReference } from '@glimmer/reference';
+import { Option } from '@glimmer/util';
 import VM from '../../vm/append';
 import { InlineBlock } from '../../scanner';
 import { CompiledExpression } from '../expressions';

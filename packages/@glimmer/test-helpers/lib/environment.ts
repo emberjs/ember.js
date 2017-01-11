@@ -54,7 +54,7 @@ import {
   Template,
   Layout,
   isComponentDefinition
-} from "glimmer-runtime";
+} from "@glimmer/runtime";
 
 import {
   compile as rawCompile,
@@ -69,9 +69,9 @@ import {
   assign,
   dict,
   unwrap
-} from 'glimmer-util';
+} from '@glimmer/util';
 
-import GlimmerObject, { GlimmerObjectFactory } from "glimmer-object";
+import GlimmerObject, { GlimmerObjectFactory } from "@glimmer/object";
 
 import {
   VOLATILE_TAG,
@@ -84,21 +84,21 @@ import {
   AbstractIterable,
   IterationItem,
   isConst
-} from "glimmer-reference";
+} from "@glimmer/reference";
 
 import {
   UpdatableReference
-} from "glimmer-object-reference";
+} from "@glimmer/object-reference";
 
 import {
   SymbolTable
-} from 'glimmer-interfaces';
+} from '@glimmer/interfaces';
 
-import * as WireFormat from 'glimmer-wire-format';
+import * as WireFormat from '@glimmer/wire-format';
 
 import {
   TemplateMeta,
-} from "glimmer-wire-format";
+} from "@glimmer/wire-format";
 
 type KeyFor<T> = (item: Opaque, index: T) => string;
 

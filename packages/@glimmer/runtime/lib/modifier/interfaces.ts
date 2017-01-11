@@ -1,7 +1,7 @@
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { DOMChanges } from '../dom/helper';
 import { DynamicScope } from '../environment';
-import { Destroyable } from 'glimmer-util';
+import { Destroyable } from '@glimmer/util';
 
 export interface ModifierManager<T> {
   // Create is meant to only produce the state bucket

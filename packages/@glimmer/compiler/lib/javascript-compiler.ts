@@ -1,5 +1,5 @@
-import { assert } from "glimmer-util";
-import { Stack, DictSet } from "glimmer-util";
+import { assert } from "@glimmer/util";
+import { Stack, DictSet } from "@glimmer/util";
 
 import {
   TemplateMeta,
@@ -12,7 +12,7 @@ import {
   Statements,
   Expression,
   Expressions
-} from 'glimmer-wire-format';
+} from '@glimmer/wire-format';
 
 export type str = string;
 export type Params = Core.Params;

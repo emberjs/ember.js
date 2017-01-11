@@ -1,4 +1,4 @@
-import { Opaque } from 'glimmer-util';
+import { Opaque } from '@glimmer/util';
 
 export interface Reference<T> {
   value(): T;

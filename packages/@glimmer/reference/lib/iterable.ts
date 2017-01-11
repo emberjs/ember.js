@@ -1,4 +1,4 @@
-import { LinkedList, ListNode, Opaque, Option, dict, expect } from 'glimmer-util';
+import { LinkedList, ListNode, Opaque, Option, dict, expect } from '@glimmer/util';
 import { VersionedPathReference as PathReference, RevisionTag } from './validators';
 
 export interface IterationItem<T, U> {

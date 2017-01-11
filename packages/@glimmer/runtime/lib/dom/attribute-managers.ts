@@ -1,4 +1,4 @@
-import { FIXME, Opaque, Option, Maybe } from 'glimmer-util';
+import { FIXME, Opaque, Option, Maybe } from '@glimmer/util';
 import { DOMNamespace } from './helper';
 import * as Simple from './interfaces';
 import {

@@ -1,6 +1,6 @@
-import { preprocess } from "glimmer-syntax";
+import { preprocess } from "@glimmer/syntax";
 import TemplateCompiler, { CompileOptions } from "./template-compiler";
-import { SerializedTemplateWithLazyBlock, TemplateJavascript } from "glimmer-wire-format";
+import { SerializedTemplateWithLazyBlock, TemplateJavascript } from "@glimmer/wire-format";
 
 export interface TemplateIdFn {
   (src: string): string;
@@ -44,7 +44,7 @@ const defaultId: () => TemplateIdFn = (() => {
  * Compile a string into a template javascript string.
  *
  * Example usage:
- *     import { precompile } from 'glimmer-compiler';
+ *     import { precompile } from '@glimmer/compiler';
  *     import { templateFactory } from 'glimer-runtime';
  *     let templateJs = precompile("Howdy {{name}}");
  *     let factory = templateFactory(new Function("return " + templateJs)());

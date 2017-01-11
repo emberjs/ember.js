@@ -1,8 +1,8 @@
-import { Opaque } from 'glimmer-util';
+import { Opaque } from '@glimmer/util';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
-import { PathReference } from 'glimmer-reference';
-import { referenceFromParts } from 'glimmer-reference';
+import { PathReference } from '@glimmer/reference';
+import { referenceFromParts } from '@glimmer/reference';
 
 export default class CompiledLookup extends CompiledExpression<Opaque> {
   public type = "lookup";

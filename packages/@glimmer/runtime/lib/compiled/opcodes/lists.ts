@@ -1,6 +1,6 @@
 import { EvaluatedArgs } from '../expressions/args';
-import { expect } from 'glimmer-util';
-import { RevisionTag, Reference, ConstReference, ReferenceIterator, IterationArtifacts } from 'glimmer-reference';
+import { expect } from '@glimmer/util';
+import { RevisionTag, Reference, ConstReference, ReferenceIterator, IterationArtifacts } from '@glimmer/reference';
 import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
 
 class IterablePresenceReference implements Reference<boolean> {

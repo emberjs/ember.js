@@ -1,8 +1,8 @@
-import { UNDEFINED_REFERENCE, EvaluatedArgs, Template, RenderResult, SafeString, PrimitiveReference, VM } from "glimmer-runtime";
-import { BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "glimmer-test-helpers";
-import { ConstReference, PathReference } from "glimmer-reference";
-import { UpdatableReference } from "glimmer-object-reference";
-import { Opaque } from "glimmer-util";
+import { UNDEFINED_REFERENCE, EvaluatedArgs, Template, RenderResult, SafeString, PrimitiveReference, VM } from "@glimmer/runtime";
+import { BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "@glimmer/test-helpers";
+import { ConstReference, PathReference } from "@glimmer/reference";
+import { UpdatableReference } from "@glimmer/object-reference";
+import { Opaque } from "@glimmer/util";
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';

@@ -2,7 +2,7 @@ import Bounds, { Cursor, DestroyableBounds, clear } from './bounds';
 
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 
-import { LOGGER, Option, Destroyable, Stack, LinkedList, LinkedListNode, assert, expect } from 'glimmer-util';
+import { LOGGER, Option, Destroyable, Stack, LinkedList, LinkedListNode, assert, expect } from '@glimmer/util';
 
 import { Environment } from './environment';
 
@@ -10,7 +10,7 @@ import { VM } from './vm';
 
 import {
   PathReference
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
 import {
   SimpleElementOperations

@@ -1,4 +1,4 @@
-import { FIXME, Option } from 'glimmer-util';
+import { FIXME, Option } from '@glimmer/util';
 export type FIX_REIFICATION<T> = FIXME<T, 'needs to be reified properly'>;
 
 export type Namespace =

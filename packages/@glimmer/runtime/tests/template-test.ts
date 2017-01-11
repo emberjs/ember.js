@@ -1,7 +1,7 @@
-import { TestEnvironment } from "glimmer-test-helpers";
-import { templateFactory } from "glimmer-runtime";
-import { precompile } from "glimmer-compiler";
-import { SerializedTemplateWithLazyBlock } from "glimmer-wire-format";
+import { TestEnvironment } from "@glimmer/test-helpers";
+import { templateFactory } from "@glimmer/runtime";
+import { precompile } from "@glimmer/compiler";
+import { SerializedTemplateWithLazyBlock } from "@glimmer/wire-format";
 
 let env: TestEnvironment;
 

@@ -16,15 +16,15 @@ import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression, CompiledArgs } from '../expressions';
 import { VM, UpdatingVM } from '../../vm';
 import { TryOpcode, VMState } from '../../vm/update';
-import { Reference, ReferenceCache, UpdatableTag, isModified, isConst, map } from 'glimmer-reference';
-import { FIXME, Option, Opaque, LinkedList, expect } from 'glimmer-util';
+import { Reference, ReferenceCache, UpdatableTag, isModified, isConst, map } from '@glimmer/reference';
+import { FIXME, Option, Opaque, LinkedList, expect } from '@glimmer/util';
 import { Cursor, clear } from '../../bounds';
 import { Fragment } from '../../builder';
 import OpcodeBuilderDSL from './builder';
 import { ConditionalReference } from '../../references';
 import { Environment } from '../../environment';
 import { UpdatableBlockTracker } from '../../builder';
-import { SymbolTable } from 'glimmer-interfaces';
+import { SymbolTable } from '@glimmer/interfaces';
 import { APPEND_OPCODES, OpcodeName as Op, Slice } from '../../opcodes';
 
 APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: append }) => {

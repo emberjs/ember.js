@@ -2,8 +2,8 @@ import { UNDEFINED_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
 import { EMPTY_ARRAY, EMPTY_DICT } from '../../utils';
-import { PathReference, RevisionTag, combineTagged } from 'glimmer-reference';
-import { Option, Dict, Opaque, assert, dict } from 'glimmer-util';
+import { PathReference, RevisionTag, combineTagged } from '@glimmer/reference';
+import { Option, Dict, Opaque, assert, dict } from '@glimmer/util';
 
 export class CompiledNamedArgs {
   static empty(): CompiledNamedArgs {

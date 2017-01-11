@@ -1,6 +1,6 @@
-import { TestEnvironment, TestDynamicScope, normalizeInnerHTML, getTextContent, equalTokens } from "glimmer-test-helpers";
-import { Template, Simple, AttributeManager } from 'glimmer-runtime';
-import { UpdatableReference } from 'glimmer-object-reference';
+import { TestEnvironment, TestDynamicScope, normalizeInnerHTML, getTextContent, equalTokens } from "@glimmer/test-helpers";
+import { Template, Simple, AttributeManager } from '@glimmer/runtime';
+import { UpdatableReference } from '@glimmer/object-reference';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';

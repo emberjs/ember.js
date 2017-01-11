@@ -1,7 +1,7 @@
-import * as WireFormat from 'glimmer-wire-format';
+import * as WireFormat from '@glimmer/wire-format';
 import { BaselineSyntax } from '../scanner';
-import { dict, assert } from 'glimmer-util';
-import { SymbolTable } from 'glimmer-interfaces';
+import { dict, assert } from '@glimmer/util';
+import { SymbolTable } from '@glimmer/interfaces';
 
 export type Syntax = BaselineSyntax.AnyStatement;
 export type Name = BaselineSyntax.AnyStatement[0];

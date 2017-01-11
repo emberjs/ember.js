@@ -1,4 +1,4 @@
-import EmberObject from 'glimmer-object';
+import EmberObject from '@glimmer/object';
 
 function get(obj, key) {
   return obj[key];

@@ -2,8 +2,8 @@ import {
   Meta,
   InnerReferenceFactory,
   PropertyReference
-} from 'glimmer-object-reference';
-import { Dict, dict, assign, initializeGuid } from 'glimmer-util';
+} from '@glimmer/object-reference';
+import { Dict, dict, assign, initializeGuid } from '@glimmer/util';
 import {
   Mixin,
   extend as extendClass,

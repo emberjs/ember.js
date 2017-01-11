@@ -9,11 +9,11 @@ import {
   CachedReference,
 
   combine
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
 import {
   dict
-} from 'glimmer-util';
+} from '@glimmer/util';
 
 class UpdatableReference<T> implements Reference<T> {
   public tag: RevisionTag;

@@ -1,6 +1,6 @@
 import EmberObject, {
   alias
-} from "glimmer-object";
+} from "@glimmer/object";
 
 import {
   Template,
@@ -21,11 +21,11 @@ import {
   classes,
   equalTokens,
   stripTight
- } from "glimmer-test-helpers";
+ } from "@glimmer/test-helpers";
 
-import { assign } from "glimmer-util";
+import { assign } from "@glimmer/util";
 
-import { CLASS_META, UpdatableReference, setProperty as set } from 'glimmer-object-reference';
+import { CLASS_META, UpdatableReference, setProperty as set } from '@glimmer/object-reference';
 
 export class EmberishRootView extends EmberObject {
   private parent: Element;

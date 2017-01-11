@@ -1,4 +1,4 @@
-import { preprocess as parse, Walker } from 'glimmer-syntax';
+import { preprocess as parse, Walker } from '@glimmer/syntax';
 
 QUnit.module('[glimmer-syntax] Plugins - AST Transforms');
 

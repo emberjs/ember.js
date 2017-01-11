@@ -1,5 +1,5 @@
 import * as Simple from './dom/interfaces';
-import { Option, Destroyable } from 'glimmer-util';
+import { Option, Destroyable } from '@glimmer/util';
 
 export interface Bounds {
   // a method to future-proof for wormholing; may not be needed ultimately

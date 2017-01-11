@@ -1,4 +1,4 @@
-import { Option, LinkedList } from 'glimmer-util';
+import { Option, LinkedList } from '@glimmer/util';
 import Environment from '../environment';
 import { DestroyableBounds, clear } from '../bounds';
 import UpdatingVM, { ExceptionHandler } from './update';

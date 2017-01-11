@@ -1,5 +1,5 @@
-import { CLASS_META } from 'glimmer-object-reference';
-import { Dict, dict, assign } from 'glimmer-util';
+import { CLASS_META } from '@glimmer/object-reference';
+import { Dict, dict, assign } from '@glimmer/util';
 import GlimmerObject, {
   GlimmerObjectFactory,
   ClassMeta,

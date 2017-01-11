@@ -1,5 +1,5 @@
 import { parse as handlebarsParse } from "handlebars/compiler/base";
-import { preprocess as parse, builders as b } from "glimmer-syntax";
+import { preprocess as parse, builders as b } from "@glimmer/syntax";
 
 import { astEqual } from "./support";
 

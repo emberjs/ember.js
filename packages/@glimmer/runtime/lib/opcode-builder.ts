@@ -8,11 +8,11 @@ import {
 
 import { BaselineSyntax, InlineBlock } from './scanner';
 
-import { SymbolTable } from 'glimmer-interfaces';
+import { SymbolTable } from '@glimmer/interfaces';
 
 import {
   Opaque
-} from 'glimmer-util';
+} from '@glimmer/util';
 
 export type StaticDefinition = ComponentDefinition<Opaque>;
 export type DynamicDefinition = FunctionExpression<ComponentDefinition<Opaque>>;

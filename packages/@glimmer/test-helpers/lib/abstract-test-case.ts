@@ -1,10 +1,10 @@
-import { PathReference, Tagged, Revision, RevisionTag, DirtyableTag } from 'glimmer-reference';
-import { Template, RenderResult, Simple } from 'glimmer-runtime';
+import { PathReference, Tagged, Revision, RevisionTag, DirtyableTag } from '@glimmer/reference';
+import { Template, RenderResult, Simple } from '@glimmer/runtime';
 import {
   TestEnvironment,
   TestDynamicScope
 } from './environment';
-import { Opaque } from 'glimmer-util';
+import { Opaque } from '@glimmer/util';
 import { assign } from './helpers';
 
 export function skip(target: Object, name: string, descriptor: PropertyDescriptor) {

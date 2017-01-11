@@ -3,7 +3,7 @@ import {
   stripTight,
   equalsElement,
   EmberishCurlyComponent
- } from "glimmer-test-helpers";
+ } from "@glimmer/test-helpers";
 
 import {
   assertAppended,
@@ -11,7 +11,7 @@ import {
   EmberishRootView
 } from './ember-component-test';
 
-import { CLASS_META, setProperty as set } from 'glimmer-object-reference';
+import { CLASS_META, setProperty as set } from '@glimmer/object-reference';
 
 let view, env;
 

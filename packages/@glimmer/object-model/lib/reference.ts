@@ -8,9 +8,9 @@ import {
   VersionedPathReference,
   RevisionTag,
   combine
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
-import { Opaque, Option } from 'glimmer-util';
+import { Opaque, Option } from '@glimmer/util';
 
 const META = new WeakMap();
 const CLASS_META = new WeakMap();

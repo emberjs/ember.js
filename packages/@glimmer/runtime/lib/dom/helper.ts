@@ -13,7 +13,7 @@ import {
 } from '../compat/text-node-merging-fix';
 import * as Simple from './interfaces';
 
-import { Option } from 'glimmer-util';
+import { Option } from '@glimmer/util';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 

@@ -1,5 +1,5 @@
-import EmberObject, { Mixin, computed } from 'glimmer-object';
-import { strip } from 'glimmer-test-helpers';
+import EmberObject, { Mixin, computed } from '@glimmer/object';
+import { strip } from '@glimmer/test-helpers';
 
 let moduleOptions;
 

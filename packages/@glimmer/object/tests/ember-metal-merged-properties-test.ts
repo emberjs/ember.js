@@ -1,4 +1,4 @@
-import EmberObject, { Mixin } from 'glimmer-object';
+import EmberObject, { Mixin } from '@glimmer/object';
 import { get, mixin } from './support';
 
 QUnit.module('Mixin.create - mergedProperties');

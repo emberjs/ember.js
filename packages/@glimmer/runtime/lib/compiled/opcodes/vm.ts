@@ -2,9 +2,9 @@ import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from '../expressions/args';
 import { UpdatingVM } from '../../vm';
-import { Reference, ConstReference } from 'glimmer-reference';
-import { Option, Opaque, initializeGuid } from 'glimmer-util';
-import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
+import { Reference, ConstReference } from '@glimmer/reference';
+import { Option, Opaque, initializeGuid } from '@glimmer/util';
+import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from '@glimmer/reference';
 import Environment from '../../environment';
 import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
 

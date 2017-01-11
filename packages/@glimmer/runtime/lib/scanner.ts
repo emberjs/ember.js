@@ -2,11 +2,11 @@ import { CompiledProgram, CompiledBlock } from './compiled/blocks';
 import { builder } from './compiler';
 import OpcodeBuilder from './compiled/opcodes/builder';
 import Environment from './environment';
-import { Option } from 'glimmer-util';
-import { SerializedTemplateBlock, TemplateMeta, SerializedBlock, Statement as SerializedStatement } from 'glimmer-wire-format';
-import * as WireFormat from 'glimmer-wire-format';
+import { Option } from '@glimmer/util';
+import { SerializedTemplateBlock, TemplateMeta, SerializedBlock, Statement as SerializedStatement } from '@glimmer/wire-format';
+import * as WireFormat from '@glimmer/wire-format';
 import { entryPoint as entryPointTable, layout as layoutTable, block as blockTable } from './symbol-table';
-import { Opaque, SymbolTable, ProgramSymbolTable } from 'glimmer-interfaces';
+import { Opaque, SymbolTable, ProgramSymbolTable } from '@glimmer/interfaces';
 
 import {
   STATEMENTS
@@ -130,7 +130,7 @@ export function scanBlock({ statements }: SerializedBlock, symbolTable: SymbolTa
 }
 
 import { PublicVM } from './vm';
-import { PathReference } from 'glimmer-reference';
+import { PathReference } from '@glimmer/reference';
 
 export namespace BaselineSyntax {
   import Core = WireFormat.Core;

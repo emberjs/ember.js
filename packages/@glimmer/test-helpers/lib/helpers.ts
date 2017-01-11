@@ -1,6 +1,6 @@
 import { tokenize } from "simple-html-tokenizer";
-import { Environment, Template, Layout, templateFactory } from "glimmer-runtime";
-import { precompile, PrecompileOptions } from "glimmer-compiler";
+import { Environment, Template, Layout, templateFactory } from "@glimmer/runtime";
+import { precompile, PrecompileOptions } from "@glimmer/compiler";
 
 // For Phantom
 function toObject(val) {

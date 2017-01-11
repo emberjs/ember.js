@@ -1,11 +1,11 @@
-import { Option, Dict, dict } from 'glimmer-util';
-import { TemplateMeta } from 'glimmer-wire-format';
+import { Option, Dict, dict } from '@glimmer/util';
+import { TemplateMeta } from '@glimmer/wire-format';
 import {
   SymbolTable,
   ProgramSymbolTable as IProgramSymbolTable,
   BlockSymbolTable as IBlockSymbolTable,
   Symbols
-} from 'glimmer-interfaces';
+} from '@glimmer/interfaces';
 
 export function entryPoint(meta: Option<TemplateMeta>): ProgramSymbolTable {
   return new ProgramSymbolTable(meta);

@@ -1,7 +1,7 @@
 import { CompiledGetBlock } from '../expressions/has-block';
 import { CompiledArgs, EvaluatedArgs } from '../expressions/args';
 import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
-import { Option } from 'glimmer-util';
+import { Option } from '@glimmer/util';
 
 APPEND_OPCODES.add(Op.OpenBlock, (vm, { op1: _getBlock, op2: _args }) => {
   let inner = vm.constants.getOther<CompiledGetBlock>(_getBlock);

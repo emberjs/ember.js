@@ -1,7 +1,7 @@
-import { PathReference } from 'glimmer-reference';
+import { PathReference } from '@glimmer/reference';
 import { CompiledExpression } from '../expressions';
 import { PublicVM as VM } from '../../vm';
-import { SymbolTable } from 'glimmer-interfaces';
+import { SymbolTable } from '@glimmer/interfaces';
 
 export type FunctionExpression<T> = (VM: VM, symbolTable: SymbolTable) => PathReference<T>;
 
