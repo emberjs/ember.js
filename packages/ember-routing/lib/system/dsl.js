@@ -139,8 +139,7 @@ DSL.map = callback => {
 
 let uuid = 0;
 
-DSL.prototype.mount = function(_name, _options) {
-  let options = _options || {};
+DSL.prototype.mount = function(_name, options = {}) {
   let engineRouteMap = this.options.resolveRouteMap(_name);
   let name = _name;
 
