@@ -240,8 +240,7 @@ export function getHistoryPath(rootURL, location) {
   let hash = getHash(location);
   let query = getQuery(location);
   let rootURLIndex = path.indexOf(rootURL);
-  let routeHash;
-  let hashParts;
+  let routeHash, hashParts;
 
   assert(`Path ${path} does not start with the provided rootURL ${rootURL}`, rootURLIndex === 0);
 
