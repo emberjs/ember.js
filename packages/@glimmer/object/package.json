@@ -1,0 +1,23 @@
+{
+  "name": "@glimmer/object",
+  "version": "0.5.3",
+  "main": "dist/commonjs/index.js",
+  "module": "dist/modules/index.js",
+  "jsnext:main": "dist/modules/index.js",
+  "typings": "dist/commonjs/index.d.ts",
+  "scripts": {
+    "build": "node build/build.js",
+    "prepublish": "npm run build",
+    "test": "node -e 'require(\".\")'"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@glimmer/object-reference": "^0.5.3",
+    "@glimmer/util": "^0.5.3"
+  },
+  "devDependencies": {
+    "typescript": "^2.1.4"
+  }
+}

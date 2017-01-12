@@ -1,5 +1,5 @@
-import { TestEnvironment, TestDynamicScope } from 'glimmer-test-helpers';
-import { UpdatableReference } from 'glimmer-object-reference';
+import { TestEnvironment, TestDynamicScope } from '@glimmer/test-helpers';
+import { UpdatableReference } from '@glimmer/object-reference';
 
 // // Bare version
 // const app = `{{#each world.cells key="key" as |cell|}}<organism-cell class="{{if cell.isAlive "alive" ""}}" style="top: {{cell.y}}0px; left: {{cell.x}}0px"/>{{/each}}`;
