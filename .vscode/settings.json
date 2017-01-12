@@ -2,7 +2,8 @@
 {
   "typescript.tsdk": "./node_modules/typescript/lib",
   "search.exclude": {
-    "**/node_modules": true
+    "**/node_modules": true,
+    "tmp": true
   },
   "files.exclude": {
     "**/.git": true,

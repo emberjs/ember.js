@@ -5,6 +5,7 @@
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
+    "strictNullChecks": false,
 
     // Environment Configuration
     "experimentalDecorators": false,
@@ -12,7 +13,6 @@
 
     // Compilation Configuration
     "target": "es6",
-    "module": "es6",
     "inlineSourceMap": true,
     "declaration": true
   }

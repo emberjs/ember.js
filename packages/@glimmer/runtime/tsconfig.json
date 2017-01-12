@@ -1,0 +1,16 @@
+{
+  "extends": "../../../build/tsconfig.json",
+
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true
+  },
+
+  "include": [
+    "index.ts",
+    "lib/**/*.ts"
+  ]
+}

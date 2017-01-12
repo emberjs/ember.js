@@ -32,7 +32,7 @@ pkg.module = "dist/modules/index.js";
 pkg["jsnext:main"] = "dist/modules/index.js";
 pkg.typings = "index.ts";
 pkg.scripts = pkg.scripts || {};
-pkg.scripts.build = "../../build/build";
+pkg.scripts.build = "sh ../../build/build";
 pkg.scripts.prepublish = "npm run build";
 // Verify that we can load the package in Node without errors.
 pkg.scripts.test = "node -e 'require(\".\")'";

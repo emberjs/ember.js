@@ -1,11 +1,11 @@
 import {
   TestEnvironment,
   TestDynamicScope
-} from 'glimmer-test-helpers';
-import { UpdatableReference } from 'glimmer-object-reference';
-import { precompile } from 'glimmer-compiler';
+} from '@glimmer/test-helpers';
+import { UpdatableReference } from '@glimmer/object-reference';
+import { precompile } from '@glimmer/compiler';
 
-import { EvaluatedArgs, templateFactory } from 'glimmer-runtime';
+import { EvaluatedArgs, templateFactory } from '@glimmer/runtime';
 
 const DEFAULT_DATA =
 `{

@@ -1,5 +1,5 @@
-import { UpdatableReference } from 'glimmer-object-reference';
-import { TestEnvironment, TestDynamicScope } from 'glimmer-test-helpers';
+import { UpdatableReference } from '@glimmer/object-reference';
+import { TestEnvironment, TestDynamicScope } from '@glimmer/test-helpers';
 import ExponentialMovingAverage from './ema';
 
 class Component {

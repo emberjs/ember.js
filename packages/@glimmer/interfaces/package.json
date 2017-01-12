@@ -1,0 +1,18 @@
+{
+  "name": "@glimmer/interfaces",
+  "version": "0.5.3",
+  "main": "dist/commonjs/index.js",
+  "module": "dist/modules/index.js",
+  "jsnext:main": "dist/modules/index.js",
+  "typings": "index.d.ts",
+  "files": [
+    "index.d.ts",
+    "lib"
+  ],
+  "dependencies": {
+    "@glimmer/wire-format": "^0.5.3"
+  },
+  "devDependencies": {
+    "typescript": "^2.1.4"
+  }
+}
