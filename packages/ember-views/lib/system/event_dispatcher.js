@@ -153,11 +153,13 @@ export default EmberObject.extend({
     let event;
     let events = this._finalEvents = assign({}, get(this, 'events'), addedEvents);
 
-    if (!isNone(rootElement)) {
+    if (isNone(rootElement)) {
+      rootElement = get(this, 'rootElement');
+    } else {
       set(this, 'rootElement', rootElement);
     }
 
-    rootElement = jQuery(get(this, 'rootElement'));
+    rootElement = jQuery(rootElement);
 
     assert(`You cannot use the same root element (${rootElement.selector || rootElement[0].tagName}) multiple times in an Ember.Application`, !rootElement.is(ROOT_ELEMENT_SELECTOR));
     assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest(ROOT_ELEMENT_SELECTOR).length);
