@@ -362,7 +362,7 @@ export default EmberObject.extend({
     types = emberA(types).map((name) => {
       return {
         klass: this._nameToClass(name),
-        name: name
+        name
       };
     });
     types = emberA(types).filter(type => this.detect(type.klass));
@@ -492,6 +492,6 @@ export default EmberObject.extend({
     @return {Function} The function to call to remove all observers.
   */
   observeRecord(record, recordUpdated) {
-    return function() {};
+    return () => {};
   }
 });

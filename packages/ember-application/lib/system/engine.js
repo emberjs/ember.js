@@ -22,7 +22,7 @@ import { ComponentLookup } from 'ember-views';
 import { setupEngineRegistry } from 'ember-glimmer';
 
 function props(obj) {
-  var properties = [];
+  let properties = [];
 
   for (let key in obj) {
     properties.push(key);
@@ -124,9 +124,9 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
   */
   runInitializers() {
     this._runInitializer('initializers', (name, initializer) => {
-      assert('No application initializer named \'' + name + '\'', !!initializer);
+      assert(`No application initializer named '${name}'`, !!initializer);
       if (initializer.initialize.length === 2) {
-        deprecate('The `initialize` method for Application initializer \'' + name + '\' should take only one argument - `App`, an instance of an `Application`.',
+        deprecate(`The \`initialize\` method for Application initializer '${name}' should take only one argument - \`App\`, an instance of an \`Application\`.`,
           false, {
             id: 'ember-application.app-initializer-initialize-arguments',
             until: '3.0.0',
@@ -147,7 +147,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
   */
   runInstanceInitializers(instance) {
     this._runInitializer('instanceInitializers', (name, initializer) => {
-      assert('No instance initializer named \'' + name + '\'', !!initializer);
+      assert(`No instance initializer named '${name}'`, !!initializer);
       initializer.initialize(instance);
     });
   },
@@ -435,7 +435,7 @@ function resolverFor(namespace) {
   let ResolverClass = namespace.get('Resolver') || DefaultResolver;
 
   return ResolverClass.create({
-    namespace: namespace
+    namespace
   });
 }
 
@@ -451,9 +451,9 @@ function buildInitializerMethod(bucketName, humanName) {
       this.reopenClass(attrs);
     }
 
-    assert('The ' + humanName + ' \'' + initializer.name + '\' has already been registered', !this[bucketName][initializer.name]);
-    assert('An ' + humanName + ' cannot be registered without an initialize function', canInvoke(initializer, 'initialize'));
-    assert('An ' + humanName + ' cannot be registered without a name property', initializer.name !== undefined);
+    assert(`The ${humanName} '${initializer.name}' has already been registered`, !this[bucketName][initializer.name]);
+    assert(`An ${humanName} cannot be registered without an initialize function`, canInvoke(initializer, 'initialize'));
+    assert(`An ${humanName} cannot be registered without a name property`, initializer.name !== undefined);
 
     this[bucketName][initializer.name] = initializer;
   };

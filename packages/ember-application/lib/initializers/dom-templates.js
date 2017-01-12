@@ -6,7 +6,7 @@ import {
 import { environment } from 'ember-environment';
 import Application from '../system/application';
 
-let bootstrap = function() { };
+let bootstrap = () => { };
 
 Application.initializer({
   name: 'domTemplates',
