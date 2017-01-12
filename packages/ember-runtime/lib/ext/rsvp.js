@@ -33,7 +33,7 @@ function errorFor(reason) {
   }
 
   if (reason.name === 'UnrecognizedURLError') {
-    assert('The URL \'' + reason.message + '\' did not match any routes in your application', false);
+    assert(`The URL '${reason.message}' did not match any routes in your application`, false);
     return;
   }
 

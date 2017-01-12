@@ -77,7 +77,7 @@ const Namespace = EmberObject.extend({
 Namespace.reopenClass({
   NAMESPACES: [Ember],
   NAMESPACES_BY_ID: {
-    Ember: Ember
+    Ember
   },
   PROCESSED: false,
   processAll: processAllNamespaces,
@@ -185,7 +185,7 @@ function calculateToString(target) {
       return str;
     } else {
       str = superClassString(target);
-      str = str ? '(subclass of ' + str + ')' : str;
+      str = str ? `(subclass of ${str})` : str;
     }
   }
   if (str) {

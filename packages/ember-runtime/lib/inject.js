@@ -33,9 +33,7 @@ const typeValidators = {};
 export function createInjectionHelper(type, validator) {
   typeValidators[type] = validator;
 
-  inject[type] = function(name) {
-    return new InjectedProperty(type, name);
-  };
+  inject[type] = name => new InjectedProperty(type, name);
 }
 
 /**

@@ -158,7 +158,7 @@ export default Mixin.create({
     @public
   */
   getProperties(...args) {
-    return getProperties.apply(null, [this].concat(args));
+    return getProperties(...[this].concat(args));
   },
 
   /**
@@ -409,7 +409,7 @@ export default Mixin.create({
     @private
   */
   hasObserverFor(key) {
-    return hasListeners(this, key + ':change');
+    return hasListeners(this, `${key}:change`);
   },
 
   /**

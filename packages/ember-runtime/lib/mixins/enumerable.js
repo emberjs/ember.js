@@ -396,7 +396,7 @@ const Enumerable = Mixin.create({
   filter(callback, target) {
     let ret = emberA();
 
-    this.forEach(function(x, idx, i) {
+    this.forEach((x, idx, i) => {
       if (callback.call(target, x, idx, i)) {
         ret.push(x);
       }
@@ -738,7 +738,7 @@ const Enumerable = Mixin.create({
   invoke(methodName, ...args) {
     let ret = emberA();
 
-    this.forEach(function(x, idx) {
+    this.forEach((x, idx) => {
       let method = x && x[methodName];
 
       if ('function' === typeof method) {

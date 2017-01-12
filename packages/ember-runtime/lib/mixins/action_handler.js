@@ -184,7 +184,7 @@ const ActionHandler = Mixin.create({
     let target = get(this, 'target');
     if (target) {
       assert(
-        'The `target` for ' + this + ' (' + target + ') does not have a `send` method',
+        `The \`target\` for ${this} (${target}) does not have a \`send\` method`,
         typeof target.send === 'function'
       );
       target.send(...arguments);
