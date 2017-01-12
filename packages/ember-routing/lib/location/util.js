@@ -4,7 +4,7 @@
   Returns the current `location.pathname`, normalized for IE inconsistencies.
 */
 export function getPath(location) {
-  var pathname = location.pathname;
+  let pathname = location.pathname;
   // Various versions of IE/Opera don't always return a leading slash
   if (pathname.charAt(0) !== '/') {
     pathname = `/${pathname}`;
@@ -33,8 +33,8 @@ export function getQuery(location) {
   https://bugzilla.mozilla.org/show_bug.cgi?id=483304
 */
 export function getHash(location) {
-  var href = location.href;
-  var hashIndex = href.indexOf('#');
+  let href = location.href;
+  let hashIndex = href.indexOf('#');
 
   if (hashIndex === -1) {
     return '';
@@ -48,11 +48,11 @@ export function getFullPath(location) {
 }
 
 export function getOrigin(location) {
-  var origin = location.origin;
+  let origin = location.origin;
 
   // Older browsers, especially IE, don't have origin
   if (!origin) {
-    origin = location.protocol + '//' + location.hostname;
+    origin = `${location.protocol}//${location.hostname}`;
 
     if (location.port) {
       origin += `:${location.port}`;

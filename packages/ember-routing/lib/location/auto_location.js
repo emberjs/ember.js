@@ -121,7 +121,7 @@ export default EmberObject.extend({
       location: this.location,
       history: this.history,
       userAgent: this.userAgent,
-      rootURL: rootURL,
+      rootURL,
       documentMode: this.documentMode,
       global: this.global
     });
@@ -287,10 +287,10 @@ export function getHashPath(rootURL, location) {
 
   if (routePath !== '') {
     if (routePath.charAt(0) !== '/') {
-      routePath = '/' + routePath;
+      routePath = `/${routePath}`;
     }
 
-    path += '#' + routePath;
+    path += `#${routePath}`;
   }
 
   return path;

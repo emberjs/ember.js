@@ -121,9 +121,7 @@ function getFullName(dsl, name, resetNamespace) {
   }
 }
 
-function createRoute(dsl, name, options, callback) {
-  options = options || {};
-
+function createRoute(dsl, name, options = {}, callback) {
   let fullName = getFullName(dsl, name, options.resetNamespace);
 
   if (typeof options.path !== 'string') {
@@ -133,7 +131,7 @@ function createRoute(dsl, name, options, callback) {
   dsl.push(options.path, fullName, callback, options.serialize);
 }
 
-DSL.map = function(callback) {
+DSL.map = callback => {
   let dsl = new DSL();
   callback.call(dsl);
   return dsl;
@@ -150,7 +148,7 @@ DSL.prototype.mount = function(_name, _options) {
     name = options.as;
   }
 
-  var fullName = getFullName(this, name, options.resetNamespace);
+  let fullName = getFullName(this, name, options.resetNamespace);
 
   let engineInfo = {
     name: _name,
