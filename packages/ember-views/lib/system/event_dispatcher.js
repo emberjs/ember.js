@@ -12,7 +12,7 @@ import { environment } from 'ember-environment';
 import fallbackViewRegistry from '../compat/fallback-view-registry';
 
 const ROOT_ELEMENT_CLASS = 'ember-application';
-const ROOT_ELEMENT_SELECTOR = '.' + ROOT_ELEMENT_CLASS;
+const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
 
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
@@ -169,11 +169,9 @@ export default EmberObject.extend({
       throw new TypeError(`Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${rootElement.selector || rootElement[0].tagName}). Make sure you set rootElement to the body or an element in the body.`);
     }
 
-    let viewRegistry = this._getViewRegistry();
-
     for (event in events) {
       if (events.hasOwnProperty(event)) {
-        this.setupHandler(rootElement, event, events[event], viewRegistry);
+        this.setupHandler(rootElement, event, events[event]);
       }
     }
   },
@@ -191,16 +189,18 @@ export default EmberObject.extend({
     @param {Element} rootElement
     @param {String} event the browser-originated event to listen to
     @param {String} eventName the name of the method to call on the view
-    @param {Object} viewRegistry
   */
-  setupHandler(rootElement, event, eventName, viewRegistry) {
+  setupHandler(rootElement, event, eventName) {
     let self = this;
+
+    let owner = getOwner(this);
+    let viewRegistry = owner && owner.lookup('-view-registry:main') || fallbackViewRegistry;
 
     if (eventName === null) {
       return;
     }
 
-    rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
+    rootElement.on(`${event}.ember`, '.ember-view', function(evt, triggeringManager) {
       let view = viewRegistry[this.id];
       let result = true;
 
@@ -215,7 +215,7 @@ export default EmberObject.extend({
       return result;
     });
 
-    rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
+    rootElement.on(`${event}.ember`, '[data-ember-action]', evt => {
       let actionId = jQuery(evt.currentTarget).attr('data-ember-action');
       let actions = ActionManager.registeredActions[actionId];
 
@@ -286,13 +286,6 @@ export default EmberObject.extend({
 
   _bubbleEvent(view, evt, eventName) {
     return view.handleEvent(eventName, evt);
-  },
-
-  _getViewRegistry() {
-    let owner = getOwner(this);
-    let viewRegistry = owner && owner.lookup('-view-registry:main') || fallbackViewRegistry;
-
-    return viewRegistry;
   },
 
   destroy() {

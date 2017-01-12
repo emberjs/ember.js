@@ -7,7 +7,7 @@ function parseUnderscoredName(templateName) {
   let nameParts = templateName.split('/');
   let lastPart = nameParts[nameParts.length - 1];
 
-  nameParts[nameParts.length - 1] = '_' + lastPart;
+  nameParts[nameParts.length - 1] = `_${lastPart}`;
 
   return nameParts.join('/');
 }
@@ -18,7 +18,7 @@ export default function lookupPartial(templateName, owner) {
   let template = templateFor(owner, parseUnderscoredName(templateName), templateName);
 
   assert(
-    'Unable to find partial with name "' + templateName + '"',
+    `Unable to find partial with name "${templateName}"`,
     !!template
   );
 
@@ -32,12 +32,12 @@ export function hasPartial(name, owner) {
                'See: http://git.io/EKPpnA');
   }
 
-  return owner.hasRegistration('template:' + parseUnderscoredName(name)) || owner.hasRegistration('template:' + name);
+  return owner.hasRegistration(`template:${parseUnderscoredName(name)}`) || owner.hasRegistration(`template:${name}`);
 }
 
 function templateFor(owner, underscored, name) {
   if (!name) { return; }
-  assert('templateNames are not allowed to contain periods: ' + name, name.indexOf('.') === -1);
+  assert(`templateNames are not allowed to contain periods: ${name}`, name.indexOf('.') === -1);
 
   if (!owner) {
     throw new EmberError('Container was not found when looking up a views template. ' +
@@ -45,5 +45,5 @@ function templateFor(owner, underscored, name) {
                'See: http://git.io/EKPpnA');
   }
 
-  return owner.lookup('template:' + underscored) || owner.lookup('template:' + name);
+  return owner.lookup(`template:${underscored}`) || owner.lookup(`template:${name}`);
 }
