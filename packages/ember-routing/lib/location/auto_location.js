@@ -121,7 +121,7 @@ export default EmberObject.extend({
       location: this.location,
       history: this.history,
       userAgent: this.userAgent,
-      rootURL: rootURL,
+      rootURL,
       documentMode: this.documentMode,
       global: this.global
     });
@@ -240,7 +240,8 @@ export function getHistoryPath(rootURL, location) {
   let hash = getHash(location);
   let query = getQuery(location);
   let rootURLIndex = path.indexOf(rootURL);
-  let routeHash, hashParts;
+  let routeHash;
+  let hashParts;
 
   assert(`Path ${path} does not start with the provided rootURL ${rootURL}`, rootURLIndex === 0);
 
@@ -287,10 +288,10 @@ export function getHashPath(rootURL, location) {
 
   if (routePath !== '') {
     if (routePath.charAt(0) !== '/') {
-      routePath = '/' + routePath;
+      routePath = `/${routePath}`;
     }
 
-    path += '#' + routePath;
+    path += `#${routePath}`;
   }
 
   return path;

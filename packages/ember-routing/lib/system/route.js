@@ -231,19 +231,19 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       let scopedPropertyName = `${controllerName}:${propName}`;
       let qp = {
         undecoratedDefaultValue: get(controllerProto, propName),
-        defaultValue: defaultValue,
+        defaultValue,
         serializedDefaultValue: defaultValueSerialized,
         serializedValue: defaultValueSerialized,
 
-        type: type,
-        urlKey: urlKey,
+        type,
+        urlKey,
         prop: propName,
-        scopedPropertyName: scopedPropertyName,
-        controllerName: controllerName,
+        scopedPropertyName,
+        controllerName,
         route: this,
-        parts: parts, // provided later when stashNames is called if 'model' scope
+        parts, // provided later when stashNames is called if 'model' scope
         values: null, // provided later when setup is called. no idea why.
-        scope: scope
+        scope
       };
 
       map[propName] = map[urlKey] = map[scopedPropertyName] = qp;
@@ -252,9 +252,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     }
 
     return {
-      qps: qps,
-      map: map,
-      propertyNames: propertyNames,
+      qps,
+      map,
+      propertyNames,
       states: {
         /*
           Called when a query parameter changes in the URL, this route cares
@@ -908,7 +908,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         transition.method('replace');
       }
 
-      qpMeta.qps.forEach(function(qp) {
+      qpMeta.qps.forEach((qp) => {
         let routeQpMeta = get(qp.route, '_qp');
         let finalizedController = qp.route.controller;
         finalizedController._qpDelegate = get(routeQpMeta, 'states.active');
@@ -1330,7 +1330,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       let allParams = queryParams.propertyNames;
       let cache = this._bucketCache;
 
-      allParams.forEach(function(prop) {
+      allParams.forEach(prop => {
         let aQp = queryParams.map[prop];
 
         aQp.values = params;
@@ -2399,8 +2399,8 @@ function mergeEachQueryParams(controllerQP, routeQP) {
 }
 
 function addQueryParamsObservers(controller, propNames) {
-  propNames.forEach(function(prop) {
-    controller.addObserver(prop + '.[]', controller, controller._qpChanged);
+  propNames.forEach((prop) => {
+    controller.addObserver(`${prop}.[]`, controller, controller._qpChanged);
   });
 }
 
