@@ -7,7 +7,7 @@ export function registerHandler(handler) {
 }
 
 registerHandler(function logWarning(message, options) {
-  Logger.warn('WARNING: ' + message);
+  Logger.warn(`WARNING: ${message}`);
   if ('trace' in Logger) {
     Logger.trace();
   }
