@@ -69,7 +69,7 @@ export class EvaluationStack {
   }
 
   slice<T extends Opaque[]>(count: number): T {
-    return this.stack.slice(this.stack.length - 1 - count) as T;
+    return this.stack.slice(this.stack.length - count) as T;
   }
 }
 
@@ -441,14 +441,11 @@ export default class VM implements PublicVM {
   }
 
   bindDynamicScope(names: ConstantString[]) {
-    let args = expect(this.frame.getArgs(), 'bindDynamicScope assumes a previous setArgs');
     let scope = this.dynamicScope();
 
-    assert(args, "Cannot bind dynamic scope");
-
-    for(let i=0; i < names.length; i++) {
+    for(let i=names.length - 1; i>=0; i--) {
       let name = this.constants.getString(names[i]);
-      scope.set(name, args.named.get(name));
+      scope.set(name, this.evalStack.pop<VersionedPathReference<Opaque>>());
     }
   }
 }

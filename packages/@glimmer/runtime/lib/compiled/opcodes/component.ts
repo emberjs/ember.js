@@ -49,11 +49,11 @@ export class NamedArguments {
     this.tag = this.args.tag;
   }
 
-  value(): Dict<VersionedPathReference<Opaque>> {
-    let out = dict<VersionedPathReference<Opaque>>();
+  value(): Dict<Opaque> {
+    let out = dict<Opaque>();
     let args = this.args;
 
-    this.named.forEach(n => out[n] = args.get(n));
+    this.named.forEach(n => out[n] = args.get(n).value());
 
     return out;
   }
@@ -180,16 +180,6 @@ APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state }) => {
 APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   let { manager, definition, component } = vm.getLocal<ComponentState<Opaque>>(_state);
   vm.evalStack.push(manager.layoutFor(definition, component, vm.env));
-});
-
-APPEND_OPCODES.add(Op.ComponentLayoutScope, (vm, { op1: _state }) => {
-  let { manager, definition, component } = vm.getLocal<ComponentState<Opaque>>(_state);
-  let layout = manager.layoutFor(definition, component, vm.env);
-
-  let scope = vm.pushRootScope(layout.symbols, true);
-  scope.bindSelf(manager.getSelf(component));
-
-  vm.evalStack.push(layout);
 });
 
 // Slow path for non-specialized component invocations. Uses an internal

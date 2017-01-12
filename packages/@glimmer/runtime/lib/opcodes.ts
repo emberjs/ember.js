@@ -462,6 +462,18 @@ export const enum Op {
   OpenElementWithOperations,
 
   /**
+   * Operation:
+   *   Open a new Element with a name on the stack and with special
+   *   operations provided on the stack.
+   * Format:
+   *   (OpenDynamicElement)
+   * Operand Stack:
+   *   ..., string, ElementOperations →
+   *   ...
+   */
+  OpenDynamicElement,
+
+  /**
    * Operation: Add an attribute to the current Element.
    * Format:
    *   (StaticAttr name:#string value:#string namespace:Option<#string>)
@@ -567,7 +579,7 @@ export const enum Op {
    * Format:
    *   (InvokeDynamic invoker:#FunctionInvoker)
    * Operand Stack:
-   *   ..., ...VersionedPathReference, InlineBlock, VersionedPathReference →
+   *   ..., InlineBlock, [ VersionedPathReference... ], VersionedPathReference →
    *   ...
    */
   InvokeDynamic,
@@ -801,7 +813,7 @@ export const enum Op {
    *   (PushComponentArgs positional:u32 named:u32 namedDict:#Dict<number>)
    *
    * Operand Stack:
-   *   ... →
+   *   ..., [VersionedPathReference ...] →
    *   ..., Arguments
    *
    * Description:
@@ -933,7 +945,6 @@ export const enum Op {
   DidRenderLayout,
 
   PushDynamicComponent,       // ()
-  OpenDynamicElement,        // ()
 
   /// TODO
   ShadowAttributes,          // Identical to `evaluate`
@@ -1015,7 +1026,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.PushComponentOperations: return ['PushComponentOperations'];
     case Op.DidCreateElement: return ['DidCreateElement', { state: op1 }];
     case Op.GetComponentSelf: return ['GetComponentSelf', { state: op1 }];
-    case Op.GetComponentLayout: return ['GetComponentSelf', { state: op1 }];
+    case Op.GetComponentLayout: return ['GetComponentLayout', { state: op1 }];
     case Op.DidRenderLayout: return ['DidRenderLayout'];
     case Op.CommitComponentTransaction: return ['CommitComponentTransaction'];
 
@@ -1046,7 +1057,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.JumpIf: return ['JumpIf', { to: op1 }];
     case Op.JumpUnless: return ['JumpUnless', { to: op1 }];
     case Op.ToBoolean: return ['ToBoolean'];
-    case Op.InvokeBlock: return ['InvokeBlock'];
+    case Op.InvokeBlock: return ['InvokeBlock', { count: op1 }];
     case Op.DoneBlock: return ['DoneBlock'];
     case Op.PushDynamicComponent: return ['PushDynamicComponent'];
     case Op.Text: return ['Text', { text: c.getString(op1) }];

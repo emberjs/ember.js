@@ -1,7 +1,7 @@
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { FunctionExpression } from '../compiled/expressions/function';
-import { CompiledProgram } from '../compiled/blocks';
 import { Layout } from '../scanner';
+import { SerializedTemplate, TemplateMeta } from 'glimmer-wire-format';
 
 import Environment, { DynamicScope } from '../environment';
 import { ElementOperations } from '../builder';
@@ -23,7 +23,7 @@ export interface Arguments {
 
 export interface NamedArguments {
   tag: Tag;
-  value(): Dict<VersionedPathReference<Opaque>>;
+  value(): Dict<Opaque>;
   get(name: string): VersionedPathReference<Opaque>;
 }
 
@@ -99,8 +99,8 @@ export interface ComponentLayoutBuilder {
   tag: ComponentTagBuilder;
   attrs: ComponentAttrsBuilder;
 
-  wrapLayout(layout: Layout): void;
-  fromLayout(layout: Layout): void;
+  wrapLayout(layout: SerializedTemplate<TemplateMeta>): void;
+  fromLayout(layout: SerializedTemplate<TemplateMeta>): void;
 }
 
 export interface ComponentTagBuilder {
