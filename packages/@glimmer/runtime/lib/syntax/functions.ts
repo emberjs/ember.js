@@ -78,13 +78,13 @@ export class Compilers<T extends Syntax, CompileTo> {
   private names = dict<number>();
   private funcs: CompilerFunction<T, CompileTo>[] = [];
 
-  add(name: T[0], func: CompilerFunction<T, CompileTo>): void {
+  add(name: string, func: CompilerFunction<T, CompileTo>): void {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
   compile(sexp: T, builder: OpcodeBuilder): CompileTo {
-    let name: T[0] = sexp[0];
+    let name: string = sexp[0];
     let index = this.names[name];
     let func = this.funcs[index];
     assert(!!func, `expected an implementation for ${sexp[0]}`);
