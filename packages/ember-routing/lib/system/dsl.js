@@ -131,7 +131,7 @@ function createRoute(dsl, name, options = {}, callback) {
   dsl.push(options.path, fullName, callback, options.serialize);
 }
 
-DSL.map = (callback) => {
+DSL.map = callback => {
   let dsl = new DSL();
   callback.call(dsl);
   return dsl;

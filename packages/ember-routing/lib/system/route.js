@@ -908,7 +908,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         transition.method('replace');
       }
 
-      qpMeta.qps.forEach((qp) => {
+      qpMeta.qps.forEach(qp => {
         let routeQpMeta = get(qp.route, '_qp');
         let finalizedController = qp.route.controller;
         finalizedController._qpDelegate = get(routeQpMeta, 'states.active');
@@ -2399,7 +2399,7 @@ function mergeEachQueryParams(controllerQP, routeQP) {
 }
 
 function addQueryParamsObservers(controller, propNames) {
-  propNames.forEach((prop) => {
+  propNames.forEach(prop => {
     controller.addObserver(`${prop}.[]`, controller, controller._qpChanged);
   });
 }

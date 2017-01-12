@@ -122,7 +122,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let owner = getOwner(this);
     let router = this;
 
-    options.resolveRouteMap = (name) => owner[FACTORY_FOR](`route-map:${name}`);
+    options.resolveRouteMap = name => owner[FACTORY_FOR](`route-map:${name}`);
 
     options.addRouteForEngine = (name, engineInfo) => {
       if (!router._engineInfoByRoute[name]) {
@@ -214,7 +214,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     this._setupRouter(router, location);
 
-    location.onUpdateURL((url) => {
+    location.onUpdateURL(url => {
       this.handleURL(url);
     });
 
@@ -639,13 +639,13 @@ const EmberRouter = EmberObject.extend(Evented, {
         location.replaceURL(lastURL);
       };
 
-      router.replaceURL = (path) => {
+      router.replaceURL = path => {
         lastURL = path;
         run.once(doReplaceURL);
       };
     }
 
-    router.didTransition = (infos) => {
+    router.didTransition = infos => {
       emberRouter.didTransition(infos);
     };
 
@@ -1084,7 +1084,7 @@ let defaultActionHandlers = {
     let handlerInfos = transition.state.handlerInfos;
     let router = originRoute.router;
 
-    forEachRouteAbove(originRoute, handlerInfos, (route) => {
+    forEachRouteAbove(originRoute, handlerInfos, route => {
       // Check for the existence of an 'error' route.
       // We don't check for an 'error' route on the originRoute, since that would
       // technically be below where we're at in the route hierarchy.
@@ -1114,7 +1114,7 @@ let defaultActionHandlers = {
     let handlerInfos = transition.state.handlerInfos;
     let router = originRoute.router;
 
-    forEachRouteAbove(originRoute, handlerInfos, (route) => {
+    forEachRouteAbove(originRoute, handlerInfos, route => {
       // Check for the existence of a 'loading' route.
       // We don't check for a 'loading' route on the originRoute, since that would
       // technically be below where we're at in the route hierarchy.
@@ -1419,7 +1419,7 @@ function didBeginTransition(transition, router) {
   }
   router.set('targetState', routerState);
 
-  transition.promise = transition.catch((error) => {
+  transition.promise = transition.catch(error => {
     let errorId = guidFor(error);
 
     if (router._isErrorHandled(errorId)) {
