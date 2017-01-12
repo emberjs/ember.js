@@ -7,9 +7,9 @@ export default function TransformOldBindingSyntax(options) {
 }
 
 TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSyntax_transform(ast) {
-  var moduleName = this.options.meta.moduleName;
-  var b = this.syntax.builders;
-  var walker = new this.syntax.Walker();
+  let moduleName = this.options.meta.moduleName;
+  let b = this.syntax.builders;
+  let walker = new this.syntax.Walker();
 
   walker.visit(ast, node => {
     if (!validate(node)) { return; }
@@ -18,7 +18,7 @@ TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSynt
       let pair = node.hash.pairs[i];
       let { key, value } = pair;
 
-      var sourceInformation = calculateLocationDisplay(moduleName, pair.loc);
+      let sourceInformation = calculateLocationDisplay(moduleName, pair.loc);
 
       if (key === 'classBinding') { return; }
 

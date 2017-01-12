@@ -11,7 +11,7 @@ DeprecateRenderModel.prototype.transform = function DeprecateRenderModel_transfo
   let moduleName = this.options.meta.moduleName;
   let walker = new this.syntax.Walker();
 
-  walker.visit(ast, function(node) {
+  walker.visit(ast, node => {
     if (!validate(node)) { return; }
 
     each(node.params, (param) => {

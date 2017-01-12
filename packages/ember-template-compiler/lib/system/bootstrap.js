@@ -43,7 +43,7 @@ function bootstrap({ context, hasTemplate, setTemplate }) {
 
     // Check if template of same name already exists.
     if (hasTemplate(templateName)) {
-      throw new EmberError('Template named "' + templateName  + '" already exists.');
+      throw new EmberError(`Template named "${templateName}" already exists.`);
     }
 
     // For templates which have a name, we save them and then remove them from the DOM.

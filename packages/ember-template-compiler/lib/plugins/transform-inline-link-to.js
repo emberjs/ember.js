@@ -20,7 +20,7 @@ TransformInlineLinkTo.prototype.transform = function TransformInlineLinkTo_trans
 
       // The default case handles literals.
       default:
-        return b.text('' + content.value, loc);
+        return b.text(`${content.value}`, loc);
     }
   }
 
