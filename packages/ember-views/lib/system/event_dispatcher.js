@@ -12,7 +12,7 @@ import { environment } from 'ember-environment';
 import fallbackViewRegistry from '../compat/fallback-view-registry';
 
 const ROOT_ELEMENT_CLASS = 'ember-application';
-const ROOT_ELEMENT_SELECTOR = '.' + ROOT_ELEMENT_CLASS;
+const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
 
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
@@ -200,7 +200,7 @@ export default EmberObject.extend({
       return;
     }
 
-    rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
+    rootElement.on(`${event}.ember`, '.ember-view', function(evt, triggeringManager) {
       let view = viewRegistry[this.id];
       let result = true;
 
@@ -215,7 +215,7 @@ export default EmberObject.extend({
       return result;
     });
 
-    rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
+    rootElement.on(`${event}.ember`, '[data-ember-action]', evt => {
       let actionId = jQuery(evt.currentTarget).attr('data-ember-action');
       let actions = ActionManager.registeredActions[actionId];
 
