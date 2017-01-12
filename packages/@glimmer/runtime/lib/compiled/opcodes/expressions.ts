@@ -62,13 +62,14 @@ APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
 });
 
 APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {
+  debugger;
   let hasBlock = !!vm.scope().getBlock(_block);
   vm.evalStack.push(hasBlock ? TRUE_REFERENCE : FALSE_REFERENCE);
 });
 
 APPEND_OPCODES.add(Op.HasBlockParams, (vm, { op1: _block }) => {
   let block = vm.scope().getBlock(_block);
-  let hasBlockParams = block && block.symbolTable.getSymbols().locals;
+  let hasBlockParams = block && block.symbolTable.getSymbolSize('local');
   vm.evalStack.push(hasBlockParams ? TRUE_REFERENCE : FALSE_REFERENCE);
 });
 

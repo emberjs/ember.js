@@ -27,6 +27,8 @@ import { assign } from "@glimmer/util";
 
 import { CLASS_META, UpdatableReference, setProperty as set } from '@glimmer/object-reference';
 
+import { module, test, assert } from './support';
+
 export class EmberishRootView extends EmberObject {
   private parent: Element;
   protected _result: RenderResult;
@@ -63,15 +65,37 @@ export class EmberishRootView extends EmberObject {
 
 let view: EmberishRootView, env: TestEnvironment;
 
-function module(name: string) {
-  QUnit.module(`[components] ${name}`, {
-    setup() {
-      env = new TestEnvironment();
-    }
-  });
+// function module(name: string) {
+//   QUnit.module(`[components] ${name}`, {
+//     setup() {
+//       env = new TestEnvironment();
+//     }
+//   });
+// }
+
+function top<T>(stack: T[]): T {
+  return stack[stack.length - 1];
 }
 
-module("Components - generic - props");
+let Components, Glimmer, Curly;
+
+module("Components", hooks => {
+  hooks.beforeEach(() => env = new TestEnvironment());
+
+  Components = top(QUnit.config['moduleStack']);
+
+  module("Glimmer", hooks => {
+    Glimmer = top(QUnit.config['moduleStack']);
+  });
+
+  module("Curly", hooks => {
+    Curly = top(QUnit.config['moduleStack']);
+  });
+
+});
+// let Component = QUnit.config['moduleStack'].pop();
+
+// module("Components - generic - props");
 
 export function appendViewFor(template: string, context: Object = {}) {
   class MyRootView extends EmberishRootView {
@@ -111,9 +135,9 @@ function assertFired(component: EmberishGlimmerComponent, name: string, count=1)
   }
 
   if (name in hooks) {
-    strictEqual(hooks[name], count, `The ${name} hook fired ${count} ${count === 1 ? 'time' : 'times'}`);
+    assert.strictEqual(hooks[name], count, `The ${name} hook fired ${count} ${count === 1 ? 'time' : 'times'}`);
   } else {
-    ok(false, `The ${name} hook fired`);
+    assert.ok(false, `The ${name} hook fired`);
   }
 }
 
@@ -234,6 +258,10 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
   if (!kind || kind === 'curly') {
     let test = skip === 'curly' ? QUnit.skip : QUnit.test;
 
+    let beforeModule = QUnit.config['currentModule'];
+    QUnit.config['moduleStack'].push(Curly);
+    QUnit.config['currentModule'] = Curly;
+
     test(`curly: ${title}`, assert => {
       if (typeof layout !== 'string') throw new Error('Only string layouts are supported for curly tests');
 
@@ -269,9 +297,12 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
         assertExpected('div', update.expected);
       });
     });
+
+    QUnit.config['moduleStack'].pop();
+    QUnit.config['currentModule'] = beforeModule;
   }
 
-  if (!kind || kind === 'curly' || kind === 'dynamic') {
+  if (false && !kind || kind === 'curly' || kind === 'dynamic') {
     let test = skip === 'dynamic' ? QUnit.skip : QUnit.test;
 
     test(`curly - component helper: ${title}`, assert => {
@@ -336,6 +367,10 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
   if (!kind || kind === 'glimmer') {
     let test = skip === 'glimmer' ? QUnit.skip : QUnit.test;
 
+    let beforeModule = QUnit.config['currentModule'];
+    QUnit.config['moduleStack'].push(Glimmer);
+    QUnit.config['currentModule'] = Glimmer;
+
     test(`glimmer: ${title}`, assert => {
       let layoutOptions: TagOptions;
 
@@ -359,11 +394,14 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
       assertExpected('aside', expected, attributes);
 
       updates.forEach(update => {
-        ok(true, `Updating with ${JSON.stringify(update)}`);
+        assert.ok(true, `Updating with ${JSON.stringify(update)}`);
         view.rerender(update.context);
         assertExpected('aside', update.expected, attributes);
       });
     });
+
+    QUnit.config['moduleStack'].pop();
+    QUnit.config['currentModule'] = beforeModule;
   }
 }
 

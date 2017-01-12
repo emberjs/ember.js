@@ -8,6 +8,7 @@ import {
   CompilableLayout,
   compileLayout,
   compileArgs,
+  compileList,
 
   // Environment
   Environment,
@@ -54,6 +55,7 @@ import {
 } from "@glimmer/runtime";
 
 import {
+  precompile,
   compile as rawCompile,
   compileLayout as rawCompileLayout
 } from "./helpers";
@@ -379,7 +381,7 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return component;
   }
 
-  layoutFor(definition: EmberishGlimmerComponentDefinition, component: EmberishGlimmerComponent, env: TestEnvironment): CompiledProgram {
+  layoutFor(definition: EmberishGlimmerComponentDefinition, component: EmberishGlimmerComponent, env: TestEnvironment): Layout {
     if (env.compiledLayouts[definition.name]) {
       return env.compiledLayouts[definition.name];
     }
@@ -968,8 +970,8 @@ export class EmberishGlimmerComponentDefinition extends GenericComponentDefiniti
 abstract class GenericComponentLayoutCompiler implements CompilableLayout {
   constructor(private layoutString: string) {}
 
-  protected compileLayout(env: Environment) {
-    return rawCompileLayout(this.layoutString, { env });
+  protected compileLayout(env: Environment): WireFormat.SerializedTemplate<TemplateMeta> {
+    return precompile(this.layoutString, { env });
   }
 
   abstract compile(builder: ComponentLayoutBuilder);
@@ -1091,14 +1093,15 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     builder.invokeStatic(sexp[5], null);
   });
 
-  blocks.add('-with-dynamic-vars', (sexp, builder) => {
+  blocks.add('-with-dynamic-vars', (sexp: BaselineSyntax.NestedBlock, builder) => {
     let block = defaultBlock(sexp);
-    let args = compileArgs(params(sexp), hash(sexp), builder);
+    let named = hash(sexp);
+
+    compileList(named[1], builder);
 
     builder.unit(b => {
-      b.putArgs(args);
       b.pushDynamicScope();
-      b.bindDynamicScope(args.named.keys as string[]);
+      b.bindDynamicScope(named[0]);
       b.invokeStatic(unwrap(block), null);
       b.popDynamicScope();
     });

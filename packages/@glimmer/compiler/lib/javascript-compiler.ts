@@ -43,17 +43,30 @@ export class TemplateBlock extends Block {
   public yields = new DictSet<string>();
   public named = new DictSet<string>();
   public prelude: Statement[] = [];
+  public head: Statements.ElementHead[] = [];
   public blocks: SerializedBlock[] = [];
   public hasPartials = false;
-  private inParams = true;
   private sawElement = false;
+  private inParams = false;
 
   push(statement: Statement) {
-    if (this.inParams) {
+    if (!this.sawElement) {
+      if (Statements.isOpenElement(statement)) {
+        this.sawElement = true;
+        this.inParams = true;
+      }
+
+      this.prelude.push(statement);
+    } else if (this.inParams) {
       if (Statements.isFlushElement(statement)) {
         this.inParams = false;
+        this.head.push(statement);
+      } else if (Statements.isModifier(statement)) {
+        throw new Error('Compile Error: Element modifiers are not allowed in component roots');
+      } else if (Statements.isInElementHead(statement)) {
+        this.head.push(statement);
       } else {
-        this.prelude.push(statement);
+        throw new Error('Compile Error: only parameters allowed before flush-element');
       }
     } else {
       this.statements.push(statement);
@@ -62,8 +75,9 @@ export class TemplateBlock extends Block {
 
   toJSON(): SerializedTemplateBlock {
     return {
-      prelude: this.inParams ? null : this.prelude,
-      statements: this.inParams ? this.prelude : this.statements,
+      prelude: this.sawElement ? this.prelude : null,
+      head: this.sawElement ? this.head : null,
+      statements: this.sawElement ? this.statements : this.prelude,
       locals: this.positionals,
       named: this.named.toArray(),
       yields: this.yields.toArray(),

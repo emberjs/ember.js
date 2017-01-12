@@ -8,11 +8,13 @@ import {
   EMPTY_ARRAY
 } from './utils';
 
-import {
+import Scanner, {
   BaselineSyntax,
   Layout,
+  EntryPoint,
   InlineBlock,
-  compileStatement
+  compileStatement,
+  scanBlock
 } from './scanner';
 
 import {
@@ -24,6 +26,7 @@ import {
 import {
   expr as compileExpr,
   compileArgs,
+  compileComponentArgs,
   compileBlocks
 } from './syntax/functions';
 
@@ -31,11 +34,17 @@ import {
   FunctionExpression
 } from './compiled/expressions/function';
 
+import {
+  layout as layoutTable
+} from './symbol-table';
+
 import OpcodeBuilderDSL from './compiled/opcodes/builder';
 
 import * as Component from './component/interfaces';
 
 import * as WireFormat from '@glimmer/wire-format';
+
+type WireTemplate = WireFormat.SerializedTemplate<WireFormat.TemplateMeta>;
 
 export interface CompilableLayout {
   compile(builder: Component.ComponentLayoutBuilder): void;
@@ -54,15 +63,15 @@ class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
 
   constructor(public env: Environment) {}
 
-  wrapLayout(layout: Layout) {
+  wrapLayout(layout: WireTemplate) {
     this.inner = new WrappedBuilder(this.env, layout);
   }
 
-  fromLayout(layout: Layout) {
+  fromLayout(layout: WireTemplate) {
     this.inner = new UnwrappedBuilder(this.env, layout);
   }
 
-  compile(): CompiledProgram {
+  compile(): Layout {
     return this.inner.compile();
   }
 
@@ -79,9 +88,9 @@ class WrappedBuilder {
   public tag = new ComponentTagBuilder();
   public attrs = new ComponentAttrsBuilder();
 
-  constructor(public env: Environment, private layout: Layout) {}
+  constructor(public env: Environment, private layout: WireTemplate) {}
 
-  compile(): CompiledProgram {
+  compile(): Layout {
     //========DYNAMIC
     //        PutValue(TagExpr)
     //        Test
@@ -110,52 +119,49 @@ class WrappedBuilder {
     //        DidRenderLayout
     //        Exit
 
-    let { env, layout } = this;
+    let { env, layout: { meta, block, block: { named, yields, hasPartials } } } = this;
 
-    let symbolTable = layout.symbolTable;
-    let b = builder(env, layout.symbolTable);
-
-    b.startLabels();
+    let statements;
+    if (block.prelude && block.head) {
+      statements = block.prelude.concat(block.head).concat(block.statements);
+    } else {
+      statements = block.statements;
+    }
 
     let dynamicTag = this.tag.getDynamic();
-    let staticTag: Maybe<string>;
 
     if (dynamicTag) {
-      compileExpr(dynamicTag, b);
-      b.test('simple');
-      b.jumpUnless('BODY');
-      // MAJOR TODO: Stack allocate this
-      compileExpr(dynamicTag, b);
-      b.openDynamicPrimitiveElement();
-      b.didCreateElement();
-      this.attrs['buffer'].forEach(statement => compileStatement(statement, b));
-      b.flushElement();
-      b.label('BODY');
-    } else if (staticTag = this.tag.getStatic()) {
-      b.openPrimitiveElement(staticTag);
-      b.didCreateElement();
-      this.attrs['buffer'].forEach(statement => compileStatement(statement, b));
-      b.flushElement();
+      let element: BaselineSyntax.AnyStatement[] = [
+        [Ops.BaselineBlock, ['with'], [dynamicTag], null, {
+          locals: ['tag'],
+          statements: [
+            [Ops.OpenDynamicElement, [Ops.Get, ['tag']]],
+            [Ops.Yield, '%attrs%', EMPTY_ARRAY],
+            ...this.attrs['buffer'],
+            [Ops.FlushElement]
+          ]
+        }, null],
+        ...block.statements,
+        [Ops.BaselineBlock, ['if'], [dynamicTag], null, {
+          locals: EMPTY_ARRAY,
+          statements: [
+            [Ops.CloseElement]
+          ]
+        }, null]
+      ];
+
+      let table = layoutTable(meta, named, yields.concat('%attrs%'), hasPartials);
+      let child = scanBlock(element, table, env);
+      return new EntryPoint(child.statements, table);
     }
 
-    b.preludeForLayout(layout);
+    let staticTag = this.tag.getStatic()!;
+    let prelude: [BaselineSyntax.OpenComponentElement] = [[Ops.OpenComponentElement, staticTag]];
 
-    layout.statements.forEach(statement => compileStatement(statement, b));
+    let head = this.attrs['buffer'];
 
-    if (dynamicTag) {
-      compileExpr(dynamicTag, b);
-      b.test('simple');
-      b.jumpUnless('END');
-      b.closeElement();
-      b.label('END');
-    } else if (staticTag) {
-      b.closeElement();
-    }
-
-    b.didRenderLayout();
-    b.stopLabels();
-
-    return new CompiledProgram(b.start, b.end, symbolTable.size);
+    let scanner = new Scanner({ ...block, prelude, head }, meta, env);
+    return scanner.scanLayout();
   }
 }
 
@@ -167,41 +173,19 @@ function isOpenElement(value: BaselineSyntax.AnyStatement): value is (BaselineSy
 class UnwrappedBuilder {
   public attrs = new ComponentAttrsBuilder();
 
-  constructor(public env: Environment, private layout: Layout) {}
+  constructor(public env: Environment, private layout: WireTemplate) {}
 
   get tag(): Component.ComponentTagBuilder {
     throw new Error('BUG: Cannot call `tag` on an UnwrappedBuilder');
   }
 
-  compile(): CompiledProgram {
-    let { env, layout } = this;
+  compile(): Layout {
+    let { env, layout: { meta, block } } = this;
 
-    let b = builder(env, layout.symbolTable);
+    let head = block.head ? this.attrs['buffer'].concat(block.head) : this.attrs['buffer'];
 
-    b.startLabels();
-
-    b.preludeForLayout(layout);
-
-    let attrs = this.attrs['buffer'];
-    let attrsInserted = false;
-
-    for (let i = 0; i < layout.statements.length; i++) {
-      let statement = layout.statements[i];
-      if (!attrsInserted && isOpenElement(statement)) {
-        b.openComponentElement(statement[1]);
-        b.didCreateElement();
-        b.shadowAttributes();
-        attrs.forEach(statement => compileStatement(statement, b));
-        attrsInserted = true;
-      } else {
-        compileStatement(statement, b);
-      }
-    }
-
-    b.didRenderLayout();
-    b.stopLabels();
-
-    return new CompiledProgram(b.start, b.end, layout.symbolTable.size);
+    let scanner = new Scanner({ ...block, head }, meta, env);
+    return scanner.scanLayout();
   }
 }
 
@@ -235,7 +219,7 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
 }
 
 class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
-  private buffer: WireFormat.Statements.Attribute[] = [];
+  private buffer: WireFormat.Statements.ElementHead[] = [];
 
   static(name: string, value: string) {
     this.buffer.push([Ops.StaticAttr, name, value, null]);
@@ -253,18 +237,19 @@ export class ComponentBuilder implements IComponentBuilder {
     this.env = builder.env;
   }
 
-  static(definition: StaticDefinition, args: BaselineSyntax.Args, _symbolTable: SymbolTable, shadow: InlineBlock) {
+  static(definition: StaticDefinition, args: BaselineSyntax.Args, _symbolTable: SymbolTable) {
     let [params, hash, _default, inverse] = args;
 
-    this.builder.unit(b => {
-      b.pushImmediate(definition);
-      let { positional } = compileArgs(params, hash, b);
-      let blocks = compileBlocks(_default, inverse, b);
-      b.pushReifiedArgs(positional, hash ? hash[0] : EMPTY_ARRAY, blocks.default, blocks.inverse);
+    let syntax: BaselineSyntax.ResolvedComponent = [
+      Ops.ResolvedComponent,
+      definition,
+      null,
+      [params, hash],
+      _default,
+      inverse
+    ];
 
-      b.openComponent(shadow);
-      b.closeComponent();
-    });
+    compileStatement(syntax, this.builder);
   }
 
   dynamic(definitionArgs: BaselineSyntax.Args, definition: DynamicDefinition, args: BaselineSyntax.Args, _symbolTable: SymbolTable, shadow: InlineBlock) {

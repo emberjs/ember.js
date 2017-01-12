@@ -13,6 +13,7 @@ import { SymbolTable } from '@glimmer/interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
 import { BaselineSyntax, InlineBlock, Template } from '../../scanner';
+import { compileList } from '../../syntax/functions';
 
 import {
   ConstantString,
@@ -214,10 +215,6 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.GetComponentLayout, state);
   }
 
-  openComponent(shadow?: InlineBlock) {
-    this.push(Op.OpenComponent, shadow ? this.block(shadow) : 0);
-  }
-
   didCreateElement(state: number) {
     this.push(Op.DidCreateElement, state);
   }
@@ -229,10 +226,6 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
 
   didRenderLayout() {
     this.push(Op.DidRenderLayout);
-  }
-
-  closeComponent() {
-    this.push(Op.CloseComponent);
   }
 
   // content
@@ -271,11 +264,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.OpenElementWithOperations, this.constants.string(tag));
   }
 
-  openComponentElement(tag: string) {
-    this.push(Op.OpenComponentElement, this.constants.string(tag));
-  }
-
-  openDynamicPrimitiveElement() {
+  openDynamicElement() {
     this.push(Op.OpenDynamicElement);
   }
 
@@ -508,10 +497,6 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.Helper, this.func(func));
   }
 
-  putArgs(_args: Represents<CompiledArgs>) {
-    throw new Error('removing PutArgs');
-  }
-
   pushBlock(block: Option<InlineBlock>) {
     this.push(Op.PushBlock, this.block(block));
   }
@@ -715,9 +700,11 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     }
   }
 
-  yield(positional: number, to: string) {
+  yield(positional: Option<BaselineSyntax.AnyExpression[]>, to: string) {
     let table = this.symbolTable;
     let yields: Option<number>, partial: Option<number>;
+
+    let count = compileList(positional, this);
 
     if (yields = table.getSymbol('yields', to)) {
       this.push(Op.GetBlock, yields);
@@ -727,7 +714,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
       throw new Error('[BUG] ${to} is not a valid block name.');
     }
 
-    this.openBlock(positional);
+    this.openBlock(count);
     this.closeBlock();
   }
 

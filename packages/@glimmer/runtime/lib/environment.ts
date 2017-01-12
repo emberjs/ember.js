@@ -47,7 +47,7 @@ import { InlineBlock } from './scanner';
 
 import { PublicVM } from './vm/append';
 
-export type ScopeSlot = PathReference<Opaque> | InlineBlock | EvaluatedArgs;
+export type ScopeSlot = PathReference<Opaque> | Option<InlineBlock> | EvaluatedArgs;
 
 export interface DynamicScope {
   get(key: string): PathReference<Opaque>;
@@ -114,7 +114,7 @@ export class Scope {
     this.slots[symbol] = value;
   }
 
-  bindBlock(symbol: number, value: InlineBlock) {
+  bindBlock(symbol: number, value: Option<InlineBlock>) {
     this.slots[symbol] = value;
   }
 
