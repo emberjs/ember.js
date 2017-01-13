@@ -38,7 +38,9 @@ export class EntryPoint extends Template {
     let table = this.symbolTable;
 
     let b = builder(env, table);
-    for (let statement of this.statements) {
+
+    for (let i = 0; i < this.statements.length; i++) {
+      let statement = this.statements[i];
       let refined = SPECIALIZE.specialize(statement, table);
       STATEMENTS.compile(refined, b);
     }
@@ -58,7 +60,8 @@ export class InlineBlock extends Template {
       builder.bindPositionalArgsForLocals(locals);
     }
 
-    for (let statement of this.statements) {
+    for (let i = 0; i < this.statements.length; i++) {
+      let statement = this.statements[i];
       let refined = SPECIALIZE.specialize(statement, table);
       STATEMENTS.compile(refined, builder);
     }
@@ -85,7 +88,8 @@ export class PartialBlock extends Template {
     let table = this.symbolTable;
     let b = builder(env, table);
 
-    for (let statement of this.statements) {
+    for (let i = 0; i < this.statements.length; i++) {
+      let statement = this.statements[i];
       let refined = SPECIALIZE.specialize(statement, table);
       STATEMENTS.compile(refined, b);
     }
@@ -217,8 +221,9 @@ export class RawInlineBlock {
 
   scan(): InlineBlock {
     let buffer: BaselineSyntax.AnyStatement[] = [];
-    let statements = this.statements;
-    for (let statement of statements) {
+
+    for(let i = 0; i < this.statements.length; i++) {
+      let statement = this.statements[i];
       if (WireFormat.Statements.isBlock(statement)) {
         buffer.push(this.specializeBlock(statement));
       } else if (WireFormat.Statements.isComponent(statement)) {
