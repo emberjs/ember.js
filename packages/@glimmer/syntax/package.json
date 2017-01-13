@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/syntax",
-  "version": "0.5.3",
+  "version": "0.21.0",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
   "jsnext:main": "dist/modules/index.js",
