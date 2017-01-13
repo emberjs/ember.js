@@ -57,7 +57,7 @@ export default function build(ast) {
     }
     break;
     case 'MustacheCommentStatement': {
-      output.push(compactJoin(['{{!', ast.value, '}}']));
+      output.push(compactJoin(['{{!--', ast.value, '--}}']));
     }
     break;
     case 'ElementModifierStatement': {
