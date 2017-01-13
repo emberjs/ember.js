@@ -71,11 +71,13 @@ class Labels {
   }
 
   patch(constants: Constants, opcodes: Program): void {
-    for (let { at, target, Target } of this.jumps) {
+    for (let i = 0; i < this.jumps.length; i++) {
+      let { at, target, Target } = this.jumps[i];
       opcodes.set(at, APPEND_OPCODES.construct(Target, null, this.labels[target]));
     }
 
-    for (let { at, start, end, Range } of this.ranges) {
+    for (let i = 0; i < this.ranges.length; i++) {
+      let { at, start, end, Range } = this.ranges[i];
       let slice = constants.slice([this.labels[start], this.labels[end] - 1]);
       opcodes.set(at, APPEND_OPCODES.construct(Range, null, slice));
     }
