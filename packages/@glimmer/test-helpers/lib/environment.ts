@@ -25,7 +25,6 @@ import {
   ComponentManager,
   ComponentDefinition,
   ComponentLayoutBuilder,
-  ComponentBuilder,
 
   // Values
   EvaluatedArgs,
@@ -36,7 +35,6 @@ import {
   BlockMacros,
   InlineMacros,
   NestedBlockSyntax,
-  CompileBlockMacro,
   BaselineSyntax,
 
   // References
@@ -46,7 +44,6 @@ import {
   // Misc
   Bounds,
   ElementOperations,
-  FunctionExpression,
   OpcodeBuilderDSL,
   Simple,
   getDynamicVar,
@@ -93,8 +90,6 @@ import {
 import {
   SymbolTable
 } from '@glimmer/interfaces';
-
-import * as WireFormat from '@glimmer/wire-format';
 
 import {
   TemplateMeta,
@@ -758,7 +753,7 @@ export class TestEnvironment extends Environment {
     return definition;
   }
 
-  registerBasicComponent<T extends BasicComponent>(name: string, Component: BasicComponentFactory, layout: string): ComponentDefinition<BasicComponentDefinition> {
+  registerBasicComponent(name: string, Component: BasicComponentFactory, layout: string): ComponentDefinition<BasicComponentDefinition> {
     let definition = new BasicComponentDefinition(name, BASIC_COMPONENT_MANAGER, Component, layout);
     return this.registerComponent(name, definition);
   }
@@ -1079,7 +1074,7 @@ export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectF
   });
 }
 
-const { defaultBlock, inverseBlock, params, hash } = BaselineSyntax.NestedBlock;
+const { defaultBlock, params, hash } = BaselineSyntax.NestedBlock;
 
 function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: BlockMacros, inlines: InlineMacros } {
   blocks.add('identity', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
@@ -1119,7 +1114,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
   });
 
   blocks.add('component', (sexp, builder) => {
-    let [, path, params, hash, _default, inverse] = sexp;
+    let [,, params, hash, _default, inverse] = sexp;
     let definitionArgs: BaselineSyntax.Args = [params.slice(0, 1), null, null, null];
     let args: BaselineSyntax.Args = [params.slice(1), hash, _default, inverse];
     builder.component.dynamic(definitionArgs, dynamicComponentFor, args, builder.symbolTable);

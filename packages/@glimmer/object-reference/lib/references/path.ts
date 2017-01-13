@@ -1,23 +1,9 @@
 import { EMPTY_CACHE } from '../utils';
-import { DictSet, dict } from '@glimmer/util';
+import { dict } from '@glimmer/util';
 import Meta from '../meta';
 import { PropertyReference } from './descriptors';
 import { VOLATILE_TAG, PathReference as IPathReference, Reference, RevisionTag } from '@glimmer/reference';
 import { Dict, HasGuid } from '@glimmer/util';
-
-class UnchainFromPath {
-  private set: DictSet<PathReference<any> & HasGuid>;
-  private child: PathReference<any> & HasGuid;
-
-  constructor(set: DictSet<PathReference<any> & HasGuid>, child: PathReference<any> & HasGuid) {
-    this.set = set;
-    this.child = child;
-  }
-
-  destroy() {
-    this.set.delete(this.child);
-  }
-}
 
 export default class PathReference<T> implements IPathReference<T>, HasGuid {
   private parent: IPathReference<any>;

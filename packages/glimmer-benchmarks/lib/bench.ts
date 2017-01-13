@@ -9,8 +9,6 @@ import { dict } from '@glimmer/util';
 
 Benchmark.support.decompilation = false;
 
-type BenchmarkDescription = string;
-
 export abstract class BenchmarkScenario {
   protected moe: number;
   protected elapsed: number;
@@ -49,10 +47,6 @@ export abstract class BenchmarkScenario {
 
 export abstract class BenchmarkEnvironment {
   abstract elapsed(timestamp: number): number;
-}
-
-interface BenchmarkReporterClass {
-  new(description: BenchmarkDescription): BenchmarkReporter;
 }
 
 export abstract class BenchmarkReporter {
