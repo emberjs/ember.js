@@ -177,7 +177,8 @@ class UnwrappedBuilder {
     let attrs = this.attrs['buffer'];
     let attrsInserted = false;
 
-    for (let statement of layout.statements) {
+    for (let i = 0; i < layout.statements.length; i++) {
+      let statement = layout.statements[i];
       if (!attrsInserted && isOpenElement(statement)) {
         b.openComponentElement(statement[1]);
         b.didCreateElement();
