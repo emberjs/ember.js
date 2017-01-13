@@ -5,8 +5,7 @@ function printTransform(template) {
 }
 
 function printEqual(template) {
-  const ast = parse(template);
-  equal(print(ast), template);
+  equal(printTransform(template), template);
 }
 
 QUnit.module('[glimmer-syntax] Code generation');
