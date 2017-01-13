@@ -20,6 +20,8 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
         this.route('comments');
         this.route('likes');
       });
+      this.route('category', {path: 'category/:id'});
+      this.route('author', {path: 'author/:id'});
     });
     this.registerRoute('application', Route.extend({
       model() {
@@ -34,11 +36,20 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
           queryParams: ['lang'],
           lang: ''
         }));
+        this.register('controller:category', Controller.extend({
+          queryParams: ['type'],
+        }));
+        this.register('controller:authorKtrl', Controller.extend({
+          queryParams: ['official'],
+        }));
         this.register('template:application', compile('Engine{{lang}}{{outlet}}'));
         this.register('route:application', Route.extend({
           model() {
             hooks.push('engine - application');
           }
+        }));
+        this.register('route:author', Route.extend({
+          controllerName: 'authorKtrl',
         }));
 
         if (self._additionalEngineRegistrations) {
@@ -137,6 +148,10 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
         this.register('template:application', compile('Engine {{foo-bar wat=contextType}}'));
       }
     }));
+  }
+
+  stringsEndWith(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
   }
 
   ['@test attrs in an engine']() {
@@ -570,6 +585,43 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       return transition.then(() => {
         this.runTaskNext(() => this.assertText('ApplicationEngineLikes'));
       });
+    });
+  }
+
+  ['@test query params don\'t have stickiness by default between model'](assert) {
+    assert.expect(1);
+    let tmpl = '{{#link-to "blog.category" 1337}}Category 1337{{/link-to}}';
+    this.setupAppAndRoutableEngine();
+    this.additionalEngineRegistrations(function() {
+      this.register('template:category', compile(tmpl));
+    });
+
+    return this.visit('/blog/category/1?type=news').then(() => {
+      let suffix = '/blog/category/1337';
+      let href = this.element.querySelector('a').href;
+
+      // check if link ends with the suffix
+      assert.ok(this.stringsEndWith(href, suffix));
+    });
+  }
+
+  ['@test query params in customized controllerName have stickiness by default between model'](assert) {
+    assert.expect(2);
+    let tmpl = '{{#link-to "blog.author" 1337 class="author-1337"}}Author 1337{{/link-to}}{{#link-to "blog.author" 1 class="author-1"}}Author 1{{/link-to}}';
+    this.setupAppAndRoutableEngine();
+    this.additionalEngineRegistrations(function() {
+      this.register('template:author', compile(tmpl));
+    });
+
+    return this.visit('/blog/author/1?official=true').then(() => {
+      let suffix1 = '/blog/author/1?official=true';
+      let href1 = this.element.querySelector('.author-1').href;
+      let suffix1337 = '/blog/author/1337';
+      let href1337 = this.element.querySelector('.author-1337').href;
+
+      // check if link ends with the suffix
+      assert.ok(this.stringsEndWith(href1, suffix1));
+      assert.ok(this.stringsEndWith(href1337, suffix1337));
     });
   }
 });

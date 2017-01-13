@@ -954,7 +954,7 @@ const EmberRouter = EmberObject.extend(Evented, {
             delete queryParams[presentProp];
           }
         } else {
-          let cacheKey = calculateCacheKey(qp.controllerName, qp.parts, state.params);
+          let cacheKey = calculateCacheKey(qp.route.fullRouteName, qp.parts, state.params);
           queryParams[qp.scopedPropertyName] = appCache.lookup(cacheKey, qp.prop, qp.defaultValue);
         }
       }
