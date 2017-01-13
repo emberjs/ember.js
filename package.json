@@ -40,7 +40,7 @@
     "handlebars": "^3.0.2",
     "qunit": "^0.9.1",
     "simple-dom": "^0.3.0",
-    "simple-html-tokenizer": "^0.2.5"
+    "simple-html-tokenizer": "^0.3.0"
   },
   "devDependencies": {
     "benchmark": "^1.0.0",
