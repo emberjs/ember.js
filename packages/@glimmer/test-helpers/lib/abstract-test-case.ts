@@ -85,7 +85,7 @@ export class RenderingTest {
   private result: RenderResult = null;
   public snapshot: Element[];
   public element: Node;
-  public assert: QUnit['assert'];
+  public assert: typeof QUnit.assert;
 
   constructor(protected env: TestEnvironment = new TestEnvironment(), template: string, private appendTo: Simple.Element) {
     this.template = this.env.compile(template);
@@ -157,10 +157,6 @@ export class RenderingTest {
     this.result.rerender();
     this.env.commit();
   }
-}
-
-interface Constructor<T> {
-  new(...args): T;
 }
 
 export function testModule(description?: string) {

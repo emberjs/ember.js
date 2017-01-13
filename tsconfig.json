@@ -14,9 +14,10 @@
         "newLine": "LF",
         "noEmit": true
     },
-    "filesGlob": [
-      "packages/**.d.ts",
-      "packages/**.ts"
+    "include": [
+      "packages/*/*.d.ts",
+      "packages/*/index.ts",
+      "packages/*/lib/**.ts"
     ],
     "exclude": [
         "dist",

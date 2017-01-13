@@ -4,15 +4,13 @@
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
   "jsnext:main": "dist/modules/index.js",
-  "typings": "dist/commonjs/index.d.ts",
+  "typings": "index.ts",
   "scripts": {
     "build": "../../../build/build",
     "prepublish": "npm run build",
     "test": "node -e 'require(\".\")'"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist", "index.ts", "lib"],
   "dependencies": {
     "@glimmer/reference": "^0.21.0",
     "@glimmer/runtime": "^0.21.1",

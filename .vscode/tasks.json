@@ -1,20 +1,12 @@
 {
   "version": "0.1.0",
-
-  // The command is tsc. Assumes that tsc has been installed using npm install -g typescript
-  "command": "build/build-all-packages",
-
-  // The command is a shell script
+  "command": "npm",
   "isShellCommand": true,
-
-  // Show the output window only if unrecognized errors occur.
-  "showOutput": "silent",
-
-  "args": [
-  ],
-
+  "showOutput": "always",
+  "suppressTaskName": true,
   "tasks": [{
     "taskName": "vscode-build",
+    "args": ["run", "vscode-build"],
     "isBuildCommand": true,
     "problemMatcher": "$tsc"
   }]

@@ -10,9 +10,7 @@
     "prepublish": "npm run build",
     "test": "node -e 'require(\".\")'"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist", "index.ts", "lib"],
   "dependencies": {
     "handlebars": "^3.0.3",
     "simple-html-tokenizer": "^0.3.0"

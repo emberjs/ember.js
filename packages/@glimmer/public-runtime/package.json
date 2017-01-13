@@ -10,11 +10,7 @@
     "prepublish": "npm run build",
     "test": "node -e 'require(\".\")'"
   },
-  "files": [
-    "dist",
-    "lib",
-    "index.ts"
-  ],
+  "files": ["dist", "index.ts", "lib"],
   "dependencies": {
     "@glimmer/runtime": "^0.21.1",
     "@glimmer/util": "^0.21.0",

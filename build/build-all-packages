@@ -12,4 +12,4 @@ do
   tsFiles="$tsFiles $packageName/index.ts"
 done
 
-tsc --noEmit --target es6 --moduleResolution node $tsFiles
+node_modules/.bin/tsc --noEmit --target es6 --moduleResolution node $tsFiles
