@@ -48,6 +48,20 @@ test("elements can have empty attributes", function() {
   ]));
 });
 
+test("disallowed quote in element space is rejected", function(assert) {
+  let t = '<img foo="bar"" >';
+  assert.throws(() => {
+    parse(t);
+  }, /Syntax error at line 1 col 14: " is not a valid character within attribute names/);
+});
+
+test("disallowed equals sign in element space is rejected", function(assert) {
+  let t = '<img =foo >';
+  assert.throws(() => {
+    parse(t);
+  }, /Syntax error at line 1 col 5: attribute name cannot start with equals sign/);
+});
+
 test("svg content", function() {
   let t = "<svg></svg>";
   astEqual(t, b.program([

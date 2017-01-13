@@ -898,7 +898,7 @@ test("Block params in HTML syntax - Throws an error on invalid identifiers for p
   }, /Invalid identifier for block parameters: 'foo\.bar' in 'as \|x foo\.bar|'/);
   QUnit.throws(function() {
     compile('<x-bar as |x "foo"|></x-bar>');
-  }, /Invalid identifier for block parameters: '"foo"' in 'as \|x "foo"|'/);
+  }, /Syntax error at line 1 col 17: " is not a valid character within attribute names/);
   QUnit.throws(function() {
     compile('<x-bar as |foo[bar]|></x-bar>');
   }, /Invalid identifier for block parameters: 'foo\[bar\]' in 'as \|foo\[bar\]\|'/);
