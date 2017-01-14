@@ -43,7 +43,9 @@ import {
 function ROOT() {}
 ROOT.__hasSuper = false;
 
-const a_slice = [].slice;
+const a_slice = Array.prototype.slice;
+const a_concat = Array.prototype.concat;
+const { isArray } = Array;
 
 function isMethod(obj) {
   return 'function' === typeof obj &&
@@ -72,14 +74,11 @@ function mixinProperties(mixinsMeta, mixin) {
 }
 
 function concatenatedMixinProperties(concatProp, props, values, base) {
-  let concats;
-
   // reset before adding each new mixin to pickup concats from previous
-  concats = values[concatProp] || base[concatProp];
+  let concats = values[concatProp] || base[concatProp];
   if (props[concatProp]) {
-    concats = concats ? concats.concat(props[concatProp]) : props[concatProp];
+    concats = concats ? a_concat.call(concats, props[concatProp]) : props[concatProp];
   }
-
   return concats;
 }
 
@@ -146,18 +145,18 @@ function applyConcatenatedProperties(obj, key, value, values) {
   let baseValue = values[key] || obj[key];
   let ret;
 
-  if (baseValue) {
-    if ('function' === typeof baseValue.concat) {
+  if (baseValue === null || baseValue === undefined) {
+    ret = makeArray(value);
+  } else {
+    if (isArray(baseValue)) {
       if (value === null || value === undefined) {
         ret = baseValue;
       } else {
-        ret = baseValue.concat(value);
+        ret = a_concat.call(baseValue, value);
       }
     } else {
-      ret = makeArray(baseValue).concat(value);
+      ret = a_concat.call(makeArray(baseValue), value);
     }
-  } else {
-    ret = makeArray(value);
   }
 
   runInDebug(() => {
@@ -176,7 +175,7 @@ function applyMergedProperties(obj, key, value, values) {
   let baseValue = values[key] || obj[key];
 
   runInDebug(function() {
-    if (Array.isArray(value)) { // use conditional to avoid stringifying every time
+    if (isArray(value)) { // use conditional to avoid stringifying every time
       assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
     }
   });
@@ -855,6 +854,5 @@ export function _beforeObserver(...args) {
 
 export {
   Mixin,
-  required,
   REQUIRED
 };

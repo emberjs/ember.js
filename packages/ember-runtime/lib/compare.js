@@ -111,7 +111,7 @@ export default function compare(v, w) {
     case 'string':
       return spaceship(v.localeCompare(w), 0);
 
-    case 'array':
+    case 'array': {
       let vLen = v.length;
       let wLen = w.length;
       let len = Math.min(vLen, wLen);
@@ -126,7 +126,7 @@ export default function compare(v, w) {
       // all elements are equal now
       // shorter array should be ordered first
       return spaceship(vLen, wLen);
-
+    }
     case 'instance':
       if (Comparable && Comparable.detect(v)) {
         return v.compare(v, w);

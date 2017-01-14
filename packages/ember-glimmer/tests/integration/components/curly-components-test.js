@@ -2089,10 +2089,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test when a property is changed during children\'s rendering'](assert) {
-    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      expectDeprecation(/modified value twice on <\(.+> in a single render/);
-    }
-
     let outer, middle;
 
     this.registerComponent('x-outer', {
@@ -2137,14 +2133,17 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
     assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
 
-    if (!isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    let expectedBacktrackingMessage = /modified "value" twice on <\(.+> in a single render\. It was rendered in "component:x-middle" and modified in "component:x-inner"/;
+
+    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      expectDeprecation(expectedBacktrackingMessage);
+      this.runTask(() => outer.set('value', 2));
+    } else {
       expectAssertion(() => {
         this.runTask(() => outer.set('value', 2));
-      }, /modified value twice on <\(.+> in a single render/);
+      }, expectedBacktrackingMessage);
 
       return;
-    } else {
-      this.runTask(() => outer.set('value', 2));
     }
 
     assert.equal(this.$('#inner-value').text(), '2', 'second render of inner');
@@ -2162,10 +2161,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test when a shared dependency is changed during children\'s rendering'](assert) {
-    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      expectDeprecation(/modified wrapper.content twice on <Ember.Object.+> in a single render/);
-    }
-
     let outer;
 
     this.registerComponent('x-outer', {
@@ -2190,14 +2185,17 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       template: '<div id="inner-value">{{wrapper.content}}</div>'
     });
 
-    if (!isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    let expectedBacktrackingMessage = /modified "wrapper\.content" twice on <Ember\.Object.+> in a single render\. It was rendered in "component:x-outer" and modified in "component:x-inner"/;
+
+    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      expectDeprecation(expectedBacktrackingMessage);
+      this.render('{{x-outer}}');
+    } else {
       expectAssertion(() => {
         this.render('{{x-outer}}');
-      }, /modified wrapper.content twice on <Ember.Object.+> in a single render/);
+      }, expectedBacktrackingMessage);
 
       return;
-    } else {
-      this.render('{{x-outer}}');
     }
 
     assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
@@ -2897,6 +2895,70 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     assert.strictEqual(fooCopyDidChangeCount, 0, 'expected observer firing for: fooCopy');
     assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
+  }
+
+  ['@test overriding didReceiveAttrs does not trigger deprecation'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didReceiveAttrs() {
+          assert.equal(1, this.get('foo'), 'expected attrs to have correct value')
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+  }
+
+  ['@test can access didReceiveAttrs arguments [DEPRECATED]'](assert) {
+    expectDeprecation(/didReceiveAttrs.*stop taking arguments/);
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didReceiveAttrs({ attrs }) {
+          assert.equal(1, attrs.foo.value, 'expected attrs to have correct value')
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+  }
+
+  ['@test can access didUpdateAttrs arguments [DEPRECATED]'](assert) {
+    expectDeprecation(/didUpdateAttrs.*stop taking arguments/);
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didUpdateAttrs({ newAttrs }) {
+          assert.equal(5, newAttrs.foo.value, "expected newAttrs to have new value");
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+
+    this.runTask(() => set(this.context, 'foo', 5));
+  }
+
+  ['@test overriding didUpdateAttrs does not trigger deprecation'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didUpdateAttrs() {
+          assert.equal(5, this.get('foo'), "expected newAttrs to have new value");
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+
+    this.runTask(() => set(this.context, 'foo', 5));
   }
 
   ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](assert) {

@@ -1,6 +1,6 @@
 import { addObserver } from '../observer';
 import { get } from '../property_get';
-import { finishChains } from '../chains';
+import { ChainNode, finishChains } from '../chains';
 import { defineProperty } from '../properties';
 import computed from '../computed';
 import { propertyDidChange } from '../property_events';
@@ -75,4 +75,15 @@ QUnit.test('observer and CP chains', function() {
 
   get(obj, 'qux'); // CP chain re-recreated
   ok(true, 'no crash');
+});
+
+QUnit.test('checks cache correctly', function(assert) {
+  let obj = {};
+  let parentChainNode = new ChainNode(null, null, obj);
+  let chainNode = new ChainNode(parentChainNode, 'foo');
+
+  defineProperty(obj, 'foo', computed(function() { return undefined; }));
+  get(obj, 'foo');
+
+  assert.strictEqual(chainNode.value(), undefined);
 });

@@ -1,3 +1,6 @@
+/* eslint no-console:off */
+/* global console */
+
 import { ENV } from 'ember-environment';
 import isEnabled from './features';
 
@@ -123,8 +126,8 @@ function withFinalizer(callback, finalizer, payload, binding) {
     result = payload;
   } finally {
     finalizer();
-    return result;
   }
+  return result;
 }
 
 function NOOP() {}

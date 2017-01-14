@@ -8,13 +8,14 @@ import {
   StatementSyntax,
   ComponentDefinition
 } from 'glimmer-runtime';
-import { _instrumentStart } from 'ember-metal';
+import { runInDebug, _instrumentStart } from 'ember-metal';
 import { RootReference } from '../utils/references';
 import {
   UpdatableTag,
   ConstReference,
   combine
 } from 'glimmer-reference';
+import AbstractManager from './abstract-manager';
 
 function outletComponentFor(vm) {
   let { outletState } = vm.dynamicScope();
@@ -174,12 +175,14 @@ class StateBucket {
   }
 }
 
-class OutletComponentManager {
+class OutletComponentManager extends AbstractManager {
   prepareArgs(definition, args) {
     return args;
   }
 
   create(environment, definition, args, dynamicScope) {
+    runInDebug(() => this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment));
+
     let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get('outlets').get(definition.outletName);
     let outletState = outletStateReference.value();
     return new StateBucket(outletState);
@@ -203,6 +206,8 @@ class OutletComponentManager {
 
   didRenderLayout(bucket) {
     bucket.finalize();
+
+    runInDebug(() => this.debugStack.pop());
   }
 
   didCreateElement() {}
@@ -216,6 +221,8 @@ const MANAGER = new OutletComponentManager();
 
 class TopLevelOutletComponentManager extends OutletComponentManager {
   create(environment, definition, args, dynamicScope) {
+    runInDebug(() => this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment));
+
     return new StateBucket(dynamicScope.outletState.value());
   }
 

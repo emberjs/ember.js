@@ -153,11 +153,13 @@ export default EmberObject.extend({
     let event;
     let events = this._finalEvents = assign({}, get(this, 'events'), addedEvents);
 
-    if (!isNone(rootElement)) {
+    if (isNone(rootElement)) {
+      rootElement = get(this, 'rootElement');
+    } else {
       set(this, 'rootElement', rootElement);
     }
 
-    rootElement = jQuery(get(this, 'rootElement'));
+    rootElement = jQuery(rootElement);
 
     assert(`You cannot use the same root element (${rootElement.selector || rootElement[0].tagName}) multiple times in an Ember.Application`, !rootElement.is(ROOT_ELEMENT_SELECTOR));
     assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest(ROOT_ELEMENT_SELECTOR).length);
@@ -169,9 +171,11 @@ export default EmberObject.extend({
       throw new TypeError(`Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${rootElement.selector || rootElement[0].tagName}). Make sure you set rootElement to the body or an element in the body.`);
     }
 
+    let viewRegistry = this._getViewRegistry();
+
     for (event in events) {
       if (events.hasOwnProperty(event)) {
-        this.setupHandler(rootElement, event, events[event]);
+        this.setupHandler(rootElement, event, events[event], viewRegistry);
       }
     }
   },
@@ -189,12 +193,10 @@ export default EmberObject.extend({
     @param {Element} rootElement
     @param {String} event the browser-originated event to listen to
     @param {String} eventName the name of the method to call on the view
+    @param {Object} viewRegistry
   */
-  setupHandler(rootElement, event, eventName) {
+  setupHandler(rootElement, event, eventName, viewRegistry) {
     let self = this;
-
-    let owner = getOwner(this);
-    let viewRegistry = owner && owner.lookup('-view-registry:main') || fallbackViewRegistry;
 
     if (eventName === null) {
       return;
@@ -286,6 +288,13 @@ export default EmberObject.extend({
 
   _bubbleEvent(view, evt, eventName) {
     return view.handleEvent(eventName, evt);
+  },
+
+  _getViewRegistry() {
+    let owner = getOwner(this);
+    let viewRegistry = owner && owner.lookup('-view-registry:main') || fallbackViewRegistry;
+
+    return viewRegistry;
   },
 
   destroy() {
