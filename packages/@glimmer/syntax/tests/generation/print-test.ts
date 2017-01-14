@@ -1,8 +1,11 @@
 import { preprocess as parse, print, builders as b } from "@glimmer/syntax";
 
+function printTransform(template) {
+  return print(parse(template));
+}
+
 function printEqual(template) {
-  const ast = parse(template);
-  equal(print(ast), template);
+  equal(printTransform(template), template);
 }
 
 QUnit.module('[glimmer-syntax] Code generation');
@@ -64,7 +67,7 @@ test('SubExpression', function() {
 });
 
 test('BlockStatement: multiline', function() {
-  printEqual('<ul>{{#each foos as |foo|}}\n  {{foo}}\n{{/each}}</ul>');
+  printEqual('<ul>{{#each foos as |foo index|}}\n  <li>{{foo}}: {{index}}</li>\n{{/each}}</ul>');
 });
 
 test('BlockStatement: inline', function() {
@@ -99,13 +102,17 @@ test('HTML comment', function() {
 });
 
 test('Handlebars comment', function() {
-  printEqual('{{! foo }}');
+  equal(printTransform('{{! foo }}'), '{{!-- foo --}}');
 });
 
 test('Handlebars comment: in ElementNode', function() {
-  printEqual('<div {{! foo }}></div>');
+  printEqual('<div {{!-- foo --}}></div>');
 });
 
 test('Handlebars comment: in ElementNode children', function() {
-  printEqual('<div>{{! foo bar}}<b></b></div>');
+  printEqual('<div>{{!-- foo bar --}}<b></b></div>');
+});
+
+test('Handlebars in handlebar comment', function() {
+  printEqual('{{!-- {{foo-bar}} --}}');
 });

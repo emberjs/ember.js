@@ -57,7 +57,7 @@ export default function build(ast) {
     }
     break;
     case 'MustacheCommentStatement': {
-      output.push(compactJoin(['{{!', ast.value, '}}']));
+      output.push(compactJoin(['{{!--', ast.value, '--}}']));
     }
     break;
     case 'ElementModifierStatement': {
@@ -170,7 +170,7 @@ function compactJoin(array, delimiter?) {
 function blockParams(block) {
   const params = block.program.blockParams;
   if(params.length) {
-    return ` as |${params.join(',')}|`;
+    return ` as |${params.join(' ')}|`;
   }
 }
 
