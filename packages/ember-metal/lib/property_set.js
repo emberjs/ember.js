@@ -81,7 +81,7 @@ export function set(obj, keyName, value, tolerant) {
 }
 
 if (isEnabled('mandatory-setter')) {
-  var setWithMandatorySetter = function(meta, obj, keyName, value) {
+  var setWithMandatorySetter = (meta, obj, keyName, value) => {
     if (meta && meta.peekWatching(keyName) > 0) {
       makeEnumerable(obj, keyName);
       meta.writeValue(obj, keyName, value);
@@ -90,7 +90,7 @@ if (isEnabled('mandatory-setter')) {
     }
   };
 
-  var makeEnumerable = function(obj, key) {
+  var makeEnumerable = (obj, key) => {
     let desc = Object.getOwnPropertyDescriptor(obj, key);
 
     if (desc && desc.set && desc.set.isMandatorySetter) {
@@ -121,7 +121,7 @@ function setPath(root, path, value, tolerant) {
     if (tolerant) {
       return;
     } else {
-      throw new EmberError('Property set failed: object in path "' + path + '" could not be found or was destroyed.');
+      throw new EmberError(`Property set failed: object in path "${path}" could not be found or was destroyed.`);
     }
   }
 

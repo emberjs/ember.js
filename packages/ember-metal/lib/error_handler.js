@@ -2,12 +2,12 @@ import Logger from 'ember-console';
 import { isTesting } from './testing';
 
 // To maintain stacktrace consistency across browsers
-let getStack = function(error) {
-  var stack = error.stack;
-  var message = error.message;
+let getStack = error => {
+  let stack = error.stack;
+  let message = error.message;
 
-  if (stack && stack.indexOf(message) === -1) {
-    stack = message + '\n' + stack;
+  if (stack && !stack.includes(message)) {
+    stack = `${message}\n${stack}`;
   }
 
   return stack;
