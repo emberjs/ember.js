@@ -29,7 +29,7 @@ function assertPolyfill(test, message) {
   if (!test) {
     try {
       // attempt to preserve the stack
-      throw new Error(`assertion failed: ${message}`);
+      throw new Error('assertion failed: ' + message);
     } catch (error) {
       setTimeout(() => {
         throw error;

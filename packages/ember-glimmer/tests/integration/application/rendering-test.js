@@ -2,8 +2,6 @@ import { Controller } from 'ember-runtime';
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Route } from 'ember-routing';
-import { isFeatureEnabled } from 'ember-metal';
-import { Component } from 'ember-glimmer';
 
 moduleFor('Application test: rendering', class extends ApplicationTest {
 
@@ -373,42 +371,5 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
         content: `Hello from A!`
       });
     });
-  }
-
-  ['@test it emits a useful backtracking re-render assertion message'](assert) {
-    this.router.map(function() {
-      this.route('routeWithError');
-    });
-
-    this.registerRoute('routeWithError', Route.extend({
-      model() {
-        return { name: 'Alex' };
-      }
-    }));
-
-    this.registerTemplate('routeWithError', 'Hi {{model.name}} {{x-foo person=model}}');
-
-    this.registerComponent('x-foo', {
-      ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          this.set('person.name', 'Ben');
-        }
-      }),
-      template: 'Hi {{person.name}} from component'
-    });
-
-    let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "template:routeWithError" and modified in "component:x-foo"/;
-
-    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      expectDeprecation(expectedBacktrackingMessage);
-      return this.visit('/routeWithError');
-    } else {
-      return this.visit('/').then(() => {
-        expectAssertion(() => {
-          this.visit('/routeWithError');
-        }, expectedBacktrackingMessage);
-      });
-    }
   }
 });

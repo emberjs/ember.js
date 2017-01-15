@@ -49,13 +49,3 @@ QUnit.test('Ember.Backburner is deprecated', function() {
     new Ember.Backburner(['foo']);
   }, 'Usage of Ember.Backburner is deprecated.');
 });
-
-QUnit.test('Ember.K is deprecated', function(assert) {
-  expectDeprecation(function() {
-    let obj = {
-      noop: Ember.K
-    };
-
-    assert.equal(obj, obj.noop());
-  }, 'Ember.K is deprecated in favor of defining a function inline.');
-});

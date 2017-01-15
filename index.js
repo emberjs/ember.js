@@ -1,5 +1,6 @@
-/* eslint-env node */
+/* jshint node: true */
 'use strict';
+var stew = require('broccoli-stew');
 var path = require('path');
 var resolve = require('resolve');
 
@@ -32,9 +33,7 @@ module.exports = {
   name: 'ember-source',
   paths: paths,
   absolutePaths: absolutePaths,
-
   treeForVendor: function() {
-    var stew = require('broccoli-stew');
 
     var jqueryPath;
     try {

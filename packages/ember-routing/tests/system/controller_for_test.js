@@ -103,10 +103,6 @@ QUnit.test('generateController should return controller:basic if provided', func
   if (isFeatureEnabled('ember-no-double-extend')) {
     ok(controller instanceof BasicController, 'should return base class of controller');
   } else {
-    let doubleExtendedFactory;
-    ignoreDeprecation(() => {
-      doubleExtendedFactory = appInstance._lookupFactory('controller:basic');
-    });
-    ok(controller instanceof doubleExtendedFactory, 'should return double-extended controller');
+    ok(controller instanceof appInstance._lookupFactory('controller:basic'), 'should return double-extended controller');
   }
 });

@@ -23,7 +23,6 @@ import {
   _instrumentStart
 } from 'ember-metal';
 import {
-  dispatchLifeCycleHook,
   setViewElement
 } from 'ember-views';
 import {
@@ -31,7 +30,6 @@ import {
   ComponentArgs
 } from '../utils/process-args';
 import { privatize as P } from 'container';
-import AbstractManager from './abstract-manager';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -178,7 +176,7 @@ function rerenderInstrumentDetails(component) {
   return component.instrumentDetails({ initialRender: false });
 }
 
-class CurlyComponentManager extends AbstractManager {
+class CurlyComponentManager {
   prepareArgs(definition, args) {
     if (definition.ComponentClass) {
       validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.class.positionalParams);
@@ -188,8 +186,6 @@ class CurlyComponentManager extends AbstractManager {
   }
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
-    runInDebug(() => this._pushToDebugStack(`component:${definition.name}`, environment));
-
     let parentView = dynamicScope.view;
 
     let factory = definition.ComponentClass;
@@ -309,8 +305,6 @@ class CurlyComponentManager extends AbstractManager {
   didRenderLayout(bucket, bounds) {
     bucket.component[BOUNDS] = bounds;
     bucket.finalize();
-
-    runInDebug(() => this.debugStack.pop());
   }
 
   getTag({ component }) {
@@ -328,8 +322,6 @@ class CurlyComponentManager extends AbstractManager {
   update(bucket, _, dynamicScope) {
     let { component, args, argsRevision, environment } = bucket;
 
-    runInDebug(() => this._pushToDebugStack(component._debugContainerKey, environment));
-
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
     if (!args.tag.validate(argsRevision)) {
@@ -344,8 +336,8 @@ class CurlyComponentManager extends AbstractManager {
       component.setProperties(props);
       component[IS_DISPATCHING_ATTRS] = false;
 
-      dispatchLifeCycleHook(component, 'didUpdateAttrs', oldAttrs, newAttrs);
-      dispatchLifeCycleHook(component, 'didReceiveAttrs', oldAttrs, newAttrs);
+      component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
+      component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });
     }
 
     if (environment.isInteractive) {
@@ -356,8 +348,6 @@ class CurlyComponentManager extends AbstractManager {
 
   didUpdateLayout(bucket) {
     bucket.finalize();
-
-    runInDebug(() => this.debugStack.pop());
   }
 
   didUpdate({ component, environment }) {
@@ -377,8 +367,6 @@ const MANAGER = new CurlyComponentManager();
 class TopComponentManager extends CurlyComponentManager {
   create(environment, definition, args, dynamicScope, currentScope, hasBlock) {
     let component = definition.ComponentClass.create();
-
-    runInDebug(() => this._pushToDebugStack(component._debugContainerKey, environment));
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 

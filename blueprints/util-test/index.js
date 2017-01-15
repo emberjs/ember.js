@@ -1,4 +1,4 @@
-/* eslint-env node */
+/*jshint node:true*/
 
 var testInfo     = require('ember-cli-test-info');
 var stringUtils  = require('ember-cli-string-utils');

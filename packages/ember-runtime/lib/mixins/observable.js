@@ -340,29 +340,34 @@ export default Mixin.create({
     value is set, regardless of whether it has actually changed. Your
     observer should be prepared to handle that.
 
+    You can also pass an optional context parameter to this method. The
+    context will be passed to your observer method whenever it is triggered.
+    Note that if you add the same target/method pair on a key multiple times
+    with different context parameters, your observer will only be called once
+    with the last context you passed.
+
     ### Observer Methods
 
-    Observer methods have the following signature:
+    Observer methods you pass should generally have the following signature if
+    you do not pass a `context` parameter:
 
     ```javascript
-    export default Ember.Component.extend({
-      init() {
-        this._super(...arguments);
-        this.addObserver('foo', this, 'fooDidChange');
-      },
-
-      fooDidChange(sender, key, value, rev) {
-        // your code
-      }
-    });
+    fooDidChange: function(sender, key, value, rev) { };
     ```
 
-    The `sender` is the object that changed. The `key` is the property that
-    changes. The `value` property is currently reserved and unused. The `rev`
+    The sender is the object that changed. The key is the property that
+    changes. The value property is currently reserved and unused. The rev
     is the last property revision of the object when it changed, which you can
     use to detect if the key value has really changed or not.
 
-    Usually you will not need the value or revision parameters at
+    If you pass a `context` parameter, the context will be passed before the
+    revision like so:
+
+    ```javascript
+    fooDidChange: function(sender, key, value, context, rev) { };
+    ```
+
+    Usually you will not need the value, context or revision parameters at
     the end. In this case, it is common to write observer methods that take
     only a sender and key value as parameters or, if you aren't interested in
     any of these values, to write an observer that has no parameters at all.

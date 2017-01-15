@@ -23,14 +23,10 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
   let counter = 0;
   let inTransaction = false;
   let shouldReflush;
-  let debugStack;
 
   runInTransaction = function(context, methodName) {
     shouldReflush = false;
     inTransaction = true;
-    runInDebug(() => {
-      debugStack = context.env.debugStack;
-    });
     context[methodName]();
     inTransaction = false;
     counter++;
@@ -44,13 +40,8 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     lastRendered[key] = counter;
 
     runInDebug(() => {
-      let referenceMap = meta.writableLastRenderedReferenceMap();
-      referenceMap[key] = reference;
-
-      let templateMap = meta.writableLastRenderedTemplateMap();
-      if (templateMap[key] === undefined) {
-        templateMap[key] = debugStack.peek();
-      }
+      let lastRenderedFrom = meta.writableLastRenderedFrom();
+      lastRenderedFrom[key] = reference;
     });
   };
 
@@ -61,13 +52,10 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     if (lastRendered && lastRendered[key] === counter) {
       raise(
         (function() {
-          let templateMap = meta.readableLastRenderedTemplateMap();
-          let lastRenderedIn = templateMap[key];
-          let currentlyIn = debugStack.peek();
-
-          let referenceMap = meta.readableLastRenderedReferenceMap();
-          let lastRef = referenceMap[key];
+          let ref = meta.readableLastRenderedFrom();
           let parts = [];
+          let lastRef = ref[key];
+
           let label;
 
           if (lastRef) {
@@ -76,12 +64,12 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
               lastRef = lastRef._parentReference;
             }
 
-            label = parts.join('.');
+            label = parts.join();
           } else {
             label = 'the same value';
           }
 
-          return `You modified "${label}" twice on ${object} in a single render. It was rendered in ${lastRenderedIn} and modified in ${currentlyIn}. This was unreliable and slow in Ember 1.x and ${implication}`;
+          return `You modified ${label} twice on ${object} in a single render. This was unreliable and slow in Ember 1.x and ${implication}`;
         }()),
         false);
 

@@ -173,7 +173,7 @@ Container.prototype = {
         throw new Error('If ember-no-double-extend is enabled, ember-factory-for must also be enabled');
       }
     }
-    let factory = this[LOOKUP_FACTORY](fullName, options);
+    let factory = this.lookupFactory(fullName, options);
     if (factory === undefined) { return; }
     let manager = new DeprecatedFactoryManager(this, factory, fullName);
 

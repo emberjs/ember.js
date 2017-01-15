@@ -45,7 +45,6 @@ let containerProxyMixin = {
 
    @public
    @method ownerInjection
-   @since 2.3.0
    @return {Object}
   */
   ownerInjection() {

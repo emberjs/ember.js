@@ -106,5 +106,5 @@ QUnit.test('adding a concatenable property that already has a defined value shou
   });
 
   let obj = mixin({}, mixinA, mixinB);
-  deepEqual(get(obj, 'foobar'), ['foo', 'bar']);
+  equal(get(obj, 'foobar'), 'foobar');
 });

@@ -14,7 +14,6 @@ import { runInDebug, assert } from './debug';
 import {
   removeChainWatcher
 } from './chains';
-import { has } from 'require';
 
 let counters = {
   peekCalls: 0,
@@ -73,10 +72,7 @@ const IS_PROXY = 1 << 4;
 if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     isEnabled('ember-glimmer-allow-backtracking-rerender')) {
   members.lastRendered = ownMap;
-  if (has('ember-debug')) { //https://github.com/emberjs/ember.js/issues/14732
-    members.lastRenderedReferenceMap = ownMap;
-    members.lastRenderedTemplateMap = ownMap;
-  }
+  members.lastRenderedFrom = ownMap; // FIXME: not used in production, remove me from prod builds
 }
 
 let memberNames = Object.keys(members);
@@ -117,10 +113,7 @@ export function Meta(obj, parentMeta) {
   if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
       isEnabled('ember-glimmer-allow-backtracking-rerender')) {
     this._lastRendered = undefined;
-    runInDebug(() => {
-      this._lastRenderedReferenceMap = undefined;
-      this._lastRenderedTemplateMap = undefined;
-    });
+    this._lastRenderedFrom = undefined; // FIXME: not used in production, remove me from prod builds
   }
 
   this._initializeListeners();

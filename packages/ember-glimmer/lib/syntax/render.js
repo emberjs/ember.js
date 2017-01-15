@@ -8,12 +8,11 @@ import {
   ComponentDefinition
 } from 'glimmer-runtime';
 import { ConstReference, isConst } from 'glimmer-reference';
-import { assert, runInDebug } from 'ember-metal';
+import { assert } from 'ember-metal';
 import { RootReference } from '../utils/references';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
 import { FACTORY_FOR } from 'container';
-import AbstractManager from './abstract-manager';
 
 function makeComponentDefinition(vm) {
   let env     = vm.env;
@@ -138,7 +137,7 @@ export class RenderSyntax extends StatementSyntax {
   }
 }
 
-class AbstractRenderManager extends AbstractManager {
+class AbstractRenderManager {
   prepareArgs(definition, args) {
     return args;
   }
@@ -169,18 +168,10 @@ class AbstractRenderManager extends AbstractManager {
   didUpdate() {}
 }
 
-runInDebug(() => {
-  AbstractRenderManager.prototype.didRenderLayout = function() {
-    this.debugStack.pop();
-  };
-});
-
 class SingletonRenderManager extends AbstractRenderManager {
   create(environment, definition, args, dynamicScope) {
     let { name, env } = definition;
     let controller = env.owner.lookup(`controller:${name}`) || generateController(env.owner, name);
-
-    runInDebug(() => this._pushToDebugStack(`controller:${name} (with the render helper)`, environment));
 
     if (dynamicScope.rootOutletState) {
       dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
@@ -200,8 +191,6 @@ class NonSingletonRenderManager extends AbstractRenderManager {
 
     let factory = controllerFactory || generateControllerFactory(env.owner, name);
     let controller = factory.create({ model: modelRef.value() });
-
-    runInDebug(() => this._pushToDebugStack(`controller:${name} (with the render helper)`, environment));
 
     if (dynamicScope.rootOutletState) {
       dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);

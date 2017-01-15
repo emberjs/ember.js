@@ -111,7 +111,7 @@ export const environment = hasDOM ? {
   location: window.location,
   history: window.history,
   userAgent: window.navigator.userAgent,
-  window
+  window: window
 } : {
   hasDOM: false,
   isChrome: false,

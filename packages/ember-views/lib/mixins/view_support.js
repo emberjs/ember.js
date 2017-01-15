@@ -1,58 +1,13 @@
 import { guidFor, getOwner } from 'ember-utils';
-import { assert, deprecate, descriptor, runInDebug, Mixin } from 'ember-metal';
+import { assert, deprecate, descriptor, Mixin } from 'ember-metal';
 import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
 import { POST_INIT } from 'ember-runtime/system/core_object';
+
+
 import jQuery from '../system/jquery';
 
 function K() { return this; }
-
-export let dispatchLifeCycleHook = function(component, hook, oldAttrs, newAttrs) {
-  component.trigger(hook, { attrs: newAttrs, oldAttrs, newAttrs });
-};
-
-runInDebug(() => {
-  class Attrs {
-    constructor(oldAttrs, newAttrs, message) {
-      this._oldAttrs = oldAttrs;
-      this._newAttrs = newAttrs;
-      this._message = message;
-    }
-
-    get attrs() {
-      return this.newAttrs;
-    }
-
-    get oldAttrs() {
-      deprecate(this._message, false, {
-        id: 'ember-views.lifecycle-hook-arguments',
-        until: '2.13.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
-      });
-
-      return this._oldAttrs;
-    }
-
-    get newAttrs() {
-      deprecate(this._message, false, {
-        id: 'ember-views.lifecycle-hook-arguments',
-        until: '2.13.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
-      });
-
-      return this._newAttrs;
-    }
-  }
-
-  dispatchLifeCycleHook = function(component, hook, oldAttrs, newAttrs) {
-    if (typeof component[hook] === 'function' && component[hook].length !== 0) {
-      // Already warned in init
-      component.trigger(hook, { attrs: newAttrs, oldAttrs, newAttrs });
-    } else {
-      component.trigger(hook, new Attrs(oldAttrs, newAttrs, `[DEPRECATED] Ember will stop passing arguments to component lifecycle hooks. Please change \`${component.toString()}#${hook}\` to stop taking arguments.`));
-    }
-  };
-});
 
 /**
  @class ViewMixin
@@ -62,9 +17,10 @@ runInDebug(() => {
 export default Mixin.create({
   concatenatedProperties: ['attributeBindings'],
   [POST_INIT]() {
-    dispatchLifeCycleHook(this, 'didInitAttrs', undefined, this.attrs);
-    dispatchLifeCycleHook(this, 'didReceiveAttrs', undefined, this.attrs);
+    this.trigger('didInitAttrs', { attrs: this.attrs });
+    this.trigger('didReceiveAttrs', { newAttrs: this.attrs });
   },
+
 
   // ..........................................................
   // TEMPLATE SUPPORT
@@ -504,36 +460,6 @@ export default Mixin.create({
         id: 'ember-views.did-init-attrs',
         until: '3.0.0',
         url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
-      }
-    );
-
-    deprecate(
-      `[DEPRECATED] Ember will stop passing arguments to component lifecycle hooks. Please change \`${this.toString()}#didInitAttrs\` to stop taking arguments.`,
-      typeof this.didInitAttrs !== 'function' || this.didInitAttrs.length === 0,
-      {
-        id: 'ember-views.lifecycle-hook-arguments',
-        until: '2.13.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
-      }
-    );
-
-    deprecate(
-      `[DEPRECATED] Ember will stop passing arguments to component lifecycle hooks. Please change \`${this.toString()}#didReceiveAttrs\` to stop taking arguments.`,
-      typeof this.didReceiveAttrs !== 'function' || this.didReceiveAttrs.length === 0,
-      {
-        id: 'ember-views.lifecycle-hook-arguments',
-        until: '2.13.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
-      }
-    );
-
-    deprecate(
-      `[DEPRECATED] Ember will stop passing arguments to component lifecycle hooks. Please change \`${this.toString()}#didUpdateAttrs\` to stop taking arguments.`,
-      typeof this.didUpdateAttrs !== 'function' || this.didUpdateAttrs.length === 0,
-      {
-        id: 'ember-views.lifecycle-hook-arguments',
-        until: '2.13.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       }
     );
 

@@ -54,12 +54,12 @@ env:
       I/BFT0MbnR6JVCZiPV7TCWPgY1gvgZ6TEEIKGqauDMUBdL8ZK6I='
     - secure: e0yxVfwVW61d3Mi/QBOsY6Rfd1mZd3VXUd9xNRoz/fkvQJRuVwDe7oG3NOuJ4LZzvMw7BJ+zpDV9D8nKhAyPEEOgpkkMHUB7Ds83pHG4qSMzm4EAwBCadDLXCQirldz8dzN5FAqgGucXoj5fj/p2SKOkO6qWIZveGr8pdBJEG1E=
   matrix:
-    - TEST_SUITE=each-package-tests PUBLISH=true
+    - TEST_SUITE=each-package-tests
     - TEST_SUITE=built-tests EMBER_ENV=production DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=old-jquery-and-extend-prototypes DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=node DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=blueprints
     - TEST_SUITE=travis-browsers DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=sauce
-    - TEST_SUITE=allow-backtracking-rerender ALLOW_BACKTRACKING=true
-    - TEST_SUITE=each-package-tests BUILD_TYPE=alpha PUBLISH=true
+    - TEST_SUITE=allow-backtracking-rerender ALLOW_BACKTRACKING=true DISABLE_PUBLISHING=true
+    - TEST_SUITE=each-package-tests BUILD_TYPE=alpha
