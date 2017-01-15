@@ -1,5 +1,5 @@
 'use strict';
-/* eslint-env node */
+/* jshint node: true */
 
 // To create fast production builds (without ES3 support, minification, derequire, or JSHint)
 // run the following:
@@ -202,13 +202,10 @@ var glimmerEngine = require('glimmer-engine/ember-cli-build')({
   stripRuntimeChecks: true
 });
 
+var find = require('broccoli-stew').find;
+
 function glimmerPackage(name) {
-  return replace(new Funnel(glimmerEngine, {
-    include: [
-      'named-amd/' + name + '.js',
-      'named-amd/' + name + '/**/*.js'
-    ]
-  }), {
+  return replace(find(glimmerEngine, 'named-amd/' + name + '/**/*.js'), {
     files: ['**/*.js'],
     pattern: {
       match: /\/\/#\s+sourceMappingURL.*/g,
@@ -344,7 +341,6 @@ module.exports = function() {
       development: babelConfigFor('development'),
       production: babelConfigFor('production')
     },
-    eslintRulePaths: [__dirname + '/lib/eslint-rules'],
     features: {
       development: getFeatures('development'),
       production: getFeatures('production')

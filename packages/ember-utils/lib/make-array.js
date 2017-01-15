@@ -1,5 +1,3 @@
-const { isArray } = Array;
-
 /**
  Forces the passed object to be part of an array. If the object is already
  an array, it will return the object. Otherwise, it will add the object to
@@ -25,5 +23,5 @@ const { isArray } = Array;
  */
 export default function makeArray(obj) {
   if (obj === null || obj === undefined) { return []; }
-  return isArray(obj) ? obj : [obj];
+  return Array.isArray(obj) ? obj : [obj];
 }

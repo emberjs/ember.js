@@ -56,14 +56,6 @@ original notice.
 * If you submit a feature request as an issue, you will be invited to follow the
 [instructions in this document](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md#requesting-a-feature)
 and the issue will be closed
-* Issues that become inactive will be labelled accordingly
-  to inform the original poster and Ember contributors that the issue
-  should be closed since the issue is no longer actionable. The issue
-  can be reopened at a later time if needed, e.g. becomes actionable again.
-* If possible, issues will be labeled to indicate the status or priority.
-  For example, labels may have a prefix for `Status: X`, or `Priority: X`.
-  Statuses may include: `In Progress`, `On Hold`. Priorities may include: 
-  `High` or `Low`.
 
 ## Requesting a Feature
 

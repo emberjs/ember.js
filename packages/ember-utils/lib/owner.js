@@ -57,8 +57,8 @@ export function getOwner(object) {
 
   @method setOwner
   @for Ember
-  @param {Object} object An object instance.
-  @param {Object} object The new owner object of the object instance.
+  @param {Object} object An object with an owner.
+  @return {Object} An owner object.
   @since 2.3.0
   @public
 */

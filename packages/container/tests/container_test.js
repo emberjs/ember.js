@@ -3,7 +3,7 @@ import { ENV } from 'ember-environment';
 import { get, isFeatureEnabled } from 'ember-metal';
 import { Registry } from '../index';
 import { factory } from 'internal-test-helpers';
-import { LOOKUP_FACTORY, FACTORY_FOR } from 'container';
+import { FACTORY_FOR } from 'container';
 
 let originalModelInjections;
 
@@ -17,7 +17,16 @@ QUnit.module('Container', {
 });
 
 function lookupFactory(name, container, options) {
-  return container[LOOKUP_FACTORY](name, options);
+  let factory;
+  if (isFeatureEnabled('ember-no-double-extend')) {
+    ignoreDeprecation(() => {
+      factory = container.lookupFactory(name, options);
+    });
+  } else {
+    factory = container.lookupFactory(name, options);
+  }
+
+  return factory;
 }
 
 QUnit.test('A registered factory returns the same instance each time', function() {
@@ -700,7 +709,7 @@ QUnit.test('#[FACTORY_FOR] class is the injected factory', (assert) => {
   if (isFeatureEnabled('ember-no-double-extend')) {
     assert.deepEqual(factoryCreator.class, Component, 'No double extend');
   } else {
-    assert.deepEqual(factoryCreator.class, lookupFactory('component:foo-bar', container), 'Double extended class');
+    assert.deepEqual(factoryCreator.class, container.lookupFactory('component:foo-bar'), 'Double extended class');
   }
 });
 

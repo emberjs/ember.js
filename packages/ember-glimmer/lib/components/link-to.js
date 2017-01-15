@@ -339,7 +339,7 @@ import EmberComponent, { HAS_BLOCK } from '../component';
   @namespace Ember
   @extends Ember.Component
   @see {Ember.Templates.helpers.link-to}
-  @public
+  @private
 **/
 const LinkComponent = EmberComponent.extend({
   layout,

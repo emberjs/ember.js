@@ -1,5 +1,5 @@
-/* eslint-env node */
-/* eslint-disable no-console */
+/*jshint node:true*/
+/*globals global,__dirname*/
 
 var path = require('path');
 var QUnit = require('qunitjs');

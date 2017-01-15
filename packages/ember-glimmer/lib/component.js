@@ -122,7 +122,7 @@ export const BOUNDS = symbol('BOUNDS');
     tagName: 'em'
   });
   ```
-
+  
   Would result in instances with the following HTML:
 
   ```html
@@ -659,7 +659,7 @@ const Component = CoreView.extend(
 
      ```javascript
      let MyComponent = Ember.Component.extend;
-
+     
      MyComponent.reopenClass({
        positionalParams: ['name', 'age']
      });
@@ -682,7 +682,7 @@ const Component = CoreView.extend(
 
      ```javascript
      let MyComponent = Ember.Component.extend;
-
+     
      MyComponent.reopenClass({
        positionalParams: 'names'
      });

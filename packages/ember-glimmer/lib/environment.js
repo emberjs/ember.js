@@ -25,7 +25,6 @@ import {
   SimpleHelperReference,
   ClassBasedHelperReference
 } from './utils/references';
-import DebugStack from './utils/debug-stack';
 
 import {
   inlineIf,
@@ -134,8 +133,6 @@ export default class Environment extends GlimmerEnvironment {
       '-html-safe': htmlSafeHelper,
       '-get-dynamic-var': getDynamicVar
     };
-
-    runInDebug(() => this.debugStack = new DebugStack());
   }
 
   // Hello future traveler, welcome to the world of syntax refinement.

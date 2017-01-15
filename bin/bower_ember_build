@@ -15,7 +15,6 @@ INCLUDED_FILES=`find dist -maxdepth 1 -type f`
 echo -e "COMPONENTS_EMBER_REPO_SLUG: ${COMPONENTS_EMBER_REPO_SLUG}\n"
 echo -e "INCLUDED_FILES: ${INCLUDED_FILES}\n"
 echo -e "CURRENT_BRANCH: ${TRAVIS_BRANCH}\n"
-echo -e "CURRENT_TAG: ${TRAVIS_TAG}\n"
 
 if [[ $TRAVIS_PULL_REQUEST != "false" ]]; then
   echo "not publishing because this is a pull request."
@@ -41,61 +40,20 @@ case $TRAVIS_BRANCH in
   "release-1-13" )
     CHANNEL="release-1-13" ;;
   * )
-    if [[ "$TRAVIS_TAG" != "" ]]; then
-      case "$TRAVIS_TAG" in
-        *alpha* )
-          CHANNEL="canary" ;;
-        *beta* )
-          CHANNEL="beta" ;;
-        * )
-          CHANNEL="release" ;;
-      esac
-    else
-      echo "Not a bower release branch or tag.  Exiting!"
-      exit 0
-    fi
+    echo "Not a bower release branch.  Exiting!"
+    exit 0 ;;
 esac
 echo -e "CHANNEL: ${CHANNEL}\n"
-PUSH_TARGET=$CHANNEL
 
 if [[ -n $BUILD_TYPE ]]; then
   CHANNEL=$BUILD_TYPE
   echo -e "CHANNEL OVERRIDE: ${CHANNEL}\n"
 fi
 
-#### NPM PUBLISHING
-
-if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+$ ]]; then
-  echo -e "Publishing to npm...\n"
-
-  echo $NPM_AUTH_TOKEN > ~/.npmrc
-
-  if [[ "$CHANNEL" == "release" ]]; then
-    npm publish
-  else
-    npm publish --tag $CHANNEL
-  fi
-fi
-
-#### RUBYGEMS PUBLISHING
-
-if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+$ ]]; then
-  echo -e "Publishing to RubyGems...\n"
-
-  mkdir -p ~/.gem
-  echo $RUBYGEMS_AUTH_TOKEN > ~/.gem/credentials
-
-  gem build ember-source.gemspec
-  gem push ember-source-${TRAVIS_TAG:1}.gem
-fi
-
-#### BOWER PUBLISHING
-
 # Sending output to /dev/null to prevent GH_TOKEN leak on error.
 git clone --branch ${CHANNEL} https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_REPO_SLUG}.git bower_ember &> /dev/null
 rm -rf bower_ember/*
-cp ${INCLUDED_FILES} bower_ember/
-cp docs/data.json bower_ember/ember-docs.json
+cp -r ${INCLUDED_FILES} bower_ember/
 cd bower_ember
 git remote rm origin
 
@@ -104,14 +62,6 @@ git remote add origin https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_
 git add -A
 git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/commit/${TRAVIS_COMMIT}."
 
-if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+$ ]]; then
-  echo -e "Creating tag ${TRAVIS_TAG:1}"
-  git tag ${TRAVIS_TAG:1}
-  PUSH_TARGET=${TRAVIS_TAG:1}
-fi
-
-echo -e "PUSH_TARGET: ${PUSH_TARGET}\n"
-
 # Sending output to /dev/null to prevent GH_TOKEN leak on error.
-git push -fq origin ${PUSH_TARGET} &> /dev/null
+git push -fq origin ${CHANNEL} &> /dev/null
 echo -e "Done\n"

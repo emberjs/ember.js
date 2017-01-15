@@ -15,7 +15,7 @@ QUnit.test('converts array style into verbose object style', function(assert) {
   equal(normalized[paramName].scope, 'model', 'defaults scope to model');
 });
 
-QUnit.test('converts object style [{foo: \'an_alias\'}]', function(assert) {
+QUnit.test('converts object stlye [{foo: \'an_alias\'}]', function(assert) {
   let paramName = 'foo';
   let params = [{ 'foo': 'an_alias' }];
   let normalized = normalizeControllerQueryParams(params);
@@ -25,7 +25,7 @@ QUnit.test('converts object style [{foo: \'an_alias\'}]', function(assert) {
   equal(normalized[paramName].scope, 'model', 'defaults scope to model');
 });
 
-QUnit.test('retains maximally verbose object style [{foo: {as: \'foo\'}}]', function(assert) {
+QUnit.test('retains maximally verbose object stlye [{foo: {as: \'foo\'}}]', function(assert) {
   let paramName = 'foo';
   let params = [{ 'foo': { as: 'an_alias' } }];
   let normalized = normalizeControllerQueryParams(params);

@@ -169,7 +169,7 @@ export default Mixin.create({
    let appInstance = App.buildInstance();
 
    // if all of type `connection` must not be singletons
-   appInstance.registerOptionsForType('connection', { singleton: false });
+   appInstance.optionsForType('connection', { singleton: false });
 
    appInstance.register('connection:twitter', TwitterConnection);
    appInstance.register('connection:facebook', FacebookConnection);

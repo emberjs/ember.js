@@ -212,23 +212,19 @@ Object.defineProperty(Ember, 'onerror', {
   @return {Object}
   @public
 */
-function deprecatedEmberK() { return this; }
+Ember.K = function K() {
+  deprecate(
+    'Ember.K is deprecated in favor of defining a function inline.',
+    false,
+    {
+      id: 'ember-metal.ember-k',
+      until: '3.0.0',
+      url: 'http://emberjs.com/deprecations/v2.x#toc_code-ember-k-code'
+    }
+  );
 
-Object.defineProperty(Ember, 'K', {
-  get() {
-    deprecate(
-      'Ember.K is deprecated in favor of defining a function inline.',
-      false,
-      {
-        id: 'ember-metal.ember-k',
-        until: '3.0.0',
-        url: 'http://emberjs.com/deprecations/v2.x#toc_code-ember-k-code'
-      }
-    );
-
-    return deprecatedEmberK;
-  }
-});
+  return this;
+};
 
 Object.defineProperty(Ember, 'testing', {
   get: metal.isTesting,
