@@ -68,6 +68,8 @@ export const ACTION = symbol('ACTION');
   Here is an example action handler on a component:
 
   ```js
+  import Ember from 'ember';
+
   export default Ember.Component.extend({
     actions: {
       save() {
@@ -116,7 +118,9 @@ export const ACTION = symbol('ACTION');
   Actions invoked with `sendAction` have the same currying behavior as demonstrated
   with `on-input` above. For example:
 
-  ```js
+  ```app/components/my-input.js
+  import Ember from 'ember';
+
   export default Ember.Component.extend({
     actions: {
       setName(model, name) {
@@ -130,8 +134,9 @@ export const ACTION = symbol('ACTION');
   {{my-input submit=(action 'setName' model)}}
   ```
 
-  ```js
-  // app/components/my-component.js
+  ```app/components/my-component.js
+  import Ember from 'ember';
+
   export default Ember.Component.extend({
     click() {
       // Note that model is not passed, it was curried in the template
@@ -187,9 +192,9 @@ export const ACTION = symbol('ACTION');
   <div onclick={{disable-bubbling (action "sayHello")}}>Hello</div>
   ```
 
-  ```js
-  // app/helpers/disable-bubbling.js
+  ```app/helpers/disable-bubbling.js
   import Ember from 'ember';
+
   export function disableBubbling([action]) {
     return function(event) {
       event.stopPropagation();
@@ -246,15 +251,15 @@ export const ACTION = symbol('ACTION');
   which object will receive the method call. This option must be a path
   to an object, accessible in the current context:
 
-  ```handlebars
-  {{! app/templates/application.hbs }}
+  ```app/templates/application.hbs
   <div {{action "anActionName" target=someService}}>
     click me
   </div>
   ```
 
-  ```javascript
-  // app/controllers/application.js
+  ```app/controllers/application.js
+  import Ember from 'ember';
+
   export default Ember.Controller.extend({
     someService: Ember.inject.service()
   });
