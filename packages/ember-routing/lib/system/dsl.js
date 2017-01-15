@@ -17,25 +17,18 @@ class DSL {
     this.options = options;
   }
 
-  route(name, options, callback) {
+  route(name, options = {}, callback) {
     let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
       options = {};
     }
 
-    if (arguments.length === 1) {
-      options = {};
-    }
+    assert(`'${name}' cannot be used as a route name.`, (() => {
+      if (options.overrideNameAssertion === true) { return true; }
 
-    assert(
-      `'${name}' cannot be used as a route name.`,
-      ((() => {
-        if (options.overrideNameAssertion === true) { return true; }
-
-        return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
-      }))()
-    );
+      return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
+    })());
 
     if (this.enableLoadingSubstates) {
       createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
@@ -78,13 +71,9 @@ class DSL {
     this.matches.push([url, name, callback]);
   }
 
-  resource(name, options, callback) {
+  resource(name, options = {}, callback) {
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
-      options = {};
-    }
-
-    if (arguments.length === 1) {
       options = {};
     }
 

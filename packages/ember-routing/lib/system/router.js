@@ -562,7 +562,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let seen = new EmptyObject();
     let owner = getOwner(this);
 
-    return (name) => {
+    return name => {
       let routeName = name;
       let routeOwner = owner;
       let engineInfo = this._engineInfoByRoute[routeName];
@@ -606,7 +606,7 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   _getSerializerFunction() {
-    return (name) => {
+    return name => {
       let engineInfo = this._engineInfoByRoute[name];
 
       // If this is not an Engine route, we fall back to the handler for serialization
@@ -629,7 +629,7 @@ const EmberRouter = EmberObject.extend(Evented, {
       location.setURL(lastURL);
     };
 
-    router.updateURL = (path) => {
+    router.updateURL = path => {
       lastURL = path;
       run.once(doUpdateURL);
     };
@@ -1431,7 +1431,7 @@ function didBeginTransition(transition, router) {
 }
 
 function resemblesURL(str) {
-  return typeof str === 'string' && (str === '' || str.charAt(0) === '/');
+  return typeof str === 'string' && (str === '' || str[0] === '/');
 }
 
 function forEachQueryParam(router, handlerInfos, queryParams, callback) {

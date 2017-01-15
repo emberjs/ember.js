@@ -38,8 +38,7 @@ const { slice } = Array.prototype;
 function K() { return this; }
 
 export function defaultSerialize(model, params) {
-  if (params.length < 1) { return; }
-  if (!model) { return; }
+  if (params.length < 1 || !model) { return; }
 
   let name = params[0];
   let object = {};
@@ -300,8 +299,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     @method _stashNames
   */
-  _stashNames(_handlerInfo, dynamicParent) {
-    let handlerInfo = _handlerInfo;
+  _stashNames(handlerInfo, dynamicParent) {
     if (this._names) { return; }
     let names = this._names = handlerInfo._names;
 
@@ -1582,9 +1580,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     } else if (!name) {
       if (transition.resolveIndex < 1) { return; }
 
-      let parentModel = transition.state.handlerInfos[transition.resolveIndex - 1].context;
-
-      return parentModel;
+      return transition.state.handlerInfos[transition.resolveIndex - 1].context;
     }
 
     return this.findModel(name, value);
@@ -2173,8 +2169,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       // backward compatibility with our existing semantics, which allow
       // any route to disconnectOutlet things originally rendered by any
       // other route. This should all get cut in 2.0.
-      this.router.router.
-        currentHandlerInfos[i].handler._disconnectOutlet(outletName, parentView);
+      this.router.router
+        .currentHandlerInfos[i]
+        .handler._disconnectOutlet(outletName, parentView);
     }
   },
 
@@ -2234,10 +2231,9 @@ function parentRoute(route) {
   return handlerInfo && handlerInfo.handler;
 }
 
-function handlerInfoFor(route, handlerInfos, _offset) {
+function handlerInfoFor(route, handlerInfos, offset = 0) {
   if (!handlerInfos) { return; }
 
-  let offset = _offset || 0;
   let current;
   for (let i = 0; i < handlerInfos.length; i++) {
     current = handlerInfos[i].handler;

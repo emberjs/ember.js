@@ -6,7 +6,7 @@
 export function getPath(location) {
   let pathname = location.pathname;
   // Various versions of IE/Opera don't always return a leading slash
-  if (pathname.charAt(0) !== '/') {
+  if (pathname[0] !== '/') {
     pathname = `/${pathname}`;
   }
 

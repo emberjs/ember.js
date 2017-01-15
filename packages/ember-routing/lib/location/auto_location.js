@@ -255,18 +255,18 @@ export function getHistoryPath(rootURL, location) {
 
     // If the path already has a trailing slash, remove the one
     // from the hashed route so we don't double up.
-    if (path.slice(-1) === '/') {
+    if (path.charAt(path.length - 1) === '/') {
       routeHash = routeHash.substr(1);
     }
 
     // This is the "expected" final order
-    path = path + routeHash + query;
+    path += routeHash + query;
 
     if (hashParts.length) {
       path += `#${hashParts.join('#')}`;
     }
   } else {
-    path = path + query + hash;
+    path += query + hash;
   }
 
   return path;
@@ -286,7 +286,7 @@ export function getHashPath(rootURL, location) {
   let routePath = historyPath.substr(rootURL.length);
 
   if (routePath !== '') {
-    if (routePath.charAt(0) !== '/') {
+    if (routePath[0] !== '/') {
       routePath = `/${routePath}`;
     }
 
