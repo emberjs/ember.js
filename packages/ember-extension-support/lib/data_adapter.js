@@ -492,6 +492,6 @@ export default EmberObject.extend({
     @return {Function} The function to call to remove all observers.
   */
   observeRecord(record, recordUpdated) {
-    return function() {};
+    return () => {};
   }
 });

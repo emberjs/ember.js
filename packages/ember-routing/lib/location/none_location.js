@@ -56,7 +56,7 @@ export default EmberObject.extend({
     rootURL = rootURL.replace(/\/$/, '');
 
     // remove rootURL from url
-    return path.replace(new RegExp('^' + rootURL + '(?=/|$)'), '');
+    return path.replace(new RegExp(`^${rootURL}(?=/|$)`), '');
   },
 
   /**

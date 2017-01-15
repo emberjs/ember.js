@@ -7,7 +7,7 @@ import jQuery from '../system/jquery';
 
 function K() { return this; }
 
-export let dispatchLifeCycleHook = function(component, hook, oldAttrs, newAttrs) {
+export let dispatchLifeCycleHook = (component, hook, oldAttrs, newAttrs) => {
   component.trigger(hook, { attrs: newAttrs, oldAttrs, newAttrs });
 };
 
@@ -44,7 +44,7 @@ runInDebug(() => {
     }
   }
 
-  dispatchLifeCycleHook = function(component, hook, oldAttrs, newAttrs) {
+  dispatchLifeCycleHook = (component, hook, oldAttrs, newAttrs) => {
     if (typeof component[hook] === 'function' && component[hook].length !== 0) {
       // Already warned in init
       component.trigger(hook, { attrs: newAttrs, oldAttrs, newAttrs });
@@ -195,9 +195,9 @@ export default Mixin.create({
     if (env.hasDOM) {
       target = typeof selector === 'string' ? document.querySelector(selector) : selector;
 
-      assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target);
+      assert(`You tried to append to (${selector}) but that isn't in the DOM`, target);
       assert('You cannot append to an existing Ember.View.', !matches(target, '.ember-view'));
-      assert('You cannot append to an existing Ember.View.', (function() {
+      assert('You cannot append to an existing Ember.View.', ((() => {
         let node = target.parentNode;
         while (node) {
           if (node.nodeType !== 9 && matches(node, '.ember-view')) {
@@ -208,12 +208,12 @@ export default Mixin.create({
         }
 
         return true;
-      })());
+      }))());
     } else {
       target = selector;
 
-      assert('You tried to append to a selector string (' + selector + ') in an environment without jQuery', typeof target !== 'string');
-      assert('You tried to append to a non-Element (' + selector + ') in an environment without jQuery', typeof selector.appendChild === 'function');
+      assert(`You tried to append to a selector string (${selector}) in an environment without jQuery`, typeof target !== 'string');
+      assert(`You tried to append to a non-Element (${selector}) in an environment without jQuery`, typeof selector.appendChild === 'function');
     }
 
     this.renderer.appendTo(this, target);
@@ -264,9 +264,7 @@ export default Mixin.create({
     @deprecated Use appendTo instead.
     @private
   */
-  renderToElement(tagName) {
-    tagName = tagName || 'body';
-
+  renderToElement(tagName = 'body') {
     deprecate(
       `Using the \`renderToElement\` is deprecated in favor of \`appendTo\`. Called in ${this.toString()}`,
       false,
@@ -300,7 +298,7 @@ export default Mixin.create({
   replaceIn(selector) {
     let target = jQuery(selector);
 
-    assert('You tried to replace in (' + selector + ') but that isn\'t in the DOM', target.length > 0);
+    assert(`You tried to replace in (${selector}) but that isn't in the DOM`, target.length > 0);
     assert('You cannot replace an existing Ember.View.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
 
     this.renderer.replaceIn(this, target[0]);
@@ -373,7 +371,7 @@ export default Mixin.create({
     @private
   */
   findElementInParentElement(parentElem) {
-    let id = '#' + this.elementId;
+    let id = `#${this.elementId}`;
     return jQuery(id)[0] || jQuery(id, parentElem)[0];
   },
 

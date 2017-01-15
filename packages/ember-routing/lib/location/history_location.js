@@ -83,8 +83,8 @@ export default EmberObject.extend({
 
     // remove baseURL and rootURL from start of path
     let url = path
-      .replace(new RegExp('^' + baseURL + '(?=/|$)'), '')
-      .replace(new RegExp('^' + rootURL + '(?=/|$)'), '');
+      .replace(new RegExp(`^${baseURL}(?=/|$)`), '')
+      .replace(new RegExp(`^${rootURL}(?=/|$)`), '');
 
     let search = location.search || '';
     url += search;
@@ -152,7 +152,7 @@ export default EmberObject.extend({
    @param path {String}
   */
   pushState(path) {
-    let state = { path: path };
+    let state = { path };
 
     get(this, 'history').pushState(state, null, path);
 
@@ -170,7 +170,7 @@ export default EmberObject.extend({
    @param path {String}
   */
   replaceState(path) {
-    let state = { path: path };
+    let state = { path };
     get(this, 'history').replaceState(state, null, path);
 
     this._historyState = state;
