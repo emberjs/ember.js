@@ -85,10 +85,12 @@ module.exports = function(_options) {
   /*
    * ES6 Build
    */
-  var tokenizerPath = path.join(require.resolve('simple-html-tokenizer'), '..', '..', 'src');
-  // TODO: WAT, why does { } change the output so much....
-  var tokenizerTree = find(tokenizerPath, { });
-  var HTMLTokenizer = mv(tokenizerTree, "simple-html-tokenizer");
+  var tokenizerPath = path.join(require.resolve('simple-html-tokenizer'), '..', 'es6');
+  var tokenizerTree = find(tokenizerPath, {
+    include: ['**/*.js'],
+    exclude: ['**/*.d.ts']
+  });
+  var HTMLTokenizer = mv(tokenizerTree, 'simple-html-tokenizer');
 
   var tsTree = find(packages, {
     include: ['**/*.ts'],
@@ -135,15 +137,9 @@ module.exports = function(_options) {
   });
 
   var cjsTree = typescript(tsTree, tsOptions);
-
-  // SimpleHTMLTokenizer ships as either ES6 or a single AMD-ish file, so we have to
-  // compile it from ES6 modules to CJS using TypeScript. broccoli-typescript-compiler
-  // only works with `.ts` files, so we rename the `.js` files to `.ts` first.
-  var simpleHTMLTokenizerLib = rename(tokenizerPath, '.js', '.ts');
-  var simpleHTMLTokenizerJSTree = typescript(simpleHTMLTokenizerLib, tsOptions);
   var handlebarsPath = path.join(require.resolve('handlebars'), '..', '..', 'dist', 'cjs');
 
-  cjsTree = merge([cjsTree, simpleHTMLTokenizerJSTree, handlebarsPath, simpleDOM]);
+  cjsTree = merge([cjsTree, handlebarsPath, simpleDOM]);
 
   // Glimmer packages require other Glimmer packages using non-relative module names
   // (e.g., `glimmer-compiler` may import `glimmer-util` instead of `../glimmer-util`),
