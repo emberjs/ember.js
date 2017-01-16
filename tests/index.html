@@ -26,8 +26,6 @@
   </style>
 
   <script>
-    QUnit.config.urlConfig.push({ id: 'nojshint', label: "No JSHint"});
-
     function getPackagesToTest() {
       if (QUnit.urlParams.packages) {
         return QUnit.urlParams.packages.split(',');
