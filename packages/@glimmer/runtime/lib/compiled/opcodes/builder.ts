@@ -32,7 +32,7 @@ import {
   ConstantBlock
 } from '../../opcodes';
 
-function opcode(name: Op, op1?: number, op2?: number, op3?: number): AppendOpcode {
+function appendOpcode(name: Op, op1?: number, op2?: number, op3?: number): AppendOpcode {
   return APPEND_OPCODES.construct(name, null, op1, op2, op3);
 }
 
@@ -106,7 +106,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   }
 
   protected opcode(name: Op, op1?: number, op2?: number, op3?: number) {
-    this.push(opcode(name, op1, op2, op3));
+    this.push(appendOpcode(name, op1, op2, op3));
   }
 
   push(op: Option<AppendOpcode>) {
