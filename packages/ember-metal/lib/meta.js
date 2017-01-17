@@ -82,153 +82,274 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
 let memberNames = Object.keys(members);
 const META_FIELD = '__ember_meta__';
 
-export function Meta(obj, parentMeta) {
-  runInDebug(() => counters.metaInstantiated++);
+export class Meta {
+  constructor(obj, parentMeta) {
+    runInDebug(() => counters.metaInstantiated++);
 
-  this._cache = undefined;
-  this._weak = undefined;
-  this._watching = undefined;
-  this._mixins = undefined;
-  this._bindings = undefined;
-  this._values = undefined;
-  this._deps = undefined;
-  this._chainWatchers = undefined;
-  this._chains = undefined;
-  this._tag = undefined;
-  this._tags = undefined;
+    this._cache = undefined;
+    this._weak = undefined;
+    this._watching = undefined;
+    this._mixins = undefined;
+    this._bindings = undefined;
+    this._values = undefined;
+    this._deps = undefined;
+    this._chainWatchers = undefined;
+    this._chains = undefined;
+    this._tag = undefined;
+    this._tags = undefined;
 
-  // initial value for all flags right now is false
-  // see FLAGS const for detailed list of flags used
-  this._flags = 0;
+    // initial value for all flags right now is false
+    // see FLAGS const for detailed list of flags used
+    this._flags = 0;
 
-  // used only internally
-  this.source = obj;
+    // used only internally
+    this.source = obj;
 
-  // when meta(obj).proto === obj, the object is intended to be only a
-  // prototype and doesn't need to actually be observable itself
-  this.proto = undefined;
+    // when meta(obj).proto === obj, the object is intended to be only a
+    // prototype and doesn't need to actually be observable itself
+    this.proto = undefined;
 
-  // The next meta in our inheritance chain. We (will) track this
-  // explicitly instead of using prototypical inheritance because we
-  // have detailed knowledge of how each property should really be
-  // inherited, and we can optimize it much better than JS runtimes.
-  this.parent = parentMeta;
+    // The next meta in our inheritance chain. We (will) track this
+    // explicitly instead of using prototypical inheritance because we
+    // have detailed knowledge of how each property should really be
+    // inherited, and we can optimize it much better than JS runtimes.
+    this.parent = parentMeta;
 
-  if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-      isEnabled('ember-glimmer-allow-backtracking-rerender')) {
-    this._lastRendered = undefined;
-    runInDebug(() => {
-      this._lastRenderedReferenceMap = undefined;
-      this._lastRenderedTemplateMap = undefined;
-    });
+    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
+        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      this._lastRendered = undefined;
+      runInDebug(() => {
+        this._lastRenderedReferenceMap = undefined;
+        this._lastRenderedTemplateMap = undefined;
+      });
+    }
+
+    this._initializeListeners();
   }
 
-  this._initializeListeners();
-}
+  isInitialized(obj) {
+    return this.proto !== obj;
+  }
 
-Meta.prototype.isInitialized = function(obj) {
-  return this.proto !== obj;
-};
+  destroy() {
+    if (this.isMetaDestroyed()) { return; }
 
-const NODE_STACK = [];
-
-Meta.prototype.destroy = function() {
-  if (this.isMetaDestroyed()) { return; }
-
-  // remove chainWatchers to remove circular references that would prevent GC
-  let node, nodes, key, nodeObject;
-  node = this.readableChains();
-  if (node) {
-    NODE_STACK.push(node);
-    // process tree
-    while (NODE_STACK.length > 0) {
-      node = NODE_STACK.pop();
-      // push children
-      nodes = node._chains;
-      if (nodes) {
-        for (key in nodes) {
-          if (nodes[key] !== undefined) {
-            NODE_STACK.push(nodes[key]);
+    // remove chainWatchers to remove circular references that would prevent GC
+    let nodes, key, nodeObject;
+    let node = this.readableChains();
+    if (node) {
+      NODE_STACK.push(node);
+      // process tree
+      while (NODE_STACK.length > 0) {
+        node = NODE_STACK.pop();
+        // push children
+        nodes = node._chains;
+        if (nodes) {
+          for (key in nodes) {
+            if (nodes[key] !== undefined) {
+              NODE_STACK.push(nodes[key]);
+            }
           }
         }
-      }
 
-      // remove chainWatcher in node object
-      if (node._watching) {
-        nodeObject = node._object;
-        if (nodeObject) {
-          let foreignMeta = peekMeta(nodeObject);
-          // avoid cleaning up chain watchers when both current and
-          // foreign objects are being destroyed
-          // if both are being destroyed manual cleanup is not needed
-          // as they will be GC'ed and no non-destroyed references will
-          // be remaining
-          if (foreignMeta && !foreignMeta.isSourceDestroying()) {
-            removeChainWatcher(nodeObject, node._key, node, foreignMeta);
+        // remove chainWatcher in node object
+        if (node._watching) {
+          nodeObject = node._object;
+          if (nodeObject) {
+            let foreignMeta = peekMeta(nodeObject);
+            // avoid cleaning up chain watchers when both current and
+            // foreign objects are being destroyed
+            // if both are being destroyed manual cleanup is not needed
+            // as they will be GC'ed and no non-destroyed references will
+            // be remaining
+            if (foreignMeta && !foreignMeta.isSourceDestroying()) {
+              removeChainWatcher(nodeObject, node._key, node, foreignMeta);
+            }
           }
         }
       }
     }
+
+    this.setMetaDestroyed();
   }
 
-  this.setMetaDestroyed();
-};
+  isSourceDestroying() {
+    return (this._flags & SOURCE_DESTROYING) !== 0;
+  }
+
+  setSourceDestroying() {
+    this._flags |= SOURCE_DESTROYING;
+  }
+
+  isSourceDestroyed() {
+    return (this._flags & SOURCE_DESTROYED) !== 0;
+  }
+
+  setSourceDestroyed() {
+    this._flags |= SOURCE_DESTROYED;
+  }
+
+  isMetaDestroyed() {
+    return (this._flags & META_DESTROYED) !== 0;
+  }
+
+  setMetaDestroyed() {
+    this._flags |= META_DESTROYED;
+  }
+
+  isProxy() {
+    return (this._flags & IS_PROXY) !== 0;
+  }
+
+  setProxy() {
+    this._flags |= IS_PROXY;
+  }
+
+  _getOrCreateOwnMap(key) {
+    return this[key] || (this[key] = new EmptyObject());
+  }
+
+  _getInherited(key) {
+    let pointer = this;
+    while (pointer !== undefined) {
+      if (pointer[key]) {
+        return pointer[key];
+      }
+      pointer = pointer.parent;
+    }
+  }
+
+  _findInherited(key, subkey) {
+    let pointer = this;
+    while (pointer !== undefined) {
+      let map = pointer[key];
+      if (map) {
+        let value = map[subkey];
+        if (value !== undefined) {
+          return value;
+        }
+      }
+      pointer = pointer.parent;
+    }
+  }
+
+  // Implements a member that provides a lazily created map of maps,
+  // with inheritance at both levels.
+  writeDeps(subkey, itemkey, value) {
+    assert(`Cannot call writeDeps after the object is destroyed.`, !this.isMetaDestroyed());
+
+    let outerMap = this._getOrCreateOwnMap('_deps');
+    let innerMap = outerMap[subkey];
+    if (!innerMap) {
+      innerMap = outerMap[subkey] = new EmptyObject();
+    }
+    innerMap[itemkey] = value;
+  }
+
+  peekDeps(subkey, itemkey) {
+    let pointer = this;
+    while (pointer !== undefined) {
+      let map = pointer._deps;
+      if (map) {
+        let value = map[subkey];
+        if (value) {
+          if (value[itemkey] !== undefined) {
+            return value[itemkey];
+          }
+        }
+      }
+      pointer = pointer.parent;
+    }
+  }
+
+  hasDeps(subkey) {
+    let pointer = this;
+    while (pointer !== undefined) {
+      if (pointer._deps && pointer._deps[subkey]) {
+        return true;
+      }
+      pointer = pointer.parent;
+    }
+    return false;
+  }
+
+  forEachInDeps(subkey, fn) {
+    return this._forEachIn('_deps', subkey, fn);
+  }
+
+  _forEachIn(key, subkey, fn) {
+    let pointer = this;
+    let seen = new EmptyObject();
+    let calls = [];
+    while (pointer !== undefined) {
+      let map = pointer[key];
+      if (map) {
+        let innerMap = map[subkey];
+        if (innerMap) {
+          for (let innerKey in innerMap) {
+            if (!seen[innerKey]) {
+              seen[innerKey] = true;
+              calls.push([innerKey, innerMap[innerKey]]);
+            }
+          }
+        }
+      }
+      pointer = pointer.parent;
+    }
+    for (let i = 0; i < calls.length; i++) {
+      let [innerKey, value] = calls[i];
+      fn(innerKey, value);
+    }
+  }
+
+  readInheritedValue(key, subkey) {
+    let internalKey = `_${key}`;
+
+    let pointer = this;
+
+    while (pointer !== undefined) {
+      let map = pointer[internalKey];
+      if (map) {
+        let value = map[subkey];
+        if (value !== undefined || subkey in map) {
+          return map[subkey];
+        }
+      }
+      pointer = pointer.parent;
+    }
+
+    return UNDEFINED;
+  }
+
+  writeValue(obj, key, value) {
+    let descriptor = lookupDescriptor(obj, key);
+    let isMandatorySetter = descriptor && descriptor.set && descriptor.set.isMandatorySetter;
+
+    if (isMandatorySetter) {
+      this.writeValues(key, value);
+    } else {
+      obj[key] = value;
+    }
+  }
+}
+
+const NODE_STACK = [];
 
 for (let name in listenerMethods) {
   Meta.prototype[name] = listenerMethods[name];
 }
 memberNames.forEach(name => members[name](name, Meta));
 
-Meta.prototype.isSourceDestroying = function isSourceDestroying() {
-  return (this._flags & SOURCE_DESTROYING) !== 0;
-};
-
-Meta.prototype.setSourceDestroying = function setSourceDestroying() {
-  this._flags |= SOURCE_DESTROYING;
-};
-
-Meta.prototype.isSourceDestroyed = function isSourceDestroyed() {
-  return (this._flags & SOURCE_DESTROYED) !== 0;
-};
-
-Meta.prototype.setSourceDestroyed = function setSourceDestroyed() {
-  this._flags |= SOURCE_DESTROYED;
-};
-
-Meta.prototype.isMetaDestroyed = function isMetaDestroyed() {
-  return (this._flags & META_DESTROYED) !== 0;
-};
-
-Meta.prototype.setMetaDestroyed = function setMetaDestroyed() {
-  this._flags |= META_DESTROYED;
-};
-
-Meta.prototype.isProxy = function isProxy() {
-  return (this._flags & IS_PROXY) !== 0;
-};
-
-Meta.prototype.setProxy = function setProxy() {
-  this._flags |= IS_PROXY;
-};
-
 // Implements a member that is a lazily created, non-inheritable
 // POJO.
 function ownMap(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-  Meta.prototype['writable' + capitalized] = function() {
+  Meta.prototype[`writable${capitalized}`] = function() {
     return this._getOrCreateOwnMap(key);
   };
-  Meta.prototype['readable' + capitalized] = function() { return this[key]; };
+  Meta.prototype[`readable${capitalized}`] = function() { return this[key]; };
 }
-
-Meta.prototype._getOrCreateOwnMap = function(key) {
-  let ret = this[key];
-  if (!ret) {
-    ret = this[key] = new EmptyObject();
-  }
-  return ret;
-};
 
 // Implements a member that is a lazily created POJO with inheritable
 // values.
@@ -236,18 +357,18 @@ function inheritedMap(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
 
-  Meta.prototype['write' + capitalized] = function(subkey, value) {
+  Meta.prototype[`write${capitalized}`] = function(subkey, value) {
     assert(`Cannot call write${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
 
     let map = this._getOrCreateOwnMap(key);
     map[subkey] = value;
   };
 
-  Meta.prototype['peek' + capitalized] = function(subkey) {
+  Meta.prototype[`peek${capitalized}`] = function(subkey) {
     return this._findInherited(key, subkey);
   };
 
-  Meta.prototype['forEach' + capitalized] = function(fn) {
+  Meta.prototype[`forEach${capitalized}`] = function(fn) {
     let pointer = this;
     let seen = new EmptyObject();
     while (pointer !== undefined) {
@@ -264,122 +385,29 @@ function inheritedMap(name, Meta) {
     }
   };
 
-  Meta.prototype['clear' + capitalized] = function() {
+  Meta.prototype[`clear${capitalized}`] = function() {
     assert(`Cannot call clear${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
 
     this[key] = undefined;
   };
 
-  Meta.prototype['deleteFrom' + capitalized] = function(subkey) {
+  Meta.prototype[`deleteFrom${capitalized}`] = function(subkey) {
     delete this._getOrCreateOwnMap(key)[subkey];
   };
 
-  Meta.prototype['hasIn' + capitalized] = function(subkey) {
+  Meta.prototype[`hasIn${capitalized}`] = function(subkey) {
     return this._findInherited(key, subkey) !== undefined;
   };
 }
 
-Meta.prototype._getInherited = function(key) {
-  let pointer = this;
-  while (pointer !== undefined) {
-    if (pointer[key]) {
-      return pointer[key];
-    }
-    pointer = pointer.parent;
-  }
-};
-
-Meta.prototype._findInherited = function(key, subkey) {
-  let pointer = this;
-  while (pointer !== undefined) {
-    let map = pointer[key];
-    if (map) {
-      let value = map[subkey];
-      if (value !== undefined) {
-        return value;
-      }
-    }
-    pointer = pointer.parent;
-  }
-};
-
 export const UNDEFINED = symbol('undefined');
-
-// Implements a member that provides a lazily created map of maps,
-// with inheritance at both levels.
-Meta.prototype.writeDeps = function writeDeps(subkey, itemkey, value) {
-  assert(`Cannot call writeDeps after the object is destroyed.`, !this.isMetaDestroyed());
-
-  let outerMap = this._getOrCreateOwnMap('_deps');
-  let innerMap = outerMap[subkey];
-  if (!innerMap) {
-    innerMap = outerMap[subkey] = new EmptyObject();
-  }
-  innerMap[itemkey] = value;
-};
-
-Meta.prototype.peekDeps = function peekDeps(subkey, itemkey) {
-  let pointer = this;
-  while (pointer !== undefined) {
-    let map = pointer._deps;
-    if (map) {
-      let value = map[subkey];
-      if (value) {
-        if (value[itemkey] !== undefined) {
-          return value[itemkey];
-        }
-      }
-    }
-    pointer = pointer.parent;
-  }
-};
-
-Meta.prototype.hasDeps = function hasDeps(subkey) {
-  let pointer = this;
-  while (pointer !== undefined) {
-    if (pointer._deps && pointer._deps[subkey]) {
-      return true;
-    }
-    pointer = pointer.parent;
-  }
-  return false;
-};
-
-Meta.prototype.forEachInDeps = function forEachInDeps(subkey, fn) {
-  return this._forEachIn('_deps', subkey, fn);
-};
-
-Meta.prototype._forEachIn = function(key, subkey, fn) {
-  let pointer = this;
-  let seen = new EmptyObject();
-  let calls = [];
-  while (pointer !== undefined) {
-    let map = pointer[key];
-    if (map) {
-      let innerMap = map[subkey];
-      if (innerMap) {
-        for (let innerKey in innerMap) {
-          if (!seen[innerKey]) {
-            seen[innerKey] = true;
-            calls.push([innerKey, innerMap[innerKey]]);
-          }
-        }
-      }
-    }
-    pointer = pointer.parent;
-  }
-  for (let i = 0; i < calls.length; i++) {
-    let [innerKey, value] = calls[i];
-    fn(innerKey, value);
-  }
-};
 
 // Implements a member that provides a non-heritable, lazily-created
 // object using the method you provide.
 function ownCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-  Meta.prototype['writable' + capitalized] = function(create) {
+  Meta.prototype[`writable${capitalized}`] = function(create) {
     assert(`Cannot call writable${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
 
     let ret = this[key];
@@ -388,7 +416,7 @@ function ownCustomObject(name, Meta) {
     }
     return ret;
   };
-  Meta.prototype['readable' + capitalized] = function() {
+  Meta.prototype[`readable${capitalized}`] = function() {
     return this[key];
   };
 }
@@ -399,27 +427,27 @@ function ownCustomObject(name, Meta) {
 function inheritedCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-  Meta.prototype['writable' + capitalized] = function(create) {
+  Meta.prototype[`writable${capitalized}`] = function(create) {
     assert(`Cannot call writable${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
 
     let ret = this[key];
     if (!ret) {
       if (this.parent) {
-        ret = this[key] = this.parent['writable' + capitalized](create).copy(this.source);
+        ret = this[key] = this.parent[`writable${capitalized}`](create).copy(this.source);
       } else {
         ret = this[key] = create(this.source);
       }
     }
     return ret;
   };
-  Meta.prototype['readable' + capitalized] = function() {
+  Meta.prototype[`readable${capitalized}`] = function() {
     return this._getInherited(key);
   };
 }
 
 
 function memberProperty(name) {
-  return '_' + name;
+  return `_${name}`;
 }
 
 // there's a more general-purpose capitalize in ember-runtime, but we
@@ -428,7 +456,7 @@ function capitalize(name) {
   return name.replace(/^\w/, m => m.toUpperCase());
 }
 
-export var META_DESC = {
+export const META_DESC = {
   writable: true,
   configurable: true,
   enumerable: false,

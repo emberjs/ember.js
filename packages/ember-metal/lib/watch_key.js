@@ -42,13 +42,9 @@ export function watchKey(obj, keyName, meta) {
 
 
 if (isEnabled('mandatory-setter')) {
-  let hasOwnProperty = function(obj, key) {
-    return Object.prototype.hasOwnProperty.call(obj, key);
-  };
+  let hasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
-  let propertyIsEnumerable = function(obj, key) {
-    return Object.prototype.propertyIsEnumerable.call(obj, key);
-  };
+  let propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
 
   // Future traveler, although this code looks scary. It merely exists in
   // development to aid in development asertions. Production builds of

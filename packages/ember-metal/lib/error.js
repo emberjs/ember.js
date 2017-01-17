@@ -9,26 +9,28 @@
   @constructor
   @public
 */
-export default function EmberError(message) {
-  if (!(this instanceof EmberError)) {
-    return new EmberError(message);
+export default class EmberError extends Error {
+  constructor(message) {
+    super();
+
+    if (!(this instanceof EmberError)) {
+      return new EmberError(message);
+    }
+
+    let error = Error.call(this, message);
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, EmberError);
+    } else {
+      this.stack = error.stack;
+    }
+
+    this.description = error.description;
+    this.fileName = error.fileName;
+    this.lineNumber = error.lineNumber;
+    this.message = error.message;
+    this.name = error.name;
+    this.number = error.number;
+    this.code = error.code;
   }
-
-  let error = Error.call(this, message);
-
-  if (Error.captureStackTrace) {
-    Error.captureStackTrace(this, EmberError);
-  } else {
-    this.stack = error.stack;
-  }
-
-  this.description = error.description;
-  this.fileName = error.fileName;
-  this.lineNumber = error.lineNumber;
-  this.message = error.message;
-  this.name = error.name;
-  this.number = error.number;
-  this.code = error.code;
 }
-
-EmberError.prototype = Object.create(Error.prototype);

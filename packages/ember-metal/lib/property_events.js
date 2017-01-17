@@ -118,7 +118,6 @@ function propertyDidChange(obj, keyName, _meta) {
   }
 }
 
-
 let WILL_SEEN, DID_SEEN;
 // called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)
 function dependentKeysWillChange(obj, depKey, meta) {
@@ -259,7 +258,7 @@ function changeProperties(callback, binding) {
 function notifyBeforeObservers(obj, keyName, meta) {
   if (meta && meta.isSourceDestroying()) { return; }
 
-  let eventName = keyName + ':before';
+  let eventName = `${keyName}:before`;
   let listeners, added;
   if (deferred) {
     listeners = beforeObserverSet.add(obj, keyName, eventName);
@@ -273,7 +272,7 @@ function notifyBeforeObservers(obj, keyName, meta) {
 function notifyObservers(obj, keyName, meta) {
   if (meta && meta.isSourceDestroying()) { return; }
 
-  let eventName = keyName + ':change';
+  let eventName = `${keyName}:change`;
   let listeners;
   if (deferred) {
     listeners = observerSet.add(obj, keyName, eventName);

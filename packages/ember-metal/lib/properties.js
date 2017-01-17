@@ -21,7 +21,7 @@ export function Descriptor() {
   this.isDescriptor = true;
 }
 
-const REDEFINE_SUPPORTED = (function () {
+const REDEFINE_SUPPORTED = ((() => {
   // https://github.com/spalger/kibana/commit/b7e35e6737df585585332857a4c397dc206e7ff9
   let a = Object.create(Object.prototype, {
     prop: {
@@ -36,7 +36,7 @@ const REDEFINE_SUPPORTED = (function () {
   });
 
   return a.prop === 2;
-}());
+})());
 // ..........................................................
 // DEFINING PROPERTIES API
 //
@@ -150,7 +150,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
           configurable: true,
           enumerable: true,
           writable: true,
-          value: value
+          value
         });
       } else {
         obj[keyName] = value;

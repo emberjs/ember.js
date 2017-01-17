@@ -81,8 +81,8 @@ export default function expandProperties(pattern, callback) {
 function duplicateAndReplace(properties, currentParts, index) {
   let all = [];
 
-  properties.forEach((property) => {
-    currentParts.forEach((part) => {
+  properties.forEach(property => {
+    currentParts.forEach(part => {
       let current = property.slice(0);
       current[index] = part;
       all.push(current);

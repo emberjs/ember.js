@@ -174,7 +174,7 @@ function applyConcatenatedProperties(obj, key, value, values) {
 function applyMergedProperties(obj, key, value, values) {
   let baseValue = values[key] || obj[key];
 
-  runInDebug(function() {
+  runInDebug(() => {
     if (isArray(value)) { // use conditional to avoid stringifying every time
       assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
     }
@@ -272,7 +272,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
 }
 
 export function detectBinding(key) {
-  var length = key.length;
+  let length = key.length;
 
   return length > 7 && key.charCodeAt(length - 7) === 66 && key.indexOf('inding', length - 6) !== -1;
 }
@@ -319,7 +319,7 @@ function followAlias(obj, desc, m, descs, values) {
     value = obj[altKey];
   }
 
-  return { desc: desc, value: value };
+  return { desc, value };
 }
 
 function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, updateMethod) {
@@ -469,40 +469,70 @@ export function mixin(obj, ...args) {
   @namespace Ember
   @public
 */
-export default function Mixin(args, properties) {
-  this.properties = properties;
+export default class Mixin {
+  constructor(args, properties) {
+    this.properties = properties;
 
-  let length = args && args.length;
+    let length = args && args.length;
 
-  if (length > 0) {
-    let m = new Array(length);
+    if (length > 0) {
+      let m = new Array(length);
 
-    for (let i = 0; i < length; i++) {
-      let x = args[i];
-      if (x instanceof Mixin) {
-        m[i] = x;
-      } else {
-        m[i] = new Mixin(undefined, x);
+      for (let i = 0; i < length; i++) {
+        let x = args[i];
+        if (x instanceof Mixin) {
+          m[i] = x;
+        } else {
+          m[i] = new Mixin(undefined, x);
+        }
       }
-    }
 
-    this.mixins = m;
-  } else {
-    this.mixins = undefined;
+      this.mixins = m;
+    } else {
+      this.mixins = undefined;
+    }
+    this.ownerConstructor = undefined;
+    this._without = undefined;
+    this[GUID_KEY] = null;
+    this[NAME_KEY] = null;
+    debugSeal(this);
   }
-  this.ownerConstructor = undefined;
-  this._without = undefined;
-  this[GUID_KEY] = null;
-  this[NAME_KEY] = null;
-  debugSeal(this);
+
+  static applyPartial(obj) {
+    let args = a_slice.call(arguments, 1);
+    return applyMixin(obj, args, true);
+  }
+
+  /**
+    @method create
+    @static
+    @param arguments*
+    @public
+  */
+  static create(...args) {
+    // ES6TODO: this relies on a global state?
+    unprocessedFlag = true;
+    let M = this;
+    return new M(args, undefined);
+  }
+
+  // returns the mixins currently applied to the specified object
+  // TODO: Make Ember.mixin
+  static mixins(obj) {
+    let m = peekMeta(obj);
+    let ret = [];
+    if (!m) { return ret; }
+
+    m.forEachMixins((key, currentMixin) => {
+      // skip primitive mixins since these are always anonymous
+      if (!currentMixin.properties) { ret.push(currentMixin); }
+    });
+
+    return ret;
+  }
 }
 
 Mixin._apply = applyMixin;
-
-Mixin.applyPartial = function(obj) {
-  let args = a_slice.call(arguments, 1);
-  return applyMixin(obj, args, true);
-};
 
 Mixin.finishPartial = finishPartial;
 
@@ -515,19 +545,6 @@ export function hasUnprocessedMixins() {
 export function clearUnprocessedMixins() {
   unprocessedFlag = false;
 }
-
-/**
-  @method create
-  @static
-  @param arguments*
-  @public
-*/
-Mixin.create = function(...args) {
-  // ES6TODO: this relies on a global state?
-  unprocessedFlag = true;
-  let M = this;
-  return new M(args, undefined);
-};
 
 let MixinPrototype = Mixin.prototype;
 
@@ -645,23 +662,8 @@ MixinPrototype.keys = function() {
 
 debugSeal(MixinPrototype);
 
-// returns the mixins currently applied to the specified object
-// TODO: Make Ember.mixin
-Mixin.mixins = function(obj) {
-  let m = peekMeta(obj);
-  let ret = [];
-  if (!m) { return ret; }
-
-  m.forEachMixins((key, currentMixin) => {
-    // skip primitive mixins since these are always anonymous
-    if (!currentMixin.properties) { ret.push(currentMixin); }
-  });
-
-  return ret;
-};
-
 const REQUIRED = new Descriptor();
-REQUIRED.toString = function() { return '(Required Property)'; };
+REQUIRED.toString = () => '(Required Property)';
 
 /**
   Denotes a required property for a mixin
@@ -741,7 +743,7 @@ export function observer(...args) {
   let func  = args.slice(-1)[0];
   let paths;
 
-  let addWatchedProperty = function(path) {
+  let addWatchedProperty = path => {
     paths.push(path);
   };
   let _paths = args.slice(0, -1);
@@ -827,7 +829,7 @@ export function _beforeObserver(...args) {
   let func  = args.slice(-1)[0];
   let paths;
 
-  let addWatchedProperty = function(path) { paths.push(path); };
+  let addWatchedProperty = path => { paths.push(path); };
 
   let _paths = args.slice(0, -1);
 

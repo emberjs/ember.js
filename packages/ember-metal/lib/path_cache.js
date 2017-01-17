@@ -26,12 +26,12 @@ const tailPathCache = new Cache(1000, (path) => {
 });
 
 export const caches = {
-  isGlobalCache:      isGlobalCache,
-  isGlobalPathCache:  isGlobalPathCache,
-  hasThisCache:       hasThisCache,
-  firstDotIndexCache: firstDotIndexCache,
-  firstKeyCache:      firstKeyCache,
-  tailPathCache:      tailPathCache
+  isGlobalCache,
+  isGlobalPathCache,
+  hasThisCache,
+  firstDotIndexCache,
+  firstKeyCache,
+  tailPathCache
 };
 
 export function isGlobal(path) {

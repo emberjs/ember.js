@@ -25,7 +25,7 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
   let shouldReflush;
   let debugStack;
 
-  runInTransaction = function(context, methodName) {
+  runInTransaction = (context, methodName) => {
     shouldReflush = false;
     inTransaction = true;
     runInDebug(() => {
@@ -37,7 +37,7 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     return shouldReflush;
   };
 
-  didRender = function(object, key, reference) {
+  didRender = (object, key, reference) => {
     if (!inTransaction) { return; }
     let meta = metaFor(object);
     let lastRendered = meta.writableLastRendered();
@@ -54,13 +54,13 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     });
   };
 
-  assertNotRendered = function(object, key, _meta) {
+  assertNotRendered = (object, key, _meta) => {
     let meta = _meta || metaFor(object);
     let lastRendered = meta.readableLastRendered();
 
     if (lastRendered && lastRendered[key] === counter) {
       raise(
-        (function() {
+        ((() => {
           let templateMap = meta.readableLastRenderedTemplateMap();
           let lastRenderedIn = templateMap[key];
           let currentlyIn = debugStack.peek();
@@ -82,22 +82,22 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
           }
 
           return `You modified "${label}" twice on ${object} in a single render. It was rendered in ${lastRenderedIn} and modified in ${currentlyIn}. This was unreliable and slow in Ember 1.x and ${implication}`;
-        }()),
+        })()),
         false);
 
       shouldReflush = true;
     }
   };
 } else {
-  runInTransaction = function() {
+  runInTransaction = () => {
     throw new Error('Cannot call runInTransaction without Glimmer');
   };
 
-  didRender = function() {
+  didRender = () => {
     throw new Error('Cannot call didRender without Glimmer');
   };
 
-  assertNotRendered = function() {
+  assertNotRendered = () => {
     throw new Error('Cannot call assertNotRendered without Glimmer');
   };
 }
