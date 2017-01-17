@@ -334,7 +334,7 @@ export default Mixin.create(TargetActionSupport, {
 // sendAction semantics for TextField are different from
 // the component semantics so this method normalizes them.
 function sendAction(eventName, view, event) {
-  let action = get(view, 'attrs.' + eventName) || get(view, eventName);
+  let action = get(view, `attrs.${eventName}`) || get(view, eventName);
   let on = get(view, 'onEvent');
   let value = get(view, 'value');
 
