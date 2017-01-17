@@ -51,7 +51,7 @@
   dependencies:
     "@glimmer/util" "^0.21.0"
 
-"@glimmer/runtime@^0.21.0", "@glimmer/runtime@^0.21.1":
+"@glimmer/runtime@^0.21.1":
   version "0.21.1"
   resolved "https://registry.yarnpkg.com/@glimmer/runtime/-/runtime-0.21.1.tgz#ae7207a9930ce0c26203dbc626d53c2fe78f8204"
   dependencies:
@@ -93,7 +93,7 @@
   dependencies:
     "@glimmer/util" "^0.21.0"
 
-abbrev@1, abbrev@1.0.x, abbrev@~1.0.9:
+abbrev@1, abbrev@~1.0.9:
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.0.9.tgz#91b4792588a7738c25f35dd6f63752a2f8776135"
 
@@ -260,10 +260,6 @@ argparse@^1.0.7, argparse@~1.0.2:
   dependencies:
     sprintf-js "~1.0.2"
 
-argsparser@^0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/argsparser/-/argsparser-0.0.6.tgz#ff45eb5b92c004225cf146a51d339dccb265be63"
-
 arr-diff@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/arr-diff/-/arr-diff-2.0.0.tgz#8f3b827f955a8bd669697e4a4256ac3ceae356cf"
@@ -371,10 +367,6 @@ async-disk-cache@^1.0.0:
     rimraf "^2.5.3"
     rsvp "^3.0.18"
 
-async@0.2.x, async@~0.2.6, async@~0.2.9:
-  version "0.2.10"
-  resolved "https://registry.yarnpkg.com/async/-/async-0.2.10.tgz#b6bbe0b0674b9d719708ca38de8c237cb526c3d1"
-
 async@2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/async/-/async-2.0.1.tgz#b709cc0280a9c36f09f4536be823c838a9049e25"
@@ -390,6 +382,10 @@ async@^2.0.0, async@^2.0.1, async@^2.1.2:
   resolved "https://registry.yarnpkg.com/async/-/async-2.1.4.tgz#2d2160c7788032e4dd6cbe2502f1f9a2c8f6cde4"
   dependencies:
     lodash "^4.14.0"
+
+async@~0.2.6, async@~0.2.9:
+  version "0.2.10"
+  resolved "https://registry.yarnpkg.com/async/-/async-0.2.10.tgz#b6bbe0b0674b9d719708ca38de8c237cb526c3d1"
 
 async@~0.9.0:
   version "0.9.2"
@@ -763,7 +759,7 @@ broccoli-clean-css@^1.1.0:
     inline-source-map-comment "^1.0.5"
     json-stable-stringify "^1.0.0"
 
-broccoli-concat@^2.0.0, broccoli-concat@^2.1.0:
+broccoli-concat@^2.0.0:
   version "2.3.8"
   resolved "https://registry.yarnpkg.com/broccoli-concat/-/broccoli-concat-2.3.8.tgz#590cdcc021bb905b6c121d87c2d1d57df44a2a48"
   dependencies:
@@ -816,24 +812,11 @@ broccoli-file-creator@^1.0.0:
     rsvp "~3.0.6"
     symlink-or-copy "^1.0.1"
 
-broccoli-filter@^0.1.6:
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/broccoli-filter/-/broccoli-filter-0.1.14.tgz#23cae3891ff9ebb7b4d7db00c6dcf03535daf7ad"
-  dependencies:
-    broccoli-kitchen-sink-helpers "^0.2.6"
-    broccoli-writer "^0.1.1"
-    mkdirp "^0.3.5"
-    promise-map-series "^0.2.1"
-    quick-temp "^0.1.2"
-    rsvp "^3.0.16"
-    symlink-or-copy "^1.0.1"
-    walk-sync "^0.1.3"
-
 broccoli-funnel-reducer@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/broccoli-funnel-reducer/-/broccoli-funnel-reducer-1.0.0.tgz#11365b2a785aec9b17972a36df87eef24c5cc0ea"
 
-broccoli-funnel@^1.0.0, broccoli-funnel@^1.0.1, broccoli-funnel@^1.0.2, broccoli-funnel@^1.0.6:
+broccoli-funnel@^1.0.0, broccoli-funnel@^1.0.1, broccoli-funnel@^1.0.6:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/broccoli-funnel/-/broccoli-funnel-1.1.0.tgz#dfb91a37c902456456de4a40a1881948d65b27d9"
   dependencies:
@@ -983,34 +966,6 @@ broccoli-string-replace@0.1.1, broccoli-string-replace@^0.1.1:
     broccoli-persistent-filter "^1.1.5"
     minimatch "^2.0.8"
 
-broccoli-tslinter@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/broccoli-tslinter/-/broccoli-tslinter-2.0.0.tgz#0c155f2cdef7f979a55f3bebebc16b6e2afbe546"
-  dependencies:
-    broccoli-persistent-filter "^1.2.0"
-    chalk "^1.1.1"
-    exists-sync "0.0.3"
-
-broccoli-typescript-compiler@^0.6.0:
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/broccoli-typescript-compiler/-/broccoli-typescript-compiler-0.6.2.tgz#dc26bce755787d2ba0f765da082bb2f6236a3ce7"
-  dependencies:
-    broccoli-funnel "^1.0.2"
-    broccoli-merge-trees "^1.1.1"
-    broccoli-persistent-filter "^1.0.1"
-    clone "^0.2.0"
-    findup "^0.1.5"
-    get-caller-file "^1.0.1"
-    json-stable-stringify "^1.0.0"
-    walk-sync "^0.2.6"
-
-broccoli-uglify-js@~0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/broccoli-uglify-js/-/broccoli-uglify-js-0.1.3.tgz#927621ea62cc2e63c2550ed95f4f508e7ab05238"
-  dependencies:
-    broccoli-filter "^0.1.6"
-    uglify-js "~2.4.11"
-
 broccoli-uglify-sourcemap@^1.0.1, broccoli-uglify-sourcemap@^1.4.2:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-1.5.1.tgz#9fd2e87f1c177b11a758e73c3a11d6a03d90d086"
@@ -1025,7 +980,7 @@ broccoli-uglify-sourcemap@^1.0.1, broccoli-uglify-sourcemap@^1.4.2:
     uglify-js "^2.7.0"
     walk-sync "^0.1.3"
 
-broccoli-writer@^0.1.1, broccoli-writer@~0.1.1:
+broccoli-writer@~0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/broccoli-writer/-/broccoli-writer-0.1.1.tgz#d4d71aa8f2afbc67a3866b91a2da79084b96ab2d"
   dependencies:
@@ -1244,7 +1199,7 @@ cli-table2@^0.2.0:
   optionalDependencies:
     colors "^1.1.2"
 
-cli-table@^0.3.0, cli-table@^0.3.1:
+cli-table@^0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/cli-table/-/cli-table-0.3.1.tgz#f53b05266a8b1a0b934b3d0821e6e2dc5914ae23"
   dependencies:
@@ -1287,10 +1242,6 @@ cmd-shim@~2.0.2:
   dependencies:
     graceful-fs "^4.1.2"
     mkdirp "~0.5.0"
-
-co@^3.0.6:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/co/-/co-3.1.0.tgz#4ea54ea5a08938153185e15210c68d9092bc1b78"
 
 co@^4.6.0:
   version "4.6.0"
@@ -2043,31 +1994,6 @@ emberjs-build@0.19.0:
     json-stable-stringify "^1.0.1"
     lodash "^3.10.1"
 
-emberjs-build@chadhietala/emberjs-build#allow-interators:
-  version "0.19.0"
-  resolved "https://codeload.github.com/chadhietala/emberjs-build/tar.gz/700f74f7d1479d96ba85d64c2d9e9023885c3b29"
-  dependencies:
-    amd-name-resolver "0.0.4"
-    broccoli "0.16.3"
-    broccoli-babel-transpiler "^5.6.1"
-    broccoli-concat "^2.0.0"
-    broccoli-file-creator "^1.0.0"
-    broccoli-funnel "^1.0.1"
-    broccoli-kitchen-sink-helpers "^0.2.6"
-    broccoli-lint-eslint "^3.2.0"
-    broccoli-merge-trees "^1.1.1"
-    broccoli-persistent-filter "^1.0.8"
-    broccoli-source "^1.1.0"
-    broccoli-stew "^1.1.1"
-    broccoli-string-replace "0.1.1"
-    broccoli-uglify-sourcemap "^1.0.1"
-    core-object "0.0.4"
-    ember-cli-yuidoc " 0.8.4"
-    git-repo-version "0.3.0"
-    js-string-escape "^1.0.0"
-    json-stable-stringify "^1.0.1"
-    lodash "^3.10.1"
-
 encodeurl@~1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/encodeurl/-/encodeurl-1.0.1.tgz#79e3d58655346909fe6f0f45a5de68103b294d20"
@@ -2202,16 +2128,6 @@ escape-string-regexp@^1.0.0, escape-string-regexp@^1.0.2, escape-string-regexp@^
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
 
-escodegen@1.2.x:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/escodegen/-/escodegen-1.2.0.tgz#09de7967791cc958b7f89a2ddb6d23451af327e1"
-  dependencies:
-    esprima "~1.0.4"
-    estraverse "~1.5.0"
-    esutils "~1.0.0"
-  optionalDependencies:
-    source-map "~0.1.30"
-
 escope@^3.6.0:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/escope/-/escope-3.6.0.tgz#e01975e812781a163a6dadfdd80398dc64c889c3"
@@ -2279,14 +2195,6 @@ esprima@^2.6.0:
   version "2.7.3"
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-2.7.3.tgz#96e3b70d5779f6ad49cd032673d1c312767ba581"
 
-"esprima@git://github.com/ariya/esprima.git#harmony":
-  version "1.1.0-dev-harmony"
-  resolved "git://github.com/ariya/esprima.git#a65a3eb93b9a5dce9a1184ca2d1bd0b184c6b8fd"
-
-esprima@~1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/esprima/-/esprima-1.0.4.tgz#9f557e08fc3b4d26ece9dd34f8fbf476b62585ad"
-
 esprima@~3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-3.0.0.tgz#53cf247acda77313e551c3aa2e73342d3fb4f7d9"
@@ -2306,10 +2214,6 @@ estraverse@^4.1.1, estraverse@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-4.2.0.tgz#0dee3fed31fcd469618ce7342099fc1afa0bdb13"
 
-estraverse@~1.5.0:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-1.5.1.tgz#867a3e8e58a9f84618afb6c2ddbcd916b7cbaf71"
-
 estraverse@~4.1.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-4.1.1.tgz#f6caca728933a850ef90661d0e17982ba47111a2"
@@ -2317,10 +2221,6 @@ estraverse@~4.1.0:
 esutils@^2.0.0, esutils@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.2.tgz#0abf4f1caa5bcb1f7a9d8acc6dea4faaa04bac9b"
-
-esutils@~1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/esutils/-/esutils-1.0.0.tgz#8151d358e20c8acc7fb745e7472c0025fe496570"
 
 etag@~1.7.0:
   version "1.7.0"
@@ -2486,13 +2386,6 @@ file-entry-cache@^2.0.0:
 filename-regex@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/filename-regex/-/filename-regex-2.0.0.tgz#996e3e80479b98b9897f15a8a58b3d084e926775"
-
-fileset@0.1.x:
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/fileset/-/fileset-0.1.8.tgz#506b91a9396eaa7e32fb42a84077c7a0c736b741"
-  dependencies:
-    glob "3.x"
-    minimatch "0.x"
 
 filesize@^3.1.3:
   version "3.3.0"
@@ -2764,7 +2657,7 @@ generate-object-property@^1.1.0:
   dependencies:
     is-property "^1.0.0"
 
-get-caller-file@^1.0.0, get-caller-file@^1.0.1:
+get-caller-file@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/get-caller-file/-/get-caller-file-1.0.2.tgz#f702e63127e7e231c160a80c1554acb70d5047e5"
 
@@ -2794,12 +2687,6 @@ git-repo-version@0.3.0:
   dependencies:
     git-repo-info "^1.0.4"
 
-git-repo-version@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/git-repo-version/-/git-repo-version-0.1.2.tgz#8dd89fc818034a5341e1b0fae12f312c2ac4e505"
-  dependencies:
-    git-repo-info "^1.0.4"
-
 git-repo-version@^0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/git-repo-version/-/git-repo-version-0.3.1.tgz#829a24d5973716dae90e222a148fb5ded9492092"
@@ -2811,25 +2698,6 @@ github@^0.2.3:
   resolved "https://registry.yarnpkg.com/github/-/github-0.2.4.tgz#24fa7f0e13fa11b946af91134c51982a91ce538b"
   dependencies:
     mime "^1.2.11"
-
-glimmer-engine@^0.20.0:
-  version "0.20.0"
-  resolved "https://registry.yarnpkg.com/glimmer-engine/-/glimmer-engine-0.20.0.tgz#fb2ad96a34df6a712d7f0e8d84043d08ec994388"
-  dependencies:
-    broccoli-concat "^2.1.0"
-    broccoli-funnel "^1.0.1"
-    broccoli-merge-trees "^1.1.1"
-    broccoli-stew "^1.2.0"
-    broccoli-tslinter "^2.0.0"
-    broccoli-typescript-compiler "^0.6.0"
-    broccoli-uglify-js "~0.1.3"
-    emberjs-build chadhietala/emberjs-build#allow-interators
-    exists-sync "0.0.3"
-    git-repo-version "^0.1.2"
-    handlebars "^3.0.2"
-    qunit "^0.9.1"
-    simple-dom "^0.3.0"
-    simple-html-tokenizer "^0.2.5"
 
 glob-base@^0.3.0:
   version "0.3.0"
@@ -2844,7 +2712,7 @@ glob-parent@^2.0.0:
   dependencies:
     is-glob "^2.0.0"
 
-glob@3.2.11, glob@3.x:
+glob@3.2.11:
   version "3.2.11"
   resolved "https://registry.yarnpkg.com/glob/-/glob-3.2.11.tgz#4a973f635b9190f715d10987d5c00fd2815ebe3d"
   dependencies:
@@ -2979,15 +2847,7 @@ growly@^1.2.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
 
-handlebars@1.3.x:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-1.3.0.tgz#9e9b130a93e389491322d975cf3ec1818c37ce34"
-  dependencies:
-    optimist "~0.3"
-  optionalDependencies:
-    uglify-js "~2.3"
-
-handlebars@^3.0.1, handlebars@^3.0.2, handlebars@^3.0.3, handlebars@~3:
+handlebars@^3.0.1, handlebars@^3.0.3, handlebars@~3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-3.0.3.tgz#0e09651a2f0fb3c949160583710d551f92e6d2ad"
   dependencies:
@@ -3456,23 +3316,6 @@ isstream@~0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
 
-"istanbul@https://github.com/gotwarlost/istanbul/tarball/harmony":
-  version "0.2.5"
-  resolved "https://github.com/gotwarlost/istanbul/tarball/harmony#02dabfd3743b695942d170a809171d3924466331"
-  dependencies:
-    abbrev "1.0.x"
-    async "0.2.x"
-    escodegen "1.2.x"
-    esprima "git://github.com/ariya/esprima.git#harmony"
-    fileset "0.1.x"
-    handlebars "1.3.x"
-    js-yaml "3.x"
-    mkdirp "0.3.x"
-    nopt "2.2.x"
-    resolve "0.6.x"
-    which "1.0.x"
-    wordwrap "0.0.x"
-
 istextorbinary@2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/istextorbinary/-/istextorbinary-2.1.0.tgz#dbed2a6f51be2f7475b68f89465811141b758874"
@@ -3514,7 +3357,7 @@ js-tokens@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-2.0.0.tgz#79903f5563ee778cc1162e6dcf1a0027c97f9cb5"
 
-js-yaml@3.x, js-yaml@^3.2.5, js-yaml@^3.2.7, js-yaml@^3.5.1, js-yaml@^3.6.1:
+js-yaml@^3.2.5, js-yaml@^3.2.7, js-yaml@^3.5.1, js-yaml@^3.6.1:
   version "3.7.0"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.7.0.tgz#5c967ddd837a9bfdca5f2de84253abe8a1c03b80"
   dependencies:
@@ -4048,7 +3891,7 @@ mime@~1.2.11:
   version "1.2.11"
   resolved "https://registry.yarnpkg.com/mime/-/mime-1.2.11.tgz#58203eed86e3a5ef17aed2b7d9ebd47f0a60dd10"
 
-minimatch@0.3, minimatch@0.x:
+minimatch@0.3:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-0.3.0.tgz#275d8edaac4f1bb3326472089e7949c8394699dd"
   dependencies:
@@ -4089,7 +3932,7 @@ minimist@^1.1.0, minimist@^1.1.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.0.tgz#a35008b20f41383eec1fb914f4cd5df79a264284"
 
-mkdirp@0.3.0, mkdirp@0.3.x:
+mkdirp@0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.0.tgz#1bbf5ab1ba827af23575143490426455f481fe1e"
 
@@ -4099,7 +3942,7 @@ mkdirp@0.5.1, mkdirp@0.5.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdi
   dependencies:
     minimist "0.0.8"
 
-mkdirp@^0.3.5, mkdirp@~0.3.5:
+mkdirp@~0.3.5:
   version "0.3.5"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.3.5.tgz#de3e5f8961c88c787ee1368df849ac4413eca8d7"
 
@@ -4231,12 +4074,6 @@ node-uuid@^1.4.3, node-uuid@~1.4.0, node-uuid@~1.4.7:
 "nopt@2 || 3", nopt@^3.0.1, nopt@~3.0.6:
   version "3.0.6"
   resolved "https://registry.yarnpkg.com/nopt/-/nopt-3.0.6.tgz#c6465dbf08abcd4db359317f79ac68a646b28ff9"
-  dependencies:
-    abbrev "1"
-
-nopt@2.2.x:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/nopt/-/nopt-2.2.1.tgz#2aa09b7d1768487b3b89a9c5aa52335bff0baea7"
   dependencies:
     abbrev "1"
 
@@ -4452,7 +4289,7 @@ optimist@^0.6.1:
     minimist "~0.0.1"
     wordwrap "~0.0.2"
 
-optimist@~0.3, optimist@~0.3.5:
+optimist@~0.3.5:
   version "0.3.7"
   resolved "https://registry.yarnpkg.com/optimist/-/optimist-0.3.7.tgz#c90941ad59e4273328923074d2cf2e7cbc6ec0d9"
   dependencies:
@@ -4704,23 +4541,6 @@ qunit-extras@^1.5.0:
 qunit-phantomjs-runner@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/qunit-phantomjs-runner/-/qunit-phantomjs-runner-2.2.0.tgz#557a0f55d7d83c315312d1b7048ed972ffea4549"
-
-qunit@^0.9.1:
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/qunit/-/qunit-0.9.1.tgz#a985244d140fa5715c1b88b42dc4ebed8519a265"
-  dependencies:
-    argsparser "^0.0.6"
-    cli-table "^0.3.0"
-    co "^3.0.6"
-    qunitjs "1.10.0"
-    tracejs "^0.1.8"
-    underscore "^1.6.0"
-  optionalDependencies:
-    istanbul "https://github.com/gotwarlost/istanbul/tarball/harmony"
-
-qunitjs@1.10.0:
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/qunitjs/-/qunitjs-1.10.0.tgz#a01918dad03476557254f40bc02a2fc66d76af78"
 
 qunitjs@^1.22.0:
   version "1.23.1"
@@ -5042,10 +4862,6 @@ resolve-from@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/resolve-from/-/resolve-from-1.0.1.tgz#26cbfe935d1aeeeabb29bc3fe5aeb01e93d44226"
 
-resolve@0.6.x:
-  version "0.6.3"
-  resolved "https://registry.yarnpkg.com/resolve/-/resolve-0.6.3.tgz#dd957982e7e736debdf53b58a4dd91754575dd46"
-
 resolve@^1.1.2, resolve@^1.1.6, resolve@^1.1.7:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.2.0.tgz#9589c3f2f6149d1417a40becc1663db6ec6bc26c"
@@ -5267,10 +5083,6 @@ simple-fmt@~0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/simple-fmt/-/simple-fmt-0.1.0.tgz#191bf566a59e6530482cb25ab53b4a8dc85c3a6b"
 
-simple-html-tokenizer@^0.2.5:
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.2.6.tgz#a6efab7bc705cf3a96f1aaeaa1a76365f0d16c33"
-
 simple-html-tokenizer@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.3.0.tgz#9b8b5559d80e331a544dd13dd59382e5d0d94411"
@@ -5383,19 +5195,13 @@ source-map@0.1.32:
   dependencies:
     amdefine ">=0.0.4"
 
-source-map@0.1.34:
-  version "0.1.34"
-  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.1.34.tgz#a7cfe89aec7b1682c3b198d0acfb47d7d090566b"
-  dependencies:
-    amdefine ">=0.0.4"
-
 source-map@0.4.x, source-map@^0.4.2, source-map@^0.4.4:
   version "0.4.4"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.4.4.tgz#eba4f5da9c0dc999de68032d8b4f76173652036b"
   dependencies:
     amdefine ">=0.0.4"
 
-source-map@^0.1.40, source-map@~0.1.30, source-map@~0.1.7:
+source-map@^0.1.40, source-map@~0.1.7:
   version "0.1.43"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.1.43.tgz#c24bc146ca517c1471f5dacbe2571b2b7f9e3346"
   dependencies:
@@ -5694,10 +5500,6 @@ tough-cookie@>=0.12.0, tough-cookie@~2.3.0:
   dependencies:
     punycode "^1.4.1"
 
-tracejs@^0.1.8:
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/tracejs/-/tracejs-0.1.8.tgz#6c26787b1853f1371634622c1c80bc44026c5d70"
-
 tree-sync@^1.1.4:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/tree-sync/-/tree-sync-1.2.1.tgz#35619b7c310f5dfb4091601c013e8a72da67937a"
@@ -5778,15 +5580,6 @@ uglify-js@~2.3:
     optimist "~0.3.5"
     source-map "~0.1.7"
 
-uglify-js@~2.4.11:
-  version "2.4.24"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-2.4.24.tgz#fad5755c1e1577658bb06ff9ab6e548c95bebd6e"
-  dependencies:
-    async "~0.2.6"
-    source-map "0.1.34"
-    uglify-to-browserify "~1.0.0"
-    yargs "~3.5.4"
-
 uglify-to-browserify@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/uglify-to-browserify/-/uglify-to-browserify-1.0.2.tgz#6e0924d6bda6b5afe349e39a6d632850a0f882b7"
@@ -5814,7 +5607,7 @@ underscore.string@~2.3.3:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/underscore.string/-/underscore.string-2.3.3.tgz#71c08bf6b428b1133f37e78fa3a21c82f7329b0d"
 
-underscore@>=1.8.3, underscore@^1.6.0:
+underscore@>=1.8.3:
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.8.3.tgz#4f3fb53b106e6097fcf9cb4109f2a5e9bdfa5022"
 
@@ -5913,7 +5706,7 @@ walk-sync@^0.1.3:
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/walk-sync/-/walk-sync-0.1.3.tgz#8a07261a00bda6cfb1be25e9f100fad57546f583"
 
-walk-sync@^0.2.0, walk-sync@^0.2.5, walk-sync@^0.2.6, walk-sync@^0.2.7:
+walk-sync@^0.2.0, walk-sync@^0.2.5, walk-sync@^0.2.7:
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/walk-sync/-/walk-sync-0.2.7.tgz#b49be4ee6867657aeb736978b56a29d10fa39969"
   dependencies:
@@ -5971,10 +5764,6 @@ which@1, which@^1.0.5, which@^1.2.12, which@^1.2.9, which@~1.2.11:
   dependencies:
     isexe "^1.1.1"
 
-which@1.0.x:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/which/-/which-1.0.9.tgz#460c1da0f810103d0321a9b633af9e575e64486f"
-
 wide-align@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/wide-align/-/wide-align-1.1.0.tgz#40edde802a71fea1f070da3e62dcda2e7add96ad"
@@ -5989,7 +5778,7 @@ window-size@^0.1.2:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/window-size/-/window-size-0.1.4.tgz#f8e1aa1ee5a53ec5bf151ffa09742a6ad7697876"
 
-wordwrap@0.0.2, wordwrap@0.0.x, wordwrap@~0.0.2:
+wordwrap@0.0.2, wordwrap@~0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-0.0.2.tgz#b79669bb42ecb409f83d583cad52ca17eaa1643f"
 
@@ -6091,15 +5880,6 @@ yargs@~3.27.0:
     os-locale "^1.4.0"
     window-size "^0.1.2"
     y18n "^3.2.0"
-
-yargs@~3.5.4:
-  version "3.5.4"
-  resolved "https://registry.yarnpkg.com/yargs/-/yargs-3.5.4.tgz#d8aff8f665e94c34bd259bdebd1bfaf0ddd35361"
-  dependencies:
-    camelcase "^1.0.2"
-    decamelize "^1.0.0"
-    window-size "0.1.0"
-    wordwrap "0.0.2"
 
 yeast@0.1.2:
   version "0.1.2"

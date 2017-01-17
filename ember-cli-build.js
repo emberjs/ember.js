@@ -89,7 +89,7 @@ function rsvp() {
 function routeRecognizer() {
   var packageJson = require('route-recognizer/package');
   var packageDir = path.dirname(require.resolve('route-recognizer/package'));
-  var entry = path.join(packageDir, packageJson['module'] || packageJson['js:next'] || packageJson['main'].replace(/dist\//, 'dist/es6/'));
+  var entry = path.join(packageDir, packageJson['module'] || packageJson['jsnext:main'] || packageJson['main'].replace(/dist\//, 'dist/es6/'));
   var basename = path.basename(entry);
   var es6 = new Funnel(path.dirname(entry), {
     files: [ basename ]
@@ -116,7 +116,7 @@ function buildPackage(name, options) {
     throw new Error('If resolving from a non-package.json entry point, you must supply the srcDirectory.');
   }
 
-  var entryModule = packageJson['module'] || packageJson['js:next'] || packageJson['main'].replace(/dist\//, 'dist/es6/');
+  var entryModule = packageJson['module'] || packageJson['jsnext:main'] || packageJson['main'].replace(/dist\//, 'dist/es6/');
   var funnelDir = path.join(packageDir, options.entry ? options.srcDir : path.dirname(entryModule));
   var sourceEntry = options.entry ? options.entry : path.basename(entryModule);
 
@@ -300,7 +300,7 @@ module.exports = function() {
     'router':                router(),
     'dag-map':               dag(),
     'route-recognizer':      routeRecognizer(),
-    'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer', { libPath: 'node_modules/glimmer-engine/dist/es6' }),
+    'simple-html-tokenizer': buildPackage('simple-html-tokenizer'),
 
     '@glimmer/compiler':     buildPackage('@glimmer/compiler', {
                                external: ['@glimmer/syntax', '@glimmer/wire-format', '@glimmer/util']

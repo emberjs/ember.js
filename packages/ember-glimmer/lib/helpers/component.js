@@ -14,7 +14,7 @@ import {
   EvaluatedPositionalArgs,
   isComponentDefinition
 } from '@glimmer/runtime';
-import { assert } from 'ember-metal';
+import { assert, runInDebug } from 'ember-metal';
 
 /**
   The `{{component}}` helper lets you add instances of `Ember.Component` to a
@@ -205,10 +205,14 @@ function createCurriedDefinition(definition, args) {
   );
 }
 
-const EMPTY_BLOCKS = {
+let EMPTY_BLOCKS = {
   default: null,
   inverse: null
 };
+
+runInDebug(() => {
+  EMPTY_BLOCKS = Object.freeze(EMPTY_BLOCKS);
+});
 
 function curryArgs(definition, newArgs) {
   let { args, ComponentClass } = definition;

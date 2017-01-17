@@ -95,5 +95,8 @@ export function populateMacros(blocks, inlines) {
     let macro = experimentalMacros[i];
     macro(blocks, inlines);
   }
+
+  experimentalMacros = [];
+
   return { blocks, inlines };
 }
