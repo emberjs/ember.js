@@ -65,7 +65,7 @@ function makeCtor() {
     }
 
     if (arguments.length > 0) {
-      initProperties = [arguments[0]];
+      initProperties = arguments[0];
     }
 
     this.__defineNonEnumerable(GUID_KEY_PROPERTY);
@@ -74,91 +74,85 @@ function makeCtor() {
     m.proto = this;
     if (initProperties) {
       // capture locally so we can clear the closed over variable
-      var props = initProperties;
+      var properties = initProperties;
       initProperties = null;
 
       var concatenatedProperties = this.concatenatedProperties;
       var mergedProperties = this.mergedProperties;
 
-      for (var i = 0; i < props.length; i++) {
-        var properties = props[i];
+      assert(
+        'Ember.Object.create no longer supports mixing in other ' +
+        'definitions, use .extend & .create separately instead.',
+        !(properties instanceof Mixin)
+      );
 
-        assert(
-          'Ember.Object.create no longer supports mixing in other ' +
-          'definitions, use .extend & .create separately instead.',
-          !(properties instanceof Mixin)
-        );
+      if (typeof properties !== 'object' && properties !== undefined) {
+        throw new EmberError('Ember.Object.create only accepts objects.');
+      }
 
-        if (typeof properties !== 'object' && properties !== undefined) {
-          throw new EmberError('Ember.Object.create only accepts objects.');
+      var keyNames = Object.keys(properties);
+
+      for (var i = 0; i < keyNames.length; i++) {
+        var keyName = keyNames[i];
+        var value = properties[keyName];
+
+        if (detectBinding(keyName)) {
+          m.writeBindings(keyName, value);
         }
 
-        if (!properties) { continue; }
+        var possibleDesc = this[keyName];
+        var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
-        var keyNames = Object.keys(properties);
+        assert(
+          'Ember.Object.create no longer supports defining computed ' +
+          'properties. Define computed properties using extend() or reopen() ' +
+          'before calling create().',
+          !(value instanceof ComputedProperty)
+        );
+        assert(
+          'Ember.Object.create no longer supports defining methods that call _super.',
+          !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
+        );
+        assert(
+          '`actions` must be provided at extend time, not at create time, ' +
+          'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
+          !((keyName === 'actions') && ActionHandler.detect(this))
+        );
 
-        for (var j = 0; j < keyNames.length; j++) {
-          var keyName = keyNames[j];
-          var value = properties[keyName];
+        if (concatenatedProperties &&
+            concatenatedProperties.length > 0 &&
+            concatenatedProperties.indexOf(keyName) >= 0) {
+          var baseValue = this[keyName];
 
-          if (detectBinding(keyName)) {
-            m.writeBindings(keyName, value);
-          }
-
-          var possibleDesc = this[keyName];
-          var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-
-          assert(
-            'Ember.Object.create no longer supports defining computed ' +
-            'properties. Define computed properties using extend() or reopen() ' +
-            'before calling create().',
-            !(value instanceof ComputedProperty)
-          );
-          assert(
-            'Ember.Object.create no longer supports defining methods that call _super.',
-            !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
-          );
-          assert(
-            '`actions` must be provided at extend time, not at create time, ' +
-            'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
-            !((keyName === 'actions') && ActionHandler.detect(this))
-          );
-
-          if (concatenatedProperties &&
-              concatenatedProperties.length > 0 &&
-              concatenatedProperties.indexOf(keyName) >= 0) {
-            var baseValue = this[keyName];
-
-            if (baseValue) {
-              if ('function' === typeof baseValue.concat) {
-                value = baseValue.concat(value);
-              } else {
-                value = makeArray(baseValue).concat(value);
-              }
+          if (baseValue) {
+            if ('function' === typeof baseValue.concat) {
+              value = baseValue.concat(value);
             } else {
-              value = makeArray(value);
+              value = makeArray(baseValue).concat(value);
             }
-          }
-
-          if (mergedProperties &&
-              mergedProperties.length &&
-              mergedProperties.indexOf(keyName) >= 0) {
-            var originalValue = this[keyName];
-
-            value = assign({}, originalValue, value);
-          }
-
-          if (desc) {
-            desc.set(this, keyName, value);
           } else {
-            if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
-              this.setUnknownProperty(keyName, value);
+            value = makeArray(value);
+          }
+        }
+
+        if (mergedProperties &&
+            mergedProperties.length &&
+            mergedProperties.indexOf(keyName) >= 0) {
+          var originalValue = this[keyName];
+
+          value = assign({}, originalValue, value);
+        }
+
+        if (desc) {
+          desc.set(this, keyName, value);
+        } else {
+          if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
+            this.setUnknownProperty(keyName, value);
+          } else {
+            if (isFeatureEnabled('mandatory-setter')) {
+              defineProperty(this, keyName, null, value); // setup mandatory setter
             } else {
-              if (isFeatureEnabled('mandatory-setter')) {
-                defineProperty(this, keyName, null, value); // setup mandatory setter
-              } else {
-                this[keyName] = value;
-              }
+              this[keyName] = value;
             }
           }
         }
@@ -710,12 +704,55 @@ var ClassMixinProps = {
     @param [arguments]*
     @public
   */
-  create(...args) {
+  create() {
     var C = this;
-    if (args.length > 0) {
-      this._initProperties(args);
+    if (arguments.length === 0) {
+      return new C();
+    } else if (arguments.length === 1) {
+      return new C(arguments[0]);
+    } else if (arguments.length > 1) {
+      let concatenatedProperties = this.concatenatedProperties;
+      let mergedProperties = this.mergedProperties;
+      let props = {};
+
+      for (let i = 0; i < arguments.length; i++) {
+        let currentArg = arguments[i];
+        let keyNames = Object.keys(currentArg);
+
+        for (let j = 0, k = keyNames.length; j < k; j++) {
+          let keyName = keyNames[j];
+          let value = currentArg[keyName];
+
+          if (concatenatedProperties &&
+              concatenatedProperties.length > 0 &&
+              concatenatedProperties.indexOf(keyName) >= 0) {
+            var baseValue = props[keyName];
+
+            if (baseValue) {
+              if ('function' === typeof baseValue.concat) {
+                value = baseValue.concat(value);
+              } else {
+                value = makeArray(baseValue).concat(value);
+              }
+            } else {
+              value = makeArray(value);
+            }
+          }
+
+          if (mergedProperties &&
+              mergedProperties.length &&
+              mergedProperties.indexOf(keyName) >= 0) {
+            var originalValue = props[keyName];
+
+            value = assign({}, originalValue, value);
+          }
+
+          props[keyName] = value;
+        }
+      }
+
+      return new C(props);
     }
-    return new C();
   },
 
   /**
