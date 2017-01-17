@@ -49,7 +49,7 @@ export default function generateController(owner, controllerName) {
   let instance = owner.lookup(fullName);
 
   if (get(instance, 'namespace.LOG_ACTIVE_GENERATION')) {
-    info(`generated -> ${fullName}`, { fullName: fullName });
+    info(`generated -> ${fullName}`, { fullName });
   }
 
   return instance;

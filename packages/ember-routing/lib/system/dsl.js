@@ -6,36 +6,29 @@ import { assert, deprecate } from 'ember-metal';
 @submodule ember-routing
 */
 
-function DSL(name, options) {
-  this.parent = name;
-  this.enableLoadingSubstates = options && options.enableLoadingSubstates;
-  this.matches = [];
-  this.explicitIndex = undefined;
-  this.options = options;
-}
+let uuid = 0;
 
-export default DSL;
+class DSL {
+  constructor(name, options) {
+    this.parent = name;
+    this.enableLoadingSubstates = options && options.enableLoadingSubstates;
+    this.matches = [];
+    this.explicitIndex = undefined;
+    this.options = options;
+  }
 
-DSL.prototype = {
-  route(name, options, callback) {
+  route(name, options = {}, callback) {
     let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
       options = {};
     }
 
-    if (arguments.length === 1) {
-      options = {};
-    }
+    assert(`'${name}' cannot be used as a route name.`, (() => {
+      if (options.overrideNameAssertion === true) { return true; }
 
-    assert(
-      `'${name}' cannot be used as a route name.`,
-      (function() {
-        if (options.overrideNameAssertion === true) { return true; }
-
-        return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
-      })()
-    );
+      return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
+    })());
 
     if (this.enableLoadingSubstates) {
       createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
@@ -55,7 +48,7 @@ DSL.prototype = {
     } else {
       createRoute(this, name, options);
     }
-  },
+  }
 
   push(url, name, callback, serialize) {
     let parts = name.split('.');
@@ -76,22 +69,18 @@ DSL.prototype = {
     if (url === '' || url === '/' || parts[parts.length - 1] === 'index') { this.explicitIndex = true; }
 
     this.matches.push([url, name, callback]);
-  },
+  }
 
-  resource(name, options, callback) {
+  resource(name, options = {}, callback) {
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
-      options = {};
-    }
-
-    if (arguments.length === 1) {
       options = {};
     }
 
     options.resetNamespace = true;
     deprecate('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.', false, { id: 'ember-routing.router-resource', until: '3.0.0' });
     this.route(name, options, callback);
-  },
+  }
 
   generate() {
     let dslMatches = this.matches;
@@ -107,7 +96,82 @@ DSL.prototype = {
       }
     };
   }
-};
+
+  mount(_name, options = {}) {
+    let engineRouteMap = this.options.resolveRouteMap(_name);
+    let name = _name;
+
+    if (options.as) {
+      name = options.as;
+    }
+
+    let fullName = getFullName(this, name, options.resetNamespace);
+
+    let engineInfo = {
+      name: _name,
+      instanceId: uuid++,
+      mountPoint: fullName,
+      fullName
+    };
+
+    let path = options.path;
+
+    if (typeof path !== 'string') {
+      path = `/${name}`;
+    }
+
+    let callback;
+    let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
+    if (engineRouteMap) {
+      let shouldResetEngineInfo = false;
+      let oldEngineInfo = this.options.engineInfo;
+      if (oldEngineInfo) {
+        shouldResetEngineInfo = true;
+        this.options.engineInfo = engineInfo;
+      }
+
+      let optionsForChild = assign({ engineInfo }, this.options);
+      let childDSL = new DSL(fullName, optionsForChild);
+
+      createRoute(childDSL, 'loading');
+      createRoute(childDSL, 'error', { path: dummyErrorRoute });
+
+
+      engineRouteMap.class.call(childDSL);
+
+      callback = childDSL.generate();
+
+      if (shouldResetEngineInfo) {
+        this.options.engineInfo = oldEngineInfo;
+      }
+    }
+
+    let localFullName = 'application';
+    let routeInfo = assign({ localFullName }, engineInfo);
+
+    if (this.enableLoadingSubstates) {
+      // These values are important to register the loading routes under their
+      // proper names for the Router and within the Engine's registry.
+      let substateName = `${name}_loading`;
+      let localFullName = `application_loading`;
+      let routeInfo = assign({ localFullName }, engineInfo);
+      createRoute(this, substateName, { resetNamespace: options.resetNamespace });
+      this.options.addRouteForEngine(substateName, routeInfo);
+
+      substateName = `${name}_error`;
+      localFullName = `application_error`;
+      routeInfo = assign({ localFullName }, engineInfo);
+      createRoute(this, substateName, { resetNamespace: options.resetNamespace, path: dummyErrorRoute });
+      this.options.addRouteForEngine(substateName, routeInfo);
+    }
+
+    this.options.addRouteForEngine(fullName, routeInfo);
+
+    this.push(path, fullName, callback);
+  }
+}
+
+export default DSL;
 
 function canNest(dsl) {
   return dsl.parent && dsl.parent !== 'application';
@@ -121,9 +185,7 @@ function getFullName(dsl, name, resetNamespace) {
   }
 }
 
-function createRoute(dsl, name, options, callback) {
-  options = options || {};
-
+function createRoute(dsl, name, options = {}, callback) {
   let fullName = getFullName(dsl, name, options.resetNamespace);
 
   if (typeof options.path !== 'string') {
@@ -133,84 +195,8 @@ function createRoute(dsl, name, options, callback) {
   dsl.push(options.path, fullName, callback, options.serialize);
 }
 
-DSL.map = function(callback) {
+DSL.map = callback => {
   let dsl = new DSL();
   callback.call(dsl);
   return dsl;
-};
-
-let uuid = 0;
-
-DSL.prototype.mount = function(_name, _options) {
-  let options = _options || {};
-  let engineRouteMap = this.options.resolveRouteMap(_name);
-  let name = _name;
-
-  if (options.as) {
-    name = options.as;
-  }
-
-  var fullName = getFullName(this, name, options.resetNamespace);
-
-  let engineInfo = {
-    name: _name,
-    instanceId: uuid++,
-    mountPoint: fullName,
-    fullName
-  };
-
-  let path = options.path;
-
-  if (typeof path !== 'string') {
-    path = `/${name}`;
-  }
-
-  let callback;
-  let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
-  if (engineRouteMap) {
-    let shouldResetEngineInfo = false;
-    let oldEngineInfo = this.options.engineInfo;
-    if (oldEngineInfo) {
-      shouldResetEngineInfo = true;
-      this.options.engineInfo = engineInfo;
-    }
-
-    let optionsForChild = assign({ engineInfo }, this.options);
-    let childDSL = new DSL(fullName, optionsForChild);
-
-    createRoute(childDSL, 'loading');
-    createRoute(childDSL, 'error', { path: dummyErrorRoute });
-
-
-    engineRouteMap.class.call(childDSL);
-
-    callback = childDSL.generate();
-
-    if (shouldResetEngineInfo) {
-      this.options.engineInfo = oldEngineInfo;
-    }
-  }
-
-  let localFullName = 'application';
-  let routeInfo = assign({ localFullName }, engineInfo);
-
-  if (this.enableLoadingSubstates) {
-    // These values are important to register the loading routes under their
-    // proper names for the Router and within the Engine's registry.
-    let substateName = `${name}_loading`;
-    let localFullName = `application_loading`;
-    let routeInfo = assign({ localFullName }, engineInfo);
-    createRoute(this, substateName, { resetNamespace: options.resetNamespace });
-    this.options.addRouteForEngine(substateName, routeInfo);
-
-    substateName = `${name}_error`;
-    localFullName = `application_error`;
-    routeInfo = assign({ localFullName }, engineInfo);
-    createRoute(this, substateName, { resetNamespace: options.resetNamespace, path: dummyErrorRoute });
-    this.options.addRouteForEngine(substateName, routeInfo);
-  }
-
-  this.options.addRouteForEngine(fullName, routeInfo);
-
-  this.push(path, fullName, callback);
 };

@@ -122,11 +122,9 @@ const EmberRouter = EmberObject.extend(Evented, {
     let owner = getOwner(this);
     let router = this;
 
-    options.resolveRouteMap = function(name) {
-      return owner[FACTORY_FOR]('route-map:' + name);
-    };
+    options.resolveRouteMap = name => owner[FACTORY_FOR](`route-map:${name}`);
 
-    options.addRouteForEngine = function(name, engineInfo) {
+    options.addRouteForEngine = (name, engineInfo) => {
       if (!router._engineInfoByRoute[name]) {
         router._engineInfoByRoute[name] = engineInfo;
       }
@@ -216,7 +214,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     this._setupRouter(router, location);
 
-    location.onUpdateURL((url) => {
+    location.onUpdateURL(url => {
       this.handleURL(url);
     });
 
@@ -564,7 +562,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let seen = new EmptyObject();
     let owner = getOwner(this);
 
-    return (name) => {
+    return name => {
       let routeName = name;
       let routeOwner = owner;
       let engineInfo = this._engineInfoByRoute[routeName];
@@ -576,7 +574,7 @@ const EmberRouter = EmberObject.extend(Evented, {
         routeName = engineInfo.localFullName;
       }
 
-      let fullRouteName = 'route:' + routeName;
+      let fullRouteName = `route:${routeName}`;
 
       let handler = routeOwner.lookup(fullRouteName);
 
@@ -608,7 +606,7 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   _getSerializerFunction() {
-    return (name) => {
+    return name => {
       let engineInfo = this._engineInfoByRoute[name];
 
       // If this is not an Engine route, we fall back to the handler for serialization
@@ -627,31 +625,31 @@ const EmberRouter = EmberObject.extend(Evented, {
     router.getHandler = this._getHandlerFunction();
     router.getSerializer = this._getSerializerFunction();
 
-    let doUpdateURL = function() {
+    let doUpdateURL = () => {
       location.setURL(lastURL);
     };
 
-    router.updateURL = function(path) {
+    router.updateURL = path => {
       lastURL = path;
       run.once(doUpdateURL);
     };
 
     if (location.replaceURL) {
-      let doReplaceURL = function() {
+      let doReplaceURL = () => {
         location.replaceURL(lastURL);
       };
 
-      router.replaceURL = function(path) {
+      router.replaceURL = path => {
         lastURL = path;
         run.once(doReplaceURL);
       };
     }
 
-    router.didTransition = function(infos) {
+    router.didTransition = infos => {
       emberRouter.didTransition(infos);
     };
 
-    router.willTransition = function(oldInfos, newInfos, transition) {
+    router.willTransition = (oldInfos, newInfos, transition) => {
       emberRouter.willTransition(oldInfos, newInfos, transition);
     };
   },
@@ -766,7 +764,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     this._prepareQueryParams(targetRouteName, models, queryParams);
 
     let transitionArgs = routeArgs(targetRouteName, models, queryParams);
-    let transition = this.router.transitionTo.apply(this.router, transitionArgs);
+    let transition = this.router.transitionTo(...transitionArgs);
 
     didBeginTransition(transition, this);
 
@@ -1019,7 +1017,7 @@ const EmberRouter = EmberObject.extend(Evented, {
       let owner = getOwner(this);
 
       assert(
-        'You attempted to mount the engine \'' + name + '\' in your router map, but the engine can not be found.',
+        `You attempted to mount the engine '${name}' in your router map, but the engine can not be found.`,
         owner.hasRegistration(`engine:${name}`)
       );
 
@@ -1086,7 +1084,7 @@ let defaultActionHandlers = {
     let handlerInfos = transition.state.handlerInfos;
     let router = originRoute.router;
 
-    forEachRouteAbove(originRoute, handlerInfos, function(route) {
+    forEachRouteAbove(originRoute, handlerInfos, route => {
       // Check for the existence of an 'error' route.
       // We don't check for an 'error' route on the originRoute, since that would
       // technically be below where we're at in the route hierarchy.
@@ -1108,7 +1106,7 @@ let defaultActionHandlers = {
       return true;
     });
 
-    logError(error, 'Error while processing route: ' + transition.targetName);
+    logError(error, `Error while processing route: ${transition.targetName}`);
   },
 
   // Attempt to find an appropriate loading route or substate to enter.
@@ -1116,7 +1114,7 @@ let defaultActionHandlers = {
     let handlerInfos = transition.state.handlerInfos;
     let router = originRoute.router;
 
-    forEachRouteAbove(originRoute, handlerInfos, function(route) {
+    forEachRouteAbove(originRoute, handlerInfos, route => {
       // Check for the existence of a 'loading' route.
       // We don't check for a 'loading' route on the originRoute, since that would
       // technically be below where we're at in the route hierarchy.
@@ -1176,10 +1174,10 @@ function findRouteSubstateName(route, state) {
   let owner = getOwner(route);
 
   let routeName = route.routeName;
-  let substateName = routeName + '_' + state;
+  let substateName = `${routeName}_${state}`;
 
   let routeNameFull = route.fullRouteName;
-  let substateNameFull = routeNameFull + '_' + state;
+  let substateNameFull = `${routeNameFull}_${state}`;
 
   return routeHasBeenDefined(owner, router, substateName, substateNameFull) ?
     substateNameFull :
@@ -1201,10 +1199,10 @@ function findRouteStateName(route, state) {
   let owner = getOwner(route);
 
   let routeName = route.routeName;
-  let stateName = routeName === 'application' ? state : routeName + '.' + state;
+  let stateName = routeName === 'application' ? state : `${routeName}.${state}`;
 
   let routeNameFull = route.fullRouteName;
-  let stateNameFull = routeNameFull === 'application' ? state : routeNameFull + '.' + state;
+  let stateNameFull = routeNameFull === 'application' ? state : `${routeNameFull}.${state}`;
 
   return routeHasBeenDefined(owner, router, stateName, stateNameFull) ?
     stateNameFull :
@@ -1402,7 +1400,7 @@ EmberRouter.reopenClass({
         oldNameParts.shift();
       }
 
-      path.push.apply(path, nameParts.slice(oldNameParts.length));
+      path.push(...nameParts.slice(oldNameParts.length));
     }
 
     return path.join('.');
@@ -1421,7 +1419,7 @@ function didBeginTransition(transition, router) {
   }
   router.set('targetState', routerState);
 
-  transition.promise = transition.catch(function(error) {
+  transition.promise = transition.catch(error => {
     let errorId = guidFor(error);
 
     if (router._isErrorHandled(errorId)) {
@@ -1433,7 +1431,7 @@ function didBeginTransition(transition, router) {
 }
 
 function resemblesURL(str) {
-  return typeof str === 'string' && (str === '' || str.charAt(0) === '/');
+  return typeof str === 'string' && (str === '' || str[0] === '/');
 }
 
 function forEachQueryParam(router, handlerInfos, queryParams, callback) {
@@ -1501,7 +1499,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
     }
   }
   return {
-    liveRoutes: liveRoutes,
+    liveRoutes,
     ownState: myState
   };
 }
@@ -1516,9 +1514,9 @@ function appendOrphan(liveRoutes, into, myState) {
     };
   }
   liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
-  run.schedule('afterRender', function() {
+  run.schedule('afterRender', () => {
     // `wasUsed` gets set by the render helper.
-    assert('You attempted to render into \'' + into + '\' but it was not found',
+    assert(`You attempted to render into '${into}' but it was not found`,
                  liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
   });
 }

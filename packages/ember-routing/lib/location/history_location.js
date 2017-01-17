@@ -29,7 +29,10 @@ export default EmberObject.extend({
     this._super(...arguments);
 
     let base = document.querySelector('base');
-    let baseURL = base ? base.getAttribute('href') : '';
+    let baseURL = '';
+    if (base) {
+      baseURL = base.getAttribute('href');
+    }
 
     set(this, 'baseURL', baseURL);
     set(this, 'location', get(this, 'location') || window.location);
@@ -83,12 +86,11 @@ export default EmberObject.extend({
 
     // remove baseURL and rootURL from start of path
     let url = path
-      .replace(new RegExp('^' + baseURL + '(?=/|$)'), '')
-      .replace(new RegExp('^' + rootURL + '(?=/|$)'), '');
+      .replace(new RegExp(`^${baseURL}(?=/|$)`), '')
+      .replace(new RegExp(`^${rootURL}(?=/|$)`), '');
 
     let search = location.search || '';
-    url += search;
-    url += this.getHash();
+    url += search + this.getHash();
 
     return url;
   },
@@ -152,7 +154,7 @@ export default EmberObject.extend({
    @param path {String}
   */
   pushState(path) {
-    let state = { path: path };
+    let state = { path };
 
     get(this, 'history').pushState(state, null, path);
 
@@ -170,7 +172,7 @@ export default EmberObject.extend({
    @param path {String}
   */
   replaceState(path) {
-    let state = { path: path };
+    let state = { path };
     get(this, 'history').replaceState(state, null, path);
 
     this._historyState = state;
@@ -218,7 +220,7 @@ export default EmberObject.extend({
       // remove trailing slashes if they exists
       rootURL = rootURL.replace(/\/$/, '');
       baseURL = baseURL.replace(/\/$/, '');
-    } else if (baseURL.match(/^\//) && rootURL.match(/^\//)) {
+    } else if (baseURL[0] === '/' && rootURL[0] === '/') {
       // if baseURL and rootURL both start with a slash
       // ... remove trailing slash from baseURL if it exists
       baseURL = baseURL.replace(/\/$/, '');
