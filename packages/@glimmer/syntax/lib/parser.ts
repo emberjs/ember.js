@@ -38,16 +38,61 @@ export function preprocess(html, options?) {
 
 const entityParser = new EntityParser(namedCharRefs);
 
-export function Parser(source, options) {
-  this.options = options || {};
-  this.elementStack = [];
-  this.tokenizer = new EventedTokenizer(this, entityParser);
+export class Parser {
+  private elementStack = [];
+  private options: Object;
+  private source: string[];
+  public currentAttribute = null;
+  public currentNode = null;
+  public tokenizer = new EventedTokenizer(this, entityParser);
 
-  this.currentNode = null;
-  this.currentAttribute = null;
+  constructor(source, options: Object = {}) {
+    this.options = options;
 
-  if (typeof source === 'string') {
-    this.source = source.split(/(?:\r\n?|\n)/g);
+    if (typeof source === 'string') {
+      this.source = source.split(/(?:\r\n?|\n)/g);
+    }
+  }
+
+  acceptNode(node): Object {
+    return this[node.type](node);
+  }
+
+  currentElement(): Object {
+    return this.elementStack[this.elementStack.length - 1];
+  }
+
+  sourceForMustache(mustache): string {
+    let firstLine = mustache.loc.start.line - 1;
+    let lastLine = mustache.loc.end.line - 1;
+    let currentLine = firstLine - 1;
+    let firstColumn = mustache.loc.start.column + 2;
+    let lastColumn = mustache.loc.end.column - 2;
+    let string = [];
+    let line;
+
+    if (!this.source) {
+      return '{{' + mustache.path.id.original + '}}';
+    }
+
+    while (currentLine < lastLine) {
+      currentLine++;
+      line = this.source[currentLine];
+
+      if (currentLine === firstLine) {
+        if (firstLine === lastLine) {
+          string.push(line.slice(firstColumn, lastColumn));
+        } else {
+          string.push(line.slice(firstColumn));
+        }
+      } else if (currentLine === lastLine) {
+        string.push(line.slice(0, lastColumn));
+      } else {
+        string.push(line);
+      }
+    }
+
+    return string.join('\n');
   }
 }
 
@@ -58,44 +103,3 @@ for (let key in handlebarsNodeVisitors) {
 for (let key in tokenizerEventHandlers) {
   Parser.prototype[key] = tokenizerEventHandlers[key];
 }
-
-Parser.prototype.acceptNode = function(node) {
-  return this[node.type](node);
-};
-
-Parser.prototype.currentElement = function() {
-  return this.elementStack[this.elementStack.length - 1];
-};
-
-Parser.prototype.sourceForMustache = function(mustache) {
-  let firstLine = mustache.loc.start.line - 1;
-  let lastLine = mustache.loc.end.line - 1;
-  let currentLine = firstLine - 1;
-  let firstColumn = mustache.loc.start.column + 2;
-  let lastColumn = mustache.loc.end.column - 2;
-  let string = [];
-  let line;
-
-  if (!this.source) {
-    return '{{' + mustache.path.id.original + '}}';
-  }
-
-  while (currentLine < lastLine) {
-    currentLine++;
-    line = this.source[currentLine];
-
-    if (currentLine === firstLine) {
-      if (firstLine === lastLine) {
-        string.push(line.slice(firstColumn, lastColumn));
-      } else {
-        string.push(line.slice(firstColumn));
-      }
-    } else if (currentLine === lastLine) {
-      string.push(line.slice(0, lastColumn));
-    } else {
-      string.push(line);
-    }
-  }
-
-  return string.join('\n');
-};
