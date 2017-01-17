@@ -51,7 +51,7 @@ TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassB
 
         buildSexprs(microsyntax, sexprs, b);
 
-        classValue.push.apply(classValue, sexprs);
+        classValue.push(...sexprs);
       }
     });
 

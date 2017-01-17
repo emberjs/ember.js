@@ -10,7 +10,7 @@ AssertReservedNamedArguments.prototype.transform = function AssertReservedNamedA
   let moduleName = this.options.meta.moduleName;
 
   this.syntax.traverse(ast, {
-    PathExpression: function(node) {
+    PathExpression(node) {
       if (node.original[0] === '@') {
         assert(assertMessage(moduleName, node));
       }
