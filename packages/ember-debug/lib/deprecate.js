@@ -19,7 +19,7 @@ function formatMessage(_message, options) {
   }
 
   if (options && options.url) {
-    message += ' See ' + options.url + ' for more details.';
+    message += ` See ${options.url} for more details.`;
   }
 
   return message;
@@ -28,17 +28,15 @@ function formatMessage(_message, options) {
 registerHandler(function logDeprecationToConsole(message, options) {
   let updatedMessage = formatMessage(message, options);
 
-  Logger.warn('DEPRECATION: ' + updatedMessage);
+  Logger.warn(`DEPRECATION: ${updatedMessage}`);
 });
 
 let captureErrorForStack;
 
 if (new Error().stack) {
-  captureErrorForStack = function() {
-    return new Error();
-  };
+  captureErrorForStack = () => new Error();
 } else {
-  captureErrorForStack = function() {
+  captureErrorForStack = () => {
     try { __fail__.fail(); } catch (e) { return e; }
   };
 }
@@ -62,12 +60,12 @@ registerHandler(function logDeprecationStackTrace(message, options, next) {
           replace(/^\(/gm, '{anonymous}(').split('\n');
       }
 
-      stackStr = '\n    ' + stack.slice(2).join('\n    ');
+      stackStr = `\n    ${stack.slice(2).join('\n    ')}`;
     }
 
     let updatedMessage = formatMessage(message, options);
 
-    Logger.warn('DEPRECATION: ' + updatedMessage + stackStr);
+    Logger.warn(`DEPRECATION: ${updatedMessage}${stackStr}`);
   } else {
     next(...arguments);
   }

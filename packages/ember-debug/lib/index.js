@@ -54,7 +54,7 @@ import _warn, {
 */
 setDebugFunction('assert', function assert(desc, test) {
   if (!test) {
-    throw new EmberError('Assertion Failed: ' + desc);
+    throw new EmberError(`Assertion Failed: ${desc}`);
   }
 });
 
@@ -73,7 +73,7 @@ setDebugFunction('assert', function assert(desc, test) {
   @public
 */
 setDebugFunction('debug', function debug(message) {
-  Logger.debug('DEBUG: ' + message);
+  Logger.debug(`DEBUG: ${message}`);
 });
 
 /**
@@ -183,7 +183,7 @@ export function _warnIfUsingStrippedFeatureFlags(FEATURES, knownFeatures, featur
         continue;
       }
 
-      warn('FEATURE["' + key + '"] is set as enabled, but FEATURE flags are only available in canary builds.', !FEATURES[key], { id: 'ember-debug.feature-flag-with-features-stripped' });
+      warn(`FEATURE["${key}"] is set as enabled, but FEATURE flags are only available in canary builds.`, !FEATURES[key], { id: 'ember-debug.feature-flag-with-features-stripped' });
     }
   }
 }
@@ -207,7 +207,7 @@ if (!isTesting()) {
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener('load', () => {
       if (document.documentElement && document.documentElement.dataset && !document.documentElement.dataset.emberExtension) {
-        var downloadURL;
+        let downloadURL;
 
         if (isChrome) {
           downloadURL = 'https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi';
@@ -215,7 +215,7 @@ if (!isTesting()) {
           downloadURL = 'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/';
         }
 
-        debug('For more advanced debugging, install the Ember Inspector from ' + downloadURL);
+        debug(`For more advanced debugging, install the Ember Inspector from ${downloadURL}`);
       }
     }, false);
   }
