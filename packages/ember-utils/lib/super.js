@@ -1,7 +1,7 @@
 const HAS_SUPER_PATTERN = /\.(_super|call\(this|apply\(this)/;
 const fnToString = Function.prototype.toString;
 
-export const checkHasSuper = (function () {
+export const checkHasSuper = ((() => {
   let sourceAvailable = fnToString.call(function() {
     return this;
   }).indexOf('return this') > -1;
@@ -15,7 +15,7 @@ export const checkHasSuper = (function () {
   return function checkHasSuper() {
     return true;
   };
-}());
+})());
 
 function ROOT() {}
 ROOT.__hasSuper = false;
