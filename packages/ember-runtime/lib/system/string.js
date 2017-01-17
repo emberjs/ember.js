@@ -14,32 +14,20 @@ import {
 
 const STRING_DASHERIZE_REGEXP = (/[ _]/g);
 
-const STRING_DASHERIZE_CACHE = new Cache(1000, function(key) {
-  return decamelize(key).replace(STRING_DASHERIZE_REGEXP, '-');
-});
+const STRING_DASHERIZE_CACHE = new Cache(1000, key => decamelize(key).replace(STRING_DASHERIZE_REGEXP, '-'));
 
 const STRING_CAMELIZE_REGEXP_1 = (/(\-|\_|\.|\s)+(.)?/g);
 const STRING_CAMELIZE_REGEXP_2 = (/(^|\/)([A-Z])/g);
 
-const CAMELIZE_CACHE = new Cache(1000, function(key) {
-  return key.replace(STRING_CAMELIZE_REGEXP_1, function(match, separator, chr) {
-    return chr ? chr.toUpperCase() : '';
-  }).replace(STRING_CAMELIZE_REGEXP_2, function(match, separator, chr) {
-    return match.toLowerCase();
-  });
-});
+const CAMELIZE_CACHE = new Cache(1000, key => key.replace(STRING_CAMELIZE_REGEXP_1, (match, separator, chr) => chr ? chr.toUpperCase() : '').replace(STRING_CAMELIZE_REGEXP_2, (match, separator, chr) => match.toLowerCase()));
 
 const STRING_CLASSIFY_REGEXP_1 = (/^(\-|_)+(.)?/);
 const STRING_CLASSIFY_REGEXP_2 = (/(.)(\-|\_|\.|\s)+(.)?/g);
 const STRING_CLASSIFY_REGEXP_3 = (/(^|\/|\.)([a-z])/g);
 
-const CLASSIFY_CACHE = new Cache(1000, function(str) {
-  let replace1 = function(match, separator, chr) {
-    return chr ? ('_' + chr.toUpperCase()) : '';
-  };
-  let replace2 = function(match, initialChar, separator, chr) {
-    return initialChar + (chr ? chr.toUpperCase() : '');
-  };
+const CLASSIFY_CACHE = new Cache(1000, str => {
+  let replace1 = (match, separator, chr) => chr ? (`_${chr.toUpperCase()}`) : '';
+  let replace2 = (match, initialChar, separator, chr) => initialChar + (chr ? chr.toUpperCase() : '');
   let parts = str.split('/');
   for (let i = 0; i < parts.length; i++) {
     parts[i] = parts[i]
@@ -47,32 +35,22 @@ const CLASSIFY_CACHE = new Cache(1000, function(str) {
       .replace(STRING_CLASSIFY_REGEXP_2, replace2);
   }
   return parts.join('/')
-  .replace(STRING_CLASSIFY_REGEXP_3, function(match, separator, chr) {
-    return match.toUpperCase();
-  });
+  .replace(STRING_CLASSIFY_REGEXP_3, (match, separator, chr) => match.toUpperCase());
 });
 
 const STRING_UNDERSCORE_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
 const STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
 
-const UNDERSCORE_CACHE = new Cache(1000, function(str) {
-  return str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').
-    replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase();
-});
+const UNDERSCORE_CACHE = new Cache(1000, str => str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').
+  replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase());
 
 const STRING_CAPITALIZE_REGEXP = (/(^|\/)([a-z])/g);
 
-const CAPITALIZE_CACHE = new Cache(1000, function(str) {
-  return str.replace(STRING_CAPITALIZE_REGEXP, function(match, separator, chr) {
-    return match.toUpperCase();
-  });
-});
+const CAPITALIZE_CACHE = new Cache(1000, str => str.replace(STRING_CAPITALIZE_REGEXP, (match, separator, chr) => match.toUpperCase()));
 
 const STRING_DECAMELIZE_REGEXP = (/([a-z\d])([A-Z])/g);
 
-const DECAMELIZE_CACHE = new Cache(1000, function(str) {
-  return str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase();
-});
+const DECAMELIZE_CACHE = new Cache(1000, str => str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase());
 
 function _fmt(str, formats) {
   let cachedFormats = formats;
@@ -87,7 +65,7 @@ function _fmt(str, formats) {
 
   // first, replace any ORDERED replacements.
   let idx  = 0; // the current index for non-numerical replacements
-  return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
+  return str.replace(/%@([0-9]+)?/g, (s, argIndex) => {
     argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
     s = cachedFormats[argIndex];
     return (s === null) ? '(null)' : (s === undefined) ? '' : inspect(s);

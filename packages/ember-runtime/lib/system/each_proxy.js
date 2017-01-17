@@ -111,7 +111,7 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   while (--loc >= idx) {
     let item = objectAt(content, loc);
     if (item) {
-      assert('When using @each to observe the array ' + content + ', the array must return an object', typeof item === 'object');
+      assert(`When using @each to observe the array ${content}, the array must return an object`, typeof item === 'object');
       _addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
       addObserver(item, keyName, proxy, 'contentKeyDidChange');
     }

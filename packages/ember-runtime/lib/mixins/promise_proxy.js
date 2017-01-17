@@ -29,7 +29,7 @@ function tap(proxy, promise) {
   }, reason => {
     if (!proxy.isDestroyed && !proxy.isDestroying) {
       setProperties(proxy, {
-        reason: reason,
+        reason,
         isRejected: true
       });
     }

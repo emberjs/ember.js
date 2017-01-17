@@ -118,10 +118,10 @@ export default Mixin.create({
       let ret;
 
       if (target.send) {
-        ret = target.send.apply(target, args(actionContext, action));
+        ret = target.send(...args(actionContext, action));
       } else {
-        assert('The action \'' + action + '\' did not exist on ' + target, typeof target[action] === 'function');
-        ret = target[action].apply(target, args(actionContext));
+        assert(`The action '${action}' did not exist on ${target}`, typeof target[action] === 'function');
+        ret = target[action](...args(actionContext));
       }
 
       if (ret !== false) {

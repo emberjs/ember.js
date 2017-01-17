@@ -265,7 +265,7 @@ export default EmberObject.extend(MutableArray, {
 
   _replace(idx, amt, objects) {
     let content = get(this, 'content');
-    assert('The content property of ' + this.constructor + ' should be set before modifying it', content);
+    assert(`The content property of ${this.constructor} should be set before modifying it`, content);
     if (content) {
       this.replaceContent(idx, amt, objects);
     }

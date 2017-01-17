@@ -688,7 +688,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
     let activeObservers = activeObserversMap.get(this);
 
     if (activeObservers) {
-      activeObservers.forEach(args => removeObserver.apply(null, args));
+      activeObservers.forEach(args => removeObserver(...args));
     }
 
     function sortPropertyDidChange() {
@@ -698,7 +698,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
     activeObservers = normalizedSortProperties.map(([prop]) => {
       let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
       let args = [this, path, sortPropertyDidChange];
-      addObserver.apply(null, args);
+      addObserver(...args);
       return args;
     });
 
