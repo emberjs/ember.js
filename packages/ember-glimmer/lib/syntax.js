@@ -69,6 +69,15 @@ function refineBlockSyntax(sexp, builder) {
   return false;
 }
 
+let experimentalMacros = [];
+
+// This is a private API to allow for expiremental macros
+// to be created in user space. Registering a macro should
+// should be done in an initializer.
+export function registerMacros(macro) {
+  experimentalMacros.push(macro);
+}
+
 export function populateMacros(blocks, inlines) {
   inlines.add('outlet', outletMacro);
   inlines.add('component', inlineComponentMacro);
@@ -81,5 +90,10 @@ export function populateMacros(blocks, inlines) {
   blocks.add('-with-dynamic-vars', _withDynamicVarsMacro);
   blocks.add('-in-element', _inElementMacro);
   blocks.addMissing(refineBlockSyntax);
+
+  for (let i = 0; i < experimentalMacros.length; i++) {
+    let macro = experimentalMacros[i];
+    macro(blocks, inlines);
+  }
   return { blocks, inlines };
 }
