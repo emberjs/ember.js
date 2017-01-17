@@ -55,8 +55,8 @@ ControllerMixin.reopen({
     @method _qpChanged
     @private
   */
-  _qpChanged(controller, prop) {
-    prop = prop.substr(0, prop.length - 3);
+  _qpChanged(controller, _prop) {
+    let prop = _prop.substr(0, _prop.length - 3);
 
     let delegate = controller._qpDelegate;
     let value = get(controller, prop);
