@@ -16,8 +16,8 @@ import {
   deprecate
 } from 'ember-metal';
 import { UPDATE, RootReference } from './utils/references';
-import { DirtyableTag } from 'glimmer-reference';
-import { readDOMAttr } from 'glimmer-runtime';
+import { DirtyableTag } from '@glimmer/reference';
+import { readDOMAttr } from '@glimmer/runtime';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');

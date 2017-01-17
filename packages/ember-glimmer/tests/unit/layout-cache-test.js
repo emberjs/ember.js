@@ -1,6 +1,6 @@
 import { EmptyObject } from 'ember-utils';
 import { RenderingTest, moduleFor } from '../utils/test-case';
-import { CompiledBlock } from 'glimmer-runtime';
+import { CompiledBlock } from '@glimmer/runtime';
 import { OWNER } from 'ember-utils';
 
 class Counter {

@@ -3,7 +3,7 @@
 @submodule ember-glimmer
 */
 import { assign, EmptyObject } from 'ember-utils';
-import { DirtyableTag } from 'glimmer-reference';
+import { DirtyableTag } from '@glimmer/reference';
 import { environment } from 'ember-environment';
 import { OWNER } from 'ember-utils';
 import { run } from 'ember-metal';

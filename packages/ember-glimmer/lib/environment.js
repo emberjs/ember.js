@@ -12,13 +12,13 @@ import {
   isSafeString,
   compileLayout,
   getDynamicVar
-} from 'glimmer-runtime';
+} from '@glimmer/runtime';
 import {
-  CurlyComponentSyntax,
   CurlyComponentDefinition
 } from './syntax/curly-component';
-import { findSyntaxBuilder } from './syntax';
-import { DynamicComponentSyntax } from './syntax/dynamic-component';
+import {
+  populateMacros
+} from './syntax';
 import createIterable from './utils/iterable';
 import {
   ConditionalReference,
@@ -31,12 +31,9 @@ import {
   inlineIf,
   inlineUnless
 } from './helpers/if-unless';
-import { wrapComponentClassAttribute } from './utils/bindings';
-
 import { default as action } from './helpers/action';
 import { default as componentHelper } from './helpers/component';
 import { default as concat } from './helpers/concat';
-import { default as debuggerHelper } from './helpers/debugger';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
@@ -53,10 +50,6 @@ import { default as htmlSafeHelper } from './helpers/-html-safe';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 import { FACTORY_FOR } from 'container';
-
-const builtInComponents = {
-  textarea: '-text-area'
-};
 
 import { default as ActionModifierManager } from './modifiers/action';
 
@@ -117,7 +110,6 @@ export default class Environment extends GlimmerEnvironment {
       action,
       component: componentHelper,
       concat,
-      debugger: debuggerHelper,
       get,
       hash,
       loc,
@@ -138,102 +130,10 @@ export default class Environment extends GlimmerEnvironment {
     runInDebug(() => this.debugStack = new DebugStack());
   }
 
-  // Hello future traveler, welcome to the world of syntax refinement.
-  // The method below is called by Glimmer's runtime compiler to allow
-  // us to take generic statement syntax and refine it to more meaniful
-  // syntax for Ember's use case. This on the fly switch-a-roo sounds fine
-  // and dandy, however Ember has precedence on statement refinement that you
-  // need to be aware of. The presendence for language constructs is as follows:
-  //
-  // ------------------------
-  // Native & Built-in Syntax
-  // ------------------------
-  //   User-land components
-  // ------------------------
-  //     User-land helpers
-  // ------------------------
-  //
-  // The one caveat here is that Ember also allows for dashed references that are
-  // not a component or helper:
-  //
-  // export default Component.extend({
-  //   'foo-bar': 'LAME'
-  // });
-  //
-  // {{foo-bar}}
-  //
-  // The heuristic for the above situation is a dashed "key" in inline form
-  // that does not resolve to a defintion. In this case refine statement simply
-  // isn't going to return any syntax and the Glimmer engine knows how to handle
-  // this case.
-
-  refineStatement(statement, symbolTable) {
-    // 1. resolve any native syntax – if, unless, with, each, and partial
-    let nativeSyntax = super.refineStatement(statement, symbolTable);
-
-    if (nativeSyntax) {
-      return nativeSyntax;
-    }
-
-    let {
-      appendType,
-      isSimple,
-      isInline,
-      isBlock,
-      isModifier,
-      key,
-      path,
-      args
-    } = statement;
-
-    assert(`You attempted to overwrite the built-in helper "${key}" which is not allowed. Please rename the helper.`, !(this.builtInHelpers[key] && this.owner.hasRegistration(`helper:${key}`)));
-
-    if (isSimple && (isInline || isBlock) && appendType !== 'get') {
-      // 2. built-in syntax
-
-      let RefinedSyntax = findSyntaxBuilder(key);
-      if (RefinedSyntax) {
-        return RefinedSyntax.create(this, args, symbolTable);
-      }
-
-      let internalKey = builtInComponents[key];
-      let definition = null;
-
-      if (internalKey) {
-        definition = this.getComponentDefinition([internalKey], symbolTable);
-      } else if (key.indexOf('-') >= 0) {
-        definition = this.getComponentDefinition(path, symbolTable);
-      }
-
-      if (definition) {
-        wrapComponentClassAttribute(args);
-
-        return new CurlyComponentSyntax(args, definition, symbolTable);
-      }
-
-      assert(`A component or helper named "${key}" could not be found`, !isBlock || this.hasHelper(path, symbolTable));
-    }
-
-    if (isInline && !isSimple && appendType !== 'helper') {
-      return statement.original.deopt();
-    }
-
-    if (!isSimple && path) {
-      return DynamicComponentSyntax.fromPath(this, path, args, symbolTable);
-    }
-
-    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(path, symbolTable));
-
-    assert(`Helpers may not be used in the element form.`, (() => {
-      if (nativeSyntax) { return true; }
-      if (!key) { return true; }
-
-      if (isModifier && !this.hasModifier(path, symbolTable) && this.hasHelper(path, symbolTable)) {
-        return false;
-      }
-
-      return true;
-    })());
+  macros() {
+    let macros = super.macros();
+    populateMacros(macros.blocks, macros.inlines);
+    return macros;
   }
 
   hasComponentDefinition() {

@@ -3,11 +3,9 @@
 @submodule ember-glimmer
 */
 import {
-  ArgsSyntax,
-  StatementSyntax,
   ComponentDefinition
-} from 'glimmer-runtime';
-import { UNDEFINED_REFERENCE } from 'glimmer-reference';
+} from '@glimmer/runtime';
+import { UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { assert, runInDebug } from 'ember-metal';
 import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing';
@@ -35,39 +33,26 @@ import AbstractManager from './abstract-manager';
   @category ember-application-engines
   @public
 */
-export class MountSyntax extends StatementSyntax {
-  static create(env, args, symbolTable) {
-    assert(
-      'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      args.positional.length === 1 && args.named.length === 0
-    );
+export function mountMacro(path, params, hash, builder) {
+  assert(
+    'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+    params.length === 1 && hash === null
+  );
 
-    assert(
-      'The first argument of {{mount}} must be quoted, e.g. {{mount "chat-engine"}}.',
-      args.positional.at(0).type === 'value' && typeof args.positional.at(0).inner() === 'string'
-    );
+  let name = params[0];
 
-    let name = args.positional.at(0).inner();
+  assert(
+    'The first argument of {{mount}} must be quoted, e.g. {{mount "chat-engine"}}.',
+    typeof name === 'string'
+  );
 
-    assert(
-      `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-      env.owner.hasRegistration(`engine:${name}`)
-    );
+  assert(
+    `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
+    builder.env.owner.hasRegistration(`engine:${name}`)
+  );
 
-    let definition = new MountDefinition(name, env);
-
-    return new MountSyntax(definition, symbolTable);
-  }
-
-  constructor(definition, symbolTable) {
-    super();
-    this.definition = definition;
-    this.symbolTable = symbolTable;
-  }
-
-  compile(builder) {
-    builder.component.static(this.definition, ArgsSyntax.empty(), null, this.symbolTable, null);
-  }
+  builder.component.static(new MountDefinition(name, builder.env), [params, hash, null, null], builder.symbolTable);
+  return true;
 }
 
 class MountManager extends AbstractManager {

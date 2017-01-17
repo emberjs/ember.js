@@ -14,7 +14,7 @@ import {
   UpdatableTag,
   combine,
   isConst
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
 
 /**

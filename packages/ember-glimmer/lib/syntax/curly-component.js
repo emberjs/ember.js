@@ -1,9 +1,8 @@
 import { OWNER } from 'ember-utils';
 import {
-  StatementSyntax,
   PrimitiveReference,
   ComponentDefinition
-} from 'glimmer-runtime';
+} from '@glimmer/runtime';
 import {
   AttributeBinding,
   ClassNameBinding,
@@ -123,20 +122,6 @@ function applyAttributeBindings(element, attributeBindings, component, operation
 
   if (seen.indexOf('style') === -1) {
     IsVisibleBinding.install(element, component, operations);
-  }
-}
-
-export class CurlyComponentSyntax extends StatementSyntax {
-  constructor(args, definition, symbolTable) {
-    super();
-    this.args = args;
-    this.definition = definition;
-    this.symbolTable = symbolTable;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.static(this.definition, this.args, this.symbolTable, this.shadow);
   }
 }
 

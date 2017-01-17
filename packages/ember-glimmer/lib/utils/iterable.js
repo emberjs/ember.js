@@ -13,7 +13,7 @@ import {
   CONSTANT_TAG,
   UpdatableTag,
   combine
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 

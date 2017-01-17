@@ -3,7 +3,7 @@ import { Component } from '../../utils/helpers';
 import {
   setDebuggerCallback,
   resetDebuggerCallback
-} from '../../../helpers/debugger';
+} from '@glimmer/runtime';
 import { set } from 'ember-metal';
 import { A as emberA } from 'ember-runtime';
 
@@ -150,7 +150,7 @@ moduleFor('Helpers test: {{debugger}}', class extends RenderingTest {
           this.zomg = 'zomg';
         }
       }),
-      template: `{{debugger not.here}}foo-bar`
+      template: `{{debugger}}foo-bar`
     });
 
     this.expectDebuggerCallback(

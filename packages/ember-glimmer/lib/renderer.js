@@ -6,7 +6,7 @@ import {
   runInTransaction as _runInTransaction,
   isFeatureEnabled
 } from 'ember-metal';
-import { CURRENT_TAG, UNDEFINED_REFERENCE } from 'glimmer-reference';
+import { CURRENT_TAG, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import {
   fallbackViewRegistry,
   getViewElement,

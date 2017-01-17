@@ -12,8 +12,8 @@ import {
   runInDebug
 } from 'ember-metal';
 import { UnboundReference } from '../utils/references';
-import { EvaluatedPositionalArgs } from 'glimmer-runtime';
-import { isConst } from 'glimmer-reference';
+import { EvaluatedPositionalArgs } from '@glimmer/runtime';
+import { isConst } from '@glimmer/reference';
 
 export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');
@@ -378,7 +378,7 @@ function makeClosureAction(context, target, action, processArgs, debugKey) {
   }
 
   return function(...args) {
-    let payload = { target: self, args, label: 'glimmer-closure-action' };
+    let payload = { target: self, args, label: '@glimmer/closure-action' };
     return flaggedInstrument('interaction.ember-action', payload, () => {
       return run.join(self, fn, ...processArgs(args));
     });

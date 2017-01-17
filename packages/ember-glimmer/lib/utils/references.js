@@ -21,19 +21,19 @@ import {
   UpdatableTag,
   combine,
   isConst
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 import {
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
   NULL_REFERENCE,
   UNDEFINED_REFERENCE
-} from 'glimmer-runtime';
+} from '@glimmer/runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
 
 export const UPDATE = symbol('UPDATE');
 
-export { NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
+export { NULL_REFERENCE, UNDEFINED_REFERENCE } from '@glimmer/runtime';
 
 // @abstract
 // @implements PathReference
