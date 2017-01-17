@@ -221,15 +221,13 @@ function updateTokenizerLocation(tokenizer, content) {
   let line = content.loc.start.line;
   let column = content.loc.start.column;
 
-  if (content.rightStripped) {
-    let offsets = calculateRightStrippedOffsets(content.original, content.value);
+  let offsets = calculateRightStrippedOffsets(content.original, content.value);
 
-    line = line + offsets.lines;
-    if (offsets.lines) {
-      column = offsets.columns;
-    } else {
-      column = column + offsets.columns;
-    }
+  line = line + offsets.lines;
+  if (offsets.lines) {
+    column = offsets.columns;
+  } else {
+    column = column + offsets.columns;
   }
 
   tokenizer.line = line;
