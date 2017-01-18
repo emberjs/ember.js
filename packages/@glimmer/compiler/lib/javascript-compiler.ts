@@ -11,7 +11,8 @@ import {
   Statement,
   Statements,
   Expression,
-  Expressions
+  Expressions,
+  Ops
 } from '@glimmer/wire-format';
 
 export type str = string;
@@ -155,22 +156,22 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   /// Statements
 
   text(content: string) {
-    this.push(['text', content]);
+    this.push([Ops.Text, content]);
   }
 
   append(trusted: boolean) {
-    this.push(['append', this.popValue<Expression>(), trusted]);
+    this.push([Ops.Append, this.popValue<Expression>(), trusted]);
   }
 
   comment(value: string) {
-    this.push(['comment', value]);
+    this.push([Ops.Comment, value]);
   }
 
   modifier(path: Path) {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
-    this.push(['modifier', path, params, hash]);
+    this.push([Ops.Modifier, path, params, hash]);
   }
 
   block(path: Path, template: number, inverse: number) {
@@ -181,78 +182,78 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     assert(typeof template !== 'number' || blocks[template] !== null, 'missing block in the compiler');
     assert(typeof inverse !== 'number' || blocks[inverse] !== null, 'missing block in the compiler');
 
-    this.push(['block', path, params, hash, blocks[template], blocks[inverse]]);
+    this.push([Ops.Block, path, params, hash, blocks[template], blocks[inverse]]);
   }
 
   openElement(tag: str, blockParams: string[]) {
     if (tag.indexOf('-') !== -1) {
       this.startComponent(blockParams);
     } else {
-      this.push(['open-element', tag, blockParams]);
+      this.push([Ops.OpenElement, tag, blockParams]);
     }
   }
 
   flushElement() {
-    this.push(['flush-element']);
+    this.push([Ops.FlushElement]);
   }
 
   closeElement(tag: str) {
     if (tag.indexOf('-') !== -1) {
       let component = this.endComponent();
-      this.push(['component', tag, component]);
+      this.push([Ops.Component, tag, component]);
     } else {
-      this.push(['close-element']);
+      this.push([Ops.CloseElement]);
     }
   }
 
   staticAttr(name: str, namespace: str) {
     let value = this.popValue<Expression>();
-    this.push(['static-attr', name, value, namespace]);
+    this.push([Ops.StaticAttr, name, value, namespace]);
   }
 
   dynamicAttr(name: str, namespace: str) {
     let value = this.popValue<Expression>();
-    this.push(['dynamic-attr', name, value, namespace]);
+    this.push([Ops.DynamicAttr, name, value, namespace]);
   }
 
   trustingAttr(name: str, namespace: str) {
     let value = this.popValue<Expression>();
-    this.push(['trusting-attr', name, value, namespace]);
+    this.push([Ops.TrustingAttr, name, value, namespace]);
   }
 
   staticArg(name: str) {
     let value = this.popValue<Expression>();
-    this.push(['static-arg', name.slice(1), value]);
+    this.push([Ops.StaticArg, name.slice(1), value]);
   }
 
   dynamicArg(name: str) {
     let value = this.popValue<Expression>();
-    this.push(['dynamic-arg', name.slice(1), value]);
+    this.push([Ops.DynamicArg, name.slice(1), value]);
   }
 
   yield(to: string) {
     let params = this.popValue<Params>();
-    this.push(['yield', to, params]);
+    this.push([Ops.Yield, to, params]);
     this.template.block.yields.add(to);
   }
 
   debugger() {
-    this.push(['debugger', null, null]);
+    this.push([Ops.Debugger, null, null]);
   }
 
   hasBlock(name: string) {
-    this.pushValue<Expressions.HasBlock>(['has-block', name]);
+    this.pushValue<Expressions.HasBlock>([Ops.HasBlock, name]);
     this.template.block.yields.add(name);
   }
 
   hasBlockParams(name: string) {
-    this.pushValue<Expressions.HasBlockParams>(['has-block-params', name]);
+    this.pushValue<Expressions.HasBlockParams>([Ops.HasBlockParams, name]);
     this.template.block.yields.add(name);
   }
 
   partial() {
     let params = this.popValue<Params>();
-    this.push(['partial', params[0]]);
+    this.push([Ops.Partial, params[0]]);
     this.template.block.hasPartials = true;
   }
 
@@ -260,34 +261,34 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
 
   literal(value: Expressions.Value | undefined) {
     if (value === undefined) {
-      this.pushValue<Expressions.Undefined>(['undefined']);
+      this.pushValue<Expressions.Undefined>([Ops.Undefined]);
     } else {
       this.pushValue<Expressions.Value>(value);
     }
   }
 
   unknown(path: string[]) {
-    this.pushValue<Expressions.Unknown>(['unknown', path]);
+    this.pushValue<Expressions.Unknown>([Ops.Unknown, path]);
   }
 
   arg(path: string[]) {
     this.template.block.named.add(path[0]);
-    this.pushValue<Expressions.Arg>(['arg', path]);
+    this.pushValue<Expressions.Arg>([Ops.Arg, path]);
   }
 
   get(path: string[]) {
-    this.pushValue<Expressions.Get>(['get', path]);
+    this.pushValue<Expressions.Get>([Ops.Get, path]);
   }
 
   concat() {
-    this.pushValue<Expressions.Concat>(['concat', this.popValue<Params>()]);
+    this.pushValue<Expressions.Concat>([Ops.Concat, this.popValue<Params>()]);
   }
 
   helper(path: string[]) {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
-    this.pushValue<Expressions.Helper>(['helper', path, params, hash]);
+    this.pushValue<Expressions.Helper>([Ops.Helper, path, params, hash]);
   }
 
   /// Stack Management Opcodes

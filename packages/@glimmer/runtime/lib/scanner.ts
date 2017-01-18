@@ -139,43 +139,45 @@ import { PathReference } from '@glimmer/reference';
 export namespace BaselineSyntax {
   import Core = WireFormat.Core;
 
+  const { Ops } = WireFormat;
+
   // TODO: use symbols for sexp[0]?
-  export type ScannedComponent = ['scanned-component', string, RawInlineBlock, WireFormat.Core.Hash, Option<RawInlineBlock>];
-  export const isScannedComponent = WireFormat.is<ScannedComponent>('scanned-component');
+  export type ScannedComponent = [number, string, RawInlineBlock, WireFormat.Core.Hash, Option<RawInlineBlock>];
+  export const isScannedComponent = WireFormat.is<ScannedComponent>(Ops.ScannedComponent);
 
   import Params = WireFormat.Core.Params;
   import Hash = WireFormat.Core.Hash;
   export type Block = InlineBlock;
 
-  export type OpenPrimitiveElement = ['open-primitive-element', string, string[]];
-  export const isPrimitiveElement = WireFormat.is<OpenPrimitiveElement>('open-primitive-element');
+  export type OpenPrimitiveElement = [number, string, string[]];
+  export const isPrimitiveElement = WireFormat.is<OpenPrimitiveElement>(Ops.OpenPrimitiveElement);
 
-  export type OptimizedAppend = ['optimized-append', WireFormat.Expression, boolean];
-  export const isOptimizedAppend = WireFormat.is<OptimizedAppend>('optimized-append');
+  export type OptimizedAppend = [number, WireFormat.Expression, boolean];
+  export const isOptimizedAppend = WireFormat.is<OptimizedAppend>(Ops.OptimizedAppend);
 
-  export type UnoptimizedAppend = ['unoptimized-append', WireFormat.Expression, boolean];
-  export const isUnoptimizedAppend = WireFormat.is<UnoptimizedAppend>('unoptimized-append');
+  export type UnoptimizedAppend = [number, WireFormat.Expression, boolean];
+  export const isUnoptimizedAppend = WireFormat.is<UnoptimizedAppend>(Ops.UnoptimizedAppend);
 
-  export type AnyDynamicAttr = ['any-dynamic-attr', string, WireFormat.Expression, Option<string>, boolean];
-  export const isAnyAttr = WireFormat.is<AnyDynamicAttr>('any-dynamic-attr');
+  export type AnyDynamicAttr = [number, string, WireFormat.Expression, Option<string>, boolean];
+  export const isAnyAttr = WireFormat.is<AnyDynamicAttr>(Ops.AnyDynamicAttr);
 
-  export type StaticPartial = ['static-partial', string];
-  export const isStaticPartial = WireFormat.is<StaticPartial>('static-partial');
-  export type DynamicPartial = ['dynamic-partial', WireFormat.Expression];
-  export const isDynamicPartial = WireFormat.is<DynamicPartial>('dynamic-partial');
+  export type StaticPartial = [number, string];
+  export const isStaticPartial = WireFormat.is<StaticPartial>(Ops.StaticPartial);
+  export type DynamicPartial = [number, WireFormat.Expression];
+  export const isDynamicPartial = WireFormat.is<DynamicPartial>(Ops.DynamicPartial);
 
   export type FunctionExpressionCallback<T> = (VM: PublicVM, symbolTable: SymbolTable) => PathReference<T>;
-  export type FunctionExpression = ['function', FunctionExpressionCallback<Opaque>];
-  export const isFunctionExpression = WireFormat.is<FunctionExpression>('function');
+  export type FunctionExpression = [number, FunctionExpressionCallback<Opaque>];
+  export const isFunctionExpression = WireFormat.is<FunctionExpression>(Ops.Function);
 
-  export type NestedBlock = ['nested-block', WireFormat.Core.Path, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
-  export const isNestedBlock = WireFormat.is<NestedBlock>('nested-block');
+  export type NestedBlock = [number, WireFormat.Core.Path, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
+  export const isNestedBlock = WireFormat.is<NestedBlock>(Ops.NestedBlock);
 
-  export type ScannedBlock = ['scanned-block', Core.Path, Core.Params, Core.Hash, Option<RawInlineBlock>, Option<RawInlineBlock>];
-  export const isScannedBlock = WireFormat.is<ScannedBlock>('scanned-block');
+  export type ScannedBlock = [number, Core.Path, Core.Params, Core.Hash, Option<RawInlineBlock>, Option<RawInlineBlock>];
+  export const isScannedBlock = WireFormat.is<ScannedBlock>(Ops.ScannedBlock);
 
-  export type Debugger = ['debugger'];
-  export const isDebugger = WireFormat.is<Debugger>('debugger');
+  export type Debugger = [number];
+  export const isDebugger = WireFormat.is<Debugger>(Ops.Debugger);
 
   export type Args = [Params, Hash, Option<Block>, Option<Block>];
 
@@ -216,6 +218,8 @@ export namespace BaselineSyntax {
   export type Program = AnyStatement[];
 }
 
+const { Ops } = WireFormat;
+
 export class RawInlineBlock {
   constructor(private env: Environment, private table: SymbolTable, private statements: SerializedStatement[]) {}
 
@@ -238,7 +242,7 @@ export class RawInlineBlock {
 
   private specializeBlock(block: WireFormat.Statements.Block): BaselineSyntax.ScannedBlock {
     let [, path, params, hash, template, inverse] = block;
-    return ['scanned-block', path, params, hash, this.child(template), this.child(inverse)];
+    return [Ops.ScannedBlock, path, params, hash, this.child(template), this.child(inverse)];
   }
 
   private specializeComponent(sexp: WireFormat.Statements.Component): BaselineSyntax.AnyStatement[] {
@@ -247,14 +251,14 @@ export class RawInlineBlock {
     if (this.env.hasComponentDefinition([tag], this.table)) {
       let child = this.child(component);
       let attrs = new RawInlineBlock(this.env, this.table, component.attrs);
-      return [['scanned-component', tag, attrs, component.args, child]];
+      return [[Ops.ScannedComponent, tag, attrs, component.args, child]];
     } else {
       let buf: BaselineSyntax.AnyStatement[] = [];
-      buf.push(['open-element', tag, []]);
+      buf.push([Ops.OpenElement, tag, []]);
       buf.push(...component.attrs);
-      buf.push(['flush-element']);
+      buf.push([Ops.FlushElement]);
       buf.push(...component.statements);
-      buf.push(['close-element']);
+      buf.push([Ops.CloseElement]);
       return buf;
     }
   }
