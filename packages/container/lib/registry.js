@@ -708,9 +708,7 @@ Registry.prototype = {
     for (let i = 0; i < injections.length; i++) {
       fullName = injections[i].fullName;
 
-      if (!this.has(fullName)) {
-        throw new Error(`Attempting to inject an unknown injection: '${fullName}'`);
-      }
+      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName));
     }
   },
 
