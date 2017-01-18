@@ -278,6 +278,22 @@ test("whitespace control - trailing", function() {
   locEqual(div, 3, 4, 3, 15, 'div inside truthy if block');
 });
 
+test("whitespace control - 'else if' trailing", function() {
+  let ast = parse(`
+  {{#if foo}}
+    {{bar}}
+  {{else if baz~}}
+    <div></div>
+  {{/if}}`);
+
+  let [,ifBlock] = ast.body;
+  let [nestedIfBlock] = ifBlock.inverse.body;
+  let [div] = nestedIfBlock.program.body;
+
+  locEqual(ifBlock, 2, 2, 6, 9, 'if block');
+  locEqual(div, 5, 4, 5, 15, 'div inside truthy else if block');
+});
+
 test("whitespace control - leading", function() {
   let ast = parse(`
   {{~#if foo}}
