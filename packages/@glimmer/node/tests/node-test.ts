@@ -274,8 +274,8 @@ module('default template id');
 QUnit.test('generates id in node', function (assert) {
   let template = precompile('hello');
   let obj = JSON.parse(template);
-  assert.equal(obj.id, 'ZDHnvwb1', 'short sha of template source');
+  assert.equal(obj.id, '3TlrituF', 'short sha of template source');
   template = precompile('hello', { meta: {moduleName: 'template/hello'} });
   obj = JSON.parse(template);
-  assert.equal(obj.id, 'mQsxG3uR', 'short sha of template source and meta');
+  assert.equal(obj.id, 'CiDxizBQ', 'short sha of template source and meta');
 });

@@ -93,6 +93,7 @@ import {
 
 import {
   TemplateMeta,
+  Ops
 } from "@glimmer/wire-format";
 
 type KeyFor<T> = (item: Opaque, index: T) => string;
@@ -1130,7 +1131,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     }
 
     if (path.length > 1) {
-      let definitionArgs: BaselineSyntax.Args = [[['get', path]], hash, _default, inverse];
+      let definitionArgs: BaselineSyntax.Args = [[[Ops.Get, path]], hash, _default, inverse];
       let args: BaselineSyntax.Args = [params, hash, _default, inverse];
       builder.component.dynamic(definitionArgs, dynamicComponentFor, args, table);
       return true;
@@ -1159,7 +1160,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     let definition = builder.env.getComponentDefinition(path, builder.symbolTable);
 
     if (path.length > 1) {
-      let definitionArgs: BaselineSyntax.Args = [[['get', path]], hash, null, null];
+      let definitionArgs: BaselineSyntax.Args = [[[Ops.Get, path]], hash, null, null];
       let args: BaselineSyntax.Args = [params, hash, null, null];
       builder.component.dynamic(definitionArgs, dynamicComponentFor, args, table);
       return true;
