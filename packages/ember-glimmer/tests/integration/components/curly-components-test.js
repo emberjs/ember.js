@@ -2483,6 +2483,18 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Jackson');
   }
 
+  ['@test injecting an unknown service raises an exception'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        missingService: inject.service()
+      })
+    });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, 'Attempting to inject an unknown injection: \'service:missingService\'');
+  }
+
   ['@test can access `actions` hash via `_actions` [DEPRECATED]']() {
     let component;
 
