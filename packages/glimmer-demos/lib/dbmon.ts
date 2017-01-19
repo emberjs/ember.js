@@ -123,7 +123,6 @@ export function init() {
   serversRef = new UpdatableReference({ model });
   result = app.render(serversRef, output, new TestDynamicScope());
 
-  console.log(env['createdComponents'].length);
   env.commit();
   console.timeEnd('initial render');
 }
