@@ -107,7 +107,6 @@ export function init() {
   serversRef = new UpdatableReference({ servers: generateServers(), fps: null });
   result = app.render(serversRef, output, new TestDynamicScope());
 
-  console.log(env['createdComponents'].length);
   env.commit();
   console.timeEnd('initial render');
 }
@@ -140,7 +139,10 @@ function start() {
     }
 
     onFrame();
+
+    env.begin();
     result.rerender();
+    env.commit();
 
     clear = requestAnimationFrame(callback);
 
