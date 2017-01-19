@@ -105,6 +105,10 @@ function generateTokens(divOrHTML) {
   return { tokens: tokenize(div.innerHTML), html: div.innerHTML };
 }
 
+declare const QUnit: QUnit & {
+  equiv(a: any, b: any): boolean;
+};
+
 export function equalTokens(fragment, html, message=null) {
   if (fragment.fragment) { fragment = fragment.fragment; }
   if (html.fragment) { html = html.fragment; }
@@ -132,7 +136,7 @@ export function equalTokens(fragment, html, message=null) {
   let equiv = QUnit.equiv(fragTokens.tokens, htmlTokens.tokens);
 
   if (equiv && fragTokens.html !== htmlTokens.html) {
-    QUnit.deepEqual(fragTokens.tokens, htmlTokens.tokens, message);
+    QUnit.assert.deepEqual(fragTokens.tokens, htmlTokens.tokens, message);
   } else {
     QUnit.push(QUnit.equiv(fragTokens.tokens, htmlTokens.tokens), fragTokens.html, htmlTokens.html, message);
   }
@@ -155,9 +159,9 @@ export function generateSnapshot(element) {
 }
 
 export function equalSnapshots(a, b) {
-  QUnit.strictEqual(a.length, b.length, 'Same number of nodes');
+  QUnit.assert.strictEqual(a.length, b.length, 'Same number of nodes');
   for (let i = 0; i < b.length; i++) {
-    QUnit.strictEqual(a[i], b[i], 'Nodes are the same');
+    QUnit.assert.strictEqual(a[i], b[i], 'Nodes are the same');
   }
 }
 
@@ -199,7 +203,7 @@ if (typeof document === 'undefined') {
   let checkedInputString = checkedInput.outerHTML;
 
   isCheckedInputHTML = function(element) {
-    QUnit.equal(element.outerHTML, checkedInputString);
+    QUnit.assert.equal(element.outerHTML, checkedInputString);
   };
 }
 
