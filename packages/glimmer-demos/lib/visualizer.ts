@@ -274,7 +274,8 @@ function renderUI() {
   {{/if}}
 </div>`);
 
-  env.registerHelper("pp-opcode", ([opcode]) => {
+  env.registerHelper("pp-opcode", (arr) => {
+    let opcode = <any>arr[0];
     let output = opcode.type.toUpperCase();
 
     if (opcode.args || opcode.details) {
@@ -380,7 +381,7 @@ function renderContent() {
     let instance = manager.create(env, definition, EvaluatedArgs.empty(), new TestDynamicScope(), null, false);
     let compiled = manager.layoutFor(definition, instance, env);
 
-    return compiled.ops;
+    return (<any>compiled).ops;
   }
 
   function eagerCompile(ops) {
@@ -405,7 +406,7 @@ function renderContent() {
   env.commit();
 
   let entryPoint = app.asEntryPoint();
-  let templateOps = entryPoint.compile(env).ops;
+  let templateOps = (<any>entryPoint.compile(env)).ops;
   let layoutOps = compileLayout("h-card");
 
   ui.rendered = true;

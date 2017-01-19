@@ -9,7 +9,7 @@ export interface Document extends Simple.Document {
   createRawHTMLSection(html: string): Simple.Node;
 }
 
-export var voidMap: Dict<boolean>;
+export const voidMap: Dict<boolean>;
 
 interface HTMLSerializerConstructor {
   new(voidMap: Dict<Boolean>): HTMLSerializer;
@@ -20,6 +20,6 @@ export interface HTMLSerializer {
   serialize(root: Simple.Node): string;
 }
 
-export var HTMLSerializer: HTMLSerializerConstructor;
+export const HTMLSerializer: HTMLSerializerConstructor;
 
-export var Document: DocumentConstructor;
+export const Document: DocumentConstructor;

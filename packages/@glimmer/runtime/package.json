@@ -23,9 +23,7 @@
     "@glimmer/wire-format": "^0.21.0",
     "@glimmer/interfaces": "^0.21.0"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist", "index.ts", "lib"],
   "devDependencies": {
     "@types/qunit": "^2.0.31",
     "typescript": "^2.1.4"

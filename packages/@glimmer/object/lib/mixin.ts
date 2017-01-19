@@ -243,30 +243,6 @@ class ValueDescriptor extends Descriptor {
   }
 }
 
-class AccessorDescriptor extends Descriptor {
-  public enumerable: boolean;
-  public configurable: boolean;
-  public get: () => any;
-  public set: (value: any) => void;
-
-  constructor({ enumerable, configurable, get, set }: PropertyDescriptor) {
-    super();
-    this.enumerable = enumerable;
-    this.configurable = configurable;
-    this.get = get;
-    this.set = set;
-  }
-
-  define(target: Object, key: string) {
-    Object.defineProperty(target, key, {
-      enumerable: this.enumerable,
-      configurable: this.configurable,
-      get: this.get,
-      set: this.set
-    });
-  }
-}
-
 export class DataBlueprint extends Blueprint {
   public enumerable: boolean;
   public configurable: boolean;

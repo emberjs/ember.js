@@ -22,9 +22,9 @@
     "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json && npm run test:packages && npm run test:node",
     "test:node": "bin/run-node-tests.js",
     "test:packages": "bin/run-package-tests.sh",
-    "tsc": "tsc -p . --noEmit",
-    "tslint": "tslint ./packages/**/*.ts",
-    "vscode-build": "tslint -s ./.vscode/tslint-formatters -t vscode ./packages/**/*.ts; tsc -p . --noEmit"
+    "tsc": "tsc -p tsconfig.json --noEmit",
+    "tslint": "tslint --project tsconfig.json",
+    "vscode-build": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "broccoli-concat": "^2.1.0",
