@@ -34,7 +34,9 @@ function rerenderGlimmer() {
   let world = getWorld();
   world.advance();
   self.update({world});
+  env.begin();
   res.rerender();
+  env.commit();
   requestAnimationFrame(rerenderGlimmer);
 }
 

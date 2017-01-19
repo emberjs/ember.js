@@ -108,7 +108,12 @@ module.exports = function(_options) {
   var jsTree = typescript(tsTree, tsOptions);
 
   var libTree = find(jsTree, {
-    include: ['*/index.js', '@glimmer/*/index.js', '@glimmer/*/lib/**/*.js']
+    include: [
+      '*/index.js',
+      '*/lib/**/*.js',
+      '@glimmer/*/index.js',
+      '@glimmer/*/lib/**/*.js'
+    ]
   });
 
   libTree = merge([libTree, HTMLTokenizer, handlebarsInlinedTrees.compiler]);
