@@ -5,10 +5,7 @@
   "module": "dist/modules/index.js",
   "jsnext:main": "dist/modules/index.js",
   "typings": "index.d.ts",
-  "files": [
-    "index.d.ts",
-    "lib"
-  ],
+  "files": ["dist", "index.ts", "lib"],
   "dependencies": {
     "@glimmer/wire-format": "^0.21.0"
   },
