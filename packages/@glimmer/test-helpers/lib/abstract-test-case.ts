@@ -108,7 +108,7 @@ export class RenderingTest {
   }
   assertContent(expected: string, message?: string) {
     let actual = document.getElementById('qunit-fixture').innerHTML;
-    QUnit.equal(actual, expected);
+    QUnit.assert.equal(actual, expected);
   }
 
   takeSnapshot() {

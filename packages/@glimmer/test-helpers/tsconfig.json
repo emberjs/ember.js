@@ -19,7 +19,6 @@
   },
 
   "include": [
-    "../../qunit.d.ts",
     "index.ts",
     "lib/**/*.ts"
   ]
