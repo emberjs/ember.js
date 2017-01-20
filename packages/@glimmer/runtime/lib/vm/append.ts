@@ -278,7 +278,6 @@ export default class VM implements PublicVM {
 
     while (frame.hasOpcodes()) {
       if (opcode = frame.nextStatement(this.env)) {
-        LOGGER.trace(opcode);
         APPEND_OPCODES.evaluate(this, opcode);
       }
     }
