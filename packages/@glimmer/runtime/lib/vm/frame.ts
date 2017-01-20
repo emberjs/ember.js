@@ -1,6 +1,6 @@
 import { Scope, Environment, Opcode } from '../environment';
 import { Reference, PathReference, ReferenceIterator } from '@glimmer/reference';
-import { TRUST, Option, unwrap, expect } from '@glimmer/util';
+import { TRUST, Option, unwrap } from '@glimmer/util';
 import { InlineBlock } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { Component, ComponentManager } from '../component/interfaces';
@@ -39,9 +39,9 @@ class Frame {
   }
 
   restore(frame: CapturedFrame) {
-    this.operand = frame['operand'];
-    this.args = frame['args'];
-    this.condition = frame['condition'];
+    this.operand = frame.operand;
+    this.args = frame.args;
+    this.condition = frame.condition;
   }
 }
 
@@ -52,26 +52,36 @@ export interface Blocks {
 
 export class FrameStack {
   private frames: Frame[] = [];
-  private frame: Option<number> = null;
+  private frame: number = -1;
 
   private get currentFrame(): Frame {
-    return this.frames[unwrap(this.frame)];
+    return this.frames[this.frame];
   }
 
   push(start: number, end: number, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<InlineBlock> = null) {
-    let frame = (this.frame === null) ? (this.frame = 0) : ++this.frame;
-
-    if (this.frames.length <= frame) {
-      this.frames.push(null as TRUST<Frame, 'the null is replaced on the next line'>);
+    let pos = ++this.frame;
+    if (pos < this.frames.length) {
+      let frame = this.frames[pos];
+      frame.start = frame.ip = start;
+      frame.end = end;
+      frame.component = component;
+      frame.manager = manager;
+      frame.shadow = shadow;
+      frame.operand = null;
+      frame.immediate = null;
+      frame.args = null;
+      frame.callerScope = null;
+      frame.blocks = null;
+      frame.condition = null;
+      frame.iterator = null;
+      frame.key = null;
+    } else {
+      this.frames[pos] = new Frame(start, end, component, manager, shadow);
     }
-
-    this.frames[frame] = new Frame(start, end, component, manager, shadow);
   }
 
   pop() {
-    let { frames, frame } = this;
-    frames[expect(frame, 'only pop after pushing')] = null as TRUST<Frame, "this frame won't be accessed anymore">;
-    this.frame = frame === 0 ? null : frame - 1;
+    this.frame--;
   }
 
   capture(): CapturedFrame {
@@ -182,11 +192,11 @@ export class FrameStack {
   }
 
   hasOpcodes(): boolean {
-    return this.frame !== null;
+    return this.frame !== -1;
   }
 
   nextStatement(env: Environment): Option<Opcode> {
-    let frame = this.frames[unwrap(this.frame)];
+    let frame = this.frames[this.frame];
     let ip = frame.ip;
     let end = frame.end;
 
