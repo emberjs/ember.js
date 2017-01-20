@@ -66,9 +66,10 @@ fi
 #### NPM PUBLISHING
 
 if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
-  echo -e "Publishing to npm...\n"
-
   echo $NPM_AUTH_TOKEN > ~/.npmrc
+
+  NPM_USER=`npm whoami`
+  echo -e "Publishing to npm as $NPM_USER...\n"
 
   if [[ "$CHANNEL" == "release" ]]; then
     npm publish
@@ -84,6 +85,7 @@ if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
 
   mkdir -p ~/.gem
   echo $RUBYGEMS_AUTH_TOKEN > ~/.gem/credentials
+  chmod 0600 ~/.gem/credentials
 
   gem build ember-source.gemspec
   gem push ember-source-${TRAVIS_TAG:1}.gem
