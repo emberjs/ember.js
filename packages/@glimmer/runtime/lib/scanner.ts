@@ -50,6 +50,7 @@ export class EntryPoint extends Template {
 }
 
 export class InlineBlock extends Template {
+  compiled: Option<CompiledBlock> = null;
   splat(builder: OpcodeBuilder) {
     let table = builder.symbolTable;
 
@@ -72,12 +73,16 @@ export class InlineBlock extends Template {
   }
 
   compile(env: Environment): CompiledBlock {
-    let table = this.symbolTable;
-    let b = builder(env, table);
+    let compiled = this.compiled;
+    if (!compiled) {
+      let table = this.symbolTable;
+      let b = builder(env, table);
 
-    this.splat(b);
+      this.splat(b);
 
-    return new CompiledBlock(b.start, b.end);
+      compiled = this.compiled = new CompiledBlock(b.start, b.end);
+    }
+    return compiled;
   }
 }
 
