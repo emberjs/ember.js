@@ -45,7 +45,7 @@ export class EntryPoint extends Template {
       STATEMENTS.compile(refined, b);
     }
 
-    return new CompiledProgram(b.toSlice(), this.symbolTable.size);
+    return new CompiledProgram(b.start, b.end, this.symbolTable.size);
   }
 }
 
@@ -77,7 +77,7 @@ export class InlineBlock extends Template {
 
     this.splat(b);
 
-    return new CompiledBlock(b.toSlice());
+    return new CompiledBlock(b.start, b.end);
   }
 }
 
@@ -94,7 +94,7 @@ export class PartialBlock extends Template {
       STATEMENTS.compile(refined, b);
     }
 
-    return new CompiledProgram(b.toSlice(), table.size);
+    return new CompiledProgram(b.start, b.end, table.size);
   }
 }
 

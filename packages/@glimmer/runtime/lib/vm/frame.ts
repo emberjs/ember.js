@@ -3,7 +3,6 @@ import { Reference, PathReference, ReferenceIterator } from '@glimmer/reference'
 import { TRUST, Option, unwrap, expect } from '@glimmer/util';
 import { InlineBlock } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { Slice } from '../opcodes';
 import { Component, ComponentManager } from '../component/interfaces';
 
 export class CapturedFrame {
@@ -26,12 +25,13 @@ class Frame {
   key: Option<string> = null;
 
   constructor(
-    public ops: Slice,
+    public start: number,
+    public end: number,
     public component: Component = null,
     public manager: Option<ComponentManager<Component>> = null,
     public shadow: Option<InlineBlock> = null
   ) {
-    this.ip = ops[0];
+    this.ip = start;
   }
 
   capture(): CapturedFrame {
@@ -58,14 +58,14 @@ export class FrameStack {
     return this.frames[unwrap(this.frame)];
   }
 
-  push(ops: Slice, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<InlineBlock> = null) {
+  push(start: number, end: number, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<InlineBlock> = null) {
     let frame = (this.frame === null) ? (this.frame = 0) : ++this.frame;
 
     if (this.frames.length <= frame) {
       this.frames.push(null as TRUST<Frame, 'the null is replaced on the next line'>);
     }
 
-    this.frames[frame] = new Frame(ops, component, manager, shadow);
+    this.frames[frame] = new Frame(start, end, component, manager, shadow);
   }
 
   pop() {
@@ -82,8 +82,12 @@ export class FrameStack {
     this.currentFrame.restore(frame);
   }
 
-  getOps(): Slice {
-    return this.currentFrame.ops;
+  getStart(): number {
+    return this.currentFrame.start;
+  }
+
+  getEnd(): number {
+    return this.currentFrame.end;
   }
 
   getCurrent(): number {
@@ -182,12 +186,13 @@ export class FrameStack {
   }
 
   nextStatement(env: Environment): Option<Opcode> {
-    let ip = this.frames[unwrap(this.frame)].ip;
-    let ops = this.getOps();
+    let frame = this.frames[unwrap(this.frame)];
+    let ip = frame.ip;
+    let end = frame.end;
 
-    if (ip <= ops[1]) {
+    if (ip < end) {
       let program = env.program;
-      this.setCurrent(ip + 4);
+      frame.ip += 4;
       return program.opcode(ip);
     } else {
       this.pop();

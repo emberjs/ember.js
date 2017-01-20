@@ -1,4 +1,4 @@
-import { LOGGER, Opaque, Option, Dict, Slice as ListSlice, initializeGuid, fillNulls } from '@glimmer/util';
+import { Opaque, Option, Dict, Slice as ListSlice, initializeGuid, fillNulls } from '@glimmer/util';
 import { RevisionTag, VersionedPathReference } from '@glimmer/reference';
 import { VM, UpdatingVM } from './vm';
 import { CompiledExpression, CompiledArgs } from './compiled/expressions';
@@ -19,10 +19,6 @@ export interface OpcodeJSON {
 
 export function pretty(json: OpcodeJSON): string {
   return `${json.type}(${json.args ? json.args.join(', ') : ''})`;
-}
-
-export function defaultToJSON(opcode: AppendOpcode): OpcodeJSON {
-  return { type: opcode[0] };
 }
 
 export const enum OpcodeName {
@@ -251,7 +247,6 @@ export type Operand1 = number;
 export type Operand2 = number;
 export type Operand3 = number;
 
-export type OpcodeToJSON = (data: AppendOpcode, constants: Constants) => OpcodeJSON;
 export type EvaluateOpcode = (vm: VM, opcode: Opcode) => void;
 
 export class AppendOpcodes {
@@ -261,18 +256,11 @@ export class AppendOpcodes {
     this.evaluateOpcode[name as number] = evaluate;
   }
 
-  construct<Name extends OpcodeName>(name: Name, _debug: Option<Object>, op1?: Operand1, op2?: Operand2, op3?: Operand3): AppendOpcode {
-    return [(name as number)|0, (op1 || 0)|0, (op2 || 0)|0, (op3 || 0)|0];
-  }
-
   evaluate(vm: VM, opcode: Opcode) {
-    LOGGER.debug(`[VM] OPCODE: ${opcode.type}`);
     let func = this.evaluateOpcode[opcode.type];
     func(vm, opcode);
   }
 }
-
-export type AppendOpcode = [number, number, number, number];
 
 export const APPEND_OPCODES = new AppendOpcodes();
 

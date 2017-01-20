@@ -10,6 +10,9 @@ class Frame {
   public actions: any[] = [];
   public blankChildTextNodes: number[] = null;
   public symbols: SymbolTable = null;
+  constructor() {
+    Object.seal(this);
+  }
 }
 
 export class SymbolTable {
