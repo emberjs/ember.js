@@ -6,6 +6,30 @@ import { UpdatableReference } from '@glimmer/object-reference';
 import { precompile } from '@glimmer/compiler';
 
 import { EvaluatedArgs, templateFactory } from '@glimmer/runtime';
+import { CompiledBlock } from '@glimmer/runtime';
+
+const APPEND_NAMES = ["push-child-scope","pop-scope","push-dynamic-scope","pop-dynamic-scope","put","evaluate-put","put-args","bind-positional-args","bind-named-args","bind-blocks","bind-partial-args","bind-caller-scope","bind-dynamic-scope","enter","exit","evaluate","jump","jump-if","jump-unless","test","open-block","close-block","put-dynamic-component","put-component","open-component","did-create-element","shadow-attributes","did-render-layout","close-component","text","comment","dynamic-content","open-element","push-remote-element","pop-remote-element","open-component-element","open-dynamic-element","flush-element","close-element","pop-element","static-attr","modifier","dynamic-attr-ns","dynamic-attr","put-iterator","enter-list","exit-list","enter-with-key","next-iter","put-dynamic-partial","put-partial","evaluate-partial"];
+
+function appendToJSON(env: TestEnvironment, compiled: CompiledBlock): {
+  guid: string,
+  type: string
+}[] {
+  let ops: {
+    guid: string,
+    type: string
+  }[] = [];
+
+  let program: number[] = env.program["opcodes"];
+
+  for (let i = compiled.start; i < compiled.end; i += 4) {
+    let op = {
+      guid: "" + i,
+      type: "" + APPEND_NAMES[program[i]]
+    };
+    ops.push(op);
+  }
+  return ops;
+}
 
 const DEFAULT_DATA =
 `{
@@ -381,7 +405,7 @@ function renderContent() {
     let instance = manager.create(env, definition, EvaluatedArgs.empty(), new TestDynamicScope(), null, false);
     let compiled = manager.layoutFor(definition, instance, env);
 
-    return (<any>compiled).ops;
+    return compiled;
   }
 
   function eagerCompile(ops) {
@@ -406,18 +430,21 @@ function renderContent() {
   env.commit();
 
   let entryPoint = app.asEntryPoint();
-  let templateOps = (<any>entryPoint.compile(env)).ops;
-  let layoutOps = compileLayout("h-card");
+  let compiledEntryPoint = entryPoint.compile(env);
+  let templateOps = appendToJSON(env, compiledEntryPoint);
+
+  let compiledLayout = compileLayout("h-card");
+  let layoutOps = appendToJSON(env, compiledLayout);
 
   ui.rendered = true;
 
   ui.template.source = $template.value;
   ui.template.wireFormat = compile($template.value, env)._block;
-  ui.template.opcodes = toJSON(eagerCompile(templateOps));
+  ui.template.opcodes = templateOps;
 
   ui.layout.source = $layout.value;
   ui.layout.wireFormat = compile($layout.value, env)._block;
-  ui.layout.opcodes = toJSON(eagerCompile(layoutOps));
+  ui.layout.opcodes = layoutOps;
 
   ui.updatingOpcodes = toJSON(res['updating']);
 
