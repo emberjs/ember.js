@@ -274,13 +274,16 @@ function qunit() {
 }
 
 function handlebarsFix() {
-  var HANDLEBARS_UTIL = /\/utils.js$/;
+  var HANDLEBARS_PARSER = /\/parser.js$/;
   return {
     load: function(id) {
-      if (HANDLEBARS_UTIL.test(id)) {
+      if (HANDLEBARS_PARSER.test(id)) {
         var code = fs.readFileSync(id, 'utf8');
         return {
-          code: code.replace(/export var isFunction/, 'export { isFunction }'),
+          code: code
+            .replace('exports.__esModule = true;', '')
+            .replace('exports[\'default\'] = handlebars;', 'export default handlebars;'),
+
           map: { mappings: null }
         };
       }
