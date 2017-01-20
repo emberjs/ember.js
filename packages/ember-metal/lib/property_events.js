@@ -113,10 +113,12 @@ function propertyDidChange(obj, keyName, _meta) {
 
   markObjectAsDirty(meta, keyName);
 
-  if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isEnabled('ember-glimmer-allow-backtracking-rerender')) {
-    runInDebug(() => { assertNotRendered(obj, keyName, meta) });
-  }
+  runInDebug(() => {
+    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
+      isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      assertNotRendered(obj, keyName, meta)
+    }
+  });
 }
 
 let WILL_SEEN, DID_SEEN;
