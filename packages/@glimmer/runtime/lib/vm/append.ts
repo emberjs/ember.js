@@ -1,6 +1,6 @@
 import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
-import { Option, Destroyable, Stack, LinkedList, ListSlice, LOGGER, Opaque, assert, expect } from '@glimmer/util';
+import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
 import { PathReference, combineSlice } from '@glimmer/reference';
 import { CompiledBlock } from '../compiled/blocks';
 import { InlineBlock, PartialBlock } from '../scanner';
