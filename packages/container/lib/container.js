@@ -448,12 +448,10 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
   } else {
     let injections = injectionsFor(container, fullName);
     let cacheable = !areInjectionsDynamic(injections);
-
-    let injectedFactory = factory.extend(injections);
+    let injectedFactory = factory.extend(injections, { [NAME_KEY]: registry.makeToString(factory, fullName) });
 
     // TODO - remove all `container` injections when Ember reaches v3.0.0
     injectDeprecatedContainer(injectedFactory.prototype, container);
-    injectedFactory.reopenClass({ [NAME_KEY]: registry.makeToString(factory, fullName) });
 
     if (factory && typeof factory._onLookup === 'function') {
       factory._onLookup(fullName);
