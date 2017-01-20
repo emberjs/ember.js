@@ -21,10 +21,7 @@ test("programs", function() {
     `);
 
   locEqual(ast, 1, 0, 5, 4, 'outer program');
-
-  // startColumn should be 13 not 2.
-  // This should be fixed upstream in Handlebars.
-  locEqual(ast.body[1].program, 2, 2, 4, 7, 'nested program');
+  locEqual(ast.body[1].program, 2, 13, 4, 7, 'nested program');
 });
 
 test("blocks", function() {
@@ -47,7 +44,7 @@ test("blocks", function() {
   locEqual(block, 2, 2, 9, 8, 'outer block');
   locEqual(nestedBlock, 3, 4, 7, 13, 'nested block');
   locEqual(nestedBlockText, 4, 0, 5, 0);
-  locEqual(nestedInverse, 5, 8, 7, 2);
+  locEqual(nestedInverse, 5, 16, 7, 2);
 });
 
 test("mustache", function() {
@@ -118,9 +115,9 @@ test("html elements with nested blocks", function() {
 
   locEqual(div, 2, 4, 10, 10, 'div element');
   locEqual(ifBlock, 3, 6, 9, 13, 'outer if block');
-  locEqual(inverseBlock, 5, 6, 9, 6, 'inverse block');
+  locEqual(inverseBlock, 5, 24, 7, 6, 'inverse block');
   locEqual(nestedIfBlock, 5, 6, 9, 6, 'nested if block');
-  locEqual(nestedIfInverseBlock, 7, 6, 9, 6, 'nested inverse block');
+  locEqual(nestedIfInverseBlock, 7, 14, 9, 6, 'nested inverse block');
   locEqual(p, 9, 14, 9, 30, 'p');
 });
 
