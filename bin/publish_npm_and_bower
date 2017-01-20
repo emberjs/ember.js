@@ -104,7 +104,7 @@ git remote add origin https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_
 git add -A
 git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/commit/${TRAVIS_COMMIT}."
 
-if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+$ ]]; then
+if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
   echo -e "Creating tag ${TRAVIS_TAG:1}"
   git tag ${TRAVIS_TAG:1}
   PUSH_TARGET=${TRAVIS_TAG:1}
