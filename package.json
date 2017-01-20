@@ -37,7 +37,7 @@
     "emberjs-build": "^0.19.0",
     "exists-sync": "0.0.3",
     "git-repo-version": "^0.1.2",
-    "handlebars": "^3.0.2",
+    "handlebars": "^4.0.6",
     "qunit": "^0.9.1",
     "simple-dom": "^0.3.0",
     "simple-html-tokenizer": "^0.3.0"
