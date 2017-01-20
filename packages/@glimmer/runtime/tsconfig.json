@@ -7,7 +7,12 @@
     "noUnusedParameters": true,
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
-    "diagnostics": true
+    "diagnostics": true,
+    "baseUrl": ".",
+    "rootDir": ".",
+    "paths": {
+      "@glimmer/test-helpers": ["../test-helpers/index.ts"]
+    }
   },
 
   "include": [

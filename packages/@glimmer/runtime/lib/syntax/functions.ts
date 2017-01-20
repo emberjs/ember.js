@@ -378,7 +378,10 @@ export function compileBaselineArgs(args: BaselineSyntax.Args, builder: OpcodeBu
 
 function compileParams(params: Option<WireFormat.Core.Params>, builder: OpcodeBuilder): CompiledPositionalArgs {
   if (!params || params.length === 0) return COMPILED_EMPTY_POSITIONAL_ARGS;
-  let compiled = params.map(p => expr(p, builder));
+  let compiled = new Array(params.length);
+  for (let i = 0; i < params.length; i++) {
+    compiled[i] = expr(params[i], builder);
+  }
   return CompiledPositionalArgs.create(compiled);
 }
 
@@ -386,8 +389,10 @@ function compileHash(hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder)
   if (!hash) return COMPILED_EMPTY_NAMED_ARGS;
   let [keys, values] = hash;
   if (keys.length === 0) return COMPILED_EMPTY_NAMED_ARGS;
-
-  let compiled = values.map(p => expr(p, builder));
+  let compiled = new Array(values.length);
+  for (let i = 0; i < values.length; i++) {
+    compiled[i] = expr(values[i], builder);
+  }
   return new CompiledNamedArgs(keys, compiled);
 }
 

@@ -147,7 +147,7 @@ class WrappedBuilder {
     b.didRenderLayout();
     b.stopLabels();
 
-    return new CompiledProgram(b.toSlice(), symbolTable.size);
+    return new CompiledProgram(b.start, b.end, symbolTable.size);
   }
 }
 
@@ -193,7 +193,7 @@ class UnwrappedBuilder {
     b.didRenderLayout();
     b.stopLabels();
 
-    return new CompiledProgram(b.toSlice(), layout.symbolTable.size);
+    return new CompiledProgram(b.start, b.end, layout.symbolTable.size);
   }
 }
 
