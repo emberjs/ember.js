@@ -2,6 +2,7 @@ import { Environment } from './environment';
 import { SymbolTable } from '@glimmer/interfaces';
 import { CompiledProgram } from './compiled/blocks';
 import { Maybe, Option } from '@glimmer/util';
+import { Ops } from '@glimmer/wire-format';
 
 import {
   BaselineSyntax,
@@ -153,7 +154,7 @@ class WrappedBuilder {
 
 function isOpenElement(value: BaselineSyntax.AnyStatement): value is (BaselineSyntax.OpenPrimitiveElement | WireFormat.Statements.OpenElement) {
   let type = value[0];
-  return type === 'open-element' || type === 'open-primitive-element';
+  return type === Ops.OpenElement || type === Ops.OpenPrimitiveElement;
 }
 
 class UnwrappedBuilder {
@@ -222,7 +223,7 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
 
   dynamic(tagName: FunctionExpression<string>) {
     this.isDynamic = true;
-    this.dynamicTagName = ['function', tagName];
+    this.dynamicTagName = [Ops.Function, tagName];
   }
 }
 
@@ -230,11 +231,11 @@ class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
   private buffer: WireFormat.Statements.Attribute[] = [];
 
   static(name: string, value: string) {
-    this.buffer.push(['static-attr', name, value, null]);
+    this.buffer.push([Ops.StaticAttr, name, value, null]);
   }
 
   dynamic(name: string, value: FunctionExpression<string>) {
-    this.buffer.push(['dynamic-attr', name, ['function', value], null]);
+    this.buffer.push([Ops.DynamicAttr, name, [Ops.Function, value], null]);
   }
 }
 
@@ -256,7 +257,7 @@ export class ComponentBuilder implements IComponentBuilder {
   dynamic(definitionArgs: BaselineSyntax.Args, definition: DynamicDefinition, args: BaselineSyntax.Args, _symbolTable: SymbolTable, shadow: InlineBlock) {
     this.builder.unit(b => {
       b.putArgs(compileArgs(definitionArgs[0], definitionArgs[1], b));
-      b.putValue(['function', definition]);
+      b.putValue([Ops.Function, definition]);
       b.test('simple');
       b.enter('BEGIN', 'END');
       b.label('BEGIN');
