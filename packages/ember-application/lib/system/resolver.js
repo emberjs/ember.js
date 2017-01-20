@@ -4,7 +4,7 @@
 */
 
 import { dictionary } from 'ember-utils';
-import { assert, info, get } from 'ember-metal';
+import { assert, info, deprecate, get  } from 'ember-metal/debug';
 import {
   String as StringUtils,
   Object as EmberObject,
@@ -211,6 +211,10 @@ export default EmberObject.extend({
     let dirname = lastSlashIndex !== -1 ? name.slice(0, lastSlashIndex) : null;
 
     if (type !== 'template' && lastSlashIndex !== -1) {
+      deprecate(`Using / as a namespace, used by: "${name}"`, true, {
+        id: 'slash-as-namespace',
+        until: 'next LTS' // TODO
+      });
       let parts = name.split('/');
       name = parts[parts.length - 1];
       let namespaceName = StringUtils.capitalize(parts.slice(0, -1).join('.'));
