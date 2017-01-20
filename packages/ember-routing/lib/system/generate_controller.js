@@ -1,6 +1,7 @@
 import {
   info,
-  get
+  get,
+  runInDebug
 } from 'ember-metal';
 import { FACTORY_FOR } from 'container';
 
@@ -48,9 +49,11 @@ export default function generateController(owner, controllerName) {
   let fullName = `controller:${controllerName}`;
   let instance = owner.lookup(fullName);
 
-  if (get(instance, 'namespace.LOG_ACTIVE_GENERATION')) {
-    info(`generated -> ${fullName}`, { fullName });
-  }
+  runInDebug(() => {
+    if (get(instance, 'namespace.LOG_ACTIVE_GENERATION')) {
+      info(`generated -> ${fullName}`, { fullName });
+    }
+  });
 
   return instance;
 }

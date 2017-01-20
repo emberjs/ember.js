@@ -4,7 +4,12 @@
 */
 
 import { dictionary } from 'ember-utils';
-import { assert, info, get } from 'ember-metal';
+import {
+  assert,
+  info,
+  get,
+  runInDebug
+} from 'ember-metal';
 import {
   String as StringUtils,
   Object as EmberObject,
@@ -171,9 +176,11 @@ export default EmberObject.extend({
 
     resolved = resolved || this.resolveOther(parsedName);
 
-    if (parsedName.root && parsedName.root.LOG_RESOLVER) {
-      this._logLookup(resolved, parsedName);
-    }
+    runInDebug(() => {
+      if (parsedName.root && parsedName.root.LOG_RESOLVER) {
+        this._logLookup(resolved, parsedName);
+      }
+    });
 
     if (resolved) {
       validateType(resolved, parsedName);

@@ -602,9 +602,11 @@ const EmberRouter = EmberObject.extend(Evented, {
         routeOwner.register(fullRouteName, DefaultRoute.extend());
         handler = routeOwner.lookup(fullRouteName);
 
-        if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
-          info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
-        }
+        runInDebug(() => {
+          if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
+            info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
+          }
+        });
       }
 
       handler._setRouteName(routeName);
