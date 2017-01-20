@@ -1,5 +1,4 @@
 import { SymbolTable } from '@glimmer/interfaces';
-import { A } from '@glimmer/util';
 
 import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
@@ -222,7 +221,7 @@ export class Opcode {
 export class Program {
   [key: number]: never;
 
-  private opcodes = new A(0x100000);
+  private opcodes = [];
   private _offset = 0;
   private _opcode: Opcode;
 
