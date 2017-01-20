@@ -221,7 +221,7 @@ export class Opcode {
 export class Program {
   [key: number]: never;
 
-  private opcodes = [];
+  private opcodes: number[] = [];
   private _offset = 0;
   private _opcode: Opcode;
 
