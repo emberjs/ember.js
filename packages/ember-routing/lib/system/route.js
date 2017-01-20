@@ -10,6 +10,7 @@ import {
   isNone,
   computed,
   run,
+  runInDebug,
   isEmpty
 } from 'ember-metal';
 import {
@@ -2299,10 +2300,12 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
 
   assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || template);
 
-  let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
-  if (LOG_VIEW_LOOKUPS && !template) {
-    info(`Could not find "${name}" template. Nothing will be rendered`, { fullName: `template:${name}` });
-  }
+  runInDebug(() => {
+    let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
+    if (LOG_VIEW_LOOKUPS && !template) {
+      info(`Could not find "${name}" template. Nothing will be rendered`, { fullName: `template:${name}` });
+    }
+  });
 
   return renderOptions;
 }
