@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.11.0-beta.5 (January 20, 2017)
+
+- [#14808](https://github.com/emberjs/ember.js/pull/14808) Remove built-in shims when using `ember-source` from npm. Please continue to use `ember-cli-shims`.
+
 ### 2.11.0-beta.4 (December 14, 2016)
 
 - [#14685](https://github.com/emberjs/ember.js/pull/14685) [BUGFIX] Fix `this.$()` returning `undefined` in `willDestroyElement`.
