@@ -1,4 +1,5 @@
 import { guidFor, symbol } from 'ember-utils';
+import { runInDebug } from 'ember-metal';
 import {
   peekMeta
 } from './meta';
@@ -113,8 +114,8 @@ function propertyDidChange(obj, keyName, _meta) {
   markObjectAsDirty(meta, keyName);
 
   if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-      isEnabled('ember-glimmer-allow-backtracking-rerender')) {
-    assertNotRendered(obj, keyName, meta);
+    isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    runInDebug(() => { assertNotRendered(obj, keyName, meta) });
   }
 }
 
