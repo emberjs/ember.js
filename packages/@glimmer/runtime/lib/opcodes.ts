@@ -6,8 +6,6 @@ import { NULL_REFERENCE, UNDEFINED_REFERENCE } from './references';
 import { InlineBlock } from './scanner';
 import { Opcode } from './environment';
 
-export type Slice = [number, number];
-
 export interface OpcodeJSON {
   type: number | string;
   guid?: Option<number>;
@@ -148,7 +146,6 @@ export class Constants {
   private strings: string[] = [];
   private expressions: Opaque[] = [];
   private arrays: number[][] = [];
-  private slices: Slice[] = [];
   private blocks: InlineBlock[] = [];
   private functions: Function[] = [];
   private others: Opaque[] = [];
@@ -198,17 +195,6 @@ export class Constants {
   array(values: number[]): ConstantArray {
     let index = this.arrays.length;
     this.arrays.push(values);
-    return index + 1;
-  }
-
-  getSlice(value: ConstantSlice): Slice {
-    return this.slices[value - 1];
-  }
-
-  slice(slice: Slice): ConstantSlice {
-    // TODO: Put the entire program in one big array
-    let index = this.slices.length;
-    this.slices.push(slice);
     return index + 1;
   }
 
