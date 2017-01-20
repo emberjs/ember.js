@@ -65,7 +65,7 @@ fi
 
 #### NPM PUBLISHING
 
-if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+$ ]]; then
+if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
   echo -e "Publishing to npm...\n"
 
   echo $NPM_AUTH_TOKEN > ~/.npmrc
@@ -79,7 +79,7 @@ fi
 
 #### RUBYGEMS PUBLISHING
 
-if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+$ ]]; then
+if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
   echo -e "Publishing to RubyGems...\n"
 
   mkdir -p ~/.gem
