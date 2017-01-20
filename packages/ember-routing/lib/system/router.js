@@ -15,6 +15,7 @@ import {
   defineProperty,
   computed,
   run,
+  runInDebug,
   deprecate
 } from 'ember-metal';
 import {
@@ -106,9 +107,11 @@ const EmberRouter = EmberObject.extend(Evented, {
       }
     });
 
-    if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
-      router.log = Logger.debug;
-    }
+    runInDebug(() => {
+      if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
+        router.log = Logger.debug;
+      }
+    });
 
     router.map(dsl.generate());
   },
@@ -265,9 +268,11 @@ const EmberRouter = EmberObject.extend(Evented, {
     // less surprising than didTransition being out of sync.
     run.once(this, this.trigger, 'didTransition');
 
-    if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Logger.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
-    }
+    runInDebug(() => {
+      if (get(this, 'namespace').LOG_TRANSITIONS) {
+        Logger.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
+      }
+    });
   },
 
   _setOutlets() {
@@ -336,9 +341,11 @@ const EmberRouter = EmberObject.extend(Evented, {
   willTransition(oldInfos, newInfos, transition) {
     run.once(this, this.trigger, 'willTransition', transition);
 
-    if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
-    }
+    runInDebug(() => {
+      if (get(this, 'namespace').LOG_TRANSITIONS) {
+        Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
+      }
+    });
   },
 
   handleURL(url) {
@@ -392,10 +399,12 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     updatePaths(this);
 
-    let infos = this.router.currentHandlerInfos;
-    if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Logger.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
-    }
+    runInDebug(() => {
+      let infos = this.router.currentHandlerInfos;
+      if (get(this, 'namespace').LOG_TRANSITIONS) {
+        Logger.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
+      }
+    });
   },
 
   replaceWith() {
