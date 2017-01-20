@@ -136,6 +136,10 @@ const EmberRouter = EmberObject.extend(Evented, {
   init() {
     this._super(...arguments);
 
+    this.currentURL = null;
+    this.currentRouteName = null;
+    this.currentPath = null;
+
     this._qpCache = new EmptyObject();
     this._resetQueuedQueryParameterChanges();
     this._handledErrors = dictionary(null);
@@ -627,6 +631,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     let doUpdateURL = () => {
       location.setURL(lastURL);
+      set(emberRouter, 'currentURL', lastURL);
     };
 
     router.updateURL = path => {
@@ -637,6 +642,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     if (location.replaceURL) {
       let doReplaceURL = () => {
         location.replaceURL(lastURL);
+        set(emberRouter, 'currentURL', lastURL);
       };
 
       router.replaceURL = path => {
@@ -1290,9 +1296,11 @@ function updatePaths(router) {
 
   let path = EmberRouter._routePath(infos);
   let currentRouteName = infos[infos.length - 1].name;
+  let currentURL = router.get('location').getURL();
 
   set(router, 'currentPath', path);
   set(router, 'currentRouteName', currentRouteName);
+  set(router, 'currentURL', currentURL);
 
   let appController = getOwner(router).lookup('controller:application');
 
