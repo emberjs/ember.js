@@ -8,6 +8,7 @@
     "ember-testing-resume-test": null,
     "ember-factory-for": true,
     "ember-no-double-extend": null,
-    "ember-routing-router-service": null
+    "ember-routing-router-service": null,
+    "ember-unique-location-history-state": null
   }
 }

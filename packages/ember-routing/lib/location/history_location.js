@@ -1,6 +1,7 @@
 import {
   get,
-  set
+  set,
+  isFeatureEnabled
 } from 'ember-metal';
 
 import { Object as EmberObject } from 'ember-runtime';
@@ -12,6 +13,19 @@ import EmberLocation from './api';
 */
 
 let popstateFired = false;
+
+let _uuid;
+
+if (isFeatureEnabled('ember-unique-location-history-state')) {
+  _uuid = function _uuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r, v;
+      r = Math.random() * 16 | 0;
+      v = c === 'x' ? r : r & 3 | 8;
+      return v.toString(16);
+    });
+  }
+}
 
 /**
   Ember.HistoryLocation implements the location API using the browser's
@@ -134,6 +148,10 @@ export default EmberObject.extend({
     from getState may be null if an iframe has changed a window's
     history.
 
+    The object returned will contain a `path` for the given state as well
+    as a unique state `id`. The state index will allow the app to distinguish
+    between two states with similar paths but should be unique from one another.
+
     @private
     @method getState
     @return state {Object}
@@ -155,6 +173,9 @@ export default EmberObject.extend({
   */
   pushState(path) {
     let state = { path };
+    if (isFeatureEnabled('ember-unique-location-history-state')) {
+      state.uuid = _uuid();
+    }
 
     get(this, 'history').pushState(state, null, path);
 
@@ -173,6 +194,10 @@ export default EmberObject.extend({
   */
   replaceState(path) {
     let state = { path };
+    if (isFeatureEnabled('ember-unique-location-history-state')) {
+      state.uuid = _uuid();
+    }
+
     get(this, 'history').replaceState(state, null, path);
 
     this._historyState = state;
