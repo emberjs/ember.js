@@ -24,7 +24,8 @@
     "test": "node bin/run-tests.js",
     "test:blueprints": "node node-tests/nodetest-runner.js",
     "test:sauce": "node bin/run-sauce-tests.js",
-    "test:testem": "testem -f testem.dist.json"
+    "test:testem": "testem -f testem.dist.json",
+    "link:glimmer": "node bin/yarn-link-glimmer.js"
   },
   "dependencies": {
     "@glimmer/compiler": "^0.21.1",
