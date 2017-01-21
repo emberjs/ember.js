@@ -2,7 +2,7 @@ import Bounds, { Cursor, DestroyableBounds, clear } from './bounds';
 
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 
-import { LOGGER, Option, Destroyable, Stack, LinkedList, LinkedListNode, assert, expect } from '@glimmer/util';
+import { Option, Destroyable, Stack, LinkedList, LinkedListNode, assert, expect } from '@glimmer/util';
 
 import { Environment } from './environment';
 
@@ -132,7 +132,7 @@ export class ElementStack implements Cursor {
 
     let topElement = elementStack.pop();
     nextSiblingStack.pop();
-    LOGGER.debug(`-> element stack ${this.elementStack.toArray().map(e => e.tagName).join(', ')}`);
+    // LOGGER.debug(`-> element stack ${this.elementStack.toArray().map(e => e.tagName).join(', ')}`);
 
     this.element = expect(elementStack.current, "can't pop past the last element");
     this.nextSibling = nextSiblingStack.current;
@@ -223,7 +223,7 @@ export class ElementStack implements Cursor {
   private pushElement(element: Simple.Element) {
     this.element = element;
     this.elementStack.push(element);
-    LOGGER.debug(`-> element stack ${this.elementStack.toArray().map(e => e.tagName).join(', ')}`);
+    // LOGGER.debug(`-> element stack ${this.elementStack.toArray().map(e => e.tagName).join(', ')}`);
 
     this.nextSibling = null;
     this.nextSiblingStack.push(null);

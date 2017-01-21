@@ -25,7 +25,7 @@ import { ConditionalReference } from '../../references';
 import { Environment } from '../../environment';
 import { UpdatableBlockTracker } from '../../builder';
 import { SymbolTable } from '@glimmer/interfaces';
-import { APPEND_OPCODES, OpcodeName as Op, Slice } from '../../opcodes';
+import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
 
 APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: append }) => {
   let opcode = vm.constants.getOther(append) as AppendDynamicOpcode<Insertion>;
@@ -106,29 +106,29 @@ export abstract class AppendDynamicOpcode<T extends Insertion> {
 
 export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDynamicOpcode<T> {
   protected abstract AppendOpcode: typeof OptimizedCautiousAppendOpcode | typeof OptimizedTrustingAppendOpcode;
-  private deopted: Option<Slice> = null;
+  private start = -1;
+  private end = -1;
 
   constructor(private expression: CompiledExpression<any>, private symbolTable: SymbolTable) {
     super();
   }
 
   evaluate(vm: VM) {
-    if (this.deopted) {
-      vm.pushEvalFrame(this.deopted);
-    } else {
+    if (this.start === -1) {
       vm.evaluateOperand(this.expression);
-
       let value = vm.frame.getOperand().value();
-
       if(isComponentDefinition(value)) {
-        vm.pushEvalFrame(this.deopt(vm.env));
+        this.deopt(vm.env);
+        vm.pushEvalFrame(this.start, this.end);
       } else {
         super.evaluate(vm);
       }
+    } else {
+      vm.pushEvalFrame(this.start, this.end);
     }
   }
 
-  public deopt(env: Environment): Slice { // Public because it's used in the lazy deopt
+  public deopt(env: Environment): number { // Public because it's used in the lazy deopt
     // At compile time, we determined that this append callsite might refer
     // to a local variable/property lookup that resolves to a component
     // definition at runtime.
@@ -188,7 +188,8 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDyn
       dsl.dynamicContent(new this.AppendOpcode());
     });
 
-    let deopted = this.deopted = dsl.toSlice();
+    this.start = dsl.start;
+    this.end = dsl.end;
 
     // From this point on, we have essentially replaced ourselves with a new set
     // of opcodes. Since we will always be executing the new/deopted code, it's
@@ -199,7 +200,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDyn
 
     this.expression = null as FIXME<any, 'QUESTION'>;
 
-    return deopted;
+    return dsl.start;
   }
 }
 
@@ -314,18 +315,19 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
     let { bounds, appendOpcode, state } = this;
     let env = vm.env;
 
-    let slice     = appendOpcode.deopt(env);
-    let enter     = expect(env.program.opcode(slice[0] + 8), 'hardcoded deopt location');
-    let ops       = vm.constants.getSlice(enter.op1);
+    let deoptStart = appendOpcode.deopt(env);
+
+    let enter = expect(env.program.opcode(deoptStart + 8), 'hardcoded deopt location');
+    let { op1: start, op2: end } = enter;
 
     let tracker = new UpdatableBlockTracker(bounds.parentElement());
     tracker.newBounds(this.bounds);
 
     let children = new LinkedList<UpdatingOpcode>();
 
-    state.frame['condition'] = IsComponentDefinitionReference.create(expect(state.frame['operand'], 'operand should be populated'));
+    state.frame.condition = IsComponentDefinitionReference.create(expect(state.frame['operand'], 'operand should be populated'));
 
-    let deopted = this.deopted = new TryOpcode(ops, state, tracker, children);
+    let deopted = this.deopted = new TryOpcode(start, end, state, tracker, children);
 
     this._tag.update(deopted.tag);
 
