@@ -57,7 +57,7 @@ APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
   vm.bindDynamicScope(names);
 });
 
-APPEND_OPCODES.add(Op.Enter, (vm, { op1: slice }) => vm.enter(slice));
+APPEND_OPCODES.add(Op.Enter, (vm, { op1: start, op2: end }) => vm.enter(start, end));
 
 APPEND_OPCODES.add(Op.Exit, (vm) => vm.exit());
 

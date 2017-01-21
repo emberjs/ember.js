@@ -1,5 +1,6 @@
 import { UpdatableReference } from '@glimmer/object-reference';
-import { TestEnvironment as DemoEnvironment } from '@glimmer/test-helpers';
+import { TestEnvironment as DemoEnvironment, TestDynamicScope } from '@glimmer/test-helpers';
+import { Template } from '@glimmer/runtime';
 
 function RingBuffer(capacity) {
   this.capacity = capacity;
@@ -68,7 +69,8 @@ export function start() {
 
   let output = document.getElementById('output');
   let self = new UpdatableReference(data);
-  let result = TEMPLATES['application'].render(self, env, { appendTo: output });
+  let template: Template<{}> = TEMPLATES['application'];
+  let result = template.render(self, output, new TestDynamicScope());
 
   window.addEventListener("resize", function() {
     data.width  = window.innerWidth;
@@ -97,7 +99,9 @@ export function start() {
     });
 
     self.update(data);
+    env.begin();
     result.rerender();
+    env.commit();
 
     window.requestAnimationFrame(tick);
   }

@@ -18,7 +18,6 @@
     "@glimmer/util": "^0.21.0",
     "@glimmer/object": "^0.21.0",
     "@glimmer/object-reference": "^0.21.0",
-    "@glimmer/object-model": "^0.21.0",
     "@glimmer/wire-format": "^0.21.0",
     "@glimmer/interfaces": "^0.21.0"
   },

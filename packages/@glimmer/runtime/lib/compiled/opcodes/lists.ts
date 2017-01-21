@@ -27,16 +27,15 @@ APPEND_OPCODES.add(Op.PutIterator, vm => {
   vm.frame.setCondition(new IterablePresenceReference(iterator.artifacts));
 });
 
-APPEND_OPCODES.add(Op.EnterList, (vm, { op1: _slice }) => {
-  vm.enterList(vm.constants.getSlice(_slice));
+APPEND_OPCODES.add(Op.EnterList, (vm, { op1: start, op2: end }) => {
+  vm.enterList(start, end);
 });
 
 APPEND_OPCODES.add(Op.ExitList, vm => vm.exitList());
 
-APPEND_OPCODES.add(Op.EnterWithKey, (vm, { op2: _slice }) => {
+APPEND_OPCODES.add(Op.EnterWithKey, (vm, { op1: start, op2: end }) => {
   let key = expect(vm.frame.getKey(), 'EnterWithKeyOpcode expects a populated key register');
-  let slice = vm.constants.getSlice(_slice);
-  vm.enterWithKey(key, slice);
+  vm.enterWithKey(key, start, end);
 });
 
 const TRUE_REF = new ConstReference(true);

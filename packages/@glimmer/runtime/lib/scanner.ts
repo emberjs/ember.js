@@ -32,24 +32,32 @@ export class Layout extends Template {
 }
 
 export class EntryPoint extends Template {
+  private compiled: Option<CompiledProgram> = null;
+
   public symbolTable: ProgramSymbolTable;
 
   compile(env: Environment): CompiledProgram {
-    let table = this.symbolTable;
+    let compiled = this.compiled;
+    if (!compiled) {
+      let table = this.symbolTable;
 
-    let b = builder(env, table);
+      let b = builder(env, table);
 
-    for (let i = 0; i < this.statements.length; i++) {
-      let statement = this.statements[i];
-      let refined = SPECIALIZE.specialize(statement, table);
-      STATEMENTS.compile(refined, b);
+      for (let i = 0; i < this.statements.length; i++) {
+        let statement = this.statements[i];
+        let refined = SPECIALIZE.specialize(statement, table);
+        STATEMENTS.compile(refined, b);
+      }
+
+      compiled = this.compiled = new CompiledProgram(b.start, b.end, this.symbolTable.size);
     }
-
-    return new CompiledProgram(b.toSlice(), this.symbolTable.size);
+    return compiled;
   }
 }
 
 export class InlineBlock extends Template {
+  private compiled: Option<CompiledBlock> = null;
+
   splat(builder: OpcodeBuilder) {
     let table = builder.symbolTable;
 
@@ -72,29 +80,39 @@ export class InlineBlock extends Template {
   }
 
   compile(env: Environment): CompiledBlock {
-    let table = this.symbolTable;
-    let b = builder(env, table);
+    let compiled = this.compiled;
+    if (!compiled) {
+      let table = this.symbolTable;
+      let b = builder(env, table);
 
-    this.splat(b);
+      this.splat(b);
 
-    return new CompiledBlock(b.toSlice());
+      compiled = this.compiled = new CompiledBlock(b.start, b.end);
+    }
+    return compiled;
   }
 }
 
 export class PartialBlock extends Template {
+  private compiled: Option<CompiledProgram> = null;
+
   public symbolTable: ProgramSymbolTable;
 
   compile(env: Environment): CompiledProgram {
-    let table = this.symbolTable;
-    let b = builder(env, table);
+    let compiled = this.compiled;
+    if (!compiled) {
+      let table = this.symbolTable;
+      let b = builder(env, table);
 
-    for (let i = 0; i < this.statements.length; i++) {
-      let statement = this.statements[i];
-      let refined = SPECIALIZE.specialize(statement, table);
-      STATEMENTS.compile(refined, b);
+      for (let i = 0; i < this.statements.length; i++) {
+        let statement = this.statements[i];
+        let refined = SPECIALIZE.specialize(statement, table);
+        STATEMENTS.compile(refined, b);
+      }
+
+      compiled = this.compiled = new CompiledProgram(b.start, b.end, table.size);
     }
-
-    return new CompiledProgram(b.toSlice(), table.size);
+    return compiled;
   }
 }
 

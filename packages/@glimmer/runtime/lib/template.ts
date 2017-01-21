@@ -113,7 +113,7 @@ function template<T>(block: SerializedTemplateBlock, id: string, meta: T, env: E
     let elementStack = ElementStack.forInitialRender(env, appendTo, null);
     let compiled = asEntryPoint().compile(env);
     let vm = VM.initial(env, self, dynamicScope, elementStack, compiled.symbols);
-    return vm.execute(compiled.slice);
+    return vm.execute(compiled.start, compiled.end);
   };
   return { id, meta, _block: block, asEntryPoint, asLayout, asPartial, render };
 }

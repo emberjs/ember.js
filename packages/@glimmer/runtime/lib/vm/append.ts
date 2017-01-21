@@ -1,6 +1,6 @@
 import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
-import { Option, Destroyable, Stack, LinkedList, ListSlice, LOGGER, Opaque, assert, expect } from '@glimmer/util';
+import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
 import { PathReference, combineSlice } from '@glimmer/reference';
 import { CompiledBlock } from '../compiled/blocks';
 import { InlineBlock, PartialBlock } from '../scanner';
@@ -14,11 +14,9 @@ import { CapturedFrame, FrameStack } from './frame';
 
 import {
   APPEND_OPCODES,
-  Slice,
   UpdatingOpcode,
   Constants,
   ConstantString,
-  ConstantSlice,
 } from '../opcodes';
 
 export interface PublicVM {
@@ -72,7 +70,6 @@ export default class VM implements PublicVM {
   }
 
   goto(ip: number) {
-    // assert(this.frame.getOps().contains(op), `Illegal jump to ${op.label}`);
     this.frame.goto(ip);
   }
 
@@ -103,39 +100,38 @@ export default class VM implements PublicVM {
     opcodes.append(END);
   }
 
-  enter(sliceId: ConstantSlice) {
+  enter(start: number, end: number) {
     let updating = new LinkedList<UpdatingOpcode>();
 
     let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
 
-    let slice = this.constants.getSlice(sliceId);
-    let tryOpcode = new TryOpcode(slice, state, tracker, updating);
+    let tryOpcode = new TryOpcode(start, end, state, tracker, updating);
 
     this.didEnter(tryOpcode, updating);
   }
 
-  enterWithKey(key: string, ops: Slice) {
+  enterWithKey(key: string, start: number, end: number) {
     let updating = new LinkedList<UpdatingOpcode>();
 
     let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
 
-    let tryOpcode = new TryOpcode(ops, state, tracker, updating);
+    let tryOpcode = new TryOpcode(start, end, state, tracker, updating);
 
     this.listBlock().map[key] = tryOpcode;
 
     this.didEnter(tryOpcode, updating);
   }
 
-  enterList(ops: Slice) {
+  enterList(start: number, end: number) {
     let updating = new LinkedList<BlockOpcode>();
 
     let tracker = this.stack().pushBlockList(updating);
     let state = this.capture();
     let artifacts = this.frame.getIterator().artifacts;
 
-    let opcode = new ListBlockOpcode(ops, state, tracker, updating, artifacts);
+    let opcode = new ListBlockOpcode(start, end, state, tracker, updating, artifacts);
 
     this.listBlockStack.push(opcode);
 
@@ -190,7 +186,7 @@ export default class VM implements PublicVM {
     args?: Option<EvaluatedArgs>,
     callerScope?: Scope
   ) {
-    this.frame.push(block.slice);
+    this.frame.push(block.start, block.end);
 
     if (args) this.frame.setArgs(args);
     if (args && args.blocks) this.frame.setBlocks(args.blocks);
@@ -205,15 +201,15 @@ export default class VM implements PublicVM {
     manager: ComponentManager<Component>,
     shadow: Option<InlineBlock>
   ) {
-    this.frame.push(layout.slice, component, manager, shadow);
+    this.frame.push(layout.start, layout.end, component, manager, shadow);
 
     if (args) this.frame.setArgs(args);
     if (args && args.blocks) this.frame.setBlocks(args.blocks);
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
-  pushEvalFrame(slice: Slice) {
-    this.frame.push(slice);
+  pushEvalFrame(start: number, end: number) {
+    this.frame.push(start, end);
   }
 
   pushChildScope() {
@@ -264,19 +260,17 @@ export default class VM implements PublicVM {
 
   /// EXECUTION
 
-  resume(opcodes: Slice, frame: CapturedFrame): RenderResult {
-    return this.execute(opcodes, vm => vm.frame.restore(frame));
+  resume(start: number, end: number, frame: CapturedFrame): RenderResult {
+    return this.execute(start, end, vm => vm.frame.restore(frame));
   }
 
-  execute(opcodes: Slice, initialize?: (vm: VM) => void): RenderResult {
-    LOGGER.debug("[VM] Begin program execution");
-
+  execute(start: number, end: number, initialize?: (vm: VM) => void): RenderResult {
     let { elementStack, frame, updatingOpcodeStack, env } = this;
 
     elementStack.pushSimpleBlock();
 
     updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
-    frame.push(opcodes);
+    frame.push(start, end);
 
     if (initialize) initialize(this);
 
@@ -284,12 +278,9 @@ export default class VM implements PublicVM {
 
     while (frame.hasOpcodes()) {
       if (opcode = frame.nextStatement(this.env)) {
-        LOGGER.trace(opcode);
         APPEND_OPCODES.evaluate(this, opcode);
       }
     }
-
-    LOGGER.debug("[VM] Completed program execution");
 
     return new RenderResult(
       env,

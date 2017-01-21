@@ -1,9 +1,8 @@
 import { SymbolTable } from '@glimmer/interfaces';
-import { A } from '@glimmer/util';
 
 import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
-import { Constants, AppendOpcode } from './opcodes';
+import { Constants } from './opcodes';
 
 import * as Simple from './dom/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
@@ -222,7 +221,7 @@ export class Opcode {
 export class Program {
   [key: number]: never;
 
-  private opcodes = new A(0x100000);
+  private opcodes: number[] = [];
   private _offset = 0;
   private _opcode: Opcode;
 
@@ -243,17 +242,15 @@ export class Program {
     return this._opcode;
   }
 
-  set(pos: number, opcode: AppendOpcode) {
-    let [type, op1, op2, op3] = opcode;
+  set(pos: number, type: number, op1 = 0, op2 = 0, op3 = 0) {
     this.opcodes[pos] = type;
     this.opcodes[pos + 1] = op1;
     this.opcodes[pos + 2] = op2;
     this.opcodes[pos + 3] = op3;
   }
 
-  push(opcode: AppendOpcode): number {
+  push(type: number, op1 = 0, op2 = 0, op3 = 0): number {
     let offset = this._offset;
-    let [type, op1, op2, op3] = opcode;
     this.opcodes[this._offset++] = type;
     this.opcodes[this._offset++] = op1;
     this.opcodes[this._offset++] = op2;

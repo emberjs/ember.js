@@ -1,7 +1,7 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { DestroyableBounds, clear, move as moveBounds } from '../bounds';
 import { ElementStack, Tracker, UpdatableTracker } from '../builder';
-import { LOGGER, Option, Opaque, Stack, LinkedList, Dict, dict, expect } from '@glimmer/util';
+import { Option, Opaque, Stack, LinkedList, Dict, dict, expect } from '@glimmer/util';
 import {
   ConstReference,
   PathReference,
@@ -18,7 +18,7 @@ import {
   INITIAL
 } from '@glimmer/reference';
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { Constants, OpcodeJSON, UpdatingOpcode, UpdatingOpSeq, Slice } from '../opcodes';
+import { Constants, OpcodeJSON, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { DOMChanges } from '../dom/helper';
 import * as Simple from '../dom/interfaces';
 import { CapturedFrame } from './frame';
@@ -54,9 +54,6 @@ export default class UpdatingVM {
         this.frameStack.pop();
         continue;
       }
-
-      LOGGER.debug(`[VM] OP ${opcode.type}`);
-      LOGGER.trace(opcode);
 
       opcode.evaluate(this);
     }
@@ -107,7 +104,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   protected children: LinkedList<UpdatingOpcode>;
   protected bounds: DestroyableBounds;
 
-  constructor(public ops: Slice, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
+  constructor(public start: number, public end: number, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
     let { env, scope, dynamicScope, frame } = state;
     this.children = children;
@@ -165,8 +162,8 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   protected bounds: UpdatableTracker;
 
-  constructor(ops: Slice, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
-    super(ops, state, bounds, children);
+  constructor(start: number, end: number, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
+    super(start, end, state, bounds, children);
     this.tag = this._tag = new UpdatableTag(CONSTANT_TAG);
   }
 
@@ -179,7 +176,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 
   handleException() {
-    let { env, scope, ops, dynamicScope, frame } = this;
+    let { env, scope, start, end, dynamicScope, frame } = this;
 
     let elementStack = ElementStack.resume(
       this.env,
@@ -188,7 +185,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     );
 
     let vm = new VM(env, scope, dynamicScope, elementStack);
-    let result = vm.resume(ops, frame);
+    let result = vm.resume(start, end, frame);
 
     this.children = result.opcodes();
     this.didInitializeChildren();
@@ -233,7 +230,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     let vm = opcode.vmForInsertion(nextSibling);
     let tryOpcode: Option<TryOpcode> = null;
 
-    vm.execute(opcode.ops, vm => {
+    vm.execute(opcode.start, opcode.end, vm => {
       vm.frame.setArgs(EvaluatedArgs.positional([item, memo]));
       vm.frame.setOperand(item);
       vm.frame.setCondition(new ConstReference(true));
@@ -242,7 +239,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
       let state = vm.capture();
       let tracker = vm.stack().pushUpdatableBlock();
 
-      tryOpcode = new TryOpcode(opcode.ops, state, tracker, vm.updating());
+      tryOpcode = new TryOpcode(opcode.start, opcode.end, state, tracker, vm.updating());
     });
 
     tryOpcode!.didInitializeChildren();
@@ -297,8 +294,8 @@ export class ListBlockOpcode extends BlockOpcode {
   private lastIterated: Revision = INITIAL;
   private _tag: UpdatableTag;
 
-  constructor(ops: Slice, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
-    super(ops, state, bounds, children);
+  constructor(start: number, end: number, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
+    super(start, end, state, bounds, children);
     this.artifacts = artifacts;
     let _tag = this._tag = new UpdatableTag(CONSTANT_TAG);
     this.tag = combine([artifacts.tag, _tag]);
