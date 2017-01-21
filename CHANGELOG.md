@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.11.0-beta.7 (January 21, 2017)
+
+- More work on auto-publishing tagged builds...
+
 ### 2.11.0-beta.6 (January 21, 2017)
 
 - Work on auto-publishing functionality (rubygems, npm, bower).
