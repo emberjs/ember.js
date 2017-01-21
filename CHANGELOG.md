@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.11.0-beta.6 (January 21, 2017)
+
+- Work on auto-publishing functionality (rubygems, npm, bower).
+
 ### 2.11.0-beta.5 (January 20, 2017)
 
 - [#14808](https://github.com/emberjs/ember.js/pull/14808) Remove built-in shims when using `ember-source` from npm. Please continue to use `ember-cli-shims`.
