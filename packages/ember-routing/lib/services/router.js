@@ -42,7 +42,28 @@ const RouterService = Service.extend({
      @public
    */
   transitionTo() {
-    this.router.transitionTo(...arguments);
+    return this.router.transitionTo(...arguments);
+  },
+
+  /**
+     Transition into another route while replacing the current URL, if possible.
+     The route may be either a single route or route path:
+
+     See [Route.replaceWith](http://emberjs.com/api/classes/Ember.Route.html#method_replaceWith) for more info.
+
+     @method replaceWith
+     @category ember-routing-router-service
+     @param {String} name the name of the route or a URL
+     @param {...Object} models the model(s) or identifier(s) to be used while
+       transitioning to the route.
+     @param {Object} [options] optional hash with a queryParams property
+       containing a mapping of query parameters
+     @return {Transition} the transition object associated with this
+       attempted transition
+     @public
+   */
+  replaceWith() {
+    return this.router.replaceWith(...arguments);
   }
 });
 
