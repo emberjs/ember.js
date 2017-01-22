@@ -9,21 +9,13 @@ addons:
   firefox: "latest"
 
 cache:
-  directories:
-    - $HOME/.yarn
-    - $HOME/.yarn-cache
-    - $HOME/.cache # includes bowers cache
+  yarn: true
 
 before_install:
   - curl -o- -L https://yarnpkg.com/install.sh | bash
   - "phantomjs --version"
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
-
-install:
-  - "yarn global add bower"
-  - "yarn install --prefer-offline"
-  - "bower install"
 
 after_success:
   - "./bin/publish_builds"

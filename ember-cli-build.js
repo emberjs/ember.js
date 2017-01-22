@@ -288,11 +288,21 @@ function handlebarsFix() {
   }
 }
 
-module.exports = function() {
+function treeForAddon(project, name) {
+  var addon = project.findAddonByName(name);
+  var tree = addon.treeFor('addon');
+
+  return new Funnel(tree, {
+    srcDir: 'modules'
+  });
+}
+
+module.exports = function(options) {
   var features = getFeatures();
   var version = getVersion();
 
   var vendorPackages = {
+    'ember-dev':             treeForAddon(options.project, 'ember-dev'),
     'external-helpers':      vendoredPackage('external-helpers'),
     'loader':                vendoredPackage('loader'),
     'rsvp':                  rsvp(),
