@@ -2,7 +2,6 @@ import b from "../builders";
 import { appendChild } from "../utils";
 
 export default {
-
   Program: function(program) {
     let body = [];
     let node = b.program(body, program.blockParams, program.loc);
@@ -136,8 +135,15 @@ export default {
   },
 
   PartialStatement: function(partial) {
-    appendChild(this.currentElement(), partial);
-    return partial;
+    let { name, loc } = partial;
+
+    throw new Error(`Handlebars partials are not supported: "{{> ${name.original}" at L${loc.start.line}:C${loc.start.column}`);
+  },
+
+  PartialBlockStatement: function(partialBlock) {
+    let { name, loc } = partialBlock;
+
+    throw new Error(`Handlebars partial blocks are not supported: "{{#> ${name.original}" at L${loc.start.line}:C${loc.start.column}`);
   },
 
   SubExpression: function(sexpr) {
@@ -233,6 +239,7 @@ function updateTokenizerLocation(tokenizer, content) {
   tokenizer.line = line;
   tokenizer.column = column;
 }
+
 function acceptCommonNodes(compiler, node) {
   compiler.acceptNode(node.path);
 
