@@ -470,3 +470,27 @@ test("allow {{undefined}} to be passed as a param", function() {
     b.mustache(b.path('foo'), [b.undefined()])
   ]));
 });
+
+test("Handlebars partial should error", function(assert) {
+  assert.throws(() => {
+    parse("{{> foo}}");
+  }, Error(`Handlebars partials are not supported: "{{> foo" at L1:C0`));
+});
+
+test("Handlebars partial block should error", function(assert) {
+  assert.throws(() => {
+    parse("{{#> foo}}{{/foo}}");
+  }, new Error(`Handlebars partial blocks are not supported: "{{#> foo" at L1:C0`));
+});
+
+test("Handlebars decorator should error", function(assert) {
+  assert.throws(() => {
+    parse("{{* foo}}");
+  }, new Error(`Handlebars decorators are not supported: "{{* foo" at L1:C0`));
+});
+
+test("Handlebars decorator block should error", function(assert) {
+  assert.throws(() => {
+    parse("{{#* foo}}{{/foo}}");
+  }, new Error(`Handlebars decorator blocks are not supported: "{{#* foo" at L1:C0`);
+});
