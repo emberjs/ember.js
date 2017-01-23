@@ -3,7 +3,7 @@ import { moduleFor, TestCase } from 'ember-glimmer/tests/utils/test-case';
 import iterableFor from 'ember-glimmer/utils/iterable';
 import { UpdatableReference } from 'ember-glimmer/utils/references';
 import eachIn from 'ember-glimmer/helpers/each-in';
-import { EvaluatedPositionalArgs } from 'glimmer-runtime';
+import { EvaluatedPositionalArgs } from '@glimmer/runtime';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
