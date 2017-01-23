@@ -69,6 +69,7 @@
     "ember-dev": "github:emberjs/ember-dev#eace534",
     "ember-publisher": "0.0.7",
     "emberjs-build": "0.20.0",
+    "eslint-plugin-ember-internal": "^1.0.1",
     "express": "^4.5.0",
     "finalhandler": "^0.4.0",
     "git-repo-info": "^1.1.4",

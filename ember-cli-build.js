@@ -297,6 +297,21 @@ function treeForAddon(project, name) {
   });
 }
 
+function getESLintRulePaths() {
+  var emberjsBuildPath = path.dirname(require.resolve('emberjs-build'));
+  var emberjsBuildLinked = emberjsBuildPath.indexOf(__dirname + '/node_modules') === -1;
+
+  if (emberjsBuildLinked) {
+    var rulePath = path.join(
+      path.dirname(require.resolve('eslint-plugin-ember-internal')),
+      'rules'
+    );
+    return [rulePath];
+  }
+
+  return [];
+}
+
 module.exports = function(options) {
   var features = getFeatures();
   var version = getVersion();
@@ -398,7 +413,7 @@ module.exports = function(options) {
       development: babelConfigFor('development'),
       production: babelConfigFor('production')
     },
-    eslintRulePaths: [__dirname + '/lib/eslint-rules'],
+    eslintRulePaths: getESLintRulePaths(),
     features: {
       development: getFeatures('development'),
       production: getFeatures('production')
