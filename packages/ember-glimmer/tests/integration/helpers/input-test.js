@@ -436,6 +436,27 @@ moduleFor('Helpers test: {{input}} with dynamic type', class extends InputRender
     this.assertAttr('type', 'password');
   }
 
+  ['@test a subexpression can be used to determine type']() {
+    this.render(`{{input type=(if isTruthy trueType falseType)}}`, {
+      isTruthy: true,
+      trueType: 'text',
+      falseType: 'password'
+    });
+
+    this.assertAttr('type', 'text');
+
+    this.runTask(() => this.rerender());
+
+    this.assertAttr('type', 'text');
+
+    this.runTask(() => set(this.context, 'isTruthy', false));
+
+    this.assertAttr('type', 'password');
+
+    this.runTask(() => set(this.context, 'isTruthy', true));
+
+    this.assertAttr('type', 'text');
+  }
 });
 
 moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderingTest {
