@@ -1,5 +1,17 @@
 # Ember Changelog
 
+### 2.12.0-beta.1 (January 23, 2017)
+
+- [#14360](https://github.com/emberjs/ember.js/pull/14360) [FEATURE factory-for] Implement `factoryFor`.
+- [#14751](https://github.com/emberjs/ember.js/pull/14751) [DEPRECATION} Deprecate `Ember.K`.
+- [#14756](https://github.com/emberjs/ember.js/pull/14756) [PERF] Disable costly `eventManager` support when unused.
+- [#14794](https://github.com/emberjs/ember.js/pull/14794) [BUGFIX] Fix query param stickiness between models in ember-engines.
+- [#14851](https://github.com/emberjs/ember.js/pull/14851) [PERF] only `LOG_VIEW_LOOKUPS` in debug
+- [#14829](https://github.com/emberjs/ember.js/pull/14829) [PERF] only `logLibraryVersions` in debug mode
+- [#14852](https://github.com/emberjs/ember.js/pull/14852) [PERF] only `LOG_TRANSITIONS` and `LOG_TRANSITIONS_INTERNAL` in debug
+- [#14854](https://github.com/emberjs/ember.js/pull/14854) [PER] only `LOG_ACTIVE_GENERATION` and `LOG_RESOLVER` in debug
+
+
 ### 2.11.0 (January 23, 2017)
 
 - [#14762](https://github.com/emberjs/ember.js/pull/14762) [BUGFIX] Ensure subexpressions can be used for `{{input}}`'s `type`.
