@@ -1,22 +1,16 @@
 # Ember Changelog
 
-### 2.11.0-beta.4 (December 14, 2016)
+### 2.11.0 (January 23, 2017)
 
+- [#14762](https://github.com/emberjs/ember.js/pull/14762) [BUGFIX] Ensure subexpressions can be used for `{{input}}`'s `type`.
+- [#14723](https://github.com/emberjs/ember.js/pull/14723) [BUGFIX] Improved backtracking re-render assertion message.
+- [#14750](https://github.com/emberjs/ember.js/pull/14750) [BUGFIX] Add assertion when a component's `tagName` is a computed property.
 - [#14685](https://github.com/emberjs/ember.js/pull/14685) [BUGFIX] Fix `this.$()` returning `undefined` in `willDestroyElement`.
 - [#14717](https://github.com/emberjs/ember.js/pull/14717) [BUGFIX] Fix an issue with block params named `attrs`.
-
-### 2.11.0-beta.3 (December 7, 2016)
-
 - [#14671](https://github.com/emberjs/ember.js/pull/14671) [BUGFIX] Fix an issue with the `list` attribute in `<input>` elements.
 - [#14681](https://github.com/emberjs/ember.js/pull/14681) [BUGFIX] Fix an issue with computed properties when using aliases as dependent keys.
 - [#14682](https://github.com/emberjs/ember.js/pull/14682) [BUGFIX] Ensure closure actions do not trigger unnecessary re-renders.
-
-### 2.11.0-beta.2 (November 29, 2016)
-
 - [#14658](https://github.com/emberjs/ember.js/pull/14658) [BUGFIX] Make the ember-source build work.
-
-### 2.11.0-beta.1 (November 28, 2016)
-
 - [#14389](https://github.com/emberjs/ember.js/pull/14389) [BUGFIX] Move `classNames` and `classNameBindings` properties into the component's prototype.
 - [#14389](https://github.com/emberjs/ember.js/pull/14389) [BUGFIX] Disallow mutation of shared concatenatedProperties, such as `classNames` and `classNameBindings`.
 - [#14441](https://github.com/emberjs/ember.js/pull/14441) [DEPRECATION] Deprecate remaining usage of the `{{render}}` helper.
