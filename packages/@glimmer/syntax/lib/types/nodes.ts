@@ -19,13 +19,11 @@ export interface Position {
   column: number;
 }
 
-
 export interface Program extends BaseNode {
   type: 'Program';
   body: Statement[];
   blockParams: string[];
 }
-
 
 export type Statement = MustacheStatement | BlockStatement | PartialStatement | MustacheCommentStatement;
 
@@ -92,7 +90,6 @@ export interface TextNode extends BaseNode {
   chars: string;
 }
 
-
 export interface ConcatStatement extends BaseNode {
   type: 'ConcatStatement';
   parts: TextNode | MustacheStatement;
@@ -113,7 +110,6 @@ export interface PathExpression extends BaseNode {
   original: string;
   parts: string[];
 }
-
 
 export type Literal = StringLiteral | BooleanLiteral | NumberLiteral | UndefinedLiteral | NullLiteral;
 
@@ -146,7 +142,6 @@ export interface NullLiteral extends BaseNode {
   value: null;
   original: null;
 }
-
 
 export interface Hash extends BaseNode {
   type: 'Hash';
