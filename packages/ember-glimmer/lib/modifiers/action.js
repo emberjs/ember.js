@@ -38,34 +38,16 @@ export let ActionHelper = {
 
   registerAction(actionState) {
     let { actionId } = actionState;
-    let actions = ActionManager.registeredActions[actionId];
 
-    if (!actions) {
-      actions = ActionManager.registeredActions[actionId] = [];
-    }
-
-    actions.push(actionState);
+    ActionManager.registeredActions[actionId] = actionState;
 
     return actionId;
   },
 
   unregisterAction(actionState) {
     let { actionId } = actionState;
-    let actions = ActionManager.registeredActions[actionId];
 
-    if (!actions) {
-      return;
-    }
-
-    let index = actions.indexOf(actionState);
-
-    if (index !== -1) {
-      actions.splice(index, 1);
-    }
-
-    if (actions.length === 0) {
-      delete ActionManager.registeredActions[actionId];
-    }
+    delete ActionManager.registeredActions[actionId];
   }
 };
 
