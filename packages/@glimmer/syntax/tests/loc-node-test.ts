@@ -243,6 +243,41 @@ data-barf="herpy"
   locEqual(dataHurky.value, 6, 15, 6, 36);
 });
 
+test("concat statement", function() {
+  let ast = parse(`
+    <div data-foo="{{if foo
+        "active"
+    "inactive"
+  }}
+derp"
+  data-bar="
+foo"
+  data-derp="foo
+{{concat ''}}
+    huzzah"
+    ></div>
+  `);
+
+  let [,div] = ast.body;
+  let [dataFoo, dataBar, dataDerp] = div.attributes;
+  let dataFooValue = dataFoo.value;
+  let [ inlineIf, staticDerpText ] = dataFooValue.parts;
+  let dataBarValue = dataBar.value;
+  let dataDerpValue = dataDerp.value;
+  let [ fooStaticText, concat, huzzahStaticText ] = dataDerpValue.parts;
+
+  locEqual(dataFoo, 2, 9, 6, 5);
+  locEqual(dataFooValue, 2, 18, 6, 5);
+  locEqual(inlineIf, 2, 19, 5, 4);
+  locEqual(staticDerpText, 5, 4, 6, 4);
+  locEqual(dataBar, 7, 2, 8, 4);
+  locEqual(dataBarValue, 7, 11, 8, 4);
+  locEqual(dataDerpValue, 9, 12, 11, 11);
+  locEqual(fooStaticText, 9, 14, 10, 0);
+  locEqual(concat, 10, 0, 10, 13);
+  locEqual(huzzahStaticText, 10, 13, 11, 10);
+});
+
 test("char references", function() {
   let ast = parse(`
     &gt;<div>&lt;<p>
