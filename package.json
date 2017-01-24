@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "2.12.0-alpha.1",
+  "version": "2.12.0-beta.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
