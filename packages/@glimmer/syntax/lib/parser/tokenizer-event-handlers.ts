@@ -172,11 +172,29 @@ export default {
 
   appendToAttributeValue: function(char) {
     let parts = this.currentAttribute.parts;
+    let lastPart = parts[parts.length - 1];
 
-    if (typeof parts[parts.length - 1] === 'string') {
-      parts[parts.length - 1] += char;
+    if (lastPart && lastPart.type === 'TextNode') {
+      lastPart.chars += char;
+
+      // update end location for each added char
+      lastPart.loc.end.line = this.tokenizer.line;
+      lastPart.loc.end.column = this.tokenizer.column;
     } else {
-      parts.push(char);
+      // initially assume the text node is a single char
+      let loc = b.loc(
+        this.tokenizer.line, this.tokenizer.column,
+        this.tokenizer.line, this.tokenizer.column
+      );
+
+      // correct for `\n` as first char
+      if (char === '\n') {
+        loc.start.line -= 1;
+        loc.start.column = lastPart ? lastPart.loc.end.column : this.currentAttribute.valueStartColumn;
+      }
+
+      let text = b.text(char, loc);
+      parts.push(text);
     }
   },
 
@@ -208,7 +226,7 @@ function assembleAttributeValue(parts, isQuoted, isDynamic, line) {
     if (isQuoted) {
       return assembleConcatenatedValue(parts);
     } else {
-      if (parts.length === 1 || (parts.length === 2 && parts[1] === '/')) {
+      if (parts.length === 1 || (parts.length === 2 && parts[1].chars === '/')) {
         return parts[0];
       } else {
         throw new Error(
@@ -219,7 +237,7 @@ function assembleAttributeValue(parts, isQuoted, isDynamic, line) {
       }
     }
   } else {
-    return b.text((parts.length > 0) ? parts[0] : "");
+    return parts.length > 0 ? parts[0] : b.text("");
   }
 }
 
@@ -227,12 +245,8 @@ function assembleConcatenatedValue(parts) {
   for (let i = 0; i < parts.length; i++) {
     let part = parts[i];
 
-    if (typeof part === 'string') {
-      parts[i] = b.text(parts[i]);
-    } else {
-      if (part.type !== 'MustacheStatement') {
-        throw new Error("Unsupported node in quoted attribute value: " + part.type);
-      }
+    if (part.type !== 'MustacheStatement' && part.type !== 'TextNode') {
+      throw new Error("Unsupported node in quoted attribute value: " + part.type);
     }
   }
 
