@@ -1086,11 +1086,11 @@ const { defaultBlock, params, hash } = BaselineSyntax.NestedBlock;
 
 function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: BlockMacros, inlines: InlineMacros } {
   blocks.add('identity', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
-    builder.invokeStatic(sexp[4], null);
+    builder.invokeStatic(sexp[4]);
   });
 
   blocks.add('render-inverse', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
-    builder.invokeStatic(sexp[5], null);
+    builder.invokeStatic(sexp[5]);
   });
 
   blocks.add('-with-dynamic-vars', (sexp: BaselineSyntax.NestedBlock, builder) => {
@@ -1102,7 +1102,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     builder.unit(b => {
       b.pushDynamicScope();
       b.bindDynamicScope(named[0]);
-      b.invokeStatic(unwrap(block), null);
+      b.invokeStatic(unwrap(block));
       b.popDynamicScope();
     });
   });

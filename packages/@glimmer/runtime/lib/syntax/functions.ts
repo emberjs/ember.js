@@ -658,8 +658,8 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     let [,, params,, _default, inverse] = sexp;
 
-    if (!params) {
-      throw new Error(`SYNTAX ERROR: #if requires an argument`);
+    if (!params || params.length !== 1) {
+      throw new Error(`SYNTAX ERROR: #if requires a single argument`);
     }
 
     let condition = builder.local();
@@ -672,13 +672,13 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.labelled(b => {
       if (_default && inverse) {
         b.jumpUnless('ELSE');
-        b.invokeStatic(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default);
         b.jump('END');
         b.label('ELSE');
-        b.invokeStatic(inverse, null);
+        b.invokeStatic(inverse);
       } else if (_default) {
         b.jumpUnless('END');
-        b.invokeStatic(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default);
       } else {
         throw unreachable();
       }
@@ -700,8 +700,8 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     let [,, params,, _default, inverse] = sexp;
 
-    if (!params) {
-      throw new Error(`SYNTAX ERROR: #if requires an argument`);
+    if (!params || params.length !== 1) {
+      throw new Error(`SYNTAX ERROR: #unless requires a single argument`);
     }
 
     let condition = builder.local();
@@ -714,13 +714,13 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.labelled(b => {
       if (_default && inverse) {
         b.jumpIf('ELSE');
-        b.invokeStatic(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default);
         b.jump('END');
         b.label('ELSE');
-        b.invokeStatic(inverse, null);
+        b.invokeStatic(inverse);
       } else if (_default) {
         b.jumpIf('END');
-        b.invokeStatic(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default);
       } else {
         throw unreachable();
       }
@@ -742,27 +742,31 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     let [,, params,, _default, inverse] = sexp;
 
-    if (!params) {
-      throw new Error(`SYNTAX ERROR: #if requires an argument`);
+    if (!params || params.length !== 1) {
+      throw new Error(`SYNTAX ERROR: #with requires a single argument`);
     }
 
-    let condition = builder.local();
+    let item = builder.local();
     expr(params[0], builder);
-    builder.setLocal(condition);
+    builder.setLocal(item);
 
-    builder.getLocal(condition);
+    builder.getLocal(item);
     builder.test('environment');
 
     builder.labelled(b => {
       if (_default && inverse) {
         b.jumpUnless('ELSE');
-        b.invokeStatic(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default, b => {
+          b.getLocal(item);
+        });
         b.jump('END');
         b.label('ELSE');
-        b.invokeStatic(inverse, null);
+        b.invokeStatic(inverse);
       } else if (_default) {
         b.jumpUnless('END');
-        b.invokeStatic(_default, [builder.GetLocal(condition)]);
+        b.invokeStatic(_default, b => {
+          b.getLocal(item);
+        });
       } else {
         throw unreachable();
       }
@@ -827,7 +831,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       if (inverse) {
         b.jump('END');
         b.label('ELSE');
-        b.invokeStatic(inverse, null);
+        b.invokeStatic(inverse);
       }
     });
 
