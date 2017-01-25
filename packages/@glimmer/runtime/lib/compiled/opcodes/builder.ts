@@ -548,20 +548,19 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.InvokeDynamic, this.other(invoker));
   }
 
-  // invokeStatic(_block: InlineBlock, args: Option<AppendOpcode[]>): void;
-  invokeStatic(_block: InlineBlock, args: number): void;
-  invokeStatic(_block: InlineBlock, args: any): void {
-    // let paramSize = _block.symbolTable.getSymbolSize('local');
-    let argSize: number;
-    let onStack: boolean;
+  invokeStatic(_block: InlineBlock, ...args: ((builder: BasicOpcodeBuilder) => void)[]): void;
+  invokeStatic(_block: InlineBlock, numArgs: number): void;
+  invokeStatic(_block: InlineBlock): void {
+    let paramSize = _block.symbolTable.getSymbolSize('local');
+    let argSize = arguments.length - 1;
+    let onStack = false;
 
-    if (typeof args === 'number') {
-      argSize = args;
+    if (argSize === 1 && typeof arguments[1] === 'number') {
+      // BUG: what happens if paramSize < argSize?
+      argSize = arguments[1];
       onStack = true;
     } else {
-      throw new Error("NOT DONE REBASING");
-      // argSize = Math.min(paramSize, args ? args.length : 0);
-      // onStack = false;
+      argSize = Math.min(paramSize, argSize);
     }
 
     if (argSize) {
@@ -570,8 +569,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
 
       for (let i=0; i<argSize; i++) {
         if (!onStack) {
-          throw new Error("NOT DONE REBASING");
-          // this.push((args as AppendOpcode[])[i]);
+          arguments[i+1](this);
         }
         this.setVariable(locals[i]);
       }
