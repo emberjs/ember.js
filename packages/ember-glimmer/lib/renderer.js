@@ -3,8 +3,7 @@ import {
   run,
   setHasViews,
   assert,
-  runInTransaction as _runInTransaction,
-  isFeatureEnabled
+  runInTransaction
 } from 'ember-metal';
 import { CURRENT_TAG, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import {
@@ -16,18 +15,6 @@ import {
 import { BOUNDS } from './component';
 import { RootComponentDefinition } from './syntax/curly-component';
 import { TopLevelOutletComponentDefinition } from './syntax/outlet';
-
-let runInTransaction;
-
-if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-  runInTransaction = _runInTransaction;
-} else {
-  runInTransaction = (context, methodName) => {
-    context[methodName]();
-    return false;
-  };
-}
 
 const { backburner } = run;
 
