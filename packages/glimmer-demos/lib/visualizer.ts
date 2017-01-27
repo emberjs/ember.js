@@ -399,7 +399,7 @@ function renderContent() {
   let app = env.compile($template.value);
 
   function compileLayout(component) {
-    let definition = env.getComponentDefinition([component]);
+    let definition = env.getComponentDefinition(component);
 
     let manager = definition.manager;
     let instance = manager.create(env, definition, EvaluatedArgs.empty(), new TestDynamicScope(), null, false);
