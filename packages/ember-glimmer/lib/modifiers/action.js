@@ -208,17 +208,13 @@ export default class ActionModifierManager {
 
   update(actionState) {
     let { positional } = actionState;
-
     let actionNameRef = positional.at(1);
 
     if (!actionNameRef[INVOKE]) {
       actionState.actionName = actionNameRef.value();
     }
-    actionState.eventName = actionState.getEventName();
 
-    // Not sure if this is needed? If we mutate the actionState is that good enough?
-    ActionHelper.unregisterAction(actionState);
-    ActionHelper.registerAction(actionState);
+    actionState.eventName = actionState.getEventName();
   }
 
   getDestructor(modifier) {
