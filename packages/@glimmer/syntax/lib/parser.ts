@@ -10,6 +10,7 @@ import {
 } from "simple-html-tokenizer";
 import handlebarsNodeVisitors from "./parser/handlebars-node-visitors";
 import tokenizerEventHandlers from "./parser/tokenizer-event-handlers";
+import { Program } from "./types/nodes";
 
 export const syntax = {
   parse: preprocess,
@@ -19,7 +20,7 @@ export const syntax = {
   Walker
 };
 
-export function preprocess(html, options?) {
+export function preprocess(html: string | hbs.AST.Program, options?): Program {
   let ast = (typeof html === 'object') ? html : parse(html);
   let combined = new Parser(html, options).acceptNode(ast);
 
@@ -53,6 +54,8 @@ export class Parser {
       this.source = source.split(/(?:\r\n?|\n)/g);
     }
   }
+
+  acceptNode(node: hbs.AST.Program): Program;
 
   acceptNode(node): Object {
     return this[node.type](node);
