@@ -1697,78 +1697,6 @@ QUnit.test('{{component}} helper works with positional params', function() {
   assertEmberishElement('div', 'Quint4');
 });
 
-module('Emberish closure components');
-
-QUnit.test('can handle aliased block components', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
-  env.registerEmberishCurlyComponent('foo-bar', null, 'Hello {{arg1}} {{yield}}');
-  appendViewFor(
-    stripTight`
-      {{#with (hash comp=(component 'foo-bar')) as |my|}}
-        {{#my.comp arg1="World!"}}Test1{{/my.comp}} Test2
-      {{/with}}
-    `
-  );
-
-  assertText('Hello World! Test1 Test2');
-});
-
-QUnit.test('can handle aliased inline components', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
-  env.registerEmberishCurlyComponent('foo-bar', null, 'Hello {{arg1}}');
-  appendViewFor(
-    stripTight`
-      {{#with (hash comp=(component 'foo-bar')) as |my|}}
-        {{my.comp arg1="World!"}} Test
-      {{/with}}
-    `
-  );
-
-  assertText('Hello World! Test');
-});
-
-QUnit.test('can handle higher order inline components', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
-
-  env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
-  env.registerEmberishCurlyComponent('baz-bar', null, 'Hello {{arg1}}');
-
-  appendViewFor(
-    stripTight`
-      {{#foo-bar as |my|}}
-        {{my.comp arg1="World!"}} Test
-      {{/foo-bar}}
-    `
-  );
-
-  assertText('Hello World! Test');
-});
-
-QUnit.test('can handle higher order block components', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
-
-  env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
-  env.registerEmberishCurlyComponent('baz-bar', null, 'Hello {{arg1}} {{yield}}');
-
-  appendViewFor(
-    stripTight`
-      {{#foo-bar as |my|}}
-        {{#my.comp arg1="World!"}}Test1{{/my.comp}} Test2
-      {{/foo-bar}}
-    `
-  );
-
-  assertText('Hello World! Test1 Test2');
-});
-
 module("Emberish Components - parentView");
 
 QUnit.skip('components in template of a yielding component should have the proper parentView', function() {
@@ -1850,10 +1778,8 @@ QUnit.skip('newly-added sub-components get correct parentView', function() {
 module('Emberish closure components');
 
 QUnit.test('can handle aliased block components with args', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
   env.registerEmberishCurlyComponent('foo-bar', null, 'Hello {{arg1}} {{yield}}');
+
   appendViewFor(
     stripTight`
       {{#with (hash comp=(component 'foo-bar')) as |my|}}
@@ -1866,10 +1792,8 @@ QUnit.test('can handle aliased block components with args', assert => {
 });
 
 QUnit.test('can handle aliased block components without args', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
   env.registerEmberishCurlyComponent('foo-bar', null, 'Hello {{yield}}');
+
   appendViewFor(
     stripTight`
       {{#with (hash comp=(component 'foo-bar')) as |my|}}
@@ -1882,10 +1806,8 @@ QUnit.test('can handle aliased block components without args', assert => {
 });
 
 QUnit.test('can handle aliased inline components with args', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
   env.registerEmberishCurlyComponent('foo-bar', null, 'Hello {{arg1}}');
+
   appendViewFor(
     stripTight`
       {{#with (hash comp=(component 'foo-bar')) as |my|}}
@@ -1898,10 +1820,8 @@ QUnit.test('can handle aliased inline components with args', assert => {
 });
 
 QUnit.test('can handle aliased inline components without args', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
   env.registerEmberishCurlyComponent('foo-bar', null, 'Hello');
+
   appendViewFor(
     stripTight`
       {{#with (hash comp=(component 'foo-bar')) as |my|}}
@@ -1913,49 +1833,7 @@ QUnit.test('can handle aliased inline components without args', assert => {
   assertText('Hello World!');
 });
 
-QUnit.test('can handle higher order block components with args', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
-
-  env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
-  env.registerEmberishCurlyComponent('baz-bar', null, 'Hello {{arg1}} {{yield}}');
-
-  appendViewFor(
-    stripTight`
-      {{#foo-bar as |my|}}
-        {{#my.comp arg1="World!"}}Test1{{/my.comp}} Test2
-      {{/foo-bar}}
-    `
-  );
-
-  assertText('Hello World! Test1 Test2');
-});
-
-QUnit.test('can handle higher order block components without args', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
-
-  env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
-  env.registerEmberishCurlyComponent('baz-bar', null, 'Hello {{arg1}} {{yield}}');
-
-  appendViewFor(
-    stripTight`
-      {{#foo-bar as |my|}}
-        {{#my.comp}}World!{{/my.comp}} Test
-      {{/foo-bar}}
-    `
-  );
-
-  assertText('Hello World! Test');
-});
-
 QUnit.test('can handle higher order inline components with args', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
-
   env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
   env.registerEmberishCurlyComponent('baz-bar', null, 'Hello {{arg1}}');
 
@@ -1971,10 +1849,6 @@ QUnit.test('can handle higher order inline components with args', assert => {
 });
 
 QUnit.test('can handle higher order inline components without args', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
-
   env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
   env.registerEmberishCurlyComponent('baz-bar', null, 'Hello');
 
@@ -1989,30 +1863,7 @@ QUnit.test('can handle higher order inline components without args', assert => {
   assertText('Hello World!');
 });
 
-QUnit.test('can handle higher order inline components without args', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
-
-  env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
-  env.registerEmberishCurlyComponent('baz-bar', null, 'Hello');
-
-  appendViewFor(
-    stripTight`
-      {{#foo-bar as |my|}}
-        {{my.comp}} World!
-      {{/foo-bar}}
-    `
-  );
-
-  assertText('Hello World!');
-});
-
-QUnit.test('can handle higher order block components', assert => {
-  env.registerHelper('hash', function(params, hash) {
-    return hash;
-  });
-
+QUnit.test('can handle higher order block components with args', assert => {
   env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
   env.registerEmberishCurlyComponent('baz-bar', null, 'Hello {{arg1}} {{yield}}');
 
@@ -2025,6 +1876,21 @@ QUnit.test('can handle higher order block components', assert => {
   );
 
   assertText('Hello World! Test1 Test2');
+});
+
+QUnit.test('can handle higher order block components without args', assert => {
+  env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
+  env.registerEmberishCurlyComponent('baz-bar', null, 'Hello {{arg1}} {{yield}}');
+
+  appendViewFor(
+    stripTight`
+      {{#foo-bar as |my|}}
+        {{#my.comp}}World!{{/my.comp}} Test
+      {{/foo-bar}}
+    `
+  );
+
+  assertText('Hello World! Test');
 });
 
 module("Emberish Component - ids");
