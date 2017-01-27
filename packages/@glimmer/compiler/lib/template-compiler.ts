@@ -117,6 +117,8 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   }
 
   modifier([action]) {
+    assertIsSimplePath(action, 'modifier');
+
     let { path: { parts } } = action;
 
     this.prepareHelper(action);
@@ -163,7 +165,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     } else if (isHelperInvocation(expr)) {
       this.prepareHelper(expr);
       this.opcode('helper', expr, expr.path.parts);
-    } else if (isSelfGet(expr) || isLocalVariable(expr, this.symbols)) {
+    } else if (!isSimplePath(expr) || isSelfGet(expr) || isLocalVariable(expr, this.symbols)) {
       this.opcode('get', expr, expr.path.parts);
     } else {
       this.opcode('unknown', expr, expr.path.parts);
@@ -254,7 +256,11 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     this.opcodes.push(opcode);
   }
 
-  prepareHelper({ params, hash }) {
+  prepareHelper(expr) {
+    assertIsSimplePath(expr, 'helper');
+
+    let { params, hash } = expr;
+
     this.prepareHash(hash);
     this.prepareParams(params);
   }
@@ -347,6 +353,11 @@ function isHelperInvocation(mustache) {
     (mustache.hash && mustache.hash.pairs.length > 0);
 }
 
+function isSimplePath(mustache) {
+  let { parts } = mustache.path;
+  return parts.length === 1;
+}
+
 function isSelfGet(mustache) {
   let { parts } = mustache.path;
   return parts[0] === null;
@@ -383,6 +394,13 @@ function isLiteral({ path }) {
 
 function isHasBlock({ path }) {
   return path.original === 'has-block';
+}
+
+function assertIsSimplePath(expr, context) {
+  if (!isSimplePath(expr)) {
+    let { path: { original }, loc: { start: { line } } } = expr;
+    throw new Error(`\`${original}\` is not a valid name for a ${context} on line ${line}.`);
+  }
 }
 
 function isHasBlockParams({ path }) {
