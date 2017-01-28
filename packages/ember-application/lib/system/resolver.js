@@ -273,7 +273,7 @@ export default EmberObject.extend({
     return description;
   },
 
-  makeToString(factory, fullName) {
+  makeToString(factory) {
     return factory.toString();
   },
 
