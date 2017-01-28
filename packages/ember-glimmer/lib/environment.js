@@ -1,5 +1,5 @@
 import { guidFor, OWNER } from 'ember-utils';
-import { Cache, assert, warn, runInDebug, isFeatureEnabled } from 'ember-metal';
+import { Cache, warn, runInDebug, isFeatureEnabled } from 'ember-metal';
 import {
   lookupPartial,
   hasPartial,

@@ -536,7 +536,7 @@ const LinkComponent = EmberComponent.extend({
     @private
   */
   disabled: computed({
-    get(key, value) {
+    get() {
       return false;
     },
     set(key, value) {
