@@ -4,8 +4,9 @@ import {
   cannotReplaceNode,
   cannotReplaceOrRemoveInKeyHandlerYet
 } from './errors';
+import { BaseNode } from '../types/nodes';
 
-function visitNode(visitor, node) {
+function visitNode(visitor, node: BaseNode) {
   let handler = visitor[node.type] || visitor.All;
   let result;
 
@@ -109,7 +110,7 @@ function spliceArray(array, index, result) {
   }
 }
 
-export default function traverse(node, visitor) {
+export default function traverse(node: BaseNode, visitor) {
   visitNode(normalizeVisitor(visitor), node);
 }
 
