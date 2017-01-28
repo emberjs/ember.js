@@ -1,3 +1,4 @@
+/* global console */
 import { context } from 'ember-environment';
 
 function K() {}
