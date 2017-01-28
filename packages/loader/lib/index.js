@@ -1,4 +1,7 @@
+/* global process */
 var enifed, requireModule, Ember;
+
+// eslint-disable-next-line no-unused-vars
 var mainContext = this; // Used in ember-environment/lib/global.js
 
 (function() {
