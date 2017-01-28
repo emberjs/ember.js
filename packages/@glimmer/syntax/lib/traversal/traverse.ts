@@ -4,9 +4,45 @@ import {
   cannotReplaceNode,
   cannotReplaceOrRemoveInKeyHandlerYet
 } from './errors';
-import { BaseNode } from '../types/nodes';
+import * as nodes from '../types/nodes';
 
-function visitNode(visitor, node: BaseNode) {
+export interface NodeVisitor {
+  All?: NodeHandler<nodes.BaseNode>;
+  Program?: NodeHandler<nodes.Program>;
+  MustacheStatement?: NodeHandler<nodes.MustacheStatement>;
+  BlockStatement?: NodeHandler<nodes.BlockStatement>;
+  ElementModifierStatement?: NodeHandler<nodes.ElementModifierStatement>;
+  PartialStatement?: NodeHandler<nodes.PartialStatement>;
+  CommentStatement?: NodeHandler<nodes.CommentStatement>;
+  MustacheCommentStatement?: NodeHandler<nodes.MustacheCommentStatement>;
+  ElementNode?: NodeHandler<nodes.ElementNode>;
+  AttrNode?: NodeHandler<nodes.AttrNode>;
+  TextNode?: NodeHandler<nodes.TextNode>;
+  ConcatStatement?: NodeHandler<nodes.ConcatStatement>;
+  SubExpression?: NodeHandler<nodes.SubExpression>;
+  PathExpression?: NodeHandler<nodes.PathExpression>;
+  StringLiteral?: NodeHandler<nodes.StringLiteral>;
+  BooleanLiteral?: NodeHandler<nodes.BooleanLiteral>;
+  NumberLiteral?: NodeHandler<nodes.NumberLiteral>;
+  UndefinedLiteral?: NodeHandler<nodes.UndefinedLiteral>;
+  NullLiteral?: NodeHandler<nodes.NullLiteral>;
+  Hash?: NodeHandler<nodes.Hash>;
+  HashPair?: NodeHandler<nodes.HashPair>;
+}
+
+export type NodeHandler<T> = NodeHandlerFunction<T> | EnterExitNodeHandler<T>;
+
+export interface NodeHandlerFunction<T> {
+  (node: T): any;
+}
+
+export interface EnterExitNodeHandler<T> {
+  enter: NodeHandlerFunction<T>;
+  exit: NodeHandlerFunction<T>;
+  keys: any;
+}
+
+function visitNode(visitor, node: nodes.BaseNode) {
   let handler = visitor[node.type] || visitor.All;
   let result;
 
@@ -39,7 +75,7 @@ function visitNode(visitor, node: BaseNode) {
   return result;
 }
 
-function visitKey(visitor, handler, node, key) {
+function visitKey(visitor, handler, node: nodes.BaseNode, key) {
   let value = node[key];
   if (!value) { return; }
 
@@ -79,7 +115,7 @@ function visitArray(visitor, array) {
   }
 }
 
-function assignKey(node, key, result) {
+function assignKey(node: nodes.BaseNode, key, result) {
   if (result === null) {
     throw cannotRemoveNode(node[key], node, key);
   } else if (Array.isArray(result)) {
@@ -110,11 +146,11 @@ function spliceArray(array, index, result) {
   }
 }
 
-export default function traverse(node: BaseNode, visitor) {
+export default function traverse(node: nodes.BaseNode, visitor: NodeVisitor) {
   visitNode(normalizeVisitor(visitor), node);
 }
 
-export function normalizeVisitor(visitor) {
+export function normalizeVisitor(visitor: NodeVisitor) {
   let normalizedVisitor = {};
 
   for (let type in visitor) {
