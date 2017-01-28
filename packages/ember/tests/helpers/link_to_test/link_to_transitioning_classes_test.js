@@ -25,8 +25,6 @@ function assertHasClass(className) {
   }
 }
 
-let updateCount, replaceCount;
-
 function sharedSetup() {
   App = Application.create({
     name: 'App',
@@ -35,16 +33,13 @@ function sharedSetup() {
 
   App.deferReadiness();
 
-  updateCount = replaceCount = 0;
   App.Router.reopen({
     location: NoneLocation.create({
       setURL(path) {
-        updateCount++;
         set(this, 'path', path);
       },
 
       replaceURL(path) {
-        replaceCount++;
         set(this, 'path', path);
       }
     })

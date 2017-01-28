@@ -3,8 +3,7 @@ import { Component } from 'ember-glimmer';
 import { Route, NoneLocation } from 'ember-routing';
 import {
   run,
-  get,
-  set
+  get
 } from 'ember-metal';
 import {
   RouterTestCase,
