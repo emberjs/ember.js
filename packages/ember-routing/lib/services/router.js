@@ -7,8 +7,6 @@ import {
   Service,
   readOnly
 } from 'ember-runtime';
-import { get } from 'ember-metal';
-import RouterDSL from '../system/dsl';
 
 /**
    The Router service is the public API that provides component/view layer
