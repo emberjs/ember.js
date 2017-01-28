@@ -37,7 +37,6 @@ import {
   removeListener
 } from './events';
 
-const a_slice = Array.prototype.slice;
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
 
