@@ -227,7 +227,10 @@ export default EmberObject.extend({
         if (attrName.lastIndexOf('data-ember-action-', 0) !== -1) {
           let action = ActionManager.registeredActions[attr.value];
 
-          if (action.eventName === eventName) {
+          // We have to check for action here since in some cases, jQuery will trigger
+          // an event on `removeChild` (i.e. focusout) after we've already torn down the
+          // action handlers for the view.
+          if (action && action.eventName === eventName) {
             action.handler(evt);
           }
         }
