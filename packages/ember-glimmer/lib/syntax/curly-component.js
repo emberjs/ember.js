@@ -218,7 +218,9 @@ class CurlyComponentManager extends AbstractManager {
       bucket.classRef = args.named.get('class');
     }
 
-    processComponentInitializationAssertions(component, props);
+    runInDebug(() => {
+      processComponentInitializationAssertions(component, props);
+    });
 
     if (environment.isInteractive && component.tagName !== '') {
       component.trigger('willRender');
@@ -382,7 +384,9 @@ class TopComponentManager extends CurlyComponentManager {
       }
     }
 
-    processComponentInitializationAssertions(component, {});
+    runInDebug(() => {
+      processComponentInitializationAssertions(component, {});
+    });
 
     return new ComponentStateBucket(environment, component, args, finalizer);
   }
