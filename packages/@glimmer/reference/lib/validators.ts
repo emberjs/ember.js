@@ -327,7 +327,7 @@ export class ReferenceCache<T> implements Tagged {
   private reference: VersionedReference<T>;
   private lastValue: Option<T> = null;
   private lastRevision: Option<Revision> = null;
-  private initialized: boolean = false;
+  private initialized = false;
 
   constructor(reference: VersionedReference<T>) {
     this.tag = reference.tag;

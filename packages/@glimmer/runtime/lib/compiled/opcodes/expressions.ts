@@ -46,7 +46,6 @@ APPEND_OPCODES.add(Op.GetProperty, (vm, { op1: _key }) => {
   vm.evalStack.push(expr.get(key));
 });
 
-
 APPEND_OPCODES.add(Op.PushBlock, (vm, { op1: _block }) => {
   let block = _block ? vm.constants.getBlock(_block) : null;
   vm.evalStack.push(block);
@@ -62,7 +61,6 @@ APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
 });
 
 APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {
-  debugger;
   let hasBlock = !!vm.scope().getBlock(_block);
   vm.evalStack.push(hasBlock ? TRUE_REFERENCE : FALSE_REFERENCE);
 });

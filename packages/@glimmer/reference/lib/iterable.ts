@@ -35,8 +35,8 @@ export type OpaquePathReferenceIterationItem = IterationItem<OpaquePathReference
 export class ListItem extends ListNode<OpaquePathReference> implements OpaqueIterationItem {
   public key: string;
   public memo: OpaquePathReference;
-  public retained: boolean = false;
-  public seen: boolean = false;
+  public retained = false;
+  public seen = false;
   private iterable: OpaqueIterable;
 
   constructor(iterable: OpaqueIterable, result: OpaqueIterationItem) {

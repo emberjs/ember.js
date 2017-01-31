@@ -5,8 +5,8 @@ class Frame {
   public children: Object = null;
   public childIndex: number = null;
   public childCount: number = null;
-  public childTemplateCount: number = 0;
-  public mustacheCount: number = 0;
+  public childTemplateCount = 0;
+  public mustacheCount = 0;
   public actions: any[] = [];
   public blankChildTextNodes: number[] = null;
   public symbols: SymbolTable = null;
