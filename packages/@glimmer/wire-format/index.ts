@@ -161,7 +161,7 @@ export namespace Statements {
     ;
 
   export function isAttribute(val: Statement): val is Attribute {
-    return val[0] === Opcodes.StaticAttr || val[0] === Opcodes.DynamicAttr;
+    return val[0] === Opcodes.StaticAttr || val[0] === Opcodes.DynamicAttr || val[0] === Opcodes.TrustingAttr;
   }
 
   export type Argument =
