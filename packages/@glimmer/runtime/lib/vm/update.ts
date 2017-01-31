@@ -21,7 +21,6 @@ import { Constants, OpcodeJSON, UpdatingOpcode, UpdatingOpSeq } from '../opcodes
 import { DOMChanges } from '../dom/helper';
 import * as Simple from '../dom/interfaces';
 
-
 import VM, { EvaluationStack } from './append';
 
 export default class UpdatingVM {

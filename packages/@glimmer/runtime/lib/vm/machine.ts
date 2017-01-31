@@ -8,11 +8,11 @@ export class Machine {
   private HEAP: Opaque[] = [];
   private stack = new Uint32Array(0x10000);
 
-  private sp: number = 0;
-  private bp: number = 0;
-  private ip: number = 1;
-  private ret: number = 0;
-  private args: number = 0; // 16/16 count of positional/named
+  private sp = 0;
+  private bp = 0;
+  private ip = 1;
+  private ret = 0;
+  private args = 0; // 16/16 count of positional/named
 
   next(): number {
     return this.ip++;

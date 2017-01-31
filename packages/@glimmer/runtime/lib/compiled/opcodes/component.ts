@@ -64,9 +64,9 @@ export class NamedArguments {
 }
 
 export class Arguments implements IArguments {
-  private positionalCount: number = 0;
-  private namedCount: number = 0;
-  private start: number = 0;
+  private positionalCount = 0;
+  private namedCount = 0;
+  private start = 0;
   private namedDict: Dict<number> = null as any;
   private vm: VM = null as any;
 
@@ -112,15 +112,15 @@ export class Arguments implements IArguments {
 const ARGS = new Arguments();
 
 interface InitialComponentState<T> {
-  definition: ComponentDefinition<T>,
-  manager: ComponentManager<T>,
-  component: null
+  definition: ComponentDefinition<T>;
+  manager: ComponentManager<T>;
+  component: null;
 }
 
 interface ComponentState<T> {
-  definition: ComponentDefinition<T>,
-  manager: ComponentManager<T>,
-  component: T
+  definition: ComponentDefinition<T>;
+  manager: ComponentManager<T>;
+  component: T;
 }
 
 APPEND_OPCODES.add(Op.SetComponentState, (vm, { op1: local }) => {

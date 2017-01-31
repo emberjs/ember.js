@@ -178,7 +178,7 @@ export namespace BaselineSyntax {
   export type ScannedComponent = [number, string, RawInlineBlock, WireFormat.Core.Hash, Option<RawInlineBlock>];
   export const isScannedComponent = WireFormat.is<ScannedComponent>(Ops.ScannedComponent);
 
-  export type ResolvedComponent = [number, ComponentDefinition<Opaque>, Option<RawInlineBlock>, WireFormat.Core.Args, Option<InlineBlock>, Option<InlineBlock>]
+  export type ResolvedComponent = [number, ComponentDefinition<Opaque>, Option<RawInlineBlock>, WireFormat.Core.Args, Option<InlineBlock>, Option<InlineBlock>];
   export const isResolvedComponent = WireFormat.is<ResolvedComponent>(Ops.ResolvedComponent);
 
   import Params = WireFormat.Core.Params;

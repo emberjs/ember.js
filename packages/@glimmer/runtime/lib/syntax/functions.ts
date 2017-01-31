@@ -223,7 +223,7 @@ class InvokeDynamicLayout implements LayoutInvoker {
 
     for (let i=callerNames.length - 1; i>=0; i--) {
       let symbol = calleeNames && calleeNames[callerNames[i]];
-      let value = stack.pop<VersionedPathReference<Opaque>>()
+      let value = stack.pop<VersionedPathReference<Opaque>>();
 
       if (symbol) scope.bindSymbol(symbol, value);
     }
@@ -617,7 +617,6 @@ export class Inlines {
     } else {
       return ['expr', value];
     }
-
 
     if (path.length > 1) return ['expr', value];
 

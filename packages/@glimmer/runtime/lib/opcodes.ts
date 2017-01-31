@@ -1021,7 +1021,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.SetComponentState: return ['SetComponentState', { local: op1 }];
     case Op.PushComponentArgs: return ['PushComponentArgs', { positional: op1, named: op2, dict: c.getOther(op3) }];
     case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: op2 }];
-    case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor']
+    case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor'];
     case Op.BeginComponentTransaction: return ['BeginComponentTransaction'];
     case Op.PushComponentOperations: return ['PushComponentOperations'];
     case Op.DidCreateElement: return ['DidCreateElement', { state: op1 }];
