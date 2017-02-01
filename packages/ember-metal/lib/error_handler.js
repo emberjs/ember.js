@@ -34,6 +34,9 @@ export function dispatchError(error) {
 }
 
 // allows testing adapter to override dispatch
+export function getDispatchOverride() {
+  return dispatchOverride;
+}
 export function setDispatchOverride(handler) {
   dispatchOverride = handler;
 }
