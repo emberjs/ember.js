@@ -330,6 +330,7 @@ module.exports = function(options) {
     '@glimmer/compiler':     buildPackage('@glimmer/compiler', {
                                external: ['@glimmer/syntax', '@glimmer/wire-format', '@glimmer/util']
                              }),
+    '@glimmer/di':           buildPackage('@glimmer/di', { external: ['@glimmer/util'] }),
     '@glimmer/reference':    buildPackage('@glimmer/reference', { external: ['@glimmer/util'] }),
     '@glimmer/runtime':      buildPackage('@glimmer/runtime', {
                                external: ['@glimmer/util',
