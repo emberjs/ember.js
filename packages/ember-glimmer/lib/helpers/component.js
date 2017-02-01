@@ -149,8 +149,10 @@ export class ClosureComponentReference extends CachedReference {
 
   constructor(args, symbolTable, env) {
     super();
-    this.defRef = args.positional.at(0);
-    this.tag = this.defRef.tag;
+    
+    let firstArg = args.positional.at(0);
+    this.defRef = firstArg;
+    this.tag = firstArg.tag;
     this.env = env;
     this.symbolTable = symbolTable;
     this.args = args;
