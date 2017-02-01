@@ -11,6 +11,12 @@
     "@glimmer/wire-format" "^0.21.0"
     simple-html-tokenizer "^0.3.0"
 
+"@glimmer/di@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.npmjs.org/@glimmer/di/-/di-0.1.6.tgz#1b04326ca30a1d5224ff545753f52d0472c30c29"
+  dependencies:
+    "@glimmer/util" "^0.21.0"
+
 "@glimmer/interfaces@^0.21.0":
   version "0.21.0"
   resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.21.0.tgz#386b2c5bbe5bf6f54eda014937adf2e3927571bf"
