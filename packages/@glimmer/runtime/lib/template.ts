@@ -16,8 +16,6 @@ import Scanner, {
 } from './scanner';
 import * as Simple from './dom/interfaces';
 
-import { debugSlice } from './opcodes';
-
 /**
  * Environment specific template.
  */
@@ -115,7 +113,6 @@ function template<T>(block: SerializedTemplateBlock, id: string, meta: T, env: E
     let elementStack = ElementStack.forInitialRender(env, appendTo, null);
     let compiled = asEntryPoint().compile(env);
     let vm = VM.initial(env, self, dynamicScope, elementStack, compiled.symbols);
-    debugSlice(env, compiled.start, compiled.end);
     return vm.execute(compiled.start, compiled.end);
   };
   return { id, meta, _block: block, asEntryPoint, asLayout, asPartial, render };

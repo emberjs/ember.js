@@ -141,7 +141,7 @@ class WrappedBuilder {
             [Ops.FlushElement]
           ]
         }, null],
-        ...block.statements,
+        ...statements,
         [Ops.BaselineBlock, ['if'], [dynamicTag], null, {
           locals: EMPTY_ARRAY,
           statements: [

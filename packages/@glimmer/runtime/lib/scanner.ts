@@ -9,6 +9,7 @@ import * as WireFormat from '@glimmer/wire-format';
 import { entryPoint as entryPointTable, layout as layoutTable, block as blockTable } from './symbol-table';
 import { Opaque, SymbolTable, ProgramSymbolTable } from '@glimmer/interfaces';
 import { ComponentDefinition } from './component/interfaces';
+import { debugSlice } from './opcodes';
 
 import {
   STATEMENTS
@@ -59,6 +60,7 @@ export class EntryPoint extends Template {
       let start = builder.start;
       let end = builder.finalize();
 
+       debugSlice(env, start, end);
        compiled = this.compiled = new CompiledProgram(start, end, this.symbolTable.size);
     }
 
@@ -107,7 +109,9 @@ export class InlineBlock extends Template {
       let start = builder.start;
       let end = builder.finalize();
 
-       compiled = this.compiled = new CompiledBlock(start, end);
+      debugSlice(env, start, end);
+
+      compiled = this.compiled = new CompiledBlock(start, end);
     }
 
     return compiled;
@@ -171,8 +175,7 @@ import { VersionedPathReference } from '@glimmer/reference';
 
 export namespace BaselineSyntax {
   import Core = WireFormat.Core;
-
-  const { Ops } = WireFormat;
+  import Ops = WireFormat.Ops;
 
   // TODO: use symbols for sexp[0]?
   export type ScannedComponent = [number, string, RawInlineBlock, WireFormat.Core.Hash, Option<RawInlineBlock>];
@@ -225,16 +228,16 @@ export namespace BaselineSyntax {
     hasPartials: boolean;
   }
 
-  export type BaselineBlock = [number, WireFormat.Core.Path, AnyExpression[], Option<[string[], AnyExpression[]]>, SerializedBlock, Option<SerializedBlock>];
+  export type BaselineBlock = [Ops.BaselineBlock, WireFormat.Core.Path, AnyExpression[], Option<[string[], AnyExpression[]]>, SerializedBlock, Option<SerializedBlock>];
   export const isBaselineBlock = WireFormat.is<BaselineBlock>(Ops.BaselineBlock);
 
-  export type NestedBlock = [number, WireFormat.Core.Path, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
+  export type NestedBlock = [Ops.NestedBlock, WireFormat.Core.Path, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
   export const isNestedBlock = WireFormat.is<NestedBlock>(Ops.NestedBlock);
 
-  export type ScannedBlock = [number, Core.Path, Core.Params, Core.Hash, Option<RawInlineBlock>, Option<RawInlineBlock>];
+  export type ScannedBlock = [Ops.ScannedBlock, Core.Path, Core.Params, Core.Hash, Option<RawInlineBlock>, Option<RawInlineBlock>];
   export const isScannedBlock = WireFormat.is<ScannedBlock>(Ops.ScannedBlock);
 
-  export type Debugger = [number];
+  export type Debugger = [Ops.Debugger];
   export const isDebugger = WireFormat.is<Debugger>(Ops.Debugger);
 
   export type Args = [Params, Hash, Option<Block>, Option<Block>];

@@ -8,9 +8,3 @@ export class CompiledProgram extends CompiledBlock {
     super(start, end);
   }
 }
-
-export class CompiledLayout extends CompiledBlock {
-  constructor(slice: Slice, public prelude: Slice, public symbols: number) {
-    super(slice);
-  }
-}

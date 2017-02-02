@@ -228,12 +228,14 @@ class InvokeDynamicLayout implements LayoutInvoker {
       if (symbol) scope.bindSymbol(symbol, value);
     }
 
-    scope.bindBlock(table.getSymbol('yields', 'default')!, stack.pop<Option<InlineBlock>>());
+    let inverseSymbol = table.getSymbol('yields', 'inverse');
+    let inverse = stack.pop<Option<InlineBlock>>();
 
-    let inverse = table.getSymbol('yields', 'inverse');
-    if (inverse !== null) {
-      scope.bindBlock(inverse, null);
+    if (inverseSymbol !== null) {
+      scope.bindBlock(inverseSymbol, inverse);
     }
+
+    scope.bindBlock(table.getSymbol('yields', 'default')!, stack.pop<Option<InlineBlock>>());
 
     vm.invokeBlock(layout);
   }
@@ -261,7 +263,7 @@ export function compileComponentArgs(args: Option<C.Hash>, builder: OpcodeBuilde
 }
 
 STATEMENTS.add(Ops.ResolvedComponent, (sexp: BaselineSyntax.ResolvedComponent, builder) => {
-  let [, definition, attrs, [, hash], block] = sexp;
+  let [, definition, attrs, [, hash], block, inverse] = sexp;
 
   let state = builder.local();
 
@@ -269,6 +271,7 @@ STATEMENTS.add(Ops.ResolvedComponent, (sexp: BaselineSyntax.ResolvedComponent, b
   builder.setComponentState(state);
 
   builder.pushBlock(block);
+  builder.pushBlock(inverse);
   let { slots, count, names } = compileComponentArgs(hash, builder);
 
   builder.pushDynamicScope();
@@ -279,7 +282,7 @@ STATEMENTS.add(Ops.ResolvedComponent, (sexp: BaselineSyntax.ResolvedComponent, b
 
   builder.getComponentSelf(state);
   builder.getComponentLayout(state);
-  builder.invokeDynamic(new InvokeDynamicLayout(attrs && attrs.scan(), names, !!block));
+  builder.invokeDynamic(new InvokeDynamicLayout(attrs && attrs.scan(), names));
   builder.didCreateElement(state);
 
   builder.didRenderLayout();
@@ -325,6 +328,8 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   builder.setComponentState(state);
 
   builder.pushBlock(block);
+  builder.pushBlock(null);
+
   let { slots, count, names } = compileComponentArgs(rawArgs, builder);
 
   builder.pushDynamicScope();
@@ -335,7 +340,7 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
 
   builder.getComponentSelf(state);
   builder.getComponentLayout(state);
-  builder.invokeDynamic(new InvokeDynamicLayout(attrs.scan(), names, !!block));
+  builder.invokeDynamic(new InvokeDynamicLayout(attrs.scan(), names));
   builder.didCreateElement(state);
 
   builder.didRenderLayout();

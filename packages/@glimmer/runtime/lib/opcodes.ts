@@ -956,11 +956,15 @@ export const enum Op {
 export function debugSlice(env: Environment, start: number, end: number) {
   let { program, constants } = env;
 
+  console.group(`%c${start}:${end}`, 'color: #999');
+
   for (let i=start; i<=end; i+=4) {
     let { type, op1, op2, op3 } = program.opcode(i);
     let [name, params] = debug(constants, type, op1, op2, op3);
     console.log(`${i}. ${logOpcode(name, params)}`);
   }
+
+  console.groupEnd();
 }
 
 function logOpcode(type: string, params: Option<Object>): string {
@@ -1207,6 +1211,7 @@ export class AppendOpcodes {
     func(vm, opcode);
     console.log('%c -> eval stack', 'color: red', vm.evalStack['stack'].length ? vm.evalStack['stack'].slice() : 'EMPTY');
     console.log('%c -> scope', 'color: green', vm.scope()['slots'].map(s => s && s['value'] ? s['value']() : s));
+    console.log('%c -> elements', 'color: blue', vm.stack()['elementStack'].toArray().map(e => e.tagName));
   }
 }
 
