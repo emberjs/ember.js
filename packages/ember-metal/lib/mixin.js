@@ -431,7 +431,10 @@ export function mixin(obj, ...args) {
     post: null
   });
 
-  let comment = Comment.create(post: somePost);
+  let comment = Comment.create({ 
+    post: somePost 
+  });
+  
   comment.edit(); // outputs 'starting to edit'
   ```
 
