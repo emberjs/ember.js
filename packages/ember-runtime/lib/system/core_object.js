@@ -231,7 +231,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     });
 
     let steve = Person.create({
-      name: "Steve"
+      name: 'Steve'
     });
 
     // alerts 'Name is Steve'.
@@ -351,8 +351,8 @@ CoreObject.PrototypeMixin = Mixin.create({
         nonMerged: 'superclass value of nonMerged'
       },
       mergedProperty: {
-        page: {replace: false},
-        limit: {replace: true}
+        page: { replace: false },
+        limit: { replace: true }
       }
     });
 
@@ -361,7 +361,7 @@ CoreObject.PrototypeMixin = Mixin.create({
         completelyNonMerged: 'subclass value of nonMerged'
       },
       mergedProperty: {
-        limit: {replace: false}
+        limit: { replace: false }
       }
     });
 
@@ -610,10 +610,10 @@ let ClassMixinProps = {
     });
 
     let yehuda = Soldier.create({
-      name: "Yehuda Katz"
+      name: 'Yehuda Katz'
     });
 
-    yehuda.say("Yes");  // alerts "Yehuda Katz says: Yes, sir!"
+    yehuda.say('Yes');  // alerts "Yehuda Katz says: Yes, sir!"
     ```
 
     The `create()` on line #17 creates an *instance* of the `Soldier` class.
@@ -733,15 +733,15 @@ let ClassMixinProps = {
     o.get('name'); // 'an object'
 
     MyObject.reopen({
-      say(msg){
+      say(msg) {
         console.log(msg);
       }
-    })
+    });
 
     o2 = MyObject.create();
-    o2.say("hello"); // logs "hello"
+    o2.say('hello'); // logs "hello"
 
-    o.say("goodbye"); // logs "goodbye"
+    o.say('goodbye'); // logs "goodbye"
     ```
 
     To add functions and properties to the constructor itself,
@@ -777,25 +777,24 @@ let ClassMixinProps = {
 
     ```javascript
     const Person = Ember.Object.extend({
-      name: "",
+      name: '',
       sayHello() {
-        alert("Hello. My name is " + this.get('name'));
+        alert(`Hello. My name is ${this.get('name')}`);
       }
     });
 
     Person.reopenClass({
-      species: "Homo sapiens",
-      createPerson(newPersonsName){
-        return Person.create({
-          name:newPersonsName
-        });
+      species: 'Homo sapiens',
+      
+      createPerson(name) {
+        return Person.create({ name });
       }
     });
 
     let tom = Person.create({
-      name: "Tom Dale"
+      name: 'Tom Dale'
     });
-    let yehuda = Person.createPerson("Yehuda Katz");
+    let yehuda = Person.createPerson('Yehuda Katz');
 
     tom.sayHello(); // "Hello. My name is Tom Dale"
     yehuda.sayHello(); // "Hello. My name is Yehuda Katz"
