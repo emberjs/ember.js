@@ -427,7 +427,33 @@ export function uniqBy(dependentKey, propertyKey) {
 }
 
 /**
-  Alias for [Ember.computed.uniq](/api/#method_computed_uniq).
+  A computed property which returns a new array with all the unique
+  elements from one or more dependent arrays.
+
+  Example
+
+  ```javascript
+  let Hamster = Ember.Object.extend({
+    uniqueFruits: Ember.computed.union('fruits', 'vegetables')
+  });
+
+  let hamster = Hamster.create({
+    fruits: [
+      'banana',
+      'grape',
+      'kale',
+      'banana',
+      'tomato'
+    ],
+    vegetables: [
+      'tomato',
+      'carrot',
+      'lettuce'
+    ]
+  });
+
+  hamster.get('uniqueFruits'); // ['banana', 'grape', 'kale', 'tomato', 'carrot', 'lettuce']
+  ```
 
   @method union
   @for Ember.computed
@@ -439,8 +465,8 @@ export function uniqBy(dependentKey, propertyKey) {
 export let union = uniq;
 
 /**
-  A computed property which returns a new array with all the duplicated
-  elements from two or more dependent arrays.
+  A computed property which returns a new array with all the elements
+  two or more dependent arrays have in common.
 
   Example
 
