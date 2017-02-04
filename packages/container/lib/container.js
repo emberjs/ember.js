@@ -147,7 +147,7 @@ Container.prototype = {
     deprecate(
       'Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.',
       !isFeatureEnabled('ember-factory-for'),
-      { id: 'container-lookupFactory', until: '2.13.0', url: 'TODO' }
+      { id: 'container-lookupFactory', until: '2.13.0', url: 'http://emberjs.com/deprecations/v2.x/#toc_migrating-from-_lookupfactory-to-factoryfor' }
     );
 
     return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
