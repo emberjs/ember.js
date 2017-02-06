@@ -793,16 +793,14 @@ export class TestEnvironment extends Environment {
     return macros;
   }
 
-  hasHelper(helperName: string[]) {
-    return helperName.length === 1 && (<string>helperName[0] in this.helpers);
+  hasHelper(helperName: string) {
+    return helperName in this.helpers;
   }
 
-  lookupHelper(helperParts: string[]) {
-    let helperName = helperParts[0];
-
+  lookupHelper(helperName: string) {
     let helper = this.helpers[helperName];
 
-    if (!helper) throw new Error(`Helper for ${helperParts.join('.')} not found.`);
+    if (!helper) throw new Error(`Helper for ${helperName} not found.`);
 
     return helper;
   }
@@ -817,24 +815,23 @@ export class TestEnvironment extends Environment {
     return partial;
   }
 
-  hasComponentDefinition(name: string[]): boolean {
-    return !!this.components[name[0]];
+  hasComponentDefinition(name: string): boolean {
+    return !!this.components[name];
   }
 
-  getComponentDefinition(name: string[], blockMeta?: TemplateMeta): ComponentDefinition<any> {
-    return this.components[name[0]];
+  getComponentDefinition(name: string, blockMeta?: TemplateMeta): ComponentDefinition<any> {
+    return this.components[name];
   }
 
-  hasModifier(modifierName: string[]): boolean {
-    return modifierName.length === 1 && (<string>modifierName[0] in this.modifiers);
+  hasModifier(modifierName: string): boolean {
+    return modifierName in this.modifiers;
   }
 
-  lookupModifier(modifierName: string[]): ModifierManager<Opaque> {
-    let [name] = modifierName;
+  lookupModifier(modifierName: string): ModifierManager<Opaque> {
+    let modifier = this.modifiers[modifierName];
 
-    let modifier = this.modifiers[name];
+    if(!modifier) throw new Error(`Modifier for ${modifierName} not found.`);
 
-    if(!modifier) throw new Error(`Modifier for ${modifierName.join('.')} not found.`);
     return modifier;
   }
 
@@ -906,7 +903,7 @@ export class DynamicComponentReference implements PathReference<ComponentDefinit
     let nameOrDef = nameRef.value();
 
     if (typeof nameOrDef === 'string') {
-      return env.getComponentDefinition([nameOrDef], this.symbolTable);
+      return env.getComponentDefinition(nameOrDef, this.symbolTable);
     } else if (isComponentDefinition(nameOrDef)) {
       return nameOrDef;
     }
@@ -1145,7 +1142,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
       return true;
     }
 
-    let definition = builder.env.getComponentDefinition(path, builder.symbolTable);
+    let definition = builder.env.getComponentDefinition(path[0], builder.symbolTable);
 
     if (definition) {
       builder.component.static(definition, [params, hash, _default, inverse], table);
@@ -1165,7 +1162,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
   inlines.addMissing((path, params, hash, builder) => {
     let table = builder.symbolTable;
 
-    let definition = builder.env.getComponentDefinition(path, builder.symbolTable);
+    let definition = builder.env.getComponentDefinition(path[0], builder.symbolTable);
 
     if (path.length > 1) {
       let definitionArgs: BaselineSyntax.Args = [[[Ops.Get, path]], hash, null, null];

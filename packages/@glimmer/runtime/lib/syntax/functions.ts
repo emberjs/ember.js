@@ -120,7 +120,7 @@ STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder: OpcodeBuilder) => {
 
   let args = compileArgs(params, hash, builder);
 
-  if (builder.env.hasModifier(path, builder.symbolTable)) {
+  if (builder.env.hasModifier(path[0], builder.symbolTable)) {
     builder.modifier(path[0], args);
   } else {
     throw new Error(`Compile Error ${path.join('.')} is not a modifier: Helpers may not be used in the element form.`);
@@ -320,7 +320,7 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   // (PopDynamicScope)
   // (CommitComponentTransaction)
 
-  let definition = builder.env.getComponentDefinition([tag], builder.symbolTable);
+  let definition = builder.env.getComponentDefinition(tag, builder.symbolTable);
 
   let state = builder.local();
 
@@ -415,9 +415,10 @@ export function expr(expression: BaselineSyntax.AnyExpression, builder: OpcodeBu
 
 EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder: OpcodeBuilder) => {
   let path = sexp[1];
+  let name = path[0];
 
-  if (builder.env.hasHelper(path, builder.symbolTable)) {
-    EXPRESSIONS.compile([Ops.Helper, path, EMPTY_ARRAY, null], builder);
+  if (builder.env.hasHelper(name, builder.symbolTable)) {
+    EXPRESSIONS.compile([Ops.Helper, [name], EMPTY_ARRAY, null], builder);
   } else {
     compilePath(path, builder);
   }
@@ -435,14 +436,14 @@ EXPRESSIONS.add(Ops.Function, (sexp: BaselineSyntax.FunctionExpression, builder:
 
 EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
   let { env, symbolTable } = builder;
-  let [, path, params, hash] = sexp;
+  let [, [name], params, hash] = sexp;
 
-  if (env.hasHelper(path, symbolTable)) {
+  if (env.hasHelper(name, symbolTable)) {
     compileArgs(params, hash, builder);
     builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
-    builder.helper(env.lookupHelper(path, symbolTable));
+    builder.helper(env.lookupHelper(name, symbolTable));
   } else {
-    throw new Error(`Compile Error: ${path.join('.')} is not a helper`);
+    throw new Error(`Compile Error: ${name} is not a helper`);
   }
 });
 

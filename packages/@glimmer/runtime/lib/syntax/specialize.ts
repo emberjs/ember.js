@@ -36,10 +36,12 @@ import S = WireFormat.Statements;
 const { Ops } = WireFormat;
 
 SPECIALIZE.add(Ops.Append, (sexp: S.Append, _symbolTable) => {
-  // let path = sexp[1];
+  // let expression = sexp[1];
 
-  // if (Array.isArray(path) && (E.isUnknown(path) || E.isGet(path))) {
-  //   if (path[1].length !== 1) {
+  // if (Array.isArray(expression) && E.isGet(expression)) {
+  //   let path = expression[1];
+
+  //   if (path.length !== 1) {
   //     return [Ops.UnoptimizedAppend, sexp[1], sexp[2]];
   //   }
   // }
