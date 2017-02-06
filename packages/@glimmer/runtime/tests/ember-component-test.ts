@@ -77,7 +77,7 @@ function top<T>(stack: T[]): T {
   return stack[stack.length - 1];
 }
 
-let Components, Glimmer, Curly;
+let Components, Glimmer, Curly, Dynamic;
 
 module("Components", hooks => {
   hooks.beforeEach(() => env = new TestEnvironment());
@@ -90,6 +90,10 @@ module("Components", hooks => {
 
   module("Curly", hooks => {
     Curly = top(QUnit.config['moduleStack']);
+  });
+
+  module("Component Helper", hooks => {
+    Dynamic = top(QUnit.config['moduleStack']);
   });
 
 });
@@ -302,8 +306,12 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
     QUnit.config['currentModule'] = beforeModule;
   }
 
-  if (false && !kind || kind === 'curly' || kind === 'dynamic') {
+  if (!kind || kind === 'curly' || kind === 'dynamic') {
     let test = skip === 'dynamic' ? QUnit.skip : QUnit.test;
+
+    let beforeModule = QUnit.config['currentModule'];
+    QUnit.config['moduleStack'].push(Dynamic);
+    QUnit.config['currentModule'] = Dynamic;
 
     test(`curly - component helper: ${title}`, assert => {
       env.registerEmberishCurlyComponent('test-component', EmberishCurlyComponent, layout as string);
@@ -362,6 +370,9 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
         }
       });
     });
+
+    QUnit.config['moduleStack'].pop();
+    QUnit.config['currentModule'] = beforeModule;
   }
 
   if (!kind || kind === 'glimmer') {
