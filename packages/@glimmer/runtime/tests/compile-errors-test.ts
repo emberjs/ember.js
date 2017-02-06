@@ -25,3 +25,21 @@ QUnit.test('explicit self ref with ./ is not allowed', assert => {
     env.compile('<div><p>{{./value}}</p></div>');
   }, new Error("Using \"./\" is not supported in Glimmer and unnecessary: \"./value\" on line 1."), "should throw error");
 });
+
+QUnit.test('helper invocation with dot-paths are not allowed', assert => {
+  assert.throws(() => {
+    env.compile('{{foo.bar some="args"}}');
+  }, new Error("`foo.bar` is not a valid name for a helper on line 1."), "should throw error");
+});
+
+QUnit.test('sub-expression helper invocation with dot-paths are not allowed', assert => {
+  assert.throws(() => {
+    env.compile('{{log (foo.bar some="args")}}');
+  }, new Error("`foo.bar` is not a valid name for a helper on line 1."), "should throw error");
+});
+
+QUnit.test('sub-expression modifier invocation with dot-paths are not allowed', assert => {
+  assert.throws(() => {
+    env.compile('<div {{foo.bar some="args"}} />');
+  }, new Error("`foo.bar` is not a valid name for a modifier on line 1."), "should throw error");
+});
