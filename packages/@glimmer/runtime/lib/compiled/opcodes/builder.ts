@@ -303,7 +303,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
 
   modifier(_name: string, _args: Represents<CompiledArgs>) {
     let args = this.constants.expression(this.compile(_args));
-    let _modifierManager = this.env.lookupModifier([_name], this.symbolTable);
+    let _modifierManager = this.env.lookupModifier(_name, this.symbolTable);
     let modifierManager = this.constants.other(_modifierManager);
     let name = this.constants.string(_name);
     this.push(Op.Modifier, name, modifierManager, args);

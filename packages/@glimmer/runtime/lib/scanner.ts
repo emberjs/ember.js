@@ -312,7 +312,7 @@ export class RawInlineBlock {
   private specializeComponent(sexp: WireFormat.Statements.Component): BaselineSyntax.AnyStatement[] {
     let [, tag, component] = sexp;
 
-    if (this.env.hasComponentDefinition([tag], this.table)) {
+    if (this.env.hasComponentDefinition(tag, this.table)) {
       let child = this.child(component);
       let attrs = new RawInlineBlock(this.env, this.table, component.attrs);
       return [[Ops.ScannedComponent, tag, attrs, component.args, child]];
