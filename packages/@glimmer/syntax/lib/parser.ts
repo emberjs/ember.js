@@ -1,7 +1,8 @@
 import { parse } from "handlebars";
 import builders from "./builders";
 import print from "./generation/print";
-import traverse from "./traversal/traverse";
+import traverse, { NodeVisitor } from "./traversal/traverse";
+import { BaseNode } from "./types/nodes";
 import Walker from "./traversal/walker";
 import {
   EventedTokenizer,
