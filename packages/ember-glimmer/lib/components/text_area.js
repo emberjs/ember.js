@@ -153,7 +153,7 @@ import layout from '../templates/empty';
   you only need to setup the action name to the event name property.
 
   ```handlebars
-  {{textarea focus-in="alertMessage"}}
+  {{textarea focus-out="alertMessage"}}
   ```
 
   See more about [Text Support Actions](/api/classes/Ember.TextArea.html)
