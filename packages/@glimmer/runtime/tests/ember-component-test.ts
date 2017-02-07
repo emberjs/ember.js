@@ -27,7 +27,7 @@ import { assign } from "@glimmer/util";
 
 import { CLASS_META, UpdatableReference, setProperty as set } from '@glimmer/object-reference';
 
-import { module, test, assert } from './support';
+import { module as nestedModule, test, assert } from './support';
 
 export class EmberishRootView extends EmberObject {
   private parent: Element;
@@ -65,13 +65,13 @@ export class EmberishRootView extends EmberObject {
 
 let view: EmberishRootView, env: TestEnvironment;
 
-// function module(name: string) {
-//   QUnit.module(`[components] ${name}`, {
-//     setup() {
-//       env = new TestEnvironment();
-//     }
-//   });
-// }
+function module(name: string) {
+  QUnit.module(`[components] ${name}`, {
+    beforeEach() {
+      env = new TestEnvironment();
+    }
+  });
+}
 
 function top<T>(stack: T[]): T {
   return stack[stack.length - 1];
@@ -79,20 +79,20 @@ function top<T>(stack: T[]): T {
 
 let Components, Glimmer, Curly, Dynamic;
 
-module("Components", hooks => {
+nestedModule("Components", hooks => {
   hooks.beforeEach(() => env = new TestEnvironment());
 
   Components = top(QUnit.config['moduleStack']);
 
-  module("Glimmer", hooks => {
+  nestedModule("Glimmer", hooks => {
     Glimmer = top(QUnit.config['moduleStack']);
   });
 
-  module("Curly", hooks => {
+  nestedModule("Curly", hooks => {
     Curly = top(QUnit.config['moduleStack']);
   });
 
-  module("Component Helper", hooks => {
+  nestedModule("Component Helper", hooks => {
     Dynamic = top(QUnit.config['moduleStack']);
   });
 
