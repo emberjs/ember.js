@@ -916,8 +916,8 @@ export class DynamicComponentReference implements PathReference<ComponentDefinit
   }
 }
 
-function dynamicComponentFor(vm: VM, symbolTable: SymbolTable) {
-  let nameRef = vm.getArgs() as PathReference<Opaque>;
+function dynamicComponentFor(vm: VM, args: EvaluatedArgs, symbolTable: SymbolTable) {
+  let nameRef = args.positional.at(0);
   let env = vm.env;
   return new DynamicComponentReference(nameRef, env, symbolTable);
 };

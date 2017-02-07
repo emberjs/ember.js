@@ -42,5 +42,6 @@ export enum Opcodes {
   Undefined,
   Function,
   Helper,
+  ResolvedHelper,
   Concat
 }

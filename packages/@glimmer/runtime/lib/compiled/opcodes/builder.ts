@@ -174,6 +174,10 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.PushComponentManager, this.other(definition));
   }
 
+  pushDynamicComponentManager(local: number) {
+    this.push(Op.PushDynamicComponentManager, local);
+  }
+
   setComponentState(local: number) {
     this.push(Op.SetComponentState, local);
   }
@@ -203,10 +207,6 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.PushComponentOperations);
   }
 
-  putDynamicComponentDefinition() {
-    this.push(Op.PushDynamicComponent);
-  }
-
   getComponentSelf(state: number) {
     this.push(Op.GetComponentSelf, state);
   }
@@ -224,8 +224,8 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.DoneBlock);
   }
 
-  didRenderLayout() {
-    this.push(Op.DidRenderLayout);
+  didRenderLayout(state: number) {
+    this.push(Op.DidRenderLayout, state);
   }
 
   // content

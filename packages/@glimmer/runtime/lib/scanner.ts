@@ -1,7 +1,7 @@
 import { CompiledProgram, CompiledBlock } from './compiled/blocks';
 import { builder } from './compiler';
 import OpcodeBuilder from './compiled/opcodes/builder';
-import Environment from './environment';
+import Environment, { Helper } from './environment';
 import { Option } from '@glimmer/util';
 import { EMPTY_ARRAY } from './utils';
 import { TemplateMeta } from '@glimmer/wire-format';
@@ -178,41 +178,45 @@ export namespace BaselineSyntax {
   import Ops = WireFormat.Ops;
 
   // TODO: use symbols for sexp[0]?
-  export type ScannedComponent = [number, string, RawInlineBlock, WireFormat.Core.Hash, Option<RawInlineBlock>];
+  export type ScannedComponent = [Ops.ScannedComponent, string, RawInlineBlock, WireFormat.Core.Hash, Option<RawInlineBlock>];
   export const isScannedComponent = WireFormat.is<ScannedComponent>(Ops.ScannedComponent);
 
-  export type ResolvedComponent = [number, ComponentDefinition<Opaque>, Option<RawInlineBlock>, WireFormat.Core.Args, Option<InlineBlock>, Option<InlineBlock>];
+  export type ResolvedComponent = [Ops.ResolvedComponent, ComponentDefinition<Opaque>, Option<RawInlineBlock>, WireFormat.Core.Args, Option<InlineBlock>, Option<InlineBlock>];
   export const isResolvedComponent = WireFormat.is<ResolvedComponent>(Ops.ResolvedComponent);
+
+  export type ResolvedHelper = [Ops.ResolvedHelper, Helper, Core.Params, Core.Hash];
+  export const isResolvedHelper = WireFormat.is<ResolvedHelper>(Ops.ResolvedHelper);
 
   import Params = WireFormat.Core.Params;
   import Hash = WireFormat.Core.Hash;
   export type Block = InlineBlock;
 
-  export type OpenComponentElement = [number, string];
+  export type OpenComponentElement = [Ops.OpenComponentElement, string];
   export const isOpenComponentElement = WireFormat.is<OpenComponentElement>(Ops.OpenComponentElement);
 
-  export type OpenPrimitiveElement = [number, string, string[]];
+  export type OpenPrimitiveElement = [Ops.OpenPrimitiveElement, string, string[]];
   export const isPrimitiveElement = WireFormat.is<OpenPrimitiveElement>(Ops.OpenPrimitiveElement);
 
-  export type OpenDynamicElement = [number, BaselineSyntax.AnyExpression];
+  export type OpenDynamicElement = [Ops.OpenDynamicElement, BaselineSyntax.AnyExpression];
   export const isDynamicElement = WireFormat.is<OpenDynamicElement>(Ops.OpenDynamicElement);
 
-  export type OptimizedAppend = [number, WireFormat.Expression, boolean];
+  export type OptimizedAppend = [Ops.OptimizedAppend, WireFormat.Expression, boolean];
   export const isOptimizedAppend = WireFormat.is<OptimizedAppend>(Ops.OptimizedAppend);
 
-  export type UnoptimizedAppend = [number, WireFormat.Expression, boolean];
+  export type UnoptimizedAppend = [Ops.UnoptimizedAppend, WireFormat.Expression, boolean];
   export const isUnoptimizedAppend = WireFormat.is<UnoptimizedAppend>(Ops.UnoptimizedAppend);
 
-  export type AnyDynamicAttr = [number, string, WireFormat.Expression, Option<string>, boolean];
+  export type AnyDynamicAttr = [Ops.AnyDynamicAttr, string, WireFormat.Expression, Option<string>, boolean];
   export const isAnyAttr = WireFormat.is<AnyDynamicAttr>(Ops.AnyDynamicAttr);
 
-  export type StaticPartial = [number, string];
+  export type StaticPartial = [Ops.StaticPartial, string];
   export const isStaticPartial = WireFormat.is<StaticPartial>(Ops.StaticPartial);
-  export type DynamicPartial = [number, WireFormat.Expression];
+
+  export type DynamicPartial = [Ops.DynamicPartial, WireFormat.Expression];
   export const isDynamicPartial = WireFormat.is<DynamicPartial>(Ops.DynamicPartial);
 
   export type FunctionExpressionCallback<T> = (VM: PublicVM, symbolTable: SymbolTable) => VersionedPathReference<T>;
-  export type FunctionExpression = [number, FunctionExpressionCallback<Opaque>];
+  export type FunctionExpression = [Ops.Function, FunctionExpressionCallback<Opaque>];
   export const isFunctionExpression = WireFormat.is<FunctionExpression>(Ops.Function);
 
   export interface SerializedBlock {
@@ -278,7 +282,7 @@ export namespace BaselineSyntax {
     ;
 
   export type AnyStatement = Statement | WireFormat.Statement;
-  export type AnyExpression = FunctionExpression | WireFormat.Expression;
+  export type AnyExpression = FunctionExpression | ResolvedHelper | WireFormat.Expression;
 
   export type Program = AnyStatement[];
 }

@@ -1,4 +1,4 @@
-import { Environment } from './environment';
+import Environment, { Helper } from './environment';
 import { SymbolTable } from '@glimmer/interfaces';
 import { CompiledProgram } from './compiled/blocks';
 import { Maybe, Option } from '@glimmer/util';
@@ -19,20 +19,18 @@ import Scanner, {
 
 import {
   ComponentBuilder as IComponentBuilder,
-  DynamicDefinition,
   StaticDefinition
 } from './opcode-builder';
 
 import {
-  expr as compileExpr,
-  compileArgs,
-  compileComponentArgs,
-  compileBlocks
-} from './syntax/functions';
-
-import {
   FunctionExpression
 } from './compiled/expressions/function';
+
+import {
+  InvokeDynamicLayout,
+  expr,
+  compileComponentArgs
+} from './syntax/functions';
 
 import {
   layout as layoutTable
@@ -252,30 +250,48 @@ export class ComponentBuilder implements IComponentBuilder {
     compileStatement(syntax, this.builder);
   }
 
-  dynamic(definitionArgs: BaselineSyntax.Args, definition: DynamicDefinition, args: BaselineSyntax.Args, _symbolTable: SymbolTable, shadow: InlineBlock) {
+  dynamic(definitionArgs: BaselineSyntax.Args, getDefinition: Helper, args: BaselineSyntax.Args, _symbolTable: SymbolTable, shadow: InlineBlock) {
     this.builder.unit(b => {
-      let [params, hash, _default, inverse] = args;
+      let [, hash, block, inverse] = args;
 
       if (!definitionArgs || definitionArgs.length === 0) {
         throw new Error("Dynamic syntax without an argument");
       }
 
-      compileExpr(definitionArgs[0][0], b);
-      compileExpr([Ops.Function, definition], b);
+      let definition = b.local();
+      let state = b.local();
+      expr([Ops.ResolvedHelper, getDefinition, definitionArgs[0], definitionArgs[1]], b);
+
+      b.setLocal(definition);
+      b.getLocal(definition);
       b.test('simple');
-      b.enter('BEGIN', 'END');
-      b.label('BEGIN');
-      b.jumpUnless('END');
-      compileExpr(definitionArgs[0][0], b);
-      compileExpr([Ops.Function, definition], b);
-      b.putDynamicComponentDefinition();
-      let { positional } = compileArgs(params, hash, b);
-      let blocks = compileBlocks(_default, inverse, b);
-      b.pushReifiedArgs(positional, hash ? hash[0] : EMPTY_ARRAY, blocks.default, blocks.inverse);
-      b.openComponent(shadow);
-      b.closeComponent();
-      b.label('END');
-      b.exit();
+
+      b.labelled(b => {
+        b.jumpUnless('END');
+
+        b.pushDynamicComponentManager(definition);
+        b.setComponentState(state);
+
+        b.pushBlock(block);
+        b.pushBlock(inverse);
+        let { slots, count, names } = compileComponentArgs(hash, b);
+
+        b.pushDynamicScope();
+        b.pushComponentArgs(0, count, slots);
+        b.createComponent(state, true, false);
+        b.registerComponentDestructor(state);
+        b.beginComponentTransaction();
+
+        b.getComponentSelf(state);
+        b.getComponentLayout(state);
+        b.invokeDynamic(new InvokeDynamicLayout(null, names));
+        b.didCreateElement(state);
+
+        b.didRenderLayout(state);
+        b.popScope();
+        b.popDynamicScope();
+        b.commitComponentTransaction();
+      });
     });
   }
 }

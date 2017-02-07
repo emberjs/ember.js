@@ -206,7 +206,7 @@ STATEMENTS.add(Ops.ScannedBlock, (sexp: BaselineSyntax.ScannedBlock, builder) =>
   blocks.compile([Ops.NestedBlock, path, params, hash, templateBlock, inverseBlock], builder);
 });
 
-class InvokeDynamicLayout implements LayoutInvoker {
+export class InvokeDynamicLayout implements LayoutInvoker {
   constructor(private attrs: Option<InlineBlock>, private names: string[]) {}
 
   invoke(vm: VM, layout: Layout) {
@@ -285,7 +285,7 @@ STATEMENTS.add(Ops.ResolvedComponent, (sexp: BaselineSyntax.ResolvedComponent, b
   builder.invokeDynamic(new InvokeDynamicLayout(attrs && attrs.scan(), names));
   builder.didCreateElement(state);
 
-  builder.didRenderLayout();
+  builder.didRenderLayout(state);
   builder.popScope();
   builder.popDynamicScope();
   builder.commitComponentTransaction();
@@ -343,7 +343,7 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   builder.invokeDynamic(new InvokeDynamicLayout(attrs.scan(), names));
   builder.didCreateElement(state);
 
-  builder.didRenderLayout();
+  builder.didRenderLayout(state);
   builder.popScope();
   builder.popDynamicScope();
   builder.commitComponentTransaction();
@@ -445,6 +445,14 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
   } else {
     throw new Error(`Compile Error: ${name} is not a helper`);
   }
+});
+
+EXPRESSIONS.add(Ops.ResolvedHelper, (sexp: BaselineSyntax.ResolvedHelper, builder) => {
+  let [, helper, params, hash] = sexp;
+
+  compileArgs(params, hash, builder);
+  builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
+  builder.helper(helper);
 });
 
 EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder: OpcodeBuilder) => {

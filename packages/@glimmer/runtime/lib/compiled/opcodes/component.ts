@@ -18,24 +18,25 @@ import {
   isConst
 } from '@glimmer/reference';
 
-APPEND_OPCODES.add(Op.PushDynamicComponent, vm => {
-  let reference = vm.evalStack.pop<VersionedPathReference<ComponentDefinition<Opaque>>>();
-  let cache = isConst(reference) ? undefined : new ReferenceCache<ComponentDefinition<Opaque>>(reference);
-  let definition = cache ? cache.peek() : reference.value();
-
-  vm.evalStack.push(definition);
-
-  if (cache) {
-    vm.updateWith(new Assert(cache));
-  }
-});
-
 APPEND_OPCODES.add(Op.PushComponentManager, (vm, { op1: _definition }) => {
   let definition = vm.constants.getOther<ComponentDefinition<Opaque>>(_definition);
   let stack = vm.evalStack;
 
   stack.push(definition);
   stack.push(definition.manager);
+});
+
+APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: local }) => {
+  let reference = vm.getLocal<VersionedPathReference<ComponentDefinition<Opaque>>>(local);
+  let cache = isConst(reference) ? undefined : new ReferenceCache<ComponentDefinition<Opaque>>(reference);
+  let definition = cache ? cache.peek() : reference.value();
+
+  vm.evalStack.push(definition);
+  vm.evalStack.push(definition.manager);
+
+  if (cache) {
+    vm.updateWith(new Assert(cache));
+  }
 });
 
 export class NamedArguments {
