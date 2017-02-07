@@ -601,9 +601,9 @@ export const enum Op {
    *   the top of the stack is true.
    *
    * Format:
-   *   (Jump to:u32)
+   *   (JumpIf to:u32)
    * Operand Stack:
-   *   ..., boolean →
+   *   ..., VersionedPathReference →
    *   ...
    */
   JumpIf,
@@ -614,9 +614,9 @@ export const enum Op {
    *   the top of the stack is false.
    *
    * Format:
-   *   (Jump to:u32)
+   *   (JumpUnless to:u32)
    * Operand Stack:
-   *   ..., boolean →
+   *   ..., VersionedPathReference →
    *   ...
    */
   JumpUnless,
@@ -780,9 +780,22 @@ export const enum Op {
    *   (PushComponentManager #ComponentDefinition)
    * Operand Stack:
    *   ... →
-   *   ..., ComponentManager
+   *   ..., ComponentDefinition, ComponentManager
    */
   PushComponentManager,
+
+  /**
+   * Operation:
+   *   Push an appropriate component manager onto the stack from
+   *   a runtime-resolved component definition.
+   *
+   * Format:
+   *   (PushDynamicComponentManager local:u32)
+   * Operand Stack:
+   *   ... →
+   *   ..., ComponentDefinition, ComponentManager
+   */
+  PushDynamicComponentManager,
 
   /**
    * Operation: Set component metadata into a local.
@@ -934,17 +947,12 @@ export const enum Op {
    * Operation: Invoke didRenderLayout on the current component manager
    *
    * Format:
-   *   (DidRenderLayout manager:u32 component:u32)
+   *   (DidRenderLayout state:u32)
    * Operand Stack:
    *   ..., →
    *   ...
-   * Description:
-   *   Expect the component manager and component instance to be stored
-   *   in locals at offsets `manager` and `component`.
    */
   DidRenderLayout,
-
-  PushDynamicComponent,       // ()
 
   /// TODO
   ShadowAttributes,          // Identical to `evaluate`
@@ -1022,6 +1030,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     /// COMPONENTS
 
     case Op.PushComponentManager: return ['PushComponentManager', { definition: c.getOther(op1) }];
+    case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', { local: op1 }];
     case Op.SetComponentState: return ['SetComponentState', { local: op1 }];
     case Op.PushComponentArgs: return ['PushComponentArgs', { positional: op1, named: op2, dict: c.getOther(op3) }];
     case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: op2 }];
@@ -1063,7 +1072,6 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.ToBoolean: return ['ToBoolean'];
     case Op.InvokeBlock: return ['InvokeBlock', { count: op1 }];
     case Op.DoneBlock: return ['DoneBlock'];
-    case Op.PushDynamicComponent: return ['PushDynamicComponent'];
     case Op.Text: return ['Text', { text: c.getString(op1) }];
     case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
     case Op.DynamicContent: return ['DynamicContent', { value: c.getOther(op1) }];
