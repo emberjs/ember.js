@@ -575,6 +575,13 @@ const Component = CoreView.extend(
       assert(`You cannot use a computed property for the component's \`tagName\` (${this}).`, !(this.tagName && this.tagName.isDescriptor));
     },
 
+    destroy: function () {
+      this._super(...arguments);
+
+      this[ROOT_REF] = undefined;
+      this[BOUNDS] = undefined;
+    },
+
     rerender() {
       this[DIRTY_TAG].dirty();
       this._super();
