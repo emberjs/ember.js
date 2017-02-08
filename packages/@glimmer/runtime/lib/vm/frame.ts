@@ -1,7 +1,7 @@
 import { Scope, Environment, Opcode } from '../environment';
 import { Reference, PathReference, ReferenceIterator } from '@glimmer/reference';
 import { Option, unwrap } from '@glimmer/util';
-import { RawTemplate } from '../scanner';
+import { Block } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { Component, ComponentManager } from '../component/interfaces';
 
@@ -21,7 +21,6 @@ interface VolatileRegisters {
   key: Option<string>;
   component: Component;
   manager: Option<ComponentManager<Component>>;
-  shadow: Option<RawTemplate>;
 }
 
 interface SavedRegisters {
@@ -30,7 +29,7 @@ interface SavedRegisters {
   condition: Option<Reference<boolean>>;
 }
 
-function volatileRegisters(component: Component, manager: Option<ComponentManager<Component>>, shadow: Option<RawTemplate>): VolatileRegisters {
+function volatileRegisters(component: Component, manager: Option<ComponentManager<Component>>): VolatileRegisters {
   return {
     immediate: null,
     callerScope: null,
@@ -39,7 +38,6 @@ function volatileRegisters(component: Component, manager: Option<ComponentManage
     key: null,
     component,
     manager,
-    shadow
   };
 }
 
@@ -63,10 +61,9 @@ class Frame {
     public end: number,
     component: Component = null,
     manager: Option<ComponentManager<Component>> = null,
-    shadow: Option<RawTemplate> = null
   ) {
     this.ip = start;
-    this.volatile = volatileRegisters(component, manager, shadow);
+    this.volatile = volatileRegisters(component, manager);
     this.saved = savedRegisters();
   }
 
@@ -88,8 +85,8 @@ class Frame {
 }
 
 export interface Blocks {
-  default: Option<RawTemplate>;
-  inverse: Option<RawTemplate>;
+  default: Option<Block>;
+  inverse: Option<Block>;
 }
 
 export class FrameStack {
@@ -100,14 +97,14 @@ export class FrameStack {
     return this.frames[this.frame];
   }
 
-  push(start: number, end: number, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<RawTemplate> = null) {
+  push(start: number, end: number, component: Component = null, manager: Option<ComponentManager<Component>> = null) {
     let pos = ++this.frame;
 
     if (pos < this.frames.length) {
       let frame = this.frames[pos];
-      Frame.call(frame, start, end, component, manager, shadow);
+      Frame.call(frame, start, end, component, manager);
     } else {
-      this.frames[pos] = new Frame(start, end, component, manager, shadow);
+      this.frames[pos] = new Frame(start, end, component, manager);
     }
   }
 
@@ -213,10 +210,6 @@ export class FrameStack {
 
   getManager(): ComponentManager<Component> {
     return unwrap(this.currentFrame.volatile.manager);
-  }
-
-  getShadow(): Option<RawTemplate> {
-    return this.currentFrame.volatile.shadow;
   }
 
   goto(ip: number) {

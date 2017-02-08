@@ -964,9 +964,6 @@ export const enum Op {
    */
   DidRenderLayout,
 
-  /// TODO
-  ShadowAttributes,          // Identical to `evaluate`
-
   /** The size of the opcode list */
   Size
 }

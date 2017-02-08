@@ -183,17 +183,6 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   vm.evalStack.push(manager.layoutFor(definition, component, vm.env));
 });
 
-// Slow path for non-specialized component invocations. Uses an internal
-// named lookup on the args.
-APPEND_OPCODES.add(Op.ShadowAttributes, vm => {
-  let shadow = vm.frame.getShadow();
-
-  vm.pushCallerScope();
-  if (!shadow) return;
-
-  vm.invokeBlock(shadow);
-});
-
 APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
   let { manager, component } = vm.getLocal<ComponentState<Opaque>>(_state);
   let bounds = vm.stack().popBlock();
