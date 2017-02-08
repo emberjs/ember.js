@@ -219,11 +219,6 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.DidCreateElement, state);
   }
 
-  shadowAttributes() {
-    this.push(Op.ShadowAttributes);
-    this.push(Op.DoneBlock);
-  }
-
   didRenderLayout(state: number) {
     this.push(Op.DidRenderLayout, state);
   }

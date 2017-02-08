@@ -8,11 +8,7 @@ import { Environment } from './environment';
 
 import { VM } from './vm';
 
-import {
-  PathReference,
-  Reference,
-  VersionedReference
-} from '@glimmer/reference';
+import { VersionedReference } from '@glimmer/reference';
 
 import {
   SimpleElementOperations
