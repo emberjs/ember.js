@@ -20,8 +20,8 @@ export {
 } from './lib/opcode-builder';
 
 export {
-  CompiledBlock,
-  CompiledProgram
+  CompiledStaticTemplate,
+  CompiledDynamicTemplate
 } from './lib/compiled/blocks';
 
 export {
@@ -80,8 +80,7 @@ export {
 
 export {
   BaselineSyntax,
-  Layout,
-  EntryPoint,
+  RawTemplate,
   compileStatement
 } from './lib/scanner';
 

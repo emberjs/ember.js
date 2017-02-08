@@ -1,7 +1,7 @@
 import { Scope, Environment, Opcode } from '../environment';
 import { Reference, PathReference, ReferenceIterator } from '@glimmer/reference';
 import { Option, unwrap } from '@glimmer/util';
-import { InlineBlock } from '../scanner';
+import { RawTemplate } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { Component, ComponentManager } from '../component/interfaces';
 
@@ -21,7 +21,7 @@ interface VolatileRegisters {
   key: Option<string>;
   component: Component;
   manager: Option<ComponentManager<Component>>;
-  shadow: Option<InlineBlock>;
+  shadow: Option<RawTemplate>;
 }
 
 interface SavedRegisters {
@@ -30,7 +30,7 @@ interface SavedRegisters {
   condition: Option<Reference<boolean>>;
 }
 
-function volatileRegisters(component: Component, manager: Option<ComponentManager<Component>>, shadow: Option<InlineBlock>): VolatileRegisters {
+function volatileRegisters(component: Component, manager: Option<ComponentManager<Component>>, shadow: Option<RawTemplate>): VolatileRegisters {
   return {
     immediate: null,
     callerScope: null,
@@ -63,7 +63,7 @@ class Frame {
     public end: number,
     component: Component = null,
     manager: Option<ComponentManager<Component>> = null,
-    shadow: Option<InlineBlock> = null
+    shadow: Option<RawTemplate> = null
   ) {
     this.ip = start;
     this.volatile = volatileRegisters(component, manager, shadow);
@@ -88,8 +88,8 @@ class Frame {
 }
 
 export interface Blocks {
-  default: Option<InlineBlock>;
-  inverse: Option<InlineBlock>;
+  default: Option<RawTemplate>;
+  inverse: Option<RawTemplate>;
 }
 
 export class FrameStack {
@@ -100,7 +100,7 @@ export class FrameStack {
     return this.frames[this.frame];
   }
 
-  push(start: number, end: number, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<InlineBlock> = null) {
+  push(start: number, end: number, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<RawTemplate> = null) {
     let pos = ++this.frame;
 
     if (pos < this.frames.length) {
@@ -215,7 +215,7 @@ export class FrameStack {
     return unwrap(this.currentFrame.volatile.manager);
   }
 
-  getShadow(): Option<InlineBlock> {
+  getShadow(): Option<RawTemplate> {
     return this.currentFrame.volatile.shadow;
   }
 

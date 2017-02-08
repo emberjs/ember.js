@@ -8,7 +8,7 @@ import {
 } from '@glimmer/interfaces';
 
 export function entryPoint(meta: Option<TemplateMeta>): ProgramSymbolTable {
-  return new ProgramSymbolTable(meta);
+  return new ProgramSymbolTable(meta, null, null, null, 1000, 1);
 }
 
 export function layout(meta: TemplateMeta, wireNamed: string[], wireYields: string[], hasPartials: boolean): ProgramSymbolTable {
@@ -17,13 +17,13 @@ export function layout(meta: TemplateMeta, wireNamed: string[], wireYields: stri
   if (!yields) yields = dict<number>();
   yields['%attrs%'] = size++;
 
-  return new ProgramSymbolTable(meta, named, yields, partialSymbol, size);
+  return new ProgramSymbolTable(meta, named, yields, partialSymbol, 1000, size);
 }
 
-export function block(parent: SymbolTable, locals: string[]): SymbolTable {
+export function block(parent: SymbolTable, locals: string[]): BlockSymbolTable {
   let localsList: Option<number[]>;
   let localsMap: Option<Dict<number>>;
-  let program = parent['program'];
+  let program: ProgramSymbolTable = parent['program'];
 
   if (locals.length === 0) {
     localsList = [];
@@ -31,7 +31,7 @@ export function block(parent: SymbolTable, locals: string[]): SymbolTable {
   } else {
     localsMap = dict<number>();
     localsList = locals.map(l => {
-      return localsMap![l] = program.size++;
+      return localsMap![l] = program.next();
     });
   }
 
@@ -68,7 +68,8 @@ export class ProgramSymbolTable implements IProgramSymbolTable {
     private named: Option<Dict<number>> = null,
     private yields: Option<Dict<number>> = null,
     private partialArgs: Option<number> = null,
-    public size = 1
+    public size = 1,
+    private allocated = 1
   ) {
     this.program = this;
     this.sizes = {
@@ -76,6 +77,10 @@ export class ProgramSymbolTable implements IProgramSymbolTable {
       named: named ? Object.keys(named).length : 0,
       yields: yields ? Object.keys(yields).length : 0
     };
+  }
+
+  next(): number {
+    return this.allocated++;
   }
 
   getMeta(): Option<TemplateMeta> {

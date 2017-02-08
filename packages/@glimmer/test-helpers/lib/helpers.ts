@@ -75,10 +75,6 @@ export function compile<T>(string: string, options: TestCompileOptions<T>): Temp
   return factory.create(options.env);
 }
 
-export function compileLayout<T>(string: string, options: TestCompileOptions<T>): Layout {
-  return compile(string, options).asLayout();
-}
-
 export function equalInnerHTML(fragment, html, msg?) {
   let actualHTML = normalizeInnerHTML(fragment.innerHTML);
   QUnit.push(actualHTML === html, actualHTML, html, msg);

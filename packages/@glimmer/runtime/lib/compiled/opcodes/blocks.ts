@@ -1,11 +1,11 @@
 import { APPEND_OPCODES, Op as Op } from '../../opcodes';
-import { InlineBlock } from '../../scanner';
+import { Block } from '../../scanner';
 import { Option, Opaque } from '@glimmer/util';
 import { VersionedPathReference } from '@glimmer/reference';
 
 APPEND_OPCODES.add(Op.InvokeBlock, (vm, { op1: positional }) => {
   let stack = vm.evalStack;
-  let block = stack.pop<Option<InlineBlock>>();
+  let block = stack.pop<Option<Block>>();
 
   // FIXME: can we avoid doing this when we don't have a block?
   vm.pushCallerScope();

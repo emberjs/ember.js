@@ -12,7 +12,7 @@ import Environment, { Program } from '../../environment';
 import { SymbolTable } from '@glimmer/interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
-import { BaselineSyntax, InlineBlock, Template } from '../../scanner';
+import { BaselineSyntax, Block, Program as Layout } from '../../scanner';
 import { compileList } from '../../syntax/functions';
 
 import {
@@ -302,11 +302,11 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   }
 
   modifier(_name: string, _args: Represents<CompiledArgs>) {
-    let args = this.constants.expression(this.compile(_args));
-    let _modifierManager = this.env.lookupModifier(_name, this.symbolTable);
-    let modifierManager = this.constants.other(_modifierManager);
-    let name = this.constants.string(_name);
-    this.push(Op.Modifier, name, modifierManager, args);
+    // let args = this.constants.expression(this.compile(_args));
+    // let _modifierManager = this.env.lookupModifier(_name, this.symbolTable);
+    // let modifierManager = this.constants.other(_modifierManager);
+    // let name = this.constants.string(_name);
+    // this.push(Op.Modifier, name, modifierManager, args);
   }
 
   // lists
@@ -497,11 +497,11 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.Helper, this.func(func));
   }
 
-  pushBlock(block: Option<InlineBlock>) {
+  pushBlock(block: Option<Block>) {
     this.push(Op.PushBlock, this.block(block));
   }
 
-  pushBlocks(_default: Option<InlineBlock>, inverse: Option<InlineBlock>) {
+  pushBlocks(_default: Option<Block>, inverse: Option<Block>) {
     let flag = 0;
     let defaultBlock: ConstantBlock = 0;
     let inverseBlock: ConstantBlock = 0;
@@ -544,19 +544,24 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.Exit);
   }
 
-  invokeDynamic(invoker: vm.LayoutInvoker): void {
+  compileDynamicBlock(): void {
+    this.push(Op.CompileDynamicBlock);
+  }
+
+  invokeDynamic(invoker: vm.DynamicInvoker<SymbolTable>): void {
     this.push(Op.InvokeDynamic, this.other(invoker));
   }
 
-  invokeStatic(_block: InlineBlock, ...args: ((builder: BasicOpcodeBuilder) => void)[]): void;
-  invokeStatic(_block: InlineBlock, numArgs: number): void;
-  invokeStatic(_block: InlineBlock): void {
+  invokeStatic(_block: Block, ...args: ((builder: BasicOpcodeBuilder) => void)[]): void;
+  invokeStatic(_block: Block, numArgs: number): void;
+  invokeStatic(_block: Block): void {
     let paramSize = _block.symbolTable.getSymbolSize('local');
     let argSize = arguments.length - 1;
     let onStack = false;
 
     if (argSize === 1 && typeof arguments[1] === 'number') {
       // BUG: what happens if paramSize < argSize?
+      // e.g. #with pushes 1 arg, #each pushes 2 - but the block might consume fewer
       argSize = arguments[1];
       onStack = true;
     } else {
@@ -617,7 +622,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.labels.jump(this.pos, Op.JumpUnless, target);
   }
 
-  protected string(_string: string): ConstantString {
+  string(_string: string): ConstantString {
     return this.constants.string(_string);
   }
 
@@ -634,7 +639,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     return this.constants.other(value);
   }
 
-  protected block(block: Option<InlineBlock>): ConstantBlock {
+  protected block(block: Option<Block>): ConstantBlock {
     return block ? this.constants.block(block) : 0;
   }
 
@@ -674,7 +679,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.push(Op.BindPositionalArgs, this.symbols(symbols));
   }
 
-  preludeForLayout(layout: Template) {
+  preludeForLayout(layout: Layout) {
     let symbols = layout.symbolTable.getSymbols();
 
     if (symbols.named) {

@@ -1,16 +1,17 @@
+import { BlockSymbolTable, ProgramSymbolTable } from '../symbol-table';
+import { CompiledDynamicBlock, CompiledDynamicProgram } from '../compiled/blocks';
 import { Ops } from '../../../wire-format';
 import * as WireFormat from '@glimmer/wire-format';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { CompiledExpression } from '../compiled/expressions';
 import CompiledHasBlock, { CompiledHasBlockParams } from '../compiled/expressions/has-block';
-import { LayoutInvoker } from '../compiled/opcodes/vm';
+import { DynamicInvoker } from '../compiled/opcodes/vm';
+import { Op } from '../opcodes';
 import { VM } from '../vm';
-import { BaselineSyntax, InlineBlock, Layout } from '../scanner';
+import { BaselineSyntax, Block } from '../scanner';
 import {
   CompiledInPartialGetBlock
 } from '../compiled/expressions/has-block';
-import { PublicVM as VM } from '../vm';
-import AppendVM from '../vm/append';
 
 import {
   EMPTY_ARRAY,
@@ -51,18 +52,6 @@ function debugCallback(context: Opaque, get: debugGet) {
   debugger;
   /* tslint:enable */
   return { context, get };
-}
-
-function getter(vm: VM, builder: OpcodeBuilder) {
-  return (path: string) => {
-    let parts = path.split('.') as any;
-
-    if (parts[0] === 'this') {
-      parts[0] = null;
-    }
-
-    return compileRef(parts, builder).evaluate(vm as AppendVM);
-  };
 }
 
 let callback = debugCallback;
@@ -115,16 +104,16 @@ STATEMENTS.add(Ops.FlushElement, (_sexp, builder: OpcodeBuilder) => {
   builder.flushElement();
 });
 
-STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder: OpcodeBuilder) => {
-  let [, path, params, hash] = sexp;
+STATEMENTS.add(Ops.Modifier, (_sexp: S.Modifier, _builder: OpcodeBuilder) => {
+  // let [, path, params, hash] = sexp;
 
-  let args = compileArgs(params, hash, builder);
+  // let args = compileArgs(params, hash, builder);
 
-  if (builder.env.hasModifier(path[0], builder.symbolTable)) {
-    builder.modifier(path[0], args);
-  } else {
-    throw new Error(`Compile Error ${path.join('.')} is not a modifier: Helpers may not be used in the element form.`);
-  }
+  // if (builder.env.hasModifier(path[0], builder.symbolTable)) {
+  //   builder.modifier(path[0], args);
+  // } else {
+  //   throw new Error(`Compile Error ${path.join('.')} is not a modifier: Helpers may not be used in the element form.`);
+  // }
 });
 
 STATEMENTS.add(Ops.StaticAttr, (sexp: S.StaticAttr, builder: OpcodeBuilder) => {
@@ -206,11 +195,11 @@ STATEMENTS.add(Ops.ScannedBlock, (sexp: BaselineSyntax.ScannedBlock, builder) =>
   blocks.compile([Ops.NestedBlock, path, params, hash, templateBlock, inverseBlock], builder);
 });
 
-export class InvokeDynamicLayout implements LayoutInvoker {
-  constructor(private attrs: Option<InlineBlock>, private names: string[]) {}
+export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
+  constructor(private attrs: Option<Block>, private names: string[]) {}
 
-  invoke(vm: VM, layout: Layout) {
-    let table = layout.symbolTable;
+  invoke(vm: VM, layout: Option<CompiledDynamicProgram>) {
+    let table = layout!.symbolTable as ProgramSymbolTable;
     let stack = vm.evalStack;
     let { names: callerNames } = this;
 
@@ -229,15 +218,15 @@ export class InvokeDynamicLayout implements LayoutInvoker {
     }
 
     let inverseSymbol = table.getSymbol('yields', 'inverse');
-    let inverse = stack.pop<Option<InlineBlock>>();
+    let inverse = stack.pop<Option<Block>>();
 
     if (inverseSymbol !== null) {
       scope.bindBlock(inverseSymbol, inverse);
     }
 
-    scope.bindBlock(table.getSymbol('yields', 'default')!, stack.pop<Option<InlineBlock>>());
+    scope.bindBlock(table.getSymbol('yields', 'default')!, stack.pop<Option<Block>>());
 
-    vm.invokeBlock(layout);
+    vm.invoke(layout!);
   }
 
   toJSON() {
@@ -362,42 +351,101 @@ STATEMENTS.add(Ops.StaticPartial, (sexp: BaselineSyntax.StaticPartial, builder) 
   builder.evaluatePartial();
 });
 
-STATEMENTS.add(Ops.DynamicPartial, (sexp: BaselineSyntax.DynamicPartial, builder) => {
-  let [, name] = sexp;
+STATEMENTS.add(Ops.DynamicPartial, (_sexp: BaselineSyntax.DynamicPartial, _builder) => {
+  // let [, name] = sexp;
 
-    builder.startLabels();
+  //   builder.startLabels();
 
-    builder.putValue(name);
-    builder.test('simple');
-    builder.enter('BEGIN', 'END');
-    builder.label('BEGIN');
-    builder.jumpUnless('END');
-    builder.putDynamicPartialDefinition();
-    builder.evaluatePartial();
-    builder.label('END');
-    builder.exit();
+  //   builder.putValue(name);
+  //   builder.test('simple');
+  //   builder.enter('BEGIN', 'END');
+  //   builder.label('BEGIN');
+  //   builder.jumpUnless('END');
+  //   builder.putDynamicPartialDefinition();
+  //   builder.evaluatePartial();
+  //   builder.label('END');
+  //   builder.exit();
 
-    builder.stopLabels();
+  //   builder.stopLabels();
 });
 
-STATEMENTS.add(Ops.Yield, function(sexp: WireFormat.Statements.Yield, builder) {
+class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
+  constructor(private callerCount: number) {}
+
+  invoke(vm: VM, block: Option<CompiledDynamicBlock>) {
+    let { callerCount } = this;
+    let stack = vm.evalStack;
+
+    vm.pushCallerScope();
+
+    if (!block) {
+      for (let i=callerCount-1; i>=0; i--) {
+        stack.pop();
+      }
+
+      return;
+    }
+
+    let table = block.symbolTable;
+    let locals = table.getSymbols().locals; // always present in inline blocks
+
+    let calleeCount = locals ? locals.length : 0;
+    let excess = Math.min(callerCount - calleeCount, 0);
+
+    for (let i=0; i<excess; i++) {
+      stack.pop();
+    }
+
+    let count = Math.min(callerCount, calleeCount);
+
+    let scope = vm.scope();
+
+    for (let i=count-1; i>=0; i--) {
+      scope.bindSymbol(locals![i], stack.pop<VersionedPathReference<Opaque>>());
+    }
+
+    vm.invoke(block);
+  }
+
+  toJSON() {
+    return { GlimmerDebug: `<invoke-dynamic-yield caller-count=${this.callerCount}>` };
+  }
+}
+
+STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder) => {
   let [, to, params] = sexp;
 
   if (params) compileList(params, builder);
-  builder.yield(params, to);
+
+  let table = builder.symbolTable;
+  let yields: Option<number>, partial: Option<number>;
+
+  let count = compileList(params, builder);
+
+  if (yields = table.getSymbol('yields', to)) {
+    builder.push(Op.GetBlock, yields);
+  } else if (partial = table.getPartialArgs()) {
+    builder.push(Op.GetEvalBlock, partial, builder.string(to));
+  } else {
+    throw new Error(`[BUG] ${to} is not a valid block name.`);
+  }
+
+  builder.compileDynamicBlock();
+  builder.invokeDynamic(new InvokeDynamicYield(count));
+  builder.popScope();
 });
 
-STATEMENTS.add(Ops.Debugger, (sexp: BaselineSyntax.Debugger, builder: OpcodeBuilder) => {
+STATEMENTS.add(Ops.Debugger, (_sexp: BaselineSyntax.Debugger, _builder: OpcodeBuilder) => {
 
-  builder.putValue([Ops.Function, (vm: VM) => {
-    let context = vm.getSelf().value();
-    let get = (path: string) => {
-      return getter(vm, builder)(path).value();
-    };
-    callback(context, get);
-  }]);
+  // builder.putValue([Ops.Function, (vm: VM) => {
+  //   let context = vm.getSelf().value();
+  //   let get = (path: string) => {
+  //     return getter(vm, builder)(path).value();
+  //   };
+  //   callback(context, get);
+  // }]);
 
-  return sexp;
+  // return sexp;
 });
 
 let EXPRESSIONS = new Compilers<SexpExpression, CompiledExpression<Opaque> | void>();
@@ -521,7 +569,7 @@ export function compileArgs(params: Option<WireFormat.Core.Params>, hash: Option
   return { positional, named };
 }
 
-export function compileList(params: Option<WireFormat.Core.Expression[]>, builder: OpcodeBuilder): number {
+export function compileList(params: Option<BaselineSyntax.AnyExpression[]>, builder: OpcodeBuilder): number {
   if (!params) return 0;
   params.forEach(p => expr(p, builder));
   return params.length;
@@ -529,7 +577,7 @@ export function compileList(params: Option<WireFormat.Core.Expression[]>, builde
 
 const EMPTY_BLOCKS = { default: false, inverse: false };
 
-export function compileBlocks(block: Option<InlineBlock>, inverse: Option<InlineBlock>, builder: OpcodeBuilder): { default: boolean, inverse: boolean } {
+export function compileBlocks(block: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder): { default: boolean, inverse: boolean } {
   if (!block && !inverse) return EMPTY_BLOCKS;
   builder.pushBlocks(block, inverse);
   return { default: !!block, inverse: !!inverse };

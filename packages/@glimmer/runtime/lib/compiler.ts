@@ -1,6 +1,6 @@
 import Environment, { Helper } from './environment';
 import { SymbolTable } from '@glimmer/interfaces';
-import { CompiledProgram } from './compiled/blocks';
+import { CompiledDynamicProgram } from './compiled/blocks';
 import { Maybe, Option } from '@glimmer/util';
 import { Ops } from '@glimmer/wire-format';
 
@@ -10,9 +10,8 @@ import {
 
 import Scanner, {
   BaselineSyntax,
-  Layout,
-  EntryPoint,
-  InlineBlock,
+  RawTemplate,
+  Program,
   compileStatement,
   scanBlock
 } from './scanner';
@@ -48,12 +47,12 @@ export interface CompilableLayout {
   compile(builder: Component.ComponentLayoutBuilder): void;
 }
 
-export function compileLayout(compilable: CompilableLayout, env: Environment): CompiledProgram {
+export function compileLayout(compilable: CompilableLayout, env: Environment): CompiledDynamicProgram {
   let builder = new ComponentLayoutBuilder(env);
 
   compilable.compile(builder);
 
-  return builder.compile();
+  return builder.compile().compileDynamic(env);
 }
 
 class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
@@ -69,7 +68,7 @@ class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
     this.inner = new UnwrappedBuilder(this.env, layout);
   }
 
-  compile(): Layout {
+  compile(): Program {
     return this.inner.compile();
   }
 
@@ -88,7 +87,7 @@ class WrappedBuilder {
 
   constructor(public env: Environment, private layout: WireTemplate) {}
 
-  compile(): Layout {
+  compile(): Program {
     //========DYNAMIC
     //        PutValue(TagExpr)
     //        Test
@@ -150,7 +149,7 @@ class WrappedBuilder {
 
       let table = layoutTable(meta, named, yields.concat('%attrs%'), hasPartials);
       let child = scanBlock(element, table, env);
-      return new EntryPoint(child.statements, table);
+      return new RawTemplate(child.statements, table);
     }
 
     let staticTag = this.tag.getStatic()!;
@@ -163,11 +162,6 @@ class WrappedBuilder {
   }
 }
 
-function isOpenElement(value: BaselineSyntax.AnyStatement): value is (BaselineSyntax.OpenPrimitiveElement | WireFormat.Statements.OpenElement) {
-  let type = value[0];
-  return type === Ops.OpenElement || type === Ops.OpenPrimitiveElement;
-}
-
 class UnwrappedBuilder {
   public attrs = new ComponentAttrsBuilder();
 
@@ -177,7 +171,7 @@ class UnwrappedBuilder {
     throw new Error('BUG: Cannot call `tag` on an UnwrappedBuilder');
   }
 
-  compile(): Layout {
+  compile(): Program {
     let { env, layout: { meta, block } } = this;
 
     let head = block.head ? this.attrs['buffer'].concat(block.head) : this.attrs['buffer'];
@@ -250,7 +244,7 @@ export class ComponentBuilder implements IComponentBuilder {
     compileStatement(syntax, this.builder);
   }
 
-  dynamic(definitionArgs: BaselineSyntax.Args, getDefinition: Helper, args: BaselineSyntax.Args, _symbolTable: SymbolTable, shadow: InlineBlock) {
+  dynamic(definitionArgs: BaselineSyntax.Args, getDefinition: Helper, args: BaselineSyntax.Args, _symbolTable: SymbolTable) {
     this.builder.unit(b => {
       let [, hash, block, inverse] = args;
 

@@ -1,7 +1,7 @@
 import { PathReference } from '@glimmer/reference';
 import { Option } from '@glimmer/util';
 import VM from '../../vm/append';
-import { InlineBlock } from '../../scanner';
+import { Block } from '../../scanner';
 import { CompiledExpression } from '../expressions';
 import { PrimitiveReference } from '../../references';
 
@@ -41,7 +41,7 @@ export class CompiledHasBlockParams extends CompiledExpression<boolean> {
 }
 
 export interface CompiledGetBlock {
-  evaluate(vm: VM): Option<InlineBlock>;
+  evaluate(vm: VM): Option<Block>;
   toJSON(): string;
 }
 
@@ -49,7 +49,7 @@ export class CompiledGetBlockBySymbol implements CompiledGetBlock {
   constructor(private symbol: number, private debug: string) {
   }
 
-  evaluate(vm: VM): InlineBlock {
+  evaluate(vm: VM): Block {
     return vm.scope().getBlock(this.symbol);
   }
 
@@ -62,7 +62,7 @@ export class CompiledInPartialGetBlock implements CompiledGetBlock {
   constructor(private symbol: number, private name: string) {
   }
 
-  evaluate(vm: VM): InlineBlock {
+  evaluate(vm: VM): Block {
     let { symbol, name } = this;
     let args = vm.scope().getPartialArgs(symbol);
     return args.blocks[name];

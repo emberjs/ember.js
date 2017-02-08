@@ -1,7 +1,7 @@
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { FunctionExpression } from '../compiled/expressions/function';
-import { Layout } from '../scanner';
-import { SerializedTemplate, TemplateMeta } from 'glimmer-wire-format';
+import { CompiledDynamicProgram } from '../compiled/blocks';
+import { SerializedTemplate, TemplateMeta } from '@glimmer/wire-format';
 
 import Environment, { DynamicScope } from '../environment';
 import { ElementOperations } from '../builder';
@@ -43,7 +43,7 @@ export interface ComponentManager<T extends Component> {
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
   // or to implement features like Ember's "late-bound" layouts.
-  layoutFor(definition: ComponentDefinition<T>, component: T, env: Environment): Layout;
+  layoutFor(definition: ComponentDefinition<T>, component: T, env: Environment): CompiledDynamicProgram;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.

@@ -43,11 +43,11 @@ import {
 
 import { EvaluatedArgs } from './compiled/expressions/args';
 
-import { InlineBlock } from './scanner';
+import { Block } from './scanner';
 
 import { PublicVM } from './vm/append';
 
-export type ScopeSlot = PathReference<Opaque> | Option<InlineBlock> | EvaluatedArgs;
+export type ScopeSlot = PathReference<Opaque> | Option<Block> | EvaluatedArgs;
 
 export interface DynamicScope {
   get(key: string): PathReference<Opaque>;
@@ -98,8 +98,8 @@ export class Scope {
     return this.slots[symbol] as PathReference<Opaque>;
   }
 
-  getBlock(symbol: number): InlineBlock {
-    return this.slots[symbol] as InlineBlock;
+  getBlock(symbol: number): Block {
+    return this.slots[symbol] as Block;
   }
 
   getPartialArgs(symbol: number): EvaluatedArgs {
@@ -114,7 +114,7 @@ export class Scope {
     this.slots[symbol] = value;
   }
 
-  bindBlock(symbol: number, value: Option<InlineBlock>) {
+  bindBlock(symbol: number, value: Option<Block>) {
     this.slots[symbol] = value;
   }
 

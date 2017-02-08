@@ -1,4 +1,4 @@
-import { CompiledProgram, CompiledBlock } from './compiled/blocks';
+import { CompiledDynamicTemplate, CompiledStaticTemplate } from './compiled/blocks';
 import { builder } from './compiler';
 import OpcodeBuilder from './compiled/opcodes/builder';
 import Environment, { Helper } from './environment';
@@ -7,7 +7,7 @@ import { EMPTY_ARRAY } from './utils';
 import { TemplateMeta } from '@glimmer/wire-format';
 import * as WireFormat from '@glimmer/wire-format';
 import { entryPoint as entryPointTable, layout as layoutTable, block as blockTable } from './symbol-table';
-import { Opaque, SymbolTable, ProgramSymbolTable } from '@glimmer/interfaces';
+import { Opaque, SymbolTable, ProgramSymbolTable, BlockSymbolTable } from '@glimmer/interfaces';
 import { ComponentDefinition } from './component/interfaces';
 import { debugSlice } from './opcodes';
 
@@ -26,11 +26,48 @@ export function compileStatement(statement: BaselineSyntax.AnyStatement, builder
   STATEMENTS.compile(refined, builder);
 }
 
-export abstract class Template {
-  constructor(public symbolTable: SymbolTable) {}
+export class RawTemplate<S extends SymbolTable> {
+  private compiledStatic: Option<CompiledStaticTemplate> = null;
+  private compiledDynamic: Option<CompiledDynamicTemplate<S>> = null;
 
-  abstract compile(env: Environment): CompiledBlock;
+  constructor(public statements: BaselineSyntax.AnyStatement[], public symbolTable: S) {}
+
+  compileStatic(env: Environment): CompiledStaticTemplate {
+    let { compiledStatic } = this;
+
+    if (!compiledStatic) {
+      let builder = compileStatements(this.statements, env, this.symbolTable);
+
+      let start = builder.start;
+      let end = builder.finalize();
+
+      debugSlice(env, start, end);
+
+      compiledStatic = this.compiledStatic = new CompiledStaticTemplate(start, end);
+    }
+
+    return compiledStatic;
+  }
+
+  compileDynamic(env: Environment): CompiledDynamicTemplate<S> {
+    let { compiledDynamic } = this;
+
+    if (!compiledDynamic) {
+      let staticBlock = this.compileStatic(env);
+      compiledDynamic = new CompiledDynamicTemplate(staticBlock.start, staticBlock.end, this.symbolTable);
+    }
+
+    return compiledDynamic;
+  }
+
+  toJSON() {
+    return { GlimmerDebug: '<template>' };
+  }
 }
+
+export type Template = RawTemplate<SymbolTable>;
+export type Program = RawTemplate<ProgramSymbolTable>;
+export type Block = RawTemplate<BlockSymbolTable>;
 
 function compileStatements(statements: BaselineSyntax.AnyStatement[], env: Environment, table: SymbolTable) {
   let b = builder(env, table);
@@ -42,91 +79,23 @@ function compileStatements(statements: BaselineSyntax.AnyStatement[], env: Envir
   return b;
 }
 
-export class EntryPoint extends Template {
-  private compiled: Option<CompiledProgram> = null;
+export function layout(prelude: BaselineSyntax.AnyStatement[], head: BaselineSyntax.AnyStatement[], body: BaselineSyntax.AnyStatement[], symbolTable: ProgramSymbolTable) {
+  let [, tag] = prelude.pop() as WireFormat.Statements.OpenElement;
+  prelude.push([Ops.OpenComponentElement, tag]);
 
-  public symbolTable: ProgramSymbolTable;
+  let statements = prelude
+    .concat([[Ops.Yield, '%attrs%', EMPTY_ARRAY]])
+    .concat(head)
+    .concat(body);
 
-  constructor(public statements: BaselineSyntax.AnyStatement[], symbolTable: ProgramSymbolTable) {
-    super(symbolTable);
-  }
-
-  compile(env: Environment): CompiledProgram {
-    let compiled = this.compiled;
-
-    if (!compiled) {
-      let builder = compileStatements(this.statements, env, this.symbolTable);
-
-      let start = builder.start;
-      let end = builder.finalize();
-
-       debugSlice(env, start, end);
-       compiled = this.compiled = new CompiledProgram(start, end, this.symbolTable.size);
-    }
-
-    return compiled;
-  }
-}
-
-export class Layout extends EntryPoint {
-  public symbolTable: ProgramSymbolTable;
-
-  constructor(prelude: BaselineSyntax.AnyStatement[], head: BaselineSyntax.AnyStatement[], body: BaselineSyntax.AnyStatement[], symbolTable: ProgramSymbolTable) {
-    let [, tag] = prelude.pop() as WireFormat.Statements.OpenElement;
-    prelude.push([Ops.OpenComponentElement, tag]);
-
-    let statements = prelude
-      .concat([[Ops.Yield, '%attrs%', EMPTY_ARRAY]])
-      .concat(head)
-      .concat(body);
-
-    super(statements, symbolTable);
-  }
-}
-
-export class InlineBlock extends Template {
-  private compiled: Option<CompiledBlock> = null;
-
-  constructor(public statements: BaselineSyntax.AnyStatement[], symbolTable: SymbolTable) {
-    super(symbolTable);
-  }
-
-  splat(builder: OpcodeBuilder) {
-    let table = builder.symbolTable;
-
-    for (let statement of this.statements) {
-      let refined = SPECIALIZE.specialize(statement, table);
-      STATEMENTS.compile(refined, builder);
-    }
-  }
-
-  compile(env: Environment): CompiledBlock {
-    let { compiled } = this;
-
-    if (!compiled) {
-      let builder = compileStatements(this.statements, env, this.symbolTable);
-
-      let start = builder.start;
-      let end = builder.finalize();
-
-      debugSlice(env, start, end);
-
-      compiled = this.compiled = new CompiledBlock(start, end);
-    }
-
-    return compiled;
-  }
-
-  toJSON() {
-    return { GlimmerDebug: '<block>' };
-  }
+  return new RawTemplate(statements, symbolTable);
 }
 
 export default class Scanner {
   constructor(private block: BaselineSyntax.SerializedTemplateBlock, private meta: TemplateMeta, private env: Environment) {
   }
 
-  scanEntryPoint(): EntryPoint {
+  scanEntryPoint(): RawTemplate<ProgramSymbolTable> {
     let { block, meta } = this;
 
     let statements;
@@ -138,10 +107,10 @@ export default class Scanner {
 
     let symbolTable = entryPointTable(meta);
     let child = scanBlock(statements, symbolTable, this.env);
-    return new EntryPoint(child.statements, symbolTable);
+    return new RawTemplate(child.statements, symbolTable);
   }
 
-  scanLayout(): Layout {
+  scanLayout(): RawTemplate<ProgramSymbolTable> {
     let { block, meta } = this;
     let { named, yields, hasPartials } = block;
 
@@ -154,19 +123,19 @@ export default class Scanner {
     let { statements: head } = scanBlock(block.head, symbolTable, this.env);
     let { statements: body } = scanBlock(block.statements, symbolTable, this.env);
 
-    return new Layout(prelude, head, body, symbolTable);
+    return layout(prelude, head, body, symbolTable);
   }
 
-  scanPartial(symbolTable: SymbolTable): EntryPoint {
+  scanPartial(symbolTable: ProgramSymbolTable): RawTemplate<ProgramSymbolTable> {
     let { block } = this;
 
     let child = scanBlock(block.statements, symbolTable, this.env);
 
-    return new EntryPoint(child.statements, symbolTable);
+    return new RawTemplate(child.statements, symbolTable);
   }
 }
 
-export function scanBlock(statements: BaselineSyntax.AnyStatement[], symbolTable: SymbolTable, env: Environment): InlineBlock {
+export function scanBlock<S extends SymbolTable>(statements: BaselineSyntax.AnyStatement[], symbolTable: S, env: Environment): RawTemplate<S> {
   return new RawInlineBlock(env, symbolTable, statements).scan();
 }
 
@@ -178,10 +147,10 @@ export namespace BaselineSyntax {
   import Ops = WireFormat.Ops;
 
   // TODO: use symbols for sexp[0]?
-  export type ScannedComponent = [Ops.ScannedComponent, string, RawInlineBlock, WireFormat.Core.Hash, Option<RawInlineBlock>];
+  export type ScannedComponent = [Ops.ScannedComponent, string, RawInlineBlock<BlockSymbolTable>, WireFormat.Core.Hash, Option<RawInlineBlock<BlockSymbolTable>>];
   export const isScannedComponent = WireFormat.is<ScannedComponent>(Ops.ScannedComponent);
 
-  export type ResolvedComponent = [Ops.ResolvedComponent, ComponentDefinition<Opaque>, Option<RawInlineBlock>, WireFormat.Core.Args, Option<InlineBlock>, Option<InlineBlock>];
+  export type ResolvedComponent = [Ops.ResolvedComponent, ComponentDefinition<Opaque>, Option<RawInlineBlock<BlockSymbolTable>>, WireFormat.Core.Args, Option<RawTemplate<BlockSymbolTable>>, Option<RawTemplate<BlockSymbolTable>>];
   export const isResolvedComponent = WireFormat.is<ResolvedComponent>(Ops.ResolvedComponent);
 
   export type ResolvedHelper = [Ops.ResolvedHelper, Helper, Core.Params, Core.Hash];
@@ -189,7 +158,7 @@ export namespace BaselineSyntax {
 
   import Params = WireFormat.Core.Params;
   import Hash = WireFormat.Core.Hash;
-  export type Block = InlineBlock;
+  export type Block = RawTemplate<BlockSymbolTable>;
 
   export type OpenComponentElement = [Ops.OpenComponentElement, string];
   export const isOpenComponentElement = WireFormat.is<OpenComponentElement>(Ops.OpenComponentElement);
@@ -225,8 +194,8 @@ export namespace BaselineSyntax {
   }
 
   export interface SerializedTemplateBlock extends SerializedBlock {
-    prelude: AnyStatement[];
-    head: AnyStatement[];
+    prelude: Option<AnyStatement[]>;
+    head: Option<AnyStatement[]>;
     named: string[];
     yields: string[];
     hasPartials: boolean;
@@ -238,7 +207,7 @@ export namespace BaselineSyntax {
   export type NestedBlock = [Ops.NestedBlock, WireFormat.Core.Path, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
   export const isNestedBlock = WireFormat.is<NestedBlock>(Ops.NestedBlock);
 
-  export type ScannedBlock = [Ops.ScannedBlock, Core.Path, Core.Params, Core.Hash, Option<RawInlineBlock>, Option<RawInlineBlock>];
+  export type ScannedBlock = [Ops.ScannedBlock, Core.Path, Core.Params, Core.Hash, Option<RawInlineBlock<BlockSymbolTable>>, Option<RawInlineBlock<BlockSymbolTable>>];
   export const isScannedBlock = WireFormat.is<ScannedBlock>(Ops.ScannedBlock);
 
   export type Debugger = [Ops.Debugger];
@@ -247,11 +216,11 @@ export namespace BaselineSyntax {
   export type Args = [Params, Hash, Option<Block>, Option<Block>];
 
   export namespace NestedBlock {
-    export function defaultBlock(sexp: NestedBlock): Option<InlineBlock> {
+    export function defaultBlock(sexp: NestedBlock): Option<RawTemplate<BlockSymbolTable>> {
       return sexp[4];
     }
 
-    export function inverseBlock(sexp: NestedBlock): Option<InlineBlock> {
+    export function inverseBlock(sexp: NestedBlock): Option<RawTemplate<BlockSymbolTable>> {
       return sexp[5];
     }
 
@@ -289,10 +258,10 @@ export namespace BaselineSyntax {
 
 const { Ops } = WireFormat;
 
-export class RawInlineBlock {
-  constructor(private env: Environment, private table: SymbolTable, private statements: BaselineSyntax.AnyStatement[]) {}
+export class RawInlineBlock<S extends SymbolTable> {
+  constructor(private env: Environment, private table: S, private statements: BaselineSyntax.AnyStatement[]) {}
 
-  scan(): InlineBlock {
+  scan(): RawTemplate<S> {
     let buffer: BaselineSyntax.AnyStatement[] = [];
     let statements = this.statements;
     for (let statement of statements) {
@@ -305,12 +274,12 @@ export class RawInlineBlock {
       }
     }
 
-    return new InlineBlock(buffer, this.table);
+    return new RawTemplate<S>(buffer, this.table);
   }
 
   private specializeBlock(block: WireFormat.Statements.Block | BaselineSyntax.BaselineBlock): BaselineSyntax.ScannedBlock {
-    let [, path, params, hash, template, inverse] = block;
-    return [Ops.ScannedBlock, path, params, hash, this.child(template), this.child(inverse)];
+    let [, path, params, hash, RawTemplate, inverse] = block;
+    return [Ops.ScannedBlock, path, params, hash, this.child(RawTemplate), this.child(inverse)];
   }
 
   private specializeComponent(sexp: WireFormat.Statements.Component): BaselineSyntax.AnyStatement[] {
@@ -331,7 +300,7 @@ export class RawInlineBlock {
     }
   }
 
-  child(block: Option<BaselineSyntax.SerializedBlock>): Option<RawInlineBlock> {
+  child(block: Option<BaselineSyntax.SerializedBlock>): Option<RawInlineBlock<BlockSymbolTable>> {
     if (!block) return null;
     let table = blockTable(this.table, block.locals);
     return new RawInlineBlock(this.env, table, block.statements);
