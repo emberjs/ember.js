@@ -7,8 +7,6 @@ import {
   closureComponentMacro
 } from './syntax/dynamic-component';
 import { wrapComponentClassAttribute } from './utils/bindings';
-import { _withDynamicVarsMacro } from './syntax/-with-dynamic-vars';
-import { _inElementMacro } from './syntax/-in-element';
 import { inputMacro } from './syntax/input';
 import { textAreaMacro } from './syntax/-text-area';
 import { assert } from 'ember-metal';
@@ -87,8 +85,6 @@ export function populateMacros(blocks, inlines) {
   inlines.add('textarea', textAreaMacro);
   inlines.addMissing(refineInlineSyntax);
   blocks.add('component', blockComponentMacro);
-  blocks.add('-with-dynamic-vars', _withDynamicVarsMacro);
-  blocks.add('-in-element', _inElementMacro);
   blocks.addMissing(refineBlockSyntax);
 
   for (let i = 0; i < experimentalMacros.length; i++) {
