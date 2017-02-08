@@ -2,11 +2,10 @@ import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
-import { CompiledBlock } from '../compiled/blocks';
-import { InlineBlock, PartialBlock, Template } from '../scanner';
+import { OpSlice } from '../compiled/blocks';
+import { Template } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
-import { Component, ComponentManager } from '../component/interfaces';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
 import { FrameStack } from './frame';
@@ -257,23 +256,8 @@ export default class VM implements PublicVM {
     return expect(this.dynamicScopeStack.current, 'expected dynamic scope on the dynamic scope stack');
   }
 
-  pushFrame(block: CompiledBlock) {
+  pushFrame(block: OpSlice) {
     this.frame.push(block.start, block.end);
-  }
-
-  pushComponentFrame(
-    layout: CompiledBlock,
-    args: EvaluatedArgs,
-    callerScope: Scope,
-    component: Component,
-    manager: ComponentManager<Component>,
-    shadow: Option<InlineBlock>
-  ) {
-    this.frame.push(layout.start, layout.end, component, manager, shadow);
-
-    if (args) this.frame.setArgs(args);
-    if (args && args.blocks) this.frame.setBlocks(args.blocks);
-    if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
   pushEvalFrame(start: number, end: number) {
@@ -365,27 +349,20 @@ export default class VM implements PublicVM {
     APPEND_OPCODES.evaluate(this, opcode, opcode.type);
   }
 
+  invoke(compiled: OpSlice) {
+    this.pushFrame(compiled);
+  }
+
   // Make sure you have opcodes that push and pop a scope around this opcode
   // if you need to change the scope.
   invokeBlock(block: Template) {
-    let compiled = block.compile(this.env);
-    this.pushFrame(compiled);
+    let compiled = block.compileStatic(this.env);
+    this.invoke(compiled);
   }
 
   invokePartial(block: PartialBlock) {
     let compiled = block.compile(this.env);
-    this.pushFrame(compiled);
-  }
-
-  invokeLayout(
-    args: EvaluatedArgs,
-    layout: CompiledBlock,
-    callerScope: Scope,
-    component: Component,
-    manager: ComponentManager<Component>,
-    shadow: Option<InlineBlock>
-  ) {
-    this.pushComponentFrame(layout, args, callerScope, component, manager, shadow);
+    this.invoke(compiled);
   }
 
   bindPositionalArgs(symbols: number[]) {

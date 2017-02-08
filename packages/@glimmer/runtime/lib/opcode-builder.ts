@@ -6,7 +6,7 @@ import {
   FunctionExpression
 } from './compiled/expressions/function';
 
-import { BaselineSyntax, InlineBlock } from './scanner';
+import { BaselineSyntax } from './scanner';
 
 import { SymbolTable } from '@glimmer/interfaces';
 
@@ -20,6 +20,6 @@ export type StaticDefinition = ComponentDefinition<Opaque>;
 export type DynamicDefinition = FunctionExpression<ComponentDefinition<Opaque>>;
 
 export interface ComponentBuilder {
-  static(definition: ComponentDefinition<Opaque>, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow?: InlineBlock): void;
-  dynamic(definitionArgs: BaselineSyntax.Args, getDefinition: Helper, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow?: InlineBlock): void;
+  static(definition: ComponentDefinition<Opaque>, args: BaselineSyntax.Args, symbolTable: SymbolTable): void;
+  dynamic(definitionArgs: BaselineSyntax.Args, getDefinition: Helper, args: BaselineSyntax.Args, symbolTable: SymbolTable): void;
 }

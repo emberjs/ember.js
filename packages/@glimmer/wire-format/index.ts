@@ -225,6 +225,7 @@ export interface SerializedTemplateBlock extends SerializedBlock {
   named: string[];
   yields: string[];
   hasPartials: boolean;
+  size: number;
 }
 
 /**

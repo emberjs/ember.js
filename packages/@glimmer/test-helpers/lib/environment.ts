@@ -4,7 +4,7 @@ import {
   DynamicScope,
 
   // Compiler
-  CompiledProgram,
+  CompiledDynamicBlock,
   CompilableLayout,
   compileLayout,
   compileArgs,
@@ -56,8 +56,7 @@ import {
 
 import {
   precompile,
-  compile as rawCompile,
-  compileLayout as rawCompileLayout
+  compile as rawCompile
 } from "./helpers";
 
 import {
@@ -303,14 +302,14 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     return new klass(args.named.value());
   }
 
-  layoutFor(definition: BasicComponentDefinition, component: BasicComponent, env: TestEnvironment): Layout {
+  layoutFor(definition: BasicComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledDynamicBlock {
     let layout = env.compiledLayouts[definition.name];
 
     if (layout) {
       return layout;
     }
 
-    layout = rawCompile(definition.layoutString, { env }).asLayout();
+    layout = rawCompile(definition.layoutString, { env }).asLayout().compile(env);
     return env.compiledLayouts[definition.name] = layout;
   }
 
@@ -348,7 +347,7 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 
 class StaticTaglessComponentManager extends BasicComponentManager {
-  layoutFor(definition: StaticTaglessComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledProgram {
+  layoutFor(definition: StaticTaglessComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledDynamicBlock {
     let layout = env.compiledLayouts[definition.name];
 
     if (layout) {
@@ -381,7 +380,7 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return component;
   }
 
-  layoutFor(definition: EmberishGlimmerComponentDefinition, component: EmberishGlimmerComponent, env: TestEnvironment): Layout {
+  layoutFor(definition: EmberishGlimmerComponentDefinition, component: EmberishGlimmerComponent, env: TestEnvironment): CompiledDynamicBlock {
     if (env.compiledLayouts[definition.name]) {
       return env.compiledLayouts[definition.name];
     }
@@ -505,7 +504,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     return component;
   }
 
-  layoutFor(definition: EmberishCurlyComponentDefinition, component: EmberishCurlyComponent, env: TestEnvironment): CompiledProgram {
+  layoutFor(definition: EmberishCurlyComponentDefinition, component: EmberishCurlyComponent, env: TestEnvironment): CompiledDynamicBlock {
     let layout = env.compiledLayouts[definition.name];
 
     if (layout) {
@@ -712,7 +711,7 @@ export class TestEnvironment extends Environment {
   private partials = dict<PartialDefinition<{}>>();
   private components = dict<ComponentDefinition<any>>();
   private uselessAnchor: HTMLAnchorElement;
-  public compiledLayouts = dict<Layout>();
+  public compiledLayouts = dict<CompiledDynamicBlock>();
 
   constructor(options: TestEnvironmentOptions = {
     document: document,
@@ -837,10 +836,6 @@ export class TestEnvironment extends Environment {
 
   compile(template: string): Template<undefined> {
     return rawCompile<undefined>(template, { env: this });
-  }
-
-  compileLayout(template: string): Layout {
-    return rawCompileLayout(template, { env: this });
   }
 
   iterableFor(ref: Reference<Opaque>, keyPath: string): OpaqueIterable {

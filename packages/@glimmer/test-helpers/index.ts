@@ -1,6 +1,5 @@
 export {
   compile,
-  compileLayout,
   equalInnerHTML,
   equalHTML,
   equalTokens,

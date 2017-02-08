@@ -1,7 +1,9 @@
+import { CompiledDynamicTemplate } from '../blocks';
 import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM, VM } from '../../vm';
+import { SymbolTable } from '@glimmer/interfaces';
 import { Reference, ConstReference, VersionedPathReference } from '@glimmer/reference';
-import { Dict, Option, Opaque, initializeGuid } from '@glimmer/util';
+import { Option, Opaque, initializeGuid } from '@glimmer/util';
 import { CONSTANT_TAG, ReferenceCache, Revision, Tag, isConst, isModified } from '@glimmer/reference';
 import Environment from '../../environment';
 import { APPEND_OPCODES, Op as Op } from '../../opcodes';
@@ -13,8 +15,8 @@ import {
 } from '../expressions/args';
 
 import {
-  InlineBlock,
-  Layout
+  Block,
+  Program
 } from '../../scanner';
 
 import {
@@ -24,10 +26,6 @@ import {
   FALSE_REFERENCE,
   PrimitiveReference
 } from '../../references';
-
-import {
-  CompiledProgram
-} from '../blocks';
 
 APPEND_OPCODES.add(Op.ReserveLocals, (vm, { op1: amount }) => {
   vm.reserveLocals(amount);
@@ -60,11 +58,11 @@ APPEND_OPCODES.add(Op.PushReifiedArgs, (vm, { op1: positional, op2: _names, op3:
   let names = vm.constants.getArray(_names).map(n => vm.constants.getString(n));
 
   if (blockFlag & 0b10) {
-    blocks.inverse = stack.pop<InlineBlock>();
+    blocks.inverse = stack.pop<Block>();
   }
 
   if (blockFlag & 0b01) {
-    blocks.default = stack.pop<InlineBlock>();
+    blocks.default = stack.pop<Block>();
   }
 
   for (let i=names.length; i>0; i--) {
@@ -127,14 +125,14 @@ APPEND_OPCODES.add(Op.BindNamedArgs, (vm, { op1: _names, op2: _symbols }) => {
 });
 
 APPEND_OPCODES.add(Op.BindVirtualBlock, (vm, { op1: _layout, op2: _block }) => {
-  let layout = vm.getLocal<Layout>(_layout);
+  let layout = vm.getLocal<Block>(_layout);
   let symbol = layout.symbolTable.getSymbol('yields', _block ? 'inverse' : 'default')!;
-  vm.scope().bindBlock(symbol, vm.evalStack.pop<InlineBlock>());
+  vm.scope().bindBlock(symbol, vm.evalStack.pop<Block>());
 });
 
 APPEND_OPCODES.add(Op.BindVirtualNamed, (vm, { op1: _layout, op2: _name }) => {
   let expr = vm.evalStack.pop<VersionedPathReference<Opaque>>();
-  let layout = vm.getLocal<Layout>(_layout);
+  let layout = vm.getLocal<Program>(_layout);
   let symbol = layout.symbolTable.getSymbol('named', vm.constants.getString(_name))!;
   vm.scope().bindSymbol(symbol, expr);
 });
@@ -160,18 +158,24 @@ APPEND_OPCODES.add(Op.Enter, (vm, { op1: start, op2: end }) => vm.enter(start, e
 
 APPEND_OPCODES.add(Op.Exit, (vm) => vm.exit());
 
+APPEND_OPCODES.add(Op.CompileDynamicBlock, vm => {
+  let stack = vm.evalStack;
+  let block = stack.pop<Block>();
+  stack.push(block ? block.compileDynamic(vm.env) : null);
+});
+
 APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: _block }) => {
   let block = vm.constants.getBlock(_block);
   vm.invokeBlock(block);
 });
 
-export interface LayoutInvoker {
-  invoke(vm: VM, block: Layout): void;
+export interface DynamicInvoker<S extends SymbolTable> {
+  invoke(vm: VM, block: Option<CompiledDynamicTemplate<S>>): void;
 }
 
 APPEND_OPCODES.add(Op.InvokeDynamic, (vm, { op1: _invoker }) => {
-  let invoker = vm.constants.getOther<LayoutInvoker>(_invoker);
-  let block = vm.evalStack.pop<Layout>();
+  let invoker = vm.constants.getOther<DynamicInvoker<SymbolTable>>(_invoker);
+  let block = vm.evalStack.pop<Option<CompiledDynamicTemplate<SymbolTable>>>();
   invoker.invoke(vm, block);
 });
 

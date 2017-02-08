@@ -2,7 +2,7 @@ import { Opaque, Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, un
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { VM, UpdatingVM } from './vm';
 import { NULL_REFERENCE, UNDEFINED_REFERENCE } from './references';
-import { InlineBlock } from './scanner';
+import { Block } from './scanner';
 import { Opcode, Environment } from './environment';
 
 export interface OpcodeJSON {
@@ -565,6 +565,16 @@ export const enum Op {
   /// VM
 
   /**
+   * Operation: Compile the InlineBlock at the top of the stack.
+   * Format:
+   *   (CompileDynamicBlock)
+   * Operand Stack:
+   *   ..., InlineBlock →
+   *   ..., CompiledDynamicBlock
+   */
+  CompileDynamicBlock,
+
+  /**
    * Operation: Evaluate the specified block.
    * Format:
    *   (InvokeStatic #InlineBlock)
@@ -964,7 +974,7 @@ export const enum Op {
 export function debugSlice(env: Environment, start: number, end: number) {
   let { program, constants } = env;
 
-  console.group(`%c${start}:${end}`, 'color: #999');
+  (console as any).group(`%c${start}:${end}`, 'color: #999');
 
   for (let i=start; i<=end; i+=4) {
     let { type, op1, op2, op3 } = program.opcode(i);
@@ -1064,6 +1074,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.BindDynamicScope: return ['BindDynamicScope'];
     case Op.Enter: return ['Enter', { start: op1, end: op2 }];
     case Op.Exit: return ['Exit'];
+    case Op.CompileDynamicBlock: return ['CompileDynamicBlock'];
     case Op.InvokeStatic: return ['InvokeStatic', { block: c.getBlock(op1) }];
     case Op.InvokeDynamic: return ['InvokeDynamic', { invoker: c.getOther(op1) }];
     case Op.Jump: return ['Jump', { to: op1 }];
@@ -1116,7 +1127,7 @@ export class Constants {
   private strings: string[] = [];
   private expressions: Opaque[] = [];
   private arrays: number[][] = [];
-  private blocks: InlineBlock[] = [];
+  private blocks: Block[] = [];
   private functions: Function[] = [];
   private others: Opaque[] = [];
 
@@ -1166,11 +1177,11 @@ export class Constants {
     return index + 1;
   }
 
-  getBlock(value: ConstantBlock): InlineBlock {
+  getBlock(value: ConstantBlock): Block {
     return this.blocks[value - 1];
   }
 
-  block(block: InlineBlock): ConstantBlock {
+  block(block: Block): ConstantBlock {
     let index = this.blocks.length;
     this.blocks.push(block);
     return index + 1;
