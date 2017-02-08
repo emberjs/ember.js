@@ -309,7 +309,7 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
       return layout;
     }
 
-    layout = rawCompile(definition.layoutString, { env }).asLayout().compile(env);
+    layout = rawCompile(definition.layoutString, { env }).asLayout().compileDynamic(env);
     return env.compiledLayouts[definition.name] = layout;
   }
 
