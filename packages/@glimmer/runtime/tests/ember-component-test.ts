@@ -1212,7 +1212,7 @@ testComponent('correct scope - conflicting block param and attr names', {
 QUnit.test('correct scope - accessing local variable in yielded block (glimmer component)', assert => {
   class FooBar extends BasicComponent {}
 
-  env.registerBasicComponent('foo-bar', FooBar, `[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{@foo}}]{{yield}}`);
+  env.registerBasicComponent('foo-bar', FooBar, `<div>[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{@foo}}]{{yield}}</div>`);
 
   appendViewFor(
     stripTight`
@@ -1235,11 +1235,13 @@ QUnit.test('correct scope - accessing local variable in yielded block (glimmer c
         [Outside: zomg]
         [Inside: zomg]
         [Inside: zomg]
-        [Layout: ]
-        [Layout: ]
-        [Layout: zomg]
-        [Block: zomg]
-        [Block: zomg]`
+        <div>
+          [Layout: ]
+          [Layout: ]
+          [Layout: zomg]
+          [Block: zomg]
+          [Block: zomg]
+        </div>`
   );
 });
 
@@ -1975,7 +1977,7 @@ module("Emberish Component - ids");
 
 QUnit.test('emberish component should have unique IDs', assert => {
   env.registerEmberishCurlyComponent('x-curly', null, '');
-  env.registerEmberishGlimmerComponent('x-glimmer', null, '<div></div>');
+  env.registerEmberishGlimmerComponent('x-glimmer', null, '<div />');
 
   appendViewFor(
     stripTight`
@@ -3143,7 +3145,7 @@ QUnit.test('glimmer components are destroyed', function(assert) {
     }
   });
 
-  env.registerEmberishGlimmerComponent('destroy-me', DestroyMeComponent as any, 'destroy me!');
+  env.registerEmberishGlimmerComponent('destroy-me', DestroyMeComponent as any, '<div>destroy me!</div>');
 
   appendViewFor(`{{#if cond}}<destroy-me />{{/if}}`, { cond: true });
 
@@ -3189,7 +3191,7 @@ QUnit.test('components inside a list are destroyed', function(assert) {
     }
   });
 
-  env.registerEmberishGlimmerComponent('destroy-me', DestroyMeComponent as any, 'destroy me!');
+  env.registerEmberishGlimmerComponent('destroy-me', DestroyMeComponent as any, '<div>destroy me!</div>');
 
   appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me @item={{item}} />{{/each}}`, { list: [1,2,3,4,5] });
 
