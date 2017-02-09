@@ -468,7 +468,7 @@ export const enum Op {
    * Format:
    *   (OpenDynamicElement)
    * Operand Stack:
-   *   ..., string, ElementOperations →
+   *   ..., ElementOperations, string →
    *   ...
    */
   OpenDynamicElement,

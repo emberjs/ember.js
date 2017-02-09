@@ -37,7 +37,15 @@ APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
 });
 
 APPEND_OPCODES.add(Op.OpenElementWithOperations, (vm, { op1: tag }) => {
-  vm.stack().openElement(vm.constants.getString(tag), vm.evalStack.pop<ElementOperations>());
+  let tagName = vm.constants.getString(tag);
+  let operations = vm.evalStack.pop<ElementOperations>();
+  vm.stack().openElement(tagName, operations);
+});
+
+APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
+  let tagName = vm.evalStack.pop<Reference<string>>().value();
+  let operations = vm.evalStack.pop<ElementOperations>();
+  vm.stack().openElement(tagName, operations);
 });
 
 APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
@@ -53,16 +61,6 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
 });
 
 APPEND_OPCODES.add(Op.PopRemoteElement, vm => vm.stack().popRemoteElement());
-
-APPEND_OPCODES.add(Op.OpenComponentElement, (vm, { op1: _tag }) => {
-  let tag = vm.constants.getString(_tag);
-  vm.stack().openElement(tag, new ComponentElementOperations(vm.env));
-});
-
-APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
-  let tagName = vm.evalStack.pop<Reference<string>>();
-  vm.stack().openElement(tagName.value());
-});
 
 class ClassList {
   private list: Option<Reference<string>[]> = null;
@@ -300,8 +298,6 @@ APPEND_OPCODES.add(Op.FlushElement, vm => {
 });
 
 APPEND_OPCODES.add(Op.CloseElement, vm => vm.stack().closeElement());
-
-APPEND_OPCODES.add(Op.PopElement, vm => vm.stack().popElement());
 
 APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespace }) => {
   let name = vm.constants.getString(_name);
