@@ -21,7 +21,9 @@ export {
 
 export {
   CompiledStaticTemplate,
-  CompiledDynamicTemplate
+  CompiledDynamicTemplate,
+  CompiledDynamicBlock,
+  CompiledDynamicProgram
 } from './lib/compiled/blocks';
 
 export {
@@ -79,8 +81,9 @@ export {
 } from './lib/syntax/functions';
 
 export {
-  BaselineSyntax,
+  ClientSide,
   RawTemplate,
+  Block,
   compileStatement
 } from './lib/scanner';
 

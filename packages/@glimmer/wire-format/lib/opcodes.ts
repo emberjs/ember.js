@@ -2,21 +2,11 @@ export enum Opcodes {
   // Statements
   Text,
   Append,
-  UnoptimizedAppend,
-  OptimizedAppend,
   Comment,
   Modifier,
   Block,
-  ScannedBlock,
-  BaselineBlock,
-  NestedBlock,
   Component,
-  ScannedComponent,
-  ResolvedComponent,
   OpenElement,
-  OpenComponentElement,
-  OpenDynamicElement,
-  OpenPrimitiveElement,
   FlushElement,
   CloseElement,
   StaticAttr,
@@ -31,6 +21,7 @@ export enum Opcodes {
   StaticArg,
   TrustingAttr,
   Debugger,
+  ClientSideStatement,
 
   // Expressions
 
@@ -40,8 +31,7 @@ export enum Opcodes {
   HasBlock,
   HasBlockParams,
   Undefined,
-  Function,
   Helper,
-  ResolvedHelper,
-  Concat
+  Concat,
+  ClientSideExpression
 }
