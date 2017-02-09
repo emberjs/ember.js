@@ -29,6 +29,7 @@ import { PublicVM as VM } from '../vm';
 import AppendVM from '../vm/append';
 
 import { CompiledFunctionExpression } from '../compiled/expressions/function';
+const { defaultBlock, params, hash } = BaselineSyntax.NestedBlock;
 
 export type SexpExpression = BaselineSyntax.AnyExpression & { 0: number };
 export type Syntax = SexpExpression | BaselineSyntax.AnyStatement;
@@ -553,6 +554,34 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       } else {
         throw unreachable();
       }
+    });
+  });
+
+  blocks.add('-in-element', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+    let block = defaultBlock(sexp);
+    let args = compileArgs(params(sexp), null, builder);
+
+    builder.putArgs(args);
+    builder.test('simple');
+
+    builder.labelled(null, b => {
+      b.jumpUnless('END');
+      b.pushRemoteElement();
+      b.evaluate(unwrap(block));
+      b.popRemoteElement();
+    });
+  });
+
+  blocks.add('-with-dynamic-vars', (sexp, builder) => {
+    let block = defaultBlock(sexp);
+    let args = compileArgs(params(sexp), hash(sexp), builder);
+
+    builder.unit(b => {
+      b.putArgs(args);
+      b.pushDynamicScope();
+      b.bindDynamicScope(args.named.keys as string[]);
+      b.evaluate(unwrap(block));
+      b.popDynamicScope();
     });
   });
 
