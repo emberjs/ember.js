@@ -339,7 +339,7 @@ QUnit.test('paramsFor considers an engine\'s mountPoint', function(assert) {
 
   let router = {
     _deserializeQueryParams() {},
-    router: {
+    _routerMicrolib: {
       state: {
         handlerInfos: [
           { name: 'posts' }
@@ -387,7 +387,7 @@ QUnit.test('modelFor considers an engine\'s mountPoint', function() {
   let postsModel = { id: '2' };
 
   let router = {
-    router: {
+    _routerMicrolib: {
       activeTransition: {
         resolvedModels: {
           'foo.bar': applicationModel,

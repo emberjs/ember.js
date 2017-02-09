@@ -3754,7 +3754,7 @@ QUnit.test('Route serializers work for Engines', function() {
 
   bootApplication();
 
-  equal(router.router.generate('blog.post', { id: '13' }), '/blog/post/13', 'url is generated properly');
+  equal(router._routerMicrolib.generate('blog.post', { id: '13' }), '/blog/post/13', 'url is generated properly');
 });
 
 QUnit.test('Defining a Route#serialize method in an Engine throws an error', function() {

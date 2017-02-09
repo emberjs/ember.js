@@ -58,7 +58,7 @@ export default Service.extend({
 
   generateURL(routeName, models, queryParams) {
     let router = get(this, 'router');
-    if (!router.router) { return; }
+    if (!router._routerMicrolib) { return; }
 
     let visibleQueryParams = {};
     assign(visibleQueryParams, queryParams);
@@ -72,7 +72,7 @@ export default Service.extend({
   isActiveForRoute(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {
     let router = get(this, 'router');
 
-    let handlers = router.router.recognizer.handlersFor(routeName);
+    let handlers = router._routerMicrolib.recognizer.handlersFor(routeName);
     let leafName = handlers[handlers.length - 1].handler;
     let maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
 
