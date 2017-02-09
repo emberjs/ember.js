@@ -1047,7 +1047,6 @@ module("[glimmer runtime] Initial render", tests => {
   });
 });
 
-
 module('Style attributes', {
   beforeEach(assert) {
     class StyleEnv extends TestEnvironment {
@@ -1108,4 +1107,3 @@ class StyleAttribute extends AttributeManager {
 }
 
 const STYLE_ATTRIBUTE = new StyleAttribute('style');
-

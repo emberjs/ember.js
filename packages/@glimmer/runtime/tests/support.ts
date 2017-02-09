@@ -15,7 +15,7 @@ export function module(name, second?, third?) {
       nested = second;
     }
   }
-  return QUnit.module(name, undefined, nested);
+  return QUnit.module(name, setup, nested);
 }
 
 export function test(name: string, callback: (assert: Assert) => void) {
