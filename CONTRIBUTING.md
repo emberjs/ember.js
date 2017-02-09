@@ -62,7 +62,7 @@ and the issue will be closed
   can be reopened at a later time if needed, e.g. becomes actionable again.
 * If possible, issues will be labeled to indicate the status or priority.
   For example, labels may have a prefix for `Status: X`, or `Priority: X`.
-  Statuses may include: `In Progress`, `On Hold`. Priorities may include: 
+  Statuses may include: `In Progress`, `On Hold`. Priorities may include:
   `High` or `Low`.
 
 ## Requesting a Feature
@@ -103,11 +103,10 @@ clone the latest ember.js directory from github
 cd to the cloned ember.js directory
  - cd ember.js
 
-ensure Node.js, yarn, and bower are installed
+ensure Node.js and yarn are installed
 
 follow these commands to build ember.js
  - yarn install
- - bower install
  - yarn run build
 ```
 
@@ -163,7 +162,7 @@ We love pull requests. Here's a quick guide:
 1. Fork the repo.
 
 2. Run the tests. We only take pull requests with passing tests, and it's great
-to know that you have a clean slate: `yarn install && bower install && yarn test`.
+to know that you have a clean slate: `yarn install && yarn test`.
 (To see tests in the browser, run `yarn start` and open `http://localhost:4200/tests/index.html`.)
 
 3. Add a test for your change. Only refactoring and documentation changes
