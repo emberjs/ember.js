@@ -77,7 +77,6 @@ function assertInvariants(assert: Assert, result, msg?: string) {
   assert.strictEqual(result.lastNode(), root.lastChild, `The lastNode of the result is the same as the root's lastChild${msg ? ': ' + msg : ''}`);
 }
 
-
 module("[glimmer-runtime] Updating", hooks => {
   hooks.beforeEach(() => commonSetup());
 
@@ -1831,8 +1830,6 @@ module("[glimmer-runtime] Updating", hooks => {
     let object = { list: [] };
     let template = compile(`<ul>{{#each list key='name' as |item|}}<li class="{{item.class}}">{{item.name}}</li>{{else}}<li class="none">none</li>{{/each}}</ul>`);
 
-
-
     render(template, object);
 
     let itemNode = getNodeByClassName('none');
@@ -2273,8 +2270,6 @@ module("[glimmer-runtime] Updating", hooks => {
     });
   }
 });
-
-
 
 let destroyedRenderNodeCount;
 let destroyedRenderNode;
@@ -2760,7 +2755,6 @@ QUnit.module("Updating SVG", hooks => {
     assert.equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE);
   });
 });
-
 
 QUnit.module("Updating Element Modifiers", hooks => {
   hooks.beforeEach(() => commonSetup());
