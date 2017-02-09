@@ -4,8 +4,10 @@ import {
   DynamicScope,
 
   // Compiler
-  CompiledDynamicBlock,
+  ClientSide,
   CompilableLayout,
+  CompiledDynamicBlock,
+  CompiledDynamicTemplate,
   compileLayout,
   compileArgs,
   compileList,
@@ -36,7 +38,6 @@ import {
   BlockMacros,
   InlineMacros,
   NestedBlockSyntax,
-  BaselineSyntax,
 
   // References
   PrimitiveReference,
@@ -50,7 +51,7 @@ import {
   getDynamicVar,
 
   Template,
-  Layout,
+  Block,
   isComponentDefinition
 } from "@glimmer/runtime";
 
@@ -91,13 +92,16 @@ import {
 } from "@glimmer/object-reference";
 
 import {
-  SymbolTable
+  SymbolTable,
+  BlockSymbolTable
 } from '@glimmer/interfaces';
 
 import {
   TemplateMeta,
   Ops
 } from "@glimmer/wire-format";
+
+import * as WireFormat from '@glimmer/wire-format';
 
 type KeyFor<T> = (item: Opaque, index: T) => string;
 
@@ -1074,18 +1078,32 @@ export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectF
   });
 }
 
-const { defaultBlock, params, hash } = BaselineSyntax.NestedBlock;
+function defaultBlock(sexp: ClientSide.NestedBlock): Block {
+  return sexp[5];
+}
+
+function inverseBlock(sexp: ClientSide.NestedBlock): Block {
+  return sexp[6];
+}
+
+function params(sexp: ClientSide.NestedBlock): WireFormat.Core.Params {
+  return sexp[3];
+}
+
+function hash(sexp: ClientSide.NestedBlock): WireFormat.Core.Hash {
+  return sexp[4];
+}
 
 function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: BlockMacros, inlines: InlineMacros } {
   blocks.add('identity', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
-    builder.invokeStatic(sexp[4]);
-  });
-
-  blocks.add('render-inverse', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
     builder.invokeStatic(sexp[5]);
   });
 
-  blocks.add('-with-dynamic-vars', (sexp: BaselineSyntax.NestedBlock, builder) => {
+  blocks.add('render-inverse', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
+    builder.invokeStatic(sexp[6]);
+  });
+
+  blocks.add('-with-dynamic-vars', (sexp: NestedBlockSyntax, builder) => {
     let block = defaultBlock(sexp);
     let named = hash(sexp);
 
@@ -1116,8 +1134,8 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
 
   blocks.add('component', (sexp, builder) => {
     let [,, params, hash, _default, inverse] = sexp;
-    let definitionArgs: BaselineSyntax.Args = [params.slice(0, 1), null, null, null];
-    let args: BaselineSyntax.Args = [params.slice(1), hash, _default, inverse];
+    let definitionArgs: WireFormat.Core.Args = [params.slice(0, 1), null, null, null];
+    let args: WireFormat.Core.Args = [params.slice(1), hash, _default, inverse];
     builder.component.dynamic(definitionArgs, dynamicComponentFor, args, builder.symbolTable);
     return true;
   });

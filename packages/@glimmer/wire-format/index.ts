@@ -47,7 +47,7 @@ export namespace Expressions {
   export type HasBlock       = [Opcodes.HasBlock, str];
   export type HasBlockParams = [Opcodes.HasBlockParams, str];
   export type Undefined      = [Opcodes.Undefined];
-  export type ClientSide     = [Opcodes.Function, Function];
+  export type ClientSide     = [Opcodes.ClientSideExpression, any];
 
   export type Expression =
       Unknown
@@ -82,6 +82,7 @@ export namespace Expressions {
   export const isHasBlock       = is<HasBlock>(Opcodes.HasBlock);
   export const isHasBlockParams = is<HasBlockParams>(Opcodes.HasBlockParams);
   export const isUndefined      = is<Undefined>(Opcodes.Undefined);
+  export const isClientSide     = is<ClientSide>(Opcodes.ClientSideExpression);
 
   export function isPrimitiveValue(value: any): value is Value {
     if (value === null) {
@@ -116,6 +117,7 @@ export namespace Statements {
   export type StaticArg     = [Opcodes.StaticArg, str, Expression];
   export type TrustingAttr  = [Opcodes.TrustingAttr, str, Expression, str];
   export type Debugger      = [Opcodes.Debugger];
+  export type ClientSide    = [Opcodes.ClientSideStatement, any];
 
   export const isText         = is<Text>(Opcodes.Text);
   export const isAppend       = is<Append>(Opcodes.Append);
@@ -134,6 +136,7 @@ export namespace Statements {
   export const isStaticArg    = is<StaticArg>(Opcodes.StaticArg);
   export const isTrustingAttr = is<TrustingAttr>(Opcodes.TrustingAttr);
   export const isDebugger     = is<Debugger>(Opcodes.Debugger);
+  export const isClientSide   = is<ClientSide>(Opcodes.ClientSideStatement);
 
   export type Statement =
       Text
@@ -153,6 +156,7 @@ export namespace Statements {
     | DynamicArg
     | TrustingAttr
     | Debugger
+    | ClientSide
     ;
 
   export type Attribute =

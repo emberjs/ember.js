@@ -3,12 +3,11 @@ import { CompiledDynamicBlock, CompiledDynamicProgram } from '../compiled/blocks
 import { Ops } from '../../../wire-format';
 import * as WireFormat from '@glimmer/wire-format';
 import OpcodeBuilder from '../compiled/opcodes/builder';
-import { CompiledExpression } from '../compiled/expressions';
 import CompiledHasBlock, { CompiledHasBlockParams } from '../compiled/expressions/has-block';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
 import { Op } from '../opcodes';
 import { VM } from '../vm';
-import { BaselineSyntax, Block } from '../scanner';
+import { ClientSide, Block } from '../scanner';
 import {
   CompiledInPartialGetBlock
 } from '../compiled/expressions/has-block';
@@ -33,10 +32,9 @@ import {
   VersionedPathReference
 } from '@glimmer/reference';
 
-export type SexpExpression = BaselineSyntax.AnyExpression & { 0: number };
-export type Syntax = SexpExpression | BaselineSyntax.AnyStatement;
-export type CompilerFunction<T extends Syntax, U> = ((sexp: T, builder: OpcodeBuilder) => U);
-export type Name = BaselineSyntax.AnyStatement[0];
+export type SexpExpression = WireFormat.Expression;
+export type Syntax = WireFormat.Statement | WireFormat.Expression;
+export type CompilerFunction<T extends Syntax> = ((sexp: T, builder: OpcodeBuilder) => void);
 export type debugGet = ((path: string) => any);
 
 export interface DebugContext {
@@ -65,27 +63,30 @@ export function resetDebuggerCallback() {
   callback = debugCallback;
 }
 
-export class Compilers<T extends Syntax, CompileTo> {
+export class Compilers<T extends Syntax> {
   private names = dict<number>();
-  private funcs: CompilerFunction<T, CompileTo>[] = [];
+  private funcs: CompilerFunction<T>[] = [];
 
-  add(name: number, func: CompilerFunction<T, CompileTo>): void {
+  constructor(private offset = 0) {}
+
+  add(name: number, func: CompilerFunction<T>): void {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
-  compile(sexp: T, builder: OpcodeBuilder): CompileTo {
-    let name: number = sexp[0];
+  compile(sexp: T, builder: OpcodeBuilder): void {
+    let name: number = sexp[this.offset];
     let index = this.names[name];
     let func = this.funcs[index];
     assert(!!func, `expected an implementation for ${sexp[0]}`);
-    return func(sexp, builder);
+    func(sexp, builder);
   }
 }
 
 import S = WireFormat.Statements;
 
-export const STATEMENTS = new Compilers<BaselineSyntax.AnyStatement, void>();
+export const STATEMENTS = new Compilers<WireFormat.Statement>();
+export const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>();
 
 STATEMENTS.add(Ops.Text, (sexp: S.Text, builder: OpcodeBuilder) => {
   builder.text(sexp[1]);
@@ -121,8 +122,8 @@ STATEMENTS.add(Ops.StaticAttr, (sexp: S.StaticAttr, builder: OpcodeBuilder) => {
   builder.staticAttr(name, namespace, value as string);
 });
 
-STATEMENTS.add(Ops.AnyDynamicAttr, (sexp: BaselineSyntax.AnyDynamicAttr, builder: OpcodeBuilder) => {
-  let [, name, value, namespace, trusting] = sexp;
+CLIENT_SIDE.add(Ops.AnyDynamicAttr, (sexp: ClientSide.AnyDynamicAttr, builder: OpcodeBuilder) => {
+  let [,, name, value, namespace, trusting] = sexp;
 
   expr(value, builder);
 
@@ -133,23 +134,23 @@ STATEMENTS.add(Ops.AnyDynamicAttr, (sexp: BaselineSyntax.AnyDynamicAttr, builder
   }
 });
 
-STATEMENTS.add(Ops.OpenElement, (sexp: BaselineSyntax.OpenPrimitiveElement, builder: OpcodeBuilder) => {
-  builder.openPrimitiveElement(sexp[1]);
+STATEMENTS.add(Ops.OpenElement, (sexp: ClientSide.OpenPrimitiveElement, builder: OpcodeBuilder) => {
+  builder.openPrimitiveElement(sexp[2]);
 });
 
-STATEMENTS.add(Ops.OpenDynamicElement, (sexp: BaselineSyntax.OpenDynamicElement, builder) => {
+CLIENT_SIDE.add(ClientSide.Ops.OpenDynamicElement, (sexp: ClientSide.OpenDynamicElement, builder) => {
   builder.pushComponentOperations();
-  expr(sexp[1], builder);
+  expr(sexp[2], builder);
   builder.openDynamicElement();
 });
 
-STATEMENTS.add(Ops.OpenComponentElement, (sexp: BaselineSyntax.OpenComponentElement, builder) => {
+CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder) => {
   builder.pushComponentOperations();
-  builder.openElementWithOperations(sexp[1]);
+  builder.openElementWithOperations(sexp[2]);
 });
 
-STATEMENTS.add(Ops.OptimizedAppend, (sexp: BaselineSyntax.OptimizedAppend, builder: OpcodeBuilder) => {
-  let [, value, trustingMorph] = sexp;
+CLIENT_SIDE.add(ClientSide.Ops.OptimizedAppend, (sexp: ClientSide.OptimizedAppend, builder: OpcodeBuilder) => {
+  let [,, value, trustingMorph] = sexp;
 
   let { inlines } = builder.env.macros();
   let returned = inlines.compile(sexp, builder) || value;
@@ -165,8 +166,8 @@ STATEMENTS.add(Ops.OptimizedAppend, (sexp: BaselineSyntax.OptimizedAppend, build
   }
 });
 
-STATEMENTS.add(Ops.UnoptimizedAppend, (sexp: BaselineSyntax.UnoptimizedAppend, builder) => {
-  let [, value, trustingMorph] = sexp;
+CLIENT_SIDE.add(ClientSide.Ops.UnoptimizedAppend, (sexp: ClientSide.UnoptimizedAppend, builder) => {
+  let [,, value, trustingMorph] = sexp;
 
   let { inlines } = builder.env.macros();
   let returned = inlines.compile(sexp, builder) || value;
@@ -180,19 +181,19 @@ STATEMENTS.add(Ops.UnoptimizedAppend, (sexp: BaselineSyntax.UnoptimizedAppend, b
   }
 });
 
-STATEMENTS.add(Ops.NestedBlock, (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+CLIENT_SIDE.add(ClientSide.Ops.NestedBlock, (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
   let { blocks } = builder.env.macros();
   blocks.compile(sexp, builder);
 });
 
-STATEMENTS.add(Ops.ScannedBlock, (sexp: BaselineSyntax.ScannedBlock, builder) => {
-  let [, path, params, hash, template, inverse] = sexp;
+CLIENT_SIDE.add(ClientSide.Ops.ScannedBlock, (sexp: ClientSide.ScannedBlock, builder) => {
+  let [,, path, params, hash, template, inverse] = sexp;
 
   let templateBlock = template && template.scan();
   let inverseBlock = inverse && inverse.scan();
 
   let { blocks } = builder.env.macros();
-  blocks.compile([Ops.NestedBlock, path, params, hash, templateBlock, inverseBlock], builder);
+  blocks.compile([Ops.ClientSideStatement, ClientSide.Ops.NestedBlock, path, params, hash, templateBlock, inverseBlock], builder);
 });
 
 export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
@@ -251,8 +252,8 @@ export function compileComponentArgs(args: Option<C.Hash>, builder: OpcodeBuilde
   return { slots, count, names };
 }
 
-STATEMENTS.add(Ops.ResolvedComponent, (sexp: BaselineSyntax.ResolvedComponent, builder) => {
-  let [, definition, attrs, [, hash], block, inverse] = sexp;
+CLIENT_SIDE.add(ClientSide.Ops.ResolvedComponent, (sexp: ClientSide.ResolvedComponent, builder) => {
+  let [,, definition, attrs, [, hash], block, inverse] = sexp;
 
   let state = builder.local();
 
@@ -280,8 +281,8 @@ STATEMENTS.add(Ops.ResolvedComponent, (sexp: BaselineSyntax.ResolvedComponent, b
   builder.commitComponentTransaction();
 });
 
-STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, builder) => {
-  let [, tag, attrs, rawArgs, rawBlock] = sexp;
+CLIENT_SIDE.add(ClientSide.Ops.ScannedComponent, (sexp: ClientSide.ScannedComponent, builder) => {
+  let [,, tag, attrs, rawArgs, rawBlock] = sexp;
   let block = rawBlock && rawBlock.scan();
 
   // `local` is a temporary we store component state throughout this algorithm
@@ -338,8 +339,8 @@ STATEMENTS.add(Ops.ScannedComponent, (sexp: BaselineSyntax.ScannedComponent, bui
   builder.commitComponentTransaction();
 });
 
-STATEMENTS.add(Ops.StaticPartial, (sexp: BaselineSyntax.StaticPartial, builder) => {
-  let [, name] = sexp;
+CLIENT_SIDE.add(Ops.StaticPartial, (sexp: ClientSide.StaticPartial, builder) => {
+  let [,, name] = sexp;
 
   if (!builder.env.hasPartial(name, builder.symbolTable)) {
     throw new Error(`Compile Error: Could not find a partial named "${name}"`);
@@ -351,7 +352,7 @@ STATEMENTS.add(Ops.StaticPartial, (sexp: BaselineSyntax.StaticPartial, builder) 
   builder.evaluatePartial();
 });
 
-STATEMENTS.add(Ops.DynamicPartial, (_sexp: BaselineSyntax.DynamicPartial, _builder) => {
+CLIENT_SIDE.add(Ops.DynamicPartial, (_sexp: ClientSide.DynamicPartial, _builder) => {
   // let [, name] = sexp;
 
   //   builder.startLabels();
@@ -435,7 +436,7 @@ STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder) => {
   builder.popScope();
 });
 
-STATEMENTS.add(Ops.Debugger, (_sexp: BaselineSyntax.Debugger, _builder: OpcodeBuilder) => {
+STATEMENTS.add(Ops.Debugger, (_sexp: WireFormat.Statements.Debugger, _builder: OpcodeBuilder) => {
 
   // builder.putValue([Ops.Function, (vm: VM) => {
   //   let context = vm.getSelf().value();
@@ -448,12 +449,17 @@ STATEMENTS.add(Ops.Debugger, (_sexp: BaselineSyntax.Debugger, _builder: OpcodeBu
   // return sexp;
 });
 
-let EXPRESSIONS = new Compilers<SexpExpression, CompiledExpression<Opaque> | void>();
+STATEMENTS.add(Ops.ClientSideStatement, (sexp: WireFormat.Statements.ClientSide, builder) => {
+  CLIENT_SIDE.compile(sexp as ClientSide.ClientSideStatement, builder);
+});
+
+const EXPRESSIONS = new Compilers<WireFormat.Expression>();
+const CLIENT_SIDE_EXPRS = new Compilers<ClientSide.ClientSideExpression>();
 
 import E = WireFormat.Expressions;
 import C = WireFormat.Core;
 
-export function expr(expression: BaselineSyntax.AnyExpression, builder: OpcodeBuilder): void {
+export function expr(expression: WireFormat.Expression, builder: OpcodeBuilder): void {
   if (Array.isArray(expression)) {
     EXPRESSIONS.compile(expression, builder);
   } else {
@@ -478,8 +484,8 @@ EXPRESSIONS.add(Ops.Concat, ((sexp: E.Concat, builder: OpcodeBuilder) => {
   builder.concat(parts.length);
 }) as any);
 
-EXPRESSIONS.add(Ops.Function, (sexp: BaselineSyntax.FunctionExpression, builder: OpcodeBuilder) => {
-  builder.function(sexp[1]);
+CLIENT_SIDE_EXPRS.add(ClientSide.Ops.FunctionExpression, (sexp: ClientSide.FunctionExpression, builder: OpcodeBuilder) => {
+  builder.function(sexp[2]);
 });
 
 EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
@@ -495,8 +501,8 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
   }
 });
 
-EXPRESSIONS.add(Ops.ResolvedHelper, (sexp: BaselineSyntax.ResolvedHelper, builder) => {
-  let [, helper, params, hash] = sexp;
+CLIENT_SIDE_EXPRS.add(ClientSide.Ops.ResolvedHelper, (sexp: ClientSide.ResolvedHelper, builder) => {
+  let [,, helper, params, hash] = sexp;
 
   compileArgs(params, hash, builder);
   builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
@@ -569,7 +575,7 @@ export function compileArgs(params: Option<WireFormat.Core.Params>, hash: Option
   return { positional, named };
 }
 
-export function compileList(params: Option<BaselineSyntax.AnyExpression[]>, builder: OpcodeBuilder): number {
+export function compileList(params: Option<WireFormat.Expression[]>, builder: OpcodeBuilder): number {
   if (!params) return 0;
   params.forEach(p => expr(p, builder));
   return params.length;
@@ -602,7 +608,7 @@ function compilePath(parts: string[], builder: OpcodeBuilder) {
   path.forEach(p => builder.getProperty(p));
 }
 
-export type NestedBlockSyntax = BaselineSyntax.NestedBlock;
+export type NestedBlockSyntax = ClientSide.NestedBlock;
 export type CompileBlockMacro = (sexp: NestedBlockSyntax, builder: OpcodeBuilder) => void;
 
 export class Blocks {
@@ -619,7 +625,7 @@ export class Blocks {
     this.missing = func;
   }
 
-  compile(sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder): void {
+  compile(sexp: ClientSide.NestedBlock, builder: OpcodeBuilder): void {
     // assert(sexp[1].length === 1, 'paths in blocks are not supported');
 
     let name: string = sexp[1][0];
@@ -639,8 +645,8 @@ export class Blocks {
 
 export const BLOCKS = new Blocks();
 
-export type AppendSyntax = BaselineSyntax.OptimizedAppend | BaselineSyntax.UnoptimizedAppend;
-export type AppendMacro = (path: C.Path, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder) => ['expr', BaselineSyntax.AnyExpression] | true | false;
+export type AppendSyntax = ClientSide.OptimizedAppend | ClientSide.UnoptimizedAppend;
+export type AppendMacro = (path: C.Path, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder) => ['expr', WireFormat.Expression] | true | false;
 
 export class Inlines {
   private names = dict<number>();
@@ -656,7 +662,7 @@ export class Inlines {
     this.missing = func;
   }
 
-  compile(sexp: AppendSyntax, builder: OpcodeBuilder): ['expr', BaselineSyntax.AnyExpression] | true {
+  compile(sexp: AppendSyntax, builder: OpcodeBuilder): ['expr', WireFormat.Expression] | true {
     let value = sexp[1];
 
     // TODO: Fix this so that expression macros can return
@@ -704,7 +710,7 @@ export const INLINES = new Inlines();
 populateBuiltins(BLOCKS, INLINES);
 
 export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines = new Inlines()): { blocks: Blocks, inlines: Inlines } {
-  blocks.add('if', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('if', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -717,7 +723,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // END:   Noop
     //        Exit
 
-    let [,, params,, _default, inverse] = sexp;
+    let [,,, params,, _default, inverse] = sexp;
 
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #if requires a single argument`);
@@ -746,7 +752,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     });
   });
 
-  blocks.add('unless', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('unless', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -759,7 +765,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // END:   Noop
     //        Exit
 
-    let [,, params,, _default, inverse] = sexp;
+    let [,,, params,, _default, inverse] = sexp;
 
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #unless requires a single argument`);
@@ -788,7 +794,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     });
   });
 
-  blocks.add('with', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('with', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -801,7 +807,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // END:   Noop
     //        Exit
 
-    let [,, params,, _default, inverse] = sexp;
+    let [,,, params,, _default, inverse] = sexp;
 
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #with requires a single argument`);
@@ -834,7 +840,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     });
   });
 
-  blocks.add('each', (sexp: BaselineSyntax.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('each', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
     //         Enter(BEGIN, END)
     // BEGIN:  Noop
     //         PutArgs
@@ -862,7 +868,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // TOMORROW: Locals for key, value, memo
     // TOMORROW: What is the memo slot used for?
 
-    let [,, params, hash, _default, inverse] = sexp;
+    let [,,, params, hash, _default, inverse] = sexp;
 
     let list = builder.local();
 
