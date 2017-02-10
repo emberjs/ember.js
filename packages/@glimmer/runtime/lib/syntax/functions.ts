@@ -86,7 +86,7 @@ export class Compilers<T extends Syntax> {
 import S = WireFormat.Statements;
 
 export const STATEMENTS = new Compilers<WireFormat.Statement>();
-export const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>();
+export const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>(1);
 
 STATEMENTS.add(Ops.Text, (sexp: S.Text, builder: OpcodeBuilder) => {
   builder.text(sexp[1]);
@@ -122,7 +122,7 @@ STATEMENTS.add(Ops.StaticAttr, (sexp: S.StaticAttr, builder: OpcodeBuilder) => {
   builder.staticAttr(name, namespace, value as string);
 });
 
-CLIENT_SIDE.add(Ops.AnyDynamicAttr, (sexp: ClientSide.AnyDynamicAttr, builder: OpcodeBuilder) => {
+CLIENT_SIDE.add(ClientSide.Ops.AnyDynamicAttr, (sexp: ClientSide.AnyDynamicAttr, builder: OpcodeBuilder) => {
   let [,, name, value, namespace, trusting] = sexp;
 
   expr(value, builder);
@@ -134,8 +134,8 @@ CLIENT_SIDE.add(Ops.AnyDynamicAttr, (sexp: ClientSide.AnyDynamicAttr, builder: O
   }
 });
 
-STATEMENTS.add(Ops.OpenElement, (sexp: ClientSide.OpenPrimitiveElement, builder: OpcodeBuilder) => {
-  builder.openPrimitiveElement(sexp[2]);
+STATEMENTS.add(Ops.OpenElement, (sexp: S.OpenElement, builder: OpcodeBuilder) => {
+  builder.openPrimitiveElement(sexp[1]);
 });
 
 CLIENT_SIDE.add(ClientSide.Ops.OpenDynamicElement, (sexp: ClientSide.OpenDynamicElement, builder) => {
@@ -339,7 +339,7 @@ CLIENT_SIDE.add(ClientSide.Ops.ScannedComponent, (sexp: ClientSide.ScannedCompon
   builder.commitComponentTransaction();
 });
 
-CLIENT_SIDE.add(Ops.StaticPartial, (sexp: ClientSide.StaticPartial, builder) => {
+CLIENT_SIDE.add(ClientSide.Ops.StaticPartial, (sexp: ClientSide.StaticPartial, builder) => {
   let [,, name] = sexp;
 
   if (!builder.env.hasPartial(name, builder.symbolTable)) {
@@ -352,7 +352,7 @@ CLIENT_SIDE.add(Ops.StaticPartial, (sexp: ClientSide.StaticPartial, builder) => 
   builder.evaluatePartial();
 });
 
-CLIENT_SIDE.add(Ops.DynamicPartial, (_sexp: ClientSide.DynamicPartial, _builder) => {
+CLIENT_SIDE.add(ClientSide.Ops.DynamicPartial, (_sexp: ClientSide.DynamicPartial, _builder) => {
   // let [, name] = sexp;
 
   //   builder.startLabels();
@@ -454,7 +454,7 @@ STATEMENTS.add(Ops.ClientSideStatement, (sexp: WireFormat.Statements.ClientSide,
 });
 
 const EXPRESSIONS = new Compilers<WireFormat.Expression>();
-const CLIENT_SIDE_EXPRS = new Compilers<ClientSide.ClientSideExpression>();
+const CLIENT_SIDE_EXPRS = new Compilers<ClientSide.ClientSideExpression>(1);
 
 import E = WireFormat.Expressions;
 import C = WireFormat.Core;
@@ -563,7 +563,10 @@ EXPRESSIONS.add(Ops.HasBlockParams, (sexp: E.HasBlockParams, builder) => {
   } else {
     throw new Error('[BUG] ${blockName} is not a valid block name.');
   }
+});
 
+EXPRESSIONS.add(Ops.ClientSideExpression, (sexp: E.ClientSide, builder) => {
+  CLIENT_SIDE_EXPRS.compile(sexp as ClientSide.ClientSideExpression, builder);
 });
 
 export function compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder): { positional: number, named: number } {
@@ -627,8 +630,7 @@ export class Blocks {
 
   compile(sexp: ClientSide.NestedBlock, builder: OpcodeBuilder): void {
     // assert(sexp[1].length === 1, 'paths in blocks are not supported');
-
-    let name: string = sexp[1][0];
+    let name: string = sexp[2][0];
     let index = this.names[name];
 
     if (index === undefined) {
@@ -663,7 +665,7 @@ export class Inlines {
   }
 
   compile(sexp: AppendSyntax, builder: OpcodeBuilder): ['expr', WireFormat.Expression] | true {
-    let value = sexp[1];
+    let value = sexp[2];
 
     // TODO: Fix this so that expression macros can return
     // things like components, so that {{component foo}}

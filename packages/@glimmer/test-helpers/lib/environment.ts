@@ -28,6 +28,7 @@ import {
   ComponentManager,
   ComponentDefinition,
   ComponentLayoutBuilder,
+  ComponentArgs,
 
   // Values
   EvaluatedArgs,
@@ -199,14 +200,14 @@ class Iterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque,
       return EMPTY_ITERATOR;
     } else if (iterable.forEach !== undefined) {
       let array = [];
-      iterable.forEach(function(item) {
+      iterable.forEach(function (item) {
         array.push(item);
       });
       return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
     } else if (typeof iterable === 'object') {
-       let keys = Object.keys(iterable);
-       return keys.length > 0 ? new ObjectKeysIterator(keys, keys.map(key => iterable[key]), keyFor) : EMPTY_ITERATOR;
-     } else {
+      let keys = Object.keys(iterable);
+      return keys.length > 0 ? new ObjectKeysIterator(keys, keys.map(key => iterable[key]), keyFor) : EMPTY_ITERATOR;
+    } else {
       throw new Error(`Don't know how to {{#each ${iterable}}}`);
     }
   }
@@ -259,15 +260,15 @@ export class EmberishCurlyComponent extends GlimmerObject {
     this.dirtinessTag.inner.dirty();
   }
 
-  didInitAttrs(options : { attrs : Attrs }) {}
-  didUpdateAttrs(diff : AttrsDiff) {}
-  didReceiveAttrs(diff : AttrsDiff) {}
-  willInsertElement() {}
-  willUpdate() {}
-  willRender() {}
-  didInsertElement() {}
-  didUpdate() {}
-  didRender() {}
+  didInitAttrs(options: { attrs: Attrs }) { }
+  didUpdateAttrs(diff: AttrsDiff) { }
+  didReceiveAttrs(diff: AttrsDiff) { }
+  willInsertElement() { }
+  willUpdate() { }
+  willRender() { }
+  didInsertElement() { }
+  didUpdate() { }
+  didRender() { }
 }
 
 export class EmberishGlimmerComponent extends GlimmerObject {
@@ -285,15 +286,15 @@ export class EmberishGlimmerComponent extends GlimmerObject {
     this.dirtinessTag.inner.dirty();
   }
 
-  didInitAttrs(options : { attrs : Attrs }) {}
-  didUpdateAttrs(diff : AttrsDiff) {}
-  didReceiveAttrs(diff : AttrsDiff) {}
-  willInsertElement() {}
-  willUpdate() {}
-  willRender() {}
-  didInsertElement() {}
-  didUpdate() {}
-  didRender() {}
+  didInitAttrs(options: { attrs: Attrs }) { }
+  didUpdateAttrs(diff: AttrsDiff) { }
+  didReceiveAttrs(diff: AttrsDiff) { }
+  willInsertElement() { }
+  willUpdate() { }
+  willRender() { }
+  didInsertElement() { }
+  didUpdate() { }
+  didRender() { }
 }
 
 class BasicComponentManager implements ComponentManager<BasicComponent> {
@@ -329,7 +330,7 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     component.bounds = bounds;
   }
 
-  didCreate() {}
+  didCreate() { }
 
   getTag() {
     return null;
@@ -339,9 +340,9 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     component.attrs = attrs.named.value();
   }
 
-  didUpdateLayout() {}
+  didUpdateLayout() { }
 
-  didUpdate() {}
+  didUpdate() { }
 
   getDestructor() {
     return null;
@@ -423,7 +424,7 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     component.willRender();
   }
 
-  didUpdateLayout() {}
+  didUpdateLayout() { }
 
   didUpdate(component: EmberishGlimmerComponent) {
     component.didUpdate();
@@ -473,7 +474,7 @@ export class ProcessedArgs {
   }
 }
 
-function processArgs(args: EvaluatedArgs, positionalParamsDefinition: string[]) : ProcessedArgs {
+function processArgs(args: EvaluatedArgs, positionalParamsDefinition: string[]): ProcessedArgs {
   return new ProcessedArgs(args, positionalParamsDefinition);
 }
 
@@ -538,7 +539,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     let rootRef = new UpdatableReference(component);
 
     if (bindings) {
-      for (let i=0; i<bindings.length; i++) {
+      for (let i = 0; i < bindings.length; i++) {
         let attribute = bindings[i];
         let reference = rootRef.get(attribute) as PathReference<string>;
 
@@ -572,7 +573,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     component.willRender();
   }
 
-  didUpdateLayout() {}
+  didUpdateLayout() { }
 
   didUpdate(component: EmberishCurlyComponent) {
     component.didUpdate();
@@ -581,7 +582,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
 
   getDestructor(component: EmberishCurlyComponent): Destroyable {
     return {
-      destroy () {
+      destroy() {
         component.destroy();
       }
     };
@@ -647,11 +648,11 @@ class HelperReference implements PathReference<Opaque> {
 }
 
 class InertModifierManager implements ModifierManager<Opaque> {
-  create() {}
+  create() { }
 
-  install(modifier: Opaque) {}
+  install(modifier: Opaque) { }
 
-  update(modifier: Opaque) {}
+  update(modifier: Opaque) { }
 
   getDestructor(modifier: Opaque): Destroyable {
     return null;
@@ -663,7 +664,7 @@ export class TestModifier {
     public element: Element,
     public args: EvaluatedArgs,
     public dom: IDOMChanges
-  ) {}
+  ) { }
 }
 
 export class TestModifierManager implements ModifierManager<TestModifier> {
@@ -833,7 +834,7 @@ export class TestEnvironment extends Environment {
   lookupModifier(modifierName: string): ModifierManager<Opaque> {
     let modifier = this.modifiers[modifierName];
 
-    if(!modifier) throw new Error(`Modifier for ${modifierName} not found.`);
+    if (!modifier) throw new Error(`Modifier for ${modifierName} not found.`);
 
     return modifier;
   }
@@ -868,7 +869,7 @@ export class TestEnvironment extends Environment {
 export class TestDynamicScope implements DynamicScope {
   private bucket;
 
-  constructor(bucket=null) {
+  constructor(bucket = null) {
     if (bucket) {
       this.bucket = assign({}, bucket);
     } else {
@@ -922,11 +923,11 @@ function dynamicComponentFor(vm: VM, args: EvaluatedArgs, symbolTable: SymbolTab
 };
 
 export interface BasicComponentFactory {
-  new(attrs: Dict<any>): BasicComponent;
+  new (attrs: Dict<any>): BasicComponent;
 }
 
 export abstract class GenericComponentDefinition<T> extends ComponentDefinition<T> {
-  public layoutString : string;
+  public layoutString: string;
 
   constructor(name: string, manager: ComponentManager<T>, ComponentClass: any, layout: string) {
     super(name, manager, ComponentClass);
@@ -964,7 +965,7 @@ export class EmberishGlimmerComponentDefinition extends GenericComponentDefiniti
 }
 
 abstract class GenericComponentLayoutCompiler implements CompilableLayout {
-  constructor(private layoutString: string) {}
+  constructor(private layoutString: string) { }
 
   protected compileLayout(env: Environment): WireFormat.SerializedTemplate<TemplateMeta> {
     return precompile(this.layoutString, { env });
@@ -1133,15 +1134,15 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
   });
 
   blocks.add('component', (sexp, builder) => {
-    let [,, params, hash, _default, inverse] = sexp;
-    let definitionArgs: WireFormat.Core.Args = [params.slice(0, 1), null, null, null];
-    let args: WireFormat.Core.Args = [params.slice(1), hash, _default, inverse];
+    let [, , _path, params, hash, _default, inverse] = sexp;
+    let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
+    let args: ComponentArgs = [params.slice(1), hash, _default, inverse];
     builder.component.dynamic(definitionArgs, dynamicComponentFor, args, builder.symbolTable);
     return true;
   });
 
   blocks.addMissing((sexp, builder) => {
-    let [, path, params, hash, _default, inverse] = sexp;
+    let [, , path, params, hash, _default, inverse] = sexp;
     let table = builder.symbolTable;
 
     if (!params) {
@@ -1149,8 +1150,8 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     }
 
     if (path.length > 1) {
-      let definitionArgs: BaselineSyntax.Args = [[[Ops.Get, path]], hash, _default, inverse];
-      let args: BaselineSyntax.Args = [params, hash, _default, inverse];
+      let definitionArgs: ComponentArgs = [[[Ops.Get, path]], hash, _default, inverse];
+      let args: ComponentArgs = [params, hash, _default, inverse];
       builder.component.dynamic(definitionArgs, dynamicComponentFor, args, table);
       return true;
     }
@@ -1166,8 +1167,8 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
   });
 
   inlines.add('component', (path, params, hash, builder) => {
-    let definitionArgs: BaselineSyntax.Args = [params.slice(0, 1), null, null, null];
-    let args: BaselineSyntax.Args = [params.slice(1), hash, null, null];
+    let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
+    let args: ComponentArgs = [params.slice(1), hash, null, null];
     builder.component.dynamic(definitionArgs, dynamicComponentFor, args, builder.symbolTable);
     return true;
   });
@@ -1178,8 +1179,8 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     let definition = builder.env.getComponentDefinition(path[0], builder.symbolTable);
 
     if (path.length > 1) {
-      let definitionArgs: BaselineSyntax.Args = [[[Ops.Get, path]], hash, null, null];
-      let args: BaselineSyntax.Args = [params, hash, null, null];
+      let definitionArgs: ComponentArgs = [[[Ops.Get, path]], hash, null, null];
+      let args: ComponentArgs = [params, hash, null, null];
       builder.component.dynamic(definitionArgs, dynamicComponentFor, args, table);
       return true;
     }

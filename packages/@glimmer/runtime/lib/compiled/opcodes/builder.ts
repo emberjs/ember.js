@@ -3,6 +3,7 @@ import * as vm from './vm';
 
 import { Insertion } from '../../upsert';
 
+import * as WireFormat from '@glimmer/wire-format';
 import { Option, Stack, Dict, Opaque, dict, expect, fillNulls } from '@glimmer/util';
 import { Constants } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
@@ -12,7 +13,7 @@ import Environment, { Program } from '../../environment';
 import { SymbolTable } from '@glimmer/interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
-import { BaselineSyntax, Block, Program as Layout } from '../../scanner';
+import { ClientSide, Block, Program as Layout } from '../../scanner';
 import { compileList } from '../../syntax/functions';
 
 import {
@@ -237,11 +238,11 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.dynamicContent(new content.OptimizedTrustingAppendOpcode());
   }
 
-  guardedCautiousAppend(expression: BaselineSyntax.AnyExpression) {
+  guardedCautiousAppend(expression: WireFormat.Expression) {
     this.dynamicContent(new content.GuardedCautiousAppendOpcode(expression, this.symbolTable));
   }
 
-  guardedTrustingAppend(expression: BaselineSyntax.AnyExpression) {
+  guardedTrustingAppend(expression: WireFormat.Expression) {
     this.dynamicContent(new content.GuardedTrustingAppendOpcode(expression, this.symbolTable));
   }
 
@@ -361,7 +362,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.Concat, size);
   }
 
-  function(f: BaselineSyntax.FunctionExpressionCallback<Opaque>) {
+  function(f: ClientSide.FunctionExpressionCallback<Opaque>) {
     this.push(Op.Function, this.func(f));
   }
 
@@ -698,7 +699,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     }
   }
 
-  yield(positional: Option<BaselineSyntax.AnyExpression[]>, to: string) {
+  yield(positional: Option<WireFormat.Expression[]>, to: string) {
     let table = this.symbolTable;
     let yields: Option<number>, partial: Option<number>;
 

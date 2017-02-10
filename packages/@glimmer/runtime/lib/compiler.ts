@@ -9,7 +9,7 @@ import {
 } from './utils';
 
 import Scanner, {
-  BaselineSyntax,
+  ClientSide,
   RawTemplate,
   Program,
   compileStatement,
@@ -18,7 +18,8 @@ import Scanner, {
 
 import {
   ComponentBuilder as IComponentBuilder,
-  StaticDefinition
+  StaticDefinition,
+  ComponentArgs
 } from './opcode-builder';
 
 import {
@@ -128,18 +129,18 @@ class WrappedBuilder {
     let dynamicTag = this.tag.getDynamic();
 
     if (dynamicTag) {
-      let element: BaselineSyntax.AnyStatement[] = [
-        [Ops.BaselineBlock, ['with'], [dynamicTag], null, {
+      let element: WireFormat.Statement[] = [
+        [Ops.Block, ['with'], [dynamicTag], null, {
           locals: ['tag'],
           statements: [
-            [Ops.OpenDynamicElement, [Ops.Get, ['tag']]],
+            [Ops.ClientSideStatement, ClientSide.Ops.OpenDynamicElement, [Ops.Get, ['tag']]],
             [Ops.Yield, '%attrs%', EMPTY_ARRAY],
             ...this.attrs['buffer'],
             [Ops.FlushElement]
           ]
         }, null],
         ...statements,
-        [Ops.BaselineBlock, ['if'], [dynamicTag], null, {
+        [Ops.Block, ['if'], [dynamicTag], null, {
           locals: EMPTY_ARRAY,
           statements: [
             [Ops.CloseElement]
@@ -153,7 +154,7 @@ class WrappedBuilder {
     }
 
     let staticTag = this.tag.getStatic()!;
-    let prelude: [BaselineSyntax.OpenComponentElement] = [[Ops.OpenComponentElement, staticTag]];
+    let prelude: [ClientSide.OpenComponentElement] = [[Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, staticTag]];
 
     let head = this.attrs['buffer'];
 
@@ -185,9 +186,9 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
   public isDynamic: Option<boolean> = null;
   public isStatic: Option<boolean> = null;
   public staticTagName: Option<string> = null;
-  public dynamicTagName: Option<BaselineSyntax.AnyExpression> = null;
+  public dynamicTagName: Option<WireFormat.Expression> = null;
 
-  getDynamic(): Maybe<BaselineSyntax.AnyExpression> {
+  getDynamic(): Maybe<WireFormat.Expression> {
     if (this.isDynamic) {
       return this.dynamicTagName;
     }
@@ -206,7 +207,7 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
 
   dynamic(tagName: FunctionExpression<string>) {
     this.isDynamic = true;
-    this.dynamicTagName = [Ops.Function, tagName];
+    this.dynamicTagName = [Ops.ClientSideExpression, ClientSide.Ops.FunctionExpression, tagName];
   }
 }
 
@@ -218,9 +219,10 @@ class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
   }
 
   dynamic(name: string, value: FunctionExpression<string>) {
-    this.buffer.push([Ops.DynamicAttr, name, [Ops.Function, value], null]);
+    this.buffer.push([Ops.DynamicAttr, name, [Ops.ClientSideExpression, ClientSide.Ops.FunctionExpression, value], null]);
   }
 }
+
 
 export class ComponentBuilder implements IComponentBuilder {
   private env: Environment;
@@ -229,11 +231,12 @@ export class ComponentBuilder implements IComponentBuilder {
     this.env = builder.env;
   }
 
-  static(definition: StaticDefinition, args: BaselineSyntax.Args, _symbolTable: SymbolTable) {
+  static(definition: StaticDefinition, args: ComponentArgs, _symbolTable: SymbolTable) {
     let [params, hash, _default, inverse] = args;
 
-    let syntax: BaselineSyntax.ResolvedComponent = [
-      Ops.ResolvedComponent,
+    let syntax: ClientSide.ResolvedComponent = [
+      Ops.ClientSideStatement,
+      ClientSide.Ops.ResolvedComponent,
       definition,
       null,
       [params, hash],
@@ -244,7 +247,7 @@ export class ComponentBuilder implements IComponentBuilder {
     compileStatement(syntax, this.builder);
   }
 
-  dynamic(definitionArgs: BaselineSyntax.Args, getDefinition: Helper, args: BaselineSyntax.Args, _symbolTable: SymbolTable) {
+  dynamic(definitionArgs: ComponentArgs, getDefinition: Helper, args: ComponentArgs, _symbolTable: SymbolTable) {
     this.builder.unit(b => {
       let [, hash, block, inverse] = args;
 
@@ -254,7 +257,7 @@ export class ComponentBuilder implements IComponentBuilder {
 
       let definition = b.local();
       let state = b.local();
-      expr([Ops.ResolvedHelper, getDefinition, definitionArgs[0], definitionArgs[1]], b);
+      expr([Ops.ClientSideExpression, ClientSide.Ops.ResolvedHelper, getDefinition, definitionArgs[0], definitionArgs[1]], b);
 
       b.setLocal(definition);
       b.getLocal(definition);
