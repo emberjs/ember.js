@@ -3,7 +3,6 @@ import { ReferenceCache, isConst, map } from '@glimmer/reference';
 import { Assert } from './vm';
 import { PartialDefinition } from '../../partial';
 import { SymbolTable } from '@glimmer/interfaces';
-import { PartialBlock } from '../../scanner';
 import { APPEND_OPCODES, Op as Op } from '../../opcodes';
 
 APPEND_OPCODES.add(Op.PutDynamicPartial, (vm, { op1: _symbolTable }) => {
@@ -31,22 +30,22 @@ APPEND_OPCODES.add(Op.PutDynamicPartial, (vm, { op1: _symbolTable }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.PutPartial, (vm, { op1: _definition }) => {
-  let definition = vm.constants.getOther<PartialDefinition<Opaque>>(_definition);
-  vm.frame.setImmediate(definition);
+APPEND_OPCODES.add(Op.PutPartial, (_vm, { op1: _definition }) => {
+  // let definition = vm.constants.getOther<PartialDefinition<Opaque>>(_definition);
+  // vm.frame.setImmediate(definition);
 });
 
-APPEND_OPCODES.add(Op.EvaluatePartial, (vm, { op1: _symbolTable, op2: _cache }) => {
-  let symbolTable = vm.constants.getOther<SymbolTable>(_symbolTable);
-  let cache = vm.constants.getOther<Dict<PartialBlock>>(_cache);
+APPEND_OPCODES.add(Op.EvaluatePartial, (_vm, { op1: _symbolTable, op2: _cache }) => {
+  // let symbolTable = vm.constants.getOther<SymbolTable>(_symbolTable);
+  // let cache = vm.constants.getOther<Dict<PartialBlock>>(_cache);
 
-  let { template } = vm.frame.getImmediate<PartialDefinition<Opaque>>();
+  // let { template } = vm.frame.getImmediate<PartialDefinition<Opaque>>();
 
-  let block = cache[template.id];
+  // let block = cache[template.id];
 
-  if (!block) {
-    block = template.asPartial(symbolTable);
-  }
+  // if (!block) {
+  //   block = template.asPartial(symbolTable);
+  // }
 
-  vm.invokePartial(block);
+  // vm.invokePartial(block);
 });

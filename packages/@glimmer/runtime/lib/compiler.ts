@@ -223,7 +223,6 @@ class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
   }
 }
 
-
 export class ComponentBuilder implements IComponentBuilder {
   private env: Environment;
 

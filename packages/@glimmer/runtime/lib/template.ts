@@ -4,7 +4,7 @@ import {
 } from '@glimmer/wire-format';
 import { PathReference } from '@glimmer/reference';
 import { assign } from '@glimmer/util';
-import { SymbolTable } from '@glimmer/interfaces';
+// import { SymbolTable } from '@glimmer/interfaces';
 import { Environment, DynamicScope } from './environment';
 import { ElementStack } from './builder';
 import { VM } from './vm';
@@ -35,7 +35,7 @@ export interface Template<T> {
   // internal casts, these are lazily created and cached
   asEntryPoint(): Program;
   asLayout(): Program;
-  asPartial(symbols: SymbolTable): Program;
+  // asPartial(symbols: SymbolTable): Program;
 
   // exposed for visualizer
   _block: SerializedTemplateBlock;
@@ -104,12 +104,14 @@ function template<T>(block: SerializedTemplateBlock, id: string, meta: T, env: E
     if (!layout) layout = scanner.scanLayout();
     return layout;
   };
-  let asPartial = (symbols: SymbolTable) => scanner.scanPartial(symbols);
+  // let asPartial = (_symbols: SymbolTable) => {};
+  // let asPartial = (symbols: SymbolTable) => scanner.scanPartial(symbols);
+
   let render = (self: PathReference<any>, appendTo: Simple.Element, dynamicScope: DynamicScope) => {
     let elementStack = ElementStack.forInitialRender(env, appendTo, null);
     let compiled = asEntryPoint().compileDynamic(env);
     let vm = VM.initial(env, self, dynamicScope, elementStack, compiled.symbolTable.size);
     return vm.execute(compiled.start, compiled.end);
   };
-  return { id, meta, _block: block, asEntryPoint, asLayout, asPartial, render };
+  return { id, meta, _block: block, asEntryPoint, asLayout, render };
 }

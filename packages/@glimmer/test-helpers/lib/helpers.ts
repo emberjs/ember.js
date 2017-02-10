@@ -1,5 +1,5 @@
 import { tokenize } from "simple-html-tokenizer";
-import { Environment, Template, Layout, templateFactory } from "@glimmer/runtime";
+import { Environment, Template, templateFactory } from "@glimmer/runtime";
 import { precompile as rawPrecompile, PrecompileOptions } from "@glimmer/compiler";
 import * as WireFormat from '@glimmer/wire-format';
 import { Opaque } from '@glimmer/util';

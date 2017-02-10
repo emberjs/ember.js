@@ -1,3 +1,4 @@
+import { EMPTY_DICT } from '../../utils';
 import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { Assert } from './vm';
 import { Component, ComponentManager, ComponentDefinition, Arguments as IArguments } from '../../component/interfaces';
@@ -74,6 +75,11 @@ export class Arguments implements IArguments {
   public named = new NamedArguments(this);
   public tag: Tag = null as any;
 
+  empty() {
+    this.setup(0, 0, EMPTY_DICT, null as any as VM);
+    return this;
+  }
+
   setup(positional: number, named: number, namedDict: Dict<number>, vm: VM) {
     this.positionalCount = positional;
     this.namedCount = named;
@@ -110,7 +116,7 @@ export class Arguments implements IArguments {
   }
 }
 
-const ARGS = new Arguments();
+export const ARGS = new Arguments();
 
 interface InitialComponentState<T> {
   definition: ComponentDefinition<T>;
