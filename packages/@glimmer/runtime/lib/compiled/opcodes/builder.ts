@@ -7,6 +7,7 @@ import * as WireFormat from '@glimmer/wire-format';
 import { Option, Stack, Dict, Opaque, dict, expect, fillNulls } from '@glimmer/util';
 import { Constants } from '../../opcodes';
 import { CompiledArgs } from '../expressions/args';
+import { ModifierManager } from '../../modifier/interfaces';
 import { ComponentDefinition } from '../../component/interfaces';
 import { PartialDefinition } from '../../partial';
 import Environment, { Program } from '../../environment';
@@ -297,12 +298,8 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.Comment, comment);
   }
 
-  modifier(_name: string, _args: Represents<CompiledArgs>) {
-    // let args = this.constants.expression(this.compile(_args));
-    // let _modifierManager = this.env.lookupModifier(_name, this.symbolTable);
-    // let modifierManager = this.constants.other(_modifierManager);
-    // let name = this.constants.string(_name);
-    // this.push(Op.Modifier, name, modifierManager, args);
+  modifier(_definition: ModifierManager<Opaque>) {
+    this.push(Op.Modifier, this.other(_definition));
   }
 
   // lists
