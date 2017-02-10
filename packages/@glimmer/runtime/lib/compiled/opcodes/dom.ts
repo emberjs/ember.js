@@ -311,12 +311,11 @@ APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespac
   }
 });
 
-APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _name, op2: _manager, op3: _args }) => {
+APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
   let manager = vm.constants.getOther<ModifierManager<Opaque>>(_manager);
-  let rawArgs = vm.constants.getExpression<CompiledArgs>(_args);
+  let args = vm.evalStack.pop<EvaluatedArgs>();
   let stack = vm.stack();
   let { constructing: element, updateOperations } = stack;
-  let args = rawArgs.evaluate(vm);
   let dynamicScope = vm.dynamicScope();
   let modifier = manager.create(element as FIX_REIFICATION<Element>, args, dynamicScope, updateOperations);
 

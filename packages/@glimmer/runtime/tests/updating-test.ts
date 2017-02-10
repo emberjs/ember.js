@@ -2763,16 +2763,16 @@ QUnit.module("Updating Element Modifiers", hooks => {
     let manager = new TestModifierManager();
     env.registerModifier('foo', manager);
 
-    let template = compile('<div {{foo bar}}></div>');
+    let template = compile('<div><div {{foo bar baz=fizz}}></div></div>');
     let input = {
       bar: 'Super Metroid'
     };
 
     render(template, input);
 
-    let valueNode = root.firstChild;
+    let valueNode = root.firstChild.firstChild;
 
-    equalTokens(root, '<div data-modifier="installed - Super Metroid"></div>', "initial render");
+    equalTokens(root, '<div><div data-modifier="installed - Super Metroid"></div></div>', "initial render");
     assert.equal(manager.installedElements.length, 1);
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 0);
@@ -2780,7 +2780,7 @@ QUnit.module("Updating Element Modifiers", hooks => {
 
     rerender();
 
-    equalTokens(root, '<div data-modifier="updated - Super Metroid"></div>', "modifier updated");
+    equalTokens(root, '<div><div data-modifier="updated - Super Metroid"></div></div>', "modifier updated");
     assert.equal(manager.installedElements.length, 1);
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 1);
@@ -2791,7 +2791,7 @@ QUnit.module("Updating Element Modifiers", hooks => {
 
     rerender();
 
-    equalTokens(root, '<div data-modifier="updated - Super Mario"></div>', "no change");
+    equalTokens(root, '<div><div data-modifier="updated - Super Mario"></div></div>', "no change");
     assert.equal(manager.installedElements.length, 1);
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 2);
@@ -2803,14 +2803,14 @@ QUnit.module("Updating Element Modifiers", hooks => {
     let manager = new TestModifierManager();
     env.registerModifier('foo', manager);
 
-    let template = compile('<div {{foo "bar"}}></div>');
+    let template = compile('<div><div {{foo "bar"}}></div></div>');
     let input = {};
 
     render(template, input);
 
-    let valueNode = root.firstChild;
+    let valueNode = root.firstChild.firstChild;
 
-    equalTokens(root, '<div data-modifier="installed - bar"></div>', "initial render");
+    equalTokens(root, '<div><div data-modifier="installed - bar"></div></div>', "initial render");
     assert.equal(manager.installedElements.length, 1);
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 0);
@@ -2818,7 +2818,7 @@ QUnit.module("Updating Element Modifiers", hooks => {
 
     rerender();
 
-    equalTokens(root, '<div data-modifier="installed - bar"></div>', "no change");
+    equalTokens(root, '<div><div data-modifier="installed - bar"></div></div>', "no change");
     assert.equal(manager.installedElements.length, 1);
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 0);

@@ -106,15 +106,17 @@ STATEMENTS.add(Ops.FlushElement, (_sexp, builder: OpcodeBuilder) => {
 });
 
 STATEMENTS.add(Ops.Modifier, (_sexp: S.Modifier, _builder: OpcodeBuilder) => {
-  // let [, path, params, hash] = sexp;
+  let { env, symbolTable } = _builder;
+  let [, [name], params, hash] = _sexp;
 
-  // let args = compileArgs(params, hash, builder);
+  compileArgs(params, hash, _builder); // side-effecty seems weird
 
-  // if (builder.env.hasModifier(path[0], builder.symbolTable)) {
-  //   builder.modifier(path[0], args);
-  // } else {
-  //   throw new Error(`Compile Error ${path.join('.')} is not a modifier: Helpers may not be used in the element form.`);
-  // }
+  if (env.hasModifier(name, symbolTable)) {
+    _builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
+    _builder.modifier(env.lookupModifier(name, symbolTable));
+  } else {
+    throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
+  }
 });
 
 STATEMENTS.add(Ops.StaticAttr, (sexp: S.StaticAttr, builder: OpcodeBuilder) => {

@@ -2239,6 +2239,13 @@ testComponent('shadowing: outer attributes clobber inner attributes with concat'
 
 module("Glimmer Component");
 
+QUnit.test(`Modifiers cannot be on the top-level element`, function() {
+  env.registerEmberishGlimmerComponent('non-block', null, `<div {{foo bar}}>Should error</div>`);
+  assert.throws(() => {
+    appendViewFor('<non-block />');
+  }, /Found modifier "foo" on the top-level element of "non-block"\. Modifiers cannot be on the top-level element\./);
+});
+
 let styles = [{
   name: 'a div',
   tagName: 'div'
