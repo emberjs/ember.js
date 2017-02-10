@@ -22,7 +22,7 @@ import { Helper } from './environment';
 export type StaticDefinition = ComponentDefinition<Opaque>;
 export type DynamicDefinition = FunctionExpression<ComponentDefinition<Opaque>>;
 
-export type ComponentArgs = [WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>]
+export type ComponentArgs = [WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
 
 export interface ComponentBuilder {
   static(definition: ComponentDefinition<Opaque>, args: ComponentArgs, symbolTable: SymbolTable): void;

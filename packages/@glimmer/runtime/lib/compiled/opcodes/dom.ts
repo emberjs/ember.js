@@ -18,7 +18,7 @@ import {
 } from '@glimmer/reference';
 import { ModifierManager } from '../../modifier/interfaces';
 import { NULL_REFERENCE, PrimitiveReference } from '../../references';
-import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
+import { EvaluatedArgs } from '../../compiled/expressions/args';
 import { AttributeManager } from '../../dom/attribute-managers';
 import { ElementOperations } from '../../builder';
 import { Assert } from './vm';

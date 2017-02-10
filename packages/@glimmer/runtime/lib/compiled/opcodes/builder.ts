@@ -6,7 +6,6 @@ import { Insertion } from '../../upsert';
 import * as WireFormat from '@glimmer/wire-format';
 import { Option, Stack, Dict, Opaque, dict, expect, fillNulls } from '@glimmer/util';
 import { Constants } from '../../opcodes';
-import { CompiledArgs } from '../expressions/args';
 import { ModifierManager } from '../../modifier/interfaces';
 import { ComponentDefinition } from '../../component/interfaces';
 import { PartialDefinition } from '../../partial';

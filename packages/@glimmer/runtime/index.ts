@@ -88,6 +88,10 @@ export {
   compileStatement
 } from './lib/scanner';
 
+export {
+  ARGS
+} from './lib/compiled/opcodes/component';
+
 export { PublicVM as VM, UpdatingVM, RenderResult } from './lib/vm';
 
 export { SafeString, isSafeString } from './lib/upsert';
