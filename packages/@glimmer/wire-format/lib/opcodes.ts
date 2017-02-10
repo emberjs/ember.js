@@ -11,11 +11,8 @@ export enum Opcodes {
   CloseElement,
   StaticAttr,
   DynamicAttr,
-  AnyDynamicAttr,
   Yield,
   Partial,
-  StaticPartial,
-  DynamicPartial,
 
   DynamicArg,
   StaticArg,

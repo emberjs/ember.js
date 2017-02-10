@@ -2,6 +2,8 @@ import * as WireFormat from '@glimmer/wire-format';
 import { dict, assert } from '@glimmer/util';
 import { SymbolTable } from '@glimmer/interfaces';
 
+import { ClientSide } from '../scanner';
+
 export type Syntax = WireFormat.Statement;
 export type Name = WireFormat.Statement[0];
 export type SpecializeFunction = (sexp: Syntax, symbolTable: SymbolTable) => Syntax;
@@ -45,23 +47,23 @@ SPECIALIZE.add(Ops.Append, (sexp: S.Append, _symbolTable) => {
   //   }
   // }
 
-  return [Ops.ClientSideStatement, Ops.OptimizedAppend, sexp[1], sexp[2]];
+  return [Ops.ClientSideStatement, ClientSide.Ops.OptimizedAppend, sexp[1], sexp[2]];
 });
 
 SPECIALIZE.add(Ops.DynamicAttr, (sexp: S.DynamicAttr, _symbolTable) => {
-  return [Ops.ClientSideStatement, Ops.AnyDynamicAttr, sexp[1], sexp[2], sexp[3], false];
+  return [Ops.ClientSideStatement, ClientSide.Ops.AnyDynamicAttr, sexp[1], sexp[2], sexp[3], false];
 });
 
 SPECIALIZE.add(Ops.TrustingAttr, (sexp: S.TrustingAttr, _symbolTable) => {
-  return [Ops.ClientSideStatement, Ops.AnyDynamicAttr, sexp[1], sexp[2], sexp[3], true];
+  return [Ops.ClientSideStatement, ClientSide.Ops.AnyDynamicAttr, sexp[1], sexp[2], sexp[3], true];
 });
 
 SPECIALIZE.add(Ops.Partial, (sexp: S.Partial, _table) => {
   let expression = sexp[1];
 
   if (typeof expression === 'string') {
-    return [Ops.ClientSideStatement, Ops.StaticPartial, expression];
+    return [Ops.ClientSideStatement, ClientSide.Ops.StaticPartial, expression];
   } else {
-    return [Ops.ClientSideStatement, Ops.DynamicPartial, expression];
+    return [Ops.ClientSideStatement, ClientSide.Ops.DynamicPartial, expression];
   }
 });

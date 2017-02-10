@@ -172,7 +172,7 @@ export namespace ClientSide {
   import Core = WireFormat.Core;
 
   export type ScannedComponent      = [ClientSideStatement, Ops.ScannedComponent, string, RawInlineBlock<BlockSymbolTable>, WireFormat.Core.Hash, Option<RawInlineBlock<BlockSymbolTable>>];
-  export type ResolvedComponent     = [ClientSideStatement, Ops.ResolvedComponent, ComponentDefinition<Opaque>, Option<RawInlineBlock<BlockSymbolTable>>, WireFormat.Core.Args, Option<RawTemplate<BlockSymbolTable>>, Option<RawTemplate<BlockSymbolTable>>];
+  export type ResolvedComponent     = [ClientSideStatement, Ops.ResolvedComponent, ComponentDefinition<Opaque>, Option<RawInlineBlock<BlockSymbolTable>>, WireFormat.Core.Args, Option<Block>, Option<Block>];
   export type OpenComponentElement  = [ClientSideStatement, Ops.OpenComponentElement, string];
   export type OpenPrimitiveElement  = [ClientSideStatement, Ops.OpenPrimitiveElement, string, string[]];
   export type OpenDynamicElement    = [ClientSideStatement, Ops.OpenDynamicElement, WireFormat.Expression];

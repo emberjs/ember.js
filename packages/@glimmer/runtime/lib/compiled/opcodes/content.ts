@@ -25,8 +25,8 @@ import { ConditionalReference } from '../../references';
 import { Environment } from '../../environment';
 import { UpdatableBlockTracker } from '../../builder';
 import { SymbolTable } from '@glimmer/interfaces';
+import * as WireFormat from '@glimmer/wire-format';
 import { APPEND_OPCODES, Op } from '../../opcodes';
-import { BaselineSyntax } from '../../scanner';
 
 APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: append }) => {
   let opcode = vm.constants.getOther(append) as AppendDynamicOpcode<Insertion>;
@@ -110,7 +110,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDyn
   private start = -1;
   private end = -1;
 
-  constructor(private expression: BaselineSyntax.AnyExpression, private symbolTable: SymbolTable) {
+  constructor(private expression: WireFormat.Expression, private symbolTable: SymbolTable) {
     super();
   }
 
