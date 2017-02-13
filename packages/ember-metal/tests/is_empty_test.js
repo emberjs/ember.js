@@ -33,6 +33,13 @@ QUnit.test('Ember.isEmpty Ember.Map', function() {
   equal(false, isEmpty(map), 'Map is not empty');
 });
 
+QUnit.test('Ember.isEmpty Object with size property', function() {
+  let obj = { size: 0 };
+  equal(false, isEmpty(obj), 'Object is empty');
+  obj.size = 1;
+  equal(false, isEmpty(obj), 'Object is empty');
+});
+
 QUnit.test('Ember.isEmpty Ember.OrderedSet', function() {
   let orderedSet = new OrderedSet();
   equal(true, isEmpty(orderedSet), 'Empty ordered set is empty');
