@@ -1,5 +1,5 @@
-import { assert } from "@glimmer/util";
-import { Stack, DictSet } from "@glimmer/util";
+import { assert, unreachable } from "@glimmer/util";
+import { Stack, DictSet, Option, Dict, dict } from "@glimmer/util";
 
 import {
   TemplateMeta,
@@ -21,10 +21,48 @@ export type Hash = Core.Hash;
 export type Path = Core.Path;
 export type StackValue = Expression | Params | Hash | str;
 
-export class Block {
+export class Top {
+  private size = 1;
+
+  local(): number {
+    return this.size++;
+  }
+}
+
+export class Locals {
+  static child(parent: Locals, locals: string[]) {
+    let top = parent.top;
+    let d = dict<number>();
+
+    locals.forEach(name => d[name] = top.local());
+    return new Locals(parent, d, top);
+  }
+
+  static top() {
+    return new Locals(null, dict<number>(), new Top());
+  }
+
+  private names = dict<number>();
+
+  constructor(private parent: Option<Locals>, private locals: Dict<number>, private top: Top) {
+  }
+
+  get(name: string) {
+    if (name in this.names) {
+      return this.names[name];
+    } else if (this.parent) {
+      return this.parent.get(name);
+    } else {
+      unreachable();
+    }
+  }
+}
+
+export abstract class Block {
   public type = "block";
-  statements: Statement[] = [];
-  positionals: string[] = [];
+  public statements: Statement[] = [];
+  public positionals: string[] = [];
+  abstract locals: Locals;
 
   toJSON(): SerializedBlock {
     return {
@@ -38,6 +76,15 @@ export class Block {
   }
 }
 
+export class InlineBlock extends Block {
+  public locals: Locals;
+
+  constructor(parent: Block, positionals: string[] = []) {
+    super();
+    this.locals = Locals.child(parent.locals, positionals);
+  }
+}
+
 export class TemplateBlock extends Block {
   public type = "template";
   public yields = new DictSet<string>();
@@ -46,8 +93,14 @@ export class TemplateBlock extends Block {
   public head: Statements.ElementHead[] = [];
   public blocks: SerializedBlock[] = [];
   public hasPartials = false;
+  public locals: Locals;
   private sawElement = false;
   private inParams = false;
+
+  constructor() {
+    super();
+    this.locals = Locals.top();
+  }
 
   push(statement: Statement) {
     if (!this.sawElement) {
@@ -90,7 +143,13 @@ export class ComponentBlock extends Block {
   public type = "component";
   public attributes: Statements.Attribute[] = [];
   public arguments: Statements.Argument[] = [];
+  public locals: Locals;
   private inParams = true;
+
+  constructor(parent: Block, positionals: string[] = []) {
+    super();
+    this.locals = Locals.child(parent.locals, positionals);
+  }
 
   push(statement: Statement) {
     if (this.inParams) {
@@ -165,8 +224,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   /// Nesting
 
   startBlock([program]) {
-    let block: Block = new Block();
-    block.positionals = program.blockParams;
+    let block: Block = new InlineBlock(this.blocks.current, program.blockParams);
     this.blocks.push(block);
   }
 
@@ -324,8 +382,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   /// Stack Management Opcodes
 
   startComponent(blockParams: string[]) {
-    let component = new ComponentBlock();
-    component.positionals = blockParams;
+    let component = new ComponentBlock(this.blocks.current, blockParams);
     this.blocks.push(component);
   }
 
