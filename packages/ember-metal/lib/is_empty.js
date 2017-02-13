@@ -1,5 +1,6 @@
 import { get } from './property_get';
 import isNone from './is_none';
+import EmberMap from './map';
 
 /**
   Verifies that a value is `null` or an empty string, empty array,
@@ -39,7 +40,7 @@ export default function isEmpty(obj) {
 
   let objectType = typeof obj;
 
-  if (objectType === 'object') {
+  if (objectType instanceof EmberMap) {
     let size = get(obj, 'size');
     if (typeof size === 'number') {
       return !size;
