@@ -78,16 +78,16 @@ class Frame {
 }
 
 export namespace Action {
-  export type StartProgram = ['startProgram', [HBS.Program, number, number[]]];
-  export type EndProgram = ['endProgram', [HBS.Program, number]];
-  export type StartBlock = ['startBlock', [HBS.Program, number, number[]]];
-  export type EndBlock = ['endBlock', [HBS.Program, number]];
-  export type Block = ['block', [HBS.BlockStatement, number, number]];
-  export type Mustache = ['mustache', [HBS.MustacheStatement | HBS.PartialStatement, number, number]];
-  export type OpenElement = ['openElement', [HBS.ElementNode, number, number, number, number[]]];
-  export type CloseElement = ['closeElement', [HBS.ElementNode, number, number]];
-  export type Text = ['text', [HBS.TextNode, number, number]];
-  export type Comment = ['comment', [HBS.CommentStatement, number, number]];
+  export type StartProgram = ['startProgram', [AST.Program, number, number[]]];
+  export type EndProgram = ['endProgram', [AST.Program, number]];
+  export type StartBlock = ['startBlock', [AST.Program, number, number[]]];
+  export type EndBlock = ['endBlock', [AST.Program, number]];
+  export type Block = ['block', [AST.BlockStatement, number, number]];
+  export type Mustache = ['mustache', [AST.MustacheStatement | AST.PartialStatement, number, number]];
+  export type OpenElement = ['openElement', [AST.ElementNode, number, number, number, number[]]];
+  export type CloseElement = ['closeElement', [AST.ElementNode, number, number]];
+  export type Text = ['text', [AST.TextNode, number, number]];
+  export type Comment = ['comment', [AST.CommentStatement, number, number]];
 
   export type Action =
       StartProgram
@@ -110,13 +110,13 @@ export default class TemplateVisitor {
   private actions: Action[] = [];
   private programDepth = -1;
 
-  visit(node: HBS.BaseNode) {
+  visit(node: AST.BaseNode) {
     this[node.type](node);
   }
 
   // Traversal methods
 
-  Program(program: HBS.Program) {
+  Program(program: AST.Program) {
     this.programDepth++;
 
     let parentFrame = this.getCurrentFrame();
@@ -163,7 +163,7 @@ export default class TemplateVisitor {
     push.apply(this.actions, programFrame.actions.reverse());
   }
 
-  ElementNode(element: HBS.ElementNode) {
+  ElementNode(element: AST.ElementNode) {
     let parentFrame = this.getCurrentFrame();
     let elementFrame = this.pushFrame();
 
@@ -174,7 +174,7 @@ export default class TemplateVisitor {
     elementFrame.blankChildTextNodes = [];
     elementFrame.symbols = parentFrame.symbols;
 
-    let actionArgs: [HBS.ElementNode, number, number] = [
+    let actionArgs: [AST.ElementNode, number, number] = [
       element,
       parentFrame.childIndex,
       parentFrame.childCount
@@ -202,13 +202,13 @@ export default class TemplateVisitor {
     parentFrame.actions.push(...elementFrame.actions);
   }
 
-  AttrNode(attr: HBS.AttrNode) {
+  AttrNode(attr: AST.AttrNode) {
     if (attr.value.type !== 'TextNode') {
       this.getCurrentFrame().mustacheCount++;
     }
   };
 
-  TextNode(text: HBS.TextNode) {
+  TextNode(text: AST.TextNode) {
     let frame = this.getCurrentFrame();
     if (text.chars === '') {
       frame.blankChildTextNodes.push(domIndexOf(frame.children, text));
@@ -216,7 +216,7 @@ export default class TemplateVisitor {
     frame.actions.push(['text', [text, frame.childIndex, frame.childCount]]);
   };
 
-  BlockStatement(node: HBS.BlockStatement) {
+  BlockStatement(node: AST.BlockStatement) {
     let frame = this.getCurrentFrame();
 
     frame.mustacheCount++;
@@ -226,13 +226,13 @@ export default class TemplateVisitor {
     if (node.program) { this.visit(node.program); }
   };
 
-  PartialStatement(node: HBS.PartialStatement) {
+  PartialStatement(node: AST.PartialStatement) {
     let frame = this.getCurrentFrame();
     frame.mustacheCount++;
     frame.actions.push(['mustache', [node, frame.childIndex, frame.childCount]]);
   };
 
-  CommentStatement(text: HBS.CommentStatement) {
+  CommentStatement(text: AST.CommentStatement) {
     let frame = this.getCurrentFrame();
     frame.actions.push(['comment', [text, frame.childIndex, frame.childCount]]);
   };
@@ -241,7 +241,7 @@ export default class TemplateVisitor {
     // Intentional empty: Handlebars comments should not affect output.
   };
 
-  MustacheStatement(mustache: HBS.MustacheStatement) {
+  MustacheStatement(mustache: AST.MustacheStatement) {
     let frame = this.getCurrentFrame();
     frame.mustacheCount++;
     frame.actions.push(['mustache', [mustache, frame.childIndex, frame.childCount]]);
