@@ -107,7 +107,7 @@ STATEMENTS.add(Ops.FlushElement, (_sexp, builder: OpcodeBuilder) => {
 
 STATEMENTS.add(Ops.Modifier, (_sexp: S.Modifier, _builder: OpcodeBuilder) => {
   let { env, symbolTable } = _builder;
-  let [, [name], params, hash] = _sexp;
+  let [, name, params, hash] = _sexp;
 
   compileArgs(params, hash, _builder); // side-effecty seems weird
 
@@ -189,13 +189,13 @@ CLIENT_SIDE.add(ClientSide.Ops.NestedBlock, (sexp: ClientSide.NestedBlock, build
 });
 
 CLIENT_SIDE.add(ClientSide.Ops.ScannedBlock, (sexp: ClientSide.ScannedBlock, builder) => {
-  let [,, path, params, hash, template, inverse] = sexp;
+  let [,, name, params, hash, template, inverse] = sexp;
 
   let templateBlock = template && template.scan();
   let inverseBlock = inverse && inverse.scan();
 
   let { blocks } = builder.env.macros();
-  blocks.compile([Ops.ClientSideStatement, ClientSide.Ops.NestedBlock, path, params, hash, templateBlock, inverseBlock], builder);
+  blocks.compile([Ops.ClientSideStatement, ClientSide.Ops.NestedBlock, name, params, hash, templateBlock, inverseBlock], builder);
 });
 
 export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
@@ -470,11 +470,10 @@ export function expr(expression: WireFormat.Expression, builder: OpcodeBuilder):
 }
 
 EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder: OpcodeBuilder) => {
-  let path = sexp[1];
-  let name = path[0];
+  let name = sexp[1];
 
   if (builder.env.hasHelper(name, builder.symbolTable)) {
-    EXPRESSIONS.compile([Ops.Helper, [name], EMPTY_ARRAY, null], builder);
+    EXPRESSIONS.compile([Ops.Helper, name, EMPTY_ARRAY, null], builder);
   } else {
     compilePath(path, builder);
   }
@@ -492,7 +491,7 @@ CLIENT_SIDE_EXPRS.add(ClientSide.Ops.FunctionExpression, (sexp: ClientSide.Funct
 
 EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
   let { env, symbolTable } = builder;
-  let [, [name], params, hash] = sexp;
+  let [, name, params, hash] = sexp;
 
   if (env.hasHelper(name, symbolTable)) {
     compileArgs(params, hash, builder);
@@ -631,8 +630,7 @@ export class Blocks {
   }
 
   compile(sexp: ClientSide.NestedBlock, builder: OpcodeBuilder): void {
-    // assert(sexp[1].length === 1, 'paths in blocks are not supported');
-    let name: string = sexp[2][0];
+    let name: string = sexp[2];
     let index = this.names[name];
 
     if (index === undefined) {
@@ -650,7 +648,7 @@ export class Blocks {
 export const BLOCKS = new Blocks();
 
 export type AppendSyntax = ClientSide.OptimizedAppend | ClientSide.UnoptimizedAppend;
-export type AppendMacro = (path: C.Path, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder) => ['expr', WireFormat.Expression] | true | false;
+export type AppendMacro = (name: string, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder) => ['expr', WireFormat.Expression] | true | false;
 
 export class Inlines {
   private names = dict<number>();
@@ -675,33 +673,30 @@ export class Inlines {
 
     if (!Array.isArray(value)) return ['expr', value];
 
-    let path: C.Path;
+    let name: string;
     let params: Option<C.Params>;
     let hash: Option<C.Hash>;
 
     if (value[0] === Ops.Helper) {
-      path = value[1];
+      name = value[1];
       params = value[2];
       hash = value[3];
     } else if (value[0] === Ops.Unknown) {
-      path = value[1];
+      name = value[1];
       params = hash = null;
     } else {
       return ['expr', value];
     }
 
-    if (path.length > 1) return ['expr', value];
-
-    let name = path[0];
     let index = this.names[name];
 
     if (index === undefined && this.missing) {
       let func = this.missing;
-      let returned = func(path, params, hash, builder);
+      let returned = func(name, params, hash, builder);
       return returned === false ? ['expr', value] : returned;
     } else if (index !== undefined) {
       let func = this.funcs[index];
-      let returned = func(path, params, hash, builder);
+      let returned = func(name, params, hash, builder);
       return returned === false ? ['expr', value] : returned;
     } else {
       return ['expr', value];

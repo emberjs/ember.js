@@ -367,5 +367,5 @@ export abstract class Environment {
 export default Environment;
 
 export interface Helper {
-  (vm: PublicVM, args: EvaluatedArgs, symbolTable: SymbolTable): PathReference<Opaque>;
+  (vm: PublicVM, args: EvaluatedArgs): PathReference<Opaque>;
 }

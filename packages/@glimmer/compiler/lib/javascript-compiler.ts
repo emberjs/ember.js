@@ -255,14 +255,14 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.push([Ops.Comment, value]);
   }
 
-  modifier(path: Path) {
+  modifier(name: string) {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
-    this.push([Ops.Modifier, path, params, hash]);
+    this.push([Ops.Modifier, name, params, hash]);
   }
 
-  block(path: Path, template: number, inverse: number) {
+  block(name: string, template: number, inverse: number) {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
@@ -270,14 +270,18 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     assert(typeof template !== 'number' || blocks[template] !== null, 'missing block in the compiler');
     assert(typeof inverse !== 'number' || blocks[inverse] !== null, 'missing block in the compiler');
 
-    this.push([Ops.Block, path, params, hash, blocks[template], blocks[inverse]]);
+    this.push([Ops.Block, name, params, hash, blocks[template], blocks[inverse]]);
   }
 
-  openElement(tag: str, blockParams: string[]) {
+  openElement(element: AST.ElementNode) {
+    let tag = element.tag;
+
     if (tag.indexOf('-') !== -1) {
-      this.startComponent(blockParams);
+      this.startComponent(element);
+    } else if (element.blockParams.length > 0) {
+      throw new Error(`Compile Error: <${element.tag}> is not a component and doesn't support block parameters`);
     } else {
-      this.push([Ops.OpenElement, tag, blockParams]);
+      this.push([Ops.OpenElement, tag]);
     }
   }
 
@@ -355,8 +359,8 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     }
   }
 
-  unknown(path: string[]) {
-    this.pushValue<Expressions.Unknown>([Ops.Unknown, path]);
+  unknown(name: string) {
+    this.pushValue<Expressions.Unknown>([Ops.Unknown, name]);
   }
 
   arg(path: string[]) {
@@ -372,11 +376,11 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.pushValue<Expressions.Concat>([Ops.Concat, this.popValue<Params>()]);
   }
 
-  helper(path: string[]) {
+  helper(name: string) {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
-    this.pushValue<Expressions.Helper>([Ops.Helper, path, params, hash]);
+    this.pushValue<Expressions.Helper>([Ops.Helper, name, params, hash]);
   }
 
   /// Stack Management Opcodes
