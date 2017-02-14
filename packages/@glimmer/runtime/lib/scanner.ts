@@ -181,8 +181,8 @@ export namespace ClientSide {
   export type AnyDynamicAttr        = [ClientSideStatement, Ops.AnyDynamicAttr, string, WireFormat.Expression, Option<string>, boolean];
   export type StaticPartial         = [ClientSideStatement, Ops.StaticPartial, string];
   export type DynamicPartial        = [ClientSideStatement, Ops.DynamicPartial, WireFormat.Expression];
-  export type NestedBlock           = [ClientSideStatement, Ops.NestedBlock, WireFormat.Core.Path, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
-  export type ScannedBlock          = [ClientSideStatement, Ops.ScannedBlock, Core.Path, Core.Params, Core.Hash, Option<RawInlineBlock<BlockSymbolTable>>, Option<RawInlineBlock<BlockSymbolTable>>];
+  export type NestedBlock           = [ClientSideStatement, Ops.NestedBlock, string, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
+  export type ScannedBlock          = [ClientSideStatement, Ops.ScannedBlock, string, Core.Params, Core.Hash, Option<RawInlineBlock<BlockSymbolTable>>, Option<RawInlineBlock<BlockSymbolTable>>];
 
   export type ResolvedHelper        = [ClientSideExpression, Ops.ResolvedHelper, Helper, Core.Params, Core.Hash];
   export type FunctionExpression    = [ClientSideExpression, Ops.FunctionExpression, FunctionExpressionCallback<Opaque>];
@@ -232,8 +232,8 @@ export class RawInlineBlock<S extends SymbolTable> {
   }
 
   private specializeBlock(block: WireFormat.Statements.Block): ClientSide.ScannedBlock {
-    let [, path, params, hash, RawTemplate, inverse] = block;
-    return [Ops.ClientSideStatement, ClientSide.Ops.ScannedBlock, path, params, hash, this.child(RawTemplate), this.child(inverse)];
+    let [, name, params, hash, RawTemplate, inverse] = block;
+    return [Ops.ClientSideStatement, ClientSide.Ops.ScannedBlock, name, params, hash, this.child(RawTemplate), this.child(inverse)];
   }
 
   private specializeComponent(sexp: WireFormat.Statements.Component): WireFormat.Statement[] {

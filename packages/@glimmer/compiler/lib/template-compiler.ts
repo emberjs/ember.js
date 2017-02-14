@@ -122,7 +122,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     let { path: { parts } } = action;
 
     this.prepareHelper(action);
-    this.opcode('modifier', action, parts);
+    this.opcode('modifier', action, parts[0]);
   }
 
   mustache([action]) {
@@ -164,11 +164,11 @@ export default class TemplateCompiler<T extends TemplateMeta> {
       this.arg([expr.path]);
     } else if (isHelperInvocation(expr)) {
       this.prepareHelper(expr);
-      this.opcode('helper', expr, expr.path.parts);
+      this.opcode('helper', expr, expr.path.parts[0]);
     } else if (!isSimplePath(expr) || isSelfGet(expr) || isLocalVariable(expr, this.symbols)) {
       this.opcode('get', expr, expr.path.parts);
     } else {
-      this.opcode('unknown', expr, expr.path.parts);
+      this.opcode('unknown', expr, expr.path.parts[0]);
     }
   }
 
@@ -213,7 +213,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
       this.builtInHelper(expr);
     } else {
       this.prepareHelper(expr);
-      this.opcode('helper', expr, expr.path.parts);
+      this.opcode('helper', expr, expr.path.parts[0]);
     }
   }
 

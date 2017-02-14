@@ -40,9 +40,9 @@ export namespace Expressions {
   export type Params = Core.Params;
   export type Hash = Core.Hash;
 
-  export type Unknown        = [Opcodes.Unknown, Path];
   export type Arg            = [Opcodes.Arg, Path];
   export type Get            = [Opcodes.Get, Path];
+  export type Unknown        = [Opcodes.Unknown, str];
   export type Value          = str | number | boolean | null; // tslint:disable-line
   export type HasBlock       = [Opcodes.HasBlock, str];
   export type HasBlockParams = [Opcodes.HasBlockParams, str];
@@ -69,7 +69,7 @@ export namespace Expressions {
 
   export interface Helper extends Array<any> {
     [0]: Opcodes.Helper;
-    [1]: Path;
+    [1]: str;
     [2]: Params;
     [3]: Hash;
   }
@@ -103,8 +103,8 @@ export namespace Statements {
   export type Text          = [Opcodes.Text, str];
   export type Append        = [Opcodes.Append, Expression, boolean];
   export type Comment       = [Opcodes.Comment, str];
-  export type Modifier      = [Opcodes.Modifier, Path, Params, Hash];
-  export type Block         = [Opcodes.Block, Path, Params, Hash, Option<SerializedBlock>, Option<SerializedBlock>];
+  export type Modifier      = [Opcodes.Modifier, str, Params, Hash];
+  export type Block         = [Opcodes.Block, str, Params, Hash, Option<SerializedBlock>, Option<SerializedBlock>];
   export type Component     = [Opcodes.Component, str, SerializedComponent];
   export type OpenElement   = [Opcodes.OpenElement, str, str[]];
   export type FlushElement  = [Opcodes.FlushElement];

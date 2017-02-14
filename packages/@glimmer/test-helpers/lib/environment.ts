@@ -1142,21 +1142,14 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
   });
 
   blocks.addMissing((sexp, builder) => {
-    let [, , path, params, hash, _default, inverse] = sexp;
+    let [, , name, params, hash, _default, inverse] = sexp;
     let table = builder.symbolTable;
 
     if (!params) {
       params = [];
     }
 
-    if (path.length > 1) {
-      let definitionArgs: ComponentArgs = [[[Ops.Get, path]], hash, _default, inverse];
-      let args: ComponentArgs = [params, hash, _default, inverse];
-      builder.component.dynamic(definitionArgs, dynamicComponentFor, args, table);
-      return true;
-    }
-
-    let definition = builder.env.getComponentDefinition(path[0], builder.symbolTable);
+    let definition = builder.env.getComponentDefinition(name, builder.symbolTable);
 
     if (definition) {
       builder.component.static(definition, [params, hash, _default, inverse], table);
@@ -1166,24 +1159,17 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     return false;
   });
 
-  inlines.add('component', (path, params, hash, builder) => {
+  inlines.add('component', (name, params, hash, builder) => {
     let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
     let args: ComponentArgs = [params.slice(1), hash, null, null];
     builder.component.dynamic(definitionArgs, dynamicComponentFor, args, builder.symbolTable);
     return true;
   });
 
-  inlines.addMissing((path, params, hash, builder) => {
+  inlines.addMissing((name, params, hash, builder) => {
     let table = builder.symbolTable;
 
-    let definition = builder.env.getComponentDefinition(path[0], builder.symbolTable);
-
-    if (path.length > 1) {
-      let definitionArgs: ComponentArgs = [[[Ops.Get, path]], hash, null, null];
-      let args: ComponentArgs = [params, hash, null, null];
-      builder.component.dynamic(definitionArgs, dynamicComponentFor, args, table);
-      return true;
-    }
+    let definition = builder.env.getComponentDefinition(name, builder.symbolTable);
 
     if (definition) {
       builder.component.static(definition, [params, hash, null, null], table);
