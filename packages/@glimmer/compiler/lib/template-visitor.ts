@@ -1,17 +1,99 @@
-import { Option } from '@glimmer/util';
 import { AST } from '@glimmer/syntax';
+import { Dict, Option, dict, unreachable } from '@glimmer/util';
 
-let push = Array.prototype.push;
+export abstract class SymbolTable {
+  static top(): ProgramSymbolTable {
+    return new ProgramSymbolTable();
+  }
 
-export class SymbolTable {
-  constructor(
-    private symbols: string[],
-    private parent: SymbolTable = null
-  ) {}
+  abstract has(name: string): boolean;
+  abstract get(name: string): number;
 
-  hasLocalVariable(name: string): boolean {
-    let { symbols, parent } = this;
-    return symbols.indexOf(name) >= 0 || (parent && parent.hasLocalVariable(name));
+  abstract allocateLocal(name: string): number;
+  abstract allocateNamed(name: string): number;
+  abstract allocateBlock(name: string): number;
+  abstract allocate(identifier: string): number;
+
+  child(locals: string[]): BlockSymbolTable {
+    let d = dict<number>();
+
+    locals.forEach(name => d[name] = this.allocateLocal(name));
+
+    return new BlockSymbolTable(this, d);
+  }
+}
+
+export class ProgramSymbolTable extends SymbolTable {
+  public size = 1;
+  private named = dict<number>();
+  private blocks = dict<number>();
+  private debug = [];
+
+  has(name: string): boolean {
+    return false;
+  }
+
+  get(name: string): never {
+    throw unreachable();
+  }
+
+  allocateLocal(): never {
+    throw unreachable();
+  }
+
+  allocateNamed(name: string): number {
+    let named = this.named[name];
+
+    if (!named) {
+      named = this.named[name] = this.allocate(`@${name}`);
+    }
+
+    return named;
+  }
+
+  allocateBlock(name: string): number {
+    let block = this.blocks[name];
+
+    if (!block) {
+      block = this.blocks[block] = this.allocate(`&${name}`);
+    }
+
+    return block;
+  }
+
+  allocate(identifier: string): number {
+    this.debug.push(identifier);
+    return this.size++;
+  }
+}
+
+export class BlockSymbolTable extends SymbolTable {
+  constructor(private parent: SymbolTable, private locals: Dict<number>) {
+    super();
+  }
+
+  has(name: string): boolean {
+    return name in this.locals || this.parent.has(name);
+  }
+
+  get(name: string): number {
+    return this.locals[name] || this.parent.get(name);
+  }
+
+  allocateLocal(name: string): number {
+    return this.parent.allocate(name);
+  }
+
+  allocateNamed(name: string): number {
+    return this.parent.allocateNamed(name);
+  }
+
+  allocateBlock(name: string): number {
+    return this.allocateBlock(name);
+  }
+
+  allocate(identifier: string): number {
+    return this.parent.allocate(identifier);
   }
 }
 
@@ -107,7 +189,7 @@ export type Action = Action.Action;
 
 export default class TemplateVisitor {
   private frameStack: Frame[] = [];
-  private actions: Action[] = [];
+  public actions: Action[] = [];
   private programDepth = -1;
 
   visit(node: AST.BaseNode) {
@@ -122,10 +204,10 @@ export default class TemplateVisitor {
     let parentFrame = this.getCurrentFrame();
     let programFrame = this.pushFrame();
 
-    if (parentFrame) {
-      program['symbols'] = new SymbolTable(program.blockParams, parentFrame.symbols);
+    if (!parentFrame) {
+      program['symbols'] = SymbolTable.top();
     } else {
-      program['symbols'] = new SymbolTable(program.blockParams);
+      program['symbols'] = parentFrame.symbols.child(program.blockParams);
     }
 
     let startType, endType;
@@ -160,7 +242,7 @@ export default class TemplateVisitor {
 
     // Push the completed template into the global actions list
     if (parentFrame) { parentFrame.childTemplateCount++; }
-    push.apply(this.actions, programFrame.actions.reverse());
+    this.actions.push(...programFrame.actions.reverse());
   }
 
   ElementNode(element: AST.ElementNode) {
@@ -172,7 +254,7 @@ export default class TemplateVisitor {
     elementFrame.childCount = element.children.length;
     elementFrame.mustacheCount += element.modifiers.length;
     elementFrame.blankChildTextNodes = [];
-    elementFrame.symbols = parentFrame.symbols;
+    elementFrame.symbols = element['symbols'] = parentFrame.symbols.child(element.blockParams);
 
     let actionArgs: [AST.ElementNode, number, number] = [
       element,

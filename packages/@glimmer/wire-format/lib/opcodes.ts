@@ -23,8 +23,8 @@ export enum Opcodes {
   // Expressions
 
   Unknown,
-  Arg,
   Get,
+  FixThisBeforeWeMerge,
   HasBlock,
   HasBlockParams,
   Undefined,

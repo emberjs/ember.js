@@ -133,7 +133,7 @@ class WrappedBuilder {
         [Ops.Block, ['with'], [dynamicTag], null, {
           locals: ['tag'],
           statements: [
-            [Ops.ClientSideStatement, ClientSide.Ops.OpenDynamicElement, [Ops.Get, ['tag']]],
+            [Ops.ClientSideStatement, ClientSide.Ops.OpenDynamicElement, [Ops.FixThisBeforeWeMerge, ['tag']]],
             [Ops.Yield, '%attrs%', EMPTY_ARRAY],
             ...this.attrs['buffer'],
             [Ops.FlushElement]

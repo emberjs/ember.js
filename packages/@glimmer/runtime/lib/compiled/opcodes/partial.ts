@@ -1,7 +1,6 @@
-import { Opaque, Dict } from '@glimmer/util';
+import { Opaque } from '@glimmer/util';
 import { ReferenceCache, isConst, map } from '@glimmer/reference';
 import { Assert } from './vm';
-import { PartialDefinition } from '../../partial';
 import { SymbolTable } from '@glimmer/interfaces';
 import { APPEND_OPCODES, Op as Op } from '../../opcodes';
 
