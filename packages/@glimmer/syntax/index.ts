@@ -10,3 +10,4 @@ export { default as print } from './lib/generation/print';
 // AST
 import * as AST from './lib/types/nodes';
 export { AST };
+export { isLiteral, printLiteral } from './lib/utils';
