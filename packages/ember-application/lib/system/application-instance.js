@@ -262,8 +262,8 @@ const ApplicationInstance = EngineInstance.extend({
     let handleTransitionReject = (error) => {
       if (error.error) {
         throw error.error;
-      } else if (error.name === 'TransitionAborted' && router.router.activeTransition) {
-        return router.router.activeTransition.then(handleTransitionResolve, handleTransitionReject);
+      } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
+        return router._routerMicrolib.activeTransition.then(handleTransitionResolve, handleTransitionReject);
       } else if (error.name === 'TransitionAborted') {
         throw new Error(error.message);
       } else {

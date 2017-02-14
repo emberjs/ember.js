@@ -29,7 +29,7 @@ export function stashParamNames(router, handlerInfos) {
   // on whether a URL transition or named transition is happening.
   // Hopefully we can remove this in the future.
   let targetRouteName = handlerInfos[handlerInfos.length - 1].name;
-  let recogHandlers = router.router.recognizer.handlersFor(targetRouteName);
+  let recogHandlers = router._routerMicrolib.recognizer.handlersFor(targetRouteName);
   let dynamicParent = null;
 
   for (let i = 0; i < handlerInfos.length; ++i) {

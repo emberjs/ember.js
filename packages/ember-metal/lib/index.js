@@ -24,6 +24,7 @@ export {
   debugSeal,
   debugFreeze
 } from './debug';
+export { deprecateProperty } from './deprecate_property';
 export {
   instrument,
   flaggedInstrument,

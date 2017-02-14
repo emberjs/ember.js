@@ -399,8 +399,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       return {};
     }
 
-    let transition = this.router.router.activeTransition;
-    let state = transition ? transition.state : this.router.router.state;
+    let transition = this.router._routerMicrolib.activeTransition;
+    let state = transition ? transition.state : this.router._routerMicrolib.state;
 
     let fullName = route.fullRouteName;
     let params = assign({}, state.params[fullName]);
@@ -1180,7 +1180,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @public
    */
   refresh() {
-    return this.router.router.refresh(this);
+    return this.router._routerMicrolib.refresh(this);
   },
 
   /**
@@ -1277,7 +1277,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   send(...args) {
-    if ((this.router && this.router.router) || !isTesting()) {
+    if ((this.router && this.router._routerMicrolib) || !isTesting()) {
       this.router.send(...args);
     } else {
       let name = args[0];
@@ -1888,14 +1888,14 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     // Only change the route name when there is an active transition.
     // Otherwise, use the passed in route name.
-    if (owner.routable && this.router && this.router.router.activeTransition) {
+    if (owner.routable && this.router && this.router._routerMicrolib.activeTransition) {
       name = getEngineRouteName(owner, _name);
     } else {
       name = _name;
     }
 
     let route = getOwner(this).lookup(`route:${name}`);
-    let transition = this.router ? this.router.router.activeTransition : null;
+    let transition = this.router ? this.router._routerMicrolib.activeTransition : null;
 
     // If we are mid-transition, we want to try and look up
     // resolved parent contexts on the current transitionEvent.
@@ -2165,12 +2165,12 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     parentView = parentView && parentView.replace(/\//g, '.');
     outletName = outletName || 'main';
     this._disconnectOutlet(outletName, parentView);
-    for (let i = 0; i < this.router.router.currentHandlerInfos.length; i++) {
+    for (let i = 0; i < this.router._routerMicrolib.currentHandlerInfos.length; i++) {
       // This non-local state munging is sadly necessary to maintain
       // backward compatibility with our existing semantics, which allow
       // any route to disconnectOutlet things originally rendered by any
       // other route. This should all get cut in 2.0.
-      this.router.router
+      this.router._routerMicrolib
         .currentHandlerInfos[i]
         .handler._disconnectOutlet(outletName, parentView);
     }
@@ -2228,7 +2228,7 @@ Route.reopenClass({
 });
 
 function parentRoute(route) {
-  let handlerInfo = handlerInfoFor(route, route.router.router.state.handlerInfos, -1);
+  let handlerInfo = handlerInfoFor(route, route.router._routerMicrolib.state.handlerInfos, -1);
   return handlerInfo && handlerInfo.handler;
 }
 
