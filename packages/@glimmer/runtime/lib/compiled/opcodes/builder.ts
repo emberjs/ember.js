@@ -339,19 +339,16 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     this.push(Op.GetProperty, this.string(key));
   }
 
-  getBlock(name: string) {
-    let symbol = this.symbolTable.getSymbol('yields', name);
-    this.push(Op.GetBlock, symbol!);
+  getBlock(symbol: number) {
+    this.push(Op.GetBlock, symbol);
   }
 
-  hasBlock(name: string) {
-    let symbol = this.symbolTable.getSymbol('yields', name);
-    this.push(Op.HasBlock, symbol!);
+  hasBlock(symbol: number) {
+    this.push(Op.HasBlock, symbol);
   }
 
-  hasBlockParams(name: string) {
-    let symbol = this.symbolTable.getSymbol('yields', name);
-    this.push(Op.HasBlockParams, symbol!);
+  hasBlockParams(symbol: number) {
+    this.push(Op.HasBlockParams, symbol);
   }
 
   concat(size: number) {

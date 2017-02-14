@@ -18,7 +18,7 @@ interface JsonArray extends Array<JsonValue> {}
 // end up being interned.
 export type str = string;
 export type TemplateReference = Option<SerializedBlock>;
-export type YieldTo = str;
+export type YieldTo = number;
 
 export function is<T extends any[]>(variant: number): (value: any[]) => value is T {
   return function(value: any[]): value is T {
@@ -40,18 +40,18 @@ export namespace Expressions {
   export type Params = Core.Params;
   export type Hash = Core.Hash;
 
-  export type Arg            = [Opcodes.Arg, Path];
-  export type Get            = [Opcodes.Get, Path];
   export type Unknown        = [Opcodes.Unknown, str];
+  export type FixMeBeforeWeMerge = [Opcodes.FixThisBeforeWeMerge, Path];
+  export type Get            = [Opcodes.Get, number, Path];
   export type Value          = str | number | boolean | null; // tslint:disable-line
-  export type HasBlock       = [Opcodes.HasBlock, str];
-  export type HasBlockParams = [Opcodes.HasBlockParams, str];
+  export type HasBlock       = [Opcodes.HasBlock, YieldTo];
+  export type HasBlockParams = [Opcodes.HasBlockParams, YieldTo];
   export type Undefined      = [Opcodes.Undefined];
   export type ClientSide     = [Opcodes.ClientSideExpression, any];
 
   export type Expression =
       Unknown
-    | Arg
+    | FixMeBeforeWeMerge
     | Get
     | Concat
     | HasBlock
@@ -75,7 +75,6 @@ export namespace Expressions {
   }
 
   export const isUnknown        = is<Unknown>(Opcodes.Unknown);
-  export const isArg            = is<Arg>(Opcodes.Arg);
   export const isGet            = is<Get>(Opcodes.Get);
   export const isConcat         = is<Concat>(Opcodes.Concat);
   export const isHelper         = is<Helper>(Opcodes.Helper);
@@ -106,7 +105,7 @@ export namespace Statements {
   export type Modifier      = [Opcodes.Modifier, str, Params, Hash];
   export type Block         = [Opcodes.Block, str, Params, Hash, Option<SerializedBlock>, Option<SerializedBlock>];
   export type Component     = [Opcodes.Component, str, SerializedComponent];
-  export type OpenElement   = [Opcodes.OpenElement, str, str[]];
+  export type OpenElement   = [Opcodes.OpenElement, str];
   export type FlushElement  = [Opcodes.FlushElement];
   export type CloseElement  = [Opcodes.CloseElement];
   export type StaticAttr    = [Opcodes.StaticAttr, str, Expression, Option<str>];

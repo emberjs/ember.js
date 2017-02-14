@@ -360,11 +360,6 @@ export default class VM implements PublicVM {
     this.invoke(compiled);
   }
 
-  invokePartial(block: PartialBlock) {
-    let compiled = block.compile(this.env);
-    this.invoke(compiled);
-  }
-
   bindPositionalArgs(symbols: number[]) {
     let args = expect(this.frame.getArgs(), 'bindPositionalArgs assumes a previous setArgs');
 

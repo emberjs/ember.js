@@ -1,5 +1,7 @@
 import { assert, unreachable } from "@glimmer/util";
 import { Stack, DictSet, Option, Dict, dict } from "@glimmer/util";
+import { AST } from '@glimmer/syntax';
+import { BlockSymbolTable, ProgramSymbolTable } from './template-visitor';
 
 import {
   TemplateMeta,
@@ -21,48 +23,10 @@ export type Hash = Core.Hash;
 export type Path = Core.Path;
 export type StackValue = Expression | Params | Hash | str;
 
-export class Top {
-  private size = 1;
-
-  local(): number {
-    return this.size++;
-  }
-}
-
-export class Locals {
-  static child(parent: Locals, locals: string[]) {
-    let top = parent.top;
-    let d = dict<number>();
-
-    locals.forEach(name => d[name] = top.local());
-    return new Locals(parent, d, top);
-  }
-
-  static top() {
-    return new Locals(null, dict<number>(), new Top());
-  }
-
-  private names = dict<number>();
-
-  constructor(private parent: Option<Locals>, private locals: Dict<number>, private top: Top) {
-  }
-
-  get(name: string) {
-    if (name in this.names) {
-      return this.names[name];
-    } else if (this.parent) {
-      return this.parent.get(name);
-    } else {
-      unreachable();
-    }
-  }
-}
-
 export abstract class Block {
   public type = "block";
   public statements: Statement[] = [];
   public positionals: string[] = [];
-  abstract locals: Locals;
 
   toJSON(): SerializedBlock {
     return {
@@ -77,11 +41,8 @@ export abstract class Block {
 }
 
 export class InlineBlock extends Block {
-  public locals: Locals;
-
-  constructor(parent: Block, positionals: string[] = []) {
+  constructor(private parent: Block, public table: BlockSymbolTable) {
     super();
-    this.locals = Locals.child(parent.locals, positionals);
   }
 }
 
@@ -93,13 +54,11 @@ export class TemplateBlock extends Block {
   public head: Statements.ElementHead[] = [];
   public blocks: SerializedBlock[] = [];
   public hasPartials = false;
-  public locals: Locals;
   private sawElement = false;
   private inParams = false;
 
-  constructor() {
+  constructor(private size: number) {
     super();
-    this.locals = Locals.top();
   }
 
   push(statement: Statement) {
@@ -114,8 +73,6 @@ export class TemplateBlock extends Block {
       if (Statements.isFlushElement(statement)) {
         this.inParams = false;
         this.head.push(statement);
-      } else if (Statements.isModifier(statement)) {
-        throw new Error('Compile Error: Element modifiers are not allowed in component roots');
       } else if (Statements.isInElementHead(statement)) {
         this.head.push(statement);
       } else {
@@ -128,6 +85,7 @@ export class TemplateBlock extends Block {
 
   toJSON(): SerializedTemplateBlock {
     return {
+      size: this.size,
       prelude: this.sawElement ? this.prelude : null,
       head: this.sawElement ? this.head : null,
       statements: this.sawElement ? this.statements : this.prelude,
@@ -143,12 +101,10 @@ export class ComponentBlock extends Block {
   public type = "component";
   public attributes: Statements.Attribute[] = [];
   public arguments: Statements.Argument[] = [];
-  public locals: Locals;
   private inParams = true;
 
-  constructor(parent: Block, positionals: string[] = []) {
+  constructor(private parent: Block, public table: BlockSymbolTable) {
     super();
-    this.locals = Locals.child(parent.locals, positionals);
   }
 
   push(statement: Statement) {
@@ -184,9 +140,11 @@ export class ComponentBlock extends Block {
 }
 
 export class Template<T extends TemplateMeta> {
-  public block = new TemplateBlock();
+  public block: TemplateBlock;
 
-  constructor(public meta: T) {}
+  constructor(symbols: ProgramSymbolTable, public meta: T) {
+    this.block = new TemplateBlock(symbols.size);
+  }
 
   toJSON(): SerializedTemplate<T> {
     return {
@@ -197,8 +155,8 @@ export class Template<T extends TemplateMeta> {
 }
 
 export default class JavaScriptCompiler<T extends TemplateMeta> {
-  static process<T extends TemplateMeta>(opcodes, meta): Template<T> {
-    let compiler = new JavaScriptCompiler<T>(opcodes, meta);
+  static process<T extends TemplateMeta>(opcodes: any[], symbols: ProgramSymbolTable, meta): Template<T> {
+    let compiler = new JavaScriptCompiler<T>(opcodes, symbols, meta);
     return compiler.process();
   }
 
@@ -207,9 +165,9 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   private opcodes: any[];
   private values: StackValue[] = [];
 
-  constructor(opcodes, meta: T) {
+  constructor(opcodes, symbols: ProgramSymbolTable, meta: T) {
     this.opcodes = opcodes;
-    this.template = new Template(meta);
+    this.template = new Template(symbols, meta);
   }
 
   process(): Template<T> {
@@ -223,8 +181,8 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
 
   /// Nesting
 
-  startBlock([program]) {
-    let block: Block = new InlineBlock(this.blocks.current, program.blockParams);
+  startBlock([program]: [AST.Program]) {
+    let block: Block = new InlineBlock(this.blocks.current, program['symbol']);
     this.blocks.push(block);
   }
 
@@ -289,7 +247,9 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.push([Ops.FlushElement]);
   }
 
-  closeElement(tag: str) {
+  closeElement(element: AST.ElementNode) {
+    let tag = element.tag;
+
     if (tag.indexOf('-') !== -1) {
       let component = this.endComponent();
       this.push([Ops.Component, tag, component]);
@@ -323,24 +283,21 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.push([Ops.DynamicArg, name.slice(1), value]);
   }
 
-  yield(to: string) {
+  yield(to: number) {
     let params = this.popValue<Params>();
     this.push([Ops.Yield, to, params]);
-    this.template.block.yields.add(to);
   }
 
   debugger() {
     this.push([Ops.Debugger, null, null]);
   }
 
-  hasBlock(name: string) {
+  hasBlock(name: number) {
     this.pushValue<Expressions.HasBlock>([Ops.HasBlock, name]);
-    this.template.block.yields.add(name);
   }
 
-  hasBlockParams(name: string) {
+  hasBlockParams(name: number) {
     this.pushValue<Expressions.HasBlockParams>([Ops.HasBlockParams, name]);
-    this.template.block.yields.add(name);
   }
 
   partial() {
@@ -363,13 +320,8 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.pushValue<Expressions.Unknown>([Ops.Unknown, name]);
   }
 
-  arg(path: string[]) {
-    this.template.block.named.add(path[0]);
-    this.pushValue<Expressions.Arg>([Ops.Arg, path]);
-  }
-
-  get(path: string[]) {
-    this.pushValue<Expressions.Get>([Ops.Get, path]);
+  get(head: number, path: string[]) {
+    this.pushValue<Expressions.Get>([Ops.Get, head, path]);
   }
 
   concat() {
@@ -385,8 +337,8 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
 
   /// Stack Management Opcodes
 
-  startComponent(blockParams: string[]) {
-    let component = new ComponentBlock(this.blocks.current, blockParams);
+  startComponent(element: AST.ElementNode) {
+    let component = new ComponentBlock(this.blocks.current, element['symbols']);
     this.blocks.push(component);
   }
 

@@ -3,14 +3,10 @@ import { CompiledDynamicBlock, CompiledDynamicProgram } from '../compiled/blocks
 import { Ops } from '../../../wire-format';
 import * as WireFormat from '@glimmer/wire-format';
 import OpcodeBuilder from '../compiled/opcodes/builder';
-import CompiledHasBlock, { CompiledHasBlockParams } from '../compiled/expressions/has-block';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
 import { Op } from '../opcodes';
 import { VM } from '../vm';
 import { ClientSide, Block } from '../scanner';
-import {
-  CompiledInPartialGetBlock
-} from '../compiled/expressions/has-block';
 
 import {
   EMPTY_ARRAY,
@@ -417,25 +413,14 @@ class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
 
 STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder) => {
   let [, to, params] = sexp;
-
-  if (params) compileList(params, builder);
-
-  let table = builder.symbolTable;
-  let yields: Option<number>, partial: Option<number>;
-
   let count = compileList(params, builder);
 
-  if (yields = table.getSymbol('yields', to)) {
-    builder.push(Op.GetBlock, yields);
-  } else if (partial = table.getPartialArgs()) {
-    builder.push(Op.GetEvalBlock, partial, builder.string(to));
-  } else {
-    throw new Error(`[BUG] ${to} is not a valid block name.`);
-  }
-
+  builder.push(Op.GetBlock, to);
   builder.compileDynamicBlock();
   builder.invokeDynamic(new InvokeDynamicYield(count));
   builder.popScope();
+
+  // TODO: handle runtime eval (e.g. partials, {{debugger}})
 });
 
 STATEMENTS.add(Ops.Debugger, (_sexp: WireFormat.Statements.Debugger, _builder: OpcodeBuilder) => {
@@ -475,7 +460,10 @@ EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder: OpcodeBuilder) => {
   if (builder.env.hasHelper(name, builder.symbolTable)) {
     EXPRESSIONS.compile([Ops.Helper, name, EMPTY_ARRAY, null], builder);
   } else {
-    compilePath(path, builder);
+    builder.getVariable(0);
+    builder.getProperty(name);
+
+    // TODO: handle runtime eval (e.g. partials, {{debugger}})
   }
 });
 
@@ -510,8 +498,15 @@ CLIENT_SIDE_EXPRS.add(ClientSide.Ops.ResolvedHelper, (sexp: ClientSide.ResolvedH
   builder.helper(helper);
 });
 
-EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder: OpcodeBuilder) => {
-  // TODO: More triage in the precompiler
+EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder) => {
+  let [, head, path] = sexp;
+  builder.getVariable(head);
+  path.forEach(p => builder.getProperty(p));
+
+  // TODO: handle runtime eval (e.g. partials, {{debugger}})
+});
+
+EXPRESSIONS.add(Ops.FixThisBeforeWeMerge, (sexp: E.FixMeBeforeWeMerge, builder: OpcodeBuilder) => {
   compilePath(sexp[1], builder);
 });
 
@@ -519,51 +514,16 @@ EXPRESSIONS.add(Ops.Undefined, (_sexp, builder) => {
   return builder.primitive(undefined);
 });
 
-EXPRESSIONS.add(Ops.Arg, (sexp: E.Arg, builder: OpcodeBuilder) => {
-  let [, parts] = sexp;
-  let head = parts[0];
-  let named: Option<number>, partial: Option<number>;
-  let path: string[];
-
-  if (named = builder.symbolTable.getSymbol('named', head)) {
-    builder.getVariable(named);
-    path = parts.slice(1);
-  } else if (partial = builder.symbolTable.getPartialArgs()) {
-    throw new Error("TODO: Partial");
-  } else {
-    throw new Error(`[BUG] @${parts.join('.')} is not a valid lookup path.`);
-  }
-
-  path.forEach(p => builder.getProperty(p));
-});
-
 EXPRESSIONS.add(Ops.HasBlock, (sexp: E.HasBlock, builder) => {
-  let blockName = sexp[1];
+  builder.hasBlock(sexp[1]);
 
-  let yields: Option<number>, partial: Option<number>;
-
-  if (yields = builder.symbolTable.getSymbol('yields', blockName)) {
-    builder.hasBlock(blockName);
-  } else if (partial = builder.symbolTable.getPartialArgs()) {
-    let inner = new CompiledInPartialGetBlock(partial, blockName);
-    return new CompiledHasBlock(inner);
-  } else {
-    throw new Error('[BUG] ${blockName} is not a valid block name.');
-  }
+  // TODO: handle runtime eval (e.g. partials, {{debugger}})
 });
 
 EXPRESSIONS.add(Ops.HasBlockParams, (sexp: E.HasBlockParams, builder) => {
-  let blockName = sexp[1];
-  let yields: Option<number>, partial: Option<number>;
+  builder.hasBlockParams(sexp[1]);
 
-  if (yields = builder.symbolTable.getSymbol('yields', blockName)) {
-    builder.hasBlockParams(blockName);
-  } else if (partial = builder.symbolTable.getPartialArgs()) {
-    let inner = new CompiledInPartialGetBlock(partial, blockName);
-    return new CompiledHasBlockParams(inner);
-  } else {
-    throw new Error('[BUG] ${blockName} is not a valid block name.');
-  }
+  // TODO: handle runtime eval (e.g. partials, {{debugger}})
 });
 
 EXPRESSIONS.add(Ops.ClientSideExpression, (sexp: E.ClientSide, builder) => {
