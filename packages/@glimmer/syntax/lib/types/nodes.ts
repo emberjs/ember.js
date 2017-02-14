@@ -3,7 +3,7 @@ export interface BaseNode {
   // The type property should be a string literal. For example, Identifier
   // has: `type: "Identifier"`
   type: string;
-  loc?: SourceLocation;
+  loc: SourceLocation;
 }
 
 export interface SourceLocation {
