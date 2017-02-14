@@ -1,5 +1,5 @@
 import b from "../builders";
-import { appendChild } from "../utils";
+import { appendChild, isLiteral, printLiteral } from "../utils";
 
 export default {
   Program: function(program) {
@@ -277,6 +277,14 @@ function acceptCommonNodes(compiler, node) {
 
 function addElementModifier(element, mustache) {
   let { path, params, hash, loc } = mustache;
+
+  if (isLiteral(path)) {
+    let modifier = `{{${printLiteral(path)}}}`;
+    let tag = `<${element.name} ... ${modifier} ...`;
+
+    throw new Error(`In ${tag}, ${modifier} is not a valid modifier: "${path.original}" on line ${loc.start.line}.`);
+  }
+
   let modifier = b.elementModifier(path, params, hash, loc);
   element.modifiers.push(modifier);
 }

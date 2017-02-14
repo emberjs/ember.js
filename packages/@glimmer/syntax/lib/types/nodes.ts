@@ -46,7 +46,7 @@ export interface BlockStatement extends BaseNode {
 
 export interface ElementModifierStatement extends BaseNode {
   type: 'ElementModifierStatement';
-  path: PathExpression | Literal;
+  path: PathExpression;
   params: Expression[];
   hash: Hash;
 }

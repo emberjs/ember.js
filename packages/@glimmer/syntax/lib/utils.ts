@@ -1,3 +1,5 @@
+import * as AST from './types/nodes';
+
 // Regex to validate the identifier for block parameters.
 // Based on the ID validation regex in Handlebars.
 
@@ -60,4 +62,20 @@ export function childrenFor(node) {
 
 export function appendChild(parent, node) {
   childrenFor(parent).push(node);
+}
+
+export function isLiteral(path: AST.PathExpression | AST.Literal): path is AST.Literal {
+  return path.type === 'StringLiteral'
+      || path.type === 'BooleanLiteral'
+      || path.type === 'NumberLiteral'
+      || path.type === 'NullLiteral'
+      || path.type === 'UndefinedLiteral';
+}
+
+export function printLiteral(literal: AST.Literal): string {
+  if (literal.type === 'UndefinedLiteral') {
+    return 'undefined';
+  } else {
+    return JSON.stringify(literal.value);
+  }
 }
