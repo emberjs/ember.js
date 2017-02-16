@@ -114,7 +114,7 @@ moduleFor('Query Params - overlapping query param property names', class extends
       queryParams: { page: 'page' }
     });
     this.registerController('parent', parentController);
-    this.registerRoute('parent.child', Route.extend({controllerName: 'parent'}));
+    this.registerRoute('parent.child', Route.extend({ controllerName: 'parent' }));
 
     return this.setupBase('/parent').then(() => {
       this.transitionTo('parent.child', { queryParams: { page: 2 } });
