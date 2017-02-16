@@ -191,22 +191,19 @@ export class FrameStack {
     this.setCurrent(ip);
   }
 
-  hasOpcodes(): boolean {
-    return this.frame !== -1;
-  }
-
   nextStatement(env: Environment): Option<Opcode> {
-    let frame = this.frames[this.frame];
-    let ip = frame.ip;
-    let end = frame.end;
-
-    if (ip < end) {
-      let program = env.program;
-      frame.ip += 4;
-      return program.opcode(ip);
-    } else {
-      this.pop();
-      return null;
+    while (this.frame !== -1) {
+      let frame = this.frames[this.frame];
+      let ip = frame.ip;
+      let end = frame.end;
+      if (ip < end) {
+        let program = env.program;
+        frame.ip += 4;
+        return program.opcode(ip);
+      } else {
+        this.pop();
+      }
     }
+    return null;
   }
 }
