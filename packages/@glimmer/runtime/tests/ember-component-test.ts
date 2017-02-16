@@ -1318,36 +1318,6 @@ QUnit.test('correct scope - caller self can be threaded through (curly component
   );
 });
 
-QUnit.test('correct scope - self', assert => {
-  class FooBar extends BasicComponent {
-    public foo = 'foo';
-    public bar = 'bar';
-    public baz = null;
-
-    constructor(attrs: Attrs) {
-      super(attrs);
-      this.baz = attrs['baz'] || 'baz';
-    }
-  }
-
-  env.registerBasicComponent('foo-bar', FooBar, `<p>{{foo}} {{bar}} {{baz}}</p>`);
-
-  appendViewFor(
-    stripTight`
-      <div>
-        <foo-bar />
-        <foo-bar @baz={{zomg}} />
-      </div>`,
-    { zomg: "zomg" }
-  );
-
-  equalsElement(view.element, 'div', {},
-      stripTight`
-        <p>foo bar baz</p>
-        <p>foo bar zomg</p>`
-  );
-});
-
 QUnit.test('`false` class name do not render', assert => {
   appendViewFor('<div class={{isFalse}}>FALSE</div>', { isFalse: false });
   assert.strictEqual(view.element.getAttribute('class'), null);
