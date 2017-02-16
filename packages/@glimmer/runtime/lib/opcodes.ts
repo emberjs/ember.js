@@ -1151,8 +1151,6 @@ export class Constants {
   }
 
   string(value: string): ConstantString {
-    if (typeof value !== 'string') debugger;
-
     let index = this.strings.length;
     this.strings.push(value);
     return index + 1;

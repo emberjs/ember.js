@@ -62,7 +62,7 @@ APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {
 
 APPEND_OPCODES.add(Op.HasBlockParams, (vm, { op1: _block }) => {
   let block = vm.scope().getBlock(_block);
-  let hasBlockParams = block && block.symbolTable.getSymbolSize('local');
+  let hasBlockParams = block && block.symbolTable.parameters.length;
   vm.evalStack.push(hasBlockParams ? TRUE_REFERENCE : FALSE_REFERENCE);
 });
 

@@ -351,17 +351,17 @@ export abstract class Environment {
     return populateBuiltins();
   }
 
-  abstract hasHelper(helperName: string, blockMeta: TemplateMeta): boolean;
-  abstract lookupHelper(helperName: string, blockMeta: TemplateMeta): Helper;
+  abstract hasHelper(helperName: string, meta: TemplateMeta): boolean;
+  abstract lookupHelper(helperName: string, meta: TemplateMeta): Helper;
 
-  abstract hasModifier(modifierName: string, blockMeta: TemplateMeta): boolean;
-  abstract lookupModifier(modifierName: string, blockMeta: TemplateMeta): ModifierManager<Opaque>;
+  abstract hasModifier(modifierName: string, meta: TemplateMeta): boolean;
+  abstract lookupModifier(modifierName: string, meta: TemplateMeta): ModifierManager<Opaque>;
 
-  abstract hasComponentDefinition(tagName: string, symbolTable: SymbolTable): boolean;
-  abstract getComponentDefinition(tagName: string, symbolTable: SymbolTable): ComponentDefinition<Opaque>;
+  abstract hasComponentDefinition(tagName: string, meta: TemplateMeta): boolean;
+  abstract getComponentDefinition(tagName: string, meta: TemplateMeta): ComponentDefinition<Opaque>;
 
-  abstract hasPartial(partialName: string, symbolTable: SymbolTable): boolean;
-  abstract lookupPartial(PartialName: string, symbolTable: SymbolTable): PartialDefinition<TemplateMeta>;
+  abstract hasPartial(partialName: string, meta: TemplateMeta): boolean;
+  abstract lookupPartial(PartialName: string, meta: TemplateMeta): PartialDefinition<TemplateMeta>;
 }
 
 export default Environment;

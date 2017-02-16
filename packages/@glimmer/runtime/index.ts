@@ -47,10 +47,6 @@ export {
 } from './lib/compiled/opcodes/content';
 
 export {
-  CompiledExpression
-} from './lib/compiled/expressions';
-
-export {
   CompiledArgs,
   CompiledNamedArgs,
   CompiledPositionalArgs,
@@ -58,10 +54,6 @@ export {
   EvaluatedNamedArgs,
   EvaluatedPositionalArgs
 } from './lib/compiled/expressions/args';
-
-export {
-  FunctionExpression
-} from './lib/compiled/expressions/function';
 
 export {
   default as getDynamicVar

@@ -9,35 +9,28 @@ export abstract class SymbolTable {
   abstract has(name: string): boolean;
   abstract get(name: string): number;
 
-  abstract allocateLocal(name: string): number;
   abstract allocateNamed(name: string): number;
   abstract allocateBlock(name: string): number;
   abstract allocate(identifier: string): number;
 
   child(locals: string[]): BlockSymbolTable {
-    let d = dict<number>();
-
-    locals.forEach(name => d[name] = this.allocateLocal(name));
-
-    return new BlockSymbolTable(this, d);
+    let symbols = locals.map(name => this.allocate(name));
+    return new BlockSymbolTable(this, locals, symbols);
   }
 }
 
 export class ProgramSymbolTable extends SymbolTable {
-  public size = 1;
+  public symbols: string[] = [];
+
+  private size = 1;
   private named = dict<number>();
   private blocks = dict<number>();
-  private debug = [];
 
   has(name: string): boolean {
     return false;
   }
 
   get(name: string): never {
-    throw unreachable();
-  }
-
-  allocateLocal(): never {
     throw unreachable();
   }
 
@@ -55,33 +48,30 @@ export class ProgramSymbolTable extends SymbolTable {
     let block = this.blocks[name];
 
     if (!block) {
-      block = this.blocks[block] = this.allocate(`&${name}`);
+      block = this.blocks[name] = this.allocate(`&${name}`);
     }
 
     return block;
   }
 
   allocate(identifier: string): number {
-    this.debug.push(identifier);
+    this.symbols.push(identifier);
     return this.size++;
   }
 }
 
 export class BlockSymbolTable extends SymbolTable {
-  constructor(private parent: SymbolTable, private locals: Dict<number>) {
+  constructor(private parent: SymbolTable, public symbols: string[], public slots: number[]) {
     super();
   }
 
   has(name: string): boolean {
-    return name in this.locals || this.parent.has(name);
+    return (this.symbols.indexOf(name) !== -1) || this.parent.has(name);
   }
 
   get(name: string): number {
-    return this.locals[name] || this.parent.get(name);
-  }
-
-  allocateLocal(name: string): number {
-    return this.parent.allocate(name);
+    let slot = this.symbols.indexOf(name);
+    return slot === -1 ? this.parent.get(name) : this.slots[slot];
   }
 
   allocateNamed(name: string): number {
@@ -89,7 +79,7 @@ export class BlockSymbolTable extends SymbolTable {
   }
 
   allocateBlock(name: string): number {
-    return this.allocateBlock(name);
+    return this.parent.allocateBlock(name);
   }
 
   allocate(identifier: string): number {

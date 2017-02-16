@@ -6,7 +6,6 @@ import { Option } from '@glimmer/util';
 import { EMPTY_ARRAY } from './utils';
 import { TemplateMeta } from '@glimmer/wire-format';
 import * as WireFormat from '@glimmer/wire-format';
-import { entryPoint as entryPointTable, layout as layoutTable, block as blockTable } from './symbol-table';
 import { Opaque, SymbolTable, ProgramSymbolTable, BlockSymbolTable } from '@glimmer/interfaces';
 import { ComponentDefinition } from './component/interfaces';
 import { debugSlice } from './opcodes';
@@ -22,7 +21,7 @@ import {
 export type DeserializedStatement = WireFormat.Statement | WireFormat.Statements.Attribute | WireFormat.Statements.Argument;
 
 export function compileStatement(statement: WireFormat.Statement, builder: OpcodeBuilder) {
-  let refined = SPECIALIZE.specialize(statement, builder.symbolTable);
+  let refined = SPECIALIZE.specialize(statement);
   STATEMENTS.compile(refined, builder);
 }
 
@@ -36,7 +35,7 @@ export class RawTemplate<S extends SymbolTable> {
     let { compiledStatic } = this;
 
     if (!compiledStatic) {
-      let builder = compileStatements(this.statements, env, this.symbolTable);
+      let builder = compileStatements(this.statements, this.symbolTable.meta, env);
 
       let start = builder.start;
       let end = builder.finalize();
@@ -69,22 +68,27 @@ export type Template = RawTemplate<SymbolTable>;
 export type Program = RawTemplate<ProgramSymbolTable>;
 export type Block = RawTemplate<BlockSymbolTable>;
 
-function compileStatements(statements: WireFormat.Statement[], env: Environment, table: SymbolTable) {
-  let b = builder(env, table);
+function compileStatements(statements: WireFormat.Statement[], meta: TemplateMeta, env: Environment) {
+  let b = builder(env, meta);
   for (let statement of statements) {
-    let refined = SPECIALIZE.specialize(statement, table);
+    let refined = SPECIALIZE.specialize(statement);
     STATEMENTS.compile(refined, b);
   }
 
   return b;
 }
 
+export const ATTRS_BLOCK = '&attrs';
+
 export function layout(prelude: WireFormat.Statement[], head: WireFormat.Statement[], body: WireFormat.Statement[], symbolTable: ProgramSymbolTable) {
   let [, tag] = prelude.pop() as WireFormat.Statements.OpenElement;
   prelude.push([Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, tag]);
 
+  let attrsSymbol = symbolTable.symbols.length + 1;
+  symbolTable.symbols.push(ATTRS_BLOCK);
+
   let statements = prelude
-    .concat([[Ops.Yield, '%attrs%', EMPTY_ARRAY]])
+    .concat([[Ops.Yield, attrsSymbol, EMPTY_ARRAY]])
     .concat(head)
     .concat(body);
 
@@ -95,7 +99,7 @@ export default class Scanner {
   constructor(private block: WireFormat.SerializedTemplateBlock, private meta: TemplateMeta, private env: Environment) {
   }
 
-  scanEntryPoint(): RawTemplate<ProgramSymbolTable> {
+  scanEntryPoint(): Block {
     let { block, meta } = this;
 
     let statements;
@@ -105,38 +109,36 @@ export default class Scanner {
       statements = block.statements;
     }
 
-    let symbolTable = entryPointTable(meta);
-    let child = scanBlock(statements, symbolTable, this.env);
-    return new RawTemplate(child.statements, symbolTable);
+    return scanBlock({ statements, parameters: EMPTY_ARRAY }, meta, this.env);
   }
 
   scanLayout(): RawTemplate<ProgramSymbolTable> {
     let { block, meta } = this;
-    let { named, yields, hasPartials } = block;
+    let { symbols } = block;
 
     if (!block.prelude || !block.head) {
       throw new Error(`A layout must have a top-level element`);
     }
 
-    let symbolTable = layoutTable(meta, named, yields, hasPartials);
-    let { statements: prelude } = scanBlock(block.prelude, symbolTable, this.env);
-    let { statements: head } = scanBlock(block.head, symbolTable, this.env);
-    let { statements: body } = scanBlock(block.statements, symbolTable, this.env);
+    let symbolTable = { meta, symbols };
+    let { statements: prelude } = scanBlock({ statements: block.prelude, parameters: EMPTY_ARRAY }, meta, this.env);
+    let { statements: head } = scanBlock({ statements: block.head, parameters: EMPTY_ARRAY }, meta, this.env);
+    let { statements: body } = scanBlock({ statements: block.statements, parameters: EMPTY_ARRAY }, meta, this.env);
 
     return layout(prelude, head, body, symbolTable);
   }
 
-  scanPartial(symbolTable: ProgramSymbolTable): RawTemplate<ProgramSymbolTable> {
-    let { block } = this;
+  // scanPartial(symbolTable: ProgramSymbolTable): RawTemplate<ProgramSymbolTable> {
+  //   let { block } = this;
 
-    let child = scanBlock(block.statements, symbolTable, this.env);
+  //   let child = scanBlock(block.statements, symbolTable, this.env);
 
-    return new RawTemplate(child.statements, symbolTable);
-  }
+  //   return new RawTemplate(child.statements, symbolTable);
+  // }
 }
 
-export function scanBlock<S extends SymbolTable>(statements: WireFormat.Statement[], symbolTable: S, env: Environment): RawTemplate<S> {
-  return new RawInlineBlock(env, symbolTable, statements).scan();
+export function scanBlock(block: WireFormat.SerializedInlineBlock, meta: TemplateMeta, env: Environment): Block {
+  return new RawInlineBlock(env, meta, block).scan();
 }
 
 import { PublicVM } from './vm';
@@ -171,8 +173,8 @@ export namespace ClientSide {
   import ClientSideExpression = WireFormat.Ops.ClientSideExpression;
   import Core = WireFormat.Core;
 
-  export type ScannedComponent      = [ClientSideStatement, Ops.ScannedComponent, string, RawInlineBlock<BlockSymbolTable>, WireFormat.Core.Hash, Option<RawInlineBlock<BlockSymbolTable>>];
-  export type ResolvedComponent     = [ClientSideStatement, Ops.ResolvedComponent, ComponentDefinition<Opaque>, Option<RawInlineBlock<BlockSymbolTable>>, WireFormat.Core.Args, Option<Block>, Option<Block>];
+  export type ScannedComponent      = [ClientSideStatement, Ops.ScannedComponent, string, RawInlineBlock, WireFormat.Core.Hash, Option<RawInlineBlock>];
+  export type ResolvedComponent     = [ClientSideStatement, Ops.ResolvedComponent, ComponentDefinition<Opaque>, Option<RawInlineBlock>, WireFormat.Core.Args, Option<Block>, Option<Block>];
   export type OpenComponentElement  = [ClientSideStatement, Ops.OpenComponentElement, string];
   export type OpenPrimitiveElement  = [ClientSideStatement, Ops.OpenPrimitiveElement, string, string[]];
   export type OpenDynamicElement    = [ClientSideStatement, Ops.OpenDynamicElement, WireFormat.Expression];
@@ -182,7 +184,7 @@ export namespace ClientSide {
   export type StaticPartial         = [ClientSideStatement, Ops.StaticPartial, string];
   export type DynamicPartial        = [ClientSideStatement, Ops.DynamicPartial, WireFormat.Expression];
   export type NestedBlock           = [ClientSideStatement, Ops.NestedBlock, string, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
-  export type ScannedBlock          = [ClientSideStatement, Ops.ScannedBlock, string, Core.Params, Core.Hash, Option<RawInlineBlock<BlockSymbolTable>>, Option<RawInlineBlock<BlockSymbolTable>>];
+  export type ScannedBlock          = [ClientSideStatement, Ops.ScannedBlock, string, Core.Params, Core.Hash, Option<RawInlineBlock>, Option<RawInlineBlock>];
 
   export type ResolvedHelper        = [ClientSideExpression, Ops.ResolvedHelper, Helper, Core.Params, Core.Hash];
   export type FunctionExpression    = [ClientSideExpression, Ops.FunctionExpression, FunctionExpressionCallback<Opaque>];
@@ -212,12 +214,12 @@ export namespace ClientSide {
 
 const { Ops } = WireFormat;
 
-export class RawInlineBlock<S extends SymbolTable> {
-  constructor(private env: Environment, private table: S, private statements: WireFormat.Statement[]) {}
+export class RawInlineBlock {
+  constructor(private env: Environment, private meta: TemplateMeta, private block: WireFormat.SerializedInlineBlock) {}
 
-  scan(): RawTemplate<S> {
+  scan(): Block {
     let buffer: WireFormat.Statement[] = [];
-    let statements = this.statements;
+    let statements = this.block.statements;
     for (let statement of statements) {
       if (WireFormat.Statements.isBlock(statement)) {
         buffer.push(this.specializeBlock(statement));
@@ -228,7 +230,7 @@ export class RawInlineBlock<S extends SymbolTable> {
       }
     }
 
-    return new RawTemplate<S>(buffer, this.table);
+    return new RawTemplate(buffer, { parameters: this.block.parameters, meta: this.meta });
   }
 
   private specializeBlock(block: WireFormat.Statements.Block): ClientSide.ScannedBlock {
@@ -237,26 +239,27 @@ export class RawInlineBlock<S extends SymbolTable> {
   }
 
   private specializeComponent(sexp: WireFormat.Statements.Component): WireFormat.Statement[] {
-    let [, tag, component] = sexp;
+    let [, tag, attrs, args, block] = sexp;
 
-    if (this.env.hasComponentDefinition(tag, this.table)) {
-      let child = this.child(component);
-      let attrs = new RawInlineBlock(this.env, this.table, component.attrs);
-      return [[Ops.ClientSideStatement, ClientSide.Ops.ScannedComponent, tag, attrs, component.args, child]];
+    if (this.env.hasComponentDefinition(tag, this.meta)) {
+      let child = this.child(block);
+      let attrsBlock = new RawInlineBlock(this.env, this.meta, { statements: attrs, parameters: EMPTY_ARRAY });
+      return [[Ops.ClientSideStatement, ClientSide.Ops.ScannedComponent, tag, attrsBlock, args, child]];
+    } else if (block && block.parameters.length) {
+      throw new Error(`Compile Error: Cannot find component ${tag}`);
     } else {
       return [
-        [Ops.OpenElement, tag, EMPTY_ARRAY],
-        ...component.attrs,
+        [Ops.OpenElement, tag],
+        ...attrs,
         [Ops.FlushElement],
-        ...component.statements,
+        ...(block ? block.statements : EMPTY_ARRAY),
         [Ops.CloseElement]
       ];
     }
   }
 
-  child(block: Option<WireFormat.SerializedBlock>): Option<RawInlineBlock<BlockSymbolTable>> {
+  child(block: Option<WireFormat.SerializedInlineBlock>): Option<RawInlineBlock> {
     if (!block) return null;
-    let table = blockTable(this.table, block.locals);
-    return new RawInlineBlock(this.env, table, block.statements);
+    return new RawInlineBlock(this.env, this.meta, block);
   }
 }

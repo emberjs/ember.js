@@ -1,12 +1,12 @@
-import { BlockSymbolTable, ProgramSymbolTable } from '../symbol-table';
 import { CompiledDynamicBlock, CompiledDynamicProgram } from '../compiled/blocks';
 import { Ops } from '../../../wire-format';
 import * as WireFormat from '@glimmer/wire-format';
+import { BlockSymbolTable, ProgramSymbolTable } from '@glimmer/interfaces';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
 import { Op } from '../opcodes';
 import { VM } from '../vm';
-import { ClientSide, Block } from '../scanner';
+import { ATTRS_BLOCK, ClientSide, Block } from '../scanner';
 
 import {
   EMPTY_ARRAY,
@@ -102,14 +102,14 @@ STATEMENTS.add(Ops.FlushElement, (_sexp, builder: OpcodeBuilder) => {
 });
 
 STATEMENTS.add(Ops.Modifier, (_sexp: S.Modifier, _builder: OpcodeBuilder) => {
-  let { env, symbolTable } = _builder;
+  let { env, meta } = _builder;
   let [, name, params, hash] = _sexp;
 
   compileArgs(params, hash, _builder); // side-effecty seems weird
 
-  if (env.hasModifier(name, symbolTable)) {
+  if (env.hasModifier(name, meta)) {
     _builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
-    _builder.modifier(env.lookupModifier(name, symbolTable));
+    _builder.modifier(env.lookupModifier(name, meta));
   } else {
     throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
   }
@@ -198,32 +198,35 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
   constructor(private attrs: Option<Block>, private names: string[]) {}
 
   invoke(vm: VM, layout: Option<CompiledDynamicProgram>) {
-    let table = layout!.symbolTable as ProgramSymbolTable;
+    let { symbols } = layout!.symbolTable as ProgramSymbolTable;
     let stack = vm.evalStack;
     let { names: callerNames } = this;
 
-    let scope = vm.pushRootScope(table.size, true);
+    let scope = vm.pushRootScope(symbols.length + 1, true);
     scope.bindSelf(stack.pop<VersionedPathReference<Opaque>>());
 
-    scope.bindBlock(table.getSymbol('yields', '%attrs%')!, this.attrs);
-
-    let calleeNames = table.getSymbols().named!;
+    scope.bindBlock(symbols.indexOf(ATTRS_BLOCK) + 1, this.attrs);
 
     for (let i=callerNames.length - 1; i>=0; i--) {
-      let symbol = calleeNames && calleeNames[callerNames[i]];
+      let symbol = symbols.indexOf(callerNames[i]);
       let value = stack.pop<VersionedPathReference<Opaque>>();
 
-      if (symbol) scope.bindSymbol(symbol, value);
+      if (symbol !== -1) scope.bindSymbol(symbol + 1, value);
     }
 
-    let inverseSymbol = table.getSymbol('yields', 'inverse');
+    let inverseSymbol = symbols.indexOf('&inverse');
     let inverse = stack.pop<Option<Block>>();
 
-    if (inverseSymbol !== null) {
-      scope.bindBlock(inverseSymbol, inverse);
+    if (inverseSymbol !== -1) {
+      scope.bindBlock(inverseSymbol + 1, inverse);
     }
 
-    scope.bindBlock(table.getSymbol('yields', 'default')!, stack.pop<Option<Block>>());
+    let defaultSymbol = symbols.indexOf('&default');
+    let defaultBlock = stack.pop<Option<Block>>();
+
+    if (defaultSymbol !== -1) {
+      scope.bindBlock(defaultSymbol + 1, defaultBlock);
+    }
 
     vm.invoke(layout!);
   }
@@ -308,7 +311,7 @@ CLIENT_SIDE.add(ClientSide.Ops.ScannedComponent, (sexp: ClientSide.ScannedCompon
   // (PopDynamicScope)
   // (CommitComponentTransaction)
 
-  let definition = builder.env.getComponentDefinition(tag, builder.symbolTable);
+  let definition = builder.env.getComponentDefinition(tag, builder.meta);
 
   let state = builder.local();
 
@@ -340,11 +343,11 @@ CLIENT_SIDE.add(ClientSide.Ops.ScannedComponent, (sexp: ClientSide.ScannedCompon
 CLIENT_SIDE.add(ClientSide.Ops.StaticPartial, (sexp: ClientSide.StaticPartial, builder) => {
   let [,, name] = sexp;
 
-  if (!builder.env.hasPartial(name, builder.symbolTable)) {
+  if (!builder.env.hasPartial(name, builder.meta)) {
     throw new Error(`Compile Error: Could not find a partial named "${name}"`);
   }
 
-  let definition = builder.env.lookupPartial(name, builder.symbolTable);
+  let definition = builder.env.lookupPartial(name, builder.meta);
 
   builder.putPartialDefinition(definition);
   builder.evaluatePartial();
@@ -386,7 +389,7 @@ class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
     }
 
     let table = block.symbolTable;
-    let locals = table.getSymbols().locals; // always present in inline blocks
+    let locals = table.parameters; // always present in inline blocks
 
     let calleeCount = locals ? locals.length : 0;
     let excess = Math.min(callerCount - calleeCount, 0);
@@ -457,7 +460,7 @@ export function expr(expression: WireFormat.Expression, builder: OpcodeBuilder):
 EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder: OpcodeBuilder) => {
   let name = sexp[1];
 
-  if (builder.env.hasHelper(name, builder.symbolTable)) {
+  if (builder.env.hasHelper(name, builder.meta)) {
     EXPRESSIONS.compile([Ops.Helper, name, EMPTY_ARRAY, null], builder);
   } else {
     builder.getVariable(0);
@@ -478,13 +481,13 @@ CLIENT_SIDE_EXPRS.add(ClientSide.Ops.FunctionExpression, (sexp: ClientSide.Funct
 });
 
 EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
-  let { env, symbolTable } = builder;
+  let { env, meta } = builder;
   let [, name, params, hash] = sexp;
 
-  if (env.hasHelper(name, symbolTable)) {
+  if (env.hasHelper(name, meta)) {
     compileArgs(params, hash, builder);
     builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
-    builder.helper(env.lookupHelper(name, symbolTable));
+    builder.helper(env.lookupHelper(name, meta));
   } else {
     throw new Error(`Compile Error: ${name} is not a helper`);
   }
@@ -504,10 +507,6 @@ EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder) => {
   path.forEach(p => builder.getProperty(p));
 
   // TODO: handle runtime eval (e.g. partials, {{debugger}})
-});
-
-EXPRESSIONS.add(Ops.FixThisBeforeWeMerge, (sexp: E.FixMeBeforeWeMerge, builder: OpcodeBuilder) => {
-  compilePath(sexp[1], builder);
 });
 
 EXPRESSIONS.add(Ops.Undefined, (_sexp, builder) => {
@@ -551,25 +550,6 @@ export function compileBlocks(block: Option<Block>, inverse: Option<Block>, buil
   if (!block && !inverse) return EMPTY_BLOCKS;
   builder.pushBlocks(block, inverse);
   return { default: !!block, inverse: !!inverse };
-}
-
-function compilePath(parts: string[], builder: OpcodeBuilder) {
-  let head = parts[0];
-  let local: Option<number>;
-  let path: string[];
-
-  if (head === null) { // {{this.foo}}
-    builder.self();
-    path = parts.slice(1);
-  } else if (local = builder.symbolTable.getSymbol('local', head)) {
-    builder.getVariable(local);
-    path = parts.slice(1);
-  } else {
-    builder.self();
-    path = parts;
-  }
-
-  path.forEach(p => builder.getProperty(p));
 }
 
 export type NestedBlockSyntax = ClientSide.NestedBlock;
