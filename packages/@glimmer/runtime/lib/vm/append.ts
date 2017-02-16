@@ -27,6 +27,11 @@ export interface PublicVM {
   newDestroyable(d: Destroyable): void;
 }
 
+export interface IteratorResult<T> {
+  value: T | null;
+  done: boolean;
+}
+
 export default class VM implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
@@ -35,6 +40,7 @@ export default class VM implements PublicVM {
   public listBlockStack = new Stack<ListBlockOpcode>();
   public frame = new FrameStack();
   public constants: Constants;
+  private notDone = { done: false, value: null };
 
   static initial(
     env: Environment,
@@ -265,28 +271,46 @@ export default class VM implements PublicVM {
   }
 
   execute(start: number, end: number, initialize?: (vm: VM) => void): RenderResult {
-    let { elementStack, frame, updatingOpcodeStack, env } = this;
+    this.prepare(start, end, initialize);
+    let result: IteratorResult<RenderResult>;
+
+    while (true) {
+      result = this.next();
+      if (result.done) break;
+    }
+
+    return result.value as RenderResult;
+  }
+
+  prepare(start: number, end: number, initialize?: (vm: VM) => void): void {
+    let { elementStack, frame, updatingOpcodeStack } = this;
 
     elementStack.pushSimpleBlock();
 
     updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
+
     frame.push(start, end);
 
     if (initialize) initialize(this);
+  }
 
+  next(): IteratorResult<RenderResult> {
+    let { frame, env, updatingOpcodeStack, elementStack } = this;
     let opcode: Option<Opcode>;
 
-    while (frame.hasOpcodes()) {
-      if (opcode = frame.nextStatement(this.env)) {
-        APPEND_OPCODES.evaluate(this, opcode);
-      }
+    if (opcode = frame.nextStatement(env)) {
+      APPEND_OPCODES.evaluate(this, opcode);
+      return this.notDone;
     }
 
-    return new RenderResult(
-      env,
-      expect(updatingOpcodeStack.pop(), 'there should be a final updating opcode stack'),
-      elementStack.popBlock()
-    );
+    return {
+      done: true,
+      value: new RenderResult(
+        env,
+        expect(updatingOpcodeStack.pop(), 'there should be a final updating opcode stack'),
+        elementStack.popBlock()
+      )
+    };
   }
 
   evaluateOpcode(opcode: Opcode) {

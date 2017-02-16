@@ -8,6 +8,7 @@ import { SymbolTable } from '@glimmer/interfaces';
 import { Environment, DynamicScope } from './environment';
 import { ElementStack } from './builder';
 import { VM } from './vm';
+import { IteratorResult } from './vm/append';
 import RenderResult from './vm/render-result';
 import Scanner, {
   EntryPoint,
@@ -113,7 +114,15 @@ function template<T>(block: SerializedTemplateBlock, id: string, meta: T, env: E
     let elementStack = ElementStack.forInitialRender(env, appendTo, null);
     let compiled = asEntryPoint().compile(env);
     let vm = VM.initial(env, self, dynamicScope, elementStack, compiled.symbols);
-    return vm.execute(compiled.start, compiled.end);
+    vm.prepare(compiled.start, compiled.end);
+    let result: IteratorResult<RenderResult>;
+
+    do {
+      result = vm.next();
+    } while (!result.done);
+
+    return result.value as RenderResult;
   };
+
   return { id, meta, _block: block, asEntryPoint, asLayout, asPartial, render };
 }
