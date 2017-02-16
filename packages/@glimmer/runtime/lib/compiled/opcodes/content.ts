@@ -13,7 +13,7 @@ import Upsert, {
 import { isComponentDefinition } from '../../component/interfaces';
 import { DOMTreeConstruction } from '../../dom/helper';
 import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { CompiledArgs } from '../expressions';
+import { CompiledArgs } from '../expressions/args';
 import { VM, UpdatingVM } from '../../vm';
 import { TryOpcode, VMState } from '../../vm/update';
 import { Reference, VersionedPathReference, ReferenceCache, UpdatableTag, TagWrapper, isModified, isConst, map } from '@glimmer/reference';
@@ -24,7 +24,6 @@ import OpcodeBuilderDSL from './builder';
 import { ConditionalReference } from '../../references';
 import { Environment } from '../../environment';
 import { UpdatableBlockTracker } from '../../builder';
-import { SymbolTable } from '@glimmer/interfaces';
 import * as WireFormat from '@glimmer/wire-format';
 import { APPEND_OPCODES, Op } from '../../opcodes';
 
@@ -110,7 +109,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDyn
   private start = -1;
   private end = -1;
 
-  constructor(private expression: WireFormat.Expression, private symbolTable: SymbolTable) {
+  constructor(private expression: WireFormat.Expression) {
     super();
   }
 
@@ -179,7 +178,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDyn
     // definition object at update time. That is handled by the "lazy deopt"
     // code on the update side (scroll down for the next big block of comment).
 
-    let dsl = new OpcodeBuilderDSL(this.symbolTable, env);
+    let dsl = new OpcodeBuilderDSL(env);
 
     dsl.putValue(this.expression);
     dsl.test(IsComponentDefinitionReference.create);

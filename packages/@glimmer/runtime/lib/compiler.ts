@@ -1,19 +1,14 @@
+import { unreachable } from '@glimmer/util';
 import Environment, { Helper } from './environment';
 import { SymbolTable } from '@glimmer/interfaces';
 import { CompiledDynamicProgram } from './compiled/blocks';
 import { Maybe, Option } from '@glimmer/util';
-import { Ops } from '@glimmer/wire-format';
-
-import {
-  EMPTY_ARRAY
-} from './utils';
+import { Ops, TemplateMeta } from '@glimmer/wire-format';
 
 import Scanner, {
   ClientSide,
-  RawTemplate,
   Program,
   compileStatement,
-  scanBlock
 } from './scanner';
 
 import {
@@ -31,10 +26,6 @@ import {
   expr,
   compileComponentArgs
 } from './syntax/functions';
-
-import {
-  layout as layoutTable
-} from './symbol-table';
 
 import OpcodeBuilderDSL from './compiled/opcodes/builder';
 
@@ -89,6 +80,7 @@ class WrappedBuilder {
   constructor(public env: Environment, private layout: WireTemplate) {}
 
   compile(): Program {
+    throw unreachable();
     //========DYNAMIC
     //        PutValue(TagExpr)
     //        Test
@@ -117,49 +109,49 @@ class WrappedBuilder {
     //        DidRenderLayout
     //        Exit
 
-    let { env, layout: { meta, block, block: { named, yields, hasPartials } } } = this;
+    // let { env, layout: { meta, block, block: { named, yields, hasPartials } } } = this;
 
-    let statements;
-    if (block.prelude && block.head) {
-      statements = block.prelude.concat(block.head).concat(block.statements);
-    } else {
-      statements = block.statements;
-    }
+    // let statements;
+    // if (block.prelude && block.head) {
+    //   statements = block.prelude.concat(block.head).concat(block.statements);
+    // } else {
+    //   statements = block.statements;
+    // }
 
-    let dynamicTag = this.tag.getDynamic();
+    // let dynamicTag = this.tag.getDynamic();
 
-    if (dynamicTag) {
-      let element: WireFormat.Statement[] = [
-        [Ops.Block, ['with'], [dynamicTag], null, {
-          locals: ['tag'],
-          statements: [
-            [Ops.ClientSideStatement, ClientSide.Ops.OpenDynamicElement, [Ops.FixThisBeforeWeMerge, ['tag']]],
-            [Ops.Yield, '%attrs%', EMPTY_ARRAY],
-            ...this.attrs['buffer'],
-            [Ops.FlushElement]
-          ]
-        }, null],
-        ...statements,
-        [Ops.Block, ['if'], [dynamicTag], null, {
-          locals: EMPTY_ARRAY,
-          statements: [
-            [Ops.CloseElement]
-          ]
-        }, null]
-      ];
+    // if (dynamicTag) {
+    //   let element: WireFormat.Statement[] = [
+    //     [Ops.Block, ['with'], [dynamicTag], null, {
+    //       locals: ['tag'],
+    //       statements: [
+    //         [Ops.ClientSideStatement, ClientSide.Ops.OpenDynamicElement, [Ops.FixThisBeforeWeMerge, ['tag']]],
+    //         [Ops.Yield, '%attrs%', EMPTY_ARRAY],
+    //         ...this.attrs['buffer'],
+    //         [Ops.FlushElement]
+    //       ]
+    //     }, null],
+    //     ...statements,
+    //     [Ops.Block, ['if'], [dynamicTag], null, {
+    //       locals: EMPTY_ARRAY,
+    //       statements: [
+    //         [Ops.CloseElement]
+    //       ]
+    //     }, null]
+    //   ];
 
-      let table = layoutTable(meta, named, yields.concat('%attrs%'), hasPartials);
-      let child = scanBlock(element, table, env);
-      return new RawTemplate(child.statements, table);
-    }
+    //   let table = layoutTable(meta, named, yields.concat('%attrs%'), hasPartials);
+    //   let child = scanBlock(element, table, env);
+    //   return new RawTemplate(child.statements, table);
+    // }
 
-    let staticTag = this.tag.getStatic()!;
-    let prelude: [ClientSide.OpenComponentElement] = [[Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, staticTag]];
+    // let staticTag = this.tag.getStatic()!;
+    // let prelude: [ClientSide.OpenComponentElement] = [[Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, staticTag]];
 
-    let head = this.attrs['buffer'];
+    // let head = this.attrs['buffer'];
 
-    let scanner = new Scanner({ ...block, prelude, head }, meta, env);
-    return scanner.scanLayout();
+    // let scanner = new Scanner({ ...block, prelude, head }, meta, env);
+    // return scanner.scanLayout();
   }
 }
 
@@ -292,6 +284,6 @@ export class ComponentBuilder implements IComponentBuilder {
   }
 }
 
-export function builder<S extends SymbolTable>(env: Environment, symbolTable: S) {
-  return new OpcodeBuilderDSL(symbolTable, env);
+export function builder(env: Environment, meta: TemplateMeta) {
+  return new OpcodeBuilderDSL(env, meta);
 }

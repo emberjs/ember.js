@@ -1,6 +1,6 @@
 import TemplateVisitor, { SymbolTable, Action } from "./template-visitor";
 import JavaScriptCompiler, { Template } from "./javascript-compiler";
-import { getAttrNamespace } from "@glimmer/util";
+import { Stack, getAttrNamespace } from "@glimmer/util";
 import { assert } from "@glimmer/util";
 import { TemplateMeta } from "@glimmer/wire-format";
 import { AST, isLiteral } from '@glimmer/syntax';
@@ -26,12 +26,16 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   private options: CompileOptions<T>;
   private templateId = 0;
   private templateIds: number[] = [];
-  private symbols: SymbolTable = null;
+  private symbolStack = new Stack<SymbolTable>();
   private opcodes: any[] = [];
   private includeMeta = false;
 
   constructor(options: CompileOptions<T>) {
     this.options = options || {};
+  }
+
+  get symbols(): SymbolTable {
+    return this.symbolStack.current;
   }
 
   process(actions: Action[]): Action[] {
@@ -43,22 +47,23 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   }
 
   startProgram(program: [AST.Program]) {
-    this.symbols = program[0]['symbols'];
+    this.symbolStack.push(program[0]['symbols']);
     this.opcode('startProgram', program, program);
   }
 
   endProgram() {
+    this.symbolStack.pop();
     this.opcode('endProgram', null);
   }
 
   startBlock(program: [AST.Program]) {
-    this.symbols = program[0]['symbols'];
+    this.symbolStack.push(program[0]['symbols']);
     this.templateId++;
     this.opcode('startBlock', program, program);
   }
 
   endBlock() {
-    this.symbols = null;
+    this.symbolStack.pop();
     this.templateIds.push(this.templateId - 1);
     this.opcode('endBlock', null);
   }
@@ -72,6 +77,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   }
 
   openElement([action]: [AST.ElementNode]) {
+
     this.opcode('openElement', action, action);
     for (let i = 0; i < action.attributes.length; i++) {
       this.attribute([action.attributes[i]]);
@@ -81,9 +87,11 @@ export default class TemplateCompiler<T extends TemplateMeta> {
       this.modifier([action.modifiers[i]]);
     }
     this.opcode('flushElement', null);
+    this.symbolStack.push(action['symbols']);
   }
 
   closeElement([action]: [AST.ElementNode]) {
+    this.symbolStack.pop();
     this.opcode('closeElement', null, action);
   }
 

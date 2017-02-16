@@ -1,3 +1,4 @@
+import { TemplateMeta } from '@glimmer/wire-format';
 import * as content from './content';
 import * as vm from './vm';
 
@@ -13,7 +14,7 @@ import Environment, { Program } from '../../environment';
 import { SymbolTable } from '@glimmer/interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
-import { ClientSide, Block, Program as Layout } from '../../scanner';
+import { ClientSide, Block } from '../../scanner';
 import { compileList } from '../../syntax/functions';
 
 import {
@@ -32,10 +33,6 @@ export interface CompilesInto<E> {
 export type Represents<E> = CompilesInto<E> | E;
 
 export type Label = string;
-
-export interface SymbolLookup {
-  symbolTable: SymbolTable;
-}
 
 type TargetOpcode = Op.Jump | Op.JumpIf | Op.JumpUnless;
 type RangeOpcode = Op.Enter | Op.EnterList;
@@ -77,19 +74,14 @@ class Labels {
   }
 }
 
-// const HI = 0x80000000;
-// const HI_MASK = 0x7FFFFFFF;
-// const HI2 = 0x40000000;
-// const HI2_MASK = 0xbFFFFFFF;
-
-export abstract class BasicOpcodeBuilder implements SymbolLookup {
+export abstract class BasicOpcodeBuilder {
   private labelsStack = new Stack<Labels>();
   public constants: Constants;
   public start: number;
   private locals = 0;
   private _localsSize = 0;
 
-  constructor(public symbolTable: SymbolTable, public env: Environment, public program: Program) {
+  constructor(public env: Environment, public meta: TemplateMeta, public program: Program) {
     this.constants = env.constants;
     this.start = program.next;
 
@@ -162,11 +154,11 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   }
 
   putDynamicPartialDefinition() {
-    this.push(Op.PutDynamicPartial, this.constants.other(this.symbolTable));
+    // this.push(Op.PutDynamicPartial, this.constants.other(this.symbolTable));
   }
 
   evaluatePartial() {
-    this.push(Op.EvaluatePartial, this.constants.other(this.symbolTable), this.constants.other(dict()));
+    // this.push(Op.EvaluatePartial, this.constants.other(this.symbolTable), this.constants.other(dict()));
   }
 
   // components
@@ -239,11 +231,11 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   }
 
   guardedCautiousAppend(expression: WireFormat.Expression) {
-    this.dynamicContent(new content.GuardedCautiousAppendOpcode(expression, this.symbolTable));
+    this.dynamicContent(new content.GuardedCautiousAppendOpcode(expression));
   }
 
   guardedTrustingAppend(expression: WireFormat.Expression) {
-    this.dynamicContent(new content.GuardedTrustingAppendOpcode(expression, this.symbolTable));
+    this.dynamicContent(new content.GuardedTrustingAppendOpcode(expression));
   }
 
   // dom
@@ -544,7 +536,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
   invokeStatic(_block: Block, ...args: ((builder: BasicOpcodeBuilder) => void)[]): void;
   invokeStatic(_block: Block, numArgs: number): void;
   invokeStatic(_block: Block): void {
-    let paramSize = _block.symbolTable.getSymbolSize('local');
+    let paramSize = _block.symbolTable.parameters.length;
     let argSize = arguments.length - 1;
     let onStack = false;
 
@@ -558,7 +550,7 @@ export abstract class BasicOpcodeBuilder implements SymbolLookup {
     }
 
     if (argSize) {
-      let locals = _block.symbolTable.getSymbols().locals!;
+      let locals = _block.symbolTable.parameters;
       this.pushChildScope();
 
       for (let i=0; i<argSize; i++) {
@@ -644,8 +636,8 @@ function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E>
 export default class OpcodeBuilder extends BasicOpcodeBuilder {
   public component: IComponentBuilder;
 
-  constructor(symbolTable: SymbolTable, env: Environment, program: Program = env.program) {
-    super(symbolTable, env, program);
+  constructor(env: Environment, meta: TemplateMeta, program: Program = env.program) {
+    super(env, meta, program);
     this.component = new ComponentBuilder(this);
   }
 
@@ -657,54 +649,10 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     }
   }
 
-  bindPositionalArgsForLocals(locals: Dict<number>) {
-    // Object.keys(locals).map(name => locals[name]);
-    let names = Object.keys(locals);
-    let symbols: number[] = new Array(names.length);
-    for (let i = 0; i < names.length; i++) {
-      symbols[i] = locals[names[i]];
-    }
-
-    this.push(Op.BindPositionalArgs, this.symbols(symbols));
-  }
-
-  preludeForLayout(layout: Layout) {
-    let symbols = layout.symbolTable.getSymbols();
-
-    if (symbols.named) {
-      let named = symbols.named;
-      let namedNames = Object.keys(named);
-      let namedSymbols = namedNames.map(n => named[n]);
-      this.push(Op.BindNamedArgs, this.names(namedNames), this.symbols(namedSymbols));
-    }
-
-    this.push(Op.BindCallerScope);
-
-    if (symbols.yields) {
-      let yields = symbols.yields;
-      let yieldNames = Object.keys(yields);
-      let yieldSymbols = yieldNames.map(n => yields[n]);
-      this.push(Op.BindBlocks, this.names(yieldNames), this.symbols(yieldSymbols));
-    }
-
-    if (symbols.partialArgs) {
-      this.push(Op.BindPartialArgs, symbols.partialArgs);
-    }
-  }
-
-  yield(positional: Option<WireFormat.Expression[]>, to: string) {
-    let table = this.symbolTable;
-    let yields: Option<number>, partial: Option<number>;
-
+  yield(positional: Option<WireFormat.Expression[]>, to: number) {
     let count = compileList(positional, this);
 
-    if (yields = table.getSymbol('yields', to)) {
-      this.push(Op.GetBlock, yields);
-    } else if (partial = this.symbolTable.getPartialArgs()) {
-      this.push(Op.GetEvalBlock, partial, this.string(to));
-    } else {
-      throw new Error('[BUG] ${to} is not a valid block name.');
-    }
+    this.push(Op.GetBlock, to);
 
     this.openBlock(count);
     this.closeBlock();

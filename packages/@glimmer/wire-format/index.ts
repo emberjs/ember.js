@@ -103,8 +103,8 @@ export namespace Statements {
   export type Append        = [Opcodes.Append, Expression, boolean];
   export type Comment       = [Opcodes.Comment, str];
   export type Modifier      = [Opcodes.Modifier, str, Params, Hash];
-  export type Block         = [Opcodes.Block, str, Params, Hash, Option<SerializedBlock>, Option<SerializedBlock>];
-  export type Component     = [Opcodes.Component, str, SerializedComponent];
+  export type Block         = [Opcodes.Block, str, Params, Hash, Option<SerializedInlineBlock>, Option<SerializedInlineBlock>];
+  export type Component     = [Opcodes.Component, str, Attribute[], Hash, Option<SerializedInlineBlock>];
   export type OpenElement   = [Opcodes.OpenElement, str];
   export type FlushElement  = [Opcodes.FlushElement];
   export type CloseElement  = [Opcodes.CloseElement];
@@ -211,12 +211,10 @@ export interface TemplateMeta {
  */
 export interface SerializedBlock {
   statements: Statements.Statement[];
-  locals: string[];
 }
 
-export interface SerializedComponent extends SerializedBlock {
-  attrs: Statements.Attribute[];
-  args: Core.Hash;
+export interface SerializedInlineBlock extends SerializedBlock {
+  parameters: number[];
 }
 
 /**
@@ -225,10 +223,8 @@ export interface SerializedComponent extends SerializedBlock {
 export interface SerializedTemplateBlock extends SerializedBlock {
   prelude: Option<Statements.Statement[]>;
   head: Option<Statements.ElementHead[]>;
-  named: string[];
-  yields: string[];
-  hasPartials: boolean;
-  size: number;
+  symbols: string[];
+  hasEval: boolean;
 }
 
 /**

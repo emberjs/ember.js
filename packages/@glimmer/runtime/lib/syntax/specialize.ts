@@ -1,12 +1,11 @@
 import * as WireFormat from '@glimmer/wire-format';
 import { dict, assert } from '@glimmer/util';
-import { SymbolTable } from '@glimmer/interfaces';
 
 import { ClientSide } from '../scanner';
 
 export type Syntax = WireFormat.Statement;
 export type Name = WireFormat.Statement[0];
-export type SpecializeFunction = (sexp: Syntax, symbolTable: SymbolTable) => Syntax;
+export type SpecializeFunction = (sexp: Syntax) => Syntax;
 
 export class Specialize {
   private names = dict<number>();
@@ -17,7 +16,7 @@ export class Specialize {
     this.names[name] = this.funcs.length - 1;
   }
 
-  specialize(sexp: Syntax, table: SymbolTable): Syntax {
+  specialize(sexp: Syntax): Syntax {
     let name: Name = sexp[0];
     let index = this.names[name];
 
@@ -25,7 +24,7 @@ export class Specialize {
 
     let func = this.funcs[index];
     assert(!!func, `expected a specialization for ${sexp[0]}`);
-    return func(sexp, table);
+    return func(sexp);
   }
 }
 
@@ -36,7 +35,7 @@ import S = WireFormat.Statements;
 
 const { Ops } = WireFormat;
 
-SPECIALIZE.add(Ops.Append, (sexp: S.Append, _symbolTable) => {
+SPECIALIZE.add(Ops.Append, (sexp: S.Append) => {
   // let expression = sexp[1];
 
   // if (Array.isArray(expression) && E.isGet(expression)) {
@@ -50,15 +49,15 @@ SPECIALIZE.add(Ops.Append, (sexp: S.Append, _symbolTable) => {
   return [Ops.ClientSideStatement, ClientSide.Ops.OptimizedAppend, sexp[1], sexp[2]];
 });
 
-SPECIALIZE.add(Ops.DynamicAttr, (sexp: S.DynamicAttr, _symbolTable) => {
+SPECIALIZE.add(Ops.DynamicAttr, (sexp: S.DynamicAttr) => {
   return [Ops.ClientSideStatement, ClientSide.Ops.AnyDynamicAttr, sexp[1], sexp[2], sexp[3], false];
 });
 
-SPECIALIZE.add(Ops.TrustingAttr, (sexp: S.TrustingAttr, _symbolTable) => {
+SPECIALIZE.add(Ops.TrustingAttr, (sexp: S.TrustingAttr) => {
   return [Ops.ClientSideStatement, ClientSide.Ops.AnyDynamicAttr, sexp[1], sexp[2], sexp[3], true];
 });
 
-SPECIALIZE.add(Ops.Partial, (sexp: S.Partial, _table) => {
+SPECIALIZE.add(Ops.Partial, (sexp: S.Partial) => {
   let expression = sexp[1];
 
   if (typeof expression === 'string') {
