@@ -4983,9 +4983,9 @@ rollup@^0.34.11:
   dependencies:
     source-map-support "^0.4.0"
 
-route-recognizer@^0.2.9:
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.2.9.tgz#fbe06d7b7a52185d85c945a4782a18361f886d15"
+route-recognizer@^0.2.10:
+  version "0.2.10"
+  resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.2.10.tgz#024b2283c2e68d13a7c7f5173a5924645e8902df"
 
 router_js@^1.2.4:
   version "1.2.5"
