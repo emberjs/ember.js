@@ -31,10 +31,10 @@ function commonSetup(customEnv = new TestEnvironment()) {
 function render<T>(template: Template<T>, self: any) {
   let result;
   env.begin();
-  let vm = template.render(new UpdatableReference(self), root, new TestDynamicScope());
+  let templateIterator = template.render(new UpdatableReference(self), root, new TestDynamicScope());
 
   do {
-    result = vm.next();
+    result = templateIterator.next();
   } while (!result.done);
 
   result = result.value;

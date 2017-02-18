@@ -103,11 +103,11 @@ export class RenderingTest {
 
     this.context = rootObject;
 
-    let vm = this.template.render(root, appendTo, new TestDynamicScope());
+    let templateIterator = this.template.render(root, appendTo, new TestDynamicScope());
 
     let result;
     do {
-      result = vm.next();
+      result = templateIterator.next();
     } while (!result.done);
 
     this.result = result.value;
