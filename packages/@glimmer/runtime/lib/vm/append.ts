@@ -2,7 +2,7 @@ import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
 import { PathReference, combineSlice } from '@glimmer/reference';
-import { CompiledBlock } from '../compiled/blocks';
+import { CompiledBlock, CompiledProgram } from '../compiled/blocks';
 import { InlineBlock, PartialBlock } from '../scanner';
 import { CompiledExpression } from '../compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
@@ -47,10 +47,13 @@ export default class VM implements PublicVM {
     self: PathReference<Opaque>,
     dynamicScope: DynamicScope,
     elementStack: ElementStack,
-    size: number
+    compiledProgram: CompiledProgram
   ) {
+    let { symbols: size, start, end }  = compiledProgram;
     let scope = Scope.root(self, size);
-    return new VM(env, scope, dynamicScope, elementStack);
+    let vm = new VM(env, scope, dynamicScope, elementStack);
+    vm.prepare(start, end);
+    return vm;
   }
 
   constructor(
@@ -282,7 +285,7 @@ export default class VM implements PublicVM {
     return result.value as RenderResult;
   }
 
-  prepare(start: number, end: number, initialize?: (vm: VM) => void): void {
+  private prepare(start: number, end: number, initialize?: (vm: VM) => void): void {
     let { elementStack, frame, updatingOpcodeStack } = this;
 
     elementStack.pushSimpleBlock();

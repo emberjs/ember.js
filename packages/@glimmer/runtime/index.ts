@@ -76,7 +76,7 @@ export {
   Layout
 } from './lib/scanner';
 
-export { PublicVM as VM, UpdatingVM, RenderResult } from './lib/vm';
+export { PublicVM as VM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
 
 export { SafeString, isSafeString } from './lib/upsert';
 

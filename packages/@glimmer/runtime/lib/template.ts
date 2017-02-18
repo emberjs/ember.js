@@ -8,8 +8,6 @@ import { SymbolTable } from '@glimmer/interfaces';
 import { Environment, DynamicScope } from './environment';
 import { ElementStack } from './builder';
 import { VM } from './vm';
-import { IteratorResult } from './vm/append';
-import RenderResult from './vm/render-result';
 import Scanner, {
   EntryPoint,
   PartialBlock,
@@ -35,7 +33,7 @@ export interface Template<T> {
   /**
    * Helper to render template as root entry point.
    */
-  render(self: PathReference<any>, appendTo: Simple.Element, dynamicScope: DynamicScope): RenderResult;
+  render(self: PathReference<any>, appendTo: Simple.Element, dynamicScope: DynamicScope): VM;
 
   // internal casts, these are lazily created and cached
   asEntryPoint(): EntryPoint;
@@ -113,15 +111,8 @@ function template<T>(block: SerializedTemplateBlock, id: string, meta: T, env: E
   let render = (self: PathReference<any>, appendTo: Simple.Element, dynamicScope: DynamicScope) => {
     let elementStack = ElementStack.forInitialRender(env, appendTo, null);
     let compiled = asEntryPoint().compile(env);
-    let vm = VM.initial(env, self, dynamicScope, elementStack, compiled.symbols);
-    vm.prepare(compiled.start, compiled.end);
-    let result: IteratorResult<RenderResult>;
-
-    do {
-      result = vm.next();
-    } while (!result.done);
-
-    return result.value as RenderResult;
+    let vm = VM.initial(env, self, dynamicScope, elementStack, compiled);
+    return vm;
   };
 
   return { id, meta, _block: block, asEntryPoint, asLayout, asPartial, render };

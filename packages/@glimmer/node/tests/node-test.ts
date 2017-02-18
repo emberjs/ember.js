@@ -38,7 +38,13 @@ function commonSetup() {
 function render<T>(template: Template<T>, self: any) {
   let result;
   env.begin();
-  result = template.render(new UpdatableReference(self), root, new TestDynamicScope());
+  let vm = template.render(new UpdatableReference(self), root, new TestDynamicScope());
+
+  do {
+    result = vm.next();
+  } while (!result.done);
+
+  result = result.value;
   env.commit();
   return result;
 }

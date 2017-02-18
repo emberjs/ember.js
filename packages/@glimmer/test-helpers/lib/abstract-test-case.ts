@@ -102,7 +102,15 @@ export class RenderingTest {
     let root = new SimpleRootReference(rootObject);
 
     this.context = rootObject;
-    this.result = this.template.render(root, appendTo, dynamicScope);
+
+    let vm = this.template.render(root, appendTo, new TestDynamicScope());
+
+    let result;
+    do {
+      result = vm.next();
+    } while (!result.done);
+
+    this.result = result.value;
     this.env.commit();
     this.element = document.getElementById('qunit-fixture').firstChild;
   }
