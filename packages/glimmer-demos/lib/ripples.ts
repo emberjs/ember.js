@@ -70,7 +70,14 @@ export function start() {
   let output = document.getElementById('output');
   let self = new UpdatableReference(data);
   let template: Template<{}> = TEMPLATES['application'];
-  let result = template.render(self, output, new TestDynamicScope());
+  let vm = template.render(self, output, new TestDynamicScope());
+
+  let result;
+  do {
+    result = vm.next();
+  } while (!result.done);
+
+  result = result.value;
 
   window.addEventListener("resize", function() {
     data.width  = window.innerWidth;
