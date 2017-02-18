@@ -40,7 +40,6 @@ export default class VM implements PublicVM {
   public listBlockStack = new Stack<ListBlockOpcode>();
   public frame = new FrameStack();
   public constants: Constants;
-  private notDone = { done: false, value: null };
 
   static initial(
     env: Environment,
@@ -303,7 +302,7 @@ export default class VM implements PublicVM {
 
     if (opcode = frame.nextStatement(env)) {
       APPEND_OPCODES.evaluate(this, opcode);
-      return this.notDone;
+      return { done: false, value: null };
     }
 
     return {

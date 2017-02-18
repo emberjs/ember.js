@@ -70,11 +70,11 @@ export function start() {
   let output = document.getElementById('output');
   let self = new UpdatableReference(data);
   let template: Template<{}> = TEMPLATES['application'];
-  let vm = template.render(self, output, new TestDynamicScope());
+  let templateIterator = template.render(self, output, new TestDynamicScope());
 
   let result;
   do {
-    result = vm.next();
+    result = templateIterator.next();
   } while (!result.done);
 
   result = result.value;

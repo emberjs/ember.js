@@ -28,10 +28,10 @@ function commonSetup() {
 function render<T>(template: Template<T>, context = {}, view: PathReference<Opaque> = null) {
   self = new UpdatableReference(context);
   env.begin();
-  let vm = template.render(self, root, new TestDynamicScope());
+  let templateIterator = template.render(self, root, new TestDynamicScope());
 
   do {
-    result = vm.next();
+    result = templateIterator.next();
   } while (!result.done);
 
   result = result.value;
