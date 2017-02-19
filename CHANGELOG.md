@@ -21,6 +21,10 @@
 - [#14852](https://github.com/emberjs/ember.js/pull/14852) [PERF] only `LOG_TRANSITIONS` and `LOG_TRANSITIONS_INTERNAL` in debug
 - [#14854](https://github.com/emberjs/ember.js/pull/14854) [PER] only `LOG_ACTIVE_GENERATION` and `LOG_RESOLVER` in debug
 
+### 2.11.2 (February 19, 2017)
+
+- [#14937](https://github.com/emberjs/ember.js/pull/14937) [BUGFIX] Fix issue preventing `ember generate *` from creating test files as appropriate.
+
 ### 2.11.1 (February 16, 2017)
 
 - [#14762](https://github.com/emberjs/ember.js/pull/14762) [BUGFIX] Make ember-template-compiler handle {{input}} helpers with sub-expression "type"
