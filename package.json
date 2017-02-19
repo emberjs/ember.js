@@ -10,6 +10,13 @@
     "url": "https://github.com/emberjs/ember.js/issues"
   },
   "license": "MIT",
+  "files": [
+    "blueprints",
+    "dist",
+    "!dist/tests",
+    "vendor/ember",
+    "index.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/emberjs/ember.js.git"
