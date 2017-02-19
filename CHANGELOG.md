@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.11.2 (February 19, 2017)
+
+- [#14937](https://github.com/emberjs/ember.js/pull/14937) [BUGFIX] Fix issue preventing `ember generate *` from creating test files as appropriate.
+
 ### 2.11.1 (February 16, 2017)
 
 - [#14762](https://github.com/emberjs/ember.js/pull/14762) [BUGFIX] Make ember-template-compiler handle {{input}} helpers with sub-expression "type"
