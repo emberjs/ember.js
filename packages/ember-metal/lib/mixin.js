@@ -11,6 +11,7 @@ import {
   guidFor,
   GUID_KEY,
   NAME_KEY,
+  ROOT,
   wrap,
   makeArray
 } from 'ember-utils';
@@ -39,9 +40,6 @@ import {
   addListener,
   removeListener
 } from './events';
-
-function ROOT() {}
-ROOT.__hasSuper = false;
 
 const a_slice = Array.prototype.slice;
 const a_concat = Array.prototype.concat;
@@ -431,10 +429,10 @@ export function mixin(obj, ...args) {
     post: null
   });
 
-  let comment = Comment.create({ 
-    post: somePost 
+  let comment = Comment.create({
+    post: somePost
   });
-  
+
   comment.edit(); // outputs 'starting to edit'
   ```
 
