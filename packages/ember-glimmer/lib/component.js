@@ -432,6 +432,34 @@ export const BOUNDS = symbol('BOUNDS');
   See [Ember.Templates.helpers.yield](/api/classes/Ember.Templates.helpers.html#method_yield)
   for more information.
 
+  Layout can be used to wrap content in a component. In addition
+  to wrapping content in a Component's template, you can also use
+  the public layout API in your Component JavaScript.
+
+  ```app/templates/components/person-profile.hbs
+    <h1>Person's Title</h1>
+    <div class='details'>{{yield}}</div>
+  ```
+
+  ```app/components/person-profile.js
+    import Ember from 'ember';
+    import layout from '../templates/components/person-profile';
+
+    export default Ember.Component.extend({
+      layout
+    });
+  ```
+
+  The above will result in the following HTML output:
+
+  ```html
+    <h1>Person's Title</h1>
+    <div class="details">
+      <h2>Chief Basket Weaver</h2>
+      <h3>Fisherman Industries</h3>
+    </div>
+  ```
+
 
   ## Responding to Browser Events
 
@@ -809,14 +837,7 @@ const Component = CoreView.extend(
      */
 
     /**
-      A component may contain a layout. A layout is a regular template but
-      supersedes the `template` property during rendering. It is the
-      responsibility of the layout template to retrieve the `template`
-      property from the component (or alternatively, call `Handlebars.helpers.yield`,
-      `{{yield}}`) to render it in the correct location.
-      This is useful for a component that has a shared wrapper, but which delegates
-      the rendering of the contents of the wrapper to the `template` property
-      on a subclass.
+      Layout can be used to wrap content in a component.
       @property layout
       @type Function
       @public
