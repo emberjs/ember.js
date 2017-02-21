@@ -1,4 +1,4 @@
-import { get, set } from 'ember-metal';
+import { get, set, getProperties } from 'ember-metal';
 import EmberComponent from '../component';
 import layout from '../templates/empty';
 
@@ -51,9 +51,17 @@ export default EmberComponent.extend({
   ],
 
   type: 'checkbox',
-  checked: false,
   disabled: false,
   indeterminate: false,
+
+  init() {
+    this._super(...arguments);
+    let isCheckedUndefined = typeof get(this, 'checked') === 'undefined';
+
+    if (isCheckedUndefined) set(this, 'checked', false);
+
+    set(this, 'isCheckedBinded', !isCheckedUndefined);
+  },
 
   didInsertElement() {
     this._super(...arguments);
@@ -61,6 +69,15 @@ export default EmberComponent.extend({
   },
 
   change() {
-    set(this, 'checked', this.$().prop('checked'));
+    let {
+      checked,
+      isCheckedBinded
+    } = getProperties(this, 'checked', 'isCheckedBinded');
+
+    if (isCheckedBinded) {
+      this.$().prop('checked', checked);
+    } else {
+      set(this, 'checked', this.$().prop('checked'));
+    }
   }
 });
