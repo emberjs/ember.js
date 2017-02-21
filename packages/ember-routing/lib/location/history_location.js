@@ -31,6 +31,28 @@ if (isFeatureEnabled('ember-unique-location-history-state')) {
   Ember.HistoryLocation implements the location API using the browser's
   history.pushState API.
 
+  Using `HistoryLocation` results in URLs that are indistinguishable from a
+  standard URL. This relies upon the browser's `history` API.
+
+  Example:
+
+  ```javascript
+  App.Router.map(function() {
+    this.route('posts', function() {
+      this.route('new');
+    });
+  });
+
+  App.Router.reopen({
+    location: 'history'
+  });
+  ```
+
+  This will result in a posts.new url of `/posts/new`.
+
+  Keep in mind that your server must serve the Ember app at all the routes you
+  define.
+
   @class HistoryLocation
   @namespace Ember
   @extends Ember.Object

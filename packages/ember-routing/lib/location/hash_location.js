@@ -17,6 +17,25 @@ import EmberLocation from './api';
   hash. At present, it relies on a `hashchange` event existing in the
   browser.
 
+  Using `HashLocation` results in URLs with a `#` (hash sign) separating the
+  server side URL portion of the URL from the portion that is used by Ember.
+
+  Example:
+
+  ```javascript
+  App.Router.map(function() {
+    this.route('posts', function() {
+      this.route('new');
+    });
+  });
+
+  App.Router.reopen({
+    location: 'hash'
+  });
+  ```
+
+  This will result in a posts.new url of `/#/posts/new`.
+
   @class HashLocation
   @namespace Ember
   @extends Ember.Object

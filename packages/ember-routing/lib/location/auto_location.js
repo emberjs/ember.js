@@ -19,12 +19,42 @@ import {
 @submodule ember-routing
 */
 
+
 /**
   Ember.AutoLocation will select the best location option based off browser
   support with the priority order: history, hash, none.
 
   Clean pushState paths accessed by hashchange-only browsers will be redirected
   to the hash-equivalent and vice versa so future transitions are consistent.
+
+  Keep in mind that since some of your users will use `HistoryLocation`, your
+  server must serve the Ember app at all the routes you define.
+
+  Browsers that support the `history` API will use `HistoryLocation`, those that
+  do not, but still support the `hashchange` event will use `HashLocation`, and
+  in the rare case neither is supported will use `NoneLocation`.
+
+  Example:
+
+  ```javascript
+  App.Router.map(function() {
+    this.route('posts', function() {
+      this.route('new');
+    });
+  });
+
+  App.Router.reopen({
+    location: 'auto'
+  });
+  ```
+
+  This will result in a posts.new url of `/posts/new` for modern browsers that
+  support the `history` api or `/#/posts/new` for older ones, like Internet
+  Explorer 9 and below.
+
+  When a user visits a link to your application, they will be automatically
+  upgraded or downgraded to the appropriate `Location` class, with the URL
+  transformed accordingly, if needed.
 
   Keep in mind that since some of your users will use `HistoryLocation`, your
   server must serve the Ember app at all the routes you define.

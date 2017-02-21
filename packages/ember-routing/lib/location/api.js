@@ -13,94 +13,14 @@ import { getHash } from './util';
 
   ## Implementations
 
-  You can pass an implementation name (`hash`, `history`, `none`) to force a
+  You can pass an implementation name (`hash`, `history`, `none`, `auto`) to force a
   particular implementation to be used in your application.
 
-  ### HashLocation
+  See [Ember.Location.HashLocation](/api/classes/Ember.Location.HashLocation).
+  See [Ember.Location.HistoryLocation](/api/classes/Ember.Location.HistoryLocation).
+  See [Ember.Location.NoneLocation](/api/classes/Ember.Location.NoneLocation).
+  See [Ember.Location.AutoLocation](/api/classes/Ember.Location.AutoLocation).
 
-  Using `HashLocation` results in URLs with a `#` (hash sign) separating the
-  server side URL portion of the URL from the portion that is used by Ember.
-  This relies upon the `hashchange` event existing in the browser.
-
-  Example:
-
-  ```javascript
-  App.Router.map(function() {
-    this.route('posts', function() {
-      this.route('new');
-    });
-  });
-
-  App.Router.reopen({
-    location: 'hash'
-  });
-  ```
-
-  This will result in a posts.new url of `/#/posts/new`.
-
-  ### HistoryLocation
-
-  Using `HistoryLocation` results in URLs that are indistinguishable from a
-  standard URL. This relies upon the browser's `history` API.
-
-  Example:
-
-  ```javascript
-  App.Router.map(function() {
-    this.route('posts', function() {
-      this.route('new');
-    });
-  });
-
-  App.Router.reopen({
-    location: 'history'
-  });
-  ```
-
-  This will result in a posts.new url of `/posts/new`.
-
-  Keep in mind that your server must serve the Ember app at all the routes you
-  define.
-
-  ### AutoLocation
-
-  Using `AutoLocation`, the router will use the best Location class supported by
-  the browser it is running in.
-
-  Browsers that support the `history` API will use `HistoryLocation`, those that
-  do not, but still support the `hashchange` event will use `HashLocation`, and
-  in the rare case neither is supported will use `NoneLocation`.
-
-  Example:
-
-  ```javascript
-  App.Router.map(function() {
-    this.route('posts', function() {
-      this.route('new');
-    });
-  });
-
-  App.Router.reopen({
-    location: 'auto'
-  });
-  ```
-
-  This will result in a posts.new url of `/posts/new` for modern browsers that
-  support the `history` api or `/#/posts/new` for older ones, like Internet
-  Explorer 9 and below.
-
-  When a user visits a link to your application, they will be automatically
-  upgraded or downgraded to the appropriate `Location` class, with the URL
-  transformed accordingly, if needed.
-
-  Keep in mind that since some of your users will use `HistoryLocation`, your
-  server must serve the Ember app at all the routes you define.
-
-  ### NoneLocation
-
-  Using `NoneLocation` causes Ember to not store the applications URL state
-  in the actual URL. This is generally used for testing purposes, and is one
-  of the changes made when calling `App.setupForTesting()`.
 
   ## Location API
 
@@ -141,7 +61,7 @@ import { getHash } from './util';
   @class Location
   @namespace Ember
   @static
-  @private
+  @public
 */
 export default {
   /**
