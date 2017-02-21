@@ -51,7 +51,6 @@ export default EmberComponent.extend({
   ],
 
   type: 'checkbox',
-  checked: false,
   disabled: false,
   indeterminate: false,
 
@@ -61,6 +60,6 @@ export default EmberComponent.extend({
   },
 
   change() {
-    set(this, 'checked', this.$().prop('checked'));
+   set(this, 'checked', this.$().prop('checked'));
   }
 });
