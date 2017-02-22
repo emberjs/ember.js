@@ -20,8 +20,7 @@ export const OWNER = symbol('OWNER');
   For example, this component dynamically looks up a service based on the
   `audioType` passed as an attribute:
 
-  ```
-  // app/components/play-audio.js
+  ```app/components/play-audio.js
   import Ember from 'ember';
 
   // Usage:
