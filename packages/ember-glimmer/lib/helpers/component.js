@@ -111,7 +111,7 @@ import { assert, runInDebug } from 'ember-metal';
   )}}
   ```
 
-  When yielding the component via the `hash` helper, the component is invocked directly.
+  When yielding the component via the `hash` helper, the component is invoked directly.
   See the following snippet:
 
   ```
