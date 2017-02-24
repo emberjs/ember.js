@@ -1,6 +1,7 @@
 import {
   SerializedTemplateWithLazyBlock,
-  SerializedTemplateBlock
+  SerializedTemplateBlock,
+  Statements
 } from '@glimmer/wire-format';
 import { PathReference } from '@glimmer/reference';
 import { assign } from '@glimmer/util';
@@ -9,8 +10,9 @@ import { Environment, DynamicScope } from './environment';
 import { ElementStack } from './builder';
 import { VM } from './vm';
 import RenderResult from './vm/render-result';
-import Scanner, { Program } from './scanner';
+import Scanner, { Block, Program } from './scanner';
 import * as Simple from './dom/interfaces';
+import { EMPTY_ARRAY } from './utils';
 
 /**
  * Environment specific template.
@@ -28,13 +30,18 @@ export interface Template<T> {
   meta: T;
 
   /**
+   * Symbols computed at compile time.
+   */
+  symbols: string[];
+
+  /**
    * Helper to render template as root entry point.
    */
   render(self: PathReference<any>, appendTo: Simple.Element, dynamicScope: DynamicScope): RenderResult;
 
   // internal casts, these are lazily created and cached
-  asEntryPoint(): Program;
-  asLayout(): Program;
+  asEntryPoint(): Block;
+  asLayout(attrs?: Statements.Attribute[]): Program;
   // asPartial(symbols: SymbolTable): Program;
 
   // exposed for visualizer
@@ -94,14 +101,14 @@ export default function templateFactory({ id: templateId, meta, block }: Seriali
 
 function template<T>(block: SerializedTemplateBlock, id: string, meta: T, env: Environment): Template<T> {
   let scanner = new Scanner(block, meta, env);
-  let entryPoint: Program;
+  let entryPoint: Block;
   let asEntryPoint = () => {
     if (!entryPoint) entryPoint = scanner.scanEntryPoint();
     return entryPoint;
   };
   let layout: Program;
-  let asLayout = () => {
-    if (!layout) layout = scanner.scanLayout();
+  let asLayout = (attrs: Statements.Attribute[] = EMPTY_ARRAY) => {
+    if (!layout) layout = scanner.scanLayout(attrs);
     return layout;
   };
   // let asPartial = (_symbols: SymbolTable) => {};
@@ -110,8 +117,8 @@ function template<T>(block: SerializedTemplateBlock, id: string, meta: T, env: E
   let render = (self: PathReference<any>, appendTo: Simple.Element, dynamicScope: DynamicScope) => {
     let elementStack = ElementStack.forInitialRender(env, appendTo, null);
     let compiled = asEntryPoint().compileDynamic(env);
-    let vm = VM.initial(env, self, dynamicScope, elementStack, compiled.symbolTable.size);
+    let vm = VM.initial(env, self, dynamicScope, elementStack, block.symbols.length);
     return vm.execute(compiled.start, compiled.end);
   };
-  return { id, meta, _block: block, asEntryPoint, asLayout, render };
+  return { id, meta, _block: block, symbols: block.symbols, asEntryPoint, asLayout, render };
 }

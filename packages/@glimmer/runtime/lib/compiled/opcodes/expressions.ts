@@ -75,14 +75,3 @@ APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
 
   vm.evalStack.push(new ConcatReference(out.reverse()));
 });
-
-APPEND_OPCODES.add(Op.PutEvalledExpr, (vm) => {
-  let expr = vm.evalStack.pop<VersionedPathReference<Opaque>>();
-  vm.frame.setOperand(expr);
-});
-
-APPEND_OPCODES.add(Op.PutEvalledArgs, vm => {
-  let args = vm.evalStack.pop<EvaluatedArgs>();
-  vm.frame.setArgs(args);
-  vm.frame.setOperand(args.positional.at(0));
-});

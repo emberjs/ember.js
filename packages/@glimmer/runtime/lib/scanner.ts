@@ -25,7 +25,12 @@ export function compileStatement(statement: WireFormat.Statement, builder: Opcod
   STATEMENTS.compile(refined, builder);
 }
 
-export class RawTemplate<S extends SymbolTable> {
+export interface ScannedTemplate<S extends SymbolTable> {
+  compileStatic(env: Environment): CompiledStaticTemplate;
+  compileDynamic(env: Environment): CompiledDynamicTemplate<S>;
+}
+
+export class RawTemplate<S extends SymbolTable> implements ScannedTemplate<S> {
   private compiledStatic: Option<CompiledStaticTemplate> = null;
   private compiledDynamic: Option<CompiledDynamicTemplate<S>> = null;
 
@@ -67,6 +72,9 @@ export class RawTemplate<S extends SymbolTable> {
 export type Template = RawTemplate<SymbolTable>;
 export type Program = RawTemplate<ProgramSymbolTable>;
 export type Block = RawTemplate<BlockSymbolTable>;
+
+export type ScannedProgram = ScannedTemplate<ProgramSymbolTable>;
+export type ScannedBlock = ScannedTemplate<BlockSymbolTable>;
 
 function compileStatements(statements: WireFormat.Statement[], meta: TemplateMeta, env: Environment) {
   let b = builder(env, meta);
@@ -112,7 +120,7 @@ export default class Scanner {
     return scanBlock({ statements, parameters: EMPTY_ARRAY }, meta, this.env);
   }
 
-  scanLayout(): RawTemplate<ProgramSymbolTable> {
+  scanLayout(attrs: WireFormat.Statements.Attribute[]): RawTemplate<ProgramSymbolTable> {
     let { block, meta } = this;
     let { symbols } = block;
 
@@ -122,7 +130,7 @@ export default class Scanner {
 
     let symbolTable = { meta, symbols };
     let { statements: prelude } = scanBlock({ statements: block.prelude, parameters: EMPTY_ARRAY }, meta, this.env);
-    let { statements: head } = scanBlock({ statements: block.head, parameters: EMPTY_ARRAY }, meta, this.env);
+    let { statements: head } = scanBlock({ statements: [...attrs, ...block.head], parameters: EMPTY_ARRAY }, meta, this.env);
     let { statements: body } = scanBlock({ statements: block.statements, parameters: EMPTY_ARRAY }, meta, this.env);
 
     return layout(prelude, head, body, symbolTable);
@@ -183,8 +191,8 @@ export namespace ClientSide {
   export type AnyDynamicAttr        = [ClientSideStatement, Ops.AnyDynamicAttr, string, WireFormat.Expression, Option<string>, boolean];
   export type StaticPartial         = [ClientSideStatement, Ops.StaticPartial, string];
   export type DynamicPartial        = [ClientSideStatement, Ops.DynamicPartial, WireFormat.Expression];
-  export type NestedBlock           = [ClientSideStatement, Ops.NestedBlock, string, WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
-  export type ScannedBlock          = [ClientSideStatement, Ops.ScannedBlock, string, Core.Params, Core.Hash, Option<RawInlineBlock>, Option<RawInlineBlock>];
+  export type NestedBlock           = [ClientSideStatement, Ops.NestedBlock, string, WireFormat.Core.Params, Option<WireFormat.Core.Hash>, Option<Block>, Option<Block>];
+  export type ScannedBlock          = [ClientSideStatement, Ops.ScannedBlock, string, Core.Params, Option<Core.Hash>, Option<RawInlineBlock>, Option<RawInlineBlock>];
 
   export type ResolvedHelper        = [ClientSideExpression, Ops.ResolvedHelper, Helper, Core.Params, Core.Hash];
   export type FunctionExpression    = [ClientSideExpression, Ops.FunctionExpression, FunctionExpressionCallback<Opaque>];

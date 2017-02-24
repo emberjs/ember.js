@@ -76,7 +76,10 @@ export {
 export {
   ClientSide,
   RawTemplate,
+  ScannedBlock,
+  ScannedProgram,
   Block,
+  Program,
   compileStatement
 } from './lib/scanner';
 

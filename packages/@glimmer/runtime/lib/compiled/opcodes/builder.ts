@@ -365,14 +365,6 @@ export abstract class BasicOpcodeBuilder {
 
   // vm
 
-  openBlock(positional: number) {
-    this.push(Op.InvokeBlock, positional);
-  }
-
-  closeBlock() {
-    this.push(Op.DoneBlock);
-  }
-
   pushRemoteElement() {
     this.push(Op.PushRemoteElement);
   }
@@ -415,18 +407,6 @@ export abstract class BasicOpcodeBuilder {
 
   popDynamicScope() {
     this.push(Op.PopDynamicScope);
-  }
-
-  putNull() {
-    this.push(Op.Constant, this.constants.NULL_REFERENCE);
-  }
-
-  putEvalledExpr() {
-    this.push(Op.PutEvalledExpr);
-  }
-
-  putEvalledArgs() {
-    this.push(Op.PutEvalledArgs);
   }
 
   pushReifiedArgs(positional: number, _names: string[], hasDefault = false, hasInverse = false) {

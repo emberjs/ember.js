@@ -53,11 +53,11 @@ export class TagWrapper<T extends RevisionTag | null> {
 
 export type Tag = TagWrapper<RevisionTag | null>;
 
-function register(Type: { create(...args: any[]): Tag }) {
+function register(Type: { create(...args: any[]): Tag, id: number }) {
   let type = VALUE.length;
   VALUE.push((tag: RevisionTag) => tag.value());
   VALIDATE.push((tag: RevisionTag, snapshot: Revision) => tag.validate(snapshot));
-  Type['id'] = type;
+  Type.id = type;
 }
 
 ///
@@ -118,7 +118,7 @@ export function combineTagged(tagged: ReadonlyArray<{ tag: Tag }>): Tag {
 }
 
 export function combineSlice(slice: Slice<{ tag: Tag } & LinkedListNode>): Tag {
-  let optimized = [];
+  let optimized: Tag[] = [];
 
   let node = slice.head();
 
@@ -135,7 +135,7 @@ export function combineSlice(slice: Slice<{ tag: Tag } & LinkedListNode>): Tag {
 }
 
 export function combine(tags: Tag[]): Tag {
-  let optimized = [];
+  let optimized: Tag[] = [];
 
   for (let i=0, l=tags.length; i<l; i++) {
     let tag = tags[i];

@@ -1,25 +1,20 @@
 import { unreachable } from '@glimmer/util';
 import Environment, { Helper } from './environment';
 import { SymbolTable } from '@glimmer/interfaces';
-import { CompiledDynamicProgram } from './compiled/blocks';
+import { CompiledDynamicProgram, CompiledDynamicTemplate } from './compiled/blocks';
 import { Maybe, Option } from '@glimmer/util';
 import { Ops, TemplateMeta } from '@glimmer/wire-format';
 
-import Scanner, {
-  ClientSide,
-  Program,
-  compileStatement,
-} from './scanner';
+import { Template } from './template';
+import { debugSlice } from './opcodes';
+
+import { ATTRS_BLOCK, ClientSide, compileStatement, Program, ScannedProgram } from './scanner';
 
 import {
   ComponentBuilder as IComponentBuilder,
   StaticDefinition,
   ComponentArgs
 } from './opcode-builder';
-
-import {
-  FunctionExpression
-} from './compiled/expressions/function';
 
 import {
   InvokeDynamicLayout,
@@ -44,23 +39,29 @@ export function compileLayout(compilable: CompilableLayout, env: Environment): C
 
   compilable.compile(builder);
 
-  return builder.compile().compileDynamic(env);
+  return builder.compile();
+}
+
+interface InnerLayoutBuilder {
+  tag: Component.ComponentTagBuilder;
+  attrs: Component.ComponentAttrsBuilder;
+  compile(): CompiledDynamicProgram;
 }
 
 class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
-  private inner: WrappedBuilder | UnwrappedBuilder;
+  private inner: InnerLayoutBuilder;
 
   constructor(public env: Environment) {}
 
-  wrapLayout(layout: WireTemplate) {
+  wrapLayout(layout: Template<TemplateMeta>) {
     this.inner = new WrappedBuilder(this.env, layout);
   }
 
-  fromLayout(layout: WireTemplate) {
+  fromLayout(layout: Template<TemplateMeta>) {
     this.inner = new UnwrappedBuilder(this.env, layout);
   }
 
-  compile(): Program {
+  compile(): CompiledDynamicProgram {
     return this.inner.compile();
   }
 
@@ -73,14 +74,13 @@ class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
   }
 }
 
-class WrappedBuilder {
+class WrappedBuilder implements InnerLayoutBuilder {
   public tag = new ComponentTagBuilder();
   public attrs = new ComponentAttrsBuilder();
 
-  constructor(public env: Environment, private layout: WireTemplate) {}
+  constructor(public env: Environment, private layout: Template<TemplateMeta>) {}
 
-  compile(): Program {
-    throw unreachable();
+  compile(): CompiledDynamicProgram {
     //========DYNAMIC
     //        PutValue(TagExpr)
     //        Test
@@ -108,6 +108,80 @@ class WrappedBuilder {
     //        CloseElement
     //        DidRenderLayout
     //        Exit
+
+    let { env, layout, layout: { meta } } = this;
+
+    let dynamicTag = this.tag.getDynamic();
+    let staticTag = this.tag.getStatic();
+
+    let b = builder(env, meta);
+    b.startLabels();
+
+    // let state = b.local();
+    // b.setLocal(state);
+
+    let tag = 0;
+
+    if (dynamicTag) {
+      tag = b.local();
+
+      expr(dynamicTag, b);
+      b.setLocal(tag);
+
+      b.getLocal(tag);
+      b.test('simple');
+
+      b.jumpUnless('BODY');
+
+      b.pushComponentOperations();
+      b.getLocal(tag);
+      b.openDynamicElement();
+    } else if (staticTag) {
+      b.pushComponentOperations();
+      b.openElementWithOperations(staticTag);
+    }
+
+    if (dynamicTag || staticTag) {
+      // b.didCreateElement(state);
+
+      let attrs = this.attrs['buffer'];
+
+      for (let i=0; i<attrs.length; i++) {
+        compileStatement(attrs[i], b);
+      }
+
+      b.flushElement();
+    }
+
+    b.label('BODY');
+    b.invokeStatic(layout.asEntryPoint());
+
+    if (dynamicTag) {
+      b.getLocal(tag);
+
+      b.test('simple');
+      b.jumpUnless('END');
+
+      b.closeElement();
+    } else if (staticTag) {
+      b.closeElement();
+    }
+
+    b.label('END');
+
+    // b.didRenderLayout(state);
+
+    b.stopLabels();
+
+    let start = b.start;
+    let end = b.finalize();
+
+    debugSlice(env, start, end);
+
+    return new CompiledDynamicTemplate(start, end, {
+      meta: layout.meta,
+      symbols: layout.symbols.concat([ATTRS_BLOCK])
+    });
 
     // let { env, layout: { meta, block, block: { named, yields, hasPartials } } } = this;
 
@@ -155,22 +229,18 @@ class WrappedBuilder {
   }
 }
 
-class UnwrappedBuilder {
+class UnwrappedBuilder implements InnerLayoutBuilder {
   public attrs = new ComponentAttrsBuilder();
 
-  constructor(public env: Environment, private layout: WireTemplate) {}
+  constructor(public env: Environment, private layout: Template<TemplateMeta>) {}
 
   get tag(): Component.ComponentTagBuilder {
     throw new Error('BUG: Cannot call `tag` on an UnwrappedBuilder');
   }
 
-  compile(): Program {
-    let { env, layout: { meta, block } } = this;
-
-    let head = block.head ? this.attrs['buffer'].concat(block.head) : this.attrs['buffer'];
-
-    let scanner = new Scanner({ ...block, head }, meta, env);
-    return scanner.scanLayout();
+  compile(): CompiledDynamicProgram {
+    let { env, layout, layout: { meta } } = this;
+    return layout.asLayout(this.attrs['buffer']).compileDynamic(env);
   }
 }
 
@@ -204,7 +274,7 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
 }
 
 class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
-  private buffer: WireFormat.Statements.ElementHead[] = [];
+  private buffer: WireFormat.Statements.Attribute[] = [];
 
   static(name: string, value: string) {
     this.buffer.push([Ops.StaticAttr, name, value, null]);
@@ -222,7 +292,7 @@ export class ComponentBuilder implements IComponentBuilder {
     this.env = builder.env;
   }
 
-  static(definition: StaticDefinition, args: ComponentArgs, _symbolTable: SymbolTable) {
+  static(definition: StaticDefinition, args: ComponentArgs) {
     let [params, hash, _default, inverse] = args;
 
     let syntax: ClientSide.ResolvedComponent = [
@@ -238,7 +308,7 @@ export class ComponentBuilder implements IComponentBuilder {
     compileStatement(syntax, this.builder);
   }
 
-  dynamic(definitionArgs: ComponentArgs, getDefinition: Helper, args: ComponentArgs, _symbolTable: SymbolTable) {
+  dynamic(definitionArgs: ComponentArgs, getDefinition: Helper, args: ComponentArgs) {
     this.builder.unit(b => {
       let [, hash, block, inverse] = args;
 

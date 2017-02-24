@@ -32,9 +32,10 @@ import {
   Destroyable,
   Opaque,
   HasGuid,
+  assert,
   ensureGuid,
   expect,
-  assert
+  unreachable
 } from '@glimmer/util';
 
 import {
@@ -91,35 +92,35 @@ export class Scope {
   }
 
   getSelf(): PathReference<Opaque> {
-    return this.slots[0] as PathReference<Opaque>;
+    return this.get<PathReference<Opaque>>(0);
   }
 
   getSymbol(symbol: number): PathReference<Opaque> {
-    return this.slots[symbol] as PathReference<Opaque>;
+    return this.get<PathReference<Opaque>>(symbol);
   }
 
   getBlock(symbol: number): Block {
-    return this.slots[symbol] as Block;
+    return this.get<Block>(symbol);
   }
 
   getPartialArgs(symbol: number): EvaluatedArgs {
-    return this.slots[symbol] as EvaluatedArgs;
+    throw unreachable();
   }
 
   bindSelf(self: PathReference<Opaque>) {
-    this.slots[0] = self;
+    this.set<PathReference<Opaque>>(0, self);
   }
 
   bindSymbol(symbol: number, value: PathReference<Opaque>) {
-    this.slots[symbol] = value;
+    this.set<PathReference<Opaque>>(symbol, value);
   }
 
   bindBlock(symbol: number, value: Option<Block>) {
-    this.slots[symbol] = value;
+    this.set<Option<Block>>(symbol, value);
   }
 
   bindPartialArgs(symbol: number, value: EvaluatedArgs) {
-    this.slots[symbol] = value;
+    throw unreachable();
   }
 
   bindCallerScope(scope: Scope) {
@@ -132,6 +133,22 @@ export class Scope {
 
   child(): Scope {
     return new Scope(this.slots.slice(), this.callerScope);
+  }
+
+  private get<T>(index: number): T {
+    if (index >= this.slots.length) {
+      throw new RangeError(`BUG: cannot get $${index} from scope; length=${this.slots.length}`);
+    }
+
+    return this.slots[index] as any as T;
+  }
+
+  private set<T>(index: number, value: T): void {
+    if (index >= this.slots.length) {
+      throw new RangeError(`BUG: cannot get $${index} from scope; length=${this.slots.length}`);
+    }
+
+    this.slots[index] = value as any;
   }
 }
 
