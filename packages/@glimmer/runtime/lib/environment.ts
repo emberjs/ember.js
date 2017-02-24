@@ -1,5 +1,3 @@
-import { SymbolTable } from '@glimmer/interfaces';
-
 import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
 import { Constants } from './opcodes';

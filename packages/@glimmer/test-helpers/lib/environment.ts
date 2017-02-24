@@ -1141,7 +1141,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
   blocks.add('component', (sexp, builder) => {
     let [, , _path, params, hash, _default, inverse] = sexp;
     let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
-    let args: ComponentArgs = [params.slice(1), hash, _default, inverse];
+    let args: ComponentArgs = [params.slice(1), hashToArgs(hash), _default, inverse];
     builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
     return true;
   });
@@ -1165,7 +1165,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
 
   inlines.add('component', (name, params, hash, builder) => {
     let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
-    let args: ComponentArgs = [params.slice(1), hash, null, null];
+    let args: ComponentArgs = [params.slice(1), hashToArgs(hash), null, null];
     builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
     return true;
   });

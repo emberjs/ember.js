@@ -1,12 +1,5 @@
-import {
-  ComponentDefinition
-} from './component/interfaces';
-
-import {
-  FunctionExpression
-} from './compiled/expressions/function';
-
-import { SymbolTable } from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { Arguments, ComponentDefinition } from './component/interfaces';
 
 import {
   Opaque,
@@ -17,14 +10,15 @@ import * as WireFormat from '@glimmer/wire-format';
 
 import { Block } from './scanner';
 
-import { Helper } from './environment';
-
-export type StaticDefinition = ComponentDefinition<Opaque>;
-export type DynamicDefinition = FunctionExpression<ComponentDefinition<Opaque>>;
+import { PublicVM } from './vm/append';
 
 export type ComponentArgs = [WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
 
+export interface DynamicComponentDefinition {
+  (vm: PublicVM, args: Arguments, meta: WireFormat.TemplateMeta): VersionedPathReference<ComponentDefinition<Opaque>>;
+}
+
 export interface ComponentBuilder {
   static(definition: ComponentDefinition<Opaque>, args: ComponentArgs): void;
-  dynamic(definitionArgs: ComponentArgs, getDefinition: Helper, args: ComponentArgs): void;
+  dynamic(definitionArgs: ComponentArgs, getDefinition: DynamicComponentDefinition, args: ComponentArgs): void;
 }

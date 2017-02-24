@@ -1,6 +1,5 @@
-import { unreachable } from '@glimmer/util';
-import Environment, { Helper } from './environment';
-import { SymbolTable } from '@glimmer/interfaces';
+import { Opaque } from '@glimmer/interfaces';
+import Environment from './environment';
 import { CompiledDynamicProgram, CompiledDynamicTemplate } from './compiled/blocks';
 import { Maybe, Option } from '@glimmer/util';
 import { Ops, TemplateMeta } from '@glimmer/wire-format';
@@ -8,19 +7,15 @@ import { Ops, TemplateMeta } from '@glimmer/wire-format';
 import { Template } from './template';
 import { debugSlice } from './opcodes';
 
-import { ATTRS_BLOCK, ClientSide, compileStatement, Program, ScannedProgram } from './scanner';
+import { ATTRS_BLOCK, ClientSide, compileStatement } from './scanner';
 
 import {
+  ComponentArgs,
   ComponentBuilder as IComponentBuilder,
-  StaticDefinition,
-  ComponentArgs
+  DynamicComponentDefinition
 } from './opcode-builder';
 
-import {
-  InvokeDynamicLayout,
-  expr,
-  compileComponentArgs
-} from './syntax/functions';
+import { expr } from './syntax/functions';
 
 import OpcodeBuilderDSL from './compiled/opcodes/builder';
 
@@ -28,7 +23,7 @@ import * as Component from './component/interfaces';
 
 import * as WireFormat from '@glimmer/wire-format';
 
-type WireTemplate = WireFormat.SerializedTemplate<WireFormat.TemplateMeta>;
+import { PublicVM } from './vm/append';
 
 export interface CompilableLayout {
   compile(builder: Component.ComponentLayoutBuilder): void;
@@ -182,50 +177,6 @@ class WrappedBuilder implements InnerLayoutBuilder {
       meta: layout.meta,
       symbols: layout.symbols.concat([ATTRS_BLOCK])
     });
-
-    // let { env, layout: { meta, block, block: { named, yields, hasPartials } } } = this;
-
-    // let statements;
-    // if (block.prelude && block.head) {
-    //   statements = block.prelude.concat(block.head).concat(block.statements);
-    // } else {
-    //   statements = block.statements;
-    // }
-
-    // let dynamicTag = this.tag.getDynamic();
-
-    // if (dynamicTag) {
-    //   let element: WireFormat.Statement[] = [
-    //     [Ops.Block, ['with'], [dynamicTag], null, {
-    //       locals: ['tag'],
-    //       statements: [
-    //         [Ops.ClientSideStatement, ClientSide.Ops.OpenDynamicElement, [Ops.FixThisBeforeWeMerge, ['tag']]],
-    //         [Ops.Yield, '%attrs%', EMPTY_ARRAY],
-    //         ...this.attrs['buffer'],
-    //         [Ops.FlushElement]
-    //       ]
-    //     }, null],
-    //     ...statements,
-    //     [Ops.Block, ['if'], [dynamicTag], null, {
-    //       locals: EMPTY_ARRAY,
-    //       statements: [
-    //         [Ops.CloseElement]
-    //       ]
-    //     }, null]
-    //   ];
-
-    //   let table = layoutTable(meta, named, yields.concat('%attrs%'), hasPartials);
-    //   let child = scanBlock(element, table, env);
-    //   return new RawTemplate(child.statements, table);
-    // }
-
-    // let staticTag = this.tag.getStatic()!;
-    // let prelude: [ClientSide.OpenComponentElement] = [[Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, staticTag]];
-
-    // let head = this.attrs['buffer'];
-
-    // let scanner = new Scanner({ ...block, prelude, head }, meta, env);
-    // return scanner.scanLayout();
   }
 }
 
@@ -292,23 +243,15 @@ export class ComponentBuilder implements IComponentBuilder {
     this.env = builder.env;
   }
 
-  static(definition: StaticDefinition, args: ComponentArgs) {
+  static(definition: Component.ComponentDefinition<Opaque>, args: ComponentArgs) {
     let [params, hash, _default, inverse] = args;
+    let { builder } = this;
 
-    let syntax: ClientSide.ResolvedComponent = [
-      Ops.ClientSideStatement,
-      ClientSide.Ops.ResolvedComponent,
-      definition,
-      null,
-      [params, hash],
-      _default,
-      inverse
-    ];
-
-    compileStatement(syntax, this.builder);
+    builder.pushComponentManager(definition);
+    builder.invokeComponent(null, params, hash, _default, inverse);
   }
 
-  dynamic(definitionArgs: ComponentArgs, getDefinition: Helper, args: ComponentArgs) {
+  dynamic(definitionArgs: ComponentArgs, getDefinition: DynamicComponentDefinition, args: ComponentArgs) {
     this.builder.unit(b => {
       let [, hash, block, inverse] = args;
 
@@ -316,9 +259,14 @@ export class ComponentBuilder implements IComponentBuilder {
         throw new Error("Dynamic syntax without an argument");
       }
 
+      let meta = this.builder.meta;
+
+      function helper(vm: PublicVM, args: Component.Arguments) {
+        return getDefinition(vm, args, meta);
+      }
+
       let definition = b.local();
-      let state = b.local();
-      expr([Ops.ClientSideExpression, ClientSide.Ops.ResolvedHelper, getDefinition, definitionArgs[0], definitionArgs[1]], b);
+      expr([Ops.ClientSideExpression, ClientSide.Ops.ResolvedHelper, helper, definitionArgs[0], definitionArgs[1]], b);
 
       b.setLocal(definition);
       b.getLocal(definition);
@@ -328,27 +276,7 @@ export class ComponentBuilder implements IComponentBuilder {
         b.jumpUnless('END');
 
         b.pushDynamicComponentManager(definition);
-        b.setComponentState(state);
-
-        b.pushBlock(block);
-        b.pushBlock(inverse);
-        let { slots, count, names } = compileComponentArgs(hash, b);
-
-        b.pushDynamicScope();
-        b.pushComponentArgs(0, count, slots);
-        b.createComponent(state, true, false);
-        b.registerComponentDestructor(state);
-        b.beginComponentTransaction();
-
-        b.getComponentSelf(state);
-        b.getComponentLayout(state);
-        b.invokeDynamic(new InvokeDynamicLayout(null, names));
-        b.didCreateElement(state);
-
-        b.didRenderLayout(state);
-        b.popScope();
-        b.popDynamicScope();
-        b.commitComponentTransaction();
+        b.invokeComponent(null, null, hash, block, inverse);
       });
     });
   }
