@@ -268,8 +268,9 @@ export default class VM implements PublicVM {
     this.scopeStack.push(this.scope().child());
   }
 
-  pushCallerScope() {
-    this.scopeStack.push(expect(this.scope().getCallerScope(), 'pushCallerScope is called when a caller scope is present'));
+  pushCallerScope(childScope = false) {
+    let callerScope = expect(this.scope().getCallerScope(), 'pushCallerScope is called when a caller scope is present');
+    this.scopeStack.push(childScope ? callerScope.child() : callerScope);
   }
 
   pushDynamicScope(): DynamicScope {

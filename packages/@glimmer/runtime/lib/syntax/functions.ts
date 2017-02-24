@@ -4,6 +4,7 @@ import * as WireFormat from '@glimmer/wire-format';
 import { BlockSymbolTable, ProgramSymbolTable } from '@glimmer/interfaces';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
+import { ComponentState } from '../compiled/opcodes/component';
 import { Op } from '../opcodes';
 import { VM } from '../vm';
 import { ATTRS_BLOCK, ClientSide, Block } from '../scanner';
@@ -378,12 +379,13 @@ class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
     let { callerCount } = this;
     let stack = vm.evalStack;
 
-    vm.pushCallerScope();
-
     if (!block) {
       for (let i=callerCount-1; i>=0; i--) {
         stack.pop();
       }
+
+      // To balance the popScope
+      vm.pushCallerScope();
 
       return;
     }
@@ -392,6 +394,9 @@ class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
     let locals = table.parameters; // always present in inline blocks
 
     let calleeCount = locals ? locals.length : 0;
+
+    vm.pushCallerScope(calleeCount > 0);
+
     let excess = Math.min(callerCount - calleeCount, 0);
 
     for (let i=0; i<excess; i++) {

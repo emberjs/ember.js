@@ -7,6 +7,7 @@ import {
   ClientSide,
   CompilableLayout,
   CompiledDynamicBlock,
+  CompiledDynamicProgram,
   CompiledDynamicTemplate,
   compileLayout,
   compileArgs,
@@ -53,7 +54,9 @@ import {
 
   Template,
   Block,
-  isComponentDefinition
+  Program,
+  isComponentDefinition,
+  templateFactory
 } from "@glimmer/runtime";
 
 import {
@@ -62,6 +65,7 @@ import {
 } from "./helpers";
 
 import {
+  Option,
   Destroyable,
   Dict,
   Opaque,
@@ -94,6 +98,7 @@ import {
 
 import {
   SymbolTable,
+  ProgramSymbolTable,
   BlockSymbolTable
 } from '@glimmer/interfaces';
 
@@ -307,7 +312,7 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     return new klass(args.named.value());
   }
 
-  layoutFor(definition: BasicComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledDynamicBlock {
+  layoutFor(definition: BasicComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledDynamicProgram {
     let layout = env.compiledLayouts[definition.name];
 
     if (layout) {
@@ -352,7 +357,7 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 
 class StaticTaglessComponentManager extends BasicComponentManager {
-  layoutFor(definition: StaticTaglessComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledDynamicBlock {
+  layoutFor(definition: StaticTaglessComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledDynamicProgram {
     let layout = env.compiledLayouts[definition.name];
 
     if (layout) {
@@ -385,7 +390,7 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return component;
   }
 
-  layoutFor(definition: EmberishGlimmerComponentDefinition, component: EmberishGlimmerComponent, env: TestEnvironment): CompiledDynamicBlock {
+  layoutFor(definition: EmberishGlimmerComponentDefinition, component: EmberishGlimmerComponent, env: TestEnvironment): CompiledDynamicProgram {
     if (env.compiledLayouts[definition.name]) {
       return env.compiledLayouts[definition.name];
     }
@@ -509,7 +514,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     return component;
   }
 
-  layoutFor(definition: EmberishCurlyComponentDefinition, component: EmberishCurlyComponent, env: TestEnvironment): CompiledDynamicBlock {
+  layoutFor(definition: EmberishCurlyComponentDefinition, component: EmberishCurlyComponent, env: TestEnvironment): CompiledDynamicProgram {
     let layout = env.compiledLayouts[definition.name];
 
     if (layout) {
@@ -716,7 +721,7 @@ export class TestEnvironment extends Environment {
   private partials = dict<PartialDefinition<{}>>();
   private components = dict<ComponentDefinition<any>>();
   private uselessAnchor: HTMLAnchorElement;
-  public compiledLayouts = dict<CompiledDynamicBlock>();
+  public compiledLayouts = dict<CompiledDynamicProgram>();
 
   constructor(options: TestEnvironmentOptions = {
     document: document,
@@ -967,8 +972,8 @@ export class EmberishGlimmerComponentDefinition extends GenericComponentDefiniti
 abstract class GenericComponentLayoutCompiler implements CompilableLayout {
   constructor(private layoutString: string) { }
 
-  protected compileLayout(env: Environment): WireFormat.SerializedTemplate<TemplateMeta> {
-    return precompile(this.layoutString, { env });
+  protected compileLayout(env: Environment): Template<TemplateMeta> {
+    return rawCompile(this.layoutString, { env });
   }
 
   abstract compile(builder: ComponentLayoutBuilder);
@@ -1137,22 +1142,21 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     let [, , _path, params, hash, _default, inverse] = sexp;
     let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
     let args: ComponentArgs = [params.slice(1), hash, _default, inverse];
-    builder.component.dynamic(definitionArgs, dynamicComponentFor, args, builder.symbolTable);
+    builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
     return true;
   });
 
   blocks.addMissing((sexp, builder) => {
     let [, , name, params, hash, _default, inverse] = sexp;
-    let table = builder.symbolTable;
 
     if (!params) {
       params = [];
     }
 
-    let definition = builder.env.getComponentDefinition(name, builder.symbolTable);
+    let definition = builder.env.getComponentDefinition(name, builder.meta);
 
     if (definition) {
-      builder.component.static(definition, [params, hash, _default, inverse], table);
+      builder.component.static(definition, [params, hashToArgs(hash), _default, inverse]);
       return true;
     }
 
@@ -1162,17 +1166,15 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
   inlines.add('component', (name, params, hash, builder) => {
     let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
     let args: ComponentArgs = [params.slice(1), hash, null, null];
-    builder.component.dynamic(definitionArgs, dynamicComponentFor, args, builder.symbolTable);
+    builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
     return true;
   });
 
   inlines.addMissing((name, params, hash, builder) => {
-    let table = builder.symbolTable;
-
-    let definition = builder.env.getComponentDefinition(name, builder.symbolTable);
+    let definition = builder.env.getComponentDefinition(name, builder.meta);
 
     if (definition) {
-      builder.component.static(definition, [params, hash, null, null], table);
+      builder.component.static(definition, [params, hashToArgs(hash), null, null]);
       return true;
     }
 
@@ -1180,6 +1182,12 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
   });
 
   return { blocks, inlines };
+}
+
+function hashToArgs(hash: Option<WireFormat.Core.Hash>): Option<WireFormat.Core.Hash> {
+  if (hash === null) return null;
+  let names = hash[0].map(key => `@${key}`);
+  return [names, hash[1]];
 }
 
 export function equalsElement(element: Element, tagName: string, attributes: Object, content: string) {

@@ -55,13 +55,13 @@ export class NamedArguments {
     let out = dict<Opaque>();
     let args = this.args;
 
-    this.named.forEach(n => out[n] = args.get(n).value());
+    this.named.forEach(n => out[n.slice(1)] = args.get(n).value());
 
     return out;
   }
 
   get(name: string): VersionedPathReference<Opaque> {
-    return this.args.get(name);
+    return this.args.get(`@${name}`);
   }
 }
 
@@ -124,7 +124,7 @@ interface InitialComponentState<T> {
   component: null;
 }
 
-interface ComponentState<T> {
+export interface ComponentState<T> {
   definition: ComponentDefinition<T>;
   manager: ComponentManager<T>;
   component: T;

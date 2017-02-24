@@ -1,5 +1,4 @@
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { FunctionExpression } from '../compiled/expressions/function';
 import { CompiledDynamicProgram } from '../compiled/blocks';
 import { SerializedTemplate, TemplateMeta } from '@glimmer/wire-format';
 
@@ -7,6 +6,8 @@ import Environment, { DynamicScope } from '../environment';
 import { ElementOperations } from '../builder';
 import Bounds from '../bounds';
 import * as Simple from '../dom/interfaces';
+import { Program } from '../scanner';
+import { Template } from '../template';
 
 import { Destroyable, Dict, Opaque } from '@glimmer/util';
 import { VersionedPathReference, Tag } from '@glimmer/reference';
@@ -99,18 +100,18 @@ export interface ComponentLayoutBuilder {
   tag: ComponentTagBuilder;
   attrs: ComponentAttrsBuilder;
 
-  wrapLayout(layout: SerializedTemplate<TemplateMeta>): void;
-  fromLayout(layout: SerializedTemplate<TemplateMeta>): void;
+  wrapLayout(layout: Template<TemplateMeta>): void;
+  fromLayout(layout: Template<TemplateMeta>): void;
 }
 
 export interface ComponentTagBuilder {
   static(tagName: string): void;
-  dynamic(tagName: FunctionExpression<string>): void;
+  // dynamic(tagName: FunctionExpression<string>): void;
 }
 
 export interface ComponentAttrsBuilder {
   static(name: string, value: string): void;
-  dynamic(name: string, value: FunctionExpression<string>): void;
+  // dynamic(name: string, value: FunctionExpression<string>): void;
 }
 
 const COMPONENT_DEFINITION_BRAND = 'COMPONENT DEFINITION [id=e59c754e-61eb-4392-8c4a-2c0ac72bfcd4]';

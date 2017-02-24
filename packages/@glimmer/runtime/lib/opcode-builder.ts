@@ -25,6 +25,6 @@ export type DynamicDefinition = FunctionExpression<ComponentDefinition<Opaque>>;
 export type ComponentArgs = [WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
 
 export interface ComponentBuilder {
-  static(definition: ComponentDefinition<Opaque>, args: ComponentArgs, symbolTable: SymbolTable): void;
-  dynamic(definitionArgs: ComponentArgs, getDefinition: Helper, args: ComponentArgs, symbolTable: SymbolTable): void;
+  static(definition: ComponentDefinition<Opaque>, args: ComponentArgs): void;
+  dynamic(definitionArgs: ComponentArgs, getDefinition: Helper, args: ComponentArgs): void;
 }

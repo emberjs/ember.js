@@ -241,8 +241,6 @@ export const enum Op {
   PushEvalNames,             // (number)
   GetEvalName,               // (ConstantString)
   GetEvalBlock,              // (ConstantString)
-  PutEvalledExpr,            // ()
-  PutEvalledArgs,            // ()
   BindPartialArgs,           // (number)
   PutDynamicPartial,         // (Other<SymbolTable>)
   PutPartial,                // (Other<PartialDefinition>)
@@ -755,32 +753,6 @@ export const enum Op {
    */
   StartIterate,
 
-  /// YIELD
-
-  /**
-   * Operation:
-   *   Invoke the block that is at the top of the
-   *   stack with `count` positional arguments.
-   *
-   * Format:
-   *   (InvokeBlock count:u32)
-   * Operand Stack:
-   *   ..., [VersionedPathReference, [VersionedPathReference ...]], InlineBlock →
-   *   ...
-   */
-  InvokeBlock,
-
-  /**
-   * Operation: Perform any post-call cleanup.
-   *
-   * Format:
-   *   (DoneBlock)
-   * Operand Stack:
-   *   ... →
-   *   ...
-   */
-  DoneBlock,
-
   /// COMPONENTS
 
   /**
@@ -1028,8 +1000,6 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.Concat: return ['Concat', { size: op1 }];
     case Op.Function: return ['Function', { function: c.getFunction(op1) }];
     case Op.Constant: return ['Constant', { value: c.getOther(op1) }];
-    case Op.PutEvalledExpr: return ['PutEvalledExpr'];
-    case Op.PutEvalledArgs: return ['PutEvalledArgs'];
     case Op.PushReifiedArgs: return ['PushReifiedArgs', { positional: op1, names: c.getArray(op2).map(n => c.getString(n)), flag: op3 }];
     case Op.Primitive: return ['Primitive', { primitive: op1 }];
     case Op.Pop: return ['Pop'];
@@ -1078,8 +1048,6 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.JumpIf: return ['JumpIf', { to: op1 }];
     case Op.JumpUnless: return ['JumpUnless', { to: op1 }];
     case Op.ToBoolean: return ['ToBoolean'];
-    case Op.InvokeBlock: return ['InvokeBlock', { count: op1 }];
-    case Op.DoneBlock: return ['DoneBlock'];
     case Op.Text: return ['Text', { text: c.getString(op1) }];
     case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
     case Op.DynamicContent: return ['DynamicContent', { value: c.getOther(op1) }];
@@ -1227,7 +1195,7 @@ export class AppendOpcodes {
     func(vm, opcode);
     console.log('%c -> eval stack', 'color: red', vm.evalStack['stack'].length ? vm.evalStack['stack'].slice() : 'EMPTY');
     console.log('%c -> scope', 'color: green', vm.scope()['slots'].map(s => s && s['value'] ? s['value']() : s));
-    console.log('%c -> elements', 'color: blue', vm.stack()['elementStack'].toArray().map(e => e.tagName));
+    console.log('%c -> elements', 'color: blue', vm.stack()['elementStack'].toArray());
   }
 }
 
