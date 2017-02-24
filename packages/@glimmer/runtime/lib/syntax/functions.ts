@@ -4,10 +4,9 @@ import * as WireFormat from '@glimmer/wire-format';
 import { BlockSymbolTable, ProgramSymbolTable } from '@glimmer/interfaces';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
-import { ComponentState } from '../compiled/opcodes/component';
 import { Op } from '../opcodes';
 import { VM } from '../vm';
-import { ATTRS_BLOCK, ClientSide, Block } from '../scanner';
+import { ATTRS_BLOCK, Block, ClientSide } from '../scanner';
 
 import {
   EMPTY_ARRAY,
@@ -257,88 +256,18 @@ export function compileComponentArgs(args: Option<C.Hash>, builder: OpcodeBuilde
 CLIENT_SIDE.add(ClientSide.Ops.ResolvedComponent, (sexp: ClientSide.ResolvedComponent, builder) => {
   let [,, definition, attrs, [, hash], block, inverse] = sexp;
 
-  let state = builder.local();
-
   builder.pushComponentManager(definition);
-  builder.setComponentState(state);
-
-  builder.pushBlock(block);
-  builder.pushBlock(inverse);
-  let { slots, count, names } = compileComponentArgs(hash, builder);
-
-  builder.pushDynamicScope();
-  builder.pushComponentArgs(0, count, slots);
-  builder.createComponent(state, true, false);
-  builder.registerComponentDestructor(state);
-  builder.beginComponentTransaction();
-
-  builder.getComponentSelf(state);
-  builder.getComponentLayout(state);
-  builder.invokeDynamic(new InvokeDynamicLayout(attrs && attrs.scan(), names));
-  builder.didCreateElement(state);
-
-  builder.didRenderLayout(state);
-  builder.popScope();
-  builder.popDynamicScope();
-  builder.commitComponentTransaction();
+  builder.invokeComponent(attrs, null, hash, block, inverse);
 });
 
 CLIENT_SIDE.add(ClientSide.Ops.ScannedComponent, (sexp: ClientSide.ScannedComponent, builder) => {
-  let [,, tag, attrs, rawArgs, rawBlock] = sexp;
+  let [,, tag, attrs, hash, rawBlock] = sexp;
   let block = rawBlock && rawBlock.scan();
-
-  // `local` is a temporary we store component state throughout this algorithm
-
-  // (PushComponentManager #definition)           ; stack: [..., definition, mgr]
-  // (SetComponentState local:u32)                ; stack: [...]
-  // ... args                                     ; stack: [..., ...args]
-  // (PushBlock #block)                           ; stack: [..., ...args, block]
-  // (PushDynamicScope)                           ; stack: [..., ...args, block] NOTE: Early because of mgr.create() 🤔
-  // (PushComponentArgs N N #Dict<number>)        ; stack: [..., ...args, block, userArgs]
-  // (CreateComponent 0b01 local:u32)             ; stack: [..., ...args, block, component]
-  // (RegisterComponentDestructor local:u32)
-  // (BeginComponentTransaction)
-  // (PushComponentOperations)                    ; stack: [..., ...args, block, operations]
-  // (OpenElementWithOperations tag:#string)      ; stack: [..., ...args, block]
-  // (DidCreateElement local:u32)
-  // (InvokeStatic #attrs)                        ; NOTE: Still original scope
-  // (GetComponentSelf)                           ; stack: [..., ...args, block, VersionedPathReference]
-  // (BindSelf)                                   ; stack: [..., ...args, block]
-  // (GetLocal local:u32)                         ; stack: [..., Layout]
-  // (GetComponentLayout state:u32, layout: u32)  ; stack: [..., ...args, block, VersionedPathReference, Layout]
-  // (InvokeDynamic invoker:#LayoutInvoker)       ; stack: [...]
-  // (DidRenderLayout local:u32)                  ; stack: [...]
-  // (PopScope)
-  // (PopDynamicScope)
-  // (CommitComponentTransaction)
 
   let definition = builder.env.getComponentDefinition(tag, builder.meta);
 
-  let state = builder.local();
-
   builder.pushComponentManager(definition);
-  builder.setComponentState(state);
-
-  builder.pushBlock(block);
-  builder.pushBlock(null);
-
-  let { slots, count, names } = compileComponentArgs(rawArgs, builder);
-
-  builder.pushDynamicScope();
-  builder.pushComponentArgs(0, count, slots);
-  builder.createComponent(state, true, false);
-  builder.registerComponentDestructor(state);
-  builder.beginComponentTransaction();
-
-  builder.getComponentSelf(state);
-  builder.getComponentLayout(state);
-  builder.invokeDynamic(new InvokeDynamicLayout(attrs.scan(), names));
-  builder.didCreateElement(state);
-
-  builder.didRenderLayout(state);
-  builder.popScope();
-  builder.popDynamicScope();
-  builder.commitComponentTransaction();
+  builder.invokeComponent(attrs, null, hash, block);
 });
 
 CLIENT_SIDE.add(ClientSide.Ops.StaticPartial, (sexp: ClientSide.StaticPartial, builder) => {
@@ -397,7 +326,7 @@ class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
 
     vm.pushCallerScope(calleeCount > 0);
 
-    let excess = Math.min(callerCount - calleeCount, 0);
+    let excess = Math.max(callerCount - calleeCount, 0);
 
     for (let i=0; i<excess; i++) {
       stack.pop();

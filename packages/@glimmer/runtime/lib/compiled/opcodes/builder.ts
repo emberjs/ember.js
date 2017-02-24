@@ -14,8 +14,8 @@ import Environment, { Program } from '../../environment';
 import { SymbolTable } from '@glimmer/interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
-import { ClientSide, Block } from '../../scanner';
-import { compileList } from '../../syntax/functions';
+import { RawInlineBlock, ClientSide, Block } from '../../scanner';
+import { InvokeDynamicLayout, compileComponentArgs } from '../../syntax/functions';
 
 import {
   ConstantString,
@@ -629,13 +629,32 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     }
   }
 
-  yield(positional: Option<WireFormat.Expression[]>, to: number) {
-    let count = compileList(positional, this);
+  invokeComponent(attrs: Option<RawInlineBlock>, _params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, block: Option<Block>, inverse: Option<Block> = null) {
+    let state = this.local();
 
-    this.push(Op.GetBlock, to);
+    this.setComponentState(state);
 
-    this.openBlock(count);
-    this.closeBlock();
+    this.pushBlock(block);
+    this.pushBlock(inverse);
+    let { slots, count, names } = compileComponentArgs(hash, this);
+
+    this.pushDynamicScope();
+    this.pushComponentArgs(0, count, slots);
+    this.createComponent(state, true, false);
+    this.registerComponentDestructor(state);
+    this.beginComponentTransaction();
+
+    this.getComponentSelf(state);
+    this.getComponentLayout(state);
+    this.invokeDynamic(new InvokeDynamicLayout(attrs && attrs.scan(), names));
+    this.didCreateElement(state);
+
+    this.didRenderLayout(state);
+    this.popScope();
+    this.popDynamicScope();
+    this.commitComponentTransaction();
+
+    this.releaseLocal();
   }
 
   // TODO

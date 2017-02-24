@@ -15,9 +15,7 @@ export {
 
 export {
   ComponentBuilder,
-  ComponentArgs,
-  StaticDefinition,
-  DynamicDefinition
+  ComponentArgs
 } from './lib/opcode-builder';
 
 export {
