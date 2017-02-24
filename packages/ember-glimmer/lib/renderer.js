@@ -60,7 +60,14 @@ class RootState {
     };
 
     this.render = () => {
-      let result = this.result = template.render(self, parentElement, dynamicScope);
+      let iterator = template.render(self, parentElement, dynamicScope);
+      let iteratorResult;
+
+      do {
+        iteratorResult = iterator.next();
+      } while (!iteratorResult.done);
+
+      let result = this.result = iteratorResult.value;
 
       // override .render function after initial render
       this.render = () => {

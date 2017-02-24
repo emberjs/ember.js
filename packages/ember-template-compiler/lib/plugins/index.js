@@ -14,8 +14,10 @@ import TransformInputTypeSyntax from './transform-input-type-syntax';
 import TransformAttrsIntoArgs from './transform-attrs-into-args';
 import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformHasBlockSyntax from './transform-has-block-syntax';
+import TransformDotComponentInvocation from './transform-dot-component-invocation';
 
 export default Object.freeze([
+  TransformDotComponentInvocation,
   TransformOldBindingSyntax,
   TransformItemClass,
   TransformAngleBracketComponents,
