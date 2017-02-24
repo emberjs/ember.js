@@ -33,6 +33,7 @@ export namespace Core {
   export type Params        = Expression[];
   export type Hash          = Option<[str[], Expression[]]>;
   export type Args          = [Params, Hash];
+  export type EvalInfo      = number[];
 }
 
 export namespace Expressions {
@@ -41,8 +42,13 @@ export namespace Expressions {
   export type Hash = Core.Hash;
 
   export type Unknown        = [Opcodes.Unknown, str];
-  export type FixMeBeforeWeMerge = [Opcodes.FixThisBeforeWeMerge, Path];
   export type Get            = [Opcodes.Get, number, Path];
+
+  /**
+   * Ambiguous between a self lookup (when not inside an eval) and
+   * a local variable (when used inside of an eval).
+   */
+  export type Doubtful       = [Opcodes.Doubtful, Path];
   export type Value          = str | number | boolean | null; // tslint:disable-line
   export type HasBlock       = [Opcodes.HasBlock, YieldTo];
   export type HasBlockParams = [Opcodes.HasBlockParams, YieldTo];
@@ -51,8 +57,8 @@ export namespace Expressions {
 
   export type Expression =
       Unknown
-    | FixMeBeforeWeMerge
     | Get
+    | Doubtful
     | Concat
     | HasBlock
     | HasBlockParams
@@ -111,11 +117,11 @@ export namespace Statements {
   export type StaticAttr    = [Opcodes.StaticAttr, str, Expression, Option<str>];
   export type DynamicAttr   = [Opcodes.DynamicAttr, str, Expression, Option<str>];
   export type Yield         = [Opcodes.Yield, YieldTo, Option<Params>];
-  export type Partial       = [Opcodes.Partial, Expression];
+  export type Partial       = [Opcodes.Partial, Expression, Core.EvalInfo];
   export type DynamicArg    = [Opcodes.DynamicArg, str, Expression];
   export type StaticArg     = [Opcodes.StaticArg, str, Expression];
   export type TrustingAttr  = [Opcodes.TrustingAttr, str, Expression, str];
-  export type Debugger      = [Opcodes.Debugger];
+  export type Debugger      = [Opcodes.Debugger, Core.EvalInfo];
   export type ClientSide    = [Opcodes.ClientSideStatement, any];
 
   export const isText         = is<Text>(Opcodes.Text);

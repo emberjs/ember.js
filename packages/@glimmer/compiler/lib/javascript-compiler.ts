@@ -287,8 +287,9 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.push([Ops.Yield, to, params]);
   }
 
-  debugger() {
-    this.push([Ops.Debugger, null, null]);
+  debugger(evalInfo: Core.EvalInfo) {
+    this.push([Ops.Debugger, evalInfo]);
+    this.template.block.hasEval = true;
   }
 
   hasBlock(name: number) {
@@ -299,9 +300,9 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.pushValue<Expressions.HasBlockParams>([Ops.HasBlockParams, name]);
   }
 
-  partial() {
+  partial(evalInfo: Core.EvalInfo) {
     let params = this.popValue<Params>();
-    this.push([Ops.Partial, params[0]]);
+    this.push([Ops.Partial, params[0], evalInfo]);
     this.template.block.hasEval = true;
   }
 
@@ -321,6 +322,10 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
 
   get(head: number, path: string[]) {
     this.pushValue<Expressions.Get>([Ops.Get, head, path]);
+  }
+
+  doubtful(path: string[]) {
+    this.pushValue<Expressions.Doubtful>([Ops.Doubtful, path]);
   }
 
   concat() {

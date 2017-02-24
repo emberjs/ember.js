@@ -1,4 +1,5 @@
 import { AST } from '@glimmer/syntax';
+import { Core } from '@glimmer/wire-format';
 import { Dict, Option, dict, unreachable } from '@glimmer/util';
 
 export abstract class SymbolTable {
@@ -9,8 +10,12 @@ export abstract class SymbolTable {
   abstract has(name: string): boolean;
   abstract get(name: string): number;
 
+  abstract getLocalsMap(): Dict<number>;
+  abstract getEvalInfo(): Core.EvalInfo;
+
   abstract allocateNamed(name: string): number;
   abstract allocateBlock(name: string): number;
+  abstract allocateEvalSlot(): number;
   abstract allocate(identifier: string): number;
 
   child(locals: string[]): BlockSymbolTable {
@@ -25,6 +30,7 @@ export class ProgramSymbolTable extends SymbolTable {
   private size = 1;
   private named = dict<number>();
   private blocks = dict<number>();
+  private evalSlot = null;
 
   has(name: string): boolean {
     return false;
@@ -32,6 +38,14 @@ export class ProgramSymbolTable extends SymbolTable {
 
   get(name: string): never {
     throw unreachable();
+  }
+
+  getLocalsMap(): Dict<number> {
+    return {};
+  }
+
+  getEvalInfo(): Core.EvalInfo {
+    return [];
   }
 
   allocateNamed(name: string): number {
@@ -54,6 +68,16 @@ export class ProgramSymbolTable extends SymbolTable {
     return block;
   }
 
+  allocateEvalSlot(): number {
+    let { evalSlot } = this;
+
+    if (!evalSlot) {
+      this.evalSlot = evalSlot = this.allocate('$eval');
+    }
+
+    return this.evalSlot;
+  }
+
   allocate(identifier: string): number {
     this.symbols.push(identifier);
     return this.size++;
@@ -74,12 +98,27 @@ export class BlockSymbolTable extends SymbolTable {
     return slot === -1 ? this.parent.get(name) : this.slots[slot];
   }
 
+  getLocalsMap(): Dict<number> {
+    let dict = this.parent.getLocalsMap();
+    this.symbols.forEach(symbol => dict[symbol] = this.get(symbol));
+    return dict;
+  }
+
+  getEvalInfo(): Core.EvalInfo {
+    let locals = this.getLocalsMap();
+    return Object.keys(locals).map(symbol => locals[symbol]);
+  }
+
   allocateNamed(name: string): number {
     return this.parent.allocateNamed(name);
   }
 
   allocateBlock(name: string): number {
     return this.parent.allocateBlock(name);
+  }
+
+  allocateEvalSlot(): number {
+    return this.parent.allocateEvalSlot();
   }
 
   allocate(identifier: string): number {

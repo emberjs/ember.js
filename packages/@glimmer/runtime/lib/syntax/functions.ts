@@ -439,6 +439,12 @@ EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder) => {
   let [, head, path] = sexp;
   builder.getVariable(head);
   path.forEach(p => builder.getProperty(p));
+});
+
+EXPRESSIONS.add(Ops.Doubtful, (sexp: E.Doubtful, builder) => {
+  let [, path] = sexp;
+  builder.getVariable(0);
+  path.forEach(p => builder.getProperty(p));
 
   // TODO: handle runtime eval (e.g. partials, {{debugger}})
 });

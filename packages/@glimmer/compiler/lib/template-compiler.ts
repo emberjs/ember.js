@@ -191,7 +191,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     } else if (isSimplePath(path)) {
       this.opcode('unknown', expr, path.parts[0]);
     } else {
-      this.opcode('get', expr, 0, path.parts);
+      this.opcode('doubtful', expr, path.parts);
     }
   }
 
@@ -203,7 +203,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   }
 
   debugger(name: string, action: AST.MustacheStatement) {
-    this.opcode('debugger', null);
+    this.opcode('debugger', action, this.symbols.getEvalInfo());
   }
 
   hasBlock(name: string, action: AST.Call) {
@@ -216,7 +216,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
 
   partial(params: AST.Expression[], action: AST.MustacheStatement) {
     this.prepareParams(action.params);
-    this.opcode('partial', action);
+    this.opcode('partial', action, this.symbols.getEvalInfo());
   }
 
   builtInHelper(expr: AST.Call) {
