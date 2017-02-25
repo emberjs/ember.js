@@ -499,8 +499,7 @@ export default class Mixin {
     debugSeal(this);
   }
 
-  static applyPartial(obj) {
-    let args = a_slice.call(arguments, 1);
+  static applyPartial(obj, ...args) {
     return applyMixin(obj, args, true);
   }
 
