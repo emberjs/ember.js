@@ -14,7 +14,7 @@ export {
   getViewId,
   getViewElement,
   setViewElement,
-  STYLE_WARNING
+  constructStyleDeprecationMessage
 } from './system/utils';
 export { default as EventDispatcher } from './system/event_dispatcher';
 export { default as ComponentLookup } from './component_lookup';
