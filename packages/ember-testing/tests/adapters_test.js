@@ -12,9 +12,11 @@ QUnit.module('ember-testing Adapters', {
     originalQUnit = window.QUnit;
   },
   teardown() {
-    run(App, App.destroy);
-    App.removeTestHelpers();
-    App = null;
+    if (App) {
+      run(App, App.destroy);
+      App.removeTestHelpers();
+      App = null;
+    }
 
     Test.adapter = originalAdapter;
     window.QUnit = originalQUnit;
@@ -67,4 +69,19 @@ QUnit.test('Adapter is used by default (if QUnit is not available)', function() 
 
   ok(Test.adapter instanceof Adapter);
   ok(!(Test.adapter instanceof QUnitAdapter));
+});
+
+QUnit.test('With Ember.Test.adapter set, errors in Ember.run are caught', function () {
+  let thrown = new Error('Boom!');
+
+  let caught;
+  Test.adapter = QUnitAdapter.create({
+    exception(error) {
+      caught = error;
+    }
+  });
+
+  run(() => { throw thrown; });
+
+  deepEqual(caught, thrown);
 });
