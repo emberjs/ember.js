@@ -2865,7 +2865,7 @@ growly@^1.2.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
 
-handlebars@^3.0.1, handlebars@^3.0.3, handlebars@~3:
+handlebars@^3.0.1, handlebars@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-3.0.3.tgz#0e09651a2f0fb3c949160583710d551f92e6d2ad"
   dependencies:
@@ -2874,7 +2874,7 @@ handlebars@^3.0.1, handlebars@^3.0.3, handlebars@~3:
   optionalDependencies:
     uglify-js "~2.3"
 
-handlebars@^4.0.4:
+handlebars@^4.0.4, handlebars@^4.0.6:
   version "4.0.6"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.0.6.tgz#2ce4484850537f9c97a8026d5399b935c4ed4ed7"
   dependencies:

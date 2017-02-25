@@ -49,7 +49,7 @@
     "ember-cli-test-info": "^1.0.0",
     "ember-cli-valid-component-name": "^1.0.0",
     "ember-cli-version-checker": "^1.1.7",
-    "handlebars": "~3",
+    "handlebars": "^4.0.6",
     "jquery": "^3.1.1",
     "resolve": "^1.1.7",
     "rsvp": "^3.3.3",
