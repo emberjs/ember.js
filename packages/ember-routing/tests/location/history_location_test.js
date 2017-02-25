@@ -333,3 +333,21 @@ QUnit.test('HistoryLocation.getURL() includes location.hash and location.search'
 
   equal(location.getURL(), '/foo/bar?time=morphin#pink-power-ranger');
 });
+
+
+QUnit.test('HistoryLocation.getURL() drops duplicate slashes', function() {
+  expect(1);
+
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+      let location = mockBrowserLocation('//');
+      location.pathname = '//'; // mockBrowserLocation does not allow for `//`, so force it
+      set(this, 'location', location);
+    }
+  });
+
+  createLocation();
+
+  equal(location.getURL(), '/');
+});
