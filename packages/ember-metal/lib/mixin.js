@@ -471,16 +471,16 @@ export function mixin(obj, ...args) {
   @public
 */
 export default class Mixin {
-  constructor(args, properties) {
+  constructor(mixins, properties) {
     this.properties = properties;
 
-    let length = args && args.length;
+    let length = mixins && mixins.length;
 
     if (length > 0) {
       let m = new Array(length);
 
       for (let i = 0; i < length; i++) {
-        let x = args[i];
+        let x = mixins[i];
         if (x instanceof Mixin) {
           m[i] = x;
         } else {
