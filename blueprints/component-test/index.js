@@ -43,7 +43,7 @@ module.exports = useTestFrameworkDetector({
     var testType = options.testType || 'integration';
     var friendlyTestDescription = testInfo.description(options.entity.name, 'Integration', 'Component');
 
-    if (options.pod && options.path !== 'components' && options.path !== '') {
+    if (options.pod && options.path && options.path !== 'components') {
       componentPathName = [options.path, dasherizedModuleName].join('/');
     }
 

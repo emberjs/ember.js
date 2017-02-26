@@ -728,6 +728,25 @@ describe('Acceptance: ember generate component', function() {
       }));
   });
 
+  it('component-test x-foo --pod', function() {
+    return generateAndDestroy(['component-test', 'x-foo', '--pod'], {
+      podModulePrefix: true,
+      files: [
+        {
+          file: 'tests/integration/pods/components/x-foo/component-test.js',
+          contains: [
+            "import { moduleForComponent, test } from 'ember-qunit';",
+            "import hbs from 'htmlbars-inline-precompile';",
+            "moduleForComponent('x-foo'",
+            "integration: true",
+            "{{x-foo}}",
+            "{{#x-foo}}"
+          ]
+        }
+      ]
+    });
+  });
+
   it('component-test x-foo --unit', function() {
     var args = ['component-test', 'x-foo', '--unit'];
 
