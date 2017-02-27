@@ -220,3 +220,11 @@ QUnit.test('Observes and releases a record correctly', function() {
   set(post, 'title', 'New Title');
   equal(updatesCalled, 1, 'Release function removes observers');
 });
+
+QUnit.test('_nameToClass does not error when not found', function(assert) {
+  adapter = App.__container__.lookup('data-adapter:main');
+
+  let klass = adapter._nameToClass('App.Foo');
+
+  assert.equal(klass, undefined, 'returns undefined');
+});
