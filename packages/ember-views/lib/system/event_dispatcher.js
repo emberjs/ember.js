@@ -171,9 +171,11 @@ export default EmberObject.extend({
       throw new TypeError(`Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${rootElement.selector || rootElement[0].tagName}). Make sure you set rootElement to the body or an element in the body.`);
     }
 
+    let viewRegistry = this._getViewRegistry();
+
     for (event in events) {
       if (events.hasOwnProperty(event)) {
-        this.setupHandler(rootElement, event, events[event]);
+        this.setupHandler(rootElement, event, events[event], viewRegistry);
       }
     }
   },
@@ -191,12 +193,10 @@ export default EmberObject.extend({
     @param {Element} rootElement
     @param {String} event the browser-originated event to listen to
     @param {String} eventName the name of the method to call on the view
+    @param {Object} viewRegistry
   */
-  setupHandler(rootElement, event, eventName) {
+  setupHandler(rootElement, event, eventName, viewRegistry) {
     let self = this;
-
-    let owner = getOwner(this);
-    let viewRegistry = owner && owner.lookup('-view-registry:main') || fallbackViewRegistry;
 
     if (eventName === null) {
       return;
@@ -236,6 +236,13 @@ export default EmberObject.extend({
         }
       }
     });
+  },
+
+  _getViewRegistry() {
+    let owner = getOwner(this);
+    let viewRegistry = owner && owner.lookup('-view-registry:main') || fallbackViewRegistry;
+
+    return viewRegistry;
   },
 
   _findNearestEventManager(view, eventName) {
