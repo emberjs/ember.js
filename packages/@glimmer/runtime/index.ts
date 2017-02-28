@@ -45,6 +45,12 @@ export {
 } from './lib/compiled/opcodes/content';
 
 export {
+  setDebuggerCallback,
+  resetDebuggerCallback,
+  DebugCallback
+} from './lib/compiled/opcodes/debugger';
+
+export {
   CompiledArgs,
   CompiledNamedArgs,
   CompiledPositionalArgs,
@@ -63,9 +69,6 @@ export {
   NestedBlockSyntax,
   CompileBlockMacro,
   compileArgs,
-  setDebuggerCallback,
-  resetDebuggerCallback,
-  debugCallback,
   compileComponentArgs,
   compileList,
   expr as compileExpression

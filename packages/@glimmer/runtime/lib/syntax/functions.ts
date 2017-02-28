@@ -35,33 +35,6 @@ import Ops = WireFormat.Ops;
 export type SexpExpression = WireFormat.Expression;
 export type Syntax = WireFormat.Statement | WireFormat.Expression;
 export type CompilerFunction<T extends Syntax> = ((sexp: T, builder: OpcodeBuilder) => void);
-export type debugGet = ((path: string) => any);
-
-export interface DebugContext {
-  context: Opaque;
-  get: debugGet;
-}
-
-export type debugCallback = ((context: Opaque, get: debugGet) => DebugContext);
-
-function debugCallback(context: Opaque, get: debugGet) {
-  console.info('Use `context`, and `get(<path>)` to debug this template.');
-  /* tslint:disable */
-  debugger;
-  /* tslint:enable */
-  return { context, get };
-}
-
-let callback = debugCallback;
-
-// For testing purposes
-export function setDebuggerCallback(cb: debugCallback) {
-  callback = cb;
-}
-
-export function resetDebuggerCallback() {
-  callback = debugCallback;
-}
 
 export class Compilers<T extends Syntax> {
   private names = dict<number>();
@@ -426,17 +399,10 @@ STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder) => {
   builder.popScope();
 });
 
-STATEMENTS.add(Ops.Debugger, (_sexp: WireFormat.Statements.Debugger, _builder: OpcodeBuilder) => {
+STATEMENTS.add(Ops.Debugger, (sexp: WireFormat.Statements.Debugger, builder: OpcodeBuilder) => {
+  let [, evalInfo] = sexp;
 
-  // builder.putValue([Ops.Function, (vm: VM) => {
-  //   let context = vm.getSelf().value();
-  //   let get = (path: string) => {
-  //     return getter(vm, builder)(path).value();
-  //   };
-  //   callback(context, get);
-  // }]);
-
-  // return sexp;
+  builder.debugger(builder.meta.symbols, evalInfo);
 });
 
 STATEMENTS.add(Ops.ClientSideStatement, (sexp: WireFormat.Statements.ClientSide, builder) => {
