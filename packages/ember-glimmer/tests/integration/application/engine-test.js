@@ -155,6 +155,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   }
 
   ['@test attrs in an engine']() {
+    expectDeprecation(/Partials are now deprecated in favor of using components. Please change "troll" to a component./)
     this.setupEngineWithAttrs([]);
 
     return this.visit('/').then(() => {
@@ -298,7 +299,9 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   }
 
   ['@test visit() with partials in routable engine'](assert) {
-    assert.expect(2);
+    expectDeprecation(/Partials are now deprecated in favor of using components. Please change "foo" to a component./)
+
+    assert.expect(3);
 
     let hooks = [];
 
@@ -315,7 +318,9 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   }
 
   ['@test visit() with partials in non-routable engine'](assert) {
-    assert.expect(2);
+    expectDeprecation(/Partials are now deprecated in favor of using components. Please change "foo" to a component./)
+
+    assert.expect(3);
 
     let hooks = [];
 
