@@ -236,16 +236,6 @@ export const enum Op {
    */
   Pop,
 
-  /// EVAL
-
-  PushEvalNames,             // (number)
-  GetEvalName,               // (ConstantString)
-  GetEvalBlock,              // (ConstantString)
-  BindPartialArgs,           // (number)
-  PutDynamicPartial,         // (Other<SymbolTable>)
-  PutPartial,                // (Other<PartialDefinition>)
-  EvaluatePartial,           // (Other<SymbolTable>, Other<Dict<PartialBlock>>)
-
   /// REIFY
   PushReifiedArgs,           // (number /* positional */, ConstantArray<string> /* names */, number /* block flags */)
 
@@ -344,29 +334,6 @@ export const enum Op {
    *   ...
    */
   BindNamedArgs,
-
-  /**
-   * Operation: Bind a named argument to the layout on the stack.
-   * Format:
-   *   (BindVirtualNamed layout:local symbol:#string)
-   * Operand Stack:
-   *   ..., VersionedPathReference →
-   *   ...
-   */
-  BindVirtualNamed,
-
-  /**
-   * Operation: Bind a block to the layout on the stack.
-   * Format:
-   *   (BindVirtualBlock layout:local block:u32)
-   * Operand Stack:
-   *   ..., InlineBlock →
-   *   ...
-   * Description:
-   *   0: default
-   *   1: inverse
-   */
-  BindVirtualBlock,
 
   /**
    * Operation:
@@ -936,6 +903,32 @@ export const enum Op {
    */
   DidRenderLayout,
 
+  /// PARTIALS
+
+  /**
+   * Operation: Extract the template from a partial definition
+   *
+   * Format:
+   *   (GetPartialTemplate)
+   * Operand Stack:
+   *   ..., PartialDefinition →
+   *   ..., Program
+   */
+  GetPartialTemplate,
+
+  /**
+   * Operation:
+   *   Resolve {{foo}} inside a partial, which could be either a self-lookup
+   *   or a local variable that is in-scope for the caller.
+   *
+   * Format:
+   *   (ResolveMaybeLocal local:#string)
+   * Operand Stack:
+   *   ... →
+   *   ..., VersionedPathReference
+   */
+  ResolveMaybeLocal,
+
   /** The size of the opcode list */
   Size
 }
@@ -986,14 +979,11 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
 
     case Op.Helper: return ['Helper', { helper: c.getFunction(op1) }];
     case Op.Self: return ['Self'];
-    case Op.GetVariable: return ['GetVariable', { symbol: op1 }];
     case Op.SetVariable: return ['SetVariable', { symbol: op1 }];
-    case Op.PushEvalNames: return ['PushEvalNames'];
-    case Op.GetEvalName: return ['GetEvalName'];
-    case Op.GetEvalBlock: return ['GetEvalBlock'];
+    case Op.GetVariable: return ['GetVariable', { symbol: op1 }];
     case Op.GetBlock: return ['GetBlock', { symbol: op1 }];
-    case Op.HasBlock: return ['HasBlock'];
-    case Op.HasBlockParams: return ['HasBlockParams'];
+    case Op.HasBlock: return ['HasBlock', { block: op1 }];
+    case Op.HasBlockParams: return ['HasBlockParams', { block: op1 }];
     case Op.PushBlock: return ['PushBlock', { block: c.getBlock(op1) }];
     case Op.PushBlocks: return ['PushBlocks', { default: c.getBlock(op1), inverse: c.getBlock(op2), flags: op3 }];
     case Op.GetProperty: return ['GetKey', { key: c.getString(op1) }];
@@ -1005,7 +995,6 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.Pop: return ['Pop'];
 
     /// COMPONENTS
-
     case Op.PushComponentManager: return ['PushComponentManager', { definition: c.getOther(op1) }];
     case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', { local: op1 }];
     case Op.SetComponentState: return ['SetComponentState', { local: op1 }];
@@ -1020,6 +1009,10 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.DidRenderLayout: return ['DidRenderLayout'];
     case Op.CommitComponentTransaction: return ['CommitComponentTransaction'];
 
+    /// PARTIALS
+    case Op.GetPartialTemplate: return ['CompilePartial'];
+    case Op.ResolveMaybeLocal: return ['ResolveMaybeLocal', { name: c.getString(op1)} ];
+
     /// STATEMENTS
     case Op.ReserveLocals: return ['ReserveLocals', { count: op1 }];
     case Op.ReleaseLocals: return ['ReleaseLocals', { count: op1 }];
@@ -1032,11 +1025,8 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.PopDynamicScope: return ['PopDynamicScope'];
     case Op.BindPositionalArgs: return ['BindPositionalArgs'];
     case Op.BindSelf: return ['BindSelf'];
-    case Op.BindVirtualBlock: return ['BindVirtualBlock', { name: c.getString(op1) }];
-    case Op.BindVirtualNamed: return ['BindVirtualNamed', { name: c.getString(op1) }];
     case Op.BindNamedArgs: return ['BindNamedArgs'];
     case Op.BindBlocks: return ['BindBlocks', { names: c.getNames(op1), symbols: c.getArray(op2) }];
-    case Op.BindPartialArgs: return ['BindPartialArgs'];
     case Op.BindCallerScope: return ['BindCallerScope'];
     case Op.BindDynamicScope: return ['BindDynamicScope'];
     case Op.Enter: return ['Enter', { start: op1, end: op2 }];
@@ -1067,9 +1057,6 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.ExitList: return ['ExitList'];
     case Op.Iterate: return ['Iterate', { breaks: op1, start: op2, end: op3 }];
     case Op.StartIterate: return ['StartIterate', { start: op1, end: op2 }];
-    case Op.PutDynamicPartial: return ['PutDynamicPartial'];
-    case Op.PutPartial: return ['PutPartial'];
-    case Op.EvaluatePartial: return ['EvaluatePartial'];
   }
 
   throw unreachable();

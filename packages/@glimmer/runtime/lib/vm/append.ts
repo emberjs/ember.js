@@ -185,8 +185,8 @@ export default class VM implements PublicVM {
 
   iterate(start: number, end: number, memo: VersionedPathReference<Opaque>, value: VersionedPathReference<Opaque>, updating = new LinkedList<UpdatingOpcode>()): TryOpcode {
     let stack = this.evalStack;
-    stack.push(memo);
     stack.push(value);
+    stack.push(memo);
 
     let state = this.capture();
     let tracker = this.stack().pushUpdatableBlock();
@@ -393,15 +393,6 @@ export default class VM implements PublicVM {
       let name = this.constants.getString(names[i]);
       scope.bindBlock(symbols[i], (blocks && blocks[name]) || null);
     }
-  }
-
-  bindPartialArgs(symbol: number) {
-    let args = expect(this.frame.getArgs(), 'bindPartialArgs assumes a previous setArgs');
-    let scope = this.scope();
-
-    assert(args, "Cannot bind named args");
-
-    scope.bindPartialArgs(symbol, args);
   }
 
   bindCallerScope() {

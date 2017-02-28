@@ -69,7 +69,7 @@ export function precompile(string: string, options: TestCompileOptions<Opaque>):
   return wrapper as WireFormat.SerializedTemplate<WireFormat.TemplateMeta>;
 }
 
-export function compile<T>(string: string, options: TestCompileOptions<T>): Template<T> {
+export function compile<T extends WireFormat.TemplateMeta>(string: string, options: TestCompileOptions<T>): Template<T> {
   let js = rawPrecompile(string, options);
   let factory = templateFactory<T>(JSON.parse(js));
   return factory.create(options.env);

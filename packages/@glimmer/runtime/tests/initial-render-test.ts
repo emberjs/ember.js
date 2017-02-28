@@ -300,12 +300,6 @@ module("[glimmer runtime] Initial render", tests => {
       compilesTo('<!-- {{foo}} -->');
     });
 
-    // TODO: Revisit partial syntax.
-    // test("The compiler can handle partials in handlebars partial syntax", function() {
-    //   registerPartial('partial_name', "<b>Partial Works!</b>");
-    //   compilesTo('<div>{{>partial_name}} Plaintext content</div>', '<div><b>Partial Works!</b> Plaintext content</div>', {});
-    // });
-
     test("The compiler can handle simple handlebars", assert => {
       compilesTo('<div>{{title}}</div>', '<div>hello</div>', { title: 'hello' });
     });

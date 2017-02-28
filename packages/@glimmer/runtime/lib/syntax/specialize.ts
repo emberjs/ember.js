@@ -56,13 +56,3 @@ SPECIALIZE.add(Ops.DynamicAttr, (sexp: S.DynamicAttr) => {
 SPECIALIZE.add(Ops.TrustingAttr, (sexp: S.TrustingAttr) => {
   return [Ops.ClientSideStatement, ClientSide.Ops.AnyDynamicAttr, sexp[1], sexp[2], sexp[3], true];
 });
-
-SPECIALIZE.add(Ops.Partial, (sexp: S.Partial) => {
-  let expression = sexp[1];
-
-  if (typeof expression === 'string') {
-    return [Ops.ClientSideStatement, ClientSide.Ops.StaticPartial, expression];
-  } else {
-    return [Ops.ClientSideStatement, ClientSide.Ops.DynamicPartial, expression];
-  }
-});

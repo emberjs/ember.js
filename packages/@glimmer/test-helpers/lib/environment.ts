@@ -718,7 +718,7 @@ export interface TestEnvironmentOptions {
 export class TestEnvironment extends Environment {
   private helpers = dict<GlimmerHelper>();
   private modifiers = dict<ModifierManager<Opaque>>();
-  private partials = dict<PartialDefinition<{}>>();
+  private partials = dict<PartialDefinition<TemplateMeta>>();
   private components = dict<ComponentDefinition<any>>();
   private uselessAnchor: HTMLAnchorElement;
   public compiledLayouts = dict<CompiledDynamicProgram>();
@@ -734,10 +734,6 @@ export class TestEnvironment extends Environment {
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
     this.registerInternalHelper("-get-dynamic-var", getDynamicVar);
     this.registerModifier("action", new InertModifierManager());
-
-    this.registerInternalHelper("component", (vm, args, symbolTable) => {
-      return new DynamicComponentReference(args.positional.at(0), vm.env, symbolTable);
-    });
 
     this.registerInternalHelper("hash", (vm, args) => args.named);
   }

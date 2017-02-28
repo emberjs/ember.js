@@ -1357,23 +1357,42 @@ QUnit.test('correct scope - simple', assert => {
     `<p>{{@name}}</p>`
   );
 
-  let subitemId = 0;
-  let subitems = [];
-
-  for (let i = 0; i < 1; i++) {
-    subitems.push({
-      id: subitemId++
-    });
-  }
+  let subitems = [{ id: 0 }, { id: 1 }, { id: 42 }];
 
   appendViewFor(
     stripTight`
-      {{#each items key="id" as |item|}}
-        <sub-item @name={{item.id}} />
-      {{/each}}`
+      <div>
+        {{#each items key="id" as |item|}}
+          <sub-item @name={{item.id}} />
+        {{/each}}
+      </div>`
     , { items: subitems });
 
-   equalsElement(view.element, 'p', {}, '0');
+  equalsElement(view.element, 'div', {}, '<p>0</p><p>1</p><p>42</p>');
+});
+
+QUnit.test('correct scope - self lookup inside #each', assert => {
+  env.registerBasicComponent('sub-item', BasicComponent,
+    `<p>{{@name}}</p>`
+  );
+
+  let subitems = [{ id: 0 }, { id: 1 }, { id: 42 }];
+
+  appendViewFor(
+    stripTight`
+      <div>
+        {{#each items key="id" as |item|}}
+          <sub-item @name={{this.id}} />
+          <sub-item @name={{id}} />
+          <sub-item @name={{item.id}} />
+        {{/each}}
+      </div>`
+    , { items: subitems, id: '(self)' });
+
+   equalsElement(view.element, 'div', {}, stripTight`
+    <p>(self)</p><p>(self)</p><p>0</p>
+    <p>(self)</p><p>(self)</p><p>1</p>
+    <p>(self)</p><p>(self)</p><p>42</p>`);
 });
 
 QUnit.test('correct scope - complex', assert => {

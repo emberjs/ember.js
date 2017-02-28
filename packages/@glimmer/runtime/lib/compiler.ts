@@ -1,4 +1,4 @@
-import { Opaque } from '@glimmer/interfaces';
+import { Opaque, CompilationMeta } from '@glimmer/interfaces';
 import Environment from './environment';
 import { CompiledDynamicProgram, CompiledDynamicTemplate } from './compiled/blocks';
 import { Maybe, Option } from '@glimmer/util';
@@ -104,7 +104,8 @@ class WrappedBuilder implements InnerLayoutBuilder {
     //        DidRenderLayout
     //        Exit
 
-    let { env, layout, layout: { meta } } = this;
+    let { env, layout } = this;
+    let meta = { templateMeta: layout.meta, symbols: layout.symbols, asPartial: false };
 
     let dynamicTag = this.tag.getDynamic();
     let staticTag = this.tag.getStatic();
@@ -149,7 +150,7 @@ class WrappedBuilder implements InnerLayoutBuilder {
     }
 
     b.label('BODY');
-    b.invokeStatic(layout.asEntryPoint());
+    b.invokeStatic(layout.asBlock());
 
     if (dynamicTag) {
       b.getLocal(tag);
@@ -174,7 +175,8 @@ class WrappedBuilder implements InnerLayoutBuilder {
     debugSlice(env, start, end);
 
     return new CompiledDynamicTemplate(start, end, {
-      meta: layout.meta,
+      meta,
+      hasEval: layout.hasEval,
       symbols: layout.symbols.concat([ATTRS_BLOCK])
     });
   }
@@ -190,7 +192,7 @@ class UnwrappedBuilder implements InnerLayoutBuilder {
   }
 
   compile(): CompiledDynamicProgram {
-    let { env, layout, layout: { meta } } = this;
+    let { env, layout } = this;
     return layout.asLayout(this.attrs['buffer']).compileDynamic(env);
   }
 }
@@ -259,7 +261,7 @@ export class ComponentBuilder implements IComponentBuilder {
         throw new Error("Dynamic syntax without an argument");
       }
 
-      let meta = this.builder.meta;
+      let meta = this.builder.meta.templateMeta;
 
       function helper(vm: PublicVM, args: Component.Arguments) {
         return getDefinition(vm, args, meta);
@@ -282,6 +284,6 @@ export class ComponentBuilder implements IComponentBuilder {
   }
 }
 
-export function builder(env: Environment, meta: TemplateMeta) {
+export function builder(env: Environment, meta: CompilationMeta) {
   return new OpcodeBuilderDSL(env, meta);
 }

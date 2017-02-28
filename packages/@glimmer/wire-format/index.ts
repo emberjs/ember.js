@@ -48,7 +48,8 @@ export namespace Expressions {
    * Ambiguous between a self lookup (when not inside an eval) and
    * a local variable (when used inside of an eval).
    */
-  export type Doubtful       = [Opcodes.Doubtful, Path];
+  export type MaybeLocal     = [Opcodes.MaybeLocal, Path];
+
   export type Value          = str | number | boolean | null; // tslint:disable-line
   export type HasBlock       = [Opcodes.HasBlock, YieldTo];
   export type HasBlockParams = [Opcodes.HasBlockParams, YieldTo];
@@ -58,7 +59,7 @@ export namespace Expressions {
   export type Expression =
       Unknown
     | Get
-    | Doubtful
+    | MaybeLocal
     | Concat
     | HasBlock
     | HasBlockParams
@@ -209,6 +210,7 @@ export type Statement = Statements.Statement;
  * A JSON object of static compile time meta for the template.
  */
 export interface TemplateMeta {
+  "<template-meta>": true;
   moduleName?: string;
 }
 

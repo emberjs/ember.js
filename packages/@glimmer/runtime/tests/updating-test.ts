@@ -836,7 +836,7 @@ module("[glimmer-runtime] Updating", hooks => {
     testStatefulHelper(assert, options);
   });
 
-  QUnit.skip(`helpers passed as arguments to {{partial}} are not torn down when switching between blocks`, assert => {
+  test(`helpers passed as arguments to {{partial}} are not torn down when switching between blocks`, assert => {
     env.registerPartial('yasss', 'Yes');
     env.registerPartial('noooo', '');
 
@@ -849,8 +849,8 @@ module("[glimmer-runtime] Updating", hooks => {
     testStatefulHelper(assert, options);
   });
 
-  QUnit.skip(`helpers passed as arguments to {{component}} are not torn down when switching between blocks`, assert => {
-    env.registerBasicComponent('x-yasss', BasicComponent, 'Yes');
+  test(`helpers passed as arguments to {{component}} are not torn down when switching between blocks`, assert => {
+    env.registerBasicComponent('x-yasss', BasicComponent, '<div>Yes</div>');
 
     let options = {
       template: '{{component (stateful-foo)}}',

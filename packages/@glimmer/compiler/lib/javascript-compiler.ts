@@ -324,8 +324,8 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.pushValue<Expressions.Get>([Ops.Get, head, path]);
   }
 
-  doubtful(path: string[]) {
-    this.pushValue<Expressions.Doubtful>([Ops.Doubtful, path]);
+  maybeLocal(path: string[]) {
+    this.pushValue<Expressions.MaybeLocal>([Ops.MaybeLocal, path]);
   }
 
   concat() {

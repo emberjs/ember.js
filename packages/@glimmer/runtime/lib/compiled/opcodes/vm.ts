@@ -15,8 +15,7 @@ import {
 } from '../expressions/args';
 
 import {
-  Block,
-  Program
+  Block
 } from '../../scanner';
 
 import {
@@ -124,27 +123,10 @@ APPEND_OPCODES.add(Op.BindNamedArgs, (vm, { op1: _names, op2: _symbols }) => {
   vm.bindNamedArgs(names, symbols);
 });
 
-APPEND_OPCODES.add(Op.BindVirtualBlock, (vm, { op1: _layout, op2: _block }) => {
-  let layout = vm.getLocal<Block>(_layout);
-  let symbol = layout.symbolTable.getSymbol('yields', _block ? 'inverse' : 'default')!;
-  vm.scope().bindBlock(symbol, vm.evalStack.pop<Block>());
-});
-
-APPEND_OPCODES.add(Op.BindVirtualNamed, (vm, { op1: _layout, op2: _name }) => {
-  let expr = vm.evalStack.pop<VersionedPathReference<Opaque>>();
-  let layout = vm.getLocal<Program>(_layout);
-  let symbol = layout.symbolTable.getSymbol('named', vm.constants.getString(_name))!;
-  vm.scope().bindSymbol(symbol, expr);
-});
-
 APPEND_OPCODES.add(Op.BindBlocks, (vm, { op1: _names, op2: _symbols }) => {
   let names = vm.constants.getArray(_names);
   let symbols = vm.constants.getArray(_symbols);
   vm.bindBlocks(names, symbols);
-});
-
-APPEND_OPCODES.add(Op.BindPartialArgs, (vm, { op1: symbol }) => {
-  vm.bindPartialArgs(symbol);
 });
 
 APPEND_OPCODES.add(Op.BindCallerScope, vm => vm.bindCallerScope());
