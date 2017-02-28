@@ -8,7 +8,6 @@ import { Option, Stack, Dict, Opaque, dict, expect, fillNulls } from '@glimmer/u
 import { Constants } from '../../opcodes';
 import { ModifierManager } from '../../modifier/interfaces';
 import { ComponentDefinition } from '../../component/interfaces';
-import { PartialDefinition } from '../../partial';
 import Environment, { Program } from '../../environment';
 import { SymbolTable, CompilationMeta } from '@glimmer/interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
@@ -208,6 +207,12 @@ export abstract class BasicOpcodeBuilder {
 
   resolveMaybeLocal(name: string) {
     this.push(Op.ResolveMaybeLocal, this.string(name));
+  }
+
+  // debugger
+
+  debugger(symbols: string[], evalInfo: number[]) {
+    this.push(Op.Debugger, this.constants.other(symbols), this.constants.array(evalInfo));
   }
 
   // content

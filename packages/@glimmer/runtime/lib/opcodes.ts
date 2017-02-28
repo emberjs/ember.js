@@ -929,6 +929,19 @@ export const enum Op {
    */
   ResolveMaybeLocal,
 
+  /// DEBUGGER
+
+  /**
+   * Operation: Activate the debugger
+   *
+   * Format:
+   *   (Debugger symbols:#Array<string> evalInfo:#Array<number>)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
+  Debugger,
+
   /** The size of the opcode list */
   Size
 }
@@ -1012,6 +1025,9 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     /// PARTIALS
     case Op.GetPartialTemplate: return ['CompilePartial'];
     case Op.ResolveMaybeLocal: return ['ResolveMaybeLocal', { name: c.getString(op1)} ];
+
+    /// DEBUGGER
+    case Op.Debugger: return ['Debugger', { symbols: c.getOther(op1), evalInfo: c.getArray(op2) }];
 
     /// STATEMENTS
     case Op.ReserveLocals: return ['ReserveLocals', { count: op1 }];
