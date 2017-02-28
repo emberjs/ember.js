@@ -191,7 +191,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     } else if (isSimplePath(path)) {
       this.opcode('unknown', expr, path.parts[0]);
     } else {
-      this.opcode('doubtful', expr, path.parts);
+      this.opcode('maybeLocal', expr, path.parts);
     }
   }
 

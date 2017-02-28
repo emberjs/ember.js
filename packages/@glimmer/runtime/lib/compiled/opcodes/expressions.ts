@@ -2,7 +2,6 @@ import { APPEND_OPCODES, Op } from '../../opcodes';
 import { ConcatReference } from '../expressions/concat';
 import { Helper } from '../../environment';
 import { EvaluatedArgs } from '../expressions/args';
-import { FunctionExpression } from '../expressions/function';
 import { TRUE_REFERENCE, FALSE_REFERENCE } from '../../references';
 import { VersionedPathReference } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
@@ -29,6 +28,18 @@ APPEND_OPCODES.add(Op.GetVariable, (vm, { op1: symbol }) => {
 APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
   let expr = vm.evalStack.pop<VersionedPathReference<Opaque>>();
   vm.scope().bindSymbol(symbol, expr);
+});
+
+APPEND_OPCODES.add(Op.ResolveMaybeLocal, (vm, { op1: _name }) => {
+  let name = vm.constants.getString(_name);
+  let locals = vm.scope().getPartialMap()!;
+
+  let ref = locals[name];
+  if (ref === undefined) {
+    ref = vm.getSelf().get(name);
+  }
+
+  vm.evalStack.push(ref);
 });
 
 APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols, op2: bindCallerScope }) => {

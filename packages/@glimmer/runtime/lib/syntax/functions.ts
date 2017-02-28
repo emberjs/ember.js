@@ -1,11 +1,12 @@
+import { EvaluatedArgs } from '../compiled/expressions/args';
+import { ScopeSlot } from '../environment';
 import { CompiledDynamicBlock, CompiledDynamicProgram } from '../compiled/blocks';
-import { Ops } from '../../../wire-format';
 import * as WireFormat from '@glimmer/wire-format';
 import { BlockSymbolTable, ProgramSymbolTable } from '@glimmer/interfaces';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
 import { Op } from '../opcodes';
-import { VM } from '../vm';
+import { VM, PublicVM } from '../vm';
 import { ATTRS_BLOCK, Block, ClientSide } from '../scanner';
 
 import {
@@ -25,8 +26,11 @@ import {
 } from '@glimmer/util';
 
 import {
-  VersionedPathReference
+  VersionedPathReference,
+  map
 } from '@glimmer/reference';
+
+import Ops = WireFormat.Ops;
 
 export type SexpExpression = WireFormat.Expression;
 export type Syntax = WireFormat.Statement | WireFormat.Expression;
@@ -107,9 +111,9 @@ STATEMENTS.add(Ops.Modifier, (_sexp: S.Modifier, _builder: OpcodeBuilder) => {
 
   compileArgs(params, hash, _builder); // side-effecty seems weird
 
-  if (env.hasModifier(name, meta)) {
+  if (env.hasModifier(name, meta.templateMeta)) {
     _builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
-    _builder.modifier(env.lookupModifier(name, meta));
+    _builder.modifier(env.lookupModifier(name, meta.templateMeta));
   } else {
     throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
   }
@@ -198,7 +202,7 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
   constructor(private attrs: Option<Block>, private names: string[]) {}
 
   invoke(vm: VM, layout: Option<CompiledDynamicProgram>) {
-    let { symbols } = layout!.symbolTable as ProgramSymbolTable;
+    let { symbols, hasEval } = layout!.symbolTable as ProgramSymbolTable;
     let stack = vm.evalStack;
     let { names: callerNames } = this;
 
@@ -207,11 +211,20 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
 
     scope.bindBlock(symbols.indexOf(ATTRS_BLOCK) + 1, this.attrs);
 
+    let lookup: Option<Dict<ScopeSlot>> = null;
+    let $eval: Option<number> = -1;
+
+    if (hasEval) {
+      $eval = symbols.indexOf('$eval') + 1;
+      lookup = dict<ScopeSlot>();
+    }
+
     for (let i=callerNames.length - 1; i>=0; i--) {
       let symbol = symbols.indexOf(callerNames[i]);
       let value = stack.pop<VersionedPathReference<Opaque>>();
 
       if (symbol !== -1) scope.bindSymbol(symbol + 1, value);
+      if (hasEval) lookup![callerNames[i]] = value;
     }
 
     let inverseSymbol = symbols.indexOf('&inverse');
@@ -221,12 +234,17 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
       scope.bindBlock(inverseSymbol + 1, inverse);
     }
 
+    if (lookup) lookup['&inverse'] = inverse;
+
     let defaultSymbol = symbols.indexOf('&default');
     let defaultBlock = stack.pop<Option<Block>>();
 
     if (defaultSymbol !== -1) {
       scope.bindBlock(defaultSymbol + 1, defaultBlock);
     }
+
+    if (lookup) lookup['&default'] = defaultBlock;
+    if (lookup) scope.bindEvalScope(lookup);
 
     vm.invoke(layout!);
   }
@@ -264,41 +282,91 @@ CLIENT_SIDE.add(ClientSide.Ops.ScannedComponent, (sexp: ClientSide.ScannedCompon
   let [,, tag, attrs, hash, rawBlock] = sexp;
   let block = rawBlock && rawBlock.scan();
 
-  let definition = builder.env.getComponentDefinition(tag, builder.meta);
+  let definition = builder.env.getComponentDefinition(tag, builder.meta.templateMeta);
 
   builder.pushComponentManager(definition);
   builder.invokeComponent(attrs, null, hash, block);
 });
 
-CLIENT_SIDE.add(ClientSide.Ops.StaticPartial, (sexp: ClientSide.StaticPartial, builder) => {
-  let [,, name] = sexp;
+export class PartialInvoker implements DynamicInvoker<ProgramSymbolTable> {
+  constructor(private outerSymbols: string[], private evalInfo: WireFormat.Core.EvalInfo) {}
 
-  if (!builder.env.hasPartial(name, builder.meta)) {
-    throw new Error(`Compile Error: Could not find a partial named "${name}"`);
+  invoke(vm: VM, partial: Option<CompiledDynamicProgram>) {
+    if (partial) {
+      let partialSymbols = partial.symbolTable.symbols;
+      let outerScope = vm.scope();
+      let partialScope = vm.pushRootScope(partialSymbols.length, false);
+      partialScope.bindCallerScope(outerScope.getCallerScope());
+      partialScope.bindEvalScope(outerScope.getEvalScope());
+      partialScope.bindSelf(outerScope.getSelf());
+
+      let { evalInfo, outerSymbols } = this;
+
+      let locals = dict<VersionedPathReference<Opaque>>();
+
+      evalInfo.forEach(slot => {
+        let name = outerSymbols[slot - 1];
+        let ref  = outerScope.getSymbol(slot);
+        locals[name] = ref;
+      });
+
+      let evalScope = outerScope.getEvalScope()!;
+      partialSymbols.forEach((name, i) => {
+        let symbol = i + 1;
+        let value = evalScope[name];
+
+        if (value !== undefined) partialScope.bind(symbol, value);
+      });
+
+      partialScope.bindPartialMap(locals);
+
+      vm.invoke(partial);
+    }
+  }
+}
+
+STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
+  let [, name, evalInfo] = sexp;
+
+  let { templateMeta, symbols } = builder.meta;
+
+  function helper(vm: PublicVM, args: EvaluatedArgs) {
+    let { env } = vm;
+    let nameRef = args.positional.at(0);
+
+    return map(nameRef, name => {
+      if (typeof name === 'string' && name) {
+        if (!env.hasPartial(name, templateMeta)) {
+          throw new Error(`Could not find a partial named "${name}"`);
+        }
+
+        return env.lookupPartial(name, templateMeta);
+      } else if (name) {
+        throw new Error(`Could not find a partial named "${String(name)}"`);
+      } else {
+        return null;
+      }
+    });
   }
 
-  let definition = builder.env.lookupPartial(name, builder.meta);
+  builder.startLabels();
 
-  builder.putPartialDefinition(definition);
-  builder.evaluatePartial();
-});
+  let definition = builder.local();
+  expr([Ops.ClientSideExpression, ClientSide.Ops.ResolvedHelper, helper, [name], null], builder);
 
-CLIENT_SIDE.add(ClientSide.Ops.DynamicPartial, (_sexp: ClientSide.DynamicPartial, _builder) => {
-  // let [, name] = sexp;
+  builder.setLocal(definition);
+  builder.getLocal(definition);
+  builder.test('simple');
 
-  //   builder.startLabels();
+  builder.labelled(b => {
+    b.jumpUnless('END');
 
-  //   builder.putValue(name);
-  //   builder.test('simple');
-  //   builder.enter('BEGIN', 'END');
-  //   builder.label('BEGIN');
-  //   builder.jumpUnless('END');
-  //   builder.putDynamicPartialDefinition();
-  //   builder.evaluatePartial();
-  //   builder.label('END');
-  //   builder.exit();
-
-  //   builder.stopLabels();
+    b.getLocal(definition);
+    b.getPartialTemplate();
+    b.compileDynamicBlock();
+    b.invokeDynamic(new PartialInvoker(symbols, evalInfo));
+    b.popScope();
+  });
 });
 
 class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
@@ -356,8 +424,6 @@ STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder) => {
   builder.compileDynamicBlock();
   builder.invokeDynamic(new InvokeDynamicYield(count));
   builder.popScope();
-
-  // TODO: handle runtime eval (e.g. partials, {{debugger}})
 });
 
 STATEMENTS.add(Ops.Debugger, (_sexp: WireFormat.Statements.Debugger, _builder: OpcodeBuilder) => {
@@ -394,13 +460,13 @@ export function expr(expression: WireFormat.Expression, builder: OpcodeBuilder):
 EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder: OpcodeBuilder) => {
   let name = sexp[1];
 
-  if (builder.env.hasHelper(name, builder.meta)) {
+  if (builder.env.hasHelper(name, builder.meta.templateMeta)) {
     EXPRESSIONS.compile([Ops.Helper, name, EMPTY_ARRAY, null], builder);
+  } else if (builder.meta.asPartial) {
+    builder.resolveMaybeLocal(name);
   } else {
     builder.getVariable(0);
     builder.getProperty(name);
-
-    // TODO: handle runtime eval (e.g. partials, {{debugger}})
   }
 });
 
@@ -418,10 +484,10 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
   let { env, meta } = builder;
   let [, name, params, hash] = sexp;
 
-  if (env.hasHelper(name, meta)) {
+  if (env.hasHelper(name, meta.templateMeta)) {
     compileArgs(params, hash, builder);
     builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
-    builder.helper(env.lookupHelper(name, meta));
+    builder.helper(env.lookupHelper(name, meta.templateMeta));
   } else {
     throw new Error(`Compile Error: ${name} is not a helper`);
   }
@@ -441,12 +507,19 @@ EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder) => {
   path.forEach(p => builder.getProperty(p));
 });
 
-EXPRESSIONS.add(Ops.Doubtful, (sexp: E.Doubtful, builder) => {
+EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder) => {
   let [, path] = sexp;
-  builder.getVariable(0);
-  path.forEach(p => builder.getProperty(p));
 
-  // TODO: handle runtime eval (e.g. partials, {{debugger}})
+  if (builder.meta.asPartial) {
+    let head = path[0];
+    path = path.slice(1);
+
+    builder.resolveMaybeLocal(head);
+  } else {
+    builder.getVariable(0);
+  }
+
+  path.forEach(p => builder.getProperty(p));
 });
 
 EXPRESSIONS.add(Ops.Undefined, (_sexp, builder) => {
@@ -455,14 +528,10 @@ EXPRESSIONS.add(Ops.Undefined, (_sexp, builder) => {
 
 EXPRESSIONS.add(Ops.HasBlock, (sexp: E.HasBlock, builder) => {
   builder.hasBlock(sexp[1]);
-
-  // TODO: handle runtime eval (e.g. partials, {{debugger}})
 });
 
 EXPRESSIONS.add(Ops.HasBlockParams, (sexp: E.HasBlockParams, builder) => {
   builder.hasBlockParams(sexp[1]);
-
-  // TODO: handle runtime eval (e.g. partials, {{debugger}})
 });
 
 EXPRESSIONS.add(Ops.ClientSideExpression, (sexp: E.ClientSide, builder) => {

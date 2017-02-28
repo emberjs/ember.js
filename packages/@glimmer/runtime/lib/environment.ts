@@ -1,3 +1,4 @@
+import { VersionedPathReference } from '@glimmer/reference';
 import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
 import { Constants } from './opcodes';
@@ -26,14 +27,14 @@ import {
 } from './modifier/interfaces';
 
 import {
+  Dict,
   Option,
   Destroyable,
   Opaque,
   HasGuid,
   assert,
   ensureGuid,
-  expect,
-  unreachable
+  expect
 } from '@glimmer/util';
 
 import {
@@ -75,13 +76,14 @@ export class Scope {
     return new Scope(refs);
   }
 
-  // the 0th slot is `self`
-  private slots: ScopeSlot[];
-  private callerScope: Option<Scope> = null;
-
-  constructor(references: ScopeSlot[], callerScope: Option<Scope> = null) {
-    this.slots = references;
-    this.callerScope = callerScope;
+  constructor(
+    // the 0th slot is `self`
+    private slots: ScopeSlot[],
+    private callerScope: Option<Scope> = null,
+    // named arguments and blocks passed to a layout that uses eval
+    private evalScope: Option<Dict<ScopeSlot>> = null,
+    // locals in scope when the partial was invoked
+    private partialMap: Option<Dict<VersionedPathReference<Opaque>>> = null) {
   }
 
   init({ self }: { self: PathReference<Opaque> }): this {
@@ -101,8 +103,16 @@ export class Scope {
     return this.get<Block>(symbol);
   }
 
-  getPartialArgs(symbol: number): EvaluatedArgs {
-    throw unreachable();
+  getEvalScope(): Option<Dict<ScopeSlot>> {
+    return this.evalScope;
+  }
+
+  getPartialMap(): Option<Dict<VersionedPathReference<Opaque>>> {
+    return this.partialMap;
+  }
+
+  bind(symbol: number, value: ScopeSlot) {
+    this.set(symbol, value);
   }
 
   bindSelf(self: PathReference<Opaque>) {
@@ -117,11 +127,15 @@ export class Scope {
     this.set<Option<Block>>(symbol, value);
   }
 
-  bindPartialArgs(symbol: number, value: EvaluatedArgs) {
-    throw unreachable();
+  bindEvalScope(map: Option<Dict<ScopeSlot>>) {
+    this.evalScope = map;
   }
 
-  bindCallerScope(scope: Scope) {
+  bindPartialMap(map: Dict<VersionedPathReference<Opaque>>) {
+    this.partialMap = map;
+  }
+
+  bindCallerScope(scope: Option<Scope>) {
     this.callerScope = scope;
   }
 
@@ -130,7 +144,7 @@ export class Scope {
   }
 
   child(): Scope {
-    return new Scope(this.slots.slice(), this.callerScope);
+    return new Scope(this.slots.slice(), this.callerScope, this.evalScope, this.partialMap);
   }
 
   private get<T>(index: number): T {

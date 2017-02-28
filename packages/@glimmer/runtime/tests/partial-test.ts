@@ -100,6 +100,19 @@ QUnit.test('static partial with local reference', assert => {
   equalTokens(root, `You smaht. You loyal. `);
 });
 
+QUnit.test('static partial with local reference (unknown)', assert => {
+  let template = compile(`{{#each qualities key='@index' as |quality|}}{{partial 'test'}}. {{/each}}`);
+
+  env.registerPartial('test', `You {{quality}}`);
+  render(template, { qualities: ['smaht', 'loyal'] });
+
+  rerender(null, { assertStable: true });
+
+  equalTokens(root, `You smaht. You loyal. `);
+  rerender({ qualities: ['smaht', 'loyal'] }, { assertStable: true });
+  equalTokens(root, `You smaht. You loyal. `);
+});
+
 QUnit.test('static partial with named arguments', assert => {
   env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{@foo}}-{{partial 'test'}}</p>`);
 
@@ -413,11 +426,26 @@ QUnit.test('changing dynamic partial and changing references', assert => {
   equalTokens(root, `Respeck my name. When my name come up put some respeck on it.`);
 });
 
-QUnit.skip('FIXME (bug?) dynamic partial with local reference', assert => {
+QUnit.test('dynamic partial with local reference', assert => {
   let template = compile(`{{#each qualities key='id' as |quality|}}{{partial name}}. {{/each}}`);
+
+  env.registerPartial('test', `You {{quality.value}}`);
+  render(template, { name: 'test', qualities: [{id: 1, value: 'smaht'}, {id: 2, value: 'loyal'}] });
+
+  rerender(null, { assertStable: true });
+
+  equalTokens(root, `You smaht. You loyal. `);
+  rerender({ name: 'test', qualities: [{id: 1, value: 'smaht'}, {id: 2, value: 'loyal'}] }, { assertStable: true });
+  equalTokens(root, `You smaht. You loyal. `);
+});
+
+QUnit.test('dynamic partial with local reference (unknown)', assert => {
+  let template = compile(`{{#each qualities key='@index' as |quality|}}{{partial name}}. {{/each}}`);
 
   env.registerPartial('test', `You {{quality}}`);
   render(template, { name: 'test', qualities: ['smaht', 'loyal'] });
+
+  rerender(null, { assertStable: true });
 
   equalTokens(root, `You smaht. You loyal. `);
   rerender({ name: 'test', qualities: ['smaht', 'loyal'] }, { assertStable: true });

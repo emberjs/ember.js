@@ -73,7 +73,7 @@ export {
 
 export {
   ClientSide,
-  RawTemplate,
+  CompilableTemplate,
   ScannedBlock,
   ScannedProgram,
   Block,

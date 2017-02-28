@@ -15,7 +15,6 @@ export abstract class SymbolTable {
 
   abstract allocateNamed(name: string): number;
   abstract allocateBlock(name: string): number;
-  abstract allocateEvalSlot(): number;
   abstract allocate(identifier: string): number;
 
   child(locals: string[]): BlockSymbolTable {
@@ -30,7 +29,6 @@ export class ProgramSymbolTable extends SymbolTable {
   private size = 1;
   private named = dict<number>();
   private blocks = dict<number>();
-  private evalSlot = null;
 
   has(name: string): boolean {
     return false;
@@ -66,16 +64,6 @@ export class ProgramSymbolTable extends SymbolTable {
     }
 
     return block;
-  }
-
-  allocateEvalSlot(): number {
-    let { evalSlot } = this;
-
-    if (!evalSlot) {
-      this.evalSlot = evalSlot = this.allocate('$eval');
-    }
-
-    return this.evalSlot;
   }
 
   allocate(identifier: string): number {
@@ -115,10 +103,6 @@ export class BlockSymbolTable extends SymbolTable {
 
   allocateBlock(name: string): number {
     return this.parent.allocateBlock(name);
-  }
-
-  allocateEvalSlot(): number {
-    return this.parent.allocateEvalSlot();
   }
 
   allocate(identifier: string): number {

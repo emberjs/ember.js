@@ -1,4 +1,3 @@
-import { TemplateMeta } from '@glimmer/wire-format';
 import * as content from './content';
 import * as vm from './vm';
 
@@ -11,7 +10,7 @@ import { ModifierManager } from '../../modifier/interfaces';
 import { ComponentDefinition } from '../../component/interfaces';
 import { PartialDefinition } from '../../partial';
 import Environment, { Program } from '../../environment';
-import { SymbolTable } from '@glimmer/interfaces';
+import { SymbolTable, CompilationMeta } from '@glimmer/interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
 import { RawInlineBlock, ClientSide, Block } from '../../scanner';
@@ -81,7 +80,7 @@ export abstract class BasicOpcodeBuilder {
   private locals = 0;
   private _localsSize = 0;
 
-  constructor(public env: Environment, public meta: TemplateMeta, public program: Program) {
+  constructor(public env: Environment, public meta: CompilationMeta, public program: Program) {
     this.constants = env.constants;
     this.start = program.next;
 
@@ -146,21 +145,6 @@ export abstract class BasicOpcodeBuilder {
     label.patch(this.program);
   }
 
-  // partials
-
-  putPartialDefinition(_definition: PartialDefinition<Opaque>) {
-    let definition = this.constants.other(_definition);
-    this.push(Op.PutPartial, definition);
-  }
-
-  putDynamicPartialDefinition() {
-    // this.push(Op.PutDynamicPartial, this.constants.other(this.symbolTable));
-  }
-
-  evaluatePartial() {
-    // this.push(Op.EvaluatePartial, this.constants.other(this.symbolTable), this.constants.other(dict()));
-  }
-
   // components
 
   pushComponentManager(definition: ComponentDefinition<Opaque>) {
@@ -214,6 +198,16 @@ export abstract class BasicOpcodeBuilder {
 
   didRenderLayout(state: number) {
     this.push(Op.DidRenderLayout, state);
+  }
+
+  // partial
+
+  getPartialTemplate() {
+    this.push(Op.GetPartialTemplate);
+  }
+
+  resolveMaybeLocal(name: string) {
+    this.push(Op.ResolveMaybeLocal, this.string(name));
   }
 
   // content
@@ -381,14 +375,6 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.BindSelf);
   }
 
-  bindVirtualBlock(layout: number, block: number) {
-    this.push(Op.BindVirtualBlock, layout, block);
-  }
-
-  bindVirtualNamed(layout: number, name: string) {
-    this.push(Op.BindVirtualNamed, layout, this.string(name));
-  }
-
   pushRootScope(symbols: number, bindCallerScope: boolean) {
     this.push(Op.RootScope, symbols, <any>bindCallerScope|0);
   }
@@ -419,7 +405,7 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.PushReifiedArgs, positional, names, flag);
   }
 
-  pushImmediate(value: Opaque) {
+  pushImmediate<T>(value: T) {
     this.push(Op.Constant, this.other(value));
   }
 
@@ -516,28 +502,32 @@ export abstract class BasicOpcodeBuilder {
   invokeStatic(_block: Block, ...args: ((builder: BasicOpcodeBuilder) => void)[]): void;
   invokeStatic(_block: Block, numArgs: number): void;
   invokeStatic(_block: Block): void {
-    let paramSize = _block.symbolTable.parameters.length;
+    let { parameters } = _block.symbolTable;
+    let paramSize = parameters.length;
     let argSize = arguments.length - 1;
     let onStack = false;
+    let excess = 0;
 
     if (argSize === 1 && typeof arguments[1] === 'number') {
-      // BUG: what happens if paramSize < argSize?
-      // e.g. #with pushes 1 arg, #each pushes 2 - but the block might consume fewer
-      argSize = arguments[1];
+      argSize = Math.min(paramSize, arguments[1]);
+      excess = Math.max(arguments[1] - paramSize, 0);
       onStack = true;
     } else {
       argSize = Math.min(paramSize, argSize);
     }
 
+    for (let i=0; i<excess; i++) {
+      this.pop();
+    }
+
     if (argSize) {
-      let locals = _block.symbolTable.parameters;
       this.pushChildScope();
 
-      for (let i=0; i<argSize; i++) {
+      for (let i=argSize-1; i>=0; i--) {
         if (!onStack) {
           arguments[i+1](this);
         }
-        this.setVariable(locals[i]);
+        this.setVariable(parameters[i]);
       }
     }
 
@@ -616,7 +606,7 @@ function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E>
 export default class OpcodeBuilder extends BasicOpcodeBuilder {
   public component: IComponentBuilder;
 
-  constructor(env: Environment, meta: TemplateMeta, program: Program = env.program) {
+  constructor(env: Environment, meta: CompilationMeta, program: Program = env.program) {
     super(env, meta, program);
     this.component = new ComponentBuilder(this);
   }
