@@ -1119,21 +1119,6 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     });
   });
 
-  blocks.add('-in-element', (sexp, builder) => {
-    let block = defaultBlock(sexp);
-    let args = compileArgs(params(sexp), hash(sexp), builder);
-
-    builder.putArgs(args);
-    builder.test('simple');
-
-    builder.labelled(null, b => {
-      b.jumpUnless('END');
-      b.pushRemoteElement();
-      b.evaluate(unwrap(block));
-      b.popRemoteElement();
-    });
-  });
-
   blocks.add('component', (sexp, builder) => {
     let [, , _path, params, hash, _default, inverse] = sexp;
     let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];

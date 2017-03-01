@@ -49,7 +49,7 @@ APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
 });
 
 APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
-  let reference = vm.frame.getOperand<Simple.Element>();
+  let reference = vm.evalStack.pop<Reference<Simple.Element>>();
   let cache = isConstReference(reference) ? undefined : new ReferenceCache(reference);
   let element = cache ? cache.peek() : reference.value();
 
