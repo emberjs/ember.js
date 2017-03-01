@@ -1,6 +1,6 @@
 import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
-import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
+import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { OpSlice } from '../compiled/blocks';
 import { Template } from '../scanner';
@@ -359,49 +359,6 @@ export default class VM implements PublicVM {
   invokeBlock(block: Template) {
     let compiled = block.compileStatic(this.env);
     this.invoke(compiled);
-  }
-
-  bindPositionalArgs(symbols: number[]) {
-    let args = expect(this.frame.getArgs(), 'bindPositionalArgs assumes a previous setArgs');
-
-    let { positional } = args;
-
-    let scope = this.scope();
-
-    for(let i=0; i < symbols.length; i++) {
-      scope.bindSymbol(symbols[i], positional.at(i));
-    }
-  }
-
-  bindNamedArgs(names: ConstantString[], symbols: number[]) {
-    let args = expect(this.frame.getArgs(), 'bindNamedArgs assumes a previous setArgs');
-    let scope = this.scope();
-
-    let { named } = args;
-
-    for(let i=0; i < names.length; i++) {
-      let name = this.constants.getString(names[i]);
-      scope.bindSymbol(symbols[i], named.get(name));
-    }
-  }
-
-  bindBlocks(names: ConstantString[], symbols: number[]) {
-    let blocks = this.frame.getBlocks();
-    let scope = this.scope();
-
-    for(let i=0; i < names.length; i++) {
-      let name = this.constants.getString(names[i]);
-      scope.bindBlock(symbols[i], (blocks && blocks[name]) || null);
-    }
-  }
-
-  bindCallerScope() {
-    let callerScope = this.frame.getCallerScope();
-    let scope = this.scope();
-
-    assert(callerScope, "Cannot bind caller scope");
-
-    scope.bindCallerScope(callerScope);
   }
 
   bindDynamicScope(names: ConstantString[]) {
