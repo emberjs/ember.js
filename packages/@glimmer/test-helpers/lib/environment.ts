@@ -1105,20 +1105,6 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     builder.invokeStatic(sexp[6]);
   });
 
-  blocks.add('-with-dynamic-vars', (sexp: NestedBlockSyntax, builder) => {
-    let block = defaultBlock(sexp);
-    let named = hash(sexp);
-
-    compileList(named[1], builder);
-
-    builder.unit(b => {
-      b.pushDynamicScope();
-      b.bindDynamicScope(named[0]);
-      b.invokeStatic(unwrap(block));
-      b.popDynamicScope();
-    });
-  });
-
   blocks.add('component', (sexp, builder) => {
     let [, , _path, params, hash, _default, inverse] = sexp;
     let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
