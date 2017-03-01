@@ -821,5 +821,28 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.pop();
   });
 
+  blocks.add('-in-element', (sexp, builder) => {
+    let [,,, params,, _default] = sexp;
+
+    if (!params || params.length !== 1) {
+      throw new Error(`SYNTAX ERROR: #-in-element requires a single argument`);
+    }
+
+    let element = builder.local();
+    expr(params[0], builder);
+    builder.setLocal(element);
+
+    builder.getLocal(element);
+    builder.test('simple');
+
+    builder.labelled(b => {
+      b.jumpUnless('END');
+      b.getLocal(element);
+      b.pushRemoteElement();
+      b.invokeStatic(_default!);
+      b.popRemoteElement();
+    });
+  });
+
   return { blocks, inlines };
 }

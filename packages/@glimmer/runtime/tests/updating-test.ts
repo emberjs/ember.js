@@ -861,7 +861,7 @@ module("[glimmer-runtime] Updating", hooks => {
     testStatefulHelper(assert, options);
   });
 
-  QUnit.skip(`helpers passed as arguments to {{#-in-element}} are not torn down when switching between blocks`, assert => {
+  test(`helpers passed as arguments to {{#-in-element}} are not torn down when switching between blocks`, assert => {
     let externalElement = document.createElement('div');
 
     let options = {
