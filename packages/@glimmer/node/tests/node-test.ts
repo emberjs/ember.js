@@ -97,7 +97,7 @@ QUnit.test("HTML boolean attribute 'disabled'", function(assert) {
   assert.equal(serializer.serializeChildren(root), '<input disabled>', 'disabled without value set as property is true');
 });
 
-QUnit.skip("Quoted attribute expression is coerced to a string", function(assert) {
+QUnit.test("Quoted attribute expression is coerced to a string", function(assert) {
   let template = compile('<input disabled="{{isDisabled}}">');
   render(template, { isDisabled: null });
 
