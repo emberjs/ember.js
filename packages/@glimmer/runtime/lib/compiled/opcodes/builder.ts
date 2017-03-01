@@ -314,10 +314,6 @@ export abstract class BasicOpcodeBuilder {
 
   // expressions
 
-  self() {
-    this.push(Op.Self);
-  }
-
   setVariable(symbol: number) {
     this.push(Op.SetVariable, symbol);
   }
@@ -374,10 +370,6 @@ export abstract class BasicOpcodeBuilder {
 
   label(name: string) {
     this.labels.label(name, this.nextPos);
-  }
-
-  bindSelf() {
-    this.push(Op.BindSelf);
   }
 
   pushRootScope(symbols: number, bindCallerScope: boolean) {
@@ -473,18 +465,6 @@ export abstract class BasicOpcodeBuilder {
 
   bindDynamicScope(_names: string[]) {
     this.push(Op.BindDynamicScope, this.names(_names));
-  }
-
-  bindPositionalArgs(_names: string[], _symbols: number[]) {
-    this.push(Op.BindPositionalArgs, this.names(_names), this.symbols(_symbols));
-  }
-
-  bindNamedArgs(_names: string[], _symbols: number[]) {
-    this.push(Op.BindNamedArgs, this.names(_names), this.symbols(_symbols));
-  }
-
-  bindBlocks(_names: string[], _symbols: number[]) {
-    this.push(Op.BindBlocks, this.names(_names), this.symbols(_symbols));
   }
 
   enter(enter: string, exit: string) {

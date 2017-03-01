@@ -112,25 +112,6 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
 
 APPEND_OPCODES.add(Op.Pop, vm => vm.evalStack.pop());
 
-APPEND_OPCODES.add(Op.BindPositionalArgs, (vm, { op1: _symbols }) => {
-  let symbols = vm.constants.getArray(_symbols);
-  vm.bindPositionalArgs(symbols);
-});
-
-APPEND_OPCODES.add(Op.BindNamedArgs, (vm, { op1: _names, op2: _symbols }) => {
-  let names = vm.constants.getArray(_names);
-  let symbols = vm.constants.getArray(_symbols);
-  vm.bindNamedArgs(names, symbols);
-});
-
-APPEND_OPCODES.add(Op.BindBlocks, (vm, { op1: _names, op2: _symbols }) => {
-  let names = vm.constants.getArray(_names);
-  let symbols = vm.constants.getArray(_symbols);
-  vm.bindBlocks(names, symbols);
-});
-
-APPEND_OPCODES.add(Op.BindCallerScope, vm => vm.bindCallerScope());
-
 APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
   let names = vm.constants.getArray(_names);
   vm.bindDynamicScope(names);

@@ -393,7 +393,7 @@ STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder) => {
   let [, to, params] = sexp;
   let count = compileList(params, builder);
 
-  builder.push(Op.GetBlock, to);
+  builder.getBlock(to);
   builder.compileDynamicBlock();
   builder.invokeDynamic(new InvokeDynamicYield(count));
   builder.popScope();

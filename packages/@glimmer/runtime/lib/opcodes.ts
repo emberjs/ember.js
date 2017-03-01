@@ -56,16 +56,6 @@ export const enum Op {
   Function,
 
   /**
-   * Operation: Push the current Self onto the stack.
-   * Format:
-   *   (PushSelf)
-   * Operand Stack:
-   *   ... →
-   *   ..., VersionedPathReference
-   */
-  Self,
-
-  /**
    * Operation:
    *   Bind the variable represented by a symbol from
    *   the value at the top of the stack.
@@ -299,69 +289,6 @@ export const enum Op {
    *   ...
    */
   PopScope,
-
-  /**
-   * Operation: Bind `self` from the stack into the current scope.
-   * Format:
-   *   (BindSelf)
-   * Operand Stack:
-   *   ..., VersionedPathReference →
-   *   ...
-   */
-  BindSelf,
-
-  /**
-   * Operation:
-   *   Bind `count` positional args from the stack into the
-   *   specified symbols in the current scope.
-   * Format:
-   *   (BindPositionalArgs count:u32)
-   * Operand Stack:
-   *   ..., VersionedPathReference, [VersionedPathReference ...] →
-   *   ...
-   */
-  BindPositionalArgs,
-
-  /**
-   * Operation:
-   *  Bind `count` named args from the stack into the
-   *  specified symbols and associate them with the
-   *  same-index name in the current scope.
-   * Format:
-   *   (BindNamedArgs names:#Array<#string>, symbols:#Array<u32>)
-   * Operand Stack:
-   *   ..., VersionedPathReference, [VersionedPathReference ...] →
-   *   ...
-   */
-  BindNamedArgs,
-
-  /**
-   * Operation:
-   *  Bind `count` blocks from the stack into the
-   *  specified symbols and associate them with the
-   *  same-index name in the current scope.
-   * Format:
-   *   (BindBlocks names:#Array<#string>, symbols:#Array<u32>)
-   * Operand Stack:
-   *   ..., VersionedPathReference, [VersionedPathReference ...] →
-   *   ...
-   */
-  BindBlocks,
-
-  /**
-   * Operation:
-   *   Bind the caller's scope into the current scope before pushing
-   *   a new scope onto the scope stack.
-   * Format:
-   *   (BindCallerScope)
-   * Operand Stack:
-   *   ... →
-   *   ...
-   * Description:
-   *   Should this change to using the caller's bp, which is already
-   *   saved off?
-   */
-  BindCallerScope,
 
   /// HTML
 
@@ -991,7 +918,6 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.Bug: return ['Bug', { description: 'This opcode should never be reached' }];
 
     case Op.Helper: return ['Helper', { helper: c.getFunction(op1) }];
-    case Op.Self: return ['Self'];
     case Op.SetVariable: return ['SetVariable', { symbol: op1 }];
     case Op.GetVariable: return ['GetVariable', { symbol: op1 }];
     case Op.GetBlock: return ['GetBlock', { symbol: op1 }];
@@ -1039,11 +965,6 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.PopScope: return ['PopScope'];
     case Op.PushDynamicScope: return ['PushDynamicScope'];
     case Op.PopDynamicScope: return ['PopDynamicScope'];
-    case Op.BindPositionalArgs: return ['BindPositionalArgs'];
-    case Op.BindSelf: return ['BindSelf'];
-    case Op.BindNamedArgs: return ['BindNamedArgs'];
-    case Op.BindBlocks: return ['BindBlocks', { names: c.getNames(op1), symbols: c.getArray(op2) }];
-    case Op.BindCallerScope: return ['BindCallerScope'];
     case Op.BindDynamicScope: return ['BindDynamicScope'];
     case Op.Enter: return ['Enter', { start: op1, end: op2 }];
     case Op.Exit: return ['Exit'];
