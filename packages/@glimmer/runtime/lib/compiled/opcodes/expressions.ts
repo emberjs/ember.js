@@ -16,10 +16,6 @@ APPEND_OPCODES.add(Op.Function, (vm, { op1: _function }) => {
   vm.evalStack.push(func(vm));
 });
 
-APPEND_OPCODES.add(Op.Self, (vm) => {
-  vm.evalStack.push(vm.getSelf());
-});
-
 APPEND_OPCODES.add(Op.GetVariable, (vm, { op1: symbol }) => {
   let expr = vm.referenceForSymbol(symbol);
   vm.evalStack.push(expr);
