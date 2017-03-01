@@ -34,7 +34,8 @@
     "test:testem": "testem -f testem.dist.json"
   },
   "dependencies": {
-    "broccoli-stew": "^1.2.0",
+    "broccoli-funnel": "^1.0.6",
+    "broccoli-merge-trees": "^1.1.4",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-normalize-entity-name": "^1.0.0",
     "ember-cli-path-utils": "^1.0.0",
@@ -52,8 +53,6 @@
     "babel-plugin-feature-flags": "^0.2.3",
     "babel-plugin-filter-imports": "~0.2.0",
     "backburner.js": "^0.3.1",
-    "broccoli-funnel": "^1.0.6",
-    "broccoli-merge-trees": "^1.1.4",
     "broccoli-rollup": "^1.0.3",
     "broccoli-string-replace": "^0.1.1",
     "broccoli-uglify-sourcemap": "^1.4.2",

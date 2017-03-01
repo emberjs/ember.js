@@ -1,5 +1,7 @@
 /* eslint-env node */
 'use strict';
+
+var fs = require('fs');
 var path = require('path');
 var resolve = require('resolve');
 
@@ -33,7 +35,8 @@ module.exports = {
   absolutePaths: absolutePaths,
 
   treeForVendor: function() {
-    var stew = require('broccoli-stew');
+    var Funnel = require('broccoli-funnel');
+    var MergeTrees = require('broccoli-merge-trees');
 
     var jqueryPath;
     try {
@@ -42,26 +45,29 @@ module.exports = {
       jqueryPath = path.dirname(require.resolve('jquery/package.json'));
     }
 
-    var jquery = stew.find(jqueryPath + '/dist', {
+    var jquery = new Funnel(jqueryPath + '/dist', {
       destDir: 'ember/jquery',
       files: [ 'jquery.js' ]
     });
 
-    var ember = stew.find(__dirname + '/dist', {
-      destDir: 'ember',
-      files: [
-        'ember-runtime.js',
-        'ember-template-compiler.js',
-        'ember-testing.js',
-        'ember.debug.js',
-        'ember.min.js',
-        'ember.prod.js'
-      ]
+    var emberFiles = [
+      'ember-runtime.js',
+      'ember-template-compiler.js',
+      'ember-testing.js',
+      'ember.debug.js',
+      'ember.min.js',
+      'ember.prod.js'
+    ].filter(function(file) {
+      var fullPath = path.join(__dirname, 'dist', file);
+
+      return fs.existsSync(fullPath);
     });
 
-    return stew.find([
-      ember,
-      jquery
-    ]);
+    var ember = new Funnel(__dirname + '/dist', {
+      destDir: 'ember',
+      files: emberFiles
+    });
+
+    return new MergeTrees([ember, jquery]);
   }
 };
