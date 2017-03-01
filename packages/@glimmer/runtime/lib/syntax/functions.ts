@@ -5,7 +5,6 @@ import * as WireFormat from '@glimmer/wire-format';
 import { BlockSymbolTable, ProgramSymbolTable } from '@glimmer/interfaces';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
-import { Op } from '../opcodes';
 import { VM, PublicVM } from '../vm';
 import { ATTRS_BLOCK, Block, ClientSide } from '../scanner';
 
@@ -839,9 +838,28 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       b.jumpUnless('END');
       b.getLocal(element);
       b.pushRemoteElement();
-      b.invokeStatic(_default!);
+      b.invokeStatic(unwrap(_default));
       b.popRemoteElement();
     });
+  });
+
+  blocks.add('-with-dynamic-vars', (sexp: NestedBlockSyntax, builder) => {
+    let [,,,, hash, _default] = sexp;
+
+    if (hash) {
+      let [names, expressions] = hash;
+
+      compileList(expressions, builder);
+
+      builder.unit(b => {
+        b.pushDynamicScope();
+        b.bindDynamicScope(names);
+        b.invokeStatic(unwrap(_default));
+        b.popDynamicScope();
+      });
+    } else {
+      builder.invokeStatic(unwrap(_default));
+    }
   });
 
   return { blocks, inlines };
