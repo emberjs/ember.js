@@ -1,16 +1,16 @@
 import { Opaque, Dict, dict } from '@glimmer/util';
-import { RevisionTag, DirtyableTag } from '@glimmer/reference';
+import { RevisionTag, Tag, DirtyableTag } from '@glimmer/reference';
 import { Computed } from './blueprint';
 
 export default class {
-  bookkeeping: Dict<DirtyableTag> = dict<DirtyableTag>();
+  bookkeeping: Dict<Tag> = dict<Tag>();
 
-  tag(name: PropertyKey): RevisionTag {
+  tag(name: PropertyKey): Tag {
     let bookkeeping = this.bookkeeping;
     let tag = bookkeeping[name];
 
     if (tag === undefined) {
-      tag = new DirtyableTag();
+      tag = DirtyableTag.create();
       bookkeeping[name] = tag;
     }
 
@@ -18,7 +18,7 @@ export default class {
   }
 
   dirty(name: PropertyKey) {
-    let tag = this.tag(name) as DirtyableTag;
+    let tag = this.tag(name).inner as DirtyableTag;
     tag.dirty();
   }
 }

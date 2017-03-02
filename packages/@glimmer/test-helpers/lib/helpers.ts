@@ -1,6 +1,8 @@
 import { tokenize } from "simple-html-tokenizer";
-import { Environment, Template, Layout, templateFactory } from "@glimmer/runtime";
-import { precompile, PrecompileOptions } from "@glimmer/compiler";
+import { Environment, Template, templateFactory } from "@glimmer/runtime";
+import { precompile as rawPrecompile, PrecompileOptions } from "@glimmer/compiler";
+import * as WireFormat from '@glimmer/wire-format';
+import { Opaque } from '@glimmer/util';
 
 // For Phantom
 function toObject(val) {
@@ -61,14 +63,16 @@ export interface TestCompileOptions<T> extends PrecompileOptions<T> {
   env: Environment;
 }
 
-export function compile<T>(string: string, options: TestCompileOptions<T>): Template<T> {
-  let js = precompile(string, options);
-  let factory = templateFactory<T>(JSON.parse(js));
-  return factory.create(options.env);
+export function precompile(string: string, options: TestCompileOptions<Opaque>): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
+  let wrapper = JSON.parse(rawPrecompile(string, options));
+  wrapper.block = JSON.parse(wrapper.block);
+  return wrapper as WireFormat.SerializedTemplate<WireFormat.TemplateMeta>;
 }
 
-export function compileLayout<T>(string: string, options: TestCompileOptions<T>): Layout {
-  return compile(string, options).asLayout();
+export function compile<T extends WireFormat.TemplateMeta>(string: string, options: TestCompileOptions<T>): Template<T> {
+  let js = rawPrecompile(string, options);
+  let factory = templateFactory<T>(JSON.parse(js));
+  return factory.create(options.env);
 }
 
 export function equalInnerHTML(fragment, html, msg?) {

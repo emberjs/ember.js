@@ -1,30 +1,21 @@
-import { Environment } from './environment';
-import { SymbolTable } from '@glimmer/interfaces';
-import { CompiledProgram } from './compiled/blocks';
+import { Opaque, CompilationMeta } from '@glimmer/interfaces';
+import Environment from './environment';
+import { CompiledDynamicProgram, CompiledDynamicTemplate } from './compiled/blocks';
 import { Maybe, Option } from '@glimmer/util';
-import { Ops } from '@glimmer/wire-format';
+import { Ops, TemplateMeta } from '@glimmer/wire-format';
+
+import { Template } from './template';
+import { debugSlice } from './opcodes';
+
+import { ATTRS_BLOCK, ClientSide, compileStatement } from './scanner';
 
 import {
-  BaselineSyntax,
-  Layout,
-  InlineBlock,
-  compileStatement
-} from './scanner';
-
-import {
+  ComponentArgs,
   ComponentBuilder as IComponentBuilder,
-  DynamicDefinition,
-  StaticDefinition
+  DynamicComponentDefinition
 } from './opcode-builder';
 
-import {
-  compileArgs,
-  compileBaselineArgs
-} from './syntax/functions';
-
-import {
-  FunctionExpression
-} from './compiled/expressions/function';
+import { expr } from './syntax/functions';
 
 import OpcodeBuilderDSL from './compiled/opcodes/builder';
 
@@ -32,11 +23,14 @@ import * as Component from './component/interfaces';
 
 import * as WireFormat from '@glimmer/wire-format';
 
+import { PublicVM } from './vm/append';
+import { FunctionExpression } from "./compiled/opcodes/expressions";
+
 export interface CompilableLayout {
   compile(builder: Component.ComponentLayoutBuilder): void;
 }
 
-export function compileLayout(compilable: CompilableLayout, env: Environment): CompiledProgram {
+export function compileLayout(compilable: CompilableLayout, env: Environment): CompiledDynamicProgram {
   let builder = new ComponentLayoutBuilder(env);
 
   compilable.compile(builder);
@@ -44,20 +38,26 @@ export function compileLayout(compilable: CompilableLayout, env: Environment): C
   return builder.compile();
 }
 
+interface InnerLayoutBuilder {
+  tag: Component.ComponentTagBuilder;
+  attrs: Component.ComponentAttrsBuilder;
+  compile(): CompiledDynamicProgram;
+}
+
 class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
-  private inner: WrappedBuilder | UnwrappedBuilder;
+  private inner: InnerLayoutBuilder;
 
   constructor(public env: Environment) {}
 
-  wrapLayout(layout: Layout) {
+  wrapLayout(layout: Template<TemplateMeta>) {
     this.inner = new WrappedBuilder(this.env, layout);
   }
 
-  fromLayout(layout: Layout) {
+  fromLayout(layout: Template<TemplateMeta>) {
     this.inner = new UnwrappedBuilder(this.env, layout);
   }
 
-  compile(): CompiledProgram {
+  compile(): CompiledDynamicProgram {
     return this.inner.compile();
   }
 
@@ -70,13 +70,13 @@ class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
   }
 }
 
-class WrappedBuilder {
+class WrappedBuilder implements InnerLayoutBuilder {
   public tag = new ComponentTagBuilder();
   public attrs = new ComponentAttrsBuilder();
 
-  constructor(public env: Environment, private layout: Layout) {}
+  constructor(public env: Environment, private layout: Template<TemplateMeta>) {}
 
-  compile(): CompiledProgram {
+  compile(): CompiledDynamicProgram {
     //========DYNAMIC
     //        PutValue(TagExpr)
     //        Test
@@ -106,95 +106,95 @@ class WrappedBuilder {
     //        Exit
 
     let { env, layout } = this;
-
-    let symbolTable = layout.symbolTable;
-    let b = builder(env, layout.symbolTable);
-
-    b.startLabels();
+    let meta = { templateMeta: layout.meta, symbols: layout.symbols, asPartial: false };
 
     let dynamicTag = this.tag.getDynamic();
-    let staticTag: Maybe<string>;
+    let staticTag = this.tag.getStatic();
+
+    let b = builder(env, meta);
+    b.startLabels();
+
+    // let state = b.local();
+    // b.setLocal(state);
+
+    let tag = 0;
 
     if (dynamicTag) {
-      b.putValue(dynamicTag);
+      tag = b.local();
+
+      expr(dynamicTag, b);
+      b.setLocal(tag);
+
+      b.getLocal(tag);
       b.test('simple');
+
       b.jumpUnless('BODY');
-      b.openDynamicPrimitiveElement();
-      b.didCreateElement();
-      this.attrs['buffer'].forEach(statement => compileStatement(statement, b));
-      b.flushElement();
-      b.label('BODY');
-    } else if (staticTag = this.tag.getStatic()) {
-      b.openPrimitiveElement(staticTag);
-      b.didCreateElement();
-      this.attrs['buffer'].forEach(statement => compileStatement(statement, b));
+
+      b.pushComponentOperations();
+      b.getLocal(tag);
+      b.openDynamicElement();
+    } else if (staticTag) {
+      b.pushComponentOperations();
+      b.openElementWithOperations(staticTag);
+    }
+
+    if (dynamicTag || staticTag) {
+      // b.didCreateElement(state);
+
+      let attrs = this.attrs['buffer'];
+
+      for (let i=0; i<attrs.length; i++) {
+        compileStatement(attrs[i], b);
+      }
+
       b.flushElement();
     }
 
-    b.preludeForLayout(layout);
-
-    layout.statements.forEach(statement => compileStatement(statement, b));
+    b.label('BODY');
+    b.invokeStatic(layout.asBlock());
 
     if (dynamicTag) {
-      b.putValue(dynamicTag);
+      b.getLocal(tag);
+
       b.test('simple');
       b.jumpUnless('END');
+
       b.closeElement();
-      b.label('END');
     } else if (staticTag) {
       b.closeElement();
     }
 
-    b.didRenderLayout();
+    b.label('END');
+
+    // b.didRenderLayout(state);
+
     b.stopLabels();
 
-    return new CompiledProgram(b.start, b.end, symbolTable.size);
+    let start = b.start;
+    let end = b.finalize();
+
+    debugSlice(env, start, end);
+
+    return new CompiledDynamicTemplate(start, end, {
+      meta,
+      hasEval: layout.hasEval,
+      symbols: layout.symbols.concat([ATTRS_BLOCK])
+    });
   }
 }
 
-function isOpenElement(value: BaselineSyntax.AnyStatement): value is (BaselineSyntax.OpenPrimitiveElement | WireFormat.Statements.OpenElement) {
-  let type = value[0];
-  return type === Ops.OpenElement || type === Ops.OpenPrimitiveElement;
-}
-
-class UnwrappedBuilder {
+class UnwrappedBuilder implements InnerLayoutBuilder {
   public attrs = new ComponentAttrsBuilder();
 
-  constructor(public env: Environment, private layout: Layout) {}
+  constructor(public env: Environment, private layout: Template<TemplateMeta>) {}
 
   get tag(): Component.ComponentTagBuilder {
     throw new Error('BUG: Cannot call `tag` on an UnwrappedBuilder');
   }
 
-  compile(): CompiledProgram {
+  compile(): CompiledDynamicProgram {
     let { env, layout } = this;
-
-    let b = builder(env, layout.symbolTable);
-
-    b.startLabels();
-
-    b.preludeForLayout(layout);
-
-    let attrs = this.attrs['buffer'];
-    let attrsInserted = false;
-
-    for (let i = 0; i < layout.statements.length; i++) {
-      let statement = layout.statements[i];
-      if (!attrsInserted && isOpenElement(statement)) {
-        b.openComponentElement(statement[1]);
-        b.didCreateElement();
-        b.shadowAttributes();
-        attrs.forEach(statement => compileStatement(statement, b));
-        attrsInserted = true;
-      } else {
-        compileStatement(statement, b);
-      }
-    }
-
-    b.didRenderLayout();
-    b.stopLabels();
-
-    return new CompiledProgram(b.start, b.end, layout.symbolTable.size);
+    return layout.asLayout(this.attrs['buffer']).compileDynamic(env);
   }
 }
 
@@ -202,9 +202,9 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
   public isDynamic: Option<boolean> = null;
   public isStatic: Option<boolean> = null;
   public staticTagName: Option<string> = null;
-  public dynamicTagName: Option<BaselineSyntax.AnyExpression> = null;
+  public dynamicTagName: Option<WireFormat.Expression> = null;
 
-  getDynamic(): Maybe<BaselineSyntax.AnyExpression> {
+  getDynamic(): Maybe<WireFormat.Expression> {
     if (this.isDynamic) {
       return this.dynamicTagName;
     }
@@ -223,7 +223,7 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
 
   dynamic(tagName: FunctionExpression<string>) {
     this.isDynamic = true;
-    this.dynamicTagName = [Ops.Function, tagName];
+    this.dynamicTagName = [Ops.ClientSideExpression, ClientSide.Ops.FunctionExpression, tagName];
   }
 }
 
@@ -235,7 +235,7 @@ class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
   }
 
   dynamic(name: string, value: FunctionExpression<string>) {
-    this.buffer.push([Ops.DynamicAttr, name, [Ops.Function, value], null]);
+    this.buffer.push([Ops.DynamicAttr, name, [Ops.ClientSideExpression, ClientSide.Ops.FunctionExpression, value], null]);
   }
 }
 
@@ -246,31 +246,45 @@ export class ComponentBuilder implements IComponentBuilder {
     this.env = builder.env;
   }
 
-  static(definition: StaticDefinition, args: BaselineSyntax.Args, _symbolTable: SymbolTable, shadow: InlineBlock) {
-    this.builder.unit(b => {
-      b.putComponentDefinition(definition);
-      b.openComponent(compileBaselineArgs(args, b), shadow);
-      b.closeComponent();
-    });
+  static(definition: Component.ComponentDefinition<Opaque>, args: ComponentArgs) {
+    let [params, hash, _default, inverse] = args;
+    let { builder } = this;
+
+    builder.pushComponentManager(definition);
+    builder.invokeComponent(null, params, hash, _default, inverse);
   }
 
-  dynamic(definitionArgs: BaselineSyntax.Args, definition: DynamicDefinition, args: BaselineSyntax.Args, _symbolTable: SymbolTable, shadow: InlineBlock) {
+  dynamic(definitionArgs: ComponentArgs, getDefinition: DynamicComponentDefinition, args: ComponentArgs) {
     this.builder.unit(b => {
-      b.putArgs(compileArgs(definitionArgs[0], definitionArgs[1], b));
-      b.putValue([Ops.Function, definition]);
+      let [, hash, block, inverse] = args;
+
+      if (!definitionArgs || definitionArgs.length === 0) {
+        throw new Error("Dynamic syntax without an argument");
+      }
+
+      let meta = this.builder.meta.templateMeta;
+
+      function helper(vm: PublicVM, args: Component.Arguments) {
+        return getDefinition(vm, args, meta);
+      }
+
+      let definition = b.local();
+      expr([Ops.ClientSideExpression, ClientSide.Ops.ResolvedHelper, helper, definitionArgs[0], definitionArgs[1]], b);
+
+      b.setLocal(definition);
+      b.getLocal(definition);
       b.test('simple');
-      b.enter('BEGIN', 'END');
-      b.label('BEGIN');
-      b.jumpUnless('END');
-      b.putDynamicComponentDefinition();
-      b.openComponent(compileBaselineArgs(args, b), shadow);
-      b.closeComponent();
-      b.label('END');
-      b.exit();
+
+      b.labelled(b => {
+        b.jumpUnless('END');
+
+        b.pushDynamicComponentManager(definition);
+        b.invokeComponent(null, null, hash, block, inverse);
+      });
     });
   }
 }
 
-export function builder<S extends SymbolTable>(env: Environment, symbolTable: S) {
-  return new OpcodeBuilderDSL(symbolTable, env);
+export function builder(env: Environment, meta: CompilationMeta) {
+  return new OpcodeBuilderDSL(env, meta);
 }

@@ -7,6 +7,8 @@ import {
   CONSTANT_TAG,
   VersionedPathReference,
   RevisionTag,
+  TagWrapper,
+  Tag,
   combine
 } from '@glimmer/reference';
 
@@ -76,7 +78,7 @@ export function root<T extends GlimmerInstance>(object: T): VersionedRootReferen
 }
 
 export class VersionedRootReference<T> implements VersionedPathReference<Opaque> {
-  public tag: RevisionTag;
+  public tag: Tag;
 
   constructor(private inner: T) {
     this.tag = CONSTANT_TAG;
@@ -92,7 +94,7 @@ export class VersionedRootReference<T> implements VersionedPathReference<Opaque>
 }
 
 export class VersionedObjectReference implements VersionedPathReference<Opaque> {
-  public tag: RevisionTag = CURRENT_TAG;
+  public tag: Tag = CURRENT_TAG;
 
   constructor(private parent: VersionedPathReference<Opaque>, private key: PropertyKey) {}
 
@@ -101,7 +103,7 @@ export class VersionedObjectReference implements VersionedPathReference<Opaque> 
     let parentObject = this.parent.value() as GlimmerInstance;
 
     let computed = classMeta(Object.getPrototypeOf(parentObject)).getComputed(key);
-    let tags: RevisionTag[] = [meta(parentObject).tag(key)];
+    let tags: Tag[] = [meta(parentObject).tag(key)];
 
     if (computed) {
       tags.push(...computed.dependentKeys.map(key => path(this, key).tag));

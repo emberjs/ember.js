@@ -1,5 +1,5 @@
 import Meta from '../meta';
-import { Reference, VOLATILE_TAG, RevisionTag } from '@glimmer/reference';
+import { Reference, VOLATILE_TAG, Tag } from '@glimmer/reference';
 import { NotifiableReference } from '../types';
 
 export interface InnerReferenceFactory<T> {
@@ -9,7 +9,7 @@ export interface InnerReferenceFactory<T> {
 export class PropertyReference<T> implements Reference<T> {
   private object: any;
   private property: string;
-  public tag: RevisionTag = VOLATILE_TAG;
+  public tag: Tag = VOLATILE_TAG;
 
   constructor(object: any, property: string, outer: NotifiableReference<T>) {
     this.object = object;
@@ -30,7 +30,7 @@ export function ComputedReferenceBlueprint<T>(property, dependencies): InnerRefe
     private dependencies: string[][];
     private outer: NotifiableReference<T>;
     private installed = false;
-    public tag: RevisionTag = VOLATILE_TAG;
+    public tag: Tag = VOLATILE_TAG;
 
     constructor(object: any, property: string, outer: NotifiableReference<T>) {
       this.object = object;

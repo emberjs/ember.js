@@ -5,12 +5,11 @@ import {
 import { UpdatableReference } from '@glimmer/object-reference';
 import { precompile } from '@glimmer/compiler';
 
-import { EvaluatedArgs, templateFactory } from '@glimmer/runtime';
-import { CompiledBlock } from '@glimmer/runtime';
+import { ARGS, templateFactory } from '@glimmer/runtime';
 
 const APPEND_NAMES = ["push-child-scope","pop-scope","push-dynamic-scope","pop-dynamic-scope","put","evaluate-put","put-args","bind-positional-args","bind-named-args","bind-blocks","bind-partial-args","bind-caller-scope","bind-dynamic-scope","enter","exit","evaluate","jump","jump-if","jump-unless","test","open-block","close-block","put-dynamic-component","put-component","open-component","did-create-element","shadow-attributes","did-render-layout","close-component","text","comment","dynamic-content","open-element","push-remote-element","pop-remote-element","open-component-element","open-dynamic-element","flush-element","close-element","pop-element","static-attr","modifier","dynamic-attr-ns","dynamic-attr","put-iterator","enter-list","exit-list","enter-with-key","next-iter","put-dynamic-partial","put-partial","evaluate-partial"];
 
-function appendToJSON(env: TestEnvironment, compiled: CompiledBlock): {
+function appendToJSON(env: TestEnvironment, compiled: any): {
   guid: string,
   type: string
 }[] {
@@ -402,7 +401,7 @@ function renderContent() {
     let definition = env.getComponentDefinition(component);
 
     let manager = definition.manager;
-    let instance = manager.create(env, definition, EvaluatedArgs.empty(), new TestDynamicScope(), null, false);
+    let instance = manager.create(env, definition, ARGS.empty(), new TestDynamicScope(), null, false);
     let compiled = manager.layoutFor(definition, instance, env);
 
     return compiled;
@@ -430,7 +429,7 @@ function renderContent() {
   env.commit();
 
   let entryPoint = app.asEntryPoint();
-  let compiledEntryPoint = entryPoint.compile(env);
+  let compiledEntryPoint = entryPoint.compileStatic(env);
   let templateOps = appendToJSON(env, compiledEntryPoint);
 
   let compiledLayout = compileLayout("h-card");

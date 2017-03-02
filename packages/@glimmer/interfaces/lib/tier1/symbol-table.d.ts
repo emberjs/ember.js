@@ -1,29 +1,30 @@
 import { Option, Dict } from '../core';
 import { TemplateMeta } from '@glimmer/wire-format';
 
-
 export interface Symbols {
-  named: Option<Dict<number>>;
-  yields: Option<Dict<number>>;
-  locals: Option<Dict<number>>;
-  partialArgs: Option<number>;
+}
+
+export interface CompilationMeta {
+  symbols: string[];
+  templateMeta: TemplateMeta;
+  asPartial: boolean;
 }
 
 export interface SymbolTable {
-  getMeta(): Option<TemplateMeta>;
-  getSymbols(): Symbols;
-  getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number>;
-  getPartialArgs(): Option<number>;
+  meta: CompilationMeta;
 }
 
 export interface ProgramSymbolTable extends SymbolTable {
-  size: number;
-  getSymbol(kind: 'local', name: string): null;
-  getSymbol(kind: 'named' | 'yields', name: string): Option<number>;
+  hasEval: boolean;
+  symbols: string[];
 }
 
 export interface BlockSymbolTable extends SymbolTable {
-  getSymbol(kind: 'local' | 'named' | 'yields', name: string): Option<number>;
+  parameters: number[];
+}
+
+export interface PartialSymbolTable extends SymbolTable {
+
 }
 
 export default SymbolTable;

@@ -27,6 +27,8 @@ import { assign } from "@glimmer/util";
 
 import { CLASS_META, UpdatableReference, setProperty as set } from '@glimmer/object-reference';
 
+import { module as nestedModule, test, assert } from './support';
+
 export class EmberishRootView extends EmberObject {
   private parent: Element;
   protected _result: RenderResult;
@@ -73,13 +75,39 @@ let view: EmberishRootView, env: TestEnvironment;
 
 function module(name: string) {
   QUnit.module(`[components] ${name}`, {
-    setup() {
+    beforeEach() {
       env = new TestEnvironment();
     }
   });
 }
 
-module("Components - generic - props");
+function top<T>(stack: T[]): T {
+  return stack[stack.length - 1];
+}
+
+let Components, Glimmer, Curly, Dynamic;
+
+nestedModule("Components", hooks => {
+  hooks.beforeEach(() => env = new TestEnvironment());
+
+  Components = top(QUnit.config['moduleStack']);
+
+  nestedModule("Glimmer", hooks => {
+    Glimmer = top(QUnit.config['moduleStack']);
+  });
+
+  nestedModule("Curly", hooks => {
+    Curly = top(QUnit.config['moduleStack']);
+  });
+
+  nestedModule("Component Helper", hooks => {
+    Dynamic = top(QUnit.config['moduleStack']);
+  });
+
+});
+// let Component = QUnit.config['moduleStack'].pop();
+
+// module("Components - generic - props");
 
 export function appendViewFor(template: string, context: Object = {}) {
   class MyRootView extends EmberishRootView {
@@ -119,9 +147,9 @@ function assertFired(component: EmberishGlimmerComponent, name: string, count=1)
   }
 
   if (name in hooks) {
-    strictEqual(hooks[name], count, `The ${name} hook fired ${count} ${count === 1 ? 'time' : 'times'}`);
+    assert.strictEqual(hooks[name], count, `The ${name} hook fired ${count} ${count === 1 ? 'time' : 'times'}`);
   } else {
-    ok(false, `The ${name} hook fired`);
+    assert.ok(false, `The ${name} hook fired`);
   }
 }
 
@@ -242,6 +270,10 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
   if (!kind || kind === 'curly') {
     let test = skip === 'curly' ? QUnit.skip : QUnit.test;
 
+    let beforeModule = QUnit.config['currentModule'];
+    QUnit.config['moduleStack'].push(Curly);
+    QUnit.config['currentModule'] = Curly;
+
     test(`curly: ${title}`, assert => {
       if (typeof layout !== 'string') throw new Error('Only string layouts are supported for curly tests');
 
@@ -277,10 +309,17 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
         assertExpected('div', update.expected);
       });
     });
+
+    QUnit.config['moduleStack'].pop();
+    QUnit.config['currentModule'] = beforeModule;
   }
 
   if (!kind || kind === 'curly' || kind === 'dynamic') {
     let test = skip === 'dynamic' ? QUnit.skip : QUnit.test;
+
+    let beforeModule = QUnit.config['currentModule'];
+    QUnit.config['moduleStack'].push(Dynamic);
+    QUnit.config['currentModule'] = Dynamic;
 
     test(`curly - component helper: ${title}`, assert => {
       env.registerEmberishCurlyComponent('test-component', EmberishCurlyComponent, layout as string);
@@ -339,10 +378,17 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
         }
       });
     });
+
+    QUnit.config['moduleStack'].pop();
+    QUnit.config['currentModule'] = beforeModule;
   }
 
   if (!kind || kind === 'glimmer') {
     let test = skip === 'glimmer' ? QUnit.skip : QUnit.test;
+
+    let beforeModule = QUnit.config['currentModule'];
+    QUnit.config['moduleStack'].push(Glimmer);
+    QUnit.config['currentModule'] = Glimmer;
 
     test(`glimmer: ${title}`, assert => {
       let layoutOptions: TagOptions;
@@ -367,11 +413,14 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
       assertExpected('aside', expected, attributes);
 
       updates.forEach(update => {
-        ok(true, `Updating with ${JSON.stringify(update)}`);
+        assert.ok(true, `Updating with ${JSON.stringify(update)}`);
         view.rerender(update.context);
         assertExpected('aside', update.expected, attributes);
       });
     });
+
+    QUnit.config['moduleStack'].pop();
+    QUnit.config['currentModule'] = beforeModule;
   }
 }
 
@@ -774,22 +823,22 @@ testComponent('Can get and set dynamic variable', {
 testComponent('Can get and set dynamic variable with bound names', {
   layout: '{{#-with-dynamic-vars myKeyword=@value1 secondKeyword=@value2}}{{yield}}{{/-with-dynamic-vars}}',
   invokeAs: {
-    template: '{{-get-dynamic-var keyword}}',
+    template: '{{keyword}}-{{-get-dynamic-var keyword}}',
     context: { value1: "hello", value2: "goodbye", keyword: "myKeyword" },
     args: { value1: "value1", value2: "value2" }
   },
-  expected: 'hello',
+  expected: 'myKeyword-hello',
   updates: [{
-    expected: 'hello'
+    expected: 'myKeyword-hello'
   }, {
     context: { keyword: 'secondKeyword' },
-    expected: 'goodbye'
+    expected: 'secondKeyword-goodbye'
   }, {
     context: { value2: 'goodbye!' },
-    expected: 'goodbye!'
+    expected: 'secondKeyword-goodbye!'
   }, {
     context: { value1: "hello", value2: "goodbye", keyword: "myKeyword" },
-    expected: 'hello'
+    expected: 'myKeyword-hello'
   }]
 });
 
@@ -1171,7 +1220,7 @@ testComponent('correct scope - conflicting block param and attr names', {
 QUnit.test('correct scope - accessing local variable in yielded block (glimmer component)', assert => {
   class FooBar extends BasicComponent {}
 
-  env.registerBasicComponent('foo-bar', FooBar, `[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{@foo}}]{{yield}}`);
+  env.registerBasicComponent('foo-bar', FooBar, `<div>[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{@foo}}]{{yield}}</div>`);
 
   appendViewFor(
     stripTight`
@@ -1194,11 +1243,13 @@ QUnit.test('correct scope - accessing local variable in yielded block (glimmer c
         [Outside: zomg]
         [Inside: zomg]
         [Inside: zomg]
-        [Layout: ]
-        [Layout: ]
-        [Layout: zomg]
-        [Block: zomg]
-        [Block: zomg]`
+        <div>
+          [Layout: ]
+          [Layout: ]
+          [Layout: zomg]
+          [Block: zomg]
+          [Block: zomg]
+        </div>`
   );
 });
 
@@ -1275,36 +1326,6 @@ QUnit.test('correct scope - caller self can be threaded through (curly component
   );
 });
 
-QUnit.test('correct scope - self', assert => {
-  class FooBar extends BasicComponent {
-    public foo = 'foo';
-    public bar = 'bar';
-    public baz = null;
-
-    constructor(attrs: Attrs) {
-      super(attrs);
-      this.baz = attrs['baz'] || 'baz';
-    }
-  }
-
-  env.registerBasicComponent('foo-bar', FooBar, `<p>{{foo}} {{bar}} {{baz}}</p>`);
-
-  appendViewFor(
-    stripTight`
-      <div>
-        <foo-bar />
-        <foo-bar @baz={{zomg}} />
-      </div>`,
-    { zomg: "zomg" }
-  );
-
-  equalsElement(view.element, 'div', {},
-      stripTight`
-        <p>foo bar baz</p>
-        <p>foo bar zomg</p>`
-  );
-});
-
 QUnit.test('`false` class name do not render', assert => {
   appendViewFor('<div class={{isFalse}}>FALSE</div>', { isFalse: false });
   assert.strictEqual(view.element.getAttribute('class'), null);
@@ -1344,23 +1365,42 @@ QUnit.test('correct scope - simple', assert => {
     `<p>{{@name}}</p>`
   );
 
-  let subitemId = 0;
-  let subitems = [];
-
-  for (let i = 0; i < 1; i++) {
-    subitems.push({
-      id: subitemId++
-    });
-  }
+  let subitems = [{ id: 0 }, { id: 1 }, { id: 42 }];
 
   appendViewFor(
     stripTight`
-      {{#each items key="id" as |item|}}
-        <sub-item @name={{item.id}} />
-      {{/each}}`
+      <div>
+        {{#each items key="id" as |item|}}
+          <sub-item @name={{item.id}} />
+        {{/each}}
+      </div>`
     , { items: subitems });
 
-   equalsElement(view.element, 'p', {}, '0');
+  equalsElement(view.element, 'div', {}, '<p>0</p><p>1</p><p>42</p>');
+});
+
+QUnit.test('correct scope - self lookup inside #each', assert => {
+  env.registerBasicComponent('sub-item', BasicComponent,
+    `<p>{{@name}}</p>`
+  );
+
+  let subitems = [{ id: 0 }, { id: 1 }, { id: 42 }];
+
+  appendViewFor(
+    stripTight`
+      <div>
+        {{#each items key="id" as |item|}}
+          <sub-item @name={{this.id}} />
+          <sub-item @name={{id}} />
+          <sub-item @name={{item.id}} />
+        {{/each}}
+      </div>`
+    , { items: subitems, id: '(self)' });
+
+   equalsElement(view.element, 'div', {}, stripTight`
+    <p>(self)</p><p>(self)</p><p>0</p>
+    <p>(self)</p><p>(self)</p><p>1</p>
+    <p>(self)</p><p>(self)</p><p>42</p>`);
 });
 
 QUnit.test('correct scope - complex', assert => {
@@ -1934,7 +1974,7 @@ module("Emberish Component - ids");
 
 QUnit.test('emberish component should have unique IDs', assert => {
   env.registerEmberishCurlyComponent('x-curly', null, '');
-  env.registerEmberishGlimmerComponent('x-glimmer', null, '<div></div>');
+  env.registerEmberishGlimmerComponent('x-glimmer', null, '<div />');
 
   appendViewFor(
     stripTight`
@@ -2195,6 +2235,13 @@ testComponent('shadowing: outer attributes clobber inner attributes with concat'
 });
 
 module("Glimmer Component");
+
+QUnit.test(`Modifiers cannot be on the top-level element`, function() {
+  env.registerEmberishGlimmerComponent('non-block', null, `<div {{foo bar}}>Should error</div>`);
+  assert.throws(() => {
+    appendViewFor('<non-block />');
+  }, /Found modifier "foo" on the top-level element of "non-block"\. Modifiers cannot be on the top-level element\./);
+});
 
 let styles = [{
   name: 'a div',
@@ -3102,7 +3149,7 @@ QUnit.test('glimmer components are destroyed', function(assert) {
     }
   });
 
-  env.registerEmberishGlimmerComponent('destroy-me', DestroyMeComponent as any, 'destroy me!');
+  env.registerEmberishGlimmerComponent('destroy-me', DestroyMeComponent as any, '<div>destroy me!</div>');
 
   appendViewFor(`{{#if cond}}<destroy-me />{{/if}}`, { cond: true });
 
@@ -3148,7 +3195,7 @@ QUnit.test('components inside a list are destroyed', function(assert) {
     }
   });
 
-  env.registerEmberishGlimmerComponent('destroy-me', DestroyMeComponent as any, 'destroy me!');
+  env.registerEmberishGlimmerComponent('destroy-me', DestroyMeComponent as any, '<div>destroy me!</div>');
 
   appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me @item={{item}} />{{/each}}`, { list: [1,2,3,4,5] });
 

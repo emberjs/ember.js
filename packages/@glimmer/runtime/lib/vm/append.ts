@@ -1,16 +1,14 @@
 import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
-import { PathReference, combineSlice } from '@glimmer/reference';
-import { CompiledBlock, CompiledProgram } from '../compiled/blocks';
-import { InlineBlock, PartialBlock } from '../scanner';
-import { CompiledExpression } from '../compiled/expressions';
-import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
+import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
+import { CompiledDynamicProgram, OpSlice } from '../compiled/blocks';
+import { Template } from '../scanner';
+import { EvaluatedArgs } from '../compiled/expressions/args';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
-import { Component, ComponentManager } from '../component/interfaces';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
-import { CapturedFrame, FrameStack } from './frame';
+import { FrameStack } from './frame';
 
 import {
   APPEND_OPCODES,
@@ -27,6 +25,53 @@ export interface PublicVM {
   newDestroyable(d: Destroyable): void;
 }
 
+export class EvaluationStack {
+  constructor(private stack: Opaque[] = []) {
+    Object.seal(this);
+  }
+
+  get pos() {
+    return this.stack.length;
+  }
+
+  snapshot(): EvaluationStack {
+    return new EvaluationStack(this.stack.slice());
+  }
+
+  restore(bp: number): number {
+    this.stack.length = bp;
+    return this.pop<number>();
+  }
+
+  set(pos: number, value: Opaque) {
+    this.stack[pos] = value;
+  }
+
+  get(pos: number): Opaque {
+    return this.stack[pos];
+  }
+
+  push(value: Opaque) {
+    this.stack.push(value);
+  }
+
+  pop<T>(): T {
+    return this.stack.pop() as T;
+  }
+
+  top<T>(): T {
+    return this.stack[this.stack.length - 1] as T;
+  }
+
+  fromTop<T>(pos: number): T {
+    return this.stack[this.stack.length - 1 - pos] as T;
+  }
+
+  slice<T extends Opaque[]>(count: number): T {
+    return this.stack.slice(this.stack.length - count) as T;
+  }
+}
+
 export interface IteratorResult<T> {
   value: T | null;
   done: boolean;
@@ -35,23 +80,25 @@ export interface IteratorResult<T> {
 export default class VM implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
+  private bp = 0;
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
   public frame = new FrameStack();
   public constants: Constants;
+  private notDone = { done: false, value: null };
+  public evalStack = new EvaluationStack();
 
   static initial(
     env: Environment,
     self: PathReference<Opaque>,
     dynamicScope: DynamicScope,
     elementStack: ElementStack,
-    compiledProgram: CompiledProgram
+    program: CompiledDynamicProgram
   ) {
-    let { symbols: size, start, end }  = compiledProgram;
-    let scope = Scope.root(self, size);
+    let scope = Scope.root(self, program.symbolTable.symbols.length);
     let vm = new VM(env, scope, dynamicScope, elementStack);
-    vm.prepare(start, end);
+    vm.prepare(program.start, program.end);
     return vm;
   }
 
@@ -73,8 +120,33 @@ export default class VM implements PublicVM {
       env: this.env,
       scope: this.scope(),
       dynamicScope: this.dynamicScope(),
-      frame: this.frame.capture()
+      stack: this.evalStack.snapshot(),
+      bp: this.bp
     };
+  }
+
+  reserveLocals(size: number) {
+    let { evalStack: stack, bp } = this;
+
+    stack.push(bp);
+    this.bp = stack.pos;
+
+    for (let i=0; i<size; i++) {
+      stack.push(null);
+    }
+  }
+
+  releaseLocals() {
+    let { evalStack: stack, bp } = this;
+    this.bp = stack.restore(bp);
+  }
+
+  setLocal(position: number, value: Opaque) {
+    this.evalStack.set(this.bp + position, value);
+  }
+
+  getLocal<T>(position: number): T {
+    return this.evalStack.get(this.bp + position) as T;
   }
 
   goto(ip: number) {
@@ -111,44 +183,47 @@ export default class VM implements PublicVM {
   enter(start: number, end: number) {
     let updating = new LinkedList<UpdatingOpcode>();
 
-    let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
+    let tracker = this.stack().pushUpdatableBlock();
 
     let tryOpcode = new TryOpcode(start, end, state, tracker, updating);
 
-    this.didEnter(tryOpcode, updating);
+    this.didEnter(tryOpcode);
   }
 
-  enterWithKey(key: string, start: number, end: number) {
-    let updating = new LinkedList<UpdatingOpcode>();
+  iterate(start: number, end: number, memo: VersionedPathReference<Opaque>, value: VersionedPathReference<Opaque>, updating = new LinkedList<UpdatingOpcode>()): TryOpcode {
+    let stack = this.evalStack;
+    stack.push(value);
+    stack.push(memo);
 
-    let tracker = this.stack().pushUpdatableBlock();
     let state = this.capture();
+    let tracker = this.stack().pushUpdatableBlock();
 
-    let tryOpcode = new TryOpcode(start, end, state, tracker, updating);
+    return new TryOpcode(start, end, state, tracker, updating);
+  }
 
-    this.listBlock().map[key] = tryOpcode;
-
-    this.didEnter(tryOpcode, updating);
+  enterItem(key: string, opcode: TryOpcode) {
+    this.listBlock().map[key] = opcode;
+    this.didEnter(opcode);
   }
 
   enterList(start: number, end: number) {
     let updating = new LinkedList<BlockOpcode>();
 
-    let tracker = this.stack().pushBlockList(updating);
     let state = this.capture();
-    let artifacts = this.frame.getIterator().artifacts;
+    let tracker = this.stack().pushBlockList(updating);
+    let artifacts = this.evalStack.top<ReferenceIterator>().artifacts;
 
     let opcode = new ListBlockOpcode(start, end, state, tracker, updating, artifacts);
 
     this.listBlockStack.push(opcode);
 
-    this.didEnter(opcode, updating);
+    this.didEnter(opcode);
   }
 
-  private didEnter(opcode: BlockOpcode, updating: LinkedList<UpdatingOpcode>) {
+  private didEnter(opcode: BlockOpcode) {
     this.updateWith(opcode);
-    this.updatingOpcodeStack.push(updating);
+    this.updatingOpcodeStack.push(opcode.children);
   }
 
   exit() {
@@ -189,31 +264,8 @@ export default class VM implements PublicVM {
     return expect(this.dynamicScopeStack.current, 'expected dynamic scope on the dynamic scope stack');
   }
 
-  pushFrame(
-    block: CompiledBlock,
-    args?: Option<EvaluatedArgs>,
-    callerScope?: Scope
-  ) {
+  pushFrame(block: OpSlice) {
     this.frame.push(block.start, block.end);
-
-    if (args) this.frame.setArgs(args);
-    if (args && args.blocks) this.frame.setBlocks(args.blocks);
-    if (callerScope) this.frame.setCallerScope(callerScope);
-  }
-
-  pushComponentFrame(
-    layout: CompiledBlock,
-    args: EvaluatedArgs,
-    callerScope: Scope,
-    component: Component,
-    manager: ComponentManager<Component>,
-    shadow: Option<InlineBlock>
-  ) {
-    this.frame.push(layout.start, layout.end, component, manager, shadow);
-
-    if (args) this.frame.setArgs(args);
-    if (args && args.blocks) this.frame.setBlocks(args.blocks);
-    if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
   pushEvalFrame(start: number, end: number) {
@@ -224,8 +276,9 @@ export default class VM implements PublicVM {
     this.scopeStack.push(this.scope().child());
   }
 
-  pushCallerScope() {
-    this.scopeStack.push(expect(this.scope().getCallerScope(), 'pushCallerScope is called when a caller scope is present'));
+  pushCallerScope(childScope = false) {
+    let callerScope = expect(this.scope().getCallerScope(), 'pushCallerScope is called when a caller scope is present');
+    this.scopeStack.push(childScope ? callerScope.child() : callerScope);
   }
 
   pushDynamicScope(): DynamicScope {
@@ -234,8 +287,9 @@ export default class VM implements PublicVM {
     return child;
   }
 
-  pushRootScope(self: PathReference<any>, size: number): Scope {
-    let scope = Scope.root(self, size);
+  pushRootScope(size: number, bindCaller: boolean): Scope {
+    let scope = Scope.sized(size);
+    if (bindCaller) scope.bindCallerScope(this.scope());
     this.scopeStack.push(scope);
     return scope;
   }
@@ -263,13 +317,16 @@ export default class VM implements PublicVM {
   }
 
   getArgs(): Option<EvaluatedArgs> {
-    return this.frame.getArgs();
+    return this.evalStack.pop<Option<EvaluatedArgs>>();
   }
 
   /// EXECUTION
 
-  resume(start: number, end: number, frame: CapturedFrame): RenderResult {
-    return this.execute(start, end, vm => vm.frame.restore(frame));
+  resume(start: number, end: number, stack: EvaluationStack, bp: number): RenderResult {
+    return this.execute(start, end, vm => {
+      vm.evalStack = stack;
+      vm.bp = bp;
+    });
   }
 
   execute(start: number, end: number, initialize?: (vm: VM) => void): RenderResult {
@@ -301,8 +358,8 @@ export default class VM implements PublicVM {
     let opcode: Option<Opcode>;
 
     if (opcode = frame.nextStatement(env)) {
-      APPEND_OPCODES.evaluate(this, opcode);
-      return { done: false, value: null };
+      APPEND_OPCODES.evaluate(this, opcode, opcode.type);
+      return this.notDone;
     }
 
     return {
@@ -316,102 +373,26 @@ export default class VM implements PublicVM {
   }
 
   evaluateOpcode(opcode: Opcode) {
-    APPEND_OPCODES.evaluate(this, opcode);
+    APPEND_OPCODES.evaluate(this, opcode, opcode.type);
+  }
+
+  invoke(compiled: OpSlice) {
+    this.pushFrame(compiled);
   }
 
   // Make sure you have opcodes that push and pop a scope around this opcode
   // if you need to change the scope.
-  invokeBlock(block: InlineBlock, args: Option<EvaluatedArgs>) {
-    let compiled = block.compile(this.env);
-    this.pushFrame(compiled, args);
-  }
-
-  invokePartial(block: PartialBlock) {
-    let compiled = block.compile(this.env);
-    this.pushFrame(compiled);
-  }
-
-  invokeLayout(
-    args: EvaluatedArgs,
-    layout: CompiledBlock,
-    callerScope: Scope,
-    component: Component,
-    manager: ComponentManager<Component>,
-    shadow: Option<InlineBlock>
-  ) {
-    this.pushComponentFrame(layout, args, callerScope, component, manager, shadow);
-  }
-
-  evaluateOperand(expr: CompiledExpression<any>) {
-    this.frame.setOperand(expr.evaluate(this));
-  }
-
-  evaluateArgs(args: CompiledArgs) {
-    let evaledArgs = this.frame.setArgs(args.evaluate(this));
-    this.frame.setOperand(evaledArgs.positional.at(0));
-  }
-
-  bindPositionalArgs(symbols: number[]) {
-    let args = expect(this.frame.getArgs(), 'bindPositionalArgs assumes a previous setArgs');
-
-    let { positional } = args;
-
-    let scope = this.scope();
-
-    for(let i=0; i < symbols.length; i++) {
-      scope.bindSymbol(symbols[i], positional.at(i));
-    }
-  }
-
-  bindNamedArgs(names: ConstantString[], symbols: number[]) {
-    let args = expect(this.frame.getArgs(), 'bindNamedArgs assumes a previous setArgs');
-    let scope = this.scope();
-
-    let { named } = args;
-
-    for(let i=0; i < names.length; i++) {
-      let name = this.constants.getString(names[i]);
-      scope.bindSymbol(symbols[i], named.get(name));
-    }
-  }
-
-  bindBlocks(names: ConstantString[], symbols: number[]) {
-    let blocks = this.frame.getBlocks();
-    let scope = this.scope();
-
-    for(let i=0; i < names.length; i++) {
-      let name = this.constants.getString(names[i]);
-      scope.bindBlock(symbols[i], (blocks && blocks[name]) || null);
-    }
-  }
-
-  bindPartialArgs(symbol: number) {
-    let args = expect(this.frame.getArgs(), 'bindPartialArgs assumes a previous setArgs');
-    let scope = this.scope();
-
-    assert(args, "Cannot bind named args");
-
-    scope.bindPartialArgs(symbol, args);
-  }
-
-  bindCallerScope() {
-    let callerScope = this.frame.getCallerScope();
-    let scope = this.scope();
-
-    assert(callerScope, "Cannot bind caller scope");
-
-    scope.bindCallerScope(callerScope);
+  invokeBlock(block: Template) {
+    let compiled = block.compileStatic(this.env);
+    this.invoke(compiled);
   }
 
   bindDynamicScope(names: ConstantString[]) {
-    let args = expect(this.frame.getArgs(), 'bindDynamicScope assumes a previous setArgs');
     let scope = this.dynamicScope();
 
-    assert(args, "Cannot bind dynamic scope");
-
-    for(let i=0; i < names.length; i++) {
+    for(let i=names.length - 1; i>=0; i--) {
       let name = this.constants.getString(names[i]);
-      scope.set(name, args.named.get(name));
+      scope.set(name, this.evalStack.pop<VersionedPathReference<Opaque>>());
     }
   }
 }

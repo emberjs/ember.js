@@ -1,23 +1,24 @@
-import {
-  ComponentDefinition
-} from './component/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { Arguments, ComponentDefinition } from './component/interfaces';
 
 import {
-  FunctionExpression
-} from './compiled/expressions/function';
-
-import { BaselineSyntax, InlineBlock } from './scanner';
-
-import { SymbolTable } from '@glimmer/interfaces';
-
-import {
-  Opaque
+  Opaque,
+  Option
 } from '@glimmer/util';
 
-export type StaticDefinition = ComponentDefinition<Opaque>;
-export type DynamicDefinition = FunctionExpression<ComponentDefinition<Opaque>>;
+import * as WireFormat from '@glimmer/wire-format';
+
+import { Block } from './scanner';
+
+import { PublicVM } from './vm/append';
+
+export type ComponentArgs = [WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
+
+export interface DynamicComponentDefinition {
+  (vm: PublicVM, args: Arguments, meta: WireFormat.TemplateMeta): VersionedPathReference<ComponentDefinition<Opaque>>;
+}
 
 export interface ComponentBuilder {
-  static(definition: ComponentDefinition<Opaque>, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow?: InlineBlock): void;
-  dynamic(definitionArgs: BaselineSyntax.Args, definition: DynamicDefinition, args: BaselineSyntax.Args, symbolTable: SymbolTable, shadow?: InlineBlock): void;
+  static(definition: ComponentDefinition<Opaque>, args: ComponentArgs): void;
+  dynamic(definitionArgs: ComponentArgs, getDefinition: DynamicComponentDefinition, args: ComponentArgs): void;
 }

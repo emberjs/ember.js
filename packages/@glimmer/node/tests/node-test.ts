@@ -1,5 +1,5 @@
 import * as SimpleDOM from 'simple-dom';
-import { TestEnvironment, TestDynamicScope } from '@glimmer/test-helpers';
+import { TestEnvironment, TestDynamicScope } from "@glimmer/test-helpers";
 import { Template, Simple } from '@glimmer/runtime';
 import { precompile } from '@glimmer/compiler';
 import { UpdatableReference } from '@glimmer/object-reference';
@@ -103,7 +103,7 @@ QUnit.test("HTML boolean attribute 'disabled'", function(assert) {
   assert.equal(serializer.serializeChildren(root), '<input disabled>', 'disabled without value set as property is true');
 });
 
-QUnit.skip("Quoted attribute expression is coerced to a string", function(assert) {
+QUnit.test("Quoted attribute expression is coerced to a string", function(assert) {
   let template = compile('<input disabled="{{isDisabled}}">');
   render(template, { isDisabled: null });
 

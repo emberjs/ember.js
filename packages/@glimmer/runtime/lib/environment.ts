@@ -1,5 +1,4 @@
-import { SymbolTable } from '@glimmer/interfaces';
-
+import { VersionedPathReference } from '@glimmer/reference';
 import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
 import { Constants } from './opcodes';
@@ -28,13 +27,14 @@ import {
 } from './modifier/interfaces';
 
 import {
+  Dict,
   Option,
   Destroyable,
   Opaque,
   HasGuid,
+  assert,
   ensureGuid,
-  expect,
-  assert
+  expect
 } from '@glimmer/util';
 
 import {
@@ -43,11 +43,11 @@ import {
 
 import { EvaluatedArgs } from './compiled/expressions/args';
 
-import { InlineBlock } from './scanner';
+import { Block } from './scanner';
 
 import { PublicVM } from './vm/append';
 
-export type ScopeSlot = PathReference<Opaque> | InlineBlock | EvaluatedArgs;
+export type ScopeSlot = PathReference<Opaque> | Option<Block> | EvaluatedArgs;
 
 export interface DynamicScope {
   get(key: string): PathReference<Opaque>;
@@ -66,13 +66,24 @@ export class Scope {
     return new Scope(refs).init({ self });
   }
 
-  // the 0th slot is `self`
-  private slots: ScopeSlot[];
-  private callerScope: Option<Scope> = null;
+  static sized(size = 0) {
+    let refs: PathReference<Opaque>[] = new Array(size + 1);
 
-  constructor(references: ScopeSlot[], callerScope: Option<Scope> = null) {
-    this.slots = references;
-    this.callerScope = callerScope;
+    for (let i = 0; i <= size; i++) {
+      refs[i] = UNDEFINED_REFERENCE;
+    }
+
+    return new Scope(refs);
+  }
+
+  constructor(
+    // the 0th slot is `self`
+    private slots: ScopeSlot[],
+    private callerScope: Option<Scope> = null,
+    // named arguments and blocks passed to a layout that uses eval
+    private evalScope: Option<Dict<ScopeSlot>> = null,
+    // locals in scope when the partial was invoked
+    private partialMap: Option<Dict<VersionedPathReference<Opaque>>> = null) {
   }
 
   init({ self }: { self: PathReference<Opaque> }): this {
@@ -81,34 +92,50 @@ export class Scope {
   }
 
   getSelf(): PathReference<Opaque> {
-    return this.slots[0] as PathReference<Opaque>;
+    return this.get<PathReference<Opaque>>(0);
   }
 
   getSymbol(symbol: number): PathReference<Opaque> {
-    return this.slots[symbol] as PathReference<Opaque>;
+    return this.get<PathReference<Opaque>>(symbol);
   }
 
-  getBlock(symbol: number): InlineBlock {
-    return this.slots[symbol] as InlineBlock;
+  getBlock(symbol: number): Block {
+    return this.get<Block>(symbol);
   }
 
-  getPartialArgs(symbol: number): EvaluatedArgs {
-    return this.slots[symbol] as EvaluatedArgs;
+  getEvalScope(): Option<Dict<ScopeSlot>> {
+    return this.evalScope;
+  }
+
+  getPartialMap(): Option<Dict<VersionedPathReference<Opaque>>> {
+    return this.partialMap;
+  }
+
+  bind(symbol: number, value: ScopeSlot) {
+    this.set(symbol, value);
+  }
+
+  bindSelf(self: PathReference<Opaque>) {
+    this.set<PathReference<Opaque>>(0, self);
   }
 
   bindSymbol(symbol: number, value: PathReference<Opaque>) {
-    this.slots[symbol] = value;
+    this.set<PathReference<Opaque>>(symbol, value);
   }
 
-  bindBlock(symbol: number, value: InlineBlock) {
-    this.slots[symbol] = value;
+  bindBlock(symbol: number, value: Option<Block>) {
+    this.set<Option<Block>>(symbol, value);
   }
 
-  bindPartialArgs(symbol: number, value: EvaluatedArgs) {
-    this.slots[symbol] = value;
+  bindEvalScope(map: Option<Dict<ScopeSlot>>) {
+    this.evalScope = map;
   }
 
-  bindCallerScope(scope: Scope) {
+  bindPartialMap(map: Dict<VersionedPathReference<Opaque>>) {
+    this.partialMap = map;
+  }
+
+  bindCallerScope(scope: Option<Scope>) {
     this.callerScope = scope;
   }
 
@@ -117,7 +144,23 @@ export class Scope {
   }
 
   child(): Scope {
-    return new Scope(this.slots.slice(), this.callerScope);
+    return new Scope(this.slots.slice(), this.callerScope, this.evalScope, this.partialMap);
+  }
+
+  private get<T>(index: number): T {
+    if (index >= this.slots.length) {
+      throw new RangeError(`BUG: cannot get $${index} from scope; length=${this.slots.length}`);
+    }
+
+    return this.slots[index] as any as T;
+  }
+
+  private set<T>(index: number, value: T): void {
+    if (index >= this.slots.length) {
+      throw new RangeError(`BUG: cannot get $${index} from scope; length=${this.slots.length}`);
+    }
+
+    this.slots[index] = value as any;
   }
 }
 
@@ -276,7 +319,7 @@ export abstract class Environment {
     return new ConditionalReference(reference);
   }
 
-  abstract iterableFor(reference: Reference<Opaque>, args: EvaluatedArgs): OpaqueIterable;
+  abstract iterableFor(reference: Reference<Opaque>, key: string): OpaqueIterable;
   abstract protocolForURL(s: string): string;
 
   getAppendOperations(): DOMTreeConstruction { return this.appendOperations; }
@@ -327,27 +370,31 @@ export abstract class Environment {
   macros(): { blocks: Blocks, inlines: Inlines } {
     let macros = this._macros;
     if (!macros) {
-      this._macros = macros = populateBuiltins();
+      this._macros = macros = this.populateBuiltins();
     }
 
     return macros;
   }
 
-  abstract hasHelper(helperName: string, blockMeta: TemplateMeta): boolean;
-  abstract lookupHelper(helperName: string, blockMeta: TemplateMeta): Helper;
+  populateBuiltins(): { blocks: Blocks, inlines: Inlines } {
+    return populateBuiltins();
+  }
 
-  abstract hasModifier(modifierName: string, blockMeta: TemplateMeta): boolean;
-  abstract lookupModifier(modifierName: string, blockMeta: TemplateMeta): ModifierManager<Opaque>;
+  abstract hasHelper(helperName: string, meta: TemplateMeta): boolean;
+  abstract lookupHelper(helperName: string, meta: TemplateMeta): Helper;
 
-  abstract hasComponentDefinition(tagName: string, symbolTable: SymbolTable): boolean;
-  abstract getComponentDefinition(tagName: string, symbolTable: SymbolTable): ComponentDefinition<Opaque>;
+  abstract hasModifier(modifierName: string, meta: TemplateMeta): boolean;
+  abstract lookupModifier(modifierName: string, meta: TemplateMeta): ModifierManager<Opaque>;
 
-  abstract hasPartial(partialName: string, symbolTable: SymbolTable): boolean;
-  abstract lookupPartial(PartialName: string, symbolTable: SymbolTable): PartialDefinition<TemplateMeta>;
+  abstract hasComponentDefinition(tagName: string, meta: TemplateMeta): boolean;
+  abstract getComponentDefinition(tagName: string, meta: TemplateMeta): ComponentDefinition<Opaque>;
+
+  abstract hasPartial(partialName: string, meta: TemplateMeta): boolean;
+  abstract lookupPartial(PartialName: string, meta: TemplateMeta): PartialDefinition<TemplateMeta>;
 }
 
 export default Environment;
 
 export interface Helper {
-  (vm: PublicVM, args: EvaluatedArgs, symbolTable: SymbolTable): PathReference<Opaque>;
+  (vm: PublicVM, args: EvaluatedArgs): PathReference<Opaque>;
 }

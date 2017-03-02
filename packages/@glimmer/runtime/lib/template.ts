@@ -1,19 +1,19 @@
 import {
+  TemplateMeta,
   SerializedTemplateWithLazyBlock,
-  SerializedTemplateBlock
+  SerializedTemplateBlock,
+  Statements
 } from '@glimmer/wire-format';
 import { PathReference } from '@glimmer/reference';
 import { assign } from '@glimmer/util';
-import { SymbolTable } from '@glimmer/interfaces';
+import { Option, Opaque } from '@glimmer/interfaces';
+// import { SymbolTable } from '@glimmer/interfaces';
 import { Environment, DynamicScope } from './environment';
 import { ElementStack } from './builder';
 import { VM, RenderResult, IteratorResult } from './vm';
-import Scanner, {
-  EntryPoint,
-  PartialBlock,
-  Layout
-} from './scanner';
+import Scanner, { Program, Block } from './scanner';
 import * as Simple from './dom/interfaces';
+import { EMPTY_ARRAY } from './utils';
 
 /**
  * Environment specific template.
@@ -30,18 +30,23 @@ export interface Template<T> {
    */
   meta: T;
 
+  hasEval: boolean;
+
+  /**
+   * Symbols computed at compile time.
+   */
+  symbols: string[];
+
   /**
    * Helper to render template as root entry point.
    */
-  render(self: PathReference<any>, appendTo: Simple.Element, dynamicScope: DynamicScope): TemplateIterator;
+  render(self: PathReference<Opaque>, appendTo: Simple.Element, dynamicScope: DynamicScope): TemplateIterator;
 
   // internal casts, these are lazily created and cached
-  asEntryPoint(): EntryPoint;
-  asLayout(): Layout;
-  asPartial(symbols: SymbolTable): PartialBlock;
-
-  // exposed for visualizer
-  _block: SerializedTemplateBlock;
+  asEntryPoint(): Program;
+  asLayout(attrs?: Statements.Attribute[]): Program;
+  asPartial(): Program;
+  asBlock(): Block;
 }
 
 export interface TemplateFactory<T, U> {
@@ -87,8 +92,8 @@ let clientId = 0;
  * that handles lazy parsing the template and to create per env singletons
  * of the template.
  */
-export default function templateFactory<T>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T, T>;
-export default function templateFactory<T, U>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T, U>;
+export default function templateFactory<T extends TemplateMeta>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T, T>;
+export default function templateFactory<T extends TemplateMeta, U>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T, U>;
 export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}, {}> {
   let parsedBlock: SerializedTemplateBlock;
   let id = templateId || `client-${clientId++}`;
@@ -97,30 +102,56 @@ export default function templateFactory({ id: templateId, meta, block }: Seriali
     if (!parsedBlock) {
       parsedBlock = JSON.parse(block);
     }
-    return template(parsedBlock, id, newMeta, env);
+    return new ScannableTemplate(id, newMeta, env, parsedBlock);
   };
   return { id, meta, create };
 }
 
-function template<T>(block: SerializedTemplateBlock, id: string, meta: T, env: Environment): Template<T> {
-  let scanner = new Scanner(block, meta, env);
-  let entryPoint: EntryPoint;
-  let asEntryPoint = () => {
-    if (!entryPoint) entryPoint = scanner.scanEntryPoint();
-    return entryPoint;
-  };
-  let layout: Layout;
-  let asLayout = () => {
-    if (!layout) layout = scanner.scanLayout();
-    return layout;
-  };
-  let asPartial = (symbols: SymbolTable) => scanner.scanPartial(symbols);
-  let render = (self: PathReference<any>, appendTo: Simple.Element, dynamicScope: DynamicScope) => {
+class ScannableTemplate implements Template<TemplateMeta> {
+  private entryPoint: Option<Program> = null;
+  private layout: Option<Program> = null;
+  private partial: Option<Program> = null;
+  private block: Option<Block> = null;
+  private scanner: Scanner;
+  public symbols: string[];
+  public hasEval: boolean;
+
+  constructor(public id: string, public meta: TemplateMeta, private env: Environment, private rawBlock: SerializedTemplateBlock) {
+    this.scanner = new Scanner(rawBlock, env);
+    this.symbols = rawBlock.symbols;
+    this.hasEval = rawBlock.hasEval;
+  }
+
+  render(self: PathReference<Opaque>, appendTo: Simple.Element, dynamicScope: DynamicScope) {
+    let { env } = this;
+
     let elementStack = ElementStack.forInitialRender(env, appendTo, null);
-    let compiled = asEntryPoint().compile(env);
+    let compiled = this.asEntryPoint().compileDynamic(env);
     let vm = VM.initial(env, self, dynamicScope, elementStack, compiled);
     return new TemplateIterator(vm);
-  };
+  }
 
-  return { id, meta, _block: block, asEntryPoint, asLayout, asPartial, render };
+  asEntryPoint(): Program {
+    if (!this.entryPoint) this.entryPoint = this.scanner.scanEntryPoint(this.compilationMeta());
+    return this.entryPoint;
+  }
+
+  asLayout(attrs?: Statements.Attribute[]): Program {
+    if (!this.layout) this.layout = this.scanner.scanLayout(this.compilationMeta(), attrs || EMPTY_ARRAY);
+    return this.layout;
+  }
+
+  asPartial(): Program {
+    if (!this.partial) this.partial = this.scanner.scanEntryPoint(this.compilationMeta(true));
+    return this.partial;
+  }
+
+  asBlock(): Block {
+    if (!this.block) this.block = this.scanner.scanBlock(this.compilationMeta());
+    return this.block;
+  }
+
+  private compilationMeta(asPartial = false) {
+    return { templateMeta: this.meta, symbols: this.symbols, asPartial };
+  }
 }

@@ -2,41 +2,34 @@ export enum Opcodes {
   // Statements
   Text,
   Append,
-  UnoptimizedAppend,
-  OptimizedAppend,
   Comment,
   Modifier,
   Block,
-  ScannedBlock,
-  NestedBlock,
   Component,
-  ScannedComponent,
   OpenElement,
-  OpenPrimitiveElement,
   FlushElement,
   CloseElement,
   StaticAttr,
   DynamicAttr,
-  AnyDynamicAttr,
   Yield,
   Partial,
-  StaticPartial,
-  DynamicPartial,
 
   DynamicArg,
   StaticArg,
   TrustingAttr,
   Debugger,
+  ClientSideStatement,
 
   // Expressions
 
   Unknown,
-  Arg,
   Get,
+  MaybeLocal,
+  FixThisBeforeWeMerge,
   HasBlock,
   HasBlockParams,
   Undefined,
-  Function,
   Helper,
-  Concat
+  Concat,
+  ClientSideExpression
 }

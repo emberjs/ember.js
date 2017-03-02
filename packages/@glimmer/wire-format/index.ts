@@ -18,7 +18,7 @@ interface JsonArray extends Array<JsonValue> {}
 // end up being interned.
 export type str = string;
 export type TemplateReference = Option<SerializedBlock>;
-export type YieldTo = str;
+export type YieldTo = number;
 
 export function is<T extends any[]>(variant: number): (value: any[]) => value is T {
   return function(value: any[]): value is T {
@@ -33,6 +33,7 @@ export namespace Core {
   export type Params        = Expression[];
   export type Hash          = Option<[str[], Expression[]]>;
   export type Args          = [Params, Hash];
+  export type EvalInfo      = number[];
 }
 
 export namespace Expressions {
@@ -40,19 +41,25 @@ export namespace Expressions {
   export type Params = Core.Params;
   export type Hash = Core.Hash;
 
-  export type Unknown        = [Opcodes.Unknown, Path];
-  export type Arg            = [Opcodes.Arg, Path];
-  export type Get            = [Opcodes.Get, Path];
+  export type Unknown        = [Opcodes.Unknown, str];
+  export type Get            = [Opcodes.Get, number, Path];
+
+  /**
+   * Ambiguous between a self lookup (when not inside an eval) and
+   * a local variable (when used inside of an eval).
+   */
+  export type MaybeLocal     = [Opcodes.MaybeLocal, Path];
+
   export type Value          = str | number | boolean | null; // tslint:disable-line
-  export type HasBlock       = [Opcodes.HasBlock, str];
-  export type HasBlockParams = [Opcodes.HasBlockParams, str];
+  export type HasBlock       = [Opcodes.HasBlock, YieldTo];
+  export type HasBlockParams = [Opcodes.HasBlockParams, YieldTo];
   export type Undefined      = [Opcodes.Undefined];
-  export type ClientSide     = [Opcodes.Function, Function];
+  export type ClientSide     = [Opcodes.ClientSideExpression, any];
 
   export type Expression =
       Unknown
-    | Arg
     | Get
+    | MaybeLocal
     | Concat
     | HasBlock
     | HasBlockParams
@@ -69,19 +76,19 @@ export namespace Expressions {
 
   export interface Helper extends Array<any> {
     [0]: Opcodes.Helper;
-    [1]: Path;
+    [1]: str;
     [2]: Params;
     [3]: Hash;
   }
 
   export const isUnknown        = is<Unknown>(Opcodes.Unknown);
-  export const isArg            = is<Arg>(Opcodes.Arg);
   export const isGet            = is<Get>(Opcodes.Get);
   export const isConcat         = is<Concat>(Opcodes.Concat);
   export const isHelper         = is<Helper>(Opcodes.Helper);
   export const isHasBlock       = is<HasBlock>(Opcodes.HasBlock);
   export const isHasBlockParams = is<HasBlockParams>(Opcodes.HasBlockParams);
   export const isUndefined      = is<Undefined>(Opcodes.Undefined);
+  export const isClientSide     = is<ClientSide>(Opcodes.ClientSideExpression);
 
   export function isPrimitiveValue(value: any): value is Value {
     if (value === null) {
@@ -102,20 +109,21 @@ export namespace Statements {
   export type Text          = [Opcodes.Text, str];
   export type Append        = [Opcodes.Append, Expression, boolean];
   export type Comment       = [Opcodes.Comment, str];
-  export type Modifier      = [Opcodes.Modifier, Path, Params, Hash];
-  export type Block         = [Opcodes.Block, Path, Params, Hash, Option<SerializedBlock>, Option<SerializedBlock>];
-  export type Component     = [Opcodes.Component, str, SerializedComponent];
-  export type OpenElement   = [Opcodes.OpenElement, str, str[]];
+  export type Modifier      = [Opcodes.Modifier, str, Params, Hash];
+  export type Block         = [Opcodes.Block, str, Params, Hash, Option<SerializedInlineBlock>, Option<SerializedInlineBlock>];
+  export type Component     = [Opcodes.Component, str, Attribute[], Hash, Option<SerializedInlineBlock>];
+  export type OpenElement   = [Opcodes.OpenElement, str];
   export type FlushElement  = [Opcodes.FlushElement];
   export type CloseElement  = [Opcodes.CloseElement];
   export type StaticAttr    = [Opcodes.StaticAttr, str, Expression, Option<str>];
   export type DynamicAttr   = [Opcodes.DynamicAttr, str, Expression, Option<str>];
-  export type Yield         = [Opcodes.Yield, YieldTo, Params];
-  export type Partial       = [Opcodes.Partial, Expression];
+  export type Yield         = [Opcodes.Yield, YieldTo, Option<Params>];
+  export type Partial       = [Opcodes.Partial, Expression, Core.EvalInfo];
   export type DynamicArg    = [Opcodes.DynamicArg, str, Expression];
   export type StaticArg     = [Opcodes.StaticArg, str, Expression];
   export type TrustingAttr  = [Opcodes.TrustingAttr, str, Expression, str];
-  export type Debugger      = [Opcodes.Debugger];
+  export type Debugger      = [Opcodes.Debugger, Core.EvalInfo];
+  export type ClientSide    = [Opcodes.ClientSideStatement, any];
 
   export const isText         = is<Text>(Opcodes.Text);
   export const isAppend       = is<Append>(Opcodes.Append);
@@ -134,6 +142,7 @@ export namespace Statements {
   export const isStaticArg    = is<StaticArg>(Opcodes.StaticArg);
   export const isTrustingAttr = is<TrustingAttr>(Opcodes.TrustingAttr);
   export const isDebugger     = is<Debugger>(Opcodes.Debugger);
+  export const isClientSide   = is<ClientSide>(Opcodes.ClientSideStatement);
 
   export type Statement =
       Text
@@ -153,6 +162,7 @@ export namespace Statements {
     | DynamicArg
     | TrustingAttr
     | Debugger
+    | ClientSide
     ;
 
   export type Attribute =
@@ -161,7 +171,7 @@ export namespace Statements {
     ;
 
   export function isAttribute(val: Statement): val is Attribute {
-    return val[0] === Opcodes.StaticAttr || val[0] === Opcodes.DynamicAttr;
+    return val[0] === Opcodes.StaticAttr || val[0] === Opcodes.DynamicAttr || val[0] === Opcodes.TrustingAttr;
   }
 
   export type Argument =
@@ -182,6 +192,16 @@ export namespace Statements {
   export function getParameterName(s: Parameter): string {
     return s[1];
   }
+
+  export type ElementHead =
+      Parameter
+    | Modifier
+    | FlushElement
+    ;
+
+  export function isInElementHead(val: Statement): val is ElementHead {
+    return isParameter(val) || isModifier(val) || isFlushElement(val);
+  }
 }
 
 export type Statement = Statements.Statement;
@@ -190,6 +210,7 @@ export type Statement = Statements.Statement;
  * A JSON object of static compile time meta for the template.
  */
 export interface TemplateMeta {
+  "<template-meta>": true;
   moduleName?: string;
 }
 
@@ -198,21 +219,20 @@ export interface TemplateMeta {
  */
 export interface SerializedBlock {
   statements: Statements.Statement[];
-  locals: string[];
 }
 
-export interface SerializedComponent extends SerializedBlock {
-  attrs: Statements.Attribute[];
-  args: Core.Hash;
+export interface SerializedInlineBlock extends SerializedBlock {
+  parameters: number[];
 }
 
 /**
  * A JSON object that the compiled TemplateBlock was serialized into.
  */
 export interface SerializedTemplateBlock extends SerializedBlock {
-  named: string[];
-  yields: string[];
-  hasPartials: boolean;
+  prelude: Option<Statements.Statement[]>;
+  head: Option<Statements.ElementHead[]>;
+  symbols: string[];
+  hasEval: boolean;
 }
 
 /**

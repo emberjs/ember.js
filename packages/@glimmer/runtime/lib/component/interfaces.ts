@@ -1,40 +1,53 @@
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { FunctionExpression } from '../compiled/expressions/function';
-import { CompiledProgram } from '../compiled/blocks';
-import { Layout } from '../scanner';
+import { CompiledDynamicProgram } from '../compiled/blocks';
+import { TemplateMeta } from '@glimmer/wire-format';
 
 import Environment, { DynamicScope } from '../environment';
 import { ElementOperations } from '../builder';
 import Bounds from '../bounds';
 import * as Simple from '../dom/interfaces';
+import { Template } from '../template';
 
-import { Destroyable, Opaque } from '@glimmer/util';
-import { PathReference, RevisionTag } from '@glimmer/reference';
+import { Destroyable, Dict, Opaque } from '@glimmer/util';
+import { VersionedPathReference, Tag } from '@glimmer/reference';
 
 export type Component = Opaque;
 export type ComponentClass = any;
+
+export interface Arguments {
+  tag: Tag;
+  named: NamedArguments;
+  at<T extends VersionedPathReference<Opaque>>(pos: number): T;
+  get<T extends VersionedPathReference<Opaque>>(name: string): T;
+}
+
+export interface NamedArguments {
+  tag: Tag;
+  value(): Dict<Opaque>;
+  get(name: string): VersionedPathReference<Opaque>;
+}
 
 export interface ComponentManager<T extends Component> {
   // First, the component manager is asked to prepare the arguments needed
   // for `create`. This allows for things like closure components where the
   // args need to be curried before constructing the instance of the state
   // bucket.
-  prepareArgs(definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope): EvaluatedArgs;
+  prepareArgs(definition: ComponentDefinition<T>, args: Arguments, dynamicScope: DynamicScope): EvaluatedArgs;
 
   // Then, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
-  create(env: Environment, definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope, caller: PathReference<Opaque>, hasDefaultBlock: boolean): T;
+  create(env: Environment, definition: ComponentDefinition<T>, args: Arguments, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): T;
 
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
   // or to implement features like Ember's "late-bound" layouts.
-  layoutFor(definition: ComponentDefinition<T>, component: T, env: Environment): CompiledProgram;
+  layoutFor(definition: ComponentDefinition<T>, component: T, env: Environment): CompiledDynamicProgram;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.
-  getSelf(component: T): PathReference<Opaque>;
+  getSelf(component: T): VersionedPathReference<Opaque>;
 
   // The `didCreateElement` hook is run for non-tagless components after the
   // element as been created, but before it has been appended ("flushed") to
@@ -60,7 +73,7 @@ export interface ComponentManager<T extends Component> {
   // outside changes captured in the input arguments. If it returns null,
   // the update hooks will only be called when one or more of the input
   // arguments has changed.
-  getTag(component: T): RevisionTag;
+  getTag(component: T): Tag;
 
   // When the input arguments have changed, and top-down revalidation has
   // begun, the manager's `update` hook is called.
@@ -86,18 +99,18 @@ export interface ComponentLayoutBuilder {
   tag: ComponentTagBuilder;
   attrs: ComponentAttrsBuilder;
 
-  wrapLayout(layout: Layout): void;
-  fromLayout(layout: Layout): void;
+  wrapLayout(layout: Template<TemplateMeta>): void;
+  fromLayout(layout: Template<TemplateMeta>): void;
 }
 
 export interface ComponentTagBuilder {
   static(tagName: string): void;
-  dynamic(tagName: FunctionExpression<string>): void;
+  // dynamic(tagName: FunctionExpression<string>): void;
 }
 
 export interface ComponentAttrsBuilder {
   static(name: string, value: string): void;
-  dynamic(name: string, value: FunctionExpression<string>): void;
+  // dynamic(name: string, value: FunctionExpression<string>): void;
 }
 
 const COMPONENT_DEFINITION_BRAND = 'COMPONENT DEFINITION [id=e59c754e-61eb-4392-8c4a-2c0ac72bfcd4]';
