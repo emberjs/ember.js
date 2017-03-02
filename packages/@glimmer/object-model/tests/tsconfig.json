@@ -6,6 +6,8 @@
     "module": "commonjs",
     "target": "es6",
     "inlineSourceMap": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
     "declaration": true,
     "rootDir": "."
   },

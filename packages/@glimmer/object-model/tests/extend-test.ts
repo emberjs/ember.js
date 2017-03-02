@@ -1,4 +1,4 @@
-import GlimmerObject, { classof } from '../index';
+import GlimmerObject from '../index';
 
 QUnit.module("[glimmer-object-model] extend");
 
@@ -78,17 +78,7 @@ QUnit.test('mixing ES6 subclassing with ES5 subclassing', assert => {
     named: 'Dan'
   });
 
-  /// TS GUNK: START
-
-  let FirstClass = classof<FirstInstance>(First);
-
-  interface FirstInstance {
-    named: string;
-  }
-
-  /// TS GUNK: END
-
-  class Second extends FirstClass {
+  class Second extends First {
     public salutation: string;
 
     hi(): string {
