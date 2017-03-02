@@ -4,7 +4,8 @@ import {
   RenderResult,
   setDebuggerCallback,
   resetDebuggerCallback,
-  debugCallback
+  debugCallback,
+  IteratorResult
 } from "@glimmer/runtime";
 import {
   BasicComponent,
@@ -19,7 +20,7 @@ import {
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Opaque } from '@glimmer/util';
 
-let env: TestEnvironment, root: Simple.Element, result: RenderResult, self: UpdatableReference<Opaque>;
+let env: TestEnvironment, root: Simple.Element, result: IteratorResult<RenderResult>, self: UpdatableReference<Opaque>;
 
 function rootElement() {
   return env.getDOM().createElement('div');
@@ -37,7 +38,13 @@ function commonSetup() {
 function render<T>(template: Template<T>, context={}) {
   self = new UpdatableReference(context);
   env.begin();
-  result = template.render(self, root, new TestDynamicScope());
+  let templateIterator = template.render(self, root, new TestDynamicScope());
+
+  do {
+    result = templateIterator.next();
+  } while (!result.done);
+
+  result = result.value;
   env.commit();
   return result;
 }

@@ -1,5 +1,7 @@
 import { Simple, Template, RenderResult, readDOMAttr } from "../index";
 import { TestEnvironment, TestDynamicScope, equalTokens } from "@glimmer/test-helpers";
+import { IteratorResult } from '@glimmer/runtime';
+
 import { PathReference } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Opaque } from "@glimmer/util";
@@ -7,7 +9,7 @@ import { Opaque } from "@glimmer/util";
 let root: Simple.Element;
 let env: TestEnvironment;
 let self: UpdatableReference<any>;
-let result: RenderResult;
+let result: IteratorResult<RenderResult>;
 
 function compile(template: string) {
   return env.compile(template);
@@ -26,7 +28,13 @@ function commonSetup() {
 function render<T>(template: Template<T>, context = {}, view: PathReference<Opaque> = null) {
   self = new UpdatableReference(context);
   env.begin();
-  result = template.render(self, root, new TestDynamicScope());
+  let templateIterator = template.render(self, root, new TestDynamicScope());
+
+  do {
+    result = templateIterator.next();
+  } while (!result.done);
+
+  result = result.value;
   env.commit();
   assertInvariants(result);
   return result;

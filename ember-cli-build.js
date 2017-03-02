@@ -300,9 +300,9 @@ module.exports = function(_options) {
   ];
 
   if (hasBower) {
-    var loader = find(__dirname + '/node_modules', {
-      srcDir: '/loader.js/lib/loader',
-      files: [ 'loader.js' ],
+    var loaderPath = path.parse(require.resolve('loader.js'));
+    var loader = find(loaderPath.dir, {
+      files: [ loaderPath.base ],
       destDir: '/assets'
     });
 

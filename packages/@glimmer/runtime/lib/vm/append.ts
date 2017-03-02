@@ -1,8 +1,8 @@
 import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
-import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect } from '@glimmer/util';
+import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
-import { OpSlice } from '../compiled/blocks';
+import { CompiledDynamicProgram, OpSlice } from '../compiled/blocks';
 import { Template } from '../scanner';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
@@ -72,6 +72,11 @@ export class EvaluationStack {
   }
 }
 
+export interface IteratorResult<T> {
+  value: T | null;
+  done: boolean;
+}
+
 export default class VM implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
@@ -81,6 +86,7 @@ export default class VM implements PublicVM {
   public listBlockStack = new Stack<ListBlockOpcode>();
   public frame = new FrameStack();
   public constants: Constants;
+  private notDone = { done: false, value: null };
   public evalStack = new EvaluationStack();
 
   static initial(
@@ -88,10 +94,12 @@ export default class VM implements PublicVM {
     self: PathReference<Opaque>,
     dynamicScope: DynamicScope,
     elementStack: ElementStack,
-    size: number
+    program: CompiledDynamicProgram
   ) {
-    let scope = Scope.root(self, size);
-    return new VM(env, scope, dynamicScope, elementStack);
+    let scope = Scope.root(self, program.symbolTable.symbols.length);
+    let vm = new VM(env, scope, dynamicScope, elementStack);
+    vm.prepare(program.start, program.end);
+    return vm;
   }
 
   constructor(
@@ -322,28 +330,46 @@ export default class VM implements PublicVM {
   }
 
   execute(start: number, end: number, initialize?: (vm: VM) => void): RenderResult {
-    let { elementStack, frame, updatingOpcodeStack, env } = this;
+    this.prepare(start, end, initialize);
+    let result: IteratorResult<RenderResult>;
+
+    while (true) {
+      result = this.next();
+      if (result.done) break;
+    }
+
+    return result.value as RenderResult;
+  }
+
+  private prepare(start: number, end: number, initialize?: (vm: VM) => void): void {
+    let { elementStack, frame, updatingOpcodeStack } = this;
 
     elementStack.pushSimpleBlock();
 
     updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
+
     frame.push(start, end);
 
     if (initialize) initialize(this);
+  }
 
+  next(): IteratorResult<RenderResult> {
+    let { frame, env, updatingOpcodeStack, elementStack } = this;
     let opcode: Option<Opcode>;
 
-    while (frame.hasOpcodes()) {
-      if (opcode = frame.nextStatement(this.env)) {
-        APPEND_OPCODES.evaluate(this, opcode, opcode.type);
-      }
+    if (opcode = frame.nextStatement(env)) {
+      APPEND_OPCODES.evaluate(this, opcode, opcode.type);
+      return this.notDone;
     }
 
-    return new RenderResult(
-      env,
-      expect(updatingOpcodeStack.pop(), 'there should be a final updating opcode stack'),
-      elementStack.popBlock()
-    );
+    return {
+      done: true,
+      value: new RenderResult(
+        env,
+        expect(updatingOpcodeStack.pop(), 'there should be a final updating opcode stack'),
+        elementStack.popBlock()
+      )
+    };
   }
 
   evaluateOpcode(opcode: Opcode) {
