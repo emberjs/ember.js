@@ -13,7 +13,7 @@ import { SymbolTable, CompilationMeta } from '@glimmer/interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
 import { RawInlineBlock, ClientSide, Block } from '../../scanner';
-import { InvokeDynamicLayout, compileComponentArgs } from '../../syntax/functions';
+import { InvokeDynamicLayout, compileComponentArgs, expr } from '../../syntax/functions';
 
 import {
   ConstantString,
@@ -227,14 +227,6 @@ export abstract class BasicOpcodeBuilder {
 
   trustingAppend() {
     this.dynamicContent(new content.OptimizedTrustingAppendOpcode());
-  }
-
-  guardedCautiousAppend(expression: WireFormat.Expression) {
-    this.dynamicContent(new content.GuardedCautiousAppendOpcode(expression));
-  }
-
-  guardedTrustingAppend(expression: WireFormat.Expression) {
-    this.dynamicContent(new content.GuardedTrustingAppendOpcode(expression));
   }
 
   // dom
@@ -602,6 +594,16 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     } else {
       return expr;
     }
+  }
+
+  guardedCautiousAppend(expression: WireFormat.Expression) {
+    expr(expression, this);
+    this.dynamicContent(new content.GuardedCautiousAppendOpcode());
+  }
+
+  guardedTrustingAppend(expression: WireFormat.Expression) {
+    expr(expression, this);
+    this.dynamicContent(new content.GuardedTrustingAppendOpcode());
   }
 
   invokeComponent(attrs: Option<RawInlineBlock>, _params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, block: Option<Block>, inverse: Option<Block> = null) {

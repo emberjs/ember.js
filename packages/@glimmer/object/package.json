@@ -16,6 +16,7 @@
     "@glimmer/util": "^0.21.0"
   },
   "devDependencies": {
-    "typescript": "^2.1.4"
+    "typescript": "^2.2.0",
+    "@types/qunit": "^2.0.31"
   }
 }

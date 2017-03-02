@@ -12,6 +12,9 @@ export type DebugCallback = ((context: Opaque, get: DebugGet) => void);
 function debugCallback(context: Opaque, get: DebugGet): void {
   console.info('Use `context`, and `get(<path>)` to debug this template.');
 
+  // for example...
+  context === get('this');
+
   debugger;
 }
 /* tslint:enable */
@@ -19,7 +22,7 @@ function debugCallback(context: Opaque, get: DebugGet): void {
 let callback = debugCallback;
 
 // For testing purposes
-export function setDebuggerCallback(cb: debugCallback) {
+export function setDebuggerCallback(cb: DebugCallback) {
   callback = cb;
 }
 

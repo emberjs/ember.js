@@ -1,11 +1,11 @@
 import { Opaque, Dict, dict } from '@glimmer/util';
-import { RevisionTag, TagWrapper, DirtyableTag } from '@glimmer/reference';
+import { RevisionTag, Tag, DirtyableTag } from '@glimmer/reference';
 import { Computed } from './blueprint';
 
 export default class {
-  bookkeeping: Dict<TagWrapper> = dict<TagWrapper>();
+  bookkeeping: Dict<Tag> = dict<Tag>();
 
-  tag(name: PropertyKey): TagWrapper {
+  tag(name: PropertyKey): Tag {
     let bookkeeping = this.bookkeeping;
     let tag = bookkeeping[name];
 

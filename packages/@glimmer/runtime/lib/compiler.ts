@@ -24,6 +24,7 @@ import * as Component from './component/interfaces';
 import * as WireFormat from '@glimmer/wire-format';
 
 import { PublicVM } from './vm/append';
+import { FunctionExpression } from "./compiled/opcodes/expressions";
 
 export interface CompilableLayout {
   compile(builder: Component.ComponentLayoutBuilder): void;

@@ -2,7 +2,7 @@ import { CompiledDynamicTemplate, CompiledStaticTemplate } from './compiled/bloc
 import { builder } from './compiler';
 import OpcodeBuilder from './compiled/opcodes/builder';
 import Environment, { Helper } from './environment';
-import { Option, dict } from '@glimmer/util';
+import { Option } from '@glimmer/util';
 import { EMPTY_ARRAY } from './utils';
 import * as WireFormat from '@glimmer/wire-format';
 import { Opaque, SymbolTable, ProgramSymbolTable, BlockSymbolTable } from '@glimmer/interfaces';

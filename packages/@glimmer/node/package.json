@@ -16,7 +16,7 @@
     "@glimmer/runtime": "^0.21.1"
   },
   "devDependencies": {
-    "typescript": "^2.1.4",
+    "typescript": "^2.2.0",
     "@glimmer/object-reference": "^0.21.0",
     "@glimmer/compiler": "^0.21.2"
   }
