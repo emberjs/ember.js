@@ -1,12 +1,14 @@
-import { assert } from "@glimmer/util";
-import { Stack, DictSet } from "@glimmer/util";
+import * as WireFormat from '@glimmer/wire-format';
+import { assert, unreachable } from "@glimmer/util";
+import { Stack, DictSet, Option, Dict, dict } from "@glimmer/util";
+import { AST } from '@glimmer/syntax';
+import { BlockSymbolTable, ProgramSymbolTable } from './template-visitor';
 
 import {
   TemplateMeta,
   SerializedBlock,
   SerializedTemplateBlock,
   SerializedTemplate,
-  SerializedComponent,
   Core,
   Statement,
   Statements,
@@ -21,20 +23,26 @@ export type Hash = Core.Hash;
 export type Path = Core.Path;
 export type StackValue = Expression | Params | Hash | str;
 
-export class Block {
-  public type = "block";
-  statements: Statement[] = [];
-  positionals: string[] = [];
+export abstract class Block {
+  public statements: Statement[] = [];
 
-  toJSON(): SerializedBlock {
-    return {
-      statements: this.statements,
-      locals: this.positionals
-    };
-  }
+  abstract toJSON();
 
   push(statement: Statement) {
     this.statements.push(statement);
+  }
+}
+
+export class InlineBlock extends Block {
+  constructor(private parent: Block, public table: BlockSymbolTable) {
+    super();
+  }
+
+  toJSON(): Object {
+    return {
+      statements: this.statements,
+      parameters: this.table.slots
+    };
   }
 }
 
@@ -42,25 +50,59 @@ export class TemplateBlock extends Block {
   public type = "template";
   public yields = new DictSet<string>();
   public named = new DictSet<string>();
-  public blocks: SerializedBlock[] = [];
-  public hasPartials = false;
+  public prelude: Statement[] = [];
+  public head: Statements.ElementHead[] = [];
+  public blocks: WireFormat.SerializedInlineBlock[] = [];
+  public hasEval = false;
+  private sawElement = false;
+  private inParams = false;
+
+  constructor(private symbolTable: ProgramSymbolTable) {
+    super();
+  }
+
+  push(statement: Statement) {
+    if (!this.sawElement) {
+      if (Statements.isOpenElement(statement)) {
+        this.sawElement = true;
+        this.inParams = true;
+      }
+
+      this.prelude.push(statement);
+    } else if (this.inParams) {
+      if (Statements.isFlushElement(statement)) {
+        this.inParams = false;
+        this.head.push(statement);
+      } else if (Statements.isInElementHead(statement)) {
+        this.head.push(statement);
+      } else {
+        throw new Error('Compile Error: only parameters allowed before flush-element');
+      }
+    } else {
+      this.statements.push(statement);
+    }
+  }
 
   toJSON(): SerializedTemplateBlock {
     return {
-      statements: this.statements,
-      locals: this.positionals,
-      named: this.named.toArray(),
-      yields: this.yields.toArray(),
-      hasPartials: this.hasPartials
+      symbols: this.symbolTable.symbols,
+      prelude: this.sawElement ? this.prelude : null,
+      head: this.sawElement ? this.head : null,
+      statements: this.sawElement ? this.statements : this.prelude,
+      hasEval: this.hasEval
     };
   }
 }
 
 export class ComponentBlock extends Block {
-  public type = "component";
   public attributes: Statements.Attribute[] = [];
   public arguments: Statements.Argument[] = [];
   private inParams = true;
+  public positionals: number[] = [];
+
+  constructor(private parent: Block, private table: BlockSymbolTable) {
+    super();
+  }
 
   push(statement: Statement) {
     if (this.inParams) {
@@ -80,24 +122,28 @@ export class ComponentBlock extends Block {
     }
   }
 
-  toJSON(): SerializedComponent {
+  toJSON(): [WireFormat.Statements.Attribute[], WireFormat.Core.Hash, Option<WireFormat.SerializedInlineBlock>] {
     let args = this.arguments;
     let keys = args.map(arg => arg[1]);
     let values = args.map(arg => arg[2]);
 
-    return {
-      attrs: this.attributes,
-      args: [keys, values],
-      locals: this.positionals,
-      statements: this.statements
-    };
+    return [
+      this.attributes,
+      [keys, values],
+      {
+        statements: this.statements,
+        parameters: this.table.slots
+      }
+    ];
   }
 }
 
 export class Template<T extends TemplateMeta> {
-  public block = new TemplateBlock();
+  public block: TemplateBlock;
 
-  constructor(public meta: T) {}
+  constructor(symbols: ProgramSymbolTable, public meta: T) {
+    this.block = new TemplateBlock(symbols);
+  }
 
   toJSON(): SerializedTemplate<T> {
     return {
@@ -108,8 +154,8 @@ export class Template<T extends TemplateMeta> {
 }
 
 export default class JavaScriptCompiler<T extends TemplateMeta> {
-  static process<T extends TemplateMeta>(opcodes, meta): Template<T> {
-    let compiler = new JavaScriptCompiler<T>(opcodes, meta);
+  static process<T extends TemplateMeta>(opcodes: any[], symbols: ProgramSymbolTable, meta): Template<T> {
+    let compiler = new JavaScriptCompiler<T>(opcodes, symbols, meta);
     return compiler.process();
   }
 
@@ -118,9 +164,9 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   private opcodes: any[];
   private values: StackValue[] = [];
 
-  constructor(opcodes, meta: T) {
+  constructor(opcodes, symbols: ProgramSymbolTable, meta: T) {
     this.opcodes = opcodes;
-    this.template = new Template(meta);
+    this.template = new Template(symbols, meta);
   }
 
   process(): Template<T> {
@@ -134,9 +180,8 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
 
   /// Nesting
 
-  startBlock([program]) {
-    let block: Block = new Block();
-    block.positionals = program.blockParams;
+  startBlock([program]: [AST.Program]) {
+    let block: Block = new InlineBlock(this.blocks.current, program['symbols']);
     this.blocks.push(block);
   }
 
@@ -167,14 +212,14 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.push([Ops.Comment, value]);
   }
 
-  modifier(path: Path) {
+  modifier(name: string) {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
-    this.push([Ops.Modifier, path, params, hash]);
+    this.push([Ops.Modifier, name, params, hash]);
   }
 
-  block(path: Path, template: number, inverse: number) {
+  block(name: string, template: number, inverse: number) {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
@@ -182,14 +227,18 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     assert(typeof template !== 'number' || blocks[template] !== null, 'missing block in the compiler');
     assert(typeof inverse !== 'number' || blocks[inverse] !== null, 'missing block in the compiler');
 
-    this.push([Ops.Block, path, params, hash, blocks[template], blocks[inverse]]);
+    this.push([Ops.Block, name, params, hash, blocks[template], blocks[inverse]]);
   }
 
-  openElement(tag: str, blockParams: string[]) {
+  openElement(element: AST.ElementNode) {
+    let tag = element.tag;
+
     if (tag.indexOf('-') !== -1) {
-      this.startComponent(blockParams);
+      this.startComponent(element);
+    } else if (element.blockParams.length > 0) {
+      throw new Error(`Compile Error: <${element.tag}> is not a component and doesn't support block parameters`);
     } else {
-      this.push([Ops.OpenElement, tag, blockParams]);
+      this.push([Ops.OpenElement, tag]);
     }
   }
 
@@ -197,10 +246,12 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.push([Ops.FlushElement]);
   }
 
-  closeElement(tag: str) {
+  closeElement(element: AST.ElementNode) {
+    let tag = element.tag;
+
     if (tag.indexOf('-') !== -1) {
-      let component = this.endComponent();
-      this.push([Ops.Component, tag, component]);
+      let [attrs, args, block] = this.endComponent();
+      this.push([Ops.Component, tag, attrs, args, block]);
     } else {
       this.push([Ops.CloseElement]);
     }
@@ -223,38 +274,36 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
 
   staticArg(name: str) {
     let value = this.popValue<Expression>();
-    this.push([Ops.StaticArg, name.slice(1), value]);
+    this.push([Ops.StaticArg, name, value]);
   }
 
   dynamicArg(name: str) {
     let value = this.popValue<Expression>();
-    this.push([Ops.DynamicArg, name.slice(1), value]);
+    this.push([Ops.DynamicArg, name, value]);
   }
 
-  yield(to: string) {
+  yield(to: number) {
     let params = this.popValue<Params>();
     this.push([Ops.Yield, to, params]);
-    this.template.block.yields.add(to);
   }
 
-  debugger() {
-    this.push([Ops.Debugger, null, null]);
+  debugger(evalInfo: Core.EvalInfo) {
+    this.push([Ops.Debugger, evalInfo]);
+    this.template.block.hasEval = true;
   }
 
-  hasBlock(name: string) {
+  hasBlock(name: number) {
     this.pushValue<Expressions.HasBlock>([Ops.HasBlock, name]);
-    this.template.block.yields.add(name);
   }
 
-  hasBlockParams(name: string) {
+  hasBlockParams(name: number) {
     this.pushValue<Expressions.HasBlockParams>([Ops.HasBlockParams, name]);
-    this.template.block.yields.add(name);
   }
 
-  partial() {
+  partial(evalInfo: Core.EvalInfo) {
     let params = this.popValue<Params>();
-    this.push([Ops.Partial, params[0]]);
-    this.template.block.hasPartials = true;
+    this.push([Ops.Partial, params[0], evalInfo]);
+    this.template.block.hasEval = true;
   }
 
   /// Expressions
@@ -267,41 +316,39 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     }
   }
 
-  unknown(path: string[]) {
-    this.pushValue<Expressions.Unknown>([Ops.Unknown, path]);
+  unknown(name: string) {
+    this.pushValue<Expressions.Unknown>([Ops.Unknown, name]);
   }
 
-  arg(path: string[]) {
-    this.template.block.named.add(path[0]);
-    this.pushValue<Expressions.Arg>([Ops.Arg, path]);
+  get(head: number, path: string[]) {
+    this.pushValue<Expressions.Get>([Ops.Get, head, path]);
   }
 
-  get(path: string[]) {
-    this.pushValue<Expressions.Get>([Ops.Get, path]);
+  maybeLocal(path: string[]) {
+    this.pushValue<Expressions.MaybeLocal>([Ops.MaybeLocal, path]);
   }
 
   concat() {
     this.pushValue<Expressions.Concat>([Ops.Concat, this.popValue<Params>()]);
   }
 
-  helper(path: string[]) {
+  helper(name: string) {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
-    this.pushValue<Expressions.Helper>([Ops.Helper, path, params, hash]);
+    this.pushValue<Expressions.Helper>([Ops.Helper, name, params, hash]);
   }
 
   /// Stack Management Opcodes
 
-  startComponent(blockParams: string[]) {
-    let component = new ComponentBlock();
-    component.positionals = blockParams;
+  startComponent(element: AST.ElementNode) {
+    let component = new ComponentBlock(this.blocks.current, element['symbols']);
     this.blocks.push(component);
   }
 
-  endComponent(): SerializedComponent {
+  endComponent(): [WireFormat.Statements.Attribute[], WireFormat.Core.Hash, WireFormat.SerializedInlineBlock] {
     let component = this.blocks.pop();
-    assert(component.type === 'component', "Compiler bug: endComponent() should end a component");
+    assert(component instanceof ComponentBlock, "Compiler bug: endComponent() should end a component");
     return (component as ComponentBlock).toJSON();
   }
 

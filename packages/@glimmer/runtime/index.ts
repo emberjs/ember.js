@@ -15,13 +15,14 @@ export {
 
 export {
   ComponentBuilder,
-  StaticDefinition,
-  DynamicDefinition
+  ComponentArgs
 } from './lib/opcode-builder';
 
 export {
-  CompiledBlock,
-  CompiledProgram
+  CompiledStaticTemplate,
+  CompiledDynamicTemplate,
+  CompiledDynamicBlock,
+  CompiledDynamicProgram
 } from './lib/compiled/blocks';
 
 export {
@@ -36,25 +37,24 @@ export {
 } from './lib/dom/attribute-managers';
 
 export {
+  debugSlice
+} from './lib/opcodes';
+
+export {
   normalizeTextValue
 } from './lib/compiled/opcodes/content';
 
 export {
-  CompiledExpression
-} from './lib/compiled/expressions';
+  setDebuggerCallback,
+  resetDebuggerCallback,
+  DebugCallback
+} from './lib/compiled/opcodes/debugger';
 
 export {
-  CompiledArgs,
-  CompiledNamedArgs,
-  CompiledPositionalArgs,
   EvaluatedArgs,
   EvaluatedNamedArgs,
   EvaluatedPositionalArgs
 } from './lib/compiled/expressions/args';
-
-export {
-  FunctionExpression
-} from './lib/compiled/expressions/function';
 
 export {
   default as getDynamicVar
@@ -66,15 +66,24 @@ export {
   NestedBlockSyntax,
   CompileBlockMacro,
   compileArgs,
-  setDebuggerCallback,
-  resetDebuggerCallback,
-  debugCallback
+  compileComponentArgs,
+  compileList,
+  expr as compileExpression
 } from './lib/syntax/functions';
 
 export {
-  BaselineSyntax,
-  Layout
+  ClientSide,
+  CompilableTemplate,
+  ScannedBlock,
+  ScannedProgram,
+  Block,
+  Program,
+  compileStatement
 } from './lib/scanner';
+
+export {
+  ARGS
+} from './lib/compiled/opcodes/component';
 
 export { PublicVM as VM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
 

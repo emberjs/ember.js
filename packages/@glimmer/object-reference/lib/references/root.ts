@@ -1,12 +1,12 @@
 import { Opaque, dict } from '@glimmer/util';
 import { PathReference } from './path';
 import { RootReference as IRootReference } from '../types';
-import { VOLATILE_TAG, PathReference as IPathReference, RevisionTag } from '@glimmer/reference';
+import { VOLATILE_TAG, PathReference as IPathReference, Tag } from '@glimmer/reference';
 
 export default class RootReference<T> implements IRootReference<T>, IPathReference<T> {
   private object: T;
   private chains = dict<PathReference<any>>();
-  public tag: RevisionTag = VOLATILE_TAG;
+  public tag: Tag = VOLATILE_TAG;
 
   constructor(object: T) {
     this.object = object;

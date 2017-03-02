@@ -1,24 +1,20 @@
-import GlimmerObject, { VersionedRootReference, classof, root as rootFor, set } from '../index';
+import GlimmerObject, { VersionedRootReference, root as rootFor, set } from '../index';
 import { VersionedPathReference, RevisionTag } from '@glimmer/reference';
 
 QUnit.module('[glimmer-object-model] reference');
 
 function MakeSub() {
-  let Sub = classof<Sub>(GlimmerObject.extend({
+  let Sub = GlimmerObject.extend({
     name: 'Dan'
-  }));
+  });
 
   interface Sub {
     name: string;
   }
 
-  let SubSub = classof<SubSub>(Sub.extend({
+  let SubSub = Sub.extend({
     sal: 'Mr.'
-  }));
-
-  interface SubSub extends Sub {
-    sal: string;
-  }
+  });
 
   let obj = Sub.create();
 

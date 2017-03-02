@@ -7,8 +7,9 @@ import { FIXME, Option, Opaque, Dict, unwrap, expect } from '@glimmer/util';
 import {
   CachedReference,
   Reference,
+  VersionedReference,
   ReferenceCache,
-  RevisionTag,
+  Tag,
   Revision,
   PathReference,
   combineTagged,
@@ -17,11 +18,11 @@ import {
 } from '@glimmer/reference';
 import { ModifierManager } from '../../modifier/interfaces';
 import { NULL_REFERENCE, PrimitiveReference } from '../../references';
-import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
+import { EvaluatedArgs } from '../../compiled/expressions/args';
 import { AttributeManager } from '../../dom/attribute-managers';
 import { ElementOperations } from '../../builder';
 import { Assert } from './vm';
-import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
+import { APPEND_OPCODES, Op as Op } from '../../opcodes';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.stack().appendText(vm.constants.getString(text));
@@ -35,8 +36,20 @@ APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
   vm.stack().openElement(vm.constants.getString(tag));
 });
 
+APPEND_OPCODES.add(Op.OpenElementWithOperations, (vm, { op1: tag }) => {
+  let tagName = vm.constants.getString(tag);
+  let operations = vm.evalStack.pop<ElementOperations>();
+  vm.stack().openElement(tagName, operations);
+});
+
+APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
+  let tagName = vm.evalStack.pop<Reference<string>>().value();
+  let operations = vm.evalStack.pop<ElementOperations>();
+  vm.stack().openElement(tagName, operations);
+});
+
 APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
-  let reference = vm.frame.getOperand<Simple.Element>();
+  let reference = vm.evalStack.pop<Reference<Simple.Element>>();
   let cache = isConstReference(reference) ? undefined : new ReferenceCache(reference);
   let element = cache ? cache.peek() : reference.value();
 
@@ -48,16 +61,6 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
 });
 
 APPEND_OPCODES.add(Op.PopRemoteElement, vm => vm.stack().popRemoteElement());
-
-APPEND_OPCODES.add(Op.OpenComponentElement, (vm, { op1: _tag }) => {
-  let tag = vm.constants.getString(_tag);
-  vm.stack().openElement(tag, new ComponentElementOperations(vm.env));
-});
-
-APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
-  let tagName = vm.frame.getOperand<string>().value();
-  vm.stack().openElement(tagName);
-});
 
 class ClassList {
   private list: Option<Reference<string>[]> = null;
@@ -85,7 +88,7 @@ class ClassList {
 }
 
 class ClassListReference extends CachedReference<Option<string>> {
-  public tag: RevisionTag;
+  public tag: Tag;
   private list: Reference<string>[] = [];
 
   constructor(list: Reference<string>[]) {
@@ -129,7 +132,7 @@ export class SimpleElementOperations implements ElementOperations {
     this.env.getAppendOperations().setAttribute(element, name, value, namespace);
   }
 
-  addDynamicAttribute(element: Simple.Element, name: string, reference: PathReference<string>, isTrusting: boolean) {
+  addDynamicAttribute(element: Simple.Element, name: string, reference: Reference<string>, isTrusting: boolean) {
     if (name === 'class') {
       this.addClass(reference);
     } else {
@@ -169,7 +172,7 @@ export class SimpleElementOperations implements ElementOperations {
     this.classList = null;
   }
 
-  private addClass(reference: PathReference<string>) {
+  private addClass(reference: Reference<string>) {
     let { classList } = this;
 
     if (!classList) {
@@ -296,8 +299,6 @@ APPEND_OPCODES.add(Op.FlushElement, vm => {
 
 APPEND_OPCODES.add(Op.CloseElement, vm => vm.stack().closeElement());
 
-APPEND_OPCODES.add(Op.PopElement, vm => vm.stack().popElement());
-
 APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespace }) => {
   let name = vm.constants.getString(_name);
   let value = vm.constants.getString(_value);
@@ -310,12 +311,11 @@ APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespac
   }
 });
 
-APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _name, op2: _manager, op3: _args }) => {
+APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
   let manager = vm.constants.getOther<ModifierManager<Opaque>>(_manager);
-  let rawArgs = vm.constants.getExpression<CompiledArgs>(_args);
+  let args = vm.evalStack.pop<EvaluatedArgs>();
   let stack = vm.stack();
   let { constructing: element, updateOperations } = stack;
-  let args = rawArgs.evaluate(vm);
   let dynamicScope = vm.dynamicScope();
   let modifier = manager.create(element as FIX_REIFICATION<Element>, args, dynamicScope, updateOperations);
 
@@ -387,7 +387,7 @@ export class StaticAttribute implements Attribute {
 export class DynamicAttribute implements Attribute  {
   private cache: Option<ReferenceCache<Opaque>> = null;
 
-  public tag: RevisionTag;
+  public tag: Tag;
 
   constructor(
     private element: Simple.Element,
@@ -457,13 +457,13 @@ function formatElement(element: Simple.Element): string {
 APPEND_OPCODES.add(Op.DynamicAttrNS, (vm, { op1: _name, op2: _namespace, op3: trusting }) => {
   let name = vm.constants.getString(_name);
   let namespace = vm.constants.getString(_namespace);
-  let reference = vm.frame.getOperand<string>();
+  let reference = vm.evalStack.pop<VersionedReference<string>>();
   vm.stack().setDynamicAttributeNS(namespace, name, reference, !!trusting);
 });
 
 APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting }) => {
   let name = vm.constants.getString(_name);
-  let reference = vm.frame.getOperand<string>();
+  let reference = vm.evalStack.pop<VersionedReference<string>>();
   vm.stack().setDynamicAttribute(name, reference, !!trusting);
 });
 

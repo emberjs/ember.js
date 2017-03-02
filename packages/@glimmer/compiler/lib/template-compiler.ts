@@ -1,8 +1,9 @@
-import TemplateVisitor, { SymbolTable } from "./template-visitor";
+import TemplateVisitor, { SymbolTable, Action } from "./template-visitor";
 import JavaScriptCompiler, { Template } from "./javascript-compiler";
-import { getAttrNamespace } from "@glimmer/util";
+import { Stack, getAttrNamespace } from "@glimmer/util";
 import { assert } from "@glimmer/util";
 import { TemplateMeta } from "@glimmer/wire-format";
+import { AST, isLiteral } from '@glimmer/syntax';
 
 export interface CompileOptions<T extends TemplateMeta> {
   meta?: T;
@@ -13,19 +14,19 @@ function isTrustedValue(value) {
 }
 
 export default class TemplateCompiler<T extends TemplateMeta> {
-  static compile<T>(options: CompileOptions<T>, ast): Template<T> {
+  static compile<T extends TemplateMeta>(options: CompileOptions<T>, ast: AST.Program): Template<T> {
     let templateVisitor = new TemplateVisitor();
     templateVisitor.visit(ast);
 
     let compiler = new TemplateCompiler(options);
     let opcodes = compiler.process(templateVisitor.actions);
-    return JavaScriptCompiler.process<T>(opcodes, options.meta);
+    return JavaScriptCompiler.process<T>(opcodes, ast['symbols'], options.meta);
   }
 
   private options: CompileOptions<T>;
   private templateId = 0;
   private templateIds: number[] = [];
-  private symbols: SymbolTable = null;
+  private symbolStack = new Stack<SymbolTable>();
   private opcodes: any[] = [];
   private includeMeta = false;
 
@@ -33,44 +34,51 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     this.options = options || {};
   }
 
-  process(actions): any[] {
+  get symbols(): SymbolTable {
+    return this.symbolStack.current;
+  }
+
+  process(actions: Action[]): Action[] {
     actions.forEach(([name, ...args]) => {
       if (!this[name]) { throw new Error(`Unimplemented ${name} on TemplateCompiler`); }
-      this[name](...args);
+      (this[name] as any)(...args);
     });
     return this.opcodes;
   }
 
-  startProgram(program) {
+  startProgram(program: [AST.Program]) {
+    this.symbolStack.push(program[0]['symbols']);
     this.opcode('startProgram', program, program);
   }
 
   endProgram() {
+    this.symbolStack.pop();
     this.opcode('endProgram', null);
   }
 
-  startBlock(program) {
-    this.symbols = program[0].symbols;
+  startBlock(program: [AST.Program]) {
+    this.symbolStack.push(program[0]['symbols']);
     this.templateId++;
     this.opcode('startBlock', program, program);
   }
 
   endBlock() {
-    this.symbols = null;
+    this.symbolStack.pop();
     this.templateIds.push(this.templateId - 1);
     this.opcode('endBlock', null);
   }
 
-  text([action]) {
+  text([action]: [AST.TextNode]) {
     this.opcode('text', action, action.chars);
   }
 
-  comment([action]) {
+  comment([action]: [AST.CommentStatement]) {
     this.opcode('comment', action, action.value);
   }
 
-  openElement([action]) {
-    this.opcode('openElement', action, action.tag, action.blockParams);
+  openElement([action]: [AST.ElementNode]) {
+
+    this.opcode('openElement', action, action);
     for (let i = 0; i < action.attributes.length; i++) {
       this.attribute([action.attributes[i]]);
     }
@@ -79,13 +87,15 @@ export default class TemplateCompiler<T extends TemplateMeta> {
       this.modifier([action.modifiers[i]]);
     }
     this.opcode('flushElement', null);
+    this.symbolStack.push(action['symbols']);
   }
 
-  closeElement([action]) {
-    this.opcode('closeElement', null, action.tag);
+  closeElement([action]: [AST.ElementNode]) {
+    this.symbolStack.pop();
+    this.opcode('closeElement', null, action);
   }
 
-  attribute([action]) {
+  attribute([action]: [AST.AttrNode]) {
     let { name, value } = action;
 
     let namespace = getAttrNamespace(name);
@@ -116,23 +126,28 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     }
   }
 
-  modifier([action]) {
-    assertIsSimplePath(action, 'modifier');
+  modifier([action]: [AST.ElementModifierStatement]) {
+    assertIsSimplePath(action.path, action.loc, 'modifier');
 
     let { path: { parts } } = action;
 
     this.prepareHelper(action);
-    this.opcode('modifier', action, parts);
+    this.opcode('modifier', action, parts[0]);
   }
 
-  mustache([action]) {
-    if (isYield(action)) {
+  mustache([action]: [AST.MustacheStatement]) {
+    let { path } = action;
+
+    if (isLiteral(path)) {
+      this.mustacheExpression(action);
+      this.opcode('append', action, !action.escaped);
+    } else if (isYield(path)) {
       let to = assertValidYield(action);
       this.yield(to, action);
-    } else if (isPartial(action)) {
+    } else if (isPartial(path)) {
       let params = assertValidPartial(action);
       this.partial(params, action);
-    }else if (isDebugger(action)) {
+    } else if (isDebugger(path)) {
       assertValidDebuggerUsage(action);
       this.debugger('debugger', action);
     } else {
@@ -141,66 +156,75 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     }
   }
 
-  block([action/*, index, count*/]) {
+  block([action/*, index, count*/]: [AST.BlockStatement]) {
     this.prepareHelper(action);
     let templateId = this.templateIds.pop();
     let inverseId = action.inverse === null ? null : this.templateIds.pop();
-    this.opcode('block', action, action.path.parts, templateId, inverseId);
+    this.opcode('block', action, action.path.parts[0], templateId, inverseId);
   }
 
   /// Internal actions, not found in the original processed actions
 
-  arg([path]) {
-    let { parts } = path;
-    this.opcode('arg', path, parts);
+  arg([path]: [AST.PathExpression]) {
+    let { parts: [head, ...rest] } = path;
+    let symbol = this.symbols.allocateNamed(head);
+    this.opcode('get', path, symbol, rest);
   }
 
-  mustacheExpression(expr) {
-    if (isBuiltInHelper(expr)) {
-      this.builtInHelper(expr);
-    } else if (isLiteral(expr)) {
-      this.opcode('literal', expr, expr.path.value);
-    } else if (isArg(expr)) {
-      this.arg([expr.path]);
+  mustacheExpression(expr: AST.MustacheStatement) {
+    let { path } = expr;
+
+    if (isLiteral(path)) {
+      this.opcode('literal', expr, path.value);
+    } else if (isBuiltInHelper(path)) {
+      this.builtInHelper(expr as AST.Call);
+    } else if (isArg(path)) {
+      this.arg([path]);
     } else if (isHelperInvocation(expr)) {
       this.prepareHelper(expr);
-      this.opcode('helper', expr, expr.path.parts);
-    } else if (!isSimplePath(expr) || isSelfGet(expr) || isLocalVariable(expr, this.symbols)) {
-      this.opcode('get', expr, expr.path.parts);
+      this.opcode('helper', expr, path.parts[0]);
+    } else if (isSelfGet(path)) {
+      this.opcode('get', expr, 0, path.parts.slice(1));
+    } else if (isLocal(path, this.symbols)) {
+      let [head, ...parts] = path.parts;
+      this.opcode('get', expr, this.symbols.get(head), parts);
+    } else if (isSimplePath(path)) {
+      this.opcode('unknown', expr, path.parts[0]);
     } else {
-      this.opcode('unknown', expr, expr.path.parts);
+      this.opcode('maybeLocal', expr, path.parts);
     }
   }
 
   /// Internal Syntax
 
-  yield(to: string, action) {
+  yield(to: string, action: AST.MustacheStatement) {
     this.prepareParams(action.params);
-    this.opcode('yield', action, to);
+    this.opcode('yield', action, this.symbols.allocateBlock(to));
   }
 
-  debugger(name, action) {
-    this.opcode('debugger', null);
+  debugger(name: string, action: AST.MustacheStatement) {
+    this.opcode('debugger', action, this.symbols.getEvalInfo());
   }
 
-  hasBlock(name: string, action) {
-    this.opcode('hasBlock', action, name);
+  hasBlock(name: string, action: AST.Call) {
+    this.opcode('hasBlock', action, this.symbols.allocateBlock(name));
   }
 
-  hasBlockParams(name: string, action) {
-    this.opcode('hasBlockParams', action, name);
+  hasBlockParams(name: string, action: AST.Call) {
+    this.opcode('hasBlockParams', action, this.symbols.allocateBlock(name));
   }
 
-  partial(params, action) {
+  partial(params: AST.Expression[], action: AST.MustacheStatement) {
     this.prepareParams(action.params);
-    this.opcode('partial', action);
+    this.opcode('partial', action, this.symbols.getEvalInfo());
   }
 
-  builtInHelper(expr) {
-    if (isHasBlock(expr)) {
+  builtInHelper(expr: AST.Call) {
+    let { path } = expr;
+    if (isHasBlock(path)) {
       let name = assertValidHasBlockUsage(expr.path.original, expr);
       this.hasBlock(name, expr);
-    } else if (isHasBlockParams(expr)) {
+    } else if (isHasBlockParams(path)) {
       let name = assertValidHasBlockUsage(expr.path.original, expr);
       this.hasBlockParams(name, expr);
     }
@@ -208,40 +232,49 @@ export default class TemplateCompiler<T extends TemplateMeta> {
 
   /// Expressions, invoked recursively from prepareParams and prepareHash
 
-  SubExpression(expr) {
-    if (isBuiltInHelper(expr)) {
+  SubExpression(expr: AST.SubExpression) {
+    if (isBuiltInHelper(expr.path)) {
       this.builtInHelper(expr);
     } else {
       this.prepareHelper(expr);
-      this.opcode('helper', expr, expr.path.parts);
+      this.opcode('helper', expr, expr.path.parts[0]);
     }
   }
 
-  PathExpression(expr) {
+  PathExpression(expr: AST.PathExpression) {
     if (expr.data) {
       this.arg([expr]);
     } else {
-      this.opcode('get', expr, expr.parts);
+      let { symbols } = this;
+      let [head, ...path] = expr.parts;
+
+      if (head === null) {
+        this.opcode('get', expr, 0, path);
+      } else  if (symbols.has(head)) {
+        this.opcode('get', expr, symbols.get(head), path);
+      } else {
+        this.opcode('get', expr, 0, expr.parts);
+      }
     }
   }
 
-  StringLiteral(action) {
+  StringLiteral(action: AST.StringLiteral) {
     this.opcode('literal', null, action.value);
   }
 
-  BooleanLiteral(action) {
+  BooleanLiteral(action: AST.BooleanLiteral) {
     this.opcode('literal', null, action.value);
   }
 
-  NumberLiteral(action) {
+  NumberLiteral(action: AST.NumberLiteral) {
     this.opcode('literal', null, action.value);
   }
 
-  NullLiteral(action) {
+  NullLiteral(action: AST.NullLiteral) {
     this.opcode('literal', null, action.value);
   }
 
-  UndefinedLiteral(action) {
+  UndefinedLiteral(action: AST.UndefinedLiteral) {
     this.opcode('literal', null, action.value);
   }
 
@@ -256,8 +289,8 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     this.opcodes.push(opcode);
   }
 
-  prepareHelper(expr) {
-    assertIsSimplePath(expr, 'helper');
+  prepareHelper(expr: AST.Call) {
+    assertIsSimplePath(expr.path, expr.loc, 'helper');
 
     let { params, hash } = expr;
 
@@ -265,11 +298,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     this.prepareParams(params);
   }
 
-  preparePath(path) {
-    this.opcode('literal', path, path.parts);
-  }
-
-  prepareParams(params) {
+  prepareParams(params: AST.Expression[]) {
     if (!params.length) {
       this.opcode('literal', null, null);
       return;
@@ -279,13 +308,13 @@ export default class TemplateCompiler<T extends TemplateMeta> {
       let param = params[i];
 
       assert(this[param.type], `Unimplemented ${param.type} on TemplateCompiler`);
-      this[param.type](param);
+      (this[param.type] as any)(param);
     }
 
     this.opcode('prepareArray', null, params.length);
   }
 
-  prepareHash(hash) {
+  prepareHash(hash: AST.Hash) {
     let pairs = hash.pairs;
 
     if (!pairs.length) {
@@ -297,14 +326,14 @@ export default class TemplateCompiler<T extends TemplateMeta> {
       let { key, value } = pairs[i];
 
       assert(this[value.type], `Unimplemented ${value.type} on TemplateCompiler`);
-      this[value.type](value);
+      (this[value.type] as any)(value);
       this.opcode('literal', null, key);
     }
 
     this.opcode('prepareObject', null, pairs.length);
   }
 
-  prepareAttributeValue(value) {
+  prepareAttributeValue(value: AST.AttrNode['value']) {
     // returns the static value if the value is static
 
     switch (value.type) {
@@ -321,7 +350,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     }
   }
 
-  prepareConcatParts(parts) {
+  prepareConcatParts(parts: AST.ConcatStatement['parts']) {
     for (let i = parts.length - 1; i >= 0; i--) {
       let part = parts[i];
 
@@ -339,7 +368,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     this.mustacheExpression(action);
   }
 
-  meta(node) {
+  meta(node: AST.BaseNode) {
     let loc = node.loc;
     if (!loc) { return []; }
 
@@ -348,71 +377,62 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   }
 }
 
-function isHelperInvocation(mustache) {
+function isHelperInvocation(mustache: AST.MustacheStatement): mustache is AST.MustacheStatement & { path: AST.PathExpression } {
   return (mustache.params && mustache.params.length > 0) ||
     (mustache.hash && mustache.hash.pairs.length > 0);
 }
 
-function isSimplePath(mustache) {
-  let { parts } = mustache.path;
+function isSimplePath({ parts }: AST.PathExpression): boolean {
   return parts.length === 1;
 }
 
-function isSelfGet(mustache) {
-  let { parts } = mustache.path;
-  return parts[0] === null;
+function isSelfGet({ parts }: AST.PathExpression): boolean {
+  return (parts[0] as any) === null;
 }
 
-function isLocalVariable(mustache, symbols) {
-  let { parts } = mustache.path;
-  return parts.length === 1 && symbols && symbols.hasLocalVariable(parts[0]);
+function isLocal({ parts }: AST.PathExpression, symbols: SymbolTable): boolean {
+  return symbols && /* parts.length && */ symbols.has(parts[0]);
 }
 
-function isYield({ path }) {
+function isLocalVariable({ parts }: AST.PathExpression, symbols: SymbolTable): boolean {
+  return parts.length === 1 && symbols && symbols.has(parts[0]);
+}
+
+function isYield(path: AST.PathExpression) {
   return path.original === 'yield';
 }
 
-function isPartial({ path }) {
+function isPartial(path: AST.PathExpression) {
   return path.original === 'partial';
 }
 
-function isDebugger({ path }) {
+function isDebugger(path: AST.PathExpression) {
   return path.original === 'debugger';
 }
 
-function isArg({ path }) {
-  return path.data;
-}
-
-function isLiteral({ path }) {
-  return path.type === 'StringLiteral'
-      || path.type === 'BooleanLiteral'
-      || path.type === 'NumberLiteral'
-      || path.type === 'NullLiteral'
-      || path.type === 'UndefinedLiteral';
-}
-
-function isHasBlock({ path }) {
+function isHasBlock(path: AST.PathExpression) {
   return path.original === 'has-block';
 }
 
-function assertIsSimplePath(expr, context) {
-  if (!isSimplePath(expr)) {
-    let { path: { original }, loc: { start: { line } } } = expr;
-    throw new Error(`\`${original}\` is not a valid name for a ${context} on line ${line}.`);
-  }
-}
-
-function isHasBlockParams({ path }) {
+function isHasBlockParams(path: AST.PathExpression) {
   return path.original === 'has-block-params';
 }
 
-function isBuiltInHelper(expr) {
-  return isHasBlock(expr)
-      || isHasBlockParams(expr);
+function isBuiltInHelper(path: AST.PathExpression) {
+  return isHasBlock(path) || isHasBlockParams(path);
 }
 
-function assertValidYield({ hash }): string {
+function isArg(path: AST.PathExpression): boolean {
+  return !!path['data'];
+}
+
+function assertIsSimplePath(path: AST.PathExpression, loc: AST.SourceLocation, context: string) {
+  if (!isSimplePath(path)) {
+    throw new Error(`\`${path.original}\` is not a valid name for a ${context} on line ${loc.start.line}.`);
+  }
+}
+
+function assertValidYield({ hash }: AST.MustacheStatement): string {
   let pairs = hash.pairs;
 
   if ((pairs.length === 1 && pairs[0].key !== 'to') || pairs.length > 1) {
@@ -422,11 +442,11 @@ function assertValidYield({ hash }): string {
   } else if (pairs.length === 0) {
     return 'default';
   } else {
-    return pairs[0].value.value;
+    return (pairs[0].value as AST.StringLiteral).value;
   }
 }
 
-function assertValidPartial({ params, hash, escaped, loc }) /* : expr */ {
+function assertValidPartial({ params, hash, escaped, loc }: AST.MustacheStatement) /* : expr */ {
   if (params && params.length !== 1) {
     throw new Error(`Partial found with no arguments. You must specify a template name. (on line ${loc.start.line})`);
   } else if (hash && hash.pairs.length > 0) {

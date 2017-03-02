@@ -50,7 +50,7 @@ function render<T>(template: Template<T>, context={}) {
 }
 
 QUnit.module("Debugger", {
-  setup: commonSetup,
+  beforeEach: commonSetup,
   afterEach() {
     resetDebuggerCallback();
   }

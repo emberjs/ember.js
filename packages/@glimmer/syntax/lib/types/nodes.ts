@@ -3,7 +3,7 @@ export interface BaseNode {
   // The type property should be a string literal. For example, Identifier
   // has: `type: "Identifier"`
   type: string;
-  loc?: SourceLocation;
+  loc: SourceLocation;
 }
 
 export interface SourceLocation {
@@ -27,6 +27,12 @@ export interface Program extends BaseNode {
 
 export type Statement = MustacheStatement | BlockStatement | PartialStatement | MustacheCommentStatement;
 
+export interface Call extends BaseNode {
+  path: PathExpression;
+  params: Expression[];
+  hash: Hash;
+}
+
 export interface MustacheStatement extends BaseNode {
   type: 'MustacheStatement';
   path: PathExpression | Literal;
@@ -46,7 +52,7 @@ export interface BlockStatement extends BaseNode {
 
 export interface ElementModifierStatement extends BaseNode {
   type: 'ElementModifierStatement';
-  path: PathExpression | Literal;
+  path: PathExpression;
   params: Expression[];
   hash: Hash;
 }
@@ -92,12 +98,12 @@ export interface TextNode extends BaseNode {
 
 export interface ConcatStatement extends BaseNode {
   type: 'ConcatStatement';
-  parts: TextNode | MustacheStatement;
+  parts: (TextNode | MustacheStatement)[];
 }
 
 export type Expression = SubExpression | PathExpression | Literal;
 
-export interface SubExpression extends BaseNode {
+export interface SubExpression extends Call {
   type: 'SubExpression';
   path: PathExpression;
   params: Expression[];

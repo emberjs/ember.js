@@ -229,7 +229,7 @@ function getData() {
   return data;
 }
 
-function generateData(oldData: any = {}) {
+export function generateData(oldData: any = {}) {
   let rawData = getData();
 
   let databases = (oldData && oldData.databases) || {};

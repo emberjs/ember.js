@@ -1,4 +1,4 @@
-import { RevisionTag, ConstReference, PathReference, Reference } from '@glimmer/reference';
+import { Tag, ConstReference, PathReference, Reference } from '@glimmer/reference';
 import { Option, Opaque } from '@glimmer/util';
 
 export type Primitive = undefined | null | boolean | number | string;
@@ -57,11 +57,11 @@ class ValueReference<T extends Value> extends PrimitiveReference<T> {
 
 export const UNDEFINED_REFERENCE: PrimitiveReference<undefined> = new ValueReference(undefined);
 export const NULL_REFERENCE: PrimitiveReference<null> = new ValueReference(null);
-const TRUE_REFERENCE: PrimitiveReference<boolean> = new ValueReference(true);
-const FALSE_REFERENCE: PrimitiveReference<boolean> = new ValueReference(false);
+export const TRUE_REFERENCE: PrimitiveReference<boolean> = new ValueReference(true);
+export const FALSE_REFERENCE: PrimitiveReference<boolean> = new ValueReference(false);
 
 export class ConditionalReference implements Reference<boolean> {
-  public tag: RevisionTag;
+  public tag: Tag;
 
   constructor(private inner: Reference<Opaque>) {
     this.tag = inner.tag;

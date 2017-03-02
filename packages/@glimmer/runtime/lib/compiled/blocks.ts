@@ -1,10 +1,19 @@
-export class CompiledBlock {
+import { SymbolTable, ProgramSymbolTable, BlockSymbolTable } from '@glimmer/interfaces';
+
+export interface OpSlice {
+  start: number;
+  end: number;
+}
+
+export class CompiledStaticTemplate implements OpSlice {
   constructor(public start: number, public end: number) {
   }
 }
 
-export class CompiledProgram extends CompiledBlock {
-  constructor(start: number, end: number, public symbols: number) {
-    super(start, end);
+export class CompiledDynamicTemplate<S extends SymbolTable> implements OpSlice {
+  constructor(public start: number, public end: number, public symbolTable: S) {
   }
 }
+
+export type CompiledDynamicBlock = CompiledDynamicTemplate<BlockSymbolTable>;
+export type CompiledDynamicProgram = CompiledDynamicTemplate<ProgramSymbolTable>;

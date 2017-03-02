@@ -8,9 +8,7 @@ import { Environment } from './environment';
 
 import { VM } from './vm';
 
-import {
-  PathReference
-} from '@glimmer/reference';
+import { VersionedReference } from '@glimmer/reference';
 
 import {
   SimpleElementOperations
@@ -45,8 +43,8 @@ class Last {
 export interface ElementOperations {
   addStaticAttribute(element: Simple.Element, name: string, value: string): void;
   addStaticAttributeNS(element: Simple.Element, namespace: string, name: string, value: string): void;
-  addDynamicAttribute(element: Simple.Element, name: string, value: PathReference<string>, isTrusting: boolean): void;
-  addDynamicAttributeNS(element: Simple.Element, namespace: string, name: string, value: PathReference<string>, isTrusting: boolean): void;
+  addDynamicAttribute(element: Simple.Element, name: string, value: VersionedReference<string>, isTrusting: boolean): void;
+  addDynamicAttributeNS(element: Simple.Element, namespace: string, name: string, value: VersionedReference<string>, isTrusting: boolean): void;
   flush(element: Simple.Element, vm: VM): void;
 }
 
@@ -261,11 +259,11 @@ export class ElementStack implements Cursor {
     this.expectOperations('setStaticAttributeNS').addStaticAttributeNS(this.expectConstructing('setStaticAttributeNS'), namespace, name, value);
   }
 
-  setDynamicAttribute(name: string, reference: PathReference<string>, isTrusting: boolean) {
+  setDynamicAttribute(name: string, reference: VersionedReference<string>, isTrusting: boolean) {
     this.expectOperations('setDynamicAttribute').addDynamicAttribute(this.expectConstructing('setDynamicAttribute'), name, reference, isTrusting);
   }
 
-  setDynamicAttributeNS(namespace: string, name: string, reference: PathReference<string>, isTrusting: boolean) {
+  setDynamicAttributeNS(namespace: string, name: string, reference: VersionedReference<string>, isTrusting: boolean) {
     this.expectOperations('setDynamicAttributeNS').addDynamicAttributeNS(this.expectConstructing('setDynamicAttributeNS'), namespace, name, reference, isTrusting);
   }
 

@@ -13,19 +13,15 @@ import Upsert, {
 import { isComponentDefinition } from '../../component/interfaces';
 import { DOMTreeConstruction } from '../../dom/helper';
 import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { CompiledExpression, CompiledArgs } from '../expressions';
 import { VM, UpdatingVM } from '../../vm';
-import { TryOpcode, VMState } from '../../vm/update';
-import { Reference, ReferenceCache, UpdatableTag, isModified, isConst, map } from '@glimmer/reference';
-import { FIXME, Option, Opaque, LinkedList, expect } from '@glimmer/util';
+import { TryOpcode } from '../../vm/update';
+import { Reference, VersionedPathReference, ReferenceCache, UpdatableTag, TagWrapper, isModified, isConst, map } from '@glimmer/reference';
+import { Option, Opaque } from '@glimmer/util';
 import { Cursor, clear } from '../../bounds';
 import { Fragment } from '../../builder';
-import OpcodeBuilderDSL from './builder';
 import { ConditionalReference } from '../../references';
 import { Environment } from '../../environment';
-import { UpdatableBlockTracker } from '../../builder';
-import { SymbolTable } from '@glimmer/interfaces';
-import { APPEND_OPCODES, OpcodeName as Op } from '../../opcodes';
+import { APPEND_OPCODES, Op } from '../../opcodes';
 
 APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: append }) => {
   let opcode = vm.constants.getOther(append) as AppendDynamicOpcode<Insertion>;
@@ -80,7 +76,7 @@ export abstract class AppendDynamicOpcode<T extends Insertion> {
   protected abstract updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<T>, bounds: Fragment, upsert: Upsert): UpdatingOpcode;
 
   evaluate(vm: VM) {
-    let reference = vm.frame.getOperand();
+    let reference = vm.evalStack.pop<VersionedPathReference<Opaque>>();
     let normalized = this.normalize(reference);
 
     let value, cache;
@@ -109,26 +105,31 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDyn
   private start = -1;
   private end = -1;
 
-  constructor(private expression: CompiledExpression<any>, private symbolTable: SymbolTable) {
+  constructor() {
     super();
   }
 
+  get deopted(): boolean {
+    return this.start === -1;
+  }
+
   evaluate(vm: VM) {
-    if (this.start === -1) {
-      vm.evaluateOperand(this.expression);
-      let value = vm.frame.getOperand().value();
+    if (this.deopted) {
+      vm.pushEvalFrame(this.start, this.end);
+    } else {
+      let value = vm.evalStack.pop();
+
       if(isComponentDefinition(value)) {
         this.deopt(vm.env);
         vm.pushEvalFrame(this.start, this.end);
       } else {
+        vm.evalStack.push(value);
         super.evaluate(vm);
       }
-    } else {
-      vm.pushEvalFrame(this.start, this.end);
     }
   }
 
-  public deopt(env: Environment): number { // Public because it's used in the lazy deopt
+  public deopt(_env: Environment): number { // Public because it's used in the lazy deopt
     // At compile time, we determined that this append callsite might refer
     // to a local variable/property lookup that resolves to a component
     // definition at runtime.
@@ -173,34 +174,7 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDyn
     // definition object at update time. That is handled by the "lazy deopt"
     // code on the update side (scroll down for the next big block of comment).
 
-    let dsl = new OpcodeBuilderDSL(this.symbolTable, env);
-
-    dsl.putValue(this.expression);
-    dsl.test(IsComponentDefinitionReference.create);
-
-    dsl.labelled(null, (dsl, _BEGIN, END) => {
-      dsl.jumpUnless('VALUE');
-      dsl.putDynamicComponentDefinition();
-      dsl.openComponent(CompiledArgs.empty());
-      dsl.closeComponent();
-      dsl.jump(END);
-      dsl.label('VALUE');
-      dsl.dynamicContent(new this.AppendOpcode());
-    });
-
-    this.start = dsl.start;
-    this.end = dsl.end;
-
-    // From this point on, we have essentially replaced ourselves with a new set
-    // of opcodes. Since we will always be executing the new/deopted code, it's
-    // a good idea (as a pattern) to null out any unneeded fields here to avoid
-    // holding on to unneeded/stale objects:
-
-    // QUESTION: Shouldn't this whole object be GCed? If not, why not?
-
-    this.expression = null as FIXME<any, 'QUESTION'>;
-
-    return dsl.start;
+    return null as any;
   }
 }
 
@@ -254,19 +228,17 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
 }
 
 abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> {
-  private _tag: UpdatableTag;
+  private _tag: TagWrapper<UpdatableTag>;
   private deopted: Option<TryOpcode> = null;
 
   constructor(
     private reference: Reference<Opaque>,
     cache: ReferenceCache<T>,
     bounds: Fragment,
-    upsert: Upsert,
-    private appendOpcode: GuardedAppendOpcode<T>,
-    private state: VMState
+    upsert: Upsert
   ) {
     super(cache, bounds, upsert);
-    this.tag = this._tag = new UpdatableTag(this.tag);
+    this.tag = this._tag = UpdatableTag.create(this.tag);
   }
 
   evaluate(vm: UpdatingVM) {
@@ -281,7 +253,7 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
     }
   }
 
-  private lazyDeopt(vm: UpdatingVM) {
+  private lazyDeopt(_vm: UpdatingVM) {
     // Durign initial render, we know that the reference does not contain a
     // component definition, so we optimistically assumed that this append
     // is just a normal append. However, at update time, we discovered that
@@ -312,42 +284,7 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
     // wouldn't have to worry about simulating those. All we have to do is to
     // execute the Try opcode and immediately throw.
 
-    let { bounds, appendOpcode, state } = this;
-    let env = vm.env;
-
-    let deoptStart = appendOpcode.deopt(env);
-
-    let enter = expect(env.program.opcode(deoptStart + 8), 'hardcoded deopt location');
-    let { op1: start, op2: end } = enter;
-
-    let tracker = new UpdatableBlockTracker(bounds.parentElement());
-    tracker.newBounds(this.bounds);
-
-    let children = new LinkedList<UpdatingOpcode>();
-
-    state.frame.condition = IsComponentDefinitionReference.create(expect(state.frame['operand'], 'operand should be populated'));
-
-    let deopted = this.deopted = new TryOpcode(start, end, state, tracker, children);
-
-    this._tag.update(deopted.tag);
-
-    vm.evaluateOpcode(deopted);
-    vm.throw();
-
-    // From this point on, we have essentially replaced ourselve with a new
-    // opcode. Since we will always be executing the new/deopted code, it's a
-    // good idea (as a pattern) to null out any unneeded fields here to avoid
-    // holding on to unneeded/stale objects:
-
-    // QUESTION: Shouldn't this whole object be GCed? If not, why not?
-
-    this._tag         = null as FIXME<any, 'QUESTION'>;
-    this.reference    = null as FIXME<any, 'QUESTION'>;
-    this.cache        = null as FIXME<any, 'QUESTION'>;
-    this.bounds       = null as FIXME<any, 'QUESTION'>;
-    this.upsert       = null as FIXME<any, 'QUESTION'>;
-    this.appendOpcode = null as FIXME<any, 'QUESTION'>;
-    this.state        = null as FIXME<any, 'QUESTION'>;
+    return null as any;
   }
 
   toJSON(): OpcodeJSON {
@@ -403,8 +340,8 @@ export class GuardedCautiousAppendOpcode extends GuardedAppendOpcode<CautiousIns
     return cautiousInsert(dom, cursor, value);
   }
 
-  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<CautiousInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
-    return new GuardedCautiousUpdateOpcode(reference, cache, bounds, upsert, this, vm.capture());
+  protected updateWith(_vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<CautiousInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
+    return new GuardedCautiousUpdateOpcode(reference, cache, bounds, upsert);
   }
 }
 
@@ -453,8 +390,8 @@ export class GuardedTrustingAppendOpcode extends GuardedAppendOpcode<TrustingIns
     return trustingInsert(dom, cursor, value);
   }
 
-  protected updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<TrustingInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
-    return new GuardedTrustingUpdateOpcode(reference, cache, bounds, upsert, this, vm.capture());
+  protected updateWith(_vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<TrustingInsertion>, bounds: Fragment, upsert: Upsert): UpdatingOpcode {
+    return new GuardedTrustingUpdateOpcode(reference, cache, bounds, upsert);
   }
 }
 
