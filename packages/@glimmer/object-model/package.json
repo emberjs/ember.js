@@ -21,6 +21,6 @@
     "mocha": "^3.2.0",
     "tomdale-mocha-qunit-ui": "^0.1.2",
     "ts-node": "^1.7.0",
-    "typescript": "^2.1.4"
+    "typescript": "^2.2.0"
   }
 }

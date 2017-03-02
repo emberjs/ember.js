@@ -1,12 +1,11 @@
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { CompiledDynamicProgram } from '../compiled/blocks';
-import { SerializedTemplate, TemplateMeta } from '@glimmer/wire-format';
+import { TemplateMeta } from '@glimmer/wire-format';
 
 import Environment, { DynamicScope } from '../environment';
 import { ElementOperations } from '../builder';
 import Bounds from '../bounds';
 import * as Simple from '../dom/interfaces';
-import { Program } from '../scanner';
 import { Template } from '../template';
 
 import { Destroyable, Dict, Opaque } from '@glimmer/util';

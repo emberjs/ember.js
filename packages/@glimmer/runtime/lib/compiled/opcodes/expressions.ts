@@ -5,6 +5,9 @@ import { EvaluatedArgs } from '../expressions/args';
 import { TRUE_REFERENCE, FALSE_REFERENCE } from '../../references';
 import { VersionedPathReference } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
+import { PublicVM } from "../../vm";
+
+export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: _helper }) => {
   let helper = vm.constants.getFunction<Helper>(_helper);

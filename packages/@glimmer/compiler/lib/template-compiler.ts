@@ -14,7 +14,7 @@ function isTrustedValue(value) {
 }
 
 export default class TemplateCompiler<T extends TemplateMeta> {
-  static compile<T>(options: CompileOptions<T>, ast: AST.Program): Template<T> {
+  static compile<T extends TemplateMeta>(options: CompileOptions<T>, ast: AST.Program): Template<T> {
     let templateVisitor = new TemplateVisitor();
     templateVisitor.visit(ast);
 

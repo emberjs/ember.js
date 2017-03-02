@@ -51,9 +51,6 @@ export {
 } from './lib/compiled/opcodes/debugger';
 
 export {
-  CompiledArgs,
-  CompiledNamedArgs,
-  CompiledPositionalArgs,
   EvaluatedArgs,
   EvaluatedNamedArgs,
   EvaluatedPositionalArgs
