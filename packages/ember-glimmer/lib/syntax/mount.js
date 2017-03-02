@@ -64,7 +64,6 @@ class DynamicEngineReference {
     this.nameRef = nameRef;
     this.env = env;
     this.symbolTable = symbolTable;
-    this.args = args;
     this._lastName = undefined;
     this._lastDef = undefined;
   }
@@ -87,7 +86,7 @@ class DynamicEngineReference {
     }
 
     this._lastName = nameOrDef;
-    this._lastDef = new MountDefinition(nameOrDef, env);
+    this._lastDef = new MountDefinition(nameOrDef);
 
     return this._lastDef;
   }
@@ -144,8 +143,7 @@ class MountManager extends AbstractManager {
 const MOUNT_MANAGER = new MountManager();
 
 class MountDefinition extends ComponentDefinition {
-  constructor(name, env) {
+  constructor(name) {
     super(name, MOUNT_MANAGER, null);
-    this.env = env;
   }
 }
