@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/compiler",
-  "version": "0.21.2",
+  "version": "0.22.0",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
   "jsnext:main": "dist/modules/index.js",
@@ -10,11 +10,15 @@
     "prepublish": "npm run build",
     "test": "node -e 'require(\".\")'"
   },
-  "files": ["dist", "index.ts", "lib"],
+  "files": [
+    "dist",
+    "index.ts",
+    "lib"
+  ],
   "dependencies": {
-    "@glimmer/syntax": "^0.21.2",
-    "@glimmer/util": "^0.21.0",
-    "@glimmer/wire-format": "^0.21.0",
+    "@glimmer/syntax": "^0.22.0",
+    "@glimmer/util": "^0.22.0",
+    "@glimmer/wire-format": "^0.22.0",
     "simple-html-tokenizer": "^0.3.0"
   },
   "devDependencies": {

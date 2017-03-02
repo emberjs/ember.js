@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/runtime",
-  "version": "0.21.1",
+  "version": "0.22.0",
   "description": "Minimal runtime needed to render Glimmer templates",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
@@ -16,14 +16,18 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@glimmer/util": "^0.21.0",
-    "@glimmer/reference": "^0.21.0",
-    "@glimmer/object": "^0.21.0",
-    "@glimmer/object-reference": "^0.21.0",
-    "@glimmer/wire-format": "^0.21.0",
-    "@glimmer/interfaces": "^0.21.0"
+    "@glimmer/util": "^0.22.0",
+    "@glimmer/reference": "^0.22.0",
+    "@glimmer/object": "^0.22.0",
+    "@glimmer/object-reference": "^0.22.0",
+    "@glimmer/wire-format": "^0.22.0",
+    "@glimmer/interfaces": "^0.22.0"
   },
-  "files": ["dist", "index.ts", "lib"],
+  "files": [
+    "dist",
+    "index.ts",
+    "lib"
+  ],
   "devDependencies": {
     "@types/qunit": "^2.0.31",
     "typescript": "^2.1.4"
