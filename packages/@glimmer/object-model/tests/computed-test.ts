@@ -85,7 +85,7 @@ QUnit.test('references for multiple subclasses of computed properties', assert =
         return `${this.sal} ${this.full}`;
       },
       set(value: string) {
-        let [, sal, full] = value.match(/([^ ]+) (.*)/);
+        let [, sal, full] = value.match(/([^ ]+) (.*)/)!;
         this.sal = sal;
         this.full = full;
       }
