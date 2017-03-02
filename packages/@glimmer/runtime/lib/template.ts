@@ -10,8 +10,7 @@ import { Option, Opaque } from '@glimmer/interfaces';
 // import { SymbolTable } from '@glimmer/interfaces';
 import { Environment, DynamicScope } from './environment';
 import { ElementStack } from './builder';
-import { VM } from './vm';
-import RenderResult from './vm/render-result';
+import { VM, RenderResult, IteratorResult } from './vm';
 import Scanner, { Program, Block } from './scanner';
 import * as Simple from './dom/interfaces';
 import { EMPTY_ARRAY } from './utils';
@@ -41,7 +40,7 @@ export interface Template<T> {
   /**
    * Helper to render template as root entry point.
    */
-  render(self: PathReference<Opaque>, appendTo: Simple.Element, dynamicScope: DynamicScope): RenderResult;
+  render(self: PathReference<Opaque>, appendTo: Simple.Element, dynamicScope: DynamicScope): TemplateIterator;
 
   // internal casts, these are lazily created and cached
   asEntryPoint(): Program;
@@ -77,6 +76,13 @@ export interface TemplateFactory<T, U> {
    * @param {Object} meta environment specific injections into meta
    */
   create(env: Environment, meta: U): Template<T & U>;
+}
+
+export class TemplateIterator {
+  constructor(private vm: VM) {}
+  next(): IteratorResult<RenderResult> {
+    return this.vm.next();
+  }
 }
 
 let clientId = 0;
@@ -117,12 +123,12 @@ class ScannableTemplate implements Template<TemplateMeta> {
   }
 
   render(self: PathReference<Opaque>, appendTo: Simple.Element, dynamicScope: DynamicScope) {
-    let { env, rawBlock } = this;
+    let { env } = this;
 
     let elementStack = ElementStack.forInitialRender(env, appendTo, null);
     let compiled = this.asEntryPoint().compileDynamic(env);
-    let vm = VM.initial(env, self, dynamicScope, elementStack, rawBlock.symbols.length);
-    return vm.execute(compiled.start, compiled.end);
+    let vm = VM.initial(env, self, dynamicScope, elementStack, compiled);
+    return new TemplateIterator(vm);
   }
 
   asEntryPoint(): Program {

@@ -1,4 +1,4 @@
-import { UNDEFINED_REFERENCE, EvaluatedArgs, Template, RenderResult, SafeString, PrimitiveReference, VM, debugSlice } from "../index";
+import { UNDEFINED_REFERENCE, EvaluatedArgs, Template, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult, debugSlice } from "@glimmer/runtime";
 import { BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "@glimmer/test-helpers";
 import { ConstReference, PathReference } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
@@ -24,7 +24,7 @@ const serializesNSAttributesCorrectly = (function() {
 let hooks, root: Element;
 let env: TestEnvironment;
 let self: UpdatableReference<any>;
-let result: RenderResult;
+let result: IteratorResult<RenderResult>;
 
 function compile(template: string) {
   return env.compile(template);
@@ -43,7 +43,13 @@ function commonSetup() {
 function render<T>(template: Template<T>, context = {}, view: PathReference<Opaque> = null) {
   self = new UpdatableReference(context);
   env.begin();
-  result = template.render(self, root, new TestDynamicScope());
+  let templateIterator = template.render(self, root, new TestDynamicScope());
+
+  do {
+    result = templateIterator.next();
+  } while (!result.done);
+
+  result = result.value;
   env.commit();
   assertInvariants(QUnit.assert, result);
   return result;
