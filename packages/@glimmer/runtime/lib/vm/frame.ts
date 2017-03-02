@@ -27,7 +27,7 @@ class Frame {
   constructor(
     public start: number,
     public end: number,
-    public component: Component = null,
+    public component = <Component>null,
     public manager: Option<ComponentManager<Component>> = null,
     public shadow: Option<InlineBlock> = null
   ) {
@@ -58,7 +58,7 @@ export class FrameStack {
     return this.frames[this.frame];
   }
 
-  push(start: number, end: number, component: Component = null, manager: Option<ComponentManager<Component>> = null, shadow: Option<InlineBlock> = null) {
+  push(start: number, end: number, component = <Component>null, manager: Option<ComponentManager<Component>> = null, shadow: Option<InlineBlock> = null) {
     let pos = ++this.frame;
     if (pos < this.frames.length) {
       let frame = this.frames[pos];
