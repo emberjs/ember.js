@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/util",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "Common utilities used in Glimmer",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
@@ -15,7 +15,11 @@
   },
   "license": "MIT",
   "jsnext:main": "dist/modules/index.js",
-  "files": ["dist", "index.ts", "lib"],
+  "files": [
+    "dist",
+    "index.ts",
+    "lib"
+  ],
   "devDependencies": {
     "@types/qunit": "^2.0.31",
     "typescript": "^2.1.4"

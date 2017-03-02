@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/object-model",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
   "jsnext:main": "dist/modules/index.js",
@@ -11,10 +11,14 @@
     "test": "node -e 'require(\".\")'",
     "test:watch": "mocha --opts tests/mocha.opts --watch"
   },
-  "files": ["dist", "index.ts", "lib"],
+  "files": [
+    "dist",
+    "index.ts",
+    "lib"
+  ],
   "dependencies": {
-    "@glimmer/util": "^0.21.0",
-    "@glimmer/reference": "^0.21.0"
+    "@glimmer/util": "^0.22.0",
+    "@glimmer/reference": "^0.22.0"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
