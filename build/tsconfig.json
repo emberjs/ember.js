@@ -3,7 +3,7 @@
     // Enhance Strictness
     "noImplicitAny": false,
     "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": false,
+    "noUnusedLocals": true,
     "noUnusedParameters": false,
     "strictNullChecks": false,
 
