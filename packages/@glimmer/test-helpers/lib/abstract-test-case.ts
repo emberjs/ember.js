@@ -1,4 +1,5 @@
-import { PathReference, Tagged, Revision, RevisionTag, DirtyableTag } from '@glimmer/reference';
+import { TagWrapper } from '../../reference/lib/validators';
+import { PathReference, Tagged, RevisionTag, DirtyableTag } from '@glimmer/reference';
 import { Template, RenderResult, Simple } from '@glimmer/runtime';
 import {
   TestEnvironment,
@@ -11,12 +12,12 @@ export function skip(target: Object, name: string, descriptor: PropertyDescripto
   descriptor.value['skip'] = true;
 }
 
-export class VersionedObject implements Tagged<Revision> {
-  public tag: DirtyableTag;
+export class VersionedObject implements Tagged {
+  public tag: TagWrapper<DirtyableTag>;
   public value: Object;
 
   constructor(value: Object) {
-    this.tag = new DirtyableTag();
+    this.tag = DirtyableTag.create();
     assign(this, value);
   }
 
@@ -31,12 +32,12 @@ export class VersionedObject implements Tagged<Revision> {
   }
 
   dirty() {
-    this.tag.dirty();
+    this.tag.inner.dirty();
   }
 }
 
 export class SimpleRootReference implements PathReference<Opaque> {
-  public tag: RevisionTag;
+  public tag: TagWrapper<RevisionTag>;
 
   constructor(private object: VersionedObject) {
     this.tag = object.tag;
@@ -52,7 +53,7 @@ export class SimpleRootReference implements PathReference<Opaque> {
 }
 
 class SimplePathReference implements PathReference<Opaque> {
-  public tag: RevisionTag;
+  public tag: TagWrapper<RevisionTag>;
 
   constructor(private parent: PathReference<Opaque>, private key: string) {
     this.tag = parent.tag;
@@ -96,7 +97,6 @@ export class RenderingTest {
 
   render(context: Object) {
     this.env.begin();
-    let dynamicScope = new TestDynamicScope();
     let appendTo = this.appendTo;
     let rootObject = new VersionedObject(context);
     let root = new SimpleRootReference(rootObject);
