@@ -9,6 +9,6 @@
     "ember-factory-for": true,
     "ember-no-double-extend": true,
     "ember-routing-router-service": null,
-    "ember-unique-location-history-state": null
+    "ember-unique-location-history-state": true
   }
 }
