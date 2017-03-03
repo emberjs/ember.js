@@ -127,6 +127,38 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       });
     }
 
+    ['@test RouterService#transitionTo with basic route using URL'](assert) {
+      assert.expect(1);
+
+      let componentInstance;
+
+      this.registerTemplate('parent.index', '{{foo-bar}}');
+
+      this.registerComponent('foo-bar', {
+        ComponentClass: Component.extend({
+          routerService: inject.service('router'),
+          init() {
+            this._super();
+            componentInstance = this;
+          },
+          actions: {
+            transitionToSister() {
+              get(this, 'routerService').transitionTo('/sister');
+            }
+          }
+        }),
+        template: `foo-bar`
+      });
+
+      return this.visit('/').then(() => {
+        run(function() {
+          componentInstance.send('transitionToSister');
+        });
+
+        assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+      });
+    }
+
     ['@test RouterService#transitionTo with dynamic segment'](assert) {
       assert.expect(3);
 

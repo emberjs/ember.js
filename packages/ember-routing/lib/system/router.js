@@ -411,8 +411,8 @@ const EmberRouter = EmberObject.extend(Evented, {
     return this.transitionTo(...arguments).method('replace');
   },
 
-  generate() {
-    let url = this._routerMicrolib.generate(...arguments);
+  generate(...args) {
+    let url = this._routerMicrolib.generate(...args);
     return this.location.formatURL(url);
   },
 

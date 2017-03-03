@@ -32,7 +32,7 @@ const RouterService = Service.extend({
 
      @method transitionTo
      @category ember-routing-router-service
-     @param {String} name the name of the route or a URL
+     @param {String} routeNameOrUrl the name of the route or a URL
      @param {...Object} models the model(s) or identifier(s) to be used while
        transitioning to the route.
      @param {Object} [options] optional hash with a queryParams property
@@ -41,7 +41,7 @@ const RouterService = Service.extend({
        attempted transition
      @public
    */
-  transitionTo() {
+  transitionTo(/* routeNameOrUrl, ...models, options */) {
     return this.router.transitionTo(...arguments);
   },
 
@@ -53,7 +53,7 @@ const RouterService = Service.extend({
 
      @method replaceWith
      @category ember-routing-router-service
-     @param {String} name the name of the route or a URL
+     @param {String} routeNameOrUrl the name of the route or a URL
      @param {...Object} models the model(s) or identifier(s) to be used while
        transitioning to the route.
      @param {Object} [options] optional hash with a queryParams property
@@ -62,8 +62,24 @@ const RouterService = Service.extend({
        attempted transition
      @public
    */
-  replaceWith() {
+  replaceWith(/* routeNameOrUrl, ...models, options */) {
     return this.router.replaceWith(...arguments);
+  },
+
+  /**
+     Generate a URL based on the supplied route name.
+
+     @method urlFor
+     @param {String} routeName the name of the route
+     @param {...Object} models the model(s) or identifier(s) to be used while
+       transitioning to the route.
+     @param {Object} [options] optional hash with a queryParams property
+       containing a mapping of query parameters
+     @return {String} the string representing the generated URL
+     @public
+   */
+  urlFor(/* routeName, ...models, options */) {
+    return this.router.generate(...arguments);
   }
 });
 
