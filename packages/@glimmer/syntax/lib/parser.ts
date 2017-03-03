@@ -1,7 +1,7 @@
 import { parse } from "handlebars";
 import builders from "./builders";
 import print from "./generation/print";
-import traverse from "./traversal/traverse";
+import * as traverse from "./traversal/traverse";
 import Walker from "./traversal/walker";
 import {
   EventedTokenizer,
@@ -10,7 +10,7 @@ import {
 } from "simple-html-tokenizer";
 import handlebarsNodeVisitors from "./parser/handlebars-node-visitors";
 import tokenizerEventHandlers from "./parser/tokenizer-event-handlers";
-import { Program } from "./types/nodes";
+import * as Types from "./types/nodes";
 
 export const syntax = {
   parse: preprocess,
@@ -20,7 +20,7 @@ export const syntax = {
   Walker
 };
 
-export function preprocess(html: string | hbs.AST.Program, options?): Program {
+export function preprocess(html: string | hbs.AST.Program, options?): Types.Program {
   let ast = (typeof html === 'object') ? html : parse(html);
   let combined = new Parser(html, options).acceptNode(ast);
 
@@ -55,7 +55,7 @@ export class Parser {
     }
   }
 
-  acceptNode(node: hbs.AST.Program): Program;
+  acceptNode(node: hbs.AST.Program): Types.Program;
 
   acceptNode(node): Object {
     return this[node.type](node);
