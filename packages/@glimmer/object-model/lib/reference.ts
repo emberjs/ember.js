@@ -1,18 +1,15 @@
 import GlimmerInstance from './object';
 import Meta, { ClassMeta } from './meta';
-import { Computed } from './blueprint';
 
 import {
   CURRENT_TAG,
   CONSTANT_TAG,
   VersionedPathReference,
-  RevisionTag,
-  TagWrapper,
   Tag,
   combine
 } from '@glimmer/reference';
 
-import { Opaque, Option, HAS_NATIVE_WEAKMAP } from '@glimmer/util';
+import { Opaque, HAS_NATIVE_WEAKMAP } from '@glimmer/util';
 
 export let classMeta;
 export let meta;
@@ -99,7 +96,7 @@ export class VersionedObjectReference implements VersionedPathReference<Opaque> 
   constructor(private parent: VersionedPathReference<Opaque>, private key: PropertyKey) {}
 
   value() {
-    let { parent, key } = this;
+    let { key } = this;
     let parentObject = this.parent.value() as GlimmerInstance;
 
     let computed = classMeta(Object.getPrototypeOf(parentObject)).getComputed(key);
