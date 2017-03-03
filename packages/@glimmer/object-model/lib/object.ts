@@ -12,12 +12,12 @@ export interface GlimmerClass<Extensions extends GlimmerObject> extends Construc
   extend<Original extends GlimmerObject, Extensions extends GlimmerObject>(this: GlimmerClass<Original>, extensions?: Extensions): GlimmerClass<Original & Extensions>;
 }
 
-export abstract class GlimmerObjectBase<Extensions> {
+export abstract class GlimmerObjectBase {
 
 }
 
 export default class GlimmerObject {
-  static create<Extensions extends GlimmerObject, CreateOptions extends GlimmerObject, T extends typeof GlimmerObject>(this: GlimmerClass<Extensions>, properties?: CreateOptions) {
+  static create<Extensions extends GlimmerObject, CreateOptions extends GlimmerObject>(this: GlimmerClass<Extensions>, properties?: CreateOptions) {
     return new this(properties) as Extensions & CreateOptions & GlimmerObject;
   }
 
