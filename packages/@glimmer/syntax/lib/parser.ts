@@ -12,7 +12,15 @@ import handlebarsNodeVisitors from "./parser/handlebars-node-visitors";
 import tokenizerEventHandlers from "./parser/tokenizer-event-handlers";
 import * as Types from "./types/nodes";
 
-export const syntax = {
+export interface Syntax {
+  parse: typeof preprocess;
+  builders: typeof builders;
+  print: typeof print;
+  traverse: typeof traverse;
+  Walker: typeof Walker;
+}
+
+export const syntax: Syntax = {
   parse: preprocess,
   builders,
   print,
