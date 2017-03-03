@@ -180,16 +180,7 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  hasHelper(nameParts, symbolTable) {
-    assert('The first argument passed into `hasHelper` should be an array', Array.isArray(nameParts));
-
-    // helpers are not allowed to include a dot in their invocation
-    if (nameParts.length > 1) {
-      return false;
-    }
-
-    let name = nameParts[0];
-
+  hasHelper(name, symbolTable) {
     if (this.builtInHelpers[name]) {
       return true;
     }
@@ -202,10 +193,7 @@ export default class Environment extends GlimmerEnvironment {
       owner.hasRegistration(`helper:${name}`);
   }
 
-  lookupHelper(nameParts, symbolTable) {
-    assert('The first argument passed into `lookupHelper` should be an array', Array.isArray(nameParts));
-
-    let name = nameParts[0];
+  lookupHelper(name, symbolTable) {
     let helper = this.builtInHelpers[name];
 
     if (helper) {
@@ -228,7 +216,7 @@ export default class Environment extends GlimmerEnvironment {
         }
         return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
       } else {
-        throw new Error(`${nameParts} is not a helper`);
+        throw new Error(`${name} is not a helper`);
       }
     } else {
       let helperFactory = owner.lookup(`helper:${name}`, options) || owner.lookup(`helper:${name}`);
@@ -239,31 +227,22 @@ export default class Environment extends GlimmerEnvironment {
       } else if (helperFactory.isHelperFactory) {
         return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
       } else {
-        throw new Error(`${nameParts} is not a helper`);
+        throw new Error(`${name} is not a helper`);
       }
     }
   }
 
-  hasModifier(nameParts) {
-    assert('The first argument passed into `hasModifier` should be an array', Array.isArray(nameParts));
-
-    // modifiers are not allowed to include a dot in their invocation
-    if (nameParts.length > 1) {
-      return false;
-    }
-
-    return !!this.builtInModifiers[nameParts[0]];
+  hasModifier(name) {
+    return !!this.builtInModifiers[name];
   }
 
-  lookupModifier(nameParts) {
-    assert('The first argument passed into `lookupModifier` should be an array', Array.isArray(nameParts));
-
-    let modifier = this.builtInModifiers[nameParts[0]];
+  lookupModifier(name) {
+    let modifier = this.builtInModifiers[name];
 
     if (modifier) {
       return modifier;
     } else {
-      throw new Error(`${nameParts} is not a modifier`);
+      throw new Error(`${name} is not a modifier`);
     }
   }
 
