@@ -149,14 +149,11 @@ export default {
   Decorator: function(decorator) {
     let { loc, path } = decorator;
 
-    let source = this.sourceForMustache(decorator);
-
     throw new Error(`Handlebars decorators are not supported: "{{* ${path.original}" at L${loc.start.line}:C${loc.start.column}`);
   },
 
   DecoratorBlock: function(decoratorBlock) {
     let { loc, path } = decoratorBlock;
-    let source = this.sourceForMustache(decoratorBlock);
 
     throw new Error(`Handlebars decorator blocks are not supported: "{{#* ${path.original}" at L${loc.start.line}:C${loc.start.column}`);
   },

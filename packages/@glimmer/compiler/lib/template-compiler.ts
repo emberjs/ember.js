@@ -394,10 +394,6 @@ function isLocal({ parts }: AST.PathExpression, symbols: SymbolTable): boolean {
   return symbols && /* parts.length && */ symbols.has(parts[0]);
 }
 
-function isLocalVariable({ parts }: AST.PathExpression, symbols: SymbolTable): boolean {
-  return parts.length === 1 && symbols && symbols.has(parts[0]);
-}
-
 function isYield(path: AST.PathExpression) {
   return path.original === 'yield';
 }

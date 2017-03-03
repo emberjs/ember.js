@@ -4,14 +4,9 @@ import {
   DynamicScope,
 
   // Compiler
-  ClientSide,
   CompilableLayout,
-  CompiledDynamicBlock,
   CompiledDynamicProgram,
-  CompiledDynamicTemplate,
   compileLayout,
-  compileArgs,
-  compileList,
 
   // Environment
   Environment,
@@ -32,9 +27,9 @@ import {
   ComponentArgs,
 
   // Values
+  Arguments,
+  NamedArguments,
   EvaluatedArgs,
-  EvaluatedNamedArgs,
-  EvaluatedPositionalArgs,
 
   // Syntax Classes
   BlockMacros,
@@ -53,14 +48,11 @@ import {
   getDynamicVar,
 
   Template,
-  Block,
-  Program,
   isComponentDefinition,
-  templateFactory
+  CompiledDynamicTemplate,
 } from "@glimmer/runtime";
 
 import {
-  precompile,
   compile as rawCompile
 } from "./helpers";
 
@@ -69,10 +61,8 @@ import {
   Destroyable,
   Dict,
   Opaque,
-  FIXME,
   assign,
-  dict,
-  unwrap
+  dict
 } from '@glimmer/util';
 
 import GlimmerObject, { GlimmerObjectFactory } from "@glimmer/object";
@@ -96,18 +86,11 @@ import {
   UpdatableReference
 } from "@glimmer/object-reference";
 
-import {
-  SymbolTable,
-  ProgramSymbolTable,
-  BlockSymbolTable
-} from '@glimmer/interfaces';
-
-import {
-  TemplateMeta,
-  Ops
-} from "@glimmer/wire-format";
-
 import * as WireFormat from '@glimmer/wire-format';
+
+import {
+  BlockSymbolTable, ProgramSymbolTable
+} from "@glimmer/interfaces/index";
 
 type KeyFor<T> = (item: Opaque, index: T) => string;
 
@@ -303,11 +286,7 @@ export class EmberishGlimmerComponent extends GlimmerObject {
 }
 
 class BasicComponentManager implements ComponentManager<BasicComponent> {
-  prepareArgs(definition: BasicComponentDefinition, args: EvaluatedArgs): EvaluatedArgs {
-    return args;
-  }
-
-  create(environment: Environment, definition: BasicComponentDefinition, args: EvaluatedArgs): BasicComponent {
+  create(environment: Environment, definition: BasicComponentDefinition, args: Arguments): BasicComponent {
     let klass = definition.ComponentClass || BasicComponent;
     return new klass(args.named.value());
   }
@@ -373,11 +352,7 @@ const STATIC_TAGLESS_COMPONENT_MANAGER = new StaticTaglessComponentManager();
 const BaseEmberishGlimmerComponent = EmberishGlimmerComponent.extend() as typeof EmberishGlimmerComponent;
 
 class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimmerComponent> {
-  prepareArgs(definition: EmberishGlimmerComponentDefinition, args: EvaluatedArgs): EvaluatedArgs {
-    return args;
-  }
-
-  create(environment: Environment, definition: EmberishGlimmerComponentDefinition, args: EvaluatedArgs, dynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishGlimmerComponent {
+  create(environment: Environment, definition: EmberishGlimmerComponentDefinition, args: Arguments, dynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishGlimmerComponent {
     let klass = definition.ComponentClass || BaseEmberishGlimmerComponent;
     let attrs = args.named.value();
     let component = klass.create({ attrs });
@@ -447,26 +422,26 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
 
 export class ProcessedArgs {
   tag: RevisionTag;
-  named: EvaluatedNamedArgs;
-  positional: EvaluatedPositionalArgs;
+  args: Arguments;
+  named: NamedArguments;
   positionalParamNames: Array<string>;
 
-  constructor(args: EvaluatedArgs, positionalParamsDefinition: string[]) {
+  constructor(args: Arguments, positionalParamsDefinition: string[]) {
     this.tag = args.tag;
+    this.args = args;
     this.named = args.named;
-    this.positional = args.positional;
     this.positionalParamNames = positionalParamsDefinition;
   }
 
   value() {
-    let { named, positional, positionalParamNames } = this;
+    let { named, args, positionalParamNames } = this;
 
     let merged = Object.assign({}, named.value());
 
     if (positionalParamNames && positionalParamNames.length) {
       for (let i = 0; i < positionalParamNames.length; i++) {
         let name = positionalParamNames[i];
-        let reference = positional.at(i);
+        let reference = args.at(i);
 
         merged[name] = reference.value();
       }
@@ -479,7 +454,7 @@ export class ProcessedArgs {
   }
 }
 
-function processArgs(args: EvaluatedArgs, positionalParamsDefinition: string[]): ProcessedArgs {
+function processArgs(args: Arguments, positionalParamsDefinition: string[]): ProcessedArgs {
   return new ProcessedArgs(args, positionalParamsDefinition);
 }
 
@@ -488,17 +463,7 @@ const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager()
 const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
 class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyComponent> {
-  prepareArgs(definition: EmberishCurlyComponentDefinition, args: EvaluatedArgs, dynamicScope: DynamicScope): EvaluatedArgs {
-    let dyn = definition.ComponentClass ? definition.ComponentClass['fromDynamicScope'] : null;
-    if (dyn) {
-      let map = assign({}, args.named.map);
-      dyn.forEach(name => map[name] = dynamicScope.get(name));
-      args = EvaluatedArgs.create(args.positional, EvaluatedNamedArgs.create(map), args.blocks);
-    }
-    return args;
-  }
-
-  create(environment: Environment, definition: EmberishCurlyComponentDefinition, args: EvaluatedArgs, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>): EmberishCurlyComponent {
+  create(environment: Environment, definition: EmberishCurlyComponentDefinition, args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>): EmberishCurlyComponent {
     let klass = definition.ComponentClass || BaseEmberishCurlyComponent;
     let processedArgs = processArgs(args, klass['positionalParams']);
     let { attrs } = processedArgs.value();
@@ -715,10 +680,13 @@ export interface TestEnvironmentOptions {
   appendOperations?: DOMTreeConstruction;
 }
 
+export type CompiledDynamicBlock = CompiledDynamicTemplate<BlockSymbolTable>;
+export type CompiledDynamicProgram = CompiledDynamicTemplate<ProgramSymbolTable>;
+
 export class TestEnvironment extends Environment {
   private helpers = dict<GlimmerHelper>();
   private modifiers = dict<ModifierManager<Opaque>>();
-  private partials = dict<PartialDefinition<TemplateMeta>>();
+  private partials = dict<PartialDefinition<WireFormat.TemplateMeta>>();
   private components = dict<ComponentDefinition<any>>();
   private uselessAnchor: HTMLAnchorElement;
   public compiledLayouts = dict<CompiledDynamicProgram>();
@@ -824,7 +792,7 @@ export class TestEnvironment extends Environment {
     return !!this.components[name];
   }
 
-  getComponentDefinition(name: string, blockMeta?: TemplateMeta): ComponentDefinition<any> {
+  getComponentDefinition(name: string, blockMeta?: WireFormat.TemplateMeta): ComponentDefinition<any> {
     return this.components[name];
   }
 
@@ -894,17 +862,17 @@ export class TestDynamicScope implements DynamicScope {
 export class DynamicComponentReference implements PathReference<ComponentDefinition<Opaque>> {
   public tag: Tag;
 
-  constructor(private nameRef: PathReference<Opaque>, private env: Environment, private symbolTable: SymbolTable) {
+  constructor(private nameRef: PathReference<Opaque>, private env: Environment, private meta: WireFormat.TemplateMeta) {
     this.tag = nameRef.tag;
   }
 
   value(): ComponentDefinition<Opaque> {
-    let { env, nameRef } = this;
+    let { env, nameRef, meta } = this;
 
     let nameOrDef = nameRef.value();
 
     if (typeof nameOrDef === 'string') {
-      return env.getComponentDefinition(nameOrDef, this.symbolTable);
+      return env.getComponentDefinition(nameOrDef, meta);
     } else if (isComponentDefinition(nameOrDef)) {
       return nameOrDef;
     }
@@ -917,10 +885,10 @@ export class DynamicComponentReference implements PathReference<ComponentDefinit
   }
 }
 
-function dynamicComponentFor(vm: VM, args: EvaluatedArgs, symbolTable: SymbolTable) {
-  let nameRef = args.positional.at(0);
+function dynamicComponentFor(vm: VM, args: Arguments, meta: WireFormat.TemplateMeta) {
+  let nameRef = args.at(0);
   let env = vm.env;
-  return new DynamicComponentReference(nameRef, env, symbolTable);
+  return new DynamicComponentReference(nameRef, env, meta);
 };
 
 export interface BasicComponentFactory {
@@ -968,17 +936,11 @@ export class EmberishGlimmerComponentDefinition extends GenericComponentDefiniti
 abstract class GenericComponentLayoutCompiler implements CompilableLayout {
   constructor(private layoutString: string) { }
 
-  protected compileLayout(env: Environment): Template<TemplateMeta> {
+  protected compileLayout(env: Environment): Template<WireFormat.TemplateMeta> {
     return rawCompile(this.layoutString, { env });
   }
 
   abstract compile(builder: ComponentLayoutBuilder);
-}
-
-class BasicComponentLayoutCompiler extends GenericComponentLayoutCompiler {
-  compile(builder: ComponentLayoutBuilder) {
-    builder.fromLayout(this.compileLayout(builder.env));
-  }
 }
 
 class StaticTaglessComponentLayoutCompiler extends GenericComponentLayoutCompiler {
@@ -987,24 +949,12 @@ class StaticTaglessComponentLayoutCompiler extends GenericComponentLayoutCompile
   }
 }
 
-function EmberTagName(vm: VM): PathReference<string> {
-  let self = vm.getSelf().value();
-  let tagName: string = self['tagName'];
-  tagName = tagName === '' ? null : self['tagName'] || 'div';
-  return PrimitiveReference.create(tagName);
-}
-
-function EmberID(vm: VM): PathReference<string> {
-  let self = vm.getSelf().value() as { _guid: string };
-  return PrimitiveReference.create(`ember${self._guid}`);
-}
-
 class EmberishCurlyComponentLayoutCompiler extends GenericComponentLayoutCompiler {
   compile(builder: ComponentLayoutBuilder) {
     builder.wrapLayout(this.compileLayout(builder.env));
-    builder.tag.dynamic(EmberTagName);
+    // builder.tag.dynamic(EmberTagName);
     builder.attrs.static('class', 'ember-view');
-    builder.attrs.dynamic('id', EmberID);
+    // builder.attrs.dynamic('id', EmberID);
   }
 }
 
@@ -1012,7 +962,7 @@ class EmberishGlimmerComponentLayoutCompiler extends GenericComponentLayoutCompi
   compile(builder: ComponentLayoutBuilder) {
     builder.fromLayout(this.compileLayout(builder.env));
     builder.attrs.static('class', 'ember-view');
-    builder.attrs.dynamic('id', EmberID);
+    // builder.attrs.dynamic('id', EmberID);
   }
 }
 
@@ -1080,22 +1030,6 @@ export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectF
   });
 }
 
-function defaultBlock(sexp: ClientSide.NestedBlock): Block {
-  return sexp[5];
-}
-
-function inverseBlock(sexp: ClientSide.NestedBlock): Block {
-  return sexp[6];
-}
-
-function params(sexp: ClientSide.NestedBlock): WireFormat.Core.Params {
-  return sexp[3];
-}
-
-function hash(sexp: ClientSide.NestedBlock): WireFormat.Core.Hash {
-  return sexp[4];
-}
-
 function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: BlockMacros, inlines: InlineMacros } {
   blocks.add('identity', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
     builder.invokeStatic(sexp[5]);
@@ -1106,7 +1040,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
   });
 
   blocks.add('component', (sexp, builder) => {
-    let [, , _path, params, hash, _default, inverse] = sexp;
+    let [, , , params, hash, _default, inverse] = sexp;
     let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
     let args: ComponentArgs = [params.slice(1), hashToArgs(hash), _default, inverse];
     builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
@@ -1120,7 +1054,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
       params = [];
     }
 
-    let definition = builder.env.getComponentDefinition(name, builder.meta);
+    let definition = builder.env.getComponentDefinition(name, builder.meta.templateMeta);
 
     if (definition) {
       builder.component.static(definition, [params, hashToArgs(hash), _default, inverse]);
@@ -1138,7 +1072,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
   });
 
   inlines.addMissing((name, params, hash, builder) => {
-    let definition = builder.env.getComponentDefinition(name, builder.meta);
+    let definition = builder.env.getComponentDefinition(name, builder.meta.templateMeta);
 
     if (definition) {
       builder.component.static(definition, [params, hashToArgs(hash), null, null]);

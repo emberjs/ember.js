@@ -28,13 +28,7 @@ export interface NamedArguments {
 }
 
 export interface ComponentManager<T extends Component> {
-  // First, the component manager is asked to prepare the arguments needed
-  // for `create`. This allows for things like closure components where the
-  // args need to be curried before constructing the instance of the state
-  // bucket.
-  prepareArgs(definition: ComponentDefinition<T>, args: Arguments, dynamicScope: DynamicScope): EvaluatedArgs;
-
-  // Then, the component manager is asked to create a bucket of state for
+  // The component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
   create(env: Environment, definition: ComponentDefinition<T>, args: Arguments, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): T;
