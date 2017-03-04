@@ -14,15 +14,10 @@ import {
   STATEMENTS
 } from './syntax/functions';
 
-import {
-  SPECIALIZE
-} from './syntax/specialize';
-
 export type DeserializedStatement = WireFormat.Statement | WireFormat.Statements.Attribute | WireFormat.Statements.Argument;
 
 export function compileStatement(statement: WireFormat.Statement, builder: OpcodeBuilder) {
-  let refined = SPECIALIZE.specialize(statement);
-  STATEMENTS.compile(refined, builder);
+  STATEMENTS.compile(statement, builder);
 }
 
 export interface ScannedTemplate<S extends SymbolTable> {
@@ -79,8 +74,7 @@ export type ScannedBlock = ScannedTemplate<BlockSymbolTable>;
 function compileStatements(statements: WireFormat.Statement[], meta: CompilationMeta, env: Environment) {
   let b = builder(env, meta);
   for (let statement of statements) {
-    let refined = SPECIALIZE.specialize(statement);
-    STATEMENTS.compile(refined, b);
+    compileStatement(statement, b);
   }
 
   return b;

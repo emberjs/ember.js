@@ -6,7 +6,14 @@ import { Insertion } from '../../upsert';
 
 import * as WireFormat from '@glimmer/wire-format';
 import { Option, Stack, Opaque, dict, expect, fillNulls } from '@glimmer/util';
-import { Constants } from '../../opcodes';
+import {
+  Constants,
+  ConstantString,
+  ConstantArray,
+  ConstantOther,
+  ConstantBlock,
+  ConstantFunction,
+} from '../../environment/constants';
 import { ModifierManager } from '../../modifier/interfaces';
 import { ComponentDefinition } from '../../component/interfaces';
 import Environment, { Program } from '../../environment';
@@ -16,14 +23,7 @@ import { ComponentBuilder } from '../../compiler';
 import { RawInlineBlock, ClientSide, Block } from '../../scanner';
 import { InvokeDynamicLayout, expr } from '../../syntax/functions';
 
-import {
-  ConstantString,
-  ConstantArray,
-  ConstantOther,
-  ConstantBlock,
-  ConstantFunction,
-  Op
-} from '../../opcodes';
+import { Op } from '../../opcodes';
 
 export interface CompilesInto<E> {
   compile(builder: OpcodeBuilder): E;

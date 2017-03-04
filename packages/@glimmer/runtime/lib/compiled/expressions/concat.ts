@@ -1,6 +1,6 @@
 import { FIXME } from '@glimmer/util';
 import { PathReference, CachedReference, Tag, combineTagged } from '@glimmer/reference';
-import { Option, Opaque } from '@glimmer/util';
+import { Option, Opaque } from '@glimmer/interfaces';
 
 export class ConcatReference extends CachedReference<Option<string>> {
   public tag: Tag;
