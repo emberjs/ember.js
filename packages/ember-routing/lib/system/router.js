@@ -609,7 +609,6 @@ const EmberRouter = EmberObject.extend(Evented, {
       }
 
       handler._setRouteName(routeName);
-      handler._populateQPMeta();
 
       if (engineInfo && !hasDefaultSerialize(handler)) {
         throw new Error('Defining a custom serialize method on an Engine route is not supported.');

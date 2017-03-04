@@ -155,16 +155,6 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   },
 
   /**
-    Populates the QP meta information in the BucketCache.
-
-    @private
-    @method _populateQPMeta
-  */
-  _populateQPMeta() {
-    this._bucketCache.stash('route-meta', this.fullRouteName, this.get('_qp'));
-  },
-
-  /**
     @private
 
     @property _qp

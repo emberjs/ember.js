@@ -1,3 +1,4 @@
+import { get } from 'ember-metal';
 import { RSVP } from 'ember-runtime';
 import { Route } from 'ember-routing';
 
@@ -11,21 +12,37 @@ moduleFor('Query Params - async get handler', class extends QueryParamTestCase {
     return {
       location: 'test',
 
+      init() {
+        this._super(...arguments);
+        this._seenHandlers = Object.create(null);
+        this._handlerPromises = Object.create(null);
+      },
+
       _getQPMeta(handlerInfo) {
-        return this._bucketCache.lookup('route-meta', handlerInfo.name);
+        let handler = this._seenHandlers[handlerInfo.name];
+        if (handler) {
+          return get(handler, '_qp');
+        }
       },
 
       _getHandlerFunction() {
         let getHandler = this._super(...arguments);
-        let cache = {};
+        let handlerPromises = this._handlerPromises;
+        let seenHandlers = this._seenHandlers;
 
         return (routeName) => {
           fetchedHandlers.push(routeName);
 
           // Cache the returns so we don't have more than one Promise for a
           // given handler.
-          return cache[routeName] || (cache[routeName] = new RSVP.Promise((resolve) => {
-            setTimeout(() => resolve(getHandler(routeName)), 10);
+          return handlerPromises[routeName] || (handlerPromises[routeName] = new RSVP.Promise((resolve) => {
+            setTimeout(() => {
+              let handler = getHandler(routeName);
+
+              seenHandlers[routeName] = handler;
+
+              resolve(handler);
+            }, 10);
           }));
         };
       }
