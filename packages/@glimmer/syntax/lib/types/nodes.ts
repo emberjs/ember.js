@@ -1,3 +1,5 @@
+export type Option<T> = T | null;
+
 export interface BaseNode {
   // Every leaf interface that extends BaseNode must specify a type property.
   // The type property should be a string literal. For example, Identifier
@@ -7,7 +9,7 @@ export interface BaseNode {
 }
 
 export interface SourceLocation {
-  source?: string;
+  source?: Option<string>;
   start: Position;
   end: Position;
 }
@@ -25,9 +27,10 @@ export interface Program extends BaseNode {
   blockParams: string[];
 }
 
-export type Statement = MustacheStatement | BlockStatement | PartialStatement | MustacheCommentStatement;
+export type Statement = MustacheStatement | BlockStatement | PartialStatement | MustacheCommentStatement | ElementNode | CommentStatement | TextNode;
 
 export interface Call extends BaseNode {
+  name?: PathExpression | SubExpression;
   path: PathExpression;
   params: Expression[];
   hash: Hash;
@@ -47,7 +50,7 @@ export interface BlockStatement extends BaseNode {
   params: Expression[];
   hash: Hash;
   program: Program;
-  inverse?: Program;
+  inverse?: Option<Program>;
 }
 
 export interface ElementModifierStatement extends BaseNode {
@@ -58,11 +61,17 @@ export interface ElementModifierStatement extends BaseNode {
 }
 
 export interface PartialStatement extends BaseNode {
+  type: 'PartialStatement';
   name: PathExpression | SubExpression;
   params: Expression[];
   hash: Hash;
   indent: string;
   strip: StripFlags;
+}
+
+export function isCall(node: any): node is Call {
+  return node.type === 'SubExpression' ||
+    (node.type === 'MustacheStatement' && node.path.type === 'PathExpression');
 }
 
 export interface CommentStatement extends BaseNode {
@@ -114,6 +123,7 @@ export interface PathExpression extends BaseNode {
   type: 'PathExpression';
   data: boolean;
   original: string;
+  this: boolean;
   parts: string[];
 }
 
@@ -149,6 +159,10 @@ export interface NullLiteral extends BaseNode {
   original: null;
 }
 
+export function isLiteral(input: Node | string): input is Literal {
+  return !!(typeof input === 'object' && input.type.match(/Literal$/));
+}
+
 export interface Hash extends BaseNode {
   type: 'Hash';
   pairs: HashPair[];
@@ -164,3 +178,22 @@ export interface StripFlags {
   open: boolean;
   close: boolean;
 }
+
+export type Node =
+    Program
+  | ElementNode
+  | AttrNode
+  | TextNode
+  | MustacheStatement
+  | BlockStatement
+  | PartialStatement
+  | ConcatStatement
+  | MustacheCommentStatement
+  | ElementModifierStatement
+  | CommentStatement
+  | PathExpression
+  | SubExpression
+  | Hash
+  | HashPair
+  | Literal
+  ;

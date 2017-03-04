@@ -17,10 +17,12 @@
   ],
   "dependencies": {
     "handlebars": "^4.0.6",
+    "@glimmer/interfaces": "^0.22.0",
     "simple-html-tokenizer": "^0.3.0"
   },
   "devDependencies": {
     "@types/handlebars": "^4.0.31",
+    "@types/qunit": "^2.0.31",
     "typescript": "^2.2.0"
   }
 }
