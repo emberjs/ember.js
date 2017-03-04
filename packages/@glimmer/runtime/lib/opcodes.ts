@@ -40,7 +40,7 @@ export const enum Op {
    * Format:
    *   (Helper helper:#Function)
    * Operand Stack:
-   *   ..., ReifiedArgs →
+   *   ..., Arguments →
    *   ..., VersionedPathReference
    **/
   Helper,
@@ -225,9 +225,6 @@ export const enum Op {
    *   ...
    */
   Pop,
-
-  /// REIFY
-  PushReifiedArgs,           // (number /* positional */, ConstantArray<string> /* names */, number /* block flags */)
 
   /// PRELUDE & EXIT
 
@@ -685,21 +682,10 @@ export const enum Op {
   SetComponentState,
 
   /**
-   * Operation: Perform any post-call cleanup.
-   *
-   * Format:
-   *   (PrepareComponentArgs)
-   * Operand Stack:
-   *   ..., ComponentManager →
-   *   ..., ComponentManager
-   */
-  PrepareComponentArgs,
-
-  /**
    * Operation: Push a user representation of args onto the stack.
    *
-   * @Format:
-   *   (PushComponentArgs positional:u32 named:u32 namedDict:#Dict<number>)
+   * Format:
+   *   (PushArgs positional:u32 named:#Array<string> synthetic:boolean)
    *
    * Operand Stack:
    *   ..., [VersionedPathReference ...] →
@@ -712,7 +698,7 @@ export const enum Op {
    *   Holding onto the Arguments after the call has completed is
    *   illegal.
    */
-  PushComponentArgs,
+  PushArgs,
 
   /**
    * Operation: Create the component and push it onto the stack.
@@ -929,7 +915,6 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.Concat: return ['Concat', { size: op1 }];
     case Op.Function: return ['Function', { function: c.getFunction(op1) }];
     case Op.Constant: return ['Constant', { value: c.getOther(op1) }];
-    case Op.PushReifiedArgs: return ['PushReifiedArgs', { positional: op1, names: c.getArray(op2).map(n => c.getString(n)), flag: op3 }];
     case Op.Primitive: return ['Primitive', { primitive: op1 }];
     case Op.Pop: return ['Pop'];
 
@@ -937,7 +922,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.PushComponentManager: return ['PushComponentManager', { definition: c.getOther(op1) }];
     case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', { local: op1 }];
     case Op.SetComponentState: return ['SetComponentState', { local: op1 }];
-    case Op.PushComponentArgs: return ['PushComponentArgs', { positional: op1, named: op2, dict: c.getOther(op3) }];
+    case Op.PushArgs: return ['PushArgs', { positional: op1, names: c.getOther(op2), synthetic: !!op3 }];
     case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: op2 }];
     case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor'];
     case Op.BeginComponentTransaction: return ['BeginComponentTransaction'];

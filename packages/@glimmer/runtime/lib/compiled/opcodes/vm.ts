@@ -7,12 +7,6 @@ import { Option, Opaque, initializeGuid } from '@glimmer/util';
 import { CONSTANT_TAG, ReferenceCache, Revision, Tag, isConst, isModified } from '@glimmer/reference';
 import Environment from '../../environment';
 import { APPEND_OPCODES, Op as Op } from '../../opcodes';
-import {
-  EvaluatedArgs,
-  EvaluatedNamedArgs,
-  EvaluatedPositionalArgs,
-  Blocks
-} from '../expressions/args';
 
 import {
   Block
@@ -47,41 +41,6 @@ APPEND_OPCODES.add(Op.PopScope, vm => vm.popScope());
 APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
 
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
-
-APPEND_OPCODES.add(Op.PushReifiedArgs, (vm, { op1: positional, op2: _names, op3: blockFlag }) => {
-  let stack = vm.evalStack;
-
-  let namedKeys = [];
-  let namedValues = [];
-  let blocks: Blocks = { default: null, inverse: null };
-  let names = vm.constants.getArray(_names).map(n => vm.constants.getString(n));
-
-  if (blockFlag & 0b10) {
-    blocks.inverse = stack.pop<Block>();
-  }
-
-  if (blockFlag & 0b01) {
-    blocks.default = stack.pop<Block>();
-  }
-
-  for (let i=names.length; i>0; i--) {
-    namedKeys.push(names[i - 1]);
-    namedValues.push(stack.pop<VersionedPathReference<Opaque>>());
-  }
-
-  let positionalArguments = [];
-  for (let i=positional; i>0; i--) {
-    positionalArguments.push(stack.pop<VersionedPathReference<Opaque>>());
-  }
-
-  positionalArguments.reverse();
-
-  stack.push(new EvaluatedArgs(
-    new EvaluatedPositionalArgs(positionalArguments),
-    new EvaluatedNamedArgs(namedKeys, namedValues),
-    blocks
-  ));
-});
 
 APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
   vm.evalStack.push(vm.constants.getOther(other));

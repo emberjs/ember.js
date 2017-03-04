@@ -1,21 +1,19 @@
-import { EMPTY_DICT } from '../../utils';
 import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { Assert } from './vm';
-import { Component, ComponentManager, ComponentDefinition, Arguments as IArguments } from '../../component/interfaces';
-import { UpdatingVM, VM } from '../../vm';
-import { EvaluatedArgs } from '../../compiled/expressions/args';
+import { UpdatingVM } from '../../vm';
+import ARGS, { IArguments } from '../../vm/arguments';
+import { Component, ComponentManager, ComponentDefinition } from '../../component/interfaces';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
 import { APPEND_OPCODES, Op as Op } from '../../opcodes';
 import { ComponentElementOperations } from './dom';
-import { Opaque, Dict, dict } from '@glimmer/util';
+import { Opaque } from '@glimmer/util';
 import {
   CONSTANT_TAG,
   ReferenceCache,
   VersionedPathReference,
   Tag,
   combine,
-  combineTagged,
   isConst
 } from '@glimmer/reference';
 
@@ -40,84 +38,6 @@ APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: local }) => {
   }
 });
 
-export class NamedArguments {
-  private named: string[] = null as any;
-  public tag: Tag = null as any;
-
-  constructor(private args: Arguments) {}
-
-  setup(named: string[]) {
-    this.named = named;
-    this.tag = this.args.tag;
-  }
-
-  value(): Dict<Opaque> {
-    let out = dict<Opaque>();
-    let args = this.args;
-
-    this.named.forEach(n => out[n.slice(1)] = args.get(n).value());
-
-    return out;
-  }
-
-  get(name: string): VersionedPathReference<Opaque> {
-    return this.args.get(`@${name}`);
-  }
-}
-
-export class Arguments implements IArguments {
-  private positionalCount = 0;
-  private namedCount = 0;
-  private start = 0;
-  private namedDict: Dict<number> = null as any;
-  private vm: VM = null as any;
-
-  public named = new NamedArguments(this);
-  public tag: Tag = null as any;
-
-  empty() {
-    this.setup(0, 0, EMPTY_DICT, null as any as VM);
-    return this;
-  }
-
-  setup(positional: number, named: number, namedDict: Dict<number>, vm: VM) {
-    this.positionalCount = positional;
-    this.namedCount = named;
-    this.namedDict = namedDict;
-    this.start = positional + named;
-    this.vm = vm;
-
-    let references = vm.evalStack.slice<VersionedPathReference<Opaque>[]>(positional + named);
-    this.tag = combineTagged(references);
-
-    this.named.setup(Object.keys(namedDict));
-  }
-
-  at<T extends VersionedPathReference<Opaque>>(pos: number): T {
-    // stack: pos1, pos2, pos3, named1, named2
-    // start: 4 (top - 4)
-    //
-    // at(0) === pos1 === top - start
-    // at(1) === pos2 === top - (start - 1)
-    // at(2) === pos3 === top - (start - 2)
-    let fromTop = this.start - pos;
-    return this.vm.evalStack.fromTop<T>(fromTop);
-  }
-
-  get<T extends VersionedPathReference<Opaque>>(name: string): T {
-    // stack: pos1, pos2, pos3, named1, named2
-    // start: 4 (top - 4)
-    // namedDict: { named1: 1, named2: 0 };
-    //
-    // get('named1') === named1 === top - (start - 1)
-    // get('named2') === named2 === top - start
-    let fromTop = this.namedDict[name];
-    return this.vm.evalStack.fromTop<T>(fromTop);
-  }
-}
-
-export const ARGS = new Arguments();
-
 interface InitialComponentState<T> {
   definition: ComponentDefinition<T>;
   manager: ComponentManager<T>;
@@ -139,15 +59,16 @@ APPEND_OPCODES.add(Op.SetComponentState, (vm, { op1: local }) => {
   vm.setLocal(local, { definition, manager, component: null });
 });
 
-APPEND_OPCODES.add(Op.PushComponentArgs, (vm, { op1: positional, op2: named, op3: _namedDict }) => {
-  let namedDict = vm.constants.getOther<Dict<number>>(_namedDict);
-  ARGS.setup(positional, named, namedDict, vm);
-  vm.evalStack.push(ARGS);
+APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: positional, op2: _names, op3: synthetic }) => {
+  let stack = vm.evalStack;
+  let names = vm.constants.getOther<string[]>(_names);
+  ARGS.setup(stack, positional, names, !!synthetic);
+  stack.push(ARGS);
 });
 
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let definition, manager;
-  let args = vm.evalStack.pop<Arguments>();
+  let args = vm.evalStack.pop<IArguments>();
   let state = { definition, manager } = vm.getLocal<InitialComponentState<Opaque>>(_state);
 
   let hasDefaultBlock = flags & 0b01;
@@ -206,10 +127,10 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
   public type = "update-component";
 
   constructor(
+    tag: Tag,
     private name: string,
     private component: Component,
     private manager: ComponentManager<Component>,
-    private args: EvaluatedArgs,
     private dynamicScope: DynamicScope,
   ) {
     super();
@@ -217,16 +138,16 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
     let componentTag = manager.getTag(component);
 
     if (componentTag) {
-      this.tag = combine([args.tag, componentTag]);
+      this.tag = combine([tag, componentTag]);
     } else {
-      this.tag = args.tag;
+      this.tag = tag;
     }
   }
 
   evaluate(_vm: UpdatingVM) {
-    let { component, manager, args, dynamicScope } = this;
+    let { component, manager, dynamicScope } = this;
 
-    manager.update(component, args, dynamicScope);
+    manager.update(component, dynamicScope);
   }
 
   toJSON(): OpcodeJSON {

@@ -1,4 +1,3 @@
-import { EvaluatedArgs } from '../compiled/expressions/args';
 import { ScopeSlot } from '../environment';
 import { CompiledDynamicBlock, CompiledDynamicProgram } from '../compiled/blocks';
 import * as WireFormat from '@glimmer/wire-format';
@@ -6,12 +5,9 @@ import { BlockSymbolTable, ProgramSymbolTable } from '@glimmer/interfaces';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
 import { VM, PublicVM } from '../vm';
+import { IArguments } from '../vm/arguments';
 import { ATTRS_BLOCK, Block, ClientSide } from '../scanner';
-
-import {
-  EMPTY_ARRAY,
-  EMPTY_DICT
-} from '../utils';
+import { EMPTY_ARRAY } from '../utils';
 
 import {
   LOGGER,
@@ -77,15 +73,13 @@ STATEMENTS.add(Ops.FlushElement, (_sexp, builder: OpcodeBuilder) => {
   builder.flushElement();
 });
 
-STATEMENTS.add(Ops.Modifier, (_sexp: S.Modifier, _builder: OpcodeBuilder) => {
-  let { env, meta } = _builder;
-  let [, name, params, hash] = _sexp;
-
-  compileArgs(params, hash, _builder); // side-effecty seems weird
+STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder: OpcodeBuilder) => {
+  let { env, meta } = builder;
+  let [, name, params, hash] = sexp;
 
   if (env.hasModifier(name, meta.templateMeta)) {
-    _builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
-    _builder.modifier(env.lookupModifier(name, meta.templateMeta));
+    builder.compileArgs(params, hash, true);
+    builder.modifier(env.lookupModifier(name, meta.templateMeta));
   } else {
     throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
   }
@@ -226,23 +220,6 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
   }
 }
 
-export function compileComponentArgs(args: Option<C.Hash>, builder: OpcodeBuilder) {
-  let count: number, slots: Dict<number>, names: string[];
-
-  if (args) {
-    names = args[0];
-    count = compileList(args[1], builder);
-    slots = dict<number>();
-    names.forEach((name, i) => slots[name] = count - i - 1);
-  } else {
-    slots = EMPTY_DICT;
-    count = 0;
-    names = [];
-  }
-
-  return { slots, count, names };
-}
-
 CLIENT_SIDE.add(ClientSide.Ops.ResolvedComponent, (sexp: ClientSide.ResolvedComponent, builder) => {
   let [,, definition, attrs, [, hash], block, inverse] = sexp;
 
@@ -302,7 +279,7 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
 
   let { templateMeta, symbols } = builder.meta;
 
-  function helper(vm: PublicVM, args: EvaluatedArgs) {
+  function helper(vm: PublicVM, args: IArguments) {
     let { env } = vm;
     let nameRef = args.positional.at(0);
 
@@ -450,8 +427,7 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
   let [, name, params, hash] = sexp;
 
   if (env.hasHelper(name, meta.templateMeta)) {
-    compileArgs(params, hash, builder);
-    builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
+    builder.compileArgs(params, hash, true);
     builder.helper(env.lookupHelper(name, meta.templateMeta));
   } else {
     throw new Error(`Compile Error: ${name} is not a helper`);
@@ -461,8 +437,7 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
 CLIENT_SIDE_EXPRS.add(ClientSide.Ops.ResolvedHelper, (sexp: ClientSide.ResolvedHelper, builder) => {
   let [,, helper, params, hash] = sexp;
 
-  compileArgs(params, hash, builder);
-  builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
+  builder.compileArgs(params, hash, true);
   builder.helper(helper);
 });
 
@@ -502,15 +477,6 @@ EXPRESSIONS.add(Ops.HasBlockParams, (sexp: E.HasBlockParams, builder) => {
 EXPRESSIONS.add(Ops.ClientSideExpression, (sexp: E.ClientSide, builder) => {
   CLIENT_SIDE_EXPRS.compile(sexp as ClientSide.ClientSideExpression, builder);
 });
-
-export function compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder): { positional: number, named: number } {
-  let positional = params ? params.length : 0;
-  let named = hash ? hash.length : 0;
-  if (params) compileList(params, builder);
-  if (hash) compileList(hash[1], builder);
-
-  return { positional, named };
-}
 
 export function compileList(params: Option<WireFormat.Expression[]>, builder: OpcodeBuilder): number {
   if (!params) return 0;
