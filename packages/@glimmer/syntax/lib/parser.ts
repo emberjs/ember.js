@@ -9,74 +9,110 @@ import {
   EntityParser,
   HTML5NamedCharRefs as namedCharRefs
 } from "simple-html-tokenizer";
-import handlebarsNodeVisitors from "./parser/handlebars-node-visitors";
-import tokenizerEventHandlers from "./parser/tokenizer-event-handlers";
 import { Program } from "./types/nodes";
-
-export const syntax = {
-  parse: preprocess,
-  builders,
-  print,
-  traverse,
-  Walker
-};
-
-export function preprocess(html: string | hbs.AST.Program, options?): Program {
-  let ast = (typeof html === 'object') ? html : parse(html);
-  let combined = new Parser(html, options).acceptNode(ast);
-
-  if (options && options.plugins && options.plugins.ast) {
-    for (let i = 0, l = options.plugins.ast.length; i < l; i++) {
-      let plugin = new options.plugins.ast[i](options);
-
-      plugin.syntax = syntax;
-
-      combined = plugin.transform(combined);
-    }
-  }
-
-  return combined;
-}
+import * as AST from "./types/nodes";
+import { Option } from '@glimmer/interfaces';
+import { assert, expect } from '@glimmer/util';
 
 const entityParser = new EntityParser(namedCharRefs);
 
+export type Element = AST.Program | AST.ElementNode;
+
+export interface Tag<T extends 'StartTag' | 'EndTag'> {
+  type: T;
+  name: string;
+  attributes: any[];
+  modifiers: any[];
+  comments: any[];
+  selfClosing: boolean;
+  loc: AST.SourceLocation;
+}
+
+export interface Attribute {
+  name: string;
+  parts: (AST.MustacheStatement | AST.TextNode)[];
+  isQuoted: boolean;
+  isDynamic: boolean;
+  start: AST.Position;
+  valueStartLine: number;
+  valueStartColumn: number;
+}
+
 export class Parser {
-  private elementStack = [];
+  protected elementStack: Element[] = [];
   private options: Object;
   private source: string[];
-  public currentAttribute = null;
-  public currentNode = null;
+  public currentAttribute: Option<Attribute> = null;
+  public currentNode: Option<AST.CommentStatement | AST.TextNode | Tag<'StartTag' | 'EndTag'>> = null;
   public tokenizer = new EventedTokenizer(this, entityParser);
 
-  constructor(source, options: Object = {}) {
+  constructor(source: string, options: Object = {}) {
     this.options = options;
+    // if (this.source === null) debugger;
+    this.source = source.split(/(?:\r\n?|\n)/g);
+  }
 
-    if (typeof source === 'string') {
-      this.source = source.split(/(?:\r\n?|\n)/g);
-    }
+  get currentAttr(): Attribute {
+    return expect(this.currentAttribute, 'expected attribute');
+  }
+
+  get currentTag(): Tag<'StartTag' | 'EndTag'> {
+    let node = this.currentNode;
+    assert(node && (node.type === 'StartTag' || node.type === 'EndTag'), 'expected tag');
+    return node as Tag<'StartTag' | 'EndTag'>;
+  }
+
+  get currentStartTag(): Tag<'StartTag'> {
+    let node = this.currentNode;
+    assert(node && node.type === 'StartTag', 'expected start tag');
+    return node as Tag<'StartTag'>;
+  }
+
+  get currentEndTag(): Tag<'EndTag'> {
+    let node = this.currentNode;
+    assert(node && node.type === 'EndTag', 'expected end tag');
+    return node as Tag<'EndTag'>;
+  }
+
+  get currentComment(): AST.CommentStatement {
+    let node = this.currentNode;
+    assert(node && node.type === 'CommentStatement', 'expected a comment');
+    return node as AST.CommentStatement;
+  }
+
+  get currentData(): AST.TextNode {
+    let node = this.currentNode;
+    assert(node && node.type === 'TextNode', 'expected a text node');
+    return node as AST.TextNode;
+
   }
 
   acceptNode(node: hbs.AST.Program): Program;
-
-  acceptNode(node): Object {
+  acceptNode<U extends AST.Node>(node: hbs.AST.Node): U;
+  acceptNode(node: hbs.AST.Node): any {
     return this[node.type](node);
   }
 
-  currentElement(): Object {
+  currentElement(): Element {
     return this.elementStack[this.elementStack.length - 1];
   }
 
-  sourceForMustache(mustache): string {
-    let firstLine = mustache.loc.start.line - 1;
-    let lastLine = mustache.loc.end.line - 1;
+  sourceForNode(node: hbs.AST.Node, endNode?: { loc: hbs.AST.SourceLocation }): string {
+    let firstLine = node.loc.start.line - 1;
     let currentLine = firstLine - 1;
-    let firstColumn = mustache.loc.start.column + 2;
-    let lastColumn = mustache.loc.end.column - 2;
+    let firstColumn = node.loc.start.column;
     let string = [];
     let line;
 
-    if (!this.source) {
-      return '{{' + mustache.path.id.original + '}}';
+    let lastLine: number;
+    let lastColumn: number;
+
+    if (endNode) {
+      lastLine = endNode.loc.end.line - 1;
+      lastColumn = endNode.loc.end.column;
+    } else {
+      lastLine = node.loc.end.line - 1;
+      lastColumn = node.loc.end.column;
     }
 
     while (currentLine < lastLine) {
@@ -98,12 +134,4 @@ export class Parser {
 
     return string.join('\n');
   }
-}
-
-for (let key in handlebarsNodeVisitors) {
-  Parser.prototype[key] = handlebarsNodeVisitors[key];
-}
-
-for (let key in tokenizerEventHandlers) {
-  Parser.prototype[key] = tokenizerEventHandlers[key];
 }

@@ -5,6 +5,7 @@ import {
   cannotReplaceOrRemoveInKeyHandlerYet
 } from './errors';
 import * as nodes from '../types/nodes';
+import { Opaque, Option } from "@glimmer/util";
 
 export interface NodeVisitor {
   All?: NodeHandler<nodes.BaseNode>;
@@ -42,12 +43,12 @@ export interface EnterExitNodeHandler<T> {
   keys: any;
 }
 
-function visitNode(visitor, node: nodes.BaseNode) {
-  let handler = visitor[node.type] || visitor.All;
+function visitNode(visitor: NodeVisitor, node: nodes.Node) {
+  let handler: Option<NodeHandler<nodes.Node>> = visitor[node.type] || visitor.All || null;
   let result;
 
-  if (handler && handler.enter) {
-    result = handler.enter.call(null, node);
+  if (handler && handler['enter']) {
+    result = handler['enter'].call(null, node);
   }
 
   if (result !== undefined && result !== null) {
@@ -67,15 +68,15 @@ function visitNode(visitor, node: nodes.BaseNode) {
       visitKey(visitor, handler, node, keys[i]);
     }
 
-    if (handler && handler.exit) {
-      result = handler.exit.call(null, node);
+    if (handler && handler['exit']) {
+      result = handler['exit'].call(null, node);
     }
   }
 
   return result;
 }
 
-function visitKey(visitor, handler, node: nodes.BaseNode, key) {
+function visitKey(visitor: NodeVisitor, handler: EnterExitNodeHandler<nodes.Node>, node: nodes.Node & TraversedNode, key: string) {
   let value = node[key];
   if (!value) { return; }
 
@@ -106,7 +107,7 @@ function visitKey(visitor, handler, node: nodes.BaseNode, key) {
   }
 }
 
-function visitArray(visitor, array) {
+function visitArray(visitor: NodeVisitor, array: nodes.Node[]) {
   for (let i = 0; i < array.length; i++) {
     let result = visitNode(visitor, array[i]);
     if (result !== undefined) {
@@ -115,7 +116,11 @@ function visitArray(visitor, array) {
   }
 }
 
-function assignKey(node: nodes.BaseNode, key, result) {
+export interface TraversedNode {
+  [key: string]: nodes.Node;
+}
+
+function assignKey(node: TraversedNode & nodes.Node, key: string, result: nodes.Node) {
   if (result === null) {
     throw cannotRemoveNode(node[key], node, key);
   } else if (Array.isArray(result)) {
@@ -133,7 +138,7 @@ function assignKey(node: nodes.BaseNode, key, result) {
   }
 }
 
-function spliceArray(array, index, result) {
+function spliceArray<T>(array: T[], index: number, result: T[]) {
   if (result === null) {
     array.splice(index, 1);
     return 0;
@@ -146,7 +151,7 @@ function spliceArray(array, index, result) {
   }
 }
 
-export default function traverse(node: nodes.BaseNode, visitor: NodeVisitor) {
+export default function traverse(node: nodes.Node, visitor: NodeVisitor) {
   visitNode(normalizeVisitor(visitor), node);
 }
 

@@ -10,7 +10,12 @@ declare module "simple-html-tokenizer" {
   }
 
   export class EventedTokenizer {
-    constructor(object: Object, parser: EntityParser)
+    constructor(object: Object, parser: EntityParser);
+    state: string;
+    line: number;
+    column: number;
+    tokenizePart(part: string): void;
+    flushData(): void;
   }
 
   export function tokenize(html: string): any;

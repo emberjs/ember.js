@@ -1,12 +1,12 @@
 import { preprocess } from "@glimmer/syntax";
 import TemplateCompiler, { CompileOptions } from "./template-compiler";
-import { SerializedTemplateWithLazyBlock, TemplateJavascript } from "@glimmer/wire-format";
+import { SerializedTemplateWithLazyBlock, TemplateJavascript, TemplateMeta } from "@glimmer/wire-format";
 
 export interface TemplateIdFn {
   (src: string): string;
 }
 
-export interface PrecompileOptions<T> extends CompileOptions<T> {
+export interface PrecompileOptions<T extends TemplateMeta> extends CompileOptions<T> {
   id?: TemplateIdFn;
 }
 
@@ -54,17 +54,17 @@ const defaultId: () => TemplateIdFn = (() => {
  * @param {string} string a Glimmer template string
  * @return {string} a template javascript string
  */
-export function precompile<T>(string: string, options?: PrecompileOptions<T>): TemplateJavascript;
-export function precompile(string: string, options?: PrecompileOptions<{}>): TemplateJavascript {
+export function precompile<T extends TemplateMeta>(string: string, options?: PrecompileOptions<T>): TemplateJavascript;
+export function precompile(string: string, options?: PrecompileOptions<TemplateMeta>): TemplateJavascript {
   let opts = options || {
     id: defaultId(),
     meta: {}
-  };
+  } as any as TemplateMeta;
   let ast = preprocess(string, opts);
   let { block, meta } = TemplateCompiler.compile(opts, ast);
   let idFn = opts.id || defaultId();
   let blockJSON = JSON.stringify(block.toJSON());
-  let templateJSONObject: SerializedTemplateWithLazyBlock<{}> = {
+  let templateJSONObject: SerializedTemplateWithLazyBlock<TemplateMeta> = {
     id: idFn(JSON.stringify(meta) + blockJSON),
     block: blockJSON,
     meta

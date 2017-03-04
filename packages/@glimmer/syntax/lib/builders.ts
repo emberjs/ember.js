@@ -1,74 +1,89 @@
+import * as AST from './types/nodes';
+import { Option } from '@glimmer/interfaces';
+
 // Statements
 
-function buildMustache(path, params?, hash?, raw?, loc?) {
+export type BuilderPath = string | AST.PathExpression;
+
+function buildMustache(path: BuilderPath | AST.Literal, params?: AST.Expression[], hash?: AST.Hash, raw?: boolean, loc?: AST.SourceLocation): AST.MustacheStatement {
+  if (!AST.isLiteral(path)) {
+    path = buildPath(path);
+  }
+
   return {
     type: "MustacheStatement",
-    path: buildPath(path),
+    path,
     params: params || [],
     hash: hash || buildHash([]),
     escaped: !raw,
-    loc: buildLoc(loc)
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildBlock(path, params?, hash?, program?, inverse?, loc?) {
+function buildBlock(path: BuilderPath, params: Option<AST.Expression[]>, hash: Option<AST.Hash>, program: AST.Program, inverse?: Option<AST.Program>, loc?: AST.SourceLocation): AST.BlockStatement {
   return {
     type: "BlockStatement",
     path: buildPath(path),
-    params: params ? params.map(buildPath) : [],
+    params: params || [],
     hash: hash || buildHash([]),
     program: program || null,
     inverse: inverse || null,
-    loc: buildLoc(loc)
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildElementModifier(path, params?, hash?, loc?) {
+function buildElementModifier(path: BuilderPath, params?: AST.Expression[], hash?: AST.Hash, loc?: Option<AST.SourceLocation>): AST.ElementModifierStatement {
   return {
     type: "ElementModifierStatement",
     path: buildPath(path),
     params: params || [],
     hash: hash || buildHash([]),
-    loc: buildLoc(loc)
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildPartial(name, params, hash, indent) {
+function buildPartial(name: AST.PathExpression, params?: AST.Expression[], hash?: AST.Hash, indent?: string, loc?: AST.SourceLocation): AST.PartialStatement {
   return {
     type: "PartialStatement",
     name: name,
     params: params || [],
     hash: hash || buildHash([]),
-    indent: indent
+    indent: indent || '',
+    strip: { open: false, close: false },
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildComment(value, loc?) {
+function buildComment(value: string, loc?: AST.SourceLocation): AST.CommentStatement {
   return {
     type: "CommentStatement",
     value: value,
-    loc: buildLoc(loc)
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildMustacheComment(value, loc?) {
+function buildMustacheComment(value: string, loc?: AST.SourceLocation): AST.MustacheCommentStatement {
   return {
     type: "MustacheCommentStatement",
     value: value,
-    loc: buildLoc(loc)
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildConcat(parts) {
+function buildConcat(parts: (AST.TextNode | AST.MustacheStatement)[], loc?: AST.SourceLocation): AST.ConcatStatement {
   return {
     type: "ConcatStatement",
-    parts: parts || []
+    parts: parts || [],
+    loc: buildLoc(loc || null)
   };
 }
 
 // Nodes
 
-function buildElement(tag, attributes?, modifiers?, children?, comments?, loc?) {
+function buildElement(tag: string, attributes?: AST.AttrNode[], modifiers?: AST.ElementModifierStatement[], children?: AST.Statement[], loc?: AST.SourceLocation): AST.ElementNode;
+function buildElement(tag: string, attributes?: AST.AttrNode[], modifiers?: AST.ElementModifierStatement[], children?: AST.Statement[], comments?: AST.MustacheCommentStatement[], loc?: AST.SourceLocation): AST.ElementNode;
+
+function buildElement(tag: string, attributes?: AST.AttrNode[], modifiers?: AST.ElementModifierStatement[], children?: AST.Statement[], comments?: AST.MustacheCommentStatement[] | AST.SourceLocation, loc?: AST.SourceLocation): AST.ElementNode {
   // this is used for backwards compat prior to `comments` being added to the AST
   if (!Array.isArray(comments)) {
     loc = comments;
@@ -83,149 +98,131 @@ function buildElement(tag, attributes?, modifiers?, children?, comments?, loc?) 
     modifiers: modifiers || [],
     comments: comments || [],
     children: children || [],
-    loc: buildLoc(loc)
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildAttr(name, value, loc?) {
+function buildAttr(name: string, value: AST.AttrNode['value'], loc?: AST.SourceLocation): AST.AttrNode {
   return {
     type: "AttrNode",
     name: name,
     value: value,
-    loc: buildLoc(loc)
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildText(chars?, loc?) {
+function buildText(chars?: string, loc?: AST.SourceLocation): AST.TextNode {
   return {
     type: "TextNode",
     chars: chars || "",
-    loc: buildLoc(loc)
+    loc: buildLoc(loc || null)
   };
 }
 
 // Expressions
 
-function buildSexpr(path, params?, hash?, loc?) {
+function buildSexpr(path: AST.PathExpression, params?: AST.Expression[], hash?: AST.Hash, loc?: AST.SourceLocation): AST.SubExpression {
   return {
     type: "SubExpression",
     path: buildPath(path),
     params: params || [],
     hash: hash || buildHash([]),
-    loc: buildLoc(loc)
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildPath(original, loc?) {
+function buildExpr(original: string | AST.Expression, loc?: AST.SourceLocation): AST.Expression {
+  if (typeof original !== 'string') return original;
+
+  return buildPath(original, loc);
+}
+
+function buildPath(original: BuilderPath, loc?: AST.SourceLocation): AST.PathExpression {
   if (typeof original !== 'string') return original;
 
   let parts = original.split('.');
+  let thisHead = false;
 
   if (parts[0] === 'this') {
-    parts[0] = null;
+    thisHead = true;
+    parts = parts.slice(1);
   }
 
   return {
     type: "PathExpression",
     original,
+    this: thisHead,
     parts,
     data: false,
-    loc: buildLoc(loc)
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildString(value) {
+function buildLiteral<T extends AST.Literal>(type: T['type'], value: T['value'], loc?: AST.SourceLocation): AST.Literal {
   return {
-    type: "StringLiteral",
-    value: value,
-    original: value
-  };
-}
-
-function buildBoolean(value) {
-  return {
-    type: "BooleanLiteral",
-    value: value,
-    original: value
-  };
-}
-
-function buildNumber(value) {
-  return {
-    type: "NumberLiteral",
-    value: value,
-    original: value
-  };
-}
-
-function buildNull() {
-  return {
-    type: "NullLiteral",
-    value: null,
-    original: null
-  };
-}
-
-function buildUndefined() {
-  return {
-    type: "UndefinedLiteral",
-    value: undefined,
-    original: undefined
-  };
+    type,
+    value,
+    original: value,
+    loc: buildLoc(loc || null)
+  } as AST.Literal;
 }
 
 // Miscellaneous
 
-function buildHash(pairs?) {
+function buildHash(pairs?: AST.HashPair[], loc?: AST.SourceLocation): AST.Hash {
   return {
     type: "Hash",
-    pairs: pairs || []
+    pairs: pairs || [],
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildPair(key, value) {
+function buildPair(key: string, value: AST.Expression, loc?: AST.SourceLocation): AST.HashPair {
   return {
     type: "HashPair",
     key: key,
-    value: value
+    value,
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildProgram(body?, blockParams?, loc?) {
+function buildProgram(body?: AST.Statement[], blockParams?: string[], loc?: AST.SourceLocation): AST.Program {
   return {
     type: "Program",
     body: body || [],
     blockParams: blockParams || [],
-    loc: buildLoc(loc)
+    loc: buildLoc(loc || null)
   };
 }
 
-function buildSource(source?) {
+function buildSource(source?: string) {
   return source || null;
 }
 
-function buildPosition(line, column) {
+function buildPosition(line: number, column: number) {
   return {
-    line: (typeof line === 'number') ? line : null,
-    column: (typeof column === 'number') ? column : null
+    line,
+    column
   };
 }
 
-function buildLoc(loc: { source: any, start: any, end: any }): { source: any, start: any, end: any };
-function buildLoc(startLine, startColumn, endLine?, endColumn?, source?): { source: any, start: any, end: any };
+export const SYNTHETIC: AST.SourceLocation = { source: '(synthetic)', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } };
 
-function buildLoc(...args) {
+function buildLoc(loc:Option<AST.SourceLocation>): AST.SourceLocation;
+function buildLoc(startLine: number, startColumn: number, endLine?: number, endColumn?: number, source?: string): AST.SourceLocation;
+
+function buildLoc(...args: any[]): AST.SourceLocation {
   if (args.length === 1) {
     let loc = args[0];
 
-    if (typeof loc === 'object') {
+    if (loc && typeof loc === 'object') {
       return {
         source: buildSource(loc.source),
         start: buildPosition(loc.start.line, loc.start.column),
         end: buildPosition(loc.end.line, loc.end.column)
       };
     } else {
-      return null;
+      return SYNTHETIC;
     }
   } else {
     let [ startLine, startColumn, endLine, endColumn, source ] = args;
@@ -249,15 +246,23 @@ export default {
   text: buildText,
   sexpr: buildSexpr,
   path: buildPath,
-  string: buildString,
-  boolean: buildBoolean,
-  number: buildNumber,
-  undefined: buildUndefined,
-  null: buildNull,
   concat: buildConcat,
   hash: buildHash,
   pair: buildPair,
+  literal: buildLiteral,
   program: buildProgram,
   loc: buildLoc,
-  pos: buildPosition
+  pos: buildPosition,
+
+  string: literal('StringLiteral'),
+  boolean: literal('BooleanLiteral'),
+  number: literal('NumberLiteral'),
+  undefined() { return buildLiteral('UndefinedLiteral', undefined); },
+  null() { return buildLiteral('NullLiteral', null); }
 };
+
+function literal<T extends AST.Literal>(type: T['type']) {
+  return function(value: T['value']) {
+    return buildLiteral(type, value);
+  };
+}

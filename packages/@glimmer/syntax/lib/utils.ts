@@ -9,12 +9,12 @@ let ID_INVERSE_PATTERN = /[!"#%-,\.\/;->@\[-\^`\{-~]/;
 // If it does, registers the block params with the program and
 // removes the corresponding attributes from the element.
 
-export function parseElementBlockParams(element) {
+export function parseElementBlockParams(element: AST.ElementNode) {
   let params = parseBlockParams(element);
   if (params) element.blockParams = params;
 }
 
-function parseBlockParams(element) {
+function parseBlockParams(element: AST.ElementNode) {
   let l = element.attributes.length;
   let attrNames = [];
 
@@ -27,7 +27,7 @@ function parseBlockParams(element) {
   if (asIndex !== -1 && l > asIndex && attrNames[asIndex + 1].charAt(0) === '|') {
     // Some basic validation, since we're doing the parsing ourselves
     let paramsString = attrNames.slice(asIndex).join(' ');
-    if (paramsString.charAt(paramsString.length - 1) !== '|' || paramsString.match(/\|/g).length !== 2) {
+    if (paramsString.charAt(paramsString.length - 1) !== '|' || paramsString.match(/\|/g)!.length !== 2) {
       throw new Error('Invalid block parameters syntax: \'' + paramsString + '\'');
     }
 
@@ -51,16 +51,14 @@ function parseBlockParams(element) {
   }
 }
 
-export function childrenFor(node) {
-  if (node.type === 'Program') {
-    return node.body;
-  }
-  if (node.type === 'ElementNode') {
-    return node.children;
+export function childrenFor(node: AST.Program | AST.ElementNode): AST.Statement[] {
+  switch (node.type) {
+    case 'Program': return node.body;
+    case 'ElementNode': return node.children;
   }
 }
 
-export function appendChild(parent, node) {
+export function appendChild(parent: AST.Program | AST.ElementNode, node: AST.Statement) {
   childrenFor(parent).push(node);
 }
 

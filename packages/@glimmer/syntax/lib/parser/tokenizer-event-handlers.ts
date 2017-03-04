@@ -1,5 +1,13 @@
-import b from "../builders";
+import b, { SYNTHETIC } from "../builders";
 import { appendChild, parseElementBlockParams } from "../utils";
+import { HandlebarsNodeVisitors } from './handlebars-node-visitors';
+import { SourceLocation } from "../types/nodes";
+import * as AST from "../types/nodes";
+import { Tag } from "../parser";
+import builders from "../builders";
+import traverse from "../traversal/traverse";
+import Walker from "../traversal/walker";
+import { parse } from "handlebars";
 
 const voidMap: {
   [tagName: string]: boolean
@@ -10,61 +18,64 @@ voidTagNames.split(" ").forEach(tagName => {
   voidMap[tagName] = true;
 });
 
-export default {
-  reset: function() {
+export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
+  private tagOpenLine = 0;
+  private tagOpenColumn = 0;
+
+  reset() {
     this.currentNode = null;
-  },
+  }
 
   // Comment
 
-  beginComment: function() {
+  beginComment() {
     this.currentNode = b.comment("");
     this.currentNode.loc = {
       source: null,
       start: b.pos(this.tagOpenLine, this.tagOpenColumn),
       end: null
-    };
-  },
+    } as any as SourceLocation;
+  }
 
-  appendToCommentData: function(char) {
-    this.currentNode.value += char;
-  },
+  appendToCommentData(char: string) {
+    this.currentComment.value += char;
+  }
 
-  finishComment: function() {
-    this.currentNode.loc.end = b.pos(this.tokenizer.line, this.tokenizer.column);
+  finishComment() {
+    this.currentComment.loc.end = b.pos(this.tokenizer.line, this.tokenizer.column);
 
-    appendChild(this.currentElement(), this.currentNode);
-  },
+    appendChild(this.currentElement(), this.currentComment);
+  }
 
   // Data
 
-  beginData: function() {
+  beginData() {
     this.currentNode = b.text();
     this.currentNode.loc = {
       source: null,
       start: b.pos(this.tokenizer.line, this.tokenizer.column),
       end: null
-    };
-  },
+    } as any as SourceLocation;
+  }
 
-  appendToData: function(char) {
-    this.currentNode.chars += char;
-  },
+  appendToData(char: string) {
+    this.currentData.chars += char;
+  }
 
-  finishData: function() {
-    this.currentNode.loc.end = b.pos(this.tokenizer.line, this.tokenizer.column);
+  finishData() {
+    this.currentData.loc.end = b.pos(this.tokenizer.line, this.tokenizer.column);
 
-    appendChild(this.currentElement(), this.currentNode);
-  },
+    appendChild(this.currentElement(), this.currentData);
+  }
 
   // Tags - basic
 
-  tagOpen: function() {
+  tagOpen() {
     this.tagOpenLine = this.tokenizer.line;
     this.tagOpenColumn = this.tokenizer.column;
-  },
+  }
 
-  beginStartTag: function() {
+  beginStartTag() {
     this.currentNode = {
       type: 'StartTag',
       name: "",
@@ -72,11 +83,11 @@ export default {
       modifiers: [],
       comments: [],
       selfClosing: false,
-      loc: null
+      loc: SYNTHETIC
     };
-  },
+  }
 
-  beginEndTag: function() {
+  beginEndTag() {
     this.currentNode = {
       type: 'EndTag',
       name: "",
@@ -84,14 +95,14 @@ export default {
       modifiers: [],
       comments: [],
       selfClosing: false,
-      loc: null
+      loc: SYNTHETIC
     };
-  },
+  }
 
-  finishTag: function() {
+  finishTag() {
     let { line, column } = this.tokenizer;
 
-    let tag = this.currentNode;
+    let tag = this.currentTag;
     tag.loc = b.loc(this.tagOpenLine, this.tagOpenColumn, line, column);
 
     if (tag.type === 'StartTag') {
@@ -103,20 +114,20 @@ export default {
     } else if (tag.type === 'EndTag') {
       this.finishEndTag(false);
     }
-  },
+  }
 
-  finishStartTag: function() {
-    let { name, attributes, modifiers, comments } = this.currentNode;
+  finishStartTag() {
+    let { name, attributes, modifiers, comments } = this.currentStartTag;
 
     let loc = b.loc(this.tagOpenLine, this.tagOpenColumn);
     let element = b.element(name, attributes, modifiers, [], comments, loc);
     this.elementStack.push(element);
-  },
+  }
 
-  finishEndTag: function(isVoid) {
-    let tag = this.currentNode;
+  finishEndTag(isVoid: boolean) {
+    let tag = this.currentTag;
 
-    let element = this.elementStack.pop();
+    let element = this.elementStack.pop() as AST.ElementNode;
     let parent = this.currentElement();
 
     validateEndTag(tag, element, isVoid);
@@ -126,22 +137,22 @@ export default {
 
     parseElementBlockParams(element);
     appendChild(parent, element);
-  },
+  }
 
-  markTagAsSelfClosing: function() {
-    this.currentNode.selfClosing = true;
-  },
+  markTagAsSelfClosing() {
+    this.currentTag.selfClosing = true;
+  }
 
   // Tags - name
 
-  appendToTagName: function(char) {
-    this.currentNode.name += char;
-  },
+  appendToTagName(char: string) {
+    this.currentTag.name += char;
+  }
 
   // Tags - attributes
 
-  beginAttribute: function() {
-    let tag = this.currentNode;
+  beginAttribute() {
+    let tag = this.currentTag;
     if (tag.type === 'EndTag') {
        throw new Error(
         `Invalid end tag: closing tag must not have attributes, ` +
@@ -155,23 +166,23 @@ export default {
       isQuoted: false,
       isDynamic: false,
       start: b.pos(this.tokenizer.line, this.tokenizer.column),
-      valueStartLine: null,
-      valueStartColumn: null
+      valueStartLine: 0,
+      valueStartColumn: 0
     };
-  },
+  }
 
-  appendToAttributeName: function(char) {
-    this.currentAttribute.name += char;
-  },
+  appendToAttributeName(char: string) {
+    this.currentAttr.name += char;
+  }
 
-  beginAttributeValue: function(isQuoted) {
-    this.currentAttribute.isQuoted = isQuoted;
-    this.currentAttribute.valueStartLine = this.tokenizer.line;
-    this.currentAttribute.valueStartColumn = this.tokenizer.column;
-  },
+  beginAttributeValue(isQuoted: boolean) {
+    this.currentAttr.isQuoted = isQuoted;
+    this.currentAttr.valueStartLine = this.tokenizer.line;
+    this.currentAttr.valueStartColumn = this.tokenizer.column;
+  }
 
-  appendToAttributeValue: function(char) {
-    let parts = this.currentAttribute.parts;
+  appendToAttributeValue(char: string) {
+    let parts = this.currentAttr.parts;
     let lastPart = parts[parts.length - 1];
 
     if (lastPart && lastPart.type === 'TextNode') {
@@ -190,16 +201,16 @@ export default {
       // correct for `\n` as first char
       if (char === '\n') {
         loc.start.line -= 1;
-        loc.start.column = lastPart ? lastPart.loc.end.column : this.currentAttribute.valueStartColumn;
+        loc.start.column = lastPart ? lastPart.loc.end.column : this.currentAttr.valueStartColumn;
       }
 
       let text = b.text(char, loc);
       parts.push(text);
     }
-  },
+  }
 
-  finishAttributeValue: function() {
-    let { name, parts, isQuoted, isDynamic, valueStartLine, valueStartColumn } = this.currentAttribute;
+  finishAttributeValue() {
+    let { name, parts, isQuoted, isDynamic, valueStartLine, valueStartColumn } = this.currentAttr;
     let value = assembleAttributeValue(parts, isQuoted, isDynamic, this.tokenizer.line);
     value.loc = b.loc(
       valueStartLine, valueStartColumn,
@@ -207,26 +218,26 @@ export default {
     );
 
     let loc = b.loc(
-      this.currentAttribute.start.line, this.currentAttribute.start.column,
+      this.currentAttr.start.line, this.currentAttr.start.column,
       this.tokenizer.line, this.tokenizer.column
     );
 
     let attribute = b.attr(name, value, loc);
 
-    this.currentNode.attributes.push(attribute);
-  },
+    this.currentStartTag.attributes.push(attribute);
+  }
 
-  reportSyntaxError: function(message) {
+  reportSyntaxError(message: string) {
     throw new Error(`Syntax error at line ${this.tokenizer.line} col ${this.tokenizer.column}: ${message}`);
   }
 };
 
-function assembleAttributeValue(parts, isQuoted, isDynamic, line) {
+function assembleAttributeValue(parts: (AST.MustacheStatement | AST.TextNode)[], isQuoted: boolean, isDynamic: boolean, line: number) {
   if (isDynamic) {
     if (isQuoted) {
       return assembleConcatenatedValue(parts);
     } else {
-      if (parts.length === 1 || (parts.length === 2 && parts[1].chars === '/')) {
+      if (parts.length === 1 || (parts.length === 2 && parts[1].type === 'TextNode' && (parts[1] as AST.TextNode).chars === '/')) {
         return parts[0];
       } else {
         throw new Error(
@@ -241,19 +252,19 @@ function assembleAttributeValue(parts, isQuoted, isDynamic, line) {
   }
 }
 
-function assembleConcatenatedValue(parts) {
+function assembleConcatenatedValue(parts: (AST.MustacheStatement | AST.TextNode)[]) {
   for (let i = 0; i < parts.length; i++) {
     let part = parts[i];
 
     if (part.type !== 'MustacheStatement' && part.type !== 'TextNode') {
-      throw new Error("Unsupported node in quoted attribute value: " + part.type);
+      throw new Error("Unsupported node in quoted attribute value: " + part['type']);
     }
   }
 
   return b.concat(parts);
 }
 
-function validateEndTag(tag, element, selfClosing) {
+function validateEndTag(tag: Tag<'StartTag' | 'EndTag'>, element: AST.ElementNode, selfClosing: boolean) {
   let error;
 
   if (voidMap[tag.name] && !selfClosing) {
@@ -271,6 +282,31 @@ function validateEndTag(tag, element, selfClosing) {
   if (error) { throw new Error(error); }
 }
 
-function formatEndTagInfo(tag) {
+function formatEndTagInfo(tag: Tag<'StartTag' | 'EndTag'>) {
   return "`" + tag.name + "` (on line " + tag.loc.end.line + ")";
+}
+
+export const syntax = {
+  parse: preprocess,
+  builders,
+  print,
+  traverse,
+  Walker
+};
+
+export function preprocess(html: string, options?: any): AST.Program {
+  let ast = (typeof html === 'object') ? html : parse(html);
+  let combined = new TokenizerEventHandlers(html, options).acceptNode(ast);
+
+  if (options && options.plugins && options.plugins.ast) {
+    for (let i = 0, l = options.plugins.ast.length; i < l; i++) {
+      let plugin = new options.plugins.ast[i](options);
+
+      plugin.syntax = syntax;
+
+      combined = plugin.transform(combined);
+    }
+  }
+
+  return combined;
 }
