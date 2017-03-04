@@ -1,17 +1,27 @@
 import { APPEND_OPCODES, Op } from '../../opcodes';
 import { ConcatReference } from '../expressions/concat';
 import { Helper } from '../../environment';
-import { EvaluatedArgs } from '../expressions/args';
 import { TRUE_REFERENCE, FALSE_REFERENCE } from '../../references';
 import { VersionedPathReference } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
 import { PublicVM } from "../../vm";
+import { IArguments } from "../../vm/arguments";
 
 export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: _helper }) => {
+  let stack = vm.evalStack;
   let helper = vm.constants.getFunction<Helper>(_helper);
-  vm.evalStack.push(helper(vm, vm.evalStack.pop<EvaluatedArgs>()));
+  let args = stack.pop<IArguments>();
+  let value = helper(vm, args);
+
+  let pops = args.length;
+
+  while (--pops >= 0) {
+    stack.pop();
+  }
+
+  vm.evalStack.push(value);
 });
 
 APPEND_OPCODES.add(Op.Function, (vm, { op1: _function }) => {

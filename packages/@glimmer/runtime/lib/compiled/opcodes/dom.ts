@@ -1,5 +1,6 @@
 import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
+import { IArguments } from '../../vm/arguments';
 import * as Simple from '../../dom/interfaces';
 import { FIX_REIFICATION } from '../../dom/interfaces';
 import { Environment } from '../../environment';
@@ -18,7 +19,6 @@ import {
 } from '@glimmer/reference';
 import { ModifierManager } from '../../modifier/interfaces';
 import { NULL_REFERENCE, PrimitiveReference } from '../../references';
-import { EvaluatedArgs } from '../../compiled/expressions/args';
 import { AttributeManager } from '../../dom/attribute-managers';
 import { ElementOperations } from '../../builder';
 import { Assert } from './vm';
@@ -313,11 +313,18 @@ APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespac
 
 APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
   let manager = vm.constants.getOther<ModifierManager<Opaque>>(_manager);
-  let args = vm.evalStack.pop<EvaluatedArgs>();
-  let stack = vm.stack();
-  let { constructing: element, updateOperations } = stack;
+  let stack = vm.evalStack;
+  let args = stack.pop<IArguments>();
+  let tag = args.tag;
+  let { constructing: element, updateOperations } = vm.stack();
   let dynamicScope = vm.dynamicScope();
   let modifier = manager.create(element as FIX_REIFICATION<Element>, args, dynamicScope, updateOperations);
+
+  let pops = args.length;
+
+  while (--pops >= 0) {
+    stack.pop();
+  }
 
   vm.env.scheduleInstallModifier(modifier, manager);
   let destructor = manager.getDestructor(modifier);
@@ -327,9 +334,9 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
   }
 
   vm.updateWith(new UpdateModifierOpcode(
+    tag,
     manager,
-    modifier,
-    args
+    modifier
   ));
 });
 
@@ -338,13 +345,12 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
   private lastUpdated: Revision;
 
   constructor(
+    public tag: Tag,
     private manager: ModifierManager<Opaque>,
-    private modifier: Opaque,
-    private args: EvaluatedArgs
+    private modifier: Opaque
   ) {
     super();
-    this.tag = args.tag;
-    this.lastUpdated = args.tag.value();
+    this.lastUpdated = tag.value();
   }
 
   evaluate(vm: UpdatingVM) {
@@ -359,8 +365,7 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
   toJSON(): OpcodeJSON {
     return {
       guid: this._guid,
-      type: this.type,
-      args: [JSON.stringify(this.args)]
+      type: this.type
     };
   }
 }

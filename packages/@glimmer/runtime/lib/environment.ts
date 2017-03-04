@@ -41,13 +41,13 @@ import {
   TemplateMeta
 } from '@glimmer/wire-format';
 
-import { EvaluatedArgs } from './compiled/expressions/args';
-
 import { Block } from './scanner';
 
 import { PublicVM } from './vm/append';
 
-export type ScopeSlot = PathReference<Opaque> | Option<Block> | EvaluatedArgs;
+import { IArguments } from './vm/arguments';
+
+export type ScopeSlot = PathReference<Opaque> | Option<Block>;
 
 export interface DynamicScope {
   get(key: string): PathReference<Opaque>;
@@ -396,5 +396,5 @@ export abstract class Environment {
 export default Environment;
 
 export interface Helper {
-  (vm: PublicVM, args: EvaluatedArgs): PathReference<Opaque>;
+  (vm: PublicVM, args: IArguments): PathReference<Opaque>;
 }
