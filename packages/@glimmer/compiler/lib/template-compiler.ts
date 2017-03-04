@@ -251,7 +251,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
       if (expr.this) {
         this.opcode('get', expr, 0, expr.parts);
       } else  if (symbols.has(head)) {
-        this.opcode('get', expr, symbols.get(head), expr.parts);
+        this.opcode('get', expr, symbols.get(head), expr.parts.slice(1));
       } else {
         this.opcode('get', expr, 0, expr.parts);
       }
