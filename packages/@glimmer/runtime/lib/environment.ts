@@ -1,7 +1,7 @@
 import { VersionedPathReference } from '@glimmer/reference';
 import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
-import { Constants } from './opcodes';
+import { Constants } from './environment/constants';
 
 import * as Simple from './dom/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';

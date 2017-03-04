@@ -1,6 +1,6 @@
 import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
-import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
+import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { CompiledDynamicProgram, OpSlice } from '../compiled/blocks';
 import { Template } from '../scanner';
@@ -11,10 +11,13 @@ import { FrameStack } from './frame';
 
 import {
   APPEND_OPCODES,
-  UpdatingOpcode,
-  Constants,
-  ConstantString,
+  UpdatingOpcode
 } from '../opcodes';
+
+import {
+  Constants,
+  ConstantString
+} from '../environment/constants';
 
 export interface PublicVM {
   env: Environment;

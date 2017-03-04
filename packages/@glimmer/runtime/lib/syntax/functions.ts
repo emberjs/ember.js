@@ -90,6 +90,26 @@ STATEMENTS.add(Ops.StaticAttr, (sexp: S.StaticAttr, builder: OpcodeBuilder) => {
   builder.staticAttr(name, namespace, value as string);
 });
 
+STATEMENTS.add(Ops.DynamicAttr, (sexp: S.DynamicAttr, builder) => {
+  dynamicAttr(sexp, false, builder);
+});
+
+STATEMENTS.add(Ops.TrustingAttr, (sexp: S.DynamicAttr, builder) => {
+  dynamicAttr(sexp, true, builder);
+});
+
+function dynamicAttr(sexp: S.DynamicAttr | S.TrustingAttr, trusting: boolean, builder: OpcodeBuilder) {
+  let [, name, value, namespace] = sexp;
+
+  expr(value, builder);
+
+  if (namespace) {
+    builder.dynamicAttrNS(name, namespace, trusting);
+  } else {
+    builder.dynamicAttr(name, trusting);
+  }
+}
+
 CLIENT_SIDE.add(ClientSide.Ops.AnyDynamicAttr, (sexp: ClientSide.AnyDynamicAttr, builder: OpcodeBuilder) => {
   let [,, name, value, namespace, trusting] = sexp;
 
@@ -117,8 +137,8 @@ CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenCompo
   builder.openElementWithOperations(sexp[2]);
 });
 
-CLIENT_SIDE.add(ClientSide.Ops.OptimizedAppend, (sexp: ClientSide.OptimizedAppend, builder: OpcodeBuilder) => {
-  let [,, value, trustingMorph] = sexp;
+STATEMENTS.add(Ops.Append, (sexp: S.Append, builder: OpcodeBuilder) => {
+  let [, value, trusting] = sexp;
 
   let { inlines } = builder.env.macros();
   let returned = inlines.compile(sexp, builder) || value;
@@ -127,27 +147,27 @@ CLIENT_SIDE.add(ClientSide.Ops.OptimizedAppend, (sexp: ClientSide.OptimizedAppen
 
   expr(value, builder);
 
-  if (trustingMorph) {
+  if (trusting) {
     builder.trustingAppend();
   } else {
     builder.cautiousAppend();
   }
 });
 
-CLIENT_SIDE.add(ClientSide.Ops.UnoptimizedAppend, (sexp: ClientSide.UnoptimizedAppend, builder) => {
-  let [,, value, trustingMorph] = sexp;
+// CLIENT_SIDE.add(ClientSide.Ops.UnoptimizedAppend, (sexp: ClientSide.UnoptimizedAppend, builder) => {
+//   let [,, value, trustingMorph] = sexp;
 
-  let { inlines } = builder.env.macros();
-  let returned = inlines.compile(sexp, builder) || value;
+//   let { inlines } = builder.env.macros();
+//   let returned = inlines.compile(sexp, builder) || value;
 
-  if (returned === true) return;
+//   if (returned === true) return;
 
-  if (trustingMorph) {
-    builder.guardedTrustingAppend(returned[1]);
-  } else {
-    builder.guardedCautiousAppend(returned[1]);
-  }
-});
+//   if (trustingMorph) {
+//     builder.guardedTrustingAppend(returned[1]);
+//   } else {
+//     builder.guardedCautiousAppend(returned[1]);
+//   }
+// });
 
 CLIENT_SIDE.add(ClientSide.Ops.NestedBlock, (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
   let { blocks } = builder.env.macros();
@@ -527,7 +547,7 @@ export class Blocks {
 
 export const BLOCKS = new Blocks();
 
-export type AppendSyntax = ClientSide.OptimizedAppend | ClientSide.UnoptimizedAppend;
+export type AppendSyntax = S.Append;
 export type AppendMacro = (name: string, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder) => ['expr', WireFormat.Expression] | true | false;
 
 export class Inlines {
@@ -545,7 +565,7 @@ export class Inlines {
   }
 
   compile(sexp: AppendSyntax, builder: OpcodeBuilder): ['expr', WireFormat.Expression] | true {
-    let value = sexp[2];
+    let value = sexp[1];
 
     // TODO: Fix this so that expression macros can return
     // things like components, so that {{component foo}}
