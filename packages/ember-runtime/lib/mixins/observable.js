@@ -373,9 +373,9 @@ export default Mixin.create({
     any of these values, to write an observer that has no parameters at all.
 
     @method addObserver
-    @param {String} key The key to observer
+    @param {String} key The key to observe
     @param {Object} target The target object to invoke
-    @param {String|Function} method The method to invoke.
+    @param {String|Function} method The method to invoke
     @public
   */
   addObserver(key, target, method) {
@@ -388,9 +388,9 @@ export default Mixin.create({
     target will no longer receive notifications.
 
     @method removeObserver
-    @param {String} key The key to observer
+    @param {String} key The key to observe
     @param {Object} target The target object to invoke
-    @param {String|Function} method The method to invoke.
+    @param {String|Function} method The method to invoke
     @public
   */
   removeObserver(key, target, method) {
