@@ -1,4 +1,8 @@
-import { inject } from 'ember-runtime';
+import {
+  Controller,
+  inject,
+  String
+} from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import { Route, NoneLocation } from 'ember-routing';
 import {
@@ -12,10 +16,23 @@ import {
 
 import { isFeatureEnabled } from 'ember-metal';
 
+function defineController(app, name) {
+  let controllerName = `${String.capitalize(name)}Controller`;
+
+  Object.defineProperty(app, controllerName, {
+    get() {
+      throw new Error(`Generating a URL should not require instantiation of a ${controllerName}.`);
+    }
+  });
+}
+
 if (isFeatureEnabled('ember-routing-router-service')) {
   moduleFor('Router Service - urlFor', class extends RouterTestCase {
     constructor() {
       super();
+
+      ['dynamic', 'child']
+        .forEach((name) => { defineController(this.application, name); });
     }
 
     ['@test RouterService#urlFor returns URL for simple route'](assert) {
