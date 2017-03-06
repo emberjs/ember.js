@@ -6,7 +6,7 @@ import OpcodeBuilder from '../compiled/opcodes/builder';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
 import { VM, PublicVM } from '../vm';
 import { IArguments } from '../vm/arguments';
-import { ATTRS_BLOCK, Block, ClientSide } from '../scanner';
+import { ATTRS_BLOCK, Block, ClientSide, RawInlineBlock } from '../scanner';
 import { EMPTY_ARRAY } from '../utils';
 
 import {
@@ -237,21 +237,24 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
   }
 }
 
-CLIENT_SIDE.add(ClientSide.Ops.ResolvedComponent, (sexp: ClientSide.ResolvedComponent, builder) => {
-  let [,, definition, attrs, [, hash], block, inverse] = sexp;
+STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
+  let [, tag, attrs, args, block] = sexp;
 
-  builder.pushComponentManager(definition);
-  builder.invokeComponent(attrs, null, hash, block, inverse);
-});
-
-CLIENT_SIDE.add(ClientSide.Ops.ScannedComponent, (sexp: ClientSide.ScannedComponent, builder) => {
-  let [,, tag, attrs, hash, rawBlock] = sexp;
-  let block = rawBlock && rawBlock.scan();
-
-  let definition = builder.env.getComponentDefinition(tag, builder.meta.templateMeta);
-
-  builder.pushComponentManager(definition);
-  builder.invokeComponent(attrs, null, hash, block);
+  if (builder.env.hasComponentDefinition(tag, builder.meta.templateMeta)) {
+    let child = builder.template(block);
+    let attrsBlock = new RawInlineBlock(builder.env, builder.meta, attrs, EMPTY_ARRAY);
+    let definition = builder.env.getComponentDefinition(tag, builder.meta.templateMeta);
+    builder.pushComponentManager(definition);
+    builder.invokeComponent(attrsBlock, null, args, child && child.scan());
+  } else if (block && block.parameters.length) {
+    throw new Error(`Compile Error: Cannot find component ${tag}`);
+  } else {
+    builder.openPrimitiveElement(tag);
+    attrs.forEach(attr => STATEMENTS.compile(attr, builder));
+    builder.flushElement();
+    if (block) block.statements.forEach(s => STATEMENTS.compile(s, builder));
+    builder.closeElement();
+  }
 });
 
 export class PartialInvoker implements DynamicInvoker<ProgramSymbolTable> {
