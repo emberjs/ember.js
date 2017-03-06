@@ -321,7 +321,10 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
   builder.startLabels();
 
   let definition = builder.local();
-  expr([Ops.ClientSideExpression, ClientSide.Ops.ResolvedHelper, helper, [name], null], builder);
+
+  expr(name, builder);
+  builder.pushArgs(1, EMPTY_ARRAY, true);
+  builder.helper(helper);
 
   builder.setLocal(definition);
   builder.getLocal(definition);
@@ -452,13 +455,6 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
   } else {
     throw new Error(`Compile Error: ${name} is not a helper`);
   }
-});
-
-CLIENT_SIDE_EXPRS.add(ClientSide.Ops.ResolvedHelper, (sexp: ClientSide.ResolvedHelper, builder) => {
-  let [,, helper, params, hash] = sexp;
-
-  builder.compileArgs(params, hash, true);
-  builder.helper(helper);
 });
 
 EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder) => {

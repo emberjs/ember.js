@@ -163,7 +163,6 @@ export namespace ClientSide {
     NestedBlock,
     ScannedBlock,
 
-    ResolvedHelper,
     FunctionExpression
   }
 
@@ -186,7 +185,6 @@ export namespace ClientSide {
   export type StaticPartial         = [ClientSideStatement, Ops.StaticPartial, string, WireFormat.Core.EvalInfo];
   export type DynamicPartial        = [ClientSideStatement, Ops.DynamicPartial, WireFormat.Expression, WireFormat.Core.EvalInfo];
 
-  export type ResolvedHelper        = [ClientSideExpression, Ops.ResolvedHelper, Helper, Core.Params, Core.Hash];
   export type FunctionExpression    = [ClientSideExpression, Ops.FunctionExpression, FunctionExpressionCallback<Opaque>];
 
   export type FunctionExpressionCallback<T> = (VM: PublicVM, symbolTable: SymbolTable) => VersionedPathReference<T>;
@@ -203,7 +201,6 @@ export namespace ClientSide {
     ;
 
   export type ClientSideExpression =
-      ResolvedHelper
     | FunctionExpression
     ;
 }

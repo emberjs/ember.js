@@ -270,7 +270,8 @@ export class ComponentBuilder implements IComponentBuilder {
       }
 
       let definition = b.local();
-      expr([Ops.ClientSideExpression, ClientSide.Ops.ResolvedHelper, helper, definitionArgs[0], definitionArgs[1]], b);
+      b.compileArgs(definitionArgs[0], definitionArgs[1], true);
+      b.helper(helper);
 
       b.setLocal(definition);
       b.getLocal(definition);
