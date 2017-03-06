@@ -26,6 +26,12 @@ function defineController(app, name) {
   });
 }
 
+function buildQueryParams(queryParams) {
+  return {
+    queryParams
+  };
+}
+
 if (isFeatureEnabled('ember-routing-router-service')) {
   moduleFor('Router Service - urlFor', class extends RouterTestCase {
     constructor() {
@@ -57,10 +63,10 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       });
     }
 
-    ['@test RouterService#urlFor returns URL for simple route with query params'](assert) {
+    ['@test RouterService#urlFor returns URL for simple route with basic query params'](assert) {
       assert.expect(1);
 
-      let queryParams = { queryParams: { foo: 'bar' } };
+      let queryParams = buildQueryParams({ foo: 'bar' });
 
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('parent.child', queryParams);
@@ -69,15 +75,87 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       });
     }
 
-    ['@test RouterService#urlFor returns URL for simple route with dynamic segments and query params'](assert) {
+    ['@test RouterService#urlFor returns URL for simple route with array as query params'](assert) {
       assert.expect(1);
 
-      let queryParams = { queryParams: { foo: 'bar' } };
+      let queryParams = buildQueryParams({ selectedItems: ['a', 'b', 'c'] });
+
+      return this.visit('/').then(() => {
+        let expectedURL = this.routerService.urlFor('parent.child', queryParams);
+
+        assert.equal('/child?selectedItems[]=a&selectedItems[]=b&selectedItems[]=c', expectedURL);
+      });
+    }
+
+    ['@test RouterService#urlFor returns URL for simple route with null query params'](assert) {
+      assert.expect(1);
+
+      let queryParams = buildQueryParams({ foo: null });
+
+      return this.visit('/').then(() => {
+        let expectedURL = this.routerService.urlFor('parent.child', queryParams);
+
+        assert.equal('/child', expectedURL);
+      });
+    }
+
+    ['@test RouterService#urlFor returns URL for simple route with undefined query params'](assert) {
+      assert.expect(1);
+
+      let queryParams = buildQueryParams({ foo: undefined });
+
+      return this.visit('/').then(() => {
+        let expectedURL = this.routerService.urlFor('parent.child', queryParams);
+
+        assert.equal('/child', expectedURL);
+      });
+    }
+
+    ['@test RouterService#urlFor returns URL for simple route with dynamic segments and basic query params'](assert) {
+      assert.expect(1);
+
+      let queryParams = buildQueryParams({ foo: 'bar' });
 
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
 
         assert.equal('/dynamic/1?foo=bar', expectedURL);
+      });
+    }
+
+    ['@test RouterService#urlFor returns URL for simple route with dynamic segments and array as query params'](assert) {
+      assert.expect(1);
+
+      let queryParams = buildQueryParams({ selectedItems: ['a', 'b', 'c'] });
+
+      return this.visit('/').then(() => {
+        let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
+
+        assert.equal('/dynamic/1?selectedItems[]=a&selectedItems[]=b&selectedItems[]=c', expectedURL);
+      });
+    }
+
+    ['@test RouterService#urlFor returns URL for simple route with dynamic segments and null query params'](assert) {
+      assert.expect(1);
+
+      let queryParams = buildQueryParams({ foo: null });
+
+      return this.visit('/').then(() => {
+        let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
+
+        assert.equal('/dynamic/1', expectedURL);
+      });
+    }
+
+    ['@test RouterService#urlFor returns URL for simple route with dynamic segments and undefined query params'](assert) {
+      assert.expect(1);
+
+      let queryParams = buildQueryParams({ foo: undefined });
+
+      return this.visit('/').then(() => {
+        let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
+
+        assert.equal('/dynamic/1', expectedURL);
       });
     }
   });
