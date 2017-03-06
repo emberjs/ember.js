@@ -69,12 +69,15 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: positional, op2: _names, op3: synthe
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let definition, manager;
   let args = vm.evalStack.pop<IArguments>();
+  let dynamicScope = vm.dynamicScope();
   let state = { definition, manager } = vm.getLocal<InitialComponentState<Opaque>>(_state);
 
   let hasDefaultBlock = flags & 0b01;
 
-  let component = manager.create(vm.env, definition, args, vm.dynamicScope(), vm.getSelf(), !!hasDefaultBlock);
+  let component = manager.create(vm.env, definition, args, dynamicScope, vm.getSelf(), !!hasDefaultBlock);
   (state as ComponentState<typeof component>).component = component;
+
+  vm.updateWith(new UpdateComponentOpcode(args.tag, definition.name, component, manager, dynamicScope));
 });
 
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
