@@ -1112,33 +1112,30 @@ function hash(sexp: ClientSide.NestedBlock): WireFormat.Core.Hash {
 }
 
 function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: BlockMacros, inlines: InlineMacros } {
-  blocks.add('identity', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
-    builder.invokeStatic(sexp[5]);
+  blocks.add('identity', (params, hash, template, inverse, builder) => {
+    builder.invokeStatic(template);
   });
 
-  blocks.add('render-inverse', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
-    builder.invokeStatic(sexp[6]);
+  blocks.add('render-inverse', (params, hash, template, inverse, builder) => {
+    builder.invokeStatic(inverse);
   });
 
-  blocks.add('component', (sexp, builder) => {
-    let [, , _path, params, hash, _default, inverse] = sexp;
+  blocks.add('component', (params, hash, template, inverse, builder) => {
     let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
-    let args: ComponentArgs = [params.slice(1), hashToArgs(hash), _default, inverse];
+    let args: ComponentArgs = [params.slice(1), hashToArgs(hash), template, inverse];
     builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
     return true;
   });
 
-  blocks.addMissing((sexp, builder) => {
-    let [, , name, params, hash, _default, inverse] = sexp;
-
+  blocks.addMissing((name, params, hash, template, inverse, builder) => {
     if (!params) {
       params = [];
     }
 
-    let definition = builder.env.getComponentDefinition(name, builder.meta);
+    let definition = builder.env.getComponentDefinition(name, builder.meta.templateMeta);
 
     if (definition) {
-      builder.component.static(definition, [params, hashToArgs(hash), _default, inverse]);
+      builder.component.static(definition, [params, hashToArgs(hash), template, inverse]);
       return true;
     }
 
@@ -1153,7 +1150,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
   });
 
   inlines.addMissing((name, params, hash, builder) => {
-    let definition = builder.env.getComponentDefinition(name, builder.meta);
+    let definition = builder.env.getComponentDefinition(name, builder.meta.templateMeta);
 
     if (definition) {
       builder.component.static(definition, [params, hashToArgs(hash), null, null]);

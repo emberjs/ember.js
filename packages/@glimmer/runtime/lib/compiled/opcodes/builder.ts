@@ -647,6 +647,11 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.releaseLocal();
   }
 
+  template(block: Option<WireFormat.SerializedInlineBlock>): Option<RawInlineBlock> {
+    if (!block) return null;
+    return new RawInlineBlock(this.env, this.meta, block.statements, block.parameters);
+  }
+
   // TODO
   // come back to this
   labelled(callback: BlockCallback) {

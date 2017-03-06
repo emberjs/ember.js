@@ -190,8 +190,6 @@ export namespace ClientSide {
   export type AnyDynamicAttr        = [ClientSideStatement, Ops.AnyDynamicAttr, string, WireFormat.Expression, Option<string>, boolean];
   export type StaticPartial         = [ClientSideStatement, Ops.StaticPartial, string, WireFormat.Core.EvalInfo];
   export type DynamicPartial        = [ClientSideStatement, Ops.DynamicPartial, WireFormat.Expression, WireFormat.Core.EvalInfo];
-  export type NestedBlock           = [ClientSideStatement, Ops.NestedBlock, string, WireFormat.Core.Params, Option<WireFormat.Core.Hash>, Option<Block>, Option<Block>];
-  export type ScannedBlock          = [ClientSideStatement, Ops.ScannedBlock, string, Core.Params, Option<Core.Hash>, Option<RawInlineBlock>, Option<RawInlineBlock>];
 
   export type ResolvedHelper        = [ClientSideExpression, Ops.ResolvedHelper, Helper, Core.Params, Core.Hash];
   export type FunctionExpression    = [ClientSideExpression, Ops.FunctionExpression, FunctionExpressionCallback<Opaque>];
@@ -209,8 +207,6 @@ export namespace ClientSide {
     | AnyDynamicAttr
     | StaticPartial
     | DynamicPartial
-    | NestedBlock
-    | ScannedBlock
     ;
 
   export type ClientSideExpression =
@@ -228,9 +224,7 @@ export abstract class RawBlock<S extends SymbolTable> {
     let buffer: WireFormat.Statement[] = [];
     let statements = this.statements;
     for (let statement of statements) {
-      if (WireFormat.Statements.isBlock(statement)) {
-        buffer.push(this.specializeBlock(statement));
-      } else if (WireFormat.Statements.isComponent(statement)) {
+      if (WireFormat.Statements.isComponent(statement)) {
         buffer.push(...this.specializeComponent(statement));
       } else {
         buffer.push(statement);
@@ -238,11 +232,6 @@ export abstract class RawBlock<S extends SymbolTable> {
     }
 
     return buffer;
-  }
-
-  protected specializeBlock(block: WireFormat.Statements.Block): ClientSide.ScannedBlock {
-    let [, name, params, hash, RawTemplate, inverse] = block;
-    return [Ops.ClientSideStatement, ClientSide.Ops.ScannedBlock, name, params, hash, this.child(RawTemplate), this.child(inverse)];
   }
 
   protected specializeComponent(sexp: WireFormat.Statements.Component): WireFormat.Statement[] {

@@ -58,8 +58,8 @@ export {
 export {
   Blocks as BlockMacros,
   Inlines as InlineMacros,
-  NestedBlockSyntax,
-  CompileBlockMacro,
+  BlockMacro,
+  MissingBlockMacro,
   compileList,
   expr as compileExpression
 } from './lib/syntax/functions';
