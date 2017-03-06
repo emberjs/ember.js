@@ -6,7 +6,6 @@ import { Option } from '@glimmer/util';
 import { EMPTY_ARRAY } from './utils';
 import * as WireFormat from '@glimmer/wire-format';
 import { Opaque, SymbolTable, ProgramSymbolTable, BlockSymbolTable } from '@glimmer/interfaces';
-import { ComponentDefinition } from './component/interfaces';
 import { debugSlice } from './opcodes';
 import { CompilationMeta } from '@glimmer/interfaces';
 
@@ -153,8 +152,6 @@ import { VersionedPathReference } from '@glimmer/reference';
 
 export namespace ClientSide {
   export enum Ops {
-    ScannedComponent,
-    ResolvedComponent,
     OpenComponentElement,
     OpenPrimitiveElement,
     OpenDynamicElement,
@@ -180,8 +177,6 @@ export namespace ClientSide {
   import ClientSideExpression = WireFormat.Ops.ClientSideExpression;
   import Core = WireFormat.Core;
 
-  export type ScannedComponent      = [ClientSideStatement, Ops.ScannedComponent, string, RawInlineBlock, WireFormat.Core.Hash, Option<RawInlineBlock>];
-  export type ResolvedComponent     = [ClientSideStatement, Ops.ResolvedComponent, ComponentDefinition<Opaque>, Option<RawInlineBlock>, WireFormat.Core.Args, Option<Block>, Option<Block>];
   export type OpenComponentElement  = [ClientSideStatement, Ops.OpenComponentElement, string];
   export type OpenPrimitiveElement  = [ClientSideStatement, Ops.OpenPrimitiveElement, string, string[]];
   export type OpenDynamicElement    = [ClientSideStatement, Ops.OpenDynamicElement, WireFormat.Expression];
@@ -197,8 +192,6 @@ export namespace ClientSide {
   export type FunctionExpressionCallback<T> = (VM: PublicVM, symbolTable: SymbolTable) => VersionedPathReference<T>;
 
   export type ClientSideStatement =
-      ScannedComponent
-    | ResolvedComponent
     | OpenComponentElement
     | OpenPrimitiveElement
     | OpenDynamicElement
@@ -224,34 +217,10 @@ export abstract class RawBlock<S extends SymbolTable> {
     let buffer: WireFormat.Statement[] = [];
     let statements = this.statements;
     for (let statement of statements) {
-      if (WireFormat.Statements.isComponent(statement)) {
-        buffer.push(...this.specializeComponent(statement));
-      } else {
-        buffer.push(statement);
-      }
+      buffer.push(statement);
     }
 
     return buffer;
-  }
-
-  protected specializeComponent(sexp: WireFormat.Statements.Component): WireFormat.Statement[] {
-    let [, tag, attrs, args, block] = sexp;
-
-    if (this.env.hasComponentDefinition(tag, this.meta.templateMeta)) {
-      let child = this.child(block);
-      let attrsBlock = new RawInlineBlock(this.env, this.meta, attrs, EMPTY_ARRAY);
-      return [[Ops.ClientSideStatement, ClientSide.Ops.ScannedComponent, tag, attrsBlock, args, child]];
-    } else if (block && block.parameters.length) {
-      throw new Error(`Compile Error: Cannot find component ${tag}`);
-    } else {
-      return [
-        [Ops.OpenElement, tag],
-        ...attrs,
-        [Ops.FlushElement],
-        ...(block ? block.statements : EMPTY_ARRAY),
-        [Ops.CloseElement]
-      ];
-    }
   }
 
   child(block: Option<WireFormat.SerializedInlineBlock>): Option<RawInlineBlock> {
