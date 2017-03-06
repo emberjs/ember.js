@@ -46,7 +46,7 @@ export class Compilers<T extends Syntax> {
     let name: number = sexp[this.offset];
     let index = this.names[name];
     let func = this.funcs[index];
-    assert(!!func, `expected an implementation for ${sexp[0]}`);
+    assert(!!func, `expected an implementation for ${this.offset === 0 ? Ops[sexp[0]] : ClientSide.Ops[sexp[1]]}`);
     func(sexp, builder);
   }
 }
@@ -169,19 +169,16 @@ STATEMENTS.add(Ops.Append, (sexp: S.Append, builder: OpcodeBuilder) => {
 //   }
 // });
 
-CLIENT_SIDE.add(ClientSide.Ops.NestedBlock, (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
-  let { blocks } = builder.env.macros();
-  blocks.compile(sexp, builder);
-});
-
-CLIENT_SIDE.add(ClientSide.Ops.ScannedBlock, (sexp: ClientSide.ScannedBlock, builder) => {
-  let [,, name, params, hash, template, inverse] = sexp;
+STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {
+  let [, name, params, hash, _template, _inverse] = sexp;
+  let template = builder.template(_template);
+  let inverse = builder.template(_inverse);
 
   let templateBlock = template && template.scan();
   let inverseBlock = inverse && inverse.scan();
 
   let { blocks } = builder.env.macros();
-  blocks.compile([Ops.ClientSideStatement, ClientSide.Ops.NestedBlock, name, params, hash, templateBlock, inverseBlock], builder);
+  blocks.compile(name, params, hash, templateBlock, inverseBlock, builder);
 });
 
 export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
@@ -512,35 +509,34 @@ export function compileBlocks(block: Option<Block>, inverse: Option<Block>, buil
   return { default: !!block, inverse: !!inverse };
 }
 
-export type NestedBlockSyntax = ClientSide.NestedBlock;
-export type CompileBlockMacro = (sexp: NestedBlockSyntax, builder: OpcodeBuilder) => void;
+export type BlockMacro = (params: C.Params, hash: C.Hash, template: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder) => void;
+export type MissingBlockMacro = (name: string, params: C.Params, hash: C.Hash, template: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder) => void;
 
 export class Blocks {
   private names = dict<number>();
-  private funcs: CompileBlockMacro[] = [];
-  private missing: CompileBlockMacro;
+  private funcs: BlockMacro[] = [];
+  private missing: MissingBlockMacro;
 
-  add(name: string, func: CompileBlockMacro) {
+  add(name: string, func: BlockMacro) {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
-  addMissing(func: CompileBlockMacro) {
+  addMissing(func: MissingBlockMacro) {
     this.missing = func;
   }
 
-  compile(sexp: ClientSide.NestedBlock, builder: OpcodeBuilder): void {
-    let name: string = sexp[2];
+  compile(name: string, params: C.Params, hash: C.Hash, template: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder): void {
     let index = this.names[name];
 
     if (index === undefined) {
       assert(!!this.missing, `${name} not found, and no catch-all block handler was registered`);
       let func = this.missing;
-      let handled = func(sexp, builder);
+      let handled = func(name, params, hash, template, inverse, builder);
       assert(!!handled, `${name} not found, and the catch-all block handler didn't handle it`);
     } else {
       let func = this.funcs[index];
-      func(sexp, builder);
+      func(params, hash, template, inverse, builder);
     }
   }
 }
@@ -609,7 +605,7 @@ export const INLINES = new Inlines();
 populateBuiltins(BLOCKS, INLINES);
 
 export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines = new Inlines()): { blocks: Blocks, inlines: Inlines } {
-  blocks.add('if', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('if', (params, _hash, template, inverse, builder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -621,8 +617,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     //        Evalulate(inverse)
     // END:   Noop
     //        Exit
-
-    let [,,, params,, _default, inverse] = sexp;
 
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #if requires a single argument`);
@@ -636,22 +630,22 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.test('environment');
 
     builder.labelled(b => {
-      if (_default && inverse) {
+      if (template && inverse) {
         b.jumpUnless('ELSE');
-        b.invokeStatic(_default);
+        b.invokeStatic(template);
         b.jump('END');
         b.label('ELSE');
         b.invokeStatic(inverse);
-      } else if (_default) {
+      } else if (template) {
         b.jumpUnless('END');
-        b.invokeStatic(_default);
+        b.invokeStatic(template);
       } else {
         throw unreachable();
       }
     });
   });
 
-  blocks.add('unless', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('unless', (params, _hash, template, inverse, builder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -663,8 +657,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     //        Evalulate(inverse)
     // END:   Noop
     //        Exit
-
-    let [,,, params,, _default, inverse] = sexp;
 
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #unless requires a single argument`);
@@ -678,22 +670,22 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.test('environment');
 
     builder.labelled(b => {
-      if (_default && inverse) {
+      if (template && inverse) {
         b.jumpIf('ELSE');
-        b.invokeStatic(_default);
+        b.invokeStatic(template);
         b.jump('END');
         b.label('ELSE');
         b.invokeStatic(inverse);
-      } else if (_default) {
+      } else if (template) {
         b.jumpIf('END');
-        b.invokeStatic(_default);
+        b.invokeStatic(template);
       } else {
         throw unreachable();
       }
     });
   });
 
-  blocks.add('with', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('with', (params, _hash, template, inverse, builder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -705,8 +697,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     //        Evalulate(inverse)
     // END:   Noop
     //        Exit
-
-    let [,,, params,, _default, inverse] = sexp;
 
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #with requires a single argument`);
@@ -720,17 +710,17 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.test('environment');
 
     builder.labelled(b => {
-      if (_default && inverse) {
+      if (template && inverse) {
         b.jumpUnless('ELSE');
-        b.invokeStatic(_default, b => {
+        b.invokeStatic(template, b => {
           b.getLocal(item);
         });
         b.jump('END');
         b.label('ELSE');
         b.invokeStatic(inverse);
-      } else if (_default) {
+      } else if (template) {
         b.jumpUnless('END');
-        b.invokeStatic(_default, b => {
+        b.invokeStatic(template, b => {
           b.getLocal(item);
         });
       } else {
@@ -739,7 +729,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     });
   });
 
-  blocks.add('each', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('each', (params, hash, template, inverse, builder) => {
     //         Enter(BEGIN, END)
     // BEGIN:  Noop
     //         PutArgs
@@ -767,8 +757,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // TOMORROW: Locals for key, value, memo
     // TOMORROW: What is the memo slot used for?
 
-    let [,,, params, hash, _default, inverse] = sexp;
-
     let list = builder.local();
 
     if (hash && hash[0][0] === 'key') {
@@ -791,7 +779,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       }
 
       b.iter(b => {
-        b.invokeStatic(unwrap(_default), 2);
+        b.invokeStatic(unwrap(template), 2);
       });
 
       if (inverse) {
@@ -806,9 +794,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.pop();
   });
 
-  blocks.add('-in-element', (sexp, builder) => {
-    let [,,, params,, _default] = sexp;
-
+  blocks.add('-in-element', (params, _hash, template, _inverse, builder) => {
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #-in-element requires a single argument`);
     }
@@ -824,14 +810,12 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       b.jumpUnless('END');
       b.getLocal(element);
       b.pushRemoteElement();
-      b.invokeStatic(unwrap(_default));
+      b.invokeStatic(unwrap(template));
       b.popRemoteElement();
     });
   });
 
-  blocks.add('-with-dynamic-vars', (sexp: NestedBlockSyntax, builder) => {
-    let [,,,, hash, _default] = sexp;
-
+  blocks.add('-with-dynamic-vars', (_params, hash, template, _inverse, builder) => {
     if (hash) {
       let [names, expressions] = hash;
 
@@ -840,11 +824,11 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       builder.unit(b => {
         b.pushDynamicScope();
         b.bindDynamicScope(names);
-        b.invokeStatic(unwrap(_default));
+        b.invokeStatic(unwrap(template));
         b.popDynamicScope();
       });
     } else {
-      builder.invokeStatic(unwrap(_default));
+      builder.invokeStatic(unwrap(template));
     }
   });
 
