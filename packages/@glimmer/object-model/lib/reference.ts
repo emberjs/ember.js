@@ -96,8 +96,8 @@ export class VersionedObjectReference implements VersionedPathReference<Opaque> 
   constructor(private parent: VersionedPathReference<Opaque>, private key: PropertyKey) {}
 
   value() {
-    let { key } = this;
-    let parentObject = this.parent.value() as GlimmerInstance;
+    let { parent, key } = this;
+    let parentObject = parent.value() as GlimmerInstance;
 
     let computed = classMeta(Object.getPrototypeOf(parentObject)).getComputed(key);
     let tags: Tag[] = [meta(parentObject).tag(key)];

@@ -105,9 +105,7 @@ export {
   ComponentDefinition,
   ComponentLayoutBuilder,
   ComponentAttrsBuilder,
-  isComponentDefinition,
-  Arguments,
-  NamedArguments
+  isComponentDefinition
 } from './lib/component/interfaces';
 
 export {
