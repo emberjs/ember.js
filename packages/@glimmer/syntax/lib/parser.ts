@@ -1,7 +1,3 @@
-import { parse } from "handlebars";
-import builders from "./builders";
-import print from "./generation/print";
-import Walker from "./traversal/walker";
 import {
   EventedTokenizer,
   EntityParser,

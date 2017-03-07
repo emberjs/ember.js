@@ -1,7 +1,7 @@
 import { CompiledDynamicTemplate, CompiledStaticTemplate } from './compiled/blocks';
 import { builder } from './compiler';
 import OpcodeBuilder from './compiled/opcodes/builder';
-import Environment, { Helper } from './environment';
+import Environment from './environment';
 import { Option } from '@glimmer/util';
 import { EMPTY_ARRAY } from './utils';
 import * as WireFormat from '@glimmer/wire-format';
@@ -174,7 +174,6 @@ export namespace ClientSide {
 
   import ClientSideStatement = WireFormat.Ops.ClientSideStatement;
   import ClientSideExpression = WireFormat.Ops.ClientSideExpression;
-  import Core = WireFormat.Core;
 
   export type OpenComponentElement  = [ClientSideStatement, Ops.OpenComponentElement, string];
   export type OpenPrimitiveElement  = [ClientSideStatement, Ops.OpenPrimitiveElement, string, string[]];

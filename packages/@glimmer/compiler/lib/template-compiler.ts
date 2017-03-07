@@ -386,10 +386,6 @@ function isSimplePath({ parts }: AST.PathExpression): boolean {
   return parts.length === 1;
 }
 
-function isSelfGet({ parts }: AST.PathExpression): boolean {
-  return (parts[0] as any) === null;
-}
-
 function isLocal({ parts }: AST.PathExpression, symbols: SymbolTable): boolean {
   return symbols && /* parts.length && */ symbols.has(parts[0]);
 }

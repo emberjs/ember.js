@@ -5,7 +5,7 @@ import {
   cannotReplaceOrRemoveInKeyHandlerYet
 } from './errors';
 import * as nodes from '../types/nodes';
-import { Opaque, Option } from "@glimmer/util";
+import { Option } from "@glimmer/interfaces";
 
 export interface NodeVisitor {
   All?: NodeHandler<nodes.BaseNode>;
