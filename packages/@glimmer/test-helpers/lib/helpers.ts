@@ -155,7 +155,7 @@ export function equalTokens(fragment, html, message=null) {
     });
   }
 
-  // deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
+  // QUnit.assert.deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
 }
 
 export function generateSnapshot(element) {
