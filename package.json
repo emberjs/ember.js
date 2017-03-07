@@ -13,7 +13,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "ember build",
-    "prepublish": "lerna bootstrap && bower install && ember build",
+    "prepublish": "lerna bootstrap && ember build",
     "sauce:connect": "ember sauce:connect",
     "sauce:disconnect": "ember sauce:disconnect",
     "start": "ember serve --port=7357",
@@ -39,14 +39,12 @@
     "exists-sync": "0.0.3",
     "git-repo-version": "^0.1.2",
     "handlebars": "^4.0.6",
-    "qunit": "^0.9.1",
     "simple-dom": "^0.3.0",
     "simple-html-tokenizer": "^0.4.0"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
     "benchmark": "^1.0.0",
-    "bower": "~1.3.3",
     "ember-cli": "^2.4.2",
     "ember-cli-release": "^1.0.0-beta.1",
     "ember-cli-sauce": "^1.3.0",

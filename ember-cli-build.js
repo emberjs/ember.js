@@ -53,8 +53,6 @@ module.exports = function(_options) {
   var options = _options || {};
   var packages = __dirname + '/packages';
   var tslintConfig = __dirname + '/tslint.json';
-  var bower = __dirname + '/bower_components';
-  var hasBower = existsSync(bower);
   var babelOptions = buildBabelOptions(options);
 
   var tsOptions = buildTSOptions();
@@ -295,15 +293,13 @@ module.exports = function(_options) {
     es6LibTree
   ];
 
-  if (hasBower) {
-    var loaderPath = path.parse(require.resolve('loader.js'));
-    var loader = find(loaderPath.dir, {
-      files: [ loaderPath.base ],
-      destDir: '/assets'
-    });
+  var loaderPath = path.parse(require.resolve('loader.js'));
+  var loader = find(loaderPath.dir, {
+    files: [ loaderPath.base ],
+    destDir: '/assets'
+  });
 
-    finalTrees.push(loader);
-  }
+  finalTrees.push(loader);
 
   return merge(finalTrees);
 };
