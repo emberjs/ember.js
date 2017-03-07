@@ -2099,11 +2099,11 @@ QUnit.test('emberish component should have unique IDs', assert => {
 // // jscs:disable validateIndentation
 // if (isEnabled('ember-glimmer-component-generation')) {
 //   QUnit.module('component - invocation (angle brackets)', {
-//     setup() {
+//     beforeEach() {
 //       commonSetup();
 //     },
 
-//     teardown() {
+//     afterEach() {
 //       commonTeardown();
 //     }
 //   });

@@ -1170,7 +1170,12 @@ function hashToArgs(hash: Option<WireFormat.Core.Hash>): Option<WireFormat.Core.
 }
 
 export function equalsElement(element: Element, tagName: string, attributes: Object, content: string) {
-  QUnit.push(element.tagName === tagName.toUpperCase(), element.tagName.toLowerCase(), tagName, `expect tagName to be ${tagName}`);
+  QUnit.assert.pushResult({
+    result: element.tagName === tagName.toUpperCase(),
+    actual: element.tagName.toLowerCase(),
+    expected: tagName,
+    message: `expect tagName to be ${tagName}`
+  });
 
   let expectedAttrs: Dict<Matcher> = dict<Matcher>();
 
@@ -1182,12 +1187,12 @@ export function equalsElement(element: Element, tagName: string, attributes: Obj
     let matcher: Matcher = typeof expected === 'object' && MATCHER in expected ? expected : equalsAttr(expected);
     expectedAttrs[prop] = matcher;
 
-    QUnit.push(
-      expectedAttrs[prop].match(element.getAttribute(prop)),
-      matcher.fail(element.getAttribute(prop)),
-      matcher.fail(element.getAttribute(prop)),
-      `Expected element's ${prop} attribute ${matcher.expected()}`
-    );
+    QUnit.assert.pushResult({
+      result: expectedAttrs[prop].match(element.getAttribute(prop)),
+      actual: matcher.fail(element.getAttribute(prop)),
+      expected: matcher.fail(element.getAttribute(prop)),
+      message: `Expected element's ${prop} attribute ${matcher.expected()}`
+    });
   }
 
   let actualAttributes = {};
@@ -1196,16 +1201,27 @@ export function equalsElement(element: Element, tagName: string, attributes: Obj
   }
 
   if (!(element instanceof HTMLElement)) {
-    QUnit.push(element instanceof HTMLElement, null, null, "Element must be an HTML Element, not an SVG Element");
+        QUnit.assert.pushResult({
+          result: element instanceof HTMLElement,
+          actual: null,
+          expected: null,
+          message: "Element must be an HTML Element, not an SVG Element"
+        });
   } else {
-    QUnit.push(
-      element.attributes.length === expectedCount,
-      element.attributes.length, expectedCount,
-      `Expected ${expectedCount} attributes; got ${element.outerHTML}`
-    );
+    QUnit.assert.pushResult({
+      result: element.attributes.length === expectedCount,
+      actual: element.attributes.length,
+      expected: expectedCount,
+      message: `Expected ${expectedCount} attributes; got ${element.outerHTML}`
+    });
 
     if (content !== null) {
-      QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);
+      QUnit.assert.pushResult({
+        result: element.innerHTML === content,
+        actual: element.innerHTML,
+        expected: content,
+        message: `The element had '${content}' as its content`
+      });
     }
   }
 }

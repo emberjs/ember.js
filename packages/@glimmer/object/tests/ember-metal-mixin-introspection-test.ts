@@ -36,14 +36,14 @@ let Combined = Mixin.create(BarProperties, BarMethods);
 let obj;
 
 QUnit.module('Mixin.mixins (introspection)', {
-  setup() {
+  beforeEach() {
     obj = {};
     mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
   }
 });
 
-QUnit.test('Ember.mixins()', function() {
-  deepEqual(Mixin.mixins(obj),
+QUnit.test('Ember.mixins()', assert => {
+  assert.deepEqual(Mixin.mixins(obj),
     [PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, BarProperties, BarMethods, Combined],
     'should return included mixins'
   );

@@ -42,5 +42,5 @@ export function astEqual(actual, expected, message?) {
   actual = normalizeNode(actual);
   expected = normalizeNode(expected);
 
-  deepEqual(actual, expected, message);
+  QUnit.assert.deepEqual(actual, expected, message);
 }
