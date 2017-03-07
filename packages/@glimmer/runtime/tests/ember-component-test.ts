@@ -1789,7 +1789,7 @@ function inspect(obj: EmberObject) {
 }
 
 function equalObject(actual: EmberObject, expected: EmberObject, msg: string) {
-  strictEqual(inspect(actual), inspect(expected), msg);
+  QUnit.assert.strictEqual(inspect(actual), inspect(expected), msg);
 }
 
 QUnit.skip('newly-added sub-components get correct parentView', function() {
@@ -2008,10 +2008,10 @@ QUnit.test('emberish component should have unique IDs', assert => {
   markAsSeen(view.element.childNodes[4] as Element);
   markAsSeen(view.element.childNodes[5] as Element);
 
-  equal(Object.keys(IDs).length, 6, "Expected the components to each have a unique IDs");
+  assert.equal(Object.keys(IDs).length, 6, "Expected the components to each have a unique IDs");
 
   for (let id in IDs) {
-    equal(IDs[id], 1, `Expected ID ${id} to be unique`);
+    assert.equal(IDs[id], 1, `Expected ID ${id} to be unique`);
   }
 });
 
@@ -2034,13 +2034,13 @@ QUnit.test('emberish component should have unique IDs', assert => {
 
 //   runAppend(view);
 
-//   equal(jQuery('#qunit-fixture').text(), 'In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
+//   QUnit.assert.equal(jQuery('#qunit-fixture').text(), 'In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
 
 //   run(function() {
 //     items.pushObject('James');
 //   });
 
-//   equal(jQuery('#qunit-fixture').text(), 'In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: James.]');
+//   QUnit.assert.equal(jQuery('#qunit-fixture').text(), 'In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: James.]');
 // });
 
 // QUnit.skip('specifying classNames results in correct class', function(assert) {
@@ -2064,7 +2064,7 @@ QUnit.test('emberish component should have unique IDs', assert => {
 //   runAppend(view);
 
 //   let button = view.$('button');
-//   ok(button.is('.foo.bar.baz.ember-view'), 'the element has the correct classes: ' + button.attr('class'));
+//   assert.ok(button.is('.foo.bar.baz.ember-view'), 'the element has the correct classes: ' + button.attr('class'));
 
 //   let expectedClassNames = ['ember-view', 'foo', 'bar', 'baz'];
 //   assert.deepEqual(clickyThing.get('classNames'),  expectedClassNames, 'classNames are properly combined');
@@ -2255,7 +2255,7 @@ let styles = [{
 }];
 
 styles.forEach(style => {
-  QUnit.test(`non-block without attributes replaced with ${style.name}`, function() {
+  QUnit.test(`non-block without attributes replaced with ${style.name}`, assert => {
     env.registerEmberishGlimmerComponent('non-block', null, `  <${style.tagName}>In layout</${style.tagName}>  `);
 
     appendViewFor('<non-block />');
@@ -2265,7 +2265,7 @@ styles.forEach(style => {
 
     rerender();
 
-    strictEqual(node, view.element.firstChild, 'The inner element has not changed');
+    assert.strictEqual(node, view.element.firstChild, 'The inner element has not changed');
     equalsElement(view.element, style.tagName, { class: 'ember-view', id: regex(/^ember\d*$/) }, 'In layout');
   });
 
@@ -2284,7 +2284,7 @@ styles.forEach(style => {
     set(view, 'stability', 'changed!!!');
     rerender();
 
-    strictEqual(node.firstElementChild, view.element.firstElementChild, 'The inner element has not changed');
+    assert.strictEqual(node.firstElementChild, view.element.firstElementChild, 'The inner element has not changed');
     equalsElement(node, style.tagName, { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) }, 'In layout');
   });
 
@@ -2303,7 +2303,7 @@ styles.forEach(style => {
     set(view, 'stability', 'changed!!!');
     rerender();
 
-    strictEqual(node.firstElementChild, view.element.firstElementChild, 'The inner element has not changed');
+    assert.strictEqual(node.firstElementChild, view.element.firstElementChild, 'The inner element has not changed');
     equalsElement(node, style.tagName, { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) }, '<p>In layout</p>');
   });
 
@@ -2439,7 +2439,7 @@ QUnit.skip('block without properties', function() {
   equalsElement(view.element, 'with-block', { class: classes('ember-view'), id: regex(/^ember\d*$/) }, 'In layout - In template');
 });
 
-QUnit.skip('attributes are not installed on the top level', function() {
+QUnit.skip('attributes are not installed on the top level', assert => {
   let component: NonBlock;
 
   class NonBlock extends EmberishGlimmerComponent {
@@ -2467,10 +2467,10 @@ QUnit.skip('attributes are not installed on the top level', function() {
     id: regex(/^ember\d*$/),
     text: 'texting'
   }, 'In layout - texting -- null');
-  equal(component.attrs['text'], 'texting');
-  equal(component.attrs['dynamic'], 'dynamic');
-  strictEqual(component['text'], null);
-  strictEqual(component['dynamic'], null);
+  assert.equal(component.attrs['text'], 'texting');
+  assert.equal(component.attrs['dynamic'], 'dynamic');
+  assert.strictEqual(component['text'], null);
+  assert.strictEqual(component['dynamic'], null);
 
   rerender();
 
@@ -2479,10 +2479,10 @@ QUnit.skip('attributes are not installed on the top level', function() {
     id: regex(/^ember\d*$/),
     text: 'texting'
   }, 'In layout - texting -- <!---->');
-  equal(component.attrs['text'], 'texting');
-  equal(component.attrs['dynamic'], 'dynamic');
-  strictEqual(component['text'], null);
-  strictEqual(component['dynamic'], null);
+  assert.equal(component.attrs['text'], 'texting');
+  assert.equal(component.attrs['dynamic'], 'dynamic');
+  assert.strictEqual(component['text'], null);
+  assert.strictEqual(component['dynamic'], null);
 });
 
 QUnit.skip('non-block with properties on attrs and component class', function() {

@@ -2,8 +2,7 @@ import { preprocess as parse, AST } from "../index";
 
 QUnit.module("[glimmer-syntax] Parser - Location Info");
 
-const test = QUnit.test;
-const deepEqual = QUnit.assert.deepEqual.bind(QUnit.assert);
+const { test } = QUnit;
 
 function locEqual(node, startLine, startColumn, endLine, endColumn, message = JSON.stringify(node)) {
 
@@ -13,7 +12,7 @@ function locEqual(node, startLine, startColumn, endLine, endColumn, message = JS
     end: { line: endLine, column: endColumn }
   };
 
-  deepEqual(node.loc, expected, message);
+  QUnit.assert.deepEqual(node.loc, expected, message);
 }
 
 test("programs", function() {

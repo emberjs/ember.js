@@ -20,7 +20,7 @@ function shouldBeClean(reference: Reference<any>, msg?: string) {
 }
 
 function shouldBeDirty(reference: Reference<any>, msg?: string) {
-  // equal(reference.isDirty(), true, msg || `${reference} should be dirty`);
+  // QUnit.assert.equal(reference.isDirty(), true, msg || `${reference} should be dirty`);
 }
 
 QUnit.test('should proxy get to alt key', assert => {
@@ -102,7 +102,7 @@ QUnit.test('immediately sets up dependencies if already being watched', assert =
 
   set(obj, 'foo.faz', 'BAR');
   assert.equal(ref.value(), 'BAR');
-  // equal(count, 1);
+  // QUnit.assert.equal(count, 1);
 });
 
 QUnit.test('setting alias on self should fail assertion', assert => {
