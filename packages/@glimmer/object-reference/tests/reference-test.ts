@@ -235,7 +235,7 @@ QUnit.test("test data flow that goes through primitive wrappers", function() {
 
 function isDirty(ref, newValue) {
   // ok(ref.isDirty(), ref.label() + " is dirty");
-  ok(ref.value() === newValue, ref.label() + " has new value " + newValue);
+  QUnit.assert.ok(ref.value() === newValue, ref.label() + " has new value " + newValue);
 }
 
 function isClean(ref) {

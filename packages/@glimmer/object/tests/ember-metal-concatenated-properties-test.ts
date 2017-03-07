@@ -3,7 +3,7 @@ import { Mixin } from '@glimmer/object';
 
 QUnit.module('Mixin.concatenatedProperties');
 
-QUnit.test('defining concatenated properties should concat future version', function() {
+QUnit.test('defining concatenated properties should concat future version', assert => {
   let MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
     foo: ['a', 'b', 'c']
@@ -14,10 +14,10 @@ QUnit.test('defining concatenated properties should concat future version', func
   });
 
   let obj = mixin({}, MixinA, MixinB);
-  deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
+  assert.deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
 });
 
-QUnit.test('defining concatenated properties should concat future version', function() {
+QUnit.test('defining concatenated properties should concat future version', assert => {
   let MixinA = Mixin.create({
     concatenatedProperties: null
   });
@@ -28,10 +28,10 @@ QUnit.test('defining concatenated properties should concat future version', func
 
   let obj = mixin({}, MixinA, MixinB);
 
-  deepEqual(obj.concatenatedProperties, []);
+  assert.deepEqual(obj.concatenatedProperties, []);
 });
 
-QUnit.test('concatenatedProperties should be concatenated', function() {
+QUnit.test('concatenatedProperties should be concatenated', assert => {
   let MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
     foo: ['a', 'b', 'c']
@@ -48,12 +48,12 @@ QUnit.test('concatenatedProperties should be concatenated', function() {
   });
 
   let obj = mixin({}, MixinA, MixinB, MixinC);
-  deepEqual(get(obj, 'concatenatedProperties'), ['foo', 'bar'], 'get concatenatedProperties');
-  deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f'], 'get foo');
-  deepEqual(get(obj, 'bar'), [1, 2, 3, 4, 5, 6], 'get bar');
+  assert.deepEqual(get(obj, 'concatenatedProperties'), ['foo', 'bar'], 'get concatenatedProperties');
+  assert.deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f'], 'get foo');
+  assert.deepEqual(get(obj, 'bar'), [1, 2, 3, 4, 5, 6], 'get bar');
 });
 
-QUnit.test('adding a prop that is not an array should make array', function() {
+QUnit.test('adding a prop that is not an array should make array', assert => {
   let MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
     foo: [1, 2, 3]
@@ -64,20 +64,20 @@ QUnit.test('adding a prop that is not an array should make array', function() {
   });
 
   let obj = mixin({}, MixinA, MixinB);
-  deepEqual(get(obj, 'foo'), [1, 2, 3, 4]);
+  assert.deepEqual(get(obj, 'foo'), [1, 2, 3, 4]);
 });
 
-QUnit.test('adding a prop that is not an array should make array', function() {
+QUnit.test('adding a prop that is not an array should make array', assert => {
   let MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
     foo: 'bar'
   });
 
   let obj = mixin({}, MixinA);
-  deepEqual(get(obj, 'foo'), ['bar']);
+  assert.deepEqual(get(obj, 'foo'), ['bar']);
 });
 
-QUnit.skip('adding a non-concatenable property that already has a defined value should result in an array with both values', function() {
+QUnit.skip('adding a non-concatenable property that already has a defined value should result in an array with both values', assert => {
   let mixinA = Mixin.create({
     foo: 1
   });
@@ -88,10 +88,10 @@ QUnit.skip('adding a non-concatenable property that already has a defined value 
   });
 
   let obj = mixin({}, mixinA, mixinB);
-  deepEqual(get(obj, 'foo'), [1, 2]);
+  assert.deepEqual(get(obj, 'foo'), [1, 2]);
 });
 
-QUnit.skip('adding a concatenable property that already has a defined value should result in a concatenated value', function() {
+QUnit.skip('adding a concatenable property that already has a defined value should result in a concatenated value', assert => {
   let mixinA = Mixin.create({
     foobar: 'foo'
   });
@@ -102,5 +102,5 @@ QUnit.skip('adding a concatenable property that already has a defined value shou
   });
 
   let obj = mixin({}, mixinA, mixinB);
-  equal(get(obj, 'foobar'), 'foobar');
+  assert.equal(get(obj, 'foobar'), 'foobar');
 });

@@ -6,11 +6,11 @@ import { get, set, defineProperty } from './support';
 let obj, count;
 
 QUnit.module('defineProperty - alias', {
-  setup() {
+  beforeEach() {
     obj = { foo: { faz: 'FOO' } };
     count = 0;
   },
-  teardown() {
+  afterEach() {
     obj = null;
   }
 });
@@ -23,27 +23,27 @@ function shouldBeDirty(reference: Reference<any>, msg?: string) {
   // equal(reference.isDirty(), true, msg || `${reference} should be dirty`);
 }
 
-QUnit.test('should proxy get to alt key', function() {
+QUnit.test('should proxy get to alt key', assert => {
   defineProperty(obj, 'bar', alias('foo.faz'));
-  equal(get(obj, 'bar'), 'FOO');
+  assert.equal(get(obj, 'bar'), 'FOO');
 });
 
-QUnit.test('should proxy set to alt key', function() {
+QUnit.test('should proxy set to alt key', assert => {
   defineProperty(obj, 'bar', alias('foo.faz'));
   set(obj, 'bar', 'BAR');
-  equal(get(obj, 'foo.faz'), 'BAR');
+  assert.equal(get(obj, 'foo.faz'), 'BAR');
 });
 
-QUnit.test('should observe the alias', function() {
+QUnit.test('should observe the alias', assert => {
   defineProperty(obj, 'bar', alias('foo.faz'));
   let ref = Meta.for(obj).root().get('bar');
   let val = ref.value();
-  equal(val, 'FOO');
+  assert.equal(val, 'FOO');
   shouldBeClean(ref);
 
   set(obj.foo, 'faz', 'FAZ');
   shouldBeDirty(ref, "after setting the property the alias is for");
-  equal(ref.value(), 'FAZ');
+  assert.equal(ref.value(), 'FAZ');
 });
 
 function observe(obj, key) {
@@ -52,7 +52,7 @@ function observe(obj, key) {
   return ref;
 }
 
-QUnit.test('old dependent keys should not trigger property changes', function() {
+QUnit.test('old dependent keys should not trigger property changes', assert => {
   let obj1 = Object.create(null);
   defineProperty(obj1, 'foo', null);
   defineProperty(obj1, 'bar', alias('foo'));
@@ -60,22 +60,22 @@ QUnit.test('old dependent keys should not trigger property changes', function() 
   defineProperty(obj1, 'baz', alias('bar')); // redefine baz
 
   let ref = observe(obj1, 'baz');
-  equal(ref.value(), null, "The value starts out null");
+  assert.equal(ref.value(), null, "The value starts out null");
 
   set(obj1, 'foo', 'FOO');
-  equal(ref.value(), 'FOO', "And it sees the new value");
+  assert.equal(ref.value(), 'FOO', "And it sees the new value");
 
   set(obj1, 'foo', 'OOF');
 });
 
-QUnit.test('overridden dependent keys should not trigger property changes', function() {
+QUnit.test('overridden dependent keys should not trigger property changes', assert => {
   let obj1 = Object.create(null);
   defineProperty(obj1, 'foo', null);
   defineProperty(obj1, 'bar', alias('foo'));
   defineProperty(obj1, 'baz', alias('foo'));
 
   let ref = observe(obj1, 'baz');
-  equal(ref.value(), null);
+  assert.equal(ref.value(), null);
 
   let obj2 = Object.create(obj1);
   defineProperty(obj2, 'baz', alias('bar')); // override baz
@@ -85,23 +85,23 @@ QUnit.test('overridden dependent keys should not trigger property changes', func
   set(obj2, 'foo', 'OOF');
 });
 
-QUnit.test('begins watching alt key as soon as alias is watched', function() {
+QUnit.test('begins watching alt key as soon as alias is watched', assert => {
   defineProperty(obj, 'bar', alias('foo.faz'));
 
   let ref = observe(obj, 'bar');
-  equal(ref.value(), 'FOO');
+  assert.equal(ref.value(), 'FOO');
 
   set(obj, 'foo.faz', 'BAR');
 
-  equal(ref.value(), 'BAR');
+  assert.equal(ref.value(), 'BAR');
 });
 
-QUnit.test('immediately sets up dependencies if already being watched', function() {
+QUnit.test('immediately sets up dependencies if already being watched', assert => {
   let ref = observe(obj, 'bar');
   defineProperty(obj, 'bar', alias('foo.faz'));
 
   set(obj, 'foo.faz', 'BAR');
-  equal(ref.value(), 'BAR');
+  assert.equal(ref.value(), 'BAR');
   // equal(count, 1);
 });
 

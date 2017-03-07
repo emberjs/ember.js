@@ -9,12 +9,12 @@ function compareWalkedNodes(html, expected) {
     nodes.push(node.type);
   });
 
-  deepEqual(nodes, expected);
+  QUnit.assert.deepEqual(nodes, expected);
 }
 
 QUnit.module('[glimmer-syntax] (Legacy) Traversal - Walker');
 
-test('walks elements', function() {
+QUnit.test('walks elements', function() {
   compareWalkedNodes('<div><li></li></div>', [
     'Program',
     'ElementNode',
@@ -22,7 +22,7 @@ test('walks elements', function() {
   ]);
 });
 
-test('walks blocks', function() {
+QUnit.test('walks blocks', function() {
   compareWalkedNodes('{{#foo}}<li></li>{{/foo}}', [
     'Program',
     'BlockStatement',

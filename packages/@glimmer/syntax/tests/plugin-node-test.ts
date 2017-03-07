@@ -1,13 +1,15 @@
 import { preprocess as parse, Walker } from '@glimmer/syntax';
 
+const { test } = QUnit;
+
 QUnit.module('[glimmer-syntax] Plugins - AST Transforms');
 
-test('AST plugins can be provided to the compiler', function() {
-  expect(1);
+test('AST plugins can be provided to the compiler', assert => {
+  assert.expect(1);
 
   function Plugin() { }
   Plugin.prototype.transform = function() {
-    ok(true, 'transform was called!');
+    assert.ok(true, 'transform was called!');
   };
 
   parse('<div></div>', {
@@ -17,12 +19,12 @@ test('AST plugins can be provided to the compiler', function() {
   });
 });
 
-test('provides syntax package as `syntax` prop if value is null', function() {
-  expect(1);
+test('provides syntax package as `syntax` prop if value is null', assert => {
+  assert.expect(1);
 
   function Plugin() { }
   Plugin.prototype.transform = function() {
-    equal(this.syntax.Walker, Walker);
+    assert.equal(this.syntax.Walker, Walker);
   };
 
   parse('<div></div>', {
@@ -32,8 +34,8 @@ test('provides syntax package as `syntax` prop if value is null', function() {
   });
 });
 
-test('AST plugins can modify the AST', function() {
-  expect(1);
+test('AST plugins can modify the AST', assert => {
+  assert.expect(1);
 
   let expected = "OOOPS, MESSED THAT UP!";
 
@@ -48,11 +50,11 @@ test('AST plugins can modify the AST', function() {
     }
   });
 
-  equal(ast, expected, 'return value from AST transform is used');
+  assert.equal(ast, expected, 'return value from AST transform is used');
 });
 
-test('AST plugins can be chained', function() {
-  expect(2);
+test('AST plugins can be chained', assert => {
+  assert.expect(2);
 
   let expected = "OOOPS, MESSED THAT UP!";
 
@@ -63,7 +65,7 @@ test('AST plugins can be chained', function() {
 
   function SecondaryPlugin() { }
   SecondaryPlugin.prototype.transform = function(ast) {
-    equal(ast, expected, 'return value from AST transform is used');
+    assert.equal(ast, expected, 'return value from AST transform is used');
 
     return 'BOOM!';
   };
@@ -77,5 +79,5 @@ test('AST plugins can be chained', function() {
     }
   });
 
-  equal(ast, 'BOOM!', 'return value from last AST transform is used');
+  assert.equal(ast, 'BOOM!', 'return value from last AST transform is used');
 });

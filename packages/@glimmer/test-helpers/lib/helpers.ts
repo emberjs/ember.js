@@ -75,9 +75,14 @@ export function compile<T extends WireFormat.TemplateMeta>(string: string, optio
   return factory.create(options.env);
 }
 
-export function equalInnerHTML(fragment, html, msg?) {
+export function equalInnerHTML(fragment, html, message?) {
   let actualHTML = normalizeInnerHTML(fragment.innerHTML);
-  QUnit.push(actualHTML === html, actualHTML, html, msg);
+  QUnit.assert.pushResult({
+    result: actualHTML === html,
+    actual: actualHTML,
+    exected: html,
+    message
+  });
 }
 
 export function equalHTML(node, html) {
@@ -142,7 +147,12 @@ export function equalTokens(fragment, html, message=null) {
   if (equiv && fragTokens.html !== htmlTokens.html) {
     QUnit.assert.deepEqual(fragTokens.tokens, htmlTokens.tokens, message);
   } else {
-    QUnit.push(QUnit.equiv(fragTokens.tokens, htmlTokens.tokens), fragTokens.html, htmlTokens.html, message);
+    QUnit.assert.pushResult({
+      result: QUnit.equiv(fragTokens.tokens, htmlTokens.tokens),
+      actual: fragTokens.html,
+      expected: htmlTokens.html,
+      message
+    });
   }
 
   // deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);

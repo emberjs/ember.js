@@ -1,10 +1,6 @@
 {
   "name": "glimmer-engine",
   "devDependencies": {
-    "qunit": "~1.20.0",
     "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#7b2034a19a4a66ece427ec96826e34a0782634fa"
-  },
-  "resolutions": {
-    "qunit": "~1.18.0"
   }
 }

@@ -215,12 +215,8 @@ module.exports = function(_options) {
     })
   ];
 
-  if (hasBower) {
-    testHarnessTrees.push(find(bower, {
-      srcDir: '/qunit/qunit',
-      destDir: '/tests'
-    }));
-  }
+  var qunitPath = path.join(require.resolve('qunitjs'), '..');
+  testHarnessTrees.push(mv(qunitPath, '/tests'));
 
   var testHarness = merge(testHarnessTrees);
 

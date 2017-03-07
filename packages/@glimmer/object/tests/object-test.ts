@@ -145,24 +145,24 @@ function root<T>(obj: T): UpdatableReference<T> {
   return metaFor(obj).root() as UpdatableReference<T>;
 }
 
-QUnit.test("Simple computed properties", function() {
+QUnit.test("Simple computed properties", assert => {
   let name = <any>new Name({ first: "Godfrey", last: "Chan" });
 
   let ref = metaFor(name).root().get('fullName');
 
-  equal(name.fullName, "Godfrey Chan");
-  equal(ref.value(), "Godfrey Chan");
+  assert.equal(name.fullName, "Godfrey Chan");
+  assert.equal(ref.value(), "Godfrey Chan");
   isClean(ref);
 
   setProperty(name, 'first', "Godhuda");
   isDirty(ref, 'Godhuda Chan');
 
-  equal(name.fullName, "Godhuda Chan");
-  equal(ref.value(), "Godhuda Chan");
+  assert.equal(name.fullName, "Godhuda Chan");
+  assert.equal(ref.value(), "Godhuda Chan");
   isClean(ref);
 });
 
-QUnit.test("Computed properties", function() {
+QUnit.test("Computed properties", assert => {
   let obj1 = new Wrapper({
     model: new Model({
       person: new Person({
@@ -174,37 +174,37 @@ QUnit.test("Computed properties", function() {
   let originalPerson = obj1.model.person;
   let ref = metaFor(obj1).root().get('fullName');
 
-  equal(obj1.fullName, "Yehuda Katz");
-  equal(ref.value(), "Yehuda Katz");
+  assert.equal(obj1.fullName, "Yehuda Katz");
+  assert.equal(ref.value(), "Yehuda Katz");
   isClean(ref);
 
   setProperty(obj1.model, 'person', new Person({ name: new Name({ first: 'Godfrey', last: 'Chan' }) }));
   isDirty(ref, "Godfrey Chan");
-  equal(obj1.fullName, "Godfrey Chan");
-  equal(ref.value(), "Godfrey Chan");
+  assert.equal(obj1.fullName, "Godfrey Chan");
+  assert.equal(ref.value(), "Godfrey Chan");
   isClean(ref);
 
   setProperty(originalPerson.name, 'first', "Godhuda");
   isDirty(ref, "Godfrey Chan");
-  equal(obj1.fullName, "Godfrey Chan");
-  equal(ref.value(), "Godfrey Chan");
+  assert.equal(obj1.fullName, "Godfrey Chan");
+  assert.equal(ref.value(), "Godfrey Chan");
   isClean(ref);
 
   setProperty(obj1.model, 'person', undefined);
   isDirty(ref, undefined);
-  equal(obj1.fullName, undefined);
-  equal(ref.value(), undefined);
+  assert.equal(obj1.fullName, undefined);
+  assert.equal(ref.value(), undefined);
   isClean(ref);
 
   setProperty(obj1.model, 'person', originalPerson);
   isDirty(ref, "Godhuda Katz");
-  equal(obj1.fullName, "Godhuda Katz");
-  equal(ref.value(), "Godhuda Katz");
+  assert.equal(obj1.fullName, "Godhuda Katz");
+  assert.equal(ref.value(), "Godhuda Katz");
   isClean(ref);
 });
 
 function isDirty(ref, newValue) {
-  ok(ref.value() === newValue, ref.label() + " has new value " + newValue);
+  QUnit.assert.ok(ref.value() === newValue, ref.label() + " has new value " + newValue);
 }
 
 function isClean(ref) {

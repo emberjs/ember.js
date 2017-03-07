@@ -1,11 +1,13 @@
 import { preprocess as parse, print, builders as b } from "@glimmer/syntax";
 
+const { test } = QUnit;
+
 function printTransform(template) {
   return print(parse(template));
 }
 
 function printEqual(template) {
-  equal(printTransform(template), template);
+  QUnit.assert.equal(printTransform(template), template);
 }
 
 QUnit.module('[glimmer-syntax] Code generation');
@@ -70,35 +72,35 @@ test('BlockStatement: inline', function() {
   printEqual('{{#if foo}}<p>{{foo}}</p>{{/if}}');
 });
 
-test('UndefinedLiteral', function() {
+test('UndefinedLiteral', assert => {
   const ast = b.program([b.mustache(b.undefined())]);
-  equal(print(ast), '{{undefined}}');
+  assert.equal(print(ast), '{{undefined}}');
 });
 
-test('NumberLiteral', function() {
+test('NumberLiteral', assert => {
   const ast = b.program([
     b.mustache('foo', null,
       b.hash([b.pair('bar', b.number(5))])
     )
   ]);
-  equal(print(ast), '{{foo bar=5}}');
+  assert.equal(print(ast), '{{foo bar=5}}');
 });
 
-test('BooleanLiteral', function() {
+test('BooleanLiteral', assert => {
   const ast = b.program([
     b.mustache('foo', null,
       b.hash([b.pair('bar', b.boolean(true))])
     )
   ]);
-  equal(print(ast), '{{foo bar=true}}');
+  assert.equal(print(ast), '{{foo bar=true}}');
 });
 
 test('HTML comment', function() {
   printEqual('<!-- foo -->');
 });
 
-test('Handlebars comment', function() {
-  equal(printTransform('{{! foo }}'), '{{!-- foo --}}');
+test('Handlebars comment', assert => {
+  assert.equal(printTransform('{{! foo }}'), '{{!-- foo --}}');
 });
 
 test('Handlebars comment: in ElementNode', function() {
