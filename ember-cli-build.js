@@ -25,6 +25,7 @@ var Rollup = require('broccoli-rollup');
 var mergeTrees = require('broccoli-merge-trees');
 var replace = require('broccoli-string-replace');
 var uglify = require('broccoli-uglify-sourcemap');
+var toAMD = require('./broccoli/to-amd');
 
 var rollupEnifed = {
   transformBundle(code, options) {
