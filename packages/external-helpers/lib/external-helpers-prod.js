@@ -50,6 +50,7 @@ function defaults(obj, defaults) {
   return obj;
 }
 
+// eslint-disable-next-line no-unused-vars
 var babelHelpers = {
   inherits: inherits,
   taggedTemplateLiteralLoose: taggedTemplateLiteralLoose,
