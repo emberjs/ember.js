@@ -17,7 +17,10 @@
     "include": [
       "packages/*/*.d.ts",
       "packages/*/index.ts",
-      "packages/*/lib/**.ts"
+      "packages/*/lib/**.ts",
+      "packages/@glimmer/*/*.d.ts",
+      "packages/@glimmer/*/index.ts",
+      "packages/@glimmer/*/lib/**.ts"
     ],
     "exclude": [
         "dist",

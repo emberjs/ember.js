@@ -1,8 +1,10 @@
-import { compile } from "@glimmer/test-helpers";
-import { TestEnvironment } from "@glimmer/test-helpers";
+import { TemplateMeta } from '@glimmer/wire-format';
+import { TestEnvironment, compile } from "@glimmer/test-helpers";
 import { precompile } from "@glimmer/compiler";
 
 let env: TestEnvironment;
+
+QUnit.module('precompile');
 
 QUnit.module('Compile options', {
   beforeEach() {
@@ -32,7 +34,7 @@ QUnit.test('returned meta is correct', assert => {
     meta: {
       moduleName: 'my/module-name',
       metaIsOpaque: 'yes'
-    }
+    } as any as TemplateMeta
   }));
 
   assert.equal(wire.meta.moduleName, 'my/module-name', 'Template has correct meta');

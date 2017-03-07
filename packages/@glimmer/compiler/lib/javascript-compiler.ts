@@ -1,12 +1,11 @@
 import * as WireFormat from '@glimmer/wire-format';
-import { assert, unreachable } from "@glimmer/util";
-import { Stack, DictSet, Option, Dict, dict } from "@glimmer/util";
+import { assert } from "@glimmer/util";
+import { Stack, DictSet, Option } from "@glimmer/util";
 import { AST } from '@glimmer/syntax';
 import { BlockSymbolTable, ProgramSymbolTable } from './template-visitor';
 
 import {
   TemplateMeta,
-  SerializedBlock,
   SerializedTemplateBlock,
   SerializedTemplate,
   Core,
@@ -34,7 +33,7 @@ export abstract class Block {
 }
 
 export class InlineBlock extends Block {
-  constructor(private parent: Block, public table: BlockSymbolTable) {
+  constructor(public table: BlockSymbolTable) {
     super();
   }
 
@@ -100,7 +99,7 @@ export class ComponentBlock extends Block {
   private inParams = true;
   public positionals: number[] = [];
 
-  constructor(private parent: Block, private table: BlockSymbolTable) {
+  constructor(private table: BlockSymbolTable) {
     super();
   }
 
@@ -181,7 +180,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   /// Nesting
 
   startBlock([program]: [AST.Program]) {
-    let block: Block = new InlineBlock(this.blocks.current, program['symbols']);
+    let block: Block = new InlineBlock(program['symbols']);
     this.blocks.push(block);
   }
 
@@ -342,7 +341,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   /// Stack Management Opcodes
 
   startComponent(element: AST.ElementNode) {
-    let component = new ComponentBlock(this.blocks.current, element['symbols']);
+    let component = new ComponentBlock(element['symbols']);
     this.blocks.push(component);
   }
 

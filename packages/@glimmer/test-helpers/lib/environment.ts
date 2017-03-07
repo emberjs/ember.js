@@ -1,17 +1,12 @@
-import { unreachable } from '../../util';
 import {
   // VM
   VM,
   DynamicScope,
 
   // Compiler
-  ClientSide,
   CompilableLayout,
-  CompiledDynamicBlock,
   CompiledDynamicProgram,
-  CompiledDynamicTemplate,
   compileLayout,
-  compileList,
 
   // Environment
   Environment,
@@ -40,7 +35,6 @@ import {
   // Syntax Classes
   BlockMacros,
   InlineMacros,
-  NestedBlockSyntax,
 
   // References
   PrimitiveReference,
@@ -49,19 +43,15 @@ import {
   // Misc
   Bounds,
   ElementOperations,
-  OpcodeBuilderDSL,
   Simple,
   getDynamicVar,
 
   Template,
-  Block,
-  Program,
   isComponentDefinition,
-  templateFactory
+  CompiledDynamicTemplate,
 } from "@glimmer/runtime";
 
 import {
-  precompile,
   compile as rawCompile
 } from "./helpers";
 
@@ -70,10 +60,8 @@ import {
   Destroyable,
   Dict,
   Opaque,
-  FIXME,
   assign,
-  dict,
-  unwrap
+  dict
 } from '@glimmer/util';
 
 import GlimmerObject, { GlimmerObjectFactory } from "@glimmer/object";
@@ -97,18 +85,11 @@ import {
   UpdatableReference
 } from "@glimmer/object-reference";
 
-import {
-  SymbolTable,
-  ProgramSymbolTable,
-  BlockSymbolTable
-} from '@glimmer/interfaces';
-
-import {
-  TemplateMeta,
-  Ops
-} from "@glimmer/wire-format";
-
 import * as WireFormat from '@glimmer/wire-format';
+
+import {
+  BlockSymbolTable, ProgramSymbolTable
+} from "@glimmer/interfaces/index";
 
 type KeyFor<T> = (item: Opaque, index: T) => string;
 
@@ -468,12 +449,12 @@ export class ProcessedArgs {
 
   constructor(args: CapturedArguments, positionalParamsDefinition: string[]) {
     this.tag = args.tag;
-    this.named = args.named;
     this.positional = args.positional;
+    this.named = args.named;
     this.positionalParamNames = positionalParamsDefinition;
   }
 
-  value() {
+  value(): any {
     let { named, positional, positionalParamNames } = this;
 
     let merged = Object.assign({}, named.value());
@@ -730,10 +711,13 @@ export interface TestEnvironmentOptions {
   appendOperations?: DOMTreeConstruction;
 }
 
+export type CompiledDynamicBlock = CompiledDynamicTemplate<BlockSymbolTable>;
+export type CompiledDynamicProgram = CompiledDynamicTemplate<ProgramSymbolTable>;
+
 export class TestEnvironment extends Environment {
   private helpers = dict<GlimmerHelper>();
   private modifiers = dict<ModifierManager<Opaque>>();
-  private partials = dict<PartialDefinition<TemplateMeta>>();
+  private partials = dict<PartialDefinition<WireFormat.TemplateMeta>>();
   private components = dict<ComponentDefinition<any>>();
   private uselessAnchor: HTMLAnchorElement;
   public compiledLayouts = dict<CompiledDynamicProgram>();
@@ -759,7 +743,7 @@ export class TestEnvironment extends Environment {
   }
 
   registerHelper(name: string, helper: UserHelper) {
-    this.helpers[name] = (vm: VM, args: EvaluatedArgs) => new HelperReference(helper, args);
+    this.helpers[name] = (vm: VM, args: Arguments) => new HelperReference(helper, args);
   }
 
   registerInternalHelper(name: string, helper: GlimmerHelper) {
@@ -839,7 +823,7 @@ export class TestEnvironment extends Environment {
     return !!this.components[name];
   }
 
-  getComponentDefinition(name: string, blockMeta?: TemplateMeta): ComponentDefinition<any> {
+  getComponentDefinition(name: string, blockMeta?: WireFormat.TemplateMeta): ComponentDefinition<any> {
     return this.components[name];
   }
 
@@ -909,17 +893,17 @@ export class TestDynamicScope implements DynamicScope {
 export class DynamicComponentReference implements PathReference<ComponentDefinition<Opaque>> {
   public tag: Tag;
 
-  constructor(private nameRef: PathReference<Opaque>, private env: Environment, private symbolTable: SymbolTable) {
+  constructor(private nameRef: PathReference<Opaque>, private env: Environment, private meta: WireFormat.TemplateMeta) {
     this.tag = nameRef.tag;
   }
 
   value(): ComponentDefinition<Opaque> {
-    let { env, nameRef } = this;
+    let { env, nameRef, meta } = this;
 
     let nameOrDef = nameRef.value();
 
     if (typeof nameOrDef === 'string') {
-      return env.getComponentDefinition(nameOrDef, this.symbolTable);
+      return env.getComponentDefinition(nameOrDef, meta);
     } else if (isComponentDefinition(nameOrDef)) {
       return nameOrDef;
     }
@@ -932,10 +916,10 @@ export class DynamicComponentReference implements PathReference<ComponentDefinit
   }
 }
 
-function dynamicComponentFor(vm: VM, args: Arguments, symbolTable: SymbolTable) {
+function dynamicComponentFor(vm: VM, args: Arguments, meta: WireFormat.TemplateMeta) {
   let nameRef = args.positional.at(0);
   let env = vm.env;
-  return new DynamicComponentReference(nameRef, env, symbolTable);
+  return new DynamicComponentReference(nameRef, env, meta);
 };
 
 export interface BasicComponentFactory {
@@ -983,17 +967,11 @@ export class EmberishGlimmerComponentDefinition extends GenericComponentDefiniti
 abstract class GenericComponentLayoutCompiler implements CompilableLayout {
   constructor(private layoutString: string) { }
 
-  protected compileLayout(env: Environment): Template<TemplateMeta> {
+  protected compileLayout(env: Environment): Template<WireFormat.TemplateMeta> {
     return rawCompile(this.layoutString, { env });
   }
 
   abstract compile(builder: ComponentLayoutBuilder);
-}
-
-class BasicComponentLayoutCompiler extends GenericComponentLayoutCompiler {
-  compile(builder: ComponentLayoutBuilder) {
-    builder.fromLayout(this.compileLayout(builder.env));
-  }
 }
 
 class StaticTaglessComponentLayoutCompiler extends GenericComponentLayoutCompiler {
@@ -1093,22 +1071,6 @@ export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectF
       this.hooks['didRender']++;
     }
   });
-}
-
-function defaultBlock(sexp: ClientSide.NestedBlock): Block {
-  return sexp[5];
-}
-
-function inverseBlock(sexp: ClientSide.NestedBlock): Block {
-  return sexp[6];
-}
-
-function params(sexp: ClientSide.NestedBlock): WireFormat.Core.Params {
-  return sexp[3];
-}
-
-function hash(sexp: ClientSide.NestedBlock): WireFormat.Core.Hash {
-  return sexp[4];
 }
 
 function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: BlockMacros, inlines: InlineMacros } {

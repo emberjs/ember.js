@@ -116,7 +116,7 @@ class ScannableTemplate implements Template<TemplateMeta> {
   public symbols: string[];
   public hasEval: boolean;
 
-  constructor(public id: string, public meta: TemplateMeta, private env: Environment, private rawBlock: SerializedTemplateBlock) {
+  constructor(public id: string, public meta: TemplateMeta, private env: Environment, rawBlock: SerializedTemplateBlock) {
     this.scanner = new Scanner(rawBlock, env);
     this.symbols = rawBlock.symbols;
     this.hasEval = rawBlock.hasEval;

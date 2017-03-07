@@ -1,5 +1,5 @@
 import { Opaque, Dict, dict } from '@glimmer/util';
-import { RevisionTag, Tag, DirtyableTag } from '@glimmer/reference';
+import { Tag, DirtyableTag } from '@glimmer/reference';
 import { Computed } from './blueprint';
 
 export default class {

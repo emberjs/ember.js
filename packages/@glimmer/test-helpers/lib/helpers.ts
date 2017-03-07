@@ -2,7 +2,6 @@ import { tokenize } from "simple-html-tokenizer";
 import { Environment, Template, templateFactory } from "@glimmer/runtime";
 import { precompile as rawPrecompile, PrecompileOptions } from "@glimmer/compiler";
 import * as WireFormat from '@glimmer/wire-format';
-import { Opaque } from '@glimmer/util';
 
 // For Phantom
 function toObject(val) {
@@ -59,11 +58,11 @@ function isMarker(node) {
   return false;
 }
 
-export interface TestCompileOptions<T> extends PrecompileOptions<T> {
+export interface TestCompileOptions<T extends WireFormat.TemplateMeta> extends PrecompileOptions<T> {
   env: Environment;
 }
 
-export function precompile(string: string, options: TestCompileOptions<Opaque>): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
+export function precompile(string: string, options?: TestCompileOptions<WireFormat.TemplateMeta>): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
   let wrapper = JSON.parse(rawPrecompile(string, options));
   wrapper.block = JSON.parse(wrapper.block);
   return wrapper as WireFormat.SerializedTemplate<WireFormat.TemplateMeta>;
