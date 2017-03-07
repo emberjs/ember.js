@@ -1,15 +1,22 @@
 import b from "../builders";
 import { appendChild, isLiteral, printLiteral } from "../utils";
+import * as AST from '../types/nodes';
+import { Parser, Tag, Attribute } from '../parser';
+import { Option } from '@glimmer/interfaces';
 
-export default {
-  Program: function(program) {
-    let body = [];
+export abstract class HandlebarsNodeVisitors extends Parser {
+  abstract appendToCommentData(s: string): void;
+  abstract beginAttributeValue(quoted: boolean): void;
+  abstract finishAttributeValue(): void;
+
+  Program(program: hbs.AST.Program): AST.Program {
+    let body: AST.Statement[] = [];
     let node = b.program(body, program.blockParams, program.loc);
     let i, l = program.body.length;
 
     this.elementStack.push(node);
 
-    if (l === 0) { return this.elementStack.pop(); }
+    if (l === 0) { return this.elementStack.pop() as AST.Program; }
 
     for (i = 0; i < l; i++) {
       this.acceptNode(program.body[i]);
@@ -18,77 +25,90 @@ export default {
     // Ensure that that the element stack is balanced properly.
     let poppedNode = this.elementStack.pop();
     if (poppedNode !== node) {
-      throw new Error("Unclosed element `" + poppedNode.tag + "` (on line " + poppedNode.loc.start.line + ").");
+      throw new Error("Unclosed element `" + (poppedNode as AST.ElementNode).tag + "` (on line " + (poppedNode as AST.ElementNode).loc!.start.line + ").");
     }
 
     return node;
-  },
+  }
 
-  BlockStatement: function(block) {
-    delete block.inverseStrip;
-    delete block.openString;
-    delete block.closeStrip;
+  BlockStatement(block: hbs.AST.BlockStatement) {
+    // delete block.inverseStrip;
+    // delete block.openString;
+    // delete block.closeStrip;
 
-    if (this.tokenizer.state === 'comment') {
-      this.appendToCommentData('{{' + this.sourceForMustache(block) + '}}');
+    if (this.tokenizer['state'] === 'comment') {
+      this.appendToCommentData(this.sourceForNode(block));
       return;
     }
 
-    if (this.tokenizer.state !== 'comment' && this.tokenizer.state !== 'data' && this.tokenizer.state !== 'beforeData') {
+    if (this.tokenizer['state'] !== 'comment' && this.tokenizer['state'] !== 'data' && this.tokenizer['state'] !== 'beforeData') {
       throw new Error("A block may only be used inside an HTML element or another block.");
     }
 
-    block = acceptCommonNodes(this, block);
-    let program = block.program ? this.acceptNode(block.program) : null;
-    let inverse = block.inverse ? this.acceptNode(block.inverse) : null;
+    let { path, params, hash } = acceptCallNodes(this, block);
+    let program = this.Program(block.program);
+    let inverse = block.inverse ? this.Program(block.inverse) : null;
 
-    let node = b.block(block.path, block.params, block.hash, program, inverse, block.loc);
+    let node = b.block(path, params, hash, program, inverse, block.loc);
     let parentProgram = this.currentElement();
     appendChild(parentProgram, node);
-  },
+  }
 
-  MustacheStatement: function(rawMustache) {
+  MustacheStatement(rawMustache: hbs.AST.MustacheStatement) {
     let { tokenizer } = this;
-    let { path, params, hash, escaped, loc } = rawMustache;
-    let mustache = b.mustache(path, params, hash, !escaped, loc);
 
-    if (tokenizer.state === 'comment') {
-      this.appendToCommentData('{{' + this.sourceForMustache(mustache) + '}}');
+    if (tokenizer['state'] === 'comment') {
+      this.appendToCommentData(this.sourceForNode(rawMustache));
       return;
     }
 
-    acceptCommonNodes(this, mustache);
+    let mustache: AST.MustacheStatement;
+    let { escaped, loc } = rawMustache;
+
+    if (rawMustache.path.type.match(/Literal$/)) {
+      mustache = {
+        type: 'MustacheStatement',
+        path: this.acceptNode<AST.Literal>(rawMustache.path),
+        params: [],
+        hash: b.hash(),
+        escaped,
+        loc
+      };
+    } else {
+      let { path, params, hash } = acceptCallNodes(this, rawMustache as hbs.AST.MustacheStatement & { path: hbs.AST.PathExpression });
+      mustache = b.mustache(path, params, hash, !escaped, loc);
+    }
 
     switch (tokenizer.state) {
       // Tag helpers
       case "tagName":
-        addElementModifier(this.currentNode, mustache);
+        addElementModifier(this.currentStartTag, mustache);
         tokenizer.state = "beforeAttributeName";
         break;
       case "beforeAttributeName":
-        addElementModifier(this.currentNode, mustache);
+        addElementModifier(this.currentStartTag, mustache);
         break;
       case "attributeName":
       case "afterAttributeName":
         this.beginAttributeValue(false);
         this.finishAttributeValue();
-        addElementModifier(this.currentNode, mustache);
+        addElementModifier(this.currentStartTag, mustache);
         tokenizer.state = "beforeAttributeName";
         break;
       case "afterAttributeValueQuoted":
-        addElementModifier(this.currentNode, mustache);
+        addElementModifier(this.currentStartTag, mustache);
         tokenizer.state = "beforeAttributeName";
         break;
 
       // Attribute values
       case "beforeAttributeValue":
-        appendDynamicAttributeValuePart(this.currentAttribute, mustache);
+        appendDynamicAttributeValuePart(this.currentAttribute!, mustache);
         tokenizer.state = 'attributeValueUnquoted';
         break;
       case "attributeValueDoubleQuoted":
       case "attributeValueSingleQuoted":
       case "attributeValueUnquoted":
-        appendDynamicAttributeValuePart(this.currentAttribute, mustache);
+        appendDynamicAttributeValuePart(this.currentAttribute!, mustache);
         break;
 
       // TODO: Only append child when the tokenizer state makes
@@ -98,28 +118,29 @@ export default {
     }
 
     return mustache;
-  },
+  }
 
-  ContentStatement: function(content) {
+  ContentStatement(content: hbs.AST.ContentStatement) {
     updateTokenizerLocation(this.tokenizer, content);
 
     this.tokenizer.tokenizePart(content.value);
     this.tokenizer.flushData();
-  },
+  }
 
-  CommentStatement: function(rawComment) {
+  CommentStatement(rawComment: hbs.AST.CommentStatement): Option<AST.MustacheCommentStatement> {
     let { tokenizer } = this;
+
+    if (tokenizer.state === 'comment') {
+      this.appendToCommentData(this.sourceForNode(rawComment));
+      return null;
+    }
+
     let { value, loc } = rawComment;
     let comment = b.mustacheComment(value, loc);
 
-    if (tokenizer.state === 'comment') {
-      this.appendToCommentData('{{' + this.sourceForMustache(comment) + '}}');
-      return;
-    }
-
     switch (tokenizer.state) {
       case "beforeAttributeName":
-        this.currentNode.comments.push(comment);
+        this.currentStartTag.comments.push(comment);
         break;
 
       case 'beforeData':
@@ -132,38 +153,40 @@ export default {
     }
 
     return comment;
-  },
+  }
 
-  PartialStatement: function(partial) {
-    let { name, loc } = partial;
+  PartialStatement(partial: hbs.AST.PartialStatement) {
+    let { loc } = partial;
 
-    throw new Error(`Handlebars partials are not supported: "{{> ${name.original}" at L${loc.start.line}:C${loc.start.column}`);
-  },
+    throw new Error(`Handlebars partials are not supported: "${this.sourceForNode(partial, partial.name)}" at L${loc.start.line}:C${loc.start.column}`);
+  }
 
-  PartialBlockStatement: function(partialBlock) {
-    let { name, loc } = partialBlock;
+  PartialBlockStatement(partialBlock: hbs.AST.PartialBlockStatement) {
+    let { loc } = partialBlock;
 
-    throw new Error(`Handlebars partial blocks are not supported: "{{#> ${name.original}" at L${loc.start.line}:C${loc.start.column}`);
-  },
+    throw new Error(`Handlebars partial blocks are not supported: "${this.sourceForNode(partialBlock, partialBlock.name)}" at L${loc.start.line}:C${loc.start.column}`);
+  }
 
-  Decorator: function(decorator) {
-    let { loc, path } = decorator;
+  Decorator(decorator: hbs.AST.Decorator) {
+    let { loc } = decorator;
 
-    throw new Error(`Handlebars decorators are not supported: "{{* ${path.original}" at L${loc.start.line}:C${loc.start.column}`);
-  },
+    throw new Error(`Handlebars decorators are not supported: "${this.sourceForNode(decorator, decorator.path)}" at L${loc.start.line}:C${loc.start.column}`);
+  }
 
-  DecoratorBlock: function(decoratorBlock) {
-    let { loc, path } = decoratorBlock;
+  DecoratorBlock(decoratorBlock: hbs.AST.DecoratorBlock) {
+    let { loc } = decoratorBlock;
 
-    throw new Error(`Handlebars decorator blocks are not supported: "{{#* ${path.original}" at L${loc.start.line}:C${loc.start.column}`);
-  },
+    throw new Error(`Handlebars decorator blocks are not supported: "${this.sourceForNode(decoratorBlock, decoratorBlock.path)}" at L${loc.start.line}:C${loc.start.column}`);
+  }
 
-  SubExpression: function(sexpr) {
-    return acceptCommonNodes(this, sexpr);
-  },
+  SubExpression(sexpr: hbs.AST.SubExpression): AST.SubExpression {
+    let { path, params, hash } = acceptCallNodes(this, sexpr);
+    return b.sexpr(path, params, hash, sexpr.loc);
+  }
 
-  PathExpression: function(path) {
+  PathExpression(path: hbs.AST.PathExpression): AST.PathExpression {
     let { original, loc } = path;
+    let parts: string[];
 
     if (original.indexOf('/') !== -1) {
       // TODO add a SyntaxError with loc info
@@ -176,10 +199,12 @@ export default {
       if (original.indexOf('.') !== -1) {
         throw new Error(`Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths: "${path.original}" on line ${loc.start.line}.`);
       }
-      path.parts = [ path.parts.join('/') ];
+      parts = [ path.parts.join('/') ];
+    } else {
+      parts = path.parts;
     }
 
-    delete path.depth;
+    let thisHead = false;
 
     // This is to fix a bug in the Handlebars AST where the path expressions in
     // `{{this.foo}}` (and similarly `{{foo-bar this.foo named=this.foo}}` etc)
@@ -192,28 +217,52 @@ export default {
     // named literally "bar.baz" on `this.foo`). By convention, we use `null`
     // for this purpose.
     if (original.match(/^this(\..+)?$/)) {
-      path.parts.unshift(null);
+      thisHead = true;
     }
 
-    return path;
-  },
+    return {
+      type: 'PathExpression',
+      original: path.original,
+      this: thisHead,
+      parts,
+      data: path.data,
+      loc: path.loc
+    };
+  }
 
-  Hash: function(hash) {
+  Hash(hash: hbs.AST.Hash): AST.Hash {
+    let pairs: AST.HashPair[] = [];
+
     for (let i = 0; i < hash.pairs.length; i++) {
-      this.acceptNode(hash.pairs[i].value);
+      let pair = hash.pairs[i];
+      pairs.push(b.pair(pair.key, this.acceptNode<AST.Expression>(pair.value), pair.loc));
     }
 
-    return hash;
-  },
+    return b.hash(pairs, hash.loc);
+  }
 
-  StringLiteral: function() {},
-  BooleanLiteral: function() {},
-  NumberLiteral: function() {},
-  UndefinedLiteral: function() {},
-  NullLiteral: function() {}
-};
+  StringLiteral(string: hbs.AST.StringLiteral) {
+    return b.literal('StringLiteral', string.value, string.loc);
+  }
 
-function calculateRightStrippedOffsets(original, value) {
+  BooleanLiteral(boolean: hbs.AST.BooleanLiteral) {
+    return b.literal('BooleanLiteral', boolean.value, boolean.loc);
+  }
+
+  NumberLiteral(number: hbs.AST.NumberLiteral) {
+    return b.literal('NumberLiteral', number.value, number.loc);
+  }
+
+  UndefinedLiteral(undef: hbs.AST.UndefinedLiteral) {
+    return b.literal('UndefinedLiteral', undefined, undef.loc);
+  }
+
+  NullLiteral(nul: hbs.AST.NullLiteral) {
+    return b.literal('NullLiteral', null, nul.loc);
+  }
+}
+
+function calculateRightStrippedOffsets(original: string, value: string) {
   if (value === '') {
     // if it is empty, just return the count of newlines
     // in original
@@ -235,11 +284,11 @@ function calculateRightStrippedOffsets(original, value) {
   };
 }
 
-function updateTokenizerLocation(tokenizer, content) {
+function updateTokenizerLocation(tokenizer: Parser['tokenizer'], content: hbs.AST.ContentStatement) {
   let line = content.loc.start.line;
   let column = content.loc.start.column;
 
-  let offsets = calculateRightStrippedOffsets(content.original, content.value);
+  let offsets = calculateRightStrippedOffsets(content.original as any as string, content.value);
 
   line = line + offsets.lines;
   if (offsets.lines) {
@@ -252,41 +301,30 @@ function updateTokenizerLocation(tokenizer, content) {
   tokenizer.column = column;
 }
 
-function acceptCommonNodes(compiler, node) {
-  compiler.acceptNode(node.path);
+function acceptCallNodes(compiler: HandlebarsNodeVisitors, node: { path: hbs.AST.PathExpression, params: hbs.AST.Expression[], hash: hbs.AST.Hash }): { path: AST.PathExpression, params: AST.Expression[], hash: AST.Hash } {
+  let path = compiler.PathExpression(node.path);
 
-  if (node.params) {
-    for (let i = 0; i < node.params.length; i++) {
-      compiler.acceptNode(node.params[i]);
-    }
-  } else {
-    node.params = [];
-  }
+  let params = node.params ? node.params.map(e => compiler.acceptNode<AST.Expression>(e)) : [];
+  let hash = node.hash ? compiler.Hash(node.hash) : b.hash();
 
-  if (node.hash) {
-    compiler.acceptNode(node.hash);
-  } else {
-    node.hash = b.hash();
-  }
-
-  return node;
+  return { path, params, hash };
 }
 
-function addElementModifier(element, mustache) {
+function addElementModifier(element: Tag<'StartTag'>, mustache: AST.MustacheStatement) {
   let { path, params, hash, loc } = mustache;
 
   if (isLiteral(path)) {
     let modifier = `{{${printLiteral(path)}}}`;
     let tag = `<${element.name} ... ${modifier} ...`;
 
-    throw new Error(`In ${tag}, ${modifier} is not a valid modifier: "${path.original}" on line ${loc.start.line}.`);
+    throw new Error(`In ${tag}, ${modifier} is not a valid modifier: "${path.original}" on line ${loc && loc.start.line}.`);
   }
 
   let modifier = b.elementModifier(path, params, hash, loc);
   element.modifiers.push(modifier);
 }
 
-function appendDynamicAttributeValuePart(attribute, part) {
+function appendDynamicAttributeValuePart(attribute: Attribute, part: AST.MustacheStatement) {
   attribute.isDynamic = true;
   attribute.parts.push(part);
 }

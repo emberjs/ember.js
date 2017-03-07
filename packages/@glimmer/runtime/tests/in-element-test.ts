@@ -36,7 +36,7 @@ function appendViewFor(template: string, context: Object = {}) {
 }
 
 QUnit.module('Targeting a remote element', {
-  setup() {
+  beforeEach() {
     env = new TestEnvironment();
   }
 });

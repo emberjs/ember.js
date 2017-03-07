@@ -1,7 +1,7 @@
 import { TemplateMeta } from '../../wire-format';
 import { preprocess } from "@glimmer/syntax";
 import TemplateCompiler, { CompileOptions } from "./template-compiler";
-import { SerializedTemplateWithLazyBlock, TemplateJavascript } from "@glimmer/wire-format";
+import { SerializedTemplateWithLazyBlock, TemplateJavascript, TemplateMeta } from "@glimmer/wire-format";
 
 export interface TemplateIdFn {
   (src: string): string;
@@ -59,8 +59,8 @@ export function precompile<T extends TemplateMeta>(string: string, options?: Pre
 export function precompile(string: string, options?: PrecompileOptions<TemplateMeta>): TemplateJavascript {
   let opts = options || {
     id: defaultId(),
-    meta: { "<template-meta>": true }
-  };
+    meta: {}
+  } as any as TemplateMeta;
   let ast = preprocess(string, opts);
   let { block, meta } = TemplateCompiler.compile(opts, ast);
   let idFn = opts.id || defaultId();

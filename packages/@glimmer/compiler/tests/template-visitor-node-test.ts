@@ -1,6 +1,8 @@
 import { preprocess } from "@glimmer/syntax";
 import { TemplateVisitor } from "@glimmer/compiler";
 
+const { test, assert } = QUnit;
+
 function actionsEqual(input, expectedActions) {
   let ast = preprocess(input);
 
@@ -13,7 +15,7 @@ function actionsEqual(input, expectedActions) {
     actualActions[i][1].shift();
   }
 
-  deepEqual(actualActions, expectedActions);
+  assert.deepEqual(actualActions, expectedActions);
 }
 
 QUnit.module("TemplateVisitor");

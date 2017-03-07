@@ -16,7 +16,7 @@ function traversalEqual(node, expectedTraversal) {
     }
   });
 
-  deepEqual(
+  QUnit.assert.deepEqual(
     actualTraversal.map(a => `${a[0]} ${a[1].type}`),
     expectedTraversal.map(a => `${a[0]} ${a[1].type}`)
   );
@@ -30,12 +30,12 @@ function traversalEqual(node, expectedTraversal) {
     }
   }
 
-  ok(nodesEqual, "Actual nodes match expected nodes");
+  QUnit.assert.ok(nodesEqual, "Actual nodes match expected nodes");
 }
 
 QUnit.module('[glimmer-syntax] Traversal - visiting keys');
 
-test('Blocks', function() {
+QUnit.test('Blocks', function() {
   let ast = parse(`{{#block param1 param2 key1=value key2=value}}<b></b><b></b>{{/block}}`);
 
   traversalEqual(ast, [

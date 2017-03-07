@@ -17,7 +17,8 @@ import {
   CONSTANT_TAG,
   INITIAL
 } from '@glimmer/reference';
-import { Constants, OpcodeJSON, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
+import { OpcodeJSON, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
+import { Constants } from '../environment/constants';
 import { DOMChanges } from '../dom/helper';
 import * as Simple from '../dom/interfaces';
 

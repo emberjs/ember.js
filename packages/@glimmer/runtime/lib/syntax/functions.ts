@@ -1,4 +1,3 @@
-import { EvaluatedArgs } from '../compiled/expressions/args';
 import { ScopeSlot } from '../environment';
 import { CompiledDynamicBlock, CompiledDynamicProgram } from '../compiled/blocks';
 import * as WireFormat from '@glimmer/wire-format';
@@ -6,12 +5,9 @@ import { BlockSymbolTable, ProgramSymbolTable } from '@glimmer/interfaces';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
 import { VM, PublicVM } from '../vm';
-import { ATTRS_BLOCK, Block, ClientSide } from '../scanner';
-
-import {
-  EMPTY_ARRAY,
-  EMPTY_DICT
-} from '../utils';
+import { IArguments } from '../vm/arguments';
+import { ATTRS_BLOCK, Block, ClientSide, RawInlineBlock } from '../scanner';
+import { EMPTY_ARRAY } from '../utils';
 
 import {
   LOGGER,
@@ -50,7 +46,7 @@ export class Compilers<T extends Syntax> {
     let name: number = sexp[this.offset];
     let index = this.names[name];
     let func = this.funcs[index];
-    assert(!!func, `expected an implementation for ${sexp[0]}`);
+    assert(!!func, `expected an implementation for ${this.offset === 0 ? Ops[sexp[0]] : ClientSide.Ops[sexp[1]]}`);
     func(sexp, builder);
   }
 }
@@ -77,15 +73,13 @@ STATEMENTS.add(Ops.FlushElement, (_sexp, builder: OpcodeBuilder) => {
   builder.flushElement();
 });
 
-STATEMENTS.add(Ops.Modifier, (_sexp: S.Modifier, _builder: OpcodeBuilder) => {
-  let { env, meta } = _builder;
-  let [, name, params, hash] = _sexp;
-
-  compileArgs(params, hash, _builder); // side-effecty seems weird
+STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder: OpcodeBuilder) => {
+  let { env, meta } = builder;
+  let [, name, params, hash] = sexp;
 
   if (env.hasModifier(name, meta.templateMeta)) {
-    _builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
-    _builder.modifier(env.lookupModifier(name, meta.templateMeta));
+    builder.compileArgs(params, hash, true);
+    builder.modifier(env.lookupModifier(name, meta.templateMeta));
   } else {
     throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
   }
@@ -95,6 +89,26 @@ STATEMENTS.add(Ops.StaticAttr, (sexp: S.StaticAttr, builder: OpcodeBuilder) => {
   let [, name, value, namespace] = sexp;
   builder.staticAttr(name, namespace, value as string);
 });
+
+STATEMENTS.add(Ops.DynamicAttr, (sexp: S.DynamicAttr, builder) => {
+  dynamicAttr(sexp, false, builder);
+});
+
+STATEMENTS.add(Ops.TrustingAttr, (sexp: S.DynamicAttr, builder) => {
+  dynamicAttr(sexp, true, builder);
+});
+
+function dynamicAttr(sexp: S.DynamicAttr | S.TrustingAttr, trusting: boolean, builder: OpcodeBuilder) {
+  let [, name, value, namespace] = sexp;
+
+  expr(value, builder);
+
+  if (namespace) {
+    builder.dynamicAttrNS(name, namespace, trusting);
+  } else {
+    builder.dynamicAttr(name, trusting);
+  }
+}
 
 CLIENT_SIDE.add(ClientSide.Ops.AnyDynamicAttr, (sexp: ClientSide.AnyDynamicAttr, builder: OpcodeBuilder) => {
   let [,, name, value, namespace, trusting] = sexp;
@@ -123,8 +137,8 @@ CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenCompo
   builder.openElementWithOperations(sexp[2]);
 });
 
-CLIENT_SIDE.add(ClientSide.Ops.OptimizedAppend, (sexp: ClientSide.OptimizedAppend, builder: OpcodeBuilder) => {
-  let [,, value, trustingMorph] = sexp;
+STATEMENTS.add(Ops.Append, (sexp: S.Append, builder: OpcodeBuilder) => {
+  let [, value, trusting] = sexp;
 
   let { inlines } = builder.env.macros();
   let returned = inlines.compile(sexp, builder) || value;
@@ -133,41 +147,38 @@ CLIENT_SIDE.add(ClientSide.Ops.OptimizedAppend, (sexp: ClientSide.OptimizedAppen
 
   expr(value, builder);
 
-  if (trustingMorph) {
+  if (trusting) {
     builder.trustingAppend();
   } else {
     builder.cautiousAppend();
   }
 });
 
-CLIENT_SIDE.add(ClientSide.Ops.UnoptimizedAppend, (sexp: ClientSide.UnoptimizedAppend, builder) => {
-  let [,, value, trustingMorph] = sexp;
+// CLIENT_SIDE.add(ClientSide.Ops.UnoptimizedAppend, (sexp: ClientSide.UnoptimizedAppend, builder) => {
+//   let [,, value, trustingMorph] = sexp;
 
-  let { inlines } = builder.env.macros();
-  let returned = inlines.compile(sexp, builder) || value;
+//   let { inlines } = builder.env.macros();
+//   let returned = inlines.compile(sexp, builder) || value;
 
-  if (returned === true) return;
+//   if (returned === true) return;
 
-  if (trustingMorph) {
-    builder.guardedTrustingAppend(returned[1]);
-  } else {
-    builder.guardedCautiousAppend(returned[1]);
-  }
-});
+//   if (trustingMorph) {
+//     builder.guardedTrustingAppend(returned[1]);
+//   } else {
+//     builder.guardedCautiousAppend(returned[1]);
+//   }
+// });
 
-CLIENT_SIDE.add(ClientSide.Ops.NestedBlock, (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
-  let { blocks } = builder.env.macros();
-  blocks.compile(sexp, builder);
-});
-
-CLIENT_SIDE.add(ClientSide.Ops.ScannedBlock, (sexp: ClientSide.ScannedBlock, builder) => {
-  let [,, name, params, hash, template, inverse] = sexp;
+STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {
+  let [, name, params, hash, _template, _inverse] = sexp;
+  let template = builder.template(_template);
+  let inverse = builder.template(_inverse);
 
   let templateBlock = template && template.scan();
   let inverseBlock = inverse && inverse.scan();
 
   let { blocks } = builder.env.macros();
-  blocks.compile([Ops.ClientSideStatement, ClientSide.Ops.NestedBlock, name, params, hash, templateBlock, inverseBlock], builder);
+  blocks.compile(name, params, hash, templateBlock, inverseBlock, builder);
 });
 
 export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
@@ -226,38 +237,24 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
   }
 }
 
-export function compileComponentArgs(args: Option<C.Hash>, builder: OpcodeBuilder) {
-  let count: number, slots: Dict<number>, names: string[];
+STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
+  let [, tag, attrs, args, block] = sexp;
 
-  if (args) {
-    names = args[0];
-    count = compileList(args[1], builder);
-    slots = dict<number>();
-    names.forEach((name, i) => slots[name] = count - i - 1);
+  if (builder.env.hasComponentDefinition(tag, builder.meta.templateMeta)) {
+    let child = builder.template(block);
+    let attrsBlock = new RawInlineBlock(builder.env, builder.meta, attrs, EMPTY_ARRAY);
+    let definition = builder.env.getComponentDefinition(tag, builder.meta.templateMeta);
+    builder.pushComponentManager(definition);
+    builder.invokeComponent(attrsBlock, null, args, child && child.scan());
+  } else if (block && block.parameters.length) {
+    throw new Error(`Compile Error: Cannot find component ${tag}`);
   } else {
-    slots = EMPTY_DICT;
-    count = 0;
-    names = [];
+    builder.openPrimitiveElement(tag);
+    attrs.forEach(attr => STATEMENTS.compile(attr, builder));
+    builder.flushElement();
+    if (block) block.statements.forEach(s => STATEMENTS.compile(s, builder));
+    builder.closeElement();
   }
-
-  return { slots, count, names };
-}
-
-CLIENT_SIDE.add(ClientSide.Ops.ResolvedComponent, (sexp: ClientSide.ResolvedComponent, builder) => {
-  let [,, definition, attrs, [, hash], block, inverse] = sexp;
-
-  builder.pushComponentManager(definition);
-  builder.invokeComponent(attrs, null, hash, block, inverse);
-});
-
-CLIENT_SIDE.add(ClientSide.Ops.ScannedComponent, (sexp: ClientSide.ScannedComponent, builder) => {
-  let [,, tag, attrs, hash, rawBlock] = sexp;
-  let block = rawBlock && rawBlock.scan();
-
-  let definition = builder.env.getComponentDefinition(tag, builder.meta.templateMeta);
-
-  builder.pushComponentManager(definition);
-  builder.invokeComponent(attrs, null, hash, block);
 });
 
 export class PartialInvoker implements DynamicInvoker<ProgramSymbolTable> {
@@ -302,7 +299,7 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
 
   let { templateMeta, symbols } = builder.meta;
 
-  function helper(vm: PublicVM, args: EvaluatedArgs) {
+  function helper(vm: PublicVM, args: IArguments) {
     let { env } = vm;
     let nameRef = args.positional.at(0);
 
@@ -324,7 +321,10 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
   builder.startLabels();
 
   let definition = builder.local();
-  expr([Ops.ClientSideExpression, ClientSide.Ops.ResolvedHelper, helper, [name], null], builder);
+
+  expr(name, builder);
+  builder.pushArgs(1, EMPTY_ARRAY, true);
+  builder.helper(helper);
 
   builder.setLocal(definition);
   builder.getLocal(definition);
@@ -450,20 +450,11 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
   let [, name, params, hash] = sexp;
 
   if (env.hasHelper(name, meta.templateMeta)) {
-    compileArgs(params, hash, builder);
-    builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
+    builder.compileArgs(params, hash, true);
     builder.helper(env.lookupHelper(name, meta.templateMeta));
   } else {
     throw new Error(`Compile Error: ${name} is not a helper`);
   }
-});
-
-CLIENT_SIDE_EXPRS.add(ClientSide.Ops.ResolvedHelper, (sexp: ClientSide.ResolvedHelper, builder) => {
-  let [,, helper, params, hash] = sexp;
-
-  compileArgs(params, hash, builder);
-  builder.pushReifiedArgs(params ? params.length : 0, hash ? hash[0] : EMPTY_ARRAY);
-  builder.helper(helper);
 });
 
 EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder) => {
@@ -503,15 +494,6 @@ EXPRESSIONS.add(Ops.ClientSideExpression, (sexp: E.ClientSide, builder) => {
   CLIENT_SIDE_EXPRS.compile(sexp as ClientSide.ClientSideExpression, builder);
 });
 
-export function compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder): { positional: number, named: number } {
-  let positional = params ? params.length : 0;
-  let named = hash ? hash.length : 0;
-  if (params) compileList(params, builder);
-  if (hash) compileList(hash[1], builder);
-
-  return { positional, named };
-}
-
 export function compileList(params: Option<WireFormat.Expression[]>, builder: OpcodeBuilder): number {
   if (!params) return 0;
   params.forEach(p => expr(p, builder));
@@ -526,42 +508,41 @@ export function compileBlocks(block: Option<Block>, inverse: Option<Block>, buil
   return { default: !!block, inverse: !!inverse };
 }
 
-export type NestedBlockSyntax = ClientSide.NestedBlock;
-export type CompileBlockMacro = (sexp: NestedBlockSyntax, builder: OpcodeBuilder) => void;
+export type BlockMacro = (params: C.Params, hash: C.Hash, template: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder) => void;
+export type MissingBlockMacro = (name: string, params: C.Params, hash: C.Hash, template: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder) => void;
 
 export class Blocks {
   private names = dict<number>();
-  private funcs: CompileBlockMacro[] = [];
-  private missing: CompileBlockMacro;
+  private funcs: BlockMacro[] = [];
+  private missing: MissingBlockMacro;
 
-  add(name: string, func: CompileBlockMacro) {
+  add(name: string, func: BlockMacro) {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
-  addMissing(func: CompileBlockMacro) {
+  addMissing(func: MissingBlockMacro) {
     this.missing = func;
   }
 
-  compile(sexp: ClientSide.NestedBlock, builder: OpcodeBuilder): void {
-    let name: string = sexp[2];
+  compile(name: string, params: C.Params, hash: C.Hash, template: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder): void {
     let index = this.names[name];
 
     if (index === undefined) {
       assert(!!this.missing, `${name} not found, and no catch-all block handler was registered`);
       let func = this.missing;
-      let handled = func(sexp, builder);
+      let handled = func(name, params, hash, template, inverse, builder);
       assert(!!handled, `${name} not found, and the catch-all block handler didn't handle it`);
     } else {
       let func = this.funcs[index];
-      func(sexp, builder);
+      func(params, hash, template, inverse, builder);
     }
   }
 }
 
 export const BLOCKS = new Blocks();
 
-export type AppendSyntax = ClientSide.OptimizedAppend | ClientSide.UnoptimizedAppend;
+export type AppendSyntax = S.Append;
 export type AppendMacro = (name: string, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder) => ['expr', WireFormat.Expression] | true | false;
 
 export class Inlines {
@@ -579,7 +560,7 @@ export class Inlines {
   }
 
   compile(sexp: AppendSyntax, builder: OpcodeBuilder): ['expr', WireFormat.Expression] | true {
-    let value = sexp[2];
+    let value = sexp[1];
 
     // TODO: Fix this so that expression macros can return
     // things like components, so that {{component foo}}
@@ -623,7 +604,7 @@ export const INLINES = new Inlines();
 populateBuiltins(BLOCKS, INLINES);
 
 export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines = new Inlines()): { blocks: Blocks, inlines: Inlines } {
-  blocks.add('if', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('if', (params, _hash, template, inverse, builder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -635,8 +616,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     //        Evalulate(inverse)
     // END:   Noop
     //        Exit
-
-    let [,,, params,, _default, inverse] = sexp;
 
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #if requires a single argument`);
@@ -650,22 +629,22 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.test('environment');
 
     builder.labelled(b => {
-      if (_default && inverse) {
+      if (template && inverse) {
         b.jumpUnless('ELSE');
-        b.invokeStatic(_default);
+        b.invokeStatic(template);
         b.jump('END');
         b.label('ELSE');
         b.invokeStatic(inverse);
-      } else if (_default) {
+      } else if (template) {
         b.jumpUnless('END');
-        b.invokeStatic(_default);
+        b.invokeStatic(template);
       } else {
         throw unreachable();
       }
     });
   });
 
-  blocks.add('unless', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('unless', (params, _hash, template, inverse, builder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -677,8 +656,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     //        Evalulate(inverse)
     // END:   Noop
     //        Exit
-
-    let [,,, params,, _default, inverse] = sexp;
 
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #unless requires a single argument`);
@@ -692,22 +669,22 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.test('environment');
 
     builder.labelled(b => {
-      if (_default && inverse) {
+      if (template && inverse) {
         b.jumpIf('ELSE');
-        b.invokeStatic(_default);
+        b.invokeStatic(template);
         b.jump('END');
         b.label('ELSE');
         b.invokeStatic(inverse);
-      } else if (_default) {
+      } else if (template) {
         b.jumpIf('END');
-        b.invokeStatic(_default);
+        b.invokeStatic(template);
       } else {
         throw unreachable();
       }
     });
   });
 
-  blocks.add('with', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('with', (params, _hash, template, inverse, builder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -719,8 +696,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     //        Evalulate(inverse)
     // END:   Noop
     //        Exit
-
-    let [,,, params,, _default, inverse] = sexp;
 
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #with requires a single argument`);
@@ -734,17 +709,17 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.test('environment');
 
     builder.labelled(b => {
-      if (_default && inverse) {
+      if (template && inverse) {
         b.jumpUnless('ELSE');
-        b.invokeStatic(_default, b => {
+        b.invokeStatic(template, b => {
           b.getLocal(item);
         });
         b.jump('END');
         b.label('ELSE');
         b.invokeStatic(inverse);
-      } else if (_default) {
+      } else if (template) {
         b.jumpUnless('END');
-        b.invokeStatic(_default, b => {
+        b.invokeStatic(template, b => {
           b.getLocal(item);
         });
       } else {
@@ -753,7 +728,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     });
   });
 
-  blocks.add('each', (sexp: ClientSide.NestedBlock, builder: OpcodeBuilder) => {
+  blocks.add('each', (params, hash, template, inverse, builder) => {
     //         Enter(BEGIN, END)
     // BEGIN:  Noop
     //         PutArgs
@@ -781,8 +756,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // TOMORROW: Locals for key, value, memo
     // TOMORROW: What is the memo slot used for?
 
-    let [,,, params, hash, _default, inverse] = sexp;
-
     let list = builder.local();
 
     if (hash && hash[0][0] === 'key') {
@@ -805,7 +778,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       }
 
       b.iter(b => {
-        b.invokeStatic(unwrap(_default), 2);
+        b.invokeStatic(unwrap(template), 2);
       });
 
       if (inverse) {
@@ -820,9 +793,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.pop();
   });
 
-  blocks.add('-in-element', (sexp, builder) => {
-    let [,,, params,, _default] = sexp;
-
+  blocks.add('-in-element', (params, _hash, template, _inverse, builder) => {
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #-in-element requires a single argument`);
     }
@@ -838,14 +809,12 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       b.jumpUnless('END');
       b.getLocal(element);
       b.pushRemoteElement();
-      b.invokeStatic(unwrap(_default));
+      b.invokeStatic(unwrap(template));
       b.popRemoteElement();
     });
   });
 
-  blocks.add('-with-dynamic-vars', (sexp: NestedBlockSyntax, builder) => {
-    let [,,,, hash, _default] = sexp;
-
+  blocks.add('-with-dynamic-vars', (_params, hash, template, _inverse, builder) => {
     if (hash) {
       let [names, expressions] = hash;
 
@@ -854,11 +823,11 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       builder.unit(b => {
         b.pushDynamicScope();
         b.bindDynamicScope(names);
-        b.invokeStatic(unwrap(_default));
+        b.invokeStatic(unwrap(template));
         b.popDynamicScope();
       });
     } else {
-      builder.invokeStatic(unwrap(_default));
+      builder.invokeStatic(unwrap(template));
     }
   });
 

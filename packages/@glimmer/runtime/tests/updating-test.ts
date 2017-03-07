@@ -1,4 +1,4 @@
-import { UNDEFINED_REFERENCE, EvaluatedArgs, Template, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult, debugSlice } from "@glimmer/runtime";
+import { UNDEFINED_REFERENCE, Arguments, Template, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult, debugSlice } from "@glimmer/runtime";
 import { BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "@glimmer/test-helpers";
 import { ConstReference, PathReference } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
@@ -691,7 +691,7 @@ module("[glimmer-runtime] Updating", hooks => {
   test("double curlies with const SafeString", assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    env.registerInternalHelper('const-foobar', (vm: VM, args: EvaluatedArgs) => {
+    env.registerInternalHelper('const-foobar', (vm: VM, args: Arguments) => {
       return new ValueReference<Opaque>(makeSafeString(rawString));
     });
 
@@ -712,7 +712,7 @@ module("[glimmer-runtime] Updating", hooks => {
   test("double curlies with const Node", assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    env.registerInternalHelper('const-foobar', (vm: VM, args: EvaluatedArgs) => {
+    env.registerInternalHelper('const-foobar', (vm: VM, args: Arguments) => {
       return new ValueReference<Opaque>(document.createTextNode(rawString));
     });
 
@@ -733,7 +733,7 @@ module("[glimmer-runtime] Updating", hooks => {
   test("triple curlies with const SafeString", assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    env.registerInternalHelper('const-foobar', (vm: VM, args: EvaluatedArgs) => {
+    env.registerInternalHelper('const-foobar', (vm: VM, args: Arguments) => {
       return new ValueReference<Opaque>(makeSafeString(rawString));
     });
 
@@ -754,7 +754,7 @@ module("[glimmer-runtime] Updating", hooks => {
   test("triple curlies with const Node", assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    env.registerInternalHelper('const-foobar', (vm: VM, args: EvaluatedArgs) => {
+    env.registerInternalHelper('const-foobar', (vm: VM, args: Arguments) => {
       return new ValueReference<Opaque>(document.createTextNode(rawString));
     });
 
@@ -780,7 +780,7 @@ module("[glimmer-runtime] Updating", hooks => {
       }
     };
 
-    env.registerInternalHelper('destroy-me', (vm: VM, args: EvaluatedArgs) => {
+    env.registerInternalHelper('destroy-me', (vm: VM, args: Arguments) => {
       vm.newDestroyable(destroyable);
       return PrimitiveReference.create('destroy me!');
     });
@@ -885,7 +885,7 @@ module("[glimmer-runtime] Updating", hooks => {
     let didDestroy = 0;
     let reference;
 
-    env.registerInternalHelper('stateful-foo', (vm: VM, args: EvaluatedArgs) => {
+    env.registerInternalHelper('stateful-foo', (vm: VM, args: Arguments) => {
       didCreate++;
 
       vm.newDestroyable({

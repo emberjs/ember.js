@@ -183,8 +183,8 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     } else if (isHelperInvocation(expr)) {
       this.prepareHelper(expr);
       this.opcode('helper', expr, path.parts[0]);
-    } else if (isSelfGet(path)) {
-      this.opcode('get', expr, 0, path.parts.slice(1));
+    } else if (path.this) {
+      this.opcode('get', expr, 0, path.parts);
     } else if (isLocal(path, this.symbols)) {
       let [head, ...parts] = path.parts;
       this.opcode('get', expr, this.symbols.get(head), parts);
@@ -246,12 +246,12 @@ export default class TemplateCompiler<T extends TemplateMeta> {
       this.arg([expr]);
     } else {
       let { symbols } = this;
-      let [head, ...path] = expr.parts;
+      let [head] = expr.parts;
 
-      if (head === null) {
-        this.opcode('get', expr, 0, path);
+      if (expr.this) {
+        this.opcode('get', expr, 0, expr.parts);
       } else  if (symbols.has(head)) {
-        this.opcode('get', expr, symbols.get(head), path);
+        this.opcode('get', expr, symbols.get(head), expr.parts.slice(1));
       } else {
         this.opcode('get', expr, 0, expr.parts);
       }

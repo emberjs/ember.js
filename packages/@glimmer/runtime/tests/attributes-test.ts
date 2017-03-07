@@ -6,6 +6,8 @@ import { PathReference } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Opaque } from "@glimmer/util";
 
+const { assert, test } = QUnit;
+
 let root: Simple.Element;
 let env: TestEnvironment;
 let self: UpdatableReference<any>;
@@ -41,8 +43,8 @@ function render<T>(template: Template<T>, context = {}, view: PathReference<Opaq
 }
 
 function assertInvariants(result, msg?) {
-  strictEqual(result.firstNode(), root.firstChild, `The firstNode of the result is the same as the root's firstChild${msg ? ': ' + msg : ''}`);
-  strictEqual(result.lastNode(), root.lastChild, `The lastNode of the result is the same as the root's lastChild${msg ? ': ' + msg : ''}`);
+  assert.strictEqual(result.firstNode(), root.firstChild, `The firstNode of the result is the same as the root's firstChild${msg ? ': ' + msg : ''}`);
+  assert.strictEqual(result.lastNode(), root.lastChild, `The lastNode of the result is the same as the root's lastChild${msg ? ': ' + msg : ''}`);
 }
 
 function rerender(context: any = null) {
@@ -60,7 +62,7 @@ function nativeValueForElementProperty(tagName, property, value) {
 }
 
 QUnit.module("Attributes", {
-  setup: commonSetup
+  beforeEach: commonSetup
 });
 
 test("helpers shadow self", () => {
@@ -154,20 +156,20 @@ test("quoted disable is always disabled", () => {
   equalTokens(root, '<input disabled />');
 });
 
-test("disable without an explicit value is truthy", () => {
+test("disable without an explicit value is truthy", assert => {
   let template = compile('<input disabled />');
 
   render(template, {});
 
   equalTokens(root, '<input disabled />');
 
-  ok(readDOMAttr(root.firstChild as Element, 'disabled'));
+  assert.ok(readDOMAttr(root.firstChild as Element, 'disabled'));
 
   rerender();
 
   equalTokens(root, '<input disabled />');
 
-  ok(readDOMAttr(root.firstChild as Element, 'disabled'));
+  assert.ok(readDOMAttr(root.firstChild as Element, 'disabled'));
 });
 
 test("a[href] marks javascript: protocol as unsafe", () => {

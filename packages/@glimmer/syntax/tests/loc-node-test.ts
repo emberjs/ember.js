@@ -1,6 +1,8 @@
-import { preprocess as parse } from "@glimmer/syntax";
+import { preprocess as parse, AST } from "../index";
 
 QUnit.module("[glimmer-syntax] Parser - Location Info");
+
+const { test } = QUnit;
 
 function locEqual(node, startLine, startColumn, endLine, endColumn, message = JSON.stringify(node)) {
 
@@ -10,7 +12,7 @@ function locEqual(node, startLine, startColumn, endLine, endColumn, message = JS
     end: { line: endLine, column: endColumn }
   };
 
-  deepEqual(node.loc, expected, message);
+  QUnit.assert.deepEqual(node.loc, expected, message);
 }
 
 test("programs", function() {
@@ -36,8 +38,8 @@ test("blocks", function() {
       }}
     `);
 
-  let [,block] = ast.body;
-  let [nestedBlock] = block.program.body;
+  let [,block] = ast.body as [any, AST.BlockStatement];
+  let [nestedBlock] = block.program.body as [AST.BlockStatement];
   let [nestedBlockText] = nestedBlock.program.body;
   let nestedInverse = nestedBlock.inverse;
 

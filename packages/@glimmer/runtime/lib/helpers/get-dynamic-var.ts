@@ -1,7 +1,6 @@
 import { Helper, DynamicScope } from '../environment';
 import { PublicVM } from '../vm/append';
-import { SymbolTable } from '@glimmer/interfaces';
-import { EvaluatedArgs } from '../compiled/expressions/args';
+import { IArguments } from '../vm/arguments';
 import { CONSTANT_TAG, Tag, PathReference, UpdatableTag, TagWrapper, combine } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
 
@@ -32,7 +31,7 @@ class DynamicVarReference implements PathReference<Opaque> {
   }
 }
 
-function getDynamicVar(vm: PublicVM, args: EvaluatedArgs, _symbolTable: SymbolTable): PathReference<Opaque> {
+function getDynamicVar(vm: PublicVM, args: IArguments): PathReference<Opaque> {
   let scope = vm.dynamicScope();
   let nameRef = args.positional.at(0);
 

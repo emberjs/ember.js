@@ -1,5 +1,7 @@
 import { preprocess as parse, traverse } from "@glimmer/syntax";
 
+const { test } = QUnit;
+
 function traversalEqual(node, expectedTraversal) {
   let actualTraversal = [];
 
@@ -10,7 +12,7 @@ function traversalEqual(node, expectedTraversal) {
     }
   });
 
-  deepEqual(
+  QUnit.assert.deepEqual(
     actualTraversal.map(a => `${a[0]} ${a[1].type}`),
     expectedTraversal.map(a => `${a[0]} ${a[1].type}`)
   );
@@ -24,7 +26,7 @@ function traversalEqual(node, expectedTraversal) {
     }
   }
 
-  ok(nodesEqual, "Actual nodes match expected nodes");
+  QUnit.assert.ok(nodesEqual, "Actual nodes match expected nodes");
 }
 
 QUnit.module('[glimmer-syntax] Traversal - visiting');

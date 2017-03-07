@@ -24,6 +24,7 @@ import * as Component from './component/interfaces';
 import * as WireFormat from '@glimmer/wire-format';
 
 import { PublicVM } from './vm/append';
+import { IArguments } from './vm/arguments';
 import { FunctionExpression } from "./compiled/opcodes/expressions";
 
 export interface CompilableLayout {
@@ -264,12 +265,13 @@ export class ComponentBuilder implements IComponentBuilder {
 
       let meta = this.builder.meta.templateMeta;
 
-      function helper(vm: PublicVM, args: Component.Arguments) {
+      function helper(vm: PublicVM, args: IArguments) {
         return getDefinition(vm, args, meta);
       }
 
       let definition = b.local();
-      expr([Ops.ClientSideExpression, ClientSide.Ops.ResolvedHelper, helper, definitionArgs[0], definitionArgs[1]], b);
+      b.compileArgs(definitionArgs[0], definitionArgs[1], true);
+      b.helper(helper);
 
       b.setLocal(definition);
       b.getLocal(definition);
