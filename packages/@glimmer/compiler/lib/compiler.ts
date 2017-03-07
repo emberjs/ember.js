@@ -1,4 +1,3 @@
-import { TemplateMeta } from '../../wire-format';
 import { preprocess } from "@glimmer/syntax";
 import TemplateCompiler, { CompileOptions } from "./template-compiler";
 import { SerializedTemplateWithLazyBlock, TemplateJavascript, TemplateMeta } from "@glimmer/wire-format";

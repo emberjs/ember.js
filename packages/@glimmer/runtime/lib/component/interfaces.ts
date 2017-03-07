@@ -8,7 +8,7 @@ import Bounds from '../bounds';
 import * as Simple from '../dom/interfaces';
 import { Template } from '../template';
 
-import { Destroyable, Dict, Opaque } from '@glimmer/util';
+import { Destroyable, Opaque } from '@glimmer/util';
 import { VersionedPathReference, Tag } from '@glimmer/reference';
 
 export type Component = Opaque;

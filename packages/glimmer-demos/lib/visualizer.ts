@@ -5,7 +5,7 @@ import {
 import { UpdatableReference } from '@glimmer/object-reference';
 import { precompile } from '@glimmer/compiler';
 
-import { ARGS, templateFactory } from '@glimmer/runtime';
+import { templateFactory } from '@glimmer/runtime';
 
 const APPEND_NAMES = ["push-child-scope","pop-scope","push-dynamic-scope","pop-dynamic-scope","put","evaluate-put","put-args","bind-positional-args","bind-named-args","bind-blocks","bind-partial-args","bind-caller-scope","bind-dynamic-scope","enter","exit","evaluate","jump","jump-if","jump-unless","test","open-block","close-block","put-dynamic-component","put-component","open-component","did-create-element","shadow-attributes","did-render-layout","close-component","text","comment","dynamic-content","open-element","push-remote-element","pop-remote-element","open-component-element","open-dynamic-element","flush-element","close-element","pop-element","static-attr","modifier","dynamic-attr-ns","dynamic-attr","put-iterator","enter-list","exit-list","enter-with-key","next-iter","put-dynamic-partial","put-partial","evaluate-partial"];
 

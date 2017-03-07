@@ -131,12 +131,6 @@ function buildSexpr(path: AST.PathExpression, params?: AST.Expression[], hash?: 
   };
 }
 
-function buildExpr(original: string | AST.Expression, loc?: AST.SourceLocation): AST.Expression {
-  if (typeof original !== 'string') return original;
-
-  return buildPath(original, loc);
-}
-
 function buildPath(original: BuilderPath, loc?: AST.SourceLocation): AST.PathExpression {
   if (typeof original !== 'string') return original;
 

@@ -1,4 +1,5 @@
 import * as AST from '../types/nodes';
+import { Option } from '@glimmer/interfaces';
 
 class TraversalError extends Error {
   constructor(message: string, public node: AST.Node, public parent: Option<AST.Node>, public key: string) {

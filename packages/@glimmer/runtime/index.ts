@@ -1,4 +1,3 @@
-import { Arguments, IArguments, INamedArguments, IPositionalArguments } from './lib/vm/arguments';
 import './lib/bootstrap';
 
 export { default as templateFactory, TemplateFactory, Template } from './lib/template';
