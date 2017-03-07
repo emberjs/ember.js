@@ -1,4 +1,3 @@
-import { unreachable } from '../../util';
 import {
   // VM
   VM,
@@ -36,7 +35,6 @@ import {
   // Syntax Classes
   BlockMacros,
   InlineMacros,
-  NestedBlockSyntax,
 
   // References
   PrimitiveReference,
@@ -45,7 +43,6 @@ import {
   // Misc
   Bounds,
   ElementOperations,
-  OpcodeBuilderDSL,
   Simple,
   getDynamicVar,
 
@@ -452,13 +449,13 @@ export class ProcessedArgs {
 
   constructor(args: CapturedArguments, positionalParamsDefinition: string[]) {
     this.tag = args.tag;
-    this.args = args;
+    this.positional = args.positional;
     this.named = args.named;
     this.positionalParamNames = positionalParamsDefinition;
   }
 
-  value() {
-    let { named, args, positionalParamNames } = this;
+  value(): any {
+    let { named, positional, positionalParamNames } = this;
 
     let merged = Object.assign({}, named.value());
 
@@ -746,7 +743,7 @@ export class TestEnvironment extends Environment {
   }
 
   registerHelper(name: string, helper: UserHelper) {
-    this.helpers[name] = (vm: VM, args: EvaluatedArgs) => new HelperReference(helper, args);
+    this.helpers[name] = (vm: VM, args: Arguments) => new HelperReference(helper, args);
   }
 
   registerInternalHelper(name: string, helper: GlimmerHelper) {
@@ -983,12 +980,24 @@ class StaticTaglessComponentLayoutCompiler extends GenericComponentLayoutCompile
   }
 }
 
+function EmberTagName(vm: VM): PathReference<string> {
+  let self = vm.getSelf().value();
+  let tagName: string = self['tagName'];
+  tagName = tagName === '' ? null : self['tagName'] || 'div';
+  return PrimitiveReference.create(tagName);
+}
+
+function EmberID(vm: VM): PathReference<string> {
+  let self = vm.getSelf().value() as { _guid: string };
+  return PrimitiveReference.create(`ember${self._guid}`);
+}
+
 class EmberishCurlyComponentLayoutCompiler extends GenericComponentLayoutCompiler {
   compile(builder: ComponentLayoutBuilder) {
     builder.wrapLayout(this.compileLayout(builder.env));
-    // builder.tag.dynamic(EmberTagName);
+    builder.tag.dynamic(EmberTagName);
     builder.attrs.static('class', 'ember-view');
-    // builder.attrs.dynamic('id', EmberID);
+    builder.attrs.dynamic('id', EmberID);
   }
 }
 
@@ -996,7 +1005,7 @@ class EmberishGlimmerComponentLayoutCompiler extends GenericComponentLayoutCompi
   compile(builder: ComponentLayoutBuilder) {
     builder.fromLayout(this.compileLayout(builder.env));
     builder.attrs.static('class', 'ember-view');
-    // builder.attrs.dynamic('id', EmberID);
+    builder.attrs.dynamic('id', EmberID);
   }
 }
 
