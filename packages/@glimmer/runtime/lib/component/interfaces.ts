@@ -1,4 +1,4 @@
-import { EvaluatedArgs } from '../compiled/expressions/args';
+import { IArguments } from '../vm/arguments';
 import { CompiledDynamicProgram } from '../compiled/blocks';
 import { TemplateMeta } from '@glimmer/wire-format';
 
@@ -14,24 +14,17 @@ import { VersionedPathReference, Tag } from '@glimmer/reference';
 export type Component = Opaque;
 export type ComponentClass = any;
 
-export interface Arguments {
-  tag: Tag;
-  named: NamedArguments;
-  at<T extends VersionedPathReference<Opaque>>(pos: number): T;
-  get<T extends VersionedPathReference<Opaque>>(name: string): T;
-}
-
-export interface NamedArguments {
-  tag: Tag;
-  value(): Dict<Opaque>;
-  get(name: string): VersionedPathReference<Opaque>;
-}
-
 export interface ComponentManager<T extends Component> {
-  // The component manager is asked to create a bucket of state for
+  // First, the component manager is asked to prepare the arguments needed
+  // for `create`. This allows for things like closure components where the
+  // args need to be curried before constructing the instance of the state
+  // bucket.
+  prepareArgs(definition: ComponentDefinition<T>, args: IArguments, dynamicScope: DynamicScope): IArguments;
+
+  // Then, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
-  create(env: Environment, definition: ComponentDefinition<T>, args: Arguments, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): T;
+  create(env: Environment, definition: ComponentDefinition<T>, args: IArguments, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): T;
 
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might
@@ -71,7 +64,7 @@ export interface ComponentManager<T extends Component> {
 
   // When the input arguments have changed, and top-down revalidation has
   // begun, the manager's `update` hook is called.
-  update(component: T, args: EvaluatedArgs, dynamicScope: DynamicScope): void;
+  update(component: T, dynamicScope: DynamicScope): void;
 
   // This hook is run after the entire layout has been updated.
   //

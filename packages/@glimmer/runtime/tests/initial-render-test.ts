@@ -17,7 +17,7 @@ function compile(template: string) {
 function compilesTo(html: string, expected: string=html, context: any={}) {
   let template = compile(html);
   root = rootElement();
-  QUnit['ok'](true, `template: ${html}`);
+  QUnit.assert.ok(true, `template: ${html}`);
   render(template, context);
   equalTokens(root, expected);
 }
@@ -253,7 +253,12 @@ module("[glimmer runtime] Initial render", tests => {
 
       root = rootElement();
 
-      QUnit.push((html === tag + extra) || (html === tag + closing + extra), html, tag + closing + extra, tagName + " should be a void element");
+      QUnit.assert.pushResult({
+        result: (html === tag + extra) || (html === tag + closing + extra),
+        actual: html,
+        expected: tag + closing + extra,
+        message: tagName + " should be a void element"
+      });
     }
 
     test("Void elements are self-closing", assert => {

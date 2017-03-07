@@ -1,3 +1,4 @@
+import { unreachable } from '../../util';
 import {
   // VM
   VM,
@@ -26,10 +27,11 @@ import {
   ComponentLayoutBuilder,
   ComponentArgs,
 
-  // Values
+  // Arguments
   Arguments,
-  NamedArguments,
-  EvaluatedArgs,
+  CapturedArguments,
+  CapturedPositionalArguments,
+  CapturedNamedArguments,
 
   // Syntax Classes
   BlockMacros,
@@ -285,13 +287,25 @@ export class EmberishGlimmerComponent extends GlimmerObject {
   didRender() { }
 }
 
-class BasicComponentManager implements ComponentManager<BasicComponent> {
-  create(environment: Environment, definition: BasicComponentDefinition, args: Arguments): BasicComponent {
-    let klass = definition.ComponentClass || BasicComponent;
-    return new klass(args.named.value());
+interface BasicStateBucket {
+  args: CapturedNamedArguments;
+  component: BasicComponent;
+}
+
+class BasicComponentManager implements ComponentManager<BasicStateBucket> {
+  prepareArgs(definition: BasicComponentDefinition, args: Arguments): Arguments {
+    return args;
   }
 
-  layoutFor(definition: BasicComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledDynamicProgram {
+  create(environment: Environment, definition: BasicComponentDefinition, _args: Arguments): BasicStateBucket {
+    let args = _args.named.capture();
+    let klass = definition.ComponentClass || BasicComponent;
+    let component = new klass(args.value());
+
+    return { args, component };
+  }
+
+  layoutFor(definition: BasicComponentDefinition, { component }: BasicStateBucket, env: TestEnvironment): CompiledDynamicProgram {
     let layout = env.compiledLayouts[definition.name];
 
     if (layout) {
@@ -302,15 +316,15 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     return env.compiledLayouts[definition.name] = layout;
   }
 
-  getSelf(component: BasicComponent): PathReference<Opaque> {
+  getSelf({ component }: BasicStateBucket): PathReference<Opaque> {
     return new UpdatableReference(component);
   }
 
-  didCreateElement(component: BasicComponent, element: Element) {
+  didCreateElement({ component }: BasicStateBucket, element: Element) {
     component.element = element;
   }
 
-  didRenderLayout(component: BasicComponent, bounds: Bounds) {
+  didRenderLayout({ component }: BasicStateBucket, bounds: Bounds) {
     component.bounds = bounds;
   }
 
@@ -320,8 +334,8 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     return null;
   }
 
-  update(component: BasicComponent, attrs: EvaluatedArgs) {
-    component.attrs = attrs.named.value();
+  update({ component, args } : BasicStateBucket) {
+    component.attrs = args.value();
   }
 
   didUpdateLayout() { }
@@ -351,10 +365,20 @@ const STATIC_TAGLESS_COMPONENT_MANAGER = new StaticTaglessComponentManager();
 
 const BaseEmberishGlimmerComponent = EmberishGlimmerComponent.extend() as typeof EmberishGlimmerComponent;
 
-class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimmerComponent> {
-  create(environment: Environment, definition: EmberishGlimmerComponentDefinition, args: Arguments, dynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishGlimmerComponent {
+interface EmberishGlimmerStateBucket {
+  args: CapturedNamedArguments;
+  component: EmberishGlimmerComponent;
+}
+
+class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimmerStateBucket> {
+  prepareArgs(definition: EmberishGlimmerComponentDefinition, args: Arguments): Arguments {
+    return args;
+  }
+
+  create(environment: Environment, definition: EmberishGlimmerComponentDefinition, _args: Arguments, dynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishGlimmerStateBucket {
+    let args = _args.named.capture();
     let klass = definition.ComponentClass || BaseEmberishGlimmerComponent;
-    let attrs = args.named.value();
+    let attrs = args.value();
     let component = klass.create({ attrs });
 
     component.didInitAttrs({ attrs });
@@ -362,7 +386,7 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     component.willInsertElement();
     component.willRender();
 
-    return component;
+    return { args, component };
   }
 
   layoutFor(definition: EmberishGlimmerComponentDefinition, component: EmberishGlimmerComponent, env: TestEnvironment): CompiledDynamicProgram {
@@ -372,30 +396,30 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return env.compiledLayouts[definition.name] = compileLayout(new EmberishGlimmerComponentLayoutCompiler(definition.layoutString), env);
   }
 
-  getSelf(component: EmberishGlimmerComponent): PathReference<Opaque> {
+  getSelf({ component }: EmberishGlimmerStateBucket): PathReference<Opaque> {
     return new UpdatableReference(component);
   }
 
-  didCreateElement(component: EmberishGlimmerComponent, element: Element) {
+  didCreateElement({ component }: EmberishGlimmerStateBucket, element: Element) {
     component.element = element;
   }
 
-  didRenderLayout(component: EmberishGlimmerComponent, bounds: Bounds) {
+  didRenderLayout({ component }: EmberishGlimmerStateBucket, bounds: Bounds) {
     component.bounds = bounds;
   }
 
-  didCreate(component: EmberishGlimmerComponent) {
+  didCreate({ component }: EmberishGlimmerStateBucket) {
     component.didInsertElement();
     component.didRender();
   }
 
-  getTag(component: EmberishGlimmerComponent) {
+  getTag({ component }: EmberishGlimmerStateBucket) {
     return component.dirtinessTag;
   }
 
-  update(component: EmberishGlimmerComponent, args: EvaluatedArgs) {
+  update({ args, component }: EmberishGlimmerStateBucket) {
     let oldAttrs = component.attrs;
-    let newAttrs = args.named.value();
+    let newAttrs = args.value();
 
     component.set('attrs', newAttrs);
     component.didUpdateAttrs({ oldAttrs, newAttrs });
@@ -406,12 +430,12 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
 
   didUpdateLayout() { }
 
-  didUpdate(component: EmberishGlimmerComponent) {
+  didUpdate({ component }: EmberishGlimmerStateBucket) {
     component.didUpdate();
     component.didRender();
   }
 
-  getDestructor(component: EmberishGlimmerComponent): Destroyable {
+  getDestructor({ component }: EmberishGlimmerStateBucket): Destroyable {
     return {
       destroy() {
         component.destroy();
@@ -422,11 +446,11 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
 
 export class ProcessedArgs {
   tag: RevisionTag;
-  args: Arguments;
-  named: NamedArguments;
+  named: CapturedNamedArguments;
+  positional: CapturedPositionalArguments;
   positionalParamNames: Array<string>;
 
-  constructor(args: Arguments, positionalParamsDefinition: string[]) {
+  constructor(args: CapturedArguments, positionalParamsDefinition: string[]) {
     this.tag = args.tag;
     this.args = args;
     this.named = args.named;
@@ -441,9 +465,7 @@ export class ProcessedArgs {
     if (positionalParamNames && positionalParamNames.length) {
       for (let i = 0; i < positionalParamNames.length; i++) {
         let name = positionalParamNames[i];
-        let reference = args.at(i);
-
-        merged[name] = reference.value();
+        merged[name] = positional.at(i).value();
       }
     }
 
@@ -455,7 +477,7 @@ export class ProcessedArgs {
 }
 
 function processArgs(args: Arguments, positionalParamsDefinition: string[]): ProcessedArgs {
-  return new ProcessedArgs(args, positionalParamsDefinition);
+  return new ProcessedArgs(args.capture(), positionalParamsDefinition);
 }
 
 const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager();
@@ -463,6 +485,18 @@ const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager()
 const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
 class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyComponent> {
+  prepareArgs(definition: EmberishCurlyComponentDefinition, args: Arguments, dynamicScope: DynamicScope): Arguments {
+    return args;
+
+    // let dyn = definition.ComponentClass ? definition.ComponentClass['fromDynamicScope'] : null;
+    // if (dyn) {
+    //   let map = assign({}, args.named.map);
+    //   dyn.forEach(name => map[name] = dynamicScope.get(name));
+    //   args = EvaluatedArgs.create(args.positional, EvaluatedNamedArgs.create(map), args.blocks);
+    // }
+    // return args;
+  }
+
   create(environment: Environment, definition: EmberishCurlyComponentDefinition, args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>): EmberishCurlyComponent {
     let klass = definition.ComponentClass || BaseEmberishCurlyComponent;
     let processedArgs = processArgs(args, klass['positionalParams']);
@@ -531,7 +565,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     return component.dirtinessTag;
   }
 
-  update(component: EmberishCurlyComponent, args: EvaluatedArgs) {
+  update(component: EmberishCurlyComponent) {
     let oldAttrs = component.attrs;
     let newAttrs = component.args.value().attrs;
     let merged = assign({}, newAttrs, { attrs: newAttrs });
@@ -598,18 +632,18 @@ export type UserHelper = (args: ReadonlyArray<Opaque>, named: Dict<Opaque>) => a
 
 class HelperReference implements PathReference<Opaque> {
   private helper: UserHelper;
-  private args: EvaluatedArgs;
+  private args: CapturedArguments;
   public tag = VOLATILE_TAG;
 
-  constructor(helper: UserHelper, args: EvaluatedArgs) {
+  constructor(helper: UserHelper, args: Arguments) {
     this.helper = helper;
-    this.args = args;
+    this.args = args.capture();
   }
 
   value() {
-    let { helper, args: { positional, named } } = this;
+    let { helper, args } = this;
 
-    return helper(positional.value(), named.value());
+    return helper(args.positional.value(), args.named.value());
   }
 
   get(prop: string): SimplePathReference<Opaque> {
@@ -632,7 +666,7 @@ class InertModifierManager implements ModifierManager<Opaque> {
 export class TestModifier {
   constructor(
     public element: Element,
-    public args: EvaluatedArgs,
+    public args: CapturedArguments,
     public dom: IDOMChanges
   ) { }
 }
@@ -642,8 +676,8 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
   public updatedElements: Element[] = [];
   public destroyedModifiers: TestModifier[] = [];
 
-  create(element: Element, args: EvaluatedArgs, dynamicScope: DynamicScope, dom: IDOMChanges): TestModifier {
-    return new TestModifier(element, args, dom);
+  create(element: Element, args: Arguments, dynamicScope: DynamicScope, dom: IDOMChanges): TestModifier {
+    return new TestModifier(element, args.capture(), dom);
   }
 
   install({ element, args, dom }: TestModifier) {
@@ -886,7 +920,7 @@ export class DynamicComponentReference implements PathReference<ComponentDefinit
 }
 
 function dynamicComponentFor(vm: VM, args: Arguments, meta: WireFormat.TemplateMeta) {
-  let nameRef = args.at(0);
+  let nameRef = args.positional.at(0);
   let env = vm.env;
   return new DynamicComponentReference(nameRef, env, meta);
 };
@@ -1031,25 +1065,22 @@ export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectF
 }
 
 function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: BlockMacros, inlines: InlineMacros } {
-  blocks.add('identity', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
-    builder.invokeStatic(sexp[5]);
+  blocks.add('identity', (params, hash, template, inverse, builder) => {
+    builder.invokeStatic(template);
   });
 
-  blocks.add('render-inverse', (sexp: NestedBlockSyntax, builder: OpcodeBuilderDSL) => {
-    builder.invokeStatic(sexp[6]);
+  blocks.add('render-inverse', (params, hash, template, inverse, builder) => {
+    builder.invokeStatic(inverse);
   });
 
-  blocks.add('component', (sexp, builder) => {
-    let [, , , params, hash, _default, inverse] = sexp;
+  blocks.add('component', (params, hash, template, inverse, builder) => {
     let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
-    let args: ComponentArgs = [params.slice(1), hashToArgs(hash), _default, inverse];
+    let args: ComponentArgs = [params.slice(1), hashToArgs(hash), template, inverse];
     builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
     return true;
   });
 
-  blocks.addMissing((sexp, builder) => {
-    let [, , name, params, hash, _default, inverse] = sexp;
-
+  blocks.addMissing((name, params, hash, template, inverse, builder) => {
     if (!params) {
       params = [];
     }
@@ -1057,7 +1088,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     let definition = builder.env.getComponentDefinition(name, builder.meta.templateMeta);
 
     if (definition) {
-      builder.component.static(definition, [params, hashToArgs(hash), _default, inverse]);
+      builder.component.static(definition, [params, hashToArgs(hash), template, inverse]);
       return true;
     }
 
@@ -1092,7 +1123,12 @@ function hashToArgs(hash: Option<WireFormat.Core.Hash>): Option<WireFormat.Core.
 }
 
 export function equalsElement(element: Element, tagName: string, attributes: Object, content: string) {
-  QUnit.push(element.tagName === tagName.toUpperCase(), element.tagName.toLowerCase(), tagName, `expect tagName to be ${tagName}`);
+  QUnit.assert.pushResult({
+    result: element.tagName === tagName.toUpperCase(),
+    actual: element.tagName.toLowerCase(),
+    expected: tagName,
+    message: `expect tagName to be ${tagName}`
+  });
 
   let expectedAttrs: Dict<Matcher> = dict<Matcher>();
 
@@ -1104,12 +1140,12 @@ export function equalsElement(element: Element, tagName: string, attributes: Obj
     let matcher: Matcher = typeof expected === 'object' && MATCHER in expected ? expected : equalsAttr(expected);
     expectedAttrs[prop] = matcher;
 
-    QUnit.push(
-      expectedAttrs[prop].match(element.getAttribute(prop)),
-      matcher.fail(element.getAttribute(prop)),
-      matcher.fail(element.getAttribute(prop)),
-      `Expected element's ${prop} attribute ${matcher.expected()}`
-    );
+    QUnit.assert.pushResult({
+      result: expectedAttrs[prop].match(element.getAttribute(prop)),
+      actual: matcher.fail(element.getAttribute(prop)),
+      expected: matcher.fail(element.getAttribute(prop)),
+      message: `Expected element's ${prop} attribute ${matcher.expected()}`
+    });
   }
 
   let actualAttributes = {};
@@ -1118,16 +1154,27 @@ export function equalsElement(element: Element, tagName: string, attributes: Obj
   }
 
   if (!(element instanceof HTMLElement)) {
-    QUnit.push(element instanceof HTMLElement, null, null, "Element must be an HTML Element, not an SVG Element");
+        QUnit.assert.pushResult({
+          result: element instanceof HTMLElement,
+          actual: null,
+          expected: null,
+          message: "Element must be an HTML Element, not an SVG Element"
+        });
   } else {
-    QUnit.push(
-      element.attributes.length === expectedCount,
-      element.attributes.length, expectedCount,
-      `Expected ${expectedCount} attributes; got ${element.outerHTML}`
-    );
+    QUnit.assert.pushResult({
+      result: element.attributes.length === expectedCount,
+      actual: element.attributes.length,
+      expected: expectedCount,
+      message: `Expected ${expectedCount} attributes; got ${element.outerHTML}`
+    });
 
     if (content !== null) {
-      QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);
+      QUnit.assert.pushResult({
+        result: element.innerHTML === content,
+        actual: element.innerHTML,
+        expected: content,
+        message: `The element had '${content}' as its content`
+      });
     }
   }
 }

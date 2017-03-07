@@ -1,3 +1,4 @@
+import { Arguments, IArguments, INamedArguments, IPositionalArguments } from './lib/vm/arguments';
 import './lib/bootstrap';
 
 export { default as templateFactory, TemplateFactory, Template } from './lib/template';
@@ -51,22 +52,14 @@ export {
 } from './lib/compiled/opcodes/debugger';
 
 export {
-  EvaluatedArgs,
-  EvaluatedNamedArgs,
-  EvaluatedPositionalArgs
-} from './lib/compiled/expressions/args';
-
-export {
   default as getDynamicVar
 } from './lib/helpers/get-dynamic-var';
 
 export {
   Blocks as BlockMacros,
   Inlines as InlineMacros,
-  NestedBlockSyntax,
-  CompileBlockMacro,
-  compileArgs,
-  compileComponentArgs,
+  BlockMacro,
+  MissingBlockMacro,
   compileList,
   expr as compileExpression
 } from './lib/syntax/functions';
@@ -81,11 +74,16 @@ export {
   compileStatement
 } from './lib/scanner';
 
-export {
-  ARGS
-} from './lib/compiled/opcodes/component';
-
 export { PublicVM as VM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
+
+export {
+  IArguments as Arguments,
+  ICapturedArguments as CapturedArguments,
+  IPositionalArguments as PositionalArguments,
+  ICapturedPositionalArguments as CapturedPositionalArguments,
+  INamedArguments as NamedArguments,
+  ICapturedNamedArguments as CapturedNamedArguments,
+} from './lib/vm/arguments';
 
 export { SafeString, isSafeString } from './lib/upsert';
 

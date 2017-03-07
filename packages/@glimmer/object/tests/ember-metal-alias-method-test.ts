@@ -4,8 +4,8 @@ import { aliasMethod } from '@glimmer/object';
 QUnit.module('Mixin.aliasMethod');
 
 function validateAliasMethod(obj) {
-  equal(obj.fooMethod(), 'FOO', 'obj.fooMethod()');
-  equal(obj.barMethod(), 'FOO', 'obj.barMethod should be a copy of foo');
+  QUnit.assert.equal(obj.fooMethod(), 'FOO', 'obj.fooMethod()');
+  QUnit.assert.equal(obj.barMethod(), 'FOO', 'obj.barMethod should be a copy of foo');
 }
 
 QUnit.test('methods of another name are aliased when the mixin is applied', function() {
@@ -18,7 +18,7 @@ QUnit.test('methods of another name are aliased when the mixin is applied', func
   validateAliasMethod(obj);
 });
 
-QUnit.test('should follow aliasMethods all the way down', function() {
+QUnit.test('should follow aliasMethods all the way down', assert => {
   let MyMixin = <Mixin>Mixin.create({
     bar: aliasMethod('foo'), // put first to break ordered iteration
     baz() { return 'baz'; },
@@ -26,7 +26,7 @@ QUnit.test('should follow aliasMethods all the way down', function() {
   });
 
   let obj = MyMixin.apply({});
-  equal(get(obj, 'bar')(), 'baz', 'should have followed aliasMethods');
+  assert.equal(get(obj, 'bar')(), 'baz', 'should have followed aliasMethods');
 });
 
 QUnit.skip('should alias methods from other dependent mixins', function() {

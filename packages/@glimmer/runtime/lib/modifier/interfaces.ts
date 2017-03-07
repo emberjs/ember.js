@@ -1,11 +1,11 @@
-import { EvaluatedArgs } from '../compiled/expressions/args';
+import { IArguments } from '../vm/arguments';
 import { DOMChanges } from '../dom/helper';
 import { DynamicScope } from '../environment';
 import { Destroyable } from '@glimmer/util';
 
 export interface ModifierManager<T> {
   // Create is meant to only produce the state bucket
-  create(element: Element, args: EvaluatedArgs, dynamicScope: DynamicScope, dom: DOMChanges): T;
+  create(element: Element, args: IArguments, dynamicScope: DynamicScope, dom: DOMChanges): T;
   // At initial render, the modifier gets a chance to install itself on the
   // element it is managing. It can also return a bucket of state that
   // it could use at update time. From the perspective of Glimmer, this

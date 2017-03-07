@@ -19,7 +19,7 @@ let serializedTemplate: SerializedTemplateWithLazyBlock<TestMeta>;
 let serializedTemplateNoId: SerializedTemplateWithLazyBlock<TestMeta>;
 
 QUnit.module("templateFactory", {
-  setup() {
+  beforeEach() {
     env = new TestEnvironment();
     let templateJs = precompile<TestMeta>("<div>{{name}}</div>", {
       meta: {

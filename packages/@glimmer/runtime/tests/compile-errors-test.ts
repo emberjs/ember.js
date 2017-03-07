@@ -3,7 +3,7 @@ import { TestEnvironment } from "@glimmer/test-helpers";
 let env: TestEnvironment;
 
 QUnit.module("Compile errors", {
-  setup() {
+  beforeEach() {
     env = new TestEnvironment();
   }
 });

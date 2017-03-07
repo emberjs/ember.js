@@ -1,7 +1,9 @@
 import { parse as handlebarsParse } from "handlebars/compiler/base";
-import { preprocess as parse, builders as b } from "@glimmer/syntax";
+import { preprocess as parse, builders as b } from "../index";
 
 import { astEqual } from "./support";
+
+const test = QUnit.test;
 
 QUnit.module("[glimmer-syntax] Parser - AST");
 
@@ -9,26 +11,6 @@ test("a simple piece of content", function() {
   let t = 'some content';
   astEqual(t, b.program([
     b.text('some content')
-  ]));
-});
-
-test("allow simple AST to be passed", function() {
-  let ast = parse(handlebarsParse("simple"));
-
-  astEqual(ast, b.program([
-    b.text("simple")
-  ]));
-});
-
-test("allow an AST with mustaches to be passed", function() {
-  let ast = parse(handlebarsParse("<h1>some</h1> ast {{foo}}"));
-
-  astEqual(ast, b.program([
-    b.element("h1", [], [], [
-      b.text("some")
-    ]),
-    b.text(" ast "),
-    b.mustache(b.path('foo'))
   ]));
 });
 
@@ -359,10 +341,11 @@ test("Stripping - programs", function() {
 
 test("Stripping - removes unnecessary text nodes", function() {
   let t = "{{#each~}}\n  <li> foo </li>\n{{~/each}}";
+
   astEqual(t, b.program([
     b.block(b.path('each'), [], b.hash(), b.program([
       b.element('li', [], [], [b.text(' foo ')])
-    ]))
+    ]), null)
   ]));
 });
 
@@ -492,5 +475,5 @@ test("Handlebars decorator should error", function(assert) {
 test("Handlebars decorator block should error", function(assert) {
   assert.throws(() => {
     parse("{{#* foo}}{{/foo}}");
-  }, new Error(`Handlebars decorator blocks are not supported: "{{#* foo" at L1:C0`);
+  }, new Error(`Handlebars decorator blocks are not supported: "{{#* foo" at L1:C0`));
 });

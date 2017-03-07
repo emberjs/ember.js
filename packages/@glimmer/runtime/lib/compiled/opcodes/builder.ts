@@ -1,11 +1,19 @@
+import { EMPTY_ARRAY } from '../../utils';
 import * as content from './content';
 import * as vm from './vm';
 
 import { Insertion } from '../../upsert';
 
 import * as WireFormat from '@glimmer/wire-format';
-import { Option, Stack, Dict, Opaque, dict, expect, fillNulls } from '@glimmer/util';
-import { Constants } from '../../opcodes';
+import { Option, Stack, Opaque, dict, expect, fillNulls } from '@glimmer/util';
+import {
+  Constants,
+  ConstantString,
+  ConstantArray,
+  ConstantOther,
+  ConstantBlock,
+  ConstantFunction,
+} from '../../environment/constants';
 import { ModifierManager } from '../../modifier/interfaces';
 import { ComponentDefinition } from '../../component/interfaces';
 import Environment, { Program } from '../../environment';
@@ -13,16 +21,9 @@ import { SymbolTable, CompilationMeta } from '@glimmer/interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
 import { ComponentBuilder } from '../../compiler';
 import { RawInlineBlock, ClientSide, Block } from '../../scanner';
-import { InvokeDynamicLayout, compileComponentArgs, expr } from '../../syntax/functions';
+import { InvokeDynamicLayout, expr } from '../../syntax/functions';
 
-import {
-  ConstantString,
-  ConstantArray,
-  ConstantOther,
-  ConstantBlock,
-  ConstantFunction,
-  Op
-} from '../../opcodes';
+import { Op } from '../../opcodes';
 
 export interface CompilesInto<E> {
   compile(builder: OpcodeBuilder): E;
@@ -129,6 +130,12 @@ export abstract class BasicOpcodeBuilder {
     return this.push(Op.ReleaseLocals);
   }
 
+  // args
+
+  pushArgs(positional: number, names: string[], synthetic: boolean) {
+    this.push(Op.PushArgs, positional, this.constants.other(names), (synthetic as any)|0);
+  }
+
   // helpers
 
   private get labels(): Labels {
@@ -156,10 +163,6 @@ export abstract class BasicOpcodeBuilder {
 
   setComponentState(local: number) {
     this.push(Op.SetComponentState, local);
-  }
-
-  pushComponentArgs(positional: number, named: number, namedDict: Dict<number>) {
-    this.push(Op.PushComponentArgs, positional, named, this.constants.other(namedDict));
   }
 
   createComponent(state: number, hasDefault: boolean, hasInverse: boolean) {
@@ -384,16 +387,6 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.PopDynamicScope);
   }
 
-  pushReifiedArgs(positional: number, _names: string[], hasDefault = false, hasInverse = false) {
-    let names = this.names(_names);
-
-    let flag = 0;
-    if (hasDefault) flag |= 0b01;
-    if (hasInverse) flag |= 0b10;
-
-    this.push(Op.PushReifiedArgs, positional, names, flag);
-  }
-
   pushImmediate<T>(value: T) {
     this.push(Op.Constant, this.other(value));
   }
@@ -588,6 +581,26 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.component = new ComponentBuilder(this);
   }
 
+  compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, synthetic: boolean): string[] {
+    let positional = 0;
+
+    if (params) {
+      params.forEach(p => expr(p, this));
+      positional = params.length;
+    }
+
+    let names = EMPTY_ARRAY;
+
+    if (hash) {
+      names = hash[0];
+      hash[1].forEach(v => expr(v, this));
+    }
+
+    this.pushArgs(positional, names, synthetic);
+
+    return names;
+  }
+
   compile<E>(expr: Represents<E>): E {
     if (isCompilableExpression(expr)) {
       return expr.compile(this);
@@ -606,17 +619,17 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.dynamicContent(new content.GuardedTrustingAppendOpcode());
   }
 
-  invokeComponent(attrs: Option<RawInlineBlock>, _params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, block: Option<Block>, inverse: Option<Block> = null) {
+  invokeComponent(attrs: Option<RawInlineBlock>, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, block: Option<Block>, inverse: Option<Block> = null) {
     let state = this.local();
 
     this.setComponentState(state);
 
     this.pushBlock(block);
     this.pushBlock(inverse);
-    let { slots, count, names } = compileComponentArgs(hash, this);
 
+    let names = this.compileArgs(params, hash, false);
     this.pushDynamicScope();
-    this.pushComponentArgs(0, count, slots);
+
     this.createComponent(state, true, false);
     this.registerComponentDestructor(state);
     this.beginComponentTransaction();
@@ -632,6 +645,11 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.commitComponentTransaction();
 
     this.releaseLocal();
+  }
+
+  template(block: Option<WireFormat.SerializedInlineBlock>): Option<RawInlineBlock> {
+    if (!block) return null;
+    return new RawInlineBlock(this.env, this.meta, block.statements, block.parameters);
   }
 
   // TODO

@@ -4,7 +4,6 @@ import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect } fro
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { CompiledDynamicProgram, OpSlice } from '../compiled/blocks';
 import { Template } from '../scanner';
-import { EvaluatedArgs } from '../compiled/expressions/args';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
@@ -12,14 +11,16 @@ import { FrameStack } from './frame';
 
 import {
   APPEND_OPCODES,
-  UpdatingOpcode,
-  Constants,
-  ConstantString,
+  UpdatingOpcode
 } from '../opcodes';
+
+import {
+  Constants,
+  ConstantString
+} from '../environment/constants';
 
 export interface PublicVM {
   env: Environment;
-  getArgs(): Option<EvaluatedArgs>;
   dynamicScope(): DynamicScope;
   getSelf(): PathReference<Opaque>;
   newDestroyable(d: Destroyable): void;
@@ -314,10 +315,6 @@ export default class VM implements PublicVM {
 
   referenceForSymbol(symbol: number): PathReference<any> {
     return this.scope().getSymbol(symbol);
-  }
-
-  getArgs(): Option<EvaluatedArgs> {
-    return this.evalStack.pop<Option<EvaluatedArgs>>();
   }
 
   /// EXECUTION

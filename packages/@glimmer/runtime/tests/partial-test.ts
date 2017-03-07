@@ -61,12 +61,12 @@ function rerender(context: any = null, params: RerenderParams = { assertStable: 
 }
 
 function assertInvariants(result) {
-  strictEqual(result.firstNode(), root.firstChild, "The firstNode of the result is the same as the root's firstChild");
-  strictEqual(result.lastNode(), root.lastChild, "The lastNode of the result is the same as the root's lastChild");
+  QUnit.assert.strictEqual(result.firstNode(), root.firstChild, "The firstNode of the result is the same as the root's firstChild");
+  QUnit.assert.strictEqual(result.lastNode(), root.lastChild, "The lastNode of the result is the same as the root's lastChild");
 }
 
 QUnit.module("Partials", {
-  setup: commonSetup
+  beforeEach: commonSetup
 });
 
 QUnit.test('static partial with static content', assert => {
