@@ -53,7 +53,7 @@
     "handlebars": "^4.0.6",
     "jquery": "^3.1.1",
     "resolve": "^1.1.7",
-    "rsvp": "^3.3.3",
+    "rsvp": "^3.4.0",
     "simple-dom": "^0.3.0",
     "simple-html-tokenizer": "^0.3.0"
   },
