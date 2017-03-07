@@ -39,16 +39,24 @@
   </script>
 
   <script>
+    QUnit.config.urlConfig.push({
+      id: "notslint",
+      label: "Disable TSLint",
+      tooltip: "Do not include any TSLint tests"
+    });
+
     var testMatch;
-    var tests = QUnit.urlParams.nojshint ? '(-test)$' : '(-test|.tslint)$';
+    var notslint = QUnit.urlParams.notslint;
+
     if (packagesToTest) {
-      testMatch = new RegExp("^(" + packagesToTest.join("|") + ").*" + tests);
+      testMatch = new RegExp("^(" + packagesToTest.join("|") + ").*-test$");
     } else {
-      testMatch = new RegExp(tests);
+      testMatch = /-test$/;
     }
 
     Object.keys(requireModule.entries).forEach(function(entry) {
       if (entry.match(testMatch)) {
+        if (notslint && entry.match(/\.lint-test$/)) return;
         requireModule(entry)
       };
     });
