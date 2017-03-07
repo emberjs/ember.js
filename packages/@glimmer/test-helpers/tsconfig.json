@@ -1,22 +1,5 @@
 {
-  "compilerOptions": {
-    // Enhance Strictness
-    "noImplicitAny": false,
-    "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "strictNullChecks": false,
-
-    // Environment Configuration
-    "experimentalDecorators": false,
-    "moduleResolution": "node",
-
-    // Compilation Configuration
-    "target": "es6",
-    "inlineSourceMap": true,
-    "declaration": true,
-    "rootDir": "."
-  },
+  "extends": "../../../build/tsconfig.json",
 
   "include": [
     "index.ts",
