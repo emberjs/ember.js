@@ -16,7 +16,7 @@ import {
 
 import { isFeatureEnabled } from 'ember-metal';
 
-function defineController(app, name) {
+function setupController(app, name) {
   let controllerName = `${String.capitalize(name)}Controller`;
 
   Object.defineProperty(app, controllerName, {
@@ -34,13 +34,6 @@ function buildQueryParams(queryParams) {
 
 if (isFeatureEnabled('ember-routing-router-service')) {
   moduleFor('Router Service - urlFor', class extends RouterTestCase {
-    constructor() {
-      super();
-
-      ['dynamic', 'child']
-        .forEach((name) => { defineController(this.application, name); });
-    }
-
     ['@test RouterService#urlFor returns URL for simple route'](assert) {
       assert.expect(1);
 
@@ -53,6 +46,8 @@ if (isFeatureEnabled('ember-routing-router-service')) {
 
     ['@test RouterService#urlFor returns URL for simple route with dynamic segments'](assert) {
       assert.expect(1);
+
+      setupController(this.application, 'dynamic');
 
       let dynamicModel = { id: 1, contents: 'much dynamicism' };
 
@@ -157,6 +152,92 @@ if (isFeatureEnabled('ember-routing-router-service')) {
 
         assert.equal('/dynamic/1', expectedURL);
       });
+    }
+
+    ['@test RouterService#urlFor correctly transitions to route via generated path'](assert) {
+      assert.expect(1);
+
+      let expectedURL;
+
+      return this.visit('/')
+        .then(() => {
+          expectedURL = this.routerService.urlFor('parent.child');
+
+          return this.routerService.transitionTo(expectedURL);
+        })
+        .then(() => {
+          assert.equal(expectedURL, this.routerService.get('currentURL'));
+        });
+    }
+
+    ['@test RouterService#urlFor correctly transitions to route via generated path with dynamic segments'](assert) {
+      assert.expect(1);
+
+      let expectedURL;
+      let dynamicModel = { id: 1 };
+
+      this.registerRoute('dynamic', Route.extend({
+        model() {
+          return dynamicModel;
+        }
+      }));
+
+      return this.visit('/')
+        .then(() => {
+          expectedURL = this.routerService.urlFor('dynamic', dynamicModel);
+
+          return this.routerService.transitionTo(expectedURL);
+        })
+        .then(() => {
+          assert.equal(expectedURL, this.routerService.get('currentURL'));
+        });
+    }
+
+    ['@test RouterService#urlFor correctly transitions to route via generated path with query params'](assert) {
+      assert.expect(1);
+
+      let expectedURL;
+      let actualURL;
+      let queryParams = buildQueryParams({ foo: 'bar' });
+
+      return this.visit('/')
+        .then(() => {
+          expectedURL = this.routerService.urlFor('parent.child', queryParams);
+
+          return this.routerService.transitionTo(expectedURL);
+        })
+        .then(() => {
+          actualURL = `${this.routerService.get('currentURL')}?foo=bar`;
+
+          assert.equal(expectedURL, actualURL);
+        });
+    }
+
+    ['@test RouterService#urlFor correctly transitions to route via generated path with dynamic segments and query params'](assert) {
+      assert.expect(1);
+
+      let expectedURL;
+      let actualURL;
+      let queryParams = buildQueryParams({ foo: 'bar' });
+      let dynamicModel = { id: 1 };
+
+      this.registerRoute('dynamic', Route.extend({
+        model() {
+          return dynamicModel;
+        }
+      }));
+
+      return this.visit('/')
+        .then(() => {
+          expectedURL = this.routerService.urlFor('dynamic', dynamicModel, queryParams);
+
+          return this.routerService.transitionTo(expectedURL);
+        })
+        .then(() => {
+          actualURL = `${this.routerService.get('currentURL')}?foo=bar`;
+
+          assert.equal(expectedURL, actualURL);
+        });
     }
   });
 }
