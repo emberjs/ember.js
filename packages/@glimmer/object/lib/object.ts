@@ -15,6 +15,7 @@ import {
 const { isArray } = Array;
 
 import { ROOT } from './utils';
+import { Option } from "@glimmer/interfaces";
 
 export const EMPTY_CACHE = function EMPTY_CACHE() {};
 
@@ -35,21 +36,21 @@ export interface GlimmerObjectFactory<T> {
   extend<T>(extension: T): GlimmerObjectFactory<T>;
   extend(...extensions: Object[]): GlimmerObjectFactory<Object>;
   create<U>(attrs?: U): GlimmerObject & T & U;
-  reopen<U>(extensions: U);
-  reopenClass<U>(extensions: U);
+  reopen<U>(extensions: U): void;
+  reopenClass<U>(extensions: U): void;
   metaForProperty(property: string): Object;
-  eachComputedProperty(callback: (string, Object) => void);
+  eachComputedProperty(callback: (s: string, o: Object) => void): void;
   "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": InstanceMeta;
 }
 
-export function turbocharge(obj) {
+export function turbocharge<T>(obj: T): T {
   // function Dummy() {}
   // Dummy.prototype = obj;
   return obj;
 }
 
 abstract class SealedMeta extends Meta {
-  addReferenceTypeFor(...args): InnerReferenceFactory<any> {
+  addReferenceTypeFor(..._args: any[]): InnerReferenceFactory<any> {
     throw new Error("Cannot modify reference types on a sealed meta");
   }
 }
@@ -66,21 +67,21 @@ export class ClassMeta {
   private staticMixins: Mixin[] = [];
   private subclasses: GlimmerObjectFactory<any>[] = [];
   private slots: string[] = [];
-  public InstanceMetaConstructor: typeof Meta = null;
+  public InstanceMetaConstructor: Option<typeof Meta> = null;
 
-  static fromParent(parent: ClassMeta) {
+  static fromParent(parent: Option<ClassMeta>) {
     let meta = new this();
     meta.reset(parent);
     return meta;
   }
 
-  static for(object: ObjectWithMixins | InstanceWithMixins): ClassMeta {
+  static for(object: ObjectWithMixins | InstanceWithMixins): Option<ClassMeta> {
     if (CLASS_META in object) return (<ObjectWithMixins>object)[CLASS_META];
     else if (object.constructor) return (<InstanceWithMixins>object).constructor[CLASS_META] || null;
     else return null;
   }
 
-  init(object: GlimmerObject, attrs: Object) {
+  init(object: GlimmerObject, attrs: Option<Object>) {
     if (typeof attrs !== 'object' || attrs === null) return;
 
     if (this.hasConcatenatedProperties) {
@@ -226,7 +227,7 @@ export class ClassMeta {
     return this.propertyMetadata;
   }
 
-  reset(parent: ClassMeta) {
+  reset(parent: Option<ClassMeta>) {
     this.referenceTypes = dict<InnerReferenceFactory<any>>();
     this.propertyMetadata = dict();
     this.concatenatedProperties = dict<any[]>();
@@ -250,7 +251,7 @@ export class ClassMeta {
 
   reseal(obj: Object) {
     let meta = Meta.for(obj);
-    let fresh = new this.InstanceMetaConstructor(obj, {});
+    let fresh = new this.InstanceMetaConstructor!(obj, {});
     let referenceTypes = meta.getReferenceTypes();
     let slots = meta.getSlots();
 
@@ -316,7 +317,7 @@ function mergeMergedProperties(attrs: Object, parent: Object) {
 export class InstanceMeta extends ClassMeta {
   public "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": ClassMeta = ClassMeta.fromParent(null);
 
-  static fromParent(parent: InstanceMeta): InstanceMeta {
+  static fromParent(parent: Option<InstanceMeta>): InstanceMeta {
     return <InstanceMeta>super.fromParent(parent);
   }
 
@@ -339,7 +340,7 @@ export default class GlimmerObject {
   static extend<T>(extension: T): typeof GlimmerObject;
   static extend(...extensions: Object[]): typeof GlimmerObject;
 
-  static extend(...extensions) {
+  static extend(...extensions: any[]) {
     return extendClass(this, ...extensions);
   }
 
@@ -365,7 +366,7 @@ export default class GlimmerObject {
     return value;
   }
 
-  static eachComputedProperty(callback: (string, Object) => void) {
+  static eachComputedProperty(callback: (s: string, o: Object) => void) {
     let metadata = this[CLASS_META].getPropertyMetadata();
     if (!metadata) return;
 
@@ -382,7 +383,7 @@ export default class GlimmerObject {
 
   constructor(attrs?: Object) {
     if (attrs) assign(this, attrs);
-    (<typeof GlimmerObject>this.constructor)[CLASS_META].init(this, attrs);
+    (<typeof GlimmerObject>this.constructor)[CLASS_META].init(this, attrs || null);
     this._super = ROOT;
     initializeGuid(this);
     this.init();

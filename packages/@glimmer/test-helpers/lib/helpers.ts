@@ -1,10 +1,11 @@
-import { tokenize } from "simple-html-tokenizer";
+import { tokenize, Token } from "simple-html-tokenizer";
 import { Environment, Template, templateFactory } from "@glimmer/runtime";
 import { precompile as rawPrecompile, PrecompileOptions } from "@glimmer/compiler";
 import * as WireFormat from '@glimmer/wire-format';
+import { Opaque, Option } from "@glimmer/interfaces";
 
 // For Phantom
-function toObject(val) {
+function toObject(val: Opaque) {
   if (val === null || val === undefined) {
     throw new TypeError('Object.assign cannot be called with null or undefined');
   }
@@ -13,7 +14,7 @@ function toObject(val) {
 }
 
 if (typeof Object.assign !== 'function') {
-  Object.assign = function(target, source) {
+  Object.assign = function(target: Opaque, _source: Opaque) {
     let from;
     let to = toObject(target);
     let symbols;
@@ -43,11 +44,10 @@ if (typeof Object.assign !== 'function') {
 
 export const assign = Object.assign;
 
-function isMarker(node) {
-  const TextNode = (<any>window).Text;
-  const Comment = (<any>window).Comment;
-
-  if (node instanceof Comment && node.textContent === '') {
+function isMarker(node: Node) {
+  const TextNode = window['Text'] as typeof Text;
+  const CommentNode = window['Comment'] as typeof Comment;
+  if (node instanceof CommentNode && node.textContent === '') {
     return true;
   }
 
@@ -74,25 +74,25 @@ export function compile<T extends WireFormat.TemplateMeta>(string: string, optio
   return factory.create(options.env);
 }
 
-export function equalInnerHTML(fragment, html, message?) {
+export function equalInnerHTML(fragment: { innerHTML: string }, html: string, message?: string) {
   let actualHTML = normalizeInnerHTML(fragment.innerHTML);
   QUnit.assert.pushResult({
     result: actualHTML === html,
     actual: actualHTML,
-    exected: html,
-    message
+    expected: html,
+    message: message || `unexpected innerHTML`
   });
 }
 
-export function equalHTML(node, html) {
-  let fragment;
-  if (!node.nodeType && node.length) {
+export function equalHTML(node: Node | Node[], html: string) {
+  let fragment: DocumentFragment | Node;
+  if (!node['nodeType'] && node['length']) {
     fragment = document.createDocumentFragment();
     while (node[0]) {
       fragment.appendChild(node[0]);
     }
   } else {
-    fragment = node;
+    fragment = node as Node;
   }
 
   let div = document.createElement("div");
@@ -101,7 +101,7 @@ export function equalHTML(node, html) {
   equalInnerHTML(div, html);
 }
 
-function generateTokens(divOrHTML) {
+function generateTokens(divOrHTML: Element | string): { tokens: Token[], html: string } {
   let div;
   if (typeof divOrHTML === 'string') {
     div = document.createElement("div");
@@ -117,14 +117,24 @@ declare const QUnit: QUnit & {
   equiv(a: any, b: any): boolean;
 };
 
-export function equalTokens(fragment, html, message=null) {
-  if (fragment.fragment) { fragment = fragment.fragment; }
-  if (html.fragment) { html = html.fragment; }
+export type TestFragment = Element | { fragment: Element };
+
+function extract(frag: TestFragment): Element {
+  if (frag['fragment'] instanceof Element) {
+    return frag['fragment'];
+  } else {
+    return frag as Element;
+  }
+}
+
+export function equalTokens(testFragment: TestFragment, testHTML: TestFragment, message: Option<string> = null) {
+  let fragment = extract(testFragment);
+  let html = extract(testHTML);
 
   let fragTokens = generateTokens(fragment);
   let htmlTokens = generateTokens(html);
 
-  function normalizeTokens(token) {
+  function normalizeTokens(token: Token) {
     if (token.type === 'StartTag') {
       token.attributes = token.attributes.sort(function(a, b) {
         if (a[0] > b[0]) { return 1; }
@@ -144,20 +154,20 @@ export function equalTokens(fragment, html, message=null) {
   let equiv = QUnit.equiv(fragTokens.tokens, htmlTokens.tokens);
 
   if (equiv && fragTokens.html !== htmlTokens.html) {
-    QUnit.assert.deepEqual(fragTokens.tokens, htmlTokens.tokens, message);
+    QUnit.assert.deepEqual(fragTokens.tokens, htmlTokens.tokens, message || 'expected tokens to match');
   } else {
     QUnit.assert.pushResult({
       result: QUnit.equiv(fragTokens.tokens, htmlTokens.tokens),
       actual: fragTokens.html,
       expected: htmlTokens.html,
-      message
+      message: message || 'expected tokens to match'
     });
   }
 
   // QUnit.assert.deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
 }
 
-export function generateSnapshot(element) {
+export function generateSnapshot(element: Element) {
   let snapshot = [];
   let node = element.firstChild;
 
@@ -171,7 +181,7 @@ export function generateSnapshot(element) {
   return snapshot;
 }
 
-export function equalSnapshots(a, b) {
+export function equalSnapshots(a: Node[], b: Node[]) {
   QUnit.assert.strictEqual(a.length, b.length, 'Same number of nodes');
   for (let i = 0; i < b.length; i++) {
     QUnit.assert.strictEqual(a[i], b[i], 'Nodes are the same');
@@ -190,7 +200,7 @@ let ieSVGInnerHTML = (function () {
   return clone.innerHTML === '<svg xmlns="http://www.w3.org/2000/svg" />';
 })();
 
-export function normalizeInnerHTML(actualHTML) {
+export function normalizeInnerHTML(actualHTML: string) {
   if (ieSVGInnerHTML) {
     // Replace `<svg xmlns="http://www.w3.org/2000/svg" height="50%" />` with `<svg height="50%"></svg>`, etc.
     // drop namespace attribute
@@ -204,10 +214,10 @@ export function normalizeInnerHTML(actualHTML) {
   return actualHTML;
 }
 
-let isCheckedInputHTML;
+let isCheckedInputHTML: (element: Element) => void;
 
 if (typeof document === 'undefined') {
-  isCheckedInputHTML = function(element) {
+  isCheckedInputHTML = function() {
   };
 } else {
   // detect weird IE8 checked element string
@@ -224,7 +234,7 @@ export { isCheckedInputHTML };
 
 // check which property has the node's text content
 let textProperty = typeof document === 'object' && document.createElement('div').textContent === undefined ? 'innerText' : 'textContent';
-export function getTextContent(el) {
+export function getTextContent(el: Node) {
   // textNode
   if (el.nodeType === 3) {
     return el.nodeValue;

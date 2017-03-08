@@ -15,7 +15,7 @@ export function setProperty(parent: any, property: string, val: any) {
   // if (rootProp) rootProp.notify();
 }
 
-export function notifyProperty(parent: any, property: string) {
+export function notifyProperty(_parent: any, _property: string) {
   // let rootProp = metaFor(parent).root().chainFor(property));
 
   // let referencesToNotify = metaFor(parent).referencesFor(property));

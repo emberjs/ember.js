@@ -1,32 +1,49 @@
 {
-    "compilerOptions": {
-        "target": "es2015",
-        "moduleResolution": "node",
-        "experimentalDecorators": true,
-        "allowUnreachableCode": false,
-        "noUnusedLocals": true,
-        "strictNullChecks": false,
-        "inlineSources": true,
-        "inlineSourceMap": true,
-        "declaration": true,
-        "rootDir": "packages",
-        "baseUrl" : "./packages",
-        "newLine": "LF",
-        "noEmit": true
-    },
-    "include": [
-      "packages/*/*.d.ts",
-      "packages/*/index.ts",
-      "packages/*/lib/**.ts",
-      "packages/@glimmer/*/*.d.ts",
-      "packages/@glimmer/*/index.ts",
-      "packages/@glimmer/*/lib/**.ts"
-    ],
-    "exclude": [
-        "dist",
-        "demos",
-        "tmp",
-        "node_modules",
-        ".vscode"
-    ]
+  "compilerOptions": {
+    // Compilation Configuration
+    "target": "es2015",
+    "inlineSources": true,
+    "inlineSourceMap": true,
+    "declaration": true,
+    "rootDir": "packages",
+    "baseUrl" : "./packages",
+
+    // Environment Configuration
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+
+    // Enhance Strictness
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+
+    "newLine": "LF",
+    "noEmit": true,
+
+    "paths": {
+      "@glimmer/test-helpers": ["../test-helpers/index.ts"]
+    }
+  },
+  "include": [
+    "packages/*/*.d.ts",
+    "packages/*/index.ts",
+    "packages/*/lib/**.ts",
+    "packages/@glimmer/*/*.d.ts",
+    "packages/@glimmer/*/index.ts",
+    "packages/@glimmer/*/lib/**.ts"
+  ],
+  "exclude": [
+    "dist",
+    "demos",
+    "packages/glimmer-demos",
+    "packages/glimmer-benchmarks",
+    "tmp",
+    "node_modules",
+    ".vscode"
+  ]
 }

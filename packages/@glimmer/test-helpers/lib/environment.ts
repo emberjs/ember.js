@@ -49,10 +49,12 @@ import {
   Template,
   isComponentDefinition,
   CompiledDynamicTemplate,
+  NULL_REFERENCE,
 } from "@glimmer/runtime";
 
 import {
-  compile as rawCompile
+  compile as rawCompile,
+  TestCompileOptions
 } from "./helpers";
 
 import {
@@ -78,7 +80,8 @@ import {
   OpaqueIterable,
   AbstractIterable,
   IterationItem,
-  isConst
+  isConst,
+  VersionedPathReference
 } from "@glimmer/reference";
 
 import {
@@ -88,8 +91,9 @@ import {
 import * as WireFormat from '@glimmer/wire-format';
 
 import {
-  BlockSymbolTable, ProgramSymbolTable
-} from "@glimmer/interfaces/index";
+  BlockSymbolTable, ProgramSymbolTable, unsafe
+} from "@glimmer/interfaces";
+import { TemplateMeta } from "@glimmer/wire-format";
 
 type KeyFor<T> = (item: Opaque, index: T) => string;
 
@@ -107,7 +111,7 @@ class ArrayIterator implements OpaqueIterator {
     return this.array.length === 0;
   }
 
-  next(): IterationItem<Opaque, number> {
+  next(): Option<IterationItem<Opaque, number>> {
     let { position, array, keyFor } = this;
 
     if (position >= array.length) return null;
@@ -138,7 +142,7 @@ class ObjectKeysIterator implements OpaqueIterator {
     return this.keys.length === 0;
   }
 
-  next(): IterationItem<Opaque, string> {
+  next(): Option<IterationItem<Opaque, string>> {
     let { position, keys, values, keyFor } = this;
 
     if (position >= keys.length) return null;
@@ -186,10 +190,8 @@ class Iterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque,
     } else if (iterable === undefined || iterable === null) {
       return EMPTY_ITERATOR;
     } else if (iterable.forEach !== undefined) {
-      let array = [];
-      iterable.forEach(function (item) {
-        array.push(item);
-      });
+      let array: Opaque[] = [];
+      iterable.forEach((item: Opaque) => array.push(item));
       return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
     } else if (typeof iterable === 'object') {
       let keys = Object.keys(iterable);
@@ -217,7 +219,7 @@ class Iterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque,
 }
 
 export type Attrs = Dict<any>;
-export type AttrsDiff = { oldAttrs: Attrs, newAttrs: Attrs };
+export type AttrsDiff = { oldAttrs: Option<Attrs>, newAttrs: Attrs };
 
 export class BasicComponent {
   public attrs: Attrs;
@@ -231,8 +233,8 @@ export class BasicComponent {
 
 export class EmberishCurlyComponent extends GlimmerObject {
   public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
-  public tagName: string = null;
-  public attributeBindings: string[] = null;
+  public tagName: Option<string> = null;
+  public attributeBindings: Option<string[]> = null;
   public attrs: Attrs;
   public element: Element;
   public bounds: Bounds;
@@ -247,9 +249,9 @@ export class EmberishCurlyComponent extends GlimmerObject {
     this.dirtinessTag.inner.dirty();
   }
 
-  didInitAttrs(options: { attrs: Attrs }) { }
-  didUpdateAttrs(diff: AttrsDiff) { }
-  didReceiveAttrs(diff: AttrsDiff) { }
+  didInitAttrs(_options: { attrs: Attrs }) { }
+  didUpdateAttrs(_diff: AttrsDiff) { }
+  didReceiveAttrs(_diff: AttrsDiff) { }
   willInsertElement() { }
   willUpdate() { }
   willRender() { }
@@ -273,9 +275,9 @@ export class EmberishGlimmerComponent extends GlimmerObject {
     this.dirtinessTag.inner.dirty();
   }
 
-  didInitAttrs(options: { attrs: Attrs }) { }
-  didUpdateAttrs(diff: AttrsDiff) { }
-  didReceiveAttrs(diff: AttrsDiff) { }
+  didInitAttrs(_options: { attrs: Attrs }) { }
+  didUpdateAttrs(_diff: AttrsDiff) { }
+  didReceiveAttrs(_diff: AttrsDiff) { }
   willInsertElement() { }
   willUpdate() { }
   willRender() { }
@@ -290,11 +292,11 @@ interface BasicStateBucket {
 }
 
 class BasicComponentManager implements ComponentManager<BasicStateBucket> {
-  prepareArgs(definition: BasicComponentDefinition, args: Arguments): Arguments {
+  prepareArgs(_definition: BasicComponentDefinition, args: Arguments): Arguments {
     return args;
   }
 
-  create(environment: Environment, definition: BasicComponentDefinition, _args: Arguments): BasicStateBucket {
+  create(_env: Environment, definition: BasicComponentDefinition, _args: Arguments): BasicStateBucket {
     let args = _args.named.capture();
     let klass = definition.ComponentClass || BasicComponent;
     let component = new klass(args.value());
@@ -302,14 +304,14 @@ class BasicComponentManager implements ComponentManager<BasicStateBucket> {
     return { args, component };
   }
 
-  layoutFor(definition: BasicComponentDefinition, { component }: BasicStateBucket, env: TestEnvironment): CompiledDynamicProgram {
+  layoutFor(definition: BasicComponentDefinition, _bucket: BasicStateBucket, env: TestEnvironment): CompiledDynamicProgram {
     let layout = env.compiledLayouts[definition.name];
 
     if (layout) {
       return layout;
     }
 
-    layout = rawCompile(definition.layoutString, { env }).asLayout().compileDynamic(env);
+    layout = rawCompile(definition.layoutString, { env, meta: undefined as any as TemplateMeta }).asLayout().compileDynamic(env);
     return env.compiledLayouts[definition.name] = layout;
   }
 
@@ -347,7 +349,7 @@ class BasicComponentManager implements ComponentManager<BasicStateBucket> {
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 
 class StaticTaglessComponentManager extends BasicComponentManager {
-  layoutFor(definition: StaticTaglessComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledDynamicProgram {
+  layoutFor(definition: StaticTaglessComponentDefinition, _component: BasicComponent, env: TestEnvironment): CompiledDynamicProgram {
     let layout = env.compiledLayouts[definition.name];
 
     if (layout) {
@@ -368,11 +370,11 @@ interface EmberishGlimmerStateBucket {
 }
 
 class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimmerStateBucket> {
-  prepareArgs(definition: EmberishGlimmerComponentDefinition, args: Arguments): Arguments {
+  prepareArgs(_definition: EmberishGlimmerComponentDefinition, args: Arguments): Arguments {
     return args;
   }
 
-  create(environment: Environment, definition: EmberishGlimmerComponentDefinition, _args: Arguments, dynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishGlimmerStateBucket {
+  create(_environment: Environment, definition: EmberishGlimmerComponentDefinition, _args: Arguments, _dynamicScope: any, _callerSelf: PathReference<Opaque>, _hasDefaultBlock: boolean): EmberishGlimmerStateBucket {
     let args = _args.named.capture();
     let klass = definition.ComponentClass || BaseEmberishGlimmerComponent;
     let attrs = args.value();
@@ -386,7 +388,7 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return { args, component };
   }
 
-  layoutFor(definition: EmberishGlimmerComponentDefinition, component: EmberishGlimmerComponent, env: TestEnvironment): CompiledDynamicProgram {
+  layoutFor(definition: EmberishGlimmerComponentDefinition, _component: EmberishGlimmerComponent, env: TestEnvironment): CompiledDynamicProgram {
     if (env.compiledLayouts[definition.name]) {
       return env.compiledLayouts[definition.name];
     }
@@ -482,7 +484,7 @@ const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager()
 const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
 class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyComponent> {
-  prepareArgs(definition: EmberishCurlyComponentDefinition, args: Arguments, dynamicScope: DynamicScope): Arguments {
+  prepareArgs(_definition: EmberishCurlyComponentDefinition, args: Arguments, _dynamicScope: DynamicScope): Arguments {
     return args;
 
     // let dyn = definition.ComponentClass ? definition.ComponentClass['fromDynamicScope'] : null;
@@ -494,9 +496,9 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     // return args;
   }
 
-  create(environment: Environment, definition: EmberishCurlyComponentDefinition, args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>): EmberishCurlyComponent {
+  create(_environment: Environment, definition: EmberishCurlyComponentDefinition, args: Arguments, _dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>): EmberishCurlyComponent {
     let klass = definition.ComponentClass || BaseEmberishCurlyComponent;
-    let processedArgs = processArgs(args, klass['positionalParams']);
+    let processedArgs = processArgs(args, klass['positionalParams'] as unsafe as string[]);
     let { attrs } = processedArgs.value();
     let self = callerSelf.value();
     let merged = assign({}, attrs, { attrs }, { args: processedArgs }, { targetObject: self });
@@ -651,11 +653,11 @@ class HelperReference implements PathReference<Opaque> {
 class InertModifierManager implements ModifierManager<Opaque> {
   create() { }
 
-  install(modifier: Opaque) { }
+  install() { }
 
-  update(modifier: Opaque) { }
+  update() { }
 
-  getDestructor(modifier: Opaque): Destroyable {
+  getDestructor(): Option<Destroyable> {
     return null;
   }
 }
@@ -673,7 +675,7 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
   public updatedElements: Element[] = [];
   public destroyedModifiers: TestModifier[] = [];
 
-  create(element: Element, args: Arguments, dynamicScope: DynamicScope, dom: IDOMChanges): TestModifier {
+  create(element: Element, args: Arguments, _dynamicScope: DynamicScope, dom: IDOMChanges): TestModifier {
     return new TestModifier(element, args.capture(), dom);
   }
 
@@ -722,19 +724,23 @@ export class TestEnvironment extends Environment {
   private uselessAnchor: HTMLAnchorElement;
   public compiledLayouts = dict<CompiledDynamicProgram>();
 
-  constructor(options: TestEnvironmentOptions = {
-    document: document,
-    appendOperations: new DOMTreeConstruction(document)
-  }) {
-    super({ appendOperations: options.appendOperations, updateOperations: new DOMChanges(options.document as Document) });
+  constructor(options: TestEnvironmentOptions = {}) {
+    // let document = options.document || window.document;
+    // let appendOperations = options.appendOperations || new DOMTreeConstruction(document);
+    super({
+      appendOperations: options.appendOperations || new DOMTreeConstruction(options.document || window.document),
+      updateOperations: new DOMChanges((options.document || window.document) as Document)
+    });
 
-    this.uselessAnchor = options.document.createElement('a') as HTMLAnchorElement;
+    let document = options.document || window.document;
+
+    this.uselessAnchor = document.createElement('a') as HTMLAnchorElement;
     this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
     this.registerInternalHelper("-get-dynamic-var", getDynamicVar);
     this.registerModifier("action", new InertModifierManager());
 
-    this.registerInternalHelper("hash", (vm, args) => args.named);
+    this.registerInternalHelper("hash", (_vm: VM, args: Arguments) => args.named);
   }
 
   protocolForURL(url: string): string {
@@ -743,7 +749,7 @@ export class TestEnvironment extends Environment {
   }
 
   registerHelper(name: string, helper: UserHelper) {
-    this.helpers[name] = (vm: VM, args: Arguments) => new HelperReference(helper, args);
+    this.helpers[name] = (_vm: VM, args: Arguments) => new HelperReference(helper, args);
   }
 
   registerInternalHelper(name: string, helper: GlimmerHelper) {
@@ -755,7 +761,7 @@ export class TestEnvironment extends Environment {
   }
 
   registerPartial(name: string, source: string) {
-    this.partials[name] = new PartialDefinition(name, rawCompile(source, { env: this }));
+    this.partials[name] = new PartialDefinition(name, rawCompile(source, { env: this } as unsafe as TestCompileOptions<TemplateMeta>));
   }
 
   registerComponent(name: string, definition: ComponentDefinition<any>) {
@@ -823,7 +829,7 @@ export class TestEnvironment extends Environment {
     return !!this.components[name];
   }
 
-  getComponentDefinition(name: string, blockMeta?: WireFormat.TemplateMeta): ComponentDefinition<any> {
+  getComponentDefinition(name: string, _blockMeta?: WireFormat.TemplateMeta): ComponentDefinition<any> {
     return this.components[name];
   }
 
@@ -840,7 +846,7 @@ export class TestEnvironment extends Environment {
   }
 
   compile(template: string): Template<undefined> {
-    return rawCompile<undefined>(template, { env: this });
+    return rawCompile<any>(template, { env: this } as any);
   }
 
   iterableFor(ref: Reference<Opaque>, keyPath: string): OpaqueIterable {
@@ -858,7 +864,7 @@ export class TestEnvironment extends Environment {
         keyFor = (item: Opaque) => String(item);
         break;
       default:
-        keyFor = (item: Opaque) => item[keyPath];
+        keyFor = (item: Opaque) => item && item[keyPath];
         break;
     }
 
@@ -867,7 +873,7 @@ export class TestEnvironment extends Environment {
 }
 
 export class TestDynamicScope implements DynamicScope {
-  private bucket;
+  private bucket: any;
 
   constructor(bucket = null) {
     if (bucket) {
@@ -890,14 +896,14 @@ export class TestDynamicScope implements DynamicScope {
   }
 }
 
-export class DynamicComponentReference implements PathReference<ComponentDefinition<Opaque>> {
+export class DynamicComponentReference implements PathReference<Option<ComponentDefinition<Opaque>>> {
   public tag: Tag;
 
   constructor(private nameRef: PathReference<Opaque>, private env: Environment, private meta: WireFormat.TemplateMeta) {
     this.tag = nameRef.tag;
   }
 
-  value(): ComponentDefinition<Opaque> {
+  value(): Option<ComponentDefinition<Opaque>> {
     let { env, nameRef, meta } = this;
 
     let nameOrDef = nameRef.value();
@@ -911,8 +917,8 @@ export class DynamicComponentReference implements PathReference<ComponentDefinit
     return null;
   }
 
-  get() {
-    return null;
+  get(): VersionedPathReference<Opaque> {
+    return NULL_REFERENCE;
   }
 }
 
@@ -949,7 +955,7 @@ class StaticTaglessComponentDefinition extends GenericComponentDefinition<BasicC
 
 export interface EmberishCurlyComponentFactory {
   positionalParams?: string[];
-  create(options: { attrs: Attrs, targetObject }): EmberishCurlyComponent;
+  create(options: { attrs: Attrs, targetObject: any }): EmberishCurlyComponent;
 }
 
 export class EmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {
@@ -968,10 +974,10 @@ abstract class GenericComponentLayoutCompiler implements CompilableLayout {
   constructor(private layoutString: string) { }
 
   protected compileLayout(env: Environment): Template<WireFormat.TemplateMeta> {
-    return rawCompile(this.layoutString, { env });
+    return rawCompile(this.layoutString, { env } as unsafe as TestCompileOptions<TemplateMeta>);
   }
 
-  abstract compile(builder: ComponentLayoutBuilder);
+  abstract compile(builder: ComponentLayoutBuilder): void;
 }
 
 class StaticTaglessComponentLayoutCompiler extends GenericComponentLayoutCompiler {
@@ -981,7 +987,7 @@ class StaticTaglessComponentLayoutCompiler extends GenericComponentLayoutCompile
 }
 
 function EmberTagName(vm: VM): PathReference<string> {
-  let self = vm.getSelf().value();
+  let self = vm.getSelf().value() as Object;
   let tagName: string = self['tagName'];
   tagName = tagName === '' ? null : self['tagName'] || 'div';
   return PrimitiveReference.create(tagName);
@@ -1011,7 +1017,7 @@ class EmberishGlimmerComponentLayoutCompiler extends GenericComponentLayoutCompi
 
 export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectFactory<T>): GlimmerObjectFactory<T> {
   return ComponentClass.extend({
-    init() {
+    init(this: any) {
       this._super(...arguments);
       this.hooks = {
         didInitAttrs: 0,
@@ -1026,47 +1032,47 @@ export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectF
       };
     },
 
-    didInitAttrs() {
+    didInitAttrs(this: any) {
       this._super(...arguments);
       this.hooks['didInitAttrs']++;
     },
 
-    didUpdateAttrs() {
+    didUpdateAttrs(this: any) {
       this._super(...arguments);
       this.hooks['didUpdateAttrs']++;
     },
 
-    didReceiveAttrs() {
+    didReceiveAttrs(this: any) {
       this._super(...arguments);
       this.hooks['didReceiveAttrs']++;
     },
 
-    willInsertElement() {
+    willInsertElement(this: any) {
       this._super(...arguments);
       this.hooks['willInsertElement']++;
     },
 
-    willUpdate() {
+    willUpdate(this: any) {
       this._super(...arguments);
       this.hooks['willUpdate']++;
     },
 
-    willRender() {
+    willRender(this: any) {
       this._super(...arguments);
       this.hooks['willRender']++;
     },
 
-    didInsertElement() {
+    didInsertElement(this: any) {
       this._super(...arguments);
       this.hooks['didInsertElement']++;
     },
 
-    didUpdate() {
+    didUpdate(this: any) {
       this._super(...arguments);
       this.hooks['didUpdate']++;
     },
 
-    didRender() {
+    didRender(this: any) {
       this._super(...arguments);
       this.hooks['didRender']++;
     }
@@ -1074,12 +1080,12 @@ export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectF
 }
 
 function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: BlockMacros, inlines: InlineMacros } {
-  blocks.add('identity', (params, hash, template, inverse, builder) => {
-    builder.invokeStatic(template);
+  blocks.add('identity', (_params, _hash, template, _inverse, builder) => {
+    builder.invokeStatic(template!);
   });
 
-  blocks.add('render-inverse', (params, hash, template, inverse, builder) => {
-    builder.invokeStatic(inverse);
+  blocks.add('render-inverse', (_params, _hash, _template, inverse, builder) => {
+    builder.invokeStatic(inverse!);
   });
 
   blocks.add('component', (params, hash, template, inverse, builder) => {
@@ -1104,9 +1110,9 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     return false;
   });
 
-  inlines.add('component', (name, params, hash, builder) => {
-    let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
-    let args: ComponentArgs = [params.slice(1), hashToArgs(hash), null, null];
+  inlines.add('component', (_name, params, hash, builder) => {
+    let definitionArgs: ComponentArgs = [params!.slice(0, 1), null, null, null];
+    let args: ComponentArgs = [params!.slice(1), hashToArgs(hash), null, null];
     builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
     return true;
   });
@@ -1115,7 +1121,7 @@ function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: B
     let definition = builder.env.getComponentDefinition(name, builder.meta.templateMeta);
 
     if (definition) {
-      builder.component.static(definition, [params, hashToArgs(hash), null, null]);
+      builder.component.static(definition, [params!, hashToArgs(hash), null, null]);
       return true;
     }
 
@@ -1190,17 +1196,17 @@ export function equalsElement(element: Element, tagName: string, attributes: Obj
 
 interface Matcher {
   "3d4ef194-13be-4ccf-8dc7-862eea02c93e": boolean;
-  match(actual): boolean;
-  fail(actual): string;
+  match(actual: any): boolean;
+  fail(actual: any): string;
   expected(): string;
 }
 
 export const MATCHER = "3d4ef194-13be-4ccf-8dc7-862eea02c93e";
 
-export function equalsAttr(expected) {
+export function equalsAttr(expected: any) {
   return {
     "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
-    match(actual) {
+    match(actual: any) {
       return expected === actual;
     },
 
@@ -1208,16 +1214,16 @@ export function equalsAttr(expected) {
       return `to equal ${expected}`;
     },
 
-    fail(actual) {
+    fail(actual: any) {
       return `${actual} did not equal ${expected}`;
     }
   };
 }
 
-export function equals(expected) {
+export function equals<T>(expected: T) {
   return {
     "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
-    match(actual) {
+    match(actual: T) {
       return expected === actual;
     },
 
@@ -1225,22 +1231,22 @@ export function equals(expected) {
       return `to equal ${expected}`;
     },
 
-    fail(actual) {
+    fail(actual: T) {
       return `${actual} did not equal ${expected}`;
     }
   };
 }
 
-export function regex(r) {
+export function regex(r: RegExp) {
   return {
     "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
-    match(v) {
+    match(v: string) {
       return r.test(v);
     },
     expected() {
       return `to match ${r}`;
     },
-    fail(actual) {
+    fail(actual: string) {
       return `${actual} did not match ${r}`;
     }
   };
@@ -1249,13 +1255,13 @@ export function regex(r) {
 export function classes(expected: string) {
   return {
     "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
-    match(actual) {
+    match(actual: string) {
       return actual && (expected.split(' ').sort().join(' ') === actual.split(' ').sort().join(' '));
     },
     expected() {
       return `to include '${expected}'`;
     },
-    fail(actual) {
+    fail(actual: string) {
       return `'${actual}'' did not match '${expected}'`;
     }
   };

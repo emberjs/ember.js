@@ -2,6 +2,7 @@ import { IArguments } from '../vm/arguments';
 import { DOMChanges } from '../dom/helper';
 import { DynamicScope } from '../environment';
 import { Destroyable } from '@glimmer/util';
+import { Option } from "@glimmer/interfaces";
 
 export interface ModifierManager<T> {
   // Create is meant to only produce the state bucket
@@ -18,5 +19,5 @@ export interface ModifierManager<T> {
 
   // Convert the opaque token into an object that implements Destroyable.
   // If it returns null, the modifier will not be destroyed.
-  getDestructor(modifier: T): Destroyable;
+  getDestructor(modifier: T): Option<Destroyable>;
 }

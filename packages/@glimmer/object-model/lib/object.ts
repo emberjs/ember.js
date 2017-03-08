@@ -2,12 +2,12 @@ import { GlimmerDescriptor, ValueBlueprint } from './blueprint';
 export type GlimmerObjectClass = typeof GlimmerObject;
 
 export interface Constructor<T extends GlimmerObject> {
-  new(...args): T;
+  new(...args: any[]): T;
   prototype: T;
 }
 
 export interface GlimmerClass<Extensions extends GlimmerObject> extends Constructor<Extensions> {
-  new(...args): Extensions;
+  new(...args: any[]): Extensions;
   create<Extensions, CreateOptions, T extends typeof GlimmerObject>(this: T & GlimmerClass<Extensions>, properties?: CreateOptions): Extensions & CreateOptions & GlimmerObject;
   extend<Original extends GlimmerObject, Extensions extends GlimmerObject>(this: GlimmerClass<Original>, extensions?: Extensions): GlimmerClass<Original & Extensions>;
 }

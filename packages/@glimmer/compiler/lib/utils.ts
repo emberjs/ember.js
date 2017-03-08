@@ -1,4 +1,4 @@
-export function processOpcodes(compiler, opcodes) {
+export function processOpcodes(compiler: any, opcodes: any) {
   for (let i=0, l=opcodes.length; i<l; i++) {
     let method = opcodes[i][0];
     let params = opcodes[i][1];

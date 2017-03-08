@@ -18,7 +18,46 @@ declare module "simple-html-tokenizer" {
     flushData(): void;
   }
 
-  export function tokenize(html: string): any;
+  export namespace Tokens {
+    export type Attribute = [string, string, boolean];
+
+    export interface Base {
+      syntaxError?: string;
+      loc: {
+        start: { line: number, column: number },
+        end: { line: number, column: number }
+      }
+    }
+
+    export interface Chars extends Base {
+      type: 'Chars';
+      chars: string;
+    }
+
+    export interface Comment extends Base {
+      type: 'Comment';
+      chars: string;
+    }
+
+    export interface StartTag extends Base {
+      type: 'StartTag';
+      tagName: string;
+      attributes: Attribute[];
+      selfClosing?: boolean;
+    }
+
+    export interface EndTag extends Base {
+      type: 'EndTag';
+      tagName: string;
+    }
+
+    export type Token = Chars | Comment | StartTag | EndTag;
+  }
+
+  export type Token = Tokens.Token;
+  export type Attribute = Tokens.Attribute;
+
+  export function tokenize(html: string): Token[];
 
   export interface CharRef {
     [namedRef: string]: string;

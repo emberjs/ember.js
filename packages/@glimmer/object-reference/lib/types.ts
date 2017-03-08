@@ -18,12 +18,13 @@ export interface RootReferenceFactory<T> {
 }
 
 export interface RootReference<T> extends PathReference<T> {
-  update(value: T);
+  update(value: T): void;
   referenceFromParts(parts: string[]): PathReference<Opaque>;
-  chainFor(prop: string): PathReference<T>;
+  chainFor(prop: string): Option<PathReference<T>>;
 }
 
 import { InnerReferenceFactory } from './references/descriptors';
+import { Option } from "@glimmer/interfaces";
 
 export interface MetaOptions {
   RootReferenceFactory?: RootReferenceFactory<any>;
@@ -32,11 +33,11 @@ export interface MetaOptions {
 
 export interface Meta {
   root(): RootReference<any>;
-  referencesFor(property: string): Set<PathReference<any>>;
+  referencesFor(property: string): Option<Set<PathReference<any>>>;
   referenceTypeFor(property: string): InnerReferenceFactory<any>;
   getReferenceTypes(): Dict<InnerReferenceFactory<any>>;
-  addReference(property: string, reference: PathReference<any>);
-  removeReference(property: string, reference: PathReference<any>);
+  addReference(property: string, reference: PathReference<any>): void;
+  removeReference(property: string, reference: PathReference<any>): void;
   getSlots(): Dict<any>;
 }
 

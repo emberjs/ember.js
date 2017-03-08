@@ -4,7 +4,7 @@ import GlimmerObject from './object';
 
 export abstract class Blueprint {
   constructor(protected key: PropertyKey) {}
-  abstract define(home: Object);
+  abstract define(home: Object): void;
 }
 
 const VALUE_DESCRIPTOR: PropertyDescriptor = {
@@ -39,7 +39,7 @@ export interface Accessor<T> {
 
 export abstract class GlimmerDescriptor {
   abstract blueprint(key: PropertyKey): Blueprint;
-  abstract define(home: Object, key: PropertyKey);
+  abstract define(home: Object, key: PropertyKey): void;
 }
 
 export class Computed<T> extends GlimmerDescriptor {
@@ -51,7 +51,7 @@ export class Computed<T> extends GlimmerDescriptor {
     return new ComputedBlueprint(key, this);
   }
 
-  reference(root: GlimmerObject, key: PropertyKey) {
+  reference(_root: GlimmerObject, _key: PropertyKey) {
 
   }
 

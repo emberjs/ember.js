@@ -25,15 +25,17 @@ class NestedEmberishCurleyTaglessComponentsScenario extends TemplateBenchmarkSce
   }
 
   renderContext(): Object {
+    let parents: { name: string, children: { name: string }[] }[] = [];
     let context = {
-      parents: []
+      parents
     };
 
     for(let i=0; i<10; i++) {
-      let parent = { name: `Parent ${i}`, children: [] };
-      context.parents.push(parent);
+      let children: { name: string }[] = [];
+      let parent = { name: `Parent ${i}`, children };
+      parents.push(parent);
       for(let j=0; j<10; j++) {
-        parent.children.push({ name: `Child ${j}` });
+        children.push({ name: `Child ${j}` });
       }
     }
 

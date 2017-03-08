@@ -1,4 +1,5 @@
 import * as AST from './types/nodes';
+import { Option } from "@glimmer/interfaces";
 
 // Regex to validate the identifier for block parameters.
 // Based on the ID validation regex in Handlebars.
@@ -14,7 +15,7 @@ export function parseElementBlockParams(element: AST.ElementNode) {
   if (params) element.blockParams = params;
 }
 
-function parseBlockParams(element: AST.ElementNode) {
+function parseBlockParams(element: AST.ElementNode): Option<string[]> {
   let l = element.attributes.length;
   let attrNames = [];
 
@@ -49,6 +50,8 @@ function parseBlockParams(element: AST.ElementNode) {
     element.attributes = element.attributes.slice(0, asIndex);
     return params;
   }
+
+  return null;
 }
 
 export function childrenFor(node: AST.Program | AST.ElementNode): AST.Statement[] {

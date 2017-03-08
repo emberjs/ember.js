@@ -1,6 +1,6 @@
 import * as WireFormat from '@glimmer/wire-format';
 import { assert } from "@glimmer/util";
-import { Stack, DictSet, Option } from "@glimmer/util";
+import { Stack, DictSet, Option, expect } from "@glimmer/util";
 import { AST } from '@glimmer/syntax';
 import { BlockSymbolTable, ProgramSymbolTable } from './template-visitor';
 
@@ -25,7 +25,7 @@ export type StackValue = Expression | Params | Hash | str;
 export abstract class Block {
   public statements: Statement[] = [];
 
-  abstract toJSON();
+  abstract toJSON(): Object;
 
   push(statement: Statement) {
     this.statements.push(statement);
@@ -37,7 +37,7 @@ export class InlineBlock extends Block {
     super();
   }
 
-  toJSON(): Object {
+  toJSON(): WireFormat.SerializedInlineBlock {
     return {
       statements: this.statements,
       parameters: this.table.slots
@@ -153,7 +153,7 @@ export class Template<T extends TemplateMeta> {
 }
 
 export default class JavaScriptCompiler<T extends TemplateMeta> {
-  static process<T extends TemplateMeta>(opcodes: any[], symbols: ProgramSymbolTable, meta): Template<T> {
+  static process<T extends TemplateMeta>(opcodes: any[], symbols: ProgramSymbolTable, meta: T): Template<T> {
     let compiler = new JavaScriptCompiler<T>(opcodes, symbols, meta);
     return compiler.process();
   }
@@ -163,9 +163,13 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   private opcodes: any[];
   private values: StackValue[] = [];
 
-  constructor(opcodes, symbols: ProgramSymbolTable, meta: T) {
+  constructor(opcodes: any[], symbols: ProgramSymbolTable, meta: T) {
     this.opcodes = opcodes;
     this.template = new Template(symbols, meta);
+  }
+
+  get currentBlock(): Block {
+    return expect(this.blocks.current, 'Expected a block on the stack');
   }
 
   process(): Template<T> {
@@ -186,7 +190,8 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
 
   endBlock() {
     let { template, blocks } = this;
-    template.block.blocks.push(blocks.pop().toJSON());
+    let block = blocks.pop() as InlineBlock;
+    template.block.blocks.push(block.toJSON());
   }
 
   startProgram() {
@@ -345,17 +350,17 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.blocks.push(component);
   }
 
-  endComponent(): [WireFormat.Statements.Attribute[], WireFormat.Core.Hash, WireFormat.SerializedInlineBlock] {
+  endComponent(): [WireFormat.Statements.Attribute[], WireFormat.Core.Hash, Option<WireFormat.SerializedInlineBlock>] {
     let component = this.blocks.pop();
     assert(component instanceof ComponentBlock, "Compiler bug: endComponent() should end a component");
     return (component as ComponentBlock).toJSON();
   }
 
   prepareArray(size: number) {
-    let values = [];
+    let values: Expression[] = [];
 
     for (let i = 0; i < size; i++) {
-      values.push(this.popValue());
+      values.push(this.popValue() as Expression);
     }
 
     this.pushValue<Params>(values);
@@ -382,7 +387,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
       args.pop();
     }
 
-    this.blocks.current.push(args);
+    this.currentBlock.push(args);
   }
 
   pushValue<S extends Expression | Params | Hash>(val: S) {

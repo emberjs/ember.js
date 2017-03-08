@@ -43,7 +43,7 @@ export interface EnterExitNodeHandler<T> {
   keys: any;
 }
 
-function visitNode(visitor: NodeVisitor, node: nodes.Node) {
+function visitNode(visitor: NodeVisitor, node: nodes.Node): any {
   let handler: Option<NodeHandler<nodes.Node>> = visitor[node.type] || visitor.All || null;
   let result;
 
@@ -65,7 +65,7 @@ function visitNode(visitor: NodeVisitor, node: nodes.Node) {
     let keys = visitorKeys[node.type];
 
     for (let i = 0; i < keys.length; i++) {
-      visitKey(visitor, handler, node, keys[i]);
+      visitKey(visitor, handler as any, node as any, keys[i]);
     }
 
     if (handler && handler['exit']) {

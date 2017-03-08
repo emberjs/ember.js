@@ -110,18 +110,6 @@ function dynamicAttr(sexp: S.DynamicAttr | S.TrustingAttr, trusting: boolean, bu
   }
 }
 
-CLIENT_SIDE.add(ClientSide.Ops.AnyDynamicAttr, (sexp: ClientSide.AnyDynamicAttr, builder: OpcodeBuilder) => {
-  let [,, name, value, namespace, trusting] = sexp;
-
-  expr(value, builder);
-
-  if (namespace) {
-    builder.dynamicAttrNS(name, namespace, trusting);
-  } else {
-    builder.dynamicAttr(name, trusting);
-  }
-});
-
 STATEMENTS.add(Ops.OpenElement, (sexp: S.OpenElement, builder: OpcodeBuilder) => {
   builder.openPrimitiveElement(sexp[1]);
 });

@@ -10,13 +10,13 @@ class AliasMethodDescriptor extends Descriptor {
     this.name = name;
   }
 
-  define(target: Object, key: string, home: Object) {
+  define(target: Object, key: string, _home: Object) {
     let name = <string>this.name;
 
     Object.defineProperty(target, key, {
       enumerable: true,
       configurable: true,
-      get() {
+      get(this: typeof target) {
         return this[name];
       }
     });
@@ -31,7 +31,7 @@ class AliasMethodBlueprint extends Blueprint {
     this.name = name;
   }
 
-  descriptor(target: Object, key: string, meta: ClassMeta): Descriptor {
+  descriptor(_target: Object, _key: string, _meta: ClassMeta): Descriptor {
     return new AliasMethodDescriptor(this.name);
   }
 }
@@ -47,11 +47,11 @@ class AliasBlueprint extends ComputedBlueprint {
     let parent = name.slice(0, -1);
     let last = name[name.length - 1];
 
-    let get = function() {
+    let get = function(this: any) {
       return name.reduce((obj, n) => obj[n], this);
     };
 
-    let set = function(value) {
+    let set = function(this: any, value: any) {
       let p = parent.reduce((obj, n) => obj[n], this);
       p[last] = value;
     };
