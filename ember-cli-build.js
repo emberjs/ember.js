@@ -22,10 +22,12 @@ var replaceVersion     = require('emberjs-build/lib/utils/replace-version');
 
 var Funnel = require('broccoli-funnel');
 var Rollup = require('broccoli-rollup');
-var mergeTrees = require('broccoli-merge-trees');
+var MergeTrees = require('broccoli-merge-trees');
 var replace = require('broccoli-string-replace');
 var uglify = require('broccoli-uglify-sourcemap');
 var toAMD = require('./broccoli/to-amd');
+var processES2015 = require('./broccoli/process-es2015');
+const REMOVE_LIB = /^([^\/]+\/)lib\//;
 
 var rollupEnifed = {
   transformBundle(code, options) {
@@ -36,27 +38,25 @@ var rollupEnifed = {
   }
 };
 
-function dag() {
-  var es = new Funnel(path.dirname(require.resolve('dag-map')), {
-    files: ['dag-map.js'],
-    annotation: 'dag-map.js'
-  });
-  return new Rollup(es, {
-    rollup: {
-      plugins: [rollupEnifed],
-      entry: 'dag-map.js',
-      dest: 'dag-map.js',
-      format: 'amd',
-      moduleId: 'dag-map',
-      exports: 'named'
-    },
+function dagES() {
+  var packageDir = path.dirname(require.resolve('dag-map'));
+  var packageJson = require(`${packageDir}/package.json`)
+  var { dir, base } = getEntry(packageDir, packageJson);
+  return new Funnel(dir, {
+    files: [base],
     annotation: 'dag-map.js'
   });
 }
 
-function backburner() {
+function backburnerES() {
   var dist = path.dirname(require.resolve('backburner.js'));
   dist = path.join(dist, 'es6');
+  return new Funnel(dist, {
+    files: ['backburner.js']
+  });
+
+
+
   return new Rollup(new Funnel(dist, {
     files: ['backburner.js']
   }), {
@@ -72,7 +72,7 @@ function backburner() {
   });
 }
 
-function rsvp() {
+function rsvpES() {
   var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
   var lib = path.resolve(path.dirname(require.resolve('rsvp')), '../lib');
   var rollup = new Rollup(lib, {
@@ -84,17 +84,24 @@ function rsvp() {
     },
     annotation: 'rsvp.js'
   });
-  return transpileES6(rollup);
+  return rollup;
+  // return transpileES6(rollup);
 }
 
-function routeRecognizer() {
+function getEntry(packageDir, packageJson) {
+  var entry = path.join(packageDir, packageJson['module'] || packageJson['jsnext:main'] || packageJson['main'].replace(/dist\//, 'dist/es6/'));
+  return { base: path.basename(entry), dir: path.dirname(entry) };
+}
+
+function routeRecognizerES() {
   var packageJson = require('route-recognizer/package');
   var packageDir = path.dirname(require.resolve('route-recognizer/package'));
-  var entry = path.join(packageDir, packageJson['module'] || packageJson['jsnext:main'] || packageJson['main'].replace(/dist\//, 'dist/es6/'));
-  var basename = path.basename(entry);
-  var es6 = new Funnel(path.dirname(entry), {
-    files: [ basename ]
+  var { dir, base } = getEntry(packageDir, packageJson);
+  var es6 = new Funnel(dir, {
+    files: [ base ]
   });
+
+  return es6;
   return new Rollup(es6, {
     rollup: {
       plugins: [rollupEnifed],
@@ -141,6 +148,8 @@ function buildPackage(name, options) {
     annotation: destination
   });
 
+  return rolledUp;
+
   var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
 
   return transpileES6(rolledUp, name, {
@@ -148,20 +157,51 @@ function buildPackage(name, options) {
   });
 }
 
-function router() {
+// function router() {
+//   return new Rollup(path.resolve(path.dirname(require.resolve('router_js')), '../lib'), {
+//     rollup: {
+//       plugins: [rollupEnifed],
+//       external: ['route-recognizer', 'rsvp'],
+//       entry: 'router.js',
+//       dest: 'router.js',
+//       format: 'amd',
+//       moduleId: 'router',
+//       exports: 'named'
+//     },
+//     annotation: 'router.js'
+//   });
+// }
+
+
+function routerES() {
+  // TODO upstream this to router.js and publish on npm
   return new Rollup(path.resolve(path.dirname(require.resolve('router_js')), '../lib'), {
     rollup: {
-      plugins: [rollupEnifed],
+      plugins: [{
+        transform(code, id) {
+          if (/[^t][^e][^r]\/router\.js$/.test(id)) {
+            code += 'export { Transition } from \'./router/transition\';\n'
+          } else if (/\/router\/handler-info\/[^\/]+\.js$/.test(id)) {
+            code = code.replace(/\'router\//g, '\'../');
+          }
+          code = code.replace(/import\ Promise\ from \'rsvp\/promise\'/g, 'import { Promise } from \'rsvp\'')
+          return {
+            code: code,
+            map: { mappings: '' }
+          };
+        }
+      }],
       external: ['route-recognizer', 'rsvp'],
       entry: 'router.js',
-      dest: 'router.js',
-      format: 'amd',
-      moduleId: 'router',
-      exports: 'named'
+      targets: [{
+        dest: 'router.js',
+        format: 'es'
+      }]
     },
     annotation: 'router.js'
   });
 }
+
 
 var featuresJson = fs.readFileSync('./features.json', { encoding: 'utf8' });
 
@@ -316,120 +356,169 @@ function getESLintRulePaths() {
   return [];
 }
 
-module.exports = function(options) {
-  var features = getFeatures();
-  var version = getVersion();
-
-  var vendorPackages = {
-    'ember-dev':             treeForAddon(options.project, 'ember-dev'),
-    'external-helpers':      vendoredPackage('external-helpers'),
-    'loader':                vendoredPackage('loader'),
-    'rsvp':                  rsvp(),
-    'backburner':            backburner(),
-    'router':                router(),
-    'dag-map':               dag(),
-    'route-recognizer':      routeRecognizer(),
-    'simple-html-tokenizer': buildPackage('simple-html-tokenizer'),
-
-    '@glimmer/compiler':     buildPackage('@glimmer/compiler', {
-                               external: ['@glimmer/syntax', '@glimmer/wire-format', '@glimmer/util']
-                             }),
-    '@glimmer/di':           buildPackage('@glimmer/di', { external: ['@glimmer/util'] }),
-    '@glimmer/reference':    buildPackage('@glimmer/reference', { external: ['@glimmer/util'] }),
-    '@glimmer/runtime':      buildPackage('@glimmer/runtime', {
-                               external: ['@glimmer/util',
-                                          '@glimmer/reference',
-                                          '@glimmer/wire-format',
-                                          '@glimmer/syntax']
-                             }),
-    '@glimmer/node':         buildPackage('@glimmer/node', { external: ['@glimmer/runtime'] }),
-    '@glimmer/syntax':       buildPackage('@glimmer/syntax', { external: ['handlebars', 'simple-html-tokenizer'] }),
-    '@glimmer/test-helpers': buildPackage('@glimmer/test-helpers'),
-    '@glimmer/util':         buildPackage('@glimmer/util', { external: [] }),
-    '@glimmer/wire-format':  buildPackage('@glimmer/wire-format', { external: ['@glimmer/util'] }),
-    'handlebars':            buildPackage('handlebars', {
-                               srcDir: 'lib',
-                               entry: 'handlebars/compiler/base.js',
-                               plugins: [handlebarsFix()]
-                             }) // inlined parser
-  };
-
-  // Replace _getBowerTree with one from npm
-  EmberBuild.prototype._getBowerTree = function getBowerTree() {
-    return mergeTrees([
-      qunit(),
-      jquery(),
-      replaceVersion(new Funnel('config/package_manager_files', {
-        destDir: '/'
-      }), {
-        version: version
-      })
-    ]);
-  };
-
-  EmberBuild.prototype._minifySourceTree = function (tree, options) {
-    var srcFile = options.srcFile;
-    var destFile = options.destFile;
-    var files = [ srcFile ];
-    var mapSrcFile = srcFile.slice(0, -2) + 'map';
-    var mapDestFile = destFile.slice(0, -2) + 'map';
-    if (options.enableSourceMaps) {
-      files.push(mapSrcFile);
-    }
-    // because broccoli-uglify-sourcemap doesn't use persistent filter
-    var reducedTree = new Funnel(tree, {
-      annotation: 'reduce for minify',
-      files: files
-    });
-    var minifiedTree = new uglify(reducedTree, {
-      sourceMapConfig: {
-        enabled: options.enableSourceMaps
-      },
-      mangle: true,
-      compress: {
-        // this is adversely affects heuristics for IIFE eval
-        negate_iife: false,
-        // limit sequences because of memory issues during parsing
-        sequences: 30
-      },
-      output: {
-        // no difference in size
-        // and much easier to debug
-        semicolons: false
-      }
-    });
-    return new Funnel(minifiedTree, {
-      annotation: 'rename minified',
-      files: files,
-      getDestinationPath: function(relativePath) {
-        if (relativePath === srcFile) {
-          return destFile;
-        }
-        if (relativePath === mapSrcFile) {
-          return mapDestFile;
-        }
-        return relativePath;
-      }
-    });
-  };
-
-  var emberBuild = new EmberBuild({
-    babel: {
-      development: babelConfigFor('development'),
-      production: babelConfigFor('production')
+function emberDebugES() {
+  return new Funnel('packages', {
+    include: ['*/lib/**/*.js', '*/lib/**/*.hbs'],
+    exclude: ['loader/**', 'external-helpers/**', 'internal-test-helpers/**'],
+    getDestinationPath(relativePath) {
+      return relativePath.replace(REMOVE_LIB, "$1");
     },
-    eslintRulePaths: getESLintRulePaths(),
-    features: {
-      development: getFeatures('development'),
-      production: getFeatures('production')
-    },
-    glimmer: require('@glimmer/compiler'),
-    packages: getPackages(features),
-    vendoredPackages: vendorPackages,
-    version: version
+    annotation: 'packages ES6'
   });
+}
 
-  return emberBuild.getDistTrees();
-};
+module.exports = function() {
+  var esSource = new MergeTrees([
+    emberDebugES(),
+    rsvpES(),
+    backburnerES(),
+    routerES(),
+    dagES(),
+    routeRecognizerES(),
+    buildPackage('simple-html-tokenizer'),
+    buildPackage('@glimmer/reference', { external: ['@glimmer/util'] }),
+    buildPackage('@glimmer/runtime', {
+      external: ['@glimmer/util',
+                '@glimmer/reference',
+                '@glimmer/wire-format',
+                '@glimmer/syntax']
+    }),
+    buildPackage('@glimmer/compiler', {
+      external: ['@glimmer/syntax', '@glimmer/wire-format', '@glimmer/util']
+    }),
+    buildPackage('@glimmer/di', { external: ['@glimmer/util'] }),
+    buildPackage('@glimmer/node', { external: ['@glimmer/runtime'] }),
+    buildPackage('@glimmer/syntax', { external: ['handlebars', 'simple-html-tokenizer'] }),
+    buildPackage('@glimmer/util', { external: [] }),
+    buildPackage('@glimmer/wire-format', { external: ['@glimmer/util'] }),
+  ]);
 
-module.exports.getFeatures = getFeatures;
+  var testing = new MergeTrees([
+    jquery(),
+    qunit(),
+    buildPackage('@glimmer/test-helpers'),
+  ]);
+
+
+
+
+
+  return esSource;
+}
+// module.exports = function(options) {
+//   var features = getFeatures();
+//   var version = getVersion();
+
+//   var vendorPackages = {
+//     'ember-dev':             treeForAddon(options.project, 'ember-dev'),
+//     'external-helpers':      vendoredPackage('external-helpers'),
+//     'loader':                vendoredPackage('loader'),
+//     'rsvp':                  rsvp(),
+//     'backburner':            backburner(),
+//     'router':                router(),
+//     'dag-map':               dag(),
+//     'route-recognizer':      routeRecognizer(),
+//     'simple-html-tokenizer': buildPackage('simple-html-tokenizer'),
+
+//     '@glimmer/compiler':     buildPackage('@glimmer/compiler', {
+//                                external: ['@glimmer/syntax', '@glimmer/wire-format', '@glimmer/util']
+//                              }),
+//     '@glimmer/di':           buildPackage('@glimmer/di', { external: ['@glimmer/util'] }),
+//     '@glimmer/reference':    buildPackage('@glimmer/reference', { external: ['@glimmer/util'] }),
+//     '@glimmer/runtime':      buildPackage('@glimmer/runtime', {
+//                                external: ['@glimmer/util',
+//                                           '@glimmer/reference',
+//                                           '@glimmer/wire-format',
+//                                           '@glimmer/syntax']
+//                              }),
+//     '@glimmer/node':         buildPackage('@glimmer/node', { external: ['@glimmer/runtime'] }),
+//     '@glimmer/syntax':       buildPackage('@glimmer/syntax', { external: ['handlebars', 'simple-html-tokenizer'] }),
+//     '@glimmer/test-helpers': buildPackage('@glimmer/test-helpers'),
+//     '@glimmer/util':         buildPackage('@glimmer/util', { external: [] }),
+//     '@glimmer/wire-format':  buildPackage('@glimmer/wire-format', { external: ['@glimmer/util'] }),
+//     'handlebars':            buildPackage('handlebars', {
+//                                srcDir: 'lib',
+//                                entry: 'handlebars/compiler/base.js',
+//                                plugins: [handlebarsFix()]
+//                              }) // inlined parser
+//   };
+
+//   // Replace _getBowerTree with one from npm
+//   EmberBuild.prototype._getBowerTree = function getBowerTree() {
+//     return mergeTrees([
+//       qunit(),
+//       jquery(),
+//       replaceVersion(new Funnel('config/package_manager_files', {
+//         destDir: '/'
+//       }), {
+//         version: version
+//       })
+//     ]);
+//   };
+
+//   EmberBuild.prototype._minifySourceTree = function (tree, options) {
+//     var srcFile = options.srcFile;
+//     var destFile = options.destFile;
+//     var files = [ srcFile ];
+//     var mapSrcFile = srcFile.slice(0, -2) + 'map';
+//     var mapDestFile = destFile.slice(0, -2) + 'map';
+//     if (options.enableSourceMaps) {
+//       files.push(mapSrcFile);
+//     }
+//     // because broccoli-uglify-sourcemap doesn't use persistent filter
+//     var reducedTree = new Funnel(tree, {
+//       annotation: 'reduce for minify',
+//       files: files
+//     });
+//     var minifiedTree = new uglify(reducedTree, {
+//       sourceMapConfig: {
+//         enabled: options.enableSourceMaps
+//       },
+//       mangle: true,
+//       compress: {
+//         // this is adversely affects heuristics for IIFE eval
+//         negate_iife: false,
+//         // limit sequences because of memory issues during parsing
+//         sequences: 30
+//       },
+//       output: {
+//         // no difference in size
+//         // and much easier to debug
+//         semicolons: false
+//       }
+//     });
+//     return new Funnel(minifiedTree, {
+//       annotation: 'rename minified',
+//       files: files,
+//       getDestinationPath: function(relativePath) {
+//         if (relativePath === srcFile) {
+//           return destFile;
+//         }
+//         if (relativePath === mapSrcFile) {
+//           return mapDestFile;
+//         }
+//         return relativePath;
+//       }
+//     });
+//   };
+
+//   var emberBuild = new EmberBuild({
+//     babel: {
+//       development: babelConfigFor('development'),
+//       production: babelConfigFor('production')
+//     },
+//     eslintRulePaths: getESLintRulePaths(),
+//     features: {
+//       development: getFeatures('development'),
+//       production: getFeatures('production')
+//     },
+//     glimmer: require('@glimmer/compiler'),
+//     packages: getPackages(features),
+//     vendoredPackages: vendorPackages,
+//     version: version
+//   });
+
+//   return emberBuild.getDistTrees();
+// };
+
+// module.exports.getFeatures = getFeatures;
