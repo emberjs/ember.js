@@ -70,7 +70,7 @@ export default class Environment extends GlimmerEnvironment {
     this.isInteractive = owner.lookup('-environment:main').isInteractive;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
-    this.destroyedComponents = undefined;
+    this.destroyedComponents = [];
 
     installPlatformSpecificProtocolForURL(this);
 
@@ -378,16 +378,16 @@ export default class Environment extends GlimmerEnvironment {
     this.inTransaction = true;
 
     super.begin();
-
-    this.destroyedComponents = [];
   }
 
   commit() {
+    let destroyedComponents = this.destroyedComponents;
+    this.destroyedComponents = [];
     // components queued for destruction must be destroyed before firing
     // `didCreate` to prevent errors when removing and adding a component
     // with the same name (would throw an error when added to view registry)
-    for (let i = 0; i < this.destroyedComponents.length; i++) {
-      this.destroyedComponents[i].destroy();
+    for (let i = 0; i < destroyedComponents.length; i++) {
+      destroyedComponents[i].destroy();
     }
 
     super.commit();
