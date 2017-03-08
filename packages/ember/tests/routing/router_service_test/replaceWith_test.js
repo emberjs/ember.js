@@ -67,6 +67,24 @@ if (isFeatureEnabled('ember-routing-router-service')) {
         });
     }
 
+    ['@test RouterService#replaceWith with basic route using URLs replaces location'](assert) {
+      assert.expect(1);
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo('/child');
+        })
+        .then(() => {
+          return this.routerService.transitionTo('/sister');
+        })
+        .then(() => {
+          return this.routerService.replaceWith('/brother');
+        })
+        .then(() => {
+          assert.deepEqual(this.state, ['/', '/child', '/brother']);
+        });
+    }
+
     ['@test RouterService#replaceWith transitioning back to previously visited route replaces location'](assert) {
       assert.expect(1);
 
