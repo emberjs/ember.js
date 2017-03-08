@@ -209,7 +209,7 @@ Container.prototype = {
    @param {String} fullName optional key to reset; if missing, resets everything
    */
   reset(fullName) {
-    if (arguments.length > 0) {
+    if (fullName) {
       resetMember(this, this.registry.normalize(fullName));
     } else {
       resetCache(this);
@@ -341,7 +341,7 @@ function lookup(container, fullName, options = {}) {
 
 function isSingletonClass(container, fullName, { instantiate, singleton }) {
   return (singleton !== false && isSingleton(container, fullName)) &&
-         (!instantiate && !shouldInstantiate(container, fullName));
+         (instantiate === false && !shouldInstantiate(container, fullName));
 }
 
 function isSingletonInstance(container, fullName, { instantiate, singleton }) {
@@ -487,10 +487,8 @@ function injectionsFor(container, fullName) {
   return injections;
 }
 
-function instantiate(factory, props, container, fullName) {
+function instantiate(factory, props = {}, container, fullName) {
   let lazyInjections, validationCache;
-
-  props = props || {};
 
   if (container.registry.getOption(fullName, 'instantiate') === false) {
     return factory;
