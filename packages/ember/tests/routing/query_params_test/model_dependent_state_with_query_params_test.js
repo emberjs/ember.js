@@ -14,7 +14,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
   }
 
   teardown() {
-    super(...arguments);
+    super.teardown(...arguments);
     this.assert.ok(!this.expectedModelHookParams, 'there should be no pending expectation of expected model hook params');
   }
 

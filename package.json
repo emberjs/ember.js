@@ -65,6 +65,7 @@
     "ember-cli-version-checker": "^1.1.7",
     "handlebars": "^4.0.6",
     "jquery": "^3.1.1",
+    "loader.js": "^4.2.3",
     "resolve": "^1.1.7",
     "rsvp": "^3.3.3",
     "simple-dom": "^0.3.0",

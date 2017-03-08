@@ -25,7 +25,7 @@ class AbstractAppendTest extends RenderingTest {
       this.assert.strictEqual($element.length, 0, `Should not leak element: #${id}`);
     });
 
-    super();
+    super.teardown();
   }
 
   /* abstract append(component): Element; */
