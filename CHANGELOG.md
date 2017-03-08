@@ -21,6 +21,14 @@
 - [#14852](https://github.com/emberjs/ember.js/pull/14852) [PERF] only `LOG_TRANSITIONS` and `LOG_TRANSITIONS_INTERNAL` in debug
 - [#14854](https://github.com/emberjs/ember.js/pull/14854) [PER] only `LOG_ACTIVE_GENERATION` and `LOG_RESOLVER` in debug
 
+### 2.11.3 (March 8, 2017)
+
+- [#14987](https://github.com/emberjs/ember.js/pull/14987) [BUGFIX] Fix a memory leak when components are destroyed.
+- [#14986](https://github.com/emberjs/ember.js/pull/14986) [BUGFIX] Fix a memory leak in RSVP.js.
+- [#14985](https://github.com/emberjs/ember.js/pull/14985) [BUGFIX] Fix a bug that added babel helpers to the global scope.
+- [#14898](https://github.com/emberjs/ember.js/pull/14898) [BUGFIX] Fix an issue where errors in tests sometimes do not cause a failure.
+- [#14707](https://github.com/emberjs/ember.js/pull/14707) [BUGFIX] Improve deprecation message for unsafe `style` attribute bindings.
+
 ### 2.11.2 (February 19, 2017)
 
 - [#14937](https://github.com/emberjs/ember.js/pull/14937) [BUGFIX] Fix issue preventing `ember generate *` from creating test files as appropriate.
