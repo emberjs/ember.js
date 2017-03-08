@@ -27,6 +27,7 @@ var replace = require('broccoli-string-replace');
 var uglify = require('broccoli-uglify-sourcemap');
 var toAMD = require('./broccoli/to-amd');
 var processES2015 = require('./broccoli/process-es2015');
+var GlimmerTemplatePrecompiler = require('./broccoli/glimmer-template-compiler');
 const REMOVE_LIB = /^([^\/]+\/)lib\//;
 
 var rollupEnifed = {
@@ -115,7 +116,7 @@ function routeRecognizerES() {
   });
 }
 
-function buildPackage(name, options) {
+function esPackage(name, options) {
   options = options ? options : {};
   var packageJson = require(name + '/package');
   var packageDir = path.dirname(require.resolve(name + '/package'));
@@ -356,54 +357,66 @@ function getESLintRulePaths() {
   return [];
 }
 
-function emberDebugES() {
-  return new Funnel('packages', {
+function emberES() {
+  return new GlimmerTemplatePrecompiler(new Funnel('packages', {
     include: ['*/lib/**/*.js', '*/lib/**/*.hbs'],
     exclude: ['loader/**', 'external-helpers/**', 'internal-test-helpers/**'],
     getDestinationPath(relativePath) {
       return relativePath.replace(REMOVE_LIB, "$1");
     },
     annotation: 'packages ES6'
+  }), {
+    glimmer: require('@glimmer/compiler')
   });
 }
 
 module.exports = function() {
   var esSource = new MergeTrees([
-    emberDebugES(),
+    emberES(),
     rsvpES(),
     backburnerES(),
     routerES(),
     dagES(),
     routeRecognizerES(),
-    buildPackage('simple-html-tokenizer'),
-    buildPackage('@glimmer/reference', { external: ['@glimmer/util'] }),
-    buildPackage('@glimmer/runtime', {
+    esPackage('simple-html-tokenizer'),
+    esPackage('@glimmer/reference', { external: ['@glimmer/util'] }),
+    esPackage('@glimmer/runtime', {
       external: ['@glimmer/util',
                 '@glimmer/reference',
                 '@glimmer/wire-format',
                 '@glimmer/syntax']
     }),
-    buildPackage('@glimmer/compiler', {
+    esPackage('@glimmer/compiler', {
       external: ['@glimmer/syntax', '@glimmer/wire-format', '@glimmer/util']
     }),
-    buildPackage('@glimmer/di', { external: ['@glimmer/util'] }),
-    buildPackage('@glimmer/node', { external: ['@glimmer/runtime'] }),
-    buildPackage('@glimmer/syntax', { external: ['handlebars', 'simple-html-tokenizer'] }),
-    buildPackage('@glimmer/util', { external: [] }),
-    buildPackage('@glimmer/wire-format', { external: ['@glimmer/util'] }),
+    esPackage('@glimmer/di', { external: ['@glimmer/util'] }),
+    esPackage('@glimmer/node', { external: ['@glimmer/runtime'] }),
+    esPackage('@glimmer/syntax', { external: ['handlebars', 'simple-html-tokenizer'] }),
+    esPackage('@glimmer/util', { external: [] }),
+    esPackage('@glimmer/wire-format', { external: ['@glimmer/util'] }),
   ]);
+
+  var AMDDebug = toAMD(processES2015(esSource), 'amd/ember.debug.js');
 
   var testing = new MergeTrees([
     jquery(),
     qunit(),
-    buildPackage('@glimmer/test-helpers'),
+    processES2015(esPackage('@glimmer/test-helpers')),
   ]);
 
+  let esSourceDebug = new Funnel(esSource, {
+    destDir: 'src/debug'
+  });
 
+  let esSourceProd = new Funnel(esSource, {
+    destDir: 'src/production'
+  });
 
+  testing = new Funnel(testing, {
+    destDir: 'testing'
+  });
 
-
-  return esSource;
+  return new MergeTrees([esSourceDebug, esSourceProd, testing, AMDDebug]);
 }
 // module.exports = function(options) {
 //   var features = getFeatures();
