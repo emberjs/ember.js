@@ -11,8 +11,8 @@ import {
 
 import { Opaque, HAS_NATIVE_WEAKMAP } from '@glimmer/util';
 
-export let classMeta;
-export let meta;
+export let classMeta: (object: GlimmerInstance) => ClassMeta;
+export let meta: (instance: GlimmerInstance) => Meta;
 
 if (HAS_NATIVE_WEAKMAP) {
   const META = new WeakMap();

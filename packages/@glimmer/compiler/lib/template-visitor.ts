@@ -1,6 +1,6 @@
 import { AST } from '@glimmer/syntax';
 import { Core } from '@glimmer/wire-format';
-import { Dict, Option, dict, unreachable } from '@glimmer/util';
+import { Dict, Option, dict, unreachable, expect } from '@glimmer/util';
 
 export abstract class SymbolTable {
   static top(): ProgramSymbolTable {
@@ -30,11 +30,11 @@ export class ProgramSymbolTable extends SymbolTable {
   private named = dict<number>();
   private blocks = dict<number>();
 
-  has(name: string): boolean {
+  has(_name: string): boolean {
     return false;
   }
 
-  get(name: string): never {
+  get(_name: string): never {
     throw unreachable();
   }
 
@@ -161,15 +161,15 @@ export class BlockSymbolTable extends SymbolTable {
  */
 
 class Frame {
-  public parentNode: Object = null;
-  public children: Object = null;
-  public childIndex: number = null;
-  public childCount: number = null;
+  public parentNode: Option<Object> = null;
+  public children: Option<AST.Node[]> = null;
+  public childIndex: Option<number> = null;
+  public childCount: Option<number> = null;
   public childTemplateCount = 0;
   public mustacheCount = 0;
   public actions: Action[] = [];
-  public blankChildTextNodes: number[] = null;
-  public symbols: SymbolTable = null;
+  public blankChildTextNodes: Option<number[]> = null;
+  public symbols: Option<SymbolTable> = null;
 }
 
 export namespace Action {
@@ -220,7 +220,7 @@ export default class TemplateVisitor {
     if (!parentFrame) {
       program['symbols'] = SymbolTable.top();
     } else {
-      program['symbols'] = parentFrame.symbols.child(program.blockParams);
+      program['symbols'] = parentFrame.symbols!.child(program.blockParams);
     }
 
     let startType, endType;
@@ -237,7 +237,7 @@ export default class TemplateVisitor {
     programFrame.children = program.body;
     programFrame.childCount = program.body.length;
     programFrame.blankChildTextNodes = [];
-    programFrame.actions.push([endType, [program, this.programDepth]]);
+    programFrame.actions.push([endType, [program, this.programDepth]] as Action);
     programFrame.symbols = program['symbols'];
 
     for (let i = program.body.length - 1; i >= 0; i--) {
@@ -248,7 +248,7 @@ export default class TemplateVisitor {
     programFrame.actions.push([startType, [
       program, programFrame.childTemplateCount,
       programFrame.blankChildTextNodes.reverse()
-    ]]);
+    ]] as Action);
     this.popFrame();
 
     this.programDepth--;
@@ -267,12 +267,12 @@ export default class TemplateVisitor {
     elementFrame.childCount = element.children.length;
     elementFrame.mustacheCount += element.modifiers.length;
     elementFrame.blankChildTextNodes = [];
-    elementFrame.symbols = element['symbols'] = parentFrame.symbols.child(element.blockParams);
+    elementFrame.symbols = element['symbols'] = parentFrame.symbols!.child(element.blockParams);
 
     let actionArgs: [AST.ElementNode, number, number] = [
       element,
-      parentFrame.childIndex,
-      parentFrame.childCount
+      parentFrame.childIndex!,
+      parentFrame.childCount!
     ];
 
     elementFrame.actions.push(['closeElement', actionArgs]);
@@ -306,16 +306,16 @@ export default class TemplateVisitor {
   TextNode(text: AST.TextNode) {
     let frame = this.getCurrentFrame();
     if (text.chars === '') {
-      frame.blankChildTextNodes.push(domIndexOf(frame.children, text));
+      frame.blankChildTextNodes!.push(domIndexOf(frame.children!, text));
     }
-    frame.actions.push(['text', [text, frame.childIndex, frame.childCount]]);
+    frame.actions.push(['text', [text, frame.childIndex, frame.childCount]] as Action);
   };
 
   BlockStatement(node: AST.BlockStatement) {
     let frame = this.getCurrentFrame();
 
     frame.mustacheCount++;
-    frame.actions.push(['block', [node, frame.childIndex, frame.childCount]]);
+    frame.actions.push(['block', [node, frame.childIndex, frame.childCount]] as Action);
 
     if (node.inverse) { this.visit(node.inverse); }
     if (node.program) { this.visit(node.program); }
@@ -324,12 +324,12 @@ export default class TemplateVisitor {
   PartialStatement(node: AST.PartialStatement) {
     let frame = this.getCurrentFrame();
     frame.mustacheCount++;
-    frame.actions.push(['mustache', [node, frame.childIndex, frame.childCount]]);
+    frame.actions.push(['mustache', [node, frame.childIndex, frame.childCount]] as Action);
   };
 
   CommentStatement(text: AST.CommentStatement) {
     let frame = this.getCurrentFrame();
-    frame.actions.push(['comment', [text, frame.childIndex, frame.childCount]]);
+    frame.actions.push(['comment', [text, frame.childIndex, frame.childCount]] as Action);
   };
 
   MustacheCommentStatement() {
@@ -339,13 +339,13 @@ export default class TemplateVisitor {
   MustacheStatement(mustache: AST.MustacheStatement) {
     let frame = this.getCurrentFrame();
     frame.mustacheCount++;
-    frame.actions.push(['mustache', [mustache, frame.childIndex, frame.childCount]]);
+    frame.actions.push(['mustache', [mustache, frame.childIndex, frame.childCount]] as Action);
   };
 
   // Frame helpers
 
-  private getCurrentFrame(): Option<Frame> {
-    return this.frameStack[this.frameStack.length - 1];
+  private getCurrentFrame(): Frame {
+    return expect(this.frameStack[this.frameStack.length - 1], "Expected a current frame");
   }
 
   private pushFrame() {
@@ -361,7 +361,7 @@ export default class TemplateVisitor {
 
 // Returns the index of `domNode` in the `nodes` array, skipping
 // over any nodes which do not represent DOM nodes.
-function domIndexOf(nodes, domNode) {
+function domIndexOf(nodes: AST.Node[], domNode: AST.TextNode | AST.ElementNode) {
   let index = -1;
 
   for (let i = 0; i < nodes.length; i++) {

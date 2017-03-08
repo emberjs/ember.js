@@ -11,11 +11,11 @@ export interface LegacyComputedGetCallback {
 }
 
 export interface ComputedSetCallback {
-  (val: any);
+  (val: any): any;
 }
 
 export interface LegacyComputedSetCallback {
-  (key: string, val: any);
+  (key: string, val: any): any;
 }
 
 export interface ComputedDescriptor {
@@ -36,7 +36,7 @@ export class ComputedBlueprint extends Blueprint {
     this.deps = deps;
   }
 
-  descriptor(target: Object, key: string, classMeta: ClassMeta): Descriptor {
+  descriptor(_target: Object, key: string, classMeta: ClassMeta): Descriptor {
     classMeta.addReferenceTypeFor(key, ComputedReferenceBlueprint(key, this.deps));
     classMeta.addPropertyMetadata(key, this.metadata);
     classMeta.addSlotFor(key);
@@ -85,21 +85,25 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
     configurable: true,
   };
 
-  if (_desc.get && _desc.get.length > 0) {
-    originalGet = function() { return _desc.get.call(this, accessorName); };
+  let get = _desc.get;
+
+  if (get && get.length > 0) {
+    originalGet = function(this: any) { return (get as any).call(this, accessorName); };
   } else {
     originalGet = <ComputedGetCallback>_desc.get;
   }
 
-  if (_desc.set && _desc.set.length > 1) {
-    originalSet = function(value) {
-      return _desc.set.call(this, accessorName, value);
+  let set = _desc.set;
+
+  if (set && set.length > 1) {
+    originalSet = function(this: any, value) {
+      return (set as any).call(this, accessorName, value);
     };
   } else {
     originalSet = <ComputedGetCallback>_desc.set;
   }
 
-  let cacheGet = function() {
+  let cacheGet = function(this: any) {
     if (Meta.exists(this)) {
       let slot = Meta.for(this).getSlots()[accessorName];
       if (slot !== EMPTY_CACHE) return slot;
@@ -108,10 +112,10 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
     return originalGet.call(this);
   };
 
-  let cacheSet;
+  let cacheSet: (value: any) => void;
 
   if (originalSet) {
-    cacheSet = function(value) {
+    cacheSet = function(this: any, value: any): void {
       let meta = Meta.for(this);
       let slots = meta.getSlots();
 
@@ -122,7 +126,7 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
       }
     };
   } else {
-    cacheSet = function(value) {
+    cacheSet = function(this: any, value: any) {
       let meta = Meta.for(this);
       let slots = meta.getSlots();
       if (value !== undefined) slots[accessorName] = value;
@@ -135,10 +139,10 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
     return desc;
   }
 
-  desc.get = function() {
+  desc.get = function(this: any) {
     let lastSuper = this._super;
-    this._super = function() {
-      return superDesc.get.call(this);
+    this._super = function(this: any) {
+      return (superDesc.get as any).call(this);
     };
 
     try {
@@ -148,10 +152,10 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
     }
   };
 
-  desc.set = function(val) {
+  desc.set = function(this: any, val: any) {
     let lastSuper = this._super;
-    this._super = function() {
-      return superDesc.set.call(this, val);
+    this._super = function(this: any) {
+      return (superDesc as any).set.call(this, val);
     };
 
     try {
@@ -164,7 +168,7 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
   return desc;
 }
 
-function getPropertyDescriptor(subject, name) {
+function getPropertyDescriptor(subject: any, name: string) {
   let pd = Object.getOwnPropertyDescriptor(subject, name);
   let proto = Object.getPrototypeOf(subject);
   while (typeof pd === 'undefined' && proto !== null) {
@@ -176,9 +180,9 @@ function getPropertyDescriptor(subject, name) {
 
 export function computed(desc: ComputedDescriptor): ComputedBlueprint;
 export function computed(getter: ComputedGetCallback | LegacyComputedGetCallback): ComputedBlueprint;
-export function computed(...args): ComputedBlueprint;
+export function computed(...args: any[]): ComputedBlueprint;
 
-export function computed(...args) {
+export function computed(...args: any[]) {
   let last: ComputedArgument = args.pop();
   let deps = args;
 
@@ -193,6 +197,6 @@ export function computed(...args) {
   }
 }
 
-export function observer(...args) {
+export function observer(..._args: any[]) {
 
 }

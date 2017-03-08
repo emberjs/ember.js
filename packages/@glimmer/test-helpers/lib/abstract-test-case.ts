@@ -1,5 +1,5 @@
 import { TagWrapper } from '../../reference/lib/validators';
-import { PathReference, Tagged, RevisionTag, DirtyableTag } from '@glimmer/reference';
+import { PathReference, Tagged, RevisionTag, DirtyableTag, Tag } from '@glimmer/reference';
 import { Template, RenderResult, Simple } from '@glimmer/runtime';
 import {
   TestEnvironment,
@@ -7,8 +7,9 @@ import {
 } from './environment';
 import { Opaque } from '@glimmer/util';
 import { assign } from './helpers';
+import { Option } from "@glimmer/interfaces";
 
-export function skip(target: Object, name: string, descriptor: PropertyDescriptor) {
+export function skip(_target: Object, _name: string, descriptor: PropertyDescriptor) {
   descriptor.value['skip'] = true;
 }
 
@@ -53,7 +54,7 @@ export class SimpleRootReference implements PathReference<Opaque> {
 }
 
 class SimplePathReference implements PathReference<Opaque> {
-  public tag: TagWrapper<RevisionTag>;
+  public tag: Tag;
 
   constructor(private parent: PathReference<Opaque>, private key: string) {
     this.tag = parent.tag;
@@ -63,12 +64,13 @@ class SimplePathReference implements PathReference<Opaque> {
     return new SimplePathReference(this, key);
   }
 
-  value() {
-    return this.parent.value()[this.key];
+  value(): Opaque {
+    let parentValue = this.parent.value();
+    return parentValue && parentValue[this.key];
   }
 }
 
-function isMarker(node) {
+function isMarker(node: Node) {
   if (node instanceof Comment && node.textContent === '') {
     return true;
   }
@@ -81,11 +83,11 @@ function isMarker(node) {
 }
 
 export class RenderingTest {
-  public template: Template<{}>;
-  protected context: VersionedObject = null;
-  private result: RenderResult = null;
-  public snapshot: Element[];
-  public element: Node;
+  public template: Template<undefined>;
+  protected context: Option<VersionedObject> = null;
+  private result: Option<RenderResult> = null;
+  public snapshot: Node[];
+  public element: Option<Node>;
   public assert: typeof QUnit.assert;
 
   constructor(protected env: TestEnvironment = new TestEnvironment(), template: string, private appendTo: Simple.Element) {
@@ -112,16 +114,17 @@ export class RenderingTest {
 
     this.result = result.value;
     this.env.commit();
-    this.element = document.getElementById('qunit-fixture').firstChild;
+    this.element = document.getElementById('qunit-fixture')!.firstChild;
   }
+
   assertContent(expected: string, message?: string) {
-    let actual = document.getElementById('qunit-fixture').innerHTML;
-    QUnit.assert.equal(actual, expected);
+    let actual = document.getElementById('qunit-fixture')!.innerHTML;
+    QUnit.assert.equal(actual, expected, message || `expected content ${expected}`);
   }
 
   takeSnapshot() {
-    let snapshot = this.snapshot = [];
-    let node = this.element.firstChild;
+    let snapshot: Node[] = this.snapshot = [];
+    let node = this.element!.firstChild;
 
     while (node) {
       if (!isMarker(node)) {
@@ -141,7 +144,7 @@ export class RenderingTest {
   }
 
   rerender() {
-    this.result.rerender();
+    this.result!.rerender();
   }
 
   assertInvariants(oldSnapshot?: Array<Node>, newSnapshot?: Array<Node>) {
@@ -162,7 +165,7 @@ export class RenderingTest {
   runTask(callback: () => void) {
     callback();
     this.env.begin();
-    this.result.rerender();
+    this.result!.rerender();
     this.env.commit();
   }
 }
@@ -185,7 +188,7 @@ export function testModule(description?: string) {
       if (typeof value === 'function' && !isSkipped) {
         QUnit.test(key, (assert) => {
           let env = new TestEnvironment();
-          context = new TestClass(env, value['template'], document.getElementById('qunit-fixture'));
+          context = new TestClass(env, value['template'], document.getElementById('qunit-fixture')!);
           value.call(context, assert);
         });
       } else if (isSkipped) {
@@ -196,7 +199,7 @@ export function testModule(description?: string) {
 }
 
 export function template(t: string) {
-  return function template(target: Object, name: string, descriptor: PropertyDescriptor) {
+  return function template(_target: Object, _name: string, descriptor: PropertyDescriptor) {
     if (typeof descriptor.value !== 'function') {
       throw new Error("Can't decorator a non-function with the @template decorator");
     }

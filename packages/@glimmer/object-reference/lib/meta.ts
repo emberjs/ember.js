@@ -14,6 +14,7 @@ import {
 import { PathReference as IPathReference, VOLATILE_TAG } from '@glimmer/reference';
 
 import { InnerReferenceFactory } from './references/descriptors';
+import { Option } from "@glimmer/interfaces";
 
 const NOOP_DESTROY = { destroy() {} };
 
@@ -22,7 +23,7 @@ class ConstPath implements IPathReference<any> {
   private property: string;
   public tag = VOLATILE_TAG;
 
-  constructor(parent: any, property: string) {
+  constructor(parent: any, _property: string) {
     this.parent = parent;
   }
 
@@ -42,7 +43,7 @@ class ConstRoot implements IRootReference<any> {
   private inner: any;
   public tag = VOLATILE_TAG;
 
-  constructor(value) {
+  constructor(value: any) {
     this.inner = value;
   }
 
@@ -57,11 +58,11 @@ class ConstRoot implements IRootReference<any> {
     return this.inner;
   }
 
-  referenceFromParts(parts: string[]): IPathReference<any> {
+  referenceFromParts(_parts: string[]): IPathReference<any> {
     throw new Error("Not implemented");
   }
 
-  chainFor(prop: string): IPathReference<any> {
+  chainFor(_prop: string): IPathReference<any> {
     throw new Error("Not implemented");
   }
 
@@ -108,7 +109,7 @@ class Meta implements IMeta, HasGuid {
     return typeof obj === 'object' && obj._meta;
   }
 
-  static metadataForProperty(key: string): any {
+  static metadataForProperty(_key: string): any {
     return null;
   }
 
@@ -116,15 +117,15 @@ class Meta implements IMeta, HasGuid {
   private RootReferenceFactory: RootReferenceFactory<any>;
   private DefaultPathReferenceFactory: InnerReferenceFactory<any>;
   private rootCache: IRootReference<any>;
-  private references: Dict<DictSet<IPathReference<any> & HasGuid>> = null;
-  public _guid;
-  protected slots: Dict<any> = null;
-  protected referenceTypes: Dict<InnerReferenceFactory<any>> = null;
-  protected propertyMetadata: Dict<any> = null;
+  private references: Option<Dict<DictSet<IPathReference<any> & HasGuid>>> = null;
+  public _guid: number;
+  protected slots: Option<Dict<any>> = null;
+  protected referenceTypes: Option<Dict<InnerReferenceFactory<any>>> = null;
+  protected propertyMetadata: Option<Dict<any>> = null;
 
   constructor(object: any, { RootReferenceFactory, DefaultPathReferenceFactory }: MetaOptions) {
     this.object = object;
-    this.RootReferenceFactory = RootReferenceFactory || RootReference;
+    this.RootReferenceFactory = (RootReferenceFactory || RootReference) as RootReferenceFactory<any>;
     this.DefaultPathReferenceFactory = DefaultPathReferenceFactory || PropertyReference;
   }
 
@@ -155,8 +156,8 @@ class Meta implements IMeta, HasGuid {
     return this.referenceTypes;
   }
 
-  referencesFor(property: string): Set<IPathReference<any>> {
-    if (!this.references) return;
+  referencesFor(property: string): Option<Set<IPathReference<any>>> {
+    if (!this.references) return null;
     return this.references[property];
   }
 

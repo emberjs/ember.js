@@ -1,9 +1,10 @@
 import { preprocess } from "@glimmer/syntax";
 import TemplateCompiler, { CompileOptions } from "./template-compiler";
 import { SerializedTemplateWithLazyBlock, TemplateJavascript, TemplateMeta } from "@glimmer/wire-format";
+import { Option } from "@glimmer/interfaces";
 
 export interface TemplateIdFn {
-  (src: string): string;
+  (src: string): Option<string>;
 }
 
 export interface PrecompileOptions<T extends TemplateMeta> extends CompileOptions<T> {
@@ -29,11 +30,8 @@ const defaultId: () => TemplateIdFn = (() => {
           };
           idFn("test");
         } catch (e) {
-          idFn = null;
+          idFn = () => null;
         }
-      }
-      if (!idFn) {
-        idFn = () => null;
       }
     }
     return idFn;
@@ -59,7 +57,7 @@ export function precompile(string: string, options?: PrecompileOptions<TemplateM
   let opts = options || {
     id: defaultId(),
     meta: {}
-  } as any as TemplateMeta;
+  } as any as PrecompileOptions<TemplateMeta>;
   let ast = preprocess(string, opts);
   let { block, meta } = TemplateCompiler.compile(opts, ast);
   let idFn = opts.id || defaultId();

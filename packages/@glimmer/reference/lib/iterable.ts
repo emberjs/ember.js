@@ -9,7 +9,7 @@ export interface IterationItem<T, U> {
 
 export interface AbstractIterator<T, U, V extends IterationItem<T, U>> {
   isEmpty(): boolean;
-  next(): V;
+  next(): Option<V>;
 }
 
 export interface AbstractIterable<T, U, ItemType extends IterationItem<T, U>, ValueReferenceType extends PathReference<T>, MemoReferenceType extends PathReference<U>> {

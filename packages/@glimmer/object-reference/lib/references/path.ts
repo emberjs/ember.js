@@ -4,15 +4,16 @@ import Meta from '../meta';
 import { PropertyReference } from './descriptors';
 import { VOLATILE_TAG, PathReference as IPathReference, Reference, Tag } from '@glimmer/reference';
 import { Dict, HasGuid } from '@glimmer/util';
+import { Option } from "@glimmer/interfaces";
 
 export default class PathReference<T> implements IPathReference<T>, HasGuid {
   private parent: IPathReference<any>;
   private property: string;
   protected cache: any = EMPTY_CACHE;
-  private inner: Reference<T> = null;
-  private chains: Dict<PathReference<any>> = null;
+  private inner: Option<Reference<T>> = null;
+  private chains: Option<Dict<PathReference<any>>> = null;
   private lastParentValue: any = EMPTY_CACHE;
-  public _guid = null;
+  public _guid = 0;
   public tag: Tag = VOLATILE_TAG;
 
   constructor(parent: IPathReference<T>, property: string) {
@@ -39,7 +40,7 @@ export default class PathReference<T> implements IPathReference<T>, HasGuid {
     //   Meta.for(parentValue).addReference(property, this);
     // }
 
-    return (this.cache = inner.value());
+    return (this.cache = inner!.value());
   }
 
   get(prop: string): IPathReference<any> {

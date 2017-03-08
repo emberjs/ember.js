@@ -1,4 +1,5 @@
 export {
+  TestCompileOptions,
   compile,
   equalInnerHTML,
   equalHTML,

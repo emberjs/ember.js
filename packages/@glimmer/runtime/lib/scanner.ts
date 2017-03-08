@@ -157,7 +157,6 @@ export namespace ClientSide {
     OpenDynamicElement,
     OptimizedAppend,
     UnoptimizedAppend,
-    AnyDynamicAttr,
     StaticPartial,
     DynamicPartial,
     NestedBlock,
@@ -180,7 +179,6 @@ export namespace ClientSide {
   export type OpenDynamicElement    = [ClientSideStatement, Ops.OpenDynamicElement, WireFormat.Expression];
   export type OptimizedAppend       = [ClientSideStatement, Ops.OptimizedAppend, WireFormat.Expression, boolean];
   export type UnoptimizedAppend     = [ClientSideStatement, Ops.UnoptimizedAppend, WireFormat.Expression, boolean];
-  export type AnyDynamicAttr        = [ClientSideStatement, Ops.AnyDynamicAttr, string, WireFormat.Expression, Option<string>, boolean];
   export type StaticPartial         = [ClientSideStatement, Ops.StaticPartial, string, WireFormat.Core.EvalInfo];
   export type DynamicPartial        = [ClientSideStatement, Ops.DynamicPartial, WireFormat.Expression, WireFormat.Core.EvalInfo];
 
@@ -194,7 +192,6 @@ export namespace ClientSide {
     | OpenDynamicElement
     | OptimizedAppend
     | UnoptimizedAppend
-    | AnyDynamicAttr
     | StaticPartial
     | DynamicPartial
     ;

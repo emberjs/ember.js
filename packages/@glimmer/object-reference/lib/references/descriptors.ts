@@ -11,7 +11,7 @@ export class PropertyReference<T> implements Reference<T> {
   private property: string;
   public tag: Tag = VOLATILE_TAG;
 
-  constructor(object: any, property: string, outer: NotifiableReference<T>) {
+  constructor(object: any, property: string, _outer: NotifiableReference<T>) {
     this.object = object;
     this.property = property;
   }
@@ -23,7 +23,7 @@ export class PropertyReference<T> implements Reference<T> {
   }
 }
 
-export function ComputedReferenceBlueprint<T>(property, dependencies): InnerReferenceFactory<T> {
+export function ComputedReferenceBlueprint<T>(_property: any, dependencies: any): InnerReferenceFactory<T> {
   return class ComputedReference<T> implements Reference<T> {
     private object: any;
     private property: string;

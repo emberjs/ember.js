@@ -8,6 +8,7 @@ import GlimmerObject, {
 } from './object';
 
 import { ROOT } from './utils';
+import { Option } from "@glimmer/interfaces";
 
 const { isArray } = Array;
 
@@ -16,7 +17,7 @@ export const BLUEPRINT  = "8d97cf5f-db9e-48d8-a6b2-7a75b7170805";
 
 export abstract class Descriptor {
   "5d90f84f-908e-4a42-9749-3d0f523c262c" = true;
-  abstract define(prototype: Object, key: string, home: Object);
+  abstract define(prototype: Object, key: string, home: Object): void;
 }
 
 export abstract class Blueprint {
@@ -32,7 +33,7 @@ export interface Extensions {
 }
 
 export class Mixin {
-  private extensions = null;
+  private extensions: Option<Dict<any>> = null;
   private concatenatedProperties: string[] = [];
   private mergedProperties: string[] = [];
   private dependencies: Mixin[] = [];
@@ -172,16 +173,16 @@ export class Mixin {
     this.mergedProperties.forEach(k => meta.addMergedProperty(k, parent[k]));
     this.concatenatedProperties.forEach(k => meta.addConcatenatedProperty(k, []));
 
-    new ValueDescriptor({ value: meta.getConcatenatedProperties() }).define(target, <string>'concatenatedProperties', null);
-    new ValueDescriptor({ value: meta.getMergedProperties() }).define(target, <string>'mergedProperties', null);
+    new ValueDescriptor({ value: meta.getConcatenatedProperties() }).define(target, 'concatenatedProperties');
+    new ValueDescriptor({ value: meta.getMergedProperties() }).define(target, 'mergedProperties');
 
     Object.keys(this.extensions).forEach(key => {
-      let extension: Blueprint = this.extensions[key];
+      let extension: Blueprint = this.extensions![key];
       let desc = extension.descriptor(target, <string>key, meta);
       desc.define(target, <string>key, parent);
     });
 
-    new ValueDescriptor({ value: ROOT }).define(target, <string>'_super', null);
+    new ValueDescriptor({ value: ROOT }).define(target, <string>'_super');
   }
 }
 
@@ -233,7 +234,7 @@ class ValueDescriptor extends Descriptor {
     this.value = value;
   }
 
-  define(target: Object, key: string, home: Object) {
+  define(target: Object, key: string, _home?: any) {
     Object.defineProperty(target, key, {
       enumerable: this.enumerable,
       configurable: this.configurable,
@@ -257,7 +258,7 @@ export class DataBlueprint extends Blueprint {
     this.writable = writable;
   }
 
-  descriptor(target: Object, key: string, classMeta: ClassMeta): Descriptor {
+  descriptor(_target: Object, key: string, classMeta: ClassMeta): Descriptor {
     let { enumerable, configurable, writable, value } = this;
 
     if (classMeta.hasConcatenatedProperty(<string>key)) {
@@ -278,7 +279,7 @@ export abstract class AccessorBlueprint extends Blueprint {
   get: () => any;
   set: (value: any) => void;
 
-  constructor({ enumerable=true, configurable=true, get, set }: PropertyDescriptor) {
+  constructor({ enumerable=true, configurable=true, get, set }: PropertyDescriptor & { get: any, set: any }) {
     super();
     this.enumerable = enumerable;
     this.configurable = configurable;
@@ -286,7 +287,7 @@ export abstract class AccessorBlueprint extends Blueprint {
     this.set = set;
   }
 
-  descriptor(target: Object, key: string, classMeta: ClassMeta): Descriptor {
+  descriptor(_target: Object, _key: string, _classMeta: ClassMeta): Descriptor {
     return new ValueDescriptor({
       enumerable: this.enumerable,
       configurable: this.configurable,
@@ -297,7 +298,7 @@ export abstract class AccessorBlueprint extends Blueprint {
 }
 
 class MethodDescriptor extends ValueDescriptor {
-  define(target: Object, key: string, home: Object) {
+  define(target: Object, key: string, home: Object): void {
     this.value = wrapMethod(home, key, this.value);
     super.define(target, key, home);
   }
@@ -310,12 +311,12 @@ class MethodBlueprint extends DataBlueprint {
   }
 }
 
-export function wrapMethod(home: Object, methodName: string, original: (...args) => any) {
+export function wrapMethod(home: Object, methodName: string, original: (...args: any[]) => any) {
   if (!(<string>methodName in home)) return maybeWrap(original);
 
   let superMethod = home[methodName];
 
-  let func = function(...args) {
+  let func = function(this: GlimmerObject, ...args: any[]) {
     if (!this) return original.apply(this, args);
 
     let lastSuper = this._super;
@@ -336,7 +337,7 @@ export function wrapMethod(home: Object, methodName: string, original: (...args)
 function maybeWrap(original: Function) {
   if ('__wrapped' in original) return original;
 
-  return function(...args) {
+  return function(this: GlimmerObject, ...args: any[]) {
     if (!this) return original.apply(this, args);
 
     let lastSuper = this._super;

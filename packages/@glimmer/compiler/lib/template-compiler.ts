@@ -1,15 +1,15 @@
 import TemplateVisitor, { SymbolTable, Action } from "./template-visitor";
 import JavaScriptCompiler, { Template } from "./javascript-compiler";
 import { Stack, getAttrNamespace } from "@glimmer/util";
-import { assert } from "@glimmer/util";
+import { assert, expect } from "@glimmer/util";
 import { TemplateMeta } from "@glimmer/wire-format";
 import { AST, isLiteral } from '@glimmer/syntax';
 
 export interface CompileOptions<T extends TemplateMeta> {
-  meta?: T;
+  meta: T;
 }
 
-function isTrustedValue(value) {
+function isTrustedValue(value: any) {
   return value.escaped !== undefined && !value.escaped;
 }
 
@@ -35,7 +35,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   }
 
   get symbols(): SymbolTable {
-    return this.symbolStack.current;
+    return expect(this.symbolStack.current, 'Expected a symbol table on the stack');
   }
 
   process(actions: Action[]): Action[] {
@@ -202,7 +202,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     this.opcode('yield', action, this.symbols.allocateBlock(to));
   }
 
-  debugger(name: string, action: AST.MustacheStatement) {
+  debugger(_name: string, action: AST.MustacheStatement) {
     this.opcode('debugger', action, this.symbols.getEvalInfo());
   }
 
@@ -214,7 +214,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     this.opcode('hasBlockParams', action, this.symbols.allocateBlock(name));
   }
 
-  partial(params: AST.Expression[], action: AST.MustacheStatement) {
+  partial(_params: AST.Expression[], action: AST.MustacheStatement) {
     this.prepareParams(action.params);
     this.opcode('partial', action, this.symbols.getEvalInfo());
   }
@@ -280,7 +280,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
 
   /// Utilities
 
-  opcode(name, action, ...args) {
+  opcode(name: any, action: any, ...args: any[]) {
     let opcode = [name, ...args];
     if (this.includeMeta && action) {
       opcode.push(this.meta(action));
@@ -364,7 +364,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     this.opcode('prepareArray', null, parts.length);
   }
 
-  attributeMustache([action]) {
+  attributeMustache([action]: [AST.MustacheStatement]) {
     this.mustacheExpression(action);
   }
 
@@ -450,7 +450,7 @@ function assertValidPartial({ params, hash, escaped, loc }: AST.MustacheStatemen
   return params;
 }
 
-function assertValidHasBlockUsage(type, { params, hash, loc }): string {
+function assertValidHasBlockUsage(type: string, { params, hash, loc }: AST.Call): string {
   if (hash && hash.pairs.length > 0) {
     throw new Error(`${type} does not take any named arguments`);
   }
@@ -458,8 +458,9 @@ function assertValidHasBlockUsage(type, { params, hash, loc }): string {
   if (params.length === 0) {
     return 'default';
   } else if (params.length === 1) {
-    if (params[0].type === 'StringLiteral') {
-      return params[0].value;
+    let param = params[0];
+    if (param.type === 'StringLiteral') {
+      return param.value;
     } else {
       throw new Error(`you can only yield to a literal value (on line ${loc.start.line})`);
     }
@@ -468,7 +469,7 @@ function assertValidHasBlockUsage(type, { params, hash, loc }): string {
   }
 }
 
-function assertValidDebuggerUsage({ params, hash }) {
+function assertValidDebuggerUsage({ params, hash }: { params: AST.Expression[], hash: AST.Hash }) {
   if (hash && hash.pairs.length > 0) {
     throw new Error(`debugger does not take any named arguments`);
   }
