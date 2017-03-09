@@ -1,7 +1,7 @@
 import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { Assert } from './vm';
 import { UpdatingVM } from '../../vm';
-import ARGS, { IArguments } from '../../vm/arguments';
+import ARGS, { Arguments, IArguments } from '../../vm/arguments';
 import { Component, ComponentManager, ComponentDefinition } from '../../component/interfaces';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
@@ -59,11 +59,42 @@ APPEND_OPCODES.add(Op.SetComponentState, (vm, { op1: local }) => {
   vm.setLocal(local, { definition, manager, component: null });
 });
 
-APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: positional, op2: _names, op3: synthetic }) => {
+APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: positional, op2: synthetic }) => {
   let stack = vm.evalStack;
-  let names = vm.constants.getOther<string[]>(_names);
-  ARGS.setup(stack, positional, names, !!synthetic);
+  ARGS.setup(stack, positional, !!synthetic);
   stack.push(ARGS);
+});
+
+APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
+  let stack = vm.evalStack;
+  let { definition, manager } = vm.constants.getOther<InitialComponentState<Opaque>>(_state);
+  let args = stack.pop<Arguments>();
+
+  let preparedArgs = manager.prepareArgs(definition, args);
+
+  if (preparedArgs) {
+    args.clear();
+
+    let { positional, named } = preparedArgs;
+
+    let positionalCount = positional.length;
+
+    for (let i=0; i<positionalCount; i++) {
+      stack.push(positional[i]);
+    }
+
+    let names = Object.keys(named);
+    let namedCount = names.length;
+
+    for (let i=0; i<namedCount; i++) {
+      stack.push(named[names[i]]);
+    }
+
+    stack.push(names);
+    args.setup(stack, positionalCount, true);
+  }
+
+  stack.push(args);
 });
 
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {

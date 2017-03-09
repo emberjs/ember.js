@@ -10,7 +10,7 @@ import { Tag, VersionedPathReference } from '@glimmer/reference';
 
   * 0-N positional arguments at the bottom (left-to-right)
   * 0-N named arguments next
-  * 0-2 blocks next
+  * an array of names on top
 */
 
 export interface IArguments {
@@ -64,17 +64,21 @@ export interface ICapturedNamedArguments {
 }
 
 export class Arguments implements IArguments {
+  private stack: EvaluationStack = null as any;
   public positional: IPositionalArguments = new PositionalArguments();
   public named: INamedArguments = new NamedArguments();
 
   empty() {
-    this.setup(null as any as EvaluationStack, 0, EMPTY_ARRAY, true);
+    this.setup(null as any as EvaluationStack, 0, true);
     return this;
   }
 
-  setup(stack: EvaluationStack, positionalCount: number, names: string[], synthetic: boolean) {
+  setup(stack: EvaluationStack, positionalCount: number, synthetic: boolean) {
+    this.stack = stack;
+
+    let names = stack.fromTop<string[]>(0);
     let namedCount = names.length;
-    let start = positionalCount + namedCount;
+    let start = positionalCount + namedCount + 1;
 
     let positional = this.positional as PositionalArguments;
     positional.setup(stack, start, positionalCount);
@@ -106,6 +110,15 @@ export class Arguments implements IArguments {
       positional: this.positional.capture(),
       named: this.named.capture()
     };
+  }
+
+  clear(): void {
+    let { stack, length } = this;
+    let pops = length + 1;
+
+    while (--pops >= 0) {
+      stack.pop();
+    }
   }
 }
 
@@ -236,7 +249,7 @@ class NamedArguments implements INamedArguments {
     //
     // get('named1') === named1 === top - (start - 1)
     // get('named2') === named2 === top - start
-    let fromTop = this.length - this.names.indexOf(name) - 1;
+    let fromTop = this.length - this.names.indexOf(name);
     return this.stack.fromTop<T>(fromTop);
   }
 

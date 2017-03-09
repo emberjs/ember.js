@@ -10,16 +10,22 @@ import { Template } from '../template';
 
 import { Destroyable, Opaque } from '@glimmer/util';
 import { VersionedPathReference, Tag } from '@glimmer/reference';
+import { Dict, Option } from "@glimmer/interfaces";
 
 export type Component = Opaque;
 export type ComponentClass = any;
+
+export interface PreparedArguments {
+  positional: VersionedPathReference<Opaque>[];
+  named: Dict<VersionedPathReference<Opaque>>;
+}
 
 export interface ComponentManager<T extends Component> {
   // First, the component manager is asked to prepare the arguments needed
   // for `create`. This allows for things like closure components where the
   // args need to be curried before constructing the instance of the state
   // bucket.
-  prepareArgs(definition: ComponentDefinition<T>, args: IArguments, dynamicScope: DynamicScope): IArguments;
+  prepareArgs(definition: ComponentDefinition<T>, args: IArguments): Option<PreparedArguments>;
 
   // Then, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
@@ -60,7 +66,7 @@ export interface ComponentManager<T extends Component> {
   // outside changes captured in the input arguments. If it returns null,
   // the update hooks will only be called when one or more of the input
   // arguments has changed.
-  getTag(component: T): Tag;
+  getTag(component: T): Option<Tag>;
 
   // When the input arguments have changed, and top-down revalidation has
   // begun, the manager's `update` hook is called.
@@ -78,7 +84,7 @@ export interface ComponentManager<T extends Component> {
 
   // Convert the opaque component into an object that implements Destroyable.
   // If it returns null, the component will not be destroyed.
-  getDestructor(component: T): Destroyable;
+  getDestructor(component: T): Option<Destroyable>;
 }
 
 export interface ComponentLayoutBuilder {

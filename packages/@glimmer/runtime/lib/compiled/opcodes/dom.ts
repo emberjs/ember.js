@@ -1,6 +1,6 @@
 import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
-import { IArguments } from '../../vm/arguments';
+import { Arguments } from '../../vm/arguments';
 import * as Simple from '../../dom/interfaces';
 import { FIX_REIFICATION } from '../../dom/interfaces';
 import { Environment } from '../../environment';
@@ -314,17 +314,13 @@ APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespac
 APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
   let manager = vm.constants.getOther<ModifierManager<Opaque>>(_manager);
   let stack = vm.evalStack;
-  let args = stack.pop<IArguments>();
+  let args = stack.pop<Arguments>();
   let tag = args.tag;
   let { constructing: element, updateOperations } = vm.stack();
   let dynamicScope = vm.dynamicScope();
   let modifier = manager.create(element as FIX_REIFICATION<Element>, args, dynamicScope, updateOperations);
 
-  let pops = args.length;
-
-  while (--pops >= 0) {
-    stack.pop();
-  }
+  args.clear();
 
   vm.env.scheduleInstallModifier(modifier, manager);
   let destructor = manager.getDestructor(modifier);

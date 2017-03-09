@@ -132,8 +132,8 @@ export abstract class BasicOpcodeBuilder {
 
   // args
 
-  pushArgs(positional: number, names: string[], synthetic: boolean) {
-    this.push(Op.PushArgs, positional, this.constants.other(names), (synthetic as any)|0);
+  pushArgs(positional: number, synthetic: boolean) {
+    this.push(Op.PushArgs, positional, (synthetic as any)|0);
   }
 
   // helpers
@@ -163,6 +163,10 @@ export abstract class BasicOpcodeBuilder {
 
   setComponentState(local: number) {
     this.push(Op.SetComponentState, local);
+  }
+
+  prepareArgs(state: number) {
+    this.push(Op.PrepareArgs, state);
   }
 
   createComponent(state: number, hasDefault: boolean, hasInverse: boolean) {
@@ -581,7 +585,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.component = new ComponentBuilder(this);
   }
 
-  compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, synthetic: boolean): string[] {
+  compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, synthetic: boolean) {
     let positional = 0;
 
     if (params) {
@@ -596,9 +600,8 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
       hash[1].forEach(v => expr(v, this));
     }
 
-    this.pushArgs(positional, names, synthetic);
-
-    return names;
+    this.pushImmediate(names);
+    this.pushArgs(positional, synthetic);
   }
 
   compile<E>(expr: Represents<E>): E {
@@ -627,7 +630,9 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.pushBlock(block);
     this.pushBlock(inverse);
 
-    let names = this.compileArgs(params, hash, false);
+    this.compileArgs(params, hash, false);
+    // this.prepareArgs(state);
+
     this.pushDynamicScope();
 
     this.createComponent(state, true, false);
@@ -636,7 +641,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
     this.getComponentSelf(state);
     this.getComponentLayout(state);
-    this.invokeDynamic(new InvokeDynamicLayout(attrs && attrs.scan(), names));
+    this.invokeDynamic(new InvokeDynamicLayout(attrs && attrs.scan()));
     this.didCreateElement(state);
 
     this.didRenderLayout(state);
