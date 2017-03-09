@@ -16,7 +16,7 @@ import { PublicVM } from './vm/append';
 export type ComponentArgs = [WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
 
 export interface DynamicComponentDefinition {
-  (vm: PublicVM, args: IArguments, meta: WireFormat.TemplateMeta): VersionedPathReference<ComponentDefinition<Opaque>>;
+  (vm: PublicVM, args: IArguments, meta: WireFormat.TemplateMeta): VersionedPathReference<Option<ComponentDefinition<Opaque>>>;
 }
 
 export interface ComponentBuilder {

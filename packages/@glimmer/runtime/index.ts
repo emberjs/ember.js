@@ -104,6 +104,7 @@ export {
   ComponentDefinition,
   ComponentLayoutBuilder,
   ComponentAttrsBuilder,
+  PreparedArguments,
   isComponentDefinition
 } from './lib/component/interfaces';
 

@@ -684,11 +684,11 @@ export const enum Op {
    * Operation: Push a user representation of args onto the stack.
    *
    * Format:
-   *   (PushArgs positional:u32 named:#Array<string> synthetic:boolean)
+   *   (PushArgs positional:u32 synthetic:boolean)
    *
    * Operand Stack:
-   *   ..., [VersionedPathReference ...] →
-   *   ..., Arguments
+   *   ..., [VersionedPathReference ...], #Array<string> →
+   *   ..., [VersionedPathReference ...], #Array<string>, Arguments
    *
    * Description:
    *   This arguments object is only necessary when calling into
@@ -698,6 +698,16 @@ export const enum Op {
    *   illegal.
    */
   PushArgs,
+
+  /**
+   * Operation: ...
+   * Format:
+   *   (CreateComponent state:u32)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
+  PrepareArgs,
 
   /**
    * Operation: Create the component and push it onto the stack.
@@ -921,7 +931,8 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.PushComponentManager: return ['PushComponentManager', { definition: c.getOther(op1) }];
     case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', { local: op1 }];
     case Op.SetComponentState: return ['SetComponentState', { local: op1 }];
-    case Op.PushArgs: return ['PushArgs', { positional: op1, names: c.getOther(op2), synthetic: !!op3 }];
+    case Op.PushArgs: return ['PushArgs', { positional: op1, synthetic: !!op2 }];
+    case Op.PrepareArgs: return ['PrepareArgs', { state: op1 }];
     case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: op2 }];
     case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor'];
     case Op.BeginComponentTransaction: return ['BeginComponentTransaction'];

@@ -170,12 +170,11 @@ STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {
 });
 
 export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
-  constructor(private attrs: Option<Block>, private names: string[]) {}
+  constructor(private attrs: Option<Block>) {}
 
   invoke(vm: VM, layout: Option<CompiledDynamicProgram>) {
     let { symbols, hasEval } = layout!.symbolTable as ProgramSymbolTable;
     let stack = vm.evalStack;
-    let { names: callerNames } = this;
 
     let scope = vm.pushRootScope(symbols.length + 1, true);
     scope.bindSelf(stack.pop<VersionedPathReference<Opaque>>());
@@ -189,6 +188,8 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
       $eval = symbols.indexOf('$eval') + 1;
       lookup = dict<ScopeSlot>();
     }
+
+    let callerNames = stack.pop<string[]>();
 
     for (let i=callerNames.length - 1; i>=0; i--) {
       let symbol = symbols.indexOf(callerNames[i]);
@@ -311,7 +312,8 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
   let definition = builder.local();
 
   expr(name, builder);
-  builder.pushArgs(1, EMPTY_ARRAY, true);
+  builder.pushImmediate(EMPTY_ARRAY);
+  builder.pushArgs(1, true);
   builder.helper(helper);
 
   builder.setLocal(definition);

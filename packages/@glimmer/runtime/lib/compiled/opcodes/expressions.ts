@@ -5,21 +5,17 @@ import { TRUE_REFERENCE, FALSE_REFERENCE } from '../../references';
 import { VersionedPathReference } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
 import { PublicVM } from "../../vm";
-import { IArguments } from "../../vm/arguments";
+import { Arguments } from "../../vm/arguments";
 
 export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: _helper }) => {
   let stack = vm.evalStack;
   let helper = vm.constants.getFunction<Helper>(_helper);
-  let args = stack.pop<IArguments>();
+  let args = stack.pop<Arguments>();
   let value = helper(vm, args);
 
-  let pops = args.length;
-
-  while (--pops >= 0) {
-    stack.pop();
-  }
+  args.clear();
 
   vm.evalStack.push(value);
 });
