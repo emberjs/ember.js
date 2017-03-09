@@ -6,8 +6,6 @@
   "jsnext:main": "dist/modules/index.js",
   "typings": "index.ts",
   "scripts": {
-    "build": "node build/build.js",
-    "prepublish": "npm run build",
     "test": "node -e 'require(\".\")'"
   },
   "files": [
