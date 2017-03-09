@@ -10,9 +10,7 @@
     "test": "tests"
   },
   "scripts": {
-    "build": "../../../build/build",
-    "test": "node -e 'require(\".\")'",
-    "prepublish": "npm run build"
+    "test": "node -e 'require(\".\")'"
   },
   "license": "MIT",
   "dependencies": {
