@@ -219,6 +219,26 @@ function loader() {
   })
 }
 
+function testIndexHTML() {
+  let index = new Funnel('tests', {
+    files: ['index.html'],
+    annotation: 'index.html'
+  });
+  index = new replace(index, {
+    files: ['index.html'],
+    patterns: [{
+      match: /\{\{DEV_FEATURES\}\}/g,
+      // TODO fix this
+      replacement: JSON.stringify({})
+    }, {
+      match: /\{\{PROD_FEATURES\}\}/g,
+      replacement: JSON.stringify({})
+    }],
+  });
+  index._annotation = 'tests/index.html FEATURES';
+  return index;
+}
+
 function internalTestHelpers() {
   return new Funnel('packages/internal-test-helpers/lib')
 }
@@ -253,7 +273,15 @@ module.exports = function() {
 
   var esTesting = new MergeTrees([
     internalTestHelpers(),
-    esPackage('@glimmer/test-helpers'),
+    esPackage('@glimmer/test-helpers', {
+      external: ['simple-html-tokenizer',
+        '@glimmer/runtime',
+        '@glimmer/reference',
+        '@glimmer/compiler',
+        '@glimmer/util',
+        '@glimmer/wire-format'
+      ]
+    }),
     new Funnel('packages', {
       include:  ['*/tests/**/*.js']
     })
@@ -263,7 +291,8 @@ module.exports = function() {
     jquery(),
     qunit(),
     loader(),
-    toAMD(processES2015(esTesting), 'testing/ember-tests.js')
+    testIndexHTML(),
+    toAMD(processES2015(esTesting), 'ember-tests.js')
   ]);
 
   let esSourceDebug = new Funnel(esSource, {
@@ -275,7 +304,7 @@ module.exports = function() {
   });
 
   testing = new Funnel(testing, {
-    destDir: 'testing'
+    destDir: 'tests'
   });
 
   return new MergeTrees([esSourceDebug, esSourceProd, testing, AMDDebug]);

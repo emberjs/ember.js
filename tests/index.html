@@ -3,13 +3,14 @@
   <head>
     <meta charset="utf-8">
     <title>Ember</title>
-    <link rel="stylesheet" href="../qunit/qunit.css">
+    <link rel="stylesheet" href="./qunit/qunit.css">
     <style type="text/css">
       #qunit-tests.hideskipped li.skipped {
         display: none;
       }
+
     </style>
-    <script src="../qunit/qunit.js"></script>
+    <script src="./qunit/qunit.js"></script>
     <script src="/testem.js"></script>
 
     <script type="text/javascript">
@@ -75,9 +76,9 @@
       var dist = QUnit.urlParams.dist;
 
       if (dist) {
-        loadScript('../ember.' + dist + '.js');
+        loadScript('../amd/ember.' + dist + '.js');
       } else {
-        loadScript('../ember.debug.js');
+        loadScript('../amd/ember.debug.js');
       }
     </script>
 
