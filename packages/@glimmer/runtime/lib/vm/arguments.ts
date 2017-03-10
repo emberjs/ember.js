@@ -58,6 +58,7 @@ export interface INamedArguments {
 
 export interface ICapturedNamedArguments extends VersionedPathReference<Dict<Opaque>> {
   tag: Tag;
+  map: Dict<VersionedPathReference<Opaque>>;
   names: string[];
   length: number;
   references: VersionedPathReference<Opaque>[];
@@ -316,6 +317,7 @@ class NamedArguments implements INamedArguments {
 
 class CapturedNamedArguments implements ICapturedNamedArguments {
   public length: number;
+  private _map: Option<Dict<VersionedPathReference<Opaque>>>;
 
   constructor(
     public tag: Tag,
@@ -323,6 +325,19 @@ class CapturedNamedArguments implements ICapturedNamedArguments {
     public references: VersionedPathReference<Opaque>[]
   ) {
     this.length = names.length;
+    this._map = null;
+  }
+
+  get map() {
+    let map = this._map;
+
+    if (!map) {
+      let { names, references } = this;
+      map = this._map = dict<VersionedPathReference<Opaque>>();
+      names.forEach((name, i) => map![name] = references[i]);
+    }
+
+    return map;
   }
 
   has(name: string): boolean {
@@ -330,7 +345,7 @@ class CapturedNamedArguments implements ICapturedNamedArguments {
   }
 
   get<T extends VersionedPathReference<Opaque>>(name: string): T {
-    let  { names, references } = this;
+    let { names, references } = this;
     let idx = names.indexOf(name);
 
     if (idx === -1) {

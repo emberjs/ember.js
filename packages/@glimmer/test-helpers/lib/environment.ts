@@ -51,6 +51,7 @@ import {
   isComponentDefinition,
   CompiledDynamicTemplate,
   NULL_REFERENCE,
+  Helper,
 } from "@glimmer/runtime";
 
 import {
@@ -72,7 +73,6 @@ import GlimmerObject, { GlimmerObjectFactory } from "@glimmer/object";
 import {
   VOLATILE_TAG,
   DirtyableTag,
-  RevisionTag,
   Tag,
   TagWrapper,
   Reference,
@@ -240,7 +240,7 @@ export class EmberishCurlyComponent extends GlimmerObject {
   public element: Element;
   public bounds: Bounds;
   public parentView: Component = null;
-  public args: ProcessedArgs;
+  public args: CapturedNamedArguments;
 
   static create(args: { attrs: Attrs }): EmberishCurlyComponent {
     return super.create(args) as EmberishCurlyComponent;
@@ -461,22 +461,12 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
         }
       }
 
-      let named = dict<VersionedPathReference<Opaque>>();
-
-      args.named.names.forEach(name => {
-        named[name] = args.named.get(name);
-      });
-
+      let named = Object.assign({}, args.named.capture().map);
       named[positionalParams] = args.positional.capture();
 
       return { positional: EMPTY_ARRAY, named };
     } else if (Array.isArray(positionalParams)) {
-      let named = dict<VersionedPathReference<Opaque>>();
-
-      args.named.names.forEach(name => {
-        named[name] = args.named.get(name);
-      });
-
+      let named = Object.assign({}, args.named.capture().map);
       let count = Math.min(positionalParams.length, args.positional.length);
 
       for (let i=0; i<count; i++) {
@@ -808,11 +798,15 @@ export class TestEnvironment extends Environment {
     return macros;
   }
 
-  hasHelper(helperName: string) {
-    return helperName in this.helpers;
+  hasHelper(helperName: string): boolean {
+    return (helperName === "component") || (helperName in this.helpers);
   }
 
-  lookupHelper(helperName: string) {
+  lookupHelper(helperName: string, meta: TemplateMeta): Helper {
+    if (helperName === "component") {
+      return (_vm: VM, args: Arguments) => new DynamicComponentReference(args.at(0), this, meta);
+    }
+
     let helper = this.helpers[helperName];
 
     if (!helper) throw new Error(`Helper for ${helperName} not found.`);

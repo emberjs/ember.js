@@ -15,6 +15,7 @@ import {
   EmberishGlimmerComponent,
   TestEnvironment,
   TestDynamicScope,
+  TestModifierManager,
   equalsElement,
   inspectHooks,
   regex,
@@ -2237,6 +2238,7 @@ testComponent('shadowing: outer attributes clobber inner attributes with concat'
 module("Glimmer Component");
 
 QUnit.test(`Modifiers cannot be on the top-level element`, function() {
+  env.registerModifier('foo', new TestModifierManager());
   env.registerEmberishGlimmerComponent('non-block', null, `<div {{foo bar}}>Should error</div>`);
   assert.throws(() => {
     appendViewFor('<non-block />');
