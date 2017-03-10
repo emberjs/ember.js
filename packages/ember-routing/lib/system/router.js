@@ -152,7 +152,7 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   /*
-    Resets all pending query paramter changes.
+    Resets all pending query parameter changes.
     Called after transitioning to a new route
     based on query parameter changes.
   */
