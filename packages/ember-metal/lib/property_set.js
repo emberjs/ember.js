@@ -1,5 +1,5 @@
 import { toString } from 'ember-utils';
-import { assert } from './debug';
+import { assert } from 'ember-debug';
 import isEnabled from './features';
 import { _getPath as getPath } from './property_get';
 import {

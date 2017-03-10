@@ -1,4 +1,4 @@
-import { warn } from './debug';
+import { warn } from 'ember-debug';
 import isEnabled from './features';
 
 /**

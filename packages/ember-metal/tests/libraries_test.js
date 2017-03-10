@@ -1,5 +1,5 @@
 /* globals EmberDev */
-import { getDebugFunction, setDebugFunction } from '../debug';
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
 import isEnabled from '../features';
 import { Libraries } from '../libraries';
 

@@ -4,8 +4,8 @@ import {
 } from 'ember-environment-flags';
 import {
   FEATURES_STRIPPED_TEST
-} from 'ember-feature-flags';
-import * as FEATURES from 'ember-feature-flags';
+} from 'ember-features';
+import * as FEATURES from 'ember-features';
 import { ENV, environment } from 'ember-environment';
 export {
   setDebugFunction,
@@ -30,7 +30,6 @@ import {
   Error as EmberError
 } from './error';
 import Logger from 'ember-console';
-
 import _deprecate, {
   registerHandler as registerDeprecationHandler,
   deprecateProperty

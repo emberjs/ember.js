@@ -29,9 +29,19 @@ const es2015Options = {
       debugTools: {
         importSpecifier: 'ember-debug'
       },
+      features: [{
+        name: 'ember-source',
+        importSpecifier: 'ember-features',
+        flags: {
+          FEATURES_STRIPPED_TEST: 0
+        }
+      }],
       envFlags: {
         importSpecifier: 'ember-environment-flags',
         flags: { DEBUG: 1, TESTING: 0 }
+      },
+      externalizeHelpers: {
+        debug: { module: true }
       }
     }],
     ['minify-dead-code-elimination',  { optimizeRawSize: true }]

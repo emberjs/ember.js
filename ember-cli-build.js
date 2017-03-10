@@ -223,9 +223,11 @@ function emberBabelDebugES() {
 }
 
 function emberFeaturesES() {
-  let content = 'export default ' + JSON.stringify(FEATURES.DEBUG) + ';\n';
-  return new WriteFile('ember/features.js', content, {
-    annotation: 'ember/features (DEBUG)'
+  let content = Object.keys(FEATURES.DEBUG).map((flag) => {
+    return `export const ${flag.replace(/-/g, '_').toUpperCase()} = ${FEATURES.DEBUG[flag] ? 1 : 0};`
+  });
+  return new WriteFile('ember-features.js', content.join('\n'), {
+    annotation: 'ember-features.js (DEBUG)'
   });
 }
 
@@ -303,8 +305,6 @@ module.exports = function() {
   ]);
 
   var ES5Ember = processES2015(esSource);
-
-  return ES5Ember;
 
   var AMDDebug = toAMD(ES5Ember, 'amd/ember.debug.js');
 

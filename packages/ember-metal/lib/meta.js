@@ -6,7 +6,7 @@ import {
 } from 'ember-utils';
 import isEnabled from './features';
 import { protoMethods as listenerMethods } from './meta_listeners';
-import { runInDebug, assert } from './debug';
+import { runInDebug, assert } from 'ember-debug';
 import {
   removeChainWatcher
 } from './chains';

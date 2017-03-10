@@ -3,7 +3,7 @@
 @submodule ember-metal
 */
 import { applyStr } from 'ember-utils';
-import { assert } from './debug';
+import { assert } from 'ember-debug';
 import { meta as metaFor, peekMeta } from './meta';
 import { deprecate } from 'ember-debug';
 

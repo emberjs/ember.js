@@ -1,5 +1,5 @@
 import { inspect } from 'ember-utils';
-import { assert } from './debug';
+import { assert } from 'ember-debug';
 import { get } from './property_get';
 import { set } from './property_set';
 import EmberError from './error';
