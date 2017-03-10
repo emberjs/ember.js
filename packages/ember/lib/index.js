@@ -8,6 +8,10 @@ import { Registry, Container } from 'container';
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
+import {
+  registerDeprecationHandler,
+  registerWarnHandler
+} from 'ember-debug';
 
 // ember-utils exports
 Ember.getOwner = utils.getOwner;
@@ -34,7 +38,7 @@ import {
   isFeatureEnabled,
   deprecate,
   deprecateFunc
-} from 'ember-metal';
+} from 'ember-debug';
 
 const computed = metal.computed;
 computed.alias = metal.alias;
@@ -241,6 +245,15 @@ if (!has('ember-debug')) {
     registerDeprecationHandler() {},
     registerWarnHandler() {}
   };
+} else {
+  /**
+    @public
+    @class Ember.Debug
+  */
+  Ember.Debug = {
+    registerDeprecationHandler,
+    registerWarnHandler
+  }
 }
 
 import Backburner from 'backburner';

@@ -309,13 +309,15 @@
 import Logger from 'ember-console';
 
 import {
-  assert,
-  deprecate,
   get,
   computed,
-  flaggedInstrument,
-  runInDebug
+  flaggedInstrument
 } from 'ember-metal';
+import {
+  assert,
+  deprecate,
+  runInDebug
+} from 'ember-degug';
 import {
   deprecatingAlias,
   inject,

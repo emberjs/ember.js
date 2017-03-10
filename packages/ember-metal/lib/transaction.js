@@ -1,5 +1,5 @@
 import { meta as metaFor } from './meta';
-import { assert, runInDebug, deprecate } from './debug';
+import { assert, runInDebug, deprecate } from 'ember-debug';
 import isEnabled from './features';
 
 let runInTransaction, didRender, assertNotRendered;

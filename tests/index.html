@@ -11,6 +11,7 @@
 
     </style>
     <script src="./qunit/qunit.js"></script>
+    <script src="./loader.js"></script>
     <script src="/testem.js"></script>
 
     <script type="text/javascript">
@@ -31,7 +32,7 @@
     <script type="text/javascript">
       // Fallback to default jQuery
       if (jQueryVersion !== 'none' && !window.jQuery) {
-        loadScript('../jquery/jquery.js');
+        loadScript('./jquery/jquery.js');
       }
       // Close the script tag to make sure document.write happens
     </script>
@@ -83,7 +84,8 @@
     </script>
 
     <script type="text/javascript">
-      Ember.testing = true;
+      var setTesting = require('ember-metal').setTesting;
+      setTesting(true);
     </script>
 
     <script>
@@ -96,7 +98,7 @@
       if (prod) {
         loadScript('../ember-tests.prod.js');
       } else {
-        loadScript('../ember-tests.js');
+        loadScript('./ember-tests.js');
       }
     </script>
 
@@ -115,7 +117,9 @@
           }
         }
 
-        Ember.Debug.registerDeprecationHandler(function (message, options, next) {
+        var registerDeprecationHandler = require('ember-debug').registerDeprecationHandler;
+
+        registerDeprecationHandler(function (message, options, next) {
           var id = options && options.id;
           next(message, options);
         });
@@ -127,7 +131,8 @@
         var originalTypeof = QUnit.jsDump.typeOf;
 
         QUnit.jsDump.typeOf = function(obj) {
-          if (Ember && Ember.Object && Ember.Object.detectInstance(obj)) {
+          var CoreObject = require('ember-metal/core_object').CoreObject;
+          if (CoreObject.detectInstance(obj)) {
             return "emberObject";
           }
 
@@ -184,12 +189,12 @@
       skipPackages = (skipPackages && skipPackages.split(',')) || [];
       var skipPackageRegexp   = new RegExp('^('+skipPackages.join('|')+')/');
 
-      for (var moduleName in Ember.__loader.registry) {
+      for (var moduleName in require.entries) {
         if (!moduleName.match(packageRegexp))   { continue; }
         if (moduleName.match(skipPackageRegexp)) { continue; }
         if (QUnit.urlParams.nolint && moduleName.match(/lint-test$/)) { continue; }
 
-        if (moduleName.match(/[_-]test$/)) { Ember.__loader.require(moduleName); }
+        if (moduleName.match(/[_-]test$/)) { require(moduleName); }
       }
     </script>
 

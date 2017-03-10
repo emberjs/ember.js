@@ -10,14 +10,16 @@ import {
   assert,
   info,
   Error as EmberError,
+  deprecate,
+  deprecateProperty,
+  runInDebug
+} from 'ember-debug';
+import {
   get,
   set,
   defineProperty,
   computed,
-  run,
-  runInDebug,
-  deprecate,
-  deprecateProperty
+  run
 } from 'ember-metal';
 import {
   Object as EmberObject,
@@ -1562,7 +1564,7 @@ function representEmptyRoute(liveRoutes, defaultParentState, route) {
   }
 }
 
-deprecateProperty(EmberRouter.prototype, 'router', '_routerMicrolib', {
+deprecateProperty(EmberRouter.prototype, get, set, 'router', '_routerMicrolib', {
   id: 'ember-router.router',
   until: '2.16',
   url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-router-router-renamed-to-ember-router-_routerMicrolib'

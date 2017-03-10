@@ -1,5 +1,6 @@
 import { guidFor, getOwner } from 'ember-utils';
-import { assert, deprecate, descriptor, runInDebug, Mixin } from 'ember-metal';
+import { assert, deprecate, runInDebug } from 'ember-debug';
+import { descriptor, Mixin } from 'ember-metal';
 import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
 import { POST_INIT } from 'ember-runtime/system/core_object';

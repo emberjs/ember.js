@@ -24,7 +24,17 @@ const es2015Options = {
     ['transform-es2015-block-scoping'],
     ['check-es2015-constants'],
     ['transform-es2015-classes', {loose: true}],
-    ['transform-proto-to-assign']
+    ['transform-proto-to-assign'],
+    ['debug-macros', {
+      debugTools: {
+        importSpecifier: 'ember-debug'
+      },
+      envFlags: {
+        importSpecifier: 'ember-environment-flags',
+        flags: { DEBUG: 1, TESTING: 0 }
+      }
+    }],
+    ['minify-dead-code-elimination',  { optimizeRawSize: true }]
   ]
 }
 
@@ -41,5 +51,5 @@ class BabelES2015 extends Babel {
 }
 
 module.exports = function toES2015(tree) {
-  return new BabelES2015(tree);
+  return new BabelES2015(tree, es2015Options);
 }

@@ -27,6 +27,8 @@ var replace = require('broccoli-string-replace');
 var uglify = require('broccoli-uglify-sourcemap');
 var toAMD = require('./broccoli/to-amd');
 var processES2015 = require('./broccoli/process-es2015');
+const FEATURES = require('./broccoli/features');
+var WriteFile = require('broccoli-file-creator');
 var GlimmerTemplatePrecompiler = require('./broccoli/glimmer-template-compiler');
 const REMOVE_LIB = /^([^\/]+\/)lib\//;
 
@@ -201,7 +203,7 @@ function getESLintRulePaths() {
 function emberES() {
   return new GlimmerTemplatePrecompiler(new Funnel('packages', {
     include: ['*/lib/**/*.js', '*/lib/**/*.hbs'],
-    exclude: ['loader/**', 'external-helpers/**', 'internal-test-helpers/**'],
+    exclude: ['loader/**', 'ember-babel/**', 'internal-test-helpers/**'],
     getDestinationPath(relativePath) {
       return relativePath.replace(REMOVE_LIB, "$1");
     },
@@ -211,11 +213,40 @@ function emberES() {
   });
 }
 
+function emberBabelDebugES() {
+  return new Funnel('packages/ember-babel/lib', {
+    files: ['external-helpers-dev.js'],
+    getDestinationPath() {
+      return 'ember-babel.js';
+    }
+  });
+}
+
+function emberFeaturesES() {
+  let content = 'export default ' + JSON.stringify(FEATURES.DEBUG) + ';\n';
+  return new WriteFile('ember/features.js', content, {
+    annotation: 'ember/features (DEBUG)'
+  });
+}
+
+function emberTemplateCompiler(ember) {
+  return toAMD(new Funnel(ember, {
+    include: [
+      'ember-template-compiler',
+      'ember-debug',
+      'ember-console',
+      'ember-environment',
+      'ember-util',
+      '@glimmer/compiler',
+      '@glimmer/wire-format'
+    ].map((pkg) => `${pkg}/**/*.js`)
+  }), 'amd/ember-template-compiler.js');
+}
+
 function loader() {
   var {dir, base} = path.parse(require.resolve('loader.js'));
   return new Funnel(dir, {
-    files: [base],
-    destDir: '/tests'
+    files: [base]
   })
 }
 
@@ -229,10 +260,10 @@ function testIndexHTML() {
     patterns: [{
       match: /\{\{DEV_FEATURES\}\}/g,
       // TODO fix this
-      replacement: JSON.stringify({})
+      replacement: JSON.stringify(FEATURES.DEBUG)
     }, {
       match: /\{\{PROD_FEATURES\}\}/g,
-      replacement: JSON.stringify({})
+      replacement: JSON.stringify(FEATURES.RELEASE)
     }],
   });
   index._annotation = 'tests/index.html FEATURES';
@@ -250,6 +281,8 @@ module.exports = function() {
     backburnerES(),
     routerES(),
     dagES(),
+    emberFeaturesES(),
+    emberBabelDebugES(),
     routeRecognizerES(),
     esPackage('simple-html-tokenizer'),
     esPackage('@glimmer/reference', { external: ['@glimmer/util'] }),
@@ -269,7 +302,11 @@ module.exports = function() {
     esPackage('@glimmer/wire-format', { external: ['@glimmer/util'] }),
   ]);
 
-  var AMDDebug = toAMD(processES2015(esSource), 'amd/ember.debug.js');
+  var ES5Ember = processES2015(esSource);
+
+  return ES5Ember;
+
+  var AMDDebug = toAMD(ES5Ember, 'amd/ember.debug.js');
 
   var esTesting = new MergeTrees([
     internalTestHelpers(),
@@ -286,6 +323,8 @@ module.exports = function() {
       include:  ['*/tests/**/*.js']
     })
   ]);
+
+  var templateCompiler = emberTemplateCompiler(ES5Ember)
 
   var testing = new MergeTrees([
     jquery(),
@@ -307,5 +346,5 @@ module.exports = function() {
     destDir: 'tests'
   });
 
-  return new MergeTrees([esSourceDebug, esSourceProd, testing, AMDDebug]);
+  return new MergeTrees([esSourceDebug, templateCompiler, esSourceProd, testing, AMDDebug]);
 }

@@ -12,9 +12,8 @@ import { ENV } from 'ember-environment';
 import {
   assert,
   deprecate,
-  runInDebug,
-  isFeatureEnabled
-} from 'ember-metal';
+  runInDebug
+} from 'ember-debug';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 export const FACTORY_FOR = symbol('FACTORY_FOR');
