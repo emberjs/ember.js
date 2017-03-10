@@ -16,6 +16,6 @@ moduleFor('Component destroy', class extends RenderingTest {
 
     this.assertText('');
 
-    assert.equal(this.env.destroyedComponents.length, 0, 'enviroment.destroyedComponents should be empty');
+    assert.equal(this.env.destroyedComponents.length, 0, 'environment.destroyedComponents should be empty');
   }
 });
