@@ -2,8 +2,9 @@ import { EvaluationStack } from './append';
 import { dict } from '@glimmer/util';
 import { combineTagged } from '@glimmer/reference';
 import { EMPTY_ARRAY } from '../utils';
-import { Dict, Opaque, Option } from '@glimmer/interfaces';
+import { Dict, Opaque, Option, unsafe } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
+import { PrimitiveReference, UNDEFINED_REFERENCE } from '../references';
 
 /*
   The calling convention is:
@@ -38,7 +39,7 @@ export interface IPositionalArguments {
   capture(): ICapturedPositionalArguments;
 }
 
-export interface ICapturedPositionalArguments {
+export interface ICapturedPositionalArguments extends VersionedPathReference<Opaque[]> {
   tag: Tag;
   length: number;
   references: VersionedPathReference<Opaque>[];
@@ -50,15 +51,17 @@ export interface INamedArguments {
   tag: Tag;
   names: string[];
   length: number;
+  has(name: string): boolean;
   get<T extends VersionedPathReference<Opaque>>(name: string): T;
   capture(): ICapturedNamedArguments;
 }
 
-export interface ICapturedNamedArguments {
+export interface ICapturedNamedArguments extends VersionedPathReference<Dict<Opaque>> {
   tag: Tag;
   names: string[];
   length: number;
   references: VersionedPathReference<Opaque>[];
+  has(name: string): boolean;
   get<T extends VersionedPathReference<Opaque>>(name: string): T;
   value(): Dict<Opaque>;
 }
@@ -151,13 +154,19 @@ class PositionalArguments implements IPositionalArguments {
   }
 
   at<T extends VersionedPathReference<Opaque>>(position: number): T {
+    let { start, length } = this;
+
+    if (position < 0 || position >= length) {
+      return UNDEFINED_REFERENCE as unsafe as T;
+    }
+
     // stack: pos1, pos2, pos3, named1, named2
     // start: 4 (top - 4)
     //
     // at(0) === pos1 === top - start
     // at(1) === pos2 === top - (start - 1)
     // at(2) === pos3 === top - (start - 2)
-    let fromTop = this.start - position - 1;
+    let fromTop = start - position - 1;
     return this.stack.fromTop<T>(fromTop);
   }
 
@@ -194,6 +203,22 @@ class CapturedPositionalArguments implements ICapturedPositionalArguments {
 
   value(): Opaque[] {
     return this.references.map(this.valueOf);
+  }
+
+  get(name: string): VersionedPathReference<Opaque> {
+    let { references, length } = this;
+
+    if (name === 'length') {
+      return PrimitiveReference.create(length);
+    } else {
+      let idx = parseInt(name, 10);
+
+      if (idx < 0 || idx >= length) {
+        return UNDEFINED_REFERENCE;
+      } else {
+        return references[idx];
+      }
+    }
   }
 
   private valueOf(this: void, reference: VersionedPathReference<Opaque>): Opaque {
@@ -242,14 +267,26 @@ class NamedArguments implements INamedArguments {
     return names;
   }
 
+  has(name: string): boolean {
+    return this.names.indexOf(name) !== -1;
+  }
+
   get<T extends VersionedPathReference<Opaque>>(name: string): T {
+    let { names, length } = this;
+
+    let idx = names.indexOf(name);
+
+    if (idx === -1) {
+      return UNDEFINED_REFERENCE as unsafe as T;
+    }
+
     // stack: pos1, pos2, pos3, named1, named2
     // start: 4 (top - 4)
     // namedDict: { named1: 1, named2: 0 };
     //
     // get('named1') === named1 === top - (start - 1)
     // get('named2') === named2 === top - start
-    let fromTop = this.length - this.names.indexOf(name);
+    let fromTop = length - idx;
     return this.stack.fromTop<T>(fromTop);
   }
 
@@ -288,9 +325,19 @@ class CapturedNamedArguments implements ICapturedNamedArguments {
     this.length = names.length;
   }
 
+  has(name: string): boolean {
+    return this.names.indexOf(name) !== -1;
+  }
+
   get<T extends VersionedPathReference<Opaque>>(name: string): T {
-    let index = this.names.indexOf(name);
-    return this.references[index] as T;
+    let  { names, references } = this;
+    let idx = names.indexOf(name);
+
+    if (idx === -1) {
+      return UNDEFINED_REFERENCE as unsafe as T;
+    } else {
+      return references[idx] as T;
+    }
   }
 
   value(): Dict<Opaque> {

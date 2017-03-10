@@ -257,7 +257,7 @@ export class ComponentBuilder implements IComponentBuilder {
 
   dynamic(definitionArgs: ComponentArgs, getDefinition: DynamicComponentDefinition, args: ComponentArgs) {
     this.builder.unit(b => {
-      let [, hash, block, inverse] = args;
+      let [params, hash, block, inverse] = args;
 
       if (!definitionArgs || definitionArgs.length === 0) {
         throw new Error("Dynamic syntax without an argument");
@@ -281,7 +281,7 @@ export class ComponentBuilder implements IComponentBuilder {
         b.jumpUnless('END');
 
         b.pushDynamicComponentManager(definition);
-        b.invokeComponent(null, null, hash, block, inverse);
+        b.invokeComponent(null, params, hash, block, inverse);
       });
     });
   }
