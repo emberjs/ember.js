@@ -27,7 +27,7 @@ APPEND_OPCODES.add(Op.PutIterator, vm => {
   stack.push(new IterablePresenceReference(iterator.artifacts));
 });
 
-APPEND_OPCODES.add(Op.EnterList, (vm, { op1: start, op2: end }) => {
+APPEND_OPCODES.add(Op.EnterList, (vm, { op2: start, op3: end }) => {
   vm.enterList(start, end);
 });
 

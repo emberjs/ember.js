@@ -216,6 +216,16 @@ export const enum Op {
   GetLocal,
 
   /**
+   * Operation: Duplicate the top item on the stack.
+   * Format:
+   *   (Dup)
+   * Operand Stack:
+   *   ..., Opaque →
+   *   ..., Opaque, Opaque
+   */
+  Dup,
+
+  /**
    * Operation: Pop the stack and throw away the value.
    * Format:
    *   (Pop)
@@ -356,7 +366,7 @@ export const enum Op {
    * Format:
    *   (OpenDynamicElement)
    * Operand Stack:
-   *   ..., ElementOperations, string →
+   *   ..., string, ElementOperations →
    *   ...
    */
   OpenDynamicElement,
@@ -525,7 +535,7 @@ export const enum Op {
    *   if one of its inputs changes.
    *
    * Format:
-   *   (Enter from:u32 to:u32)
+   *   (Enter args:u32 from:u32 to:u32)
    * Operand Stack:
    *   ... →
    *   ...
@@ -557,17 +567,17 @@ export const enum Op {
   Exit,
 
   /**
-   * Operation: Convert the top of the stack into a boolean.
+   * Operation: Convert the top of the stack into a boolean reference.
    *
    * Format:
-   *   (ToBoolean test:#function)
+   *   (Test test:#function)
    * Operand Stack:
-   *   ..., VersionedPathReference →
-   *   ..., boolean
+   *   ..., VersionedPathReference<Opaque> →
+   *   ..., VersionedPathReference<bool>
    * Description:
    *   TODO: ToBoolean should be global in the env
    */
-  ToBoolean,
+  Test,
 
   /// LISTS
 
@@ -575,7 +585,7 @@ export const enum Op {
    * Operation: Enter a list.
    *
    * Format:
-   *   (EnterList from:u32 to:u32)
+   *   (EnterList unused:u32 from:u32 to:u32)
    * Operand Stack:
    *   ..., Iterator →
    *   ...
@@ -662,9 +672,9 @@ export const enum Op {
    *   a runtime-resolved component definition.
    *
    * Format:
-   *   (PushDynamicComponentManager local:u32)
+   *   (PushDynamicComponentManager)
    * Operand Stack:
-   *   ... →
+   *   ... Reference<ComponentDefinition> →
    *   ..., ComponentDefinition, ComponentManager
    */
   PushDynamicComponentManager,
@@ -925,6 +935,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.Function: return ['Function', { function: c.getFunction(op1) }];
     case Op.Constant: return ['Constant', { value: c.getOther(op1) }];
     case Op.Primitive: return ['Primitive', { primitive: op1 }];
+    case Op.Dup: return ['Dup'];
     case Op.Pop: return ['Pop'];
 
     /// COMPONENTS
@@ -969,7 +980,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.Jump: return ['Jump', { to: op1 }];
     case Op.JumpIf: return ['JumpIf', { to: op1 }];
     case Op.JumpUnless: return ['JumpUnless', { to: op1 }];
-    case Op.ToBoolean: return ['ToBoolean'];
+    case Op.Test: return ['ToBoolean'];
     case Op.Text: return ['Text', { text: c.getString(op1) }];
     case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
     case Op.DynamicContent: return ['DynamicContent', { value: c.getOther(op1) }];

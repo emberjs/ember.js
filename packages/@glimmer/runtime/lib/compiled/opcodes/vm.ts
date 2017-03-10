@@ -69,6 +69,8 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   }
 });
 
+APPEND_OPCODES.add(Op.Dup, vm => vm.evalStack.dup());
+
 APPEND_OPCODES.add(Op.Pop, vm => vm.evalStack.pop());
 
 APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
@@ -76,7 +78,7 @@ APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
   vm.bindDynamicScope(names);
 });
 
-APPEND_OPCODES.add(Op.Enter, (vm, { op1: start, op2: end }) => vm.enter(start, end));
+APPEND_OPCODES.add(Op.Enter, (vm, { op1: args, op2: start, op3: end }) => vm.enter(args, start, end));
 
 APPEND_OPCODES.add(Op.Exit, (vm) => vm.exit());
 
@@ -153,7 +155,7 @@ export const EnvironmentTest: TestFunction = function(ref: Reference<Opaque>, en
   return env.toConditionalReference(ref);
 };
 
-APPEND_OPCODES.add(Op.ToBoolean, (vm, { op1: _func }) => {
+APPEND_OPCODES.add(Op.Test, (vm, { op1: _func }) => {
   let stack = vm.evalStack;
   let operand = stack.pop();
   let func = vm.constants.getFunction(_func);

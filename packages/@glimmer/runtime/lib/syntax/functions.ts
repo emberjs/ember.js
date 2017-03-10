@@ -114,12 +114,6 @@ STATEMENTS.add(Ops.OpenElement, (sexp: S.OpenElement, builder: OpcodeBuilder) =>
   builder.openPrimitiveElement(sexp[1]);
 });
 
-CLIENT_SIDE.add(ClientSide.Ops.OpenDynamicElement, (sexp: ClientSide.OpenDynamicElement, builder) => {
-  builder.pushComponentOperations();
-  expr(sexp[2], builder);
-  builder.openDynamicElement();
-});
-
 CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder) => {
   builder.pushComponentOperations();
   builder.openElementWithOperations(sexp[2]);
@@ -309,25 +303,23 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
 
   builder.startLabels();
 
-  let definition = builder.local();
-
   expr(name, builder);
   builder.pushImmediate(EMPTY_ARRAY);
   builder.pushArgs(1, true);
   builder.helper(helper);
 
-  builder.setLocal(definition);
-  builder.getLocal(definition);
+  builder.dup();
   builder.test('simple');
 
-  builder.labelled(b => {
-    b.jumpUnless('END');
-
-    b.getLocal(definition);
+  builder.closure(2, b => {
+    b.jumpUnless('ELSE');
     b.getPartialTemplate();
     b.compileDynamicBlock();
     b.invokeDynamic(new PartialInvoker(symbols, evalInfo));
     b.popScope();
+    b.jump('END');
+    b.label('ELSE');
+    b.pop();
   });
 });
 
@@ -611,14 +603,11 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #if requires a single argument`);
     }
 
-    let condition = builder.local();
     expr(params[0], builder);
-    builder.setLocal(condition);
 
-    builder.getLocal(condition);
     builder.test('environment');
 
-    builder.labelled(b => {
+    builder.closure(1, b => {
       if (template && inverse) {
         b.jumpUnless('ELSE');
         b.invokeStatic(template);
@@ -651,14 +640,11 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #unless requires a single argument`);
     }
 
-    let condition = builder.local();
     expr(params[0], builder);
-    builder.setLocal(condition);
 
-    builder.getLocal(condition);
     builder.test('environment');
 
-    builder.labelled(b => {
+    builder.closure(1, b => {
       if (template && inverse) {
         b.jumpIf('ELSE');
         b.invokeStatic(template);
@@ -691,29 +677,19 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #with requires a single argument`);
     }
 
-    let item = builder.local();
     expr(params[0], builder);
-    builder.setLocal(item);
 
-    builder.getLocal(item);
+    builder.dup();
     builder.test('environment');
 
-    builder.labelled(b => {
-      if (template && inverse) {
-        b.jumpUnless('ELSE');
-        b.invokeStatic(template, b => {
-          b.getLocal(item);
-        });
-        b.jump('END');
-        b.label('ELSE');
+    builder.closure(2, b => {
+      b.jumpUnless('ELSE');
+      b.invokeStatic(unwrap(template), 1);
+      b.jump('END');
+      b.label('ELSE');
+      b.pop();
+      if (inverse) {
         b.invokeStatic(inverse);
-      } else if (template) {
-        b.jumpUnless('END');
-        b.invokeStatic(template, b => {
-          b.getLocal(item);
-        });
-      } else {
-        throw unreachable();
       }
     });
   });
@@ -746,8 +722,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // TOMORROW: Locals for key, value, memo
     // TOMORROW: What is the memo slot used for?
 
-    let list = builder.local();
-
     if (hash && hash[0][0] === 'key') {
       expr(hash[1][0], builder);
     } else {
@@ -755,25 +729,17 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     }
 
     expr(params[0], builder);
-    builder.setLocal(list);
-    builder.getLocal(list);
 
-    builder.labelled(b => {
+    builder.closure(2, b => {
       b.putIterator();
-
-      if (inverse) {
-        b.jumpUnless('ELSE');
-      } else {
-        b.jumpUnless('END');
-      }
-
+      b.jumpUnless('ELSE');
       b.iter(b => {
         b.invokeStatic(unwrap(template), 2);
       });
-
+      b.jump('END');
+      b.label('ELSE');
+      b.pop();
       if (inverse) {
-        b.jump('END');
-        b.label('ELSE');
         b.invokeStatic(inverse);
       }
     });
@@ -788,19 +754,19 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #-in-element requires a single argument`);
     }
 
-    let element = builder.local();
     expr(params[0], builder);
-    builder.setLocal(element);
 
-    builder.getLocal(element);
+    builder.dup();
     builder.test('simple');
 
-    builder.labelled(b => {
-      b.jumpUnless('END');
-      b.getLocal(element);
+    builder.closure(2, b => {
+      b.jumpUnless('ELSE');
       b.pushRemoteElement();
       b.invokeStatic(unwrap(template));
       b.popRemoteElement();
+      b.jump('END');
+      b.label('ELSE');
+      b.pop();
     });
   });
 

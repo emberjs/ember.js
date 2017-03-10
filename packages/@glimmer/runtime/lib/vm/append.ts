@@ -35,8 +35,8 @@ export class EvaluationStack {
     return this.stack.length;
   }
 
-  snapshot(): EvaluationStack {
-    return new EvaluationStack(this.stack.slice());
+  snapshot(args: number): EvaluationStack {
+    return new EvaluationStack(this.stack.slice(-args));
   }
 
   restore(bp: number): number {
@@ -52,8 +52,12 @@ export class EvaluationStack {
     return this.stack[pos];
   }
 
-  push(value: Opaque) {
+  push(value: Opaque): void {
     this.stack.push(value);
+  }
+
+  dup(): void {
+    this.push(this.fromTop(0));
   }
 
   pop<T>(): T {
@@ -116,12 +120,12 @@ export default class VM implements PublicVM {
     this.dynamicScopeStack.push(dynamicScope);
   }
 
-  capture(): VMState {
+  capture(args: number): VMState {
     return {
       env: this.env,
       scope: this.scope(),
       dynamicScope: this.dynamicScope(),
-      stack: this.evalStack.snapshot(),
+      stack: this.evalStack.snapshot(args),
       bp: this.bp
     };
   }
@@ -181,10 +185,10 @@ export default class VM implements PublicVM {
     opcodes.append(END);
   }
 
-  enter(start: number, end: number) {
+  enter(args: number, start: number, end: number) {
     let updating = new LinkedList<UpdatingOpcode>();
 
-    let state = this.capture();
+    let state = this.capture(args);
     let tracker = this.stack().pushUpdatableBlock();
 
     let tryOpcode = new TryOpcode(start, end, state, tracker, updating);
@@ -197,7 +201,7 @@ export default class VM implements PublicVM {
     stack.push(value);
     stack.push(memo);
 
-    let state = this.capture();
+    let state = this.capture(2);
     let tracker = this.stack().pushUpdatableBlock();
 
     return new TryOpcode(start, end, state, tracker, updating);
@@ -211,7 +215,7 @@ export default class VM implements PublicVM {
   enterList(start: number, end: number) {
     let updating = new LinkedList<BlockOpcode>();
 
-    let state = this.capture();
+    let state = this.capture(1);
     let tracker = this.stack().pushBlockList(updating);
     let artifacts = this.evalStack.top<ReferenceIterator>().artifacts;
 

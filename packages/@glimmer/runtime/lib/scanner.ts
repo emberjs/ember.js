@@ -153,8 +153,6 @@ import { VersionedPathReference } from '@glimmer/reference';
 export namespace ClientSide {
   export enum Ops {
     OpenComponentElement,
-    OpenPrimitiveElement,
-    OpenDynamicElement,
     OptimizedAppend,
     UnoptimizedAppend,
     StaticPartial,
@@ -175,8 +173,6 @@ export namespace ClientSide {
   import ClientSideExpression = WireFormat.Ops.ClientSideExpression;
 
   export type OpenComponentElement  = [ClientSideStatement, Ops.OpenComponentElement, string];
-  export type OpenPrimitiveElement  = [ClientSideStatement, Ops.OpenPrimitiveElement, string, string[]];
-  export type OpenDynamicElement    = [ClientSideStatement, Ops.OpenDynamicElement, WireFormat.Expression];
   export type OptimizedAppend       = [ClientSideStatement, Ops.OptimizedAppend, WireFormat.Expression, boolean];
   export type UnoptimizedAppend     = [ClientSideStatement, Ops.UnoptimizedAppend, WireFormat.Expression, boolean];
   export type StaticPartial         = [ClientSideStatement, Ops.StaticPartial, string, WireFormat.Core.EvalInfo];
@@ -188,8 +184,6 @@ export namespace ClientSide {
 
   export type ClientSideStatement =
     | OpenComponentElement
-    | OpenPrimitiveElement
-    | OpenDynamicElement
     | OptimizedAppend
     | UnoptimizedAppend
     | StaticPartial
