@@ -1,5 +1,6 @@
 import { meta as metaFor } from './meta';
-import { assert, runInDebug, deprecate } from 'ember-debug';
+import { assert, deprecate } from 'ember-debug';
+import { DEBUG } from 'ember-environment-flags';
 import isEnabled from './features';
 
 let runInTransaction, didRender, assertNotRendered;
@@ -16,9 +17,9 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
   runInTransaction = (context, methodName) => {
     shouldReflush = false;
     inTransaction = true;
-    runInDebug(() => {
+    if (DEBUG) {
       debugStack = context.env.debugStack;
-    });
+    }
     context[methodName]();
     inTransaction = false;
     counter++;
@@ -31,7 +32,7 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     let lastRendered = meta.writableLastRendered();
     lastRendered[key] = counter;
 
-    runInDebug(() => {
+    if (DEBUG) {
       let referenceMap = meta.writableLastRenderedReferenceMap();
       referenceMap[key] = reference;
 
@@ -39,7 +40,7 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
       if (templateMap[key] === undefined) {
         templateMap[key] = debugStack.peek();
       }
-    });
+    }
   };
 
   assertNotRendered = (object, key, _meta) => {
@@ -47,7 +48,7 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     let lastRendered = meta.readableLastRendered();
 
     if (lastRendered && lastRendered[key] === counter) {
-      runInDebug(() => {
+      if (DEBUG) {
         let templateMap = meta.readableLastRenderedTemplateMap();
         let lastRenderedIn = templateMap[key];
         let currentlyIn = debugStack.peek();
@@ -75,7 +76,7 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
         } else {
           assert(`${message} is no longer supported. See https://github.com/emberjs/ember.js/issues/13948 for more details.`, false);
         }
-      });
+      }
 
       shouldReflush = true;
     }

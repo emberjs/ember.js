@@ -15,9 +15,9 @@ import EmberError from './error';
 import {
   debugSeal,
   assert,
-  deprecate,
-  runInDebug
+  deprecate
 } from 'ember-debug';
+import { DEBUG } from 'ember-environment-flags';
 import { meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';
 import {
@@ -153,14 +153,14 @@ function applyConcatenatedProperties(obj, key, value, values) {
     }
   }
 
-  runInDebug(() => {
+  if (DEBUG) {
     // it is possible to use concatenatedProperties with strings (which cannot be frozen)
     // only freeze objects...
     if (typeof ret === 'object' && ret !== null) {
       // prevent mutating `concatenatedProperties` array after it is applied
       Object.freeze(ret);
     }
-  });
+  }
 
   return ret;
 }
@@ -168,11 +168,11 @@ function applyConcatenatedProperties(obj, key, value, values) {
 function applyMergedProperties(obj, key, value, values) {
   let baseValue = values[key] || obj[key];
 
-  runInDebug(() => {
+  if (DEBUG) {
     if (isArray(value)) { // use conditional to avoid stringifying every time
       assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
     }
-  });
+  }
 
   if (!baseValue) { return value; }
 

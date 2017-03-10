@@ -11,9 +11,9 @@ import {
   info,
   Error as EmberError,
   deprecate,
-  deprecateProperty,
-  runInDebug
+  deprecateProperty
 } from 'ember-debug';
+import { DEBUG } from 'ember-environment-flags';
 import {
   get,
   set,
@@ -110,11 +110,11 @@ const EmberRouter = EmberObject.extend(Evented, {
       }
     });
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
         routerMicrolib.log = Logger.debug;
       }
-    });
+    }
 
     routerMicrolib.map(dsl.generate());
   },
@@ -270,11 +270,11 @@ const EmberRouter = EmberObject.extend(Evented, {
     // less surprising than didTransition being out of sync.
     run.once(this, this.trigger, 'didTransition');
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (get(this, 'namespace').LOG_TRANSITIONS) {
         Logger.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
       }
-    });
+    }
   },
 
   _setOutlets() {
@@ -343,11 +343,11 @@ const EmberRouter = EmberObject.extend(Evented, {
   willTransition(oldInfos, newInfos, transition) {
     run.once(this, this.trigger, 'willTransition', transition);
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (get(this, 'namespace').LOG_TRANSITIONS) {
         Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
       }
-    });
+    }
   },
 
   handleURL(url) {
@@ -401,12 +401,12 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     updatePaths(this);
 
-    runInDebug(() => {
+    if (DEBUG) {
       let infos = this._routerMicrolib.currentHandlerInfos;
       if (get(this, 'namespace').LOG_TRANSITIONS) {
         Logger.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
       }
-    });
+    }
   },
 
   replaceWith() {
@@ -603,11 +603,11 @@ const EmberRouter = EmberObject.extend(Evented, {
         routeOwner.register(fullRouteName, DefaultRoute.extend());
         handler = routeOwner.lookup(fullRouteName);
 
-        runInDebug(() => {
+        if (DEBUG) {
           if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
             info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
           }
-        });
+        }
       }
 
       handler._setRouteName(routeName);

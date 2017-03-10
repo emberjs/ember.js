@@ -1,5 +1,11 @@
 import { guidFor, OWNER } from 'ember-utils';
-import { Cache, assert, warn, runInDebug, isFeatureEnabled } from 'ember-metal';
+import { assert, warn } from 'ember-debug';
+import { DEBUG } from 'ember-environment-flags';
+import { Cache } from 'ember-metal';
+import {
+  EMBER_FACTORY_FOR,
+  EMBER_NO_DOUBLE_EXTEND
+} from 'ember-features';
 import {
   lookupPartial,
   hasPartial,
@@ -127,7 +133,9 @@ export default class Environment extends GlimmerEnvironment {
       '-get-dynamic-var': getDynamicVar
     };
 
-    runInDebug(() => this.debugStack = new DebugStack());
+    if (DEBUG) {
+      this.debugStack = new DebugStack()
+    }
   }
 
   macros() {
@@ -204,14 +212,14 @@ export default class Environment extends GlimmerEnvironment {
     let owner = blockMeta.owner;
     let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
 
-    if (isFeatureEnabled('ember-factory-for')) {
+    if (EMBER_FACTORY_FOR) {
       let helperFactory = owner[FACTORY_FOR](`helper:${name}`, options) || owner[FACTORY_FOR](`helper:${name}`);
 
       // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
       if (helperFactory.class.isHelperInstance) {
         return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
       } else if (helperFactory.class.isHelperFactory) {
-        if (!isFeatureEnabled('ember-no-double-extend')) {
+        if (!EMBER_NO_DOUBLE_EXTEND) {
           helperFactory = helperFactory.create();
         }
         return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
@@ -293,7 +301,7 @@ export default class Environment extends GlimmerEnvironment {
   }
 }
 
-runInDebug(() => {
+if (DEBUG) {
   class StyleAttributeManager extends AttributeManager {
     setAttribute(dom, element, value) {
       warn(constructStyleDeprecationMessage(value), (() => {
@@ -325,4 +333,4 @@ runInDebug(() => {
 
     return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
   };
-});
+}

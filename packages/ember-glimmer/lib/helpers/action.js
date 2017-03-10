@@ -3,13 +3,13 @@
 @submodule ember-glimmer
 */
 import { symbol } from 'ember-utils';
+import { assert } from 'ember-debug';
+import { DEBUG } from 'ember-environment-flags';
 import {
-  assert,
   run,
   get,
   flaggedInstrument,
-  isNone,
-  runInDebug
+  isNone
 } from 'ember-metal';
 import { UnboundReference } from '../utils/references';
 import { EvaluatedPositionalArgs } from '@glimmer/runtime';
@@ -344,9 +344,9 @@ function makeArgsProcessor(valuePathRef, actionArgsRef) {
 
 function makeDynamicClosureAction(context, targetRef, actionRef, processArgs, debugKey) {
   // We don't allow undefined/null values, so this creates a throw-away action to trigger the assertions
-  runInDebug(function() {
+  if (DEBUG) {
     makeClosureAction(context, targetRef.value(), actionRef.value(), processArgs, debugKey);
-  });
+  }
 
   return function(...args) {
     return makeClosureAction(context, targetRef.value(), actionRef.value(), processArgs, debugKey)(...args);

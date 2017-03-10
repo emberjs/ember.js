@@ -5,14 +5,18 @@
 import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
 import {
-  assert,
-  debug,
   libraries,
   isTesting,
   get,
-  run,
-  runInDebug
+  run
 } from 'ember-metal';
+import {
+  assert,
+  debug
+} from 'ember-debug';
+import {
+  DEBUG
+} from 'ember-environment-flags';
 import {
   Namespace,
   setNamespaceSearchDisabled,
@@ -342,7 +346,9 @@ const Application = Engine.extend({
     }
 
     registerLibraries();
-    runInDebug(() => logLibraryVersions());
+    if (DEBUG) {
+      logLibraryVersions();
+    }
 
     // Start off the number of deferrals at 1. This will be decremented by
     // the Application's own `boot` method.
@@ -1058,7 +1064,7 @@ function registerLibraries() {
 }
 
 function logLibraryVersions() {
-  runInDebug(() => {
+  if (DEBUG) {
     if (ENV.LOG_VERSION) {
       // we only need to see this once per Application#init
       ENV.LOG_VERSION = false;
@@ -1076,7 +1082,7 @@ function logLibraryVersions() {
       }
       debug('-------------------------------');
     }
-  });
+  }
 }
 
 export default Application;

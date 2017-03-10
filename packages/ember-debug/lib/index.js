@@ -34,6 +34,9 @@ import _deprecate, {
   registerHandler as registerDeprecationHandler,
   deprecateProperty
 } from './deprecate';
+export {
+  registerHandler as registerDeprecationHandler,
+} from './deprecate';
 import _warn, {
   registerHandler as registerWarnHandler
 } from './warn';

@@ -6,7 +6,8 @@ import {
   ComponentDefinition
 } from '@glimmer/runtime';
 import { UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { assert, runInDebug } from 'ember-metal';
+import { assert } from 'ember-debug';
+import { DEBUG } from 'ember-environment-flags';
 import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
@@ -98,7 +99,9 @@ class MountManager extends AbstractManager {
   }
 
   create(environment, { name }, args, dynamicScope) {
-    runInDebug(() => this._pushEngineToDebugStack(`engine:${name}`, environment));
+    if (DEBUG) {
+      this._pushEngineToDebugStack(`engine:${name}`, environment);
+    }
 
     dynamicScope.outletState = UNDEFINED_REFERENCE;
 
@@ -131,7 +134,9 @@ class MountManager extends AbstractManager {
   didCreateElement() {}
 
   didRenderLayout() {
-    runInDebug(() => this.debugStack.pop());
+    if (DEBUG) {
+      this.debugStack.pop();
+    }
   }
 
   didCreate(state) {}

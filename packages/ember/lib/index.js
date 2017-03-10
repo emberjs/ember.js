@@ -5,6 +5,7 @@ import { ENV, context } from 'ember-environment';
 import * as utils from 'ember-utils';
 
 import { Registry, Container } from 'container';
+import { DEBUG } from 'ember-environment-flags';
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
@@ -51,7 +52,11 @@ Ember.warn = metal.warn;
 Ember.debug = metal.debug;
 Ember.deprecate = metal.deprecate;
 Ember.deprecateFunc = metal.deprecateFunc;
-Ember.runInDebug = metal.runInDebug;
+Ember.runInDebug = (cb) => {
+  if (DEBUG) {
+    cb();
+  }
+};
 Ember.merge = metal.merge;
 
 Ember.instrument = metal.instrument;

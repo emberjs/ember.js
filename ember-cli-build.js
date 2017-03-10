@@ -157,6 +157,15 @@ function jquery() {
   });
 }
 
+function treeForAddon(project, name) {
+  var addon = project.findAddonByName(name);
+  var tree = addon.treeFor('addon');
+
+  return new Funnel(tree, {
+    srcDir: 'modules'
+  });
+}
+
 // TEST files
 function qunit() {
   var qunitjs = require.resolve('qunitjs');
@@ -276,7 +285,7 @@ function internalTestHelpers() {
   return new Funnel('packages/internal-test-helpers/lib')
 }
 
-module.exports = function() {
+module.exports = function(options) {
   var esSource = new MergeTrees([
     emberES(),
     rsvpES(),
@@ -310,6 +319,7 @@ module.exports = function() {
 
   var esTesting = new MergeTrees([
     internalTestHelpers(),
+    treeForAddon(options.project, 'ember-dev'),
     esPackage('@glimmer/test-helpers', {
       external: ['simple-html-tokenizer',
         '@glimmer/runtime',

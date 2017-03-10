@@ -10,10 +10,14 @@ import {
   tagFor,
   didRender,
   watchKey,
-  isFeatureEnabled,
-  runInDebug,
   isProxy
 } from 'ember-metal';
+import { DEBUG } from 'ember-environment-flags';
+import {
+  EMBER_GLIMMER_DETECT_BACKTRACKING_RENDER,
+  EMBER_GLIMMER_ALLOW_BACKTRACKING_RENDER,
+  MANDATORY_SETTER
+} from 'ember-features';
 import {
   CONSTANT_TAG,
   ConstReference,
@@ -88,8 +92,7 @@ export class RootReference extends ConstReference {
 
 let TwoWayFlushDetectionTag;
 
-if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+if (EMBER_GLIMMER_DETECT_BACKTRACKING_RENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RENDER) {
   TwoWayFlushDetectionTag = class {
     constructor(tag, key, ref) {
       this.tag = tag;
@@ -142,14 +145,13 @@ export class RootPropertyReference extends PropertyReference {
     this._parentValue = parentValue;
     this._propertyKey = propertyKey;
 
-    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RENDER) {
       this.tag = new TwoWayFlushDetectionTag(tagForProperty(parentValue, propertyKey), propertyKey, this);
     } else {
       this.tag = tagForProperty(parentValue, propertyKey);
     }
 
-    if (isFeatureEnabled('mandatory-setter')) {
+    if (MANDATORY_SETTER) {
       watchKey(parentValue, propertyKey);
     }
   }
@@ -157,8 +159,7 @@ export class RootPropertyReference extends PropertyReference {
   compute() {
     let { _parentValue, _propertyKey } = this;
 
-    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RENDER) {
       this.tag.didCompute(_parentValue);
     }
 
@@ -181,8 +182,7 @@ export class NestedPropertyReference extends PropertyReference {
     this._parentObjectTag = parentObjectTag;
     this._propertyKey = propertyKey;
 
-    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RENDER) {
       let tag = combine([parentReferenceTag, parentObjectTag]);
       this.tag = new TwoWayFlushDetectionTag(tag, propertyKey, this);
     } else {
@@ -202,12 +202,11 @@ export class NestedPropertyReference extends PropertyReference {
     }
 
     if (typeof parentValue === 'object' && parentValue) {
-      if (isFeatureEnabled('mandatory-setter')) {
+      if (MANDATORY_SETTER) {
         watchKey(parentValue, _propertyKey);
       }
 
-      if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-          isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      if (EMBER_GLIMMER_DETECT_BACKTRACKING_RENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RENDER) {
         this.tag.didCompute(parentValue);
       }
 
@@ -292,12 +291,12 @@ export class SimpleHelperReference extends CachedReference {
       let positionalValue = positional.value();
       let namedValue = named.value();
 
-      runInDebug(() => {
+      if (DEBUG) {
         if (HAS_NATIVE_WEAKMAP) {
           Object.freeze(positionalValue);
           Object.freeze(namedValue);
         }
-      });
+      }
 
       let result = helper(positionalValue, namedValue);
 
@@ -329,12 +328,12 @@ export class SimpleHelperReference extends CachedReference {
     let positionalValue = positional.value();
     let namedValue = named.value();
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (HAS_NATIVE_WEAKMAP) {
         Object.freeze(positionalValue);
         Object.freeze(namedValue);
       }
-    });
+    }
 
     return helper(positionalValue, namedValue);
   }
@@ -361,12 +360,12 @@ export class ClassBasedHelperReference extends CachedReference {
     let positionalValue = positional.value();
     let namedValue = named.value();
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (HAS_NATIVE_WEAKMAP) {
         Object.freeze(positionalValue);
         Object.freeze(namedValue);
       }
-    });
+    }
 
     return instance.compute(positionalValue, namedValue);
   }

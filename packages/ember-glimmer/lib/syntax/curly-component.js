@@ -16,8 +16,12 @@ import {
   BOUNDS
 } from '../component';
 import {
-  assert,
-  runInDebug,
+  assert
+} from 'ember-debug';
+import {
+  DEBUG
+} from 'ember-environment-flags';
+import {
   get,
   _instrumentStart
 } from 'ember-metal';
@@ -63,7 +67,7 @@ function processComponentInitializationAssertions(component, props) {
 }
 
 export function validatePositionalParameters(named, positional, positionalParamsDefinition) {
-  runInDebug(() => {
+  if (DEBUG) {
     if (!named || !positional || !positional.length) {
       return;
     }
@@ -86,7 +90,7 @@ export function validatePositionalParameters(named, positional, positionalParams
         );
       }
     }
-  });
+  }
 }
 
 function aliasIdToElementId(args, props) {
@@ -173,7 +177,9 @@ class CurlyComponentManager extends AbstractManager {
   }
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
-    runInDebug(() => this._pushToDebugStack(`component:${definition.name}`, environment));
+    if (DEBUG) {
+      this._pushToDebugStack(`component:${definition.name}`, environment)
+    }
 
     let parentView = dynamicScope.view;
 
@@ -218,9 +224,9 @@ class CurlyComponentManager extends AbstractManager {
       bucket.classRef = args.named.get('class');
     }
 
-    runInDebug(() => {
+    if (DEBUG) {
       processComponentInitializationAssertions(component, props);
-    });
+    }
 
     if (environment.isInteractive && component.tagName !== '') {
       component.trigger('willRender');
@@ -297,7 +303,9 @@ class CurlyComponentManager extends AbstractManager {
     bucket.component[BOUNDS] = bounds;
     bucket.finalize();
 
-    runInDebug(() => this.debugStack.pop());
+    if (DEBUG) {
+      this.debugStack.pop();
+    }
   }
 
   getTag({ component }) {
@@ -315,7 +323,9 @@ class CurlyComponentManager extends AbstractManager {
   update(bucket, _, dynamicScope) {
     let { component, args, argsRevision, environment } = bucket;
 
-    runInDebug(() => this._pushToDebugStack(component._debugContainerKey, environment));
+    if (DEBUG) {
+      this._pushToDebugStack(component._debugContainerKey, environment);
+    }
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
@@ -344,7 +354,9 @@ class CurlyComponentManager extends AbstractManager {
   didUpdateLayout(bucket) {
     bucket.finalize();
 
-    runInDebug(() => this.debugStack.pop());
+    if (DEBUG) {
+      this.debugStack.pop();
+    }
   }
 
   didUpdate({ component, environment }) {
@@ -365,7 +377,9 @@ class TopComponentManager extends CurlyComponentManager {
   create(environment, definition, args, dynamicScope, currentScope, hasBlock) {
     let component = definition.ComponentClass.create();
 
-    runInDebug(() => this._pushToDebugStack(component._debugContainerKey, environment));
+    if (DEBUG) {
+      this._pushToDebugStack(component._debugContainerKey, environment);
+    }
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
@@ -384,9 +398,9 @@ class TopComponentManager extends CurlyComponentManager {
       }
     }
 
-    runInDebug(() => {
+    if (DEBUG) {
       processComponentInitializationAssertions(component, {});
-    });
+    }
 
     return new ComponentStateBucket(environment, component, args, finalizer);
   }
