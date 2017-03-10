@@ -39,7 +39,7 @@ type RangeOpcode = Op.Enter | Op.EnterList;
 class Labels {
   labels = dict<number>();
   jumps: { at: number, target: string, Target: TargetOpcode }[] = [];
-  ranges: { at: number, start: string, end: string, Range: RangeOpcode }[] = [];
+  ranges: { at: number, args: number, start: string, end: string, Range: RangeOpcode }[] = [];
   iters: { at: number, breaks: string, start: string, end: string }[] = [];
 
   label(name: string, index: number) {
@@ -54,8 +54,8 @@ class Labels {
     this.jumps.push({ at, target, Target });
   }
 
-  range(at: number, Range: RangeOpcode, start: string, end: string) {
-    this.ranges.push({ at, start, end, Range });
+  range(at: number, Range: RangeOpcode, args: number, start: string, end: string) {
+    this.ranges.push({ at, args, start, end, Range });
   }
 
   patch(opcodes: Program): void {
@@ -63,8 +63,8 @@ class Labels {
       opcodes.set(at, Target, this.labels[target]);
     }
 
-    for (let { at, start, end, Range } of this.ranges) {
-      opcodes.set(at, Range, this.labels[start], this.labels[end] - 4);
+    for (let { at, args, start, end, Range } of this.ranges) {
+      opcodes.set(at, Range, args, this.labels[start], this.labels[end] - 4);
     }
 
     for (let { at, breaks, start, end } of this.iters) {
@@ -118,7 +118,7 @@ export abstract class BasicOpcodeBuilder {
   }
 
   reserve(name: Op) {
-    this.push(name);
+    this.push(name, 0, 0, 0);
   }
 
   push(name: Op, op1 = 0, op2 = 0, op3 = 0) {
@@ -157,8 +157,8 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.PushComponentManager, this.other(definition));
   }
 
-  pushDynamicComponentManager(local: number) {
-    this.push(Op.PushDynamicComponentManager, local);
+  pushDynamicComponentManager() {
+    this.push(Op.PushDynamicComponentManager);
   }
 
   setComponentState(local: number) {
@@ -299,7 +299,7 @@ export abstract class BasicOpcodeBuilder {
 
   enterList(start: string, end: string) {
     this.reserve(Op.EnterList);
-    this.labels.range(this.pos, Op.EnterList, start, end);
+    this.labels.range(this.pos, Op.EnterList, 0, start, end);
   }
 
   exitList() {
@@ -351,6 +351,10 @@ export abstract class BasicOpcodeBuilder {
 
   getLocal(pos: number) {
     this.push(Op.GetLocal, pos);
+  }
+
+  dup() {
+    return this.push(Op.Dup);
   }
 
   pop() {
@@ -456,9 +460,9 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.BindDynamicScope, this.names(_names));
   }
 
-  enter(enter: string, exit: string) {
+  enter(args: number, enter: string, exit: string) {
     this.reserve(Op.Enter);
-    this.labels.range(this.pos, Op.Enter, enter, exit);
+    this.labels.range(this.pos, Op.Enter, args, enter, exit);
   }
 
   exit() {
@@ -529,7 +533,7 @@ export abstract class BasicOpcodeBuilder {
     }
 
     let func = this.constants.function(_func);
-    this.push(Op.ToBoolean, func);
+    this.push(Op.Test, func);
   }
 
   jump(target: string) {
@@ -659,9 +663,9 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
   // TODO
   // come back to this
-  labelled(callback: BlockCallback) {
+  closure(args: number, callback: BlockCallback) {
     this.startLabels();
-    this.enter('BEGIN', 'END');
+    this.enter(args, 'BEGIN', 'END');
     this.label('BEGIN');
 
     callback(this, 'BEGIN', 'END');

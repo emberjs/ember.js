@@ -118,21 +118,16 @@ class WrappedBuilder implements InnerLayoutBuilder {
     // let state = b.local();
     // b.setLocal(state);
 
-    let tag = 0;
-
     if (dynamicTag) {
-      tag = b.local();
-
       expr(dynamicTag, b);
-      b.setLocal(tag);
 
-      b.getLocal(tag);
+      b.dup();
       b.test('simple');
 
       b.jumpUnless('BODY');
 
+      b.dup();
       b.pushComponentOperations();
-      b.getLocal(tag);
       b.openDynamicElement();
     } else if (staticTag) {
       b.pushComponentOperations();
@@ -155,12 +150,13 @@ class WrappedBuilder implements InnerLayoutBuilder {
     b.invokeStatic(layout.asBlock());
 
     if (dynamicTag) {
-      b.getLocal(tag);
-
+      b.dup();
       b.test('simple');
-      b.jumpUnless('END');
-
+      b.jumpUnless('ELSE');
       b.closeElement();
+      b.jump('END');
+      b.label('ELSE');
+      b.pop();
     } else if (staticTag) {
       b.closeElement();
     }
@@ -269,19 +265,19 @@ export class ComponentBuilder implements IComponentBuilder {
         return getDefinition(vm, args, meta);
       }
 
-      let definition = b.local();
       b.compileArgs(definitionArgs[0], definitionArgs[1], true);
       b.helper(helper);
 
-      b.setLocal(definition);
-      b.getLocal(definition);
+      b.dup();
       b.test('simple');
 
-      b.labelled(b => {
-        b.jumpUnless('END');
-
-        b.pushDynamicComponentManager(definition);
+      b.closure(2, b => {
+        b.jumpUnless('ELSE');
+        b.pushDynamicComponentManager();
         b.invokeComponent(null, params, hash, block, inverse);
+        b.jump('END');
+        b.label('ELSE');
+        b.pop();
       });
     });
   }
