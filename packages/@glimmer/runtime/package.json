@@ -2,6 +2,7 @@
   "name": "@glimmer/runtime",
   "version": "0.22.0",
   "description": "Minimal runtime needed to render Glimmer templates",
+  "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/runtime",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
   "jsnext:main": "dist/modules/index.js",
