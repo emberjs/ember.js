@@ -1,3 +1,4 @@
+import { EMPTY_ARRAY } from '../../runtime/lib/utils';
 import {
   // VM
   VM,
@@ -25,11 +26,11 @@ import {
   ComponentDefinition,
   ComponentLayoutBuilder,
   ComponentArgs,
+  PreparedArguments,
 
   // Arguments
   Arguments,
   CapturedArguments,
-  CapturedPositionalArguments,
   CapturedNamedArguments,
 
   // Syntax Classes
@@ -443,57 +444,63 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
   }
 }
 
-export class ProcessedArgs {
-  tag: RevisionTag;
-  named: CapturedNamedArguments;
-  positional: CapturedPositionalArguments;
-  positionalParamNames: Array<string>;
-
-  constructor(args: CapturedArguments, positionalParamsDefinition: string[]) {
-    this.tag = args.tag;
-    this.positional = args.positional;
-    this.named = args.named;
-    this.positionalParamNames = positionalParamsDefinition;
-  }
-
-  value(): any {
-    let { named, positional, positionalParamNames } = this;
-
-    let merged = Object.assign({}, named.value());
-
-    if (positionalParamNames && positionalParamNames.length) {
-      for (let i = 0; i < positionalParamNames.length; i++) {
-        let name = positionalParamNames[i];
-        merged[name] = positional.at(i).value();
-      }
-    }
-
-    return {
-      attrs: merged,
-      props: merged
-    };
-  }
-}
-
-function processArgs(args: Arguments, positionalParamsDefinition: string[]): ProcessedArgs {
-  return new ProcessedArgs(args.capture(), positionalParamsDefinition);
-}
-
 const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager();
 
 const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
 class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyComponent> {
-  prepareArgs(): null {
-    return null;
+  prepareArgs(definition: EmberishCurlyComponentDefinition, args: Arguments): Option<PreparedArguments> {
+    const { positionalParams } = definition.ComponentClass || BaseEmberishCurlyComponent;
+
+    if (typeof positionalParams === 'string') {
+      if (args.named.has(positionalParams)) {
+        if (args.positional.length === 0) {
+          return null;
+        } else {
+          throw new Error(`You cannot specify positional parameters and the hash argument \`${positionalParams}\`.`);
+        }
+      }
+
+      let named = dict<VersionedPathReference<Opaque>>();
+
+      args.named.names.forEach(name => {
+        named[name] = args.named.get(name);
+      });
+
+      named[positionalParams] = args.positional.capture();
+
+      return { positional: EMPTY_ARRAY, named };
+    } else if (Array.isArray(positionalParams)) {
+      let named = dict<VersionedPathReference<Opaque>>();
+
+      args.named.names.forEach(name => {
+        named[name] = args.named.get(name);
+      });
+
+      let count = Math.min(positionalParams.length, args.positional.length);
+
+      for (let i=0; i<count; i++) {
+        let name = positionalParams[i];
+
+        if (named[name]) {
+          throw new Error(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`);
+        }
+
+        named[name] = args.positional.at(i);
+      }
+
+      return { positional: EMPTY_ARRAY, named };
+    } else {
+      return null;
+    }
   }
 
-  create(_environment: Environment, definition: EmberishCurlyComponentDefinition, args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>): EmberishCurlyComponent {
+  create(_environment: Environment, definition: EmberishCurlyComponentDefinition, _args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>): EmberishCurlyComponent {
     let klass = definition.ComponentClass || BaseEmberishCurlyComponent;
-    let processedArgs = processArgs(args, klass['positionalParams'] as unsafe as string[]);
-    let { attrs } = processedArgs.value();
     let self = callerSelf.value();
-    let merged = assign(args, attrs, { attrs }, { args: processedArgs }, { targetObject: self });
+    let args = _args.named.capture();
+    let attrs = args.value();
+    let merged = assign({}, attrs, { attrs }, { args }, { targetObject: self });
     let component = klass.create(merged);
 
     let dyn: Option<string[]> = definition.ComponentClass ? definition.ComponentClass['fromDynamicScope'] : null;
@@ -564,7 +571,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
 
   update(component: EmberishCurlyComponent): void {
     let oldAttrs = component.attrs;
-    let newAttrs = component.args.value().attrs;
+    let newAttrs = component.args.value();
     let merged = assign({}, newAttrs, { attrs: newAttrs });
 
     component.setProperties(merged);
@@ -952,7 +959,7 @@ class StaticTaglessComponentDefinition extends GenericComponentDefinition<BasicS
 }
 
 export interface EmberishCurlyComponentFactory {
-  positionalParams?: string[];
+  positionalParams: Option<string | string[]>;
   create(options: { attrs: Attrs, targetObject: any }): EmberishCurlyComponent;
 }
 

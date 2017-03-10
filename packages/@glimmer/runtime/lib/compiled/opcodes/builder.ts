@@ -631,7 +631,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.pushBlock(inverse);
 
     this.compileArgs(params, hash, false);
-    // this.prepareArgs(state);
+    this.prepareArgs(state);
 
     this.pushDynamicScope();
 

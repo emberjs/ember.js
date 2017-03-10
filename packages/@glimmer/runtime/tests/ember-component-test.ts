@@ -1547,7 +1547,7 @@ QUnit.test('component has access to dynamic scope', function() {
 
 module('Curly Components - positional arguments');
 
-QUnit.skip('static named positional parameters', function() {
+QUnit.test('static named positional parameters', function() {
   class SampleComponent extends EmberishCurlyComponent {
     static positionalParams = ['name', 'age'];
   }
@@ -1561,7 +1561,7 @@ QUnit.skip('static named positional parameters', function() {
   assertEmberishElement('div', 'Quint4');
 });
 
-QUnit.skip('dynamic named positional parameters', function() {
+QUnit.test('dynamic named positional parameters', function() {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
@@ -1584,7 +1584,7 @@ QUnit.skip('dynamic named positional parameters', function() {
   assertEmberishElement('div', 'Edward5');
 });
 
-QUnit.skip('if a value is passed as a non-positional parameter, it takes precedence over the named one', assert => {
+QUnit.test('if a value is passed as a non-positional parameter, it takes precedence over the named one', assert => {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
@@ -1601,37 +1601,37 @@ QUnit.skip('if a value is passed as a non-positional parameter, it takes precede
   }, "You cannot specify both a positional param (at position 0) and the hash argument `name`.");
 });
 
-QUnit.skip('static arbitrary number of positional parameters', function() {
+QUnit.test('static arbitrary number of positional parameters', function() {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
     positionalParams: 'names'
   });
 
-  env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{#each names as |name|}}{{name}}{{/each}}');
+  env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{#each names key="@index" as |name|}}{{name}}{{/each}}');
 
   appendViewFor(
-    stripTight`<div>{{sample-component "Foo" 4 "Bar" id="args-3"}}
-      {{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}
-      {{!sample-component "Foo" 4 "Bar" 5 "Baz" id="helper"}}</div>`);
+    stripTight`<div>{{sample-component "Foo" 4 "Bar"}}
+      {{sample-component "Foo" 4 "Bar" 5 "Baz"}}
+      {{!sample-component "Foo" 4 "Bar" 5 "Baz"}}</div>`);
 
   let first = <Element>view.element.firstChild;
   let second = <Element>first.nextSibling;
   // let third = <Element>second.nextSibling;
 
-  assertElementIsEmberishElement(first, 'div', { id: 'args-3' }, 'Foo4Bar');
-  assertElementIsEmberishElement(second, 'div', { id: 'args-5' }, 'Foo4Bar5Baz');
+  assertElementIsEmberishElement(first, 'div', 'Foo4Bar');
+  assertElementIsEmberishElement(second, 'div', 'Foo4Bar5Baz');
   // equalsElement(third, ...emberishElement('div', { id: 'helper' }, 'Foo4Bar5Baz'));
 });
 
-QUnit.skip('arbitrary positional parameter conflict with hash parameter is reported', assert => {
+QUnit.test('arbitrary positional parameter conflict with hash parameter is reported', assert => {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
     positionalParams: 'names'
   });
 
-  env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{#each attrs.names as |name|}}{{name}}{{/each}}');
+  env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{#each attrs.names key="@index" as |name|}}{{name}}{{/each}}');
 
   assert.throws(function() {
     appendViewFor('{{sample-component "Foo" 4 "Bar" names=numbers id="args-3"}}', {
@@ -1640,23 +1640,23 @@ QUnit.skip('arbitrary positional parameter conflict with hash parameter is repor
   }, `You cannot specify positional parameters and the hash argument \`names\`.`);
 });
 
-QUnit.skip('can use hash parameter instead of arbitrary positional param [GH #12444]', function() {
+QUnit.test('can use hash parameter instead of arbitrary positional param [GH #12444]', function() {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
     positionalParams: 'names'
   });
 
-  env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{#each names as |name|}}{{name}}{{/each}}');
+  env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{#each names key="@index" as |name|}}{{name}}{{/each}}');
 
-  appendViewFor('{{sample-component names=things id="args-3"}}', {
+  appendViewFor('{{sample-component names=things}}', {
     things: ['Foo', 4, 'Bar']
   });
 
-  assertEmberishElement('div', { id: 'args-3' }, 'Foo4Bar');
+  assertEmberishElement('div', 'Foo4Bar');
 });
 
-QUnit.skip('can use hash parameter instead of positional param', function() {
+QUnit.test('can use hash parameter instead of positional param', function() {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
@@ -1666,9 +1666,9 @@ QUnit.skip('can use hash parameter instead of positional param', function() {
   env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{first}} - {{second}}');
 
   appendViewFor(`<div>
-    {{sample-component "one" "two" id="two-positional"}}
-    {{sample-component "one" second="two" id="one-positional"}}
-    {{sample-component first="one" second="two" id="no-positional"}}</div>
+    {{sample-component "one" "two"}}
+    {{sample-component "one" second="two"}}
+    {{sample-component first="one" second="two"}}</div>
   `, {
     things: ['Foo', 4, 'Bar']
   });
@@ -1677,21 +1677,21 @@ QUnit.skip('can use hash parameter instead of positional param', function() {
   let second = first.nextElementSibling;
   let third = second.nextElementSibling;
 
-  assertElementIsEmberishElement(first, 'div', { id: 'two-positional' }, 'one - two');
-  assertElementIsEmberishElement(second, 'div', { id: 'one-positional' }, 'one - two');
-  assertElementIsEmberishElement(third, 'div', { id: 'no-positional' }, 'one - two');
+  assertElementIsEmberishElement(first, 'div', 'one - two');
+  assertElementIsEmberishElement(second, 'div', 'one - two');
+  assertElementIsEmberishElement(third, 'div', 'one - two');
 });
 
-QUnit.skip('dynamic arbitrary number of positional parameters', function() {
+QUnit.test('dynamic arbitrary number of positional parameters', function() {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
     positionalParams: 'n'
   });
 
-  env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{#each attrs.n as |name|}}{{name}}{{/each}}');
+  env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{#each attrs.n key="@index" as |name|}}{{name}}{{/each}}');
 
-  appendViewFor('<div>{{sample-component user1 user2 id="direct"}}{{!component "sample-component" user1 user2 id="helper"}}</div>', {
+  appendViewFor('<div>{{sample-component user1 user2}}{{!component "sample-component" user1 user2}}</div>', {
     user1: 'Foo',
     user2: 4
   });
@@ -1699,21 +1699,21 @@ QUnit.skip('dynamic arbitrary number of positional parameters', function() {
   let first = view.element.firstElementChild;
   // let second = first.nextElementSibling;
 
-  assertElementIsEmberishElement(first, 'div', { id: 'direct' }, 'Foo4');
-  // assertElementIsEmberishElement(first, 'div', { id: 'helper' }, 'Foo4');
+  assertElementIsEmberishElement(first, 'div', 'Foo4');
+  // assertElementIsEmberishElement(first, 'div', 'Foo4');
 
   set(view, 'user1', "Bar");
   set(view, 'user2', "5");
   rerender();
 
-  assertElementIsEmberishElement(first, 'div', { id: 'direct' }, 'Bar5');
-  // assertElementIsEmberishElement(second, 'div', { id: 'helper' }, 'Bar5');
+  assertElementIsEmberishElement(first, 'div', 'Bar5');
+  // assertElementIsEmberishElement(second, 'div', 'Bar5');
 
   set(view, 'user2', '6');
   rerender();
 
-  assertElementIsEmberishElement(first, 'div', { id: 'direct' }, 'Bar6');
-  // assertElementIsEmberishElement(second, 'div', { id: 'helper' }, 'Bar6');
+  assertElementIsEmberishElement(first, 'div', 'Bar6');
+  // assertElementIsEmberishElement(second, 'div', 'Bar6');
 });
 
 QUnit.test('{{component}} helper works with positional params', function() {

@@ -67,7 +67,7 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: positional, op2: synthetic }) => {
 
 APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   let stack = vm.evalStack;
-  let { definition, manager } = vm.constants.getOther<InitialComponentState<Opaque>>(_state);
+  let { definition, manager } = vm.getLocal<InitialComponentState<Opaque>>(_state);
   let args = stack.pop<Arguments>();
 
   let preparedArgs = manager.prepareArgs(definition, args);
