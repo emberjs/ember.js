@@ -1,6 +1,7 @@
 {
   "name": "@glimmer/interfaces",
   "version": "0.22.0",
+  "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/interfaces",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
   "jsnext:main": "dist/modules/index.js",
