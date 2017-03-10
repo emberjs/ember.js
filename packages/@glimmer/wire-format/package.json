@@ -2,6 +2,7 @@
   "name": "@glimmer/wire-format",
   "version": "0.22.0",
   "description": "",
+  "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/wire-format",
   "main": "dist/commonjs/index.js",
   "module": "dist/modules/index.js",
   "typings": "index.ts",
