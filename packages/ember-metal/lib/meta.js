@@ -4,7 +4,6 @@
 
 import {
   HAS_NATIVE_WEAKMAP,
-  EmptyObject,
   lookupDescriptor,
   symbol
 } from 'ember-utils';
@@ -206,7 +205,7 @@ export class Meta {
   }
 
   _getOrCreateOwnMap(key) {
-    return this[key] || (this[key] = new EmptyObject());
+    return this[key] || (this[key] = Object.create(null));
   }
 
   _getInherited(key) {
@@ -242,7 +241,7 @@ export class Meta {
     let outerMap = this._getOrCreateOwnMap('_deps');
     let innerMap = outerMap[subkey];
     if (!innerMap) {
-      innerMap = outerMap[subkey] = new EmptyObject();
+      innerMap = outerMap[subkey] = Object.create(null);
     }
     innerMap[itemkey] = value;
   }
@@ -286,7 +285,7 @@ export class Meta {
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map) {
-        seen = seen || new EmptyObject();
+        seen = seen || Object.create(null);
         let innerMap = map[subkey];
         if (innerMap) {
           for (let innerKey in innerMap) {
@@ -376,7 +375,7 @@ function inheritedMap(name, Meta) {
 
   Meta.prototype[`forEach${capitalized}`] = function(fn) {
     let pointer = this;
-    let seen = new EmptyObject();
+    let seen = Object.create(null);
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map) {

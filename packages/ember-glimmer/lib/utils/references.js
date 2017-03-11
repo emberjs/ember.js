@@ -1,7 +1,6 @@
 import {
   HAS_NATIVE_WEAKMAP,
-  symbol,
-  EmptyObject
+  symbol
 } from 'ember-utils';
 import {
   get,
@@ -72,7 +71,7 @@ export class CachedReference extends EmberPathReference {
 export class RootReference extends ConstReference {
   constructor(value) {
     super(value);
-    this.children = new EmptyObject();
+    this.children = Object.create(null);
   }
 
   get(propertyKey) {

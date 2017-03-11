@@ -56,7 +56,7 @@ class OrphanedOutletStateReference extends OutletStateReference {
       return null;
     }
 
-    let state = new EmptyObject();
+    let state = Object.create(null);
     state[matched.render.outlet] = matched;
     matched.wasUsed = true;
     return { outlets: state };

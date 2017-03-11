@@ -1,7 +1,6 @@
 import {
   assign,
-  symbol,
-  EmptyObject
+  symbol
 } from 'ember-utils';
 import {
   CONSTANT_TAG
@@ -88,8 +87,8 @@ export class ComponentArgs {
     let { namedArgs } = this;
     let keys = namedArgs.keys;
     let attrs = namedArgs.value();
-    let props = new EmptyObject();
-    let args = new EmptyObject();
+    let props = Object.create(null);
+    let args = Object.create(null);
 
     props[ARGS] = args;
 
