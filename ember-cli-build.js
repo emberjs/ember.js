@@ -30,6 +30,7 @@ var processES2015 = require('./broccoli/process-es2015');
 const FEATURES = require('./broccoli/features');
 var WriteFile = require('broccoli-file-creator');
 var GlimmerTemplatePrecompiler = require('./broccoli/glimmer-template-compiler');
+const EMBER_VERSION = require('./broccoli/version');
 const REMOVE_LIB = /^([^\/]+\/)lib\//;
 
 function dagES() {
@@ -72,13 +73,25 @@ function getEntry(packageDir, packageJson) {
   return { base: path.basename(entry), dir: path.dirname(entry) };
 }
 
+function emberVersionES() {
+  let content = 'export default ' + JSON.stringify(EMBER_VERSION) + ';\n';
+  return new WriteFile('ember/version.js', content, {
+    annotation: 'ember/version'
+  });
+}
+
+
 function routeRecognizerES() {
   var packageJson = require('route-recognizer/package');
   var packageDir = path.dirname(require.resolve('route-recognizer/package'));
   var { dir, base } = getEntry(packageDir, packageJson);
   // Will pull a rolled up dist
   return new Funnel(dir, {
-    files: [ base ]
+    files: [ base ],
+    getDestinationPath(relativePath) {
+      var name = relativePath.replace('.es', '');
+      return name;
+    }
   });
 }
 
@@ -282,11 +295,17 @@ function testIndexHTML() {
 }
 
 function internalTestHelpers() {
-  return new Funnel('packages/internal-test-helpers/lib')
+  return new Funnel('packages/internal-test-helpers/lib', {
+    include: ['**/*.js'],
+    getDestinationPath(relativePath) {
+      return `internal-test-helpers/${relativePath.replace(REMOVE_LIB, "$1")}`;
+    }
+  });
 }
 
 module.exports = function(options) {
   var esSource = new MergeTrees([
+    emberVersionES(),
     emberES(),
     rsvpES(),
     backburnerES(),

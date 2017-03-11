@@ -1,7 +1,7 @@
 /* globals EmberDev */
 import { getDebugFunction, setDebugFunction } from 'ember-debug';
-import isEnabled from '../features';
 import { Libraries } from '../libraries';
+import { EMBER_LIBRARIES_ISREGISTERED } from 'ember-features';
 
 let libs, registry;
 let originalWarn = getDebugFunction('warn');
@@ -41,7 +41,7 @@ QUnit.test('only the first registration of a library is stored', function() {
   equal(registry.length, 1);
 });
 
-if (isEnabled('ember-libraries-isregistered')) {
+if (EMBER_LIBRARIES_ISREGISTERED) {
   QUnit.test('isRegistered returns correct value', function() {
     expect(3);
 

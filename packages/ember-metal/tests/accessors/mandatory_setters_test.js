@@ -1,8 +1,8 @@
-import isEnabled from '../../features';
 import { get } from '../../property_get';
 import { set } from '../../property_set';
 import { watch, unwatch } from '../../watching';
 import { meta as metaFor } from '../../meta';
+import { MANDATORY_SETTER } from 'ember-features';
 
 QUnit.module('mandatory-setters');
 
@@ -18,7 +18,7 @@ function hasMetaValue(object, property) {
   return metaFor(object).hasInValues(property);
 }
 
-if (isEnabled('mandatory-setter')) {
+if (MANDATORY_SETTER) {
   QUnit.test('does not assert if property is not being watched', function() {
     let obj = {
       someProp: null,

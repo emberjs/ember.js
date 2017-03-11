@@ -1,6 +1,6 @@
 import { toString } from 'ember-utils';
 import { assert } from 'ember-debug';
-import isEnabled from './features';
+import { MANDATORY_SETTER } from 'ember-features';
 import { _getPath as getPath } from './property_get';
 import {
   propertyWillChange,
@@ -68,7 +68,7 @@ export function set(obj, keyName, value, tolerant) {
   } else {
     propertyWillChange(obj, keyName);
 
-    if (isEnabled('mandatory-setter')) {
+    if (MANDATORY_SETTER) {
       setWithMandatorySetter(meta, obj, keyName, value);
     } else {
       obj[keyName] = value;
@@ -80,7 +80,7 @@ export function set(obj, keyName, value, tolerant) {
   return value;
 }
 
-if (isEnabled('mandatory-setter')) {
+if (MANDATORY_SETTER) {
   var setWithMandatorySetter = (meta, obj, keyName, value) => {
     if (meta && meta.peekWatching(keyName) > 0) {
       makeEnumerable(obj, keyName);
