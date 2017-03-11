@@ -1701,7 +1701,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     `_super`:
 
     ```app/routes/photos.js
-    import Ember from 'ebmer';
+    import Ember from 'ember';
 
     export default Ember.Route.extend({
       model() {
