@@ -2,9 +2,9 @@ import { RootReference } from './utils/references';
 import {
   run,
   setHasViews,
-  assert,
   runInTransaction
 } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { CURRENT_TAG, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import {
   fallbackViewRegistry,

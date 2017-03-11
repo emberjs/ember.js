@@ -10,6 +10,7 @@ import {
 } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import { DEBUG } from 'ember-environment-flags';
+import { EMBER_FACTORY_FOR, EMBER_NO_DOUBLE_EXTEND } from 'ember-features';
 import {
   assert,
   deprecate
@@ -144,7 +145,7 @@ Container.prototype = {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
 
     deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.',
-      !isFeatureEnabled('ember-factory-for'),
+      !EMBER_FACTORY_FOR,
       { id: 'container-lookupFactory', until: '2.13.0', url: 'http://emberjs.com/deprecations/v2.x/#toc_migrating-from-_lookupfactory-to-factoryfor' }
     );
 
@@ -163,8 +164,8 @@ Container.prototype = {
    * of factoryFor, which always returns the registered class.
    */
   [FACTORY_FOR](fullName, options = {}) {
-    if (isFeatureEnabled('ember-no-double-extend')) {
-      if (isFeatureEnabled('ember-factory-for')) {
+    if (EMBER_NO_DOUBLE_EXTEND) {
+      if (EMBER_FACTORY_FOR) {
         return this.factoryFor(fullName, options);
       } else {
         /* This throws in case of a poorly designed build */
@@ -263,7 +264,7 @@ function wrapManagerInDeprecationProxy(manager) {
   return manager;
 }
 
-if (isFeatureEnabled('ember-factory-for')) {
+if (EMBER_FACTORY_FOR) {
   /**
    Given a fullName, return the corresponding factory. The consumer of the factory
    is responsible for the destruction of any factory instances, as there is no
@@ -321,7 +322,7 @@ function lookup(container, fullName, options = {}) {
     return container.cache[fullName];
   }
 
-  if (isFeatureEnabled('ember-factory-for')) {
+  if (EMBER_FACTORY_FOR) {
     return instantiateFactory(container, fullName, options);
   } else {
     let factory = deprecatedFactoryFor(container, fullName);

@@ -13,8 +13,8 @@ import {
   privatize as P
 } from 'container';
 import DAG from 'dag-map';
-import { deprecate } from 'ember-debug';
-import { get, set, assert } from 'ember-metal';
+import { deprecate, assert } from 'ember-debug';
+import { get, set } from 'ember-metal';
 import DefaultResolver from './resolver';
 import EngineInstance from './engine-instance';
 import { RoutingService } from 'ember-routing';

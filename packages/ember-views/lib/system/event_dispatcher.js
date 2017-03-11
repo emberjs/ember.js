@@ -4,7 +4,8 @@
 */
 
 import { assign, getOwner } from 'ember-utils';
-import { assert, get, set, isNone, run } from 'ember-metal';
+import { assert } from 'ember-debug';
+import { get, set, isNone, run } from 'ember-metal';
 import { Object as EmberObject } from 'ember-runtime';
 import jQuery from './jquery';
 import ActionManager from './action_manager';

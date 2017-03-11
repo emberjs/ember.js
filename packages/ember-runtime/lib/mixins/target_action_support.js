@@ -4,8 +4,8 @@
 */
 
 import { context } from 'ember-environment';
+import { assert } from 'ember-debug';
 import {
-  assert,
   get,
   Mixin,
   computed

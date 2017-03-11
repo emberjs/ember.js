@@ -14,7 +14,7 @@ import {
   EvaluatedPositionalArgs,
   isComponentDefinition
 } from '@glimmer/runtime';
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-environment-flags';
 
 /**

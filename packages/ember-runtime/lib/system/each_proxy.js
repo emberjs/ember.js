@@ -1,6 +1,6 @@
 import { EmptyObject } from 'ember-utils';
+import { assert } from 'ember-debug';
 import {
-  assert,
   get,
   _addBeforeObserver,
   _removeBeforeObserver,
