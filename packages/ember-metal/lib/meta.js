@@ -212,8 +212,9 @@ export class Meta {
   _getInherited(key) {
     let pointer = this;
     while (pointer !== undefined) {
-      if (pointer[key]) {
-        return pointer[key];
+      let map = pointer[key];
+      if (map) {
+        return map;
       }
       pointer = pointer.parent;
     }
@@ -253,8 +254,9 @@ export class Meta {
       if (map) {
         let value = map[subkey];
         if (value) {
-          if (value[itemkey] !== undefined) {
-            return value[itemkey];
+          let itemvalue = value[itemkey];
+          if (itemvalue !== undefined) {
+            return itemvalue;
           }
         }
       }
@@ -312,7 +314,7 @@ export class Meta {
       if (map) {
         let value = map[subkey];
         if (value !== undefined || subkey in map) {
-          return map[subkey];
+          return value;
         }
       }
       pointer = pointer.parent;
@@ -479,7 +481,7 @@ if (isEnabled('mandatory-setter')) {
       if (map) {
         let value = map[subkey];
         if (value !== undefined || subkey in map) {
-          return map[subkey];
+          return value;
         }
       }
       pointer = pointer.parent;
