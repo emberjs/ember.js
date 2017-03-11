@@ -10,9 +10,9 @@ import {
   moduleFor
 } from 'internal-test-helpers';
 
-import { isFeatureEnabled } from 'ember-metal';
+import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember-features';
 
-if (isFeatureEnabled('ember-routing-router-service')) {
+if (EMBER_ROUTING_ROUTER_SERVICE) {
   let results = [];
   let ROUTE_NAMES = ['index', 'child', 'sister', 'brother'];
 

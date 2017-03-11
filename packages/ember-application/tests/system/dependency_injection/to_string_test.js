@@ -1,9 +1,10 @@
 import { guidFor } from 'ember-utils';
 import { ENV, context } from 'ember-environment'; // lookup, etc
-import { run, isFeatureEnabled } from 'ember-metal';
+import { run } from 'ember-metal';
 import Application from '../../../system/application';
 import { Object as EmberObject } from 'ember-runtime';
 import DefaultResolver from '../../../system/resolver';
+import { EMBER_FACTORY_FOR } from 'ember-features';
 
 let originalLookup, App, originalModelInjections;
 
@@ -33,7 +34,7 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
 
 QUnit.test('factories', function() {
   let PostFactory;
-  if (isFeatureEnabled('ember-factory-for')) {
+  if (EMBER_FACTORY_FOR) {
     PostFactory = App.__container__.factoryFor('model:post').class;
   } else {
     PostFactory = App.__container__.lookupFactory('model:post');

@@ -10,7 +10,7 @@ import {
   FACTORY_FOR,
   LOOKUP_FACTORY
 } from 'container';
-import { isFeatureEnabled } from 'ember-metal';
+import { EMBER_FACTORY_FOR } from 'ember-features';
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -147,7 +147,7 @@ let containerProxyMixin = {
   }
 };
 
-if (isFeatureEnabled('ember-factory-for')) {
+if (EMBER_FACTORY_FOR) {
   containerProxyMixin.factoryFor = function ContainerProxyMixin_factoryFor(fullName, options = {}) {
     return this.__container__.factoryFor(fullName, options);
   };

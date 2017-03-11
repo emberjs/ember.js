@@ -1,9 +1,11 @@
 import {
-  isFeatureEnabled,
   set,
   run
 } from 'ember-metal';
 import HistoryLocation from '../../location/history_location';
+import {
+  EMBER_UNIQUE_LOCATION_HISTORY_STATE
+} from 'ember-features';
 
 let FakeHistory, HistoryTestLocation, location;
 
@@ -114,7 +116,7 @@ QUnit.test('base URL is removed when retrieving the current pathname', function(
   location.initState();
 });
 
-if (isFeatureEnabled('ember-unique-location-history-state')) {
+if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
   QUnit.test('base URL is preserved when moving around', function() {
     expect(2);
 

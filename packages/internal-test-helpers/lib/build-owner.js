@@ -4,7 +4,7 @@ import {
   Application,
   ApplicationInstance
 } from 'ember-application';
-import { isFeatureEnabled } from 'ember-metal';
+import { EMBER_FACTORY_FOR } from 'ember-features';
 import {
   RegistryProxyMixin,
   ContainerProxyMixin,
@@ -25,7 +25,7 @@ export default function buildOwner(options = {}) {
     }
   });
 
-  if (isFeatureEnabled('ember-factory-for')) {
+  if (EMBER_FACTORY_FOR) {
     Owner.reopen({
       factoryFor() {
         return this.__container__.factoryFor(...arguments);

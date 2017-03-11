@@ -3,10 +3,10 @@ import { strip } from '../../utils/abstract-test-case';
 import { Component } from '../../utils/helpers';
 import {
   set,
-  isFeatureEnabled,
   instrumentationSubscribe,
   instrumentationReset
 } from 'ember-metal';
+import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember-features';
 
 import { Object as EmberObject, A as emberA } from 'ember-runtime';
 
@@ -31,7 +31,7 @@ function getActionIds(element) {
   return getActionAttributes(element).map(attribute => attribute.slice('data-ember-action-'.length));
 }
 
-if (isFeatureEnabled('ember-improved-instrumentation')) {
+if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor('Helpers test: element action instrumentation', class extends RenderingTest {
     teardown() {
       super.teardown();

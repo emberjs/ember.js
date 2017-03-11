@@ -37,7 +37,6 @@ export {
 export { default as Error } from './error';
 export { default as Cache } from './cache';
 export {
-  default as isFeatureEnabled,
   FEATURES,
   DEFAULT_FEATURES
 } from './features';

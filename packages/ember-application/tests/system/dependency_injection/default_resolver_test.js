@@ -2,10 +2,12 @@
 import { context } from 'ember-environment';
 import {
   getDebugFunction,
-  setDebugFunction,
-  run,
-  isFeatureEnabled
+  setDebugFunction
+} from 'ember-debug';
+import {
+  run
 } from 'ember-metal';
+import { EMBER_FACTORY_FOR } from 'ember-features';
 import {
   Controller,
   Service,
@@ -71,7 +73,7 @@ QUnit.test('the default resolver looks up templates in Ember.TEMPLATES', functio
     equal(locator.lookupFactory('template:fooBar.baz'), fooBarBazTemplate, 'resolves template:foo_bar.baz');
   });
 
-  if (isFeatureEnabled('ember-factory-for')) {
+  if (EMBER_FACTORY_FOR) {
     equal(locator.factoryFor('template:foo').class, fooTemplate, 'resolves template:foo');
     equal(locator.factoryFor('template:fooBar').class, fooBarTemplate, 'resolves template:foo_bar');
     equal(locator.factoryFor('template:fooBar.baz').class, fooBarBazTemplate, 'resolves template:foo_bar.baz');
@@ -98,7 +100,7 @@ QUnit.test('the default resolver resolves models on the namespace', function() {
   ignoreDeprecation(() => {
     detectEqual(application.Post, locator.lookupFactory('model:post'), 'looks up Post model on application');
   });
-  if (isFeatureEnabled('ember-factory-for')) {
+  if (EMBER_FACTORY_FOR) {
     detectEqual(application.Post, locator.factoryFor('model:post').class, 'looks up Post model on application');
   }
 });
@@ -109,12 +111,12 @@ QUnit.test('the default resolver resolves *:main on the namespace', function() {
   ignoreDeprecation(() => {
     detectEqual(application.FooBar, locator.lookupFactory('foo-bar:main'), 'looks up FooBar type without name on application');
   });
-  if (isFeatureEnabled('ember-factory-for')) {
+  if (EMBER_FACTORY_FOR) {
     detectEqual(application.FooBar, locator.factoryFor('foo-bar:main').class, 'looks up FooBar type without name on application');
   }
 });
 
-if (isFeatureEnabled('ember-factory-for')) {
+if (EMBER_FACTORY_FOR) {
   QUnit.test('the default resolver resolves container-registered helpers', function() {
     let shorthandHelper = makeHelper(() => {});
     let helper = Helper.extend();

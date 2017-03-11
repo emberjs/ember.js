@@ -40,7 +40,7 @@ import { privatize as P } from 'container';
 import Engine from './engine';
 import { setupApplicationRegistry } from 'ember-glimmer';
 import { RouterService } from 'ember-routing';
-import { isFeatureEnabled } from 'ember-metal';
+import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember-features';
 
 let librariesRegistered = false;
 
@@ -1047,7 +1047,7 @@ function commonSetupRegistry(registry) {
 
   registry.register(P`-bucket-cache:main`, BucketCache);
 
-  if (isFeatureEnabled('ember-routing-router-service')) {
+  if (EMBER_ROUTING_ROUTER_SERVICE) {
     registry.register('service:router', RouterService);
     registry.injection('service:router', 'router', 'router:main');
   }

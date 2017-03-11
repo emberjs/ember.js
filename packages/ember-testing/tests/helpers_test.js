@@ -5,8 +5,7 @@ import {
   RSVP
 } from 'ember-runtime';
 import {
-  run,
-  isFeatureEnabled
+  run
 } from 'ember-metal';
 import { jQuery } from 'ember-views';
 import {
@@ -21,6 +20,7 @@ import '../initializers'; // ensure the initializer is setup
 import setupForTesting from '../setup_for_testing';
 import { Application as EmberApplication } from 'ember-application';
 import { compile } from 'ember-template-compiler';
+import { EMBER_TESTING_RESUME_TEST } from 'ember-features';
 
 import {
   pendingRequests,
@@ -814,7 +814,7 @@ QUnit.test('pauseTest pauses', function() {
   App.testHelpers.pauseTest();
 });
 
-if (isFeatureEnabled('ember-testing-resume-test')) {
+if (EMBER_TESTING_RESUME_TEST) {
   QUnit.test('resumeTest resumes paused tests', function() {
     expect(1);
 
