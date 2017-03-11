@@ -11,7 +11,6 @@
 export { default as symbol } from './symbol';
 export { getOwner, setOwner, OWNER } from './owner';
 export { default as assign } from './assign';
-export { default as EmptyObject } from './empty-object';
 export { default as dictionary } from './dictionary';
 export {
   uuid,

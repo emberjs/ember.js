@@ -2,7 +2,6 @@
 @module ember
 @submodule ember-views
 */
-import { EmptyObject } from 'ember-utils';
 import { computed } from 'ember-metal';
 import { environment } from 'ember-environment';
 import Component from '../component';
@@ -10,7 +9,7 @@ import layout from '../templates/empty';
 import { TextSupport } from 'ember-views';
 
 let inputTypeTestElement;
-const inputTypes = new EmptyObject();
+const inputTypes = Object.create(null);
 function canSetTypeOfInput(type) {
   if (type in inputTypes) {
     return inputTypes[type];

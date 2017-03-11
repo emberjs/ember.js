@@ -7,7 +7,7 @@
 // HELPERS
 //
 
-import { guidFor, EmptyObject } from 'ember-utils';
+import { guidFor } from 'ember-utils';
 import {
   get,
   set,
@@ -1086,7 +1086,7 @@ const Enumerable = Mixin.create({
 
   uniqBy(key) {
     let ret = emberA();
-    let seen = new EmptyObject();
+    let seen = Object.create(null);
 
     this.forEach((item) => {
       let guid = guidFor(get(item, key));

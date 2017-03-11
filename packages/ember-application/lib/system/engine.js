@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-application
 */
-import { canInvoke, EmptyObject } from 'ember-utils';
+import { canInvoke } from 'ember-utils';
 import {
   Namespace,
   RegistryProxyMixin,
@@ -168,8 +168,8 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
 });
 
 Engine.reopenClass({
-  initializers: new EmptyObject(),
-  instanceInitializers: new EmptyObject(),
+  initializers: Object.create(null),
+  instanceInitializers: Object.create(null),
 
   /**
     The goal of initializers should be to register dependencies and injections.

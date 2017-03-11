@@ -20,7 +20,7 @@
   Map is mocked out to look like an Ember object, so you can do
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
-import { EmptyObject, guidFor } from 'ember-utils';
+import { guidFor } from 'ember-utils';
 
 function missingFunction(fn) {
   throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);
@@ -31,10 +31,10 @@ function missingNew(name) {
 }
 
 function copyNull(obj) {
-  let output = new EmptyObject();
+  let output = Object.create(null);
 
   for (let prop in obj) {
-    // hasOwnPropery is not needed because obj is new EmptyObject();
+    // hasOwnPropery is not needed because obj is Object.create(null);
     output[prop] = obj[prop];
   }
 
@@ -90,7 +90,7 @@ OrderedSet.prototype = {
     @private
   */
   clear() {
-    this.presenceSet = new EmptyObject();
+    this.presenceSet = Object.create(null);
     this.list = [];
     this.size = 0;
   },
@@ -242,7 +242,7 @@ function Map() {
   if (this instanceof Map) {
     this._keys = OrderedSet.create();
     this._keys._silenceRemoveDeprecation = true;
-    this._values = new EmptyObject();
+    this._values = Object.create(null);
     this.size = 0;
   } else {
     missingNew('Map');
@@ -394,7 +394,7 @@ Map.prototype = {
   */
   clear() {
     this._keys.clear();
-    this._values = new EmptyObject();
+    this._values = Object.create(null);
     this.size = 0;
   },
 
