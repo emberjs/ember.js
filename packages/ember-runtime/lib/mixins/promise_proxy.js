@@ -2,9 +2,9 @@ import {
   get,
   setProperties,
   computed,
-  Mixin,
-  Error as EmberError
+  Mixin
 } from 'ember-metal';
+import { Error as EmberError } from 'ember-debug';
 import { not, or } from '../computed/computed_macros';
 
 /**

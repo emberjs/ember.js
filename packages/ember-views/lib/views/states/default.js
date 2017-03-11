@@ -1,6 +1,6 @@
 import {
   Error as EmberError
-} from 'ember-metal';
+} from 'ember-debug';
 
 /**
 @module ember

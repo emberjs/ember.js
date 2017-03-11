@@ -6,10 +6,10 @@ import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
 import {
   libraries,
-  isTesting,
   get,
   run
 } from 'ember-metal';
+import { TESTING } from 'ember-environment-flags';
 import {
   assert,
   debug
@@ -706,7 +706,7 @@ const Application = Engine.extend({
   didBecomeReady() {
     try {
       // TODO: Is this still needed for _globalsMode = false?
-      if (!isTesting()) {
+      if (!TESTING) {
         // Eagerly name all classes that are already loaded
         Namespace.processAll();
         setNamespaceSearchDisabled(true);

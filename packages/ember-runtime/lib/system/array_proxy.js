@@ -8,9 +8,9 @@ import {
   observer,
   beginPropertyChanges,
   endPropertyChanges,
-  Error as EmberError,
   alias
 } from 'ember-metal';
+import { Error as EmberError } from 'ember-debug';
 import {
   isArray
 } from '../utils';

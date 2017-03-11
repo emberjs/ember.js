@@ -32,7 +32,6 @@ import {
   detectBinding,
   Mixin,
   REQUIRED,
-  Error as EmberError,
   defineProperty,
   Binding,
   ComputedProperty,
@@ -42,6 +41,7 @@ import {
   destroy,
   descriptor
 } from 'ember-metal';
+import {   Error as EmberError } from 'ember-debug';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
 

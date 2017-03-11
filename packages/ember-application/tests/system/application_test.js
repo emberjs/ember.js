@@ -3,10 +3,12 @@ import { VERSION } from 'ember';
 import { ENV, context } from 'ember-environment';
 import {
   run,
-  libraries,
+  libraries
+} from 'ember-metal';
+import {
   getDebugFunction,
   setDebugFunction
-} from 'ember-metal';
+} from 'ember-debug';
 import Application from '../../system/application';
 import DefaultResolver from '../../system/resolver';
 import {
