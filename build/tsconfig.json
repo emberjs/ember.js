@@ -1,19 +1,17 @@
 {
   "compilerOptions": {
-    // Enhance Strictness
-    "noImplicitAny": false,
-    "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": false,
-    "strictNullChecks": false,
-
-    // Environment Configuration
-    "experimentalDecorators": false,
+    "target": "es2017",
+    "module": "es2015",
     "moduleResolution": "node",
-
-    // Compilation Configuration
-    "target": "es6",
+    "experimentalDecorators": true,
+    "inlineSources": true,
     "inlineSourceMap": true,
-    "declaration": true
-  }
+    "declaration": true,
+    "newLine": "LF",
+    "outDir": "dist"
+  },
+  "include": [
+    "lib/**/*.ts",
+    "*.ts"
+  ]
 }

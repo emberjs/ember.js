@@ -7,6 +7,7 @@ var merge = require('broccoli-merge-trees');
 var typescript = require('broccoli-typescript-compiler');
 var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
 var handlebarsInlinedTrees = require('./build-support/handlebars-inliner');
+var buildPackages = require('./build-support/build-packages');
 var stew = require('broccoli-stew');
 var TSLint = require('broccoli-tslinter');
 var mv = stew.mv;
@@ -50,6 +51,10 @@ function buildBabelOptions(options) {
 }
 
 module.exports = function(_options) {
+  if (process.env.BUILD_PACKAGES) {
+    return buildPackages();
+  }
+
   var options = _options || {};
   var packages = __dirname + '/packages';
   var tslintConfig = __dirname + '/tslint.json';
