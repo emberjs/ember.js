@@ -2,9 +2,8 @@
 @module ember
 @submodule ember-runtime
 */
-
+import { assert } from 'ember-debug';
 import {
-  assert,
   get,
   getWithDefault,
   set,

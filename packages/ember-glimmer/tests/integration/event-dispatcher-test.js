@@ -1,11 +1,13 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
 import {
-  isFeatureEnabled,
   instrumentationSubscribe,
   instrumentationReset,
   run
 } from 'ember-metal';
+import {
+  EMBER_IMPROVED_INSTRUMENTATION
+} from 'ember-features';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
 
@@ -180,7 +182,7 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
   }
 });
 
-if (isFeatureEnabled('ember-improved-instrumentation')) {
+if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor('EventDispatcher - Instrumentation', class extends RenderingTest {
     teardown() {
       super.teardown();

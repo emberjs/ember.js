@@ -4,10 +4,9 @@
 */
 
 import { EmptyObject, guidFor } from 'ember-utils';
+import { assert, Error as EmberError } from 'ember-debug';
 import {
-  assert,
   get,
-  Error as EmberError,
   ComputedProperty,
   computed,
   addObserver,

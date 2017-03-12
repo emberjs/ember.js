@@ -2,15 +2,16 @@ import {
   run,
   set,
   computed,
-  isFeatureEnabled,
   instrumentationSubscribe,
   instrumentationUnsubscribe
 } from 'ember-metal';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Component, INVOKE } from '../../utils/helpers';
+import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember-features';
 
-if (isFeatureEnabled('ember-improved-instrumentation')) {
+
+if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor('Helpers test: closure {{action}} improved instrumentation', class extends RenderingTest {
 
     subscribe(eventName, options) {

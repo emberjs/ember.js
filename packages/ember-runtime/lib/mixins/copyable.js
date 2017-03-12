@@ -2,12 +2,13 @@
 @module ember
 @submodule ember-runtime
 */
-
 import {
   deprecate,
+  Error as EmberError
+} from 'ember-debug';
+import {
   get,
   Mixin,
-  Error as EmberError
 } from 'ember-metal';
 import { Freezable } from './freezable';
 

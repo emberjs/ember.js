@@ -1,7 +1,7 @@
 import * as RSVP from 'rsvp';
+import { assert } from 'ember-debug';
 import {
   run,
-  assert,
   dispatchError
 } from 'ember-metal';
 

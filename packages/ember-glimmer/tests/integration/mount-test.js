@@ -6,8 +6,11 @@ import {
 } from '../utils/test-case';
 import { compile, Component } from '../utils/helpers';
 import { Controller } from 'ember-runtime';
-import { set, isFeatureEnabled } from 'ember-metal';
+import { set } from 'ember-metal';
 import { Engine, getEngineParent } from 'ember-application';
+import {
+  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER
+} from 'ember-features';
 
 moduleFor('{{mount}} assertions', class extends RenderingTest {
   ['@test it asserts that only a single param is passed']() {
@@ -105,7 +108,7 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
 
     let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "template:route-with-mount" \(in "engine:chat"\) and modified in "component:component-with-backtracking-set" \(in "engine:chat"\)/;
 
-    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       expectDeprecation(expectedBacktrackingMessage);
       return this.visit('/route-with-mount');
     } else {

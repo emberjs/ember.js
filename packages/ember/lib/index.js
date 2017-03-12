@@ -5,9 +5,15 @@ import { ENV, context } from 'ember-environment';
 import * as utils from 'ember-utils';
 
 import { Registry, Container } from 'container';
+import { DEBUG } from 'ember-environment-flags';
+import { EMBER_METAL_WEAKMAP } from 'ember-features';
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
+import {
+  registerDeprecationHandler,
+  registerWarnHandler
+} from 'ember-debug';
 
 // ember-utils exports
 Ember.getOwner = utils.getOwner;
@@ -31,10 +37,9 @@ Ember.Registry = Registry;
 // need to import this directly, to ensure the babel feature
 // flag plugin works properly
 import {
-  isFeatureEnabled,
   deprecate,
   deprecateFunc
-} from 'ember-metal';
+} from 'ember-debug';
 
 const computed = metal.computed;
 computed.alias = metal.alias;
@@ -47,7 +52,11 @@ Ember.warn = metal.warn;
 Ember.debug = metal.debug;
 Ember.deprecate = metal.deprecate;
 Ember.deprecateFunc = metal.deprecateFunc;
-Ember.runInDebug = metal.runInDebug;
+Ember.runInDebug = (cb) => {
+  if (DEBUG) {
+    cb();
+  }
+};
 Ember.merge = metal.merge;
 
 Ember.instrument = metal.instrument;
@@ -68,7 +77,9 @@ Ember._getPath = metal._getPath;
 Ember.set = metal.set;
 Ember.trySet = metal.trySet;
 Ember.FEATURES = metal.FEATURES;
-Ember.FEATURES.isEnabled = metal.isFeatureEnabled;
+Ember.FEATURES.isEnabled = (str) => {
+  throw new Error('TODO: Implement something for isEnabled.');
+};
 Ember._Cache = metal.Cache;
 Ember.on = metal.on;
 Ember.addListener = metal.addListener;
@@ -131,7 +142,7 @@ Ember.bind = metal.bind;
 Ember.Binding = metal.Binding;
 Ember.isGlobalPath = metal.isGlobalPath;
 
-if (isFeatureEnabled('ember-metal-weakmap')) {
+if (EMBER_METAL_WEAKMAP) {
   Ember.WeakMap = metal.WeakMap;
 }
 
@@ -241,6 +252,15 @@ if (!has('ember-debug')) {
     registerDeprecationHandler() {},
     registerWarnHandler() {}
   };
+} else {
+  /**
+    @public
+    @class Ember.Debug
+  */
+  Ember.Debug = {
+    registerDeprecationHandler,
+    registerWarnHandler
+  }
 }
 
 import Backburner from 'backburner';

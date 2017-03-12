@@ -1,5 +1,5 @@
 import { inspect } from 'ember-utils';
-import { assert, warn } from './debug';
+import { assert, warn } from 'ember-debug';
 import { set } from './property_set';
 import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import expandProperties from './expand_properties';

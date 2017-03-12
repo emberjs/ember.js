@@ -9,12 +9,12 @@ import {
   HAS_NATIVE_PROXY
 } from 'ember-utils';
 import { ENV } from 'ember-environment';
+import { DEBUG } from 'ember-environment-flags';
+import { EMBER_FACTORY_FOR, EMBER_NO_DOUBLE_EXTEND } from 'ember-features';
 import {
   assert,
-  deprecate,
-  runInDebug,
-  isFeatureEnabled
-} from 'ember-metal';
+  deprecate
+} from 'ember-debug';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 export const FACTORY_FOR = symbol('FACTORY_FOR');
@@ -144,9 +144,8 @@ Container.prototype = {
   lookupFactory(fullName, options) {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
 
-    deprecate(
-      'Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.',
-      !isFeatureEnabled('ember-factory-for'),
+    deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.',
+      !EMBER_FACTORY_FOR,
       { id: 'container-lookupFactory', until: '2.13.0', url: 'http://emberjs.com/deprecations/v2.x/#toc_migrating-from-_lookupfactory-to-factoryfor' }
     );
 
@@ -165,8 +164,8 @@ Container.prototype = {
    * of factoryFor, which always returns the registered class.
    */
   [FACTORY_FOR](fullName, options = {}) {
-    if (isFeatureEnabled('ember-no-double-extend')) {
-      if (isFeatureEnabled('ember-factory-for')) {
+    if (EMBER_NO_DOUBLE_EXTEND) {
+      if (EMBER_FACTORY_FOR) {
         return this.factoryFor(fullName, options);
       } else {
         /* This throws in case of a poorly designed build */
@@ -177,9 +176,9 @@ Container.prototype = {
     if (factory === undefined) { return; }
     let manager = new DeprecatedFactoryManager(this, factory, fullName);
 
-    runInDebug(() => {
+    if (DEBUG) {
       manager = wrapManagerInDeprecationProxy(manager);
-    });
+    }
 
     return manager;
   },
@@ -265,7 +264,7 @@ function wrapManagerInDeprecationProxy(manager) {
   return manager;
 }
 
-if (isFeatureEnabled('ember-factory-for')) {
+if (EMBER_FACTORY_FOR) {
   /**
    Given a fullName, return the corresponding factory. The consumer of the factory
    is responsible for the destruction of any factory instances, as there is no
@@ -295,9 +294,9 @@ if (isFeatureEnabled('ember-factory-for')) {
 
     let manager = new FactoryManager(this, factory, fullName, normalizedName);
 
-    runInDebug(() => {
+    if (DEBUG) {
       manager = wrapManagerInDeprecationProxy(manager);
-    });
+    }
 
     return manager;
   };
@@ -323,7 +322,7 @@ function lookup(container, fullName, options = {}) {
     return container.cache[fullName];
   }
 
-  if (isFeatureEnabled('ember-factory-for')) {
+  if (EMBER_FACTORY_FOR) {
     return instantiateFactory(container, fullName, options);
   } else {
     let factory = deprecatedFactoryFor(container, fullName);
@@ -405,9 +404,9 @@ function buildInjections(/* container, ...injections */) {
       }
     }
 
-    runInDebug(() => {
+    if (DEBUG) {
       container.registry.validateInjections(injections);
-    });
+    }
 
     for (let i = 0; i < injections.length; i++) {
       injection = injections[i];
@@ -504,7 +503,7 @@ function instantiate(factory, props, container, fullName) {
 
     validationCache = container.validationCache;
 
-    runInDebug(() => {
+    if (DEBUG) {
       // Ensure that all lazy injections are valid at instantiation time
       if (!validationCache[fullName] && typeof factory._lazyInjections === 'function') {
         lazyInjections = factory._lazyInjections();
@@ -512,7 +511,7 @@ function instantiate(factory, props, container, fullName) {
 
         container.registry.validateInjections(lazyInjections);
       }
-    });
+    }
 
     validationCache[fullName] = true;
 
@@ -676,7 +675,7 @@ class FactoryManager {
 
     props[NAME_KEY] = this.container.registry.makeToString(this.class, this.fullName);
 
-    runInDebug(() => {
+    if (DEBUG) {
       let lazyInjections;
       let validationCache = this.container.validationCache;
       // Ensure that all lazy injections are valid at instantiation time
@@ -688,7 +687,7 @@ class FactoryManager {
       }
 
       validationCache[this.fullName] = true;
-    });
+    }
 
     if (!this.class.create) {
       throw new Error(`Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or` +

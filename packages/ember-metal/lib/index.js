@@ -12,20 +12,6 @@ export {
 export { default as alias } from './alias';
 export { default as merge } from './merge';
 export {
-  assert,
-  info,
-  warn,
-  debug,
-  deprecate,
-  deprecateFunc,
-  runInDebug,
-  setDebugFunction,
-  getDebugFunction,
-  debugSeal,
-  debugFreeze
-} from './debug';
-export { deprecateProperty } from './deprecate_property';
-export {
   instrument,
   flaggedInstrument,
   _instrumentStart,
@@ -51,7 +37,6 @@ export {
 export { default as Error } from './error';
 export { default as Cache } from './cache';
 export {
-  default as isFeatureEnabled,
   FEATURES,
   DEFAULT_FEATURES
 } from './features';

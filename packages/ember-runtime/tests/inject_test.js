@@ -1,12 +1,13 @@
 /* global EmberDev */
 
-import { InjectedProperty, isFeatureEnabled } from 'ember-metal';
+import { InjectedProperty } from 'ember-metal';
 import inject from '../inject';
 import {
   createInjectionHelper
 } from '../inject';
 import EmberObject from '../system/object';
 import { buildOwner } from 'internal-test-helpers';
+import { EMBER_FACTORY_FOR } from 'ember-features';
 
 QUnit.module('inject');
 
@@ -33,7 +34,7 @@ if (!EmberDev.runningProdBuild) {
 
     owner.register('foo:main', AnObject);
 
-    if (isFeatureEnabled('ember-factory-for')) {
+    if (EMBER_FACTORY_FOR) {
       expect(2);
       expectDeprecation(() => {
         owner._lookupFactory('foo:main');

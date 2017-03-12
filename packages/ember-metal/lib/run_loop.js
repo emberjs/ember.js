@@ -1,5 +1,5 @@
 import { GUID_KEY } from 'ember-utils';
-import { assert } from './debug';
+import { assert } from 'ember-debug';
 import { isTesting } from './testing';
 import {
   dispatchError,

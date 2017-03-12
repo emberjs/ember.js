@@ -2,8 +2,8 @@
 @module ember-metal
 */
 
-import { assert } from './debug';
-import isEnabled from './features';
+import { assert } from 'ember-debug';
+import { MANDATORY_SETTER } from 'ember-features';
 import { meta as metaFor, peekMeta } from './meta';
 import { overrideChains } from './property_events';
 // ..........................................................
@@ -144,7 +144,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
   if (desc instanceof Descriptor) {
     value = desc;
-    if (isEnabled('mandatory-setter')) {
+    if (MANDATORY_SETTER) {
       if (watching) {
         Object.defineProperty(obj, keyName, {
           configurable: true,
@@ -163,7 +163,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     if (desc == null) {
       value = data;
 
-      if (isEnabled('mandatory-setter')) {
+      if (MANDATORY_SETTER) {
         if (watching) {
           meta.writeValues(keyName, data);
 

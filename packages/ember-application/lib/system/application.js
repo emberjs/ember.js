@@ -5,14 +5,18 @@
 import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
 import {
-  assert,
-  debug,
   libraries,
-  isTesting,
   get,
-  run,
-  runInDebug
+  run
 } from 'ember-metal';
+import { TESTING } from 'ember-environment-flags';
+import {
+  assert,
+  debug
+} from 'ember-debug';
+import {
+  DEBUG
+} from 'ember-environment-flags';
 import {
   Namespace,
   setNamespaceSearchDisabled,
@@ -36,7 +40,7 @@ import { privatize as P } from 'container';
 import Engine from './engine';
 import { setupApplicationRegistry } from 'ember-glimmer';
 import { RouterService } from 'ember-routing';
-import { isFeatureEnabled } from 'ember-metal';
+import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember-features';
 
 let librariesRegistered = false;
 
@@ -342,7 +346,9 @@ const Application = Engine.extend({
     }
 
     registerLibraries();
-    runInDebug(() => logLibraryVersions());
+    if (DEBUG) {
+      logLibraryVersions();
+    }
 
     // Start off the number of deferrals at 1. This will be decremented by
     // the Application's own `boot` method.
@@ -700,7 +706,7 @@ const Application = Engine.extend({
   didBecomeReady() {
     try {
       // TODO: Is this still needed for _globalsMode = false?
-      if (!isTesting()) {
+      if (!TESTING) {
         // Eagerly name all classes that are already loaded
         Namespace.processAll();
         setNamespaceSearchDisabled(true);
@@ -1041,7 +1047,7 @@ function commonSetupRegistry(registry) {
 
   registry.register(P`-bucket-cache:main`, BucketCache);
 
-  if (isFeatureEnabled('ember-routing-router-service')) {
+  if (EMBER_ROUTING_ROUTER_SERVICE) {
     registry.register('service:router', RouterService);
     registry.injection('service:router', 'router', 'router:main');
   }
@@ -1058,7 +1064,7 @@ function registerLibraries() {
 }
 
 function logLibraryVersions() {
-  runInDebug(() => {
+  if (DEBUG) {
     if (ENV.LOG_VERSION) {
       // we only need to see this once per Application#init
       ENV.LOG_VERSION = false;
@@ -1076,7 +1082,7 @@ function logLibraryVersions() {
       }
       debug('-------------------------------');
     }
-  });
+  }
 }
 
 export default Application;

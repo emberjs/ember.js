@@ -13,9 +13,11 @@ const EMPTY = [];
 
 import {
   get,
-  Error as EmberError,
   Mixin
 } from 'ember-metal';
+import {
+  Error as EmberError
+} from 'ember-debug';
 import EmberArray, { objectAt } from './array';
 import MutableEnumerable from './mutable_enumerable';
 import Enumerable from './enumerable';

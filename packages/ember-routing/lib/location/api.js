@@ -1,4 +1,4 @@
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { environment } from 'ember-environment';
 import { getHash } from './util';
 

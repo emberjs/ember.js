@@ -2,9 +2,10 @@
 @module ember
 @submodule ember-runtime
 */
-
 import {
-  deprecate,
+  deprecate
+} from 'ember-debug';
+import {
   Mixin,
   get,
   set

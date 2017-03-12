@@ -15,10 +15,10 @@ import {
 } from '../warn';
 
 import {
-  deprecate,
   warn,
+  deprecate,
   assert as emberAssert
-} from 'ember-metal';
+} from 'ember-debug';
 
 let originalEnvValue;
 let originalDeprecateHandler;

@@ -309,13 +309,17 @@
 import Logger from 'ember-console';
 
 import {
-  assert,
-  deprecate,
   get,
   computed,
-  flaggedInstrument,
-  runInDebug
+  flaggedInstrument
 } from 'ember-metal';
+import {
+  assert,
+  deprecate
+} from 'ember-debug';
+import {
+  DEBUG
+} from 'ember-environment-flags';
 import {
   deprecatingAlias,
   inject,
@@ -713,7 +717,7 @@ const LinkComponent = EmberComponent.extend({
     let routing = get(this, '_routing');
     let queryParams = get(this, 'queryParams.values');
 
-    runInDebug(() => {
+    if (DEBUG) {
       /*
        * Unfortunately, to get decent error messages, we need to do this.
        * In some future state we should be able to use a "feature flag"
@@ -730,7 +734,7 @@ const LinkComponent = EmberComponent.extend({
       } catch (e) {
         assert('You attempted to define a `{{link-to "' + qualifiedRouteName + '"}}` but did not pass the parameters required for generating its dynamic segments. ' + e.message);
       }
-    });
+    }
 
     return routing.generateURL(qualifiedRouteName, models, queryParams);
   }),

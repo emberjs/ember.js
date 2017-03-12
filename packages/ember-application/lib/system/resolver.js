@@ -5,11 +5,15 @@
 
 import { dictionary } from 'ember-utils';
 import {
-  assert,
-  info,
-  get,
-  runInDebug
+  get
 } from 'ember-metal';
+import {
+  assert,
+  info
+} from 'ember-debug';
+import {
+  DEBUG
+} from 'ember-environment-flags';
 import {
   String as StringUtils,
   Object as EmberObject,
@@ -176,11 +180,11 @@ export default EmberObject.extend({
 
     resolved = resolved || this.resolveOther(parsedName);
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (parsedName.root && parsedName.root.LOG_RESOLVER) {
         this._logLookup(resolved, parsedName);
       }
-    });
+    }
 
     if (resolved) {
       validateType(resolved, parsedName);

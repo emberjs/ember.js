@@ -1,6 +1,6 @@
 import { assign } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import DEFAULT_FEATURES from 'ember/features';
+import DEFAULT_FEATURES from 'ember-features';
 
 /**
   The hash of enabled Canary features. Add to this, any canary features

@@ -1,7 +1,35 @@
 import Logger from 'ember-console';
-import { deprecate } from 'ember-metal';
+import { deprecate } from './debug-handlers';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 
+/**
+  Allows for runtime registration of handler functions that override the default warning behavior.
+  Warnings are invoked by calls made to [Ember.warn](http://emberjs.com/api/classes/Ember.html#method_warn).
+  The following example demonstrates its usage by registering a handler that does nothing overriding Ember's
+  default warning behavior.
+
+  ```javascript
+  // next is not called, so no warnings get the default behavior
+  Ember.Debug.registerWarnHandler(() => {});
+  ```
+
+  The handler function takes the following arguments:
+
+  <ul>
+    <li> <code>message</code> - The message received from the warn call. </li>
+    <li> <code>options</code> - An object passed in with the warn call containing additional information including:</li>
+      <ul>
+        <li> <code>id</code> - An id of the warning in the form of <code>package-name.specific-warning</code>.</li>
+      </ul>
+    <li> <code>next</code> - A function that calls into the previously registered handler.</li>
+  </ul>
+
+  @public
+  @static
+  @method registerWarnHandler
+  @param handler {Function} A function to handle warnings.
+  @since 2.1.0
+*/
 export function registerHandler(handler) {
   genericRegisterHandler('warn', handler);
 }

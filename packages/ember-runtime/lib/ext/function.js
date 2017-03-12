@@ -5,11 +5,13 @@
 
 import { ENV } from 'ember-environment';
 import {
-  assert,
-  deprecateFunc,
   computed,
   observer
 } from 'ember-metal';
+import {
+  assert,
+  deprecateFunc
+} from 'ember-debug';
 
 const a_slice = Array.prototype.slice;
 const FunctionPrototype = Function.prototype;

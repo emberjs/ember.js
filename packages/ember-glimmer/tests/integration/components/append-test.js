@@ -1,8 +1,9 @@
-import { set, isFeatureEnabled } from 'ember-metal';
+import { set } from 'ember-metal';
 import { jQuery } from 'ember-views';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component, compile } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
+import { EMBER_FACTORY_FOR } from 'ember-features';
 
 class AbstractAppendTest extends RenderingTest {
 
@@ -25,7 +26,7 @@ class AbstractAppendTest extends RenderingTest {
       this.assert.strictEqual($element.length, 0, `Should not leak element: #${id}`);
     });
 
-    super();
+    super.teardown();
   }
 
   /* abstract append(component): Element; */
@@ -136,7 +137,7 @@ class AbstractAppendTest extends RenderingTest {
 
     let XParent;
 
-    if (isFeatureEnabled('ember-factory-for')) {
+    if (EMBER_FACTORY_FOR) {
       XParent = this.owner.factoryFor('component:x-parent');
     } else {
       XParent = this.owner._lookupFactory('component:x-parent');
@@ -287,7 +288,7 @@ class AbstractAppendTest extends RenderingTest {
 
     let XParent;
 
-    if (isFeatureEnabled('ember-factory-for')) {
+    if (EMBER_FACTORY_FOR) {
       XParent = this.owner.factoryFor('component:x-parent');
     } else {
       XParent = this.owner._lookupFactory('component:x-parent');
@@ -364,7 +365,7 @@ class AbstractAppendTest extends RenderingTest {
 
     let First, Second;
 
-    if (isFeatureEnabled('ember-factory-for')) {
+    if (EMBER_FACTORY_FOR) {
       First = this.owner.factoryFor('component:x-first');
       Second = this.owner.factoryFor('component:x-second');
     } else {
@@ -452,7 +453,7 @@ class AbstractAppendTest extends RenderingTest {
           element1 = this.element;
 
           let SecondComponent;
-          if (isFeatureEnabled('ember-factory-for')) {
+          if (EMBER_FACTORY_FOR) {
             SecondComponent = owner.factoryFor('component:second-component');
           } else {
             SecondComponent = owner._lookupFactory('component:second-component');
@@ -475,7 +476,7 @@ class AbstractAppendTest extends RenderingTest {
 
     let FirstComponent;
 
-    if (isFeatureEnabled('ember-factory-for')) {
+    if (EMBER_FACTORY_FOR) {
       FirstComponent = this.owner.factoryFor('component:first-component');
     } else {
       FirstComponent = this.owner._lookupFactory('component:first-component');
@@ -508,7 +509,7 @@ class AbstractAppendTest extends RenderingTest {
           element1 = this.element;
           let OtherRoot;
 
-          if (isFeatureEnabled('ember-factory-for')) {
+          if (EMBER_FACTORY_FOR) {
             OtherRoot = owner.factoryFor('component:other-root');
           } else {
             OtherRoot = owner._lookupFactory('component:other-root');
@@ -542,7 +543,7 @@ class AbstractAppendTest extends RenderingTest {
           element3 = this.element;
           let OtherRoot;
 
-          if (isFeatureEnabled('ember-factory-for')) {
+          if (EMBER_FACTORY_FOR) {
             OtherRoot = owner.factoryFor('component:other-root');
           } else {
             OtherRoot = owner._lookupFactory('component:other-root');
@@ -640,7 +641,7 @@ moduleFor('appendTo: a selector', class extends AbstractAppendTest {
 
     let FooBar;
 
-    if (isFeatureEnabled('ember-factory-for')) {
+    if (EMBER_FACTORY_FOR) {
       FooBar = this.owner.factoryFor('component:foo-bar');
     } else {
       FooBar = this.owner._lookupFactory('component:foo-bar');

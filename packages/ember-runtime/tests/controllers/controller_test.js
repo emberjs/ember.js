@@ -2,10 +2,11 @@
 
 import Controller from '../../controllers/controller';
 import Service from '../../system/service';
-import { Mixin, get, isFeatureEnabled } from 'ember-metal';
+import { Mixin, get } from 'ember-metal';
 import EmberObject from '../../system/object';
 import inject from '../../inject';
 import { buildOwner } from 'internal-test-helpers';
+import { EMBER_FACTORY_FOR } from 'ember-features';
 
 QUnit.module('Controller event handling');
 
@@ -161,7 +162,7 @@ if (!EmberDev.runningProdBuild) {
 
       owner.register('foo:main', AnObject);
 
-      if (isFeatureEnabled('ember-factory-for')) {
+      if (EMBER_FACTORY_FOR) {
         expectDeprecation(() => {
           owner._lookupFactory('foo:main');
         }, /Using "_lookupFactory" is deprecated. Please use container.factoryFor instead./);

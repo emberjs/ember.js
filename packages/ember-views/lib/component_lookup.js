@@ -1,4 +1,4 @@
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { Object as EmberObject } from 'ember-runtime';
 import { FACTORY_FOR } from 'container';
 

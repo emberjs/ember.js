@@ -6,7 +6,9 @@
 import { CachedTag, DirtyableTag, UpdatableTag } from '@glimmer/reference';
 import {
   assert,
-  deprecate,
+  deprecate
+} from 'ember-debug';
+import {
   get,
   set,
   meta,

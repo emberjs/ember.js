@@ -1,12 +1,47 @@
 /*global __fail__*/
 
-import { Error as EmberError } from 'ember-metal';
+import { Error as EmberError } from './error';
 import Logger from 'ember-console';
 
 import { ENV } from 'ember-environment';
 
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 
+/**
+  Allows for runtime registration of handler functions that override the default deprecation behavior.
+  Deprecations are invoked by calls to [Ember.deprecate](http://emberjs.com/api/classes/Ember.html#method_deprecate).
+  The following example demonstrates its usage by registering a handler that throws an error if the
+  message contains the word "should", otherwise defers to the default handler.
+
+  ```javascript
+  Ember.Debug.registerDeprecationHandler((message, options, next) => {
+    if (message.indexOf('should') !== -1) {
+      throw new Error(`Deprecation message with should: ${message}`);
+    } else {
+      // defer to whatever handler was registered before this one
+      next(message, options);
+    }
+  });
+  ```
+
+  The handler function takes the following arguments:
+
+  <ul>
+    <li> <code>message</code> - The message received from the deprecation call.</li>
+    <li> <code>options</code> - An object passed in with the deprecation call containing additional information including:</li>
+      <ul>
+        <li> <code>id</code> - An id of the deprecation in the form of <code>package-name.specific-deprecation</code>.</li>
+        <li> <code>until</code> - The Ember version number the feature and deprecation will be removed in.</li>
+      </ul>
+    <li> <code>next</code> - A function that calls into the previously registered handler.</li>
+  </ul>
+
+  @public
+  @static
+  @method registerDeprecationHandler
+  @param handler {Function} A function to handle deprecation calls.
+  @since 2.1.0
+*/
 export function registerHandler(handler) {
   genericRegisterHandler('deprecate', handler);
 }
@@ -153,4 +188,39 @@ export default function deprecate(message, test, options) {
   }
 
   invoke('deprecate', ...arguments);
+}
+
+/**
+  Used internally to allow changing properties in a backwards compatible way, and print a helpful
+  deprecation warning.
+
+  @method deprecateProperty
+  @param {Object} object The object to add the deprecated property to.
+  @param {String} deprecatedKey The property to add (and print deprecation warnings upon accessing).
+  @param {String} newKey The property that will be aliased.
+  @private
+  @since 1.7.0
+*/
+
+export function deprecateProperty(object, get, set, deprecatedKey, newKey, options) {
+  function _deprecate() {
+    deprecate(
+      `Usage of \`${deprecatedKey}\` is deprecated, use \`${newKey}\` instead.`,
+      false,
+      options
+    );
+  }
+
+  Object.defineProperty(object, deprecatedKey, {
+    configurable: true,
+    enumerable: false,
+    set(value) {
+      _deprecate();
+      set(this, newKey, value);
+    },
+    get() {
+      _deprecate();
+      return get(this, newKey);
+    }
+  });
 }

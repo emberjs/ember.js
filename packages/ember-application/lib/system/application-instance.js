@@ -4,7 +4,8 @@
 */
 
 import { assign } from 'ember-utils';
-import { deprecate, get, set, run, computed } from 'ember-metal';
+import { deprecate } from 'ember-debug';
+import { get, set, run, computed } from 'ember-metal';
 import {
   buildFakeRegistryWithDeprecations,
   RSVP

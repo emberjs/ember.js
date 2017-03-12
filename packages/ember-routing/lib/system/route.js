@@ -2,15 +2,19 @@ import { assign, symbol, getOwner } from 'ember-utils';
 import {
   assert,
   info,
-  isTesting,
   Error as EmberError,
+} from 'ember-debug';
+import {
+  DEBUG,
+  TESTING
+} from 'ember-environment-flags';
+import {
   get,
   set,
   getProperties,
   isNone,
   computed,
   run,
-  runInDebug,
   isEmpty
 } from 'ember-metal';
 import {
@@ -1267,7 +1271,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   send(...args) {
-    if ((this.router && this.router._routerMicrolib) || !isTesting()) {
+    if ((this.router && this.router._routerMicrolib) || TESTING) {
       this.router.send(...args);
     } else {
       let name = args[0];
@@ -2290,12 +2294,12 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
 
   assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || template);
 
-  runInDebug(() => {
+  if (DEBUG) {
     let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
     if (LOG_VIEW_LOOKUPS && !template) {
       info(`Could not find "${name}" template. Nothing will be rendered`, { fullName: `template:${name}` });
     }
-  });
+  }
 
   return renderOptions;
 }

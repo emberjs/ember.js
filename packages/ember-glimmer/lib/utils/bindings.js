@@ -7,7 +7,8 @@ import {
 import {
   Ops
 } from '@glimmer/wire-format';
-import { get, assert } from 'ember-metal';
+import { get } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { String as StringUtils } from 'ember-runtime';
 import { ROOT_REF } from '../component';
 import { htmlSafe, isHTMLSafe } from './string';

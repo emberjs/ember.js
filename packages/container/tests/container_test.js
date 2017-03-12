@@ -1,9 +1,10 @@
 import { getOwner, OWNER } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import { get, isFeatureEnabled } from 'ember-metal';
+import { get } from 'ember-metal';
 import { Registry } from '../index';
 import { factory } from 'internal-test-helpers';
 import { LOOKUP_FACTORY, FACTORY_FOR } from 'container';
+import { EMBER_FACTORY_FOR, EMBER_NO_DOUBLE_EXTEND } from 'ember-features'
 
 let originalModelInjections;
 
@@ -571,7 +572,7 @@ QUnit.test('A deprecated `container` property is appended to every object instan
 
 // This is testing that container was passed as an option
 QUnit.test('A deprecated `container` property is appended to every object instantiated from a non-extendable factory, and a fake container is available during instantiation.', function() {
-  if (!isFeatureEnabled('ember-factory-for')) {
+  if (!EMBER_FACTORY_FOR) {
     expect(8);
   } else {
     expect(1);
@@ -614,7 +615,7 @@ QUnit.test('A deprecated `container` property is appended to every object instan
 
   registry.register('controller:post', PostController);
 
-  if (!isFeatureEnabled('ember-factory-for')) {
+  if (!EMBER_FACTORY_FOR) {
     let postController = container.lookup('controller:post');
 
     expectDeprecation(() => {
@@ -697,14 +698,14 @@ QUnit.test('#[FACTORY_FOR] class is the injected factory', (assert) => {
   registry.register('component:foo-bar', Component);
 
   let factoryCreator = container[FACTORY_FOR]('component:foo-bar');
-  if (isFeatureEnabled('ember-no-double-extend')) {
+  if (EMBER_NO_DOUBLE_EXTEND) {
     assert.deepEqual(factoryCreator.class, Component, 'No double extend');
   } else {
     assert.deepEqual(factoryCreator.class, lookupFactory('component:foo-bar', container), 'Double extended class');
   }
 });
 
-if (isFeatureEnabled('ember-factory-for')) {
+if (EMBER_FACTORY_FOR) {
   QUnit.test('#factoryFor must supply a fullname', (assert) => {
     let registry = new Registry();
     let container = registry.container();

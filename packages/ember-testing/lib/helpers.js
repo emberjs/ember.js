@@ -1,4 +1,3 @@
-import { isFeatureEnabled } from 'ember-metal';
 import {
   registerHelper as helper,
   registerAsyncHelper as asyncHelper
@@ -16,6 +15,7 @@ import { pauseTest, resumeTest } from './helpers/pause_test';
 import triggerEvent from './helpers/trigger_event';
 import visit from './helpers/visit';
 import wait from './helpers/wait';
+import { EMBER_TESTING_RESUME_TEST } from 'ember-features';
 
 asyncHelper('visit', visit);
 asyncHelper('click', click);
@@ -32,6 +32,6 @@ helper('currentRouteName', currentRouteName);
 helper('currentPath', currentPath);
 helper('currentURL', currentURL);
 
-if (isFeatureEnabled('ember-testing-resume-test')) {
+if (EMBER_TESTING_RESUME_TEST) {
   helper('resumeTest', resumeTest);
 }

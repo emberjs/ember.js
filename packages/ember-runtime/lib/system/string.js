@@ -3,7 +3,9 @@
 @submodule ember-runtime
 */
 import {
-  deprecate,
+  deprecate
+} from 'ember-debug';
+import {
   Cache
 } from 'ember-metal';
 import { inspect } from 'ember-utils';
