@@ -277,16 +277,18 @@ export class Meta {
 
   _forEachIn(key, subkey, fn) {
     let pointer = this;
-    let seen = new EmptyObject();
-    let calls = [];
+    let seen;
+    let calls;
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map) {
+        seen = seen || new EmptyObject();
         let innerMap = map[subkey];
         if (innerMap) {
           for (let innerKey in innerMap) {
             if (!seen[innerKey]) {
               seen[innerKey] = true;
+              calls = calls || [];
               calls.push([innerKey, innerMap[innerKey]]);
             }
           }
@@ -294,9 +296,11 @@ export class Meta {
       }
       pointer = pointer.parent;
     }
-    for (let i = 0; i < calls.length; i++) {
-      let [innerKey, value] = calls[i];
-      fn(innerKey, value);
+    if (calls) {
+      for (let i = 0; i < calls.length; i++) {
+        let [innerKey, value] = calls[i];
+        fn(innerKey, value);
+      }
     }
   }
 
