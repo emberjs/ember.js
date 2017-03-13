@@ -9,14 +9,11 @@ import {
   get,
   run
 } from 'ember-metal';
-import { TESTING } from 'ember-environment-flags';
+import { TESTING, DEBUG } from 'ember-environment-flags';
 import {
   assert,
   debug
 } from 'ember-debug';
-import {
-  DEBUG
-} from 'ember-environment-flags';
 import {
   Namespace,
   setNamespaceSearchDisabled,

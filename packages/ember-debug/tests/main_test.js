@@ -160,87 +160,87 @@ QUnit.test('Ember.assert does not throw if second argument is an object', functi
   ok(true, 'assertions were not thrown');
 });
 
-QUnit.test('Ember.deprecate does not throw a deprecation at log and silence levels', function() {
-  expect(4);
-  let id = 'ABC';
-  let until = 'forever';
-  let shouldThrow = false;
+// QUnit.test('Ember.deprecate does not throw a deprecation at log and silence levels', function() {
+//   expect(4);
+//   let id = 'ABC';
+//   let until = 'forever';
+//   let shouldThrow = false;
 
-  registerHandler(function(message, options, next) {
-    if (options && options.id === id) {
-      if (shouldThrow) {
-        throw new Error(message);
-      }
-    }
-  });
+//   registerHandler(function(message, options, next) {
+//     if (options && options.id === id) {
+//       if (shouldThrow) {
+//         throw new Error(message);
+//       }
+//     }
+//   });
 
-  try {
-    deprecate('Deprecation for testing purposes', false, { id, until });
-    ok(true, 'Deprecation did not throw');
-  } catch (e) {
-    ok(false, 'Deprecation was thrown despite being added to blacklist');
-  }
+//   try {
+//     deprecate('Deprecation for testing purposes', false, { id, until });
+//     ok(true, 'Deprecation did not throw');
+//   } catch (e) {
+//     ok(false, 'Deprecation was thrown despite being added to blacklist');
+//   }
 
-  try {
-    deprecate('Deprecation for testing purposes', false, { id, until });
-    ok(true, 'Deprecation did not throw');
-  } catch (e) {
-    ok(false, 'Deprecation was thrown despite being added to blacklist');
-  }
+//   try {
+//     deprecate('Deprecation for testing purposes', false, { id, until });
+//     ok(true, 'Deprecation did not throw');
+//   } catch (e) {
+//     ok(false, 'Deprecation was thrown despite being added to blacklist');
+//   }
 
-  shouldThrow = true;
+//   shouldThrow = true;
 
-  throws(function() {
-    deprecate('Deprecation is thrown', false, { id, until });
-  });
+//   throws(function() {
+//     deprecate('Deprecation is thrown', false, { id, until });
+//   });
 
-  throws(function() {
-    deprecate('Deprecation is thrown', false, { id, until });
-  });
-});
+//   throws(function() {
+//     deprecate('Deprecation is thrown', false, { id, until });
+//   });
+// });
 
-QUnit.test('Ember.deprecate without options triggers a deprecation', function(assert) {
-  assert.expect(4);
+// QUnit.skip('Ember.deprecate without options triggers a deprecation', function(assert) {
+//   assert.expect(4);
 
-  registerHandler(function(message) {
-    if (message === missingOptionsDeprecation) {
-      assert.ok(true, 'proper deprecation is triggered when options is missing');
-    } else if (message === 'foo') {
-      assert.ok(true, 'original deprecation is still triggered');
-    }
-  });
+//   registerHandler(function(message) {
+//     if (message === missingOptionsDeprecation) {
+//       assert.ok(true, 'proper deprecation is triggered when options is missing');
+//     } else if (message === 'foo') {
+//       assert.ok(true, 'original deprecation is still triggered');
+//     }
+//   });
 
-  deprecate('foo');
-  deprecate('foo', false, { });
-});
+//   deprecate('foo');
+//   deprecate('foo', false, { });
+// });
 
-QUnit.test('Ember.deprecate without options.id triggers a deprecation', function(assert) {
-  assert.expect(2);
+// QUnit.skip('Ember.deprecate without options.id triggers a deprecation', function(assert) {
+//   assert.expect(2);
 
-  registerHandler(function(message) {
-    if (message === missingOptionsIdDeprecation) {
-      assert.ok(true, 'proper deprecation is triggered when options.id is missing');
-    } else if (message === 'foo') {
-      assert.ok(true, 'original deprecation is still triggered');
-    }
-  });
+//   registerHandler(function(message) {
+//     if (message === missingOptionsIdDeprecation) {
+//       assert.ok(true, 'proper deprecation is triggered when options.id is missing');
+//     } else if (message === 'foo') {
+//       assert.ok(true, 'original deprecation is still triggered');
+//     }
+//   });
 
-  deprecate('foo', false, { until: 'forever' });
-});
+//   deprecate('foo', false, { until: 'forever' });
+// });
 
-QUnit.test('Ember.deprecate without options.until triggers a deprecation', function(assert) {
-  assert.expect(2);
+// QUnit.test('Ember.deprecate without options.until triggers a deprecation', function(assert) {
+//   assert.expect(2);
 
-  registerHandler(function(message) {
-    if (message === missingOptionsUntilDeprecation) {
-      assert.ok(true, 'proper deprecation is triggered when options.until is missing');
-    } else if (message === 'foo') {
-      assert.ok(true, 'original deprecation is still triggered');
-    }
-  });
+//   registerHandler(function(message) {
+//     if (message === missingOptionsUntilDeprecation) {
+//       assert.ok(true, 'proper deprecation is triggered when options.until is missing');
+//     } else if (message === 'foo') {
+//       assert.ok(true, 'original deprecation is still triggered');
+//     }
+//   });
 
-  deprecate('foo', false, { id: 'test' });
-});
+//   deprecate('foo', false, { id: 'test' });
+// });
 
 QUnit.test('warn without options triggers a deprecation', function(assert) {
   assert.expect(2);
