@@ -3,7 +3,6 @@ import {
   inject,
   String
 } from 'ember-runtime';
-import { Component } from 'ember-glimmer';
 import { Route, NoneLocation } from 'ember-routing';
 import {
   get,
@@ -24,12 +23,6 @@ function setupController(app, name) {
       throw new Error(`Generating a URL should not require instantiation of a ${controllerName}.`);
     }
   });
-}
-
-function buildQueryParams(queryParams) {
-  return {
-    queryParams
-  };
 }
 
 if (EMBER_ROUTING_ROUTER_SERVICE) {
@@ -61,7 +54,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     ['@test RouterService#urlFor returns URL for simple route with basic query params'](assert) {
       assert.expect(1);
 
-      let queryParams = buildQueryParams({ foo: 'bar' });
+      let queryParams = this.buildQueryParams({ foo: 'bar' });
 
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('parent.child', queryParams);
@@ -73,7 +66,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     ['@test RouterService#urlFor returns URL for simple route with array as query params'](assert) {
       assert.expect(1);
 
-      let queryParams = buildQueryParams({ selectedItems: ['a', 'b', 'c'] });
+      let queryParams = this.buildQueryParams({ selectedItems: ['a', 'b', 'c'] });
 
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('parent.child', queryParams);
@@ -85,7 +78,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     ['@test RouterService#urlFor returns URL for simple route with null query params'](assert) {
       assert.expect(1);
 
-      let queryParams = buildQueryParams({ foo: null });
+      let queryParams = this.buildQueryParams({ foo: null });
 
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('parent.child', queryParams);
@@ -97,7 +90,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     ['@test RouterService#urlFor returns URL for simple route with undefined query params'](assert) {
       assert.expect(1);
 
-      let queryParams = buildQueryParams({ foo: undefined });
+      let queryParams = this.buildQueryParams({ foo: undefined });
 
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('parent.child', queryParams);
@@ -109,7 +102,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     ['@test RouterService#urlFor returns URL for simple route with dynamic segments and basic query params'](assert) {
       assert.expect(1);
 
-      let queryParams = buildQueryParams({ foo: 'bar' });
+      let queryParams = this.buildQueryParams({ foo: 'bar' });
 
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
@@ -121,7 +114,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     ['@test RouterService#urlFor returns URL for simple route with dynamic segments and array as query params'](assert) {
       assert.expect(1);
 
-      let queryParams = buildQueryParams({ selectedItems: ['a', 'b', 'c'] });
+      let queryParams = this.buildQueryParams({ selectedItems: ['a', 'b', 'c'] });
 
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
@@ -133,7 +126,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     ['@test RouterService#urlFor returns URL for simple route with dynamic segments and null query params'](assert) {
       assert.expect(1);
 
-      let queryParams = buildQueryParams({ foo: null });
+      let queryParams = this.buildQueryParams({ foo: null });
 
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
@@ -145,7 +138,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     ['@test RouterService#urlFor returns URL for simple route with dynamic segments and undefined query params'](assert) {
       assert.expect(1);
 
-      let queryParams = buildQueryParams({ foo: undefined });
+      let queryParams = this.buildQueryParams({ foo: undefined });
 
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
@@ -198,7 +191,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
       let expectedURL;
       let actualURL;
-      let queryParams = buildQueryParams({ foo: 'bar' });
+      let queryParams = this.buildQueryParams({ foo: 'bar' });
 
       return this.visit('/')
         .then(() => {
@@ -218,7 +211,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
       let expectedURL;
       let actualURL;
-      let queryParams = buildQueryParams({ foo: 'bar' });
+      let queryParams = this.buildQueryParams({ foo: 'bar' });
       let dynamicModel = { id: 1 };
 
       this.add('route:dynamic', Route.extend({

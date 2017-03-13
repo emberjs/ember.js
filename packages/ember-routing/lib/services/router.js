@@ -7,6 +7,24 @@ import {
   Service,
   readOnly
 } from 'ember-runtime';
+import {
+  get,
+  isEmpty
+} from 'ember-metal';
+import { assign } from 'ember-utils';
+import RouterDSL from '../system/dsl';
+
+
+function shallowEqual(a, b) {
+  let k;
+  for (k in a) {
+    if (a.hasOwnProperty(k) && a[k] !== b[k]) { return false; }
+  }
+  for (k in b) {
+    if (b.hasOwnProperty(k) && a[k] !== b[k]) { return false; }
+  }
+  return true;
+}
 
 /**
    The Router service is the public API that provides component/view layer
@@ -19,6 +37,7 @@ import {
 const RouterService = Service.extend({
   currentRouteName: readOnly('router.currentRouteName'),
   currentURL: readOnly('router.currentURL'),
+  currentState: readOnly('router.currentState'),
   location: readOnly('router.location'),
   rootURL: readOnly('router.rootURL'),
   router: null,
@@ -79,6 +98,51 @@ const RouterService = Service.extend({
    */
   urlFor(/* routeName, ...models, options */) {
     return this.router.generate(...arguments);
+  },
+
+  /**
+     Determines whether a route is active.
+
+     @method urlFor
+     @param {String} routeName the name of the route
+     @param {...Object} models the model(s) or identifier(s) to be used while
+       transitioning to the route.
+     @param {Object} [options] optional hash with a queryParams property
+       containing a mapping of query parameters
+     @return {String} the string representing the generated URL
+     @public
+   */
+  isActive(/* routeName, ...models, options */) {
+    if (!this.router.isActive(...arguments)) { return false; }
+debugger;
+    let { routeName, models, queryParams } = this._extractArguments(...arguments);
+    let emptyQueryParams = Object.keys(queryParams).length;
+
+    if (!emptyQueryParams) {
+      let visibleQueryParams = {};
+      assign(visibleQueryParams, queryParams);
+
+      this.router._prepareQueryParams(routeName, models, visibleQueryParams);
+      return shallowEqual(visibleQueryParams, queryParams);
+    }
+
+    return true;
+  },
+
+  _extractArguments(...args) {
+    let routeName;
+    let models;
+    let possibleQueryParams = args[args.length - 1];
+    let queryParams = {};
+
+    if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
+      queryParams = args.pop().queryParams;
+    }
+
+    routeName = args.shift();
+    models = args;
+
+    return { routeName, models, queryParams };
   }
 });
 
