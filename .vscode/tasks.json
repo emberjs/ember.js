@@ -6,7 +6,7 @@
   "suppressTaskName": true,
   "tasks": [{
     "taskName": "vscode-build",
-    "args": ["run", "vscode-build"],
+    "args": ["run", "problems"],
     "isBuildCommand": true,
     "problemMatcher": "$tsc"
   }]

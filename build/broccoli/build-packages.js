@@ -6,8 +6,8 @@ const DAGMap = require('dag-map').default;
 const glob = require('glob');
 const path = require('path');
 
-const TSCONFIG_PATH = `${__dirname}/../build/tsconfig.json`;
-const PACKAGES_PATH = `${__dirname}/../packages`;
+const TSCONFIG_PATH = `${__dirname}/../../build/tsconfig.json`;
+const PACKAGES_PATH = `${__dirname}/../../packages`;
 
 /**
  * Find all packages in `packages/` directory and build them individually.
@@ -21,7 +21,7 @@ module.exports = function() {
     .map(packagePath => treeForPackage(packagePath));
 
   // Merge all packages together, completing the build.
-  return merge(packageTrees);
+  return funnel(merge(packageTrees), { destDir: 'node_modules' });
 }
 
 function topsortPackages() {

@@ -24,7 +24,8 @@
     "tsc": "tsc -p tsconfig.json --noEmit",
     "tslint": "tslint --project tsconfig.json",
     "vscode-build": "tsc -p tsconfig.json --noEmit",
-    "yarn:link": "node build/yarn-link-all.js"
+    "yarn:link": "node build/yarn-link-all.js",
+    "problems": "node bin/problems"
   },
   "dependencies": {
     "broccoli-concat": "^2.1.0",
