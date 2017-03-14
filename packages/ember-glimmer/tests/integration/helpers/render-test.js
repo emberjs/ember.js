@@ -1,6 +1,7 @@
-import { observer, set, computed, isFeatureEnabled } from 'ember-metal';
+import { observer, set, computed } from 'ember-metal';
 import { Controller } from 'ember-runtime';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { isFeatureEnabled } from 'ember-debug';
 
 moduleFor('Helpers test: {{render}}', class extends RenderingTest {
   ['@test should render given template']() {

@@ -1,6 +1,7 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { runAppend } from 'internal-test-helpers';
-import { set, isFeatureEnabled } from 'ember-metal';
+import { set } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 moduleFor('outlet view', class extends RenderingTest {
   constructor() {

@@ -3,7 +3,7 @@
 @submodule ember-glimmer
 */
 
-import { deprecate } from 'ember-metal';
+import { deprecate } from 'ember-debug';
 
 export class SafeString {
   constructor(string) {

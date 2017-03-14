@@ -1,5 +1,5 @@
 import Logger from 'ember-console';
-import { isTesting } from './testing';
+import { isTesting } from 'ember-debug';
 
 // To maintain stacktrace consistency across browsers
 let getStack = error => {

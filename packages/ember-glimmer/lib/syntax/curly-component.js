@@ -16,11 +16,13 @@ import {
   BOUNDS
 } from '../component';
 import {
-  assert,
-  runInDebug,
   get,
   _instrumentStart
 } from 'ember-metal';
+import {
+  assert,
+  runInDebug
+} from 'ember-debug';
 import {
   dispatchLifeCycleHook,
   setViewElement

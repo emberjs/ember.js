@@ -4,7 +4,7 @@ import {
   Application,
   ApplicationInstance
 } from 'ember-application';
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 import {
   RegistryProxyMixin,
   ContainerProxyMixin,

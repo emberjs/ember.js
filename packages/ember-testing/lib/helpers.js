@@ -1,4 +1,4 @@
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 import {
   registerHelper as helper,
   registerAsyncHelper as asyncHelper

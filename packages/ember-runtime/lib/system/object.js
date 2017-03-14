@@ -4,9 +4,10 @@
 */
 
 import { symbol } from 'ember-utils';
-import { assert, on, runInDebug } from 'ember-metal';
+import { on } from 'ember-metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
+import { runInDebug, assert } from 'ember-debug';
 
 /**
   `Ember.Object` is the main base class for all Ember objects. It is a subclass

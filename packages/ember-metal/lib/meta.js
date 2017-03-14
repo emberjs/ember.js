@@ -3,9 +3,8 @@ import {
   lookupDescriptor,
   symbol
 } from 'ember-utils';
-import isEnabled from './features';
 import { protoMethods as listenerMethods } from './meta_listeners';
-import { runInDebug, assert } from './debug';
+import { runInDebug, assert, isFeatureEnabled } from 'ember-debug';
 import {
   removeChainWatcher
 } from './chains';
@@ -65,8 +64,8 @@ const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
 const IS_PROXY = 1 << 4;
 
-if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
+    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
   members.lastRendered = ownMap;
   if (has('ember-debug')) { //https://github.com/emberjs/ember.js/issues/14732
     members.lastRenderedReferenceMap = ownMap;
@@ -110,8 +109,8 @@ export class Meta {
     // inherited, and we can optimize it much better than JS runtimes.
     this.parent = parentMeta;
 
-    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
+        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
       this._lastRendered = undefined;
       runInDebug(() => {
         this._lastRenderedReferenceMap = undefined;
@@ -470,7 +469,7 @@ const EMBER_META_PROPERTY = {
   descriptor: META_DESC
 };
 
-if (isEnabled('mandatory-setter')) {
+if (isFeatureEnabled('mandatory-setter')) {
   Meta.prototype.readInheritedValue = function(key, subkey) {
     let internalKey = `_${key}`;
 

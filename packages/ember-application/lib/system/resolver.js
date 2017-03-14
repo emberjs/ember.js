@@ -4,12 +4,8 @@
 */
 
 import { dictionary } from 'ember-utils';
-import {
-  assert,
-  info,
-  get,
-  runInDebug
-} from 'ember-metal';
+import { get } from 'ember-metal';
+import { assert, info, runInDebug } from 'ember-debug';
 import {
   String as StringUtils,
   Object as EmberObject,

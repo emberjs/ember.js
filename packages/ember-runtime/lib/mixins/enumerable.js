@@ -19,10 +19,9 @@ import {
   addListener,
   removeListener,
   sendEvent,
-  hasListeners,
-  assert,
-  deprecate
+  hasListeners
 } from 'ember-metal';
+import { assert, deprecate } from 'ember-debug';
 import compare from '../compare';
 import require from 'require';
 

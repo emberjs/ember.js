@@ -4,10 +4,8 @@ import {
   Object as EmberObject,
   RSVP
 } from 'ember-runtime';
-import {
-  run,
-  isFeatureEnabled
-} from 'ember-metal';
+import { run } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 import { jQuery } from 'ember-views';
 import {
   Component,

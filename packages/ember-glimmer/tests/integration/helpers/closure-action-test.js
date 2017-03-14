@@ -2,10 +2,10 @@ import {
   run,
   set,
   computed,
-  isFeatureEnabled,
   instrumentationSubscribe,
   instrumentationUnsubscribe
 } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Component, INVOKE } from '../../utils/helpers';

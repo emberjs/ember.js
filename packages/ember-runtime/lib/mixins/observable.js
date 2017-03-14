@@ -4,7 +4,6 @@
 */
 
 import {
-  assert,
   get,
   getWithDefault,
   set,
@@ -22,6 +21,7 @@ import {
   cacheFor,
   isNone
 } from 'ember-metal';
+import { assert } from 'ember-debug';
 
 /**
   ## Overview

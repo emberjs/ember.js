@@ -9,8 +9,6 @@ import {
   tagFor,
   didRender,
   watchKey,
-  isFeatureEnabled,
-  runInDebug,
   isProxy
 } from 'ember-metal';
 import {
@@ -29,6 +27,7 @@ import {
 } from '@glimmer/runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
+import { isFeatureEnabled, runInDebug } from 'ember-debug';
 
 export const UPDATE = symbol('UPDATE');
 

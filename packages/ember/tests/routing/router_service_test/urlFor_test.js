@@ -14,7 +14,7 @@ import {
   moduleFor
 } from 'internal-test-helpers';
 
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 function setupController(app, name) {
   let controllerName = `${String.capitalize(name)}Controller`;

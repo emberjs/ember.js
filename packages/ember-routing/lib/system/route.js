@@ -1,18 +1,14 @@
 import { assign, symbol, getOwner } from 'ember-utils';
 import {
-  assert,
-  info,
-  isTesting,
-  Error as EmberError,
   get,
   set,
   getProperties,
   isNone,
   computed,
   run,
-  runInDebug,
   isEmpty
 } from 'ember-metal';
+import { assert, runInDebug, info, Error as EmberError, isTesting } from 'ember-debug';
 import {
   typeOf,
   copy,

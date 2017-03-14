@@ -1,5 +1,5 @@
 import { getOwner } from 'ember-utils';
-import { assert } from './debug';
+import { assert } from 'ember-debug';
 import { ComputedProperty } from './computed';
 import { AliasedProperty } from './alias';
 import { Descriptor } from './properties';

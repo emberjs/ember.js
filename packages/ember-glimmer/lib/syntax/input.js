@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-glimmer
 */
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { wrapComponentClassAttribute } from '../utils/bindings';
 import { dynamicComponentMacro } from './dynamic-component';
 

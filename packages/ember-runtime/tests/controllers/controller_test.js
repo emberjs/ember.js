@@ -2,10 +2,11 @@
 
 import Controller from '../../controllers/controller';
 import Service from '../../system/service';
-import { Mixin, get, isFeatureEnabled } from 'ember-metal';
+import { Mixin, get } from 'ember-metal';
 import EmberObject from '../../system/object';
 import inject from '../../inject';
 import { buildOwner } from 'internal-test-helpers';
+import { isFeatureEnabled } from 'ember-debug';
 
 QUnit.module('Controller event handling');
 
