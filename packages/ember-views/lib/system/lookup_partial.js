@@ -1,5 +1,6 @@
 import {
   assert,
+  deprecate,
   Error as EmberError
 } from 'ember-metal';
 
@@ -21,6 +22,12 @@ export default function lookupPartial(templateName, owner) {
     `Unable to find partial with name "${templateName}"`,
     !!template
   );
+
+  deprecate(`Partials are now deprecated in favor of using components. Please change "${templateName}" to a component.`, false, {
+    id: 'ember-glimmer.partials',
+    since: '2.13.0',
+    until: '3.0.0'
+  });
 
   return template;
 }

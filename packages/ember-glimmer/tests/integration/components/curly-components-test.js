@@ -601,7 +601,9 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.registerComponent('foo-bar', { template: '{{partial "partialWithYield"}} - In component' });
 
-    this.render('{{#foo-bar}}hello{{/foo-bar}}');
+    expectDeprecation(() => {
+      this.render('{{#foo-bar}}hello{{/foo-bar}}');
+    }, /Partials are now deprecated in favor of using components. Please change "partialWithYield" to a component./)
 
     this.assertComponentElement(this.firstChild, { content: 'yielded: [hello] - In component' });
 
@@ -615,7 +617,9 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.registerComponent('foo-bar', { template: '{{partial "partialWithYield"}} - In component' });
 
-    this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
+    expectDeprecation(() => {
+      this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
+    }, /Partials are now deprecated in favor of using components. Please change "partialWithYield" to a component./)
 
     this.assertComponentElement(this.firstChild, { content: 'yielded: [hello] - In component' });
 

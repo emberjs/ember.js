@@ -8,7 +8,9 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
   ['@test should render other templates registered with the container']() {
     this.registerPartial('_subTemplateFromContainer', 'sub-template');
 
-    this.render(`This {{partial "subTemplateFromContainer"}} is pretty great.`);
+    expectDeprecation(() => {
+      this.render(`This {{partial "subTemplateFromContainer"}} is pretty great.`);
+    }, /Partials are now deprecated in favor of using components. Please change "subTemplateFromContainer" to a component\./);
 
     this.assertStableRerender();
 
@@ -18,7 +20,9 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
   ['@test should render other slash-separated templates registered with the container']() {
     this.registerPartial('child/_subTemplateFromContainer', 'sub-template');
 
-    this.render(`This {{partial "child/subTemplateFromContainer"}} is pretty great.`);
+    expectDeprecation(() => {
+      this.render(`This {{partial "child/subTemplateFromContainer"}} is pretty great.`);
+    }, /Partials are now deprecated in favor of using components. Please change "child\/subTemplateFromContainer" to a component\./);
 
     this.assertStableRerender();
 
@@ -28,12 +32,14 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
   ['@test should use the current context']() {
     this.registerPartial('_person_name', '{{model.firstName}} {{model.lastName}}');
 
-    this.render('Who is {{partial "person_name"}}?', {
-      model: {
-        firstName: 'Kris',
-        lastName: 'Selden'
-      }
-    });
+    expectDeprecation(() => {
+      this.render('Who is {{partial "person_name"}}?', {
+        model: {
+          firstName: 'Kris',
+          lastName: 'Selden'
+        }
+      });
+    }, /Partials are now deprecated in favor of using components. Please change "person_name" to a component\./);
 
     this.assertStableRerender();
 
@@ -52,15 +58,19 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
     this.registerPartial('_subTemplate', 'sub-template');
     this.registerPartial('_otherTemplate', 'other-template');
 
-    this.render('This {{partial templates.partialName}} is pretty {{partial nonexistent}}great.', {
-      templates: { partialName: 'subTemplate' }
-    });
+    expectDeprecation(() => {
+      this.render('This {{partial templates.partialName}} is pretty {{partial nonexistent}}great.', {
+        templates: { partialName: 'subTemplate' }
+      });
+    }, /Partials are now deprecated in favor of using components. Please change "subTemplate" to a component\./);
 
     this.assertStableRerender();
 
     this.assertText('This sub-template is pretty great.');
 
-    this.runTask(() => set(this.context, 'templates.partialName', 'otherTemplate'));
+    expectDeprecation(() => {
+      this.runTask(() => set(this.context, 'templates.partialName', 'otherTemplate'));
+    }, /Partials are now deprecated in favor of using components. Please change "otherTemplate" to a component\./);
 
     this.assertText('This other-template is pretty great.');
 
@@ -68,12 +78,16 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
 
     this.assertText('This  is pretty great.');
 
-    this.runTask(() => set(this.context, 'templates', { partialName: 'subTemplate' }));
+    expectDeprecation(() => {
+      this.runTask(() => set(this.context, 'templates', { partialName: 'subTemplate' }));
+    }, /Partials are now deprecated in favor of using components. Please change "subTemplate" to a component\./);
 
     this.assertText('This sub-template is pretty great.');
   }
 
   ['@test dynamic partials in {{#each}}']() {
+    expectDeprecation(/^Partials are now deprecated in favor of using components\./);
+
     this.registerPartial('_odd', 'ODD{{i}}');
     this.registerPartial('_even', 'EVEN{{i}}');
 
@@ -104,6 +118,8 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
   }
 
   ['@test dynamic partials in {{#with}}']() {
+    expectDeprecation(/^Partials are now deprecated in favor of using components\./);
+
     this.registerPartial('_thing', '{{t}}');
 
     this.render(strip`
