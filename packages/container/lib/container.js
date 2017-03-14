@@ -38,6 +38,7 @@ export default function Container(registry, options) {
   this.owner           = options && options.owner ? options.owner : null;
   this.cache           = dictionary(options && options.cache ? options.cache : null);
   this.factoryCache    = dictionary(options && options.factoryCache ? options.factoryCache : null);
+  this.factoryManagerCache = dictionary(options && options.factoryCache ? options.factoryCache : null);
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
   this._fakeContainerToInject = buildFakeContainerWithDeprecations(this);
   this[CONTAINER_OVERRIDE] = undefined;
@@ -281,6 +282,7 @@ if (isFeatureEnabled('ember-factory-for')) {
    */
   Container.prototype.factoryFor = function _factoryFor(fullName, options = {}) {
     let normalizedName = this.registry.normalize(fullName);
+
     assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
 
     if (options.source) {
@@ -289,9 +291,15 @@ if (isFeatureEnabled('ember-factory-for')) {
       if (!normalizedName) { return; }
     }
 
+    let cached = this.factoryManagerCache[normalizedName];
+
+    if (cached) { return cached; }
+
     let factory = this.registry.resolve(normalizedName);
 
-    if (factory === undefined) { return; }
+    if (factory === undefined) {
+      return;
+    }
 
     let manager = new FactoryManager(this, factory, fullName, normalizedName);
 
@@ -299,6 +307,7 @@ if (isFeatureEnabled('ember-factory-for')) {
       manager = wrapManagerInDeprecationProxy(manager);
     });
 
+    this.factoryManagerCache[normalizedName] = manager;
     return manager;
   };
 }
@@ -667,13 +676,14 @@ class FactoryManager {
     this.class = factory;
     this.fullName = fullName;
     this.normalizedName = normalizedName;
+    this.madeToString = undefined;
   }
 
   create(options = {}) {
     let injections = injectionsFor(this.container, this.normalizedName);
     let props = assign({}, injections, options);
 
-    props[NAME_KEY] = this.container.registry.makeToString(this.class, this.fullName);
+    props[NAME_KEY] = this.madeToString || (this.madeToString = this.container.registry.makeToString(this.class, this.fullName));
 
     runInDebug(() => {
       let lazyInjections;
