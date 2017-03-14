@@ -38,7 +38,7 @@ export default function Container(registry, options) {
   this.owner           = options && options.owner ? options.owner : null;
   this.cache           = dictionary(options && options.cache ? options.cache : null);
   this.factoryCache    = dictionary(options && options.factoryCache ? options.factoryCache : null);
-  this.factoryManagerCache = dictionary(options && options.factoryCache ? options.factoryCache : null);
+  this.factoryManagerCache = dictionary(options && options.factoryManagerCache ? options.factoryManagerCache : null);
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
   this._fakeContainerToInject = buildFakeContainerWithDeprecations(this);
   this[CONTAINER_OVERRIDE] = undefined;
