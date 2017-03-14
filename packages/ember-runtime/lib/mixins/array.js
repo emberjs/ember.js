@@ -20,9 +20,9 @@ import Ember, { // ES6TODO: Ember.A
   addListener,
   removeListener,
   sendEvent,
-  hasListeners,
-  deprecate
+  hasListeners
 } from 'ember-metal';
+import { deprecate } from 'ember-debug';
 
 import Enumerable from './enumerable';
 import EachProxy from '../system/each_proxy';

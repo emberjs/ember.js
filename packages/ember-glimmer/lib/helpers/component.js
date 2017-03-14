@@ -14,7 +14,7 @@ import {
   EvaluatedPositionalArgs,
   isComponentDefinition
 } from '@glimmer/runtime';
-import { assert, runInDebug } from 'ember-metal';
+import { assert, runInDebug } from 'ember-debug';
 
 /**
   The `{{component}}` helper lets you add instances of `Ember.Component` to a
@@ -148,7 +148,7 @@ export class ClosureComponentReference extends CachedReference {
 
   constructor(args, symbolTable, env) {
     super();
-    
+
     let firstArg = args.positional.at(0);
     this.defRef = firstArg;
     this.tag = firstArg.tag;

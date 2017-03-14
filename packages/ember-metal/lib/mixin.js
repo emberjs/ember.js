@@ -11,13 +11,13 @@ import {
   wrap,
   makeArray
 } from 'ember-utils';
-import EmberError from './error';
 import {
   debugSeal,
   assert,
   deprecate,
-  runInDebug
-} from './debug';
+  runInDebug,
+  EmberError
+} from 'ember-debug';
 import { meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';
 import {

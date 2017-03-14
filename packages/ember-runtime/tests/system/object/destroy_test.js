@@ -1,5 +1,4 @@
 import {
-  isFeatureEnabled,
   run,
   observer,
   set,
@@ -10,6 +9,8 @@ import {
 } from 'ember-metal';
 import { testBoth } from 'internal-test-helpers';
 import EmberObject from '../../../system/object';
+import { isFeatureEnabled } from 'ember-debug';
+
 QUnit.module('ember-runtime/system/object/destroy_test');
 
 testBoth('should schedule objects to be destroyed at the end of the run loop', function(get, set) {

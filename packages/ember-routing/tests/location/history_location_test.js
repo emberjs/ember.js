@@ -1,9 +1,9 @@
 import {
-  isFeatureEnabled,
   set,
   run
 } from 'ember-metal';
 import HistoryLocation from '../../location/history_location';
+import { isFeatureEnabled } from 'ember-debug';
 
 let FakeHistory, HistoryTestLocation, location;
 

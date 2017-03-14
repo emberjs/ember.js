@@ -6,18 +6,20 @@ import {
 } from 'ember-utils';
 import Logger from 'ember-console';
 import {
-  assert,
-  info,
-  Error as EmberError,
   get,
   set,
   defineProperty,
   computed,
   run,
-  runInDebug,
-  deprecate,
   deprecateProperty
 } from 'ember-metal';
+import {
+  EmberError,
+  runInDebug,
+  deprecate,
+  assert,
+  info
+} from 'ember-debug';
 import {
   Object as EmberObject,
   Evented,

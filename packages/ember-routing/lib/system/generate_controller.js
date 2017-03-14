@@ -1,10 +1,6 @@
-import {
-  info,
-  get,
-  runInDebug
-} from 'ember-metal';
+import { get } from 'ember-metal';
 import { FACTORY_FOR } from 'container';
-
+import { runInDebug, info } from 'ember-debug';
 /**
 @module ember
 @submodule ember-routing

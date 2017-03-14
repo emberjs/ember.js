@@ -12,7 +12,7 @@ import {
 } from 'internal-test-helpers';
 import { Transition } from 'router';
 
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 if (isFeatureEnabled('ember-routing-router-service')) {
   moduleFor('Router Service - transitionTo', class extends RouterTestCase {

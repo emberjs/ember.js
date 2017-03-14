@@ -1,6 +1,5 @@
 /* globals EmberDev */
 import {
-  isFeatureEnabled,
   set,
   get,
   observer,
@@ -8,6 +7,7 @@ import {
   computed,
   run
 } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 import {
   Object as EmberObject,
   A as emberA,

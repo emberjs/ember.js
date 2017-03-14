@@ -307,14 +307,11 @@
 */
 
 import Logger from 'ember-console';
-
+import { assert, deprecate, runInDebug } from 'ember-debug';
 import {
-  assert,
-  deprecate,
   get,
   computed,
-  flaggedInstrument,
-  runInDebug
+  flaggedInstrument
 } from 'ember-metal';
 import {
   deprecatingAlias,

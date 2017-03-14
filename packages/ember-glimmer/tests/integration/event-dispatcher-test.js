@@ -1,11 +1,11 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
 import {
-  isFeatureEnabled,
   instrumentationSubscribe,
   instrumentationReset,
   run
 } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
 

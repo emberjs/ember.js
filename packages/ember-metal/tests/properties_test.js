@@ -1,6 +1,6 @@
 import { computed } from '../computed';
 import { defineProperty } from '../properties';
-import { deprecateProperty } from '../deprecate_property';
+import { deprecateProperty } from 'ember-metal';
 
 QUnit.module('Ember.defineProperty');
 

@@ -1,6 +1,6 @@
 import run from '../../run_loop';
 import { setOnerror, getOnerror, setDispatchOverride, getDispatchOverride } from '../../error_handler';
-import { isTesting, setTesting } from '../../testing';
+import { isTesting, setTesting } from 'ember-debug';
 
 QUnit.module('system/run_loop/onerror_test');
 

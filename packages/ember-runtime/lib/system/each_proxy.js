@@ -1,5 +1,5 @@
+import { assert } from 'ember-debug';
 import {
-  assert,
   get,
   _addBeforeObserver,
   _removeBeforeObserver,

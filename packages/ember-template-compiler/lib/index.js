@@ -1,4 +1,5 @@
-import _Ember, { FEATURES } from 'ember-metal';
+import _Ember from 'ember-metal';
+import { FEATURES } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import VERSION from 'ember/version';
 

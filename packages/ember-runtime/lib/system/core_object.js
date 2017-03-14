@@ -16,9 +16,6 @@ import {
   GUID_KEY
 } from 'ember-utils';
 import {
-  assert,
-  runInDebug,
-  isFeatureEnabled,
   get,
   meta,
   finishChains,
@@ -26,7 +23,6 @@ import {
   detectBinding,
   Mixin,
   REQUIRED,
-  Error as EmberError,
   defineProperty,
   Binding,
   ComputedProperty,
@@ -38,6 +34,7 @@ import {
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
+import { assert, runInDebug, isFeatureEnabled, Error as EmberError } from 'ember-debug';
 
 let schedule = run.schedule;
 let applyMixin = Mixin._apply;
@@ -781,7 +778,7 @@ let ClassMixinProps = {
 
     Person.reopenClass({
       species: 'Homo sapiens',
-      
+
       createPerson(name) {
         return Person.create({ name });
       }

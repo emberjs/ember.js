@@ -3,12 +3,8 @@
 @submodule ember-runtime
 */
 
-import {
-  assert,
-  deprecate,
-  Mixin,
-  get
-} from 'ember-metal';
+import { Mixin, get } from 'ember-metal';
+import { assert, deprecate } from 'ember-debug';
 
 /**
   `Ember.ActionHandler` is available on some familiar classes including

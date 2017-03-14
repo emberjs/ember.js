@@ -4,10 +4,7 @@
 */
 import { RSVP } from 'ember-runtime';
 import Logger from 'ember-console';
-import {
-  assert,
-  isFeatureEnabled
-} from 'ember-metal';
+import { assert, isFeatureEnabled } from 'ember-debug';
 
 let resume;
 

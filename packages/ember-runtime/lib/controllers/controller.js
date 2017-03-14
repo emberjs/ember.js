@@ -1,4 +1,4 @@
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import EmberObject from '../system/object';
 import Mixin from '../mixins/controller';
 import { createInjectionHelper } from '../inject';

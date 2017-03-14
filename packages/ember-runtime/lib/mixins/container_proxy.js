@@ -10,7 +10,7 @@ import {
   FACTORY_FOR,
   LOOKUP_FACTORY
 } from 'container';
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 /**
   ContainerProxyMixin is used to provide public access to specific

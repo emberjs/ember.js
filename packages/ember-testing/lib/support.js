@@ -1,4 +1,4 @@
-import { warn } from 'ember-metal';
+import { warn } from 'ember-debug';
 import { jQuery } from 'ember-views';
 
 import { environment } from 'ember-environment';

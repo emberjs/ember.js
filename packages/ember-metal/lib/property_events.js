@@ -10,7 +10,7 @@ import {
   markObjectAsDirty
 } from './tags';
 import ObserverSet from './observer_set';
-import isEnabled from './features';
+import { isFeatureEnabled } from 'ember-debug';
 import { assertNotRendered } from './transaction';
 
 export let PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
@@ -112,8 +112,8 @@ function propertyDidChange(obj, keyName, _meta) {
 
   markObjectAsDirty(meta, keyName);
 
-  if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-      isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+  if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
+      isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
     assertNotRendered(obj, keyName, meta);
   }
 }

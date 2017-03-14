@@ -1,5 +1,5 @@
 import DebugStack from 'ember-glimmer/utils/debug-stack';
-import { runInDebug } from 'ember-metal';
+import { runInDebug } from 'ember-debug';
 
 runInDebug(() => {
   QUnit.module('Glimmer DebugStack');

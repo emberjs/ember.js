@@ -4,16 +4,15 @@
 */
 import { symbol } from 'ember-utils';
 import {
-  assert,
   run,
   get,
   flaggedInstrument,
-  isNone,
-  runInDebug
+  isNone
 } from 'ember-metal';
 import { UnboundReference } from '../utils/references';
 import { EvaluatedPositionalArgs } from '@glimmer/runtime';
 import { isConst } from '@glimmer/reference';
+import { runInDebug, assert } from 'ember-debug';
 
 export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');

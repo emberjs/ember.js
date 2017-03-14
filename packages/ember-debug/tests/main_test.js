@@ -18,7 +18,7 @@ import {
   deprecate,
   warn,
   assert as emberAssert
-} from 'ember-metal';
+} from '../index';
 
 let originalEnvValue;
 let originalDeprecateHandler;

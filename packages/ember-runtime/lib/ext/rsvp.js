@@ -1,9 +1,9 @@
 import * as RSVP from 'rsvp';
 import {
   run,
-  assert,
   dispatchError
 } from 'ember-metal';
+import { assert } from 'ember-debug';
 
 const backburner = run.backburner;
 run._addQueue('rsvpAfter', 'destroy');

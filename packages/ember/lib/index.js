@@ -31,10 +31,20 @@ Ember.Registry = Registry;
 // need to import this directly, to ensure the babel feature
 // flag plugin works properly
 import {
-  isFeatureEnabled,
   deprecate,
-  deprecateFunc
-} from 'ember-metal';
+  deprecateFunc,
+  runInDebug,
+  debug,
+  warn,
+  assert,
+  registerDeprecationHandler,
+  registerWarnHandler,
+  isFeatureEnabled,
+  isTesting,
+  setTesting,
+  Error as EmberError,
+  FEATURES
+} from 'ember-debug';
 
 const computed = metal.computed;
 computed.alias = metal.alias;
@@ -42,12 +52,17 @@ Ember.computed = computed;
 Ember.ComputedProperty = metal.ComputedProperty;
 Ember.cacheFor = metal.cacheFor;
 
-Ember.assert = metal.assert;
-Ember.warn = metal.warn;
-Ember.debug = metal.debug;
-Ember.deprecate = metal.deprecate;
-Ember.deprecateFunc = metal.deprecateFunc;
-Ember.runInDebug = metal.runInDebug;
+Ember.assert = assert;
+Ember.warn = warn;
+Ember.debug = debug;
+Ember.deprecate = deprecate;
+Ember.deprecateFunc = deprecateFunc;
+Ember.runInDebug = runInDebug;
+/**
+  @public
+  @class Ember.Debug
+*/
+Ember.Debug = { registerDeprecationHandler, registerWarnHandler };
 Ember.merge = metal.merge;
 
 Ember.instrument = metal.instrument;
@@ -59,7 +74,7 @@ Ember.Instrumentation = {
   reset: metal.instrumentationReset
 };
 
-Ember.Error = metal.Error;
+Ember.Error = EmberError;
 Ember.META_DESC = metal.META_DESC;
 Ember.meta = metal.meta;
 Ember.get = metal.get;
@@ -67,8 +82,8 @@ Ember.getWithDefault = metal.getWithDefault;
 Ember._getPath = metal._getPath;
 Ember.set = metal.set;
 Ember.trySet = metal.trySet;
-Ember.FEATURES = metal.FEATURES;
-Ember.FEATURES.isEnabled = metal.isFeatureEnabled;
+Ember.FEATURES = FEATURES;
+Ember.FEATURES.isEnabled = isFeatureEnabled;
 Ember._Cache = metal.Cache;
 Ember.on = metal.on;
 Ember.addListener = metal.addListener;
@@ -231,8 +246,8 @@ Object.defineProperty(Ember, 'K', {
 });
 
 Object.defineProperty(Ember, 'testing', {
-  get: metal.isTesting,
-  set: metal.setTesting,
+  get: isTesting,
+  set: setTesting,
   enumerable: false
 });
 

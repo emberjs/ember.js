@@ -1,6 +1,6 @@
 /* global self */
 
-import { setTesting } from 'ember-metal';
+import { setTesting } from 'ember-debug';
 import { jQuery } from 'ember-views';
 import {
   getAdapter,

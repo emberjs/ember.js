@@ -10,7 +10,7 @@ import {
   moduleFor
 } from 'internal-test-helpers';
 
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 if (isFeatureEnabled('ember-routing-router-service')) {
   let results = [];

@@ -5,12 +5,11 @@
 
 import { context } from 'ember-environment';
 import {
-  assert,
   get,
   Mixin,
   computed
 } from 'ember-metal';
-
+import { assert } from 'ember-debug';
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class
 to add a `triggerAction` method with semantics similar to the Handlebars

@@ -2,7 +2,7 @@ import { set, computed } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 moduleFor('Components test: dynamic components', class extends RenderingTest {
 

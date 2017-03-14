@@ -1,8 +1,9 @@
 import { getOwner, OWNER } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import { get, isFeatureEnabled } from 'ember-metal';
+import { get } from 'ember-metal';
 import { Registry } from '../index';
 import { factory } from 'internal-test-helpers';
+import { isFeatureEnabled } from 'ember-debug';
 import { LOOKUP_FACTORY, FACTORY_FOR } from 'container';
 
 let originalModelInjections;

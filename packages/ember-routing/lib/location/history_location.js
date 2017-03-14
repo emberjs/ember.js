@@ -1,8 +1,8 @@
 import {
   get,
-  set,
-  isFeatureEnabled
+  set
 } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 import { Object as EmberObject } from 'ember-runtime';
 import EmberLocation from './api';
