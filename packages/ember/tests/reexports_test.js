@@ -32,7 +32,6 @@ QUnit.module('ember reexports');
   ['computed.alias', 'ember-metal', 'alias'],
   ['ComputedProperty', 'ember-metal'],
   ['cacheFor', 'ember-metal'],
-  ['deprecate', 'ember-debug'],
   ['deprecateFunc', 'ember-debug'],
   ['assert', 'ember-debug'],
   ['warn', 'ember-debug'],

@@ -30,21 +30,8 @@ Ember.Registry = Registry;
 
 // need to import this directly, to ensure the babel feature
 // flag plugin works properly
-import {
-  deprecate,
-  deprecateFunc,
-  runInDebug,
-  debug,
-  warn,
-  assert,
-  registerDeprecationHandler,
-  registerWarnHandler,
-  isFeatureEnabled,
-  isTesting,
-  setTesting,
-  Error as EmberError,
-  FEATURES
-} from 'ember-debug';
+import * as EmberDebug from 'ember-debug';
+import { deprecate, runInDebug, deprecateFunc } from 'ember-debug';
 
 const computed = metal.computed;
 computed.alias = metal.alias;
@@ -52,17 +39,25 @@ Ember.computed = computed;
 Ember.ComputedProperty = metal.ComputedProperty;
 Ember.cacheFor = metal.cacheFor;
 
-Ember.assert = assert;
-Ember.warn = warn;
-Ember.debug = debug;
-Ember.deprecate = deprecate;
-Ember.deprecateFunc = deprecateFunc;
-Ember.runInDebug = runInDebug;
+Ember.assert = EmberDebug.assert;
+Ember.warn = EmberDebug.warn;
+Ember.debug = EmberDebug.debug;
+Ember.deprecate = function () { };
+Ember.deprecateFunc = function() { };
+runInDebug(function() {
+  Ember.deprecate = EmberDebug.deprecate;
+  Ember.deprecateFunc = EmberDebug.deprecateFunc;
+});
+Ember.deprecateFunc = EmberDebug.deprecateFunc;
+Ember.runInDebug = EmberDebug.runInDebug;
 /**
   @public
   @class Ember.Debug
 */
-Ember.Debug = { registerDeprecationHandler, registerWarnHandler };
+Ember.Debug = {
+  registerDeprecationHandler: EmberDebug.registerDeprecationHandler,
+  registerWarnHandler: EmberDebug.registerWarnHandler
+};
 Ember.merge = metal.merge;
 
 Ember.instrument = metal.instrument;
@@ -74,7 +69,7 @@ Ember.Instrumentation = {
   reset: metal.instrumentationReset
 };
 
-Ember.Error = EmberError;
+Ember.Error = EmberDebug.Error;
 Ember.META_DESC = metal.META_DESC;
 Ember.meta = metal.meta;
 Ember.get = metal.get;
@@ -82,8 +77,8 @@ Ember.getWithDefault = metal.getWithDefault;
 Ember._getPath = metal._getPath;
 Ember.set = metal.set;
 Ember.trySet = metal.trySet;
-Ember.FEATURES = FEATURES;
-Ember.FEATURES.isEnabled = isFeatureEnabled;
+Ember.FEATURES = EmberDebug.FEATURES;
+Ember.FEATURES.isEnabled = EmberDebug.isFeatureEnabled;
 Ember._Cache = metal.Cache;
 Ember.on = metal.on;
 Ember.addListener = metal.addListener;
@@ -146,7 +141,7 @@ Ember.bind = metal.bind;
 Ember.Binding = metal.Binding;
 Ember.isGlobalPath = metal.isGlobalPath;
 
-if (isFeatureEnabled('ember-metal-weakmap')) {
+if (EmberDebug.isFeatureEnabled('ember-metal-weakmap')) {
   Ember.WeakMap = metal.WeakMap;
 }
 
@@ -246,17 +241,10 @@ Object.defineProperty(Ember, 'K', {
 });
 
 Object.defineProperty(Ember, 'testing', {
-  get: isTesting,
-  set: setTesting,
+  get: EmberDebug.isTesting,
+  set: EmberDebug.setTesting,
   enumerable: false
 });
-
-if (!has('ember-debug')) {
-  Ember.Debug = {
-    registerDeprecationHandler() {},
-    registerWarnHandler() {}
-  };
-}
 
 import Backburner from 'backburner';
 
