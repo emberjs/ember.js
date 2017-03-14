@@ -533,7 +533,7 @@ function instantiate(factory, props, container, fullName) {
       obj = factory.create(assign({}, injections, props));
 
       // TODO - remove when Ember reaches v3.0.0
-      if (!Object.isFrozen(obj) && 'container' in obj) {
+      if (!Object.isFrozen(obj)) {
         injectDeprecatedContainer(obj, container);
       }
     }
@@ -557,6 +557,7 @@ function factoryInjectionsFor(container, fullName) {
 
 // TODO - remove when Ember reaches v3.0.0
 function injectDeprecatedContainer(object, container) {
+  if ('container' in object) { return; }
   Object.defineProperty(object, 'container', {
     configurable: true,
     enumerable: false,
@@ -693,8 +694,9 @@ class FactoryManager {
                   ` an invalid module export.`);
     }
 
-    if (this.class.prototype) {
-      injectDeprecatedContainer(this.class.prototype, this.container);
+    let prototype = this.class.prototype;
+    if (prototype) {
+      injectDeprecatedContainer(prototype, this.container);
     }
 
     return this.class.create(props);
