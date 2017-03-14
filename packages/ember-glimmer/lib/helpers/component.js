@@ -9,11 +9,13 @@ import {
   validatePositionalParameters
 } from '../syntax/curly-component';
 import {
+  combineTagged,
   EvaluatedArgs,
   EvaluatedNamedArgs,
   EvaluatedPositionalArgs,
   isComponentDefinition
 } from '@glimmer/runtime';
+import makeArray from 'ember-utils/make-array';
 import { assert, runInDebug } from 'ember-metal';
 
 /**
@@ -148,7 +150,7 @@ export class ClosureComponentReference extends CachedReference {
 
   constructor(args, symbolTable, env) {
     super();
-    
+
     let firstArg = args.positional.at(0);
     this.defRef = firstArg;
     this.tag = firstArg.tag;
@@ -219,6 +221,7 @@ runInDebug(() => {
 function curryArgs(definition, newArgs) {
   let { args, ComponentClass } = definition;
   let positionalParams = ComponentClass.class.positionalParams;
+  let concatenatedProperties = ComponentClass.class.proto().concatenatedProperties;
 
   // The args being passed in are from the (component ...) invocation,
   // so the first positional argument is actually the name or component
@@ -262,8 +265,22 @@ function curryArgs(definition, newArgs) {
   mergedPositional.splice(0, oldPositional.length, ...oldPositional);
   mergedPositional.splice(0, slicedPositionalArgs.length, ...slicedPositionalArgs);
 
+  let newNamed = newArgs.named.map;
+
   // Merge named maps
-  let mergedNamed = assign({}, oldNamed, positionalToNamedParams, newArgs.named.map);
+  let mergedNamed = assign({}, oldNamed, positionalToNamedParams, newNamed);
+
+  // This processed concatenatedProperties
+  for(let i = 0; i < concatenatedProperties.length; i++) {
+    let key = concatenatedProperties[i];
+    if (key in oldNamed && key in newNamed) {
+      let result = (makeArray(oldNamed[key].value()).concat(makeArray(newNamed[key].value())));
+      mergedNamed[key] = {
+        value() { return result; },
+        tag: oldNamed[key].tag
+      };
+    }
+  }
 
   let mergedArgs = EvaluatedArgs.create(
     EvaluatedPositionalArgs.create(mergedPositional),

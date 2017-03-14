@@ -1091,6 +1091,27 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       this.render('{{component (component "textarea" type="text")}}');
     }, 'You cannot use the textarea helper as a contextual helper. Please extend Ember.TextArea to use it as a contextual component.');
   }
+
+  ['@test GH#14914 concatenate concatenated properties in contextual components'](assert) {
+    this.registerComponent('my-comp', {
+      ComponentClass: Component.extend({
+        concatenatedProperties: ['foo'],
+        foo: 'first',
+        init() {
+          this._super();
+        }
+      }),
+      template: '{{#each foo as |f|}}{{f}} {{/each}}'
+    });
+
+    this.render('{{component (component (component (component "my-comp" foo=second) foo=third) foo=fourth)}}', {
+      second: ['second'],
+      third: 'third',
+      fourth: 'fourth'
+    });
+
+    this.assertText('first second third fourth ');
+  }
 });
 
 class ContextualComponentMutableParamsTest extends RenderingTest {
