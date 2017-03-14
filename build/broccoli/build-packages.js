@@ -21,7 +21,7 @@ module.exports = function() {
     .map(packagePath => treeForPackage(packagePath));
 
   // Merge all packages together, completing the build.
-  return funnel(merge(packageTrees), { destDir: 'node_modules' });
+  return merge(packageTrees);
 }
 
 function topsortPackages() {

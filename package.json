@@ -23,8 +23,9 @@
     "test:packages": "bin/run-package-tests.sh",
     "tsc": "tsc -p tsconfig.json --noEmit",
     "tslint": "tslint --project tsconfig.json",
-    "yarn:link": "node build/yarn-link-all.js",
     "problems": "tsc -p tsconfig.json --noEmit",
+    "yarn:link": "node bin/yarn-link-all",
+    "yarn:unlink": "node bin/yarn-link-all --unlink"
   },
   "dependencies": {
     "broccoli-concat": "^2.1.0",
