@@ -285,10 +285,10 @@ export class Meta {
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map) {
-        seen = seen || Object.create(null);
         let innerMap = map[subkey];
         if (innerMap) {
           for (let innerKey in innerMap) {
+            seen = seen || Object.create(null);
             if (!seen[innerKey]) {
               seen[innerKey] = true;
               calls = calls || [];
@@ -375,11 +375,12 @@ function inheritedMap(name, Meta) {
 
   Meta.prototype[`forEach${capitalized}`] = function(fn) {
     let pointer = this;
-    let seen = Object.create(null);
+    let seen;
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map) {
         for (let key in map) {
+          seen = seen || Object.create(null);
           if (!seen[key]) {
             seen[key] = true;
             fn(key, map[key]);
