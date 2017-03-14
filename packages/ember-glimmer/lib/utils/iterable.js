@@ -1,4 +1,4 @@
-import { guidFor, EmptyObject } from 'ember-utils';
+import { guidFor } from 'ember-utils';
 import { get, tagForProperty, tagFor, isProxy } from 'ember-metal';
 import {
   objectAt,
@@ -84,7 +84,7 @@ class ArrayIterator {
     this.length = array.length;
     this.keyFor = keyFor;
     this.position = 0;
-    this.seen = new EmptyObject();
+    this.seen = Object.create(null);
   }
 
   isEmpty() {
@@ -112,7 +112,7 @@ class EmberArrayIterator {
     this.length = get(array, 'length');
     this.keyFor = keyFor;
     this.position = 0;
-    this.seen = new EmptyObject();
+    this.seen = Object.create(null);
   }
 
   isEmpty() {
@@ -140,7 +140,7 @@ class ObjectKeysIterator {
     this.values = values;
     this.keyFor = keyFor;
     this.position = 0;
-    this.seen = new EmptyObject();
+    this.seen = Object.create(null);
   }
 
   isEmpty() {

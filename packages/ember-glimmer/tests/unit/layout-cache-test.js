@@ -1,4 +1,3 @@
-import { EmptyObject } from 'ember-utils';
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { CompiledBlock } from '@glimmer/runtime';
 import { OWNER } from 'ember-utils';
@@ -19,7 +18,7 @@ class Counter {
 
   reset() {
     this.total  = 0;
-    this.counts = new EmptyObject();
+    this.counts = Object.create(null);
   }
 }
 

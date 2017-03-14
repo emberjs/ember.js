@@ -1,4 +1,4 @@
-import { dictionary, EmptyObject, assign, intern } from 'ember-utils';
+import { dictionary, assign, intern } from 'ember-utils';
 import { assert, deprecate } from 'ember-metal';
 import Container from './container';
 
@@ -35,7 +35,7 @@ export default function Registry(options) {
   this._factoryTypeInjections = dictionary(null);
   this._factoryInjections     = dictionary(null);
 
-  this._localLookupCache      = new EmptyObject();
+  this._localLookupCache      = Object.create(null);
   this._normalizeCache        = dictionary(null);
   this._resolveCache          = dictionary(null);
   this._failCache             = dictionary(null);
@@ -205,7 +205,7 @@ Registry.prototype = {
 
     let normalizedName = this.normalize(fullName);
 
-    this._localLookupCache = new EmptyObject();
+    this._localLookupCache = Object.create(null);
 
     delete this.registrations[normalizedName];
     delete this._resolveCache[normalizedName];
@@ -811,7 +811,7 @@ function expandLocalLookup(registry, normalizedName, normalizedSource) {
   let normalizedNameCache = cache[normalizedName];
 
   if (!normalizedNameCache) {
-    normalizedNameCache = cache[normalizedName] = new EmptyObject();
+    normalizedNameCache = cache[normalizedName] = Object.create(null);
   }
 
   let cached = normalizedNameCache[normalizedSource];

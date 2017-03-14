@@ -1,5 +1,4 @@
 import {
-  EmptyObject,
   assign,
   guidFor,
   dictionary,
@@ -144,11 +143,11 @@ const EmberRouter = EmberObject.extend(Evented, {
     this.currentRouteName = null;
     this.currentPath = null;
 
-    this._qpCache = new EmptyObject();
+    this._qpCache = Object.create(null);
     this._resetQueuedQueryParameterChanges();
     this._handledErrors = dictionary(null);
-    this._engineInstances = new EmptyObject();
-    this._engineInfoByRoute = new EmptyObject();
+    this._engineInstances = Object.create(null);
+    this._engineInfoByRoute = Object.create(null)
   },
 
   /*
@@ -571,7 +570,7 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   _getHandlerFunction() {
-    let seen = new EmptyObject();
+    let seen = Object.create(null);
     let owner = getOwner(this);
 
     return name => {
@@ -1024,7 +1023,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let engineInstances = this._engineInstances;
 
     if (!engineInstances[name]) {
-      engineInstances[name] = new EmptyObject();
+      engineInstances[name] = Object.create(null);
     }
 
     let engineInstance = engineInstances[name][instanceId];
@@ -1483,7 +1482,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
   let target;
   let myState = {
     render: renderOptions,
-    outlets: new EmptyObject(),
+    outlets: Object.create(null),
     wasUsed: false
   };
   if (renderOptions.into) {
@@ -1528,7 +1527,7 @@ function appendOrphan(liveRoutes, into, myState) {
       render: {
         name: '__ember_orphans__'
       },
-      outlets: new EmptyObject()
+      outlets: Object.create(null)
     };
   }
   liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
