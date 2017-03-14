@@ -1,25 +1,9 @@
 # Ember Changelog
 
-### 2.12.0-beta.3 (March 8, 2017)
+### 2.12.0 (March 14, 2017)
 
-- [#14987](https://github.com/emberjs/ember.js/pull/14987) [BUGFIX] Fix a memory leak when components are destroyed.
-- [#14986](https://github.com/emberjs/ember.js/pull/14986) [BUGFIX] Fix a memory leak in RSVP.js.
-- [#14985](https://github.com/emberjs/ember.js/pull/14985) [BUGFIX] Fix a bug that added babel helpers to the global scope.
-- [#14898](https://github.com/emberjs/ember.js/pull/14898) [BUGFIX] Fix an issue where errors in tests sometimes do not cause a failure.
-- [#14707](https://github.com/emberjs/ember.js/pull/14707) [BUGFIX] Improve deprecation message for unsafe `style` attribute bindings.
-
-### 2.12.0-beta.2 (February 16, 2017)
-
-- [#14872](https://github.com/emberjs/ember.js/pull/14872) / [#14871](https://github.com/emberjs/ember.js/pull/14871) / [#14883](https://github.com/emberjs/ember.js/pull/14883) [PERF] Simplify action event handler
-- [#14905](https://github.com/emberjs/ember.js/pull/14905) [DOC] Add link to `_lookupFactory` deprecation message
-- [#14762](https://github.com/emberjs/ember.js/pull/14762) [BUGFIX] Make ember-template-compiler handle {{input}} helpers with sub-expression "type"
-- [#14791](https://github.com/emberjs/ember.js/pull/14791) [BUGFIX] exempt routes that share a controller from duplicate assertion
-- [#14860](https://github.com/emberjs/ember.js/pull/14860) [BUGFIX] Add back `mainContext` to loader #14859 (fixes issue with non ember-cli template compilation).
-- [#14878](https://github.com/emberjs/ember.js/pull/14878) [DOC] Fix yuidoc package paths to ensure RSVP is properly included in API documentation.
-- [#14910](https://github.com/emberjs/ember.js/pull/14910) [BUGFIX] Include blueprints in NPM release, to ensure `ember-source` blueprints are used over `ember-cli-legacy-blueprints`.
-
-### 2.12.0-beta.1 (January 23, 2017)
-
+- [#15000](https://github.com/emberjs/ember.js/pull/15000) / [#15002](https://github.com/emberjs/ember.js/pull/15002) / [#15006](https://github.com/emberjs/ember.js/pull/15006) / [#15008](https://github.com/emberjs/ember.js/pull/15008) / [#15009](https://github.com/emberjs/ember.js/pull/15009) / [#15011](https://github.com/emberjs/ember.js/pull/15011) [PERF] Assorted performance improvements for modern browsers.
+- [#14872](https://github.com/emberjs/ember.js/pull/14872) / [#14871](https://github.com/emberjs/ember.js/pull/14871) / [#14883](https://github.com/emberjs/ember.js/pull/14883) [PERF] Simplify action event handlertemplate compilation).
 - [#14360](https://github.com/emberjs/ember.js/pull/14360) [FEATURE factory-for] Implement `factoryFor`.
 - [#14751](https://github.com/emberjs/ember.js/pull/14751) [DEPRECATION} Deprecate `Ember.K`.
 - [#14756](https://github.com/emberjs/ember.js/pull/14756) [PERF] Disable costly `eventManager` support when unused.
@@ -27,7 +11,7 @@
 - [#14851](https://github.com/emberjs/ember.js/pull/14851) [PERF] only `LOG_VIEW_LOOKUPS` in debug
 - [#14829](https://github.com/emberjs/ember.js/pull/14829) [PERF] only `logLibraryVersions` in debug mode
 - [#14852](https://github.com/emberjs/ember.js/pull/14852) [PERF] only `LOG_TRANSITIONS` and `LOG_TRANSITIONS_INTERNAL` in debug
-- [#14854](https://github.com/emberjs/ember.js/pull/14854) [PER] only `LOG_ACTIVE_GENERATION` and `LOG_RESOLVER` in debug
+- [#14854](https://github.com/emberjs/ember.js/pull/14854) [PERF] only `LOG_ACTIVE_GENERATION` and `LOG_RESOLVER` in debug
 
 ### 2.11.3 (March 8, 2017)
 
