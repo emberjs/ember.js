@@ -1,14 +1,14 @@
 {
   "features": {
-    "features-stripped-test": null,
-    "ember-libraries-isregistered": null,
-    "ember-improved-instrumentation": null,
-    "ember-metal-weakmap": null,
-    "ember-glimmer-allow-backtracking-rerender": null,
+    "features-stripped-test": false,
+    "ember-libraries-isregistered": false,
+    "ember-improved-instrumentation": false,
+    "ember-metal-weakmap": false,
+    "ember-glimmer-allow-backtracking-rerender": false,
     "ember-testing-resume-test": true,
     "ember-factory-for": true,
     "ember-no-double-extend": true,
-    "ember-routing-router-service": null,
+    "ember-routing-router-service": false,
     "ember-unique-location-history-state": true
   }
 }
