@@ -68,19 +68,6 @@
     handlebars "^4.0.6"
     simple-html-tokenizer "^0.3.0"
 
-"@glimmer/test-helpers@^0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@glimmer/test-helpers/-/test-helpers-0.22.0.tgz#03d8253bc26e138bbf980d7f1f42d075196bf4ae"
-  dependencies:
-    "@glimmer/compiler" "^0.22.0"
-    "@glimmer/interfaces" "^0.22.0"
-    "@glimmer/object" "^0.22.0"
-    "@glimmer/object-reference" "^0.22.0"
-    "@glimmer/reference" "^0.22.0"
-    "@glimmer/runtime" "^0.22.0"
-    "@glimmer/util" "^0.22.0"
-    "@glimmer/wire-format" "^0.22.0"
-
 "@glimmer/util@^0.21.0":
   version "0.21.0"
   resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.21.0.tgz#86c1e972e2f777f5af664b59c5bc037b71e9ef00"

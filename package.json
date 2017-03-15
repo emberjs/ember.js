@@ -58,7 +58,6 @@
     "simple-html-tokenizer": "^0.3.0"
   },
   "devDependencies": {
-    "@glimmer/test-helpers": "^0.22.0",
     "aws-sdk": "~2.2.43",
     "babel-plugin-feature-flags": "^0.2.3",
     "babel-plugin-filter-imports": "~0.2.0",
