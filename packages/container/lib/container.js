@@ -171,12 +171,7 @@ Container.prototype = {
    @method destroy
    */
   destroy() {
-    eachDestroyable(this, item => {
-      if (item.destroy) {
-        item.destroy();
-      }
-    });
-
+    destroyDestroyables(this);
     this.isDestroyed = true;
   },
 
@@ -293,7 +288,7 @@ function isSingleton(container, fullName) {
   return container.registry.getOption(fullName, 'singleton') !== false;
 }
 
-function shouldInstantiate(container, fullName) {
+function isInstantiatable(container, fullName) {
   return container.registry.getOption(fullName, 'instantiate') !== false;
 }
 
@@ -330,19 +325,19 @@ function lookup(container, fullName, options = {}) {
 }
 
 function isSingletonClass(container, fullName, { instantiate, singleton }) {
-  return singleton !== false && isSingleton(container, fullName) && !instantiate && !shouldInstantiate(container, fullName);
+  return singleton !== false && isSingleton(container, fullName) && !instantiate && !isInstantiatable(container, fullName);
 }
 
 function isSingletonInstance(container, fullName, { instantiate, singleton }) {
-  return singleton !== false && isSingleton(container, fullName) && instantiate !== false && shouldInstantiate(container, fullName);
+  return singleton !== false && isSingleton(container, fullName) && instantiate !== false && isInstantiatable(container, fullName);
 }
 
 function isFactoryClass(container, fullname, { instantiate, singleton }) {
-  return (singleton === false || !isSingleton(container, fullname)) && instantiate === false && !shouldInstantiate(container, fullname);
+  return (singleton === false || !isSingleton(container, fullname)) && instantiate === false && !isInstantiatable(container, fullname);
 }
 
 function isFactoryInstance(container, fullName, { instantiate, singleton }) {
-  return (singleton !== false || isSingleton(container, fullName)) && instantiate !== false && shouldInstantiate(container, fullName);
+  return (singleton !== false || isSingleton(container, fullName)) && instantiate !== false && isInstantiatable(container, fullName);
 }
 
 function instantiateFactory(container, fullName, options) {
@@ -565,7 +560,7 @@ function injectDeprecatedContainer(object, container) {
   });
 }
 
-function eachDestroyable(container, callback) {
+function destroyDestroyables(container) {
   let cache = container.cache;
   let keys = Object.keys(cache);
 
@@ -573,19 +568,14 @@ function eachDestroyable(container, callback) {
     let key = keys[i];
     let value = cache[key];
 
-    if (container.registry.getOption(key, 'instantiate') !== false) {
-      callback(value);
+    if (isInstantiatable(container, key) && value.destroy) {
+      value.destroy();
     }
   }
 }
 
 function resetCache(container) {
-  eachDestroyable(container, value => {
-    if (value.destroy) {
-      value.destroy();
-    }
-  });
-
+  destroyDestroyables(container);
   container.cache.dict = dictionary(null);
 }
 
