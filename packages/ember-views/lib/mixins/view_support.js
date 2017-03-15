@@ -337,7 +337,7 @@ export default Mixin.create({
     finished synchronizing
 
     @method replaceIn
-    @param {String|DOMElement|jQuery} target A selector, element, HTML string, or jQuery object
+    @param {String|DOMElement|jQuery} selector A selector, element, HTML string, or jQuery object
     @return {Ember.View} received
     @private
   */

@@ -19,7 +19,7 @@ export function constructStyleDeprecationMessage(affectedStyle) {
     'please ensure that values being bound are properly escaped. For more information, ' +
     'including how to disable this warning, see ' +
     'http://emberjs.com/deprecations/v1.x/#toc_binding-style-attributes. ' +
-    'Style affected: "' + affectedStyle + '"';
+    `Style affected: "${affectedStyle}"`;
 }
 
 /**

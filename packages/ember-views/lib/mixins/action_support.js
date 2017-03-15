@@ -104,13 +104,9 @@ export default Mixin.create({
     @param [params] {*} arguments for the action
     @public
   */
-  sendAction(action, ...contexts) {
+  sendAction(action = 'action', ...contexts) {
     let actionName;
 
-    // Send the default action
-    if (action === undefined) {
-      action = 'action';
-    }
     actionName = get(this, `attrs.${action}`) || get(this, action);
     actionName = validateAction(this, actionName);
 
@@ -131,8 +127,8 @@ export default Mixin.create({
     let action = this.actions && this.actions[actionName];
 
     if (action) {
-      let shouldBubble = action.apply(this, args) === true;
-      if (!shouldBubble) { return; }
+      let shouldBubble = action.apply(this, args);
+      if (shouldBubble === false) { return; }
     }
 
     let target = get(this, 'target');
