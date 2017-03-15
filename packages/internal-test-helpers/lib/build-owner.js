@@ -51,7 +51,7 @@ export default function buildOwner(options = {}) {
     __container__: null
   }, ownerOptions);
 
-  let container = registry.container({ owner: owner });
+  let container = registry.container({ owner });
   owner.__container__ = container;
 
   return owner;
