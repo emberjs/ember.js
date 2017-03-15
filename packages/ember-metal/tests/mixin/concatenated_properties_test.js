@@ -1,8 +1,8 @@
-import get from '../../property_get';
 import {
   Mixin,
-  mixin
-} from '../../mixin';
+  mixin,
+  get
+} from '../..';
 
 QUnit.module('Mixin concatenatedProperties');
 

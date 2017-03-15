@@ -64,7 +64,7 @@ function K() {}
 
 function ensureRunloop() {
   if (!run) {
-    run = require('ember-metal/run_loop').default;
+    run = require('ember-metal').run;
   }
 
   if (hasViews() && !run.backburner.currentInstance) {

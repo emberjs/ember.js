@@ -1,5 +1,4 @@
-import isNone from '../../is_none';
-import run from '../../run_loop';
+import { run, isNone } from '../..';
 
 const originalSetTimeout = window.setTimeout;
 const originalDateValueOf = Date.prototype.valueOf;

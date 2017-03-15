@@ -1,4 +1,4 @@
-import expandProperties from '../expand_properties';
+import { expandProperties } from '..';
 
 let foundProperties = [];
 

@@ -1,4 +1,13 @@
 
+function ExtendBuiltin(klass) {
+  function ExtendableBuiltin() {
+    klass.apply(this, arguments);
+  }
+
+  ExtendableBuiltin.prototype = Object.create(klass.prototype);
+  ExtendableBuiltin.prototype.constructor = ExtendableBuiltin;
+  return ExtendableBuiltin;
+}
 
 /**
   A subclass of the JavaScript Error object for use in Ember.
@@ -9,7 +18,7 @@
   @constructor
   @public
 */
-export default class EmberError extends Error {
+export default class EmberError extends ExtendBuiltin(Error) {
   constructor(message) {
     super();
 

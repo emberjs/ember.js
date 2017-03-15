@@ -1,4 +1,4 @@
-import WeakMap from '../weak_map';
+import { WeakMap } from '..';
 
 QUnit.module('Ember.WeakMap');
 

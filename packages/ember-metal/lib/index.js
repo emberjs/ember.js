@@ -24,7 +24,8 @@ export {
   getOnerror,
   setOnerror,
   dispatchError,
-  setDispatchOverride
+  setDispatchOverride,
+  getDispatchOverride
 } from './error_handler';
 export {
   META_DESC,
@@ -94,7 +95,7 @@ export {
   watch,
   watcherCount
 } from './watching';
-export { default as libraries } from './libraries';
+export { default as libraries, Libraries } from './libraries';
 export {
   Map,
   MapWithDefault,

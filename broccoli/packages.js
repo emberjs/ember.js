@@ -1,0 +1,276 @@
+'use strict';
+/* eslint-env node */
+const { readFileSync } = require('fs');
+const path = require('path');
+const Rollup = require('broccoli-rollup');
+const Funnel = require('broccoli-funnel');
+const findLib = require('./find-lib');
+const funnelLib = require('./funnel-lib');
+const { VERSION } = require('./version');
+const WriteFile = require('broccoli-file-creator');
+const StringReplace = require('broccoli-string-replace');
+const { RELEASE, DEBUG } = require('./features');
+const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
+const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
+
+module.exports.routerES = function _routerES() {
+  return new Rollup(findLib('router_js', 'lib'), {
+    rollup: {
+      external: ['route-recognizer', 'rsvp'],
+      entry: 'router.js',
+      plugins: [{
+        transform(code, id) {
+          if (/[^t][^e][^r]\/router\.js$/.test(id)) {
+            code += 'export { Transition } from \'./router/transition\';\n'
+          } else if (/\/router\/handler-info\/[^\/]+\.js$/.test(id)) {
+            code = code.replace(/\'router\//g, '\'../');
+          }
+          code = code.replace(/import\ Promise\ from \'rsvp\/promise\'/g, 'import { Promise } from \'rsvp\'')
+          return {
+            code: code,
+            map: { mappings: '' }
+          };
+        }
+      }],
+      targets: [{
+        dest: 'router.js',
+        format: 'es'
+      }]
+    },
+    annotation: 'router.js'
+  });
+}
+
+
+module.exports.jquery = function _jquery() {
+  return new Funnel(findLib('jquery'), {
+    files: ['jquery.js'],
+    destDir: 'jquery',
+    annotation: 'jquery'
+  });
+}
+
+module.exports.internalLoader = function _internalLoader() {
+  return new Funnel('packages/loader/lib', {
+    files: ['index.js'],
+    getDestinationPath() {
+      return 'loader.js';
+    },
+    annotation: 'internal loader'
+  });
+}
+
+module.exports.qunit = function _qunit() {
+  return new Funnel(findLib('qunitjs'), {
+    files: ['qunit.js', 'qunit.css'],
+    destDir: 'qunit',
+    annotation: 'qunit'
+  });
+}
+
+module.exports.glimmerDependencyInjectionES = function _glimmerDependencyInjectionES() {
+  return new Rollup(findLib('@glimmer/di', 'dist/modules/es2017'), {
+    rollup: {
+      entry: 'index.js',
+      dest: '@glimmer/di.js',
+      external: ['@glimmer/util'],
+      format: 'es',
+      exports: 'named'
+    }
+  });
+}
+
+module.exports.emberGlimmerES = function _emberGlimmerES() {
+  let pkg = new Funnel('packages/ember-glimmer/lib', {
+    include: ['**/*.js', '**/*.hbs'],
+    destDir: 'ember-glimmer'
+  });
+
+  return new GlimmerTemplatePrecompiler(pkg, {
+    persist: true,
+    glimmer: require('@glimmer/compiler'),
+    annotation: 'ember-glimmer es'
+  });
+}
+
+module.exports.handlebarsES = function _handlebars() {
+  return new Rollup(findLib('handlebars', 'lib'), {
+    rollup: {
+      entry: 'handlebars/compiler/base.js',
+      dest: 'handlebars.js',
+      format: 'es',
+      exports: 'named',
+      plugins: [handlebarsFix()]
+    },
+    annotation: 'handlebars'
+  })
+}
+
+function handlebarsFix() {
+  var HANDLEBARS_PARSER = /\/parser.js$/;
+  return {
+    load: function(id) {
+      if (HANDLEBARS_PARSER.test(id)) {
+        var code = readFileSync(id, 'utf8');
+        return {
+          code: code
+            .replace('exports.__esModule = true;', '')
+            .replace('exports[\'default\'] = handlebars;', 'export default handlebars;'),
+
+          map: { mappings: null }
+        };
+      }
+    }
+  }
+}
+
+module.exports.rsvpES = function _rsvpES() {
+  let lib = path.resolve(path.dirname(require.resolve('rsvp')), '../lib');
+  return new Rollup(lib, {
+    rollup: {
+      entry: 'rsvp.js',
+      dest: 'rsvp.js',
+      format: 'es',
+      exports: 'named'
+    },
+    annotation: 'rsvp.js'
+  });
+}
+
+module.exports.backburnerES = function _backburnerES() {
+  return funnelLib('backburner.js', 'dist/es6', {
+    files: ['backburner.js'],
+    annotation: 'backburner es'
+  });
+}
+
+module.exports.dagES = function _dagES() {
+  return funnelLib('dag-map', {
+    files: ['dag-map.js'],
+    annotation: 'dag-map es'
+  });
+}
+
+module.exports.routeRecognizerES = function _routeRecognizerES() {
+  return funnelLib('route-recognizer', {
+    files: ['route-recognizer.es.js'],
+    getDestinationPath() {
+      return 'route-recognizer.js'
+    },
+    annotation: 'route-recognizer es'
+  });
+}
+
+
+module.exports.simpleHTMLTokenizerES = function _simpleHTMLTokenizerES() {
+  return new Rollup(findLib('simple-html-tokenizer', 'dist/es6'), {
+    rollup: {
+      entry: 'index.js',
+      dest: 'simple-html-tokenizer.js',
+      format: 'es',
+      exports: 'named'
+    },
+    annotation: 'simple-html-tokenizer es'
+  })
+}
+
+module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
+  if (rollup) {
+    return new Rollup(`packages/${name}/lib`, {
+      rollup: {
+        entry: 'index.js',
+        dest: `${name}.js`,
+        external: externs,
+        format: 'es',
+        exports: 'named'
+      }
+    });
+  }
+
+  return new Funnel(`packages/${name}/lib`, {
+    exclude: ['.gitkeep'],
+    destDir: name,
+    annotation: `${name} es`
+  });
+}
+
+module.exports.glimmerPkgES = function _glimmerPkgES(name, externs = []) {
+  return new Rollup(findLib(name, 'dist/modules'), {
+    rollup: {
+      entry: 'index.js',
+      dest: `${name}.js`,
+      external: externs,
+      format: 'es',
+      exports: 'named'
+    },
+    annotation: `${name} es`
+  });
+}
+
+module.exports.emberTestsES = function _emberTestES(name) {
+  return new Funnel(`packages/${name}/tests`, {
+    exclude: ['.gitkeep'],
+    destDir: `${name}/tests`,
+    annotation: `${name} tests es`
+  });
+}
+
+module.exports.nodeModuleUtils = function _nodeModuleUtils() {
+  return new Funnel('packages/node-module/lib', {
+    files: ['index.js']
+  });
+}
+
+module.exports.emberVersionES = function _emberVersionES() {
+  let content = 'export default ' + JSON.stringify(VERSION) + ';\n';
+  return new WriteFile('ember/version.js', content, {
+    annotation: 'ember/version'
+  });
+}
+
+module.exports.emberLicense = function _emberLicense() {
+  let license = new Funnel('generators', {
+    files: ['license.js'],
+    annotation: 'license'
+  });
+
+  return new StringReplace(license, {
+    files: ['license.js'],
+    patterns: [{
+      match: VERSION_PLACEHOLDER,
+      replacement: VERSION
+    }],
+    annotation: 'license'
+  });
+}
+
+module.exports.emberFeaturesES = function _emberFeaturesES(production = false) {
+  let content = 'export default ' + JSON.stringify(production ? RELEASE : DEBUG) + ';\n';
+  return new WriteFile('ember/features.js', content, {
+    annotation: `ember/features ${production ? 'production' : 'debug' }`
+  });
+}
+
+module.exports.packageManagerJSONs = function _packageManagerJSONs() {
+  var packageJsons = new Funnel('config/package_manager_files', {
+    include: ['*.json'],
+    destDir: '/',
+    annotation: 'package.json'
+  });
+
+  packageJsons = new StringReplace(packageJsons, {
+    patterns: [{
+      match: VERSION_PLACEHOLDER,
+      replacement: VERSION
+    }],
+    files: ['*.json']
+  });
+  packageJsons._annotation = 'package.json VERSION';
+  return packageJsons;
+}
+
+module.exports.nodeTests = function _nodeTests() {
+  return new Funnel('tests', {
+    include: ['**/*/*.js']
+  });
+}

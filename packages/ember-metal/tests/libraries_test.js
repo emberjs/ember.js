@@ -1,6 +1,6 @@
 /* globals EmberDev */
 import { isFeatureEnabled, getDebugFunction, setDebugFunction } from 'ember-debug';
-import { Libraries } from '../libraries';
+import { Libraries } from '..';
 
 let libs, registry;
 let originalWarn = getDebugFunction('warn');

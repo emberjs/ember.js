@@ -2,9 +2,9 @@ import { testBoth } from 'internal-test-helpers';
 import {
   observer,
   mixin,
-  Mixin
-} from '../../mixin';
-import { isWatching } from '../../watching';
+  Mixin,
+  isWatching
+} from '../..';
 
 QUnit.module('Mixin observer');
 

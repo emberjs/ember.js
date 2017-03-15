@@ -1,8 +1,8 @@
-import get from '../../property_get';
 import {
+  get,
   Mixin,
   mixin
-} from '../../mixin';
+} from '../..';
 
 QUnit.module('Ember.Mixin.apply');
 

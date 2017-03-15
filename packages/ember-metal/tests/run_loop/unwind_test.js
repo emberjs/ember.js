@@ -1,4 +1,4 @@
-import run from '../../run_loop';
+import { run } from '../..';
 import { Error as EmberError } from 'ember-debug';
 
 QUnit.module('system/run_loop/unwind_test');
