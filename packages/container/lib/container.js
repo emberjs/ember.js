@@ -379,30 +379,26 @@ function areInjectionsDynamic(injections) {
   return !!injections._dynamic;
 }
 
-function buildInjections() /* container, ...injections */{
+function buildInjections(container, ...injectionsArray) {
   let hash = {};
+  let injections = Array.prototype.concat(...injectionsArray);
 
-  if (arguments.length > 1) {
-    let container = arguments[0];
-    let injections = [];
-    let injection;
-
-    for (let i = 1; i < arguments.length; i++) {
-      if (arguments[i]) {
-        injections = injections.concat(arguments[i]);
-      }
-    }
-
+  if (injections.length > 0) {
     runInDebug(() => {
       container.registry.validateInjections(injections);
     });
 
+    let markAsDynamic = false;
     for (let i = 0; i < injections.length; i++) {
-      injection = injections[i];
-      hash[injection.property] = lookup(container, injection.fullName);
-      if (!isSingleton(container, injection.fullName)) {
-        markInjectionsAsDynamic(hash);
+      let { property, fullName } = injections[i];
+      hash[property] = lookup(container, fullName);
+      if (!markAsDynamic) {
+        markAsDynamic = !isSingleton(container, fullName);
       }
+    }
+
+    if (markAsDynamic) {
+      markInjectionsAsDynamic(hash);
     }
   }
 
