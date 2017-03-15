@@ -1,13 +1,11 @@
 import { toString } from 'ember-utils';
-import { assert } from './debug';
-import isEnabled from './features';
+import { assert, isFeatureEnabled, Error as EmberError } from 'ember-debug';
 import { _getPath as getPath } from './property_get';
 import {
   propertyWillChange,
   propertyDidChange
 } from './property_events';
 
-import EmberError from './error';
 import {
   isPath,
   hasThis as pathHasThis
@@ -68,7 +66,7 @@ export function set(obj, keyName, value, tolerant) {
   } else {
     propertyWillChange(obj, keyName);
 
-    if (isEnabled('mandatory-setter')) {
+    if (isFeatureEnabled('mandatory-setter')) {
       setWithMandatorySetter(meta, obj, keyName, value);
     } else {
       obj[keyName] = value;
@@ -80,7 +78,7 @@ export function set(obj, keyName, value, tolerant) {
   return value;
 }
 
-if (isEnabled('mandatory-setter')) {
+if (isFeatureEnabled('mandatory-setter')) {
   var setWithMandatorySetter = (meta, obj, keyName, value) => {
     if (meta && meta.peekWatching(keyName) > 0) {
       makeEnumerable(obj, keyName);

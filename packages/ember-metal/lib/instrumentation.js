@@ -2,7 +2,7 @@
 /* global console */
 
 import { ENV } from 'ember-environment';
-import isEnabled from './features';
+import { isFeatureEnabled } from 'ember-debug';
 
 /**
   The purpose of the Ember Instrumentation module is
@@ -110,7 +110,7 @@ export function instrument(name, _payload, callback, binding) {
 }
 
 let flaggedInstrument;
-if (isEnabled('ember-improved-instrumentation')) {
+if (isFeatureEnabled('ember-improved-instrumentation')) {
   flaggedInstrument = instrument;
 } else {
   flaggedInstrument = (name, payload, callback) => callback();

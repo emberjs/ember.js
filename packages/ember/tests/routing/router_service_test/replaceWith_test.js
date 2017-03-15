@@ -5,7 +5,7 @@ import {
 } from 'internal-test-helpers';
 import { Transition } from 'router';
 
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 if (isFeatureEnabled('ember-routing-router-service')) {
   moduleFor('Router Service - replaceWith', class extends RouterTestCase {
@@ -61,6 +61,24 @@ if (isFeatureEnabled('ember-routing-router-service')) {
         })
         .then(() => {
           return this.routerService.replaceWith('parent.brother');
+        })
+        .then(() => {
+          assert.deepEqual(this.state, ['/', '/child', '/brother']);
+        });
+    }
+
+    ['@test RouterService#replaceWith with basic route using URLs replaces location'](assert) {
+      assert.expect(1);
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo('/child');
+        })
+        .then(() => {
+          return this.routerService.transitionTo('/sister');
+        })
+        .then(() => {
+          return this.routerService.replaceWith('/brother');
         })
         .then(() => {
           assert.deepEqual(this.state, ['/', '/child', '/brother']);

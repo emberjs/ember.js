@@ -10,7 +10,7 @@ import {
   FACTORY_FOR,
   LOOKUP_FACTORY
 } from 'container';
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -148,6 +148,44 @@ let containerProxyMixin = {
 };
 
 if (isFeatureEnabled('ember-factory-for')) {
+  /**
+   Given a fullName return a factory manager.
+
+   This method returns a manager which can be used for introspection of the
+   factory's class or for the creation of factory instances with initial
+   properties. The manager is an object with the following properties:
+
+   * `class` - The registered or resolved class.
+   * `create` - A function that will create an instance of the class with
+     any dependencies injected.
+
+   For example:
+
+   ```javascript
+   let owner = Ember.getOwner(otherInstance);
+   // the owner is commonly the `applicationInstance`, and can be accessed via
+   // an instance initializer.
+
+   let factory = owner.factoryFor('service:bespoke');
+
+   factory.class;
+   // The registered or resolved class. For example when used with an Ember-CLI
+   // app, this would be the default export from `app/services/bespoke.js`.
+
+   let instance = factory.create({
+     someProperty: 'an initial property value'
+   });
+   // Create an instance with any injections and the passed options as
+   // initial properties.
+   ```
+
+   @public
+   @class ContainerProxyMixin
+   @method factoryFor
+   @param {String} fullName
+   @param {Object} options
+   @return {FactoryManager}
+   */
   containerProxyMixin.factoryFor = function ContainerProxyMixin_factoryFor(fullName, options = {}) {
     return this.__container__.factoryFor(fullName, options);
   };

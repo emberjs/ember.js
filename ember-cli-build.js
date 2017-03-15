@@ -207,8 +207,8 @@ function babelConfigFor(environment) {
 
   plugins.push(applyFeatureFlags({
     imports: [
-      { module: 'ember-metal/features' },
-      { module: 'ember-metal', name: 'isFeatureEnabled' },
+      { module: 'ember-debug/features' },
+      { module: 'ember-debug', name: 'isFeatureEnabled' },
     ],
     features: features
   }));
@@ -217,8 +217,8 @@ function babelConfigFor(environment) {
   if (isProduction) {
     includeDevHelpers = false;
     plugins.push(filterImports({
-      'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal', 'debugFreeze'],
-      'ember-metal': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal', 'debugFreeze']
+      'ember-debug/deprecate': ['deprecate'],
+      'ember-debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal', 'debugFreeze']
     }));
   }
 
@@ -274,13 +274,16 @@ function qunit() {
 }
 
 function handlebarsFix() {
-  var HANDLEBARS_UTIL = /\/utils.js$/;
+  var HANDLEBARS_PARSER = /\/parser.js$/;
   return {
     load: function(id) {
-      if (HANDLEBARS_UTIL.test(id)) {
+      if (HANDLEBARS_PARSER.test(id)) {
         var code = fs.readFileSync(id, 'utf8');
         return {
-          code: code.replace(/export var isFunction/, 'export { isFunction }'),
+          code: code
+            .replace('exports.__esModule = true;', '')
+            .replace('exports[\'default\'] = handlebars;', 'export default handlebars;'),
+
           map: { mappings: null }
         };
       }

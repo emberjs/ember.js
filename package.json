@@ -10,6 +10,13 @@
     "url": "https://github.com/emberjs/ember.js/issues"
   },
   "license": "MIT",
+  "files": [
+    "blueprints",
+    "dist",
+    "!dist/tests",
+    "vendor/ember",
+    "index.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/emberjs/ember.js.git"
@@ -28,13 +35,14 @@
     "link:glimmer": "node bin/yarn-link-glimmer.js"
   },
   "dependencies": {
-    "@glimmer/compiler": "^0.21.1",
-    "@glimmer/di": "^0.1.6",
-    "@glimmer/node": "^0.21.1",
-    "@glimmer/reference": "^0.21.0",
-    "@glimmer/runtime": "^0.21.1",
-    "@glimmer/util": "^0.21.0",
-    "broccoli-stew": "^1.2.0",
+    "@glimmer/compiler": "^0.22.0",
+    "@glimmer/di": "^0.1.8",
+    "@glimmer/node": "^0.22.0",
+    "@glimmer/reference": "^0.22.0",
+    "@glimmer/runtime": "^0.22.0",
+    "@glimmer/util": "^0.22.0",
+    "broccoli-funnel": "^1.0.6",
+    "broccoli-merge-trees": "^1.1.4",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-normalize-entity-name": "^1.0.0",
     "ember-cli-path-utils": "^1.0.0",
@@ -42,21 +50,19 @@
     "ember-cli-test-info": "^1.0.0",
     "ember-cli-valid-component-name": "^1.0.0",
     "ember-cli-version-checker": "^1.1.7",
-    "handlebars": "~3",
+    "handlebars": "^4.0.6",
     "jquery": "^3.1.1",
     "resolve": "^1.1.7",
-    "rsvp": "^3.3.3",
+    "rsvp": "^3.4.0",
     "simple-dom": "^0.3.0",
     "simple-html-tokenizer": "^0.3.0"
   },
   "devDependencies": {
-    "@glimmer/test-helpers": "^0.21.1",
+    "@glimmer/test-helpers": "^0.22.0",
     "aws-sdk": "~2.2.43",
     "babel-plugin-feature-flags": "^0.2.3",
     "babel-plugin-filter-imports": "~0.2.0",
     "backburner.js": "^0.3.1",
-    "broccoli-funnel": "^1.0.6",
-    "broccoli-merge-trees": "^1.1.4",
     "broccoli-rollup": "^1.0.3",
     "broccoli-string-replace": "^0.1.1",
     "broccoli-uglify-sourcemap": "^1.4.2",

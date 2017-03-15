@@ -1,6 +1,5 @@
-import { EmptyObject } from 'ember-utils';
+import { assert } from 'ember-debug';
 import {
-  assert,
   get,
   _addBeforeObserver,
   _removeBeforeObserver,
@@ -74,7 +73,7 @@ EachProxy.prototype = {
   beginObservingContentKey(keyName) {
     let keys = this._keys;
     if (!keys) {
-      keys = this._keys = new EmptyObject();
+      keys = this._keys = Object.create(null);
     }
 
     if (!keys[keyName]) {

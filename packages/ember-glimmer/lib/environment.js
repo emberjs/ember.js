@@ -1,10 +1,11 @@
 import { guidFor, OWNER } from 'ember-utils';
-import { Cache, assert, warn, runInDebug, isFeatureEnabled } from 'ember-metal';
+import { Cache } from 'ember-metal';
+import { assert, warn, runInDebug, isFeatureEnabled } from 'ember-debug';
 import {
   lookupPartial,
   hasPartial,
   lookupComponent,
-  STYLE_WARNING
+  constructStyleDeprecationMessage
 } from 'ember-views';
 import {
   Environment as GlimmerEnvironment,
@@ -64,7 +65,7 @@ export default class Environment extends GlimmerEnvironment {
     this.isInteractive = owner.lookup('-environment:main').isInteractive;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
-    this.destroyedComponents = undefined;
+    this.destroyedComponents = [];
 
     installPlatformSpecificProtocolForURL(this);
 
@@ -180,16 +181,7 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  hasHelper(nameParts, symbolTable) {
-    assert('The first argument passed into `hasHelper` should be an array', Array.isArray(nameParts));
-
-    // helpers are not allowed to include a dot in their invocation
-    if (nameParts.length > 1) {
-      return false;
-    }
-
-    let name = nameParts[0];
-
+  hasHelper(name, symbolTable) {
     if (this.builtInHelpers[name]) {
       return true;
     }
@@ -202,10 +194,7 @@ export default class Environment extends GlimmerEnvironment {
       owner.hasRegistration(`helper:${name}`);
   }
 
-  lookupHelper(nameParts, symbolTable) {
-    assert('The first argument passed into `lookupHelper` should be an array', Array.isArray(nameParts));
-
-    let name = nameParts[0];
+  lookupHelper(name, symbolTable) {
     let helper = this.builtInHelpers[name];
 
     if (helper) {
@@ -228,7 +217,7 @@ export default class Environment extends GlimmerEnvironment {
         }
         return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
       } else {
-        throw new Error(`${nameParts} is not a helper`);
+        throw new Error(`${name} is not a helper`);
       }
     } else {
       let helperFactory = owner.lookup(`helper:${name}`, options) || owner.lookup(`helper:${name}`);
@@ -239,31 +228,22 @@ export default class Environment extends GlimmerEnvironment {
       } else if (helperFactory.isHelperFactory) {
         return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
       } else {
-        throw new Error(`${nameParts} is not a helper`);
+        throw new Error(`${name} is not a helper`);
       }
     }
   }
 
-  hasModifier(nameParts) {
-    assert('The first argument passed into `hasModifier` should be an array', Array.isArray(nameParts));
-
-    // modifiers are not allowed to include a dot in their invocation
-    if (nameParts.length > 1) {
-      return false;
-    }
-
-    return !!this.builtInModifiers[nameParts[0]];
+  hasModifier(name) {
+    return !!this.builtInModifiers[name];
   }
 
-  lookupModifier(nameParts) {
-    assert('The first argument passed into `lookupModifier` should be an array', Array.isArray(nameParts));
-
-    let modifier = this.builtInModifiers[nameParts[0]];
+  lookupModifier(name) {
+    let modifier = this.builtInModifiers[name];
 
     if (modifier) {
       return modifier;
     } else {
-      throw new Error(`${nameParts} is not a modifier`);
+      throw new Error(`${name} is not a modifier`);
     }
   }
 
@@ -296,16 +276,16 @@ export default class Environment extends GlimmerEnvironment {
     this.inTransaction = true;
 
     super.begin();
-
-    this.destroyedComponents = [];
   }
 
   commit() {
+    let destroyedComponents = this.destroyedComponents;
+    this.destroyedComponents = [];
     // components queued for destruction must be destroyed before firing
     // `didCreate` to prevent errors when removing and adding a component
     // with the same name (would throw an error when added to view registry)
-    for (let i = 0; i < this.destroyedComponents.length; i++) {
-      this.destroyedComponents[i].destroy();
+    for (let i = 0; i < destroyedComponents.length; i++) {
+      destroyedComponents[i].destroy();
     }
 
     super.commit();
@@ -317,7 +297,7 @@ export default class Environment extends GlimmerEnvironment {
 runInDebug(() => {
   class StyleAttributeManager extends AttributeManager {
     setAttribute(dom, element, value) {
-      warn(STYLE_WARNING, (() => {
+      warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
         }
@@ -327,7 +307,7 @@ runInDebug(() => {
     }
 
     updateAttribute(dom, element, value) {
-      warn(STYLE_WARNING, (() => {
+      warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
         }

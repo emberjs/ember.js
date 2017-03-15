@@ -4,7 +4,11 @@ import {
   map,
   referenceFromParts
 } from '@glimmer/reference';
-import { get, assert } from 'ember-metal';
+import {
+  Ops
+} from '@glimmer/wire-format';
+import { assert } from 'ember-debug';
+import { get } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
 import { ROOT_REF } from '../component';
 import { htmlSafe, isHTMLSafe } from './string';
@@ -40,11 +44,11 @@ export function wrapComponentClassAttribute(hash) {
   if (index !== -1) {
     let [ type ] = values[index];
 
-    if (type === 'get') {
+    if (type === Ops.Get) {
       let getExp = values[index];
       let path = getExp[1];
       let propName = path[path.length - 1];
-      hash[1][index] = ['helper', ['-class'], [getExp, propName]];
+      hash[1][index] = [Ops.Helper, ['-class'], [getExp, propName]];
     }
   }
 

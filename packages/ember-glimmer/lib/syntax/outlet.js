@@ -7,7 +7,8 @@ import {
   ComponentDefinition,
   CompiledArgs
 } from '@glimmer/runtime';
-import { _instrumentStart, runInDebug } from 'ember-metal';
+import { runInDebug } from 'ember-debug';
+import { _instrumentStart } from 'ember-metal';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract-manager';
 import {

@@ -7,7 +7,7 @@ import {
 import controllerFor from '../../system/controller_for';
 import generateController from '../../system/generate_controller';
 import { buildOwner } from 'internal-test-helpers';
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 function buildInstance(namespace) {
   let owner = buildOwner();

@@ -1,12 +1,13 @@
 /* global EmberDev */
 
-import { InjectedProperty, isFeatureEnabled } from 'ember-metal';
+import { InjectedProperty } from 'ember-metal';
 import inject from '../inject';
 import {
   createInjectionHelper
 } from '../inject';
 import EmberObject from '../system/object';
 import { buildOwner } from 'internal-test-helpers';
+import { isFeatureEnabled } from 'ember-debug';
 
 QUnit.module('inject');
 

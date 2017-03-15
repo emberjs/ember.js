@@ -1,4 +1,3 @@
-import { EmptyObject } from 'ember-utils';
 import { get } from './property_get';
 import { meta as metaFor, peekMeta } from './meta';
 import { watchKey, unwatchKey } from './watch_key';
@@ -23,7 +22,7 @@ class ChainWatchers {
     // chain nodes that reference a key in this obj by key
     // we only create ChainWatchers when we are going to add them
     // so create this upfront
-    this.chains = new EmptyObject();
+    this.chains = Object.create(null);
   }
 
   add(key, node) {
@@ -231,7 +230,7 @@ class ChainNode {
     let chains = this._chains;
     let node;
     if (chains === undefined) {
-      chains = this._chains = new EmptyObject();
+      chains = this._chains = Object.create(null);
     } else {
       node = chains[key];
     }

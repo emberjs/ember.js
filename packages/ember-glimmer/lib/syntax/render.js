@@ -6,7 +6,7 @@ import {
   ComponentDefinition
 } from '@glimmer/runtime';
 import { ConstReference, isConst } from '@glimmer/reference';
-import { assert, runInDebug } from 'ember-metal';
+import { assert, runInDebug } from 'ember-debug';
 import { RootReference } from '../utils/references';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';

@@ -11,7 +11,7 @@ export default class RouterTestCase extends ApplicationTestCase {
         this.route('sister');
         this.route('brother');
       });
-      this.route('dynamic', { path: '/dynamic/:post_id' });
+      this.route('dynamic', { path: '/dynamic/:dynamic_id' });
     });
   }
 

@@ -4,14 +4,11 @@
 */
 import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
+import { assert, runInDebug, debug, isTesting } from 'ember-debug';
 import {
-  assert,
-  debug,
   libraries,
-  isTesting,
   get,
-  run,
-  runInDebug
+  run
 } from 'ember-metal';
 import {
   Namespace,
@@ -36,7 +33,7 @@ import { privatize as P } from 'container';
 import Engine from './engine';
 import { setupApplicationRegistry } from 'ember-glimmer';
 import { RouterService } from 'ember-routing';
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 let librariesRegistered = false;
 

@@ -11,7 +11,7 @@ import { _withDynamicVarsMacro } from './syntax/-with-dynamic-vars';
 import { _inElementMacro } from './syntax/-in-element';
 import { inputMacro } from './syntax/input';
 import { textAreaMacro } from './syntax/-text-area';
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 
 function refineInlineSyntax(path, params, hash, builder) {
   let [ name ] = path;

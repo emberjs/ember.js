@@ -5,8 +5,6 @@
 
 import { CachedTag, DirtyableTag, UpdatableTag } from '@glimmer/reference';
 import {
-  assert,
-  deprecate,
   get,
   set,
   meta,
@@ -22,6 +20,10 @@ import {
   observer,
   tagFor,
 } from 'ember-metal';
+import {
+  assert,
+  deprecate
+} from 'ember-debug';
 import { bool } from '../computed/computed_macros';
 
 function contentPropertyWillChange(content, contentKey) {

@@ -60,7 +60,7 @@ function defaults(obj, defaults) {
   return obj;
 }
 
-babelHelpers = {
+var babelHelpers = {
   classCallCheck: classCallCheck,
   inherits: inherits,
   taggedTemplateLiteralLoose: taggedTemplateLiteralLoose,

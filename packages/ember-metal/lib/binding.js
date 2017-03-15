@@ -2,7 +2,7 @@ import { guidFor } from 'ember-utils';
 import Logger from 'ember-console';
 import { context, ENV } from 'ember-environment';
 import run from './run_loop';
-import { assert, deprecate } from './debug';
+import { assert, deprecate } from 'ember-debug';
 import { get } from './property_get';
 import { trySet } from './property_set';
 import { addListener } from './events';

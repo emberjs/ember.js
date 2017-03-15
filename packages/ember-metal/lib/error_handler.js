@@ -1,5 +1,5 @@
 import Logger from 'ember-console';
-import { isTesting } from './testing';
+import { isTesting } from 'ember-debug';
 
 // To maintain stacktrace consistency across browsers
 let getStack = error => {
@@ -34,6 +34,9 @@ export function dispatchError(error) {
 }
 
 // allows testing adapter to override dispatch
+export function getDispatchOverride() {
+  return dispatchOverride;
+}
 export function setDispatchOverride(handler) {
   dispatchOverride = handler;
 }

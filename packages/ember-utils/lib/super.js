@@ -17,7 +17,7 @@ export const checkHasSuper = ((() => {
   };
 })());
 
-function ROOT() {}
+export function ROOT() {}
 ROOT.__hasSuper = false;
 
 function hasSuper(func) {

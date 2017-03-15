@@ -50,7 +50,7 @@ function defaults(obj, defaults) {
   return obj;
 }
 
-babelHelpers = {
+var babelHelpers = {
   inherits: inherits,
   taggedTemplateLiteralLoose: taggedTemplateLiteralLoose,
   slice: Array.prototype.slice,

@@ -1,13 +1,12 @@
 import { meta as metaFor } from './meta';
-import { assert, runInDebug, deprecate } from './debug';
-import isEnabled from './features';
+import { assert, runInDebug, deprecate, isFeatureEnabled } from 'ember-debug';
 
 let runInTransaction, didRender, assertNotRendered;
 
 // detect-backtracking-rerender by default is debug build only
 // detect-glimmer-allow-backtracking-rerender can be enabled in custom builds
-if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
+    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
   let counter = 0;
   let inTransaction = false;
   let shouldReflush;
@@ -70,7 +69,7 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
 
         let message = `You modified "${label}" twice on ${object} in a single render. It was rendered in ${lastRenderedIn} and modified in ${currentlyIn}. This was unreliable and slow in Ember 1.x and`;
 
-        if (isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+        if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
           deprecate(`${message} will be removed in Ember 3.0.`, false, { id: 'ember-views.render-double-modify', until: '3.0.0' });
         } else {
           assert(`${message} is no longer supported. See https://github.com/emberjs/ember.js/issues/13948 for more details.`, false);

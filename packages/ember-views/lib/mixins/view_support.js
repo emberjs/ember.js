@@ -1,5 +1,6 @@
 import { guidFor, getOwner } from 'ember-utils';
-import { assert, deprecate, descriptor, runInDebug, Mixin } from 'ember-metal';
+import { descriptor, Mixin } from 'ember-metal';
+import { assert, deprecate, runInDebug } from 'ember-debug';
 import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
 import { POST_INIT } from 'ember-runtime/system/core_object';
@@ -60,6 +61,52 @@ runInDebug(() => {
  @private
 */
 export default Mixin.create({
+  /**
+    A list of properties of the view to apply as attributes. If the property
+    is a string value, the value of that string will be applied as the value
+    for an attribute of the property's name.
+
+    The following example creates a tag like `<div priority="high" />`.
+
+    ```javascript
+    Ember.Component.extend({
+      attributeBindings: ['priority'],
+      priority: 'high'
+    });
+    ```
+
+    If the value of the property is a Boolean, the attribute is treated as
+    an HTML Boolean attribute. It will be present if the property is `true`
+    and omitted if the property is `false`.
+
+    The following example creates markup like `<div visible />`.
+
+    ```javascript
+    Ember.Component.extend({
+      attributeBindings: ['visible'],
+      visible: true
+    });
+    ```
+
+    If you would prefer to use a custom value instead of the property name,
+    you can create the same markup as the last example with a binding like
+    this:
+
+    ```javascript
+    Ember.Component.extend({
+      attributeBindings: ['isVisible:visible'],
+      isVisible: true
+    });
+    ```
+
+    This list of attributes is inherited from the component's superclasses,
+    as well.
+
+    @property attributeBindings
+    @type Array
+    @default []
+    @public
+   */
   concatenatedProperties: ['attributeBindings'],
   [POST_INIT]() {
     dispatchLifeCycleHook(this, 'didInitAttrs', undefined, this.attrs);

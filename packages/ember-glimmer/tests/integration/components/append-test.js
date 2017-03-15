@@ -1,8 +1,9 @@
-import { set, isFeatureEnabled } from 'ember-metal';
+import { set } from 'ember-metal';
 import { jQuery } from 'ember-views';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component, compile } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
+import { isFeatureEnabled } from 'ember-debug';
 
 class AbstractAppendTest extends RenderingTest {
 

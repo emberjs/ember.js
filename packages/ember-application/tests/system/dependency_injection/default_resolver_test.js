@@ -1,11 +1,11 @@
 /* globals EmberDev */
 import { context } from 'ember-environment';
+import { run } from 'ember-metal';
 import {
+  isFeatureEnabled,
   getDebugFunction,
-  setDebugFunction,
-  run,
-  isFeatureEnabled
-} from 'ember-metal';
+  setDebugFunction
+} from 'ember-debug';
 import {
   Controller,
   Service,

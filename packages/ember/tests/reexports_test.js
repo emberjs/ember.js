@@ -1,6 +1,6 @@
 import Ember from '../index';
 import { confirmExport } from 'internal-test-helpers';
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 QUnit.module('ember reexports');
 
@@ -32,25 +32,24 @@ QUnit.module('ember reexports');
   ['computed.alias', 'ember-metal', 'alias'],
   ['ComputedProperty', 'ember-metal'],
   ['cacheFor', 'ember-metal'],
-  ['deprecate', 'ember-metal'],
-  ['deprecateFunc', 'ember-metal'],
-  ['assert', 'ember-metal'],
-  ['warn', 'ember-metal'],
-  ['debug', 'ember-metal'],
-  ['runInDebug', 'ember-metal'],
+  ['deprecateFunc', 'ember-debug'],
+  ['assert', 'ember-debug'],
+  ['warn', 'ember-debug'],
+  ['debug', 'ember-debug'],
+  ['runInDebug', 'ember-debug'],
   ['merge', 'ember-metal'],
   ['instrument', 'ember-metal'],
   ['Instrumentation.instrument', 'ember-metal', 'instrument'],
   ['Instrumentation.subscribe', 'ember-metal', 'instrumentationSubscribe'],
   ['Instrumentation.unsubscribe', 'ember-metal', 'instrumentationUnsubscribe'],
   ['Instrumentation.reset', 'ember-metal', 'instrumentationReset'],
-  ['testing', 'ember-metal', { get: 'isTesting', set: 'setTesting' }],
+  ['testing', 'ember-debug', { get: 'isTesting', set: 'setTesting' }],
   ['onerror', 'ember-metal', { get: 'getOnerror', set: 'setOnerror' }],
   // ['create'], TODO: figure out what to do here
   // ['keys'], TODO: figure out what to do here
-  ['FEATURES', 'ember-metal'],
-  ['FEATURES.isEnabled', 'ember-metal', 'isFeatureEnabled'],
-  ['Error', 'ember-metal'],
+  ['FEATURES', 'ember-debug'],
+  ['FEATURES.isEnabled', 'ember-debug', 'isFeatureEnabled'],
+  ['Error', 'ember-debug'],
   ['META_DESC', 'ember-metal'],
   ['meta', 'ember-metal'],
   ['get', 'ember-metal'],

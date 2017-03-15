@@ -1,3 +1,4 @@
+import { assert, deprecate, runInDebug, isFeatureEnabled } from 'ember-debug';
 /* globals Proxy */
 import {
   dictionary,
@@ -9,12 +10,6 @@ import {
   HAS_NATIVE_PROXY
 } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import {
-  assert,
-  deprecate,
-  runInDebug,
-  isFeatureEnabled
-} from 'ember-metal';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 export const FACTORY_FOR = symbol('FACTORY_FOR');
@@ -38,6 +33,7 @@ export default function Container(registry, options) {
   this.owner           = options && options.owner ? options.owner : null;
   this.cache           = dictionary(options && options.cache ? options.cache : null);
   this.factoryCache    = dictionary(options && options.factoryCache ? options.factoryCache : null);
+  this.factoryManagerCache = dictionary(options && options.factoryManagerCache ? options.factoryManagerCache : null);
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
   this._fakeContainerToInject = buildFakeContainerWithDeprecations(this);
   this[CONTAINER_OVERRIDE] = undefined;
@@ -83,43 +79,30 @@ Container.prototype = {
 
   /**
    Given a fullName return a corresponding instance.
-
-   The default behaviour is for lookup to return a singleton instance.
+    The default behaviour is for lookup to return a singleton instance.
    The singleton is scoped to the container, allowing multiple containers
    to all have their own locally scoped singletons.
-
-   ```javascript
+    ```javascript
    let registry = new Registry();
    let container = registry.container();
-
-   registry.register('api:twitter', Twitter);
-
-   let twitter = container.lookup('api:twitter');
-
-   twitter instanceof Twitter; // => true
-
-   // by default the container will return singletons
+    registry.register('api:twitter', Twitter);
+    let twitter = container.lookup('api:twitter');
+    twitter instanceof Twitter; // => true
+    // by default the container will return singletons
    let twitter2 = container.lookup('api:twitter');
    twitter2 instanceof Twitter; // => true
-
-   twitter === twitter2; //=> true
+    twitter === twitter2; //=> true
    ```
-
-   If singletons are not wanted, an optional flag can be provided at lookup.
-
-   ```javascript
+    If singletons are not wanted, an optional flag can be provided at lookup.
+    ```javascript
    let registry = new Registry();
    let container = registry.container();
-
-   registry.register('api:twitter', Twitter);
-
-   let twitter = container.lookup('api:twitter', { singleton: false });
+    registry.register('api:twitter', Twitter);
+    let twitter = container.lookup('api:twitter', { singleton: false });
    let twitter2 = container.lookup('api:twitter', { singleton: false });
-
-   twitter === twitter2; //=> false
+    twitter === twitter2; //=> false
    ```
-
-   @private
+    @private
    @method lookup
    @param {String} fullName
    @param {Object} [options]
@@ -133,8 +116,7 @@ Container.prototype = {
 
   /**
    Given a fullName, return the corresponding factory.
-
-   @private
+    @private
    @method lookupFactory
    @param {String} fullName
    @param {Object} [options]
@@ -144,11 +126,7 @@ Container.prototype = {
   lookupFactory(fullName, options) {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
 
-    deprecate(
-      'Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.',
-      !isFeatureEnabled('ember-factory-for'),
-      { id: 'container-lookupFactory', until: '2.13.0', url: 'TODO' }
-    );
+    deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.', !isFeatureEnabled('ember-factory-for'), { id: 'container-lookupFactory', until: '2.13.0', url: 'http://emberjs.com/deprecations/v2.x/#toc_migrating-from-_lookupfactory-to-factoryfor' });
 
     return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
   },
@@ -174,7 +152,9 @@ Container.prototype = {
       }
     }
     let factory = this[LOOKUP_FACTORY](fullName, options);
-    if (factory === undefined) { return; }
+    if (factory === undefined) {
+      return;
+    }
     let manager = new DeprecatedFactoryManager(this, factory, fullName);
 
     runInDebug(() => {
@@ -187,8 +167,7 @@ Container.prototype = {
   /**
    A depth first traversal, destroying the container, its descendant containers and all
    their managed objects.
-
-   @private
+    @private
    @method destroy
    */
   destroy() {
@@ -203,8 +182,7 @@ Container.prototype = {
 
   /**
    Clear either the entire cache or just the cache for a particular key.
-
-   @private
+    @private
    @method reset
    @param {String} fullName optional key to reset; if missing, resets everything
    */
@@ -219,8 +197,7 @@ Container.prototype = {
   /**
    Returns an object that can be used to provide an owner to a
    manually created instance.
-
-   @private
+    @private
    @method ownerInjection
    @returns { Object }
   */
@@ -271,8 +248,7 @@ if (isFeatureEnabled('ember-factory-for')) {
    is responsible for the destruction of any factory instances, as there is no
    way for the container to ensure instances are destroyed when it itself is
    destroyed.
-
-   @public
+    @public
    @method factoryFor
    @param {String} fullName
    @param {Object} [options]
@@ -281,17 +257,26 @@ if (isFeatureEnabled('ember-factory-for')) {
    */
   Container.prototype.factoryFor = function _factoryFor(fullName, options = {}) {
     let normalizedName = this.registry.normalize(fullName);
+
     assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
 
     if (options.source) {
       normalizedName = this.registry.expandLocalLookup(fullName, options);
       // if expandLocalLookup returns falsey, we do not support local lookup
-      if (!normalizedName) { return; }
+      if (!normalizedName) {
+        return;
+      }
     }
+
+    let cached = this.factoryManagerCache[normalizedName];
+
+    if (cached) { return cached; }
 
     let factory = this.registry.resolve(normalizedName);
 
-    if (factory === undefined) { return; }
+    if (factory === undefined) {
+      return;
+    }
 
     let manager = new FactoryManager(this, factory, fullName, normalizedName);
 
@@ -299,6 +284,7 @@ if (isFeatureEnabled('ember-factory-for')) {
       manager = wrapManagerInDeprecationProxy(manager);
     });
 
+    this.factoryManagerCache[normalizedName] = manager;
     return manager;
   };
 }
@@ -316,7 +302,9 @@ function lookup(container, fullName, options = {}) {
     fullName = container.registry.expandLocalLookup(fullName, options);
 
     // if expandLocalLookup returns falsey, we do not support local lookup
-    if (!fullName) { return; }
+    if (!fullName) {
+      return;
+    }
   }
 
   if (container.cache[fullName] !== undefined && options.singleton !== false) {
@@ -329,7 +317,9 @@ function lookup(container, fullName, options = {}) {
     let factory = deprecatedFactoryFor(container, fullName);
     let value = instantiate(factory, {}, container, fullName);
 
-    if (value === undefined) { return; }
+    if (value === undefined) {
+      return;
+    }
 
     if (isSingleton(container, fullName) && options.singleton !== false) {
       container.cache[fullName] = value;
@@ -340,29 +330,27 @@ function lookup(container, fullName, options = {}) {
 }
 
 function isSingletonClass(container, fullName, { instantiate, singleton }) {
-  return (singleton !== false && isSingleton(container, fullName)) &&
-         (instantiate === false && !shouldInstantiate(container, fullName));
+  return singleton !== false && isSingleton(container, fullName) && !instantiate && !shouldInstantiate(container, fullName);
 }
 
 function isSingletonInstance(container, fullName, { instantiate, singleton }) {
-  return (singleton !== false && isSingleton(container, fullName)) &&
-         (instantiate !== false && shouldInstantiate(container, fullName));
+  return singleton !== false && isSingleton(container, fullName) && instantiate !== false && shouldInstantiate(container, fullName);
 }
 
 function isFactoryClass(container, fullname, { instantiate, singleton }) {
-  return (singleton === false || !isSingleton(container, fullname)) &&
-         (instantiate === false && !shouldInstantiate(container, fullname));
+  return (singleton === false || !isSingleton(container, fullname)) && instantiate === false && !shouldInstantiate(container, fullname);
 }
 
 function isFactoryInstance(container, fullName, { instantiate, singleton }) {
-  return (singleton !== false || isSingleton(container, fullName)) &&
-         (instantiate !== false && shouldInstantiate(container, fullName));
+  return (singleton !== false || isSingleton(container, fullName)) && instantiate !== false && shouldInstantiate(container, fullName);
 }
 
 function instantiateFactory(container, fullName, options) {
   let factoryManager = container[FACTORY_FOR](fullName);
 
-  if (factoryManager === undefined) { return; }
+  if (factoryManager === undefined) {
+    return;
+  }
 
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
@@ -391,7 +379,7 @@ function areInjectionsDynamic(injections) {
   return !!injections._dynamic;
 }
 
-function buildInjections(/* container, ...injections */) {
+function buildInjections() /* container, ...injections */{
   let hash = {};
 
   if (arguments.length > 1) {
@@ -427,7 +415,9 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
   if (options.source) {
     fullName = registry.expandLocalLookup(fullName, options);
     // if expandLocalLookup returns falsey, we do not support local lookup
-    if (!fullName) { return; }
+    if (!fullName) {
+      return;
+    }
   }
 
   let cache = container.factoryCache;
@@ -435,10 +425,12 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
     return cache[fullName];
   }
   let factory = registry.resolve(fullName);
-  if (factory === undefined) { return; }
+  if (factory === undefined) {
+    return;
+  }
 
   let type = fullName.split(':')[0];
-  if (!factory || typeof factory.extend !== 'function' || (!ENV.MODEL_FACTORY_INJECTIONS && type === 'model')) {
+  if (!factory || typeof factory.extend !== 'function' || !ENV.MODEL_FACTORY_INJECTIONS && type === 'model') {
     if (factory && typeof factory._onLookup === 'function') {
       factory._onLookup(fullName);
     }
@@ -477,9 +469,7 @@ function injectionsFor(container, fullName) {
   let splitName = fullName.split(':');
   let type = splitName[0];
 
-  let injections = buildInjections(container,
-                                   registry.getTypeInjections(type),
-                                   registry.getInjections(fullName));
+  let injections = buildInjections(container, registry.getTypeInjections(type), registry.getInjections(fullName));
   injections._debugContainerKey = fullName;
 
   setOwner(injections, container.owner);
@@ -496,8 +486,7 @@ function instantiate(factory, props = {}, container, fullName) {
 
   if (factory) {
     if (typeof factory.create !== 'function') {
-      throw new Error(`Failed to create an instance of '${fullName}'. Most likely an improperly defined class or` +
-                      ` an invalid module export.`);
+      throw new Error(`Failed to create an instance of '${fullName}'. Most likely an improperly defined class or` + ` an invalid module export.`);
     }
 
     validationCache = container.validationCache;
@@ -533,7 +522,7 @@ function instantiate(factory, props = {}, container, fullName) {
       obj = factory.create(assign({}, injections, props));
 
       // TODO - remove when Ember reaches v3.0.0
-      if (!Object.isFrozen(obj) && 'container' in obj) {
+      if (!Object.isFrozen(obj)) {
         injectDeprecatedContainer(obj, container);
       }
     }
@@ -547,9 +536,7 @@ function factoryInjectionsFor(container, fullName) {
   let splitName = fullName.split(':');
   let type = splitName[0];
 
-  let factoryInjections = buildInjections(container,
-                                          registry.getFactoryTypeInjections(type),
-                                          registry.getFactoryInjections(fullName));
+  let factoryInjections = buildInjections(container, registry.getFactoryTypeInjections(type), registry.getFactoryInjections(fullName));
   factoryInjections._debugContainerKey = fullName;
 
   return factoryInjections;
@@ -557,22 +544,17 @@ function factoryInjectionsFor(container, fullName) {
 
 // TODO - remove when Ember reaches v3.0.0
 function injectDeprecatedContainer(object, container) {
+  if ('container' in object) { return; }
   Object.defineProperty(object, 'container', {
     configurable: true,
     enumerable: false,
     get() {
-      deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.',
-                false,
-                { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
+      deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.', false, { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
       return this[CONTAINER_OVERRIDE] || container;
     },
 
     set(value) {
-      deprecate(
-        `Providing the \`container\` property to ${this} is deprecated. Please use \`Ember.setOwner\` or \`owner.ownerInjection()\` instead to provide an owner to the instance being created.`,
-        false,
-        { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' }
-      );
+      deprecate(`Providing the \`container\` property to ${this} is deprecated. Please use \`Ember.setOwner\` or \`owner.ownerInjection()\` instead to provide an owner to the instance being created.`, false, { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
 
       this[CONTAINER_OVERRIDE] = value;
 
@@ -596,7 +578,7 @@ function eachDestroyable(container, callback) {
 }
 
 function resetCache(container) {
-  eachDestroyable(container, (value) => {
+  eachDestroyable(container, value => {
     if (value.destroy) {
       value.destroy();
     }
@@ -634,16 +616,12 @@ export function buildFakeContainerWithDeprecations(container) {
 }
 
 function buildFakeContainerFunction(container, containerProperty, ownerProperty) {
-  return function() {
-    deprecate(
-      `Using the injected \`container\` is deprecated. Please use the \`getOwner\` helper to access the owner of this object and then call \`${ownerProperty}\` instead.`,
-      false,
-      {
-        id: 'ember-application.injected-container',
-        until: '3.0.0',
-        url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access'
-      }
-    );
+  return function () {
+    deprecate(`Using the injected \`container\` is deprecated. Please use the \`getOwner\` helper to access the owner of this object and then call \`${ownerProperty}\` instead.`, false, {
+      id: 'ember-application.injected-container',
+      until: '3.0.0',
+      url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access'
+    });
     return container[containerProperty](...arguments);
   };
 }
@@ -666,13 +644,14 @@ class FactoryManager {
     this.class = factory;
     this.fullName = fullName;
     this.normalizedName = normalizedName;
+    this.madeToString = undefined;
   }
 
   create(options = {}) {
     let injections = injectionsFor(this.container, this.normalizedName);
     let props = assign({}, injections, options);
 
-    props[NAME_KEY] = this.container.registry.makeToString(this.class, this.fullName);
+    props[NAME_KEY] = this.madeToString || (this.madeToString = this.container.registry.makeToString(this.class, this.fullName));
 
     runInDebug(() => {
       let lazyInjections;
@@ -689,12 +668,12 @@ class FactoryManager {
     });
 
     if (!this.class.create) {
-      throw new Error(`Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or` +
-                  ` an invalid module export.`);
+      throw new Error(`Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or` + ` an invalid module export.`);
     }
 
-    if (this.class.prototype) {
-      injectDeprecatedContainer(this.class.prototype, this.container);
+    let prototype = this.class.prototype;
+    if (prototype) {
+      injectDeprecatedContainer(prototype, this.container);
     }
 
     return this.class.create(props);
