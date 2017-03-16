@@ -392,12 +392,17 @@ function buildInjections() /* container, ...injections */{
       container.registry.validateInjections(injections);
     });
 
+    let markAsDynamic = false;
     for (let i = 0; i < injections.length; i++) {
       injection = injections[i];
       hash[injection.property] = lookup(container, injection.fullName);
-      if (!isSingleton(container, injection.fullName)) {
-        markInjectionsAsDynamic(hash);
+      if (!markAsDynamic) {
+        markAsDynamic = !isSingleton(container, injection.fullName);
       }
+    }
+
+    if (markAsDynamic) {
+      markInjectionsAsDynamic(hash);
     }
   }
 
