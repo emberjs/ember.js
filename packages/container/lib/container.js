@@ -677,10 +677,18 @@ class FactoryManager {
     this.fullName = fullName;
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
+    this.injections = undefined;
   }
 
   create(options = {}) {
-    let injections = injectionsFor(this.container, this.normalizedName);
+
+    let injections = this.injections;
+    if (injections === undefined) {
+      injections = injectionsFor(this.container, this.normalizedName);
+      if (areInjectionsDynamic(injections) === false) {
+        this.injections = injections;
+      }
+    }
     let props = assign({}, injections, options);
 
     props[NAME_KEY] = this.madeToString || (this.madeToString = this.container.registry.makeToString(this.class, this.fullName));
