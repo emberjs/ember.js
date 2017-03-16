@@ -68,21 +68,22 @@ export const protoMethods = {
 
   matchingListeners(eventName) {
     let pointer = this;
-    let result = [];
-    while (pointer) {
+    let result;
+    while (pointer !== undefined) {
       let listeners = pointer._listeners;
-      if (listeners) {
+      if (listeners !== undefined) {
         for (let index = 0; index < listeners.length - 3; index += 4) {
           if (listeners[index] === eventName) {
+            result = result || [];
             pushUniqueListener(result, listeners, index);
           }
         }
       }
-      if (pointer._listenersFinalized) { break; }
+      if (pointer._listenersFinalized === true) { break; }
       pointer = pointer.parent;
     }
     let sus = this._suspendedListeners;
-    if (sus) {
+    if (sus !== undefined && result !== undefined) {
       for (let susIndex = 0; susIndex < sus.length - 2; susIndex += 3) {
         if (eventName === sus[susIndex]) {
           for (let resultIndex = 0; resultIndex < result.length - 2; resultIndex += 3) {

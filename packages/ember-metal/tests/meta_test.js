@@ -42,7 +42,7 @@ QUnit.test('meta.listeners basics', function(assert) {
   assert.equal(matching[0], t);
   m.removeFromListeners('hello', t, 'm');
   matching = m.matchingListeners('hello');
-  assert.equal(matching.length, 0);
+  assert.equal(matching, undefined);
 });
 
 QUnit.test('meta.listeners inheritance', function(assert) {
@@ -61,7 +61,7 @@ QUnit.test('meta.listeners inheritance', function(assert) {
   assert.equal(matching[2], 0);
   m.removeFromListeners('hello', target, 'm');
   matching = m.matchingListeners('hello');
-  assert.equal(matching.length, 0);
+  assert.equal(matching, undefined);
   matching = parentMeta.matchingListeners('hello');
   assert.equal(matching.length, 3);
 });
