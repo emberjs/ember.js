@@ -343,7 +343,6 @@ module.exports = function(options) {
                              }),
     '@glimmer/node':         buildPackage('@glimmer/node', { external: ['@glimmer/runtime'] }),
     '@glimmer/syntax':       buildPackage('@glimmer/syntax', { external: ['handlebars', 'simple-html-tokenizer'] }),
-    '@glimmer/test-helpers': buildPackage('@glimmer/test-helpers'),
     '@glimmer/util':         buildPackage('@glimmer/util', { external: [] }),
     '@glimmer/wire-format':  buildPackage('@glimmer/wire-format', { external: ['@glimmer/util'] }),
     'handlebars':            buildPackage('handlebars', {
