@@ -74,7 +74,8 @@ function topsortPackages() {
 function treeForPackage(packagePath) {
   let packageTree = buildPackage({
     projectPath: packagePath,
-    tsconfigPath: TSCONFIG_PATH
+    tsconfigPath: TSCONFIG_PATH,
+    include: ['lib/**/*.ts', 'index.ts']
   });
 
   let packageJSONTree = treeForPackageJSON(packagePath);
