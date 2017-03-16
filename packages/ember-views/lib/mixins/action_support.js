@@ -127,8 +127,8 @@ export default Mixin.create({
     let action = this.actions && this.actions[actionName];
 
     if (action) {
-      let shouldBubble = action.apply(this, args);
-      if (shouldBubble === false) { return; }
+      let shouldBubble = action.apply(this, args) === true;
+      if (!shouldBubble) { return; }
     }
 
     let target = get(this, 'target');
