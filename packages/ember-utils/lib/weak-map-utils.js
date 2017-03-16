@@ -1,4 +1,4 @@
-export const HAS_NATIVE_WEAKMAP = (function() {
+export const HAS_NATIVE_WEAKMAP = ((() => {
   // detect if `WeakMap` is even present
   let hasWeakMap = typeof WeakMap === 'function';
   if (!hasWeakMap) { return false; }
@@ -7,4 +7,4 @@ export const HAS_NATIVE_WEAKMAP = (function() {
   // use `Object`'s `.toString` directly to prevent us from detecting
   // polyfills as native weakmaps
   return Object.prototype.toString.call(instance) === '[object WeakMap]';
-})();
+}))();

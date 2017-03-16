@@ -13,6 +13,6 @@ export default function applyStr(t, m, a) {
     case 3:  return t[m](a[0], a[1], a[2]);
     case 4:  return t[m](a[0], a[1], a[2], a[3]);
     case 5:  return t[m](a[0], a[1], a[2], a[3], a[4]);
-    default: return t[m].apply(t, a);
+    default: return t[m](...a);
   }
 }

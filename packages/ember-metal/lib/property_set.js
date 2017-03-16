@@ -1,13 +1,11 @@
 import { toString } from 'ember-utils';
-import { assert } from './debug';
-import isEnabled from './features';
+import { assert, isFeatureEnabled, Error as EmberError } from 'ember-debug';
 import { _getPath as getPath } from './property_get';
 import {
   propertyWillChange,
   propertyDidChange
 } from './property_events';
 
-import EmberError from './error';
 import {
   isPath,
   hasThis as pathHasThis
@@ -68,7 +66,7 @@ export function set(obj, keyName, value, tolerant) {
   } else {
     propertyWillChange(obj, keyName);
 
-    if (isEnabled('mandatory-setter')) {
+    if (isFeatureEnabled('mandatory-setter')) {
       setWithMandatorySetter(meta, obj, keyName, value);
     } else {
       obj[keyName] = value;
@@ -80,8 +78,8 @@ export function set(obj, keyName, value, tolerant) {
   return value;
 }
 
-if (isEnabled('mandatory-setter')) {
-  var setWithMandatorySetter = function(meta, obj, keyName, value) {
+if (isFeatureEnabled('mandatory-setter')) {
+  var setWithMandatorySetter = (meta, obj, keyName, value) => {
     if (meta && meta.peekWatching(keyName) > 0) {
       makeEnumerable(obj, keyName);
       meta.writeValue(obj, keyName, value);
@@ -90,7 +88,7 @@ if (isEnabled('mandatory-setter')) {
     }
   };
 
-  var makeEnumerable = function(obj, key) {
+  var makeEnumerable = (obj, key) => {
     let desc = Object.getOwnPropertyDescriptor(obj, key);
 
     if (desc && desc.set && desc.set.isMandatorySetter) {
@@ -121,7 +119,7 @@ function setPath(root, path, value, tolerant) {
     if (tolerant) {
       return;
     } else {
-      throw new EmberError('Property set failed: object in path "' + path + '" could not be found or was destroyed.');
+      throw new EmberError(`Property set failed: object in path "${path}" could not be found or was destroyed.`);
     }
   }
 

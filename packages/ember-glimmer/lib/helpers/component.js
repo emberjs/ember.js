@@ -9,13 +9,12 @@ import {
   validatePositionalParameters
 } from '../syntax/curly-component';
 import {
-  Blocks,
   EvaluatedArgs,
   EvaluatedNamedArgs,
   EvaluatedPositionalArgs,
   isComponentDefinition
-} from 'glimmer-runtime';
-import { assert } from 'ember-metal';
+} from '@glimmer/runtime';
+import { assert, runInDebug } from 'ember-debug';
 
 /**
   The `{{component}}` helper lets you add instances of `Ember.Component` to a
@@ -112,7 +111,7 @@ import { assert } from 'ember-metal';
   )}}
   ```
 
-  When yielding the component via the `hash` helper, the component is invocked directly.
+  When yielding the component via the `hash` helper, the component is invoked directly.
   See the following snippet:
 
   ```
@@ -149,9 +148,11 @@ export class ClosureComponentReference extends CachedReference {
 
   constructor(args, symbolTable, env) {
     super();
-    this.defRef = args.positional.at(0);
+
+    let firstArg = args.positional.at(0);
+    this.defRef = firstArg;
+    this.tag = firstArg.tag;
     this.env = env;
-    this.tag = args.positional.at(0).tag;
     this.symbolTable = symbolTable;
     this.args = args;
     this.lastDefinition = undefined;
@@ -173,6 +174,8 @@ export class ClosureComponentReference extends CachedReference {
     this.lastName = nameOrDef;
 
     if (typeof nameOrDef === 'string') {
+      assert('You cannot use the input helper as a contextual helper. Please extend Ember.TextField or Ember.Checkbox to use it as a contextual component.', nameOrDef !== 'input');
+      assert('You cannot use the textarea helper as a contextual helper. Please extend Ember.TextArea to use it as a contextual component.', nameOrDef !== 'textarea');
       definition = env.getComponentDefinition([nameOrDef], symbolTable);
       assert(`The component helper cannot be used without a valid component name. You used "${nameOrDef}" via (component "${nameOrDef}")`, definition);
     } else if (isComponentDefinition(nameOrDef)) {
@@ -203,6 +206,15 @@ function createCurriedDefinition(definition, args) {
     curriedArgs
   );
 }
+
+let EMPTY_BLOCKS = {
+  default: null,
+  inverse: null
+};
+
+runInDebug(() => {
+  EMPTY_BLOCKS = Object.freeze(EMPTY_BLOCKS);
+});
 
 function curryArgs(definition, newArgs) {
   let { args, ComponentClass } = definition;
@@ -256,7 +268,7 @@ function curryArgs(definition, newArgs) {
   let mergedArgs = EvaluatedArgs.create(
     EvaluatedPositionalArgs.create(mergedPositional),
     EvaluatedNamedArgs.create(mergedNamed),
-    Blocks.empty()
+    EMPTY_BLOCKS
   );
 
   return mergedArgs;

@@ -6,8 +6,9 @@ import {
 } from '../utils/test-case';
 import { compile, Component } from '../utils/helpers';
 import { Controller } from 'ember-runtime';
-import { set, isFeatureEnabled } from 'ember-metal';
+import { set } from 'ember-metal';
 import { Engine, getEngineParent } from 'ember-application';
+import { isFeatureEnabled } from 'ember-debug';
 
 moduleFor('{{mount}} assertions', class extends RenderingTest {
   ['@test it asserts that only a single param is passed']() {

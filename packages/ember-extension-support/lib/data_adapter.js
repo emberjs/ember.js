@@ -165,7 +165,8 @@ export default EmberObject.extend({
   _nameToClass(type) {
     if (typeof type === 'string') {
       let owner = getOwner(this);
-      type = owner[FACTORY_FOR](`model:${type}`).class;
+      let Factory = owner[FACTORY_FOR](`model:${type}`);
+      type = Factory && Factory.class;
     }
     return type;
   },
@@ -362,7 +363,7 @@ export default EmberObject.extend({
     types = emberA(types).map((name) => {
       return {
         klass: this._nameToClass(name),
-        name: name
+        name
       };
     });
     types = emberA(types).filter(type => this.detect(type.klass));

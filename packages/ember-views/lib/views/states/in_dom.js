@@ -1,9 +1,6 @@
 import { assign } from 'ember-utils';
-import {
-  runInDebug,
-  Error as EmberError,
-  _addBeforeObserver
-} from 'ember-metal';
+import { _addBeforeObserver } from 'ember-metal';
+import { runInDebug, Error as EmberError } from 'ember-debug';
 
 import hasElement from './has_element';
 /**

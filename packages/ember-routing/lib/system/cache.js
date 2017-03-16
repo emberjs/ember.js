@@ -1,4 +1,3 @@
-import { EmptyObject } from 'ember-utils';
 import { Object as EmberObject } from 'ember-runtime';
 
 /**
@@ -10,7 +9,7 @@ import { Object as EmberObject } from 'ember-runtime';
 */
 export default EmberObject.extend({
   init() {
-    this.cache = new EmptyObject();
+    this.cache = Object.create(null);
   },
 
   has(bucketKey) {
@@ -21,7 +20,7 @@ export default EmberObject.extend({
     let bucket = this.cache[bucketKey];
 
     if (!bucket) {
-      bucket = this.cache[bucketKey] = new EmptyObject();
+      bucket = this.cache[bucketKey] = Object.create(null);
     }
 
     bucket[key] = value;

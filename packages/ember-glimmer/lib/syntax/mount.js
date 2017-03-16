@@ -3,17 +3,23 @@
 @submodule ember-glimmer
 */
 import {
-  ArgsSyntax,
-  StatementSyntax,
   ComponentDefinition
-} from 'glimmer-runtime';
-import { UNDEFINED_REFERENCE } from 'glimmer-reference';
-import { assert, runInDebug } from 'ember-metal';
+} from '@glimmer/runtime';
+import { UNDEFINED_REFERENCE } from '@glimmer/reference';
+import { assert, runInDebug } from 'ember-debug';
 import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
 import { FACTORY_FOR } from 'container';
 import AbstractManager from './abstract-manager';
+
+function dynamicEngineFor(vm, symbolTable) {
+  let env     = vm.env;
+  let args    = vm.getArgs();
+  let nameRef = args.positional.at(0);
+
+  return new DynamicEngineReference({ nameRef, env, symbolTable });
+}
 
 /**
   The `{{mount}}` helper lets you embed a routeless engine in a template.
@@ -35,38 +41,54 @@ import AbstractManager from './abstract-manager';
   @category ember-application-engines
   @public
 */
-export class MountSyntax extends StatementSyntax {
-  static create(env, args, symbolTable) {
-    assert(
-      'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      args.positional.length === 1 && args.named.length === 0
-    );
+export function mountMacro(path, params, hash, builder) {
+  assert(
+    'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+    params.length === 1 && hash === null
+  );
 
-    assert(
-      'The first argument of {{mount}} must be quoted, e.g. {{mount "chat-engine"}}.',
-      args.positional.at(0).type === 'value' && typeof args.positional.at(0).inner() === 'string'
-    );
+  assert(
+    'The first argument of {{mount}} must be quoted, e.g. {{mount "chat-engine"}}.',
+    typeof params[0] === 'string'
+  );
 
-    let name = args.positional.at(0).inner();
+  let definitionArgs = [params.slice(0, 1), null, null, null];
+  let args = [null, null, null, null];
+  builder.component.dynamic(definitionArgs, dynamicEngineFor, args, builder.symbolTable);
+  return true;
+}
 
-    assert(
-      `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-      env.owner.hasRegistration(`engine:${name}`)
-    );
-
-    let definition = new MountDefinition(name, env);
-
-    return new MountSyntax(definition, symbolTable);
-  }
-
-  constructor(definition, symbolTable) {
-    super();
-    this.definition = definition;
+class DynamicEngineReference {
+  constructor({ nameRef, env, symbolTable, args }) {
+    this.tag = nameRef.tag;
+    this.nameRef = nameRef;
+    this.env = env;
     this.symbolTable = symbolTable;
+    this._lastName = undefined;
+    this._lastDef = undefined;
   }
 
-  compile(builder) {
-    builder.component.static(this.definition, ArgsSyntax.empty(), null, this.symbolTable, null);
+  value() {
+    let { env, nameRef, /*symbolTable*/ } = this;
+    let nameOrDef = nameRef.value();
+
+    if (this._lastName === nameOrDef) {
+      return this._lastDef;
+    }
+
+    assert(
+      `You used \`{{mount '${nameOrDef}'}}\`, but the engine '${nameOrDef}' can not be found.`,
+      env.owner.hasRegistration(`engine:${nameOrDef}`)
+    );
+
+    if (!env.owner.hasRegistration(`engine:${nameOrDef}`)) {
+      return null;
+    }
+
+    this._lastName = nameOrDef;
+    this._lastDef = new MountDefinition(nameOrDef);
+
+    return this._lastDef;
   }
 }
 
@@ -75,24 +97,24 @@ class MountManager extends AbstractManager {
     return args;
   }
 
-  create(environment, { name, env }, args, dynamicScope) {
-    runInDebug(() => this._pushEngineToDebugStack(`engine:${name}`, env));
+  create(environment, { name }, args, dynamicScope) {
+    runInDebug(() => this._pushEngineToDebugStack(`engine:${name}`, environment));
 
     dynamicScope.outletState = UNDEFINED_REFERENCE;
 
-    let engine = env.owner.buildChildEngineInstance(name);
+    let engine = environment.owner.buildChildEngineInstance(name);
 
     engine.boot();
 
-    return { engine };
+    return engine;
   }
 
-  layoutFor(definition, { engine }, env) {
+  layoutFor(definition, engine, env) {
     let template = engine.lookup(`template:application`);
     return env.getCompiledBlock(OutletLayoutCompiler, template);
   }
 
-  getSelf({ engine }) {
+  getSelf(engine) {
     let applicationFactory = engine[FACTORY_FOR](`controller:application`);
     let factory = applicationFactory || generateControllerFactory(engine, 'application');
     return new RootReference(factory.create());
@@ -102,7 +124,7 @@ class MountManager extends AbstractManager {
     return null;
   }
 
-  getDestructor({ engine }) {
+  getDestructor(engine) {
     return engine;
   }
 
@@ -121,8 +143,7 @@ class MountManager extends AbstractManager {
 const MOUNT_MANAGER = new MountManager();
 
 class MountDefinition extends ComponentDefinition {
-  constructor(name, env) {
+  constructor(name) {
     super(name, MOUNT_MANAGER, null);
-    this.env = env;
   }
 }

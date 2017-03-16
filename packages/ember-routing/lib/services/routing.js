@@ -58,7 +58,7 @@ export default Service.extend({
 
   generateURL(routeName, models, queryParams) {
     let router = get(this, 'router');
-    if (!router.router) { return; }
+    if (!router._routerMicrolib) { return; }
 
     let visibleQueryParams = {};
     assign(visibleQueryParams, queryParams);
@@ -66,13 +66,13 @@ export default Service.extend({
     this.normalizeQueryParams(routeName, models, visibleQueryParams);
 
     let args = routeArgs(routeName, models, visibleQueryParams);
-    return router.generate.apply(router, args);
+    return router.generate(...args);
   },
 
   isActiveForRoute(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {
     let router = get(this, 'router');
 
-    let handlers = router.router.recognizer.handlersFor(routeName);
+    let handlers = router._routerMicrolib.recognizer.handlersFor(routeName);
     let leafName = handlers[handlers.length - 1].handler;
     let maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
 
@@ -97,7 +97,7 @@ export default Service.extend({
 function numberOfContextsAcceptedByHandler(handler, handlerInfos) {
   let req = 0;
   for (let i = 0; i < handlerInfos.length; i++) {
-    req = req + handlerInfos[i].names.length;
+    req += handlerInfos[i].names.length;
     if (handlerInfos[i].handler === handler) {
       break;
     }

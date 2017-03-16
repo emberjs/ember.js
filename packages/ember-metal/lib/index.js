@@ -11,19 +11,7 @@ export {
 } from './computed';
 export { default as alias } from './alias';
 export { default as merge } from './merge';
-export {
-  assert,
-  info,
-  warn,
-  debug,
-  deprecate,
-  deprecateFunc,
-  runInDebug,
-  setDebugFunction,
-  getDebugFunction,
-  debugSeal,
-  debugFreeze
-} from './debug';
+export { deprecateProperty } from './deprecate_property';
 export {
   instrument,
   flaggedInstrument,
@@ -32,10 +20,6 @@ export {
   subscribe as instrumentationSubscribe,
   unsubscribe as instrumentationUnsubscribe
 } from './instrumentation';
-export {
-  isTesting,
-  setTesting
-} from './testing';
 export {
   getOnerror,
   setOnerror,
@@ -47,13 +31,7 @@ export {
   meta,
   peekMeta
 } from './meta';
-export { default as Error } from './error';
 export { default as Cache } from './cache';
-export {
-  default as isFeatureEnabled,
-  FEATURES,
-  DEFAULT_FEATURES
-} from './features';
 export {
   _getPath,
   get,
@@ -172,13 +150,3 @@ export {
   isProxy
 } from './is_proxy';
 export { default as descriptor } from './descriptor';
-
-
-// TODO: this needs to be deleted once we refactor the build tooling
-// do this for side-effects of updating Ember.assert, warn, etc when
-// ember-debug is present
-// This needs to be called before any deprecateFunc
-import require, { has } from 'require';
-if (has('ember-debug')) {
-  require('ember-debug');
-}

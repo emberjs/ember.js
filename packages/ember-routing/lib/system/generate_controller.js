@@ -1,9 +1,6 @@
-import {
-  info,
-  get
-} from 'ember-metal';
+import { get } from 'ember-metal';
 import { FACTORY_FOR } from 'container';
-
+import { runInDebug, info } from 'ember-debug';
 /**
 @module ember
 @submodule ember-routing
@@ -48,9 +45,11 @@ export default function generateController(owner, controllerName) {
   let fullName = `controller:${controllerName}`;
   let instance = owner.lookup(fullName);
 
-  if (get(instance, 'namespace.LOG_ACTIVE_GENERATION')) {
-    info(`generated -> ${fullName}`, { fullName: fullName });
-  }
+  runInDebug(() => {
+    if (get(instance, 'namespace.LOG_ACTIVE_GENERATION')) {
+      info(`generated -> ${fullName}`, { fullName });
+    }
+  });
 
   return instance;
 }

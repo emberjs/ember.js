@@ -1,4 +1,4 @@
-import { deprecate } from 'ember-metal';
+import { deprecate } from 'ember-debug';
 
 const contexts = [];
 const callbacks = [];

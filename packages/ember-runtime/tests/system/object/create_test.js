@@ -1,10 +1,10 @@
 import {
-  isFeatureEnabled,
   meta,
   computed,
   Mixin,
   observer
 } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 import EmberObject from '../../../system/object';
 
 QUnit.module('EmberObject.create', {});

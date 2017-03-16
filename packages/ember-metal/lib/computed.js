@@ -1,9 +1,8 @@
 import { inspect } from 'ember-utils';
-import { assert, warn } from './debug';
+import { assert, warn, Error as EmberError } from 'ember-debug';
 import { set } from './property_set';
 import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import expandProperties from './expand_properties';
-import EmberError from './error';
 import {
   Descriptor,
   defineProperty
@@ -134,7 +133,7 @@ function ComputedProperty(config, opts) {
     this._getter = config;
   } else {
     assert('Ember.computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
-    assert('Config object passed to an Ember.computed can only contain `get` or `set` keys.', (function() {
+    assert('Config object passed to an Ember.computed can only contain `get` or `set` keys.', ((() => {
       let keys = Object.keys(config);
       for (let i = 0; i < keys.length; i++) {
         if (keys[i] !== 'get' && keys[i] !== 'set') {
@@ -142,7 +141,7 @@ function ComputedProperty(config, opts) {
         }
       }
       return true;
-    })());
+    }))());
     this._getter = config.get;
     this._setter = config.set;
   }
@@ -543,7 +542,7 @@ export default function computed(func) {
   let cp = new ComputedProperty(func);
 
   if (args) {
-    cp.property.apply(cp, args);
+    cp.property(...args);
   }
 
   return cp;

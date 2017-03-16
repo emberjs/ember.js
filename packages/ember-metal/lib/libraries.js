@@ -1,5 +1,4 @@
-import { warn } from './debug';
-import isEnabled from './features';
+import { warn, isFeatureEnabled } from 'ember-debug';
 
 /**
   Helper class that allows you to register your library with Ember.
@@ -10,9 +9,15 @@ import isEnabled from './features';
   @constructor
   @private
 */
-export function Libraries() {
-  this._registry = [];
-  this._coreLibIndex = 0;
+export class Libraries {
+  constructor() {
+    this._registry = [];
+    this._coreLibIndex = 0;
+  }
+
+  isRegistered(name) {
+    return !!this._getLibraryByName(name);
+  }
 }
 
 Libraries.prototype = {
@@ -36,7 +41,7 @@ Libraries.prototype = {
       if (isCoreLibrary) {
         index = this._coreLibIndex++;
       }
-      this._registry.splice(index, 0, { name: name, version: version });
+      this._registry.splice(index, 0, { name, version });
     } else {
       warn(`Library "${name}" is already registered with Ember.`, false, { id: 'ember-metal.libraries-register' });
     }
@@ -57,7 +62,7 @@ Libraries.prototype = {
   }
 };
 
-if (isEnabled('ember-libraries-isregistered')) {
+if (isFeatureEnabled('ember-libraries-isregistered')) {
   Libraries.prototype.isRegistered = function(name) {
     return !!this._getLibraryByName(name);
   };

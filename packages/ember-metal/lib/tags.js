@@ -1,4 +1,4 @@
-import { CONSTANT_TAG, DirtyableTag } from 'glimmer-reference';
+import { CONSTANT_TAG, DirtyableTag } from '@glimmer/reference';
 import { meta as metaFor } from './meta';
 import require from 'require';
 import { isProxy } from './is_proxy';

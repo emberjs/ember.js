@@ -62,6 +62,6 @@ function insertTypeHelperParameter(node, builders) {
     }
   }
   if (pair && pair.value.type !== 'StringLiteral') {
-    node.params.unshift(builders.sexpr('-input-type', [builders.path(pair.value.original, pair.loc)], null, pair.loc));
+    node.params.unshift(builders.sexpr('-input-type', [pair.value], null, pair.loc));
   }
 }

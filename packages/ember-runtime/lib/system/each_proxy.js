@@ -1,6 +1,5 @@
-import { EmptyObject } from 'ember-utils';
+import { assert } from 'ember-debug';
 import {
-  assert,
   get,
   _addBeforeObserver,
   _removeBeforeObserver,
@@ -74,7 +73,7 @@ EachProxy.prototype = {
   beginObservingContentKey(keyName) {
     let keys = this._keys;
     if (!keys) {
-      keys = this._keys = new EmptyObject();
+      keys = this._keys = Object.create(null);
     }
 
     if (!keys[keyName]) {
@@ -111,7 +110,7 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   while (--loc >= idx) {
     let item = objectAt(content, loc);
     if (item) {
-      assert('When using @each to observe the array ' + content + ', the array must return an object', typeof item === 'object');
+      assert(`When using @each to observe the array ${content}, the array must return an object`, typeof item === 'object');
       _addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
       addObserver(item, keyName, proxy, 'contentKeyDidChange');
     }

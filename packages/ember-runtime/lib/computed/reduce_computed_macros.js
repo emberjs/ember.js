@@ -3,11 +3,10 @@
 @submodule ember-runtime
 */
 
-import { EmptyObject, guidFor } from 'ember-utils';
+import { guidFor } from 'ember-utils';
+import { assert, Error as EmberError } from 'ember-debug';
 import {
-  assert,
   get,
-  Error as EmberError,
   ComputedProperty,
   computed,
   addObserver,
@@ -278,6 +277,28 @@ export function mapBy(dependentKey, propertyKey) {
   hamster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
   ```
 
+  You can also use `@each.property` in your dependent key, the callback will still use the underlying array:
+
+  ```javascript
+  let Hamster = Ember.Object.extend({
+    remainingChores: Ember.computed.filter('chores.@each.done', function(chore, index, array) {
+      return !chore.get('done');
+    })
+  });
+
+  let hamster = Hamster.create({
+    chores: Ember.A([
+      Ember.Object.create({ name: 'cook', done: true }),
+      Ember.Object.create({ name: 'clean', done: true }),
+      Ember.Object.create({ name: 'write more unit tests', done: false })
+    ])
+  });
+  hamster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
+  hamster.get('chores').objectAt(2).set('done', true);
+  hamster.get('remainingChores'); // []
+  ```
+
+
   @method filter
   @for Ember.computed
   @param {String} dependentKey
@@ -411,7 +432,7 @@ export function uniq(...args) {
 export function uniqBy(dependentKey, propertyKey) {
   return computed(`${dependentKey}.[]`, function() {
     let uniq = emberA();
-    let seen = new EmptyObject();
+    let seen = Object.create(null);
     let list = get(this, dependentKey);
     if (isArray(list)) {
       list.forEach(item => {
@@ -427,7 +448,33 @@ export function uniqBy(dependentKey, propertyKey) {
 }
 
 /**
-  Alias for [Ember.computed.uniq](/api/#method_computed_uniq).
+  A computed property which returns a new array with all the unique
+  elements from one or more dependent arrays.
+
+  Example
+
+  ```javascript
+  let Hamster = Ember.Object.extend({
+    uniqueFruits: Ember.computed.union('fruits', 'vegetables')
+  });
+
+  let hamster = Hamster.create({
+    fruits: [
+      'banana',
+      'grape',
+      'kale',
+      'banana',
+      'tomato'
+    ],
+    vegetables: [
+      'tomato',
+      'carrot',
+      'lettuce'
+    ]
+  });
+
+  hamster.get('uniqueFruits'); // ['banana', 'grape', 'kale', 'tomato', 'carrot', 'lettuce']
+  ```
 
   @method union
   @for Ember.computed
@@ -439,8 +486,8 @@ export function uniqBy(dependentKey, propertyKey) {
 export let union = uniq;
 
 /**
-  A computed property which returns a new array with all the duplicated
-  elements from two or more dependent arrays.
+  A computed property which returns a new array with all the elements
+  two or more dependent arrays have in common.
 
   Example
 
@@ -688,7 +735,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
     let activeObservers = activeObserversMap.get(this);
 
     if (activeObservers) {
-      activeObservers.forEach(args => removeObserver.apply(null, args));
+      activeObservers.forEach(args => removeObserver(...args));
     }
 
     function sortPropertyDidChange() {
@@ -698,7 +745,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
     activeObservers = normalizedSortProperties.map(([prop]) => {
       let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
       let args = [this, path, sortPropertyDidChange];
-      addObserver.apply(null, args);
+      addObserver(...args);
       return args;
     });
 

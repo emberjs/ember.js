@@ -3,10 +3,8 @@
 @submodule ember-runtime
 */
 
-import { CachedTag, DirtyableTag, UpdatableTag } from 'glimmer-reference';
+import { CachedTag, DirtyableTag, UpdatableTag } from '@glimmer/reference';
 import {
-  assert,
-  deprecate,
   get,
   set,
   meta,
@@ -22,6 +20,10 @@ import {
   observer,
   tagFor,
 } from 'ember-metal';
+import {
+  assert,
+  deprecate
+} from 'ember-debug';
 import { bool } from '../computed/computed_macros';
 
 function contentPropertyWillChange(content, contentKey) {
@@ -99,13 +101,13 @@ export default Mixin.create({
   _debugContainerKey: null,
 
   willWatchProperty(key) {
-    let contentKey = 'content.' + key;
+    let contentKey = `content.${key}`;
     _addBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     addObserver(this, contentKey, null, contentPropertyDidChange);
   },
 
   didUnwatchProperty(key) {
-    let contentKey = 'content.' + key;
+    let contentKey = `content.${key}`;
     _removeBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     removeObserver(this, contentKey, null, contentPropertyDidChange);
   },

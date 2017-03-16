@@ -1,16 +1,16 @@
 import { assign, getOwner } from 'ember-utils';
 import { get } from 'ember-metal';
-import { Error as EmberError } from 'ember-metal';
+import { Error as EmberError } from 'ember-debug';
 
 const ALL_PERIODS_REGEX = /\./g;
 
 export function routeArgs(targetRouteName, models, queryParams) {
   let args = [];
   if (typeof targetRouteName === 'string') {
-    args.push('' + targetRouteName);
+    args.push(`${targetRouteName}`);
   }
-  args.push.apply(args, models);
-  args.push({ queryParams: queryParams });
+  args.push(...models);
+  args.push({ queryParams });
   return args;
 }
 
@@ -29,7 +29,7 @@ export function stashParamNames(router, handlerInfos) {
   // on whether a URL transition or named transition is happening.
   // Hopefully we can remove this in the future.
   let targetRouteName = handlerInfos[handlerInfos.length - 1].name;
-  let recogHandlers = router.router.recognizer.handlersFor(targetRouteName);
+  let recogHandlers = router._routerMicrolib.recognizer.handlersFor(targetRouteName);
   let dynamicParent = null;
 
   for (let i = 0; i < handlerInfos.length; ++i) {
@@ -76,8 +76,7 @@ function _calculateCacheValuePrefix(prefix, part) {
 /*
   Stolen from Controller
 */
-export function calculateCacheKey(prefix, _parts, values) {
-  let parts = _parts || [];
+export function calculateCacheKey(prefix, parts = [], values) {
   let suffixes = '';
   for (let i = 0; i < parts.length; ++i) {
     let part = parts[i];
@@ -91,7 +90,7 @@ export function calculateCacheKey(prefix, _parts, values) {
         value = get(values, part);
       }
     }
-    suffixes += '::' + part + ':' + value;
+    suffixes += `::${part}:${value}`;
   }
   return prefix + suffixes.replace(ALL_PERIODS_REGEX, '-');
 }

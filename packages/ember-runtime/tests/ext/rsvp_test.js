@@ -1,11 +1,10 @@
 import {
-  isTesting,
-  setTesting,
   setOnerror,
   getOnerror,
   run
 } from 'ember-metal';
 import RSVP from '../../ext/rsvp';
+import { isTesting, setTesting } from 'ember-debug';
 
 const ORIGINAL_ONERROR = getOnerror();
 

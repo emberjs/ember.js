@@ -4,11 +4,9 @@
 */
 import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
+import { assert, runInDebug, debug, isTesting } from 'ember-debug';
 import {
-  assert,
-  debug,
   libraries,
-  isTesting,
   get,
   run
 } from 'ember-metal';
@@ -34,6 +32,8 @@ import ApplicationInstance from './application-instance';
 import { privatize as P } from 'container';
 import Engine from './engine';
 import { setupApplicationRegistry } from 'ember-glimmer';
+import { RouterService } from 'ember-routing';
+import { isFeatureEnabled } from 'ember-debug';
 
 let librariesRegistered = false;
 
@@ -339,7 +339,7 @@ const Application = Engine.extend({
     }
 
     registerLibraries();
-    logLibraryVersions();
+    runInDebug(() => logLibraryVersions());
 
     // Start off the number of deferrals at 1. This will be decremented by
     // the Application's own `boot` method.
@@ -1037,6 +1037,11 @@ function commonSetupRegistry(registry) {
   registry.register('location:none', NoneLocation);
 
   registry.register(P`-bucket-cache:main`, BucketCache);
+
+  if (isFeatureEnabled('ember-routing-router-service')) {
+    registry.register('service:router', RouterService);
+    registry.injection('service:router', 'router', 'router:main');
+  }
 }
 
 function registerLibraries() {
@@ -1050,23 +1055,25 @@ function registerLibraries() {
 }
 
 function logLibraryVersions() {
-  if (ENV.LOG_VERSION) {
-    // we only need to see this once per Application#init
-    ENV.LOG_VERSION = false;
-    let libs = libraries._registry;
+  runInDebug(() => {
+    if (ENV.LOG_VERSION) {
+      // we only need to see this once per Application#init
+      ENV.LOG_VERSION = false;
+      let libs = libraries._registry;
 
-    let nameLengths = libs.map(item => get(item, 'name.length'));
+      let nameLengths = libs.map(item => get(item, 'name.length'));
 
-    let maxNameLength = Math.max.apply(this, nameLengths);
+      let maxNameLength = Math.max.apply(this, nameLengths);
 
-    debug('-------------------------------');
-    for (let i = 0; i < libs.length; i++) {
-      let lib = libs[i];
-      let spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
-      debug([lib.name, spaces, ' : ', lib.version].join(''));
+      debug('-------------------------------');
+      for (let i = 0; i < libs.length; i++) {
+        let lib = libs[i];
+        let spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
+        debug([lib.name, spaces, ' : ', lib.version].join(''));
+      }
+      debug('-------------------------------');
     }
-    debug('-------------------------------');
-  }
+  });
 }
 
 export default Application;

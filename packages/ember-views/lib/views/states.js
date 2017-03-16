@@ -38,9 +38,9 @@ export function cloneStates(from) {
     on a destroyed view.
 */
 export let states = {
-  _default: _default,
-  preRender: preRender,
-  inDOM: inDOM,
-  hasElement: hasElement,
-  destroying: destroying
+  _default,
+  preRender,
+  inDOM,
+  hasElement,
+  destroying
 };

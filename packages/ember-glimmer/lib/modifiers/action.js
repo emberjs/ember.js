@@ -1,5 +1,6 @@
 import { uuid } from 'ember-utils';
-import { assert, run, flaggedInstrument } from 'ember-metal';
+import { run, flaggedInstrument } from 'ember-metal';
+import { assert } from 'ember-debug';
 import {
   isSimpleClick,
   ActionManager
@@ -38,34 +39,16 @@ export let ActionHelper = {
 
   registerAction(actionState) {
     let { actionId } = actionState;
-    let actions = ActionManager.registeredActions[actionId];
 
-    if (!actions) {
-      actions = ActionManager.registeredActions[actionId] = [];
-    }
-
-    actions.push(actionState);
+    ActionManager.registeredActions[actionId] = actionState;
 
     return actionId;
   },
 
   unregisterAction(actionState) {
     let { actionId } = actionState;
-    let actions = ActionManager.registeredActions[actionId];
 
-    if (!actions) {
-      return;
-    }
-
-    let index = actions.indexOf(actionState);
-
-    if (index !== -1) {
-      actions.splice(index, 1);
-    }
-
-    if (actions.length === 0) {
-      delete ActionManager.registeredActions[actionId];
-    }
+    delete ActionManager.registeredActions[actionId];
   }
 };
 
@@ -226,17 +209,13 @@ export default class ActionModifierManager {
 
   update(actionState) {
     let { positional } = actionState;
-
     let actionNameRef = positional.at(1);
 
     if (!actionNameRef[INVOKE]) {
       actionState.actionName = actionNameRef.value();
     }
-    actionState.eventName = actionState.getEventName();
 
-    // Not sure if this is needed? If we mutate the actionState is that good enough?
-    ActionHelper.unregisterAction(actionState);
-    ActionHelper.registerAction(actionState);
+    actionState.eventName = actionState.getEventName();
   }
 
   getDestructor(modifier) {

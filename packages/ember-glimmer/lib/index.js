@@ -1,7 +1,5 @@
 /**
-  [Glimmer](https://github.com/tildeio/glimmer) is a [Handlebars](http://handlebarsjs.com/)
-  compatible templating engine used by Ember.js.
-  Any valid Handlebars syntax is valid in an Ember template.
+  [Glimmer](https://github.com/tildeio/glimmer) is a templating engine used by Ember.js that is compatible with a subset of the [Handlebars](http://handlebarsjs.com/) syntax.
 
   ### Showing a property
 
@@ -9,15 +7,13 @@
   the DOM) to a user. For example, given a component with the property "name",
   that component's template can use the name in several ways:
 
-  ```javascript
-    // app/components/person.js
+  ```app/components/person.js
     export default Ember.Component.extend({
       name: 'Jill'
     });
   ```
 
-  ```handlebars
-  {{! app/components/person.hbs }}
+  ```app/components/person.hbs
   {{name}}
   <div>{{name}}</div>
   <span data-name={{name}}></span>
@@ -200,7 +196,6 @@
 
 export { INVOKE } from './helpers/action';
 export { default as RootTemplate } from './templates/root';
-export { registerSyntax } from './syntax';
 export { default as template } from './template';
 export { default as Checkbox } from './components/checkbox';
 export { default as TextField } from './components/text_field';

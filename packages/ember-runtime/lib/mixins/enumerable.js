@@ -7,7 +7,7 @@
 // HELPERS
 //
 
-import { guidFor, EmptyObject } from 'ember-utils';
+import { guidFor } from 'ember-utils';
 import {
   get,
   set,
@@ -19,10 +19,9 @@ import {
   addListener,
   removeListener,
   sendEvent,
-  hasListeners,
-  assert,
-  deprecate
+  hasListeners
 } from 'ember-metal';
+import { assert, deprecate } from 'ember-debug';
 import compare from '../compare';
 import require from 'require';
 
@@ -396,7 +395,7 @@ const Enumerable = Mixin.create({
   filter(callback, target) {
     let ret = emberA();
 
-    this.forEach(function(x, idx, i) {
+    this.forEach((x, idx, i) => {
       if (callback.call(target, x, idx, i)) {
         ret.push(x);
       }
@@ -738,7 +737,7 @@ const Enumerable = Mixin.create({
   invoke(methodName, ...args) {
     let ret = emberA();
 
-    this.forEach(function(x, idx) {
+    this.forEach((x, idx) => {
       let method = x && x[methodName];
 
       if ('function' === typeof method) {
@@ -1086,7 +1085,7 @@ const Enumerable = Mixin.create({
 
   uniqBy(key) {
     let ret = emberA();
-    let seen = new EmptyObject();
+    let seen = Object.create(null);
 
     this.forEach((item) => {
       let guid = guidFor(get(item, key));

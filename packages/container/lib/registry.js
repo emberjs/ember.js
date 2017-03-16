@@ -1,5 +1,5 @@
-import { dictionary, EmptyObject, assign, intern } from 'ember-utils';
-import { assert, deprecate } from 'ember-metal';
+import { dictionary, assign, intern } from 'ember-utils';
+import { assert, deprecate } from 'ember-debug';
 import Container from './container';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
@@ -33,7 +33,7 @@ export default function Registry(options) {
   this._typeInjections        = dictionary(null);
   this._injections            = dictionary(null);
 
-  this._localLookupCache      = new EmptyObject();
+  this._localLookupCache      = Object.create(null);
   this._normalizeCache        = dictionary(null);
   this._resolveCache          = dictionary(null);
   this._failCache             = dictionary(null);
@@ -187,7 +187,7 @@ Registry.prototype = {
 
     let normalizedName = this.normalize(fullName);
 
-    this._localLookupCache = new EmptyObject();
+    this._localLookupCache = Object.create(null);
 
     delete this.registrations[normalizedName];
     delete this._resolveCache[normalizedName];
@@ -581,9 +581,7 @@ Registry.prototype = {
     for (let i = 0; i < injections.length; i++) {
       fullName = injections[i].fullName;
 
-      if (!this.has(fullName)) {
-        throw new Error(`Attempting to inject an unknown injection: '${fullName}'`);
-      }
+      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName));
     }
   },
 
@@ -670,7 +668,7 @@ function expandLocalLookup(registry, normalizedName, normalizedSource) {
   let normalizedNameCache = cache[normalizedName];
 
   if (!normalizedNameCache) {
-    normalizedNameCache = cache[normalizedName] = new EmptyObject();
+    normalizedNameCache = cache[normalizedName] = Object.create(null);
   }
 
   let cached = normalizedNameCache[normalizedSource];

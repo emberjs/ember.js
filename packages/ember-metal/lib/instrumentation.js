@@ -2,7 +2,7 @@
 /* global console */
 
 import { ENV } from 'ember-environment';
-import isEnabled from './features';
+import { isFeatureEnabled } from 'ember-debug';
 
 /**
   The purpose of the Ember Instrumentation module is
@@ -69,7 +69,7 @@ function populateListeners(name) {
   return listeners;
 }
 
-const time = (function() {
+const time = (() => {
   let perf = 'undefined' !== typeof window ? window.performance || {} : {};
   let fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
   // fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
@@ -110,7 +110,7 @@ export function instrument(name, _payload, callback, binding) {
 }
 
 let flaggedInstrument;
-if (isEnabled('ember-improved-instrumentation')) {
+if (isFeatureEnabled('ember-improved-instrumentation')) {
   flaggedInstrument = instrument;
 } else {
   flaggedInstrument = (name, payload, callback) => callback();
@@ -153,7 +153,7 @@ export function _instrumentStart(name, _payload, _payloadParam) {
   let STRUCTURED_PROFILE = ENV.STRUCTURED_PROFILE;
   let timeName;
   if (STRUCTURED_PROFILE) {
-    timeName = name + ': ' + payload.object;
+    timeName = `${name}: ${payload.object}`;
     console.time(timeName);
   }
 
@@ -208,12 +208,12 @@ export function subscribe(pattern, object) {
   }
 
   regex = regex.join('\\.');
-  regex = regex + '(\\..*)?';
+  regex = `${regex}(\\..*)?`;
 
   let subscriber = {
-    pattern: pattern,
-    regex: new RegExp('^' + regex + '$'),
-    object: object
+    pattern,
+    regex: new RegExp(`^${regex}$`),
+    object
   };
 
   subscribers.push(subscriber);

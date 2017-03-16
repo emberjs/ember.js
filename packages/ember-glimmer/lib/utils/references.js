@@ -1,7 +1,6 @@
 import {
   HAS_NATIVE_WEAKMAP,
-  symbol,
-  EmptyObject
+  symbol
 } from 'ember-utils';
 import {
   get,
@@ -10,8 +9,6 @@ import {
   tagFor,
   didRender,
   watchKey,
-  isFeatureEnabled,
-  runInDebug,
   isProxy
 } from 'ember-metal';
 import {
@@ -21,19 +18,20 @@ import {
   UpdatableTag,
   combine,
   isConst
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 import {
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
   NULL_REFERENCE,
   UNDEFINED_REFERENCE
-} from 'glimmer-runtime';
+} from '@glimmer/runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
+import { isFeatureEnabled, runInDebug } from 'ember-debug';
 
 export const UPDATE = symbol('UPDATE');
 
-export { NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
+export { NULL_REFERENCE, UNDEFINED_REFERENCE } from '@glimmer/runtime';
 
 // @abstract
 // @implements PathReference
@@ -72,7 +70,7 @@ export class CachedReference extends EmberPathReference {
 export class RootReference extends ConstReference {
   constructor(value) {
     super(value);
-    this.children = new EmptyObject();
+    this.children = Object.create(null);
   }
 
   get(propertyKey) {

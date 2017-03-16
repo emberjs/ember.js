@@ -1,5 +1,5 @@
 import { lookupDescriptor } from 'ember-utils';
-import isEnabled from './features';
+import { isFeatureEnabled } from 'ember-debug';
 import {
   meta as metaFor
 } from './meta';
@@ -31,7 +31,7 @@ export function watchKey(obj, keyName, meta) {
       obj.willWatchProperty(keyName);
     }
 
-    if (isEnabled('mandatory-setter')) {
+    if (isFeatureEnabled('mandatory-setter')) {
       // NOTE: this is dropped for prod + minified builds
       handleMandatorySetter(m, obj, keyName);
     }
@@ -41,14 +41,10 @@ export function watchKey(obj, keyName, meta) {
 }
 
 
-if (isEnabled('mandatory-setter')) {
-  let hasOwnProperty = function(obj, key) {
-    return Object.prototype.hasOwnProperty.call(obj, key);
-  };
+if (isFeatureEnabled('mandatory-setter')) {
+  let hasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
-  let propertyIsEnumerable = function(obj, key) {
-    return Object.prototype.propertyIsEnumerable.call(obj, key);
-  };
+  let propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
 
   // Future traveler, although this code looks scary. It merely exists in
   // development to aid in development asertions. Production builds of
@@ -112,7 +108,7 @@ export function unwatchKey(obj, keyName, _meta) {
       obj.didUnwatchProperty(keyName);
     }
 
-    if (isEnabled('mandatory-setter')) {
+    if (isFeatureEnabled('mandatory-setter')) {
       // It is true, the following code looks quite WAT. But have no fear, It
       // exists purely to improve development ergonomics and is removed from
       // ember.min.js and ember.prod.js builds.

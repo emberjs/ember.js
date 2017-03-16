@@ -1,4 +1,4 @@
-import { runInDebug } from 'ember-metal';
+import { runInDebug } from 'ember-debug';
 
 let DebugStack;
 

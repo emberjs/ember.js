@@ -1,8 +1,9 @@
 import { getOwner, OWNER } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import { get, isFeatureEnabled } from 'ember-metal';
+import { get } from 'ember-metal';
 import { Registry } from '../index';
 import { factory } from 'internal-test-helpers';
+import { isFeatureEnabled } from 'ember-debug';
 import { LOOKUP_FACTORY, FACTORY_FOR } from 'container';
 
 let originalModelInjections;
@@ -664,11 +665,11 @@ QUnit.test('#[FACTORY_FOR] class is the injected factory', (assert) => {
   let Component = factory();
   registry.register('component:foo-bar', Component);
 
-  let factoryCreator = container[FACTORY_FOR]('component:foo-bar');
+  let factoryManager = container[FACTORY_FOR]('component:foo-bar');
   if (isFeatureEnabled('ember-no-double-extend')) {
-    assert.deepEqual(factoryCreator.class, Component, 'No double extend');
+    assert.deepEqual(factoryManager.class, Component, 'No double extend');
   } else {
-    assert.deepEqual(factoryCreator.class, lookupFactory('component:foo-bar', container), 'Double extended class');
+    assert.deepEqual(factoryManager.class, lookupFactory('component:foo-bar', container), 'Double extended class');
   }
 });
 
@@ -681,16 +682,32 @@ if (isFeatureEnabled('ember-factory-for')) {
     }, /Invalid Fullname, expected: 'type:name' got: chad-bar/);
   });
 
-  QUnit.test('#factoryFor returns a factory creator', (assert) => {
+  QUnit.test('#factoryFor returns a factory manager', (assert) => {
     let registry = new Registry();
     let container = registry.container();
 
     let Component = factory();
     registry.register('component:foo-bar', Component);
 
-    let factoryCreator = container.factoryFor('component:foo-bar');
-    assert.ok(factoryCreator.create);
-    assert.ok(factoryCreator.class);
+    let factoryManager = container.factoryFor('component:foo-bar');
+    assert.ok(factoryManager.create);
+    assert.ok(factoryManager.class);
+  });
+
+  QUnit.test('#factoryFor returns a cached factory manager for the same type', (assert) => {
+    let registry = new Registry();
+    let container = registry.container();
+
+    let Component = factory();
+    registry.register('component:foo-bar', Component);
+    registry.register('component:baz-bar', Component);
+
+    let factoryManager1 = container.factoryFor('component:foo-bar');
+    let factoryManager2 = container.factoryFor('component:foo-bar');
+    let factoryManager3 = container.factoryFor('component:baz-bar');
+
+    assert.equal(factoryManager1, factoryManager2, 'cache hit');
+    assert.notEqual(factoryManager1, factoryManager3, 'cache miss');
   });
 
   QUnit.test('#factoryFor class returns the factory function', (assert) => {
@@ -700,8 +717,8 @@ if (isFeatureEnabled('ember-factory-for')) {
     let Component = factory();
     registry.register('component:foo-bar', Component);
 
-    let factoryCreator = container.factoryFor('component:foo-bar');
-    assert.deepEqual(factoryCreator.class, Component, 'No double extend');
+    let factoryManager = container.factoryFor('component:foo-bar');
+    assert.deepEqual(factoryManager.class, Component, 'No double extend');
   });
 
   QUnit.test('#factoryFor instance have a common parent', (assert) => {
@@ -711,10 +728,10 @@ if (isFeatureEnabled('ember-factory-for')) {
     let Component = factory();
     registry.register('component:foo-bar', Component);
 
-    let factoryCreator1 = container.factoryFor('component:foo-bar');
-    let factoryCreator2 = container.factoryFor('component:foo-bar');
-    let instance1 = factoryCreator1.create({ foo: 'foo' });
-    let instance2 = factoryCreator2.create({ bar: 'bar' });
+    let factoryManager1 = container.factoryFor('component:foo-bar');
+    let factoryManager2 = container.factoryFor('component:foo-bar');
+    let instance1 = factoryManager1.create({ foo: 'foo' });
+    let instance2 = factoryManager2.create({ bar: 'bar' });
 
     assert.deepEqual(instance1.constructor, instance2.constructor);
   });

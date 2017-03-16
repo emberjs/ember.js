@@ -1,6 +1,5 @@
 /* globals EmberDev */
 import {
-  isFeatureEnabled,
   set,
   get,
   observer,
@@ -8,6 +7,7 @@ import {
   computed,
   run
 } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 import {
   Object as EmberObject,
   A as emberA,
@@ -2481,6 +2481,18 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => { service.set('last', 'Jackson'); });
 
     this.assertText('Jackson');
+  }
+
+  ['@test injecting an unknown service raises an exception'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        missingService: inject.service()
+      })
+    });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, 'Attempting to inject an unknown injection: \'service:missingService\'');
   }
 
   ['@test can access `actions` hash via `_actions` [DEPRECATED]']() {

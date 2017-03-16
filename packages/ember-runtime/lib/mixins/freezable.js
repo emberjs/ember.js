@@ -4,11 +4,11 @@
 */
 
 import {
-  deprecate,
   Mixin,
   get,
   set
 } from 'ember-metal';
+import { deprecate } from 'ember-debug';
 
 /**
   The `Ember.Freezable` mixin implements some basic methods for marking an
@@ -68,7 +68,7 @@ import {
   @deprecated Use `Object.freeze` instead.
   @private
 */
-export var Freezable = Mixin.create({
+export const Freezable = Mixin.create({
 
   init() {
     deprecate(
@@ -108,4 +108,4 @@ export var Freezable = Mixin.create({
 
 });
 
-export var FROZEN_ERROR = 'Frozen object cannot be modified.';
+export const FROZEN_ERROR = 'Frozen object cannot be modified.';

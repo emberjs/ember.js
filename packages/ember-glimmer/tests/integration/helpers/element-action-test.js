@@ -3,10 +3,10 @@ import { strip } from '../../utils/abstract-test-case';
 import { Component } from '../../utils/helpers';
 import {
   set,
-  isFeatureEnabled,
   instrumentationSubscribe,
   instrumentationReset
 } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 
 import { Object as EmberObject, A as emberA } from 'ember-runtime';
 

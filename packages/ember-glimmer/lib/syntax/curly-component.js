@@ -1,9 +1,8 @@
 import { OWNER } from 'ember-utils';
 import {
-  StatementSyntax,
   PrimitiveReference,
   ComponentDefinition
-} from 'glimmer-runtime';
+} from '@glimmer/runtime';
 import {
   AttributeBinding,
   ClassNameBinding,
@@ -17,11 +16,13 @@ import {
   BOUNDS
 } from '../component';
 import {
-  assert,
-  runInDebug,
   get,
   _instrumentStart
 } from 'ember-metal';
+import {
+  assert,
+  runInDebug
+} from 'ember-debug';
 import {
   dispatchLifeCycleHook,
   setViewElement
@@ -126,20 +127,6 @@ function applyAttributeBindings(element, attributeBindings, component, operation
   }
 }
 
-export class CurlyComponentSyntax extends StatementSyntax {
-  constructor(args, definition, symbolTable) {
-    super();
-    this.args = args;
-    this.definition = definition;
-    this.symbolTable = symbolTable;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.static(this.definition, this.args, this.symbolTable, this.shadow);
-  }
-}
-
 function NOOP() {}
 
 class ComponentStateBucket {
@@ -233,7 +220,9 @@ class CurlyComponentManager extends AbstractManager {
       bucket.classRef = args.named.get('class');
     }
 
-    processComponentInitializationAssertions(component, props);
+    runInDebug(() => {
+      processComponentInitializationAssertions(component, props);
+    });
 
     if (environment.isInteractive && component.tagName !== '') {
       component.trigger('willRender');
@@ -397,7 +386,9 @@ class TopComponentManager extends CurlyComponentManager {
       }
     }
 
-    processComponentInitializationAssertions(component, {});
+    runInDebug(() => {
+      processComponentInitializationAssertions(component, {});
+    });
 
     return new ComponentStateBucket(environment, component, args, finalizer);
   }

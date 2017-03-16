@@ -4,7 +4,7 @@
 */
 import { assign } from 'ember-utils';
 import { InternalHelperReference } from '../utils/references';
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { QueryParams } from 'ember-routing';
 
 /**

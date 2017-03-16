@@ -1,4 +1,4 @@
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
 export default function AssertReservedNamedArguments(options) {
@@ -10,7 +10,7 @@ AssertReservedNamedArguments.prototype.transform = function AssertReservedNamedA
   let moduleName = this.options.meta.moduleName;
 
   this.syntax.traverse(ast, {
-    PathExpression: function(node) {
+    PathExpression(node) {
       if (node.original[0] === '@') {
         assert(assertMessage(moduleName, node));
       }

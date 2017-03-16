@@ -3,12 +3,8 @@
 @submodule ember-runtime
 */
 
-import {
-  assert,
-  deprecate,
-  Mixin,
-  get
-} from 'ember-metal';
+import { Mixin, get } from 'ember-metal';
+import { assert, deprecate } from 'ember-debug';
 
 /**
   `Ember.ActionHandler` is available on some familiar classes including
@@ -184,7 +180,7 @@ const ActionHandler = Mixin.create({
     let target = get(this, 'target');
     if (target) {
       assert(
-        'The `target` for ' + this + ' (' + target + ') does not have a `send` method',
+        `The \`target\` for ${this} (${target}) does not have a \`send\` method`,
         typeof target.send === 'function'
       );
       target.send(...arguments);

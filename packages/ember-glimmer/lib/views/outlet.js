@@ -2,8 +2,8 @@
 @module ember
 @submodule ember-glimmer
 */
-import { assign, EmptyObject } from 'ember-utils';
-import { DirtyableTag } from 'glimmer-reference';
+import { assign } from 'ember-utils';
+import { DirtyableTag } from '@glimmer/reference';
 import { environment } from 'ember-environment';
 import { OWNER } from 'ember-utils';
 import { run } from 'ember-metal';
@@ -56,7 +56,7 @@ class OrphanedOutletStateReference extends OutletStateReference {
       return null;
     }
 
-    let state = new EmptyObject();
+    let state = Object.create(null);
     state[matched.render.outlet] = matched;
     matched.wasUsed = true;
     return { outlets: state };

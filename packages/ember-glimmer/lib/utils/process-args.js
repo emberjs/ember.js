@@ -1,11 +1,10 @@
 import {
   assign,
-  symbol,
-  EmptyObject
+  symbol
 } from 'ember-utils';
 import {
   CONSTANT_TAG
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 import { ARGS } from '../component';
 import { UPDATE } from './references';
 import { MUTABLE_CELL } from 'ember-views';
@@ -13,7 +12,7 @@ import { ACTION } from '../helpers/action';
 import {
   EvaluatedArgs,
   EvaluatedPositionalArgs
-} from 'glimmer-runtime';
+} from '@glimmer/runtime';
 
 // Maps all variants of positional and dynamically scoped arguments
 // into the named arguments. Input `args` and return value are both
@@ -88,8 +87,8 @@ export class ComponentArgs {
     let { namedArgs } = this;
     let keys = namedArgs.keys;
     let attrs = namedArgs.value();
-    let props = new EmptyObject();
-    let args = new EmptyObject();
+    let props = Object.create(null);
+    let args = Object.create(null);
 
     props[ARGS] = args;
 

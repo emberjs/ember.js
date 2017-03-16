@@ -2,7 +2,7 @@ import { Controller } from 'ember-runtime';
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Route } from 'ember-routing';
-import { isFeatureEnabled } from 'ember-metal';
+import { isFeatureEnabled } from 'ember-debug';
 import { Component } from 'ember-glimmer';
 
 moduleFor('Application test: rendering', class extends ApplicationTest {

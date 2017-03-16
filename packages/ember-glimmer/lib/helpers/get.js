@@ -6,7 +6,7 @@ import {
   combine,
   isConst,
   referenceFromParts
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
 /**
 @module ember

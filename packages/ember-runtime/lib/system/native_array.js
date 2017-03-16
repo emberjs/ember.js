@@ -104,7 +104,7 @@ NativeArray.keys().forEach((methodName) => {
   }
 });
 
-NativeArray = NativeArray.without.apply(NativeArray, ignore);
+NativeArray = NativeArray.without(...ignore);
 
 /**
   Creates an `Ember.NativeArray` from an Array like object.

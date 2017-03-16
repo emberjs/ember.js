@@ -3,12 +3,10 @@
 @submodule ember-glimmer
 */
 import {
-  ArgsSyntax,
-  StatementSyntax,
   ComponentDefinition
-} from 'glimmer-runtime';
-import { ConstReference, isConst } from 'glimmer-reference';
-import { assert, runInDebug } from 'ember-metal';
+} from '@glimmer/runtime';
+import { ConstReference, isConst } from '@glimmer/reference';
+import { assert, runInDebug } from 'ember-debug';
 import { RootReference } from '../utils/references';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
@@ -49,6 +47,7 @@ function makeComponentDefinition(vm) {
     return new ConstReference(new RenderDefinition(controllerName, template, env, NON_SINGLETON_RENDER_MANAGER));
   }
 }
+
 
 /**
   Calling ``{{render}}`` from within a template will insert another
@@ -119,23 +118,14 @@ function makeComponentDefinition(vm) {
   @return {String} HTML string
   @public
 */
-export class RenderSyntax extends StatementSyntax {
-  static create(environment, args, symbolTable) {
-    return new this(environment, args, symbolTable);
+export function renderMacro(path, params, hash, builder) {
+  if (!params) {
+    params = [];
   }
-
-  constructor(environment, args, symbolTable) {
-    super();
-    this.definitionArgs = args;
-    this.definition = makeComponentDefinition;
-    this.args = ArgsSyntax.fromPositionalArgs(args.positional.slice(1, 2));
-    this.symbolTable = symbolTable;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.symbolTable, this.shadow);
-  }
+  let definitionArgs = [params.slice(0), hash, null, null];
+  let args = [params.slice(1), hash, null, null];
+  builder.component.dynamic(definitionArgs, makeComponentDefinition, args, builder.symbolTable);
+  return true;
 }
 
 class AbstractRenderManager extends AbstractManager {

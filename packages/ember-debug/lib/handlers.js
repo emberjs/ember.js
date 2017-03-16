@@ -1,9 +1,9 @@
 export let HANDLERS = { };
 
 export function registerHandler(type, callback) {
-  let nextHandler = HANDLERS[type] || function() { };
+  let nextHandler = HANDLERS[type] || (() => { });
 
-  HANDLERS[type] = function(message, options) {
+  HANDLERS[type] = (message, options) => {
     callback(message, options, nextHandler);
   };
 }

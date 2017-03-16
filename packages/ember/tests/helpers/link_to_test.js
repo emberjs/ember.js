@@ -11,7 +11,6 @@ import {
   run,
   instrumentationSubscribe as subscribe,
   instrumentationReset as reset,
-  isFeatureEnabled,
   alias
 } from 'ember-metal';
 import { Route, NoneLocation } from 'ember-routing';
@@ -19,6 +18,7 @@ import { Application } from 'ember-application';
 import { jQuery } from 'ember-views';
 import { compile } from 'ember-template-compiler';
 import { setTemplates, setTemplate } from 'ember-glimmer';
+import { isFeatureEnabled } from 'ember-debug';
 
 let Router, App, router, appInstance;
 

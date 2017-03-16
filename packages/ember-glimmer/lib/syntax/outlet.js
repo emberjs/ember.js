@@ -4,18 +4,18 @@
 */
 import { generateGuid, guidFor } from 'ember-utils';
 import {
-  ArgsSyntax,
-  StatementSyntax,
-  ComponentDefinition
-} from 'glimmer-runtime';
-import { runInDebug, _instrumentStart } from 'ember-metal';
+  ComponentDefinition,
+  CompiledArgs
+} from '@glimmer/runtime';
+import { runInDebug } from 'ember-debug';
+import { _instrumentStart } from 'ember-metal';
 import { RootReference } from '../utils/references';
+import AbstractManager from './abstract-manager';
 import {
   UpdatableTag,
   ConstReference,
   combine
-} from 'glimmer-reference';
-import AbstractManager from './abstract-manager';
+} from '@glimmer/reference';
 
 function outletComponentFor(vm) {
   let { outletState } = vm.dynamicScope();
@@ -30,6 +30,7 @@ function outletComponentFor(vm) {
 
   return new OutletComponentReference(outletNameRef, outletState);
 }
+
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -80,24 +81,13 @@ function outletComponentFor(vm) {
   @for Ember.Templates.helpers
   @public
 */
-export class OutletSyntax extends StatementSyntax {
-  static create(environment, args, symbolTable) {
-    let definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0, 1));
-    return new this(environment, definitionArgs, symbolTable);
+export function outletMacro(path, params, hash, builder) {
+  if (!params) {
+    params = [];
   }
-
-  constructor(environment, args, symbolTable) {
-    super();
-    this.definitionArgs = args;
-    this.definition = outletComponentFor;
-    this.args = ArgsSyntax.empty();
-    this.symbolTable = symbolTable;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.symbolTable, this.shadow);
-  }
+  let definitionArgs = [params.slice(0, 1), null, null, null];
+  builder.component.dynamic(definitionArgs, outletComponentFor, CompiledArgs.empty(), builder.symbolTable, null);
+  return true;
 }
 
 class OutletComponentReference {

@@ -1,7 +1,3 @@
-'no use strict';
-// Remove "use strict"; from transpiled module until
-// https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
-
 /**
 @module ember
 @submodule ember-metal
@@ -11,16 +7,17 @@ import {
   guidFor,
   GUID_KEY,
   NAME_KEY,
+  ROOT,
   wrap,
   makeArray
 } from 'ember-utils';
-import EmberError from './error';
 import {
   debugSeal,
   assert,
   deprecate,
-  runInDebug
-} from './debug';
+  runInDebug,
+  EmberError
+} from 'ember-debug';
 import { meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';
 import {
@@ -39,9 +36,6 @@ import {
   addListener,
   removeListener
 } from './events';
-
-function ROOT() {}
-ROOT.__hasSuper = false;
 
 const a_slice = Array.prototype.slice;
 const a_concat = Array.prototype.concat;
@@ -174,7 +168,7 @@ function applyConcatenatedProperties(obj, key, value, values) {
 function applyMergedProperties(obj, key, value, values) {
   let baseValue = values[key] || obj[key];
 
-  runInDebug(function() {
+  runInDebug(() => {
     if (isArray(value)) { // use conditional to avoid stringifying every time
       assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
     }
@@ -233,7 +227,7 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
   }
 }
 
-function mergeMixins(mixins, m, descs, values, base, keys) {
+function mergeMixins(mixins, meta, descs, values, base, keys) {
   let currentMixin, props, key, concats, mergings;
 
   function removeKeys(keyName) {
@@ -248,7 +242,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
       typeof currentMixin === 'object' && currentMixin !== null && Object.prototype.toString.call(currentMixin) !== '[object Array]'
     );
 
-    props = mixinProperties(m, currentMixin);
+    props = mixinProperties(meta, currentMixin);
     if (props === CONTINUE) { continue; }
 
     if (props) {
@@ -259,20 +253,20 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
       for (key in props) {
         if (!props.hasOwnProperty(key)) { continue; }
         keys.push(key);
-        addNormalizedProperty(base, key, props[key], m, descs, values, concats, mergings);
+        addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
       }
 
       // manually copy toString() because some JS engines do not enumerate it
       if (props.hasOwnProperty('toString')) { base.toString = props.toString; }
     } else if (currentMixin.mixins) {
-      mergeMixins(currentMixin.mixins, m, descs, values, base, keys);
+      mergeMixins(currentMixin.mixins, meta, descs, values, base, keys);
       if (currentMixin._without) { currentMixin._without.forEach(removeKeys); }
     }
   }
 }
 
 export function detectBinding(key) {
-  var length = key.length;
+  let length = key.length;
 
   return length > 7 && key.charCodeAt(length - 7) === 66 && key.indexOf('inding', length - 6) !== -1;
 }
@@ -280,9 +274,9 @@ export function detectBinding(key) {
 detectBinding('notbound');
 detectBinding('fooBinding');
 
-function connectBindings(obj, m) {
+function connectBindings(obj, meta) {
   // TODO Mixin.apply(instance) should disconnect binding if exists
-  m.forEachBindings((key, binding) => {
+  meta.forEachBindings((key, binding) => {
     if (binding) {
       let to = key.slice(0, -7); // strip Binding off end
       if (binding instanceof Binding) {
@@ -296,15 +290,15 @@ function connectBindings(obj, m) {
     }
   });
   // mark as applied
-  m.clearBindings();
+  meta.clearBindings();
 }
 
-function finishPartial(obj, m) {
-  connectBindings(obj, m || metaFor(obj));
+function finishPartial(obj, meta) {
+  connectBindings(obj, meta || metaFor(obj));
   return obj;
 }
 
-function followAlias(obj, desc, m, descs, values) {
+function followAlias(obj, desc, descs, values) {
   let altKey = desc.methodName;
   let value;
   let possibleDesc;
@@ -319,7 +313,7 @@ function followAlias(obj, desc, m, descs, values) {
     value = obj[altKey];
   }
 
-  return { desc: desc, value: value };
+  return { desc, value };
 }
 
 function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, updateMethod) {
@@ -351,7 +345,7 @@ function replaceObserversAndListeners(obj, key, observerOrListener) {
 function applyMixin(obj, mixins, partial) {
   let descs = {};
   let values = {};
-  let m = metaFor(obj);
+  let meta = metaFor(obj);
   let keys = [];
   let key, value, desc;
 
@@ -364,7 +358,7 @@ function applyMixin(obj, mixins, partial) {
   // * Set up _super wrapping if necessary
   // * Set up computed property descriptors
   // * Copying `toString` in broken browsers
-  mergeMixins(mixins, m, descs, values, obj, keys);
+  mergeMixins(mixins, meta, descs, values, obj, keys);
 
   for (let i = 0; i < keys.length; i++) {
     key = keys[i];
@@ -376,7 +370,7 @@ function applyMixin(obj, mixins, partial) {
     if (desc === REQUIRED) { continue; }
 
     while (desc && desc instanceof Alias) {
-      let followed = followAlias(obj, desc, m, descs, values);
+      let followed = followAlias(obj, desc, descs, values);
       desc = followed.desc;
       value = followed.value;
     }
@@ -386,14 +380,14 @@ function applyMixin(obj, mixins, partial) {
     replaceObserversAndListeners(obj, key, value);
 
     if (detectBinding(key)) {
-      m.writeBindings(key, value);
+      meta.writeBindings(key, value);
     }
 
-    defineProperty(obj, key, desc, value, m);
+    defineProperty(obj, key, desc, value, meta);
   }
 
   if (!partial) { // don't apply to prototype
-    finishPartial(obj, m);
+    finishPartial(obj, meta);
   }
 
   return obj;
@@ -431,7 +425,10 @@ export function mixin(obj, ...args) {
     post: null
   });
 
-  let comment = Comment.create(post: somePost);
+  let comment = Comment.create({
+    post: somePost
+  });
+
   comment.edit(); // outputs 'starting to edit'
   ```
 
@@ -469,40 +466,69 @@ export function mixin(obj, ...args) {
   @namespace Ember
   @public
 */
-export default function Mixin(args, properties) {
-  this.properties = properties;
+export default class Mixin {
+  constructor(mixins, properties) {
+    this.properties = properties;
 
-  let length = args && args.length;
+    let length = mixins && mixins.length;
 
-  if (length > 0) {
-    let m = new Array(length);
+    if (length > 0) {
+      let m = new Array(length);
 
-    for (let i = 0; i < length; i++) {
-      let x = args[i];
-      if (x instanceof Mixin) {
-        m[i] = x;
-      } else {
-        m[i] = new Mixin(undefined, x);
+      for (let i = 0; i < length; i++) {
+        let x = mixins[i];
+        if (x instanceof Mixin) {
+          m[i] = x;
+        } else {
+          m[i] = new Mixin(undefined, x);
+        }
       }
-    }
 
-    this.mixins = m;
-  } else {
-    this.mixins = undefined;
+      this.mixins = m;
+    } else {
+      this.mixins = undefined;
+    }
+    this.ownerConstructor = undefined;
+    this._without = undefined;
+    this[GUID_KEY] = null;
+    this[NAME_KEY] = null;
+    debugSeal(this);
   }
-  this.ownerConstructor = undefined;
-  this._without = undefined;
-  this[GUID_KEY] = null;
-  this[NAME_KEY] = null;
-  debugSeal(this);
+
+  static applyPartial(obj, ...args) {
+    return applyMixin(obj, args, true);
+  }
+
+  /**
+    @method create
+    @static
+    @param arguments*
+    @public
+  */
+  static create(...args) {
+    // ES6TODO: this relies on a global state?
+    unprocessedFlag = true;
+    let M = this;
+    return new M(args, undefined);
+  }
+
+  // returns the mixins currently applied to the specified object
+  // TODO: Make Ember.mixin
+  static mixins(obj) {
+    let meta = peekMeta(obj);
+    let ret = [];
+    if (!meta) { return ret; }
+
+    meta.forEachMixins((key, currentMixin) => {
+      // skip primitive mixins since these are always anonymous
+      if (!currentMixin.properties) { ret.push(currentMixin); }
+    });
+
+    return ret;
+  }
 }
 
 Mixin._apply = applyMixin;
-
-Mixin.applyPartial = function(obj) {
-  let args = a_slice.call(arguments, 1);
-  return applyMixin(obj, args, true);
-};
 
 Mixin.finishPartial = finishPartial;
 
@@ -515,19 +541,6 @@ export function hasUnprocessedMixins() {
 export function clearUnprocessedMixins() {
   unprocessedFlag = false;
 }
-
-/**
-  @method create
-  @static
-  @param arguments*
-  @public
-*/
-Mixin.create = function(...args) {
-  // ES6TODO: this relies on a global state?
-  unprocessedFlag = true;
-  let M = this;
-  return new M(args, undefined);
-};
 
 let MixinPrototype = Mixin.prototype;
 
@@ -608,9 +621,9 @@ function _detect(curMixin, targetMixin, seen) {
 MixinPrototype.detect = function(obj) {
   if (typeof obj !== 'object' || obj === null) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
-  let m = peekMeta(obj);
-  if (!m) { return false; }
-  return !!m.peekMixins(guidFor(this));
+  let meta = peekMeta(obj);
+  if (!meta) { return false; }
+  return !!meta.peekMixins(guidFor(this));
 };
 
 MixinPrototype.without = function(...args) {
@@ -645,23 +658,8 @@ MixinPrototype.keys = function() {
 
 debugSeal(MixinPrototype);
 
-// returns the mixins currently applied to the specified object
-// TODO: Make Ember.mixin
-Mixin.mixins = function(obj) {
-  let m = peekMeta(obj);
-  let ret = [];
-  if (!m) { return ret; }
-
-  m.forEachMixins((key, currentMixin) => {
-    // skip primitive mixins since these are always anonymous
-    if (!currentMixin.properties) { ret.push(currentMixin); }
-  });
-
-  return ret;
-};
-
 const REQUIRED = new Descriptor();
-REQUIRED.toString = function() { return '(Required Property)'; };
+REQUIRED.toString = () => '(Required Property)';
 
 /**
   Denotes a required property for a mixin
@@ -741,7 +739,7 @@ export function observer(...args) {
   let func  = args.slice(-1)[0];
   let paths;
 
-  let addWatchedProperty = function(path) {
+  let addWatchedProperty = path => {
     paths.push(path);
   };
   let _paths = args.slice(0, -1);
@@ -827,7 +825,7 @@ export function _beforeObserver(...args) {
   let func  = args.slice(-1)[0];
   let paths;
 
-  let addWatchedProperty = function(path) { paths.push(path); };
+  let addWatchedProperty = path => { paths.push(path); };
 
   let _paths = args.slice(0, -1);
 

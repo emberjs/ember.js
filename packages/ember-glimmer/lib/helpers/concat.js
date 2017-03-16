@@ -1,5 +1,5 @@
 import { InternalHelperReference } from '../utils/references';
-import { normalizeTextValue } from 'glimmer-runtime';
+import { normalizeTextValue } from '@glimmer/runtime';
 
 /**
 @module ember
