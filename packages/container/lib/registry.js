@@ -668,8 +668,8 @@ Registry.prototype = {
 
     let localKnown = dictionary(null);
     let registeredNames = Object.keys(this.registrations);
-    for (let index = 0; index < registeredNames.length; index++) {
-      let fullName = registeredNames[index];
+    for (let i = 0; i < registeredNames.length; i++) {
+      let fullName = registeredNames[i];
       let itemType = fullName.split(':')[0];
 
       if (itemType === type) {
@@ -732,7 +732,7 @@ Registry.prototype = {
   getInjections(fullName) {
     let injections = this._injections[fullName] || [];
     if (this.fallback) {
-      injections = injections.concat(this.fallback.getInjections(fullName));
+      injections.push(...this.fallback.getInjections(fullName));
     }
     return injections;
   },
@@ -740,7 +740,7 @@ Registry.prototype = {
   getTypeInjections(type) {
     let injections = this._typeInjections[type] || [];
     if (this.fallback) {
-      injections = injections.concat(this.fallback.getTypeInjections(type));
+      injections.push(...this.fallback.getTypeInjections(type));
     }
     return injections;
   },
@@ -748,7 +748,7 @@ Registry.prototype = {
   getFactoryInjections(fullName) {
     let injections = this._factoryInjections[fullName] || [];
     if (this.fallback) {
-      injections = injections.concat(this.fallback.getFactoryInjections(fullName));
+      injections.push(...this.fallback.getFactoryInjections(fullName));
     }
     return injections;
   },
@@ -756,7 +756,7 @@ Registry.prototype = {
   getFactoryTypeInjections(type) {
     let injections = this._factoryTypeInjections[type] || [];
     if (this.fallback) {
-      injections = injections.concat(this.fallback.getFactoryTypeInjections(type));
+      injections.push(...this.fallback.getFactoryTypeInjections(type));
     }
     return injections;
   }

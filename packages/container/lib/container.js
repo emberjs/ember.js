@@ -171,12 +171,7 @@ Container.prototype = {
    @method destroy
    */
   destroy() {
-    eachDestroyable(this, item => {
-      if (item.destroy) {
-        item.destroy();
-      }
-    });
-
+    destroyDestroyables(this);
     this.isDestroyed = true;
   },
 
@@ -255,14 +250,14 @@ if (isFeatureEnabled('ember-factory-for')) {
    @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
-  Container.prototype.factoryFor = function _factoryFor(fullName, options = {}) {
+  Container.prototype.factoryFor = function (fullName, options = {}) {
     let normalizedName = this.registry.normalize(fullName);
 
     assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
 
     if (options.source) {
       normalizedName = this.registry.expandLocalLookup(fullName, options);
-      // if expandLocalLookup returns falsey, we do not support local lookup
+      // if expandLocalLookup returns falsy, we do not support local lookup
       if (!normalizedName) {
         return;
       }
@@ -293,7 +288,7 @@ function isSingleton(container, fullName) {
   return container.registry.getOption(fullName, 'singleton') !== false;
 }
 
-function shouldInstantiate(container, fullName) {
+function isInstantiatable(container, fullName) {
   return container.registry.getOption(fullName, 'instantiate') !== false;
 }
 
@@ -330,19 +325,19 @@ function lookup(container, fullName, options = {}) {
 }
 
 function isSingletonClass(container, fullName, { instantiate, singleton }) {
-  return singleton !== false && isSingleton(container, fullName) && !instantiate && !shouldInstantiate(container, fullName);
+  return singleton !== false && isSingleton(container, fullName) && !instantiate && !isInstantiatable(container, fullName);
 }
 
 function isSingletonInstance(container, fullName, { instantiate, singleton }) {
-  return singleton !== false && isSingleton(container, fullName) && instantiate !== false && shouldInstantiate(container, fullName);
+  return singleton !== false && isSingleton(container, fullName) && instantiate !== false && isInstantiatable(container, fullName);
 }
 
 function isFactoryClass(container, fullname, { instantiate, singleton }) {
-  return (singleton === false || !isSingleton(container, fullname)) && instantiate === false && !shouldInstantiate(container, fullname);
+  return (singleton === false || !isSingleton(container, fullname)) && instantiate === false && !isInstantiatable(container, fullname);
 }
 
 function isFactoryInstance(container, fullName, { instantiate, singleton }) {
-  return (singleton !== false || isSingleton(container, fullName)) && instantiate !== false && shouldInstantiate(container, fullName);
+  return (singleton !== false || isSingleton(container, fullName)) && instantiate !== false && isInstantiatable(container, fullName);
 }
 
 function instantiateFactory(container, fullName, options) {
@@ -381,16 +376,15 @@ function areInjectionsDynamic(injections) {
 
 function buildInjections() /* container, ...injections */{
   let hash = {};
+  let len = arguments.length;
 
-  if (arguments.length > 1) {
+  if (len > 1) {
     let container = arguments[0];
     let injections = [];
     let injection;
 
-    for (let i = 1; i < arguments.length; i++) {
-      if (arguments[i]) {
-        injections = injections.concat(arguments[i]);
-      }
+    for (let i = 1; i < len; i++) {
+      injections.push(...arguments[i]);
     }
 
     runInDebug(() => {
@@ -414,7 +408,7 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
 
   if (options.source) {
     fullName = registry.expandLocalLookup(fullName, options);
-    // if expandLocalLookup returns falsey, we do not support local lookup
+    // if expandLocalLookup returns falsy, we do not support local lookup
     if (!fullName) {
       return;
     }
@@ -466,8 +460,7 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
 
 function injectionsFor(container, fullName) {
   let registry = container.registry;
-  let splitName = fullName.split(':');
-  let type = splitName[0];
+  let type = fullName.split(':')[0];
 
   let injections = buildInjections(container, registry.getTypeInjections(type), registry.getInjections(fullName));
   injections._debugContainerKey = fullName;
@@ -533,8 +526,7 @@ function instantiate(factory, props = {}, container, fullName) {
 
 function factoryInjectionsFor(container, fullName) {
   let registry = container.registry;
-  let splitName = fullName.split(':');
-  let type = splitName[0];
+  let type = fullName.split(':')[0];
 
   let factoryInjections = buildInjections(container, registry.getFactoryTypeInjections(type), registry.getFactoryInjections(fullName));
   factoryInjections._debugContainerKey = fullName;
@@ -563,7 +555,7 @@ function injectDeprecatedContainer(object, container) {
   });
 }
 
-function eachDestroyable(container, callback) {
+function destroyDestroyables(container) {
   let cache = container.cache;
   let keys = Object.keys(cache);
 
@@ -571,19 +563,14 @@ function eachDestroyable(container, callback) {
     let key = keys[i];
     let value = cache[key];
 
-    if (container.registry.getOption(key, 'instantiate') !== false) {
-      callback(value);
+    if (isInstantiatable(container, key) && value.destroy) {
+      value.destroy();
     }
   }
 }
 
 function resetCache(container) {
-  eachDestroyable(container, value => {
-    if (value.destroy) {
-      value.destroy();
-    }
-  });
-
+  destroyDestroyables(container);
   container.cache.dict = dictionary(null);
 }
 
