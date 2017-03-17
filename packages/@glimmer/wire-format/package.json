@@ -3,25 +3,10 @@
   "version": "0.22.0",
   "description": "",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/wire-format",
-  "main": "dist/commonjs/index.js",
-  "module": "dist/modules/index.js",
-  "typings": "index.ts",
-  "jsnext:main": "dist/modules/index.js",
-  "directories": {
-    "test": "tests"
-  },
-  "scripts": {
-    "test": "node -e 'require(\".\")'"
-  },
   "license": "MIT",
   "dependencies": {
     "@glimmer/util": "^0.22.0"
   },
-  "files": [
-    "dist",
-    "index.ts",
-    "lib"
-  ],
   "devDependencies": {
     "typescript": "^2.2.0"
   }
