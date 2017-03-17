@@ -6,6 +6,7 @@ import * as AST from "../types/nodes";
 import { Tag } from "../parser";
 import builders from "../builders";
 import traverse from "../traversal/traverse";
+import print from "../generation/print";
 import Walker from "../traversal/walker";
 import { parse } from "handlebars";
 
