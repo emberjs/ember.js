@@ -2,18 +2,6 @@
   "name": "@glimmer/object",
   "version": "0.22.0",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/object",
-  "main": "dist/commonjs/index.js",
-  "module": "dist/modules/index.js",
-  "jsnext:main": "dist/modules/index.js",
-  "typings": "index.ts",
-  "scripts": {
-    "test": "node -e 'require(\".\")'"
-  },
-  "files": [
-    "dist",
-    "index.ts",
-    "lib"
-  ],
   "dependencies": {
     "@glimmer/object-reference": "^0.22.0",
     "@glimmer/util": "^0.22.0"

@@ -3,18 +3,6 @@
   "version": "0.22.0",
   "description": "Minimal runtime needed to render Glimmer templates",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/runtime",
-  "main": "dist/commonjs/index.js",
-  "module": "dist/modules/index.js",
-  "jsnext:main": "dist/modules/index.js",
-  "typings": "index.ts",
-  "directories": {
-    "test": "tests"
-  },
-  "scripts": {
-    "build": "sh ../../../build/build",
-    "test": "node -e 'require(\".\")'",
-    "prepublish": "npm run build"
-  },
   "license": "MIT",
   "dependencies": {
     "@glimmer/util": "^0.22.0",
@@ -24,11 +12,6 @@
     "@glimmer/wire-format": "^0.22.0",
     "@glimmer/interfaces": "^0.22.0"
   },
-  "files": [
-    "dist",
-    "index.ts",
-    "lib"
-  ],
   "devDependencies": {
     "@types/qunit": "^2.0.31",
     "typescript": "^2.2.0"
