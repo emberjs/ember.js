@@ -103,7 +103,6 @@ export abstract class AppendDynamicOpcode<T extends Insertion> {
 export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDynamicOpcode<T> {
   protected abstract AppendOpcode: typeof OptimizedCautiousAppendOpcode | typeof OptimizedTrustingAppendOpcode;
   private start = -1;
-  private end = -1;
 
   constructor() {
     super();
@@ -115,13 +114,13 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDyn
 
   evaluate(vm: VM) {
     if (this.deopted) {
-      vm.pushEvalFrame(this.start, this.end);
+      vm.pushEvalFrame(this.start);
     } else {
       let value = vm.evalStack.pop();
 
       if(isComponentDefinition(value)) {
         this.deopt(vm.env);
-        vm.pushEvalFrame(this.start, this.end);
+        vm.pushEvalFrame(this.start);
       } else {
         vm.evalStack.push(value);
         super.evaluate(vm);

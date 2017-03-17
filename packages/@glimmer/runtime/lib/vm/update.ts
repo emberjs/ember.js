@@ -178,7 +178,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 
   handleException() {
-    let { env, scope, start, end, dynamicScope, stack, bp } = this;
+    let { env, scope, start, dynamicScope, stack, bp } = this;
 
     let elementStack = ElementStack.resume(
       this.env,
@@ -187,7 +187,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     );
 
     let vm = new VM(env, scope, dynamicScope, elementStack);
-    let result = vm.resume(start, end, stack.snapshot(), bp);
+    let result = vm.resume(start, stack.snapshot(), bp);
 
     this.children = result.opcodes();
     this.didInitializeChildren();
@@ -234,7 +234,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
 
     let { start, end } = opcode;
 
-    vm.execute(start, end, vm => {
+    vm.execute(start, vm => {
       map[key] = tryOpcode = vm.iterate(start, end, memo, item, vm.updating());
     });
 

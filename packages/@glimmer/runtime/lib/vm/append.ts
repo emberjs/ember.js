@@ -7,7 +7,6 @@ import { Template } from '../scanner';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
-import { FrameStack } from './frame';
 
 import {
   APPEND_OPCODES,
@@ -35,7 +34,7 @@ export class EvaluationStack {
     return this.stack.length;
   }
 
-  snapshot(args: number): EvaluationStack {
+  snapshot(args = 0): EvaluationStack {
     return new EvaluationStack(this.stack.slice(-args));
   }
 
@@ -89,7 +88,7 @@ export default class VM implements PublicVM {
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
-  public frame = new FrameStack();
+  public frames: number[] = [];
   public constants: Constants;
   private notDone = { done: false, value: null };
   public evalStack = new EvaluationStack();
@@ -103,7 +102,7 @@ export default class VM implements PublicVM {
   ) {
     let scope = Scope.root(self, program.symbolTable.symbols.length);
     let vm = new VM(env, scope, dynamicScope, elementStack);
-    vm.prepare(program.start, program.end);
+    vm.prepare(program.start);
     return vm;
   }
 
@@ -118,6 +117,14 @@ export default class VM implements PublicVM {
     this.elementStack = elementStack;
     this.scopeStack.push(scope);
     this.dynamicScopeStack.push(dynamicScope);
+  }
+
+  private get ip(): number {
+    return this.frames[this.frames.length - 1]!;
+  }
+
+  private set ip(val: number) {
+    this.frames[this.frames.length - 1] = val;
   }
 
   capture(args: number): VMState {
@@ -155,7 +162,7 @@ export default class VM implements PublicVM {
   }
 
   goto(ip: number) {
-    this.frame.goto(ip);
+    this.ip = ip;
   }
 
   beginCacheGroup() {
@@ -193,6 +200,10 @@ export default class VM implements PublicVM {
 
     let tryOpcode = new TryOpcode(start, end, state, tracker, updating);
 
+    let ip = this.ip;
+    this.ip = end + 4;
+    this.frames.push(ip);
+
     this.didEnter(tryOpcode);
   }
 
@@ -203,6 +214,10 @@ export default class VM implements PublicVM {
 
     let state = this.capture(2);
     let tracker = this.stack().pushUpdatableBlock();
+
+    let ip = this.ip;
+    this.ip = end + 4;
+    this.frames.push(ip);
 
     return new TryOpcode(start, end, state, tracker, updating);
   }
@@ -232,16 +247,28 @@ export default class VM implements PublicVM {
   }
 
   exit() {
-    this.stack().popBlock();
-    this.updatingOpcodeStack.pop();
+    this.frames.pop();
 
-    let parent = this.updating().tail() as BlockOpcode;
+    if (this.frames.length) {
+      this.stack().popBlock();
+      this.updatingOpcodeStack.pop();
 
-    parent.didInitializeChildren();
+      let parent = this.updating().tail() as BlockOpcode;
+
+      parent.didInitializeChildren();
+    }
   }
 
   exitList() {
-    this.exit();
+    if (this.frames.length) {
+      this.stack().popBlock();
+      this.updatingOpcodeStack.pop();
+
+      let parent = this.updating().tail() as BlockOpcode;
+
+      parent.didInitializeChildren();
+    }
+
     this.listBlockStack.pop();
   }
 
@@ -270,11 +297,11 @@ export default class VM implements PublicVM {
   }
 
   pushFrame(block: OpSlice) {
-    this.frame.push(block.start, block.end);
+    this.frames.push(block.start);
   }
 
-  pushEvalFrame(start: number, end: number) {
-    this.frame.push(start, end);
+  pushEvalFrame(start: number) {
+    this.frames.push(start);
   }
 
   pushChildScope() {
@@ -323,15 +350,15 @@ export default class VM implements PublicVM {
 
   /// EXECUTION
 
-  resume(start: number, end: number, stack: EvaluationStack, bp: number): RenderResult {
-    return this.execute(start, end, vm => {
+  resume(start: number, stack: EvaluationStack, bp: number): RenderResult {
+    return this.execute(start, vm => {
       vm.evalStack = stack;
       vm.bp = bp;
     });
   }
 
-  execute(start: number, end: number, initialize?: (vm: VM) => void): RenderResult {
-    this.prepare(start, end, initialize);
+  execute(start: number, initialize?: (vm: VM) => void): RenderResult {
+    this.prepare(start, initialize);
     let result: IteratorResult<RenderResult>;
 
     while (true) {
@@ -342,23 +369,23 @@ export default class VM implements PublicVM {
     return result.value as RenderResult;
   }
 
-  private prepare(start: number, end: number, initialize?: (vm: VM) => void): void {
-    let { elementStack, frame, updatingOpcodeStack } = this;
+  private prepare(start: number, initialize?: (vm: VM) => void): void {
+    let { elementStack, frames, updatingOpcodeStack } = this;
 
     elementStack.pushSimpleBlock();
 
     updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
 
-    frame.push(start, end);
+    frames.push(start);
 
     if (initialize) initialize(this);
   }
 
   next(): IteratorResult<RenderResult> {
-    let { frame, env, updatingOpcodeStack, elementStack } = this;
+    let { env, updatingOpcodeStack, elementStack } = this;
     let opcode: Option<Opcode>;
 
-    if (opcode = frame.nextStatement(env)) {
+    if (opcode = this.nextStatement(env)) {
       APPEND_OPCODES.evaluate(this, opcode, opcode.type);
       return this.notDone;
     }
@@ -371,6 +398,21 @@ export default class VM implements PublicVM {
         elementStack.popBlock()
       )
     };
+  }
+
+  return(): void {
+    this.frames.pop();
+  }
+
+  private nextStatement(env: Environment): Option<Opcode> {
+    if (this.frames.length === 0) {
+      return null;
+    }
+
+    let { ip } = this;
+    let program = env.program;
+    this.ip += 4;
+    return program.opcode(ip);
   }
 
   evaluateOpcode(opcode: Opcode) {
