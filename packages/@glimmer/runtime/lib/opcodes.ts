@@ -296,6 +296,16 @@ export const enum Op {
    */
   PopScope,
 
+  /**
+   * Operation: Return to the previous frame.
+   * Format:
+   *   (Return)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
+  Return,
+
   /// HTML
 
   /**
@@ -969,10 +979,11 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.GetLocal: return ['GetLocal', { position: op1 }];
     case Op.ChildScope: return ['ChildScope'];
     case Op.PopScope: return ['PopScope'];
+    case Op.Return: return ['Return'];
     case Op.PushDynamicScope: return ['PushDynamicScope'];
     case Op.PopDynamicScope: return ['PopDynamicScope'];
     case Op.BindDynamicScope: return ['BindDynamicScope'];
-    case Op.Enter: return ['Enter', { start: op1, end: op2 }];
+    case Op.Enter: return ['Enter', { args: op1, start: op2, end: op3 }];
     case Op.Exit: return ['Exit'];
     case Op.CompileDynamicBlock: return ['CompileDynamicBlock'];
     case Op.InvokeStatic: return ['InvokeStatic', { block: c.getBlock(op1) }];
@@ -996,7 +1007,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any
     case Op.DynamicAttrNS: return ['DynamicAttrNS', { name: c.getString(op1), ns: c.getString(op2), trusting: !!op2 }];
     case Op.DynamicAttr: return ['DynamicAttr', { name: c.getString(op1), trusting: !!op2 }];
     case Op.PutIterator: return ['PutIterator'];
-    case Op.EnterList: return ['EnterList', { start: op1, end: op2 }];
+    case Op.EnterList: return ['EnterList', { start: op2, end: op3 }];
     case Op.ExitList: return ['ExitList'];
     case Op.Iterate: return ['Iterate', { breaks: op1, start: op2, end: op3 }];
     case Op.StartIterate: return ['StartIterate', { start: op1, end: op2 }];
@@ -1021,13 +1032,14 @@ export class AppendOpcodes {
   evaluate(vm: VM, opcode: Opcode, type: number) {
     let func = this.evaluateOpcode[type];
     let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
-    console.log(`${vm.frame['currentFrame']['ip'] - 4}. ${logOpcode(name, params)}`);
+    console.log(`${vm['ip'] - 4}. ${logOpcode(name, params)}`);
 
     // console.log(...debug(vm.constants, type, opcode.op1, opcode.op2, opcode.op3));
     func(vm, opcode);
     console.log('%c -> eval stack', 'color: red', vm.evalStack['stack'].length ? vm.evalStack['stack'].slice() : 'EMPTY');
     console.log('%c -> scope', 'color: green', vm.scope()['slots'].map(s => s && s['value'] ? s['value']() : s));
     console.log('%c -> elements', 'color: blue', vm.stack()['elementStack'].toArray());
+    console.log('%c -> frames', 'color:cyan', vm['frames']);
   }
 }
 

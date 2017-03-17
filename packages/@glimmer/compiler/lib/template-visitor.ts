@@ -259,7 +259,7 @@ export default class TemplateVisitor {
   }
 
   ElementNode(element: AST.ElementNode) {
-    let parentFrame = this.getCurrentFrame();
+    let parentFrame = this.currentFrame;
     let elementFrame = this.pushFrame();
 
     elementFrame.parentNode = element;
@@ -299,12 +299,12 @@ export default class TemplateVisitor {
 
   AttrNode(attr: AST.AttrNode) {
     if (attr.value.type !== 'TextNode') {
-      this.getCurrentFrame().mustacheCount++;
+      this.currentFrame.mustacheCount++;
     }
   };
 
   TextNode(text: AST.TextNode) {
-    let frame = this.getCurrentFrame();
+    let frame = this.currentFrame;
     if (text.chars === '') {
       frame.blankChildTextNodes!.push(domIndexOf(frame.children!, text));
     }
@@ -312,7 +312,7 @@ export default class TemplateVisitor {
   };
 
   BlockStatement(node: AST.BlockStatement) {
-    let frame = this.getCurrentFrame();
+    let frame = this.currentFrame;
 
     frame.mustacheCount++;
     frame.actions.push(['block', [node, frame.childIndex, frame.childCount]] as Action);
@@ -322,13 +322,13 @@ export default class TemplateVisitor {
   };
 
   PartialStatement(node: AST.PartialStatement) {
-    let frame = this.getCurrentFrame();
+    let frame = this.currentFrame;
     frame.mustacheCount++;
     frame.actions.push(['mustache', [node, frame.childIndex, frame.childCount]] as Action);
   };
 
   CommentStatement(text: AST.CommentStatement) {
-    let frame = this.getCurrentFrame();
+    let frame = this.currentFrame;
     frame.actions.push(['comment', [text, frame.childIndex, frame.childCount]] as Action);
   };
 
@@ -337,15 +337,19 @@ export default class TemplateVisitor {
   };
 
   MustacheStatement(mustache: AST.MustacheStatement) {
-    let frame = this.getCurrentFrame();
+    let frame = this.currentFrame;
     frame.mustacheCount++;
     frame.actions.push(['mustache', [mustache, frame.childIndex, frame.childCount]] as Action);
   };
 
   // Frame helpers
 
-  private getCurrentFrame(): Frame {
-    return expect(this.frameStack[this.frameStack.length - 1], "Expected a current frame");
+  private get currentFrame(): Frame {
+    return expect(this.getCurrentFrame(), "Expected a current frame");
+  }
+
+  private getCurrentFrame(): Option<Frame> {
+    return this.frameStack[this.frameStack.length - 1];
   }
 
   private pushFrame() {

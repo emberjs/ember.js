@@ -141,6 +141,8 @@ APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
   }
 });
 
+APPEND_OPCODES.add(Op.Return, vm => vm.return());
+
 export type TestFunction = (ref: Reference<Opaque>, env: Environment) => Reference<boolean>;
 
 export const ConstTest: TestFunction = function(ref: Reference<Opaque>, _env: Environment): Reference<boolean> {

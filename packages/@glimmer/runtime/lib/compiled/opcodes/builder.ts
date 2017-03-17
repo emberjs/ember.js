@@ -64,11 +64,11 @@ class Labels {
     }
 
     for (let { at, args, start, end, Range } of this.ranges) {
-      opcodes.set(at, Range, args, this.labels[start], this.labels[end] - 4);
+      opcodes.set(at, Range, args, this.labels[start], this.labels[end]);
     }
 
     for (let { at, breaks, start, end } of this.iters) {
-      opcodes.set(at, Op.Iterate, this.labels[breaks], this.labels[start], this.labels[end] - 4);
+      opcodes.set(at, Op.Iterate, this.labels[breaks], this.labels[start], this.labels[end]);
     }
   }
 }
@@ -127,7 +127,8 @@ export abstract class BasicOpcodeBuilder {
 
   finalize(): number {
     this.program.set(this.start, Op.ReserveLocals, this.localsSize);
-    return this.push(Op.ReleaseLocals);
+    this.push(Op.ReleaseLocals);
+    return this.push(Op.Return);
   }
 
   // args
