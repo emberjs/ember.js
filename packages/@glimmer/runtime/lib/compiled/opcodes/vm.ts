@@ -20,20 +20,6 @@ import {
   PrimitiveReference
 } from '../../references';
 
-APPEND_OPCODES.add(Op.ReserveLocals, (vm, { op1: amount }) => {
-  vm.reserveLocals(amount);
-});
-
-APPEND_OPCODES.add(Op.ReleaseLocals, vm => vm.releaseLocals());
-
-APPEND_OPCODES.add(Op.SetLocal, (vm, { op1: position }) => {
-  vm.setLocal(position, vm.evalStack.pop());
-});
-
-APPEND_OPCODES.add(Op.GetLocal, (vm, { op1: position }) => {
-  vm.evalStack.push(vm.getLocal(position));
-});
-
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
 
 APPEND_OPCODES.add(Op.PopScope, vm => vm.popScope());
@@ -42,12 +28,16 @@ APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
 
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
 
-APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
-  vm.evalStack.push(vm.constants.getOther(other));
+APPEND_OPCODES.add(Op.Immediate, (vm, { op1: number }) => {
+  vm.stack.push(number);
 });
 
-APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
-  let stack = vm.evalStack;
+APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
+  vm.stack.push(vm.constants.getOther(other));
+});
+
+APPEND_OPCODES.add(Op.PrimitiveReference, (vm, { op1: primitive }) => {
+  let stack = vm.stack;
   let flag = (primitive & (3 << 30)) >>> 30;
   let value = primitive & ~(3 << 30);
 
@@ -69,28 +59,40 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.Dup, vm => vm.evalStack.dup());
+APPEND_OPCODES.add(Op.Dup, (vm, { op1: register, op2: offset }) => {
+  let position = vm.fetchValue<number>(register) - offset;
+  vm.stack.dup(position);
+});
 
-APPEND_OPCODES.add(Op.Pop, vm => vm.evalStack.pop());
+APPEND_OPCODES.add(Op.Pop, (vm, { op1: count }) => vm.stack.pop(count));
+
+APPEND_OPCODES.add(Op.Load, (vm, { op1: register }) => vm.load(register));
+
+APPEND_OPCODES.add(Op.Fetch, (vm, { op1: register }) => vm.fetch(register));
 
 APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
   let names = vm.constants.getArray(_names);
   vm.bindDynamicScope(names);
 });
 
-APPEND_OPCODES.add(Op.Enter, (vm, { op1: args, op2: start, op3: end }) => vm.enter(args, start, end));
+APPEND_OPCODES.add(Op.PushFrame, vm => vm.pushFrame());
+
+APPEND_OPCODES.add(Op.PopFrame, vm => vm.popFrame());
+
+APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => vm.enter(args));
 
 APPEND_OPCODES.add(Op.Exit, (vm) => vm.exit());
 
 APPEND_OPCODES.add(Op.CompileDynamicBlock, vm => {
-  let stack = vm.evalStack;
+  let stack = vm.stack;
   let block = stack.pop<Block>();
   stack.push(block ? block.compileDynamic(vm.env) : null);
 });
 
 APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: _block }) => {
   let block = vm.constants.getBlock(_block);
-  vm.invokeBlock(block);
+  let compiled = block.compileStatic(vm.env);
+  vm.call(compiled.start);
 });
 
 export interface DynamicInvoker<S extends SymbolTable> {
@@ -99,14 +101,14 @@ export interface DynamicInvoker<S extends SymbolTable> {
 
 APPEND_OPCODES.add(Op.InvokeDynamic, (vm, { op1: _invoker }) => {
   let invoker = vm.constants.getOther<DynamicInvoker<SymbolTable>>(_invoker);
-  let block = vm.evalStack.pop<Option<CompiledDynamicTemplate<SymbolTable>>>();
+  let block = vm.stack.pop<Option<CompiledDynamicTemplate<SymbolTable>>>();
   invoker.invoke(vm, block);
 });
 
 APPEND_OPCODES.add(Op.Jump, (vm, { op1: target }) => vm.goto(target));
 
 APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
-  let reference = vm.evalStack.pop<VersionedPathReference<Opaque>>();
+  let reference = vm.stack.pop<VersionedPathReference<Opaque>>();
 
   if (isConst(reference)) {
     if (reference.value()) {
@@ -124,7 +126,7 @@ APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
 });
 
 APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
-  let reference = vm.evalStack.pop<VersionedPathReference<Opaque>>();
+  let reference = vm.stack.pop<VersionedPathReference<Opaque>>();
 
   if (isConst(reference)) {
     if (!reference.value()) {
@@ -158,7 +160,7 @@ export const EnvironmentTest: TestFunction = function(ref: Reference<Opaque>, en
 };
 
 APPEND_OPCODES.add(Op.Test, (vm, { op1: _func }) => {
-  let stack = vm.evalStack;
+  let stack = vm.stack;
   let operand = stack.pop();
   let func = vm.constants.getFunction(_func);
   stack.push(func(operand, vm.env));

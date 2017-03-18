@@ -6,6 +6,7 @@ import OpcodeBuilder from '../compiled/opcodes/builder';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
 import { VM, PublicVM } from '../vm';
 import { IArguments } from '../vm/arguments';
+import { Register } from '../opcodes';
 import { ATTRS_BLOCK, Block, ClientSide, RawInlineBlock } from '../scanner';
 
 import {
@@ -119,6 +120,14 @@ CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenCompo
   builder.openElementWithOperations(sexp[2]);
 });
 
+CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder) => {
+  builder.didCreateElement(Register.s0);
+});
+
+CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayout, builder) => {
+  builder.didRenderLayout(Register.s0);
+});
+
 STATEMENTS.add(Ops.Append, (sexp: S.Append, builder: OpcodeBuilder) => {
   let [, value, trusting] = sexp;
 
@@ -168,7 +177,7 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
 
   invoke(vm: VM, layout: Option<CompiledDynamicProgram>) {
     let { symbols, hasEval } = layout!.symbolTable as ProgramSymbolTable;
-    let stack = vm.evalStack;
+    let stack = vm.stack;
 
     let scope = vm.pushRootScope(symbols.length + 1, true);
     scope.bindSelf(stack.pop<VersionedPathReference<Opaque>>());
@@ -212,7 +221,8 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
     if (lookup) lookup['&default'] = defaultBlock;
     if (lookup) scope.bindEvalScope(lookup);
 
-    vm.invoke(layout!);
+    vm.pushFrame();
+    vm.call(layout!.start);
   }
 
   toJSON() {
@@ -243,37 +253,37 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
 export class PartialInvoker implements DynamicInvoker<ProgramSymbolTable> {
   constructor(private outerSymbols: string[], private evalInfo: WireFormat.Core.EvalInfo) {}
 
-  invoke(vm: VM, partial: Option<CompiledDynamicProgram>) {
-    if (partial) {
-      let partialSymbols = partial.symbolTable.symbols;
-      let outerScope = vm.scope();
-      let partialScope = vm.pushRootScope(partialSymbols.length, false);
-      partialScope.bindCallerScope(outerScope.getCallerScope());
-      partialScope.bindEvalScope(outerScope.getEvalScope());
-      partialScope.bindSelf(outerScope.getSelf());
+  invoke(vm: VM, _partial: Option<CompiledDynamicProgram>) {
+    let partial = unwrap(_partial);
+    let partialSymbols = partial.symbolTable.symbols;
+    let outerScope = vm.scope();
+    let partialScope = vm.pushRootScope(partialSymbols.length, false);
+    partialScope.bindCallerScope(outerScope.getCallerScope());
+    partialScope.bindEvalScope(outerScope.getEvalScope());
+    partialScope.bindSelf(outerScope.getSelf());
 
-      let { evalInfo, outerSymbols } = this;
+    let { evalInfo, outerSymbols } = this;
 
-      let locals = dict<VersionedPathReference<Opaque>>();
+    let locals = dict<VersionedPathReference<Opaque>>();
 
-      evalInfo.forEach(slot => {
-        let name = outerSymbols[slot - 1];
-        let ref  = outerScope.getSymbol(slot);
-        locals[name] = ref;
-      });
+    evalInfo.forEach(slot => {
+      let name = outerSymbols[slot - 1];
+      let ref  = outerScope.getSymbol(slot);
+      locals[name] = ref;
+    });
 
-      let evalScope = outerScope.getEvalScope()!;
-      partialSymbols.forEach((name, i) => {
-        let symbol = i + 1;
-        let value = evalScope[name];
+    let evalScope = outerScope.getEvalScope()!;
+    partialSymbols.forEach((name, i) => {
+      let symbol = i + 1;
+      let value = evalScope[name];
 
-        if (value !== undefined) partialScope.bind(symbol, value);
-      });
+      if (value !== undefined) partialScope.bind(symbol, value);
+    });
 
-      partialScope.bindPartialMap(locals);
+    partialScope.bindPartialMap(locals);
 
-      vm.invoke(partial);
-    }
+    vm.pushFrame();
+    vm.call(partial.start);
   }
 }
 
@@ -303,6 +313,10 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
 
   builder.startLabels();
 
+  builder.pushFrame();
+
+  builder.returnTo('END');
+
   expr(name, builder);
   builder.pushImmediate(EMPTY_ARRAY);
   builder.pushArgs(1, true);
@@ -311,16 +325,24 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
   builder.dup();
   builder.test('simple');
 
-  builder.closure(2, b => {
-    b.jumpUnless('ELSE');
-    b.getPartialTemplate();
-    b.compileDynamicBlock();
-    b.invokeDynamic(new PartialInvoker(symbols, evalInfo));
-    b.popScope();
-    b.jump('END');
-    b.label('ELSE');
-    b.pop();
-  });
+  builder.enter(2);
+
+  builder.jumpUnless('ELSE');
+
+  builder.getPartialTemplate();
+  builder.compileDynamicBlock();
+  builder.invokeDynamic(new PartialInvoker(symbols, evalInfo));
+  builder.popScope();
+  builder.popFrame();
+
+  builder.label('ELSE');
+  builder.exit();
+  builder.return();
+
+  builder.label('END');
+  builder.popFrame();
+
+  builder.stopLabels();
 });
 
 class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
@@ -328,14 +350,11 @@ class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
 
   invoke(vm: VM, block: Option<CompiledDynamicBlock>) {
     let { callerCount } = this;
-    let stack = vm.evalStack;
+    let stack = vm.stack;
 
     if (!block) {
-      for (let i=callerCount-1; i>=0; i--) {
-        stack.pop();
-      }
-
-      // To balance the popScope
+      // To balance the pop{Frame,Scope}
+      vm.pushFrame();
       vm.pushCallerScope();
 
       return;
@@ -345,24 +364,18 @@ class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
     let locals = table.parameters; // always present in inline blocks
 
     let calleeCount = locals ? locals.length : 0;
-
-    vm.pushCallerScope(calleeCount > 0);
-
-    let excess = Math.max(callerCount - calleeCount, 0);
-
-    for (let i=0; i<excess; i++) {
-      stack.pop();
-    }
-
     let count = Math.min(callerCount, calleeCount);
+
+    vm.pushFrame();
+    vm.pushCallerScope(calleeCount > 0);
 
     let scope = vm.scope();
 
-    for (let i=count-1; i>=0; i--) {
-      scope.bindSymbol(locals![i], stack.pop<VersionedPathReference<Opaque>>());
+    for (let i=0; i<count; i++) {
+      scope.bindSymbol(locals![i], stack.fromBase<VersionedPathReference<Opaque>>(callerCount-i));
     }
 
-    vm.invoke(block);
+    vm.call(block.start);
   }
 
   toJSON() {
@@ -372,12 +385,18 @@ class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
 
 STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder) => {
   let [, to, params] = sexp;
+
   let count = compileList(params, builder);
 
   builder.getBlock(to);
   builder.compileDynamicBlock();
   builder.invokeDynamic(new InvokeDynamicYield(count));
   builder.popScope();
+  builder.popFrame();
+
+  if (count) {
+    builder.pop(count);
+  }
 });
 
 STATEMENTS.add(Ops.Debugger, (sexp: WireFormat.Statements.Debugger, builder: OpcodeBuilder) => {
@@ -603,24 +622,41 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #if requires a single argument`);
     }
 
+    builder.startLabels();
+
+    builder.pushFrame();
+
+    builder.returnTo('END');
+
     expr(params[0], builder);
 
     builder.test('environment');
 
-    builder.closure(1, b => {
-      if (template && inverse) {
-        b.jumpUnless('ELSE');
-        b.invokeStatic(template);
-        b.jump('END');
-        b.label('ELSE');
-        b.invokeStatic(inverse);
-      } else if (template) {
-        b.jumpUnless('END');
-        b.invokeStatic(template);
-      } else {
-        throw unreachable();
-      }
-    });
+    builder.enter(1);
+
+    builder.jumpUnless('ELSE');
+
+    builder.invokeStatic(unwrap(template));
+
+    if (inverse) {
+      builder.jump('EXIT');
+
+      builder.label('ELSE');
+      builder.invokeStatic(inverse);
+
+      builder.label('EXIT');
+      builder.exit();
+      builder.return();
+    } else {
+      builder.label('ELSE');
+      builder.exit();
+      builder.return();
+    }
+
+    builder.label('END');
+    builder.popFrame();
+
+    builder.stopLabels();
   });
 
   blocks.add('unless', (params, _hash, template, inverse, builder) => {
@@ -640,24 +676,41 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #unless requires a single argument`);
     }
 
+    builder.startLabels();
+
+    builder.pushFrame();
+
+    builder.returnTo('END');
+
     expr(params[0], builder);
 
     builder.test('environment');
 
-    builder.closure(1, b => {
-      if (template && inverse) {
-        b.jumpIf('ELSE');
-        b.invokeStatic(template);
-        b.jump('END');
-        b.label('ELSE');
-        b.invokeStatic(inverse);
-      } else if (template) {
-        b.jumpIf('END');
-        b.invokeStatic(template);
-      } else {
-        throw unreachable();
-      }
-    });
+    builder.enter(1);
+
+    builder.jumpIf('ELSE');
+
+    builder.invokeStatic(unwrap(template));
+
+    if (inverse) {
+      builder.jump('EXIT');
+
+      builder.label('ELSE');
+      builder.invokeStatic(inverse);
+
+      builder.label('EXIT');
+      builder.exit();
+      builder.return();
+    } else {
+      builder.label('ELSE');
+      builder.exit();
+      builder.return();
+    }
+
+    builder.label('END');
+    builder.popFrame();
+
+    builder.stopLabels();
   });
 
   blocks.add('with', (params, _hash, template, inverse, builder) => {
@@ -677,21 +730,42 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #with requires a single argument`);
     }
 
+    builder.startLabels();
+
+    builder.pushFrame();
+
+    builder.returnTo('END');
+
     expr(params[0], builder);
 
     builder.dup();
     builder.test('environment');
 
-    builder.closure(2, b => {
-      b.jumpUnless('ELSE');
-      b.invokeStatic(unwrap(template), 1);
-      b.jump('END');
-      b.label('ELSE');
-      b.pop();
-      if (inverse) {
-        b.invokeStatic(inverse);
-      }
-    });
+    builder.enter(2);
+
+    builder.jumpUnless('ELSE');
+
+    builder.invokeStatic(unwrap(template), 1);
+
+    if (inverse) {
+      builder.jump('EXIT');
+
+      builder.label('ELSE');
+      builder.invokeStatic(inverse);
+
+      builder.label('EXIT');
+      builder.exit();
+      builder.return();
+    } else {
+      builder.label('ELSE');
+      builder.exit();
+      builder.return();
+    }
+
+    builder.label('END');
+    builder.popFrame();
+
+    builder.stopLabels();
   });
 
   blocks.add('each', (params, hash, template, inverse, builder) => {
@@ -703,7 +777,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     //         EnterList(BEGIN2, END2)
     // ITER:   Noop
     //         NextIter(BREAK)
-    //         EnterWithKey(BEGIN2, END2)
     // BEGIN2: Noop
     //         PushChildScope
     //         Evaluate(default)
@@ -719,8 +792,11 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // END:    Noop
     //         Exit
 
-    // TOMORROW: Locals for key, value, memo
-    // TOMORROW: What is the memo slot used for?
+    builder.startLabels();
+
+    builder.pushFrame();
+
+    builder.returnTo('END');
 
     if (hash && hash[0][0] === 'key') {
       expr(hash[1][0], builder);
@@ -730,29 +806,64 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     expr(params[0], builder);
 
-    builder.closure(2, b => {
-      b.putIterator();
-      b.jumpUnless('ELSE');
-      b.iter(b => {
-        b.invokeStatic(unwrap(template), 2);
-      });
-      b.jump('END');
-      b.label('ELSE');
-      b.pop();
-      if (inverse) {
-        b.invokeStatic(inverse);
-      }
-    });
+    builder.enter(2);
 
-    // pop the iterator that is at the top of the stack
-    // throughout this process.
-    builder.pop();
+    builder.putIterator();
+
+    builder.jumpUnless('ELSE');
+
+    builder.pushFrame();
+
+    builder.returnTo('ITER');
+
+    builder.dup(Register.fp, 1);
+
+    builder.enterList('BODY');
+
+    builder.label('ITER');
+    builder.iterate('BREAK');
+
+    builder.label('BODY');
+    builder.invokeStatic(unwrap(template), 2);
+    builder.pop(2);
+    builder.exit();
+    builder.return();
+
+    builder.label('BREAK');
+    builder.exitList();
+    builder.popFrame();
+
+    if (inverse) {
+      builder.jump('EXIT');
+
+      builder.label('ELSE');
+      builder.invokeStatic(inverse);
+
+      builder.label('EXIT');
+      builder.exit();
+      builder.return();
+    } else {
+      builder.label('ELSE');
+      builder.exit();
+      builder.return();
+    }
+
+    builder.label('END');
+    builder.popFrame();
+
+    builder.stopLabels();
   });
 
   blocks.add('-in-element', (params, hash, template, _inverse, builder) => {
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #-in-element requires a single argument`);
     }
+
+    builder.startLabels();
+
+    builder.pushFrame();
+
+    builder.returnTo('END');
 
     if (hash && hash[0].length) {
       let [ keys, values ] = hash;
@@ -771,15 +882,22 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.dup();
     builder.test('simple');
 
-    builder.closure(3, b => {
-      b.jumpUnless('ELSE');
-      b.pushRemoteElement();
-      b.invokeStatic(unwrap(template));
-      b.popRemoteElement();
-      b.jump('END');
-      b.label('ELSE');
-      b.pop();
-    });
+    builder.enter(3);
+
+    builder.jumpUnless('ELSE');
+
+    builder.pushRemoteElement();
+    builder.invokeStatic(unwrap(template));
+    builder.popRemoteElement();
+
+    builder.label('ELSE');
+    builder.exit();
+    builder.return();
+
+    builder.label('END');
+    builder.popFrame();
+
+    builder.stopLabels();
   });
 
   blocks.add('-with-dynamic-vars', (_params, hash, template, _inverse, builder) => {
@@ -788,12 +906,10 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
       compileList(expressions, builder);
 
-      builder.unit(b => {
-        b.pushDynamicScope();
-        b.bindDynamicScope(names);
-        b.invokeStatic(unwrap(template));
-        b.popDynamicScope();
-      });
+      builder.pushDynamicScope();
+      builder.bindDynamicScope(names);
+      builder.invokeStatic(unwrap(template));
+      builder.popDynamicScope();
     } else {
       builder.invokeStatic(unwrap(template));
     }

@@ -1,11 +1,10 @@
-import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { APPEND_OPCODES, Op, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { Assert } from './vm';
 import { UpdatingVM } from '../../vm';
 import ARGS, { Arguments, IArguments } from '../../vm/arguments';
 import { Component, ComponentManager, ComponentDefinition } from '../../component/interfaces';
 import { DynamicScope } from '../../environment';
 import Bounds from '../../bounds';
-import { APPEND_OPCODES, Op as Op } from '../../opcodes';
 import { ComponentElementOperations } from './dom';
 import { Opaque } from '@glimmer/util';
 import {
@@ -19,14 +18,14 @@ import {
 
 APPEND_OPCODES.add(Op.PushComponentManager, (vm, { op1: _definition }) => {
   let definition = vm.constants.getOther<ComponentDefinition<Opaque>>(_definition);
-  let stack = vm.evalStack;
+  let stack = vm.stack;
 
   stack.push(definition);
   stack.push(definition.manager);
 });
 
 APPEND_OPCODES.add(Op.PushDynamicComponentManager, vm => {
-  let stack = vm.evalStack;
+  let stack = vm.stack;
   let reference = stack.pop<VersionedPathReference<ComponentDefinition<Opaque>>>();
   let cache = isConst(reference) ? undefined : new ReferenceCache<ComponentDefinition<Opaque>>(reference);
   let definition = cache ? cache.peek() : reference.value();
@@ -51,24 +50,24 @@ export interface ComponentState<T> {
   component: T;
 }
 
-APPEND_OPCODES.add(Op.SetComponentState, (vm, { op1: local }) => {
-  let stack = vm.evalStack;
+APPEND_OPCODES.add(Op.InitializeComponentState, vm => {
+  let stack = vm.stack;
 
   let manager = stack.pop();
   let definition = stack.pop();
 
-  vm.setLocal(local, { definition, manager, component: null });
+  stack.push({ definition, manager, component: null });
 });
 
 APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: positional, op2: synthetic }) => {
-  let stack = vm.evalStack;
+  let stack = vm.stack;
   ARGS.setup(stack, positional, !!synthetic);
   stack.push(ARGS);
 });
 
 APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
-  let stack = vm.evalStack;
-  let { definition, manager } = vm.getLocal<InitialComponentState<Opaque>>(_state);
+  let stack = vm.stack;
+  let { definition, manager } = vm.fetchValue<InitialComponentState<Opaque>>(_state);
   let args = stack.pop<Arguments>();
 
   let preparedArgs = manager.prepareArgs(definition, args);
@@ -100,9 +99,9 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
 
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let definition, manager;
-  let args = vm.evalStack.pop<IArguments>();
+  let args = vm.stack.pop<IArguments>();
   let dynamicScope = vm.dynamicScope();
-  let state = { definition, manager } = vm.getLocal<InitialComponentState<Opaque>>(_state);
+  let state = { definition, manager } = vm.fetchValue<InitialComponentState<Opaque>>(_state);
 
   let hasDefaultBlock = flags & 0b01;
 
@@ -113,7 +112,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
 });
 
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
-  let { manager, component } = vm.getLocal<ComponentState<Opaque>>(_state);
+  let { manager, component } = vm.fetchValue<ComponentState<Opaque>>(_state);
 
   let destructor = manager.getDestructor(component);
   if (destructor) vm.newDestroyable(destructor);
@@ -121,33 +120,33 @@ APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
 
 APPEND_OPCODES.add(Op.BeginComponentTransaction, vm => {
   vm.beginCacheGroup();
-  vm.stack().pushSimpleBlock();
+  vm.elements().pushSimpleBlock();
 });
 
 APPEND_OPCODES.add(Op.PushComponentOperations, vm => {
-  vm.evalStack.push(new ComponentElementOperations(vm.env));
+  vm.stack.push(new ComponentElementOperations(vm.env));
 });
 
 APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
-  let { manager, component } = vm.getLocal<ComponentState<Opaque>>(_state);
+  let { manager, component } = vm.fetchValue<ComponentState<Opaque>>(_state);
 
   let action = 'DidCreateElementOpcode#evaluate';
-  manager.didCreateElement(component, vm.stack().expectConstructing(action), vm.stack().expectOperations(action));
+  manager.didCreateElement(component, vm.elements().expectConstructing(action), vm.elements().expectOperations(action));
 });
 
 APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state }) => {
-  let state = vm.getLocal<ComponentState<Opaque>>(_state);
-  vm.evalStack.push(state.manager.getSelf(state.component));
+  let state = vm.fetchValue<ComponentState<Opaque>>(_state);
+  vm.stack.push(state.manager.getSelf(state.component));
 });
 
 APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
-  let { manager, definition, component } = vm.getLocal<ComponentState<Opaque>>(_state);
-  vm.evalStack.push(manager.layoutFor(definition, component, vm.env));
+  let { manager, definition, component } = vm.fetchValue<ComponentState<Opaque>>(_state);
+  vm.stack.push(manager.layoutFor(definition, component, vm.env));
 });
 
 APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
-  let { manager, component } = vm.getLocal<ComponentState<Opaque>>(_state);
-  let bounds = vm.stack().popBlock();
+  let { manager, component } = vm.fetchValue<ComponentState<Opaque>>(_state);
+  let bounds = vm.elements().popBlock();
 
   manager.didRenderLayout(component, bounds);
 

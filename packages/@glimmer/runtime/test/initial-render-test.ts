@@ -820,15 +820,15 @@ module("[glimmer runtime] Initial render", tests => {
       equalTokens(fragment, '<a href="http://nope.example.com/nope.html/linky">linky</a>');
     });
     */
-    test("Elements inside a yielded block", assert => {
+    test("Elements inside a yielded block", () => {
       compilesTo('{{#identity}}<div id="test">123</div>{{/identity}}', '<div id="test">123</div>');
     });
 
-    test("A simple block helper can return text", assert => {
+    test("A simple block helper can return text", () => {
       compilesTo('{{#identity}}test{{else}}not shown{{/identity}}', 'test');
     });
 
-    test("A block helper can have an else block", assert => {
+    test("A block helper can have an else block", () => {
       compilesTo('{{#render-inverse}}Nope{{else}}<div id="test">123</div>{{/render-inverse}}', '<div id="test">123</div>');
     });
   });
@@ -860,7 +860,7 @@ module("[glimmer runtime] Initial render", tests => {
       compilesTo('{{a}}{{b}}<img><img><img><img>', 'AB<img><img><img><img>', object);
     });
 
-    test("Simple elements can have dashed attributes", assert => {
+    test("Simple elements can have dashed attributes", () => {
       let template = compile("<div aria-label='foo'>content</div>");
       render(template, {});
 

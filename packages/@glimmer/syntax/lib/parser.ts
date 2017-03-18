@@ -42,7 +42,6 @@ export class Parser {
 
   constructor(source: string, options: Object = {}) {
     this.options = options;
-    // if (this.source === null) debugger;
     this.source = source.split(/(?:\r\n?|\n)/g);
   }
 

@@ -5,7 +5,7 @@ import { Maybe, Option } from '@glimmer/util';
 import { Ops, TemplateMeta } from '@glimmer/wire-format';
 
 import { Template } from './template';
-import { debugSlice } from './opcodes';
+import { Register, debugSlice } from './opcodes';
 
 import { ATTRS_BLOCK, ClientSide, compileStatement } from './scanner';
 
@@ -113,20 +113,22 @@ class WrappedBuilder implements InnerLayoutBuilder {
     let staticTag = this.tag.getStatic();
 
     let b = builder(env, meta);
+
     b.startLabels();
 
-    // let state = b.local();
-    // b.setLocal(state);
-
     if (dynamicTag) {
+      b.fetch(Register.s1);
+
       expr(dynamicTag, b);
 
       b.dup();
+      b.load(Register.s1);
+
       b.test('simple');
 
       b.jumpUnless('BODY');
 
-      b.dup();
+      b.fetch(Register.s1);
       b.pushComponentOperations();
       b.openDynamicElement();
     } else if (staticTag) {
@@ -135,7 +137,7 @@ class WrappedBuilder implements InnerLayoutBuilder {
     }
 
     if (dynamicTag || staticTag) {
-      // b.didCreateElement(state);
+      b.didCreateElement(Register.s0);
 
       let attrs = this.attrs['buffer'];
 
@@ -150,20 +152,21 @@ class WrappedBuilder implements InnerLayoutBuilder {
     b.invokeStatic(layout.asBlock());
 
     if (dynamicTag) {
-      b.dup();
+      b.fetch(Register.s1);
       b.test('simple');
-      b.jumpUnless('ELSE');
+      b.jumpUnless('END');
       b.closeElement();
-      b.jump('END');
-      b.label('ELSE');
-      b.pop();
     } else if (staticTag) {
       b.closeElement();
     }
 
     b.label('END');
 
-    // b.didRenderLayout(state);
+    b.didRenderLayout(Register.s0);
+
+    if (dynamicTag) {
+      b.load(Register.s1);
+    }
 
     b.stopLabels();
 
@@ -252,34 +255,46 @@ export class ComponentBuilder implements IComponentBuilder {
   }
 
   dynamic(definitionArgs: ComponentArgs, getDefinition: DynamicComponentDefinition, args: ComponentArgs) {
-    this.builder.unit(b => {
-      let [params, hash, block, inverse] = args;
+    let [params, hash, block, inverse] = args;
+    let { builder } = this;
 
-      if (!definitionArgs || definitionArgs.length === 0) {
-        throw new Error("Dynamic syntax without an argument");
-      }
+    if (!definitionArgs || definitionArgs.length === 0) {
+      throw new Error("Dynamic syntax without an argument");
+    }
 
-      let meta = this.builder.meta.templateMeta;
+    let meta = this.builder.meta.templateMeta;
 
-      function helper(vm: PublicVM, args: IArguments) {
-        return getDefinition(vm, args, meta);
-      }
+    function helper(vm: PublicVM, args: IArguments) {
+      return getDefinition(vm, args, meta);
+    }
 
-      b.compileArgs(definitionArgs[0], definitionArgs[1], true);
-      b.helper(helper);
+    builder.startLabels();
 
-      b.dup();
-      b.test('simple');
+    builder.pushFrame();
 
-      b.closure(2, b => {
-        b.jumpUnless('ELSE');
-        b.pushDynamicComponentManager();
-        b.invokeComponent(null, params, hash, block, inverse);
-        b.jump('END');
-        b.label('ELSE');
-        b.pop();
-      });
-    });
+    builder.returnTo('END');
+
+    builder.compileArgs(definitionArgs[0], definitionArgs[1], true);
+    builder.helper(helper);
+
+    builder.dup();
+    builder.test('simple');
+
+    builder.enter(2);
+
+    builder.jumpUnless('ELSE');
+
+    builder.pushDynamicComponentManager();
+    builder.invokeComponent(null, params, hash, block, inverse);
+
+    builder.label('ELSE');
+    builder.exit();
+    builder.return();
+
+    builder.label('END');
+    builder.popFrame();
+
+    builder.stopLabels();
   }
 }
 
