@@ -2,7 +2,7 @@ import * as content from './content';
 import * as vm from './vm';
 
 import { Insertion } from '../../upsert';
-
+import { Register } from '../../opcodes';
 import * as WireFormat from '@glimmer/wire-format';
 import { Option, Stack, Opaque, dict, expect, fillNulls, EMPTY_ARRAY } from '@glimmer/util';
 import {
@@ -32,42 +32,23 @@ export type Represents<E> = CompilesInto<E> | E;
 
 export type Label = string;
 
-type TargetOpcode = Op.Jump | Op.JumpIf | Op.JumpUnless;
-type RangeOpcode = Op.Enter | Op.EnterList;
+type TargetOpcode = Op.Jump | Op.JumpIf | Op.JumpUnless | Op.EnterList | Op.Iterate | Op.Immediate;
 
 class Labels {
   labels = dict<number>();
-  jumps: { at: number, target: string, Target: TargetOpcode }[] = [];
-  ranges: { at: number, args: number, start: string, end: string, Range: RangeOpcode }[] = [];
-  iters: { at: number, breaks: string, start: string, end: string }[] = [];
+  targets: { at: number, Target: TargetOpcode, target: string }[] = [];
 
   label(name: string, index: number) {
     this.labels[name] = index;
   }
 
-  iter(at: number, breaks: string, start: string, end: string) {
-    this.iters.push({ at, breaks, start, end });
-  }
-
-  jump(at: number, Target: TargetOpcode, target: string) {
-    this.jumps.push({ at, target, Target });
-  }
-
-  range(at: number, Range: RangeOpcode, args: number, start: string, end: string) {
-    this.ranges.push({ at, args, start, end, Range });
+  target(at: number, Target: TargetOpcode, target: string) {
+    this.targets.push({ at, Target, target });
   }
 
   patch(opcodes: Program): void {
-    for (let { at, target, Target } of this.jumps) {
+    for (let { at, Target, target } of this.targets) {
       opcodes.set(at, Target, this.labels[target]);
-    }
-
-    for (let { at, args, start, end, Range } of this.ranges) {
-      opcodes.set(at, Range, args, this.labels[start], this.labels[end]);
-    }
-
-    for (let { at, breaks, start, end } of this.iters) {
-      opcodes.set(at, Op.Iterate, this.labels[breaks], this.labels[start], this.labels[end]);
     }
   }
 }
@@ -76,14 +57,10 @@ export abstract class BasicOpcodeBuilder {
   private labelsStack = new Stack<Labels>();
   public constants: Constants;
   public start: number;
-  private locals = 0;
-  private _localsSize = 0;
 
   constructor(public env: Environment, public meta: CompilationMeta, public program: Program) {
     this.constants = env.constants;
     this.start = program.next;
-
-    this.reserve(Op.ReserveLocals);
   }
 
   abstract compile<E>(expr: Represents<E>): E;
@@ -100,22 +77,6 @@ export abstract class BasicOpcodeBuilder {
     return fillNulls(count) as T;
   }
 
-  local(): number {
-    let locals = this.locals++;
-    if (this._localsSize < this.locals) {
-      this._localsSize = this.locals;
-    }
-    return locals;
-  }
-
-  releaseLocal() {
-    this.locals--;
-  }
-
-  get localsSize() {
-    return this._localsSize;
-  }
-
   reserve(name: Op) {
     this.push(name, 0, 0, 0);
   }
@@ -125,8 +86,6 @@ export abstract class BasicOpcodeBuilder {
   }
 
   finalize(): number {
-    this.program.set(this.start, Op.ReserveLocals, this.localsSize);
-    this.push(Op.ReleaseLocals);
     return this.push(Op.Return);
   }
 
@@ -161,20 +120,20 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.PushDynamicComponentManager);
   }
 
-  setComponentState(local: number) {
-    this.push(Op.SetComponentState, local);
+  initializeComponentState() {
+    this.push(Op.InitializeComponentState);
   }
 
-  prepareArgs(state: number) {
+  prepareArgs(state: Register) {
     this.push(Op.PrepareArgs, state);
   }
 
-  createComponent(state: number, hasDefault: boolean, hasInverse: boolean) {
+  createComponent(state: Register, hasDefault: boolean, hasInverse: boolean) {
     let flag = (<any>hasDefault|0) | ((<any>hasInverse|0) << 1);
     this.push(Op.CreateComponent, flag, state);
   }
 
-  registerComponentDestructor(state: number) {
+  registerComponentDestructor(state: Register) {
     this.push(Op.RegisterComponentDestructor, state);
   }
 
@@ -190,19 +149,19 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.PushComponentOperations);
   }
 
-  getComponentSelf(state: number) {
+  getComponentSelf(state: Register) {
     this.push(Op.GetComponentSelf, state);
   }
 
-  getComponentLayout(state: number ) {
+  getComponentLayout(state: Register ) {
     this.push(Op.GetComponentLayout, state);
   }
 
-  didCreateElement(state: number) {
+  didCreateElement(state: Register) {
     this.push(Op.DidCreateElement, state);
   }
 
-  didRenderLayout(state: number) {
+  didRenderLayout(state: Register) {
     this.push(Op.DidRenderLayout, state);
   }
 
@@ -297,18 +256,18 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.PutIterator);
   }
 
-  enterList(start: string, end: string) {
+  enterList(start: string) {
     this.reserve(Op.EnterList);
-    this.labels.range(this.pos, Op.EnterList, 0, start, end);
+    this.labels.target(this.pos, Op.EnterList, start);
   }
 
   exitList() {
     this.push(Op.ExitList);
   }
 
-  iterate(breaks: string, start: string, end: string) {
+  iterate(breaks: string) {
     this.reserve(Op.Iterate);
-    this.labels.iter(this.pos, breaks, start, end);
+    this.labels.target(this.pos, Op.Iterate, breaks);
   }
 
   // expressions
@@ -345,20 +304,20 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.Function, this.func(f));
   }
 
-  setLocal(pos: number) {
-    this.push(Op.SetLocal, pos);
+  load(register: Register) {
+    this.push(Op.Load, register);
   }
 
-  getLocal(pos: number) {
-    this.push(Op.GetLocal, pos);
+  fetch(register: Register) {
+    this.push(Op.Fetch, register);
   }
 
-  dup() {
-    return this.push(Op.Dup);
+  dup(register = Register.sp, offset = 0) {
+    return this.push(Op.Dup, register, offset);
   }
 
-  pop() {
-    return this.push(Op.Pop);
+  pop(count = 1) {
+    return this.push(Op.Pop, count);
   }
 
   // vm
@@ -385,6 +344,12 @@ export abstract class BasicOpcodeBuilder {
 
   popScope() {
     this.push(Op.PopScope);
+  }
+
+  returnTo(label: string) {
+    this.reserve(Op.Immediate);
+    this.labels.target(this.pos, Op.Immediate, label);
+    this.load(Register.ra);
   }
 
   pushDynamicScope() {
@@ -427,7 +392,7 @@ export abstract class BasicOpcodeBuilder {
         throw new Error('Invalid primitive passed to pushPrimitive');
     }
 
-    this.push(Op.Primitive, (flag << 30) | primitive);
+    this.push(Op.PrimitiveReference, (flag << 30) | primitive);
   }
 
   helper(func: Function) {
@@ -460,13 +425,24 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.BindDynamicScope, this.names(_names));
   }
 
-  enter(args: number, enter: string, exit: string) {
-    this.reserve(Op.Enter);
-    this.labels.range(this.pos, Op.Enter, args, enter, exit);
+  enter(args: number) {
+    this.push(Op.Enter, args);
   }
 
   exit() {
     this.push(Op.Exit);
+  }
+
+  return() {
+    this.push(Op.Return);
+  }
+
+  pushFrame() {
+    this.push(Op.PushFrame);
+  }
+
+  popFrame() {
+    this.push(Op.PopFrame);
   }
 
   compileDynamicBlock(): void {
@@ -477,44 +453,30 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.InvokeDynamic, this.other(invoker));
   }
 
-  invokeStatic(_block: Block, ...args: ((builder: BasicOpcodeBuilder) => void)[]): void;
-  invokeStatic(_block: Block, numArgs: number): void;
-  invokeStatic(_block: Block): void {
-    let { parameters } = _block.symbolTable;
-    let paramSize = parameters.length;
-    let argSize = arguments.length - 1;
-    let onStack = false;
-    let excess = 0;
+  invokeStatic(block: Block, callerCount = 0): void {
+    let { parameters } = block.symbolTable;
+    let calleeCount = parameters.length;
+    let count = Math.min(callerCount, calleeCount);
 
-    if (argSize === 1 && typeof arguments[1] === 'number') {
-      argSize = Math.min(paramSize, arguments[1]);
-      excess = Math.max(arguments[1] - paramSize, 0);
-      onStack = true;
-    } else {
-      argSize = Math.min(paramSize, argSize);
-    }
+    this.pushFrame();
 
-    for (let i=0; i<excess; i++) {
-      this.pop();
-    }
-
-    if (argSize) {
+    if (count) {
       this.pushChildScope();
 
-      for (let i=argSize-1; i>=0; i--) {
-        if (!onStack) {
-          arguments[i+1](this);
-        }
+      for (let i=0; i<count; i++) {
+        this.dup(Register.fp, callerCount - i);
         this.setVariable(parameters[i]);
       }
     }
 
-    let block = this.constants.block(_block);
-    this.push(Op.InvokeStatic, block);
+    let _block = this.constants.block(block);
+    this.push(Op.InvokeStatic, _block);
 
-    if (argSize) {
+    if (count) {
       this.popScope();
     }
+
+    this.popFrame();
   }
 
   test(testFunc: 'const' | 'simple' | 'environment' | vm.TestFunction) {
@@ -538,17 +500,17 @@ export abstract class BasicOpcodeBuilder {
 
   jump(target: string) {
     this.reserve(Op.Jump);
-    this.labels.jump(this.pos, Op.Jump, target);
+    this.labels.target(this.pos, Op.Jump, target);
   }
 
   jumpIf(target: string) {
     this.reserve(Op.JumpIf);
-    this.labels.jump(this.pos, Op.JumpIf, target);
+    this.labels.target(this.pos, Op.JumpIf, target);
   }
 
   jumpUnless(target: string) {
     this.reserve(Op.JumpUnless);
-    this.labels.jump(this.pos, Op.JumpUnless, target);
+    this.labels.target(this.pos, Op.JumpUnless, target);
   }
 
   string(_string: string): ConstantString {
@@ -627,79 +589,38 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
   }
 
   invokeComponent(attrs: Option<RawInlineBlock>, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, block: Option<Block>, inverse: Option<Block> = null) {
-    let state = this.local();
+    this.initializeComponentState();
 
-    this.setComponentState(state);
+    this.fetch(Register.s0);
+    this.dup(Register.sp, 1);
+    this.load(Register.s0);
 
     this.pushBlock(block);
     this.pushBlock(inverse);
 
     this.compileArgs(params, hash, false);
-    this.prepareArgs(state);
+    this.prepareArgs(Register.s0);
 
-    this.pushDynamicScope();
-
-    this.createComponent(state, true, false);
-    this.registerComponentDestructor(state);
     this.beginComponentTransaction();
+    this.pushDynamicScope();
+    this.createComponent(Register.s0, true, inverse === null);
+    this.registerComponentDestructor(Register.s0);
 
-    this.getComponentSelf(state);
-    this.getComponentLayout(state);
+    this.getComponentSelf(Register.s0);
+    this.getComponentLayout(Register.s0);
     this.invokeDynamic(new InvokeDynamicLayout(attrs && attrs.scan()));
-    this.didCreateElement(state);
+    this.popFrame();
 
-    this.didRenderLayout(state);
     this.popScope();
     this.popDynamicScope();
     this.commitComponentTransaction();
 
-    this.releaseLocal();
+    this.load(Register.s0);
   }
 
   template(block: Option<WireFormat.SerializedInlineBlock>): Option<RawInlineBlock> {
     if (!block) return null;
     return new RawInlineBlock(this.env, this.meta, block.statements, block.parameters);
-  }
-
-  // TODO
-  // come back to this
-  closure(args: number, callback: BlockCallback) {
-    this.startLabels();
-    this.enter(args, 'BEGIN', 'END');
-    this.label('BEGIN');
-
-    callback(this, 'BEGIN', 'END');
-
-    this.label('END');
-    this.exit();
-    this.stopLabels();
-  }
-
-  // TODO
-  // come back to this
-  iter(callback: BlockCallback) {
-    this.startLabels();
-    this.enterList('BEGIN', 'END');
-    this.label('ITER');
-    this.iterate('BREAK', 'BEGIN', 'END');
-    this.label('BEGIN');
-
-    callback(this, 'BEGIN', 'END');
-
-    this.label('END');
-    this.exit();
-    this.jump('ITER');
-    this.label('BREAK');
-    this.exitList();
-    this.stopLabels();
-  }
-
-  // TODO
-  // come back to this
-  unit(callback: (builder: OpcodeBuilder) => void) {
-    this.startLabels();
-    callback(this);
-    this.stopLabels();
   }
 }
 

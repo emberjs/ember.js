@@ -76,7 +76,7 @@ export abstract class AppendDynamicOpcode<T extends Insertion> {
   protected abstract updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<T>, bounds: Fragment, upsert: Upsert): UpdatingOpcode;
 
   evaluate(vm: VM) {
-    let reference = vm.evalStack.pop<VersionedPathReference<Opaque>>();
+    let reference = vm.stack.pop<VersionedPathReference<Opaque>>();
     let normalized = this.normalize(reference);
 
     let value, cache;
@@ -88,7 +88,7 @@ export abstract class AppendDynamicOpcode<T extends Insertion> {
       value = cache.peek();
     }
 
-    let stack = vm.stack();
+    let stack = vm.elements();
     let upsert = this.insert(vm.env.getAppendOperations(), stack, value);
     let bounds = new Fragment(upsert.bounds);
 
@@ -114,15 +114,15 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendDyn
 
   evaluate(vm: VM) {
     if (this.deopted) {
-      vm.pushEvalFrame(this.start);
+      vm.goto(this.start);
     } else {
-      let value = vm.evalStack.pop();
+      let value = vm.stack.pop();
 
       if(isComponentDefinition(value)) {
         this.deopt(vm.env);
-        vm.pushEvalFrame(this.start);
+        vm.goto(this.start);
       } else {
-        vm.evalStack.push(value);
+        vm.stack.push(value);
         super.evaluate(vm);
       }
     }

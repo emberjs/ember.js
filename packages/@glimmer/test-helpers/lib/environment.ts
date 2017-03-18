@@ -2,6 +2,7 @@ import {
   // VM
   VM,
   DynamicScope,
+  Register,
 
   // Compiler
   CompilableLayout,

@@ -25,32 +25,32 @@ import { Assert } from './vm';
 import { APPEND_OPCODES, Op as Op } from '../../opcodes';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
-  vm.stack().appendText(vm.constants.getString(text));
+  vm.elements().appendText(vm.constants.getString(text));
 });
 
 APPEND_OPCODES.add(Op.Comment, (vm, { op1: text }) => {
-  vm.stack().appendComment(vm.constants.getString(text));
+  vm.elements().appendComment(vm.constants.getString(text));
 });
 
 APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
-  vm.stack().openElement(vm.constants.getString(tag));
+  vm.elements().openElement(vm.constants.getString(tag));
 });
 
 APPEND_OPCODES.add(Op.OpenElementWithOperations, (vm, { op1: tag }) => {
   let tagName = vm.constants.getString(tag);
-  let operations = vm.evalStack.pop<ElementOperations>();
-  vm.stack().openElement(tagName, operations);
+  let operations = vm.stack.pop<ElementOperations>();
+  vm.elements().openElement(tagName, operations);
 });
 
 APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
-  let operations = vm.evalStack.pop<ElementOperations>();
-  let tagName = vm.evalStack.pop<Reference<string>>().value();
-  vm.stack().openElement(tagName, operations);
+  let operations = vm.stack.pop<ElementOperations>();
+  let tagName = vm.stack.pop<Reference<string>>().value();
+  vm.elements().openElement(tagName, operations);
 });
 
 APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
-  let elementRef = vm.evalStack.pop<Reference<Simple.Element>>();
-  let nextSiblingRef = vm.evalStack.pop<Reference<Option<Simple.Node>>>();
+  let elementRef = vm.stack.pop<Reference<Simple.Element>>();
+  let nextSiblingRef = vm.stack.pop<Reference<Option<Simple.Node>>>();
 
   let element: Simple.Element;
   let nextSibling: Option<Simple.Node>;
@@ -71,10 +71,10 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
     vm.updateWith(new Assert(cache));
   }
 
-  vm.stack().pushRemoteElement(element, nextSibling);
+  vm.elements().pushRemoteElement(element, nextSibling);
 });
 
-APPEND_OPCODES.add(Op.PopRemoteElement, vm => vm.stack().popRemoteElement());
+APPEND_OPCODES.add(Op.PopRemoteElement, vm => vm.elements().popRemoteElement());
 
 class ClassList {
   private list: Option<Reference<string>[]> = null;
@@ -304,14 +304,14 @@ export class ComponentElementOperations implements ElementOperations {
 }
 
 APPEND_OPCODES.add(Op.FlushElement, vm => {
-  let stack = vm.stack();
+  let stack = vm.elements();
 
   let action = 'FlushElementOpcode#evaluate';
   stack.expectOperations(action).flush(stack.expectConstructing(action), vm);
   stack.flushElement();
 });
 
-APPEND_OPCODES.add(Op.CloseElement, vm => vm.stack().closeElement());
+APPEND_OPCODES.add(Op.CloseElement, vm => vm.elements().closeElement());
 
 APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespace }) => {
   let name = vm.constants.getString(_name);
@@ -319,18 +319,18 @@ APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespac
 
   if (_namespace) {
     let namespace = vm.constants.getString(_namespace);
-    vm.stack().setStaticAttributeNS(namespace, name, value);
+    vm.elements().setStaticAttributeNS(namespace, name, value);
   } else {
-    vm.stack().setStaticAttribute(name, value);
+    vm.elements().setStaticAttribute(name, value);
   }
 });
 
 APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
   let manager = vm.constants.getOther<ModifierManager<Opaque>>(_manager);
-  let stack = vm.evalStack;
+  let stack = vm.stack;
   let args = stack.pop<Arguments>();
   let tag = args.tag;
-  let { constructing: element, updateOperations } = vm.stack();
+  let { constructing: element, updateOperations } = vm.elements();
   let dynamicScope = vm.dynamicScope();
   let modifier = manager.create(element as FIX_REIFICATION<Element>, args, dynamicScope, updateOperations);
 
@@ -472,14 +472,14 @@ function formatElement(element: Simple.Element): string {
 APPEND_OPCODES.add(Op.DynamicAttrNS, (vm, { op1: _name, op2: _namespace, op3: trusting }) => {
   let name = vm.constants.getString(_name);
   let namespace = vm.constants.getString(_namespace);
-  let reference = vm.evalStack.pop<VersionedReference<string>>();
-  vm.stack().setDynamicAttributeNS(namespace, name, reference, !!trusting);
+  let reference = vm.stack.pop<VersionedReference<string>>();
+  vm.elements().setDynamicAttributeNS(namespace, name, reference, !!trusting);
 });
 
 APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting }) => {
   let name = vm.constants.getString(_name);
-  let reference = vm.evalStack.pop<VersionedReference<string>>();
-  vm.stack().setDynamicAttribute(name, reference, !!trusting);
+  let reference = vm.stack.pop<VersionedReference<string>>();
+  vm.elements().setDynamicAttribute(name, reference, !!trusting);
 });
 
 export class PatchElementOpcode extends UpdatingOpcode {
