@@ -352,8 +352,8 @@ const EmberRouter = EmberObject.extend(Evented, {
   handleURL(url) {
     // Until we have an ember-idiomatic way of accessing #hashes, we need to
     // remove it because router.js doesn't know how to handle it.
-    url = url.split(/#(.+)?/)[0];
-    return this._doURLTransition('handleURL', url);
+    let _url = url.split(/#(.+)?/)[0];
+    return this._doURLTransition('handleURL', _url);
   },
 
   _doURLTransition(routerJsMethod, url) {
@@ -380,8 +380,9 @@ const EmberRouter = EmberObject.extend(Evented, {
   */
   transitionTo(...args) {
     let queryParams;
-    if (resemblesURL(args[0])) {
-      return this._doURLTransition('transitionTo', args[0]);
+    let arg = args[0];
+    if (resemblesURL(arg)) {
+      return this._doURLTransition('transitionTo', arg);
     }
 
     let possibleQueryParams = args[args.length - 1];
@@ -425,7 +426,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     @return {Boolean}
     @private
   */
-  isActive(routeName) {
+  isActive() {
     return this._routerMicrolib.isActive(...arguments);
   },
 
@@ -446,7 +447,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     return this.currentState.isActiveIntent(routeName, models, queryParams);
   },
 
-  send(name, context) {
+  send() { /*name, context*/
     this._routerMicrolib.trigger(...arguments);
   },
 
@@ -634,7 +635,6 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   _setupRouter(location) {
     let lastURL;
-    let emberRouter = this;
     let routerMicrolib = this._routerMicrolib;
 
     routerMicrolib.getHandler = this._getHandlerFunction();
@@ -642,7 +642,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     let doUpdateURL = () => {
       location.setURL(lastURL);
-      set(emberRouter, 'currentURL', lastURL);
+      set(this, 'currentURL', lastURL);
     };
 
     routerMicrolib.updateURL = path => {
@@ -653,7 +653,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     if (location.replaceURL) {
       let doReplaceURL = () => {
         location.replaceURL(lastURL);
-        set(emberRouter, 'currentURL', lastURL);
+        set(this, 'currentURL', lastURL);
       };
 
       routerMicrolib.replaceURL = path => {
@@ -663,11 +663,11 @@ const EmberRouter = EmberObject.extend(Evented, {
     }
 
     routerMicrolib.didTransition = infos => {
-      emberRouter.didTransition(infos);
+      this.didTransition(infos);
     };
 
     routerMicrolib.willTransition = (oldInfos, newInfos, transition) => {
-      emberRouter.willTransition(oldInfos, newInfos, transition);
+      this.willTransition(oldInfos, newInfos, transition);
     };
   },
 
@@ -739,13 +739,12 @@ const EmberRouter = EmberObject.extend(Evented, {
   */
   _deserializeQueryParam(value, defaultType) {
     if (defaultType === 'boolean') {
-      return (value === 'true') ? true : false;
+      return value === 'true';
     } else if (defaultType === 'number') {
       return (Number(value)).valueOf();
     } else if (defaultType === 'array') {
       return emberA(JSON.parse(value));
     }
-
     return value;
   },
 
@@ -793,11 +792,12 @@ const EmberRouter = EmberObject.extend(Evented, {
     // queryParams from the url on initial load.
     if (!this._routerMicrolib.activeTransition) { return; }
 
-    var unchangedQPs = {};
-    var qpUpdates = this._qpUpdates || {};
-    for (var key in this._routerMicrolib.activeTransition.queryParams) {
+    let unchangedQPs = {};
+    let qpUpdates = this._qpUpdates || {};
+    let params = this._routerMicrolib.activeTransition.queryParams;
+    for (let key in params) {
       if (!qpUpdates[key]) {
-        unchangedQPs[key] = this._routerMicrolib.activeTransition.queryParams[key];
+        unchangedQPs[key] = params[key];
       }
     }
 
@@ -852,8 +852,9 @@ const EmberRouter = EmberObject.extend(Evented, {
    */
   _queryParamsFor(handlerInfos) {
     let leafRouteName = handlerInfos[handlerInfos.length - 1].name;
-    if (this._qpCache[leafRouteName]) {
-      return this._qpCache[leafRouteName];
+    let cached = this._qpCache[leafRouteName];
+    if (cached) {
+      return cached;
     }
 
     let shouldCache = true;
@@ -887,10 +888,7 @@ const EmberRouter = EmberObject.extend(Evented, {
       assign(map, qpMeta.map);
     }
 
-    let finalQPMeta = {
-      qps: qps,
-      map: map
-    };
+    let finalQPMeta = { qps, map };
 
     if (shouldCache) {
       this._qpCache[leafRouteName] = finalQPMeta;
@@ -911,18 +909,18 @@ const EmberRouter = EmberObject.extend(Evented, {
     @return {Void}
   */
   _fullyScopeQueryParams(leafRouteName, contexts, queryParams) {
-    var state = calculatePostTransitionState(this, leafRouteName, contexts);
-    var handlerInfos = state.handlerInfos;
+    let state = calculatePostTransitionState(this, leafRouteName, contexts);
+    let handlerInfos = state.handlerInfos;
 
-    for (var i = 0, len = handlerInfos.length; i < len; ++i) {
-      var qpMeta = this._getQPMeta(handlerInfos[i]);
+    for (let i = 0, len = handlerInfos.length; i < len; ++i) {
+      let qpMeta = this._getQPMeta(handlerInfos[i]);
 
       if (!qpMeta) { continue; }
 
-      for (var j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
-        var qp = qpMeta.qps[j];
+      for (let j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
+        let qp = qpMeta.qps[j];
 
-        var presentProp = qp.prop in queryParams  && qp.prop ||
+        let presentProp = qp.prop in queryParams && qp.prop ||
                           qp.scopedPropertyName in queryParams && qp.scopedPropertyName ||
                           qp.urlKey in queryParams && qp.urlKey;
 
@@ -959,7 +957,7 @@ const EmberRouter = EmberObject.extend(Evented, {
       for (let j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
         let qp = qpMeta.qps[j];
 
-        let presentProp = qp.prop in queryParams  && qp.prop ||
+        let presentProp = qp.prop in queryParams && qp.prop ||
                           qp.scopedPropertyName in queryParams && qp.scopedPropertyName ||
                           qp.urlKey in queryParams && qp.urlKey;
 
@@ -1252,14 +1250,14 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
   }
 
   let eventWasHandled = false;
-  let handlerInfo, handler;
+  let handlerInfo, handler, actionHandler;
 
   for (let i = handlerInfos.length - 1; i >= 0; i--) {
     handlerInfo = handlerInfos[i];
     handler = handlerInfo.handler;
-
-    if (handler && handler.actions && handler.actions[name]) {
-      if (handler.actions[name].apply(handler, args) === true) {
+    actionHandler = handler && handler.actions && handler.actions[name];
+    if (actionHandler) {
+      if (actionHandler.apply(handler, args) === true) {
         eventWasHandled = true;
       } else {
         // Should only hit here if a non-bubbling error action is triggered on a route.
@@ -1272,8 +1270,9 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
     }
   }
 
-  if (defaultActionHandlers[name]) {
-    defaultActionHandlers[name].apply(null, args);
+  let defaultHandler = defaultActionHandlers[name]
+  if (defaultHandler) {
+    defaultHandler.apply(null, args);
     return;
   }
 
