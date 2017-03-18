@@ -17,10 +17,10 @@ moduleFor('{{mount}} assertions', class extends RenderingTest {
     }, /You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}./i);
   }
 
-  ['@test it asserts that the engine name argument is quoted']() {
+  ['@test it asserts when an invalid engine name is provided']() {
     expectAssertion(() => {
-      this.render('{{mount chat}}');
-    }, /The first argument of {{mount}} must be quoted, e.g. {{mount "chat-engine"}}./i);
+      this.render('{{mount engineName}}', { engineName: {} });
+    }, /Invalid engine name '\[object Object\]' specified, engine name must be either a string, null or undefined./i);
   }
 
   ['@test it asserts that the specified engine is registered']() {
@@ -117,4 +117,63 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
       });
     }
   }
+
+  ['@test it renders with a bound engine name']() {
+    this.router.map(function() {
+      this.route('bound-engine-name');
+    });
+    let controller;
+    this.registerController('bound-engine-name', Controller.extend({
+      engineName: null,
+      init() {
+        this._super();
+        controller = this;
+      }
+    }));
+    this.registerTemplate('bound-engine-name', '{{mount engineName}}');
+
+    this.registerEngine('foo', Engine.extend({
+      router: null,
+      init() {
+        this._super(...arguments);
+        this.register('template:application', compile('<h2>Foo Engine</h2>', { moduleName: 'application' }));
+      }
+    }));
+    this.registerEngine('bar', Engine.extend({
+      router: null,
+      init() {
+        this._super(...arguments);
+        this.register('template:application', compile('<h2>Bar Engine</h2>', { moduleName: 'application' }));
+      }
+    }));
+
+    return this.visit('/bound-engine-name').then(() => {
+      this.assertComponentElement(this.firstChild, { content: '<!---->' });
+
+      this.runTask(() => set(controller, 'engineName', 'foo'));
+
+      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine</h2>' });
+
+      this.runTask(() => set(controller, 'engineName', undefined));
+
+      this.assertComponentElement(this.firstChild, { content: '<!---->' });
+
+      this.runTask(() => set(controller, 'engineName', 'foo'));
+
+      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine</h2>' });
+
+      this.runTask(() => set(controller, 'engineName', 'bar'));
+
+      this.assertComponentElement(this.firstChild, { content: '<h2>Bar Engine</h2>' });
+
+      this.runTask(() => set(controller, 'engineName', 'foo'));
+
+      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine</h2>' });
+
+      this.runTask(() => set(controller, 'engineName', null));
+
+      this.assertComponentElement(this.firstChild, { content: '<!---->' });
+    });
+  }
+
 });

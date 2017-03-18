@@ -47,11 +47,6 @@ export function mountMacro(path, params, hash, builder) {
     params.length === 1 && hash === null
   );
 
-  assert(
-    'The first argument of {{mount}} must be quoted, e.g. {{mount "chat-engine"}}.',
-    typeof params[0] === 'string'
-  );
-
   let definitionArgs = [params.slice(0, 1), null, null, null];
   let args = [null, null, null, null];
   builder.component.dynamic(definitionArgs, dynamicEngineFor, args, builder.symbolTable);
@@ -72,23 +67,32 @@ class DynamicEngineReference {
     let { env, nameRef, /*symbolTable*/ } = this;
     let nameOrDef = nameRef.value();
 
-    if (this._lastName === nameOrDef) {
+    if (typeof nameOrDef === 'string') {
+      if (this._lastName === nameOrDef) {
+        return this._lastDef;
+      }
+
+      assert(
+        `You used \`{{mount '${nameOrDef}'}}\`, but the engine '${nameOrDef}' can not be found.`,
+        env.owner.hasRegistration(`engine:${nameOrDef}`)
+      );
+
+      if (!env.owner.hasRegistration(`engine:${nameOrDef}`)) {
+        return null;
+      }
+
+      this._lastName = nameOrDef;
+      this._lastDef = new MountDefinition(nameOrDef);
+
       return this._lastDef;
-    }
-
-    assert(
-      `You used \`{{mount '${nameOrDef}'}}\`, but the engine '${nameOrDef}' can not be found.`,
-      env.owner.hasRegistration(`engine:${nameOrDef}`)
-    );
-
-    if (!env.owner.hasRegistration(`engine:${nameOrDef}`)) {
+    } else {
+      assert(
+        `Invalid engine name '${nameOrDef}' specified, engine name must be either a string, null or undefined.`,
+        nameOrDef === null || nameOrDef === undefined
+      );
+      
       return null;
     }
-
-    this._lastName = nameOrDef;
-    this._lastDef = new MountDefinition(nameOrDef);
-
-    return this._lastDef;
   }
 }
 
