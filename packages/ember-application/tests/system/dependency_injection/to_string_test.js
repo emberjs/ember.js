@@ -18,7 +18,7 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
     run(() => {
       App = Application.create();
       context.lookup = {
-        App: App
+        App
       };
     });
 
@@ -32,7 +32,7 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
   }
 });
 
-QUnit.test('factories', function() {
+QUnit.test('factories', () => {
   let PostFactory;
   if (isFeatureEnabled('ember-factory-for')) {
     PostFactory = App.__container__.factoryFor('model:post').class;
@@ -42,14 +42,14 @@ QUnit.test('factories', function() {
   equal(PostFactory.toString(), 'App.Post', 'expecting the model to be post');
 });
 
-QUnit.test('instances', function() {
+QUnit.test('instances', () => {
   let post = App.__container__.lookup('model:post');
   let guid = guidFor(post);
 
-  equal(post.toString(), '<App.Post:' + guid + '>', 'expecting the model to be post');
+  equal(post.toString(), `<App.Post:${guid}>`, 'expecting the model to be post');
 });
 
-QUnit.test('with a custom resolver', function() {
+QUnit.test('with a custom resolver', () => {
   run(App, 'destroy');
 
   run(() => {
@@ -67,5 +67,5 @@ QUnit.test('with a custom resolver', function() {
   let peter = App.__container__.lookup('model:peter');
   let guid = guidFor(peter);
 
-  equal(peter.toString(), '<model:peter:' + guid + '>', 'expecting the supermodel to be peter');
+  equal(peter.toString(), `<model:peter:${guid}>`, 'expecting the supermodel to be peter');
 });
