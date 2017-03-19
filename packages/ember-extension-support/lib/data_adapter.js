@@ -10,7 +10,6 @@ import {
   objectAt
 } from 'ember-runtime';
 import { FACTORY_FOR } from 'container';
-import { Application } from 'ember-application';
 
 /**
 @module ember
@@ -391,9 +390,6 @@ export default EmberObject.extend({
         // (especially when `EmberENV.MODEL_FACTORY_INJECTIONS` is `true`)
         if (!this.detect(namespace[key])) { continue; }
         let name = StringUtils.dasherize(key);
-        if (!(namespace instanceof Application) && namespace.toString()) {
-          name = `${namespace}/${name}`;
-        }
         types.push(name);
       }
     });
