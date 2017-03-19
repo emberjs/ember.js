@@ -1,11 +1,10 @@
-import { EMPTY_ARRAY } from '../../utils';
 import * as content from './content';
 import * as vm from './vm';
 
 import { Insertion } from '../../upsert';
 
 import * as WireFormat from '@glimmer/wire-format';
-import { Option, Stack, Opaque, dict, expect, fillNulls } from '@glimmer/util';
+import { Option, Stack, Opaque, dict, expect, fillNulls, EMPTY_ARRAY } from '@glimmer/util';
 import {
   Constants,
   ConstantString,

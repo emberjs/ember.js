@@ -1,7 +1,6 @@
 import { EvaluationStack } from './append';
-import { dict } from '@glimmer/util';
+import { dict, EMPTY_ARRAY } from '@glimmer/util';
 import { combineTagged } from '@glimmer/reference';
-import { EMPTY_ARRAY } from '../utils';
 import { Dict, Opaque, Option, unsafe } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { PrimitiveReference, UNDEFINED_REFERENCE } from '../references';

@@ -1,4 +1,3 @@
-import { EMPTY_ARRAY } from '../../runtime/lib/utils';
 import {
   // VM
   VM,
@@ -65,7 +64,8 @@ import {
   Dict,
   Opaque,
   assign,
-  dict
+  dict,
+  EMPTY_ARRAY
 } from '@glimmer/util';
 
 import GlimmerObject, { GlimmerObjectFactory } from "@glimmer/object";
