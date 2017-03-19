@@ -51,167 +51,35 @@ function buildBabelOptions(options) {
 }
 
 module.exports = function(_options) {
-  if (process.env.BUILD_PACKAGES) {
-    return buildPackages();
-  }
+  let packages = buildPackages();
 
-  var options = _options || {};
-  var packages = __dirname + '/packages';
-  var tslintConfig = __dirname + '/tslint.json';
-  var babelOptions = buildBabelOptions(options);
+  let trees = [packages];
 
-  var tsOptions = buildTSOptions();
-
-  var benchmarkTrees = [find(__dirname + '/bench', {
-    include: ['*.html'],
-    destDir: 'bench'
-  })];
-
-  var benchmarkPath = __dirname + '/node_modules/benchmark';
-
-  if (existsSync(benchmarkPath)) {
-    benchmarkTrees.push(find(benchmarkPath, {
-      include: ['benchmark.js'],
-      destDir: 'bench'
-    }));
-  }
-
-  var demos = find(__dirname + '/demos', {
-    include: ['*.html'],
-    destDir: 'demos'
+  let amdFiles = find(packages, {
+    include: ['**/amd/es5/*.js']
   });
 
-  var simpleDOMPath = path.dirname(require.resolve('simple-dom'));
-  var simpleDOM = find(simpleDOMPath, {
-    include: ['simple-dom.js']
-  });
-  /*
-   * ES6 Build
-   */
-  var tokenizerPath = path.join(require.resolve('simple-html-tokenizer'), '..', 'es6');
-  var tokenizerTree = find(tokenizerPath, {
-    include: ['**/*.js'],
-    exclude: ['**/*.d.ts']
-  });
-  var HTMLTokenizer = mv(tokenizerTree, 'simple-html-tokenizer');
-
-  var tsTree = find(packages, {
-    include: ['**/*.ts'],
-    exclude: [
-      '**/*.d.ts',
-      '*/node_modules/**',
-      '@glimmer/*/node_modules/**'
-    ]
+  let testFiles = find(packages, {
+    include: ['@glimmer/*/tests.js']
   });
 
-  var tsLintTree = new TSLint(tsTree, {
-    configuration: tslintConfig
-  });
-  /* tslint:enable:no-unused-variable */
-  var transpiledTSLintTree = typescript(tsLintTree, tsOptions);
-
-  var jsTree = typescript(tsTree, tsOptions);
-
-  var libTree = find(jsTree, {
-    include: [
-      '*/index.js',
-      '*/lib/**/*.js',
-      '@glimmer/*/index.js',
-      '@glimmer/*/lib/**/*.js'
-    ]
+  let simpleHTMLTokenizer = find('node_modules/simple-html-tokenizer/dist/es6', {
+    include: ['*.js'],
+    destDir: 'simple-html-tokenizer'
   });
 
-  libTree = merge([libTree, HTMLTokenizer, handlebarsInlinedTrees.compiler]);
+  let transpiled = transpile(merge([simpleHTMLTokenizer, handlebarsInlinedTrees.compiler]), {
+    avoidDefine: false
+  })
 
-  var es6LibTree = mv(libTree, 'es6');
-
-  /*
-   * ES5 Named AMD Build
-   */
-  libTree = transpile(libTree, babelOptions, 'ES5 Lib Tree');
-  var es5LibTree = mv(libTree, 'named-amd');
-
-  /*
-   * CommonJS Build
-   */
-  tsOptions = buildTSOptions({
-    module: "commonjs",
-    target: "es5"
+  vendored = concat(merge([amdFiles, transpiled, testFiles]), {
+    outputFile: 'glimmer.vendor.js'
   });
 
-  var cjsTree = typescript(tsTree, tsOptions);
-  var handlebarsPath = path.join(require.resolve('handlebars'), '..', '..', 'dist', 'cjs');
-
-  cjsTree = merge([cjsTree, handlebarsPath, simpleDOM]);
-
-  // Glimmer packages require other Glimmer packages using non-relative module names
-  // (e.g., `glimmer-compiler` may import `glimmer-util` instead of `../glimmer-util`),
-  // which doesn't work with Node's module resolution strategy.
-  // As a workaround, naming the CommonJS directory `node_modules` allows us to treat each
-  // package inside as a top-level module.
-  cjsTree = mv(cjsTree, 'node_modules');
-
-  /*
-   * Anonymous AMD Build
-   */
-  var glimmerCommon = find(libTree, {
-    include: [
-      'glimmer/**/*.js',
-      '@glimmer/object/**/*.js',
-      '@glimmer/object-model/**/*.js',
-      '@glimmer/object-reference/**/*.js',
-      '@glimmer/reference/**/*.js',
-      '@glimmer/util/**/*.js',
-      '@glimmer/wire-format/**/*.js'
-    ]
-  });
-
-  var glimmerRuntime = find(libTree, {
-    include: ['@glimmer/runtime/**/*', '@glimmer/public-runtime/**/*']
-  });
-
-  var glimmerCompiler = merge([
-    find(libTree, {
-      include: [
-        '@glimmer/syntax/**/*.js',
-        '@glimmer/compiler/**/*.js',
-        'simple-html-tokenizer/**/*.js',
-        'handlebars.js',
-        'handlebars/**/*.js'
-      ]
-    })
-  ]);
-
-  var glimmerDemos = merge([
-    find(libTree, {
-      include: [
-        '@glimmer/test-helpers/**/*.js',
-        'glimmer-demos/**/*.js',
-      ]
-    })
-  ]);
-
-  var glimmerBenchmarks = merge([
-    find(libTree, {
-      include: [
-        '@glimmer/test-helpers/**/*.js',
-        'glimmer-benchmarks/**/*.js',
-      ]
-    })
-  ]);
-
-  var glimmerTests = merge([
-    transpiledTSLintTree,
-    find(jsTree, { include: ['*/tests/**/*.js', '@glimmer/*/tests/**/*.js'], exclude: ['@glimmer/node/tests/**/*.js'] }),
-    find(jsTree, { include: ['@glimmer/test-helpers/**/*.js'] })
-  ]);
-
-  glimmerTests = transpile(glimmerTests, babelOptions, 'glimmer-tests');
-
-  // Test Assets
+  trees.push(vendored);
 
   var testHarnessTrees = [
-    find(__dirname + '/tests', {
+    find(__dirname + '/test', {
       srcDir: '/',
       files: [ 'index.html' ],
       destDir: '/tests'
@@ -223,80 +91,7 @@ module.exports = function(_options) {
 
   var testHarness = merge(testHarnessTrees);
 
-  glimmerCommon = concat(glimmerCommon, {
-    inputFiles: ['**/*.js'],
-    outputFile: '/amd/glimmer-common.amd.js',
-    sourceMapConfig: {
-      enabled: true,
-      cache: null,
-      sourceRoot: '/'
-    }
-  });
-
-  glimmerCompiler = concat(glimmerCompiler, {
-    inputFiles: ['**/*.js'],
-    outputFile: '/amd/glimmer-compiler.amd.js',
-    sourceMapConfig: {
-      enabled: true,
-      cache: null,
-      sourceRoot: '/'
-    }
-  });
-
-  glimmerRuntime = concat(glimmerRuntime, {
-    inputFiles: ['**/*.js'],
-    outputFile: '/amd/glimmer-runtime.amd.js',
-    sourceMapConfig: {
-      enabled: true,
-      cache: null,
-      sourceRoot: '/'
-    }
-  });
-
-  glimmerDemos = concat(glimmerDemos, {
-    inputFiles: ['**/*.js'],
-    outputFile: '/amd/glimmer-demos.amd.js',
-    sourceMapConfig: {
-      enabled: true,
-      cache: null,
-      sourceRoot: '/'
-    }
-  });
-
-  glimmerBenchmarks = concat(glimmerBenchmarks, {
-    inputFiles: ['**/*.js'],
-    outputFile: '/amd/glimmer-benchmarks.amd.js',
-    sourceMapConfig: {
-      enabled: true,
-      cache: null,
-      sourceRoot: '/'
-    }
-  });
-
-  glimmerTests = concat(glimmerTests, {
-    inputFiles: ['**/*.js'],
-    outputFile: '/amd/glimmer-tests.amd.js',
-    sourceMapConfig: {
-      enabled: true,
-      cache: null,
-      sourceRoot: '/'
-    }
-  });
-
-  var finalTrees = [
-    testHarness,
-    demos,
-    merge(benchmarkTrees),
-    glimmerCommon,
-    glimmerCompiler,
-    glimmerRuntime,
-    glimmerTests,
-    glimmerDemos,
-    glimmerBenchmarks,
-    cjsTree,
-    es5LibTree,
-    es6LibTree
-  ];
+  trees.push(testHarness);
 
   var loaderPath = path.parse(require.resolve('loader.js'));
   var loader = find(loaderPath.dir, {
@@ -304,7 +99,260 @@ module.exports = function(_options) {
     destDir: '/assets'
   });
 
-  finalTrees.push(loader);
+  trees.push(loader);
 
-  return merge(finalTrees);
+  return merge(trees);
+
+  // var options = _options || {};
+  // var packages = __dirname + '/packages';
+  // var tslintConfig = __dirname + '/tslint.json';
+  // var babelOptions = buildBabelOptions(options);
+
+  // var tsOptions = buildTSOptions();
+
+  // var benchmarkTrees = [find(__dirname + '/bench', {
+  //   include: ['*.html'],
+  //   destDir: 'bench'
+  // })];
+
+  // var benchmarkPath = __dirname + '/node_modules/benchmark';
+
+  // if (existsSync(benchmarkPath)) {
+  //   benchmarkTrees.push(find(benchmarkPath, {
+  //     include: ['benchmark.js'],
+  //     destDir: 'bench'
+  //   }));
+  // }
+
+  // var demos = find(__dirname + '/demos', {
+  //   include: ['*.html'],
+  //   destDir: 'demos'
+  // });
+
+  // var simpleDOMPath = path.dirname(require.resolve('simple-dom'));
+  // var simpleDOM = find(simpleDOMPath, {
+  //   include: ['simple-dom.js']
+  // });
+  // /*
+  //  * ES6 Build
+  //  */
+  // var tokenizerPath = path.join(require.resolve('simple-html-tokenizer'), '..', 'es6');
+  // var tokenizerTree = find(tokenizerPath, {
+  //   include: ['**/*.js'],
+  //   exclude: ['**/*.d.ts']
+  // });
+  // var HTMLTokenizer = mv(tokenizerTree, 'simple-html-tokenizer');
+
+  // var tsTree = find(packages, {
+  //   include: ['**/*.ts'],
+  //   exclude: [
+  //     '**/*.d.ts',
+  //     '*/node_modules/**',
+  //     '@glimmer/*/node_modules/**'
+  //   ]
+  // });
+
+  // var tsLintTree = new TSLint(tsTree, {
+  //   configuration: tslintConfig
+  // });
+  // /* tslint:enable:no-unused-variable */
+  // var transpiledTSLintTree = typescript(tsLintTree, tsOptions);
+
+  // var jsTree = typescript(tsTree, tsOptions);
+
+  // var libTree = find(jsTree, {
+  //   include: [
+  //     '*/index.js',
+  //     '*/lib/**/*.js',
+  //     '@glimmer/*/index.js',
+  //     '@glimmer/*/lib/**/*.js'
+  //   ]
+  // });
+
+  // libTree = merge([libTree, HTMLTokenizer, handlebarsInlinedTrees.compiler]);
+
+  // var es6LibTree = mv(libTree, 'es6');
+
+  // /*
+  //  * ES5 Named AMD Build
+  //  */
+  // libTree = transpile(libTree, babelOptions, 'ES5 Lib Tree');
+  // var es5LibTree = mv(libTree, 'named-amd');
+
+  // /*
+  //  * CommonJS Build
+  //  */
+  // tsOptions = buildTSOptions({
+  //   module: "commonjs",
+  //   target: "es5"
+  // });
+
+  // var cjsTree = typescript(tsTree, tsOptions);
+  // var handlebarsPath = path.join(require.resolve('handlebars'), '..', '..', 'dist', 'cjs');
+
+  // cjsTree = merge([cjsTree, handlebarsPath, simpleDOM]);
+
+  // // Glimmer packages require other Glimmer packages using non-relative module names
+  // // (e.g., `glimmer-compiler` may import `glimmer-util` instead of `../glimmer-util`),
+  // // which doesn't work with Node's module resolution strategy.
+  // // As a workaround, naming the CommonJS directory `node_modules` allows us to treat each
+  // // package inside as a top-level module.
+  // cjsTree = mv(cjsTree, 'node_modules');
+
+  // /*
+  //  * Anonymous AMD Build
+  //  */
+  // var glimmerCommon = find(libTree, {
+  //   include: [
+  //     'glimmer/**/*.js',
+  //     '@glimmer/object/**/*.js',
+  //     '@glimmer/object-model/**/*.js',
+  //     '@glimmer/object-reference/**/*.js',
+  //     '@glimmer/reference/**/*.js',
+  //     '@glimmer/util/**/*.js',
+  //     '@glimmer/wire-format/**/*.js'
+  //   ]
+  // });
+
+  // var glimmerRuntime = find(libTree, {
+  //   include: ['@glimmer/runtime/**/*', '@glimmer/public-runtime/**/*']
+  // });
+
+  // var glimmerCompiler = merge([
+  //   find(libTree, {
+  //     include: [
+  //       '@glimmer/syntax/**/*.js',
+  //       '@glimmer/compiler/**/*.js',
+  //       'simple-html-tokenizer/**/*.js',
+  //       'handlebars.js',
+  //       'handlebars/**/*.js'
+  //     ]
+  //   })
+  // ]);
+
+  // var glimmerDemos = merge([
+  //   find(libTree, {
+  //     include: [
+  //       '@glimmer/test-helpers/**/*.js',
+  //       'glimmer-demos/**/*.js',
+  //     ]
+  //   })
+  // ]);
+
+  // var glimmerBenchmarks = merge([
+  //   find(libTree, {
+  //     include: [
+  //       '@glimmer/test-helpers/**/*.js',
+  //       'glimmer-benchmarks/**/*.js',
+  //     ]
+  //   })
+  // ]);
+
+  // var glimmerTests = merge([
+  //   transpiledTSLintTree,
+  //   find(jsTree, { include: ['*/tests/**/*.js', '@glimmer/*/tests/**/*.js'], exclude: ['@glimmer/node/tests/**/*.js'] }),
+  //   find(jsTree, { include: ['@glimmer/test-helpers/**/*.js'] })
+  // ]);
+
+  // glimmerTests = transpile(glimmerTests, babelOptions, 'glimmer-tests');
+
+  // // Test Assets
+
+  // var testHarnessTrees = [
+  //   find(__dirname + '/tests', {
+  //     srcDir: '/',
+  //     files: [ 'index.html' ],
+  //     destDir: '/tests'
+  //   })
+  // ];
+
+  // var qunitPath = path.join(require.resolve('qunitjs'), '..');
+  // testHarnessTrees.push(mv(qunitPath, '/tests'));
+
+  // var testHarness = merge(testHarnessTrees);
+
+  // glimmerCommon = concat(glimmerCommon, {
+  //   inputFiles: ['**/*.js'],
+  //   outputFile: '/amd/glimmer-common.amd.js',
+  //   sourceMapConfig: {
+  //     enabled: true,
+  //     cache: null,
+  //     sourceRoot: '/'
+  //   }
+  // });
+
+  // glimmerCompiler = concat(glimmerCompiler, {
+  //   inputFiles: ['**/*.js'],
+  //   outputFile: '/amd/glimmer-compiler.amd.js',
+  //   sourceMapConfig: {
+  //     enabled: true,
+  //     cache: null,
+  //     sourceRoot: '/'
+  //   }
+  // });
+
+  // glimmerRuntime = concat(glimmerRuntime, {
+  //   inputFiles: ['**/*.js'],
+  //   outputFile: '/amd/glimmer-runtime.amd.js',
+  //   sourceMapConfig: {
+  //     enabled: true,
+  //     cache: null,
+  //     sourceRoot: '/'
+  //   }
+  // });
+
+  // glimmerDemos = concat(glimmerDemos, {
+  //   inputFiles: ['**/*.js'],
+  //   outputFile: '/amd/glimmer-demos.amd.js',
+  //   sourceMapConfig: {
+  //     enabled: true,
+  //     cache: null,
+  //     sourceRoot: '/'
+  //   }
+  // });
+
+  // glimmerBenchmarks = concat(glimmerBenchmarks, {
+  //   inputFiles: ['**/*.js'],
+  //   outputFile: '/amd/glimmer-benchmarks.amd.js',
+  //   sourceMapConfig: {
+  //     enabled: true,
+  //     cache: null,
+  //     sourceRoot: '/'
+  //   }
+  // });
+
+  // glimmerTests = concat(glimmerTests, {
+  //   inputFiles: ['**/*.js'],
+  //   outputFile: '/amd/glimmer-tests.amd.js',
+  //   sourceMapConfig: {
+  //     enabled: true,
+  //     cache: null,
+  //     sourceRoot: '/'
+  //   }
+  // });
+
+  // var finalTrees = [
+  //   testHarness,
+  //   demos,
+  //   merge(benchmarkTrees),
+  //   glimmerCommon,
+  //   glimmerCompiler,
+  //   glimmerRuntime,
+  //   glimmerTests,
+  //   glimmerDemos,
+  //   glimmerBenchmarks,
+  //   cjsTree,
+  //   es5LibTree,
+  //   es6LibTree
+  // ];
+
+  // var loaderPath = path.parse(require.resolve('loader.js'));
+  // var loader = find(loaderPath.dir, {
+  //   files: [ loaderPath.base ],
+  //   destDir: '/assets'
+  // });
+
+  // finalTrees.push(loader);
+
+  // return merge(finalTrees);
 };

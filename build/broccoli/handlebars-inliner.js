@@ -22,7 +22,7 @@ var handlebars = new Funnel(handlebarsRoot, {
 });
 
 // Get our shim file for the Handlebars entry point, which includes just the parser bits and not everything else in Handlebars.
-var glimmerSyntaxRoot = __dirname + "/../packages/@glimmer/syntax";
+var glimmerSyntaxRoot = __dirname + "/../../packages/@glimmer/syntax";
 var handlebarsShim = rename(new Funnel(glimmerSyntaxRoot, {
     files: ['handlebars-shim.js']
 }), 'handlebars-shim.js', 'handlebars.js');

@@ -1,10 +1,12 @@
 const buildPackage = require('@glimmer/build');
+const buildTestsIndex = require('@glimmer/build/lib/build-tests-index');
 const funnel = require('broccoli-funnel');
 const merge = require('broccoli-merge-trees');
 const Filter = require('broccoli-persistent-filter');
 const DAGMap = require('dag-map').default;
 const glob = require('glob');
 const path = require('path');
+const fs = require('fs');
 
 const TSCONFIG_PATH = `${__dirname}/../../build/tsconfig.json`;
 const PACKAGES_PATH = `${__dirname}/../../packages`;
@@ -29,7 +31,9 @@ function topsortPackages() {
   // that `package.json`.
   let pkgs = glob
     .sync(`${PACKAGES_PATH}/**/package.json`)
-    .map(pkgPath => require(pkgPath));
+    .map(pkgPath => require(pkgPath))
+    // .filter(pkg => pkg.name === '@glimmer/util')
+    .filter(pkg => pkg.name !== '@glimmer/interfaces');
 
   // Get a list of package names discovered in the repo.
   let inRepoDependencies = pkgs.map(pkg => pkg.name);
@@ -72,10 +76,18 @@ function topsortPackages() {
  * @param {string} packagePath
  */
 function treeForPackage(packagePath) {
+  let srcTrees = [
+    funnel(packagePath, { exclude: ['test/'] }),
+  ];
+
+  if (fs.readdirSync(`${packagePath}`).length > 0) {
+    srcTrees.push(buildTestsIndex(`${packagePath}/test`, 'test/index.ts'));
+  }
+
   let packageTree = buildPackage({
+    srcTrees,
     projectPath: packagePath,
-    tsconfigPath: TSCONFIG_PATH,
-    include: ['lib/**/*.ts', 'index.ts']
+    tsconfigPath: TSCONFIG_PATH
   });
 
   let packageJSONTree = treeForPackageJSON(packagePath);

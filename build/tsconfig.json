@@ -9,9 +9,5 @@
     "declaration": true,
     "newLine": "LF",
     "outDir": "dist"
-  },
-  "include": [
-    "lib/**/*.ts",
-    "*.ts"
-  ]
+  }
 }
