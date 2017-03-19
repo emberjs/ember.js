@@ -49,7 +49,8 @@ function transpileGlimmerSourceToAMD() {
   let jsTree = typescript(merge([tsTree, tslintTree]), {
     tsconfig: {
       compilerOptions: {
-        target: 'es2015',
+        target: 'es5',
+        module: 'es6',
         inlineSourceMap: true,
         inlineSources: true,
         moduleResolution: 'node',
@@ -68,7 +69,19 @@ function transpileGlimmerSourceToAMD() {
     avoidDefine: false,
     externalHelpers: false,
     stripRuntimeChecks: false,
-    sourceMaps: 'inline'
+    sourceMaps: 'inline',
+    // The list of helpers whitelisted from emberjs-build does not support
+    // extends. We need to override the entire list to add it.
+    helperWhiteList: [
+      'tagged-template-literal-loose',
+      'slice',
+      'defaults',
+      'create-class',
+      'class-call-check',
+      'interop-export-wildcard',
+      'inherits',
+      'extends'
+    ]
   });
 }
 
