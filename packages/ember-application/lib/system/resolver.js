@@ -197,7 +197,7 @@ export default EmberObject.extend({
 
   parseName(fullName) {
     return this._parseNameCache[fullName] || (
-      this._parseNameCache[fullName] = this._parseName(fullName)
+      (this._parseNameCache[fullName] = this._parseName(fullName))
     );
   },
 
@@ -265,6 +265,10 @@ export default EmberObject.extend({
     }
 
     return description;
+  },
+
+  makeToString(factory, fullName) {
+    return factory.toString();
   },
 
   /**

@@ -98,7 +98,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
     @return {Ember.Registry} the configured registry
   */
   buildRegistry() {
-    return this.__registry__ = this.constructor.buildRegistry(this)
+    return this.__registry__ = this.constructor.buildRegistry(this);
   },
 
   /**

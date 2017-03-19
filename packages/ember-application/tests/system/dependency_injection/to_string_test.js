@@ -32,7 +32,7 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
   }
 });
 
-QUnit.test('factories', () => {
+QUnit.test('factories', function() {
   let PostFactory;
   if (isFeatureEnabled('ember-factory-for')) {
     PostFactory = App.__container__.factoryFor('model:post').class;
@@ -42,14 +42,14 @@ QUnit.test('factories', () => {
   equal(PostFactory.toString(), 'App.Post', 'expecting the model to be post');
 });
 
-QUnit.test('instances', () => {
+QUnit.test('instances', function() {
   let post = App.__container__.lookup('model:post');
   let guid = guidFor(post);
 
   equal(post.toString(), `<App.Post:${guid}>`, 'expecting the model to be post');
 });
 
-QUnit.test('with a custom resolver', () => {
+QUnit.test('with a custom resolver', function() {
   run(App, 'destroy');
 
   run(() => {

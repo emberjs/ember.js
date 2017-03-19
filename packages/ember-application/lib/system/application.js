@@ -706,16 +706,16 @@ const Application = Engine.extend({
 
       // See documentation on `_autoboot()` for details
       if (this.autoboot) {
-        // Otherwise, build an instance and boot it. This is currently unreachable,
-        // because we forced _globalsMode to === autoboot; but having this branch
-        // allows us to locally toggle that flag for weeding out legacy globals mode
-        // dependencies independently
-        let instance = this.buildInstance();
+        // If we already have the __deprecatedInstance__ lying around, boot it to
+        // avoid unnecessary work
+        let instance = this.__deprecatedInstance__;
 
-        if (this._globalsMode) {
-          // If we already have the __deprecatedInstance__ lying around, boot it to
-          // avoid unnecessary work
-          instance = this.__deprecatedInstance__;
+        if (!this._globalsMode) {
+          // Otherwise, build an instance and boot it. This is currently unreachable,
+          // because we forced _globalsMode to === autoboot; but having this branch
+          // allows us to locally toggle that flag for weeding out legacy globals mode
+          // dependencies independently
+          instance = this.buildInstance();
         }
 
         instance._bootSync();
