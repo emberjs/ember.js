@@ -80,10 +80,6 @@ function treeForPackage(packagePath) {
     funnel(packagePath, { exclude: ['test/'] }),
   ];
 
-  if (fs.readdirSync(`${packagePath}`).length > 0) {
-    srcTrees.push(buildTestsIndex(`${packagePath}/test`, 'test/index.ts'));
-  }
-
   let packageTree = buildPackage({
     srcTrees,
     projectPath: packagePath,
