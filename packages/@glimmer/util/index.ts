@@ -12,7 +12,7 @@ export { ensureGuid, initializeGuid, HasGuid } from './lib/guid';
 
 export { Stack, Dict, Set, DictSet, dict } from './lib/collections';
 export { EMPTY_SLICE, LinkedList, LinkedListNode, ListNode, CloneableListNode, ListSlice, Slice } from './lib/list-utils';
-export { default as A } from './lib/array-utils';
+export { default as A, EMPTY_ARRAY } from './lib/array-utils';
 export { HAS_NATIVE_WEAKMAP } from './lib/weakmap';
 
 export type TSISSUE<T, S extends string> = T;

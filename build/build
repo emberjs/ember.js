@@ -1,5 +1,0 @@
-#!/bin/sh
-
-rm -rf dist
-tsc -p tsconfig.json --outDir dist/commonjs --module commonjs
-tsc -p tsconfig.json --outDir dist/modules --module es2015

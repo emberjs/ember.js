@@ -7,17 +7,17 @@ import { DynamicInvoker } from '../compiled/opcodes/vm';
 import { VM, PublicVM } from '../vm';
 import { IArguments } from '../vm/arguments';
 import { ATTRS_BLOCK, Block, ClientSide, RawInlineBlock } from '../scanner';
-import { EMPTY_ARRAY } from '../utils';
 
 import {
   LOGGER,
+  EMPTY_ARRAY,
   Opaque,
   Option,
   Dict,
   dict,
   assert,
   unwrap,
-  unreachable
+  unreachable,
 } from '@glimmer/util';
 
 import {

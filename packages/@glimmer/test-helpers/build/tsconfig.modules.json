@@ -1,9 +1,0 @@
-{
-  "extends": "../tsconfig.json",
-
-  "compilerOptions": {
-    // Input/output paths
-    "outDir": "../dist/modules",
-    "module": "es2015"
-  }
-}

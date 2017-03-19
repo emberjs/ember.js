@@ -12,8 +12,16 @@ being, please refer the [architecture overview][guides] for more information.
 # Building Glimmer
 
 1. Ensure that [Node.js](http://nodejs.org/) is installed.
-2. Run `npm install` to ensure the required dependencies are installed.
-3. Run `npm run-script build` to build Glimmer. The builds will be placed in the `dist/` directory.
+2. Run `npm install` or `yarn install` to ensure the required dependencies are installed.
+3. Run `npm run build` to build each Glimmer package. The builds will be placed in the `dist/` directory.
+
+Glimmer's packages are only built when running `npm run build` (or `ember build --env production`).
+If you run `ember build` without setting the production environment, `dist/`
+will only contain test assets.
+
+If you want to use the built packages in other projects, you can use `npm run
+yarn:link` to execute the `yarn link` command inside each built package. (You
+must build the packages first with `npm run build`).
 
 # How to Run Tests
 

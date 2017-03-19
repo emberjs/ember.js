@@ -3,21 +3,17 @@
 <head>
   <meta charset="utf-8">
   <title>Glimmer Test Suite</title>
-  <link rel="stylesheet" href="qunit.css">
+  <link rel="stylesheet" href="assets/qunit.css">
 </head>
 <body>
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
-  <script src="qunit.js"></script>
+  <script src="assets/qunit.js"></script>
   <script src="/testem.js"></script>
-  <script src="../assets/loader.js"></script>
-  <script>loader.noConflict({ define: 'enifed' });</script>
-  <!--<script src="export-test-results.js"></script>-->
-  <script src="/amd/glimmer-common.amd.js"></script>
-  <script src="/amd/glimmer-compiler.amd.js"></script>
-  <script src="/amd/glimmer-runtime.amd.js"></script>
-  <script src="/amd/glimmer-tests.amd.js"></script>
-  <script src="/amd/tests.amd.js"></script>
+  <script src="assets/loader.js"></script>
+  <script src="assets/vendor.js"></script>
+  <script src="assets/glimmer.js"></script>
+  <script src="assets/tests.js"></script>
 
   <style>
     #qunit-tests.hidepass li.skipped {
