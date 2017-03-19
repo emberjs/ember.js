@@ -31,7 +31,6 @@
     "broccoli-concat": "^2.1.0",
     "broccoli-funnel": "^1.1.0",
     "broccoli-merge-trees": "^1.1.1",
-    "broccoli-stew": "^1.2.0",
     "broccoli-tslinter": "^2.0.0",
     "broccoli-typescript-compiler": "^0.6.0",
     "broccoli-uglify-js": "~0.1.3",
