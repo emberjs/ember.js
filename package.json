@@ -11,8 +11,7 @@
     "url": "https://github.com/tildeio/glimmer.git"
   },
   "scripts": {
-    "build": "ember build",
-    "prepublish": "ember build",
+    "build": "ember build --env production",
     "sauce:connect": "ember sauce:connect",
     "sauce:disconnect": "ember sauce:disconnect",
     "start": "ember serve --port=7357",
@@ -21,7 +20,6 @@
     "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json && npm run test:packages && npm run test:node",
     "test:node": "bin/run-node-tests.js",
     "test:packages": "bin/run-package-tests.sh",
-    "tsc": "tsc -p tsconfig.json --noEmit",
     "tslint": "tslint --project tsconfig.json",
     "problems": "tsc -p tsconfig.json --noEmit",
     "yarn:link": "node bin/yarn-link-all",
