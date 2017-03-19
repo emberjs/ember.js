@@ -5,7 +5,7 @@ import {
   Statements
 } from '@glimmer/wire-format';
 import { PathReference } from '@glimmer/reference';
-import { assign } from '@glimmer/util';
+import { assign, EMPTY_ARRAY } from '@glimmer/util';
 import { Option, Opaque } from '@glimmer/interfaces';
 // import { SymbolTable } from '@glimmer/interfaces';
 import { Environment, DynamicScope } from './environment';
@@ -13,7 +13,6 @@ import { ElementStack } from './builder';
 import { VM, RenderResult, IteratorResult } from './vm';
 import Scanner, { Program, Block } from './scanner';
 import * as Simple from './dom/interfaces';
-import { EMPTY_ARRAY } from './utils';
 
 /**
  * Environment specific template.

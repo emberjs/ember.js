@@ -2,25 +2,10 @@
   "name": "@glimmer/reference",
   "version": "0.22.0",
   "description": "Objects used to track values and their dirtiness in Glimmer",
-  "main": "dist/commonjs/index.js",
-  "jsnext:main": "dist/modules/index.js",
-  "module": "dist/modules/index.js",
-  "typings": "index.ts",
-  "directories": {
-    "test": "tests"
-  },
-  "scripts": {
-    "test": "node -e 'require(\".\")'"
-  },
   "license": "MIT",
   "dependencies": {
     "@glimmer/util": "^0.22.0"
   },
-  "files": [
-    "dist",
-    "index.ts",
-    "lib"
-  ],
   "devDependencies": {
     "typescript": "^2.2.0"
   }

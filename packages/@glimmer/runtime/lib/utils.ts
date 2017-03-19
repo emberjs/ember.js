@@ -1,7 +1,4 @@
-import { Option, Dict, dict, HAS_NATIVE_WEAKMAP } from '@glimmer/util';
-
-export const EMPTY_ARRAY: any[] = (HAS_NATIVE_WEAKMAP ? Object.freeze([]) : []) as any;
-export const EMPTY_DICT: Dict<any> = HAS_NATIVE_WEAKMAP ? Object.freeze(dict<any>()) : dict<any>();
+import { Option } from '@glimmer/util';
 
 export interface EnumerableCallback<T> {
   (item: T): void;

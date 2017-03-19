@@ -1,8 +1,0 @@
-{
-  "name": "@glimmer/runtime-tests",
-  "version": "^0.22",
-  "dependencies": {
-    "@glimmer/test-helpers": "^0.22",
-    "@glimmer/runtime": "^0.22"
-  }
-}

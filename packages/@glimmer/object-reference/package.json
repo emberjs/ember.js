@@ -3,26 +3,11 @@
   "version": "0.22.0",
   "description": "References for a Glimmer-compatible object model",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/object-reference",
-  "main": "dist/commonjs/index.js",
-  "module": "dist/modules/index.js",
-  "jsnext:main": "dist/modules/index.js",
-  "typings": "index.ts",
-  "directories": {
-    "test": "tests"
-  },
-  "scripts": {
-    "test": "node -e 'require(\".\")'"
-  },
   "license": "MIT",
   "dependencies": {
     "@glimmer/util": "^0.22.0",
     "@glimmer/reference": "^0.22.0"
   },
-  "files": [
-    "dist",
-    "index.ts",
-    "lib"
-  ],
   "devDependencies": {
     "typescript": "^2.2.0"
   }

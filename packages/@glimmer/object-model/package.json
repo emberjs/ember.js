@@ -2,19 +2,6 @@
   "name": "@glimmer/object-model",
   "version": "0.22.0",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/object-model",
-  "main": "dist/commonjs/index.js",
-  "module": "dist/modules/index.js",
-  "jsnext:main": "dist/modules/index.js",
-  "typings": "index.ts",
-  "scripts": {
-    "test": "node -e 'require(\".\")'",
-    "test:watch": "mocha --opts tests/mocha.opts --watch"
-  },
-  "files": [
-    "dist",
-    "index.ts",
-    "lib"
-  ],
   "dependencies": {
     "@glimmer/util": "^0.22.0",
     "@glimmer/reference": "^0.22.0"
