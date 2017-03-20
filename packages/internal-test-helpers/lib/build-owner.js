@@ -4,7 +4,6 @@ import {
   Application,
   ApplicationInstance
 } from 'ember-application';
-import { isFeatureEnabled } from 'ember-debug';
 import {
   RegistryProxyMixin,
   ContainerProxyMixin,
@@ -25,13 +24,11 @@ export default function buildOwner(options = {}) {
     }
   });
 
-  if (isFeatureEnabled('ember-factory-for')) {
-    Owner.reopen({
-      factoryFor() {
-        return this.__container__.factoryFor(...arguments);
-      }
-    });
-  }
+  Owner.reopen({
+    factoryFor() {
+      return this.__container__.factoryFor(...arguments);
+    }
+  });
 
   let namespace = EmberObject.create({
     Resolver: { create() { return resolver; } }

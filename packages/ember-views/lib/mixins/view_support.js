@@ -1,10 +1,11 @@
 import { guidFor, getOwner } from 'ember-utils';
 import { descriptor, Mixin } from 'ember-metal';
-import { assert, deprecate, runInDebug } from 'ember-debug';
+import { assert, deprecate } from 'ember-debug';
 import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
 import { POST_INIT } from 'ember-runtime/system/core_object';
 import jQuery from '../system/jquery';
+import { DEBUG } from 'ember-env-flags';
 
 function K() { return this; }
 
@@ -12,7 +13,7 @@ export let dispatchLifeCycleHook = (component, hook, oldAttrs, newAttrs) => {
   component.trigger(hook, { attrs: newAttrs, oldAttrs, newAttrs });
 };
 
-runInDebug(() => {
+if (DEBUG) {
   class Attrs {
     constructor(oldAttrs, newAttrs, message) {
       this._oldAttrs = oldAttrs;
@@ -53,7 +54,7 @@ runInDebug(() => {
       component.trigger(hook, new Attrs(oldAttrs, newAttrs, `[DEPRECATED] Ember will stop passing arguments to component lifecycle hooks. Please change \`${component.toString()}#${hook}\` to stop taking arguments.`));
     }
   };
-});
+}
 
 /**
  @class ViewMixin

@@ -8,7 +8,8 @@ import {
   run,
   isEmpty
 } from 'ember-metal';
-import { assert, runInDebug, info, Error as EmberError, isTesting } from 'ember-debug';
+import { assert, info, Error as EmberError, isTesting } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 import {
   typeOf,
   copy,
@@ -2288,12 +2289,12 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
 
   assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || template);
 
-  runInDebug(() => {
+  if (DEBUG) {
     let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
     if (LOG_VIEW_LOOKUPS && !template) {
       info(`Could not find "${name}" template. Nothing will be rendered`, { fullName: `template:${name}` });
     }
-  });
+  }
 
   return renderOptions;
 }

@@ -14,7 +14,7 @@ import {
   moduleFor
 } from 'internal-test-helpers';
 
-import { isFeatureEnabled } from 'ember-debug';
+import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 
 function setupController(app, name) {
   let controllerName = `${String.capitalize(name)}Controller`;
@@ -32,7 +32,7 @@ function buildQueryParams(queryParams) {
   };
 }
 
-if (isFeatureEnabled('ember-routing-router-service')) {
+if (EMBER_ROUTING_ROUTER_SERVICE) {
   moduleFor('Router Service - urlFor', class extends RouterTestCase {
     ['@test RouterService#urlFor returns URL for simple route'](assert) {
       assert.expect(1);

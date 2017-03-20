@@ -2,7 +2,7 @@ import {
   get,
   set
 } from 'ember-metal';
-import { isFeatureEnabled } from 'ember-debug';
+import { EMBER_UNIQUE_LOCATION_HISTORY_STATE } from 'ember/features';
 
 import { Object as EmberObject } from 'ember-runtime';
 import EmberLocation from './api';
@@ -16,7 +16,7 @@ let popstateFired = false;
 
 let _uuid;
 
-if (isFeatureEnabled('ember-unique-location-history-state')) {
+if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
   _uuid = function _uuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r, v;
@@ -173,7 +173,7 @@ export default EmberObject.extend({
   */
   pushState(path) {
     let state = { path };
-    if (isFeatureEnabled('ember-unique-location-history-state')) {
+    if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
       state.uuid = _uuid();
     }
 
@@ -194,7 +194,7 @@ export default EmberObject.extend({
   */
   replaceState(path) {
     let state = { path };
-    if (isFeatureEnabled('ember-unique-location-history-state')) {
+    if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
       state.uuid = _uuid();
     }
 

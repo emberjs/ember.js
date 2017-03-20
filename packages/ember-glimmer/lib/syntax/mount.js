@@ -6,12 +6,13 @@ import {
   ComponentDefinition
 } from '@glimmer/runtime';
 import { UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { assert, runInDebug } from 'ember-debug';
+import { assert } from 'ember-debug';
 import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
 import { FACTORY_FOR } from 'container';
 import AbstractManager from './abstract-manager';
+import { DEBUG } from 'ember-env-flags';
 
 function dynamicEngineFor(vm, symbolTable) {
   let env     = vm.env;
@@ -90,7 +91,7 @@ class DynamicEngineReference {
         `Invalid engine name '${nameOrDef}' specified, engine name must be either a string, null or undefined.`,
         nameOrDef === null || nameOrDef === undefined
       );
-      
+
       return null;
     }
   }
@@ -102,7 +103,9 @@ class MountManager extends AbstractManager {
   }
 
   create(environment, { name }, args, dynamicScope) {
-    runInDebug(() => this._pushEngineToDebugStack(`engine:${name}`, environment));
+    if (DEBUG) {
+      this._pushEngineToDebugStack(`engine:${name}`, environment)
+    }
 
     dynamicScope.outletState = UNDEFINED_REFERENCE;
 
@@ -135,7 +138,9 @@ class MountManager extends AbstractManager {
   didCreateElement() {}
 
   didRenderLayout() {
-    runInDebug(() => this.debugStack.pop());
+    if (DEBUG) {
+      this.debugStack.pop()
+    }
   }
 
   didCreate(state) {}

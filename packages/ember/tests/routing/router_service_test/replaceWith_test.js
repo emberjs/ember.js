@@ -5,9 +5,9 @@ import {
 } from 'internal-test-helpers';
 import { Transition } from 'router';
 
-import { isFeatureEnabled } from 'ember-debug';
+import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 
-if (isFeatureEnabled('ember-routing-router-service')) {
+if (EMBER_ROUTING_ROUTER_SERVICE) {
   moduleFor('Router Service - replaceWith', class extends RouterTestCase {
     constructor() {
       super();

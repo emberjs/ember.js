@@ -20,7 +20,6 @@ export let debugFunctions = {
   debug() {},
   deprecate() {},
   deprecateFunc(...args) { return args[args.length - 1]; },
-  runInDebug() {},
   debugSeal() {},
   debugFreeze() {}
 };

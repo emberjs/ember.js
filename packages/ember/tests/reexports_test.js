@@ -1,6 +1,6 @@
 import Ember from '../index';
 import { confirmExport } from 'internal-test-helpers';
-import { isFeatureEnabled } from 'ember-debug';
+import { EMBER_METAL_WEAKMAP } from 'ember/features';
 
 QUnit.module('ember reexports');
 
@@ -226,7 +226,7 @@ QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
   confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
 });
 
-if (isFeatureEnabled('ember-metal-weakmap')) {
+if (EMBER_METAL_WEAKMAP) {
   QUnit.test('Ember.WeakMap exports correctly', function(assert) {
     confirmExport(Ember, assert, 'WeakMap', 'ember-metal', 'WeakMap');
   });

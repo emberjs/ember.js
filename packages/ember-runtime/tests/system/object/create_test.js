@@ -4,7 +4,7 @@ import {
   Mixin,
   observer
 } from 'ember-metal';
-import { isFeatureEnabled } from 'ember-debug';
+import { MANDATORY_SETTER } from 'ember/features';
 import EmberObject from '../../../system/object';
 
 QUnit.module('EmberObject.create', {});
@@ -30,7 +30,7 @@ QUnit.test('calls computed property setters', function() {
   equal(o.get('foo'), 'bar');
 });
 
-if (isFeatureEnabled('mandatory-setter')) {
+if (MANDATORY_SETTER) {
   QUnit.test('sets up mandatory setters for watched simple properties', function() {
     let MyClass = EmberObject.extend({
       foo: null,

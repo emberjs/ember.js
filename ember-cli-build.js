@@ -42,8 +42,24 @@ const SHOULD_ROLLUP = true;
 
 module.exports = function(options) {
   let tokenizer = simpleHTMLTokenizerES();
-  let container = emberPkgES('container', SHOULD_ROLLUP, ['ember-debug', 'ember-utils', 'ember-environment']);
-  let emberMetal = emberPkgES('ember-metal', SHOULD_ROLLUP, ['ember-debug', 'ember-environment', 'ember-utils', '@glimmer/reference', 'require', 'backburner', 'ember-console']);
+  let container = emberPkgES('container', SHOULD_ROLLUP, [
+    'ember-debug',
+    'ember-utils',
+    'ember-environment',
+    'ember-env-flags',
+    'ember/features'
+  ]);
+  let emberMetal = emberPkgES('ember-metal', SHOULD_ROLLUP, [
+    'ember-debug',
+    'ember-environment',
+    'ember-utils',
+    '@glimmer/reference',
+    'require',
+    'backburner',
+    'ember-console',
+    'ember-env-flags',
+    'ember/features'
+  ]);
   let emberEnvironment = emberPkgES('ember-environment', SHOULD_ROLLUP);
   let emberConsole = emberPkgES('ember-console', SHOULD_ROLLUP, ['ember-environment']);
   let emberMain = emberPkgES('ember');

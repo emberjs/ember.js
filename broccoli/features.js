@@ -35,5 +35,15 @@ function getFeatures(isDebug) {
   return features;
 }
 
+function toConst(features) {
+  let consted = {};
+  Object.keys(features).forEach((feature) => {
+    consted[feature.toUpperCase().replace(/-/g, '_')] = features[feature]
+  });
+
+  return consted;
+}
+
+module.exports.toConst = toConst;
 module.exports.RELEASE = getFeatures(false);
 module.exports.DEBUG = getFeatures(true);

@@ -9,7 +9,7 @@ import {
 } from 'ember-metal';
 import { testBoth } from 'internal-test-helpers';
 import EmberObject from '../../../system/object';
-import { isFeatureEnabled } from 'ember-debug';
+import { MANDATORY_SETTER } from 'ember/features';
 
 QUnit.module('ember-runtime/system/object/destroy_test');
 
@@ -29,7 +29,7 @@ testBoth('should schedule objects to be destroyed at the end of the run loop', f
   ok(get(obj, 'isDestroyed'), 'object is destroyed after run loop finishes');
 });
 
-if (isFeatureEnabled('mandatory-setter')) {
+if (MANDATORY_SETTER) {
   // MANDATORY_SETTER moves value to meta.values
   // a destroyed object removes meta but leaves the accessor
   // that looks it up
