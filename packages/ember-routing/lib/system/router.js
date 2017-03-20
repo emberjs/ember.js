@@ -851,7 +851,8 @@ const EmberRouter = EmberObject.extend(Evented, {
     @return {Object}
    */
   _queryParamsFor(handlerInfos) {
-    let leafRouteName = handlerInfos[handlerInfos.length - 1].name;
+    let handlerInfoLength = handlerInfos.length;
+    let leafRouteName = handlerInfos[handlerInfoLength - 1].name;
     let cached = this._qpCache[leafRouteName];
     if (cached) {
       return cached;
@@ -862,7 +863,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let map = {};
     let qps = [];
 
-    for (let i = 0; i < handlerInfos.length; ++i) {
+    for (let i = 0; i < handlerInfoLength; ++i) {
       let qpMeta = this._getQPMeta(handlerInfos[i]);
 
       if (!qpMeta) {
@@ -1185,14 +1186,11 @@ function logError(_error, initialMessage) {
   @return {String}
 */
 function findRouteSubstateName(route, state) {
-  let router = route.router;
   let owner = getOwner(route);
+  let { routeName, fullRouteName, router } = route;
 
-  let routeName = route.routeName;
   let substateName = `${routeName}_${state}`;
-
-  let routeNameFull = route.fullRouteName;
-  let substateNameFull = `${routeNameFull}_${state}`;
+  let substateNameFull = `${fullRouteName}_${state}`;
 
   return routeHasBeenDefined(owner, router, substateName, substateNameFull) ?
     substateNameFull :
@@ -1210,14 +1208,11 @@ function findRouteSubstateName(route, state) {
   @return {String}
 */
 function findRouteStateName(route, state) {
-  let router = route.router;
   let owner = getOwner(route);
+  let { routeName, fullRouteName, router } = route;
 
-  let routeName = route.routeName;
   let stateName = routeName === 'application' ? state : `${routeName}.${state}`;
-
-  let routeNameFull = route.fullRouteName;
-  let stateNameFull = routeNameFull === 'application' ? state : `${routeNameFull}.${state}`;
+  let stateNameFull = fullRouteName === 'application' ? state : `${fullRouteName}.${state}`;
 
   return routeHasBeenDefined(owner, router, stateName, stateNameFull) ?
     stateNameFull :
@@ -1282,10 +1277,8 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
 }
 
 function calculatePostTransitionState(emberRouter, leafRouteName, contexts) {
-  let routerMicrolib = emberRouter._routerMicrolib;
-  let state = routerMicrolib.applyIntent(leafRouteName, contexts);
-  let handlerInfos = state.handlerInfos;
-  let params = state.params;
+  let state = emberRouter._routerMicrolib.applyIntent(leafRouteName, contexts);
+  let { handlerInfos, params } = state;
 
   for (let i = 0; i < handlerInfos.length; ++i) {
     let handlerInfo = handlerInfos[i];
