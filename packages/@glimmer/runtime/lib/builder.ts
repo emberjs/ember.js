@@ -206,8 +206,8 @@ export class ElementStack implements Cursor {
     this.block().openElement(element);
   }
 
-  pushRemoteElement(element: Simple.Element) {
-    this.pushElement(element);
+  pushRemoteElement(element: Simple.Element, nextSibling: Option<Simple.Node> = null) {
+    this.pushElement(element, nextSibling);
 
     let tracker = new RemoteBlockTracker(element);
     this.pushBlockTracker(tracker, true);
@@ -218,13 +218,13 @@ export class ElementStack implements Cursor {
     this.popElement();
   }
 
-  private pushElement(element: Simple.Element) {
+  private pushElement(element: Simple.Element, nextSibling: Option<Simple.Node> = null) {
     this.element = element;
     this.elementStack.push(element);
     // LOGGER.debug(`-> element stack ${this.elementStack.toArray().map(e => e.tagName).join(', ')}`);
 
-    this.nextSibling = null;
-    this.nextSiblingStack.push(null);
+    this.nextSibling = nextSibling;
+    this.nextSiblingStack.push(nextSibling);
   }
 
   newDestroyable(d: Destroyable) {

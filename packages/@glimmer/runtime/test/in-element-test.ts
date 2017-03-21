@@ -2,7 +2,8 @@ import {
   TestEnvironment,
   stripTight,
   equalsElement,
-  EmberishCurlyComponent
+  EmberishCurlyComponent,
+  MyRootView
  } from "@glimmer/test-helpers";
 
 import {
@@ -11,22 +12,17 @@ import {
   EmberishRootView
 } from './ember-component-test';
 
-import { CLASS_META, setProperty as set } from '@glimmer/object-reference';
+import { setProperty as set } from '@glimmer/object-reference';
 
-let view, env;
+let view: EmberishRootView;
+let env: TestEnvironment;
 
 function rerender() {
   view.rerender();
 }
 
 function appendViewFor(template: string, context: Object = {}) {
-  class MyRootView extends EmberishRootView {
-    protected env = env;
-    protected template = env.compile(template);
-  }
-
-  view = new MyRootView(context);
-  MyRootView[CLASS_META].seal();
+  view = new EmberishRootView(env, template, context);
 
   env.begin();
   view.appendTo('#qunit-fixture');
@@ -41,7 +37,7 @@ QUnit.module('Targeting a remote element', {
   }
 });
 
-QUnit.test('basic', function(assert) {
+QUnit.test('basic', function() {
   let externalElement = document.createElement('div');
 
   appendViewFor(
@@ -62,7 +58,7 @@ QUnit.test('basic', function(assert) {
   equalsElement(externalElement, 'div', {}, stripTight`[Yippie!]`);
 });
 
-QUnit.test('changing to falsey', function(assert) {
+QUnit.test('changing to falsey', function() {
   let first = document.createElement('div');
   let second = document.createElement('div');
 
@@ -116,7 +112,7 @@ QUnit.test('changing to falsey', function(assert) {
   assertAppended('|Yippie!|<!----><!---->');
 });
 
-QUnit.test('with pre-existing content', function(assert) {
+QUnit.test('with pre-existing content', function() {
   let externalElement = document.createElement('div');
   let initialContent = externalElement.innerHTML = '<p>Hello there!</p>';
 
@@ -153,7 +149,46 @@ QUnit.test('with pre-existing content', function(assert) {
   equalsElement(externalElement, 'div', {}, `${initialContent}[Yippie!]`);
 });
 
-QUnit.test('updating remote element', function(assert) {
+QUnit.test('with nextSibling', function() {
+  let externalElement = document.createElement('div');
+  externalElement.innerHTML = '<b>Hello</b><em>there!</em>';
+
+  appendViewFor(
+    stripTight`{{#-in-element externalElement nextSibling=nextSibling}}[{{foo}}]{{/-in-element}}`,
+    { externalElement, nextSibling: externalElement.lastChild, foo: 'Yippie!' }
+  );
+
+  assertAppended('<!---->');
+  equalsElement(externalElement, 'div', {}, `<b>Hello</b>[Yippie!]<em>there!</em>`);
+
+  set(view, 'foo', 'Double Yips!');
+  rerender();
+
+  assertAppended('<!---->');
+  equalsElement(externalElement, 'div', {}, `<b>Hello</b>[Double Yips!]<em>there!</em>`);
+
+  set(view, 'nextSibling', null);
+  rerender();
+
+  assertAppended('<!---->');
+  equalsElement(externalElement, 'div', {}, `<b>Hello</b><em>there!</em>[Double Yips!]`);
+
+  set(view, 'externalElement', null);
+  rerender();
+
+  assertAppended('<!---->');
+  equalsElement(externalElement, 'div', {}, `<b>Hello</b><em>there!</em>`);
+
+  set(view, 'foo', 'Yippie!');
+  set(view, 'externalElement', externalElement);
+  set(view, 'nextSibling', externalElement.lastChild);
+  rerender();
+
+  assertAppended('<!---->');
+  equalsElement(externalElement, 'div', {}, `<b>Hello</b>[Yippie!]<em>there!</em>`);
+});
+
+QUnit.test('updating remote element', function() {
   let first = document.createElement('div');
   let second = document.createElement('div');
 
@@ -199,7 +234,7 @@ QUnit.test('updating remote element', function(assert) {
   equalsElement(second, 'div', {}, `[Yippie!]`);
 });
 
-QUnit.test('inside an `{{if}}', function(assert) {
+QUnit.test('inside an `{{if}}', function() {
   let first = document.createElement('div');
   let second = document.createElement('div');
 
@@ -261,7 +296,7 @@ QUnit.test('inside an `{{if}}', function(assert) {
   equalsElement(second, 'div', {}, stripTight``);
 });
 
-QUnit.test('multiple', function(assert) {
+QUnit.test('multiple', function() {
   let firstElement = document.createElement('div');
   let secondElement = document.createElement('div');
 
@@ -310,7 +345,7 @@ QUnit.test('multiple', function(assert) {
   equalsElement(secondElement, 'div', {}, stripTight`[World!]`);
 });
 
-QUnit.test('nesting', function(assert) {
+QUnit.test('nesting', function() {
   let firstElement = document.createElement('div');
   let secondElement = document.createElement('div');
 
@@ -390,7 +425,7 @@ QUnit.test('components are destroyed', function(assert) {
   set(view, 'showExternal', true);
   rerender();
 
-  assertElementIsEmberishElement(externalElement.firstElementChild, 'div', { }, 'destroy me!');
+  assertElementIsEmberishElement(externalElement.firstElementChild!, 'div', { }, 'destroy me!');
   assert.equal(destroyed, 0, 'component was destroyed');
 
   set(view, 'showExternal', false);
