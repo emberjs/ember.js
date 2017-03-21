@@ -576,7 +576,19 @@ const Application = Engine.extend({
   _bootSync() {
     if (this._booted) { return; }
 
-
+    /*
+     * router:main is always an instance of `App.Router`. In the past, this
+     * was because the container resolved the 'main' by looking to `App[type]`.
+     * By registering it explicitly, the dependency on the DefaultResolver is
+     * avoided.
+     *
+     * A copy is registered on the application since it may be requested by
+     * access to the container before the application instance has booted.
+     * App.Router is not gaurenteed to be set at this point, however.
+     */
+    if (!this.resolveRegistration('router:main') && this.Router) {
+      this.register('router:main', this.Router);
+    }
 
     // Even though this returns synchronously, we still need to make sure the
     // boot promise exists for book-keeping purposes: if anything went wrong in
