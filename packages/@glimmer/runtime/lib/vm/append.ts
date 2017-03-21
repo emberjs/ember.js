@@ -76,10 +76,13 @@ export class EvaluationStack {
   }
 }
 
-export interface IteratorResult<T> {
-  value: T | null;
-  done: boolean;
-}
+export type IteratorResult<T> = {
+  done: false;
+  value: null;
+} | {
+  done: true;
+  value: T;
+};
 
 export default class VM implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();

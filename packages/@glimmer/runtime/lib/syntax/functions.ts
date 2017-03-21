@@ -749,9 +749,21 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.pop();
   });
 
-  blocks.add('-in-element', (params, _hash, template, _inverse, builder) => {
+  blocks.add('-in-element', (params, hash, template, _inverse, builder) => {
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #-in-element requires a single argument`);
+    }
+
+    if (hash && hash[0].length) {
+      let [ keys, values ] = hash;
+
+      if (keys.length === 1 && keys[0] === 'nextSibling') {
+        expr(values[0], builder);
+      } else {
+        throw new Error(`SYNTAX ERROR: #-in-element does not take a \`${keys[0]}\` option`);
+      }
+    } else {
+      expr(null, builder);
     }
 
     expr(params[0], builder);
@@ -759,7 +771,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.dup();
     builder.test('simple');
 
-    builder.closure(2, b => {
+    builder.closure(3, b => {
       b.jumpUnless('ELSE');
       b.pushRemoteElement();
       b.invokeStatic(unwrap(template));

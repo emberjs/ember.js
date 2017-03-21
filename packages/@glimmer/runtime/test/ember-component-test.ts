@@ -4,7 +4,6 @@ import EmberObject, {
 
 import {
   Template,
-  Environment,
   RenderResult,
 } from "../index";
 
@@ -28,17 +27,27 @@ import { assign } from "@glimmer/util";
 
 import { CLASS_META, UpdatableReference, setProperty as set } from '@glimmer/object-reference';
 
-import { module as nestedModule, test, assert } from './support';
+import { module as nestedModule, assert } from './support';
 
 export class EmberishRootView extends EmberObject {
+  public element: Element;
+
+  protected template: Template<undefined>;
+  protected result: RenderResult;
+
   private parent: Element;
-  protected _result: RenderResult;
-  protected template: Template<{}>;
-  protected env: Environment;
-  public element: Element; // provided by the component definition
+
+  constructor(
+    protected env: TestEnvironment,
+    template: string,
+    context?: Object
+  ) {
+    super(context);
+    this.template = env.compile(template);
+  }
 
   appendTo(selector: string) {
-    let element = this.parent = document.querySelector(selector);
+    let element = this.parent = document.querySelector(selector)!;
     let self = new UpdatableReference(this);
     let templateIterator = this.template.render(self, element, new TestDynamicScope());
 
@@ -47,30 +56,32 @@ export class EmberishRootView extends EmberObject {
       result = templateIterator.next();
     } while (!result.done);
 
-    this._result = result.value;
+    this.result = result.value!;
 
-    this.element = element.firstElementChild;
+    this.element = element.firstElementChild!;
   }
 
-  rerender(context: Object = null) {
+  rerender(context: Object | null = null) {
     if (context) {
       this.setProperties(context);
     }
 
     this.env.begin();
-    this._result.rerender();
+    this.result.rerender();
     this.env.commit();
 
-    this.element = this.parent.firstElementChild;
+    this.element = this.parent.firstElementChild!;
   }
 
   destroy() {
     super.destroy();
-    if (this._result) {
-      this._result.destroy();
+    if (this.result) {
+      this.result.destroy();
     }
   }
 }
+
+EmberishRootView[CLASS_META].seal();
 
 let view: EmberishRootView, env: TestEnvironment;
 
@@ -111,14 +122,7 @@ nestedModule("Components", hooks => {
 // module("Components - generic - props");
 
 export function appendViewFor(template: string, context: Object = {}) {
-  class MyRootView extends EmberishRootView {
-    protected env = env;
-    protected template = env.compile(template);
-  }
-
-  MyRootView[CLASS_META].seal();
-
-  view = new MyRootView(context);
+  view = new EmberishRootView(env, template, context);
 
   env.begin();
   view.appendTo('#qunit-fixture');

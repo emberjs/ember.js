@@ -49,15 +49,29 @@ APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
 });
 
 APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
-  let reference = vm.evalStack.pop<Reference<Simple.Element>>();
-  let cache = isConstReference(reference) ? undefined : new ReferenceCache(reference);
-  let element = cache ? cache.peek() : reference.value();
+  let elementRef = vm.evalStack.pop<Reference<Simple.Element>>();
+  let nextSiblingRef = vm.evalStack.pop<Reference<Option<Simple.Node>>>();
 
-  vm.stack().pushRemoteElement(element);
+  let element: Simple.Element;
+  let nextSibling: Option<Simple.Node>;
 
-  if (cache) {
+  if (isConstReference(elementRef)) {
+    element = elementRef.value();
+  } else {
+    let cache = new ReferenceCache(elementRef);
+    element = cache.peek();
     vm.updateWith(new Assert(cache));
   }
+
+  if (isConstReference(nextSiblingRef)) {
+    nextSibling = nextSiblingRef.value();
+  } else {
+    let cache = new ReferenceCache(nextSiblingRef);
+    nextSibling = cache.peek();
+    vm.updateWith(new Assert(cache));
+  }
+
+  vm.stack().pushRemoteElement(element, nextSibling);
 });
 
 APPEND_OPCODES.add(Op.PopRemoteElement, vm => vm.stack().popRemoteElement());
