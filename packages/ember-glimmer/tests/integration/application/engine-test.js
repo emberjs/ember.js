@@ -22,6 +22,10 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       });
       this.route('category', {path: 'category/:id'});
       this.route('author', {path: 'author/:id'});
+      this.route('contributor', { path: 'contributor/:id' }, function() {
+        this.route('posts');
+        this.route('profile');
+      });
     });
     this.registerRoute('application', Route.extend({
       model() {
@@ -622,6 +626,47 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       // check if link ends with the suffix
       assert.ok(this.stringsEndWith(href1, suffix1));
       assert.ok(this.stringsEndWith(href1337, suffix1337));
+    });
+  }
+
+  ['@test query params in slow loading route have stickiness by default'](assert) {
+    let tmpl = '{{#link-to "blog.contributor.posts" class="contributor-1"}}Posts{{/link-to}}';
+    let resolveLoading;
+
+    this.setupAppAndRoutableEngine();
+
+    this.application.__registry__.resolver.moduleBasedResolver = true;
+    this.additionalEngineRegistrations(function() {
+      this.register('template:contributor.profile', compile(tmpl));
+      this.register('template:contributor.loading', compile('Loading'));
+      this.register('controller:contributor', Controller.extend({
+        queryParams: ['simplified']
+      }));
+      this.register('route:contributor', Route.extend({
+        model() {
+          return {};
+        }
+      }));
+
+      this.register('route:contributor.profile', Route.extend({
+        model() {
+          return new RSVP.Promise((resolve) => {
+            resolveLoading = resolve;
+          });
+        }
+      }));
+    });
+
+    this.runTaskNext(() => {
+      this.assertText('ApplicationEngineLoading');
+      resolveLoading();
+    });
+
+    return this.visit('/blog/contributor/4231/profile?simplified=true').then(() => {
+      let suffix1 = '/blog/contributor/4231/posts?simplified=true';
+      let href1 = this.element.querySelector('.contributor-1').href;
+
+      assert.ok(this.stringsEndWith(href1, suffix1));
     });
   }
 });
