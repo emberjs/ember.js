@@ -7,8 +7,8 @@ import { Error as EmberError } from 'ember-debug';
 import compile from './compile';
 
 /**
-  Find templates stored in the head tag as script tags and make them available
-  to `Ember.CoreView` in the global `Ember.TEMPLATES` object.
+  Find templates stored in the head tag as script tags and register them
+  into an application registry.
 
   Script tags with `text/x-handlebars` will be compiled
   with Ember's template compiler and are suitable for use as a view's template.
@@ -19,7 +19,7 @@ import compile from './compile';
   @static
   @param ctx
 */
-function bootstrap({ context, hasTemplate, setTemplate }) {
+function bootstrap({ context, application }) {
   if (!context) {
     context = document;
   }
@@ -41,13 +41,14 @@ function bootstrap({ context, hasTemplate, setTemplate }) {
       moduleName: templateName
     });
 
+    let registrationName = `template:${templateName}`;
     // Check if template of same name already exists.
-    if (hasTemplate(templateName)) {
+    if (application.hasRegistration(registrationName)) {
       throw new EmberError(`Template named "${templateName}" already exists.`);
     }
 
     // For templates which have a name, we save them and then remove them from the DOM.
-    setTemplate(templateName, template);
+    application.register(registrationName, template);
 
     // Remove script tag from DOM.
     script.parentNode.removeChild(script);
