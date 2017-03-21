@@ -46,7 +46,7 @@ let originalLookup, originalDebug, originalWarn, resolver;
  *   - MyApplication, an alternative Application class to create()
  */
 function buildApplication(options, MyApplication=Application) {
-  let myOptions = assign({ Resolver: TestResolver}, options);
+  let myOptions = assign({ Resolver: TestResolver }, options);
   let applicationInstance = MyApplication.create(myOptions);
   applications.push(applicationInstance);
   resolver = myOptions.Resolver.lastInstance;
@@ -133,7 +133,11 @@ QUnit.test('with DefaultResolver acts like a namespace', function() {
   let lookup = context.lookup = {};
 
   let application = run(() => {
-    return lookup.TestApp = Application.create({ rootElement: '#two', router: false });
+    return lookup.TestApp = buildApplication({
+      rootElement: '#two',
+      router: false,
+      Resolver: DefaultResolver
+    });
   });
 
   setNamespaceSearchDisabled(false);

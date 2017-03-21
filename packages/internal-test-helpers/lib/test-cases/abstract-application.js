@@ -7,6 +7,8 @@ import { compile } from 'ember-template-compiler';
 import AbstractTestCase from './abstract';
 import { runDestroy } from '../run';
 
+import { ModuleBasedResolver } from '../test-resolver';
+
 export default class AbstractApplicationTestCase extends AbstractTestCase {
   constructor() {
     super();
@@ -16,6 +18,7 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     this.application = run(Application, 'create', this.applicationOptions);
 
     this.router = this.application.Router = Router.extend(this.routerOptions);
+    this.resolver = this.applicationOptions.Resolver.lastInstance;
 
     this.applicationInstance = null;
   }
@@ -23,7 +26,8 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
   get applicationOptions() {
     return {
       rootElement: '#qunit-fixture',
-      autoboot: false
+      autoboot: false,
+      Resolver: ModuleBasedResolver
     };
   }
 
@@ -66,32 +70,32 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
   }
 
   registerRoute(name, route) {
-    this.application.register(`route:${name}`, route);
+    this.resolver.add(`route:${name}`, route);
   }
 
   registerTemplate(name, template) {
-    this.application.register(`template:${name}`, this.compile(template, {
+    this.resolver.add(`template:${name}`, this.compile(template, {
       moduleName: name
     }));
   }
 
   registerComponent(name, { ComponentClass = null, template = null }) {
     if (ComponentClass) {
-      this.application.register(`component:${name}`, ComponentClass);
+      this.resolver.add(`component:${name}`, ComponentClass);
     }
 
     if (typeof template === 'string') {
-      this.application.register(`template:components/${name}`, this.compile(template, {
+      this.resolver.add(`template:components/${name}`, this.compile(template, {
         moduleName: `components/${name}`
       }));
     }
   }
 
   registerController(name, controller) {
-    this.application.register(`controller:${name}`, controller);
+    this.resolver.add(`controller:${name}`, controller);
   }
 
   registerEngine(name, engine) {
-    this.application.register(`engine:${name}`, engine);
+    this.resolver.add(`engine:${name}`, engine);
   }
 }
