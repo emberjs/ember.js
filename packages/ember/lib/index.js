@@ -2,6 +2,7 @@ import require, { has } from 'require';
 
 // ****ember-environment****
 import { ENV, context } from 'ember-environment';
+import { IS_NODE, module } from 'node-module';
 import * as utils from 'ember-utils';
 
 import { Registry, Container } from 'container';
@@ -629,8 +630,9 @@ runLoadHooks('Ember');
 */
 export default Ember;
 
+
 /* globals module */
-if (typeof module === 'object' && module.exports) {
+if (IS_NODE) {
   module.exports = Ember;
 } else {
   context.exports.Ember = context.exports.Em = Ember;

@@ -1,4 +1,4 @@
-import { isGlobalPath } from '../../path_cache';
+import { isGlobalPath } from '../..';
 
 QUnit.module('Ember.isGlobalPath');
 

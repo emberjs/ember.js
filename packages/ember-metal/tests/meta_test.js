@@ -1,6 +1,6 @@
 import {
   meta
-} from '../meta';
+} from '..';
 
 QUnit.module('Ember.meta');
 

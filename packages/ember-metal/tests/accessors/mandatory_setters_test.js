@@ -1,8 +1,11 @@
 import { isFeatureEnabled } from 'ember-debug';
-import { get } from '../../property_get';
-import { set } from '../../property_set';
-import { watch, unwatch } from '../../watching';
-import { meta as metaFor } from '../../meta';
+import {
+  get,
+  set,
+  watch,
+  unwatch,
+  meta as metaFor
+} from '../..';
 
 QUnit.module('mandatory-setters');
 

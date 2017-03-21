@@ -1,4 +1,4 @@
-import run from '../../run_loop';
+import { run } from '../..';
 
 const originalDebounce = run.backburner.debounce;
 let wasCalled = false;

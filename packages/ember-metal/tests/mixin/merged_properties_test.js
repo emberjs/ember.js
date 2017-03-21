@@ -1,6 +1,9 @@
 import { Object as EmberObject } from 'ember-runtime';
-import { get } from '../../property_get';
-import { mixin, Mixin } from '../../mixin';
+import {
+  get,
+  mixin,
+  Mixin
+} from '../..';
 
 QUnit.module('Mixin mergedProperties');
 
