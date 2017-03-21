@@ -21,7 +21,6 @@ const {
   jquery,
   internalLoader,
   qunit,
-  glimmerDependencyInjectionES,
   emberGlimmerES,
   handlebarsES,
   rsvpES,
@@ -113,7 +112,6 @@ module.exports = function(options) {
     dagES(),
     routerES(),
     routeRecognizerES(),
-    glimmerDependencyInjectionES(),
     glimmerPkgES('@glimmer/node', ['@glimmer/runtime']),
     bootstrapModule('ember')
   ];

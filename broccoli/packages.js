@@ -68,18 +68,6 @@ module.exports.qunit = function _qunit() {
   });
 }
 
-module.exports.glimmerDependencyInjectionES = function _glimmerDependencyInjectionES() {
-  return new Rollup(findLib('@glimmer/di', 'dist/modules/es2017'), {
-    rollup: {
-      entry: 'index.js',
-      dest: '@glimmer/di.js',
-      external: ['@glimmer/util'],
-      format: 'es',
-      exports: 'named'
-    }
-  });
-}
-
 module.exports.emberGlimmerES = function _emberGlimmerES() {
   let pkg = new Funnel('packages/ember-glimmer/lib', {
     include: ['**/*.js', '**/*.hbs'],
