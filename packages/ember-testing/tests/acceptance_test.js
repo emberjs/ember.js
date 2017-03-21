@@ -5,9 +5,8 @@ import QUnitAdapter from '../adapters/qunit';
 import '../initializers'; // ensure the initializer is setup
 import { Application as EmberApplication } from 'ember-application';
 import { Route as EmberRoute } from 'ember-routing';
-import { compile } from 'ember-template-compiler';
 import { RSVP } from 'ember-runtime';
-import { setTemplates, setTemplate } from 'ember-glimmer';
+import TestResolver from 'internal-test-helpers';
 
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
 
@@ -24,7 +23,8 @@ QUnit.module('ember-testing Acceptance', {
       indexHitCount = 0;
 
       App = EmberApplication.create({
-        rootElement: '#ember-testing'
+        rootElement: '#ember-testing',
+        Resolver: TestResolver
       });
 
       App.Router.map(function() {
@@ -36,41 +36,43 @@ QUnit.module('ember-testing Acceptance', {
         this.route('redirect');
       });
 
-      App.IndexRoute = EmberRoute.extend({
+      let resolver = TestResolver.lastInstance;
+
+      resolver.add('route:index', EmberRoute.extend({
         model() {
           indexHitCount += 1;
         }
-      });
+      }));
 
-      App.PostsRoute = EmberRoute.extend({
+      resolver.add('route:posts', EmberRoute.extend({
         renderTemplate() {
           currentRoute = 'posts';
           this._super(...arguments);
         }
-      });
+      }));
 
-      setTemplate('posts', compile('<div class="posts-view"><a class="dummy-link"></a><div id="comments-link">{{#link-to \'comments\'}}Comments{{/link-to}}</div></div>'));
+      resolver.addTemplate('posts', '<div class="posts-view"><a class="dummy-link"></a><div id="comments-link">{{#link-to \'comments\'}}Comments{{/link-to}}</div></div>');
 
-      App.CommentsRoute = EmberRoute.extend({
+      resolver.add('route:comments', EmberRoute.extend({
         renderTemplate() {
           currentRoute = 'comments';
           this._super(...arguments);
         }
-      });
+      }));
 
-      setTemplate('comments', compile('<div>{{input type="text"}}</div>'));
+      resolver.addTemplate('comments', '<div>{{input type="text"}}</div>');
 
-      App.AbortTransitionRoute = EmberRoute.extend({
+      resolver.add('route:abort_transition', EmberRoute.extend({
         beforeModel(transition) {
           transition.abort();
         }
-      });
+      }));
 
-      App.RedirectRoute = EmberRoute.extend({
+      resolver.add('route:redirect', EmberRoute.extend({
         beforeModel() {
           this.transitionTo('comments');
         }
-      });
+      }));
 
       App.setupForTesting();
     });
@@ -93,7 +95,6 @@ QUnit.module('ember-testing Acceptance', {
 
   teardown() {
     Test.unregisterHelper('slowHelper');
-    setTemplates({});
     jQuery('#ember-testing-container, #ember-testing').remove();
     run(App, App.destroy);
     App = null;
