@@ -11,12 +11,6 @@
     "@glimmer/wire-format" "^0.22.0"
     simple-html-tokenizer "^0.3.0"
 
-"@glimmer/di@^0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@glimmer/di/-/di-0.1.8.tgz#cc1f44e5d5b5e5703d7b1746ffd0a0419ade7f05"
-  dependencies:
-    "@glimmer/util" "^0.21.0"
-
 "@glimmer/interfaces@^0.22.0":
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.22.0.tgz#69915fb6416e9cf024c73178ced513b475944baa"
@@ -67,10 +61,6 @@
   dependencies:
     handlebars "^4.0.6"
     simple-html-tokenizer "^0.3.0"
-
-"@glimmer/util@^0.21.0":
-  version "0.21.0"
-  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.21.0.tgz#86c1e972e2f777f5af664b59c5bc037b71e9ef00"
 
 "@glimmer/util@^0.22.0":
   version "0.22.0"

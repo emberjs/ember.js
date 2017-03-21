@@ -36,7 +36,6 @@
   },
   "dependencies": {
     "@glimmer/compiler": "^0.22.0",
-    "@glimmer/di": "^0.1.8",
     "@glimmer/node": "^0.22.0",
     "@glimmer/reference": "^0.22.0",
     "@glimmer/runtime": "^0.22.0",
