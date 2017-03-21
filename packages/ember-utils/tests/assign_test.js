@@ -1,4 +1,4 @@
-import assign from '../assign';
+import { assign } from '..';
 
 QUnit.module('Ember.assign');
 
