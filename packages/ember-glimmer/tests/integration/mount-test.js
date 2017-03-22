@@ -36,7 +36,7 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
 
     let engineRegistrations = this.engineRegistrations = {};
 
-    this.registerEngine('chat', Engine.extend({
+    this.add('engine:chat', Engine.extend({
       router: null,
 
       init() {
@@ -48,7 +48,7 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
       }
     }));
 
-    this.registerTemplate('index', '{{mount "chat"}}');
+    this.addTemplate('index', '{{mount "chat"}}');
   }
 
   ['@test it boots an engine, instantiates its application controller, and renders its application template'](assert) {
@@ -88,8 +88,8 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
       this.route('route-with-mount');
     });
 
-    this.registerTemplate('index', '');
-    this.registerTemplate('route-with-mount', '{{mount "chat"}}');
+    this.addTemplate('index', '');
+    this.addTemplate('route-with-mount', '{{mount "chat"}}');
 
     this.engineRegistrations['template:application'] = compile('hi {{person.name}} [{{component-with-backtracking-set person=person}}]', { moduleName: 'application' });
     this.engineRegistrations['controller:application'] = Controller.extend({
@@ -123,23 +123,23 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
       this.route('bound-engine-name');
     });
     let controller;
-    this.registerController('bound-engine-name', Controller.extend({
+    this.add('controller:bound-engine-name', Controller.extend({
       engineName: null,
       init() {
         this._super();
         controller = this;
       }
     }));
-    this.registerTemplate('bound-engine-name', '{{mount engineName}}');
+    this.addTemplate('bound-engine-name', '{{mount engineName}}');
 
-    this.registerEngine('foo', Engine.extend({
+    this.add('engine:foo', Engine.extend({
       router: null,
       init() {
         this._super(...arguments);
         this.register('template:application', compile('<h2>Foo Engine</h2>', { moduleName: 'application' }));
       }
     }));
-    this.registerEngine('bar', Engine.extend({
+    this.add('engine:bar', Engine.extend({
       router: null,
       init() {
         this._super(...arguments);

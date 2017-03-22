@@ -176,7 +176,7 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       let expectedURL;
       let dynamicModel = { id: 1 };
 
-      this.registerRoute('dynamic', Route.extend({
+      this.add('route:dynamic', Route.extend({
         model() {
           return dynamicModel;
         }
@@ -221,7 +221,7 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       let queryParams = buildQueryParams({ foo: 'bar' });
       let dynamicModel = { id: 1 };
 
-      this.registerRoute('dynamic', Route.extend({
+      this.add('route:dynamic', Route.extend({
         model() {
           return dynamicModel;
         }

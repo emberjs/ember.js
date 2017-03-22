@@ -5,6 +5,7 @@ import { Router } from 'ember-routing';
 import { compile } from 'ember-template-compiler';
 
 import AbstractTestCase from './abstract';
+import { ModuleBasedResolver } from '../test-resolver';
 import { runDestroy } from '../run';
 
 export default class AbstractApplicationTestCase extends AbstractTestCase {
@@ -13,9 +14,12 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
 
     this.element = jQuery('#qunit-fixture')[0];
 
-    this.application = run(Application, 'create', this.applicationOptions);
+    let { applicationOptions } = this;
+    this.application = run(Application, 'create', applicationOptions);
 
-    this.router = this.application.Router = Router.extend(this.routerOptions);
+    this.resolver = applicationOptions.Resolver.lastInstance;
+
+    this.add('router:main', Router.extend(this.routerOptions));
 
     this.applicationInstance = null;
   }
@@ -23,7 +27,8 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
   get applicationOptions() {
     return {
       rootElement: '#qunit-fixture',
-      autoboot: false
+      autoboot: false,
+      Resolver: ModuleBasedResolver
     };
   }
 
@@ -33,15 +38,16 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     };
   }
 
+  get router() {
+    return this.application.resolveRegistration('router:main');
+  }
+
   get appRouter() {
     return this.applicationInstance.lookup('router:main');
   }
 
   teardown() {
-    if (this.applicationInstance) {
-      runDestroy(this.applicationInstance);
-    }
-
+    runDestroy(this.applicationInstance);
     runDestroy(this.application);
   }
 
@@ -65,33 +71,26 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     return compile(...arguments);
   }
 
-  registerRoute(name, route) {
-    this.application.register(`route:${name}`, route);
+  add(specifier, factory) {
+    this.resolver.add(specifier, factory);
   }
 
-  registerTemplate(name, template) {
-    this.application.register(`template:${name}`, this.compile(template, {
-      moduleName: name
+  addTemplate(templateName, templateString) {
+    this.resolver.add(`template:${templateName}`, this.compile(templateString, {
+      moduleName: templateName
     }));
   }
 
-  registerComponent(name, { ComponentClass = null, template = null }) {
+  addComponent(name, { ComponentClass = null, template = null }) {
     if (ComponentClass) {
-      this.application.register(`component:${name}`, ComponentClass);
+      this.resolver.add(`component:${name}`, ComponentClass);
     }
 
     if (typeof template === 'string') {
-      this.application.register(`template:components/${name}`, this.compile(template, {
+      this.resolver.add(`template:components/${name}`, this.compile(template, {
         moduleName: `components/${name}`
       }));
     }
   }
 
-  registerController(name, controller) {
-    this.application.register(`controller:${name}`, controller);
-  }
-
-  registerEngine(name, engine) {
-    this.application.register(`engine:${name}`, engine);
-  }
 }

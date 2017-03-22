@@ -1024,6 +1024,7 @@ Application.reopenClass({
 });
 
 function commonSetupRegistry(registry) {
+  registry.register('router:main', Router);
   registry.register('-view-registry:main', { create() { return dictionary(null); } });
 
   registry.register('route:basic', Route);
