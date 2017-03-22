@@ -72,7 +72,7 @@ if (isFeatureEnabled('ember-routing-router-service')) {
     ['@test RouterService#rootURL is correctly set to a custom value'](assert) {
       assert.expect(1);
 
-      this.registerRoute('parent.index', Route.extend({
+      this.add('route:parent.index', Route.extend({
         init() {
           this._super();
           set(this.router, 'rootURL', '/homepage');

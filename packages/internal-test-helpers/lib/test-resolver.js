@@ -9,6 +9,9 @@ class Resolver {
     return this._registered[specifier];
   }
   add(specifier, factory) {
+    if (specifier.indexOf(':') === -1) {
+      throw new Error('Specifiers added to the resolver must be in the format of type:name');
+    }
     return this._registered[specifier] = factory;
   }
   addTemplate(templateName, template) {

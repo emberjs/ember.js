@@ -22,7 +22,7 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       let testCase = this;
       testCase.state = [];
 
-      this.application.register('location:test', NoneLocation.extend({
+      this.add('location:test', NoneLocation.extend({
         setURL(path) {
           testCase.state.push(path);
           this.set('path', path);
@@ -100,9 +100,9 @@ if (isFeatureEnabled('ember-routing-router-service')) {
 
       let componentInstance;
 
-      this.registerTemplate('parent.index', '{{foo-bar}}');
+      this.addTemplate('parent.index', '{{foo-bar}}');
 
-      this.registerComponent('foo-bar', {
+      this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
           routerService: inject.service('router'),
           init() {
@@ -132,9 +132,9 @@ if (isFeatureEnabled('ember-routing-router-service')) {
 
       let componentInstance;
 
-      this.registerTemplate('parent.index', '{{foo-bar}}');
+      this.addTemplate('parent.index', '{{foo-bar}}');
 
-      this.registerComponent('foo-bar', {
+      this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
           routerService: inject.service('router'),
           init() {
@@ -165,10 +165,10 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       let componentInstance;
       let dynamicModel = { id: 1, contents: 'much dynamicism' };
 
-      this.registerTemplate('parent.index', '{{foo-bar}}');
-      this.registerTemplate('dynamic', '{{model.contents}}');
+      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.addTemplate('dynamic', '{{model.contents}}');
 
-      this.registerComponent('foo-bar', {
+      this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
           routerService: inject.service('router'),
           init() {
@@ -201,16 +201,16 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       let componentInstance;
       let dynamicModel = { id: 1, contents: 'much dynamicism' };
 
-      this.registerRoute('dynamic', Route.extend({
+      this.add('route:dynamic', Route.extend({
         model() {
           return dynamicModel;
         }
       }));
 
-      this.registerTemplate('parent.index', '{{foo-bar}}');
-      this.registerTemplate('dynamic', '{{model.contents}}');
+      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.addTemplate('dynamic', '{{model.contents}}');
 
-      this.registerComponent('foo-bar', {
+      this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
           routerService: inject.service('router'),
           init() {

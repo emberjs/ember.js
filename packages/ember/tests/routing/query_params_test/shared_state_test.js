@@ -20,24 +20,24 @@ moduleFor('Query Params - shared service state', class extends QueryParamTestCas
       this.route('dashboard');
     });
 
-    this.application.register('service:filters', Service.extend({
+    this.add('service:filters', Service.extend({
       shared: true
     }));
 
-    this.registerController('home', Controller.extend({
+    this.add('controller:home', Controller.extend({
       filters: Ember.inject.service()
     }));
 
-    this.registerController('dashboard', Controller.extend({
+    this.add('controller:dashboard', Controller.extend({
       filters: Ember.inject.service(),
       queryParams: [
         { 'filters.shared': 'shared' }
       ]
     }));
 
-    this.registerTemplate('application', `{{link-to 'Home' 'home' }} <div> {{outlet}} </div>`);
-    this.registerTemplate('home', `{{link-to 'Dashboard' 'dashboard' }}{{input type="checkbox" id='filters-checkbox' checked=(mut filters.shared) }}`);
-    this.registerTemplate('dashboard', `{{link-to 'Home' 'home' }}`);
+    this.addTemplate('application', `{{link-to 'Home' 'home' }} <div> {{outlet}} </div>`);
+    this.addTemplate('home', `{{link-to 'Dashboard' 'dashboard' }}{{input type="checkbox" id='filters-checkbox' checked=(mut filters.shared) }}`);
+    this.addTemplate('dashboard', `{{link-to 'Home' 'home' }}`);
   }
   visitApplication() {
     return this.visit('/');

@@ -11,7 +11,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     let testCase = this;
     testCase.expectedPushURL = null;
     testCase.expectedReplaceURL = null;
-    this.application.register('location:test', NoneLocation.extend({
+    this.add('location:test', NoneLocation.extend({
       setURL(path) {
         if (testCase.expectedReplaceURL) {
           testCase.assert.ok(false, 'pushState occurred but a replaceState was expected');
@@ -76,7 +76,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     @method setSingleQPController
   */
   setSingleQPController(routeName, param = 'foo', defaultValue = 'bar', options = {}) {
-    this.registerController(routeName, Controller.extend({
+    this.add(`controller:${routeName}`, Controller.extend({
       queryParams: [param],
       [param]: defaultValue
     }, options));
@@ -89,7 +89,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     @method setMappedQPController
   */
   setMappedQPController(routeName, prop = 'page', urlKey = 'parentPage', defaultValue = 1, options = {}) {
-    this.registerController(routeName, Controller.extend({
+    this.add(`controller:${routeName}`, Controller.extend({
       queryParams: {
         [prop]: urlKey
       },

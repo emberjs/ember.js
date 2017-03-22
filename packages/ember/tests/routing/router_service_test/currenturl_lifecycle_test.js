@@ -43,11 +43,11 @@ if (isFeatureEnabled('ember-routing-router-service')) {
 
       ROUTE_NAMES.forEach((name) => {
         let routeName = `parent.${name}`;
-        this.registerRoute(routeName, InstrumentedRoute.extend());
-        this.registerTemplate(routeName, '{{current-url}}');
+        this.add(`route:${routeName}`, InstrumentedRoute.extend());
+        this.addTemplate(routeName, '{{current-url}}');
       });
 
-      this.registerComponent('current-url', {
+      this.addComponent('current-url', {
         ComponentClass: Component.extend({
           routerService: inject.service('router'),
           currentURL: readOnly('routerService.currentURL')
