@@ -80,11 +80,11 @@ function treeForPackage(packagePath) {
     funnel(packagePath, { exclude: ['test/'] }),
   ];
 
-  let packageTree = buildPackage({
+  let packageTree = funnel(buildPackage({
     srcTrees,
     projectPath: packagePath,
     tsconfigPath: TSCONFIG_PATH
-  });
+  }), { destDir: 'dist' });
 
   let packageJSONTree = treeForPackageJSON(packagePath);
 
@@ -98,10 +98,10 @@ function treeForPackage(packagePath) {
 }
 
 const PACKAGE_JSON_FIELDS = {
-  "main": "commonjs/es5/index.js",
-  "jsnext:main": "modules/es5/index.js",
-  "module": "modules/es5/index.js",
-  "typings": "types/index.d.ts"
+  "main": "dist/commonjs/es5/index.js",
+  "jsnext:main": "dist/modules/es5/index.js",
+  "module": "dist/modules/es5/index.js",
+  "typings": "dist/types/index.d.ts"
 };
 
 class PackageJSONRewriter extends Filter {
