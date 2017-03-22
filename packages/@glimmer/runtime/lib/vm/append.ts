@@ -93,7 +93,6 @@ export default class VM implements PublicVM {
   public listBlockStack = new Stack<ListBlockOpcode>();
   public frames: number[] = [];
   public constants: Constants;
-  private notDone = { done: false, value: null };
   public evalStack = new EvaluationStack();
 
   static initial(
@@ -390,7 +389,7 @@ export default class VM implements PublicVM {
 
     if (opcode = this.nextStatement(env)) {
       APPEND_OPCODES.evaluate(this, opcode, opcode.type);
-      return this.notDone;
+      return { done: false, value: null };
     }
 
     return {
