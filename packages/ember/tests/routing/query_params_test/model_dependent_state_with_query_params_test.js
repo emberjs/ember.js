@@ -75,7 +75,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
       assert.equal(this.controller.get('q'), 'lol');
       assert.equal(this.controller.get('z'), 0);
       assert.equal(this.$link1.attr('href'), `${urlPrefix}/a-1?q=lol`);
-      assert.equal(this.$link2.attr('href'), `${urlPrefix}/a-2?q=lol`); // fail
+      assert.equal(this.$link2.attr('href'), `${urlPrefix}/a-2?q=lol`);
       assert.equal(this.$link3.attr('href'), `${urlPrefix}/a-3`);
 
       this.expectedModelHookParams = { id: 'a-3', q: 'lol', z: 123 };
@@ -530,7 +530,7 @@ moduleFor('Query Params - model-dependent state (nested & more than 1 dynamic se
   }
 
   ['@test query params have \'model\' stickiness by default'](assert) {
-    assert.expect(59); // Insane.
+    assert.expect(59);
 
     return this.boot().then(() => {
       run(this.links['s-1-a-1'], 'click');
@@ -599,7 +599,7 @@ moduleFor('Query Params - model-dependent state (nested & more than 1 dynamic se
   }
 
   ['@test query params have \'model\' stickiness by default (url changes)'](assert) {
-    assert.expect(88); // INSANE.
+    assert.expect(88);
 
     return this.boot().then(() => {
       this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
@@ -700,7 +700,7 @@ moduleFor('Query Params - model-dependent state (nested & more than 1 dynamic se
   }
 
   ['@test query params have \'model\' stickiness by default (params-based transitions)'](assert) {
-    assert.expect(118); // <-- INSANE! Like why is this even a thing?
+    assert.expect(118);
 
     return this.boot().then(() => {
       this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
