@@ -94,7 +94,7 @@ function applyNewVersion() {
       if (!DRY_RUN) {
         package.savePackageJSON();
       }
-      execWithSideEffects(`git add "${package.absolutePath}"`);
+      execWithSideEffects(`git add "${package.packageJSONPath}"`);
     });
 
   // Update root package.json
@@ -103,6 +103,7 @@ function applyNewVersion() {
   rootPkg.version = newVersion;
   if (!DRY_RUN) {
     fs.writeFileSync(rootPkgPath, JSON.stringify(rootPkg, null, 2));
+      execWithSideEffects(`git add package.json`);
   }
 }
 
