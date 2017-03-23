@@ -81,8 +81,9 @@ function applyNewVersion() {
   // Update packages in the dist directory
   packages.forEach(package => {
     package.pkg.version = newVersion;
+    package.updateDependencies(newVersion);
+
     if (!DRY_RUN) {
-      package.updateDependencies();
       package.savePackageJSON();
     }
   });
@@ -91,6 +92,8 @@ function applyNewVersion() {
   findPackages(PACKAGES_PATH)
     .forEach(package => {
       package.pkg.version = newVersion;
+      package.updateDependencies(newVersion);
+
       if (!DRY_RUN) {
         package.savePackageJSON();
       }

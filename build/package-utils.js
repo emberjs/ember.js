@@ -27,12 +27,12 @@ class Package {
     return path.join(this.absolutePath, 'package.json');
   }
 
-  updateDependencies() {
-    this._updateDependencies(this.pkg.dependencies);
-    this._updateDependencies(this.pkg.devDependencies);
+  updateDependencies(newVersion) {
+    this._updateDependencies(this.pkg.dependencies, newVersion);
+    this._updateDependencies(this.pkg.devDependencies, newVersion);
   }
 
-  _updateDependencies(deps) {
+  _updateDependencies(deps, newVersion) {
     if (!deps) { return; }
 
     Object.keys(deps).forEach(dep => {
@@ -50,12 +50,12 @@ class Package {
 function findPackages(cwd) {
   // Search for packages one level deep, including scoped packages that are
   // nested in a @scope directory.
-  let packages = glob.sync('{@*/,}*/package.json', { cwd });
+  let packages = glob.sync('{@*/,}*/package.json', { cwd })
+    .map(pkg => path.dirname(pkg)); // Remove package.json from path
 
   if (!packages.length) { throwNoPackagesErr(); }
 
   return packages
-    .map(pkg => path.dirname(pkg)) // Remove package.json from path
     .map(pkg => path.resolve(cwd, pkg)) // Ensure path is absolute
     .map(pkg => new Package(pkg, packages));
 }
