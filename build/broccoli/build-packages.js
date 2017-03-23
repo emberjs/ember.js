@@ -31,9 +31,7 @@ function topsortPackages() {
   // that `package.json`.
   let pkgs = glob
     .sync(`${PACKAGES_PATH}/**/package.json`)
-    .map(pkgPath => require(pkgPath))
-    // .filter(pkg => pkg.name === '@glimmer/util')
-    .filter(pkg => pkg.name !== '@glimmer/interfaces');
+    .map(pkgPath => require(pkgPath));
 
   // Get a list of package names discovered in the repo.
   let inRepoDependencies = pkgs.map(pkg => pkg.name);
@@ -77,14 +75,25 @@ function topsortPackages() {
  */
 function treeForPackage(packagePath) {
   let srcTrees = [
-    funnel(packagePath, { exclude: ['test/'] }),
+    funnel(packagePath, { exclude: ['test/**/*'] }),
   ];
 
-  let packageTree = funnel(buildPackage({
-    srcTrees,
-    projectPath: packagePath,
-    tsconfigPath: TSCONFIG_PATH
-  }), { destDir: 'dist' });
+  let packageTree;
+
+  if (fs.existsSync(path.join(packagePath, 'index.d.ts'))) {
+    // @glimmer/interfaces only exports types, so we can copy it verbatim without
+    // any transpilation.
+    packageTree = funnel(packagePath, {
+      destDir: path.join('dist', 'types'),
+      exclude: ['package.json']
+    });
+  } else {
+    packageTree = funnel(buildPackage({
+      srcTrees,
+      projectPath: packagePath,
+      tsconfigPath: TSCONFIG_PATH,
+    }), { destDir: 'dist' });
+  }
 
   let packageJSONTree = treeForPackageJSON(packagePath);
 
