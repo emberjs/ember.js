@@ -6,9 +6,19 @@ const execSync = require('child_process').execSync;
 const chalk = require('chalk');
 const readline = require('readline');
 const semver = require('semver');
+const findPackages = require('../build/package-utils').findPackages;
+
+const DIST_PATH = path.resolve(__dirname, '../dist');
+const PACKAGES_PATH = path.resolve(__dirname, '../packages');
+
+const DRY_RUN = process.argv.indexOf('--dry-run') > -1;
+if (DRY_RUN) {
+  console.log(chalk.yellow("--dry-run"), "- side effects disabled");
+}
 
 // Fail fast if we haven't done a build first.
 assertDistExists();
+assertGitIsClean();
 
 let cli = readline.createInterface({
   input: process.stdin,
@@ -16,7 +26,7 @@ let cli = readline.createInterface({
 });
 
 // Load up the built packages in dist.
-let packages = findPackages();
+let packages = findPackages(DIST_PATH);
 let packageNames = packages.map(package => package.name);
 let newVersion;
 let distTag;
@@ -44,6 +54,7 @@ function promptForVersion() {
 
     newVersion = version;
     applyNewVersion();
+    gitCommitAndTag();
     confirmPublish();
   });
 }
@@ -52,14 +63,6 @@ function generateDefaultVersion() {
   let currentVersion = require('../package.json').version;
   return semver.inc(currentVersion, 'pre', 'alpha');
 }
-
-// function datestamp() {
-//   return new Date().toISOString().substring(0, 10).replace(/-/g, '');
-// }
-
-// function shastamp() {
-//   return execSync('git rev-parse --short HEAD').toString().trim();
-// }
 
 function validateNewVersion(version) {
   if (version === '') { fatalError("Version must not be empty."); }
@@ -75,11 +78,37 @@ function validateNewVersion(version) {
 function applyNewVersion() {
   console.log(`Apply ${newVersion}`);
 
+  // Update packages in the dist directory
   packages.forEach(package => {
     package.pkg.version = newVersion;
-    package.updateDependencies();
-    package.savePackageJSON();
+    if (!DRY_RUN) {
+      package.updateDependencies();
+      package.savePackageJSON();
+    }
   });
+
+  // Update source packages
+  findPackages(PACKAGES_PATH)
+    .forEach(package => {
+      package.pkg.version = newVersion;
+      if (!DRY_RUN) {
+        package.savePackageJSON();
+      }
+      execWithSideEffects(`git add "${package.absolutePath}"`);
+    });
+
+  // Update root package.json
+  let rootPkgPath = path.join(__dirname, '../package.json');
+  let rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8'));
+  rootPkg.version = newVersion;
+  if (!DRY_RUN) {
+    fs.writeFileSync(rootPkgPath, JSON.stringify(rootPkg, null, 2));
+  }
+}
+
+function gitCommitAndTag() {
+  execWithSideEffects(`git commit -m "Release v${newVersion}"`);
+  execWithSideEffects(`git tag "v${newVersion}"`);
 }
 
 function confirmPublish() {
@@ -94,15 +123,15 @@ function confirmPublish() {
     }
 
     packages.forEach(package => {
-      let command = `npm publish --tag next`;
-      console.log(chalk.grey(package.relativePath), "->", command)
-      execSync(command, {
+      execWithSideEffects(`npm publish --tag ${distTag}`, {
         cwd: package.absolutePath
       });
     });
 
-    console.log(chalk.green.bold(`v${newVersion} deployed!`));
-    console.log(chalk.green('\nDone.'));
+    execWithSideEffects(`git push origin master --tags`);
+
+    console.log(chalk.green(`\nv${newVersion} deployed!`));
+    console.log(chalk.green('Done.'));
     cli.close();
   });
 }
@@ -113,13 +142,13 @@ function fatalError(message) {
 }
 
 function throwNoPackagesErr() {
-  console.log(chalk.red('No dist directory found. Did you do a build first?'))
+  console.log(chalk.red('No dist directory found. Did you do a build first? (npm run build)'))
   process.exit(1);
 }
 
 function assertDistExists() {
   try {
-    let stat = fs.statSync('dist');
+    let stat = fs.statSync(DIST_PATH);
     if (!stat.isDirectory()) {
       throwNoPackagesErr()
     }
@@ -128,53 +157,28 @@ function assertDistExists() {
   }
 }
 
-function findPackages() {
-  class Package {
-    constructor(absolutePath) {
-      this.absolutePath = absolutePath;
-      this.pkg = require(absolutePath + '/package.json');
-    }
+function assertGitIsClean() {
+  let status = execSync('git status').toString();
+  let force = process.argv.indexOf('--force') > -1;
 
-    get name() {
-      return this.pkg.name;
-    }
+  if (!force && !status.match(/^nothing to commit, working tree clean/)) {
+    console.log(chalk.red("Git working tree isn't clean. Use --force to ignore this warning."));
+    process.exit(1);
+  } else {
+    console.log(chalk.yellow("--force"), "- ignoring unclean git working tree");
+  }
+}
 
-    get version() {
-      return this.pkg.version;
-    }
-
-    get relativePath() {
-      return path.relative(process.cwd(), this.absolutePath);
-    }
-
-    updateDependencies() {
-      this._updateDependencies(this.pkg.dependencies);
-      this._updateDependencies(this.pkg.devDependencies);
-    }
-
-    _updateDependencies(deps) {
-      if (!deps) { return; }
-
-      Object.keys(deps).forEach(dep => {
-        if (packageNames.indexOf(dep) >= 0) {
-          deps[dep] = `^${newVersion}`;
-        }
-      });
-    }
-
-    savePackageJSON() {
-      fs.writeFileSync(this.absolutePath + '/package.json', JSON.stringify(this.pkg, null, 2));
-    }
+function execWithSideEffects(cmd, options) {
+  let cwd = '';
+  if (options && options.cwd) {
+    cwd = chalk.gray.dim(` (cwd: ${options.cwd}`);
   }
 
-  let distPath = __dirname + '/../dist/@glimmer';
-  let packages = fs.readdirSync(distPath);
-
-  if (!packages.length) { throwNoPackagesErr(); }
-
-  return packages
-    .map(package => `${distPath}/${package}`)
-    .map(package => new Package(package));
+  console.log(chalk.green('>') + ' ' + chalk.gray(cmd) + cwd);
+  if (!DRY_RUN) {
+    return execSync.apply(null, arguments);
+  }
 }
 
 function printPadded(table) {
