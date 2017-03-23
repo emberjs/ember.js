@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/object-model",
-  "version": "0.22.0",
+  "version": "0.23.0-alpha.5",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/object-model",
   "dependencies": {
     "@glimmer/util": "^0.22.0",

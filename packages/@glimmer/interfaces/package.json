@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/interfaces",
-  "version": "0.22.0",
+  "version": "0.23.0-alpha.5",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/interfaces",
   "dependencies": {
     "@glimmer/wire-format": "^0.22.0"
