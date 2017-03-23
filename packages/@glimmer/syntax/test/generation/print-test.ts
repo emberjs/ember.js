@@ -59,7 +59,7 @@ test('ConcatStatement: in element attribute string', function() {
 test('ElementModifierStatement', function() {
   printEqual('<p {{action "activate"}} {{someting foo="bar"}}>Test</p>');
 });
-
+
 test('SubExpression', function() {
   printEqual('<p>{{my-component submit=(action (mut model.name) (full-name model.firstName "Smith"))}}</p>');
 });
