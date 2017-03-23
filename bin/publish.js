@@ -161,7 +161,7 @@ function assertGitIsClean() {
   let status = execSync('git status').toString();
   let force = process.argv.indexOf('--force') > -1;
 
-  if (!force && !status.match(/^nothing to commit, working tree clean/)) {
+  if (!force && !status.match(/^nothing to commit, working tree clean/m)) {
     console.log(chalk.red("Git working tree isn't clean. Use --force to ignore this warning."));
     process.exit(1);
   } else {
