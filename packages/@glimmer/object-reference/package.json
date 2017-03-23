@@ -1,12 +1,12 @@
 {
   "name": "@glimmer/object-reference",
-  "version": "0.23.0-alpha.5",
+  "version": "0.23.0-alpha.6",
   "description": "References for a Glimmer-compatible object model",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/object-reference",
   "license": "MIT",
   "dependencies": {
-    "@glimmer/util": "^0.22.0",
-    "@glimmer/reference": "^0.22.0"
+    "@glimmer/util": "^0.23.0-alpha.6",
+    "@glimmer/reference": "^0.23.0-alpha.6"
   },
   "devDependencies": {
     "typescript": "^2.2.0"
