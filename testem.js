@@ -1,4 +1,8 @@
-{
+'use strict';
+
+let isCI = !!process.env.CI;
+
+let config = {
   "framework": "qunit",
   "test_page": "tests/index.html?hidepassed",
   "disable_watching": true,
@@ -14,6 +18,11 @@
   ],
   "launch_in_ci": [
     "PhantomJS",
-    "Node"
   ]
+};
+
+if (isCI) {
+  config.tap_quiet_logs = true;
 }
+
+module.exports = config;

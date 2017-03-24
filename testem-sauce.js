@@ -1,4 +1,6 @@
-{
+'use strict';
+
+module.exports = {
   "framework": "qunit",
   "test_page": "tests/index.html?hidepassed",
   "disable_watching": true,
@@ -64,5 +66,6 @@
     "SL_IE_11",
     "SL_IE_10",
     "SL_IE_9"
-  ]
-}
+  ],
+  tap_quiet_logs: true
+};
