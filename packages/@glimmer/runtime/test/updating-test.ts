@@ -3,7 +3,7 @@ import { BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager,
 import { ConstReference, PathReference } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Opaque } from "@glimmer/util";
-import { test, module, assert } from './support';
+import { test, todo, module, assert } from './support';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
@@ -1862,7 +1862,7 @@ module("[glimmer-runtime] Updating", hooks => {
     }
   });
 
-  test('The each helper yields the index of the current item current item when using the @index key', assert => {
+  todo('The each helper yields the index of the current item current item when using the @index key', assert => {
     let tom = { name: "Tom Dale", "class": "tomdale" };
     let yehuda = { name: "Yehuda Katz", "class": "wycats" };
     let object = { list: [tom, yehuda] };
@@ -2002,7 +2002,7 @@ module("[glimmer-runtime] Updating", hooks => {
     }
   });
 
-  test('The each helper yields the index of the current item when using a non-@index key', assert => {
+  todo('The each helper yields the index of the current item when using a non-@index key', assert => {
     let tom = { key: "1", name: "Tom Dale", class: "tomdale" };
     let yehuda = { key: "2", name: "Yehuda Katz", class: "wycats" };
     let object = { list: [tom, yehuda] };
