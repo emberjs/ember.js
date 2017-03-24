@@ -891,6 +891,12 @@ export const enum Op {
 export function debugSlice(env: Environment, start: number, end: number) {
   let { program, constants } = env;
 
+  // console is not available in IE9
+  if (typeof console === 'undefined') { return; }
+
+  // IE10 does not have `console.group`
+  if (typeof console.group !== 'function') { return; }
+
   (console as any).group(`%c${start}:${end}`, 'color: #999');
 
   for (let i=start; i<=end; i+=4) {
