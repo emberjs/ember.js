@@ -1423,4 +1423,35 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     this.assertText('Click me');
   }
+
+  ['@test it supports non-registered actions [GH#14888]']() {
+    this.registerComponent('example-component', {
+      template: '{{yield}}'
+    });
+
+    this.render(`
+      {{#unless hide}}
+        {{#example-component}}
+          <button {{action (mut hide) true}}>hide ({{hide}})</button>
+        {{/example-component}}
+      {{else}}
+        <button {{action (mut hide) false}}>show ({{hide}})</button>
+      {{/unless}}
+    `, { hide: false });
+
+    //add a non-registered action to simulate the effect of jQuery triggering a
+    //`focusout` event on `removeChild` (see GH#14888)
+    this.$('button')[0].setAttribute('data-ember-action-999999999', 999999999);
+
+    this.assert.equal(this.$('button').text(), 'hide (false)');
+
+    this.runTask(() => this.$('button').click());
+
+    this.assert.equal(this.$('button').text(), 'show (true)');
+
+    this.runTask(() => this.$('button').click());
+
+    this.assert.equal(this.$('button').text(), 'hide (false)');
+  }
+
 });
