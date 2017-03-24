@@ -113,7 +113,7 @@ export function generateDeprecatedWaitersArray() {
   deprecate(
     'Usage of `Ember.Test.waiters` is deprecated. Please refactor to `Ember.Test.checkWaiters`.',
     false,
-    { until: '2.8.0', id: 'ember-testing.test-waiters' }
+    { since: '2.7.0', until: '2.8.0', id: 'ember-testing.test-waiters' }
   );
 
   let array = new Array(callbacks.length);

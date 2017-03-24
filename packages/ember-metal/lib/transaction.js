@@ -70,7 +70,7 @@ if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
         let message = `You modified "${label}" twice on ${object} in a single render. It was rendered in ${lastRenderedIn} and modified in ${currentlyIn}. This was unreliable and slow in Ember 1.x and`;
 
         if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-          deprecate(`${message} will be removed in Ember 3.0.`, false, { id: 'ember-views.render-double-modify', until: '3.0.0' });
+          deprecate(`${message} will be removed in Ember 3.0.`, false, { id: 'ember-views.render-double-modify', since: '2.0.0', until: '3.0.0' });
         } else {
           assert(`${message} is no longer supported. See https://github.com/emberjs/ember.js/issues/13948 for more details.`, false);
         }

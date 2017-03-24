@@ -157,6 +157,7 @@ export default function deprecate(message, test, options) {
       false,
       {
         id: 'ember-debug.deprecate-options-missing',
+        since: '2.1.0',
         until: '3.0.0',
         url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
       }
@@ -169,6 +170,7 @@ export default function deprecate(message, test, options) {
       false,
       {
         id: 'ember-debug.deprecate-id-missing',
+        since: '2.1.0',
         until: '3.0.0',
         url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
       }
@@ -181,6 +183,7 @@ export default function deprecate(message, test, options) {
       options && options.until,
       {
         id: 'ember-debug.deprecate-until-missing',
+        since: '2.1.0',
         until: '3.0.0',
         url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
       }

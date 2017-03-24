@@ -74,7 +74,7 @@ export const Freezable = Mixin.create({
     deprecate(
       '`Ember.Freezable` is deprecated, use `Object.freeze` instead.',
       false,
-      { id: 'ember-runtime.freezable-init', until: '3.0.0' }
+      { id: 'ember-runtime.freezable-init', since: '2.0.0', until: '3.0.0' }
     );
     this._super(...arguments);
   },

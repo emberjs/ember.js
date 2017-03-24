@@ -762,7 +762,7 @@ const LinkComponent = EmberComponent.extend({
           'Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. ' +
             (this.parentView ? 'Please update `' + this.parentView + '` to use `{{link-to "post" someController.model}}` instead.' : ''),
           false,
-          { id: 'ember-routing-views.controller-wrapped-param', until: '3.0.0' }
+          { id: 'ember-routing-views.controller-wrapped-param', since: '2.0.0', until: '3.0.0' }
         );
         value = value.get('model');
       }

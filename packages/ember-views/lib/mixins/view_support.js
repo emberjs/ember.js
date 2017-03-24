@@ -27,6 +27,7 @@ runInDebug(() => {
     get oldAttrs() {
       deprecate(this._message, false, {
         id: 'ember-views.lifecycle-hook-arguments',
+        since: '2.12.0',
         until: '2.13.0',
         url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       });
@@ -37,6 +38,7 @@ runInDebug(() => {
     get newAttrs() {
       deprecate(this._message, false, {
         id: 'ember-views.lifecycle-hook-arguments',
+        since: '2.12.0',
         until: '2.13.0',
         url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       });
@@ -317,6 +319,7 @@ export default Mixin.create({
       false,
       {
         id: 'ember-views.render-to-element',
+        since: '2.11.0',
         until: '2.12.0',
         url: 'http://emberjs.com/deprecations/v2.x#toc_code-rendertoelement-code'
       }
@@ -547,6 +550,7 @@ export default Mixin.create({
       typeof(this.didInitAttrs) !== 'function',
       {
         id: 'ember-views.did-init-attrs',
+        since: '2.6.0',
         until: '3.0.0',
         url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
       }
@@ -557,6 +561,7 @@ export default Mixin.create({
       typeof this.didInitAttrs !== 'function' || this.didInitAttrs.length === 0,
       {
         id: 'ember-views.lifecycle-hook-arguments',
+        since: '2.12.0',
         until: '2.13.0',
         url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       }
@@ -567,6 +572,7 @@ export default Mixin.create({
       typeof this.didReceiveAttrs !== 'function' || this.didReceiveAttrs.length === 0,
       {
         id: 'ember-views.lifecycle-hook-arguments',
+        since: '2.12.0',
         until: '2.13.0',
         url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       }
@@ -577,6 +583,7 @@ export default Mixin.create({
       typeof this.didUpdateAttrs !== 'function' || this.didUpdateAttrs.length === 0,
       {
         id: 'ember-views.lifecycle-hook-arguments',
+        since: '2.12.0',
         until: '2.13.0',
         url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       }

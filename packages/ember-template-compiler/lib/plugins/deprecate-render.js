@@ -18,6 +18,7 @@ DeprecateRender.prototype.transform = function DeprecateRender_transform(ast) {
 
       deprecate(deprecationMessage(moduleName, node), false, {
         id: 'ember-template-compiler.deprecate-render',
+        since: '2.11.0',
         until: '3.0.0',
         url: 'http://emberjs.com/deprecations/v2.x#toc_code-render-code-helper'
       });

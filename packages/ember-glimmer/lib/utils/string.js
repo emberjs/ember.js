@@ -25,6 +25,7 @@ export function getSafeString() {
     false,
     {
       id: 'ember-htmlbars.ember-handlebars-safestring',
+      since: '2.8.0',
       until: '3.0.0',
       url: 'http://emberjs.com/deprecations/v2.x#toc_use-ember-string-htmlsafe-over-ember-handlebars-safestring'
     }

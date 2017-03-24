@@ -83,6 +83,7 @@ export function addListener(obj, eventName, target, method, once) {
     eventName !== 'didInitAttrs',
     {
       id: 'ember-views.did-init-attrs',
+      since: '2.6.0',
       until: '3.0.0',
       url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
     }

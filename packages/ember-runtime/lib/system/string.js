@@ -74,7 +74,7 @@ function fmt(str, formats) {
   deprecate(
     'Ember.String.fmt is deprecated, use ES6 template strings instead.',
     false,
-    { id: 'ember-string-utils.fmt', until: '3.0.0', url: 'http://babeljs.io/docs/learn-es2015/#template-strings' }
+    { id: 'ember-string-utils.fmt', since: '2.0.0', until: '3.0.0', url: 'http://babeljs.io/docs/learn-es2015/#template-strings' }
   );
   return _fmt(...arguments);
 }

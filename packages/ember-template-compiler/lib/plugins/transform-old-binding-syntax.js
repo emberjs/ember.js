@@ -30,7 +30,7 @@ TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSynt
         deprecate(
           `You're using legacy binding syntax: ${key}=${exprToString(value)} ${sourceInformation}. Please replace with ${newKey}=${value.original}`,
           false,
-          { id: 'ember-template-compiler.transform-old-binding-syntax', until: '3.0.0' }
+          { id: 'ember-template-compiler.transform-old-binding-syntax', since: '2.1.0', until: '3.0.0' }
         );
 
         pair.key = newKey;

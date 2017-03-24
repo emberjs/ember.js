@@ -130,6 +130,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
         deprecate(`The \`initialize\` method for Application initializer '${name}' should take only one argument - \`App\`, an instance of an \`Application\`.`,
           false, {
             id: 'ember-application.app-initializer-initialize-arguments',
+            since: '2.1.0',
             until: '3.0.0',
             url: 'http://emberjs.com/deprecations/v2.x/#toc_initializer-arity'
           });

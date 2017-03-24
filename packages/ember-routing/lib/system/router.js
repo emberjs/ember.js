@@ -1501,6 +1501,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
         false,
         {
           id: 'ember-routing.top-level-render-helper',
+          since: '2.11.0',
           until: '3.0.0',
           url: 'http://emberjs.com/deprecations/v2.x/#toc_rendering-into-a-render-helper-that-resolves-to-an-outlet'
         }

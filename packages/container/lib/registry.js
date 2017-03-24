@@ -765,7 +765,7 @@ Registry.prototype = {
 function deprecateResolverFunction(registry) {
   deprecate('Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.',
             false,
-            { id: 'ember-application.registry-resolver-as-function', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function' });
+            { id: 'ember-application.registry-resolver-as-function', since: '2.3.0', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function' });
   registry.resolver = {
     resolve: registry.resolver
   };
