@@ -22,4 +22,8 @@ export function test(name: string, callback: (assert: Assert) => void) {
   return QUnit.test(name, callback);
 }
 
+export function todo(name: string, callback: (assert: Assert) => void) {
+  return QUnit.todo(name, callback);
+}
+
 export const assert = QUnit.assert;

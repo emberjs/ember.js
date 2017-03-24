@@ -17,7 +17,7 @@
     "start": "ember serve --port=7357",
     "pretest": "ember build",
     "test": "ember test",
-    "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json && npm run test:packages && npm run test:node",
+    "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.js && npm run test:packages && npm run test:node",
     "test:node": "bin/run-node-tests.js",
     "test:packages": "bin/run-package-tests.sh",
     "tslint": "tslint --project tsconfig.json",
@@ -52,8 +52,9 @@
     "loader.js": "^4.0.10",
     "qunit-tap": "^1.5.1",
     "qunitjs": "^2.1.1",
+    "semver": "^5.3.0",
+    "testem": "github:rwjblue/testem#todo-support",
     "tslint": "^4.0.2",
-    "typescript": "^2.2.0",
-    "semver": "^5.3.0"
+    "typescript": "^2.2.0"
   }
 }
