@@ -109,6 +109,7 @@ export class ElementStack implements Cursor {
 
     this.defaultOperations = new SimpleElementOperations(env);
 
+    this.pushSimpleBlock();
     this.elementStack.push(this.element);
     this.nextSiblingStack.push(this.nextSibling);
   }
@@ -377,9 +378,10 @@ export class UpdatableBlockTracker extends SimpleBlockTracker implements Updatab
 
     let nextSibling = clear(this);
 
-    this.destroyables = null;
     this.first = null;
     this.last = null;
+    this.destroyables = null;
+    this.nesting = 0;
 
     return nextSibling;
   }

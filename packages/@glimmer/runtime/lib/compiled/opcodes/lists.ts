@@ -17,7 +17,7 @@ class IterablePresenceReference implements Reference<boolean> {
 }
 
 APPEND_OPCODES.add(Op.PutIterator, vm => {
-  let stack = vm.evalStack;
+  let stack = vm.stack;
   let listRef = stack.pop<VersionedPathReference<Opaque>>();
   let key = stack.pop<VersionedPathReference<string>>();
   let iterable = vm.env.iterableFor(listRef, key.value());
@@ -27,18 +27,18 @@ APPEND_OPCODES.add(Op.PutIterator, vm => {
   stack.push(new IterablePresenceReference(iterator.artifacts));
 });
 
-APPEND_OPCODES.add(Op.EnterList, (vm, { op2: start, op3: end }) => {
-  vm.enterList(start, end);
+APPEND_OPCODES.add(Op.EnterList, (vm, { op1: start }) => {
+  vm.enterList(start);
 });
 
 APPEND_OPCODES.add(Op.ExitList, vm => vm.exitList());
 
-APPEND_OPCODES.add(Op.Iterate, (vm, { op1: breaks, op2: start, op3: end }) => {
-  let stack = vm.evalStack;
-  let item = stack.top<ReferenceIterator>().next();
+APPEND_OPCODES.add(Op.Iterate, (vm, { op1: breaks }) => {
+  let stack = vm.stack;
+  let item = stack.peek<ReferenceIterator>().next();
 
   if (item) {
-    let tryOpcode = vm.iterate(start, end, item.memo, item.value);
+    let tryOpcode = vm.iterate(item.memo, item.value);
     vm.enterItem(item.key, tryOpcode);
   } else {
     vm.goto(breaks);

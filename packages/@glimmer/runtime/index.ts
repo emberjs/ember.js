@@ -37,6 +37,7 @@ export {
 } from './lib/dom/attribute-managers';
 
 export {
+  Register,
   debugSlice
 } from './lib/opcodes';
 
