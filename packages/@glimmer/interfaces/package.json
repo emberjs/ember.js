@@ -1,9 +1,9 @@
 {
   "name": "@glimmer/interfaces",
-  "version": "0.23.0-alpha.8",
+  "version": "0.23.0-alpha.9",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/interfaces",
   "dependencies": {
-    "@glimmer/wire-format": "^0.23.0-alpha.8"
+    "@glimmer/wire-format": "^0.23.0-alpha.9"
   },
   "devDependencies": {
     "typescript": "^2.2.0"

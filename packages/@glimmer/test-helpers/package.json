@@ -1,16 +1,16 @@
 {
   "name": "@glimmer/test-helpers",
-  "version": "0.23.0-alpha.8",
+  "version": "0.23.0-alpha.9",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/test-helpers",
   "dependencies": {
-    "@glimmer/reference": "^0.23.0-alpha.8",
-    "@glimmer/runtime": "^0.23.0-alpha.8",
-    "@glimmer/compiler": "^0.23.0-alpha.8",
-    "@glimmer/util": "^0.23.0-alpha.8",
-    "@glimmer/object": "^0.23.0-alpha.8",
-    "@glimmer/object-reference": "^0.23.0-alpha.8",
-    "@glimmer/wire-format": "^0.23.0-alpha.8",
-    "@glimmer/interfaces": "^0.23.0-alpha.8"
+    "@glimmer/reference": "^0.23.0-alpha.9",
+    "@glimmer/runtime": "^0.23.0-alpha.9",
+    "@glimmer/compiler": "^0.23.0-alpha.9",
+    "@glimmer/util": "^0.23.0-alpha.9",
+    "@glimmer/object": "^0.23.0-alpha.9",
+    "@glimmer/object-reference": "^0.23.0-alpha.9",
+    "@glimmer/wire-format": "^0.23.0-alpha.9",
+    "@glimmer/interfaces": "^0.23.0-alpha.9"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
