@@ -237,8 +237,11 @@ module.exports.emberLicense = function _emberLicense() {
 module.exports.emberFeaturesES = function _emberFeaturesES(production = false) {
   let FEATURES = production ? RELEASE : DEBUG;
   let content = stripIndent`
-    const FEATURES = ${JSON.stringify(FEATURES)};
-    export default FEATURES;
+    import { ENV } from 'ember-environment';
+    import { assign } from 'ember-utils';
+    export const DEFAULT_FEATURES = ${JSON.stringify(FEATURES)};
+    export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
+
 
     ${Object.keys(toConst(FEATURES)).map((FEATURE) => {
       return `export const ${FEATURE} = FEATURES["${FEATURE.replace(/_/g, '-').toLowerCase()}"];`

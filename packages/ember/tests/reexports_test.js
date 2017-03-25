@@ -47,7 +47,7 @@ QUnit.module('ember reexports');
   ['onerror', 'ember-metal', { get: 'getOnerror', set: 'setOnerror' }],
   // ['create'], TODO: figure out what to do here
   // ['keys'], TODO: figure out what to do here
-  ['FEATURES', 'ember-debug'],
+  ['FEATURES', 'ember/features'],
   ['FEATURES.isEnabled', 'ember-debug', 'isFeatureEnabled'],
   ['Error', 'ember-debug'],
   ['META_DESC', 'ember-metal'],

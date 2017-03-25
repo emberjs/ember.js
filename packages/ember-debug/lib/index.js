@@ -1,15 +1,16 @@
-import DEFAULT_FEATURES from 'ember/features';
 import { ENV, environment } from 'ember-environment';
 import Logger from 'ember-console';
 import { isTesting } from './testing';
 import EmberError from './error';
-import { default as isFeatureEnabled, FEATURES } from './features';
+import { default as isFeatureEnabled } from './features';
+import * as FLAGS from 'ember/features';
+let { DEFAULT_FEATURES, FEATURES } = FLAGS;
 
 import _deprecate from './deprecate';
 import _warn from './warn';
 export { registerHandler as registerWarnHandler } from './warn';
 export { registerHandler as registerDeprecationHandler } from './deprecate';
-export { default as isFeatureEnabled, FEATURES } from './features';
+export { default as isFeatureEnabled } from './features';
 export { default as Error } from './error';
 export { isTesting, setTesting } from './testing';
 

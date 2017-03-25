@@ -9,7 +9,8 @@ import { Registry, Container } from 'container';
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
-import { EMBER_METAL_WEAKMAP } from 'ember/features'
+import { EMBER_METAL_WEAKMAP } from 'ember/features';
+import * as FLAGS from 'ember/features'
 
 // ember-utils exports
 Ember.getOwner = utils.getOwner;
@@ -80,7 +81,7 @@ Ember.getWithDefault = metal.getWithDefault;
 Ember._getPath = metal._getPath;
 Ember.set = metal.set;
 Ember.trySet = metal.trySet;
-Ember.FEATURES = EmberDebug.FEATURES;
+Ember.FEATURES = FLAGS.FEATURES;
 Ember.FEATURES.isEnabled = EmberDebug.isFeatureEnabled;
 Ember._Cache = metal.Cache;
 Ember.on = metal.on;
