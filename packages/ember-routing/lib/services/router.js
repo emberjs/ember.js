@@ -7,8 +7,6 @@ import {
   Service,
   readOnly
 } from 'ember-runtime';
-import { get } from 'ember-metal';
-import RouterDSL from '../system/dsl';
 
 /**
    The Router service is the public API that provides component/view layer
@@ -19,10 +17,14 @@ import RouterDSL from '../system/dsl';
    @category ember-routing-router-service
  */
 const RouterService = Service.extend({
-  currentRouteName: readOnly('router.currentRouteName'),
-  currentURL: readOnly('router.currentURL'),
-  location: readOnly('router.location'),
+  router: null,
+
   rootURL: readOnly('router.rootURL'),
+  location: readOnly('router.location'),
+
+  currentURL: readOnly('router.currentURL'),
+  currentPath: readOnly('router.currentPath'),
+  currentRouteName: readOnly('router.currentRouteName'),
 
   /**
      Transition the application into another route. The route may
