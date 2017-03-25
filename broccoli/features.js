@@ -1,8 +1,8 @@
 'use strict';
 /* eslint-env node */
 
-function getFeatures(isDebug) {
-  let features = Object.assign({}, require('../features').features);
+function getFlags(isDebug, type) {
+  let features = Object.assign({}, require('../features')[type]);
   let featureName;
 
   if (process.env.BUILD_TYPE === 'alpha') {
@@ -38,12 +38,15 @@ function getFeatures(isDebug) {
 function toConst(features) {
   let consted = {};
   Object.keys(features).forEach((feature) => {
-    consted[feature.toUpperCase().replace(/-/g, '_')] = features[feature]
+    consted[feature.toUpperCase().replace(/(-|\.)/g, '_')] = features[feature]
   });
 
   return consted;
 }
 
+const RELEASE_FLAGS = Object.assign(getFlags(false, 'features'), getFlags(false, 'deprecations'))
+const DEBUG_FLAGS = Object.assign(getFlags(true, 'fetaures'), getFlags(true, 'deprecations'));
+
 module.exports.toConst = toConst;
-module.exports.RELEASE = getFeatures(false);
-module.exports.DEBUG = getFeatures(true);
+module.exports.RELEASE = RELEASE_FLAGS;
+module.exports.DEBUG = DEBUG_FLAGS;

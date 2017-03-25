@@ -27,7 +27,7 @@ module.exports = function toES5(tree, _options) {
         flags: { DEBUG: options.environment !== 'production' }
       },
       features: {
-        name: 'ember',
+        name: 'ember-source',
         source: 'ember/features',
         flags: options.environment === 'production' ? toConst(RELEASE) : toConst(DEBUG)
       },
@@ -78,7 +78,7 @@ function stripForProd(tree) {
   let options = {
     plugins: [
       [stripClassCallCheck, { source: 'ember-babel' }],
-      ['minify-dead-code-elimination', { optimizeRawSize: true }]
+      // ['minify-dead-code-elimination', { optimizeRawSize: true }]
     ]
   };
 
