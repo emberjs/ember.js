@@ -889,6 +889,8 @@ export const enum Op {
 }
 
 export function debugSlice(env: Environment, start: number, end: number) {
+  if (window['GLIMMER_DEBUG'] !== true) { return; }
+
   let { program, constants } = env;
 
   // console is not available in IE9
@@ -1038,14 +1040,20 @@ export class AppendOpcodes {
   evaluate(vm: VM, opcode: Opcode, type: number) {
     let func = this.evaluateOpcode[type];
     let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
-    console.log(`${vm['ip'] - 4}. ${logOpcode(name, params)}`);
+    let verbose = window['GLIMMER_DEBUG'];
+
+    if (verbose === true) {
+      console.log(`${vm['ip'] - 4}. ${logOpcode(name, params)}`);
+    }
 
     // console.log(...debug(vm.constants, type, opcode.op1, opcode.op2, opcode.op3));
     func(vm, opcode);
-    console.log('%c -> eval stack', 'color: red', vm.evalStack['stack'].length ? vm.evalStack['stack'].slice() : 'EMPTY');
-    console.log('%c -> scope', 'color: green', vm.scope()['slots'].map(s => s && s['value'] ? s['value']() : s));
-    console.log('%c -> elements', 'color: blue', vm.stack()['elementStack'].toArray());
-    console.log('%c -> frames', 'color:cyan', vm['frames']);
+    if (verbose === true) {
+      console.log('%c -> eval stack', 'color: red', vm.evalStack['stack'].length ? vm.evalStack['stack'].slice() : 'EMPTY');
+      console.log('%c -> scope', 'color: green', vm.scope()['slots'].map(s => s && s['value'] ? s['value']() : s));
+      console.log('%c -> elements', 'color: blue', vm.stack()['elementStack'].toArray());
+      console.log('%c -> frames', 'color:cyan', vm['frames']);
+    }
   }
 }
 
