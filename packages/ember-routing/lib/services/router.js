@@ -17,14 +17,11 @@ import {
    @category ember-routing-router-service
  */
 const RouterService = Service.extend({
-  router: null,
-
-  rootURL: readOnly('router.rootURL'),
-  location: readOnly('router.location'),
-
-  currentURL: readOnly('router.currentURL'),
-  currentPath: readOnly('router.currentPath'),
   currentRouteName: readOnly('router.currentRouteName'),
+  currentURL: readOnly('router.currentURL'),
+  location: readOnly('router.location'),
+  rootURL: readOnly('router.rootURL'),
+  router: null,
 
   /**
      Transition the application into another route. The route may
