@@ -13,6 +13,35 @@ export interface OpcodeJSON {
   children?: OpcodeJSON[];
 }
 
+/**
+ * Registers
+ *
+ * For the most part, these follows MIPS naming conventions, however the
+ * register numbers are different.
+ */
+
+export enum Register {
+  // $0 or $pc (program counter): pointer into `program` for the next insturction; -1 means exit
+  'pc',
+
+  // $1 or $ra (return address): pointer into `program` for the return
+  'ra',
+
+  // $2 or $fp (frame pointer): pointer into the `evalStack` for the base of the stack
+  'fp',
+
+  // $3 or $sp (stack pointer): pointer into the `evalStack` for the top of the stack
+  'sp',
+
+  // $4-$5 or $s0-$s1 (saved): callee saved general-purpose registers
+  's0',
+  's1',
+
+  // $6-$7 or $t0-$t1 (temporaries): caller saved general-purpose registers
+  't0',
+  't1'
+}
+
 export const enum Op {
   /*
     Documentation TODO:
@@ -53,6 +82,18 @@ export const enum Op {
    *   ..., #Function
    */
   Function,
+
+  /**
+   * Operation:
+   *   Bind a variable represented by a symbol from
+   *   a caller supplied argument.
+   * Format:
+   *   (SetVariable symbol:u32 offsetFromBase:u32)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
+  BindVariable,
 
   /**
    * Operation:
@@ -101,20 +142,6 @@ export const enum Op {
    *   ..., Option<InlineBlock>
    */
   PushBlock,
-
-  /**
-   * Operation: Push the specified constant blocks onto the stack.
-   * Format:
-   *   (PushBlocks default:Option<#InlineBlock> inverse:Option<#InlineBlock>)
-   * Operand Stack:
-   *   Form 1:
-   *   ... →
-   *   ..., InlineBlock
-   *   Form 2:
-   *   ... →
-   *   ..., InlineBlock, InlineBlock
-   */
-  PushBlocks,
 
   /**
    * Operation: Push the specified bound block onto the stack.
@@ -166,6 +193,17 @@ export const enum Op {
 
   /**
    * Operation:
+   *   Push a number onto the stack.
+   * Format:
+   *   (Immediate number:u32)
+   * Operand Stack:
+   *   ... →
+   *   ..., number
+   */
+  Immediate,
+
+  /**
+   * Operation:
    *   Push an Object constant onto the stack that is not
    *   a JavaScript primitive.
    * Format:
@@ -177,7 +215,9 @@ export const enum Op {
   Constant,
 
   /**
-   * Operation: Push a JavaScript primitive onto the stack.
+   * Operation:
+   *   Wrap a JavaScript primitive in a reference and push it
+   *   onto the stack.
    * Format:
    *   (PushPrimitive constant:#Primitive)
    * Operand Stack:
@@ -191,34 +231,12 @@ export const enum Op {
    *   01: string
    *   10: true | false | null | undefined
    */
-  Primitive,
+  PrimitiveReference,
 
   /**
-   * Operation:
-   *   Set the value at the top of the stack as a local.
+   * Operation: Duplicate and push item from an offset in the stack.
    * Format:
-   *   (SetLocal offset:u32)
-   * Operand Stack:
-   *   ..., Opaque →
-   *   ...
-   */
-  SetLocal,
-
-  /**
-   * Operation:
-   *   Push the local at `offset` onto the stack.
-   * Format:
-   *   (GetLocal offset:u32)
-   * Operand Stack:
-   *   ... →
-   *   ..., Opaque
-   */
-  GetLocal,
-
-  /**
-   * Operation: Duplicate the top item on the stack.
-   * Format:
-   *   (Dup)
+   *   (Dup register:u32, offset:u32)
    * Operand Stack:
    *   ..., Opaque →
    *   ..., Opaque, Opaque
@@ -226,36 +244,36 @@ export const enum Op {
   Dup,
 
   /**
-   * Operation: Pop the stack and throw away the value.
+   * Operation: Pop N items off the stack and throw away the value.
    * Format:
    *   (Pop)
    * Operand Stack:
-   *   ..., Opaque →
+   *   ..., Opaque, ..., Opaque →
    *   ...
    */
   Pop,
 
+  /**
+   * Operation: Load a value into a register
+   * Format:
+   *   (Load register:u32)
+   * Operand Stack:
+   *   ..., Opaque →
+   *   ...
+   */
+  Load,
+
+  /**
+   * Operation: Fetch a value from a register
+   * Format:
+   *   (Fetch register:u32)
+   * Operand Stack:
+   *   ... →
+   *   ..., Opaque
+   */
+  Fetch,
+
   /// PRELUDE & EXIT
-
-  /**
-   * Operation: Reserve space for `count` locals
-   * Format:
-   *   (ReserveLocals count:u32)
-   * Operand Stack:
-   *   ... →
-   *   ...
-   */
-  ReserveLocals,
-
-  /**
-   * Operation: Release any reserved locals
-   * Format:
-   *   (ReleaseLocals)
-   * Operand Stack:
-   *   ... →
-   *   ...
-   */
-  ReleaseLocals,
 
   /**
    * Operation: Push a new root scope onto the scope stack.
@@ -301,7 +319,7 @@ export const enum Op {
    * Format:
    *   (Return)
    * Operand Stack:
-   *   ... →
+   *   ..., address:number →
    *   ...
    */
   Return,
@@ -485,7 +503,7 @@ export const enum Op {
   /**
    * Operation: Evaluate the specified block.
    * Format:
-   *   (InvokeStatic #InlineBlock)
+   *   (InvokeStatic block:#InlineBlock)
    * Operand Stack:
    *   ... →
    *   ...
@@ -540,12 +558,34 @@ export const enum Op {
   JumpUnless,
 
   /**
+   * Operation: Push a stack frame
+   *
+   * Format:
+   *   (PushFrame)
+   * Operand Stack:
+   *   ... →
+   *   $ra, $fp
+   */
+  PushFrame,
+
+  /**
+   * Operation: Pop a stack frame
+   *
+   * Format:
+   *   (PushFrame)
+   * Operand Stack:
+   *   $ra, $fp →
+   *   ...
+   */
+  PopFrame,
+
+  /**
    * Operation:
    *   Start tracking a new output block that could change
    *   if one of its inputs changes.
    *
    * Format:
-   *   (Enter args:u32 from:u32 to:u32)
+   *   (Enter args:u32)
    * Operand Stack:
    *   ... →
    *   ...
@@ -595,7 +635,7 @@ export const enum Op {
    * Operation: Enter a list.
    *
    * Format:
-   *   (EnterList unused:u32 from:u32 to:u32)
+   *   (EnterList address:u32)
    * Operand Stack:
    *   ..., Iterator →
    *   ...
@@ -650,19 +690,6 @@ export const enum Op {
    */
   Iterate,
 
-  /**
-   * Operation: Start iterating for a given key.
-   *
-   * Format:
-   *   (StartIterate from:u32 to:u32)
-   * Operand Stack:
-   *   ..., VersionedPathReference →
-   *   ...
-   * Description:
-   *   TODO: Merge with Iterate?
-   */
-  StartIterate,
-
   /// COMPONENTS
 
   /**
@@ -690,15 +717,15 @@ export const enum Op {
   PushDynamicComponentManager,
 
   /**
-   * Operation: Set component metadata into a local.
+   * Operation: push component metadata onto the stack.
    *
    * Format:
-   *   (SetComponentState local:u32)
+   *   (InitializeComponentState)
    * Operand Stack:
-   *   ..., ComponentDefinition<T>, ComponentManager<T>, T →
-   *   ...
+   *   ..., ComponentDefinition<T>, ComponentManager<T> →
+   *   ..., ComponentState
    */
-  SetComponentState,
+  InitializeComponentState,
 
   /**
    * Operation: Push a user representation of args onto the stack.
@@ -722,7 +749,7 @@ export const enum Op {
   /**
    * Operation: ...
    * Format:
-   *   (CreateComponent state:u32)
+   *   (PrepareArgs state:u32)
    * Operand Stack:
    *   ... →
    *   ...
@@ -733,10 +760,10 @@ export const enum Op {
    * Operation: Create the component and push it onto the stack.
    * Format:
    *   (CreateComponent flags:u32 state:u32)
-   * Operand Stack:
    *   ... →
    *   ...
    * Description:
+   * Operand Stack:
    *   Flags:
    *
    *   * 0b001: Has a default block
@@ -822,19 +849,6 @@ export const enum Op {
   DidCreateElement,
 
   /**
-   * Operation:
-   *   Push the layout for the current component onto
-   *   the stack.
-   *
-   * Format:
-   *   (ComponentLayoutScope state:u32)
-   * Operand Stack:
-   *   ... →
-   *   ..., InlineBlock
-   */
-  ComponentLayoutScope,
-
-  /**
    * Operation: Invoke didRenderLayout on the current component manager
    *
    * Format:
@@ -914,8 +928,8 @@ function logOpcode(type: string, params: Option<Object>): string {
   let out = type;
 
   if (params) {
-    let args = Object.keys(params).map(p => `${p}=${json(params[p])}`).join(' ');
-    out += ` ${args}`;
+    let args = Object.keys(params).map(p => ` ${p}=${json(params[p])}`).join('');
+    out += args;
   }
   return `(${out})`;
 }
@@ -936,89 +950,104 @@ function json(param: Opaque) {
   return string;
 }
 
-function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): any[] {
+function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): [string, object] {
   switch (op) {
-    case Op.Bug: return ['Bug', { description: 'This opcode should never be reached' }];
+    case Op.Bug: throw unreachable();
 
     case Op.Helper: return ['Helper', { helper: c.getFunction(op1) }];
+    case Op.Function: return ['Function', { function: c.getFunction(op1) }];
     case Op.SetVariable: return ['SetVariable', { symbol: op1 }];
     case Op.GetVariable: return ['GetVariable', { symbol: op1 }];
+    case Op.GetProperty: return ['GetProperty', { key: c.getString(op1) }];
+    case Op.PushBlock: return ['PushBlock', { block: c.getBlock(op1) }];
     case Op.GetBlock: return ['GetBlock', { symbol: op1 }];
     case Op.HasBlock: return ['HasBlock', { block: op1 }];
     case Op.HasBlockParams: return ['HasBlockParams', { block: op1 }];
-    case Op.PushBlock: return ['PushBlock', { block: c.getBlock(op1) }];
-    case Op.PushBlocks: return ['PushBlocks', { default: c.getBlock(op1), inverse: c.getBlock(op2), flags: op3 }];
-    case Op.GetProperty: return ['GetKey', { key: c.getString(op1) }];
     case Op.Concat: return ['Concat', { size: op1 }];
-    case Op.Function: return ['Function', { function: c.getFunction(op1) }];
+    case Op.Immediate: return ['Immediate', { value: op1 }];
     case Op.Constant: return ['Constant', { value: c.getOther(op1) }];
-    case Op.Primitive: return ['Primitive', { primitive: op1 }];
-    case Op.Dup: return ['Dup'];
-    case Op.Pop: return ['Pop'];
+    case Op.PrimitiveReference: return ['PrimitiveReference', { primitive: op1 }];
+    case Op.Dup: return ['Dup', { register: Register[op1], offset: op2 }];
+    case Op.Pop: return ['Pop', { count: op1 }];
+    case Op.Load: return ['Load', { register: Register[op1] }];
+    case Op.Fetch: return ['Fetch', { register: Register[op1] }];
+
+    /// PRELUDE & EXIT
+    case Op.RootScope: return ['RootScope', { symbols: op1, bindCallerScope: !!op2 }];
+    case Op.ChildScope: return ['ChildScope', {}];
+    case Op.PopScope: return ['PopScope', {}];
+    case Op.Return: return ['Return', {}];
+
+    /// HTML
+    case Op.Text: return ['Text', { text: c.getString(op1) }];
+    case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
+    case Op.DynamicContent: return ['DynamicContent', { value: c.getOther(op1) }];
+    case Op.OpenElement: return ['OpenElement', { tag: c.getString(op1) }];
+    case Op.OpenElementWithOperations: return ['OpenElementWithOperations', { tag: c.getString(op1) }];
+    case Op.OpenDynamicElement: return ['OpenDynamicElement', {}];
+    case Op.StaticAttr: return ['StaticAttr', { name: c.getString(op1), value: c.getString(op2), namespace: op3 ? c.getString(op3) : null }];
+    case Op.DynamicAttr: return ['DynamicAttr', { name: c.getString(op1), trusting: !!op2 }];
+    case Op.DynamicAttrNS: return ['DynamicAttrNS', { name: c.getString(op1), ns: c.getString(op2), trusting: !!op2 }];
+    case Op.FlushElement: return ['FlushElement', {}];
+    case Op.CloseElement: return ['CloseElement', {}];
+
+    /// MODIFIER
+    case Op.Modifier: return ['Modifier', {}];
+
+    /// WORMHOLE
+    case Op.PushRemoteElement: return ['PushRemoteElement', {}];
+    case Op.PopRemoteElement: return ['PopRemoteElement', {}];
+
+    /// DYNAMIC SCOPE
+    case Op.BindDynamicScope: return ['BindDynamicScope', {}];
+    case Op.PushDynamicScope: return ['PushDynamicScope', {}];
+    case Op.PopDynamicScope: return ['PopDynamicScope', {}];
+
+    /// VM
+    case Op.CompileDynamicBlock: return ['CompileDynamicBlock', {}];
+    case Op.InvokeStatic: return ['InvokeStatic', { block: c.getBlock(op1) }];
+    case Op.InvokeDynamic: return ['InvokeDynamic', { invoker: c.getOther(op1) }];
+    case Op.Jump: return ['Jump', { to: op1 }];
+    case Op.JumpIf: return ['JumpIf', { to: op1 }];
+    case Op.JumpUnless: return ['JumpUnless', { to: op1 }];
+    case Op.PushFrame: return ['PushFrame', {}];
+    case Op.PopFrame: return ['PopFrame', {}];
+    case Op.Enter: return ['Enter', { args: op1 }];
+    case Op.Exit: return ['Exit', {}];
+    case Op.Test: return ['ToBoolean', {}];
+
+    /// LISTS
+    case Op.EnterList: return ['EnterList', { start: op1 }];
+    case Op.ExitList: return ['ExitList', {}];
+    case Op.PutIterator: return ['PutIterator', {}];
+    case Op.Iterate: return ['Iterate', { end: op1 }];
 
     /// COMPONENTS
     case Op.PushComponentManager: return ['PushComponentManager', { definition: c.getOther(op1) }];
-    case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', { local: op1 }];
-    case Op.SetComponentState: return ['SetComponentState', { local: op1 }];
+    case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', {}];
+    case Op.InitializeComponentState: return ['InitializeComponentState', {}];
     case Op.PushArgs: return ['PushArgs', { positional: op1, synthetic: !!op2 }];
-    case Op.PrepareArgs: return ['PrepareArgs', { state: op1 }];
-    case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: op2 }];
-    case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor'];
-    case Op.BeginComponentTransaction: return ['BeginComponentTransaction'];
-    case Op.PushComponentOperations: return ['PushComponentOperations'];
-    case Op.DidCreateElement: return ['DidCreateElement', { state: op1 }];
-    case Op.GetComponentSelf: return ['GetComponentSelf', { state: op1 }];
-    case Op.GetComponentLayout: return ['GetComponentLayout', { state: op1 }];
-    case Op.DidRenderLayout: return ['DidRenderLayout'];
-    case Op.CommitComponentTransaction: return ['CommitComponentTransaction'];
+    case Op.PrepareArgs: return ['PrepareArgs', { state: Register[op1] }];
+    case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: Register[op2] }];
+    case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor', {}];
+    case Op.PushComponentOperations: return ['PushComponentOperations', {}];
+    case Op.GetComponentSelf: return ['GetComponentSelf', { state: Register[op1] }];
+    case Op.GetComponentLayout: return ['GetComponentLayout', { state: Register[op1] }];
+    case Op.BeginComponentTransaction: return ['BeginComponentTransaction', {}];
+    case Op.CommitComponentTransaction: return ['CommitComponentTransaction', {}];
+    case Op.DidCreateElement: return ['DidCreateElement', { state: Register[op1] }];
+    case Op.DidRenderLayout: return ['DidRenderLayout', {}];
 
     /// PARTIALS
-    case Op.GetPartialTemplate: return ['CompilePartial'];
+    case Op.GetPartialTemplate: return ['CompilePartial', {}];
     case Op.ResolveMaybeLocal: return ['ResolveMaybeLocal', { name: c.getString(op1)} ];
 
     /// DEBUGGER
     case Op.Debugger: return ['Debugger', { symbols: c.getOther(op1), evalInfo: c.getArray(op2) }];
 
     /// STATEMENTS
-    case Op.ReserveLocals: return ['ReserveLocals', { count: op1 }];
-    case Op.ReleaseLocals: return ['ReleaseLocals', { count: op1 }];
-    case Op.RootScope: return ['RootScope', { symbols: op1, bindCallerScope: !!op2 }];
-    case Op.SetLocal: return ['SetLocal', { position: op1 }];
-    case Op.GetLocal: return ['GetLocal', { position: op1 }];
-    case Op.ChildScope: return ['ChildScope'];
-    case Op.PopScope: return ['PopScope'];
-    case Op.Return: return ['Return'];
-    case Op.PushDynamicScope: return ['PushDynamicScope'];
-    case Op.PopDynamicScope: return ['PopDynamicScope'];
-    case Op.BindDynamicScope: return ['BindDynamicScope'];
-    case Op.Enter: return ['Enter', { args: op1, start: op2, end: op3 }];
-    case Op.Exit: return ['Exit'];
-    case Op.CompileDynamicBlock: return ['CompileDynamicBlock'];
-    case Op.InvokeStatic: return ['InvokeStatic', { block: c.getBlock(op1) }];
-    case Op.InvokeDynamic: return ['InvokeDynamic', { invoker: c.getOther(op1) }];
-    case Op.Jump: return ['Jump', { to: op1 }];
-    case Op.JumpIf: return ['JumpIf', { to: op1 }];
-    case Op.JumpUnless: return ['JumpUnless', { to: op1 }];
-    case Op.Test: return ['ToBoolean'];
-    case Op.Text: return ['Text', { text: c.getString(op1) }];
-    case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
-    case Op.DynamicContent: return ['DynamicContent', { value: c.getOther(op1) }];
-    case Op.OpenElement: return ['OpenElement', { tag: c.getString(op1) }];
-    case Op.OpenElementWithOperations: return ['OpenElementWithOperations', { tag: c.getString(op1) }];
-    case Op.PushRemoteElement: return ['PushRemoteElement'];
-    case Op.PopRemoteElement: return ['PopRemoteElement'];
-    case Op.OpenDynamicElement: return ['OpenDynamicElement'];
-    case Op.FlushElement: return ['FlushElement'];
-    case Op.CloseElement: return ['CloseElement'];
-    case Op.StaticAttr: return ['StaticAttr', { name: c.getString(op1), value: c.getString(op2), namespace: op3 ? c.getString(op3) : null }];
-    case Op.Modifier: return ['Modifier'];
-    case Op.DynamicAttrNS: return ['DynamicAttrNS', { name: c.getString(op1), ns: c.getString(op2), trusting: !!op2 }];
-    case Op.DynamicAttr: return ['DynamicAttr', { name: c.getString(op1), trusting: !!op2 }];
-    case Op.PutIterator: return ['PutIterator'];
-    case Op.EnterList: return ['EnterList', { start: op2, end: op3 }];
-    case Op.ExitList: return ['ExitList'];
-    case Op.Iterate: return ['Iterate', { breaks: op1, start: op2, end: op3 }];
-    case Op.StartIterate: return ['StartIterate', { start: op1, end: op2 }];
+
+    case Op.Size: throw unreachable();
   }
 
   throw unreachable();
@@ -1043,16 +1072,17 @@ export class AppendOpcodes {
     let verbose = window['GLIMMER_DEBUG'];
 
     if (verbose === true) {
-      console.log(`${vm['ip'] - 4}. ${logOpcode(name, params)}`);
+      console.log(`${vm['pc'] - 4}. ${logOpcode(name, params)}`);
     }
 
     // console.log(...debug(vm.constants, type, opcode.op1, opcode.op2, opcode.op3));
     func(vm, opcode);
+
     if (verbose === true) {
-      console.log('%c -> eval stack', 'color: red', vm.evalStack['stack'].length ? vm.evalStack['stack'].slice() : 'EMPTY');
+      console.log('%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O', 'color: orange', vm['pc'], vm['ra'], vm['fp'], vm['sp'], vm['s0'], vm['s1'], vm['t0'], vm['t1']);
+      console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
       console.log('%c -> scope', 'color: green', vm.scope()['slots'].map(s => s && s['value'] ? s['value']() : s));
-      console.log('%c -> elements', 'color: blue', vm.stack()['elementStack'].toArray());
-      console.log('%c -> frames', 'color:cyan', vm['frames']);
+      console.log('%c -> elements', 'color: blue', vm.elements()['elementStack'].toArray());
     }
   }
 }

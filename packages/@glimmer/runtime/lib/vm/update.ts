@@ -22,7 +22,7 @@ import { Constants } from '../environment/constants';
 import { DOMChanges } from '../dom/helper';
 import * as Simple from '../dom/interfaces';
 
-import VM, { EvaluationStack } from './append';
+import VM, { CapturedStack, EvaluationStack } from './append';
 
 export default class UpdatingVM {
   public env: Environment;
@@ -88,8 +88,7 @@ export interface VMState {
   env: Environment;
   scope: Scope;
   dynamicScope: DynamicScope;
-  stack: EvaluationStack;
-  bp: number;
+  stack: CapturedStack;
 }
 
 export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableBounds {
@@ -101,19 +100,17 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   protected env: Environment;
   protected scope: Scope;
   protected dynamicScope: DynamicScope;
-  protected stack: EvaluationStack;
-  protected bp: number;
+  protected stack: CapturedStack;
   protected bounds: DestroyableBounds;
 
-  constructor(public start: number, public end: number, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
+  constructor(public start: number, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
-    let { env, scope, dynamicScope, stack, bp } = state;
+    let { env, scope, dynamicScope, stack } = state;
     this.children = children;
     this.env = env;
     this.scope = scope;
     this.dynamicScope = dynamicScope;
     this.stack = stack;
-    this.bp = bp;
     this.bounds = bounds;
   }
 
@@ -164,8 +161,8 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   protected bounds: UpdatableTracker;
 
-  constructor(start: number, end: number, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
-    super(start, end, state, bounds, children);
+  constructor(start: number, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
+    super(start, state, bounds, children);
     this.tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
   }
 
@@ -178,19 +175,29 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 
   handleException() {
-    let { env, scope, start, dynamicScope, stack, bp } = this;
+    let { env, bounds, children, scope, dynamicScope, start, stack, prev, next } = this;
+
+    children.clear();
 
     let elementStack = ElementStack.resume(
-      this.env,
-      this.bounds,
-      this.bounds.reset(env)
+      env,
+      bounds,
+      bounds.reset(env)
     );
 
     let vm = new VM(env, scope, dynamicScope, elementStack);
-    let result = vm.resume(start, stack.snapshot(), bp);
 
-    this.children = result.opcodes();
-    this.didInitializeChildren();
+    let updating = new LinkedList<UpdatingOpcode>();
+
+    vm.execute(start, vm => {
+      vm.stack = EvaluationStack.restore(stack);
+      vm.updatingOpcodeStack.push(updating);
+      vm.updateWith(this);
+      vm.updatingOpcodeStack.push(children);
+    });
+
+    this.prev = prev;
+    this.next = next;
   }
 
   toJSON() : OpcodeJSON {
@@ -232,13 +239,14 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     let vm = opcode.vmForInsertion(nextSibling);
     let tryOpcode: Option<TryOpcode> = null;
 
-    let { start, end } = opcode;
+    let { start } = opcode;
 
     vm.execute(start, vm => {
-      map[key] = tryOpcode = vm.iterate(start, end, memo, item, vm.updating());
+      map[key] = tryOpcode = vm.iterate(memo, item);
+      vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
+      vm.updateWith(tryOpcode);
+      vm.updatingOpcodeStack.push(tryOpcode.children);
     });
-
-    tryOpcode!.didInitializeChildren();
 
     updating.insertBefore(tryOpcode!, reference);
 
@@ -288,8 +296,8 @@ export class ListBlockOpcode extends BlockOpcode {
   private lastIterated: Revision = INITIAL;
   private _tag: TagWrapper<UpdatableTag>;
 
-  constructor(start: number, end: number, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
-    super(start, end, state, bounds, children);
+  constructor(start: number, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
+    super(start, state, bounds, children);
     this.artifacts = artifacts;
     let _tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
     this.tag = combine([artifacts.tag, _tag]);

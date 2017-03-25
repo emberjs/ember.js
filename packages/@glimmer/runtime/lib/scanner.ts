@@ -71,6 +71,7 @@ export type ScannedBlock = ScannedTemplate<BlockSymbolTable>;
 
 function compileStatements(statements: WireFormat.Statement[], meta: CompilationMeta, env: Environment) {
   let b = builder(env, meta);
+
   for (let statement of statements) {
     compileStatement(statement, b);
   }
@@ -83,6 +84,7 @@ export const ATTRS_BLOCK = '&attrs';
 export function layout(prelude: WireFormat.Statement[], head: WireFormat.Statement[], body: WireFormat.Statement[], symbolTable: ProgramSymbolTable) {
   let [, tag] = prelude.pop() as WireFormat.Statements.OpenElement;
   prelude.push([Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, tag]);
+  prelude.push([Ops.ClientSideStatement, ClientSide.Ops.DidCreateElement]);
 
   let attrsSymbol = symbolTable.symbols.length + 1;
   symbolTable.symbols.push(ATTRS_BLOCK);
@@ -90,7 +92,8 @@ export function layout(prelude: WireFormat.Statement[], head: WireFormat.Stateme
   let statements = prelude
     .concat([[Ops.Yield, attrsSymbol, EMPTY_ARRAY]])
     .concat(head)
-    .concat(body);
+    .concat(body)
+    .concat([[Ops.ClientSideStatement, ClientSide.Ops.DidRenderLayout]]);
 
   return new CompilableTemplate(statements, symbolTable);
 }
@@ -152,6 +155,8 @@ import { VersionedPathReference } from '@glimmer/reference';
 export namespace ClientSide {
   export enum Ops {
     OpenComponentElement,
+    DidCreateElement,
+    DidRenderLayout,
     OptimizedAppend,
     UnoptimizedAppend,
     StaticPartial,
@@ -172,6 +177,8 @@ export namespace ClientSide {
   import ClientSideExpression = WireFormat.Ops.ClientSideExpression;
 
   export type OpenComponentElement  = [ClientSideStatement, Ops.OpenComponentElement, string];
+  export type DidCreateElement      = [ClientSideStatement, Ops.DidCreateElement];
+  export type DidRenderLayout       = [ClientSideStatement, Ops.DidRenderLayout];
   export type OptimizedAppend       = [ClientSideStatement, Ops.OptimizedAppend, WireFormat.Expression, boolean];
   export type UnoptimizedAppend     = [ClientSideStatement, Ops.UnoptimizedAppend, WireFormat.Expression, boolean];
   export type StaticPartial         = [ClientSideStatement, Ops.StaticPartial, string, WireFormat.Core.EvalInfo];
@@ -183,6 +190,8 @@ export namespace ClientSide {
 
   export type ClientSideStatement =
     | OpenComponentElement
+    | DidCreateElement
+    | DidRenderLayout
     | OptimizedAppend
     | UnoptimizedAppend
     | StaticPartial
