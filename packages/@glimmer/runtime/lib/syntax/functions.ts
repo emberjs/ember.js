@@ -501,14 +501,6 @@ export function compileList(params: Option<WireFormat.Expression[]>, builder: Op
   return params.length;
 }
 
-const EMPTY_BLOCKS = { default: false, inverse: false };
-
-export function compileBlocks(block: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder): { default: boolean, inverse: boolean } {
-  if (!block && !inverse) return EMPTY_BLOCKS;
-  builder.pushBlocks(block, inverse);
-  return { default: !!block, inverse: !!inverse };
-}
-
 export type BlockMacro = (params: C.Params, hash: C.Hash, template: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder) => void;
 export type MissingBlockMacro = (name: string, params: C.Params, hash: C.Hash, template: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder) => void;
 

@@ -144,20 +144,6 @@ export const enum Op {
   PushBlock,
 
   /**
-   * Operation: Push the specified constant blocks onto the stack.
-   * Format:
-   *   (PushBlocks default:Option<#InlineBlock> inverse:Option<#InlineBlock>)
-   * Operand Stack:
-   *   Form 1:
-   *   ... →
-   *   ..., InlineBlock
-   *   Form 2:
-   *   ... →
-   *   ..., InlineBlock, InlineBlock
-   */
-  PushBlocks,
-
-  /**
    * Operation: Push the specified bound block onto the stack.
    * Format:
    *   (GetBlock block:u32)
@@ -974,7 +960,6 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): [st
     case Op.GetVariable: return ['GetVariable', { symbol: op1 }];
     case Op.GetProperty: return ['GetProperty', { key: c.getString(op1) }];
     case Op.PushBlock: return ['PushBlock', { block: c.getBlock(op1) }];
-    case Op.PushBlocks: return ['PushBlocks', { default: c.getBlock(op1), inverse: c.getBlock(op2), flags: op3 }];
     case Op.GetBlock: return ['GetBlock', { symbol: op1 }];
     case Op.HasBlock: return ['HasBlock', { block: op1 }];
     case Op.HasBlockParams: return ['HasBlockParams', { block: op1 }];

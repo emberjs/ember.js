@@ -301,17 +301,6 @@ export default class VM implements PublicVM {
   }
 
   exit() {
-    console.log(`
-;;;;;;;;;;
-;; EXIT ;;
-;;;;;;;;;;
-
-$blocks: %O,
-$updating: %O
-    `,
-    this.elements()['blockStack']['stack'].slice(),
-    this.updatingOpcodeStack['stack'].slice());
-
     this.elements().popBlock();
     this.updatingOpcodeStack.pop();
 
@@ -396,14 +385,6 @@ $updating: %O
   /// EXECUTION
 
   execute(start: number, initialize?: (vm: VM) => void): RenderResult {
-    console.log(`
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    `);
-
     this.pc = start;
 
     if (initialize) initialize(this);
