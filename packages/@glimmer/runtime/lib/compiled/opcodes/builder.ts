@@ -403,24 +403,6 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.PushBlock, this.block(block));
   }
 
-  pushBlocks(_default: Option<Block>, inverse: Option<Block>) {
-    let flag = 0;
-    let defaultBlock: ConstantBlock = 0;
-    let inverseBlock: ConstantBlock = 0;
-
-    if (_default) {
-      flag |= 0b01;
-      defaultBlock = this.block(_default);
-    }
-
-    if (inverse) {
-      flag |= 0b10;
-      inverseBlock = this.block(inverse);
-    }
-
-    this.push(Op.PushBlocks, defaultBlock, inverseBlock, flag);
-  }
-
   bindDynamicScope(_names: string[]) {
     this.push(Op.BindDynamicScope, this.names(_names));
   }

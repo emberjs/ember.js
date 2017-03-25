@@ -62,11 +62,6 @@ APPEND_OPCODES.add(Op.PushBlock, (vm, { op1: _block }) => {
   vm.stack.push(block);
 });
 
-APPEND_OPCODES.add(Op.PushBlocks, (vm, { op1: defaultBlock, op2: inverseBlock }) => {
-  if (defaultBlock) vm.stack.push(vm.constants.getBlock(defaultBlock));
-  if (inverseBlock) vm.stack.push(vm.constants.getBlock(inverseBlock));
-});
-
 APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
   vm.stack.push(vm.scope().getBlock(_block));
 });
