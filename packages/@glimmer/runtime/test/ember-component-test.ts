@@ -1166,7 +1166,7 @@ QUnit.test('dynamic tagless component', assert => {
   assertAppended('Michael Jordan says "Go Tagless"');
 });
 
-QUnit.todo('dynamic attribute bindings', assert => {
+QUnit.test('dynamic attribute bindings', assert => {
   let fooBarInstance: FooBar = null;
 
   class FooBar extends EmberishCurlyComponent {
@@ -2650,7 +2650,7 @@ QUnit.test('Curly component hooks (attrs as self props)', function() {
   assertFired(instance, 'didRender', 3);
 });
 
-QUnit.todo('Setting value attributeBinding to null results in empty string value', function(assert) {
+QUnit.test('Setting value attributeBinding to null results in empty string value', function(assert) {
   let instance;
 
   class InputComponent extends EmberishCurlyComponent {
@@ -2678,7 +2678,7 @@ QUnit.todo('Setting value attributeBinding to null results in empty string value
   assert.equal(instance.element.value, '');
 });
 
-QUnit.todo('Setting class attributeBinding does not clobber ember-view', function(assert) {
+QUnit.test('Setting class attributeBinding does not clobber ember-view', function(assert) {
   let instance;
 
   class FooBarComponent extends EmberishCurlyComponent {
@@ -2709,7 +2709,7 @@ QUnit.todo('Setting class attributeBinding does not clobber ember-view', functio
   assertEmberishElement('div',{ class: classes('ember-view foo bar') }, 'FOO BAR');
 });
 
-QUnit.todo('Curly component hooks (force recompute)', function() {
+QUnit.test('Curly component hooks (force recompute)', function() {
   let instance;
 
   class NonBlock extends EmberishCurlyComponent {
@@ -2791,7 +2791,7 @@ QUnit.test('Glimmer component hooks', function() {
   assertFired(instance, 'didRender', 3);
 });
 
-QUnit.todo('Glimmer component hooks (force recompute)', function() {
+QUnit.test('Glimmer component hooks (force recompute)', function() {
   let instance;
 
   class NonBlock extends EmberishGlimmerComponent {
@@ -3522,7 +3522,7 @@ QUnit.todo('it works on unoptimized appends when initially not a component (this
 
 module('bounds tracking');
 
-QUnit.todo('it works for wrapped (curly) components', function(assert) {
+QUnit.test('it works for wrapped (curly) components', function(assert) {
   let instance: FooBar;
 
   class FooBar extends EmberishCurlyComponent {
@@ -3568,7 +3568,7 @@ QUnit.test('it works for tagless components', function(assert) {
   assert.equal(instance.bounds.lastNode(), document.querySelector('#before-last-node').nextSibling);
 });
 
-QUnit.todo('it works for unwrapped components', function(assert) {
+QUnit.test('it works for unwrapped components', function(assert) {
   let instance: FooBar;
 
   class FooBar extends EmberishGlimmerComponent {

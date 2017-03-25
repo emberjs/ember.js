@@ -1862,7 +1862,7 @@ module("[glimmer-runtime] Updating", hooks => {
     }
   });
 
-  todo('The each helper yields the index of the current item current item when using the @index key', assert => {
+  test('The each helper yields the index of the current item current item when using the @index key', assert => {
     let tom = { name: "Tom Dale", "class": "tomdale" };
     let yehuda = { name: "Yehuda Katz", "class": "wycats" };
     let object = { list: [tom, yehuda] };
@@ -2002,7 +2002,7 @@ module("[glimmer-runtime] Updating", hooks => {
     }
   });
 
-  todo('The each helper yields the index of the current item when using a non-@index key', assert => {
+  test('The each helper yields the index of the current item when using a non-@index key', assert => {
     let tom = { key: "1", name: "Tom Dale", class: "tomdale" };
     let yehuda = { key: "2", name: "Yehuda Katz", class: "wycats" };
     let object = { list: [tom, yehuda] };
