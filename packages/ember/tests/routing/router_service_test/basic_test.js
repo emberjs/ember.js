@@ -93,5 +93,51 @@ if (isFeatureEnabled('ember-routing-router-service')) {
         assert.ok(location instanceof NoneLocation);
       });
     }
+
+    ['@test RouterService#queryParams are correctly set'](assert) {
+      assert.expect(2);
+
+      return this.visit('/?qp1=param1&qp2=param2').then(() => {
+        let queryParams = this.routerService.get('queryParams');
+        assert.deepEqual(queryParams, { qp1: "param1", qp2: "param2" });
+      }).then(() => {
+        this.visit('/child?qp1=param2&qp3=param3').then(() => {
+          let queryParams = this.routerService.get('queryParams');
+          assert.deepEqual(queryParams, { qp1: "param2", qp3: "param3" });
+        });
+      });
+    }
+
+    ['@test RouterService#params are correctly set'](assert) {
+      assert.expect(2);
+
+      this.add('route:dynamic', Route.extend({ model() {} }));
+
+      return this.visit('dynamic/1').then(() => {
+        let params = this.routerService.get('params');
+        assert.deepEqual(params, { "application": {}, "dynamic": { "dynamic_id": "1" } });
+      }).then(() => {
+        this.visit('dynamic/2').then(() => {
+          let params = this.routerService.get('params');
+          assert.deepEqual(params, { "application": {}, "dynamic": { "dynamic_id": "2" } });
+        });
+      });
+    }
+
+    ['@test RouterService#currentRouteParams are correctly set'](assert) {
+      assert.expect(2);
+
+      this.add('route:dynamic', Route.extend({ model() {} }));
+
+      return this.visit('dynamic/1').then(() => {
+        let currentRouteParams = this.routerService.get('currentRouteParams');
+        assert.deepEqual(currentRouteParams, { "dynamic_id": "1" });
+      }).then(() => {
+        this.visit('dynamic/2').then(() => {
+          let currentRouteParams = this.routerService.get('currentRouteParams');
+          assert.deepEqual(currentRouteParams, { "dynamic_id": "2" });
+        });
+      });
+    }
   });
 }

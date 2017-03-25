@@ -7,7 +7,7 @@ import {
   Service,
   readOnly
 } from 'ember-runtime';
-import { get } from 'ember-metal';
+import { get, computed } from 'ember-metal';
 import RouterDSL from '../system/dsl';
 
 /**
@@ -23,6 +23,13 @@ const RouterService = Service.extend({
   currentURL: readOnly('router.currentURL'),
   location: readOnly('router.location'),
   rootURL: readOnly('router.rootURL'),
+
+  params: readOnly('router.currentState.routerJsState.params'),
+  queryParams: readOnly('router.currentState.routerJsState.fullQueryParams'),
+
+  currentRouteParams: computed('currentRouteName', 'params', function() {
+    return this.get('params')[this.get('currentRouteName')];
+  }),
 
   /**
      Transition the application into another route. The route may
