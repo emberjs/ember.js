@@ -1,12 +1,12 @@
 {
   "name": "@glimmer/compiler",
-  "version": "0.23.0-alpha.9",
+  "version": "0.23.0-alpha.10",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/compiler",
   "dependencies": {
-    "@glimmer/syntax": "^0.23.0-alpha.9",
-    "@glimmer/util": "^0.23.0-alpha.9",
-    "@glimmer/wire-format": "^0.23.0-alpha.9",
-    "@glimmer/interfaces": "^0.23.0-alpha.9",
+    "@glimmer/syntax": "^0.23.0-alpha.10",
+    "@glimmer/util": "^0.23.0-alpha.10",
+    "@glimmer/wire-format": "^0.23.0-alpha.10",
+    "@glimmer/interfaces": "^0.23.0-alpha.10",
     "simple-html-tokenizer": "^0.3.0"
   },
   "devDependencies": {
