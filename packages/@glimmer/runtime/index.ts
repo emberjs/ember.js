@@ -38,7 +38,6 @@ export {
 
 export {
   Register,
-  debugSlice
 } from './lib/opcodes';
 
 export {

@@ -46,36 +46,31 @@ export class Parser {
   }
 
   get currentAttr(): Attribute {
-    return expect(this.currentAttribute, 'expected attribute');
+    return this.currentAttribute;
   }
 
   get currentTag(): Tag<'StartTag' | 'EndTag'> {
     let node = this.currentNode;
-    assert(node && (node.type === 'StartTag' || node.type === 'EndTag'), 'expected tag');
     return node as Tag<'StartTag' | 'EndTag'>;
   }
 
   get currentStartTag(): Tag<'StartTag'> {
     let node = this.currentNode;
-    assert(node && node.type === 'StartTag', 'expected start tag');
     return node as Tag<'StartTag'>;
   }
 
   get currentEndTag(): Tag<'EndTag'> {
     let node = this.currentNode;
-    assert(node && node.type === 'EndTag', 'expected end tag');
     return node as Tag<'EndTag'>;
   }
 
   get currentComment(): AST.CommentStatement {
     let node = this.currentNode;
-    assert(node && node.type === 'CommentStatement', 'expected a comment');
     return node as AST.CommentStatement;
   }
 
   get currentData(): AST.TextNode {
     let node = this.currentNode;
-    assert(node && node.type === 'TextNode', 'expected a text node');
     return node as AST.TextNode;
 
   }
