@@ -1,5 +1,5 @@
 import { toString } from 'ember-utils';
-import { assert, isFeatureEnabled, Error as EmberError } from 'ember-debug';
+import { assert, Error as EmberError } from 'ember-debug';
 import { _getPath as getPath } from './property_get';
 import {
   propertyWillChange,
@@ -13,6 +13,7 @@ import {
 import {
   peekMeta
 } from './meta';
+import { MANDATORY_SETTER } from 'ember/features';
 
 /**
   Sets the value of a property on an object, respecting computed properties
@@ -66,7 +67,7 @@ export function set(obj, keyName, value, tolerant) {
   } else {
     propertyWillChange(obj, keyName);
 
-    if (isFeatureEnabled('mandatory-setter')) {
+    if (MANDATORY_SETTER) {
       setWithMandatorySetter(meta, obj, keyName, value);
     } else {
       obj[keyName] = value;
@@ -78,7 +79,7 @@ export function set(obj, keyName, value, tolerant) {
   return value;
 }
 
-if (isFeatureEnabled('mandatory-setter')) {
+if (MANDATORY_SETTER) {
   var setWithMandatorySetter = (meta, obj, keyName, value) => {
     if (meta && meta.peekWatching(keyName) > 0) {
       makeEnumerable(obj, keyName);

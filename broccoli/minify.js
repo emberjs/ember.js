@@ -1,3 +1,6 @@
+/* eslint-env node */
+'use strict';
+
 const Funnel = require('broccoli-funnel');
 const Uglify = require('broccoli-uglify-js');
 const path = require('path');

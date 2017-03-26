@@ -2,8 +2,8 @@ import { Controller } from 'ember-runtime';
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Route } from 'ember-routing';
-import { isFeatureEnabled } from 'ember-debug';
 import { Component } from 'ember-glimmer';
+import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
 
 moduleFor('Application test: rendering', class extends ApplicationTest {
 
@@ -400,7 +400,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
 
     let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "template:routeWithError" and modified in "component:x-foo"/;
 
-    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       expectDeprecation(expectedBacktrackingMessage);
       return this.visit('/routeWithError');
     } else {

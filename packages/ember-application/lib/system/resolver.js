@@ -5,7 +5,7 @@
 
 import { dictionary } from 'ember-utils';
 import { get } from 'ember-metal';
-import { assert, info, runInDebug } from 'ember-debug';
+import { assert, info } from 'ember-debug';
 import {
   String as StringUtils,
   Object as EmberObject,
@@ -13,6 +13,7 @@ import {
 } from 'ember-runtime';
 import validateType from '../utils/validate-type';
 import { getTemplate } from 'ember-glimmer';
+import { DEBUG } from 'ember-env-flags';
 
 export const Resolver = EmberObject.extend({
   /*
@@ -172,11 +173,11 @@ export default EmberObject.extend({
 
     resolved = resolved || this.resolveOther(parsedName);
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (parsedName.root && parsedName.root.LOG_RESOLVER) {
         this._logLookup(resolved, parsedName);
       }
-    });
+    }
 
     if (resolved) {
       validateType(resolved, parsedName);

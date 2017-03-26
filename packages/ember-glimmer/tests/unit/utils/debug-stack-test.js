@@ -1,7 +1,7 @@
 import DebugStack from 'ember-glimmer/utils/debug-stack';
-import { runInDebug } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 
-runInDebug(() => {
+if (DEBUG) {
   QUnit.module('Glimmer DebugStack');
 
   QUnit.test('pushing and popping', function(assert) {
@@ -29,4 +29,4 @@ runInDebug(() => {
     assert.equal(item, 'component:top-level-component');
     assert.equal(stack.peek(), '"template:application"');
   });
-});
+}

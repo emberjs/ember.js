@@ -3,7 +3,7 @@
 
 const Babel = require('broccoli-babel-transpiler');
 const injectBabelHelpers = require('./transforms/inject-babel-helpers');
-const { RELEASE, DEBUG } = require('./features');
+const { RELEASE, DEBUG, toConst } = require('./features');
 
 module.exports = function toES5(tree, _options) {
   let options = Object.assign({
@@ -11,12 +11,22 @@ module.exports = function toES5(tree, _options) {
   }, _options);
   options.plugins = [
     injectBabelHelpers,
-    ['feature-flags', {
-      import: {
-        name: 'isFeatureEnabled',
-        module: 'ember-debug'
+    ['debug-macros', {
+      debugTools: {
+        source: 'ember-debug'
       },
-      features: options.environment === 'production' ? RELEASE : DEBUG
+      envFlags: {
+        source: 'ember-env-flags',
+        flags: { DEBUG: options.environment !== 'production' }
+      },
+      features: {
+        name: 'ember',
+        source: 'ember/features',
+        flags: options.environment === 'production' ? toConst(RELEASE) : toConst(DEBUG)
+      },
+      externalizeHelpers: {
+        module: true
+      }
     }],
     ['transform-es2015-template-literals', {loose: true}],
     ['transform-es2015-arrow-functions'],
@@ -28,7 +38,7 @@ module.exports = function toES5(tree, _options) {
     ['transform-es2015-block-scoping'],
     ['check-es2015-constants'],
     ['transform-es2015-classes', {loose: true}],
-    ['transform-proto-to-assign'],
+    ['transform-proto-to-assign']
   ];
 
   if (options.inlineHelpers) {
@@ -37,12 +47,7 @@ module.exports = function toES5(tree, _options) {
   }
 
   if (options.environment === 'production') {
-    options.plugins.push([
-      'filter-imports', {
-        'ember-debug/deprecate': ['deprecate'],
-        'ember-debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal', 'debugFreeze']
-      }
-    ]);
+    options.plugins.push(['minify-dead-code-elimination', { 'optimizeRawSize': true }]);
   }
 
   delete options.environment;

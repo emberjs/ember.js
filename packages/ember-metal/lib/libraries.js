@@ -1,4 +1,5 @@
-import { warn, isFeatureEnabled } from 'ember-debug';
+import { warn } from 'ember-debug';
+import { EMBER_LIBRARIES_ISREGISTERED } from 'ember/features';
 
 /**
   Helper class that allows you to register your library with Ember.
@@ -62,7 +63,7 @@ Libraries.prototype = {
   }
 };
 
-if (isFeatureEnabled('ember-libraries-isregistered')) {
+if (EMBER_LIBRARIES_ISREGISTERED) {
   Libraries.prototype.isRegistered = function(name) {
     return !!this._getLibraryByName(name);
   };

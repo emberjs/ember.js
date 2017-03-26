@@ -1,18 +1,12 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { runAppend } from 'internal-test-helpers';
 import { set } from 'ember-metal';
-import { isFeatureEnabled } from 'ember-debug';
 
 moduleFor('outlet view', class extends RenderingTest {
   constructor() {
     super(...arguments);
 
-    let CoreOutlet;
-    if (isFeatureEnabled('ember-factory-for')) {
-      CoreOutlet = this.owner.factoryFor('view:-outlet');
-    } else {
-      CoreOutlet = this.owner._lookupFactory('view:-outlet');
-    }
+    let CoreOutlet = this.owner.factoryFor('view:-outlet');
 
     this.component = CoreOutlet.create();
   }

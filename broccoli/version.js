@@ -7,7 +7,6 @@ const path = require('path');
 module.exports.VERSION = (() => {
   let info = getGitInfo(path.resolve(__dirname, '..'));
   if (info.tag) {
-    console.log('herr');
     return info.tag.replace(/^v/, '');
   }
 
