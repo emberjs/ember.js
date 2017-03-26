@@ -4,7 +4,6 @@ export interface Destroyable {
 
 export { getAttrNamespace } from './lib/namespaces';
 export * from './lib/platform-utils';
-export { default as assert } from './lib/assert';
 
 export { assign, fillNulls } from './lib/object-utils';
 export { ensureGuid, initializeGuid, HasGuid } from './lib/guid';
