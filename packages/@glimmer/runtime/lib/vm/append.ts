@@ -89,8 +89,6 @@ export type IteratorResult<T> = {
   value: T;
 };
 
-let i = 0;
-
 export default class VM implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
@@ -180,10 +178,6 @@ export default class VM implements PublicVM {
 
   // Return to the `program` address stored in $ra
   return() {
-    if (this.pc === (this.ra + 4)) {
-      throw "ZOMG";
-    }
-
     this.pc = this.ra;
   }
 
@@ -402,10 +396,6 @@ export default class VM implements PublicVM {
   next(): IteratorResult<RenderResult> {
     let { env, updatingOpcodeStack, elementStack } = this;
     let opcode: Option<Opcode>;
-
-    if (i++ > 100000) {
-      throw "zomg";
-    }
 
     if (opcode = this.nextStatement(env)) {
       APPEND_OPCODES.evaluate(this, opcode, opcode.type);
