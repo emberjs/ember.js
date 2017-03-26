@@ -1,10 +1,10 @@
 {
   "name": "@glimmer/object",
-  "version": "0.23.0-alpha.10",
+  "version": "0.23.0-alpha.11",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/object",
   "dependencies": {
-    "@glimmer/object-reference": "^0.23.0-alpha.10",
-    "@glimmer/util": "^0.23.0-alpha.10"
+    "@glimmer/object-reference": "^0.23.0-alpha.11",
+    "@glimmer/util": "^0.23.0-alpha.11"
   },
   "devDependencies": {
     "typescript": "^2.2.0",
