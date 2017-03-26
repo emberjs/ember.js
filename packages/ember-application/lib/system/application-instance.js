@@ -503,6 +503,7 @@ Object.defineProperty(ApplicationInstance.prototype, 'container', {
           'Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
           false, {
             id: 'ember-application.app-instance-container',
+            since: '2.1.0',
             until: '3.0.0',
             url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-applicationinstance-container'
           }

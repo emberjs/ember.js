@@ -28,7 +28,7 @@ export default function validateType(resolvedType, parsedName) {
       `factory. Either add the \`${factoryFlag}\` property to this factory or ` +
       `extend from ${expectedType}.`,
       !!resolvedType[factoryFlag],
-      { id: 'ember-application.validate-type', until: '3.0.0' }
+      { id: 'ember-application.validate-type', since: '2.0.0', until: '3.0.0' }
     );
   } else {
     assert(

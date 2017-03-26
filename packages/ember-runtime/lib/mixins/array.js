@@ -307,7 +307,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     deprecate(
       '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
       false,
-      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
+      { id: 'ember-runtime.enumerable-contains', since: '2.7.0', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
     );
 
     return this.indexOf(obj) >= 0;

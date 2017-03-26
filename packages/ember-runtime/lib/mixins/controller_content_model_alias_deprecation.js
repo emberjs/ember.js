@@ -42,7 +42,7 @@ export default Mixin.create({
       deprecate(
         'Do not specify `content` on a Controller, use `model` instead.',
         false,
-        { id: 'ember-runtime.will-merge-mixin', until: '3.0.0' }
+        { id: 'ember-runtime.will-merge-mixin', since: '2.0.0', until: '3.0.0' }
       );
     }
   }

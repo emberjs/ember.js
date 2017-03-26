@@ -302,16 +302,19 @@ function fireDeprecations(obj, toPath, fromPath, deprecateGlobal, deprecateOneWa
   let objectInfo = `The \`${toPath}\` property of \`${obj}\` is an \`Ember.Binding\` connected to \`${fromPath}\`, but `;
   deprecate(objectInfo + deprecateGlobalMessage, !deprecateGlobal, {
     id: 'ember-metal.binding',
+    since: '2.7.0',
     until: '3.0.0',
     url: 'http://emberjs.com/deprecations/v2.x#toc_ember-binding'
   });
   deprecate(objectInfo + deprecateOneWayMessage, !deprecateOneWay, {
     id: 'ember-metal.binding',
+    since: '2.7.0',
     until: '3.0.0',
     url: 'http://emberjs.com/deprecations/v2.x#toc_ember-binding'
   });
   deprecate(objectInfo + deprecateAliasMessage, !deprecateAlias, {
     id: 'ember-metal.binding',
+    since: '2.7.0',
     until: '3.0.0',
     url: 'http://emberjs.com/deprecations/v2.x#toc_ember-binding'
   });

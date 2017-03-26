@@ -232,6 +232,7 @@ Object.defineProperty(Ember, 'K', {
       false,
       {
         id: 'ember-metal.ember-k',
+        since: '2.12.0',
         until: '3.0.0',
         url: 'http://emberjs.com/deprecations/v2.x#toc_code-ember-k-code'
       }
@@ -260,6 +261,7 @@ Ember.Backburner = function() {
     false,
     {
       id: 'ember-metal.ember-backburner',
+      since: '2.7.0',
       until: '2.8.0',
       url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-backburner'
     }

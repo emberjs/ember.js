@@ -52,7 +52,7 @@ export default function makeBoundHelper(fn) {
   deprecate(
     'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.',
     false,
-    { id: 'ember-htmlbars.make-bound-helper', until: '3.0.0' }
+    { id: 'ember-htmlbars.make-bound-helper', since: '2.0.0', until: '3.0.0' }
   );
   return helper(fn);
 }

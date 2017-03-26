@@ -76,6 +76,7 @@ export default function warn(message, test, options) {
       false,
       {
         id: 'ember-debug.warn-options-missing',
+        since: '2.1.0',
         until: '3.0.0',
         url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
       }
@@ -88,6 +89,7 @@ export default function warn(message, test, options) {
       false,
       {
         id: 'ember-debug.warn-id-missing',
+        since: '2.1.0',
         until: '3.0.0',
         url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
       }

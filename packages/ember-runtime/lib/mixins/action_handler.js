@@ -194,7 +194,7 @@ const ActionHandler = Mixin.create({
       deprecate(
         'Specifying actions in `_actions` is deprecated, please use `actions` instead.',
         false,
-        { id: 'ember-runtime.action-handler-_actions', until: '3.0.0' }
+        { id: 'ember-runtime.action-handler-_actions', since: '2.0.0', until: '3.0.0' }
       );
 
       props.actions = props._actions;
@@ -216,7 +216,7 @@ export function deprecateUnderscoreActions(factory) {
       deprecate(
         `Usage of \`_actions\` is deprecated, use \`actions\` instead.`,
         false,
-        { id: 'ember-runtime.action-handler-_actions', until: '3.0.0' }
+        { id: 'ember-runtime.action-handler-_actions', since: '2.0.0', until: '3.0.0' }
       );
       return get(this, 'actions');
     }

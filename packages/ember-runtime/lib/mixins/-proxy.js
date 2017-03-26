@@ -118,7 +118,7 @@ export default Mixin.create({
       deprecate(
         `You attempted to access \`${key}\` from \`${this}\`, but object proxying is deprecated. Please use \`model.${key}\` instead.`,
         !this.isController,
-        { id: 'ember-runtime.controller-proxy', until: '3.0.0' }
+        { id: 'ember-runtime.controller-proxy', since: '2.0.0', until: '3.0.0' }
       );
       return get(content, key);
     }
@@ -139,7 +139,7 @@ export default Mixin.create({
     deprecate(
       `You attempted to set \`${key}\` from \`${this}\`, but object proxying is deprecated. Please use \`model.${key}\` instead.`,
       !this.isController,
-      { id: 'ember-runtime.controller-proxy', until: '3.0.0' }
+      { id: 'ember-runtime.controller-proxy', since: '2.0.0', until: '3.0.0' }
     );
     return set(content, key, value);
   }

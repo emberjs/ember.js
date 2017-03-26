@@ -53,7 +53,7 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
         deprecate(
           `Using a dynamic value for '#{normalizedOn.key}=' with the '{{input}}' helper ${moduleInfo}is deprecated.`,
           false,
-          { id: 'ember-template-compiler.transform-input-on-to-onEvent.dynamic-value', until: '3.0.0' }
+          { id: 'ember-template-compiler.transform-input-on-to-onEvent.dynamic-value', since: '2.1.0', until: '3.0.0' }
         );
 
         normalizedOn.key = 'onEvent';
@@ -67,7 +67,7 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
         deprecate(
           `Using '{{input ${normalizedOn.key}="${normalizedOn.value.value}" ...}}' without specifying an action ${moduleInfo}will do nothing.`,
           false,
-          { id: 'ember-template-compiler.transform-input-on-to-onEvent.no-action', until: '3.0.0' }
+          { id: 'ember-template-compiler.transform-input-on-to-onEvent.no-action', since: '2.1.0', until: '3.0.0' }
         );
 
         return; // exit early, if no action was available there is nothing to do
@@ -86,7 +86,7 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
       deprecate(
         `Using '{{input ${specifiedOn}action="${action.value.original}"}}' ${moduleInfo}is deprecated. Please use '{{input ${expected}}}' instead.`,
         false,
-        { id: 'ember-template-compiler.transform-input-on-to-onEvent.normalized-on', until: '3.0.0' }
+        { id: 'ember-template-compiler.transform-input-on-to-onEvent.normalized-on', since: '2.1.0', until: '3.0.0' }
       );
       if (!normalizedOn) {
         normalizedOn = b.pair('onEvent', b.string('enter'));
