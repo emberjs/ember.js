@@ -13,6 +13,10 @@
   "files": [
     "blueprints",
     "dist",
+    "!dist/ember-tests.prod.js",
+    "!dist/ember-tests.js",
+    "!dist/qunit",
+    "!dist/jquery",
     "!dist/tests",
     "vendor/ember",
     "index.js"
