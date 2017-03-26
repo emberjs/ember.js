@@ -367,6 +367,7 @@ const Application = Engine.extend({
   buildInstance(options = {}) {
     options.base = this;
     options.application = this;
+
     return ApplicationInstance.create(options);
   },
 
@@ -705,18 +706,16 @@ const Application = Engine.extend({
 
       // See documentation on `_autoboot()` for details
       if (this.autoboot) {
-        let instance;
+        // Otherwise, build an instance and boot it. This is currently unreachable,
+        // because we forced _globalsMode to === autoboot; but having this branch
+        // allows us to locally toggle that flag for weeding out legacy globals mode
+        // dependencies independently
+        let instance = this.buildInstance();
 
         if (this._globalsMode) {
           // If we already have the __deprecatedInstance__ lying around, boot it to
           // avoid unnecessary work
           instance = this.__deprecatedInstance__;
-        } else {
-          // Otherwise, build an instance and boot it. This is currently unreachable,
-          // because we forced _globalsMode to === autoboot; but having this branch
-          // allows us to locally toggle that flag for weeding out legacy globals mode
-          // dependencies independently
-          instance = this.buildInstance();
         }
 
         instance._bootSync();
@@ -1064,7 +1063,7 @@ function logLibraryVersions() {
 
       let nameLengths = libs.map(item => get(item, 'name.length'));
 
-      let maxNameLength = Math.max.apply(this, nameLengths);
+      let maxNameLength = Math.max(...nameLengths);
 
       debug('-------------------------------');
       for (let i = 0; i < libs.length; i++) {
