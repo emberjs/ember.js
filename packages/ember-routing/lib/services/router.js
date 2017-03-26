@@ -7,8 +7,6 @@ import {
   Service,
   readOnly
 } from 'ember-runtime';
-import { get } from 'ember-metal';
-import RouterDSL from '../system/dsl';
 
 /**
    The Router service is the public API that provides component/view layer
@@ -23,6 +21,7 @@ const RouterService = Service.extend({
   currentURL: readOnly('router.currentURL'),
   location: readOnly('router.location'),
   rootURL: readOnly('router.rootURL'),
+  router: null,
 
   /**
      Transition the application into another route. The route may
