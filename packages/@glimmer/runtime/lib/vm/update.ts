@@ -59,7 +59,7 @@ export default class UpdatingVM {
   }
 
   private get frame() {
-    return expect(this.frameStack.current, 'bug: expected a frame');
+    return this.frameStack.current;
   }
 
   goto(op: UpdatingOpcode) {
@@ -139,19 +139,6 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   didDestroy() {
     this.env.didDestroy(this.bounds);
   }
-
-  toJSON() : OpcodeJSON {
-    let details = dict<string>();
-
-    details["guid"] = `${this._guid}`;
-
-    return {
-      guid: this._guid,
-      type: this.type,
-      details,
-      children: this.children.toArray().map(op => op.toJSON())
-    };
-  }
 }
 
 export class TryOpcode extends BlockOpcode implements ExceptionHandler {
@@ -198,17 +185,6 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
     this.prev = prev;
     this.next = next;
-  }
-
-  toJSON() : OpcodeJSON {
-    let json = super.toJSON();
-
-    let details = json["details"];
-    if (!details) {
-      details = json["details"] = {};
-    }
-
-    return super.toJSON();
   }
 }
 
@@ -319,7 +295,7 @@ export class ListBlockOpcode extends BlockOpcode {
       let { dom } = vm;
 
       let marker = dom.createComment('');
-      dom.insertAfter(bounds.parentElement(), marker, expect(bounds.lastNode(), "can't insert after an empty bounds"));
+      dom.insertAfter(bounds.parentElement(), marker, bounds.lastNode());
 
       let target = new ListRevalidationDelegate(this, marker);
       let synchronizer = new IteratorSynchronizer({ target, artifacts });
@@ -343,24 +319,6 @@ export class ListBlockOpcode extends BlockOpcode {
     );
 
     return new VM(env, scope, dynamicScope, elementStack);
-  }
-
-  toJSON() : OpcodeJSON {
-    let json = super.toJSON();
-    let map = this.map;
-
-    let inner = Object.keys(map).map(key => {
-      return `${JSON.stringify(key)}: ${map[key]._guid}`;
-    }).join(", ");
-
-    let details = json["details"];
-    if (!details) {
-      details = json["details"] = {};
-    }
-
-    details["map"] = `{${inner}}`;
-
-    return json;
   }
 }
 

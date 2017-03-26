@@ -32,9 +32,7 @@ import {
   Destroyable,
   Opaque,
   HasGuid,
-  assert,
   ensureGuid,
-  expect
 } from '@glimmer/util';
 
 import {
@@ -330,12 +328,11 @@ export abstract class Environment {
   }
 
   begin() {
-    assert(!this._transaction, 'Cannot start a nested transaction');
     this._transaction = new Transaction();
   }
 
   private get transaction(): Transaction {
-    return expect(this._transaction, 'must be in a transaction');
+    return this._transaction;
   }
 
   didCreate<T>(component: T, manager: ComponentManager<T>) {

@@ -1,7 +1,6 @@
 import TemplateVisitor, { SymbolTable, Action } from "./template-visitor";
 import JavaScriptCompiler, { Template } from "./javascript-compiler";
 import { Stack, getAttrNamespace } from "@glimmer/util";
-import { assert, expect } from "@glimmer/util";
 import { TemplateMeta } from "@glimmer/wire-format";
 import { AST, isLiteral } from '@glimmer/syntax';
 
@@ -35,7 +34,7 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   }
 
   get symbols(): SymbolTable {
-    return expect(this.symbolStack.current, 'Expected a symbol table on the stack');
+    return this.symbolStack.current;
   }
 
   process(actions: Action[]): Action[] {
@@ -307,7 +306,6 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     for (let i = params.length - 1; i >= 0; i--) {
       let param = params[i];
 
-      assert(this[param.type], `Unimplemented ${param.type} on TemplateCompiler`);
       (this[param.type] as any)(param);
     }
 
@@ -325,7 +323,6 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     for (let i = pairs.length - 1; i >= 0; i--) {
       let { key, value } = pairs[i];
 
-      assert(this[value.type], `Unimplemented ${value.type} on TemplateCompiler`);
       (this[value.type] as any)(value);
       this.opcode('literal', null, key);
     }
