@@ -10,15 +10,11 @@ import { Register } from '../opcodes';
 import { ATTRS_BLOCK, Block, ClientSide, RawInlineBlock } from '../scanner';
 
 import {
-  LOGGER,
   EMPTY_ARRAY,
   Opaque,
   Option,
   Dict,
-  dict,
-  assert,
-  unwrap,
-  unreachable,
+  dict
 } from '@glimmer/util';
 
 import {
@@ -47,7 +43,6 @@ export class Compilers<T extends Syntax> {
     let name: number = sexp[this.offset];
     let index = this.names[name];
     let func = this.funcs[index];
-    assert(!!func, `expected an implementation for ${this.offset === 0 ? Ops[sexp[0]] : ClientSide.Ops[sexp[1]]}`);
     func(sexp, builder);
   }
 }
@@ -66,7 +61,6 @@ STATEMENTS.add(Ops.Comment, (sexp: S.Comment, builder: OpcodeBuilder) => {
 });
 
 STATEMENTS.add(Ops.CloseElement, (_sexp, builder: OpcodeBuilder) => {
-  LOGGER.trace('close-element statement');
   builder.closeElement();
 });
 
@@ -224,10 +218,6 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
     vm.pushFrame();
     vm.call(layout!.start);
   }
-
-  toJSON() {
-    return { GlimmerDebug: '<invoke-dynamic-layout>' };
-  }
 }
 
 STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
@@ -254,7 +244,7 @@ export class PartialInvoker implements DynamicInvoker<ProgramSymbolTable> {
   constructor(private outerSymbols: string[], private evalInfo: WireFormat.Core.EvalInfo) {}
 
   invoke(vm: VM, _partial: Option<CompiledDynamicProgram>) {
-    let partial = unwrap(_partial);
+    let partial = _partial;
     let partialSymbols = partial.symbolTable.symbols;
     let outerScope = vm.scope();
     let partialScope = vm.pushRootScope(partialSymbols.length, false);
@@ -376,10 +366,6 @@ class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
     }
 
     vm.call(block.start);
-  }
-
-  toJSON() {
-    return { GlimmerDebug: `<invoke-dynamic-yield caller-count=${this.callerCount}>` };
   }
 }
 
@@ -522,10 +508,8 @@ export class Blocks {
     let index = this.names[name];
 
     if (index === undefined) {
-      assert(!!this.missing, `${name} not found, and no catch-all block handler was registered`);
       let func = this.missing;
       let handled = func(name, params, hash, template, inverse, builder);
-      assert(!!handled, `${name} not found, and the catch-all block handler didn't handle it`);
     } else {
       let func = this.funcs[index];
       func(params, hash, template, inverse, builder);
@@ -628,7 +612,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.jumpUnless('ELSE');
 
-    builder.invokeStatic(unwrap(template));
+    builder.invokeStatic(template);
 
     if (inverse) {
       builder.jump('EXIT');
@@ -682,7 +666,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.jumpIf('ELSE');
 
-    builder.invokeStatic(unwrap(template));
+    builder.invokeStatic(template);
 
     if (inverse) {
       builder.jump('EXIT');
@@ -737,7 +721,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.jumpUnless('ELSE');
 
-    builder.invokeStatic(unwrap(template), 1);
+    builder.invokeStatic(template, 1);
 
     if (inverse) {
       builder.jump('EXIT');
@@ -816,7 +800,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.iterate('BREAK');
 
     builder.label('BODY');
-    builder.invokeStatic(unwrap(template), 2);
+    builder.invokeStatic(template, 2);
     builder.pop(2);
     builder.exit();
     builder.return();
@@ -879,7 +863,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.jumpUnless('ELSE');
 
     builder.pushRemoteElement();
-    builder.invokeStatic(unwrap(template));
+    builder.invokeStatic(template);
     builder.popRemoteElement();
 
     builder.label('ELSE');
@@ -900,10 +884,10 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
       builder.pushDynamicScope();
       builder.bindDynamicScope(names);
-      builder.invokeStatic(unwrap(template));
+      builder.invokeStatic(template);
       builder.popDynamicScope();
     } else {
-      builder.invokeStatic(unwrap(template));
+      builder.invokeStatic(template);
     }
   });
 
