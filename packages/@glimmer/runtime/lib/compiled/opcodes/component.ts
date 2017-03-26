@@ -183,14 +183,6 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
 
     manager.update(component, dynamicScope);
   }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [JSON.stringify(this.name)]
-    };
-  }
 }
 
 export class DidUpdateLayoutOpcode extends UpdatingOpcode {

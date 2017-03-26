@@ -1,10 +1,10 @@
-import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import * as Simple from '../../dom/interfaces';
 import { FIX_REIFICATION } from '../../dom/interfaces';
 import { Environment } from '../../environment';
-import { FIXME, Option, Opaque, Dict, unwrap, expect } from '@glimmer/util';
+import { FIXME, Option, Opaque } from '@glimmer/util';
 import {
   CachedReference,
   Reference,
@@ -299,7 +299,7 @@ export class ComponentElementOperations implements ElementOperations {
     }
 
     attributeNames.push(name);
-    unwrap(attributes).push(attribute);
+    attributes.push(attribute);
   }
 }
 
@@ -371,13 +371,6 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
       this.lastUpdated = tag.value();
     }
   }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type
-    };
-  }
 }
 
 export interface Attribute {
@@ -417,7 +410,7 @@ export class DynamicAttribute implements Attribute  {
   patch(env: Environment) {
     let { element, cache } = this;
 
-    let value = expect(cache, 'must patch after flush').revalidate();
+    let value = cache.revalidate();
 
     if (isModified(value)) {
       this.attributeManager.updateAttribute(env, element as FIXME<Element, 'needs to be reified properly'>, value, this.namespace);
@@ -437,31 +430,6 @@ export class DynamicAttribute implements Attribute  {
       this.attributeManager.setAttribute(env, element, value, this.namespace);
       return new PatchElementOpcode(this);
     }
-  }
-
-  toJSON(): Dict<Option<string>> {
-    let { element, namespace, name, cache } = this;
-
-    let formattedElement = formatElement(element);
-    let lastValue = expect(cache, 'must serialize after flush').peek() as string;
-
-    if (namespace) {
-      return {
-        element: formattedElement,
-        type: 'attribute',
-        namespace,
-        name,
-        lastValue
-      };
-    }
-
-    return {
-      element: formattedElement,
-      type: 'attribute',
-      namespace: namespace === undefined ? null : namespace,
-      name,
-      lastValue
-    };
   }
 }
 
@@ -495,15 +463,5 @@ export class PatchElementOpcode extends UpdatingOpcode {
 
   evaluate(vm: UpdatingVM) {
     this.operation.patch(vm.env);
-  }
-
-  toJSON(): OpcodeJSON {
-    let { _guid, type, operation } = this;
-
-    return {
-      guid: _guid,
-      type,
-      details: operation.toJSON()
-    };
   }
 }

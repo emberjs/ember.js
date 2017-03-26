@@ -1,4 +1,4 @@
-import { LinkedList, ListNode, Opaque, Option, dict, expect } from '@glimmer/util';
+import { LinkedList, ListNode, Opaque, Option, dict } from '@glimmer/util';
 import { VersionedPathReference as PathReference, Tag } from './validators';
 
 export interface IterationItem<T, U> {
@@ -246,8 +246,6 @@ export class IteratorSynchronizer {
 
   private nextRetain(item: OpaqueIterationItem) {
     let { artifacts, current } = this;
-
-    current = expect(current, 'BUG: current is empty');
 
     current.update(item);
     this.current = artifacts.nextNode(current);
