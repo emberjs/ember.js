@@ -1,6 +1,7 @@
 import { assign } from 'ember-utils';
 import { _addBeforeObserver } from 'ember-metal';
-import { runInDebug, Error as EmberError } from 'ember-debug';
+import { Error as EmberError } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 
 import hasElement from './has_element';
 /**
@@ -16,11 +17,11 @@ assign(inDOM, {
     // Ember.EventDispatcher to dispatch incoming events.
     view.renderer.register(view);
 
-    runInDebug(() => {
+    if (DEBUG) {
       _addBeforeObserver(view, 'elementId', () => {
         throw new EmberError('Changing a view\'s elementId after creation is not allowed');
       });
-    });
+    }
   },
 
   exit(view) {

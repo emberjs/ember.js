@@ -63,8 +63,10 @@
   "devDependencies": {
     "aws-sdk": "~2.2.43",
     "babel-plugin-check-es2015-constants": "^6.22.0",
+    "babel-plugin-debug-macros": "^0.0.6",
     "babel-plugin-feature-flags": "^0.3.1",
     "babel-plugin-filter-imports": "^0.3.1",
+    "babel-plugin-minify-dead-code-elimination": "^0.1.4",
     "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
     "babel-plugin-transform-es2015-block-scoping": "^6.23.0",
     "babel-plugin-transform-es2015-classes": "^6.23.0",

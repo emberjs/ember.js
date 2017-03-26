@@ -6,7 +6,6 @@ import { Mixin, get } from 'ember-metal';
 import EmberObject from '../../system/object';
 import inject from '../../inject';
 import { buildOwner } from 'internal-test-helpers';
-import { isFeatureEnabled } from 'ember-debug';
 
 QUnit.module('Controller event handling');
 
@@ -162,13 +161,10 @@ if (!EmberDev.runningProdBuild) {
 
       owner.register('foo:main', AnObject);
 
-      if (isFeatureEnabled('ember-factory-for')) {
-        expectDeprecation(() => {
-          owner._lookupFactory('foo:main');
-        }, /Using "_lookupFactory" is deprecated. Please use container.factoryFor instead./);
-      } else {
+      expectDeprecation(() => {
         owner._lookupFactory('foo:main');
-      }
+      }, /Using "_lookupFactory" is deprecated. Please use container.factoryFor instead./);
+
     }, /Defining an injected controller property on a non-controller is not allowed./);
   });
 }

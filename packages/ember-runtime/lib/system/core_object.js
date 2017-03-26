@@ -34,7 +34,9 @@ import {
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
-import { assert, runInDebug, isFeatureEnabled, Error as EmberError } from 'ember-debug';
+import { assert, Error as EmberError } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
+import { MANDATORY_SETTER } from 'ember/features';
 
 let schedule = run.schedule;
 let applyMixin = Mixin._apply;
@@ -147,7 +149,7 @@ function makeCtor() {
               if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
                 this.setUnknownProperty(keyName, value);
               } else {
-                if (isFeatureEnabled('mandatory-setter')) {
+                if (MANDATORY_SETTER) {
                   defineProperty(this, keyName, null, value); // setup mandatory setter
                 } else {
                   this[keyName] = value;
@@ -910,7 +912,7 @@ function injectedPropertyAssertion() {
   assert('Injected properties are invalid', validatePropertyInjections(this));
 }
 
-runInDebug(() => {
+if (DEBUG) {
   /**
     Provides lookup-time type validation for injected properties.
 
@@ -918,7 +920,7 @@ runInDebug(() => {
     @method _onLookup
   */
   ClassMixinProps._onLookup = injectedPropertyAssertion;
-});
+}
 
 /**
   Returns a hash of property names and container names that injected

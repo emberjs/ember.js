@@ -14,7 +14,8 @@ import {
   EvaluatedPositionalArgs,
   isComponentDefinition
 } from '@glimmer/runtime';
-import { assert, runInDebug } from 'ember-debug';
+import { assert } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 
 /**
   The `{{component}}` helper lets you add instances of `Ember.Component` to a
@@ -212,9 +213,9 @@ let EMPTY_BLOCKS = {
   inverse: null
 };
 
-runInDebug(() => {
+if (DEBUG) {
   EMPTY_BLOCKS = Object.freeze(EMPTY_BLOCKS);
-});
+}
 
 function curryArgs(definition, newArgs) {
   let { args, ComponentClass } = definition;

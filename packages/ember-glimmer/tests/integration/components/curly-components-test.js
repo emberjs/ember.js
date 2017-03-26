@@ -7,7 +7,6 @@ import {
   computed,
   run
 } from 'ember-metal';
-import { isFeatureEnabled } from 'ember-debug';
 import {
   Object as EmberObject,
   A as emberA,
@@ -23,6 +22,10 @@ import {
   equalsElement,
   styles
 } from '../../utils/test-helpers';
+import {
+  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
+  MANDATORY_SETTER
+} from 'ember/features';
 
 moduleFor('Components test: curly components', class extends RenderingTest {
 
@@ -2135,7 +2138,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     let expectedBacktrackingMessage = /modified "value" twice on <\(.+> in a single render\. It was rendered in "component:x-middle" and modified in "component:x-inner"/;
 
-    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       expectDeprecation(expectedBacktrackingMessage);
       this.runTask(() => outer.set('value', 2));
     } else {
@@ -2187,7 +2190,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     let expectedBacktrackingMessage = /modified "wrapper\.content" twice on <Ember\.Object.+> in a single render\. It was rendered in "component:x-outer" and modified in "component:x-inner"/;
 
-    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       expectDeprecation(expectedBacktrackingMessage);
       this.render('{{x-outer}}');
     } else {
@@ -2339,7 +2342,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('initial value - initial value');
 
-    if (isFeatureEnabled('mandatory-setter')) {
+    if (MANDATORY_SETTER) {
       expectAssertion(() => {
         component.bar = 'foo-bar';
       }, /You must use Ember\.set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./);

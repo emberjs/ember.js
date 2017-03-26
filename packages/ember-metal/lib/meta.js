@@ -4,7 +4,13 @@ import {
   symbol
 } from 'ember-utils';
 import { protoMethods as listenerMethods } from './meta_listeners';
-import { runInDebug, assert, isFeatureEnabled } from 'ember-debug';
+import { assert } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
+import {
+  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
+  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
+  MANDATORY_SETTER
+} from 'ember/features';
 import {
   removeChainWatcher
 } from './chains';
@@ -64,8 +70,7 @@ const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
 const IS_PROXY = 1 << 4;
 
-if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
   members.lastRendered = ownMap;
   if (has('ember-debug')) { //https://github.com/emberjs/ember.js/issues/14732
     members.lastRenderedReferenceMap = ownMap;
@@ -78,7 +83,9 @@ const META_FIELD = '__ember_meta__';
 
 export class Meta {
   constructor(obj, parentMeta) {
-    runInDebug(() => counters.metaInstantiated++);
+    if (DEBUG) {
+      counters.metaInstantiated++;
+    }
 
     this._cache = undefined;
     this._weak = undefined;
@@ -109,13 +116,12 @@ export class Meta {
     // inherited, and we can optimize it much better than JS runtimes.
     this.parent = parentMeta;
 
-    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       this._lastRendered = undefined;
-      runInDebug(() => {
+      if (DEBUG) {
         this._lastRenderedReferenceMap = undefined;
         this._lastRenderedTemplateMap = undefined;
-      });
+      }
     }
 
     this._initializeListeners();
@@ -469,7 +475,7 @@ const EMBER_META_PROPERTY = {
   descriptor: META_DESC
 };
 
-if (isFeatureEnabled('mandatory-setter')) {
+if (MANDATORY_SETTER) {
   Meta.prototype.readInheritedValue = function(key, subkey) {
     let internalKey = `_${key}`;
 
@@ -509,12 +515,16 @@ if (HAS_NATIVE_WEAKMAP) {
   let metaStore = new WeakMap();
 
   setMeta = function WeakMap_setMeta(obj, meta) {
-    runInDebug(() => counters.setCalls++);
+    if (DEBUG) {
+      counters.setCalls++;
+    }
     metaStore.set(obj, meta);
   };
 
   peekMeta = function WeakMap_peekMeta(obj) {
-    runInDebug(() => counters.peekCalls++);
+    if (DEBUG) {
+      counters.peekCalls++
+    }
 
     return metaStore.get(obj);
   };
@@ -525,7 +535,9 @@ if (HAS_NATIVE_WEAKMAP) {
     while (pointer) {
       meta = metaStore.get(pointer);
       // jshint loopfunc:true
-      runInDebug(() => counters.peekCalls++);
+      if (DEBUG) {
+        counters.peekCalls++;
+      }
       // stop if we find a `null` value, since
       // that means the meta was deleted
       // any other truthy value is a "real" meta
@@ -534,7 +546,9 @@ if (HAS_NATIVE_WEAKMAP) {
       }
 
       pointer = getPrototypeOf(pointer);
-      runInDebug(() => counters.peakPrototypeWalks++);
+      if (DEBUG) {
+        counters.peakPrototypeWalks++;
+      }
     }
   };
 } else {
@@ -558,7 +572,9 @@ if (HAS_NATIVE_WEAKMAP) {
 }
 
 export function deleteMeta(obj) {
-  runInDebug(() => counters.deleteCalls++);
+  if (DEBUG) {
+    counters.deleteCalls++;
+  }
 
   let meta = peekMeta(obj);
   if (meta) {
@@ -585,7 +601,9 @@ export function deleteMeta(obj) {
   @return {Object} the meta hash for an object
 */
 export function meta(obj) {
-  runInDebug(() => counters.metaCalls++);
+  if (DEBUG) {
+    counters.metaCalls++;
+  }
 
   let maybeMeta = peekMeta(obj);
   let parent;

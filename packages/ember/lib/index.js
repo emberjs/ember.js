@@ -9,6 +9,8 @@ import { Registry, Container } from 'container';
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
+import { EMBER_METAL_WEAKMAP } from 'ember/features';
+import * as FLAGS from 'ember/features'
 
 // ember-utils exports
 Ember.getOwner = utils.getOwner;
@@ -32,7 +34,8 @@ Ember.Registry = Registry;
 // need to import this directly, to ensure the babel feature
 // flag plugin works properly
 import * as EmberDebug from 'ember-debug';
-import { deprecate, runInDebug, deprecateFunc } from 'ember-debug';
+import { deprecate, deprecateFunc } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 
 const computed = metal.computed;
 computed.alias = metal.alias;
@@ -45,10 +48,10 @@ Ember.warn = EmberDebug.warn;
 Ember.debug = EmberDebug.debug;
 Ember.deprecate = function () { };
 Ember.deprecateFunc = function() { };
-runInDebug(function() {
+if (DEBUG) {
   Ember.deprecate = EmberDebug.deprecate;
   Ember.deprecateFunc = EmberDebug.deprecateFunc;
-});
+}
 Ember.deprecateFunc = EmberDebug.deprecateFunc;
 Ember.runInDebug = EmberDebug.runInDebug;
 /**
@@ -78,7 +81,7 @@ Ember.getWithDefault = metal.getWithDefault;
 Ember._getPath = metal._getPath;
 Ember.set = metal.set;
 Ember.trySet = metal.trySet;
-Ember.FEATURES = EmberDebug.FEATURES;
+Ember.FEATURES = FLAGS.FEATURES;
 Ember.FEATURES.isEnabled = EmberDebug.isFeatureEnabled;
 Ember._Cache = metal.Cache;
 Ember.on = metal.on;
@@ -142,7 +145,7 @@ Ember.bind = metal.bind;
 Ember.Binding = metal.Binding;
 Ember.isGlobalPath = metal.isGlobalPath;
 
-if (EmberDebug.isFeatureEnabled('ember-metal-weakmap')) {
+if (EMBER_METAL_WEAKMAP) {
   Ember.WeakMap = metal.WeakMap;
 }
 

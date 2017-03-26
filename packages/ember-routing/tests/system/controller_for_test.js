@@ -7,7 +7,7 @@ import {
 import controllerFor from '../../system/controller_for';
 import generateController from '../../system/generate_controller';
 import { buildOwner } from 'internal-test-helpers';
-import { isFeatureEnabled } from 'ember-debug';
+import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
 
 function buildInstance(namespace) {
   let owner = buildOwner();
@@ -100,7 +100,7 @@ QUnit.test('generateController should return controller:basic if provided', func
 
   controller = generateController(appInstance, 'home');
 
-  if (isFeatureEnabled('ember-no-double-extend')) {
+  if (EMBER_NO_DOUBLE_EXTEND) {
     ok(controller instanceof BasicController, 'should return base class of controller');
   } else {
     let doubleExtendedFactory;

@@ -4,7 +4,8 @@
 */
 import { RSVP } from 'ember-runtime';
 import Logger from 'ember-console';
-import { assert, isFeatureEnabled } from 'ember-debug';
+import { assert } from 'ember-debug';
+import { EMBER_TESTING_RESUME_TEST } from 'ember/features';
 
 let resume;
 
@@ -37,12 +38,12 @@ export function resumeTest() {
  @public
 */
 export function pauseTest() {
-  if (isFeatureEnabled('ember-testing-resume-test')) {
+  if (EMBER_TESTING_RESUME_TEST) {
     Logger.info('Testing paused. Use `resumeTest()` to continue.');
   }
 
   return new RSVP.Promise((resolve) => {
-    if (isFeatureEnabled('ember-testing-resume-test')) {
+    if (EMBER_TESTING_RESUME_TEST) {
       resume = resolve;
     }
   }, 'TestAdapter paused promise');

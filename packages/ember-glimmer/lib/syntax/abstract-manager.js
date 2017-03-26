@@ -1,10 +1,10 @@
-import { runInDebug } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 
 class AbstractManager {
 
 }
 
-runInDebug(() => {
+if (DEBUG) {
   AbstractManager.prototype._pushToDebugStack = function(name, environment) {
     this.debugStack = environment.debugStack;
     this.debugStack.push(name);
@@ -14,6 +14,6 @@ runInDebug(() => {
     this.debugStack = environment.debugStack;
     this.debugStack.pushEngine(name);
   };
-});
+}
 
 export default AbstractManager;

@@ -1,8 +1,8 @@
-import { runInDebug } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 
 let DebugStack;
 
-runInDebug(function() {
+if (DEBUG) {
   class Element {
     constructor(name) {
       this.name = name;
@@ -61,6 +61,6 @@ runInDebug(function() {
       }
     }
   };
-});
+}
 
 export default DebugStack;

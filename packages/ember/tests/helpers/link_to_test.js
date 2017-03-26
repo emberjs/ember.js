@@ -18,7 +18,7 @@ import { Application } from 'ember-application';
 import { jQuery } from 'ember-views';
 import { compile } from 'ember-template-compiler';
 import { setTemplates, setTemplate } from 'ember-glimmer';
-import { isFeatureEnabled } from 'ember-debug';
+import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember-debug';
 
 let Router, App, router, appInstance;
 
@@ -118,7 +118,7 @@ QUnit.test('The {{link-to}} helper moves into the named route', function() {
   equal(jQuery('#home-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 });
 
-if (isFeatureEnabled('ember-improved-instrumentation')) {
+if (EMBER_IMPROVED_INSTRUMENTATION) {
   QUnit.test('The {{link-to}} helper fires an interaction event', function(assert) {
     assert.expect(2);
     Router.map(function(match) {
