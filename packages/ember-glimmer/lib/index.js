@@ -110,6 +110,37 @@
   @public
  */
 
+/**
+  `{{yield}}` denotes an area of a template that will be rendered inside
+  of another template.
+
+  ### Use with Ember.Component
+  When designing components `{{yield}}` is used to denote where, inside the component's
+  template, an optional block passed to the component should render:
+  ```handlebars
+  <!-- application.hbs -->
+  {{#labeled-textfield value=someProperty}}
+   First name:
+  {{/labeled-textfield}}
+  ```
+  ```handlebars
+  <!-- components/labeled-textfield.hbs -->
+  <label>
+   {{yield}} {{input value=value}}
+  </label>
+  ```
+  Result:
+  ```html
+  <label>
+   First name: <input type="text" />
+  </label>
+  ```
+  @method yield
+  @for Ember.Templates.helpers
+  @param {Hash} options
+  @return {String} HTML string
+  @public
+ */
 
 /**
   Execute the `debugger` statement in the current template's context.
