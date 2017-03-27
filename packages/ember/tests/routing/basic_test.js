@@ -2571,6 +2571,66 @@ QUnit.test('Aborting/redirecting the transition in `willTransition` prevents Loa
   run(deferred.resolve);
 });
 
+QUnit.test('Conditionally pausing a route transition, only one `link-to` components will receive an `.active` state when the transition is `.retry()`ed', function() {
+  expect(3);
+
+  setTemplate('application', compile('\
+    {{#link-to "thread" 1 class="one"}} One {{/link-to}}\
+    {{#link-to "thread" 2 class="two"}} Two {{/link-to}}\
+    {{#link-to "thread" 3 class="three"}} Three {{/link-to}}\
+    {{outlet}}'
+  ));
+
+  Router.reopen({
+    location: 'none',
+    rootURL: '/'
+  });
+
+  Router.map(function() {
+    this.route('thread', { path: '/:id' });
+  });
+
+  App.IndexRoute = Route.extend({
+    actions: {
+      willTransition(transition) {
+        this._super(...arguments);
+
+        // If the user wants to transition, reset and return
+        if (this.continueTransition) {
+          // reset users selection
+          this.continueTransition = false;
+          return false;
+        }
+
+        transition.abort();
+
+        var previousTransition = this.getWithDefault('previousTransition', transition);
+        this.set('previousTransition', previousTransition);
+
+        this.continueTransition = true;
+        previousTransition.retry();
+      }
+    }
+  });
+
+  bootApplication();
+
+  var appController = getOwner(router).lookup('controller:application');
+
+  run(router, 'transitionTo', 'index');
+  equal(appController.get('currentPath'), 'index');
+
+  run(router, 'transitionTo', 'thread', 2);
+
+  run(() => {
+    // Only one link-to should have the active class
+    equal(jQuery('.one.active').length, 0);
+    equal(jQuery('.two.active').length, 1);
+    equal(jQuery('.three.active').length, 0);
+  });
+
+});
+
 QUnit.test('`didTransition` event fires on the router', function() {
   expect(3);
 
