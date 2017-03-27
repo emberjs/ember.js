@@ -1,6 +1,6 @@
-import { assign } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import DEFAULT_FEATURES from 'ember/features';
+import * as FLAGS from 'ember/features';
+let { FEATURES } = FLAGS;
 
 /**
   The hash of enabled Canary features. Add to this, any canary features
@@ -15,7 +15,8 @@ import DEFAULT_FEATURES from 'ember/features';
   @since 1.1.0
   @public
 */
-export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
+
+// Auto-generated
 
 /**
   Determine whether the specified `feature` is enabled. Used by Ember's
@@ -44,7 +45,3 @@ export default function isEnabled(feature) {
     return false;
   }
 }
-
-export {
-  DEFAULT_FEATURES
-};

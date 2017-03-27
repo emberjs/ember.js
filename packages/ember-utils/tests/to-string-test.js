@@ -1,4 +1,4 @@
-import { toString } from '../index';
+import { toString } from '..';
 
 QUnit.module('ember-utils toString');
 

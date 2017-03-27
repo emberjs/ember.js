@@ -1,10 +1,13 @@
-import { addObserver } from '../observer';
-import { get } from '../property_get';
-import { ChainNode, finishChains } from '../chains';
-import { defineProperty } from '../properties';
-import computed from '../computed';
-import { propertyDidChange } from '../property_events';
-import { peekMeta } from '../meta';
+import {
+  addObserver,
+  get,
+  ChainNode,
+  finishChains,
+  defineProperty,
+  computed,
+  propertyDidChange,
+  peekMeta
+} from '..';
 
 QUnit.module('Chains');
 

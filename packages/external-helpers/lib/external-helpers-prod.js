@@ -1,4 +1,4 @@
-function inherits(subClass, superClass) {
+export function inherits(subClass, superClass) {
   subClass.prototype = Object.create(superClass && superClass.prototype, {
     constructor: {
       value: subClass,
@@ -11,7 +11,7 @@ function inherits(subClass, superClass) {
   if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : defaults(subClass, superClass);
 }
 
-function taggedTemplateLiteralLoose(strings, raw) {
+export function taggedTemplateLiteralLoose(strings, raw) {
   strings.raw = raw;
   return strings;
 }
@@ -26,19 +26,13 @@ function defineProperties(target, props) {
   }
 }
 
-function createClass(Constructor, protoProps, staticProps) {
+export function createClass(Constructor, protoProps, staticProps) {
   if (protoProps) defineProperties(Constructor.prototype, protoProps);
   if (staticProps) defineProperties(Constructor, staticProps);
   return Constructor;
 }
 
-function interopExportWildcard(obj, defaults) {
-  var newObj = defaults({}, obj);
-  delete newObj['default'];
-  return newObj;
-}
-
-function defaults(obj, defaults) {
+export function defaults(obj, defaults) {
   var keys = Object.getOwnPropertyNames(defaults);
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
@@ -50,11 +44,8 @@ function defaults(obj, defaults) {
   return obj;
 }
 
-var babelHelpers = {
-  inherits: inherits,
-  taggedTemplateLiteralLoose: taggedTemplateLiteralLoose,
-  slice: Array.prototype.slice,
-  createClass: createClass,
-  interopExportWildcard: interopExportWildcard,
-  defaults: defaults
-};
+export const possibleConstructorReturn = (function (self, call) {
+  return call && (typeof call === 'object' || typeof call === 'function') ? call : self;
+});
+
+export const slice = Array.prototype.slice;

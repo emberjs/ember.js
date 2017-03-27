@@ -2,11 +2,6 @@
 import { context } from 'ember-environment';
 import { run } from 'ember-metal';
 import {
-  isFeatureEnabled,
-  getDebugFunction,
-  setDebugFunction
-} from 'ember-debug';
-import {
   Controller,
   Service,
   Object as EmberObject,
@@ -23,6 +18,7 @@ import {
   makeBoundHelper as makeHTMLBarsBoundHelper
 } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
 
 let registry, locator, application, originalLookup, originalInfo;
 
@@ -71,11 +67,9 @@ QUnit.test('the default resolver looks up templates in Ember.TEMPLATES', functio
     equal(locator.lookupFactory('template:fooBar.baz'), fooBarBazTemplate, 'resolves template:foo_bar.baz');
   });
 
-  if (isFeatureEnabled('ember-factory-for')) {
-    equal(locator.factoryFor('template:foo').class, fooTemplate, 'resolves template:foo');
-    equal(locator.factoryFor('template:fooBar').class, fooBarTemplate, 'resolves template:foo_bar');
-    equal(locator.factoryFor('template:fooBar.baz').class, fooBarBazTemplate, 'resolves template:foo_bar.baz');
-  }
+  equal(locator.factoryFor('template:foo').class, fooTemplate, 'resolves template:foo');
+  equal(locator.factoryFor('template:fooBar').class, fooBarTemplate, 'resolves template:foo_bar');
+  equal(locator.factoryFor('template:fooBar.baz').class, fooBarBazTemplate, 'resolves template:foo_bar.baz');
 });
 
 QUnit.test('the default resolver looks up basic name as no prefix', function() {
@@ -98,9 +92,8 @@ QUnit.test('the default resolver resolves models on the namespace', function() {
   ignoreDeprecation(() => {
     detectEqual(application.Post, locator.lookupFactory('model:post'), 'looks up Post model on application');
   });
-  if (isFeatureEnabled('ember-factory-for')) {
-    detectEqual(application.Post, locator.factoryFor('model:post').class, 'looks up Post model on application');
-  }
+
+  detectEqual(application.Post, locator.factoryFor('model:post').class, 'looks up Post model on application');
 });
 
 QUnit.test('the default resolver resolves *:main on the namespace', function() {
@@ -109,29 +102,27 @@ QUnit.test('the default resolver resolves *:main on the namespace', function() {
   ignoreDeprecation(() => {
     detectEqual(application.FooBar, locator.lookupFactory('foo-bar:main'), 'looks up FooBar type without name on application');
   });
-  if (isFeatureEnabled('ember-factory-for')) {
-    detectEqual(application.FooBar, locator.factoryFor('foo-bar:main').class, 'looks up FooBar type without name on application');
-  }
+
+  detectEqual(application.FooBar, locator.factoryFor('foo-bar:main').class, 'looks up FooBar type without name on application');
 });
 
-if (isFeatureEnabled('ember-factory-for')) {
-  QUnit.test('the default resolver resolves container-registered helpers', function() {
-    let shorthandHelper = makeHelper(() => {});
-    let helper = Helper.extend();
+QUnit.test('the default resolver resolves container-registered helpers', function() {
+  let shorthandHelper = makeHelper(() => {});
+  let helper = Helper.extend();
 
-    application.register('helper:shorthand', shorthandHelper);
-    application.register('helper:complete', helper);
+  application.register('helper:shorthand', shorthandHelper);
+  application.register('helper:complete', helper);
 
-    let lookedUpShorthandHelper = locator.factoryFor('helper:shorthand').class;
+  let lookedUpShorthandHelper = locator.factoryFor('helper:shorthand').class;
 
-    ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
+  ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
 
-    let lookedUpHelper = locator.factoryFor('helper:complete').class;
+  let lookedUpHelper = locator.factoryFor('helper:complete').class;
 
-    ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
-    ok(helper.detect(lookedUpHelper), 'looked up complete helper');
-  });
-}
+  ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
+  ok(helper.detect(lookedUpHelper), 'looked up complete helper');
+});
+
 
 QUnit.test('the default resolver resolves container-registered helpers via lookupFor', function() {
   let shorthandHelper = makeHelper(() => {});

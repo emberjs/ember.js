@@ -1,9 +1,9 @@
 import {
   mixin,
   Mixin,
-  required
-} from '../../mixin';
-import { get } from '../../property_get';
+  required,
+  get
+} from '../..';
 
 let PartialMixin, FinalMixin, obj;
 

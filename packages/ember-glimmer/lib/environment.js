@@ -1,6 +1,8 @@
 import { guidFor, OWNER } from 'ember-utils';
 import { Cache } from 'ember-metal';
-import { assert, warn, runInDebug, isFeatureEnabled } from 'ember-debug';
+import { assert, warn } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
+import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
 import {
   lookupPartial,
   hasPartial,
@@ -128,7 +130,9 @@ export default class Environment extends GlimmerEnvironment {
       '-get-dynamic-var': getDynamicVar
     };
 
-    runInDebug(() => this.debugStack = new DebugStack());
+    if (DEBUG) {
+      this.debugStack = new DebugStack()
+    }
   }
 
   macros() {
@@ -204,32 +208,18 @@ export default class Environment extends GlimmerEnvironment {
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
+    let helperFactory = owner[FACTORY_FOR](`helper:${name}`, options) || owner[FACTORY_FOR](`helper:${name}`);
 
-    if (isFeatureEnabled('ember-factory-for')) {
-      let helperFactory = owner[FACTORY_FOR](`helper:${name}`, options) || owner[FACTORY_FOR](`helper:${name}`);
-
-      // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-      if (helperFactory.class.isHelperInstance) {
-        return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
-      } else if (helperFactory.class.isHelperFactory) {
-        if (!isFeatureEnabled('ember-no-double-extend')) {
-          helperFactory = helperFactory.create();
-        }
-        return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
-      } else {
-        throw new Error(`${name} is not a helper`);
+    // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
+    if (helperFactory.class.isHelperInstance) {
+      return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
+    } else if (helperFactory.class.isHelperFactory) {
+      if (!EMBER_NO_DOUBLE_EXTEND) {
+        helperFactory = helperFactory.create();
       }
+      return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
     } else {
-      let helperFactory = owner.lookup(`helper:${name}`, options) || owner.lookup(`helper:${name}`);
-
-      // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-      if (helperFactory.isHelperInstance) {
-        return (vm, args) => SimpleHelperReference.create(helperFactory.compute, args);
-      } else if (helperFactory.isHelperFactory) {
-        return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
-      } else {
-        throw new Error(`${name} is not a helper`);
-      }
+      throw new Error(`${name} is not a helper`);
     }
   }
 
@@ -294,7 +284,7 @@ export default class Environment extends GlimmerEnvironment {
   }
 }
 
-runInDebug(() => {
+if (DEBUG) {
   class StyleAttributeManager extends AttributeManager {
     setAttribute(dom, element, value) {
       warn(constructStyleDeprecationMessage(value), (() => {
@@ -326,4 +316,4 @@ runInDebug(() => {
 
     return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
   };
-});
+}

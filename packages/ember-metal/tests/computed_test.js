@@ -3,20 +3,15 @@ import { testBoth } from 'internal-test-helpers';
 import {
   ComputedProperty,
   computed,
-  cacheFor
-} from '../computed';
-
-import {
+  cacheFor,
   Descriptor,
-  defineProperty
-} from '../properties';
-import { get } from '../property_get';
-import { set } from '../property_set';
-import { isWatching } from '../watching';
-import {
+  defineProperty,
+  get,
+  set,
+  isWatching,
   addObserver,
   _addBeforeObserver
-} from '../observer';
+} from '..';
 
 let obj, count;
 

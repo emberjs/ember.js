@@ -1,9 +1,11 @@
 import { testBoth } from 'internal-test-helpers';
-import { PROPERTY_DID_CHANGE } from '../property_events';
-import { isWatching } from '../watching';
-import { defineProperty } from '../properties';
-import alias from '../alias';
-import { computed } from '../computed';
+import {
+  isWatching,
+  defineProperty,
+  alias,
+  PROPERTY_DID_CHANGE,
+  computed
+} from '..';
 
 QUnit.module('PROPERTY_DID_CHANGE');
 

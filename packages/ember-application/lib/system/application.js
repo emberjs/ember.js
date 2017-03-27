@@ -4,7 +4,8 @@
 */
 import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
-import { assert, runInDebug, debug, isTesting } from 'ember-debug';
+import { assert, debug, isTesting } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 import {
   libraries,
   get,
@@ -33,7 +34,7 @@ import { privatize as P } from 'container';
 import Engine from './engine';
 import { setupApplicationRegistry } from 'ember-glimmer';
 import { RouterService } from 'ember-routing';
-import { isFeatureEnabled } from 'ember-debug';
+import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 
 let librariesRegistered = false;
 
@@ -339,7 +340,10 @@ const Application = Engine.extend({
     }
 
     registerLibraries();
-    runInDebug(() => logLibraryVersions());
+
+    if (DEBUG) {
+      logLibraryVersions();
+    }
 
     // Start off the number of deferrals at 1. This will be decremented by
     // the Application's own `boot` method.
@@ -1024,6 +1028,7 @@ Application.reopenClass({
 });
 
 function commonSetupRegistry(registry) {
+  registry.register('router:main', Router);
   registry.register('-view-registry:main', { create() { return dictionary(null); } });
 
   registry.register('route:basic', Route);
@@ -1038,7 +1043,7 @@ function commonSetupRegistry(registry) {
 
   registry.register(P`-bucket-cache:main`, BucketCache);
 
-  if (isFeatureEnabled('ember-routing-router-service')) {
+  if (EMBER_ROUTING_ROUTER_SERVICE) {
     registry.register('service:router', RouterService);
     registry.injection('service:router', 'router', 'router:main');
   }
@@ -1055,7 +1060,7 @@ function registerLibraries() {
 }
 
 function logLibraryVersions() {
-  runInDebug(() => {
+  if (DEBUG) {
     if (ENV.LOG_VERSION) {
       // we only need to see this once per Application#init
       ENV.LOG_VERSION = false;
@@ -1073,7 +1078,7 @@ function logLibraryVersions() {
       }
       debug('-------------------------------');
     }
-  });
+  }
 }
 
 export default Application;

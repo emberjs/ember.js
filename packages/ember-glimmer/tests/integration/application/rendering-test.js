@@ -2,13 +2,13 @@ import { Controller } from 'ember-runtime';
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Route } from 'ember-routing';
-import { isFeatureEnabled } from 'ember-debug';
 import { Component } from 'ember-glimmer';
+import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
 
 moduleFor('Application test: rendering', class extends ApplicationTest {
 
   ['@test it can render the application template'](assert) {
-    this.registerTemplate('application', 'Hello world!');
+    this.addTemplate('application', 'Hello world!');
 
     return this.visit('/').then(() => {
       this.assertText('Hello world!');
@@ -16,13 +16,13 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
   }
 
   ['@test it can access the model provided by the route'](assert) {
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       model() {
         return ['red', 'yellow', 'blue'];
       }
     }));
 
-    this.registerTemplate('application', strip`
+    this.addTemplate('application', strip`
       <ul>
         {{#each model as |item|}}
           <li>{{item}}</li>
@@ -53,13 +53,13 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
 
     // The "favorite" route will inherit the model
-    this.registerRoute('lists.colors', Route.extend({
+    this.add('route:lists.colors', Route.extend({
       model() {
         return ['red', 'yellow', 'blue'];
       }
     }));
 
-    this.registerTemplate('lists.colors.favorite', strip`
+    this.addTemplate('lists.colors.favorite', strip`
       <ul>
         {{#each model as |item|}}
           <li>{{item}}</li>
@@ -85,16 +85,16 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       this.route('colors');
     });
 
-    this.registerTemplate('application', strip`
+    this.addTemplate('application', strip`
       <nav>{{outlet "nav"}}</nav>
       <main>{{outlet}}</main>
     `);
 
-    this.registerTemplate('nav', strip`
+    this.addTemplate('nav', strip`
       <a href="http://emberjs.com/">Ember</a>
     `);
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       renderTemplate() {
         this.render();
         this.render('nav', {
@@ -104,13 +104,13 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       }
     }));
 
-    this.registerRoute('colors', Route.extend({
+    this.add('route:colors', Route.extend({
       model() {
         return ['red', 'yellow', 'blue'];
       }
     }));
 
-    this.registerTemplate('colors', strip`
+    this.addTemplate('colors', strip`
       <ul>
         {{#each model as |item|}}
           <li>{{item}}</li>
@@ -141,16 +141,16 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       this.route('colors');
     });
 
-    this.registerTemplate('application', strip`
+    this.addTemplate('application', strip`
       <nav>{{outlet "nav"}}</nav>
       <main>{{outlet}}</main>
     `);
 
-    this.registerTemplate('nav', strip`
+    this.addTemplate('nav', strip`
       <a href="http://emberjs.com/">Ember</a>
     `);
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       renderTemplate() {
         this.render();
         this.render('nav', {
@@ -160,13 +160,13 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       }
     }));
 
-    this.registerRoute('colors', Route.extend({
+    this.add('route:colors', Route.extend({
       model() {
         return ['red', 'yellow', 'blue'];
       }
     }));
 
-    this.registerTemplate('colors', strip`
+    this.addTemplate('colors', strip`
       <ul>
         {{#each model as |item|}}
           <li>{{item}}</li>
@@ -201,10 +201,10 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       });
     });
 
-    this.registerTemplate('a', 'A{{outlet}}');
-    this.registerTemplate('b', 'B{{outlet}}');
-    this.registerTemplate('b.c', 'C');
-    this.registerTemplate('b.d', 'D');
+    this.addTemplate('a', 'A{{outlet}}');
+    this.addTemplate('b', 'B{{outlet}}');
+    this.addTemplate('b.c', 'C');
+    this.addTemplate('b.d', 'D');
 
     return this.visit('/b/c').then(() => {
       // this.assertComponentElement(this.firstChild, { content: 'BC' });
@@ -225,13 +225,13 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       this.route('color', { path: '/colors/:color' });
     });
 
-    this.registerRoute('color', Route.extend({
+    this.add('route:color', Route.extend({
       model(params) {
         return params.color;
       }
     }));
 
-    this.registerTemplate('color', 'color: {{model}}');
+    this.addTemplate('color', 'color: {{model}}');
 
     return this.visit('/colors/red').then(() => {
       this.assertComponentElement(this.firstChild, { content: 'color: red' });
@@ -249,16 +249,16 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       this.route('b');
     });
 
-    this.registerController('a', Controller.extend({
+    this.add('controller:a', Controller.extend({
       value: 'a'
     }));
 
-    this.registerController('b', Controller.extend({
+    this.add('controller:b', Controller.extend({
       value: 'b'
     }));
 
-    this.registerTemplate('a', '{{value}}');
-    this.registerTemplate('b', '{{value}}');
+    this.addTemplate('a', '{{value}}');
+    this.addTemplate('b', '{{value}}');
 
     return this.visit('/a').then(() => {
       this.assertText('a');
@@ -271,7 +271,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       this.route('color', { path: '/colors/:color' });
     });
 
-    this.registerRoute('color', Route.extend({
+    this.add('route:color', Route.extend({
       model(params) {
         return { color: params.color };
       },
@@ -281,15 +281,15 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       }
     }));
 
-    this.registerController('red', Controller.extend({
+    this.add('controller:red', Controller.extend({
       color: 'red'
     }));
 
-    this.registerController('green', Controller.extend({
+    this.add('controller:green', Controller.extend({
       color: 'green'
     }));
 
-    this.registerTemplate('color', 'model color: {{model.color}}, controller color: {{color}}');
+    this.addTemplate('color', 'model color: {{model.color}}, controller color: {{color}}');
 
     return this.visit('/colors/red').then(() => {
       this.assertComponentElement(this.firstChild, { content: 'model color: red, controller color: red' });
@@ -307,7 +307,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       this.route('b');
     });
 
-    this.registerRoute('a', Route.extend({
+    this.add('route:a', Route.extend({
       model() {
         return 'A';
       },
@@ -317,7 +317,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       }
     }));
 
-    this.registerRoute('b', Route.extend({
+    this.add('route:b', Route.extend({
       model() {
         return 'B';
       },
@@ -327,11 +327,11 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       }
     }));
 
-    this.registerController('common', Controller.extend({
+    this.add('controller:common', Controller.extend({
       prefix: 'common'
     }));
 
-    this.registerTemplate('common', '{{prefix}} {{model}}');
+    this.addTemplate('common', '{{prefix}} {{model}}');
 
     return this.visit('/a').then(() => {
       this.assertComponentElement(this.firstChild, { content: 'common A' });
@@ -348,8 +348,8 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
   // I wish there was a way to assert that the OutletComponentManager did not
   // receive a didCreateElement.
   ['@test a child outlet is always a fragment']() {
-    this.registerTemplate('application', '{{outlet}}');
-    this.registerTemplate('index', '{{#if true}}1{{/if}}<div>2</div>');
+    this.addTemplate('application', '{{outlet}}');
+    this.addTemplate('index', '{{#if true}}1{{/if}}<div>2</div>');
     return this.visit('/').then(() => {
       this.assertComponentElement(this.firstChild, { content: '1<div>2</div>' });
     });
@@ -360,13 +360,13 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       this.route('a');
     });
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       activate() {
         this.transitionTo('a');
       }
     }));
 
-    this.registerTemplate('a', 'Hello from A!');
+    this.addTemplate('a', 'Hello from A!');
 
     return this.visit('/').then(() => {
       this.assertComponentElement(this.firstChild, {
@@ -380,15 +380,15 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       this.route('routeWithError');
     });
 
-    this.registerRoute('routeWithError', Route.extend({
+    this.add('route:routeWithError', Route.extend({
       model() {
         return { name: 'Alex' };
       }
     }));
 
-    this.registerTemplate('routeWithError', 'Hi {{model.name}} {{x-foo person=model}}');
+    this.addTemplate('routeWithError', 'Hi {{model.name}} {{x-foo person=model}}');
 
-    this.registerComponent('x-foo', {
+    this.addComponent('x-foo', {
       ComponentClass: Component.extend({
         init() {
           this._super(...arguments);
@@ -400,7 +400,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
 
     let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "template:routeWithError" and modified in "component:x-foo"/;
 
-    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       expectDeprecation(expectedBacktrackingMessage);
       return this.visit('/routeWithError');
     } else {

@@ -152,7 +152,7 @@ class ChainNode {
     this.count = 0;
 
     this._value = value;
-    this._paths = {};
+    this._paths = undefined;
     if (this._watching) {
       let obj = parent.value();
 
@@ -189,21 +189,22 @@ class ChainNode {
     let ret = new ChainNode(null, null, obj);
     let paths = this._paths;
     let path;
-
-    for (path in paths) {
-      // this check will also catch non-number vals.
-      if (paths[path] <= 0) {
-        continue;
+    if (paths !== undefined) {
+      for (path in paths) {
+        // this check will also catch non-number vals.
+        if (paths[path] <= 0) {
+          continue;
+        }
+        ret.add(path);
       }
-      ret.add(path);
-    }
+  }
     return ret;
   }
 
   // called on the root node of a chain to setup watchers on the specified
   // path.
   add(path) {
-    let paths = this._paths;
+    let paths = this._paths || (this._paths = {});
     paths[path] = (paths[path] || 0) + 1;
 
     let key = firstKey(path);
@@ -216,6 +217,7 @@ class ChainNode {
   // path
   remove(path) {
     let paths = this._paths;
+    if (paths === undefined) { return; }
     if (paths[path] > 0) {
       paths[path]--;
     }
