@@ -19,7 +19,9 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
 
     this.resolver = applicationOptions.Resolver.lastInstance;
 
-    this.add('router:main', Router.extend(this.routerOptions));
+    if (this.resolver) {
+      this.resolver.add('router:main', Router.extend(this.routerOptions));
+    }
 
     this.applicationInstance = null;
   }
