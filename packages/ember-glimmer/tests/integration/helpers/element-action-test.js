@@ -1423,4 +1423,38 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     this.assertText('Click me');
   }
+
+  ['@test action handler that shifts element attributes doesn\'t trigger multiple invocations']() {
+    let actionCount = 0;
+    let ExampleComponent = Component.extend({
+      selected: false,
+      actions: {
+        toggleSelected() {
+          actionCount++;
+          this.toggleProperty('selected');
+        }
+      }
+    });
+
+    this.registerComponent('example-component', {
+      ComponentClass: ExampleComponent,
+      template: '<button class="{{if selected \'selected\'}}" {{action "toggleSelected"}}>Toggle Selected</button>'
+    });
+
+    this.render('{{example-component}}');
+
+    this.runTask(() => {
+      this.$('button').click();
+    });
+
+    this.assert.equal(actionCount, 1, 'Click action only fired once.');
+    this.assert.ok(this.$('button').hasClass('selected'), 'Element with action handler has properly updated it\'s conditional class');
+
+    this.runTask(() => {
+      this.$('button').click();
+    });
+
+    this.assert.equal(actionCount, 2, 'Second click action only fired once.');
+    this.assert.ok(!this.$('button').hasClass('selected'), 'Element with action handler has properly updated it\'s conditional class');
+  }
 });

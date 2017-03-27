@@ -220,6 +220,7 @@ export default EmberObject.extend({
 
     rootElement.on(`${event}.ember`, '[data-ember-action]', evt => {
       let attributes = evt.currentTarget.attributes;
+      let handledActions = [];
 
       for (let i = 0; i < attributes.length; i++) {
         let attr = attributes.item(i);
@@ -231,8 +232,12 @@ export default EmberObject.extend({
           // We have to check for action here since in some cases, jQuery will trigger
           // an event on `removeChild` (i.e. focusout) after we've already torn down the
           // action handlers for the view.
-          if (action && action.eventName === eventName) {
+          if (action && action.eventName === eventName && handledActions.indexOf(action) === -1) {
             action.handler(evt);
+            // Action handlers can mutate state which in turn creates new attributes on the element.
+            // This effect could cause the `data-ember-action` attribute to shift down and be invoked twice.
+            // To avoid this, we keep track of which actions have been handled.
+            handledActions.push(action);
           }
         }
       }
