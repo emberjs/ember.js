@@ -57,7 +57,7 @@ import { FACTORY_FOR } from 'container';
 import { default as ActionModifierManager } from './modifiers/action';
 
 function instrumentationPayload(name) {
-  return { object: name };
+  return { object: `component:${name}` };
 }
 
 export default class Environment extends GlimmerEnvironment {
