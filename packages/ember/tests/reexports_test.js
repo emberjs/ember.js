@@ -8,7 +8,7 @@ QUnit.module('ember reexports');
   // ember-utils
   ['getOwner', 'ember-utils', 'getOwner'],
   ['setOwner', 'ember-utils', 'setOwner'],
-  // ['assign', 'ember-metal'], TODO: fix this test, we use `Object.assign` if present
+  ['assign', 'ember-utils'],
   ['GUID_KEY', 'ember-utils'],
   ['uuid', 'ember-utils'],
   ['generateGuid', 'ember-utils'],

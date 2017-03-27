@@ -1,4 +1,4 @@
-import { assign } from '..';
+import { assignPolyfill as assign } from '..';
 
 QUnit.module('Ember.assign');
 

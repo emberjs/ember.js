@@ -25,7 +25,7 @@ Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.applyStr = utils.applyStr;
 Ember.uuid = utils.uuid;
-Ember.assign = Object.assign || utils.assign;
+Ember.assign = utils.assign;
 
 // container exports
 Ember.Container = Container;

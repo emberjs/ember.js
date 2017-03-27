@@ -15,7 +15,7 @@
   @return {Object}
   @public
 */
-export default function assign(original) {
+export function assign(original) {
   for (let i = 1; i < arguments.length; i++) {
     let arg = arguments[i];
     if (!arg) { continue; }
@@ -30,3 +30,5 @@ export default function assign(original) {
 
   return original;
 }
+
+export default Object.assign || assign;
