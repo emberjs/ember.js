@@ -1,5 +1,5 @@
 import { guidFor, OWNER } from 'ember-utils';
-import { Cache } from 'ember-metal';
+import { Cache, _instrumentStart } from 'ember-metal';
 import { assert, warn } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
@@ -55,6 +55,10 @@ import installPlatformSpecificProtocolForURL from './protocol-for-url';
 import { FACTORY_FOR } from 'container';
 
 import { default as ActionModifierManager } from './modifiers/action';
+
+function instrumentationPayload(name) {
+  return { object: name };
+}
 
 export default class Environment extends GlimmerEnvironment {
   static create(options) {
@@ -147,11 +151,13 @@ export default class Environment extends GlimmerEnvironment {
 
   getComponentDefinition(path, symbolTable) {
     let name = path[0];
+    let finalizer = _instrumentStart('render.compile', instrumentationPayload, name);
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let source = blockMeta.moduleName && `template:${blockMeta.moduleName}`;
-
-    return this._definitionCache.get({ name, source, owner });
+    let definition = this._definitionCache.get({ name, source, owner });
+    definition.finalizer = finalizer;
+    return definition;
   }
 
   // normally templates should be exported at the proper module name

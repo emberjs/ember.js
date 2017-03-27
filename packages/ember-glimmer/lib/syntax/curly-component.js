@@ -175,6 +175,8 @@ class CurlyComponentManager extends AbstractManager {
   }
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
+    definition.finalizer();
+
     if (DEBUG) {
       this._pushToDebugStack(`component:${definition.name}`, environment)
     }
