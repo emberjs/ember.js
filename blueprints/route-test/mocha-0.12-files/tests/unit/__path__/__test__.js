@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 import { setupTest } from 'ember-mocha';
 
 describe('<%= friendlyTestDescription %>', function() {
-  setupTest('route:<%= dasherizedModuleName %>', {
+  setupTest('route:<%= moduleName %>', {
     // Specify the other units that are required for this test.
     // needs: ['controller:foo']
   });
