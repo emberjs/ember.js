@@ -1762,7 +1762,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   },
 
   /**
-    Returns the resolved controller of the current route, or a parent (or any ancestor)
+    Returns the controller of the current route, or a parent (or any ancestor)
     route in a route hierarchy.
 
     The controller instance must already have been created, either through entering the
