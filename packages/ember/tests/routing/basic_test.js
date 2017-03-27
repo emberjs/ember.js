@@ -2571,8 +2571,8 @@ QUnit.test('Aborting/redirecting the transition in `willTransition` prevents Loa
   run(deferred.resolve);
 });
 
-QUnit.test('Conditionally pausing a route transition, only one `link-to` components will receive an `.active` state when the transition is `.retry()`ed', function() {
-  expect(3);
+QUnit.skip('Conditionally pausing a route transition, only one `link-to` components will receive an `.active` state when the transition is `.retry()`ed', function() {
+  expect(6);
 
   setTemplate('application', compile('\
     {{#link-to "thread" 1 class="one"}} One {{/link-to}}\
@@ -2619,6 +2619,14 @@ QUnit.test('Conditionally pausing a route transition, only one `link-to` compone
 
   run(router, 'transitionTo', 'index');
   equal(appController.get('currentPath'), 'index');
+
+  run(() => {
+    // Only one link-to should have the active class
+    equal(jQuery('.one.active').length, 0);
+    equal(jQuery('.two.active').length, 0);
+    equal(jQuery('.three.active').length, 0);
+  });
+
 
   run(router, 'transitionTo', 'thread', 2);
 
