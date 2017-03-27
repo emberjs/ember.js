@@ -1,3 +1,4 @@
+import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { Route, Router } from 'ember-routing';
 import {
   Controller,
@@ -34,8 +35,8 @@ import {
   unregisterWaiter
 } from '../test/waiters';
 
-var App;
-var originalAdapter = getAdapter();
+let App;
+let originalAdapter = getAdapter();
 
 function cleanup() {
   // Teardown setupForTesting
@@ -64,8 +65,8 @@ function assertHelpers(application, helperContainer, expected) {
   if (expected === undefined) { expected = true; }
 
   function checkHelperPresent(helper, expected) {
-    var presentInHelperContainer = !!helperContainer[helper];
-    var presentInTestHelpers = !!application.testHelpers[helper];
+    let presentInHelperContainer = !!helperContainer[helper];
+    let presentInTestHelpers = !!application.testHelpers[helper];
 
     ok(presentInHelperContainer === expected, 'Expected \'' + helper + '\' to be present in the helper container (defaults to window).');
     ok(presentInTestHelpers === expected, 'Expected \'' + helper + '\' to be present in App.testHelpers.');
@@ -104,684 +105,681 @@ function setupApp() {
   });
 }
 
-QUnit.module('ember-testing: Helper setup', {
-  setup() { cleanup(); },
-  teardown() { cleanup(); }
-});
-
 function registerHelper() {
   Test.registerHelper('LeakyMcLeakLeak', function(app) {
   });
 }
 
-QUnit.test('Ember.Application#injectTestHelpers/#removeTestHelpers', function() {
-  App = run(EmberApplication, EmberApplication.create);
-  assertNoHelpers(App);
+moduleFor('ember-testing: Helper setup', class extends ApplicationTestCase {
+  teardown() { cleanup(); }
 
-  registerHelper();
+  ['@test Ember.Application#injectTestHelpers/#removeTestHelpers'](assert) {
+    App = run(EmberApplication, EmberApplication.create);
+    assertNoHelpers(App);
 
-  App.injectTestHelpers();
-  assertHelpers(App);
-  ok(Test.Promise.prototype.LeakyMcLeakLeak, 'helper in question SHOULD be present');
+    registerHelper();
 
-  App.removeTestHelpers();
-  assertNoHelpers(App);
+    App.injectTestHelpers();
+    assertHelpers(App);
+    ok(Test.Promise.prototype.LeakyMcLeakLeak, 'helper in question SHOULD be present');
 
-  equal(Test.Promise.prototype.LeakyMcLeakLeak, undefined, 'should NOT leak test promise extensions');
-});
+    App.removeTestHelpers();
+    assertNoHelpers(App);
 
-
-QUnit.test('Ember.Application#setupForTesting', function() {
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  equal(App.__container__.lookup('router:main').location, 'none');
-});
-
-QUnit.test('Ember.Application.setupForTesting sets the application to `testing`.', function() {
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  equal(App.testing, true, 'Application instance is set to testing.');
-});
-
-QUnit.test('Ember.Application.setupForTesting leaves the system in a deferred state.', function() {
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  equal(App._readinessDeferrals, 1, 'App is in deferred state after setupForTesting.');
-});
-
-QUnit.test('App.reset() after Application.setupForTesting leaves the system in a deferred state.', function() {
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  equal(App._readinessDeferrals, 1, 'App is in deferred state after setupForTesting.');
-
-  App.reset();
-  equal(App._readinessDeferrals, 1, 'App is in deferred state after setupForTesting.');
-});
-
-QUnit.test('Ember.Application#setupForTesting attaches ajax listeners', function() {
-  var documentEvents;
-
-  documentEvents = jQuery._data(document, 'events');
-
-  if (!documentEvents) {
-    documentEvents = {};
+    equal(Test.Promise.prototype.LeakyMcLeakLeak, undefined, 'should NOT leak test promise extensions');
   }
 
-  ok(documentEvents['ajaxSend'] === undefined, 'there are no ajaxSend listers setup prior to calling injectTestHelpers');
-  ok(documentEvents['ajaxComplete'] === undefined, 'there are no ajaxComplete listers setup prior to calling injectTestHelpers');
+  ['@test Ember.Application#setupForTesting'](assert) {
+    run(function() {
+      App = EmberApplication.create();
+      App.setupForTesting();
+    });
 
-  run(function() {
-    setupForTesting();
-  });
-
-  documentEvents = jQuery._data(document, 'events');
-
-  equal(documentEvents['ajaxSend'].length, 1, 'calling injectTestHelpers registers an ajaxSend handler');
-  equal(documentEvents['ajaxComplete'].length, 1, 'calling injectTestHelpers registers an ajaxComplete handler');
-});
-
-QUnit.test('Ember.Application#setupForTesting attaches ajax listeners only once', function() {
-  var documentEvents;
-
-  documentEvents = jQuery._data(document, 'events');
-
-  if (!documentEvents) {
-    documentEvents = {};
+    equal(App.__container__.lookup('router:main').location, 'none');
   }
 
-  ok(documentEvents['ajaxSend'] === undefined, 'there are no ajaxSend listeners setup prior to calling injectTestHelpers');
-  ok(documentEvents['ajaxComplete'] === undefined, 'there are no ajaxComplete listeners setup prior to calling injectTestHelpers');
+  ['@test Ember.Application.setupForTesting sets the application to `testing`.'](assert) {
+    run(function() {
+      App = EmberApplication.create();
+      App.setupForTesting();
+    });
 
-  run(function() {
-    setupForTesting();
-  });
-  run(function() {
-    setupForTesting();
-  });
+    equal(App.testing, true, 'Application instance is set to testing.');
+  }
 
-  documentEvents = jQuery._data(document, 'events');
+  ['@test Ember.Application.setupForTesting leaves the system in a deferred state.'](assert) {
+    run(function() {
+      App = EmberApplication.create();
+      App.setupForTesting();
+    });
 
-  equal(documentEvents['ajaxSend'].length, 1, 'calling injectTestHelpers registers an ajaxSend handler');
-  equal(documentEvents['ajaxComplete'].length, 1, 'calling injectTestHelpers registers an ajaxComplete handler');
+    equal(App._readinessDeferrals, 1, 'App is in deferred state after setupForTesting.');
+  }
+
+  ['@test App.reset() after Application.setupForTesting leaves the system in a deferred state.'](assert) {
+    run(function() {
+      App = EmberApplication.create();
+      App.setupForTesting();
+    });
+
+    equal(App._readinessDeferrals, 1, 'App is in deferred state after setupForTesting.');
+
+    App.reset();
+    equal(App._readinessDeferrals, 1, 'App is in deferred state after setupForTesting.');
+  }
+
+  ['@test Ember.Application#setupForTesting attaches ajax listeners'](assert) {
+      let documentEvents;
+
+      documentEvents = jQuery._data(document, 'events');
+
+      if (!documentEvents) {
+        documentEvents = {};
+      }
+
+      ok(documentEvents['ajaxSend'] === undefined, 'there are no ajaxSend listers setup prior to calling injectTestHelpers');
+      ok(documentEvents['ajaxComplete'] === undefined, 'there are no ajaxComplete listers setup prior to calling injectTestHelpers');
+
+      run(function() {
+        setupForTesting();
+      });
+
+      documentEvents = jQuery._data(document, 'events');
+
+      equal(documentEvents['ajaxSend'].length, 1, 'calling injectTestHelpers registers an ajaxSend handler');
+      equal(documentEvents['ajaxComplete'].length, 1, 'calling injectTestHelpers registers an ajaxComplete handler');
+  }
+
+  ['@test Ember.Application#setupForTesting attaches ajax listeners only once'](assert) {
+    let documentEvents;
+
+    documentEvents = jQuery._data(document, 'events');
+
+    if (!documentEvents) {
+      documentEvents = {};
+    }
+
+    ok(documentEvents['ajaxSend'] === undefined, 'there are no ajaxSend listeners setup prior to calling injectTestHelpers');
+    ok(documentEvents['ajaxComplete'] === undefined, 'there are no ajaxComplete listeners setup prior to calling injectTestHelpers');
+
+    run(function() {
+      setupForTesting();
+    });
+    run(function() {
+      setupForTesting();
+    });
+
+    documentEvents = jQuery._data(document, 'events');
+
+    equal(documentEvents['ajaxSend'].length, 1, 'calling injectTestHelpers registers an ajaxSend handler');
+    equal(documentEvents['ajaxComplete'].length, 1, 'calling injectTestHelpers registers an ajaxComplete handler');
+  }
+
+  ['@test Ember.Application#injectTestHelpers calls callbacks registered with onInjectHelpers'](assert) {
+    let injected = 0;
+
+    Test.onInjectHelpers(function() {
+      injected++;
+    });
+
+    run(function() {
+      App = EmberApplication.create();
+      App.setupForTesting();
+    });
+
+    equal(injected, 0, 'onInjectHelpers are not called before injectTestHelpers');
+
+    App.injectTestHelpers();
+
+    equal(injected, 1, 'onInjectHelpers are called after injectTestHelpers');
+  }
+
+  ['@test Ember.Application#injectTestHelpers adds helpers to provided object.'](assert) {
+    let helpers = {};
+
+    run(function() {
+      App = EmberApplication.create();
+      App.setupForTesting();
+    });
+
+    App.injectTestHelpers(helpers);
+    assertHelpers(App, helpers);
+
+    App.removeTestHelpers();
+    assertNoHelpers(App, helpers);
+  }
+
+  ['@test Ember.Application#removeTestHelpers resets the helperContainer\'s original values'](assert) {
+    let helpers = { visit: 'snazzleflabber' };
+
+    run(function() {
+      App = EmberApplication.create();
+      App.setupForTesting();
+    });
+
+    App.injectTestHelpers(helpers);
+
+    ok(helpers.visit !== 'snazzleflabber', 'helper added to container');
+    App.removeTestHelpers();
+
+    ok(helpers.visit === 'snazzleflabber', 'original value added back to container');
+  }
 });
 
-QUnit.test('Ember.Application#injectTestHelpers calls callbacks registered with onInjectHelpers', function() {
-  var injected = 0;
-
-  Test.onInjectHelpers(function() {
-    injected++;
-  });
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  equal(injected, 0, 'onInjectHelpers are not called before injectTestHelpers');
-
-  App.injectTestHelpers();
-
-  equal(injected, 1, 'onInjectHelpers are called after injectTestHelpers');
-});
-
-QUnit.test('Ember.Application#injectTestHelpers adds helpers to provided object.', function() {
-  var helpers = {};
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.injectTestHelpers(helpers);
-  assertHelpers(App, helpers);
-
-  App.removeTestHelpers();
-  assertNoHelpers(App, helpers);
-});
-
-QUnit.test('Ember.Application#removeTestHelpers resets the helperContainer\'s original values', function() {
-  var helpers = { visit: 'snazzleflabber' };
-
-  run(function() {
-    App = EmberApplication.create();
-    App.setupForTesting();
-  });
-
-  App.injectTestHelpers(helpers);
-
-  ok(helpers.visit !== 'snazzleflabber', 'helper added to container');
-  App.removeTestHelpers();
-
-  ok(helpers.visit === 'snazzleflabber', 'original value added back to container');
-});
-
-QUnit.module('ember-testing: Helper methods', {
-  setup() {
+moduleFor('ember-testing: Helper methods', class extends ApplicationTestCase {
+  constructor() {
+    super();
     setupApp();
-  },
-  teardown() {
-    cleanup();
   }
-});
+  teardown() { cleanup(); }
 
-QUnit.test('`wait` respects registerWaiters', function(assert) {
-  assert.expect(3);
+  ['@test `wait` respects registerWaiters'](assert) {
+    assert.expect(3);
 
-  let done = assert.async();
+    let done = assert.async();
 
-  let counter = 0;
-  function waiter() {
-    return ++counter > 2;
+    let counter = 0;
+    function waiter() {
+      return ++counter > 2;
+    }
+
+    let other = 0;
+    function otherWaiter() {
+      return ++other > 2;
+    }
+
+    run(App, App.advanceReadiness);
+    registerWaiter(waiter);
+    registerWaiter(otherWaiter);
+
+    App.testHelpers.wait()
+      .then(function() {
+        equal(waiter(), true, 'should not resolve until our waiter is ready');
+        unregisterWaiter(waiter);
+        counter = 0;
+        return App.testHelpers.wait();
+      })
+      .then(function() {
+        equal(counter, 0, 'unregistered waiter was not checked');
+        equal(otherWaiter(), true, 'other waiter is still registered');
+      })
+      .finally(() => {
+        unregisterWaiter(otherWaiter);
+        done();
+      });
   }
 
-  let other = 0;
-  function otherWaiter() {
-    return ++other > 2;
-  }
+  ['@test `visit` advances readiness.'](assert) {
+    expect(2);
 
-  run(App, App.advanceReadiness);
-  registerWaiter(waiter);
-  registerWaiter(otherWaiter);
+    equal(App._readinessDeferrals, 1, 'App is in deferred state after setupForTesting.');
 
-  App.testHelpers.wait()
-    .then(function() {
-      equal(waiter(), true, 'should not resolve until our waiter is ready');
-      unregisterWaiter(waiter);
-      counter = 0;
-      return App.testHelpers.wait();
-    })
-    .then(function() {
-      equal(counter, 0, 'unregistered waiter was not checked');
-      equal(otherWaiter(), true, 'other waiter is still registered');
-    })
-    .finally(() => {
-      unregisterWaiter(otherWaiter);
-      done();
+    return App.testHelpers.visit('/').then(function() {
+      equal(App._readinessDeferrals, 0, 'App\'s readiness was advanced by visit.');
     });
-});
-
-QUnit.test('`visit` advances readiness.', function() {
-  expect(2);
-
-  equal(App._readinessDeferrals, 1, 'App is in deferred state after setupForTesting.');
-
-  return App.testHelpers.visit('/').then(function() {
-    equal(App._readinessDeferrals, 0, 'App\'s readiness was advanced by visit.');
-  });
-});
-
-QUnit.test('`wait` helper can be passed a resolution value', function() {
-  expect(4);
-
-  var promise, wait;
-
-  promise = new RSVP.Promise(function(resolve) {
-    run(null, resolve, 'promise');
-  });
-
-  run(App, App.advanceReadiness);
-
-  wait = App.testHelpers.wait;
-
-  return wait('text').then(function(val) {
-    equal(val, 'text', 'can resolve to a string');
-    return wait(1);
-  }).then(function(val) {
-    equal(val, 1, 'can resolve to an integer');
-    return wait({ age: 10 });
-  }).then(function(val) {
-    deepEqual(val, { age: 10 }, 'can resolve to an object');
-    return wait(promise);
-  }).then(function(val) {
-    equal(val, 'promise', 'can resolve to a promise resolution value');
-  });
-});
-
-QUnit.test('`click` triggers appropriate events in order', function() {
-  expect(5);
-
-  var click, wait, events;
-
-  App.IndexWrapperComponent = Component.extend({
-    classNames: 'index-wrapper',
-
-    didInsertElement() {
-      this.$().on('mousedown focusin mouseup click', function(e) {
-        events.push(e.type);
-      });
-    }
-  });
-
-  App.XCheckboxComponent = Component.extend({
-    tagName: 'input',
-    attributeBindings: ['type'],
-    type: 'checkbox',
-    click() {
-      events.push('click:' + this.get('checked'));
-    },
-    change() {
-      events.push('change:' + this.get('checked'));
-    }
-  });
-
-  setTemplate('index', compile('{{#index-wrapper}}{{input type="text"}} {{x-checkbox type="checkbox"}} {{textarea}} <div contenteditable="true"> </div>{{/index-wrapper}}'));
-
-  run(App, App.advanceReadiness);
-
-  click = App.testHelpers.click;
-  wait  = App.testHelpers.wait;
-
-  return wait().then(function() {
-    events = [];
-    return click('.index-wrapper');
-  }).then(function() {
-    deepEqual(events,
-      ['mousedown', 'mouseup', 'click'],
-      'fires events in order');
-  }).then(function() {
-    events = [];
-    return click('.index-wrapper input[type=text]');
-  }).then(function() {
-    deepEqual(events,
-      ['mousedown', 'focusin', 'mouseup', 'click'],
-      'fires focus events on inputs');
-  }).then(function() {
-    events = [];
-    return click('.index-wrapper textarea');
-  }).then(function() {
-    deepEqual(events,
-      ['mousedown', 'focusin', 'mouseup', 'click'],
-      'fires focus events on textareas');
-  }).then(function() {
-    events = [];
-    return click('.index-wrapper div');
-  }).then(function() {
-    deepEqual(events,
-      ['mousedown', 'focusin', 'mouseup', 'click'],
-      'fires focus events on contenteditable');
-  }).then(function() {
-    events = [];
-    return click('.index-wrapper input[type=checkbox]');
-  }).then(function() {
-    // i.e. mousedown, mouseup, change:true, click, click:true
-    // Firefox differs so we can't assert the exact ordering here.
-    // See https://bugzilla.mozilla.org/show_bug.cgi?id=843554.
-    equal(events.length, 5, 'fires click and change on checkboxes');
-  });
-});
-
-QUnit.test('`click` triggers native events with simulated X/Y coordinates', function() {
-  expect(15);
-
-  var click, wait, events;
-
-  App.IndexWrapperComponent = Component.extend({
-    classNames: 'index-wrapper',
-
-    didInsertElement() {
-      let pushEvent  = e => events.push(e);
-      this.element.addEventListener('mousedown', pushEvent);
-      this.element.addEventListener('mouseup', pushEvent);
-      this.element.addEventListener('click', pushEvent);
-    }
-  });
-
-
-  setTemplate('index', compile('{{#index-wrapper}}some text{{/index-wrapper}}'));
-
-  run(App, App.advanceReadiness);
-
-  click = App.testHelpers.click;
-  wait  = App.testHelpers.wait;
-
-  return wait().then(function() {
-    events = [];
-    return click('.index-wrapper');
-  }).then(function() {
-    events.forEach(e => {
-      ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
-      ok(typeof e.screenX === 'number' && e.screenX > 0, 'screenX is correct');
-      ok(typeof e.screenY === 'number' && e.screenY > 0, 'screenY is correct');
-      ok(typeof e.clientX === 'number' && e.clientX > 0, 'clientX is correct');
-      ok(typeof e.clientY === 'number' && e.clientY > 0, 'clientY is correct');
-    });
-  });
-});
-
-QUnit.test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
-  expect(5);
-
-  var triggerEvent, wait, evt;
-
-  App.IndexWrapperComponent = Component.extend({
-    classNames: 'index-wrapper',
-
-    didInsertElement() {
-      this.element.addEventListener('mouseenter', e => evt = e);
-    }
-  });
-
-
-  setTemplate('index', compile('{{#index-wrapper}}some text{{/index-wrapper}}'));
-
-  run(App, App.advanceReadiness);
-
-  triggerEvent = App.testHelpers.triggerEvent;
-  wait  = App.testHelpers.wait;
-
-  return wait().then(function() {
-    return triggerEvent('.index-wrapper', 'mouseenter');
-  }).then(function() {
-    ok(evt instanceof window.Event, 'The event is an instance of MouseEvent');
-    ok(typeof evt.screenX === 'number' && evt.screenX > 0, 'screenX is correct');
-    ok(typeof evt.screenY === 'number' && evt.screenY > 0, 'screenY is correct');
-    ok(typeof evt.clientX === 'number' && evt.clientX > 0, 'clientX is correct');
-    ok(typeof evt.clientY === 'number' && evt.clientY > 0, 'clientY is correct');
-  });
-});
-
-QUnit.test('`wait` waits for outstanding timers', function() {
-  expect(1);
-
-  var wait_done = false;
-
-  run(App, App.advanceReadiness);
-
-  run.later(this, function() {
-    wait_done = true;
-  }, 500);
-
-  return App.testHelpers.wait().then(function() {
-    equal(wait_done, true, 'should wait for the timer to be fired.');
-  });
-});
-
-QUnit.test('`wait` respects registerWaiters with optional context', function() {
-  expect(3);
-
-  let obj = {
-    counter: 0,
-    ready() {
-      return ++this.counter > 2;
-    }
-  };
-
-  let other = 0;
-  function otherWaiter() {
-    return ++other > 2;
   }
 
-  run(App, App.advanceReadiness);
-  registerWaiter(obj, obj.ready);
-  registerWaiter(otherWaiter);
+  ['@test `wait` helper can be passed a resolution value'](assert) {
+    expect(4);
 
-  return App.testHelpers.wait().then(function() {
-    equal(obj.ready(), true, 'should not resolve until our waiter is ready');
-    unregisterWaiter(obj, obj.ready);
-    obj.counter = 0;
-    return App.testHelpers.wait();
-  }).then(function() {
-    equal(obj.counter, 0, 'the unregistered waiter should still be at 0');
-    equal(otherWaiter(), true, 'other waiter should still be registered');
-  })
-    .finally(() => {
-      unregisterWaiter(otherWaiter);
+    let promise, wait;
+
+    promise = new RSVP.Promise(function(resolve) {
+      run(null, resolve, 'promise');
     });
-});
 
-QUnit.test('`wait` does not error if routing has not begun', function() {
-  expect(1);
+    run(App, App.advanceReadiness);
 
-  return App.testHelpers.wait().then(function() {
-    ok(true, 'should not error without `visit`');
-  });
-});
+    wait = App.testHelpers.wait;
 
-QUnit.test('`triggerEvent accepts an optional options hash without context', function() {
-  expect(3);
+    return wait('text').then(function(val) {
+      equal(val, 'text', 'can resolve to a string');
+      return wait(1);
+    }).then(function(val) {
+      equal(val, 1, 'can resolve to an integer');
+      return wait({ age: 10 });
+    }).then(function(val) {
+      deepEqual(val, { age: 10 }, 'can resolve to an object');
+      return wait(promise);
+    }).then(function(val) {
+      equal(val, 'promise', 'can resolve to a promise resolution value');
+    });
+  }
 
-  var triggerEvent, wait, event;
+  ['@test `click` triggers appropriate events in order'](assert) {
+    expect(5);
 
-  App.IndexWrapperComponent = Component.extend({
-    didInsertElement() {
-      this.$('.input').on('keydown change', function(e) {
-        event = e;
-      });
-    }
-  });
+    let click, wait, events;
 
-  setTemplate('index', compile('{{index-wrapper}}'));
-  setTemplate('components/index-wrapper', compile('{{input type="text" id="scope" class="input"}}'));
+    App.IndexWrapperComponent = Component.extend({
+      classNames: 'index-wrapper',
 
-  run(App, App.advanceReadiness);
-
-  triggerEvent = App.testHelpers.triggerEvent;
-  wait         = App.testHelpers.wait;
-
-  return wait().then(function() {
-    return triggerEvent('.input', 'keydown', { keyCode: 13 });
-  }).then(function() {
-    equal(event.keyCode, 13, 'options were passed');
-    equal(event.type, 'keydown', 'correct event was triggered');
-    equal(event.target.getAttribute('id'), 'scope', 'triggered on the correct element');
-  });
-});
-
-QUnit.test('`triggerEvent can limit searching for a selector to a scope', function() {
-  expect(2);
-
-  var triggerEvent, wait, event;
-
-  App.IndexWrapperComponent = Component.extend({
-
-    didInsertElement() {
-      this.$('.input').on('blur change', function(e) {
-        event = e;
-      });
-    }
-  });
-
-  setTemplate('components/index-wrapper', compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'));
-  setTemplate('index', compile('{{index-wrapper}}'));
-
-  run(App, App.advanceReadiness);
-
-  triggerEvent = App.testHelpers.triggerEvent;
-  wait         = App.testHelpers.wait;
-
-  return wait().then(function() {
-    return triggerEvent('.input', '#limited', 'blur');
-  }).then(function() {
-    equal(event.type, 'blur', 'correct event was triggered');
-    equal(event.target.getAttribute('id'), 'inside-scope', 'triggered on the correct element');
-  });
-});
-
-QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() {
-  expect(2);
-
-  var triggerEvent, wait, event;
-
-  App.IndexWrapperComponent = Component.extend({
-    didInsertElement() {
-      this.$('#foo').on('blur change', function(e) {
-        event = e;
-      });
-    }
-  });
-
-  setTemplate('components/index-wrapper',  compile('{{input type="text" id="foo"}}'));
-  setTemplate('index', compile('{{index-wrapper}}'));
-
-  run(App, App.advanceReadiness);
-
-  triggerEvent = App.testHelpers.triggerEvent;
-  wait         = App.testHelpers.wait;
-
-  return wait().then(function() {
-    return triggerEvent('#foo', 'blur');
-  }).then(function() {
-    equal(event.type, 'blur', 'correct event was triggered');
-    equal(event.target.getAttribute('id'), 'foo', 'triggered on the correct element');
-  });
-});
-
-QUnit.test('`fillIn` takes context into consideration', function() {
-  expect(2);
-  var fillIn, find, visit, andThen;
-
-  setTemplate('index', compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}'));
-
-  run(App, App.advanceReadiness);
-
-  fillIn = App.testHelpers.fillIn;
-  find = App.testHelpers.find;
-  visit = App.testHelpers.visit;
-  andThen = App.testHelpers.andThen;
-
-  visit('/');
-  fillIn('.current', '#parent', 'current value');
-
-  return andThen(function() {
-    equal(find('#first').val(), 'current value');
-    equal(find('#second').val(), '');
-  });
-});
-
-QUnit.test('`fillIn` focuses on the element', function() {
-  expect(2);
-  var fillIn, find, visit, andThen, wait;
-
-  App.ApplicationRoute = Route.extend({
-    actions: {
-      wasFocused() {
-        ok(true, 'focusIn event was triggered');
+      didInsertElement() {
+        this.$().on('mousedown focusin mouseup click', function(e) {
+          events.push(e.type);
+        });
       }
-    }
-  });
+    });
 
-  setTemplate('index', compile('<div id="parent">{{input type="text" id="first" focus-in="wasFocused"}}</div>'));
-
-  run(App, App.advanceReadiness);
-
-  fillIn = App.testHelpers.fillIn;
-  find = App.testHelpers.find;
-  visit = App.testHelpers.visit;
-  andThen = App.testHelpers.andThen;
-  wait = App.testHelpers.wait;
-
-  visit('/');
-  fillIn('#first', 'current value');
-  andThen(function() {
-    equal(find('#first').val(), 'current value');
-  });
-
-  return wait();
-});
-
-QUnit.test('`fillIn` fires `input` and `change` events in the proper order', function() {
-  expect(1);
-
-  var fillIn, visit, andThen, wait;
-  var events = [];
-  App.IndexController = Controller.extend({
-    actions: {
-      oninputHandler(e) {
-        events.push(e.type);
+    App.XCheckboxComponent = Component.extend({
+      tagName: 'input',
+      attributeBindings: ['type'],
+      type: 'checkbox',
+      click() {
+        events.push('click:' + this.get('checked'));
       },
-      onchangeHandler(e) {
-        events.push(e.type);
+      change() {
+        events.push('change:' + this.get('checked'));
       }
-    }
-  });
+    });
 
-  setTemplate('index', compile('<input type="text" id="first" oninput={{action "oninputHandler"}} onchange={{action "onchangeHandler"}}>'));
+    setTemplate('index', compile('{{#index-wrapper}}{{input type="text"}} {{x-checkbox type="checkbox"}} {{textarea}} <div contenteditable="true"> </div>{{/index-wrapper}}'));
 
-  run(App, App.advanceReadiness);
+    run(App, App.advanceReadiness);
 
-  fillIn = App.testHelpers.fillIn;
-  visit = App.testHelpers.visit;
-  andThen = App.testHelpers.andThen;
-  wait = App.testHelpers.wait;
+    click = App.testHelpers.click;
+    wait  = App.testHelpers.wait;
 
-  visit('/');
-  fillIn('#first', 'current value');
-  andThen(function() {
-    deepEqual(events, ['input', 'change'], '`input` and `change` events are fired in the proper order');
-  });
+    return wait().then(function() {
+      events = [];
+      return click('.index-wrapper');
+    }).then(function() {
+      deepEqual(events,
+        ['mousedown', 'mouseup', 'click'],
+        'fires events in order');
+    }).then(function() {
+      events = [];
+      return click('.index-wrapper input[type=text]');
+    }).then(function() {
+      deepEqual(events,
+        ['mousedown', 'focusin', 'mouseup', 'click'],
+        'fires focus events on inputs');
+    }).then(function() {
+      events = [];
+      return click('.index-wrapper textarea');
+    }).then(function() {
+      deepEqual(events,
+        ['mousedown', 'focusin', 'mouseup', 'click'],
+        'fires focus events on textareas');
+    }).then(function() {
+      events = [];
+      return click('.index-wrapper div');
+    }).then(function() {
+      deepEqual(events,
+        ['mousedown', 'focusin', 'mouseup', 'click'],
+        'fires focus events on contenteditable');
+    }).then(function() {
+      events = [];
+      return click('.index-wrapper input[type=checkbox]');
+    }).then(function() {
+      // i.e. mousedown, mouseup, change:true, click, click:true
+      // Firefox differs so we can't assert the exact ordering here.
+      // See https://bugzilla.mozilla.org/show_bug.cgi?id=843554.
+      equal(events.length, 5, 'fires click and change on checkboxes');
+    });
+  }
 
-  return wait();
-});
+  ['@test `click` triggers native events with simulated X/Y coordinates'](assert) {
+    expect(15);
 
-QUnit.test('`fillIn` only sets the value in the first matched element', function() {
-  let fillIn, find, visit, andThen, wait;
+    let click, wait, events;
 
-  setTemplate('index', compile('<input type="text" id="first" class="in-test"><input type="text" id="second" class="in-test">'));
-  run(App, App.advanceReadiness);
+    App.IndexWrapperComponent = Component.extend({
+      classNames: 'index-wrapper',
 
-  fillIn = App.testHelpers.fillIn;
-  find = App.testHelpers.find;
-  visit = App.testHelpers.visit;
-  andThen = App.testHelpers.andThen;
-  wait = App.testHelpers.wait;
+      didInsertElement() {
+        let pushEvent  = e => events.push(e);
+        this.element.addEventListener('mousedown', pushEvent);
+        this.element.addEventListener('mouseup', pushEvent);
+        this.element.addEventListener('click', pushEvent);
+      }
+    });
 
-  visit('/');
-  fillIn('input.in-test', 'new value');
-  andThen(function() {
-    equal(find('#first').val(), 'new value');
-    equal(find('#second').val(), '');
-  });
 
-  return wait();
-});
+    setTemplate('index', compile('{{#index-wrapper}}some text{{/index-wrapper}}'));
 
-QUnit.test('`triggerEvent accepts an optional options hash and context', function() {
-  expect(3);
+    run(App, App.advanceReadiness);
 
-  var triggerEvent, wait, event;
+    click = App.testHelpers.click;
+    wait  = App.testHelpers.wait;
 
-  App.IndexWrapperComponent = Component.extend({
-    didInsertElement() {
-      this.$('.input').on('keydown change', function(e) {
-        event = e;
+    return wait().then(function() {
+      events = [];
+      return click('.index-wrapper');
+    }).then(function() {
+      events.forEach(e => {
+        ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
+        ok(typeof e.screenX === 'number' && e.screenX > 0, 'screenX is correct');
+        ok(typeof e.screenY === 'number' && e.screenY > 0, 'screenY is correct');
+        ok(typeof e.clientX === 'number' && e.clientX > 0, 'clientX is correct');
+        ok(typeof e.clientY === 'number' && e.clientY > 0, 'clientY is correct');
       });
+    });
+  }
+
+  ['@test `triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates'](assert) {
+    expect(5);
+
+    let triggerEvent, wait, evt;
+
+    App.IndexWrapperComponent = Component.extend({
+      classNames: 'index-wrapper',
+
+      didInsertElement() {
+        this.element.addEventListener('mouseenter', e => evt = e);
+      }
+    });
+
+
+    setTemplate('index', compile('{{#index-wrapper}}some text{{/index-wrapper}}'));
+
+    run(App, App.advanceReadiness);
+
+    triggerEvent = App.testHelpers.triggerEvent;
+    wait  = App.testHelpers.wait;
+
+    return wait().then(function() {
+      return triggerEvent('.index-wrapper', 'mouseenter');
+    }).then(function() {
+      ok(evt instanceof window.Event, 'The event is an instance of MouseEvent');
+      ok(typeof evt.screenX === 'number' && evt.screenX > 0, 'screenX is correct');
+      ok(typeof evt.screenY === 'number' && evt.screenY > 0, 'screenY is correct');
+      ok(typeof evt.clientX === 'number' && evt.clientX > 0, 'clientX is correct');
+      ok(typeof evt.clientY === 'number' && evt.clientY > 0, 'clientY is correct');
+    });
+  }
+
+  ['@test `wait` waits for outstanding timers'](assert) {
+    expect(1);
+
+    let wait_done = false;
+
+    run(App, App.advanceReadiness);
+
+    run.later(this, function() {
+      wait_done = true;
+    }, 500);
+
+    return App.testHelpers.wait().then(function() {
+      equal(wait_done, true, 'should wait for the timer to be fired.');
+    });
+  }
+
+  ['@test `wait` respects registerWaiters with optional context'](assert) {
+    expect(3);
+
+    let obj = {
+      counter: 0,
+      ready() {
+        return ++this.counter > 2;
+      }
+    };
+
+    let other = 0;
+    function otherWaiter() {
+      return ++other > 2;
     }
-  });
 
-  setTemplate('components/index-wrapper', compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'));
-  setTemplate('index', compile('{{index-wrapper}}'));
+    run(App, App.advanceReadiness);
+    registerWaiter(obj, obj.ready);
+    registerWaiter(otherWaiter);
 
-  run(App, App.advanceReadiness);
-
-  triggerEvent = App.testHelpers.triggerEvent;
-  wait         = App.testHelpers.wait;
-
-  return wait()
-    .then(function() {
-      return triggerEvent('.input', '#limited', 'keydown', { keyCode: 13 });
+    return App.testHelpers.wait().then(function() {
+      equal(obj.ready(), true, 'should not resolve until our waiter is ready');
+      unregisterWaiter(obj, obj.ready);
+      obj.counter = 0;
+      return App.testHelpers.wait();
+    }).then(function() {
+      equal(obj.counter, 0, 'the unregistered waiter should still be at 0');
+      equal(otherWaiter(), true, 'other waiter should still be registered');
     })
-    .then(function() {
+      .finally(() => {
+        unregisterWaiter(otherWaiter);
+      });
+  }
+
+  ['@test `wait` does not error if routing has not begun'](assert) {
+    expect(1);
+
+    return App.testHelpers.wait().then(function() {
+      ok(true, 'should not error without `visit`');
+    });
+  }
+
+  ['@test `triggerEvent accepts an optional options hash without context'](assert) {
+    expect(3);
+
+    let triggerEvent, wait, event;
+
+    App.IndexWrapperComponent = Component.extend({
+      didInsertElement() {
+        this.$('.input').on('keydown change', function(e) {
+          event = e;
+        });
+      }
+    });
+
+    setTemplate('index', compile('{{index-wrapper}}'));
+    setTemplate('components/index-wrapper', compile('{{input type="text" id="scope" class="input"}}'));
+
+    run(App, App.advanceReadiness);
+
+    triggerEvent = App.testHelpers.triggerEvent;
+    wait         = App.testHelpers.wait;
+
+    return wait().then(function() {
+      return triggerEvent('.input', 'keydown', { keyCode: 13 });
+    }).then(function() {
       equal(event.keyCode, 13, 'options were passed');
       equal(event.type, 'keydown', 'correct event was triggered');
+      equal(event.target.getAttribute('id'), 'scope', 'triggered on the correct element');
+    });
+  }
+
+  ['@test `triggerEvent can limit searching for a selector to a scope'](assert) {
+    expect(2);
+
+    let triggerEvent, wait, event;
+
+    App.IndexWrapperComponent = Component.extend({
+
+      didInsertElement() {
+        this.$('.input').on('blur change', function(e) {
+          event = e;
+        });
+      }
+    });
+
+    setTemplate('components/index-wrapper', compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'));
+    setTemplate('index', compile('{{index-wrapper}}'));
+
+    run(App, App.advanceReadiness);
+
+    triggerEvent = App.testHelpers.triggerEvent;
+    wait         = App.testHelpers.wait;
+
+    return wait().then(function() {
+      return triggerEvent('.input', '#limited', 'blur');
+    }).then(function() {
+      equal(event.type, 'blur', 'correct event was triggered');
       equal(event.target.getAttribute('id'), 'inside-scope', 'triggered on the correct element');
     });
+  }
+
+  ['@test `triggerEvent` can be used to trigger arbitrary events'](assert) {
+    expect(2);
+
+    let triggerEvent, wait, event;
+
+    App.IndexWrapperComponent = Component.extend({
+      didInsertElement() {
+        this.$('#foo').on('blur change', function(e) {
+          event = e;
+        });
+      }
+    });
+
+    setTemplate('components/index-wrapper',  compile('{{input type="text" id="foo"}}'));
+    setTemplate('index', compile('{{index-wrapper}}'));
+
+    run(App, App.advanceReadiness);
+
+    triggerEvent = App.testHelpers.triggerEvent;
+    wait         = App.testHelpers.wait;
+
+    return wait().then(function() {
+      return triggerEvent('#foo', 'blur');
+    }).then(function() {
+      equal(event.type, 'blur', 'correct event was triggered');
+      equal(event.target.getAttribute('id'), 'foo', 'triggered on the correct element');
+    });
+  }
+
+  ['@test `fillIn` takes context into consideration'](assert) {
+    expect(2);
+    let fillIn, find, visit, andThen;
+
+    setTemplate('index', compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}'));
+
+    run(App, App.advanceReadiness);
+
+    fillIn = App.testHelpers.fillIn;
+    find = App.testHelpers.find;
+    visit = App.testHelpers.visit;
+    andThen = App.testHelpers.andThen;
+
+    visit('/');
+    fillIn('.current', '#parent', 'current value');
+
+    return andThen(function() {
+      equal(find('#first').val(), 'current value');
+      equal(find('#second').val(), '');
+    });
+  }
+
+  ['@test `fillIn` focuses on the element'](assert) {
+    expect(2);
+    let fillIn, find, visit, andThen, wait;
+
+    App.ApplicationRoute = Route.extend({
+      actions: {
+        wasFocused() {
+          ok(true, 'focusIn event was triggered');
+        }
+      }
+    });
+
+    setTemplate('index', compile('<div id="parent">{{input type="text" id="first" focus-in="wasFocused"}}</div>'));
+
+    run(App, App.advanceReadiness);
+
+    fillIn = App.testHelpers.fillIn;
+    find = App.testHelpers.find;
+    visit = App.testHelpers.visit;
+    andThen = App.testHelpers.andThen;
+    wait = App.testHelpers.wait;
+
+    visit('/');
+    fillIn('#first', 'current value');
+    andThen(function() {
+      equal(find('#first').val(), 'current value');
+    });
+
+    return wait();
+  }
+
+  ['@alert `fillIn` fires `input` and `change` events in the proper order'](assert) {
+    expect(1);
+
+    let fillIn, visit, andThen, wait;
+    let events = [];
+    App.IndexController = Controller.extend({
+      actions: {
+        oninputHandler(e) {
+          events.push(e.type);
+        },
+        onchangeHandler(e) {
+          events.push(e.type);
+        }
+      }
+    });
+
+    setTemplate('index', compile('<input type="text" id="first" oninput={{action "oninputHandler"}} onchange={{action "onchangeHandler"}}>'));
+
+    run(App, App.advanceReadiness);
+
+    fillIn = App.testHelpers.fillIn;
+    visit = App.testHelpers.visit;
+    andThen = App.testHelpers.andThen;
+    wait = App.testHelpers.wait;
+
+    visit('/');
+    fillIn('#first', 'current value');
+    andThen(function() {
+      deepEqual(events, ['input', 'change'], '`input` and `change` events are fired in the proper order');
+    });
+
+    return wait();
+  }
+
+  ['@test `fillIn` only sets the value in the first matched element'](assert) {
+    let fillIn, find, visit, andThen, wait;
+
+    setTemplate('index', compile('<input type="text" id="first" class="in-test"><input type="text" id="second" class="in-test">'));
+    run(App, App.advanceReadiness);
+
+    fillIn = App.testHelpers.fillIn;
+    find = App.testHelpers.find;
+    visit = App.testHelpers.visit;
+    andThen = App.testHelpers.andThen;
+    wait = App.testHelpers.wait;
+
+    visit('/');
+    fillIn('input.in-test', 'new value');
+    andThen(function() {
+      equal(find('#first').val(), 'new value');
+      equal(find('#second').val(), '');
+    });
+
+    return wait();
+  }
+
+  ['@test `triggerEvent accepts an optional options hash and context'](assert) {
+    expect(3);
+
+    let triggerEvent, wait, event;
+
+    App.IndexWrapperComponent = Component.extend({
+      didInsertElement() {
+        this.$('.input').on('keydown change', function(e) {
+          event = e;
+        });
+      }
+    });
+
+    setTemplate('components/index-wrapper', compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'));
+    setTemplate('index', compile('{{index-wrapper}}'));
+
+    run(App, App.advanceReadiness);
+
+    triggerEvent = App.testHelpers.triggerEvent;
+    wait         = App.testHelpers.wait;
+
+    return wait()
+      .then(function() {
+        return triggerEvent('.input', '#limited', 'keydown', { keyCode: 13 });
+      })
+      .then(function() {
+        equal(event.keyCode, 13, 'options were passed');
+        equal(event.type, 'keydown', 'correct event was triggered');
+        equal(event.target.getAttribute('id'), 'inside-scope', 'triggered on the correct element');
+      });
+  }
 });
 
-
-QUnit.module('ember-testing debugging helpers', {
-  setup() {
+moduleFor('ember-testing debugging helpers', class extends ApplicationTestCase {
+  constructor() {
+    super();
     setupApp();
 
     run(function() {
@@ -791,46 +789,67 @@ QUnit.module('ember-testing debugging helpers', {
     });
 
     run(App, 'advanceReadiness');
-  },
+  }
 
   teardown() {
     cleanup();
   }
-});
 
-QUnit.test('pauseTest pauses', function() {
-  expect(1);
+  ['@test pauseTest pauses'](assert) {
+    expect(1);
 
-  function fakeAdapterAsyncStart() {
-    ok(true, 'Async start should be called after waiting for other helpers');
+    function fakeAdapterAsyncStart() {
+      ok(true, 'Async start should be called after waiting for other helpers');
+    }
+
+    App.testHelpers.andThen(() => {
+      Test.adapter.asyncStart = fakeAdapterAsyncStart;
+    });
+
+    App.testHelpers.pauseTest();
   }
-
-  App.testHelpers.andThen(() => {
-    Test.adapter.asyncStart = fakeAdapterAsyncStart;
-  });
-
-  App.testHelpers.pauseTest();
 });
 
 if (EMBER_TESTING_RESUME_TEST) {
-  QUnit.test('resumeTest resumes paused tests', function() {
-    expect(1);
+  moduleFor('ember-testing debugging helpers', class extends ApplicationTestCase {
+    constructor() {
+      super();
+      setupApp();
 
-    let pausePromise = App.testHelpers.pauseTest();
-    setTimeout(() => App.testHelpers.resumeTest(), 0);
+      run(function() {
+        App.Router = Router.extend({
+          location: 'none'
+        });
+      });
 
-    return pausePromise.then(() => ok(true, 'pauseTest promise was resolved'));
-  });
+      run(App, 'advanceReadiness');
+    }
 
-  QUnit.test('resumeTest throws if nothing to resume', function() {
-    expect(1);
+    teardown() {
+      cleanup();
+    }
 
-    throws(() => App.testHelpers.resumeTest(), /Testing has not been paused. There is nothing to resume./);
+    ['@test resumeTest resumes paused tests'](assert) {
+      expect(1);
+
+      let pausePromise = App.testHelpers.pauseTest();
+      setTimeout(() => App.testHelpers.resumeTest(), 0);
+
+      return pausePromise.then(() => ok(true, 'pauseTest promise was resolved'));
+    }
+
+    ['@test resumeTest throws if nothing to resume'](assert) {
+      expect(1);
+
+      throws(() => App.testHelpers.resumeTest(), /Testing has not been paused. There is nothing to resume./);
+    }
   });
 }
 
-QUnit.module('ember-testing routing helpers', {
-  setup() {
+moduleFor('ember-testing routing helpers', class extends ApplicationTestCase {
+  constructor() {
+    super();
+
     run(function() {
       App = EmberApplication.create();
       App.setupForTesting();
@@ -849,91 +868,92 @@ QUnit.module('ember-testing routing helpers', {
     });
 
     run(App, 'advanceReadiness');
-  },
+  }
 
   teardown() {
     cleanup();
   }
+
+  ['@test currentRouteName for \'/\''](assert) {
+    expect(3);
+
+    return App.testHelpers.visit('/').then(function() {
+      equal(App.testHelpers.currentRouteName(), 'index', 'should equal \'index\'.');
+      equal(App.testHelpers.currentPath(), 'index', 'should equal \'index\'.');
+      equal(App.testHelpers.currentURL(), '/', 'should equal \'/\'.');
+    });
+  }
+
+  ['@test currentRouteName for \'/posts\''](assert) {
+    expect(3);
+
+    return App.testHelpers.visit('/posts').then(function() {
+      equal(App.testHelpers.currentRouteName(), 'posts.index', 'should equal \'posts.index\'.');
+      equal(App.testHelpers.currentPath(), 'posts.index', 'should equal \'posts.index\'.');
+      equal(App.testHelpers.currentURL(), '/posts', 'should equal \'/posts\'.');
+    });
+  }
+
+  ['@test currentRouteName for \'/posts/new\''](assert) {
+    expect(3);
+
+    return App.testHelpers.visit('/posts/new').then(function() {
+      equal(App.testHelpers.currentRouteName(), 'posts.new', 'should equal \'posts.new\'.');
+      equal(App.testHelpers.currentPath(), 'posts.new', 'should equal \'posts.new\'.');
+      equal(App.testHelpers.currentURL(), '/posts/new', 'should equal \'/posts/new\'.');
+    });
+  }
 });
 
-QUnit.test('currentRouteName for \'/\'', function() {
-  expect(3);
-
-  return App.testHelpers.visit('/').then(function() {
-    equal(App.testHelpers.currentRouteName(), 'index', 'should equal \'index\'.');
-    equal(App.testHelpers.currentPath(), 'index', 'should equal \'index\'.');
-    equal(App.testHelpers.currentURL(), '/', 'should equal \'/\'.');
-  });
-});
-
-
-QUnit.test('currentRouteName for \'/posts\'', function() {
-  expect(3);
-
-  return App.testHelpers.visit('/posts').then(function() {
-    equal(App.testHelpers.currentRouteName(), 'posts.index', 'should equal \'posts.index\'.');
-    equal(App.testHelpers.currentPath(), 'posts.index', 'should equal \'posts.index\'.');
-    equal(App.testHelpers.currentURL(), '/posts', 'should equal \'/posts\'.');
-  });
-});
-
-QUnit.test('currentRouteName for \'/posts/new\'', function() {
-  expect(3);
-
-  return App.testHelpers.visit('/posts/new').then(function() {
-    equal(App.testHelpers.currentRouteName(), 'posts.new', 'should equal \'posts.new\'.');
-    equal(App.testHelpers.currentPath(), 'posts.new', 'should equal \'posts.new\'.');
-    equal(App.testHelpers.currentURL(), '/posts/new', 'should equal \'/posts/new\'.');
-  });
-});
-
-QUnit.module('ember-testing pendingRequests', {
-  setup() {
+moduleFor('ember-testing pendingRequests', class extends ApplicationTestCase {
+  constructor() {
+    super();
     setupApp();
-  },
+  }
 
   teardown() {
     cleanup();
   }
+
+  ['@test pendingRequests is maintained for ajaxSend and ajaxComplete events'](assert) {
+    equal(pendingRequests(), 0);
+    let xhr = { some: 'xhr' };
+    jQuery(document).trigger('ajaxSend', xhr);
+    equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
+    jQuery(document).trigger('ajaxComplete', xhr);
+    equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was decremented');
+  }
+
+  ['@test pendingRequests is ignores ajaxComplete events from past setupForTesting calls'](assert) {
+    equal(pendingRequests(), 0);
+    let xhr = { some: 'xhr' };
+    jQuery(document).trigger('ajaxSend', xhr);
+    equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
+
+    run(function() {
+      setupForTesting();
+    });
+    equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was reset');
+
+    let altXhr = { some: 'more xhr' };
+    jQuery(document).trigger('ajaxSend', altXhr);
+    equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
+    jQuery(document).trigger('ajaxComplete', xhr);
+    equal(pendingRequests(), 1, 'Ember.Test.pendingRequests is not impressed with your unexpected complete');
+  }
+
+  ['@test pendingRequests is reset by setupForTesting'](assert) {
+    incrementPendingRequests();
+    run(function() {
+      setupForTesting();
+    });
+    equal(pendingRequests(), 0, 'pendingRequests is reset');
+  }
 });
 
-QUnit.test('pendingRequests is maintained for ajaxSend and ajaxComplete events', function() {
-  equal(pendingRequests(), 0);
-  var xhr = { some: 'xhr' };
-  jQuery(document).trigger('ajaxSend', xhr);
-  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
-  jQuery(document).trigger('ajaxComplete', xhr);
-  equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was decremented');
-});
-
-QUnit.test('pendingRequests is ignores ajaxComplete events from past setupForTesting calls', function() {
-  equal(pendingRequests(), 0);
-  var xhr = { some: 'xhr' };
-  jQuery(document).trigger('ajaxSend', xhr);
-  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
-
-  run(function() {
-    setupForTesting();
-  });
-  equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was reset');
-
-  var altXhr = { some: 'more xhr' };
-  jQuery(document).trigger('ajaxSend', altXhr);
-  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
-  jQuery(document).trigger('ajaxComplete', xhr);
-  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests is not impressed with your unexpected complete');
-});
-
-QUnit.test('pendingRequests is reset by setupForTesting', function() {
-  incrementPendingRequests();
-  run(function() {
-    setupForTesting();
-  });
-  equal(pendingRequests(), 0, 'pendingRequests is reset');
-});
-
-QUnit.module('ember-testing async router', {
-  setup() {
+moduleFor('ember-testing async router', class extends ApplicationTestCase {
+  constructor() {
+    super();
     cleanup();
 
     run(function() {
@@ -957,7 +977,7 @@ QUnit.module('ember-testing async router', {
 
       App.UserProfileRoute = Route.extend({
         beforeModel() {
-          var self = this;
+          let self = this;
           return resolveLater().then(function() {
             self.transitionTo('user.edit');
           });
@@ -966,7 +986,7 @@ QUnit.module('ember-testing async router', {
 
       // Emulates a long-running unscheduled async operation.
       function resolveLater() {
-        var promise;
+        let promise;
 
         run(function() {
           promise = new RSVP.Promise(function(resolve) {
@@ -989,39 +1009,41 @@ QUnit.module('ember-testing async router', {
 
     App.injectTestHelpers();
     run(App, 'advanceReadiness');
-  },
+  }
 
   teardown() {
     cleanup();
   }
+
+  ['@test currentRouteName for \'/user\''](assert) {
+    expect(4);
+
+    return App.testHelpers.visit('/user').then(function() {
+      equal(currentRouteName(App), 'user.index', 'should equal \'user.index\'.');
+      equal(currentPath(App), 'user.index', 'should equal \'user.index\'.');
+      equal(currentURL(App), '/user', 'should equal \'/user\'.');
+      equal(App.__container__.lookup('route:user').get('controller.model.firstName'), 'Tom', 'should equal \'Tom\'.');
+    });
+  }
+
+  ['@test currentRouteName for \'/user/profile\''](assert) {
+    expect(4);
+
+    return App.testHelpers.visit('/user/profile').then(function() {
+      equal(currentRouteName(App), 'user.edit', 'should equal \'user.edit\'.');
+      equal(currentPath(App), 'user.edit', 'should equal \'user.edit\'.');
+      equal(currentURL(App), '/user/edit', 'should equal \'/user/edit\'.');
+      equal(App.__container__.lookup('route:user').get('controller.model.firstName'), 'Tom', 'should equal \'Tom\'.');
+    });
+  }
 });
 
-QUnit.test('currentRouteName for \'/user\'', function() {
-  expect(4);
+let originalVisitHelper, originalFindHelper, originalWaitHelper;
 
-  return App.testHelpers.visit('/user').then(function() {
-    equal(currentRouteName(App), 'user.index', 'should equal \'user.index\'.');
-    equal(currentPath(App), 'user.index', 'should equal \'user.index\'.');
-    equal(currentURL(App), '/user', 'should equal \'/user\'.');
-    equal(App.__container__.lookup('route:user').get('controller.model.firstName'), 'Tom', 'should equal \'Tom\'.');
-  });
-});
+moduleFor('can override built-in helpers', class extends ApplicationTestCase {
+  constructor() {
+    super();
 
-QUnit.test('currentRouteName for \'/user/profile\'', function() {
-  expect(4);
-
-  return App.testHelpers.visit('/user/profile').then(function() {
-    equal(currentRouteName(App), 'user.edit', 'should equal \'user.edit\'.');
-    equal(currentPath(App), 'user.edit', 'should equal \'user.edit\'.');
-    equal(currentURL(App), '/user/edit', 'should equal \'/user/edit\'.');
-    equal(App.__container__.lookup('route:user').get('controller.model.firstName'), 'Tom', 'should equal \'Tom\'.');
-  });
-});
-
-var originalVisitHelper, originalFindHelper, originalWaitHelper;
-
-QUnit.module('can override built-in helpers', {
-  setup() {
     originalVisitHelper = Test._helpers.visit;
     originalFindHelper  = Test._helpers.find;
     originalWaitHelper  = Test._helpers.wait;
@@ -1035,7 +1057,7 @@ QUnit.module('can override built-in helpers', {
 
       App.setupForTesting();
     });
-  },
+  }
 
   teardown() {
     cleanup();
@@ -1044,30 +1066,30 @@ QUnit.module('can override built-in helpers', {
     Test._helpers.find  = originalFindHelper;
     Test._helpers.wait  = originalWaitHelper;
   }
-});
 
-QUnit.test('can override visit helper', function() {
-  expect(1);
+  ['@test can override visit helper'](assert) {
+    expect(1);
 
-  Test.registerHelper('visit', function() {
-    ok(true, 'custom visit helper was called');
-  });
+    Test.registerHelper('visit', function() {
+      ok(true, 'custom visit helper was called');
+    });
 
-  App.injectTestHelpers();
+    App.injectTestHelpers();
 
-  return App.testHelpers.visit();
-});
+    return App.testHelpers.visit();
+  }
 
-QUnit.test('can override find helper', function() {
-  expect(1);
+  ['@test can override find helper'](assert) {
+    expect(1);
 
-  Test.registerHelper('find', function() {
-    ok(true, 'custom find helper was called');
+    Test.registerHelper('find', function() {
+      ok(true, 'custom find helper was called');
 
-    return ['not empty array'];
-  });
+      return ['not empty array'];
+    });
 
-  App.injectTestHelpers();
+    App.injectTestHelpers();
 
-  return App.testHelpers.findWithAssert('.who-cares');
+    return App.testHelpers.findWithAssert('.who-cares');
+  }
 });
