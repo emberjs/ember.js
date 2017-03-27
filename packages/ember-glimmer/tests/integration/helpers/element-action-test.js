@@ -1423,4 +1423,21 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     this.assertText('Click me');
   }
+
+  ['@test it supports non-registered actions [GH#14888]']() {
+    this.render(`
+      {{#if show}}
+        <button id='ddButton' {{action (mut show) false}}>
+          Show ({{show}})
+        </button>
+      {{/if}}
+    `, { show: true });
+
+    this.assert.equal(this.$('button').text().trim(), 'Show (true)');
+    // We need to focus in to simulate an actual click.
+    this.runTask(() => {
+      document.getElementById('ddButton').focus();
+      document.getElementById('ddButton').click();
+    });
+  }
 });
