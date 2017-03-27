@@ -423,6 +423,7 @@ export class CurlyComponentDefinition extends ComponentDefinition {
     super(name, MANAGER, ComponentClass);
     this.template = template;
     this.args = args;
+    this.finalizer = () => {};
   }
 }
 

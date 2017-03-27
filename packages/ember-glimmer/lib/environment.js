@@ -156,7 +156,11 @@ export default class Environment extends GlimmerEnvironment {
     let owner = blockMeta.owner;
     let source = blockMeta.moduleName && `template:${blockMeta.moduleName}`;
     let definition = this._definitionCache.get({ name, source, owner });
-    definition.finalizer = finalizer;
+    if (definition) {
+      definition.finalizer = finalizer;
+    } else {
+      finalizer();
+    }
     return definition;
   }
 
