@@ -637,7 +637,7 @@ const Component = CoreView.extend(
     readDOMAttr(name) {
       let element = getViewElement(this);
       return readDOMAttr(element, name);
-    }
+    },
 
     /**
      The WAI-ARIA role of the control represented by this view. For example, a
@@ -717,24 +717,7 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
-
-    /**
-     Called when the attributes passed into the component have been updated.
-     Called both during the initial render of a container and during a rerender.
-     Can be used in place of an observer; code placed here will be executed
-     every time any attribute updates.
-     @event didReceiveAttrs
-     @public
-     @since 1.13.0
-     */
-
-    /**
-     Called after a component has been rendered, both on initial render and
-     in subsequent rerenders.
-     @method didRender
-     @public
-     @since 1.13.0
-     */
+    didReceiveAttrs() {},
 
     /**
      Called after a component has been rendered, both on initial render and
@@ -743,14 +726,7 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
-
-    /**
-     Called before a component has been rendered, both on initial render and
-     in subsequent rerenders.
-     @method willRender
-     @public
-     @since 1.13.0
-     */
+    didRender() {},
 
     /**
      Called before a component has been rendered, both on initial render and
@@ -759,6 +735,7 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
+    willRender() {},
 
     /**
      Called when the attributes passed into the component have been changed.
@@ -767,14 +744,7 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
-
-    /**
-     Called when the attributes passed into the component have been changed.
-     Called only during a rerender, not during an initial render.
-     @event didUpdateAttrs
-     @public
-     @since 1.13.0
-     */
+    didUpdateAttrs() {},
 
     /**
      Called when the component is about to update and rerender itself.
@@ -783,14 +753,7 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
-
-    /**
-     Called when the component is about to update and rerender itself.
-     Called only during a rerender, not during an initial render.
-     @event willUpdate
-     @public
-     @since 1.13.0
-     */
+    willUpdate() {},
 
     /**
      Called when the component has updated and rerendered itself.
@@ -799,14 +762,14 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
+    didUpdate() {},
 
     /**
-     Called when the component has updated and rerendered itself.
-     Called only during a rerender, not during an initial render.
-     @event didUpdate
+     @event didDestroyElement
      @public
-     @since 1.13.0
+     @since 2.13.0
      */
+    didDestroyElement() {}
 
     /**
       A component may contain a layout. A layout is a regular template but

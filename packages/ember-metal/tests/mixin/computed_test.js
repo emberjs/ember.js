@@ -141,3 +141,16 @@ QUnit.test('setter behavior works properly when overriding computed properties',
   equal(get(obj, 'cpWithoutSetter'), 'test', 'The default setter was called, the value is correct');
   ok(!cpWasCalled, 'The default setter was called, not the CP itself');
 });
+
+QUnit.test('calling _super when there is no computed on parent class is deprecated', function() {
+  expectDeprecation('Calling `_super` when there is no computed on the parent class is deprecated.');
+
+  let SuperMixin = Mixin.create({});
+
+  let SubMixin = Mixin.create(SuperMixin, {
+    foo: computed({
+      get(key) { return this._super(...arguments); },
+      set(key, value) { return this._super(...arguments); }
+    })
+  });
+});
