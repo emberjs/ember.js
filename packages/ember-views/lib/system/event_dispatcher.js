@@ -6,6 +6,7 @@
 import { assign, getOwner } from 'ember-utils';
 import { assert } from 'ember-debug';
 import { get, set, isNone, run } from 'ember-metal';
+import { deprecate } from 'ember-debug';
 import { Object as EmberObject } from 'ember-runtime';
 import jQuery from './jquery';
 import ActionManager from './action_manager';
@@ -129,13 +130,22 @@ export default EmberObject.extend({
     @type boolean
     @default false
     @since 1.7.0
+    @deprecated
     @private
   */
-  canDispatchToEventManager: null,
 
   init() {
     this._super();
     assert('EventDispatcher should never be instantiated in fastboot mode. Please report this as an Ember bug.', environment.hasDOM);
+
+    deprecate(
+      `[DEPRECATED] \`canDispatchToEventManager\` has been deprecated.`,
+      !('canDispatchToEventManager' in this),
+      {
+        id: 'ember-views.event-dispatcher.canDispatchToEventManager',
+        until: '3.0.0'
+      }
+    );
   },
 
   /**

@@ -6,6 +6,7 @@ import {
   run
 } from 'ember-metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
+import { EventDispatcher } from 'ember-views';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
 
@@ -136,6 +137,34 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     this.render(`{{x-foo}}`);
 
     this.$('div').trigger('myevent');
+  }
+
+  ['@test canDispatchToEventManager is deprecated'](assert) {
+    this.dispatcher.canDispatchToEventManager = null;
+    this.registerComponent('x-foo', {
+      ComponentClass: Component.extend({
+        eventManager: {
+          myEvent() {}
+        }
+      }),
+      template: `<p>Hello!</p>`
+    });
+
+    expectDeprecation(() => {
+      this.render(`{{x-foo}}`);
+    }, '[DEPRECATED] `canDispatchToEventManager` has been deprecated.');
+
+    this.$('div').trigger('myevent');
+  }
+
+  ['@test canDispatchToEventManager is deprecated in EventDispatcher'](assert) {
+    let MyDispatcher = EventDispatcher.extend({
+      canDispatchToEventManager: null
+    });
+
+    expectDeprecation(() => {
+      MyDispatcher.create();
+    }, '[DEPRECATED] `canDispatchToEventManager` has been deprecated.');
   }
 
   ['@test a rootElement can be specified'](assert) {
