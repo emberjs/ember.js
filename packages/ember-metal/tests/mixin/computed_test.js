@@ -148,10 +148,12 @@ QUnit.test('calling _super when there is no computed on parent class is deprecat
   let SuperMixin = Mixin.create({});
 
   let SubMixin = Mixin.create(SuperMixin, {
-    foo: computed({
-      get(key) { return this._super(...arguments); }
+    foo: computed(function() {
+      return this._super(...arguments);
     })
   });
 
-  SubMixin.get('foo');
+  let obj = {};
+  SubMixin.apply(obj);
+  get(obj, 'foo');
 });
