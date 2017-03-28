@@ -95,16 +95,15 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
   }
 
   if (superProperty === undefined || !(superProperty instanceof ComputedProperty)) {
-    /*
-    deprecate(
-      'Calling `_super` when there is no computed on the parent class is deprecated.',
-      false,
-      { id: 'ember-metal.missing-super-computed', until: '3.0.0' }
-    );
-    */
-    console.warn('no super computed');
-
-    return property;
+    superProperty = {
+      _getter: function() {
+        deprecate(
+          `Calling \`_super\` when there is no computed \`${key}\` on the parent class is deprecated.`,
+          false,
+          { id: 'ember-metal.missing-super-computed', until: '3.0.0' }
+        );
+      }
+    };
   }
 
   // Since multiple mixins may inherit from the same parent, we need
@@ -138,24 +137,13 @@ function giveMethodSuper(obj, key, method, values, descs) {
 
   // Only wrap the new method if the original method was a function
   if (superMethod === undefined || 'function' !== typeof superMethod) {
-    /*
-    deprecate(
-      'Calling `_super` when there is no method on the parent class is deprecated.',
-      false,
-      { id: 'ember-metal.missing-super-computed', until: '3.0.0' }
-    );
-    *
-    */
-    /*
-    deprecate(
-      'Ember.required is deprecated as its behavior is inconsistent and unreliable.',
-      false,
-      { id: 'ember-metal.required', until: '3.0.0' }
-    );
-    */
-    console.warn('no super method');
-
-    return method;
+    superMethod = function() {
+      deprecate(
+        `Calling \`_super\` when there is no method \`${key}\` on the parent class is deprecated.`,
+        false,
+        { id: 'ember-metal.missing-super-method', until: '3.0.0' }
+      );
+    };
   }
 
   return wrap(method, superMethod);

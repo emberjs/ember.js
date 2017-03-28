@@ -155,8 +155,6 @@ QUnit.test('_super from a first-of-two mixins with no superclass function does n
 });
 
 QUnit.test('calling _super when there is no method on parent class is deprecated', function() {
-  expectDeprecation('Calling `_super` when there is no method on the parent class is deprecated.');
-
   let MixinA = Mixin.create({});
 
   let MixinB = Mixin.create(MixinA, {
@@ -164,6 +162,12 @@ QUnit.test('calling _super when there is no method on parent class is deprecated
       this._super(...arguments);
     }
   });
+
+  let obj = {};
+  MixinB.apply(obj);
+
+  expectDeprecation('Calling `_super` when there is no method `foo` on the parent class is deprecated.');
+  obj.foo();
 });
 
 // ..........................................................

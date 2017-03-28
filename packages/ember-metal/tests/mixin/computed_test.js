@@ -143,14 +143,15 @@ QUnit.test('setter behavior works properly when overriding computed properties',
 });
 
 QUnit.test('calling _super when there is no computed on parent class is deprecated', function() {
-  expectDeprecation('Calling `_super` when there is no computed on the parent class is deprecated.');
+  expectDeprecation('Calling `_super` when there is no computed `foo` on the parent class is deprecated.');
 
   let SuperMixin = Mixin.create({});
 
   let SubMixin = Mixin.create(SuperMixin, {
     foo: computed({
-      get(key) { return this._super(...arguments); },
-      set(key, value) { return this._super(...arguments); }
+      get(key) { return this._super(...arguments); }
     })
   });
+
+  SubMixin.get('foo');
 });
