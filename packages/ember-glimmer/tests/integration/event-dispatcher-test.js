@@ -56,6 +56,8 @@ moduleFor('EventDispatcher', class extends RenderingTest {
       template: `<input id="is-done" type="checkbox">`
     });
 
+
+    expectDeprecation(/`eventManager` has been deprecated/);
     this.render(`{{x-foo}}`);
 
     this.runTask(() => this.$('#is-done').trigger('click'));
@@ -90,6 +92,7 @@ moduleFor('EventDispatcher', class extends RenderingTest {
       template: `<input id="is-done" type="checkbox">`
     });
 
+    expectDeprecation(/`eventManager` has been deprecated/);
     this.render(`{{x-foo}}`);
 
     this.runTask(() => this.$('#is-done').trigger('click'));
@@ -139,8 +142,7 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     this.$('div').trigger('myevent');
   }
 
-  ['@test canDispatchToEventManager is deprecated'](assert) {
-    this.dispatcher.canDispatchToEventManager = null;
+  ['@test eventManager is deprecated'](assert) {
     this.registerComponent('x-foo', {
       ComponentClass: Component.extend({
         eventManager: {
@@ -150,11 +152,8 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
       template: `<p>Hello!</p>`
     });
 
-    expectDeprecation(() => {
-      this.render(`{{x-foo}}`);
-    }, '[DEPRECATED] `canDispatchToEventManager` has been deprecated.');
-
-    this.$('div').trigger('myevent');
+    expectDeprecation(/`eventManager` has been deprecated/);
+    this.render(`{{x-foo}}`);
   }
 
   ['@test canDispatchToEventManager is deprecated in EventDispatcher'](assert) {
@@ -162,9 +161,8 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
       canDispatchToEventManager: null
     });
 
-    expectDeprecation(() => {
-      MyDispatcher.create();
-    }, '[DEPRECATED] `canDispatchToEventManager` has been deprecated.');
+    expectDeprecation(/`canDispatchToEventManager` has been deprecated/);
+    MyDispatcher.create();
   }
 
   ['@test a rootElement can be specified'](assert) {

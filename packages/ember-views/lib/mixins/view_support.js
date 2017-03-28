@@ -539,11 +539,11 @@ export default Mixin.create({
       let dispatcher = owner && owner.lookup('event_dispatcher:main');
 
       deprecate(
-        `[DEPRECATED] \`canDispatchToEventManager\` has been deprecated.`,
-        !('canDispatchToEventManager' in dispatcher),
+        `\`eventManager\` has been deprecated in ${this}.`,
+        false,
         {
           id: 'ember-views.event-dispatcher.canDispatchToEventManager',
-          until: '3.0.0'
+          until: '2.16.0'
         }
       );
 

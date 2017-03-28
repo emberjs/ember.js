@@ -139,11 +139,11 @@ export default EmberObject.extend({
     assert('EventDispatcher should never be instantiated in fastboot mode. Please report this as an Ember bug.', environment.hasDOM);
 
     deprecate(
-      `[DEPRECATED] \`canDispatchToEventManager\` has been deprecated.`,
+      `\`canDispatchToEventManager\` has been deprecated in ${this}.`,
       !('canDispatchToEventManager' in this),
       {
         id: 'ember-views.event-dispatcher.canDispatchToEventManager',
-        until: '3.0.0'
+        until: '2.16.0'
       }
     );
   },
