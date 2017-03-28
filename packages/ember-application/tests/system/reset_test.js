@@ -3,8 +3,45 @@ import EmberApplication from '../../system/application';
 import { Object as EmberObject, Controller } from 'ember-runtime';
 import { Router } from 'ember-routing';
 import { Registry } from 'container';
+import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 let application, Application;
+
+moduleFor('Ember.Application - resetting', class extends ApplicationTestCase {
+
+    /*
+     * As you are defining an ES class for your test module, you may
+     * override APIs from the parent class and call super. If needed, you
+     * can even create a whole new test case in internal-test-helpers
+     */
+
+    /*
+     * In this format, tests are any property on the class that starts
+     * with "@test".
+     */
+    ['@test When an application is reset, the router URL is reset to `/`'](assert) {
+        this.router.map(function() {
+            this.route('one');
+            this.route('two');
+        });
+
+        return this.visit('/').then(() => {
+            return this.visit('/one');
+        }).then(() => {
+            this.application.reset();
+            let location = this.appRouter.get('location');
+            assert.equal(location.getURL(), '', 'location URL is blank');
+
+            let applicationController = this.applicationInstance.lookup('controller:application');
+            assert.equal(get(applicationController, 'currentPath'), 'index', 'application controller currentPath is index');
+            return this.visit('/one');
+
+        }).then(() => {
+            let applicationController = this.applicationInstance.lookup('controller:application');
+            assert.equal(get(applicationController, 'currentPath'), 'one', 'application controller currentPath is updated to one after a reset then visit');
+        });
+    }
+});
 
 QUnit.module('Ember.Application - resetting', {
   setup() {
@@ -124,46 +161,7 @@ QUnit.test('When an application is reset, the eventDispatcher is destroyed and r
   Registry.prototype.register = originalRegister;
 });
 
-QUnit.test('When an application is reset, the router URL is reset to `/`', function() {
-  let location, router;
 
-  run(() => {
-    application = Application.create();
-    application.Router = Router.extend({
-      location: 'none'
-    });
-
-    application.Router.map(function() {
-      this.route('one');
-      this.route('two');
-    });
-  });
-
-  router = application.__container__.lookup('router:main');
-
-  location = router.get('location');
-
-  run(() => {
-    location.handleURL('/one');
-  });
-
-  application.reset();
-
-  let applicationController = application.__container__.lookup('controller:application');
-  router = application.__container__.lookup('router:main');
-  location = router.get('location');
-
-  equal(location.getURL(), '');
-
-  equal(get(applicationController, 'currentPath'), 'index');
-
-  location = application.__container__.lookup('router:main').get('location');
-  run(() => {
-    location.handleURL('/one');
-  });
-
-  equal(get(applicationController, 'currentPath'), 'one');
-});
 
 QUnit.test('When an application with advance/deferReadiness is reset, the app does correctly become ready after reset', function() {
   var readyCallCount;
