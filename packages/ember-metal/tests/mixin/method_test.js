@@ -116,7 +116,8 @@ QUnit.test('Including the same mixin more than once will only run once', functio
   equal(cnt, 1, 'should invoke MixinA.foo one time');
 });
 
-QUnit.test('_super from a single mixin with no superclass does not error', function() {
+QUnit.test('_super from a single mixin with no superclass is deprecated', function() {
+  expectDeprecation('Calling `_super` when there is no method `foo` on the parent class is deprecated.');
   let MixinA = Mixin.create({
     foo() {
       this._super(...arguments);
@@ -127,10 +128,11 @@ QUnit.test('_super from a single mixin with no superclass does not error', funct
   MixinA.apply(obj);
 
   obj.foo();
-  ok(true);
 });
 
-QUnit.test('_super from a first-of-two mixins with no superclass function does not error', function() {
+QUnit.test('_super from a first-of-two mixins with no superclass function is deprecated', function() {
+  expectDeprecation('Calling `_super` when there is no method `foo` on the parent class is deprecated.');
+
   // _super was previously calling itself in the second assertion.
   // Use remaining count of calls to ensure it doesn't loop indefinitely.
   let remaining = 3;
@@ -155,6 +157,7 @@ QUnit.test('_super from a first-of-two mixins with no superclass function does n
 });
 
 QUnit.test('calling _super when there is no method on parent class is deprecated', function() {
+  expectDeprecation('Calling `_super` when there is no method `foo` on the parent class is deprecated.');
   let MixinA = Mixin.create({});
 
   let MixinB = Mixin.create(MixinA, {
@@ -166,7 +169,6 @@ QUnit.test('calling _super when there is no method on parent class is deprecated
   let obj = {};
   MixinB.apply(obj);
 
-  expectDeprecation('Calling `_super` when there is no method `foo` on the parent class is deprecated.');
   obj.foo();
 });
 
