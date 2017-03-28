@@ -89,7 +89,7 @@ export function isArray(obj) {
   Ember.typeOf(new Number(101));        // 'number'
   Ember.typeOf(true);                   // 'boolean'
   Ember.typeOf(new Boolean(true));      // 'boolean'
-  Ember.typeOf(Ember.makeArray);        // 'function'
+  Ember.typeOf(Ember.A);                // 'function'
   Ember.typeOf([1, 2, 90]);             // 'array'
   Ember.typeOf(/abc/);                  // 'regexp'
   Ember.typeOf(new Date());             // 'date'
