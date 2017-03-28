@@ -12,7 +12,7 @@ moduleFor('Components compile instrumentation', class extends RenderingTest {
 
     this.resetEvents();
 
-    instrumentationSubscribe('render.compile', {
+    instrumentationSubscribe('render.getComponentDefinition', {
       before: (name, timestamp, payload) => {
         if (payload.view !== this.component) {
           this.actual.before.push(payload);

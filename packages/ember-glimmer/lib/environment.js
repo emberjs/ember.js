@@ -151,16 +151,12 @@ export default class Environment extends GlimmerEnvironment {
 
   getComponentDefinition(path, symbolTable) {
     let name = path[0];
-    let finalizer = _instrumentStart('render.compile', instrumentationPayload, name);
+    let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let source = blockMeta.moduleName && `template:${blockMeta.moduleName}`;
     let definition = this._definitionCache.get({ name, source, owner });
-    if (definition) {
-      definition.finalizer = finalizer;
-    } else {
-      finalizer();
-    }
+    finalizer();
     return definition;
   }
 
