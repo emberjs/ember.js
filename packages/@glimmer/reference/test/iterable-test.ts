@@ -9,12 +9,13 @@ import {
   IterationArtifacts,
   ReferenceIterator,
   IteratorSynchronizer,
-  IteratorSynchronizerDelegate
+  IteratorSynchronizerDelegate,
+  TagWrapper
 } from '@glimmer/reference';
 
 import { UpdatableReference } from '@glimmer/object-reference';
 
-import { Opaque, LinkedList, ListNode, dict } from '@glimmer/util';
+import { Opaque, Option, LinkedList, ListNode, dict } from '@glimmer/util';
 
 QUnit.module("Reference iterables");
 
@@ -23,7 +24,7 @@ class Target implements IteratorSynchronizerDelegate {
   private list = new LinkedList<ListNode<BasicReference<Opaque>>>();
   public tag = VOLATILE_TAG;
 
-  retain(key: string, item: BasicReference<Opaque>, memo: BasicReference<Opaque>) {
+  retain(key: string, item: BasicReference<Opaque>) {
     if (item !== this.map[key].value) {
       throw new Error("unstable reference");
     }
@@ -31,18 +32,18 @@ class Target implements IteratorSynchronizerDelegate {
 
   done() {}
 
-  append(key: string, item: BasicReference<Opaque>, memo: BasicReference<Opaque>) {
+  append(key: string, item: BasicReference<Opaque>) {
     let node = this.map[key] = new ListNode(item);
     this.list.append(node);
   }
 
-  insert(key: string, item: BasicReference<Opaque>, memo: BasicReference<Opaque>, before: string) {
+  insert(key: string, item: BasicReference<Opaque>, _: BasicReference<Opaque>, before: string) {
     let referenceNode = before ? this.map[before] : null;
     let node = this.map[key] = new ListNode(item);
     this.list.insertBefore(node, referenceNode);
   }
 
-  move(key: string, item: BasicReference<Opaque>, memo: BasicReference<Opaque>, before: string) {
+  move(key: string, item: BasicReference<Opaque>, _: BasicReference<Opaque>, before: string) {
     let referenceNode = before ? this.map[before] : null;
     let node = this.map[key];
 
@@ -98,7 +99,7 @@ class TestIterator implements Iterator<Opaque, Opaque> {
     return this.array.length === 0;
   }
 
-  next(): IterationItem<Opaque, Opaque> {
+  next(): Option<IterationItem<Opaque, Opaque>>  {
     let { position, array } = this;
 
     if (position >= array.length) return null;
@@ -112,7 +113,7 @@ class TestIterator implements Iterator<Opaque, Opaque> {
 }
 
 class TestIterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque, Opaque>, UpdatableReference<Opaque>, UpdatableReference<Opaque>> {
-  public tag: RevisionTag;
+  public tag: TagWrapper<RevisionTag | null>;
   private arrayRef: UpdatableReference<TestItem[]>;
 
   constructor(arrayRef: UpdatableReference<TestItem[]>) {
@@ -120,7 +121,7 @@ class TestIterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opa
     this.arrayRef = arrayRef;
   }
 
-  iterate(): TestIterator {
+  iterate(): Iterator<Opaque, Opaque> {
     return new TestIterator(this.arrayRef.value());
   }
 
@@ -145,10 +146,10 @@ function initialize(arr: TestItem[]): { artifacts: IterationArtifacts, target: T
   let target = new Target();
   let reference = new UpdatableReference(arr);
   let iterator = new ReferenceIterator(new TestIterable(reference));
-  let item: IterationItem<Reference<Opaque>, Reference<Opaque>>;
+  let item;
 
   while (item = iterator.next()) {
-    target.append(item.key, item.value, item.memo);
+    target.append(item.key, item.value);
   }
 
   return { reference, target, artifacts: iterator.artifacts };
