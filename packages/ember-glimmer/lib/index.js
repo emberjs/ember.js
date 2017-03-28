@@ -135,6 +135,31 @@
    First name: <input type="text" />
   </label>
   ```
+
+  Additionally you can `yield` properties into the context for use by the consumer:
+
+  ```handlebars
+  <!-- application.hbs -->
+  {{#labeled-textfield value=someProperty validator=(action 'firstNameValidator') as |validationError|}}
+  {{#if validationError}}
+    <p class="error">{{ValidationError}}</p>
+  {{/if}}
+  First name:
+  {{/labeled-textfield}}
+  ```
+  ```handlebars
+  <!-- components/labeled-textfield.hbs -->
+  <label>
+   {{yield validationError}} {{input value=value}}
+  </label>
+  ```
+  Result:
+  ```html
+  <label>
+   <p class="error">First Name must be at least 3 characters long.</p>
+   First name: <input type="text" />
+  </label>
+  ```
   @method yield
   @for Ember.Templates.helpers
   @param {Hash} options
