@@ -115,49 +115,53 @@
   of another template.
 
   ### Use with Ember.Component
+
   When designing components `{{yield}}` is used to denote where, inside the component's
   template, an optional block passed to the component should render:
-  ```handlebars
-  <!-- application.hbs -->
+
+  ```application.hbs
   {{#labeled-textfield value=someProperty}}
-   First name:
+    First name:
   {{/labeled-textfield}}
   ```
-  ```handlebars
-  <!-- components/labeled-textfield.hbs -->
+
+  ```components/labeled-textfield.hbs
   <label>
-   {{yield}} {{input value=value}}
+    {{yield}} {{input value=value}}
   </label>
   ```
+
   Result:
+
   ```html
   <label>
-   First name: <input type="text" />
+    First name: <input type="text" />
   </label>
   ```
 
   Additionally you can `yield` properties into the context for use by the consumer:
 
-  ```handlebars
-  <!-- application.hbs -->
+  ```application.hbs
   {{#labeled-textfield value=someProperty validator=(action 'firstNameValidator') as |validationError|}}
-  {{#if validationError}}
-    <p class="error">{{ValidationError}}</p>
-  {{/if}}
-  First name:
+    {{#if validationError}}
+      <p class="error">{{ValidationError}}</p>
+    {{/if}}
+    First name:
   {{/labeled-textfield}}
   ```
-  ```handlebars
-  <!-- components/labeled-textfield.hbs -->
+
+  ```components/labeled-textfield.hbs
   <label>
-   {{yield validationError}} {{input value=value}}
+    {{yield validationError}} {{input value=value}}
   </label>
   ```
+
   Result:
+
   ```html
   <label>
-   <p class="error">First Name must be at least 3 characters long.</p>
-   First name: <input type="text" />
+    <p class="error">First Name must be at least 3 characters long.</p>
+    First name: <input type="text" />
   </label>
   ```
   @method yield
