@@ -67,15 +67,10 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
     @param name {String}
     @private
   */
-  trigger() {
+  trigger(name, ...args) {
     this._super(...arguments);
-    let name = arguments[0];
     let method = this[name];
     if (method) {
-      let args = new Array(arguments.length - 1);
-      for (let i = 1; i < arguments.length; i++) {
-        args[i - 1] = arguments[i];
-      }
       return method.apply(this, args);
     }
   },
