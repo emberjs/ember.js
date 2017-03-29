@@ -434,6 +434,11 @@ export const BOUNDS = symbol('BOUNDS');
   to wrapping content in a Component's template, you can also use
   the public layout API in your Component JavaScript.
 
+  ```app/templates/components/person-profile.hbs
+    <h1>Person's Title</h1>
+    <div class='details'>{{yield}}</div>
+  ```
+
   ```app/components/person-profile.js
     import Ember from 'ember';
     import layout from '../templates/components/person-profile';

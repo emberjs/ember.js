@@ -67,7 +67,7 @@ import { getHash } from './util';
   @class Location
   @namespace Ember
   @static
-  @private
+  @public
 */
 export default {
   /**
