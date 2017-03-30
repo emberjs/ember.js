@@ -255,7 +255,7 @@ export default class VM implements PublicVM {
     this.didEnter(tryOpcode);
   }
 
-  iterate(memo: VersionedPathReference<Opaque>, value: VersionedPathReference<Opaque>, updating = new LinkedList<UpdatingOpcode>()): TryOpcode {
+  iterate(memo: VersionedPathReference<Opaque>, value: VersionedPathReference<Opaque>): TryOpcode {
     let stack = this.stack;
     stack.push(value);
     stack.push(memo);
@@ -267,7 +267,7 @@ export default class VM implements PublicVM {
     // this.ip = end + 4;
     // this.frames.push(ip);
 
-    return new TryOpcode(this.pc, state, tracker, updating);
+    return new TryOpcode(this.pc, state, tracker, new LinkedList<UpdatingOpcode>());
   }
 
   enterItem(key: string, opcode: TryOpcode) {
