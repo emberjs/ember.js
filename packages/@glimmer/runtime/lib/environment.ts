@@ -61,7 +61,7 @@ export class Scope {
       refs[i] = UNDEFINED_REFERENCE;
     }
 
-    return new Scope(refs).init({ self });
+    return new Scope(refs, null, null, null).init({ self });
   }
 
   static sized(size = 0) {
@@ -71,17 +71,17 @@ export class Scope {
       refs[i] = UNDEFINED_REFERENCE;
     }
 
-    return new Scope(refs);
+    return new Scope(refs, null, null, null);
   }
 
   constructor(
     // the 0th slot is `self`
     private slots: ScopeSlot[],
-    private callerScope: Option<Scope> = null,
+    private callerScope: Option<Scope>,
     // named arguments and blocks passed to a layout that uses eval
-    private evalScope: Option<Dict<ScopeSlot>> = null,
+    private evalScope: Option<Dict<ScopeSlot>>,
     // locals in scope when the partial was invoked
-    private partialMap: Option<Dict<VersionedPathReference<Opaque>>> = null) {
+    private partialMap: Option<Dict<VersionedPathReference<Opaque>>>) {
   }
 
   init({ self }: { self: VersionedPathReference<Opaque> }): this {
@@ -332,7 +332,7 @@ export abstract class Environment {
   }
 
   private get transaction(): Transaction {
-    return this._transaction;
+    return this._transaction!;
   }
 
   didCreate<T>(component: T, manager: ComponentManager<T>) {

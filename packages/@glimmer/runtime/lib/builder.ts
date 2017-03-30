@@ -114,16 +114,16 @@ export class ElementStack implements Cursor {
     this.nextSiblingStack.push(this.nextSibling);
   }
 
-  expectConstructing(method: string): Simple.Element {
-    return this.constructing;
+  expectConstructing(_: string): Simple.Element {
+    return this.constructing!;
   }
 
-  expectOperations(method: string): ElementOperations {
-    return this.operations;
+  expectOperations(_: string): ElementOperations {
+    return this.operations!;
   }
 
   block(): Tracker {
-    return this.blockStack.current;
+    return this.blockStack.current!;
   }
 
   popElement() {
@@ -133,7 +133,7 @@ export class ElementStack implements Cursor {
     nextSiblingStack.pop();
     // LOGGER.debug(`-> element stack ${this.elementStack.toArray().map(e => e.tagName).join(', ')}`);
 
-    this.element = elementStack.current;
+    this.element = elementStack.current!;
     this.nextSibling = nextSiblingStack.current;
 
     return topElement;
@@ -182,10 +182,12 @@ export class ElementStack implements Cursor {
   popBlock(): Tracker {
     this.block().finalize(this);
 
-    return this.blockStack.pop();
+    return this.blockStack.pop()!;
   }
 
-  openElement(tag: string, operations = this.defaultOperations): Simple.Element {
+  openElement(tag: string, _operations?: ElementOperations): Simple.Element {
+    // workaround argument.length transpile of arg initializer
+    let operations = _operations === undefined ? this.defaultOperations : _operations;
     let element = this.dom.createElement(tag, this.element);
 
     this.constructing = element;
@@ -196,14 +198,14 @@ export class ElementStack implements Cursor {
 
   flushElement() {
     let parent  = this.element;
-    let element = this.constructing;
+    let element = this.constructing!;
 
     this.dom.insertBefore(parent, element, this.nextSibling);
 
     this.constructing = null;
     this.operations = null;
 
-    this.pushElement(element);
+    this.pushElement(element, null);
     this.block().openElement(element);
   }
 
@@ -219,7 +221,7 @@ export class ElementStack implements Cursor {
     this.popElement();
   }
 
-  private pushElement(element: Simple.Element, nextSibling: Option<Simple.Node> = null) {
+  private pushElement(element: Simple.Element, nextSibling: Option<Simple.Node>) {
     this.element = element;
     this.elementStack.push(element);
     // LOGGER.debug(`-> element stack ${this.elementStack.toArray().map(e => e.tagName).join(', ')}`);
