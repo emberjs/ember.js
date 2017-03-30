@@ -143,7 +143,6 @@ QUnit.module('ember reexports');
   ['Handlebars.SafeString', 'ember-glimmer', { get: '_getSafeString' }],
   ['Handlebars.Utils.escapeExpression', 'ember-glimmer', 'escapeExpression'],
   ['String.htmlSafe', 'ember-glimmer', 'htmlSafe'],
-  ['HTMLBars.makeBoundHelper', 'ember-glimmer', 'makeBoundHelper'],
 
   // ember-runtime
   ['_RegistryProxyMixin', 'ember-runtime', 'RegistryProxyMixin'],

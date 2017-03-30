@@ -204,7 +204,6 @@ export { default as LinkComponent } from './components/link-to';
 export { default as Component } from './component';
 export { default as Helper, helper } from './helper';
 export { default as Environment } from './environment';
-export { default as makeBoundHelper } from './make-bound-helper';
 export {
   SafeString,
   escapeExpression,

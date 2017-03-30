@@ -32,18 +32,6 @@ QUnit.test('SEMVER_REGEX properly validates and invalidates version numbers', fu
   validateVersionString('1.11', false);
 });
 
-QUnit.test('Ember.keys is deprecated', function() {
-  expectDeprecation(function() {
-    Ember.keys({});
-  }, 'Ember.keys is deprecated in favor of Object.keys');
-});
-
-QUnit.test('Ember.create is deprecated', function() {
-  expectDeprecation(function() {
-    Ember.create(null);
-  }, 'Ember.create is deprecated in favor of Object.create');
-});
-
 QUnit.test('Ember.Backburner is deprecated', function() {
   expectDeprecation(function() {
     new Ember.Backburner(['foo']);
