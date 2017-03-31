@@ -485,7 +485,6 @@ import {
   template,
   escapeExpression,
   isHTMLSafe,
-  makeBoundHelper,
   getTemplates,
   setTemplates,
   _getSafeString
@@ -518,7 +517,6 @@ EmberHandleBarsUtils.escapeExpression = escapeExpression;
 EmberString.htmlSafe = htmlSafe;
 
 EmberString.isHTMLSafe = isHTMLSafe;
-EmberHTMLBars.makeBoundHelper = makeBoundHelper;
 
 /**
  Global hash of shared templates. This will automatically be populated
@@ -549,9 +547,6 @@ export { VERSION };
 Ember.VERSION = VERSION;
 
 metal.libraries.registerCoreLibrary('Ember', VERSION);
-
-Ember.create = deprecateFunc('Ember.create is deprecated in favor of Object.create', { id: 'ember-metal.ember-create', until: '3.0.0' }, Object.create);
-Ember.keys = deprecateFunc('Ember.keys is deprecated in favor of Object.keys', { id: 'ember-metal.ember.keys', until: '3.0.0' }, Object.keys);
 
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly

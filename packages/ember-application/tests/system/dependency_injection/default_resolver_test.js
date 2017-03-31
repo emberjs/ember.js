@@ -15,7 +15,6 @@ import {
   setTemplate,
   Helper,
   helper as makeHelper,
-  makeBoundHelper as makeHTMLBarsBoundHelper
 } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
 import { getDebugFunction, setDebugFunction } from 'ember-debug';
@@ -148,21 +147,14 @@ QUnit.test('the default resolver resolves helpers on the namespace', function() 
   let CompleteHelper = Helper.extend();
   let LegacyHTMLBarsBoundHelper;
 
-  expectDeprecation(() => {
-    LegacyHTMLBarsBoundHelper = makeHTMLBarsBoundHelper(() => {});
-  }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.');
-
   application.ShorthandHelper = ShorthandHelper;
   application.CompleteHelper = CompleteHelper;
-  application.LegacyHtmlBarsBoundHelper = LegacyHTMLBarsBoundHelper; // Must use lowered "tml" in "HTMLBars" for resolver to find this
 
   let resolvedShorthand = registry.resolve('helper:shorthand');
   let resolvedComplete = registry.resolve('helper:complete');
-  let resolvedLegacyHTMLBars = registry.resolve('helper:legacy-html-bars-bound');
 
   equal(resolvedShorthand, ShorthandHelper, 'resolve fetches the shorthand helper factory');
   equal(resolvedComplete, CompleteHelper, 'resolve fetches the complete helper factory');
-  equal(resolvedLegacyHTMLBars, LegacyHTMLBarsBoundHelper, 'resolves legacy HTMLBars bound helper');
 });
 
 QUnit.test('the default resolver resolves to the same instance, no matter the notation ', function() {
@@ -261,21 +253,23 @@ QUnit.test('no assertion for routes that extend from Ember.Route', function() {
 });
 
 QUnit.test('deprecation warning for service factories without isServiceFactory property', function() {
-  expectDeprecation(/service factories must have an `isServiceFactory` property/);
-  application.FooService = EmberObject.extend();
-  registry.resolve('service:foo');
+  expectAssertion(() =>{
+    application.FooService = EmberObject.extend();
+    registry.resolve('service:foo');
+  }, /Expected service:foo to resolve to an Ember.Service but instead it was \.FooService\./);
 });
 
 QUnit.test('no deprecation warning for service factories that extend from Ember.Service', function() {
-  expectNoDeprecation();
+  expect(0);
   application.FooService = Service.extend();
   registry.resolve('service:foo');
 });
 
 QUnit.test('deprecation warning for component factories without isComponentFactory property', function() {
-  expectDeprecation(/component factories must have an `isComponentFactory` property/);
-  application.FooComponent = EmberObject.extend();
-  registry.resolve('component:foo');
+  expectAssertion(() => {
+    application.FooComponent = EmberObject.extend();
+    registry.resolve('component:foo');
+  }, /Expected component:foo to resolve to an Ember\.Component but instead it was \.FooComponent\./);
 });
 
 QUnit.test('no deprecation warning for component factories that extend from Ember.Component', function() {
