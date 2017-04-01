@@ -1,112 +1,59 @@
-import { get, run } from 'ember-metal'; // A
 import {
-  Namespace,
-  String as StringUtils,
   Controller
 } from 'ember-runtime';
 import controllerFor from '../../system/controller_for';
 import generateController from '../../system/generate_controller';
-import { buildOwner } from 'internal-test-helpers';
 import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
+import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
-function buildInstance(namespace) {
-  let owner = buildOwner();
+moduleFor('Ember.controllerFor', class extends ApplicationTestCase {
+  ['@test controllerFor should lookup for registered controllers'](assert) {
+    this.add('controller:app', Controller.extend());
 
-  owner.__registry__.resolver = resolverFor(namespace);
-  owner.registerOptionsForType('view', { singleton: false });
+    return this.visit('/').then(() => {
+      let appInstance = this.applicationInstance;
+      let appController = appInstance.lookup('controller:app');
+      let controller = controllerFor(appInstance, 'app');
+      assert.equal(appController, controller, 'should find app controller');
+    });
+  }
+});
 
-  owner.register('application:main', namespace, { instantiate: false });
+moduleFor('Ember.generateController', class extends ApplicationTestCase {
+  ['@test generateController should return Ember.Controller'](assert) {
+    return this.visit('/').then(() => {
+      let controller = generateController(this.applicationInstance, 'home');
+      assert.ok(controller instanceof Controller, 'should return controller');
+    });
+  }
 
-  owner.register('controller:basic', Controller, { instantiate: false });
+  ['@test generateController should return App.Controller if provided'](assert) {
+    let MainController = Controller.extend();
+    this.add('controller:basic', MainController);
 
-  return owner;
-}
+    return this.visit('/').then(() => {
+      let controller = generateController(this.applicationInstance, 'home');
+      assert.ok(controller instanceof MainController, 'should return controller');
+    });
+  }
 
-function resolverFor(namespace) {
-  return {
-    resolve(fullName) {
-      let nameParts = fullName.split(':');
-      let type = nameParts[0];
-      let name = nameParts[1];
+  ['@test generateController should return controller:basic if provided'](assert) {
+    let controller;
+    let BasicController = Controller.extend();
+    this.add('controller:basic', BasicController);
 
-      if (name === 'basic') {
-        name = '';
+    return this.visit('/').then(() => {
+      controller = generateController(this.applicationInstance, 'home');
+
+      if (EMBER_NO_DOUBLE_EXTEND) {
+        assert.ok(controller instanceof BasicController, 'should return base class of controller');
+      } else {
+        let doubleExtendedFactory;
+        ignoreDeprecation(() => {
+          doubleExtendedFactory = this.applicationInstance._lookupFactory('controller:basic');
+        });
+        assert.ok(controller instanceof doubleExtendedFactory, 'should return double-extended controller');
       }
-      let className = StringUtils.classify(name) + StringUtils.classify(type);
-      let factory = get(namespace, className);
-
-      if (factory) { return factory; }
-    }
-  };
-}
-
-let appInstance, appController, namespace;
-
-QUnit.module('Ember.controllerFor', {
-  setup() {
-    namespace = Namespace.create();
-    appInstance = buildInstance(namespace);
-    appInstance.register('controller:app', Controller.extend());
-    appController = appInstance.lookup('controller:app');
-  },
-  teardown() {
-    run(() => {
-      appInstance.destroy();
-      namespace.destroy();
     });
-  }
-});
-
-QUnit.test('controllerFor should lookup for registered controllers', function() {
-  let controller = controllerFor(appInstance, 'app');
-
-  equal(appController, controller, 'should find app controller');
-});
-
-QUnit.module('Ember.generateController', {
-  setup() {
-    namespace = Namespace.create();
-    appInstance = buildInstance(namespace);
-  },
-  teardown() {
-    run(() => {
-      appInstance.destroy();
-      namespace.destroy();
-    });
-  }
-});
-
-QUnit.test('generateController should return Ember.Controller', function() {
-  let controller = generateController(appInstance, 'home');
-
-  ok(controller instanceof Controller, 'should return controller');
-});
-
-
-QUnit.test('generateController should return App.Controller if provided', function() {
-  let controller;
-  namespace.Controller = Controller.extend();
-
-  controller = generateController(appInstance, 'home');
-
-  ok(controller instanceof namespace.Controller, 'should return controller');
-});
-
-QUnit.test('generateController should return controller:basic if provided', function() {
-  let controller;
-
-  let BasicController = Controller.extend();
-  appInstance.register('controller:basic', BasicController);
-
-  controller = generateController(appInstance, 'home');
-
-  if (EMBER_NO_DOUBLE_EXTEND) {
-    ok(controller instanceof BasicController, 'should return base class of controller');
-  } else {
-    let doubleExtendedFactory;
-    ignoreDeprecation(() => {
-      doubleExtendedFactory = appInstance._lookupFactory('controller:basic');
-    });
-    ok(controller instanceof doubleExtendedFactory, 'should return double-extended controller');
   }
 });
