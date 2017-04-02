@@ -269,3 +269,31 @@ QUnit.test('warn without options.id triggers a deprecation', function(assert) {
 
   warn('foo', false, { });
 });
+
+QUnit.test('warn without options.id nor test triggers a deprecation', function(assert) {
+  assert.expect(2);
+
+  registerHandler(function(message) {
+    assert.equal(message, missingWarnOptionsIdDeprecation, 'deprecation is triggered when options is missing');
+  });
+
+  registerWarnHandler(function(message) {
+    assert.equal(message, 'foo', 'original warning is triggered');
+  });
+
+  warn('foo', { });
+});
+
+QUnit.test('warn without test but with options does not trigger a deprecation', function(assert) {
+  assert.expect(1);
+
+  registerHandler(function(message) {
+    assert.ok(false, `there should be no deprecation ${message}`);
+  });
+
+  registerWarnHandler(function(message) {
+    assert.equal(message, 'foo', 'warning was triggered');
+  });
+
+  warn('foo', { id: 'ember-debug.do-not-raise' });
+});
