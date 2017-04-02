@@ -70,6 +70,10 @@ export let missingOptionsIdDeprecation = 'When calling `Ember.warn` you must pro
   @since 1.0.0
 */
 export default function warn(message, test, options) {
+  if (arguments.length === 2 && typeof test === 'object') {
+    options = test;
+    test = false;
+  }
   if (!options) {
     deprecate(
       missingOptionsDeprecation,
@@ -94,5 +98,5 @@ export default function warn(message, test, options) {
     );
   }
 
-  invoke('warn', ...arguments);
+  invoke('warn', message, test, options);
 }
