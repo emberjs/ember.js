@@ -23,6 +23,7 @@ module.exports = function(tree, options) {
     footerFiles: footerFiles,
     inputFiles: ['**/*'],
     annotation: outputFile,
-    footer: '}());'
+    footer: '}());',
+    sourceMapConfig: { enabled: false }
   });
 }
