@@ -27,23 +27,22 @@ moduleFor('Ember.generateController', class extends ApplicationTestCase {
     });
   }
 
-  ['@test generateController should return App.Controller if provided'](assert) {
-    let MainController = Controller.extend();
-    this.add('controller:basic', MainController);
-
-    return this.visit('/').then(() => {
-      let controller = generateController(this.applicationInstance, 'home');
-      assert.ok(controller instanceof MainController, 'should return controller');
-    });
-  }
-
-  ['@test generateController should return controller:basic if provided'](assert) {
-    let controller;
+  ['@test generateController should return controller:basic if resolved'](assert) {
     let BasicController = Controller.extend();
     this.add('controller:basic', BasicController);
 
     return this.visit('/').then(() => {
-      controller = generateController(this.applicationInstance, 'home');
+      let controller = generateController(this.applicationInstance, 'home');
+      assert.ok(controller instanceof BasicController, 'should return controller');
+    });
+  }
+
+  ['@test generateController should return controller:basic if registered'](assert) {
+    let BasicController = Controller.extend();
+    this.application.register('controller:basic', BasicController);
+
+    return this.visit('/').then(() => {
+      let controller = generateController(this.applicationInstance, 'home');
 
       if (EMBER_NO_DOUBLE_EXTEND) {
         assert.ok(controller instanceof BasicController, 'should return base class of controller');
