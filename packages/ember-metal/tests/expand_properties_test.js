@@ -93,7 +93,7 @@ QUnit.test('A pattern must be a string', function() {
   expect(1);
 
   expectAssertion(() => {
-    expandProperties([], addProperty);
+    expandProperties([1, 2], addProperty);
   }, /A computed property key must be a string/);
 });
 
