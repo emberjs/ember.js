@@ -145,7 +145,7 @@ class ChainNode {
     // It is false for the root of a chain (because we have no parent)
     // and for global paths (because the parent node is the object with
     // the observer on it)
-    this._watching = (value === undefined);
+    let isWatching = this._watching = (value === undefined);
 
     this._chains = undefined;
     this._object = undefined;
@@ -153,10 +153,10 @@ class ChainNode {
 
     this._value = value;
     this._paths = undefined;
-    if (this._watching) {
+    if (isWatching === true) {
       let obj = parent.value();
 
-      if (!isObject(obj)) {
+      if (!isObject(obj) === true) {
         return;
       }
 
@@ -167,7 +167,7 @@ class ChainNode {
   }
 
   value() {
-    if (this._value === undefined && this._watching) {
+    if (this._value === undefined && this._watching === true) {
       let obj = this._parent.value();
       this._value = lazyGet(obj, this._key);
     }
@@ -175,7 +175,7 @@ class ChainNode {
   }
 
   destroy() {
-    if (this._watching) {
+    if (this._watching === true) {
       let obj = this._object;
       if (obj) {
         removeChainWatcher(obj, this._key, this);
@@ -271,11 +271,11 @@ class ChainNode {
   }
 
   notify(revalidate, affected) {
-    if (revalidate && this._watching) {
+    if (revalidate && this._watching === true) {
       let parentValue = this._parent.value();
 
       if (parentValue !== this._object) {
-        if (this._object) {
+        if (this._object !== undefined) {
           removeChainWatcher(this._object, this._key, this);
         }
 
@@ -292,7 +292,7 @@ class ChainNode {
     // then notify chains...
     let chains = this._chains;
     let node;
-    if (chains) {
+    if (chains !== undefined) {
       for (let key in chains) {
         node = chains[key];
         if (node !== undefined) {
@@ -329,12 +329,12 @@ function lazyGet(obj, key) {
   let meta = peekMeta(obj);
 
   // check if object meant only to be a prototype
-  if (meta && meta.proto === obj) {
+  if (meta !== undefined && meta.proto === obj) {
     return;
   }
 
   // Use `get` if the return value is an EachProxy or an uncacheable value.
-  if (isVolatile(obj[key])) {
+  if (isVolatile(obj[key]) === true) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {
@@ -350,17 +350,17 @@ import { makeChainNode } from './watch_path';
 export function finishChains(obj) {
   // We only create meta if we really have to
   let m = peekMeta(obj);
-  if (m) {
+  if (m !== undefined) {
     m = metaFor(obj);
 
     // finish any current chains node watchers that reference obj
     let chainWatchers = m.readableChainWatchers();
-    if (chainWatchers) {
+    if (chainWatchers !== undefined) {
       chainWatchers.revalidateAll();
     }
     // ensure that if we have inherited any chains they have been
     // copied onto our own meta.
-    if (m.readableChains()) {
+    if (m.readableChains() !== undefined) {
       m.writableChains(makeChainNode);
     }
   }
