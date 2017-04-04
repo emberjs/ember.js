@@ -173,7 +173,8 @@ module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
         external: externs,
         format: 'es',
         exports: 'named'
-      }
+      },
+      annotation: `rollup ${name}`
     });
   }
 
