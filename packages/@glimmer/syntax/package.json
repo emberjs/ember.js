@@ -1,7 +1,7 @@
 {
   "name": "@glimmer/syntax",
   "version": "0.23.0-alpha.11",
-  "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/syntax",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/syntax",
   "dependencies": {
     "handlebars": "^4.0.6",
     "@glimmer/interfaces": "^0.23.0-alpha.11",

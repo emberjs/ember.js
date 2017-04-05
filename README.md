@@ -1,4 +1,4 @@
-# Status [![Build Status](https://travis-ci.org/tildeio/glimmer.svg?branch=master)](https://travis-ci.org/tildeio/glimmer) [![Sauce Test Status](https://saucelabs.com/buildstatus/htmlbars-ci)](https://saucelabs.com/u/htmlbars-ci)
+# Status [![Build Status](https://travis-ci.org/glimmerjs/glimmer-vm.svg?branch=master)](https://travis-ci.org/glimmerjs/glimmer-vm) [![Sauce Test Status](https://saucelabs.com/buildstatus/htmlbars-ci)](https://saucelabs.com/u/htmlbars-ci)
 
 Glimmer is a flexible, low-level rendering pipeline for building a "live" DOM
 from [Handlebars][handlebars] templates that can subsequently be updated cheaply
