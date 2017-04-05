@@ -24,6 +24,7 @@ module.exports = function(tree, options) {
     header: '(function() {',
     outputFile: outputFile,
     headerFiles: ['license.js', 'loader.js'],
+    sourceMapConfig: { enabled: true },
     footerFiles: footerFiles,
     inputFiles: ['**/*'],
     annotation: outputFile,
