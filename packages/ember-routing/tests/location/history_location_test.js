@@ -33,6 +33,12 @@ function mockBrowserLocation(path) {
   };
 }
 
+function triggerPopstate() {
+  var event = document.createEvent('HTMLEvents');
+  event.initEvent('popstate', true, false);
+  window.dispatchEvent(event);
+}
+
 QUnit.module('Ember.HistoryLocation', {
   setup() {
     FakeHistory = {
@@ -332,4 +338,49 @@ QUnit.test('HistoryLocation.getURL() includes location.hash and location.search'
   createLocation();
 
   equal(location.getURL(), '/foo/bar?time=morphin#pink-power-ranger');
+});
+
+QUnit.test('HistoryLocation.onUpdateURL callback executes as expected', function() {
+  expect(1);
+
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+
+      set(this, 'location', mockBrowserLocation('/foo/bar'));
+    }
+  });
+
+  createLocation();
+
+  var callback = function (param) {
+    equal(param, '/foo/bar', 'path is passed as param');
+  };
+
+  location.onUpdateURL(callback);
+
+  triggerPopstate();
+});
+
+QUnit.test('HistoryLocation.onUpdateURL doesn\'t executes callback if URL doesn\'t start with rootURL', function() {
+  expect(0);
+
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+
+      set(this, 'location', mockBrowserLocation('/bar'));
+      set(this, 'rootURL', '/foo/');
+    }
+  });
+
+  createLocation();
+
+  var callback = function (param) {
+    ok(false, 'callback should not be called');
+  };
+
+  location.onUpdateURL(callback);
+
+  triggerPopstate();
 });
