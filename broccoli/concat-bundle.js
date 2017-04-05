@@ -4,7 +4,7 @@
 const concat = require('broccoli-concat');
 
 module.exports = function(tree, options) {
-  let { outputFile, hasBootstrap } = options;
+  let { outputFile, hasBootstrap, footer } = options;
 
   if (typeof hasBootstrap !== 'boolean') {
     hasBootstrap = true;
@@ -16,6 +16,10 @@ module.exports = function(tree, options) {
     footerFiles = ['bootstrap']
   }
 
+  if (!footer) {
+    footer = '';
+  }
+
   return concat(tree, {
     header: '(function() {',
     outputFile: outputFile,
@@ -23,6 +27,6 @@ module.exports = function(tree, options) {
     footerFiles: footerFiles,
     inputFiles: ['**/*'],
     annotation: outputFile,
-    footer: '}());'
+    footer: footer + '\n}());'
   });
 }
