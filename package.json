@@ -8,7 +8,7 @@
   "jsnext:main": "dist/es6/glimmer/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tildeio/glimmer.git"
+    "url": "https://github.com/glimmerjs/glimmer-vm.git"
   },
   "scripts": {
     "build": "ember build --env production",

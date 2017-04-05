@@ -1,7 +1,7 @@
 {
   "name": "@glimmer/compiler",
   "version": "0.23.0-alpha.11",
-  "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/compiler",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/compiler",
   "dependencies": {
     "@glimmer/syntax": "^0.23.0-alpha.11",
     "@glimmer/util": "^0.23.0-alpha.11",

@@ -1,7 +1,7 @@
 {
   "name": "@glimmer/public-runtime",
   "version": "0.23.0-alpha.11",
-  "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/public-runtime",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/public-runtime",
   "dependencies": {
     "@glimmer/runtime": "^0.23.0-alpha.11",
     "@glimmer/util": "^0.23.0-alpha.11",
