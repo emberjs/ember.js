@@ -40,7 +40,7 @@
     "simple-html-tokenizer": "^0.4.0"
   },
   "devDependencies": {
-    "@glimmer/build": "^0.6.0",
+    "@glimmer/build": "^0.7.0",
     "@types/qunit": "^2.0.31",
     "benchmark": "^1.0.0",
     "broccoli-persistent-filter": "^1.2.13",
