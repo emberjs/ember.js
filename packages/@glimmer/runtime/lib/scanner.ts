@@ -5,6 +5,7 @@ import Environment from './environment';
 import { Option, EMPTY_ARRAY } from '@glimmer/util';
 import * as WireFormat from '@glimmer/wire-format';
 import { Opaque, SymbolTable, ProgramSymbolTable, BlockSymbolTable } from '@glimmer/interfaces';
+import { debugSlice } from './opcodes';
 import { CompilationMeta } from '@glimmer/interfaces';
 
 import {
@@ -37,6 +38,8 @@ export class CompilableTemplate<S extends SymbolTable> implements ScannedTemplat
       let start = builder.start;
       let end = builder.finalize();
 
+      debugSlice(env, start, end);
+
       compiledStatic = this.compiledStatic = new CompiledStaticTemplate(start, end);
     }
 
@@ -52,6 +55,10 @@ export class CompilableTemplate<S extends SymbolTable> implements ScannedTemplat
     }
 
     return compiledDynamic;
+  }
+
+  toJSON() {
+    return { GlimmerDebug: '<template>' };
   }
 }
 
