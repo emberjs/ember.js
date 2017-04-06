@@ -5,7 +5,7 @@
 import { checkWaiters } from '../test/waiters';
 import { RSVP } from 'ember-runtime';
 import { run } from 'ember-metal';
-import { pendingRequests } from '../test/pending_requests';
+import { checkPendingRequests } from '../test/pending_requests';
 
 /**
   Causes the run loop to process any pending events. This is used to ensure that
@@ -45,7 +45,7 @@ export default function wait(app, value) {
       if (routerIsLoading) { return; }
 
       // 2. If there are pending Ajax requests, keep polling
-      if (pendingRequests()) { return; }
+      if (checkPendingRequests()) { return; }
 
       // 3. If there are scheduled timers or we are inside of a run loop, keep polling
       if (run.hasScheduledTimers() || run.currentRunLoop) { return; }
