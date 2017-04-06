@@ -51,7 +51,7 @@
     "glob": "^7.0.5",
     "loader.js": "^4.0.10",
     "qunit-tap": "^1.5.1",
-    "qunitjs": "^2.1.1",
+    "qunitjs": "2.2.0",
     "semver": "^5.3.0",
     "testem": "github:rwjblue/testem#todo-support",
     "tslint": "^4.0.2",
