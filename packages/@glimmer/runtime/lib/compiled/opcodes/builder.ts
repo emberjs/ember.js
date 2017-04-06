@@ -4,7 +4,7 @@ import * as vm from './vm';
 import { Insertion } from '../../upsert';
 import { Register } from '../../opcodes';
 import * as WireFormat from '@glimmer/wire-format';
-import { Option, Stack, Opaque, dict, fillNulls, EMPTY_ARRAY } from '@glimmer/util';
+import { Option, Stack, Opaque, dict, expect, fillNulls, EMPTY_ARRAY } from '@glimmer/util';
 import {
   Constants,
   ConstantString,
@@ -98,7 +98,7 @@ export abstract class BasicOpcodeBuilder {
   // helpers
 
   private get labels(): Labels {
-    return this.labelsStack.current;
+    return expect(this.labelsStack.current, 'bug: not in a label stack');
   }
 
   startLabels() {
@@ -106,7 +106,7 @@ export abstract class BasicOpcodeBuilder {
   }
 
   stopLabels() {
-    let label = this.labelsStack.pop();
+    let label = expect(this.labelsStack.pop(), 'unbalanced push and pop labels');
     label.patch(this.program);
   }
 

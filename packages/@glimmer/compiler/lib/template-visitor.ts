@@ -1,6 +1,6 @@
 import { AST } from '@glimmer/syntax';
 import { Core } from '@glimmer/wire-format';
-import { Dict, Option, dict } from '@glimmer/util';
+import { Dict, Option, dict, unreachable, expect } from '@glimmer/util';
 
 export abstract class SymbolTable {
   static top(): ProgramSymbolTable {
@@ -35,6 +35,7 @@ export class ProgramSymbolTable extends SymbolTable {
   }
 
   get(_name: string): never {
+    throw unreachable();
   }
 
   getLocalsMap(): Dict<number> {
@@ -344,7 +345,7 @@ export default class TemplateVisitor {
   // Frame helpers
 
   private get currentFrame(): Frame {
-    return this.getCurrentFrame();
+    return expect(this.getCurrentFrame(), "Expected a current frame");
   }
 
   private getCurrentFrame(): Option<Frame> {

@@ -1,4 +1,4 @@
-import { Opaque } from '@glimmer/util';
+import { Opaque, unreachable } from '@glimmer/util';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import * as Simple from './dom/interfaces';
 import { FIX_REIFICATION } from './dom/interfaces';
@@ -44,6 +44,7 @@ export function cautiousInsert(dom: DOMTreeConstruction, cursor: Cursor, value: 
     return NodeUpsert.insert(dom, cursor, value);
   }
 
+  throw unreachable();
 }
 
 export function trustingInsert(dom: DOMTreeConstruction, cursor: Cursor, value: TrustingInsertion): Upsert {
@@ -54,6 +55,7 @@ export function trustingInsert(dom: DOMTreeConstruction, cursor: Cursor, value: 
     return NodeUpsert.insert(dom, cursor, value);
   }
 
+  throw unreachable();
 }
 
 class TextUpsert extends Upsert {

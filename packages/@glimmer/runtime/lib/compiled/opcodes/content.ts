@@ -214,6 +214,16 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
       bounds.update(upsert.bounds);
     }
   }
+
+  toJSON(): OpcodeJSON {
+    let { _guid: guid, type, cache } = this;
+
+    return {
+      guid,
+      type,
+      details: { lastValue: JSON.stringify(cache.peek()) }
+    };
+  }
 }
 
 abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> {
@@ -274,6 +284,21 @@ abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpcode<T> 
     // execute the Try opcode and immediately throw.
 
     return null as any;
+  }
+
+  toJSON(): OpcodeJSON {
+    let { _guid: guid, type, deopted } = this;
+
+    if (deopted) {
+      return {
+        guid,
+        type,
+        deopted: true,
+        children: [deopted.toJSON()]
+      };
+    } else {
+      return super.toJSON();
+    }
   }
 }
 
