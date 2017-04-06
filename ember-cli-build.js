@@ -6,6 +6,7 @@
 //
 // DISABLE_ES3=true DISABLE_JSCS=true DISABLE_JSHINT=true DISABLE_MIN=true DISABLE_DEREQUIRE=true ember serve --environment=production
 
+const stripIndent = require('common-tags').stripIndent;
 const MergeTrees = require('broccoli-merge-trees');
 const babelHelpers = require('./broccoli/babel-helpers');
 const bootstrapModule = require('./broccoli/bootstrap-modules');
@@ -275,8 +276,7 @@ module.exports = function(options) {
     license,
     loader,
     emberTestingAMD,
-    nodeModule,
-    bootstrapModule('ember-testing')
+    nodeModule
   ]);
 
   let emberTestsBundle = new MergeTrees([
@@ -300,7 +300,15 @@ module.exports = function(options) {
   });
 
   emberTestingBundle = concat(emberTestingBundle, {
-    outputFile: 'ember-testing.js'
+    outputFile: 'ember-testing.js',
+    hasBootstrap: false,
+    footer: stripIndent`
+      var testing = requireModule('ember-testing');
+      Ember.Test = testing.Test;
+      Ember.Test.Adapter = testing.Adapter;
+      Ember.Test.QUnitAdapter = testing.QUnitAdapter;
+      Ember.setupForTesting = testing.setupForTesting;
+    `
   });
 
   let prodDist = [];
