@@ -25,7 +25,6 @@ export enum Opcodes {
   Unknown,
   Get,
   MaybeLocal,
-  FixThisBeforeWeMerge,
   HasBlock,
   HasBlockParams,
   Undefined,
