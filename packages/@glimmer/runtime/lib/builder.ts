@@ -115,15 +115,15 @@ export class ElementStack implements Cursor {
   }
 
   expectConstructing(method: string): Simple.Element {
-    return expect(this.constructing!, `${method} should only be called while constructing an element`);
+    return expect(this.constructing, `${method} should only be called while constructing an element`);
   }
 
   expectOperations(method: string): ElementOperations {
-    return expect(this.operations!, `${method} should only be called while constructing an element`);
+    return expect(this.operations, `${method} should only be called while constructing an element`);
   }
 
   block(): Tracker {
-    return expect(this.blockStack.current!, "Expected a current block tracker");
+    return expect(this.blockStack.current, "Expected a current block tracker");
   }
 
   popElement() {
