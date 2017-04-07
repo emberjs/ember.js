@@ -10,7 +10,7 @@ addons:
 
 cache:
   directories:
-  - $Home/.yarn-cache
+  - $HOME/.yarn-cache
 
 before_install:
 - |
