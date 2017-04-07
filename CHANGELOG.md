@@ -1,5 +1,14 @@
 # Ember Changelog
 
+# 2.13.0-beta.2 (April 7, 2017)
+
+- [#15111](https://github.com/emberjs/ember.js/pull/15111) / [#15029](https://github.com/emberjs/ember.js/pull/15029) [PERF] `factoryFor` should cache when possible.
+- [#14961](https://github.com/emberjs/ember.js/pull/14961) [BUGIX] [Fixes #14925] remove duplicate `/` in pathname
+- [#15065](https://github.com/emberjs/ember.js/pull/15065) [BUGFIX] Guard jQuery access in `setupForTesting`.
+- [#15103](https://github.com/emberjs/ember.js/pull/15103) [BUGFIX] Allow calling `Ember.warn` without test.
+- [#15106](https://github.com/emberjs/ember.js/pull/15106) [DOC] Introduce a more debugging data to warnings about CP dependencies.
+- [#15107](https://github.com/emberjs/ember.js/pull/15107) [PERF] avoid toBoolean conversion when possible (chains).
+
 # 2.13.0-beta.1 (March 15, 2017)
 
 - [#14011](https://github.com/emberjs/ember.js/pull/14011) [FEATURE ember-unique-location-history-state] Implements [RFC #186](https://github.com/emberjs/rfcs/pull/186).
