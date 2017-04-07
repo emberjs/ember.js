@@ -14,8 +14,17 @@ ControllerMixin.reopen({
     Defines which query parameters the controller accepts.
     If you give the names `['category','page']` it will bind
     the values of these query parameters to the variables
-    `this.category` and `this.page`
-
+    `this.category` and `this.page`.
+    By default, Ember coerces query parameter values using `toggleProperty`.
+    This behavior may lead to unexpected results.
+    To explicity configure a query parameter property so it coerces as expected, you must define a type property:
+    ```javascript
+      queryParams: [{
+        category: {
+          type: 'boolean'
+        }
+      }]
+    ```
     @property queryParams
     @public
   */
