@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### 2.12.1 (April 7, 2017)
+
+- [#14961](https://github.com/emberjs/ember.js/pull/14961) [BUGIX] Remove duplicate trailing `/` in pathname.
+- [#15029](https://github.com/emberjs/ember.js/pull/15029) [PERF] [BUGFIX] cache `factoryFor` injections when possible
+- [#15089](https://github.com/emberjs/ember.js/pull/15089) [BUGFIX] Fixing IE and Edge issue causing action handlers to be fired twice.
+
 ### 2.12.0 (March 14, 2017)
 
 - [#15000](https://github.com/emberjs/ember.js/pull/15000) / [#15002](https://github.com/emberjs/ember.js/pull/15002) / [#15006](https://github.com/emberjs/ember.js/pull/15006) / [#15008](https://github.com/emberjs/ember.js/pull/15008) / [#15009](https://github.com/emberjs/ember.js/pull/15009) / [#15011](https://github.com/emberjs/ember.js/pull/15011) [PERF] Assorted performance improvements for modern browsers.
