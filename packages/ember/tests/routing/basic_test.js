@@ -3697,7 +3697,7 @@ QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
 
   throws(() => {
     run(() => router.handleURL('/other'));
-  }, /boom/, 'expected an exception that didn\'t happen');
+  }, /boom/, 'expected an exception but none was thrown');
 });
 
 QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet', function(assert) {
