@@ -243,7 +243,7 @@ CoreObject.PrototypeMixin = Mixin.create({
   */
   init() {},
 
-  [POST_INIT]() { }, // Private, and only for didInitAttrs willRecieveAttrs
+  [POST_INIT]() { }, // Private, and only for didInitAttrs willReceiveAttrs
 
   __defineNonEnumerable(property) {
     Object.defineProperty(this, property.name, property.descriptor);

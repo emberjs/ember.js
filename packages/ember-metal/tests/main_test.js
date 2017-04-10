@@ -21,7 +21,7 @@ QUnit.test('SEMVER_REGEX properly validates and invalidates version numbers', fu
     equal(SEMVER_REGEX.test(versionString), expectedResult);
   }
 
-  // Postive test cases
+  // Positive test cases
   validateVersionString('1.11.3', true);
   validateVersionString('1.0.0-beta.16.1', true);
   validateVersionString('1.12.1+canary.aba1412', true);

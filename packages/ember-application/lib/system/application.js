@@ -775,7 +775,7 @@ const Application = Engine.extend({
     Boot a new instance of `Ember.ApplicationInstance` for the current
     application and navigate it to the given `url`. Returns a `Promise` that
     resolves with the instance when the initial routing and rendering is
-    complete, or rejects with any error that occured during the boot process.
+    complete, or rejects with any error that occurred during the boot process.
 
     When `autoboot` is disabled, calling `visit` would first cause the
     application to boot, which runs the application initializers.
@@ -800,7 +800,7 @@ const Application = Engine.extend({
     result in unexpected behavior.
 
     For example, booting the instance in the full browser environment
-    while specifying a foriegn `document` object (e.g. `{ isBrowser: true,
+    while specifying a foreign `document` object (e.g. `{ isBrowser: true,
     document: iframe.contentDocument }`) does not work correctly today,
     largely due to Ember's jQuery dependency.
 
@@ -903,7 +903,7 @@ const Application = Engine.extend({
 
     This setup allows you to run the routing layer of your Ember app in a server
     environment using Node.js and completely disable rendering. This allows you
-    to simulate and discover the resources (i.e. AJAX requests) needed to fufill
+    to simulate and discover the resources (i.e. AJAX requests) needed to fulfill
     a given request and eagerly "push" these resources to the client.
 
     ```app/initializers/network-service.js
@@ -911,7 +911,7 @@ const Application = Engine.extend({
     import NodeNetworkService from 'app/services/network/node';
 
     // Inject a (hypothetical) service for abstracting all AJAX calls and use
-    // the appropiate implementaion on the client/server. This also allows the
+    // the appropriate implementation on the client/server. This also allows the
     // server to log all the AJAX calls made during a particular request and use
     // that for resource-discovery purpose.
 
