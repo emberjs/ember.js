@@ -27,14 +27,16 @@ QUnit.test('Ember.isEmpty', function() {
 });
 
 QUnit.test('Ember.isEmpty Ember.Map', function() {
-  let map = new Map();
+  let map = null;
+  ignoreDeprecation(() => { map = new Map() });
   equal(true, isEmpty(map), 'Empty map is empty');
   map.set('foo', 'bar');
   equal(false, isEmpty(map), 'Map is not empty');
 });
 
 QUnit.test('Ember.isEmpty Ember.OrderedSet', function() {
-  let orderedSet = new OrderedSet();
+  let orderedSet = null;
+  ignoreDeprecation(() => orderedSet = new OrderedSet());
   equal(true, isEmpty(orderedSet), 'Empty ordered set is empty');
   orderedSet.add('foo');
   equal(false, isEmpty(orderedSet), 'Ordered set is not empty');

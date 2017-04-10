@@ -16,7 +16,7 @@ function testMap(nameAndFunc) {
       number = 42;
       string = 'foo';
 
-      map = nameAndFunc[1].create();
+      ignoreDeprecation(() => map = nameAndFunc[1].create());
     }
   });
 
@@ -47,6 +47,12 @@ function testMap(nameAndFunc) {
   (function() {
     unboundThis = this;
   }());
+
+  QUnit.test('is deprecated', function() {
+    expectDeprecation(() => {
+      nameAndFunc[1].create();
+    }, `${nameAndFunc[0]} is being deprecated.`);
+  });
 
   QUnit.test('set', function() {
     map.set(object, 'winning');
@@ -146,7 +152,8 @@ function testMap(nameAndFunc) {
     map.set(number, 'winning');
     map.set(string, 'winning');
 
-    let map2 = map.copy();
+    let map2 = null;
+    ignoreDeprecation(() => map2 = map.copy());
 
     map2.set(object, 'losing');
     map2.set(number, 'losing');
@@ -170,7 +177,8 @@ function testMap(nameAndFunc) {
     map.set(number, 'winning');
     map.set(string, 'winning');
 
-    let map2 = map.copy();
+    let map2 = null;
+    ignoreDeprecation(() => map2 = map.copy());
 
     map2.delete(object);
     map2.delete(number);
@@ -202,7 +210,8 @@ function testMap(nameAndFunc) {
     equal(map.size, 2);
 
     //Check copy
-    let copy = map.copy();
+    let copy = null;
+    ignoreDeprecation(() => copy = map.copy());
     equal(copy.size, 2);
 
     //Remove a key twice
@@ -451,10 +460,13 @@ for (let i = 0;  i < varieties.length;  i++) {
 QUnit.module('MapWithDefault - default values');
 
 QUnit.test('Retrieving a value that has not been set returns and sets a default value', function() {
-  let map = MapWithDefault.create({
-    defaultValue(key) {
-      return [key];
-    }
+  let map = null;
+  ignoreDeprecation(() => {
+    map = MapWithDefault.create({
+      defaultValue(key) {
+        return [key];
+      }
+    });
   });
 
   let value = map.get('ohai');
@@ -464,7 +476,8 @@ QUnit.test('Retrieving a value that has not been set returns and sets a default 
 });
 
 QUnit.test('Map.prototype.constructor', function() {
-  let map = new Map();
+  let map = null
+  ignoreDeprecation(() => map = new Map());
   equal(map.constructor, Map);
 });
 
@@ -483,16 +496,20 @@ QUnit.test('MapWithDefault.prototype.constructor', function() {
 });
 
 QUnit.test('Copying a MapWithDefault copies the default value', function() {
-  let map = MapWithDefault.create({
-    defaultValue(key) {
-      return [key];
-    }
+  let map = null;
+  ignoreDeprecation(() => {
+    map = MapWithDefault.create({
+      defaultValue(key) {
+        return [key];
+      }
+    });
   });
 
   map.set('ohai', 1);
   map.get('bai');
 
-  let map2 = map.copy();
+  let map2 = null;
+  ignoreDeprecation(() => map2 = map.copy())
 
   equal(map2.get('ohai'), 1);
   deepEqual(map2.get('bai'), ['bai']);
@@ -515,14 +532,14 @@ QUnit.module('OrderedSet', {
     number = 42;
     string = 'foo';
 
-    map = OrderedSet.create();
+    ignoreDeprecation(() => map = OrderedSet.create());
   }
 });
 
 QUnit.test('OrderedSet() without `new`', function() {
   QUnit.throws(() => {
     // jshint newcap:false
-    OrderedSet();
+    ignoreDeprecation(() => OrderedSet());
   }, /Constructor OrderedSet requires 'new'/);
 });
 
