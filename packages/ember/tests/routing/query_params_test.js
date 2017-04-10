@@ -62,7 +62,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
             return;
           });
         } else if (indexModelCount === 3) {
-          assert.deepEqual(params, { omg: 'hello' }, 'Model hook reruns even if the previous one didnt finish');
+          assert.deepEqual(params, { omg: 'hello' }, 'Model hook reruns even if the previous one didn\'t finish');
         }
       }
     }));

@@ -125,7 +125,7 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     this.dispatcher = this.owner.lookup('event_dispatcher:main');
   }
 
-  ['@test additonal events can be specified'](assert) {
+  ['@test additional events can be specified'](assert) {
     this.dispatcher.setup({ myevent: 'myEvent' });
 
     this.registerComponent('x-foo', {

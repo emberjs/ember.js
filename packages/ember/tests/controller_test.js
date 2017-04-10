@@ -15,7 +15,7 @@ moduleFor('Template scoping examples', class extends ApplicationTestCase {
     this.add('controller:index', Controller.extend({
       actions: {
         componentAction() {
-          assert.ok(true, 'controller recieved the action');
+          assert.ok(true, 'controller received the action');
         }
       }
     }));

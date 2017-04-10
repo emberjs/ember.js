@@ -802,7 +802,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     }
 
     // We need to fully scope queryParams so that we can create one object
-    // that represents both pased in queryParams and ones that aren't changed
+    // that represents both passed-in queryParams and ones that aren't changed
     // from the active transition.
     this._fullyScopeQueryParams(targetRouteName, models, _queryParams);
     this._fullyScopeQueryParams(targetRouteName, models, unchangedQPs);

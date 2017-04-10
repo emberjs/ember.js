@@ -40,10 +40,10 @@ ControllerMixin.reopen({
    the sanity of future travelers:
 
    * `inactive` - This state is used when this controller instance is not part of the active
-     route heirarchy. Set in `Ember.Route.prototype._reset` (a `router.js` microlib hook) and
+     route hierarchy. Set in `Ember.Route.prototype._reset` (a `router.js` microlib hook) and
      `Ember.Route.prototype.actions.finalizeQueryParamChange`.
    * `active` - This state is used when this controller instance is part of the active
-     route heirarchy. Set in `Ember.Route.prototype.actions.finalizeQueryParamChange`.
+     route hierarchy. Set in `Ember.Route.prototype.actions.finalizeQueryParamChange`.
    * `allowOverrides` - This state is used in `Ember.Route.prototype.setup` (`route.js` microlib hook).
 
     @method _qpDelegate
