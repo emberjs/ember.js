@@ -18,7 +18,6 @@ function add(paths, name, path) {
 add(paths, 'prod',  'vendor/ember/ember.prod.js');
 add(paths, 'debug', 'vendor/ember/ember.debug.js');
 add(paths, 'testing', 'vendor/ember/ember-testing.js');
-add(paths, 'jquery', 'vendor/ember/jquery/jquery.js');
 
 add(absolutePaths, 'templateCompiler', __dirname + '/dist/ember-template-compiler.js');
 
@@ -37,19 +36,6 @@ module.exports = {
 
   treeForVendor: function() {
     var Funnel = require('broccoli-funnel');
-    var MergeTrees = require('broccoli-merge-trees');
-
-    var jqueryPath;
-    try {
-      jqueryPath = path.dirname(resolve.sync('jquery/package.json', { basedir: this.project.root }));
-    } catch (error) {
-      jqueryPath = path.dirname(require.resolve('jquery/package.json'));
-    }
-
-    var jquery = new Funnel(jqueryPath + '/dist', {
-      destDir: 'ember/jquery',
-      files: [ 'jquery.js' ]
-    });
 
     var emberFiles = [
       'ember-runtime.js',
@@ -69,6 +55,6 @@ module.exports = {
       files: emberFiles
     });
 
-    return new MergeTrees([ember, jquery]);
+    return ember;
   }
 };
