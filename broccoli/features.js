@@ -44,9 +44,19 @@ function toConst(features) {
   return consted;
 }
 
-const RELEASE_FLAGS = Object.assign(getFlags(false, 'features'), getFlags(false, 'deprecations'))
-const DEBUG_FLAGS = Object.assign(getFlags(true, 'fetaures'), getFlags(true, 'deprecations'));
+let RUNTIME_RELEASE_FLAGS = {};
+let releaseFlags = getFlags(false, 'features');
+Object.keys(releaseFlags).forEach((flag) => {
+
+  if (releaseFlags[flag] === null) {
+    RUNTIME_RELEASE_FLAGS[flag] = null;
+  }
+})
+
+const DEBUG_FLAGS = getFlags(true, 'features');
 
 module.exports.toConst = toConst;
-module.exports.RELEASE = RELEASE_FLAGS;
+module.exports.RELEASE = releaseFlags;
+module.exports.RUNTIME_RELEASE_FLAGS = RUNTIME_RELEASE_FLAGS;
 module.exports.DEBUG = DEBUG_FLAGS;
+module.exports.DEPRECATIONS = Object.assign({}, require('../features')['deprecations']);

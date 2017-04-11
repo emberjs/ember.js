@@ -20,10 +20,10 @@ export class SafeString {
   }
 }
 
-export let getSafeString;
+let _getSafeString;
 
 if (EMBER_HTMLBARS_EMBER_HANDLEBARS_SAFESTRING) {
-  getSafeString = function() {
+  _getSafeString = function() {
     deprecate(
       'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe',
       false,
@@ -37,6 +37,8 @@ if (EMBER_HTMLBARS_EMBER_HANDLEBARS_SAFESTRING) {
     return SafeString;
   }
 }
+
+export const getSafeString = _getSafeString;
 
 const escape = {
   '&': '&amp;',

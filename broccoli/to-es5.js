@@ -2,10 +2,16 @@
 /* eslint-env node */
 
 const Babel = require('broccoli-babel-transpiler');
+const DebugMacros = require('babel-plugin-debug-macros').default;
 const injectBabelHelpers = require('./transforms/inject-babel-helpers');
 const injectNodeGlobals = require('./transforms/inject-node-globals');
 const enifed = require('./transforms/transform-define');
-const { RELEASE, DEBUG, toConst } = require('./features');
+const {
+  RELEASE,
+  DEPRECATIONS,
+  DEBUG,
+  toConst
+} = require('./features');
 const stripClassCallCheck = require('./transforms/strip-class-call-check');
 const resolveModuleSource = require('amd-name-resolver').moduleResolve;
 
@@ -18,7 +24,7 @@ module.exports = function toES5(tree, _options) {
   options.sourceMap = true;
   options.plugins = [
     injectBabelHelpers,
-    ['debug-macros', {
+    [DebugMacros, {
       debugTools: {
         source: 'ember-debug'
       },
@@ -29,7 +35,8 @@ module.exports = function toES5(tree, _options) {
       features: {
         name: 'ember-source',
         source: 'ember/features',
-        flags: options.environment === 'production' ? toConst(RELEASE) : toConst(DEBUG)
+        flags: options.environment === 'production' ? toConst(Object.assign({}, RELEASE, DEPRECATIONS)) :
+                                                      toConst(Object.assign({}, DEBUG, DEPRECATIONS))
       },
       externalizeHelpers: {
         module: true
@@ -78,7 +85,7 @@ function stripForProd(tree) {
   let options = {
     plugins: [
       [stripClassCallCheck, { source: 'ember-babel' }],
-      // ['minify-dead-code-elimination', { optimizeRawSize: true }]
+      ['minify-dead-code-elimination', { optimizeRawSize: true }]
     ]
   };
 

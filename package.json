@@ -44,6 +44,7 @@
     "@glimmer/reference": "^0.22.0",
     "@glimmer/runtime": "^0.22.0",
     "@glimmer/util": "^0.22.0",
+    "babel-plugin-debug-macros": "^0.1.6",
     "broccoli-funnel": "^1.0.6",
     "broccoli-merge-trees": "^1.1.4",
     "ember-cli-get-component-path-option": "^1.0.0",
@@ -63,7 +64,6 @@
   "devDependencies": {
     "aws-sdk": "~2.2.43",
     "babel-plugin-check-es2015-constants": "^6.22.0",
-    "babel-plugin-debug-macros": "^0.1.2",
     "babel-plugin-feature-flags": "^0.3.1",
     "babel-plugin-filter-imports": "^0.3.1",
     "babel-plugin-minify-dead-code-elimination": "^0.1.4",
