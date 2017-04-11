@@ -13,7 +13,7 @@ const { RELEASE, DEBUG, toConst } = require('./features');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
 const { stripIndent } = require('common-tags');
-
+const toES5 = require('./to-es5');
 
 module.exports.routerES = function _routerES() {
   return new Rollup(findLib('router_js', 'lib'), {
@@ -208,7 +208,7 @@ module.exports.emberTestsES = function _emberTestES(name) {
 
 module.exports.nodeModuleUtils = function _nodeModuleUtils() {
   return new Funnel('packages/node-module/lib', {
-    files: ['index.js']
+    files: ['node-module.js']
   });
 }
 
@@ -276,4 +276,32 @@ module.exports.nodeTests = function _nodeTests() {
   return new Funnel('tests', {
     include: ['**/*/*.js']
   });
+}
+
+module.exports.rollupEmberMetal = function _rollupEmberMetal(tree, options) {
+  options = Object.assign({ transformModules: false, annotation: 'ember metal' }, options);
+  let emberMetalES5 = toES5(tree, options);
+  return toES5(new Rollup(emberMetalES5, {
+    rollup: {
+      entry: `index.js`,
+      dest: `ember-metal.js`,
+      moduleId: 'ember-metal',
+      external: [
+        'node-module',
+        'ember-babel',
+        'ember-debug',
+        'ember-environment',
+        'ember-utils',
+        '@glimmer/reference',
+        'require',
+        'backburner',
+        'ember-console',
+        'ember-env-flags',
+        'ember/features'
+      ],
+      format: 'amd',
+      exports: 'named'
+    },
+    annotation: `rollup ember-metal`
+  }), { transformDefine: true });
 }
