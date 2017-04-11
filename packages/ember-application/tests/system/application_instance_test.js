@@ -139,7 +139,7 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
 });
 
 QUnit.test('can build and boot a registered engine', function(assert) {
-  assert.expect(10);
+  assert.expect(11);
 
   let ChatEngine = Engine.extend();
   let chatEngineInstance;
@@ -174,7 +174,8 @@ QUnit.test('can build and boot a registered engine', function(assert) {
         'router:main',
         P`-bucket-cache:main`,
         '-view-registry:main',
-        '-environment:main'
+        '-environment:main',
+        'service:-document'
       ];
 
       let env = appInstance.lookup('-environment:main');
