@@ -65,7 +65,6 @@ function copyMap(original, newObject) {
 function OrderedSet() {
   if (this instanceof OrderedSet) {
     this.clear();
-    this._silenceRemoveDeprecation = false;
   } else {
     missingNew('OrderedSet');
   }
@@ -209,7 +208,6 @@ OrderedSet.prototype = {
     let Constructor = this.constructor;
     let set = new Constructor();
 
-    set._silenceRemoveDeprecation = this._silenceRemoveDeprecation;
     set.presenceSet = copyNull(this.presenceSet);
     set.list = this.toArray();
     set.size = this.size;
@@ -241,7 +239,6 @@ OrderedSet.prototype = {
 function Map() {
   if (this instanceof Map) {
     this._keys = OrderedSet.create();
-    this._keys._silenceRemoveDeprecation = true;
     this._values = Object.create(null);
     this.size = 0;
   } else {
