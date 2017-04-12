@@ -1854,7 +1854,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     export default Router;
     ```
 
-    ```app/routes/comments.js
+    ```app/routes/post/comments.js
     import Ember from 'ember';
 
     export default Ember.Route.extend({
