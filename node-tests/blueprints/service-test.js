@@ -183,6 +183,22 @@ describe('Acceptance: ember generate and destroy service', function() {
       }));
   });
 
+  it('service-test foo for mocha --pod', function() {
+    var args = ['service-test', 'foo', '--pod'];
+
+    return emberNew()
+      .then(() => modifyPackages([
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.11.0'))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/unit/foo/service-test.js'))
+          .to.contain("import { describeModule, it } from 'ember-mocha';")
+          .to.contain("describeModule('service:foo', 'Unit | Service | foo'");
+      }));
+  });
+
   it('service-test foo for mocha v0.12+', function() {
     var args = ['service-test', 'foo'];
 
@@ -194,6 +210,24 @@ describe('Acceptance: ember generate and destroy service', function() {
       .then(() => generateFakePackageManifest('ember-cli-mocha', '0.12.0'))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/unit/services/foo-test.js'))
+          .to.contain("import { describe, it } from 'mocha';")
+          .to.contain("import { setupTest } from 'ember-mocha';")
+          .to.contain("describe('Unit | Service | foo', function() {")
+          .to.contain("setupTest('service:foo',");
+      }));
+  });
+
+  it('service-test foo for mocha v0.12+ --pod', function() {
+    var args = ['service-test', 'foo', '--pod'];
+
+    return emberNew()
+      .then(() => modifyPackages([
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.12.0'))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/unit/foo/service-test.js'))
           .to.contain("import { describe, it } from 'mocha';")
           .to.contain("import { setupTest } from 'ember-mocha';")
           .to.contain("describe('Unit | Service | foo', function() {")
