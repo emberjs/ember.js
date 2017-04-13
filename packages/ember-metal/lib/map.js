@@ -22,6 +22,7 @@
 */
 import { guidFor } from 'ember-utils';
 import { runInDebug } from 'ember-debug';
+const THRESHOLD = 50;
 
 function missingFunction(fn) {
   throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);
@@ -80,6 +81,7 @@ OrderedSet.prototype = {
   clear() {
     this._presenceSet = undefined;
     this._list = undefined;
+    this._value = undefined;
     this.size = 0;
   },
 
@@ -88,7 +90,10 @@ OrderedSet.prototype = {
   },
 
   get list() {
-    return this._list || (this._list = []);
+    if (this._list !== undefined) { return this._list; }
+    let size = this.size;
+    if (size === 0) { return this._list = []; }
+    if (size === 1) { return this._list = [this._value]; }
   },
   /**
     @method add
@@ -97,19 +102,57 @@ OrderedSet.prototype = {
     @return {Ember.OrderedSet}
     @private
   */
-  add(obj, _guid) {
-    let guid = _guid || guidFor(obj);
+  add(obj) {
+    let size = this.size;
+
+    if (size === 1 && this._value === obj) {
+      return this;
+    }
+
+    if (size === 0) {
+      this._value = obj;
+      this.size = 1;
+      return this;
+    }
+
+     if (size < THRESHOLD) {
+      let list = this.list;
+      for (let i = 0; i < list.length; i++) {
+        let entry = list[i];
+        if (list[i] === obj ||
+          /* for NaN */
+          obj !== obj && entry !== entry) {
+          return this;
+        }
+      }
+      list.push(obj);
+      this.size++;
+      return this;
+    }
+
+    return this._slowAdd(obj, size)
+  },
+
+  _slowAdd(obj, size) {
+    let guid = guidFor(obj);
+
     let presenceSet = this.presenceSet;
-    let list = this.list;
+    if (size === THRESHOLD) {
+      // upgrade to index set
+      let list = this.list;
+      for (let i = 0; i < list.length; i++) {
+        let item = list[i];
+        presenceSet[guidFor(item)] = true;
+      }
+    }
 
     if (presenceSet[guid] !== true) {
       presenceSet[guid] = true;
-      this.size = list.push(obj);
+      this.list.push(obj);
+      this.size++;
     }
-
     return this;
   },
-
   /**
     @since 1.8.0
     @method delete
@@ -118,23 +161,47 @@ OrderedSet.prototype = {
     @return {Boolean}
     @private
   */
-  delete(obj, _guid) {
-    if (this.size === 0) { return;}
-    let guid = _guid || guidFor(obj);
-    let presenceSet = this.presenceSet;
-    let list = this.list;
+  delete(obj) {
+    let size = this.size;
 
-    if (presenceSet[guid] === true) {
-      delete presenceSet[guid];
-      let index = list.indexOf(obj);
-      if (index > -1) {
-        list.splice(index, 1);
+    if (size === 0) { return false;}
+    if (size === 1) {
+      if (this._value === obj ||
+        /* for NaN */
+          obj !== obj && this._value !== this._value) {
+        this._value = undefined;
+        this.size--;
+        return true;
       }
-      this.size = list.length;
-      return true;
-    } else {
       return false;
     }
+
+    if (size >= THRESHOLD) {
+      let presenceSet = this.presenceSet;
+      let guid = guidFor(obj);
+      if (presenceSet[guid] === true) {
+        delete presenceSet[guid];
+      } else {
+        return false;
+      }
+    }
+
+    let list = this.list;
+    for (let i = 0; i < list.length; i++) {
+      let entry = list[i];
+      if (entry === obj ||
+        /* for NaN */
+        obj !== obj && entry !== entry) {
+        list.splice(i, 1);
+        this.size--;
+        if (this.size === 1) {
+          this._value = this._list[0];
+          this._list = undefined;
+        }
+        return true;
+      }
+    }
+    return false;
   },
 
   /**
@@ -153,12 +220,29 @@ OrderedSet.prototype = {
     @private
   */
   has(obj) {
-    if (this.size === 0) { return false; }
+    let size = this.size;
+    if (size === 0) { return false; }
+    if (size === 1) {
+      let entry = this._value;
+      return entry === obj ||
+        /* for NaN */
+          obj !== obj && entry !== entry;
+    }
+    if (size < THRESHOLD) {
+      let list = this.list;
+      for (let i = 0; i < list.length; i++) {
+        let entry = list[i];
+        if (entry === obj ||
+          /* for NaN */
+          obj !== obj && entry !== entry) {
+          return true;
+        }
+      }
 
-    let guid = guidFor(obj);
-    let presenceSet = this.presenceSet;
-
-    return presenceSet[guid] === true;
+      return false;
+    } else {
+      return this.presenceSet[guidFor(obj)] === true;
+    }
   },
 
   /**
@@ -301,7 +385,6 @@ Map.prototype = {
     let k = key === -0 ? 0 : key;
 
     keys.add(k, guid);
-
     values[guid] = value;
 
     this.size = keys.size;
@@ -328,7 +411,7 @@ Map.prototype = {
 
     if (keys.delete(key, guid)) {
       delete values[guid];
-      this.size = keys.size;
+      this.size--;
       return true;
     } else {
       return false;
