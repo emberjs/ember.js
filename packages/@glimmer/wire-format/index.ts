@@ -245,7 +245,6 @@ export interface SerializedTemplate<T extends TemplateMeta> {
 
 /**
  * A string of JSON containing a SerializedTemplateBlock
- * @typedef {string} SerializedTemplateBlockJSON
  */
 export type SerializedTemplateBlockJSON = string;
 
@@ -261,6 +260,5 @@ export interface SerializedTemplateWithLazyBlock<T extends TemplateMeta> {
 /**
  * A string of Javascript containing a SerializedTemplateWithLazyBlock to be
  * concatenated into a Javascript module.
- * @typedef {string} TemplateJavascript
  */
 export type TemplateJavascript = string;
