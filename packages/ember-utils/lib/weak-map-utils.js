@@ -8,3 +8,9 @@ export const HAS_NATIVE_WEAKMAP = ((() => {
   // polyfills as native weakmaps
   return Object.prototype.toString.call(instance) === '[object WeakMap]';
 }))();
+
+// Returns whether Type(value) is Object according to the terminology in the spec
+export function isObject(value) {
+  let type = typeof value;
+  return (type === 'object' && value !== null) || type === 'function';
+}

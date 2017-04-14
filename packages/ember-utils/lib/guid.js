@@ -1,3 +1,4 @@
+import { HAS_NATIVE_WEAKMAP, isObject } from './weak-map-utils';
 import intern from './intern';
 
 /**
@@ -7,7 +8,7 @@ import intern from './intern';
  @private
  @return {Number} the uuid
  */
-let _uuid = 0;
+let _uuid = 1; // starting at 1 so all guids are "truthy"
 
 /**
  Generates a universally unique identifier. This method
@@ -116,6 +117,44 @@ export function buildGuidFor(obj) {
   }
 }
 
+let peekGuid, setGuid;
+if (HAS_NATIVE_WEAKMAP) {
+  let store = new WeakMap();
+
+  setGuid = function GuidForWeakMap_set(obj, value) {
+    if (isObject(obj)) {
+      store.set(obj, value);
+    }
+  };
+
+  peekGuid = function GuidForWeakMap_get(obj) {
+    return store.get(obj);
+  };
+} else {
+  setGuid = function GuidForFallback_set(obj, value) {
+    if (isObject(obj)) {
+      if (obj[GUID_KEY] === null) {
+        obj[GUID_KEY] = value;
+      } else {
+        GUID_DESC.value = value;
+
+        if (obj.__defineNonEnumerable) {
+          obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
+          obj[GUID_KEY] = value;
+        } else {
+          Object.defineProperty(obj, GUID_KEY, GUID_DESC);
+        }
+      }
+    }
+  };
+
+  peekGuid = function GuidForFallback_get(obj) {
+    if (isObject(obj) && obj[GUID_KEY]) {
+      return obj[GUID_KEY];
+    }
+  };
+}
+
 /**
   Generates a new guid, optionally saving the guid to the object that you
   pass in. You will rarely need to use this method. Instead you should
@@ -141,18 +180,8 @@ export function generateGuid(obj, prefix) {
     ret = uuid();
   }
 
-  if (obj) {
-    if (obj[GUID_KEY] === null) {
-      obj[GUID_KEY] = ret;
-    } else {
-      GUID_DESC.value = ret;
-      if (obj.__defineNonEnumerable) {
-        obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
-      } else {
-        Object.defineProperty(obj, GUID_KEY, GUID_DESC);
-      }
-    }
-  }
+  setGuid(obj, ret);
+
   return ret;
 }
 
@@ -171,29 +200,13 @@ export function generateGuid(obj, prefix) {
   @return {String} the unique guid for this instance.
 */
 export function guidFor(obj) {
-  let type = typeof obj;
-  let isObject = type === 'object' && obj !== null;
-  let isFunction = type === 'function';
+  let ret = peekGuid(obj);
+  if (ret) { return ret; }
 
-  if ((isObject || isFunction) && obj[GUID_KEY]) {
-    return obj[GUID_KEY];
-  }
-
-  let ret = buildGuidFor(obj);
-
-  if (isObject || isFunction) {
-    if (obj[GUID_KEY] === null) {
-      obj[GUID_KEY] = ret;
-    } else {
-      GUID_DESC.value = ret;
-
-      if (obj.__defineNonEnumerable) {
-        obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
-      } else {
-        Object.defineProperty(obj, GUID_KEY, GUID_DESC);
-      }
-    }
-  }
+  ret = buildGuidFor(obj);
+  setGuid(obj, ret);
 
   return ret;
 }
+
+export { peekGuid }

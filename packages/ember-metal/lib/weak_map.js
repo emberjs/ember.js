@@ -1,4 +1,4 @@
-import { GUID_KEY } from 'ember-utils';
+import { isObject } from 'ember-utils';
 import {
   peekMeta,
   meta as metaFor,
@@ -6,11 +6,6 @@ import {
 } from './meta';
 
 let id = 0;
-
-// Returns whether Type(value) is Object according to the terminology in the spec
-function isObject(value) {
-  return (typeof value === 'object' && value !== null) || typeof value === 'function';
-}
 
 /*
  * @class Ember.WeakMap
@@ -30,7 +25,7 @@ export default function WeakMap(iterable) {
     throw new TypeError(`Constructor WeakMap requires 'new'`);
   }
 
-  this._id = GUID_KEY + (id++);
+  this._id = id++;
 
   if (iterable === null || iterable === undefined) {
     return;

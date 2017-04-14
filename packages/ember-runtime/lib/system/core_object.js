@@ -10,6 +10,7 @@ import {
   guidFor,
   generateGuid,
   makeArray,
+  HAS_NATIVE_WEAKMAP,
   GUID_KEY_PROPERTY,
   symbol,
   NAME_KEY,
@@ -64,7 +65,9 @@ function makeCtor() {
         initProperties = [arguments[0]];
       }
 
-      this.__defineNonEnumerable(GUID_KEY_PROPERTY);
+      if (!HAS_NATIVE_WEAKMAP) {
+        this.__defineNonEnumerable(GUID_KEY_PROPERTY);
+      }
       let m = meta(this);
       let proto = m.proto;
       m.proto = this;
@@ -560,7 +563,7 @@ let ClassMixinProps = {
 
   isMethod: false,
   [NAME_KEY]: null,
-  [GUID_KEY]: null,
+
   /**
     Creates a new subclass.
 
@@ -907,6 +910,10 @@ let ClassMixinProps = {
     }
   }
 };
+
+if (!HAS_NATIVE_WEAKMAP) {
+  ClassMixinProps[GUID_KEY] = null;
+}
 
 function injectedPropertyAssertion() {
   assert('Injected properties are invalid', validatePropertyInjections(this));
