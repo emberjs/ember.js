@@ -30,7 +30,8 @@ import {
   InjectedProperty,
   run,
   destroy,
-  descriptor
+  descriptor,
+  _hasCachedComputedProperties
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
@@ -40,7 +41,6 @@ let schedule = run.schedule;
 let applyMixin = Mixin._apply;
 let finishPartial = Mixin.finishPartial;
 let reopen = Mixin.prototype.reopen;
-let hasCachedComputedProperties = false;
 
 export const POST_INIT = symbol('POST_INIT');
 
@@ -865,7 +865,7 @@ let ClassMixinProps = {
   },
 
   _computedProperties: computed(function() {
-    hasCachedComputedProperties = true;
+    _hasCachedComputedProperties();
     let proto = this.proto();
     let property;
     let properties = [];
@@ -951,18 +951,4 @@ ClassMixin.ownerConstructor = CoreObject;
 CoreObject.ClassMixin = ClassMixin;
 
 ClassMixin.apply(CoreObject);
-
-CoreObject.reopen({
-  didDefineProperty(proto, key, value) {
-    if (hasCachedComputedProperties === false) { return; }
-    if (value instanceof ComputedProperty) {
-      let cache = meta(this.constructor).readableCache();
-
-      if (cache && cache._computedProperties !== undefined) {
-        cache._computedProperties = undefined;
-      }
-    }
-  }
-});
-
 export default CoreObject;
