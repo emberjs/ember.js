@@ -47,39 +47,28 @@ export default function Container(registry, options) {
 Container.prototype = {
   /**
    @private
-   @property owner
-   @type Object
-   */
-  owner: null,
-
-  /**
-   @private
    @property registry
    @type Registry
    @since 1.11.0
    */
-  registry: null,
 
   /**
    @private
    @property cache
    @type InheritingDict
    */
-  cache: null,
 
   /**
    @private
    @property factoryCache
    @type InheritingDict
    */
-  factoryCache: null,
 
   /**
    @private
    @property validationCache
    @type InheritingDict
    */
-  validationCache: null,
 
   /**
    Given a fullName return a corresponding instance.
