@@ -200,3 +200,11 @@ QUnit.test('can build a registry via Ember.ApplicationInstance.setupRegistry() -
 
   assert.equal(registry.resolve('service:-document'), document);
 });
+
+QUnit.test('attempts to use ApplicationInstance.didCreateRootView get deprecation message', function(assert) {
+  appInstance = run(() => ApplicationInstance.create({ application }));
+
+  let fakeView = { appendTo () {} };
+  expectDeprecation(/Using `ApplicationInstance.didCreateRootView` is deprecated/);
+  appInstance.didCreateRootView(fakeView);
+});

@@ -323,7 +323,7 @@ const EmberRouter = EmberObject.extend(Evented, {
       this._toplevelView = OutletView.create();
       this._toplevelView.setOutletState(liveRoutes);
       let instance = owner.lookup('-application-instance:main');
-      instance.didCreateRootView(this._toplevelView);
+      this._toplevelView.appendTo(instance.rootElement);
     } else {
       this._toplevelView.setOutletState(liveRoutes);
     }

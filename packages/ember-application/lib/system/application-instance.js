@@ -150,6 +150,13 @@ const ApplicationInstance = EngineInstance.extend({
     @private
   */
   didCreateRootView(view) {
+    deprecate(
+      'Using `ApplicationInstance.didCreateRootView` is deprecated.',
+      false, {
+        id: 'ember-application.app-instance-didCreateRootView',
+        until: '3.0.0',
+      }
+    );
     view.appendTo(this.rootElement);
   },
 
