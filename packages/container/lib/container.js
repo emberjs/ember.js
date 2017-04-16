@@ -47,39 +47,28 @@ export default function Container(registry, options) {
 Container.prototype = {
   /**
    @private
-   @property owner
-   @type Object
-   */
-  owner: null,
-
-  /**
-   @private
    @property registry
    @type Registry
    @since 1.11.0
    */
-  registry: null,
 
   /**
    @private
    @property cache
    @type InheritingDict
    */
-  cache: null,
 
   /**
    @private
    @property factoryCache
    @type InheritingDict
    */
-  factoryCache: null,
 
   /**
    @private
    @property validationCache
    @type InheritingDict
    */
-  validationCache: null,
 
   /**
    Given a fullName return a corresponding instance.
@@ -527,25 +516,28 @@ function factoryInjectionsFor(container, fullName) {
   return factoryInjections;
 }
 
+const INJECTED_DEPRECATED_CONTAINER_DESC = {
+  configurable: true,
+  enumerable: false,
+  get() {
+    deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.', false, { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
+    return this[CONTAINER_OVERRIDE];
+  },
+
+  set(value) {
+    deprecate(`Providing the \`container\` property to ${this} is deprecated. Please use \`Ember.setOwner\` or \`owner.ownerInjection()\` instead to provide an owner to the instance being created.`, false, { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
+
+    this[CONTAINER_OVERRIDE] = value;
+
+    return value;
+  }
+};
+
 // TODO - remove when Ember reaches v3.0.0
 function injectDeprecatedContainer(object, container) {
   if ('container' in object) { return; }
-  Object.defineProperty(object, 'container', {
-    configurable: true,
-    enumerable: false,
-    get() {
-      deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.', false, { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
-      return this[CONTAINER_OVERRIDE] || container;
-    },
-
-    set(value) {
-      deprecate(`Providing the \`container\` property to ${this} is deprecated. Please use \`Ember.setOwner\` or \`owner.ownerInjection()\` instead to provide an owner to the instance being created.`, false, { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
-
-      this[CONTAINER_OVERRIDE] = value;
-
-      return value;
-    }
-  });
+  Object.defineProperty(object, 'container', INJECTED_DEPRECATED_CONTAINER_DESC);
+  object[CONTAINER_OVERRIDE] = container;
 }
 
 function destroyDestroyables(container) {
