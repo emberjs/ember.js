@@ -165,7 +165,7 @@ function makeCtor() {
       this[POST_INIT]();
 
       m.proto = proto;
-      finishChains(this);
+      finishChains(m);
       sendEvent(this, 'init');
     }
 
