@@ -49,7 +49,7 @@ export function isArray(obj) {
 
   let type = typeOf(obj);
   if ('array' === type) { return true; }
-  if ((obj.length !== undefined) && 'object' === type) { return true; }
+  if (!isNaN(obj.length) && 'object' === type) { return true; }
   return false;
 }
 
