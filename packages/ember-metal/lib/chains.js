@@ -347,22 +347,16 @@ function lazyGet(obj, key) {
 
 import { makeChainNode } from './watch_path';
 
-export function finishChains(obj) {
-  // We only create meta if we really have to
-  let m = peekMeta(obj);
-  if (m !== undefined) {
-    m = metaFor(obj);
-
-    // finish any current chains node watchers that reference obj
-    let chainWatchers = m.readableChainWatchers();
-    if (chainWatchers !== undefined) {
-      chainWatchers.revalidateAll();
-    }
-    // ensure that if we have inherited any chains they have been
-    // copied onto our own meta.
-    if (m.readableChains() !== undefined) {
-      m.writableChains(makeChainNode);
-    }
+export function finishChains(meta) {
+  // finish any current chains node watchers that reference obj
+  let chainWatchers = meta.readableChainWatchers();
+  if (chainWatchers !== undefined) {
+    chainWatchers.revalidateAll();
+  }
+  // ensure that if we have inherited any chains they have been
+  // copied onto our own meta.
+  if (meta.readableChains() !== undefined) {
+    meta.writableChains(makeChainNode);
   }
 }
 
