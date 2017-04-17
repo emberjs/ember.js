@@ -567,6 +567,51 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
+  ['@test refreshModel and replace work together'](assert) {
+    assert.expect(8);
+
+    this.setSingleQPController('application', 'appomg', 'applol');
+    this.setSingleQPController('index', 'omg', 'lol');
+
+    let appModelCount = 0;
+    this.add('route:application', Route.extend({
+      model(params) {
+        appModelCount++;
+      }
+    }));
+
+    let indexModelCount = 0;
+    this.add('route:index', Route.extend({
+      queryParams: {
+        omg: {
+          refreshModel: true,
+          replace: true
+        }
+      },
+      model(params) {
+        indexModelCount++;
+
+        if (indexModelCount === 1) {
+          assert.deepEqual(params, { omg: 'lol' }, 'params are correct on first pass');
+        } else if (indexModelCount === 2) {
+          assert.deepEqual(params, { omg: 'lex' }, 'params are correct on second pass');
+        }
+      }
+    }));
+
+    return this.visitAndAssert('/').then(() => {
+      assert.equal(appModelCount, 1, 'app model hook ran');
+      assert.equal(indexModelCount, 1, 'index model hook ran');
+
+      let indexController = this.getController('index');
+      this.expectedReplaceURL = '/?omg=lex';
+      this.setAndFlush(indexController, 'omg', 'lex');
+
+      assert.equal(appModelCount, 1, 'app model hook did not run again');
+      assert.equal(indexModelCount, 2, 'index model hook ran again due to refreshModel');
+    });
+  }
+
   ['@test multiple QP value changes only cause a single model refresh'](assert) {
     assert.expect(2);
 
