@@ -22,7 +22,7 @@ QUnit.test('Ember.isArray', function() {
   equal(isArray(strarray), true, '["Hello", "Hi"]');
   equal(isArray(string), false, '"Hello"');
   equal(isArray(object), false, '{}');
-  equal(isArray(length), true, '{ length: 12 }');
+  equal(isArray(length), false, '{ length: 12 }');
   equal(isArray(global), false, 'global');
   equal(isArray(fn), false, 'function() {}');
   equal(isArray(arrayProxy), true, '[]');
