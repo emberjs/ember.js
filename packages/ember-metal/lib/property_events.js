@@ -83,12 +83,12 @@ function propertyWillChange(obj, keyName, _meta) {
 */
 function propertyDidChange(obj, keyName, _meta) {
   let meta = _meta || peekMeta(obj);
+  let hasMeta = !!meta;
 
-  if (meta && !meta.isInitialized(obj)) {
+  if (hasMeta && !meta.isInitialized(obj)) {
     return;
   }
 
-  let watching = meta && meta.peekWatching(keyName) > 0;
   let possibleDesc = obj[keyName];
   let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
@@ -97,8 +97,8 @@ function propertyDidChange(obj, keyName, _meta) {
     desc.didChange(obj, keyName);
   }
 
-  if (watching) {
-    if (meta.hasDeps(keyName)) {
+  if (hasMeta && meta.peekWatching(keyName) > 0) {
+    if (meta.hasDeps(keyName) && !meta.isSourceDestroying()) {
       dependentKeysDidChange(obj, keyName, meta);
     }
 
@@ -106,14 +106,14 @@ function propertyDidChange(obj, keyName, _meta) {
     notifyObservers(obj, keyName, meta);
   }
 
-
   if (obj[PROPERTY_DID_CHANGE]) {
     obj[PROPERTY_DID_CHANGE](keyName);
   }
 
-  if (meta && meta.isSourceDestroying()) { return; }
-
-  markObjectAsDirty(meta, keyName);
+  if (hasMeta) {
+    if (meta.isSourceDestroying()) { return; }
+    markObjectAsDirty(meta, keyName);
+  }
 
   if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
     assertNotRendered(obj, keyName, meta);
@@ -123,9 +123,8 @@ function propertyDidChange(obj, keyName, _meta) {
 let WILL_SEEN, DID_SEEN;
 // called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)
 function dependentKeysWillChange(obj, depKey, meta) {
-  if (meta && meta.isSourceDestroying()) { return; }
-
-  if (meta && meta.hasDeps(depKey)) {
+  if (meta.isSourceDestroying()) { return; }
+  if (meta.hasDeps(depKey)) {
     let seen = WILL_SEEN;
     let top = !seen;
 
@@ -143,21 +142,17 @@ function dependentKeysWillChange(obj, depKey, meta) {
 
 // called whenever a property has just changed to update dependent keys
 function dependentKeysDidChange(obj, depKey, meta) {
-  if (meta && meta.isSourceDestroying()) { return; }
+  let seen = DID_SEEN;
+  let top = !seen;
 
-  if (meta && meta.hasDeps(depKey)) {
-    let seen = DID_SEEN;
-    let top = !seen;
+  if (top) {
+    seen = DID_SEEN = {};
+  }
 
-    if (top) {
-      seen = DID_SEEN = {};
-    }
+  iterDeps(propertyDidChange, obj, depKey, seen, meta);
 
-    iterDeps(propertyDidChange, obj, depKey, seen, meta);
-
-    if (top) {
-      DID_SEEN = null;
-    }
+  if (top) {
+    DID_SEEN = null;
   }
 }
 
@@ -258,7 +253,7 @@ function changeProperties(callback, binding) {
 }
 
 function notifyBeforeObservers(obj, keyName, meta) {
-  if (meta && meta.isSourceDestroying()) { return; }
+  if (meta.isSourceDestroying()) { return; }
 
   let eventName = `${keyName}:before`;
   let listeners, added;
@@ -272,7 +267,7 @@ function notifyBeforeObservers(obj, keyName, meta) {
 }
 
 function notifyObservers(obj, keyName, meta) {
-  if (meta && meta.isSourceDestroying()) { return; }
+  if (meta.isSourceDestroying()) { return; }
 
   let eventName = `${keyName}:change`;
   let listeners;

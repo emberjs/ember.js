@@ -14,20 +14,18 @@ function makeTag() {
 }
 
 export function tagForProperty(object, propertyKey, _meta) {
-  if (isProxy(object)) {
-    return tagFor(object, _meta);
+  if (typeof object !== 'object' || object === null) { return CONSTANT_TAG; }
+
+  let meta = _meta || metaFor(object);
+  if (meta.isProxy()) {
+    return tagFor(object, meta);
   }
 
-  if (typeof object === 'object' && object) {
-    let meta = _meta || metaFor(object);
-    let tags = meta.writableTags();
-    let tag = tags[propertyKey];
-    if (tag) { return tag; }
+  let tags = meta.writableTags();
+  let tag = tags[propertyKey];
+  if (tag) { return tag; }
 
-    return tags[propertyKey] = makeTag();
-  } else {
-    return CONSTANT_TAG;
-  }
+  return tags[propertyKey] = makeTag();
 }
 
 export function tagFor(object, _meta) {
@@ -40,17 +38,21 @@ export function tagFor(object, _meta) {
 }
 
 export function markObjectAsDirty(meta, propertyKey) {
-  let objectTag = meta && meta.readableTag();
+  let objectTag = meta.readableTag();
 
   if (objectTag) {
     objectTag.dirty();
   }
 
-  let tags = meta && meta.readableTags();
+  let tags = meta.readableTags();
   let propertyTag = tags && tags[propertyKey];
 
   if (propertyTag) {
     propertyTag.dirty();
+  }
+
+  if (propertyKey === 'content' && meta.isProxy()) {
+    meta.getTag().contentDidChange();
   }
 
   if (objectTag || propertyTag) {
