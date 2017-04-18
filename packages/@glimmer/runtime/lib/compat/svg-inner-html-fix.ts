@@ -1,6 +1,6 @@
 import { Bounds, ConcreteBounds } from '../bounds';
 import { moveNodesBefore, DOMChanges, DOMTreeConstruction } from '../dom/helper';
-import { Option } from '@glimmer/util';
+import { Option, unwrap } from '@glimmer/util';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
@@ -85,7 +85,7 @@ function shouldApplyFix(document: Document, svgNamespace: SVG_NAMESPACE) {
     // Safari: Will throw, insertAdjacentHTML is not present on SVG
   } finally {
     // FF: Old versions will create a node in the wrong namespace
-    if (svg.childNodes.length === 1 && svg.firstChild.namespaceURI === SVG_NAMESPACE) {
+    if (svg.childNodes.length === 1 && unwrap(svg.firstChild).namespaceURI === SVG_NAMESPACE) {
       // The test worked as expected, no fix required
       return false;
     }

@@ -2,7 +2,7 @@ import Bounds, { Cursor, DestroyableBounds, clear } from './bounds';
 
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 
-import { Option, Destroyable, Stack, LinkedList, LinkedListNode, } from '@glimmer/util';
+import { Option, Destroyable, Stack, LinkedList, LinkedListNode, assert, expect } from '@glimmer/util';
 
 import { Environment } from './environment';
 
@@ -114,16 +114,16 @@ export class ElementStack implements Cursor {
     this.nextSiblingStack.push(this.nextSibling);
   }
 
-  expectConstructing(_: string): Simple.Element {
-    return this.constructing!;
+  expectConstructing(method: string): Simple.Element {
+    return expect(this.constructing!, `${method} should only be called while constructing an element`);
   }
 
-  expectOperations(_: string): ElementOperations {
-    return this.operations!;
+  expectOperations(method: string): ElementOperations {
+    return expect(this.operations!, `${method} should only be called while constructing an element`);
   }
 
   block(): Tracker {
-    return this.blockStack.current!;
+    return expect(this.blockStack.current!, "Expected a current block tracker");
   }
 
   popElement() {
@@ -133,7 +133,7 @@ export class ElementStack implements Cursor {
     nextSiblingStack.pop();
     // LOGGER.debug(`-> element stack ${this.elementStack.toArray().map(e => e.tagName).join(', ')}`);
 
-    this.element = elementStack.current!;
+    this.element = expect(elementStack.current, "can't pop past the last element");
     this.nextSibling = nextSiblingStack.current;
 
     return topElement;
@@ -181,8 +181,7 @@ export class ElementStack implements Cursor {
 
   popBlock(): Tracker {
     this.block().finalize(this);
-
-    return this.blockStack.pop()!;
+    return expect(this.blockStack.pop(), "Expected popBlock to return a block");
   }
 
   openElement(tag: string, _operations?: ElementOperations): Simple.Element {
@@ -198,7 +197,7 @@ export class ElementStack implements Cursor {
 
   flushElement() {
     let parent  = this.element;
-    let element = this.constructing!;
+    let element = expect(this.constructing, `flushElement should only be called when constructing an element`);
 
     this.dom.insertBefore(parent, element, this.nextSibling);
 
@@ -414,12 +413,15 @@ class BlockListTracker implements Tracker {
   }
 
   openElement(_element: Element) {
+    assert(false, 'Cannot openElement directly inside a block list');
   }
 
   closeElement() {
+    assert(false, 'Cannot closeElement directly inside a block list');
   }
 
   newNode(_node: Node) {
+    assert(false, 'Cannot create a new node directly inside a block list');
   }
 
   newBounds(_bounds: Bounds) {
