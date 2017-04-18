@@ -939,6 +939,10 @@ export abstract class GenericComponentDefinition<T> extends ComponentDefinition<
     super(name, manager, ComponentClass);
     this.layoutString = layout;
   }
+
+  toJSON() {
+    return { GlimmerDebug: `<component ${this.name}>` };
+  }
 }
 
 export class BasicComponentDefinition extends GenericComponentDefinition<BasicStateBucket> {

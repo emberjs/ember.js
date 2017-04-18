@@ -184,6 +184,25 @@ export class Assert extends UpdatingOpcode {
       vm.throw();
     }
   }
+
+  toJSON(): OpcodeJSON {
+    let { type, _guid, cache } = this;
+
+    let expected;
+
+    try {
+      expected = JSON.stringify(cache.peek());
+    } catch(e) {
+      expected = String(cache.peek());
+    }
+
+    return {
+      guid: _guid,
+      type,
+      args: [],
+      details: { expected }
+    };
+  }
 }
 
 export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
@@ -207,6 +226,14 @@ export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
 
   didModify() {
     this.lastRevision = this.tag.value();
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: [JSON.stringify(this.target.inspect())]
+    };
   }
 }
 
@@ -241,5 +268,13 @@ export class LabelOpcode implements UpdatingOpcode {
 
   inspect(): string {
     return `${this.label} [${this._guid}]`;
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: [JSON.stringify(this.inspect())]
+    };
   }
 }

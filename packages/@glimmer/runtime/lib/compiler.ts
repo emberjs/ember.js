@@ -5,7 +5,7 @@ import { Maybe, Option } from '@glimmer/util';
 import { Ops, TemplateMeta } from '@glimmer/wire-format';
 
 import { Template } from './template';
-import { Register } from './opcodes';
+import { Register, debugSlice } from './opcodes';
 
 import { ATTRS_BLOCK, ClientSide, compileStatement } from './scanner';
 
@@ -172,6 +172,8 @@ class WrappedBuilder implements InnerLayoutBuilder {
 
     let start = b.start;
     let end = b.finalize();
+
+    debugSlice(env, start, end);
 
     return new CompiledDynamicTemplate(start, end, {
       meta,

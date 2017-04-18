@@ -1,6 +1,6 @@
 import * as WireFormat from '@glimmer/wire-format';
 import { assert } from "@glimmer/util";
-import { Stack, DictSet, Option } from "@glimmer/util";
+import { Stack, DictSet, Option, expect } from "@glimmer/util";
 import { AST } from '@glimmer/syntax';
 import { BlockSymbolTable, ProgramSymbolTable } from './template-visitor';
 
@@ -169,7 +169,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   }
 
   get currentBlock(): Block {
-    return this.blocks.current;
+    return expect(this.blocks.current, 'Expected a block on the stack');
   }
 
   process(): Template<T> {
@@ -228,6 +228,8 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     let hash = this.popValue<Hash>();
 
     let blocks = this.template.block.blocks;
+    assert(typeof template !== 'number' || blocks[template] !== null, 'missing block in the compiler');
+    assert(typeof inverse !== 'number' || blocks[inverse] !== null, 'missing block in the compiler');
 
     this.push([Ops.Block, name, params, hash, blocks[template], blocks[inverse]]);
   }
@@ -350,6 +352,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
 
   endComponent(): [WireFormat.Statements.Attribute[], WireFormat.Core.Hash, Option<WireFormat.SerializedInlineBlock>] {
     let component = this.blocks.pop();
+    assert(component instanceof ComponentBlock, "Compiler bug: endComponent() should end a component");
     return (component as ComponentBlock).toJSON();
   }
 
@@ -364,6 +367,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   }
 
   prepareObject(size: number) {
+    assert(this.values.length >= size, `Expected ${size} values on the stack, found ${this.values.length}`);
 
     let keys: string[] = new Array(size);
     let values: Expression[] = new Array(size);
@@ -391,6 +395,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   }
 
   popValue<T extends StackValue>(): T {
+    assert(this.values.length, "No expression found on stack");
     return this.values.pop() as T;
   }
 }

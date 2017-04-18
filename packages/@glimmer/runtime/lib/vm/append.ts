@@ -1,7 +1,7 @@
 import { Register } from '../opcodes';
 import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
-import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque } from '@glimmer/util';
+import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { CompiledDynamicProgram } from '../compiled/blocks';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
@@ -313,11 +313,11 @@ export default class VM implements PublicVM {
   }
 
   listBlock(): ListBlockOpcode {
-    return this.listBlockStack.current;
+    return expect(this.listBlockStack.current, 'expected a list block');
   }
 
   updating(): LinkedList<UpdatingOpcode> {
-    return this.updatingOpcodeStack.current;
+    return expect(this.updatingOpcodeStack.current, 'expected updating opcode on the updating opcode stack');
   }
 
   elements(): ElementStack {
@@ -325,11 +325,11 @@ export default class VM implements PublicVM {
   }
 
   scope(): Scope {
-    return this.scopeStack.current;
+    return expect(this.scopeStack.current, 'expected scope on the scope stack');
   }
 
   dynamicScope(): DynamicScope {
-    return this.dynamicScopeStack.current;
+    return expect(this.dynamicScopeStack.current, 'expected dynamic scope on the dynamic scope stack');
   }
 
   pushChildScope() {
@@ -337,7 +337,7 @@ export default class VM implements PublicVM {
   }
 
   pushCallerScope(childScope = false) {
-    let callerScope = this.scope().getCallerScope();
+    let callerScope = expect(this.scope().getCallerScope(), 'pushCallerScope is called when a caller scope is present');
     this.scopeStack.push(childScope ? callerScope.child() : callerScope);
   }
 
@@ -406,7 +406,7 @@ export default class VM implements PublicVM {
       done: true,
       value: new RenderResult(
         env,
-        updatingOpcodeStack.pop(),
+        expect(updatingOpcodeStack.pop(), 'there should be a final updating opcode stack'),
         elementStack.popBlock()
       )
     };
