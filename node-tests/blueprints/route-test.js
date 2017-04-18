@@ -85,6 +85,54 @@ describe('Acceptance: ember generate and destroy route', function() {
         .to.not.contain('path: \':foo_id/show\''));
   });
 
+  it('route --reset-namespace', function() {
+    var args = ['route', 'parent/child', '--reset-namespace'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, (_file) => {
+        expect(_file('app/routes/child.js'))
+          .to.contain('import Ember from \'ember\';')
+          .to.contain('export default Ember.Route.extend({\n});');
+
+        expect(_file('app/templates/child.hbs'))
+          .to.contain('{{outlet}}');
+
+        expect(_file('tests/unit/routes/child-test.js'))
+          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
+          .to.contain('moduleFor(\'route:child\'');
+
+        expect(file('app/router.js'))
+          .to.contain('this.route(\'parent\', {')
+          .to.contain('this.route(\'child\', {')
+          .to.contain('resetNamespace: true')
+          .to.contain('});');
+      }));
+  });
+
+  it('route --reset-namespace --pod', function() {
+    var args = ['route', 'parent/child', '--reset-namespace', '--pod'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, (_file) => {
+        expect(_file('app/child/route.js'))
+          .to.contain('import Ember from \'ember\';')
+          .to.contain('export default Ember.Route.extend({\n});');
+
+        expect(_file('app/child/template.hbs'))
+          .to.contain('{{outlet}}');
+
+        expect(_file('tests/unit/child/route-test.js'))
+          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
+          .to.contain('moduleFor(\'route:child\'');
+
+        expect(file('app/router.js'))
+          .to.contain('this.route(\'parent\', {')
+          .to.contain('this.route(\'child\', {')
+          .to.contain('resetNamespace: true')
+          .to.contain('});');
+      }));
+  });
+
   it('route index', function() {
     var args = ['route', 'index'];
 
