@@ -3,7 +3,7 @@ import { Tag } from '@glimmer/reference';
 import { VM, UpdatingVM } from './vm';
 import { Opcode, Environment } from './environment';
 import { Constants } from './environment/constants';
-import { DEBUG } from '@glimmer/env-flags';
+import { CI, DEBUG } from '@glimmer/env-flags';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -954,7 +954,7 @@ function json(param: Opaque) {
 }
 
 function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): [string, object] {
-  if (DEBUG) {
+  if (!CI && DEBUG) {
     switch (op) {
       case Op.Bug: throw unreachable();
 
@@ -1075,7 +1075,7 @@ export class AppendOpcodes {
 
   evaluate(vm: VM, opcode: Opcode, type: number) {
     let func = this.evaluateOpcode[type];
-    if (DEBUG) {
+    if (!CI && DEBUG) {
       let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
       console.log(`${vm['pc'] - 4}. ${logOpcode(name, params)}`);
       // console.log(...debug(vm.constants, type, opcode.op1, opcode.op2, opcode.op3));
@@ -1083,7 +1083,7 @@ export class AppendOpcodes {
 
     func(vm, opcode);
 
-    if (DEBUG) {
+    if (!CI && DEBUG) {
       console.log('%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O', 'color: orange', vm['pc'], vm['ra'], vm['fp'], vm['sp'], vm['s0'], vm['s1'], vm['t0'], vm['t1']);
       console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
       console.log('%c -> scope', 'color: green', vm.scope()['slots'].map(s => s && s['value'] ? s['value']() : s));
