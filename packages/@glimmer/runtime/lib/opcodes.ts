@@ -3,6 +3,7 @@ import { Tag } from '@glimmer/reference';
 import { VM, UpdatingVM } from './vm';
 import { Opcode, Environment } from './environment';
 import { Constants } from './environment/constants';
+import { CI, DEBUG } from '@glimmer/env-flags';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -903,35 +904,37 @@ export const enum Op {
 }
 
 export function debugSlice(env: Environment, start: number, end: number) {
-  if (window['GLIMMER_DEBUG'] !== true) { return; }
+  if (DEBUG) {
+    let { program, constants } = env;
 
-  let { program, constants } = env;
+    // console is not available in IE9
+    if (typeof console === 'undefined') { return; }
 
-  // console is not available in IE9
-  if (typeof console === 'undefined') { return; }
+    // IE10 does not have `console.group`
+    if (typeof console.group !== 'function') { return; }
 
-  // IE10 does not have `console.group`
-  if (typeof console.group !== 'function') { return; }
+    (console as any).group(`%c${start}:${end}`, 'color: #999');
 
-  (console as any).group(`%c${start}:${end}`, 'color: #999');
+    for (let i=start; i<=end; i+=4) {
+      let { type, op1, op2, op3 } = program.opcode(i);
+      let [name, params] = debug(constants, type, op1, op2, op3);
+      console.log(`${i}. ${logOpcode(name, params)}`);
+    }
 
-  for (let i=start; i<=end; i+=4) {
-    let { type, op1, op2, op3 } = program.opcode(i);
-    let [name, params] = debug(constants, type, op1, op2, op3);
-    console.log(`${i}. ${logOpcode(name, params)}`);
+    console.groupEnd();
   }
-
-  console.groupEnd();
 }
 
-function logOpcode(type: string, params: Option<Object>): string {
-  let out = type;
+function logOpcode(type: string, params: Option<Object>): string | void {
+  if (DEBUG) {
+    let out = type;
 
-  if (params) {
-    let args = Object.keys(params).map(p => ` ${p}=${json(params[p])}`).join('');
-    out += args;
+    if (params) {
+      let args = Object.keys(params).map(p => ` ${p}=${json(params[p])}`).join('');
+      out += args;
+    }
+    return `(${out})`;
   }
-  return `(${out})`;
 }
 
 function json(param: Opaque) {
@@ -951,106 +954,110 @@ function json(param: Opaque) {
 }
 
 function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): [string, object] {
-  switch (op) {
-    case Op.Bug: throw unreachable();
+  if (!CI && DEBUG) {
+    switch (op) {
+      case Op.Bug: throw unreachable();
 
-    case Op.Helper: return ['Helper', { helper: c.getFunction(op1) }];
-    case Op.Function: return ['Function', { function: c.getFunction(op1) }];
-    case Op.SetVariable: return ['SetVariable', { symbol: op1 }];
-    case Op.GetVariable: return ['GetVariable', { symbol: op1 }];
-    case Op.GetProperty: return ['GetProperty', { key: c.getString(op1) }];
-    case Op.PushBlock: return ['PushBlock', { block: c.getBlock(op1) }];
-    case Op.GetBlock: return ['GetBlock', { symbol: op1 }];
-    case Op.HasBlock: return ['HasBlock', { block: op1 }];
-    case Op.HasBlockParams: return ['HasBlockParams', { block: op1 }];
-    case Op.Concat: return ['Concat', { size: op1 }];
-    case Op.Immediate: return ['Immediate', { value: op1 }];
-    case Op.Constant: return ['Constant', { value: c.getOther(op1) }];
-    case Op.PrimitiveReference: return ['PrimitiveReference', { primitive: op1 }];
-    case Op.Dup: return ['Dup', { register: Register[op1], offset: op2 }];
-    case Op.Pop: return ['Pop', { count: op1 }];
-    case Op.Load: return ['Load', { register: Register[op1] }];
-    case Op.Fetch: return ['Fetch', { register: Register[op1] }];
+      case Op.Helper: return ['Helper', { helper: c.getFunction(op1) }];
+      case Op.Function: return ['Function', { function: c.getFunction(op1) }];
+      case Op.SetVariable: return ['SetVariable', { symbol: op1 }];
+      case Op.GetVariable: return ['GetVariable', { symbol: op1 }];
+      case Op.GetProperty: return ['GetProperty', { key: c.getString(op1) }];
+      case Op.PushBlock: return ['PushBlock', { block: c.getBlock(op1) }];
+      case Op.GetBlock: return ['GetBlock', { symbol: op1 }];
+      case Op.HasBlock: return ['HasBlock', { block: op1 }];
+      case Op.HasBlockParams: return ['HasBlockParams', { block: op1 }];
+      case Op.Concat: return ['Concat', { size: op1 }];
+      case Op.Immediate: return ['Immediate', { value: op1 }];
+      case Op.Constant: return ['Constant', { value: c.getOther(op1) }];
+      case Op.PrimitiveReference: return ['PrimitiveReference', { primitive: op1 }];
+      case Op.Dup: return ['Dup', { register: Register[op1], offset: op2 }];
+      case Op.Pop: return ['Pop', { count: op1 }];
+      case Op.Load: return ['Load', { register: Register[op1] }];
+      case Op.Fetch: return ['Fetch', { register: Register[op1] }];
 
-    /// PRELUDE & EXIT
-    case Op.RootScope: return ['RootScope', { symbols: op1, bindCallerScope: !!op2 }];
-    case Op.ChildScope: return ['ChildScope', {}];
-    case Op.PopScope: return ['PopScope', {}];
-    case Op.Return: return ['Return', {}];
+      /// PRELUDE & EXIT
+      case Op.RootScope: return ['RootScope', { symbols: op1, bindCallerScope: !!op2 }];
+      case Op.ChildScope: return ['ChildScope', {}];
+      case Op.PopScope: return ['PopScope', {}];
+      case Op.Return: return ['Return', {}];
 
-    /// HTML
-    case Op.Text: return ['Text', { text: c.getString(op1) }];
-    case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
-    case Op.DynamicContent: return ['DynamicContent', { value: c.getOther(op1) }];
-    case Op.OpenElement: return ['OpenElement', { tag: c.getString(op1) }];
-    case Op.OpenElementWithOperations: return ['OpenElementWithOperations', { tag: c.getString(op1) }];
-    case Op.OpenDynamicElement: return ['OpenDynamicElement', {}];
-    case Op.StaticAttr: return ['StaticAttr', { name: c.getString(op1), value: c.getString(op2), namespace: op3 ? c.getString(op3) : null }];
-    case Op.DynamicAttr: return ['DynamicAttr', { name: c.getString(op1), trusting: !!op2 }];
-    case Op.DynamicAttrNS: return ['DynamicAttrNS', { name: c.getString(op1), ns: c.getString(op2), trusting: !!op2 }];
-    case Op.FlushElement: return ['FlushElement', {}];
-    case Op.CloseElement: return ['CloseElement', {}];
+      /// HTML
+      case Op.Text: return ['Text', { text: c.getString(op1) }];
+      case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
+      case Op.DynamicContent: return ['DynamicContent', { value: c.getOther(op1) }];
+      case Op.OpenElement: return ['OpenElement', { tag: c.getString(op1) }];
+      case Op.OpenElementWithOperations: return ['OpenElementWithOperations', { tag: c.getString(op1) }];
+      case Op.OpenDynamicElement: return ['OpenDynamicElement', {}];
+      case Op.StaticAttr: return ['StaticAttr', { name: c.getString(op1), value: c.getString(op2), namespace: op3 ? c.getString(op3) : null }];
+      case Op.DynamicAttr: return ['DynamicAttr', { name: c.getString(op1), trusting: !!op2 }];
+      case Op.DynamicAttrNS: return ['DynamicAttrNS', { name: c.getString(op1), ns: c.getString(op2), trusting: !!op2 }];
+      case Op.FlushElement: return ['FlushElement', {}];
+      case Op.CloseElement: return ['CloseElement', {}];
 
-    /// MODIFIER
-    case Op.Modifier: return ['Modifier', {}];
+      /// MODIFIER
+      case Op.Modifier: return ['Modifier', {}];
 
-    /// WORMHOLE
-    case Op.PushRemoteElement: return ['PushRemoteElement', {}];
-    case Op.PopRemoteElement: return ['PopRemoteElement', {}];
+      /// WORMHOLE
+      case Op.PushRemoteElement: return ['PushRemoteElement', {}];
+      case Op.PopRemoteElement: return ['PopRemoteElement', {}];
 
-    /// DYNAMIC SCOPE
-    case Op.BindDynamicScope: return ['BindDynamicScope', {}];
-    case Op.PushDynamicScope: return ['PushDynamicScope', {}];
-    case Op.PopDynamicScope: return ['PopDynamicScope', {}];
+      /// DYNAMIC SCOPE
+      case Op.BindDynamicScope: return ['BindDynamicScope', {}];
+      case Op.PushDynamicScope: return ['PushDynamicScope', {}];
+      case Op.PopDynamicScope: return ['PopDynamicScope', {}];
 
-    /// VM
-    case Op.CompileDynamicBlock: return ['CompileDynamicBlock', {}];
-    case Op.InvokeStatic: return ['InvokeStatic', { block: c.getBlock(op1) }];
-    case Op.InvokeDynamic: return ['InvokeDynamic', { invoker: c.getOther(op1) }];
-    case Op.Jump: return ['Jump', { to: op1 }];
-    case Op.JumpIf: return ['JumpIf', { to: op1 }];
-    case Op.JumpUnless: return ['JumpUnless', { to: op1 }];
-    case Op.PushFrame: return ['PushFrame', {}];
-    case Op.PopFrame: return ['PopFrame', {}];
-    case Op.Enter: return ['Enter', { args: op1 }];
-    case Op.Exit: return ['Exit', {}];
-    case Op.Test: return ['ToBoolean', {}];
+      /// VM
+      case Op.CompileDynamicBlock: return ['CompileDynamicBlock', {}];
+      case Op.InvokeStatic: return ['InvokeStatic', { block: c.getBlock(op1) }];
+      case Op.InvokeDynamic: return ['InvokeDynamic', { invoker: c.getOther(op1) }];
+      case Op.Jump: return ['Jump', { to: op1 }];
+      case Op.JumpIf: return ['JumpIf', { to: op1 }];
+      case Op.JumpUnless: return ['JumpUnless', { to: op1 }];
+      case Op.PushFrame: return ['PushFrame', {}];
+      case Op.PopFrame: return ['PopFrame', {}];
+      case Op.Enter: return ['Enter', { args: op1 }];
+      case Op.Exit: return ['Exit', {}];
+      case Op.Test: return ['ToBoolean', {}];
 
-    /// LISTS
-    case Op.EnterList: return ['EnterList', { start: op1 }];
-    case Op.ExitList: return ['ExitList', {}];
-    case Op.PutIterator: return ['PutIterator', {}];
-    case Op.Iterate: return ['Iterate', { end: op1 }];
+      /// LISTS
+      case Op.EnterList: return ['EnterList', { start: op1 }];
+      case Op.ExitList: return ['ExitList', {}];
+      case Op.PutIterator: return ['PutIterator', {}];
+      case Op.Iterate: return ['Iterate', { end: op1 }];
 
-    /// COMPONENTS
-    case Op.PushComponentManager: return ['PushComponentManager', { definition: c.getOther(op1) }];
-    case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', {}];
-    case Op.InitializeComponentState: return ['InitializeComponentState', {}];
-    case Op.PushArgs: return ['PushArgs', { positional: op1, synthetic: !!op2 }];
-    case Op.PrepareArgs: return ['PrepareArgs', { state: Register[op1] }];
-    case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: Register[op2] }];
-    case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor', {}];
-    case Op.PushComponentOperations: return ['PushComponentOperations', {}];
-    case Op.GetComponentSelf: return ['GetComponentSelf', { state: Register[op1] }];
-    case Op.GetComponentLayout: return ['GetComponentLayout', { state: Register[op1] }];
-    case Op.BeginComponentTransaction: return ['BeginComponentTransaction', {}];
-    case Op.CommitComponentTransaction: return ['CommitComponentTransaction', {}];
-    case Op.DidCreateElement: return ['DidCreateElement', { state: Register[op1] }];
-    case Op.DidRenderLayout: return ['DidRenderLayout', {}];
+      /// COMPONENTS
+      case Op.PushComponentManager: return ['PushComponentManager', { definition: c.getOther(op1) }];
+      case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', {}];
+      case Op.InitializeComponentState: return ['InitializeComponentState', {}];
+      case Op.PushArgs: return ['PushArgs', { positional: op1, synthetic: !!op2 }];
+      case Op.PrepareArgs: return ['PrepareArgs', { state: Register[op1] }];
+      case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: Register[op2] }];
+      case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor', {}];
+      case Op.PushComponentOperations: return ['PushComponentOperations', {}];
+      case Op.GetComponentSelf: return ['GetComponentSelf', { state: Register[op1] }];
+      case Op.GetComponentLayout: return ['GetComponentLayout', { state: Register[op1] }];
+      case Op.BeginComponentTransaction: return ['BeginComponentTransaction', {}];
+      case Op.CommitComponentTransaction: return ['CommitComponentTransaction', {}];
+      case Op.DidCreateElement: return ['DidCreateElement', { state: Register[op1] }];
+      case Op.DidRenderLayout: return ['DidRenderLayout', {}];
 
-    /// PARTIALS
-    case Op.GetPartialTemplate: return ['CompilePartial', {}];
-    case Op.ResolveMaybeLocal: return ['ResolveMaybeLocal', { name: c.getString(op1)} ];
+      /// PARTIALS
+      case Op.GetPartialTemplate: return ['CompilePartial', {}];
+      case Op.ResolveMaybeLocal: return ['ResolveMaybeLocal', { name: c.getString(op1)} ];
 
-    /// DEBUGGER
-    case Op.Debugger: return ['Debugger', { symbols: c.getOther(op1), evalInfo: c.getArray(op2) }];
+      /// DEBUGGER
+      case Op.Debugger: return ['Debugger', { symbols: c.getOther(op1), evalInfo: c.getArray(op2) }];
 
-    /// STATEMENTS
+      /// STATEMENTS
 
-    case Op.Size: throw unreachable();
+      case Op.Size: throw unreachable();
+    }
+
+    throw unreachable();
   }
 
-  throw unreachable();
+  return ['', {}];
 }
 
 export type Operand1 = number;
@@ -1068,17 +1075,15 @@ export class AppendOpcodes {
 
   evaluate(vm: VM, opcode: Opcode, type: number) {
     let func = this.evaluateOpcode[type];
-    let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
-    let verbose = window['GLIMMER_DEBUG'];
-
-    if (verbose === true) {
+    if (!CI && DEBUG) {
+      let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
       console.log(`${vm['pc'] - 4}. ${logOpcode(name, params)}`);
+      // console.log(...debug(vm.constants, type, opcode.op1, opcode.op2, opcode.op3));
     }
 
-    // console.log(...debug(vm.constants, type, opcode.op1, opcode.op2, opcode.op3));
     func(vm, opcode);
 
-    if (verbose === true) {
+    if (!CI && DEBUG) {
       console.log('%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O', 'color: orange', vm['pc'], vm['ra'], vm['fp'], vm['sp'], vm['s0'], vm['s1'], vm['t0'], vm['t1']);
       console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
       console.log('%c -> scope', 'color: green', vm.scope()['slots'].map(s => s && s['value'] ? s['value']() : s));
