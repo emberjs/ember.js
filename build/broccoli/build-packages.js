@@ -1,5 +1,6 @@
 const buildPackage = require('@glimmer/build');
 const buildTestsIndex = require('@glimmer/build/lib/build-tests-index');
+const plugins = require('@glimmer/build/lib/default-es5-plugins');
 const funnel = require('broccoli-funnel');
 const merge = require('broccoli-merge-trees');
 const Filter = require('broccoli-persistent-filter');
