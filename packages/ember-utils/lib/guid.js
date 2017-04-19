@@ -31,10 +31,6 @@ export function uuid() {
  */
 const GUID_PREFIX = 'ember';
 
-// Used for guid generation...
-const numberCache  = [];
-const stringCache  = {};
-
 /**
   A unique key used to assign guids and other private metadata to objects.
   If you inspect an object in your browser debugger you will often see these.
@@ -144,24 +140,8 @@ export function guidFor(obj) {
 
   // Don't allow prototype changes to String etc. to change the guidFor
   switch (type) {
-    case 'number':
-      ret = numberCache[obj];
-
-      if (!ret) {
-        ret = numberCache[obj] = `nu${obj}`;
-      }
-
-      return ret;
-
-    case 'string':
-      ret = stringCache[obj];
-
-      if (!ret) {
-        ret = stringCache[obj] = `st${uuid()}`;
-      }
-
-      return ret;
-
+    case 'number': return '' + obj;
+    case 'string': return obj;
     case 'boolean':
       return obj ? '(true)' : '(false)';
 
