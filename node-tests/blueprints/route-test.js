@@ -18,6 +18,8 @@ var chai = require('ember-cli-blueprint-test-helpers/chai');
 var expect = chai.expect;
 var file = chai.file;
 
+var generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+
 describe('Acceptance: ember generate and destroy route', function() {
   setupTestHooks(this);
 
@@ -81,6 +83,54 @@ describe('Acceptance: ember generate and destroy route', function() {
       .then(() => expect(file('app/router.js'))
         .to.not.contain('this.route(\'foo\'')
         .to.not.contain('path: \':foo_id/show\''));
+  });
+
+  it('route --reset-namespace', function() {
+    var args = ['route', 'parent/child', '--reset-namespace'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, (_file) => {
+        expect(_file('app/routes/child.js'))
+          .to.contain('import Ember from \'ember\';')
+          .to.contain('export default Ember.Route.extend({\n});');
+
+        expect(_file('app/templates/child.hbs'))
+          .to.contain('{{outlet}}');
+
+        expect(_file('tests/unit/routes/child-test.js'))
+          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
+          .to.contain('moduleFor(\'route:child\'');
+
+        expect(file('app/router.js'))
+          .to.contain('this.route(\'parent\', {')
+          .to.contain('this.route(\'child\', {')
+          .to.contain('resetNamespace: true')
+          .to.contain('});');
+      }));
+  });
+
+  it('route --reset-namespace --pod', function() {
+    var args = ['route', 'parent/child', '--reset-namespace', '--pod'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, (_file) => {
+        expect(_file('app/child/route.js'))
+          .to.contain('import Ember from \'ember\';')
+          .to.contain('export default Ember.Route.extend({\n});');
+
+        expect(_file('app/child/template.hbs'))
+          .to.contain('{{outlet}}');
+
+        expect(_file('tests/unit/child/route-test.js'))
+          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
+          .to.contain('moduleFor(\'route:child\'');
+
+        expect(file('app/router.js'))
+          .to.contain('this.route(\'parent\', {')
+          .to.contain('this.route(\'child\', {')
+          .to.contain('resetNamespace: true')
+          .to.contain('});');
+      }));
   });
 
   it('route index', function() {
@@ -417,11 +467,29 @@ describe('Acceptance: ember generate and destroy route', function() {
         { name: 'ember-cli-qunit', delete: true },
         { name: 'ember-cli-mocha', dev: true }
       ]))
-
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.11.0'))
       .then(() => emberGenerateDestroy(args, (_file) => {
         expect(_file('tests/unit/routes/foo-test.js'))
           .to.contain('import { describeModule, it } from \'ember-mocha\';')
           .to.contain('describeModule(\'route:foo\', \'Unit | Route | foo\'');
+      }));
+  });
+
+  it('route-test foo for mocha v0.12+', function() {
+    var args = ['route-test', 'foo'];
+
+    return emberNew()
+      .then(() => modifyPackages([
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ]))
+      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.12.0'))
+      .then(() => emberGenerateDestroy(args, (_file) => {
+        expect(_file('tests/unit/routes/foo-test.js'))
+          .to.contain('import { describe, it } from \'mocha\';')
+          .to.contain('import { setupTest } from \'ember-mocha\';')
+          .to.contain('describe(\'Unit | Route | foo\', function() {')
+          .to.contain('setupTest(\'route:foo\',');
       }));
   });
 });

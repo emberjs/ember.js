@@ -1,9 +1,8 @@
 import { OWNER } from 'ember-utils';
 import {
-  StatementSyntax,
-  ValueReference,
+  PrimitiveReference,
   ComponentDefinition
-} from 'glimmer-runtime';
+} from '@glimmer/runtime';
 import {
   AttributeBinding,
   ClassNameBinding,
@@ -17,12 +16,15 @@ import {
   BOUNDS
 } from '../component';
 import {
-  assert,
-  runInDebug,
   get,
   _instrumentStart
 } from 'ember-metal';
 import {
+  assert
+} from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
+import {
+  dispatchLifeCycleHook,
   setViewElement
 } from 'ember-views';
 import {
@@ -30,6 +32,7 @@ import {
   ComponentArgs
 } from '../utils/process-args';
 import { privatize as P } from 'container';
+import AbstractManager from './abstract-manager';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -62,7 +65,7 @@ function processComponentInitializationAssertions(component, props) {
 }
 
 export function validatePositionalParameters(named, positional, positionalParamsDefinition) {
-  runInDebug(() => {
+  if (DEBUG) {
     if (!named || !positional || !positional.length) {
       return;
     }
@@ -85,7 +88,7 @@ export function validatePositionalParameters(named, positional, positionalParams
         );
       }
     }
-  });
+  }
 }
 
 function aliasIdToElementId(args, props) {
@@ -121,21 +124,6 @@ function applyAttributeBindings(element, attributeBindings, component, operation
 
   if (seen.indexOf('style') === -1) {
     IsVisibleBinding.install(element, component, operations);
-  }
-}
-
-export class CurlyComponentSyntax extends StatementSyntax {
-  constructor(args, definition, templates, symbolTable) {
-    super();
-    this.args = args;
-    this.definition = definition;
-    this.templates = templates;
-    this.symbolTable = symbolTable;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.static(this.definition, this.args, this.templates, this.symbolTable, this.shadow);
   }
 }
 
@@ -177,19 +165,26 @@ function rerenderInstrumentDetails(component) {
   return component.instrumentDetails({ initialRender: false });
 }
 
-class CurlyComponentManager {
+class CurlyComponentManager extends AbstractManager {
   prepareArgs(definition, args) {
-    validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.positionalParams);
+    if (definition.ComponentClass) {
+      validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.class.positionalParams);
+    }
 
     return gatherArgs(args, definition);
   }
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
+    if (DEBUG) {
+      this._pushToDebugStack(`component:${definition.name}`, environment)
+    }
+
     let parentView = dynamicScope.view;
 
-    let klass = definition.ComponentClass;
+    let factory = definition.ComponentClass;
+
     let processedArgs = ComponentArgs.create(args);
-    let { attrs, props } = processedArgs.value();
+    let { props } = processedArgs.value();
 
     aliasIdToElementId(args, props);
 
@@ -198,7 +193,7 @@ class CurlyComponentManager {
 
     props._targetObject = callerSelfRef.value();
 
-    let component = klass.create(props);
+    let component = factory.create(props);
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
@@ -208,11 +203,17 @@ class CurlyComponentManager {
       parentView.appendChild(component);
     }
 
-    component.trigger('didInitAttrs', { attrs });
-    component.trigger('didReceiveAttrs', { newAttrs: attrs });
+    // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
+    if (component.tagName === '') {
+      if (environment.isInteractive) {
+        component.trigger('willRender');
+      }
 
-    if (environment.isInteractive) {
-      component.trigger('willRender');
+      component._transitionTo('hasElement');
+
+      if (environment.isInteractive) {
+        component.trigger('willInsertElement');
+      }
     }
 
     let bucket = new ComponentStateBucket(environment, component, processedArgs, finalizer);
@@ -221,7 +222,13 @@ class CurlyComponentManager {
       bucket.classRef = args.named.get('class');
     }
 
-    processComponentInitializationAssertions(component, props);
+    if (DEBUG) {
+      processComponentInitializationAssertions(component, props);
+    }
+
+    if (environment.isInteractive && component.tagName !== '') {
+      component.trigger('willRender');
+    }
 
     return bucket;
   }
@@ -293,6 +300,10 @@ class CurlyComponentManager {
   didRenderLayout(bucket, bounds) {
     bucket.component[BOUNDS] = bounds;
     bucket.finalize();
+
+    if (DEBUG) {
+      this.debugStack.pop();
+    }
   }
 
   getTag({ component }) {
@@ -310,6 +321,10 @@ class CurlyComponentManager {
   update(bucket, _, dynamicScope) {
     let { component, args, argsRevision, environment } = bucket;
 
+    if (DEBUG) {
+       this._pushToDebugStack(component._debugContainerKey, environment)
+    }
+
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
     if (!args.tag.validate(argsRevision)) {
@@ -324,8 +339,8 @@ class CurlyComponentManager {
       component.setProperties(props);
       component[IS_DISPATCHING_ATTRS] = false;
 
-      component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
-      component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });
+      dispatchLifeCycleHook(component, 'didUpdateAttrs', oldAttrs, newAttrs);
+      dispatchLifeCycleHook(component, 'didReceiveAttrs', oldAttrs, newAttrs);
     }
 
     if (environment.isInteractive) {
@@ -336,6 +351,10 @@ class CurlyComponentManager {
 
   didUpdateLayout(bucket) {
     bucket.finalize();
+
+    if (DEBUG) {
+      this.debugStack.pop();
+    }
   }
 
   didUpdate({ component, environment }) {
@@ -354,20 +373,32 @@ const MANAGER = new CurlyComponentManager();
 
 class TopComponentManager extends CurlyComponentManager {
   create(environment, definition, args, dynamicScope, currentScope, hasBlock) {
-    let component = definition.ComponentClass;
+    let component = definition.ComponentClass.create();
+
+    if (DEBUG) {
+      this._pushToDebugStack(component._debugContainerKey, environment)
+    }
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
     dynamicScope.view = component;
 
-    component.trigger('didInitAttrs');
-    component.trigger('didReceiveAttrs');
+    // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
+    if (component.tagName === '') {
+      if (environment.isInteractive) {
+        component.trigger('willRender');
+      }
 
-    if (environment.isInteractive) {
-      component.trigger('willRender');
+      component._transitionTo('hasElement');
+
+      if (environment.isInteractive) {
+        component.trigger('willInsertElement');
+      }
     }
 
-    processComponentInitializationAssertions(component, {});
+    if (DEBUG) {
+      processComponentInitializationAssertions(component, {});
+    }
 
     return new ComponentStateBucket(environment, component, args, finalizer);
   }
@@ -378,7 +409,7 @@ const ROOT_MANAGER = new TopComponentManager();
 function tagName(vm) {
   let { tagName } = vm.dynamicScope().view;
 
-  return new ValueReference(tagName === '' ? null : tagName || 'div');
+  return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
 }
 
 function ariaRole(vm) {
@@ -395,7 +426,12 @@ export class CurlyComponentDefinition extends ComponentDefinition {
 
 export class RootComponentDefinition extends ComponentDefinition {
   constructor(instance) {
-    super('-root', ROOT_MANAGER, instance);
+    super('-root', ROOT_MANAGER, {
+      class: instance.constructor,
+      create() {
+        return instance;
+      }
+    });
     this.template = undefined;
     this.args = undefined;
   }

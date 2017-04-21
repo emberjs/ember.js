@@ -139,7 +139,7 @@
 
         var EmberDevTestHelperAssert = window.Ember.__loader.require('ember-dev/test-helper/index')['default'];
         var setupQUnit = window.Ember.__loader.require('ember-dev/test-helper/setup-qunit')['default'];
-        var debugModule = window.Ember.__loader.require('ember-metal/debug');
+        var debugModule = window.Ember.__loader.require('ember-debug');
         var testHelpers = new EmberDevTestHelperAssert({
           Ember: window.Ember,
           runningProdBuild: EmberDev.runningProdBuild,
@@ -159,7 +159,7 @@
         // Enable/disable livereload
         QUnit.config.urlConfig.push({ id: 'livereload', label: 'Live Reload'});
         // Handle JSHint
-        QUnit.config.urlConfig.push('nojshint');
+        QUnit.config.urlConfig.push({ id: 'nolint', label: 'Skip ESLint'});
         QUnit.config.urlConfig.push('forceskip');
 
         if (QUnit.config.seed) {
@@ -186,9 +186,9 @@
       for (var moduleName in Ember.__loader.registry) {
         if (!moduleName.match(packageRegexp))   { continue; }
         if (moduleName.match(skipPackageRegexp)) { continue; }
+        if (QUnit.urlParams.nolint && moduleName.match(/lint-test$/)) { continue; }
 
         if (moduleName.match(/[_-]test$/)) { Ember.__loader.require(moduleName); }
-        if (!QUnit.urlParams.nojshint && moduleName.match(/[-_.]jshint$/)) { Ember.__loader.require(moduleName); }
       }
     </script>
 

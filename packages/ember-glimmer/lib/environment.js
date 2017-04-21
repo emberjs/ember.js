@@ -1,10 +1,13 @@
 import { guidFor, OWNER } from 'ember-utils';
-import { Cache, assert, warn, runInDebug } from 'ember-metal';
+import { Cache, _instrumentStart } from 'ember-metal';
+import { assert, warn } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
+import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
 import {
   lookupPartial,
   hasPartial,
   lookupComponent,
-  STYLE_WARNING
+  constructStyleDeprecationMessage
 } from 'ember-views';
 import {
   Environment as GlimmerEnvironment,
@@ -12,30 +15,28 @@ import {
   isSafeString,
   compileLayout,
   getDynamicVar
-} from 'glimmer-runtime';
+} from '@glimmer/runtime';
 import {
-  CurlyComponentSyntax,
   CurlyComponentDefinition
 } from './syntax/curly-component';
-import { findSyntaxBuilder } from './syntax';
-import { DynamicComponentSyntax } from './syntax/dynamic-component';
+import {
+  populateMacros
+} from './syntax';
 import createIterable from './utils/iterable';
 import {
   ConditionalReference,
   SimpleHelperReference,
   ClassBasedHelperReference
 } from './utils/references';
+import DebugStack from './utils/debug-stack';
 
 import {
   inlineIf,
   inlineUnless
 } from './helpers/if-unless';
-import { wrapComponentClassAttribute } from './utils/bindings';
-
 import { default as action } from './helpers/action';
 import { default as componentHelper } from './helpers/component';
 import { default as concat } from './helpers/concat';
-import { default as debuggerHelper } from './helpers/debugger';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
@@ -51,12 +52,13 @@ import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
-
-const builtInComponents = {
-  textarea: '-text-area'
-};
+import { FACTORY_FOR } from 'container';
 
 import { default as ActionModifierManager } from './modifiers/action';
+
+function instrumentationPayload(name) {
+  return { object: `component:${name}` };
+}
 
 export default class Environment extends GlimmerEnvironment {
   static create(options) {
@@ -69,14 +71,15 @@ export default class Environment extends GlimmerEnvironment {
     this.isInteractive = owner.lookup('-environment:main').isInteractive;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
-    this.destroyedComponents = undefined;
+    this.destroyedComponents = [];
 
     installPlatformSpecificProtocolForURL(this);
 
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
-      let { component: ComponentClass, layout } = lookupComponent(owner, name, { source });
-      if (ComponentClass || layout) {
-        return new CurlyComponentDefinition(name, ComponentClass, layout);
+      let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
+
+      if (componentFactory || layout) {
+        return new CurlyComponentDefinition(name, componentFactory, layout);
       }
     }, ({ name, source, owner }) => {
       let expandedName = source && owner._resolveLocalLookupName(name, source) || name;
@@ -96,10 +99,11 @@ export default class Environment extends GlimmerEnvironment {
     }, ({ Template, owner }) => guidFor(owner) + '|' + Template.id);
 
     this._compilerCache = new Cache(10, Compiler => {
-      return new Cache(2000, ({ template }) => {
+      return new Cache(2000, (template) => {
         let compilable = new Compiler(template);
         return compileLayout(compilable, this);
-      }, ({ template, owner })=> {
+      }, (template)=> {
+        let owner = template.meta.owner;
         return guidFor(owner) + '|' + template.id;
       });
     }, Compiler => Compiler.id);
@@ -113,7 +117,6 @@ export default class Environment extends GlimmerEnvironment {
       action,
       component: componentHelper,
       concat,
-      debugger: debuggerHelper,
       get,
       hash,
       loc,
@@ -130,105 +133,16 @@ export default class Environment extends GlimmerEnvironment {
       '-html-safe': htmlSafeHelper,
       '-get-dynamic-var': getDynamicVar
     };
+
+    if (DEBUG) {
+      this.debugStack = new DebugStack()
+    }
   }
 
-  // Hello future traveler, welcome to the world of syntax refinement.
-  // The method below is called by Glimmer's runtime compiler to allow
-  // us to take generic statement syntax and refine it to more meaniful
-  // syntax for Ember's use case. This on the fly switch-a-roo sounds fine
-  // and dandy, however Ember has precedence on statement refinement that you
-  // need to be aware of. The presendence for language constructs is as follows:
-  //
-  // ------------------------
-  // Native & Built-in Syntax
-  // ------------------------
-  //   User-land components
-  // ------------------------
-  //     User-land helpers
-  // ------------------------
-  //
-  // The one caveat here is that Ember also allows for dashed references that are
-  // not a component or helper:
-  //
-  // export default Component.extend({
-  //   'foo-bar': 'LAME'
-  // });
-  //
-  // {{foo-bar}}
-  //
-  // The heuristic for the above situation is a dashed "key" in inline form
-  // that does not resolve to a defintion. In this case refine statement simply
-  // isn't going to return any syntax and the Glimmer engine knows how to handle
-  // this case.
-
-  refineStatement(statement, symbolTable) {
-    // 1. resolve any native syntax – if, unless, with, each, and partial
-    let nativeSyntax = super.refineStatement(statement, symbolTable);
-
-    if (nativeSyntax) {
-      return nativeSyntax;
-    }
-
-    let {
-      appendType,
-      isSimple,
-      isInline,
-      isBlock,
-      isModifier,
-      key,
-      path,
-      args,
-      templates
-    } = statement;
-
-    assert(`You attempted to overwrite the built-in helper "${key}" which is not allowed. Please rename the helper.`, !(this.builtInHelpers[key] && this.owner.hasRegistration(`helper:${key}`)));
-
-    if (isSimple && (isInline || isBlock)) {
-      // 2. built-in syntax
-
-      let RefinedSyntax = findSyntaxBuilder(key);
-      if (RefinedSyntax) {
-        return RefinedSyntax.create(this, args, templates, symbolTable);
-      }
-
-      let internalKey = builtInComponents[key];
-      let definition = null;
-
-      if (internalKey) {
-        definition = this.getComponentDefinition([internalKey], symbolTable);
-      } else if (key.indexOf('-') >= 0) {
-        definition = this.getComponentDefinition(path, symbolTable);
-      }
-
-      if (definition) {
-        wrapComponentClassAttribute(args);
-
-        return new CurlyComponentSyntax(args, definition, templates, symbolTable);
-      }
-
-      assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(path, symbolTable));
-    }
-
-    if (!isSimple && appendType === 'unknown') {
-      return statement.original.deopt();
-    }
-
-    if (!isSimple && path) {
-      return DynamicComponentSyntax.fromPath(this, path, args, templates, symbolTable);
-    }
-
-    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(path, symbolTable));
-
-    assert(`Helpers may not be used in the element form.`, (() => {
-      if (nativeSyntax) { return true; }
-      if (!key) { return true; }
-
-      if (isModifier && !this.hasModifier(path, symbolTable) && this.hasHelper(path, symbolTable)) {
-        return false;
-      }
-
-      return true;
-    })());
+  macros() {
+    let macros = super.macros();
+    populateMacros(macros.blocks, macros.inlines);
+    return macros;
   }
 
   hasComponentDefinition() {
@@ -237,11 +151,13 @@ export default class Environment extends GlimmerEnvironment {
 
   getComponentDefinition(path, symbolTable) {
     let name = path[0];
+    let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let source = blockMeta.moduleName && `template:${blockMeta.moduleName}`;
-
-    return this._definitionCache.get({ name, source, owner });
+    let definition = this._definitionCache.get({ name, source, owner });
+    finalizer();
+    return definition;
   }
 
   // normally templates should be exported at the proper module name
@@ -252,9 +168,9 @@ export default class Environment extends GlimmerEnvironment {
   }
 
   // a Compiler can wrap the template so it needs its own cache
-  getCompiledBlock(Compiler, template, owner) {
+  getCompiledBlock(Compiler, template) {
     let compilerCache = this._compilerCache.get(Compiler);
-    return compilerCache.get({ template, owner });
+    return compilerCache.get(template);
   }
 
   hasPartial(name, symbolTable) {
@@ -275,16 +191,7 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  hasHelper(nameParts, symbolTable) {
-    assert('The first argument passed into `hasHelper` should be an array', Array.isArray(nameParts));
-
-    // helpers are not allowed to include a dot in their invocation
-    if (nameParts.length > 1) {
-      return false;
-    }
-
-    let name = nameParts[0];
-
+  hasHelper(name, symbolTable) {
     if (this.builtInHelpers[name]) {
       return true;
     }
@@ -297,10 +204,7 @@ export default class Environment extends GlimmerEnvironment {
       owner.hasRegistration(`helper:${name}`);
   }
 
-  lookupHelper(nameParts, symbolTable) {
-    assert('The first argument passed into `lookupHelper` should be an array', Array.isArray(nameParts));
-
-    let name = nameParts[0];
+  lookupHelper(name, symbolTable) {
     let helper = this.builtInHelpers[name];
 
     if (helper) {
@@ -310,39 +214,32 @@ export default class Environment extends GlimmerEnvironment {
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
-
-    helper = owner.lookup(`helper:${name}`, options) || owner.lookup(`helper:${name}`);
+    let helperFactory = owner[FACTORY_FOR](`helper:${name}`, options) || owner[FACTORY_FOR](`helper:${name}`);
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-    if (helper.isHelperInstance) {
-      return (vm, args) => SimpleHelperReference.create(helper.compute, args);
-    } else if (helper.isHelperFactory) {
-      return (vm, args) => ClassBasedHelperReference.create(helper, vm, args);
+    if (helperFactory.class.isHelperInstance) {
+      return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
+    } else if (helperFactory.class.isHelperFactory) {
+      if (!EMBER_NO_DOUBLE_EXTEND) {
+        helperFactory = helperFactory.create();
+      }
+      return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
     } else {
-      throw new Error(`${nameParts} is not a helper`);
+      throw new Error(`${name} is not a helper`);
     }
   }
 
-  hasModifier(nameParts) {
-    assert('The first argument passed into `hasModifier` should be an array', Array.isArray(nameParts));
-
-    // modifiers are not allowed to include a dot in their invocation
-    if (nameParts.length > 1) {
-      return false;
-    }
-
-    return !!this.builtInModifiers[nameParts[0]];
+  hasModifier(name) {
+    return !!this.builtInModifiers[name];
   }
 
-  lookupModifier(nameParts) {
-    assert('The first argument passed into `lookupModifier` should be an array', Array.isArray(nameParts));
-
-    let modifier = this.builtInModifiers[nameParts[0]];
+  lookupModifier(name) {
+    let modifier = this.builtInModifiers[name];
 
     if (modifier) {
       return modifier;
     } else {
-      throw new Error(`${nameParts} is not a modifier`);
+      throw new Error(`${name} is not a modifier`);
     }
   }
 
@@ -375,16 +272,16 @@ export default class Environment extends GlimmerEnvironment {
     this.inTransaction = true;
 
     super.begin();
-
-    this.destroyedComponents = [];
   }
 
   commit() {
+    let destroyedComponents = this.destroyedComponents;
+    this.destroyedComponents = [];
     // components queued for destruction must be destroyed before firing
     // `didCreate` to prevent errors when removing and adding a component
     // with the same name (would throw an error when added to view registry)
-    for (let i = 0; i < this.destroyedComponents.length; i++) {
-      this.destroyedComponents[i].destroy();
+    for (let i = 0; i < destroyedComponents.length; i++) {
+      destroyedComponents[i].destroy();
     }
 
     super.commit();
@@ -393,10 +290,10 @@ export default class Environment extends GlimmerEnvironment {
   }
 }
 
-runInDebug(() => {
+if (DEBUG) {
   class StyleAttributeManager extends AttributeManager {
     setAttribute(dom, element, value) {
-      warn(STYLE_WARNING, (() => {
+      warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
         }
@@ -406,7 +303,7 @@ runInDebug(() => {
     }
 
     updateAttribute(dom, element, value) {
-      warn(STYLE_WARNING, (() => {
+      warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
         }
@@ -425,4 +322,4 @@ runInDebug(() => {
 
     return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
   };
-});
+}

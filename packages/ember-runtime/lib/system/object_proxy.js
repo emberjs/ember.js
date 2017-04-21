@@ -1,4 +1,4 @@
-import EmberObject from './object';
+import FrameworkObject from './object';
 import _ProxyMixin from '../mixins/-proxy';
 
 /**
@@ -67,8 +67,8 @@ import _ProxyMixin from '../mixins/-proxy';
   @class ObjectProxy
   @namespace Ember
   @extends Ember.Object
-  @extends Ember._ProxyMixin
+  @uses Ember.ProxyMixin
   @public
 */
 
-export default EmberObject.extend(_ProxyMixin);
+export default FrameworkObject.extend(_ProxyMixin);

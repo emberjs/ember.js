@@ -10,7 +10,10 @@ import {
   markObjectAsDirty
 } from './tags';
 import ObserverSet from './observer_set';
-import isEnabled from './features';
+import {
+  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
+  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER
+} from 'ember/features';
 import { assertNotRendered } from './transaction';
 
 export let PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
@@ -110,14 +113,12 @@ function propertyDidChange(obj, keyName, _meta) {
 
   if (meta && meta.isSourceDestroying()) { return; }
 
-  markObjectAsDirty(meta);
+  markObjectAsDirty(meta, keyName);
 
-  if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-      isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+  if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
     assertNotRendered(obj, keyName, meta);
   }
 }
-
 
 let WILL_SEEN, DID_SEEN;
 // called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)
@@ -225,7 +226,7 @@ function beginPropertyChanges() {
 */
 function endPropertyChanges() {
   deferred--;
-  if (deferred<=0) {
+  if (deferred <= 0) {
     beforeObserverSet.clear();
     observerSet.flush();
   }
@@ -259,7 +260,7 @@ function changeProperties(callback, binding) {
 function notifyBeforeObservers(obj, keyName, meta) {
   if (meta && meta.isSourceDestroying()) { return; }
 
-  let eventName = keyName + ':before';
+  let eventName = `${keyName}:before`;
   let listeners, added;
   if (deferred) {
     listeners = beforeObserverSet.add(obj, keyName, eventName);
@@ -273,7 +274,7 @@ function notifyBeforeObservers(obj, keyName, meta) {
 function notifyObservers(obj, keyName, meta) {
   if (meta && meta.isSourceDestroying()) { return; }
 
-  let eventName = keyName + ':change';
+  let eventName = `${keyName}:change`;
   let listeners;
   if (deferred) {
     listeners = observerSet.add(obj, keyName, eventName);

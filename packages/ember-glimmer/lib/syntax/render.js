@@ -3,15 +3,16 @@
 @submodule ember-glimmer
 */
 import {
-  ArgsSyntax,
-  StatementSyntax,
   ComponentDefinition
-} from 'glimmer-runtime';
-import { ConstReference, isConst } from 'glimmer-reference';
-import { assert } from 'ember-metal';
+} from '@glimmer/runtime';
+import { ConstReference, isConst } from '@glimmer/reference';
+import { assert } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 import { RootReference } from '../utils/references';
-import { generateControllerFactory } from 'ember-routing';
+import { generateController, generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
+import { FACTORY_FOR } from 'container';
+import AbstractManager from './abstract-manager';
 
 function makeComponentDefinition(vm) {
   let env     = vm.env;
@@ -47,6 +48,7 @@ function makeComponentDefinition(vm) {
     return new ConstReference(new RenderDefinition(controllerName, template, env, NON_SINGLETON_RENDER_MANAGER));
   }
 }
+
 
 /**
   Calling ``{{render}}`` from within a template will insert another
@@ -117,27 +119,17 @@ function makeComponentDefinition(vm) {
   @return {String} HTML string
   @public
 */
-export class RenderSyntax extends StatementSyntax {
-  static create(environment, args, templates, symbolTable) {
-    return new this(environment, args, templates, symbolTable);
+export function renderMacro(path, params, hash, builder) {
+  if (!params) {
+    params = [];
   }
-
-  constructor(environment, args, templates, symbolTable) {
-    super();
-    this.definitionArgs = args;
-    this.definition = makeComponentDefinition;
-    this.args = ArgsSyntax.fromPositionalArgs(args.positional.slice(1, 2));
-    this.templates = null;
-    this.symbolTable = symbolTable;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.templates, this.symbolTable, this.shadow);
-  }
+  let definitionArgs = [params.slice(0), hash, null, null];
+  let args = [params.slice(1), hash, null, null];
+  builder.component.dynamic(definitionArgs, makeComponentDefinition, args, builder.symbolTable);
+  return true;
 }
 
-class AbstractRenderManager {
+class AbstractRenderManager extends AbstractManager {
   prepareArgs(definition, args) {
     return args;
   }
@@ -168,10 +160,20 @@ class AbstractRenderManager {
   didUpdate() {}
 }
 
+if (DEBUG) {
+  AbstractRenderManager.prototype.didRenderLayout = function() {
+    this.debugStack.pop();
+  };
+}
+
 class SingletonRenderManager extends AbstractRenderManager {
   create(environment, definition, args, dynamicScope) {
     let { name, env } = definition;
-    let controller = env.owner.lookup(`controller:${name}`);
+    let controller = env.owner.lookup(`controller:${name}`) || generateController(env.owner, name);
+
+    if (DEBUG) {
+      this._pushToDebugStack(`controller:${name} (with the render helper)`, environment);
+    }
 
     if (dynamicScope.rootOutletState) {
       dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
@@ -187,9 +189,14 @@ class NonSingletonRenderManager extends AbstractRenderManager {
   create(environment, definition, args, dynamicScope) {
     let { name, env } = definition;
     let modelRef = args.positional.at(0);
+    let controllerFactory = env.owner[FACTORY_FOR](`controller:${name}`);
 
-    let factory = env.owner._lookupFactory(`controller:${name}`) || generateControllerFactory(env.owner, name);
+    let factory = controllerFactory || generateControllerFactory(env.owner, name);
     let controller = factory.create({ model: modelRef.value() });
+
+    if (DEBUG) {
+      this._pushToDebugStack(`controller:${name} (with the render helper)`, environment);
+    }
 
     if (dynamicScope.rootOutletState) {
       dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);

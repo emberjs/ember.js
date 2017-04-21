@@ -50,7 +50,7 @@ RSVP.resolve()
     console.log('error');
     console.log(error);
     process.exit(1);
-  }).then(function(){
+  }).then(function() {
     console.log('success');
     process.exit(0);
   });

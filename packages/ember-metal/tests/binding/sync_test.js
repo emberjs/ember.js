@@ -1,15 +1,13 @@
 import { testBoth } from 'internal-test-helpers';
-import run from '../../run_loop';
 import {
-  addObserver
-} from '../../observer';
-import { bind } from '../../binding';
-import { computed } from '../../computed';
-import { defineProperty } from '../../properties';
-import {
+  run,
+  addObserver,
+  bind,
+  computed,
+  defineProperty,
   propertyWillChange,
   propertyDidChange
-} from '../../property_events';
+} from '../..';
 
 QUnit.module('system/binding/sync_test.js');
 

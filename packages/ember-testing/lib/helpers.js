@@ -1,3 +1,4 @@
+import { EMBER_TESTING_RESUME_TEST } from 'ember/features';
 import {
   registerHelper as helper,
   registerAsyncHelper as asyncHelper
@@ -11,7 +12,7 @@ import fillIn from './helpers/fill_in';
 import find from './helpers/find';
 import findWithAssert from './helpers/find_with_assert';
 import keyEvent from './helpers/key_event';
-import pauseTest from './helpers/pause_test';
+import { pauseTest, resumeTest } from './helpers/pause_test';
 import triggerEvent from './helpers/trigger_event';
 import visit from './helpers/visit';
 import wait from './helpers/wait';
@@ -30,3 +31,7 @@ helper('findWithAssert', findWithAssert);
 helper('currentRouteName', currentRouteName);
 helper('currentPath', currentPath);
 helper('currentURL', currentURL);
+
+if (EMBER_TESTING_RESUME_TEST) {
+  helper('resumeTest', resumeTest);
+}

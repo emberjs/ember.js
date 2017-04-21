@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/* eslint-env node */
 
 var testInfo                 = require('ember-cli-test-info');
 var stringUtils              = require('ember-cli-string-utils');
@@ -12,10 +12,10 @@ module.exports = useTestFrameworkDetector({
     {
       name: 'test-type',
       type: ['integration', 'unit'],
-      default: 'unit',
-      aliases:[
-        { 'i': 'integration'},
-        { 'u': 'unit'},
+      default: 'integration',
+      aliases: [
+        { 'i': 'integration' },
+        { 'u': 'unit' },
         { 'integration': 'integration' },
         { 'unit': 'unit' }
       ]
@@ -25,20 +25,20 @@ module.exports = useTestFrameworkDetector({
   fileMapTokens: function() {
     return {
       __testType__: function(options) {
-        return options.locals.testType || 'unit';
+        return options.locals.testType || 'integration';
       }
     };
   },
 
   locals: function(options) {
-    var testType = options.testType || 'unit';
+    var testType = options.testType || 'integration';
     var testName = testType === 'integration' ? 'Integration' : 'Unit';
     var friendlyTestName = testInfo.name(options.entity.name, testName, 'Helper');
 
     return {
       friendlyTestName: friendlyTestName,
       dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix),
-      testType:testType
+      testType: testType
     };
   },
 

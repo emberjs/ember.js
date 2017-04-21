@@ -1,4 +1,4 @@
-import { Mixin } from '../../mixin';
+import { Mixin } from '../..';
 
 QUnit.test('without should create a new mixin excluding named properties', function() {
   let MixinA = Mixin.create({

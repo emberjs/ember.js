@@ -56,7 +56,7 @@ export default EmberObject.extend({
     let originalPath = this.getHash().substr(1);
     let outPath = originalPath;
 
-    if (outPath.charAt(0) !== '/') {
+    if (outPath[0] !== '/') {
       outPath = '/';
 
       // Only add the # if the path isn't empty.

@@ -1,6 +1,6 @@
 import {
-  Error as EmberError
-} from 'ember-metal';
+  EmberError
+} from 'ember-debug';
 
 /**
 @module ember
@@ -12,18 +12,12 @@ export default {
     throw new EmberError('You can\'t use appendChild outside of the rendering process');
   },
 
-  $() {
-    return undefined;
-  },
-
   // Handle events from `Ember.EventDispatcher`
   handleEvent() {
     return true; // continue event propagation
   },
 
-  destroy() { },
+  rerender() { },
 
-  rerender(view) {
-    view.renderer.ensureViewNotRendering(view);
-  }
+  destroy() { }
 };

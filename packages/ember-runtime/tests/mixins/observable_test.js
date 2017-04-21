@@ -62,7 +62,7 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
       lastName: 'Cook',
       companyName: 'Fruit Co., Inc.'
     });
-  } catch(err) {
+  } catch (err) {
     if (err !== exc) {
       throw err;
     }

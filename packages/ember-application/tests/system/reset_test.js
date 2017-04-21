@@ -193,10 +193,6 @@ QUnit.test('When an application with advance/deferReadiness is reset, the app do
 });
 
 QUnit.test('With ember-data like initializer and constant', function() {
-  let readyCallCount;
-
-  readyCallCount = 0;
-
   let DS = {
     Store: EmberObject.extend({
       init() {

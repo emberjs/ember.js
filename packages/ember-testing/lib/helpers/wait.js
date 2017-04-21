@@ -12,24 +12,27 @@ import { pendingRequests } from '../test/pending_requests';
   any async operations from other helpers (or your assertions) have been processed.
 
   This is most often used as the return value for the helper functions (see 'click',
-  'fillIn','visit',etc).
+  'fillIn','visit',etc). However, there is a method to register a test helper which
+  utilizes this method without the need to actually call `wait()` in your helpers.
+
+  The `wait` helper is built into `registerAsyncHelper` by default. You will not need
+  to `return app.testHelpers.wait();` - the wait behavior is provided for you.
 
   Example:
 
   ```javascript
   Ember.Test.registerAsyncHelper('loginUser', function(app, username, password) {
     visit('secured/path/here')
-    .fillIn('#username', username)
-    .fillIn('#password', password)
-    .click('.submit')
-
-    return app.testHelpers.wait();
+      .fillIn('#username', username)
+      .fillIn('#password', password)
+      .click('.submit');
   });
 
   @method wait
   @param {Object} value The value to be returned.
   @return {RSVP.Promise}
   @public
+  @since 1.0.0
 */
 export default function wait(app, value) {
   return new RSVP.Promise(function(resolve) {
@@ -38,7 +41,7 @@ export default function wait(app, value) {
     // Every 10ms, poll for the async thing to have finished
     let watcher = setInterval(() => {
       // 1. If the router is loading, keep polling
-      let routerIsLoading = router.router && !!router.router.activeTransition;
+      let routerIsLoading = router._routerMicrolib && !!router._routerMicrolib.activeTransition;
       if (routerIsLoading) { return; }
 
       // 2. If there are pending Ajax requests, keep polling

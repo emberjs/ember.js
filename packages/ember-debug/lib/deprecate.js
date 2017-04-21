@@ -1,12 +1,47 @@
 /*global __fail__*/
 
-import { Error as EmberError } from 'ember-metal';
+import EmberError from './error';
 import Logger from 'ember-console';
 
 import { ENV } from 'ember-environment';
 
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 
+/**
+  Allows for runtime registration of handler functions that override the default deprecation behavior.
+  Deprecations are invoked by calls to [Ember.deprecate](http://emberjs.com/api/classes/Ember.html#method_deprecate).
+  The following example demonstrates its usage by registering a handler that throws an error if the
+  message contains the word "should", otherwise defers to the default handler.
+
+  ```javascript
+  Ember.Debug.registerDeprecationHandler((message, options, next) => {
+    if (message.indexOf('should') !== -1) {
+      throw new Error(`Deprecation message with should: ${message}`);
+    } else {
+      // defer to whatever handler was registered before this one
+      next(message, options);
+    }
+  });
+  ```
+
+  The handler function takes the following arguments:
+
+  <ul>
+    <li> <code>message</code> - The message received from the deprecation call.</li>
+    <li> <code>options</code> - An object passed in with the deprecation call containing additional information including:</li>
+      <ul>
+        <li> <code>id</code> - An id of the deprecation in the form of <code>package-name.specific-deprecation</code>.</li>
+        <li> <code>until</code> - The Ember version number the feature and deprecation will be removed in.</li>
+      </ul>
+    <li> <code>next</code> - A function that calls into the previously registered handler.</li>
+  </ul>
+
+  @public
+  @static
+  @method registerDeprecationHandler
+  @param handler {Function} A function to handle deprecation calls.
+  @since 2.1.0
+*/
 export function registerHandler(handler) {
   genericRegisterHandler('deprecate', handler);
 }
@@ -19,7 +54,7 @@ function formatMessage(_message, options) {
   }
 
   if (options && options.url) {
-    message += ' See ' + options.url + ' for more details.';
+    message += ` See ${options.url} for more details.`;
   }
 
   return message;
@@ -28,18 +63,16 @@ function formatMessage(_message, options) {
 registerHandler(function logDeprecationToConsole(message, options) {
   let updatedMessage = formatMessage(message, options);
 
-  Logger.warn('DEPRECATION: ' + updatedMessage);
+  Logger.warn(`DEPRECATION: ${updatedMessage}`);
 });
 
 let captureErrorForStack;
 
 if (new Error().stack) {
-  captureErrorForStack = function() {
-    return new Error();
-  };
+  captureErrorForStack = () => new Error();
 } else {
-  captureErrorForStack = function() {
-    try { __fail__.fail(); } catch(e) { return e; }
+  captureErrorForStack = () => {
+    try { __fail__.fail(); } catch (e) { return e; }
   };
 }
 
@@ -62,12 +95,12 @@ registerHandler(function logDeprecationStackTrace(message, options, next) {
           replace(/^\(/gm, '{anonymous}(').split('\n');
       }
 
-      stackStr = '\n    ' + stack.slice(2).join('\n    ');
+      stackStr = `\n    ${stack.slice(2).join('\n    ')}`;
     }
 
     let updatedMessage = formatMessage(message, options);
 
-    Logger.warn('DEPRECATION: ' + updatedMessage + stackStr);
+    Logger.warn(`DEPRECATION: ${updatedMessage}${stackStr}`);
   } else {
     next(...arguments);
   }
@@ -115,6 +148,7 @@ export let missingOptionsUntilDeprecation = 'When calling `Ember.deprecate` you 
     emberjs.com website.
   @for Ember
   @public
+  @since 1.0.0
 */
 export default function deprecate(message, test, options) {
   if (!options || (!options.id && !options.until)) {

@@ -1,8 +1,10 @@
 import { getOwner, OWNER } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
-import { Registry } from '../index';
+import { Registry } from '..';
 import { factory } from 'internal-test-helpers';
+import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
+import { LOOKUP_FACTORY, FACTORY_FOR } from 'container';
 
 let originalModelInjections;
 
@@ -14,6 +16,10 @@ QUnit.module('Container', {
     ENV.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });
+
+function lookupFactory(name, container, options) {
+  return container[LOOKUP_FACTORY](name, options);
+}
 
 QUnit.test('A registered factory returns the same instance each time', function() {
   let registry = new Registry();
@@ -36,7 +42,7 @@ QUnit.test('A registered factory is returned from lookupFactory', function() {
 
   registry.register('controller:post', PostController);
 
-  let PostControllerFactory = container.lookupFactory('controller:post');
+  let PostControllerFactory = lookupFactory('controller:post', container);
 
   ok(PostControllerFactory, 'factory is returned');
   ok(PostControllerFactory.create() instanceof  PostController, 'The return of factory.create is an instance of PostController');
@@ -49,7 +55,10 @@ QUnit.test('A registered factory is returned from lookupFactory is the same fact
 
   registry.register('controller:post', PostController);
 
-  deepEqual(container.lookupFactory('controller:post'), container.lookupFactory('controller:post'), 'The return of lookupFactory is always the same');
+  let Post1 = lookupFactory('controller:post', container);
+  let Post2 = lookupFactory('controller:post', container);
+
+  deepEqual(Post1, Post2, 'The return of lookupFactory is always the same');
 });
 
 QUnit.test('A factory returned from lookupFactory has a debugkey', function() {
@@ -58,7 +67,7 @@ QUnit.test('A factory returned from lookupFactory has a debugkey', function() {
   let PostController = factory();
 
   registry.register('controller:post', PostController);
-  let PostFactory = container.lookupFactory('controller:post');
+  let PostFactory = lookupFactory('controller:post', container);
   equal(PostFactory._debugContainerKey, 'controller:post', 'factory instance receives _debugContainerKey');
 });
 
@@ -87,7 +96,7 @@ QUnit.test('The descendants of a factory returned from lookupFactory have a cont
   let instance;
 
   registry.register('controller:post', PostController);
-  instance = container.lookupFactory('controller:post').create();
+  instance = lookupFactory('controller:post', container).create();
 
   equal(instance._debugContainerKey, 'controller:post', 'factory instance receives _debugContainerKey');
 
@@ -190,7 +199,7 @@ QUnit.test('A factory with both type and individual factoryInjections', function
   registry.factoryInjection('controller:post', 'store', 'store:main');
   registry.factoryTypeInjection('controller', 'router', 'router:main');
 
-  let PostControllerFactory = container.lookupFactory('controller:post');
+  let PostControllerFactory = lookupFactory('controller:post', container);
   let store = container.lookup('store:main');
   let router = container.lookup('router:main');
 
@@ -348,7 +357,7 @@ QUnit.test('The container normalizes names when looking factory up', function() 
   };
 
   registry.register('controller:post', PostController);
-  let fact = container.lookupFactory('controller:normalized');
+  let fact = lookupFactory('controller:normalized', container);
 
   equal(fact.toString() === PostController.extend().toString(), true, 'Normalizes the name when looking factory up');
 });
@@ -428,10 +437,10 @@ QUnit.test('Factory resolves are cached', function() {
   };
 
   deepEqual(resolveWasCalled, []);
-  container.lookupFactory('controller:post');
+  lookupFactory('controller:post', container);
   deepEqual(resolveWasCalled, ['controller:post']);
 
-  container.lookupFactory('controller:post');
+  lookupFactory('controller:post', container);
   deepEqual(resolveWasCalled, ['controller:post']);
 });
 
@@ -446,10 +455,10 @@ QUnit.test('factory for non extendables (MODEL) resolves are cached', function()
   };
 
   deepEqual(resolveWasCalled, []);
-  container.lookupFactory('model:post');
+  lookupFactory('model:post', container);
   deepEqual(resolveWasCalled, ['model:post']);
 
-  container.lookupFactory('model:post');
+  lookupFactory('model:post', container);
   deepEqual(resolveWasCalled, ['model:post']);
 });
 
@@ -465,10 +474,10 @@ QUnit.test('factory for non extendables resolves are cached', function() {
   };
 
   deepEqual(resolveWasCalled, []);
-  container.lookupFactory('foo:post');
+  lookupFactory('foo:post', container);
   deepEqual(resolveWasCalled, ['foo:post']);
 
-  container.lookupFactory('foo:post');
+  lookupFactory('foo:post', container);
   deepEqual(resolveWasCalled, ['foo:post']);
 });
 
@@ -488,8 +497,8 @@ QUnit.test('The `_onLookup` hook is called on factories when looked up the first
 
   registry.register('apple:main', Apple);
 
-  container.lookupFactory('apple:main');
-  container.lookupFactory('apple:main');
+  lookupFactory('apple:main', container);
+  lookupFactory('apple:main', container);
 });
 
 QUnit.test('A factory\'s lazy injections are validated when first instantiated', function() {
@@ -561,103 +570,13 @@ QUnit.test('A deprecated `container` property is appended to every object instan
   }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
 });
 
-QUnit.test('A deprecated `container` property is appended to every object instantiated from a non-extendable factory, and a fake container is available during instantiation.', function() {
-  expect(8);
-
-  let owner = {};
-  let registry = new Registry();
-  let container = registry.container({ owner });
-
-  // Define a simple non-extendable factory
-  function PostController(options) {
-    this.container = options.container;
-  }
-
-  PostController.create = function(options) {
-    ok(options.container, 'fake container has been injected and is available during `create`.');
-
-    expectDeprecation(() => {
-      options.container.lookup('abc:one');
-    }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper to access the owner of this object and then call `lookup` instead.');
-
-    expectDeprecation(() => {
-      options.container.lookupFactory('abc:two');
-    }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper to access the owner of this object and then call `_lookupFactory` instead.');
-
-    // non-deprecated usage of `lookup` and `_lookupFactory`
-    owner.lookup = function(fullName) {
-      equal(fullName, 'abc:one', 'lookup on owner called properly');
-    };
-    owner._lookupFactory = function(fullName) {
-      equal(fullName, 'abc:two', '_lookupFactory on owner called properly');
-    };
-    let foundOwner = getOwner(options);
-    foundOwner.lookup('abc:one');
-    foundOwner._lookupFactory('abc:two');
-
-    return new PostController(options);
-  };
-
-  registry.register('controller:post', PostController);
-  let postController = container.lookup('controller:post');
-
-  expectDeprecation(() => {
-    get(postController, 'container');
-  }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
-
-  expectDeprecation(() => {
-    let c = postController.container;
-    strictEqual(c, container, 'Injected container is now regular (not fake) container, but access is still deprecated.');
-  }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
-});
-
-QUnit.test('A deprecated `container` property is only set on a non-extendable factory instance if `container` is present and writable.', function() {
-  expect(2);
-
-  let owner = {};
-  let registry = new Registry();
-  let container = registry.container({ owner });
-
-  // Define a non-extendable factory that is frozen after `create`
-  let PostController = function() {};
-  PostController.create = function() {
-    let instance = new PostController();
-
-    Object.seal(instance);
-
-    return instance;
-  };
-
-  registry.register('controller:post', PostController);
-  let postController = container.lookup('controller:post');
-
-  equal(postController.container, undefined, 'container was not added');
-
-  let OtherController = function() {
-    this.container = 'foo';
-  };
-
-  OtherController.create = function() {
-    let instance = new OtherController();
-
-    Object.freeze(instance);
-
-    return instance;
-  };
-
-  registry.register('controller:other', OtherController);
-  let otherController = container.lookup('controller:other');
-
-  equal(otherController.container, 'foo', 'container was not added');
-});
-
 QUnit.test('An extendable factory can provide `container` upon create, with a deprecation', function(assert) {
   let registry = new Registry();
   let container = registry.container();
 
   registry.register('controller:post', factory());
 
-  let PostController = container.lookupFactory('controller:post');
+  let PostController = lookupFactory('controller:post', container);
 
   let postController;
 
@@ -688,7 +607,7 @@ QUnit.test('lookupFactory passes options through to expandlocallookup', function
     return 'controller:post';
   };
 
-  let PostControllerFactory = container.lookupFactory('foo:bar', { source: 'baz:qux' });
+  let PostControllerFactory = lookupFactory('foo:bar', container, { source: 'baz:qux' });
 
   assert.ok(PostControllerFactory.create() instanceof  PostController, 'The return of factory.create is an instance of PostController');
 });
@@ -699,7 +618,6 @@ QUnit.test('lookup passes options through to expandlocallookup', function(assert
   let PostController = factory();
 
   registry.register('controller:post', PostController);
-
   registry.expandLocalLookup = function(fullName, options) {
     assert.ok(true, 'expandLocalLookup was called');
     assert.equal(fullName, 'foo:bar');
@@ -712,3 +630,115 @@ QUnit.test('lookup passes options through to expandlocallookup', function(assert
 
   assert.ok(PostControllerLookupResult instanceof PostController);
 });
+
+QUnit.test('#[FACTORY_FOR] class is the injected factory', (assert) => {
+  let registry = new Registry();
+  let container = registry.container();
+
+  let Component = factory();
+  registry.register('component:foo-bar', Component);
+
+  let factoryManager = container[FACTORY_FOR]('component:foo-bar');
+  if (EMBER_NO_DOUBLE_EXTEND) {
+    assert.deepEqual(factoryManager.class, Component, 'No double extend');
+  } else {
+    assert.deepEqual(factoryManager.class, lookupFactory('component:foo-bar', container), 'Double extended class');
+  }
+});
+
+QUnit.test('#factoryFor must supply a fullname', (assert) => {
+  let registry = new Registry();
+  let container = registry.container();
+  assert.throws(() => {
+    container.factoryFor('chad-bar');
+  }, /Invalid Fullname, expected: 'type:name' got: chad-bar/);
+});
+
+QUnit.test('#factoryFor returns a factory manager', (assert) => {
+  let registry = new Registry();
+  let container = registry.container();
+
+  let Component = factory();
+  registry.register('component:foo-bar', Component);
+
+  let factoryManager = container.factoryFor('component:foo-bar');
+  assert.ok(factoryManager.create);
+  assert.ok(factoryManager.class);
+});
+
+QUnit.test('#factoryFor returns a cached factory manager for the same type', (assert) => {
+  let registry = new Registry();
+  let container = registry.container();
+
+  let Component = factory();
+  registry.register('component:foo-bar', Component);
+  registry.register('component:baz-bar', Component);
+
+  let factoryManager1 = container.factoryFor('component:foo-bar');
+  let factoryManager2 = container.factoryFor('component:foo-bar');
+  let factoryManager3 = container.factoryFor('component:baz-bar');
+
+  assert.equal(factoryManager1, factoryManager2, 'cache hit');
+  assert.notEqual(factoryManager1, factoryManager3, 'cache miss');
+});
+
+QUnit.test('#factoryFor class returns the factory function', (assert) => {
+  let registry = new Registry();
+  let container = registry.container();
+
+  let Component = factory();
+  registry.register('component:foo-bar', Component);
+
+  let factoryManager = container.factoryFor('component:foo-bar');
+  assert.deepEqual(factoryManager.class, Component, 'No double extend');
+});
+
+QUnit.test('#factoryFor instance have a common parent', (assert) => {
+  let registry = new Registry();
+  let container = registry.container();
+
+  let Component = factory();
+  registry.register('component:foo-bar', Component);
+
+  let factoryManager1 = container.factoryFor('component:foo-bar');
+  let factoryManager2 = container.factoryFor('component:foo-bar');
+  let instance1 = factoryManager1.create({ foo: 'foo' });
+  let instance2 = factoryManager2.create({ bar: 'bar' });
+
+  assert.deepEqual(instance1.constructor, instance2.constructor);
+});
+
+QUnit.test('#factoryFor created instances come with instance injections', (assert) => {
+  let registry = new Registry();
+  let container = registry.container();
+
+  let Component = factory();
+  let Ajax = factory();
+  registry.register('component:foo-bar', Component);
+  registry.register('util:ajax', Ajax);
+  registry.injection('component:foo-bar', 'ajax', 'util:ajax');
+
+  let componentFactory = container.factoryFor('component:foo-bar');
+  let component = componentFactory.create();
+
+  assert.ok(component.ajax);
+  assert.ok(component.ajax instanceof Ajax);
+});
+
+QUnit.test('#factoryFor options passed to create clobber injections', (assert) => {
+  let registry = new Registry();
+  let container = registry.container();
+
+  let Component = factory();
+  let Ajax = factory();
+  registry.register('component:foo-bar', Component);
+  registry.register('util:ajax', Ajax);
+  registry.injection('component:foo-bar', 'ajax', 'util:ajax');
+
+  let componentFactory = container.factoryFor('component:foo-bar');
+
+  let instrance = componentFactory.create({ ajax: 'fetch' });
+
+  assert.equal(instrance.ajax, 'fetch');
+});
+

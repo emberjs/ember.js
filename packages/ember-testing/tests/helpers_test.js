@@ -5,6 +5,7 @@ import {
   RSVP
 } from 'ember-runtime';
 import { run } from 'ember-metal';
+import { EMBER_TESTING_RESUME_TEST } from 'ember/features';
 import { jQuery } from 'ember-views';
 import {
   Component,
@@ -639,7 +640,7 @@ QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() 
 
 QUnit.test('`fillIn` takes context into consideration', function() {
   expect(2);
-  var fillIn, find, visit, andThen, wait;
+  var fillIn, find, visit, andThen;
 
   setTemplate('index', compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}'));
 
@@ -649,7 +650,6 @@ QUnit.test('`fillIn` takes context into consideration', function() {
   find = App.testHelpers.find;
   visit = App.testHelpers.visit;
   andThen = App.testHelpers.andThen;
-  wait = App.testHelpers.wait;
 
   visit('/');
   fillIn('.current', '#parent', 'current value');
@@ -811,6 +811,23 @@ QUnit.test('pauseTest pauses', function() {
 
   App.testHelpers.pauseTest();
 });
+
+if (EMBER_TESTING_RESUME_TEST) {
+  QUnit.test('resumeTest resumes paused tests', function() {
+    expect(1);
+
+    let pausePromise = App.testHelpers.pauseTest();
+    setTimeout(() => App.testHelpers.resumeTest(), 0);
+
+    return pausePromise.then(() => ok(true, 'pauseTest promise was resolved'));
+  });
+
+  QUnit.test('resumeTest throws if nothing to resume', function() {
+    expect(1);
+
+    throws(() => App.testHelpers.resumeTest(), /Testing has not been paused. There is nothing to resume./);
+  });
+}
 
 QUnit.module('ember-testing routing helpers', {
   setup() {

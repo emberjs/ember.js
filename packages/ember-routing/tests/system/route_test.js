@@ -6,6 +6,7 @@ import {
   inject
 } from 'ember-runtime';
 import EmberRoute from '../../system/route';
+import { FACTORY_FOR } from 'container';
 
 let route, routeOne, routeTwo, lookupHash;
 
@@ -34,19 +35,25 @@ QUnit.test('default store utilizes the container to acquire the model factory', 
     }
   });
 
-  setOwner(route, buildOwner({
+  let ownerOptions = {
     ownerOptions: {
       hasRegistration() {
         return true;
       },
-
-      _lookupFactory(fullName) {
+      [FACTORY_FOR](fullName) {
         equal(fullName, 'model:post', 'correct factory was looked up');
 
-        return Post;
+        return {
+          class: Post,
+          create() {
+            return Post.create();
+          }
+        };
       }
     }
-  }));
+  };
+
+  setOwner(route, buildOwner(ownerOptions));
 
   route.set('_qp', null);
 
@@ -332,7 +339,7 @@ QUnit.test('paramsFor considers an engine\'s mountPoint', function(assert) {
 
   let router = {
     _deserializeQueryParams() {},
-    router: {
+    _routerMicrolib: {
       state: {
         handlerInfos: [
           { name: 'posts' }
@@ -361,8 +368,8 @@ QUnit.test('paramsFor considers an engine\'s mountPoint', function(assert) {
     }
   });
 
-  let applicationRoute = EmberRoute.create({ router, routeName: 'application' });
-  let postsRoute = EmberRoute.create({ router, routeName: 'posts' });
+  let applicationRoute = EmberRoute.create({ router, routeName: 'application', fullRouteName: 'foo.bar' });
+  let postsRoute = EmberRoute.create({ router, routeName: 'posts', fullRouteName: 'foo.bar.posts' });
   let route = EmberRoute.create({ router });
 
   setOwner(applicationRoute, engineInstance);
@@ -380,7 +387,7 @@ QUnit.test('modelFor considers an engine\'s mountPoint', function() {
   let postsModel = { id: '2' };
 
   let router = {
-    router: {
+    _routerMicrolib: {
       activeTransition: {
         resolvedModels: {
           'foo.bar': applicationModel,

@@ -1,9 +1,8 @@
-import { guidFor, EmptyObject } from 'ember-utils';
-import { get, tagFor } from 'ember-metal';
+import { guidFor } from 'ember-utils';
+import { get, tagForProperty, tagFor, isProxy } from 'ember-metal';
 import {
   objectAt,
-  isEmberArray,
-  isProxy
+  isEmberArray
 } from 'ember-runtime';
 import {
   UpdatableReference,
@@ -14,7 +13,7 @@ import {
   CONSTANT_TAG,
   UpdatableTag,
   combine
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
@@ -85,7 +84,7 @@ class ArrayIterator {
     this.length = array.length;
     this.keyFor = keyFor;
     this.position = 0;
-    this.seen = new EmptyObject();
+    this.seen = Object.create(null);
   }
 
   isEmpty() {
@@ -113,7 +112,7 @@ class EmberArrayIterator {
     this.length = get(array, 'length');
     this.keyFor = keyFor;
     this.position = 0;
-    this.seen = new EmptyObject();
+    this.seen = Object.create(null);
   }
 
   isEmpty() {
@@ -141,7 +140,7 @@ class ObjectKeysIterator {
     this.values = values;
     this.keyFor = keyFor;
     this.position = 0;
-    this.seen = new EmptyObject();
+    this.seen = Object.create(null);
   }
 
   isEmpty() {
@@ -242,7 +241,7 @@ class ArrayIterable {
 
     let iterable = ref.value();
 
-    valueTag.update(tagFor(iterable));
+    valueTag.update(tagForProperty(iterable, '[]'));
 
     if (!iterable || typeof iterable !== 'object') {
       return EMPTY_ITERATOR;

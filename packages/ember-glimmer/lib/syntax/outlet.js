@@ -4,17 +4,18 @@
 */
 import { generateGuid, guidFor } from 'ember-utils';
 import {
-  ArgsSyntax,
-  StatementSyntax,
-  ComponentDefinition
-} from 'glimmer-runtime';
+  ComponentDefinition,
+  CompiledArgs
+} from '@glimmer/runtime';
+import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
 import { RootReference } from '../utils/references';
+import AbstractManager from './abstract-manager';
 import {
   UpdatableTag,
   ConstReference,
   combine
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
 function outletComponentFor(vm) {
   let { outletState } = vm.dynamicScope();
@@ -29,6 +30,7 @@ function outletComponentFor(vm) {
 
   return new OutletComponentReference(outletNameRef, outletState);
 }
+
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -79,26 +81,13 @@ function outletComponentFor(vm) {
   @for Ember.Templates.helpers
   @public
 */
-export class OutletSyntax extends StatementSyntax {
-  static create(environment, args, templates, symbolTable) {
-    let definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0, 1));
-
-    return new this(environment, definitionArgs, templates, symbolTable);
+export function outletMacro(path, params, hash, builder) {
+  if (!params) {
+    params = [];
   }
-
-  constructor(environment, args, templates, symbolTable) {
-    super();
-    this.definitionArgs = args;
-    this.definition = outletComponentFor;
-    this.args = ArgsSyntax.empty();
-    this.symbolTable = symbolTable;
-    this.templates = null;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.templates, this.symbolTable, this.shadow);
-  }
+  let definitionArgs = [params.slice(0, 1), null, null, null];
+  builder.component.dynamic(definitionArgs, outletComponentFor, CompiledArgs.empty(), builder.symbolTable, null);
+  return true;
 }
 
 class OutletComponentReference {
@@ -113,7 +102,6 @@ class OutletComponentReference {
 
   value() {
     let { outletNameRef, parentOutletStateRef, definition, lastState } = this;
-
 
     let outletName = outletNameRef.value();
     let outletStateRef = parentOutletStateRef.get('outlets').get(outletName);
@@ -130,7 +118,7 @@ class OutletComponentReference {
     } else if (hasTemplate) {
       return this.definition = new OutletComponentDefinition(outletName, newState.render.template);
     } else {
-      return null;
+      return this.definition = null;
     }
   }
 }
@@ -177,22 +165,23 @@ class StateBucket {
   }
 }
 
-class OutletComponentManager {
+class OutletComponentManager extends AbstractManager {
   prepareArgs(definition, args) {
     return args;
   }
 
   create(environment, definition, args, dynamicScope) {
+    if (DEBUG) {
+      this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
+    }
+
     let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get('outlets').get(definition.outletName);
     let outletState = outletStateReference.value();
     return new StateBucket(outletState);
   }
 
   layoutFor(definition, bucket, env) {
-    let { template } = definition;
-    let owner = template.meta.owner;
-
-    return env.getCompiledBlock(OutletLayoutCompiler, definition.template, owner);
+    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 
   getSelf({ outletState }) {
@@ -209,6 +198,10 @@ class OutletComponentManager {
 
   didRenderLayout(bucket) {
     bucket.finalize();
+
+    if (DEBUG) {
+      this.debugStack.pop();
+    }
   }
 
   didCreateElement() {}
@@ -222,14 +215,14 @@ const MANAGER = new OutletComponentManager();
 
 class TopLevelOutletComponentManager extends OutletComponentManager {
   create(environment, definition, args, dynamicScope) {
+    if (DEBUG) {
+      this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
+    }
     return new StateBucket(dynamicScope.outletState.value());
   }
 
   layoutFor(definition, bucket, env) {
-    let { template } = definition;
-    let owner = template.meta.owner;
-
-    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, template, owner);
+    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
   }
 }
 

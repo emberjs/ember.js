@@ -2,11 +2,9 @@ import { RootReference } from './utils/references';
 import {
   run,
   setHasViews,
-  assert,
-  runInTransaction as _runInTransaction,
-  isFeatureEnabled
+  runInTransaction
 } from 'ember-metal';
-import { CURRENT_TAG, UNDEFINED_REFERENCE } from 'glimmer-reference';
+import { CURRENT_TAG, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import {
   fallbackViewRegistry,
   getViewElement,
@@ -16,18 +14,7 @@ import {
 import { BOUNDS } from './component';
 import { RootComponentDefinition } from './syntax/curly-component';
 import { TopLevelOutletComponentDefinition } from './syntax/outlet';
-
-let runInTransaction;
-
-if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-  runInTransaction = _runInTransaction;
-} else {
-  runInTransaction = (context, methodName) => {
-    context[methodName]();
-    return false;
-  };
-}
+import { assert } from 'ember-debug';
 
 const { backburner } = run;
 
@@ -73,7 +60,14 @@ class RootState {
     };
 
     this.render = () => {
-      let result = this.result = template.render(self, parentElement, dynamicScope);
+      let iterator = template.render(self, parentElement, dynamicScope);
+      let iteratorResult;
+
+      do {
+        iteratorResult = iterator.next();
+      } while (!iteratorResult.done);
+
+      let result = this.result = iteratorResult.value;
 
       // override .render function after initial render
       this.render = () => {
@@ -206,15 +200,6 @@ class Renderer {
     this._scheduleRevalidate();
   }
 
-  componentInitAttrs() {
-    // TODO: Remove me
-  }
-
-  ensureViewNotRendering() {
-    // TODO: Implement this
-    // throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
-  }
-
   register(view) {
     let id = getViewId(view);
     assert('Attempted to register a view with an id already in use: ' + id, !this._viewRegistry[id]);
@@ -228,13 +213,13 @@ class Renderer {
   remove(view) {
     view._transitionTo('destroying');
 
+    this.cleanupRootFor(view);
+
     setViewElement(view, null);
 
     if (this._destinedForDOM) {
       view.trigger('didDestroyElement');
     }
-
-    this.cleanupRootFor(view);
 
     if (!view.isDestroying) {
       view.destroy();
@@ -252,7 +237,6 @@ class Renderer {
     let i = this._roots.length;
     while (i--) {
       let root = roots[i];
-      // check if the view being removed is a root view
       if (root.isFor(view)) {
         root.destroy();
       }

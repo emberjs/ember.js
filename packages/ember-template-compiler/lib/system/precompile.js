@@ -19,8 +19,8 @@ let glimmerPrecompile;
   @param {String} templateString This is the string to be compiled by HTMLBars.
 */
 export default function precompile(templateString, options) {
-  if (!glimmerPrecompile && has('glimmer-compiler')) {
-    glimmerPrecompile = require('glimmer-compiler').precompile;
+  if (!glimmerPrecompile && has('@glimmer/compiler')) {
+    glimmerPrecompile = require('@glimmer/compiler').precompile;
   }
 
   if (!glimmerPrecompile) {

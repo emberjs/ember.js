@@ -1,11 +1,11 @@
 import { GUID_KEY } from 'ember-utils';
 import {
   peekMeta,
-  meta as metaFor
+  meta as metaFor,
+  UNDEFINED
 } from './meta';
 
 let id = 0;
-function UNDEFINED() {}
 
 // Returns whether Type(value) is Object according to the terminology in the spec
 function isObject(value) {

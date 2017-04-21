@@ -1,15 +1,18 @@
-import isEnabled from '../../features';
-import { get } from '../../property_get';
-import { set } from '../../property_set';
-import { watch, unwatch } from '../../watching';
-import { meta as metaFor } from '../../meta';
+import { MANDATORY_SETTER } from 'ember/features';
+import {
+  get,
+  set,
+  watch,
+  unwatch,
+  meta as metaFor
+} from '../..';
 
 QUnit.module('mandatory-setters');
 
 function hasMandatorySetter(object, property) {
   try {
     return Object.getOwnPropertyDescriptor(object, property).set.isMandatorySetter === true;
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }
@@ -18,7 +21,7 @@ function hasMetaValue(object, property) {
   return metaFor(object).hasInValues(property);
 }
 
-if (isEnabled('mandatory-setter')) {
+if (MANDATORY_SETTER) {
   QUnit.test('does not assert if property is not being watched', function() {
     let obj = {
       someProp: null,
@@ -373,15 +376,15 @@ if (isEnabled('mandatory-setter')) {
 
     let child = new Parent();
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
     watch(child, 'food');
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
     Parent.prototype.food  = 'icecreame';
 
-    equal(child.food , 'icecreame');
+    equal(child.food, 'icecreame');
 
     unwatch(child, 'food');
 
@@ -406,15 +409,15 @@ if (isEnabled('mandatory-setter')) {
 
     let child = new Parent('chips');
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
     watch(child, 'food');
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
-    child._food  = 'icecreame';
+    child._food = 'icecreame';
 
-    equal(child.food , 'icecreame');
+    equal(child.food, 'icecreame');
 
     unwatch(child, 'food');
 

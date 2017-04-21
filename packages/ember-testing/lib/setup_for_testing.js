@@ -1,4 +1,6 @@
-import { setTesting } from 'ember-metal';
+/* global self */
+
+import { setTesting } from 'ember-debug';
 import { jQuery } from 'ember-views';
 import {
   getAdapter,
@@ -9,6 +11,7 @@ import {
   decrementPendingRequests,
   clearPendingRequests
 } from './test/pending_requests';
+import Adapter from './adapters/adapter';
 import QUnitAdapter from './adapters/qunit';
 
 /**
@@ -29,14 +32,16 @@ export default function setupForTesting() {
   let adapter = getAdapter();
   // if adapter is not manually set default to QUnit
   if (!adapter) {
-    setAdapter(new QUnitAdapter());
+    setAdapter((typeof self.QUnit === 'undefined') ? new Adapter() : new QUnitAdapter());
   }
 
-  jQuery(document).off('ajaxSend', incrementPendingRequests);
-  jQuery(document).off('ajaxComplete', decrementPendingRequests);
+  if (jQuery) {
+    jQuery(document).off('ajaxSend', incrementPendingRequests);
+    jQuery(document).off('ajaxComplete', decrementPendingRequests);
 
-  clearPendingRequests();
+    clearPendingRequests();
 
-  jQuery(document).on('ajaxSend', incrementPendingRequests);
-  jQuery(document).on('ajaxComplete', decrementPendingRequests);
+    jQuery(document).on('ajaxSend', incrementPendingRequests);
+    jQuery(document).on('ajaxComplete', decrementPendingRequests);
+  }
 }

@@ -1,4 +1,4 @@
-import { symbol, getOwner } from 'ember-utils';
+import { symbol, getOwner, NAME_KEY } from 'ember-utils';
 import {
   CoreView,
   ClassNamesSupport,
@@ -10,15 +10,16 @@ import {
 } from 'ember-views';
 import { TargetActionSupport } from 'ember-runtime';
 import {
+  assert,
+  deprecate
+} from 'ember-debug';
+import {
   get,
   PROPERTY_DID_CHANGE,
-  assert,
-  deprecate,
-  NAME_KEY
 } from 'ember-metal';
 import { UPDATE, RootReference } from './utils/references';
-import { DirtyableTag } from 'glimmer-reference';
-import { readDOMAttr } from 'glimmer-runtime';
+import { DirtyableTag } from '@glimmer/reference';
+import { readDOMAttr } from '@glimmer/runtime';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');
@@ -42,16 +43,15 @@ export const BOUNDS = symbol('BOUNDS');
 
   The easiest way to create an `Ember.Component` is via
   a template. If you name a template
-  `components/my-foo`, you will be able to use
+  `app/components/my-foo.hbs`, you will be able to use
   `{{my-foo}}` in other templates, which will make
   an instance of the isolated component.
 
-  ```handlebars
-  {{app-profile person=currentUser}}
+  ```app/components/my-foo.hbs
+  {{person-profile person=currentUser}}
   ```
 
-  ```handlebars
-  <!-- app-profile template -->
+  ```app/components/person-profile.hbs
   <h1>{{person.title}}</h1>
   <img src={{person.avatar}}>
   <p class='signature'>{{person.signature}}</p>
@@ -63,14 +63,13 @@ export const BOUNDS = symbol('BOUNDS');
   context of the surrounding context or outer controller:
 
   ```handlebars
-  {{#app-profile person=currentUser}}
+  {{#person-profile person=currentUser}}
     <p>Admin mode</p>
     {{! Executed in the controller's context. }}
-  {{/app-profile}}
+  {{/person-profile}}
   ```
 
-  ```handlebars
-  <!-- app-profile template -->
+  ```app/components/person-profile.hbs
   <h1>{{person.title}}</h1>
   {{! Executed in the component's context. }}
   {{yield}} {{! block contents }}
@@ -79,16 +78,17 @@ export const BOUNDS = symbol('BOUNDS');
   If you want to customize the component, in order to
   handle events or actions, you implement a subclass
   of `Ember.Component` named after the name of the
-  component. Note that `Component` needs to be appended to the name of
-  your subclass like `AppProfileComponent`.
+  component.
 
   For example, you could implement the action
-  `hello` for the `app-profile` component:
+  `hello` for the `person-profile` component:
 
-  ```javascript
-  App.AppProfileComponent = Ember.Component.extend({
+  ```app/components/person-profile.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
     actions: {
-      hello: function(name) {
+      hello(name) {
         console.log("Hello", name);
       }
     }
@@ -97,18 +97,422 @@ export const BOUNDS = symbol('BOUNDS');
 
   And then use it in the component's template:
 
-  ```handlebars
-  <!-- app-profile template -->
+  ```app/templates/components/person-profile.hbs
   <h1>{{person.title}}</h1>
   {{yield}} <!-- block contents -->
   <button {{action 'hello' person.name}}>
     Say Hello to {{person.name}}
   </button>
   ```
+
   Components must have a `-` in their name to avoid
   conflicts with built-in controls that wrap HTML
   elements. This is consistent with the same
   requirement in web components.
+
+
+  ## HTML Tag
+
+  The default HTML tag name used for a component's DOM representation is `div`.
+  This can be customized by setting the `tagName` property.
+  The following component class:
+
+  ```app/components/emphasized-paragraph.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    tagName: 'em'
+  });
+  ```
+
+  Would result in instances with the following HTML:
+
+  ```html
+  <em id="ember1" class="ember-view"></em>
+  ```
+
+
+  ## HTML `class` Attribute
+
+  The HTML `class` attribute of a component's tag can be set by providing a
+  `classNames` property that is set to an array of strings:
+
+  ```app/components/my-widget.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    classNames: ['my-class', 'my-other-class']
+  });
+  ```
+
+  Will result in component instances with an HTML representation of:
+
+  ```html
+  <div id="ember1" class="ember-view my-class my-other-class"></div>
+  ```
+
+  `class` attribute values can also be set by providing a `classNameBindings`
+  property set to an array of properties names for the component. The return value
+  of these properties will be added as part of the value for the components's `class`
+  attribute. These properties can be computed properties:
+
+  ```app/components/my-widget.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    classNameBindings: ['propertyA', 'propertyB'],
+    propertyA: 'from-a',
+    propertyB: Ember.computed(function() {
+      if (someLogic) { return 'from-b'; }
+    })
+  });
+  ```
+
+  Will result in component instances with an HTML representation of:
+
+  ```html
+  <div id="ember1" class="ember-view from-a from-b"></div>
+  ```
+
+  If the value of a class name binding returns a boolean the property name
+  itself will be used as the class name if the property is true.
+  The class name will not be added if the value is `false` or `undefined`.
+
+  ```app/components/my-widget.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    classNameBindings: ['hovered'],
+    hovered: true
+  });
+  ```
+
+  Will result in component instances with an HTML representation of:
+
+  ```html
+  <div id="ember1" class="ember-view hovered"></div>
+  ```
+
+  When using boolean class name bindings you can supply a string value other
+  than the property name for use as the `class` HTML attribute by appending the
+  preferred value after a ":" character when defining the binding:
+
+  ```app/components/my-widget.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    classNameBindings: ['awesome:so-very-cool'],
+    awesome: true
+  });
+  ```
+
+  Will result in component instances with an HTML representation of:
+
+  ```html
+  <div id="ember1" class="ember-view so-very-cool"></div>
+  ```
+
+  Boolean value class name bindings whose property names are in a
+  camelCase-style format will be converted to a dasherized format:
+
+  ```app/components/my-widget.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    classNameBindings: ['isUrgent'],
+    isUrgent: true
+  });
+  ```
+
+  Will result in component instances with an HTML representation of:
+
+  ```html
+  <div id="ember1" class="ember-view is-urgent"></div>
+  ```
+
+  Class name bindings can also refer to object values that are found by
+  traversing a path relative to the component itself:
+
+  ```app/components/my-widget.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    classNameBindings: ['messages.empty'],
+    messages: Ember.Object.create({
+      empty: true
+    })
+  });
+  ```
+
+  Will result in component instances with an HTML representation of:
+
+  ```html
+  <div id="ember1" class="ember-view empty"></div>
+  ```
+
+  If you want to add a class name for a property which evaluates to true and
+  and a different class name if it evaluates to false, you can pass a binding
+  like this:
+
+  ```app/components/my-widget.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    classNameBindings: ['isEnabled:enabled:disabled'],
+    isEnabled: true
+  });
+  ```
+
+  Will result in component instances with an HTML representation of:
+
+  ```html
+  <div id="ember1" class="ember-view enabled"></div>
+  ```
+
+  When isEnabled is `false`, the resulting HTML representation looks like
+  this:
+
+  ```html
+  <div id="ember1" class="ember-view disabled"></div>
+  ```
+
+  This syntax offers the convenience to add a class if a property is `false`:
+
+  ```app/components/my-widget.js
+  import Ember from 'ember';
+
+  // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
+  export default Ember.Component.extend({
+    classNameBindings: ['isEnabled::disabled'],
+    isEnabled: true
+  });
+  ```
+
+  Will result in component instances with an HTML representation of:
+
+  ```html
+  <div id="ember1" class="ember-view"></div>
+  ```
+
+  When the `isEnabled` property on the component is set to `false`, it will result
+  in component instances with an HTML representation of:
+
+  ```html
+  <div id="ember1" class="ember-view disabled"></div>
+  ```
+
+  Updates to the value of a class name binding will result in automatic
+  update of the  HTML `class` attribute in the component's rendered HTML
+  representation. If the value becomes `false` or `undefined` the class name
+  will be removed.
+  Both `classNames` and `classNameBindings` are concatenated properties. See
+  [Ember.Object](/api/classes/Ember.Object.html) documentation for more
+  information about concatenated properties.
+
+
+  ## HTML Attributes
+
+  The HTML attribute section of a component's tag can be set by providing an
+  `attributeBindings` property set to an array of property names on the component.
+  The return value of these properties will be used as the value of the component's
+  HTML associated attribute:
+
+  ```app/components/my-anchor.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    tagName: 'a',
+    attributeBindings: ['href'],
+    href: 'http://google.com'
+  });
+  ```
+
+  Will result in component instances with an HTML representation of:
+
+  ```html
+  <a id="ember1" class="ember-view" href="http://google.com"></a>
+  ```
+
+  One property can be mapped on to another by placing a ":" between
+  the source property and the destination property:
+
+  ```app/components/my-anchor.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    tagName: 'a',
+    attributeBindings: ['url:href'],
+    url: 'http://google.com'
+  });
+  ```
+
+  Will result in component instances with an HTML representation of:
+
+  ```html
+  <a id="ember1" class="ember-view" href="http://google.com"></a>
+  ```
+
+  Namespaced attributes (e.g. `xlink:href`) are supported, but have to be
+  mapped, since `:` is not a valid character for properties in Javascript:
+
+  ```app/components/my-use.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    tagName: 'use',
+    attributeBindings: ['xlinkHref:xlink:href'],
+    xlinkHref: '#triangle'
+  });
+  ```
+
+  Will result in component instances with an HTML representation of:
+
+  ```html
+  <use xlink:href="#triangle"></use>
+  ```
+
+  If the return value of an `attributeBindings` monitored property is a boolean
+  the attribute will be present or absent depending on the value:
+
+  ```app/components/my-text-input.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    tagName: 'input',
+    attributeBindings: ['disabled'],
+    disabled: false
+  });
+  ```
+
+  Will result in a component instance with an HTML representation of:
+
+  ```html
+  <input id="ember1" class="ember-view" />
+  ```
+
+  `attributeBindings` can refer to computed properties:
+
+  ```app/components/my-text-input.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    tagName: 'input',
+    attributeBindings: ['disabled'],
+    disabled: Ember.computed(function() {
+      if (someLogic) {
+        return true;
+      } else {
+        return false;
+      }
+    })
+  });
+  ```
+
+  To prevent setting an attribute altogether, use `null` or `undefined` as the
+  return value of the `attributeBindings` monitored property:
+
+  ```app/components/my-text-input.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    tagName: 'form',
+    attributeBindings: ['novalidate'],
+    novalidate: null
+  });
+  ```
+
+  Updates to the property of an attribute binding will result in automatic
+  update of the  HTML attribute in the component's rendered HTML representation.
+  `attributeBindings` is a concatenated property. See [Ember.Object](/api/classes/Ember.Object.html)
+  documentation for more information about concatenated properties.
+
+
+  ## Layouts
+
+  See [Ember.Templates.helpers.yield](/api/classes/Ember.Templates.helpers.html#method_yield)
+  for more information.
+
+
+  ## Responding to Browser Events
+
+  Components can respond to user-initiated events in one of three ways: method
+  implementation, through an event manager, and through `{{action}}` helper use
+  in their template or layout.
+
+
+  ### Method Implementation
+
+  Components can respond to user-initiated events by implementing a method that
+  matches the event name. A `jQuery.Event` object will be passed as the
+  argument to this method.
+
+  ```app/components/my-widget.js
+  import Ember from 'ember';
+
+  export default Ember.Component.extend({
+    click(event) {
+      // will be called when an instance's
+      // rendered element is clicked
+    }
+  });
+  ```
+
+
+  ### `{{action}}` Helper
+
+  See [Ember.Templates.helpers.action](/api/classes/Ember.Templates.helpers.html#method_action).
+
+
+  ### Event Names
+
+  All of the event handling approaches described above respond to the same set
+  of events. The names of the built-in events are listed below. (The hash of
+  built-in events exists in `Ember.EventDispatcher`.) Additional, custom events
+  can be registered by using `Ember.Application.customEvents`.
+
+  Touch events:
+
+  * `touchStart`
+  * `touchMove`
+  * `touchEnd`
+  * `touchCancel`
+
+  Keyboard events:
+
+  * `keyDown`
+  * `keyUp`
+  * `keyPress`
+
+  Mouse events:
+
+  * `mouseDown`
+  * `mouseUp`
+  * `contextMenu`
+  * `click`
+  * `doubleClick`
+  * `mouseMove`
+  * `focusIn`
+  * `focusOut`
+  * `mouseEnter`
+  * `mouseLeave`
+
+  Form events:
+
+  * `submit`
+  * `change`
+  * `focusIn`
+  * `focusOut`
+  * `input`
+
+  HTML5 drag and drop events:
+
+  * `dragStart`
+  * `drag`
+  * `dragEnter`
+  * `dragLeave`
+  * `dragOver`
+  * `dragEnd`
+  * `drop`
 
   @class Component
   @namespace Ember
@@ -117,6 +521,7 @@ export const BOUNDS = symbol('BOUNDS');
   @uses Ember.ClassNamesSupport
   @uses Ember.ActionSupport
   @uses Ember.ViewMixin
+  @uses Ember.ViewStateSupport
   @public
 */
 const Component = CoreView.extend(
@@ -168,6 +573,8 @@ const Component = CoreView.extend(
           }
         }
       )());
+
+      assert(`You cannot use a computed property for the component's \`tagName\` (${this}).`, !(this.tagName && this.tagName.isDescriptor));
     },
 
     rerender() {
@@ -254,8 +661,9 @@ const Component = CoreView.extend(
 
      ```javascript
      let MyComponent = Ember.Component.extend;
+
      MyComponent.reopenClass({
-     positionalParams: ['name', 'age']
+       positionalParams: ['name', 'age']
      });
      ```
 
@@ -268,7 +676,7 @@ const Component = CoreView.extend(
      The parameters can be referred to just like named parameters:
 
      ```hbs
-     Name: {{attrs.name}}, Age: {{attrs.age}}.
+     Name: {{name}}, Age: {{age}}.
      ```
 
      Using a string instead of an array allows for an arbitrary number of
@@ -276,8 +684,9 @@ const Component = CoreView.extend(
 
      ```javascript
      let MyComponent = Ember.Component.extend;
+
      MyComponent.reopenClass({
-     positionalParams: 'names'
+       positionalParams: 'names'
      });
      ```
 
@@ -289,7 +698,7 @@ const Component = CoreView.extend(
      The parameters can then be referred to by enumerating over the list:
 
      ```hbs
-     {{#each attrs.names as |name|}}{{name}}{{/each}}
+     {{#each names as |name|}}{{name}}{{/each}}
      ```
 
      @static
@@ -398,6 +807,71 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
+
+    /**
+      A component may contain a layout. A layout is a regular template but
+      supersedes the `template` property during rendering. It is the
+      responsibility of the layout template to retrieve the `template`
+      property from the component (or alternatively, call `Handlebars.helpers.yield`,
+      `{{yield}}`) to render it in the correct location.
+      This is useful for a component that has a shared wrapper, but which delegates
+      the rendering of the contents of the wrapper to the `template` property
+      on a subclass.
+      @property layout
+      @type Function
+      @public
+    */
+
+    /**
+      The name of the layout to lookup if no layout is provided.
+      By default `Ember.Component` will lookup a template with this name in
+      `Ember.TEMPLATES` (a shared global object).
+      @property layoutName
+      @type String
+      @default null
+      @private
+    */
+
+    /**
+      Returns a jQuery object for this component's element. If you pass in a selector
+      string, this method will return a jQuery object, using the current element
+      as its buffer.
+      For example, calling `component.$('li')` will return a jQuery object containing
+      all of the `li` elements inside the DOM element of this component.
+      @method $
+      @param {String} [selector] a jQuery-compatible selector string
+      @return {jQuery} the jQuery object for the DOM node
+      @public
+    */
+
+    /**
+      The HTML `id` of the component's element in the DOM. You can provide this
+      value yourself but it must be unique (just as in HTML):
+
+      ```handlebars
+      {{my-component elementId="a-really-cool-id"}}
+      ```
+      If not manually set a default value will be provided by the framework.
+      Once rendered an element's `elementId` is considered immutable and you
+      should never change it. If you need to compute a dynamic value for the
+      `elementId`, you should do this when the component or element is being
+      instantiated:
+
+      ```javascript
+      export default Ember.Component.extend({
+        init() {
+          this._super(...arguments);
+
+          var index = this.get('index');
+          this.set('elementId', `component-id${index}`);
+        }
+      });
+      ```
+
+      @property elementId
+      @type String
+      @public
+    */
 
     /**
      If `false`, the view will appear hidden in DOM.

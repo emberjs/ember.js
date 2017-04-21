@@ -20,8 +20,6 @@ if (!EmberDev.runningProdBuild) {
   // this check is done via an assertion which is stripped from
   // production builds
   QUnit.test('injection type validation is run when first looked up', function() {
-    expect(1);
-
     createInjectionHelper('foo', function() {
       ok(true, 'should call validation method');
     });
@@ -34,7 +32,11 @@ if (!EmberDev.runningProdBuild) {
     });
 
     owner.register('foo:main', AnObject);
-    owner._lookupFactory('foo:main');
+
+    expect(2);
+    expectDeprecation(() => {
+      owner._lookupFactory('foo:main');
+    }, /Using "_lookupFactory" is deprecated. Please use container.factoryFor instead./);
   });
 
   QUnit.test('attempting to inject a nonexistent container key should error', function() {

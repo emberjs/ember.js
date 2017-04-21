@@ -1,12 +1,11 @@
-import { assert } from './debug';
+import { assert } from 'ember-debug';
 
 /**
 @module ember
 @submodule ember-metal
 */
 
-const SPLIT_REGEX = /\{|\}/;
-const END_WITH_EACH_REGEX = /\.@each$/;
+var END_WITH_EACH_REGEX = /\.@each$/;
 
 /**
   Expands `pattern`, invoking `callback` for each expansion.
@@ -36,37 +35,60 @@ const END_WITH_EACH_REGEX = /\.@each$/;
   expansion, and is passed the expansion.
 */
 export default function expandProperties(pattern, callback) {
-  assert('A computed property key must be a string', typeof pattern === 'string');
+  assert(`A computed property key must be a string, you passed ${typeof pattern} ${pattern}`, typeof pattern === 'string');
   assert(
     'Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"',
     pattern.indexOf(' ') === -1
   );
 
-  let parts = pattern.split(SPLIT_REGEX);
-  let properties = [parts];
+  let unbalancedNestedError = `Brace expanded properties have to be balanced and cannot be nested, pattern: ${pattern}`;
+  let properties = [pattern];
 
-  for (let i = 0; i < parts.length; i++) {
-    let part = parts[i];
-    if (part.indexOf(',') >= 0) {
-      properties = duplicateAndReplace(properties, part.split(','), i);
+  // Iterating backward over the pattern makes dealing with indices easier.
+  let bookmark;
+  let inside = false;
+  for (let i = pattern.length; i > 0; --i) {
+    let current = pattern[i - 1];
+
+    switch (current) {
+      // Closing curly brace will be the first character of the brace expansion we encounter.
+      // Bookmark its index so long as we're not already inside a brace expansion.
+      case '}':
+        if (!inside) {
+          bookmark = i - 1;
+          inside = true;
+        } else {
+          assert(unbalancedNestedError, false);
+        }
+        break;
+      // Opening curly brace will be the last character of the brace expansion we encounter.
+      // Apply the brace expansion so long as we've already seen a closing curly brace.
+      case '{':
+        if (inside) {
+          let expansion = pattern.slice(i, bookmark).split(',');
+          // Iterating backward allows us to push new properties w/out affecting our "cursor".
+          for (let j = properties.length; j > 0; --j) {
+            // Extract the unexpanded property from the array.
+            let property = properties.splice(j - 1, 1)[0];
+            // Iterate over the expansion, pushing the newly formed properties onto the array.
+            for (let k = 0; k < expansion.length; ++k) {
+              properties.push(property.slice(0, i - 1) +
+                              expansion[k] +
+                              property.slice(bookmark + 1));
+            }
+          }
+          inside = false;
+        } else {
+          assert(unbalancedNestedError, false);
+        }
+        break;
     }
+  }
+  if (inside) {
+    assert(unbalancedNestedError, false);
   }
 
   for (let i = 0; i < properties.length; i++) {
-    callback(properties[i].join('').replace(END_WITH_EACH_REGEX, '.[]'));
+    callback(properties[i].replace(END_WITH_EACH_REGEX, '.[]'));
   }
-}
-
-function duplicateAndReplace(properties, currentParts, index) {
-  let all = [];
-
-  properties.forEach((property) => {
-    currentParts.forEach((part) => {
-      let current = property.slice(0);
-      current[index] = part;
-      all.push(current);
-    });
-  });
-
-  return all;
 }

@@ -1,12 +1,10 @@
 import {
-  assert,
   get,
   computed,
   _beforeObserver,
   observer,
   beginPropertyChanges,
   endPropertyChanges,
-  Error as EmberError,
   alias
 } from 'ember-metal';
 import {
@@ -20,6 +18,7 @@ import {
   removeArrayObserver,
   objectAt
 } from '../mixins/array';
+import { assert, Error as EmberError } from 'ember-debug';
 
 /**
 @module ember
@@ -103,7 +102,7 @@ export default EmberObject.extend(MutableArray, {
     @method objectAtContent
     @param {Number} idx The index to retrieve.
     @return {Object} the value or undefined if none found
-    @private
+    @public
   */
   objectAtContent(idx) {
     return objectAt(get(this, 'arrangedContent'), idx);
@@ -265,7 +264,7 @@ export default EmberObject.extend(MutableArray, {
 
   _replace(idx, amt, objects) {
     let content = get(this, 'content');
-    assert('The content property of ' + this.constructor + ' should be set before modifying it', content);
+    assert(`The content property of ${this.constructor} should be set before modifying it`, content);
     if (content) {
       this.replaceContent(idx, amt, objects);
     }

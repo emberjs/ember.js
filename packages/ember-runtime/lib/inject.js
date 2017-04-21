@@ -1,7 +1,5 @@
-import {
-  assert,
-  InjectedProperty
-} from 'ember-metal';
+import { InjectedProperty } from 'ember-metal';
+import { assert } from 'ember-debug';
 
 /**
   Namespace for injection helper methods.
@@ -33,9 +31,7 @@ const typeValidators = {};
 export function createInjectionHelper(type, validator) {
   typeValidators[type] = validator;
 
-  inject[type] = function(name) {
-    return new InjectedProperty(type, name);
-  };
+  inject[type] = name => new InjectedProperty(type, name);
 }
 
 /**

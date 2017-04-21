@@ -3,10 +3,8 @@
 @submodule ember-views
 */
 
-import {
-  assert,
-  Mixin
-} from 'ember-metal';
+import { Mixin } from 'ember-metal';
+import { assert } from 'ember-debug';
 
 const EMPTY_ARRAY = Object.freeze([]);
 
@@ -22,10 +20,7 @@ export default Mixin.create({
     this._super(...arguments);
 
     assert(`Only arrays are allowed for 'classNameBindings'`, Array.isArray(this.classNameBindings));
-    this.classNameBindings = this.classNameBindings.slice();
-
     assert(`Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.`, Array.isArray(this.classNames));
-    this.classNames = this.classNames.slice();
   },
 
   /**

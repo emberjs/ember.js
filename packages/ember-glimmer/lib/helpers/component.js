@@ -13,8 +13,9 @@ import {
   EvaluatedNamedArgs,
   EvaluatedPositionalArgs,
   isComponentDefinition
-} from 'glimmer-runtime';
-import { assert } from 'ember-metal';
+} from '@glimmer/runtime';
+import { assert } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 
 /**
   The `{{component}}` helper lets you add instances of `Ember.Component` to a
@@ -22,17 +23,19 @@ import { assert } from 'ember-metal';
   additional information on how a `Component` functions.
   `{{component}}`'s primary use is for cases where you want to dynamically
   change which type of component is rendered as the state of your application
-  changes. The provided block will be applied as the template for the component.
-  Given an empty `<body>` the following template:
+  changes. This helper has three modes: inline, block, and nested.
 
-  ```handlebars
-  {{! application.hbs }}
+  ### Inline Form
+
+  Given the following template:
+
+  ```app/application.hbs
   {{component infographicComponentName}}
   ```
 
   And the following application code:
 
-  ```javascript
+  ```app/controllers/application.js
   export default Ember.Controller.extend({
     infographicComponentName: computed('isMarketOpen', {
       get() {
@@ -53,32 +56,86 @@ import { assert } from 'ember-metal';
   Note: You should not use this helper when you are consistently rendering the same
   component. In that case, use standard component syntax, for example:
 
-  ```handlebars
-  {{! application.hbs }}
+  ```app/templates/application.hbs
   {{live-updating-chart}}
   ```
 
-  ## Nested Usage
+  ### Block Form
+
+  Using the block form of this helper is similar to using the block form
+  of a component. Given the following application template:
+
+  ```app/templates/application.hbs
+  {{#component infographicComponentName}}
+    Last update: {{lastUpdateTimestamp}}
+  {{/component}}
+  ```
+
+  The following controller code:
+
+  ```app/controllers/application.js
+  export default Ember.Controller.extend({
+    lastUpdateTimestamp: computed(function() {
+      return new Date();
+    }),
+
+    infographicComponentName: computed('isMarketOpen', {
+      get() {
+        if (this.get('isMarketOpen')) {
+          return 'live-updating-chart';
+        } else {
+          return 'market-close-summary';
+        }
+      }
+    })
+  });
+  ```
+
+  And the following component template:
+
+  ```app/templates/components/live-updating-chart.hbs
+  {{! chart }}
+  {{yield}}
+  ```
+
+  The `Last Update: {{lastUpdateTimestamp}}` will be rendered in place of the `{{yield}}`.
+
+  ### Nested Usage
 
   The `component` helper can be used to package a component path with initial attrs.
   The included attrs can then be merged during the final invocation.
   For example, given a `person-form` component with the following template:
 
-  ```handlebars
+  ```app/templates/components/person-form.hbs
   {{yield (hash
-      nameInput=(component "my-input-component" value=model.name placeholder="First Name"))}}
+    nameInput=(component "my-input-component" value=model.name placeholder="First Name")
+  )}}
   ```
 
-  The following snippet:
+  When yielding the component via the `hash` helper, the component is invoked directly.
+  See the following snippet:
 
   ```
   {{#person-form as |form|}}
-    {{component form.nameInput placeholder="Username"}}
+    {{form.nameInput placeholder="Username"}}
   {{/person-form}}
   ```
 
-  would output an input whose value is already bound to `model.name` and `placeholder`
+  Which outputs an input whose value is already bound to `model.name` and `placeholder`
   is "Username".
+
+  When yielding the component without the hash helper use the `component` helper.
+  For example, below is a `full-name` component template:
+
+  ```handlebars
+  {{yield (component "my-input-component" value=model.name placeholder="Name")}}
+  ```
+
+  ```
+  {{#full-name as |field|}}
+    {{component field placeholder="Full name"}}
+  {{/full-name}}
+  ```
 
   @method component
   @since 1.11.0
@@ -92,9 +149,11 @@ export class ClosureComponentReference extends CachedReference {
 
   constructor(args, symbolTable, env) {
     super();
-    this.defRef = args.positional.at(0);
+
+    let firstArg = args.positional.at(0);
+    this.defRef = firstArg;
+    this.tag = firstArg.tag;
     this.env = env;
-    this.tag = args.positional.at(0).tag;
     this.symbolTable = symbolTable;
     this.args = args;
     this.lastDefinition = undefined;
@@ -116,6 +175,8 @@ export class ClosureComponentReference extends CachedReference {
     this.lastName = nameOrDef;
 
     if (typeof nameOrDef === 'string') {
+      assert('You cannot use the input helper as a contextual helper. Please extend Ember.TextField or Ember.Checkbox to use it as a contextual component.', nameOrDef !== 'input');
+      assert('You cannot use the textarea helper as a contextual helper. Please extend Ember.TextArea to use it as a contextual component.', nameOrDef !== 'textarea');
       definition = env.getComponentDefinition([nameOrDef], symbolTable);
       assert(`The component helper cannot be used without a valid component name. You used "${nameOrDef}" via (component "${nameOrDef}")`, definition);
     } else if (isComponentDefinition(nameOrDef)) {
@@ -147,9 +208,18 @@ function createCurriedDefinition(definition, args) {
   );
 }
 
+let EMPTY_BLOCKS = {
+  default: null,
+  inverse: null
+};
+
+if (DEBUG) {
+  EMPTY_BLOCKS = Object.freeze(EMPTY_BLOCKS);
+}
+
 function curryArgs(definition, newArgs) {
   let { args, ComponentClass } = definition;
-  let { positionalParams } = ComponentClass;
+  let positionalParams = ComponentClass.class.positionalParams;
 
   // The args being passed in are from the (component ...) invocation,
   // so the first positional argument is actually the name or component
@@ -198,7 +268,8 @@ function curryArgs(definition, newArgs) {
 
   let mergedArgs = EvaluatedArgs.create(
     EvaluatedPositionalArgs.create(mergedPositional),
-    EvaluatedNamedArgs.create(mergedNamed)
+    EvaluatedNamedArgs.create(mergedNamed),
+    EMPTY_BLOCKS
   );
 
   return mergedArgs;

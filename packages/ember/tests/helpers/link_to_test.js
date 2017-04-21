@@ -11,7 +11,6 @@ import {
   run,
   instrumentationSubscribe as subscribe,
   instrumentationReset as reset,
-  isFeatureEnabled,
   alias
 } from 'ember-metal';
 import { Route, NoneLocation } from 'ember-routing';
@@ -19,6 +18,7 @@ import { Application } from 'ember-application';
 import { jQuery } from 'ember-views';
 import { compile } from 'ember-template-compiler';
 import { setTemplates, setTemplate } from 'ember-glimmer';
+import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember-debug';
 
 let Router, App, router, appInstance;
 
@@ -118,7 +118,7 @@ QUnit.test('The {{link-to}} helper moves into the named route', function() {
   equal(jQuery('#home-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 });
 
-if (isFeatureEnabled('ember-improved-instrumentation')) {
+if (EMBER_IMPROVED_INSTRUMENTATION) {
   QUnit.test('The {{link-to}} helper fires an interaction event', function(assert) {
     assert.expect(2);
     Router.map(function(match) {
@@ -1249,18 +1249,40 @@ QUnit.test('the {{link-to}} helper does not call preventDefault if `preventDefau
   equal(event.isDefaultPrevented(), false, 'should not preventDefault');
 });
 
+QUnit.test('the {{link-to}} helper throws a useful error if you invoke it wrong', function() {
+  expect(1);
+
+  setTemplate('application', compile("{{#link-to 'post'}}Post{{/link-to}}"));
+
+  Router.map(function() {
+    this.route('post', { path: 'post/:post_id' });
+  });
+
+  QUnit.throws(function() {
+    bootApplication();
+  }, /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/);
+});
+
 QUnit.test('the {{link-to}} helper does not throw an error if its route has exited', function() {
   expect(0);
 
-  setTemplate('application', compile("{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'post' defaultPost id='default-post-link'}}Default Post{{/link-to}}{{#if currentPost}}{{#link-to 'post' id='post-link'}}Post{{/link-to}}{{/if}}"));
+  setTemplate('application', compile("{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'post' defaultPost id='default-post-link'}}Default Post{{/link-to}}{{#if currentPost}}{{#link-to 'post' currentPost id='current-post-link'}}Current Post{{/link-to}}{{/if}}"));
 
   App.ApplicationController = Controller.extend({
+    defaultPost: { id: 1 },
     postController: inject.controller('post'),
     currentPost: alias('postController.model')
   });
 
-  App.PostController = Controller.extend({
-    model: { id: 1 }
+  App.PostController = Controller.extend();
+
+  App.PostRoute = Route.extend({
+    model: function() {
+      return { id: 2 };
+    },
+    serialize: function(model) {
+      return { post_id: model.id };
+    }
   });
 
   Router.map(function() {
@@ -1272,6 +1294,8 @@ QUnit.test('the {{link-to}} helper does not throw an error if its route has exit
   run(router, 'handleURL', '/');
 
   run(() => jQuery('#default-post-link', '#qunit-fixture').click());
+  run(() => jQuery('#home-link', '#qunit-fixture').click());
+  run(() => jQuery('#current-post-link', '#qunit-fixture').click());
   run(() => jQuery('#home-link', '#qunit-fixture').click());
 });
 

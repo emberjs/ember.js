@@ -352,6 +352,14 @@ QUnit.test('adding an object should notify (@each.isDone)', function() {
   equal(called, 1, 'calls observer when object is pushed');
 });
 
+QUnit.test('@each is readOnly', function() {
+  expect(1);
+
+  throws(function() {
+    set(ary, '@each', 'foo');
+  }, /Cannot set read-only property "@each"/);
+});
+
 QUnit.test('using @each to observe arrays that does not return objects raise error', function() {
   let called = 0;
 

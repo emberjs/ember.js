@@ -32,7 +32,8 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
 });
 
 QUnit.test('factories', function() {
-  let PostFactory = App.__container__.lookupFactory('model:post');
+  let PostFactory;
+  PostFactory = App.__container__.factoryFor('model:post').class;
   equal(PostFactory.toString(), 'App.Post', 'expecting the model to be post');
 });
 

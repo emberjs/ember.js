@@ -1,4 +1,4 @@
-import isPresent from '../is_present';
+import { isPresent } from '..';
 
 QUnit.module('Ember.isPresent');
 

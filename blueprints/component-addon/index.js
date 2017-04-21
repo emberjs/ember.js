@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/* eslint-env node */
 
 var stringUtil         = require('ember-cli-string-utils');
 var validComponentName = require('ember-cli-valid-component-name');
@@ -45,7 +45,7 @@ module.exports = {
     var importPathName       = [addonName, 'components', fileName].join('/');
 
     if (options.pod) {
-      importPathName = [addonName, 'components', fileName,'component'].join('/');
+      importPathName = [addonName, 'components', fileName, 'component'].join('/');
     }
 
     return {

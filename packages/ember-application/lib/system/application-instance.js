@@ -4,7 +4,8 @@
 */
 
 import { assign } from 'ember-utils';
-import { deprecate, get, set, run, computed } from 'ember-metal';
+import { deprecate } from 'ember-debug';
+import { get, set, run, computed } from 'ember-metal';
 import {
   buildFakeRegistryWithDeprecations,
   RSVP
@@ -239,22 +240,31 @@ const ApplicationInstance = EngineInstance.extend({
   visit(url) {
     this.setupRouter();
 
+    let bootOptions = this.__container__.lookup('-environment:main');
+
     let router = get(this, 'router');
 
-    let handleResolve = () => {
-      // Resolve only after rendering is complete
-      return new RSVP.Promise((resolve) => {
-        // TODO: why is this necessary? Shouldn't 'actions' queue be enough?
-        // Also, aren't proimses supposed to be async anyway?
-        run.next(null, resolve, this);
-      });
+    let handleTransitionResolve = () => {
+      if (!bootOptions.options.shouldRender) {
+        // No rendering is needed, and routing has completed, simply return.
+        return this;
+      } else {
+        return new RSVP.Promise((resolve) => {
+          // Resolve once rendering is completed. `router.handleURL` returns the transition (as a thennable)
+          // which resolves once the transition is completed, but the transition completion only queues up
+          // a scheduled revalidation (into the `render` queue) in the Renderer.
+          //
+          // This uses `run.schedule('afterRender', ....)` to resolve after that rendering has completed.
+          run.schedule('afterRender', null, resolve, this);
+        });
+      }
     };
 
-    let handleReject = (error) => {
+    let handleTransitionReject = (error) => {
       if (error.error) {
         throw error.error;
-      } else if (error.name === 'TransitionAborted' && router.router.activeTransition) {
-        return router.router.activeTransition.then(handleResolve, handleReject);
+      } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
+        return router._routerMicrolib.activeTransition.then(handleTransitionResolve, handleTransitionReject);
       } else if (error.name === 'TransitionAborted') {
         throw new Error(error.message);
       } else {
@@ -268,7 +278,7 @@ const ApplicationInstance = EngineInstance.extend({
     location.setURL(url);
 
     // getURL returns the set url with the rootURL stripped off
-    return router.handleURL(location.getURL()).then(handleResolve, handleReject);
+    return router.handleURL(location.getURL()).then(handleTransitionResolve, handleTransitionReject);
   }
 });
 

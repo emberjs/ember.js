@@ -44,7 +44,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.assertText('Nested template says: Hi!', 'Re-render works');
   }
 
-  ['@test tagless blockless component can lookup local template'](assert) {
+  ['@test tagless blockless component can lookup local template']() {
     this.registerComponent('x-outer/x-inner', { template: 'Nested template says: {{yield}}' });
     this.registerTemplate('components/x-outer', '{{#x-inner}}Hi!{{/x-inner}}');
     this.registerComponent('x-outer', {
@@ -99,7 +99,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.assertText('yall finished or yall done?');
   }
 
-   ['@test it can local lookup a dynamic component from a passed named argument']() {
+  ['@test it can local lookup a dynamic component from a passed named argument']() {
     this.registerComponent('parent-foo', { template: `yall finished {{global-biz baz=(component 'local-bar')}}` });
     this.registerComponent('global-biz', { template: 'or {{component baz}}' });
     this.registerComponent('parent-foo/local-bar', { template: 'yall done?' });
@@ -201,7 +201,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
 
     expectAssertion(() => {
       this.render('{{x-outer}}');
-    }, /A helper named "x-inner" could not be found/);
+    }, /A component or helper named "x-inner" could not be found/);
   }
 
   ['@test overrides global lookup']() {

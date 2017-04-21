@@ -60,11 +60,11 @@ function setupComponentTest() {
   var module = this;
 
   module.element = new SimpleDOM.Document();
-  module.owner = buildOwner(this.Ember, { resolve: function(){} });
+  module.owner = buildOwner(this.Ember, { resolve: function() {} });
   module.owner.register('service:-document', new SimpleDOM.Document(), { instantiate: false });
 
   this._hasRendered = false;
-  var OutletView = module.owner._lookupFactory('view:-outlet');
+  let OutletView = module.owner._lookupFactory('view:-outlet');
   var OutletTemplate = module.owner.lookup('template:-outlet');
   module.component = OutletView.create();
   this._outletState = {

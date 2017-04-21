@@ -1374,7 +1374,6 @@ QUnit.test('Route inherits model from parent route', function() {
   let post1 = {};
   let post2 = {};
   let post3 = {};
-  let currentPost;
   let share1 = {};
   let share2 = {};
   let share3 = {};
@@ -1420,15 +1419,12 @@ QUnit.test('Route inherits model from parent route', function() {
 
   bootApplication();
 
-  currentPost = post1;
   handleURL('/posts/1/comments');
   handleURL('/posts/1/shares/1');
 
-  currentPost = post2;
   handleURL('/posts/2/comments');
   handleURL('/posts/2/shares/2');
 
-  currentPost = post3;
   handleURL('/posts/3/comments');
   handleURL('/posts/3/shares/3');
 });
@@ -1446,7 +1442,6 @@ QUnit.test('Routes with { resetNamespace: true } inherits model from parent rout
   let post1 = {};
   let post2 = {};
   let post3 = {};
-  let currentPost;
 
   let posts = {
     1: post1,
@@ -1470,13 +1465,8 @@ QUnit.test('Routes with { resetNamespace: true } inherits model from parent rout
 
   bootApplication();
 
-  currentPost = post1;
   handleURL('/posts/1/comments');
-
-  currentPost = post2;
   handleURL('/posts/2/comments');
-
-  currentPost = post3;
   handleURL('/posts/3/comments');
 });
 
@@ -1848,6 +1838,10 @@ QUnit.test('Parent route context change', function() {
   App.PostRoute = Route.extend({
     model(params) {
       return { id: params.postId };
+    },
+
+    serialize(model) {
+      return { postId: model.id };
     },
 
     actions: {
@@ -2290,6 +2284,8 @@ QUnit.test('Route should tear down multiple outlets', function() {
 
 
 QUnit.test('Route will assert if you try to explicitly render {into: ...} a missing template', function () {
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -2865,7 +2861,7 @@ QUnit.test('Specifying non-existent controller name in route#render throws', fun
     renderTemplate() {
       try {
         this.render('homepage', { controller: 'stefanpenneristhemanforme' });
-      } catch(e) {
+      } catch (e) {
         equal(e.message, 'You passed `controller: \'stefanpenneristhemanforme\'` into the `render` method, but no such controller could be found.');
       }
     }
@@ -3441,7 +3437,12 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
 });
 
 QUnit.test('Can this.render({into:...}) the render helper', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
   setTemplate('bar', compile('bar'));
@@ -3468,7 +3469,12 @@ QUnit.test('Can this.render({into:...}) the render helper', function() {
 });
 
 QUnit.test('Can disconnect from the render helper', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
 
@@ -3493,7 +3499,12 @@ QUnit.test('Can disconnect from the render helper', function() {
 });
 
 QUnit.test('Can this.render({into:...}) the render helper\'s children', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
   setTemplate('other', compile('other'));
@@ -3522,7 +3533,12 @@ QUnit.test('Can this.render({into:...}) the render helper\'s children', function
 });
 
 QUnit.test('Can disconnect from the render helper\'s children', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
   setTemplate('other', compile('other'));
@@ -3549,8 +3565,16 @@ QUnit.test('Can disconnect from the render helper\'s children', function() {
 });
 
 QUnit.test('Can this.render({into:...}) nested render helpers', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
-  setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+  expectDeprecation(() => {
+    setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
   setTemplate('baz', compile('baz'));
@@ -3577,8 +3601,16 @@ QUnit.test('Can this.render({into:...}) nested render helpers', function() {
 });
 
 QUnit.test('Can disconnect from nested render helpers', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
-  setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+  expectDeprecation(() => {
+    setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
 
@@ -3665,7 +3697,7 @@ QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
 
   throws(() => {
     run(() => router.handleURL('/other'));
-  }, /boom/, 'expected an exception that didnt happen');
+  }, /boom/, 'expected an exception but none was thrown');
 });
 
 QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet', function(assert) {
@@ -3722,7 +3754,7 @@ QUnit.test('Route serializers work for Engines', function() {
 
   bootApplication();
 
-  equal(router.router.generate('blog.post', { id: '13' }), '/blog/post/13', 'url is generated properly');
+  equal(router._routerMicrolib.generate('blog.post', { id: '13' }), '/blog/post/13', 'url is generated properly');
 });
 
 QUnit.test('Defining a Route#serialize method in an Engine throws an error', function() {

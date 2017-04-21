@@ -3,13 +3,15 @@ import { RenderingTest, moduleFor } from '../utils/test-case';
 import { applyMixins } from '../utils/abstract-test-case';
 import {
   set,
-  computed,
+  computed
+} from 'ember-metal';
+import {
   getDebugFunction,
   setDebugFunction
-} from 'ember-metal';
+} from 'ember-debug';
 import { Object as EmberObject, ObjectProxy } from 'ember-runtime';
 import { classes } from '../utils/test-helpers';
-import { STYLE_WARNING } from 'ember-views';
+import { constructStyleDeprecationMessage  } from 'ember-views';
 import { Component, SafeString } from '../utils/helpers';
 
 moduleFor('Static content tests', class extends RenderingTest {
@@ -1161,8 +1163,8 @@ class StyleTest extends RenderingTest {
     setDebugFunction('warn', originalWarn);
   }
 
-  assertStyleWarning() {
-    this.assert.deepEqual(warnings, [STYLE_WARNING]);
+  assertStyleWarning(style) {
+    this.assert.deepEqual(warnings, [constructStyleDeprecationMessage(style)]);
   }
 
   assertNoWarning() {
@@ -1223,11 +1225,12 @@ moduleFor('Inline style tests', class extends StyleTest {
 if (!EmberDev.runningProdBuild) {
   moduleFor('Inline style tests - warnings', class extends StyleTest {
     ['@test specifying <div style={{userValue}}></div> generates a warning'](assert) {
+      let userValue = 'width: 42px';
       this.render('<div style={{userValue}}></div>', {
-        userValue: 'width: 42px'
+        userValue
       });
 
-      this.assertStyleWarning();
+      this.assertStyleWarning(userValue);
     }
 
     ['@test specifying `attributeBindings: ["style"]` generates a warning'](assert) {
@@ -1236,12 +1239,12 @@ if (!EmberDev.runningProdBuild) {
       });
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
-
+      let userValue = 'width: 42px';
       this.render('{{foo-bar style=userValue}}', {
-        userValue: 'width: 42px'
+        userValue
       });
 
-      this.assertStyleWarning();
+      this.assertStyleWarning(userValue);
     }
 
     ['@test specifying `<div style={{{userValue}}}></div>` works properly without a warning'](assert) {
@@ -1280,6 +1283,50 @@ if (!EmberDev.runningProdBuild) {
       });
 
       this.assertNoWarning();
+    }
+
+    ['@test no warnings are triggered when a safe string is quoted'](assert) {
+      this.render('<div style="{{userValue}}"></div>', {
+        userValue: new SafeString('width: 42px')
+      });
+
+      this.assertNoWarning();
+    }
+
+    ['@test binding warning is triggered when an unsafe string is quoted'](assert) {
+      let userValue = 'width: 42px';
+      this.render('<div style="{{userValue}}"></div>', {
+        userValue
+      });
+
+      this.assertStyleWarning(userValue);
+    }
+
+    ['@test binding warning is triggered when a safe string for a complete property is concatenated in place'](assert) {
+      let userValue = 'width: 42px';
+      this.render('<div style="color: green; {{userValue}}"></div>', {
+        userValue: new SafeString('width: 42px')
+      });
+
+      this.assertStyleWarning(`color: green; ${userValue}`);
+    }
+
+    ['@test binding warning is triggered when a safe string for a value is concatenated in place'](assert) {
+      let userValue = '42px';
+      this.render('<div style="color: green; width: {{userValue}}"></div>', {
+        userValue: new SafeString(userValue)
+      });
+
+      this.assertStyleWarning(`color: green; width: ${userValue}`);
+    }
+
+    ['@test binding warning is triggered when a safe string for a property name is concatenated in place'](assert) {
+      let userValue = 'width';
+      this.render('<div style="color: green; {{userProperty}}: 42px"></div>', {
+        userProperty: new SafeString(userValue)
+      });
+
+      this.assertStyleWarning(`color: green; ${userValue}: 42px`);
     }
   });
 }

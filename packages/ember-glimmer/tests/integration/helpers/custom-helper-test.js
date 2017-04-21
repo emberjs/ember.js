@@ -1,8 +1,8 @@
 /* globals EmberDev */
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { makeBoundHelper } from '../../utils/helpers';
 import { runDestroy } from 'internal-test-helpers';
 import { set } from 'ember-metal';
+import { HAS_NATIVE_WEAKMAP } from 'ember-utils';
 
 let assert = QUnit.assert;
 
@@ -56,24 +56,6 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('');
   }
 
-  ['@test it can resolve custom makeBoundHelper with or without dashes [DEPRECATED]']() {
-    expectDeprecation(() => {
-      this.owner.register('helper:hello', makeBoundHelper(() => 'hello'));
-    }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.');
-
-    expectDeprecation(() => {
-      this.owner.register('helper:hello-world', makeBoundHelper(() => 'hello world'));
-    }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.');
-
-    this.render('{{hello}} | {{hello-world}}');
-
-    this.assertText('hello | hello world');
-
-    this.runTask(() => this.rerender());
-
-    this.assertText('hello | hello world');
-  }
-
   ['@test it can resolve custom class-based helpers with or without dashes']() {
     this.registerHelper('hello', {
       compute() {
@@ -94,6 +76,16 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.runTask(() => this.rerender());
 
     this.assertText('hello | hello world');
+  }
+
+  ['@test throws if `this._super` is not called from `init`']() {
+    this.registerHelper('hello-world', {
+      init() {}
+    });
+
+    expectAssertion(() => {
+      this.render('{{hello-world}}');
+    }, /You must call `this._super\(...arguments\);` when overriding `init` on a framework object. Please update .* to call `this._super\(...arguments\);` from `init`./);
   }
 
   ['@test class-based helper can recompute a new value']() {
@@ -162,6 +154,30 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('2');
 
     assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
+  }
+
+  ['@test helper params can be returned']() {
+    this.registerHelper('hello-world', values => {
+      return values;
+    });
+
+    this.render('{{#each (hello-world model) as |item|}}({{item}}){{/each}}', {
+      model: ['bob']
+    });
+
+    this.assertText('(bob)');
+  }
+
+  ['@test helper hash can be returned']() {
+    this.registerHelper('hello-world', (_, hash) => {
+      return hash.model;
+    });
+
+    this.render(`{{get (hello-world model=model) 'name'}}`, {
+      model: { name: 'bob' }
+    });
+
+    this.assertText('bob');
   }
 
   ['@test simple helper is called for param changes']() {
@@ -318,9 +334,8 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
                    (join-words "overcomes" "by")
                    model.reason
                    (join-words (join-words "hath overcome but" "half"))
-                   (join-words "his" (join-words "foe"))}}`, {
-      model: { reason: 'force' }
-    });
+                   (join-words "his" (join-words "foe"))}}`,
+      { model: { reason: 'force' } });
 
     this.assertText('Who overcomes by force hath overcome but half his foe');
 
@@ -383,9 +398,9 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
   ['@test simple helper not usable within element']() {
     this.registerHelper('some-helper', () => {});
 
-    expectAssertion(() => {
+    this.assert.throws(() => {
       this.render(`<div {{some-helper}}></div>`);
-    }, /Helpers may not be used in the element form/);
+    }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
   }
 
   ['@test class-based helper not usable within element']() {
@@ -394,9 +409,9 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
       }
     });
 
-    expectAssertion(() => {
+    this.assert.throws(() => {
       this.render(`<div {{some-helper}}></div>`);
-    }, /Helpers may not be used in the element form/);
+    }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
   }
 
   ['@test class-based helper is torn down']() {
@@ -562,7 +577,7 @@ let pushingIntoFrozenArrayThrows = (() => {
     array.push('foo');
 
     return false;
-  } catch(e) {
+  } catch (e) {
     return true;
   }
 })();
@@ -575,7 +590,7 @@ let assigningExistingFrozenPropertyThrows = (() => {
     obj.foo = 'derp';
 
     return false;
-  } catch(e) {
+  } catch (e) {
     return true;
   }
 })();
@@ -588,12 +603,12 @@ let addingPropertyToFrozenObjectThrows = (() => {
     obj.bar = 'derp';
 
     return false;
-  } catch(e) {
+  } catch (e) {
     return true;
   }
 })();
 
-if (!EmberDev.runningProdBuild && (
+if (!EmberDev.runningProdBuild && HAS_NATIVE_WEAKMAP && (
   pushingIntoFrozenArrayThrows ||
     assigningExistingFrozenPropertyThrows ||
     addingPropertyToFrozenObjectThrows

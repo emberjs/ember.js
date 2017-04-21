@@ -1,15 +1,51 @@
-import { observer, set } from 'ember-metal';
+import { observer, set, computed } from 'ember-metal';
 import { Controller } from 'ember-runtime';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
 
 moduleFor('Helpers test: {{render}}', class extends RenderingTest {
   ['@test should render given template']() {
-    this.owner.register('controller:home', Controller.extend());
     this.registerTemplate('home', '<p>BYE</p>');
 
-    this.render(`<h1>HI</h1>{{render 'home'}}`);
+    expectDeprecation(() => {
+      this.render(`<h1>HI</h1>{{render 'home'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
 
     this.assertText('HIBYE');
+  }
+
+  ['@test uses `controller:basic` as the basis for a generated controller when none exists for specified name']() {
+    this.owner.register('controller:basic', Controller.extend({
+      isBasicController: true
+    }));
+    this.registerTemplate('home', '{{isBasicController}}');
+
+    expectDeprecation(() => {
+      this.render(`{{render 'home'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    this.assertText('true');
+  }
+
+  ['@test generates a controller if none exists']() {
+    this.registerTemplate('home', '<p>{{this}}</p>');
+
+    expectDeprecation(() => {
+      this.render(`<h1>HI</h1>{{render 'home'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    this.assertText('HI(generated home controller)');
+  }
+
+  ['@test should use controller with the same name as template if present']() {
+    this.owner.register('controller:home', Controller.extend({ name: 'home' }));
+    this.registerTemplate('home', '{{name}}<p>BYE</p>');
+
+    expectDeprecation(() => {
+      this.render(`<h1>HI</h1>{{render 'home'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    this.assertText('HIhomeBYE');
   }
 
   ['@test should render nested helpers']() {
@@ -19,20 +55,25 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     this.owner.register('controller:baz', Controller.extend());
 
     this.registerTemplate('home', '<p>BYE</p>');
-    this.registerTemplate('foo', `<p>FOO</p>{{render 'bar'}}`);
-    this.registerTemplate('bar', `<p>BAR</p>{{render 'baz'}}`);
     this.registerTemplate('baz', `<p>BAZ</p>`);
 
-    this.render('<h1>HI</h1>{{render \'foo\'}}');
+    expectDeprecation(() => {
+      this.registerTemplate('foo', `<p>FOO</p>{{render 'bar'}}`);
+      this.registerTemplate('bar', `<p>BAR</p>{{render 'baz'}}`);
+      this.render('<h1>HI</h1>{{render \'foo\'}}');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
     this.assertText('HIFOOBARBAZ');
   }
 
   ['@test should have assertion if the template does not exist']() {
     this.owner.register('controller:oops', Controller.extend());
 
-    expectAssertion(() => {
-      this.render(`<h1>HI</h1>{{render 'oops'}}`);
-    }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as a template.');
+    expectDeprecation(() => {
+      expectAssertion(() => {
+        this.render(`<h1>HI</h1>{{render 'oops'}}`);
+      }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as a template.');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
   }
 
   ['@test should render given template with the singleton controller as its context']() {
@@ -43,7 +84,9 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     }));
     this.registerTemplate('post', '<p>{{title}}</p>');
 
-    this.render(`<h1>HI</h1>{{render 'post'}}`);
+    expectDeprecation(() => {
+      this.render(`<h1>HI</h1>{{render 'post'}}`);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
 
     this.assertText(`HIIt's Simple Made Easy`);
 
@@ -78,7 +121,9 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
 
     this.registerTemplate('post', '<p>{{title}}</p>');
 
-    this.render(`{{#if showPost}}{{render 'post'}}{{else}}Nothing here{{/if}}`, { showPost: false });
+    expectDeprecation(() => {
+      this.render(`{{#if showPost}}{{render 'post'}}{{else}}Nothing here{{/if}}`, { showPost: false });
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
 
     this.assertText(`Nothing here`);
 
@@ -212,9 +257,12 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
   ['@test should raise an error when a given controller name does not resolve to a controller']() {
     this.registerTemplate('home', '<p>BYE</p>');
     this.owner.register('controller:posts', Controller.extend());
-    expectAssertion(() => {
-      this.render(`<h1>HI</h1>{{render "home" controller="postss"}}`);
-    }, /The controller name you supplied \'postss\' did not resolve to a controller./);
+
+    expectDeprecation(() => {
+      expectAssertion(() => {
+        this.render(`<h1>HI</h1>{{render "home" controller="postss"}}`);
+      }, /The controller name you supplied \'postss\' did not resolve to a controller./);
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
   }
 
   ['@test should render with given controller'](assert) {
@@ -231,7 +279,10 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
       }
     }));
 
-    this.render('{{render "home" controller="posts"}}');
+    expectDeprecation(() => {
+      this.render('{{render "home" controller="posts"}}');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
     let renderedController = this.owner.lookup('controller:posts');
     let uniqueId = renderedController.get('uniqueId');
     let renderedModel = renderedController.get('model');
@@ -331,7 +382,9 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
       }
     }));
 
-    this.render('{{render "blog.post"}}');
+    expectDeprecation(() => {
+      this.render('{{render "blog.post"}}');
+    }, /Please refactor [\w\.{\}"` ]+ to a component/);
 
     this.assertText(`0`);
   }
@@ -379,5 +432,33 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     }, /Please refactor [\w\{\}"` ]+ to a component/);
 
     postController.send('someAction');
+  }
+
+  ['@test render helper emits useful backtracking re-render assertion message'](assert) {
+    this.owner.register('controller:outer', Controller.extend());
+    this.owner.register('controller:inner', Controller.extend({
+      propertyWithError: computed(function() {
+        this.set('model.name', 'this will cause a backtracking error');
+        return 'foo';
+      })
+    }));
+
+    let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "controller:outer \(with the render helper\)" and modified in "controller:inner \(with the render helper\)"/;
+
+    expectDeprecation(() => {
+      let person = { name: 'Ben' };
+
+      this.registerTemplate('outer', `Hi {{model.name}} | {{render 'inner' model}}`);
+      this.registerTemplate('inner', `Hi {{propertyWithError}}`);
+
+      if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+        expectDeprecation(expectedBacktrackingMessage);
+        this.render(`{{render 'outer' person}}`, { person });
+      } else {
+        expectAssertion(() => {
+          this.render(`{{render 'outer' person}}`, { person });
+        }, expectedBacktrackingMessage);
+      }
+    });
   }
 });

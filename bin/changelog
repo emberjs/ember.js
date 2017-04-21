@@ -42,7 +42,7 @@ function getCommitMessage(commitInfo) {
     try {
       // command from http://stackoverflow.com/questions/8475448/find-merge-commit-which-include-a-specific-commit
       message = execSync('commit=$((git rev-list ' + originalCommit + '..origin/master --ancestry-path | cat -n; git rev-list ' + originalCommit + '..origin/master --first-parent | cat -n) | sort -k2 | uniq -f1 -d | sort -n | tail -1 | cut -f2) && git show --format="%s\n\n%b" $commit', { encoding: 'utf8' });
-    } catch(e) { }
+    } catch (e) { }
   }
 
   return message;

@@ -1,12 +1,12 @@
 import { testBoth } from 'internal-test-helpers';
 import {
   watch,
-  unwatch
-} from '../../watching';
-import { defineProperty } from '../../properties';
-import { addListener } from '../../events';
-import { computed } from '../../computed';
-import { set } from '../../property_set';
+  unwatch,
+  defineProperty,
+  addListener,
+  computed,
+  set
+} from '../..';
 
 let willCount, didCount;
 

@@ -81,11 +81,11 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
       {{#each model.items as |template i|}}
         {{model.type}}: {{partial template}}
       {{/each}}`, {
-      model: {
-        items: ['even', 'odd', 'even', 'odd'],
-        type: 'number'
-      }
-    });
+        model: {
+          items: ['even', 'odd', 'even', 'odd'],
+          type: 'number'
+        }
+      });
 
     this.assertStableRerender();
 
@@ -112,8 +112,8 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
       {{else}}
         Nothing!
       {{/with}}`, {
-      item: { thing: false }
-    });
+        item: { thing: false }
+      });
 
     this.assertStableRerender();
 

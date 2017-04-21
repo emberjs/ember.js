@@ -1,7 +1,7 @@
 import { describe, it, beforeEach, afterEach } from 'mocha';
 import { expect } from 'chai';
-import startApp from '../helpers/start-app';
-<% if (destroyAppExists) { %>import destroyApp from '../helpers/destroy-app';<% } else { %>import Ember from 'ember';<% } %>
+import startApp from '<%= dasherizedPackageName %>/tests/helpers/start-app';
+<% if (destroyAppExists) { %>import destroyApp from '<%= dasherizedPackageName %>/tests/helpers/destroy-app';<% } else { %>import Ember from 'ember';<% } %>
 
 describe('<%= friendlyTestName %>', function() {
   let application;
@@ -17,7 +17,7 @@ describe('<%= friendlyTestName %>', function() {
   it('can visit /<%= dasherizedModuleName %>', function() {
     visit('/<%= dasherizedModuleName %>');
 
-    andThen(function() {
+    return andThen(() => {
       expect(currentURL()).to.equal('/<%= dasherizedModuleName %>');
     });
   });

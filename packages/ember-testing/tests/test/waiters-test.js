@@ -1,4 +1,3 @@
-import { isFeatureEnabled } from 'ember-metal';
 import {
   registerWaiter,
   unregisterWaiter,
@@ -156,13 +155,9 @@ QUnit.test('generateDeprecatedWaitersArray provides deprecated access to waiters
   this.waiters.register();
 
   let waiters;
-  if (isFeatureEnabled('ember-testing-check-waiters')) {
-    expectDeprecation(function() {
-      waiters = generateDeprecatedWaitersArray();
-    }, /Usage of `Ember.Test.waiters` is deprecated/);
-  } else {
+  expectDeprecation(function() {
     waiters = generateDeprecatedWaitersArray();
-  }
+  }, /Usage of `Ember.Test.waiters` is deprecated/);
 
   assert.deepEqual(waiters, [
     [null, waiter1],

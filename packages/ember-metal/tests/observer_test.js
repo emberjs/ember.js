@@ -6,30 +6,22 @@ import {
   _addBeforeObserver,
   _suspendObserver,
   _suspendObservers,
-  _removeBeforeObserver
-} from '../observer';
-import {
+  _removeBeforeObserver,
   propertyWillChange,
-  propertyDidChange
-} from '../property_events';
-import { defineProperty } from '../properties';
-import {
+  propertyDidChange,
+  defineProperty,
   computed,
-  cacheFor
-} from '../computed';
-import {
+  cacheFor,
   Mixin,
   mixin,
   observer,
   _beforeObserver,
-  _immediateObserver
-} from '../mixin';
-import run from '../run_loop';
-import {
+  _immediateObserver,
+  run,
   beginPropertyChanges,
   endPropertyChanges,
   changeProperties
-} from '../property_events';
+} from '..';
 
 function K() {}
 
@@ -223,10 +215,10 @@ testBoth('removing an chain observer on change should not fail', function(get, s
   }
   function observer4() { count4++; }
 
-  addObserver(obj1, 'foo.bar' , observer1);
-  addObserver(obj2, 'foo.bar' , observer2);
-  addObserver(obj3, 'foo.bar' , observer3);
-  addObserver(obj4, 'foo.bar' , observer4);
+  addObserver(obj1, 'foo.bar', observer1);
+  addObserver(obj2, 'foo.bar', observer2);
+  addObserver(obj3, 'foo.bar', observer3);
+  addObserver(obj4, 'foo.bar', observer4);
 
   set(foo, 'bar', 'baz');
 
@@ -257,10 +249,10 @@ testBoth('removing an chain before observer on change should not fail', function
   }
   function observer4() { count4++; }
 
-  _addBeforeObserver(obj1, 'foo.bar' , observer1);
-  _addBeforeObserver(obj2, 'foo.bar' , observer2);
-  _addBeforeObserver(obj3, 'foo.bar' , observer3);
-  _addBeforeObserver(obj4, 'foo.bar' , observer4);
+  _addBeforeObserver(obj1, 'foo.bar', observer1);
+  _addBeforeObserver(obj2, 'foo.bar', observer2);
+  _addBeforeObserver(obj3, 'foo.bar', observer3);
+  _addBeforeObserver(obj4, 'foo.bar', observer4);
 
   set(foo, 'bar', 'baz');
 
@@ -448,7 +440,7 @@ testBoth('deferring property change notifications safely despite exceptions', fu
       set(obj, 'foo', 'BAZ');
       throw exc;
     });
-  } catch(err) {
+  } catch (err) {
     if (err !== exc) {
       throw err;
     }

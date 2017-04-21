@@ -10,7 +10,6 @@ import {
   addArrayObserver,
   removeArrayObserver
 } from '../../mixins/array';
-import { isFeatureEnabled } from 'ember-metal';
 
 const ObserverClass = EnumerableTestsObserverClass.extend({
   observeArray(obj) {
@@ -44,8 +43,6 @@ ArrayTests.importModuleTests(indexOfTests);
 ArrayTests.importModuleTests(lastIndexOfTests);
 ArrayTests.importModuleTests(objectAtTests);
 
-if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-  ArrayTests.importModuleTests(includesTests);
-}
+ArrayTests.importModuleTests(includesTests);
 
-export {ArrayTests, ObserverClass};
+export { ArrayTests, ObserverClass };

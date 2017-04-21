@@ -1,11 +1,14 @@
-import alias from '../alias';
-import { defineProperty } from '../properties';
-import { get } from '../property_get';
-import { set } from '../property_set';
-import { meta } from '../meta';
-import { isWatching } from '../watching';
-import { addObserver, removeObserver } from '../observer';
-import { tagFor } from '../tags';
+import {
+  alias,
+  defineProperty,
+  get,
+  set,
+  meta,
+  isWatching,
+  addObserver,
+  removeObserver,
+  tagFor
+} from '..'
 
 let obj, count;
 

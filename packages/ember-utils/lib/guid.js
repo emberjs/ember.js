@@ -49,7 +49,7 @@ const stringCache  = {};
   @type String
   @final
 */
-export const GUID_KEY = intern('__ember' + (+ new Date()));
+export const GUID_KEY = intern(`__ember${+ new Date()}`);
 
 export let GUID_DESC = {
   writable:     true,
@@ -148,7 +148,7 @@ export function guidFor(obj) {
       ret = numberCache[obj];
 
       if (!ret) {
-        ret = numberCache[obj] = 'nu' + obj;
+        ret = numberCache[obj] = `nu${obj}`;
       }
 
       return ret;
@@ -157,7 +157,7 @@ export function guidFor(obj) {
       ret = stringCache[obj];
 
       if (!ret) {
-        ret = stringCache[obj] = 'st' + uuid();
+        ret = stringCache[obj] = `st${uuid()}`;
       }
 
       return ret;

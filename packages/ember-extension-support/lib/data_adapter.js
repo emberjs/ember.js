@@ -9,7 +9,7 @@ import {
   removeArrayObserver,
   objectAt
 } from 'ember-runtime';
-import { Application } from 'ember-application';
+import { FACTORY_FOR } from 'container';
 
 /**
 @module ember
@@ -154,7 +154,7 @@ export default EmberObject.extend({
     typesAdded(typesToSend);
 
     let release = () => {
-      releaseMethods.forEach((fn) => fn() );
+      releaseMethods.forEach((fn) => fn());
       this.releaseMethods.removeObject(release);
     };
     this.releaseMethods.pushObject(release);
@@ -163,7 +163,9 @@ export default EmberObject.extend({
 
   _nameToClass(type) {
     if (typeof type === 'string') {
-      type = getOwner(this)._lookupFactory(`model:${type}`);
+      let owner = getOwner(this);
+      let Factory = owner[FACTORY_FOR](`model:${type}`);
+      type = Factory && Factory.class;
     }
     return type;
   },
@@ -360,7 +362,7 @@ export default EmberObject.extend({
     types = emberA(types).map((name) => {
       return {
         klass: this._nameToClass(name),
-        name: name
+        name
       };
     });
     types = emberA(types).filter(type => this.detect(type.klass));
@@ -388,9 +390,6 @@ export default EmberObject.extend({
         // (especially when `EmberENV.MODEL_FACTORY_INJECTIONS` is `true`)
         if (!this.detect(namespace[key])) { continue; }
         let name = StringUtils.dasherize(key);
-        if (!(namespace instanceof Application) && namespace.toString()) {
-          name = `${namespace}/${name}`;
-        }
         types.push(name);
       }
     });

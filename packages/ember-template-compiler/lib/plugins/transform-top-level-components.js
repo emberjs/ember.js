@@ -22,7 +22,6 @@ function hasSingleComponentNode(program, componentCallback) {
   if (!loc || loc.start.line !== 1 || loc.start.column !== 0) { return; }
 
   let lastComponentNode;
-  let lastIndex;
   let nodeCount = 0;
 
   for (let i = 0; i < body.length; i++) {
@@ -36,7 +35,6 @@ function hasSingleComponentNode(program, componentCallback) {
 
     if (curr.type === 'ComponentNode' || curr.type === 'ElementNode') {
       lastComponentNode = curr;
-      lastIndex = i;
     }
   }
 

@@ -1,7 +1,5 @@
-import {
-  deprecate,
-  Mixin
-} from 'ember-metal';
+import { Mixin } from 'ember-metal';
+import { deprecate } from 'ember-debug';
 
 /*
   The ControllerContentModelAliasDeprecation mixin is used to provide a useful

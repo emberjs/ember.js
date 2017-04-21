@@ -22,6 +22,23 @@ suite.test('[].replace(0,0,\'X\') => [\'X\'] + notify', function() {
   equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
 });
 
+suite.test('[].replace(0,0,"X") => ["X"] + avoid calling objectAt and notifying fistObject/lastObject when not in cache', function() {
+  var obj, exp, observer;
+  var called = 0;
+  exp = this.newFixture(1);
+  obj = this.newObject([]);
+  obj.objectAt = function() {
+    called++;
+  };
+  observer = this.newObserver(obj, 'firstObject', 'lastObject');
+
+  obj.replace(0, 0, exp);
+
+  equal(called, 0, 'should NOT have called objectAt upon replace when firstObject/lastObject are not cached');
+  equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject since not cached');
+  equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject since not cached');
+});
+
 suite.test('[A,B,C,D].replace(1,2,X) => [A,X,D] + notify', function() {
   let before  = this.newFixture(4);
   let replace = this.newFixture(1);

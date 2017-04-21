@@ -127,10 +127,9 @@ QUnit.test('`content` is moved to `model` when `model` is unset', function() {
 
 QUnit.test('specifying `content` (without `model` specified) results in deprecation', function() {
   expect(1);
-  let controller;
 
   expectDeprecation(function() {
-    controller = Controller.extend({
+    Controller.extend({
       content: 'foo-bar'
     }).create();
   }, 'Do not specify `content` on a Controller, use `model` instead.');
@@ -162,7 +161,10 @@ if (!EmberDev.runningProdBuild) {
 
       owner.register('foo:main', AnObject);
 
-      owner._lookupFactory('foo:main');
+      expectDeprecation(() => {
+        owner._lookupFactory('foo:main');
+      }, /Using "_lookupFactory" is deprecated. Please use container.factoryFor instead./);
+
     }, /Defining an injected controller property on a non-controller is not allowed./);
   });
 }

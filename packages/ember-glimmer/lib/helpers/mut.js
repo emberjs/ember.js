@@ -3,7 +3,7 @@
 @submodule ember-glimmer
 */
 import { symbol } from 'ember-utils';
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { UPDATE } from '../utils/references';
 import { INVOKE } from './action';
 
@@ -29,6 +29,9 @@ import { INVOKE } from './action';
   });
   ```
 
+  Note that for curly components (`{{my-component}}`) the bindings are already mutable,
+  making the `mut` unnecessary.
+
   Additionally, the `mut` helper can be combined with the `action` helper to
   mutate a value. For example:
 
@@ -42,12 +45,31 @@ import { INVOKE } from './action';
   // my-child.js
   export default Component.extend({
     click() {
-      this.get('clickCountChange')(this.get('childClickCount') + 1);
+      this.get('click-count-change')(this.get('childClickCount') + 1);
     }
   });
   ```
 
   The `mut` helper changes the `totalClicks` value to what was provided as the action argument.
+
+  The `mut` helper, when used with `action`, will return a function that
+  sets the value passed to `mut` to its first argument. This works like any other
+  closure action and interacts with the other features `action` provides.
+  As an example, we can create a button that increments a value passing the value
+  directly to the `action`:
+
+  ```handlebars
+  {{! inc helper is not provided by Ember }}
+  <button onclick={{action (mut count) (inc count)}}>
+    Increment count
+  </button>
+  ```
+
+  You can also use the `value` option:
+
+  ```handlebars
+  <input value={{name}} oninput={{action (mut name) value="target.value"}}>
+  ```
 
   @method mut
   @param {Object} [attr] the "two-way" attribute that can be modified.

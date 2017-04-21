@@ -13,12 +13,15 @@ export { default as HashLocation } from './location/hash_location';
 export { default as HistoryLocation } from './location/history_location';
 export { default as AutoLocation } from './location/auto_location';
 
-export { default as generateController } from './system/generate_controller';
-export { generateControllerFactory } from './system/generate_controller';
+export {
+  default as generateController,
+  generateControllerFactory
+} from './system/generate_controller';
 export { default as controllerFor } from './system/controller_for';
 export { default as RouterDSL } from './system/dsl';
 export { default as Router } from './system/router';
 export { default as Route } from './system/route';
 export { default as QueryParams } from './system/query_params';
 export { default as RoutingService } from './services/routing';
+export { default as RouterService } from './services/router';
 export { default as BucketCache } from './system/cache';

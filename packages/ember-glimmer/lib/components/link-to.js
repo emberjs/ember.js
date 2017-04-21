@@ -307,10 +307,8 @@
 */
 
 import Logger from 'ember-console';
-
+import { assert, deprecate } from 'ember-debug';
 import {
-  assert,
-  deprecate,
   get,
   computed,
   flaggedInstrument
@@ -323,7 +321,7 @@ import {
 import { isSimpleClick } from 'ember-views';
 import layout from '../templates/link-to';
 import EmberComponent, { HAS_BLOCK } from '../component';
-
+import { DEBUG } from 'ember-env-flags';
 
 /**
   `Ember.LinkComponent` renders an element whose `click` event triggers a
@@ -338,7 +336,7 @@ import EmberComponent, { HAS_BLOCK } from '../component';
   @namespace Ember
   @extends Ember.Component
   @see {Ember.Templates.helpers.link-to}
-  @private
+  @public
 **/
 const LinkComponent = EmberComponent.extend({
   layout,
@@ -711,6 +709,26 @@ const LinkComponent = EmberComponent.extend({
 
     let routing = get(this, '_routing');
     let queryParams = get(this, 'queryParams.values');
+
+    if (DEBUG) {
+      /*
+       * Unfortunately, to get decent error messages, we need to do this.
+       * In some future state we should be able to use a "feature flag"
+       * which allows us to strip this without needing to call it twice.
+       *
+       * if (isDebugBuild()) {
+       *   // Do the useful debug thing, probably including try/catch.
+       * } else {
+       *   // Do the performant thing.
+       * }
+       */
+      try {
+        routing.generateURL(qualifiedRouteName, models, queryParams);
+      } catch (e) {
+        assert('You attempted to define a `{{link-to "' + qualifiedRouteName + '"}}` but did not pass the parameters required for generating its dynamic segments. ' + e.message);
+      }
+    }
+
     return routing.generateURL(qualifiedRouteName, models, queryParams);
   }),
 

@@ -1,22 +1,36 @@
+import { CONSTANT_TAG, DirtyableTag } from '@glimmer/reference';
 import { meta as metaFor } from './meta';
-import require, { has } from 'require';
-
-const hasGlimmer = has('glimmer-reference');
-
-let CONSTANT_TAG, CURRENT_TAG, DirtyableTag, makeTag, run;
+import require from 'require';
+import { isProxy } from './is_proxy';
 
 let hasViews = () => false;
+
 export function setHasViews(fn) {
   hasViews = fn;
 }
 
-export let markObjectAsDirty;
+function makeTag() {
+  return new DirtyableTag();
+}
 
-export function tagFor(object, _meta) {
-  if (!hasGlimmer) {
-    throw new Error('Cannot call tagFor without Glimmer');
+export function tagForProperty(object, propertyKey, _meta) {
+  if (isProxy(object)) {
+    return tagFor(object, _meta);
   }
 
+  if (typeof object === 'object' && object) {
+    let meta = _meta || metaFor(object);
+    let tags = meta.writableTags();
+    let tag = tags[propertyKey];
+    if (tag) { return tag; }
+
+    return tags[propertyKey] = makeTag();
+  } else {
+    return CONSTANT_TAG;
+  }
+}
+
+export function tagFor(object, _meta) {
   if (typeof object === 'object' && object) {
     let meta = _meta || metaFor(object);
     return meta.writableTag(makeTag);
@@ -25,29 +39,35 @@ export function tagFor(object, _meta) {
   }
 }
 
+export function markObjectAsDirty(meta, propertyKey) {
+  let objectTag = meta && meta.readableTag();
+
+  if (objectTag) {
+    objectTag.dirty();
+  }
+
+  let tags = meta && meta.readableTags();
+  let propertyTag = tags && tags[propertyKey];
+
+  if (propertyTag) {
+    propertyTag.dirty();
+  }
+
+  if (objectTag || propertyTag) {
+    ensureRunloop();
+  }
+}
+
+let run;
+
 function K() {}
+
 function ensureRunloop() {
   if (!run) {
-    run = require('ember-metal/run_loop').default;
+    run = require('ember-metal').run;
   }
 
   if (hasViews() && !run.backburner.currentInstance) {
     run.schedule('actions', K);
   }
-}
-
-if (hasGlimmer) {
-  ({ DirtyableTag, CONSTANT_TAG, CURRENT_TAG } = require('glimmer-reference'));
-  makeTag = () => new DirtyableTag();
-
-  markObjectAsDirty = function(meta) {
-    let tag = meta && meta.readableTag();
-
-    if (tag) {
-      ensureRunloop();
-      tag.dirty();
-    }
-  };
-} else {
-  markObjectAsDirty = function() {};
 }

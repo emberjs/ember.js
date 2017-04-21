@@ -13,11 +13,8 @@ export {
   TextField,
   InteractiveRender,
   InertRenderer,
-  makeBoundHelper,
   htmlSafe,
   SafeString,
   DOMChanges,
   isHTMLSafe
 } from 'ember-glimmer';
-
-export { buildOwner } from 'internal-test-helpers';

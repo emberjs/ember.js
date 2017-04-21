@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/* eslint-env node */
 
 var stringUtil  = require('ember-cli-string-utils');
 var path        = require('path');
@@ -38,7 +38,7 @@ module.exports = {
     var modulePathSegments = [addonName, inflector.pluralize(options.originBlueprintName), fileName];
 
     if (blueprintName.match(/-addon/)) {
-      blueprintName = blueprintName.substr(0,blueprintName.indexOf('-addon'));
+      blueprintName = blueprintName.substr(0, blueprintName.indexOf('-addon'));
       modulePathSegments = [addonName, inflector.pluralize(blueprintName), fileName];
     }
 

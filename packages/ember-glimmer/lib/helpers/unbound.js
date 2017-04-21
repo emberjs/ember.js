@@ -3,7 +3,7 @@
 @submodule ember-glimmer
 */
 
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { UnboundReference } from '../utils/references';
 
 /**

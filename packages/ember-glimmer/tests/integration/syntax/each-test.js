@@ -445,7 +445,7 @@ class SingleEachTest extends AbstractEachTest {
     this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
     let FooBarComponent = Component.extend({
-      init () {
+      init() {
         this._super(...arguments);
         this.isEven = true;
         this.tagName = 'li';
@@ -818,9 +818,9 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
         {{/each}}
       {{/each}}
       `, {
-      content: emberA(['X', 'Y']),
-      options: emberA([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }])
-    });
+        content: emberA(['X', 'Y']),
+        options: emberA([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }])
+      });
 
     this.assertText('X-1:One2:TwoY-1:One2:Two');
 
@@ -928,6 +928,30 @@ moduleFor('Syntax test: {{#each as}} undefined path', class extends RenderingTes
   }
 });
 
+moduleFor('Syntax test: {{#each}} with sparse arrays', class extends RenderingTest {
+  ['@test it should itterate over holes'](assert) {
+    let sparseArray = [];
+    sparseArray[3] = 'foo';
+    sparseArray[4] = 'bar';
+
+    this.render(strip`
+      {{#each list as |value key|}}
+        [{{key}}:{{value}}]
+      {{/each}}`, { list: emberA(sparseArray) });
+
+    this.assertText('[0:][1:][2:][3:foo][4:bar]');
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let list = get(this.context, 'list');
+      list.pushObject('baz');
+    });
+
+    this.assertText('[0:][1:][2:][3:foo][4:bar][5:baz]');
+  }
+});
+
 /* globals MutationObserver: false */
 if (typeof MutationObserver === 'function') {
   moduleFor('Syntax test: {{#each as}} DOM mutation test', class extends RenderingTest {
@@ -938,7 +962,7 @@ if (typeof MutationObserver === 'function') {
 
     observe(element) {
       let observer = this.observer = new MutationObserver(function() {});
-      observer.observe(element, { childList: true });
+      observer.observe(element, { childList: true, characterData: true });
     }
 
     teardown() {
@@ -1003,9 +1027,7 @@ if (typeof MutationObserver === 'function') {
           </ul>
         `);
       }).then(() => {
-        // 'page' and 'model' is keyed off the same object, so we do expect Glimmer
-        // to re-iterate the list
-        this.expectMutations();
+        this.assertNoMutation();
 
         this.runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
 

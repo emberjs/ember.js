@@ -1,6 +1,6 @@
 import { tryInvoke, getOwner } from 'ember-utils';
-import { assert, get, set } from 'ember-metal';
-
+import { get, set } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { Object as EmberObject } from 'ember-runtime';
 import { environment } from 'ember-environment';
 
@@ -121,7 +121,7 @@ export default EmberObject.extend({
       location: this.location,
       history: this.history,
       userAgent: this.userAgent,
-      rootURL: rootURL,
+      rootURL,
       documentMode: this.documentMode,
       global: this.global
     });
@@ -255,18 +255,18 @@ export function getHistoryPath(rootURL, location) {
 
     // If the path already has a trailing slash, remove the one
     // from the hashed route so we don't double up.
-    if (path.slice(-1) === '/') {
+    if (path.charAt(path.length - 1) === '/') {
       routeHash = routeHash.substr(1);
     }
 
     // This is the "expected" final order
-    path = path + routeHash + query;
+    path += routeHash + query;
 
     if (hashParts.length) {
       path += `#${hashParts.join('#')}`;
     }
   } else {
-    path = path + query + hash;
+    path += query + hash;
   }
 
   return path;
@@ -286,11 +286,11 @@ export function getHashPath(rootURL, location) {
   let routePath = historyPath.substr(rootURL.length);
 
   if (routePath !== '') {
-    if (routePath.charAt(0) !== '/') {
-      routePath = '/' + routePath;
+    if (routePath[0] !== '/') {
+      routePath = `/${routePath}`;
     }
 
-    path += '#' + routePath;
+    path += `#${routePath}`;
   }
 
   return path;

@@ -68,8 +68,8 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
 
     return emberNew()
       .then(() => modifyPackages([
-        {name: 'ember-cli-qunit', delete: true},
-        {name: 'ember-cli-mocha', dev: true}
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
       ]))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/acceptance/foo-test.js'))
@@ -78,7 +78,7 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
           .to.contain("describe('Acceptance | foo', function() {")
           .to.contain("it('can visit /foo', function() {")
           .to.contain("visit('/foo');")
-          .to.contain("andThen(function() {")
+          .to.contain("return andThen(() => {")
           .to.contain("expect(currentURL()).to.equal('/foo');");
       }));
   });

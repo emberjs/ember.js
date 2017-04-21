@@ -1,13 +1,11 @@
 import { testBoth } from 'internal-test-helpers';
 import {
   get,
-  getWithDefault
-} from '../../property_get';
-import {
+  getWithDefault,
   Mixin,
-  observer
-} from '../../mixin';
-import { addObserver } from '../../observer';
+  observer,
+  addObserver
+} from '../..';
 
 QUnit.module('Ember.get');
 
@@ -37,14 +35,6 @@ QUnit.test('should not access a property more than once', function() {
   get(obj, 'id');
 
   equal(count, 1);
-});
-
-QUnit.test('should be able to use an empty string as a property', function(assert) {
-  let obj = { '': 'empty string' };
-
-  let result = get(obj, '');
-
-  assert.equal(result, obj['']);
 });
 
 testBoth('should call unknownProperty on watched values if the value is undefined', function(get, set) {
@@ -114,6 +104,7 @@ QUnit.test('warn on attempts to use get with an unsupported property path', func
   expectAssertion(() => get(obj, undefined), /The key provided to get must be a string, you passed undefined/);
   expectAssertion(() => get(obj, false),     /The key provided to get must be a string, you passed false/);
   expectAssertion(() => get(obj, 42),        /The key provided to get must be a string, you passed 42/);
+  expectAssertion(() => get(obj, ''), /Cannot call `Ember.get` with an empty string/);
 });
 
 // ..........................................................

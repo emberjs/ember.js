@@ -1,9 +1,9 @@
 import * as RSVP from 'rsvp';
 import {
   run,
-  assert,
   dispatchError
 } from 'ember-metal';
+import { assert } from 'ember-debug';
 
 const backburner = run.backburner;
 run._addQueue('rsvpAfter', 'destroy');
@@ -33,7 +33,7 @@ function errorFor(reason) {
   }
 
   if (reason.name === 'UnrecognizedURLError') {
-    assert('The URL \'' + reason.message + '\' did not match any routes in your application', false);
+    assert(`The URL '${reason.message}' did not match any routes in your application`, false);
     return;
   }
 

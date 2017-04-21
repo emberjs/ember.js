@@ -1,8 +1,9 @@
-/*jshint node:true*/
+/* eslint-env node */
 
-var fs          = require('fs-extra');
-var path        = require('path');
-var chalk       = require('chalk');
+var fs                   = require('fs-extra');
+var path                 = require('path');
+var chalk                = require('chalk');
+var stringUtil           = require('ember-cli-string-utils');
 var EmberRouterGenerator = require('ember-router-generator');
 
 module.exports = {
@@ -27,9 +28,21 @@ module.exports = {
 
   fileMapTokens: function() {
     return {
+      __name__: function (options) {
+        if (options.pod) {
+          return 'route';
+        }
+        return options.locals.moduleName;
+      },
+      __path__: function(options) {
+        if (options.pod) {
+          return path.join(options.podPath, options.locals.moduleName);
+        }
+        return 'routes';
+      },
       __templatepath__: function(options) {
         if (options.pod) {
-          return path.join(options.podPath, options.dasherizedModuleName);
+          return path.join(options.podPath, options.locals.moduleName);
         }
         return 'templates';
       },
@@ -37,7 +50,7 @@ module.exports = {
         if (options.pod) {
           return 'template';
         }
-        return options.dasherizedModuleName;
+        return options.locals.moduleName;
       },
       __root__: function(options) {
         if (options.inRepoAddon) {
@@ -45,7 +58,7 @@ module.exports = {
         }
 
         if (options.inDummy) {
-          return path.join('tests','dummy','app');
+          return path.join('tests', 'dummy', 'app');
         }
 
         if (options.inAddon) {
@@ -54,6 +67,18 @@ module.exports = {
 
         return 'app';
       }
+    };
+  },
+
+  locals: function(options) {
+    var moduleName = options.entity.name;
+
+    if (options.resetNamespace) {
+      moduleName = moduleName.split('/').pop();
+    }
+
+    return {
+      moduleName: stringUtil.dasherize(moduleName)
     };
   },
 

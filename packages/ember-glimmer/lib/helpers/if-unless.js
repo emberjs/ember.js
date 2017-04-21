@@ -3,7 +3,7 @@
 @submodule ember-glimmer
 */
 
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import {
   UNDEFINED_REFERENCE,
   CachedReference,
@@ -14,7 +14,7 @@ import {
   UpdatableTag,
   combine,
   isConst
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
 
 /**

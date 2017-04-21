@@ -2,7 +2,7 @@
 @module ember-metal
 */
 
-import { assert } from './debug';
+import { assert } from 'ember-debug';
 import { isPath, hasThis } from './path_cache';
 
 const ALLOWABLE_TYPES = {
@@ -52,6 +52,7 @@ export function get(obj, keyName) {
   assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
   assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
   assert(`'this' in paths is not supported`, !hasThis(keyName));
+  assert('Cannot call `Ember.get` with an empty string', keyName !== '');
 
   let value = obj[keyName];
   let desc = (value !== null && typeof value === 'object' && value.isDescriptor) ? value : undefined;

@@ -5,12 +5,11 @@
 
 import { context } from 'ember-environment';
 import {
-  assert,
   get,
   Mixin,
   computed
 } from 'ember-metal';
-
+import { assert } from 'ember-debug';
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class
 to add a `triggerAction` method with semantics similar to the Handlebars
@@ -118,10 +117,10 @@ export default Mixin.create({
       let ret;
 
       if (target.send) {
-        ret = target.send.apply(target, args(actionContext, action));
+        ret = target.send(...args(actionContext, action));
       } else {
-        assert('The action \'' + action + '\' did not exist on ' + target, typeof target[action] === 'function');
-        ret = target[action].apply(target, args(actionContext));
+        assert(`The action '${action}' did not exist on ${target}`, typeof target[action] === 'function');
+        ret = target[action](...args(actionContext));
       }
 
       if (ret !== false) {

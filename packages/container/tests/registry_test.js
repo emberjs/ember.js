@@ -1,4 +1,4 @@
-import { Registry } from '../index';
+import { Registry } from '..';
 import { factory } from 'internal-test-helpers';
 
 QUnit.module('Registry');
