@@ -1,7 +1,9 @@
-import run from '../../run_loop';
-import get from '../../property_get';
 import { Object as EmberObject } from 'ember-runtime';
-import Mixin from '../../mixin';
+import {
+  run,
+  get,
+  Mixin
+} from '../..'
 
 QUnit.module('Ember.Mixin#reopen');
 

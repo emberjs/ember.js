@@ -2,7 +2,7 @@
 @module ember-metal
 */
 
-import { assert } from './debug';
+import { assert } from 'ember-debug';
 import { isPath, hasThis } from './path_cache';
 
 const ALLOWABLE_TYPES = {

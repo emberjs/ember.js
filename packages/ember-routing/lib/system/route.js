@@ -1,18 +1,15 @@
 import { assign, symbol, getOwner } from 'ember-utils';
 import {
-  assert,
-  info,
-  isTesting,
-  Error as EmberError,
   get,
   set,
   getProperties,
   isNone,
   computed,
   run,
-  runInDebug,
   isEmpty
 } from 'ember-metal';
+import { assert, info, Error as EmberError, isTesting } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 import {
   typeOf,
   copy,
@@ -1208,6 +1205,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} name the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used while
       transitioning to the route.
+    @param {Object} [options] optional hash with a queryParams property
+      containing a mapping of query parameters
     @return {Transition} the transition object associated with this
       attempted transition
     @since 1.0.0
@@ -1701,7 +1700,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     `_super`:
 
     ```app/routes/photos.js
-    import Ember from 'ebmer';
+    import Ember from 'ember';
 
     export default Ember.Route.extend({
       model() {
@@ -1763,7 +1762,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   },
 
   /**
-    Returns the resolved model of the current route, or a parent (or any ancestor)
+    Returns the controller of the current route, or a parent (or any ancestor)
     route in a route hierarchy.
 
     The controller instance must already have been created, either through entering the
@@ -1855,7 +1854,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     export default Router;
     ```
 
-    ```app/routes/comments.js
+    ```app/routes/post/comments.js
     import Ember from 'ember';
 
     export default Ember.Route.extend({
@@ -2290,12 +2289,12 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
 
   assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || template);
 
-  runInDebug(() => {
+  if (DEBUG) {
     let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
     if (LOG_VIEW_LOOKUPS && !template) {
       info(`Could not find "${name}" template. Nothing will be rendered`, { fullName: `template:${name}` });
     }
-  });
+  }
 
   return renderOptions;
 }

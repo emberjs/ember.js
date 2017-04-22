@@ -1,12 +1,16 @@
 import {
   HAS_NATIVE_WEAKMAP,
-  EmptyObject,
   lookupDescriptor,
   symbol
 } from 'ember-utils';
-import isEnabled from './features';
 import { protoMethods as listenerMethods } from './meta_listeners';
-import { runInDebug, assert } from './debug';
+import { assert } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
+import {
+  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
+  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
+  MANDATORY_SETTER
+} from 'ember/features';
 import {
   removeChainWatcher
 } from './chains';
@@ -66,8 +70,7 @@ const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
 const IS_PROXY = 1 << 4;
 
-if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
   members.lastRendered = ownMap;
   if (has('ember-debug')) { //https://github.com/emberjs/ember.js/issues/14732
     members.lastRenderedReferenceMap = ownMap;
@@ -80,7 +83,9 @@ const META_FIELD = '__ember_meta__';
 
 export class Meta {
   constructor(obj, parentMeta) {
-    runInDebug(() => counters.metaInstantiated++);
+    if (DEBUG) {
+      counters.metaInstantiated++;
+    }
 
     this._cache = undefined;
     this._weak = undefined;
@@ -111,13 +116,12 @@ export class Meta {
     // inherited, and we can optimize it much better than JS runtimes.
     this.parent = parentMeta;
 
-    if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       this._lastRendered = undefined;
-      runInDebug(() => {
+      if (DEBUG) {
         this._lastRenderedReferenceMap = undefined;
         this._lastRenderedTemplateMap = undefined;
-      });
+      }
     }
 
     this._initializeListeners();
@@ -202,14 +206,15 @@ export class Meta {
   }
 
   _getOrCreateOwnMap(key) {
-    return this[key] || (this[key] = new EmptyObject());
+    return this[key] || (this[key] = Object.create(null));
   }
 
   _getInherited(key) {
     let pointer = this;
     while (pointer !== undefined) {
-      if (pointer[key]) {
-        return pointer[key];
+      let map = pointer[key];
+      if (map) {
+        return map;
       }
       pointer = pointer.parent;
     }
@@ -237,7 +242,7 @@ export class Meta {
     let outerMap = this._getOrCreateOwnMap('_deps');
     let innerMap = outerMap[subkey];
     if (!innerMap) {
-      innerMap = outerMap[subkey] = new EmptyObject();
+      innerMap = outerMap[subkey] = Object.create(null);
     }
     innerMap[itemkey] = value;
   }
@@ -249,8 +254,9 @@ export class Meta {
       if (map) {
         let value = map[subkey];
         if (value) {
-          if (value[itemkey] !== undefined) {
-            return value[itemkey];
+          let itemvalue = value[itemkey];
+          if (itemvalue !== undefined) {
+            return itemvalue;
           }
         }
       }
@@ -275,16 +281,18 @@ export class Meta {
 
   _forEachIn(key, subkey, fn) {
     let pointer = this;
-    let seen = new EmptyObject();
-    let calls = [];
+    let seen;
+    let calls;
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map) {
         let innerMap = map[subkey];
         if (innerMap) {
           for (let innerKey in innerMap) {
+            seen = seen || Object.create(null);
             if (!seen[innerKey]) {
               seen[innerKey] = true;
+              calls = calls || [];
               calls.push([innerKey, innerMap[innerKey]]);
             }
           }
@@ -292,9 +300,11 @@ export class Meta {
       }
       pointer = pointer.parent;
     }
-    for (let i = 0; i < calls.length; i++) {
-      let [innerKey, value] = calls[i];
-      fn(innerKey, value);
+    if (calls) {
+      for (let i = 0; i < calls.length; i++) {
+        let [innerKey, value] = calls[i];
+        fn(innerKey, value);
+      }
     }
   }
 
@@ -308,7 +318,7 @@ export class Meta {
       if (map) {
         let value = map[subkey];
         if (value !== undefined || subkey in map) {
-          return map[subkey];
+          return value;
         }
       }
       pointer = pointer.parent;
@@ -366,11 +376,12 @@ function inheritedMap(name, Meta) {
 
   Meta.prototype[`forEach${capitalized}`] = function(fn) {
     let pointer = this;
-    let seen = new EmptyObject();
+    let seen;
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map) {
         for (let key in map) {
+          seen = seen || Object.create(null);
           if (!seen[key]) {
             seen[key] = true;
             fn(key, map[key]);
@@ -464,7 +475,7 @@ const EMBER_META_PROPERTY = {
   descriptor: META_DESC
 };
 
-if (isEnabled('mandatory-setter')) {
+if (MANDATORY_SETTER) {
   Meta.prototype.readInheritedValue = function(key, subkey) {
     let internalKey = `_${key}`;
 
@@ -475,7 +486,7 @@ if (isEnabled('mandatory-setter')) {
       if (map) {
         let value = map[subkey];
         if (value !== undefined || subkey in map) {
-          return map[subkey];
+          return value;
         }
       }
       pointer = pointer.parent;
@@ -504,12 +515,16 @@ if (HAS_NATIVE_WEAKMAP) {
   let metaStore = new WeakMap();
 
   setMeta = function WeakMap_setMeta(obj, meta) {
-    runInDebug(() => counters.setCalls++);
+    if (DEBUG) {
+      counters.setCalls++;
+    }
     metaStore.set(obj, meta);
   };
 
   peekMeta = function WeakMap_peekMeta(obj) {
-    runInDebug(() => counters.peekCalls++);
+    if (DEBUG) {
+      counters.peekCalls++
+    }
 
     return metaStore.get(obj);
   };
@@ -520,7 +535,9 @@ if (HAS_NATIVE_WEAKMAP) {
     while (pointer) {
       meta = metaStore.get(pointer);
       // jshint loopfunc:true
-      runInDebug(() => counters.peekCalls++);
+      if (DEBUG) {
+        counters.peekCalls++;
+      }
       // stop if we find a `null` value, since
       // that means the meta was deleted
       // any other truthy value is a "real" meta
@@ -529,7 +546,9 @@ if (HAS_NATIVE_WEAKMAP) {
       }
 
       pointer = getPrototypeOf(pointer);
-      runInDebug(() => counters.peakPrototypeWalks++);
+      if (DEBUG) {
+        counters.peakPrototypeWalks++;
+      }
     }
   };
 } else {
@@ -553,7 +572,9 @@ if (HAS_NATIVE_WEAKMAP) {
 }
 
 export function deleteMeta(obj) {
-  runInDebug(() => counters.deleteCalls++);
+  if (DEBUG) {
+    counters.deleteCalls++;
+  }
 
   let meta = peekMeta(obj);
   if (meta) {
@@ -580,7 +601,9 @@ export function deleteMeta(obj) {
   @return {Object} the meta hash for an object
 */
 export function meta(obj) {
-  runInDebug(() => counters.metaCalls++);
+  if (DEBUG) {
+    counters.metaCalls++;
+  }
 
   let maybeMeta = peekMeta(obj);
   let parent;

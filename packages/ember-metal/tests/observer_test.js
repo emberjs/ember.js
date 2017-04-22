@@ -6,30 +6,22 @@ import {
   _addBeforeObserver,
   _suspendObserver,
   _suspendObservers,
-  _removeBeforeObserver
-} from '../observer';
-import {
+  _removeBeforeObserver,
   propertyWillChange,
-  propertyDidChange
-} from '../property_events';
-import { defineProperty } from '../properties';
-import {
+  propertyDidChange,
+  defineProperty,
   computed,
-  cacheFor
-} from '../computed';
-import {
+  cacheFor,
   Mixin,
   mixin,
   observer,
   _beforeObserver,
-  _immediateObserver
-} from '../mixin';
-import run from '../run_loop';
-import {
+  _immediateObserver,
+  run,
   beginPropertyChanges,
   endPropertyChanges,
   changeProperties
-} from '../property_events';
+} from '..';
 
 function K() {}
 

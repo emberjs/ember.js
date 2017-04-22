@@ -1,6 +1,5 @@
 import CoreObject, { POST_INIT } from '../../system/core_object';
-import { set } from 'ember-metal/property_set';
-import { observer } from 'ember-metal/mixin';
+import { set, observer } from 'ember-metal';
 
 QUnit.module('Ember.CoreObject');
 

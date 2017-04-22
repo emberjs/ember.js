@@ -10,10 +10,12 @@ import {
 } from 'ember-views';
 import { TargetActionSupport } from 'ember-runtime';
 import {
-  get,
-  PROPERTY_DID_CHANGE,
   assert,
   deprecate
+} from 'ember-debug';
+import {
+  get,
+  PROPERTY_DID_CHANGE,
 } from 'ember-metal';
 import { UPDATE, RootReference } from './utils/references';
 import { DirtyableTag } from '@glimmer/reference';

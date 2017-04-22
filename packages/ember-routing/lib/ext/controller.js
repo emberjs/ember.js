@@ -14,8 +14,17 @@ ControllerMixin.reopen({
     Defines which query parameters the controller accepts.
     If you give the names `['category','page']` it will bind
     the values of these query parameters to the variables
-    `this.category` and `this.page`
-
+    `this.category` and `this.page`.
+    By default, Ember coerces query parameter values using `toggleProperty`.
+    This behavior may lead to unexpected results.
+    To explicity configure a query parameter property so it coerces as expected, you must define a type property:
+    ```javascript
+      queryParams: [{
+        category: {
+          type: 'boolean'
+        }
+      }]
+    ```
     @property queryParams
     @public
   */
@@ -31,10 +40,10 @@ ControllerMixin.reopen({
    the sanity of future travelers:
 
    * `inactive` - This state is used when this controller instance is not part of the active
-     route heirarchy. Set in `Ember.Route.prototype._reset` (a `router.js` microlib hook) and
+     route hierarchy. Set in `Ember.Route.prototype._reset` (a `router.js` microlib hook) and
      `Ember.Route.prototype.actions.finalizeQueryParamChange`.
    * `active` - This state is used when this controller instance is part of the active
-     route heirarchy. Set in `Ember.Route.prototype.actions.finalizeQueryParamChange`.
+     route hierarchy. Set in `Ember.Route.prototype.actions.finalizeQueryParamChange`.
    * `allowOverrides` - This state is used in `Ember.Route.prototype.setup` (`route.js` microlib hook).
 
     @method _qpDelegate

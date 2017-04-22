@@ -13,8 +13,6 @@ export function invoke(type, message, test, options) {
 
   let handlerForType = HANDLERS[type];
 
-  if (!handlerForType) { return; }
-
   if (handlerForType) {
     handlerForType(message, options);
   }

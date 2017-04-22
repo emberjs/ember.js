@@ -256,7 +256,7 @@ QUnit.test('visit() follows redirects', function(assert) {
   });
 });
 
-QUnit.test('visit() rejects if an error occured during a transition', function(assert) {
+QUnit.test('visit() rejects if an error occurred during a transition', function(assert) {
   run(() => {
     createApplication();
 

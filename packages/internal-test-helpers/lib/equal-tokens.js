@@ -17,7 +17,7 @@ function generateTokens(containerOrHTML) {
 function normalizeTokens(tokens) {
   tokens.forEach(token => {
     if (token.type === 'StartTag') {
-      token.attributes = token.attributes.sort(function(a, b) {
+      token.attributes = token.attributes.sort((a, b) => {
         if (a[0] > b[0]) { return 1; }
         if (a[0] < b[0]) { return -1; }
         return 0;

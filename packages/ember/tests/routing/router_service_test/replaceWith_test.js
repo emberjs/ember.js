@@ -5,9 +5,9 @@ import {
 } from 'internal-test-helpers';
 import { Transition } from 'router';
 
-import { isFeatureEnabled } from 'ember-metal';
+import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 
-if (isFeatureEnabled('ember-routing-router-service')) {
+if (EMBER_ROUTING_ROUTER_SERVICE) {
   moduleFor('Router Service - replaceWith', class extends RouterTestCase {
     constructor() {
       super();
@@ -15,7 +15,7 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       let testCase = this;
       testCase.state = [];
 
-      this.application.register('location:test', NoneLocation.extend({
+      this.add('location:test', NoneLocation.extend({
         setURL(path) {
           testCase.state.push(path);
           this.set('path', path);
@@ -61,6 +61,24 @@ if (isFeatureEnabled('ember-routing-router-service')) {
         })
         .then(() => {
           return this.routerService.replaceWith('parent.brother');
+        })
+        .then(() => {
+          assert.deepEqual(this.state, ['/', '/child', '/brother']);
+        });
+    }
+
+    ['@test RouterService#replaceWith with basic route using URLs replaces location'](assert) {
+      assert.expect(1);
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo('/child');
+        })
+        .then(() => {
+          return this.routerService.transitionTo('/sister');
+        })
+        .then(() => {
+          return this.routerService.replaceWith('/brother');
         })
         .then(() => {
           assert.deepEqual(this.state, ['/', '/child', '/brother']);

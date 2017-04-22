@@ -4,7 +4,6 @@ import {
   Application,
   ApplicationInstance
 } from 'ember-application';
-import { isFeatureEnabled } from 'ember-metal';
 import {
   RegistryProxyMixin,
   ContainerProxyMixin,
@@ -25,13 +24,11 @@ export default function buildOwner(options = {}) {
     }
   });
 
-  if (isFeatureEnabled('ember-factory-for')) {
-    Owner.reopen({
-      factoryFor() {
-        return this.__container__.factoryFor(...arguments);
-      }
-    });
-  }
+  Owner.reopen({
+    factoryFor() {
+      return this.__container__.factoryFor(...arguments);
+    }
+  });
 
   let namespace = EmberObject.create({
     Resolver: { create() { return resolver; } }
@@ -51,7 +48,7 @@ export default function buildOwner(options = {}) {
     __container__: null
   }, ownerOptions);
 
-  let container = registry.container({ owner: owner });
+  let container = registry.container({ owner });
   owner.__container__ = container;
 
   return owner;

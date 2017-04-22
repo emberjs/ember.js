@@ -1,13 +1,11 @@
 import { testBoth } from 'internal-test-helpers';
 import {
   get,
-  getWithDefault
-} from '../../property_get';
-import {
+  getWithDefault,
   Mixin,
-  observer
-} from '../../mixin';
-import { addObserver } from '../../observer';
+  observer,
+  addObserver
+} from '../..';
 
 QUnit.module('Ember.get');
 

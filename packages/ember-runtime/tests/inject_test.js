@@ -1,6 +1,6 @@
 /* global EmberDev */
 
-import { InjectedProperty, isFeatureEnabled } from 'ember-metal';
+import { InjectedProperty } from 'ember-metal';
 import inject from '../inject';
 import {
   createInjectionHelper
@@ -33,15 +33,10 @@ if (!EmberDev.runningProdBuild) {
 
     owner.register('foo:main', AnObject);
 
-    if (isFeatureEnabled('ember-factory-for')) {
-      expect(2);
-      expectDeprecation(() => {
-        owner._lookupFactory('foo:main');
-      }, /Using "_lookupFactory" is deprecated. Please use container.factoryFor instead./);
-    } else {
-      expect(1);
+    expect(2);
+    expectDeprecation(() => {
       owner._lookupFactory('foo:main');
-    }
+    }, /Using "_lookupFactory" is deprecated. Please use container.factoryFor instead./);
   });
 
   QUnit.test('attempting to inject a nonexistent container key should error', function() {

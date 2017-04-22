@@ -1,8 +1,10 @@
-import { get } from '../../property_get';
-import { set } from '../../property_set';
-import { Mixin } from '../../mixin';
-import { computed } from '../../computed';
-import { defineProperty } from '../../properties';
+import {
+  get,
+  set,
+  Mixin,
+  computed,
+  defineProperty
+} from '../..';
 
 function K() { return this; }
 

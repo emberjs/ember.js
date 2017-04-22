@@ -1,6 +1,6 @@
 import { assign, getOwner } from 'ember-utils';
 import { get } from 'ember-metal';
-import { Error as EmberError } from 'ember-metal';
+import { Error as EmberError } from 'ember-debug';
 
 const ALL_PERIODS_REGEX = /\./g;
 
@@ -50,7 +50,7 @@ export function stashParamNames(router, handlerInfos) {
 }
 
 function _calculateCacheValuePrefix(prefix, part) {
-  // calculates the dot seperated sections from prefix that are also
+  // calculates the dot separated sections from prefix that are also
   // at the start of part - which gives us the route name
 
   // given : prefix = site.article.comments, part = site.article.id

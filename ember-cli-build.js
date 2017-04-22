@@ -6,429 +6,382 @@
 //
 // DISABLE_ES3=true DISABLE_JSCS=true DISABLE_JSHINT=true DISABLE_MIN=true DISABLE_DEREQUIRE=true ember serve --environment=production
 
-var fs   = require('fs');
-var path = require('path');
-
-var EmberBuild  = require('emberjs-build');
-var getPackages = require('./lib/packages');
-var getGitInfo  = require('git-repo-info');
-
-var applyFeatureFlags = require('babel-plugin-feature-flags');
-var filterImports     = require('babel-plugin-filter-imports');
-
-var vendoredPackage    = require('emberjs-build/lib/vendored-package');
-var htmlbarsPackage    = require('emberjs-build/lib/htmlbars-package');
-var replaceVersion     = require('emberjs-build/lib/utils/replace-version');
-
-var Funnel = require('broccoli-funnel');
-var Rollup = require('broccoli-rollup');
-var mergeTrees = require('broccoli-merge-trees');
-var replace = require('broccoli-string-replace');
-var uglify = require('broccoli-uglify-sourcemap');
-
-var rollupEnifed = {
-  transformBundle(code, options) {
-    return {
-      code: code.replace(/\bdefine\(/, 'enifed('),
-      map: { mappings: null }
-    };
-  }
-};
-
-function dag() {
-  var es = new Funnel(path.dirname(require.resolve('dag-map')), {
-    files: ['dag-map.js'],
-    annotation: 'dag-map.js'
-  });
-  return new Rollup(es, {
-    rollup: {
-      plugins: [rollupEnifed],
-      entry: 'dag-map.js',
-      dest: 'dag-map.js',
-      format: 'amd',
-      moduleId: 'dag-map',
-      exports: 'named'
-    },
-    annotation: 'dag-map.js'
-  });
-}
-
-function backburner() {
-  var dist = path.dirname(require.resolve('backburner.js'));
-  dist = path.join(dist, 'es6');
-  return new Rollup(new Funnel(dist, {
-    files: ['backburner.js']
-  }), {
-    rollup: {
-      plugins: [rollupEnifed],
-      entry: 'backburner.js',
-      dest: 'backburner.js',
-      format: 'amd',
-      moduleId: 'backburner',
-      exports: 'named'
-    },
-    annotation: 'backburner.js'
-  });
-}
-
-function rsvp() {
-  var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
-  var lib = path.resolve(path.dirname(require.resolve('rsvp')), '../lib');
-  var rollup = new Rollup(lib, {
-    rollup: {
-      entry: 'rsvp.js',
-      dest: 'rsvp.js',
-      format: 'es',
-      exports: 'named'
-    },
-    annotation: 'rsvp.js'
-  });
-  return transpileES6(rollup);
-}
-
-function routeRecognizer() {
-  var packageJson = require('route-recognizer/package');
-  var packageDir = path.dirname(require.resolve('route-recognizer/package'));
-  var entry = path.join(packageDir, packageJson['module'] || packageJson['jsnext:main'] || packageJson['main'].replace(/dist\//, 'dist/es6/'));
-  var basename = path.basename(entry);
-  var es6 = new Funnel(path.dirname(entry), {
-    files: [ basename ]
-  });
-  return new Rollup(es6, {
-    rollup: {
-      plugins: [rollupEnifed],
-      entry: basename,
-      dest: 'route-recognizer.js',
-      format: 'amd',
-      moduleId: 'route-recognizer',
-      exports: 'named'
-    },
-    annotation: 'route-recognizer.js'
-  });
-}
-
-function buildPackage(name, options) {
-  options = options ? options : {};
-  var packageJson = require(name + '/package');
-  var packageDir = path.dirname(require.resolve(name + '/package'));
-
-  if (options.entry && !options.srcDir) {
-    throw new Error('If resolving from a non-package.json entry point, you must supply the srcDirectory.');
-  }
-
-  var entryModule = packageJson['module'] || packageJson['jsnext:main'] || packageJson['main'].replace(/dist\//, 'dist/es6/');
-  var funnelDir = path.join(packageDir, options.entry ? options.srcDir : path.dirname(entryModule));
-  var sourceEntry = options.entry ? options.entry : path.basename(entryModule);
-
-  var es6 = new Funnel(funnelDir, {
-    include: ['**/*.js' ]
-  });
-  var moduleId = options.moduleId ? options.moduleId : name;
-  var destination = options.dest ? options.dest + '.js': moduleId + '.js';
-  var external = options.external ? options.external : [];
-  var plugins = options.plugins ? options.plugins : [];
-  var rolledUp = new Rollup(es6, {
-    rollup: {
-      external: external,
-      entry: sourceEntry,
-      dest: destination,
-      plugins: plugins,
-      format: 'es',
-      moduleId: moduleId,
-      exports: 'named'
-    },
-    annotation: destination
-  });
-
-  var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
-
-  return transpileES6(rolledUp, name, {
-    stripRuntimeChecks: true
-  });
-}
-
-function router() {
-  return new Rollup(path.resolve(path.dirname(require.resolve('router_js')), '../lib'), {
-    rollup: {
-      plugins: [rollupEnifed],
-      external: ['route-recognizer', 'rsvp'],
-      entry: 'router.js',
-      dest: 'router.js',
-      format: 'amd',
-      moduleId: 'router',
-      exports: 'named'
-    },
-    annotation: 'router.js'
-  });
-}
-
-var featuresJson = fs.readFileSync('./features.json', { encoding: 'utf8' });
-
-function getFeatures(environment) {
-  var features = JSON.parse(featuresJson).features;
-  var featureName;
-
-  if (process.env.BUILD_TYPE === 'alpha') {
-    for (featureName in features) {
-      if (features[featureName] === null) {
-        features[featureName] = false;
-      }
-    }
-  }
-
-  if (process.env.OVERRIDE_FEATURES) {
-    var forcedFeatures = process.env.OVERRIDE_FEATURES.split(',');
-    for (var i = 0; i < forcedFeatures.length; i++) {
-      featureName = forcedFeatures[i];
-
-      features[featureName] = true;
-    }
-  }
-
-  features['ember-glimmer-allow-backtracking-rerender'] = false;
-
-  if (process.env.ALLOW_BACKTRACKING) {
-    features['ember-glimmer-allow-backtracking-rerender'] = true;
-    features['ember-glimmer-detect-backtracking-rerender'] = false;
-  }
-
-  var isDevelopment = (environment === 'development');
-
-  features['mandatory-setter'] = isDevelopment;
-  features['ember-glimmer-detect-backtracking-rerender'] = isDevelopment;
-
-  return features;
-}
-
-function babelConfigFor(environment) {
-  var plugins = [];
-  var features = getFeatures(environment);
-  var includeDevHelpers = true;
-
-  plugins.push(applyFeatureFlags({
-    imports: [
-      { module: 'ember-metal/features' },
-      { module: 'ember-metal', name: 'isFeatureEnabled' },
-    ],
-    features: features
-  }));
-
-  var isProduction = (environment === 'production');
-  if (isProduction) {
-    includeDevHelpers = false;
-    plugins.push(filterImports({
-      'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal', 'debugFreeze'],
-      'ember-metal': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal', 'debugFreeze']
-    }));
-  }
-
-  return {
-    plugins: plugins,
-    includeDevHelpers: includeDevHelpers,
-    helperWhiteList: [
-      'inherits',
-      'class-call-check',
-      'tagged-template-literal-loose',
-      'slice',
-      'defaults',
-      'create-class',
-      'interop-export-wildcard'
-    ]
-  };
-}
-
-function getVersion() {
-  var projectPath = process.cwd();
-  var info = getGitInfo(projectPath);
-  if (info.tag) {
-    return info.tag.replace(/^v/, '');
-  }
-
-  var packageVersion  = require(path.join(projectPath, 'package.json')).version;
-  var sha = info.sha || '';
-  var prefix = packageVersion + '-' + (process.env.BUILD_TYPE || info.branch || process.env.TRAVIS_BRANCH);
-
-  prefix = prefix.replace('master', 'canary');
-
-  return prefix + '+' + sha.slice(0, 8);
-}
-
-// non bundled vendor
-function jquery() {
-  var jquery = require.resolve('jquery');
-  return new Funnel(path.dirname(jquery), {
-    files: ['jquery.js'],
-    destDir: 'jquery',
-    annotation: 'jquery/jquery.js'
-  });
-}
-
-// TEST files
-function qunit() {
-  var qunitjs = require.resolve('qunitjs');
-  return new Funnel(path.dirname(qunitjs), {
-    files: ['qunit.js', 'qunit.css'],
-    destDir: 'qunit',
-    annotation: 'qunit/qunit.{js|css}'
-  });
-}
-
-function handlebarsFix() {
-  var HANDLEBARS_PARSER = /\/parser.js$/;
-  return {
-    load: function(id) {
-      if (HANDLEBARS_PARSER.test(id)) {
-        var code = fs.readFileSync(id, 'utf8');
-        return {
-          code: code
-            .replace('exports.__esModule = true;', '')
-            .replace('exports[\'default\'] = handlebars;', 'export default handlebars;'),
-
-          map: { mappings: null }
-        };
-      }
-    }
-  }
-}
-
-function treeForAddon(project, name) {
-  var addon = project.findAddonByName(name);
-  var tree = addon.treeFor('addon');
-
-  return new Funnel(tree, {
-    srcDir: 'modules'
-  });
-}
-
-function getESLintRulePaths() {
-  var emberjsBuildPath = path.dirname(require.resolve('emberjs-build'));
-  var emberjsBuildLinked = emberjsBuildPath.indexOf(__dirname + '/node_modules') === -1;
-
-  if (emberjsBuildLinked) {
-    var rulePath = path.join(
-      path.dirname(require.resolve('eslint-plugin-ember-internal')),
-      'rules'
-    );
-    return [rulePath];
-  }
-
-  return [];
-}
+const MergeTrees = require('broccoli-merge-trees');
+const Funnel = require('broccoli-funnel');
+const babelHelpers = require('./broccoli/babel-helpers');
+const bootstrapModule = require('./broccoli/bootstrap-modules');
+const addon = require('./broccoli/addon');
+const concat = require('./broccoli/concat-bundle');
+const testIndexHTML = require('./broccoli/test-index-html');
+const toES5 = require('./broccoli/to-es5');
+const stripForProd = toES5.stripForProd;
+const minify = require('./broccoli/minify');
+const lint = require('./broccoli/lint');
+const Rollup = require('broccoli-rollup');
+const { stripIndent } = require('common-tags');
+const {
+  routerES,
+  jquery,
+  internalLoader,
+  qunit,
+  emberGlimmerES,
+  handlebarsES,
+  rsvpES,
+  simpleHTMLTokenizerES,
+  backburnerES,
+  dagES,
+  routeRecognizerES,
+  emberPkgES,
+  glimmerPkgES,
+  emberTestsES,
+  nodeModuleUtils,
+  emberVersionES,
+  emberLicense,
+  emberFeaturesES,
+  packageManagerJSONs,
+  nodeTests,
+  rollupEmberMetal
+} = require('./broccoli/packages');
+const SHOULD_ROLLUP = true;
 
 module.exports = function(options) {
-  var features = getFeatures();
-  var version = getVersion();
+  let loader = internalLoader();
+  let license = emberLicense();
+  let nodeModule = nodeModuleUtils();
+  let ENV = process.env.EMBER_ENV || 'development';
+  let debugFeatures = toES5(emberFeaturesES());
+  let version = toES5(emberVersionES());
+  let emberTesting = emberPkgES('ember-testing');
+  let emberTestingES5 = toES5(emberTesting, { annotation: 'ember-testing' });
+  let emberDebug = emberPkgES('ember-debug');
+  let emberDebugES5 = toES5(emberDebug, { annotation: 'ember-debug' });
+  let emberTemplateCompiler = emberPkgES('ember-template-compiler');
+  let emberTemplateCompilerES5 = toES5(emberTemplateCompiler, { annotation: 'ember-template-compiler' });
+  let glimmerSyntax = toES5(
+    glimmerPkgES('@glimmer/syntax', ['handlebars', 'simple-html-tokenizer']),
+    { annotation: '@glimmer/syntax' }
+  );
+  let glimmerCompiler = toES5(
+    glimmerPkgES('@glimmer/compiler', ['@glimmer/util', '@glimmer/wire-format', '@glimmer/syntax']),
+    { annotation: '@glimmer/compiler' }
+  );
+  let glimmerReference = toES5(glimmerPkgES('@glimmer/reference', ['@glimmer/util']));
+  let glimmerUtil = toES5(glimmerPkgES('@glimmer/util'));
+  let glimmerWireFormat = toES5(glimmerPkgES('@glimmer/wire-format', ['@glimmer/util']));
+  let babelDebugHelpersES5 = toES5(babelHelpers('debug'), { annotation: 'babel helpers debug' });
+  let inlineParser = toES5(handlebarsES(), { annotation: 'handlebars' });
+  let tokenizer = toES5(simpleHTMLTokenizerES(), { annotation: 'tokenizer' });
+  let rsvp = toES5(rsvpES(), { annotation: 'rsvp' });
+  let emberMetal = new Funnel('packages/ember-metal/lib', { destDir: '/' });
+  let emberMetalES5 = rollupEmberMetal(emberMetal);
+  let emberConsole = emberPkgES('ember-console', SHOULD_ROLLUP, ['ember-environment']);
+  let emberConsoleES5 = toES5(emberConsole, { annotation: 'ember-console' });
+  let emberEnvironment = emberPkgES('ember-environment', SHOULD_ROLLUP);
+  let emberEnvironmentES5 = toES5(emberEnvironment, { annotation: 'ember-environment' });
+  let emberUtils = emberPkgES('ember-utils', SHOULD_ROLLUP);
+  let emberUtilsES5 = toES5(emberUtils, { annotation: 'ember-utils' });
+  let container = emberPkgES('container', SHOULD_ROLLUP, [
+    'ember-debug',
+    'ember-utils',
+    'ember-environment',
+    'ember-env-flags',
+    'ember/features'
+  ]);
+  let containerES5 = toES5(container, { annotation: 'container' });
+  let emberCoreES6 = emberES6();
+  let emberTests = emberTestsES6();
+  let testHarness = testHarnessFiles();
+  let backburner = toES5(backburnerES());
 
-  var vendorPackages = {
-    'ember-dev':             treeForAddon(options.project, 'ember-dev'),
-    'external-helpers':      vendoredPackage('external-helpers'),
-    'loader':                vendoredPackage('loader'),
-    'rsvp':                  rsvp(),
-    'backburner':            backburner(),
-    'router':                router(),
-    'dag-map':               dag(),
-    'route-recognizer':      routeRecognizer(),
-    'simple-html-tokenizer': buildPackage('simple-html-tokenizer'),
+  // Linting
+  let emberTestsLinted = emberTests.map(lint);
+  let emberLinted = emberCoreES6.map(lint);
 
-    '@glimmer/compiler':     buildPackage('@glimmer/compiler', {
-                               external: ['@glimmer/syntax', '@glimmer/wire-format', '@glimmer/util']
-                             }),
-    '@glimmer/di':           buildPackage('@glimmer/di', { external: ['@glimmer/util'] }),
-    '@glimmer/reference':    buildPackage('@glimmer/reference', { external: ['@glimmer/util'] }),
-    '@glimmer/runtime':      buildPackage('@glimmer/runtime', {
-                               external: ['@glimmer/util',
-                                          '@glimmer/reference',
-                                          '@glimmer/wire-format',
-                                          '@glimmer/syntax']
-                             }),
-    '@glimmer/node':         buildPackage('@glimmer/node', { external: ['@glimmer/runtime'] }),
-    '@glimmer/syntax':       buildPackage('@glimmer/syntax', { external: ['handlebars', 'simple-html-tokenizer'] }),
-    '@glimmer/test-helpers': buildPackage('@glimmer/test-helpers'),
-    '@glimmer/util':         buildPackage('@glimmer/util', { external: [] }),
-    '@glimmer/wire-format':  buildPackage('@glimmer/wire-format', { external: ['@glimmer/util'] }),
-    'handlebars':            buildPackage('handlebars', {
-                               srcDir: 'lib',
-                               entry: 'handlebars/compiler/base.js',
-                               plugins: [handlebarsFix()]
-                             }) // inlined parser
-  };
+  // ES5
+  let dependenciesES5 = dependenciesES6().map(toES5);
+  let emberES5 = emberCoreES6.map(toES5);
+  emberTests.push(addon('ember-dev', options.project));
+  let emberTestsES5 = emberTests.map(toES5);
 
-  // Replace _getBowerTree with one from npm
-  EmberBuild.prototype._getBowerTree = function getBowerTree() {
-    return mergeTrees([
-      qunit(),
-      jquery(),
-      replaceVersion(new Funnel('config/package_manager_files', {
-        destDir: '/'
-      }), {
-        version: version
-      })
-    ]);
-  };
+  // Bundling
+  let emberTestsBundle = new MergeTrees([
+    ...emberTestsES5,
+    ...emberTestsLinted,
+    ...emberLinted,
+    loader,
+    nodeModule,
+    license,
+    babelDebugHelpersES5,
+    lint(emberUtils),
+    lint(emberTesting),
+    lint(emberDebug),
+    lint(emberTemplateCompiler),
+    lint(emberMetal),
+    lint(emberConsole),
+    lint(emberEnvironment),
+    lint(container)
+  ]);
 
-  EmberBuild.prototype._minifySourceTree = function (tree, options) {
-    var srcFile = options.srcFile;
-    var destFile = options.destFile;
-    var files = [ srcFile ];
-    var mapSrcFile = srcFile.slice(0, -2) + 'map';
-    var mapDestFile = destFile.slice(0, -2) + 'map';
-    if (options.enableSourceMaps) {
-      files.push(mapSrcFile);
-    }
-    // because broccoli-uglify-sourcemap doesn't use persistent filter
-    var reducedTree = new Funnel(tree, {
-      annotation: 'reduce for minify',
-      files: files
-    });
-    var minifiedTree = new uglify(reducedTree, {
-      sourceMapConfig: {
-        enabled: options.enableSourceMaps
-      },
-      mangle: true,
-      compress: {
-        // this is adversely affects heuristics for IIFE eval
-        negate_iife: false,
-        // limit sequences because of memory issues during parsing
-        sequences: 30
-      },
-      output: {
-        // no difference in size
-        // and much easier to debug
-        semicolons: false
-      }
-    });
-    return new Funnel(minifiedTree, {
-      annotation: 'rename minified',
-      files: files,
-      getDestinationPath: function(relativePath) {
-        if (relativePath === srcFile) {
-          return destFile;
-        }
-        if (relativePath === mapSrcFile) {
-          return mapDestFile;
-        }
-        return relativePath;
-      }
-    });
-  };
+  let emberDebugBase = [
+    ...emberES5,
+    ...dependenciesES5,
+    rsvp,
+    containerES5,
+    emberUtilsES5,
+    emberEnvironmentES5,
+    emberMetalES5,
+    emberConsoleES5,
+    emberDebugES5,
+    glimmerReference,
+    glimmerUtil,
+    glimmerWireFormat,
+    backburner,
+    version,
+    license,
+    loader,
+    nodeModule,
+    bootstrapModule('ember')
+  ];
 
-  var emberBuild = new EmberBuild({
-    babel: {
-      development: babelConfigFor('development'),
-      production: babelConfigFor('production')
-    },
-    eslintRulePaths: getESLintRulePaths(),
-    features: {
-      development: getFeatures('development'),
-      production: getFeatures('production')
-    },
-    glimmer: require('@glimmer/compiler'),
-    packages: getPackages(features),
-    vendoredPackages: vendorPackages,
-    version: version
+  emberTestsBundle = concat(emberTestsBundle, {
+    outputFile: 'ember-tests.js',
+    hasBootstrap: false
   });
 
-  return emberBuild.getDistTrees();
+  let emberDebugBundle = new MergeTrees([
+    ...emberDebugBase,
+    emberTestingES5,
+    babelDebugHelpersES5,
+    inlineParser,
+    debugFeatures,
+    emberTemplateCompilerES5
+  ]);
+
+  emberDebugBundle = concat(emberDebugBundle, {
+    outputFile: 'ember.debug.js'
+  });
+
+  let emberTestingBundle = new MergeTrees([
+    loader,
+    license,
+    emberTestingES5,
+    emberDebugES5,
+    babelDebugHelpersES5,
+    nodeModule
+  ]);
+
+  emberTestingBundle = concat(emberTestingBundle, {
+    outputFile: 'ember-testing.js',
+    hasBootstrap: false,
+    footer: stripIndent`
+      var testing = requireModule('ember-testing');
+      Ember.Test = testing.Test;
+      Ember.Test.Adapter = testing.Adapter;
+      Ember.Test.QUnitAdapter = testing.QUnitAdapter;
+      Ember.setupForTesting = testing.setupForTesting;
+    `
+  });
+
+  function templateCompiler(babelHelpers) {
+    return [
+      containerES5,
+      emberUtilsES5,
+      emberEnvironmentES5,
+      emberMetalES5,
+      emberConsoleES5,
+      emberTemplateCompilerES5,
+      emberDebugES5,
+      glimmerSyntax,
+      glimmerCompiler,
+      glimmerReference,
+      glimmerUtil,
+      glimmerWireFormat,
+      backburner,
+      debugFeatures,
+      tokenizer,
+      inlineParser,
+      babelHelpers,
+      bootstrapModule('ember-template-compiler', 'umd')
+    ];
+  }
+
+  let trees = [];
+
+  if (ENV === 'production') {
+    let babelProdHelpersES5 = toES5(babelHelpers('prod'), { environment: 'production' });
+    let productionFeatures = toES5(emberFeaturesES(true), { environment: 'production' });
+    let emberMetalProd = stripForProd(rollupEmberMetal(emberMetal, { environment: 'production' }));
+
+    let emberProdES5 = [
+      ...emberCoreES6,
+      ...dependenciesES6(),
+      container,
+      emberUtils,
+      emberEnvironment,
+      emberConsole,
+      emberDebug
+    ].map((tree) => {
+      return stripForProd(toES5(tree, { environment: 'production' }));
+    });
+
+    let depsProd = [
+      glimmerReference,
+      glimmerUtil,
+      glimmerWireFormat,
+      backburner,
+    ].map(stripForProd);
+
+    let emberProdTestES5 = emberTests.map((tree) => {
+      return stripForProd(toES5(tree, { environment: 'production' }));
+    });
+
+    let emberRuntimeBundle = new MergeTrees([
+      loader,
+      babelDebugHelpersES5,
+      emberMetalES5,
+      emberEnvironmentES5,
+      emberConsoleES5,
+      containerES5,
+      rsvp,
+      license,
+      bootstrapModule('ember-runtime', 'default')
+    ]);
+
+    let emberProdBundle = new MergeTrees([
+      ...emberProdES5,
+      ...depsProd,
+      emberMetalProd,
+      rsvp,
+      productionFeatures,
+      babelProdHelpersES5,
+      version,
+      license,
+      loader,
+      nodeModule,
+      bootstrapModule('ember')
+    ]);
+
+    // Note:
+    // We have to build custom production template compiler
+    // because we strip babel helpers in the prod build
+    let prodTemplateCompiler = new MergeTrees(templateCompiler(babelProdHelpersES5));
+
+    prodTemplateCompiler = stripForProd(prodTemplateCompiler)
+
+    prodTemplateCompiler = new MergeTrees([
+      nodeModule,
+      prodTemplateCompiler,
+      version,
+      license,
+      loader
+    ]);
+
+    prodTemplateCompiler = concat(prodTemplateCompiler, {
+      outputFile: 'ember-template-compiler.js'
+    });
+
+    let emberProdTestsBundle = new MergeTrees([
+      ...emberProdTestES5,
+      tokenizer,
+      emberTemplateCompilerES5,
+      babelProdHelpersES5,
+      license,
+      loader,
+      nodeModule
+    ]);
+
+    emberRuntimeBundle = concat(emberRuntimeBundle, {
+      outputFile: 'ember-runtime.js'
+    });
+
+    emberProdBundle = concat(emberProdBundle, {
+      outputFile: 'ember.prod.js'
+    });
+
+    emberProdTestsBundle = concat(emberProdTestsBundle, {
+      outputFile: 'ember-tests.prod.js',
+      hasBootstrap: false
+    });
+
+    let emberMinBundle = minify(emberProdBundle, 'ember.min');
+
+    trees.push(emberRuntimeBundle, emberProdBundle, emberMinBundle, emberProdTestsBundle, prodTemplateCompiler);
+  } else {
+    let emberTemplateCompilerBundle = new MergeTrees([
+      ...templateCompiler(babelDebugHelpersES5),
+        version,
+        license,
+        loader,
+        nodeModule
+    ]);
+
+    emberTemplateCompilerBundle = concat(emberTemplateCompilerBundle, {
+      outputFile: 'ember-template-compiler.js'
+    });
+
+    trees.push(emberTemplateCompilerBundle);
+  }
+
+  return new MergeTrees([
+    ...trees,
+    ...testHarness,
+    emberTestsBundle,
+    emberDebugBundle,
+    emberTestingBundle,
+    packageManagerJSONs(),
+    nodeTests()
+  ]);
 };
 
-module.exports.getFeatures = getFeatures;
+function dependenciesES6() {
+  return [
+    dagES(),
+    routerES(),
+    routeRecognizerES(),
+    glimmerPkgES('@glimmer/node', ['@glimmer/runtime']),
+    glimmerPkgES('@glimmer/runtime', [
+      '@glimmer/util',
+      '@glimmer/reference',
+      '@glimmer/wire-format'
+    ])
+  ];
+}
+
+function emberTestsES6() {
+  return [
+    emberPkgES('internal-test-helpers'),
+    emberTestsES('container'),
+    emberTestsES('ember'),
+    emberTestsES('ember-metal'),
+    emberTestsES('ember-template-compiler'),
+    emberTestsES('ember-glimmer'),
+    emberTestsES('ember-application'),
+    emberTestsES('ember-debug'),
+    emberTestsES('ember-runtime'),
+    emberTestsES('ember-extension-support'),
+    emberTestsES('ember-routing'),
+    emberTestsES('ember-utils'),
+    emberTestsES('ember-testing'),
+    emberTestsES('internal-test-helpers')
+  ];
+}
+
+function emberES6() {
+  return [
+    emberPkgES('ember-views'),
+    emberPkgES('ember'),
+    emberPkgES('ember-application'),
+    emberPkgES('ember-runtime'),
+    emberPkgES('ember-extension-support'),
+    emberPkgES('ember-routing'),
+    emberGlimmerES()
+  ];
+}
+
+function testHarnessFiles() {
+  return [
+    testIndexHTML(),
+    jquery(),
+    qunit()
+  ];
+}

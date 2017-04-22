@@ -1,6 +1,4 @@
 import {
-  assert,
-  deprecate,
   get,
   set,
   computed,
@@ -9,6 +7,10 @@ import {
   alias,
   expandProperties
 } from 'ember-metal';
+import {
+  assert,
+  deprecate
+} from 'ember-debug';
 
 /**
 @module ember

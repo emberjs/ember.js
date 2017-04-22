@@ -1,4 +1,4 @@
-// STATE within a module is frowned apon, this exists
+// STATE within a module is frowned upon, this exists
 // to support Ember.TEMPLATES but shield ember internals from this legacy
 // global API.
 let TEMPLATES = {};

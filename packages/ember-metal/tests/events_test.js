@@ -1,7 +1,6 @@
-import { Mixin } from '../mixin';
-import { meta } from '../meta';
-
 import {
+  Mixin,
+  meta,
   on,
   addListener,
   removeListener,
@@ -9,7 +8,7 @@ import {
   suspendListeners,
   sendEvent,
   hasListeners
-} from '../events';
+} from '..';
 
 QUnit.module('system/props/events_test');
 

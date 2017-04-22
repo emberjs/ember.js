@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-glimmer
 */
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { wrapComponentClassAttribute } from '../utils/bindings';
 import { dynamicComponentMacro } from './dynamic-component';
 
@@ -54,7 +54,7 @@ function buildTextFieldSyntax(params, hash, builder) {
   {{input value=searchWord}}
   ```
 
-  In this example, the inital value in the `<input />` will be set to the value of `searchWord`.
+  In this example, the initial value in the `<input />` will be set to the value of `searchWord`.
   If the user changes the text, the value of `searchWord` will also be updated.
 
   ### Actions

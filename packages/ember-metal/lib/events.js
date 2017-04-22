@@ -3,9 +3,8 @@
 @submodule ember-metal
 */
 import { applyStr } from 'ember-utils';
-import { assert } from './debug';
 import { meta as metaFor, peekMeta } from './meta';
-import { deprecate } from './debug';
+import { deprecate, assert } from 'ember-debug';
 
 import { ONCE, SUSPENDED } from './meta_listeners';
 
@@ -46,6 +45,7 @@ export function accumulateListeners(obj, eventName, otherActions) {
   let meta = peekMeta(obj);
   if (!meta) { return; }
   let actions = meta.matchingListeners(eventName);
+  if (actions === undefined) { return; }
   let newActions = [];
 
   for (let i = actions.length - 3; i >= 0; i -= 3) {
@@ -247,7 +247,8 @@ export function sendEvent(obj, eventName, params, actions) {
 export function hasListeners(obj, eventName) {
   let meta = peekMeta(obj);
   if (!meta) { return false; }
-  return meta.matchingListeners(eventName).length > 0;
+  let matched = meta.matchingListeners(eventName);
+  return matched !== undefined && matched.length > 0;
 }
 
 /**

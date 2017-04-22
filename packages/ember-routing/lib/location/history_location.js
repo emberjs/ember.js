@@ -1,8 +1,8 @@
 import {
   get,
-  set,
-  isFeatureEnabled
+  set
 } from 'ember-metal';
+import { EMBER_UNIQUE_LOCATION_HISTORY_STATE } from 'ember/features';
 
 import { Object as EmberObject } from 'ember-runtime';
 import EmberLocation from './api';
@@ -16,7 +16,7 @@ let popstateFired = false;
 
 let _uuid;
 
-if (isFeatureEnabled('ember-unique-location-history-state')) {
+if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
   _uuid = function _uuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r, v;
@@ -101,7 +101,8 @@ export default EmberObject.extend({
     // remove baseURL and rootURL from start of path
     let url = path
       .replace(new RegExp(`^${baseURL}(?=/|$)`), '')
-      .replace(new RegExp(`^${rootURL}(?=/|$)`), '');
+      .replace(new RegExp(`^${rootURL}(?=/|$)`), '')
+      .replace(/\/\/$/g,'/'); // remove extra slashes
 
     let search = location.search || '';
     url += search + this.getHash();
@@ -173,7 +174,7 @@ export default EmberObject.extend({
   */
   pushState(path) {
     let state = { path };
-    if (isFeatureEnabled('ember-unique-location-history-state')) {
+    if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
       state.uuid = _uuid();
     }
 
@@ -194,7 +195,7 @@ export default EmberObject.extend({
   */
   replaceState(path) {
     let state = { path };
-    if (isFeatureEnabled('ember-unique-location-history-state')) {
+    if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
       state.uuid = _uuid();
     }
 

@@ -7,9 +7,9 @@ import {
   moduleFor
 } from 'internal-test-helpers';
 
-import { isFeatureEnabled } from 'ember-metal';
+import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 
-if (isFeatureEnabled('ember-routing-router-service')) {
+if (EMBER_ROUTING_ROUTER_SERVICE) {
   moduleFor('Router Service - main', class extends RouterTestCase {
     ['@test RouterService#currentRouteName is correctly set for top level route'](assert) {
       assert.expect(1);
@@ -69,7 +69,7 @@ if (isFeatureEnabled('ember-routing-router-service')) {
     ['@test RouterService#rootURL is correctly set to a custom value'](assert) {
       assert.expect(1);
 
-      this.registerRoute('parent.index', Route.extend({
+      this.add('route:parent.index', Route.extend({
         init() {
           this._super();
           set(this.router, 'rootURL', '/homepage');

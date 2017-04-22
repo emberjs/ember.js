@@ -4,9 +4,11 @@
 */
 
 import { symbol } from 'ember-utils';
-import { assert, on, runInDebug } from 'ember-metal';
+import { on } from 'ember-metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
+import { assert } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 
 /**
   `Ember.Object` is the main base class for all Ember objects. It is a subclass
@@ -24,7 +26,7 @@ EmberObject.toString = () => 'Ember.Object';
 
 export let FrameworkObject = EmberObject;
 
-runInDebug(() => {
+if (DEBUG) {
   let INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
   let ASSERT_INIT_WAS_CALLED = symbol('ASSERT_INIT_WAS_CALLED');
 
@@ -41,6 +43,6 @@ runInDebug(() => {
       );
     })
   });
-});
+}
 
 export default EmberObject;

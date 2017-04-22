@@ -1,4 +1,4 @@
-import { Mixin } from '../../mixin';
+import { Mixin } from '../..';
 
 QUnit.module('Mixin.detect');
 

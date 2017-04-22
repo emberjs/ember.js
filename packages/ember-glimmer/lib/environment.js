@@ -1,5 +1,8 @@
 import { guidFor, OWNER } from 'ember-utils';
-import { Cache, warn, runInDebug, isFeatureEnabled } from 'ember-metal';
+import { Cache, _instrumentStart } from 'ember-metal';
+import { assert, warn } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
+import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
 import {
   lookupPartial,
   hasPartial,
@@ -53,6 +56,10 @@ import { FACTORY_FOR } from 'container';
 
 import { default as ActionModifierManager } from './modifiers/action';
 
+function instrumentationPayload(name) {
+  return { object: `component:${name}` };
+}
+
 export default class Environment extends GlimmerEnvironment {
   static create(options) {
     return new Environment(options);
@@ -64,7 +71,7 @@ export default class Environment extends GlimmerEnvironment {
     this.isInteractive = owner.lookup('-environment:main').isInteractive;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
-    this.destroyedComponents = undefined;
+    this.destroyedComponents = [];
 
     installPlatformSpecificProtocolForURL(this);
 
@@ -127,7 +134,9 @@ export default class Environment extends GlimmerEnvironment {
       '-get-dynamic-var': getDynamicVar
     };
 
-    runInDebug(() => this.debugStack = new DebugStack());
+    if (DEBUG) {
+      this.debugStack = new DebugStack()
+    }
   }
 
   macros() {
@@ -142,11 +151,13 @@ export default class Environment extends GlimmerEnvironment {
 
   getComponentDefinition(path, symbolTable) {
     let name = path[0];
+    let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let source = blockMeta.moduleName && `template:${blockMeta.moduleName}`;
-
-    return this._definitionCache.get({ name, source, owner });
+    let definition = this._definitionCache.get({ name, source, owner });
+    finalizer();
+    return definition;
   }
 
   // normally templates should be exported at the proper module name
@@ -203,32 +214,18 @@ export default class Environment extends GlimmerEnvironment {
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
+    let helperFactory = owner[FACTORY_FOR](`helper:${name}`, options) || owner[FACTORY_FOR](`helper:${name}`);
 
-    if (isFeatureEnabled('ember-factory-for')) {
-      let helperFactory = owner[FACTORY_FOR](`helper:${name}`, options) || owner[FACTORY_FOR](`helper:${name}`);
-
-      // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-      if (helperFactory.class.isHelperInstance) {
-        return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
-      } else if (helperFactory.class.isHelperFactory) {
-        if (!isFeatureEnabled('ember-no-double-extend')) {
-          helperFactory = helperFactory.create();
-        }
-        return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
-      } else {
-        throw new Error(`${name} is not a helper`);
+    // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
+    if (helperFactory.class.isHelperInstance) {
+      return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
+    } else if (helperFactory.class.isHelperFactory) {
+      if (!EMBER_NO_DOUBLE_EXTEND) {
+        helperFactory = helperFactory.create();
       }
+      return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
     } else {
-      let helperFactory = owner.lookup(`helper:${name}`, options) || owner.lookup(`helper:${name}`);
-
-      // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-      if (helperFactory.isHelperInstance) {
-        return (vm, args) => SimpleHelperReference.create(helperFactory.compute, args);
-      } else if (helperFactory.isHelperFactory) {
-        return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
-      } else {
-        throw new Error(`${name} is not a helper`);
-      }
+      throw new Error(`${name} is not a helper`);
     }
   }
 
@@ -275,16 +272,16 @@ export default class Environment extends GlimmerEnvironment {
     this.inTransaction = true;
 
     super.begin();
-
-    this.destroyedComponents = [];
   }
 
   commit() {
+    let destroyedComponents = this.destroyedComponents;
+    this.destroyedComponents = [];
     // components queued for destruction must be destroyed before firing
     // `didCreate` to prevent errors when removing and adding a component
     // with the same name (would throw an error when added to view registry)
-    for (let i = 0; i < this.destroyedComponents.length; i++) {
-      this.destroyedComponents[i].destroy();
+    for (let i = 0; i < destroyedComponents.length; i++) {
+      destroyedComponents[i].destroy();
     }
 
     super.commit();
@@ -293,7 +290,7 @@ export default class Environment extends GlimmerEnvironment {
   }
 }
 
-runInDebug(() => {
+if (DEBUG) {
   class StyleAttributeManager extends AttributeManager {
     setAttribute(dom, element, value) {
       warn(constructStyleDeprecationMessage(value), (() => {
@@ -325,4 +322,4 @@ runInDebug(() => {
 
     return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
   };
-});
+}

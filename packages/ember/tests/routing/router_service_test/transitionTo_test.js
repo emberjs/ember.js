@@ -11,9 +11,9 @@ import {
 } from 'internal-test-helpers';
 import { Transition } from 'router';
 
-import { isFeatureEnabled } from 'ember-metal';
+import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 
-if (isFeatureEnabled('ember-routing-router-service')) {
+if (EMBER_ROUTING_ROUTER_SERVICE) {
   moduleFor('Router Service - transitionTo', class extends RouterTestCase {
     constructor() {
       super();
@@ -21,7 +21,7 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       let testCase = this;
       testCase.state = [];
 
-      this.application.register('location:test', NoneLocation.extend({
+      this.add('location:test', NoneLocation.extend({
         setURL(path) {
           testCase.state.push(path);
           this.set('path', path);
@@ -99,9 +99,9 @@ if (isFeatureEnabled('ember-routing-router-service')) {
 
       let componentInstance;
 
-      this.registerTemplate('parent.index', '{{foo-bar}}');
+      this.addTemplate('parent.index', '{{foo-bar}}');
 
-      this.registerComponent('foo-bar', {
+      this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
           routerService: inject.service('router'),
           init() {
@@ -126,16 +126,48 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       });
     }
 
+    ['@test RouterService#transitionTo with basic route using URL'](assert) {
+      assert.expect(1);
+
+      let componentInstance;
+
+      this.addTemplate('parent.index', '{{foo-bar}}');
+
+      this.addComponent('foo-bar', {
+        ComponentClass: Component.extend({
+          routerService: inject.service('router'),
+          init() {
+            this._super();
+            componentInstance = this;
+          },
+          actions: {
+            transitionToSister() {
+              get(this, 'routerService').transitionTo('/sister');
+            }
+          }
+        }),
+        template: `foo-bar`
+      });
+
+      return this.visit('/').then(() => {
+        run(function() {
+          componentInstance.send('transitionToSister');
+        });
+
+        assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+      });
+    }
+
     ['@test RouterService#transitionTo with dynamic segment'](assert) {
       assert.expect(3);
 
       let componentInstance;
       let dynamicModel = { id: 1, contents: 'much dynamicism' };
 
-      this.registerTemplate('parent.index', '{{foo-bar}}');
-      this.registerTemplate('dynamic', '{{model.contents}}');
+      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.addTemplate('dynamic', '{{model.contents}}');
 
-      this.registerComponent('foo-bar', {
+      this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
           routerService: inject.service('router'),
           init() {
@@ -168,16 +200,16 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       let componentInstance;
       let dynamicModel = { id: 1, contents: 'much dynamicism' };
 
-      this.registerRoute('dynamic', Route.extend({
+      this.add('route:dynamic', Route.extend({
         model() {
           return dynamicModel;
         }
       }));
 
-      this.registerTemplate('parent.index', '{{foo-bar}}');
-      this.registerTemplate('dynamic', '{{model.contents}}');
+      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.addTemplate('dynamic', '{{model.contents}}');
 
-      this.registerComponent('foo-bar', {
+      this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
           routerService: inject.service('router'),
           init() {

@@ -6,7 +6,7 @@ import { guidFor } from 'ember-utils';
 import {
   mixin,
   Mixin
-} from '../../mixin';
+} from '../..';
 
 const PrivateProperty = Mixin.create({
   _foo: '_FOO'

@@ -7,8 +7,8 @@ function consoleMethod(name) {
   let consoleObj;
   if (context.imports.console) {
     consoleObj = context.imports.console;
-  } else if (typeof console !== 'undefined') {
-    consoleObj = console;
+  } else if (typeof console !== 'undefined') { // eslint-disable-line no-undef
+    consoleObj = console; // eslint-disable-line no-undef
   }
 
   let method = typeof consoleObj === 'object' ? consoleObj[name] : null;

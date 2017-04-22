@@ -1,4 +1,4 @@
-import { isFeatureEnabled } from 'ember-metal';
+import { EMBER_TESTING_RESUME_TEST } from 'ember/features';
 import {
   registerHelper as helper,
   registerAsyncHelper as asyncHelper
@@ -32,6 +32,6 @@ helper('currentRouteName', currentRouteName);
 helper('currentPath', currentPath);
 helper('currentURL', currentURL);
 
-if (isFeatureEnabled('ember-testing-resume-test')) {
+if (EMBER_TESTING_RESUME_TEST) {
   helper('resumeTest', resumeTest);
 }

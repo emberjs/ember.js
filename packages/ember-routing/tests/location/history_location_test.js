@@ -1,9 +1,9 @@
 import {
-  isFeatureEnabled,
   set,
   run
 } from 'ember-metal';
 import HistoryLocation from '../../location/history_location';
+import { EMBER_UNIQUE_LOCATION_HISTORY_STATE } from 'ember/features';
 
 let FakeHistory, HistoryTestLocation, location;
 
@@ -114,7 +114,7 @@ QUnit.test('base URL is removed when retrieving the current pathname', function(
   location.initState();
 });
 
-if (isFeatureEnabled('ember-unique-location-history-state')) {
+if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
   QUnit.test('base URL is preserved when moving around', function() {
     expect(2);
 
@@ -332,4 +332,22 @@ QUnit.test('HistoryLocation.getURL() includes location.hash and location.search'
   createLocation();
 
   equal(location.getURL(), '/foo/bar?time=morphin#pink-power-ranger');
+});
+
+
+QUnit.test('HistoryLocation.getURL() drops duplicate slashes', function() {
+  expect(1);
+
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+      let location = mockBrowserLocation('//');
+      location.pathname = '//'; // mockBrowserLocation does not allow for `//`, so force it
+      set(this, 'location', location);
+    }
+  });
+
+  createLocation();
+
+  equal(location.getURL(), '/');
 });

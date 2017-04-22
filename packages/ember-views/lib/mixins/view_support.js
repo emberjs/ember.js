@@ -1,9 +1,11 @@
 import { guidFor, getOwner } from 'ember-utils';
-import { assert, deprecate, descriptor, runInDebug, Mixin } from 'ember-metal';
+import { descriptor, Mixin } from 'ember-metal';
+import { assert, deprecate } from 'ember-debug';
 import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
 import { POST_INIT } from 'ember-runtime/system/core_object';
 import jQuery from '../system/jquery';
+import { DEBUG } from 'ember-env-flags';
 
 function K() { return this; }
 
@@ -11,7 +13,7 @@ export let dispatchLifeCycleHook = (component, hook, oldAttrs, newAttrs) => {
   component.trigger(hook, { attrs: newAttrs, oldAttrs, newAttrs });
 };
 
-runInDebug(() => {
+if (DEBUG) {
   class Attrs {
     constructor(oldAttrs, newAttrs, message) {
       this._oldAttrs = oldAttrs;
@@ -52,7 +54,7 @@ runInDebug(() => {
       component.trigger(hook, new Attrs(oldAttrs, newAttrs, `[DEPRECATED] Ember will stop passing arguments to component lifecycle hooks. Please change \`${component.toString()}#${hook}\` to stop taking arguments.`));
     }
   };
-});
+}
 
 /**
  @class ViewMixin
@@ -328,31 +330,6 @@ export default Mixin.create({
   },
 
   /**
-    Replaces the content of the specified parent element with this view's
-    element. If the view does not have an HTML representation yet,
-    the element will be generated automatically.
-
-    Note that this method just schedules the view to be appended; the DOM
-    element will not be appended to the given element until all bindings have
-    finished synchronizing
-
-    @method replaceIn
-    @param {String|DOMElement|jQuery} target A selector, element, HTML string, or jQuery object
-    @return {Ember.View} received
-    @private
-  */
-  replaceIn(selector) {
-    let target = jQuery(selector);
-
-    assert(`You tried to replace in (${selector}) but that isn't in the DOM`, target.length > 0);
-    assert('You cannot replace an existing Ember.View.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
-
-    this.renderer.replaceIn(this, target[0]);
-
-    return this;
-  },
-
-  /**
     Appends the view's element to the document body. If the view does
     not have an HTML representation yet
     the element will be generated automatically.
@@ -536,7 +513,16 @@ export default Mixin.create({
       let owner = getOwner(this);
       let dispatcher = owner && owner.lookup('event_dispatcher:main');
 
-      if (dispatcher && dispatcher.canDispatchToEventManager === null) {
+      deprecate(
+        `\`eventManager\` has been deprecated in ${this}.`,
+        false,
+        {
+          id: 'ember-views.event-dispatcher.canDispatchToEventManager',
+          until: '2.16.0'
+        }
+      );
+
+      if (dispatcher && !('canDispatchToEventManager' in dispatcher)) {
         dispatcher.canDispatchToEventManager = true;
       }
     }
