@@ -3,8 +3,6 @@
   @submodule ember-runtime
 */
 
-// using ember-metal/lib/main here to ensure that ember-debug is setup
-// if present
 import {
   assign,
   guidFor,
@@ -15,6 +13,9 @@ import {
   NAME_KEY,
   GUID_KEY
 } from 'ember-utils';
+import {
+  peekFactoryManager
+} from 'container';
 import {
   get,
   meta,
@@ -540,7 +541,9 @@ CoreObject.PrototypeMixin = Mixin.create({
   toString() {
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
-    let ret = `<${this[NAME_KEY] || this.constructor.toString()}:${guidFor(this)}${extension}>`;
+    let factoryManager = peekFactoryManager(this);
+    let factoryToString = this[NAME_KEY] || factoryManager;
+    let ret = `<${factoryToString || this.constructor.toString()}:${guidFor(this)}${extension}>`;
 
     return ret;
   }

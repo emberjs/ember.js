@@ -741,3 +741,18 @@ QUnit.test('#factoryFor options passed to create clobber injections', (assert) =
   assert.equal(instrance.ajax, 'fetch');
 });
 
+QUnit.test('#factoryFor does not add properties to the object being instantiated', function(assert) {
+  let owner = {};
+  let registry = new Registry();
+  let container = registry.container();
+
+  let Component = factory();
+  registry.register('component:foo-bar', Component);
+
+  let componentFactory = container.factoryFor('component:foo-bar');
+  let instance = componentFactory.create();
+
+  // note: _guid and isDestroyed are being set in the `factory` constructor
+  // not via registry/container shenanigans
+  assert.deepEqual(Object.keys(instance), ['_guid', 'isDestroyed']);
+});
