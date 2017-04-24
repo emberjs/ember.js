@@ -84,21 +84,12 @@ export default Mixin.create({
 
   init() {
     this._super(...arguments);
-    meta(this).setProxy();
+    let m = meta(this);
+    m.setProxy();
+    m.setTag(new ProxyTag(this));
   },
 
-  _initializeTag: on('init', function() {
-    meta(this)._tag = new ProxyTag(this);
-  }),
-
-  _contentDidChange: observer('content', function() {
-    assert('Can\'t set Proxy\'s content to itself', get(this, 'content') !== this);
-    tagFor(this).contentDidChange();
-  }),
-
   isTruthy: bool('content'),
-
-  _debugContainerKey: null,
 
   willWatchProperty(key) {
     let contentKey = `content.${key}`;
@@ -126,6 +117,7 @@ export default Mixin.create({
 
   setUnknownProperty(key, value) {
     let m = meta(this);
+
     if (m.proto === this) {
       // if marked as prototype then just defineProperty
       // rather than delegate
@@ -141,6 +133,7 @@ export default Mixin.create({
       !this.isController,
       { id: 'ember-runtime.controller-proxy', until: '3.0.0' }
     );
+
     return set(content, key, value);
   }
 });
