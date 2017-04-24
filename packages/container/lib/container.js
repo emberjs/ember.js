@@ -4,6 +4,7 @@ import {
   dictionary,
   symbol,
   setOwner,
+  getOwner,
   OWNER,
   assign,
   NAME_KEY,
@@ -544,7 +545,7 @@ const INJECTED_DEPRECATED_CONTAINER_DESC = {
   enumerable: false,
   get() {
     deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.', false, { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
-    return this[CONTAINER_OVERRIDE];
+    return this[CONTAINER_OVERRIDE] || getOwner(this).__container__;
   },
 
   set(value) {
@@ -560,7 +561,6 @@ const INJECTED_DEPRECATED_CONTAINER_DESC = {
 function injectDeprecatedContainer(object, container) {
   if ('container' in object) { return; }
   Object.defineProperty(object, 'container', INJECTED_DEPRECATED_CONTAINER_DESC);
-  object[CONTAINER_OVERRIDE] = container;
 }
 
 function destroyDestroyables(container) {
