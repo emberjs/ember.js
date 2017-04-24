@@ -414,7 +414,7 @@ function buildInjections(/* container, ...injections */) {
       }
     }
 
-    container.registry.validateInjections(injections);
+    runInDebug(() => container.registry.validateInjections(injections));
 
     for (let i = 0; i < injections.length; i++) {
       injection = injections[i];
