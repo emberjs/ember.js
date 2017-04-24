@@ -535,6 +535,17 @@ moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderin
     this.assertCheckboxIsChecked();
   }
 
+  ['@test native click changes check property'](assert) {
+    this.render(`{{input type="checkbox"}}`);
+
+    this.assertSingleCheckbox();
+    this.assertCheckboxIsNotChecked();
+    this.$input()[0].click();
+    this.assertCheckboxIsChecked();
+    this.$input()[0].click();
+    this.assertCheckboxIsNotChecked();
+  }
+
   ['@test with static values'](assert) {
     this.render(`{{input type="checkbox" disabled=false tabindex=10 name="original-name" checked=false}}`);
 
@@ -552,7 +563,6 @@ moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderin
     this.assertAttr('tabindex', '10');
     this.assertAttr('name', 'original-name');
   }
-
 });
 
 moduleFor(`Helpers test: {{input type='text'}}`, class extends InputRenderingTest {
