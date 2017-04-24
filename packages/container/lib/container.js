@@ -8,7 +8,9 @@ import {
   OWNER,
   assign,
   NAME_KEY,
-  HAS_NATIVE_PROXY
+  HAS_NATIVE_PROXY,
+  HAS_NATIVE_WEAKMAP,
+  isObject
 } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import {
@@ -651,6 +653,14 @@ class FactoryManager {
     }
   }
 
+  factoryToString() {
+    if (!this.madeToString) {
+      this.madeToString = this.container.registry.makeToString(this.class, this.fullName);
+    }
+
+    return this.madeToString;
+  }
+
   create(options = {}) {
 
     let injections = this.injections;
@@ -661,8 +671,6 @@ class FactoryManager {
       }
     }
     let props = assign({}, injections, options);
-
-    props[NAME_KEY] = this.madeToString || (this.madeToString = this.container.registry.makeToString(this.class, this.fullName));
 
     if (DEBUG) {
       let lazyInjections;
