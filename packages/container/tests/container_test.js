@@ -553,8 +553,9 @@ QUnit.test('An object with its owner pre-set should be returned from ownerInject
 });
 
 QUnit.test('A deprecated `container` property is appended to every object instantiated from an extendable factory', function() {
+  let owner = { };
   let registry = new Registry();
-  let container = registry.container();
+  let container = owner.__container__ = registry.container({ owner });
   let PostController = factory();
   registry.register('controller:post', PostController);
   let postController = container.lookup('controller:post');
