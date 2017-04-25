@@ -200,16 +200,19 @@ export function watchedEvents(obj) {
   @param {String} eventName
   @param {Array} params Optional parameters for each listener.
   @param {Array} actions Optional array of actions (listeners).
+  @param {Meta}  meta Optional meta to lookup listeners
   @return true
   @public
 */
-export function sendEvent(obj, eventName, params, actions) {
-  if (!actions) {
-    let meta = peekMeta(obj);
-    actions = meta && meta.matchingListeners(eventName);
+export function sendEvent(obj, eventName, params, actions, _meta) {
+  if (actions === undefined) {
+    let meta = _meta || peekMeta(obj);
+    actions = typeof meta === 'object' &&
+                     meta !== null &&
+                     meta.matchingListeners(eventName);
   }
 
-  if (!actions || actions.length === 0) { return; }
+  if (actions === undefined || actions.length === 0) { return; }
 
   for (let i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
     let target = actions[i];
