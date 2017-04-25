@@ -102,7 +102,7 @@ export function isArray(obj) {
   Ember.typeOf(new Error('teamocil'));  // 'error'
   Ember.typeOf(function(){})            // 'function'
   Ember.typeOf(async function(){})      // 'function'
-  Ember.typeof(function* (){})          // 'function'
+  Ember.typeOf(function* (){})          // 'function'
 
   // 'normal' JavaScript object
   Ember.typeOf({ a: 'b' });             // 'object'
