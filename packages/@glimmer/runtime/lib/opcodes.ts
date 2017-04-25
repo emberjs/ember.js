@@ -3,7 +3,7 @@ import { Tag } from '@glimmer/reference';
 import { VM, UpdatingVM } from './vm';
 import { Opcode, Environment } from './environment';
 import { Constants } from './environment/constants';
-import { CI, DEBUG } from '@glimmer/env-flags';
+import { DEBUG, CI } from '@glimmer/local-debug-flags';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -904,7 +904,7 @@ export const enum Op {
 }
 
 export function debugSlice(env: Environment, start: number, end: number) {
-  if (DEBUG) {
+  if (!CI && DEBUG) {
     let { program, constants } = env;
 
     // console is not available in IE9
@@ -926,7 +926,7 @@ export function debugSlice(env: Environment, start: number, end: number) {
 }
 
 function logOpcode(type: string, params: Option<Object>): string | void {
-  if (DEBUG) {
+  if (!CI && DEBUG) {
     let out = type;
 
     if (params) {
