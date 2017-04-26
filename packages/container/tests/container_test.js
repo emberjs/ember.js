@@ -1,4 +1,4 @@
-import { getOwner, OWNER } from 'ember-utils';
+import { getOwner, OWNER, assign } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
 import { Registry } from '../index';
@@ -71,7 +71,7 @@ QUnit.test('A factory returned from lookupFactory has a debugkey', function() {
   equal(PostFactory._debugContainerKey, 'controller:post', 'factory instance receives _debugContainerKey');
 });
 
-QUnit.test('fallback for to create time injections if factory has no extend', function() {
+QUnit.test('uses create time injections if factory has no extend', function() {
   let registry = new Registry();
   let container = registry.container();
   let AppleController = factory();
@@ -85,7 +85,6 @@ QUnit.test('fallback for to create time injections if factory has no extend', fu
 
   let postController = container.lookup('controller:post');
 
-  equal(postController._debugContainerKey, 'controller:post', 'instance receives _debugContainerKey');
   ok(postController.apple instanceof AppleController, 'instance receives an apple of instance AppleController');
 });
 
@@ -157,9 +156,6 @@ QUnit.test('An individual factory with a registered injection receives the injec
   let postController = container.lookup('controller:post');
   let store = container.lookup('store:main');
 
-  equal(store._debugContainerKey, 'store:main');
-
-  equal(postController._debugContainerKey, 'controller:post');
   equal(postController.store, store, 'has the correct store injected');
 });
 
@@ -800,5 +796,54 @@ if (isFeatureEnabled('ember-factory-for')) {
     let instrance = componentFactory.create({ ajax: 'fetch' });
 
     assert.equal(instrance.ajax, 'fetch');
+  });
+
+  QUnit.test('#factoryFor does not add properties to the object being instantiated when _initFactory is present', function(assert) {
+    let owner = {};
+    let registry = new Registry();
+    let container = registry.container();
+
+    let factory;
+    class Component {
+      static _initFactory(_factory) { factory = _factory; }
+      static create(options) {
+        let instance = new this();
+        assign(instance, options);
+        return instance;
+      }
+    }
+    registry.register('component:foo-bar', Component);
+
+    let componentFactory = container.factoryFor('component:foo-bar');
+    let instance = componentFactory.create();
+
+    // note: _guid and isDestroyed are being set in the `factory` constructor
+    // not via registry/container shenanigans
+    assert.deepEqual(Object.keys(instance), []);
+  });
+
+  // this is skipped until templates and the glimmer environment do not require `OWNER` to be
+  // passed in as constructor args
+  QUnit.skip('#factoryFor does not add properties to the object being instantiated', function(assert) {
+    let owner = {};
+    let registry = new Registry();
+    let container = registry.container();
+
+    let factory;
+    class Component {
+      static create(options) {
+        let instance = new this();
+        assign(instance, options);
+        return instance;
+      }
+    }
+    registry.register('component:foo-bar', Component);
+
+    let componentFactory = container.factoryFor('component:foo-bar');
+    let instance = componentFactory.create();
+
+    // note: _guid and isDestroyed are being set in the `factory` constructor
+    // not via registry/container shenanigans
+    assert.deepEqual(Object.keys(instance), []);
   });
 }
