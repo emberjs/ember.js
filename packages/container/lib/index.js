@@ -10,5 +10,7 @@ export {
   default as Container,
   buildFakeContainerWithDeprecations,
   FACTORY_FOR,
-  LOOKUP_FACTORY
+  LOOKUP_FACTORY,
+  peekFactoryManager,
+  setFactoryManager
 } from './container';

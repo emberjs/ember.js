@@ -1,6 +1,5 @@
 import { getOwner, OWNER } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import { get } from 'ember-metal';
 import { Registry } from '..';
 import { factory } from 'internal-test-helpers';
 import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
@@ -562,7 +561,7 @@ QUnit.test('A deprecated `container` property is appended to every object instan
   let postController = container.lookup('controller:post');
 
   expectDeprecation(() => {
-    get(postController, 'container');
+    postController.container;
   }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
 
   expectDeprecation(() => {

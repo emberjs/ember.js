@@ -9,7 +9,9 @@ import {
   OWNER,
   assign,
   NAME_KEY,
-  HAS_NATIVE_PROXY
+  HAS_NATIVE_PROXY,
+  HAS_NATIVE_WEAKMAP,
+  isObject
 } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import {
@@ -17,6 +19,7 @@ import {
 } from 'ember/features';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
+export const FACTORY_MANAGER = symbol('FACTORY_MANAGER');
 export const FACTORY_FOR = symbol('FACTORY_FOR');
 export const LOOKUP_FACTORY = symbol('LOOKUP_FACTORY');
 
@@ -610,6 +613,32 @@ class DeprecatedFactoryManager {
   }
 }
 
+let peekFactoryManager, setFactoryManager;
+if (HAS_NATIVE_WEAKMAP) {
+  let weakmap = new WeakMap();
+
+  peekFactoryManager = function(obj) {
+    return weakmap.get(obj);
+  };
+
+  setFactoryManager = function(obj, manager) {
+    weakmap.set(obj, manager);
+  }
+} else {
+  peekFactoryManager = function(obj) {
+    return obj[FACTORY_MANAGER];
+  };
+
+  setFactoryManager = function(obj, manager) {
+    obj[FACTORY_MANAGER] = manager;
+  }
+}
+
+export {
+  peekFactoryManager,
+  setFactoryManager
+}
+
 class FactoryManager {
   constructor(container, factory, fullName, normalizedName) {
     this.container = container;
@@ -618,6 +647,18 @@ class FactoryManager {
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
     this.injections = undefined;
+
+    if (isObject(factory)) {
+      setFactoryManager(factory, this);
+    }
+  }
+
+  factoryToString() {
+    if (!this.madeToString) {
+      this.madeToString = this.container.registry.makeToString(this.class, this.fullName);
+    }
+
+    return this.madeToString;
   }
 
   create(options = {}) {
@@ -630,8 +671,6 @@ class FactoryManager {
       }
     }
     let props = assign({}, injections, options);
-
-    props[NAME_KEY] = this.madeToString || (this.madeToString = this.container.registry.makeToString(this.class, this.fullName));
 
     if (DEBUG) {
       let lazyInjections;
