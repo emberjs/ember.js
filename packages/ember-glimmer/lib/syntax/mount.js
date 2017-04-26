@@ -12,6 +12,7 @@ import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
 import AbstractManager from './abstract-manager';
 import { DEBUG } from 'ember-env-flags';
+import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 
 function dynamicEngineFor(vm, symbolTable) {
   let env     = vm.env;
@@ -42,13 +43,20 @@ function dynamicEngineFor(vm, symbolTable) {
   @public
 */
 export function mountMacro(path, params, hash, builder) {
-  assert(
-    'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-    params.length === 1 && hash === null
-  );
+  if (EMBER_ENGINES_MOUNT_PARAMS) {
+    assert(
+      'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+      params.length === 1
+    );
+  } else {
+    assert(
+      'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+      params.length === 1 && hash === null
+    );
+  }
 
   let definitionArgs = [params.slice(0, 1), null, null, null];
-  let args = [null, null, null, null];
+  let args = [null, hash, null, null];
   builder.component.dynamic(definitionArgs, dynamicEngineFor, args, builder.symbolTable);
   return true;
 }
@@ -112,25 +120,35 @@ class MountManager extends AbstractManager {
 
     engine.boot();
 
-    return engine;
+    return { engine, args };
   }
 
-  layoutFor(definition, engine, env) {
+  layoutFor(definition, { engine }, env) {
     let template = engine.lookup(`template:application`);
     return env.getCompiledBlock(OutletLayoutCompiler, template);
   }
 
-  getSelf(engine) {
+  getSelf(bucket) {
+    let { engine, args } = bucket;
+
     let applicationFactory = engine.factoryFor(`controller:application`);
-    let factory = applicationFactory || generateControllerFactory(engine, 'application');
-    return new RootReference(factory.create());
+    let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
+    let controller = bucket.controller = controllerFactory.create();
+
+    if (EMBER_ENGINES_MOUNT_PARAMS) {
+      let model = args.named.value();
+      bucket.argsRevision = args.tag.value();
+      controller.set('model', model);
+    }
+
+    return new RootReference(controller);
   }
 
   getTag() {
     return null;
   }
 
-  getDestructor(engine) {
+  getDestructor({ engine }) {
     return engine;
   }
 
@@ -143,7 +161,19 @@ class MountManager extends AbstractManager {
   }
 
   didCreate(state) {}
-  update(state, args, dynamicScope) {}
+
+  update(bucket) {
+    if (EMBER_ENGINES_MOUNT_PARAMS) {
+      let { controller, args, argsRevision } = bucket;
+
+      if (!args.tag.validate(argsRevision)) {
+        let model = args.named.value();
+        bucket.argsRevision = args.tag.value();
+        controller.set('model', model);
+      }
+    }
+  }
+
   didUpdateLayout() {}
   didUpdate(state) {}
 }
