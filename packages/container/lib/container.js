@@ -647,10 +647,6 @@ class FactoryManager {
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
     this.injections = undefined;
-
-    if (isObject(factory)) {
-      setFactoryManager(factory, this);
-    }
   }
 
   toString() {
@@ -695,6 +691,10 @@ class FactoryManager {
       injectDeprecatedContainer(prototype, this.container);
     }
 
-    return this.class.create(props);
+    let instance = this.class.create(props);
+
+    setFactoryManager(instance, this);
+
+    return instance;
   }
 }
