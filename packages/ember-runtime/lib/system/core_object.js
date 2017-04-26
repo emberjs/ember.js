@@ -168,7 +168,7 @@ function makeCtor() {
 
       m.proto = proto;
       finishChains(m);
-      sendEvent(this, 'init');
+      sendEvent(this, 'init', undefined, undefined, undefined, m);
     }
 
     static willReopen() {
