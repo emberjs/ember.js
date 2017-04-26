@@ -211,7 +211,7 @@ ControllerMixin.reopen({
     // target may be either another controller or a router
     let target = get(this, 'target');
     let method = target.replaceRoute || target.replaceWith;
-    return method.apply(target, prefixRouteNameArg(target, args));
+    return method.apply(target, prefixRouteNameArg(this, args));
   }
 });
 
