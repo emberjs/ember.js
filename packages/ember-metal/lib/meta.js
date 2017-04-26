@@ -98,6 +98,7 @@ export class Meta {
     this._chains = undefined;
     this._tag = undefined;
     this._tags = undefined;
+    this._factory = undefined;
 
     // initial value for all flags right now is false
     // see FLAGS const for detailed list of flags used
@@ -344,6 +345,14 @@ export class Meta {
     } else {
       obj[key] = value;
     }
+  }
+
+  set factory(factory) {
+    this._factory = factory;
+  }
+
+  get factory() {
+    return this._factory;
   }
 }
 
