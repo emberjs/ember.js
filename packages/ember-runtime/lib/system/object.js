@@ -3,12 +3,15 @@
 @submodule ember-runtime
 */
 
+import { peekFactoryManager } from 'container';
 import { symbol } from 'ember-utils';
-import { on } from 'ember-metal';
+import { on, descriptor } from 'ember-metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
+
+let DEBUG_CONTAINER_KEY_OVERRIDE = symbol('DEBUG_CONTAINER_KEY_OVERRIDE');
 
 /**
   `Ember.Object` is the main base class for all Ember objects. It is a subclass
@@ -21,7 +24,23 @@ import { DEBUG } from 'ember-env-flags';
   @uses Ember.Observable
   @public
 */
-const EmberObject = CoreObject.extend(Observable);
+const EmberObject = CoreObject.extend(Observable, {
+  _debugContainerKey: descriptor({
+    get() {
+      if (this[DEBUG_CONTAINER_KEY_OVERRIDE]) {
+        return this[DEBUG_CONTAINER_KEY_OVERRIDE];
+      }
+
+      let factoryManager = peekFactoryManager(this);
+      return factoryManager && factoryManager.fullName;
+    },
+
+    set(value) {
+      this[DEBUG_CONTAINER_KEY_OVERRIDE] = value;
+    }
+  })
+});
+
 EmberObject.toString = () => 'Ember.Object';
 
 export let FrameworkObject = EmberObject;

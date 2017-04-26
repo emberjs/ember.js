@@ -98,8 +98,6 @@ export default Mixin.create({
 
   isTruthy: bool('content'),
 
-  _debugContainerKey: null,
-
   willWatchProperty(key) {
     let contentKey = `content.${key}`;
     _addBeforeObserver(this, contentKey, null, contentPropertyWillChange);

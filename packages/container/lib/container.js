@@ -420,6 +420,8 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
     let cacheable = !areInjectionsDynamic(injections) && !areInjectionsDynamic(factoryInjections);
 
     factoryInjections[NAME_KEY] = registry.makeToString(factory, fullName);
+    factoryInjections._debugContainerKey = fullName;
+    injections._debugContainerKey = fullName;
 
     let injectedFactory = factory.extend(injections);
 
@@ -445,7 +447,6 @@ function injectionsFor(container, fullName) {
   let type = splitName[0];
 
   let injections = buildInjections(container, registry.getTypeInjections(type), registry.getInjections(fullName));
-  injections._debugContainerKey = fullName;
 
   setOwner(injections, container.owner);
 
@@ -508,13 +509,14 @@ function instantiate(factory, props, container, fullName) {
   }
 }
 
+// only used to support the `deprecatedFactoryFor` scenario
+// this is where `owner.lookupFactory` is called directly
 function factoryInjectionsFor(container, fullName) {
   let registry = container.registry;
   let splitName = fullName.split(':');
   let type = splitName[0];
 
   let factoryInjections = buildInjections(container, registry.getFactoryTypeInjections(type), registry.getFactoryInjections(fullName));
-  factoryInjections._debugContainerKey = fullName;
 
   return factoryInjections;
 }

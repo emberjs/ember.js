@@ -3,7 +3,7 @@ import { ENV } from 'ember-environment';
 import { Registry } from '..';
 import { factory } from 'internal-test-helpers';
 import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
-import { LOOKUP_FACTORY, FACTORY_FOR } from 'container';
+import { LOOKUP_FACTORY, FACTORY_FOR, peekFactoryManager } from 'container';
 
 let originalModelInjections;
 
@@ -60,7 +60,7 @@ QUnit.test('A registered factory is returned from lookupFactory is the same fact
   deepEqual(Post1, Post2, 'The return of lookupFactory is always the same');
 });
 
-QUnit.test('A factory returned from lookupFactory has a debugkey', function() {
+QUnit.test('A factory returned from lookupFactory has access to _debugContainerKey', function() {
   let registry = new Registry();
   let container = registry.container();
   let PostController = factory();
@@ -70,7 +70,7 @@ QUnit.test('A factory returned from lookupFactory has a debugkey', function() {
   equal(PostFactory._debugContainerKey, 'controller:post', 'factory instance receives _debugContainerKey');
 });
 
-QUnit.test('fallback for to create time injections if factory has no extend', function() {
+QUnit.test('fallback to create time injections if factory has no extend', function() {
   let registry = new Registry();
   let container = registry.container();
   let AppleController = factory();
@@ -83,12 +83,13 @@ QUnit.test('fallback for to create time injections if factory has no extend', fu
   registry.injection('controller:post', 'apple', 'controller:apple');
 
   let postController = container.lookup('controller:post');
+  let postControllerManager = peekFactoryManager(postController);
 
-  equal(postController._debugContainerKey, 'controller:post', 'instance receives _debugContainerKey');
+  equal(postControllerManager.fullName, 'controller:post', 'instance has access to fullName for debugging');
   ok(postController.apple instanceof AppleController, 'instance receives an apple of instance AppleController');
 });
 
-QUnit.test('The descendants of a factory returned from lookupFactory have a container and debugkey', function() {
+QUnit.test('The instances of a factory returned from lookupFactory have access to container and _debugContainerKey', function() {
   let registry = new Registry();
   let container = registry.container();
   let PostController = factory();
@@ -156,9 +157,11 @@ QUnit.test('An individual factory with a registered injection receives the injec
   let postController = container.lookup('controller:post');
   let store = container.lookup('store:main');
 
-  equal(store._debugContainerKey, 'store:main');
+  let storeManager = peekFactoryManager(store);
+  equal(storeManager.fullName, 'store:main');
 
-  equal(postController._debugContainerKey, 'controller:post');
+  let postControllerManager = peekFactoryManager(postController);
+  equal(postControllerManager.fullName, 'controller:post');
   equal(postController.store, store, 'has the correct store injected');
 });
 

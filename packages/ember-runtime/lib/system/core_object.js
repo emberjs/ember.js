@@ -14,7 +14,8 @@ import {
   GUID_KEY
 } from 'ember-utils';
 import {
-  peekFactoryManager
+  peekFactoryManager,
+  setFactoryManager
 } from 'container';
 import {
   get,
