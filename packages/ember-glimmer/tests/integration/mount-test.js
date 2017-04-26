@@ -8,7 +8,15 @@ import { compile, Component } from '../utils/helpers';
 import { Controller } from 'ember-runtime';
 import { set } from 'ember-metal';
 import { Engine, getEngineParent } from 'ember-application';
-import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
+import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER, TESTS_SHOULD_FAIL } from 'ember/features';
+
+if (TESTS_SHOULD_FAIL) {
+  moduleFor('tests should fail', class extends RenderingTest {
+    ['@test it should fail']() {
+      throw new Error('this should fail the build');
+    }
+  });
+}
 
 moduleFor('{{mount}} assertions', class extends RenderingTest {
   ['@test it asserts that only a single param is passed']() {
