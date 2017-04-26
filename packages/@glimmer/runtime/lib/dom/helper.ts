@@ -56,123 +56,15 @@ export function moveNodesBefore(source: Simple.Node, target: Simple.Element, nex
   return [first, last];
 }
 
-export namespace DOM {
-  export type Node = Simple.Node;
-  export type Element = Simple.Element;
-  export type Document = Simple.Document;
-  export type Comment = Simple.Comment;
-  export type Text = Simple.Text;
-  export type Namespace = Simple.Namespace;
-  export type HTMLElement = Simple.HTMLElement;
+export class DOMOperations {
+  protected uselessElement: HTMLElement;
 
-  export class TreeConstruction {
-    protected uselessElement: HTMLElement;
-    constructor(protected document: Document) {
-      this.setupUselessElement();
-    }
-
-    protected setupUselessElement() {
-      this.uselessElement = this.document.createElement('div');
-    }
-
-    createElement(tag: string, context?: Element): Element {
-      let isElementInSVGNamespace: boolean, isHTMLIntegrationPoint: boolean;
-
-      if (context) {
-        isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
-        isHTMLIntegrationPoint = SVG_INTEGRATION_POINTS[context.tagName];
-      } else {
-        isElementInSVGNamespace = tag === 'svg';
-        isHTMLIntegrationPoint = false;
-      }
-
-      if (isElementInSVGNamespace && !isHTMLIntegrationPoint) {
-        // FIXME: This does not properly handle <font> with color, face, or
-        // size attributes, which is also disallowed by the spec. We should fix
-        // this.
-        if (BLACKLIST_TABLE[tag]) {
-          throw new Error(`Cannot create a ${tag} inside an SVG context`);
-        }
-
-        return this.document.createElementNS(SVG_NAMESPACE as Namespace, tag);
-      } else {
-        return this.document.createElement(tag);
-      }
-    }
-
-    createElementNS(namespace: Namespace, tag: string): Element {
-      return this.document.createElementNS(namespace, tag);
-    }
-
-    setAttribute(element: Element, name: string, value: string, namespace?: string) {
-      if (namespace) {
-        element.setAttributeNS(namespace, name, value);
-      } else {
-        element.setAttribute(name, value);
-      }
-    }
-
-    createTextNode(text: string): Text {
-      return this.document.createTextNode(text);
-    }
-
-    createComment(data: string): Comment {
-      return this.document.createComment(data);
-    }
-
-    insertBefore(parent: Element, node: Node, reference: Option<Node>) {
-      parent.insertBefore(node, reference);
-    }
-
-    insertHTMLBefore(parent: Element, html: string, reference: Option<Node>): Bounds {
-      return insertHTMLBefore(this.uselessElement, parent, reference, html);
-    };
-  }
-
-  let appliedTreeContruction = TreeConstruction;
-  appliedTreeContruction = treeConstructionNodeMergingFix(doc, appliedTreeContruction);
-  appliedTreeContruction = treeConstructionTableElementFix(doc, appliedTreeContruction);
-  appliedTreeContruction = treeConstructionSvgElementFix(doc, appliedTreeContruction, SVG_NAMESPACE);
-
-  export const DOMTreeConstruction = appliedTreeContruction;
-  export type DOMTreeConstruction = TreeConstruction;
-}
-
-export class DOMChanges {
-  protected namespace: Option<string>;
-  private uselessElement: HTMLElement;
-
-  constructor(protected document: HTMLDocument) {
-    this.namespace = null;
+  constructor(protected document: Document) {
     this.uselessElement = this.document.createElement('div');
   }
 
-  setAttribute(element: Simple.Element, name: string, value: string) {
-    element.setAttribute(name, value);
-  }
-
-  setAttributeNS(element: Simple.Element, namespace: string, name: string, value: string) {
-    element.setAttributeNS(namespace, name, value);
-  }
-
-  removeAttribute(element: Simple.Element, name: string) {
-    element.removeAttribute(name);
-  }
-
-  removeAttributeNS(element: Simple.Element, namespace: string, name: string) {
-    element.removeAttributeNS(namespace, name);
-  }
-
-  createTextNode(text: string): Simple.Text {
-    return this.document.createTextNode(text);
-  }
-
-  createComment(data: string): Simple.Comment {
-    return this.document.createComment(data);
-  }
-
-  createElement(tag: string, context?: Simple.Element): Simple.Element {
-    let isElementInSVGNamespace: boolean, isHTMLIntegrationPoint: boolean;
+  createElement(tag: string, context?: Element): Element {
+    let isElementInSVGNamespace, isHTMLIntegrationPoint;
 
     if (context) {
       isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
@@ -190,10 +82,83 @@ export class DOMChanges {
         throw new Error(`Cannot create a ${tag} inside an SVG context`);
       }
 
-      return this.document.createElementNS(SVG_NAMESPACE as Simple.Namespace, tag);
+      return this.document.createElementNS(SVG_NAMESPACE as Namespace, tag);
     } else {
       return this.document.createElement(tag);
     }
+  }
+
+  insertBefore(parent: Element, node: Node, reference: Option<Node>) {
+    parent.insertBefore(node, reference);
+  }
+
+  createTextNode(text: string): Text {
+    return this.document.createTextNode(text);
+  }
+
+  createComment(data: string): Simple.Comment {
+    return this.document.createComment(data);
+  }
+}
+
+export namespace DOM {
+  export type Node = Simple.Node;
+  export type Element = Simple.Element;
+  export type Document = Simple.Document;
+  export type Comment = Simple.Comment;
+  export type Text = Simple.Text;
+  export type Namespace = Simple.Namespace;
+  export type HTMLElement = Simple.HTMLElement;
+
+  export class TreeConstruction extends DOMOperations {
+    createElementNS(namespace: Namespace, tag: string): Element {
+      return this.document.createElementNS(namespace, tag);
+    }
+
+    setAttribute(element: Element, name: string, value: string, namespace?: string) {
+      if (namespace) {
+        element.setAttributeNS(namespace, name, value);
+      } else {
+        element.setAttribute(name, value);
+      }
+    }
+
+    insertHTMLBefore(parent: Element, html: string, reference: Option<Node>): Bounds {
+      return insertHTMLBefore(this.uselessElement, parent, reference, html);
+    }
+  }
+
+  let appliedTreeContruction = TreeConstruction;
+  appliedTreeContruction = treeConstructionNodeMergingFix(doc, appliedTreeContruction);
+  appliedTreeContruction = treeConstructionTableElementFix(doc, appliedTreeContruction);
+  appliedTreeContruction = treeConstructionSvgElementFix(doc, appliedTreeContruction, SVG_NAMESPACE);
+
+  export const DOMTreeConstruction = appliedTreeContruction;
+  export type DOMTreeConstruction = TreeConstruction;
+}
+
+export class DOMChanges extends DOMOperations {
+  protected namespace: Option<string>;
+
+  constructor(protected document: HTMLDocument) {
+    super(document);
+    this.namespace = null;
+  }
+
+  setAttribute(element: Simple.Element, name: string, value: string) {
+    element.setAttribute(name, value);
+  }
+
+  setAttributeNS(element: Simple.Element, namespace: string, name: string, value: string) {
+    element.setAttributeNS(namespace, name, value);
+  }
+
+  removeAttribute(element: Simple.Element, name: string) {
+    element.removeAttribute(name);
+  }
+
+  removeAttributeNS(element: Simple.Element, namespace: string, name: string) {
+    element.removeAttributeNS(namespace, name);
   }
 
   insertHTMLBefore(_parent: Element, nextSibling: Node, html: string): Bounds {
