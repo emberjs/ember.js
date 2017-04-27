@@ -245,7 +245,7 @@ class TopLevelOutletLayoutCompiler {
   compile(builder) {
     builder.wrapLayout(this.template.asLayout());
     builder.tag.static('div');
-    builder.attrs.static('id', guidFor(this));
+    builder.attrs.static('id', 'ember' + guidFor(this));
     builder.attrs.static('class', 'ember-view');
   }
 }

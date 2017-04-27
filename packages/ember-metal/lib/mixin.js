@@ -9,7 +9,8 @@ import {
   NAME_KEY,
   ROOT,
   wrap,
-  makeArray
+  makeArray,
+  HAS_NATIVE_WEAKMAP
 } from 'ember-utils';
 import {
   debugSeal,
@@ -490,7 +491,9 @@ export default class Mixin {
     }
     this.ownerConstructor = undefined;
     this._without = undefined;
-    this[GUID_KEY] = null;
+    if (!HAS_NATIVE_WEAKMAP) {
+      this[GUID_KEY] = null;
+    }
     this[NAME_KEY] = null;
     debugSeal(this);
   }

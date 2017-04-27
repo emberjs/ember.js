@@ -1,3 +1,4 @@
+import { HAS_NATIVE_WEAKMAP, isObject } from './weak-map-utils';
 import intern from './intern';
 
 /**
@@ -7,7 +8,7 @@ import intern from './intern';
  @private
  @return {Number} the uuid
  */
-let _uuid = 0;
+let _uuid = 1; // starting at 1 so all guids are "truthy"
 
 /**
  Generates a universally unique identifier. This method
@@ -21,19 +22,16 @@ export function uuid() {
   return ++_uuid;
 }
 
-/**
- Prefix used for guids through out Ember.
- @private
- @property GUID_PREFIX
- @for Ember
- @type String
- @final
- */
-const GUID_PREFIX = 'ember';
-
 // Used for guid generation...
-const numberCache  = [];
-const stringCache  = {};
+const NUMBER_CACHE = [];
+const STRING_CACHE = {};
+
+const TRUE_UUID = uuid();
+const FALSE_UUID = uuid();
+const OBJECT_UUID = uuid();
+const ARRAY_UUID = uuid();
+const NULL_UUID = uuid();
+const UNDEFINED_UUID = uuid();
 
 /**
   A unique key used to assign guids and other private metadata to objects.
@@ -70,6 +68,93 @@ export let GUID_KEY_PROPERTY = {
   descriptor: nullDescriptor
 };
 
+export function buildGuidFor(obj) {
+  let type = typeof obj;
+  // special cases where we don't want to add a key to object
+  if (obj === undefined) {
+    return UNDEFINED_UUID;
+  }
+
+  if (obj === null) {
+    return NULL_UUID;
+  }
+
+  let ret;
+
+  // Don't allow prototype changes to String etc. to change the guidFor
+  switch (type) {
+  case 'number':
+    ret = NUMBER_CACHE[obj];
+
+    if (!ret) {
+      ret = NUMBER_CACHE[obj] = uuid();
+    }
+
+    return ret;
+
+  case 'string':
+    ret = STRING_CACHE[obj];
+
+    if (!ret) {
+      ret = STRING_CACHE[obj] = uuid();
+    }
+
+    return ret;
+
+  case 'boolean':
+    return obj ? TRUE_UUID : FALSE_UUID;
+
+  default:
+    if (obj === Object) {
+      return OBJECT_UUID;
+    }
+
+    if (obj === Array) {
+      return ARRAY_UUID;
+    }
+
+    return uuid();
+  }
+}
+
+let peekGuid, setGuid;
+if (HAS_NATIVE_WEAKMAP) {
+  let store = new WeakMap();
+
+  setGuid = function GuidForWeakMap_set(obj, value) {
+    if (isObject(obj)) {
+      store.set(obj, value);
+    }
+  };
+
+  peekGuid = function GuidForWeakMap_get(obj) {
+    return store.get(obj);
+  };
+} else {
+  setGuid = function GuidForFallback_set(obj, value) {
+    if (isObject(obj)) {
+      if (obj[GUID_KEY] === null) {
+        obj[GUID_KEY] = value;
+      } else {
+        GUID_DESC.value = value;
+
+        if (obj.__defineNonEnumerable) {
+          obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
+          obj[GUID_KEY] = value;
+        } else {
+          Object.defineProperty(obj, GUID_KEY, GUID_DESC);
+        }
+      }
+    }
+  };
+
+  peekGuid = function GuidForFallback_get(obj) {
+    if (isObject(obj) && obj[GUID_KEY]) {
+      return obj[GUID_KEY];
+    }
+  };
+}
+
 /**
   Generates a new guid, optionally saving the guid to the object that you
   pass in. You will rarely need to use this method. Instead you should
@@ -88,23 +173,15 @@ export let GUID_KEY_PROPERTY = {
   @return {String} the guid
 */
 export function generateGuid(obj, prefix) {
-  if (!prefix) {
-    prefix = GUID_PREFIX;
+  let ret;
+  if (prefix) {
+    ret = prefix + uuid();
+  } else {
+    ret = uuid();
   }
 
-  let ret = (prefix + uuid());
-  if (obj) {
-    if (obj[GUID_KEY] === null) {
-      obj[GUID_KEY] = ret;
-    } else {
-      GUID_DESC.value = ret;
-      if (obj.__defineNonEnumerable) {
-        obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
-      } else {
-        Object.defineProperty(obj, GUID_KEY, GUID_DESC);
-      }
-    }
-  }
+  setGuid(obj, ret);
+
   return ret;
 }
 
@@ -123,70 +200,13 @@ export function generateGuid(obj, prefix) {
   @return {String} the unique guid for this instance.
 */
 export function guidFor(obj) {
-  let type = typeof obj;
-  let isObject = type === 'object' && obj !== null;
-  let isFunction = type === 'function';
+  let ret = peekGuid(obj);
+  if (ret) { return ret; }
 
-  if ((isObject || isFunction) && obj[GUID_KEY]) {
-    return obj[GUID_KEY];
-  }
+  ret = buildGuidFor(obj);
+  setGuid(obj, ret);
 
-  // special cases where we don't want to add a key to object
-  if (obj === undefined) {
-    return '(undefined)';
-  }
-
-  if (obj === null) {
-    return '(null)';
-  }
-
-  let ret;
-
-  // Don't allow prototype changes to String etc. to change the guidFor
-  switch (type) {
-    case 'number':
-      ret = numberCache[obj];
-
-      if (!ret) {
-        ret = numberCache[obj] = `nu${obj}`;
-      }
-
-      return ret;
-
-    case 'string':
-      ret = stringCache[obj];
-
-      if (!ret) {
-        ret = stringCache[obj] = `st${uuid()}`;
-      }
-
-      return ret;
-
-    case 'boolean':
-      return obj ? '(true)' : '(false)';
-
-    default:
-      if (obj === Object) {
-        return '(Object)';
-      }
-
-      if (obj === Array) {
-        return '(Array)';
-      }
-
-      ret = GUID_PREFIX + uuid();
-
-      if (obj[GUID_KEY] === null) {
-        obj[GUID_KEY] = ret;
-      } else {
-        GUID_DESC.value = ret;
-
-        if (obj.__defineNonEnumerable) {
-          obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
-        } else {
-          Object.defineProperty(obj, GUID_KEY, GUID_DESC);
-        }
-      }
-      return ret;
-  }
+  return ret;
 }
+
+export { peekGuid }

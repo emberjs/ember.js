@@ -1,4 +1,4 @@
-import { GUID_KEY } from 'ember-utils';
+import { peekGuid } from 'ember-utils';
 import { assert, isTesting } from 'ember-debug';
 import {
   dispatchError,
@@ -28,7 +28,7 @@ const onErrorTarget = {
 };
 
 const backburner = new Backburner(['sync', 'actions', 'destroy'], {
-  GUID_KEY: GUID_KEY,
+  peekGuid: peekGuid,
   sync: {
     before: beginPropertyChanges,
     after: endPropertyChanges
