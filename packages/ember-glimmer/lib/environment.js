@@ -2,7 +2,6 @@ import { guidFor, OWNER } from 'ember-utils';
 import { Cache, _instrumentStart } from 'ember-metal';
 import { assert, warn } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
 import {
   lookupPartial,
   hasPartial,
@@ -220,9 +219,6 @@ export default class Environment extends GlimmerEnvironment {
     if (helperFactory.class.isHelperInstance) {
       return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
     } else if (helperFactory.class.isHelperFactory) {
-      if (!EMBER_NO_DOUBLE_EXTEND) {
-        helperFactory = helperFactory.create();
-      }
       return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
     } else {
       throw new Error(`${name} is not a helper`);

@@ -12,9 +12,6 @@ import {
   HAS_NATIVE_PROXY
 } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import {
-  EMBER_NO_DOUBLE_EXTEND
-} from 'ember/features';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 export const FACTORY_FOR = symbol('FACTORY_FOR');
@@ -137,20 +134,7 @@ Container.prototype = {
    * of factoryFor, which always returns the registered class.
    */
   [FACTORY_FOR](fullName, options = {}) {
-    if (EMBER_NO_DOUBLE_EXTEND) {
-      return this.factoryFor(fullName, options);
-    }
-    let factory = this[LOOKUP_FACTORY](fullName, options);
-    if (factory === undefined) {
-      return;
-    }
-    let manager = new DeprecatedFactoryManager(this, factory, fullName);
-
-    if (DEBUG) {
-      manager = wrapManagerInDeprecationProxy(manager);
-    }
-
-    return manager;
+    return this.factoryFor(fullName, options);
   },
 
   /**

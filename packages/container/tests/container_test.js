@@ -3,7 +3,6 @@ import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
 import { Registry } from '..';
 import { factory } from 'internal-test-helpers';
-import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
 import { LOOKUP_FACTORY, FACTORY_FOR } from 'container';
 
 let originalModelInjections;
@@ -635,12 +634,8 @@ QUnit.test('#[FACTORY_FOR] class is the injected factory', (assert) => {
   let Component = factory();
   registry.register('component:foo-bar', Component);
 
-  let factoryManager = container[FACTORY_FOR]('component:foo-bar');
-  if (EMBER_NO_DOUBLE_EXTEND) {
-    assert.deepEqual(factoryManager.class, Component, 'No double extend');
-  } else {
-    assert.deepEqual(factoryManager.class, lookupFactory('component:foo-bar', container), 'Double extended class');
-  }
+  let factoryManager = container.factoryFor('component:foo-bar');
+  assert.deepEqual(factoryManager.class, Component, 'No double extend');
 });
 
 QUnit.test('#factoryFor must supply a fullname', (assert) => {
