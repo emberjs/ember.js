@@ -5,6 +5,5 @@
     "url": "https://github.com/emberjs/ember.js.git"
   },
   "devDependencies": {
-    "ember-dev": "https://github.com/emberjs/ember-dev.git#eace5340485bdb5e4223ab67fecf4aff31c1940c"
   }
 }
