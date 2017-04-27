@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### 2.12.2 (April 27, 2017)
+
+- [#15160](https://github.com/emberjs/ember.js/pull/15160) [BUGFIX] Ensure `Ember.Test` global is setup when including `ember-testing.js`.
+- [#15142](https://github.com/emberjs/ember.js/pull/15142) / [#15163](https://github.com/emberjs/ember.js/pull/15163) [BUGFIX] Don’t leak deprecated `container`.
+- [#15161](https://github.com/emberjs/ember.js/pull/15161) [BUGFIX] Prevent errors from being triggered during error processing on non ES6 platforms.
+- [#15180](https://github.com/emberjs/ember.js/pull/15180) [BUGFIX] Correct `until` values for `this.container` deprecations.
+
 ### 2.12.1 (April 7, 2017)
 
 - [#14961](https://github.com/emberjs/ember.js/pull/14961) [BUGIX] Remove duplicate trailing `/` in pathname.
