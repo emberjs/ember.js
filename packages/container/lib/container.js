@@ -544,12 +544,12 @@ const INJECTED_DEPRECATED_CONTAINER_DESC = {
   configurable: true,
   enumerable: false,
   get() {
-    deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.', false, { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
+    deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.', false, { id: 'ember-application.injected-container', until: '2.13.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
     return this[CONTAINER_OVERRIDE] || getOwner(this).__container__;
   },
 
   set(value) {
-    deprecate(`Providing the \`container\` property to ${this} is deprecated. Please use \`Ember.setOwner\` or \`owner.ownerInjection()\` instead to provide an owner to the instance being created.`, false, { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
+    deprecate(`Providing the \`container\` property to ${this} is deprecated. Please use \`Ember.setOwner\` or \`owner.ownerInjection()\` instead to provide an owner to the instance being created.`, false, { id: 'ember-application.injected-container', until: '2.13.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
 
     this[CONTAINER_OVERRIDE] = value;
 
@@ -614,7 +614,7 @@ function buildFakeContainerFunction(container, containerProperty, ownerProperty)
   return function () {
     deprecate(`Using the injected \`container\` is deprecated. Please use the \`getOwner\` helper to access the owner of this object and then call \`${ownerProperty}\` instead.`, false, {
       id: 'ember-application.injected-container',
-      until: '3.0.0',
+      until: '2.13.0',
       url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access'
     });
     return container[containerProperty](...arguments);
