@@ -52,7 +52,7 @@ function makeCtor() {
   // possible.
 
   let wasApplied = false;
-  let initProperties;
+  let initProperties, initFactory;
 
   class Class {
     constructor() {
@@ -68,6 +68,11 @@ function makeCtor() {
       let m = meta(this);
       let proto = m.proto;
       m.proto = this;
+
+      if (initFactory) {
+        m.factory = initFactory;
+        initFactory = null;
+      }
       if (initProperties) {
         // capture locally so we can clear the closed over variable
         let props = initProperties;
@@ -180,6 +185,7 @@ function makeCtor() {
     }
 
     static _initProperties(args) { initProperties = args; }
+    static _initFactory(factory) { initFactory = factory; }
 
     static proto() {
       let superclass = Class.superclass;
@@ -540,7 +546,8 @@ CoreObject.PrototypeMixin = Mixin.create({
   toString() {
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
-    let ret = `<${this[NAME_KEY] || this.constructor.toString()}:${guidFor(this)}${extension}>`;
+
+    let ret = `<${this[NAME_KEY] || meta(this).factory || this.constructor.toString()}:${guidFor(this)}${extension}>`;
 
     return ret;
   }

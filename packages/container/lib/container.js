@@ -418,6 +418,8 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
     let cacheable = !areInjectionsDynamic(injections) && !areInjectionsDynamic(factoryInjections);
 
     factoryInjections[NAME_KEY] = registry.makeToString(factory, fullName);
+    injections._debugContainerKey = fullName;
+    setOwner(injections, container.owner);
 
     let injectedFactory = factory.extend(injections);
 
@@ -443,9 +445,6 @@ function injectionsFor(container, fullName) {
   let type = splitName[0];
 
   let injections = buildInjections(container, registry.getTypeInjections(type), registry.getInjections(fullName));
-  injections._debugContainerKey = fullName;
-
-  setOwner(injections, container.owner);
 
   return injections;
 }
@@ -488,6 +487,7 @@ function instantiate(factory, props, container, fullName) {
       // to create time injections
       // TODO: support new'ing for instantiation and merge injections for pure JS Functions
       let injections = injectionsFor(container, fullName);
+      injections._debugContainerKey = fullName;
 
       // Ensure that a container is available to an object during instantiation.
       // TODO - remove when Ember reaches v3.0.0
@@ -613,11 +613,20 @@ class DeprecatedFactoryManager {
 class FactoryManager {
   constructor(container, factory, fullName, normalizedName) {
     this.container = container;
+    this.owner = container.owner;
     this.class = factory;
     this.fullName = fullName;
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
     this.injections = undefined;
+  }
+
+  toString() {
+    if (!this.madeToString) {
+      this.madeToString = this.container.registry.makeToString(this.class, this.fullName);
+    }
+
+    return this.madeToString;
   }
 
   create(options = {}) {
@@ -631,7 +640,6 @@ class FactoryManager {
     }
     let props = assign({}, injections, options);
 
-    props[NAME_KEY] = this.madeToString || (this.madeToString = this.container.registry.makeToString(this.class, this.fullName));
 
     if (DEBUG) {
       let lazyInjections;
@@ -654,6 +662,21 @@ class FactoryManager {
     let prototype = this.class.prototype;
     if (prototype) {
       injectDeprecatedContainer(prototype, this.container);
+    }
+
+    // required to allow access to things like
+    // the customized toString, _debugContainerKey,
+    // owner, etc. without a double extend and without
+    // modifying the objects properties
+    if (typeof this.class._initFactory === 'function') {
+      this.class._initFactory(this);
+    } else {
+      // in the non-Ember.Object case we need to still setOwner
+      // this is required for supporting glimmer environment and
+      // template instantiation which rely heavily on
+      // `options[OWNER]` being passed into `create`
+      // TODO: clean this up, and remove in future versions
+      setOwner(props, this.owner);
     }
 
     return this.class.create(props);
