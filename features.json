@@ -5,7 +5,6 @@
     "ember-improved-instrumentation": null,
     "ember-metal-weakmap": null,
     "ember-glimmer-allow-backtracking-rerender": null,
-    "ember-testing-resume-test": true,
     "ember-factory-for": true,
     "ember-routing-router-service": null
   },

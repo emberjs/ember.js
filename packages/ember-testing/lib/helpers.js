@@ -1,4 +1,3 @@
-import { EMBER_TESTING_RESUME_TEST } from 'ember/features';
 import {
   registerHelper as helper,
   registerAsyncHelper as asyncHelper
@@ -31,7 +30,4 @@ helper('findWithAssert', findWithAssert);
 helper('currentRouteName', currentRouteName);
 helper('currentPath', currentPath);
 helper('currentURL', currentURL);
-
-if (EMBER_TESTING_RESUME_TEST) {
-  helper('resumeTest', resumeTest);
-}
+helper('resumeTest', resumeTest);
