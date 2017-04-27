@@ -61,16 +61,6 @@ QUnit.test('A registered factory is returned from lookupFactory is the same fact
   deepEqual(Post1, Post2, 'The return of lookupFactory is always the same');
 });
 
-QUnit.test('A factory returned from lookupFactory has a debugkey', function() {
-  let registry = new Registry();
-  let container = registry.container();
-  let PostController = factory();
-
-  registry.register('controller:post', PostController);
-  let PostFactory = lookupFactory('controller:post', container);
-  equal(PostFactory._debugContainerKey, 'controller:post', 'factory instance receives _debugContainerKey');
-});
-
 QUnit.test('fallback for to create time injections if factory has no extend', function() {
   let registry = new Registry();
   let container = registry.container();
@@ -183,28 +173,6 @@ QUnit.test('A factory with both type and individual injections', function() {
 
   equal(postController.store, store);
   equal(postController.router, router);
-});
-
-QUnit.test('A factory with both type and individual factoryInjections', function() {
-  let registry = new Registry();
-  let container = registry.container();
-  let PostController = factory();
-  let Store = factory();
-  let Router = factory();
-
-  registry.register('controller:post', PostController);
-  registry.register('store:main', Store);
-  registry.register('router:main', Router);
-
-  registry.factoryInjection('controller:post', 'store', 'store:main');
-  registry.factoryTypeInjection('controller', 'router', 'router:main');
-
-  let PostControllerFactory = lookupFactory('controller:post', container);
-  let store = container.lookup('store:main');
-  let router = container.lookup('router:main');
-
-  equal(PostControllerFactory.store, store, 'PostControllerFactory has the instance of store');
-  equal(PostControllerFactory.router, router, 'PostControllerFactory has the route instance');
 });
 
 QUnit.test('A non-singleton instance is never cached', function() {
