@@ -10,7 +10,6 @@ import { assert } from 'ember-debug';
 import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
-import { FACTORY_FOR } from 'container';
 import AbstractManager from './abstract-manager';
 import { DEBUG } from 'ember-env-flags';
 
@@ -122,7 +121,7 @@ class MountManager extends AbstractManager {
   }
 
   getSelf(engine) {
-    let applicationFactory = engine[FACTORY_FOR](`controller:application`);
+    let applicationFactory = engine.factoryFor(`controller:application`);
     let factory = applicationFactory || generateControllerFactory(engine, 'application');
     return new RootReference(factory.create());
   }

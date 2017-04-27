@@ -3,7 +3,6 @@ import {
 } from 'ember-runtime';
 import controllerFor from '../../system/controller_for';
 import generateController from '../../system/generate_controller';
-import { EMBER_NO_DOUBLE_EXTEND } from 'ember/features';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor('Ember.controllerFor', class extends ApplicationTestCase {
@@ -44,15 +43,7 @@ moduleFor('Ember.generateController', class extends ApplicationTestCase {
     return this.visit('/').then(() => {
       let controller = generateController(this.applicationInstance, 'home');
 
-      if (EMBER_NO_DOUBLE_EXTEND) {
-        assert.ok(controller instanceof BasicController, 'should return base class of controller');
-      } else {
-        let doubleExtendedFactory;
-        ignoreDeprecation(() => {
-          doubleExtendedFactory = this.applicationInstance._lookupFactory('controller:basic');
-        });
-        assert.ok(controller instanceof doubleExtendedFactory, 'should return double-extended controller');
-      }
+      assert.ok(controller instanceof BasicController, 'should return base class of controller');
     });
   }
 });

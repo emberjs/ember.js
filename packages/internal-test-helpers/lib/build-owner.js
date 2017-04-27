@@ -1,4 +1,4 @@
-import { Registry, FACTORY_FOR, LOOKUP_FACTORY } from 'container';
+import { Registry } from 'container';
 import { Router } from 'ember-routing';
 import {
   Application,
@@ -15,20 +15,7 @@ export default function buildOwner(options = {}) {
   let resolver = options.resolver;
   let bootOptions = options.bootOptions || {};
 
-  let Owner = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin, {
-    [FACTORY_FOR]() {
-      return this.__container__[FACTORY_FOR](...arguments);
-    },
-    [LOOKUP_FACTORY]() {
-      return this.__container__[LOOKUP_FACTORY](...arguments);
-    }
-  });
-
-  Owner.reopen({
-    factoryFor() {
-      return this.__container__.factoryFor(...arguments);
-    }
-  });
+  let Owner = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin);
 
   let namespace = EmberObject.create({
     Resolver: { create() { return resolver; } }

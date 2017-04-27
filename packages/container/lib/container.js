@@ -12,13 +12,8 @@ import {
   HAS_NATIVE_PROXY
 } from 'ember-utils';
 import { ENV } from 'ember-environment';
-import {
-  EMBER_NO_DOUBLE_EXTEND
-} from 'ember/features';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
-export const FACTORY_FOR = symbol('FACTORY_FOR');
-export const LOOKUP_FACTORY = symbol('LOOKUP_FACTORY');
 
 /**
  A container used to instantiate and cache objects.
@@ -123,34 +118,6 @@ Container.prototype = {
     deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.', false, { id: 'container-lookupFactory', until: '2.13.0', url: 'http://emberjs.com/deprecations/v2.x/#toc_migrating-from-_lookupfactory-to-factoryfor' });
 
     return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
-  },
-
-  [LOOKUP_FACTORY](fullName, options) {
-    assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
-    return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
-  },
-
-  /*
-   * This internal version of factoryFor swaps between the public API for
-   * factoryFor (class is the registered class) and a transition implementation
-   * (class is the double-extended class). It is *not* the public API version
-   * of factoryFor, which always returns the registered class.
-   */
-  [FACTORY_FOR](fullName, options = {}) {
-    if (EMBER_NO_DOUBLE_EXTEND) {
-      return this.factoryFor(fullName, options);
-    }
-    let factory = this[LOOKUP_FACTORY](fullName, options);
-    if (factory === undefined) {
-      return;
-    }
-    let manager = new DeprecatedFactoryManager(this, factory, fullName);
-
-    if (DEBUG) {
-      manager = wrapManagerInDeprecationProxy(manager);
-    }
-
-    return manager;
   },
 
   /**
@@ -314,7 +281,7 @@ function isFactoryInstance(container, fullName, { instantiate, singleton }) {
 }
 
 function instantiateFactory(container, fullName, options) {
-  let factoryManager = container[FACTORY_FOR](fullName);
+  let factoryManager = container.factoryFor(fullName);
 
   if (factoryManager === undefined) {
     return;

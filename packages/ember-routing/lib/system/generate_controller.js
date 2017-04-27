@@ -1,5 +1,4 @@
 import { get } from 'ember-metal';
-import { FACTORY_FOR } from 'container';
 import { info } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 /**
@@ -16,7 +15,7 @@ import { DEBUG } from 'ember-env-flags';
 */
 
 export function generateControllerFactory(owner, controllerName, context) {
-  let Factory = owner[FACTORY_FOR]('controller:basic').class;
+  let Factory = owner.factoryFor('controller:basic').class;
 
   Factory = Factory.extend({
     toString() {

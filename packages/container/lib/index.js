@@ -8,7 +8,5 @@ The public API, specified on the application namespace should be considered the 
 export { default as Registry, privatize } from './registry';
 export {
   default as Container,
-  buildFakeContainerWithDeprecations,
-  FACTORY_FOR,
-  LOOKUP_FACTORY
+  buildFakeContainerWithDeprecations
 } from './container';

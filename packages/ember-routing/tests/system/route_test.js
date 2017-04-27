@@ -6,7 +6,6 @@ import {
   inject
 } from 'ember-runtime';
 import EmberRoute from '../../system/route';
-import { FACTORY_FOR } from 'container';
 
 let route, routeOne, routeTwo, lookupHash;
 
@@ -40,7 +39,7 @@ QUnit.test('default store utilizes the container to acquire the model factory', 
       hasRegistration() {
         return true;
       },
-      [FACTORY_FOR](fullName) {
+      factoryFor(fullName) {
         equal(fullName, 'model:post', 'correct factory was looked up');
 
         return {

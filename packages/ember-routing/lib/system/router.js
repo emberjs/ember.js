@@ -37,7 +37,6 @@ import {
   calculateCacheKey
 } from '../utils';
 import RouterState from './router_state';
-import { FACTORY_FOR } from 'container';
 import { DEBUG } from 'ember-env-flags';
 
 /**
@@ -127,7 +126,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let owner = getOwner(this);
     let router = this;
 
-    options.resolveRouteMap = name => owner[FACTORY_FOR](`route-map:${name}`);
+    options.resolveRouteMap = name => owner.factoryFor(`route-map:${name}`);
 
     options.addRouteForEngine = (name, engineInfo) => {
       if (!router._engineInfoByRoute[name]) {
@@ -319,7 +318,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     if (!this._toplevelView) {
       let owner = getOwner(this);
-      let OutletView = owner[FACTORY_FOR]('view:-outlet');
+      let OutletView = owner.factoryFor('view:-outlet');
       this._toplevelView = OutletView.create();
       this._toplevelView.setOutletState(liveRoutes);
       let instance = owner.lookup('-application-instance:main');
@@ -598,7 +597,7 @@ const EmberRouter = EmberObject.extend(Evented, {
       seen[name] = true;
 
       if (!handler) {
-        let DefaultRoute = routeOwner[FACTORY_FOR]('route:basic').class;
+        let DefaultRoute = routeOwner.factoryFor('route:basic').class;
         routeOwner.register(fullRouteName, DefaultRoute.extend());
         handler = routeOwner.lookup(fullRouteName);
 

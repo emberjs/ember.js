@@ -27,7 +27,6 @@ import {
   calculateCacheKey,
   prefixRouteNameArg
 } from '../utils';
-import { FACTORY_FOR } from 'container';
 const { slice } = Array.prototype;
 
 function K() { return this; }
@@ -1617,7 +1616,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     return {
       find(name, value) {
-        let modelClass = owner[FACTORY_FOR](`model:${name}`);
+        let modelClass = owner.factoryFor(`model:${name}`);
 
         assert(
           `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${StringUtils.classify(name)} did not exist and you did not override your route's \`model\` hook.`, !!modelClass);
