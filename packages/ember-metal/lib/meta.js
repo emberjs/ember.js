@@ -70,6 +70,7 @@ const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
 const IS_PROXY = 1 << 4;
 
+
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
   members.lastRendered = ownMap;
   if (has('ember-debug')) { //https://github.com/emberjs/ember.js/issues/14732

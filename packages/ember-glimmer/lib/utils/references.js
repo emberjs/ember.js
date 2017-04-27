@@ -89,6 +89,7 @@ export class RootReference extends ConstReference {
   }
 }
 
+
 let TwoWayFlushDetectionTag;
 
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||

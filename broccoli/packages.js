@@ -9,7 +9,7 @@ const funnelLib = require('./funnel-lib');
 const { VERSION } = require('./version');
 const WriteFile = require('broccoli-file-creator');
 const StringReplace = require('broccoli-string-replace');
-const { RELEASE, DEBUG, toConst } = require('./features');
+const { DEBUG, DEPRECATIONS, RUNTIME_RELEASE_FLAGS, toConst } = require('./features');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
 const { stripIndent } = require('common-tags');
@@ -236,14 +236,23 @@ module.exports.emberLicense = function _emberLicense() {
 }
 
 module.exports.emberFeaturesES = function _emberFeaturesES(production = false) {
-  let FEATURES = production ? RELEASE : DEBUG;
-  let content = stripIndent`
+  let FEATURES = production ? RUNTIME_RELEASE_FLAGS : DEBUG;
+  let DEPRECATION_FLAGS = production ? {} : DEPRECATIONS;
+  let deprecationMap = {};
+  Object.keys(DEPRECATIONS).forEach((deprecation) => {
+    deprecationMap[deprecation.toUpperCase().replace(/(-|\.)/g, '_')] = deprecation;
+  });
+
+  let content = `
     import { ENV } from 'ember-environment';
     import { assign } from 'ember-utils';
     export const DEFAULT_FEATURES = ${JSON.stringify(FEATURES)};
     export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
+    ${!production ? `const DEPRECATIONS = ${JSON.stringify(DEPRECATION_FLAGS)}` : ''}
 
-
+    ${Object.keys(toConst(DEPRECATION_FLAGS)).map(DEPRECATION => {
+      return `export const ${DEPRECATION} = DEPRECATIONS["${deprecationMap[DEPRECATION]}"];`
+    }).join('\n')}
     ${Object.keys(toConst(FEATURES)).map((FEATURE) => {
       return `export const ${FEATURE} = FEATURES["${FEATURE.replace(/_/g, '-').toLowerCase()}"];`
     }).join('\n')}

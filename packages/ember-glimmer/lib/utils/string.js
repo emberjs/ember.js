@@ -4,6 +4,7 @@
 */
 
 import { deprecate } from 'ember-debug';
+import { EMBER_HTMLBARS_EMBER_HANDLEBARS_SAFESTRING } from 'ember/features';
 
 export class SafeString {
   constructor(string) {
@@ -19,19 +20,25 @@ export class SafeString {
   }
 }
 
-export function getSafeString() {
-  deprecate(
-    'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe',
-    false,
-    {
-      id: 'ember-htmlbars.ember-handlebars-safestring',
-      until: '3.0.0',
-      url: 'http://emberjs.com/deprecations/v2.x#toc_use-ember-string-htmlsafe-over-ember-handlebars-safestring'
-    }
-  );
+let _getSafeString;
 
-  return SafeString;
+if (EMBER_HTMLBARS_EMBER_HANDLEBARS_SAFESTRING) {
+  _getSafeString = function() {
+    deprecate(
+      'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe',
+      false,
+      {
+        id: 'ember-htmlbars.ember-handlebars-safestring',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x#toc_use-ember-string-htmlsafe-over-ember-handlebars-safestring'
+      }
+    );
+
+    return SafeString;
+  }
 }
+
+export const getSafeString = _getSafeString;
 
 const escape = {
   '&': '&amp;',

@@ -1,8 +1,8 @@
 'use strict';
 /* eslint-env node */
 
-function getFeatures(isDebug) {
-  let features = Object.assign({}, require('../features').features);
+function getFlags(isDebug, type) {
+  let features = Object.assign({}, require('../features')[type]);
   let featureName;
 
   if (process.env.BUILD_TYPE === 'alpha') {
@@ -38,12 +38,25 @@ function getFeatures(isDebug) {
 function toConst(features) {
   let consted = {};
   Object.keys(features).forEach((feature) => {
-    consted[feature.toUpperCase().replace(/-/g, '_')] = features[feature]
+    consted[feature.toUpperCase().replace(/(-|\.)/g, '_')] = features[feature]
   });
 
   return consted;
 }
 
+let RUNTIME_RELEASE_FLAGS = {};
+let releaseFlags = getFlags(false, 'features');
+Object.keys(releaseFlags).forEach((flag) => {
+
+  if (releaseFlags[flag] === null) {
+    RUNTIME_RELEASE_FLAGS[flag] = null;
+  }
+})
+
+const DEBUG_FLAGS = getFlags(true, 'features');
+
 module.exports.toConst = toConst;
-module.exports.RELEASE = getFeatures(false);
-module.exports.DEBUG = getFeatures(true);
+module.exports.RELEASE = releaseFlags;
+module.exports.RUNTIME_RELEASE_FLAGS = RUNTIME_RELEASE_FLAGS;
+module.exports.DEBUG = DEBUG_FLAGS;
+module.exports.DEPRECATIONS = Object.assign({}, require('../features')['deprecations']);

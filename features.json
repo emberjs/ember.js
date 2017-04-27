@@ -14,7 +14,6 @@
     "ember-application.registry-resolver-as-function": "2.3.0",
     "ember-application.app-instance-container": "2.1.0",
     "ember-application.app-initializer-initialize-arguments": "2.1.0",
-    "ember-application.validate-type": "1.13.0",
     "ember-debug.deprecate-options-missing": "2.1.0",
     "ember-debug.deprecate-id-missing": "2.1.0",
     "ember-debug.deprecate-until-missing": "2.1.0",
@@ -22,7 +21,6 @@
     "ember-debug.warn-id-missing": "2.1.0",
     "ember-views.component.defaultLayout": "2.3.0",
     "ember-routing-views.controller-wrapped-param": "2.0.0",
-    "ember-htmlbars.make-bound-helper": "1.13.6",
     "ember-htmlbars.ember-handlebars-safestring": "2.8.0",
     "ember-metal.binding": "2.7.0",
     "ember-views.did-init-attrs": "2.6.0",
@@ -49,8 +47,6 @@
     "ember-views.lifecycle-hook-arguments": "2.12.0",
     "ember-views.render-to-element": "2.11.0",
     "ember-metal.ember-k": "2.12.0",
-    "ember-metal.ember-backburner": "2.7.0",
-    "ember-metal.ember.keys": "1.13.3",
-    "ember-metal.ember-create": "1.13.3"
+    "ember-metal.ember-backburner": "2.7.0"
   }
 }
