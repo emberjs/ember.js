@@ -29,7 +29,7 @@ var END_WITH_EACH_REGEX = /\.@each$/;
 
   @method expandProperties
   @for Ember
-  @private
+  @public
   @param {String} pattern The property pattern to expand.
   @param {Function} callback The callback to invoke.  It is invoked once per
   expansion, and is passed the expansion.
