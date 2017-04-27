@@ -116,7 +116,7 @@
     "semver": "^5.3.0",
     "serve-static": "^1.12.2",
     "simple-dom": "^0.3.0",
-    "testem": "^1.16.0"
+    "testem": "1.15.0"
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"
