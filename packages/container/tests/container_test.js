@@ -3,7 +3,6 @@ import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
 import { Registry } from '..';
 import { factory } from 'internal-test-helpers';
-import { LOOKUP_FACTORY } from 'container';
 
 let originalModelInjections;
 
@@ -17,7 +16,12 @@ QUnit.module('Container', {
 });
 
 function lookupFactory(name, container, options) {
-  return container[LOOKUP_FACTORY](name, options);
+  let factory;
+  expectDeprecation(() => {
+    factory = container.lookupFactory(name, options);
+  }, 'Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.');
+
+  return factory;
 }
 
 QUnit.test('A registered factory returns the same instance each time', function() {
@@ -477,7 +481,7 @@ QUnit.test('factory for non extendables resolves are cached', function() {
 });
 
 QUnit.test('The `_onLookup` hook is called on factories when looked up the first time', function() {
-  expect(2);
+  expect(4); // 2 are from expectDeprecation in `lookupFactory`
 
   let registry = new Registry();
   let container = registry.container();

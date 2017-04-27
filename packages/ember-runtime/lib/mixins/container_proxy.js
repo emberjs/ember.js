@@ -6,9 +6,6 @@ import {
   Mixin,
   run
 } from 'ember-metal';
-import {
-  LOOKUP_FACTORY
-} from 'container';
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -108,10 +105,6 @@ let containerProxyMixin = {
    */
   _lookupFactory(fullName, options) {
     return this.__container__.lookupFactory(fullName, options);
-  },
-
-  [LOOKUP_FACTORY]() {
-    return this.__container__[LOOKUP_FACTORY](...arguments);
   },
 
   /**

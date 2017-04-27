@@ -14,7 +14,6 @@ import {
 import { ENV } from 'ember-environment';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
-export const LOOKUP_FACTORY = symbol('LOOKUP_FACTORY');
 
 /**
  A container used to instantiate and cache objects.
@@ -118,11 +117,6 @@ Container.prototype = {
 
     deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.', false, { id: 'container-lookupFactory', until: '2.13.0', url: 'http://emberjs.com/deprecations/v2.x/#toc_migrating-from-_lookupfactory-to-factoryfor' });
 
-    return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
-  },
-
-  [LOOKUP_FACTORY](fullName, options) {
-    assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
     return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
   },
 
