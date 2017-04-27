@@ -46,7 +46,7 @@ export function isWhitespace(string: string) {
 
 export function moveNodesBefore(source: Simple.Node, target: Simple.Element, nextSibling: Simple.Node) {
   let first = source.firstChild;
-  let last: Option<Simple.Node> = null;
+  let last: Simple.Node | null = null;
   let current = first;
   while (current) {
     last = current;
@@ -63,8 +63,8 @@ export class DOMOperations {
     this.uselessElement = this.document.createElement('div');
   }
 
-  createElement(tag: string, context?: Element): Element {
-    let isElementInSVGNamespace, isHTMLIntegrationPoint;
+  createElement(tag: string, context?: Simple.Element): Simple.Element {
+    let isElementInSVGNamespace: boolean, isHTMLIntegrationPoint: boolean;
 
     if (context) {
       isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
@@ -82,7 +82,7 @@ export class DOMOperations {
         throw new Error(`Cannot create a ${tag} inside an SVG context`);
       }
 
-      return this.document.createElementNS(SVG_NAMESPACE as Namespace, tag);
+      return this.document.createElementNS(SVG_NAMESPACE, tag);
     } else {
       return this.document.createElement(tag);
     }
@@ -90,6 +90,10 @@ export class DOMOperations {
 
   insertBefore(parent: Element, node: Node, reference: Option<Node>) {
     parent.insertBefore(node, reference);
+  }
+
+  insertHTMLBefore(_parent: Element, nextSibling: Node, html: string): Bounds {
+    return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
   }
 
   createTextNode(text: string): Text {
@@ -121,10 +125,6 @@ export namespace DOM {
       } else {
         element.setAttribute(name, value);
       }
-    }
-
-    insertHTMLBefore(parent: Element, html: string, reference: Option<Node>): Bounds {
-      return insertHTMLBefore(this.uselessElement, parent, reference, html);
     }
   }
 
@@ -159,10 +159,6 @@ export class DOMChanges extends DOMOperations {
 
   removeAttributeNS(element: Simple.Element, namespace: string, name: string) {
     element.removeAttributeNS(namespace, name);
-  }
-
-  insertHTMLBefore(_parent: Element, nextSibling: Node, html: string): Bounds {
-    return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
   }
 
   insertNodeBefore(parent: Simple.Element, node: Simple.Node, reference: Simple.Node): Bounds {
@@ -201,7 +197,7 @@ export function insertHTMLBefore(this: void, _useless: Simple.HTMLElement, _pare
   let nextSibling = _nextSibling as Node;
 
   let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
-  let last: Node | null;
+  let last: Node;
 
   if (html === null || html === '') {
     return new ConcreteBounds(parent, null, null);
