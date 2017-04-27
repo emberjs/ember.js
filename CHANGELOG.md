@@ -1,6 +1,6 @@
 # Ember Changelog
 
-# 2.13.0-beta.2 (April 7, 2017)
+### 2.13.0-beta.2 (April 7, 2017)
 
 - [#15111](https://github.com/emberjs/ember.js/pull/15111) / [#15029](https://github.com/emberjs/ember.js/pull/15029) [PERF] `factoryFor` should cache when possible.
 - [#14961](https://github.com/emberjs/ember.js/pull/14961) [BUGIX] [Fixes #14925] remove duplicate `/` in pathname
@@ -9,7 +9,7 @@
 - [#15106](https://github.com/emberjs/ember.js/pull/15106) [DOC] Introduce a more debugging data to warnings about CP dependencies.
 - [#15107](https://github.com/emberjs/ember.js/pull/15107) [PERF] avoid toBoolean conversion when possible (chains).
 
-# 2.13.0-beta.1 (March 15, 2017)
+### 2.13.0-beta.1 (March 15, 2017)
 
 - [#14011](https://github.com/emberjs/ember.js/pull/14011) [FEATURE ember-unique-location-history-state] Implements [RFC #186](https://github.com/emberjs/rfcs/pull/186).
 - [#13231](https://github.com/emberjs/ember.js/pull/13231) [BUGFIX] Fix a bug when using commas in computer property dependent keys.
@@ -20,6 +20,14 @@
 - [#14970](https://github.com/emberjs/ember.js/pull/14970) [BUGFIX] Generate integration tests for template helpers by default.
 - [#14976](https://github.com/emberjs/ember.js/pull/14976) [BUGFIX] Remove "no use strict" workaround for old versions of iOS 8.
 - [#14981](https://github.com/emberjs/ember.js/pull/14981) [FEATURE ember-testing-resume-test] Enable by default.
+
+### 2.12.2 (April 27, 2017)
+
+- [#15160](https://github.com/emberjs/ember.js/pull/15160) [BUGFIX] Ensure `Ember.Test` global is setup when including `ember-testing.js`.
+- [#15142](https://github.com/emberjs/ember.js/pull/15142) / [#15163](https://github.com/emberjs/ember.js/pull/15163) [BUGFIX] Don’t leak deprecated `container`.
+- [#15161](https://github.com/emberjs/ember.js/pull/15161) [BUGFIX] Prevent errors from being triggered during error processing on non ES6 platforms.
+- [#15180](https://github.com/emberjs/ember.js/pull/15180) [BUGFIX] Correct `until` values for `this.container` deprecations.
+
 
 ### 2.12.1 (April 7, 2017)
 
