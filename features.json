@@ -7,8 +7,7 @@
     "ember-glimmer-allow-backtracking-rerender": null,
     "ember-testing-resume-test": true,
     "ember-factory-for": true,
-    "ember-routing-router-service": null,
-    "ember-unique-location-history-state": true
+    "ember-routing-router-service": null
   },
   "deprecations": {
     "container-lookupFactory": "2.12.0",

@@ -2,7 +2,6 @@ import {
   get,
   set
 } from 'ember-metal';
-import { EMBER_UNIQUE_LOCATION_HISTORY_STATE } from 'ember/features';
 
 import { Object as EmberObject } from 'ember-runtime';
 import EmberLocation from './api';
@@ -14,18 +13,15 @@ import EmberLocation from './api';
 
 let popstateFired = false;
 
-let _uuid;
-
-if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
-  _uuid = function _uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r, v;
-      r = Math.random() * 16 | 0;
-      v = c === 'x' ? r : r & 3 | 8;
-      return v.toString(16);
-    });
-  }
+function _uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r, v;
+    r = Math.random() * 16 | 0;
+    v = c === 'x' ? r : r & 3 | 8;
+    return v.toString(16);
+  });
 }
+
 
 /**
   Ember.HistoryLocation implements the location API using the browser's
@@ -173,10 +169,7 @@ export default EmberObject.extend({
    @param path {String}
   */
   pushState(path) {
-    let state = { path };
-    if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
-      state.uuid = _uuid();
-    }
+    let state = { path, uuid: _uuid() };
 
     get(this, 'history').pushState(state, null, path);
 
@@ -194,10 +187,7 @@ export default EmberObject.extend({
    @param path {String}
   */
   replaceState(path) {
-    let state = { path };
-    if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
-      state.uuid = _uuid();
-    }
+    let state = { path, uuid: _uuid() };
 
     get(this, 'history').replaceState(state, null, path);
 
