@@ -22,15 +22,12 @@ import {
 } from 'ember-runtime';
 import generateController from './generate_controller';
 import {
-  generateControllerFactory
-} from './generate_controller';
-import {
   stashParamNames,
   normalizeControllerQueryParams,
   calculateCacheKey,
   prefixRouteNameArg
 } from '../utils';
-import { FACTORY_FOR, LOOKUP_FACTORY } from 'container';
+import { FACTORY_FOR } from 'container';
 const { slice } = Array.prototype;
 
 function K() { return this; }
@@ -157,29 +154,27 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @property _qp
   */
   _qp: computed(function() {
-    let controllerProto, combinedQueryParameterConfiguration;
+    let combinedQueryParameterConfiguration;
 
     let controllerName = this.controllerName || this.routeName;
     let owner = getOwner(this);
-    let definedControllerClass = owner[LOOKUP_FACTORY](`controller:${controllerName}`);
+    let controller = owner.lookup(`controller:${controllerName}`);
     let queryParameterConfiguraton = get(this, 'queryParams');
     let hasRouterDefinedQueryParams = !!Object.keys(queryParameterConfiguraton).length;
 
-    if (definedControllerClass) {
+    if (controller) {
       // the developer has authored a controller class in their application for this route
       // access the prototype, find its query params and normalize their object shape
       // them merge in the query params for the route. As a mergedProperty, Route#queryParams is always
       // at least `{}`
-      controllerProto = definedControllerClass.proto();
 
-      let controllerDefinedQueryParameterConfiguration = get(controllerProto, 'queryParams');
+      let controllerDefinedQueryParameterConfiguration = get(controller, 'queryParams');
       let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(controllerDefinedQueryParameterConfiguration);
       combinedQueryParameterConfiguration = mergeEachQueryParams(normalizedControllerQueryParameterConfiguration, queryParameterConfiguraton);
     } else if (hasRouterDefinedQueryParams) {
       // the developer has not defined a controller but *has* supplied route query params.
       // Generate a class for them so we can later insert default values
-      let generatedControllerClass = generateControllerFactory(getOwner(this), controllerName);
-      controllerProto = generatedControllerClass.proto();
+      controller = generateController(getOwner(this), controllerName);
       combinedQueryParameterConfiguration = queryParameterConfiguraton;
     }
 
@@ -206,7 +201,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       }
 
       let urlKey = desc.as || this.serializeQueryParamKey(propName);
-      let defaultValue = get(controllerProto, propName);
+      let defaultValue = get(controller, propName);
 
       if (Array.isArray(defaultValue)) {
         defaultValue = emberA(defaultValue.slice());
@@ -217,7 +212,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       let defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
       let scopedPropertyName = `${controllerName}:${propName}`;
       let qp = {
-        undecoratedDefaultValue: get(controllerProto, propName),
+        undecoratedDefaultValue: get(controller, propName),
         defaultValue,
         serializedDefaultValue: defaultValueSerialized,
         serializedValue: defaultValueSerialized,
