@@ -1,16 +1,17 @@
 # Ember Changelog
 
-### 2.13.0-beta.2 (April 7, 2017)
+### 2.13.0 (April 27, 2017)
 
+- [#15086](https://github.com/emberjs/ember.js/pull/15086) [BUGFIX] Ensure route blueprint honors the `--reset-namespace` flag.
+- [#15160](https://github.com/emberjs/ember.js/pull/15160) [BUGFIX] Ensure Ember.Test globals setup when including ember-testing.js
+- [#15117](https://github.com/emberjs/ember.js/pull/15117) [BUGFIX] Ensure an array of objects with a null prototype do not trigger assertions when calling `.toString` on the array.
+- [#15141](https://github.com/emberjs/ember.js/pull/15141) [PERF] Remove global didDefineProperty
+- [#15142](https://github.com/emberjs/ember.js/pull/15142) / [#15163](https://github.com/emberjs/ember.js/pull/15163) [BUGFIX] Don’t leak deprecated `container`.
+- [#15180](https://github.com/emberjs/ember.js/pull/15180) [DEPRECATION] Correct `until` values for `this.container` deprecations.
 - [#15111](https://github.com/emberjs/ember.js/pull/15111) / [#15029](https://github.com/emberjs/ember.js/pull/15029) [PERF] `factoryFor` should cache when possible.
-- [#14961](https://github.com/emberjs/ember.js/pull/14961) [BUGIX] [Fixes #14925] remove duplicate `/` in pathname
-- [#15065](https://github.com/emberjs/ember.js/pull/15065) [BUGFIX] Guard jQuery access in `setupForTesting`.
+- [#14961](https://github.com/emberjs/ember.js/pull/14961) [BUGFIX] Remove duplicate trailing slash `/` in pathname.
+- [#15065](https://github.com/emberjs/ember.js/pull/15065) [BUGFIX] Guard `jQuery` access in `setupForTesting` (allow using acceptance tests when `jQuery` is not present).
 - [#15103](https://github.com/emberjs/ember.js/pull/15103) [BUGFIX] Allow calling `Ember.warn` without test.
-- [#15106](https://github.com/emberjs/ember.js/pull/15106) [DOC] Introduce a more debugging data to warnings about CP dependencies.
-- [#15107](https://github.com/emberjs/ember.js/pull/15107) [PERF] avoid toBoolean conversion when possible (chains).
-
-### 2.13.0-beta.1 (March 15, 2017)
-
 - [#14011](https://github.com/emberjs/ember.js/pull/14011) [FEATURE ember-unique-location-history-state] Implements [RFC #186](https://github.com/emberjs/rfcs/pull/186).
 - [#13231](https://github.com/emberjs/ember.js/pull/13231) [BUGFIX] Fix a bug when using commas in computer property dependent keys.
 - [#14890](https://github.com/emberjs/ember.js/pull/14890) [BUGFIX] Fix a race condition where actions are invoked on destroyed DOM nodes.
