@@ -1,4 +1,4 @@
-import { Registry, FACTORY_FOR, LOOKUP_FACTORY } from 'container';
+import { Registry, LOOKUP_FACTORY } from 'container';
 import { Router } from 'ember-routing';
 import {
   Application,
@@ -16,9 +16,6 @@ export default function buildOwner(options = {}) {
   let bootOptions = options.bootOptions || {};
 
   let Owner = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin, {
-    [FACTORY_FOR]() {
-      return this.__container__[FACTORY_FOR](...arguments);
-    },
     [LOOKUP_FACTORY]() {
       return this.__container__[LOOKUP_FACTORY](...arguments);
     }

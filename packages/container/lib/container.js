@@ -14,7 +14,6 @@ import {
 import { ENV } from 'ember-environment';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
-export const FACTORY_FOR = symbol('FACTORY_FOR');
 export const LOOKUP_FACTORY = symbol('LOOKUP_FACTORY');
 
 /**
@@ -125,16 +124,6 @@ Container.prototype = {
   [LOOKUP_FACTORY](fullName, options) {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
     return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
-  },
-
-  /*
-   * This internal version of factoryFor swaps between the public API for
-   * factoryFor (class is the registered class) and a transition implementation
-   * (class is the double-extended class). It is *not* the public API version
-   * of factoryFor, which always returns the registered class.
-   */
-  [FACTORY_FOR](fullName, options = {}) {
-    return this.factoryFor(fullName, options);
   },
 
   /**
@@ -298,7 +287,7 @@ function isFactoryInstance(container, fullName, { instantiate, singleton }) {
 }
 
 function instantiateFactory(container, fullName, options) {
-  let factoryManager = container[FACTORY_FOR](fullName);
+  let factoryManager = container.factoryFor(fullName);
 
   if (factoryManager === undefined) {
     return;

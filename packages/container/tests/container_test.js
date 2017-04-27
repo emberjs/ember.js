@@ -3,7 +3,7 @@ import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
 import { Registry } from '..';
 import { factory } from 'internal-test-helpers';
-import { LOOKUP_FACTORY, FACTORY_FOR } from 'container';
+import { LOOKUP_FACTORY } from 'container';
 
 let originalModelInjections;
 
@@ -627,7 +627,7 @@ QUnit.test('lookup passes options through to expandlocallookup', function(assert
   assert.ok(PostControllerLookupResult instanceof PostController);
 });
 
-QUnit.test('#[FACTORY_FOR] class is the injected factory', (assert) => {
+QUnit.test('#factoryFor class is registered class', (assert) => {
   let registry = new Registry();
   let container = registry.container();
 

@@ -51,8 +51,6 @@ import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
-import { FACTORY_FOR } from 'container';
-
 import { default as ActionModifierManager } from './modifiers/action';
 
 function instrumentationPayload(name) {
@@ -213,7 +211,7 @@ export default class Environment extends GlimmerEnvironment {
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
-    let helperFactory = owner[FACTORY_FOR](`helper:${name}`, options) || owner[FACTORY_FOR](`helper:${name}`);
+    let helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helperFactory.class.isHelperInstance) {

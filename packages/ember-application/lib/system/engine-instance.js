@@ -12,7 +12,7 @@ import {
 } from 'ember-runtime';
 import { assert, Error as EmberError } from 'ember-debug';
 import { run } from 'ember-metal';
-import { Registry, FACTORY_FOR, LOOKUP_FACTORY, privatize as P } from 'container';
+import { Registry, LOOKUP_FACTORY, privatize as P } from 'container';
 import { getEngineParent, setEngineParent } from './engine-parent';
 
 /**
@@ -195,10 +195,6 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
     this.inject('view', '_environment', '-environment:main');
     this.inject('route', '_environment', '-environment:main');
-  },
-
-  [FACTORY_FOR](fullName, options) {
-    return this.__container__[FACTORY_FOR](fullName, options);
   },
 
   [LOOKUP_FACTORY](fullName, options) {

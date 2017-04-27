@@ -7,7 +7,6 @@ import {
   run
 } from 'ember-metal';
 import {
-  FACTORY_FOR,
   LOOKUP_FACTORY
 } from 'container';
 
@@ -109,10 +108,6 @@ let containerProxyMixin = {
    */
   _lookupFactory(fullName, options) {
     return this.__container__.lookupFactory(fullName, options);
-  },
-
-  [FACTORY_FOR]() {
-    return this.__container__[FACTORY_FOR](...arguments);
   },
 
   [LOOKUP_FACTORY]() {
