@@ -1,5 +1,17 @@
 # Ember Changelog
 
+### 2.14.0-beta.1 (April 27, 2017)
+
+- [#15015](https://github.com/emberjs/ember.js/pull/15015) Allow mounting routeless engines with a bound engine name
+- [#15078](https://github.com/emberjs/ember.js/pull/15078) [DEPRECATION] Deprecate `EventManager#canDispatchToEventManager`.
+- [#15085](https://github.com/emberjs/ember.js/pull/15085) Add missing instrumentation for compilation/lookup phase
+- [#15150](https://github.com/emberjs/ember.js/pull/15150) [PERF] Cleanup Proxy invalidation tracking.
+- [#15168](https://github.com/emberjs/ember.js/pull/15168) [BUGFIX] Ensure that retrying a transition created with `replaceWith` causes a history replacement.
+- [#15148](https://github.com/emberjs/ember.js/pull/15148) [BUGFIX] Ensure that using `replace` with `refreshModel` works properly.
+- [#15178](https://github.com/emberjs/ember.js/pull/15178) Refactor route to lookup controller for QPs.
+- [#15129](https://github.com/emberjs/ember.js/pull/15129) Fix access to service:-document in ember-engines
+
+
 ### 2.13.0 (April 27, 2017)
 
 - [#15086](https://github.com/emberjs/ember.js/pull/15086) [BUGFIX] Ensure route blueprint honors the `--reset-namespace` flag.
