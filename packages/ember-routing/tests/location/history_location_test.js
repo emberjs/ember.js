@@ -3,8 +3,6 @@ import {
   run
 } from 'ember-metal';
 import HistoryLocation from '../../location/history_location';
-import { EMBER_UNIQUE_LOCATION_HISTORY_STATE } from 'ember/features';
-
 let FakeHistory, HistoryTestLocation, location;
 
 function createLocation(options) {
@@ -114,96 +112,51 @@ QUnit.test('base URL is removed when retrieving the current pathname', function(
   location.initState();
 });
 
-if (EMBER_UNIQUE_LOCATION_HISTORY_STATE) {
-  QUnit.test('base URL is preserved when moving around', function() {
-    expect(2);
+QUnit.test('base URL is preserved when moving around', function() {
+  expect(2);
 
-    HistoryTestLocation.reopen({
-      init() {
-        this._super(...arguments);
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
 
-        set(this, 'location', mockBrowserLocation('/base/foo/bar'));
-        set(this, 'baseURL', '/base/');
-      }
-    });
-
-    createLocation();
-    location.initState();
-    location.setURL('/one/two');
-
-    equal(location._historyState.path, '/base/one/two');
-    ok(location._historyState.uuid);
+      set(this, 'location', mockBrowserLocation('/base/foo/bar'));
+      set(this, 'baseURL', '/base/');
+    }
   });
 
-  QUnit.test('setURL continues to set even with a null state (iframes may set this)', function() {
-    expect(2);
+  createLocation();
+  location.initState();
+  location.setURL('/one/two');
 
-    createLocation();
-    location.initState();
+  equal(location._historyState.path, '/base/one/two');
+  ok(location._historyState.uuid);
+});
 
-    FakeHistory.pushState(null);
-    location.setURL('/three/four');
+QUnit.test('setURL continues to set even with a null state (iframes may set this)', function() {
+  expect(2);
 
-    equal(location._historyState.path, '/three/four');
-    ok(location._historyState.uuid);
-  });
+  createLocation();
+  location.initState();
 
-  QUnit.test('replaceURL continues to set even with a null state (iframes may set this)', function() {
-    expect(2);
+  FakeHistory.pushState(null);
+  location.setURL('/three/four');
 
-    createLocation();
-    location.initState();
+  equal(location._historyState.path, '/three/four');
+  ok(location._historyState.uuid);
+});
 
-    FakeHistory.pushState(null);
-    location.replaceURL('/three/four');
+QUnit.test('replaceURL continues to set even with a null state (iframes may set this)', function() {
+  expect(2);
 
-    equal(location._historyState.path, '/three/four');
-    ok(location._historyState.uuid);
-  });
-} else {
-  QUnit.test('base URL is preserved when moving around', function() {
-    expect(1);
+  createLocation();
+  location.initState();
 
-    HistoryTestLocation.reopen({
-      init() {
-        this._super(...arguments);
+  FakeHistory.pushState(null);
+  location.replaceURL('/three/four');
 
-        set(this, 'location', mockBrowserLocation('/base/foo/bar'));
-        set(this, 'baseURL', '/base/');
-      }
-    });
-
-    createLocation();
-    location.initState();
-    location.setURL('/one/two');
-
-    equal(location._historyState.path, '/base/one/two');
-  });
-
-  QUnit.test('setURL continues to set even with a null state (iframes may set this)', function() {
-    expect(1);
-
-    createLocation();
-    location.initState();
-
-    FakeHistory.pushState(null);
-    location.setURL('/three/four');
-
-    equal(location._historyState.path, '/three/four');
-  });
-
-  QUnit.test('replaceURL continues to set even with a null state (iframes may set this)', function() {
-    expect(1);
-
-    createLocation();
-    location.initState();
-
-    FakeHistory.pushState(null);
-    location.replaceURL('/three/four');
-
-    equal(location._historyState.path, '/three/four');
-  });
-}
+  equal(location._historyState.path, '/three/four');
+  ok(location._historyState.uuid);
+});
 
 QUnit.test('HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL', function() {
   expect(1);
