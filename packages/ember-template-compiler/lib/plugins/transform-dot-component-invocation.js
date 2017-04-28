@@ -59,7 +59,9 @@ export default function TransFormDotComponentInvocation() {
 
 TransFormDotComponentInvocation.prototype = {
   _isMulipartPath(path)  {
-    return path.parts.length > 1;
+    if (path.parts && path.parts.length && path.parts.length > 1) {
+      return true;
+    }
   },
 
   _isInlineInvocation(path, params, hash) {
