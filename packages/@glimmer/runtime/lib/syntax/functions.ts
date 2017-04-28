@@ -18,7 +18,6 @@ import {
   dict,
   assert,
   unwrap,
-  unreachable,
 } from '@glimmer/util';
 
 import {
@@ -65,12 +64,12 @@ STATEMENTS.add(Ops.Comment, (sexp: S.Comment, builder: OpcodeBuilder) => {
   builder.comment(sexp[1]);
 });
 
-STATEMENTS.add(Ops.CloseElement, (_sexp, builder: OpcodeBuilder) => {
+STATEMENTS.add(Ops.CloseElement, (_sexp: S.CloseElement, builder: OpcodeBuilder) => {
   LOGGER.trace('close-element statement');
   builder.closeElement();
 });
 
-STATEMENTS.add(Ops.FlushElement, (_sexp, builder: OpcodeBuilder) => {
+STATEMENTS.add(Ops.FlushElement, (_sexp: S.FlushElement, builder: OpcodeBuilder) => {
   builder.flushElement();
 });
 
@@ -91,11 +90,11 @@ STATEMENTS.add(Ops.StaticAttr, (sexp: S.StaticAttr, builder: OpcodeBuilder) => {
   builder.staticAttr(name, namespace, value as string);
 });
 
-STATEMENTS.add(Ops.DynamicAttr, (sexp: S.DynamicAttr, builder) => {
+STATEMENTS.add(Ops.DynamicAttr, (sexp: S.DynamicAttr, builder: OpcodeBuilder) => {
   dynamicAttr(sexp, false, builder);
 });
 
-STATEMENTS.add(Ops.TrustingAttr, (sexp: S.DynamicAttr, builder) => {
+STATEMENTS.add(Ops.TrustingAttr, (sexp: S.DynamicAttr, builder: OpcodeBuilder) => {
   dynamicAttr(sexp, true, builder);
 });
 
@@ -115,16 +114,16 @@ STATEMENTS.add(Ops.OpenElement, (sexp: S.OpenElement, builder: OpcodeBuilder) =>
   builder.openPrimitiveElement(sexp[1]);
 });
 
-CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder) => {
+CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder: OpcodeBuilder) => {
   builder.pushComponentOperations();
   builder.openElementWithOperations(sexp[2]);
 });
 
-CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder) => {
+CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder: OpcodeBuilder) => {
   builder.didCreateElement(Register.s0);
 });
 
-CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayout, builder) => {
+CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayout, builder: OpcodeBuilder) => {
   builder.didRenderLayout(Register.s0);
 });
 
@@ -160,7 +159,7 @@ STATEMENTS.add(Ops.Append, (sexp: S.Append, builder: OpcodeBuilder) => {
 //   }
 // });
 
-STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {
+STATEMENTS.add(Ops.Block, (sexp: S.Block, builder: OpcodeBuilder) => {
   let [, name, params, hash, _template, _inverse] = sexp;
   let template = builder.template(_template);
   let inverse = builder.template(_inverse);
@@ -230,7 +229,7 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
   }
 }
 
-STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
+STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
   let [, tag, attrs, args, block] = sexp;
 
   if (builder.env.hasComponentDefinition(tag, builder.meta.templateMeta)) {
@@ -287,7 +286,7 @@ export class PartialInvoker implements DynamicInvoker<ProgramSymbolTable> {
   }
 }
 
-STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
+STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder: OpcodeBuilder) => {
   let [, name, evalInfo] = sexp;
 
   let { templateMeta, symbols } = builder.meta;
@@ -383,7 +382,7 @@ class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
   }
 }
 
-STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder) => {
+STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder: OpcodeBuilder) => {
   let [, to, params] = sexp;
 
   let count = compileList(params, builder);
@@ -405,7 +404,7 @@ STATEMENTS.add(Ops.Debugger, (sexp: WireFormat.Statements.Debugger, builder: Opc
   builder.debugger(builder.meta.symbols, evalInfo);
 });
 
-STATEMENTS.add(Ops.ClientSideStatement, (sexp: WireFormat.Statements.ClientSide, builder) => {
+STATEMENTS.add(Ops.ClientSideStatement, (sexp: WireFormat.Statements.ClientSide, builder: OpcodeBuilder) => {
   CLIENT_SIDE.compile(sexp as ClientSide.ClientSideStatement, builder);
 });
 
@@ -458,13 +457,13 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
   }
 });
 
-EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder) => {
+EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder: OpcodeBuilder) => {
   let [, head, path] = sexp;
   builder.getVariable(head);
   path.forEach(p => builder.getProperty(p));
 });
 
-EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder) => {
+EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder: OpcodeBuilder) => {
   let [, path] = sexp;
 
   if (builder.meta.asPartial) {
@@ -483,15 +482,15 @@ EXPRESSIONS.add(Ops.Undefined, (_sexp, builder) => {
   return builder.primitive(undefined);
 });
 
-EXPRESSIONS.add(Ops.HasBlock, (sexp: E.HasBlock, builder) => {
+EXPRESSIONS.add(Ops.HasBlock, (sexp: E.HasBlock, builder: OpcodeBuilder) => {
   builder.hasBlock(sexp[1]);
 });
 
-EXPRESSIONS.add(Ops.HasBlockParams, (sexp: E.HasBlockParams, builder) => {
+EXPRESSIONS.add(Ops.HasBlockParams, (sexp: E.HasBlockParams, builder: OpcodeBuilder) => {
   builder.hasBlockParams(sexp[1]);
 });
 
-EXPRESSIONS.add(Ops.ClientSideExpression, (sexp: E.ClientSide, builder) => {
+EXPRESSIONS.add(Ops.ClientSideExpression, (sexp: E.ClientSide, builder: OpcodeBuilder) => {
   CLIENT_SIDE_EXPRS.compile(sexp as ClientSide.ClientSideExpression, builder);
 });
 
