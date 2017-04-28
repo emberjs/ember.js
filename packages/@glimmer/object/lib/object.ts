@@ -138,8 +138,8 @@ export class ClassMeta {
   }
 
   static applyAllMixins(Subclass: GlimmerObjectFactory<any>, Parent: GlimmerObjectFactory<any>) {
-    Subclass[CLASS_META].getMixins().forEach(m => m.extendPrototypeOnto(Subclass, Parent));
-    Subclass[CLASS_META].getStaticMixins().forEach(m => m.extendStatic(Subclass));
+    Subclass[CLASS_META].getMixins().forEach((m: Mixin) => m.extendPrototypeOnto(Subclass, Parent));
+    Subclass[CLASS_META].getStaticMixins().forEach((m: Mixin) => m.extendStatic(Subclass));
     Subclass[CLASS_META].seal();
   }
 

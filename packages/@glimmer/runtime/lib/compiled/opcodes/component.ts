@@ -98,7 +98,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
 });
 
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
-  let definition, manager;
+  let definition: ComponentDefinition<Opaque>, manager: ComponentManager<Opaque>;
   let args = vm.stack.pop<IArguments>();
   let dynamicScope = vm.dynamicScope();
   let state = { definition, manager } = vm.fetchValue<InitialComponentState<Opaque>>(_state);
