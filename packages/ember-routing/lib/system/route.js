@@ -3,6 +3,7 @@ import {
   get,
   set,
   getProperties,
+  setProperties,
   isNone,
   computed,
   run,
@@ -162,12 +163,12 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let hasRouterDefinedQueryParams = !!Object.keys(queryParameterConfiguraton).length;
 
     if (controller) {
-      // the developer has authored a controller class in their application for this route
-      // access the prototype, find its query params and normalize their object shape
-      // them merge in the query params for the route. As a mergedProperty, Route#queryParams is always
-      // at least `{}`
+      // the developer has authored a controller class in their application for
+      // this route find its query params and normalize their object shape them
+      // merge in the query params for the route. As a mergedProperty,
+      // Route#queryParams is always at least `{}`
 
-      let controllerDefinedQueryParameterConfiguration = get(controller, 'queryParams');
+      let controllerDefinedQueryParameterConfiguration = get(controller, 'queryParams') || {};
       let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(controllerDefinedQueryParameterConfiguration);
       combinedQueryParameterConfiguration = mergeEachQueryParams(normalizedControllerQueryParameterConfiguration, queryParameterConfiguraton);
     } else if (hasRouterDefinedQueryParams) {
@@ -1327,7 +1328,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     if (transition) {
       let qpValues = getQueryParamsFor(this, transition.state);
-      controller.setProperties(qpValues);
+      setProperties(controller, qpValues);
     }
 
     this.setupController(controller, context, transition);
