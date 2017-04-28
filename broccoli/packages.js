@@ -97,7 +97,7 @@ module.exports.handlebarsES = function _handlebars() {
 }
 
 function handlebarsFix() {
-  var HANDLEBARS_PARSER = /\/parser.js$/;
+  var HANDLEBARS_PARSER = /[\/\\]parser.js$/;
   return {
     load: function(id) {
       if (HANDLEBARS_PARSER.test(id)) {
