@@ -134,12 +134,6 @@ export const protoMethods = {
       pointer = pointer.parent;
     }
     return Object.keys(names);
-  },
-
-  _initializeListeners() {
-    this._listeners = undefined;
-    this._listenersFinalized = undefined;
-    this._suspendedListeners = undefined;
   }
 };
 

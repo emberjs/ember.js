@@ -125,7 +125,9 @@ export class Meta {
       }
     }
 
-    this._initializeListeners();
+    this._listeners = undefined;
+    this._listenersFinalized = undefined;
+    this._suspendedListeners = undefined;
   }
 
   isInitialized(obj) {
