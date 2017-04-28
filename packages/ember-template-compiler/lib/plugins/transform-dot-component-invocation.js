@@ -61,6 +61,8 @@ TransFormDotComponentInvocation.prototype = {
   _isMulipartPath(path)  {
     if (path.parts && path.parts.length && path.parts.length > 1) {
       return true;
+    } else {
+      return false;
     }
   },
 
