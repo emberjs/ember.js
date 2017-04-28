@@ -305,6 +305,18 @@ QUnit.module('Ember.Route interaction', {
   }
 });
 
+
+QUnit.test('route._qp does not crash if the controller has no QP, or setProperties', function() {
+  lookupHash['controller:test'] = {};
+
+  routeOne.controllerName = 'test';
+  let qp = routeOne.get('_qp');
+
+  deepEqual(qp.map, {}, 'map should be empty');
+  deepEqual(qp.propertyNames, [], 'property names should be empty');
+  deepEqual(qp.qps, [], 'qps is should be empty');
+});
+
 QUnit.test('controllerFor uses route\'s controllerName if specified', function() {
   let testController = {};
   lookupHash['controller:test'] = testController;
