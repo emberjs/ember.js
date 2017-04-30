@@ -60,12 +60,6 @@ QUnit.test('the default resolver looks up templates in Ember.TEMPLATES', functio
   setTemplate('fooBar', fooBarTemplate);
   setTemplate('fooBar/baz', fooBarBazTemplate);
 
-  ignoreDeprecation(() => {
-    equal(locator.lookupFactory('template:foo'), fooTemplate, 'resolves template:foo');
-    equal(locator.lookupFactory('template:fooBar'), fooBarTemplate, 'resolves template:foo_bar');
-    equal(locator.lookupFactory('template:fooBar.baz'), fooBarBazTemplate, 'resolves template:foo_bar.baz');
-  });
-
   equal(locator.factoryFor('template:foo').class, fooTemplate, 'resolves template:foo');
   equal(locator.factoryFor('template:fooBar').class, fooBarTemplate, 'resolves template:foo_bar');
   equal(locator.factoryFor('template:fooBar.baz').class, fooBarBazTemplate, 'resolves template:foo_bar.baz');
@@ -88,19 +82,11 @@ QUnit.test('the default resolver looks up arbitrary types on the namespace', fun
 QUnit.test('the default resolver resolves models on the namespace', function() {
   application.Post = EmberObject.extend({});
 
-  ignoreDeprecation(() => {
-    detectEqual(application.Post, locator.lookupFactory('model:post'), 'looks up Post model on application');
-  });
-
   detectEqual(application.Post, locator.factoryFor('model:post').class, 'looks up Post model on application');
 });
 
 QUnit.test('the default resolver resolves *:main on the namespace', function() {
   application.FooBar = EmberObject.extend({});
-
-  ignoreDeprecation(() => {
-    detectEqual(application.FooBar, locator.lookupFactory('foo-bar:main'), 'looks up FooBar type without name on application');
-  });
 
   detectEqual(application.FooBar, locator.factoryFor('foo-bar:main').class, 'looks up FooBar type without name on application');
 });
@@ -130,16 +116,14 @@ QUnit.test('the default resolver resolves container-registered helpers via looku
   application.register('helper:shorthand', shorthandHelper);
   application.register('helper:complete', helper);
 
-  ignoreDeprecation(() => {
-    let lookedUpShorthandHelper = locator.lookupFactory('helper:shorthand');
+  let lookedUpShorthandHelper = locator.factoryFor('helper:shorthand').class;
 
-    ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
+  ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
 
-    let lookedUpHelper = locator.lookupFactory('helper:complete');
+  let lookedUpHelper = locator.factoryFor('helper:complete').class;
 
-    ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
-    ok(helper.detect(lookedUpHelper), 'looked up complete helper');
-  });
+  ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
+  ok(helper.detect(lookedUpHelper), 'looked up complete helper');
 });
 
 QUnit.test('the default resolver resolves helpers on the namespace', function() {

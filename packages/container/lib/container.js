@@ -32,7 +32,6 @@ export default function Container(registry, options) {
   this.registry        = registry;
   this.owner           = options && options.owner ? options.owner : null;
   this.cache           = dictionary(options && options.cache ? options.cache : null);
-  this.factoryCache    = dictionary(options && options.factoryCache ? options.factoryCache : null);
   this.factoryManagerCache = dictionary(options && options.factoryManagerCache ? options.factoryManagerCache : null);
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
   this[CONTAINER_OVERRIDE] = undefined;
@@ -50,12 +49,6 @@ Container.prototype = {
   /**
    @private
    @property cache
-   @type InheritingDict
-   */
-
-  /**
-   @private
-   @property factoryCache
    @type InheritingDict
    */
 
@@ -100,23 +93,6 @@ Container.prototype = {
   lookup(fullName, options) {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
-  },
-
-  /**
-   Given a fullName, return the corresponding factory.
-    @private
-   @method lookupFactory
-   @param {String} fullName
-   @param {Object} [options]
-   @param {String} [options.source] The fullname of the request source (used for local lookup)
-   @return {any}
-   */
-  lookupFactory(fullName, options) {
-    assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
-
-    deprecate('Using "_lookupFactory" is deprecated. Please use container.factoryFor instead.', false, { id: 'container-lookupFactory', until: '2.13.0', url: 'http://emberjs.com/deprecations/v2.x/#toc_migrating-from-_lookupfactory-to-factoryfor' });
-
-    return deprecatedFactoryFor(this, this.registry.normalize(fullName), options);
   },
 
   /**
@@ -348,61 +324,6 @@ function buildInjections() /* container, ...injections */{
   return hash;
 }
 
-function deprecatedFactoryFor(container, fullName, options = {}) {
-  let registry = container.registry;
-
-  if (options.source) {
-    fullName = registry.expandLocalLookup(fullName, options);
-    // if expandLocalLookup returns falsey, we do not support local lookup
-    if (!fullName) {
-      return;
-    }
-  }
-
-  let cache = container.factoryCache;
-  if (cache[fullName]) {
-    return cache[fullName];
-  }
-  let factory = registry.resolve(fullName);
-  if (factory === undefined) {
-    return;
-  }
-
-  let type = fullName.split(':')[0];
-  if (!factory || typeof factory.extend !== 'function' || !ENV.MODEL_FACTORY_INJECTIONS && type === 'model') {
-    if (factory && typeof factory._onLookup === 'function') {
-      factory._onLookup(fullName);
-    }
-
-    // TODO: think about a 'safe' merge style extension
-    // for now just fallback to create time injection
-    cache[fullName] = factory;
-    return factory;
-  } else {
-    let injections = injectionsFor(container, fullName);
-    let factoryInjections = factoryInjectionsFor(container, fullName);
-    let cacheable = !areInjectionsDynamic(injections) && !areInjectionsDynamic(factoryInjections);
-
-    factoryInjections[NAME_KEY] = registry.makeToString(factory, fullName);
-    injections._debugContainerKey = fullName;
-    setOwner(injections, container.owner);
-
-    let injectedFactory = factory.extend(injections);
-
-    injectedFactory.reopenClass(factoryInjections);
-
-    if (factory && typeof factory._onLookup === 'function') {
-      factory._onLookup(fullName);
-    }
-
-    if (cacheable) {
-      cache[fullName] = injectedFactory;
-    }
-
-    return injectedFactory;
-  }
-}
-
 function injectionsFor(container, fullName) {
   let registry = container.registry;
   let splitName = fullName.split(':');
@@ -411,74 +332,6 @@ function injectionsFor(container, fullName) {
   let injections = buildInjections(container, registry.getTypeInjections(type), registry.getInjections(fullName));
 
   return injections;
-}
-
-function instantiate(factory, props, container, fullName) {
-  let lazyInjections, validationCache;
-
-  props = props || {};
-
-  if (container.registry.getOption(fullName, 'instantiate') === false) {
-    return factory;
-  }
-
-  if (factory) {
-    if (typeof factory.create !== 'function') {
-      throw new Error(`Failed to create an instance of '${fullName}'. Most likely an improperly defined class or` + ` an invalid module export.`);
-    }
-
-    validationCache = container.validationCache;
-
-    if (DEBUG) {
-      // Ensure that all lazy injections are valid at instantiation time
-      if (!validationCache[fullName] && typeof factory._lazyInjections === 'function') {
-        lazyInjections = factory._lazyInjections();
-        lazyInjections = container.registry.normalizeInjectionsHash(lazyInjections);
-
-        container.registry.validateInjections(lazyInjections);
-      }
-    }
-
-    validationCache[fullName] = true;
-
-    let obj;
-
-    if (typeof factory.extend === 'function') {
-      // assume the factory was extendable and is already injected
-      obj = factory.create(props);
-    } else {
-      // assume the factory was extendable
-      // to create time injections
-      // TODO: support new'ing for instantiation and merge injections for pure JS Functions
-      let injections = injectionsFor(container, fullName);
-      injections._debugContainerKey = fullName;
-
-      // Ensure that a container is available to an object during instantiation.
-      // TODO - remove when Ember reaches v3.0.0
-      // This "fake" container will be replaced after instantiation with a
-      // property that raises deprecations every time it is accessed.
-      injections.container = container._fakeContainerToInject;
-      obj = factory.create(assign({}, injections, props));
-
-      // TODO - remove when Ember reaches v3.0.0
-      if (!Object.isFrozen(obj)) {
-        injectDeprecatedContainer(obj, container);
-      }
-    }
-
-    return obj;
-  }
-}
-
-function factoryInjectionsFor(container, fullName) {
-  let registry = container.registry;
-  let splitName = fullName.split(':');
-  let type = splitName[0];
-
-  let factoryInjections = buildInjections(container, registry.getFactoryTypeInjections(type), registry.getFactoryInjections(fullName));
-  factoryInjections._debugContainerKey = fullName;
-
-  return factoryInjections;
 }
 
 function destroyDestroyables(container) {
@@ -503,7 +356,7 @@ function resetCache(container) {
 function resetMember(container, fullName) {
   let member = container.cache[fullName];
 
-  delete container.factoryCache[fullName];
+  delete container.factoryManagerCache[fullName];
 
   if (member) {
     delete container.cache[fullName];
@@ -511,18 +364,6 @@ function resetMember(container, fullName) {
     if (member.destroy) {
       member.destroy();
     }
-  }
-}
-
-class DeprecatedFactoryManager {
-  constructor(container, factory, fullName) {
-    this.container = container;
-    this.class = factory;
-    this.fullName = fullName;
-  }
-
-  create(props = {}) {
-    return instantiate(this.class, props, this.container, this.fullName);
   }
 }
 
