@@ -159,12 +159,10 @@ if (!EmberDev.runningProdBuild) {
         foo: inject.controller('bar')
       });
 
+      owner.register('controller:bar', EmberObject.extend());
       owner.register('foo:main', AnObject);
 
-      expectDeprecation(() => {
-        owner._lookupFactory('foo:main');
-      }, /Using "_lookupFactory" is deprecated. Please use container.factoryFor instead./);
-
+      owner.lookup('foo:main');
     }, /Defining an injected controller property on a non-controller is not allowed./);
   });
 }

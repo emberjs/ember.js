@@ -32,11 +32,11 @@ if (!EmberDev.runningProdBuild) {
     });
 
     owner.register('foo:main', AnObject);
+    owner.register('foo:bar', EmberObject.extend());
+    owner.register('foo:baz', EmberObject.extend());
 
-    expect(2);
-    expectDeprecation(() => {
-      owner._lookupFactory('foo:main');
-    }, /Using "_lookupFactory" is deprecated. Please use container.factoryFor instead./);
+    expect(1);
+    owner.lookup('foo:main');
   });
 
   QUnit.test('attempting to inject a nonexistent container key should error', function() {

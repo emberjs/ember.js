@@ -166,6 +166,10 @@ Container.prototype = {
       return;
     }
 
+    if (DEBUG && factory && typeof factory._onLookup === 'function') {
+      factory._onLookup(fullName);
+    }
+
     let manager = new FactoryManager(this, factory, fullName, normalizedName);
 
     if (DEBUG) {
