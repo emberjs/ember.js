@@ -552,46 +552,6 @@ QUnit.test('An object with its owner pre-set should be returned from ownerInject
   equal(result[OWNER], owner, 'owner is properly included');
 });
 
-QUnit.test('A deprecated `container` property is appended to every object instantiated from an extendable factory', function() {
-  let owner = { };
-  let registry = new Registry();
-  let container = owner.__container__ = registry.container({ owner });
-  let PostController = factory();
-  registry.register('controller:post', PostController);
-  let postController = container.lookup('controller:post');
-
-  expectDeprecation(() => {
-    get(postController, 'container');
-  }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
-
-  expectDeprecation(() => {
-    let c = postController.container;
-    strictEqual(c, container);
-  }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
-});
-
-QUnit.test('An extendable factory can provide `container` upon create, with a deprecation', function(assert) {
-  let registry = new Registry();
-  let container = registry.container();
-
-  registry.register('controller:post', factory());
-
-  let PostController = lookupFactory('controller:post', container);
-
-  let postController;
-
-  expectDeprecation(() => {
-    postController = PostController.create({
-      container: 'foo'
-    });
-  }, /Providing the \`container\` property to .+ is deprecated. Please use \`Ember.setOwner\` or \`owner.ownerInjection\(\)\` instead to provide an owner to the instance being created/);
-
-  expectDeprecation(() => {
-    let c = postController.container;
-    assert.equal(c, 'foo', 'the `container` provided to `.create`was used');
-  }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
-});
-
 QUnit.test('lookupFactory passes options through to expandlocallookup', function(assert) {
   let registry = new Registry();
   let container = registry.container();
