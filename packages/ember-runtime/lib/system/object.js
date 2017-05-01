@@ -36,12 +36,6 @@ const EmberObject = CoreObject.extend(Observable, {
       let { factory } = meta;
 
       return factory && factory.fullName;
-    },
-
-    // we need a setter here largely to support the legacy
-    // `owner._lookupFactory` and its double extend
-    set(value) {
-      this[OVERRIDE_CONTAINER_KEY] = value;
     }
   }),
 
@@ -58,8 +52,8 @@ const EmberObject = CoreObject.extend(Observable, {
       return factory && factory.owner;
     },
 
-    // we need a setter here largely to support the legacy
-    // `owner._lookupFactory` and its double extend
+    // we need a setter here largely to support
+    // folks calling `owner.ownerInjection()` API
     set(value) {
       this[OVERRIDE_OWNER] = value;
     }
