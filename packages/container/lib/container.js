@@ -137,7 +137,7 @@ Container.prototype = {
    @param {String} fullName optional key to reset; if missing, resets everything
    */
   reset(fullName) {
-    if (arguments.length > 0) {
+    if (fullName) {
       resetMember(this, this.registry.normalize(fullName));
     } else {
       resetCache(this);
@@ -174,7 +174,7 @@ Container.prototype = {
 
     if (options.source) {
       normalizedName = this.registry.expandLocalLookup(fullName, options);
-      // if expandLocalLookup returns falsey, we do not support local lookup
+      // if expandLocalLookup returns falsy, we do not support local lookup
       if (!normalizedName) {
         return;
       }
@@ -315,16 +315,15 @@ function areInjectionsDynamic(injections) {
 
 function buildInjections() /* container, ...injections */{
   let hash = {};
+  let len = arguments.length;
 
-  if (arguments.length > 1) {
+  if (len > 1) {
     let container = arguments[0];
     let injections = [];
     let injection;
 
-    for (let i = 1; i < arguments.length; i++) {
-      if (arguments[i]) {
-        injections = injections.concat(arguments[i]);
-      }
+    for (let i = 1; i < len; i++) {
+      injections.push(...arguments[i]);
     }
 
     if (DEBUG) {
@@ -353,7 +352,7 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
 
   if (options.source) {
     fullName = registry.expandLocalLookup(fullName, options);
-    // if expandLocalLookup returns falsey, we do not support local lookup
+    // if expandLocalLookup returns falsy, we do not support local lookup
     if (!fullName) {
       return;
     }
@@ -405,18 +404,15 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
 
 function injectionsFor(container, fullName) {
   let registry = container.registry;
-  let splitName = fullName.split(':');
-  let type = splitName[0];
+  let type = fullName.split(':')[0];
 
   let injections = buildInjections(container, registry.getTypeInjections(type), registry.getInjections(fullName));
 
   return injections;
 }
 
-function instantiate(factory, props, container, fullName) {
+function instantiate(factory, props = {}, container, fullName) {
   let lazyInjections, validationCache;
-
-  props = props || {};
 
   if (container.registry.getOption(fullName, 'instantiate') === false) {
     return factory;
@@ -472,8 +468,7 @@ function instantiate(factory, props, container, fullName) {
 
 function factoryInjectionsFor(container, fullName) {
   let registry = container.registry;
-  let splitName = fullName.split(':');
-  let type = splitName[0];
+  let type = fullName.split(':')[0];
 
   let factoryInjections = buildInjections(container, registry.getFactoryTypeInjections(type), registry.getFactoryInjections(fullName));
   factoryInjections._debugContainerKey = fullName;
