@@ -492,27 +492,6 @@ BootOptions.prototype.toEnvironment = function() {
   return env;
 };
 
-Object.defineProperty(ApplicationInstance.prototype, 'container', {
-  configurable: true,
-  enumerable: false,
-  get() {
-    let instance = this;
-    return {
-      lookup() {
-        deprecate(
-          'Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
-          false, {
-            id: 'ember-application.app-instance-container',
-            until: '2.13.0',
-            url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-applicationinstance-container'
-          }
-        );
-        return instance.lookup(...arguments);
-      }
-    };
-  }
-});
-
 Object.defineProperty(ApplicationInstance.prototype, 'registry', {
   configurable: true,
   enumerable: false,
