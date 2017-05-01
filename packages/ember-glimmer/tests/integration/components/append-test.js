@@ -640,38 +640,3 @@ moduleFor('appendTo: with multiple components', class extends AbstractAppendTest
     return jQuery('#qunit-fixture')[0];
   }
 });
-
-moduleFor('renderToElement: no arguments (defaults to a body context)', class extends AbstractAppendTest {
-
-  append(component) {
-    expectDeprecation(/Using the `renderToElement` is deprecated in favor of `appendTo`. Called in/);
-    let wrapper;
-
-    this.runTask(() => wrapper = component.renderToElement());
-    this.didAppend(component);
-
-    this.assert.equal(wrapper.tagName, 'BODY', 'wrapper is a body element');
-    this.assert.notEqual(wrapper, document.body, 'wrapper is not document.body');
-    this.assert.ok(!wrapper.parentNode, 'wrapper is detached');
-
-    return wrapper;
-  }
-
-});
-
-moduleFor('renderToElement: a div', class extends AbstractAppendTest {
-
-  append(component) {
-    expectDeprecation(/Using the `renderToElement` is deprecated in favor of `appendTo`. Called in/);
-    let wrapper;
-
-    this.runTask(() => wrapper = component.renderToElement('div'));
-    this.didAppend(component);
-
-    this.assert.equal(wrapper.tagName, 'DIV', 'wrapper is a body element');
-    this.assert.ok(!wrapper.parentNode, 'wrapper is detached');
-
-    return wrapper;
-  }
-
-});
