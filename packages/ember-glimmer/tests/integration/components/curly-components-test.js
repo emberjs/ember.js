@@ -2873,14 +2873,14 @@ moduleFor('Components test: curly components', class extends RenderingTest {
           this.didInit = true;
         },
 
-        didInitAttrs({ attrs }) {
+        didInitAttrs() {
           assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
-          this.set('fooCopy', attrs.foo.value + 1);
+          this.set('fooCopy', this.attrs.foo.value + 1);
         },
 
-        didReceiveAttrs({ newAttrs }) {
+        didReceiveAttrs() {
           assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
-          this.set('barCopy', newAttrs.bar.value + 1);
+          this.set('barCopy', this.attrs.bar.value + 1);
         },
 
         fooCopyDidChange: observer('fooCopy', () => { fooCopyDidChangeCount++; }),
@@ -2924,40 +2924,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
-  }
-
-  ['@test can access didReceiveAttrs arguments [DEPRECATED]'](assert) {
-    expectDeprecation(/didReceiveAttrs.*stop taking arguments/);
-
-    this.registerComponent('foo-bar', {
-      ComponentClass: Component.extend({
-        didReceiveAttrs({ attrs }) {
-          assert.equal(1, attrs.foo.value, 'expected attrs to have correct value')
-        }
-      }),
-
-      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
-    });
-
-    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
-  }
-
-  ['@test can access didUpdateAttrs arguments [DEPRECATED]'](assert) {
-    expectDeprecation(/didUpdateAttrs.*stop taking arguments/);
-
-    this.registerComponent('foo-bar', {
-      ComponentClass: Component.extend({
-        didUpdateAttrs({ newAttrs }) {
-          assert.equal(5, newAttrs.foo.value, "expected newAttrs to have new value");
-        }
-      }),
-
-      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
-    });
-
-    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
-
-    this.runTask(() => set(this.context, 'foo', 5));
   }
 
   ['@test overriding didUpdateAttrs does not trigger deprecation'](assert) {

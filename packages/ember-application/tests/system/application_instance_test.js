@@ -36,7 +36,7 @@ QUnit.test('an application instance can be created based upon an application', f
 });
 
 QUnit.test('properties (and aliases) are correctly assigned for accessing the container and registry', function() {
-  expect(9);
+  expect(6);
 
   appInstance = run(() => ApplicationInstance.create({ application }));
 
@@ -44,17 +44,10 @@ QUnit.test('properties (and aliases) are correctly assigned for accessing the co
   ok(appInstance.__container__, '#__container__ is accessible');
   ok(appInstance.__registry__, '#__registry__ is accessible');
 
-  ok(typeof appInstance.container.lookup === 'function', '#container.lookup is available as a function');
-
   // stub with a no-op to keep deprecation test simple
   appInstance.__container__.lookup = function() {
     ok(true, '#loookup alias is called correctly');
   };
-
-  expectDeprecation(() => {
-    appInstance.container.lookup();
-  }, /Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead./);
-
 
   ok(typeof appInstance.registry.register === 'function', '#registry.register is available as a function');
   appInstance.__registry__.register = function() {
