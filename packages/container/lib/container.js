@@ -361,15 +361,16 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
   }
 
   let cache = container.factoryCache;
-  if (cache[fullName]) {
-    return cache[fullName];
+  let cached = cache[fullName];
+  if (cached) {
+    return cached;
   }
   let factory = registry.resolve(fullName);
   if (factory === undefined) {
     return;
   }
 
-  let type = fullName.split(':')[0];
+  let [type] = fullName.split(':');
   if (!factory || typeof factory.extend !== 'function' || !ENV.MODEL_FACTORY_INJECTIONS && type === 'model') {
     if (factory && typeof factory._onLookup === 'function') {
       factory._onLookup(fullName);
@@ -408,18 +409,15 @@ function deprecatedFactoryFor(container, fullName, options = {}) {
 
 function injectionsFor(container, fullName) {
   let registry = container.registry;
-  let splitName = fullName.split(':');
-  let type = splitName[0];
+  let [type] = fullName.split(':');
 
   let injections = buildInjections(container, registry.getTypeInjections(type), registry.getInjections(fullName));
 
   return injections;
 }
 
-function instantiate(factory, props, container, fullName) {
+function instantiate(factory, props = {}, container, fullName) {
   let lazyInjections, validationCache;
-
-  props = props || {};
 
   if (container.registry.getOption(fullName, 'instantiate') === false) {
     return factory;
@@ -475,8 +473,7 @@ function instantiate(factory, props, container, fullName) {
 
 function factoryInjectionsFor(container, fullName) {
   let registry = container.registry;
-  let splitName = fullName.split(':');
-  let type = splitName[0];
+  let [type] = fullName.split(':');
 
   let factoryInjections = buildInjections(container, registry.getFactoryTypeInjections(type), registry.getFactoryInjections(fullName));
   factoryInjections._debugContainerKey = fullName;
@@ -572,7 +569,7 @@ class DeprecatedFactoryManager {
     this.fullName = fullName;
   }
 
-  create(props = {}) {
+  create(props) {
     return instantiate(this.class, props, this.container, this.fullName);
   }
 }
