@@ -382,7 +382,7 @@ mixinProperties(Binding, {
   could do:
 
   ```
-  bigTitlesBinding: Ember.Binding.oneWay("MyApp.preferencesController.bigTitles")
+  bigTitlesBinding: Ember.computed.oneWay("MyApp.preferencesController.bigTitles")
   ```
 
   This way if the value of `MyApp.preferencesController.bigTitles` changes the
