@@ -261,25 +261,6 @@ module.exports = function(options) {
       bootstrapModule('ember')
     ]);
 
-    // Note:
-    // We have to build custom production template compiler
-    // because we strip babel helpers in the prod build
-    let prodTemplateCompiler = new MergeTrees(templateCompiler(babelProdHelpersES5));
-
-    prodTemplateCompiler = stripForProd(prodTemplateCompiler)
-
-    prodTemplateCompiler = new MergeTrees([
-      nodeModule,
-      prodTemplateCompiler,
-      version,
-      license,
-      loader
-    ]);
-
-    prodTemplateCompiler = concat(prodTemplateCompiler, {
-      outputFile: 'ember-template-compiler.js'
-    });
-
     let emberProdTestsBundle = new MergeTrees([
       ...emberProdTestES5,
       tokenizer,
@@ -305,22 +286,22 @@ module.exports = function(options) {
 
     let emberMinBundle = minify(emberProdBundle, 'ember.min');
 
-    trees.push(emberRuntimeBundle, emberProdBundle, emberMinBundle, emberProdTestsBundle, prodTemplateCompiler);
-  } else {
-    let emberTemplateCompilerBundle = new MergeTrees([
-      ...templateCompiler(babelDebugHelpersES5),
-        version,
-        license,
-        loader,
-        nodeModule
-    ]);
-
-    emberTemplateCompilerBundle = concat(emberTemplateCompilerBundle, {
-      outputFile: 'ember-template-compiler.js'
-    });
-
-    trees.push(emberTemplateCompilerBundle);
+    trees.push(emberRuntimeBundle, emberProdBundle, emberMinBundle, emberProdTestsBundle);
   }
+
+  let emberTemplateCompilerBundle = new MergeTrees([
+    ...templateCompiler(babelDebugHelpersES5),
+    version,
+    license,
+    loader,
+    nodeModule
+  ]);
+
+  emberTemplateCompilerBundle = concat(emberTemplateCompilerBundle, {
+    outputFile: 'ember-template-compiler.js'
+  });
+
+  trees.push(emberTemplateCompilerBundle);
 
   return new MergeTrees([
     ...trees,
