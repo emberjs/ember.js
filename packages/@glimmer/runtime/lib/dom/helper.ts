@@ -46,7 +46,7 @@ export function isWhitespace(string: string) {
 
 export function moveNodesBefore(source: Simple.Node, target: Simple.Element, nextSibling: Simple.Node) {
   let first = source.firstChild;
-  let last = null;
+  let last: Option<Simple.Node> = null;
   let current = first;
   while (current) {
     last = current;
@@ -76,7 +76,7 @@ export namespace DOM {
     }
 
     createElement(tag: string, context?: Element): Element {
-      let isElementInSVGNamespace, isHTMLIntegrationPoint;
+      let isElementInSVGNamespace: boolean, isHTMLIntegrationPoint: boolean;
 
       if (context) {
         isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
@@ -172,7 +172,7 @@ export class DOMChanges {
   }
 
   createElement(tag: string, context?: Simple.Element): Simple.Element {
-    let isElementInSVGNamespace, isHTMLIntegrationPoint;
+    let isElementInSVGNamespace: boolean, isHTMLIntegrationPoint: boolean;
 
     if (context) {
       isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
@@ -236,7 +236,7 @@ export function insertHTMLBefore(this: void, _useless: Simple.HTMLElement, _pare
   let nextSibling = _nextSibling as Node;
 
   let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
-  let last;
+  let last: Node;
 
   if (html === null || html === '') {
     return new ConcreteBounds(parent, null, null);

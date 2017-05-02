@@ -105,7 +105,7 @@ export default class Scanner {
   scanEntryPoint(meta: CompilationMeta): Program {
     let { block, env } = this;
 
-    let statements;
+    let statements: WireFormat.Statement[];
     if (block.prelude && block.head) {
       statements = block.prelude.concat(block.head).concat(block.statements);
     } else {
@@ -118,7 +118,7 @@ export default class Scanner {
   scanBlock(meta: CompilationMeta): Block {
     let { block, env } = this;
 
-    let statements;
+    let statements: WireFormat.Statement[];
     if (block.prelude && block.head) {
       statements = block.prelude.concat(block.head).concat(block.statements);
     } else {
@@ -189,7 +189,7 @@ export namespace ClientSide {
   export type FunctionExpressionCallback<T> = (VM: PublicVM, symbolTable: SymbolTable) => VersionedPathReference<T>;
 
   export type ClientSideStatement =
-    | OpenComponentElement
+    OpenComponentElement
     | DidCreateElement
     | DidRenderLayout
     | OptimizedAppend
@@ -198,9 +198,7 @@ export namespace ClientSide {
     | DynamicPartial
     ;
 
-  export type ClientSideExpression =
-    | FunctionExpression
-    ;
+  export type ClientSideExpression = FunctionExpression;
 }
 
 const { Ops } = WireFormat;
