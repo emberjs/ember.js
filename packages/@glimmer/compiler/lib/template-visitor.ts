@@ -223,7 +223,7 @@ export default class TemplateVisitor {
       program['symbols'] = parentFrame.symbols!.child(program.blockParams);
     }
 
-    let startType, endType;
+    let startType: string, endType: string;
 
     if (this.programDepth === 0) {
       startType = 'startProgram';

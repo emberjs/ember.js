@@ -188,7 +188,7 @@ export class Assert extends UpdatingOpcode {
   toJSON(): OpcodeJSON {
     let { type, _guid, cache } = this;
 
-    let expected;
+    let expected: string;
 
     try {
       expected = JSON.stringify(cache.peek());

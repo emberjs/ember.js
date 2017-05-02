@@ -96,7 +96,7 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
   let set = _desc.set;
 
   if (set && set.length > 1) {
-    originalSet = function(this: any, value) {
+    originalSet = function(this: any, value: any) {
       return (set as any).call(this, accessorName, value);
     };
   } else {

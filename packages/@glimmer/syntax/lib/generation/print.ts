@@ -82,7 +82,7 @@ export default function build(ast: HBS.Node): string {
       output.push(ast.value ? 'true' : 'false');
     break;
     case 'BlockStatement': {
-      const lines = [];
+      const lines: string[] = [];
 
       if(ast['chained']){
         lines.push(['{{else ', pathParams(ast), '}}'].join(''));
