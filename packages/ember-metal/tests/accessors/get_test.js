@@ -142,11 +142,13 @@ QUnit.test('should get arbitrary properties on an object', function() {
   }
 
   obj = {
-    undef: undefined
+    undef: undefined,
+    nullValue: null
   };
 
   equal(getWithDefault(obj, 'undef', 'default'), 'default', 'explicit undefined retrieves the default');
   equal(getWithDefault(obj, 'not-present', 'default'), 'default', 'non-present key retrieves the default');
+  equal(getWithDefault(obj, 'nullValue', 'default'), 'default', 'explicit null retrieves the default');
 });
 
 QUnit.test('should call unknownProperty if defined and value is undefined', function() {
