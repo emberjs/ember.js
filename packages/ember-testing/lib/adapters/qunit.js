@@ -11,11 +11,19 @@ import Adapter from './adapter';
   @public
 */
 export default Adapter.extend({
+  done: [],
   asyncStart() {
-    QUnit.stop();
+    this.done.push(QUnit.config.current.assert.async());
   },
   asyncEnd() {
-    QUnit.start();
+    let current = QUnit.config.current;
+    this.done.pop()();
+
+    // If we're done with async and the user hasn't invoked async manually,
+    // then set usedAsync to false so that assertions can still happen
+    if (this.done.length === 0 && current.semaphore === 0) {
+      current.usedAsync = false;
+    }
   },
   exception(error) {
     ok(false, inspect(error));

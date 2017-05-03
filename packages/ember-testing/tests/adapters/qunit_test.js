@@ -12,28 +12,18 @@ QUnit.module('ember-testing QUnitAdapter', {
   }
 });
 
-QUnit.test('asyncStart calls stop', function() {
-  var originalStop = QUnit.stop;
-  try {
-    QUnit.stop = function() {
-      ok(true, 'stop called');
-    };
-    adapter.asyncStart();
-  } finally {
-    QUnit.stop = originalStop;
-  }
+QUnit.test('can still do assertions after asyncEnd', function() {
+  adapter.asyncStart();
+  adapter.asyncEnd();
+  ok(true);
 });
 
-QUnit.test('asyncEnd calls start', function() {
-  var originalStart = QUnit.start;
-  try {
-    QUnit.start = function() {
-      ok(true, 'start called');
-    };
+QUnit.test('asyncStart waits for asyncEnd to finish a test', function() {
+  adapter.asyncStart();
+  setTimeout(function() {
+    ok(true);
     adapter.asyncEnd();
-  } finally {
-    QUnit.start = originalStart;
-  }
+  }, 50);
 });
 
 QUnit.test('exception causes a failing assertion', function() {
