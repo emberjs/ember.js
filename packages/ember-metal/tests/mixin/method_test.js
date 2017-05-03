@@ -209,3 +209,31 @@ QUnit.test('applying several mixins at once with sup already defined causes infi
   obj.foo();
   equal(cnt, 3, 'should invoke all 3 methods');
 });
+
+test('_super disappears when called asynchronously', function() {
+  // our assertions are asynchronous
+  expect(0);
+
+  var hasRun = false;
+
+  var Base = Ember.Mixin.create({
+    foo: function() {
+      hasRun = true;
+    }
+  });
+
+  var Sub = Ember.Mixin.create({
+    foo: function() {
+      var self = this;
+      setTimeout(function() {
+        ok(self._super, 'should have a _super method');
+      });
+    }
+  });
+
+  var obj = {};
+  Ember.mixin(obj, Base);
+  Ember.mixin(obj, Sub);
+
+  obj.foo();
+});
