@@ -19,6 +19,14 @@ module.exports = {
       aliases: [
         { 'no-path': '' }
       ]
+    },
+    {
+      name: 'positional-parameters',
+      type: Boolean,
+      default: false,
+      aliases: [
+        { 'p': true }
+      ]
     }
   ],
 
@@ -70,7 +78,8 @@ module.exports = {
     return {
       importTemplate: importTemplate,
       contents: contents,
-      path: getPathOption(options)
+      path: getPathOption(options),
+      posParams: options.positionalParameters
     };
   }
 };
