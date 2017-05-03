@@ -435,6 +435,23 @@ QUnit.test('properties values can be replaced', function() {
   deepEqual(obj.get('a1bs').mapBy('name'), ['item1'], 'properties can be filtered by matching value');
 });
 
+QUnit.test('responds to change of property value on element', function() {
+  let a1 = { foo: true };
+  let a2 = { foo: true };
+
+  obj = EmberObject.extend({
+    a: filterBy('array', 'foo')
+  }).create({
+    array: [a1, a2]
+  });
+
+  deepEqual(obj.get('a'), [a1, a2], 'value is correct initially');
+
+  set(a1, 'foo', false);
+
+  deepEqual(obj.get('a'), [a2], 'responds to change of property on element');
+});
+
 [
   ['uniq', uniq],
   ['union', union]
