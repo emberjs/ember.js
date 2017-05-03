@@ -1430,7 +1430,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     A hook you can implement to optionally redirect to another route.
 
     If you call `this.transitionTo` from inside of this hook, this route
-    will not be entered in favor of the other hook.
+    will not be entered in favor of the other hook. In practical terms
+    this means that this route, and its parent routes, will *not*
+    complete their full lifecycle, and hooks such as `setupController`
+    will not be called. To transition at the end of the routes entire
+    lifecycle, call `transitionTo` in an `afterModel` hook.
 
     `redirect` and `afterModel` behave very similarly and are
     called almost at the same time, but they have an important
