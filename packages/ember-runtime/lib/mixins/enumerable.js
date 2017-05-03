@@ -89,7 +89,7 @@ function iter(key, value) {
   @class Enumerable
   @namespace Ember
   @since Ember 0.9
-  @private
+  @public
 */
 const Enumerable = Mixin.create({
 
