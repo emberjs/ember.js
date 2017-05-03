@@ -480,7 +480,11 @@ CoreObject.PrototypeMixin = Mixin.create({
   },
 
   /**
-    Override to implement teardown.
+    Override to implement teardown. Will be called asynchronously.
+    This is scheduled for execution by the `destroy` method.
+
+    If you want to cancel a scheduled item with `Ember.run.cancel`, you should
+    do it in `destroy` to avoid race condition.
 
     @method willDestroy
     @public
