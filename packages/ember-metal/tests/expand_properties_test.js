@@ -81,7 +81,8 @@ QUnit.test('Nested brace expansions are not allowed', function() {
     'a.{{b}.c}',
     'a.{b,c}.{d.{e,f}.g',
     'a.{b.{c}',
-    'a.{b,c}}'
+    'a.{b,c}}',
+    'model.{bar,baz'
   ];
 
   nestedBraceProperties.forEach((invalidProperties) => {
