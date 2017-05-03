@@ -1921,6 +1921,25 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     });
     ```
 
+    If the PostsRoute is a resource, it is important to keep in mind
+    that this would only work for the PostsRoute, and not for the
+    PostsIndexRoute. The posts/index.hbs has no children routes, and
+    thus there is no `{{outlet}}` for the posts/index template.
+    Here of an example that **would not** work:
+
+    ```javascript
+    App.PostsIndexRoute = Ember.Route.extend({
+      renderTemplate: function(controller, model) {
+        this.render('posts/index', { controller: 'posts/index' } );
+
+        this.render('favoritePost', {
+          into: 'posts/index',
+          outlet: 'favorite-post',
+        });
+      }
+    });
+    ```
+
     @method renderTemplate
     @param {Object} controller the route's controller
     @param {Object} model the route's model
