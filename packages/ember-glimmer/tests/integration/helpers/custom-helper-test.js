@@ -28,6 +28,20 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('hello | hello world');
   }
 
+  ['@test local variables take precedence over custom helpers']() {
+    this.registerHelper('app-name', () => 'helper resolved :(');
+
+    this.render('{{app-name}}', {
+      appName: 'I won!'
+    });
+
+    this.assertText('I won!');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('I won!');
+  }
+
   ['@test it does not resolve helpers with a `.` (period)']() {
     this.registerHelper('hello.world', () => 'hello world');
 
