@@ -81,6 +81,8 @@ const EmberRouter = EmberObject.extend(Evented, {
     @public
   */
   location: 'hash',
+  
+  rootURL: '/',
 
   /**
    Represents the URL of the root of the application, often '/'. This prefix is
