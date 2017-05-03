@@ -27,6 +27,7 @@ test/tmp
 test/version_tmp
 test_*.html
 /tests/ember-tests.js
+tests/source
 tmp
 tmp*.gem
 tmp.bpm
