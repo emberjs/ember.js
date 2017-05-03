@@ -758,6 +758,49 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
 
   /**
+    The `queryParamsDidChange` action is triggered every time a query
+    parameter is changed.
+   
+    ```js
+    App.ApplicationRoute = Ember.Route.extend({
+      model: function(params) {
+        return $.get('/data', {sortBy: params.sortBy});
+      },
+      actions: {
+        queryParamsDidChange: function(changed, totalPresent, removed) {
+          // This is how we opt-in to
+          // a full-on transition that'll
+          // refire the `model` hook and 
+          // give us a chance to reload data
+          // from the server.
+          this.refresh();
+        }
+      }
+    });
+
+    App.ApplicationController = Ember.ArrayController.extend({
+      queryParams: ['sortBy'],
+      sortBy: 'firstName'
+    });
+    ```
+
+    @event queryParamsDidChange
+    @param {Object} changed An object containing all of the queryParams that have changed.
+    @param {Object} totalPresent An object containing all of the queryParams that are currently active.
+    @param {Object} removed An object that contians all of the queryParams that have been removed from the url.
+    @since 1.7.0
+  */
+
+  /**
+    @private
+    @event finalizeQueryParamChange
+    @param {Object} params
+    @param {Array} finalParams
+    @param {Transition} transition
+    @since 1.7.0
+  */
+
+  /**
     The controller associated with this route.
 
     Example
