@@ -4,16 +4,7 @@ import { get } from 'ember-metal';
 import { Registry } from '..';
 import { factory } from 'internal-test-helpers';
 
-let originalModelInjections;
-
-QUnit.module('Container', {
-  setup() {
-    originalModelInjections = ENV.MODEL_FACTORY_INJECTIONS;
-  },
-  teardown() {
-    ENV.MODEL_FACTORY_INJECTIONS = originalModelInjections;
-  }
-});
+QUnit.module('Container');
 
 QUnit.test('A registered factory returns the same instance each time', function() {
   let registry = new Registry();
@@ -166,8 +157,6 @@ QUnit.test('An invalid factory throws an error', function() {
 });
 
 QUnit.test('Injecting a failed lookup raises an error', function() {
-  ENV.MODEL_FACTORY_INJECTIONS = true;
-
   let registry = new Registry();
   let container = registry.container();
 
