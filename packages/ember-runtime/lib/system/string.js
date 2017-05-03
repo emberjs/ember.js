@@ -117,6 +117,14 @@ function capitalize(str) {
 }
 
 /**
+  Allow to join strings from differents packages or 'strings.js'
+  files into one.
+*/
+Ember.stringsFor = function(strings) {
+  Ember.mixin(Ember.STRINGS, strings);
+};
+
+/**
   Defines string helper methods including string formatting and localization.
   Unless `EmberENV.EXTEND_PROTOTYPES.String` is `false` these methods will also be
   added to the `String.prototype` as well.
