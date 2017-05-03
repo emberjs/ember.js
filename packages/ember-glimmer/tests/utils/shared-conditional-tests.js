@@ -781,6 +781,51 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.assertText('F-outer');
   }
 
+  ['@test can add and remove children']() {
+    let template = this.wrappedTemplateFor({ cond: 'outer', truthy: '{{#each inner as |text|}}{{text}}{{/each}}', falsy: 'F-outer' });
+
+    this.render(template, { outer: this.truthyValue, inner: emberA() });
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    // Add a child
+    this.runTask(() => this.context.inner.pushObject('inner-after'));
+
+    this.assertText('inner-after');
+
+    // Add another child
+    this.runTask(() => this.context.inner.pushObject('-foo'));
+
+    this.assertText('inner-after-foo');
+
+    // Remove second child
+    this.runTask(() => this.context.inner.removeObject('-foo'));
+
+    this.assertText('inner-after');
+
+    // Now rerender the outer conditional, which require first clearing its bounds
+    this.runTask(() => set(this.context, 'outer', this.falsyValue));
+
+    this.assertText('F-outer');
+
+    // Reset
+    this.runTask(() => {
+      set(this.context, 'inner', emberA());
+      set(this.context, 'outer', this.truthyValue);
+    });
+
+    this.assertText('');
+
+    // Now rerender the outer conditional, which require first clearing its bounds
+    this.runTask(() => set(this.context, 'outer', this.falsyValue));
+
+    this.assertText('F-outer');
+  }
+
   ['@test it updates correctly when enclosing triple-curlies']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
     let template = this.wrappedTemplateFor({ cond: 'outer', truthy: '{{{inner}}}', falsy: 'F-outer' });
