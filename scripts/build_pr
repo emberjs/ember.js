@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# This script automates the process of adding a new remote and
+# checking out a branch so you can test out other branches. Testing
+# PR's is the primary use case. But you can also use this script to
+# merge in a couple of branches to create custom builds.
+
+# USAGE: $ build GITHUB_USERNAME BRANCH_NAME
+
+# Examples:
+#
+#   $ build_pr twinturbo radio-buttons
+
+if [ -z "$1" ]; then
+  echo "No repo passed!"
+  exit 1
+fi
+
+if [ -z "$2" ]; then
+  echo "No branch passed!"
+  exit 1
+fi
+
+github_user=$1
+branch_name="testing-$2"
+
+git_path="git://github.com/$github_user/ember.js.git"
+
+if git remote | grep -Fq "$github_user" ; then
+  echo "$github_user's repo already added as a remote"
+else
+  echo "Adding new remote: $github_user"
+
+  git remote add "$github_user" "$git_path"
+fi
+
+if ! git ls-remote "$github_user" ; then
+  echo "Could not connect to remote repo for $github_user!"
+  exit 1
+fi
+
+# So building always pulls in the most up to date branches
+git fetch "$github_user"
+
+if git branch --list "$branch_name" ; then
+  echo "$branch_name already exists. Deleting to ensure a clean build"
+  git branch -D "$branch_name"
+fi
+
+# Switch to master, then make a new branch from that. This is the
+# testing branch to merge to PR into
+
+git checkout master
+git checkout -b "$branch_name"
+
+git merge "$github_user/$2"
+
+if [ $? -ne 0 ]; then
+  echo "Merge failed. Aborting. Resolve merge conflicts then run: rake dist"
+  exit 1
+fi
+
+rake dist
