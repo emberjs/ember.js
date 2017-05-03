@@ -1196,7 +1196,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [BUGFIX] Do not deprecate the block form of {{render}}.
 * [BUGFIX] allow enumerable/any to match undefined as value
 * [BUGFIX] Allow canceling of Timers in IE8.
-* [BUGFIX] Calling toString at extend time causes Ember.View to memoize and return the same value for different instances.
+* [BUGFIX] Calling toString at extend time causes Ember.View to memorize and return the same value for different instances.
 * [BUGFIX] Fix ember-testing-lazy-routing.
 * [BUGFIX] Fixed how parentController property of an itemController when nested. Breaking for apps that rely on previous broken behavior of an itemController's `parentController` property skipping its ArrayController when nested.
 * Document the send method on Ember.ActionHandler.
