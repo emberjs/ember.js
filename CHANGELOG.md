@@ -763,7 +763,7 @@
 - [#11141](https://github.com/emberjs/ember.js/pull/11141) Implement angle-bracket components.
 
 ### 1.12.0 (May 13, 2015)
-
+prorerty
 - [#10874](https://github.com/emberjs/ember.js/pull/10874) Include all files in jspm package.
 - [#10876](https://github.com/emberjs/ember.js/pull/10876) [BUGFIX] Make the `{{component}}` helper deal with dynamically set falsey values.
 - [#10883](https://github.com/emberjs/ember.js/pull/10883) [BUGFIX] Fix `View.prototype.replaceIn` functionality.
