@@ -3825,3 +3825,116 @@ QUnit.test('App.destroy does not leave undestroyed views after clearing engines'
   run(App, 'destroy');
   equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
 });
+
+QUnit.test("Can render complex nested named outlets", function() {
+  Ember.TEMPLATES.application = compile("Application {{outlet}}");
+  Ember.TEMPLATES.section = compile("Section {{outlet}}");
+  Ember.TEMPLATES['section/subsection'] = compile("Subsection {{outlet 'sub1'}} {{outlet 'sub2'}}");
+  Ember.TEMPLATES['section/subsection/sub1'] = compile("Sub1 {{#each record in model}}<p>{{record.name}}</p>{{/each}} {{outlet 'dialog'}}");
+  Ember.TEMPLATES['section/subsection/sub2'] = compile("Sub2 {{#each record in model}}<p>{{record.name}}</p>{{/each}} {{outlet 'dialog'}}");
+  Ember.TEMPLATES['section/subsection/sub1/edit'] = compile("Edit Sub1");
+  Ember.TEMPLATES['section/subsection/sub2/edit'] = compile("Edit Sub2");
+
+  Router.map(function() {
+    this.route('section', function() {
+      this.route('subsection', function() {
+        this.route('sub1', function() {
+          this.route('edit', { path: '/:id/edit' });
+        });
+        this.route('sub2', function() {
+          this.route('edit', { path: '/:id/edit' });
+        });
+      });
+    });
+  });
+
+  App.SectionSubsectionView = Ember.View.extend({
+    classNames: ['section-subsection']
+  });
+
+  App.SectionSubsectionSub1View = Ember.View.extend({
+    classNames: ['section-subsection-sub1']
+  });
+
+  App.SectionSubsectionSub1EditView = Ember.View.extend({
+    classNames: ['section-subsection-sub1-edit']
+  });
+
+  App.SectionSubsectionSub2View = Ember.View.extend({
+    classNames: ['section-subsection-sub2']
+  });
+
+  App.SectionSubsectionSub2EditView = Ember.View.extend({
+    classNames: ['section-subsection-sub2-edit']
+  });
+
+  App.SectionSubsectionRoute = Ember.Route.extend({
+    renderTemplate() {
+      this.render();
+
+      this.render('section/subsection/sub1', {
+        into: 'section/subsection',
+        outlet: 'sub1',
+        controller: this.controllerFor('section.subsection.sub1')
+      });
+
+      this.render('section/subsection/sub2', {
+        into: 'section/subsection',
+        outlet: 'sub2',
+        controller: this.controllerFor('section.subsection.sub2')
+      });
+    }
+  });
+
+  App.SectionSubsectionSub1EditRoute = Ember.Route.extend({
+    renderTemplate() {
+      this.render('section/subsection/sub1/edit', {
+        into: 'section/subsection/sub1',
+        outlet: 'dialog'
+      });
+    }
+  });
+
+  App.SectionSubsectionSub2EditRoute = Ember.Route.extend({
+    renderTemplate() {
+      this.render('section/subsection/sub2/edit', {
+        into: 'section/subsection/sub2',
+        outlet: 'dialog'
+      });
+    }
+  });
+
+  App.SectionSubsectionSub1Controller = Ember.Controller.extend({
+    model: Ember.A([
+      { id: 1, name: 'Sub1 Model 1' },
+      { id: 2, name: 'Sub1 Model 2' }
+    ])
+  });
+
+  App.SectionSubsectionSub2Controller = Ember.Controller.extend({
+    model: Ember.A([
+      { id: 1, name: 'Sub2 Model 1' },
+      { id: 2, name: 'Sub2 Model 2' }
+    ])
+  });
+
+  bootApplication();
+
+  handleURL('/section/subsection');
+  equal(Ember.$('div.section-subsection-sub1 p:contains(Sub1)', '#qunit-fixture').length, 2, "The section/subsect/sub1 template was rendered");
+  equal(Ember.$('div.section-subsection-sub2 p:contains(Sub2)', '#qunit-fixture').length, 2, "The section/subsect/sub2 template was rendered");
+
+  handleURL('/section/subsection/sub1/1/edit');
+  equal(Ember.$('div.section-subsection-sub1-edit:contains(Edit Sub1)', '#qunit-fixture').length, 1, "The section/subsect/sub1/1/edit template was rendered");
+
+  handleURL('/section/subsection');
+  equal(Ember.$('div.section-subsection-sub1 p:contains(Sub1)', '#qunit-fixture').length, 2, "The section/subsect/sub1 template was rendered");
+  equal(Ember.$('div.section-subsection-sub2 p:contains(Sub2)', '#qunit-fixture').length, 2, "The section/subsect/sub2 template was rendered");
+
+  handleURL('/section/subsection/sub1/2/edit');
+  equal(Ember.$('div.section-subsection-sub2-edit:contains(Edit Sub2)', '#qunit-fixture').length, 1, "The section/subsect/sub1/2/edit template was rendered");
+
+  handleURL('/section/subsection');
+  equal(Ember.$('div.section-subsection-sub1 p:contains(Sub1)', '#qunit-fixture').length, 2, "The section/subsect/sub1 template was rendered");
+  equal(Ember.$('div.section-subsection-sub2 p:contains(Sub2)', '#qunit-fixture').length, 2, "The section/subsect/sub2 template was rendered");
+});
