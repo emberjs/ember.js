@@ -38,3 +38,18 @@ QUnit.test('allows reopening already instantiated classes', function() {
 
   equal(Subclass.create().get('trololol'), true, 'reopen works');
 });
+
+test('reopen adds properties to classes of already created instances', function() {
+  var klass = Ember.Object.extend();
+
+  var object = klass.create();
+
+  klass.reopen({
+    added: true
+  });
+
+  // works fine if you uncomment this line
+  //var somethingElse = klass.create();
+
+  equal(object.get('added'), true, "reopen works");
+});
