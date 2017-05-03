@@ -102,6 +102,53 @@ import { getHash } from './util';
   in the actual URL. This is generally used for testing purposes, and is one
   of the changes made when calling `App.setupForTesting()`.
 
+  ## Extending Implementations
+
+  Ember scans the path `app/locations/*` for extending the Location API.
+
+  Example:
+
+  ```app/locations/hashbang.js
+	#Creates URLs prefixed with #!
+	import Ember from 'ember';
+
+	var get = Ember.get, set = Ember.set;
+
+	export default Ember.HashLocation.extend({
+
+	    getURL: function() {
+	        return get(this, 'location').hash.substr(2);
+	    },
+
+	    setURL: function(path) {
+	        get(this, 'location').hash = "!"+path;
+	        set(this, 'lastSetURL', "!"+path);
+	    },
+
+	    onUpdateURL: function(callback) {
+	        var self = this;
+	        var guid = Ember.guidFor(this);
+
+	            Ember.$(window).bind('hashchange.ember-location-'+guid, function() {
+	                Ember.run(function() {
+	                    var path = location.hash.substr(2);
+	                    if (get(self, 'lastSetURL') === path) { return; }
+
+	                    set(self, 'lastSetURL', null);
+
+	                    callback(location.hash.substr(2));
+	                });
+	            });
+	        },
+
+	    formatURL: function(url) {
+	        return '#!'+url;
+	    }
+
+	});
+  ```
+
+
   ## Location API
 
   Each location implementation must provide the following methods:
