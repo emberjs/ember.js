@@ -80,7 +80,7 @@ export default EmberObject.extend(MutableArray, {
     @type Ember.Array
     @private
   */
-  content: null,
+  content: Ember.A(),
 
   /**
    The array that the proxy pretends to be. In the default `ArrayProxy`
