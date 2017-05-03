@@ -5,11 +5,6 @@ import Copyable from './mixins/copyable';
 function _copy(obj, deep, seen, copies) {
   let ret, loc, key;
 
-  // primitive data types are immutable, just return them.
-  if (typeof obj !== 'object' || obj === null) {
-    return obj;
-  }
-
   // avoid cyclical loops
   if (deep && (loc = seen.indexOf(obj)) >= 0) {
     return copies[loc];
