@@ -127,7 +127,7 @@ const Enumerable = Mixin.create({
       `nextObject`.
     @param {Object} context a context object you can use to maintain state.
     @return {Object} the next object in the iteration or undefined
-    @private
+    @public
   */
   nextObject: null,
 
