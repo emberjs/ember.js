@@ -11,6 +11,12 @@ const ALLOWABLE_TYPES = {
   string: true
 };
 
+function canCallUnknownProperty(obj, key) {
+  return 'object' === typeof obj &&
+         !(key in obj) &&
+         'function' === typeof obj.unknownProperty;
+}
+
 // ..........................................................
 // GET AND SET
 //
@@ -56,23 +62,23 @@ export function get(obj, keyName) {
 
   let value = obj[keyName];
   let desc = (value !== null && typeof value === 'object' && value.isDescriptor) ? value : undefined;
-  let ret;
 
   if (desc === undefined && isPath(keyName)) {
-    return _getPath(obj, keyName);
+    if (canCallUnknownProperty(obj, keyName)) {
+      return obj.unknownProperty(keyName);
+    } else {
+      return _getPath(obj, keyName);
+    }
   }
 
   if (desc) {
     return desc.get(obj, keyName);
   } else {
-    ret = value;
-
-    if (ret === undefined &&
-        'object' === typeof obj && !(keyName in obj) && 'function' === typeof obj.unknownProperty) {
+    if (value === undefined && canCallUnknownProperty(obj, keyName)) {
       return obj.unknownProperty(keyName);
+    } else {
+      return value;
     }
-
-    return ret;
   }
 }
 

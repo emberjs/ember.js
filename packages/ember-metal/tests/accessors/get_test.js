@@ -163,6 +163,16 @@ QUnit.test('should call unknownProperty if defined and value is undefined', func
   equal(obj.count, 1, 'should have invoked');
 });
 
+QUnit.test('should call unknownProperty with original key', function() {
+  let obj = {
+    unknownProperty(key) {
+      return key;
+    }
+  };
+
+  equal(get(obj, 'foo.bar'), 'foo.bar');
+});
+
 testBoth('if unknownProperty is present, it is called', function(get, set) {
   let obj = {
     count: 0,
