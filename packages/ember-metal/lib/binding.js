@@ -486,11 +486,17 @@ mixinProperties(Binding, {
   Global helper method to create a new binding. Just pass the root object
   along with a `to` and `from` path to create and connect the binding.
 
+  ```javascript
+  Ember.run.bind(thisContext, functionToCall);
+  ```
+
   @method bind
   @for Ember
-  @param {Object} obj The root object of the transform.
+  @param {Object} obj The root object of the transform. Also known
+    as the `thisContext`.
   @param {String} to The path to the 'to' side of the binding.
     Must be relative to obj.
+  @param {Function} to The function to execute within the `thisContext`.
   @param {String} from The path to the 'from' side of the binding.
     Must be relative to obj or a global path.
   @return {Ember.Binding} binding instance
