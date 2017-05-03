@@ -6,16 +6,7 @@ import { factory } from 'internal-test-helpers';
 import { isFeatureEnabled } from 'ember-debug';
 import { LOOKUP_FACTORY, FACTORY_FOR } from 'container';
 
-let originalModelInjections;
-
-QUnit.module('Container', {
-  setup() {
-    originalModelInjections = ENV.MODEL_FACTORY_INJECTIONS;
-  },
-  teardown() {
-    ENV.MODEL_FACTORY_INJECTIONS = originalModelInjections;
-  }
-});
+QUnit.module('Container');
 
 function lookupFactory(name, container, options) {
   return container[LOOKUP_FACTORY](name, options);
@@ -244,8 +235,6 @@ QUnit.test('An invalid factory throws an error', function() {
 });
 
 QUnit.test('Injecting a failed lookup raises an error', function() {
-  ENV.MODEL_FACTORY_INJECTIONS = true;
-
   let registry = new Registry();
   let container = registry.container();
 

@@ -388,7 +388,6 @@ export default EmberObject.extend({
         if (!namespace.hasOwnProperty(key)) { continue; }
         // Even though we will filter again in `getModelTypes`,
         // we should not call `lookupFactory` on non-models
-        // (especially when `EmberENV.MODEL_FACTORY_INJECTIONS` is `true`)
         if (!this.detect(namespace[key])) { continue; }
         let name = StringUtils.dasherize(key);
         if (!(namespace instanceof Application) && namespace.toString()) {

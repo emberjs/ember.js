@@ -176,10 +176,22 @@ Object.defineProperty(Ember, 'LOG_VERSION', {
   enumerable: false
 });
 
-Object.defineProperty(Ember, 'MODEL_FACTORY_INJECTIONS', {
-  get()      { return ENV.MODEL_FACTORY_INJECTIONS;    },
-  set(value) { ENV.MODEL_FACTORY_INJECTIONS = !!value;  },
-  enumerable: false
+runInDebug(function() {
+  Object.defineProperty(Ember, 'MODEL_FACTORY_INJECTIONS', {
+    get()      { return false; },
+    set(value) {
+      deprecate(
+        'Ember.MODEL_FACTORY_INJECTIONS is no longer required',
+        false,
+        {
+          id: 'ember-metal.model_factory_injections',
+          until: '2.17.0',
+          url: 'http://emberjs.com/deprecations/v2.x#toc_code-ember-model-factory-injections'
+        }
+      );
+    },
+    enumerable: false
+  });
 });
 
 Object.defineProperty(Ember, 'LOG_BINDINGS', {

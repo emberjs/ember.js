@@ -241,11 +241,6 @@ export default Mixin.create({
     directly (via `create` or `new`) bypasses the dependency injection
     system.
 
-    **Note:** Ember-Data instantiates its models in a unique manner, and consequently
-    injections onto models (or all models) will not work as expected. Injections
-    on models can be enabled by setting `EmberENV.MODEL_FACTORY_INJECTIONS`
-    to `true`.
-
     @public
     @method inject
     @param  factoryNameOrType {String}
