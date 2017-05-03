@@ -1,0 +1,36 @@
+{
+  "name": "sproutcore-routes",
+  "summary": "SproutCore Routes",
+  "description": "Browser location management for Sproutcore",
+
+  "homepage": "http://sproutcore.com",
+  "author": "Charles Jolley",
+  "version": "2.0.beta.2",
+
+  "directories": {
+    "lib": "lib"
+  },
+
+  "dependencies": {
+    "spade":            "~> 1.0",
+    "sproutcore-metal": "2.0.beta.2"
+  },
+
+  "dependencies:development": {
+    "spade-qunit": "~> 1.0.0"
+  },
+  
+  "bpm:build": {
+    
+    "bpm_libs.js": {
+      "directories": ["lib"],
+      "modes":        "*"
+    },
+    
+    "sproutcore-routes/bpm_tests.js": {
+      "directories": ["tests"],
+      "modes": ["debug"]
+    }
+  }
+
+}
