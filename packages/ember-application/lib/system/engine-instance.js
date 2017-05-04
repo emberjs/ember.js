@@ -130,14 +130,6 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   },
 
   /**
-    @private
-  */
-  willDestroy() {
-    this._super(...arguments);
-    run(this.__container__, 'destroy');
-  },
-
-  /**
     Build a new `Ember.EngineInstance` that's a child of this instance.
 
     Engines must be registered by name with their parent engine
