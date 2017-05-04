@@ -69,7 +69,7 @@ function refineBlockSyntax(sexp, builder) {
   return false;
 }
 
-let experimentalMacros = [];
+export const experimentalMacros = [];
 
 // This is a private API to allow for expiremental macros
 // to be created in user space. Registering a macro should
@@ -95,8 +95,6 @@ export function populateMacros(blocks, inlines) {
     let macro = experimentalMacros[i];
     macro(blocks, inlines);
   }
-
-  experimentalMacros = [];
 
   return { blocks, inlines };
 }
