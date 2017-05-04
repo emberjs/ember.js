@@ -226,3 +226,4 @@ export {
 } from './template_registry';
 export { setupEngineRegistry, setupApplicationRegistry } from './setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './dom';
+export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './syntax';
