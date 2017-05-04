@@ -142,17 +142,23 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
   let cache = meta && meta.readableCache();
 
   if (cache) {
+    let length = get(array, 'length') + removeAmt - addAmt;
     if (cache.firstObject !== undefined &&
-        objectAt(array, 0) !== cacheFor.get(cache, 'firstObject')) {
+        ((startIdx === 0 && (addAmt > 0 || removeAmt > 0)) ||
+        (startIdx <= -length && (addAmt > 0 || removeAmt > 0)))) {
       propertyWillChange(array, 'firstObject');
       propertyDidChange(array, 'firstObject');
     }
+
     if (cache.lastObject !== undefined &&
-        objectAt(array, get(array, 'length') - 1) !== cacheFor.get(cache, 'lastObject')) {
+        ((startIdx >= length && addAmt > 0) ||
+        (startIdx >= 0 && (startIdx + removeAmt >= length)) ||
+        (startIdx < 0 && (removeAmt >= -startIdx)))) {
       propertyWillChange(array, 'lastObject');
       propertyDidChange(array, 'lastObject');
     }
   }
+
   return array;
 }
 

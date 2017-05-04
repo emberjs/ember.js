@@ -135,10 +135,21 @@ suite.test('[A,B,C].insertAt(1,X) => [A,X,B,C] + notify', function() {
   let after  = [before[0], item, before[1], before[2]];
   let obj = this.newObject(before);
   let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  let objectAtCalls = [];
+
+  let objectAt = obj.objectAt;
+  obj.objectAt = (ix) => {
+    objectAtCalls.push(ix);
+    return objectAt.call(obj, ix);
+  }
 
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
+  objectAtCalls.splice(0, objectAtCalls.length);
+
   obj.insertAt(1, item);
+
+  deepEqual(objectAtCalls, [], 'objectAt is not called when only inserting items');
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(get(obj, 'length'), after.length, 'length');
