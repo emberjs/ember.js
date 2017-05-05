@@ -144,13 +144,13 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
   if (cache) {
     if (cache.firstObject !== undefined &&
         objectAt(array, 0) !== cacheFor.get(cache, 'firstObject')) {
-      propertyWillChange(array, 'firstObject');
-      propertyDidChange(array, 'firstObject');
+      propertyWillChange(array, 'firstObject', meta);
+      propertyDidChange(array, 'firstObject', meta);
     }
     if (cache.lastObject !== undefined &&
         objectAt(array, get(array, 'length') - 1) !== cacheFor.get(cache, 'lastObject')) {
-      propertyWillChange(array, 'lastObject');
-      propertyDidChange(array, 'lastObject');
+      propertyWillChange(array, 'lastObject', meta);
+      propertyDidChange(array, 'lastObject', meta);
     }
   }
   return array;
@@ -653,22 +653,26 @@ EachProxy.prototype = {
   arrayWillChange(content, idx, removedCnt, addedCnt) {
     let keys = this._keys;
     let lim = removedCnt > 0 ? idx + removedCnt : -1;
+    let meta;
     for (let key in keys) {
+      meta = meta || peakMeta(this);
       if (lim > 0) {
         removeObserverForContentKey(content, key, this, idx, lim);
       }
-      propertyWillChange(this, key);
+      propertyWillChange(this, key, meta);
     }
   },
 
   arrayDidChange(content, idx, removedCnt, addedCnt) {
     let keys = this._keys;
     let lim = addedCnt > 0 ? idx + addedCnt : -1;
+    let meta;
     for (let key in keys) {
+      meta = meta || peakMeta(this);
       if (lim > 0) {
         addObserverForContentKey(content, key, this, idx, lim);
       }
-      propertyDidChange(this, key);
+      propertyDidChange(this, key, meta);
     }
   },
 
