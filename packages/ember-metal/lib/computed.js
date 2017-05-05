@@ -412,7 +412,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     return ret;
   }
 
-  propertyWillChange(obj, keyName);
+  propertyWillChange(obj, keyName, meta);
 
   if (hadCachedValue) {
     cache[keyName] = undefined;
@@ -428,7 +428,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     cache[keyName] = ret;
   }
 
-  propertyDidChange(obj, keyName);
+  propertyDidChange(obj, keyName, meta);
 
   return ret;
 };
