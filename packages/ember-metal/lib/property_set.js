@@ -65,7 +65,7 @@ export function set(obj, keyName, value, tolerant) {
   } else if (currentValue === value) { /* no change */
     return value;
   } else {
-    propertyWillChange(obj, keyName);
+    propertyWillChange(obj, keyName, meta);
 
     if (MANDATORY_SETTER) {
       setWithMandatorySetter(meta, obj, keyName, value);
@@ -73,7 +73,7 @@ export function set(obj, keyName, value, tolerant) {
       obj[keyName] = value;
     }
 
-    propertyDidChange(obj, keyName);
+    propertyDidChange(obj, keyName, meta);
   }
 
   return value;
