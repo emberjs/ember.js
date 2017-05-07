@@ -1,4 +1,4 @@
-import { assert } from './debug';
+import { assert, warn } from './debug';
 
 /**
 @module ember
@@ -62,6 +62,30 @@ export default function expandProperties(pattern, callback) {
 
       return true;
     })(pattern));
+
+  warn(
+    `You used the key "${pattern}" which is invalid and is not longer expanding on Ember 2.13.`,
+    ((str) => {
+      let inBrace = 0;
+      let char;
+      for (let i = 0; i < str.length; i++) {
+        char = str.charAt(i);
+
+        if (char === '{') {
+          inBrace++;
+        } else if (char === '}') {
+          inBrace--;
+        } else if (char === ',' && inBrace === 0) {
+          return false;
+        }
+
+        if (inBrace > 1 || inBrace < 0) {
+          return false;
+        }
+      }
+
+      return inBrace === 0;
+    })(pattern), { id: 'ember-metal.invalid-expand-properties' });
 
   let parts = pattern.split(SPLIT_REGEX);
   let properties = [parts];
