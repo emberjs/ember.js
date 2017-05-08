@@ -64,8 +64,7 @@ export default function expandProperties(pattern, callback) {
     })(pattern));
 
   warn(
-    `You used the key "${pattern}" which is invalid and is not longer expanding on Ember 2.13.`,
-    ((str) => {
+    ...((str, opts) => {
       let inBrace = 0;
       let char;
       for (let i = 0; i < str.length; i++) {
@@ -76,16 +75,28 @@ export default function expandProperties(pattern, callback) {
         } else if (char === '}') {
           inBrace--;
         } else if (char === ',' && inBrace === 0) {
-          return false;
+          return [
+            `You are using a comma outside braces in ${str} that was unintentionally being expanded. This property will no longer expand on Ember 2.13.`,
+            false,
+            opts
+          ];
         }
 
         if (inBrace > 1 || inBrace < 0) {
-          return false;
+          return [
+            `You have nested or unbalanced properties in ${str} that was unintentionally being expanded. This property will no longer expand on Ember 2.13.`,
+            false,
+            opts
+          ];
         }
       }
 
-      return inBrace === 0;
-    })(pattern), { id: 'ember-metal.invalid-expand-properties' });
+      return [
+        `The property ${str} ended with unbalanced braces. This property will no longer expand on Ember 2.13.`,
+        inBrace === 0,
+        opts
+      ];
+    })(pattern, { id: 'ember-metal.invalid-expand-properties' }));
 
   let parts = pattern.split(SPLIT_REGEX);
   let properties = [parts];

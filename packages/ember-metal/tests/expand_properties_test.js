@@ -107,7 +107,7 @@ QUnit.test('unbalanced braces are warned', function() {
   invalidBraceProperties.forEach((invalidProperties) =>
     expectWarning(() => {
       expandProperties(invalidProperties, addProperty)
-    }, / which is invalid and is not longer expanding on Ember 2\.13\./)
+    }, / no longer expand on Ember 2\.13\./)
   );
 });
 
