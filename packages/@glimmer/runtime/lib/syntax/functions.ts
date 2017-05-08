@@ -7,6 +7,7 @@ import { DynamicInvoker } from '../compiled/opcodes/vm';
 import { VM, PublicVM } from '../vm';
 import { IArguments } from '../vm/arguments';
 import { Register } from '../opcodes';
+import { IsComponentDefinitionReference } from '../compiled/opcodes/content';
 import { ATTRS_BLOCK, Block, ClientSide, RawInlineBlock } from '../scanner';
 
 import {
@@ -139,14 +140,14 @@ STATEMENTS.add(Ops.Append, (sexp: S.Append, builder: OpcodeBuilder) => {
 
   if (trusting) {
     if (hasGet) {
-      builder.guardedTrustingAppend(value)
+      builder.guardedAppend(value, true);
     } else {
       expr(value, builder);
       builder.trustingAppend();
     }
   } else {
     if (hasGet) {
-      builder.guardedCautiousAppend(value);
+      builder.guardedAppend(value, false);
     } else {
       expr(value, builder);
       builder.cautiousAppend();

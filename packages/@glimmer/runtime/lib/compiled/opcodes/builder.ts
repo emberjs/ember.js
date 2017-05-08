@@ -22,6 +22,8 @@ import { ComponentBuilder } from '../../compiler';
 import { RawInlineBlock, ClientSide, Block } from '../../scanner';
 import { InvokeDynamicLayout, expr } from '../../syntax/functions';
 
+import { IsComponentDefinitionReference } from '../opcodes/content';
+
 import { Op } from '../../opcodes';
 
 export interface CompilesInto<E> {
@@ -558,6 +560,53 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     } else {
       return expr;
     }
+  }
+
+  guardedAppend(expression: WireFormat.Expression, trusting: boolean) {
+
+    this.startLabels();
+
+    this.pushFrame();
+
+    this.returnTo('END');
+
+    expr(expression, this);
+
+    this.dup();
+
+    this.test((reference) => {
+      return IsComponentDefinitionReference.create(reference);
+    });
+
+    this.enter(2);
+
+    this.jumpUnless('ELSE');
+
+    this.pushDynamicComponentManager();
+
+    this.invokeComponent(null, null, null, null, null);
+
+    this.exit();
+
+    this.return();
+
+    this.label('ELSE');
+
+    if (trusting) {
+      this.trustingAppend();
+    } else {
+      this.cautiousAppend();
+    }
+
+    this.exit();
+
+    this.return();
+
+    this.label('END');
+
+    this.popFrame();
+
+    this.stopLabels();
   }
 
   guardedCautiousAppend(expression: WireFormat.Expression) {
