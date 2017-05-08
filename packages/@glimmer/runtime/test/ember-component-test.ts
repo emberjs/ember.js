@@ -1946,7 +1946,7 @@ QUnit.test('component helper can handle higher order block components without ar
   assertText('Hello World! Test');
 });
 
-QUnit.todo('component deopt can handle aliased inline components without args', assert => {
+QUnit.test('component deopt can handle aliased inline components without args', assert => {
   env.registerEmberishCurlyComponent('foo-bar', null, 'Hello');
 
   appendViewFor(

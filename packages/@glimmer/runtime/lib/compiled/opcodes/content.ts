@@ -25,6 +25,7 @@ import { APPEND_OPCODES, Op } from '../../opcodes';
 
 APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: append }) => {
   let opcode = vm.constants.getOther(append) as AppendDynamicOpcode<Insertion>;
+  debugger;
   opcode.evaluate(vm);
 });
 
@@ -77,25 +78,30 @@ export abstract class AppendDynamicOpcode<T extends Insertion> {
 
   evaluate(vm: VM) {
     let reference = vm.stack.pop<VersionedPathReference<Opaque>>();
-    let normalized = this.normalize(reference);
 
-    let value, cache;
+    if (isComponentDefinition(reference.value())) {
 
-    if (isConst(reference)) {
-      value = normalized.value();
     } else {
-      cache = new ReferenceCache(normalized);
-      value = cache.peek();
-    }
+      let normalized = this.normalize(reference);
 
-    let stack = vm.elements();
-    let upsert = this.insert(vm.env.getAppendOperations(), stack, value);
-    let bounds = new Fragment(upsert.bounds);
+      let value, cache;
 
-    stack.newBounds(bounds);
+      if (isConst(reference)) {
+        value = normalized.value();
+      } else {
+        cache = new ReferenceCache(normalized);
+        value = cache.peek();
+      }
 
-    if (cache /* i.e. !isConst(reference) */) {
-      vm.updateWith(this.updateWith(vm, reference, cache, bounds, upsert));
+      let stack = vm.elements();
+      let upsert = this.insert(vm.env.getAppendOperations(), stack, value);
+      let bounds = new Fragment(upsert.bounds);
+
+      stack.newBounds(bounds);
+
+      if (cache /* i.e. !isConst(reference) */) {
+        vm.updateWith(this.updateWith(vm, reference, cache, bounds, upsert));
+      }
     }
   }
 }
