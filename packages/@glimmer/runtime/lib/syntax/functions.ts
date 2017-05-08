@@ -135,12 +135,22 @@ STATEMENTS.add(Ops.Append, (sexp: S.Append, builder: OpcodeBuilder) => {
 
   if (returned === true) return;
 
-  expr(value, builder);
+  let hasGet = E.isGet(value as E.Get);
 
   if (trusting) {
-    builder.trustingAppend();
+    if (hasGet) {
+      builder.guardedTrustingAppend(value)
+    } else {
+      expr(value, builder);
+      builder.trustingAppend();
+    }
   } else {
-    builder.cautiousAppend();
+    if (hasGet) {
+      builder.guardedCautiousAppend(value);
+    } else {
+      expr(value, builder);
+      builder.cautiousAppend();
+    }
   }
 });
 
