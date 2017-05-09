@@ -153,6 +153,7 @@ module("[glimmer-runtime] Updating", hooks => {
     assert.strictEqual(root.firstChild.lastChild.firstChild, valueNode2, "The text node was not blown away");
 
     object.v1 = 'hello';
+
     rerender();
 
     equalTokens(root, '<div><p>hello</p><p></p></div>', "After updating and dirtying");
