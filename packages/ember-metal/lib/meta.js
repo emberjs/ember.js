@@ -224,7 +224,7 @@ export class Meta {
     let pointer = this;
     while (pointer !== undefined) {
       let map = pointer[key];
-      if (map) {
+      if (map !== undefined) {
         return map;
       }
       pointer = pointer.parent;
@@ -235,7 +235,7 @@ export class Meta {
     let pointer = this;
     while (pointer !== undefined) {
       let map = pointer[key];
-      if (map) {
+      if (map !== undefined) {
         let value = map[subkey];
         if (value !== undefined) {
           return value;
@@ -252,7 +252,7 @@ export class Meta {
 
     let outerMap = this._getOrCreateOwnMap('_deps');
     let innerMap = outerMap[subkey];
-    if (!innerMap) {
+    if (innerMap === undefined) {
       innerMap = outerMap[subkey] = Object.create(null);
     }
     innerMap[itemkey] = value;
@@ -262,9 +262,9 @@ export class Meta {
     let pointer = this;
     while (pointer !== undefined) {
       let map = pointer._deps;
-      if (map) {
+      if (map !== undefined) {
         let value = map[subkey];
-        if (value) {
+        if (value !== undefined) {
           let itemvalue = value[itemkey];
           if (itemvalue !== undefined) {
             return itemvalue;
@@ -278,7 +278,8 @@ export class Meta {
   hasDeps(subkey) {
     let pointer = this;
     while (pointer !== undefined) {
-      if (pointer._deps && pointer._deps[subkey]) {
+      let deps = pointer._deps;
+      if (deps !== undefined && deps[subkey] !== undefined) {
         return true;
       }
       pointer = pointer.parent;
@@ -296,12 +297,12 @@ export class Meta {
     let calls;
     while (pointer !== undefined) {
       let map = pointer[key];
-      if (map) {
+      if (map !== undefined) {
         let innerMap = map[subkey];
-        if (innerMap) {
+        if (innerMap !== undefined) {
           for (let innerKey in innerMap) {
             seen = seen || Object.create(null);
-            if (!seen[innerKey]) {
+            if (seen[innerKey] === undefined) {
               seen[innerKey] = true;
               calls = calls || [];
               calls.push([innerKey, innerMap[innerKey]]);
@@ -311,7 +312,7 @@ export class Meta {
       }
       pointer = pointer.parent;
     }
-    if (calls) {
+    if (calls !== undefined) {
       for (let i = 0; i < calls.length; i++) {
         let [innerKey, value] = calls[i];
         fn(innerKey, value);
@@ -326,7 +327,7 @@ export class Meta {
 
     while (pointer !== undefined) {
       let map = pointer[internalKey];
-      if (map) {
+      if (map !== undefined) {
         let value = map[subkey];
         if (value !== undefined || subkey in map) {
           return value;
@@ -340,7 +341,7 @@ export class Meta {
 
   writeValue(obj, key, value) {
     let descriptor = lookupDescriptor(obj, key);
-    let isMandatorySetter = descriptor && descriptor.set && descriptor.set.isMandatorySetter;
+    let isMandatorySetter = descriptor !== undefined&& descriptor.set && descriptor.set.isMandatorySetter;
 
     if (isMandatorySetter) {
       this.writeValues(key, value);
@@ -398,10 +399,10 @@ function inheritedMap(name, Meta) {
     let seen;
     while (pointer !== undefined) {
       let map = pointer[key];
-      if (map) {
+      if (map !== undefined) {
         for (let key in map) {
           seen = seen || Object.create(null);
-          if (!seen[key]) {
+          if (seen[key] === undefined) {
             seen[key] = true;
             fn(key, map[key]);
           }
@@ -437,7 +438,7 @@ function ownCustomObject(name, Meta) {
     assert(`Cannot call writable${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
 
     let ret = this[key];
-    if (!ret) {
+    if (ret === undefined) {
       ret = this[key] = create(this.source);
     }
     return ret;
@@ -457,7 +458,7 @@ function inheritedCustomObject(name, Meta) {
     assert(`Cannot call writable${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
 
     let ret = this[key];
-    if (!ret) {
+    if (ret === undefined) {
       if (this.parent) {
         ret = this[key] = this.parent[`writable${capitalized}`](create).copy(this.source);
       } else {
@@ -502,7 +503,7 @@ if (MANDATORY_SETTER) {
 
     while (pointer !== undefined) {
       let map = pointer[internalKey];
-      if (map) {
+      if (map !== undefined) {
         let value = map[subkey];
         if (value !== undefined || subkey in map) {
           return value;
@@ -516,7 +517,9 @@ if (MANDATORY_SETTER) {
 
   Meta.prototype.writeValue = function(obj, key, value) {
     let descriptor = lookupDescriptor(obj, key);
-    let isMandatorySetter = descriptor && descriptor.set && descriptor.set.isMandatorySetter;
+    let isMandatorySetter = descriptor !== undefined &&
+                            descriptor !== null &&
+                            descriptor.set && descriptor.set.isMandatorySetter;
 
     if (isMandatorySetter) {
       this.writeValues(key, value);
@@ -551,7 +554,7 @@ if (HAS_NATIVE_WEAKMAP) {
   peekMeta = function WeakMap_peekParentMeta(obj) {
     let pointer = obj;
     let meta;
-    while (pointer) {
+    while (pointer !== undefined && pointer !== null) {
       meta = metaStore.get(pointer);
       // jshint loopfunc:true
       if (DEBUG) {
@@ -560,7 +563,7 @@ if (HAS_NATIVE_WEAKMAP) {
       // stop if we find a `null` value, since
       // that means the meta was deleted
       // any other truthy value is a "real" meta
-      if (meta === null || meta) {
+      if (meta === null || meta !== undefined) {
         return meta;
       }
 
@@ -596,7 +599,7 @@ export function deleteMeta(obj) {
   }
 
   let meta = peekMeta(obj);
-  if (meta) {
+  if (meta !== undefined) {
     meta.destroy();
   }
 }
@@ -628,7 +631,7 @@ export function meta(obj) {
   let parent;
 
   // remove this code, in-favor of explicit parent
-  if (maybeMeta) {
+  if (maybeMeta !== undefined && maybeMeta !== null) {
     if (maybeMeta.source === obj) {
       return maybeMeta;
     }
