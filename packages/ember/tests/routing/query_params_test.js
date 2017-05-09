@@ -9,7 +9,7 @@ import {
   run,
   get,
   computed,
-  meta
+  peekMeta
 } from 'ember-metal';
 import { Route } from 'ember-routing';
 import { jQuery } from 'ember-views';
@@ -1143,8 +1143,8 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.add('route:other', Route.extend({
       model(p, trans) {
-        let m = meta(trans.params.application);
-        assert.ok(!m.peekWatching('woot'), 'A meta object isn\'t constructed for this params POJO');
+        let m = peekMeta(trans.params.application);
+        assert.ok(m === undefined, 'A meta object isn\'t constructed for this params POJO');
       }
     }));
 
