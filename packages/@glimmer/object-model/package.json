@@ -1,10 +1,10 @@
 {
   "name": "@glimmer/object-model",
-  "version": "0.23.0-alpha.12",
+  "version": "0.23.0-alpha.13",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/object-model",
   "dependencies": {
-    "@glimmer/util": "^0.23.0-alpha.12",
-    "@glimmer/reference": "^0.23.0-alpha.12"
+    "@glimmer/util": "^0.23.0-alpha.13",
+    "@glimmer/reference": "^0.23.0-alpha.13"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
