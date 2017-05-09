@@ -3400,7 +3400,7 @@ QUnit.test('it does not work on optimized appends', function(assert) {
   assertAppended('[object Object]');
 });
 
-QUnit.todo('it works on unoptimized appends (dot paths)', function(assert) {
+QUnit.test('it works on unoptimized appends (dot paths)', function(assert) {
   class FooBar extends EmberishCurlyComponent {}
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
@@ -3464,7 +3464,7 @@ QUnit.test('it works on unoptimized appends (this paths)', function(assert) {
   assertEmberishElement('div', {}, 'foo bar');
 });
 
-QUnit.todo('it works on unoptimized appends when initially not a component (dot paths)', function(assert) {
+QUnit.test('it works on unoptimized appends when initially not a component (dot paths)', function(assert) {
   class FooBar extends EmberishCurlyComponent {}
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');

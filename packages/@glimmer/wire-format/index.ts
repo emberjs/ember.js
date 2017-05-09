@@ -20,9 +20,9 @@ export type str = string;
 export type TemplateReference = Option<SerializedBlock>;
 export type YieldTo = number;
 
-export function is<T extends any[]>(variant: number): (value: any[]) => value is T {
-  return function(value: any[]): value is T {
-    return value[0] === variant;
+export function is<T>(variant: number): (value: any) => value is T {
+  return function(value: any): value is T {
+    return Array.isArray(value) && value[0] === variant;
   };
 }
 
@@ -89,6 +89,7 @@ export namespace Expressions {
   export const isHasBlockParams = is<HasBlockParams>(Opcodes.HasBlockParams);
   export const isUndefined      = is<Undefined>(Opcodes.Undefined);
   export const isClientSide     = is<ClientSide>(Opcodes.ClientSideExpression);
+  export const isMaybeLocal     = is<MaybeLocal>(Opcodes.MaybeLocal);
 
   export function isPrimitiveValue(value: any): value is Value {
     if (value === null) {

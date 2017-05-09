@@ -563,7 +563,6 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
   }
 
   guardedAppend(expression: WireFormat.Expression, trusting: boolean) {
-
     this.startLabels();
 
     this.pushFrame();

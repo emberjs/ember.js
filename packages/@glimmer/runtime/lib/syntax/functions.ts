@@ -136,17 +136,13 @@ STATEMENTS.add(Ops.Append, (sexp: S.Append, builder: OpcodeBuilder) => {
 
   if (returned === true) return;
 
-  let hasGet = E.isGet(value as E.Get);
+  let isGet = E.isGet(value);
+  let isMaybeLocal = E.isMaybeLocal(value);
 
   if (trusting) {
-    if (hasGet) {
-      builder.guardedAppend(value, true);
-    } else {
-      expr(value, builder);
-      builder.trustingAppend();
-    }
+    builder.guardedAppend(value, true);
   } else {
-    if (hasGet) {
+    if (isGet || isMaybeLocal) {
       builder.guardedAppend(value, false);
     } else {
       expr(value, builder);
