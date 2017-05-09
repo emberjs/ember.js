@@ -7,6 +7,7 @@ const Filter = require('broccoli-persistent-filter');
 const DAGMap = require('dag-map').default;
 const glob = require('glob');
 const path = require('path');
+const writeFile = require('broccoli-file-creator');
 const fs = require('fs');
 
 const TSCONFIG_PATH = `${__dirname}/../../build/tsconfig.json`;
@@ -76,7 +77,7 @@ function topsortPackages() {
  */
 function treeForPackage(packagePath) {
   let srcTrees = [
-    funnel(packagePath, { exclude: ['test/**/*'] }),
+    funnel(packagePath, { exclude: ['test/**/*'] })
   ];
 
   let packageTree;
@@ -98,7 +99,9 @@ function treeForPackage(packagePath) {
 
   let packageJSONTree = treeForPackageJSON(packagePath);
 
-  let tree = merge([packageTree, packageJSONTree]);
+  let license = writeFile('/LICENSE', fs.readFileSync('./LICENSE', 'utf8'));
+
+  let tree = merge([packageTree, packageJSONTree, license]);
 
   // Convert the package's absolute path to a relative path so it shows up in
   // the right place in `dist`.
@@ -111,7 +114,8 @@ const PACKAGE_JSON_FIELDS = {
   "main": "dist/commonjs/es5/index.js",
   "jsnext:main": "dist/modules/es5/index.js",
   "module": "dist/modules/es5/index.js",
-  "typings": "dist/types/index.d.ts"
+  "typings": "dist/types/index.d.ts",
+  "license": "MIT"
 };
 
 class PackageJSONRewriter extends Filter {

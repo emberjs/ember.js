@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "broccoli-concat": "^2.1.0",
+    "broccoli-file-creator": "^1.1.1",
     "broccoli-funnel": "^1.1.0",
     "broccoli-merge-trees": "^1.1.1",
     "broccoli-tslinter": "^2.0.0",
