@@ -40,55 +40,36 @@ export default function expandProperties(pattern, callback) {
     'Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"',
     pattern.indexOf(' ') === -1
   );
+  // regex to look for double open, double close, or unclosed braces
+  assert(
+    `Brace expanded properties have to be balanced and cannot be nested, pattern: ${pattern}`,
+    pattern.match( /\{[^}{]*\{|\}[^}{]*\}|\{[^}]*$/g ) === null
+  );
 
-  let unbalancedNestedError = `Brace expanded properties have to be balanced and cannot be nested, pattern: ${pattern}`;
-  let properties = [pattern];
+  let start = pattern.indexOf('{');
+  if (start < 0) {
+    callback( pattern.replace(END_WITH_EACH_REGEX, '.[]') );
+  } else {
+    dive('', pattern, start, callback);
+  }
+}
 
-  // Iterating backward over the pattern makes dealing with indices easier.
-  let bookmark;
-  let inside = false;
-  for (let i = pattern.length; i > 0; --i) {
-    let current = pattern[i - 1];
+function dive(prefix, pattern, start, callback) {
+  let end = pattern.indexOf('}'),
+      i = 0,
+      newStart,
+      arrayLength;
+  let tempArr = pattern.substring(start + 1, end).split(',');
+  let after = pattern.substring(end + 1);
+  prefix = prefix + pattern.substring(0, start);
 
-    switch (current) {
-      // Closing curly brace will be the first character of the brace expansion we encounter.
-      // Bookmark its index so long as we're not already inside a brace expansion.
-      case '}':
-        if (!inside) {
-          bookmark = i - 1;
-          inside = true;
-        } else {
-          assert(unbalancedNestedError, false);
-        }
-        break;
-      // Opening curly brace will be the last character of the brace expansion we encounter.
-      // Apply the brace expansion so long as we've already seen a closing curly brace.
-      case '{':
-        if (inside) {
-          let expansion = pattern.slice(i, bookmark).split(',');
-          // Iterating backward allows us to push new properties w/out affecting our "cursor".
-          for (let j = properties.length; j > 0; --j) {
-            // Extract the unexpanded property from the array.
-            let property = properties.splice(j - 1, 1)[0];
-            // Iterate over the expansion, pushing the newly formed properties onto the array.
-            for (let k = 0; k < expansion.length; ++k) {
-              properties.push(property.slice(0, i - 1) +
-                              expansion[k] +
-                              property.slice(bookmark + 1));
-            }
-          }
-          inside = false;
-        } else {
-          assert(unbalancedNestedError, false);
-        }
-        break;
+  arrayLength = tempArr.length;
+  while (i < arrayLength) {
+    newStart = after.indexOf('{');
+    if (newStart < 0) {
+      callback((prefix + tempArr[i++] + after).replace(END_WITH_EACH_REGEX, '.[]'));
+    } else {
+      dive(prefix + tempArr[i++], after, newStart, callback);
     }
-  }
-  if (inside) {
-    assert(unbalancedNestedError, false);
-  }
-
-  for (let i = 0; i < properties.length; i++) {
-    callback(properties[i].replace(END_WITH_EACH_REGEX, '.[]'));
   }
 }
