@@ -1457,3 +1457,56 @@ QUnit.test('GJ: {{link-to}} to a parent root model hook which performs a `transi
 
   shouldBeActive('#parent-link');
 });
+
+QUnit.module('The {{link-to}} helper materialization', {
+  setup: function() {
+    Ember.run(function() {
+      App = Ember.Application.create({
+        name: 'App',
+        rootElement: '#qunit-fixture'
+      });
+
+      App.deferReadiness();
+
+      Ember.TEMPLATES.application = compile('{{link-to "User" "user" user id="user-link"}}<span id="user-span">{{user.id}}</span>');
+
+      App.Router.map(function() {
+        this.route('user', { path: '/user/:user_id' });
+      });
+
+      App.PromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
+
+      App.ApplicationController = Ember.Controller.extend({
+        user: Ember.computed(function() {
+          var properties = {
+            id: '123'
+          };
+          var deferred = Ember.RSVP.defer();
+          var promiseProxy = App.PromiseProxy.create({
+            promise: deferred.promise
+          });
+
+          Ember.run.later(function() {
+            deferred.resolve(properties);
+          }, 0);
+
+          return promiseProxy;
+        })
+      });
+
+    });
+
+    Ember.run(App, 'advanceReadiness');
+  },
+
+  teardown: sharedTeardown
+});
+
+QUnit.test('link-to should handle materialized model properly', function() {
+  QUnit.stop();
+  Ember.run.later(function() {
+    equal(Ember.$('#user-span').text(), '123');
+    equal(Ember.$('#user-link').prop('href').split('#')[1], '/users/123');
+    QUnit.start();
+  }, 20);
+});
