@@ -6,6 +6,18 @@
   <link rel="stylesheet" href="assets/qunit.css">
 </head>
 <body>
+  <script>
+    if (typeof console === "undefined") {
+      console = {
+        log: function(){},
+        warn: function(){},
+        error: function(){},
+        group: function(){},
+        groupEnd: function(){},
+      }
+    }
+  </script>
+
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
   <script src="assets/qunit.js"></script>
