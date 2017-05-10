@@ -1671,6 +1671,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     in order to populate the URL.
 
     @method serialize
+    @deprecated See http://emberjs.com/deprecations/v2.x#toc_route-serialize
     @param {Object} model the routes model
     @param {Array} params an Array of parameter names for the current
       route (in the example, `['post_id']`.

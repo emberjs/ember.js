@@ -1355,6 +1355,9 @@ EmberRouter.reopenClass({
         `resetNamespace: true` will cause the route not to inherit from its
         parent route's names. This is handy for preventing extremely long route names.
         Keep in mind that the actual URL path behavior is still retained.
+      * `serialize`: a function to serialize a route's model into the dynamic
+        segments of the route's path. Returns an object with property keys that
+        map to dynamic segment values.
 
     The third parameter is a function, which can be used to nest routes.
     Nested routes, by default, will have the parent route tree's route name and
