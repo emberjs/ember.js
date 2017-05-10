@@ -1,2 +1,5 @@
+
 export const DEBUG = true;
-export const CI = false;
+
+// TODO this is hacky but requires unifying the build
+export const CI = !!window['Testem'];
