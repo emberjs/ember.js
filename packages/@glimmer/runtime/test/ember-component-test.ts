@@ -2241,7 +2241,7 @@ testComponent('shadowing: outer attributes clobber inner attributes with concat'
 
 module("Glimmer Component");
 
-QUnit.todo(`Modifiers cannot be on the top-level element`, function() {
+QUnit.skip(`Modifiers cannot be on the top-level element`, function() {
   env.registerModifier('foo', new TestModifierManager());
   env.registerEmberishGlimmerComponent('non-block', null, `<div {{foo bar}}>Should error</div>`);
   assert.throws(() => {
@@ -2259,7 +2259,7 @@ let styles = [{
 },*/ {
   name: 'a web component',
   tagName: 'not-an-ember-component',
-  test: QUnit.todo
+  test: QUnit.skip
 }];
 
 styles.forEach(style => {
