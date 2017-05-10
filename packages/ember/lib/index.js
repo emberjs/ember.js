@@ -35,7 +35,6 @@ Ember.Registry = Registry;
 // flag plugin works properly
 import * as EmberDebug from 'ember-debug';
 import { deprecate, deprecateFunc } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
 
 const computed = metal.computed;
 computed.alias = metal.alias;
@@ -46,12 +45,6 @@ Ember.cacheFor = metal.cacheFor;
 Ember.assert = EmberDebug.assert;
 Ember.warn = EmberDebug.warn;
 Ember.debug = EmberDebug.debug;
-Ember.deprecate = function () { };
-Ember.deprecateFunc = function() { };
-if (DEBUG) {
-  Ember.deprecate = EmberDebug.deprecate;
-  Ember.deprecateFunc = EmberDebug.deprecateFunc;
-}
 Ember.deprecateFunc = EmberDebug.deprecateFunc;
 Ember.runInDebug = EmberDebug.runInDebug;
 /**
