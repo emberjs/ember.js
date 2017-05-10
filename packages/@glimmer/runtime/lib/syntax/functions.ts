@@ -7,7 +7,6 @@ import { DynamicInvoker } from '../compiled/opcodes/vm';
 import { VM, PublicVM } from '../vm';
 import { IArguments } from '../vm/arguments';
 import { Register } from '../opcodes';
-import { IsComponentDefinitionReference } from '../compiled/opcodes/content';
 import { ATTRS_BLOCK, Block, ClientSide, RawInlineBlock } from '../scanner';
 
 import {
