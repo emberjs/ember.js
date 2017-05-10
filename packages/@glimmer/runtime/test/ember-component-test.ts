@@ -1946,7 +1946,7 @@ QUnit.test('component helper can handle higher order block components without ar
   assertText('Hello World! Test');
 });
 
-QUnit.todo('component deopt can handle aliased inline components without args', assert => {
+QUnit.test('component deopt can handle aliased inline components without args', assert => {
   env.registerEmberishCurlyComponent('foo-bar', null, 'Hello');
 
   appendViewFor(
@@ -1960,7 +1960,7 @@ QUnit.todo('component deopt can handle aliased inline components without args', 
   assertText('Hello World!');
 });
 
-QUnit.todo('component deopt can handle higher order inline components without args', assert => {
+QUnit.test('component deopt can handle higher order inline components without args', assert => {
   env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
   env.registerEmberishCurlyComponent('baz-bar', null, 'Hello');
 
@@ -3400,7 +3400,7 @@ QUnit.test('it does not work on optimized appends', function(assert) {
   assertAppended('[object Object]');
 });
 
-QUnit.todo('it works on unoptimized appends (dot paths)', function(assert) {
+QUnit.test('it works on unoptimized appends (dot paths)', function(assert) {
   class FooBar extends EmberishCurlyComponent {}
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
@@ -3432,7 +3432,7 @@ QUnit.todo('it works on unoptimized appends (dot paths)', function(assert) {
   assertEmberishElement('div', {}, 'foo bar');
 });
 
-QUnit.todo('it works on unoptimized appends (this paths)', function(assert) {
+QUnit.test('it works on unoptimized appends (this paths)', function(assert) {
   class FooBar extends EmberishCurlyComponent {}
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
@@ -3464,7 +3464,7 @@ QUnit.todo('it works on unoptimized appends (this paths)', function(assert) {
   assertEmberishElement('div', {}, 'foo bar');
 });
 
-QUnit.todo('it works on unoptimized appends when initially not a component (dot paths)', function(assert) {
+QUnit.test('it works on unoptimized appends when initially not a component (dot paths)', function(assert) {
   class FooBar extends EmberishCurlyComponent {}
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
@@ -3492,7 +3492,7 @@ QUnit.todo('it works on unoptimized appends when initially not a component (dot 
   assertAppended('lol');
 });
 
-QUnit.todo('it works on unoptimized appends when initially not a component (this paths)', function(assert) {
+QUnit.test('it works on unoptimized appends when initially not a component (this paths)', function(assert) {
   class FooBar extends EmberishCurlyComponent {}
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
