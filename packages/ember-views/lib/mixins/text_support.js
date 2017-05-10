@@ -342,10 +342,10 @@ function sendAction(eventName, view, event) {
   // it's also a method name that consumes the event (and therefore
   // incompatible with sendAction semantics).
   if (on === eventName || (on === 'keyPress' && eventName === 'key-press')) {
-    view.sendAction('action', value);
+    view.sendAction('action', value, event);
   }
 
-  view.sendAction(eventName, value);
+  view.sendAction(eventName, value, event);
 
   if (action || on === eventName) {
     if (!get(view, 'bubbles')) {
