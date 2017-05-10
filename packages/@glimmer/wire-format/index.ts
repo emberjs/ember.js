@@ -193,16 +193,6 @@ export namespace Statements {
   export function getParameterName(s: Parameter): string {
     return s[1];
   }
-
-  export type ElementHead =
-      Parameter
-    | Modifier
-    | FlushElement
-    ;
-
-  export function isInElementHead(val: Statement): val is ElementHead {
-    return isParameter(val) || isModifier(val) || isFlushElement(val);
-  }
 }
 
 export type Statement = Statements.Statement;
@@ -230,8 +220,6 @@ export interface SerializedInlineBlock extends SerializedBlock {
  * A JSON object that the compiled TemplateBlock was serialized into.
  */
 export interface SerializedTemplateBlock extends SerializedBlock {
-  prelude: Option<Statements.Statement[]>;
-  head: Option<Statements.ElementHead[]>;
   symbols: string[];
   hasEval: boolean;
 }

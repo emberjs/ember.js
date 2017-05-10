@@ -49,45 +49,21 @@ export class TemplateBlock extends Block {
   public type = "template";
   public yields = new DictSet<string>();
   public named = new DictSet<string>();
-  public prelude: Statement[] = [];
-  public head: Statements.ElementHead[] = [];
   public blocks: WireFormat.SerializedInlineBlock[] = [];
   public hasEval = false;
-  private sawElement = false;
-  private inParams = false;
 
   constructor(private symbolTable: ProgramSymbolTable) {
     super();
   }
 
   push(statement: Statement) {
-    if (!this.sawElement) {
-      if (Statements.isOpenElement(statement)) {
-        this.sawElement = true;
-        this.inParams = true;
-      }
-
-      this.prelude.push(statement);
-    } else if (this.inParams) {
-      if (Statements.isFlushElement(statement)) {
-        this.inParams = false;
-        this.head.push(statement);
-      } else if (Statements.isInElementHead(statement)) {
-        this.head.push(statement);
-      } else {
-        throw new Error('Compile Error: only parameters allowed before flush-element');
-      }
-    } else {
-      this.statements.push(statement);
-    }
+    this.statements.push(statement);
   }
 
   toJSON(): SerializedTemplateBlock {
     return {
       symbols: this.symbolTable.symbols,
-      prelude: this.sawElement ? this.prelude : null,
-      head: this.sawElement ? this.head : null,
-      statements: this.sawElement ? this.statements : this.prelude,
+      statements: this.statements,
       hasEval: this.hasEval
     };
   }

@@ -81,22 +81,7 @@ function compileStatements(statements: WireFormat.Statement[], meta: Compilation
 
 export const ATTRS_BLOCK = '&attrs';
 
-export function layout(prelude: WireFormat.Statement[], head: WireFormat.Statement[], body: WireFormat.Statement[], symbolTable: ProgramSymbolTable) {
-  let [, tag] = prelude.pop() as WireFormat.Statements.OpenElement;
-  prelude.push([Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, tag]);
-  prelude.push([Ops.ClientSideStatement, ClientSide.Ops.DidCreateElement]);
-
-  let attrsSymbol = symbolTable.symbols.length + 1;
-  symbolTable.symbols.push(ATTRS_BLOCK);
-
-  let statements = prelude
-    .concat([[Ops.Yield, attrsSymbol, EMPTY_ARRAY]])
-    .concat(head)
-    .concat(body)
-    .concat([[Ops.ClientSideStatement, ClientSide.Ops.DidRenderLayout]]);
-
-  return new CompilableTemplate(statements, symbolTable);
-}
+const { Ops } = WireFormat;
 
 export default class Scanner {
   constructor(private block: WireFormat.SerializedTemplateBlock, private env: Environment) {
@@ -105,43 +90,42 @@ export default class Scanner {
   scanEntryPoint(meta: CompilationMeta): Program {
     let { block, env } = this;
 
-    let statements: WireFormat.Statement[];
-    if (block.prelude && block.head) {
-      statements = block.prelude.concat(block.head).concat(block.statements);
-    } else {
-      statements = block.statements;
-    }
-
-    return new RawProgram(env, meta, statements, block.symbols, block.hasEval).scan();
+    return new RawProgram(env, meta, block.statements, block.symbols, block.hasEval).scan();
   }
 
   scanBlock(meta: CompilationMeta): Block {
     let { block, env } = this;
 
-    let statements: WireFormat.Statement[];
-    if (block.prelude && block.head) {
-      statements = block.prelude.concat(block.head).concat(block.statements);
-    } else {
-      statements = block.statements;
-    }
-
-    return new RawInlineBlock(env, meta, statements, EMPTY_ARRAY).scan();
+    return new RawInlineBlock(env, meta, block.statements, EMPTY_ARRAY).scan();
   }
 
   scanLayout(meta: CompilationMeta, attrs: WireFormat.Statements.Attribute[]): Program {
     let { block } = this;
-    let { symbols, hasEval } = block;
-
-    if (!block.prelude || !block.head) {
-      throw new Error(`A layout must have a top-level element`);
-    }
+    let { statements, symbols, hasEval } = block;
 
     let symbolTable = { meta, hasEval, symbols };
-    let { statements: prelude } = scanBlock({ statements: block.prelude, parameters: EMPTY_ARRAY }, meta, this.env);
-    let { statements: head } = scanBlock({ statements: [...attrs, ...block.head], parameters: EMPTY_ARRAY }, meta, this.env);
-    let { statements: body } = scanBlock({ statements: block.statements, parameters: EMPTY_ARRAY }, meta, this.env);
 
-    return layout(prelude, head, body, symbolTable);
+    let newStatements: WireFormat.Statement[] = [];
+
+    let hasToplevel = false;
+
+    for(let i = 0; i < statements.length; i++) {
+      let statement = statements[i];
+      if (!hasToplevel && Ops.OpenElement === statement[0]) {
+        hasToplevel = true;
+        let tag = statement[1];
+        let attrsSymbol = symbolTable.symbols.length + 1;
+        symbolTable.symbols.push(ATTRS_BLOCK);
+        newStatements.push([Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, tag]);
+        newStatements.push([Ops.ClientSideStatement, ClientSide.Ops.DidCreateElement]);
+        newStatements.push([Ops.Yield, attrsSymbol, EMPTY_ARRAY]);
+        newStatements.push(...attrs);
+      } else {
+        newStatements.push(statement);
+      }
+    }
+    newStatements.push([Ops.ClientSideStatement, ClientSide.Ops.DidRenderLayout]);
+    return new CompilableTemplate(newStatements, symbolTable);
   }
 }
 
@@ -201,19 +185,11 @@ export namespace ClientSide {
   export type ClientSideExpression = FunctionExpression;
 }
 
-const { Ops } = WireFormat;
-
 export abstract class RawBlock<S extends SymbolTable> {
   constructor(protected env: Environment, protected meta: CompilationMeta, private statements: WireFormat.Statement[]) {}
 
   scanStatements(): WireFormat.Statement[] {
-    let buffer: WireFormat.Statement[] = [];
-    let statements = this.statements;
-    for (let statement of statements) {
-      buffer.push(statement);
-    }
-
-    return buffer;
+    return this.statements;
   }
 
   child(block: Option<WireFormat.SerializedInlineBlock>): Option<RawInlineBlock> {
