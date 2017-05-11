@@ -71,7 +71,7 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
     this._super(...arguments);
     let name = arguments[0];
     let method = this[name];
-    if (method) {
+    if (typeof method === 'function') {
       let args = new Array(arguments.length - 1);
       for (let i = 1; i < arguments.length; i++) {
         args[i - 1] = arguments[i];
