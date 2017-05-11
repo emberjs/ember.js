@@ -70,7 +70,7 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
   trigger(name, ...args) {
     this._super(...arguments);
     let method = this[name];
-    if (method) {
+    if (typeof method === 'function') {
       return method.apply(this, args);
     }
   },
