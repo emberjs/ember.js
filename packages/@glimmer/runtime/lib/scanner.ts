@@ -52,6 +52,12 @@ export default class Scanner {
             decorateTopLevelElement(tagName, symbols, attrs, newStatements);
           }
           addFallback(statement, newStatements);
+        } else {
+          if (toplevel === undefined && tagName === componentName) {
+            toplevel = tagName;
+            decorateTopLevelElement(tagName, symbols, attrs, newStatements);
+            addFallback(statement, newStatements);
+          }
         }
       } else {
         if (toplevel === undefined && WireFormat.Statements.isOpenElement(statement)) {

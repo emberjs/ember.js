@@ -2253,10 +2253,11 @@ let styles = [{
   name: 'a div',
   tagName: 'div',
   test: QUnit.test
-}, /*{
+}, {
   name: 'an identity element',
-  tagName: 'non-block'
-},*/ {
+  tagName: 'non-block',
+  test: QUnit.test
+}, {
   name: 'a web component',
   tagName: 'not-an-ember-component',
   test: QUnit.test
