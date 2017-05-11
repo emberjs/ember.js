@@ -1,22 +1,20 @@
-import { IArguments } from '../vm/arguments';
-import { CompiledDynamicProgram } from '../compiled/blocks';
+import { Dict, Opaque, Option } from '@glimmer/interfaces';
+import { Tag, VersionedPathReference } from '@glimmer/reference';
+import { Destroyable } from '@glimmer/util';
 import { TemplateMeta } from '@glimmer/wire-format';
-
-import Environment, { DynamicScope } from '../environment';
-import { ElementOperations } from '../builder';
 import Bounds from '../bounds';
+import { ElementOperations } from '../builder';
+import { CompiledDynamicProgram } from '../compiled/blocks';
 import * as Simple from '../dom/interfaces';
+import Environment, { DynamicScope } from '../environment';
 import { Template } from '../template';
-
-import { Destroyable, Opaque } from '@glimmer/util';
-import { VersionedPathReference, Tag } from '@glimmer/reference';
-import { Dict, Option } from "@glimmer/interfaces";
+import { IArguments } from '../vm/arguments';
 
 export type Component = Opaque;
 export type ComponentClass = any;
 
 export interface PreparedArguments {
-  positional: VersionedPathReference<Opaque>[];
+  positional: Array<VersionedPathReference<Opaque>>;
   named: Dict<VersionedPathReference<Opaque>>;
 }
 

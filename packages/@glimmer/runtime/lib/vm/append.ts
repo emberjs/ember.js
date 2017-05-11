@@ -1,7 +1,7 @@
 import { Register } from '../opcodes';
 import { Scope, DynamicScope, Environment, Opcode } from '../environment';
 import { ElementStack } from '../builder';
-import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, assert, expect } from '@glimmer/util';
+import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { CompiledDynamicProgram } from '../compiled/blocks';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
@@ -99,7 +99,7 @@ export default class VM implements PublicVM {
 
   public stack = EvaluationStack.empty();
 
-  /** Registers **/
+  /* Registers */
 
   private pc = -1;
   private ra = -1;
@@ -210,9 +210,9 @@ export default class VM implements PublicVM {
 
   capture(args: number): VMState {
     return {
+      dynamicScope: this.dynamicScope(),
       env: this.env,
       scope: this.scope(),
-      dynamicScope: this.dynamicScope(),
       stack: this.stack.capture(args)
     };
   }
@@ -395,21 +395,22 @@ export default class VM implements PublicVM {
 
   next(): IteratorResult<RenderResult> {
     let { env, updatingOpcodeStack, elementStack } = this;
-    let opcode: Option<Opcode>;
-
-    if (opcode = this.nextStatement(env)) {
+    let opcode = this.nextStatement(env);
+    let result: IteratorResult<RenderResult>;
+    if (opcode) {
       APPEND_OPCODES.evaluate(this, opcode, opcode.type);
-      return { done: false, value: null };
+      result = { done: false, value: null };
+    } else {
+      result = {
+        done: true,
+        value: new RenderResult(
+          env,
+          expect(updatingOpcodeStack.pop(), 'there should be a final updating opcode stack'),
+          elementStack.popBlock()
+        )
+      };
     }
-
-    return {
-      done: true,
-      value: new RenderResult(
-        env,
-        expect(updatingOpcodeStack.pop(), 'there should be a final updating opcode stack'),
-        elementStack.popBlock()
-      )
-    };
+    return result;
   }
 
   private nextStatement(env: Environment): Option<Opcode> {

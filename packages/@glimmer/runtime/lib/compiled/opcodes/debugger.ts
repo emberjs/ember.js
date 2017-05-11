@@ -1,8 +1,8 @@
-import { Scope } from '../../environment';
-import { VersionedPathReference } from '@glimmer/reference';
-import { APPEND_OPCODES, Op } from '../../opcodes';
 import { Opaque } from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
 import { dict } from '@glimmer/util';
+import { Scope } from '../../environment';
+import { APPEND_OPCODES, Op } from '../../opcodes';
 
 export type DebugGet = ((path: string) => Opaque);
 
@@ -60,7 +60,7 @@ class ScopeInspector {
       tail = parts;
     }
 
-    return tail.reduce((ref, part) => ref.get(part), ref);
+    return tail.reduce((r, part) => r.get(part), ref);
   }
 }
 

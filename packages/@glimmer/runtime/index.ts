@@ -65,14 +65,10 @@ export {
 } from './lib/syntax/functions';
 
 export {
-  ClientSide,
   CompilableTemplate,
-  ScannedBlock,
-  ScannedProgram,
   Block,
-  Program,
-  compileStatement
-} from './lib/scanner';
+  Program
+} from './lib/syntax/interfaces';
 
 export { PublicVM as VM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
 
@@ -114,7 +110,7 @@ export {
 } from './lib/modifier/interfaces';
 
 export { default as DOMChanges, DOMChanges as IDOMChanges, DOMTreeConstruction, isWhitespace, insertHTMLBefore } from './lib/dom/helper';
-import  * as Simple from './lib/dom/interfaces';
+import * as Simple from './lib/dom/interfaces';
 export { Simple };
 export { ElementStack, ElementOperations } from './lib/builder';
 export { default as Bounds, ConcreteBounds } from './lib/bounds';

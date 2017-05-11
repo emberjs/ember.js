@@ -76,7 +76,7 @@ QUnit.test("HTML tags re-rendered", function(assert) {
   let result = render(template, {});
 
   env.begin();
-  result.rerender();
+  result!.rerender();
   env.commit();
 
   assert.equal(serializer.serializeChildren(root), "<h1>hello!</h1><div>content</div>");
@@ -245,7 +245,7 @@ QUnit.test("A simple block helper can return text", function(assert) {
 QUnit.test('can instantiate NodeDOMTreeConstruction without a document', function(assert) {
   // this emulates what happens in Ember when using `App.visit('/', { shouldRender: false });`
 
-  helper = new NodeDOMTreeConstruction(null);
+  helper = new NodeDOMTreeConstruction(null as any);
 
   assert.ok(!!helper, 'helper was instantiated without errors');
 });

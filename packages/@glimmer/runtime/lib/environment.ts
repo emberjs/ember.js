@@ -41,7 +41,7 @@ import {
   TemplateMeta
 } from '@glimmer/wire-format';
 
-import { Block } from './scanner';
+import { Block } from './syntax/interfaces';
 
 import { PublicVM } from './vm/append';
 

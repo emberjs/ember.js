@@ -1,20 +1,21 @@
+
+import { Opaque } from '@glimmer/interfaces';
+import {
+  combine,
+  CONSTANT_TAG,
+  isConst,
+  ReferenceCache,
+  Tag,
+  VersionedPathReference,
+} from '@glimmer/reference';
+import Bounds from '../../bounds';
+import { Component, ComponentDefinition, ComponentManager } from '../../component/interfaces';
+import { DynamicScope } from '../../environment';
 import { APPEND_OPCODES, Op, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { Assert } from './vm';
 import { UpdatingVM } from '../../vm';
 import ARGS, { Arguments, IArguments } from '../../vm/arguments';
-import { Component, ComponentManager, ComponentDefinition } from '../../component/interfaces';
-import { DynamicScope } from '../../environment';
-import Bounds from '../../bounds';
 import { ComponentElementOperations } from './dom';
-import { Opaque } from '@glimmer/util';
-import {
-  CONSTANT_TAG,
-  ReferenceCache,
-  VersionedPathReference,
-  Tag,
-  combine,
-  isConst
-} from '@glimmer/reference';
+import { Assert } from './vm';
 
 APPEND_OPCODES.add(Op.PushComponentManager, (vm, { op1: _definition }) => {
   let definition = vm.constants.getOther<ComponentDefinition<Opaque>>(_definition);
@@ -79,14 +80,14 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
 
     let positionalCount = positional.length;
 
-    for (let i=0; i<positionalCount; i++) {
+    for (let i = 0; i < positionalCount; i++) {
       stack.push(positional[i]);
     }
 
     let names = Object.keys(named);
     let namedCount = names.length;
 
-    for (let i=0; i<namedCount; i++) {
+    for (let i = 0; i < namedCount; i++) {
       stack.push(named[names[i]]);
     }
 
@@ -98,7 +99,8 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
 });
 
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
-  let definition: ComponentDefinition<Opaque>, manager: ComponentManager<Opaque>;
+  let definition: ComponentDefinition<Opaque>;
+  let manager: ComponentManager<Opaque>;
   let args = vm.stack.pop<IArguments>();
   let dynamicScope = vm.dynamicScope();
   let state = { definition, manager } = vm.fetchValue<InitialComponentState<Opaque>>(_state);
@@ -158,7 +160,7 @@ APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
 APPEND_OPCODES.add(Op.CommitComponentTransaction, vm => vm.commitCacheGroup());
 
 export class UpdateComponentOpcode extends UpdatingOpcode {
-  public type = "update-component";
+  public type = 'update-component';
 
   constructor(
     tag: Tag,
@@ -186,21 +188,21 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
 
   toJSON(): OpcodeJSON {
     return {
+      args: [JSON.stringify(this.name)],
       guid: this._guid,
       type: this.type,
-      args: [JSON.stringify(this.name)]
     };
   }
 }
 
 export class DidUpdateLayoutOpcode extends UpdatingOpcode {
-  public type = "did-update-layout";
+  public type = 'did-update-layout';
   public tag: Tag = CONSTANT_TAG;
 
   constructor(
     private manager: ComponentManager<Component>,
     private component: Component,
-    private bounds: Bounds
+    private bounds: Bounds,
   ) {
     super();
   }

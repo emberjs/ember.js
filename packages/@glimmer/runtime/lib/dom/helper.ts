@@ -236,7 +236,7 @@ export function insertHTMLBefore(this: void, _useless: Simple.HTMLElement, _pare
   let nextSibling = _nextSibling as Node;
 
   let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
-  let last: Node;
+  let last: Node | null;
 
   if (html === null || html === '') {
     return new ConcreteBounds(parent, null, null);

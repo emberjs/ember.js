@@ -1,30 +1,29 @@
-import * as content from './content';
-import * as vm from './vm';
 
-import { Insertion } from '../../upsert';
-import { Register } from '../../opcodes';
+import { CompilationMeta, Opaque, Option, SymbolTable } from '@glimmer/interfaces';
+import { dict, EMPTY_ARRAY, expect, fillNulls, Stack } from '@glimmer/util';
 import * as WireFormat from '@glimmer/wire-format';
-import { Option, Stack, Opaque, dict, expect, fillNulls, EMPTY_ARRAY } from '@glimmer/util';
-import {
-  Constants,
-  ConstantString,
-  ConstantArray,
-  ConstantOther,
-  ConstantBlock,
-  ConstantFunction,
-} from '../../environment/constants';
-import { ModifierManager } from '../../modifier/interfaces';
+import { ComponentBuilder } from '../../compiler';
 import { ComponentDefinition } from '../../component/interfaces';
 import Environment, { Program } from '../../environment';
-import { SymbolTable, CompilationMeta } from '@glimmer/interfaces';
+import {
+  ConstantArray,
+  ConstantBlock,
+  ConstantFunction,
+  ConstantOther,
+  Constants,
+  ConstantString,
+} from '../../environment/constants';
+import { ModifierManager } from '../../modifier/interfaces';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
-import { ComponentBuilder } from '../../compiler';
-import { RawInlineBlock, ClientSide, Block } from '../../scanner';
-import { InvokeDynamicLayout, expr } from '../../syntax/functions';
-
+import { Op, Register } from '../../opcodes';
+import { FunctionExpressionCallback } from '../../syntax/client-side';
+import { expr, InvokeDynamicLayout } from '../../syntax/functions';
+import { Block } from '../../syntax/interfaces';
+import RawInlineBlock from '../../syntax/raw-block';
+import { Insertion } from '../../upsert';
 import { IsComponentDefinitionReference } from '../opcodes/content';
-
-import { Op } from '../../opcodes';
+import * as content from './content';
+import * as vm from './vm';
 
 export interface CompilesInto<E> {
   compile(builder: OpcodeBuilder): E;
@@ -38,7 +37,7 @@ type TargetOpcode = Op.Jump | Op.JumpIf | Op.JumpUnless | Op.EnterList | Op.Iter
 
 class Labels {
   labels = dict<number>();
-  targets: { at: number, Target: TargetOpcode, target: string }[] = [];
+  targets: Array<{ at: number, Target: TargetOpcode, target: string }> = [];
 
   label(name: string, index: number) {
     this.labels[name] = index;
@@ -56,9 +55,10 @@ class Labels {
 }
 
 export abstract class BasicOpcodeBuilder {
-  private labelsStack = new Stack<Labels>();
   public constants: Constants;
   public start: number;
+
+  private labelsStack = new Stack<Labels>();
 
   constructor(public env: Environment, public meta: CompilationMeta, public program: Program) {
     this.constants = env.constants;
@@ -94,7 +94,7 @@ export abstract class BasicOpcodeBuilder {
   // args
 
   pushArgs(positional: number, synthetic: boolean) {
-    this.push(Op.PushArgs, positional, (synthetic as any)|0);
+    this.push(Op.PushArgs, positional, synthetic === true ? 1 : 0);
   }
 
   // helpers
@@ -131,7 +131,7 @@ export abstract class BasicOpcodeBuilder {
   }
 
   createComponent(state: Register, hasDefault: boolean, hasInverse: boolean) {
-    let flag = (<any>hasDefault|0) | ((<any>hasInverse|0) << 1);
+    let flag = (hasDefault === true ? 1 : 0) | ((hasInverse === true ? 1 : 0) << 1);
     this.push(Op.CreateComponent, flag, state);
   }
 
@@ -235,12 +235,12 @@ export abstract class BasicOpcodeBuilder {
     let name = this.constants.string(_name);
     let namespace = this.constants.string(_namespace);
 
-    this.push(Op.DynamicAttrNS, name, namespace, (trusting as any)|0);
+    this.push(Op.DynamicAttrNS, name, namespace, (trusting === true ? 1 : 0));
   }
 
   dynamicAttr(_name: string, trusting: boolean) {
     let name = this.constants.string(_name);
-    this.push(Op.DynamicAttr, name, (trusting as any)|0);
+    this.push(Op.DynamicAttr, name, (trusting === true ? 1 : 0));
   }
 
   comment(_comment: string) {
@@ -302,7 +302,7 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.Concat, size);
   }
 
-  function(f: ClientSide.FunctionExpressionCallback<Opaque>) {
+  function(f: FunctionExpressionCallback<Opaque>) {
     this.push(Op.Function, this.func(f));
   }
 
@@ -337,7 +337,7 @@ export abstract class BasicOpcodeBuilder {
   }
 
   pushRootScope(symbols: number, bindCallerScope: boolean) {
-    this.push(Op.RootScope, symbols, <any>bindCallerScope|0);
+    this.push(Op.RootScope, symbols, (bindCallerScope ? 1 : 0));
   }
 
   pushChildScope() {
@@ -447,7 +447,7 @@ export abstract class BasicOpcodeBuilder {
     if (count) {
       this.pushChildScope();
 
-      for (let i=0; i<count; i++) {
+      for (let i = 0; i < count; i++) {
         this.dup(Register.fp, callerCount - i);
         this.setVariable(parameters[i]);
       }
@@ -524,7 +524,7 @@ export abstract class BasicOpcodeBuilder {
 }
 
 function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E> {
-  return expr && typeof expr['compile'] === 'function';
+  return typeof expr === 'object' && expr !== null && typeof (expr as CompilesInto<E>).compile === 'function';
 }
 
 export default class OpcodeBuilder extends BasicOpcodeBuilder {
@@ -608,16 +608,6 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.stopLabels();
   }
 
-  guardedCautiousAppend(expression: WireFormat.Expression) {
-    expr(expression, this);
-    this.dynamicContent(new content.GuardedCautiousAppendOpcode());
-  }
-
-  guardedTrustingAppend(expression: WireFormat.Expression) {
-    expr(expression, this);
-    this.dynamicContent(new content.GuardedTrustingAppendOpcode());
-  }
-
   invokeComponent(attrs: Option<RawInlineBlock>, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, block: Option<Block>, inverse: Option<Block> = null) {
     this.initializeComponentState();
 
@@ -650,7 +640,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
   template(block: Option<WireFormat.SerializedInlineBlock>): Option<RawInlineBlock> {
     if (!block) return null;
-    return new RawInlineBlock(this.env, this.meta, block.statements, block.parameters);
+    return new RawInlineBlock(this.meta, block.statements, block.parameters);
   }
 }
 

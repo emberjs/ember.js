@@ -1,5 +1,4 @@
 import { GlimmerDescriptor, ValueBlueprint } from './blueprint';
-export type GlimmerObjectClass = typeof GlimmerObject;
 
 export interface Constructor<T extends GlimmerObject> {
   new(...args: any[]): T;
@@ -46,3 +45,5 @@ export default class GlimmerObject {
     }
   }
 }
+
+export type GlimmerObjectClass = typeof GlimmerObject;

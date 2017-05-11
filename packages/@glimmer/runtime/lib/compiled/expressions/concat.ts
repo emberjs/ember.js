@@ -1,11 +1,10 @@
-import { FIXME } from '@glimmer/util';
-import { PathReference, CachedReference, Tag, combineTagged } from '@glimmer/reference';
-import { Option, Opaque } from '@glimmer/interfaces';
+import { Opaque, Option } from '@glimmer/interfaces';
+import { CachedReference, combineTagged, PathReference, Tag } from '@glimmer/reference';
 
 export class ConcatReference extends CachedReference<Option<string>> {
   public tag: Tag;
 
-  constructor(private parts: PathReference<Opaque>[]) {
+  constructor(private parts: Array<PathReference<Opaque>>) {
     super();
     this.tag = combineTagged(parts);
   }
@@ -17,7 +16,7 @@ export class ConcatReference extends CachedReference<Option<string>> {
       let value = this.parts[i].value();
 
       if (value !== null && value !== undefined) {
-        parts[i] = castToString(value as FIXME<any, 'This works with strict null checks'>) as FIXME<string, 'Coerce falsy values to strings'>;
+        parts[i] = castToString(value);
       }
     }
 
@@ -29,8 +28,8 @@ export class ConcatReference extends CachedReference<Option<string>> {
   }
 }
 
-function castToString(value: Object) {
-  if (typeof value['toString'] !== 'function') {
+function castToString(value: {}) {
+  if (typeof value.toString !== 'function') {
     return '';
   }
 

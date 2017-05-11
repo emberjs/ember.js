@@ -3,11 +3,10 @@ import Environment from './environment';
 import { CompiledDynamicProgram, CompiledDynamicTemplate } from './compiled/blocks';
 import { Maybe, Option } from '@glimmer/util';
 import { Ops, TemplateMeta } from '@glimmer/wire-format';
-
 import { Template } from './template';
 import { Register, debugSlice } from './opcodes';
-
-import { ATTRS_BLOCK, ClientSide, compileStatement } from './scanner';
+import { ATTRS_BLOCK, compileStatement } from './syntax/functions';
+import * as ClientSide from './syntax/client-side';
 
 import {
   ComponentArgs,
@@ -139,7 +138,7 @@ class WrappedBuilder implements InnerLayoutBuilder {
     if (dynamicTag || staticTag) {
       b.didCreateElement(Register.s0);
 
-      let attrs = this.attrs['buffer'];
+      let attrs = this.attrs.buffer;
 
       for (let i=0; i<attrs.length; i++) {
         compileStatement(attrs[i], b);
@@ -194,7 +193,7 @@ class UnwrappedBuilder implements InnerLayoutBuilder {
 
   compile(): CompiledDynamicProgram {
     let { env, layout } = this;
-    return layout.asLayout(this.attrs['buffer'], this.componentName).compileDynamic(env);
+    return layout.asLayout(this.componentName, this.attrs.buffer).compileDynamic(env);
   }
 }
 
@@ -228,7 +227,7 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
 }
 
 class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
-  private buffer: WireFormat.Statements.Attribute[] = [];
+  public buffer: WireFormat.Statements.Attribute[] = [];
 
   static(name: string, value: string) {
     this.buffer.push([Ops.StaticAttr, name, value, null]);
@@ -264,8 +263,8 @@ export class ComponentBuilder implements IComponentBuilder {
 
     let meta = this.builder.meta.templateMeta;
 
-    function helper(vm: PublicVM, args: IArguments) {
-      return getDefinition(vm, args, meta);
+    function helper(vm: PublicVM, a: IArguments) {
+      return getDefinition(vm, a, meta);
     }
 
     builder.startLabels();
