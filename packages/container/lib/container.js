@@ -158,7 +158,7 @@ Container.prototype = {
 
     let cached = this.factoryManagerCache[normalizedName];
 
-    if (cached) { return cached; }
+    if (cached !== undefined) { return cached; }
 
     let factory = this.registry.resolve(normalizedName);
 
@@ -235,28 +235,28 @@ function lookup(container, fullName, options = {}) {
     }
   }
 
-  if (container.cache[fullName] !== undefined && options.singleton !== false) {
-    return container.cache[fullName];
+  let cached = container.cache[fullName];
+  if (cached !== undefined && options.singleton !== false) {
+    return cached;
   }
-
 
   return instantiateFactory(container, fullName, options);
 }
 
 function isSingletonClass(container, fullName, { instantiate, singleton }) {
-  return singleton !== false && isSingleton(container, fullName) && !instantiate && !isInstantiatable(container, fullName);
+  return singleton !== false && !instantiate && isSingleton(container, fullName) && !isInstantiatable(container, fullName);
 }
 
 function isSingletonInstance(container, fullName, { instantiate, singleton }) {
-  return singleton !== false && isSingleton(container, fullName) && instantiate !== false && isInstantiatable(container, fullName);
+  return singleton !== false && instantiate !== false && isSingleton(container, fullName) && isInstantiatable(container, fullName);
 }
 
 function isFactoryClass(container, fullname, { instantiate, singleton }) {
-  return (singleton === false || !isSingleton(container, fullname)) && instantiate === false && !isInstantiatable(container, fullname);
+  return instantiate === false && (singleton === false || !isSingleton(container, fullname)) && !isInstantiatable(container, fullname);
 }
 
 function isFactoryInstance(container, fullName, { instantiate, singleton }) {
-  return (singleton !== false || isSingleton(container, fullName)) && instantiate !== false && isInstantiatable(container, fullName);
+  return instantiate !== false && (singleton !== false || isSingleton(container, fullName)) && isInstantiatable(container, fullName);
 }
 
 function instantiateFactory(container, fullName, options) {
@@ -289,8 +289,8 @@ function markInjectionsAsDynamic(injections) {
   injections._dynamic = true;
 }
 
-function areInjectionsDynamic(injections) {
-  return !!injections._dynamic;
+function areInjectionsNotDynamic(injections) {
+  return injections._dynamic !== true;
 }
 
 function buildInjections() /* container, ...injections */{
@@ -395,7 +395,7 @@ class FactoryManager {
     let injections = this.injections;
     if (injections === undefined) {
       injections = injectionsFor(this.container, this.normalizedName);
-      if (areInjectionsDynamic(injections) === false) {
+      if (areInjectionsNotDynamic(injections)) {
         this.injections = injections;
       }
     }
