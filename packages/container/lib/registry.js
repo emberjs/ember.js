@@ -570,7 +570,7 @@ Registry.prototype = {
   },
 
   isValidFullName(fullName) {
-    return !!VALID_FULL_NAME_REGEXP.test(fullName);
+    return VALID_FULL_NAME_REGEXP.test(fullName);
   },
 
   validateInjections(injections) {
