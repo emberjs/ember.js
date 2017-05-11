@@ -43,7 +43,7 @@ export interface Template<T> {
 
   // internal casts, these are lazily created and cached
   asEntryPoint(): Program;
-  asLayout(attrs?: Statements.Attribute[]): Program;
+  asLayout(attrs?: Statements.Attribute[], componentName?: string): Program;
   asPartial(): Program;
   asBlock(): Block;
 }
@@ -135,8 +135,8 @@ class ScannableTemplate implements Template<TemplateMeta> {
     return this.entryPoint;
   }
 
-  asLayout(attrs?: Statements.Attribute[]): Program {
-    if (!this.layout) this.layout = this.scanner.scanLayout(this.compilationMeta(), attrs || EMPTY_ARRAY);
+  asLayout(attrs?: Statements.Attribute[], componentName?: string): Program {
+    if (!this.layout) this.layout = this.scanner.scanLayout(this.compilationMeta(), attrs || EMPTY_ARRAY, componentName);
     return this.layout;
   }
 

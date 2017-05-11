@@ -93,7 +93,7 @@ export interface ComponentLayoutBuilder {
   attrs: ComponentAttrsBuilder;
 
   wrapLayout(layout: Template<TemplateMeta>): void;
-  fromLayout(layout: Template<TemplateMeta>): void;
+  fromLayout(componentName: string, layout: Template<TemplateMeta>): void;
 }
 
 export interface ComponentTagBuilder {

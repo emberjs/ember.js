@@ -2,7 +2,6 @@ import {
   // VM
   VM,
   DynamicScope,
-  Register,
 
   // Compiler
   CompilableLayout,
@@ -313,7 +312,7 @@ class BasicComponentManager implements ComponentManager<BasicStateBucket> {
       return layout;
     }
 
-    layout = rawCompile(definition.layoutString, { env, meta: undefined as any as TemplateMeta }).asLayout().compileDynamic(env);
+    layout = rawCompile(definition.layoutString, { env, meta: undefined as any as TemplateMeta }).asLayout([], definition.name).compileDynamic(env);
     return env.compiledLayouts[definition.name] = layout;
   }
 
@@ -394,7 +393,7 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     if (env.compiledLayouts[definition.name]) {
       return env.compiledLayouts[definition.name];
     }
-    return env.compiledLayouts[definition.name] = compileLayout(new EmberishGlimmerComponentLayoutCompiler(definition.layoutString), env);
+    return env.compiledLayouts[definition.name] = compileLayout(new EmberishGlimmerComponentLayoutCompiler(definition.name, definition.layoutString), env);
   }
 
   getSelf({ component }: EmberishGlimmerStateBucket): PathReference<Opaque> {
@@ -1001,17 +1000,21 @@ function EmberID(vm: VM): PathReference<string> {
 class EmberishCurlyComponentLayoutCompiler extends GenericComponentLayoutCompiler {
   compile(builder: ComponentLayoutBuilder) {
     builder.wrapLayout(this.compileLayout(builder.env));
-    builder.tag.dynamic(EmberTagName);
+    (builder.tag as any).dynamic(EmberTagName);
     builder.attrs.static('class', 'ember-view');
-    builder.attrs.dynamic('id', EmberID);
+    (builder.attrs as any).dynamic('id', EmberID);
   }
 }
 
 class EmberishGlimmerComponentLayoutCompiler extends GenericComponentLayoutCompiler {
+  constructor(private componentName: string, layoutString: string) {
+    super(layoutString);
+  }
+
   compile(builder: ComponentLayoutBuilder) {
-    builder.fromLayout(this.compileLayout(builder.env));
+    builder.fromLayout(this.componentName, this.compileLayout(builder.env));
     builder.attrs.static('class', 'ember-view');
-    builder.attrs.dynamic('id', EmberID);
+    (builder.attrs as any).dynamic('id', EmberID);
   }
 }
 

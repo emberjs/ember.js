@@ -88,18 +88,16 @@ export default class Scanner {
   }
 
   scanEntryPoint(meta: CompilationMeta): Program {
-    let { block, env } = this;
-
+    let { env, block } = this;
     return new RawProgram(env, meta, block.statements, block.symbols, block.hasEval).scan();
   }
 
   scanBlock(meta: CompilationMeta): Block {
-    let { block, env } = this;
-
+    let { env, block } = this;
     return new RawInlineBlock(env, meta, block.statements, EMPTY_ARRAY).scan();
   }
 
-  scanLayout(meta: CompilationMeta, attrs: WireFormat.Statements.Attribute[]): Program {
+  scanLayout(meta: CompilationMeta, attrs: WireFormat.Statements.Attribute[], componentName?: string): Program {
     let { block } = this;
     let { statements, symbols, hasEval } = block;
 
@@ -107,21 +105,37 @@ export default class Scanner {
 
     let newStatements: WireFormat.Statement[] = [];
 
-    let hasToplevel = false;
+    let toplevel: string | undefined;
+    let inTopLevel = false;
 
     for(let i = 0; i < statements.length; i++) {
       let statement = statements[i];
-      if (!hasToplevel && Ops.OpenElement === statement[0]) {
-        hasToplevel = true;
-        let tag = statement[1];
-        let attrsSymbol = symbolTable.symbols.length + 1;
-        symbolTable.symbols.push(ATTRS_BLOCK);
-        newStatements.push([Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, tag]);
-        newStatements.push([Ops.ClientSideStatement, ClientSide.Ops.DidCreateElement]);
-        newStatements.push([Ops.Yield, attrsSymbol, EMPTY_ARRAY]);
-        newStatements.push(...attrs);
+      if (WireFormat.Statements.isComponent(statement)) {
+        let tagName = statement[1];
+        if (!this.env.hasComponentDefinition(tagName, meta.templateMeta)) {
+          if (toplevel !== undefined) {
+            newStatements.push([Ops.OpenElement, tagName]);
+          } else {
+            toplevel = tagName;
+            decorateTopLevelElement(tagName, symbols, attrs, newStatements);
+          }
+          addFallback(statement, newStatements);
+        }
       } else {
-        newStatements.push(statement);
+        if (toplevel === undefined && WireFormat.Statements.isOpenElement(statement)) {
+          toplevel = statement[1];
+          inTopLevel = true;
+          decorateTopLevelElement(toplevel, symbols, attrs, newStatements);
+        } else {
+          if (inTopLevel) {
+            if (WireFormat.Statements.isFlushElement(statement)) {
+              inTopLevel = false;
+            } else if (WireFormat.Statements.isModifier(statement)) {
+              throw Error(`Found modifier "${statement[1]}" on the top-level element of "${componentName}"\. Modifiers cannot be on the top-level element`);
+            }
+          }
+          newStatements.push(statement);
+        }
       }
     }
     newStatements.push([Ops.ClientSideStatement, ClientSide.Ops.DidRenderLayout]);
@@ -129,8 +143,31 @@ export default class Scanner {
   }
 }
 
-export function scanBlock(block: WireFormat.SerializedInlineBlock, meta: CompilationMeta, env: Environment): Block {
-  return new RawInlineBlock(env, meta, block.statements, EMPTY_ARRAY).scan();
+function addFallback(statement: WireFormat.Statements.Component, buffer: WireFormat.Statement[]) {
+  let [, , attrs, , block] = statement;
+  for (let i = 0; i < attrs.length; i++) {
+    buffer.push(attrs[i]);
+  }
+  buffer.push([ Ops.FlushElement ]);
+  if (block) {
+    let { statements } = block;
+    for (let i = 0; i < statements.length; i++) {
+      buffer.push(statements[i]);
+    }
+  }
+  buffer.push([ Ops.CloseElement ]);
+}
+
+function decorateTopLevelElement(
+  tagName: string,
+  symbols: string[],
+  attrs: WireFormat.Statements.Attribute[],
+  buffer: WireFormat.Statement[]) {
+  let attrsSymbol = symbols.push(ATTRS_BLOCK);
+  buffer.push([Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, tagName]);
+  buffer.push([Ops.ClientSideStatement, ClientSide.Ops.DidCreateElement]);
+  buffer.push([Ops.Yield, attrsSymbol, EMPTY_ARRAY]);
+  buffer.push(...attrs);
 }
 
 import { PublicVM } from './vm';
@@ -192,11 +229,6 @@ export abstract class RawBlock<S extends SymbolTable> {
     return this.statements;
   }
 
-  child(block: Option<WireFormat.SerializedInlineBlock>): Option<RawInlineBlock> {
-    if (!block) return null;
-    return new RawInlineBlock(this.env, this.meta, block.statements, block.parameters);
-  }
-
   abstract scan(): CompilableTemplate<S>;
 }
 
@@ -211,7 +243,7 @@ export class RawInlineBlock extends RawBlock<BlockSymbolTable> {
   }
 }
 
-export class RawProgram extends RawBlock<ProgramSymbolTable> {
+class RawProgram extends RawBlock<ProgramSymbolTable> {
   constructor(env: Environment, meta: CompilationMeta, statements: WireFormat.Statement[], private symbols: string[], private hasEval: boolean) {
     super(env, meta, statements);
   }
