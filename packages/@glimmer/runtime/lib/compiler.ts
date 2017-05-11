@@ -54,8 +54,8 @@ class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
     this.inner = new WrappedBuilder(this.env, layout);
   }
 
-  fromLayout(layout: Template<TemplateMeta>) {
-    this.inner = new UnwrappedBuilder(this.env, layout);
+  fromLayout(componentName: string, layout: Template<TemplateMeta>) {
+    this.inner = new UnwrappedBuilder(this.env, componentName, layout);
   }
 
   compile(): CompiledDynamicProgram {
@@ -186,7 +186,7 @@ class WrappedBuilder implements InnerLayoutBuilder {
 class UnwrappedBuilder implements InnerLayoutBuilder {
   public attrs = new ComponentAttrsBuilder();
 
-  constructor(public env: Environment, private layout: Template<TemplateMeta>) {}
+  constructor(public env: Environment, private componentName: string, private layout: Template<TemplateMeta>) {}
 
   get tag(): Component.ComponentTagBuilder {
     throw new Error('BUG: Cannot call `tag` on an UnwrappedBuilder');
@@ -194,7 +194,7 @@ class UnwrappedBuilder implements InnerLayoutBuilder {
 
   compile(): CompiledDynamicProgram {
     let { env, layout } = this;
-    return layout.asLayout(this.attrs['buffer']).compileDynamic(env);
+    return layout.asLayout(this.attrs['buffer'], this.componentName).compileDynamic(env);
   }
 }
 

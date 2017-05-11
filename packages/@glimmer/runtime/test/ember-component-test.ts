@@ -2241,12 +2241,12 @@ testComponent('shadowing: outer attributes clobber inner attributes with concat'
 
 module("Glimmer Component");
 
-QUnit.skip(`Modifiers cannot be on the top-level element`, function() {
+QUnit.test(`Modifiers cannot be on the top-level element`, function() {
   env.registerModifier('foo', new TestModifierManager());
   env.registerEmberishGlimmerComponent('non-block', null, `<div {{foo bar}}>Should error</div>`);
   assert.throws(() => {
     appendViewFor('<non-block />');
-  }, /Found modifier "foo" on the top-level element of "non-block"\. Modifiers cannot be on the top-level element\./);
+  }, `Found modifier "foo" on the top-level element of "non-block". Modifiers cannot be on the top-level element.`);
 });
 
 let styles = [{
@@ -2259,7 +2259,7 @@ let styles = [{
 },*/ {
   name: 'a web component',
   tagName: 'not-an-ember-component',
-  test: QUnit.skip
+  test: QUnit.test
 }];
 
 styles.forEach(style => {
