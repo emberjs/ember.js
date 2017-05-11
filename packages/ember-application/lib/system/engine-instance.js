@@ -75,7 +75,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   boot(options) {
     if (this._bootPromise) { return this._bootPromise; }
 
-    this._bootPromise = new RSVP.Promise(resolve => resolve(this._bootSync(options)));
+    this._bootPromise = RSVP.resolve(this._bootSync(options));
 
     return this._bootPromise;
   },
