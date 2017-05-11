@@ -23,8 +23,4 @@ export interface BlockSymbolTable extends SymbolTable {
   parameters: number[];
 }
 
-export interface PartialSymbolTable extends SymbolTable {
-
-}
-
 export default SymbolTable;

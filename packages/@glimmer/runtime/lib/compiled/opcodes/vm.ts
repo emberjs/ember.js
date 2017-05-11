@@ -1,23 +1,26 @@
-import { CompiledDynamicTemplate } from '../blocks';
-import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { UpdatingVM, VM } from '../../vm';
-import { SymbolTable } from '@glimmer/interfaces';
-import { Reference, ConstReference, VersionedPathReference } from '@glimmer/reference';
-import { Option, Opaque, initializeGuid } from '@glimmer/util';
-import { CONSTANT_TAG, ReferenceCache, Revision, Tag, isConst, isModified } from '@glimmer/reference';
+import { Opaque, Option, SymbolTable } from '@glimmer/interfaces';
+import { ConstReference, Reference, VersionedPathReference } from '@glimmer/reference';
+import {
+  CONSTANT_TAG,
+  isConst,
+  isModified,
+  ReferenceCache,
+  Revision,
+  Tag,
+} from '@glimmer/reference';
+import { initializeGuid } from '@glimmer/util';
 import Environment from '../../environment';
-import { APPEND_OPCODES, Op as Op } from '../../opcodes';
+import { APPEND_OPCODES, Op, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { Block } from '../../syntax/interfaces';
+import { UpdatingVM, VM } from '../../vm';
+import { CompiledDynamicTemplate } from '../blocks';
 
 import {
-  Block
-} from '../../scanner';
-
-import {
-  NULL_REFERENCE,
-  UNDEFINED_REFERENCE,
-  TRUE_REFERENCE,
   FALSE_REFERENCE,
-  PrimitiveReference
+  NULL_REFERENCE,
+  PrimitiveReference,
+  TRUE_REFERENCE,
+  UNDEFINED_REFERENCE,
 } from '../../references';
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
@@ -167,7 +170,7 @@ APPEND_OPCODES.add(Op.Test, (vm, { op1: _func }) => {
 });
 
 export class Assert extends UpdatingOpcode {
-  public type = "assert";
+  public type = 'assert';
 
   private cache: ReferenceCache<Opaque>;
 
@@ -192,21 +195,21 @@ export class Assert extends UpdatingOpcode {
 
     try {
       expected = JSON.stringify(cache.peek());
-    } catch(e) {
+    } catch (e) {
       expected = String(cache.peek());
     }
 
     return {
+      args: [],
+      details: { expected },
       guid: _guid,
       type,
-      args: [],
-      details: { expected }
     };
   }
 }
 
 export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
-  public type = "jump-if-not-modified";
+  public type = 'jump-if-not-modified';
 
   private lastRevision: Revision;
 
@@ -230,15 +233,15 @@ export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
 
   toJSON(): OpcodeJSON {
     return {
+      args: [JSON.stringify(this.target.inspect())],
       guid: this._guid,
       type: this.type,
-      args: [JSON.stringify(this.target.inspect())]
     };
   }
 }
 
 export class DidModifyOpcode extends UpdatingOpcode {
-  public type = "did-modify";
+  public type = 'did-modify';
 
   constructor(private target: JumpIfNotModifiedOpcode) {
     super();
@@ -252,7 +255,7 @@ export class DidModifyOpcode extends UpdatingOpcode {
 
 export class LabelOpcode implements UpdatingOpcode {
   public tag: Tag = CONSTANT_TAG;
-  public type = "label";
+  public type = 'label';
   public label: Option<string> = null;
   public _guid: number;
 
@@ -261,7 +264,7 @@ export class LabelOpcode implements UpdatingOpcode {
 
   constructor(label: string) {
     initializeGuid(this);
-    if (label) this.label = label;
+    this.label = label;
   }
 
   evaluate() {}
@@ -272,9 +275,9 @@ export class LabelOpcode implements UpdatingOpcode {
 
   toJSON(): OpcodeJSON {
     return {
+      args: [JSON.stringify(this.inspect())],
       guid: this._guid,
       type: this.type,
-      args: [JSON.stringify(this.inspect())]
     };
   }
 }

@@ -1,5 +1,5 @@
-import { Tag, ConstReference, PathReference, Reference } from '@glimmer/reference';
-import { Option, Opaque } from '@glimmer/util';
+import {  Opaque, Option } from '@glimmer/interfaces';
+import { ConstReference, PathReference, Reference, Tag } from '@glimmer/reference';
 
 export type Primitive = undefined | null | boolean | number | string;
 

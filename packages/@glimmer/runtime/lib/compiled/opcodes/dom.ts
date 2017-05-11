@@ -1,28 +1,28 @@
-import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { VM, UpdatingVM } from '../../vm';
-import { Arguments } from '../../vm/arguments';
+
+import {
+  CachedReference,
+  combineTagged,
+  isConst as isConstReference,
+  isModified,
+  PathReference,
+  Reference,
+  ReferenceCache,
+  Revision,
+  Tag,
+  VersionedReference,
+} from '@glimmer/reference';
+import { Dict, expect, FIXME, Opaque, Option, unwrap } from '@glimmer/util';
+import { ElementOperations } from '../../builder';
+import { AttributeManager } from '../../dom/attribute-managers';
 import * as Simple from '../../dom/interfaces';
 import { FIX_REIFICATION } from '../../dom/interfaces';
 import { Environment } from '../../environment';
-import { FIXME, Option, Opaque, Dict, unwrap, expect } from '@glimmer/util';
-import {
-  CachedReference,
-  Reference,
-  VersionedReference,
-  ReferenceCache,
-  Tag,
-  Revision,
-  PathReference,
-  combineTagged,
-  isConst as isConstReference,
-  isModified
-} from '@glimmer/reference';
 import { ModifierManager } from '../../modifier/interfaces';
+import { APPEND_OPCODES, Op, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { NULL_REFERENCE, PrimitiveReference } from '../../references';
-import { AttributeManager } from '../../dom/attribute-managers';
-import { ElementOperations } from '../../builder';
+import { UpdatingVM, VM } from '../../vm';
+import { Arguments } from '../../vm/arguments';
 import { Assert } from './vm';
-import { APPEND_OPCODES, Op as Op } from '../../opcodes';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm.constants.getString(text));
@@ -77,7 +77,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
 APPEND_OPCODES.add(Op.PopRemoteElement, vm => vm.elements().popRemoteElement());
 
 class ClassList {
-  private list: Option<Reference<string>[]> = null;
+  private list: Option<Array<Reference<string>>> = null;
   private isConst = true;
 
   append(reference: Reference<string>) {
@@ -103,9 +103,9 @@ class ClassList {
 
 class ClassListReference extends CachedReference<Option<string>> {
   public tag: Tag;
-  private list: Reference<string>[] = [];
+  private list: Array<Reference<string>> = [];
 
-  constructor(list: Reference<string>[]) {
+  constructor(list: Array<Reference<string>>) {
     super();
     this.tag = combineTagged(list);
     this.list = list;
@@ -116,7 +116,7 @@ class ClassListReference extends CachedReference<Option<string>> {
   }
 }
 
-function toClassName(list: Reference<string>[]): Option<string> {
+function toClassName(list: Array<Reference<string>>): Option<string> {
   let ret: Opaque[] = [];
 
   for (let i = 0; i < list.length; i++) {
@@ -346,18 +346,18 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
   vm.updateWith(new UpdateModifierOpcode(
     tag,
     manager,
-    modifier
+    modifier,
   ));
 });
 
 export class UpdateModifierOpcode extends UpdatingOpcode {
-  public type = "update-modifier";
+  public type = 'update-modifier';
   private lastUpdated: Revision;
 
   constructor(
     public tag: Tag,
     private manager: ModifierManager<Opaque>,
-    private modifier: Opaque
+    private modifier: Opaque,
   ) {
     super();
     this.lastUpdated = tag.value();
@@ -375,7 +375,7 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
   toJSON(): OpcodeJSON {
     return {
       guid: this._guid,
-      type: this.type
+      type: this.type,
     };
   }
 }
@@ -390,7 +390,7 @@ export class StaticAttribute implements Attribute {
     private element: Simple.Element,
     public name: string,
     private value: string,
-    private namespace?: string
+    private namespace?: string,
   ) {}
 
   flush(env: Environment): Option<UpdatingOpcode> {
@@ -400,16 +400,16 @@ export class StaticAttribute implements Attribute {
 }
 
 export class DynamicAttribute implements Attribute  {
-  private cache: Option<ReferenceCache<Opaque>> = null;
-
   public tag: Tag;
+
+  private cache: Option<ReferenceCache<Opaque>> = null;
 
   constructor(
     private element: Simple.Element,
     private attributeManager: AttributeManager,
     public name: string,
     private reference: Reference<Opaque>,
-    private namespace?: Simple.Namespace
+    private namespace?: Simple.Namespace,
   ) {
     this.tag = reference.tag;
   }
@@ -448,19 +448,19 @@ export class DynamicAttribute implements Attribute  {
     if (namespace) {
       return {
         element: formattedElement,
-        type: 'attribute',
-        namespace,
+        lastValue,
         name,
-        lastValue
+        namespace,
+        type: 'attribute',
       };
     }
 
     return {
       element: formattedElement,
-      type: 'attribute',
-      namespace: namespace === undefined ? null : namespace,
+      lastValue,
       name,
-      lastValue
+      namespace: namespace === undefined ? null : namespace,
+      type: 'attribute',
     };
   }
 }
@@ -483,7 +483,7 @@ APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting }) => {
 });
 
 export class PatchElementOpcode extends UpdatingOpcode {
-  public type = "patch-element";
+  public type = 'patch-element';
 
   private operation: DynamicAttribute;
 
@@ -501,9 +501,9 @@ export class PatchElementOpcode extends UpdatingOpcode {
     let { _guid, type, operation } = this;
 
     return {
+      details: operation.toJSON(),
       guid: _guid,
       type,
-      details: operation.toJSON()
     };
   }
 }

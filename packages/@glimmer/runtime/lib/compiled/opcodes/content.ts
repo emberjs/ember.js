@@ -1,25 +1,22 @@
-import Upsert, {
-  Insertion,
-  CautiousInsertion,
-  TrustingInsertion,
-
-  isSafeString,
-  isNode,
-  isString,
-
-  cautiousInsert,
-  trustingInsert
-} from '../../upsert';
+import { Opaque } from '@glimmer/interfaces';
+import { isConst, isModified, map, Reference, ReferenceCache, VersionedPathReference } from '@glimmer/reference';
+import { clear, Cursor } from '../../bounds';
+import { Fragment } from '../../builder';
 import { isComponentDefinition } from '../../component/interfaces';
 import { DOMTreeConstruction } from '../../dom/helper';
-import { OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { VM, UpdatingVM } from '../../vm';
-import { Reference, VersionedPathReference, ReferenceCache, isModified, isConst, map } from '@glimmer/reference';
-import { Opaque } from '@glimmer/util';
-import { Cursor, clear } from '../../bounds';
-import { Fragment } from '../../builder';
+import { APPEND_OPCODES, Op, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { ConditionalReference } from '../../references';
-import { APPEND_OPCODES, Op } from '../../opcodes';
+import Upsert, {
+  cautiousInsert,
+  CautiousInsertion,
+  Insertion,
+  isNode,
+  isSafeString,
+  isString,
+  trustingInsert,
+  TrustingInsertion,
+} from '../../upsert';
+import { UpdatingVM, VM } from '../../vm';
 
 APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: append }) => {
   let opcode = vm.constants.getOther(append) as AppendDynamicOpcode<Insertion>;
@@ -27,7 +24,7 @@ APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: append }) => {
 });
 
 function isEmpty(value: Opaque): boolean {
-  return value === null || value === undefined || typeof value['toString'] !== 'function';
+  return value === null || value === undefined || typeof value.toString !== 'function';
 }
 
 export function normalizeTextValue(value: Opaque): string {
@@ -66,19 +63,14 @@ function normalizeValue(value: Opaque): CautiousInsertion {
   return String(value);
 }
 
-export type AppendDynamicOpcodeConstructor =  typeof OptimizedCautiousAppendOpcode | typeof OptimizedTrustingAppendOpcode;
-
 export abstract class AppendDynamicOpcode<T extends Insertion> {
-  protected abstract normalize(reference: Reference<Opaque>): Reference<T>;
-  protected abstract insert(dom: DOMTreeConstruction, cursor: Cursor, value: T): Upsert;
-  protected abstract updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<T>, bounds: Fragment, upsert: Upsert): UpdatingOpcode;
-
   evaluate(vm: VM) {
     let reference = vm.stack.pop<VersionedPathReference<Opaque>>();
 
     let normalized = this.normalize(reference);
 
-    let value: T, cache: ReferenceCache<T> | undefined;
+    let value: T;
+    let cache: ReferenceCache<T> | undefined;
 
     if (isConst(reference)) {
       value = normalized.value();
@@ -97,6 +89,10 @@ export abstract class AppendDynamicOpcode<T extends Insertion> {
       vm.updateWith(this.updateWith(vm, reference, cache, bounds, upsert));
     }
   }
+
+  protected abstract normalize(reference: Reference<Opaque>): Reference<T>;
+  protected abstract insert(dom: DOMTreeConstruction, cursor: Cursor, value: T): Upsert;
+  protected abstract updateWith(vm: VM, reference: Reference<Opaque>, cache: ReferenceCache<T>, bounds: Fragment, upsert: Upsert): UpdatingOpcode;
 }
 
 export class IsComponentDefinitionReference extends ConditionalReference {
@@ -113,13 +109,11 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
   constructor(
     protected cache: ReferenceCache<T>,
     protected bounds: Fragment,
-    protected upsert: Upsert
+    protected upsert: Upsert,
   ) {
     super();
     this.tag = cache.tag;
   }
-
-  protected abstract insert(dom: DOMTreeConstruction, cursor: Cursor, value: T): Upsert;
 
   evaluate(vm: UpdatingVM) {
     let value = this.cache.revalidate();
@@ -128,7 +122,7 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
       let { bounds, upsert } = this;
       let { dom } = vm;
 
-      if(!this.upsert.update(dom, value)) {
+      if (!this.upsert.update(dom, value)) {
         let cursor = new Cursor(bounds.parentElement(), clear(bounds));
         upsert = this.upsert = this.insert(vm.env.getAppendOperations(), cursor, value as T);
       }
@@ -141,11 +135,13 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
     let { _guid: guid, type, cache } = this;
 
     return {
+      details: { lastValue: JSON.stringify(cache.peek()) },
       guid,
       type,
-      details: { lastValue: JSON.stringify(cache.peek()) }
     };
   }
+
+  protected abstract insert(dom: DOMTreeConstruction, cursor: Cursor, value: T): Upsert;
 }
 
 export class OptimizedCautiousAppendOpcode extends AppendDynamicOpcode<CautiousInsertion> {
@@ -195,3 +191,5 @@ class OptimizedTrustingUpdateOpcode extends UpdateOpcode<TrustingInsertion> {
     return trustingInsert(dom, cursor, value);
   }
 }
+
+export type AppendDynamicOpcodeConstructor =  typeof OptimizedCautiousAppendOpcode | typeof OptimizedTrustingAppendOpcode;

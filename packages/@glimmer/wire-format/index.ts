@@ -201,7 +201,6 @@ export type Statement = Statements.Statement;
  * A JSON object of static compile time meta for the template.
  */
 export interface TemplateMeta {
-  "<template-meta>": true;
   moduleName?: string;
 }
 

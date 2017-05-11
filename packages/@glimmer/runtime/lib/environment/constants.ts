@@ -2,7 +2,7 @@ import { VersionedPathReference } from "@glimmer/reference";
 import { Opaque } from "@glimmer/interfaces";
 
 import { NULL_REFERENCE, UNDEFINED_REFERENCE } from '../references';
-import { Block } from "../scanner";
+import { Block } from "../syntax/interfaces";
 
 export type ConstantType = 'slice' | 'block' | 'reference' | 'string' | 'number' | 'expression';
 export type ConstantReference =  number;

@@ -312,7 +312,7 @@ class BasicComponentManager implements ComponentManager<BasicStateBucket> {
       return layout;
     }
 
-    layout = rawCompile(definition.layoutString, { env, meta: undefined as any as TemplateMeta }).asLayout([], definition.name).compileDynamic(env);
+    layout = rawCompile(definition.layoutString, { env, meta: undefined as any as TemplateMeta }).asLayout(definition.name).compileDynamic(env);
     return env.compiledLayouts[definition.name] = layout;
   }
 

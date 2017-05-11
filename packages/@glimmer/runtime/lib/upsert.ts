@@ -1,19 +1,19 @@
 import { Opaque, unreachable } from '@glimmer/util';
+import { Bounds, clear, Cursor, single, SingleNodeBounds } from './bounds';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import * as Simple from './dom/interfaces';
 import { FIX_REIFICATION } from './dom/interfaces';
-import { Bounds, Cursor, SingleNodeBounds, single, clear } from './bounds';
 
 export interface SafeString {
   toHTML(): string;
 }
 
 export function isSafeString(value: Opaque): value is SafeString {
-  return !!value && typeof value['toHTML'] === 'function';
+  return typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function';
 }
 
 export function isNode(value: Opaque): value is Node {
-  return value !== null && typeof value === 'object' && typeof value['nodeType'] === 'number';
+  return typeof value === 'object' && value !== null && typeof (value as any).nodeType === 'number';
 }
 
 export function isString(value: Opaque): value is string {

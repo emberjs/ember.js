@@ -1,18 +1,18 @@
-import {
-  TemplateMeta,
-  SerializedTemplateWithLazyBlock,
-  SerializedTemplateBlock,
-  Statements
-} from '@glimmer/wire-format';
+import { Opaque, Option } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { assign, EMPTY_ARRAY } from '@glimmer/util';
-import { Option, Opaque } from '@glimmer/interfaces';
-// import { SymbolTable } from '@glimmer/interfaces';
-import { Environment, DynamicScope } from './environment';
+import {
+  SerializedTemplateBlock,
+  SerializedTemplateWithLazyBlock,
+  Statements,
+  TemplateMeta,
+} from '@glimmer/wire-format';
 import { ElementStack } from './builder';
-import { VM, RenderResult, IteratorResult } from './vm';
-import Scanner, { Program, Block } from './scanner';
 import * as Simple from './dom/interfaces';
+import { DynamicScope, Environment } from './environment';
+import Scanner from './scanner';
+import { Block, Program } from './syntax/interfaces';
+import { IteratorResult, RenderResult, VM } from './vm';
 
 /**
  * Environment specific template.
@@ -43,7 +43,7 @@ export interface Template<T> {
 
   // internal casts, these are lazily created and cached
   asEntryPoint(): Program;
-  asLayout(attrs?: Statements.Attribute[], componentName?: string): Program;
+  asLayout(componentName: string, attrs?: Statements.Attribute[]): Program;
   asPartial(): Program;
   asBlock(): Block;
 }
@@ -135,7 +135,7 @@ class ScannableTemplate implements Template<TemplateMeta> {
     return this.entryPoint;
   }
 
-  asLayout(attrs?: Statements.Attribute[], componentName?: string): Program {
+  asLayout(componentName: string, attrs?: Statements.Attribute[]): Program {
     if (!this.layout) this.layout = this.scanner.scanLayout(this.compilationMeta(), attrs || EMPTY_ARRAY, componentName);
     return this.layout;
   }

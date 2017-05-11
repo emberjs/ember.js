@@ -1,5 +1,11 @@
-import { Opaque } from '@glimmer/util';
-import { Tag, Reference, ReferenceIterator, IterationArtifacts, VersionedPathReference } from '@glimmer/reference';
+import { Opaque } from '@glimmer/interfaces';
+import {
+  IterationArtifacts,
+  Reference,
+  ReferenceIterator,
+  Tag,
+  VersionedPathReference,
+} from '@glimmer/reference';
 import { APPEND_OPCODES, Op } from '../../opcodes';
 
 class IterablePresenceReference implements Reference<boolean> {

@@ -1,11 +1,11 @@
-import { APPEND_OPCODES, Op } from '../../opcodes';
-import { ConcatReference } from '../expressions/concat';
-import { Helper } from '../../environment';
-import { TRUE_REFERENCE, FALSE_REFERENCE } from '../../references';
+import { Opaque } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { Opaque } from '@glimmer/util';
-import { PublicVM } from "../../vm";
-import { Arguments } from "../../vm/arguments";
+import { Helper } from '../../environment';
+import { APPEND_OPCODES, Op } from '../../opcodes';
+import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
+import { PublicVM } from '../../vm';
+import { Arguments } from '../../vm/arguments';
+import { ConcatReference } from '../expressions/concat';
 
 export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
@@ -78,9 +78,9 @@ APPEND_OPCODES.add(Op.HasBlockParams, (vm, { op1: _block }) => {
 });
 
 APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
-  let out: VersionedPathReference<Opaque>[] = [];
+  let out: Array<VersionedPathReference<Opaque>> = [];
 
-  for (let i=count; i>0; i--) {
+  for (let i = count; i > 0; i--) {
     out.push(vm.stack.pop<VersionedPathReference<Opaque>>());
   }
 

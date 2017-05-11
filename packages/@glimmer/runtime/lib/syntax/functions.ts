@@ -1,37 +1,36 @@
-import { ScopeSlot } from '../environment';
-import { CompiledDynamicBlock, CompiledDynamicProgram } from '../compiled/blocks';
-import * as WireFormat from '@glimmer/wire-format';
-import { BlockSymbolTable, ProgramSymbolTable } from '@glimmer/interfaces';
-import OpcodeBuilder from '../compiled/opcodes/builder';
-import { DynamicInvoker } from '../compiled/opcodes/vm';
-import { VM, PublicVM } from '../vm';
-import { IArguments } from '../vm/arguments';
-import { Register } from '../opcodes';
-import { ATTRS_BLOCK, Block, ClientSide, RawInlineBlock } from '../scanner';
-
+import { BlockSymbolTable, CompilationMeta, Opaque, Option, ProgramSymbolTable } from '@glimmer/interfaces';
 import {
-  LOGGER,
-  EMPTY_ARRAY,
-  Opaque,
-  Option,
+  map,
+  VersionedPathReference,
+} from '@glimmer/reference';
+import {
+  assert,
   Dict,
   dict,
-  assert,
+  EMPTY_ARRAY,
+  LOGGER,
   unwrap,
 } from '@glimmer/util';
-
-import {
-  VersionedPathReference,
-  map
-} from '@glimmer/reference';
-
+import * as WireFormat from '@glimmer/wire-format';
+import { CompiledDynamicBlock, CompiledDynamicProgram } from '../compiled/blocks';
+import OpcodeBuilder from '../compiled/opcodes/builder';
+import { DynamicInvoker } from '../compiled/opcodes/vm';
+import Environment, { ScopeSlot } from '../environment';
+import { Register } from '../opcodes';
+import * as ClientSide from '../syntax/client-side';
+import { PublicVM, VM } from '../vm';
+import { IArguments } from '../vm/arguments';
+import { Block } from './interfaces';
+import RawInlineBlock from './raw-block';
 import Ops = WireFormat.Ops;
 
 export type SexpExpression = WireFormat.Expression;
 export type Syntax = WireFormat.Statement | WireFormat.Expression;
 export type CompilerFunction<T extends Syntax> = ((sexp: T, builder: OpcodeBuilder) => void);
 
-export class Compilers<T extends Syntax> {
+export const ATTRS_BLOCK = '&attrs';
+
+class Compilers<T extends Syntax> {
   private names = dict<number>();
   private funcs: CompilerFunction<T>[] = [];
 
@@ -53,8 +52,8 @@ export class Compilers<T extends Syntax> {
 
 import S = WireFormat.Statements;
 
-export const STATEMENTS = new Compilers<WireFormat.Statement>();
-export const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>(1);
+const STATEMENTS = new Compilers<WireFormat.Statement>();
+const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>(1);
 
 STATEMENTS.add(Ops.Text, (sexp: S.Text, builder: OpcodeBuilder) => {
   builder.text(sexp[1]);
@@ -225,7 +224,7 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
 
   if (builder.env.hasComponentDefinition(tag, builder.meta.templateMeta)) {
     let child = builder.template(block);
-    let attrsBlock = new RawInlineBlock(builder.env, builder.meta, attrs, EMPTY_ARRAY);
+    let attrsBlock = new RawInlineBlock(builder.meta, attrs, EMPTY_ARRAY);
     let definition = builder.env.getComponentDefinition(tag, builder.meta.templateMeta);
     builder.pushComponentManager(definition);
     builder.invokeComponent(attrsBlock, null, args, child && child.scan());
@@ -286,15 +285,15 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder: OpcodeBuilder) => {
     let { env } = vm;
     let nameRef = args.positional.at(0);
 
-    return map(nameRef, name => {
-      if (typeof name === 'string' && name) {
-        if (!env.hasPartial(name, templateMeta)) {
-          throw new Error(`Could not find a partial named "${name}"`);
+    return map(nameRef, (n) => {
+      if (typeof n === 'string' && n) {
+        if (!env.hasPartial(n, templateMeta)) {
+          throw new Error(`Could not find a partial named "${n}"`);
         }
 
-        return env.lookupPartial(name, templateMeta);
-      } else if (name) {
-        throw new Error(`Could not find a partial named "${String(name)}"`);
+        return env.lookupPartial(n, templateMeta);
+      } else if (n) {
+        throw new Error(`Could not find a partial named "${String(n)}"`);
       } else {
         return null;
       }
@@ -898,4 +897,21 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
   });
 
   return { blocks, inlines };
+}
+
+export function compileStatement(statement: WireFormat.Statement, builder: OpcodeBuilder) {
+  STATEMENTS.compile(statement, builder);
+}
+
+export function compileStatements(statements: WireFormat.Statement[], meta: CompilationMeta, env: Environment): {
+  start: number;
+  finalize(): number;
+} {
+  let b = new OpcodeBuilder(env, meta);
+
+  for (let statement of statements) {
+    compileStatement(statement, b);
+  }
+
+  return b;
 }
