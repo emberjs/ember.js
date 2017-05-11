@@ -1,16 +1,16 @@
 {
   "name": "@glimmer/test-helpers",
-  "version": "0.23.0-alpha.13",
+  "version": "0.23.0-alpha.14",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/test-helpers",
   "dependencies": {
-    "@glimmer/reference": "^0.23.0-alpha.13",
-    "@glimmer/runtime": "^0.23.0-alpha.13",
-    "@glimmer/compiler": "^0.23.0-alpha.13",
-    "@glimmer/util": "^0.23.0-alpha.13",
-    "@glimmer/object": "^0.23.0-alpha.13",
-    "@glimmer/object-reference": "^0.23.0-alpha.13",
-    "@glimmer/wire-format": "^0.23.0-alpha.13",
-    "@glimmer/interfaces": "^0.23.0-alpha.13"
+    "@glimmer/reference": "^0.23.0-alpha.14",
+    "@glimmer/runtime": "^0.23.0-alpha.14",
+    "@glimmer/compiler": "^0.23.0-alpha.14",
+    "@glimmer/util": "^0.23.0-alpha.14",
+    "@glimmer/object": "^0.23.0-alpha.14",
+    "@glimmer/object-reference": "^0.23.0-alpha.14",
+    "@glimmer/wire-format": "^0.23.0-alpha.14",
+    "@glimmer/interfaces": "^0.23.0-alpha.14"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
