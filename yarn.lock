@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@glimmer/build@^0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@glimmer/build/-/build-0.8.0.tgz#af4c1cbb641adfef15beff1da6e63304e0a9be6e"
+"@glimmer/build@^0.8.1":
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/@glimmer/build/-/build-0.8.1.tgz#eadeb7268bd04797e08f39818f0b8e58f0028cf7"
   dependencies:
     "@types/qunit" "^1.16.30"
     amd-name-resolver "0.0.6"
@@ -5432,11 +5432,11 @@ rsvp@3.0.14:
   version "3.0.14"
   resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-3.0.14.tgz#9d2968cf36d878d3bb9a9a5a4b8e1ff55a76dd31"
 
-rsvp@^3.0.14, rsvp@^3.0.16, rsvp@^3.0.17, rsvp@^3.0.18, rsvp@^3.0.21, rsvp@^3.0.6, rsvp@^3.1.0, rsvp@^3.2.1, rsvp@^3.3.3:
+rsvp@^3.0.14, rsvp@^3.0.16, rsvp@^3.0.17, rsvp@^3.0.21, rsvp@^3.0.6, rsvp@^3.1.0, rsvp@^3.2.1, rsvp@^3.3.3:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-3.5.0.tgz#a62c573a4ae4e1dfd0697ebc6242e79c681eaa34"
 
-rsvp@~3.0.6:
+rsvp@^3.0.18, rsvp@~3.0.6:
   version "3.0.21"
   resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-3.0.21.tgz#49c588fe18ef293bcd0ab9f4e6756e6ac433359f"
 
