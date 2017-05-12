@@ -397,7 +397,7 @@ export default class VM implements PublicVM {
     let { env, updatingOpcodeStack, elementStack } = this;
     let opcode = this.nextStatement(env);
     let result: IteratorResult<RenderResult>;
-    if (opcode) {
+    if (opcode !== null) {
       APPEND_OPCODES.evaluate(this, opcode, opcode.type);
       result = { done: false, value: null };
     } else {
