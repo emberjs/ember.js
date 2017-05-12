@@ -54,7 +54,10 @@ export class DictSet<T extends SetMember> implements Set<T> {
 
   forEach(callback: (item: T) => void) {
     let { dict } = this;
-    Object.keys(dict).forEach(key => callback(dict[key]));
+    let dictKeys = Object.keys(dict);
+    for (let i = 0; dictKeys.length; i++) {
+      callback(dict[dictKeys[i]]);
+    }
   }
 
   toArray(): string[] {
