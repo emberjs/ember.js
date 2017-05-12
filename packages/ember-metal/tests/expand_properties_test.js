@@ -97,6 +97,20 @@ QUnit.test('A pattern must be a string', function() {
   }, /A computed property key must be a string/);
 });
 
+QUnit.test('unbalanced braces are warned', function() {
+  let invalidBraceProperties = [
+    'model.{baz,bar',
+    'model.bar,bar',
+    'model.{bar'
+  ];
+
+  invalidBraceProperties.forEach((invalidProperties) =>
+    expectWarning(() => {
+      expandProperties(invalidProperties, addProperty)
+    }, / no longer expand on Ember 2\.13\./)
+  );
+});
+
 QUnit.test('A pattern must not contain a space', function() {
   expect(1);
 
