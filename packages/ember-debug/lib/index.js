@@ -265,19 +265,6 @@ if (DEBUG && !isTesting()) {
   }
 }
 
-/*
-  We are transitioning away from `ember.js` to `ember.debug.js` to make
-  it much clearer that it is only for local development purposes.
-
-  This flag value is changed by the tooling (by a simple string replacement)
-  so that if `ember.js` (which must be output for backwards compat reasons) is
-  used a nice helpful warning message will be printed out.
-*/
-export let runningNonEmberDebugJS = false;
-if (runningNonEmberDebugJS) {
-  warn('Please use `ember.debug.js` instead of `ember.js` for development and debugging.');
-}
-
 export {
   assert,
   info,
