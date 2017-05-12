@@ -502,7 +502,13 @@ export abstract class BasicOpcodeBuilder {
   }
 
   protected names(_names: string[]): ConstantArray {
-    let names = _names.map(n => this.constants.string(n));
+    let names: number[] = [];
+
+    for (let i = 0; i < _names.length; i++) {
+      let n = _names[i];
+      names[i]= this.constants.string(n);
+    }
+
     return this.constants.array(names);
   }
 
@@ -539,7 +545,9 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     let positional = 0;
 
     if (params) {
-      params.forEach(p => expr(p, this));
+      for (let i = 0; i < params.length; i++) {
+        expr(params[i], this);
+      }
       positional = params.length;
     }
 
@@ -547,7 +555,10 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
     if (hash) {
       names = hash[0];
-      hash[1].forEach(v => expr(v, this));
+      let val = hash[1];
+      for (let i = 0; i < val.length; i++) {
+        expr(val[i], this);
+      }
     }
 
     this.pushImmediate(names);
