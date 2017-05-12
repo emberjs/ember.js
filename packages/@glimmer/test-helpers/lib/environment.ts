@@ -192,11 +192,25 @@ class Iterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque,
       return EMPTY_ITERATOR;
     } else if (iterable.forEach !== undefined) {
       let array: Opaque[] = [];
-      iterable.forEach((item: Opaque) => array.push(item));
+      for (let i = 0; i < iterable.length; i++) {
+        array.push(iterable[i]);
+      }
       return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
     } else if (typeof iterable === 'object') {
       let keys = Object.keys(iterable);
-      return keys.length > 0 ? new ObjectKeysIterator(keys, keys.map(key => iterable[key]), keyFor) : EMPTY_ITERATOR;
+
+      if (keys.length > 0) {
+        let values: Opaque[] = [];
+
+        for (let i = 0; i < keys.length; i++) {
+          let key = keys[i];
+          values[i] = iterable[key];
+        }
+
+        return new ObjectKeysIterator(keys, values, keyFor);
+      } else {
+        return EMPTY_ITERATOR;
+      }
     } else {
       throw new Error(`Don't know how to {{#each ${iterable}}}`);
     }
@@ -496,7 +510,10 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     let dyn: Option<string[]> = definition.ComponentClass ? definition.ComponentClass['fromDynamicScope'] : null;
 
     if (dyn) {
-      dyn.forEach(name => component.set(name, dynamicScope.get(name).value()));
+      for (let i = 0; i < dyn.length; i++) {
+        let name = dyn[i];
+        component.set(name, dynamicScope.get(name).value());
+      }
     }
 
     component.didInitAttrs({ attrs });

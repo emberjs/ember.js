@@ -232,9 +232,18 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
     throw new Error(`Compile Error: Cannot find component ${tag}`);
   } else {
     builder.openPrimitiveElement(tag);
-    attrs.forEach(attr => STATEMENTS.compile(attr, builder));
+
+    for (let i = 0; i < attrs.length; i++) {
+      STATEMENTS.compile(attrs[i], builder);
+    }
+
     builder.flushElement();
-    if (block) block.statements.forEach(s => STATEMENTS.compile(s, builder));
+    if (block) {
+      let stmts = block.statements;
+      for (let i = 0; i <  stmts.length; i++) {
+        STATEMENTS.compile(stmts[i], builder);
+      }
+    }
     builder.closeElement();
   }
 });
@@ -255,19 +264,22 @@ export class PartialInvoker implements DynamicInvoker<ProgramSymbolTable> {
 
     let locals = dict<VersionedPathReference<Opaque>>();
 
-    evalInfo.forEach(slot => {
+    for (let i = 0; i < evalInfo.length; i++) {
+      let slot = evalInfo[i];
       let name = outerSymbols[slot - 1];
       let ref  = outerScope.getSymbol(slot);
       locals[name] = ref;
-    });
+    }
 
     let evalScope = outerScope.getEvalScope()!;
-    partialSymbols.forEach((name, i) => {
+
+    for (let i = 0; i < partialSymbols.length; i++) {
+      let name = partialSymbols[i];
       let symbol = i + 1;
       let value = evalScope[name];
 
       if (value !== undefined) partialScope.bind(symbol, value);
-    });
+    }
 
     partialScope.bindPartialMap(locals);
 
@@ -427,7 +439,9 @@ EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder: OpcodeBuilder) => {
 
 EXPRESSIONS.add(Ops.Concat, ((sexp: E.Concat, builder: OpcodeBuilder) => {
   let parts = sexp[1];
-  parts.forEach(p => expr(p, builder));
+  for (let i = 0; i < parts.length; i++) {
+    expr(parts[i], builder);
+  }
   builder.concat(parts.length);
 }) as any);
 
@@ -450,7 +464,9 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
 EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder: OpcodeBuilder) => {
   let [, head, path] = sexp;
   builder.getVariable(head);
-  path.forEach(p => builder.getProperty(p));
+  for (let i = 0; i < path.length; i++) {
+    builder.getProperty(path[i]);
+  }
 });
 
 EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder: OpcodeBuilder) => {
@@ -465,7 +481,9 @@ EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder: OpcodeBuilder) => 
     builder.getVariable(0);
   }
 
-  path.forEach(p => builder.getProperty(p));
+  for(let i = 0; i < path.length; i++) {
+    builder.getProperty(path[i]);
+  }
 });
 
 EXPRESSIONS.add(Ops.Undefined, (_sexp, builder) => {
@@ -486,7 +504,11 @@ EXPRESSIONS.add(Ops.ClientSideExpression, (sexp: E.ClientSide, builder: OpcodeBu
 
 export function compileList(params: Option<WireFormat.Expression[]>, builder: OpcodeBuilder): number {
   if (!params) return 0;
-  params.forEach(p => expr(p, builder));
+
+  for (let i = 0; i < params.length; i++) {
+    expr(params[i], builder);
+  }
+
   return params.length;
 }
 

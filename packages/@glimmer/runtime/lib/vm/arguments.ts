@@ -333,7 +333,12 @@ class CapturedNamedArguments implements ICapturedNamedArguments {
     if (!map) {
       let { names, references } = this;
       map = this._map = dict<VersionedPathReference<Opaque>>();
-      names.forEach((name, i) => map![name] = references[i]);
+
+      for (let i = 0; i < names.length; i++) {
+        let name = names[i];
+        map![name] = references[i];
+      }
+
     }
 
     return map;
@@ -358,7 +363,10 @@ class CapturedNamedArguments implements ICapturedNamedArguments {
     let { names, references } = this;
     let out = dict<Opaque>();
 
-    names.forEach((name, i) => out[name] = references[i].value());
+    for (let i = 0; i < names.length; i++) {
+      let name = names[i];
+      out[name] = references[i].value();
+    }
 
     return out;
   }

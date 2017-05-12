@@ -62,7 +62,15 @@ export class Constants {
   }
 
   getNames(value: ConstantArray): string[] {
-    return this.getArray(value).map(n => this.getString(n));
+    let _names: string[] = [];
+    let names = this.getArray(value);
+
+    for (let i = 0; i < names.length; i++) {
+      let n = names[i];
+      _names[i] = this.getString(n);
+    }
+
+    return _names;
   }
 
   array(values: number[]): ConstantArray {

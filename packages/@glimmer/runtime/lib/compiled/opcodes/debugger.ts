@@ -34,11 +34,12 @@ class ScopeInspector {
   private locals = dict<VersionedPathReference<Opaque>>();
 
   constructor(private scope: Scope, symbols: string[], evalInfo: number[]) {
-    evalInfo.forEach(slot => {
+    for (let i = 0; i < evalInfo.length; i++) {
+      let slot = evalInfo[i];
       let name = symbols[slot - 1];
       let ref  = scope.getSymbol(slot);
       this.locals[name] = ref;
-    });
+    }
   }
 
   get(path: string): VersionedPathReference<Opaque> {
