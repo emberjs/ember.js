@@ -103,7 +103,10 @@ export class VersionedObjectReference implements VersionedPathReference<Opaque> 
     let tags: Tag[] = [meta(parentObject).tag(key)];
 
     if (computed) {
-      tags.push(...computed.dependentKeys.map(key => path(this, key).tag));
+      for (let i = 0; i < computed.dependentKeys.length; i++) {
+        let key = computed.dependentKeys[i];
+        tags.push(path(this, key).tag);
+      }
     }
 
     this.tag = combine(tags);
