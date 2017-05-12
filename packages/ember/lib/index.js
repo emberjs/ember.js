@@ -45,6 +45,7 @@ Ember.cacheFor = metal.cacheFor;
 Ember.assert = EmberDebug.assert;
 Ember.warn = EmberDebug.warn;
 Ember.debug = EmberDebug.debug;
+Ember.deprecate = EmberDebug.deprecate;
 Ember.deprecateFunc = EmberDebug.deprecateFunc;
 Ember.runInDebug = EmberDebug.runInDebug;
 /**

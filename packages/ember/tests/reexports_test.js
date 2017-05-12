@@ -27,16 +27,19 @@ QUnit.module('ember reexports');
   ['Registry', 'container', 'Registry'],
   ['Container', 'container', 'Container'],
 
+  // ember-debug
+  ['deprecateFunc', 'ember-debug'],
+  ['deprecate', 'ember-debug'],
+  ['assert', 'ember-debug'],
+  ['warn', 'ember-debug'],
+  ['debug', 'ember-debug'],
+  ['runInDebug', 'ember-debug'],
+
   // ember-metal
   ['computed', 'ember-metal'],
   ['computed.alias', 'ember-metal', 'alias'],
   ['ComputedProperty', 'ember-metal'],
   ['cacheFor', 'ember-metal'],
-  ['deprecateFunc', 'ember-debug'],
-  ['assert', 'ember-debug'],
-  ['warn', 'ember-debug'],
-  ['debug', 'ember-debug'],
-  ['runInDebug', 'ember-debug'],
   ['merge', 'ember-metal'],
   ['instrument', 'ember-metal'],
   ['Instrumentation.instrument', 'ember-metal', 'instrument'],
