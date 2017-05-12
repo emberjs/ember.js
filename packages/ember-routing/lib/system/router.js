@@ -14,8 +14,8 @@ import {
   deprecateProperty
 } from 'ember-metal';
 import {
-  EmberError,
   runInDebug,
+  Error as EmberError,
   deprecate,
   assert,
   info
