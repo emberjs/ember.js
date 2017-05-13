@@ -45,6 +45,13 @@ QUnit.test('can create a router without an owner', function() {
   ok(true, 'no errors were thrown when creating without a container');
 });
 
+QUnit.test('[GH#15237] EmberError is imported correctly', function() {
+  // If we get the right message it means Error is being imported correctly.
+  throws(function() {
+    triggerEvent(null, false, []);
+  }, /because your app hasn't finished transitioning/);
+});
+
 QUnit.test('should not create a router.js instance upon init', function() {
   let router = createRouter(null, { disableSetup: true });
 
