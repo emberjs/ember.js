@@ -5,13 +5,10 @@ import Application from '../../../system/application';
 import { Object as EmberObject } from 'ember-runtime';
 import DefaultResolver from '../../../system/resolver';
 
-let originalLookup, App, originalModelInjections;
+let originalLookup, App;
 
 QUnit.module('Ember.Application Dependency Injection – toString', {
   setup() {
-    originalModelInjections = ENV.MODEL_FACTORY_INJECTIONS;
-    ENV.MODEL_FACTORY_INJECTIONS = true;
-
     originalLookup = context.lookup;
 
     run(() => {
@@ -27,7 +24,6 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
   teardown() {
     context.lookup = originalLookup;
     run(App, 'destroy');
-    ENV.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });
 

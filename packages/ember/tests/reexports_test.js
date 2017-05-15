@@ -1,6 +1,7 @@
 import Ember from '../index';
 import { confirmExport } from 'internal-test-helpers';
 import { EMBER_METAL_WEAKMAP } from 'ember/features';
+import { DEBUG } from 'ember-env-flags';
 
 QUnit.module('ember reexports');
 
@@ -231,5 +232,20 @@ QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
 if (EMBER_METAL_WEAKMAP) {
   QUnit.test('Ember.WeakMap exports correctly', function(assert) {
     confirmExport(Ember, assert, 'WeakMap', 'ember-metal', 'WeakMap');
+  });
+}
+
+if (DEBUG) {
+  QUnit.test('Ember.MODEL_FACTORY_INJECTIONS', function(assert) {
+    let descriptor = Object.getOwnPropertyDescriptor(Ember, 'MODEL_FACTORY_INJECTIONS');
+    assert.equal(descriptor.enumerable, false, 'descriptor is not enumerable');
+    assert.equal(descriptor.configurable, false, 'descriptor is not configurable');
+
+    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false)
+
+    expectDeprecation(function() {
+      Ember.MODEL_FACTORY_INJECTIONS = true;
+    }, 'Ember.MODEL_FACTORY_INJECTIONS is no longer required')
+    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false, 'writing to the property has no affect')
   });
 }
