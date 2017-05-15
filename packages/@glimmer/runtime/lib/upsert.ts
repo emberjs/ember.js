@@ -61,7 +61,7 @@ export function trustingInsert(dom: DOMTreeConstruction, cursor: Cursor, value: 
 class TextUpsert extends Upsert {
   static insert(dom: DOMTreeConstruction, cursor: Cursor, value: string): Upsert {
     let textNode = dom.createTextNode(value);
-    dom.insertBefore(cursor.element, textNode, cursor.nextSibling);
+    dom.insertBefore(cursor.element as Element, textNode, cursor.nextSibling as Node);
     let bounds = new SingleNodeBounds(cursor.element, textNode);
     return new TextUpsert(bounds, textNode);
   }
@@ -86,7 +86,7 @@ class TextUpsert extends Upsert {
 
 class HTMLUpsert extends Upsert {
   static insert(dom: DOMTreeConstruction, cursor: Cursor, value: string): Upsert {
-    let bounds = dom.insertHTMLBefore(cursor.element, value, cursor.nextSibling);
+    let bounds = dom.insertHTMLBefore(cursor.element as Element, cursor.nextSibling as Node, value);
     return new HTMLUpsert(bounds);
   }
 
@@ -109,7 +109,7 @@ class HTMLUpsert extends Upsert {
 class SafeStringUpsert extends Upsert {
   static insert(dom: DOMTreeConstruction, cursor: Cursor, value: SafeString): Upsert {
     let stringValue = value.toHTML();
-    let bounds = dom.insertHTMLBefore(cursor.element, stringValue, cursor.nextSibling);
+    let bounds = dom.insertHTMLBefore(cursor.element as Element, cursor.nextSibling as Node, stringValue);
     return new SafeStringUpsert(bounds, stringValue);
   }
 
@@ -140,7 +140,7 @@ class SafeStringUpsert extends Upsert {
 
 class NodeUpsert extends Upsert {
   static insert(dom: DOMTreeConstruction, cursor: Cursor, node: Simple.Node): Upsert {
-    dom.insertBefore(cursor.element, node, cursor.nextSibling);
+    dom.insertBefore(cursor.element as Element, node as Node, cursor.nextSibling as Node);
     return new NodeUpsert(single(cursor.element, node));
   }
 
