@@ -68,9 +68,9 @@ export function treeConstruction(document: Option<Document>, TreeConstructionCla
       this.uselessComment = this.createComment('') as Comment;
     }
 
-    insertHTMLBefore(parent: HTMLElement, html: string, reference: Node): Bounds {
+    insertHTMLBefore(parent: HTMLElement, reference: Node, html: string): Bounds {
       if (html === null) {
-        return super.insertHTMLBefore(parent, html, reference);
+        return super.insertHTMLBefore(parent, reference, html);
       }
 
       let didSetUselessComment = false;
@@ -81,7 +81,7 @@ export function treeConstruction(document: Option<Document>, TreeConstructionCla
         parent.insertBefore(this.uselessComment, reference);
       }
 
-      let bounds = super.insertHTMLBefore(parent, html, reference);
+      let bounds = super.insertHTMLBefore(parent, reference, html);
 
       if (didSetUselessComment) {
         parent.removeChild(this.uselessComment);
