@@ -165,7 +165,7 @@ function assertGitIsClean() {
   let status = execSync('git status').toString();
   let force = process.argv.indexOf('--force') > -1;
 
-  if (!status.match(/^nothing to commit, working tree clean/m)) {
+  if (!status.match(/^nothing to commit/m)) {
     if (force) {
       console.log(chalk.yellow("--force"), "- ignoring unclean git working tree");
     } else {
