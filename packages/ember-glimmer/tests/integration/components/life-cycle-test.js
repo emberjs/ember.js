@@ -140,7 +140,7 @@ class LifeCycleHooksTest extends RenderingTest {
 
         this.on('init', () => pushHook('on(init)'));
 
-        run.scheduleOnce('afterRender', () => {
+        run.schedule('afterRender', () => {
           this.isInitialRender = false;
         });
       },
@@ -1317,7 +1317,7 @@ moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
     let ComponentClass = Component.extend({
       width: '5',
       didInsertElement() {
-        run.scheduleOnce('afterRender', () => {
+        run.schedule('afterRender', () => {
           this.set('width', '10');
         });
       }
@@ -1338,7 +1338,7 @@ moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
   ['@test afterRender set on parent']() {
     let ComponentClass = Component.extend({
       didInsertElement() {
-        run.scheduleOnce('afterRender', () => {
+        run.schedule('afterRender', () => {
           let parent = this.get('parent');
           parent.set('foo', 'wat');
         });
