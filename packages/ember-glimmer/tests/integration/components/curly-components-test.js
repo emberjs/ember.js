@@ -3164,4 +3164,24 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('huzzah!');
   }
+
+  ['@test can use custom element in component layout'](assert) {
+    this.registerComponent('foo-bar', {
+      template: '<blah-zorz>Hi!</blah-zorz>'
+    });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('Hi!');
+  }
+
+  ['@test can use nested custom element in component layout'](assert) {
+    this.registerComponent('foo-bar', {
+      template: '<blah-zorz><hows-it-going>Hi!</hows-it-going></blah-zorz>'
+    });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('Hi!');
+  }
 });
