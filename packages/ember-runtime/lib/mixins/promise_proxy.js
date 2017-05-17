@@ -107,6 +107,16 @@ export default Mixin.create({
   reason:  null,
 
   /**
+    If the proxied promise is resolved, this will contain the resolved
+    result.
+
+    @property content
+    @default null
+    @public
+  */
+  content:  null,
+
+  /**
     Once the proxied promise has settled this will become `false`.
 
     @property isPending
