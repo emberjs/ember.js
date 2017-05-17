@@ -20,12 +20,12 @@ const defaultId: TemplateIdFn = (() => {
       const crypto = require('crypto');
       /* tslint:enable:no-require-imports */
 
-      function idFn(src: string): Option<string> {
+      let idFn: TemplateIdFn = src => {
         let hash = crypto.createHash('sha1');
         hash.update(src, 'utf8');
         // trim to 6 bytes of data (2^48 - 1)
         return hash.digest('base64').substring(0,8);
-      }
+      };
 
       idFn("test");
 
