@@ -87,8 +87,6 @@ export function populateMacros(blocks, inlines) {
   inlines.add('textarea', textAreaMacro);
   inlines.addMissing(refineInlineSyntax);
   blocks.add('component', blockComponentMacro);
-  blocks.add('-with-dynamic-vars', _withDynamicVarsMacro);
-  blocks.add('-in-element', _inElementMacro);
   blocks.addMissing(refineBlockSyntax);
 
   for (let i = 0; i < experimentalMacros.length; i++) {
