@@ -275,6 +275,6 @@ function curryArgs(definition, newArgs) {
   return mergedArgs;
 }
 
-export default function(vm, args, symbolTable) {
-  return ClosureComponentReference.create(args, symbolTable, vm.env);
+export default function(vm, args, meta) {
+  return ClosureComponentReference.create(args.capture(), meta, vm.env);
 }

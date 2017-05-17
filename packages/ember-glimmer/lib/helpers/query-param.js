@@ -32,5 +32,5 @@ function queryParams({ positional, named }) {
 }
 
 export default function(vm, args) {
-  return new InternalHelperReference(queryParams, args);
+  return new InternalHelperReference(queryParams, args.capture());
 }
