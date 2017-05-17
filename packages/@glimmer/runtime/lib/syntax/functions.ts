@@ -804,7 +804,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     if (hash && hash[0][0] === 'key') {
       expr(hash[1][0], builder);
     } else {
-      throw new Error('Compile error: #each without key');
+      builder.primitive(null);
     }
 
     expr(params[0], builder);
