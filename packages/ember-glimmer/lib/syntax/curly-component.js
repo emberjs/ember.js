@@ -443,7 +443,7 @@ class CurlyComponentLayoutCompiler {
   }
 
   compile(builder) {
-    builder.wrapLayout(this.template.asLayout());
+    builder.wrapLayout(this.template);
     builder.tag.dynamic(tagName);
     builder.attrs.dynamic('role', ariaRole);
     builder.attrs.static('class', 'ember-view');

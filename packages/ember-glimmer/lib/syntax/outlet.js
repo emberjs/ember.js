@@ -243,7 +243,7 @@ class TopLevelOutletLayoutCompiler {
   }
 
   compile(builder) {
-    builder.wrapLayout(this.template.asLayout());
+    builder.wrapLayout(this.template);
     builder.tag.static('div');
     builder.attrs.static('id', guidFor(this));
     builder.attrs.static('class', 'ember-view');
@@ -267,7 +267,7 @@ export class OutletLayoutCompiler {
   }
 
   compile(builder) {
-    builder.wrapLayout(this.template.asLayout());
+    builder.wrapLayout(this.template);
   }
 }
 
