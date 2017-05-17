@@ -234,7 +234,7 @@ if (isFeatureEnabled('ember-metal-weakmap')) {
   });
 }
 
-if (EmberDev && EmberDev.runningProdBuild) {
+if (EmberDev && !EmberDev.runningProdBuild) {
   QUnit.test('Ember.MODEL_FACTORY_INJECTIONS', function(assert) {
     let descriptor = Object.getOwnPropertyDescriptor(Ember, 'MODEL_FACTORY_INJECTIONS');
     assert.equal(descriptor.enumerable, false, 'descriptor is not enumerable');
