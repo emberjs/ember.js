@@ -13,30 +13,34 @@ export interface PrecompileOptions<T extends TemplateMeta> extends CompileOption
 
 declare function require(id: string): any;
 
-const defaultId: () => TemplateIdFn = (() => {
-  let idFn: TemplateIdFn;
-  return () => {
-    if (!idFn) {
-      if (typeof require === 'function') {
-        try {
-          /* tslint:disable:no-require-imports */
-          const crypto = require('crypto');
-          /* tslint:enable:no-require-imports */
-          idFn = src => {
-            let hash = crypto.createHash('sha1');
-            hash.update(src, 'utf8');
-            // trim to 6 bytes of data (2^48 - 1)
-            return hash.digest('base64').substring(0,8);
-          };
-          idFn("test");
-        } catch (e) {
-          idFn = () => null;
-        }
+const defaultId: TemplateIdFn = (() => {
+  if (typeof require === 'function') {
+    try {
+      /* tslint:disable:no-require-imports */
+      const crypto = require('crypto');
+      /* tslint:enable:no-require-imports */
+
+      function idFn(src: string): Option<string> {
+        let hash = crypto.createHash('sha1');
+        hash.update(src, 'utf8');
+        // trim to 6 bytes of data (2^48 - 1)
+        return hash.digest('base64').substring(0,8);
       }
+
+      idFn("test");
+
+      return idFn;
+    } catch (e) {
     }
-    return idFn;
-  };
+  }
+
+  return function idFn() { return null; };
 })();
+
+const defaultOptions: PrecompileOptions<TemplateMeta> = {
+  id: defaultId,
+  meta: {}
+};
 
 /*
  * Compile a string into a template javascript string.
@@ -53,14 +57,10 @@ const defaultId: () => TemplateIdFn = (() => {
  * @return {string} a template javascript string
  */
 export function precompile<T extends TemplateMeta>(string: string, options?: PrecompileOptions<T>): TemplateJavascript;
-export function precompile(string: string, options?: PrecompileOptions<TemplateMeta>): TemplateJavascript {
-  let opts = options || {
-    id: defaultId(),
-    meta: {}
-  } as any as PrecompileOptions<TemplateMeta>;
-  let ast = preprocess(string, opts);
-  let { block, meta } = TemplateCompiler.compile(opts, ast);
-  let idFn = opts.id || defaultId();
+export function precompile(string: string, options: PrecompileOptions<TemplateMeta> = defaultOptions): TemplateJavascript {
+  let ast = preprocess(string, options);
+  let { block, meta } = TemplateCompiler.compile(options, ast);
+  let idFn = options.id || defaultId;
   let blockJSON = JSON.stringify(block.toJSON());
   let templateJSONObject: SerializedTemplateWithLazyBlock<TemplateMeta> = {
     id: idFn(JSON.stringify(meta) + blockJSON),
