@@ -1,7 +1,5 @@
 import { VersionedPathReference } from "@glimmer/reference";
 import { Opaque } from "@glimmer/interfaces";
-
-import { NULL_REFERENCE, UNDEFINED_REFERENCE } from '../references';
 import { Block } from "../syntax/interfaces";
 
 export type ConstantType = 'slice' | 'block' | 'reference' | 'string' | 'number' | 'expression';
@@ -24,14 +22,6 @@ export class Constants {
   private blocks: Block[] = [];
   private functions: Function[] = [];
   private others: Opaque[] = [];
-
-  public NULL_REFERENCE: number;
-  public UNDEFINED_REFERENCE: number;
-
-  constructor() {
-    this.NULL_REFERENCE = this.reference(NULL_REFERENCE);
-    this.UNDEFINED_REFERENCE = this.reference(UNDEFINED_REFERENCE);
-  }
 
   getReference<T extends Opaque>(value: ConstantReference): VersionedPathReference<T> {
     return this.references[value - 1] as VersionedPathReference<T>;
