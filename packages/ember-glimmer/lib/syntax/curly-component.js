@@ -27,10 +27,6 @@ import {
   dispatchLifeCycleHook,
   setViewElement
 } from 'ember-views';
-import {
-  gatherArgs,
-  ComponentArgs
-} from '../utils/process-args';
 import { privatize as P } from 'container';
 import AbstractManager from './abstract-manager';
 
@@ -167,11 +163,7 @@ function rerenderInstrumentDetails(component) {
 
 class CurlyComponentManager extends AbstractManager {
   prepareArgs(definition, args) {
-    if (definition.ComponentClass) {
-      validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.class.positionalParams);
-    }
-
-    return gatherArgs(args, definition);
+    return null;
   }
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
@@ -183,8 +175,8 @@ class CurlyComponentManager extends AbstractManager {
 
     let factory = definition.ComponentClass;
 
-    let processedArgs = ComponentArgs.create(args);
-    let { props } = processedArgs.value();
+    let capturedArgs = args.named.capture();
+    let props = capturedArgs.value();
 
     aliasIdToElementId(args, props);
 
@@ -216,7 +208,7 @@ class CurlyComponentManager extends AbstractManager {
       }
     }
 
-    let bucket = new ComponentStateBucket(environment, component, processedArgs, finalizer);
+    let bucket = new ComponentStateBucket(environment, component, capturedArgs, finalizer);
 
     if (args.named.has('class')) {
       bucket.classRef = args.named.get('class');
@@ -235,10 +227,12 @@ class CurlyComponentManager extends AbstractManager {
 
   layoutFor(definition, bucket, env) {
     let template = definition.template;
+
     if (!template) {
       let { component } = bucket;
       template = this.templateFor(component, env);
     }
+
     return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
   }
 
@@ -328,12 +322,12 @@ class CurlyComponentManager extends AbstractManager {
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
     if (!args.tag.validate(argsRevision)) {
-      let { attrs, props } = args.value();
+      let props = args.value();
 
       bucket.argsRevision = args.tag.value();
 
       let oldAttrs = component.attrs;
-      let newAttrs = attrs;
+      let newAttrs = props;
 
       component[IS_DISPATCHING_ATTRS] = true;
       component.setProperties(props);
@@ -400,7 +394,7 @@ class TopComponentManager extends CurlyComponentManager {
       processComponentInitializationAssertions(component, {});
     }
 
-    return new ComponentStateBucket(environment, component, args, finalizer);
+    return new ComponentStateBucket(environment, component, args.named.capture(), finalizer);
   }
 }
 
