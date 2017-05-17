@@ -13,9 +13,8 @@ import { generateController, generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
 import AbstractManager from './abstract-manager';
 
-function makeComponentDefinition(vm) {
+function makeComponentDefinition(vm, args) {
   let env     = vm.env;
-  let args    = vm.getArgs();
   let nameRef = args.positional.at(0);
 
   assert(`The first argument of {{render}} must be quoted, e.g. {{render "sidebar"}}.`, isConst(nameRef));

@@ -14,12 +14,11 @@ import AbstractManager from './abstract-manager';
 import { DEBUG } from 'ember-env-flags';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 
-function dynamicEngineFor(vm, symbolTable) {
+function dynamicEngineFor(vm, args, meta) {
   let env     = vm.env;
-  let args    = vm.getArgs();
   let nameRef = args.positional.at(0);
 
-  return new DynamicEngineReference({ nameRef, env, symbolTable });
+  return new DynamicEngineReference({ nameRef, env, meta });
 }
 
 /**
@@ -42,7 +41,7 @@ function dynamicEngineFor(vm, symbolTable) {
   @category ember-application-engines
   @public
 */
-export function mountMacro(path, params, hash, builder) {
+export function mountMacro(name, params, hash, builder) {
   if (EMBER_ENGINES_MOUNT_PARAMS) {
     assert(
       'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
@@ -62,17 +61,17 @@ export function mountMacro(path, params, hash, builder) {
 }
 
 class DynamicEngineReference {
-  constructor({ nameRef, env, symbolTable, args }) {
+  constructor({ nameRef, env, meta }) {
     this.tag = nameRef.tag;
     this.nameRef = nameRef;
     this.env = env;
-    this.symbolTable = symbolTable;
+    this.meta = meta;
     this._lastName = undefined;
     this._lastDef = undefined;
   }
 
   value() {
-    let { env, nameRef, /*symbolTable*/ } = this;
+    let { env, nameRef, /*meta*/ } = this;
     let nameOrDef = nameRef.value();
 
     if (typeof nameOrDef === 'string') {

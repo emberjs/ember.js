@@ -17,10 +17,9 @@ import {
   combine
 } from '@glimmer/reference';
 
-function outletComponentFor(vm) {
+function outletComponentFor(vm, args) {
   let { outletState } = vm.dynamicScope();
 
-  let args = vm.getArgs();
   let outletNameRef;
   if (args.positional.length === 0) {
     outletNameRef = new ConstReference('main');

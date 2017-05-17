@@ -3,12 +3,9 @@ import { outletMacro } from './syntax/outlet';
 import { mountMacro } from './syntax/mount';
 import {
   blockComponentMacro,
-  inlineComponentMacro,
-  closureComponentMacro
+  inlineComponentMacro
 } from './syntax/dynamic-component';
 import { wrapComponentClassAttribute } from './utils/bindings';
-import { _withDynamicVarsMacro } from './syntax/-with-dynamic-vars';
-import { _inElementMacro } from './syntax/-in-element';
 import { inputMacro } from './syntax/input';
 import { textAreaMacro } from './syntax/-text-area';
 import { assert } from 'ember-debug';
@@ -17,10 +14,6 @@ function refineInlineSyntax(path, params, hash, builder) {
   let [ name ] = path;
 
   assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.env.builtInHelpers[name] && builder.env.owner.hasRegistration(`helper:${name}`)));
-
-  if (path.length > 1) {
-    return closureComponentMacro(path, params, hash, null, null, builder);
-  }
 
   let { symbolTable } = builder;
 
@@ -41,10 +34,6 @@ function refineInlineSyntax(path, params, hash, builder) {
 function refineBlockSyntax(sexp, builder) {
   let [, path, params, hash, _default, inverse] = sexp;
   let [ name ] = path;
-
-  if (path.length > 1) {
-    return closureComponentMacro(path, params, hash, _default, inverse, builder);
-  }
 
   if (name.indexOf('-') === -1) {
     return false;

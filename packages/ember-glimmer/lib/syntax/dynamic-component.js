@@ -4,19 +4,11 @@ import {
 import { UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { assert } from 'ember-debug';
 
-function dynamicComponentFor(vm, symbolTable) {
+function dynamicComponentFor(vm, args, meta) {
   let env     = vm.env;
-  let args    = vm.getArgs();
   let nameRef = args.positional.at(0);
 
-  return new DynamicComponentReference({ nameRef, env, symbolTable });
-}
-
-export function closureComponentMacro(path, params, hash, _default, inverse, builder) {
-  let definitionArgs = [[['get', path]], hash, _default, inverse];
-  let args = [params, hash, _default, inverse];
-  builder.component.dynamic(definitionArgs, dynamicComponentFor, args, builder.symbolTable);
-  return true;
+  return new DynamicComponentReference({ nameRef, env, meta });
 }
 
 export function dynamicComponentMacro(params, hash, _default, inverse, builder) {
