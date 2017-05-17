@@ -39,17 +39,22 @@ Ember.computed = computed;
 Ember.ComputedProperty = metal.ComputedProperty;
 Ember.cacheFor = metal.cacheFor;
 
-Ember.assert = EmberDebug.assert;
-Ember.warn = EmberDebug.warn;
-Ember.debug = EmberDebug.debug;
+Ember.assert = function() { };
+Ember.warn = function() { };
+Ember.debug = function() { };
 Ember.deprecate = function () { };
-Ember.deprecateFunc = function() { };
+Ember.deprecateFunc = function() { return arguments[arguments.length - 1]; };
+Ember.runInDebug = function() { };
+
 runInDebug(function() {
+  Ember.assert = EmberDebug.assert;
+  Ember.warn = EmberDebug.warn;
+  Ember.debug = EmberDebug.debug;
   Ember.deprecate = EmberDebug.deprecate;
   Ember.deprecateFunc = EmberDebug.deprecateFunc;
+  Ember.runInDebug = EmberDebug.runInDebug;
 });
-Ember.deprecateFunc = EmberDebug.deprecateFunc;
-Ember.runInDebug = EmberDebug.runInDebug;
+
 /**
   @public
   @class Ember.Debug
