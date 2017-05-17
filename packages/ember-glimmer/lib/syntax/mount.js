@@ -13,6 +13,7 @@ import { OutletLayoutCompiler } from './outlet';
 import AbstractManager from './abstract-manager';
 import { DEBUG } from 'ember-env-flags';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
+import { hashToArgs } from './utils';
 
 function dynamicEngineFor(vm, args, meta) {
   let env     = vm.env;
@@ -55,8 +56,8 @@ export function mountMacro(name, params, hash, builder) {
   }
 
   let definitionArgs = [params.slice(0, 1), null, null, null];
-  let args = [null, hash, null, null];
-  builder.component.dynamic(definitionArgs, dynamicEngineFor, args, builder.symbolTable);
+  let args = [null, hashToArgs(hash), null, null];
+  builder.component.dynamic(definitionArgs, dynamicEngineFor, args);
   return true;
 }
 

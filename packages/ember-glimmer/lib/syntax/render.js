@@ -12,6 +12,7 @@ import { RootReference } from '../utils/references';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
 import AbstractManager from './abstract-manager';
+import { hashToArgs } from './utils';
 
 function makeComponentDefinition(vm, args) {
   let env     = vm.env;
@@ -117,13 +118,13 @@ function makeComponentDefinition(vm, args) {
   @return {String} HTML string
   @public
 */
-export function renderMacro(path, params, hash, builder) {
+export function renderMacro(name, params, hash, builder) {
   if (!params) {
     params = [];
   }
   let definitionArgs = [params.slice(0), hash, null, null];
-  let args = [params.slice(1), hash, null, null];
-  builder.component.dynamic(definitionArgs, makeComponentDefinition, args, builder.symbolTable);
+  let args = [params.slice(1), hashToArgs(hash), null, null];
+  builder.component.dynamic(definitionArgs, makeComponentDefinition, args);
   return true;
 }
 

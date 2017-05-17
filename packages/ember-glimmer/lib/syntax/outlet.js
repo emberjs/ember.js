@@ -30,7 +30,6 @@ function outletComponentFor(vm, args) {
   return new OutletComponentReference(outletNameRef, outletState);
 }
 
-
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
   your template. An important use of the `{{outlet}}` helper is in your
@@ -80,12 +79,13 @@ function outletComponentFor(vm, args) {
   @for Ember.Templates.helpers
   @public
 */
-export function outletMacro(path, params, hash, builder) {
+export function outletMacro(name, params, hash, builder) {
   if (!params) {
     params = [];
   }
   let definitionArgs = [params.slice(0, 1), null, null, null];
-  builder.component.dynamic(definitionArgs, outletComponentFor, CompiledArgs.empty(), builder.symbolTable, null);
+  let emptyArgs = [[], null, null, null]; // FIXME
+  builder.component.dynamic(definitionArgs, outletComponentFor, emptyArgs);
   return true;
 }
 

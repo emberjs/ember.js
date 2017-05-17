@@ -1,8 +1,9 @@
 import { wrapComponentClassAttribute } from '../utils/bindings';
+import { hashToArgs } from './utils';
 
-export function textAreaMacro(path, params, hash, builder) {
-  let definition = builder.env.getComponentDefinition(['-text-area'], builder.symbolTable);
+export function textAreaMacro(name, params, hash, builder) {
+  let definition = builder.env.getComponentDefinition('-text-area', builder.meta.templateMeta);
   wrapComponentClassAttribute(hash);
-  builder.component.static(definition, [params, hash, null, null], builder.symbolTable);
+  builder.component.static(definition, [params, hashToArgs(hash), null, null]);
   return true;
 }
