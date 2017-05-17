@@ -32,5 +32,5 @@
  */
 
 export default function(vm, args) {
-  return args.named;
+  return args.named.capture();
 }
