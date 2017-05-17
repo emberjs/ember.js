@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### 2.13.1 (May 17, 2017)
+
+- [#15129](https://github.com/emberjs/ember.js/pull/15129) Fix access to document service in `ember-engines`.
+- [#15138](https://github.com/emberjs/ember.js/pull/15138) [BUGFIX] Fix mocha blueprint service test filename
+- [#15204](https://github.com/emberjs/ember.js/pull/15204) [DEPRECATION] `Ember.MODEL_FACTORY_INJECTIONS` is now always false, deprecate setting it.
+- [#15207](https://github.com/emberjs/ember.js/pull/15207) [BUGFIX] Ensure child engines do not have their container destroyed twice.
+- [#15242](https://github.com/emberjs/ember.js/pull/15242) [BUGFIX] Fix `EmberError` import in system/router.
+- [#15247](https://github.com/emberjs/ember.js/pull/15247) [BUGFIX] Ensure nested custom elements render properly.
+
 ### 2.13.0 (April 27, 2017)
 
 - [#15086](https://github.com/emberjs/ember.js/pull/15086) [BUGFIX] Ensure route blueprint honors the `--reset-namespace` flag.
