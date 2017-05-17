@@ -236,9 +236,8 @@ export default class Environment extends GlimmerEnvironment {
     return ConditionalReference.create(reference);
   }
 
-  iterableFor(ref, args) {
-    let keyPath = args.named.get('key').value();
-    return createIterable(ref, keyPath);
+  iterableFor(ref, key) {
+    return createIterable(ref, key);
   }
 
   scheduleInstallModifier() {
