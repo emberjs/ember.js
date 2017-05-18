@@ -2,8 +2,7 @@ import {
   ActionHandler,
   Evented,
   FrameworkObject,
-  deprecateUnderscoreActions,
-  typeOf
+  deprecateUnderscoreActions
 } from 'ember-runtime';
 import { initViewElement } from '../system/utils';
 import { cloneStates, states } from './states';
@@ -71,7 +70,7 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
     this._super(...arguments);
     let name = arguments[0];
     let method = this[name];
-    if (method) {
+    if (typeof method === 'function') {
       let len = arguments.length;
       let args = new Array(len - 1);
       for (let i = 1; i < len; i++) {
@@ -82,7 +81,7 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
   },
 
   has(name) {
-    return typeOf(this[name]) === 'function' || this._super(name);
+    return typeof this[name] === 'function' || this._super(name);
   }
 });
 

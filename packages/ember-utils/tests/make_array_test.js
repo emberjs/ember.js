@@ -1,4 +1,4 @@
-import makeArray from '../make-array';
+import { makeArray } from '..';
 
 QUnit.module('Ember.makeArray');
 

@@ -4,10 +4,7 @@ import {
   Object as EmberObject,
   RSVP
 } from 'ember-runtime';
-import {
-  run,
-  isFeatureEnabled
-} from 'ember-metal';
+import { run } from 'ember-metal';
 import { jQuery } from 'ember-views';
 import {
   Component,
@@ -814,22 +811,20 @@ QUnit.test('pauseTest pauses', function() {
   App.testHelpers.pauseTest();
 });
 
-if (isFeatureEnabled('ember-testing-resume-test')) {
-  QUnit.test('resumeTest resumes paused tests', function() {
-    expect(1);
+QUnit.test('resumeTest resumes paused tests', function() {
+  expect(1);
 
-    let pausePromise = App.testHelpers.pauseTest();
-    setTimeout(() => App.testHelpers.resumeTest(), 0);
+  let pausePromise = App.testHelpers.pauseTest();
+  setTimeout(() => App.testHelpers.resumeTest(), 0);
 
-    return pausePromise.then(() => ok(true, 'pauseTest promise was resolved'));
-  });
+  return pausePromise.then(() => ok(true, 'pauseTest promise was resolved'));
+});
 
-  QUnit.test('resumeTest throws if nothing to resume', function() {
-    expect(1);
+QUnit.test('resumeTest throws if nothing to resume', function() {
+  expect(1);
 
-    throws(() => App.testHelpers.resumeTest(), /Testing has not been paused. There is nothing to resume./);
-  });
-}
+  throws(() => App.testHelpers.resumeTest(), /Testing has not been paused. There is nothing to resume./);
+});
 
 QUnit.module('ember-testing routing helpers', {
   setup() {

@@ -1,10 +1,9 @@
-import { Registry, FACTORY_FOR, LOOKUP_FACTORY } from 'container';
+import { Registry } from 'container';
 import { Router } from 'ember-routing';
 import {
   Application,
   ApplicationInstance
 } from 'ember-application';
-import { isFeatureEnabled } from 'ember-metal';
 import {
   RegistryProxyMixin,
   ContainerProxyMixin,
@@ -16,22 +15,7 @@ export default function buildOwner(options = {}) {
   let resolver = options.resolver;
   let bootOptions = options.bootOptions || {};
 
-  let Owner = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin, {
-    [FACTORY_FOR]() {
-      return this.__container__[FACTORY_FOR](...arguments);
-    },
-    [LOOKUP_FACTORY]() {
-      return this.__container__[LOOKUP_FACTORY](...arguments);
-    }
-  });
-
-  if (isFeatureEnabled('ember-factory-for')) {
-    Owner.reopen({
-      factoryFor() {
-        return this.__container__.factoryFor(...arguments);
-      }
-    });
-  }
+  let Owner = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin);
 
   let namespace = EmberObject.create({
     Resolver: { create() { return resolver; } }
@@ -51,7 +35,7 @@ export default function buildOwner(options = {}) {
     __container__: null
   }, ownerOptions);
 
-  let container = registry.container({ owner: owner });
+  let container = registry.container({ owner });
   owner.__container__ = container;
 
   return owner;

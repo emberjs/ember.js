@@ -2,7 +2,6 @@ import { RootReference } from './utils/references';
 import {
   run,
   setHasViews,
-  assert,
   runInTransaction
 } from 'ember-metal';
 import { CURRENT_TAG, UNDEFINED_REFERENCE } from '@glimmer/reference';
@@ -15,6 +14,7 @@ import {
 import { BOUNDS } from './component';
 import { RootComponentDefinition } from './syntax/curly-component';
 import { TopLevelOutletComponentDefinition } from './syntax/outlet';
+import { assert } from 'ember-debug';
 
 const { backburner } = run;
 

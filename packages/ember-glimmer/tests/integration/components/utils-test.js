@@ -19,7 +19,7 @@ moduleFor('View tree tests', class extends ApplicationTest {
   constructor() {
     super();
 
-    this.registerComponent('x-tagless', {
+    this.addComponent('x-tagless', {
       ComponentClass: Component.extend({
         tagName: ''
       }),
@@ -27,7 +27,7 @@ moduleFor('View tree tests', class extends ApplicationTest {
       template: '<div id="{{id}}">[{{id}}] {{#if isShowing}}{{yield}}{{/if}}</div>'
     });
 
-    this.registerComponent('x-toggle', {
+    this.addComponent('x-toggle', {
       ComponentClass: Component.extend({
         isExpanded: true,
 
@@ -50,9 +50,9 @@ moduleFor('View tree tests', class extends ApplicationTest {
       }
     });
 
-    this.registerController('application', ToggleController);
+    this.add('controller:application', ToggleController);
 
-    this.registerTemplate('application', `
+    this.addTemplate('application', `
       {{x-tagless id="root-1"}}
 
       {{#x-toggle id="root-2"}}
@@ -72,11 +72,11 @@ moduleFor('View tree tests', class extends ApplicationTest {
       {{outlet}}
     `);
 
-    this.registerController('index', ToggleController.extend({
+    this.add('controller:index', ToggleController.extend({
       isExpanded: false
     }));
 
-    this.registerTemplate('index', `
+    this.addTemplate('index', `
       {{x-tagless id="root-4"}}
 
       {{#x-toggle id="root-5" isExpanded=false}}
@@ -94,7 +94,7 @@ moduleFor('View tree tests', class extends ApplicationTest {
       {{/if}}
     `);
 
-    this.registerTemplate('zomg', `
+    this.addTemplate('zomg', `
       {{x-tagless id="root-7"}}
 
       {{#x-toggle id="root-8"}}
@@ -110,7 +110,7 @@ moduleFor('View tree tests', class extends ApplicationTest {
       {{/x-toggle}}
     `);
 
-    this.registerTemplate('zomg.lol', `
+    this.addTemplate('zomg.lol', `
       {{x-toggle id="inner-10"}}
     `);
 

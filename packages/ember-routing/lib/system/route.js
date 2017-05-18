@@ -1,18 +1,16 @@
 import { assign, symbol, getOwner } from 'ember-utils';
 import {
-  assert,
-  info,
-  isTesting,
-  Error as EmberError,
   get,
   set,
   getProperties,
+  setProperties,
   isNone,
   computed,
   run,
-  runInDebug,
   isEmpty
 } from 'ember-metal';
+import { assert, info, Error as EmberError, isTesting } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 import {
   typeOf,
   copy,
@@ -25,15 +23,11 @@ import {
 } from 'ember-runtime';
 import generateController from './generate_controller';
 import {
-  generateControllerFactory
-} from './generate_controller';
-import {
   stashParamNames,
   normalizeControllerQueryParams,
   calculateCacheKey,
   prefixRouteNameArg
 } from '../utils';
-import { FACTORY_FOR, LOOKUP_FACTORY } from 'container';
 const { slice } = Array.prototype;
 
 function K() { return this; }
@@ -160,29 +154,27 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @property _qp
   */
   _qp: computed(function() {
-    let controllerProto, combinedQueryParameterConfiguration;
+    let combinedQueryParameterConfiguration;
 
     let controllerName = this.controllerName || this.routeName;
     let owner = getOwner(this);
-    let definedControllerClass = owner[LOOKUP_FACTORY](`controller:${controllerName}`);
+    let controller = owner.lookup(`controller:${controllerName}`);
     let queryParameterConfiguraton = get(this, 'queryParams');
     let hasRouterDefinedQueryParams = !!Object.keys(queryParameterConfiguraton).length;
 
-    if (definedControllerClass) {
-      // the developer has authored a controller class in their application for this route
-      // access the prototype, find its query params and normalize their object shape
-      // them merge in the query params for the route. As a mergedProperty, Route#queryParams is always
-      // at least `{}`
-      controllerProto = definedControllerClass.proto();
+    if (controller) {
+      // the developer has authored a controller class in their application for
+      // this route find its query params and normalize their object shape them
+      // merge in the query params for the route. As a mergedProperty,
+      // Route#queryParams is always at least `{}`
 
-      let controllerDefinedQueryParameterConfiguration = get(controllerProto, 'queryParams');
+      let controllerDefinedQueryParameterConfiguration = get(controller, 'queryParams') || {};
       let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(controllerDefinedQueryParameterConfiguration);
       combinedQueryParameterConfiguration = mergeEachQueryParams(normalizedControllerQueryParameterConfiguration, queryParameterConfiguraton);
     } else if (hasRouterDefinedQueryParams) {
       // the developer has not defined a controller but *has* supplied route query params.
       // Generate a class for them so we can later insert default values
-      let generatedControllerClass = generateControllerFactory(getOwner(this), controllerName);
-      controllerProto = generatedControllerClass.proto();
+      controller = generateController(getOwner(this), controllerName);
       combinedQueryParameterConfiguration = queryParameterConfiguraton;
     }
 
@@ -209,7 +201,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       }
 
       let urlKey = desc.as || this.serializeQueryParamKey(propName);
-      let defaultValue = get(controllerProto, propName);
+      let defaultValue = get(controller, propName);
 
       if (Array.isArray(defaultValue)) {
         defaultValue = emberA(defaultValue.slice());
@@ -220,7 +212,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       let defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
       let scopedPropertyName = `${controllerName}:${propName}`;
       let qp = {
-        undecoratedDefaultValue: get(controllerProto, propName),
+        undecoratedDefaultValue: get(controller, propName),
         defaultValue,
         serializedDefaultValue: defaultValueSerialized,
         serializedValue: defaultValueSerialized,
@@ -1208,6 +1200,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @param {String} name the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used while
       transitioning to the route.
+    @param {Object} [options] optional hash with a queryParams property
+      containing a mapping of query parameters
     @return {Transition} the transition object associated with this
       attempted transition
     @since 1.0.0
@@ -1334,7 +1328,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     if (transition) {
       let qpValues = getQueryParamsFor(this, transition.state);
-      controller.setProperties(qpValues);
+      setProperties(controller, qpValues);
     }
 
     this.setupController(controller, context, transition);
@@ -1623,7 +1617,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     return {
       find(name, value) {
-        let modelClass = owner[FACTORY_FOR](`model:${name}`);
+        let modelClass = owner.factoryFor(`model:${name}`);
 
         assert(
           `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${StringUtils.classify(name)} did not exist and you did not override your route's \`model\` hook.`, !!modelClass);
@@ -1701,7 +1695,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     `_super`:
 
     ```app/routes/photos.js
-    import Ember from 'ebmer';
+    import Ember from 'ember';
 
     export default Ember.Route.extend({
       model() {
@@ -1763,7 +1757,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   },
 
   /**
-    Returns the resolved model of the current route, or a parent (or any ancestor)
+    Returns the controller of the current route, or a parent (or any ancestor)
     route in a route hierarchy.
 
     The controller instance must already have been created, either through entering the
@@ -1855,7 +1849,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     export default Router;
     ```
 
-    ```app/routes/comments.js
+    ```app/routes/post/comments.js
     import Ember from 'ember';
 
     export default Ember.Route.extend({
@@ -2290,12 +2284,12 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
 
   assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || template);
 
-  runInDebug(() => {
+  if (DEBUG) {
     let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
     if (LOG_VIEW_LOOKUPS && !template) {
       info(`Could not find "${name}" template. Nothing will be rendered`, { fullName: `template:${name}` });
     }
-  });
+  }
 
   return renderOptions;
 }

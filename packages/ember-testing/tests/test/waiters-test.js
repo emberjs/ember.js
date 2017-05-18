@@ -1,8 +1,7 @@
 import {
   registerWaiter,
   unregisterWaiter,
-  checkWaiters,
-  generateDeprecatedWaitersArray
+  checkWaiters
 } from '../../test/waiters';
 
 class Waiters {
@@ -143,24 +142,4 @@ QUnit.test('checkWaiters short circuits after first falsey waiter', function(ass
   });
 
   assert.ok(this.waiters.check(), 'checkWaiters returns false if any waiters return false');
-});
-
-QUnit.test('generateDeprecatedWaitersArray provides deprecated access to waiters array', function(assert) {
-  let waiter1 = () => {};
-  let waiter2 = () => {};
-
-  this.waiters.add(waiter1);
-  this.waiters.add(waiter2);
-
-  this.waiters.register();
-
-  let waiters;
-  expectDeprecation(function() {
-    waiters = generateDeprecatedWaitersArray();
-  }, /Usage of `Ember.Test.waiters` is deprecated/);
-
-  assert.deepEqual(waiters, [
-    [null, waiter1],
-    [null, waiter2]
-  ]);
 });

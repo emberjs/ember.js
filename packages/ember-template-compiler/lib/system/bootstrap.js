@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import { Error as EmberError } from 'ember-metal';
+import { Error as EmberError } from 'ember-debug';
 import compile from './compile';
 
 /**

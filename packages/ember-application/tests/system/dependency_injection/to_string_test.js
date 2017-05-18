@@ -1,17 +1,14 @@
 import { guidFor } from 'ember-utils';
 import { ENV, context } from 'ember-environment'; // lookup, etc
-import { run, isFeatureEnabled } from 'ember-metal';
+import { run } from 'ember-metal';
 import Application from '../../../system/application';
 import { Object as EmberObject } from 'ember-runtime';
 import DefaultResolver from '../../../system/resolver';
 
-let originalLookup, App, originalModelInjections;
+let originalLookup, App;
 
 QUnit.module('Ember.Application Dependency Injection – toString', {
   setup() {
-    originalModelInjections = ENV.MODEL_FACTORY_INJECTIONS;
-    ENV.MODEL_FACTORY_INJECTIONS = true;
-
     originalLookup = context.lookup;
 
     run(() => {
@@ -27,17 +24,12 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
   teardown() {
     context.lookup = originalLookup;
     run(App, 'destroy');
-    ENV.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });
 
 QUnit.test('factories', function() {
   let PostFactory;
-  if (isFeatureEnabled('ember-factory-for')) {
-    PostFactory = App.__container__.factoryFor('model:post').class;
-  } else {
-    PostFactory = App.__container__.lookupFactory('model:post');
-  }
+  PostFactory = App.__container__.factoryFor('model:post').class;
   equal(PostFactory.toString(), 'App.Post', 'expecting the model to be post');
 });
 

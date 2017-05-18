@@ -1,5 +1,4 @@
 import {
-  EmptyObject,
   assign,
   guidFor,
   dictionary,
@@ -7,18 +6,19 @@ import {
 } from 'ember-utils';
 import Logger from 'ember-console';
 import {
-  assert,
-  info,
-  Error as EmberError,
   get,
   set,
   defineProperty,
   computed,
   run,
-  runInDebug,
-  deprecate,
   deprecateProperty
 } from 'ember-metal';
+import {
+  Error as EmberError,
+  deprecate,
+  assert,
+  info
+} from 'ember-debug';
 import {
   Object as EmberObject,
   Evented,
@@ -37,7 +37,7 @@ import {
   calculateCacheKey
 } from '../utils';
 import RouterState from './router_state';
-import { FACTORY_FOR } from 'container';
+import { DEBUG } from 'ember-env-flags';
 
 /**
 @module ember
@@ -108,11 +108,11 @@ const EmberRouter = EmberObject.extend(Evented, {
       }
     });
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
         routerMicrolib.log = Logger.debug;
       }
-    });
+    }
 
     routerMicrolib.map(dsl.generate());
   },
@@ -126,7 +126,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let owner = getOwner(this);
     let router = this;
 
-    options.resolveRouteMap = name => owner[FACTORY_FOR](`route-map:${name}`);
+    options.resolveRouteMap = name => owner.factoryFor(`route-map:${name}`);
 
     options.addRouteForEngine = (name, engineInfo) => {
       if (!router._engineInfoByRoute[name]) {
@@ -144,15 +144,15 @@ const EmberRouter = EmberObject.extend(Evented, {
     this.currentRouteName = null;
     this.currentPath = null;
 
-    this._qpCache = new EmptyObject();
+    this._qpCache = Object.create(null);
     this._resetQueuedQueryParameterChanges();
     this._handledErrors = dictionary(null);
-    this._engineInstances = new EmptyObject();
-    this._engineInfoByRoute = new EmptyObject();
+    this._engineInstances = Object.create(null);
+    this._engineInfoByRoute = Object.create(null)
   },
 
   /*
-    Resets all pending query paramter changes.
+    Resets all pending query parameter changes.
     Called after transitioning to a new route
     based on query parameter changes.
   */
@@ -268,11 +268,11 @@ const EmberRouter = EmberObject.extend(Evented, {
     // less surprising than didTransition being out of sync.
     run.once(this, this.trigger, 'didTransition');
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (get(this, 'namespace').LOG_TRANSITIONS) {
         Logger.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
       }
-    });
+    }
   },
 
   _setOutlets() {
@@ -318,7 +318,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     if (!this._toplevelView) {
       let owner = getOwner(this);
-      let OutletView = owner[FACTORY_FOR]('view:-outlet');
+      let OutletView = owner.factoryFor('view:-outlet');
       this._toplevelView = OutletView.create();
       this._toplevelView.setOutletState(liveRoutes);
       let instance = owner.lookup('-application-instance:main');
@@ -341,11 +341,11 @@ const EmberRouter = EmberObject.extend(Evented, {
   willTransition(oldInfos, newInfos, transition) {
     run.once(this, this.trigger, 'willTransition', transition);
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (get(this, 'namespace').LOG_TRANSITIONS) {
         Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
       }
-    });
+    }
   },
 
   handleURL(url) {
@@ -399,12 +399,12 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     updatePaths(this);
 
-    runInDebug(() => {
+    if (DEBUG) {
       let infos = this._routerMicrolib.currentHandlerInfos;
       if (get(this, 'namespace').LOG_TRANSITIONS) {
         Logger.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
       }
-    });
+    }
   },
 
   replaceWith() {
@@ -571,7 +571,7 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   _getHandlerFunction() {
-    let seen = new EmptyObject();
+    let seen = Object.create(null);
     let owner = getOwner(this);
 
     return name => {
@@ -597,15 +597,15 @@ const EmberRouter = EmberObject.extend(Evented, {
       seen[name] = true;
 
       if (!handler) {
-        let DefaultRoute = routeOwner[FACTORY_FOR]('route:basic').class;
+        let DefaultRoute = routeOwner.factoryFor('route:basic').class;
         routeOwner.register(fullRouteName, DefaultRoute.extend());
         handler = routeOwner.lookup(fullRouteName);
 
-        runInDebug(() => {
+        if (DEBUG) {
           if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
             info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
           }
-        });
+        }
       }
 
       handler._setRouteName(routeName);
@@ -801,7 +801,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     }
 
     // We need to fully scope queryParams so that we can create one object
-    // that represents both pased in queryParams and ones that aren't changed
+    // that represents both passed-in queryParams and ones that aren't changed
     // from the active transition.
     this._fullyScopeQueryParams(targetRouteName, models, _queryParams);
     this._fullyScopeQueryParams(targetRouteName, models, unchangedQPs);
@@ -1024,7 +1024,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let engineInstances = this._engineInstances;
 
     if (!engineInstances[name]) {
-      engineInstances[name] = new EmptyObject();
+      engineInstances[name] = Object.create(null);
     }
 
     let engineInstance = engineInstances[name][instanceId];
@@ -1483,7 +1483,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
   let target;
   let myState = {
     render: renderOptions,
-    outlets: new EmptyObject(),
+    outlets: Object.create(null),
     wasUsed: false
   };
   if (renderOptions.into) {
@@ -1528,7 +1528,7 @@ function appendOrphan(liveRoutes, into, myState) {
       render: {
         name: '__ember_orphans__'
       },
-      outlets: new EmptyObject()
+      outlets: Object.create(null)
     };
   }
   liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
@@ -1565,7 +1565,7 @@ function representEmptyRoute(liveRoutes, defaultParentState, route) {
 deprecateProperty(EmberRouter.prototype, 'router', '_routerMicrolib', {
   id: 'ember-router.router',
   until: '2.16',
-  url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-router-router-renamed-to-ember-router-_routerMicrolib'
+  url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-router-router-renamed-to-ember-router-_routermicrolib'
 });
 
 export default EmberRouter;

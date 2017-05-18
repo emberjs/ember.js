@@ -16,9 +16,6 @@ import {
   GUID_KEY
 } from 'ember-utils';
 import {
-  assert,
-  runInDebug,
-  isFeatureEnabled,
   get,
   meta,
   finishChains,
@@ -26,7 +23,6 @@ import {
   detectBinding,
   Mixin,
   REQUIRED,
-  Error as EmberError,
   defineProperty,
   Binding,
   ComputedProperty,
@@ -34,16 +30,19 @@ import {
   InjectedProperty,
   run,
   destroy,
-  descriptor
+  descriptor,
+  _hasCachedComputedProperties
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
+import { assert, Error as EmberError } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
+import { MANDATORY_SETTER } from 'ember/features';
 
 let schedule = run.schedule;
 let applyMixin = Mixin._apply;
 let finishPartial = Mixin.finishPartial;
 let reopen = Mixin.prototype.reopen;
-let hasCachedComputedProperties = false;
 
 export const POST_INIT = symbol('POST_INIT');
 
@@ -53,7 +52,7 @@ function makeCtor() {
   // possible.
 
   let wasApplied = false;
-  let initProperties;
+  let initProperties, initFactory;
 
   class Class {
     constructor() {
@@ -69,6 +68,11 @@ function makeCtor() {
       let m = meta(this);
       let proto = m.proto;
       m.proto = this;
+
+      if (initFactory) {
+        m.factory = initFactory;
+        initFactory = null;
+      }
       if (initProperties) {
         // capture locally so we can clear the closed over variable
         let props = initProperties;
@@ -150,7 +154,7 @@ function makeCtor() {
               if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
                 this.setUnknownProperty(keyName, value);
               } else {
-                if (isFeatureEnabled('mandatory-setter')) {
+                if (MANDATORY_SETTER) {
                   defineProperty(this, keyName, null, value); // setup mandatory setter
                 } else {
                   this[keyName] = value;
@@ -168,8 +172,8 @@ function makeCtor() {
       this[POST_INIT]();
 
       m.proto = proto;
-      finishChains(this);
-      sendEvent(this, 'init');
+      finishChains(m);
+      sendEvent(this, 'init', undefined, undefined, undefined, m);
     }
 
     static willReopen() {
@@ -181,6 +185,7 @@ function makeCtor() {
     }
 
     static _initProperties(args) { initProperties = args; }
+    static _initFactory(factory) { initFactory = factory; }
 
     static proto() {
       let superclass = Class.superclass;
@@ -244,7 +249,7 @@ CoreObject.PrototypeMixin = Mixin.create({
   */
   init() {},
 
-  [POST_INIT]() { }, // Private, and only for didInitAttrs willRecieveAttrs
+  [POST_INIT]() { }, // Private, and only for didInitAttrs willReceiveAttrs
 
   __defineNonEnumerable(property) {
     Object.defineProperty(this, property.name, property.descriptor);
@@ -541,7 +546,8 @@ CoreObject.PrototypeMixin = Mixin.create({
   toString() {
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
-    let ret = `<${this[NAME_KEY] || this.constructor.toString()}:${guidFor(this)}${extension}>`;
+
+    let ret = `<${this[NAME_KEY] || meta(this).factory || this.constructor.toString()}:${guidFor(this)}${extension}>`;
 
     return ret;
   }
@@ -781,7 +787,7 @@ let ClassMixinProps = {
 
     Person.reopenClass({
       species: 'Homo sapiens',
-      
+
       createPerson(name) {
         return Person.create({ name });
       }
@@ -868,7 +874,7 @@ let ClassMixinProps = {
   },
 
   _computedProperties: computed(function() {
-    hasCachedComputedProperties = true;
+    _hasCachedComputedProperties();
     let proto = this.proto();
     let property;
     let properties = [];
@@ -913,7 +919,7 @@ function injectedPropertyAssertion() {
   assert('Injected properties are invalid', validatePropertyInjections(this));
 }
 
-runInDebug(() => {
+if (DEBUG) {
   /**
     Provides lookup-time type validation for injected properties.
 
@@ -921,7 +927,7 @@ runInDebug(() => {
     @method _onLookup
   */
   ClassMixinProps._onLookup = injectedPropertyAssertion;
-});
+}
 
 /**
   Returns a hash of property names and container names that injected
@@ -954,18 +960,4 @@ ClassMixin.ownerConstructor = CoreObject;
 CoreObject.ClassMixin = ClassMixin;
 
 ClassMixin.apply(CoreObject);
-
-CoreObject.reopen({
-  didDefineProperty(proto, key, value) {
-    if (hasCachedComputedProperties === false) { return; }
-    if (value instanceof ComputedProperty) {
-      let cache = meta(this.constructor).readableCache();
-
-      if (cache && cache._computedProperties !== undefined) {
-        cache._computedProperties = undefined;
-      }
-    }
-  }
-});
-
 export default CoreObject;

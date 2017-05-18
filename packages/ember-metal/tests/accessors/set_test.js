@@ -1,6 +1,8 @@
-import { get } from '../../property_get';
-import { set } from '../../property_set';
-import { setHasViews } from '../../tags';
+import {
+  get,
+  set,
+  setHasViews
+} from '../..';
 
 QUnit.module('set', {
   teardown() {

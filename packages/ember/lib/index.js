@@ -1,13 +1,17 @@
 import require, { has } from 'require';
+import { DEBUG } from 'ember-env-flags';
 
 // ****ember-environment****
 import { ENV, context } from 'ember-environment';
+import { IS_NODE, module } from 'node-module';
 import * as utils from 'ember-utils';
 
 import { Registry, Container } from 'container';
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
+import { EMBER_METAL_WEAKMAP } from 'ember/features';
+import * as FLAGS from 'ember/features'
 
 // ember-utils exports
 Ember.getOwner = utils.getOwner;
@@ -22,7 +26,7 @@ Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.applyStr = utils.applyStr;
 Ember.uuid = utils.uuid;
-Ember.assign = Object.assign || utils.assign;
+Ember.assign = utils.assign;
 
 // container exports
 Ember.Container = Container;
@@ -30,11 +34,8 @@ Ember.Registry = Registry;
 
 // need to import this directly, to ensure the babel feature
 // flag plugin works properly
-import {
-  isFeatureEnabled,
-  deprecate,
-  deprecateFunc
-} from 'ember-metal';
+import * as EmberDebug from 'ember-debug';
+import { deprecate, deprecateFunc } from 'ember-debug';
 
 const computed = metal.computed;
 computed.alias = metal.alias;
@@ -42,12 +43,20 @@ Ember.computed = computed;
 Ember.ComputedProperty = metal.ComputedProperty;
 Ember.cacheFor = metal.cacheFor;
 
-Ember.assert = metal.assert;
-Ember.warn = metal.warn;
-Ember.debug = metal.debug;
-Ember.deprecate = metal.deprecate;
-Ember.deprecateFunc = metal.deprecateFunc;
-Ember.runInDebug = metal.runInDebug;
+Ember.assert = EmberDebug.assert;
+Ember.warn = EmberDebug.warn;
+Ember.debug = EmberDebug.debug;
+Ember.deprecate = EmberDebug.deprecate;
+Ember.deprecateFunc = EmberDebug.deprecateFunc;
+Ember.runInDebug = EmberDebug.runInDebug;
+/**
+  @public
+  @class Ember.Debug
+*/
+Ember.Debug = {
+  registerDeprecationHandler: EmberDebug.registerDeprecationHandler,
+  registerWarnHandler: EmberDebug.registerWarnHandler
+};
 Ember.merge = metal.merge;
 
 Ember.instrument = metal.instrument;
@@ -59,7 +68,7 @@ Ember.Instrumentation = {
   reset: metal.instrumentationReset
 };
 
-Ember.Error = metal.Error;
+Ember.Error = EmberDebug.Error;
 Ember.META_DESC = metal.META_DESC;
 Ember.meta = metal.meta;
 Ember.get = metal.get;
@@ -67,8 +76,8 @@ Ember.getWithDefault = metal.getWithDefault;
 Ember._getPath = metal._getPath;
 Ember.set = metal.set;
 Ember.trySet = metal.trySet;
-Ember.FEATURES = metal.FEATURES;
-Ember.FEATURES.isEnabled = metal.isFeatureEnabled;
+Ember.FEATURES = FLAGS.FEATURES;
+Ember.FEATURES.isEnabled = EmberDebug.isFeatureEnabled;
 Ember._Cache = metal.Cache;
 Ember.on = metal.on;
 Ember.addListener = metal.addListener;
@@ -131,7 +140,7 @@ Ember.bind = metal.bind;
 Ember.Binding = metal.Binding;
 Ember.isGlobalPath = metal.isGlobalPath;
 
-if (isFeatureEnabled('ember-metal-weakmap')) {
+if (EMBER_METAL_WEAKMAP) {
   Ember.WeakMap = metal.WeakMap;
 }
 
@@ -166,11 +175,23 @@ Object.defineProperty(Ember, 'LOG_VERSION', {
   enumerable: false
 });
 
-Object.defineProperty(Ember, 'MODEL_FACTORY_INJECTIONS', {
-  get()      { return ENV.MODEL_FACTORY_INJECTIONS;    },
-  set(value) { ENV.MODEL_FACTORY_INJECTIONS = !!value;  },
-  enumerable: false
-});
+if (DEBUG) {
+  Object.defineProperty(Ember, 'MODEL_FACTORY_INJECTIONS', {
+    get()      { return false; },
+    set(value) {
+      deprecate(
+        'Ember.MODEL_FACTORY_INJECTIONS is no longer required',
+        false,
+        {
+          id: 'ember-metal.model_factory_injections',
+          until: '2.17.0',
+          url: 'http://emberjs.com/deprecations/v2.x#toc_code-ember-model-factory-injections'
+        }
+      );
+    },
+    enumerable: false
+  });
+}
 
 Object.defineProperty(Ember, 'LOG_BINDINGS', {
   get()      { return ENV.LOG_BINDINGS;    },
@@ -231,17 +252,10 @@ Object.defineProperty(Ember, 'K', {
 });
 
 Object.defineProperty(Ember, 'testing', {
-  get: metal.isTesting,
-  set: metal.setTesting,
+  get: EmberDebug.isTesting,
+  set: EmberDebug.setTesting,
   enumerable: false
 });
-
-if (!has('ember-debug')) {
-  Ember.Debug = {
-    registerDeprecationHandler() {},
-    registerWarnHandler() {}
-  };
-}
 
 import Backburner from 'backburner';
 
@@ -478,7 +492,6 @@ import {
   template,
   escapeExpression,
   isHTMLSafe,
-  makeBoundHelper,
   getTemplates,
   setTemplates,
   _getSafeString
@@ -511,7 +524,6 @@ EmberHandleBarsUtils.escapeExpression = escapeExpression;
 EmberString.htmlSafe = htmlSafe;
 
 EmberString.isHTMLSafe = isHTMLSafe;
-EmberHTMLBars.makeBoundHelper = makeBoundHelper;
 
 /**
  Global hash of shared templates. This will automatically be populated
@@ -542,9 +554,6 @@ export { VERSION };
 Ember.VERSION = VERSION;
 
 metal.libraries.registerCoreLibrary('Ember', VERSION);
-
-Ember.create = deprecateFunc('Ember.create is deprecated in favor of Object.create', { id: 'ember-metal.ember-create', until: '3.0.0' }, Object.create);
-Ember.keys = deprecateFunc('Ember.keys is deprecated in favor of Object.keys', { id: 'ember-metal.ember.keys', until: '3.0.0' }, Object.keys);
 
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly
@@ -626,8 +635,9 @@ runLoadHooks('Ember');
 */
 export default Ember;
 
+
 /* globals module */
-if (typeof module === 'object' && module.exports) {
+if (IS_NODE) {
   module.exports = Ember;
 } else {
   context.exports.Ember = context.exports.Em = Ember;

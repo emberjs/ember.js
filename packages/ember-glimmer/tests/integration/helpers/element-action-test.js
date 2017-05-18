@@ -3,10 +3,10 @@ import { strip } from '../../utils/abstract-test-case';
 import { Component } from '../../utils/helpers';
 import {
   set,
-  isFeatureEnabled,
   instrumentationSubscribe,
   instrumentationReset
 } from 'ember-metal';
+import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 
 import { Object as EmberObject, A as emberA } from 'ember-runtime';
 
@@ -31,7 +31,7 @@ function getActionIds(element) {
   return getActionAttributes(element).map(attribute => attribute.slice('data-ember-action-'.length));
 }
 
-if (isFeatureEnabled('ember-improved-instrumentation')) {
+if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor('Helpers test: element action instrumentation', class extends RenderingTest {
     teardown() {
       super.teardown();
@@ -1422,5 +1422,56 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     });
 
     this.assertText('Click me');
+  }
+
+  ['@test it supports non-registered actions [GH#14888]']() {
+    this.render(`
+      {{#if show}}
+        <button id='ddButton' {{action (mut show) false}}>
+          Show ({{show}})
+        </button>
+      {{/if}}
+    `, { show: true });
+
+    this.assert.equal(this.$('button').text().trim(), 'Show (true)');
+    // We need to focus in to simulate an actual click.
+    this.runTask(() => {
+      document.getElementById('ddButton').focus();
+      document.getElementById('ddButton').click();
+    });
+  }
+
+  ['@test action handler that shifts element attributes doesn\'t trigger multiple invocations']() {
+    let actionCount = 0;
+    let ExampleComponent = Component.extend({
+      selected: false,
+      actions: {
+        toggleSelected() {
+          actionCount++;
+          this.toggleProperty('selected');
+        }
+      }
+    });
+
+    this.registerComponent('example-component', {
+      ComponentClass: ExampleComponent,
+      template: '<button class="{{if selected \'selected\'}}" {{action "toggleSelected"}}>Toggle Selected</button>'
+    });
+
+    this.render('{{example-component}}');
+
+    this.runTask(() => {
+      this.$('button').click();
+    });
+
+    this.assert.equal(actionCount, 1, 'Click action only fired once.');
+    this.assert.ok(this.$('button').hasClass('selected'), 'Element with action handler has properly updated it\'s conditional class');
+
+    this.runTask(() => {
+      this.$('button').click();
+    });
+
+    this.assert.equal(actionCount, 2, 'Second click action only fired once.');
+    this.assert.ok(!this.$('button').hasClass('selected'), 'Element with action handler has properly updated it\'s conditional class');
   }
 });

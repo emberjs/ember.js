@@ -1,5 +1,7 @@
 import { guidFor, OWNER } from 'ember-utils';
-import { Cache, assert, warn, runInDebug, isFeatureEnabled } from 'ember-metal';
+import { Cache, _instrumentStart } from 'ember-metal';
+import { assert, warn } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 import {
   lookupPartial,
   hasPartial,
@@ -49,9 +51,11 @@ import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
-import { FACTORY_FOR } from 'container';
-
 import { default as ActionModifierManager } from './modifiers/action';
+
+function instrumentationPayload(name) {
+  return { object: `component:${name}` };
+}
 
 export default class Environment extends GlimmerEnvironment {
   static create(options) {
@@ -127,7 +131,9 @@ export default class Environment extends GlimmerEnvironment {
       '-get-dynamic-var': getDynamicVar
     };
 
-    runInDebug(() => this.debugStack = new DebugStack());
+    if (DEBUG) {
+      this.debugStack = new DebugStack()
+    }
   }
 
   macros() {
@@ -142,11 +148,13 @@ export default class Environment extends GlimmerEnvironment {
 
   getComponentDefinition(path, symbolTable) {
     let name = path[0];
+    let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let source = blockMeta.moduleName && `template:${blockMeta.moduleName}`;
-
-    return this._definitionCache.get({ name, source, owner });
+    let definition = this._definitionCache.get({ name, source, owner });
+    finalizer();
+    return definition;
   }
 
   // normally templates should be exported at the proper module name
@@ -203,32 +211,15 @@ export default class Environment extends GlimmerEnvironment {
     let blockMeta = symbolTable.getMeta();
     let owner = blockMeta.owner;
     let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
+    let helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
 
-    if (isFeatureEnabled('ember-factory-for')) {
-      let helperFactory = owner[FACTORY_FOR](`helper:${name}`, options) || owner[FACTORY_FOR](`helper:${name}`);
-
-      // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-      if (helperFactory.class.isHelperInstance) {
-        return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
-      } else if (helperFactory.class.isHelperFactory) {
-        if (!isFeatureEnabled('ember-no-double-extend')) {
-          helperFactory = helperFactory.create();
-        }
-        return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
-      } else {
-        throw new Error(`${name} is not a helper`);
-      }
+    // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
+    if (helperFactory.class.isHelperInstance) {
+      return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
+    } else if (helperFactory.class.isHelperFactory) {
+      return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
     } else {
-      let helperFactory = owner.lookup(`helper:${name}`, options) || owner.lookup(`helper:${name}`);
-
-      // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-      if (helperFactory.isHelperInstance) {
-        return (vm, args) => SimpleHelperReference.create(helperFactory.compute, args);
-      } else if (helperFactory.isHelperFactory) {
-        return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
-      } else {
-        throw new Error(`${name} is not a helper`);
-      }
+      throw new Error(`${name} is not a helper`);
     }
   }
 
@@ -293,7 +284,7 @@ export default class Environment extends GlimmerEnvironment {
   }
 }
 
-runInDebug(() => {
+if (DEBUG) {
   class StyleAttributeManager extends AttributeManager {
     setAttribute(dom, element, value) {
       warn(constructStyleDeprecationMessage(value), (() => {
@@ -325,4 +316,4 @@ runInDebug(() => {
 
     return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
   };
-});
+}

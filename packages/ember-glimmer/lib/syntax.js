@@ -11,7 +11,7 @@ import { _withDynamicVarsMacro } from './syntax/-with-dynamic-vars';
 import { _inElementMacro } from './syntax/-in-element';
 import { inputMacro } from './syntax/input';
 import { textAreaMacro } from './syntax/-text-area';
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 
 function refineInlineSyntax(path, params, hash, builder) {
   let [ name ] = path;
@@ -69,7 +69,7 @@ function refineBlockSyntax(sexp, builder) {
   return false;
 }
 
-let experimentalMacros = [];
+export const experimentalMacros = [];
 
 // This is a private API to allow for expiremental macros
 // to be created in user space. Registering a macro should
@@ -95,8 +95,6 @@ export function populateMacros(blocks, inlines) {
     let macro = experimentalMacros[i];
     macro(blocks, inlines);
   }
-
-  experimentalMacros = [];
 
   return { blocks, inlines };
 }

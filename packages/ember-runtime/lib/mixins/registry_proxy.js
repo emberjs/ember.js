@@ -4,9 +4,9 @@
 */
 
 import {
-  deprecate,
   Mixin
 } from 'ember-metal';
+import { deprecate } from 'ember-debug';
 
 /**
   RegistryProxyMixin is used to provide public access to specific
@@ -240,11 +240,6 @@ export default Mixin.create({
     classes that are instantiated by Ember itself. Instantiating a class
     directly (via `create` or `new`) bypasses the dependency injection
     system.
-
-    **Note:** Ember-Data instantiates its models in a unique manner, and consequently
-    injections onto models (or all models) will not work as expected. Injections
-    on models can be enabled by setting `EmberENV.MODEL_FACTORY_INJECTIONS`
-    to `true`.
 
     @public
     @method inject

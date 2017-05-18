@@ -1,9 +1,8 @@
 import { inspect } from 'ember-utils';
-import { assert, warn } from './debug';
+import { assert, warn, Error as EmberError } from 'ember-debug';
 import { set } from './property_set';
 import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import expandProperties from './expand_properties';
-import EmberError from './error';
 import {
   Descriptor,
   defineProperty
@@ -413,7 +412,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     return ret;
   }
 
-  propertyWillChange(obj, keyName);
+  propertyWillChange(obj, keyName, meta);
 
   if (hadCachedValue) {
     cache[keyName] = undefined;
@@ -429,7 +428,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     cache[keyName] = ret;
   }
 
-  propertyDidChange(obj, keyName);
+  propertyDidChange(obj, keyName, meta);
 
   return ret;
 };

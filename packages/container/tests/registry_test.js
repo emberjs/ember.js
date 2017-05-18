@@ -1,4 +1,4 @@
-import { Registry } from '../index';
+import { Registry } from '..';
 import { factory } from 'internal-test-helpers';
 
 QUnit.module('Registry');
@@ -434,29 +434,6 @@ QUnit.test('`getTypeInjections` includes type injections from a fallback registr
   fallback.injection('model', 'source', 'source:main');
 
   equal(registry.getTypeInjections('model').length, 1, 'Injections from the fallback registry are merged');
-});
-
-QUnit.test('`getFactoryInjections` includes factory injections from a fallback registry', function() {
-  let fallback = new Registry();
-  let registry = new Registry({ fallback: fallback });
-
-  equal(registry.getFactoryInjections('model:user').length, 0, 'No factory injections in the primary registry');
-
-  fallback.factoryInjection('model:user', 'store', 'store:main');
-
-  equal(registry.getFactoryInjections('model:user').length, 1, 'Factory injections from the fallback registry are merged');
-});
-
-
-QUnit.test('`getFactoryTypeInjections` includes factory type injections from a fallback registry', function() {
-  let fallback = new Registry();
-  let registry = new Registry({ fallback: fallback });
-
-  equal(registry.getFactoryTypeInjections('model').length, 0, 'No factory type injections in the primary registry');
-
-  fallback.factoryInjection('model', 'store', 'store:main');
-
-  equal(registry.getFactoryTypeInjections('model').length, 1, 'Factory type injections from the fallback registry are merged');
 });
 
 QUnit.test('`knownForType` contains keys for each item of a given type', function() {

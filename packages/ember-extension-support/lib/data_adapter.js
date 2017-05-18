@@ -9,8 +9,6 @@ import {
   removeArrayObserver,
   objectAt
 } from 'ember-runtime';
-import { FACTORY_FOR } from 'container';
-import { Application } from 'ember-application';
 
 /**
 @module ember
@@ -165,7 +163,7 @@ export default EmberObject.extend({
   _nameToClass(type) {
     if (typeof type === 'string') {
       let owner = getOwner(this);
-      let Factory = owner[FACTORY_FOR](`model:${type}`);
+      let Factory = owner.factoryFor(`model:${type}`);
       type = Factory && Factory.class;
     }
     return type;
@@ -388,12 +386,8 @@ export default EmberObject.extend({
         if (!namespace.hasOwnProperty(key)) { continue; }
         // Even though we will filter again in `getModelTypes`,
         // we should not call `lookupFactory` on non-models
-        // (especially when `EmberENV.MODEL_FACTORY_INJECTIONS` is `true`)
         if (!this.detect(namespace[key])) { continue; }
         let name = StringUtils.dasherize(key);
-        if (!(namespace instanceof Application) && namespace.toString()) {
-          name = `${namespace}/${name}`;
-        }
         types.push(name);
       }
     });

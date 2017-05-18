@@ -3,11 +3,10 @@
 @submodule ember-runtime
 */
 
-import { EmptyObject, guidFor } from 'ember-utils';
+import { guidFor } from 'ember-utils';
+import { assert, Error as EmberError } from 'ember-debug';
 import {
-  assert,
   get,
-  Error as EmberError,
   ComputedProperty,
   computed,
   addObserver,
@@ -433,7 +432,7 @@ export function uniq(...args) {
 export function uniqBy(dependentKey, propertyKey) {
   return computed(`${dependentKey}.[]`, function() {
     let uniq = emberA();
-    let seen = new EmptyObject();
+    let seen = Object.create(null);
     let list = get(this, dependentKey);
     if (isArray(list)) {
       list.forEach(item => {

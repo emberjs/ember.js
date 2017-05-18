@@ -1,5 +1,5 @@
-import { dictionary, EmptyObject, assign, intern } from 'ember-utils';
-import { assert, deprecate } from 'ember-metal';
+import { dictionary, assign, intern } from 'ember-utils';
+import { assert, deprecate } from 'ember-debug';
 import Container from './container';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
@@ -32,10 +32,8 @@ export default function Registry(options) {
 
   this._typeInjections        = dictionary(null);
   this._injections            = dictionary(null);
-  this._factoryTypeInjections = dictionary(null);
-  this._factoryInjections     = dictionary(null);
 
-  this._localLookupCache      = new EmptyObject();
+  this._localLookupCache      = Object.create(null);
   this._normalizeCache        = dictionary(null);
   this._resolveCache          = dictionary(null);
   this._failCache             = dictionary(null);
@@ -85,22 +83,6 @@ Registry.prototype = {
    @type InheritingDict
    */
   _injections: null,
-
-  /**
-   @private
-
-   @property _factoryTypeInjections
-   @type InheritingDict
-   */
-  _factoryTypeInjections: null,
-
-  /**
-   @private
-
-   @property _factoryInjections
-   @type InheritingDict
-   */
-  _factoryInjections: null,
 
   /**
    @private
@@ -205,7 +187,7 @@ Registry.prototype = {
 
     let normalizedName = this.normalize(fullName);
 
-    this._localLookupCache = new EmptyObject();
+    this._localLookupCache = Object.create(null);
 
     delete this.registrations[normalizedName];
     delete this._resolveCache[normalizedName];
@@ -549,115 +531,6 @@ Registry.prototype = {
     });
   },
 
-
-  /**
-   Used only via `factoryInjection`.
-
-   Provides a specialized form of injection, specifically enabling
-   all factory of one type to be injected with a reference to another
-   object.
-
-   For example, provided each factory of type `model` needed a `store`.
-   one would do the following:
-
-   ```javascript
-   let registry = new Registry();
-
-   registry.register('store:main', SomeStore);
-
-   registry.factoryTypeInjection('model', 'store', 'store:main');
-
-   let store = registry.lookup('store:main');
-   let UserFactory = registry.lookupFactory('model:user');
-
-   UserFactory.store instanceof SomeStore; //=> true
-   ```
-
-   @private
-   @method factoryTypeInjection
-   @param {String} type
-   @param {String} property
-   @param {String} fullName
-   */
-  factoryTypeInjection(type, property, fullName) {
-    let injections = this._factoryTypeInjections[type] ||
-                     (this._factoryTypeInjections[type] = []);
-
-    injections.push({
-      property: property,
-      fullName: this.normalize(fullName)
-    });
-  },
-
-  /**
-   Defines factory injection rules.
-
-   Similar to regular injection rules, but are run against factories, via
-   `Registry#lookupFactory`.
-
-   These rules are used to inject objects onto factories when they
-   are looked up.
-
-   Two forms of injections are possible:
-
-   * Injecting one fullName on another fullName
-   * Injecting one fullName on a type
-
-   Example:
-
-   ```javascript
-   let registry = new Registry();
-   let container = registry.container();
-
-   registry.register('store:main', Store);
-   registry.register('store:secondary', OtherStore);
-   registry.register('model:user', User);
-   registry.register('model:post', Post);
-
-   // injecting one fullName on another type
-   registry.factoryInjection('model', 'store', 'store:main');
-
-   // injecting one fullName on another fullName
-   registry.factoryInjection('model:post', 'secondaryStore', 'store:secondary');
-
-   let UserFactory = container.lookupFactory('model:user');
-   let PostFactory = container.lookupFactory('model:post');
-   let store = container.lookup('store:main');
-
-   UserFactory.store instanceof Store; //=> true
-   UserFactory.secondaryStore instanceof OtherStore; //=> false
-
-   PostFactory.store instanceof Store; //=> true
-   PostFactory.secondaryStore instanceof OtherStore; //=> true
-
-   // and both models share the same source instance
-   UserFactory.store === PostFactory.store; //=> true
-   ```
-
-   @private
-   @method factoryInjection
-   @param {String} factoryName
-   @param {String} property
-   @param {String} injectionName
-   */
-  factoryInjection(fullName, property, injectionName) {
-    let normalizedName = this.normalize(fullName);
-    let normalizedInjectionName = this.normalize(injectionName);
-
-    this.validateFullName(injectionName);
-
-    if (fullName.indexOf(':') === -1) {
-      return this.factoryTypeInjection(normalizedName, property, normalizedInjectionName);
-    }
-
-    let injections = this._factoryInjections[normalizedName] || (this._factoryInjections[normalizedName] = []);
-
-    injections.push({
-      property: property,
-      fullName: normalizedInjectionName
-    });
-  },
-
   /**
    @private
    @method knownForType
@@ -697,7 +570,7 @@ Registry.prototype = {
   },
 
   isValidFullName(fullName) {
-    return !!VALID_FULL_NAME_REGEXP.test(fullName);
+    return VALID_FULL_NAME_REGEXP.test(fullName);
   },
 
   validateInjections(injections) {
@@ -741,22 +614,6 @@ Registry.prototype = {
     let injections = this._typeInjections[type] || [];
     if (this.fallback) {
       injections = injections.concat(this.fallback.getTypeInjections(type));
-    }
-    return injections;
-  },
-
-  getFactoryInjections(fullName) {
-    let injections = this._factoryInjections[fullName] || [];
-    if (this.fallback) {
-      injections = injections.concat(this.fallback.getFactoryInjections(fullName));
-    }
-    return injections;
-  },
-
-  getFactoryTypeInjections(type) {
-    let injections = this._factoryTypeInjections[type] || [];
-    if (this.fallback) {
-      injections = injections.concat(this.fallback.getFactoryTypeInjections(type));
     }
     return injections;
   }
@@ -811,7 +668,7 @@ function expandLocalLookup(registry, normalizedName, normalizedSource) {
   let normalizedNameCache = cache[normalizedName];
 
   if (!normalizedNameCache) {
-    normalizedNameCache = cache[normalizedName] = new EmptyObject();
+    normalizedNameCache = cache[normalizedName] = Object.create(null);
   }
 
   let cached = normalizedNameCache[normalizedSource];

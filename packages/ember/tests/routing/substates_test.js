@@ -558,7 +558,7 @@ QUnit.test('Handled errors that bubble can be handled at a higher level', functi
       error(err) {
         step(3, 'MomRoute#error');
 
-        equal(err, handledError, 'error handled and rebubbled is handleable at heigher route');
+        equal(err, handledError, 'error handled and rebubbled is handleable at higher route');
       }
     }
   });

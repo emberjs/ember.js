@@ -10,8 +10,9 @@ import {
   RegistryProxyMixin,
   RSVP
 } from 'ember-runtime';
-import { Error as EmberError, assert, run } from 'ember-metal';
-import { Registry, FACTORY_FOR, LOOKUP_FACTORY, privatize as P } from 'container';
+import { assert, Error as EmberError } from 'ember-debug';
+import { run } from 'ember-metal';
+import { Registry, privatize as P } from 'container';
 import { getEngineParent, setEngineParent } from './engine-parent';
 
 /**
@@ -129,14 +130,6 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   },
 
   /**
-    @private
-  */
-  willDestroy() {
-    this._super(...arguments);
-    run(this.__container__, 'destroy');
-  },
-
-  /**
     Build a new `Ember.EngineInstance` that's a child of this instance.
 
     Engines must be registered by name with their parent engine
@@ -187,21 +180,14 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       'router:main',
       P`-bucket-cache:main`,
       '-view-registry:main',
-      `renderer:-${env.isInteractive ? 'dom' : 'inert'}`
+      `renderer:-${env.isInteractive ? 'dom' : 'inert'}`,
+      'service:-document'
     ];
 
     singletons.forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
 
     this.inject('view', '_environment', '-environment:main');
     this.inject('route', '_environment', '-environment:main');
-  },
-
-  [FACTORY_FOR](fullName, options) {
-    return this.__container__[FACTORY_FOR](fullName, options);
-  },
-
-  [LOOKUP_FACTORY](fullName, options) {
-    return this.__container__[LOOKUP_FACTORY](fullName, options);
   }
 });
 

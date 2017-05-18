@@ -14,7 +14,7 @@ import {
   moduleFor
 } from 'internal-test-helpers';
 
-import { isFeatureEnabled } from 'ember-metal';
+import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 
 function setupController(app, name) {
   let controllerName = `${String.capitalize(name)}Controller`;
@@ -32,7 +32,7 @@ function buildQueryParams(queryParams) {
   };
 }
 
-if (isFeatureEnabled('ember-routing-router-service')) {
+if (EMBER_ROUTING_ROUTER_SERVICE) {
   moduleFor('Router Service - urlFor', class extends RouterTestCase {
     ['@test RouterService#urlFor returns URL for simple route'](assert) {
       assert.expect(1);
@@ -176,7 +176,7 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       let expectedURL;
       let dynamicModel = { id: 1 };
 
-      this.registerRoute('dynamic', Route.extend({
+      this.add('route:dynamic', Route.extend({
         model() {
           return dynamicModel;
         }
@@ -221,7 +221,7 @@ if (isFeatureEnabled('ember-routing-router-service')) {
       let queryParams = buildQueryParams({ foo: 'bar' });
       let dynamicModel = { id: 1 };
 
-      this.registerRoute('dynamic', Route.extend({
+      this.add('route:dynamic', Route.extend({
         model() {
           return dynamicModel;
         }

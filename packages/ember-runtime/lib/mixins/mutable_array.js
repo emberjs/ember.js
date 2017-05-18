@@ -13,12 +13,12 @@ const EMPTY = [];
 
 import {
   get,
-  Error as EmberError,
   Mixin
 } from 'ember-metal';
 import EmberArray, { objectAt } from './array';
 import MutableEnumerable from './mutable_enumerable';
 import Enumerable from './enumerable';
+import { Error as EmberError } from 'ember-debug';
 
 export function removeAt(array, start, len) {
   if ('number' === typeof start) {

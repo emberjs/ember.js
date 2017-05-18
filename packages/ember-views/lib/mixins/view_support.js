@@ -1,58 +1,17 @@
 import { guidFor, getOwner } from 'ember-utils';
-import { assert, deprecate, descriptor, runInDebug, Mixin } from 'ember-metal';
+import { descriptor, Mixin } from 'ember-metal';
+import { assert, deprecate } from 'ember-debug';
 import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
 import { POST_INIT } from 'ember-runtime/system/core_object';
 import jQuery from '../system/jquery';
+import { DEBUG } from 'ember-env-flags';
 
 function K() { return this; }
 
-export let dispatchLifeCycleHook = (component, hook, oldAttrs, newAttrs) => {
-  component.trigger(hook, { attrs: newAttrs, oldAttrs, newAttrs });
-};
-
-runInDebug(() => {
-  class Attrs {
-    constructor(oldAttrs, newAttrs, message) {
-      this._oldAttrs = oldAttrs;
-      this._newAttrs = newAttrs;
-      this._message = message;
-    }
-
-    get attrs() {
-      return this.newAttrs;
-    }
-
-    get oldAttrs() {
-      deprecate(this._message, false, {
-        id: 'ember-views.lifecycle-hook-arguments',
-        until: '2.13.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
-      });
-
-      return this._oldAttrs;
-    }
-
-    get newAttrs() {
-      deprecate(this._message, false, {
-        id: 'ember-views.lifecycle-hook-arguments',
-        until: '2.13.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
-      });
-
-      return this._newAttrs;
-    }
-  }
-
-  dispatchLifeCycleHook = (component, hook, oldAttrs, newAttrs) => {
-    if (typeof component[hook] === 'function' && component[hook].length !== 0) {
-      // Already warned in init
-      component.trigger(hook, { attrs: newAttrs, oldAttrs, newAttrs });
-    } else {
-      component.trigger(hook, new Attrs(oldAttrs, newAttrs, `[DEPRECATED] Ember will stop passing arguments to component lifecycle hooks. Please change \`${component.toString()}#${hook}\` to stop taking arguments.`));
-    }
-  };
-});
+export function dispatchLifeCycleHook(component, hook, oldAttrs, newAttrs) {
+  component.trigger(hook);
+}
 
 /**
  @class ViewMixin
@@ -536,7 +495,16 @@ export default Mixin.create({
       let owner = getOwner(this);
       let dispatcher = owner && owner.lookup('event_dispatcher:main');
 
-      if (dispatcher && dispatcher.canDispatchToEventManager === null) {
+      deprecate(
+        `\`eventManager\` has been deprecated in ${this}.`,
+        false,
+        {
+          id: 'ember-views.event-dispatcher.canDispatchToEventManager',
+          until: '2.16.0'
+        }
+      );
+
+      if (dispatcher && !('canDispatchToEventManager' in dispatcher)) {
         dispatcher.canDispatchToEventManager = true;
       }
     }
@@ -548,36 +516,6 @@ export default Mixin.create({
         id: 'ember-views.did-init-attrs',
         until: '3.0.0',
         url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
-      }
-    );
-
-    deprecate(
-      `[DEPRECATED] Ember will stop passing arguments to component lifecycle hooks. Please change \`${this.toString()}#didInitAttrs\` to stop taking arguments.`,
-      typeof this.didInitAttrs !== 'function' || this.didInitAttrs.length === 0,
-      {
-        id: 'ember-views.lifecycle-hook-arguments',
-        until: '2.13.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
-      }
-    );
-
-    deprecate(
-      `[DEPRECATED] Ember will stop passing arguments to component lifecycle hooks. Please change \`${this.toString()}#didReceiveAttrs\` to stop taking arguments.`,
-      typeof this.didReceiveAttrs !== 'function' || this.didReceiveAttrs.length === 0,
-      {
-        id: 'ember-views.lifecycle-hook-arguments',
-        until: '2.13.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
-      }
-    );
-
-    deprecate(
-      `[DEPRECATED] Ember will stop passing arguments to component lifecycle hooks. Please change \`${this.toString()}#didUpdateAttrs\` to stop taking arguments.`,
-      typeof this.didUpdateAttrs !== 'function' || this.didUpdateAttrs.length === 0,
-      {
-        id: 'ember-views.lifecycle-hook-arguments',
-        until: '2.13.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_arguments-in-component-lifecycle-hooks'
       }
     );
 

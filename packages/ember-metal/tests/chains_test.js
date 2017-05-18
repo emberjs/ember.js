@@ -1,10 +1,14 @@
-import { addObserver } from '../observer';
-import { get } from '../property_get';
-import { ChainNode, finishChains } from '../chains';
-import { defineProperty } from '../properties';
-import computed from '../computed';
-import { propertyDidChange } from '../property_events';
-import { peekMeta } from '../meta';
+import {
+  addObserver,
+  get,
+  ChainNode,
+  finishChains,
+  defineProperty,
+  computed,
+  propertyDidChange,
+  peekMeta,
+  meta
+} from '..';
 
 QUnit.module('Chains');
 
@@ -15,11 +19,16 @@ QUnit.test('finishChains should properly copy chains from prototypes to instance
   addObserver(obj, 'foo.bar', null, didChange);
 
   let childObj = Object.create(obj);
-  finishChains(childObj);
-  ok(peekMeta(obj) !== peekMeta(childObj).readableChains(), 'The chains object is copied');
+
+  let parentMeta = meta(obj);
+  let childMeta = meta(childObj);
+
+  finishChains(childMeta);
+
+  ok(parentMeta.readableChains() !== childMeta.readableChains(), 'The chains object is copied');
 });
 
-QUnit.test('does not observe primative values', function(assert) {
+QUnit.test('does not observe primitive values', function(assert) {
   let obj = {
     foo: { bar: 'STRING' }
   };

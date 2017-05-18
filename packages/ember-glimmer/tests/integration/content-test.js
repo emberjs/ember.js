@@ -3,10 +3,12 @@ import { RenderingTest, moduleFor } from '../utils/test-case';
 import { applyMixins } from '../utils/abstract-test-case';
 import {
   set,
-  computed,
+  computed
+} from 'ember-metal';
+import {
   getDebugFunction,
   setDebugFunction
-} from 'ember-metal';
+} from 'ember-debug';
 import { Object as EmberObject, ObjectProxy } from 'ember-runtime';
 import { classes } from '../utils/test-helpers';
 import { constructStyleDeprecationMessage  } from 'ember-views';

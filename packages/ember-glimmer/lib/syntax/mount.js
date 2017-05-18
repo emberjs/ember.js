@@ -6,12 +6,13 @@ import {
   ComponentDefinition
 } from '@glimmer/runtime';
 import { UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { assert, runInDebug } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing';
 import { OutletLayoutCompiler } from './outlet';
-import { FACTORY_FOR } from 'container';
 import AbstractManager from './abstract-manager';
+import { DEBUG } from 'ember-env-flags';
+import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 
 function dynamicEngineFor(vm, symbolTable) {
   let env     = vm.env;
@@ -42,18 +43,20 @@ function dynamicEngineFor(vm, symbolTable) {
   @public
 */
 export function mountMacro(path, params, hash, builder) {
-  assert(
-    'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-    params.length === 1 && hash === null
-  );
-
-  assert(
-    'The first argument of {{mount}} must be quoted, e.g. {{mount "chat-engine"}}.',
-    typeof params[0] === 'string'
-  );
+  if (EMBER_ENGINES_MOUNT_PARAMS) {
+    assert(
+      'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+      params.length === 1
+    );
+  } else {
+    assert(
+      'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+      params.length === 1 && hash === null
+    );
+  }
 
   let definitionArgs = [params.slice(0, 1), null, null, null];
-  let args = [null, null, null, null];
+  let args = [null, hash, null, null];
   builder.component.dynamic(definitionArgs, dynamicEngineFor, args, builder.symbolTable);
   return true;
 }
@@ -72,23 +75,32 @@ class DynamicEngineReference {
     let { env, nameRef, /*symbolTable*/ } = this;
     let nameOrDef = nameRef.value();
 
-    if (this._lastName === nameOrDef) {
+    if (typeof nameOrDef === 'string') {
+      if (this._lastName === nameOrDef) {
+        return this._lastDef;
+      }
+
+      assert(
+        `You used \`{{mount '${nameOrDef}'}}\`, but the engine '${nameOrDef}' can not be found.`,
+        env.owner.hasRegistration(`engine:${nameOrDef}`)
+      );
+
+      if (!env.owner.hasRegistration(`engine:${nameOrDef}`)) {
+        return null;
+      }
+
+      this._lastName = nameOrDef;
+      this._lastDef = new MountDefinition(nameOrDef);
+
       return this._lastDef;
-    }
+    } else {
+      assert(
+        `Invalid engine name '${nameOrDef}' specified, engine name must be either a string, null or undefined.`,
+        nameOrDef === null || nameOrDef === undefined
+      );
 
-    assert(
-      `You used \`{{mount '${nameOrDef}'}}\`, but the engine '${nameOrDef}' can not be found.`,
-      env.owner.hasRegistration(`engine:${nameOrDef}`)
-    );
-
-    if (!env.owner.hasRegistration(`engine:${nameOrDef}`)) {
       return null;
     }
-
-    this._lastName = nameOrDef;
-    this._lastDef = new MountDefinition(nameOrDef);
-
-    return this._lastDef;
   }
 }
 
@@ -98,7 +110,9 @@ class MountManager extends AbstractManager {
   }
 
   create(environment, { name }, args, dynamicScope) {
-    runInDebug(() => this._pushEngineToDebugStack(`engine:${name}`, environment));
+    if (DEBUG) {
+      this._pushEngineToDebugStack(`engine:${name}`, environment)
+    }
 
     dynamicScope.outletState = UNDEFINED_REFERENCE;
 
@@ -106,36 +120,60 @@ class MountManager extends AbstractManager {
 
     engine.boot();
 
-    return engine;
+    return { engine, args };
   }
 
-  layoutFor(definition, engine, env) {
+  layoutFor(definition, { engine }, env) {
     let template = engine.lookup(`template:application`);
     return env.getCompiledBlock(OutletLayoutCompiler, template);
   }
 
-  getSelf(engine) {
-    let applicationFactory = engine[FACTORY_FOR](`controller:application`);
-    let factory = applicationFactory || generateControllerFactory(engine, 'application');
-    return new RootReference(factory.create());
+  getSelf(bucket) {
+    let { engine, args } = bucket;
+
+    let applicationFactory = engine.factoryFor(`controller:application`);
+    let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
+    let controller = bucket.controller = controllerFactory.create();
+
+    if (EMBER_ENGINES_MOUNT_PARAMS) {
+      let model = args.named.value();
+      bucket.argsRevision = args.tag.value();
+      controller.set('model', model);
+    }
+
+    return new RootReference(controller);
   }
 
   getTag() {
     return null;
   }
 
-  getDestructor(engine) {
+  getDestructor({ engine }) {
     return engine;
   }
 
   didCreateElement() {}
 
   didRenderLayout() {
-    runInDebug(() => this.debugStack.pop());
+    if (DEBUG) {
+      this.debugStack.pop()
+    }
   }
 
   didCreate(state) {}
-  update(state, args, dynamicScope) {}
+
+  update(bucket) {
+    if (EMBER_ENGINES_MOUNT_PARAMS) {
+      let { controller, args, argsRevision } = bucket;
+
+      if (!args.tag.validate(argsRevision)) {
+        let model = args.named.value();
+        bucket.argsRevision = args.tag.value();
+        controller.set('model', model);
+      }
+    }
+  }
+
   didUpdateLayout() {}
   didUpdate(state) {}
 }

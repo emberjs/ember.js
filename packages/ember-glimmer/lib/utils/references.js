@@ -1,7 +1,6 @@
 import {
   HAS_NATIVE_WEAKMAP,
-  symbol,
-  EmptyObject
+  symbol
 } from 'ember-utils';
 import {
   get,
@@ -10,8 +9,6 @@ import {
   tagFor,
   didRender,
   watchKey,
-  isFeatureEnabled,
-  runInDebug,
   isProxy
 } from 'ember-metal';
 import {
@@ -30,6 +27,12 @@ import {
 } from '@glimmer/runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
+import { DEBUG } from 'ember-env-flags';
+import {
+  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
+  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
+  MANDATORY_SETTER
+} from 'ember/features';
 
 export const UPDATE = symbol('UPDATE');
 
@@ -72,7 +75,7 @@ export class CachedReference extends EmberPathReference {
 export class RootReference extends ConstReference {
   constructor(value) {
     super(value);
-    this.children = new EmptyObject();
+    this.children = Object.create(null);
   }
 
   get(propertyKey) {
@@ -88,8 +91,8 @@ export class RootReference extends ConstReference {
 
 let TwoWayFlushDetectionTag;
 
-if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
+    EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
   TwoWayFlushDetectionTag = class {
     constructor(tag, key, ref) {
       this.tag = tag;
@@ -142,14 +145,14 @@ export class RootPropertyReference extends PropertyReference {
     this._parentValue = parentValue;
     this._propertyKey = propertyKey;
 
-    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
+        EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       this.tag = new TwoWayFlushDetectionTag(tagForProperty(parentValue, propertyKey), propertyKey, this);
     } else {
       this.tag = tagForProperty(parentValue, propertyKey);
     }
 
-    if (isFeatureEnabled('mandatory-setter')) {
+    if (MANDATORY_SETTER) {
       watchKey(parentValue, propertyKey);
     }
   }
@@ -157,8 +160,8 @@ export class RootPropertyReference extends PropertyReference {
   compute() {
     let { _parentValue, _propertyKey } = this;
 
-    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
+        EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       this.tag.didCompute(_parentValue);
     }
 
@@ -181,8 +184,8 @@ export class NestedPropertyReference extends PropertyReference {
     this._parentObjectTag = parentObjectTag;
     this._propertyKey = propertyKey;
 
-    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
+        EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       let tag = combine([parentReferenceTag, parentObjectTag]);
       this.tag = new TwoWayFlushDetectionTag(tag, propertyKey, this);
     } else {
@@ -202,12 +205,12 @@ export class NestedPropertyReference extends PropertyReference {
     }
 
     if (typeof parentValue === 'object' && parentValue) {
-      if (isFeatureEnabled('mandatory-setter')) {
+      if (MANDATORY_SETTER) {
         watchKey(parentValue, _propertyKey);
       }
 
-      if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-          isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
+          EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
         this.tag.didCompute(parentValue);
       }
 
@@ -292,12 +295,12 @@ export class SimpleHelperReference extends CachedReference {
       let positionalValue = positional.value();
       let namedValue = named.value();
 
-      runInDebug(() => {
+      if (DEBUG) {
         if (HAS_NATIVE_WEAKMAP) {
           Object.freeze(positionalValue);
           Object.freeze(namedValue);
         }
-      });
+      }
 
       let result = helper(positionalValue, namedValue);
 
@@ -329,12 +332,12 @@ export class SimpleHelperReference extends CachedReference {
     let positionalValue = positional.value();
     let namedValue = named.value();
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (HAS_NATIVE_WEAKMAP) {
         Object.freeze(positionalValue);
         Object.freeze(namedValue);
       }
-    });
+    }
 
     return helper(positionalValue, namedValue);
   }
@@ -361,12 +364,12 @@ export class ClassBasedHelperReference extends CachedReference {
     let positionalValue = positional.value();
     let namedValue = named.value();
 
-    runInDebug(() => {
+    if (DEBUG) {
       if (HAS_NATIVE_WEAKMAP) {
         Object.freeze(positionalValue);
         Object.freeze(namedValue);
       }
-    });
+    }
 
     return instance.compute(positionalValue, namedValue);
   }

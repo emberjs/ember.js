@@ -110,6 +110,66 @@
   @public
  */
 
+/**
+  `{{yield}}` denotes an area of a template that will be rendered inside
+  of another template.
+
+  ### Use with Ember.Component
+
+  When designing components `{{yield}}` is used to denote where, inside the component's
+  template, an optional block passed to the component should render:
+
+  ```application.hbs
+  {{#labeled-textfield value=someProperty}}
+    First name:
+  {{/labeled-textfield}}
+  ```
+
+  ```components/labeled-textfield.hbs
+  <label>
+    {{yield}} {{input value=value}}
+  </label>
+  ```
+
+  Result:
+
+  ```html
+  <label>
+    First name: <input type="text" />
+  </label>
+  ```
+
+  Additionally you can `yield` properties into the context for use by the consumer:
+
+  ```application.hbs
+  {{#labeled-textfield value=someProperty validator=(action 'firstNameValidator') as |validationError|}}
+    {{#if validationError}}
+      <p class="error">{{ValidationError}}</p>
+    {{/if}}
+    First name:
+  {{/labeled-textfield}}
+  ```
+
+  ```components/labeled-textfield.hbs
+  <label>
+    {{yield validationError}} {{input value=value}}
+  </label>
+  ```
+
+  Result:
+
+  ```html
+  <label>
+    <p class="error">First Name must be at least 3 characters long.</p>
+    First name: <input type="text" />
+  </label>
+  ```
+  @method yield
+  @for Ember.Templates.helpers
+  @param {Hash} options
+  @return {String} HTML string
+  @public
+ */
 
 /**
   Execute the `debugger` statement in the current template's context.
@@ -204,7 +264,6 @@ export { default as LinkComponent } from './components/link-to';
 export { default as Component } from './component';
 export { default as Helper, helper } from './helper';
 export { default as Environment } from './environment';
-export { default as makeBoundHelper } from './make-bound-helper';
 export {
   SafeString,
   escapeExpression,
@@ -226,3 +285,4 @@ export {
 } from './template_registry';
 export { setupEngineRegistry, setupApplicationRegistry } from './setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './dom';
+export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './syntax';

@@ -31,10 +31,6 @@ export default Service.extend({
   currentRouteName: readOnly('router.currentRouteName'),
   currentPath: readOnly('router.currentPath'),
 
-  availableRoutes() {
-    return Object.keys(get(this, 'router').router.recognizer.names);
-  },
-
   hasRoute(routeName) {
     return get(this, 'router').hasRoute(routeName);
   },

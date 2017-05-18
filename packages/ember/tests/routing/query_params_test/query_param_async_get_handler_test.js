@@ -59,7 +59,7 @@ moduleFor('Query Params - async get handler', class extends QueryParamTestCase {
     this.setSingleQPController('post');
 
     let setupAppTemplate = () => {
-      this.registerTemplate('application', `
+      this.addTemplate('application', `
         {{link-to 'Post' 'post' 1337 (query-params foo='bar') class='post-link'}}
         {{link-to 'Post' 'post' 7331 (query-params foo='boo') class='post-link'}}
         {{outlet}}
@@ -202,13 +202,13 @@ moduleFor('Query Params - async get handler', class extends QueryParamTestCase {
       this.route('example');
     });
 
-    this.registerTemplate('application', '{{link-to \'Example\' \'example\' (query-params foo=undefined) id=\'the-link\'}}');
+    this.addTemplate('application', '{{link-to \'Example\' \'example\' (query-params foo=undefined) id=\'the-link\'}}');
 
     this.setSingleQPController('example', 'foo', undefined, {
       foo: undefined
     });
 
-    this.registerRoute('example', Route.extend({
+    this.add('route:example', Route.extend({
       model(params) {
         assert.deepEqual(params, { foo: undefined });
       }

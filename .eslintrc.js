@@ -1,13 +1,6 @@
 var fs = require('fs');
 var path = require('path');
 
-function isEmberJSBuildLinked() {
-  var emberjsBuildPath = path.dirname(require.resolve('emberjs-build'));
-  var emberjsBuildLinked = emberjsBuildPath.indexOf(__dirname + '/node_modules') === -1;
-
-  return emberjsBuildLinked;
-}
-
 var options = {
   root: true,
   parserOptions: {
@@ -50,18 +43,5 @@ var options = {
     'comma-dangle': 'off',
   },
 };
-
-if (isEmberJSBuildLinked()) {
-  delete options.plugins;
-
-  for (var ruleName in options.rules) {
-    var ruleParts = ruleName.split('ember-internal/');
-
-    if (ruleParts.length > 1) {
-      options.rules[ruleParts[1]] = options.rules[ruleName];
-      delete options.rules[ruleName];
-    }
-  }
-}
 
 module.exports = options;

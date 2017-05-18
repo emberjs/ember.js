@@ -1,11 +1,6 @@
 /* globals EmberDev */
 import { context } from 'ember-environment';
-import {
-  getDebugFunction,
-  setDebugFunction,
-  run,
-  isFeatureEnabled
-} from 'ember-metal';
+import { run } from 'ember-metal';
 import {
   Controller,
   Service,
@@ -20,9 +15,9 @@ import {
   setTemplate,
   Helper,
   helper as makeHelper,
-  makeBoundHelper as makeHTMLBarsBoundHelper
 } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
 
 let registry, locator, application, originalLookup, originalInfo;
 
@@ -65,17 +60,9 @@ QUnit.test('the default resolver looks up templates in Ember.TEMPLATES', functio
   setTemplate('fooBar', fooBarTemplate);
   setTemplate('fooBar/baz', fooBarBazTemplate);
 
-  ignoreDeprecation(() => {
-    equal(locator.lookupFactory('template:foo'), fooTemplate, 'resolves template:foo');
-    equal(locator.lookupFactory('template:fooBar'), fooBarTemplate, 'resolves template:foo_bar');
-    equal(locator.lookupFactory('template:fooBar.baz'), fooBarBazTemplate, 'resolves template:foo_bar.baz');
-  });
-
-  if (isFeatureEnabled('ember-factory-for')) {
-    equal(locator.factoryFor('template:foo').class, fooTemplate, 'resolves template:foo');
-    equal(locator.factoryFor('template:fooBar').class, fooBarTemplate, 'resolves template:foo_bar');
-    equal(locator.factoryFor('template:fooBar.baz').class, fooBarBazTemplate, 'resolves template:foo_bar.baz');
-  }
+  equal(locator.factoryFor('template:foo').class, fooTemplate, 'resolves template:foo');
+  equal(locator.factoryFor('template:fooBar').class, fooBarTemplate, 'resolves template:foo_bar');
+  equal(locator.factoryFor('template:fooBar.baz').class, fooBarBazTemplate, 'resolves template:foo_bar.baz');
 });
 
 QUnit.test('the default resolver looks up basic name as no prefix', function() {
@@ -95,43 +82,32 @@ QUnit.test('the default resolver looks up arbitrary types on the namespace', fun
 QUnit.test('the default resolver resolves models on the namespace', function() {
   application.Post = EmberObject.extend({});
 
-  ignoreDeprecation(() => {
-    detectEqual(application.Post, locator.lookupFactory('model:post'), 'looks up Post model on application');
-  });
-  if (isFeatureEnabled('ember-factory-for')) {
-    detectEqual(application.Post, locator.factoryFor('model:post').class, 'looks up Post model on application');
-  }
+  detectEqual(application.Post, locator.factoryFor('model:post').class, 'looks up Post model on application');
 });
 
 QUnit.test('the default resolver resolves *:main on the namespace', function() {
   application.FooBar = EmberObject.extend({});
 
-  ignoreDeprecation(() => {
-    detectEqual(application.FooBar, locator.lookupFactory('foo-bar:main'), 'looks up FooBar type without name on application');
-  });
-  if (isFeatureEnabled('ember-factory-for')) {
-    detectEqual(application.FooBar, locator.factoryFor('foo-bar:main').class, 'looks up FooBar type without name on application');
-  }
+  detectEqual(application.FooBar, locator.factoryFor('foo-bar:main').class, 'looks up FooBar type without name on application');
 });
 
-if (isFeatureEnabled('ember-factory-for')) {
-  QUnit.test('the default resolver resolves container-registered helpers', function() {
-    let shorthandHelper = makeHelper(() => {});
-    let helper = Helper.extend();
+QUnit.test('the default resolver resolves container-registered helpers', function() {
+  let shorthandHelper = makeHelper(() => {});
+  let helper = Helper.extend();
 
-    application.register('helper:shorthand', shorthandHelper);
-    application.register('helper:complete', helper);
+  application.register('helper:shorthand', shorthandHelper);
+  application.register('helper:complete', helper);
 
-    let lookedUpShorthandHelper = locator.factoryFor('helper:shorthand').class;
+  let lookedUpShorthandHelper = locator.factoryFor('helper:shorthand').class;
 
-    ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
+  ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
 
-    let lookedUpHelper = locator.factoryFor('helper:complete').class;
+  let lookedUpHelper = locator.factoryFor('helper:complete').class;
 
-    ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
-    ok(helper.detect(lookedUpHelper), 'looked up complete helper');
-  });
-}
+  ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
+  ok(helper.detect(lookedUpHelper), 'looked up complete helper');
+});
+
 
 QUnit.test('the default resolver resolves container-registered helpers via lookupFor', function() {
   let shorthandHelper = makeHelper(() => {});
@@ -140,16 +116,14 @@ QUnit.test('the default resolver resolves container-registered helpers via looku
   application.register('helper:shorthand', shorthandHelper);
   application.register('helper:complete', helper);
 
-  ignoreDeprecation(() => {
-    let lookedUpShorthandHelper = locator.lookupFactory('helper:shorthand');
+  let lookedUpShorthandHelper = locator.factoryFor('helper:shorthand').class;
 
-    ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
+  ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
 
-    let lookedUpHelper = locator.lookupFactory('helper:complete');
+  let lookedUpHelper = locator.factoryFor('helper:complete').class;
 
-    ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
-    ok(helper.detect(lookedUpHelper), 'looked up complete helper');
-  });
+  ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
+  ok(helper.detect(lookedUpHelper), 'looked up complete helper');
 });
 
 QUnit.test('the default resolver resolves helpers on the namespace', function() {
@@ -157,21 +131,14 @@ QUnit.test('the default resolver resolves helpers on the namespace', function() 
   let CompleteHelper = Helper.extend();
   let LegacyHTMLBarsBoundHelper;
 
-  expectDeprecation(() => {
-    LegacyHTMLBarsBoundHelper = makeHTMLBarsBoundHelper(() => {});
-  }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.');
-
   application.ShorthandHelper = ShorthandHelper;
   application.CompleteHelper = CompleteHelper;
-  application.LegacyHtmlBarsBoundHelper = LegacyHTMLBarsBoundHelper; // Must use lowered "tml" in "HTMLBars" for resolver to find this
 
   let resolvedShorthand = registry.resolve('helper:shorthand');
   let resolvedComplete = registry.resolve('helper:complete');
-  let resolvedLegacyHTMLBars = registry.resolve('helper:legacy-html-bars-bound');
 
   equal(resolvedShorthand, ShorthandHelper, 'resolve fetches the shorthand helper factory');
   equal(resolvedComplete, CompleteHelper, 'resolve fetches the complete helper factory');
-  equal(resolvedLegacyHTMLBars, LegacyHTMLBarsBoundHelper, 'resolves legacy HTMLBars bound helper');
 });
 
 QUnit.test('the default resolver resolves to the same instance, no matter the notation ', function() {
@@ -270,21 +237,23 @@ QUnit.test('no assertion for routes that extend from Ember.Route', function() {
 });
 
 QUnit.test('deprecation warning for service factories without isServiceFactory property', function() {
-  expectDeprecation(/service factories must have an `isServiceFactory` property/);
-  application.FooService = EmberObject.extend();
-  registry.resolve('service:foo');
+  expectAssertion(() =>{
+    application.FooService = EmberObject.extend();
+    registry.resolve('service:foo');
+  }, /Expected service:foo to resolve to an Ember.Service but instead it was \.FooService\./);
 });
 
 QUnit.test('no deprecation warning for service factories that extend from Ember.Service', function() {
-  expectNoDeprecation();
+  expect(0);
   application.FooService = Service.extend();
   registry.resolve('service:foo');
 });
 
 QUnit.test('deprecation warning for component factories without isComponentFactory property', function() {
-  expectDeprecation(/component factories must have an `isComponentFactory` property/);
-  application.FooComponent = EmberObject.extend();
-  registry.resolve('component:foo');
+  expectAssertion(() => {
+    application.FooComponent = EmberObject.extend();
+    registry.resolve('component:foo');
+  }, /Expected component:foo to resolve to an Ember\.Component but instead it was \.FooComponent\./);
 });
 
 QUnit.test('no deprecation warning for component factories that extend from Ember.Component', function() {

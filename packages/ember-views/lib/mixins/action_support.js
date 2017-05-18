@@ -3,7 +3,8 @@
  @submodule ember-views
 */
 import { inspect } from 'ember-utils';
-import { Mixin, get, isNone, assert } from 'ember-metal';
+import { Mixin, get, isNone } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { MUTABLE_CELL } from '../compat/attrs';
 
 function validateAction(component, actionName) {

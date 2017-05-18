@@ -1,12 +1,10 @@
 import {
-  assert,
   get,
   computed,
   _beforeObserver,
   observer,
   beginPropertyChanges,
   endPropertyChanges,
-  Error as EmberError,
   alias
 } from 'ember-metal';
 import {
@@ -20,6 +18,7 @@ import {
   removeArrayObserver,
   objectAt
 } from '../mixins/array';
+import { assert, Error as EmberError } from 'ember-debug';
 
 /**
 @module ember
