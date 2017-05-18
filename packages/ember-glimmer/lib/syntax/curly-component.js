@@ -29,6 +29,7 @@ import {
 } from 'ember-views';
 import { privatize as P } from 'container';
 import AbstractManager from './abstract-manager';
+import { processComponentArgs } from '../utils/process-args';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -176,7 +177,7 @@ class CurlyComponentManager extends AbstractManager {
     let factory = definition.ComponentClass;
 
     let capturedArgs = args.named.capture();
-    let props = capturedArgs.value();
+    let props = processComponentArgs(capturedArgs);
 
     aliasIdToElementId(args, props);
 
@@ -322,19 +323,17 @@ class CurlyComponentManager extends AbstractManager {
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
     if (!args.tag.validate(argsRevision)) {
-      let props = args.value();
+      let props = processComponentArgs(args);
 
       bucket.argsRevision = args.tag.value();
 
-      let oldAttrs = component.attrs;
-      let newAttrs = props;
 
       component[IS_DISPATCHING_ATTRS] = true;
       component.setProperties(props);
       component[IS_DISPATCHING_ATTRS] = false;
 
-      dispatchLifeCycleHook(component, 'didUpdateAttrs', oldAttrs, newAttrs);
-      dispatchLifeCycleHook(component, 'didReceiveAttrs', oldAttrs, newAttrs);
+      dispatchLifeCycleHook(component, 'didUpdateAttrs');
+      dispatchLifeCycleHook(component, 'didReceiveAttrs');
     }
 
     if (environment.isInteractive) {
