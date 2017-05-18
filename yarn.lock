@@ -11,6 +11,15 @@
     "@glimmer/wire-format" "^0.22.0"
     simple-html-tokenizer "^0.3.0"
 
+"@glimmer/compiler@^0.22.1":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@glimmer/compiler/-/compiler-0.22.1.tgz#70a8a3064ca4d62b15fc3c870ead11e6c7fb00bf"
+  dependencies:
+    "@glimmer/syntax" "^0.22.1"
+    "@glimmer/util" "^0.22.1"
+    "@glimmer/wire-format" "^0.22.1"
+    simple-html-tokenizer "^0.3.0"
+
 "@glimmer/di@^0.1.8":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@glimmer/di/-/di-0.1.8.tgz#cc1f44e5d5b5e5703d7b1746ffd0a0419ade7f05"
@@ -23,11 +32,17 @@
   dependencies:
     "@glimmer/wire-format" "^0.22.0"
 
-"@glimmer/node@^0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@glimmer/node/-/node-0.22.0.tgz#0ecea9fb3f45f985408f8c6010a9749f1312f057"
+"@glimmer/interfaces@^0.22.1":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.22.1.tgz#56410f35cc3097314c9c56eca01223714354a2f6"
   dependencies:
-    "@glimmer/runtime" "^0.22.0"
+    "@glimmer/wire-format" "^0.22.1"
+
+"@glimmer/node@^0.22.1":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@glimmer/node/-/node-0.22.1.tgz#caf53983cb42ac0eff54c931a43d92430b8f6217"
+  dependencies:
+    "@glimmer/runtime" "^0.22.1"
     simple-dom "^0.3.0"
 
 "@glimmer/object-reference@^0.22.0":
@@ -37,6 +52,13 @@
     "@glimmer/reference" "^0.22.0"
     "@glimmer/util" "^0.22.0"
 
+"@glimmer/object-reference@^0.22.1":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@glimmer/object-reference/-/object-reference-0.22.1.tgz#f5f18ffe11f86140921977d6bff3e8d75818494a"
+  dependencies:
+    "@glimmer/reference" "^0.22.1"
+    "@glimmer/util" "^0.22.1"
+
 "@glimmer/object@^0.22.0":
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/@glimmer/object/-/object-0.22.0.tgz#62df92fab110449683f61283f9524f2f3e1e49f2"
@@ -44,11 +66,24 @@
     "@glimmer/object-reference" "^0.22.0"
     "@glimmer/util" "^0.22.0"
 
+"@glimmer/object@^0.22.1":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@glimmer/object/-/object-0.22.1.tgz#f560eef3ac1eb4decc173368c44b6cdcc6d62e07"
+  dependencies:
+    "@glimmer/object-reference" "^0.22.1"
+    "@glimmer/util" "^0.22.1"
+
 "@glimmer/reference@^0.22.0":
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/@glimmer/reference/-/reference-0.22.0.tgz#1b3cf62f100caad14052c3844de8626a89601177"
   dependencies:
     "@glimmer/util" "^0.22.0"
+
+"@glimmer/reference@^0.22.1":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@glimmer/reference/-/reference-0.22.1.tgz#9aea78e63ddd83f13acad79bd24ae4c4c0457210"
+  dependencies:
+    "@glimmer/util" "^0.22.1"
 
 "@glimmer/runtime@^0.22.0":
   version "0.22.0"
@@ -61,9 +96,27 @@
     "@glimmer/util" "^0.22.0"
     "@glimmer/wire-format" "^0.22.0"
 
+"@glimmer/runtime@^0.22.1":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@glimmer/runtime/-/runtime-0.22.1.tgz#90077df1b97ffb3efd0709f92fa70ede1301d198"
+  dependencies:
+    "@glimmer/interfaces" "^0.22.1"
+    "@glimmer/object" "^0.22.1"
+    "@glimmer/object-reference" "^0.22.1"
+    "@glimmer/reference" "^0.22.1"
+    "@glimmer/util" "^0.22.1"
+    "@glimmer/wire-format" "^0.22.1"
+
 "@glimmer/syntax@^0.22.0":
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.22.0.tgz#20f5dbc8660437ecce941c3a32c2536688a4f2ea"
+  dependencies:
+    handlebars "^4.0.6"
+    simple-html-tokenizer "^0.3.0"
+
+"@glimmer/syntax@^0.22.1":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.22.1.tgz#b4048738fa55c46e337278b2aeb37731509ae284"
   dependencies:
     handlebars "^4.0.6"
     simple-html-tokenizer "^0.3.0"
@@ -89,11 +142,21 @@
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.22.0.tgz#80883909d14b5b0e1701bca0acf5e4c580514f93"
 
+"@glimmer/util@^0.22.1":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.22.1.tgz#7be751f77325ac857327f9c786ee2d02fba4d4e1"
+
 "@glimmer/wire-format@^0.22.0":
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.22.0.tgz#d1254f50b2b90ffe0cccb06111de986396c4393f"
   dependencies:
     "@glimmer/util" "^0.22.0"
+
+"@glimmer/wire-format@^0.22.1":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.22.1.tgz#2673bbb1e89805194e9870064c6905af21406ffb"
+  dependencies:
+    "@glimmer/util" "^0.22.1"
 
 abbrev@1, abbrev@~1.0.9:
   version "1.0.9"
@@ -4623,7 +4686,7 @@ read@1, read@~1.0.1, read@~1.0.7:
   dependencies:
     mute-stream "~0.0.4"
 
-"readable-stream@1 || 2", readable-stream@^2, "readable-stream@^2.0.0 || ^1.1.13", readable-stream@^2.0.2, readable-stream@~2.1.5:
+"readable-stream@1 || 2", readable-stream@^2, readable-stream@^2.0.2, readable-stream@~2.1.5:
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.1.5.tgz#66fa8b720e1438b364681f2ad1a63c618448c9d0"
   dependencies:
@@ -4635,7 +4698,7 @@ read@1, read@~1.0.1, read@~1.0.7:
     string_decoder "~0.10.x"
     util-deprecate "~1.0.1"
 
-readable-stream@^2.0.0, readable-stream@^2.0.5, readable-stream@^2.2.2:
+readable-stream@^2.0.0, "readable-stream@^2.0.0 || ^1.1.13", readable-stream@^2.0.5, readable-stream@^2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.2.2.tgz#a9e6fec3c7dda85f8bb1b3ba7028604556fc825e"
   dependencies:
@@ -4923,7 +4986,7 @@ rollup@^0.34.11:
   dependencies:
     source-map-support "^0.4.0"
 
-route-recognizer@^0.3.0:
+route-recognizer@0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.3.0.tgz#75081992378fa3a61ab538a41b2f3a5b73fb325b"
 
@@ -5424,7 +5487,7 @@ temp@0.8.3:
     os-tmpdir "^1.0.0"
     rimraf "~2.2.6"
 
-testem@^1.14.2, testem@^1.8.1:
+testem@1.14.2, testem@^1.8.1:
   version "1.14.2"
   resolved "https://registry.yarnpkg.com/testem/-/testem-1.14.2.tgz#0c29f82e99cebf51c1a5808e57a922b9624075af"
   dependencies:
