@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.13.2 (May 18, 2017)
+
+- Revert over eager dependency upgrades in 2.13.1.
+
 ### 2.13.1 (May 17, 2017)
 
 - [#15129](https://github.com/emberjs/ember.js/pull/15129) Fix access to document service in `ember-engines`.
