@@ -2032,7 +2032,7 @@ QUnit.test('Generated route should be an instance of App.Route if provided', fun
   ok(generatedRoute instanceof App.Route, 'should extend the correct route');
 });
 
-QUnit.test('Nested index route is not overriden by parent\'s implicit index route', function() {
+QUnit.test('Nested index route is not overridden by parent\'s implicit index route', function() {
   Router.map(function() {
     this.route('posts', function() {
       this.route('index', { path: ':category' });

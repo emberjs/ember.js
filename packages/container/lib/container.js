@@ -60,7 +60,7 @@ Container.prototype = {
 
   /**
    Given a fullName return a corresponding instance.
-    The default behaviour is for lookup to return a singleton instance.
+    The default behavior is for lookup to return a singleton instance.
    The singleton is scoped to the container, allowing multiple containers
    to all have their own locally scoped singletons.
     ```javascript

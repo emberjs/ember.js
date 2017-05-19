@@ -252,7 +252,7 @@ class Renderer {
   }
 
   getElement(view) {
-    // overriden in the subclasses
+    // overridden in the subclasses
   }
 
   getBounds(view) {

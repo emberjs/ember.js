@@ -75,7 +75,7 @@
 
   any passed value to `disabled` will disable it except `undefined`.
   to ensure that only `true` disable the `link-to` component you can
-  override the global behaviour of `Ember.LinkComponent`.
+  override the global behavior of `Ember.LinkComponent`.
 
   ```javascript
   Ember.LinkComponent.reopen({

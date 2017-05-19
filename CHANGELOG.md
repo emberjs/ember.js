@@ -604,7 +604,7 @@
 ### 1.13.10 (September 6, 2015)
 
 - [#12104](https://github.com/emberjs/ember.js/pull/12104) [BUGFIX] Ensure `concatenatedProperties` are not stomped.
-- [#12256](https://github.com/emberjs/ember.js/pull/12256) [BUGFIX] Ensure concat streams unsubscribe properly. Fixes memory leak with attributes specified within quotes in the template (i.e. `<div data-foo="{{somethign}}"></div>`).
+- [#12256](https://github.com/emberjs/ember.js/pull/12256) [BUGFIX] Ensure concat streams unsubscribe properly. Fixes memory leak with attributes specified within quotes in the template (i.e. `<div data-foo="{{something}}"></div>`).
 - [#12272](https://github.com/emberjs/ember.js/pull/12272) [BUGFIX] Update HTMLBars to fix memory leak when an `{{each}}` is inside an `{{if}}`.
 
 ### 1.13.9 (August 22, 2015)
@@ -878,7 +878,7 @@
   * `removeAttribute` fix for IE <11 and SVG.
   * Disable `cloneNodes` in IE8.
   * Improve HTML validation and error messages thrown.
-  * Fix a number of template compliation issues in IE8.
+  * Fix a number of template compilation issues in IE8.
   * Use the correct namespace in `parseHTML` (fixes various issues that occur
     when changing to and from alternate namespaces).
   * Ensure values are converted to `String`'s when setting attributes (fixes issues in IE10 & IE11).
@@ -1116,7 +1116,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 ### Ember 1.6.0 (July, 7, 2014)
 
 * [BREAKING BUGFIX] An empty array is treated as falsy value in `bind-attr` to be in consistent
-  with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty
+  with `if` helper. Breaking for apps that relies on the previous behavior which treats an empty
   array as truthy value in `bind-attr`.
 * [BUGFIX] Ensure itemController's do not leak by tying them to the parent controller lifecycle.
 * [BUGFIX] Spaces in brace expansion throws an error.
@@ -1955,7 +1955,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Various enhancements to bound helpers: adds multiple property support to bound helpers, adds bind-able options hash properties, adds {{unbound}} helper support to render unbound form of helpers.
 * Add App.inject
 * Add Ember.EnumberableUtils.intersection
-* Deprecate Controller#controllerFor in favour of Controller#needs
+* Deprecate Controller#controllerFor in favor of Controller#needs
 * Adds `bubbles` property to Ember.TextField
 * Allow overriding of Ember.Router#handleURL
 * Allow libraries loaded before Ember to tie into Ember load hooks
@@ -1987,7 +1987,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Add `action` support to Ember.TextField
 * Warn about using production builds in localhost
 * Update Metamorph
-* Deprecate Ember.alias in favour of Ember.aliasMethod
+* Deprecate Ember.alias in favor of Ember.aliasMethod
 * Add Ember.computed.alias
 * Allow chaining on DeferredMixin#then
 * ArrayController learned itemControllerClass.
