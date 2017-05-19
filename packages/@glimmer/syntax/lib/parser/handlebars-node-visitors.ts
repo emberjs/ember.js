@@ -1,16 +1,17 @@
 import b from "../builders";
 import { appendChild, isLiteral, printLiteral } from "../utils";
 import * as AST from '../types/nodes';
+import * as HandlebarsAST from '../types/handlebars-ast';
 import { Parser, Tag, Attribute } from '../parser';
-import { Option } from '@glimmer/interfaces';
 import SyntaxError from '../errors/syntax-error';
+import { Option } from "@glimmer/util";
 
 export abstract class HandlebarsNodeVisitors extends Parser {
   abstract appendToCommentData(s: string): void;
   abstract beginAttributeValue(quoted: boolean): void;
   abstract finishAttributeValue(): void;
 
-  Program(program: hbs.AST.Program): AST.Program {
+  Program(program: HandlebarsAST.Program): AST.Program {
     let body: AST.Statement[] = [];
     let node = b.program(body, program.blockParams, program.loc);
     let i, l = program.body.length;
@@ -34,7 +35,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     return node;
   }
 
-  BlockStatement(block: hbs.AST.BlockStatement) {
+  BlockStatement(block: HandlebarsAST.BlockStatement) {
     if (this.tokenizer['state'] === 'comment') {
       this.appendToCommentData(this.sourceForNode(block));
       return;
@@ -53,7 +54,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     appendChild(parentProgram, node);
   }
 
-  MustacheStatement(rawMustache: hbs.AST.MustacheStatement) {
+  MustacheStatement(rawMustache: HandlebarsAST.MustacheStatement) {
     let { tokenizer } = this;
 
     if (tokenizer['state'] === 'comment') {
@@ -74,7 +75,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         loc
       };
     } else {
-      let { path, params, hash } = acceptCallNodes(this, rawMustache as hbs.AST.MustacheStatement & { path: hbs.AST.PathExpression });
+      let { path, params, hash } = acceptCallNodes(this, rawMustache as HandlebarsAST.MustacheStatement & { path: HandlebarsAST.PathExpression });
       mustache = b.mustache(path, params, hash, !escaped, loc);
     }
 
@@ -119,14 +120,14 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     return mustache;
   }
 
-  ContentStatement(content: hbs.AST.ContentStatement) {
+  ContentStatement(content: HandlebarsAST.ContentStatement) {
     updateTokenizerLocation(this.tokenizer, content);
 
     this.tokenizer.tokenizePart(content.value);
     this.tokenizer.flushData();
   }
 
-  CommentStatement(rawComment: hbs.AST.CommentStatement): Option<AST.MustacheCommentStatement> {
+  CommentStatement(rawComment: HandlebarsAST.CommentStatement): Option<AST.MustacheCommentStatement> {
     let { tokenizer } = this;
 
     if (tokenizer.state === 'comment') {
@@ -154,36 +155,36 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     return comment;
   }
 
-  PartialStatement(partial: hbs.AST.PartialStatement) {
+  PartialStatement(partial: HandlebarsAST.PartialStatement) {
     let { loc } = partial;
 
     throw new SyntaxError(`Handlebars partials are not supported: "${this.sourceForNode(partial, partial.name)}" at L${loc.start.line}:C${loc.start.column}`, partial.loc);
   }
 
-  PartialBlockStatement(partialBlock: hbs.AST.PartialBlockStatement) {
+  PartialBlockStatement(partialBlock: HandlebarsAST.PartialBlockStatement) {
     let { loc } = partialBlock;
 
     throw new SyntaxError(`Handlebars partial blocks are not supported: "${this.sourceForNode(partialBlock, partialBlock.name)}" at L${loc.start.line}:C${loc.start.column}`, partialBlock.loc);
   }
 
-  Decorator(decorator: hbs.AST.Decorator) {
+  Decorator(decorator: HandlebarsAST.Decorator) {
     let { loc } = decorator;
 
     throw new SyntaxError(`Handlebars decorators are not supported: "${this.sourceForNode(decorator, decorator.path)}" at L${loc.start.line}:C${loc.start.column}`, decorator.loc);
   }
 
-  DecoratorBlock(decoratorBlock: hbs.AST.DecoratorBlock) {
+  DecoratorBlock(decoratorBlock: HandlebarsAST.DecoratorBlock) {
     let { loc } = decoratorBlock;
 
     throw new SyntaxError(`Handlebars decorator blocks are not supported: "${this.sourceForNode(decoratorBlock, decoratorBlock.path)}" at L${loc.start.line}:C${loc.start.column}`, decoratorBlock.loc);
   }
 
-  SubExpression(sexpr: hbs.AST.SubExpression): AST.SubExpression {
+  SubExpression(sexpr: HandlebarsAST.SubExpression): AST.SubExpression {
     let { path, params, hash } = acceptCallNodes(this, sexpr);
     return b.sexpr(path, params, hash, sexpr.loc);
   }
 
-  PathExpression(path: hbs.AST.PathExpression): AST.PathExpression {
+  PathExpression(path: HandlebarsAST.PathExpression): AST.PathExpression {
     let { original, loc } = path;
     let parts: string[];
 
@@ -228,7 +229,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     };
   }
 
-  Hash(hash: hbs.AST.Hash): AST.Hash {
+  Hash(hash: HandlebarsAST.Hash): AST.Hash {
     let pairs: AST.HashPair[] = [];
 
     for (let i = 0; i < hash.pairs.length; i++) {
@@ -239,23 +240,23 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     return b.hash(pairs, hash.loc);
   }
 
-  StringLiteral(string: hbs.AST.StringLiteral) {
+  StringLiteral(string: HandlebarsAST.StringLiteral) {
     return b.literal('StringLiteral', string.value, string.loc);
   }
 
-  BooleanLiteral(boolean: hbs.AST.BooleanLiteral) {
+  BooleanLiteral(boolean: HandlebarsAST.BooleanLiteral) {
     return b.literal('BooleanLiteral', boolean.value, boolean.loc);
   }
 
-  NumberLiteral(number: hbs.AST.NumberLiteral) {
+  NumberLiteral(number: HandlebarsAST.NumberLiteral) {
     return b.literal('NumberLiteral', number.value, number.loc);
   }
 
-  UndefinedLiteral(undef: hbs.AST.UndefinedLiteral) {
+  UndefinedLiteral(undef: HandlebarsAST.UndefinedLiteral) {
     return b.literal('UndefinedLiteral', undefined, undef.loc);
   }
 
-  NullLiteral(nul: hbs.AST.NullLiteral) {
+  NullLiteral(nul: HandlebarsAST.NullLiteral) {
     return b.literal('NullLiteral', null, nul.loc);
   }
 }
@@ -282,7 +283,7 @@ function calculateRightStrippedOffsets(original: string, value: string) {
   };
 }
 
-function updateTokenizerLocation(tokenizer: Parser['tokenizer'], content: hbs.AST.ContentStatement) {
+function updateTokenizerLocation(tokenizer: Parser['tokenizer'], content: HandlebarsAST.ContentStatement) {
   let line = content.loc.start.line;
   let column = content.loc.start.column;
 
@@ -299,7 +300,7 @@ function updateTokenizerLocation(tokenizer: Parser['tokenizer'], content: hbs.AS
   tokenizer.column = column;
 }
 
-function acceptCallNodes(compiler: HandlebarsNodeVisitors, node: { path: hbs.AST.PathExpression, params: hbs.AST.Expression[], hash: hbs.AST.Hash }): { path: AST.PathExpression, params: AST.Expression[], hash: AST.Hash } {
+function acceptCallNodes(compiler: HandlebarsNodeVisitors, node: { path: HandlebarsAST.PathExpression, params: HandlebarsAST.Expression[], hash: HandlebarsAST.Hash }): { path: AST.PathExpression, params: AST.Expression[], hash: AST.Hash } {
   let path = compiler.PathExpression(node.path);
 
   let params = node.params ? node.params.map(e => compiler.acceptNode<AST.Expression>(e)) : [];
