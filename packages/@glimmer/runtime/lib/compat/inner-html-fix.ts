@@ -61,19 +61,19 @@ export function treeConstruction(document: Option<Document>, DOMTreeConstruction
   let div = document.createElement('div');
 
   return class DOMTreeConstructionWithInnerHTMLFix extends DOMTreeConstructionClass {
-    insertHTMLBefore(parent: HTMLElement, html: string, reference: Node): Bounds {
+    insertHTMLBefore(parent: HTMLElement, referenceNode: Node, html: string): Bounds {
       if (html === null || html === '') {
-        return super.insertHTMLBefore(parent, html, reference);
+        return super.insertHTMLBefore(parent, referenceNode, html);
       }
 
       let parentTag = parent.tagName.toLowerCase();
       let wrapper = innerHTMLWrapper[parentTag];
 
       if(wrapper === undefined) {
-        return super.insertHTMLBefore(parent, html, reference);
+        return super.insertHTMLBefore(parent, referenceNode, html);
       }
 
-      return fixInnerHTML(parent, wrapper, div, html, reference);
+      return fixInnerHTML(parent, wrapper, div, html, referenceNode);
     }
   };
 }
