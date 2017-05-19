@@ -130,7 +130,7 @@ export function renderMacro(name, params, hash, builder) {
 
 class AbstractRenderManager extends AbstractManager {
   prepareArgs(definition, args) {
-    return args;
+    return null;
   }
 
   /* abstract create(environment, definition, args, dynamicScope); */
