@@ -50,13 +50,13 @@ export function treeConstruction(document: Option<Document>, TreeConstructionCla
   let div = document.createElement('div');
 
   return class TreeConstructionWithSVGInnerHTMLFix extends TreeConstructionClass {
-    insertHTMLBefore(parent: HTMLElement, html: string,  reference: Node,): Bounds {
+    insertHTMLBefore(parent: HTMLElement, reference: Node, html: string): Bounds {
       if (html === null || html === '') {
-        return super.insertHTMLBefore(parent, html, reference);
+        return super.insertHTMLBefore(parent, reference, html);
       }
 
       if (parent.namespaceURI !== svgNamespace) {
-        return super.insertHTMLBefore(parent, html, reference);
+        return super.insertHTMLBefore(parent, reference, html);
       }
 
       return fixSVG(parent, div, html, reference);
