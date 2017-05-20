@@ -25,5 +25,5 @@ import isEmpty from './is_empty';
   @public
 */
 export default function isBlank(obj) {
-  return isEmpty(obj) || (typeof obj === 'string' && obj.match(/\S/) === null);
+  return isEmpty(obj) || (typeof obj === 'string' && /\S/.test(obj) === false);
 }
