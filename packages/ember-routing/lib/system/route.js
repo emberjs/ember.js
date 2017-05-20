@@ -66,7 +66,7 @@ export function hasDefaultSerialize(route) {
 
 /**
   The `Ember.Route` class is used to define individual routes. Refer to
-  the [routing guide](http://emberjs.com/guides/routing/) for documentation.
+  the [routing guide](https://emberjs.com/guides/routing/) for documentation.
 
   @class Route
   @namespace Ember

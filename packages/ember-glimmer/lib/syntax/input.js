@@ -16,7 +16,7 @@ function buildTextFieldSyntax(params, hash, builder) {
   The `{{input}}` helper lets you create an HTML `<input />` component.
   It causes an `Ember.TextField` component to be rendered.  For more info,
   see the [Ember.TextField](/api/classes/Ember.TextField.html) docs and
-  the [templates guide](http://emberjs.com/guides/templates/input-helpers/).
+  the [templates guide](https://emberjs.com/guides/templates/input-helpers/).
 
   ```handlebars
   {{input value="987"}}

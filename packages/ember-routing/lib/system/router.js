@@ -53,7 +53,7 @@ const { slice } = Array.prototype;
 
 /**
   The `Ember.Router` class manages the application state and URLs. Refer to
-  the [routing guide](http://emberjs.com/guides/routing/) for documentation.
+  the [routing guide](https://emberjs.com/guides/routing/) for documentation.
 
   @class Router
   @namespace Ember
@@ -365,7 +365,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     Transition the application into another route. The route may
     be either a single route or route path:
 
-    See [Route.transitionTo](http://emberjs.com/api/classes/Ember.Route.html#method_transitionTo) for more info.
+    See [Route.transitionTo](https://emberjs.com/api/classes/Ember.Route.html#method_transitionTo) for more info.
 
     @method transitionTo
     @param {String} name the name of the route or a URL
@@ -1364,7 +1364,7 @@ EmberRouter.reopenClass({
     ```
 
     For more detailed documentation and examples please see
-    [the guides](http://emberjs.com/guides/routing/defining-your-routes/).
+    [the guides](https://emberjs.com/guides/routing/defining-your-routes/).
 
     @method map
     @param callback
@@ -1493,7 +1493,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
         {
           id: 'ember-routing.top-level-render-helper',
           until: '3.0.0',
-          url: 'http://emberjs.com/deprecations/v2.x/#toc_rendering-into-a-render-helper-that-resolves-to-an-outlet'
+          url: 'https://emberjs.com/deprecations/v2.x/#toc_rendering-into-a-render-helper-that-resolves-to-an-outlet'
         }
       );
 
@@ -1557,7 +1557,7 @@ function representEmptyRoute(liveRoutes, defaultParentState, route) {
 deprecateProperty(EmberRouter.prototype, 'router', '_routerMicrolib', {
   id: 'ember-router.router',
   until: '2.16',
-  url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-router-router-renamed-to-ember-router-_routermicrolib'
+  url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-router-router-renamed-to-ember-router-_routermicrolib'
 });
 
 export default EmberRouter;

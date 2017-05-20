@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://emberjs.com"><img width="300" src="https://raw.githubusercontent.com/emberjs/website/master/source/images/brand/ember_Ember-Light.png"></a>
+  <a href="https://emberjs.com"><img width="300" src="https://raw.githubusercontent.com/emberjs/website/master/source/images/brand/ember_Ember-Light.png"></a>
 </p>
 
 <p align="center">
@@ -17,12 +17,12 @@ to build any web application. It is focused on making you, the developer, as pro
 
 Ember.js also provides access to the most advanced features of Javascript, HTML and the Browser giving you everything you need to create your next killer web app.
 
-- [Website](http://emberjs.com)
-- [Guides](http://guides.emberjs.com)
-- [API](http://emberjs.com/api)
-- [Community](http://emberjs.com/community)
-- [Blog](http://emberjs.com/blog)
-- [Builds](http://emberjs.com/builds)
+- [Website](https://emberjs.com)
+- [Guides](https://guides.emberjs.com)
+- [API](https://emberjs.com/api)
+- [Community](https://emberjs.com/community)
+- [Blog](https://emberjs.com/blog)
+- [Builds](https://emberjs.com/builds)
 
 # Contribution
 
