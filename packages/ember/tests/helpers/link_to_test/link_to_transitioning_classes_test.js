@@ -20,11 +20,13 @@ moduleFor('The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
 
     this.aboutDefer = RSVP.defer();
     this.otherDefer = RSVP.defer();
+    this.newsDefer = RSVP.defer();
     let _this = this;
 
     this.router.map(function() {
       this.route('about');
       this.route('other');
+      this.route('news');
     });
 
     this.add('route:about', Route.extend({
@@ -39,11 +41,18 @@ moduleFor('The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
       }
     }));
 
+    this.add('route:news', Route.extend({
+      model() {
+        return _this.newsDefer.promise;
+      }
+    }));
+
     this.addTemplate('application',`
       {{outlet}}
       {{link-to 'Index' 'index' id='index-link'}}
       {{link-to 'About' 'about' id='about-link'}}
       {{link-to 'Other' 'other' id='other-link'}}
+      {{link-to 'News' 'news' activeClass=false id='news-link'}}
     `);
 
     this.visit('/');
@@ -53,6 +62,7 @@ moduleFor('The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
     super.teardown();
     this.aboutDefer = null;
     this.otherDefer = null;
+    this.newsDefer = null;
   }
 
   ['@test while a transition is underway'](assert) {
@@ -88,6 +98,41 @@ moduleFor('The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
     assertHasNoClass(assert, $about, 'ember-transitioning-out');
     assertHasNoClass(assert, $other, 'ember-transitioning-out');
   }
+
+  ['@test while a transition is underway with activeClass is false'](assert) {
+    let $index = this.$('#index-link');
+    let $news = this.$('#news-link');
+    let $other = this.$('#other-link');
+
+    $news.click();
+
+    assertHasClass(assert, $index, 'active');
+    assertHasNoClass(assert, $news, 'active');
+    assertHasNoClass(assert, $other, 'active');
+
+    assertHasNoClass(assert, $index, 'ember-transitioning-in');
+    assertHasClass(assert, $news, 'ember-transitioning-in');
+    assertHasNoClass(assert, $other, 'ember-transitioning-in');
+
+    assertHasClass(assert, $index, 'ember-transitioning-out');
+    assertHasNoClass(assert, $news, 'ember-transitioning-out');
+    assertHasNoClass(assert, $other, 'ember-transitioning-out');
+
+    this.runTask(() => this.newsDefer.resolve());
+
+    assertHasNoClass(assert, $index, 'active');
+    assertHasNoClass(assert, $news, 'active');
+    assertHasNoClass(assert, $other, 'active');
+
+    assertHasNoClass(assert, $index, 'ember-transitioning-in');
+    assertHasNoClass(assert, $news, 'ember-transitioning-in');
+    assertHasNoClass(assert, $other, 'ember-transitioning-in');
+
+    assertHasNoClass(assert, $index, 'ember-transitioning-out');
+    assertHasNoClass(assert, $news, 'ember-transitioning-out');
+    assertHasNoClass(assert, $other, 'ember-transitioning-out');
+  }
+
 });
 
 moduleFor(`The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes - nested link-to's`, class extends ApplicationTestCase {

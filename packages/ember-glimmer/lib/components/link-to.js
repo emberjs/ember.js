@@ -545,7 +545,7 @@ const LinkComponent = EmberComponent.extend({
     }
   }),
 
-  _computeActive(routerState) {
+  _isActive(routerState) {
     if (get(this, 'loading')) { return false; }
 
     let routing = get(this, '_routing');
@@ -563,7 +563,7 @@ const LinkComponent = EmberComponent.extend({
 
     for (let i = 0; i < currentWhen.length; i++) {
       if (routing.isActiveForRoute(models, resolvedQueryParams, currentWhen[i], routerState, isCurrentWhenSpecified)) {
-        return get(this, 'activeClass');
+        return true;
       }
     }
 
@@ -584,11 +584,17 @@ const LinkComponent = EmberComponent.extend({
     @property active
     @private
   */
-  active: computed('attrs.params', '_routing.currentState', function computeLinkToComponentActive() {
+  active: computed('attrs.params', '_active', function computeLinkToComponentActiveClass() {
     let currentState = get(this, '_routing.currentState');
     if (!currentState) { return false; }
 
-    return this._computeActive(currentState);
+    return this.get('_active') ? get(this, 'activeClass') : false;
+  }),
+
+  _active: computed('_routing.currentState', function computeLinkToComponentActive() {
+    let currentState = get(this, '_routing.currentState');
+    if (!currentState) { return false; }
+    return this._isActive(currentState);
   }),
 
   willBeActive: computed('_routing.targetState', function computeLinkToComponentWillBeActive() {
@@ -596,11 +602,11 @@ const LinkComponent = EmberComponent.extend({
     let targetState = get(routing, 'targetState');
     if (get(routing, 'currentState') === targetState) { return; }
 
-    return !!this._computeActive(targetState);
+    return this._isActive(targetState);
   }),
 
   transitioningIn: computed('active', 'willBeActive', function computeLinkToComponentTransitioningIn() {
-    if (get(this, 'willBeActive') === true && !get(this, 'active')) {
+    if (get(this, 'willBeActive') === true && !get(this, '_active')) {
       return 'ember-transitioning-in';
     } else {
       return false;
@@ -608,7 +614,7 @@ const LinkComponent = EmberComponent.extend({
   }),
 
   transitioningOut: computed('active', 'willBeActive', function computeLinkToComponentTransitioningOut() {
-    if (get(this, 'willBeActive') === false && get(this, 'active')) {
+    if (get(this, 'willBeActive') === false && get(this, '_active')) {
       return 'ember-transitioning-out';
     } else {
       return false;
