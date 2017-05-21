@@ -595,16 +595,12 @@ const LinkComponent = EmberComponent.extend({
 
   transitioningIn: computed('active', 'willBeActive', function computeLinkToComponentTransitioningIn() {
     let willBeActive = get(this, 'willBeActive');
-    if (typeof willBeActive === 'undefined') { return false; }
-
-    return !get(this, 'active') && willBeActive && 'ember-transitioning-in';
+    return willBeActive === true && !get(this, 'active') && 'ember-transitioning-in';
   }),
 
   transitioningOut: computed('active', 'willBeActive', function computeLinkToComponentTransitioningOut() {
     let willBeActive = get(this, 'willBeActive');
-    if (typeof willBeActive === 'undefined') { return false; }
-
-    return get(this, 'active') && !willBeActive && 'ember-transitioning-out';
+    return willBeActive === false &&  get(this, 'active') && 'ember-transitioning-out';
   }),
 
   /**
