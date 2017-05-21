@@ -944,7 +944,13 @@ function json(param: Opaque) {
     return '<function>';
   }
 
-  let string = JSON.stringify(param);
+  let string;
+  try {
+    string = JSON.stringify(param);
+  } catch(e) {
+    return '<cannot generate JSON>';
+  }
+
   if (string === undefined) {
     return 'undefined';
   }
