@@ -221,7 +221,7 @@ const Enumerable = Mixin.create({
     ```
 
     @method contains
-    @deprecated Use `Enumerable#includes` instead. See http://emberjs.com/deprecations/v2.x#toc_enumerable-contains
+    @deprecated Use `Enumerable#includes` instead. See https://emberjs.com/deprecations/v2.x#toc_enumerable-contains
     @param {Object} obj The object to search for.
     @return {Boolean} `true` if object is found in enumerable.
     @public
@@ -230,7 +230,7 @@ const Enumerable = Mixin.create({
     deprecate(
       '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
       false,
-      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
+      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
     );
 
     let found = this.find(item => item === obj);

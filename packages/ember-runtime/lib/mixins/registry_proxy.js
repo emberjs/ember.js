@@ -286,7 +286,7 @@ function buildFakeRegistryFunction(instance, typeForMessage, deprecatedProperty,
       {
         id: 'ember-application.app-instance-registry',
         until: '3.0.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-application-registry-ember-applicationinstance-registry'
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-application-registry-ember-applicationinstance-registry'
       }
     );
     return instance[nonDeprecatedProperty](...arguments);

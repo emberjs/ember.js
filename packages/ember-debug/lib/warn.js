@@ -16,7 +16,7 @@ let missingOptionsDeprecation, missingOptionsIdDeprecation;
 if (DEBUG) {
   /**
     Allows for runtime registration of handler functions that override the default warning behavior.
-    Warnings are invoked by calls made to [Ember.warn](http://emberjs.com/api/classes/Ember.html#method_warn).
+    Warnings are invoked by calls made to [Ember.warn](https://emberjs.com/api/classes/Ember.html#method_warn).
     The following example demonstrates its usage by registering a handler that does nothing overriding Ember's
     default warning behavior.
 
@@ -88,7 +88,7 @@ if (DEBUG) {
         {
           id: 'ember-debug.warn-options-missing',
           until: '3.0.0',
-          url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
         }
       );
     }
@@ -100,7 +100,7 @@ if (DEBUG) {
         {
           id: 'ember-debug.warn-id-missing',
           until: '3.0.0',
-          url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
         }
       );
     }

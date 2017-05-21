@@ -90,7 +90,7 @@ along.
 
 In short, if you have an idea that would be nice to have, create an issue on the
 emberjs/rfcs repo. If you have a question about requesting a feature, start a
-discussion at [discuss.emberjs.com](http://discuss.emberjs.com)
+discussion at [discuss.emberjs.com](https://discuss.emberjs.com)
 
 # Building Ember.js
 
@@ -168,7 +168,7 @@ to know that you have a clean slate: `yarn install && yarn test`.
 3. Add a test for your change. Only refactoring and documentation changes
 require no new tests. If you are adding functionality or fixing a bug, we need
 a test! If your change is a new feature, please
-[wrap it in a feature flag](http://emberjs.com/guides/contributing/adding-new-features/).
+[wrap it in a feature flag](https://emberjs.com/guides/contributing/adding-new-features/).
 
 4. Make sure to check out the
    [JavaScript Style Guide](https://github.com/emberjs/ember.js/blob/master/STYLEGUIDE.md) and
@@ -311,7 +311,7 @@ Documentation commits are tagged as `[DOC channel]` where channel is `canary`,
 
 ### Security
 
-Security commits will be tagged as `[SECURITY cve]`. Please do not submit security related PRs without coordinating with the security team. See the [Security Policy](http://emberjs.com/security/) for more information.
+Security commits will be tagged as `[SECURITY cve]`. Please do not submit security related PRs without coordinating with the security team. See the [Security Policy](https://emberjs.com/security/) for more information.
 
 ### Other
 

@@ -185,7 +185,7 @@ if (DEBUG) {
         {
           id: 'ember-metal.model_factory_injections',
           until: '2.17.0',
-          url: 'http://emberjs.com/deprecations/v2.x#toc_code-ember-model-factory-injections'
+          url: 'https://emberjs.com/deprecations/v2.x#toc_code-ember-model-factory-injections'
         }
       );
     },
@@ -243,7 +243,7 @@ Object.defineProperty(Ember, 'K', {
       {
         id: 'ember-metal.ember-k',
         until: '3.0.0',
-        url: 'http://emberjs.com/deprecations/v2.x#toc_code-ember-k-code'
+        url: 'https://emberjs.com/deprecations/v2.x#toc_code-ember-k-code'
       }
     );
 
@@ -271,7 +271,7 @@ Ember.Backburner = function() {
     {
       id: 'ember-metal.ember-backburner',
       until: '2.8.0',
-      url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-backburner'
+      url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-backburner'
     }
   );
 

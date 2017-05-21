@@ -218,7 +218,7 @@
 - [#13672](https://github.com/emberjs/ember.js/pull/13672) [BUGFIX] Fix issue with `this.render` and `this.disconnectOutlet` in routes.
 - [#13716](https://github.com/emberjs/ember.js/pull/13716) [BUGFIX] Ensure that `Ember.Test.waiters` allows access to configured test waiters.
 - [#13273](https://github.com/emberjs/ember.js/pull/13273) [BUGFIX] Fix a number of query param related issues reported.
-- [#13424](https://github.com/emberjs/ember.js/pull/13424) [DEPRECATE] Deprecate Ember.Binding. See [the deprecation guide](http://emberjs.com/deprecations/v2.x/#toc_ember-binding) for more details.
+- [#13424](https://github.com/emberjs/ember.js/pull/13424) [DEPRECATE] Deprecate Ember.Binding. See [the deprecation guide](https://emberjs.com/deprecations/v2.x/#toc_ember-binding) for more details.
 - [#13599](https://github.com/emberjs/ember.js/pull/13599) [FEATURE] Enable `ember-runtime-computed-uniq-by` feature.
 
 ### 2.6.2 (July 11, 2016)
@@ -359,7 +359,7 @@
 ### 2.3.0 (January 17, 2016)
 
 - [#12712](https://github.com/emberjs/ember.js/pull/12712) [BUGFIX] Create a new hash parameter when creating a component cell
-- [#12746](https://github.com/emberjs/ember.js/pull/12746) [BUGFIX] Update htmlbars to 0.14.11 to fix [CVE-2015-7565](http://emberjs.com/blog/2016/01/14/security-releases-ember-1-11-4-1-12-2-1-13-12-2-0-3-2-1-2-2-2-1.html).
+- [#12746](https://github.com/emberjs/ember.js/pull/12746) [BUGFIX] Update htmlbars to 0.14.11 to fix [CVE-2015-7565](https://emberjs.com/blog/2016/01/14/security-releases-ember-1-11-4-1-12-2-1-13-12-2-0-3-2-1-2-2-2-1.html).
 - [#12752](https://github.com/emberjs/ember.js/pull/12752) [BUGFIX] Do not re-raise on errors handled in route error action.
 - [#12764](https://github.com/emberjs/ember.js/pull/12764) [BUGFIX] Read values of `action` helper parameters
 - [#12793](https://github.com/emberjs/ember.js/pull/12793) [BUGFIX] Remove jQuery version assertion.
@@ -590,7 +590,7 @@
 
 ### 1.13.12 (January 14, 2016)
 
-- [CVE-2015-7565](http://emberjs.com/blog/2016/01/14/security-releases-ember-1-11-4-1-12-2-1-13-12-2-0-3-2-1-2-2-2-1.html)
+- [CVE-2015-7565](https://emberjs.com/blog/2016/01/14/security-releases-ember-1-11-4-1-12-2-1-13-12-2-0-3-2-1-2-2-2-1.html)
 
 ### 1.13.11 (November 16, 2015)
 
@@ -805,7 +805,7 @@
 - [#10709](https://github.com/emberjs/ember.js/pull/10709) [BUGFIX] Clear `src` attributes that are set to `null` or `undefined`.
 - [#10695](https://github.com/emberjs/ember.js/pull/10695) [SECURITY] Add `<base>` and `<embed>` to list of tags where `src` and `href` are sanitized.
 - [#10683](https://github.com/emberjs/ember.js/pull/10683) / [#10703](https://github.com/emberjs/ember.js/pull/10703) / [#10712](https://github.com/emberjs/ember.js/pull/10712) [BUGFIX] Fix regressions added during the `{{outlet}}` refactor.
-- [#10663](https://github.com/emberjs/ember.js/pull/10663) / [#10711](https://github.com/emberjs/ember.js/pull/10711) [SECURITY] Warn when using dynamic style attributes without a `SafeString` value. [See here](http://emberjs.com/deprecations/v1.x/#toc_warning-when-binding-style-attributes) for more details.
+- [#10663](https://github.com/emberjs/ember.js/pull/10663) / [#10711](https://github.com/emberjs/ember.js/pull/10711) [SECURITY] Warn when using dynamic style attributes without a `SafeString` value. [See here](https://emberjs.com/deprecations/v1.x/#toc_warning-when-binding-style-attributes) for more details.
 - [#10463](https://github.com/emberjs/ember.js/pull/10463) [BUGFIX] Make async test helpers more robust. Fixes hanging test when elements are not found.
 - [#10631](https://github.com/emberjs/ember.js/pull/10631) Deprecate using `fooBinding` syntax (`{{some-thing nameBinding="model.name"}}`) in templates.
 - [#10627](https://github.com/emberjs/ember.js/pull/10627) [BUGFIX] Ensure specifying `class` as a sub-expression (`{{input value=foo class=(some-sub-expr)}}`) works properly.
@@ -863,7 +863,7 @@
 * [BUGFIX] Ensure that property case is normalized.
 * [BUGFIX] Prevent an error from being thrown if the errorThrown property is a string when catching unhandled promise rejections.
 * [BUGFIX] `contenteditable` elements should fire focus events in `ember-testing` click helper.
-* [BUGFIX] Remove HTMLBars from builds `ember.debug.js` and `ember.prod.js` builds. Please see http://emberjs.com/blog/2015/02/05/compiling-templates-in-1-10-0.html for more details.
+* [BUGFIX] Remove HTMLBars from builds `ember.debug.js` and `ember.prod.js` builds. Please see https://emberjs.com/blog/2015/02/05/compiling-templates-in-1-10-0.html for more details.
 * [BUGFIX] Ensure that calling the `wait` testing helper without routing works properly.
 * [BUGFIX] Ensure that a plus sign in query params are treated as spaces.
 * [BUGFIX] Fix broken `Ember.Test.unregisterWaiter` semantics.
@@ -961,7 +961,7 @@
 Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Previously, if `component-a` did not handle the action, it would silently continue.  Now, an assertion would be triggered.
 
 * [PERF] Speedup Mixin creation.
-* [BREAKING] Require Handlebars 2.0. See [blog post](http://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
+* [BREAKING] Require Handlebars 2.0. See [blog post](https://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
 * Allow all rejection types in promises to be handled.
 * Mandatory setter checks for configurable, and does not clobber non-configurable properties.
 * Remove long deprecated `Ember.empty` and `Ember.none`.
@@ -1045,7 +1045,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [FEATURE] ember-metal-is-present
 * [FEATURE] property-brace-expansion-improvement
 * Deprecate usage of Internet Explorer 6 & 7.
-* Deprecate global access to view classes from template (see the [deprecation guide](http://emberjs.com/guides/deprecations/)).
+* Deprecate global access to view classes from template (see the [deprecation guide](https://emberjs.com/guides/deprecations/)).
 * Deprecate `Ember.Set` (note: this is NOT the `Ember.set`).
 * Deprecate `Ember.computed.defaultTo`.
 * Remove long deprecated `Ember.StateManager` warnings.

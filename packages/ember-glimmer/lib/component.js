@@ -550,7 +550,7 @@ const Component = CoreView.extend(
           {
             id: 'ember-views.component.defaultLayout',
             until: '3.0.0',
-            url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-component-defaultlayout'
+            url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-component-defaultlayout'
           }
         );
 

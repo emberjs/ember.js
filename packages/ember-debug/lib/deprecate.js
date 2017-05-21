@@ -15,7 +15,7 @@ import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 
 /**
   Allows for runtime registration of handler functions that override the default deprecation behavior.
-  Deprecations are invoked by calls to [Ember.deprecate](http://emberjs.com/api/classes/Ember.html#method_deprecate).
+  Deprecations are invoked by calls to [Ember.deprecate](https://emberjs.com/api/classes/Ember.html#method_deprecate).
   The following example demonstrates its usage by registering a handler that throws an error if the
   message contains the word "should", otherwise defers to the default handler.
 
@@ -163,7 +163,7 @@ if (DEBUG) {
         {
           id: 'ember-debug.deprecate-options-missing',
           until: '3.0.0',
-          url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
         }
       );
     }
@@ -175,7 +175,7 @@ if (DEBUG) {
         {
           id: 'ember-debug.deprecate-id-missing',
           until: '3.0.0',
-          url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
         }
       );
     }
@@ -187,7 +187,7 @@ if (DEBUG) {
         {
           id: 'ember-debug.deprecate-until-missing',
           until: '3.0.0',
-          url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
         }
       );
     }

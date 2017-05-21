@@ -131,7 +131,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
           false, {
             id: 'ember-application.app-initializer-initialize-arguments',
             until: '3.0.0',
-            url: 'http://emberjs.com/deprecations/v2.x/#toc_initializer-arity'
+            url: 'https://emberjs.com/deprecations/v2.x/#toc_initializer-arity'
           });
 
         initializer.initialize(this.__registry__, this);
