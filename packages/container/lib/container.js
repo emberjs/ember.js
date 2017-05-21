@@ -1,5 +1,5 @@
 /* globals Proxy */
-import { assert, deprecate } from 'ember-debug';
+import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
   dictionary,
@@ -28,12 +28,12 @@ const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
  @private
  @class Container
  */
-export default function Container(registry, options) {
+export default function Container(registry, options = {}) {
   this.registry        = registry;
-  this.owner           = options && options.owner ? options.owner : null;
-  this.cache           = dictionary(options && options.cache ? options.cache : null);
-  this.factoryManagerCache = dictionary(options && options.factoryManagerCache ? options.factoryManagerCache : null);
-  this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
+  this.owner           = options.owner || null;
+  this.cache           = dictionary(options.cache || null);
+  this.validationCache = dictionary(options.validationCache || null);
+  this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
   this[CONTAINER_OVERRIDE] = undefined;
   this.isDestroyed = false;
 }
