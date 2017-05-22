@@ -700,7 +700,7 @@ export const enum Op {
    *   (PushComponentManager #ComponentDefinition)
    * Operand Stack:
    *   ... →
-   *   ..., ComponentDefinition, ComponentManager
+   *   ..., { ComponentDefinition, ComponentManager }
    */
   PushComponentManager,
 
@@ -716,17 +716,6 @@ export const enum Op {
    *   ..., ComponentDefinition, ComponentManager
    */
   PushDynamicComponentManager,
-
-  /**
-   * Operation: push component metadata onto the stack.
-   *
-   * Format:
-   *   (InitializeComponentState)
-   * Operand Stack:
-   *   ..., ComponentDefinition<T>, ComponentManager<T> →
-   *   ..., ComponentState
-   */
-  InitializeComponentState,
 
   /**
    * Operation: Push a user representation of args onto the stack.
@@ -1039,8 +1028,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): [st
       /// COMPONENTS
       case Op.PushComponentManager: return ['PushComponentManager', { definition: c.getOther(op1) }];
       case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', {}];
-      case Op.InitializeComponentState: return ['InitializeComponentState', {}];
-      case Op.PushArgs: return ['PushArgs', { synthetic: !!op1 }];
+      case Op.PushArgs: return ['PushArgs', { synthetic: !!op2 }];
       case Op.PrepareArgs: return ['PrepareArgs', { state: Register[op1] }];
       case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: Register[op2] }];
       case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor', {}];
