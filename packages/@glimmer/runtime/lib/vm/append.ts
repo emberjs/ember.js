@@ -7,6 +7,7 @@ import { CompiledDynamicProgram } from '../compiled/blocks';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
+import { DEBUG } from '@glimmer/local-debug-flags';
 
 import {
   APPEND_OPCODES,
@@ -37,7 +38,9 @@ export class EvaluationStack {
   }
 
   constructor(private stack: Opaque[], public fp: number, public sp: number) {
-    Object.seal(this);
+    if (DEBUG) {
+      Object.seal(this);
+    }
   }
 
   isEmpty() {
@@ -74,6 +77,10 @@ export class EvaluationStack {
     let end = this.sp + 1;
     let start = end - items;
     return this.stack.slice(start, end);
+  }
+
+  reset() {
+    this.stack.length = 0;
   }
 
   toArray() {
@@ -150,7 +157,6 @@ export default class VM implements PublicVM {
     this.stack.push(this.ra);
     this.stack.push(this.fp);
     this.fp = this.sp - 1;
-    // this.fp = this.sp + 1;
   }
 
   // Restore $ra, $sp and $fp
@@ -401,6 +407,9 @@ export default class VM implements PublicVM {
       APPEND_OPCODES.evaluate(this, opcode, opcode.type);
       result = { done: false, value: null };
     } else {
+      // Unload the stack
+      this.stack.reset();
+
       result = {
         done: true,
         value: new RenderResult(
