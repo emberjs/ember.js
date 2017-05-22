@@ -60,9 +60,9 @@ APPEND_OPCODES.add(Op.InitializeComponentState, vm => {
   stack.push({ definition, manager, component: null });
 });
 
-APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: positional, op2: synthetic }) => {
+APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: synthetic }) => {
   let stack = vm.stack;
-  ARGS.setup(stack, positional, !!synthetic);
+  ARGS.setup(stack, !!synthetic);
   stack.push(ARGS);
 });
 
@@ -84,6 +84,8 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
       stack.push(positional[i]);
     }
 
+    stack.push(positionalCount);
+
     let names = Object.keys(named);
     let namedCount = names.length;
 
@@ -92,7 +94,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
     }
 
     stack.push(names);
-    args.setup(stack, positionalCount, true);
+    args.setup(stack, true);
   }
 
   stack.push(args);
