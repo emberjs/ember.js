@@ -191,6 +191,13 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
       if (hasEval) lookup![callerNames[i]] = value;
     }
 
+    let numPositionalArgs = stack.pop<number>();
+
+    assert(typeof numPositionalArgs === 'number', '[BUG] Incorrect value of positional argument count found during invoke-dynamic-layout.');
+
+    // Currently we don't support accessing positional args in templates, so just throw them away
+    stack.pop(numPositionalArgs);
+
     let inverseSymbol = symbols.indexOf('&inverse');
     let inverse = stack.pop<Option<Block>>();
 
@@ -319,8 +326,9 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder: OpcodeBuilder) => {
   builder.returnTo('END');
 
   expr(name, builder);
+  builder.pushImmediate(1);
   builder.pushImmediate(EMPTY_ARRAY);
-  builder.pushArgs(1, true);
+  builder.pushArgs(true);
   builder.helper(helper);
 
   builder.dup();
