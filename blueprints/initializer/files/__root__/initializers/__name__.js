@@ -3,6 +3,5 @@ export function initialize(/* application */) {
 }
 
 export default {
-  name: '<%= dasherizedModuleName %>',
   initialize
 };
