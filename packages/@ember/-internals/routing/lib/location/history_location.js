@@ -1,13 +1,11 @@
 import { get, set } from '@ember/-internals/metal';
-
+import { bind } from '@ember/runloop';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import EmberLocation from './api';
 
 /**
 @module @ember/routing
 */
-
-let popstateFired = false;
 
 function _uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -63,6 +61,7 @@ export default EmberObject.extend({
     set(this, 'baseURL', baseURL);
     set(this, 'location', get(this, 'location') || window.location);
 
+    this.__popstateFired = false;
     this._popstateHandler = undefined;
   },
 
@@ -181,7 +180,6 @@ export default EmberObject.extend({
     if (this.supportsHistory) {
       return get(this, 'history').state;
     }
-
     return this._historyState;
   },
 
@@ -232,16 +230,17 @@ export default EmberObject.extend({
   onUpdateURL(callback) {
     this._removeEventListener();
 
-    this._popstateHandler = () => {
+    this._popstateHandler = bind(this, function() {
+      let url = this.getURL();
       // Ignore initial page load popstate event in Chrome
-      if (!popstateFired) {
-        popstateFired = true;
-        if (this.getURL() === this._previousURL) {
+      if (!this.__popstateFired) {
+        this.__popstateFired = true;
+        if (url === this._previousURL) {
           return;
         }
       }
-      callback(this.getURL());
-    };
+      callback(url);
+    });
 
     window.addEventListener('popstate', this._popstateHandler);
   },
