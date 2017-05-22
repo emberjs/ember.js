@@ -21,8 +21,7 @@ APPEND_OPCODES.add(Op.PushComponentManager, (vm, { op1: _definition }) => {
   let definition = vm.constants.getOther<ComponentDefinition<Opaque>>(_definition);
   let stack = vm.stack;
 
-  stack.push(definition);
-  stack.push(definition.manager);
+  stack.push({ definition, manager: definition.manager, component: null });
 });
 
 APPEND_OPCODES.add(Op.PushDynamicComponentManager, vm => {
@@ -31,8 +30,7 @@ APPEND_OPCODES.add(Op.PushDynamicComponentManager, vm => {
   let cache = isConst(reference) ? undefined : new ReferenceCache<ComponentDefinition<Opaque>>(reference);
   let definition = cache ? cache.peek() : reference.value();
 
-  stack.push(definition);
-  stack.push(definition.manager);
+  stack.push({ definition, manager: definition.manager, component: null });
 
   if (cache) {
     vm.updateWith(new Assert(cache));
@@ -50,15 +48,6 @@ export interface ComponentState<T> {
   manager: ComponentManager<T>;
   component: T;
 }
-
-APPEND_OPCODES.add(Op.InitializeComponentState, vm => {
-  let stack = vm.stack;
-
-  let manager = stack.pop();
-  let definition = stack.pop();
-
-  stack.push({ definition, manager, component: null });
-});
 
 APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: synthetic }) => {
   let stack = vm.stack;
