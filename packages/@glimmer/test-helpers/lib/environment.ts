@@ -247,6 +247,8 @@ export class BasicComponent {
 }
 
 export class EmberishCurlyComponent extends GlimmerObject {
+  public static positionalParams: string[] | string;
+
   public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
   public tagName: Option<string> = null;
   public attributeBindings: Option<string[]> = null;

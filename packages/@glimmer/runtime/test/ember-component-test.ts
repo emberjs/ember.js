@@ -1233,6 +1233,19 @@ QUnit.test('dynamic attribute bindings', assert => {
 
 module("Components - generic - attrs");
 
+QUnit.test('using @value from emberish curly component', () => {
+  class FooBar extends EmberishCurlyComponent {
+    static positionalParams = ['foo'];
+    tagName = 'div';
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, `{{@blah}}`);
+
+  appendViewFor(`{{foo-bar first blah="derp"}}`);
+
+  assertEmberishElement('div', {}, `derp`);
+});
+
 module("Components - integration - scope");
 
 testComponent('correct scope - conflicting local names', {
