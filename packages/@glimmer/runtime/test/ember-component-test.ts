@@ -807,6 +807,32 @@ testComponent('parameterized has-block (concatted attr, default) when block not 
   expected: '<button data-has-block="is-false"></button>'
 });
 
+module('Manager#create - hasBlock');
+
+QUnit.test('when no block present', assert => {
+  class FooBar extends EmberishCurlyComponent {
+    tagName = 'div';
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, `{{HAS_BLOCK}}`);
+
+  appendViewFor(`{{foo-bar}}`);
+
+  assertEmberishElement('div', {}, `false`);
+});
+
+QUnit.test('when block present', assert => {
+  class FooBar extends EmberishCurlyComponent {
+    tagName = 'div';
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, `{{HAS_BLOCK}}`);
+
+  appendViewFor(`{{#foo-bar}}{{/foo-bar}}`);
+
+  assertEmberishElement('div', {}, `true`);
+});
+
 module('Dynamically-scoped variable accessors');
 
 testComponent('Can get and set dynamic variable', {
