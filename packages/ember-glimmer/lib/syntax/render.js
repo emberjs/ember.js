@@ -201,11 +201,11 @@ class NonSingletonRenderManager extends AbstractRenderManager {
       dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
     }
 
-    return { controller };
+    return { controller, model: modelRef };
   }
 
-  update({ controller }, args, dynamicScope) {
-    controller.set('model', args.positional.at(0).value());
+  update({ controller, model }, dynamicScope) {
+    controller.set('model', model.value());
   }
 
   getDestructor({ controller }) {
