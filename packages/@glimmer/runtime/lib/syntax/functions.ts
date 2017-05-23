@@ -939,8 +939,8 @@ export function compileStatements(statements: WireFormat.Statement[], meta: Comp
 } {
   let b = new OpcodeBuilder(env, meta);
 
-  for (let statement of statements) {
-    compileStatement(statement, b);
+  for (let i = 0; i < statements.length; i++) {
+    compileStatement(statements[i], b);
   }
 
   return b;
