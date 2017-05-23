@@ -32,6 +32,7 @@ import {
 import { privatize as P } from 'container';
 import AbstractManager from './abstract';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
+import { PropertyReference } from '../utils/references';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -104,6 +105,10 @@ export class PositionalArgumentReference {
 
   value() {
     return this._references.map(reference => reference.value());
+  }
+
+  get(key) {
+    return PropertyReference.create(this, key);
   }
 }
 
