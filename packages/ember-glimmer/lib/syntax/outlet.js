@@ -166,7 +166,7 @@ class StateBucket {
 
 class OutletComponentManager extends AbstractManager {
   prepareArgs(definition, args) {
-    return args;
+    return null;
   }
 
   create(environment, definition, args, dynamicScope) {

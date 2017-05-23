@@ -106,7 +106,7 @@ class DynamicEngineReference {
 
 class MountManager extends AbstractManager {
   prepareArgs(definition, args) {
-    return args;
+    return null;
   }
 
   create(environment, { name }, args, dynamicScope) {
