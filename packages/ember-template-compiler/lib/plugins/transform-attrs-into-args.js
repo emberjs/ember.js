@@ -16,7 +16,8 @@
  {{@foo.bar}}
   ```
 
-  as well as `{{#if attrs.foo}}`, `{{deeply (nested attrs.foobar.baz)}}` etc
+  as well as `{{#if attrs.foo}}`, `{{deeply (nested attrs.foobar.baz)}}`,
+  `{{this.attrs.foo}}` etc
 
   @private
   @class TransformAttrsToProps
@@ -35,12 +36,11 @@ function isAttrs(node, symbols) {
   }
 
   if (name === 'attrs') {
-    return true;
-  }
+    if (node.this === true) {
+      node.parts.shift();
+      node.original = node.original.slice(5);
+    }
 
-  if (name === null && node.parts[1] === 'attrs') {
-    node.parts.shift();
-    node.original = node.original.slice(5);
     return true;
   }
 
