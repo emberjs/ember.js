@@ -1,4 +1,5 @@
-import { OWNER } from 'ember-utils';
+import { OWNER, assign } from 'ember-utils';
+import { combineTagged } from '@glimmer/reference';
 import {
   PrimitiveReference,
   ComponentDefinition
@@ -95,29 +96,63 @@ class CurlyComponentLayoutCompiler {
 
 CurlyComponentLayoutCompiler.id = 'curly';
 
+export class PositionalArgumentReference {
+  constructor(references) {
+    this.tag = combineTagged(references);
+    this._references = references;
+  }
+
+  value() {
+    return this._references.map(reference => reference.value());
+  }
+}
+
 export default class CurlyComponentManager extends AbstractManager {
   prepareArgs(definition, args) {
     let componentPositionalParamsDefinition = definition.ComponentClass.class.positionalParams;
 
     if (DEBUG && componentPositionalParamsDefinition) {
-      validatePositionalParameters(args.named, args.positional.values, componentPositionalParamsDefinition);
+      validatePositionalParameters(args.named, args.positional, componentPositionalParamsDefinition);
     }
 
-    // merging positional params should be PAYGO
-    if (args.positional.length === 0 || !componentPositionalParamsDefinition) {
+    let componentHasRestStylePositionalParams = typeof componentPositionalParamsDefinition === 'string';
+    let componentHasPositionalParams = componentHasRestStylePositionalParams || componentPositionalParamsDefinition.length > 0;
+    let needsPositionalParamMunging = componentHasPositionalParams && args.positional.length !== 0;
+    let isClosureComponent = definition.args;
+
+    if (!needsPositionalParamMunging && !isClosureComponent) {
       return null;
     }
 
     let capturedArgs = args.capture();
-    let positional = capturedArgs.positional;
-    let named = capturedArgs.named.map || {};
+    // grab raw positional references array
+    let positional = capturedArgs.positional.references;
 
-    if (typeof componentPositionalParamsDefinition === 'string') {
-      named[componentPositionalParamsDefinition] = positional;
-      positional = [];
-    } else {
-      //named = mergePositionalParams(named, positionalValues, positionalParamsDefinition);
+    // handle prep for closure component with positional params
+    let curriedNamed;
+    if (definition.args) {
+      let remainingDefinitionPositionals = definition.args.positional.slice(positional.length);
+      positional = positional.concat(remainingDefinitionPositionals);
+      curriedNamed = definition.args.named;
     }
+
+    // handle positionalParams
+    let positionalParamsToNamed;
+    if (componentHasRestStylePositionalParams) {
+      positionalParamsToNamed = {
+        [componentPositionalParamsDefinition]: new PositionalArgumentReference(positional)
+      };
+      positional = [];
+    } else if (componentHasPositionalParams){
+      positionalParamsToNamed = {};
+      let length = Math.min(positional.length, componentPositionalParamsDefinition.length);
+      for (let i = 0; i < length; i++) {
+        let name = componentPositionalParamsDefinition[i];
+        positionalParamsToNamed[name] = positional[i];
+      }
+    }
+
+    let named = assign({}, curriedNamed, positionalParamsToNamed, capturedArgs.named.map);
 
     return { positional, named };
   }

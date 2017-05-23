@@ -6,7 +6,8 @@ import { assign } from 'ember-utils';
 import { CachedReference } from '../utils/references';
 import {
   CurlyComponentDefinition,
-  validatePositionalParameters
+  validatePositionalParameters,
+  PositionalArgumentsReference
 } from '../component-managers/curly';
 import {
   isComponentDefinition
@@ -239,7 +240,7 @@ function curryArgs(definition, newArgs) {
   // the component instance (inside of processArgs(), inside of create()).
   let positionalToNamedParams = {};
 
-  if (!isRest && positionalParams && positionalParams.length > 0) {
+  if (!isRest && positionalParams.length > 0) {
     let limit = Math.min(positionalParams.length, slicedPositionalArgs.length);
 
     for (let i = 0; i < limit; i++) {
@@ -252,8 +253,8 @@ function curryArgs(definition, newArgs) {
 
   // args (aka 'oldArgs') may be undefined or simply be empty args, so
   // we need to fall back to an empty array or object.
-  let oldNamed = args && args.named && args.named.map || {};
-  let oldPositional = args && args.positional && args.positional.references || [];
+  let oldNamed = args && args.named || {};
+  let oldPositional = args && args.positional || [];
 
   // Merge positional arrays
   let positional = new Array(Math.max(oldPositional.length, slicedPositionalArgs.length));
