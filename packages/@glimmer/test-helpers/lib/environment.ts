@@ -499,12 +499,12 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     }
   }
 
-  create(_environment: Environment, definition: EmberishCurlyComponentDefinition, _args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>): EmberishCurlyComponent {
+  create(_environment: Environment, definition: EmberishCurlyComponentDefinition, _args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishCurlyComponent {
     let klass = definition.ComponentClass || BaseEmberishCurlyComponent;
     let self = callerSelf.value();
     let args = _args.named.capture();
     let attrs = args.value();
-    let merged = assign({}, attrs, { attrs }, { args }, { targetObject: self });
+    let merged = assign({}, attrs, { attrs }, { args }, { targetObject: self }, { HAS_BLOCK: hasDefaultBlock });
     let component = klass.create(merged);
 
     let dyn: Option<string[]> = definition.ComponentClass ? definition.ComponentClass['fromDynamicScope'] : null;
