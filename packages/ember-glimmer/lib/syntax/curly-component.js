@@ -164,7 +164,29 @@ function rerenderInstrumentDetails(component) {
 
 class CurlyComponentManager extends AbstractManager {
   prepareArgs(definition, args) {
-    return null;
+    let componentPositionalParamsDefinition = definition.ComponentClass.class.positionalParams;
+
+    if (DEBUG && componentPositionalParamsDefinition) {
+      validatePositionalParameters(args.named, args.positional.values, componentPositionalParamsDefinition);
+    }
+
+    // merging positional params should be PAYGO
+    if (args.positional.length === 0 || !componentPositionalParamsDefinition) {
+      return null;
+    }
+
+    let capturedArgs = args.capture();
+    let positional = capturedArgs.positional;
+    let named = capturedArgs.named.map || {};
+
+    if (typeof componentPositionalParamsDefinition === 'string') {
+      named[componentPositionalParamsDefinition] = positional;
+      positional = [];
+    } else {
+      //named = mergePositionalParams(named, positionalValues, positionalParamsDefinition);
+    }
+
+    return { positional, named };
   }
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
