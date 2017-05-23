@@ -732,11 +732,11 @@ export const enum Op {
    * Operation: Push a user representation of args onto the stack.
    *
    * Format:
-   *   (PushArgs positional:u32 synthetic:boolean)
+   *   (PushArgs synthetic:boolean)
    *
    * Operand Stack:
-   *   ..., [VersionedPathReference ...], #Array<string> →
-   *   ..., [VersionedPathReference ...], #Array<string>, Arguments
+   *   ..., [VersionedPathReference ...], number, [VersionedPathReference ...], #Array<string> →
+   *   ..., [VersionedPathReference ...], number, [VersionedPathReference ...], #Array<string>, Arguments
    *
    * Description:
    *   This arguments object is only necessary when calling into
@@ -1034,7 +1034,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): [st
       case Op.PushComponentManager: return ['PushComponentManager', { definition: c.getOther(op1) }];
       case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', {}];
       case Op.InitializeComponentState: return ['InitializeComponentState', {}];
-      case Op.PushArgs: return ['PushArgs', { positional: op1, synthetic: !!op2 }];
+      case Op.PushArgs: return ['PushArgs', { synthetic: !!op1 }];
       case Op.PrepareArgs: return ['PrepareArgs', { state: Register[op1] }];
       case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: Register[op2] }];
       case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor', {}];

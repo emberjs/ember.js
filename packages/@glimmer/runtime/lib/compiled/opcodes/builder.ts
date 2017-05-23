@@ -93,8 +93,8 @@ export abstract class BasicOpcodeBuilder {
 
   // args
 
-  pushArgs(positional: number, synthetic: boolean) {
-    this.push(Op.PushArgs, positional, synthetic === true ? 1 : 0);
+  pushArgs(synthetic: boolean) {
+    this.push(Op.PushArgs, synthetic === true ? 1 : 0);
   }
 
   // helpers
@@ -551,6 +551,8 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
       positional = params.length;
     }
 
+    this.pushImmediate(positional);
+
     let names = EMPTY_ARRAY;
 
     if (hash) {
@@ -562,7 +564,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     }
 
     this.pushImmediate(names);
-    this.pushArgs(positional, synthetic);
+    this.pushArgs(synthetic);
   }
 
   compile<E>(expr: Represents<E>): E {
