@@ -122,10 +122,6 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.PushDynamicComponentManager);
   }
 
-  initializeComponentState() {
-    this.push(Op.InitializeComponentState);
-  }
-
   prepareArgs(state: Register) {
     this.push(Op.PrepareArgs, state);
   }
@@ -621,9 +617,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.stopLabels();
   }
 
-  invokeComponent(attrs: Option<RawInlineBlock>, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, block: Option<Block> = null, inverse: Option<Block> = null) {
-    this.initializeComponentState();
-
+  invokeComponent(attrs: Option<RawInlineBlock>, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, block: Option<Block>, inverse: Option<Block> = null) {
     this.fetch(Register.s0);
     this.dup(Register.sp, 1);
     this.load(Register.s0);
