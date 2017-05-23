@@ -48,8 +48,11 @@ class Labels {
   }
 
   patch(opcodes: Program): void {
-    for (let { at, Target, target } of this.targets) {
-      opcodes.set(at, Target, this.labels[target]);
+    let { targets, labels } = this;
+    for (let i = 0; i < targets.length; i++) {
+      let { at, Target, target } = targets[i];
+
+      opcodes.set(at, Target, labels[target]);
     }
   }
 }
