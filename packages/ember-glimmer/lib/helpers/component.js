@@ -7,7 +7,7 @@ import { CachedReference } from '../utils/references';
 import {
   CurlyComponentDefinition,
   validatePositionalParameters
-} from '../syntax/curly-component';
+} from '../component-managers/curly';
 import {
   isComponentDefinition
 } from '@glimmer/runtime';

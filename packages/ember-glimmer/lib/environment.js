@@ -17,7 +17,7 @@ import {
 } from '@glimmer/runtime';
 import {
   CurlyComponentDefinition
-} from './syntax/curly-component';
+} from './component-managers/curly';
 import {
   populateMacros
 } from './syntax';

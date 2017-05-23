@@ -1,6 +1,7 @@
 import { OWNER } from 'ember-utils';
 import {
-  PrimitiveReference
+  PrimitiveReference,
+  ComponentDefinition
 } from '@glimmer/runtime';
 import {
   assert
@@ -28,14 +29,8 @@ import {
   setViewElement
 } from 'ember-views';
 import { privatize as P } from 'container';
-import AbstractManager from '../syntax/abstract-manager';
-import ComponentStateBucket from '../syntax/component-state-bucket';
-import {
-  initialRenderInstrumentDetails,
-  rerenderInstrumentDetails,
-  validatePositionalParameters,
-  processComponentInitializationAssertions
-} from '../syntax/curly-component';
+import AbstractManager from './abstract';
+import ComponentStateBucket from '../utils/curly-component-state-bucket';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -316,5 +311,78 @@ export default class CurlyComponentManager extends AbstractManager {
 
   getDestructor(stateBucket) {
     return stateBucket;
+  }
+}
+
+export function validatePositionalParameters(named, positional, positionalParamsDefinition) {
+  if (DEBUG) {
+    if (!named || !positional || !positional.length) {
+      return;
+    }
+
+    let paramType = typeof positionalParamsDefinition;
+
+    if (paramType === 'string') {
+      assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsDefinition}\`.`, !named.has(positionalParamsDefinition));
+    } else {
+      if (positional.length < positionalParamsDefinition.length) {
+        positionalParamsDefinition = positionalParamsDefinition.slice(0, positional.length);
+      }
+
+      for (let i = 0; i < positionalParamsDefinition.length; i++) {
+        let name = positionalParamsDefinition[i];
+
+        assert(
+          `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
+          !named.has(name)
+        );
+      }
+    }
+  }
+}
+
+export function processComponentInitializationAssertions(component, props) {
+  assert(`classNameBindings must not have spaces in them: ${component.toString()}`, (() => {
+    let { classNameBindings } = component;
+    for (let i = 0; i < classNameBindings.length; i++) {
+      let binding = classNameBindings[i];
+      if (binding.split(' ').length > 1) {
+        return false;
+      }
+    }
+    return true;
+  })());
+
+  assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), (() => {
+    let { classNameBindings, tagName } = component;
+    return tagName !== '' || !classNameBindings || classNameBindings.length === 0;
+  })());
+
+  assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
+    let { elementId, tagName } = component;
+    return tagName !== '' || props.id === elementId || (!elementId && elementId !== '');
+  })());
+
+  assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
+    let { attributeBindings, tagName } = component;
+    return tagName !== '' || !attributeBindings || attributeBindings.length === 0;
+  })());
+}
+
+export function initialRenderInstrumentDetails(component) {
+  return component.instrumentDetails({ initialRender: true });
+}
+
+export function rerenderInstrumentDetails(component) {
+  return component.instrumentDetails({ initialRender: false });
+}
+
+const MANAGER = new CurlyComponentManager();
+
+export class CurlyComponentDefinition extends ComponentDefinition {
+  constructor(name, ComponentClass, template, args, customManager) {
+    super(name, customManager || MANAGER, ComponentClass);
+    this.template = template;
+    this.args = args;
   }
 }
