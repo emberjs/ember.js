@@ -101,7 +101,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let dynamicScope = vm.dynamicScope();
   let state = { definition, manager } = vm.fetchValue<InitialComponentState<Opaque>>(_state);
 
-  let hasDefaultBlock = flags & 0b01;
+  let hasDefaultBlock = flags & 1;
 
   let component = manager.create(vm.env, definition, args, dynamicScope, vm.getSelf(), !!hasDefaultBlock);
   (state as ComponentState<typeof component>).component = component;
