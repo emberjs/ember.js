@@ -98,70 +98,6 @@ moduleFor('Iterable', class extends TestCase {
     }
   }
 
-  ['@test iterates over an object\'s own properties']() {
-    let iterator = iteratorForObject({ first: 'foo', second: 'bar' });
-
-    this.assert.deepEqual(iterator.next(), { key: 'first', memo: 'first', value: 'foo' });
-    this.assert.deepEqual(iterator.next(), { key: 'second', memo: 'second', value: 'bar' });
-  }
-
-  ['@test iterates over an object\'s own properties with indices as keys']() {
-    let iterator = iteratorForObject({ first: 'foo', second: 'bar' }, '@index');
-
-    this.assert.deepEqual(iterator.next(), { key: 'first', memo: 'first', value: 'foo' });
-    this.assert.deepEqual(iterator.next(), { key: 'second', memo: 'second', value: 'bar' });
-  }
-
-  ['@test iterates over an object\'s own properties with identities as keys']() {
-    let iterator = iteratorForObject({ first: 'foo', second: 'bar' }, '@identity');
-
-    this.assert.deepEqual(iterator.next(), { key: 'foo', memo: 'first', value: 'foo' });
-    this.assert.deepEqual(iterator.next(), { key: 'bar', memo: 'second', value: 'bar' });
-  }
-
-  ['@test iterates over an object\'s own properties with arbitrary properties as keys']() {
-    let iterator = iteratorForObject({ first: { k: 'uno', v: 'foo' }, second: { k: 'dos', v: 'bar' } }, 'k');
-
-    this.assert.deepEqual(iterator.next(), { key: 'uno', memo: 'first', value: { k: 'uno', v: 'foo' } });
-    this.assert.deepEqual(iterator.next(), { key: 'dos', memo: 'second', value: { k: 'dos', v: 'bar' } });
-  }
-
-  ['@test each-in errors on `#next` with an undefined ref']() {
-    let iterator = iteratorForObject(undefined);
-
-    this.assert.expect(1);
-
-    try {
-      iterator.next();
-    } catch({ message }) {
-      this.assert.equal(message, 'Cannot call next() on an empty iterator');
-    }
-  }
-
-  ['@test each-in errors on `#next` with a null ref']() {
-    let iterator = iteratorForObject(null);
-
-    this.assert.expect(1);
-
-    try {
-      iterator.next();
-    } catch({ message }) {
-      this.assert.equal(message, 'Cannot call next() on an empty iterator');
-    }
-  }
-
-  ['@test each-in errors on `#next` with an invalid ref type']() {
-    let iterator = iteratorForObject('string');
-
-    this.assert.expect(1);
-
-    try {
-      iterator.next();
-    } catch({ message }) {
-      this.assert.equal(message, 'Cannot call next() on an empty iterator');
-    }
-  }
-
   ['@test ensures keys are unique']() {
     let iterator = iteratorForArray([{ k: 'qux', v: 'foo' }, { k: 'qux', v: 'bar' }, { k: 'qux', v: 'baz' }], 'k');
 
@@ -173,15 +109,6 @@ moduleFor('Iterable', class extends TestCase {
 
 function iteratorForArray(arr, keyPath) {
   let ref = new UpdatableReference(arr);
-  let iterable = iterableFor(ref, keyPath);
-
-  return iterable.iterate();
-}
-
-function iteratorForObject(obj, keyPath) {
-  let vm = null;
-  let positionalArgs = EvaluatedPositionalArgs.create([new UpdatableReference(obj)]);
-  let ref = eachIn(vm, { positional: positionalArgs });
   let iterable = iterableFor(ref, keyPath);
 
   return iterable.iterate();
