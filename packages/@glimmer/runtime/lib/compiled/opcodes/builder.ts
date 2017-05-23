@@ -621,7 +621,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.stopLabels();
   }
 
-  invokeComponent(attrs: Option<RawInlineBlock>, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, block: Option<Block>, inverse: Option<Block> = null) {
+  invokeComponent(attrs: Option<RawInlineBlock>, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, block: Option<Block> = null, inverse: Option<Block> = null) {
     this.initializeComponentState();
 
     this.fetch(Register.s0);
@@ -636,7 +636,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
     this.beginComponentTransaction();
     this.pushDynamicScope();
-    this.createComponent(Register.s0, true, inverse === null);
+    this.createComponent(Register.s0, block !== null, inverse !== null);
     this.registerComponentDestructor(Register.s0);
 
     this.getComponentSelf(Register.s0);
