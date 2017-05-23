@@ -1,7 +1,7 @@
 {
   "name": "The Ember API",
   "description": "The Ember API: a framework for building ambitious web applications",
-  "url": "http://emberjs.com/",
+  "url": "https://emberjs.com/",
   "options": {
     "paths": [
       "packages/ember/lib",

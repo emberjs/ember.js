@@ -53,6 +53,10 @@ import { default as htmlSafeHelper } from './helpers/-html-safe';
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 import { default as ActionModifierManager } from './modifiers/action';
 
+import {
+  GLIMMER_CUSTOM_COMPONENT_MANAGER
+} from 'ember/features';
+
 function instrumentationPayload(name) {
   return { object: `component:${name}` };
 }
@@ -74,9 +78,17 @@ export default class Environment extends GlimmerEnvironment {
 
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
+      let customManager = undefined;
 
       if (componentFactory || layout) {
-        return new CurlyComponentDefinition(name, componentFactory, layout);
+        if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
+          let managerId = layout && layout.meta.managerId;
+
+          if (managerId) {
+            customManager = owner.factoryFor(`component-manager:${managerId}`).class;
+          }
+        }
+        return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);
       }
     }, ({ name, source, owner }) => {
       let expandedName = source && owner._resolveLocalLookupName(name, source) || name;

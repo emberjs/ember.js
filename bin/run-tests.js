@@ -171,7 +171,7 @@ switch (process.env.TEST_SUITE) {
     server.close();
     return;
   case 'travis-browsers':
-    console.log('suite: sauce');
+    console.log('suite: travis-browsers');
     require('./run-travis-browser-tests');
     return;
 

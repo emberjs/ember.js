@@ -47,7 +47,7 @@ function outletComponentFor(vm, args) {
   {{my-footer}}
   ```
 
-  See [templates guide](http://emberjs.com/guides/templates/the-application-template/) for
+  See [templates guide](https://emberjs.com/guides/templates/the-application-template/) for
   additional information on using `{{outlet}}` in `application.hbs`.
   You may also specify a name for the `{{outlet}}`, which is useful when using more than one
   `{{outlet}}` in a template:
@@ -70,7 +70,7 @@ function outletComponentFor(vm, args) {
   });
   ```
 
-  See the [routing guide](http://emberjs.com/guides/routing/rendering-a-template/) for more
+  See the [routing guide](https://emberjs.com/guides/routing/rendering-a-template/) for more
   information on how your `route` interacts with the `{{outlet}}` helper.
   Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
 
