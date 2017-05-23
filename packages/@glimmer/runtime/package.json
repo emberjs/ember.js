@@ -1,16 +1,16 @@
 {
   "name": "@glimmer/runtime",
-  "version": "0.24.0-alpha.1",
+  "version": "0.24.0-alpha.2",
   "description": "Minimal runtime needed to render Glimmer templates",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/runtime",
   "license": "MIT",
   "dependencies": {
-    "@glimmer/util": "^0.24.0-alpha.1",
-    "@glimmer/reference": "^0.24.0-alpha.1",
-    "@glimmer/object": "^0.24.0-alpha.1",
-    "@glimmer/object-reference": "^0.24.0-alpha.1",
-    "@glimmer/wire-format": "^0.24.0-alpha.1",
-    "@glimmer/interfaces": "^0.24.0-alpha.1"
+    "@glimmer/util": "^0.24.0-alpha.2",
+    "@glimmer/reference": "^0.24.0-alpha.2",
+    "@glimmer/object": "^0.24.0-alpha.2",
+    "@glimmer/object-reference": "^0.24.0-alpha.2",
+    "@glimmer/wire-format": "^0.24.0-alpha.2",
+    "@glimmer/interfaces": "^0.24.0-alpha.2"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
