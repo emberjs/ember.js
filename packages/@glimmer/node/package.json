@@ -1,9 +1,9 @@
 {
   "name": "@glimmer/node",
-  "version": "0.24.0-alpha.2",
+  "version": "0.24.0-beta.1",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/node",
   "dependencies": {
-    "@glimmer/runtime": "^0.24.0-alpha.2",
+    "@glimmer/runtime": "^0.24.0-beta.1",
     "simple-dom": "^0.3.0"
   },
   "devDependencies": {
