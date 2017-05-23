@@ -77,13 +77,18 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
 
     let names = Object.keys(named);
     let namedCount = names.length;
+    let atNames = [];
 
     for (let i = 0; i < namedCount; i++) {
-      stack.push(named[names[i]]);
+      let value = named[names[i]];
+      let atName = `@${names[i]}`;
+
+      stack.push(value);
+      atNames.push(atName);
     }
 
-    stack.push(names);
-    args.setup(stack, true);
+    stack.push(atNames);
+    args.setup(stack, false);
   }
 
   stack.push(args);
