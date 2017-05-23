@@ -118,6 +118,10 @@ class RootState {
 
 const renderers = [];
 
+export function _resetRenderers() {
+  renderers.length = 0;
+}
+
 setHasViews(() => renderers.length > 0);
 
 function register(renderer) {

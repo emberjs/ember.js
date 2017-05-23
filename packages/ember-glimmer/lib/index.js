@@ -274,7 +274,8 @@ export {
 export {
   Renderer,
   InertRenderer,
-  InteractiveRenderer
+  InteractiveRenderer,
+  _resetRenderers
 } from './renderer';
 export {
   getTemplate,
