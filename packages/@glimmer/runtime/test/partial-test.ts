@@ -1,4 +1,4 @@
-import { Simple, Template, RenderResult, IteratorResult } from "@glimmer/runtime";
+import { Template, RenderResult, IteratorResult } from "@glimmer/runtime";
 import {
   BasicComponent,
   EmberishCurlyComponent,
@@ -12,31 +12,30 @@ import {
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Opaque } from '@glimmer/util';
 
-let env: TestEnvironment, root: Simple.Element, result: IteratorResult<RenderResult>, self: UpdatableReference<Opaque>;
-
-function rootElement() {
-  return env.getDOM().createElement('div');
-}
+let env: TestEnvironment;
+let root: HTMLElement;
+let result: RenderResult;
+let self: UpdatableReference<Opaque>;
 
 function compile(template: string) {
   return env.compile(template);
 }
 
 function commonSetup() {
-  env = new TestEnvironment(); // TODO: Support SimpleDOM
-  root = rootElement();
+  env = new TestEnvironment();
+  root = document.createElement('div');
 }
 
 function render<T>(template: Template<T>, context={}) {
   self = new UpdatableReference(context);
   env.begin();
   let templateIterator = template.render(self, root, new TestDynamicScope());
-
+  let iteratorResult: IteratorResult<RenderResult>;
   do {
-    result = templateIterator.next();
-  } while (!result.done);
+    iteratorResult = templateIterator.next();
+  } while (!iteratorResult.done);
 
-  result = result.value;
+  result = iteratorResult.value;
   env.commit();
   assertInvariants(result);
   return result;
@@ -47,7 +46,7 @@ interface RerenderParams {
 }
 
 function rerender(context: any = null, params: RerenderParams = { assertStable: false }) {
-  let snapshot;
+  let snapshot: Node[] | undefined;
   if (params.assertStable) {
     snapshot = generateSnapshot(root);
   }
@@ -55,12 +54,12 @@ function rerender(context: any = null, params: RerenderParams = { assertStable: 
   env.begin();
   result.rerender();
   env.commit();
-  if (params.assertStable) {
+  if (snapshot !== undefined) {
     equalSnapshots(generateSnapshot(root), snapshot);
   }
 }
 
-function assertInvariants(result) {
+function assertInvariants(result: RenderResult) {
   QUnit.assert.strictEqual(result.firstNode(), root.firstChild, "The firstNode of the result is the same as the root's firstChild");
   QUnit.assert.strictEqual(result.lastNode(), root.lastChild, "The lastNode of the result is the same as the root's lastChild");
 }
@@ -69,7 +68,7 @@ QUnit.module("Partials", {
   beforeEach: commonSetup
 });
 
-QUnit.test('static partial with static content', assert => {
+QUnit.test('static partial with static content', () => {
   let template = compile(`Before {{partial 'test'}} After`);
 
   env.registerPartial('test', `<div>Testing</div>`);
@@ -80,7 +79,7 @@ QUnit.test('static partial with static content', assert => {
   equalTokens(root, `Before <div>Testing</div> After`);
 });
 
-QUnit.test('static partial with self reference', assert => {
+QUnit.test('static partial with self reference', () => {
   let template = compile(`{{partial 'birdman'}}`);
 
   env.registerPartial('birdman', `Respeck my {{item}}. When my {{item}} come up put some respeck on it.`);
@@ -93,7 +92,7 @@ QUnit.test('static partial with self reference', assert => {
   equalTokens(root, `Respeck my name. When my name come up put some respeck on it.`);
 });
 
-QUnit.test('static partial with local reference', assert => {
+QUnit.test('static partial with local reference', () => {
   let template = compile(`{{#each qualities key='id' as |quality|}}{{partial 'test'}}. {{/each}}`);
 
   env.registerPartial('test', `You {{quality.value}}`);
@@ -106,7 +105,7 @@ QUnit.test('static partial with local reference', assert => {
   equalTokens(root, `You smaht. You loyal. `);
 });
 
-QUnit.test('static partial with local reference (unknown)', assert => {
+QUnit.test('static partial with local reference (unknown)', () => {
   let template = compile(`{{#each qualities key='@index' as |quality|}}{{partial 'test'}}. {{/each}}`);
 
   env.registerPartial('test', `You {{quality}}`);
@@ -119,7 +118,7 @@ QUnit.test('static partial with local reference (unknown)', assert => {
   equalTokens(root, `You smaht. You loyal. `);
 });
 
-QUnit.test('static partial with named arguments', assert => {
+QUnit.test('static partial with named arguments', () => {
   env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{@foo}}-{{partial 'test'}}</p>`);
 
   let template = compile(`<foo-bar @foo={{foo}} @bar={{bar}} />`);
@@ -137,7 +136,7 @@ QUnit.test('static partial with named arguments', assert => {
   equalTokens(root, `<p>foo-foo-bar</p>`);
 });
 
-QUnit.test('static partial with has-block in basic component', assert => {
+QUnit.test('static partial with has-block in basic component', () => {
   env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{partial 'test'}}</p>`);
   env.registerBasicComponent('foo-bar-baz', BasicComponent, `<p>{{partial 'test'}}-{{has-block}}-{{has-block 'inverse'}}</p>`);
   env.registerPartial('test', `{{has-block}}-{{has-block 'inverse'}}`);
@@ -159,7 +158,7 @@ QUnit.test('static partial with has-block in basic component', assert => {
   rerender(null, { assertStable: true });
 });
 
-QUnit.test('static partial with has-block in curly component', assert => {
+QUnit.test('static partial with has-block in curly component', () => {
   class TaglessComponent extends EmberishCurlyComponent {
     tagName = '';
   }
@@ -189,7 +188,7 @@ QUnit.test('static partial with has-block in curly component', assert => {
   rerender(null, { assertStable: true });
 });
 
-QUnit.test('static partial with has-block-params in basic component', assert => {
+QUnit.test('static partial with has-block-params in basic component', () => {
   env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{partial 'test'}}</p>`);
   env.registerBasicComponent('foo-bar-baz', BasicComponent, `<p>{{partial 'test'}}-{{has-block-params}}-{{has-block-params "inverse"}}</p>`);
   env.registerPartial('test', `{{has-block-params}}-{{has-block-params "inverse"}}`);
@@ -215,7 +214,7 @@ QUnit.test('static partial with has-block-params in basic component', assert => 
   rerender(null, { assertStable: true });
 });
 
-QUnit.test('static partial with has-block-params in curly component', assert => {
+QUnit.test('static partial with has-block-params in curly component', () => {
   class TaglessComponent extends EmberishCurlyComponent {
     tagName = '';
   }
@@ -249,7 +248,7 @@ QUnit.test('static partial with has-block-params in curly component', assert => 
   rerender(null, { assertStable: true });
 });
 
-QUnit.test('static partial with yield in basic component', assert => {
+QUnit.test('static partial with yield in basic component', () => {
   env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{partial 'test'}}</p>`);
   env.registerBasicComponent('foo-bar-baz', BasicComponent, `<p>{{partial 'test'}}-{{yield "layout"}}-{{yield to='inverse'}}</p>`);
   env.registerPartial('test', `{{yield "partial"}}-{{yield to='inverse'}}`);
@@ -271,7 +270,7 @@ QUnit.test('static partial with yield in basic component', assert => {
   rerender(null, { assertStable: true });
 });
 
-QUnit.test('static partial with yield in curly component', assert => {
+QUnit.test('static partial with yield in curly component', () => {
   class TaglessComponent extends EmberishCurlyComponent {
     tagName = '';
   }
@@ -301,7 +300,7 @@ QUnit.test('static partial with yield in curly component', assert => {
   rerender(null, { assertStable: true });
 });
 
-QUnit.test('dynamic partial with static content', assert => {
+QUnit.test('dynamic partial with static content', () => {
   let template = compile(`Before {{partial name}} After`);
 
   env.registerPartial('test', `<div>Testing</div>`);
@@ -312,7 +311,7 @@ QUnit.test('dynamic partial with static content', assert => {
   equalTokens(root, `Before <div>Testing</div> After`);
 });
 
-QUnit.test('nested dynamic partial with dynamic content', assert => {
+QUnit.test('nested dynamic partial with dynamic content', () => {
   let template = compile(`Before {{partial name}} After`);
 
   env.registerPartial('test', `<div>Testing {{wat}} {{partial nest}}</div>`);
@@ -325,7 +324,7 @@ QUnit.test('nested dynamic partial with dynamic content', assert => {
   equalTokens(root, `Before <div>Testing wat are <div>Nested you doing?</div></div> After`);
 });
 
-QUnit.test('dynamic partial with falsy value does not render', assert => {
+QUnit.test('dynamic partial with falsy value does not render', () => {
   let template = compile(`Before {{partial name}} After`);
 
   render(template, { name: false });
@@ -351,7 +350,7 @@ QUnit.test('dynamic partial that does not exist does not render', assert => {
   }, /Could not find a partial named "illuminati"/);
 });
 
-QUnit.test('dynamic partial with can change from falsy to real template', assert => {
+QUnit.test('dynamic partial with can change from falsy to real template', () => {
   let template = compile(`Before {{partial name}} After`);
   env.registerPartial('test', `<div>Testing</div>`);
 
@@ -379,7 +378,7 @@ QUnit.test('dynamic partial with can change from falsy to real template', assert
   equalTokens(root, `Before <!----> After`);
 });
 
-QUnit.test('dynamic partial with self reference', assert => {
+QUnit.test('dynamic partial with self reference', () => {
   let template = compile(`{{partial name}}`);
 
   env.registerPartial('test', `I know {{item}}. I have the best {{item}}s.`);
@@ -390,7 +389,7 @@ QUnit.test('dynamic partial with self reference', assert => {
   equalTokens(root, `I know partial. I have the best partials.`);
 });
 
-QUnit.test('changing dynamic partial with self reference', assert => {
+QUnit.test('changing dynamic partial with self reference', () => {
   let template = compile(`{{partial name}}`);
 
   env.registerPartial('weezy', `Ain't my birthday but I got my {{item}} on the cake.`);
@@ -404,7 +403,7 @@ QUnit.test('changing dynamic partial with self reference', assert => {
   equalTokens(root, `Respeck my name. When my name come up put some respeck on it.`);
 });
 
-QUnit.test('changing dynamic partial and changing reference values', assert => {
+QUnit.test('changing dynamic partial and changing reference values', () => {
   let template = compile(`{{partial name}}`);
 
   env.registerPartial('weezy', `Ain't my birthday but I got my {{item}} on the cake.`);
@@ -418,7 +417,7 @@ QUnit.test('changing dynamic partial and changing reference values', assert => {
   equalTokens(root, `Respeck my name. When my name come up put some respeck on it.`);
 });
 
-QUnit.test('changing dynamic partial and changing references', assert => {
+QUnit.test('changing dynamic partial and changing references', () => {
   let template = compile(`{{partial name}}`);
 
   env.registerPartial('weezy', `Ain't my birthday but I got my {{item}} on the cake.`);
@@ -432,7 +431,7 @@ QUnit.test('changing dynamic partial and changing references', assert => {
   equalTokens(root, `Respeck my name. When my name come up put some respeck on it.`);
 });
 
-QUnit.test('dynamic partial with local reference', assert => {
+QUnit.test('dynamic partial with local reference', () => {
   let template = compile(`{{#each qualities key='id' as |quality|}}{{partial name}}. {{/each}}`);
 
   env.registerPartial('test', `You {{quality.value}}`);
@@ -445,7 +444,7 @@ QUnit.test('dynamic partial with local reference', assert => {
   equalTokens(root, `You smaht. You loyal. `);
 });
 
-QUnit.test('dynamic partial with local reference (unknown)', assert => {
+QUnit.test('dynamic partial with local reference (unknown)', () => {
   let template = compile(`{{#each qualities key='@index' as |quality|}}{{partial name}}. {{/each}}`);
 
   env.registerPartial('test', `You {{quality}}`);
