@@ -112,7 +112,7 @@
     "qunit-phantomjs-runner": "^2.2.0",
     "qunitjs": "^1.22.0",
     "route-recognizer": "^0.3.3",
-    "router_js": "^1.2.7",
+    "router_js": "^1.2.8",
     "semver": "^5.3.0",
     "serve-static": "^1.12.2",
     "simple-dom": "^0.3.0",
