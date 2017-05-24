@@ -7,7 +7,7 @@ import {
 } from "@glimmer/test-helpers";
 
 @testModule('Static Content Tests')
-class StaticContentTests extends RenderingTest {
+export class StaticContentTests extends RenderingTest {
   @template(`Hello World!`)
   ['renders text']() {
     this.render({});
@@ -50,11 +50,11 @@ class StaticContentTests extends RenderingTest {
 }
 
 @testModule('Content Tests')
-class DynamicContentTests extends RenderingTest {
+export class DynamicContentTests extends RenderingTest {
   protected context: VersionedObject;
 
   @template(`<div><p>{{value}}</p></div>`)
-  ['renders simple curly'](assert) {
+  ['renders simple curly']() {
     this.render({ value: 'hello world' });
     this.assertContent('<div><p>hello world</p></div>');
     this.assertStableRerender();
@@ -69,7 +69,7 @@ class DynamicContentTests extends RenderingTest {
   }
 
   @template(`<div><p>{{value}} world</p></div>`)
-  ['renders simple curly with sibling'](assert) {
+  ['renders simple curly with sibling']() {
     this.render({ value: 'hello' });
     this.assertContent('<div><p>hello world</p></div>');
     this.assertStableRerender();
@@ -84,7 +84,7 @@ class DynamicContentTests extends RenderingTest {
   }
 
   @template(`<div><p>{{v1}}</p><p>{{v2}}</p></div>`)
-  ['null and undefined produces empty text nodes'](assert) {
+  ['null and undefined produces empty text nodes']() {
     this.render({ v1: null, v2: undefined });
     this.assertContent('<div><p></p><p></p></div>');
     this.assertStableRerender();
