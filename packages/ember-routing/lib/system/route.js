@@ -2056,11 +2056,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
   render(_name, options) {
     let name;
-    let namePassed = false;
+    let isNamePassed = false;
     let isDefaultRender = true;
     if (arguments.length > 0) {
       assert('The name in the given arguments is undefined', !isNone(_name));
-      namePassed = typeof _name === 'string' && !!_name;
+      isNamePassed = typeof _name === 'string' && !!_name;
       isDefaultRender = isEmpty(_name);
       if (typeof _name === 'object' && !options) {
         name = this.templateName || this.routeName;
@@ -2069,7 +2069,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         name = _name;
       }
     }
-    let renderOptions = buildRenderOptions(this, namePassed, isDefaultRender, name, options);
+
+    let renderOptions = buildRenderOptions(this, isNamePassed, isDefaultRender, name, options);
     this.connections.push(renderOptions);
     run.once(this.router, '_setOutlets');
   },
@@ -2222,12 +2223,12 @@ function handlerInfoFor(route, handlerInfos, offset = 0) {
   }
 }
 
-function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) {
+function buildRenderOptions(route, isNamePassed, isDefaultRender, _name, options) {
   let into = options && options.into && options.into.replace(/\//g, '.');
   let outlet = (options && options.outlet) || 'main';
 
   let name, templateName;
-  if (_name) {
+  if (isNamePassed) {
     name = _name.replace(/\//g, '.');
     templateName = name;
   } else {
@@ -2238,7 +2239,7 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
   let owner = getOwner(route);
   let controller = options && options.controller;
   if (!controller) {
-    if (namePassed) {
+    if (isNamePassed) {
       controller = owner.lookup(`controller:${name}`) || route.controllerName || route.routeName;
     } else {
       controller = route.controllerName || owner.lookup(`controller:${name}`);
