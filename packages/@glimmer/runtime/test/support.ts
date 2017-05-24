@@ -1,8 +1,7 @@
 export function module(name: string, nested: (hooks: NestedHooks) => void): void;
 export function module(name: string, setup: Partial<NestedHooks>): void;
 export function module(name: string, setup: Partial<NestedHooks>, nested: (hooks: NestedHooks) => void): void;
-
-export function module(name, second?, third?) {
+export function module(name: string, second?: any, third?: any) {
   let nested, setup;
 
   if (arguments.length === 3) {
@@ -23,7 +22,7 @@ export function test(name: string, callback: (assert: Assert) => void) {
 }
 
 export function todo(name: string, callback: (assert: Assert) => void) {
-  return QUnit.todo(name, callback);
+  return (QUnit as any).todo(name, callback);
 }
 
 export const assert = QUnit.assert;
