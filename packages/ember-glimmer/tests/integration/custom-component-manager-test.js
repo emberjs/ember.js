@@ -22,7 +22,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
     }
 
     compile(builder) {
-      builder.wrapLayout(this.template.asLayout());
+      builder.wrapLayout(this.template);
       builder.tag.dynamic(() => {
         return PrimitiveReference.create('p');
       });
@@ -35,7 +35,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
     Implementation of custom component manager, `ComponentManager` interface
   */
   class TestComponentManager {
-    prepareArgs(definition, args) { return args; }
+    prepareArgs(definition, args) { return null; }
 
     create(env, definition, args, dynamicScope, caller, hasBlock) {
       return definition.ComponentClass.create();
