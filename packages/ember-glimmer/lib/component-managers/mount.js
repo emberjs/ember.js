@@ -26,7 +26,13 @@ class MountManager extends AbstractManager {
 
     engine.boot();
 
-    return { engine, args };
+    let bucket = { engine };
+
+    if (EMBER_ENGINES_MOUNT_PARAMS) {
+      bucket.args = args.capture();
+    }
+
+    return bucket;
   }
 
   layoutFor(definition, { engine }, env) {
