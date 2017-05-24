@@ -239,3 +239,34 @@ export function stripTight(strings: TemplateStringsArray) {
 export function trimLines(strings: TemplateStringsArray) {
   return strings[0].trim().split('\n').map(s => s.trim()).join('\n');
 }
+
+export function assertIsElement(node: Node | null): node is Element {
+  let nodeType = node === null ? null : node.nodeType;
+  QUnit.assert.pushResult({
+    result: nodeType === 1,
+    expected: 1,
+    actual: nodeType,
+    message: 'expected node to be an element'
+  });
+  return nodeType === 1;
+}
+
+export function assertNodeTagName<T extends keyof ElementTagNameMap, U extends ElementTagNameMap[T]>(node: Node | null, tagName: T): node is U {
+  if (assertIsElement(node)) {
+    const nodeTagName = node.tagName.toLowerCase();
+    QUnit.assert.pushResult({
+      result: nodeTagName === tagName,
+      expected: tagName,
+      actual: nodeTagName,
+      message: `expected tagName to be ${tagName} but was ${nodeTagName}`
+    });
+    return nodeTagName === tagName;
+  }
+  return false;
+}
+
+export function assertNodeProperty<T extends keyof ElementTagNameMap, P extends keyof ElementTagNameMap[T], V extends HTMLElementTagNameMap[T][P]>(node: Node | null, tagName: T, prop: P, value: V) {
+  if (assertNodeTagName(node, tagName)) {
+    QUnit.assert.strictEqual(node[prop], value);;
+  }
+}
