@@ -1,33 +1,28 @@
 import EmberObject, {
   alias
 } from "@glimmer/object";
-
-import {
-  Template,
-  RenderResult,
-} from "../index";
-
+import { CLASS_META, setProperty as set, UpdatableReference } from '@glimmer/object-reference';
 import {
   Attrs,
   BasicComponent,
+  classes,
   EmberishCurlyComponent,
   EmberishGlimmerComponent,
-  TestEnvironment,
-  TestDynamicScope,
-  TestModifierManager,
   equalsElement,
+  equalTokens,
   inspectHooks,
   regex,
-  classes,
-  equalTokens,
-  stripTight
+  stripTight,
+  TestDynamicScope,
+  TestEnvironment,
+  TestModifierManager,
  } from "@glimmer/test-helpers";
-
 import { assign } from "@glimmer/util";
-
-import { CLASS_META, UpdatableReference, setProperty as set } from '@glimmer/object-reference';
-
-import { module as nestedModule, assert } from './support';
+import {
+  RenderResult,
+  Template,
+} from "../index";
+import { assert, module as nestedModule } from './support';
 
 export class EmberishRootView extends EmberObject {
   public element: Element;
@@ -97,22 +92,24 @@ function top<T>(stack: T[]): T {
   return stack[stack.length - 1];
 }
 
-let Components, Glimmer, Curly, Dynamic;
+let Glimmer: any;
+let Curly: any;
+let Dynamic: any;
 
 nestedModule("Components", hooks => {
   hooks.beforeEach(() => env = new TestEnvironment());
 
-  Components = top(QUnit.config['moduleStack']);
+  top(QUnit.config['moduleStack']);
 
-  nestedModule("Glimmer", hooks => {
+  nestedModule("Glimmer", () => {
     Glimmer = top(QUnit.config['moduleStack']);
   });
 
-  nestedModule("Curly", hooks => {
+  nestedModule("Curly", () => {
     Curly = top(QUnit.config['moduleStack']);
   });
 
-  nestedModule("Component Helper", hooks => {
+  nestedModule("Component Helper", () => {
     Dynamic = top(QUnit.config['moduleStack']);
   });
 
@@ -136,7 +133,7 @@ export function assertAppended(content: string) {
 }
 
 function assertText(expected: string) {
-  let rawText = document.querySelector('#qunit-fixture').innerText;
+  let rawText = (document.querySelector('#qunit-fixture') as HTMLElement).innerText;
   let text = rawText.split(/[\r\n]/g).map((part) => {
                let p = part.replace(/\s+/g, ' ');
                return p.trim();
@@ -158,31 +155,11 @@ function assertFired(component: EmberishGlimmerComponent, name: string, count=1)
   }
 }
 
-function assertComponentElement(tagName: string, attrs: Object, contents: string);
-function assertComponentElement(tagName: string, attrs: Object);
-function assertComponentElement(tagName: string, contents: string);
-function assertComponentElement(tagName: string);
-
-function assertComponentElement(...args) {
-  let tagName, attrs, contents;
-  if (args.length === 2) {
-    if (typeof args[1] === 'string') [tagName, attrs, contents] = [args[0], {}, args[1]];
-    else [tagName, attrs, contents] = [args[0], args[1], null];
-  } else if (args.length === 1) {
-    [tagName, attrs, contents] = [args[0], {}, null];
-  } else {
-    [tagName, attrs, contents] = args;
-  }
-
-  equalsElement(view.element, tagName, attrs, contents);
-}
-
-function assertEmberishElement(tagName: string, attrs: Object, contents: string);
-function assertEmberishElement(tagName: string, attrs: Object);
-function assertEmberishElement(tagName: string, contents: string);
-function assertEmberishElement(tagName: string);
-
-function assertEmberishElement(...args) {
+function assertEmberishElement(tagName: string, attrs: Object, contents: string): void;
+function assertEmberishElement(tagName: string, attrs: Object): void;
+function assertEmberishElement(tagName: string, contents: string): void;
+function assertEmberishElement(tagName: string): void;
+function assertEmberishElement(...args: any[]): void {
   let tagName, attrs, contents;
   if (args.length === 2) {
     if (typeof args[1] === 'string') [tagName, attrs, contents] = [args[0], {}, args[1]];
@@ -197,12 +174,11 @@ function assertEmberishElement(...args) {
   equalsElement(view.element, tagName, fullAttrs, contents);
 }
 
-export function assertElementIsEmberishElement(element: Element, tagName: string, attrs: Object, contents: string);
-export function assertElementIsEmberishElement(element: Element, tagName: string, attrs: Object);
-export function assertElementIsEmberishElement(element: Element, tagName: string, contents: string);
-export function assertElementIsEmberishElement(element: Element, tagName: string);
-
-export function assertElementIsEmberishElement(element: Element, ...args) {
+export function assertElementIsEmberishElement(element: Element | null, tagName: string, attrs: Object, contents: string): void;
+export function assertElementIsEmberishElement(element: Element | null, tagName: string, attrs: Object): void;
+export function assertElementIsEmberishElement(element: Element | null, tagName: string, contents: string): void;
+export function assertElementIsEmberishElement(element: Element | null, tagName: string): void;
+export function assertElementIsEmberishElement(element: Element | null, ...args: any[]): void {
   let tagName, attrs, contents;
   if (args.length === 2) {
     if (typeof args[1] === 'string') [tagName, attrs, contents] = [args[0], {}, args[1]];
@@ -285,7 +261,7 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
       env.registerEmberishCurlyComponent('test-component', EmberishCurlyComponent, layout);
       let list = ['test-component'];
 
-      Object.keys(attributes).forEach(key => {
+      Object.keys(attributes).forEach(() => {
         throw new Error("Cannot use attrs in a curly component test");
         // list.push(`${key}="${attrs[key]}"`);
       });
@@ -332,7 +308,7 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
 
       let list = ['component', 'componentName'];
 
-      Object.keys(attributes).forEach(key => {
+      Object.keys(attributes).forEach(() => {
         throw new Error("Cannot use attrs in a curly component test");
         // list.push(`${key}="${attrs[key]}"`);
       });
@@ -809,7 +785,7 @@ testComponent('parameterized has-block (concatted attr, default) when block not 
 
 module('Manager#create - hasBlock');
 
-QUnit.test('when no block present', assert => {
+QUnit.test('when no block present', () => {
   class FooBar extends EmberishCurlyComponent {
     tagName = 'div';
   }
@@ -821,7 +797,7 @@ QUnit.test('when no block present', assert => {
   assertEmberishElement('div', {}, `false`);
 });
 
-QUnit.test('when block present', assert => {
+QUnit.test('when block present', () => {
   class FooBar extends EmberishCurlyComponent {
     tagName = 'div';
   }
@@ -1086,7 +1062,7 @@ testComponent('parameterized has-block-params (concatted attr, default) when blo
 
 module("Components - curlies - dynamic component");
 
-QUnit.test('initially missing, then present, then missing', assert => {
+QUnit.test('initially missing, then present, then missing', () => {
   class FooBar extends BasicComponent {
     public foo = 'foo';
     public bar = 'bar';
@@ -1123,7 +1099,7 @@ QUnit.test('initially missing, then present, then missing', assert => {
   equalsElement(view.element, 'div', {}, '<!---->');
 });
 
-QUnit.test('initially present, then missing, then present', assert => {
+QUnit.test('initially present, then missing, then present', () => {
   class FooBar extends BasicComponent {
     public foo = 'foo';
     public bar = 'bar';
@@ -1162,7 +1138,7 @@ QUnit.test('initially present, then missing, then present', assert => {
 
 module("Components - curlies - dynamic customizations");
 
-QUnit.test('dynamic tagName', assert => {
+QUnit.test('dynamic tagName', () => {
   class FooBar extends EmberishCurlyComponent {
     tagName = 'aside';
   }
@@ -1177,7 +1153,7 @@ QUnit.test('dynamic tagName', assert => {
   assertEmberishElement('aside', {}, `Hello. It's me.`);
 });
 
-QUnit.test('dynamic tagless component', assert => {
+QUnit.test('dynamic tagless component', () => {
   class FooBar extends EmberishCurlyComponent {
     tagName = '';
   }
@@ -1193,13 +1169,13 @@ QUnit.test('dynamic tagless component', assert => {
 });
 
 QUnit.test('dynamic attribute bindings', assert => {
-  let fooBarInstance: FooBar = null;
+  let fooBarInstance: FooBar | undefined;
 
   class FooBar extends EmberishCurlyComponent {
     attributeBindings = ['style'];
-    style: string = null;
+    style: string | null = null;
 
-    constructor(attrs) {
+    constructor(attrs: any) {
       super(attrs);
       this.style = 'color: red;';
       fooBarInstance = this;
@@ -1212,6 +1188,10 @@ QUnit.test('dynamic attribute bindings', assert => {
   assertEmberishElement('div', { 'style': 'color: red;' }, `Hello. It's me.`);
 
   rerender();
+
+  assert.ok(fooBarInstance, 'expected foo-bar to be set');
+
+  if (fooBarInstance === undefined) { return; }
 
   assertEmberishElement('div', { 'style': 'color: red;' }, `Hello. It's me.`);
 
@@ -1261,7 +1241,7 @@ testComponent('correct scope - conflicting block param and attr names', {
   expected: 'Outer: from attr Inner: from attr Block: from block'
 });
 
-QUnit.test('correct scope - accessing local variable in yielded block (glimmer component)', assert => {
+QUnit.test('correct scope - accessing local variable in yielded block (glimmer component)', () => {
   class FooBar extends BasicComponent {}
 
   env.registerBasicComponent('foo-bar', FooBar, `<div>[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{@foo}}]{{yield}}</div>`);
@@ -1297,7 +1277,7 @@ QUnit.test('correct scope - accessing local variable in yielded block (glimmer c
   );
 });
 
-QUnit.test('correct scope - accessing local variable in yielded block (curly component)', assert => {
+QUnit.test('correct scope - accessing local variable in yielded block (curly component)', () => {
   class FooBar extends EmberishCurlyComponent {
     public tagName = '';
   }
@@ -1333,7 +1313,7 @@ QUnit.test('correct scope - accessing local variable in yielded block (curly com
   );
 });
 
-QUnit.test('correct scope - caller self can be threaded through (curly component)', assert => {
+QUnit.test('correct scope - caller self can be threaded through (curly component)', () => {
   // demonstrates ability for Ember to know the target object of curly component actions
   class Base extends EmberishCurlyComponent {
     public tagName = '';
@@ -1404,7 +1384,7 @@ QUnit.test('component with slashed name', assert => {
   assert.equal(view.element.textContent, 'hello');
 });
 
-QUnit.test('correct scope - simple', assert => {
+QUnit.test('correct scope - simple', () => {
   env.registerBasicComponent('sub-item', BasicComponent,
     `<p>{{@name}}</p>`
   );
@@ -1423,7 +1403,7 @@ QUnit.test('correct scope - simple', assert => {
   equalsElement(view.element, 'div', {}, '<p>0</p><p>1</p><p>42</p>');
 });
 
-QUnit.test('correct scope - self lookup inside #each', assert => {
+QUnit.test('correct scope - self lookup inside #each', () => {
   env.registerBasicComponent('sub-item', BasicComponent,
     `<p>{{@name}}</p>`
   );
@@ -1447,7 +1427,7 @@ QUnit.test('correct scope - self lookup inside #each', assert => {
     <p>(self)</p><p>(self)</p><p>42</p>`);
 });
 
-QUnit.test('correct scope - complex', assert => {
+QUnit.test('correct scope - complex', () => {
   env.registerBasicComponent('sub-item', BasicComponent,
     `<p>{{@name}}</p>`
   );
@@ -1498,7 +1478,7 @@ QUnit.test('correct scope - complex', assert => {
     );
 });
 
-QUnit.test('correct scope - complex yield', assert => {
+QUnit.test('correct scope - complex yield', () => {
   env.registerEmberishCurlyComponent('item-list', EmberishCurlyComponent.extend() as any,
     stripTight`
       <ul>
@@ -1543,7 +1523,7 @@ QUnit.test('correct scope - complex yield', assert => {
   );
 });
 
-QUnit.test('correct scope - self', assert => {
+QUnit.test('correct scope - self', () => {
   class FooBar extends BasicComponent {
     public foo = 'foo';
     public bar = 'bar';
@@ -1718,8 +1698,8 @@ QUnit.test('can use hash parameter instead of positional param', function() {
   });
 
   let first = view.element.firstElementChild;
-  let second = first.nextElementSibling;
-  let third = second.nextElementSibling;
+  let second = first && first.nextElementSibling;
+  let third = second && second.nextElementSibling;
 
   assertElementIsEmberishElement(first, 'div', 'one - two');
   assertElementIsEmberishElement(second, 'div', 'one - two');
@@ -1791,25 +1771,27 @@ QUnit.test('{{component}} helper works with positional params', function() {
 
 module("Emberish Components - parentView");
 
-QUnit.skip('components in template of a yielding component should have the proper parentView', function() {
-  let outer, innerTemplate, innerLayout;
+QUnit.skip('components in template of a yielding component should have the proper parentView', (assert) => {
+  let outer: EmberishCurlyComponent | undefined;
+  let innerTemplate: EmberishCurlyComponent | undefined;
+  let innerLayout: EmberishCurlyComponent | undefined;
 
   let Outer = EmberishCurlyComponent.extend({
-    init() {
+    init(this: EmberishCurlyComponent) {
       this._super(...arguments);
       outer = this;
     }
   }) as any;
 
   let InnerInTemplate = EmberishCurlyComponent.extend({
-    init() {
+    init(this: EmberishCurlyComponent) {
       this._super(...arguments);
       innerTemplate = this;
     }
   }) as any;
 
   let InnerInLayout = EmberishCurlyComponent.extend({
-    init() {
+    init(this: EmberishCurlyComponent) {
       this._super(...arguments);
       innerLayout = this;
     }
@@ -1823,9 +1805,13 @@ QUnit.skip('components in template of a yielding component should have the prope
 
   assertEmberishElement('div');
 
-  equalObject(innerTemplate.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
-  equalObject(innerLayout.parentView, outer, 'receives the wrapping component as its parentView in layout');
-  equalObject(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
+  assert.ok(innerTemplate, 'expected inner to render');
+  assert.ok(innerLayout, 'expected innerLayout to render');
+  assert.ok(outer, 'expected outer to render');
+
+  equalObject(innerTemplate!.parentView as any, outer as any, 'receives the wrapping component as its parentView in template blocks');
+  equalObject(innerLayout!.parentView as any, outer as any, 'receives the wrapping component as its parentView in layout');
+  equalObject(outer!.parentView as any, view as any, 'x-outer receives the ambient scope as its parentView');
 });
 
 function inspect(obj: EmberObject) {
@@ -1837,17 +1823,18 @@ function equalObject(actual: EmberObject, expected: EmberObject, msg: string) {
 }
 
 QUnit.skip('newly-added sub-components get correct parentView', function() {
-  let outer, inner;
+  let outer: EmberishCurlyComponent | undefined;
+  let inner: EmberishCurlyComponent | undefined;
 
   let Outer = EmberishCurlyComponent.extend({
-    init() {
+    init(this: EmberishCurlyComponent) {
       this._super(...arguments);
       outer = this;
     }
   });
 
   let Inner = EmberishCurlyComponent.extend({
-    init() {
+    init(this: EmberishCurlyComponent) {
       this._super(...arguments);
       inner = this;
     }
@@ -1858,18 +1845,18 @@ QUnit.skip('newly-added sub-components get correct parentView', function() {
 
   appendViewFor('{{#x-outer}}{{#if showInner}}{{x-inner}}{{/if}}{{/x-outer}}', { showInner: false });
 
-  equalObject(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
+  equalObject(outer!.parentView as any, view, 'x-outer receives the ambient scope as its parentView');
 
   set(view, 'showInner', true);
   rerender();
 
-  equalObject(inner.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
-  equalObject(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
+  equalObject(inner!.parentView as any, outer!, 'receives the wrapping component as its parentView in template blocks');
+  equalObject(outer!.parentView as any, view, 'x-outer receives the ambient scope as its parentView');
 });
 
 module('Emberish closure components');
 
-QUnit.test('component helper can handle aliased block components with args', assert => {
+QUnit.test('component helper can handle aliased block components with args', () => {
   env.registerEmberishCurlyComponent('foo-bar', null, 'Hello {{arg1}} {{yield}}');
 
   appendViewFor(
@@ -1883,7 +1870,7 @@ QUnit.test('component helper can handle aliased block components with args', ass
   assertText('Hello World! Test1 Test2');
 });
 
-QUnit.test('component helper can handle aliased block components without args', assert => {
+QUnit.test('component helper can handle aliased block components without args', () => {
   env.registerEmberishCurlyComponent('foo-bar', null, 'Hello {{yield}}');
 
   appendViewFor(
@@ -1897,7 +1884,7 @@ QUnit.test('component helper can handle aliased block components without args', 
   assertText('Hello World! Test');
 });
 
-QUnit.test('component helper can handle aliased inline components with args', assert => {
+QUnit.test('component helper can handle aliased inline components with args', () => {
   env.registerEmberishCurlyComponent('foo-bar', null, 'Hello {{arg1}}');
 
   appendViewFor(
@@ -1911,7 +1898,7 @@ QUnit.test('component helper can handle aliased inline components with args', as
   assertText('Hello World! Test');
 });
 
-QUnit.test('component helper can handle aliased inline components without args', assert => {
+QUnit.test('component helper can handle aliased inline components without args', () => {
   env.registerEmberishCurlyComponent('foo-bar', null, 'Hello');
 
   appendViewFor(
@@ -1925,7 +1912,7 @@ QUnit.test('component helper can handle aliased inline components without args',
   assertText('Hello World!');
 });
 
-QUnit.test('component helper can handle higher order inline components with args', assert => {
+QUnit.test('component helper can handle higher order inline components with args', () => {
   env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
   env.registerEmberishCurlyComponent('baz-bar', null, 'Hello {{arg1}}');
 
@@ -1940,7 +1927,7 @@ QUnit.test('component helper can handle higher order inline components with args
   assertText('Hello World! Test');
 });
 
-QUnit.test('component helper can handle higher order inline components without args', assert => {
+QUnit.test('component helper can handle higher order inline components without args', () => {
   env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
   env.registerEmberishCurlyComponent('baz-bar', null, 'Hello');
 
@@ -1955,7 +1942,7 @@ QUnit.test('component helper can handle higher order inline components without a
   assertText('Hello World!');
 });
 
-QUnit.test('component helper can handle higher order block components with args', assert => {
+QUnit.test('component helper can handle higher order block components with args', () => {
   env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
   env.registerEmberishCurlyComponent('baz-bar', null, 'Hello {{arg1}} {{yield}}');
 
@@ -1970,7 +1957,7 @@ QUnit.test('component helper can handle higher order block components with args'
   assertText('Hello World! Test1 Test2');
 });
 
-QUnit.test('component helper can handle higher order block components without args', assert => {
+QUnit.test('component helper can handle higher order block components without args', () => {
   env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
   env.registerEmberishCurlyComponent('baz-bar', null, 'Hello {{arg1}} {{yield}}');
 
@@ -1985,7 +1972,7 @@ QUnit.test('component helper can handle higher order block components without ar
   assertText('Hello World! Test');
 });
 
-QUnit.test('component deopt can handle aliased inline components without args', assert => {
+QUnit.test('component deopt can handle aliased inline components without args', () => {
   env.registerEmberishCurlyComponent('foo-bar', null, 'Hello');
 
   appendViewFor(
@@ -1999,7 +1986,7 @@ QUnit.test('component deopt can handle aliased inline components without args', 
   assertText('Hello World!');
 });
 
-QUnit.test('component deopt can handle higher order inline components without args', assert => {
+QUnit.test('component deopt can handle higher order inline components without args', () => {
   env.registerEmberishCurlyComponent('foo-bar', null, '{{yield (hash comp=(component "baz-bar"))}}');
   env.registerEmberishCurlyComponent('baz-bar', null, 'Hello');
 
@@ -2369,7 +2356,7 @@ styles.forEach(style => {
   });
 
   QUnit.skip(`non-block with outer attributes replaced with ${style.name} shadows inner attributes`, function() {
-    let component: MyComponent;
+    let component: MyComponent | undefined;
 
     class MyComponent extends EmberishGlimmerComponent {
       constructor(attrs: Object) {
@@ -2488,7 +2475,7 @@ QUnit.skip('block without properties', function() {
 });
 
 QUnit.skip('attributes are not installed on the top level', assert => {
-  let component: NonBlock;
+  let component: NonBlock | undefined;
 
   class NonBlock extends EmberishGlimmerComponent {
 
@@ -2515,10 +2502,10 @@ QUnit.skip('attributes are not installed on the top level', assert => {
     id: regex(/^ember\d*$/),
     text: 'texting'
   }, 'In layout - texting -- null');
-  assert.equal(component.attrs['text'], 'texting');
-  assert.equal(component.attrs['dynamic'], 'dynamic');
-  assert.strictEqual(component['text'], null);
-  assert.strictEqual(component['dynamic'], null);
+  assert.equal(component!.attrs['text'], 'texting');
+  assert.equal(component!.attrs['dynamic'], 'dynamic');
+  assert.strictEqual(component!['text'], null);
+  assert.strictEqual(component!['dynamic'], null);
 
   rerender();
 
@@ -2527,10 +2514,10 @@ QUnit.skip('attributes are not installed on the top level', assert => {
     id: regex(/^ember\d*$/),
     text: 'texting'
   }, 'In layout - texting -- <!---->');
-  assert.equal(component.attrs['text'], 'texting');
-  assert.equal(component.attrs['dynamic'], 'dynamic');
-  assert.strictEqual(component['text'], null);
-  assert.strictEqual(component['dynamic'], null);
+  assert.equal(component!.attrs['text'], 'texting');
+  assert.equal(component!.attrs['dynamic'], 'dynamic');
+  assert.strictEqual(component!['text'], null);
+  assert.strictEqual(component!['dynamic'], null);
 });
 
 QUnit.skip('non-block with properties on attrs and component class', function() {
@@ -2586,8 +2573,8 @@ QUnit.skip('computed property alias on a dynamic attr', function() {
   assertEmberishElement('computed-alias', { someProp: 'other value' }, 'other value');
 });
 
-QUnit.skip('lookup of component takes priority over property', function() {
-  expect(1);
+QUnit.skip('lookup of component takes priority over property', (assert) => {
+  assert.expect(1);
 
   class MyComponent extends EmberishCurlyComponent {
     'some-component' = 'not-some-component';
@@ -2595,7 +2582,6 @@ QUnit.skip('lookup of component takes priority over property', function() {
   }
 
   class SomeComponent extends EmberishCurlyComponent {
-
   }
 
   env.registerEmberishCurlyComponent('my-component', MyComponent, '{{some-prop}} {{some-component}}');
@@ -2606,8 +2592,8 @@ QUnit.skip('lookup of component takes priority over property', function() {
   assertAppended('<div>some-prop <div>some-component</div></div>');
 });
 
-QUnit.test('Curly component hooks (with attrs)', function() {
-  let instance;
+QUnit.test('Curly component hooks (with attrs)', assert => {
+  let instance: NonBlock | undefined;
 
   class NonBlock extends EmberishCurlyComponent {
     init() {
@@ -2618,6 +2604,12 @@ QUnit.test('Curly component hooks (with attrs)', function() {
   env.registerEmberishCurlyComponent('non-block', inspectHooks(NonBlock), 'In layout - someProp: {{@someProp}}');
 
   appendViewFor('{{non-block someProp=someProp}}', { someProp: 'wycats' });
+
+  assert.ok(instance, 'instance is created');
+
+  if (instance === undefined) {
+    return;
+  }
 
   assertFired(instance, 'didReceiveAttrs');
   assertFired(instance, 'willRender');
@@ -2649,7 +2641,7 @@ QUnit.test('Curly component hooks (with attrs)', function() {
 });
 
 QUnit.test('Curly component hooks (attrs as self props)', function() {
-  let instance;
+  let instance: NonBlock | undefined;
 
   class NonBlock extends EmberishCurlyComponent {
     init() {
@@ -2660,6 +2652,12 @@ QUnit.test('Curly component hooks (attrs as self props)', function() {
   env.registerEmberishCurlyComponent('non-block', inspectHooks(NonBlock), 'In layout - someProp: {{someProp}}');
 
   appendViewFor('{{non-block someProp=someProp}}', { someProp: 'wycats' });
+
+  assert.ok(instance, 'instance is created');
+
+  if (instance === undefined) {
+    return;
+  }
 
   assertFired(instance, 'didReceiveAttrs');
   assertFired(instance, 'willRender');
@@ -2691,7 +2689,7 @@ QUnit.test('Curly component hooks (attrs as self props)', function() {
 });
 
 QUnit.test('Setting value attributeBinding to null results in empty string value', function(assert) {
-  let instance;
+  let instance: InputComponent | undefined;
 
   class InputComponent extends EmberishCurlyComponent {
     tagName = 'input';
@@ -2705,21 +2703,29 @@ QUnit.test('Setting value attributeBinding to null results in empty string value
 
   appendViewFor('{{input-component value=someProp}}', { someProp: null });
 
-  assert.equal(instance.element.value, '');
+  assert.ok(instance, 'instance is created');
+
+  if (instance === undefined) {
+    return;
+  }
+
+  let element: HTMLInputElement = instance.element as HTMLInputElement;
+
+  assert.equal(element.value, '');
 
   set(view, 'someProp', 'wycats');
   rerender();
 
-  assert.equal(instance.element.value, 'wycats');
+  assert.equal(element.value, 'wycats');
 
   set(view, 'someProp', null);
   rerender();
 
-  assert.equal(instance.element.value, '');
+  assert.equal(element.value, '');
 });
 
-QUnit.test('Setting class attributeBinding does not clobber ember-view', function(assert) {
-  let instance;
+QUnit.test('Setting class attributeBinding does not clobber ember-view', assert => {
+  let instance: FooBarComponent | undefined;
 
   class FooBarComponent extends EmberishCurlyComponent {
     attributeBindings = ['class'];
@@ -2731,6 +2737,12 @@ QUnit.test('Setting class attributeBinding does not clobber ember-view', functio
   env.registerEmberishCurlyComponent('foo-bar', FooBarComponent, 'FOO BAR');
 
   appendViewFor('{{foo-bar class=classes}}', { classes: "foo bar" });
+
+  assert.ok(instance, 'instance is created');
+
+  if (instance === undefined) {
+    return;
+  }
 
   assertEmberishElement('div',{ class: classes('ember-view foo bar') }, 'FOO BAR');
 
@@ -2749,8 +2761,8 @@ QUnit.test('Setting class attributeBinding does not clobber ember-view', functio
   assertEmberishElement('div',{ class: classes('ember-view foo bar') }, 'FOO BAR');
 });
 
-QUnit.test('Curly component hooks (force recompute)', function() {
-  let instance;
+QUnit.test('Curly component hooks (force recompute)', assert => {
+  let instance: NonBlock | undefined;
 
   class NonBlock extends EmberishCurlyComponent {
     init() {
@@ -2761,6 +2773,12 @@ QUnit.test('Curly component hooks (force recompute)', function() {
   env.registerEmberishCurlyComponent('non-block', inspectHooks(NonBlock), 'In layout - someProp: {{@someProp}}');
 
   appendViewFor('{{non-block someProp="wycats"}}');
+
+  assert.ok(instance, 'instance is created');
+
+  if (instance === undefined) {
+    return;
+  }
 
   assertFired(instance, 'didReceiveAttrs', 1);
   assertFired(instance, 'willRender', 1);
@@ -2789,8 +2807,8 @@ QUnit.test('Curly component hooks (force recompute)', function() {
   assertFired(instance, 'didRender', 2);
 });
 
-QUnit.test('Glimmer component hooks', function() {
-  let instance;
+QUnit.test('Glimmer component hooks', assert => {
+  let instance: NonBlock | undefined;
 
   class NonBlock extends EmberishGlimmerComponent {
     init() {
@@ -2801,6 +2819,12 @@ QUnit.test('Glimmer component hooks', function() {
   env.registerEmberishGlimmerComponent('non-block', inspectHooks(NonBlock), '<div>In layout - someProp: {{@someProp}}</div>');
 
   appendViewFor('<non-block @someProp={{someProp}} />', { someProp: 'wycats' });
+
+  assert.ok(instance, 'instance is created');
+
+  if (instance === undefined) {
+    return;
+  }
 
   assertFired(instance, 'didReceiveAttrs');
   assertFired(instance, 'willRender');
@@ -2831,8 +2855,8 @@ QUnit.test('Glimmer component hooks', function() {
   assertFired(instance, 'didRender', 3);
 });
 
-QUnit.test('Glimmer component hooks (force recompute)', function() {
-  let instance;
+QUnit.test('Glimmer component hooks (force recompute)', assert => {
+  let instance: NonBlock | undefined;
 
   class NonBlock extends EmberishGlimmerComponent {
     init() {
@@ -2843,6 +2867,12 @@ QUnit.test('Glimmer component hooks (force recompute)', function() {
   env.registerEmberishGlimmerComponent('non-block', inspectHooks(NonBlock), '<div>In layout - someProp: {{@someProp}}</div>');
 
   appendViewFor('{{non-block someProp="wycats"}}');
+
+  assert.ok(instance, 'instance is created');
+
+  if (instance === undefined) {
+    return;
+  }
 
   assertFired(instance, 'didReceiveAttrs', 1);
   assertFired(instance, 'willRender', 1);
@@ -3170,7 +3200,7 @@ QUnit.test('curly components are destroyed', function(assert) {
   let destroyed = 0;
 
   let DestroyMeComponent = EmberishCurlyComponent.extend({
-    destroy() {
+    destroy(this: EmberishCurlyComponent) {
       this._super();
       destroyed++;
     }
@@ -3191,7 +3221,7 @@ QUnit.test('glimmer components are destroyed', function(assert) {
   let destroyed = 0;
 
   let DestroyMeComponent = EmberishGlimmerComponent.extend({
-    destroy() {
+    destroy(this: EmberishGlimmerComponent) {
       this._super();
       destroyed++;
     }
@@ -3212,7 +3242,7 @@ QUnit.test('component helpers component are destroyed', function(assert) {
   let destroyed = 0;
 
   let DestroyMeComponent = EmberishCurlyComponent.extend({
-    destroy() {
+    destroy(this: EmberishCurlyComponent) {
       this._super();
       destroyed++;
     }
@@ -3234,10 +3264,10 @@ QUnit.test('component helpers component are destroyed', function(assert) {
 });
 
 QUnit.test('components inside a list are destroyed', function(assert) {
-  let destroyed = [];
+  let destroyed: number[] = [];
 
   let DestroyMeComponent = EmberishGlimmerComponent.extend({
-    destroy() {
+    destroy(this: EmberishGlimmerComponent) {
       this._super();
       destroyed.push(this.attrs.item);
     }
@@ -3263,17 +3293,17 @@ QUnit.test('components inside a list are destroyed', function(assert) {
 });
 
 QUnit.test('components that are "destroyed twice" are destroyed once', function(assert) {
-  let destroyed = [];
+  let destroyed: string[] = [];
 
   let DestroyMeComponent = EmberishCurlyComponent.extend({
-    destroy() {
+    destroy(this: EmberishCurlyComponent) {
       this._super();
       destroyed.push(this.attrs.from);
     }
   });
 
   let DestroyMe2Component = EmberishCurlyComponent.extend({
-    destroy() {
+    destroy(this: EmberishCurlyComponent) {
       this._super();
       destroyed.push(this.attrs.from);
     }
@@ -3292,17 +3322,17 @@ QUnit.test('components that are "destroyed twice" are destroyed once', function(
 });
 
 QUnit.test('deeply nested destructions', function(assert) {
-  let destroyed = [];
+  let destroyed: string[] = [];
 
   let DestroyMe1Component = EmberishGlimmerComponent.extend({
-    destroy() {
+    destroy(this: EmberishGlimmerComponent) {
       this._super();
       destroyed.push(`destroy-me1: ${this.attrs.item}`);
     }
   });
 
   let DestroyMe2Component = EmberishCurlyComponent.extend({
-    destroy() {
+    destroy(this: EmberishCurlyComponent) {
       this._super();
       destroyed.push(`destroy-me2: ${this.attrs.from} - ${this.attrs.item}`);
     }
@@ -3352,14 +3382,14 @@ QUnit.test('components inside the root are destroyed when the render result is d
   let curlyDestroyed = false;
 
   let DestroyMe1Component = EmberishGlimmerComponent.extend({
-    destroy() {
+    destroy(this: EmberishGlimmerComponent) {
       this._super();
       glimmerDestroyed = true;
     }
   });
 
   let DestroyMe2Component = EmberishCurlyComponent.extend({
-    destroy() {
+    destroy(this: EmberishCurlyComponent) {
       this._super();
       curlyDestroyed = true;
     }
@@ -3381,10 +3411,10 @@ QUnit.test('components inside the root are destroyed when the render result is d
   assert.strictEqual(document.querySelectorAll('#destroy-me1').length, 0, 'component DOM node was removed from DOM');
   assert.strictEqual(document.querySelectorAll('#destroy-me2').length, 0, 'component DOM node was removed from DOM');
 
-  assert.strictEqual(document.querySelector('#qunit-fixture').childElementCount, 0, 'root view was removed from DOM');
+  assert.strictEqual(document.querySelector('#qunit-fixture')!.childElementCount, 0, 'root view was removed from DOM');
 });
 
-QUnit.test('tagless components render properly', function(assert) {
+QUnit.test('tagless components render properly', () => {
   class FooBar extends BasicComponent {}
 
   env.registerStaticTaglessComponent('foo-bar', FooBar, `Michael Jordan says "Go Tagless"`);
@@ -3399,7 +3429,7 @@ QUnit.test('tagless components render properly', function(assert) {
 
 module('late bound layout');
 
-QUnit.test('can bind the layout late', function(assert) {
+QUnit.test('can bind the layout late', () => {
   class FooBar extends EmberishCurlyComponent {
     layout = 'Swap - {{yield}}';
   }
@@ -3416,7 +3446,7 @@ QUnit.test('can bind the layout late', function(assert) {
 
 module('appendable components');
 
-QUnit.test('it does not work on optimized appends', function(assert) {
+QUnit.test('it does not work on optimized appends', () => {
   class FooBar extends EmberishCurlyComponent {}
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
@@ -3440,7 +3470,7 @@ QUnit.test('it does not work on optimized appends', function(assert) {
   assertAppended('[object Object]');
 });
 
-QUnit.test('it works on unoptimized appends (dot paths)', function(assert) {
+QUnit.test('it works on unoptimized appends (dot paths)', () => {
   class FooBar extends EmberishCurlyComponent {}
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
@@ -3472,7 +3502,7 @@ QUnit.test('it works on unoptimized appends (dot paths)', function(assert) {
   assertEmberishElement('div', {}, 'foo bar');
 });
 
-QUnit.test('it works on unoptimized appends (this paths)', function(assert) {
+QUnit.test('it works on unoptimized appends (this paths)', () => {
   class FooBar extends EmberishCurlyComponent {}
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
@@ -3504,7 +3534,7 @@ QUnit.test('it works on unoptimized appends (this paths)', function(assert) {
   assertEmberishElement('div', {}, 'foo bar');
 });
 
-QUnit.test('it works on unoptimized appends when initially not a component (dot paths)', function(assert) {
+QUnit.test('it works on unoptimized appends when initially not a component (dot paths)', () => {
   class FooBar extends EmberishCurlyComponent {}
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
@@ -3532,7 +3562,7 @@ QUnit.test('it works on unoptimized appends when initially not a component (dot 
   assertAppended('lol');
 });
 
-QUnit.test('it works on unoptimized appends when initially not a component (this paths)', function(assert) {
+QUnit.test('it works on unoptimized appends when initially not a component (this paths)', () => {
   class FooBar extends EmberishCurlyComponent {}
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
@@ -3563,7 +3593,7 @@ QUnit.test('it works on unoptimized appends when initially not a component (this
 module('bounds tracking');
 
 QUnit.test('it works for wrapped (curly) components', function(assert) {
-  let instance: FooBar;
+  let instance: FooBar | undefined;
 
   class FooBar extends EmberishCurlyComponent {
     tagName = 'span';
@@ -3578,6 +3608,12 @@ QUnit.test('it works for wrapped (curly) components', function(assert) {
 
   appendViewFor('zomg {{foo-bar}} wow');
 
+  assert.ok(instance, 'instance is created');
+
+  if (instance === undefined) {
+    return;
+  }
+
   assertEmberishElement('span', {}, 'foo bar');
 
   assert.equal(instance.bounds.parentElement(), document.querySelector('#qunit-fixture'));
@@ -3586,7 +3622,7 @@ QUnit.test('it works for wrapped (curly) components', function(assert) {
 });
 
 QUnit.test('it works for tagless components', function(assert) {
-  let instance: FooBar;
+  let instance: FooBar | undefined;
 
   class FooBar extends EmberishCurlyComponent {
     tagName = '';
@@ -3601,15 +3637,21 @@ QUnit.test('it works for tagless components', function(assert) {
 
   appendViewFor('zomg {{foo-bar}} wow');
 
+  assert.ok(instance, 'instance is created');
+
+  if (instance === undefined) {
+    return;
+  }
+
   assertAppended('zomg <span id="first-node">foo</span> <span id="before-last-node">bar</span>! wow');
 
   assert.equal(instance.bounds.parentElement(), document.querySelector('#qunit-fixture'));
   assert.equal(instance.bounds.firstNode(), document.querySelector('#first-node'));
-  assert.equal(instance.bounds.lastNode(), document.querySelector('#before-last-node').nextSibling);
+  assert.equal(instance.bounds.lastNode(), document.querySelector('#before-last-node')!.nextSibling);
 });
 
 QUnit.test('it works for unwrapped components', function(assert) {
-  let instance: FooBar;
+  let instance: FooBar | undefined;
 
   class FooBar extends EmberishGlimmerComponent {
     constructor() {
@@ -3621,6 +3663,12 @@ QUnit.test('it works for unwrapped components', function(assert) {
   env.registerEmberishGlimmerComponent('foo-bar', FooBar, '<!-- ohhh --><span>foo bar!</span>');
 
   appendViewFor('zomg <foo-bar /> wow');
+
+  assert.ok(instance, 'instance is created');
+
+  if (instance === undefined) {
+    return;
+  }
 
   assertEmberishElement('span', {}, 'foo bar!');
 
