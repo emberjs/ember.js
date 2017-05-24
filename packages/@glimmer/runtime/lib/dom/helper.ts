@@ -1,4 +1,4 @@
-import { ConcreteBounds, SingleNodeBounds, Bounds } from '../bounds';
+import { Bounds, ConcreteBounds, SingleNodeBounds } from '../bounds';
 import {
   domChanges as domChangesTableElementFix,
   treeConstruction as treeConstructionTableElementFix
@@ -94,11 +94,11 @@ export class DOMOperations {
     }
   }
 
-  insertBefore(parent: Element, node: Node, reference: Option<Node>) {
+  insertBefore(parent: Simple.Element, node: Simple.Node, reference: Option<Simple.Node>) {
     parent.insertBefore(node, reference);
   }
 
-  insertHTMLBefore(_parent: Element, nextSibling: Node, html: string): Bounds {
+  insertHTMLBefore(_parent: Simple.Element, nextSibling: Simple.Node, html: string): Bounds {
     return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
   }
 
@@ -193,7 +193,7 @@ export class DOMChanges extends DOMOperations {
   }
 }
 
-export function insertHTMLBefore(this: void, _useless: Simple.HTMLElement, _parent: Simple.Element, _nextSibling: Option<Simple.Node>, html: string): Bounds { // tslint:disable-line
+export function insertHTMLBefore(this: void, _useless: Simple.Element, _parent: Simple.Element, _nextSibling: Option<Simple.Node>, html: string): Bounds { // tslint:disable-line
   // TypeScript vendored an old version of the DOM spec where `insertAdjacentHTML`
   // only exists on `HTMLElement` but not on `Element`. We actually work with the
   // newer version of the DOM API here (and monkey-patch this method in `./compat`
@@ -203,7 +203,7 @@ export function insertHTMLBefore(this: void, _useless: Simple.HTMLElement, _pare
   let nextSibling = _nextSibling as Node;
 
   let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
-  let last: Node;
+  let last: Simple.Node | null;
 
   if (html === null || html === '') {
     return new ConcreteBounds(parent, null, null);

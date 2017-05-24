@@ -1,8 +1,8 @@
-import { tokenize, Token } from "simple-html-tokenizer";
-import { Environment, Template, templateFactory } from "@glimmer/runtime";
 import { precompile as rawPrecompile, PrecompileOptions } from "@glimmer/compiler";
-import * as WireFormat from '@glimmer/wire-format';
 import { Opaque, Option } from "@glimmer/interfaces";
+import { Environment, Template, templateFactory } from "@glimmer/runtime";
+import * as WireFormat from '@glimmer/wire-format';
+import { tokenize } from "simple-html-tokenizer";
 
 // For Phantom
 function toObject(val: Opaque) {
@@ -101,7 +101,7 @@ export function equalHTML(node: Node | Node[], html: string) {
   equalInnerHTML(div, html);
 }
 
-function generateTokens(divOrHTML: Element | string): { tokens: Token[], html: string } {
+function generateTokens(divOrHTML: Element | string) {
   let div;
   if (typeof divOrHTML === 'string') {
     div = document.createElement("div");
@@ -110,42 +110,27 @@ function generateTokens(divOrHTML: Element | string): { tokens: Token[], html: s
     div = divOrHTML;
   }
 
-  return { tokens: tokenize(div.innerHTML), html: div.innerHTML };
+  const tokens = tokenize(div.innerHTML, {});
+  tokens.forEach((token) => {
+    if (token.attributes) {
+      token.attributes.sort((a, b) => {
+        if (a[0] > b[0]) { return 1; }
+        if (a[0] < b[0]) { return -1; }
+        return 0;
+      });
+    }
+  });
+
+  return { tokens: tokens, html: div.innerHTML };
 }
 
 declare const QUnit: QUnit & {
   equiv(a: any, b: any): boolean;
 };
 
-export type TestFragment = Element | { fragment: Element };
-
-function extract(frag: TestFragment): Element {
-  if (frag['fragment'] instanceof Element) {
-    return frag['fragment'];
-  } else {
-    return frag as Element;
-  }
-}
-
-export function equalTokens(testFragment: TestFragment, testHTML: TestFragment, message: Option<string> = null) {
-  let fragment = extract(testFragment);
-  let html = extract(testHTML);
-
-  let fragTokens = generateTokens(fragment);
-  let htmlTokens = generateTokens(html);
-
-  function normalizeTokens(token: Token) {
-    if (token.type === 'StartTag') {
-      token.attributes = token.attributes.sort(function(a, b) {
-        if (a[0] > b[0]) { return 1; }
-        if (a[0] < b[0]) { return -1; }
-        return 0;
-      });
-    }
-  }
-
-  fragTokens.tokens.forEach(normalizeTokens);
-  htmlTokens.tokens.forEach(normalizeTokens);
+export function equalTokens(testFragment: HTMLElement | string, testHTML: HTMLElement | string, message: Option<string> = null) {
+  let fragTokens = generateTokens(testFragment);
+  let htmlTokens = generateTokens(testHTML);
 
   // let msg = "Expected: " + htmlTokens.html + "; Actual: " + fragTokens.html;
 

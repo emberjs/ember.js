@@ -37,7 +37,7 @@
     "git-repo-version": "^0.1.2",
     "handlebars": "^4.0.6",
     "simple-dom": "^0.3.0",
-    "simple-html-tokenizer": "^0.4.0"
+    "simple-html-tokenizer": "^0.4.1"
   },
   "devDependencies": {
     "@glimmer/build": "^0.8.1",
