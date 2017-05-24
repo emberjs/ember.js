@@ -10,7 +10,7 @@ export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
   // override to prevent usage of `this.document` until after the constructor
   protected setupUselessElement() { }
 
-  insertHTMLBefore(parent: Simple.Element, html: string, reference: Simple.Node): Bounds {
+  insertHTMLBefore(parent: Simple.Element, reference: Simple.Node, html: string): Bounds {
     let prev = reference ? reference.previousSibling : parent.lastChild;
 
     let raw = this.document.createRawHTMLSection(html);
