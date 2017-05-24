@@ -1,4 +1,12 @@
-import { TestEnvironment, TestDynamicScope, normalizeInnerHTML, getTextContent, equalTokens } from "@glimmer/test-helpers";
+import {
+  TestEnvironment,
+  TestDynamicScope,
+  normalizeInnerHTML,
+  getTextContent,
+  equalTokens,
+  assertNodeTagName,
+  assertNodeProperty,
+} from "@glimmer/test-helpers";
 import { Environment, Template, Simple, AttributeManager, IteratorResult, RenderResult } from '@glimmer/runtime';
 import { module, test } from './support';
 import { UpdatableReference } from '@glimmer/object-reference';
@@ -49,37 +57,6 @@ function render<T>(template: Template<T>, self: any) {
 
 function createElement<T extends keyof HTMLElementTagNameMap>(tag: T): HTMLElementTagNameMap[T] {
   return document.createElement(tag);
-}
-
-function assertIsElement(node: Node | null): node is Element {
-  let nodeType = node === null ? null : node.nodeType;
-  QUnit.assert.pushResult({
-    result: nodeType === 1,
-    expected: 1,
-    actual: nodeType,
-    message: 'expected node to be an element'
-  });
-  return nodeType === 1;
-}
-
-function assertNodeHasTagName<T extends keyof ElementTagNameMap, U extends ElementTagNameMap[T]>(node: Node | null, tagName: T): node is U {
-  if (assertIsElement(node)) {
-    const nodeTagName = node.tagName.toLowerCase();
-    QUnit.assert.pushResult({
-      result: nodeTagName === tagName,
-      expected: tagName,
-      actual: nodeTagName,
-      message: `expected tagName to be ${tagName} but was ${nodeTagName}`
-    });
-    return nodeTagName === tagName;
-  }
-  return false;
-}
-
-function assertNodeProperty<T extends keyof ElementTagNameMap, P extends keyof ElementTagNameMap[T], V extends HTMLElementTagNameMap[T][P]>(node: Node | null, tagName: T, prop: P, value: V) {
-  if (assertNodeHasTagName(node, tagName)) {
-    QUnit.assert.strictEqual(node[prop], value);;
-  }
 }
 
 module("[glimmer runtime] Initial render", tests => {
@@ -350,7 +327,7 @@ module("[glimmer runtime] Initial render", tests => {
       root = table;
       render(template, context);
 
-      assertNodeHasTagName(table.firstChild, 'tbody');
+      assertNodeTagName(table.firstChild, 'tbody');
     });
 
     test("The compiler can handle top-level unescaped td inside tr contextualElement", () => {
@@ -360,7 +337,7 @@ module("[glimmer runtime] Initial render", tests => {
       root = row;
       render(template, context);
 
-      assertNodeHasTagName(row.firstChild, 'td');
+      assertNodeTagName(row.firstChild, 'td');
     });
 
     test("second render respects whitespace", assert => {
@@ -510,15 +487,15 @@ module("[glimmer runtime] Initial render", tests => {
       root = table;
       render(template, context);
 
-      assertNodeHasTagName(root.firstChild, 'tbody');
+      assertNodeTagName(root.firstChild, 'tbody');
     });
 
     test("The compiler can handle unescaped tr inside fragment table", () => {
       let template = compile('<table>{{#identity}}{{{html}}}{{/identity}}</table>');
       let context = { html: '<tr><td>Yo</td></tr>' };
       render(template, context);
-      if (assertNodeHasTagName(root.firstChild, 'table')) {
-        assertNodeHasTagName(root.firstChild.firstChild, 'tbody');
+      if (assertNodeTagName(root.firstChild, 'table')) {
+        assertNodeTagName(root.firstChild.firstChild, 'tbody');
       }
     });
   });
@@ -1019,7 +996,7 @@ module("[glimmer runtime] Initial render", tests => {
     test("Namespaced attribute", assert => {
       compilesTo("<svg xlink:title='svg-title'>content</svg>");
       let svg = root.firstChild;
-      if (assertNodeHasTagName(svg, 'svg')) {
+      if (assertNodeTagName(svg, 'svg')) {
         assert.equal(svg.namespaceURI, SVG_NAMESPACE);
         assert.equal(svg.attributes[0].namespaceURI, XLINK_NAMESPACE);
       }
@@ -1029,7 +1006,7 @@ module("[glimmer runtime] Initial render", tests => {
       let viewBox = '0 0 0 0';
       compilesTo(`<svg viewBox="${viewBox}"></svg>`);
       let svg = root.firstChild;
-      if (assertNodeHasTagName(svg, 'svg')) {
+      if (assertNodeTagName(svg, 'svg')) {
         assert.equal(svg.namespaceURI, SVG_NAMESPACE);
         assert.equal(svg.getAttribute('viewBox'), viewBox);
       }
@@ -1039,10 +1016,10 @@ module("[glimmer runtime] Initial render", tests => {
       let d = 'M 0 0 L 100 100';
       compilesTo(`<svg><path d="${d}"></path></svg>`);
       let svg = root.firstChild;
-      if (assertNodeHasTagName(svg, 'svg')) {
+      if (assertNodeTagName(svg, 'svg')) {
         assert.equal(svg.namespaceURI, SVG_NAMESPACE);
         let path = svg.firstChild;
-        if (assertNodeHasTagName(path, 'path')) {
+        if (assertNodeTagName(path, 'path')) {
           assert.equal(path.namespaceURI, SVG_NAMESPACE,
                 "creates the path element with a namespace");
           assert.equal(path.getAttribute('d'), d);
@@ -1053,10 +1030,10 @@ module("[glimmer runtime] Initial render", tests => {
     test("<foreignObject> tag has an SVG namespace", assert => {
       compilesTo('<svg><foreignObject>Hi</foreignObject></svg>');
       let svg = root.firstChild;
-      if (assertNodeHasTagName(svg, 'svg')) {
+      if (assertNodeTagName(svg, 'svg')) {
         assert.equal(svg.namespaceURI, SVG_NAMESPACE);
         let foreignObject = svg.firstChild;
-        if (assertNodeHasTagName(foreignObject, 'foreignobject')) {
+        if (assertNodeTagName(foreignObject, 'foreignobject')) {
           assert.equal(foreignObject.namespaceURI, SVG_NAMESPACE,
               "creates the foreignObject element with a namespace");
         }
@@ -1078,15 +1055,15 @@ module("[glimmer runtime] Initial render", tests => {
       let firstDiv = root.firstChild;
       let secondDiv = root.lastChild;
       let svg = firstDiv && firstDiv.firstChild;
-      if (assertNodeHasTagName(firstDiv, 'div')) {
+      if (assertNodeTagName(firstDiv, 'div')) {
         assert.equal(firstDiv.namespaceURI, XHTML_NAMESPACE,
               "first div's namespace is xhtmlNamespace");
       }
-      if (assertNodeHasTagName(svg, 'svg')) {
+      if (assertNodeTagName(svg, 'svg')) {
         assert.equal(svg.namespaceURI, SVG_NAMESPACE,
               "svg's namespace is svgNamespace");
       }
-      if (assertNodeHasTagName(secondDiv, 'div')) {
+      if (assertNodeTagName(secondDiv, 'div')) {
         assert.equal(secondDiv.namespaceURI, XHTML_NAMESPACE,
               "last div's namespace is xhtmlNamespace");
       }
