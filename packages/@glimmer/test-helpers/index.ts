@@ -1,4 +1,7 @@
 export {
+  assertIsElement,
+  assertNodeTagName,
+  assertNodeProperty,
   TestCompileOptions,
   compile,
   equalInnerHTML,

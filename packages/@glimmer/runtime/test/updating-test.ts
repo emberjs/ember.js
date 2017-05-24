@@ -1,5 +1,5 @@
 import { UNDEFINED_REFERENCE, Arguments, Template, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult } from "@glimmer/runtime";
-import { BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "@glimmer/test-helpers";
+import { assertNodeTagName, BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "@glimmer/test-helpers";
 import { ConstReference } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Opaque } from "@glimmer/util";
@@ -34,6 +34,13 @@ function commonSetup() {
   env = new TestEnvironment(); // TODO: Support SimpleDOM
   root = document.createElement('div');
   root.setAttribute('debug-root', 'true');
+}
+
+function assertProperty<T, K extends keyof T, V extends T[K]>(obj: T | null, key: K, value: V): void {
+  QUnit.assert.notStrictEqual(obj, null);
+  if (obj !== null) {
+    QUnit.assert.equal(obj[key], value);
+  }
 }
 
 function render<T>(template: Template<T>, context = {}) {
@@ -86,90 +93,119 @@ module("[glimmer-runtime] Updating", hooks => {
     let object = { value: 'hello world' };
     let template = compile('<div><p>{{value}}</p></div>');
     render(template, object);
-    let valueNode = root.firstChild.firstChild.firstChild;
+    let valueNode: Node | null | undefined;
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      if (assertNodeTagName(root.firstChild.firstChild, 'p')) {
+        valueNode = root.firstChild.firstChild.firstChild;
+      }
+    }
 
     equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
 
     rerender();
 
     equalTokens(root, '<div><p>hello world</p></div>', "no change");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      if (assertNodeTagName(root.firstChild.firstChild, 'p')) {
+        assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+      }
+    }
 
     object.value = 'goodbye world';
     rerender();
 
     equalTokens(root, '<div><p>goodbye world</p></div>', "After updating and dirtying");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      if (assertNodeTagName(root.firstChild.firstChild, 'p')) {
+        assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+      }
+    }
   });
 
-  test("updating a single curly with siblings", assert => {
+  test("updating a single curly with siblings", () => {
     let value = 'brave new ';
     let context = { value };
-    let getDiv = () => root.firstChild;
     let template = compile('<div>hello {{value}}world</div>');
     render(template, context);
 
-    assert.equal(getDiv().firstChild.textContent, 'hello ');
-    assert.equal(getDiv().childNodes[1].textContent, 'brave new ');
-    assert.equal(getDiv().lastChild.textContent, 'world');
+    function assertText(text1: string, text2: string, text3: string) {
+      if (assertNodeTagName(root.firstChild, 'div')) {
+        assertProperty(root.firstChild.firstChild, 'textContent', text1);
+        assertProperty(root.firstChild.childNodes[1], 'textContent', text2);
+        assertProperty(root.firstChild.lastChild, 'textContent', text3);
+      }
+    }
+
+    assertText('hello ', 'brave new ', 'world');
 
     rerender();
 
-    assert.equal(getDiv().firstChild.textContent, 'hello ');
-    assert.equal(getDiv().childNodes[1].textContent, 'brave new ');
-    assert.equal(getDiv().lastChild.textContent, 'world');
+    assertText('hello ', 'brave new ', 'world');
 
     context.value = 'another ';
     rerender();
 
-    assert.equal(getDiv().firstChild.textContent, 'hello ');
-    assert.equal(getDiv().childNodes[1].textContent, 'another ');
-    assert.equal(getDiv().lastChild.textContent, 'world');
+    assertText('hello ', 'another ', 'world');
 
     rerender({value});
 
-    assert.equal(getDiv().firstChild.textContent, 'hello ');
-    assert.equal(getDiv().childNodes[1].textContent, 'brave new ');
-    assert.equal(getDiv().lastChild.textContent, 'world');
+    assertText('hello ', 'brave new ', 'world');
   });
 
   test("null and undefined produces empty text nodes", assert => {
-    let object = { v1: null, v2: undefined };
+    let object = { v1: null as (string | null), v2: undefined as (string | undefined) };
     let template = compile('<div><p>{{v1}}</p><p>{{v2}}</p></div>');
     render(template, object);
-    let valueNode1 = root.firstChild.firstChild.firstChild;
-    let valueNode2 = root.firstChild.lastChild.firstChild;
+
+    let valueNode1: Node | null;
+    let valueNode2: Node | null;
+    if (assertNodeTagName(root.firstChild, 'div') &&
+        assertNodeTagName(root.firstChild.firstChild, 'p') &&
+        assertNodeTagName(root.firstChild.lastChild, 'p')) {
+      valueNode1 = root.firstChild.firstChild.firstChild;
+      valueNode2 = root.firstChild.lastChild.firstChild;
+    }
+
+    function assertStable() {
+      if (assertNodeTagName(root.firstChild, 'div') &&
+          assertNodeTagName(root.firstChild.firstChild, 'p') &&
+          assertNodeTagName(root.firstChild.lastChild, 'p')) {
+        assert.equal(root.firstChild.firstChild.firstChild, valueNode1, 'The text node was not blown away');
+        assert.equal(root.firstChild.lastChild.firstChild, valueNode2, 'The text node was not blown away');
+      }
+    }
 
     equalTokens(root, '<div><p></p><p></p></div>', "Initial render");
 
     rerender();
 
     equalTokens(root, '<div><p></p><p></p></div>', "no change");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode1, "The text node was not blown away");
-    assert.strictEqual(root.firstChild.lastChild.firstChild, valueNode2, "The text node was not blown away");
+
+    assertStable();
 
     object.v1 = 'hello';
 
     rerender();
 
     equalTokens(root, '<div><p>hello</p><p></p></div>', "After updating and dirtying");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode1, "The text node was not blown away");
-    assert.strictEqual(root.firstChild.lastChild.firstChild, valueNode2, "The text node was not blown away");
+
+    assertStable();
 
     object.v2 = 'world';
     rerender();
 
     equalTokens(root, '<div><p>hello</p><p>world</p></div>', "After updating and dirtying");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode1, "The text node was not blown away");
-    assert.strictEqual(root.firstChild.lastChild.firstChild, valueNode2, "The text node was not blown away");
+
+    assertStable();
 
     object.v1 = null;
     object.v2 = undefined;
     rerender();
 
     equalTokens(root, '<div><p></p><p></p></div>', "Reset");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode1, "The text node was not blown away");
-    assert.strictEqual(root.firstChild.lastChild.firstChild, valueNode2, "The text node was not blown away");
+
+    assertStable();
   });
 
   test("weird paths", assert => {
