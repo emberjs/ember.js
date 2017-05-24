@@ -68,7 +68,7 @@ import {
   EMPTY_ARRAY
 } from '@glimmer/util';
 
-import GlimmerObject, { GlimmerObjectFactory } from "@glimmer/object";
+import GlimmerObject from "@glimmer/object";
 
 import {
   VOLATILE_TAG,
@@ -534,10 +534,10 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     }
 
     let layoutString = definition.layoutString;
-    let lateBound = !layoutString;
+    let lateBound = layoutString !== null;
 
-    if (!layoutString && layoutString !== '') {
-      layoutString = component['layout'];
+    if (layoutString === null) {
+      layoutString = (component as any).layout as string;
     }
 
     layout = compileLayout(new EmberishCurlyComponentLayoutCompiler(layoutString), env);
@@ -742,7 +742,7 @@ export class TestEnvironment extends Environment {
     // let document = options.document || window.document;
     // let appendOperations = options.appendOperations || new DOMTreeConstruction(document);
     super({
-      appendOperations: options.appendOperations || new DOMTreeConstruction(options.document || window.document),
+      appendOperations: options.appendOperations || new DOMTreeConstruction(options.document as Document || window.document),
       updateOperations: new DOMChanges((options.document || window.document) as Document)
     });
 
@@ -793,12 +793,12 @@ export class TestEnvironment extends Environment {
     return this.registerComponent(name, definition);
   }
 
-  registerEmberishCurlyComponent(name: string, Component: EmberishCurlyComponentFactory, layout: string): ComponentDefinition<EmberishCurlyComponentDefinition> {
+  registerEmberishCurlyComponent(name: string, Component: EmberishCurlyComponentFactory | null, layout: string | null): ComponentDefinition<EmberishCurlyComponentDefinition> {
     let definition = new EmberishCurlyComponentDefinition(name, EMBERISH_CURLY_COMPONENT_MANAGER, Component, layout);
     return this.registerComponent(name, definition);
   }
 
-  registerEmberishGlimmerComponent(name: string, Component: EmberishGlimmerComponentFactory, layout: string): ComponentDefinition<EmberishGlimmerComponentDefinition> {
+  registerEmberishGlimmerComponent(name: string, Component: EmberishGlimmerComponentFactory | null, layout: string): ComponentDefinition<EmberishGlimmerComponentDefinition> {
     let definition = new EmberishGlimmerComponentDefinition(name, EMBERISH_GLIMMER_COMPONENT_MANAGER, Component, layout);
     return this.registerComponent(name, definition);
   }
@@ -951,9 +951,9 @@ export interface BasicComponentFactory {
 }
 
 export abstract class GenericComponentDefinition<T> extends ComponentDefinition<T> {
-  public layoutString: string;
+  public layoutString: string | null;
 
-  constructor(name: string, manager: ComponentManager<T>, ComponentClass: any, layout: string) {
+  constructor(name: string, manager: ComponentManager<T>, ComponentClass: any, layout: string | null) {
     super(name, manager, ComponentClass);
     this.layoutString = layout;
   }
@@ -964,10 +964,14 @@ export abstract class GenericComponentDefinition<T> extends ComponentDefinition<
 }
 
 export class BasicComponentDefinition extends GenericComponentDefinition<BasicStateBucket> {
+  public layoutString: string;
+
   public ComponentClass: BasicComponentFactory;
 }
 
 class StaticTaglessComponentDefinition extends GenericComponentDefinition<BasicStateBucket> {
+  public layoutString: string;
+
   public ComponentClass: BasicComponentFactory;
 }
 
@@ -985,6 +989,7 @@ export interface EmberishGlimmerComponentFactory {
 }
 
 export class EmberishGlimmerComponentDefinition extends GenericComponentDefinition<EmberishGlimmerStateBucket> {
+  public layoutString: string;
   public ComponentClass: EmberishGlimmerComponentFactory;
 }
 
@@ -1037,8 +1042,8 @@ class EmberishGlimmerComponentLayoutCompiler extends GenericComponentLayoutCompi
   }
 }
 
-export function inspectHooks<T extends Component>(ComponentClass: GlimmerObjectFactory<T>): GlimmerObjectFactory<T> {
-  return ComponentClass.extend({
+export function inspectHooks<T>(ComponentClass: T): T {
+  return (ComponentClass as any).extend({
     init(this: any) {
       this._super(...arguments);
       this.hooks = {
@@ -1159,7 +1164,17 @@ function hashToArgs(hash: Option<WireFormat.Core.Hash>): Option<WireFormat.Core.
   return [names, hash[1]];
 }
 
-export function equalsElement(element: Element, tagName: string, attributes: Object, content: string) {
+export function equalsElement(element: Element | null, tagName: string, attributes: Object, content: string) {
+  if (element === null) {
+    QUnit.assert.pushResult({
+      result: false,
+      actual: element,
+      expected: true,
+      message: `failed - expected element to not be null`
+    });
+    return;
+  }
+
   QUnit.assert.pushResult({
     result: element.tagName === tagName.toUpperCase(),
     actual: element.tagName.toLowerCase(),
@@ -1178,16 +1193,18 @@ export function equalsElement(element: Element, tagName: string, attributes: Obj
     expectedAttrs[prop] = matcher;
 
     QUnit.assert.pushResult({
-      result: expectedAttrs[prop].match(element.getAttribute(prop)),
-      actual: matcher.fail(element.getAttribute(prop)),
-      expected: matcher.fail(element.getAttribute(prop)),
+      result: expectedAttrs[prop].match(element && element.getAttribute(prop)),
+      actual: matcher.fail(element && element.getAttribute(prop)),
+      expected: matcher.fail(element && element.getAttribute(prop)),
       message: `Expected element's ${prop} attribute ${matcher.expected()}`
     });
   }
 
   let actualAttributes = {};
-  for (let i = 0, l = element.attributes.length; i < l; i++) {
-    actualAttributes[element.attributes[i].name] = element.attributes[i].value;
+  if (element) {
+    for (let i = 0, l = element.attributes.length; i < l; i++) {
+      actualAttributes[element.attributes[i].name] = element.attributes[i].value;
+    }
   }
 
   if (!(element instanceof HTMLElement)) {
