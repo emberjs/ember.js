@@ -2,8 +2,7 @@ import {
   TestEnvironment,
   stripTight,
   equalsElement,
-  EmberishCurlyComponent,
-  MyRootView
+  EmberishCurlyComponent
  } from "@glimmer/test-helpers";
 
 import {
@@ -397,7 +396,7 @@ QUnit.test('nesting', function() {
 QUnit.test('components are destroyed', function(assert) {
   let destroyed = 0;
   let DestroyMeComponent = EmberishCurlyComponent.extend({
-    destroy() {
+    destroy(this: EmberishCurlyComponent) {
       this._super();
       destroyed++;
     }
