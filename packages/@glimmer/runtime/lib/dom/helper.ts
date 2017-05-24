@@ -60,6 +60,12 @@ export class DOMOperations {
   protected uselessElement: HTMLElement;
 
   constructor(protected document: Document) {
+    this.setupUselessElement();
+  }
+
+  // split into seperate method so that NodeDOMTreeConstruction
+  // can override it.
+  protected setupUselessElement() {
     this.uselessElement = this.document.createElement('div');
   }
 
