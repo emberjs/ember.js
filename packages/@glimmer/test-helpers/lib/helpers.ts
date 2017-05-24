@@ -153,7 +153,7 @@ export function equalTokens(testFragment: HTMLElement | string, testHTML: HTMLEl
 }
 
 export function generateSnapshot(element: Element) {
-  let snapshot = [];
+  let snapshot: Node[] = [];
   let node = element.firstChild;
 
   while (node) {
