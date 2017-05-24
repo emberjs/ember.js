@@ -39,11 +39,11 @@
     "link:glimmer": "node bin/yarn-link-glimmer.js"
   },
   "dependencies": {
-    "@glimmer/compiler": "^0.24.0-beta.2",
-    "@glimmer/node": "^0.24.0-beta.2",
-    "@glimmer/reference": "^0.24.0-beta.2",
-    "@glimmer/runtime": "^0.24.0-beta.2",
-    "@glimmer/util": "^0.24.0-beta.2",
+    "@glimmer/compiler": "^0.24.0-beta.3",
+    "@glimmer/node": "^0.24.0-beta.3",
+    "@glimmer/reference": "^0.24.0-beta.3",
+    "@glimmer/runtime": "^0.24.0-beta.3",
+    "@glimmer/util": "^0.24.0-beta.3",
     "broccoli-funnel": "^1.2.0",
     "broccoli-merge-trees": "^2.0.0",
     "ember-cli-get-component-path-option": "^1.0.0",
