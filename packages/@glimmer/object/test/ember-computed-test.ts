@@ -5,14 +5,14 @@ interface Get {
 }
 
 interface Set {
-  (obj: any, key: string, value: any);
+  (obj: any, key: string, value: any): void;
 }
 
-let emberGet = function aget(x, y) { return x[y]; };
-let emberSet = function aset(x, y, z) { return (x[y] = z); };
+let emberGet = function aget(x: any, y: string) { return x[y]; };
+let emberSet = function aset(x: any, y: string, z: any) { return (x[y] = z); };
 
-function testWithDefault(name: string, callback: (Get, Set) => void) {
-  QUnit.test(name, assert => {
+function testWithDefault(name: string, callback: (get: Get, set: Set) => void) {
+  QUnit.test(name, () => {
     callback(emberGet, emberSet);
   });
 }
@@ -21,11 +21,11 @@ let EmberObject = GlimmerObject;
 
 const assert = QUnit.assert;
 
-function K() { return this; }
+function K(this: any) { return this; }
 
 QUnit.module('GlimmerObject.extend - Computed Properties');
 
-testWithDefault('computed property on instance', function(get, set) {
+testWithDefault('computed property on instance', function(get) {
   let MyClass = EmberObject.extend({
     foo: computed(function() { return 'FOO'; })
   });
@@ -33,7 +33,7 @@ testWithDefault('computed property on instance', function(get, set) {
   QUnit.assert.equal(get(new MyClass(), 'foo'), 'FOO');
 });
 
-testWithDefault('computed property on subclass', function(get, set) {
+testWithDefault('computed property on subclass', function(get) {
   let MyClass = EmberObject.extend({
     foo: computed(function() { return 'FOO'; })
   });
@@ -45,7 +45,7 @@ testWithDefault('computed property on subclass', function(get, set) {
   assert.equal(get(new Subclass(), 'foo'), 'BAR');
 });
 
-testWithDefault('replacing computed property with regular val', function(get, set) {
+testWithDefault('replacing computed property with regular val', function(get) {
   let MyClass = EmberObject.extend({
     foo: computed(function() { return 'FOO'; })
   });
@@ -60,12 +60,12 @@ testWithDefault('replacing computed property with regular val', function(get, se
 testWithDefault('complex dependent keys', function(get, set) {
   let MyClass = EmberObject.extend({
 
-    init() {
+    init(this: any) {
       this._super.apply(this, arguments);
       set(this, 'bar', { baz: 'BIFF' });
     },
 
-    foo: computed(function() {
+    foo: computed(function(this: any) {
       return get(get(this, 'bar'), 'baz');
     }).property('bar.baz')
 
@@ -93,23 +93,23 @@ testWithDefault('complex dependent keys', function(get, set) {
 
 testWithDefault('complex dependent keys changing complex dependent keys', function(get, set) {
   let MyClass = EmberObject.extend({
-    init() {
+    init(this: any) {
       this._super.apply(this, arguments);
       set(this, 'bar', { baz: 'BIFF' });
     },
 
-    foo: computed(function() {
+    foo: computed(function(this: any) {
       return get(get(this, 'bar'), 'baz');
     }).property('bar.baz')
   });
 
   let Subclass = MyClass.extend({
-    init() {
+    init(this: any) {
       this._super.apply(this, arguments);
       set(this, 'bar2', { baz: 'BIFF2' });
     },
 
-    foo: computed(function() {
+    foo: computed(function(this: any) {
       return get(get(this, 'bar2'), 'baz');
     }).property('bar2.baz')
   });
@@ -169,7 +169,7 @@ QUnit.test('can iterate over a list of computed properties for a class', functio
     bat: computed(function() {}).meta({ iAmBat: true })
   });
 
-  let list = [];
+  let list: string[] = [];
 
   MyClass.eachComputedProperty(function(name) {
     list.push(name);
@@ -201,7 +201,7 @@ QUnit.test('list of properties updates when an additional property is added (suc
     bar: computed(K)
   });
 
-  let list = [];
+  let list: string[] = [];
 
   MyClass.eachComputedProperty(function(name) {
     list.push(name);
@@ -225,8 +225,8 @@ QUnit.test('list of properties updates when an additional property is added (suc
 });
 
 QUnit.test('Calling _super in call outside the immediate function of a CP getter works', function() {
-  function macro(callback) {
-    return computed(function() {
+  function macro(callback: (obj: any) => any) {
+    return computed(function(this: any) {
       return callback.call(this);
     });
   }
@@ -238,7 +238,7 @@ QUnit.test('Calling _super in call outside the immediate function of a CP getter
   });
 
   let SubClass = MyClass.extend({
-    foo: macro(function() {
+    foo: macro(function(this: any) {
       return this._super();
     })
   });
@@ -247,8 +247,8 @@ QUnit.test('Calling _super in call outside the immediate function of a CP getter
 });
 
 QUnit.test('Calling _super in apply outside the immediate function of a CP getter works', function() {
-  function macro(callback) {
-    return computed(function() {
+  function macro(callback: (obj: any) => any) {
+    return computed(function(this: any) {
       return callback.apply(this);
     });
   }
@@ -260,7 +260,7 @@ QUnit.test('Calling _super in apply outside the immediate function of a CP gette
   });
 
   let SubClass = MyClass.extend({
-    foo: macro(function() {
+    foo: macro(function(this: any) {
       return this._super();
     })
   });

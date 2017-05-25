@@ -1,4 +1,5 @@
 import { metaFor, setProperty } from "@glimmer/object-reference";
+import { Reference } from "@glimmer/reference";
 
 //function computed(obj, name, getter, depStrings) {
   //Object.defineProperty(obj, name, {
@@ -13,7 +14,7 @@ import { metaFor, setProperty } from "@glimmer/object-reference";
   //Meta.for(obj).addReferenceTypeFor(name, ComputedBlueprint(name, deps)); [>jshint +W064<]
 //}
 
-function addObserver(obj: any, name: string, path: string) {
+function addObserver(obj: any, _: string, path: string) {
   return metaFor(obj).root().referenceFromParts(path.split('.'));
 }
 
@@ -233,19 +234,19 @@ QUnit.test("test data flow that goes through primitive wrappers", function() {
   isClean(o4[3]);
 });
 
-function isDirty(ref, newValue) {
+function isDirty<T>(ref: Reference<T>, newValue: T) {
   // ok(ref.isDirty(), ref.label() + " is dirty");
-  QUnit.assert.ok(ref.value() === newValue, ref.label() + " has new value " + newValue);
+  QUnit.assert.ok(ref.value() === newValue, (ref as any).label() + " has new value " + newValue);
 }
 
-function isClean(ref) {
+function isClean<T>(_: Reference<T>) {
   // clean references are allowed to report dirty
 }
 
-function allDirty(refs, newValue) {
+function allDirty<T>(refs: Reference<T>[], newValue: T) {
   refs.forEach(function(ref) { isDirty(ref, newValue); });
 }
 
-function allClean(refs) {
+function allClean<T>(refs: Reference<T>[]) {
   refs.forEach(function(ref) { isClean(ref); });
 }

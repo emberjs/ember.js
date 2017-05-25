@@ -287,7 +287,15 @@ function formatEndTagInfo(tag: Tag<'StartTag' | 'EndTag'>) {
   return "`" + tag.name + "` (on line " + tag.loc.end.line + ")";
 }
 
-export const syntax = {
+export interface Syntax {
+  parse: typeof preprocess;
+  builders: typeof builders;
+  print: typeof print;
+  traverse: typeof traverse;
+  Walker: typeof Walker;
+}
+
+export const syntax: Syntax = {
   parse: preprocess,
   builders,
   print,

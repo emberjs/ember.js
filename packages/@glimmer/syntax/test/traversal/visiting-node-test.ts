@@ -1,9 +1,9 @@
-import { preprocess as parse, traverse } from "@glimmer/syntax";
+import { preprocess as parse, traverse, AST} from "@glimmer/syntax";
 
 const { test } = QUnit;
 
-function traversalEqual(node, expectedTraversal) {
-  let actualTraversal = [];
+function traversalEqual(node: AST.Node, expectedTraversal: Array<[string, AST.BaseNode]>) {
+  let actualTraversal: Array<[string, AST.BaseNode]> = [];
 
   traverse(node, {
     All: {

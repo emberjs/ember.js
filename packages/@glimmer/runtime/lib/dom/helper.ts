@@ -59,14 +59,14 @@ export function moveNodesBefore(source: Simple.Node, target: Simple.Element, nex
 export class DOMOperations {
   protected uselessElement: HTMLElement;
 
-  constructor(protected document: Document) {
+  constructor(protected document: Simple.Document) {
     this.setupUselessElement();
   }
 
   // split into seperate method so that NodeDOMTreeConstruction
   // can override it.
   protected setupUselessElement() {
-    this.uselessElement = this.document.createElement('div');
+    this.uselessElement = this.document.createElement('div') as HTMLElement;
   }
 
   createElement(tag: string, context?: Simple.Element): Simple.Element {
@@ -102,7 +102,7 @@ export class DOMOperations {
     return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
   }
 
-  createTextNode(text: string): Text {
+  createTextNode(text: string): Simple.Text {
     return this.document.createTextNode(text);
   }
 

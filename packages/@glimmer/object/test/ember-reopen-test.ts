@@ -1,6 +1,6 @@
 import EmberObject from '@glimmer/object';
 
-function get(obj, key) {
+function get(obj: any, key: string) {
   return obj[key];
 }
 

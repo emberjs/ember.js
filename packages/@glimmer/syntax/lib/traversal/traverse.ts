@@ -40,7 +40,7 @@ export interface NodeHandlerFunction<T> {
 export interface EnterExitNodeHandler<T> {
   enter: NodeHandlerFunction<T>;
   exit: NodeHandlerFunction<T>;
-  keys: any;
+  keys?: any;
 }
 
 function visitNode(visitor: NodeVisitor, node: nodes.Node): any {

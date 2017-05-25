@@ -1,7 +1,7 @@
 import { Mixin, get, set, mixin } from './support';
 import { computed } from '@glimmer/object';
 
-function K() { return this; }
+function K(this: any) { return this; }
 
 QUnit.module('Mixin.create - Computed Properties');
 
@@ -16,19 +16,19 @@ QUnit.test('overriding computed properties', assert => {
   });
 
   MixinB = Mixin.create({
-    aProp: computed(function() {
+    aProp: computed(function(this: any) {
       return this._super.apply(this, arguments) + 'B';
     })
   });
 
   MixinC = Mixin.create({
-    aProp: computed(function() {
+    aProp: computed(function(this: any) {
       return this._super.apply(this, arguments) + 'C';
     })
   });
 
   MixinD = Mixin.create({
-    aProp: computed(function() {
+    aProp: computed(function(this: any) {
       return this._super.apply(this, arguments) + 'D';
     })
   });
@@ -51,7 +51,7 @@ QUnit.test('overriding computed properties', assert => {
 
   obj = { };
   mixin(obj, {
-    aProp: computed(function(key) {
+    aProp: computed(function() {
       return 'obj';
     })
   });
@@ -69,15 +69,15 @@ QUnit.test('calling set on overridden computed properties', assert => {
 
   SuperMixin = Mixin.create({
     aProp: computed({
-      get: function(key) { superGetOccurred = true; },
-      set: function(key, value) { superSetOccurred = true; }
+      get: function() { superGetOccurred = true; },
+      set: function() { superSetOccurred = true; }
     })
   });
 
   SubMixin = Mixin.create(SuperMixin, {
     aProp: computed({
-      get: function(key) { return this._super.apply(this, arguments); },
-      set: function(key, value) { return this._super.apply(this, arguments); }
+      get: function() { return this._super.apply(this, arguments); },
+      set: function() { return this._super.apply(this, arguments); }
     })
   });
 
@@ -113,15 +113,15 @@ QUnit.test('setter behavior works properly when overriding computed properties',
   let MixinB = Mixin.create({
     cpWithSetter2: computed({
       get: K,
-      set: function(k, v) { cpWasCalled = true; }
+      set: function() { cpWasCalled = true; }
     }),
 
     cpWithSetter3: computed({
       get: K,
-      set: function(k, v) { cpWasCalled = true; }
+      set: function() { cpWasCalled = true; }
     }),
 
-    cpWithoutSetter: computed(function(k) {
+    cpWithoutSetter: computed(function() {
       cpWasCalled = true;
     })
   });

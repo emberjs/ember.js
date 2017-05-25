@@ -110,7 +110,7 @@ QUnit.test('mergedProperties\' overwriting methods can call _super', assert => {
   let MixinA = Mixin.create({
     mergedProperties: ['foo'],
     foo: {
-      meth(a) {
+      meth(a: string) {
         assert.equal(a, 'WOOT', '_super successfully called MixinA\'s `foo.meth` method');
         return 'WAT';
       }
@@ -119,7 +119,7 @@ QUnit.test('mergedProperties\' overwriting methods can call _super', assert => {
 
   let MixinB = Mixin.create({
     foo: {
-      meth(a) {
+      meth() {
         assert.ok(true, 'MixinB\'s `foo.meth` method called');
         return this._super.apply(this, arguments);
       }
@@ -128,7 +128,7 @@ QUnit.test('mergedProperties\' overwriting methods can call _super', assert => {
 
   let MixinC = Mixin.create({
     foo: {
-      meth(a) {
+      meth(a: string) {
         assert.ok(true, 'MixinC\'s `foo.meth` method called');
         return this._super(a);
       }

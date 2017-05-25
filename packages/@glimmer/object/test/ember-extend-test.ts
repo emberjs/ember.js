@@ -28,7 +28,7 @@ QUnit.test('Overriding a method several layers deep', assert => {
 
   let AnotherClass = SomeClass.extend({
     barCnt: 0,
-    bar() {
+    bar(this: any) {
       this.barCnt++;
       this._super.apply(this, arguments);
     }
@@ -36,7 +36,7 @@ QUnit.test('Overriding a method several layers deep', assert => {
 
   let FinalClass = AnotherClass.extend({
     fooCnt: 0,
-    foo() {
+    foo(this: any) {
       this.fooCnt++;
       this._super.apply(this, arguments);
     }
@@ -50,7 +50,7 @@ QUnit.test('Overriding a method several layers deep', assert => {
 
   // Try overriding on create also
   obj = FinalClass.extend({
-    foo() {
+    foo(this: any) {
       this.fooCnt++;
       this._super.apply(this, arguments);
     }
@@ -74,7 +74,7 @@ QUnit.test('With concatenatedProperties', assert => {
   assert.deepEqual(yetAnother.get('things'), ['foo', 'baz'], 'subclass should have base class\' and its own');
 });
 
-function get(obj, key) {
+function get(obj: any, key: string) {
   return obj[key];
 }
 

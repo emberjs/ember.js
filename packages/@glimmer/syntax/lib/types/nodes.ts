@@ -4,7 +4,7 @@ export interface BaseNode {
   // Every leaf interface that extends BaseNode must specify a type property.
   // The type property should be a string literal. For example, Identifier
   // has: `type: "Identifier"`
-  type: string;
+  type: NodeType;
   loc: SourceLocation;
 }
 
@@ -27,7 +27,7 @@ export interface Program extends BaseNode {
   blockParams: string[];
 }
 
-export type Statement = MustacheStatement | BlockStatement | PartialStatement | MustacheCommentStatement | ElementNode | CommentStatement | TextNode;
+export type Statement = MustacheStatement | BlockStatement | PartialStatement | MustacheCommentStatement | CommentStatement | TextNode | ElementNode;
 
 export interface Call extends BaseNode {
   name?: PathExpression | SubExpression;
@@ -179,21 +179,29 @@ export interface StripFlags {
   close: boolean;
 }
 
-export type Node =
-    Program
-  | ElementNode
-  | AttrNode
-  | TextNode
-  | MustacheStatement
-  | BlockStatement
-  | PartialStatement
-  | ConcatStatement
-  | MustacheCommentStatement
-  | ElementModifierStatement
-  | CommentStatement
-  | PathExpression
-  | SubExpression
-  | Hash
-  | HashPair
-  | Literal
-  ;
+export type NodeType = keyof Nodes;
+
+export type Node = Nodes[NodeType];
+
+export interface Nodes {
+  Program: Program;
+  ElementNode: ElementNode;
+  AttrNode: AttrNode;
+  TextNode: TextNode;
+  MustacheStatement: MustacheStatement;
+  BlockStatement: BlockStatement;
+  PartialStatement: PartialStatement;
+  ConcatStatement: ConcatStatement;
+  MustacheCommentStatement: MustacheCommentStatement;
+  ElementModifierStatement: ElementModifierStatement;
+  CommentStatement: CommentStatement;
+  PathExpression: PathExpression;
+  SubExpression: SubExpression;
+  Hash: Hash;
+  HashPair: HashPair;
+  StringLiteral: StringLiteral;
+  BooleanLiteral: BooleanLiteral;
+  NumberLiteral: NumberLiteral;
+  UndefinedLiteral: UndefinedLiteral;
+  NullLiteral: NullLiteral;
+}

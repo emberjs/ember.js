@@ -64,7 +64,7 @@ test('AST plugins can be chained', assert => {
   };
 
   function SecondaryPlugin() { }
-  SecondaryPlugin.prototype.transform = function(ast) {
+  SecondaryPlugin.prototype.transform = function(ast: any) {
     assert.equal(ast, expected, 'return value from AST transform is used');
 
     return 'BOOM!';

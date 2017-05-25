@@ -34,19 +34,19 @@ QUnit.test('reopening a parent flushes the child', assert => {
   });
 
   let SubClass = MyClass.extend({
-    hello() {
+    hello(this: any) {
       return this._super();
     }
   });
 
   let GrandChild = SubClass.extend({
-    hello() {
+    hello(this: any) {
       return this._super();
     }
   });
 
   MyClass.reopen({
-    hello() {
+    hello(this: any) {
       return this._super() + " new hello";
     }
   });
@@ -64,19 +64,19 @@ QUnit.test('reopening a parent with a computed property flushes the child', asse
   });
 
   let SubClass = MyClass.extend({
-    hello: computed(function() {
+    hello: computed(function(this: any) {
       return this._super();
     })
   });
 
   let GrandChild = SubClass.extend({
-    hello: computed(function() {
+    hello: computed(function(this: any) {
       return this._super();
     })
   });
 
   MyClass.reopen({
-    hello: computed(function() {
+    hello: computed(function(this: any) {
       return this._super() + " new hello";
     })
   });
@@ -92,7 +92,7 @@ QUnit.test('calls computed property setters', assert => {
       get: function() {
         return 'this is not the value you\'re looking for';
       },
-      set: function(key, value) {
+      set: function(_, value) {
         return value;
       }
     })
@@ -115,7 +115,7 @@ QUnit.skip('calls setUnknownProperty if defined', assert => {
   let setUnknownPropertyCalled = false;
 
   let MyClass = EmberObject.extend({
-    setUnknownProperty(key, value) {
+    setUnknownProperty() {
       setUnknownPropertyCalled = true;
     }
   });
@@ -136,7 +136,7 @@ QUnit.skip('throws if you try to define a computed property', assert => {
 QUnit.skip('throws if you try to call _super in a method', assert => {
   assert.throws(function() {
     EmberObject.create({
-      foo() {
+      foo(this: any) {
         this._super.apply(this, arguments);
       }
     });
@@ -145,7 +145,7 @@ QUnit.skip('throws if you try to call _super in a method', assert => {
 
 QUnit.skip('throws if you try to \'mixin\' a definition', assert => {
   let myMixin = Mixin.create({
-    adder(arg1, arg2) {
+    adder(arg1: number, arg2: number) {
       return arg1 + arg2;
     }
   });

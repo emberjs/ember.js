@@ -344,7 +344,7 @@ export default class GlimmerObject {
     return extendClass(this, ...extensions);
   }
 
-  static create(attrs?: Object): GlimmerObject {
+  static create(attrs?: Object | null): GlimmerObject {
     return new this(attrs);
   }
 
@@ -381,7 +381,7 @@ export default class GlimmerObject {
 
   init() {}
 
-  constructor(attrs?: Object) {
+  constructor(attrs?: Object | null) {
     if (attrs) assign(this, attrs);
     (<typeof GlimmerObject>this.constructor)[CLASS_META].init(this, attrs || null);
     this._super = ROOT;
