@@ -45,7 +45,7 @@
     "benchmark": "^1.0.0",
     "broccoli-persistent-filter": "^1.2.13",
     "dag-map": "^2.0.2",
-    "ember-cli": "^2.4.2",
+    "ember-cli": "^2.13.2",
     "ember-cli-release": "^1.0.0-beta.1",
     "ember-cli-sauce": "^1.3.0",
     "glob": "^7.0.5",
