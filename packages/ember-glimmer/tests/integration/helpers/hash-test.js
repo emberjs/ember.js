@@ -1,6 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
-import { set } from 'ember-metal';
+import { get, set, observer } from 'ember-metal';
 
 moduleFor('Helpers test: {{hash}}', class extends RenderingTest {
 
@@ -166,5 +166,87 @@ moduleFor('Helpers test: {{hash}}', class extends RenderingTest {
     });
 
     this.assertText('Chad Hietala');
+  }
+
+  ['@test returns stable object when updated']() {
+    let fooBarInstance;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super();
+        fooBarInstance = this;
+      }
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent,
+      template: `{{model.firstName}} {{model.lastName}}`
+    });
+
+    this.render(`{{foo-bar model=(hash firstName=firstName lastName="Arbeo")}}`, {
+      firstName: 'Sergio'
+    });
+
+    let hashInstance = get(fooBarInstance, 'model');
+
+    strictEqual(hashInstance, get(fooBarInstance, 'model'));
+    this.assertText('Sergio Arbeo');
+
+    this.runTask(() => this.rerender());
+
+    strictEqual(hashInstance, get(fooBarInstance, 'model'));
+    this.assertText('Sergio Arbeo');
+
+    this.runTask(() => set(this.context, 'firstName', 'Godfrey'));
+
+    strictEqual(hashInstance, get(fooBarInstance, 'model'));
+    this.assertText('Godfrey Arbeo');
+  }
+
+  ['@test correctly triggers observers']() {
+    let modelTriggerCnt = 0;
+    let firstNameTriggerCnt = 0;
+    let lastNameTriggerCnt = 0;
+
+    let FooBarComponent = Component.extend({
+      modelObserver: observer('model', () => {
+        modelTriggerCnt++;
+      }),
+
+      firstNameObserver: observer('model.firstName', () => {
+        firstNameTriggerCnt++;
+      }),
+
+      lastNameObserver: observer('model.lastName', () => {
+        lastNameTriggerCnt++;
+      })
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent,
+      template: `{{model.firstName}} {{model.lastName}}`
+    });
+
+    this.render(`{{foo-bar model=(hash firstName=firstName lastName="Arbeo")}}`, {
+      firstName: 'Sergio'
+    });
+
+    equal(modelTriggerCnt, 0);
+    equal(firstNameTriggerCnt, 0);
+    equal(lastNameTriggerCnt, 0);
+    this.assertText('Sergio Arbeo');
+
+    this.runTask(() => this.rerender());
+
+    equal(modelTriggerCnt, 0);
+    equal(firstNameTriggerCnt, 0);
+    equal(lastNameTriggerCnt, 0);
+    this.assertText('Sergio Arbeo');
+
+    this.runTask(() => set(this.context, 'firstName', 'Godfrey'));
+
+    equal(modelTriggerCnt, 0);
+    equal(firstNameTriggerCnt, 1);
+    equal(lastNameTriggerCnt, 0);
+    this.assertText('Godfrey Arbeo');
   }
 });
