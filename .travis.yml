@@ -19,6 +19,7 @@ matrix:
 before_script:
   - yarn run sauce:connect
 script:
+  - yarn run problems
   - yarn run test:ci
 after_script:
   - sleep 10
