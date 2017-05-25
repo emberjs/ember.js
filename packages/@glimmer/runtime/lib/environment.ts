@@ -330,7 +330,7 @@ export abstract class Environment {
   }
 
   begin() {
-    assert(!this._transaction, 'Cannot start a nested transaction');
+    assert(!this._transaction, 'a glimmer transaction was begun, but one already exists. You may have a nested transaction');
     this._transaction = new Transaction();
   }
 
@@ -359,8 +359,9 @@ export abstract class Environment {
   }
 
   commit() {
-    this.transaction.commit();
+    let transaction = this.transaction;
     this._transaction = null;
+    transaction.commit();
   }
 
   attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace?: string): AttributeManager {
