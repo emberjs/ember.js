@@ -34,12 +34,12 @@ export interface NodeVisitor {
 export type NodeHandler<T> = NodeHandlerFunction<T> | EnterExitNodeHandler<T>;
 
 export interface NodeHandlerFunction<T> {
-  (node: T): any;
+  (node: T): any | null | undefined;
 }
 
 export interface EnterExitNodeHandler<T> {
-  enter: NodeHandlerFunction<T>;
-  exit: NodeHandlerFunction<T>;
+  enter?: NodeHandlerFunction<T>;
+  exit?: NodeHandlerFunction<T>;
   keys?: any;
 }
 
