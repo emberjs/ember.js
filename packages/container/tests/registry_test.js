@@ -1,4 +1,4 @@
-import { Registry } from '..';
+import { Registry, privatize } from '..';
 import { factory } from 'internal-test-helpers';
 
 QUnit.module('Registry');
@@ -724,4 +724,16 @@ QUnit.test('has uses expandLocalLookup', function(assert) {
   assert.ok(!result, 'foo:baz/qux not found');
 
   assert.deepEqual(['foo:qux/bar'], resolvedFullNames);
+});
+
+QUnit.module('Registry privatize');
+
+QUnit.test('valid format', function(assert) {
+  let privatized = privatize(['secret:factory']);
+  let matched = privatized.match(/^([^:]+):([^:]+)-(\d+)$/);
+
+  assert.ok(matched, 'privatized format was recognized');
+  assert.equal(matched[1], 'secret');
+  assert.equal(matched[2], 'factory');
+  assert.ok(/^\d+$/.test(matched[3]));
 });
