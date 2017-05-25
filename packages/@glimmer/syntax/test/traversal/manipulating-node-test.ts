@@ -1,5 +1,5 @@
 import { astEqual } from '../support';
-import { preprocess as parse, traverse, builders as b } from "@glimmer/syntax";
+import { preprocess as parse, traverse, builders as b, AST } from "@glimmer/syntax";
 
 import {
   cannotRemoveNode,
@@ -8,18 +8,20 @@ import {
 
 QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
-['enter', 'exit'].forEach(eventName => {
+(["enter", "exit"] as Array<"enter" | "exit">).forEach((eventName) => {
   QUnit.test(`[${eventName}] Replacing self in a key (returning null)`, assert => {
     let ast = parse(`<x y={{z}} />`);
-    let attr = ast.body[0].attributes[0];
+    let el = ast.body[0] as AST.ElementNode;
+    let attr = el.attributes[0];
 
     assert.throws(() => {
       traverse(ast, {
         MustacheStatement: {
-          [eventName](node) {
-            if (node.path.parts[0] === 'z') {
+          [eventName]: (node: AST.MustacheStatement) => {
+            if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
               return null;
             }
+            return;
           }
         }
       });
@@ -28,15 +30,17 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
   QUnit.test(`[${eventName}] Replacing self in a key (returning an empty array)`, assert => {
     let ast = parse(`<x y={{z}} />`);
-    let attr = ast.body[0].attributes[0];
+    let el = ast.body[0] as AST.ElementNode;
+    let attr = el.attributes[0];
 
     assert.throws(() => {
       traverse(ast, {
         MustacheStatement: {
-          [eventName](node) {
-            if (node.path.parts[0] === 'z') {
+          [eventName](node: AST.MustacheStatement) {
+            if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
               return [];
             }
+            return;
           }
         }
       });
@@ -48,10 +52,11 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
     traverse(ast, {
       MustacheStatement: {
-        [eventName](node) {
-          if (node.path.parts[0] === 'z') {
+        [eventName](node: AST.MustacheStatement) {
+          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
             return b.mustache('a');
           }
+          return;
         }
       }
     });
@@ -64,10 +69,11 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
     traverse(ast, {
       MustacheStatement: {
-        [eventName](node) {
-          if (node.path.parts[0] === 'z') {
+        [eventName](node: AST.MustacheStatement) {
+          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
             return [b.mustache('a')];
           }
+          return;
         }
       }
     });
@@ -77,19 +83,21 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
   QUnit.test(`[${eventName}] Replacing self in a key (returning an array with multiple nodes)`, assert => {
     let ast = parse(`<x y={{z}} />`);
-    let attr = ast.body[0].attributes[0];
+    let el = ast.body[0] as AST.ElementNode;
+    let attr = el.attributes[0];
 
     assert.throws(() => {
       traverse(ast, {
         MustacheStatement: {
-          [eventName](node) {
-            if (node.path.parts[0] === 'z') {
+          [eventName](node: AST.MustacheStatement) {
+            if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
               return [
                 b.mustache('a'),
                 b.mustache('b'),
                 b.mustache('c')
               ];
             }
+            return;
           }
         }
       });
@@ -101,10 +109,11 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
     traverse(ast, {
       MustacheStatement: {
-        [eventName](node) {
-          if (node.path.parts[0] === 'y') {
+        [eventName](node: AST.MustacheStatement) {
+          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
             return null;
           }
+          return;
         }
       }
     });
@@ -117,10 +126,11 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
     traverse(ast, {
       MustacheStatement: {
-        [eventName](node) {
-          if (node.path.parts[0] === 'y') {
+        [eventName](node: AST.MustacheStatement) {
+          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
             return [];
           }
+          return;
         }
       }
     });
@@ -133,10 +143,11 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
     traverse(ast, {
       MustacheStatement: {
-        [eventName](node) {
-          if (node.path.parts[0] === 'y') {
+        [eventName](node: AST.MustacheStatement) {
+          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
             return b.mustache('a');
           }
+          return;
         }
       }
     });
@@ -149,10 +160,11 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
     traverse(ast, {
       MustacheStatement: {
-        [eventName](node) {
-          if (node.path.parts[0] === 'y') {
+        [eventName](node: AST.MustacheStatement) {
+          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
             return [b.mustache('a')];
           }
+          return;
         }
       }
     });
@@ -165,14 +177,15 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
     traverse(ast, {
       MustacheStatement: {
-        [eventName](node) {
-          if (node.path.parts[0] === 'y') {
+        [eventName](node: AST.MustacheStatement) {
+          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
             return [
               b.mustache('a'),
               b.mustache('b'),
               b.mustache('c')
             ];
           }
+          return;
         }
       }
     });
@@ -188,20 +201,21 @@ QUnit.test('Inside of a block', () => {
 
   traverse(ast, {
     MustacheStatement(node) {
-      if (node.path.parts[0] === 'y') {
+      if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
         return [
           b.mustache('a'),
           b.mustache('b'),
           b.mustache('c')
         ];
       }
+      return;
     }
   });
 
   astEqual(ast, `{{a}}{{b}}{{c}}{{#w}}{{x}}{{a}}{{b}}{{c}}{{z}}{{/w}}`);
 });
 
-QUnit.test('Should recurrsively walk the transformed node', assert => {
+QUnit.test('Should recurrsively walk the transformed node', () => {
   let ast = parse(`{{x}}{{y}}{{z}}`);
 
   traverse(ast, {
@@ -211,13 +225,14 @@ QUnit.test('Should recurrsively walk the transformed node', assert => {
       } else if (node.path.original === 'y') {
         return b.mustache('z');
       }
+      return;
     }
   });
 
   astEqual(ast, `{{z}}{{z}}{{z}}`);
 });
 
-QUnit.test('Should recurrsively walk the keys in the transformed node', assert => {
+QUnit.test('Should recurrsively walk the keys in the transformed node', () => {
   let ast = parse(`{{#foo}}{{#bar}}{{baz}}{{/bar}}{{else}}{{#bar}}{{bat}}{{/bar}}{{/foo}}`);
 
   traverse(ast, {
@@ -227,6 +242,7 @@ QUnit.test('Should recurrsively walk the keys in the transformed node', assert =
       } else if (node.path.original === 'bar') {
         return b.block(b.path('x-bar'), node.params, node.hash, node.program, node.inverse, node.loc);
       }
+      return;
     },
 
     MustacheStatement: function(node) {
@@ -235,6 +251,7 @@ QUnit.test('Should recurrsively walk the keys in the transformed node', assert =
       } else if (node.path.original === 'bat') {
         return b.mustache('x-bat');
       }
+      return;
     }
   });
 
@@ -244,8 +261,8 @@ QUnit.test('Should recurrsively walk the keys in the transformed node', assert =
 QUnit.test('Exit event is not triggered if the node is replaced during the enter event', assert => {
   let ast = parse(`{{x}}`);
 
-  let entered = [];
-  let exited  = [];
+  let entered: Array<string | number | boolean | null | undefined> = [];
+  let exited: Array<string | number | boolean | null | undefined> = [];
 
   traverse(ast, {
     MustacheStatement: {

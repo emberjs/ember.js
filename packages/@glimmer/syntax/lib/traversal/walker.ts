@@ -5,7 +5,7 @@ export type NodeCallback<N extends AST.Node> = (node: N, walker: Walker) => void
 
 export default class Walker {
   public stack: any[] = [];
-  constructor(public order: any) {}
+  constructor(public order?: any) {}
 
   visit<N extends AST.Node>(node: Option<N>, callback: NodeCallback<N>) {
     if (!node) {
