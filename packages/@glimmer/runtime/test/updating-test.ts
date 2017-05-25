@@ -1,4 +1,4 @@
-import { UNDEFINED_REFERENCE, Arguments, Template, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult } from "@glimmer/runtime";
+import { UNDEFINED_REFERENCE, Template, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult } from "@glimmer/runtime";
 import { assertNodeTagName, BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "@glimmer/test-helpers";
 import { ConstReference } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
@@ -208,7 +208,7 @@ module("[glimmer-runtime] Updating", hooks => {
     assertStable();
   });
 
-  test("weird paths", assert => {
+  test("weird paths", () => {
     let context = {
       "": "empty string",
       "1": "1",
@@ -218,12 +218,17 @@ module("[glimmer-runtime] Updating", hooks => {
       "false": "false",
       "this": "this",
       "foo.bar": "foo.bar",
-      "nested": null
+      "nested": null as (any | null)
     };
 
     context.nested = context;
 
-    let getDiv = () => root.firstChild;
+    function assertTextContent(expected: string) {
+      if (assertNodeTagName(root.firstChild, 'div')) {
+        assertProperty(root.firstChild, 'textContent', expected);
+      }
+    }
+
     let template = compile(stripTight`
       <div>
         [{{[]}}]
@@ -247,7 +252,7 @@ module("[glimmer-runtime] Updating", hooks => {
     `);
     render(template, context);
 
-    assert.equal(getDiv().textContent, stripTight`
+    assertTextContent(stripTight`
       [empty string]
       [1]
       [undefined]
@@ -269,7 +274,7 @@ module("[glimmer-runtime] Updating", hooks => {
 
     rerender();
 
-    assert.equal(getDiv().textContent, stripTight`
+    assertTextContent(stripTight`
       [empty string]
       [1]
       [undefined]
@@ -299,7 +304,7 @@ module("[glimmer-runtime] Updating", hooks => {
     context["foo.bar"] = "FOO.BAR";
     rerender();
 
-    assert.equal(getDiv().textContent, stripTight`
+    assertTextContent(stripTight`
       [EMPTY STRING]
       [ONE]
       [UNDEFINED]
@@ -334,7 +339,7 @@ module("[glimmer-runtime] Updating", hooks => {
 
     rerender(context);
 
-    assert.equal(getDiv().textContent, stripTight`
+    assertTextContent(stripTight`
       [empty string]
       [1]
       [undefined]
@@ -360,20 +365,27 @@ module("[glimmer-runtime] Updating", hooks => {
     let object = { value };
     let template = compile('<div>{{{value}}}</div>');
     render(template, object);
-    let valueNode = root.firstChild.firstChild.firstChild;
+    let valueNode: Node | null | undefined;
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      valueNode = root.firstChild.firstChild.firstChild;
+    }
 
     equalTokens(root, `<div>${value}</div>`, "Initial render");
 
     rerender();
 
     equalTokens(root, '<div><p>hello world</p></div>', "no change");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    }
 
     object.value = '<span>goodbye world</span>';
     rerender();
 
     equalTokens(root, `<div>${object.value}</div>`, "After updating and dirtying");
-    assert.notStrictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was blown away");
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'span')) {
+      assert.notStrictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was blown away");
+    }
 
     object.value = 'a <span>good man</span> is hard to <b>fund</b>';
     rerender();
@@ -385,10 +397,9 @@ module("[glimmer-runtime] Updating", hooks => {
     equalTokens(root, `<div>${value}</div>`, "no change");
   });
 
-  test("updating a single trusting curly with siblings", assert => {
+  test("updating a single trusting curly with siblings", () => {
     let value = '<b>brave new </b>';
     let context = { value };
-    let getDiv = () => root.firstChild;
     let template = compile('<div>hello {{{value}}}world</div>');
     render(template, context);
 
@@ -401,28 +412,31 @@ module("[glimmer-runtime] Updating", hooks => {
     context.value = 'big <b>wide</b> ';
     rerender();
 
-    assert.equal(getDiv().firstChild.textContent, 'hello ');
-    assert.equal(getDiv().childNodes[1].textContent, 'big ');
-    assert.equal((<HTMLElement> getDiv().childNodes[2]).innerHTML, 'wide');
-    assert.equal(getDiv().childNodes[3].textContent, ' ');
-    assert.equal(getDiv().lastChild.textContent, 'world');
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      assertProperty(root.firstChild.firstChild, 'textContent', 'hello ');
+      assertProperty(root.firstChild.childNodes[1], 'textContent', 'big ');
+      assertProperty(root.firstChild.childNodes[2], 'textContent', 'wide');
+      assertProperty(root.firstChild.childNodes[3], 'textContent', ' ');
+      assertProperty(root.firstChild.lastChild, 'textContent', 'world');
+    }
 
     context.value = 'another ';
     rerender();
 
-    assert.equal(getDiv().firstChild.textContent, 'hello ');
-    assert.equal(getDiv().childNodes[1].textContent, 'another ');
-    assert.equal(getDiv().lastChild.textContent, 'world');
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      assertProperty(root.firstChild.firstChild, 'textContent', 'hello ');
+      assertProperty(root.firstChild.childNodes[1], 'textContent', 'another ');
+      assertProperty(root.firstChild.lastChild, 'textContent', 'world');
+    }
 
     rerender({value});
 
     equalTokens(root, '<div>hello <b>brave new </b>world</div>', 'rerender');
   });
 
-  test("updating a single trusting curly with previous sibling", assert => {
+  test("updating a single trusting curly with previous sibling", () => {
     let value = '<b>brave new </b>';
     let context = { value };
-    let getDiv = () => root.firstChild;
     let template = compile('<div>hello {{{value}}}</div>');
     render(template, context);
 
@@ -435,8 +449,10 @@ module("[glimmer-runtime] Updating", hooks => {
     context.value = 'another ';
     rerender();
 
-    assert.equal(getDiv().firstChild.textContent, 'hello ');
-    equalTokens(getDiv().lastChild.textContent, 'another ');
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      assertProperty(root.firstChild.firstChild, 'textContent', 'hello ');
+      assertProperty(root.firstChild.lastChild, 'textContent', 'another ');
+    }
 
     rerender({value});
 
@@ -444,7 +460,7 @@ module("[glimmer-runtime] Updating", hooks => {
   });
 
   // This is to catch a regression about not caching lastValue correctly
-  test("Cycling between two values in a trusting curly", assert => {
+  test("Cycling between two values in a trusting curly", () => {
     let a = '<p>A</p>';
     let b = '<p>B</p>';
 
@@ -481,20 +497,29 @@ module("[glimmer-runtime] Updating", hooks => {
     };
     let template = compile('<div>{{value}}</div>');
     render(template, object);
-    let valueNode = root.firstChild.firstChild.firstChild;
+    let valueNode: Node | null | undefined;
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      valueNode = root.firstChild.firstChild.firstChild;
+    }
 
     equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
 
     rerender();
 
     equalTokens(root, '<div><p>hello world</p></div>', "no change");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    }
 
     object.value = unsafeString;
     rerender();
 
     equalTokens(root, '<div>&lt;b&gt;Big old world!&lt;/b&gt;</div>', "After replacing with unsafe string");
-    assert.notStrictEqual(root.firstChild.firstChild, valueNode, "The text node was blown away");
+
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      assert.notStrictEqual(root.firstChild.firstChild, valueNode, "The text node was blown away");
+    }
 
     object.value = safeString;
     rerender();
@@ -503,11 +528,17 @@ module("[glimmer-runtime] Updating", hooks => {
   });
 
   function makeSafeString(value: string): SafeString {
-    return {
-      string: value,
-      toHTML: function () { return this.string; },
-      toString: function () { return this.string; }
-    } as SafeString;
+    return new SafeStringImpl(value);
+  }
+
+  class SafeStringImpl implements SafeString {
+    constructor(private string: string) {}
+    toHTML() {
+      return this.string;
+    }
+    toString() {
+      return this.string;
+    }
   }
 
   // Test cases to matrix:
@@ -646,7 +677,7 @@ module("[glimmer-runtime] Updating", hooks => {
     test(`updating ${config.name} produces expected result`, () => {
       let template = compile(config.template);
       let context = {
-        value: undefined
+        value: undefined as (undefined | null | { toString(): string })
       };
       config.values.forEach((testCase, index) => {
         context.value = testCase.input;
@@ -669,20 +700,28 @@ module("[glimmer-runtime] Updating", hooks => {
     };
     let template = compile('<div>{{{value}}}</div>');
     render(template, object);
-    let valueNode = root.firstChild.firstChild.firstChild;
+
+    let valueNode: Node | null | undefined;
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      valueNode = root.firstChild.firstChild.firstChild;
+    }
 
     equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
 
     rerender();
 
     equalTokens(root, '<div><p>hello world</p></div>', "no change");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The nodes were not blown away");
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The nodes were not blown away");
+    }
 
     object.value = unsafeString;
     rerender();
 
     equalTokens(root, '<div><b>Big old world!</b></div>', "Normal strings may contain HTML");
-    assert.notStrictEqual(root.firstChild.firstChild.firstChild, valueNode, "The nodes were blown away");
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'b')) {
+      assert.notStrictEqual(root.firstChild.firstChild.firstChild, valueNode, "The nodes were blown away");
+    }
 
     object.value = safeString;
     rerender();
@@ -732,14 +771,19 @@ module("[glimmer-runtime] Updating", hooks => {
     let input = {};
 
     render(template, input);
-    let valueNode = root.firstChild.firstChild;
+    let valueNode: Node | null | undefined;
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      valueNode = root.firstChild.firstChild;
+    }
 
     equalTokens(root, '<div><b>bold</b> and spicy</div>', "initial render");
 
     rerender();
 
     equalTokens(root, '<div><b>bold</b> and spicy</div>', "no change");
-    assert.strictEqual(root.firstChild.firstChild, valueNode, "The nodes were not blown away");
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      assert.strictEqual(root.firstChild.firstChild, valueNode, "The nodes were not blown away");
+    }
   });
 
   test("double curlies with const Node", assert => {
@@ -753,14 +797,19 @@ module("[glimmer-runtime] Updating", hooks => {
     let input = {};
 
     render(template, input);
-    let valueNode = root.firstChild.firstChild;
+    let valueNode: Node | null | undefined;
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      valueNode = root.firstChild.firstChild;
+    }
 
     equalTokens(root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', "initial render");
 
     rerender();
 
     equalTokens(root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', "no change");
-    assert.strictEqual(root.firstChild.firstChild, valueNode, "The node was not blown away");
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      assert.strictEqual(root.firstChild.firstChild, valueNode, "The node was not blown away");
+    }
   });
 
   test("triple curlies with const SafeString", assert => {
@@ -774,14 +823,20 @@ module("[glimmer-runtime] Updating", hooks => {
     let input = {};
 
     render(template, input);
-    let valueNode = root.firstChild.firstChild;
+    let valueNode: Node | null | undefined;
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      valueNode = root.firstChild.firstChild;
+    }
 
     equalTokens(root, '<div><b>bold</b> and spicy</div>', "initial render");
 
     rerender();
 
     equalTokens(root, '<div><b>bold</b> and spicy</div>', "no change");
-    assert.strictEqual(root.firstChild.firstChild, valueNode, "The nodes were not blown away");
+
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      assert.strictEqual(root.firstChild.firstChild, valueNode, "The nodes were not blown away");
+    }
   });
 
   test("triple curlies with const Node", assert => {
@@ -913,12 +968,23 @@ module("[glimmer-runtime] Updating", hooks => {
     testStatefulHelper(assert, options);
   });
 
-  function testStatefulHelper(assert, { template, truthyValue, falsyValue, element = root }) {
+  function testStatefulHelper<T, U>(assert: typeof QUnit.assert, arg1: {
+    template: string;
+    truthyValue: T,
+    falsyValue: U,
+    element?: HTMLElement
+  }) {
+    let {
+      template,
+      truthyValue,
+      falsyValue,
+      element = root
+    } = arg1;
     let didCreate = 0;
     let didDestroy = 0;
-    let reference;
+    let reference: UpdatableReference<T | U> | undefined;
 
-    env.registerInternalHelper('stateful-foo', (vm: VM, args: Arguments) => {
+    env.registerInternalHelper('stateful-foo', (vm: VM) => {
       didCreate++;
 
       vm.newDestroyable({
@@ -945,14 +1011,14 @@ module("[glimmer-runtime] Updating", hooks => {
     assert.strictEqual(didCreate, 1, 'didCreate: after no-op re-render');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after no-op re-render');
 
-    reference.update(falsyValue);
+    reference!.update(falsyValue);
     rerender();
 
     assert.strictEqual(element.textContent, '', 'after switching to falsy');
     assert.strictEqual(didCreate, 1, 'didCreate: after switching to falsy');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after switching to falsy');
 
-    reference.update(truthyValue);
+    reference!.update(truthyValue);
     rerender();
 
     assert.equal(element.textContent, 'Yes', 'after reset');
@@ -964,45 +1030,62 @@ module("[glimmer-runtime] Updating", hooks => {
     let object = { value: 'hello world' };
     let template = compile('<div><p>{{this.value}}</p></div>');
     render(template, object);
-    let valueNode = root.firstChild.firstChild.firstChild;
+
+    let valueNode: Node | null | undefined;
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      valueNode = root.firstChild.firstChild.firstChild;
+    }
 
     equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
 
     rerender();
 
     equalTokens(root, '<div><p>hello world</p></div>', "no change");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    }
 
     object.value = 'goodbye world';
     rerender();
 
     equalTokens(root, '<div><p>goodbye world</p></div>', "After updating and dirtying");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    }
   });
 
   test("a simple implementation of a dirtying rerender", assert => {
     let object = { condition: true, value: 'hello world' };
     let template = compile('<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>');
     render(template, object);
-    let valueNode = root.firstChild.firstChild.firstChild;
+    let valueNode: Node | null | undefined;
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      valueNode = root.firstChild.firstChild.firstChild;
+    }
 
     equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
 
     rerender();
 
     equalTokens(root, '<div><p>hello world</p></div>', "After dirtying but not updating");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    }
 
     // Even though the #if was stable, a dirty child node is updated
     object.value = 'goodbye world';
     rerender();
     equalTokens(root, '<div><p>goodbye world</p></div>', "After updating and dirtying");
-    assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      assert.strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    }
 
     object.condition = false;
     rerender();
     equalTokens(root, '<div><p>Nothing</p></div>', "And then dirtying");
-    assert.notStrictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    if (assertNodeTagName(root.firstChild, 'div') && assertNodeTagName(root.firstChild.firstChild, 'p')) {
+      assert.notStrictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+    }
   });
 
   test('The if helper should consider an empty array falsy', function() {
@@ -1020,7 +1103,7 @@ module("[glimmer-runtime] Updating", hooks => {
     equalTokens(root, '<div><p>Nothing</p></div>');
   });
 
-  test("a simple implementation of a dirtying rerender without inverse", assert => {
+  test("a simple implementation of a dirtying rerender without inverse", () => {
     let object = { condition: true, value: 'hello world' };
     let template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
     render(template, object);
@@ -1086,7 +1169,7 @@ module("[glimmer-runtime] Updating", hooks => {
     equalTokens(root, '<div><p>hello world</p></div>', "If the condition is false, the default renders");
   });
 
-  test("a conditional that is false on the first run", assert => {
+  test("a conditional that is false on the first run", () => {
     let object = { condition: false, value: 'hello world' };
     let template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
     render(template, object);
@@ -1104,7 +1187,7 @@ module("[glimmer-runtime] Updating", hooks => {
     equalTokens(root, '<div><!----></div>', "If the condition is false, the morph is empty");
   });
 
-  test("block arguments", assert => {
+  test("block arguments", () => {
     let template = compile("<div>{{#with person.name.first as |f|}}{{f}}{{/with}}</div>");
 
     let object = { person: { name: { first: "Godfrey", last: "Chan" } } };
@@ -1375,7 +1458,7 @@ module("[glimmer-runtime] Updating", hooks => {
   });
 
   test("The with helper should consider an empty array falsy", () => {
-    let object = { condition: [] };
+    let object = { condition: [] as number[] };
     let template = compile("<div>{{#with condition as |c|}}{{c.length}}{{/with}}</div>");
     render(template, object);
 
@@ -1394,10 +1477,13 @@ module("[glimmer-runtime] Updating", hooks => {
 
     equalTokens(root, 'hello world');
     let firstNode = result.firstNode();
-    assert.equal(firstNode.nodeType, 3, "the first node of the helper should be a text node");
-    assert.equal(firstNode.nodeValue, "hello world", "its content should be hello world");
+    assert.notStrictEqual(firstNode, null, "first node should have rendered");
+    if (firstNode !== null) {
+      assert.equal(firstNode.nodeType, 3, "the first node of the helper should be a text node");
+      assert.equal(firstNode.nodeValue, "hello world", "its content should be hello world");
 
-    assert.strictEqual(firstNode.nextSibling, null, "there should only be one nodes");
+      assert.strictEqual(firstNode.nextSibling, null, "there should only be one nodes");
+    }
   });
 
   test("clean content doesn't get blown away", assert => {
@@ -1405,8 +1491,12 @@ module("[glimmer-runtime] Updating", hooks => {
     let object = { value: "hello" };
     render(template, object);
 
-    let textNode = result.firstNode().firstChild;
-    assert.equal(textNode.nodeValue, "hello");
+    let firstNode = result.firstNode() as Node | null;
+    let textNode: Node | null;
+    if (assertNodeTagName(firstNode, 'div')) {
+      textNode = firstNode.firstChild;
+      assert.equal(textNode && textNode.nodeValue, "hello");
+    }
 
     object.value = "goodbye";
     rerender();
@@ -1416,21 +1506,30 @@ module("[glimmer-runtime] Updating", hooks => {
     object.value = "hello";
     rerender();
 
-    textNode = root.firstChild.firstChild;
-    assert.equal(textNode.nodeValue, "hello");
+    firstNode = root.firstChild;
+    if (assertNodeTagName(firstNode, 'div')) {
+      textNode = firstNode.firstChild;
+      assert.equal(textNode && textNode.nodeValue, "hello");
+    }
   });
 
-  test("helper calls follow the normal dirtying rules", assert => {
+  test("helper calls follow the normal dirtying rules", () => {
     env.registerHelper('capitalize', function(params) {
-      return params[0].toUpperCase();
+      let value = params[0];
+      if (value !== null && value !== undefined && typeof value === "string") {
+        return value.toUpperCase();
+      }
+      return;
     });
 
     let template = compile("<div>{{capitalize value}}</div>");
     let object = { value: "hello" };
     render(template, object);
 
-    let textNode = result.firstNode().firstChild;
-    assert.equal(textNode.nodeValue, "HELLO");
+    let div = result.firstNode() as Node | null;
+    if (assertNodeTagName(div, 'div')) {
+      assertProperty(div.firstChild, 'nodeValue', 'HELLO');
+    }
 
     object.value = "goodbye";
     rerender();
@@ -1445,8 +1544,9 @@ module("[glimmer-runtime] Updating", hooks => {
     object.value = "GoOdByE";
     rerender();
 
-    textNode = root.firstChild.firstChild;
-    assert.equal(textNode.nodeValue, "GOODBYE");
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      assertProperty(root.firstChild.firstChild, 'nodeValue', 'GOODBYE');
+    }
   });
 
   test("class attribute follow the normal dirtying rules", () => {
@@ -1474,7 +1574,7 @@ module("[glimmer-runtime] Updating", hooks => {
 
   test("class attribute w/ concat follow the normal dirtying rules", () => {
     let template = compile("<div class='hello {{value}}'>hello</div>");
-    let object = { value: "world" };
+    let object = { value: "world" as (string | null) };
     render(template, object);
 
     equalTokens(root, "<div class='hello world'>hello</div>");
@@ -1533,7 +1633,7 @@ module("[glimmer-runtime] Updating", hooks => {
 
   test("attribute nodes follow the normal dirtying rules", () => {
     let template = compile("<div data-value='{{value}}'>hello</div>");
-    let object = { value: "world" };
+    let object = { value: "world" as (string | null) };
 
     render(template, object);
 
@@ -1561,7 +1661,7 @@ module("[glimmer-runtime] Updating", hooks => {
 
   test("attribute nodes w/ concat follow the normal dirtying rules", () => {
     let template = compile("<div data-value='hello {{value}}'>hello</div>");
-    let object = { value: "world" };
+    let object = { value: "world" as (string | null) };
     render(template, object);
 
     equalTokens(root, "<div data-value='hello world'>hello</div>");
@@ -1643,7 +1743,7 @@ module("[glimmer-runtime] Updating", hooks => {
 
   test("namespaced attribute nodes w/ concat follow the normal dirtying rules", () => {
     let template = compile("<div xml:lang='en-{{locale}}'>hello</div>");
-    let object = { locale: "us" };
+    let object = { locale: "us" as (string | null) };
 
     render(template, object);
 
@@ -1690,7 +1790,7 @@ module("[glimmer-runtime] Updating", hooks => {
 
   test("non-standard namespaced attribute nodes w/ concat follow the normal dirtying rules", () => {
     let template = compile("<div epub:type='dedication {{type}}'>hello</div>");
-    let object = { type: "backmatter" };
+    let object = { type: "backmatter" as (string | null) };
 
     render(template, object);
 
@@ -1742,9 +1842,9 @@ module("[glimmer-runtime] Updating", hooks => {
 
     let object = {
       one: true,
-      two: <any>'is-true',
-      three: undefined,
-      four: null,
+      two: 'is-true' as (string | boolean),
+      three: undefined as (undefined | null | boolean),
+      four: null as (undefined | null | string),
       five: false
     };
 
@@ -1817,7 +1917,7 @@ module("[glimmer-runtime] Updating", hooks => {
 
     let tom = { name: "Tom Dale" };
     let yehuda = { name: "Yehuda Katz" };
-    let object = { item: tom };
+    let object = { item: tom as (typeof tom | null) };
 
     render(template, object);
     assertInvariants(assert, result, "initial render");
@@ -1866,7 +1966,7 @@ module("[glimmer-runtime] Updating", hooks => {
   );
 
   test('The each helper with inverse', assert => {
-    let object = { list: [] };
+    let object = { list: [] as any[] };
     let template = compile(`<ul>{{#each list key='name' as |item|}}<li class="{{item.class}}">{{item.name}}</li>{{else}}<li class="none">none</li>{{/each}}</ul>`);
 
     render(template, object);
@@ -2025,8 +2125,10 @@ module("[glimmer-runtime] Updating", hooks => {
     object = { list: [] };
 
     rerender(object);
-    assert.strictEqual(root.firstChild.firstChild.nodeType, 8, "there are no li's after removing the remaining entry");
-    equalTokens(root, "<ul><!----></ul>", "After removing the remaining entries");
+    if (assertNodeTagName(root.firstChild, 'ul')) {
+      assert.strictEqual(root.firstChild.firstChild && root.firstChild.firstChild.nodeType, 8, "there are no li's after removing the remaining entry");
+      equalTokens(root, "<ul><!----></ul>", "After removing the remaining entries");
+    }
 
     function assertStableNodes(className: string, index: number, message: string) {
       assert.strictEqual(getNodeByClassName(className), itemNode, "The item node has not changed " + message);
@@ -2167,7 +2269,9 @@ module("[glimmer-runtime] Updating", hooks => {
     object = { list: [] };
 
     rerender(object);
-    assert.strictEqual(root.firstChild.firstChild.nodeType, 8, "there are no li's after removing the remaining entry");
+    if (assertNodeTagName(root.firstChild, 'ul')) {
+      assert.strictEqual(root.firstChild.firstChild && root.firstChild.firstChild.nodeType, 8, "there are no li's after removing the remaining entry");
+    }
     equalTokens(root, "<ul><!----></ul>", "After removing the remaining entries");
 
     function assertStableNodes(className: string, index: number, message: string) {
@@ -2315,20 +2419,25 @@ QUnit.module("Updating SVG", hooks => {
 
   test("HTML namespace from root element is continued to child templates", assert => {
     let object = { hasCircle: true };
-    let getSvg = () => root.firstChild;
-    let getCircle = () => getSvg().firstChild;
     let template = compile('<svg>{{#if hasCircle}}<circle />{{/if}}</svg>');
     render(template, object);
 
+    function assertNamespaces() {
+      if (assertNodeTagName(root.firstChild, 'svg')) {
+        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+        if (assertNodeTagName(root.firstChild.firstChild, 'circle')) {
+          assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+        }
+      }
+    }
+
     equalTokens(root, "<svg><circle /></svg>");
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getCircle().namespaceURI, SVG_NAMESPACE);
+    assertNamespaces();
 
     rerender();
 
     equalTokens(root, "<svg><circle /></svg>");
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getCircle().namespaceURI, SVG_NAMESPACE);
+    assertNamespaces();
 
     object.hasCircle = false;
     rerender();
@@ -2338,62 +2447,72 @@ QUnit.module("Updating SVG", hooks => {
     rerender({ hasCircle: true });
 
     equalTokens(root, "<svg><circle /></svg>");
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getCircle().namespaceURI, SVG_NAMESPACE);
+    assertNamespaces();
   });
 
   test("root <foreignObject> tag is SVG namespaced", assert => {
     let object = { hasForeignObject: true };
-    let getForeignObject = () => root.firstChild;
-    let getDiv = () => getForeignObject().firstChild;
     let template = compile('{{#if hasForeignObject}}<foreignObject><div></div></foreignObject>{{/if}}');
-    // Add an SVG node on the root that can be rendered into
-    root.appendChild(env.getDOM().createElement('svg') as Element);
-    root = root.firstChild;
+
+    let parent = root;
+    let svg = document.createElementNS(SVG_NAMESPACE, 'svg');
+    root.appendChild(svg);
+    root = svg as any;
 
     render(template, object);
 
-    equalTokens(root.parentNode, "<svg><foreignObject><div></div></foreignObject></svg>");
-    assert.equal(getForeignObject().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+    function assertNamespaces() {
+      if (assertNodeTagName(svg.firstChild, 'foreignobject')) {
+        assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE);
+        if (assertNodeTagName(svg.firstChild.firstChild, 'div')) {
+          assert.equal(svg.firstChild.firstChild.namespaceURI, XHTML_NAMESPACE);
+        }
+      }
+    }
+
+    equalTokens(parent, "<svg><foreignObject><div></div></foreignObject></svg>");
+    assertNamespaces();
 
     rerender();
 
-    equalTokens(root.parentNode, "<svg><foreignObject><div></div></foreignObject></svg>");
-    assert.equal(getForeignObject().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+    equalTokens(parent, "<svg><foreignObject><div></div></foreignObject></svg>");
+    assertNamespaces();
 
     object.hasForeignObject = false;
     rerender();
 
-    equalTokens(root.parentNode, "<svg><!----></svg>");
+    equalTokens(parent, "<svg><!----></svg>");
 
     rerender({ hasForeignObject: true });
 
-    equalTokens(root.parentNode, "<svg><foreignObject><div></div></foreignObject></svg>");
-    assert.equal(getForeignObject().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+    equalTokens(parent, "<svg><foreignObject><div></div></foreignObject></svg>");
+    assertNamespaces();
   });
 
   test("elements nested inside <foreignObject> have an XHTML namespace", assert => {
     let object = { hasDiv: true };
-    let getSvg = () => root.firstChild;
-    let getForeignObject = () => getSvg().firstChild;
-    let getDiv = () => getForeignObject().firstChild;
     let template = compile('<svg><foreignObject>{{#if hasDiv}}<div></div>{{/if}}</foreignObject></svg>');
     render(template, object);
 
+    function assertNamespaces() {
+      if (assertNodeTagName(root.firstChild, 'svg')) {
+        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+        if (assertNodeTagName(root.firstChild.firstChild, 'foreignobject')) {
+          assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+          if (assertNodeTagName(root.firstChild.firstChild.firstChild, 'div')) {
+            assert.equal(root.firstChild.firstChild.firstChild.namespaceURI, XHTML_NAMESPACE);
+          }
+        }
+      }
+    }
+
     equalTokens(root, "<svg><foreignObject><div></div></foreignObject></svg>");
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getForeignObject().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+    assertNamespaces();
 
     rerender();
 
     equalTokens(root, "<svg><foreignObject><div></div></foreignObject></svg>");
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getForeignObject().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+    assertNamespaces();
 
     object.hasDiv = false;
     rerender();
@@ -2403,206 +2522,245 @@ QUnit.module("Updating SVG", hooks => {
     rerender({ hasDiv: true });
 
     equalTokens(root, "<svg><foreignObject><div></div></foreignObject></svg>");
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getForeignObject().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+    assertNamespaces();
   });
 
   test("Namespaced attribute with a quoted expression", assert => {
     let title = 'svg-title';
     let context = { title };
-    let getSvg = () => root.firstChild;
-    let getXlinkAttr = () => getSvg().attributes[0];
     let template = compile('<svg xlink:title="{{title}}">content</svg>');
     render(template, context);
 
+    function assertNamespaces() {
+      if (assertNodeTagName(root.firstChild, 'svg')) {
+        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+        let attr = root.firstChild.attributes[0];
+        assert.equal(attr.namespaceURI, XLINK_NAMESPACE);
+      }
+    }
+
     equalTokens(root, `<svg xlink:title="${title}">content</svg>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getXlinkAttr().namespaceURI, XLINK_NAMESPACE);
+    assertNamespaces();
 
     rerender();
 
     equalTokens(root, `<svg xlink:title="${title}">content</svg>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getXlinkAttr().namespaceURI, XLINK_NAMESPACE);
+    assertNamespaces();
 
     context.title = 'mmun';
     rerender();
 
     equalTokens(root, `<svg xlink:title="${context.title}">content</svg>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getXlinkAttr().namespaceURI, XLINK_NAMESPACE);
+    assertNamespaces();
 
     rerender({ title });
 
     equalTokens(root, `<svg xlink:title="${title}">content</svg>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getXlinkAttr().namespaceURI, XLINK_NAMESPACE);
+    assertNamespaces();
   });
 
   test("<svg> tag and expression as sibling", assert => {
     let name = 'svg-title';
-    let context = { name };
-    let getSvg = () => root.firstChild;
+    let context: { name: string | null; } = { name };
     let template = compile('<svg></svg>{{name}}');
     render(template, context);
 
+    function assertNamespace() {
+      if (assertNodeTagName(root.firstChild, 'svg')) {
+        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+      }
+    }
+
     equalTokens(root, `<svg></svg>${name}`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertNamespace();
 
     rerender();
 
     equalTokens(root, `<svg></svg>${name}`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertNamespace();
 
     context.name = null;
     rerender();
 
     equalTokens(root, `<svg></svg>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertNamespace();
 
     rerender({name});
 
     equalTokens(root, `<svg></svg>${name}`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertNamespace();
   });
 
   test("<svg> tag and unsafe expression as sibling", assert => {
     let name = '<i>Biff</i>';
     let context = { name };
-    let getSvg = () => root.firstChild;
-    let getItalic = () => root.lastChild;
     let template = compile('<svg></svg>{{{name}}}');
     render(template, context);
 
+    function assertNamespaces() {
+      if (assertNodeTagName(root.firstChild, 'svg')) {
+        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+      }
+      if (context.name === name && assertNodeTagName(root.lastChild, 'i')) {
+        assert.equal(root.lastChild.namespaceURI, XHTML_NAMESPACE);
+      }
+    }
+
     equalTokens(root, `<svg></svg>${name}`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getItalic().namespaceURI, XHTML_NAMESPACE);
+    assertNamespaces();
 
     rerender();
 
     equalTokens(root, `<svg></svg>${name}`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getItalic().namespaceURI, XHTML_NAMESPACE);
+    assertNamespaces();
 
     context.name = 'ef4';
     rerender();
 
     equalTokens(root, `<svg></svg>${context.name}`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertNamespaces();
 
     rerender({name});
 
     equalTokens(root, `<svg></svg>${name}`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getItalic().namespaceURI, XHTML_NAMESPACE);
+    assertNamespaces();
   });
 
   test("unsafe expression nested inside a namespace", assert => {
     let content = '<path></path>';
     let context = { content };
-    let getSvg = () => root.firstChild;
-    let getPath = () => getSvg().firstChild;
-    let getDiv = () => root.lastChild;
     let template = compile('<svg>{{{content}}}</svg><div></div>');
     render(template, context);
 
+    function assertNamespaces(callback: (svg: SVGSVGElement) => void) {
+      if (assertNodeTagName(root.firstChild, 'svg')) {
+        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+        callback(root.firstChild);
+      }
+      if (assertNodeTagName(root.lastChild, 'div')) {
+        assert.equal(root.lastChild.namespaceURI, XHTML_NAMESPACE);
+      }
+    }
+
     equalTokens(root, `<svg>${content}</svg><div></div>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getPath().namespaceURI, SVG_NAMESPACE, 'initial render path has SVG namespace');
+    assertNamespaces(svg => {
+      if (assertNodeTagName(svg.firstChild, 'path')) {
+        assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE, 'initial render path has SVG namespace');
+      }
+    });
 
     rerender();
 
     equalTokens(root, `<svg>${content}</svg><div></div>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getPath().namespaceURI, SVG_NAMESPACE, 'path has SVG namespace');
+    assertNamespaces(svg => {
+      if (assertNodeTagName(svg.firstChild, 'path')) {
+        assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE, 'path has SVG namespace');
+      }
+    });
 
     context.content = '<foreignObject><span></span></foreignObject>';
     rerender();
 
     equalTokens(root, `<svg>${context.content}</svg><div></div>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE, 'foreignObject has SVG NS');
-    assert.equal(getSvg().firstChild.firstChild.namespaceURI, XHTML_NAMESPACE, 'span has XHTML NS');
+    assertNamespaces(svg => {
+      if (assertNodeTagName(svg.firstChild, 'foreignobject')) {
+        assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE, 'initial render path has SVG namespace');
+        if (assertNodeTagName(svg.firstChild.firstChild, 'span')) {
+          assert.equal(svg.firstChild.firstChild.namespaceURI, XHTML_NAMESPACE, 'span has XHTML NS');
+        }
+      }
+    });
 
     context.content = '<path></path><circle></circle>';
     rerender();
 
     equalTokens(root, `<svg>${context.content}</svg><div></div>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE);
-    assert.equal(getSvg().lastChild.namespaceURI, SVG_NAMESPACE);
+    assertNamespaces(svg => {
+      if (assertNodeTagName(svg.firstChild, 'path')) {
+        assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE, 'initial render path has SVG namespace');
+      }
+      if (assertNodeTagName(svg.lastChild, 'circle')) {
+        assert.equal(svg.lastChild.namespaceURI, SVG_NAMESPACE, 'initial render path has SVG namespace');
+      }
+    });
 
     rerender({content});
 
     equalTokens(root, `<svg>${content}</svg><div></div>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getPath().namespaceURI, SVG_NAMESPACE);
+    assertNamespaces(svg => {
+      if (assertNodeTagName(svg.firstChild, 'path')) {
+        assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE, 'initial render path has SVG namespace');
+      }
+    });
   });
 
   test("expression nested inside a namespace", assert => {
     let content = 'Milly';
     let context = { content };
-    let getDiv = () => root.firstChild;
-    let getSvg = () => getDiv().firstChild;
     let template = compile('<div><svg>{{content}}</svg></div>');
     render(template, context);
 
+    function assertNamespaces() {
+      if (assertNodeTagName(root.firstChild, 'div')) {
+        assert.equal(root.firstChild.namespaceURI, XHTML_NAMESPACE);
+        if (assertNodeTagName(root.firstChild.firstChild, 'svg')) {
+          assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+        }
+      }
+    }
+
     equalTokens(root, `<div><svg>${content}</svg></div>`);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertNamespaces();
 
     rerender();
 
     equalTokens(root, `<div><svg>${content}</svg></div>`);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertNamespaces();
 
     context.content = 'Moe';
     rerender();
 
     equalTokens(root, `<div><svg>${context.content}</svg></div>`);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertNamespaces();
 
     rerender({content});
 
     equalTokens(root, `<div><svg>${content}</svg></div>`);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertNamespaces();
   });
 
   test("expression nested inside a namespaced root element", assert => {
     let content = 'Maurice';
-    let context = { content };
-    let getSvg = () => root.firstChild as Element;
+    let context: { content: string | null } = { content };
     let template = compile('<svg>{{content}}</svg>');
     render(template, context);
 
+    function assertSvg(callback?: (svg: SVGSVGElement) => void) {
+      if (assertNodeTagName(root.firstChild, 'svg')) {
+        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+        if (callback) callback(root.firstChild);
+      }
+    }
+
     equalTokens(root, `<svg>${content}</svg>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertSvg();
 
     rerender();
 
     equalTokens(root, `<svg>${content}</svg>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertSvg();
 
     context.content = null;
     rerender();
 
-    assert.equal(getSvg().tagName, 'svg');
-    assert.ok(getSvg().firstChild.textContent === '');
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertSvg(svg => {
+      assert.strictEqual(svg.firstChild && svg.firstChild.textContent, '');
+    });
 
     rerender({content});
 
     equalTokens(root, `<svg>${content}</svg>`);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertSvg();
   });
 
   test("HTML namespace is created in child templates", assert => {
@@ -2610,61 +2768,78 @@ QUnit.module("Updating SVG", hooks => {
     let context = { isTrue };
     let template = compile('{{#if isTrue}}<svg></svg>{{else}}<div><svg></svg></div>{{/if}}');
     render(template, context);
+    function assertNamespaces(isTrue: boolean) {
+      if (isTrue) {
+        if (assertNodeTagName(root.firstChild, 'svg')) {
+          assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+        }
+      } else {
+        if (assertNodeTagName(root.firstChild, 'div')) {
+          assert.equal(root.firstChild.namespaceURI, XHTML_NAMESPACE);
+          if (assertNodeTagName(root.firstChild.firstChild, 'svg')) {
+            assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+          }
+        }
+      }
+    }
 
     equalTokens(root, `<svg></svg>`);
-    assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+    assertNamespaces(true);
 
     rerender();
 
     equalTokens(root, `<svg></svg>`);
-    assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+    assertNamespaces(true);
 
     context.isTrue = false;
     rerender();
 
     equalTokens(root, `<div><svg></svg></div>`);
-    assert.equal(root.firstChild.namespaceURI, XHTML_NAMESPACE);
-    assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+    assertNamespaces(false);
 
     rerender({isTrue});
 
     equalTokens(root, `<svg></svg>`);
-    assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+    assertNamespaces(true);
   });
 
   test("HTML namespace is continued to child templates", assert => {
     let isTrue = true;
     let context = { isTrue };
-    let getDiv = () => root.firstChild;
-    let getSvg = () => getDiv().firstChild;
     let template = compile('<div><svg>{{#if isTrue}}<circle />{{/if}}</svg></div>');
     render(template, context);
 
+    function assertNamespaces(isTrue: boolean) {
+      if (assertNodeTagName(root.firstChild, 'div')) {
+        assert.equal(root.firstChild.namespaceURI, XHTML_NAMESPACE);
+        if (assertNodeTagName(root.firstChild.firstChild, 'svg')) {
+          assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+          if (isTrue && assertNodeTagName(root.firstChild.firstChild.firstChild, 'circle')) {
+            assert.equal(root.firstChild.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+          }
+        }
+      }
+    }
+
     equalTokens(root, `<div><svg><circle /></svg></div>`);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE);
+
+    assertNamespaces(true);
 
     rerender();
 
     equalTokens(root, `<div><svg><circle /></svg></div>`);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE);
+    assertNamespaces(true);
 
     context.isTrue = false;
     rerender();
 
     equalTokens(root, `<div><svg><!----></svg></div>`);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
+    assertNamespaces(false);
 
     rerender({isTrue});
 
     equalTokens(root, `<div><svg><circle /></svg></div>`);
-    assert.equal(getDiv().namespaceURI, XHTML_NAMESPACE);
-    assert.equal(getSvg().namespaceURI, SVG_NAMESPACE);
-    assert.equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE);
+    assertNamespaces(true);
   });
 });
 
@@ -2682,7 +2857,10 @@ QUnit.module("Updating Element Modifiers", hooks => {
 
     render(template, input);
 
-    let valueNode = root.firstChild.firstChild;
+    let valueNode: Node | null | undefined;
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      valueNode = root.firstChild.firstChild;
+    }
 
     equalTokens(root, '<div><div data-modifier="installed - Super Metroid"></div></div>', "initial render");
     assert.equal(manager.installedElements.length, 1);
@@ -2720,7 +2898,10 @@ QUnit.module("Updating Element Modifiers", hooks => {
 
     render(template, input);
 
-    let valueNode = root.firstChild.firstChild;
+    let valueNode: Node | null | undefined;
+    if (assertNodeTagName(root.firstChild, 'div')) {
+      valueNode = root.firstChild.firstChild;
+    }
 
     equalTokens(root, '<div><div data-modifier="installed - bar"></div></div>', "initial render");
     assert.equal(manager.installedElements.length, 1);
