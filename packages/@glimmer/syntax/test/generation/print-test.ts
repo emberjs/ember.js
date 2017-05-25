@@ -2,11 +2,11 @@ import { preprocess as parse, print, builders as b } from "@glimmer/syntax";
 
 const { test } = QUnit;
 
-function printTransform(template) {
+function printTransform(template: string) {
   return print(parse(template));
 }
 
-function printEqual(template) {
+function printEqual(template: string) {
   QUnit.assert.equal(printTransform(template), template);
 }
 
@@ -79,7 +79,7 @@ test('UndefinedLiteral', assert => {
 
 test('NumberLiteral', assert => {
   const ast = b.program([
-    b.mustache('foo', null,
+    b.mustache('foo', undefined,
       b.hash([b.pair('bar', b.number(5))])
     )
   ]);
@@ -88,7 +88,7 @@ test('NumberLiteral', assert => {
 
 test('BooleanLiteral', assert => {
   const ast = b.program([
-    b.mustache('foo', null,
+    b.mustache('foo', undefined,
       b.hash([b.pair('bar', b.boolean(true))])
     )
   ]);

@@ -1,4 +1,3 @@
-import { parse as handlebarsParse } from "handlebars/compiler/base";
 import { preprocess as parse, builders as b } from "../index";
 
 import { astEqual } from "./support";
@@ -70,7 +69,7 @@ test("html content with svg content inline", function() {
 });
 
 let integrationPoints = ['foreignObject', 'desc', 'title'];
-function buildIntegrationPointTest(integrationPoint){
+function buildIntegrationPointTest(integrationPoint: string){
   return function integrationPointTest(){
     let t = '<svg><'+integrationPoint+'><div></div></'+integrationPoint+'></svg>';
     astEqual(t, b.program([

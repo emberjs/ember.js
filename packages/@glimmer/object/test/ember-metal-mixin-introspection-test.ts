@@ -33,7 +33,7 @@ let BarMethods = Mixin.create({
 
 let Combined = Mixin.create(BarProperties, BarMethods);
 
-let obj;
+let obj: any;
 
 QUnit.module('Mixin.mixins (introspection)', {
   beforeEach() {

@@ -57,7 +57,7 @@ declare module "simple-html-tokenizer" {
   export type Token = Tokens.Token;
   export type Attribute = Tokens.Attribute;
 
-  export function tokenize(html: string): Token[];
+  export function tokenize(html: string, opts?: any): Token[];
 
   export interface CharRef {
     [namedRef: string]: string;

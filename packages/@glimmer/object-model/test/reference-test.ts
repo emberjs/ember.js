@@ -32,7 +32,7 @@ QUnit.test('getting a reference', assert => {
 });
 
 QUnit.test('unchanged references are valid', assert => {
-  let { root, obj, name } = MakeSub();
+  let { name } = MakeSub();
 
   let dan = name.value();
   let nameTag = name.tag;
@@ -43,7 +43,7 @@ QUnit.test('unchanged references are valid', assert => {
 });
 
 QUnit.test('changed references are invalid', assert => {
-  let { root, obj, name } = MakeSub();
+  let { obj, name } = MakeSub();
 
   let nameTag = name.tag;
   let initialSnapshot = nameTag.value();
@@ -134,7 +134,7 @@ class State {
   }
 }
 
-QUnit.test('references are granular', assert => {
+QUnit.test('references are granular', () => {
   let { SubSub } = MakeSub();
 
   let obj = SubSub.create({ loud: true });
@@ -159,7 +159,7 @@ QUnit.test('references are granular', assert => {
   state.update();
 });
 
-QUnit.test('works with ES6 subclassing', assert => {
+QUnit.test('works with ES6 subclassing', () => {
   let { Sub } = MakeSub();
 
   class SubSub extends Sub {

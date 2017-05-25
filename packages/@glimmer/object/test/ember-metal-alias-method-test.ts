@@ -3,7 +3,7 @@ import { aliasMethod } from '@glimmer/object';
 
 QUnit.module('Mixin.aliasMethod');
 
-function validateAliasMethod(obj) {
+function validateAliasMethod(obj: { fooMethod(): string; barMethod(): string }) {
   QUnit.assert.equal(obj.fooMethod(), 'FOO', 'obj.fooMethod()');
   QUnit.assert.equal(obj.barMethod(), 'FOO', 'obj.barMethod should be a copy of foo');
 }
@@ -72,5 +72,5 @@ QUnit.test('should alias methods from mixins already applied on object', functio
   BaseMixin.apply(obj);
   MyMixin.apply(obj);
 
-  validateAliasMethod(obj);
+  validateAliasMethod(obj as any);
 });

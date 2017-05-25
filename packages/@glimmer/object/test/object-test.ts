@@ -1,26 +1,27 @@
 import GlimmerObject, { computed } from '@glimmer/object';
 import { UpdatableReference, metaFor, setProperty } from '@glimmer/object-reference';
+import { Reference } from '@glimmer/reference';
 
 let Wrapper = <any>GlimmerObject.extend({
-  fullName: computed(function() {
+  fullName: computed(function(this: any) {
     return this.model && this.model.fullName;
   }).property('model.fullName')
 });
 
 let Model = GlimmerObject.extend({
-  fullName: computed(function() {
+  fullName: computed(function(this: any) {
     return this.person && this.person.fullName;
   }).property('person.fullName')
 });
 
 let Person = GlimmerObject.extend({
-  fullName: computed(function() {
+  fullName: computed(function(this: any) {
     return this.name && this.name.fullName;
   }).property('name.fullName')
 });
 
 let Name = GlimmerObject.extend({
-  fullName: computed(function() {
+  fullName: computed(function(this: any) {
     return `${this.first} ${this.last}`;
   }).property('first', 'last')
 });
@@ -131,7 +132,7 @@ QUnit.test('the simple object model allows you to derive references', function()
   isClean(o4[2]);
   isClean(o4[3]);
 
-  function referencesFor(obj) {
+  function referencesFor(obj: any) {
     return [
       root(obj).path('model.person.name.first'),
       root(obj.model).path('person.name.first'),
@@ -203,18 +204,18 @@ QUnit.test("Computed properties", assert => {
   isClean(ref);
 });
 
-function isDirty(ref, newValue) {
-  QUnit.assert.ok(ref.value() === newValue, ref.label() + " has new value " + newValue);
+function isDirty<T>(ref: Reference<T>, newValue: T) {
+  QUnit.assert.ok(ref.value() === newValue, (ref as any).label() + " has new value " + newValue);
 }
 
-function isClean(ref) {
+function isClean<T>(_: Reference<T>) {
   // clean references are allowed to report dirty
 }
 
-function allDirty(refs, newValue) {
+function allDirty<T>(refs: Reference<T>[], newValue: T) {
   refs.forEach(function(ref) { isDirty(ref, newValue); });
 }
 
-function allClean(refs) {
+function allClean<T>(refs: Reference<T>[]) {
   refs.forEach(function(ref) { isClean(ref); });
 }

@@ -26,7 +26,7 @@ export abstract class Blueprint {
 }
 
 export interface Extensions {
-  concatenatedProperties?: string[] | string;
+  concatenatedProperties?: string[] | string | null;
   mergedProperties?: string[] | string;
   _super?: Function;
   [index: string]: any;

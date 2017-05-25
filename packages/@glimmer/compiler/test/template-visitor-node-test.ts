@@ -3,7 +3,7 @@ import { TemplateVisitor } from "@glimmer/compiler";
 
 const { test, assert } = QUnit;
 
-function actionsEqual(input, expectedActions) {
+function actionsEqual(input: string, expectedActions: any[]) {
   let ast = preprocess(input);
 
   let templateVisitor = new TemplateVisitor();

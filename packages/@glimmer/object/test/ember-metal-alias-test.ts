@@ -1,9 +1,9 @@
 import { alias } from '@glimmer/object';
-import { Reference } from '@glimmer/reference';
 import{ Meta } from '@glimmer/object-reference';
 import { get, set, defineProperty } from './support';
 
-let obj, count;
+let obj: any;
+let count: number;
 
 QUnit.module('defineProperty - alias', {
   beforeEach() {
@@ -15,11 +15,11 @@ QUnit.module('defineProperty - alias', {
   }
 });
 
-function shouldBeClean(reference: Reference<any>, msg?: string) {
+function shouldBeClean(..._: any[]) {
   // a "clean" reference is allowed to report dirty
 }
 
-function shouldBeDirty(reference: Reference<any>, msg?: string) {
+function shouldBeDirty(..._: any[]) {
   // QUnit.assert.equal(reference.isDirty(), true, msg || `${reference} should be dirty`);
 }
 
@@ -46,7 +46,7 @@ QUnit.test('should observe the alias', assert => {
   assert.equal(ref.value(), 'FAZ');
 });
 
-function observe(obj, key) {
+function observe(obj: any, key: string) {
   let ref = Meta.for(obj).root().get(key);
   // ref.value();
   return ref;

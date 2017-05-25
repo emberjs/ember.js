@@ -7,10 +7,10 @@ QUnit.test('basic computed properties', assert => {
     last: 'Gebhardt',
 
     full: computed('first', 'last', {
-      get() {
+      get(this: {first: string, last: string}) {
         return `${this.first} ${this.last}`;
       },
-      set(value: string) {
+      set(this: {first: string, last: string}, value: string) {
         let [first, last] = value.split(' ');
         this.first = first;
         this.last = last;
@@ -34,10 +34,10 @@ QUnit.test('references for computed properties', assert => {
     last: 'Gebhardt',
 
     full: computed('first', 'last', {
-      get() {
+      get(this: {first: string, last: string}) {
         return `${this.first} ${this.last}`;
       },
-      set(value: string) {
+      set(this: {first: string, last: string}, value: string) {
         let [first, last] = value.split(' ');
         this.first = first;
         this.last = last;
@@ -48,7 +48,7 @@ QUnit.test('references for computed properties', assert => {
   let obj = Person.create();
   let ref = root(obj).get('full');
 
-  let name = ref.value();
+  ref.value();
   let snapshot = ref.tag.value();
 
   assert.strictEqual(obj.full, 'Dan Gebhardt');
@@ -66,10 +66,10 @@ QUnit.test('references for multiple subclasses of computed properties', assert =
     last: 'Gebhardt',
 
     full: computed('first', 'last', {
-      get() {
+      get(this: {first: string, last: string}) {
         return `${this.first} ${this.last}`;
       },
-      set(value: string) {
+      set(this: {first: string, last: string}, value: string) {
         let [first, last] = value.split(' ');
         this.first = first;
         this.last = last;
@@ -81,10 +81,10 @@ QUnit.test('references for multiple subclasses of computed properties', assert =
     sal: 'Mr.',
 
     name: computed('sal', 'full', {
-      get() {
+      get(this: any) {
         return `${this.sal} ${this.full}`;
       },
-      set(value: string) {
+      set(this: any, value: string) {
         let [, sal, full] = value.match(/([^ ]+) (.*)/)!;
         this.sal = sal;
         this.full = full;
@@ -95,7 +95,7 @@ QUnit.test('references for multiple subclasses of computed properties', assert =
   let obj = FancyPerson.create();
   let ref = root(obj).get('name');
 
-  let name = ref.value();
+  ref.value();
   let snapshot = ref.tag.value();
 
   assert.strictEqual(obj.full, 'Dan Gebhardt');
