@@ -2055,19 +2055,20 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   render(_name, options) {
-    assert('The name in the given arguments is undefined', arguments.length > 0 ? !isNone(arguments[0]) : true);
-
-    let namePassed = typeof _name === 'string' && !!_name;
-    let isDefaultRender = arguments.length === 0 || isEmpty(arguments[0]);
     let name;
-
-    if (typeof _name === 'object' && !options) {
-      name = this.templateName || this.routeName;
-      options = _name;
-    } else {
-      name = _name;
+    let namePassed = false;
+    let isDefaultRender = true;
+    if (arguments.length > 0) {
+      assert('The name in the given arguments is undefined', !isNone(_name));
+      namePassed = typeof _name === 'string' && !!_name;
+      isDefaultRender = isEmpty(_name);
+      if (typeof _name === 'object' && !options) {
+        name = this.templateName || this.routeName;
+        options = _name;
+      } else {
+        name = _name;
+      }
     }
-
     let renderOptions = buildRenderOptions(this, namePassed, isDefaultRender, name, options);
     this.connections.push(renderOptions);
     run.once(this.router, '_setOutlets');
