@@ -215,9 +215,9 @@ if (DEBUG) {
   EMPTY_BLOCKS = Object.freeze(EMPTY_BLOCKS);
 }
 
-function curryArgs(definition, newArgs) {
-  let { args, ComponentClass } = definition;
-  let positionalParams = ComponentClass.class.positionalParams;
+function curryArgs(definition, invocationArgs) {
+  // grab any existing `definition.args` and slice them (to get a mutable copy)
+  let args = definition.args ? definition.args.slice() : [];
 
   // The args being passed in are from the (component ...) invocation,
   // so the first positional argument is actually the name or component
@@ -227,44 +227,15 @@ function curryArgs(definition, newArgs) {
   // For "normal" curly components this slicing is done at the syntax layer,
   // but we don't have that luxury here.
 
-  let [, ...slicedPositionalArgs] = newArgs.positional.references;
+  let [, ...slicedPositionalArgs] = invocationArgs.positional.references;
 
-  if (positionalParams && slicedPositionalArgs.length) {
-    validatePositionalParameters(newArgs.named, slicedPositionalArgs, positionalParams);
+  if (DEBUG) {
+    validatePositionalParameters(invocationArgs.named, slicedPositionalArgs, definition);
   }
 
-  let isRest = typeof positionalParams === 'string';
+  args.push(slicedPositionalArgs, invocationArgs.named.map);
 
-  // For non-rest position params, we need to perform the position -> name mapping
-  // at each layer to avoid a collision later when the args are used to construct
-  // the component instance (inside of processArgs(), inside of create()).
-  let positionalToNamedParams = {};
-
-  if (!isRest && positionalParams.length > 0) {
-    let limit = Math.min(positionalParams.length, slicedPositionalArgs.length);
-
-    for (let i = 0; i < limit; i++) {
-      let name = positionalParams[i];
-      positionalToNamedParams[name] = slicedPositionalArgs[i];
-    }
-
-    slicedPositionalArgs.length = 0; // Throw them away since you're merged in.
-  }
-
-  // args (aka 'oldArgs') may be undefined or simply be empty args, so
-  // we need to fall back to an empty array or object.
-  let oldNamed = args && args.named || {};
-  let oldPositional = args && args.positional || [];
-
-  // Merge positional arrays
-  let positional = new Array(Math.max(oldPositional.length, slicedPositionalArgs.length));
-  positional.splice(0, oldPositional.length, ...oldPositional);
-  positional.splice(0, slicedPositionalArgs.length, ...slicedPositionalArgs);
-
-  // Merge named maps
-  let named = assign({}, oldNamed, positionalToNamedParams, newArgs.named.map);
-
-  return { positional, named };
+  return args;
 }
 
 export default function(vm, args, meta) {
