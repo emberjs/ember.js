@@ -2,16 +2,7 @@
 # yarn lockfile v1
 
 
-"@glimmer/compiler@^0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@glimmer/compiler/-/compiler-0.22.0.tgz#8fd2e80e1e6fc6e355819f180feb189f457184f0"
-  dependencies:
-    "@glimmer/syntax" "^0.22.0"
-    "@glimmer/util" "^0.22.0"
-    "@glimmer/wire-format" "^0.22.0"
-    simple-html-tokenizer "^0.3.0"
-
-"@glimmer/compiler@^0.22.1":
+"@glimmer/compiler@^0.22.0", "@glimmer/compiler@^0.22.1":
   version "0.22.1"
   resolved "https://registry.yarnpkg.com/@glimmer/compiler/-/compiler-0.22.1.tgz#70a8a3064ca4d62b15fc3c870ead11e6c7fb00bf"
   dependencies:
@@ -73,30 +64,13 @@
     "@glimmer/object-reference" "^0.22.1"
     "@glimmer/util" "^0.22.1"
 
-"@glimmer/reference@^0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@glimmer/reference/-/reference-0.22.0.tgz#1b3cf62f100caad14052c3844de8626a89601177"
-  dependencies:
-    "@glimmer/util" "^0.22.0"
-
-"@glimmer/reference@^0.22.1":
+"@glimmer/reference@^0.22.0", "@glimmer/reference@^0.22.1":
   version "0.22.1"
   resolved "https://registry.yarnpkg.com/@glimmer/reference/-/reference-0.22.1.tgz#9aea78e63ddd83f13acad79bd24ae4c4c0457210"
   dependencies:
     "@glimmer/util" "^0.22.1"
 
-"@glimmer/runtime@^0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@glimmer/runtime/-/runtime-0.22.0.tgz#f6c6195ec5a8950ef37e8764eb5e62f3985bc30e"
-  dependencies:
-    "@glimmer/interfaces" "^0.22.0"
-    "@glimmer/object" "^0.22.0"
-    "@glimmer/object-reference" "^0.22.0"
-    "@glimmer/reference" "^0.22.0"
-    "@glimmer/util" "^0.22.0"
-    "@glimmer/wire-format" "^0.22.0"
-
-"@glimmer/runtime@^0.22.1":
+"@glimmer/runtime@^0.22.0", "@glimmer/runtime@^0.22.1":
   version "0.22.1"
   resolved "https://registry.yarnpkg.com/@glimmer/runtime/-/runtime-0.22.1.tgz#90077df1b97ffb3efd0709f92fa70ede1301d198"
   dependencies:
@@ -107,12 +81,16 @@
     "@glimmer/util" "^0.22.1"
     "@glimmer/wire-format" "^0.22.1"
 
-"@glimmer/syntax@^0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.22.0.tgz#20f5dbc8660437ecce941c3a32c2536688a4f2ea"
+"@glimmer/runtime@^0.22.2":
+  version "0.22.2"
+  resolved "https://registry.npmjs.org/@glimmer/runtime/-/runtime-0.22.2.tgz#1f0172153420deb53321b345e9dee0dfafa70f15"
   dependencies:
-    handlebars "^4.0.6"
-    simple-html-tokenizer "^0.3.0"
+    "@glimmer/interfaces" "^0.22.1"
+    "@glimmer/object" "^0.22.1"
+    "@glimmer/object-reference" "^0.22.1"
+    "@glimmer/reference" "^0.22.1"
+    "@glimmer/util" "^0.22.1"
+    "@glimmer/wire-format" "^0.22.1"
 
 "@glimmer/syntax@^0.22.1":
   version "0.22.1"
@@ -138,21 +116,11 @@
   version "0.21.0"
   resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.21.0.tgz#86c1e972e2f777f5af664b59c5bc037b71e9ef00"
 
-"@glimmer/util@^0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.22.0.tgz#80883909d14b5b0e1701bca0acf5e4c580514f93"
-
-"@glimmer/util@^0.22.1":
+"@glimmer/util@^0.22.0", "@glimmer/util@^0.22.1":
   version "0.22.1"
   resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.22.1.tgz#7be751f77325ac857327f9c786ee2d02fba4d4e1"
 
-"@glimmer/wire-format@^0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.22.0.tgz#d1254f50b2b90ffe0cccb06111de986396c4393f"
-  dependencies:
-    "@glimmer/util" "^0.22.0"
-
-"@glimmer/wire-format@^0.22.1":
+"@glimmer/wire-format@^0.22.0", "@glimmer/wire-format@^0.22.1":
   version "0.22.1"
   resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.22.1.tgz#2673bbb1e89805194e9870064c6905af21406ffb"
   dependencies:
@@ -4686,7 +4654,7 @@ read@1, read@~1.0.1, read@~1.0.7:
   dependencies:
     mute-stream "~0.0.4"
 
-"readable-stream@1 || 2", readable-stream@^2, readable-stream@^2.0.2, readable-stream@~2.1.5:
+"readable-stream@1 || 2", readable-stream@^2, "readable-stream@^2.0.0 || ^1.1.13", readable-stream@^2.0.2, readable-stream@~2.1.5:
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.1.5.tgz#66fa8b720e1438b364681f2ad1a63c618448c9d0"
   dependencies:
@@ -4698,7 +4666,7 @@ read@1, read@~1.0.1, read@~1.0.7:
     string_decoder "~0.10.x"
     util-deprecate "~1.0.1"
 
-readable-stream@^2.0.0, "readable-stream@^2.0.0 || ^1.1.13", readable-stream@^2.0.5, readable-stream@^2.2.2:
+readable-stream@^2.0.0, readable-stream@^2.0.5, readable-stream@^2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.2.2.tgz#a9e6fec3c7dda85f8bb1b3ba7028604556fc825e"
   dependencies:
