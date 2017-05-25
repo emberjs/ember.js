@@ -861,7 +861,7 @@ function has(registry, fullName, source) {
 }
 
 const privateNames = dictionary(null);
-const privateSuffix = `${Math.random()}${Date.now()}`;
+const privateSuffix = `${Math.random()}${Date.now()}`.replace('.', '');
 
 export function privatize([fullName]) {
   let name = privateNames[fullName];
