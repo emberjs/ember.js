@@ -197,7 +197,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let initialURL = get(this, 'initialURL');
 
     if (this.setupRouter()) {
-      if (typeof initialURL === 'undefined') {
+      if (initialURL === undefined) {
         initialURL = get(this, 'location').getURL();
       }
       let initialTransition = this.handleURL(initialURL);
@@ -539,7 +539,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     if ('string' === typeof location && owner) {
       let resolvedLocation = owner.lookup(`location:${location}`);
 
-      if ('undefined' !== typeof resolvedLocation) {
+      if (resolvedLocation !== undefined) {
         location = set(this, 'location', resolvedLocation);
       } else {
         // Allow for deprecated registration of custom location API's
