@@ -57,6 +57,8 @@ export default class Scanner {
             toplevel = tagName;
             decorateTopLevelElement(tagName, symbols, attrs, newStatements);
             addFallback(statement, newStatements);
+          } else {
+            newStatements.push(statement);
           }
         }
       } else {
