@@ -2060,8 +2060,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let isDefaultRender = true;
     if (arguments.length > 0) {
       assert('The name in the given arguments is undefined', !isNone(_name));
-      isNamePassed = typeof _name === 'string' && !!_name;
       isDefaultRender = isEmpty(_name);
+      isNamePassed = !isDefaultRender && typeof _name === 'string';
       if (typeof _name === 'object' && !options) {
         name = this.templateName || this.routeName;
         options = _name;
@@ -2139,9 +2139,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       outletName = options.outlet;
       parentView = options.parentView;
 
-      if (options && Object.keys(options).indexOf('outlet') !== -1 && typeof options.outlet === 'undefined') {
-        throw new EmberError('You passed undefined as the outlet name.');
-      }
+      assert(
+        'You passed undefined as the outlet name.',
+        !('outlet' in options && options.outlet === undefined)
+      );
     }
     parentView = parentView && parentView.replace(/\//g, '.');
     outletName = outletName || 'main';
@@ -2254,9 +2255,10 @@ function buildRenderOptions(route, isNamePassed, isDefaultRender, _name, options
     }
   }
 
-  if (options && Object.keys(options).indexOf('outlet') !== -1 && typeof options.outlet === 'undefined') {
-    throw new EmberError('You passed undefined as the outlet name.');
-  }
+  assert(
+    'You passed undefined as the outlet name.',
+    isDefaultRender || !(options && 'outlet' in options && options.outlet === undefined)
+  );
 
   if (options && options.model) {
     controller.set('model', options.model);

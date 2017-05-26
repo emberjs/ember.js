@@ -3720,11 +3720,11 @@ QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet
 
   bootApplication();
 
-  throws(() => {
+  expectAssertion(() => {
     run(() => router.send('showModal'));
   }, /You passed undefined as the outlet name/);
 
-  throws(() => {
+  expectAssertion(() => {
     run(() => router.send('hideModal'));
   }, /You passed undefined as the outlet name/);
 });
