@@ -255,7 +255,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         active: (prop, value) => {
           let qp = map[prop];
           this._qpChanged(prop, value, qp);
-          return this._activeQPChanged(map[prop], value);
+          return this._activeQPChanged(qp, value);
         },
         /*
           Called when a value of a query parameter this route handles changes in a controller
@@ -264,7 +264,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         allowOverrides: (prop, value) => {
           let qp = map[prop];
           this._qpChanged(prop, value, qp);
-          return this._updatingQPChanged(map[prop]);
+          return this._updatingQPChanged(qp);
         }
       }
     };
@@ -312,8 +312,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @property _activeQPChanged
   */
   _activeQPChanged(qp, value) {
-    let router = this.router;
-    router._activeQPChanged(qp.scopedPropertyName, value);
+    this.router._activeQPChanged(qp.scopedPropertyName, value);
   },
 
   /**
@@ -321,8 +320,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @method _updatingQPChanged
   */
   _updatingQPChanged(qp) {
-    let router = this.router;
-    router._updatingQPChanged(qp.urlKey);
+    this.router._updatingQPChanged(qp.urlKey);
   },
 
   mergedProperties: ['queryParams'],
@@ -1285,10 +1283,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let controllerName = this.controllerName || this.routeName;
     let definedController = this.controllerFor(controllerName, true);
 
-    if (!definedController) {
-      controller =  this.generateController(controllerName);
-    } else {
+    if (definedController) {
       controller = definedController;
+    } else {
+      controller = this.generateController(controllerName);
     }
 
     // Assign the route's controller so that it can more easily be
@@ -1324,9 +1322,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
           set(controller, prop, value);
         }
       });
-    }
 
-    if (transition) {
       let qpValues = getQueryParamsFor(this, transition.state);
       setProperties(controller, qpValues);
     }
@@ -2059,19 +2055,20 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   render(_name, options) {
-    assert('The name in the given arguments is undefined', arguments.length > 0 ? !isNone(arguments[0]) : true);
-
-    let namePassed = typeof _name === 'string' && !!_name;
-    let isDefaultRender = arguments.length === 0 || isEmpty(arguments[0]);
     let name;
-
-    if (typeof _name === 'object' && !options) {
-      name = this.templateName || this.routeName;
-      options = _name;
-    } else {
-      name = _name;
+    let namePassed = false;
+    let isDefaultRender = true;
+    if (arguments.length > 0) {
+      assert('The name in the given arguments is undefined', !isNone(_name));
+      namePassed = typeof _name === 'string' && !!_name;
+      isDefaultRender = isEmpty(_name);
+      if (typeof _name === 'object' && !options) {
+        name = this.templateName || this.routeName;
+        options = _name;
+      } else {
+        name = _name;
+      }
     }
-
     let renderOptions = buildRenderOptions(this, namePassed, isDefaultRender, name, options);
     this.connections.push(renderOptions);
     run.once(this.router, '_setOutlets');

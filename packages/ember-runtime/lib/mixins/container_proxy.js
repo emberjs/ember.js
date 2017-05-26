@@ -96,18 +96,6 @@ let containerProxyMixin = {
   },
 
   /**
-   Given a fullName return the corresponding factory.
-
-   @private
-   @method _lookupFactory
-   @param {String} fullName
-   @return {any}
-   */
-  _lookupFactory(fullName, options) {
-    return this.__container__.lookupFactory(fullName, options);
-  },
-
-  /**
    Given a name and a source path, resolve the fullName
 
    @private
