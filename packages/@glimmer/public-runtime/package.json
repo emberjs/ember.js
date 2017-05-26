@@ -1,13 +1,13 @@
 {
   "name": "@glimmer/public-runtime",
-  "version": "0.24.0-beta.3",
+  "version": "0.24.0-beta.4",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/public-runtime",
   "dependencies": {
-    "@glimmer/runtime": "^0.24.0-beta.3",
-    "@glimmer/util": "^0.24.0-beta.3",
-    "@glimmer/reference": "^0.24.0-beta.3",
-    "@glimmer/wire-format": "^0.24.0-beta.3",
-    "@glimmer/interfaces": "^0.24.0-beta.3"
+    "@glimmer/runtime": "^0.24.0-beta.4",
+    "@glimmer/util": "^0.24.0-beta.4",
+    "@glimmer/reference": "^0.24.0-beta.4",
+    "@glimmer/wire-format": "^0.24.0-beta.4",
+    "@glimmer/interfaces": "^0.24.0-beta.4"
   },
   "devDependencies": {
     "typescript": "^2.2.0"
