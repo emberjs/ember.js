@@ -34,12 +34,10 @@ QUnit.test('extending with new properties works', assert => {
 
 QUnit.test('extending with methods works', assert => {
   let Sub = GlimmerObject.extend({
-    hi(this: Sub): string {
+    hi(this: any): string {
       return this.name;
     }
   });
-
-  type Sub = { name: string, hi(): string };
 
   let obj = Sub.create({ name: 'Dan' });
   assert.equal(obj.hi(), 'Dan');
@@ -53,20 +51,16 @@ QUnit.test('extending multiple times with new functionality each time works', as
   type First = { name: string };
 
   let Second = First.extend({
-    hi(this: Second): string {
+    hi(this: any): string {
       return `Hi ${this.salutation} ${this.name}`;
     }
   });
 
-  type Second = First & { salutation: string, hi(): string };
-
   let Sub = Second.extend({
-    greet(this: Sub): string {
+    greet(this: any): string {
       return this.hi().toUpperCase();
     }
   });
-
-  type Sub = Second & { greet(): string };
 
   let obj = Sub.create({ salutation: 'Mr.' });
 

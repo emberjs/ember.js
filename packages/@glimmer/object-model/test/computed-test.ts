@@ -7,10 +7,10 @@ QUnit.test('basic computed properties', assert => {
     last: 'Gebhardt',
 
     full: computed('first', 'last', {
-      get(this: {first: string, last: string}) {
+      get(this: any) {
         return `${this.first} ${this.last}`;
       },
-      set(this: {first: string, last: string}, value: string) {
+      set(this: any, value: string) {
         let [first, last] = value.split(' ');
         this.first = first;
         this.last = last;
@@ -34,10 +34,10 @@ QUnit.test('references for computed properties', assert => {
     last: 'Gebhardt',
 
     full: computed('first', 'last', {
-      get(this: {first: string, last: string}) {
+      get(this: any) {
         return `${this.first} ${this.last}`;
       },
-      set(this: {first: string, last: string}, value: string) {
+      set(this: any, value: string) {
         let [first, last] = value.split(' ');
         this.first = first;
         this.last = last;
@@ -66,10 +66,10 @@ QUnit.test('references for multiple subclasses of computed properties', assert =
     last: 'Gebhardt',
 
     full: computed('first', 'last', {
-      get(this: {first: string, last: string}) {
+      get(this: any) {
         return `${this.first} ${this.last}`;
       },
-      set(this: {first: string, last: string}, value: string) {
+      set(this: any, value: string) {
         let [first, last] = value.split(' ');
         this.first = first;
         this.last = last;
