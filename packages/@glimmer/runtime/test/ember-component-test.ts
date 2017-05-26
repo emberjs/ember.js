@@ -2458,6 +2458,14 @@ styles.forEach(style => {
 
 });
 
+QUnit.test(`Ensure components can be invoked`, function() {
+  env.registerEmberishGlimmerComponent('x-outer', null, `<x-inner></x-inner>`);
+  env.registerEmberishGlimmerComponent('x-inner', null, `<div>hi!</div>`);
+
+  appendViewFor('<x-outer />');
+  equalsElement(view.element, 'div', { class: classes('ember-view'), id: regex(/^ember\d*$/) }, 'hi!');
+});
+
 QUnit.test(`Glimmer component with element modifier`, function(assert) {
   env.registerEmberishGlimmerComponent('non-block', null, `  <div>In layout</div>  `);
 
