@@ -141,3 +141,59 @@ QUnit.test('setter behavior works properly when overriding computed properties',
   equal(get(obj, 'cpWithoutSetter'), 'test', 'The default setter was called, the value is correct');
   ok(!cpWasCalled, 'The default setter was called, not the CP itself');
 });
+
+QUnit.test('calling _super from a getter when no inherited descriptor exists is bound properly [#13230]', function() {
+  let obj;
+
+  let MixinA = Mixin.create({
+    foo() {
+      return 'foo';
+    }
+  });
+
+  let MixinB = Mixin.create(MixinA, {
+    aProp: computed(function() {
+      return this._super(...arguments) + 'B';
+    }),
+
+    foo() {
+      return this._super(...arguments) + get(this, 'aProp');
+    }
+  });
+
+  obj = {};
+  MixinB.apply(obj);
+  equal(obj.foo(), 'fooundefinedB');
+});
+
+QUnit.test('calling _super from a setter when no inherited descriptor exists is bound properly [#13230]', function() {
+  let obj;
+
+  let MixinA = Mixin.create({
+    foo() {
+      return 'foo';
+    }
+  });
+
+  let MixinB = Mixin.create(MixinA, {
+    aProp: computed({
+      get() {
+        return this._super(...arguments) + 'B';
+      },
+
+      set() {
+        return this._super(...arguments) + 'C';
+      }
+    }),
+
+    foo() {
+      set(this, 'aProp', 'foo');
+
+      return this._super(...arguments) + get(this, 'aProp');
+    }
+  });
+
+  obj = {};
+  MixinB.apply(obj);
+  equal(obj.foo(), 'fooundefinedC');
+});
