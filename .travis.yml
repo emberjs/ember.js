@@ -21,6 +21,7 @@ before_script:
 script:
   - yarn run problems
   - yarn run test:ci
+  - yarn run build
 after_script:
   - sleep 10
   - yarn run sauce:disconnect
