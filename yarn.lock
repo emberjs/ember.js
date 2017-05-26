@@ -55,6 +55,17 @@
     "@glimmer/util" "^0.22.1"
     "@glimmer/wire-format" "^0.22.1"
 
+"@glimmer/runtime@^0.22.2":
+  version "0.22.2"
+  resolved "https://registry.npmjs.org/@glimmer/runtime/-/runtime-0.22.2.tgz#1f0172153420deb53321b345e9dee0dfafa70f15"
+  dependencies:
+    "@glimmer/interfaces" "^0.22.1"
+    "@glimmer/object" "^0.22.1"
+    "@glimmer/object-reference" "^0.22.1"
+    "@glimmer/reference" "^0.22.1"
+    "@glimmer/util" "^0.22.1"
+    "@glimmer/wire-format" "^0.22.1"
+
 "@glimmer/syntax@^0.22.1":
   version "0.22.1"
   resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.22.1.tgz#b4048738fa55c46e337278b2aeb37731509ae284"
