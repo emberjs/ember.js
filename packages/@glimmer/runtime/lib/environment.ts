@@ -46,6 +46,7 @@ import { Block } from './syntax/interfaces';
 import { PublicVM } from './vm/append';
 
 import { IArguments } from './vm/arguments';
+import { DEBUG } from "@glimmer/local-debug-flags";
 
 export type ScopeSlot = VersionedPathReference<Opaque> | Option<Block>;
 
@@ -242,63 +243,154 @@ class Transaction {
 
 export class Opcode {
   public offset = 0;
-  constructor(private array: Uint32Array | Array<number>) {}
+  constructor(private heap: Heap) {}
 
   get type() {
-    return this.array[this.offset];
+    return this.heap.getbyaddr(this.offset);
   }
 
   get op1() {
-    return this.array[this.offset + 1];
+    return this.heap.getbyaddr(this.offset + 1);
   }
 
   get op2() {
-    return this.array[this.offset + 2];
+    return this.heap.getbyaddr(this.offset + 2);
   }
 
   get op3() {
-    return this.array[this.offset + 3];
+    return this.heap.getbyaddr(this.offset + 3);
+  }
+}
+
+export interface Handle {
+  "[is-handle]": true;
+}
+
+type unsafe = any;
+
+enum TableSlotState {
+  Allocated,
+  Freed,
+  Purged,
+  Pointer
+}
+
+export class Heap {
+  private heap: number[] = [];
+  private offset = 0;
+  private handle = 0;
+
+  /**
+   * layout:
+   *
+   * - pointer into heap
+   * - size
+   * - freed (0 or 1)
+   */
+  private table: number[] = [];
+
+  push(item: number): void {
+    this.heap[this.offset++] = item;
+  }
+
+  getbyaddr(address: number): number {
+    return this.heap[address];
+  }
+
+  setbyaddr(address: number, value: number) {
+    this.heap[address] = value;
+  }
+
+  malloc(): Handle {
+    this.table.push(this.offset, 0, 0);
+    let handle = this.handle;
+    this.handle += 3;
+    return handle as unsafe as Handle;
+  }
+
+  finishMalloc(handle: Handle): void {
+    let start = this.table[handle as unsafe as number];
+    let finish = this.offset;
+    this.table[(handle as unsafe as number) + 1] = finish - start;
+  }
+
+  size(): number {
+    return this.offset;
+  }
+
+  // It is illegal to close over this address, as compaction
+  // may move it. However, it is legal to use this address
+  // multiple times between compactions.
+  getaddr(handle: Handle): number {
+    return this.table[handle as unsafe as number];
+  }
+
+  gethandle(address: number): Handle {
+    this.table.push(address, 0, TableSlotState.Pointer);
+    let handle = this.handle;
+    this.handle += 3;
+    return handle as unsafe as Handle;
+  }
+
+  sizeof(handle: Handle): number {
+    if (DEBUG) {
+      return this.table[(handle as unsafe as number) + 1];
+    }
+    return -1;
+  }
+
+  free(handle: Handle): void {
+    this.table[(handle as unsafe as number) + 2] = 1;
+  }
+
+  compact(): void {
+    let compactedSize = 0;
+    let { table, table: { length }, heap } = this;
+
+    for (let i=0; i<length; i+=3) {
+      let offset = table[i];
+      let size = table[i + 1];
+      let state = table[i + 2];
+
+      if (state === TableSlotState.Purged) {
+        continue;
+      } else if (state === TableSlotState.Freed) {
+        // transition to "already freed"
+        // a good improvement would be to reuse
+        // these slots
+        table[i + 2] = 2;
+        compactedSize += size;
+      } else if (state === TableSlotState.Allocated) {
+        for (let j=offset; j<=i+size; j++) {
+          heap[j - compactedSize] = heap[j];
+        }
+
+        table[i] = offset - compactedSize;
+      } else if (state === TableSlotState.Pointer) {
+        table[i] = offset - compactedSize;
+      }
+    }
+
+    this.offset = this.offset - compactedSize;
   }
 }
 
 export class Program {
   [key: number]: never;
 
-  private opcodes: number[] = [];
-  private _offset = 0;
   private _opcode: Opcode;
+  public constants: Constants;
+  public heap: Heap;
 
   constructor() {
-    this._opcode = new Opcode(this.opcodes);
-  }
-
-  get next(): number {
-    return this._offset;
-  }
-
-  get current(): number {
-    return this._offset - 4;
+    this.heap = new Heap();
+    this._opcode = new Opcode(this.heap);
+    this.constants = new Constants();
   }
 
   opcode(offset: number): Opcode {
     this._opcode.offset = offset;
     return this._opcode;
-  }
-
-  set(pos: number, type: number, op1 = 0, op2 = 0, op3 = 0) {
-    this.opcodes[pos] = type;
-    this.opcodes[pos + 1] = op1;
-    this.opcodes[pos + 2] = op2;
-    this.opcodes[pos + 3] = op3;
-  }
-
-  push(type: number, op1 = 0, op2 = 0, op3 = 0): number {
-    let offset = this._offset;
-    this.opcodes[this._offset++] = type;
-    this.opcodes[this._offset++] = op1;
-    this.opcodes[this._offset++] = op2;
-    this.opcodes[this._offset++] = op3;
-    return offset;
   }
 }
 
@@ -307,7 +399,6 @@ export abstract class Environment {
   protected appendOperations: DOMTreeConstruction;
   private _macros: Option<{ blocks: Blocks, inlines: Inlines }> = null;
   private _transaction: Option<Transaction> = null;
-  public constants: Constants = new Constants();
   public program = new Program();
 
   constructor({ appendOperations, updateOperations }: { appendOperations: DOMTreeConstruction, updateOperations: DOMChanges }) {

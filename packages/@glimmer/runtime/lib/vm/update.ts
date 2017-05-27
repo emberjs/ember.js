@@ -1,4 +1,4 @@
-import { Scope, DynamicScope, Environment } from '../environment';
+import { Scope, DynamicScope, Environment, Handle } from '../environment';
 import { DestroyableBounds, clear, move as moveBounds } from '../bounds';
 import { ElementStack, Tracker, UpdatableTracker } from '../builder';
 import { Option, Opaque, Stack, LinkedList, Dict, dict, expect } from '@glimmer/util';
@@ -34,7 +34,7 @@ export default class UpdatingVM {
 
   constructor(env: Environment, { alwaysRevalidate = false }) {
     this.env = env;
-    this.constants = env.constants;
+    this.constants = env.program.constants;
     this.dom = env.getDOM();
     this.alwaysRevalidate = alwaysRevalidate;
   }
@@ -103,7 +103,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   protected stack: CapturedStack;
   protected bounds: DestroyableBounds;
 
-  constructor(public start: number, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
+  constructor(public start: Handle, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
     let { env, scope, dynamicScope, stack } = state;
     this.children = children;
@@ -161,7 +161,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   protected bounds: UpdatableTracker;
 
-  constructor(start: number, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
+  constructor(start: Handle, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
     super(start, state, bounds, children);
     this.tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
   }
@@ -296,7 +296,7 @@ export class ListBlockOpcode extends BlockOpcode {
   private lastIterated: Revision = INITIAL;
   private _tag: TagWrapper<UpdatableTag>;
 
-  constructor(start: number, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
+  constructor(start: Handle, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
     super(start, state, bounds, children);
     this.artifacts = artifacts;
     let _tag = this._tag = UpdatableTag.create(CONSTANT_TAG);

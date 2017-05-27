@@ -1,10 +1,10 @@
 
 import { CompilationMeta, Opaque, Option, SymbolTable } from '@glimmer/interfaces';
-import { dict, EMPTY_ARRAY, expect, fillNulls, Stack } from '@glimmer/util';
+import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, typePos } from '@glimmer/util';
 import * as WireFormat from '@glimmer/wire-format';
 import { ComponentBuilder } from '../../compiler';
 import { ComponentDefinition } from '../../component/interfaces';
-import Environment, { Program } from '../../environment';
+import Environment, { Program, Heap, Handle } from '../../environment';
 import {
   ConstantArray,
   ConstantBlock,
@@ -33,7 +33,7 @@ export type Represents<E> = CompilesInto<E> | E;
 
 export type Label = string;
 
-type TargetOpcode = Op.Jump | Op.JumpIf | Op.JumpUnless | Op.EnterList | Op.Iterate | Op.Immediate;
+type TargetOpcode = Op.Jump | Op.JumpIf | Op.JumpUnless | Op.EnterList | Op.Iterate | Op.Immediate | Op.ReturnTo;
 
 class Labels {
   labels = dict<number>();
@@ -47,35 +47,37 @@ class Labels {
     this.targets.push({ at, Target, target });
   }
 
-  patch(opcodes: Program): void {
+  patch(program: Program): void {
     let { targets, labels } = this;
     for (let i = 0; i < targets.length; i++) {
-      let { at, Target, target } = targets[i];
-
-      opcodes.set(at, Target, labels[target]);
+      let { at, target } = targets[i];
+      let goto = labels[target] - at;
+      program.heap.setbyaddr(at + 1, goto);
     }
   }
 }
 
 export abstract class BasicOpcodeBuilder {
   public constants: Constants;
-  public start: number;
+  public heap: Heap;
+  public start: Handle;
 
   private labelsStack = new Stack<Labels>();
 
   constructor(public env: Environment, public meta: CompilationMeta, public program: Program) {
-    this.constants = env.constants;
-    this.start = program.next;
+    this.constants = program.constants;
+    this.heap = program.heap;
+    this.start = this.heap.malloc();
   }
 
   abstract compile<E>(expr: Represents<E>): E;
 
   private get pos() {
-    return this.program.current;
+    return typePos(this.heap.size());
   }
 
   private get nextPos() {
-    return this.program.next;
+    return this.heap.size();
   }
 
   upvars<T extends [Opaque]>(count: number): T {
@@ -87,11 +89,16 @@ export abstract class BasicOpcodeBuilder {
   }
 
   push(name: Op, op1 = 0, op2 = 0, op3 = 0) {
-    return this.program.push(name, op1, op2, op3);
+    this.heap.push(name);
+    this.heap.push(op1);
+    this.heap.push(op2);
+    this.heap.push(op3);
   }
 
-  finalize(): number {
-    return this.push(Op.Return);
+  finalize(): Handle {
+    this.push(Op.Return);
+    this.heap.finishMalloc(this.start);
+    return this.start;
   }
 
   // args
@@ -348,9 +355,8 @@ export abstract class BasicOpcodeBuilder {
   }
 
   returnTo(label: string) {
-    this.reserve(Op.Immediate);
-    this.labels.target(this.pos, Op.Immediate, label);
-    this.load(Register.ra);
+    this.reserve(Op.ReturnTo);
+    this.labels.target(this.pos, Op.ReturnTo, label);
   }
 
   pushDynamicScope() {
