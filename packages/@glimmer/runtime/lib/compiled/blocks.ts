@@ -1,4 +1,5 @@
 import { SymbolTable, ProgramSymbolTable, BlockSymbolTable } from '@glimmer/interfaces';
+import { Handle } from '../environment';
 
 /**
  * The term "block" in the runtime refers to a section
@@ -35,17 +36,16 @@ import { SymbolTable, ProgramSymbolTable, BlockSymbolTable } from '@glimmer/inte
  */
 
 export interface OpSlice {
-  start: number;
-  end: number;
+  handle: Handle;
 }
 
 export class CompiledStaticTemplate implements OpSlice {
-  constructor(public start: number, public end: number) {
+  constructor(public handle: Handle) {
   }
 }
 
 export class CompiledDynamicTemplate<S extends SymbolTable> implements OpSlice {
-  constructor(public start: number, public end: number, public symbolTable: S) {
+  constructor(public handle: Handle, public symbolTable: S) {
   }
 }
 

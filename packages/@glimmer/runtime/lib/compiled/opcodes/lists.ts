@@ -33,8 +33,8 @@ APPEND_OPCODES.add(Op.PutIterator, vm => {
   stack.push(new IterablePresenceReference(iterator.artifacts));
 });
 
-APPEND_OPCODES.add(Op.EnterList, (vm, { op1: start }) => {
-  vm.enterList(start);
+APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart }) => {
+  vm.enterList(relativeStart);
 });
 
 APPEND_OPCODES.add(Op.ExitList, vm => vm.exitList());

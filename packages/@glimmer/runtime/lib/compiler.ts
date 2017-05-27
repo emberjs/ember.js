@@ -25,6 +25,7 @@ import * as WireFormat from '@glimmer/wire-format';
 import { PublicVM } from './vm/append';
 import { IArguments } from './vm/arguments';
 import { FunctionExpression } from "./compiled/opcodes/expressions";
+import { DEBUG } from "@glimmer/local-debug-flags";
 
 export interface CompilableLayout {
   compile(builder: Component.ComponentLayoutBuilder): void;
@@ -172,9 +173,11 @@ class WrappedBuilder implements InnerLayoutBuilder {
     let start = b.start;
     let end = b.finalize();
 
-    debugSlice(env, start, end);
+    if (DEBUG) {
+      debugSlice(env, env.program.heap.getaddr(start), env.program.heap.getaddr(end));
+    }
 
-    return new CompiledDynamicTemplate(start, end, {
+    return new CompiledDynamicTemplate(start, {
       meta,
       hasEval: layout.hasEval,
       symbols: layout.symbols.concat([ATTRS_BLOCK])
