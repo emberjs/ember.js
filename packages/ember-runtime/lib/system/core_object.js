@@ -126,7 +126,7 @@ function makeCtor() {
 
             if (concatenatedProperties &&
                 concatenatedProperties.length > 0 &&
-                concatenatedProperties.indexOf(keyName) >= 0) {
+                concatenatedProperties.indexOf(keyName) > -1) {
               let baseValue = this[keyName];
 
               if (baseValue) {
@@ -141,8 +141,8 @@ function makeCtor() {
             }
 
             if (mergedProperties &&
-                mergedProperties.length &&
-                mergedProperties.indexOf(keyName) >= 0) {
+                mergedProperties.length > 0 &&
+                mergedProperties.indexOf(keyName) > -1) {
               let originalValue = this[keyName];
 
               value = assign({}, originalValue, value);
@@ -420,7 +420,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     set(value) {
       // prevent setting while applying mixins
-      if (typeof value === 'object' && value !== null && value.isDescriptor) {
+      if (value !== null && typeof value === 'object' && value.isDescriptor) {
         return;
       }
 
@@ -445,7 +445,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     set(value) {
       // prevent setting while applying mixins
-      if (typeof value === 'object' && value !== null && value.isDescriptor) {
+      if (value !== null && typeof value === 'object' && value.isDescriptor) {
         return;
       }
 
