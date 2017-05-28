@@ -36,10 +36,6 @@ class StateBucket {
 }
 
 class OutletComponentManager extends AbstractManager {
-  prepareArgs(definition, args) {
-    return null;
-  }
-
   create(environment, definition, args, dynamicScope) {
     if (DEBUG) {
       this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
@@ -58,14 +54,6 @@ class OutletComponentManager extends AbstractManager {
     return new RootReference(outletState.render.controller);
   }
 
-  getTag() {
-    return null;
-  }
-
-  getDestructor() {
-    return null;
-  }
-
   didRenderLayout(bucket) {
     bucket.finalize();
 
@@ -73,12 +61,6 @@ class OutletComponentManager extends AbstractManager {
       this.debugStack.pop();
     }
   }
-
-  didCreateElement() {}
-  didCreate(state) {}
-  update(bucket) {}
-  didUpdateLayout(bucket) {}
-  didUpdate(state) {}
 }
 
 const MANAGER = new OutletComponentManager();

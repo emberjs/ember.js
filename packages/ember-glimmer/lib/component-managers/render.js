@@ -14,12 +14,6 @@ import { OutletLayoutCompiler } from './outlet';
 import AbstractManager from './abstract';
 
 export class AbstractRenderManager extends AbstractManager {
-  prepareArgs(definition, args) {
-    return null;
-  }
-
-  /* abstract create(environment, definition, args, dynamicScope); */
-
   layoutFor(definition, bucket, env) {
     return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
@@ -27,21 +21,6 @@ export class AbstractRenderManager extends AbstractManager {
   getSelf({ controller }) {
     return new RootReference(controller);
   }
-
-  getTag() {
-    return null;
-  }
-
-  getDestructor() {
-    return null;
-  }
-
-  didCreateElement() {}
-  didRenderLayout() {}
-  didCreate() {}
-  update() {}
-  didUpdateLayout() {}
-  didUpdate() {}
 }
 
 if (DEBUG) {

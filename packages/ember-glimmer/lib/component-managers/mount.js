@@ -56,23 +56,15 @@ class MountManager extends AbstractManager {
     return new RootReference(controller);
   }
 
-  getTag() {
-    return null;
-  }
-
   getDestructor({ engine }) {
     return engine;
   }
-
-  didCreateElement() {}
 
   didRenderLayout() {
     if (DEBUG) {
       this.debugStack.pop()
     }
   }
-
-  didCreate(state) {}
 
   update(bucket) {
     if (EMBER_ENGINES_MOUNT_PARAMS) {
@@ -85,9 +77,6 @@ class MountManager extends AbstractManager {
       }
     }
   }
-
-  didUpdateLayout() {}
-  didUpdate(state) {}
 }
 
 const MOUNT_MANAGER = new MountManager();

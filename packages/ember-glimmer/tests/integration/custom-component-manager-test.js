@@ -8,8 +8,7 @@ import {
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
   MANDATORY_SETTER
 } from 'ember/features';
-
-import ExperimentalComponentManager from 'ember-glimmer/component-managers/curly'
+import { AbstractComponentManager } from 'ember-glimmer';
 
 if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
   /*
@@ -34,9 +33,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
   /*
     Implementation of custom component manager, `ComponentManager` interface
   */
-  class TestComponentManager {
-    prepareArgs(definition, args) { return null; }
-
+  class TestComponentManager extends AbstractComponentManager {
     create(env, definition, args, dynamicScope, caller, hasBlock) {
       return definition.ComponentClass.create();
     }
@@ -44,24 +41,6 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
     layoutFor(definition, bucket, env) {
       return env.getCompiledBlock(TestLayoutCompiler, definition.template);
     }
-
-    getSelf({ component }) { return component; }
-
-    didCreateElement(component, element, operations) { }
-
-    didRenderLayout(component, bounds) { }
-
-    didCreate(component) { }
-
-    getTag({ component }) { return null; }
-
-    update(component, dynamicScope) { }
-
-    didUpdateLayout(component, bounds) { }
-
-    didUpdate(component) { }
-
-    getDestructor(component) { }
   }
 
   moduleFor('Components test: curly components with custom manager', class extends RenderingTest {
