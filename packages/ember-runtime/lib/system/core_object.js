@@ -83,15 +83,17 @@ function makeCtor() {
 
         for (let i = 0; i < props.length; i++) {
           let properties = props[i];
+
+          assert(
+            'Ember.Object.create only accepts objects.',
+            typeof properties === 'object' || properties === undefined
+          );
+
           assert(
             'Ember.Object.create no longer supports mixing in other ' +
             'definitions, use .extend & .create separately instead.',
             !(properties instanceof Mixin)
           );
-
-          if (typeof properties !== 'object' && properties !== undefined) {
-            throw new EmberError('Ember.Object.create only accepts objects.');
-          }
 
           if (!properties) { continue; }
 
