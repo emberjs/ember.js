@@ -2056,12 +2056,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
   render(_name, options) {
     let name;
-    let isNamePassed = false;
     let isDefaultRender = true;
     if (arguments.length > 0) {
       assert('The name in the given arguments is undefined', !isNone(_name));
       isDefaultRender = isEmpty(_name);
-      isNamePassed = !isDefaultRender && typeof _name === 'string';
       if (typeof _name === 'object' && !options) {
         name = this.templateName || this.routeName;
         options = _name;
@@ -2070,7 +2068,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       }
     }
 
-    let renderOptions = buildRenderOptions(this, isNamePassed, isDefaultRender, name, options);
+    let renderOptions = buildRenderOptions(this, isDefaultRender, name, options);
     this.connections.push(renderOptions);
     run.once(this.router, '_setOutlets');
   },
@@ -2224,26 +2222,26 @@ function handlerInfoFor(route, handlerInfos, offset = 0) {
   }
 }
 
-function buildRenderOptions(route, isNamePassed, isDefaultRender, _name, options) {
+function buildRenderOptions(route, isDefaultRender, _name, options) {
   let into = options && options.into && options.into.replace(/\//g, '.');
   let outlet = (options && options.outlet) || 'main';
 
   let name, templateName;
-  if (isNamePassed) {
-    name = _name.replace(/\//g, '.');
-    templateName = name;
-  } else {
+  if (isDefaultRender) {
     name = route.routeName;
     templateName = route.templateName || name;
+  } else {
+    name = _name.replace(/\//g, '.');
+    templateName = name;
   }
 
   let owner = getOwner(route);
   let controller = options && options.controller;
   if (!controller) {
-    if (isNamePassed) {
-      controller = owner.lookup(`controller:${name}`) || route.controllerName || route.routeName;
-    } else {
+    if (isDefaultRender) {
       controller = route.controllerName || owner.lookup(`controller:${name}`);
+    } else {
+      controller = owner.lookup(`controller:${name}`) || route.controllerName || route.routeName;
     }
   }
 
