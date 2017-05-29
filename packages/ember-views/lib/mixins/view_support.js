@@ -9,7 +9,7 @@ import { DEBUG } from 'ember-env-flags';
 
 function K() { return this; }
 
-export function dispatchLifeCycleHook(component, hook, oldAttrs, newAttrs) {
+export function dispatchLifeCycleHook(component, hook) {
   component.trigger(hook);
 }
 

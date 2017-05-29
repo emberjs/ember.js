@@ -1,22 +1,16 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { _registerMacros, _experimentalMacros } from 'ember-glimmer';
-import { compileArgs } from '@glimmer/runtime';
+import { compileExpression } from '@glimmer/runtime';
 
 moduleFor('registerMacros', class extends RenderingTest {
   constructor() {
     let originalMacros = _experimentalMacros.slice();
 
     _registerMacros((blocks, inlines) => {
-      blocks.add('-let', (sexp, builder) => {
-        let [,, params, hash, _default] = sexp;
-        let args = compileArgs(params, hash, builder);
-
-        builder.putArgs(args);
-
-        builder.labelled(null, b => {
-          b.evaluate(_default);
-        });
+      blocks.add('-let', (params, hash, _default, inverse, builder) => {
+        compileExpression(params[0], builder);
+        builder.invokeStatic(_default, 1);
       });
     });
 

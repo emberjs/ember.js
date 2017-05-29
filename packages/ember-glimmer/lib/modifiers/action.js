@@ -154,7 +154,7 @@ export class ActionState {
 // implements ModifierManager<Action>
 export default class ActionModifierManager {
   create(element, args, dynamicScope, dom) {
-    let { named, positional } = args;
+    let { named, positional } = args.capture();
     let implicitTarget;
     let actionName;
     let actionNameRef;

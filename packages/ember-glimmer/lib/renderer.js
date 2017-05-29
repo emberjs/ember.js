@@ -12,8 +12,8 @@ import {
   getViewId
 } from 'ember-views';
 import { BOUNDS } from './component';
-import { RootComponentDefinition } from './syntax/curly-component';
-import { TopLevelOutletComponentDefinition } from './syntax/outlet';
+import { RootComponentDefinition } from './component-managers/root';
+import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
 import { assert } from 'ember-debug';
 
 const { backburner } = run;
@@ -117,6 +117,10 @@ class RootState {
 }
 
 const renderers = [];
+
+export function _resetRenderers() {
+  renderers.length = 0;
+}
 
 setHasViews(() => renderers.length > 0);
 

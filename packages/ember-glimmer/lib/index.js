@@ -274,7 +274,8 @@ export {
 export {
   Renderer,
   InertRenderer,
-  InteractiveRenderer
+  InteractiveRenderer,
+  _resetRenderers
 } from './renderer';
 export {
   getTemplate,
@@ -286,3 +287,4 @@ export {
 export { setupEngineRegistry, setupApplicationRegistry } from './setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './dom';
 export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './syntax';
+export { default as AbstractComponentManager } from './component-managers/abstract';

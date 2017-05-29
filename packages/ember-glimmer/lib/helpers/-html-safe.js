@@ -7,5 +7,5 @@ function htmlSafe({ positional }) {
 }
 
 export default function(vm, args) {
-  return new InternalHelperReference(htmlSafe, args);
+  return new InternalHelperReference(htmlSafe, args.capture());
 }

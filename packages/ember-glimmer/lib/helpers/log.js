@@ -24,5 +24,5 @@ function log({ positional }) {
 }
 
 export default function(vm, args) {
-  return new InternalHelperReference(log, args);
+  return new InternalHelperReference(log, args.capture());
 }

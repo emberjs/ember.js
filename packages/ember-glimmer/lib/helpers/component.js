@@ -6,12 +6,10 @@ import { assign } from 'ember-utils';
 import { CachedReference } from '../utils/references';
 import {
   CurlyComponentDefinition,
-  validatePositionalParameters
-} from '../syntax/curly-component';
+  validatePositionalParameters,
+  PositionalArgumentsReference
+} from '../component-managers/curly';
 import {
-  EvaluatedArgs,
-  EvaluatedNamedArgs,
-  EvaluatedPositionalArgs,
   isComponentDefinition
 } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
@@ -143,19 +141,19 @@ import { DEBUG } from 'ember-env-flags';
   @public
 */
 export class ClosureComponentReference extends CachedReference {
-  static create(args, symbolTable, env) {
-    return new ClosureComponentReference(args, symbolTable, env);
+  static create(args, meta, env) {
+    return new ClosureComponentReference(args, meta, env);
   }
 
-  constructor(args, symbolTable, env) {
+  constructor(args, meta, env) {
     super();
 
     let firstArg = args.positional.at(0);
     this.defRef = firstArg;
     this.tag = firstArg.tag;
-    this.env = env;
-    this.symbolTable = symbolTable;
     this.args = args;
+    this.meta = meta;
+    this.env = env;
     this.lastDefinition = undefined;
     this.lastName = undefined;
   }
@@ -164,7 +162,7 @@ export class ClosureComponentReference extends CachedReference {
     // TODO: Figure out how to extract this because it's nearly identical to
     // DynamicComponentReference::compute(). The only differences besides
     // currying are in the assertion messages.
-    let { args, defRef, env, symbolTable, lastDefinition, lastName } = this;
+    let { args, defRef, env, meta, lastDefinition, lastName } = this;
     let nameOrDef = defRef.value();
     let definition = null;
 
@@ -177,7 +175,7 @@ export class ClosureComponentReference extends CachedReference {
     if (typeof nameOrDef === 'string') {
       assert('You cannot use the input helper as a contextual helper. Please extend Ember.TextField or Ember.Checkbox to use it as a contextual component.', nameOrDef !== 'input');
       assert('You cannot use the textarea helper as a contextual helper. Please extend Ember.TextArea to use it as a contextual component.', nameOrDef !== 'textarea');
-      definition = env.getComponentDefinition([nameOrDef], symbolTable);
+      definition = env.getComponentDefinition(nameOrDef, meta);
       assert(`The component helper cannot be used without a valid component name. You used "${nameOrDef}" via (component "${nameOrDef}")`, definition);
     } else if (isComponentDefinition(nameOrDef)) {
       definition = nameOrDef;
@@ -229,7 +227,7 @@ function curryArgs(definition, newArgs) {
   // For "normal" curly components this slicing is done at the syntax layer,
   // but we don't have that luxury here.
 
-  let [, ...slicedPositionalArgs] = newArgs.positional.values;
+  let [, ...slicedPositionalArgs] = newArgs.positional.references;
 
   if (positionalParams && slicedPositionalArgs.length) {
     validatePositionalParameters(newArgs.named, slicedPositionalArgs, positionalParams);
@@ -242,7 +240,7 @@ function curryArgs(definition, newArgs) {
   // the component instance (inside of processArgs(), inside of create()).
   let positionalToNamedParams = {};
 
-  if (!isRest && positionalParams && positionalParams.length > 0) {
+  if (!isRest && positionalParams.length > 0) {
     let limit = Math.min(positionalParams.length, slicedPositionalArgs.length);
 
     for (let i = 0; i < limit; i++) {
@@ -255,26 +253,20 @@ function curryArgs(definition, newArgs) {
 
   // args (aka 'oldArgs') may be undefined or simply be empty args, so
   // we need to fall back to an empty array or object.
-  let oldNamed = args && args.named && args.named.map || {};
-  let oldPositional = args && args.positional && args.positional.values || [];
+  let oldNamed = args && args.named || {};
+  let oldPositional = args && args.positional || [];
 
   // Merge positional arrays
-  let mergedPositional = new Array(Math.max(oldPositional.length, slicedPositionalArgs.length));
-  mergedPositional.splice(0, oldPositional.length, ...oldPositional);
-  mergedPositional.splice(0, slicedPositionalArgs.length, ...slicedPositionalArgs);
+  let positional = new Array(Math.max(oldPositional.length, slicedPositionalArgs.length));
+  positional.splice(0, oldPositional.length, ...oldPositional);
+  positional.splice(0, slicedPositionalArgs.length, ...slicedPositionalArgs);
 
   // Merge named maps
-  let mergedNamed = assign({}, oldNamed, positionalToNamedParams, newArgs.named.map);
+  let named = assign({}, oldNamed, positionalToNamedParams, newArgs.named.map);
 
-  let mergedArgs = EvaluatedArgs.create(
-    EvaluatedPositionalArgs.create(mergedPositional),
-    EvaluatedNamedArgs.create(mergedNamed),
-    EMPTY_BLOCKS
-  );
-
-  return mergedArgs;
+  return { positional, named };
 }
 
-export default function(vm, args, symbolTable) {
-  return ClosureComponentReference.create(args, symbolTable, vm.env);
+export default function(vm, args, meta) {
+  return ClosureComponentReference.create(args.capture(), meta, vm.env);
 }

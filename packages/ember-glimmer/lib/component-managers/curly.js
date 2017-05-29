@@ -1,6 +1,8 @@
-import { OWNER } from 'ember-utils';
+import { OWNER, assign } from 'ember-utils';
+import { combineTagged } from '@glimmer/reference';
 import {
-  PrimitiveReference
+  PrimitiveReference,
+  ComponentDefinition
 } from '@glimmer/runtime';
 import {
   assert
@@ -22,23 +24,15 @@ import {
   get,
   _instrumentStart
 } from 'ember-metal';
-import {
-  gatherArgs,
-  ComponentArgs
-} from '../utils/process-args';
+import { processComponentArgs } from '../utils/process-args';
 import {
   dispatchLifeCycleHook,
   setViewElement
 } from 'ember-views';
 import { privatize as P } from 'container';
-import AbstractManager from '../syntax/abstract-manager';
-import ComponentStateBucket from '../syntax/component-state-bucket';
-import {
-  initialRenderInstrumentDetails,
-  rerenderInstrumentDetails,
-  validatePositionalParameters,
-  processComponentInitializationAssertions
-} from '../syntax/curly-component';
+import AbstractManager from './abstract';
+import ComponentStateBucket from '../utils/curly-component-state-bucket';
+import { PropertyReference } from '../utils/references';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -94,7 +88,7 @@ class CurlyComponentLayoutCompiler {
   }
 
   compile(builder) {
-    builder.wrapLayout(this.template.asLayout());
+    builder.wrapLayout(this.template);
     builder.tag.dynamic(tagName);
     builder.attrs.dynamic('role', ariaRole);
     builder.attrs.static('class', 'ember-view');
@@ -103,13 +97,69 @@ class CurlyComponentLayoutCompiler {
 
 CurlyComponentLayoutCompiler.id = 'curly';
 
+export class PositionalArgumentReference {
+  constructor(references) {
+    this.tag = combineTagged(references);
+    this._references = references;
+  }
+
+  value() {
+    return this._references.map(reference => reference.value());
+  }
+
+  get(key) {
+    return PropertyReference.create(this, key);
+  }
+}
+
 export default class CurlyComponentManager extends AbstractManager {
   prepareArgs(definition, args) {
-    if (definition.ComponentClass) {
-      validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.class.positionalParams);
+    let componentPositionalParamsDefinition = definition.ComponentClass.class.positionalParams;
+
+    if (DEBUG && componentPositionalParamsDefinition) {
+      validatePositionalParameters(args.named, args.positional, componentPositionalParamsDefinition);
     }
 
-    return gatherArgs(args, definition);
+    let componentHasRestStylePositionalParams = typeof componentPositionalParamsDefinition === 'string';
+    let componentHasPositionalParams = componentHasRestStylePositionalParams || componentPositionalParamsDefinition.length > 0;
+    let needsPositionalParamMunging = componentHasPositionalParams && args.positional.length !== 0;
+    let isClosureComponent = definition.args;
+
+    if (!needsPositionalParamMunging && !isClosureComponent) {
+      return null;
+    }
+
+    let capturedArgs = args.capture();
+    // grab raw positional references array
+    let positional = capturedArgs.positional.references;
+
+    // handle prep for closure component with positional params
+    let curriedNamed;
+    if (definition.args) {
+      let remainingDefinitionPositionals = definition.args.positional.slice(positional.length);
+      positional = positional.concat(remainingDefinitionPositionals);
+      curriedNamed = definition.args.named;
+    }
+
+    // handle positionalParams
+    let positionalParamsToNamed;
+    if (componentHasRestStylePositionalParams) {
+      positionalParamsToNamed = {
+        [componentPositionalParamsDefinition]: new PositionalArgumentReference(positional)
+      };
+      positional = [];
+    } else if (componentHasPositionalParams){
+      positionalParamsToNamed = {};
+      let length = Math.min(positional.length, componentPositionalParamsDefinition.length);
+      for (let i = 0; i < length; i++) {
+        let name = componentPositionalParamsDefinition[i];
+        positionalParamsToNamed[name] = positional[i];
+      }
+    }
+
+    let named = assign({}, curriedNamed, positionalParamsToNamed, capturedArgs.named.map);
+
+    return { positional, named };
   }
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
@@ -121,8 +171,8 @@ export default class CurlyComponentManager extends AbstractManager {
 
     let factory = definition.ComponentClass;
 
-    let processedArgs = ComponentArgs.create(args);
-    let { props } = processedArgs.value();
+    let capturedArgs = args.named.capture();
+    let props = processComponentArgs(capturedArgs);
 
     aliasIdToElementId(args, props);
 
@@ -154,7 +204,7 @@ export default class CurlyComponentManager extends AbstractManager {
       }
     }
 
-    let bucket = new ComponentStateBucket(environment, component, processedArgs, finalizer);
+    let bucket = new ComponentStateBucket(environment, component, capturedArgs, finalizer);
 
     if (args.named.has('class')) {
       bucket.classRef = args.named.get('class');
@@ -266,19 +316,16 @@ export default class CurlyComponentManager extends AbstractManager {
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
     if (!args.tag.validate(argsRevision)) {
-      let { attrs, props } = args.value();
+      let props = processComponentArgs(args);
 
       bucket.argsRevision = args.tag.value();
-
-      let oldAttrs = component.attrs;
-      let newAttrs = attrs;
 
       component[IS_DISPATCHING_ATTRS] = true;
       component.setProperties(props);
       component[IS_DISPATCHING_ATTRS] = false;
 
-      dispatchLifeCycleHook(component, 'didUpdateAttrs', oldAttrs, newAttrs);
-      dispatchLifeCycleHook(component, 'didReceiveAttrs', oldAttrs, newAttrs);
+      dispatchLifeCycleHook(component, 'didUpdateAttrs');
+      dispatchLifeCycleHook(component, 'didReceiveAttrs');
     }
 
     if (environment.isInteractive) {
@@ -304,5 +351,78 @@ export default class CurlyComponentManager extends AbstractManager {
 
   getDestructor(stateBucket) {
     return stateBucket;
+  }
+}
+
+export function validatePositionalParameters(named, positional, positionalParamsDefinition) {
+  if (DEBUG) {
+    if (!named || !positional || !positional.length) {
+      return;
+    }
+
+    let paramType = typeof positionalParamsDefinition;
+
+    if (paramType === 'string') {
+      assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsDefinition}\`.`, !named.has(positionalParamsDefinition));
+    } else {
+      if (positional.length < positionalParamsDefinition.length) {
+        positionalParamsDefinition = positionalParamsDefinition.slice(0, positional.length);
+      }
+
+      for (let i = 0; i < positionalParamsDefinition.length; i++) {
+        let name = positionalParamsDefinition[i];
+
+        assert(
+          `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
+          !named.has(name)
+        );
+      }
+    }
+  }
+}
+
+export function processComponentInitializationAssertions(component, props) {
+  assert(`classNameBindings must not have spaces in them: ${component.toString()}`, (() => {
+    let { classNameBindings } = component;
+    for (let i = 0; i < classNameBindings.length; i++) {
+      let binding = classNameBindings[i];
+      if (binding.split(' ').length > 1) {
+        return false;
+      }
+    }
+    return true;
+  })());
+
+  assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), (() => {
+    let { classNameBindings, tagName } = component;
+    return tagName !== '' || !classNameBindings || classNameBindings.length === 0;
+  })());
+
+  assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
+    let { elementId, tagName } = component;
+    return tagName !== '' || props.id === elementId || (!elementId && elementId !== '');
+  })());
+
+  assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
+    let { attributeBindings, tagName } = component;
+    return tagName !== '' || !attributeBindings || attributeBindings.length === 0;
+  })());
+}
+
+export function initialRenderInstrumentDetails(component) {
+  return component.instrumentDetails({ initialRender: true });
+}
+
+export function rerenderInstrumentDetails(component) {
+  return component.instrumentDetails({ initialRender: false });
+}
+
+const MANAGER = new CurlyComponentManager();
+
+export class CurlyComponentDefinition extends ComponentDefinition {
+  constructor(name, ComponentClass, template, args, customManager) {
+    super(name, customManager || MANAGER, ComponentClass);
+    this.template = template;
+    this.args = args;
   }
 }

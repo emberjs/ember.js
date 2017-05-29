@@ -3150,4 +3150,16 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('Hi!');
   }
+
+  ['@test can access properties off of rest style positionalParams array'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend().reopenClass({ positionalParams: 'things' }),
+      // using `attrs` here to simulate `@things.length`
+      template: `{{attrs.things.length}}`
+    });
+
+    this.render('{{foo-bar "foo" "bar" "baz"}}');
+
+    this.assertText('3');
+  }
 });

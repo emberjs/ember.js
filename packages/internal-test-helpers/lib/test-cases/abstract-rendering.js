@@ -1,7 +1,7 @@
 import { assign } from 'ember-utils';
 import { compile } from 'ember-template-compiler';
 import { jQuery, EventDispatcher } from 'ember-views';
-import { helper, Helper, Component } from 'ember-glimmer';
+import { helper, Helper, Component, _resetRenderers} from 'ember-glimmer';
 
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
@@ -40,11 +40,15 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
   getResolver() { }
 
   teardown() {
-    if (this.component) {
-      runDestroy(this.component);
-    }
-    if (this.owner) {
-      runDestroy(this.owner);
+    try {
+      if (this.component) {
+        runDestroy(this.component);
+      }
+      if (this.owner) {
+        runDestroy(this.owner);
+      }
+    } finally {
+      _resetRenderers();
     }
   }
 

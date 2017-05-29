@@ -186,7 +186,7 @@ module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
 }
 
 module.exports.glimmerPkgES = function _glimmerPkgES(name, externs = []) {
-  return new Rollup(findLib(name, 'dist/modules'), {
+  return new Rollup(findLib(name, 'dist/modules/es5'), {
     rollup: {
       entry: 'index.js',
       dest: `${name}.js`,

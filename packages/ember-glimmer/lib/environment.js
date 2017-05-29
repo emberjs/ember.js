@@ -17,7 +17,7 @@ import {
 } from '@glimmer/runtime';
 import {
   CurlyComponentDefinition
-} from './syntax/curly-component';
+} from './component-managers/curly';
 import {
   populateMacros
 } from './syntax';
@@ -124,7 +124,6 @@ export default class Environment extends GlimmerEnvironment {
     this.builtInHelpers = {
       if: inlineIf,
       action,
-      component: componentHelper,
       concat,
       get,
       hash,
@@ -158,12 +157,9 @@ export default class Environment extends GlimmerEnvironment {
     return false;
   }
 
-  getComponentDefinition(path, symbolTable) {
-    let name = path[0];
+  getComponentDefinition(name, { owner, moduleName }) {
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
-    let blockMeta = symbolTable.getMeta();
-    let owner = blockMeta.owner;
-    let source = blockMeta.moduleName && `template:${blockMeta.moduleName}`;
+    let source = moduleName && `template:${moduleName}`;
     let definition = this._definitionCache.get({ name, source, owner });
     finalizer();
     return definition;
@@ -182,13 +178,11 @@ export default class Environment extends GlimmerEnvironment {
     return compilerCache.get(template);
   }
 
-  hasPartial(name, symbolTable) {
-    let { owner } = symbolTable.getMeta();
+  hasPartial(name, { owner }) {
     return hasPartial(name, owner);
   }
 
-  lookupPartial(name, symbolTable) {
-    let { owner } = symbolTable.getMeta();
+  lookupPartial(name, { owner }) {
     let partial = {
       template: lookupPartial(name, owner)
     };
@@ -200,36 +194,37 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  hasHelper(name, symbolTable) {
-    if (this.builtInHelpers[name]) {
+  hasHelper(name, { owner, moduleName }) {
+    if (name === 'component' || this.builtInHelpers[name]) {
       return true;
     }
 
-    let blockMeta = symbolTable.getMeta();
-    let owner = blockMeta.owner;
-    let options = { source: `template:${blockMeta.moduleName}` };
+    let options = { source: `template:${moduleName}` };
 
     return owner.hasRegistration(`helper:${name}`, options) ||
       owner.hasRegistration(`helper:${name}`);
   }
 
-  lookupHelper(name, symbolTable) {
+  lookupHelper(name, meta) {
+    if (name === 'component') {
+      return (vm, args) => componentHelper(vm, args, meta);
+    }
+
+    let { owner, moduleName } = meta;
     let helper = this.builtInHelpers[name];
 
     if (helper) {
       return helper;
     }
 
-    let blockMeta = symbolTable.getMeta();
-    let owner = blockMeta.owner;
-    let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
+    let options = moduleName && { source: `template:${moduleName}` } || {};
     let helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helperFactory.class.isHelperInstance) {
-      return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
+      return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args.capture());
     } else if (helperFactory.class.isHelperFactory) {
-      return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
+      return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args.capture());
     } else {
       throw new Error(`${name} is not a helper`);
     }
@@ -253,9 +248,8 @@ export default class Environment extends GlimmerEnvironment {
     return ConditionalReference.create(reference);
   }
 
-  iterableFor(ref, args) {
-    let keyPath = args.named.get('key').value();
-    return createIterable(ref, keyPath);
+  iterableFor(ref, key) {
+    return createIterable(ref, key);
   }
 
   scheduleInstallModifier() {

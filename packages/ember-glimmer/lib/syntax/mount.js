@@ -2,24 +2,17 @@
 @module ember
 @submodule ember-glimmer
 */
-import {
-  ComponentDefinition
-} from '@glimmer/runtime';
-import { UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { assert } from 'ember-debug';
-import { RootReference } from '../utils/references';
-import { generateControllerFactory } from 'ember-routing';
-import { OutletLayoutCompiler } from './outlet';
-import AbstractManager from './abstract-manager';
 import { DEBUG } from 'ember-env-flags';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
+import { hashToArgs } from './utils';
+import { MountDefinition } from '../component-managers/mount';
 
-function dynamicEngineFor(vm, symbolTable) {
+function dynamicEngineFor(vm, args, meta) {
   let env     = vm.env;
-  let args    = vm.getArgs();
   let nameRef = args.positional.at(0);
 
-  return new DynamicEngineReference({ nameRef, env, symbolTable });
+  return new DynamicEngineReference({ nameRef, env, meta });
 }
 
 /**
@@ -42,7 +35,7 @@ function dynamicEngineFor(vm, symbolTable) {
   @category ember-application-engines
   @public
 */
-export function mountMacro(path, params, hash, builder) {
+export function mountMacro(name, params, hash, builder) {
   if (EMBER_ENGINES_MOUNT_PARAMS) {
     assert(
       'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
@@ -56,23 +49,23 @@ export function mountMacro(path, params, hash, builder) {
   }
 
   let definitionArgs = [params.slice(0, 1), null, null, null];
-  let args = [null, hash, null, null];
-  builder.component.dynamic(definitionArgs, dynamicEngineFor, args, builder.symbolTable);
+  let args = [null, hashToArgs(hash), null, null];
+  builder.component.dynamic(definitionArgs, dynamicEngineFor, args);
   return true;
 }
 
 class DynamicEngineReference {
-  constructor({ nameRef, env, symbolTable, args }) {
+  constructor({ nameRef, env, meta }) {
     this.tag = nameRef.tag;
     this.nameRef = nameRef;
     this.env = env;
-    this.symbolTable = symbolTable;
+    this.meta = meta;
     this._lastName = undefined;
     this._lastDef = undefined;
   }
 
   value() {
-    let { env, nameRef, /*symbolTable*/ } = this;
+    let { env, nameRef, /*meta*/ } = this;
     let nameOrDef = nameRef.value();
 
     if (typeof nameOrDef === 'string') {
@@ -101,87 +94,5 @@ class DynamicEngineReference {
 
       return null;
     }
-  }
-}
-
-class MountManager extends AbstractManager {
-  prepareArgs(definition, args) {
-    return args;
-  }
-
-  create(environment, { name }, args, dynamicScope) {
-    if (DEBUG) {
-      this._pushEngineToDebugStack(`engine:${name}`, environment)
-    }
-
-    dynamicScope.outletState = UNDEFINED_REFERENCE;
-
-    let engine = environment.owner.buildChildEngineInstance(name);
-
-    engine.boot();
-
-    return { engine, args };
-  }
-
-  layoutFor(definition, { engine }, env) {
-    let template = engine.lookup(`template:application`);
-    return env.getCompiledBlock(OutletLayoutCompiler, template);
-  }
-
-  getSelf(bucket) {
-    let { engine, args } = bucket;
-
-    let applicationFactory = engine.factoryFor(`controller:application`);
-    let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
-    let controller = bucket.controller = controllerFactory.create();
-
-    if (EMBER_ENGINES_MOUNT_PARAMS) {
-      let model = args.named.value();
-      bucket.argsRevision = args.tag.value();
-      controller.set('model', model);
-    }
-
-    return new RootReference(controller);
-  }
-
-  getTag() {
-    return null;
-  }
-
-  getDestructor({ engine }) {
-    return engine;
-  }
-
-  didCreateElement() {}
-
-  didRenderLayout() {
-    if (DEBUG) {
-      this.debugStack.pop()
-    }
-  }
-
-  didCreate(state) {}
-
-  update(bucket) {
-    if (EMBER_ENGINES_MOUNT_PARAMS) {
-      let { controller, args, argsRevision } = bucket;
-
-      if (!args.tag.validate(argsRevision)) {
-        let model = args.named.value();
-        bucket.argsRevision = args.tag.value();
-        controller.set('model', model);
-      }
-    }
-  }
-
-  didUpdateLayout() {}
-  didUpdate(state) {}
-}
-
-const MOUNT_MANAGER = new MountManager();
-
-class MountDefinition extends ComponentDefinition {
-  constructor(name) {
-    super(name, MOUNT_MANAGER, null);
   }
 }
