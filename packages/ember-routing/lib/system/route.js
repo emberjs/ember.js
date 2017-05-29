@@ -160,7 +160,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let owner = getOwner(this);
     let controller = owner.lookup(`controller:${controllerName}`);
     let queryParameterConfiguraton = get(this, 'queryParams');
-    let hasRouterDefinedQueryParams = !!Object.keys(queryParameterConfiguraton).length;
+    let hasRouterDefinedQueryParams = Object.keys(queryParameterConfiguraton).length > 0;
 
     if (controller) {
       // the developer has authored a controller class in their application for
@@ -174,7 +174,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     } else if (hasRouterDefinedQueryParams) {
       // the developer has not defined a controller but *has* supplied route query params.
       // Generate a class for them so we can later insert default values
-      controller = generateController(getOwner(this), controllerName);
+      controller = generateController(owner, controllerName);
       combinedQueryParameterConfiguration = queryParameterConfiguraton;
     }
 
