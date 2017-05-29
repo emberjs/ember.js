@@ -2342,10 +2342,8 @@ function copyDefaultValue(value) {
   the existing objects.
 */
 function mergeEachQueryParams(controllerQP, routeQP) {
-  let keysAlreadyMergedOrSkippable;
   let qps = {};
-
-  keysAlreadyMergedOrSkippable = {
+  let keysAlreadyMergedOrSkippable = {
     defaultValue: true,
     type: true,
     scope: true,
@@ -2358,8 +2356,7 @@ function mergeEachQueryParams(controllerQP, routeQP) {
     if (!controllerQP.hasOwnProperty(cqpName)) { continue; }
 
     let newControllerParameterConfiguration = {};
-    assign(newControllerParameterConfiguration, controllerQP[cqpName]);
-    assign(newControllerParameterConfiguration, routeQP[cqpName]);
+    assign(newControllerParameterConfiguration, controllerQP[cqpName], routeQP[cqpName]);
 
     qps[cqpName] = newControllerParameterConfiguration;
 
