@@ -108,12 +108,13 @@ Container.prototype = {
 
   /**
    Clear either the entire cache or just the cache for a particular key.
-    @private
+
+   @private
    @method reset
    @param {String} fullName optional key to reset; if missing, resets everything
-   */
+  */
   reset(fullName) {
-    if (arguments.length > 0) {
+    if (fullName !== undefined) {
       resetMember(this, this.registry.normalize(fullName));
     } else {
       resetCache(this);
