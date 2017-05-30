@@ -1111,8 +1111,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   transitionTo(name, context) {
-    let router = this.router;
-    return router.transitionTo(...prefixRouteNameArg(this, arguments));
+    return this.router.transitionTo(...prefixRouteNameArg(this, arguments));
   },
 
   /**
@@ -1133,8 +1132,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @public
    */
   intermediateTransitionTo() {
-    let router = this.router;
-    router.intermediateTransitionTo(...prefixRouteNameArg(this, arguments));
+    this.router.intermediateTransitionTo(...prefixRouteNameArg(this, arguments));
   },
 
   /**
@@ -1206,8 +1204,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   replaceWith() {
-    let router = this.router;
-    return router.replaceWith(...prefixRouteNameArg(this, arguments));
+    return this.router.replaceWith(...prefixRouteNameArg(this, arguments));
   },
 
   /**
@@ -1556,12 +1553,13 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       sawParams = true;
     }
 
-    if (!name && sawParams) {
-      return copy(params);
-    } else if (!name) {
-      if (transition.resolveIndex < 1) { return; }
-
-      return transition.state.handlerInfos[transition.resolveIndex - 1].context;
+    if (!name) {
+      if (sawParams) {
+        return copy(params);
+      } else {
+        if (transition.resolveIndex < 1) { return; }
+        return transition.state.handlerInfos[transition.resolveIndex - 1].context;
+      }
     }
 
     return this.findModel(name, value);
@@ -1588,8 +1586,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @private
   */
   findModel() {
-    let store = get(this, 'store');
-    return store.find(...arguments);
+    return get(this, 'store').find(...arguments);
   },
 
   /**
@@ -1616,7 +1613,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         let modelClass = owner.factoryFor(`model:${name}`);
 
         assert(
-          `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${StringUtils.classify(name)} did not exist and you did not override your route's \`model\` hook.`, !!modelClass);
+          `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${StringUtils.classify(name)} did not exist and you did not override your route's \`model\` hook.`,
+          !!modelClass
+        );
 
         if (!modelClass) { return; }
 
