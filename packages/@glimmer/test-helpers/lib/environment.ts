@@ -328,7 +328,7 @@ class BasicComponentManager implements ComponentManager<BasicStateBucket> {
       return layout;
     }
 
-    return env.compiledLayouts[definition.name] = compileLayout(new BasicComponentLayoutCompiler(definition.componentName, definition.layoutString), env);
+    return env.compiledLayouts[definition.name] = compileLayout(new BasicComponentLayoutCompiler(definition.name, definition.layoutString), env);
   }
 
   getSelf({ component }: BasicStateBucket): PathReference<Opaque> {
