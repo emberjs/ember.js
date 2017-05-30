@@ -28,7 +28,6 @@ import {
   calculateCacheKey,
   prefixRouteNameArg
 } from '../utils';
-const { slice } = Array.prototype;
 
 function K() { return this; }
 
@@ -1259,11 +1258,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     if ((this.router && this.router._routerMicrolib) || !isTesting()) {
       this.router.send(...args);
     } else {
-      let name = args[0];
-      args = slice.call(args, 1);
+      let name = args.shift();
       let action = this.actions[name];
       if (action) {
-        return this.actions[name].apply(this, args);
+        return action.apply(this, args);
       }
     }
   },
@@ -1546,7 +1544,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       }
 
       let match = prop.match(/^(.*)_id$/);
-      if (match) {
+      if (match !== null) {
         name = match[1];
         value = params[prop];
       }
