@@ -2128,28 +2128,29 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   disconnectOutlet(options) {
     let outletName;
     let parentView;
-    if (!options || typeof options === 'string') {
-      outletName = options;
-    } else {
-      outletName = options.outlet;
-      parentView = options.parentView;
+    if (options) {
+      if (typeof options === 'string') {
+        outletName = options;
+      } else {
+        outletName = options.outlet;
+        parentView = options.parentView ? options.parentView.replace(/\//g, '.') : undefined;
 
-      assert(
-        'You passed undefined as the outlet name.',
-        !('outlet' in options && options.outlet === undefined)
-      );
+        assert(
+          'You passed undefined as the outlet name.',
+          !('outlet' in options && options.outlet === undefined)
+        );
+      }
     }
-    parentView = parentView && parentView.replace(/\//g, '.');
+
     outletName = outletName || 'main';
     this._disconnectOutlet(outletName, parentView);
-    for (let i = 0; i < this.router._routerMicrolib.currentHandlerInfos.length; i++) {
+    let handlerInfos = this.router._routerMicrolib.currentHandlerInfos;
+    for (let i = 0; i < handlerInfos.length; i++) {
       // This non-local state munging is sadly necessary to maintain
       // backward compatibility with our existing semantics, which allow
       // any route to disconnectOutlet things originally rendered by any
       // other route. This should all get cut in 2.0.
-      this.router._routerMicrolib
-        .currentHandlerInfos[i]
-        .handler._disconnectOutlet(outletName, parentView);
+      handlerInfos[i].handler._disconnectOutlet(outletName, parentView);
     }
   },
 
