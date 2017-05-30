@@ -42,3 +42,19 @@ asyncTest('multiple calls to run.next share coalesce callbacks into same run loo
     ok(secondRunLoop && secondRunLoop === thirdRunLoop, 'callbacks coalesced into same run loop');
   }, 20);
 });
+
+test('does not break with synchronous testing', function() {
+  var callbackHasBeenRun = false;
+
+  Ember.run(function() {
+    // This be the application's production code that is being exercised from
+    // a test suite, and it calls Ember.run.next. We'd like for the callback
+    // to have finished executing before Ember.run returns, or non-determinism
+    // happens.
+    Ember.run.next(function() {
+      callbackHasBeenRun = true;
+    });
+  });
+
+  ok(callbackHasBeenRun, 'callback is called before run loop finishes');
+});
