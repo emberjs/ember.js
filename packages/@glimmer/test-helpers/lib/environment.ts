@@ -328,8 +328,7 @@ class BasicComponentManager implements ComponentManager<BasicStateBucket> {
       return layout;
     }
 
-    layout = rawCompile(definition.layoutString, { env, meta: undefined as any as TemplateMeta }).asLayout(definition.name).compileDynamic(env);
-    return env.compiledLayouts[definition.name] = layout;
+    return env.compiledLayouts[definition.name] = compileLayout(new BasicComponentLayoutCompiler(definition.componentName, definition.layoutString), env);
   }
 
   getSelf({ component }: BasicStateBucket): PathReference<Opaque> {
@@ -1001,6 +1000,16 @@ abstract class GenericComponentLayoutCompiler implements CompilableLayout {
   }
 
   abstract compile(builder: ComponentLayoutBuilder): void;
+}
+
+class BasicComponentLayoutCompiler extends GenericComponentLayoutCompiler {
+  constructor(private componentName: string, layoutString: string) {
+    super(layoutString);
+  }
+
+  compile(builder: ComponentLayoutBuilder) {
+    builder.fromLayout(this.componentName, this.compileLayout(builder.env));
+  }
 }
 
 class StaticTaglessComponentLayoutCompiler extends GenericComponentLayoutCompiler {
