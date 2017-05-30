@@ -2859,11 +2859,9 @@ QUnit.test('Specifying non-existent controller name in route#render throws', fun
 
   App.HomeRoute = Route.extend({
     renderTemplate() {
-      try {
+      expectAssertion(() => {
         this.render('homepage', { controller: 'stefanpenneristhemanforme' });
-      } catch (e) {
-        equal(e.message, 'You passed `controller: \'stefanpenneristhemanforme\'` into the `render` method, but no such controller could be found.');
-      }
+      }, 'You passed `controller: \'stefanpenneristhemanforme\'` into the `render` method, but no such controller could be found.')
     }
   });
 

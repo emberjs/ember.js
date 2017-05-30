@@ -2223,10 +2223,21 @@ function handlerInfoFor(route, handlerInfos, offset = 0) {
 }
 
 function buildRenderOptions(route, isDefaultRender, _name, options) {
-  let into = options && options.into && options.into.replace(/\//g, '.');
-  let outlet = (options && options.outlet) || 'main';
+  assert(
+    'You passed undefined as the outlet name.',
+    isDefaultRender || !(options && 'outlet' in options && options.outlet === undefined)
+  );
 
-  let name, templateName;
+  let owner = getOwner(route);
+  let name, templateName, into, outlet, controller, model;
+  if (options) {
+    into = options.into && options.into.replace(/\//g, '.');
+    outlet = options.outlet;
+    controller = options.controller;
+    model = options.model;
+  }
+  outlet = outlet || 'main';
+
   if (isDefaultRender) {
     name = route.routeName;
     templateName = route.templateName || name;
@@ -2235,8 +2246,6 @@ function buildRenderOptions(route, isDefaultRender, _name, options) {
     templateName = name;
   }
 
-  let owner = getOwner(route);
-  let controller = options && options.controller;
   if (!controller) {
     if (isDefaultRender) {
       controller = route.controllerName || owner.lookup(`controller:${name}`);
@@ -2248,21 +2257,18 @@ function buildRenderOptions(route, isDefaultRender, _name, options) {
   if (typeof controller === 'string') {
     let controllerName = controller;
     controller = owner.lookup(`controller:${controllerName}`);
-    if (!controller) {
-      throw new EmberError(`You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`);
-    }
+    assert(
+      `You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`,
+      isDefaultRender || controller
+    );
   }
 
-  assert(
-    'You passed undefined as the outlet name.',
-    isDefaultRender || !(options && 'outlet' in options && options.outlet === undefined)
-  );
-
-  if (options && options.model) {
-    controller.set('model', options.model);
+  if (model) {
+    controller.set('model', model);
   }
 
   let template = owner.lookup(`template:${templateName}`);
+  assert(`Could not find "${templateName}" template, view, or component.`, isDefaultRender || template);
 
   let parent;
   if (into && (parent = parentRoute(route)) && into === parent.routeName) {
@@ -2278,8 +2284,6 @@ function buildRenderOptions(route, isDefaultRender, _name, options) {
     template: template || route._topLevelViewTemplate,
     ViewClass: undefined
   };
-
-  assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || template);
 
   if (DEBUG) {
     let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
