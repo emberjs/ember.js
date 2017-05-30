@@ -529,6 +529,7 @@ const Application = Engine.extend({
   advanceReadiness() {
     assert('You must call advanceReadiness on an instance of Ember.Application', this instanceof Application);
     this._readinessDeferrals--;
+    Ember.assert('_readinessDeferrals is ' + this._readinessDeferrals + ' (must be >= 0); was advanceReadiness() called without a matching deferReadiness()?', this._readinessDeferrals >= 0);
 
     if (this._readinessDeferrals === 0) {
       run.once(this, this.didBecomeReady);
