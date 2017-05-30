@@ -17,18 +17,17 @@ const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
  @class Registry
  @since 1.11.0
 */
-export default function Registry(options) {
-  this.fallback = options && options.fallback ? options.fallback : null;
+export default function Registry(options = {}) {
+  this.fallback = options.fallback || null;
 
-  if (options && options.resolver) {
+  if (options.resolver) {
     this.resolver = options.resolver;
-
     if (typeof this.resolver === 'function') {
       deprecateResolverFunction(this);
     }
   }
 
-  this.registrations  = dictionary(options && options.registrations ? options.registrations : null);
+  this.registrations = dictionary(options.registrations || null);
 
   this._typeInjections        = dictionary(null);
   this._injections            = dictionary(null);
