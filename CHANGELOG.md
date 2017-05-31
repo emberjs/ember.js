@@ -19,6 +19,11 @@
 - [#15178](https://github.com/emberjs/ember.js/pull/15178) Refactor route to lookup controller for QPs.
 - [#15129](https://github.com/emberjs/ember.js/pull/15129) Fix access to service:-document in ember-engines
 
+### 2.13.3 (May 31, 2017)
+
+- [#15284](https://github.com/emberjs/ember.js/pull/15284) [BUGFIX] remove nested transaction assertion from glimmer.
+- [glimmerjs/glimmer-vm#529](https://github.com/glimmerjs/glimmer-vm/pull/529) [BUGFIX] Fix issues identified with custom element support.
+
 ### 2.13.2 (May 18, 2017)
 
 - Revert over eager dependency upgrades in 2.13.1.
