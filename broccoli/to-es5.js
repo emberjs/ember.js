@@ -20,7 +20,8 @@ module.exports = function toES5(tree, _options) {
     injectBabelHelpers,
     ['debug-macros', {
       debugTools: {
-        source: 'ember-debug'
+        source: 'ember-debug',
+        assertPredicateIndex: 1
       },
       envFlags: {
         source: 'ember-env-flags',

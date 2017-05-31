@@ -587,9 +587,9 @@ babel-plugin-dead-code-elimination@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/babel-plugin-dead-code-elimination/-/babel-plugin-dead-code-elimination-1.0.2.tgz#5f7c451274dcd7cccdbfbb3e0b85dd28121f0f65"
 
-babel-plugin-debug-macros@^0.1.7:
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/babel-plugin-debug-macros/-/babel-plugin-debug-macros-0.1.7.tgz#69f5a3dc7d72f781354f18c611a3b007bb223511"
+babel-plugin-debug-macros@^0.1.10:
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/babel-plugin-debug-macros/-/babel-plugin-debug-macros-0.1.10.tgz#dd077ad6e1cc0a8f9bbc6405c561392ebfc9a01c"
   dependencies:
     semver "^5.3.0"
 
