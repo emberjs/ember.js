@@ -2053,14 +2053,13 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
   render(_name, options) {
     let name;
-    let isDefaultRender = true;
-    if (arguments.length > 0) {
-      assert('The name in the given arguments is undefined', !isNone(_name));
-      isDefaultRender = isEmpty(_name);
+    let isDefaultRender = arguments.length === 0;
+    if (!isDefaultRender) {
       if (typeof _name === 'object' && !options) {
         name = this.templateName || this.routeName;
         options = _name;
       } else {
+        assert('The name in the given arguments is undefined or empty string', !isEmpty(_name));
         name = _name;
       }
     }
