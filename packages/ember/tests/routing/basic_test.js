@@ -1878,15 +1878,14 @@ QUnit.test('Parent route context change', function() {
 QUnit.test('Router accounts for rootURL on page load when using history location', function() {
   let rootURL = window.location.pathname + '/app';
   let postsTemplateRendered = false;
-  let setHistory, HistoryTestLocation;
 
-  setHistory = function(obj, path) {
-    obj.set('history', { state: { path: path } });
-  };
+  function setHistory(obj, path) {
+    obj.set('history', { state: { path } });
+  }
 
   // Create new implementation that extends HistoryLocation
   // and set current location to rootURL + '/posts'
-  HistoryTestLocation = HistoryLocation.extend({
+  let HistoryTestLocation = HistoryLocation.extend({
     initState() {
       let path = rootURL + '/posts';
 
@@ -1905,7 +1904,6 @@ QUnit.test('Router accounts for rootURL on page load when using history location
       setHistory(this, path);
     }
   });
-
 
   registry.register('location:historyTest', HistoryTestLocation);
 
@@ -2280,6 +2278,51 @@ QUnit.test('Route should tear down multiple outlets', function() {
   equal(jQuery('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 0, 'The posts/menu template was removed');
   equal(jQuery('p.posts-index:contains(postsIndex)', '#qunit-fixture').length, 0, 'The posts/index template was removed');
   equal(jQuery('div.posts-footer:contains(postsFooter)', '#qunit-fixture').length, 0, 'The posts/footer template was removed');
+});
+
+QUnit.test('boot into unrecognized route', function () {
+  let rootURL = window.location.pathname + '/app';
+  Router.map(function() {});
+
+  function setHistory(obj, path) {
+    obj.set('history', { state: { path } });
+  }
+
+  registry.register('location:historyTest', HistoryLocation.extend({
+    initState() {
+      let path = rootURL + '/unknown-path';
+
+      setHistory(this, path);
+      this.set('location', {
+        pathname: path,
+        href: 'http://localhost/' + path
+      });
+    }
+  }));
+
+  App.ApplicationRoute = Route.extend({
+    actions: {
+      error(theError) {
+        // do we expect this to be hit? Today we never even get that far.
+      }
+    }
+  });
+
+  self.Ember.onError = function(error) {
+    // this totally gets HIT if set, but in testing we hijack this one.
+  }
+
+  Router.reopen({
+    location: 'historyTest',
+    rootURL: rootURL
+  });
+
+  Router.map(function() {
+    this.route('error', { path: '/posts'})
+  });
+
+  router = container.lookup('router:main');
+  Ember.run(App,'advanceReadiness'); // this blows up with `"UnrecognizedURLError: /unknown-path"` but without a reasonable way of redirecting to a 404 page
 });
 
 
