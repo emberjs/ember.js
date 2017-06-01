@@ -123,6 +123,7 @@ export default Mixin.create(TargetActionSupport, {
     'disabled',
     'form',
     'maxlength',
+    'minlength',
     'placeholder',
     'readonly',
     'required',
