@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, unreachable } from '@glimmer/util';
+import { Opaque, Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, unreachable, typePos } from '@glimmer/util';
 import { Tag } from '@glimmer/reference';
 import { VM, UpdatingVM } from './vm';
 import { Opcode, Environment } from './environment';
@@ -324,6 +324,15 @@ export const enum Op {
    *   ...
    */
   Return,
+
+  /**
+   * Operation: Return to a place in the program given an offset
+   * Format:
+   *  (ReturnTo offset:i32)
+   * Operand Stack:
+   *    ... →
+   */
+  ReturnTo,
 
   /// HTML
 
@@ -895,7 +904,8 @@ export const enum Op {
 export function debugSlice(env: Environment, start: number, end: number) {
   if (!CI && DEBUG) {
     /* tslint:disable:no-console */
-    let { program, constants } = env;
+    let { program } = env;
+    let { constants } = program;
 
     // console is not available in IE9
     if (typeof console === 'undefined') { return; }
@@ -905,7 +915,7 @@ export function debugSlice(env: Environment, start: number, end: number) {
 
     (console as any).group(`%c${start}:${end}`, 'color: #999');
 
-    for (let i=start; i<=end; i+=4) {
+    for (let i=start; i<end; i= i + 4) {
       let { type, op1, op2, op3 } = program.opcode(i);
       let [name, params] = debug(constants, type, op1, op2, op3);
       console.log(`${i}. ${logOpcode(name, params)}`);
@@ -980,6 +990,7 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): [st
       case Op.ChildScope: return ['ChildScope', {}];
       case Op.PopScope: return ['PopScope', {}];
       case Op.Return: return ['Return', {}];
+      case Op.ReturnTo: return ['ReturnTo', { offset: op1 }];
 
       /// HTML
       case Op.Text: return ['Text', { text: c.getString(op1) }];
@@ -1076,7 +1087,7 @@ export class AppendOpcodes {
     if (!CI && DEBUG) {
       /* tslint:disable */
       let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
-      console.log(`${vm['pc'] - 4}. ${logOpcode(name, params)}`);
+      console.log(`${typePos(vm['pc'])}. ${logOpcode(name, params)}`);
       // console.log(...debug(vm.constants, type, opcode.op1, opcode.op2, opcode.op3));
       /* tslint:enable */
     }

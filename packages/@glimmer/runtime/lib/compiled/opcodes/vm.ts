@@ -95,7 +95,7 @@ APPEND_OPCODES.add(Op.CompileDynamicBlock, vm => {
 APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: _block }) => {
   let block = vm.constants.getBlock(_block);
   let compiled = block.compileStatic(vm.env);
-  vm.call(compiled.start);
+  vm.call(compiled.handle);
 });
 
 export interface DynamicInvoker<S extends SymbolTable> {
@@ -147,6 +147,9 @@ APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
 });
 
 APPEND_OPCODES.add(Op.Return, vm => vm.return());
+APPEND_OPCODES.add(Op.ReturnTo, (vm, { op1: relative }) => {
+  vm.returnTo(relative);
+});
 
 export type TestFunction = (ref: Reference<Opaque>, env: Environment) => Reference<boolean>;
 

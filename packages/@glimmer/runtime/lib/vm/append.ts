@@ -1,7 +1,7 @@
 import { Register } from '../opcodes';
-import { Scope, DynamicScope, Environment, Opcode } from '../environment';
+import { Scope, DynamicScope, Environment, Opcode, Handle, Heap } from '../environment';
 import { ElementStack } from '../builder';
-import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect } from '@glimmer/util';
+import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect, typePos } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { CompiledDynamicProgram } from '../compiled/blocks';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
@@ -103,6 +103,7 @@ export default class VM implements PublicVM {
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
   public constants: Constants;
+  public heap: Heap;
 
   public stack = EvaluationStack.empty();
 
@@ -167,19 +168,20 @@ export default class VM implements PublicVM {
   }
 
   // Jump to an address in `program`
-  goto(pc: number) {
-    this.pc = pc;
+  goto(offset: number) {
+    this.pc = typePos(this.pc + offset);
   }
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
-  call(pc: number) {
+  call(handle: Handle) {
+    let pc = this.heap.getaddr(handle);
     this.ra = this.pc;
     this.pc = pc;
   }
 
   // Put a specific `program` address in $ra
-  returnTo(ra: number) {
-    this.ra = ra;
+  returnTo(offset: number) {
+    this.ra = typePos(this.pc + offset);
   }
 
   // Return to the `program` address stored in $ra
@@ -196,7 +198,7 @@ export default class VM implements PublicVM {
   ) {
     let scope = Scope.root(self, program.symbolTable.symbols.length);
     let vm = new VM(env, scope, dynamicScope, elementStack);
-    vm.pc = program.start;
+    vm.pc = vm.heap.getaddr(program.handle);
     vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
     return vm;
   }
@@ -208,7 +210,8 @@ export default class VM implements PublicVM {
     private elementStack: ElementStack,
   ) {
     this.env = env;
-    this.constants = env.constants;
+    this.heap = env.program.heap;
+    this.constants = env.program.constants;
     this.elementStack = elementStack;
     this.scopeStack.push(scope);
     this.dynamicScopeStack.push(dynamicScope);
@@ -256,7 +259,7 @@ export default class VM implements PublicVM {
     let state = this.capture(args);
     let tracker = this.elements().pushUpdatableBlock();
 
-    let tryOpcode = new TryOpcode(this.pc, state, tracker, updating);
+    let tryOpcode = new TryOpcode(this.heap.gethandle(this.pc), state, tracker, updating);
 
     this.didEnter(tryOpcode);
   }
@@ -273,7 +276,7 @@ export default class VM implements PublicVM {
     // this.ip = end + 4;
     // this.frames.push(ip);
 
-    return new TryOpcode(this.pc, state, tracker, new LinkedList<UpdatingOpcode>());
+    return new TryOpcode(this.heap.gethandle(this.pc), state, tracker, new LinkedList<UpdatingOpcode>());
   }
 
   enterItem(key: string, opcode: TryOpcode) {
@@ -281,12 +284,14 @@ export default class VM implements PublicVM {
     this.didEnter(opcode);
   }
 
-  enterList(start: number) {
+  enterList(relativeStart: number) {
     let updating = new LinkedList<BlockOpcode>();
 
     let state = this.capture(0);
     let tracker = this.elements().pushBlockList(updating);
     let artifacts = this.stack.peek<ReferenceIterator>().artifacts;
+
+    let start = this.heap.gethandle(typePos(this.pc + relativeStart));
 
     let opcode = new ListBlockOpcode(start, state, tracker, updating, artifacts);
 
@@ -384,8 +389,8 @@ export default class VM implements PublicVM {
 
   /// EXECUTION
 
-  execute(start: number, initialize?: (vm: VM) => void): RenderResult {
-    this.pc = start;
+  execute(start: Handle, initialize?: (vm: VM) => void): RenderResult {
+    this.pc = this.heap.getaddr(start);
 
     if (initialize) initialize(this);
 

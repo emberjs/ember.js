@@ -8,14 +8,13 @@ import {
   Dict,
   dict,
   EMPTY_ARRAY,
-  LOGGER,
   unwrap,
 } from '@glimmer/util';
 import * as WireFormat from '@glimmer/wire-format';
 import { CompiledDynamicBlock, CompiledDynamicProgram } from '../compiled/blocks';
 import OpcodeBuilder from '../compiled/opcodes/builder';
 import { DynamicInvoker } from '../compiled/opcodes/vm';
-import Environment, { ScopeSlot } from '../environment';
+import Environment, { ScopeSlot, Handle } from '../environment';
 import { Register } from '../opcodes';
 import * as ClientSide from '../syntax/client-side';
 import { PublicVM, VM } from '../vm';
@@ -64,7 +63,6 @@ STATEMENTS.add(Ops.Comment, (sexp: S.Comment, builder: OpcodeBuilder) => {
 });
 
 STATEMENTS.add(Ops.CloseElement, (_sexp: S.CloseElement, builder: OpcodeBuilder) => {
-  LOGGER.trace('close-element statement');
   builder.closeElement();
 });
 
@@ -218,7 +216,7 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
     if (lookup) scope.bindEvalScope(lookup);
 
     vm.pushFrame();
-    vm.call(layout!.start);
+    vm.call(layout!.handle);
   }
 
   toJSON() {
@@ -291,7 +289,7 @@ export class PartialInvoker implements DynamicInvoker<ProgramSymbolTable> {
     partialScope.bindPartialMap(locals);
 
     vm.pushFrame();
-    vm.call(partial.start);
+    vm.call(partial.handle);
   }
 }
 
@@ -384,7 +382,7 @@ class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
       scope.bindSymbol(locals![i], stack.fromBase<VersionedPathReference<Opaque>>(callerCount-i));
     }
 
-    vm.call(block.start);
+    vm.call(block.handle);
   }
 
   toJSON() {
@@ -934,8 +932,8 @@ export function compileStatement(statement: WireFormat.Statement, builder: Opcod
 }
 
 export function compileStatements(statements: WireFormat.Statement[], meta: CompilationMeta, env: Environment): {
-  start: number;
-  finalize(): number;
+  start: Handle;
+  finalize(): Handle;
 } {
   let b = new OpcodeBuilder(env, meta);
 

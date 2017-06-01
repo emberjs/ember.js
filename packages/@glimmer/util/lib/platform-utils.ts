@@ -15,3 +15,7 @@ export function expect<T>(val: Maybe<T>, message: string): T {
 export function unreachable(): Error {
   return new Error('unreachable');
 }
+
+export function typePos(lastOperand: number): number {
+  return lastOperand - 4;
+}
