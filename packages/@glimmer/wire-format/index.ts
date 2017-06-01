@@ -50,14 +50,15 @@ export namespace Expressions {
    */
   export type MaybeLocal     = [Opcodes.MaybeLocal, Path];
 
-  export type Value          = str | number | boolean | null; // tslint:disable-line
+  export type Value          = str | number | boolean | null;
+
   export type HasBlock       = [Opcodes.HasBlock, YieldTo];
   export type HasBlockParams = [Opcodes.HasBlockParams, YieldTo];
   export type Undefined      = [Opcodes.Undefined];
   export type ClientSide     = [Opcodes.ClientSideExpression, any];
 
-  export type Expression =
-      Unknown
+  export type TupleExpression =
+    Unknown
     | Get
     | MaybeLocal
     | Concat
@@ -65,9 +66,10 @@ export namespace Expressions {
     | HasBlockParams
     | Helper
     | Undefined
-    | Value
     | ClientSide
     ;
+
+  export type Expression = TupleExpression | Value;
 
   export interface Concat extends Array<any> {
     [0]: Opcodes.Concat;
@@ -100,6 +102,8 @@ export namespace Expressions {
 }
 
 export type Expression = Expressions.Expression;
+
+export type TupleExpression = Expressions.TupleExpression;
 
 export namespace Statements {
   export type Expression = Expressions.Expression;
