@@ -1,5 +1,6 @@
 import {
   get,
+  run,
   setProperties,
   computed,
   Mixin
@@ -20,17 +21,21 @@ function tap(proxy, promise) {
 
   return promise.then(value => {
     if (!proxy.isDestroyed && !proxy.isDestroying) {
-      setProperties(proxy, {
-        content: value,
-        isFulfilled: true
-      });
+      run(() => {
+        setProperties(proxy, {
+          content: value,
+          isFulfilled: true
+        });
+      })
     }
     return value;
   }, reason => {
     if (!proxy.isDestroyed && !proxy.isDestroying) {
-      setProperties(proxy, {
-        reason,
-        isRejected: true
+      run(() => { 
+        setProperties(proxy, {
+          reason,
+          isRejected: true
+        });
       });
     }
     throw reason;
