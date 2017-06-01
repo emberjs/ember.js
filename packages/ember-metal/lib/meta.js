@@ -182,6 +182,20 @@ export class Meta {
     }
 
     this.setMetaDestroyed();
+
+    this._weak = undefined;
+    this._watching = undefined;
+    this._mixins = undefined;
+    this._bindings = undefined;
+    this._values = undefined;
+    this._deps = undefined;
+    this._chainWatchers = undefined;
+    this._chains = undefined;
+    this._tag = undefined;
+    this._tags = undefined;
+    this.parent = undefined;
+    this._lastRenderedReferenceMap = undefined;
+    this._listeners = undefined;
   }
 
   isSourceDestroying() {
