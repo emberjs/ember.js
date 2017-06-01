@@ -29,6 +29,40 @@ export class StaticContentTests extends RenderingTest {
     this.assertStableRerender();
   }
 
+  @template(`<use-the-platform><seriously-please data-foo="1">Stuff <div>Here</div></seriously-please></use-the-platform>`)
+  ['renders nested custom elements']() {
+    this.render({});
+    this.assertContent(`<use-the-platform><seriously-please data-foo="1">Stuff <div>Here</div></seriously-please></use-the-platform>`);
+    this.assertStableRerender();
+  }
+  @template(`<use-the-platform><seriously-please data-foo="1"><wheres-the-platform>Here</wheres-the-platform></seriously-please></use-the-platform>`)
+  ['renders MOAR NESTED custom elements']() {
+    this.render({});
+    this.assertContent(`<use-the-platform><seriously-please data-foo="1"><wheres-the-platform>Here</wheres-the-platform></seriously-please></use-the-platform>`);
+    this.assertStableRerender();
+  }
+
+  @template(`<fake-thing><other-fake-thing data-src="extra-{{someDynamicBits}}-here" /></fake-thing>`)
+  ['renders custom elements with dynamic attributes']() {
+    this.render({ someDynamicBits: 'things' });
+    this.assertContent(`<fake-thing><other-fake-thing data-src="extra-things-here"></other-fake-thing></fake-thing>`);
+    this.assertStableRerender();
+  }
+
+  @template(`<x-foo><x-bar>{{derp}}</x-bar></x-foo>`)
+  ['renders dynamic content within nested custom elements']() {
+    this.render({ derp: 'stuff' });
+    this.assertContent(`<x-foo><x-bar>stuff</x-bar></x-foo>`);
+    this.assertStableRerender();
+  }
+
+  @template(`<x-foo>{{#if derp}}Content Here{{/if}}</x-foo>`)
+  ['renders dynamic content within single custom element']() {
+    this.render({ derp: 'stuff' });
+    this.assertContent(`<x-foo>Content Here</x-foo>`);
+    this.assertStableRerender();
+  }
+
   @template(strip`
     <div class="world">
       <h1>Hello World!</h1>
