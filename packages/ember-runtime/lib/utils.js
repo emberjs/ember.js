@@ -5,15 +5,17 @@ import EmberObject from './system/object';
 // TYPING & ARRAY MESSAGING
 //
 const TYPE_MAP = {
-  '[object Boolean]':  'boolean',
-  '[object Number]':   'number',
-  '[object String]':   'string',
-  '[object Function]': 'function',
-  '[object Array]':    'array',
-  '[object Date]':     'date',
-  '[object RegExp]':   'regexp',
-  '[object Object]':   'object',
-  '[object FileList]': 'filelist'
+  '[object Boolean]':           'boolean',
+  '[object Number]':            'number',
+  '[object String]':            'string',
+  '[object Function]':          'function',
+  '[object Array]':             'array',
+  '[object Date]':              'date',
+  '[object RegExp]':            'regexp',
+  '[object Object]':            'object',
+  '[object FileList]':          'filelist',
+  '[object AsyncFunction]':     'function',
+  '[object GeneratorFunction]': 'function'
 };
 
 const { toString } = Object.prototype;
@@ -98,6 +100,9 @@ export function isArray(obj) {
   Ember.typeOf(Ember.Object.extend());  // 'class'
   Ember.typeOf(Ember.Object.create());  // 'instance'
   Ember.typeOf(new Error('teamocil'));  // 'error'
+  Ember.typeOf(function(){})            // 'function'
+  Ember.typeOf(async function(){})      // 'function'
+  Ember.typeOf(function* (){})          // 'function'
 
   // 'normal' JavaScript object
   Ember.typeOf({ a: 'b' });             // 'object'
