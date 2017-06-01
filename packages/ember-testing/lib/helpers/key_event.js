@@ -14,7 +14,7 @@
   @param {String} selector jQuery selector for finding element on the DOM
   @param {String} type the type of key event, e.g. `keypress`, `keydown`, `keyup`
   @param {Number} keyCode the keyCode of the simulated key event
-  @return {RSVP.Promise}
+  @return {RSVP.Promise<undefined>}
   @since 1.5.0
   @public
 */

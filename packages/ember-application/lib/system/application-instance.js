@@ -235,7 +235,7 @@ const ApplicationInstance = EngineInstance.extend({
 
     @public
     @param url {String} the destination URL
-    @return {Promise}
+    @return {Promise<undefined>}
   */
   visit(url) {
     this.setupRouter();
