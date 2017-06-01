@@ -23,13 +23,12 @@ import { Block } from './interfaces';
 import RawInlineBlock from './raw-block';
 import Ops = WireFormat.Ops;
 
-export type SexpExpression = WireFormat.Expression;
-export type Syntax = WireFormat.Statement | WireFormat.Expression;
-export type CompilerFunction<T extends Syntax> = ((sexp: T, builder: OpcodeBuilder) => void);
+export type TupleSyntax = WireFormat.Statement | WireFormat.TupleExpression;
+export type CompilerFunction<T extends TupleSyntax> = ((sexp: T, builder: OpcodeBuilder) => void);
 
 export const ATTRS_BLOCK = '&attrs';
 
-class Compilers<T extends Syntax> {
+class Compilers<T extends TupleSyntax> {
   private names = dict<number>();
   private funcs: CompilerFunction<T>[] = [];
 
@@ -416,7 +415,7 @@ STATEMENTS.add(Ops.ClientSideStatement, (sexp: WireFormat.Statements.ClientSide,
   CLIENT_SIDE.compile(sexp as ClientSide.ClientSideStatement, builder);
 });
 
-const EXPRESSIONS = new Compilers<WireFormat.Expression>();
+const EXPRESSIONS = new Compilers<WireFormat.TupleExpression>();
 const CLIENT_SIDE_EXPRS = new Compilers<ClientSide.ClientSideExpression>(1);
 
 import E = WireFormat.Expressions;
