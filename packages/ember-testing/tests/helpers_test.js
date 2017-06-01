@@ -20,7 +20,7 @@ import { Application as EmberApplication } from 'ember-application';
 import { compile } from 'ember-template-compiler';
 
 import {
-  pendingRequests,
+  checkPendingRequests,
   incrementPendingRequests,
   clearPendingRequests
 } from '../test/pending_requests';
@@ -884,7 +884,7 @@ QUnit.test('currentRouteName for \'/posts/new\'', function() {
   });
 });
 
-QUnit.module('ember-testing pendingRequests', {
+QUnit.module('ember-testing checkPendingRequests', {
   setup() {
     setupApp();
   },
@@ -894,39 +894,39 @@ QUnit.module('ember-testing pendingRequests', {
   }
 });
 
-QUnit.test('pendingRequests is maintained for ajaxSend and ajaxComplete events', function() {
-  equal(pendingRequests(), 0);
+QUnit.test('checkPendingRequests is maintained for ajaxSend and ajaxComplete events', function() {
+  equal(checkPendingRequests(), false);
   var xhr = { some: 'xhr' };
   jQuery(document).trigger('ajaxSend', xhr);
-  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
+  equal(checkPendingRequests(), true, 'There is pending requests');
   jQuery(document).trigger('ajaxComplete', xhr);
-  equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was decremented');
+  equal(checkPendingRequests(), false, 'There isn\'t any pending request');
 });
 
-QUnit.test('pendingRequests is ignores ajaxComplete events from past setupForTesting calls', function() {
-  equal(pendingRequests(), 0);
+QUnit.test('checkPendingRequests is ignores ajaxComplete events from past setupForTesting calls', function() {
+  equal(checkPendingRequests(), false);
   var xhr = { some: 'xhr' };
   jQuery(document).trigger('ajaxSend', xhr);
-  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
+  equal(checkPendingRequests(), true, 'There is pending requests');
 
   run(function() {
     setupForTesting();
   });
-  equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was reset');
+  equal(checkPendingRequests(), false, 'Pending requests have been reseted');
 
   var altXhr = { some: 'more xhr' };
   jQuery(document).trigger('ajaxSend', altXhr);
-  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
+  equal(checkPendingRequests(), true, 'There is pending requests');
   jQuery(document).trigger('ajaxComplete', xhr);
-  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests is not impressed with your unexpected complete');
+  equal(checkPendingRequests(), true, 'checkPendingRequests is not impressed with your unexpected complete');
 });
 
-QUnit.test('pendingRequests is reset by setupForTesting', function() {
+QUnit.test('checkPendingRequests is reset by setupForTesting', function() {
   incrementPendingRequests();
   run(function() {
     setupForTesting();
   });
-  equal(pendingRequests(), 0, 'pendingRequests is reset');
+  equal(checkPendingRequests(), false, 'The pending requests have been reseted');
 });
 
 QUnit.module('ember-testing async router', {

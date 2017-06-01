@@ -1,22 +1,17 @@
-let requests = [];
+let pendingRequestsCounter = 0;
 
-export function pendingRequests() {
-  return requests.length;
+export function checkPendingRequests() {
+  return pendingRequestsCounter > 0;
 }
 
 export function clearPendingRequests() {
-  requests.length = 0;
+  pendingRequestsCounter = 0;
 }
 
-export function incrementPendingRequests(_, xhr) {
-  requests.push(xhr);
+export function incrementPendingRequests() {
+  pendingRequestsCounter++;
 }
 
-export function decrementPendingRequests(_, xhr) {
-  for (let i = 0; i < requests.length; i++) {
-    if (xhr === requests[i]) {
-      requests.splice(i, 1);
-      break;
-    }
-  }
+export function decrementPendingRequests() {
+  pendingRequestsCounter--;
 }
