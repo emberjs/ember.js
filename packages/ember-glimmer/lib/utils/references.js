@@ -38,6 +38,22 @@ export const UPDATE = symbol('UPDATE');
 
 export { NULL_REFERENCE, UNDEFINED_REFERENCE } from '@glimmer/runtime';
 
+let maybeFreeze;
+if (DEBUG) {
+  // gaurding this in a DEBUG gaurd (as well as all invocations)
+  // so that it is properly stripped during the minification's
+  // dead code elimination
+  maybeFreeze = (obj) => {
+    // re-freezing an already frozen object introduces a significant
+    // performance penalty on Chrome (tested through 59).
+    //
+    // See: https://bugs.chromium.org/p/v8/issues/detail?id=6450
+    if (!Object.isFrozen(obj) && HAS_NATIVE_WEAKMAP) {
+      Object.freeze(obj);
+    }
+  }
+}
+
 // @abstract
 // @implements PathReference
 class EmberPathReference {
@@ -296,10 +312,8 @@ export class SimpleHelperReference extends CachedReference {
       let namedValue = named.value();
 
       if (DEBUG) {
-        if (HAS_NATIVE_WEAKMAP) {
-          Object.freeze(positionalValue);
-          Object.freeze(namedValue);
-        }
+        maybeFreeze(positionalValue);
+        maybeFreeze(namedValue);
       }
 
       let result = helper(positionalValue, namedValue);
@@ -333,10 +347,8 @@ export class SimpleHelperReference extends CachedReference {
     let namedValue = named.value();
 
     if (DEBUG) {
-      if (HAS_NATIVE_WEAKMAP) {
-        Object.freeze(positionalValue);
-        Object.freeze(namedValue);
-      }
+      maybeFreeze(positionalValue);
+      maybeFreeze(namedValue);
     }
 
     return helper(positionalValue, namedValue);
@@ -365,10 +377,8 @@ export class ClassBasedHelperReference extends CachedReference {
     let namedValue = named.value();
 
     if (DEBUG) {
-      if (HAS_NATIVE_WEAKMAP) {
-        Object.freeze(positionalValue);
-        Object.freeze(namedValue);
-      }
+      maybeFreeze(positionalValue);
+      maybeFreeze(namedValue);
     }
 
     return instance.compute(positionalValue, namedValue);
