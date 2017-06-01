@@ -17,7 +17,8 @@ import {
   Error as EmberError,
   deprecate,
   assert,
-  info
+  info,
+  warn
 } from 'ember-debug';
 import {
   Object as EmberObject,
@@ -742,9 +743,27 @@ const EmberRouter = EmberObject.extend(Evented, {
     } else if (defaultType === 'number') {
       return (Number(value)).valueOf();
     } else if (defaultType === 'array') {
-      return emberA(JSON.parse(value));
+      return emberA(this._deserializeArrayQueryParam(value));
     }
     return value;
+  },
+
+  /**
+    Deserializes an array, returning an empty array if current value cannot be
+    deserialized.
+
+    @private
+    @method _deserializeArrayQueryParam
+    @param {String} value
+    @return {Array}
+  */
+  _deserializeArrayQueryParam(value) {
+    try {
+      return JSON.parse(value);
+    } catch (_) {
+      info(`Value ${value} could not be deserialized as an array. Returning an empty array instead.`);
+      return [];
+    }
   },
 
   /**

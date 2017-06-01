@@ -1044,6 +1044,19 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
+  ['@test GH#15306 non-array value does not break the app'](assert) {
+    assert.expect(3);
+
+    this.setSingleQPController('index', 'foo', [1]);
+
+    return this.visitAndAssert('/?foo=bar').then(() => {
+      let controller = this.getController('index');
+
+      this.assertCurrentPath('/?foo=bar', 'returns empty array if not parseable but URL does not change');
+      assert.deepEqual(controller.get('foo'), []);
+    });
+  }
+
   ['@test Url with array query param sets controller property to array'](assert) {
     assert.expect(1);
 
