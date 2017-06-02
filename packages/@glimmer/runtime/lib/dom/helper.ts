@@ -210,10 +210,10 @@ export function insertHTMLBefore(this: void, _useless: Simple.Element, _parent: 
   }
 
   if (nextSibling === null) {
-    parent.insertAdjacentHTML('beforeEnd', html);
+    parent.insertAdjacentHTML('beforeend', html);
     last = parent.lastChild;
   } else if (nextSibling instanceof HTMLElement) {
-    nextSibling.insertAdjacentHTML('beforeBegin', html);
+    nextSibling.insertAdjacentHTML('beforebegin', html);
     last = nextSibling.previousSibling;
   } else {
     // Non-element nodes do not support insertAdjacentHTML, so add an
@@ -222,7 +222,7 @@ export function insertHTMLBefore(this: void, _useless: Simple.Element, _parent: 
     // This also protects Edge, IE and Firefox w/o the inspector open
     // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
     parent.insertBefore(useless, nextSibling);
-    useless.insertAdjacentHTML('beforeBegin', html);
+    useless.insertAdjacentHTML('beforebegin', html);
     last = useless.previousSibling;
     parent.removeChild(useless);
   }
