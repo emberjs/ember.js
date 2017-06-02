@@ -189,13 +189,6 @@ Container.prototype = {
 function wrapManagerInDeprecationProxy(manager) {
   if (HAS_NATIVE_PROXY) {
     let validator = {
-      get(obj, prop) {
-        if (prop !== 'class' && prop !== 'create') {
-          throw new Error(`You attempted to access "${prop}" on a factory manager created by container#factoryFor. "${prop}" is not a member of a factory manager."`);
-        }
-
-        return obj[prop];
-      },
       set(obj, prop, value) {
         throw new Error(`You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`);
       }
