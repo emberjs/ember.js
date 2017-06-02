@@ -3,6 +3,7 @@ import { appendChild, isLiteral, printLiteral } from "../utils";
 import * as AST from '../types/nodes';
 import { Parser, Tag, Attribute } from '../parser';
 import { Option } from '@glimmer/interfaces';
+import SyntaxError from '../errors/syntax-error';
 
 export abstract class HandlebarsNodeVisitors extends Parser {
   abstract appendToCommentData(s: string): void;
@@ -25,24 +26,22 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     // Ensure that that the element stack is balanced properly.
     let poppedNode = this.elementStack.pop();
     if (poppedNode !== node) {
-      throw new Error("Unclosed element `" + (poppedNode as AST.ElementNode).tag + "` (on line " + (poppedNode as AST.ElementNode).loc!.start.line + ").");
+      let elementNode = poppedNode as AST.ElementNode;
+
+      throw new SyntaxError("Unclosed element `" + elementNode.tag + "` (on line " + elementNode.loc!.start.line + ").", elementNode.loc);
     }
 
     return node;
   }
 
   BlockStatement(block: hbs.AST.BlockStatement) {
-    // delete block.inverseStrip;
-    // delete block.openString;
-    // delete block.closeStrip;
-
     if (this.tokenizer['state'] === 'comment') {
       this.appendToCommentData(this.sourceForNode(block));
       return;
     }
 
     if (this.tokenizer['state'] !== 'comment' && this.tokenizer['state'] !== 'data' && this.tokenizer['state'] !== 'beforeData') {
-      throw new Error("A block may only be used inside an HTML element or another block.");
+      throw new SyntaxError("A block may only be used inside an HTML element or another block.", block.loc);
     }
 
     let { path, params, hash } = acceptCallNodes(this, block);
@@ -149,7 +148,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         break;
 
       default:
-        throw new Error(`Using a Handlebars comment when in the \`${tokenizer.state}\` state is not supported: "${comment.value}" on line ${loc.start.line}:${loc.start.column}`);
+        throw new SyntaxError(`Using a Handlebars comment when in the \`${tokenizer.state}\` state is not supported: "${comment.value}" on line ${loc.start.line}:${loc.start.column}`, rawComment.loc);
     }
 
     return comment;
@@ -158,25 +157,25 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   PartialStatement(partial: hbs.AST.PartialStatement) {
     let { loc } = partial;
 
-    throw new Error(`Handlebars partials are not supported: "${this.sourceForNode(partial, partial.name)}" at L${loc.start.line}:C${loc.start.column}`);
+    throw new SyntaxError(`Handlebars partials are not supported: "${this.sourceForNode(partial, partial.name)}" at L${loc.start.line}:C${loc.start.column}`, partial.loc);
   }
 
   PartialBlockStatement(partialBlock: hbs.AST.PartialBlockStatement) {
     let { loc } = partialBlock;
 
-    throw new Error(`Handlebars partial blocks are not supported: "${this.sourceForNode(partialBlock, partialBlock.name)}" at L${loc.start.line}:C${loc.start.column}`);
+    throw new SyntaxError(`Handlebars partial blocks are not supported: "${this.sourceForNode(partialBlock, partialBlock.name)}" at L${loc.start.line}:C${loc.start.column}`, partialBlock.loc);
   }
 
   Decorator(decorator: hbs.AST.Decorator) {
     let { loc } = decorator;
 
-    throw new Error(`Handlebars decorators are not supported: "${this.sourceForNode(decorator, decorator.path)}" at L${loc.start.line}:C${loc.start.column}`);
+    throw new SyntaxError(`Handlebars decorators are not supported: "${this.sourceForNode(decorator, decorator.path)}" at L${loc.start.line}:C${loc.start.column}`, decorator.loc);
   }
 
   DecoratorBlock(decoratorBlock: hbs.AST.DecoratorBlock) {
     let { loc } = decoratorBlock;
 
-    throw new Error(`Handlebars decorator blocks are not supported: "${this.sourceForNode(decoratorBlock, decoratorBlock.path)}" at L${loc.start.line}:C${loc.start.column}`);
+    throw new SyntaxError(`Handlebars decorator blocks are not supported: "${this.sourceForNode(decoratorBlock, decoratorBlock.path)}" at L${loc.start.line}:C${loc.start.column}`, decoratorBlock.loc);
   }
 
   SubExpression(sexpr: hbs.AST.SubExpression): AST.SubExpression {
@@ -189,15 +188,14 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     let parts: string[];
 
     if (original.indexOf('/') !== -1) {
-      // TODO add a SyntaxError with loc info
       if (original.slice(0, 2) === './') {
-        throw new Error(`Using "./" is not supported in Glimmer and unnecessary: "${path.original}" on line ${loc.start.line}.`);
+        throw new SyntaxError(`Using "./" is not supported in Glimmer and unnecessary: "${path.original}" on line ${loc.start.line}.`, path.loc);
       }
       if (original.slice(0, 3) === '../') {
-        throw new Error(`Changing context using "../" is not supported in Glimmer: "${path.original}" on line ${loc.start.line}.`);
+        throw new SyntaxError(`Changing context using "../" is not supported in Glimmer: "${path.original}" on line ${loc.start.line}.`, path.loc);
       }
       if (original.indexOf('.') !== -1) {
-        throw new Error(`Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths: "${path.original}" on line ${loc.start.line}.`);
+        throw new SyntaxError(`Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths: "${path.original}" on line ${loc.start.line}.`, path.loc);
       }
       parts = [ path.parts.join('/') ];
     } else {
@@ -317,7 +315,7 @@ function addElementModifier(element: Tag<'StartTag'>, mustache: AST.MustacheStat
     let modifier = `{{${printLiteral(path)}}}`;
     let tag = `<${element.name} ... ${modifier} ...`;
 
-    throw new Error(`In ${tag}, ${modifier} is not a valid modifier: "${path.original}" on line ${loc && loc.start.line}.`);
+    throw new SyntaxError(`In ${tag}, ${modifier} is not a valid modifier: "${path.original}" on line ${loc && loc.start.line}.`, mustache.loc);
   }
 
   let modifier = b.elementModifier(path, params, hash, loc);

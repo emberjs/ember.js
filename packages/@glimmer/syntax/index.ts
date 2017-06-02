@@ -7,6 +7,9 @@ export { default as traverse, NodeHandler, NodeVisitor, NodeHandlerFunction, Ent
 export { default as Walker } from './lib/traversal/walker';
 export { default as print } from './lib/generation/print';
 
+// errors
+export { default as SyntaxError } from './lib/errors/syntax-error';
+
 // AST
 import * as AST from './lib/types/nodes';
 export { AST };
