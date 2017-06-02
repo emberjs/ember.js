@@ -114,3 +114,59 @@ testBoth('unwatching should not destroy non MANDATORY_SETTER descriptor', functi
   unwatch(obj, 'foo');
   equal(obj.foo, 'RUN', 'obj.foo after unwatch');
 });
+
+test("unwatching capitalized property name", function() {
+  var obj = { Foo: "bar" };
+  addListeners(obj, 'Foo');
+
+  watch(obj, 'Foo');
+
+  set(obj, 'Foo', 'FOO');
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
+
+  unwatch(obj, 'Foo');
+  willCount = didCount = 0;
+  set(obj, 'Foo', 'BAR');
+  equal(willCount, 0, 'should NOT have invoked willCount');
+  equal(didCount, 0, 'should NOT have invoked didCount');
+
+});
+
+test("unwatching a chain", function() {
+  var Bar = {};
+  var obj = { foo: Bar };
+  addListeners(obj, 'foo.Bar');
+
+  watch(obj, 'foo.Bar');
+
+  set(obj, 'foo.Bar', 'FOOBAR');
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
+
+  unwatch(obj, 'foo.Bar');
+  willCount = didCount = 0;
+  set(obj, 'foo.Bar', 'BARFOO');
+  equal(willCount, 0, 'should NOT have invoked willCount');
+  equal(didCount, 0, 'should NOT have invoked didCount');
+
+});
+
+test("unwatching a chain with capitalize property names", function() {
+  var Bar = {};
+  var obj = { Foo: Bar };
+  addListeners(obj, 'Foo.Bar');
+
+  watch(obj, 'Foo.Bar');
+
+  set(obj, 'Foo.Bar', 'FOOBAR');
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
+
+  unwatch(obj, 'Foo.Bar');
+  willCount = didCount = 0;
+  set(obj, 'Foo.Bar', 'BARFOO');
+  equal(willCount, 0, 'should NOT have invoked willCount');
+  equal(didCount, 0, 'should NOT have invoked didCount');
+
+});
