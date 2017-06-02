@@ -96,7 +96,7 @@ function shouldApplyFix(document: Document) {
   let mergingTextDiv: HTMLDivElement = document.createElement('div');
 
   mergingTextDiv.innerHTML = 'first';
-  mergingTextDiv.insertAdjacentHTML('beforeEnd', 'second');
+  mergingTextDiv.insertAdjacentHTML('beforeend', 'second');
 
   if (mergingTextDiv.childNodes.length === 2) {
     // It worked as expected, no fix required
