@@ -57,10 +57,12 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     let { applicationInstance } = this;
 
     if (applicationInstance) {
-      return run(applicationInstance, 'visit', url, options);
+      return this.runTask(() => applicationInstance.visit(url, options));
     } else {
-      return run(this.application, 'visit', url, options).then(instance => {
-        this.applicationInstance = instance;
+      return this.runTask(() => {
+        return this.application.visit(url, options).then(instance => {
+          this.applicationInstance = instance;
+        });
       });
     }
   }
