@@ -214,7 +214,10 @@ function wrapManagerInDeprecationProxy(manager) {
   if (HAS_NATIVE_PROXY) {
     let validator = {
       get(obj, prop) {
-        if (prop !== 'class' && prop !== 'create') {
+        if (typeof prop === 'symbol') { return obj[prop]; }
+        if (prop === 'inspect') { return undefined; /* for nodes formatter */ }
+       
+        if (prop !== 'class' && prop !== 'create' && prop !== 'toString') {
           throw new Error(`You attempted to access "${prop}" on a factory manager created by container#factoryFor. "${prop}" is not a member of a factory manager."`);
         }
 
