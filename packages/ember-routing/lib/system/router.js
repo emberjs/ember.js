@@ -165,7 +165,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     @method url
     @return {String} The current URL.
-    @private
+    @public
   */
   url: computed(function() {
     return get(this, 'location').getURL();
@@ -191,7 +191,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     If no value is found `/` will be used.
 
     @method startRouting
-    @private
+    @public
   */
   startRouting() {
     let initialURL = get(this, 'initialURL');
@@ -423,7 +423,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     @method isActive
     @param routeName
     @return {Boolean}
-    @private
+    @public
   */
   isActive() {
     return this._routerMicrolib.isActive(...arguments);
@@ -439,7 +439,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     @param models
     @param queryParams
     @return {Boolean}
-    @private
+    @public
     @since 1.7.0
   */
   isActiveIntent(routeName, models, queryParams) {
@@ -455,7 +455,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     @method hasRoute
     @return {Boolean}
-    @private
+    @public
   */
   hasRoute(route) {
     return this._routerMicrolib.hasRoute(route);
@@ -465,7 +465,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     Resets the state of the router by clearing the current route
     handlers and deactivating them.
 
-    @private
+    @public
     @method reset
    */
   reset() {
