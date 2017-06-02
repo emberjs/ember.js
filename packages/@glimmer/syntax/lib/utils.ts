@@ -1,5 +1,6 @@
 import * as AST from './types/nodes';
 import { Option } from "@glimmer/interfaces";
+import SyntaxError from './errors/syntax-error';
 
 // Regex to validate the identifier for block parameters.
 // Based on the ID validation regex in Handlebars.
@@ -29,7 +30,7 @@ function parseBlockParams(element: AST.ElementNode): Option<string[]> {
     // Some basic validation, since we're doing the parsing ourselves
     let paramsString = attrNames.slice(asIndex).join(' ');
     if (paramsString.charAt(paramsString.length - 1) !== '|' || paramsString.match(/\|/g)!.length !== 2) {
-      throw new Error('Invalid block parameters syntax: \'' + paramsString + '\'');
+      throw new SyntaxError('Invalid block parameters syntax: \'' + paramsString + '\'', element.loc);
     }
 
     let params = [];
@@ -37,14 +38,14 @@ function parseBlockParams(element: AST.ElementNode): Option<string[]> {
       let param = attrNames[i].replace(/\|/g, '');
       if (param !== '') {
         if (ID_INVERSE_PATTERN.test(param)) {
-          throw new Error('Invalid identifier for block parameters: \'' + param + '\' in \'' + paramsString + '\'');
+          throw new SyntaxError('Invalid identifier for block parameters: \'' + param + '\' in \'' + paramsString + '\'', element.loc);
         }
         params.push(param);
       }
     }
 
     if (params.length === 0) {
-      throw new Error('Cannot use zero block parameters: \'' + paramsString + '\'');
+      throw new SyntaxError('Cannot use zero block parameters: \'' + paramsString + '\'', element.loc);
     }
 
     element.attributes = element.attributes.slice(0, asIndex);
