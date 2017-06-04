@@ -29,7 +29,7 @@ class MountManager extends AbstractManager {
     let bucket = { engine };
 
     if (EMBER_ENGINES_MOUNT_PARAMS) {
-      bucket.args = args.capture();
+      bucket.modelReference = args.named.get('model');
     }
 
     return bucket;
@@ -41,15 +41,15 @@ class MountManager extends AbstractManager {
   }
 
   getSelf(bucket) {
-    let { engine, args } = bucket;
+    let { engine, modelReference } = bucket;
 
     let applicationFactory = engine.factoryFor(`controller:application`);
     let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
     let controller = bucket.controller = controllerFactory.create();
 
     if (EMBER_ENGINES_MOUNT_PARAMS) {
-      let model = args.named.value();
-      bucket.argsRevision = args.tag.value();
+      let model = modelReference.value();
+      bucket.modelRevision = modelReference.tag.value();
       controller.set('model', model);
     }
 
@@ -68,11 +68,11 @@ class MountManager extends AbstractManager {
 
   update(bucket) {
     if (EMBER_ENGINES_MOUNT_PARAMS) {
-      let { controller, args, argsRevision } = bucket;
+      let { controller, modelReference, modelRevision } = bucket;
 
-      if (!args.tag.validate(argsRevision)) {
-        let model = args.named.value();
-        bucket.argsRevision = args.tag.value();
+      if (!modelReference.tag.validate(modelRevision)) {
+        let model = modelReference.value();
+        bucket.modelRevision = modelReference.tag.value();
         controller.set('model', model);
       }
     }
