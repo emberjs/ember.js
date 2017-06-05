@@ -1,6 +1,6 @@
 import { Bounds, ConcreteBounds } from '../bounds';
-import { moveNodesBefore } from '../dom/helper';
-import { unwrap } from '@glimmer/util';
+import { moveNodesBefore, DOMChanges, DOMTreeConstruction } from '../dom/helper';
+import { Option, unwrap } from '@glimmer/util';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
@@ -16,7 +16,55 @@ export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
 //           approach is used. A pre/post SVG tag is added to the string, then
 //           that whole string is added to a div. The created nodes are plucked
 //           out and applied to the target location on DOM.
-export function fixSVG(parent: Element, div: HTMLElement, html: string, reference: Node): Bounds {
+export function domChanges(document: Option<Document>, DOMChangesClass: typeof DOMChanges, svgNamespace: SVG_NAMESPACE): typeof DOMChanges {
+  if (!document) return DOMChangesClass;
+
+  if (!shouldApplyFix(document, svgNamespace)) {
+    return DOMChangesClass;
+  }
+
+  let div = document.createElement('div');
+
+  return class DOMChangesWithSVGInnerHTMLFix extends DOMChangesClass {
+    insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
+      if (html === null || html === '') {
+        return super.insertHTMLBefore(parent, nextSibling, html);
+      }
+
+      if (parent.namespaceURI !== svgNamespace) {
+        return super.insertHTMLBefore(parent, nextSibling, html);
+      }
+
+      return fixSVG(parent, div, html, nextSibling);
+    }
+  };
+}
+
+export function treeConstruction(document: Option<Document>, TreeConstructionClass: typeof DOMTreeConstruction, svgNamespace: SVG_NAMESPACE): typeof DOMTreeConstruction {
+  if (!document) return TreeConstructionClass;
+
+  if (!shouldApplyFix(document, svgNamespace)) {
+    return TreeConstructionClass;
+  }
+
+  let div = document.createElement('div');
+
+  return class TreeConstructionWithSVGInnerHTMLFix extends TreeConstructionClass {
+    insertHTMLBefore(parent: HTMLElement, reference: Node, html: string): Bounds {
+      if (html === null || html === '') {
+        return super.insertHTMLBefore(parent, reference, html);
+      }
+
+      if (parent.namespaceURI !== svgNamespace) {
+        return super.insertHTMLBefore(parent, reference, html);
+      }
+
+      return fixSVG(parent, div, html, reference);
+    }
+  };
+}
+
+function fixSVG(parent: Element, div: HTMLElement, html: string, reference: Node): Bounds {
   // IE, Edge: also do not correctly support using `innerHTML` on SVG
   // namespaced elements. So here a wrapper is used.
   let wrappedHtml = '<svg>' + html + '</svg>';
@@ -27,7 +75,7 @@ export function fixSVG(parent: Element, div: HTMLElement, html: string, referenc
   return new ConcreteBounds(parent, first, last);
 }
 
-export function needsSVGInnerHTMLFix(document: Document, svgNamespace: SVG_NAMESPACE) {
+function shouldApplyFix(document: Document, svgNamespace: SVG_NAMESPACE) {
   let svg = document.createElementNS(svgNamespace, 'svg');
 
   try {
