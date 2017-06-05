@@ -1,21 +1,19 @@
 import { Bounds, ConcreteBounds, SingleNodeBounds } from '../bounds';
 import {
-  innerHTMLWrapper,
-  fixInnerHTML,
-  needsInnerHTMLFix
+  domChanges as domChangesTableElementFix,
+  treeConstruction as treeConstructionTableElementFix
 } from '../compat/inner-html-fix';
 import {
-  fixSVG,
-  needsSVGInnerHTMLFix
+  domChanges as domChangesSvgElementFix,
+  treeConstruction as treeConstructionSvgElementFix
 } from '../compat/svg-inner-html-fix';
 import {
-  fixTextNodeMerging,
-  needsTextNodeFix
+  domChanges as domChangesNodeMergingFix,
+  treeConstruction as treeConstructionNodeMergingFix
 } from '../compat/text-node-merging-fix';
 import * as Simple from './interfaces';
 
 import { Option } from '@glimmer/util';
-import { emptyHTML } from "../compat/utils";
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -40,6 +38,8 @@ export const BLACKLIST_TABLE = Object.create(null);
 
 const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/;
 
+let doc: Option<Document> = typeof document === 'undefined' ? null : document;
+
 export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
 }
@@ -58,22 +58,14 @@ export function moveNodesBefore(source: Simple.Node, target: Simple.Element, nex
 
 export class DOMOperations {
   protected uselessElement: HTMLElement;
-  protected uselessComment: Comment;
-  private applyTextNodeFix = false;
-  private applySVGFix = false;
-  private applyInnerHTMLFix = false;
 
   constructor(protected document: Simple.Document) {
     this.setupUselessElement();
-    this.applyTextNodeFix = needsTextNodeFix(this.document as Document);
-    this.applyInnerHTMLFix = needsInnerHTMLFix(this.document as Document);
-    this.applySVGFix = needsSVGInnerHTMLFix(this.document as Document, SVG_NAMESPACE);
   }
 
   // split into seperate method so that NodeDOMTreeConstruction
   // can override it.
   protected setupUselessElement() {
-    this.uselessComment = this.document.createComment('') as Comment;
     this.uselessElement = this.document.createElement('div') as HTMLElement;
   }
 
@@ -106,64 +98,8 @@ export class DOMOperations {
     parent.insertBefore(node, reference);
   }
 
-  private fixSVG(parent: HTMLElement, reference: Element, html: string): Bounds {
-    if (emptyHTML(html)) {
-      return insertHTMLBefore(this.uselessElement, parent, reference, html);
-    }
-
-    if (parent.namespaceURI !== SVG_NAMESPACE) {
-      return insertHTMLBefore(this.uselessElement, parent, reference, html);
-    }
-
-    return fixSVG(parent, this.uselessElement, html, reference);
-  }
-
-  private fixInnerHTML(parent: HTMLElement, reference: Element, html: string): Bounds {
-    if (emptyHTML(html)) {
-      return insertHTMLBefore(this.uselessElement, parent, reference, html);
-    }
-    let parentTag = parent.tagName.toLowerCase();
-    let wrapper = innerHTMLWrapper[parentTag];
-
-    if(wrapper === undefined) {
-      return this.fixSVG(parent, reference, html);
-    }
-
-    return fixInnerHTML(parent, wrapper, this.uselessElement, html, reference);
-  }
-
-  private fixTextNodeMerge(parent: HTMLElement, reference: Element, html: string): Bounds {
-    if (html === null) {
-      return this.fixInnerHTML(parent, reference, html);
-    }
-
-    let didSetUselessComment = fixTextNodeMerging(parent, reference, this.uselessComment);
-    let bounds = this.fixInnerHTML(parent, reference, html);
-
-    if (didSetUselessComment) {
-      parent.removeChild(this.uselessComment);
-    }
-
-    return bounds;
-  }
-
   insertHTMLBefore(_parent: Simple.Element, nextSibling: Simple.Node, html: string): Bounds {
-    let parent = _parent as HTMLElement;
-    let reference = nextSibling as Element;
-
-    if (this.applyTextNodeFix) {
-      return this.fixTextNodeMerge(parent, reference, html);
-    }
-
-    if (this.applyInnerHTMLFix) {
-      return this.fixInnerHTML(parent, reference, html);
-    }
-
-    if (this.applySVGFix) {
-      return this.fixSVG(parent, reference, html);
-    }
-
-    return insertHTMLBefore(this.uselessElement, parent, reference, html);
+    return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
   }
 
   createTextNode(text: string): Simple.Text {
@@ -198,7 +134,12 @@ export namespace DOM {
     }
   }
 
-  export const DOMTreeConstruction = TreeConstruction;
+  let appliedTreeContruction = TreeConstruction;
+  appliedTreeContruction = treeConstructionNodeMergingFix(doc, appliedTreeContruction);
+  appliedTreeContruction = treeConstructionTableElementFix(doc, appliedTreeContruction);
+  appliedTreeContruction = treeConstructionSvgElementFix(doc, appliedTreeContruction, SVG_NAMESPACE);
+
+  export const DOMTreeConstruction = appliedTreeContruction;
   export type DOMTreeConstruction = TreeConstruction;
 }
 
@@ -294,7 +235,13 @@ function isDocumentFragment(node: Simple.Node): node is DocumentFragment {
   return node.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
 }
 
-export default DOMChanges;
+let helper = DOMChanges;
+
+helper = domChangesNodeMergingFix(doc, helper);
+helper = domChangesTableElementFix(doc, helper);
+helper = domChangesSvgElementFix(doc, helper, SVG_NAMESPACE);
+
+export default helper;
 export const DOMTreeConstruction = DOM.DOMTreeConstruction;
 export type DOMTreeConstruction = DOM.DOMTreeConstruction;
 export { Namespace as DOMNamespace } from './interfaces';
