@@ -20,4 +20,14 @@ describe('Acceptance: ember generate and destroy helper-addon', function() {
           .to.contain("export { default, fooBar } from 'my-addon/helpers/foo-bar';");
       }));
   });
+  
+  it('in-addon helper-addon foo-bar --pod', function() {
+    var args = ['helper-addon', 'foo-bar', '--pod'];
+
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/helpers/foo-bar.js'))
+          .to.contain("export { default, fooBar } from 'my-addon/helpers/foo-bar';");
+      }));
+  });
 });

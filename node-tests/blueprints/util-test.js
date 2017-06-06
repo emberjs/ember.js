@@ -61,6 +61,24 @@ describe('Acceptance: ember generate and destroy util', function() {
       }));
   });
 
+  it('in-addon util foo-bar --pod', function() {
+    var args = ['util', 'foo-bar', '--pod'];
+
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('addon/utils/foo-bar.js'))
+          .to.contain('export default function fooBar() {\n' +
+                      '  return true;\n' +
+                      '}');
+
+        expect(_file('app/utils/foo-bar.js'))
+          .to.contain("export { default } from 'my-addon/utils/foo-bar';");
+
+        expect(_file('tests/unit/utils/foo-bar-test.js'))
+          .to.contain("import fooBar from 'dummy/utils/foo-bar';");
+      }));
+  });
+
   it('in-addon util foo-bar/baz', function() {
     var args = ['util', 'foo/bar-baz'];
 
