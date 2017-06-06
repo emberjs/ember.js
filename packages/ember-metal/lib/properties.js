@@ -2,10 +2,10 @@
 @module ember-metal
 */
 
-import { assert } from './debug';
-import isEnabled from './features';
+import { assert } from 'ember-debug';
 import { meta as metaFor, peekMeta } from './meta';
 import { overrideChains } from './property_events';
+import { MANDATORY_SETTER } from 'ember/features';
 // ..........................................................
 // DESCRIPTOR
 //
@@ -21,7 +21,7 @@ export function Descriptor() {
   this.isDescriptor = true;
 }
 
-const REDEFINE_SUPPORTED = (function () {
+const REDEFINE_SUPPORTED = ((() => {
   // https://github.com/spalger/kibana/commit/b7e35e6737df585585332857a4c397dc206e7ff9
   let a = Object.create(Object.prototype, {
     prop: {
@@ -36,7 +36,7 @@ const REDEFINE_SUPPORTED = (function () {
   });
 
   return a.prop === 2;
-}());
+})());
 // ..........................................................
 // DEFINING PROPERTIES API
 //
@@ -127,30 +127,29 @@ export function INHERITING_GETTER_FUNCTION(name) {
     become the explicit value of this property.
 */
 export function defineProperty(obj, keyName, desc, data, meta) {
-  let possibleDesc, existingDesc, watching, value;
-
   if (!meta) {
     meta = metaFor(obj);
   }
   let watchEntry = meta.peekWatching(keyName);
-  possibleDesc = obj[keyName];
-  existingDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  let possibleDesc = obj[keyName];
+  let existingDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
-  watching = watchEntry !== undefined && watchEntry > 0;
+  let watching = watchEntry !== undefined && watchEntry > 0;
 
   if (existingDesc) {
     existingDesc.teardown(obj, keyName);
   }
 
+  let value;
   if (desc instanceof Descriptor) {
     value = desc;
-    if (isEnabled('mandatory-setter')) {
+    if (MANDATORY_SETTER) {
       if (watching) {
         Object.defineProperty(obj, keyName, {
           configurable: true,
           enumerable: true,
           writable: true,
-          value: value
+          value
         });
       } else {
         obj[keyName] = value;
@@ -158,12 +157,15 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     } else {
       obj[keyName] = value;
     }
-    if (desc.setup) { desc.setup(obj, keyName); }
+
+    didDefineComputedProperty(obj.constructor);
+
+    if (typeof desc.setup === 'function') { desc.setup(obj, keyName); }
   } else {
     if (desc == null) {
       value = data;
 
-      if (isEnabled('mandatory-setter')) {
+      if (MANDATORY_SETTER) {
         if (watching) {
           meta.writeValues(keyName, data);
 
@@ -199,10 +201,25 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
   // The `value` passed to the `didDefineProperty` hook is
   // either the descriptor or data, whichever was passed.
-  if (obj.didDefineProperty) { obj.didDefineProperty(obj, keyName, value); }
+  if (typeof obj.didDefineProperty === 'function') { obj.didDefineProperty(obj, keyName, value); }
 
   return this;
 }
+
+let hasCachedComputedProperties = false;
+export function _hasCachedComputedProperties() {
+  hasCachedComputedProperties = true;
+}
+
+function didDefineComputedProperty(constructor) {
+  if (hasCachedComputedProperties === false) { return; }
+  let cache = metaFor(constructor).readableCache();
+
+  if (cache && cache._computedProperties !== undefined) {
+    cache._computedProperties = undefined;
+  }
+}
+
 
 function handleBrokenPhantomDefineProperty(obj, keyName, desc) {
   // https://github.com/ariya/phantomjs/issues/11856

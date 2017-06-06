@@ -2,21 +2,18 @@
 @module ember
 @submodule ember-glimmer
 */
-import {
-  ArgsSyntax,
-  StatementSyntax,
-  ComponentDefinition
-} from 'glimmer-runtime';
-import { ConstReference, isConst } from 'glimmer-reference';
-import { assert } from 'ember-metal';
-import { RootReference } from '../utils/references';
-import { generateController, generateControllerFactory } from 'ember-routing';
-import { OutletLayoutCompiler } from './outlet';
-import { FACTORY_FOR } from 'container';
 
-function makeComponentDefinition(vm) {
+import { ConstReference, isConst } from '@glimmer/reference';
+import { assert } from 'ember-debug';
+import { hashToArgs } from './utils';
+import {
+  RenderDefinition,
+  SINGLETON_RENDER_MANAGER,
+  NON_SINGLETON_RENDER_MANAGER
+} from '../component-managers/render';
+
+function makeComponentDefinition(vm, args) {
   let env     = vm.env;
-  let args    = vm.getArgs();
   let nameRef = args.positional.at(0);
 
   assert(`The first argument of {{render}} must be quoted, e.g. {{render "sidebar"}}.`, isConst(nameRef));
@@ -48,6 +45,7 @@ function makeComponentDefinition(vm) {
     return new ConstReference(new RenderDefinition(controllerName, template, env, NON_SINGLETON_RENDER_MANAGER));
   }
 }
+
 
 /**
   Calling ``{{render}}`` from within a template will insert another
@@ -118,104 +116,12 @@ function makeComponentDefinition(vm) {
   @return {String} HTML string
   @public
 */
-export class RenderSyntax extends StatementSyntax {
-  static create(environment, args, symbolTable) {
-    return new this(environment, args, symbolTable);
+export function renderMacro(name, params, hash, builder) {
+  if (!params) {
+    params = [];
   }
-
-  constructor(environment, args, symbolTable) {
-    super();
-    this.definitionArgs = args;
-    this.definition = makeComponentDefinition;
-    this.args = ArgsSyntax.fromPositionalArgs(args.positional.slice(1, 2));
-    this.symbolTable = symbolTable;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.symbolTable, this.shadow);
-  }
-}
-
-class AbstractRenderManager {
-  prepareArgs(definition, args) {
-    return args;
-  }
-
-  /* abstract create(environment, definition, args, dynamicScope); */
-
-  layoutFor(definition, bucket, env) {
-    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
-  }
-
-  getSelf({ controller }) {
-    return new RootReference(controller);
-  }
-
-  getTag() {
-    return null;
-  }
-
-  getDestructor() {
-    return null;
-  }
-
-  didCreateElement() {}
-  didRenderLayout() {}
-  didCreate() {}
-  update() {}
-  didUpdateLayout() {}
-  didUpdate() {}
-}
-
-class SingletonRenderManager extends AbstractRenderManager {
-  create(environment, definition, args, dynamicScope) {
-    let { name, env } = definition;
-    let controller = env.owner.lookup(`controller:${name}`) || generateController(env.owner, name);
-
-    if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
-    }
-
-    return { controller };
-  }
-}
-
-const SINGLETON_RENDER_MANAGER = new SingletonRenderManager();
-
-class NonSingletonRenderManager extends AbstractRenderManager {
-  create(environment, definition, args, dynamicScope) {
-    let { name, env } = definition;
-    let modelRef = args.positional.at(0);
-    let controllerFactory = env.owner[FACTORY_FOR](`controller:${name}`);
-
-    let factory = controllerFactory || generateControllerFactory(env.owner, name);
-    let controller = factory.create({ model: modelRef.value() });
-
-    if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
-    }
-
-    return { controller };
-  }
-
-  update({ controller }, args, dynamicScope) {
-    controller.set('model', args.positional.at(0).value());
-  }
-
-  getDestructor({ controller }) {
-    return controller;
-  }
-}
-
-const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
-
-class RenderDefinition extends ComponentDefinition {
-  constructor(name, template, env, manager) {
-    super('render', manager, null);
-
-    this.name = name;
-    this.template = template;
-    this.env = env;
-  }
+  let definitionArgs = [params.slice(0), hash, null, null];
+  let args = [params.slice(1), hashToArgs(hash), null, null];
+  builder.component.dynamic(definitionArgs, makeComponentDefinition, args);
+  return true;
 }

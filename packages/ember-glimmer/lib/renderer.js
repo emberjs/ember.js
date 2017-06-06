@@ -2,11 +2,9 @@ import { RootReference } from './utils/references';
 import {
   run,
   setHasViews,
-  assert,
-  runInTransaction as _runInTransaction,
-  isFeatureEnabled
+  runInTransaction
 } from 'ember-metal';
-import { CURRENT_TAG, UNDEFINED_REFERENCE } from 'glimmer-reference';
+import { CURRENT_TAG, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import {
   fallbackViewRegistry,
   getViewElement,
@@ -14,20 +12,9 @@ import {
   getViewId
 } from 'ember-views';
 import { BOUNDS } from './component';
-import { RootComponentDefinition } from './syntax/curly-component';
-import { TopLevelOutletComponentDefinition } from './syntax/outlet';
-
-let runInTransaction;
-
-if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-  runInTransaction = _runInTransaction;
-} else {
-  runInTransaction = (context, methodName) => {
-    context[methodName]();
-    return false;
-  };
-}
+import { RootComponentDefinition } from './component-managers/root';
+import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
+import { assert } from 'ember-debug';
 
 const { backburner } = run;
 
@@ -73,7 +60,14 @@ class RootState {
     };
 
     this.render = () => {
-      let result = this.result = template.render(self, parentElement, dynamicScope);
+      let iterator = template.render(self, parentElement, dynamicScope);
+      let iteratorResult;
+
+      do {
+        iteratorResult = iterator.next();
+      } while (!iteratorResult.done);
+
+      let result = this.result = iteratorResult.value;
 
       // override .render function after initial render
       this.render = () => {
@@ -123,6 +117,10 @@ class RootState {
 }
 
 const renderers = [];
+
+export function _resetRenderers() {
+  renderers.length = 0;
+}
 
 setHasViews(() => renderers.length > 0);
 

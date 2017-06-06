@@ -1,69 +1,53 @@
 import {
-  ArgsSyntax,
-  StatementSyntax,
-  GetSyntax,
-  PositionalArgsSyntax,
   isComponentDefinition
-} from 'glimmer-runtime';
-import { UNDEFINED_REFERENCE } from 'glimmer-reference';
-import { assert } from 'ember-metal';
+} from '@glimmer/runtime';
+import { UNDEFINED_REFERENCE } from '@glimmer/reference';
+import { assert } from 'ember-debug';
+import { hashToArgs } from './utils';
 
-function dynamicComponentFor(vm, symbolTable) {
+function dynamicComponentFor(vm, args, meta) {
   let env     = vm.env;
-  let args    = vm.getArgs();
   let nameRef = args.positional.at(0);
 
-  return new DynamicComponentReference({ nameRef, env, symbolTable });
+  return new DynamicComponentReference({ nameRef, env, meta });
 }
 
-export class DynamicComponentSyntax extends StatementSyntax {
-  // for {{component componentName}}
-  static create(environment, args, symbolTable) {
-    let definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0, 1));
-    let invocationArgs = ArgsSyntax.build(args.positional.slice(1), args.named, args.blocks);
+export function dynamicComponentMacro(params, hash, _default, inverse, builder) {
+  let definitionArgs = [params.slice(0, 1), null, null, null];
+  let args = [params.slice(1), hashToArgs(hash), null, null];
+  builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
+  return true;
+}
 
-    return new this(definitionArgs, invocationArgs, symbolTable);
-  }
+export function blockComponentMacro(params, hash, _default, inverse, builder) {
+  let definitionArgs = [params.slice(0, 1), null, null, null];
+  let args = [params.slice(1), hashToArgs(hash), _default, inverse];
+  builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
+  return true;
+}
 
-  // Transforms {{foo.bar with=args}} or {{#foo.bar with=args}}{{/foo.bar}}
-  // into {{component foo.bar with=args}} or
-  // {{#component foo.bar with=args}}{{/component}}
-  // with all of it's arguments
-  static fromPath(environment, path, args, symbolTable) {
-    let positional = ArgsSyntax.fromPositionalArgs(PositionalArgsSyntax.build([GetSyntax.build(path.join('.'))]));
-
-    return new this(positional, args, symbolTable);
-  }
-
-  constructor(definitionArgs, args, symbolTable) {
-    super();
-    this.definition = dynamicComponentFor;
-    this.definitionArgs = definitionArgs;
-    this.args = args;
-    this.symbolTable = symbolTable;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.symbolTable, this.shadow);
-  }
+export function inlineComponentMacro(name, params, hash, builder) {
+  let definitionArgs = [params.slice(0, 1), null, null, null];
+  let args = [params.slice(1), hashToArgs(hash), null, null];
+  builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
+  return true;
 }
 
 class DynamicComponentReference {
-  constructor({ nameRef, env, symbolTable, args }) {
+  constructor({ nameRef, env, meta, args }) {
     this.tag = nameRef.tag;
     this.nameRef = nameRef;
     this.env = env;
-    this.symbolTable = symbolTable;
+    this.meta = meta;
     this.args = args;
   }
 
   value() {
-    let { env, nameRef, symbolTable } = this;
+    let { env, nameRef, meta } = this;
     let nameOrDef = nameRef.value();
 
     if (typeof nameOrDef === 'string') {
-      let definition = env.getComponentDefinition([nameOrDef], symbolTable);
+      let definition = env.getComponentDefinition(nameOrDef, meta);
 
       assert(`Could not find component named "${nameOrDef}" (no component or template with that name was found)`, definition);
 

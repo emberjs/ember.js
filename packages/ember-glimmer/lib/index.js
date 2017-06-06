@@ -1,7 +1,5 @@
 /**
-  [Glimmer](https://github.com/tildeio/glimmer) is a [Handlebars](http://handlebarsjs.com/)
-  compatible templating engine used by Ember.js.
-  Any valid Handlebars syntax is valid in an Ember template.
+  [Glimmer](https://github.com/tildeio/glimmer) is a templating engine used by Ember.js that is compatible with a subset of the [Handlebars](http://handlebarsjs.com/) syntax.
 
   ### Showing a property
 
@@ -9,15 +7,13 @@
   the DOM) to a user. For example, given a component with the property "name",
   that component's template can use the name in several ways:
 
-  ```javascript
-    // app/components/person.js
+  ```app/components/person.js
     export default Ember.Component.extend({
       name: 'Jill'
     });
   ```
 
-  ```handlebars
-  {{! app/components/person.hbs }}
+  ```app/components/person.hbs
   {{name}}
   <div>{{name}}</div>
   <span data-name={{name}}></span>
@@ -114,6 +110,66 @@
   @public
  */
 
+/**
+  `{{yield}}` denotes an area of a template that will be rendered inside
+  of another template.
+
+  ### Use with Ember.Component
+
+  When designing components `{{yield}}` is used to denote where, inside the component's
+  template, an optional block passed to the component should render:
+
+  ```application.hbs
+  {{#labeled-textfield value=someProperty}}
+    First name:
+  {{/labeled-textfield}}
+  ```
+
+  ```components/labeled-textfield.hbs
+  <label>
+    {{yield}} {{input value=value}}
+  </label>
+  ```
+
+  Result:
+
+  ```html
+  <label>
+    First name: <input type="text" />
+  </label>
+  ```
+
+  Additionally you can `yield` properties into the context for use by the consumer:
+
+  ```application.hbs
+  {{#labeled-textfield value=someProperty validator=(action 'firstNameValidator') as |validationError|}}
+    {{#if validationError}}
+      <p class="error">{{ValidationError}}</p>
+    {{/if}}
+    First name:
+  {{/labeled-textfield}}
+  ```
+
+  ```components/labeled-textfield.hbs
+  <label>
+    {{yield validationError}} {{input value=value}}
+  </label>
+  ```
+
+  Result:
+
+  ```html
+  <label>
+    <p class="error">First Name must be at least 3 characters long.</p>
+    First name: <input type="text" />
+  </label>
+  ```
+  @method yield
+  @for Ember.Templates.helpers
+  @param {Hash} options
+  @return {String} HTML string
+  @public
+ */
 
 /**
   Execute the `debugger` statement in the current template's context.
@@ -200,7 +256,6 @@
 
 export { INVOKE } from './helpers/action';
 export { default as RootTemplate } from './templates/root';
-export { registerSyntax } from './syntax';
 export { default as template } from './template';
 export { default as Checkbox } from './components/checkbox';
 export { default as TextField } from './components/text_field';
@@ -209,7 +264,6 @@ export { default as LinkComponent } from './components/link-to';
 export { default as Component } from './component';
 export { default as Helper, helper } from './helper';
 export { default as Environment } from './environment';
-export { default as makeBoundHelper } from './make-bound-helper';
 export {
   SafeString,
   escapeExpression,
@@ -220,7 +274,8 @@ export {
 export {
   Renderer,
   InertRenderer,
-  InteractiveRenderer
+  InteractiveRenderer,
+  _resetRenderers
 } from './renderer';
 export {
   getTemplate,
@@ -231,3 +286,5 @@ export {
 } from './template_registry';
 export { setupEngineRegistry, setupApplicationRegistry } from './setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './dom';
+export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './syntax';
+export { default as AbstractComponentManager } from './component-managers/abstract';

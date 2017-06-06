@@ -27,9 +27,10 @@
    @for Ember.Templates.helpers
    @param {Object} options
    @return {Object} Hash
+   @since 2.3.0
    @public
  */
 
 export default function(vm, args) {
-  return args.named;
+  return args.named.capture();
 }

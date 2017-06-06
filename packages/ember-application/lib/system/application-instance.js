@@ -4,7 +4,8 @@
 */
 
 import { assign } from 'ember-utils';
-import { deprecate, get, set, run, computed } from 'ember-metal';
+import { deprecate } from 'ember-debug';
+import { get, set, run, computed } from 'ember-metal';
 import {
   buildFakeRegistryWithDeprecations,
   RSVP
@@ -262,8 +263,8 @@ const ApplicationInstance = EngineInstance.extend({
     let handleTransitionReject = (error) => {
       if (error.error) {
         throw error.error;
-      } else if (error.name === 'TransitionAborted' && router.router.activeTransition) {
-        return router.router.activeTransition.then(handleTransitionResolve, handleTransitionReject);
+      } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
+        return router._routerMicrolib.activeTransition.then(handleTransitionResolve, handleTransitionReject);
       } else if (error.name === 'TransitionAborted') {
         throw new Error(error.message);
       } else {
@@ -490,27 +491,6 @@ BootOptions.prototype.toEnvironment = function() {
   env.options = this;
   return env;
 };
-
-Object.defineProperty(ApplicationInstance.prototype, 'container', {
-  configurable: true,
-  enumerable: false,
-  get() {
-    let instance = this;
-    return {
-      lookup() {
-        deprecate(
-          'Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
-          false, {
-            id: 'ember-application.app-instance-container',
-            until: '3.0.0',
-            url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-applicationinstance-container'
-          }
-        );
-        return instance.lookup(...arguments);
-      }
-    };
-  }
-});
 
 Object.defineProperty(ApplicationInstance.prototype, 'registry', {
   configurable: true,

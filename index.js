@@ -1,5 +1,7 @@
-/* jshint node: true */
+/* eslint-env node */
 'use strict';
+
+var fs = require('fs');
 var path = require('path');
 var resolve = require('resolve');
 
@@ -15,7 +17,7 @@ function add(paths, name, path) {
 
 add(paths, 'prod',  'vendor/ember/ember.prod.js');
 add(paths, 'debug', 'vendor/ember/ember.debug.js');
-add(paths, 'shims', 'vendor/ember/shims.js');
+add(paths, 'testing', 'vendor/ember/ember-testing.js');
 add(paths, 'jquery', 'vendor/ember/jquery/jquery.js');
 
 add(absolutePaths, 'templateCompiler', __dirname + '/dist/ember-template-compiler.js');
@@ -34,7 +36,8 @@ module.exports = {
   absolutePaths: absolutePaths,
 
   treeForVendor: function() {
-    var stew = require('broccoli-stew');
+    var Funnel = require('broccoli-funnel');
+    var MergeTrees = require('broccoli-merge-trees');
 
     var jqueryPath;
     try {
@@ -43,32 +46,29 @@ module.exports = {
       jqueryPath = path.dirname(require.resolve('jquery/package.json'));
     }
 
-    var jquery = stew.find(jqueryPath + '/dist', {
+    var jquery = new Funnel(jqueryPath + '/dist', {
       destDir: 'ember/jquery',
       files: [ 'jquery.js' ]
     });
 
-    var ember = stew.find(__dirname + '/dist', {
-      destDir: 'ember',
-      files: [
-        'ember-runtime.js',
-        'ember-template-compiler.js',
-        'ember-testing.js',
-        'ember.debug.js',
-        'ember.min.js',
-        'ember.prod.js'
-      ]
+    var emberFiles = [
+      'ember-runtime.js',
+      'ember-template-compiler.js',
+      'ember-testing.js',
+      'ember.debug.js',
+      'ember.min.js',
+      'ember.prod.js'
+    ].filter(function(file) {
+      var fullPath = path.join(__dirname, 'dist', file);
+
+      return fs.existsSync(fullPath);
     });
 
-    var shims = stew.find(__dirname + '/vendor/ember', {
+    var ember = new Funnel(__dirname + '/dist', {
       destDir: 'ember',
-      files: [ 'shims.js' ]
+      files: emberFiles
     });
 
-    return stew.find([
-      ember,
-      shims,
-      jquery
-    ]);
+    return new MergeTrees([ember, jquery]);
   }
 };

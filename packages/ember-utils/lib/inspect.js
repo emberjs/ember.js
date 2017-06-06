@@ -22,12 +22,12 @@ export default function inspect(obj) {
     return 'undefined';
   }
   if (Array.isArray(obj)) {
-    return '[' + obj + ']';
+    return `[${obj}]`;
   }
   // for non objects
   let type = typeof obj;
   if (type !== 'object' && type !== 'symbol') {
-    return '' + obj;
+    return `${obj}`;
   }
   // overridden toString
   if (typeof obj.toString === 'function' && obj.toString !== objectToString) {
@@ -44,11 +44,11 @@ export default function inspect(obj) {
       if (typeof v === 'function') { v = 'function() { ... }'; }
 
       if (v && typeof v.toString !== 'function') {
-        ret.push(key + ': ' + objectToString.call(v));
+        ret.push(`${key}: ${objectToString.call(v)}`);
       } else {
-        ret.push(key + ': ' + v);
+        ret.push(`${key}: ${v}`);
       }
     }
   }
-  return '{' + ret.join(', ') + '}';
+  return `{${ret.join(', ')}}`;
 }

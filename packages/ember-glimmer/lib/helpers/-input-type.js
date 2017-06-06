@@ -9,5 +9,5 @@ function inputTypeHelper({ positional, named }) {
 }
 
 export default function(vm, args) {
-  return new InternalHelperReference(inputTypeHelper, args);
+  return new InternalHelperReference(inputTypeHelper, args.capture());
 }

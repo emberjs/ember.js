@@ -13,7 +13,6 @@ export {
   TextField,
   InteractiveRender,
   InertRenderer,
-  makeBoundHelper,
   htmlSafe,
   SafeString,
   DOMChanges,

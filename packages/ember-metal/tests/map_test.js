@@ -2,7 +2,7 @@ import {
   Map,
   MapWithDefault,
   OrderedSet
-} from '../map';
+} from '..';
 
 let object, number, string, map, variety;
 const varieties = [['Map', Map], ['MapWithDefault', MapWithDefault]];

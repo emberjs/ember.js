@@ -1,5 +1,7 @@
 'use strict';
 
+var fs = require('fs');
+
 var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 var setupTestHooks = blueprintHelpers.setupTestHooks;
 var emberNew = blueprintHelpers.emberNew;
@@ -727,6 +729,29 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("{{#x-foo}}");
       }));
   });
+
+  describe('usePods: true', function() {
+    it('component-test x-foo', function() {
+      var args = ['component-test', 'x-foo'];
+
+      return emberNew()
+        .then(() => {
+          fs.writeFileSync('.ember-cli', `{
+            "disableAnalytics": false,
+            "usePods": true
+          }`);
+        })
+        .then(() => emberGenerateDestroy(args, _file => {
+          expect(_file('tests/integration/components/x-foo/component-test.js'))
+            .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
+            .to.contain("import hbs from 'htmlbars-inline-precompile';")
+            .to.contain("moduleForComponent('x-foo'")
+            .to.contain("integration: true")
+            .to.contain("{{x-foo}}")
+            .to.contain("{{#x-foo}}");
+        }));
+    });
+  })
 
   it('component-test x-foo --unit', function() {
     var args = ['component-test', 'x-foo', '--unit'];

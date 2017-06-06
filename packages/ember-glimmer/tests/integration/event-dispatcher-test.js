@@ -1,11 +1,12 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
 import {
-  isFeatureEnabled,
   instrumentationSubscribe,
   instrumentationReset,
   run
 } from 'ember-metal';
+import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
+import { EventDispatcher } from 'ember-views';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
 
@@ -36,6 +37,59 @@ moduleFor('EventDispatcher', class extends RenderingTest {
     assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
   }
 
+  ['@test events bubble to parent view'](assert) {
+    let receivedEvent;
+
+    this.registerComponent('x-foo', {
+      ComponentClass: Component.extend({
+        change(event) {
+          receivedEvent = event;
+        }
+      }),
+      template: `{{yield}}`
+    });
+
+    this.registerComponent('x-bar', {
+      ComponentClass: Component.extend({
+        change() {}
+      }),
+      template: `<input id="is-done" type="checkbox">`
+    });
+
+    this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
+
+    this.runTask(() => this.$('#is-done').trigger('change'));
+    assert.ok(receivedEvent, 'change event was triggered');
+    assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
+  }
+
+  ['@test events bubbling up can be prevented'](assert) {
+    let hasReceivedEvent;
+
+    this.registerComponent('x-foo', {
+      ComponentClass: Component.extend({
+        change() {
+          hasReceivedEvent = true;
+        }
+      }),
+      template: `{{yield}}`
+    });
+
+    this.registerComponent('x-bar', {
+      ComponentClass: Component.extend({
+        change() {
+          return false;
+        }
+      }),
+      template: `<input id="is-done" type="checkbox">`
+    });
+
+    this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
+
+    this.runTask(() => this.$('#is-done').trigger('change'));
+    assert.notOk(hasReceivedEvent, 'change event has not been received');
+  }
+
   ['@test dispatches to the nearest event manager'](assert) {
     let receivedEvent;
 
@@ -55,6 +109,8 @@ moduleFor('EventDispatcher', class extends RenderingTest {
       template: `<input id="is-done" type="checkbox">`
     });
 
+
+    expectDeprecation(/`eventManager` has been deprecated/);
     this.render(`{{x-foo}}`);
 
     this.runTask(() => this.$('#is-done').trigger('click'));
@@ -89,6 +145,7 @@ moduleFor('EventDispatcher', class extends RenderingTest {
       template: `<input id="is-done" type="checkbox">`
     });
 
+    expectDeprecation(/`eventManager` has been deprecated/);
     this.render(`{{x-foo}}`);
 
     this.runTask(() => this.$('#is-done').trigger('click'));
@@ -121,7 +178,7 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     this.dispatcher = this.owner.lookup('event_dispatcher:main');
   }
 
-  ['@test additonal events can be specified'](assert) {
+  ['@test additional events can be specified'](assert) {
     this.dispatcher.setup({ myevent: 'myEvent' });
 
     this.registerComponent('x-foo', {
@@ -136,6 +193,29 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     this.render(`{{x-foo}}`);
 
     this.$('div').trigger('myevent');
+  }
+
+  ['@test eventManager is deprecated'](assert) {
+    this.registerComponent('x-foo', {
+      ComponentClass: Component.extend({
+        eventManager: {
+          myEvent() {}
+        }
+      }),
+      template: `<p>Hello!</p>`
+    });
+
+    expectDeprecation(/`eventManager` has been deprecated/);
+    this.render(`{{x-foo}}`);
+  }
+
+  ['@test canDispatchToEventManager is deprecated in EventDispatcher'](assert) {
+    let MyDispatcher = EventDispatcher.extend({
+      canDispatchToEventManager: null
+    });
+
+    expectDeprecation(/`canDispatchToEventManager` has been deprecated/);
+    MyDispatcher.create();
   }
 
   ['@test a rootElement can be specified'](assert) {
@@ -180,7 +260,7 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
   }
 });
 
-if (isFeatureEnabled('ember-improved-instrumentation')) {
+if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor('EventDispatcher - Instrumentation', class extends RenderingTest {
     teardown() {
       super.teardown();

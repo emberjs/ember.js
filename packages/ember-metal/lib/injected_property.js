@@ -1,5 +1,5 @@
 import { getOwner } from 'ember-utils';
-import { assert } from './debug';
+import { assert } from 'ember-debug';
 import { ComputedProperty } from './computed';
 import { AliasedProperty } from './alias';
 import { Descriptor } from './properties';
@@ -30,7 +30,7 @@ function injectedPropertyGet(keyName) {
   assert(`InjectedProperties should be defined with the Ember.inject computed property macros.`, desc && desc.isDescriptor && desc.type);
   assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, owner);
 
-  return owner.lookup(desc.type + ':' + (desc.name || keyName));
+  return owner.lookup(`${desc.type}:${desc.name || keyName}`);
 }
 
 InjectedProperty.prototype = Object.create(Descriptor.prototype);

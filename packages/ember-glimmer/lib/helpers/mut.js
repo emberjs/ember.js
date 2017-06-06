@@ -3,7 +3,7 @@
 @submodule ember-glimmer
 */
 import { symbol } from 'ember-utils';
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { UPDATE } from '../utils/references';
 import { INVOKE } from './action';
 
@@ -116,4 +116,3 @@ export default function(vm, args) {
 
   return wrappedRef;
 }
-

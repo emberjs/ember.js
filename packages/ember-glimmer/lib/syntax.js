@@ -1,44 +1,82 @@
-import { RenderSyntax } from './syntax/render';
-import { OutletSyntax } from './syntax/outlet';
-import { MountSyntax } from './syntax/mount';
-import { DynamicComponentSyntax } from './syntax/dynamic-component';
-import { InputSyntax } from './syntax/input';
+import { renderMacro } from './syntax/render';
+import { outletMacro } from './syntax/outlet';
+import { mountMacro } from './syntax/mount';
 import {
-  WithDynamicVarsSyntax,
-  InElementSyntax
-} from 'glimmer-runtime';
+  blockComponentMacro,
+  inlineComponentMacro
+} from './syntax/dynamic-component';
+import { wrapComponentClassAttribute } from './utils/bindings';
+import { inputMacro } from './syntax/input';
+import { textAreaMacro } from './syntax/-text-area';
+import { hashToArgs } from './syntax/utils';
+import { assert } from 'ember-debug';
 
+function refineInlineSyntax(name, params, hash, builder) {
+  assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.env.builtInHelpers[name] && builder.env.owner.hasRegistration(`helper:${name}`)));
 
-let syntaxKeys = [];
-let syntaxes = [];
+  let definition;
+  if (name.indexOf('-') > -1) {
+    definition = builder.env.getComponentDefinition(name, builder.meta.templateMeta);
+  }
 
-export function registerSyntax(key, syntax) {
-  syntaxKeys.push(key);
-  syntaxes.push(syntax);
+  if (definition) {
+    wrapComponentClassAttribute(hash);
+    builder.component.static(definition, [params, hashToArgs(hash), null, null]);
+    return true;
+  }
+
+  return false;
 }
 
-export function findSyntaxBuilder(key) {
-  let index = syntaxKeys.indexOf(key);
-
-  if (index > -1) {
-    return syntaxes[index];
+function refineBlockSyntax(name, params, hash, _default, inverse, builder) {
+  if (name.indexOf('-') === -1) {
+    return false;
   }
+
+  let meta = builder.meta.templateMeta;
+
+  let definition;
+  if (name.indexOf('-') > -1) {
+    definition = builder.env.getComponentDefinition(name, meta);
+  }
+
+  if (definition) {
+    wrapComponentClassAttribute(hash);
+    builder.component.static(definition, [params, hashToArgs(hash), _default, inverse]);
+    return true;
+  }
+
+  assert(`A component or helper named "${name}" could not be found`, builder.env.hasHelper(name, meta));
+
+  assert(`Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`, !builder.env.hasHelper(name, meta));
+
+  return false;
 }
 
-registerSyntax('render', RenderSyntax);
-registerSyntax('outlet', OutletSyntax);
-registerSyntax('mount', MountSyntax);
-registerSyntax('component', DynamicComponentSyntax);
-registerSyntax('input', InputSyntax);
+export const experimentalMacros = [];
 
-registerSyntax('-with-dynamic-vars', class {
-  static create(environment, args, symbolTable) {
-    return new WithDynamicVarsSyntax(args);
-  }
-});
+// This is a private API to allow for expiremental macros
+// to be created in user space. Registering a macro should
+// should be done in an initializer.
+export function registerMacros(macro) {
+  experimentalMacros.push(macro);
+}
 
-registerSyntax('-in-element', class {
-  static create(environment, args, symbolTable) {
-    return new InElementSyntax(args);
+export function populateMacros(blocks, inlines) {
+  inlines.add('outlet', outletMacro);
+  inlines.add('component', inlineComponentMacro);
+  inlines.add('render', renderMacro);
+  inlines.add('mount', mountMacro);
+  inlines.add('input', inputMacro);
+  inlines.add('textarea', textAreaMacro);
+  inlines.addMissing(refineInlineSyntax);
+  blocks.add('component', blockComponentMacro);
+  blocks.addMissing(refineBlockSyntax);
+
+  for (let i = 0; i < experimentalMacros.length; i++) {
+    let macro = experimentalMacros[i];
+    macro(blocks, inlines);
   }
-});
+
+  return { blocks, inlines };
+}

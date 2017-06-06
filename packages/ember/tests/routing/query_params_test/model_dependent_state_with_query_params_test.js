@@ -14,7 +14,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
   }
 
   teardown() {
-    super(...arguments);
+    super.teardown(...arguments);
     this.assert.ok(!this.expectedModelHookParams, 'there should be no pending expectation of expected model hook params');
   }
 
@@ -75,7 +75,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
       assert.equal(this.controller.get('q'), 'lol');
       assert.equal(this.controller.get('z'), 0);
       assert.equal(this.$link1.attr('href'), `${urlPrefix}/a-1?q=lol`);
-      assert.equal(this.$link2.attr('href'), `${urlPrefix}/a-2?q=lol`); // fail
+      assert.equal(this.$link2.attr('href'), `${urlPrefix}/a-2?q=lol`);
       assert.equal(this.$link3.attr('href'), `${urlPrefix}/a-3`);
 
       this.expectedModelHookParams = { id: 'a-3', q: 'lol', z: 123 };
@@ -94,7 +94,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
 
     assert.expect(32);
 
-    this.registerTemplate('application', `{{#each articles as |a|}} {{link-to 'Article' '${articleLookup}' a.id id=a.id}} {{/each}}`);
+    this.addTemplate('application', `{{#each articles as |a|}} {{link-to 'Article' '${articleLookup}' a.id id=a.id}} {{/each}}`);
 
     return this.boot().then(() => {
       this.expectedModelHookParams = { id: 'a-1', q: 'wat', z: 0 };
@@ -233,7 +233,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
       }
     });
 
-    this.registerTemplate('about', `{{link-to 'A' '${commentsLookup}' 'a-1' id='one'}} {{link-to 'B' '${commentsLookup}' 'a-2' id='two'}}`);
+    this.addTemplate('about', `{{link-to 'A' '${commentsLookup}' 'a-1' id='one'}} {{link-to 'B' '${commentsLookup}' 'a-2' id='two'}}`);
 
     return this.visitApplication().then(() => {
       this.transitionTo(commentsLookup, 'a-1');
@@ -272,13 +272,13 @@ moduleFor('Query Params - model-dependent state', class extends ModelDependentQP
 
     let articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
-    this.registerController('application', Controller.extend({
+    this.add('controller:application', Controller.extend({
       articles
     }));
 
     let self = this;
     let assert = this.assert;
-    this.registerRoute('article', Route.extend({
+    this.add('route:article', Route.extend({
       model(params) {
         if (self.expectedModelHookParams) {
           assert.deepEqual(params, self.expectedModelHookParams, 'the ArticleRoute model hook received the expected merged dynamic segment + query params hash');
@@ -288,18 +288,18 @@ moduleFor('Query Params - model-dependent state', class extends ModelDependentQP
       }
     }));
 
-    this.registerController('article', Controller.extend({
+    this.add('controller:article', Controller.extend({
       queryParams: ['q', 'z'],
       q: 'wat',
       z: 0
     }));
 
-    this.registerController('comments', Controller.extend({
+    this.add('controller:comments', Controller.extend({
       queryParams: 'page',
       page: 1
     }));
 
-    this.registerTemplate('application', '{{#each articles as |a|}} 1{{link-to \'Article\' \'article\' a id=a.id}} {{/each}} {{outlet}}');
+    this.addTemplate('application', '{{#each articles as |a|}} 1{{link-to \'Article\' \'article\' a id=a.id}} {{/each}} {{outlet}}');
   }
 
   visitApplication() {
@@ -356,13 +356,13 @@ moduleFor('Query Params - model-dependent state (nested)', class extends ModelDe
 
     let site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
-    this.registerController('application', Controller.extend({
+    this.add('controller:application', Controller.extend({
       articles: site_articles
     }));
 
     let self = this;
     let assert = this.assert;
-    this.registerRoute('site.article', Route.extend({
+    this.add('route:site.article', Route.extend({
       model(params) {
         if (self.expectedModelHookParams) {
           assert.deepEqual(params, self.expectedModelHookParams, 'the ArticleRoute model hook received the expected merged dynamic segment + query params hash');
@@ -372,18 +372,18 @@ moduleFor('Query Params - model-dependent state (nested)', class extends ModelDe
       }
     }));
 
-    this.registerController('site.article', Controller.extend({
+    this.add('controller:site.article', Controller.extend({
       queryParams: ['q', 'z'],
       q: 'wat',
       z: 0
     }));
 
-    this.registerController('site.article.comments', Controller.extend({
+    this.add('controller:site.article.comments', Controller.extend({
       queryParams: 'page',
       page: 1
     }));
 
-    this.registerTemplate('application', '{{#each articles as |a|}} {{link-to \'Article\' \'site.article\' a id=a.id}} {{/each}} {{outlet}}');
+    this.addTemplate('application', '{{#each articles as |a|}} {{link-to \'Article\' \'site.article\' a id=a.id}} {{/each}} {{outlet}}');
   }
 
   visitApplication() {
@@ -440,7 +440,7 @@ moduleFor('Query Params - model-dependent state (nested & more than 1 dynamic se
     let sites = emberA([{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }]);
     let site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
-    this.registerController('application', Controller.extend({
+    this.add('controller:application', Controller.extend({
       siteArticles: site_articles,
       sites,
       allSitesAllArticles: computed({
@@ -460,7 +460,7 @@ moduleFor('Query Params - model-dependent state (nested & more than 1 dynamic se
 
     let self = this;
     let assert = this.assert;
-    this.registerRoute('site', Route.extend({
+    this.add('route:site', Route.extend({
       model(params) {
         if (self.expectedSiteModelHookParams) {
           assert.deepEqual(params, self.expectedSiteModelHookParams, 'the SiteRoute model hook received the expected merged dynamic segment + query params hash');
@@ -470,7 +470,7 @@ moduleFor('Query Params - model-dependent state (nested & more than 1 dynamic se
       }
     }));
 
-    this.registerRoute('site.article', Route.extend({
+    this.add('route:site.article', Route.extend({
       model(params) {
         if (self.expectedArticleModelHookParams) {
           assert.deepEqual(params, self.expectedArticleModelHookParams, 'the SiteArticleRoute model hook received the expected merged dynamic segment + query params hash');
@@ -480,23 +480,23 @@ moduleFor('Query Params - model-dependent state (nested & more than 1 dynamic se
       }
     }));
 
-    this.registerController('site', Controller.extend({
+    this.add('controller:site', Controller.extend({
       queryParams: ['country'],
       country: 'au'
     }));
 
-    this.registerController('site.article', Controller.extend({
+    this.add('controller:site.article', Controller.extend({
       queryParams: ['q', 'z'],
       q: 'wat',
       z: 0
     }));
 
-    this.registerController('site.article.comments', Controller.extend({
+    this.add('controller:site.article.comments', Controller.extend({
       queryParams: ['page'],
       page: 1
     }));
 
-    this.registerTemplate('application', '{{#each allSitesAllArticles as |a|}} {{#link-to \'site.article\' a.site_id a.article_id id=a.id}}Article [{{a.site_id}}] [{{a.article_id}}]{{/link-to}} {{/each}} {{outlet}}');
+    this.addTemplate('application', '{{#each allSitesAllArticles as |a|}} {{#link-to \'site.article\' a.site_id a.article_id id=a.id}}Article [{{a.site_id}}] [{{a.article_id}}]{{/link-to}} {{/each}} {{outlet}}');
   }
 
   visitApplication() {
@@ -530,7 +530,7 @@ moduleFor('Query Params - model-dependent state (nested & more than 1 dynamic se
   }
 
   ['@test query params have \'model\' stickiness by default'](assert) {
-    assert.expect(59); // Insane.
+    assert.expect(59);
 
     return this.boot().then(() => {
       run(this.links['s-1-a-1'], 'click');
@@ -599,7 +599,7 @@ moduleFor('Query Params - model-dependent state (nested & more than 1 dynamic se
   }
 
   ['@test query params have \'model\' stickiness by default (url changes)'](assert) {
-    assert.expect(88); // INSANE.
+    assert.expect(88);
 
     return this.boot().then(() => {
       this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
@@ -700,7 +700,7 @@ moduleFor('Query Params - model-dependent state (nested & more than 1 dynamic se
   }
 
   ['@test query params have \'model\' stickiness by default (params-based transitions)'](assert) {
-    assert.expect(118); // <-- INSANE! Like why is this even a thing?
+    assert.expect(118);
 
     return this.boot().then(() => {
       this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };

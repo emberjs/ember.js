@@ -1,4 +1,4 @@
-import expandProperties from '../expand_properties';
+import { expandProperties } from '..';
 
 let foundProperties = [];
 
@@ -81,7 +81,8 @@ QUnit.test('Nested brace expansions are not allowed', function() {
     'a.{{b}.c}',
     'a.{b,c}.{d.{e,f}.g',
     'a.{b.{c}',
-    'a.{b,c}}'
+    'a.{b,c}}',
+    'model.{bar,baz'
   ];
 
   nestedBraceProperties.forEach((invalidProperties) => {
@@ -89,18 +90,26 @@ QUnit.test('Nested brace expansions are not allowed', function() {
   }, /Brace expanded properties have to be balanced and cannot be nested/);
 });
 
+QUnit.test('A property with no braces does not expand', function() {
+  expect(1);
+
+  expandProperties('a,b,c.d.e,f', addProperty);
+
+  deepEqual(foundProperties, ['a,b,c.d.e,f']);
+});
+
 QUnit.test('A pattern must be a string', function() {
   expect(1);
 
   expectAssertion(() => {
-    expandProperties([], addProperty);
+    expandProperties([1, 2], addProperty);
   }, /A computed property key must be a string/);
 });
 
 QUnit.test('A pattern must not contain a space', function() {
   expect(1);
 
-  expectAssertion(() => {
-    expandProperties('a, b', addProperty);
+  expectAssertion(function() {
+    expandProperties('{a, b}', addProperty);
   }, /Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"/);
 });

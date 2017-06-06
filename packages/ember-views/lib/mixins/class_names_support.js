@@ -3,10 +3,8 @@
 @submodule ember-views
 */
 
-import {
-  assert,
-  Mixin
-} from 'ember-metal';
+import { Mixin } from 'ember-metal';
+import { assert } from 'ember-debug';
 
 const EMPTY_ARRAY = Object.freeze([]);
 

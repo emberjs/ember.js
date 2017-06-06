@@ -14,6 +14,7 @@ QUnit.test('Ember.isArray', function() {
   let string        = 'Hello';
   let object        = {};
   let length        = { length: 12 };
+  let strangeLength = { length: 'yes' };
   let fn            = function() {};
   let arrayProxy = ArrayProxy.create({ content: emberA() });
 
@@ -23,6 +24,7 @@ QUnit.test('Ember.isArray', function() {
   equal(isArray(string), false, '"Hello"');
   equal(isArray(object), false, '{}');
   equal(isArray(length), true, '{ length: 12 }');
+  equal(isArray(strangeLength), false, '{ length: "yes" }');
   equal(isArray(global), false, 'global');
   equal(isArray(fn), false, 'function() {}');
   equal(isArray(arrayProxy), true, '[]');

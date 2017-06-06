@@ -1,4 +1,4 @@
-import { deprecate } from 'ember-metal';
+import { deprecate } from 'ember-debug';
 
 const contexts = [];
 const callbacks = [];
@@ -107,22 +107,4 @@ function indexOf(context, callback) {
     }
   }
   return -1;
-}
-
-export function generateDeprecatedWaitersArray() {
-  deprecate(
-    'Usage of `Ember.Test.waiters` is deprecated. Please refactor to `Ember.Test.checkWaiters`.',
-    false,
-    { until: '2.8.0', id: 'ember-testing.test-waiters' }
-  );
-
-  let array = new Array(callbacks.length);
-  for (let i = 0; i < callbacks.length; i++) {
-    let context = contexts[i];
-    let callback = callbacks[i];
-
-    array[i] = [context, callback];
-  }
-
-  return array;
 }

@@ -2,6 +2,7 @@ import { set, computed } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
 
 moduleFor('Components test: dynamic components', class extends RenderingTest {
 
@@ -705,5 +706,38 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     });
 
     this.assertText('Foo4');
+  }
+
+  ['@test component helper emits useful backtracking re-render assertion message'](assert) {
+    this.registerComponent('outer-component', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          this.set('person', { name: 'Alex' });
+        }
+      }),
+      template: `Hi {{person.name}}! {{component "error-component" person=person}}`
+    });
+
+    this.registerComponent('error-component', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          this.set('person.name', { name: 'Ben' });
+        }
+      }),
+      template: '{{person.name}}'
+    });
+
+    let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "component:outer-component" and modified in "component:error-component"/;
+
+    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+      expectDeprecation(expectedBacktrackingMessage);
+      this.render('{{component componentName}}', { componentName: 'outer-component' });
+    } else {
+      expectAssertion(() => {
+        this.render('{{component componentName}}', { componentName: 'outer-component' });
+      }, expectedBacktrackingMessage);
+    }
   }
 });

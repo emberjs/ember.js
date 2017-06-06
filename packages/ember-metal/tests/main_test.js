@@ -1,4 +1,4 @@
-import Ember from '../index'; // testing reexports
+import Ember from '..'; // testing reexports
 
 // From sindresourhus/semver-regex https://github.com/sindresorhus/semver-regex/blob/795b05628d96597ebcbe6d31ef4a432858365582/index.js#L3
 const SEMVER_REGEX = /^\bv?(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?\b$/;
@@ -21,7 +21,7 @@ QUnit.test('SEMVER_REGEX properly validates and invalidates version numbers', fu
     equal(SEMVER_REGEX.test(versionString), expectedResult);
   }
 
-  // Postive test cases
+  // Positive test cases
   validateVersionString('1.11.3', true);
   validateVersionString('1.0.0-beta.16.1', true);
   validateVersionString('1.12.1+canary.aba1412', true);
@@ -30,18 +30,6 @@ QUnit.test('SEMVER_REGEX properly validates and invalidates version numbers', fu
   // Negative test cases
   validateVersionString('1.11.3.aba18a', false);
   validateVersionString('1.11', false);
-});
-
-QUnit.test('Ember.keys is deprecated', function() {
-  expectDeprecation(function() {
-    Ember.keys({});
-  }, 'Ember.keys is deprecated in favor of Object.keys');
-});
-
-QUnit.test('Ember.create is deprecated', function() {
-  expectDeprecation(function() {
-    Ember.create(null);
-  }, 'Ember.create is deprecated in favor of Object.create');
 });
 
 QUnit.test('Ember.Backburner is deprecated', function() {

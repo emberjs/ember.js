@@ -4,11 +4,10 @@
 */
 
 import {
-  deprecate,
   get,
-  Mixin,
-  Error as EmberError
+  Mixin
 } from 'ember-metal';
+import { deprecate, Error as EmberError } from 'ember-debug';
 import { Freezable } from './freezable';
 
 /**

@@ -4,7 +4,7 @@
 */
 import { assign } from 'ember-utils';
 import { InternalHelperReference } from '../utils/references';
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { QueryParams } from 'ember-routing';
 
 /**
@@ -32,5 +32,5 @@ function queryParams({ positional, named }) {
 }
 
 export default function(vm, args) {
-  return new InternalHelperReference(queryParams, args);
+  return new InternalHelperReference(queryParams, args.capture());
 }

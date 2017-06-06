@@ -307,14 +307,11 @@
 */
 
 import Logger from 'ember-console';
-
+import { assert, deprecate } from 'ember-debug';
 import {
-  assert,
-  deprecate,
   get,
   computed,
-  flaggedInstrument,
-  runInDebug
+  flaggedInstrument
 } from 'ember-metal';
 import {
   deprecatingAlias,
@@ -324,7 +321,7 @@ import {
 import { isSimpleClick } from 'ember-views';
 import layout from '../templates/link-to';
 import EmberComponent, { HAS_BLOCK } from '../component';
-
+import { DEBUG } from 'ember-env-flags';
 
 /**
   `Ember.LinkComponent` renders an element whose `click` event triggers a
@@ -597,17 +594,19 @@ const LinkComponent = EmberComponent.extend({
   }),
 
   transitioningIn: computed('active', 'willBeActive', function computeLinkToComponentTransitioningIn() {
-    let willBeActive = get(this, 'willBeActive');
-    if (typeof willBeActive === 'undefined') { return false; }
-
-    return !get(this, 'active') && willBeActive && 'ember-transitioning-in';
+    if (get(this, 'willBeActive') === true && !get(this, 'active')) {
+      return 'ember-transitioning-in';
+    } else {
+      return false;
+    }
   }),
 
   transitioningOut: computed('active', 'willBeActive', function computeLinkToComponentTransitioningOut() {
-    let willBeActive = get(this, 'willBeActive');
-    if (typeof willBeActive === 'undefined') { return false; }
-
-    return get(this, 'active') && !willBeActive && 'ember-transitioning-out';
+    if (get(this, 'willBeActive') === false && get(this, 'active')) {
+      return 'ember-transitioning-out';
+    } else {
+      return false;
+    }
   }),
 
   /**
@@ -713,7 +712,7 @@ const LinkComponent = EmberComponent.extend({
     let routing = get(this, '_routing');
     let queryParams = get(this, 'queryParams.values');
 
-    runInDebug(() => {
+    if (DEBUG) {
       /*
        * Unfortunately, to get decent error messages, we need to do this.
        * In some future state we should be able to use a "feature flag"
@@ -730,7 +729,7 @@ const LinkComponent = EmberComponent.extend({
       } catch (e) {
         assert('You attempted to define a `{{link-to "' + qualifiedRouteName + '"}}` but did not pass the parameters required for generating its dynamic segments. ' + e.message);
       }
-    });
+    }
 
     return routing.generateURL(qualifiedRouteName, models, queryParams);
   }),

@@ -1,10 +1,16 @@
-module.exports = {
+var fs = require('fs');
+var path = require('path');
+
+var options = {
   root: true,
   parserOptions: {
     ecmaVersion: 6,
     sourceType: 'module',
   },
   extends: 'eslint:recommended',
+  plugins: [
+    "ember-internal"
+  ],
   env: {
     qunit: true,
   },
@@ -29,11 +35,13 @@ module.exports = {
     'WeakMap': true,
   },
   rules: {
-    'require-yuidoc-access': 'error',
-    'no-const-outside-module-scope': 'error',
+    'ember-internal/require-yuidoc-access': 'error',
+    'ember-internal/no-const-outside-module-scope': 'error',
 
     // temporarily disabled
     'no-unused-vars': 'off',
     'comma-dangle': 'off',
   },
 };
+
+module.exports = options;

@@ -1,4 +1,4 @@
-import { deprecate } from 'ember-metal';
+import { deprecate } from 'ember-debug';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
 export default function DeprecateRender(options) {
@@ -10,7 +10,7 @@ DeprecateRender.prototype.transform = function DeprecateRender_transform(ast) {
   let moduleName = this.options.meta.moduleName;
   let walker = new this.syntax.Walker();
 
-  walker.visit(ast, function(node) {
+  walker.visit(ast, node => {
     if (!validate(node)) { return; }
 
     each(node.params, (param) => {
@@ -19,7 +19,7 @@ DeprecateRender.prototype.transform = function DeprecateRender_transform(ast) {
       deprecate(deprecationMessage(moduleName, node), false, {
         id: 'ember-template-compiler.deprecate-render',
         until: '3.0.0',
-        url: 'http://emberjs.com/deprecations/v2.x#toc_code-render-code-helper'
+        url: 'https://emberjs.com/deprecations/v2.x#toc_code-render-code-helper'
       });
     });
   });

@@ -14,7 +14,7 @@ import { context } from 'ember-environment';
   cross-platform compatibility and object property observing.  Ember-Runtime is
   small and performance-focused so you can use it alongside other
   cross-platform libraries such as jQuery. For more details, see
-  [Ember-Runtime](http://emberjs.com/api/modules/ember-runtime.html).
+  [Ember-Runtime](https://emberjs.com/api/modules/ember-runtime.html).
 
   @class Ember
   @static

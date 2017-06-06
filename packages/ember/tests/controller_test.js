@@ -1,14 +1,6 @@
 import { Controller } from 'ember-runtime';
-import { Route } from 'ember-routing';
-import { run } from 'ember-metal';
-import { compile } from 'ember-template-compiler';
-import { Application } from 'ember-application';
-import {
-  Component,
-  setTemplates,
-  setTemplate
-} from 'ember-glimmer';
-import { jQuery } from 'ember-views';
+import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { Component } from 'ember-glimmer';
 
 /*
  In Ember 1.x, controllers subtly affect things like template scope
@@ -18,61 +10,29 @@ import { jQuery } from 'ember-views';
  from the runtime up to the templating layer.
 */
 
-let App, $fixture;
+moduleFor('Template scoping examples', class extends ApplicationTestCase {
+  ['@test Actions inside an outlet go to the associated controller'](assert) {
+    this.add('controller:index', Controller.extend({
+      actions: {
+        componentAction() {
+          assert.ok(true, 'controller received the action');
+        }
+      }
+    }));
 
-QUnit.module('Template scoping examples', {
-  setup() {
-    run(() => {
-      App = Application.create({
-        name: 'App',
-        rootElement: '#qunit-fixture'
-      });
-      App.deferReadiness();
-
-      App.Router.reopen({
-        location: 'none'
-      });
-
-      App.LoadingRoute = Route.extend();
+    this.addComponent('component-with-action', {
+      ComponentClass: Component.extend({
+        classNames: ['component-with-action'],
+        click() {
+          this.sendAction();
+        }
+      }),
     });
 
-    $fixture = jQuery('#qunit-fixture');
-  },
+    this.addTemplate('index', '{{component-with-action action="componentAction"}}');
 
-  teardown() {
-    run(() => App.destroy());
-
-    App = null;
-
-    setTemplates({});
+    return this.visit('/').then(() => {
+      this.runTask(() => this.$('.component-with-action').click());
+    });
   }
 });
-
-QUnit.test('Actions inside an outlet go to the associated controller', function() {
-  expect(1);
-
-  setTemplate('index', compile('{{component-with-action action=\'componentAction\'}}'));
-
-  App.IndexController = Controller.extend({
-    actions: {
-      componentAction() {
-        ok(true, 'received the click');
-      }
-    }
-  });
-
-  App.ComponentWithActionComponent = Component.extend({
-    classNames: ['component-with-action'],
-    click() {
-      this.sendAction();
-    }
-  });
-
-  bootApp();
-
-  $fixture.find('.component-with-action').click();
-});
-
-function bootApp() {
-  run(App, 'advanceReadiness');
-}

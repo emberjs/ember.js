@@ -4,11 +4,10 @@
 */
 import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
+import { assert, debug, isTesting } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 import {
-  assert,
-  debug,
   libraries,
-  isTesting,
   get,
   run
 } from 'ember-metal';
@@ -34,6 +33,8 @@ import ApplicationInstance from './application-instance';
 import { privatize as P } from 'container';
 import Engine from './engine';
 import { setupApplicationRegistry } from 'ember-glimmer';
+import { RouterService } from 'ember-routing';
+import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 
 let librariesRegistered = false;
 
@@ -339,7 +340,10 @@ const Application = Engine.extend({
     }
 
     registerLibraries();
-    logLibraryVersions();
+
+    if (DEBUG) {
+      logLibraryVersions();
+    }
 
     // Start off the number of deferrals at 1. This will be decremented by
     // the Application's own `boot` method.
@@ -771,7 +775,7 @@ const Application = Engine.extend({
     Boot a new instance of `Ember.ApplicationInstance` for the current
     application and navigate it to the given `url`. Returns a `Promise` that
     resolves with the instance when the initial routing and rendering is
-    complete, or rejects with any error that occured during the boot process.
+    complete, or rejects with any error that occurred during the boot process.
 
     When `autoboot` is disabled, calling `visit` would first cause the
     application to boot, which runs the application initializers.
@@ -796,7 +800,7 @@ const Application = Engine.extend({
     result in unexpected behavior.
 
     For example, booting the instance in the full browser environment
-    while specifying a foriegn `document` object (e.g. `{ isBrowser: true,
+    while specifying a foreign `document` object (e.g. `{ isBrowser: true,
     document: iframe.contentDocument }`) does not work correctly today,
     largely due to Ember's jQuery dependency.
 
@@ -899,7 +903,7 @@ const Application = Engine.extend({
 
     This setup allows you to run the routing layer of your Ember app in a server
     environment using Node.js and completely disable rendering. This allows you
-    to simulate and discover the resources (i.e. AJAX requests) needed to fufill
+    to simulate and discover the resources (i.e. AJAX requests) needed to fulfill
     a given request and eagerly "push" these resources to the client.
 
     ```app/initializers/network-service.js
@@ -907,7 +911,7 @@ const Application = Engine.extend({
     import NodeNetworkService from 'app/services/network/node';
 
     // Inject a (hypothetical) service for abstracting all AJAX calls and use
-    // the appropiate implementaion on the client/server. This also allows the
+    // the appropriate implementation on the client/server. This also allows the
     // server to log all the AJAX calls made during a particular request and use
     // that for resource-discovery purpose.
 
@@ -1024,6 +1028,7 @@ Application.reopenClass({
 });
 
 function commonSetupRegistry(registry) {
+  registry.register('router:main', Router);
   registry.register('-view-registry:main', { create() { return dictionary(null); } });
 
   registry.register('route:basic', Route);
@@ -1037,6 +1042,11 @@ function commonSetupRegistry(registry) {
   registry.register('location:none', NoneLocation);
 
   registry.register(P`-bucket-cache:main`, BucketCache);
+
+  if (EMBER_ROUTING_ROUTER_SERVICE) {
+    registry.register('service:router', RouterService);
+    registry.injection('service:router', 'router', 'router:main');
+  }
 }
 
 function registerLibraries() {
@@ -1050,22 +1060,24 @@ function registerLibraries() {
 }
 
 function logLibraryVersions() {
-  if (ENV.LOG_VERSION) {
-    // we only need to see this once per Application#init
-    ENV.LOG_VERSION = false;
-    let libs = libraries._registry;
+  if (DEBUG) {
+    if (ENV.LOG_VERSION) {
+      // we only need to see this once per Application#init
+      ENV.LOG_VERSION = false;
+      let libs = libraries._registry;
 
-    let nameLengths = libs.map(item => get(item, 'name.length'));
+      let nameLengths = libs.map(item => get(item, 'name.length'));
 
-    let maxNameLength = Math.max.apply(this, nameLengths);
+      let maxNameLength = Math.max.apply(this, nameLengths);
 
-    debug('-------------------------------');
-    for (let i = 0; i < libs.length; i++) {
-      let lib = libs[i];
-      let spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
-      debug([lib.name, spaces, ' : ', lib.version].join(''));
+      debug('-------------------------------');
+      for (let i = 0; i < libs.length; i++) {
+        let lib = libs[i];
+        let spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
+        debug([lib.name, spaces, ' : ', lib.version].join(''));
+      }
+      debug('-------------------------------');
     }
-    debug('-------------------------------');
   }
 }
 

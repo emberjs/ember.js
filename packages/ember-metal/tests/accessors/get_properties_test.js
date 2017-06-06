@@ -1,4 +1,4 @@
-import getProperties from '../../get_properties';
+import { getProperties } from '../..';
 
 QUnit.module('Ember.getProperties');
 

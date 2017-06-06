@@ -3,10 +3,12 @@ import { VERSION } from 'ember';
 import { ENV, context } from 'ember-environment';
 import {
   run,
-  libraries,
+  libraries
+} from 'ember-metal';
+import {
   getDebugFunction,
   setDebugFunction
-} from 'ember-metal';
+} from 'ember-debug';
 import Application from '../../system/application';
 import DefaultResolver from '../../system/resolver';
 import {
@@ -22,389 +24,404 @@ import {
   _loaded
 } from 'ember-runtime';
 import { compile } from 'ember-template-compiler';
-import { setTemplates, setTemplate } from 'ember-glimmer';
+import { setTemplates } from 'ember-glimmer';
 import { privatize as P } from 'container';
 import {
   verifyInjection,
   verifyRegistration
 } from '../test-helpers/registry-check';
+import { assign } from 'ember-utils';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  AbstractTestCase,
+  AutobootApplicationTestCase
+} from 'internal-test-helpers';
 
 let { trim } = jQuery;
+let secondApp;
 
-let app, application, originalLookup, originalDebug, originalWarn;
+moduleFor('Ember.Application, autobooting multiple apps', class extends ApplicationTestCase {
+  constructor() {
+    jQuery('#qunit-fixture').html(`
+      <div id="one">
+        <div id="one-child">HI</div>
+      </div>
+      <div id="two">HI</div>
+    `);
+    super();
+  }
 
-QUnit.module('Ember.Application', {
-  setup() {
-    originalLookup = context.lookup;
-    originalDebug = getDebugFunction('debug');
-    originalWarn = getDebugFunction('warn');
+  get applicationOptions() {
+    return assign(super.applicationOptions, {
+      rootElement: '#one',
+      router: null,
+      autoboot: true
+    });
+  }
 
-    jQuery('#qunit-fixture').html('<div id=\'one\'><div id=\'one-child\'>HI</div></div><div id=\'two\'>HI</div>');
-    application = run(() => Application.create({ rootElement: '#one', router: null }));
-  },
+  buildSecondApplication(options) {
+    let myOptions = assign(this.applicationOptions, options);
+    return this.secondApp = Application.create(myOptions);
+  }
 
   teardown() {
-    jQuery('#qunit-fixture').empty();
-    setDebugFunction('debug', originalDebug);
-    setDebugFunction('warn', originalWarn);
+    super.teardown();
 
-    context.lookup = originalLookup;
-
-    if (application) {
-      run(application, 'destroy');
+    if (this.secondApp) {
+      run(this.secondApp, 'destroy');
     }
+  }
 
-    if (app) {
-      run(app, 'destroy');
-    }
+  [`@test you can make a new application in a non-overlapping element`](assert) {
+    let app = run(() => this.buildSecondApplication({
+      rootElement: '#two'
+    }));
+
+    run(app, 'destroy');
+    assert.ok(true, 'should not raise');
+  }
+
+  [`@test you cannot make a new application that is a parent of an existing application`]() {
+    expectAssertion(() => {
+      run(() => this.buildSecondApplication({
+        rootElement: '#qunit-fixture'
+      }));
+    });
+  }
+
+  [`@test you cannot make a new application that is a descendant of an existing application`]() {
+    expectAssertion(() => {
+      run(() => this.buildSecondApplication({
+        rootElement: '#one-child'
+      }));
+    });
+  }
+
+  [`@test you cannot make a new application that is a duplicate of an existing application`]() {
+    expectAssertion(() => {
+      run(() => this.buildSecondApplication({
+        rootElement: '#one'
+      }));
+    });
+  }
+
+  [`@test you cannot make two default applications without a rootElement error`]() {
+    expectAssertion(() => {
+      run(() => this.buildSecondApplication());
+    });
   }
 });
 
-QUnit.test('you can make a new application in a non-overlapping element', function() {
-  app = run(() => Application.create({ rootElement: '#two', router: null }));
+moduleFor('Ember.Application', class extends ApplicationTestCase {
 
-  run(app, 'destroy');
-  ok(true, 'should not raise');
+  ['@test includes deprecated access to `application.registry`'](assert) {
+    assert.expect(3);
+
+    assert.ok(typeof this.application.registry.register === 'function', '#registry.register is available as a function');
+
+    this.application.__registry__.register = function() {
+      assert.ok(true, '#register alias is called correctly');
+    };
+
+    expectDeprecation(() => {
+      this.application.registry.register();
+    }, /Using `Application.registry.register` is deprecated. Please use `Application.register` instead./);
+  }
+
+  [`@test builds a registry`](assert) {
+    let {application} = this;
+    assert.strictEqual(application.resolveRegistration('application:main'), application, `application:main is registered`);
+    assert.deepEqual(application.registeredOptionsForType('component'), { singleton: false }, `optionsForType 'component'`);
+    assert.deepEqual(application.registeredOptionsForType('view'), { singleton: false }, `optionsForType 'view'`);
+    verifyRegistration(application, 'controller:basic');
+    verifyRegistration(application, '-view-registry:main');
+    verifyInjection(application, 'view', '_viewRegistry', '-view-registry:main');
+    verifyInjection(application, 'route', '_topLevelViewTemplate', 'template:-outlet');
+    verifyRegistration(application, 'route:basic');
+    verifyRegistration(application, 'event_dispatcher:main');
+    verifyInjection(application, 'router:main', 'namespace', 'application:main');
+    verifyInjection(application, 'view:-outlet', 'namespace', 'application:main');
+
+    verifyRegistration(application, 'location:auto');
+    verifyRegistration(application, 'location:hash');
+    verifyRegistration(application, 'location:history');
+    verifyRegistration(application, 'location:none');
+
+    verifyInjection(application, 'controller', 'target', 'router:main');
+    verifyInjection(application, 'controller', 'namespace', 'application:main');
+
+    verifyRegistration(application, P`-bucket-cache:main`);
+    verifyInjection(application, 'router', '_bucketCache', P`-bucket-cache:main`);
+    verifyInjection(application, 'route', '_bucketCache', P`-bucket-cache:main`);
+
+    verifyInjection(application, 'route', 'router', 'router:main');
+
+    verifyRegistration(application, 'component:-text-field');
+    verifyRegistration(application, 'component:-text-area');
+    verifyRegistration(application, 'component:-checkbox');
+    verifyRegistration(application, 'component:link-to');
+
+    verifyRegistration(application, 'service:-routing');
+    verifyInjection(application, 'service:-routing', 'router', 'router:main');
+
+    // DEBUGGING
+    verifyRegistration(application, 'resolver-for-debugging:main');
+    verifyInjection(application, 'container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
+    verifyInjection(application, 'data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
+    verifyRegistration(application, 'container-debug-adapter:main');
+    verifyRegistration(application, 'component-lookup:main');
+
+    verifyRegistration(application, 'service:-glimmer-environment');
+    verifyRegistration(application, 'service:-dom-changes');
+    verifyRegistration(application, 'service:-dom-tree-construction');
+    verifyInjection(application, 'service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
+    verifyInjection(application, 'service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
+    verifyInjection(application, 'renderer', 'env', 'service:-glimmer-environment');
+    verifyRegistration(application, 'view:-outlet');
+    verifyRegistration(application, 'renderer:-dom');
+    verifyRegistration(application, 'renderer:-inert');
+    verifyRegistration(application, P`template:components/-default`);
+    verifyRegistration(application, 'template:-outlet');
+    verifyInjection(application, 'view:-outlet', 'template', 'template:-outlet');
+    verifyInjection(application, 'template', 'env', 'service:-glimmer-environment');
+    assert.deepEqual(application.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
+  }
+
 });
 
-QUnit.test('you cannot make a new application that is a parent of an existing application', function() {
-  expectAssertion(() => {
-    run(() => Application.create({ rootElement: '#qunit-fixture' }));
-  });
-});
+moduleFor('Ember.Application, default resolver with autoboot', class extends AutobootApplicationTestCase {
 
-QUnit.test('you cannot make a new application that is a descendant of an existing application', function() {
-  expectAssertion(() => {
-    run(() => Application.create({ rootElement: '#one-child' }));
-  });
-});
+  constructor() {
+    super();
+    this.originalLookup = context.lookup;
+  }
 
-QUnit.test('you cannot make a new application that is a duplicate of an existing application', function() {
-  expectAssertion(() => {
-    run(() => Application.create({ rootElement: '#one' }));
-  });
-});
-
-QUnit.test('you cannot make two default applications without a rootElement error', function() {
-  expectAssertion(() => {
-    run(() => Application.create({ router: false }));
-  });
-});
-
-QUnit.test('acts like a namespace', function() {
-  let lookup = context.lookup = {};
-
-  app = run(() => {
-    return lookup.TestApp = Application.create({ rootElement: '#two', router: false });
-  });
-
-  setNamespaceSearchDisabled(false);
-  app.Foo = EmberObject.extend();
-  equal(app.Foo.toString(), 'TestApp.Foo', 'Classes pick up their parent namespace');
-});
-
-QUnit.test('includes deprecated access to `application.registry`', function() {
-  expect(3);
-
-  ok(typeof application.registry.register === 'function', '#registry.register is available as a function');
-
-  application.__registry__.register = function() {
-    ok(true, '#register alias is called correctly');
-  };
-
-  expectDeprecation(() => {
-    application.registry.register();
-  }, /Using `Application.registry.register` is deprecated. Please use `Application.register` instead./);
-});
-
-QUnit.test('builds a registry', function() {
-  strictEqual(application.resolveRegistration('application:main'), application, `application:main is registered`);
-  deepEqual(application.registeredOptionsForType('component'), { singleton: false }, `optionsForType 'component'`);
-  deepEqual(application.registeredOptionsForType('view'), { singleton: false }, `optionsForType 'view'`);
-  verifyRegistration(application, 'controller:basic');
-  verifyRegistration(application, '-view-registry:main');
-  verifyInjection(application, 'view', '_viewRegistry', '-view-registry:main');
-  verifyInjection(application, 'route', '_topLevelViewTemplate', 'template:-outlet');
-  verifyRegistration(application, 'route:basic');
-  verifyRegistration(application, 'event_dispatcher:main');
-  verifyInjection(application, 'router:main', 'namespace', 'application:main');
-  verifyInjection(application, 'view:-outlet', 'namespace', 'application:main');
-
-  verifyRegistration(application, 'location:auto');
-  verifyRegistration(application, 'location:hash');
-  verifyRegistration(application, 'location:history');
-  verifyRegistration(application, 'location:none');
-
-  verifyInjection(application, 'controller', 'target', 'router:main');
-  verifyInjection(application, 'controller', 'namespace', 'application:main');
-
-  verifyRegistration(application, P`-bucket-cache:main`);
-  verifyInjection(application, 'router', '_bucketCache', P`-bucket-cache:main`);
-  verifyInjection(application, 'route', '_bucketCache', P`-bucket-cache:main`);
-
-  verifyInjection(application, 'route', 'router', 'router:main');
-
-  verifyRegistration(application, 'component:-text-field');
-  verifyRegistration(application, 'component:-text-area');
-  verifyRegistration(application, 'component:-checkbox');
-  verifyRegistration(application, 'component:link-to');
-
-  verifyRegistration(application, 'service:-routing');
-  verifyInjection(application, 'service:-routing', 'router', 'router:main');
-
-  // DEBUGGING
-  verifyRegistration(application, 'resolver-for-debugging:main');
-  verifyInjection(application, 'container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
-  verifyInjection(application, 'data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
-  verifyRegistration(application, 'container-debug-adapter:main');
-  verifyRegistration(application, 'component-lookup:main');
-
-  verifyRegistration(application, 'service:-glimmer-environment');
-  verifyRegistration(application, 'service:-dom-changes');
-  verifyRegistration(application, 'service:-dom-tree-construction');
-  verifyInjection(application, 'service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
-  verifyInjection(application, 'service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
-  verifyInjection(application, 'renderer', 'env', 'service:-glimmer-environment');
-  verifyRegistration(application, 'view:-outlet');
-  verifyRegistration(application, 'renderer:-dom');
-  verifyRegistration(application, 'renderer:-inert');
-  verifyRegistration(application, P`template:components/-default`);
-  verifyRegistration(application, 'template:-outlet');
-  verifyInjection(application, 'view:-outlet', 'template', 'template:-outlet');
-  verifyInjection(application, 'template', 'env', 'service:-glimmer-environment');
-  deepEqual(application.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
-});
-
-const originalLogVersion = ENV.LOG_VERSION;
-
-QUnit.module('Ember.Application initialization', {
   teardown() {
-    if (app) {
-      run(app, 'destroy');
-    }
+    context.lookup = this.originalLookup;
+    super.teardown();
     setTemplates({});
-    ENV.LOG_VERSION = originalLogVersion;
   }
-});
 
-QUnit.test('initialized application goes to initial route', function() {
-  run(() => {
-    app = Application.create({
-      rootElement: '#qunit-fixture'
+  createApplication(options) {
+    let myOptions = assign({
+      Resolver: DefaultResolver
+    }, options);
+    return super.createApplication(myOptions);
+  }
+
+  [`@test acts like a namespace`](assert) {
+    let lookup = context.lookup = {};
+
+    run(() => {
+      lookup.TestApp = this.createApplication();
     });
 
-    app.Router.reopen({
-      location: 'none'
-    });
+    setNamespaceSearchDisabled(false);
+    let Foo = this.application.Foo = EmberObject.extend();
+    assert.equal(Foo.toString(), 'TestApp.Foo', 'Classes pick up their parent namespace');
+  }
 
-    app.register('template:application',
-      compile('{{outlet}}')
+  [`@test can specify custom router`](assert) {
+    let MyRouter = Router.extend();
+    run(() => {
+      let app = this.createApplication();
+      app.Router = MyRouter;
+    });
+    assert.ok(
+      this.application.__deprecatedInstance__.lookup('router:main') instanceof MyRouter,
+      'application resolved the correct router'
     );
+  }
 
-    setTemplate('index', compile(
-      '<h1>Hi from index</h1>'
-    ));
-  });
+  [`@test Minimal Application initialized with just an application template`](assert) {
+    jQuery('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
+    run(() => {
+      this.createApplication();
+    });
 
-  equal(jQuery('#qunit-fixture h1').text(), 'Hi from index');
+    equal(trim(jQuery('#qunit-fixture').text()), 'Hello World');
+  }
+
 });
 
-QUnit.test('ready hook is called before routing begins', function() {
-  expect(2);
+moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTestCase {
 
-  run(() => {
-    function registerRoute(application, name, callback) {
-      let route = EmberRoute.extend({
-        activate: callback
+  constructor() {
+    super();
+    this.originalLogVersion = ENV.LOG_VERSION;
+    this.originalDebug = getDebugFunction('debug');
+    this.originalWarn = getDebugFunction('warn');
+  }
+
+  teardown() {
+    setDebugFunction('warn', this.originalWarn);
+    setDebugFunction('debug', this.originalDebug);
+    ENV.LOG_VERSION = this.originalLogVersion;
+    super.teardown();
+  }
+
+  createApplication(options, MyApplication) {
+    let application = super.createApplication(options, MyApplication);
+    this.add('router:main', Router.extend({
+      location: 'none'
+    }));
+    return application;
+  }
+
+  [`@test initialized application goes to initial route`](assert) {
+    run(() => {
+      this.createApplication();
+      this.addTemplate('application', '{{outlet}}');
+      this.addTemplate('index', '<h1>Hi from index</h1>');
+    });
+
+    assert.equal(jQuery('#qunit-fixture h1').text(), 'Hi from index');
+  }
+
+  [`@test ready hook is called before routing begins`](assert) {
+    assert.expect(2);
+
+    run(() => {
+      function registerRoute(application, name, callback) {
+        let route = EmberRoute.extend({
+          activate: callback
+        });
+
+        application.register('route:' + name, route);
+      }
+
+      let MyApplication = Application.extend({
+        ready() {
+          registerRoute(this, 'index', () => {
+            assert.ok(true, 'last-minute route is activated');
+          });
+        }
       });
 
-      application.register('route:' + name, route);
-    }
+      let app = this.createApplication({}, MyApplication);
 
-    let MyApplication = Application.extend({
-      ready() {
-        registerRoute(this, 'index', () => {
-          ok(true, 'last-minute route is activated');
-        });
-      }
+      registerRoute(app, 'application', () => ok(true, 'normal route is activated'));
     });
-
-    app = MyApplication.create({
-      rootElement: '#qunit-fixture'
-    });
-
-    app.Router.reopen({
-      location: 'none'
-    });
-
-    registerRoute(app, 'application', () => ok(true, 'normal route is activated'));
-  });
-});
-
-QUnit.test('initialize application via initialize call', function() {
-  run(() => {
-    app = Application.create({
-      rootElement: '#qunit-fixture'
-    });
-
-    app.Router.reopen({
-      location: 'none'
-    });
-
-    setTemplate('application', compile(
-      '<h1>Hello!</h1>'
-    ));
-  });
-
-  // This is not a public way to access the container; we just
-  // need to make some assertions about the created router
-  let router = app.__container__.lookup('router:main');
-  equal(router instanceof Router, true, 'Router was set from initialize call');
-  equal(router.location instanceof NoneLocation, true, 'Location was set from location implementation name');
-});
-
-QUnit.test('initialize application with stateManager via initialize call from Router class', function() {
-  run(() => {
-    app = Application.create({
-      rootElement: '#qunit-fixture'
-    });
-
-    app.Router.reopen({
-      location: 'none'
-    });
-
-    app.register('template:application', compile('<h1>Hello!</h1>'));
-  });
-
-  let router = app.__container__.lookup('router:main');
-  equal(router instanceof Router, true, 'Router was set from initialize call');
-  equal(jQuery('#qunit-fixture h1').text(), 'Hello!');
-});
-
-QUnit.test('ApplicationView is inserted into the page', function() {
-  run(() => {
-    app = Application.create({
-      rootElement: '#qunit-fixture'
-    });
-
-    setTemplate('application', compile('<h1>Hello!</h1>'));
-
-    app.ApplicationController = Controller.extend();
-
-    app.Router.reopen({
-      location: 'none'
-    });
-  });
-
-  equal(jQuery('#qunit-fixture h1').text(), 'Hello!');
-});
-
-QUnit.test('Minimal Application initialized with just an application template', function() {
-  jQuery('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
-  app = run(() => {
-    return Application.create({
-      rootElement: '#qunit-fixture'
-    });
-  });
-
-  equal(trim(jQuery('#qunit-fixture').text()), 'Hello World');
-});
-
-QUnit.test('enable log of libraries with an ENV var', function() {
-  if (EmberDev && EmberDev.runningProdBuild) {
-    ok(true, 'Logging does not occur in production builds');
-    return;
   }
 
-  let messages = [];
-
-  ENV.LOG_VERSION = true;
-
-  setDebugFunction('debug', message => messages.push(message));
-
-  libraries.register('my-lib', '2.0.0a');
-
-  app = run(() => {
-    return Application.create({
-      rootElement: '#qunit-fixture'
+  [`@test initialize application via initialize call`](assert) {
+    run(() => {
+      this.createApplication();
     });
-  });
+    // This is not a public way to access the container; we just
+    // need to make some assertions about the created router
+    let router = this.application.__deprecatedInstance__.lookup('router:main');
+    assert.equal(router instanceof Router, true, 'Router was set from initialize call');
+    assert.equal(router.location instanceof NoneLocation, true, 'Location was set from location implementation name');
+  }
 
-  equal(messages[1], 'Ember  : ' + VERSION);
-  equal(messages[2], 'jQuery : ' + jQuery().jquery);
-  equal(messages[3], 'my-lib : ' + '2.0.0a');
-
-  libraries.deRegister('my-lib');
-});
-
-QUnit.test('disable log version of libraries with an ENV var', function() {
-  let logged = false;
-
-  ENV.LOG_VERSION = false;
-
-  setDebugFunction('debug', () => logged = true);
-
-  jQuery('#qunit-fixture').empty();
-
-  run(() => {
-    app = Application.create({
-      rootElement: '#qunit-fixture'
+  [`@test initialize application with stateManager via initialize call from Router class`](assert) {
+    run(() => {
+      this.createApplication();
+      this.addTemplate('application', '<h1>Hello!</h1>');
     });
+    // This is not a public way to access the container; we just
+    // need to make some assertions about the created router
+    let router = this.application.__deprecatedInstance__.lookup('router:main');
+    assert.equal(router instanceof Router, true, 'Router was set from initialize call');
+    assert.equal(jQuery('#qunit-fixture h1').text(), 'Hello!');
+  }
 
-    app.Router.reopen({
-      location: 'none'
+  [`@test Application Controller backs the appplication template`](assert) {
+    run(() => {
+      this.createApplication();
+      this.addTemplate('application', '<h1>{{greeting}}</h1>');
+      this.add('controller:application', Controller.extend({
+        greeting: 'Hello!'
+      }));
     });
-  });
+    assert.equal(jQuery('#qunit-fixture h1').text(), 'Hello!');
+  }
 
-  ok(!logged, 'library version logging skipped');
-});
-
-QUnit.test('can resolve custom router', function() {
-  let CustomRouter = Router.extend();
-
-  let Resolver = DefaultResolver.extend({
-    resolveMain(parsedName) {
-      if (parsedName.type === 'router') {
-        return CustomRouter;
-      } else {
-        return this._super(parsedName);
-      }
+  [`@test enable log of libraries with an ENV var`](assert) {
+    if (EmberDev && EmberDev.runningProdBuild) {
+      assert.ok(true, 'Logging does not occur in production builds');
+      return;
     }
-  });
 
-  app = run(() => {
-    return Application.create({
-      Resolver
+    let messages = [];
+
+    ENV.LOG_VERSION = true;
+
+    setDebugFunction('debug', message => messages.push(message));
+
+    libraries.register('my-lib', '2.0.0a');
+
+    run(() => {
+      this.createApplication();
     });
-  });
 
-  ok(app.__container__.lookup('router:main') instanceof CustomRouter, 'application resolved the correct router');
-});
+    assert.equal(messages[1], 'Ember  : ' + VERSION);
+    assert.equal(messages[2], 'jQuery : ' + jQuery().jquery);
+    assert.equal(messages[3], 'my-lib : ' + '2.0.0a');
 
-QUnit.test('can specify custom router', function() {
-  app = run(() => {
-    return Application.create({
-      Router: Router.extend()
+    libraries.deRegister('my-lib');
+  }
+
+  [`@test disable log of version of libraries with an ENV var`](assert) {
+    let logged = false;
+
+    ENV.LOG_VERSION = false;
+
+    setDebugFunction('debug', () => logged = true);
+
+    run(() => {
+      this.createApplication();
     });
-  });
 
-  ok(app.__container__.lookup('router:main') instanceof Router, 'application resolved the correct router');
+    assert.ok(!logged, 'library version logging skipped');
+  }
+
+  [`@test can resolve custom router`](assert) {
+    let CustomRouter = Router.extend();
+
+    run(() => {
+      this.createApplication();
+      this.add('router:main', CustomRouter);
+    });
+
+    assert.ok(
+      this.application.__deprecatedInstance__.lookup('router:main') instanceof CustomRouter,
+      'application resolved the correct router'
+    );
+  }
+
+  [`@test does not leak itself in onLoad._loaded`](assert) {
+    assert.equal(_loaded.application, undefined);
+    run(() => this.createApplication());
+    assert.equal(_loaded.application, this.application);
+    run(this.application, 'destroy');
+    assert.equal(_loaded.application, undefined);
+  }
+
+  [`@test can build a registry via Ember.Application.buildRegistry() --- simulates ember-test-helpers`](assert) {
+    let namespace = EmberObject.create({
+      Resolver: { create: function() { } }
+    });
+
+    let registry = Application.buildRegistry(namespace);
+
+    assert.equal(registry.resolve('application:main'), namespace);
+  }
+
 });
 
-QUnit.test('does not leak itself in onLoad._loaded', function() {
-  equal(_loaded.application, undefined);
-  let app = run(Application, 'create');
-  equal(_loaded.application, app);
-  run(app, 'destroy');
-  equal(_loaded.application, undefined);
-});
+moduleFor('Ember.Application#buildRegistry', class extends AbstractTestCase {
 
-QUnit.test('can build a registry via Ember.Application.buildRegistry() --- simulates ember-test-helpers', function(assert) {
-  let namespace = EmberObject.create({
-    Resolver: { create: function() { } }
-  });
+  [`@test can build a registry via Ember.Application.buildRegistry() --- simulates ember-test-helpers`](assert) {
+    let namespace = EmberObject.create({
+      Resolver: { create() { } }
+    });
 
-  let registry = Application.buildRegistry(namespace);
+    let registry = Application.buildRegistry(namespace);
 
-  assert.equal(registry.resolve('application:main'), namespace);
+    assert.equal(registry.resolve('application:main'), namespace);
+  }
+
 });

@@ -6,8 +6,8 @@ function consoleMethod(name) {
   let consoleObj;
   if (context.imports.console) {
     consoleObj = context.imports.console;
-  } else if (typeof console !== 'undefined') {
-    consoleObj = console;
+  } else if (typeof console !== 'undefined') { // eslint-disable-line no-undef
+    consoleObj = console; // eslint-disable-line no-undef
   }
 
   let method = typeof consoleObj === 'object' ? consoleObj[name] : null;
@@ -29,7 +29,7 @@ function assertPolyfill(test, message) {
   if (!test) {
     try {
       // attempt to preserve the stack
-      throw new Error('assertion failed: ' + message);
+      throw new Error(`assertion failed: ${message}`);
     } catch (error) {
       setTimeout(() => {
         throw error;

@@ -14,8 +14,14 @@ import TransformInputTypeSyntax from './transform-input-type-syntax';
 import TransformAttrsIntoArgs from './transform-attrs-into-args';
 import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformHasBlockSyntax from './transform-has-block-syntax';
+import TransformDotComponentInvocation from './transform-dot-component-invocation';
+import ExtractPragmaTag from './extract-pragma-tag';
+import {
+  GLIMMER_CUSTOM_COMPONENT_MANAGER
+} from 'ember/features';
 
-export default Object.freeze([
+const transforms = [
+  TransformDotComponentInvocation,
   TransformOldBindingSyntax,
   TransformItemClass,
   TransformAngleBracketComponents,
@@ -32,4 +38,10 @@ export default Object.freeze([
   TransformAttrsIntoArgs,
   TransformEachInIntoEach,
   TransformHasBlockSyntax
-]);
+];
+
+if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
+  transforms.push(ExtractPragmaTag);
+}
+
+export default Object.freeze(transforms);

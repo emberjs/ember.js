@@ -1,8 +1,7 @@
 import { GUID_KEY } from 'ember-utils';
-import { assert } from './debug';
-import { isTesting } from './testing';
+import { assert, isTesting } from 'ember-debug';
 import {
-  getOnerror,
+  dispatchError,
   setOnerror
 } from './error_handler';
 import {
@@ -21,7 +20,7 @@ function onEnd(current, next) {
 
 const onErrorTarget = {
   get onerror() {
-    return getOnerror();
+    return dispatchError;
   },
   set onerror(handler) {
     return setOnerror(handler);

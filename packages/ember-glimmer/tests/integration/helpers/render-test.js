@@ -1,6 +1,7 @@
-import { observer, set } from 'ember-metal';
+import { observer, set, computed } from 'ember-metal';
 import { Controller } from 'ember-runtime';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
 
 moduleFor('Helpers test: {{render}}', class extends RenderingTest {
   ['@test should render given template']() {
@@ -431,5 +432,33 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     }, /Please refactor [\w\{\}"` ]+ to a component/);
 
     postController.send('someAction');
+  }
+
+  ['@test render helper emits useful backtracking re-render assertion message'](assert) {
+    this.owner.register('controller:outer', Controller.extend());
+    this.owner.register('controller:inner', Controller.extend({
+      propertyWithError: computed(function() {
+        this.set('model.name', 'this will cause a backtracking error');
+        return 'foo';
+      })
+    }));
+
+    let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "controller:outer \(with the render helper\)" and modified in "controller:inner \(with the render helper\)"/;
+
+    expectDeprecation(() => {
+      let person = { name: 'Ben' };
+
+      this.registerTemplate('outer', `Hi {{model.name}} | {{render 'inner' model}}`);
+      this.registerTemplate('inner', `Hi {{propertyWithError}}`);
+
+      if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+        expectDeprecation(expectedBacktrackingMessage);
+        this.render(`{{render 'outer' person}}`, { person });
+      } else {
+        expectAssertion(() => {
+          this.render(`{{render 'outer' person}}`, { person });
+        }, expectedBacktrackingMessage);
+      }
+    });
   }
 });

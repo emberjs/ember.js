@@ -1,12 +1,11 @@
-import { assert } from './debug';
+import { assert } from 'ember-debug';
 
 /**
 @module ember
 @submodule ember-metal
 */
 
-const SPLIT_REGEX = /\{|\}/;
-const END_WITH_EACH_REGEX = /\.@each$/;
+var END_WITH_EACH_REGEX = /\.@each$/;
 
 /**
   Expands `pattern`, invoking `callback` for each expansion.
@@ -36,58 +35,41 @@ const END_WITH_EACH_REGEX = /\.@each$/;
   expansion, and is passed the expansion.
 */
 export default function expandProperties(pattern, callback) {
-  assert('A computed property key must be a string', typeof pattern === 'string');
+  assert(`A computed property key must be a string, you passed ${typeof pattern} ${pattern}`, typeof pattern === 'string');
   assert(
     'Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"',
     pattern.indexOf(' ') === -1
   );
+  // regex to look for double open, double close, or unclosed braces
   assert(
     `Brace expanded properties have to be balanced and cannot be nested, pattern: ${pattern}`,
-    ((str) => {
-      let inBrace = 0;
-      let char;
-      for (let i = 0; i < str.length; i++) {
-        char = str.charAt(i);
+    pattern.match( /\{[^}{]*\{|\}[^}{]*\}|\{[^}]*$/g ) === null
+  );
 
-        if (char === '{') {
-          inBrace++;
-        } else if (char === '}') {
-          inBrace--;
-        }
-
-        if (inBrace > 1 || inBrace < 0) {
-          return false;
-        }
-      }
-
-      return true;
-    })(pattern));
-
-  let parts = pattern.split(SPLIT_REGEX);
-  let properties = [parts];
-
-  for (let i = 0; i < parts.length; i++) {
-    let part = parts[i];
-    if (part.indexOf(',') >= 0) {
-      properties = duplicateAndReplace(properties, part.split(','), i);
-    }
-  }
-
-  for (let i = 0; i < properties.length; i++) {
-    callback(properties[i].join('').replace(END_WITH_EACH_REGEX, '.[]'));
+  let start = pattern.indexOf('{');
+  if (start < 0) {
+    callback( pattern.replace(END_WITH_EACH_REGEX, '.[]') );
+  } else {
+    dive('', pattern, start, callback);
   }
 }
 
-function duplicateAndReplace(properties, currentParts, index) {
-  let all = [];
+function dive(prefix, pattern, start, callback) {
+  let end = pattern.indexOf('}'),
+      i = 0,
+      newStart,
+      arrayLength;
+  let tempArr = pattern.substring(start + 1, end).split(',');
+  let after = pattern.substring(end + 1);
+  prefix = prefix + pattern.substring(0, start);
 
-  properties.forEach((property) => {
-    currentParts.forEach((part) => {
-      let current = property.slice(0);
-      current[index] = part;
-      all.push(current);
-    });
-  });
-
-  return all;
+  arrayLength = tempArr.length;
+  while (i < arrayLength) {
+    newStart = after.indexOf('{');
+    if (newStart < 0) {
+      callback((prefix + tempArr[i++] + after).replace(END_WITH_EACH_REGEX, '.[]'));
+    } else {
+      dive(prefix + tempArr[i++], after, newStart, callback);
+    }
+  }
 }

@@ -2,22 +2,22 @@
 @module ember
 @submodule ember-glimmer
 */
-import { assert } from 'ember-metal';
-import { CurlyComponentSyntax } from './curly-component';
-import { DynamicComponentSyntax } from './dynamic-component';
+import { assert } from 'ember-debug';
 import { wrapComponentClassAttribute } from '../utils/bindings';
+import { dynamicComponentMacro } from './dynamic-component';
+import { hashToArgs } from './utils';
 
-function buildTextFieldSyntax(args, getDefinition, symbolTable) {
-  let definition = getDefinition('-text-field');
-  wrapComponentClassAttribute(args);
-  return new CurlyComponentSyntax(args, definition, symbolTable);
+function buildTextFieldSyntax(params, hash, builder) {
+  let definition = builder.env.getComponentDefinition('-text-field', builder.meta.templateMeta);
+  builder.component.static(definition, [params, hashToArgs(hash), null, null]);
+  return true;
 }
 
 /**
   The `{{input}}` helper lets you create an HTML `<input />` component.
   It causes an `Ember.TextField` component to be rendered.  For more info,
   see the [Ember.TextField](/api/classes/Ember.TextField.html) docs and
-  the [templates guide](http://emberjs.com/guides/templates/input-helpers/).
+  the [templates guide](https://emberjs.com/guides/templates/input-helpers/).
 
   ```handlebars
   {{input value="987"}}
@@ -55,7 +55,7 @@ function buildTextFieldSyntax(args, getDefinition, symbolTable) {
   {{input value=searchWord}}
   ```
 
-  In this example, the inital value in the `<input />` will be set to the value of `searchWord`.
+  In this example, the initial value in the `<input />` will be set to the value of `searchWord`.
   If the user changes the text, the value of `searchWord` will also be updated.
 
   ### Actions
@@ -145,31 +145,47 @@ function buildTextFieldSyntax(args, getDefinition, symbolTable) {
   @param {Hash} options
   @public
 */
-export const InputSyntax = {
-  create(environment, args, symbolTable) {
-    let getDefinition = (path) => environment.getComponentDefinition([path], symbolTable);
 
-    if (args.named.has('type')) {
-      let typeArg = args.named.at('type');
-      if (typeArg.type === 'value') {
-        if (typeArg.value === 'checkbox') {
-          assert(
-            '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
-              'you must use `checked=someBooleanValue` instead.',
-            !args.named.has('value')
-          );
+export function inputMacro(name, params, hash, builder) {
+  let keys;
+  let values;
+  let typeIndex = -1;
+  let valueIndex = -1;
 
-          wrapComponentClassAttribute(args);
-          let definition = getDefinition('-checkbox');
-          return new CurlyComponentSyntax(args, definition, symbolTable);
-        } else {
-          return buildTextFieldSyntax(args, getDefinition, symbolTable);
-        }
-      }
-    } else {
-      return buildTextFieldSyntax(args, getDefinition, symbolTable);
-    }
-
-    return DynamicComponentSyntax.create(environment, args, symbolTable);
+  if (hash) {
+    keys = hash[0];
+    values = hash[1];
+    typeIndex = keys.indexOf('type');
+    valueIndex = keys.indexOf('value');
   }
-};
+
+  if (!params) {
+    params = [];
+  }
+
+  if (typeIndex > -1) {
+    let typeArg = values[typeIndex];
+    if (!Array.isArray(typeArg)) {
+      if (typeArg === 'checkbox') {
+        assert(
+          '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
+            'you must use `checked=someBooleanValue` instead.',
+          valueIndex === -1
+        );
+
+        wrapComponentClassAttribute(hash);
+
+        let definition = builder.env.getComponentDefinition('-checkbox', builder.meta.templateMeta);
+        builder.component.static(definition, [params, hashToArgs(hash), null, null]);
+        return true;
+      } else {
+        return buildTextFieldSyntax(params, hash, builder);
+      }
+    }
+  } else {
+    return buildTextFieldSyntax(params, hash, builder);
+  }
+
+
+  return dynamicComponentMacro(params, hash, null, null, builder);
+}

@@ -1,6 +1,6 @@
 ## About Features
 
-Please read the [Feature Flag Guide](http://emberjs.com/guides/configuring-ember/feature-flags/)
+Please read the [Feature Flag Guide](https://emberjs.com/guides/configuring-ember/feature-flags/)
 for a detailed explanation.
 
 ## Feature Flags
@@ -21,3 +21,8 @@ for a detailed explanation.
 * `ember-testing-resume-test`
 
   Introduces the `resumeTest` testing helper to complement the `pauseTest` helper.
+
+* `glimmer-custom-component-manager`
+
+  Adds an ability to for developers to integrate their own custom component managers
+  into Ember Applications per [RFC](https://github.com/emberjs/rfcs/blob/custom-components/text/0000-custom-components.md).

@@ -4,16 +4,15 @@
 */
 import { symbol } from 'ember-utils';
 import {
-  assert,
   run,
   get,
   flaggedInstrument,
-  isNone,
-  runInDebug
+  isNone
 } from 'ember-metal';
 import { UnboundReference } from '../utils/references';
-import { EvaluatedPositionalArgs } from 'glimmer-runtime';
-import { isConst } from 'glimmer-reference';
+import { isConst } from '@glimmer/reference';
+import { assert } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 
 export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');
@@ -68,6 +67,8 @@ export const ACTION = symbol('ACTION');
   Here is an example action handler on a component:
 
   ```js
+  import Ember from 'ember';
+
   export default Ember.Component.extend({
     actions: {
       save() {
@@ -116,7 +117,9 @@ export const ACTION = symbol('ACTION');
   Actions invoked with `sendAction` have the same currying behavior as demonstrated
   with `on-input` above. For example:
 
-  ```js
+  ```app/components/my-input.js
+  import Ember from 'ember';
+
   export default Ember.Component.extend({
     actions: {
       setName(model, name) {
@@ -130,8 +133,9 @@ export const ACTION = symbol('ACTION');
   {{my-input submit=(action 'setName' model)}}
   ```
 
-  ```js
-  // app/components/my-component.js
+  ```app/components/my-component.js
+  import Ember from 'ember';
+
   export default Ember.Component.extend({
     click() {
       // Note that model is not passed, it was curried in the template
@@ -187,9 +191,9 @@ export const ACTION = symbol('ACTION');
   <div onclick={{disable-bubbling (action "sayHello")}}>Hello</div>
   ```
 
-  ```js
-  // app/helpers/disable-bubbling.js
+  ```app/helpers/disable-bubbling.js
   import Ember from 'ember';
+
   export function disableBubbling([action]) {
     return function(event) {
       event.stopPropagation();
@@ -246,15 +250,15 @@ export const ACTION = symbol('ACTION');
   which object will receive the method call. This option must be a path
   to an object, accessible in the current context:
 
-  ```handlebars
-  {{! app/templates/application.hbs }}
+  ```app/templates/application.hbs
   <div {{action "anActionName" target=someService}}>
     click me
   </div>
   ```
 
-  ```javascript
-  // app/controllers/application.js
+  ```app/controllers/application.js
+  import Ember from 'ember';
+
   export default Ember.Controller.extend({
     someService: Ember.inject.service()
   });
@@ -267,23 +271,17 @@ export const ACTION = symbol('ACTION');
 export default function(vm, args) {
   let { named, positional } = args;
 
+  let capturedArgs = positional.capture();
+  let { references } = capturedArgs;
+
   // The first two argument slots are reserved.
   // pos[0] is the context (or `this`)
   // pos[1] is the action name or function
   // Anything else is an action argument.
-  let context = positional.at(0);
-  let action = positional.at(1);
+  let [context, action, ...restArgs] = capturedArgs.references;
 
   // TODO: Is there a better way of doing this?
   let debugKey = action._propertyKey;
-
-  let restArgs;
-
-  if (positional.length === 2) {
-    restArgs = EvaluatedPositionalArgs.empty();
-  } else {
-    restArgs = EvaluatedPositionalArgs.create(positional.values.slice(2));
-  }
 
   let target = named.has('target') ? named.get('target') : context;
   let processArgs = makeArgsProcessor(named.has('value') && named.get('value'), restArgs);
@@ -310,7 +308,7 @@ function makeArgsProcessor(valuePathRef, actionArgsRef) {
 
   if (actionArgsRef.length > 0) {
     mergeArgs = function(args) {
-      return actionArgsRef.value().concat(args);
+      return actionArgsRef.map(ref => ref.value()).concat(args);
     };
   }
 
@@ -339,9 +337,9 @@ function makeArgsProcessor(valuePathRef, actionArgsRef) {
 
 function makeDynamicClosureAction(context, targetRef, actionRef, processArgs, debugKey) {
   // We don't allow undefined/null values, so this creates a throw-away action to trigger the assertions
-  runInDebug(function() {
+  if (DEBUG) {
     makeClosureAction(context, targetRef.value(), actionRef.value(), processArgs, debugKey);
-  });
+  }
 
   return function(...args) {
     return makeClosureAction(context, targetRef.value(), actionRef.value(), processArgs, debugKey)(...args);
@@ -373,7 +371,7 @@ function makeClosureAction(context, target, action, processArgs, debugKey) {
   }
 
   return function(...args) {
-    let payload = { target: self, args, label: 'glimmer-closure-action' };
+    let payload = { target: self, args, label: '@glimmer/closure-action' };
     return flaggedInstrument('interaction.ember-action', payload, () => {
       return run.join(self, fn, ...processArgs(args));
     });

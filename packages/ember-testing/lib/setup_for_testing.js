@@ -1,6 +1,6 @@
 /* global self */
 
-import { setTesting } from 'ember-metal';
+import { setTesting } from 'ember-debug';
 import { jQuery } from 'ember-views';
 import {
   getAdapter,
@@ -35,11 +35,13 @@ export default function setupForTesting() {
     setAdapter((typeof self.QUnit === 'undefined') ? new Adapter() : new QUnitAdapter());
   }
 
-  jQuery(document).off('ajaxSend', incrementPendingRequests);
-  jQuery(document).off('ajaxComplete', decrementPendingRequests);
+  if (jQuery) {
+    jQuery(document).off('ajaxSend', incrementPendingRequests);
+    jQuery(document).off('ajaxComplete', decrementPendingRequests);
 
-  clearPendingRequests();
+    clearPendingRequests();
 
-  jQuery(document).on('ajaxSend', incrementPendingRequests);
-  jQuery(document).on('ajaxComplete', decrementPendingRequests);
+    jQuery(document).on('ajaxSend', incrementPendingRequests);
+    jQuery(document).on('ajaxComplete', decrementPendingRequests);
+  }
 }

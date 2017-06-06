@@ -67,7 +67,7 @@ import _ProxyMixin from '../mixins/-proxy';
   @class ObjectProxy
   @namespace Ember
   @extends Ember.Object
-  @extends Ember._ProxyMixin
+  @uses Ember.ProxyMixin
   @public
 */
 

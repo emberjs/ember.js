@@ -24,7 +24,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -44,7 +43,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -64,7 +62,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -87,7 +84,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -110,7 +106,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -133,7 +128,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -156,7 +150,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -179,7 +172,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -204,7 +196,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
       }));
@@ -222,7 +213,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
       }));
@@ -239,7 +229,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
       }));
@@ -258,7 +247,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
       }));

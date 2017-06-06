@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-application
 */
-import { canInvoke, EmptyObject } from 'ember-utils';
+import { canInvoke } from 'ember-utils';
 import {
   Namespace,
   RegistryProxyMixin,
@@ -13,7 +13,8 @@ import {
   privatize as P
 } from 'container';
 import DAG from 'dag-map';
-import { get, set, assert, deprecate } from 'ember-metal';
+import { assert, deprecate } from 'ember-debug';
+import { get, set } from 'ember-metal';
 import DefaultResolver from './resolver';
 import EngineInstance from './engine-instance';
 import { RoutingService } from 'ember-routing';
@@ -22,7 +23,7 @@ import { ComponentLookup } from 'ember-views';
 import { setupEngineRegistry } from 'ember-glimmer';
 
 function props(obj) {
-  var properties = [];
+  let properties = [];
 
   for (let key in obj) {
     properties.push(key);
@@ -124,13 +125,13 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
   */
   runInitializers() {
     this._runInitializer('initializers', (name, initializer) => {
-      assert('No application initializer named \'' + name + '\'', !!initializer);
+      assert(`No application initializer named '${name}'`, !!initializer);
       if (initializer.initialize.length === 2) {
-        deprecate('The `initialize` method for Application initializer \'' + name + '\' should take only one argument - `App`, an instance of an `Application`.',
+        deprecate(`The \`initialize\` method for Application initializer '${name}' should take only one argument - \`App\`, an instance of an \`Application\`.`,
           false, {
             id: 'ember-application.app-initializer-initialize-arguments',
             until: '3.0.0',
-            url: 'http://emberjs.com/deprecations/v2.x/#toc_initializer-arity'
+            url: 'https://emberjs.com/deprecations/v2.x/#toc_initializer-arity'
           });
 
         initializer.initialize(this.__registry__, this);
@@ -147,7 +148,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
   */
   runInstanceInitializers(instance) {
     this._runInitializer('instanceInitializers', (name, initializer) => {
-      assert('No instance initializer named \'' + name + '\'', !!initializer);
+      assert(`No instance initializer named '${name}'`, !!initializer);
       initializer.initialize(instance);
     });
   },
@@ -168,8 +169,8 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
 });
 
 Engine.reopenClass({
-  initializers: new EmptyObject(),
-  instanceInitializers: new EmptyObject(),
+  initializers: Object.create(null),
+  instanceInitializers: Object.create(null),
 
   /**
     The goal of initializers should be to register dependencies and injections.
@@ -435,7 +436,7 @@ function resolverFor(namespace) {
   let ResolverClass = namespace.get('Resolver') || DefaultResolver;
 
   return ResolverClass.create({
-    namespace: namespace
+    namespace
   });
 }
 
@@ -451,9 +452,9 @@ function buildInitializerMethod(bucketName, humanName) {
       this.reopenClass(attrs);
     }
 
-    assert('The ' + humanName + ' \'' + initializer.name + '\' has already been registered', !this[bucketName][initializer.name]);
-    assert('An ' + humanName + ' cannot be registered without an initialize function', canInvoke(initializer, 'initialize'));
-    assert('An ' + humanName + ' cannot be registered without a name property', initializer.name !== undefined);
+    assert(`The ${humanName} '${initializer.name}' has already been registered`, !this[bucketName][initializer.name]);
+    assert(`An ${humanName} cannot be registered without an initialize function`, canInvoke(initializer, 'initialize'));
+    assert(`An ${humanName} cannot be registered without a name property`, initializer.name !== undefined);
 
     this[bucketName][initializer.name] = initializer;
   };

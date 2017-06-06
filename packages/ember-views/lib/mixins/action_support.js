@@ -3,7 +3,8 @@
  @submodule ember-views
 */
 import { inspect } from 'ember-utils';
-import { Mixin, get, isNone, assert } from 'ember-metal';
+import { Mixin, get, isNone } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { MUTABLE_CELL } from '../compat/attrs';
 
 function validateAction(component, actionName) {
@@ -12,8 +13,7 @@ function validateAction(component, actionName) {
   }
 
   assert(
-    'The default action was triggered on the component ' + component.toString() +
-    ', but the action name (' + actionName + ') was not a string.',
+    `The default action was triggered on the component ${component.toString()}, but the action name (${actionName}) was not a string.`,
     isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function'
   );
   return actionName;
@@ -139,8 +139,7 @@ export default Mixin.create({
     let target = get(this, 'target');
     if (target) {
       assert(
-        'The `target` for ' + this + ' (' + target +
-        ') does not have a `send` method',
+        `The \`target\` for ${this} (${target}) does not have a \`send\` method`,
         typeof target.send === 'function'
       );
       target.send(...arguments);

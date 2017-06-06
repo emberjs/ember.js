@@ -6,7 +6,7 @@ moduleFor('Application test: actions', class extends ApplicationTest {
   ['@test actions in top level template application template target application controller'](assert) {
     assert.expect(1);
 
-    this.registerController('application', Controller.extend({
+    this.add('controller:application', Controller.extend({
       actions: {
         handleIt(arg) {
           assert.ok(true, 'controller received action properly');
@@ -14,7 +14,7 @@ moduleFor('Application test: actions', class extends ApplicationTest {
       }
     }));
 
-    this.registerTemplate('application', '<button id="handle-it" {{action "handleIt"}}>Click!</button>');
+    this.addTemplate('application', '<button id="handle-it" {{action "handleIt"}}>Click!</button>');
 
     return this.visit('/')
       .then(() => {
@@ -25,7 +25,7 @@ moduleFor('Application test: actions', class extends ApplicationTest {
   ['@test actions in nested outlet template target their controller'](assert) {
     assert.expect(1);
 
-    this.registerController('application', Controller.extend({
+    this.add('controller:application', Controller.extend({
       actions: {
         handleIt(arg) {
           assert.ok(false, 'application controller should not have received action!');
@@ -33,7 +33,7 @@ moduleFor('Application test: actions', class extends ApplicationTest {
       }
     }));
 
-    this.registerController('index', Controller.extend({
+    this.add('controller:index', Controller.extend({
       actions: {
         handleIt(arg) {
           assert.ok(true, 'controller received action properly');
@@ -41,7 +41,7 @@ moduleFor('Application test: actions', class extends ApplicationTest {
       }
     }));
 
-    this.registerTemplate('index', '<button id="handle-it" {{action "handleIt"}}>Click!</button>');
+    this.addTemplate('index', '<button id="handle-it" {{action "handleIt"}}>Click!</button>');
 
     return this.visit('/')
       .then(() => {

@@ -10,20 +10,23 @@ addons:
 
 cache:
   directories:
-    - $HOME/.yarn
-    - $HOME/.yarn-cache
-    - $HOME/.cache # includes bowers cache
+  - $HOME/.yarn-cache
 
 before_install:
-  - curl -o- -L https://yarnpkg.com/install.sh | bash
-  - "phantomjs --version"
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
+- |
+    phantomjs --version
+    export DISPLAY=:99.0
+    sh -e /etc/init.d/xvfb start
+
+    sudo apt-key adv --fetch-keys http://dl.yarnpkg.com/debian/pubkey.gpg
+    echo "deb http://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+    sudo apt-get update -qq
+    sudo apt-get install -y -qq yarn
+    yarn --version
 
 install:
-  - "yarn global add bower"
-  - "yarn install --prefer-offline"
-  - "bower install"
+- |
+    yarn install
 
 after_success:
   - "./bin/publish_builds"
@@ -54,12 +57,12 @@ env:
       I/BFT0MbnR6JVCZiPV7TCWPgY1gvgZ6TEEIKGqauDMUBdL8ZK6I='
     - secure: e0yxVfwVW61d3Mi/QBOsY6Rfd1mZd3VXUd9xNRoz/fkvQJRuVwDe7oG3NOuJ4LZzvMw7BJ+zpDV9D8nKhAyPEEOgpkkMHUB7Ds83pHG4qSMzm4EAwBCadDLXCQirldz8dzN5FAqgGucXoj5fj/p2SKOkO6qWIZveGr8pdBJEG1E=
   matrix:
-    - TEST_SUITE=each-package-tests
+    - TEST_SUITE=each-package-tests PUBLISH=true
     - TEST_SUITE=built-tests EMBER_ENV=production DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=old-jquery-and-extend-prototypes DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=node DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=blueprints
     - TEST_SUITE=travis-browsers DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=sauce
-    - TEST_SUITE=allow-backtracking-rerender ALLOW_BACKTRACKING=true DISABLE_PUBLISHING=true
-    - TEST_SUITE=each-package-tests BUILD_TYPE=alpha
+    - TEST_SUITE=allow-backtracking-rerender ALLOW_BACKTRACKING=true
+    - TEST_SUITE=each-package-tests BUILD_TYPE=alpha PUBLISH=true

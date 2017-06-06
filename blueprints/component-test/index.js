@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/* eslint-env node */
 
 var path          = require('path');
 var testInfo      = require('ember-cli-test-info');
@@ -44,7 +44,7 @@ module.exports = useTestFrameworkDetector({
     var friendlyTestDescription = testInfo.description(options.entity.name, 'Integration', 'Component');
 
     if (options.pod && options.path !== 'components' && options.path !== '') {
-      componentPathName = [options.path, dasherizedModuleName].join('/');
+      componentPathName = [options.path, dasherizedModuleName].filter(Boolean).join('/');
     }
 
     if (options.testType === 'unit') {

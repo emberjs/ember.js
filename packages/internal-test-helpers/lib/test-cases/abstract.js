@@ -36,11 +36,11 @@ export default class AbstractTestCase {
   teardown() {}
 
   runTask(callback) {
-    run(callback);
+    return run(callback);
   }
 
   runTaskNext(callback) {
-    run.next(callback);
+    return run.next(callback);
   }
 
   // The following methods require `this.element` to work
@@ -85,6 +85,10 @@ export default class AbstractTestCase {
 
   $(sel) {
     return sel ? jQuery(sel, this.element) : jQuery(this.element);
+  }
+
+  click(selector) {
+    this.runTask(() => this.$(selector).click());
   }
 
   textValue() {

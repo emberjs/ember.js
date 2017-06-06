@@ -6,7 +6,6 @@ import {
   inject
 } from 'ember-runtime';
 import EmberRoute from '../../system/route';
-import { FACTORY_FOR } from 'container';
 
 let route, routeOne, routeTwo, lookupHash;
 
@@ -40,7 +39,7 @@ QUnit.test('default store utilizes the container to acquire the model factory', 
       hasRegistration() {
         return true;
       },
-      [FACTORY_FOR](fullName) {
+      factoryFor(fullName) {
         equal(fullName, 'model:post', 'correct factory was looked up');
 
         return {
@@ -306,6 +305,18 @@ QUnit.module('Ember.Route interaction', {
   }
 });
 
+
+QUnit.test('route._qp does not crash if the controller has no QP, or setProperties', function() {
+  lookupHash['controller:test'] = {};
+
+  routeOne.controllerName = 'test';
+  let qp = routeOne.get('_qp');
+
+  deepEqual(qp.map, {}, 'map should be empty');
+  deepEqual(qp.propertyNames, [], 'property names should be empty');
+  deepEqual(qp.qps, [], 'qps is should be empty');
+});
+
 QUnit.test('controllerFor uses route\'s controllerName if specified', function() {
   let testController = {};
   lookupHash['controller:test'] = testController;
@@ -339,7 +350,7 @@ QUnit.test('paramsFor considers an engine\'s mountPoint', function(assert) {
 
   let router = {
     _deserializeQueryParams() {},
-    router: {
+    _routerMicrolib: {
       state: {
         handlerInfos: [
           { name: 'posts' }
@@ -387,7 +398,7 @@ QUnit.test('modelFor considers an engine\'s mountPoint', function() {
   let postsModel = { id: '2' };
 
   let router = {
-    router: {
+    _routerMicrolib: {
       activeTransition: {
         resolvedModels: {
           'foo.bar': applicationModel,

@@ -1,9 +1,8 @@
 import { inspect } from 'ember-utils';
-import { assert, warn } from './debug';
+import { assert, warn, Error as EmberError } from 'ember-debug';
 import { set } from './property_set';
 import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import expandProperties from './expand_properties';
-import EmberError from './error';
 import {
   Descriptor,
   defineProperty
@@ -122,7 +121,7 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
   Additional resources:
   - [New CP syntax RFC](https://github.com/emberjs/rfcs/blob/master/text/0011-improved-cp-syntax.md)
-  - [New computed syntax explained in "Ember 1.12 released" ](http://emberjs.com/blog/2015/05/13/ember-1-12-released.html#toc_new-computed-syntax)
+  - [New computed syntax explained in "Ember 1.12 released" ](https://emberjs.com/blog/2015/05/13/ember-1-12-released.html#toc_new-computed-syntax)
 
   @class ComputedProperty
   @namespace Ember
@@ -134,7 +133,7 @@ function ComputedProperty(config, opts) {
     this._getter = config;
   } else {
     assert('Ember.computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
-    assert('Config object passed to an Ember.computed can only contain `get` or `set` keys.', (function() {
+    assert('Config object passed to an Ember.computed can only contain `get` or `set` keys.', ((() => {
       let keys = Object.keys(config);
       for (let i = 0; i < keys.length; i++) {
         if (keys[i] !== 'get' && keys[i] !== 'set') {
@@ -142,7 +141,7 @@ function ComputedProperty(config, opts) {
         }
       }
       return true;
-    })());
+    }))());
     this._getter = config.get;
     this._setter = config.set;
   }
@@ -413,7 +412,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     return ret;
   }
 
-  propertyWillChange(obj, keyName);
+  propertyWillChange(obj, keyName, meta);
 
   if (hadCachedValue) {
     cache[keyName] = undefined;
@@ -429,7 +428,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     cache[keyName] = ret;
   }
 
-  propertyDidChange(obj, keyName);
+  propertyDidChange(obj, keyName, meta);
 
   return ret;
 };
@@ -513,7 +512,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
 
   _Note: This is the preferred way to define computed properties when writing third-party
   libraries that depend on or use Ember, since there is no guarantee that the user
-  will have [prototype Extensions](http://emberjs.com/guides/configuring-ember/disabling-prototype-extensions/) enabled._
+  will have [prototype Extensions](https://emberjs.com/guides/configuring-ember/disabling-prototype-extensions/) enabled._
 
   The alternative syntax, with prototype extensions, might look like:
 
@@ -543,7 +542,7 @@ export default function computed(func) {
   let cp = new ComputedProperty(func);
 
   if (args) {
-    cp.property.apply(cp, args);
+    cp.property(...args);
   }
 
   return cp;

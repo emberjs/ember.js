@@ -125,6 +125,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
         placeholder=placeholder
         name=name
         maxlength=maxlength
+        minlength=minlength
         size=size
         tabindex=tabindex
       }}`, {
@@ -133,6 +134,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
         placeholder: 'Original placeholder',
         name: 'original-name',
         maxlength: 10,
+        minlength: 5,
         size: 20,
         tabindex: 30
       }
@@ -143,6 +145,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20'); //NOTE: failing in IE  (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -153,6 +156,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20'); //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -162,6 +166,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
       set(this.context, 'placeholder', 'Updated placeholder');
       set(this.context, 'name', 'updated-name');
       set(this.context, 'maxlength', 11);
+      set(this.context, 'minlength', 6);
       // set(this.context, 'size', 21); //NOTE: failing in IE (TEST_SUITE=sauce)
       // set(this.context, 'tabindex', 31); //NOTE: failing in IE (TEST_SUITE=sauce)
     });
@@ -171,6 +176,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Updated placeholder');
     this.assertAttr('name', 'updated-name');
     this.assertAttr('maxlength', '11');
+    this.assertAttr('minlength', '6');
     // this.assertAttr('size', '21'); //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '31'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -180,6 +186,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
       set(this.context, 'placeholder', 'Original placeholder');
       set(this.context, 'name', 'original-name');
       set(this.context, 'maxlength', 10);
+      set(this.context, 'minlength', 5);
       // set(this.context, 'size', 20); //NOTE: failing in IE (TEST_SUITE=sauce)
       // set(this.context, 'tabindex', 30); //NOTE: failing in IE (TEST_SUITE=sauce)
     });
@@ -189,6 +196,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20'); //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
   }
@@ -201,6 +209,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
         placeholder="Original placeholder"
         name="original-name"
         maxlength=10
+        minlength=5
         size=20
         tabindex=30
       }}`
@@ -211,6 +220,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20');  //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30');  //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -221,6 +231,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20');  //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30');  //NOTE: failing in IE (TEST_SUITE=sauce)
   }
@@ -436,6 +447,27 @@ moduleFor('Helpers test: {{input}} with dynamic type', class extends InputRender
     this.assertAttr('type', 'password');
   }
 
+  ['@test a subexpression can be used to determine type']() {
+    this.render(`{{input type=(if isTruthy trueType falseType)}}`, {
+      isTruthy: true,
+      trueType: 'text',
+      falseType: 'password'
+    });
+
+    this.assertAttr('type', 'text');
+
+    this.runTask(() => this.rerender());
+
+    this.assertAttr('type', 'text');
+
+    this.runTask(() => set(this.context, 'isTruthy', false));
+
+    this.assertAttr('type', 'password');
+
+    this.runTask(() => set(this.context, 'isTruthy', true));
+
+    this.assertAttr('type', 'text');
+  }
 });
 
 moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderingTest {
@@ -514,6 +546,17 @@ moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderin
     this.assertCheckboxIsChecked();
   }
 
+  ['@test native click changes check property'](assert) {
+    this.render(`{{input type="checkbox"}}`);
+
+    this.assertSingleCheckbox();
+    this.assertCheckboxIsNotChecked();
+    this.$input()[0].click();
+    this.assertCheckboxIsChecked();
+    this.$input()[0].click();
+    this.assertCheckboxIsNotChecked();
+  }
+
   ['@test with static values'](assert) {
     this.render(`{{input type="checkbox" disabled=false tabindex=10 name="original-name" checked=false}}`);
 
@@ -531,7 +574,6 @@ moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderin
     this.assertAttr('tabindex', '10');
     this.assertAttr('name', 'original-name');
   }
-
 });
 
 moduleFor(`Helpers test: {{input type='text'}}`, class extends InputRenderingTest {

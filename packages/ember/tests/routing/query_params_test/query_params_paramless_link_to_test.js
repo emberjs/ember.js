@@ -6,9 +6,9 @@ moduleFor('Query Params - paramless link-to', class extends QueryParamTestCase {
   testParamlessLinks(assert, routeName) {
     assert.expect(1);
 
-    this.registerTemplate(routeName, '{{link-to \'index\' \'index\' id=\'index-link\'}}');
+    this.addTemplate(routeName, '{{link-to \'index\' \'index\' id=\'index-link\'}}');
 
-    this.registerController(routeName, Controller.extend({
+    this.add(`controller:${routeName}`, Controller.extend({
       queryParams: ['foo'],
       foo: 'wat'
     }));

@@ -43,5 +43,5 @@ function locHelper({ positional }) {
 }
 
 export default function(vm, args) {
-  return new InternalHelperReference(locHelper, args);
+  return new InternalHelperReference(locHelper, args.capture());
 }

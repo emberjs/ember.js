@@ -9,7 +9,7 @@ import {
   run,
   get,
   computed,
-  meta
+  peekMeta
 } from 'ember-metal';
 import { Route } from 'ember-routing';
 import { jQuery } from 'ember-views';
@@ -25,7 +25,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     let appModelCount = 0;
     let promiseResolve;
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       queryParams: {
         appomg: {
           defaultValue: 'applol'
@@ -42,7 +42,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     let actionName = typeof loadingReturn !== 'undefined' ? 'loading' : 'ignore';
     let indexModelCount = 0;
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       queryParams: {
         omg: {
           refreshModel: true
@@ -62,7 +62,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
             return;
           });
         } else if (indexModelCount === 3) {
-          assert.deepEqual(params, { omg: 'hello' }, 'Model hook reruns even if the previous one didnt finish');
+          assert.deepEqual(params, { omg: 'hello' }, 'Model hook reruns even if the previous one didn\'t finish');
         }
       }
     }));
@@ -107,7 +107,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       });
     });
 
-    this.registerRoute('parent.child', Route.extend({
+    this.add('route:parent.child', Route.extend({
       afterModel() {
         this.transitionTo('parent.sibling');
       }
@@ -144,7 +144,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
   ['@test Query params can map to different url keys configured on the controller'](assert) {
     assert.expect(6);
 
-    this.registerController('index', Controller.extend({
+    this.add('controller:index', Controller.extend({
       queryParams: [{ foo: 'other_foo', bar: { as: 'other_bar' } }],
       foo: 'FOO',
       bar: 'BAR'
@@ -173,7 +173,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
   ['@test Routes have a private overridable serializeQueryParamKey hook'](assert) {
     assert.expect(2);
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       serializeQueryParamKey: StringUtils.dasherize
     }));
 
@@ -232,7 +232,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('index');
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       model(params) {
         assert.deepEqual(params, { foo: 'bar' });
       }
@@ -250,7 +250,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('index');
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       model(params) {
         assert.deepEqual(params, { foo: 'bar', id: 'baz' });
       }
@@ -268,7 +268,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('index');
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       model(params) {
         assert.deepEqual(params, { foo: 'baz', id: 'boo' });
       }
@@ -291,101 +291,12 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     }, `The route 'index' has both a dynamic segment and query param with name 'foo'. Please rename one to avoid collisions.`);
   }
 
-  ['@test controllers won\'t be eagerly instantiated by internal query params logic'](assert) {
-    assert.expect(10);
-
-    this.router.map(function() {
-      this.route('cats', function() {
-        this.route('index', { path: '/' });
-      });
-      this.route('home', { path: '/' });
-      this.route('about');
-    });
-
-    this.registerTemplate('home', `<h3>{{link-to 'About' 'about' (query-params lol='wat') id='link-to-about'}}</h3>`);
-    this.registerTemplate('about', `<h3>{{link-to 'Home' 'home'  (query-params foo='naw')}}</h3>`);
-    this.registerTemplate('cats.index', `<h3>{{link-to 'Cats' 'cats'  (query-params name='domino') id='cats-link'}}</h3>`);
-
-    let homeShouldBeCreated = false;
-    let aboutShouldBeCreated = false;
-    let catsIndexShouldBeCreated = false;
-
-    this.registerRoute('home', Route.extend({
-      setup() {
-        homeShouldBeCreated = true;
-        this._super(...arguments);
-      }
-    }));
-
-    this.setSingleQPController('home', 'foo', '123', {
-      init() {
-        this._super(...arguments);
-        assert.ok(homeShouldBeCreated, 'HomeController should be created at this time');
-      }
-    });
-
-    this.registerRoute('about', Route.extend({
-      setup() {
-        aboutShouldBeCreated = true;
-        this._super(...arguments);
-      }
-    }));
-
-    this.setSingleQPController('about', 'lol', 'haha', {
-      init() {
-        this._super(...arguments);
-        assert.ok(aboutShouldBeCreated, 'AboutController should be created at this time');
-      }
-    });
-
-    this.registerRoute('cats.index', Route.extend({
-      model() {
-        return [];
-      },
-      setup() {
-        catsIndexShouldBeCreated = true;
-        this._super(...arguments);
-      },
-      setupController(controller, context) {
-        controller.set('model', context);
-      }
-    }));
-
-    this.registerController('cats.index', Controller.extend({
-      queryParams: ['breed', 'name'],
-      breed: 'Golden',
-      name: null,
-      init() {
-        this._super(...arguments);
-        assert.ok(catsIndexShouldBeCreated, 'CatsIndexController should be created at this time');
-      }
-    }));
-
-    return this.visitAndAssert('/').then(() => {
-      let controller = this.getController('home');
-
-      this.setAndFlush(controller, 'foo', '456');
-      this.assertCurrentPath('/?foo=456');
-      assert.equal(jQuery('#link-to-about').attr('href'), '/about?lol=wat', 'link to about is correct');
-
-      this.transitionTo('about');
-      this.assertCurrentPath('/about');
-
-      this.transitionTo('cats');
-      this.assertCurrentPath('/cats');
-      assert.equal(jQuery('#cats-link').attr('href'), '/cats?name=domino', 'link to cats is correct');
-
-      run(jQuery('#cats-link'), 'click');
-      this.assertCurrentPath('/cats?name=domino');
-    });
-  }
-
   ['@test query params have been set by the time setupController is called'](assert) {
     assert.expect(2);
 
     this.setSingleQPController('application');
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       setupController(controller) {
         assert.equal(controller.get('foo'), 'YEAH', 'controller\'s foo QP property set before setupController called');
       }
@@ -399,7 +310,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('application', { faz: 'foo' });
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       setupController(controller) {
         assert.equal(controller.get('faz'), 'YEAH', 'controller\'s foo QP property set before setupController called');
       }
@@ -417,7 +328,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('index');
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       model(params, transition) {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: 'bar' }, 'could retrieve params for index');
       }
@@ -435,7 +346,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('index');
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       model(params, transition) {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: 'boo' }, 'could retrieve params for index');
       }
@@ -453,7 +364,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('index', 'foo', false);
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       model(params, transition) {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: false }, 'could retrieve params for index');
       }
@@ -471,7 +382,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('index', 'foo', true);
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       model(params, transition) {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: false }, 'could retrieve params for index');
       }
@@ -486,13 +397,13 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('application', 'appomg', 'applol');
     this.setSingleQPController('index', 'omg', 'lol');
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       model(params) {
         assert.deepEqual(params, { appomg: 'applol' });
       }
     }));
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       model(params) {
         assert.deepEqual(params, { omg: 'lol' });
         assert.deepEqual(this.paramsFor('application'), { appomg: 'applol' });
@@ -508,13 +419,13 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('application', 'appomg', 'applol');
     this.setSingleQPController('index', 'omg', 'lol');
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       model(params) {
         assert.deepEqual(params, { appomg: 'appyes' });
       }
     }));
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       model(params) {
         assert.deepEqual(params, { omg: 'yes' });
         assert.deepEqual(this.paramsFor('application'), { appomg: 'appyes' });
@@ -531,14 +442,14 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index', 'omg', 'lol');
 
     let appModelCount = 0;
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       model(params) {
         appModelCount++;
       }
     }));
 
     let indexModelCount = 0;
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       queryParams: {
         omg: {
           refreshModel: true
@@ -567,6 +478,51 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
+  ['@test refreshModel and replace work together'](assert) {
+    assert.expect(8);
+
+    this.setSingleQPController('application', 'appomg', 'applol');
+    this.setSingleQPController('index', 'omg', 'lol');
+
+    let appModelCount = 0;
+    this.add('route:application', Route.extend({
+      model(params) {
+        appModelCount++;
+      }
+    }));
+
+    let indexModelCount = 0;
+    this.add('route:index', Route.extend({
+      queryParams: {
+        omg: {
+          refreshModel: true,
+          replace: true
+        }
+      },
+      model(params) {
+        indexModelCount++;
+
+        if (indexModelCount === 1) {
+          assert.deepEqual(params, { omg: 'lol' }, 'params are correct on first pass');
+        } else if (indexModelCount === 2) {
+          assert.deepEqual(params, { omg: 'lex' }, 'params are correct on second pass');
+        }
+      }
+    }));
+
+    return this.visitAndAssert('/').then(() => {
+      assert.equal(appModelCount, 1, 'app model hook ran');
+      assert.equal(indexModelCount, 1, 'index model hook ran');
+
+      let indexController = this.getController('index');
+      this.expectedReplaceURL = '/?omg=lex';
+      this.setAndFlush(indexController, 'omg', 'lex');
+
+      assert.equal(appModelCount, 1, 'app model hook did not run again');
+      assert.equal(indexModelCount, 2, 'index model hook ran again due to refreshModel');
+    });
+  }
+
   ['@test multiple QP value changes only cause a single model refresh'](assert) {
     assert.expect(2);
 
@@ -574,7 +530,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index', 'steely', 'lel');
 
     let refreshCount = 0;
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       queryParams: {
         alex: {
           refreshModel: true
@@ -601,7 +557,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('application', 'appomg', 'applol');
     this.setSingleQPController('index', 'omg', 'lol');
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       queryParams: {
         omg: {
           refreshModel: true
@@ -616,7 +572,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
   }
 
   ['@test queryParams are updated when a controller property is set and the route is refreshed. Issue #13263  '](assert) {
-    this.registerTemplate('application', '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{foo}}</span>{{outlet}}');
+    this.addTemplate('application', '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{foo}}</span>{{outlet}}');
 
     this.setSingleQPController('application', 'foo', 1, {
       actions: {
@@ -627,7 +583,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       }
     });
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       actions: {
         refreshRoute() {
           this.refresh();
@@ -655,14 +611,14 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index', 'omg', 'lol');
 
     let appModelCount = 0;
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       model(params) {
         appModelCount++;
       }
     }));
 
     let indexModelCount = 0;
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       queryParams: EmberObject.create({
         unknownProperty(keyName) {
           return { refreshModel: true };
@@ -697,7 +653,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index', 'omg', 'lol');
 
     let indexModelCount = 0;
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       queryParams: {
         omg: {
           refreshModel: true
@@ -730,7 +686,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('application', 'alex', 'matchneer');
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       queryParams: {
         alex: {
           replace: true
@@ -748,11 +704,11 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
   ['@test Route query params config can be configured using property name instead of URL key'](assert) {
     assert.expect(2);
 
-    this.registerController('application', Controller.extend({
+    this.add('controller:application', Controller.extend({
       queryParams: [{ commitBy: 'commit_by' }]
     }));
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       queryParams: {
         commitBy: {
           replace: true
@@ -770,13 +726,13 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
   ['@test An explicit replace:false on a changed QP always wins and causes a pushState'](assert) {
     assert.expect(3);
 
-    this.registerController('application', Controller.extend({
+    this.add('controller:application', Controller.extend({
       queryParams: ['alex', 'steely'],
       alex: 'matchneer',
       steely: 'dan'
     }));
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       queryParams: {
         alex: {
           replace: true
@@ -801,8 +757,8 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
   }
 
   ['@test can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent'](assert) {
-    this.registerTemplate('parent', '{{outlet}}');
-    this.registerTemplate('parent.child', '{{link-to \'Parent\' \'parent\' (query-params foo=\'change\') id=\'parent-link\'}}');
+    this.addTemplate('parent', '{{outlet}}');
+    this.addTemplate('parent.child', '{{link-to \'Parent\' \'parent\' (query-params foo=\'change\') id=\'parent-link\'}}');
 
     this.router.map(function() {
       this.route('parent', function() {
@@ -811,7 +767,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
 
     let parentModelCount = 0;
-    this.registerRoute('parent', Route.extend({
+    this.add('route:parent', Route.extend({
       model() {
         parentModelCount++;
       },
@@ -837,7 +793,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('application', 'alex', 'matchneer');
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       queryParams: EmberObject.create({
         unknownProperty(keyName) {
           // We are simulating all qps requiring refresh
@@ -862,7 +818,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('index', 'omg', 'lol');
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       setupController(controller) {
         assert.ok(true, 'setupController called');
         controller.set('omg', 'OVERRIDE');
@@ -889,7 +845,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('index', 'omg', ['lol']);
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       setupController(controller) {
         assert.ok(true, 'setupController called');
         controller.set('omg', ['OVERRIDE']);
@@ -930,7 +886,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       });
     });
 
-    this.registerTemplate('application', '{{link-to \'A\' \'abc.def\' (query-params foo=\'123\') id=\'one\'}}{{link-to \'B\' \'abc.def.zoo\' (query-params foo=\'123\' bar=\'456\') id=\'two\'}}{{outlet}}');
+    this.addTemplate('application', '{{link-to \'A\' \'abc.def\' (query-params foo=\'123\') id=\'one\'}}{{link-to \'B\' \'abc.def.zoo\' (query-params foo=\'123\' bar=\'456\') id=\'two\'}}{{outlet}}');
 
     this.setSingleQPController('abc.def', 'foo', 'lol');
     this.setSingleQPController('abc.def.zoo', 'bar', 'haha');
@@ -966,7 +922,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
   }
 
   ['@test transitionTo supports query params (multiple)'](assert) {
-    this.registerController('index', Controller.extend({
+    this.add('controller:index', Controller.extend({
       queryParams: ['foo', 'bar'],
       foo: 'lol',
       bar: 'wat'
@@ -1003,7 +959,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
   ['@test setting QP to empty string doesn\'t generate null in URL'](assert) {
     assert.expect(1);
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1024,7 +980,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('index', 'foo', false);
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       model(params) {
         assert.equal(params.foo, true, 'model hook received foo as boolean true');
       }
@@ -1042,7 +998,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
   ['@test Query param without value are empty string'](assert) {
     assert.expect(1);
 
-    this.registerController('index', Controller.extend({
+    this.add('controller:index', Controller.extend({
       queryParams: ['foo'],
       foo: ''
     }));
@@ -1153,7 +1109,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
 
     let modelCount = 0;
-    this.registerRoute('home', Route.extend({
+    this.add('route:home', Route.extend({
       model() {
         modelCount++;
       }
@@ -1185,10 +1141,10 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     // unless we return a copy of the params hash.
     this.setSingleQPController('application', 'woot', 'wat');
 
-    this.registerRoute('other', Route.extend({
+    this.add('route:other', Route.extend({
       model(p, trans) {
-        let m = meta(trans.params.application);
-        assert.ok(!m.peekWatching('woot'), 'A meta object isn\'t constructed for this params POJO');
+        let m = peekMeta(trans.params.application);
+        assert.ok(m === undefined, 'A meta object isn\'t constructed for this params POJO');
       }
     }));
 
@@ -1204,13 +1160,13 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       woot: undefined
     });
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       model(p, trans) {
         return { woot: true };
       }
     }));
 
-    this.registerRoute('index', Route.extend({
+    this.add('route:index', Route.extend({
       setupController(controller, model) {
         assert.deepEqual(model, { woot: true }, 'index route inherited model route from parent route');
       }
@@ -1222,7 +1178,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
   ['@test opting into replace does not affect transitions between routes'](assert) {
     assert.expect(5);
 
-    this.registerTemplate('application', '{{link-to \'Foo\' \'foo\' id=\'foo-link\'}}{{link-to \'Bar\' \'bar\' id=\'bar-no-qp-link\'}}{{link-to \'Bar\' \'bar\' (query-params raytiley=\'isthebest\') id=\'bar-link\'}}{{outlet}}');
+    this.addTemplate('application', '{{link-to \'Foo\' \'foo\' id=\'foo-link\'}}{{link-to \'Bar\' \'bar\' id=\'bar-no-qp-link\'}}{{link-to \'Bar\' \'bar\' (query-params raytiley=\'isthebest\') id=\'bar-link\'}}{{outlet}}');
 
     this.router.map(function() {
       this.route('foo');
@@ -1231,7 +1187,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.setSingleQPController('bar', 'raytiley', 'israd');
 
-    this.registerRoute('bar', Route.extend({
+    this.add('route:bar', Route.extend({
       queryParams: {
         raytiley: {
           replace: true
@@ -1266,13 +1222,13 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       this.route('example');
     });
 
-    this.registerTemplate('application', '{{link-to \'Example\' \'example\' (query-params foo=undefined) id=\'the-link\'}}');
+    this.addTemplate('application', '{{link-to \'Example\' \'example\' (query-params foo=undefined) id=\'the-link\'}}');
 
     this.setSingleQPController('example', 'foo', undefined, {
       foo: undefined
     });
 
-    this.registerRoute('example', Route.extend({
+    this.add('route:example', Route.extend({
       model(params) {
         assert.deepEqual(params, { foo: undefined });
       }
@@ -1302,7 +1258,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
   ['@test warn user that Route\'s queryParams configuration must be an Object, not an Array'](assert) {
     assert.expect(1);
 
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       queryParams: [
         { commitBy: { replace: true } }
       ]
@@ -1320,7 +1276,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       this.route('constructor');
     });
 
-    this.registerRoute('constructor', Route.extend({
+    this.add('route:constructor', Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'

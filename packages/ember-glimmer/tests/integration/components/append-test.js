@@ -1,4 +1,4 @@
-import { set, isFeatureEnabled } from 'ember-metal';
+import { set } from 'ember-metal';
 import { jQuery } from 'ember-views';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component, compile } from '../../utils/helpers';
@@ -25,7 +25,7 @@ class AbstractAppendTest extends RenderingTest {
       this.assert.strictEqual($element.length, 0, `Should not leak element: #${id}`);
     });
 
-    super();
+    super.teardown();
   }
 
   /* abstract append(component): Element; */
@@ -136,11 +136,7 @@ class AbstractAppendTest extends RenderingTest {
 
     let XParent;
 
-    if (isFeatureEnabled('ember-factory-for')) {
-      XParent = this.owner.factoryFor('component:x-parent');
-    } else {
-      XParent = this.owner._lookupFactory('component:x-parent');
-    }
+    XParent = this.owner.factoryFor('component:x-parent');
 
     this.component = XParent.create({ foo: 'zomg' });
 
@@ -287,11 +283,7 @@ class AbstractAppendTest extends RenderingTest {
 
     let XParent;
 
-    if (isFeatureEnabled('ember-factory-for')) {
-      XParent = this.owner.factoryFor('component:x-parent');
-    } else {
-      XParent = this.owner._lookupFactory('component:x-parent');
-    }
+    XParent = this.owner.factoryFor('component:x-parent');
 
     this.component = XParent.create({ foo: 'zomg' });
 
@@ -364,13 +356,8 @@ class AbstractAppendTest extends RenderingTest {
 
     let First, Second;
 
-    if (isFeatureEnabled('ember-factory-for')) {
-      First = this.owner.factoryFor('component:x-first');
-      Second = this.owner.factoryFor('component:x-second');
-    } else {
-      First = this.owner._lookupFactory('component:x-first');
-      Second = this.owner._lookupFactory('component:x-second');
-    }
+    First = this.owner.factoryFor('component:x-first');
+    Second = this.owner.factoryFor('component:x-second');
 
     let first = First.create({ foo: 'foo' });
     let second = Second.create({ bar: 'bar' });
@@ -451,12 +438,7 @@ class AbstractAppendTest extends RenderingTest {
         didInsertElement() {
           element1 = this.element;
 
-          let SecondComponent;
-          if (isFeatureEnabled('ember-factory-for')) {
-            SecondComponent = owner.factoryFor('component:second-component');
-          } else {
-            SecondComponent = owner._lookupFactory('component:second-component');
-          }
+          let SecondComponent = owner.factoryFor('component:second-component');
 
           append(SecondComponent.create());
         }
@@ -473,13 +455,7 @@ class AbstractAppendTest extends RenderingTest {
       })
     });
 
-    let FirstComponent;
-
-    if (isFeatureEnabled('ember-factory-for')) {
-      FirstComponent = this.owner.factoryFor('component:first-component');
-    } else {
-      FirstComponent = this.owner._lookupFactory('component:first-component');
-    }
+    let FirstComponent = this.owner.factoryFor('component:first-component');
 
     this.runTask(() => append(FirstComponent.create()));
 
@@ -506,13 +482,8 @@ class AbstractAppendTest extends RenderingTest {
 
         didInsertElement() {
           element1 = this.element;
-          let OtherRoot;
 
-          if (isFeatureEnabled('ember-factory-for')) {
-            OtherRoot = owner.factoryFor('component:other-root');
-          } else {
-            OtherRoot = owner._lookupFactory('component:other-root');
-          }
+          let OtherRoot = owner.factoryFor('component:other-root');
 
           this._instance = OtherRoot.create({
             didInsertElement() {
@@ -540,13 +511,8 @@ class AbstractAppendTest extends RenderingTest {
 
         didInsertElement() {
           element3 = this.element;
-          let OtherRoot;
 
-          if (isFeatureEnabled('ember-factory-for')) {
-            OtherRoot = owner.factoryFor('component:other-root');
-          } else {
-            OtherRoot = owner._lookupFactory('component:other-root');
-          }
+          let OtherRoot = owner.factoryFor('component:other-root');
 
           this._instance = OtherRoot.create({
             didInsertElement() {
@@ -638,13 +604,7 @@ moduleFor('appendTo: a selector', class extends AbstractAppendTest {
       template: 'FOO BAR!'
     });
 
-    let FooBar;
-
-    if (isFeatureEnabled('ember-factory-for')) {
-      FooBar = this.owner.factoryFor('component:foo-bar');
-    } else {
-      FooBar = this.owner._lookupFactory('component:foo-bar');
-    }
+    let FooBar = this.owner.factoryFor('component:foo-bar');
 
     this.component = FooBar.create();
 
@@ -679,39 +639,4 @@ moduleFor('appendTo: with multiple components', class extends AbstractAppendTest
     this.didAppend(component);
     return jQuery('#qunit-fixture')[0];
   }
-});
-
-moduleFor('renderToElement: no arguments (defaults to a body context)', class extends AbstractAppendTest {
-
-  append(component) {
-    expectDeprecation(/Using the `renderToElement` is deprecated in favor of `appendTo`. Called in/);
-    let wrapper;
-
-    this.runTask(() => wrapper = component.renderToElement());
-    this.didAppend(component);
-
-    this.assert.equal(wrapper.tagName, 'BODY', 'wrapper is a body element');
-    this.assert.notEqual(wrapper, document.body, 'wrapper is not document.body');
-    this.assert.ok(!wrapper.parentNode, 'wrapper is detached');
-
-    return wrapper;
-  }
-
-});
-
-moduleFor('renderToElement: a div', class extends AbstractAppendTest {
-
-  append(component) {
-    expectDeprecation(/Using the `renderToElement` is deprecated in favor of `appendTo`. Called in/);
-    let wrapper;
-
-    this.runTask(() => wrapper = component.renderToElement('div'));
-    this.didAppend(component);
-
-    this.assert.equal(wrapper.tagName, 'DIV', 'wrapper is a body element');
-    this.assert.ok(!wrapper.parentNode, 'wrapper is detached');
-
-    return wrapper;
-  }
-
 });

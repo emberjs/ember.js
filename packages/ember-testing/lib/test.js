@@ -16,8 +16,7 @@ import TestPromise, {
 import {
   checkWaiters,
   registerWaiter,
-  unregisterWaiter,
-  generateDeprecatedWaitersArray
+  unregisterWaiter
 } from './test/waiters';
 
 import {
@@ -82,10 +81,6 @@ const Test = {
 Object.defineProperty(Test, 'adapter', {
   get: getAdapter,
   set: setAdapter
-});
-
-Object.defineProperty(Test, 'waiters', {
-  get: generateDeprecatedWaitersArray
 });
 
 export default Test;

@@ -10,35 +10,46 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   setupAppAndRoutableEngine(hooks = []) {
     let self = this;
 
-    this.application.register('template:application', compile('Application{{outlet}}'));
+    this.addTemplate('application', 'Application{{outlet}}');
 
     this.router.map(function() {
       this.mount('blog');
     });
-    this.application.register('route-map:blog', function() {
+    this.add('route-map:blog', function() {
       this.route('post', function() {
         this.route('comments');
         this.route('likes');
       });
+      this.route('category', {path: 'category/:id'});
+      this.route('author', {path: 'author/:id'});
     });
-    this.registerRoute('application', Route.extend({
+    this.add('route:application', Route.extend({
       model() {
         hooks.push('application - application');
       }
     }));
 
-    this.registerEngine('blog', Engine.extend({
+    this.add('engine:blog', Engine.extend({
       init() {
         this._super(...arguments);
         this.register('controller:application', Controller.extend({
           queryParams: ['lang'],
           lang: ''
         }));
+        this.register('controller:category', Controller.extend({
+          queryParams: ['type'],
+        }));
+        this.register('controller:authorKtrl', Controller.extend({
+          queryParams: ['official'],
+        }));
         this.register('template:application', compile('Engine{{lang}}{{outlet}}'));
         this.register('route:application', Route.extend({
           model() {
             hooks.push('engine - application');
           }
+        }));
+        this.register('route:author', Route.extend({
+          controllerName: 'authorKtrl',
         }));
 
         if (self._additionalEngineRegistrations) {
@@ -51,7 +62,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   setupAppAndRoutelessEngine(hooks) {
     this.setupRoutelessEngine(hooks);
 
-    this.registerEngine('chat-engine', Engine.extend({
+    this.add('engine:chat-engine', Engine.extend({
       init() {
         this._super(...arguments);
         this.register('template:application', compile('Engine'));
@@ -66,19 +77,19 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   }
 
   setupAppAndRoutableEngineWithPartial(hooks) {
-    this.application.register('template:application', compile('Application{{outlet}}'));
+    this.addTemplate('application', 'Application{{outlet}}');
 
     this.router.map(function() {
       this.mount('blog');
     });
-    this.application.register('route-map:blog', function() { });
-    this.registerRoute('application', Route.extend({
+    this.add('route-map:blog', function() { });
+    this.add('route:application', Route.extend({
       model() {
         hooks.push('application - application');
       }
     }));
 
-    this.registerEngine('blog', Engine.extend({
+    this.add('engine:blog', Engine.extend({
       init() {
         this._super(...arguments);
         this.register('template:foo', compile('foo partial'));
@@ -93,8 +104,8 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   }
 
   setupRoutelessEngine(hooks) {
-    this.application.register('template:application', compile('Application{{mount "chat-engine"}}'));
-    this.registerRoute('application', Route.extend({
+    this.addTemplate('application', 'Application{{mount "chat-engine"}}');
+    this.add('route:application', Route.extend({
       model() {
         hooks.push('application - application');
       }
@@ -104,7 +115,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   setupAppAndRoutlessEngineWithPartial(hooks) {
     this.setupRoutelessEngine(hooks);
 
-    this.registerEngine('chat-engine', Engine.extend({
+    this.add('engine:chat-engine', Engine.extend({
       init() {
         this._super(...arguments);
         this.register('template:foo', compile('foo partial'));
@@ -124,9 +135,9 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   }
 
   setupEngineWithAttrs(hooks) {
-    this.application.register('template:application', compile('Application{{mount "chat-engine"}}'));
+    this.addTemplate('application', 'Application{{mount "chat-engine"}}');
 
-    this.registerEngine('chat-engine', Engine.extend({
+    this.add('engine:chat-engine', Engine.extend({
       init() {
         this._super(...arguments);
         this.register('template:components/foo-bar', compile(`{{partial "troll"}}`));
@@ -137,6 +148,10 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
         this.register('template:application', compile('Engine {{foo-bar wat=contextType}}'));
       }
     }));
+  }
+
+  stringsEndWith(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
   }
 
   ['@test attrs in an engine']() {
@@ -157,8 +172,8 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       {{outlet}}
     `);
 
-    this.application.register('template:application', sharedTemplate);
-    this.registerController('application', Controller.extend({
+    this.add('template:application', sharedTemplate);
+    this.add('controller:application', Controller.extend({
       contextType: 'Application',
       'ambiguous-curlies': 'Controller Data!'
     }));
@@ -166,9 +181,9 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this.router.map(function() {
       this.mount('blog');
     });
-    this.application.register('route-map:blog', function() { });
+    this.add('route-map:blog', function() { });
 
-    this.registerEngine('blog', Engine.extend({
+    this.add('engine:blog', Engine.extend({
       init() {
         this._super(...arguments);
 
@@ -198,20 +213,20 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       layout: sharedLayout
     });
 
-    this.application.register('template:application', compile(strip`
+    this.addTemplate('application', strip`
       <h1>Application</h1>
       {{my-component ambiguous-curlies="Local Data!"}}
       {{outlet}}
-    `));
+    `);
 
-    this.application.register('component:my-component', sharedComponent);
+    this.add('component:my-component', sharedComponent);
 
     this.router.map(function() {
       this.mount('blog');
     });
-    this.application.register('route-map:blog', function() { });
+    this.add('route-map:blog', function() { });
 
-    this.registerEngine('blog', Engine.extend({
+    this.add('engine:blog', Engine.extend({
       init() {
         this._super(...arguments);
         this.register('template:application', compile(strip`
@@ -321,7 +336,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
 
     this.setupAppAndRoutableEngine();
 
-    this.registerEngine('blog', Engine.extend({
+    this.add('engine:blog', Engine.extend({
       init() {
         this._super(...arguments);
         this.register('template:application', compile('Engine{{outlet}}'));
@@ -351,7 +366,6 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     assert.expect(2);
 
     this.setupAppAndRoutableEngine();
-    this.application.__registry__.resolver.moduleBasedResolver = true;
     this.additionalEngineRegistrations(function() {
       this.register('template:application_error', compile('Error! {{model.message}}'));
       this.register('route:post', Route.extend({
@@ -373,7 +387,6 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     assert.expect(2);
 
     this.setupAppAndRoutableEngine();
-    this.application.__registry__.resolver.moduleBasedResolver = true;
     this.additionalEngineRegistrations(function() {
       this.register('template:error', compile('Error! {{model.message}}'));
       this.register('route:post', Route.extend({
@@ -395,7 +408,6 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     assert.expect(2);
 
     this.setupAppAndRoutableEngine();
-    this.application.__registry__.resolver.moduleBasedResolver = true;
     this.additionalEngineRegistrations(function() {
       this.register('template:post_error', compile('Error! {{model.message}}'));
       this.register('route:post', Route.extend({
@@ -417,7 +429,6 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     assert.expect(2);
 
     this.setupAppAndRoutableEngine();
-    this.application.__registry__.resolver.moduleBasedResolver = true;
     this.additionalEngineRegistrations(function() {
       this.register('template:post.error', compile('Error! {{model.message}}'));
       this.register('route:post.comments', Route.extend({
@@ -441,7 +452,6 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     let resolveLoading;
 
     this.setupAppAndRoutableEngine();
-    this.application.__registry__.resolver.moduleBasedResolver = true;
     this.additionalEngineRegistrations(function() {
       this.register('template:application_loading', compile('Loading'));
       this.register('template:post', compile('Post'));
@@ -508,7 +518,6 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     let resolveLoading;
 
     this.setupAppAndRoutableEngine();
-    this.application.__registry__.resolver.moduleBasedResolver = true;
     this.additionalEngineRegistrations(function() {
       this.register('template:post', compile('{{outlet}}'));
       this.register('template:post.comments', compile('Comments'));
@@ -570,6 +579,43 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       return transition.then(() => {
         this.runTaskNext(() => this.assertText('ApplicationEngineLikes'));
       });
+    });
+  }
+
+  ['@test query params don\'t have stickiness by default between model'](assert) {
+    assert.expect(1);
+    let tmpl = '{{#link-to "blog.category" 1337}}Category 1337{{/link-to}}';
+    this.setupAppAndRoutableEngine();
+    this.additionalEngineRegistrations(function() {
+      this.register('template:category', compile(tmpl));
+    });
+
+    return this.visit('/blog/category/1?type=news').then(() => {
+      let suffix = '/blog/category/1337';
+      let href = this.element.querySelector('a').href;
+
+      // check if link ends with the suffix
+      assert.ok(this.stringsEndWith(href, suffix));
+    });
+  }
+
+  ['@test query params in customized controllerName have stickiness by default between model'](assert) {
+    assert.expect(2);
+    let tmpl = '{{#link-to "blog.author" 1337 class="author-1337"}}Author 1337{{/link-to}}{{#link-to "blog.author" 1 class="author-1"}}Author 1{{/link-to}}';
+    this.setupAppAndRoutableEngine();
+    this.additionalEngineRegistrations(function() {
+      this.register('template:author', compile(tmpl));
+    });
+
+    return this.visit('/blog/author/1?official=true').then(() => {
+      let suffix1 = '/blog/author/1?official=true';
+      let href1 = this.element.querySelector('.author-1').href;
+      let suffix1337 = '/blog/author/1337';
+      let href1337 = this.element.querySelector('.author-1337').href;
+
+      // check if link ends with the suffix
+      assert.ok(this.stringsEndWith(href1, suffix1));
+      assert.ok(this.stringsEndWith(href1337, suffix1337));
     });
   }
 });

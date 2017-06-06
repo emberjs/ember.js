@@ -3,9 +3,12 @@ import {
   combine,
   map,
   referenceFromParts
-} from 'glimmer-reference';
-import { HelperSyntax } from 'glimmer-runtime';
-import { get, assert } from 'ember-metal';
+} from '@glimmer/reference';
+import {
+  Ops
+} from '@glimmer/wire-format';
+import { assert } from 'ember-debug';
+import { get } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
 import { ROOT_REF } from '../component';
 import { htmlSafe, isHTMLSafe } from './string';
@@ -30,20 +33,26 @@ function referenceForParts(component, parts) {
 }
 
 // TODO we should probably do this transform at build time
-export function wrapComponentClassAttribute(args) {
-  let { named } = args;
-  let index = named.keys.indexOf('class');
+export function wrapComponentClassAttribute(hash) {
+  if (!hash) {
+    return hash;
+  }
+
+  let [ keys, values ] = hash;
+  let index = keys.indexOf('class');
 
   if (index !== -1) {
-    let { ref, type } = named.values[index];
+    let [ type ] = values[index];
 
-    if (type === 'get') {
-      let propName = ref.parts[ref.parts.length - 1];
-      named.values[index] = HelperSyntax.fromSpec(['helper', ['-class'], [['get', ref.parts], propName], null]);
+    if (type === Ops.Get) {
+      let getExp = values[index];
+      let path = getExp[2];
+      let propName = path[path.length - 1];
+      hash[1][index] = [Ops.Helper, ['-class'], [getExp, propName]];
     }
   }
 
-  return args;
+  return hash;
 }
 
 export const AttributeBinding = {

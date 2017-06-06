@@ -104,11 +104,11 @@ NativeArray.keys().forEach((methodName) => {
   }
 });
 
-NativeArray = NativeArray.without.apply(NativeArray, ignore);
+NativeArray = NativeArray.without(...ignore);
 
 /**
   Creates an `Ember.NativeArray` from an Array like object.
-  Does not modify the original object. Ember.A is not needed if
+  Does not modify the original object's contents. Ember.A is not needed if
   `EmberENV.EXTEND_PROTOTYPES` is `true` (the default value). However,
   it is recommended that you use Ember.A when creating addons for
   ember or when you can not guarantee that `EmberENV.EXTEND_PROTOTYPES`

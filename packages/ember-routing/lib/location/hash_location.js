@@ -56,7 +56,7 @@ export default EmberObject.extend({
     let originalPath = this.getHash().substr(1);
     let outPath = originalPath;
 
-    if (outPath.charAt(0) !== '/') {
+    if (outPath[0] !== '/') {
       outPath = '/';
 
       // Only add the # if the path isn't empty.
@@ -110,16 +110,14 @@ export default EmberObject.extend({
   onUpdateURL(callback) {
     this._removeEventListener();
 
-    this._hashchangeHandler = () => {
-      run(() => {
-        let path = this.getURL();
-        if (get(this, 'lastSetURL') === path) { return; }
+    this._hashchangeHandler = run.bind(this, function() {
+      let path = this.getURL();
+      if (get(this, 'lastSetURL') === path) { return; }
 
-        set(this, 'lastSetURL', null);
+      set(this, 'lastSetURL', null);
 
-        callback(path);
-      });
-    };
+      callback(path);
+    });
 
     window.addEventListener('hashchange', this._hashchangeHandler);
   },
