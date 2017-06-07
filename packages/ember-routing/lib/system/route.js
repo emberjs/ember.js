@@ -1420,8 +1420,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   /**
     A hook you can implement to optionally redirect to another route.
 
-    If you call `this.transitionTo` from inside of this hook, this route
-    will not be entered in favor of the other hook.
+    If you call `this.replaceWith` or `this.transitionTo` from inside of this
+    hook, this route will not be entered in favor of the other route. Note that
+    calling `this.transitionTo` will likely add a history entry you don't want
+    and break the back button.
 
     `redirect` and `afterModel` behave very similarly and are
     called almost at the same time, but they have an important
