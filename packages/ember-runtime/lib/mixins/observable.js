@@ -305,6 +305,30 @@ export default Mixin.create({
     order and cause notifications to be delivered more often than you would
     like.
 
+    Property change notifications do not propogate over bindings if the object
+    returned is the same object (compared with ===). When a binding is created,
+    an observer is added on both the "from" and "to" paths. When
+    propertyDidChange is called on the "from" side, it triggers the "from"
+    observer which schedules a synchronization of the binding in the run loop
+    (into the sync queue). Synchronization just means to call set on the "to"
+    side of the binding with the value of the "from" side. This set call becomes
+    a no op if the value it is being set to is the same as it was previously.
+
+    Also note that calling this method will clear the cache of a computed
+    property, which may lead to unintuitive behaviour:
+
+    ```javascript
+    myObj = Ember.Object.extend({
+      foo: function() {
+        return {};
+      }.property()
+    }).create();
+
+    myObj.set('foo.bar', 'baz');
+    myObj.notifyPropertyChange('foo');
+    console.log(myObj.get('foo.bar')) // undefined
+    ```
+
     @method propertyDidChange
     @param {String} keyName The property key that has just changed.
     @return {Ember.Observable}
