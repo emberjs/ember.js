@@ -305,17 +305,17 @@ export class Meta {
             if (seen[innerKey] === undefined) {
               seen[innerKey] = true;
               calls = calls || [];
-              calls.push([innerKey, innerMap[innerKey]]);
+              calls.push(innerKey, innerMap[innerKey]);
             }
           }
         }
       }
       pointer = pointer.parent;
     }
+
     if (calls !== undefined) {
-      for (let i = 0; i < calls.length; i++) {
-        let [innerKey, value] = calls[i];
-        fn(innerKey, value);
+      for (let i = 0; i < calls.length; i+=2) {
+        fn(calls[i], calls[i + 1]);
       }
     }
   }
@@ -341,7 +341,7 @@ export class Meta {
 
   writeValue(obj, key, value) {
     let descriptor = lookupDescriptor(obj, key);
-    let isMandatorySetter = descriptor !== undefined&& descriptor.set && descriptor.set.isMandatorySetter;
+    let isMandatorySetter = descriptor !== undefined && descriptor.set && descriptor.set.isMandatorySetter;
 
     if (isMandatorySetter) {
       this.writeValues(key, value);
