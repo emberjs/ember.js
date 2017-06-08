@@ -3,6 +3,7 @@ import { appendChild, parseElementBlockParams } from "../utils";
 import { HandlebarsNodeVisitors } from './handlebars-node-visitors';
 import { SourceLocation } from "../types/nodes";
 import * as AST from "../types/nodes";
+import SyntaxError from '../errors/syntax-error';
 import { Tag } from "../parser";
 import builders from "../builders";
 import traverse from "../traversal/traverse";
@@ -155,9 +156,10 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   beginAttribute() {
     let tag = this.currentTag;
     if (tag.type === 'EndTag') {
-       throw new Error(
+       throw new SyntaxError(
         `Invalid end tag: closing tag must not have attributes, ` +
-        `in \`${tag.name}\` (on line ${this.tokenizer.line}).`
+        `in \`${tag.name}\` (on line ${this.tokenizer.line}).`,
+        tag.loc
       );
     }
 
@@ -229,7 +231,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   }
 
   reportSyntaxError(message: string) {
-    throw new Error(`Syntax error at line ${this.tokenizer.line} col ${this.tokenizer.column}: ${message}`);
+    throw new SyntaxError(`Syntax error at line ${this.tokenizer.line} col ${this.tokenizer.column}: ${message}`, b.loc(this.tokenizer.line, this.tokenizer.column));
   }
 };
 
@@ -241,10 +243,11 @@ function assembleAttributeValue(parts: (AST.MustacheStatement | AST.TextNode)[],
       if (parts.length === 1 || (parts.length === 2 && parts[1].type === 'TextNode' && (parts[1] as AST.TextNode).chars === '/')) {
         return parts[0];
       } else {
-        throw new Error(
+        throw new SyntaxError(
           `An unquoted attribute value must be a string or a mustache, ` +
           `preceeded by whitespace or a '=' character, and ` +
-          `followed by whitespace, a '>' character, or '/>' (on line ${line})`
+          `followed by whitespace, a '>' character, or '/>' (on line ${line})`,
+          b.loc(line, 0)
         );
       }
     }
@@ -255,10 +258,10 @@ function assembleAttributeValue(parts: (AST.MustacheStatement | AST.TextNode)[],
 
 function assembleConcatenatedValue(parts: (AST.MustacheStatement | AST.TextNode)[]) {
   for (let i = 0; i < parts.length; i++) {
-    let part = parts[i];
+    let part: AST.BaseNode = parts[i];
 
     if (part.type !== 'MustacheStatement' && part.type !== 'TextNode') {
-      throw new Error("Unsupported node in quoted attribute value: " + part['type']);
+      throw new SyntaxError("Unsupported node in quoted attribute value: " + part['type'], part.loc);
     }
   }
 
@@ -280,7 +283,7 @@ function validateEndTag(tag: Tag<'StartTag' | 'EndTag'>, element: AST.ElementNod
             element.loc.start.line + ").";
   }
 
-  if (error) { throw new Error(error); }
+  if (error) { throw new SyntaxError(error, element.loc); }
 }
 
 function formatEndTagInfo(tag: Tag<'StartTag' | 'EndTag'>) {

@@ -3,7 +3,7 @@ import JavaScriptCompiler, { Template } from "./javascript-compiler";
 import { Stack, getAttrNamespace } from "@glimmer/util";
 import { assert, expect } from "@glimmer/util";
 import { TemplateMeta } from "@glimmer/wire-format";
-import { AST, isLiteral } from '@glimmer/syntax';
+import { AST, isLiteral, SyntaxError } from '@glimmer/syntax';
 
 export interface CompileOptions<T extends TemplateMeta> {
   meta: T;
@@ -77,7 +77,6 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   }
 
   openElement([action]: [AST.ElementNode]) {
-
     this.opcode('openElement', action, action);
     for (let i = 0; i < action.attributes.length; i++) {
       this.attribute([action.attributes[i]]);
@@ -420,17 +419,17 @@ function isArg(path: AST.PathExpression): boolean {
 
 function assertIsSimplePath(path: AST.PathExpression, loc: AST.SourceLocation, context: string) {
   if (!isSimplePath(path)) {
-    throw new Error(`\`${path.original}\` is not a valid name for a ${context} on line ${loc.start.line}.`);
+    throw new SyntaxError(`\`${path.original}\` is not a valid name for a ${context} on line ${loc.start.line}.`, path.loc);
   }
 }
 
-function assertValidYield({ hash }: AST.MustacheStatement): string {
-  let pairs = hash.pairs;
+function assertValidYield(statement: AST.MustacheStatement): string {
+  let { pairs } = statement.hash;
 
   if ((pairs.length === 1 && pairs[0].key !== 'to') || pairs.length > 1) {
-    throw new Error(`yield only takes a single named argument: 'to'`);
+    throw new SyntaxError(`yield only takes a single named argument: 'to'`, statement.loc);
   } else if (pairs.length === 1 && pairs[0].value.type !== 'StringLiteral') {
-    throw new Error(`you can only yield to a literal value`);
+    throw new SyntaxError(`you can only yield to a literal value`, statement.loc);
   } else if (pairs.length === 0) {
     return 'default';
   } else {
@@ -438,21 +437,25 @@ function assertValidYield({ hash }: AST.MustacheStatement): string {
   }
 }
 
-function assertValidPartial({ params, hash, escaped, loc }: AST.MustacheStatement) /* : expr */ {
+function assertValidPartial(statement: AST.MustacheStatement) /* : expr */ {
+  let { params, hash, escaped, loc } = statement;
+
   if (params && params.length !== 1) {
-    throw new Error(`Partial found with no arguments. You must specify a template name. (on line ${loc.start.line})`);
+    throw new SyntaxError(`Partial found with no arguments. You must specify a template name. (on line ${loc.start.line})`, statement.loc);
   } else if (hash && hash.pairs.length > 0) {
-    throw new Error(`partial does not take any named arguments (on line ${loc.start.line})`);
+    throw new SyntaxError(`partial does not take any named arguments (on line ${loc.start.line})`, statement.loc);
   } else if (!escaped) {
-    throw new Error(`{{{partial ...}}} is not supported, please use {{partial ...}} instead (on line ${loc.start.line})`);
+    throw new SyntaxError(`{{{partial ...}}} is not supported, please use {{partial ...}} instead (on line ${loc.start.line})`, statement.loc);
   }
 
   return params;
 }
 
-function assertValidHasBlockUsage(type: string, { params, hash, loc }: AST.Call): string {
+function assertValidHasBlockUsage(type: string, call: AST.Call): string {
+  let { params, hash, loc } = call;
+
   if (hash && hash.pairs.length > 0) {
-    throw new Error(`${type} does not take any named arguments`);
+    throw new SyntaxError(`${type} does not take any named arguments`, call.loc);
   }
 
   if (params.length === 0) {
@@ -462,21 +465,23 @@ function assertValidHasBlockUsage(type: string, { params, hash, loc }: AST.Call)
     if (param.type === 'StringLiteral') {
       return param.value;
     } else {
-      throw new Error(`you can only yield to a literal value (on line ${loc.start.line})`);
+      throw new SyntaxError(`you can only yield to a literal value (on line ${loc.start.line})`, call.loc);
     }
   } else {
-    throw new Error(`${type} only takes a single positional argument (on line ${loc.start.line})`);
+    throw new SyntaxError(`${type} only takes a single positional argument (on line ${loc.start.line})`, call.loc);
   }
 }
 
-function assertValidDebuggerUsage({ params, hash }: { params: AST.Expression[], hash: AST.Hash }) {
+function assertValidDebuggerUsage(statement: AST.MustacheStatement) {
+  let { params, hash } = statement;
+
   if (hash && hash.pairs.length > 0) {
-    throw new Error(`debugger does not take any named arguments`);
+    throw new SyntaxError(`debugger does not take any named arguments`, statement.loc);
   }
 
   if (params.length === 0) {
     return 'default';
   } else {
-    throw new Error(`debugger does not take any positional arguments`);
+    throw new SyntaxError(`debugger does not take any positional arguments`, statement.loc);
   }
 }
