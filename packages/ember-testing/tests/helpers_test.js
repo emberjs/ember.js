@@ -830,7 +830,6 @@ QUnit.module('ember-testing routing helpers', {
   setup() {
     run(function() {
       App = EmberApplication.create();
-      App.setupForTesting();
 
       App.injectTestHelpers();
 
@@ -843,6 +842,8 @@ QUnit.module('ember-testing routing helpers', {
           this.route('new');
         });
       });
+
+      App.setupForTesting();
     });
 
     run(App, 'advanceReadiness');
