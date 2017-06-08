@@ -60,7 +60,8 @@ EmberApplication.reopen({
     the app when your tests are ready to run. It also sets the router's
     location to 'none', so that the window's location will not be modified
     (preventing both accidental leaking of state between tests and interference
-    with your testing framework).
+    with your testing framework). `setupForTesting` should only be called after
+    setting a custom `router` class (for example `App.Router = Router.extend(`).
 
     Example:
 
@@ -76,7 +77,7 @@ EmberApplication.reopen({
 
     this.testing = true;
 
-    this.Router.reopen({
+    this.resolveRegistration('router:main').reopen({
       location: 'none'
     });
   },
