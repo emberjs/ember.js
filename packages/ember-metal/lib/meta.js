@@ -58,9 +58,10 @@ let members = {
   watching: inheritedMap,
   mixins: inheritedMap,
   bindings: inheritedMap,
-  values: inheritedMap,
-  chains: inheritedCustomObject
+  values: inheritedMap
 };
+
+export const UNDEFINED = symbol('undefined');
 
 // FLAGS
 const SOURCE_DESTROYING = 1 << 1;
@@ -384,6 +385,23 @@ export class Meta {
     return this._chainWatchers;
   }
 
+  writableChains(create) {
+     assert(`Cannot call writableChains after the object is destroyed.`, !this.isMetaDestroyed());
+     let ret = this._chains;
+     if (ret === undefined) {
+       if (this.parent) {
+         ret = this._chains = this.parent.writableChains(create).copy(this.source);
+       } else {
+         ret = this._chains = create(this.source);
+       }
+     }
+     return ret;
+   }
+
+   readableChains() {
+     return this._getInherited('_chains');
+   }
+
 }
 
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
@@ -449,32 +467,6 @@ function inheritedMap(name, key, Meta) {
     return this._findInherited(key, subkey) !== undefined;
   };
 }
-
-export const UNDEFINED = symbol('undefined');
-
-// Implements a member that provides an inheritable, lazily-created
-// object using the method you provide. We will derived children from
-// their parents by calling your object's `copy()` method.
-function inheritedCustomObject(name, key, Meta) {
-  Meta.prototype[`writable${name}`] = function(create) {
-    assert(`Cannot call writable${name} after the object is destroyed.`, !this.isMetaDestroyed());
-
-    let ret = this[key];
-    if (ret === undefined) {
-      if (this.parent) {
-        ret = this[key] = this.parent[`writable${name}`](create).copy(this.source);
-      } else {
-        ret = this[key] = create(this.source);
-      }
-    }
-    return ret;
-  };
-
-  Meta.prototype[`readable${name}`] = function() {
-    return this._getInherited(key);
-  };
-}
-
 
 function memberProperty(name) {
   return `_${name}`;
