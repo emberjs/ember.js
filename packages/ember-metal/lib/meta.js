@@ -16,15 +16,18 @@ import {
 } from './chains';
 import { has } from 'require';
 
-let counters = {
-  peekCalls: 0,
-  peekParentCalls: 0,
-  peekPrototypeWalks: 0,
-  setCalls: 0,
-  deleteCalls: 0,
-  metaCalls: 0,
-  metaInstantiated: 0
-};
+let counters;
+if (DEBUG) {
+  counters = {
+    peekCalls: 0,
+    peekParentCalls: 0,
+    peekPrototypeWalks: 0,
+    setCalls: 0,
+    deleteCalls: 0,
+    metaCalls: 0,
+    metaInstantiated: 0
+  };
+}
 
 /**
 @module ember-metal
