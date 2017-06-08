@@ -59,9 +59,7 @@ let members = {
   mixins: inheritedMap,
   bindings: inheritedMap,
   values: inheritedMap,
-  chainWatchers: ownCustomObject,
-  chains: inheritedCustomObject,
-  tag: ownCustomObject,
+  chains: inheritedCustomObject
 };
 
 // FLAGS
@@ -360,6 +358,32 @@ export class Meta {
   writableTags() { return this._getOrCreateOwnMap('_tags'); }
   readableTags() { return this._tags; }
 
+  writableTag(create) {
+    assert(`Cannot call writableTag after the object is destroyed.`, !this.isMetaDestroyed());
+    let ret = this._tag;
+    if (ret === undefined) {
+      ret = this._tag = create(this.source);
+    }
+    return ret;
+  }
+
+  readableTag() {
+    return this._tag;
+  }
+
+  writableChainWatchers(create) {
+    assert(`Cannot call writableChainWatchers after the object is destroyed.`, !this.isMetaDestroyed());
+    let ret = this._chainWatchers;
+    if (ret === undefined) {
+      ret = this._chainWatchers = create(this.source);
+    }
+    return ret;
+  }
+
+  readableChainWatchers() {
+    return this._chainWatchers;
+  }
+
 }
 
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
@@ -427,24 +451,6 @@ function inheritedMap(name, key, Meta) {
 }
 
 export const UNDEFINED = symbol('undefined');
-
-// Implements a member that provides a non-heritable, lazily-created
-// object using the method you provide.
-function ownCustomObject(name, key, Meta) {
-  Meta.prototype[`writable${name}`] = function(create) {
-    assert(`Cannot call writable${name} after the object is destroyed.`, !this.isMetaDestroyed());
-
-    let ret = this[key];
-    if (ret === undefined) {
-      ret = this[key] = create(this.source);
-    }
-    return ret;
-  };
-
-  Meta.prototype[`readable${name}`] = function() {
-    return this[key];
-  };
-}
 
 // Implements a member that provides an inheritable, lazily-created
 // object using the method you provide. We will derived children from
