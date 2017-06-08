@@ -33,34 +33,6 @@ if (DEBUG) {
 @module ember-metal
 */
 
-/*
- This declares several meta-programmed members on the Meta class. Such
- meta!
-
- In general, the `readable` variants will give you an object (if it
- already exists) that you can read but should not modify. The
- `writable` variants will give you a mutable object, and they will
- create it if it didn't already exist.
-
- The following methods will get generated metaprogrammatically, and
- I'm including them here for greppability:
-
- writableCache, readableCache, writeWatching,
- peekWatching, clearWatching, writeMixins,
- peekMixins, clearMixins, writeBindings,
- peekBindings, clearBindings, writeValues,
- peekValues, clearValues, writeDeps, forEachInDeps
- writableChainWatchers, readableChainWatchers, writableChains,
- readableChains, writableTag, readableTag, writableTags,
- readableTags
-*/
-let members = {
-  watching: inheritedMap,
-  mixins: inheritedMap,
-  bindings: inheritedMap,
-  values: inheritedMap
-};
-
 export const UNDEFINED = symbol('undefined');
 
 // FLAGS
@@ -69,7 +41,6 @@ const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
 const IS_PROXY = 1 << 4;
 
-let memberNames = Object.keys(members);
 const META_FIELD = '__ember_meta__';
 const NODE_STACK = [];
 
@@ -386,60 +357,79 @@ export class Meta {
   }
 
   writableChains(create) {
-     assert(`Cannot call writableChains after the object is destroyed.`, !this.isMetaDestroyed());
-     let ret = this._chains;
-     if (ret === undefined) {
-       if (this.parent) {
-         ret = this._chains = this.parent.writableChains(create).copy(this.source);
-       } else {
-         ret = this._chains = create(this.source);
-       }
-     }
-     return ret;
-   }
-
-   readableChains() {
-     return this._getInherited('_chains');
-   }
-
-}
-
-if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-  Meta.prototype.writableLastRendered = function() { return this._getOrCreateOwnMap('_lastRendered'); };
-  Meta.prototype.readableLastRendered = function() { return this._lastRendered; };
-  if (has('ember-debug')) { //https://github.com/emberjs/ember.js/issues/14732
-    Meta.prototype.writableLastRenderedReferenceMap = function() { return this._getOrCreateOwnMap('_lastRenderedReferenceMap'); };
-    Meta.prototype.readableLastRenderedReferenceMap = function() { return this._lastRenderedReferenceMap; };
-    Meta.prototype.writableLastRenderedTemplateMap = function() { return this._getOrCreateOwnMap('_lastRenderedTemplateMap'); };
-    Meta.prototype.readableLastRenderedTemplateMap = function() { return this._lastRenderedTemplateMap; };
+    assert(`Cannot call writableChains after the object is destroyed.`, !this.isMetaDestroyed());
+    let ret = this._chains;
+    if (ret === undefined) {
+      if (this.parent) {
+        ret = this._chains = this.parent.writableChains(create).copy(this.source);
+      } else {
+        ret = this._chains = create(this.source);
+      }
+    }
+    return ret;
   }
-}
 
-for (let name in listenerMethods) {
-  Meta.prototype[name] = listenerMethods[name];
-}
+  readableChains() {
+    return this._getInherited('_chains');
+  }
 
-memberNames.forEach(name => members[name](name, Meta));
-
-// Implements a member that is a lazily created POJO with inheritable
-// values.
-function inheritedMap(name, key, Meta) {
-  Meta.prototype[`write${name}`] = function(subkey, value) {
-    assert(`Cannot call write${name} after the object is destroyed.`, !this.isMetaDestroyed());
-
-    let map = this._getOrCreateOwnMap(key);
+  writeWatching(subkey, value) {
+    assert(`Cannot call writeWatching after the object is destroyed.`, !this.isMetaDestroyed());
+    let map = this._getOrCreateOwnMap('_watching');
     map[subkey] = value;
-  };
+  }
 
-  Meta.prototype[`peek${name}`] = function(subkey) {
-    return this._findInherited(key, subkey);
-  };
+  peekWatching(subkey) {
+   return this._findInherited('_watching', subkey);
+  }
 
-  Meta.prototype[`forEach${name}`] = function(fn) {
+  forEachWatching(fn) {
     let pointer = this;
     let seen;
     while (pointer !== undefined) {
-      let map = pointer[key];
+      let map = pointer._watching;
+      if (map !== undefined) {
+        for (let key in map) {
+          seen = seen || Object.create(null);
+          if (seen[key] === undefined) {
+            seen[key] = true;
+            fn(key, map[key]);
+          }
+       }
+    }
+    pointer = pointer.parent;
+    }
+  }
+
+  clearWatching() {
+   assert(`Cannot call clearWatching after the object is destroyed.`, !this.isMetaDestroyed());
+
+   this._watching = undefined;
+  }
+
+  deleteFromWatching(subkey) {
+    delete this._getOrCreateOwnMap('_watching')[subkey];
+  }
+
+  hasInWatching(subkey) {
+    return this._findInherited('_watching', subkey) !== undefined;
+  }
+
+  writeMixins(subkey, value) {
+    assert(`Cannot call writeMixins after the object is destroyed.`, !this.isMetaDestroyed());
+    let map = this._getOrCreateOwnMap('_mixins');
+    map[subkey] = value;
+  }
+
+  peekMixins(subkey) {
+    return this._findInherited('_mixins', subkey);
+  }
+
+  forEachMixins(fn) {
+    let pointer = this;
+    let seen;
+    while (pointer !== undefined) {
+      let map = pointer._mixins;
       if (map !== undefined) {
         for (let key in map) {
           seen = seen || Object.create(null);
@@ -451,31 +441,122 @@ function inheritedMap(name, key, Meta) {
       }
       pointer = pointer.parent;
     }
-  };
+  }
 
-  Meta.prototype[`clear${name}`] = function() {
-    assert(`Cannot call clear${name} after the object is destroyed.`, !this.isMetaDestroyed());
+  clearMixins() {
+    assert(`Cannot call clearMixins after the object is destroyed.`, !this.isMetaDestroyed());
 
-    this[key] = undefined;
-  };
+    this._mixins = undefined;
+  }
 
-  Meta.prototype[`deleteFrom${name}`] = function(subkey) {
-    delete this._getOrCreateOwnMap(key)[subkey];
-  };
+  deleteFromMixins(subkey) {
+    delete this._getOrCreateOwnMap('_mixins')[subkey];
+  }
 
-  Meta.prototype[`hasIn${name}`] = function(subkey) {
-    return this._findInherited(key, subkey) !== undefined;
-  };
+  hasInMixins(subkey) {
+    return this._findInherited('_mixins', subkey) !== undefined;
+  }
+
+  writeBindings(subkey, value) {
+    assert(`Cannot call writeBindings after the object is destroyed.`, !this.isMetaDestroyed());
+
+    let map = this._getOrCreateOwnMap('_bindings');
+    map[subkey] = value;
+  }
+
+  peekBindings(subkey) {
+    return this._findInherited('_bindings', subkey);
+  }
+
+  forEachBindings(fn) {
+    let pointer = this;
+    let seen;
+    while (pointer !== undefined) {
+      let map = pointer._bindings;
+      if (map !== undefined) {
+        for (let key in map) {
+          seen = seen || Object.create(null);
+          if (seen[key] === undefined) {
+            seen[key] = true;
+            fn(key, map[key]);
+          }
+        }
+      }
+      pointer = pointer.parent;
+    }
+  }
+
+  clearBindings() {
+    assert(`Cannot call clearBindings after the object is destroyed.`, !this.isMetaDestroyed());
+    this._bindings = undefined;
+  }
+
+  deleteFromBindings(subkey) {
+    delete this._getOrCreateOwnMap('_bindings')[subkey];
+  }
+
+  hasInBindings(subkey) {
+    return this._findInherited('_bindings', subkey) !== undefined;
+  }
+
+  writeValues(subkey, value) {
+    assert(`Cannot call writeValues after the object is destroyed.`, !this.isMetaDestroyed());
+
+    let map = this._getOrCreateOwnMap('_values');
+    map[subkey] = value;
+  }
+
+  peekValues(subkey) {
+    return this._findInherited('_values', subkey);
+  }
+
+  forEachValues(fn) {
+    let pointer = this;
+    let seen;
+    while (pointer !== undefined) {
+      let map = pointer._values;
+      if (map !== undefined) {
+        for (let key in map) {
+          seen = seen || Object.create(null);
+          if (seen[key] === undefined) {
+            seen[key] = true;
+            fn(key, map[key]);
+          }
+        }
+      }
+      pointer = pointer.parent;
+    }
+  }
+
+  clearValues() {
+    assert(`Cannot call clearValues after the object is destroyed.`, !this.isMetaDestroyed());
+
+    this._values = undefined;
+  }
+
+  deleteFromValues(subkey) {
+    delete this._getOrCreateOwnMap('_values')[subkey];
+  }
+
+  hasInValues(subkey) {
+    return this._findInherited('_values', subkey) !== undefined;
+  }
+
 }
 
-function memberProperty(name) {
-  return `_${name}`;
+if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+  Meta.prototype.writableLastRendered = function() { return this._getOrCreateOwnMap('_lastRendered'); };
+  Meta.prototype.readableLastRendered = function() { return this._lastRendered; };
+  if (DEBUG) {
+    Meta.prototype.writableLastRenderedReferenceMap = function() { return this._getOrCreateOwnMap('_lastRenderedReferenceMap'); };
+    Meta.prototype.readableLastRenderedReferenceMap = function() { return this._lastRenderedReferenceMap; };
+    Meta.prototype.writableLastRenderedTemplateMap = function() { return this._getOrCreateOwnMap('_lastRenderedTemplateMap'); };
+    Meta.prototype.readableLastRenderedTemplateMap = function() { return this._lastRenderedTemplateMap; };
+  }
 }
 
-// there's a more general-purpose capitalize in ember-runtime, but we
-// don't want to make ember-metal depend on ember-runtime.
-function capitalize(name) {
-  return name.replace(/^\w/, m => m.toUpperCase());
+for (let name in listenerMethods) {
+  Meta.prototype[name] = listenerMethods[name];
 }
 
 export const META_DESC = {
