@@ -10,7 +10,7 @@ function firstKey(path) {
 }
 
 function isObject(obj) {
-  return typeof obj === 'object' && obj;
+  return typeof obj === 'object' && obj !== null;
 }
 
 function isVolatile(obj) {
@@ -176,10 +176,7 @@ class ChainNode {
 
   destroy() {
     if (this._watching === true) {
-      let obj = this._object;
-      if (obj) {
-        removeChainWatcher(obj, this._key, this);
-      }
+      removeChainWatcher(this._object, this._key, this);
       this._watching = false; // so future calls do nothing
     }
   }
@@ -275,9 +272,7 @@ class ChainNode {
       let parentValue = this._parent.value();
 
       if (parentValue !== this._object) {
-        if (this._object !== undefined) {
-          removeChainWatcher(this._object, this._key, this);
-        }
+        removeChainWatcher(this._object, this._key, this);
 
         if (isObject(parentValue)) {
           this._object = parentValue;
@@ -339,7 +334,7 @@ function lazyGet(obj, key) {
   // Otherwise attempt to get the cached value of the computed property
   } else {
     let cache = meta.readableCache();
-    if (cache) {
+    if (cache !== undefined) {
       return cacheFor.get(cache, key);
     }
   }
