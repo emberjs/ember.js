@@ -78,7 +78,6 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKI
   }
 }
 
-let memberNames = Object.keys(members);
 const META_FIELD = '__ember_meta__';
 
 export class Meta {
@@ -364,37 +363,37 @@ const NODE_STACK = [];
 for (let name in listenerMethods) {
   Meta.prototype[name] = listenerMethods[name];
 }
-memberNames.forEach(name => members[name](name, Meta));
+
+Object.keys(members).forEach(name => {
+  let key = memberProperty(name);
+  let capitalized = capitalize(name);
+  members[name](capitalized, key, Meta);
+});
 
 // Implements a member that is a lazily created, non-inheritable
 // POJO.
-function ownMap(name, Meta) {
-  let key = memberProperty(name);
-  let capitalized = capitalize(name);
-  Meta.prototype[`writable${capitalized}`] = function() {
+function ownMap(name, key, Meta) {
+  Meta.prototype[`writable${name}`] = function() {
     return this._getOrCreateOwnMap(key);
   };
-  Meta.prototype[`readable${capitalized}`] = function() { return this[key]; };
+  Meta.prototype[`readable${name}`] = function() { return this[key]; };
 }
 
 // Implements a member that is a lazily created POJO with inheritable
 // values.
-function inheritedMap(name, Meta) {
-  let key = memberProperty(name);
-  let capitalized = capitalize(name);
-
-  Meta.prototype[`write${capitalized}`] = function(subkey, value) {
-    assert(`Cannot call write${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
+function inheritedMap(name, key, Meta) {
+  Meta.prototype[`write${name}`] = function(subkey, value) {
+    assert(`Cannot call write${name} after the object is destroyed.`, !this.isMetaDestroyed());
 
     let map = this._getOrCreateOwnMap(key);
     map[subkey] = value;
   };
 
-  Meta.prototype[`peek${capitalized}`] = function(subkey) {
+  Meta.prototype[`peek${name}`] = function(subkey) {
     return this._findInherited(key, subkey);
   };
 
-  Meta.prototype[`forEach${capitalized}`] = function(fn) {
+  Meta.prototype[`forEach${name}`] = function(fn) {
     let pointer = this;
     let seen;
     while (pointer !== undefined) {
@@ -412,17 +411,17 @@ function inheritedMap(name, Meta) {
     }
   };
 
-  Meta.prototype[`clear${capitalized}`] = function() {
-    assert(`Cannot call clear${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
+  Meta.prototype[`clear${name}`] = function() {
+    assert(`Cannot call clear${name} after the object is destroyed.`, !this.isMetaDestroyed());
 
     this[key] = undefined;
   };
 
-  Meta.prototype[`deleteFrom${capitalized}`] = function(subkey) {
+  Meta.prototype[`deleteFrom${name}`] = function(subkey) {
     delete this._getOrCreateOwnMap(key)[subkey];
   };
 
-  Meta.prototype[`hasIn${capitalized}`] = function(subkey) {
+  Meta.prototype[`hasIn${name}`] = function(subkey) {
     return this._findInherited(key, subkey) !== undefined;
   };
 }
@@ -431,11 +430,9 @@ export const UNDEFINED = symbol('undefined');
 
 // Implements a member that provides a non-heritable, lazily-created
 // object using the method you provide.
-function ownCustomObject(name, Meta) {
-  let key = memberProperty(name);
-  let capitalized = capitalize(name);
-  Meta.prototype[`writable${capitalized}`] = function(create) {
-    assert(`Cannot call writable${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
+function ownCustomObject(name, key, Meta) {
+  Meta.prototype[`writable${name}`] = function(create) {
+    assert(`Cannot call writable${name} after the object is destroyed.`, !this.isMetaDestroyed());
 
     let ret = this[key];
     if (ret === undefined) {
@@ -443,7 +440,8 @@ function ownCustomObject(name, Meta) {
     }
     return ret;
   };
-  Meta.prototype[`readable${capitalized}`] = function() {
+
+  Meta.prototype[`readable${name}`] = function() {
     return this[key];
   };
 }
@@ -451,23 +449,22 @@ function ownCustomObject(name, Meta) {
 // Implements a member that provides an inheritable, lazily-created
 // object using the method you provide. We will derived children from
 // their parents by calling your object's `copy()` method.
-function inheritedCustomObject(name, Meta) {
-  let key = memberProperty(name);
-  let capitalized = capitalize(name);
-  Meta.prototype[`writable${capitalized}`] = function(create) {
-    assert(`Cannot call writable${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
+function inheritedCustomObject(name, key, Meta) {
+  Meta.prototype[`writable${name}`] = function(create) {
+    assert(`Cannot call writable${name} after the object is destroyed.`, !this.isMetaDestroyed());
 
     let ret = this[key];
     if (ret === undefined) {
       if (this.parent) {
-        ret = this[key] = this.parent[`writable${capitalized}`](create).copy(this.source);
+        ret = this[key] = this.parent[`writable${name}`](create).copy(this.source);
       } else {
         ret = this[key] = create(this.source);
       }
     }
     return ret;
   };
-  Meta.prototype[`readable${capitalized}`] = function() {
+
+  Meta.prototype[`readable${name}`] = function() {
     return this._getInherited(key);
   };
 }
