@@ -6,7 +6,7 @@
     "ember-metal-weakmap": null,
     "ember-glimmer-allow-backtracking-rerender": null,
     "ember-routing-router-service": null,
-    "ember-engines-mount-params": null,
+    "ember-engines-mount-params": true,
     "glimmer-custom-component-manager": null
   },
   "deprecations": {
