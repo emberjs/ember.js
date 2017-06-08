@@ -55,8 +55,6 @@ if (DEBUG) {
  readableTags
 */
 let members = {
-  cache: ownMap,
-  weak: ownMap,
   watching: inheritedMap,
   mixins: inheritedMap,
   bindings: inheritedMap,
@@ -64,7 +62,6 @@ let members = {
   chainWatchers: ownCustomObject,
   chains: inheritedCustomObject,
   tag: ownCustomObject,
-  tags: ownMap
 };
 
 // FLAGS
@@ -73,15 +70,9 @@ const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
 const IS_PROXY = 1 << 4;
 
-if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-  members.lastRendered = ownMap;
-  if (has('ember-debug')) { //https://github.com/emberjs/ember.js/issues/14732
-    members.lastRenderedReferenceMap = ownMap;
-    members.lastRenderedTemplateMap = ownMap;
-  }
-}
-
+let memberNames = Object.keys(members);
 const META_FIELD = '__ember_meta__';
+const NODE_STACK = [];
 
 export class Meta {
   constructor(obj, parentMeta) {
@@ -359,28 +350,34 @@ export class Meta {
   get factory() {
     return this._factory;
   }
+
+  writableCache() { return this._getOrCreateOwnMap('_cache'); }
+  readableCache() { return this._cache; }
+
+  writableWeak() { return this._getOrCreateOwnMap('_weak'); }
+  readableWeak() { return this._weak; }
+
+  writableTags() { return this._getOrCreateOwnMap('_tags'); }
+  readableTags() { return this._tags; }
+
 }
 
-const NODE_STACK = [];
+if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+  Meta.prototype.writableLastRendered = function() { return this._getOrCreateOwnMap('_lastRendered'); };
+  Meta.prototype.readableLastRendered = function() { return this._lastRendered; };
+  if (has('ember-debug')) { //https://github.com/emberjs/ember.js/issues/14732
+    Meta.prototype.writableLastRenderedReferenceMap = function() { return this._getOrCreateOwnMap('_lastRenderedReferenceMap'); };
+    Meta.prototype.readableLastRenderedReferenceMap = function() { return this._lastRenderedReferenceMap; };
+    Meta.prototype.writableLastRenderedTemplateMap = function() { return this._getOrCreateOwnMap('_lastRenderedTemplateMap'); };
+    Meta.prototype.readableLastRenderedTemplateMap = function() { return this._lastRenderedTemplateMap; };
+  }
+}
 
 for (let name in listenerMethods) {
   Meta.prototype[name] = listenerMethods[name];
 }
 
-Object.keys(members).forEach(name => {
-  let key = memberProperty(name);
-  let capitalized = capitalize(name);
-  members[name](capitalized, key, Meta);
-});
-
-// Implements a member that is a lazily created, non-inheritable
-// POJO.
-function ownMap(name, key, Meta) {
-  Meta.prototype[`writable${name}`] = function() {
-    return this._getOrCreateOwnMap(key);
-  };
-  Meta.prototype[`readable${name}`] = function() { return this[key]; };
-}
+memberNames.forEach(name => members[name](name, Meta));
 
 // Implements a member that is a lazily created POJO with inheritable
 // values.
