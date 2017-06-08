@@ -156,7 +156,7 @@ class ChainNode {
     if (isWatching === true) {
       let obj = parent.value();
 
-      if (!isObject(obj) === true) {
+      if (!isObject(obj)) {
         return;
       }
 
@@ -329,7 +329,7 @@ function lazyGet(obj, key) {
   }
 
   // Use `get` if the return value is an EachProxy or an uncacheable value.
-  if (isVolatile(obj[key]) === true) {
+  if (isVolatile(obj[key])) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {
