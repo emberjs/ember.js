@@ -1,6 +1,7 @@
 import { dictionary, assign, intern } from 'ember-utils';
 import { assert, deprecate } from 'ember-debug';
 import Container from './container';
+import { DEBUG } from 'ember-env-flags';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
 
@@ -572,18 +573,6 @@ Registry.prototype = {
     return VALID_FULL_NAME_REGEXP.test(fullName);
   },
 
-  validateInjections(injections) {
-    if (!injections) { return; }
-
-    let fullName;
-
-    for (let i = 0; i < injections.length; i++) {
-      fullName = injections[i].fullName;
-
-      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName));
-    }
-  },
-
   normalizeInjectionsHash(hash) {
     let injections = [];
 
@@ -625,6 +614,20 @@ function deprecateResolverFunction(registry) {
   registry.resolver = {
     resolve: registry.resolver
   };
+}
+
+if (DEBUG) {
+  Registry.prototype.validateInjections = function(injections) {
+    if (!injections) { return; }
+
+    let fullName;
+
+    for (let i = 0; i < injections.length; i++) {
+      fullName = injections[i].fullName;
+
+      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName));
+    }
+  }
 }
 
 /**

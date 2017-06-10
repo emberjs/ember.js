@@ -32,10 +32,13 @@ export default function Container(registry, options = {}) {
   this.registry        = registry;
   this.owner           = options.owner || null;
   this.cache           = dictionary(options.cache || null);
-  this.validationCache = dictionary(options.validationCache || null);
   this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
   this[CONTAINER_OVERRIDE] = undefined;
   this.isDestroyed = false;
+
+  if (DEBUG) {
+    this.validationCache = dictionary(options.validationCache || null);
+  }
 }
 
 Container.prototype = {
@@ -385,7 +388,6 @@ class FactoryManager {
   }
 
   create(options = {}) {
-
     let injections = this.injections;
     if (injections === undefined) {
       injections = injectionsFor(this.container, this.normalizedName);
@@ -394,7 +396,6 @@ class FactoryManager {
       }
     }
     let props = assign({}, injections, options);
-
 
     if (DEBUG) {
       let lazyInjections;
