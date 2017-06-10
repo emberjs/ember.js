@@ -26,6 +26,10 @@ export function focus(el) {
   }
 }
 
+function isNullOrUndefined(obj) {
+  return obj === undefined || obj === null;
+}
+
 export function fireEvent(element, type, options = {}) {
   if (!element) {
     return;
@@ -38,11 +42,16 @@ export function fireEvent(element, type, options = {}) {
     let x = rect.left + 1;
     let y = rect.top + 1;
     let simulatedCoordinates = {
-      screenX: x + 5,
-      screenY: y + 95,
-      clientX: x,
-      clientY: y
+      screenX: isNullOrUndefined(options.screenX) ? x + 5 : options.screenX,
+      screenY: isNullOrUndefined(options.screenY) ? y + 95 : options.screenY,
+      clientX: isNullOrUndefined(options.clientX) ? x : options.clientX,
+      clientY: isNullOrUndefined(options.clientY) ? y : options.clientY
     };
+    if (!options.button) {
+      // default to left button
+      options.button = 0;
+    }
+    options.which = options.button + 1; // jquery normalises to 1,2,3 for left, middle, right
     event = buildMouseEvent(type, jQuery.extend(simulatedCoordinates, options));
   } else {
     event = buildBasicEvent(type, options);
@@ -62,6 +71,7 @@ function buildMouseEvent(type, options = {}) {
   try {
     event = document.createEvent('MouseEvents');
     let eventOpts = jQuery.extend({}, DEFAULT_EVENT_OPTIONS, options);
+    //todo: initMouseEvent has been deprecated https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/initMouseEvent
     event.initMouseEvent(
       type,
       eventOpts.canBubble,

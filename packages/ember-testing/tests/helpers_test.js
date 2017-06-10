@@ -437,7 +437,6 @@ QUnit.test('`click` triggers native events with simulated X/Y coordinates', func
     }
   });
 
-
   setTemplate('index', compile('{{#index-wrapper}}some text{{/index-wrapper}}'));
 
   run(App, App.advanceReadiness);
@@ -455,6 +454,153 @@ QUnit.test('`click` triggers native events with simulated X/Y coordinates', func
       ok(typeof e.screenY === 'number' && e.screenY > 0, 'screenY is correct');
       ok(typeof e.clientX === 'number' && e.clientX > 0, 'clientX is correct');
       ok(typeof e.clientY === 'number' && e.clientY > 0, 'clientY is correct');
+    });
+  });
+});
+
+QUnit.test('`click` triggers native events with specified X/Y coordinates', function() {
+  expect(15);
+
+  var click, wait, events;
+
+  App.IndexWrapperComponent = Component.extend({
+    classNames: 'index-wrapper',
+
+    didInsertElement() {
+      let pushEvent  = e => events.push(e);
+      this.element.addEventListener('mousedown', pushEvent);
+      this.element.addEventListener('mouseup', pushEvent);
+      this.element.addEventListener('click', pushEvent);
+    }
+  });
+
+
+  setTemplate('index', compile('{{#index-wrapper}}some text{{/index-wrapper}}'));
+
+  run(App, App.advanceReadiness);
+
+  click = App.testHelpers.click;
+  wait  = App.testHelpers.wait;
+
+  return wait().then(function() {
+    events = [];
+    return click('.index-wrapper', null, { screenX: 1111, screenY: 2222, clientX: 3333, clientY: 4444 });
+  }).then(function() {
+    events.forEach(e => {
+      ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
+      ok(typeof e.screenX === 'number' && e.screenX === 1111, 'screenX is correct');
+      ok(typeof e.screenY === 'number' && e.screenY === 2222, 'screenY is correct');
+      ok(typeof e.clientX === 'number' && e.clientX === 3333, 'clientX is correct');
+      ok(typeof e.clientY === 'number' && e.clientY === 4444, 'clientY is correct');
+    });
+  });
+});
+
+QUnit.test('`click` triggers native events with specified X/Y coordinates when coords are falsy', function() {
+  expect(15);
+
+  var click, wait, events;
+
+  App.IndexWrapperComponent = Component.extend({
+    classNames: 'index-wrapper',
+
+    didInsertElement() {
+      let pushEvent  = e => events.push(e);
+      this.element.addEventListener('mousedown', pushEvent);
+      this.element.addEventListener('mouseup', pushEvent);
+      this.element.addEventListener('click', pushEvent);
+    }
+  });
+
+  setTemplate('index', compile('{{#index-wrapper}}some text{{/index-wrapper}}'));
+
+  run(App, App.advanceReadiness);
+
+  click = App.testHelpers.click;
+  wait  = App.testHelpers.wait;
+
+  return wait().then(function() {
+    events = [];
+    return click('.index-wrapper', null, { screenX: 0, screenY: 0, clientX: 0, clientY: 0 });
+  }).then(function() {
+    events.forEach(e => {
+      ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
+      ok(typeof e.screenX === 'number' && e.screenX === 0, 'screenX is correct');
+      ok(typeof e.screenY === 'number' && e.screenY === 0, 'screenY is correct');
+      ok(typeof e.clientX === 'number' && e.clientX === 0, 'clientX is correct');
+      ok(typeof e.clientY === 'number' && e.clientY === 0, 'clientY is correct');
+    });
+  });
+});
+
+QUnit.test('`click` triggers native events with specified mouse button', function() {
+  expect(9);
+
+  var click, wait, events;
+
+  App.IndexWrapperComponent = Component.extend({
+    classNames: 'index-wrapper',
+
+    didInsertElement() {
+      let pushEvent  = e => events.push(e);
+      this.element.addEventListener('mousedown', pushEvent);
+      this.element.addEventListener('mouseup', pushEvent);
+      this.element.addEventListener('click', pushEvent);
+    }
+  });
+
+
+  setTemplate('index', compile('{{#index-wrapper}}some text{{/index-wrapper}}'));
+
+  run(App, App.advanceReadiness);
+
+  click = App.testHelpers.click;
+  wait  = App.testHelpers.wait;
+
+  return wait().then(function() {
+    events = [];
+    return click('.index-wrapper', null, { button: 2 });
+  }).then(function() {
+    events.forEach(e => {
+      ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
+      ok(typeof e.button === 'number' && e.button === 2, 'button is correct');
+      ok(typeof e.which === 'number' && e.which === 3, 'which is correct');
+    });
+  });
+});
+
+QUnit.test('`click` triggers native events with default left mouse button', function() {
+  expect(9);
+
+  var click, wait, events;
+
+  App.IndexWrapperComponent = Component.extend({
+    classNames: 'index-wrapper',
+
+    didInsertElement() {
+      let pushEvent  = e => events.push(e);
+      this.element.addEventListener('mousedown', pushEvent);
+      this.element.addEventListener('mouseup', pushEvent);
+      this.element.addEventListener('click', pushEvent);
+    }
+  });
+
+
+  setTemplate('index', compile('{{#index-wrapper}}some text{{/index-wrapper}}'));
+
+  run(App, App.advanceReadiness);
+
+  click = App.testHelpers.click;
+  wait  = App.testHelpers.wait;
+
+  return wait().then(function() {
+    events = [];
+    return click('.index-wrapper');
+  }).then(function() {
+    events.forEach(e => {
+      ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
+      ok(typeof e.button === 'number' && e.button === 0, 'button is correct');
+      ok(typeof e.which === 'number' && e.which === 1, 'which is correct');
     });
   });
 });
