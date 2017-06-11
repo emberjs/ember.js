@@ -89,18 +89,6 @@ QUnit.test('meta.writeWatching issues useful error after destroy', function(asse
   }, 'Cannot update watchers for `hello` on `<special-sauce:123>` after it has been destroyed.');
 });
 
-QUnit.test('meta.clearWatching issues useful error after destroy', function(assert) {
-  let target = {
-    toString() { return '<special-sauce:123>'; }
-  };
-  let targetMeta = meta(target);
-
-  targetMeta.destroy();
-
-  expectAssertion(() => {
-    targetMeta.clearWatching();
-  }, 'Cannot clear watchers on `<special-sauce:123>` after it has been destroyed.');
-});
 QUnit.test('meta.writableTag issues useful error after destroy', function(assert) {
   let target = {
     toString() { return '<special-sauce:123>'; }

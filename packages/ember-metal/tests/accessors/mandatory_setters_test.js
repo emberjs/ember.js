@@ -18,7 +18,7 @@ function hasMandatorySetter(object, property) {
 }
 
 function hasMetaValue(object, property) {
-  return metaFor(object).hasInValues(property);
+  return metaFor(object).peekValues(property) !== undefined;
 }
 
 if (MANDATORY_SETTER) {
