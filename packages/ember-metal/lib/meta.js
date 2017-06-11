@@ -1,7 +1,8 @@
 import {
   HAS_NATIVE_WEAKMAP,
   lookupDescriptor,
-  symbol
+  symbol,
+  toString
 } from 'ember-utils';
 import { protoMethods as listenerMethods } from './meta_listeners';
 import { assert } from 'ember-debug';
@@ -211,7 +212,7 @@ export class Meta {
   // Implements a member that provides a lazily created map of maps,
   // with inheritance at both levels.
   writeDeps(subkey, itemkey, value) {
-    assert(`Cannot call writeDeps after the object is destroyed.`, !this.isMetaDestroyed());
+    assert(`Cannot modify dependent keys for \`${itemkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     let outerMap = this._getOrCreateOwnMap('_deps');
     let innerMap = outerMap[subkey];
@@ -331,7 +332,7 @@ export class Meta {
   readableTags() { return this._tags; }
 
   writableTag(create) {
-    assert(`Cannot call writableTag after the object is destroyed.`, !this.isMetaDestroyed());
+    assert(`Cannot create a new tag for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let ret = this._tag;
     if (ret === undefined) {
       ret = this._tag = create(this.source);
@@ -344,7 +345,7 @@ export class Meta {
   }
 
   writableChainWatchers(create) {
-    assert(`Cannot call writableChainWatchers after the object is destroyed.`, !this.isMetaDestroyed());
+    assert(`Cannot create a new chain watcher for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let ret = this._chainWatchers;
     if (ret === undefined) {
       ret = this._chainWatchers = create(this.source);
@@ -357,7 +358,7 @@ export class Meta {
   }
 
   writableChains(create) {
-    assert(`Cannot call writableChains after the object is destroyed.`, !this.isMetaDestroyed());
+    assert(`Cannot create a new chains for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let ret = this._chains;
     if (ret === undefined) {
       if (this.parent) {
@@ -374,7 +375,7 @@ export class Meta {
   }
 
   writeWatching(subkey, value) {
-    assert(`Cannot call writeWatching after the object is destroyed.`, !this.isMetaDestroyed());
+    assert(`Cannot update watchers for \`hello\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let map = this._getOrCreateOwnMap('_watching');
     map[subkey] = value;
   }
@@ -402,7 +403,7 @@ export class Meta {
   }
 
   clearWatching() {
-   assert(`Cannot call clearWatching after the object is destroyed.`, !this.isMetaDestroyed());
+   assert(`Cannot clear watchers on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
    this._watching = undefined;
   }
@@ -416,7 +417,7 @@ export class Meta {
   }
 
   writeMixins(subkey, value) {
-    assert(`Cannot call writeMixins after the object is destroyed.`, !this.isMetaDestroyed());
+    assert(`Cannot add mixins for \`${subkey}\` on \`${toString(this.source)}\` call writeMixins after it has been destroyed.`, !this.isMetaDestroyed());
     let map = this._getOrCreateOwnMap('_mixins');
     map[subkey] = value;
   }
@@ -444,7 +445,7 @@ export class Meta {
   }
 
   clearMixins() {
-    assert(`Cannot call clearMixins after the object is destroyed.`, !this.isMetaDestroyed());
+    assert(`Cannot clear mixins on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     this._mixins = undefined;
   }
@@ -458,7 +459,7 @@ export class Meta {
   }
 
   writeBindings(subkey, value) {
-    assert(`Cannot call writeBindings after the object is destroyed.`, !this.isMetaDestroyed());
+    assert(`Cannot add a binding for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     let map = this._getOrCreateOwnMap('_bindings');
     map[subkey] = value;
@@ -487,7 +488,7 @@ export class Meta {
   }
 
   clearBindings() {
-    assert(`Cannot call clearBindings after the object is destroyed.`, !this.isMetaDestroyed());
+    assert(`Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     this._bindings = undefined;
   }
 
@@ -500,7 +501,7 @@ export class Meta {
   }
 
   writeValues(subkey, value) {
-    assert(`Cannot call writeValues after the object is destroyed.`, !this.isMetaDestroyed());
+    assert(`Cannot set the value of \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     let map = this._getOrCreateOwnMap('_values');
     map[subkey] = value;
