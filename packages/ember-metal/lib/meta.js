@@ -283,36 +283,6 @@ export class Meta {
     }
   }
 
-  readInheritedValue(key, subkey) {
-    let internalKey = `_${key}`;
-
-    let pointer = this;
-
-    while (pointer !== undefined) {
-      let map = pointer[internalKey];
-      if (map !== undefined) {
-        let value = map[subkey];
-        if (value !== undefined || subkey in map) {
-          return value;
-        }
-      }
-      pointer = pointer.parent;
-    }
-
-    return UNDEFINED;
-  }
-
-  writeValue(obj, key, value) {
-    let descriptor = lookupDescriptor(obj, key);
-    let isMandatorySetter = descriptor !== undefined && descriptor.set && descriptor.set.isMandatorySetter;
-
-    if (isMandatorySetter) {
-      this.writeValues(key, value);
-    } else {
-      obj[key] = value;
-    }
-  }
-
   set factory(factory) {
     this._factory = factory;
   }
