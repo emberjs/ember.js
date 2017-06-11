@@ -2,6 +2,7 @@ import { preprocess } from "@glimmer/syntax";
 import TemplateCompiler, { CompileOptions } from "./template-compiler";
 import { SerializedTemplateWithLazyBlock, TemplateJavascript, TemplateMeta } from "@glimmer/wire-format";
 import { Option } from "@glimmer/interfaces";
+import { TransformASTPluginFactory } from "@glimmer/syntax";
 
 export interface TemplateIdFn {
   (src: string): Option<string>;
@@ -9,6 +10,9 @@ export interface TemplateIdFn {
 
 export interface PrecompileOptions<T extends TemplateMeta> extends CompileOptions<T> {
   id?: TemplateIdFn;
+  plugins?: {
+    ast?: TransformASTPluginFactory[]
+  };
 }
 
 declare function require(id: string): any;
