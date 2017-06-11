@@ -15,7 +15,6 @@ import {
 import {
   removeChainWatcher
 } from './chains';
-import { has } from 'require';
 
 let counters;
 if (DEBUG) {
