@@ -15,7 +15,7 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     this.element = jQuery('#qunit-fixture')[0];
 
     let { applicationOptions } = this;
-    this.application = run(Application, 'create', applicationOptions);
+    this.application = this.runTask(() => Application.create(applicationOptions));
 
     this.resolver = applicationOptions.Resolver.lastInstance;
 

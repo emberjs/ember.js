@@ -60,7 +60,7 @@ moduleFor('Ember.Application, autobooting multiple apps', class extends Applicat
     });
   }
 
-  buildSecondApplication(options) {
+  createSecondApplication(options) {
     let myOptions = assign(this.applicationOptions, options);
     return this.secondApp = Application.create(myOptions);
   }
@@ -74,7 +74,7 @@ moduleFor('Ember.Application, autobooting multiple apps', class extends Applicat
   }
 
   [`@test you can make a new application in a non-overlapping element`](assert) {
-    let app = run(() => this.buildSecondApplication({
+    let app = run(() => this.createSecondApplication({
       rootElement: '#two'
     }));
 
@@ -84,7 +84,7 @@ moduleFor('Ember.Application, autobooting multiple apps', class extends Applicat
 
   [`@test you cannot make a new application that is a parent of an existing application`]() {
     expectAssertion(() => {
-      run(() => this.buildSecondApplication({
+      run(() => this.createSecondApplication({
         rootElement: '#qunit-fixture'
       }));
     });
@@ -92,7 +92,7 @@ moduleFor('Ember.Application, autobooting multiple apps', class extends Applicat
 
   [`@test you cannot make a new application that is a descendant of an existing application`]() {
     expectAssertion(() => {
-      run(() => this.buildSecondApplication({
+      run(() => this.createSecondApplication({
         rootElement: '#one-child'
       }));
     });
@@ -100,7 +100,7 @@ moduleFor('Ember.Application, autobooting multiple apps', class extends Applicat
 
   [`@test you cannot make a new application that is a duplicate of an existing application`]() {
     expectAssertion(() => {
-      run(() => this.buildSecondApplication({
+      run(() => this.createSecondApplication({
         rootElement: '#one'
       }));
     });
@@ -108,7 +108,7 @@ moduleFor('Ember.Application, autobooting multiple apps', class extends Applicat
 
   [`@test you cannot make two default applications without a rootElement error`]() {
     expectAssertion(() => {
-      run(() => this.buildSecondApplication());
+      run(() => this.createSecondApplication());
     });
   }
 });
