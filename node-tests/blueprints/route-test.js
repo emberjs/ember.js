@@ -33,7 +33,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('app/templates/foo.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('tests/unit/routes/foo-test.js'))
           .to.contain('import { moduleFor, test } from \'ember-qunit\';')
@@ -69,7 +69,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('app/templates/foo.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('tests/unit/routes/foo-test.js'))
           .to.contain('import { moduleFor, test } from \'ember-qunit\';')
@@ -95,7 +95,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('app/templates/child.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('tests/unit/routes/child-test.js'))
           .to.contain('import { moduleFor, test } from \'ember-qunit\';')
@@ -119,7 +119,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('app/child/template.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('tests/unit/child/route-test.js'))
           .to.contain('import { moduleFor, test } from \'ember-qunit\';')
@@ -176,7 +176,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('addon/templates/foo.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('app/routes/foo.js'))
           .to.contain('export { default } from \'my-addon/routes/foo\';');
@@ -205,7 +205,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('addon/templates/foo/bar.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('app/routes/foo/bar.js'))
           .to.contain('export { default } from \'my-addon/routes/foo/bar\';');
@@ -234,7 +234,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('tests/dummy/app/templates/foo.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('app/routes/foo.js')).to.not.exist;
         expect(_file('app/templates/foo.hbs')).to.not.exist;
@@ -257,7 +257,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('tests/dummy/app/templates/foo/bar.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('app/routes/foo/bar.js')).to.not.exist;
         expect(_file('app/templates/foo/bar.hbs')).to.not.exist;
@@ -281,7 +281,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('lib/my-addon/addon/templates/foo.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('lib/my-addon/app/routes/foo.js'))
           .to.contain('export { default } from \'my-addon/routes/foo\';');
@@ -305,7 +305,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('lib/my-addon/addon/templates/foo/bar.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('lib/my-addon/app/routes/foo/bar.js'))
           .to.contain('export { default } from \'my-addon/routes/foo/bar\';');
@@ -329,7 +329,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('app/foo/template.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('tests/unit/foo/route-test.js'))
           .to.contain('import { moduleFor, test } from \'ember-qunit\';')
@@ -369,7 +369,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('app/pods/foo/template.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('tests/unit/pods/foo/route-test.js'))
           .to.contain('import { moduleFor, test } from \'ember-qunit\';')
@@ -423,7 +423,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('export default Ember.Route.extend({\n});');
 
         expect(_file('addon/foo/template.hbs'))
-          .to.contain('{{outlet}}');
+          .to.equal('{{outlet}}');
 
         expect(_file('app/foo/route.js'))
           .to.contain('export { default } from \'my-addon/foo/route\';');

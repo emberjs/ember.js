@@ -27,7 +27,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/templates/components/x-foo.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/components/x-foo-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -50,7 +50,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/templates/components/foo/x-foo.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/components/foo/x-foo-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -73,7 +73,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/templates/components/x-foo.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/components/x-foo-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -98,7 +98,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('addon/templates/components/x-foo.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('app/components/x-foo.js'))
           .to.contain("export { default } from 'my-addon/components/x-foo';");
@@ -126,7 +126,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('addon/templates/components/nested/x-foo.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('app/components/nested/x-foo.js'))
           .to.contain("export { default } from 'my-addon/components/nested/x-foo';");
@@ -152,7 +152,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('tests/dummy/app/templates/components/x-foo.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('app/components/x-foo.js'))
           .to.not.exist;
@@ -173,7 +173,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('tests/dummy/app/templates/components/nested/x-foo.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('app/components/nested/x-foo.js'))
           .to.not.exist;
@@ -196,7 +196,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('lib/my-addon/addon/templates/components/x-foo.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('lib/my-addon/app/components/x-foo.js'))
           .to.contain("export { default } from 'my-addon/components/x-foo';");
@@ -251,7 +251,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('lib/my-addon/addon/templates/components/nested/x-foo.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('lib/my-addon/app/components/nested/x-foo.js'))
           .to.contain("export { default } from 'my-addon/components/nested/x-foo';");
@@ -278,7 +278,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/components/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/components/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -300,7 +300,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/pods/components/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/pods/components/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -323,7 +323,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/components/foo/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/components/foo/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -347,7 +347,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/pods/components/foo/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/pods/components/foo/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -370,7 +370,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/bar/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/bar/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -394,7 +394,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/pods/bar/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/pods/bar/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -417,7 +417,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/bar/foo/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/bar/foo/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -441,7 +441,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/pods/bar/foo/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/pods/bar/foo/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -463,7 +463,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/bar/baz/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/bar/baz/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -487,7 +487,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/pods/bar/baz/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/pods/bar/baz/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -510,7 +510,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/bar/baz/foo/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/bar/baz/foo/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -534,7 +534,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/pods/bar/baz/foo/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/pods/bar/baz/foo/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -557,7 +557,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -581,7 +581,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/pods/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/pods/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -604,7 +604,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/foo/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/foo/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -628,7 +628,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('app/pods/foo/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('tests/integration/pods/foo/x-foo/component-test.js'))
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
@@ -653,7 +653,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('addon/components/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('app/components/x-foo/component.js'))
           .to.contain("export { default } from 'my-addon/components/x-foo/component';");
@@ -678,7 +678,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('lib/my-addon/addon/components/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('lib/my-addon/app/components/x-foo/component.js'))
           .to.contain("export { default } from 'my-addon/components/x-foo/component';");
@@ -703,7 +703,7 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("});");
 
         expect(_file('lib/my-addon/addon/components/nested/x-foo/template.hbs'))
-          .to.contain("{{yield}}");
+          .to.equal("{{yield}}");
 
         expect(_file('lib/my-addon/app/components/nested/x-foo/component.js'))
           .to.contain("export { default } from 'my-addon/components/nested/x-foo/component';");
