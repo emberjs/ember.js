@@ -15,7 +15,6 @@ import {
 import {
   removeChainWatcher
 } from './chains';
-import { has } from 'require';
 
 let counters;
 if (DEBUG) {
@@ -284,36 +283,6 @@ export class Meta {
     }
   }
 
-  readInheritedValue(key, subkey) {
-    let internalKey = `_${key}`;
-
-    let pointer = this;
-
-    while (pointer !== undefined) {
-      let map = pointer[internalKey];
-      if (map !== undefined) {
-        let value = map[subkey];
-        if (value !== undefined || subkey in map) {
-          return value;
-        }
-      }
-      pointer = pointer.parent;
-    }
-
-    return UNDEFINED;
-  }
-
-  writeValue(obj, key, value) {
-    let descriptor = lookupDescriptor(obj, key);
-    let isMandatorySetter = descriptor !== undefined && descriptor.set && descriptor.set.isMandatorySetter;
-
-    if (isMandatorySetter) {
-      this.writeValues(key, value);
-    } else {
-      obj[key] = value;
-    }
-  }
-
   set factory(factory) {
     this._factory = factory;
   }
@@ -384,38 +353,6 @@ export class Meta {
    return this._findInherited('_watching', subkey);
   }
 
-  forEachWatching(fn) {
-    let pointer = this;
-    let seen;
-    while (pointer !== undefined) {
-      let map = pointer._watching;
-      if (map !== undefined) {
-        for (let key in map) {
-          seen = seen || Object.create(null);
-          if (seen[key] === undefined) {
-            seen[key] = true;
-            fn(key, map[key]);
-          }
-       }
-    }
-    pointer = pointer.parent;
-    }
-  }
-
-  clearWatching() {
-   assert(`Cannot clear watchers on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
-
-   this._watching = undefined;
-  }
-
-  deleteFromWatching(subkey) {
-    delete this._getOrCreateOwnMap('_watching')[subkey];
-  }
-
-  hasInWatching(subkey) {
-    return this._findInherited('_watching', subkey) !== undefined;
-  }
-
   writeMixins(subkey, value) {
     assert(`Cannot add mixins for \`${subkey}\` on \`${toString(this.source)}\` call writeMixins after it has been destroyed.`, !this.isMetaDestroyed());
     let map = this._getOrCreateOwnMap('_mixins');
@@ -442,20 +379,6 @@ export class Meta {
       }
       pointer = pointer.parent;
     }
-  }
-
-  clearMixins() {
-    assert(`Cannot clear mixins on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
-
-    this._mixins = undefined;
-  }
-
-  deleteFromMixins(subkey) {
-    delete this._getOrCreateOwnMap('_mixins')[subkey];
-  }
-
-  hasInMixins(subkey) {
-    return this._findInherited('_mixins', subkey) !== undefined;
   }
 
   writeBindings(subkey, value) {
@@ -492,14 +415,6 @@ export class Meta {
     this._bindings = undefined;
   }
 
-  deleteFromBindings(subkey) {
-    delete this._getOrCreateOwnMap('_bindings')[subkey];
-  }
-
-  hasInBindings(subkey) {
-    return this._findInherited('_bindings', subkey) !== undefined;
-  }
-
   writeValues(subkey, value) {
     assert(`Cannot set the value of \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
@@ -511,38 +426,9 @@ export class Meta {
     return this._findInherited('_values', subkey);
   }
 
-  forEachValues(fn) {
-    let pointer = this;
-    let seen;
-    while (pointer !== undefined) {
-      let map = pointer._values;
-      if (map !== undefined) {
-        for (let key in map) {
-          seen = seen || Object.create(null);
-          if (seen[key] === undefined) {
-            seen[key] = true;
-            fn(key, map[key]);
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
-  }
-
-  clearValues() {
-    assert(`Cannot call clearValues after the object is destroyed.`, !this.isMetaDestroyed());
-
-    this._values = undefined;
-  }
-
   deleteFromValues(subkey) {
     delete this._getOrCreateOwnMap('_values')[subkey];
   }
-
-  hasInValues(subkey) {
-    return this._findInherited('_values', subkey) !== undefined;
-  }
-
 }
 
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
