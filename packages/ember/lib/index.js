@@ -185,7 +185,7 @@ if (DEBUG) {
         {
           id: 'ember-metal.model_factory_injections',
           until: '2.17.0',
-          url: 'https://emberjs.com/deprecations/v2.x#toc_code-ember-model-factory-injections'
+          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-model-em-factory-em-injections-removed'
         }
       );
     },
