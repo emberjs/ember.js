@@ -5,6 +5,7 @@ import {
 } from "simple-html-tokenizer";
 import { Program } from "./types/nodes";
 import * as AST from "./types/nodes";
+import * as HandlebarsAST from './types/handlebars-ast';
 import { Option } from '@glimmer/interfaces';
 import { assert, expect } from '@glimmer/util';
 
@@ -80,9 +81,9 @@ export class Parser {
 
   }
 
-  acceptNode(node: hbs.AST.Program): Program;
-  acceptNode<U extends AST.Node>(node: hbs.AST.Node): U;
-  acceptNode(node: hbs.AST.Node): any {
+  acceptNode(node: HandlebarsAST.Program): Program;
+  acceptNode<U extends AST.Node>(node: HandlebarsAST.Node): U;
+  acceptNode(node: HandlebarsAST.Node): any {
     return this[node.type](node);
   }
 
@@ -90,7 +91,7 @@ export class Parser {
     return this.elementStack[this.elementStack.length - 1];
   }
 
-  sourceForNode(node: hbs.AST.Node, endNode?: { loc: hbs.AST.SourceLocation }): string {
+  sourceForNode(node: HandlebarsAST.Node, endNode?: { loc: HandlebarsAST.SourceLocation }): string {
     let firstLine = node.loc.start.line - 1;
     let currentLine = firstLine - 1;
     let firstColumn = node.loc.start.column;
