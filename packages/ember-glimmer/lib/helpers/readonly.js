@@ -98,7 +98,7 @@ import { unMut } from './mut';
   @method readonly
   @param {Object} [attr] the read-only attribute.
   @for Ember.Templates.helpers
-  @private
+  @public
 */
 export default function(vm, args) {
   let ref = unMut(args.positional.at(0));
