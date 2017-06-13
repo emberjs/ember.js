@@ -116,7 +116,7 @@ Pull requests should pass the Ember.js unit tests. Do the following to run these
 
 1. Follow the setup steps listed above under [Building Ember.js](#building-emberjs).
 
-2. To start the development server, run `npm start`.
+2. To start the development server, run `yarn start`.
 
 3. To run all tests, visit <http://localhost:4200/>.
 
@@ -137,7 +137,7 @@ versions of jQuery.
 
 1. Install phantomjs from http://phantomjs.org.
 
-2. Run `npm test` to run a basic test suite or run `TEST_SUITE=all npm test` to
+2. Run `yarn test` to run a basic test suite or run `TEST_SUITE=all yarn test` to
    run a more comprehensive suite.
 
 ## From ember-cli
