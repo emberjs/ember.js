@@ -9,10 +9,6 @@ import { DEBUG } from 'ember-env-flags';
 
 function K() { return this; }
 
-export function dispatchLifeCycleHook(component, hook) {
-  component.trigger(hook);
-}
-
 /**
  @class ViewMixin
  @namespace Ember
@@ -66,9 +62,10 @@ export default Mixin.create({
     @public
    */
   concatenatedProperties: ['attributeBindings'],
+
   [POST_INIT]() {
-    dispatchLifeCycleHook(this, 'didInitAttrs', undefined, this.attrs);
-    dispatchLifeCycleHook(this, 'didReceiveAttrs', undefined, this.attrs);
+    this.trigger('didInitAttrs');
+    this.trigger('didReceiveAttrs');
   },
 
   // ..........................................................
