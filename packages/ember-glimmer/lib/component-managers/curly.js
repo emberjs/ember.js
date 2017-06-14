@@ -25,10 +25,7 @@ import {
   _instrumentStart
 } from 'ember-metal';
 import { processComponentArgs } from '../utils/process-args';
-import {
-  dispatchLifeCycleHook,
-  setViewElement
-} from 'ember-views';
+import { setViewElement } from 'ember-views';
 import { privatize as P } from 'container';
 import AbstractManager from './abstract';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
@@ -324,8 +321,8 @@ export default class CurlyComponentManager extends AbstractManager {
       component.setProperties(props);
       component[IS_DISPATCHING_ATTRS] = false;
 
-      dispatchLifeCycleHook(component, 'didUpdateAttrs');
-      dispatchLifeCycleHook(component, 'didReceiveAttrs');
+      component.trigger('didUpdateAttrs');
+      component.trigger('didReceiveAttrs');
     }
 
     if (environment.isInteractive) {
