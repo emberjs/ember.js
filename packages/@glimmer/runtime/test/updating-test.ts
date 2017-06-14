@@ -46,7 +46,7 @@ function assertProperty<T, K extends keyof T, V extends T[K]>(obj: T | null, key
 function render<T>(template: Template<T>, context = {}) {
   self = new UpdatableReference(context);
   env.begin();
-  let templateIterator = template.render(self, root, new TestDynamicScope());
+  let templateIterator = template.render({ self, parentNode: root, dynamicScope: new TestDynamicScope() });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next();
@@ -486,10 +486,16 @@ module("[glimmer-runtime] Updating", hooks => {
   });
 
   test("updating a curly with a safe and unsafe string", assert => {
+    interface SafeString {
+      string: string;
+      toHTML(): string;
+      toString(): string;
+    }
+
     let safeString = {
       string: '<p>hello world</p>',
-      toHTML: function () { return this.string; },
-      toString: function () { return this.string; }
+      toHTML: function (this: SafeString) { return this.string; },
+      toString: function (this: SafeString) { return this.string; }
     };
     let unsafeString = '<b>Big old world!</b>';
     let object: { value: SafeString | string; } = {
@@ -587,7 +593,7 @@ module("[glimmer-runtime] Updating", hooks => {
     }, {
       input: makeElement('p', 'hello'),
       expected: '<div><p>hello</p></div>',
-      description: 'DOM node containing and element with text'
+      description: 'DOM node containing an element with text'
     }, {
       input: makeFragment([makeElement('p', 'one'), makeElement('p', 'two')]),
       expected: '<div><p>one</p><p>two</p></div>',
@@ -863,7 +869,7 @@ module("[glimmer-runtime] Updating", hooks => {
   test("helpers can add destroyables", assert => {
     let destroyable = {
       count: 0,
-      destroy() {
+      destroy(this: { count: number }) {
         this.count++;
       }
     };

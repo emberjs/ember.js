@@ -16,7 +16,7 @@
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    // "noUnusedParameters": true,
     "allowUnreachableCode": false,
     "strictNullChecks": true,
     "noImplicitReturns": true,

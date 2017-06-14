@@ -3,14 +3,15 @@ import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
 import { Constants } from './environment/constants';
 
-import * as Simple from './dom/interfaces';
+import { Simple } from '@glimmer/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { Reference, OpaqueIterable } from '@glimmer/reference';
 import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
-import {
-  defaultManagers,
-  AttributeManager
-} from './dom/attribute-managers';
+import { DynamicAttributeFactory, defaultDynamicAttributes } from './vm/attributes/dynamic';
+// import {
+//   defaultManagers,
+//   AttributeManager
+// } from './dom/attribute-managers';
 
 import {
   PartialDefinition
@@ -455,8 +456,8 @@ export abstract class Environment {
     transaction.commit();
   }
 
-  attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace?: string): AttributeManager {
-    return defaultManagers(element, attr, isTrusting, namespace === undefined ? null : namespace);
+  attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace: Option<string>): DynamicAttributeFactory {
+    return defaultDynamicAttributes(element, attr);
   }
 
   macros(): { blocks: Blocks, inlines: Inlines } {

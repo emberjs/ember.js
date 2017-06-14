@@ -1,7 +1,7 @@
 import { UpdatableReference } from "@glimmer/object-reference";
 import { IteratorResult } from '@glimmer/runtime';
 import { equalTokens, TestDynamicScope, TestEnvironment } from "@glimmer/test-helpers";
-import { readDOMAttr, RenderResult, Template } from "../index";
+import { SVG_NAMESPACE, RenderResult, Template, normalizeProperty } from "../index";
 
 const { assert, test } = QUnit;
 
@@ -20,10 +20,25 @@ function commonSetup() {
   root.setAttribute('debug-root', 'true');
 }
 
+function readDOMAttr(element: Element, attr: string) {
+  let isSVG = element.namespaceURI === SVG_NAMESPACE;
+  let { type, normalized } = normalizeProperty(element, attr);
+
+  if (isSVG) {
+    return element.getAttribute(normalized);
+  }
+
+  if (type === 'attr') {
+    return element.getAttribute(normalized);
+  } {
+    return element[normalized];
+  }
+};
+
 function render<T>(template: Template<T>, context = {}) {
   self = new UpdatableReference(context);
   env.begin();
-  let templateIterator = template.render(self, root, new TestDynamicScope());
+  let templateIterator = template.render({ self, parentNode: root, dynamicScope: new TestDynamicScope() });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next();

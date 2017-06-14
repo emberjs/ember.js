@@ -1,11 +1,10 @@
-import { Dict, Opaque, Option } from '@glimmer/interfaces';
+import { Simple, Dict, Opaque, Option } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util';
 import { TemplateMeta } from '@glimmer/wire-format';
 import Bounds from '../bounds';
-import { ElementOperations } from '../builder';
+import { ElementOperations } from '../vm/element-builder';
 import { CompiledDynamicProgram } from '../compiled/blocks';
-import * as Simple from '../dom/interfaces';
 import Environment, { DynamicScope } from '../environment';
 import { Template } from '../template';
 import { IArguments } from '../vm/arguments';

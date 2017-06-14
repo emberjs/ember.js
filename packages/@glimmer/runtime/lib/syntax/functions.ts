@@ -100,9 +100,9 @@ function dynamicAttr(sexp: S.DynamicAttr | S.TrustingAttr, trusting: boolean, bu
   expr(value, builder);
 
   if (namespace) {
-    builder.dynamicAttrNS(name, namespace, trusting);
+    builder.dynamicAttr(name, namespace, trusting);
   } else {
-    builder.dynamicAttr(name, trusting);
+    builder.dynamicAttr(name, null, trusting);
   }
 }
 
@@ -111,12 +111,21 @@ STATEMENTS.add(Ops.OpenElement, (sexp: S.OpenElement, builder: OpcodeBuilder) =>
 });
 
 CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder: OpcodeBuilder) => {
-  builder.pushComponentOperations();
+  builder.putComponentOperations();
   builder.openElementWithOperations(sexp[2]);
 });
 
 CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder: OpcodeBuilder) => {
   builder.didCreateElement(Register.s0);
+});
+
+CLIENT_SIDE.add(ClientSide.Ops.SetComponentAttrs, (sexp: ClientSide.SetComponentAttrs, builder) => {
+  builder.setComponentAttrs(sexp[2]);
+});
+
+CLIENT_SIDE.add(ClientSide.Ops.Debugger, () => {
+  // tslint:disable-next-line:no-debugger
+  debugger;
 });
 
 CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayout, builder: OpcodeBuilder) => {
@@ -141,7 +150,7 @@ STATEMENTS.add(Ops.Append, (sexp: S.Append, builder: OpcodeBuilder) => {
       builder.guardedAppend(value, false);
     } else {
       expr(value, builder);
-      builder.cautiousAppend();
+      builder.dynamicContent(false);
     }
   }
 });
@@ -224,10 +233,15 @@ export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
 }
 
 STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
-  let [, tag, attrs, args, block] = sexp;
+  let [, tag, _attrs, args, block] = sexp;
 
   if (builder.env.hasComponentDefinition(tag, builder.meta.templateMeta)) {
     let child = builder.template(block);
+    let attrs: WireFormat.Statement[] = [
+      [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true],
+      ..._attrs,
+      [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false]
+    ];
     let attrsBlock = new RawInlineBlock(builder.meta, attrs, EMPTY_ARRAY);
     let definition = builder.env.getComponentDefinition(tag, builder.meta.templateMeta);
     builder.pushComponentManager(definition);
@@ -237,8 +251,8 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
   } else {
     builder.openPrimitiveElement(tag);
 
-    for (let i = 0; i < attrs.length; i++) {
-      STATEMENTS.compile(attrs[i], builder);
+    for (let i = 0; i < _attrs.length; i++) {
+      STATEMENTS.compile(_attrs[i], builder);
     }
 
     builder.flushElement();

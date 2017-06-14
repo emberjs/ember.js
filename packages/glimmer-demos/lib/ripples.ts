@@ -70,7 +70,7 @@ export function start() {
   let output = document.getElementById('output');
   let self = new UpdatableReference(data);
   let template: Template<{}> = TEMPLATES['application'];
-  let templateIterator = template.render(self, output, new TestDynamicScope());
+  let templateIterator = template.render({ self, parentNode: output, dynamicScope: new TestDynamicScope() });
 
   let result;
   do {
