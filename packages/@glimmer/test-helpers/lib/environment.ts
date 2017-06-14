@@ -43,7 +43,6 @@ import {
   // Misc
   Bounds,
   ElementOperations,
-  Simple,
   getDynamicVar,
 
   Template,
@@ -92,7 +91,7 @@ import {
 import * as WireFormat from '@glimmer/wire-format';
 
 import {
-  BlockSymbolTable, ProgramSymbolTable, unsafe
+  Simple, BlockSymbolTable, ProgramSymbolTable, unsafe
 } from "@glimmer/interfaces";
 import { TemplateMeta } from "@glimmer/wire-format";
 
@@ -559,7 +558,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
         let attribute = bindings[i];
         let reference = rootRef.get(attribute) as PathReference<string>;
 
-        operations.addDynamicAttribute(element, attribute, reference, false);
+        operations.setAttribute(attribute, reference, false, null);
       }
     }
   }

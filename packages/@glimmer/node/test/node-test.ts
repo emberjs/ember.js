@@ -1,6 +1,7 @@
 import * as SimpleDOM from 'simple-dom';
 import { TestEnvironment, TestDynamicScope } from "@glimmer/test-helpers";
-import { Template, Simple } from '@glimmer/runtime';
+import { Template } from '@glimmer/runtime';
+import { Simple } from '@glimmer/interfaces';
 import { precompile } from '@glimmer/compiler';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { NodeDOMTreeConstruction } from '@glimmer/node';
@@ -38,7 +39,7 @@ function commonSetup() {
 function render<T>(template: Template<T>, self: any) {
   let result;
   env.begin();
-  let templateIterator = template.render(new UpdatableReference(self), root, new TestDynamicScope());
+  let templateIterator = template.render({ self: new UpdatableReference(self), parentNode: root, dynamicScope: new TestDynamicScope() });
 
   do {
     result = templateIterator.next();

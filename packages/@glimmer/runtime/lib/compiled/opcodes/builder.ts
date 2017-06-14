@@ -20,9 +20,7 @@ import { FunctionExpressionCallback } from '../../syntax/client-side';
 import { expr, InvokeDynamicLayout } from '../../syntax/functions';
 import { Block } from '../../syntax/interfaces';
 import RawInlineBlock from '../../syntax/raw-block';
-import { Insertion } from '../../upsert';
 import { IsComponentDefinitionReference } from '../opcodes/content';
-import * as content from './content';
 import * as vm from './vm';
 
 export interface CompilesInto<E> {
@@ -63,6 +61,7 @@ export abstract class BasicOpcodeBuilder {
   public start: Handle;
 
   private labelsStack = new Stack<Labels>();
+  private isComponentAttrs = false;
 
   constructor(public env: Environment, public meta: CompilationMeta, public program: Program) {
     this.constants = program.constants;
@@ -99,6 +98,10 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.Return);
     this.heap.finishMalloc(this.start);
     return this.start;
+  }
+
+  setComponentAttrs(enabled: boolean): void {
+    this.isComponentAttrs = enabled;
   }
 
   // args
@@ -153,8 +156,8 @@ export abstract class BasicOpcodeBuilder {
     this.push(Op.CommitComponentTransaction);
   }
 
-  pushComponentOperations() {
-    this.push(Op.PushComponentOperations);
+  putComponentOperations() {
+    this.push(Op.PutComponentOperations);
   }
 
   getComponentSelf(state: Register) {
@@ -191,16 +194,8 @@ export abstract class BasicOpcodeBuilder {
 
   // content
 
-  dynamicContent(Opcode: content.AppendDynamicOpcode<Insertion>) {
-    this.push(Op.DynamicContent, this.other(Opcode));
-  }
-
-  cautiousAppend() {
-    this.dynamicContent(new content.OptimizedCautiousAppendOpcode());
-  }
-
-  trustingAppend() {
-    this.dynamicContent(new content.OptimizedTrustingAppendOpcode());
+  dynamicContent(isTrusting: boolean) {
+    this.push(Op.DynamicContent, isTrusting ? 1 : 0);
   }
 
   // dom
@@ -232,21 +227,25 @@ export abstract class BasicOpcodeBuilder {
   staticAttr(_name: string, _namespace: Option<string>, _value: string) {
     let name = this.constants.string(_name);
     let namespace = _namespace ? this.constants.string(_namespace) : 0;
-    let value = this.constants.string(_value);
 
-    this.push(Op.StaticAttr, name, value, namespace);
+    if (this.isComponentAttrs) {
+      this.primitive(_value);
+      this.push(Op.ComponentAttr, name, 1, namespace);
+    } else {
+      let value = this.constants.string(_value);
+      this.push(Op.StaticAttr, name, value, namespace);
+    }
   }
 
-  dynamicAttrNS(_name: string, _namespace: string, trusting: boolean) {
+  dynamicAttr(_name: string, _namespace: Option<string>, trusting: boolean) {
     let name = this.constants.string(_name);
-    let namespace = this.constants.string(_namespace);
+    let namespace = _namespace ? this.constants.string(_namespace) : 0;
 
-    this.push(Op.DynamicAttrNS, name, namespace, (trusting === true ? 1 : 0));
-  }
-
-  dynamicAttr(_name: string, trusting: boolean) {
-    let name = this.constants.string(_name);
-    this.push(Op.DynamicAttr, name, (trusting === true ? 1 : 0));
+    if (this.isComponentAttrs) {
+      this.push(Op.ComponentAttr, name, (trusting === true ? 1 : 0), namespace);
+    } else {
+      this.push(Op.DynamicAttr, name, (trusting === true ? 1 : 0), namespace);
+    }
   }
 
   comment(_comment: string) {
@@ -609,11 +608,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
 
     this.label('ELSE');
 
-    if (trusting) {
-      this.trustingAppend();
-    } else {
-      this.cautiousAppend();
-    }
+    this.dynamicContent(trusting);
 
     this.exit();
 

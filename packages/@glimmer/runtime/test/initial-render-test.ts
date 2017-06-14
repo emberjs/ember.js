@@ -7,10 +7,18 @@ import {
   assertNodeTagName,
   assertNodeProperty,
 } from "@glimmer/test-helpers";
-import { Environment, Template, Simple, AttributeManager, IteratorResult, RenderResult } from '@glimmer/runtime';
 import { module, test } from './support';
 import { UpdatableReference } from '@glimmer/object-reference';
-import { Opaque } from '@glimmer/interfaces';
+import { Simple, Opaque, Option } from '@glimmer/interfaces';
+
+import {
+  Template,
+  DynamicAttributeFactory,
+  IteratorResult,
+  RenderResult,
+  ElementBuilder,
+  SimpleDynamicAttribute
+} from '@glimmer/runtime';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
@@ -44,7 +52,7 @@ function commonSetup(customEnv = new TestEnvironment()) {
 function render<T>(template: Template<T>, self: any) {
   let result: RenderResult;
   env.begin();
-  let templateIterator = template.render(new UpdatableReference(self), root, new TestDynamicScope());
+  let templateIterator = template.render({ self: new UpdatableReference(self), parentNode: root, dynamicScope: new TestDynamicScope() });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next();
@@ -63,61 +71,6 @@ module("[glimmer runtime] Initial render", tests => {
   tests.beforeEach(() => commonSetup());
 
   module("Simple HTML, inline expressions", () => {
-    test("HTML text content", () => {
-      let template = compile("content");
-      render(template, {});
-
-      equalTokens(root, "content");
-    });
-
-    test("HTML tags", () => {
-      let template = compile("<h1>hello!</h1><div>content</div>");
-      render(template, {});
-
-      equalTokens(root, "<h1>hello!</h1><div>content</div>");
-    });
-
-    test("HTML tags re-rendered", assert => {
-      let template = compile("<h1>hello!</h1><div>content</div>");
-      let result = render(template, {});
-
-      let oldFirstChild = root.firstChild;
-
-      env.begin();
-      result.rerender();
-      env.commit();
-
-      assert.strictEqual(root.firstChild, oldFirstChild);
-      equalTokens(root, "<h1>hello!</h1><div>content</div>");
-    });
-
-    test("HTML attributes", () => {
-      let template = compile("<div class='foo' id='bar'>content</div>");
-      render(template, {});
-
-      equalTokens(root, '<div class="foo" id="bar">content</div>');
-    });
-
-    test("HTML tag with empty attribute", () => {
-      let template = compile("<div class=''>content</div>");
-      render(template, {});
-
-      equalTokens(root, "<div class=''>content</div>");
-    });
-
-    test("HTML boolean attribute 'disabled'", () => {
-      let template = compile('<input disabled>');
-      render(template, {});
-      assertNodeProperty(root.firstChild, 'input', 'disabled', true);
-    });
-
-    test("Quoted attribute null values do not disable", () => {
-      let template = compile('<input disabled="{{isDisabled}}">');
-      render(template, { isDisabled: null });
-      assertNodeProperty(root.firstChild, 'input', 'disabled', false);
-      equalTokens(root, '<input />');
-    });
-
     test("Unquoted attribute expression with null value is not coerced", () => {
       let template = compile('<input disabled={{isDisabled}}>');
       render(template, { isDisabled: null });
@@ -1079,12 +1032,12 @@ module("[glimmer runtime] Initial render", tests => {
 module('Style attributes', {
   beforeEach() {
     class StyleEnv extends TestEnvironment {
-      attributeFor(element: Simple.Element, attr: string, isTrusting: boolean): AttributeManager {
+      attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace: Option<string>): DynamicAttributeFactory {
         if (attr === 'style' && !isTrusting) {
-          return STYLE_ATTRIBUTE;
+          return StyleAttribute;
         }
 
-        return super.attributeFor(element, attr, isTrusting);
+        return super.attributeFor(element, attr, isTrusting, namespace);
       }
     }
 
@@ -1126,13 +1079,11 @@ module('Style attributes', {
 
 let warnings = 0;
 
-class StyleAttribute extends AttributeManager {
-  setAttribute(env: Environment, element: Simple.Element, value: Opaque) {
+class StyleAttribute extends SimpleDynamicAttribute {
+  set(dom: ElementBuilder, value: Opaque): void {
     warnings++;
-    super.setAttribute(env, element, value);
+    super.set(dom, value);
   }
 
-  updateAttribute() {}
+  update() {}
 }
-
-const STYLE_ATTRIBUTE = new StyleAttribute('style');

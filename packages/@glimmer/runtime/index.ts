@@ -1,6 +1,6 @@
 import './lib/bootstrap';
 
-export { default as templateFactory, TemplateFactory, Template } from './lib/template';
+export { default as templateFactory, TemplateFactory, Template, TemplateIterator, RenderOptions } from './lib/template';
 
 export { NULL_REFERENCE, UNDEFINED_REFERENCE, PrimitiveReference, ConditionalReference } from './lib/references';
 
@@ -26,24 +26,9 @@ export {
 } from './lib/compiled/blocks';
 
 export {
-  AttributeManager as IAttributeManager,
-  AttributeManager,
-  PropertyManager,
-  INPUT_VALUE_PROPERTY_MANAGER,
-  defaultManagers,
-  defaultAttributeManagers,
-  defaultPropertyManagers,
-  readDOMAttr
-} from './lib/dom/attribute-managers';
-
-export {
   Register,
   debugSlice
 } from './lib/opcodes';
-
-export {
-  normalizeTextValue
-} from './lib/compiled/opcodes/content';
 
 export {
   setDebuggerCallback,
@@ -73,6 +58,12 @@ export {
 export { PublicVM as VM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
 
 export {
+  SimpleDynamicAttribute,
+  DynamicAttributeFactory,
+  DynamicAttribute
+} from './lib/vm/attributes/dynamic';
+
+export {
   IArguments as Arguments,
   ICapturedArguments as CapturedArguments,
   IPositionalArguments as PositionalArguments,
@@ -81,7 +72,7 @@ export {
   ICapturedNamedArguments as CapturedNamedArguments,
 } from './lib/vm/arguments';
 
-export { SafeString, isSafeString } from './lib/upsert';
+export { SafeString } from './lib/upsert';
 
 export {
   Scope,
@@ -109,8 +100,7 @@ export {
   ModifierManager
 } from './lib/modifier/interfaces';
 
-export { default as DOMChanges, DOMChanges as IDOMChanges, DOMTreeConstruction, isWhitespace, insertHTMLBefore } from './lib/dom/helper';
-import * as Simple from './lib/dom/interfaces';
-export { Simple };
-export { ElementStack, ElementOperations } from './lib/builder';
+export { default as DOMChanges, SVG_NAMESPACE, DOMChanges as IDOMChanges, DOMTreeConstruction, isWhitespace, insertHTMLBefore } from './lib/dom/helper';
+export { normalizeProperty } from './lib/dom/props';
+export { ElementBuilder, NewElementBuilder, ElementOperations } from './lib/vm/element-builder';
 export { default as Bounds, ConcreteBounds } from './lib/bounds';

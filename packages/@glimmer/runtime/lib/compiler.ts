@@ -129,10 +129,10 @@ class WrappedBuilder implements InnerLayoutBuilder {
       b.jumpUnless('BODY');
 
       b.fetch(Register.s1);
-      b.pushComponentOperations();
+      b.putComponentOperations();
       b.openDynamicElement();
     } else if (staticTag) {
-      b.pushComponentOperations();
+      b.putComponentOperations();
       b.openElementWithOperations(staticTag);
     }
 
@@ -141,9 +141,13 @@ class WrappedBuilder implements InnerLayoutBuilder {
 
       let attrs = this.attrs.buffer;
 
+      b.setComponentAttrs(true);
+
       for (let i=0; i<attrs.length; i++) {
         compileStatement(attrs[i], b);
       }
+
+      b.setComponentAttrs(false);
 
       b.flushElement();
     }

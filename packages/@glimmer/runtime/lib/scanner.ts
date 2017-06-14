@@ -1,5 +1,6 @@
+import { unreachable } from '../../util';
 import { CompilationMeta } from '@glimmer/interfaces';
-import { EMPTY_ARRAY } from '@glimmer/util';
+import { EMPTY_ARRAY, assert } from '@glimmer/util';
 import * as WireFormat from '@glimmer/wire-format';
 import Environment from './environment';
 import * as ClientSide from './syntax/client-side';
@@ -10,6 +11,7 @@ import {
   Program,
 } from './syntax/interfaces';
 import Ops = WireFormat.Ops;
+import { TemplateMeta } from "@glimmer/wire-format";
 
 export type DeserializedStatement = WireFormat.Statement | WireFormat.Statements.Attribute | WireFormat.Statements.Argument;
 
@@ -31,81 +33,135 @@ export default class Scanner {
 
   scanLayout(meta: CompilationMeta, attrs: WireFormat.Statements.Attribute[], componentName?: string): Program {
     let { block } = this;
-    let { statements, symbols, hasEval } = block;
+    let { symbols, hasEval } = block;
 
-    let symbolTable = { meta, hasEval, symbols };
+    let scanner = new LayoutScanner(block, this.env, meta, attrs, componentName);
 
-    let newStatements: WireFormat.Statement[] = [];
+    return new CompilableTemplate(scanner.scan(), { meta, hasEval, symbols });
+  }
+}
 
-    let toplevel: string | undefined;
-    let inTopLevel = false;
+const enum LayoutState {
+  BeforeTopLevel,
+  InTopLevel,
+  AfterFlush
+}
 
-    for (let i = 0; i < statements.length; i++) {
-      let statement = statements[i];
-      if (WireFormat.Statements.isComponent(statement)) {
-        let tagName = statement[1];
-        if (!this.env.hasComponentDefinition(tagName, meta.templateMeta)) {
-          if (toplevel !== undefined) {
-            newStatements.push([Ops.OpenElement, tagName]);
-          } else {
-            toplevel = tagName;
-            decorateTopLevelElement(tagName, symbols, attrs, newStatements);
-          }
-          addFallback(statement, newStatements);
-        } else {
-          if (toplevel === undefined && tagName === componentName) {
-            toplevel = tagName;
-            decorateTopLevelElement(tagName, symbols, attrs, newStatements);
-            addFallback(statement, newStatements);
-          } else {
-            newStatements.push(statement);
-          }
-        }
-      } else {
-        if (toplevel === undefined && WireFormat.Statements.isOpenElement(statement)) {
-          toplevel = statement[1];
-          inTopLevel = true;
-          decorateTopLevelElement(toplevel, symbols, attrs, newStatements);
-        } else {
-          if (inTopLevel) {
-            if (WireFormat.Statements.isFlushElement(statement)) {
-              inTopLevel = false;
-            } else if (WireFormat.Statements.isModifier(statement)) {
-              throw Error(`Found modifier "${statement[1]}" on the top-level element of "${componentName}"\. Modifiers cannot be on the top-level element`);
-            }
-          }
-          newStatements.push(statement);
-        }
+class LayoutScanner {
+  private state = LayoutState.BeforeTopLevel;
+  private symbols: string[];
+  private statements: WireFormat.Statement[];
+  private meta: TemplateMeta;
+
+  constructor(block: WireFormat.SerializedTemplateBlock, private env: Environment, meta: CompilationMeta, private attrs: WireFormat.Statements.Attribute[], private componentName?: string) {
+    let { statements, symbols } = block;
+    this.statements = statements;
+    this.symbols = symbols;
+    this.meta = meta.templateMeta;
+  }
+
+  scan(): WireFormat.Statement[] {
+    let { statements } = this;
+    this.state = LayoutState.BeforeTopLevel;
+
+    let buffer: WireFormat.Statement[] = [];
+
+    for (let i=0; i<statements.length; i++) {
+      this.processStatement(this.statements[i], buffer);
+    }
+
+    buffer.push([Ops.ClientSideStatement, ClientSide.Ops.DidRenderLayout]);
+
+    return buffer;
+  }
+
+  private processStatement(statement: WireFormat.Statement, buffer: WireFormat.Statement[]) {
+    switch (this.state) {
+      case LayoutState.BeforeTopLevel:
+        this.processBeforeTopLevel(statement, buffer);
+        break;
+
+      case LayoutState.InTopLevel:
+        this.processInTopLevel(statement, buffer);
+        break;
+
+      case LayoutState.AfterFlush:
+        buffer.push(statement);
+        break;
+
+      default:
+        throw unreachable();
+    }
+  }
+
+  private processBeforeTopLevel(statement: WireFormat.Statement, buffer: WireFormat.Statement[]) {
+    if (WireFormat.Statements.isComponent(statement)) {
+      this.processTopLevelComponent(statement, buffer);
+    } else if (WireFormat.Statements.isOpenElement(statement)) {
+      this.processIsOpenElement(statement, buffer);
+    } else {
+      // Should be whitespace
+      buffer.push(statement);
+    }
+  }
+
+  private processTopLevelComponent(statement: WireFormat.Statements.Component, buffer: WireFormat.Statement[]) {
+    let [, tagName, attrs, , block] = statement;
+
+    if (this.env.hasComponentDefinition(tagName, this.meta) && tagName !== this.componentName) {
+      buffer.push(statement);
+      this.state = LayoutState.AfterFlush;
+      return;
+    }
+
+    assert(!this.env.hasComponentDefinition(tagName, this.meta) || tagName === this.componentName, `Cannot use a component (<${tagName}>) as the top-level element in the layout of <${this.componentName}>`);
+
+    this.state = LayoutState.InTopLevel;
+
+    buffer.push([Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true]);
+    buffer.push([Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, tagName]);
+    buffer.push([Ops.ClientSideStatement, ClientSide.Ops.DidCreateElement]);
+
+    for (let i=0; i<attrs.length; i++) {
+      this.processStatement(attrs[i], buffer);
+    }
+
+    this.processStatement([ Ops.FlushElement ], buffer);
+
+    if (block) {
+      let { statements } = block;
+
+      for (let i=0; i<statements.length; i++) {
+        this.processStatement(statements[i], buffer);
       }
     }
-    newStatements.push([Ops.ClientSideStatement, ClientSide.Ops.DidRenderLayout]);
-    return new CompilableTemplate(newStatements, symbolTable);
-  }
-}
 
-function addFallback(statement: WireFormat.Statements.Component, buffer: WireFormat.Statement[]) {
-  let [, , attrs, , block] = statement;
-  for (let i = 0; i < attrs.length; i++) {
-    buffer.push(attrs[i]);
+    this.processStatement([ Ops.CloseElement ], buffer);
   }
-  buffer.push([ Ops.FlushElement ]);
-  if (block) {
-    let { statements } = block;
-    for (let i = 0; i < statements.length; i++) {
-      buffer.push(statements[i]);
+
+  private processIsOpenElement(statement: WireFormat.Statements.OpenElement, buffer: WireFormat.Statement[]) {
+    let [, tagName] = statement;
+
+    this.state = LayoutState.InTopLevel;
+
+    buffer.push([Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true]);
+    buffer.push([Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, tagName]);
+    buffer.push([Ops.ClientSideStatement, ClientSide.Ops.DidCreateElement]);
+  }
+
+  private processInTopLevel(statement: WireFormat.Statement, buffer: WireFormat.Statement[]) {
+    assert(!WireFormat.Statements.isModifier(statement), `Cannot use element modifiers ({{${statement[1]} ...}}) in the top-level element in the layout of <${this.componentName}>`);
+
+    if (WireFormat.Statements.isFlushElement(statement)) {
+      let { symbols, attrs } = this;
+      this.state = LayoutState.AfterFlush;
+
+      let attrsSymbol = symbols.push(ATTRS_BLOCK);
+      buffer.push(...attrs);
+      buffer.push([Ops.Yield, attrsSymbol, EMPTY_ARRAY]);
+      buffer.push([Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false]);
     }
-  }
-  buffer.push([ Ops.CloseElement ]);
-}
 
-function decorateTopLevelElement(
-  tagName: string,
-  symbols: string[],
-  attrs: WireFormat.Statements.Attribute[],
-  buffer: WireFormat.Statement[]) {
-  let attrsSymbol = symbols.push(ATTRS_BLOCK);
-  buffer.push([Ops.ClientSideStatement, ClientSide.Ops.OpenComponentElement, tagName]);
-  buffer.push([Ops.ClientSideStatement, ClientSide.Ops.DidCreateElement]);
-  buffer.push([Ops.Yield, attrsSymbol, EMPTY_ARRAY]);
-  buffer.push(...attrs);
+    buffer.push(statement);
+  }
 }

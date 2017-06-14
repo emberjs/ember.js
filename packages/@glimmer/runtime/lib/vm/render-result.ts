@@ -3,7 +3,7 @@ import Environment from '../environment';
 import { DestroyableBounds, clear } from '../bounds';
 import UpdatingVM, { ExceptionHandler } from './update';
 import { UpdatingOpcode } from '../opcodes';
-import * as Simple from '../dom/interfaces';
+import { Simple } from '@glimmer/interfaces';
 
 export default class RenderResult implements DestroyableBounds, ExceptionHandler {
   constructor(
