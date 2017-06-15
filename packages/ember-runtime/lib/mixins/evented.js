@@ -3,6 +3,7 @@ import {
   addListener,
   removeListener,
   hasListeners,
+  listenersFor,
   sendEvent
 } from 'ember-metal';
 
@@ -149,5 +150,17 @@ export default Mixin.create({
    */
   has(name) {
     return hasListeners(this, name);
+  },
+
+  /**
+    Returns the list of listeners for a specific event.
+
+    @method listenersFor
+    @param {String} name The name of the event
+    @return {Array} array of [target, method] elements or the empty array
+    @public
+   */
+  listenersFor(name) {
+    return listenersFor(this, name);
   }
 });

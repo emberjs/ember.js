@@ -255,11 +255,11 @@ export function hasListeners(obj, eventName) {
 }
 
 /**
-  @private
   @method listenersFor
   @for Ember
   @param obj
   @param {String} eventName
+  @public
 */
 export function listenersFor(obj, eventName) {
   let ret = [];
