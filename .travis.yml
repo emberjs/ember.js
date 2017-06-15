@@ -2,7 +2,9 @@ language: node_js
 node_js:
   - 6
 sudo: false
-cache: yarn
+cache:
+  directories:
+    - node_modules
 before_install:
   - mkdir travis-phantomjs
   - wget https://s3.amazonaws.com/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2 -O $PWD/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2
@@ -17,11 +19,12 @@ env:
 matrix:
   fast_finish: true
 before_script:
-  - yarn run sauce:connect
+  - if [[ `npm -v` < 5* ]]; then npm i -g npm; fi
+  - npm run sauce:connect
 script:
-  - yarn run problems
-  - yarn run test:ci
-  - yarn run build
+  - npm run problems
+  - npm run test:ci
+  - npm run build
 after_script:
   - sleep 10
-  - yarn run sauce:disconnect
+  - npm run sauce:disconnect
