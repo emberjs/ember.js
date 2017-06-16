@@ -26,3 +26,19 @@ for a detailed explanation.
 
   Adds an ability to for developers to integrate their own custom component managers
   into Ember Applications per [RFC](https://github.com/emberjs/rfcs/blob/custom-components/text/0000-custom-components.md).
+
+* `ember-module-unification`
+
+  Introduces support for Module Unification
+  ([RFC](https://github.com/dgeb/rfcs/blob/module-unification/text/0000-module-unification.md))
+  to Ember. This includes:
+
+  - Passing the `source` of a `lookup`/`factoryFor` call as the second argument
+    to an Ember resolver's `resolve` method (as a positional arg we will call
+    `referrer`).
+  - Making `lookupComponentPair` friendly to local/private resolutions. The
+    new code ensures a local resolution is not paired with a global resolution.
+
+  This feature is paired with the
+  [`EMBER_RESOLVER_MODULE_UNIFICATION`](https://github.com/ember-cli/ember-resolver#ember_resolver_module_unification)
+  flag on the ember-resolver package.

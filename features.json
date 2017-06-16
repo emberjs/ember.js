@@ -7,6 +7,7 @@
     "ember-glimmer-allow-backtracking-rerender": null,
     "ember-routing-router-service": true,
     "ember-engines-mount-params": true,
+    "ember-module-unification": null,
     "glimmer-custom-component-manager": null
   },
   "deprecations": {
