@@ -1,5 +1,6 @@
 /* globals Proxy */
 import { assert } from 'ember-debug';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
 import {
   dictionary,
@@ -135,6 +136,10 @@ Container.prototype = {
     return { [OWNER]: this.owner };
   },
 
+  _resolverCacheKey(name, options) {
+    return this.registry.resolverCacheKey(name, options);
+  },
+
   /**
    Given a fullName, return the corresponding factory. The consumer of the factory
    is responsible for the destruction of any factory instances, as there is no
@@ -153,18 +158,28 @@ Container.prototype = {
     assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
 
     if (options.source) {
-      normalizedName = this.registry.expandLocalLookup(fullName, options);
+      let expandedFullName = this.registry.expandLocalLookup(fullName, options);
       // if expandLocalLookup returns falsey, we do not support local lookup
-      if (!normalizedName) {
-        return;
+      if (!EMBER_MODULE_UNIFICATION) {
+        if (!expandedFullName) {
+          return;
+        }
+
+        normalizedName = expandedFullName;
+      } else if (expandedFullName) {
+        // with ember-module-unification, if expandLocalLookup returns something,
+        // pass it to the resolve without the source
+        normalizedName = expandedFullName;
+        options = {};
       }
     }
 
-    let cached = this.factoryManagerCache[normalizedName];
+    let cacheKey = this._resolverCacheKey(normalizedName, options);
+    let cached = this.factoryManagerCache[cacheKey];
 
     if (cached !== undefined) { return cached; }
 
-    let factory = this.registry.resolve(normalizedName);
+    let factory = EMBER_MODULE_UNIFICATION ? this.registry.resolve(normalizedName, options) : this.registry.resolve(normalizedName);
 
     if (factory === undefined) {
       return;
@@ -180,7 +195,7 @@ Container.prototype = {
       manager = wrapManagerInDeprecationProxy(manager);
     }
 
-    this.factoryManagerCache[normalizedName] = manager;
+    this.factoryManagerCache[cacheKey] = manager;
     return manager;
   }
 };
@@ -224,15 +239,25 @@ function isInstantiatable(container, fullName) {
 
 function lookup(container, fullName, options = {}) {
   if (options.source) {
-    fullName = container.registry.expandLocalLookup(fullName, options);
+    let expandedFullName = container.registry.expandLocalLookup(fullName, options);
 
-    // if expandLocalLookup returns falsey, we do not support local lookup
-    if (!fullName) {
-      return;
+    if (!EMBER_MODULE_UNIFICATION) {
+      // if expandLocalLookup returns falsey, we do not support local lookup
+      if (!expandedFullName) {
+        return;
+      }
+
+      fullName = expandedFullName;
+    } else if (expandedFullName) {
+      // with ember-module-unification, if expandLocalLookup returns something,
+      // pass it to the resolve without the source
+      fullName = expandedFullName;
+      options = {};
     }
   }
 
-  let cached = container.cache[fullName];
+  let cacheKey = container._resolverCacheKey(fullName, options);
+  let cached = container.cache[cacheKey];
   if (cached !== undefined && options.singleton !== false) {
     return cached;
   }
@@ -257,16 +282,18 @@ function isFactoryInstance(container, fullName, { instantiate, singleton }) {
 }
 
 function instantiateFactory(container, fullName, options) {
-  let factoryManager = container.factoryFor(fullName);
+  let factoryManager = EMBER_MODULE_UNIFICATION && options && options.source ? container.factoryFor(fullName, options) : container.factoryFor(fullName);
 
   if (factoryManager === undefined) {
     return;
   }
 
+  let cacheKey = container._resolverCacheKey(fullName, options);
+
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
-    return container.cache[fullName] = factoryManager.create();
+    return container.cache[cacheKey] = factoryManager.create();
   }
 
   // SomeClass { singleton: false, instantiate: true }

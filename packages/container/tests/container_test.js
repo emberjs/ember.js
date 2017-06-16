@@ -1,6 +1,7 @@
 import { getOwner, OWNER, assign } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { Registry } from '..';
 import { factory } from 'internal-test-helpers';
 
@@ -615,3 +616,47 @@ QUnit.skip('#factoryFor does not add properties to the object being instantiated
   // not via registry/container shenanigans
   assert.deepEqual(Object.keys(instance), []);
 });
+
+if (EMBER_MODULE_UNIFICATION) {
+  QUnit.module('Container module unification');
+
+  QUnit.test('The container can pass a source to factoryFor', function(assert) {
+    let PrivateComponent = factory();
+    let lookup = 'component:my-input';
+    let expectedSource = 'template:routes/application';
+    let registry = new Registry();
+    let resolveCount = 0;
+    registry.resolve = function(fullName, { source }) {
+      resolveCount++;
+      if (fullName === lookup && source === expectedSource) {
+        return PrivateComponent;
+      }
+    };
+
+    let container = registry.container();
+
+    assert.strictEqual(container.factoryFor(lookup, { source: expectedSource }).class, PrivateComponent, 'The correct factory was provided');
+    assert.strictEqual(container.factoryFor(lookup, { source: expectedSource }).class, PrivateComponent, 'The correct factory was provided again');
+    assert.equal(resolveCount, 1, 'resolve called only once and a cached factory was returned the second time');
+  });
+
+  QUnit.test('The container can pass a source to lookup', function(assert) {
+    let PrivateComponent = factory();
+    let lookup = 'component:my-input';
+    let expectedSource = 'template:routes/application';
+    let registry = new Registry();
+    registry.resolve = function(fullName, { source }) {
+      if (fullName === lookup && source === expectedSource) {
+        return PrivateComponent;
+      }
+    };
+
+    let container = registry.container();
+
+    let result = container.lookup(lookup, { source: expectedSource });
+    assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
+
+    assert.ok(container.cache[`template:routes/application:component:my-input`] instanceof PrivateComponent,
+       'The correct factory was stored in the cache with the correct key which includes the source.');
+  });
+}

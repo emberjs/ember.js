@@ -1,5 +1,6 @@
 import { dictionary, assign, intern } from 'ember-utils';
 import { assert, deprecate } from 'ember-debug';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import Container from './container';
 import { DEBUG } from 'ember-env-flags';
 
@@ -604,6 +605,14 @@ Registry.prototype = {
       injections = injections.concat(this.fallback.getTypeInjections(type));
     }
     return injections;
+  },
+
+  resolverCacheKey(name, options) {
+    if (!EMBER_MODULE_UNIFICATION) {
+      return name;
+    }
+
+    return (options && options.source) ? `${options.source}:${name}` : name;
   }
 };
 
@@ -686,20 +695,32 @@ function resolve(registry, normalizedName, options) {
   if (options && options.source) {
     // when `source` is provided expand normalizedName
     // and source into the full normalizedName
-    normalizedName = registry.expandLocalLookup(normalizedName, options);
+    let expandedNormalizedName = registry.expandLocalLookup(normalizedName, options);
 
     // if expandLocalLookup returns falsey, we do not support local lookup
-    if (!normalizedName) { return; }
+    if (!EMBER_MODULE_UNIFICATION) {
+      if (!expandedNormalizedName) {
+        return;
+      }
+
+      normalizedName = expandedNormalizedName;
+    } else if (expandedNormalizedName) {
+      // with ember-module-unification, if expandLocalLookup returns something,
+      // pass it to the resolve without the source
+      normalizedName = expandedNormalizedName;
+      options = {};
+    }
   }
 
-  let cached = registry._resolveCache[normalizedName];
+  let cacheKey = registry.resolverCacheKey(normalizedName, options);
+  let cached = registry._resolveCache[cacheKey];
   if (cached !== undefined) { return cached; }
-  if (registry._failCache[normalizedName]) { return; }
+  if (registry._failCache[cacheKey]) { return; }
 
   let resolved;
 
   if (registry.resolver) {
-    resolved = registry.resolver.resolve(normalizedName);
+    resolved = registry.resolver.resolve(normalizedName, options && options.source);
   }
 
   if (resolved === undefined) {
@@ -707,9 +728,9 @@ function resolve(registry, normalizedName, options) {
   }
 
   if (resolved === undefined) {
-    registry._failCache[normalizedName] = true;
+    registry._failCache[cacheKey] = true;
   } else {
-    registry._resolveCache[normalizedName] = resolved;
+    registry._resolveCache[cacheKey] = resolved;
   }
 
   return resolved;

@@ -1,6 +1,7 @@
 import { guidFor, OWNER } from 'ember-utils';
 import { Cache, _instrumentStart } from 'ember-metal';
 import { assert, warn } from 'ember-debug';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
 import {
   lookupPartial,
@@ -91,7 +92,8 @@ export default class Environment extends GlimmerEnvironment {
         return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);
       }
     }, ({ name, source, owner }) => {
-      let expandedName = source && owner._resolveLocalLookupName(name, source) || name;
+      let expandedName = source && this._resolveLocalLookupName(name, source, owner) || name;
+
       let ownerGuid = guidFor(owner);
 
       return ownerGuid + '|' + expandedName;
@@ -145,6 +147,11 @@ export default class Environment extends GlimmerEnvironment {
     if (DEBUG) {
       this.debugStack = new DebugStack()
     }
+  }
+
+  _resolveLocalLookupName(name, source, owner) {
+    return EMBER_MODULE_UNIFICATION ? `${source}:${name}`
+      : owner._resolveLocalLookupName(name, source);
   }
 
   macros() {
