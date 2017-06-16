@@ -9,7 +9,7 @@ import builders from "../builders";
 import traverse from "../traversal/traverse";
 import print from "../generation/print";
 import Walker from "../traversal/walker";
-import { parse } from "handlebars";
+import * as handlebars from "handlebars";
 
 const voidMap: {
   [tagName: string]: boolean
@@ -327,7 +327,7 @@ export interface PreprocessOptions {
 }
 
 export function preprocess(html: string, options?: PreprocessOptions): AST.Program {
-  let ast = (typeof html === 'object') ? html : parse(html);
+  let ast = (typeof html === 'object') ? html : handlebars.parse(html);
   let combined = new TokenizerEventHandlers(html, options).acceptNode(ast);
 
   if (options && options.plugins && options.plugins.ast) {
