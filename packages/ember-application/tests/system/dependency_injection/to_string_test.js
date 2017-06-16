@@ -1,62 +1,58 @@
-import { guidFor } from 'ember-utils';
-import { ENV, context } from 'ember-environment'; // lookup, etc
-import { run } from 'ember-metal';
-import Application from '../../../system/application';
+import { guidFor, assign } from 'ember-utils';
 import { Object as EmberObject } from 'ember-runtime';
-import DefaultResolver from '../../../system/resolver';
+import { Resolver as DefaultResolver } from 'ember-application';
+import { moduleFor, ApplicationTestCase, ModuleBasedTestResolver,
+  DefaultResolverApplicationTestCase } from 'internal-test-helpers';
 
-let originalLookup, App;
+moduleFor('Ember.Application Dependency Injection - DefaultResolver#toString', class extends
+  DefaultResolverApplicationTestCase {
+  constructor() {
+    super();
+    this.createApplication();
+    this.application.Post = EmberObject.extend();
+    this.visit('/');
+  }
 
-QUnit.module('Ember.Application Dependency Injection – toString', {
-  setup() {
-    originalLookup = context.lookup;
+  ['@test factories'](assert) {
+    let PostFactory = this.applicationInstance.factoryFor('model:post').class;
+    assert.equal(
+      PostFactory.toString(), '.Post',
+      'expecting the model to be post'
+    );
+  }
 
-    run(() => {
-      App = Application.create();
-      context.lookup = {
-        App: App
-      };
-    });
+  ['@test instances'](assert) {
+    let post = this.applicationInstance.lookup('model:post');
+    let guid = guidFor(post);
 
-    App.Post = EmberObject.extend();
-  },
-
-  teardown() {
-    context.lookup = originalLookup;
-    run(App, 'destroy');
+    assert.equal(post.toString(), '<.Post:' + guid + '>', 'expecting the model to be post');
   }
 });
 
-QUnit.test('factories', function() {
-  let PostFactory;
-  PostFactory = App.__container__.factoryFor('model:post').class;
-  equal(PostFactory.toString(), 'App.Post', 'expecting the model to be post');
-});
+moduleFor('Ember.Application Dependency Injection - Resolver#toString', class extends ApplicationTestCase {
+  constructor() {
+    super();
+    this.visit('/');
+  }
 
-QUnit.test('instances', function() {
-  let post = App.__container__.lookup('model:post');
-  let guid = guidFor(post);
-
-  equal(post.toString(), '<App.Post:' + guid + '>', 'expecting the model to be post');
-});
-
-QUnit.test('with a custom resolver', function() {
-  run(App, 'destroy');
-
-  run(() => {
-    App = Application.create({
-      Resolver: DefaultResolver.extend({
-        makeToString(factory, fullName) {
+  get applicationOptions() {
+    return assign(super.applicationOptions, {
+      Resolver: class extends ModuleBasedTestResolver {
+        makeToString(_, fullName) {
           return fullName;
         }
-      })
+      }
     });
-  });
+  }
 
-  App.register('model:peter', EmberObject.extend());
+  ['@test toString called on a resolver'](assert) {
+    this.add('model:peter', EmberObject.extend());
 
-  let peter = App.__container__.lookup('model:peter');
-  let guid = guidFor(peter);
-
-  equal(peter.toString(), '<model:peter:' + guid + '>', 'expecting the supermodel to be peter');
+    let peter = this.applicationInstance.lookup('model:peter');
+    let guid = guidFor(peter);
+    assert.equal(
+      peter.toString(), `<model:peter:${guid}>`,
+      'expecting the supermodel to be peter'
+    );
+  }
 });
