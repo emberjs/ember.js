@@ -51,6 +51,7 @@ export interface Document extends Node {
 
 export interface CharacterData extends Node {
   data: string;
+  nodeValue: string;
 }
 
 export interface TokenList {
