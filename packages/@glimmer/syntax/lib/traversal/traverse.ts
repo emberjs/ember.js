@@ -7,37 +7,21 @@ import {
 import * as nodes from '../types/nodes';
 import { Option } from "@glimmer/interfaces";
 
-export interface NodeVisitor {
-  All?: NodeHandler<nodes.BaseNode>;
-  Program?: NodeHandler<nodes.Program>;
-  MustacheStatement?: NodeHandler<nodes.MustacheStatement>;
-  BlockStatement?: NodeHandler<nodes.BlockStatement>;
-  ElementModifierStatement?: NodeHandler<nodes.ElementModifierStatement>;
-  PartialStatement?: NodeHandler<nodes.PartialStatement>;
-  CommentStatement?: NodeHandler<nodes.CommentStatement>;
-  MustacheCommentStatement?: NodeHandler<nodes.MustacheCommentStatement>;
-  ElementNode?: NodeHandler<nodes.ElementNode>;
-  AttrNode?: NodeHandler<nodes.AttrNode>;
-  TextNode?: NodeHandler<nodes.TextNode>;
-  ConcatStatement?: NodeHandler<nodes.ConcatStatement>;
-  SubExpression?: NodeHandler<nodes.SubExpression>;
-  PathExpression?: NodeHandler<nodes.PathExpression>;
-  StringLiteral?: NodeHandler<nodes.StringLiteral>;
-  BooleanLiteral?: NodeHandler<nodes.BooleanLiteral>;
-  NumberLiteral?: NodeHandler<nodes.NumberLiteral>;
-  UndefinedLiteral?: NodeHandler<nodes.UndefinedLiteral>;
-  NullLiteral?: NodeHandler<nodes.NullLiteral>;
-  Hash?: NodeHandler<nodes.Hash>;
-  HashPair?: NodeHandler<nodes.HashPair>;
+export type NodeHandler<T extends nodes.Node> = NodeHandlerFunction<T> | EnterExitNodeHandler<T>;
+
+export type SpecificNodeVisitor = {
+  [P in keyof nodes.Nodes]?: NodeHandler<nodes.Nodes[P]>;
+};
+
+export interface NodeVisitor extends SpecificNodeVisitor {
+  All?: NodeHandler<nodes.Node>;
 }
 
-export type NodeHandler<T> = NodeHandlerFunction<T> | EnterExitNodeHandler<T>;
-
-export interface NodeHandlerFunction<T> {
-  (node: T): any | null | undefined;
+export interface NodeHandlerFunction<T extends nodes.Node> {
+  (this: null, node: T): any | null | undefined;
 }
 
-export interface EnterExitNodeHandler<T> {
+export interface EnterExitNodeHandler<T extends nodes.Node> {
   enter?: NodeHandlerFunction<T>;
   exit?: NodeHandlerFunction<T>;
   keys?: any;

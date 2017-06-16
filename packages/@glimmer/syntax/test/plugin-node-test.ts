@@ -1,11 +1,72 @@
-import { preprocess as parse, Walker, Syntax, AST } from '@glimmer/syntax';
+import {
+  preprocess,
+  Syntax,
+  Walker,
+  AST,
+  ASTPlugin
+} from '@glimmer/syntax';
 
 const { test } = QUnit;
 
 QUnit.module('[glimmer-syntax] Plugins - AST Transforms');
 
-test('AST plugins can be provided to the compiler', assert => {
+test('function based AST plugins can be provided to the compiler', assert => {
   assert.expect(1);
+
+  preprocess('<div></div>', {
+    plugins: {
+      ast: [
+        () => ({
+          name: 'plugin-a',
+          visitors: {
+            Program() {
+              assert.ok(true, 'transform was called!');
+            }
+          }
+        })
+      ]
+    }
+  });
+});
+
+test('plugins are provided the syntax package', assert => {
+  assert.expect(1);
+
+  preprocess('<div></div>', {
+    plugins: {
+      ast: [
+        ({ syntax }) => {
+          assert.equal(syntax.Walker, Walker);
+
+          return { name: 'plugin-a', visitors: {} };
+        }
+      ]
+    }
+  });
+});
+
+test('can support the legacy AST transform API via ASTPlugin', assert => {
+  function ensurePlugin(FunctionOrPlugin: any): ASTPlugin {
+    if (FunctionOrPlugin.prototype && FunctionOrPlugin.prototype.transform) {
+      return (env) => {
+        return {
+          name: 'plugin-a',
+
+          visitors: {
+            Program(node: AST.Program) {
+              let plugin = new FunctionOrPlugin(env);
+
+              plugin.syntax = env.syntax;
+
+              return plugin.transform(node);
+            }
+          }
+        };
+      };
+    } else {
+      return FunctionOrPlugin;
+    }
+  }
 
   class Plugin {
     syntax: Syntax;
@@ -16,103 +77,58 @@ test('AST plugins can be provided to the compiler', assert => {
     }
   }
 
-  parse('<div></div>', {
+  preprocess('<div></div>', {
     plugins: {
-      ast: [ Plugin ]
+      ast: [ ensurePlugin(Plugin) ]
     }
   });
-});
-
-test('provides syntax package as `syntax` prop if value is null', assert => {
-  assert.expect(1);
-
-  class Plugin {
-    syntax: Syntax;
-    transform(program: AST.Program): AST.Program {
-      assert.equal(this.syntax.Walker, Walker);
-      return program;
-    }
-  }
-
-  parse('<div></div>', {
-    plugins: {
-      ast: [ Plugin ]
-    }
-  });
-});
-
-test('AST plugins can modify the AST', assert => {
-  assert.expect(1);
-
-  class Plugin {
-    syntax: Syntax;
-    transform(): AST.Program {
-      return {
-        type: 'Program',
-        body: [],
-        blockParams: [],
-        isSynthetic: true,
-        loc: {
-          start: { line: 0, column: 0 },
-          end: { line: 0, column: 1 }
-        }
-      } as AST.Program;
-    }
-  }
-
-  let ast = parse('<div></div>', {
-    plugins: {
-      ast: [ Plugin ]
-    }
-  });
-
-  assert.ok(ast['isSynthetic'], 'return value from AST transform is used');
 });
 
 test('AST plugins can be chained', assert => {
-  assert.expect(2);
+  assert.expect(3);
 
-  class Plugin {
-    syntax: Syntax;
-    transform(): AST.Program {
-      return {
-        type: 'Program',
-        body: [],
-        blockParams: [],
-        isFromFirstPlugin: true,
-        loc: {
-          start: { line: 0, column: 0 },
-          end: { line: 0, column: 1 }
+  let first = () => {
+    return {
+      name: 'first',
+      visitors: {
+        Program(program: AST.Program) {
+          program['isFromFirstPlugin'] = true;
         }
-      } as AST.Program;
-    }
-  }
+      }
+    };
+  };
 
-  class SecondaryPlugin {
-    syntax: Syntax;
-    transform(program: AST.Program) {
-      assert.equal(program['isFromFirstPlugin'], true, 'AST from first plugin is passed to second');
-      return {
-        type: 'Program',
-        body: [],
-        blockParams: [],
-        isFromSecondPlugin: true,
-        loc: {
-          start: { line: 0, column: 0 },
-          end: { line: 0, column: 1 }
+  let second = () => {
+    return {
+      name: 'second',
+      visitors: {
+        Program(node: AST.Program) {
+          assert.equal(node['isFromFirstPlugin'], true, 'AST from first plugin is passed to second');
+
+          node['isFromSecondPlugin'] = true;
         }
-      } as AST.Program;
-    }
-  }
+      }
+    };
+  };
 
-  let ast = parse('<div></div>', {
+  let third = () => {
+    return {
+      name: 'third',
+      visitors: {
+        Program(node: AST.Program) {
+          assert.equal(node['isFromSecondPlugin'], true, 'AST from second plugin is passed to third');
+
+          node['isFromThirdPlugin'] = true;
+        }
+      }
+    };
+  };
+
+  let ast = preprocess('<div></div>', {
     plugins: {
-      ast: [
-        Plugin,
-        SecondaryPlugin
-      ]
+      ast: [first, second, third]
     }
   });
 
-  assert.equal(ast['isFromSecondPlugin'], true, 'return value from last AST transform is used');
+  assert.equal(ast['isFromThirdPlugin'], true, 'return value from last AST transform is used');
 });
