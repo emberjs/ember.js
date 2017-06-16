@@ -306,7 +306,27 @@ export const syntax: Syntax = {
   Walker
 };
 
-export function preprocess(html: string, options?: any): AST.Program {
+/**
+ * TransformASTPlugins can make changes to the Glimmer template AST before
+ * compilation begins. Plugins implement a `transform()` method that takes a
+ * `Program` AST node and should return the modified program.
+ */
+export interface TransformASTPlugin {
+  syntax: Syntax;
+  transform(program: AST.Program): AST.Program;
+}
+
+export interface TransformASTPluginFactory {
+  new (options: PreprocessOptions): TransformASTPlugin;
+}
+
+export interface PreprocessOptions {
+  plugins?: {
+    ast?: TransformASTPluginFactory[]
+  };
+}
+
+export function preprocess(html: string, options?: PreprocessOptions): AST.Program {
   let ast = (typeof html === 'object') ? html : parse(html);
   let combined = new TokenizerEventHandlers(html, options).acceptNode(ast);
 
