@@ -20,7 +20,7 @@ export default abstract class DynamicContentBase implements DynamicContent {
     let parentElement = bounds.parentElement();
     let nextSibling = clear(bounds);
 
-    let stack = new NewElementBuilder(env, parentElement, nextSibling);
+    let stack = NewElementBuilder.forInitialRender(env, parentElement, nextSibling);
 
     if (this.trusting) {
       return stack.__appendTrustingDynamicContent(value);

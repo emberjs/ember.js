@@ -88,6 +88,8 @@ export interface DOMStack {
 export interface TreeOperations {
   __openElement(tag: string): Simple.Element;
   __flushElement(parent: Simple.Element, constructing: Simple.Element): void;
+  __openBlock(): void;
+  __closeBlock(): void;
   __appendText(text: string): Simple.Text;
   __appendComment(string: string): Simple.Comment;
   __appendNode(node: Simple.Node): Simple.Node;
@@ -132,13 +134,16 @@ export class NewElementBuilder implements ElementBuilder {
   private blockStack = new Stack<Tracker>();
 
   static forInitialRender(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
-    return new this(env, parentNode, nextSibling);
+    let builder = new this(env, parentNode, nextSibling);
+    builder.pushSimpleBlock();
+    return builder;
   }
 
   static resume(env: Environment, tracker: Tracker, nextSibling: Option<Simple.Node>) {
     let parentNode = tracker.parentElement();
 
     let stack = new this(env, parentNode, nextSibling);
+    stack.pushSimpleBlock();
     stack.pushBlockTracker(tracker);
 
     return stack;
@@ -150,8 +155,6 @@ export class NewElementBuilder implements ElementBuilder {
     this.env = env;
     this.dom = env.getAppendOperations();
     this.updateOperations = env.getDOM();
-
-    this.pushSimpleBlock();
   }
 
   get element(): Simple.Element {
@@ -180,18 +183,18 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   pushSimpleBlock(): Tracker {
-    let tracker = new SimpleBlockTracker(this.element);
-    this.pushBlockTracker(tracker);
-    return tracker;
+    return this.pushBlockTracker(new SimpleBlockTracker(this.element));
   }
 
   pushUpdatableBlock(): UpdatableTracker {
-    let tracker = new UpdatableBlockTracker(this.element);
-    this.pushBlockTracker(tracker);
-    return tracker;
+    return this.pushBlockTracker(new UpdatableBlockTracker(this.element));
   }
 
-  private pushBlockTracker(tracker: Tracker, isRemote = false) {
+  pushBlockList(list: LinkedList<LinkedListNode & Bounds & Destroyable>): Tracker {
+    return this.pushBlockTracker(new BlockListTracker(this.element, list));
+  }
+
+  private pushBlockTracker<T extends Tracker>(tracker: T, isRemote = false): T {
     let current = this.blockStack.current;
 
     if (current !== null) {
@@ -202,27 +205,19 @@ export class NewElementBuilder implements ElementBuilder {
       }
     }
 
-    this.blockStack.push(tracker);
-    return tracker;
-  }
-
-  pushBlockList(list: LinkedList<LinkedListNode & Bounds & Destroyable>): Tracker {
-    let tracker = new BlockListTracker(this.element, list);
-    let current = this.blockStack.current;
-
-    if (current !== null) {
-      current.newDestroyable(tracker);
-      current.didAppendBounds(tracker);
-    }
-
+    this.__openBlock();
     this.blockStack.push(tracker);
     return tracker;
   }
 
   popBlock(): Tracker {
     this.block().finalize(this);
+    this.__closeBlock();
     return expect(this.blockStack.pop(), "Expected popBlock to return a block");
   }
+
+  __openBlock(): void {}
+  __closeBlock(): void {}
 
   openElement(tag: string): Simple.Element {
     let element = this.__openElement(tag);
@@ -251,6 +246,11 @@ export class NewElementBuilder implements ElementBuilder {
 
   __flushElement(parent: Simple.Element, constructing: Simple.Element) {
     this.dom.insertBefore(parent, constructing, this.nextSibling);
+  }
+
+  closeElement() {
+    this.willCloseElement();
+    this.popElement();
   }
 
   pushRemoteElement(element: Simple.Element, nextSibling: Option<Simple.Node> = null) {
@@ -434,11 +434,6 @@ export class NewElementBuilder implements ElementBuilder {
     attribute.set(this, value, this.env);
 
     return attribute;
-  }
-
-  closeElement() {
-    this.willCloseElement();
-    this.popElement();
   }
 }
 

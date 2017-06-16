@@ -271,7 +271,7 @@ abstract class RenderTest {
     Object.assign(this.context, properties);
   }
 
-  private takeSnapshot() {
+  protected takeSnapshot() {
     let snapshot: (Node | 'up' | 'down')[] = this.snapshot = [];
 
     let node = this.element.firstChild;
@@ -287,7 +287,7 @@ abstract class RenderTest {
           node = node.parentNode;
         }
       } else {
-        snapshot.push(node);
+        if (!isServerMarker(node)) snapshot.push(node);
 
         if (node.firstChild) {
           snapshot.push('down');
@@ -357,15 +357,98 @@ module("Initial Render Tests", class extends RenderTest {
   }
 });
 
-module("Rehydration Tests", class extends RenderTest {
+type Content = string | typeof OPEN | typeof CLOSE | typeof SEP | typeof EMPTY;
+
+const OPEN: { marker: 'open-block' } = { marker: 'open-block' };
+const CLOSE: { marker: 'close-block' } = { marker: 'close-block' };
+const SEP: { marker: 'sep' } = { marker: 'sep' };
+const EMPTY: { marker: 'empty' } = { marker: 'empty' };
+
+function content(list: Content[]): string {
+  let out: string[] = [];
+  let depth = 0;
+
+  list.forEach(item => {
+    if (typeof item === 'string') {
+      out.push(item);
+    } else if (item.marker === 'open-block') {
+      out.push(`<!--%+block:${depth++}%-->`);
+    } else if (item.marker === 'close-block') {
+      out.push(`<!--%-block:${--depth}%-->`);
+    } else {
+      out.push(`<!--%${item.marker}%-->`);
+    }
+  });
+
+  return out.join('');
+}
+
+class Rehydration extends RenderTest {
   protected element: HTMLDivElement;
+  protected template: Option<Template<Opaque>>;
 
   constructor(env = new TestEnvironment()) {
     super(env);
     this.element = env.getDOM().createElement('div') as HTMLDivElement;
   }
 
-  renderTemplate(template: Template<Opaque>) {
+  @test "mismatched text nodes"() {
+    this.setup({ template: "{{content}}" });
+    this.renderServerSide({ content: 'hello' });
+    this.assertServerOutput("hello");
+
+    this.renderClientSide({ content: 'goodbye' });
+    this.assertHTML("goodbye");
+    this.assertStableNodes();
+    this.assertStableRerender();
+  }
+
+  @test "mismatched text nodes (server-render empty)"() {
+    this.setup({ template: "{{content}} world" });
+    this.renderServerSide({ content: '' });
+    this.assertServerOutput(EMPTY, " world");
+
+    this.renderClientSide({ content: 'hello' });
+    this.assertHTML("hello world");
+
+    // TODO: handle %empty% in the testing DSL
+    // this.assertStableNodes();
+    this.assertStableRerender();
+  }
+
+  @test "mismatched elements"() {
+    this.setup({ template: "{{#if admin}}<div>hi admin</div>{{else}}<p>HAXOR</p>{{/if}}" });
+    this.renderServerSide({ admin: true });
+    this.assertServerOutput(OPEN, "<div>hi admin</div>", CLOSE);
+
+    this.renderClientSide({ admin: false });
+    this.assertHTML("<p>HAXOR</p>");
+    this.assertStableRerender();
+  }
+
+  @test "extra nodes at the end"() {
+    this.setup({ template: "{{#if admin}}<div>hi admin</div>{{else}}<div>HAXOR{{stopHaxing}}</div>{{/if}}" });
+    this.renderServerSide({ admin: false, stopHaxing: 'stahp' });
+    this.assertServerOutput(OPEN, "<div>HAXOR<!--%sep%-->stahp</div>", CLOSE);
+
+    this.renderClientSide({ admin: true });
+    this.assertHTML("<div>hi admin</div>");
+    this.assertStableRerender();
+  }
+
+  protected setup({ template, context }: { template: string, context?: Dict<Opaque> }) {
+    this.template = this.compile(template);
+    if (context) this.setProperties(context);
+  }
+
+  assertServerOutput(..._expected: Content[]) {
+    this.assertHTML(content([OPEN, ..._expected, CLOSE]));
+  }
+
+  renderServerSide(context?: Dict<Opaque>): void {
+    if (context) { this.context = context; }
+
+    let template = expect(this.template, 'Must set up a template before calling renderServerSide');
     // Emulate server-side render
     renderTemplate(new TestEnvironment(), template, {
       self: new UpdatableReference(this.context),
@@ -376,16 +459,32 @@ module("Rehydration Tests", class extends RenderTest {
 
     // Remove adjacent/empty text nodes
     this.element.innerHTML = this.element.innerHTML;
+    this.takeSnapshot();
+  }
+
+  renderClientSide(context?: Dict<Opaque>) {
+    if (context) { this.context = context; }
+
+    let template = expect(this.template, 'Must set up a template before calling renderClientSide');
 
     // Client-side rehydration
-    return renderTemplate(this.env, template, {
+    this.renderResult = renderTemplate(this.env, template, {
       self: new UpdatableReference(this.context),
       parentNode: this.element,
       dynamicScope: new TestDynamicScope(),
       mode: 'rehydrate'
     });
   }
-});
+
+  renderTemplate(template: Template<Opaque>): RenderResult {
+    this.template = template;
+    this.renderServerSide();
+    this.renderClientSide();
+    return this.renderResult!;
+  }
+}
+
+module("Rehydration Tests", Rehydration);
 
 function test(_target: Object, _name: string, descriptor: PropertyDescriptor): PropertyDescriptor | void {
   let testFunction = descriptor.value as Function;
@@ -435,11 +534,12 @@ function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, excep
   let normalizedNew = [];
 
   while (true) {
-    let next = oldIterator.peek();
+    let nextOld = oldIterator.peek();
+    let nextNew = newIterator.peek();
 
-    if (next === null && newIterator.peek() === null) break;
+    if (nextOld === null && newIterator.peek() === null) break;
 
-    if (next instanceof Node && except.has(next)) {
+    if ((nextOld instanceof Node && except.has(nextOld)) || (nextNew instanceof Node && except.has(nextNew))) {
       oldIterator.skip();
       newIterator.skip();
     } else {
@@ -488,4 +588,8 @@ class SnapshotIterator {
 
     return token;
   }
+}
+
+function isServerMarker(node: Node) {
+  return node.nodeType === Node.COMMENT_NODE && node.nodeValue!.charAt(0) === '%';
 }
