@@ -420,7 +420,8 @@ module("[glimmer runtime] Initial render", tests => {
 
       let selectNode: any = root.childNodes[1];
 
-      let options = selectNode.querySelectorAll('option[selected]');
+      let options = Array.prototype.slice.call(selectNode.querySelectorAll('option'))
+        .filter((option: HTMLOptionElement) => option.getAttribute('selected') === '');
 
       assert.equal(options.length, 2, 'two options are selected');
     });
