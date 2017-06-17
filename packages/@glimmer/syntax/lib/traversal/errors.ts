@@ -1,14 +1,34 @@
 import * as AST from '../types/nodes';
 import { Option } from '@glimmer/interfaces';
 
-class TraversalError extends Error {
-  constructor(message: string, public node: AST.Node, public parent: Option<AST.Node>, public key: string) {
-    super(message);
-  }
+export interface TraversalError extends Error {
+  constructor: TraversalErrorConstructor;
+  key: string;
+  node: AST.Node;
+  parent: Option<AST.Node>;
 }
 
-TraversalError.prototype = Object.create(Error.prototype);
-TraversalError.prototype.constructor = TraversalError;
+export interface TraversalErrorConstructor {
+  new (message: string, node: AST.Node, parent: Option<AST.Node>, key: string): TraversalError;
+  readonly prototype: TraversalError;
+}
+
+const TraversalError: TraversalErrorConstructor = (function () {
+  TraversalError.prototype = Object.create(Error.prototype);
+  TraversalError.prototype.constructor = TraversalError;
+
+  function TraversalError(this: TraversalError, message: string, node: AST.Node, parent: Option<AST.Node>, key: string) {
+    let error = Error.call(this, message);
+
+    this.key = key;
+    this.message = message;
+    this.node = node;
+    this.parent = parent;
+    this.stack = error.stack;
+  }
+
+  return TraversalError as any;
+}());
 
 export default TraversalError;
 
