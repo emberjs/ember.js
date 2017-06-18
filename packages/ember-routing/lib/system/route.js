@@ -1380,7 +1380,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     @method beforeModel
     @param {Transition} transition
-    @return {Promise<any>} if the value returned from this hook is
+    @return {any | Promise<any>} if the value returned from this hook is
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
       utilized in any way.
@@ -1417,7 +1417,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @param {Object} resolvedModel the value returned from `model`,
       or its resolved value if it was a promise
     @param {Transition} transition
-    @return {Promise<any>} if the value returned from this hook is
+    @return {any | Promise<any>} if the value returned from this hook is
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
       utilized in any way.
@@ -1536,7 +1536,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @method model
     @param {Object} params the parameters extracted from the URL
     @param {Transition} transition
-    @return {Object|Promise<Object>} the model for this route. If
+    @return {any | Promise<any>} the model for this route. If
       a promise is returned, the transition will pause until
       the promise resolves, and the resolved value of the promise
       will be used as the model for this route.
@@ -1576,7 +1576,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @method deserialize
     @param {Object} params the parameters extracted from the URL
     @param {Transition} transition
-    @return {Object|Promise<Object>} the model for this route.
+    @return {any | Promise<any>} the model for this route.
 
     Router.js hook.
    */
