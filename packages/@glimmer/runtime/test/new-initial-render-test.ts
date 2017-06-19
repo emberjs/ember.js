@@ -319,15 +319,13 @@ abstract class RenderTest {
     return callback();
   }
 
-  protected assertStableNodes({ except: _except }: { except: Set<Node> | Node | Node[] } = { except: new Set() }) {
-    let except: Set<Node>;
+  protected assertStableNodes({ except: _except }: { except: Array<Node> | Node | Node[] } = { except: [] }) {
+    let except: Array<Node>;
 
     if (Array.isArray(_except)) {
-      except = new Set(_except);
-    } else if (_except instanceof Set) {
-      except = _except;
+      except = uniq(_except);
     } else {
-      except = new Set([_except]);
+      except = [_except];
     }
 
     let { oldSnapshot, newSnapshot } = normalize(this.snapshot, this.takeSnapshot(), except);
@@ -357,12 +355,12 @@ module("Initial Render Tests", class extends RenderTest {
   }
 });
 
-type Content = string | typeof OPEN | typeof CLOSE | typeof SEP | typeof EMPTY;
-
 const OPEN: { marker: 'open-block' } = { marker: 'open-block' };
 const CLOSE: { marker: 'close-block' } = { marker: 'close-block' };
 const SEP: { marker: 'sep' } = { marker: 'sep' };
 const EMPTY: { marker: 'empty' } = { marker: 'empty' };
+
+type Content = string | typeof OPEN | typeof CLOSE | typeof SEP | typeof EMPTY;
 
 function content(list: Content[]): string {
   let out: string[] = [];
@@ -526,7 +524,7 @@ function renderTemplate(env: TestEnvironment, template: Template<Opaque>, option
   return result;
 }
 
-function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, except: Set<Node>) {
+function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, except: Array<Node>) {
   let oldIterator = new SnapshotIterator(oldSnapshot);
   let newIterator = new SnapshotIterator(newSnapshot);
 
@@ -539,7 +537,7 @@ function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, excep
 
     if (nextOld === null && newIterator.peek() === null) break;
 
-    if ((nextOld instanceof Node && except.has(nextOld)) || (nextNew instanceof Node && except.has(nextNew))) {
+    if ((nextOld instanceof Node && except.indexOf(nextOld) > -1) || (nextNew instanceof Node && except.indexOf(nextNew) > -1)) {
       oldIterator.skip();
       newIterator.skip();
     } else {
@@ -588,6 +586,13 @@ class SnapshotIterator {
 
     return token;
   }
+}
+
+function uniq(arr: any[]) {
+  return arr.reduce((accum, val) => {
+    if (accum.indexOf(val) === -1) accum.push(val);
+    return accum;
+  }, []);
 }
 
 function isServerMarker(node: Node) {

@@ -204,7 +204,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     let unmatched = this.unmatchedAttributes;
 
     if (unmatched) {
-      let attr = unmatched.find(a => a.name === name);
+      let attr = findByName(unmatched, name);
       if (attr) {
         attr.value = value;
         unmatched.splice(unmatched.indexOf(attr), 1);
@@ -219,7 +219,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     let unmatched = this.unmatchedAttributes;
 
     if (unmatched) {
-      let attr = unmatched.find(a => a.name === name);
+      let attr = findByName(unmatched, name);
       if (attr) {
         attr.value = value;
         unmatched.splice(unmatched.indexOf(attr), 1);
@@ -340,6 +340,15 @@ function remove(node: Simple.Node): Option<Simple.Node> {
   let next = node.nextSibling;
   element.removeChild(node);
   return next;
+}
+
+function findByName(array: Simple.Attribute[], name: string): Simple.Attribute | undefined {
+  for (let i = 0; i < array.length; i++) {
+    let attr = array[i];
+    if (attr.name === name) return attr;
+  }
+
+  return undefined;
 }
 
 function unimplemented() {
