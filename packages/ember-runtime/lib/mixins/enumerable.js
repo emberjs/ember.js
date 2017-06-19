@@ -603,7 +603,9 @@ const Enumerable = Mixin.create({
 
   /**
     Returns `true` if the passed function returns true for any item in the
-    enumeration. This corresponds with the `some()` method in JavaScript 1.6.
+    enumeration. This corresponds with the `some()` method in JavaScript 1.6
+    except that if the callback function returns a value other than `true` or
+    `false` then that value will be returned by this function as well.
 
     The callback method you provide should have the following signature (all
     parameters are optional):
