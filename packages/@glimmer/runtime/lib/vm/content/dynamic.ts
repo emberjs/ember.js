@@ -8,7 +8,7 @@ export interface DynamicContent {
   update(env: Environment, value: Opaque): DynamicContent;
 }
 
-export default abstract class DynamicContentBase implements DynamicContent {
+abstract class DynamicContentBase implements DynamicContent {
   constructor(protected trusting: boolean) {}
 
   abstract update(env: Environment, value: Opaque): DynamicContent;
@@ -29,6 +29,8 @@ export default abstract class DynamicContentBase implements DynamicContent {
     }
   }
 }
+
+export default DynamicContentBase;
 
 export class DynamicContentWrapper implements DynamicContent, Bounds {
   parentElement(): Simple.Element {
