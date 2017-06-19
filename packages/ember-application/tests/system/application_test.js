@@ -1,16 +1,12 @@
 /*globals EmberDev */
 import { VERSION } from 'ember';
 import { ENV, context } from 'ember-environment';
-import {
-  run,
-  libraries
-} from 'ember-metal';
+import { libraries } from 'ember-metal';
 import {
   getDebugFunction,
   setDebugFunction
 } from 'ember-debug';
 import Application from '../../system/application';
-import DefaultResolver from '../../system/resolver';
 import {
   Router,
   NoneLocation,
@@ -35,10 +31,10 @@ import {
   moduleFor,
   ApplicationTestCase,
   AbstractTestCase,
-  AutobootApplicationTestCase
+  AutobootApplicationTestCase,
+  DefaultResolverApplicationTestCase
 } from 'internal-test-helpers';
 
-let { trim } = jQuery;
 let secondApp;
 
 moduleFor('Ember.Application, autobooting multiple apps', class extends ApplicationTestCase {
@@ -69,30 +65,30 @@ moduleFor('Ember.Application, autobooting multiple apps', class extends Applicat
     super.teardown();
 
     if (this.secondApp) {
-      run(this.secondApp, 'destroy');
+      this.runTask(() => this.secondApp.destroy());
     }
   }
 
   [`@test you can make a new application in a non-overlapping element`](assert) {
-    let app = run(() => this.createSecondApplication({
+    let app = this.runTask(() => this.createSecondApplication({
       rootElement: '#two'
     }));
 
-    run(app, 'destroy');
+    this.runTask(() => app.destroy());
     assert.ok(true, 'should not raise');
   }
 
   [`@test you cannot make a new application that is a parent of an existing application`]() {
     expectAssertion(() => {
-      run(() => this.createSecondApplication({
-        rootElement: '#qunit-fixture'
+      this.runTask(() => this.createSecondApplication({
+        rootElement: this.applicationOptions.rootElement
       }));
     });
   }
 
   [`@test you cannot make a new application that is a descendant of an existing application`]() {
     expectAssertion(() => {
-      run(() => this.createSecondApplication({
+      this.runTask(() => this.createSecondApplication({
         rootElement: '#one-child'
       }));
     });
@@ -100,7 +96,7 @@ moduleFor('Ember.Application, autobooting multiple apps', class extends Applicat
 
   [`@test you cannot make a new application that is a duplicate of an existing application`]() {
     expectAssertion(() => {
-      run(() => this.createSecondApplication({
+      this.runTask(() => this.createSecondApplication({
         rootElement: '#one'
       }));
     });
@@ -108,7 +104,7 @@ moduleFor('Ember.Application, autobooting multiple apps', class extends Applicat
 
   [`@test you cannot make two default applications without a rootElement error`]() {
     expectAssertion(() => {
-      run(() => this.createSecondApplication());
+      this.runTask(() => this.createSecondApplication());
     });
   }
 });
@@ -190,7 +186,7 @@ moduleFor('Ember.Application', class extends ApplicationTestCase {
 
 });
 
-moduleFor('Ember.Application, default resolver with autoboot', class extends AutobootApplicationTestCase {
+moduleFor('Ember.Application, default resolver with autoboot', class extends DefaultResolverApplicationTestCase {
 
   constructor() {
     super();
@@ -203,19 +199,16 @@ moduleFor('Ember.Application, default resolver with autoboot', class extends Aut
     setTemplates({});
   }
 
-  createApplication(options) {
-    let myOptions = assign({
-      Resolver: DefaultResolver
-    }, options);
-    return super.createApplication(myOptions);
+  get applicationOptions() {
+    return assign(super.applicationOptions, {
+      autoboot: true
+    });
   }
 
   [`@test acts like a namespace`](assert) {
     let lookup = context.lookup = {};
 
-    run(() => {
-      lookup.TestApp = this.createApplication();
-    });
+    lookup.TestApp = this.runTask(() => this.createApplication());
 
     setNamespaceSearchDisabled(false);
     let Foo = this.application.Foo = EmberObject.extend();
@@ -224,10 +217,11 @@ moduleFor('Ember.Application, default resolver with autoboot', class extends Aut
 
   [`@test can specify custom router`](assert) {
     let MyRouter = Router.extend();
-    run(() => {
-      let app = this.createApplication();
-      app.Router = MyRouter;
+    this.runTask(() => {
+      this.createApplication()
+      this.application.Router = MyRouter;
     });
+
     assert.ok(
       this.application.__deprecatedInstance__.lookup('router:main') instanceof MyRouter,
       'application resolved the correct router'
@@ -235,12 +229,10 @@ moduleFor('Ember.Application, default resolver with autoboot', class extends Aut
   }
 
   [`@test Minimal Application initialized with just an application template`](assert) {
-    jQuery('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
-    run(() => {
-      this.createApplication();
-    });
+    this.$().html('<script type="text/x-handlebars">Hello World</script>');
+    this.runTask(() => this.createApplication());
 
-    equal(trim(jQuery('#qunit-fixture').text()), 'Hello World');
+    assert.equal(this.$().text().trim(), 'Hello World');
   }
 
 });
@@ -261,28 +253,20 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
     super.teardown();
   }
 
-  createApplication(options, MyApplication) {
-    let application = super.createApplication(options, MyApplication);
-    this.add('router:main', Router.extend({
-      location: 'none'
-    }));
-    return application;
-  }
-
   [`@test initialized application goes to initial route`](assert) {
-    run(() => {
+    this.runTask(() => {
       this.createApplication();
       this.addTemplate('application', '{{outlet}}');
       this.addTemplate('index', '<h1>Hi from index</h1>');
     });
 
-    assert.equal(jQuery('#qunit-fixture h1').text(), 'Hi from index');
+    assert.equal(this.$('h1').text(), 'Hi from index');
   }
 
   [`@test ready hook is called before routing begins`](assert) {
     assert.expect(2);
 
-    run(() => {
+    this.runTask(() => {
       function registerRoute(application, name, callback) {
         let route = EmberRoute.extend({
           activate: callback
@@ -306,18 +290,16 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
   }
 
   [`@test initialize application via initialize call`](assert) {
-    run(() => {
-      this.createApplication();
-    });
+    this.runTask(() => this.createApplication());
     // This is not a public way to access the container; we just
     // need to make some assertions about the created router
-    let router = this.application.__deprecatedInstance__.lookup('router:main');
+    let router = this.applicationInstance.lookup('router:main');
     assert.equal(router instanceof Router, true, 'Router was set from initialize call');
     assert.equal(router.location instanceof NoneLocation, true, 'Location was set from location implementation name');
   }
 
   [`@test initialize application with stateManager via initialize call from Router class`](assert) {
-    run(() => {
+    this.runTask(() => {
       this.createApplication();
       this.addTemplate('application', '<h1>Hello!</h1>');
     });
@@ -325,18 +307,18 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
     // need to make some assertions about the created router
     let router = this.application.__deprecatedInstance__.lookup('router:main');
     assert.equal(router instanceof Router, true, 'Router was set from initialize call');
-    assert.equal(jQuery('#qunit-fixture h1').text(), 'Hello!');
+    assert.equal(this.$('h1').text(), 'Hello!');
   }
 
   [`@test Application Controller backs the appplication template`](assert) {
-    run(() => {
+    this.runTask(() => {
       this.createApplication();
       this.addTemplate('application', '<h1>{{greeting}}</h1>');
       this.add('controller:application', Controller.extend({
         greeting: 'Hello!'
       }));
     });
-    assert.equal(jQuery('#qunit-fixture h1').text(), 'Hello!');
+    assert.equal(this.$('h1').text(), 'Hello!');
   }
 
   [`@test enable log of libraries with an ENV var`](assert) {
@@ -353,9 +335,7 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
 
     libraries.register('my-lib', '2.0.0a');
 
-    run(() => {
-      this.createApplication();
-    });
+    this.runTask(() => this.createApplication());
 
     assert.equal(messages[1], 'Ember  : ' + VERSION);
     assert.equal(messages[2], 'jQuery : ' + jQuery().jquery);
@@ -371,9 +351,7 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
 
     setDebugFunction('debug', () => logged = true);
 
-    run(() => {
-      this.createApplication();
-    });
+    this.runTask(() => this.createApplication());
 
     assert.ok(!logged, 'library version logging skipped');
   }
@@ -381,7 +359,7 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
   [`@test can resolve custom router`](assert) {
     let CustomRouter = Router.extend();
 
-    run(() => {
+    this.runTask(() => {
       this.createApplication();
       this.add('router:main', CustomRouter);
     });
@@ -394,9 +372,9 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
 
   [`@test does not leak itself in onLoad._loaded`](assert) {
     assert.equal(_loaded.application, undefined);
-    run(() => this.createApplication());
+    this.runTask(() => this.createApplication());
     assert.equal(_loaded.application, this.application);
-    run(this.application, 'destroy');
+    this.runTask(() => this.application.destroy());
     assert.equal(_loaded.application, undefined);
   }
 

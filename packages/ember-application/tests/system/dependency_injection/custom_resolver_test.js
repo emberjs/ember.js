@@ -1,40 +1,34 @@
-import { jQuery } from 'ember-views';
-import { run } from 'ember-metal';
-import Application from '../../../system/application';
 import DefaultResolver from '../../../system/resolver';
-import { compile } from 'ember-template-compiler';
+import { assign } from 'ember-utils';
+import {
+  moduleFor,
+  DefaultResolverApplicationTestCase
+} from 'internal-test-helpers';
 
-let application;
+moduleFor('Ember.Application with extended default resolver and autoboot', class extends DefaultResolverApplicationTestCase {
 
-QUnit.module('Ember.Application Dependency Injection – customResolver', {
-  setup() {
-    let fallbackTemplate = compile('<h1>Fallback</h1>');
+  get applicationOptions() {
+    let applicationTemplate = this.compile(`<h1>Fallback</h1>`);
 
     let Resolver = DefaultResolver.extend({
       resolveTemplate(resolvable) {
-        let resolvedTemplate = this._super(resolvable);
-        if (resolvedTemplate) { return resolvedTemplate; }
         if (resolvable.fullNameWithoutType === 'application') {
-          return fallbackTemplate;
+          return applicationTemplate;
         } else {
-          return;
+          return this._super(resolvable);
         }
       }
     });
 
-    application = run(() => {
-      return Application.create({
-        Resolver: Resolver,
-        rootElement: '#qunit-fixture'
-      });
+    return assign(super.applicationOptions, {
+      Resolver,
+      autoboot: true
     });
-  },
-
-  teardown() {
-    run(application, 'destroy');
   }
-});
 
-QUnit.test('a resolver can be supplied to application', function() {
-  equal(jQuery('h1', application.rootElement).text(), 'Fallback');
+  [`@test a resolver can be supplied to application`](assert) {
+    this.runTask(() => this.createApplication());
+    assert.equal(this.$('h1').text(), 'Fallback');
+  }
+
 });

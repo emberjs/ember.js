@@ -1,52 +1,31 @@
-import AbstractTestCase from './abstract';
+import TestResolverApplicationTestCase from './test-resolver-application';
 import TestResolver from '../test-resolver';
 import { Application } from 'ember-application';
 import { assign } from 'ember-utils';
-import { runDestroy } from '../run';
-import { run } from 'ember-metal';
-import { compile } from 'ember-template-compiler';
+import { Router } from 'ember-routing';
 
-export default class AutobootApplicationTestCase extends AbstractTestCase {
-
-  teardown() {
-    runDestroy(this.application);
-    super.teardown();
-  }
+export default class AutobootApplicationTestCase extends TestResolverApplicationTestCase {
 
   createApplication(options, MyApplication=Application) {
-    let myOptions = assign({
-      rootElement: '#qunit-fixture',
-      Resolver: TestResolver
-    }, options);
+    let myOptions = assign(this.applicationOptions, options);
     let application = this.application = MyApplication.create(myOptions);
     this.resolver = myOptions.Resolver.lastInstance;
+
+    if (this.resolver) {
+      this.resolver.add('router:main', Router.extend(this.routerOptions));
+    }
+
     return application;
   }
 
-  add(specifier, factory) {
-    this.resolver.add(specifier, factory);
-  }
-
-  get router() {
-    return this.application.resolveRegistration('router:main');
-  }
-
   visit(url, options) {
-    return run(this.applicationInstance, 'visit', url, options);
+    return this.runTask(() => {
+      return this.applicationInstance.visit(url, options);
+    });
   }
 
   get applicationInstance() {
     return this.application.__deprecatedInstance__;
-  }
-
-  compile(string, options) {
-    return compile(...arguments);
-  }
-
-  addTemplate(templateName, templateString) {
-    this.resolver.add(`template:${templateName}`, this.compile(templateString, {
-      moduleName: templateName
-    }));
   }
 
 }

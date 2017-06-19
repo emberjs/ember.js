@@ -1,34 +1,30 @@
-import TestResolverApplicationTestCase from './test-resolver-application';
+import AbstractApplicationTestCase from './abstract-application';
+import { Resolver as DefaultResolver } from 'ember-application';
 import { Application } from 'ember-application';
-import { Router } from 'ember-routing';
+import {
+  setTemplates,
+  setTemplate
+} from 'ember-glimmer';
 import { assign } from 'ember-utils';
 import { runDestroy } from '../run';
 
-export default class ApplicationTestCase extends TestResolverApplicationTestCase {
-  constructor() {
-    super();
+export default class ApplicationTestCase extends AbstractApplicationTestCase {
 
-    let { applicationOptions } = this;
-    this.application = this.runTask(() => {
-      return Application.create(applicationOptions)
-    });
-
-    this.resolver = applicationOptions.Resolver.lastInstance;
-
-    if (this.resolver) {
-      this.resolver.add('router:main', Router.extend(this.routerOptions));
-    }
+  createApplication() {
+    return this.application = Application.create(this.applicationOptions);
   }
 
   get applicationOptions() {
     return assign(super.applicationOptions, {
-      autoboot: false
+      autoboot: false,
+      Resolver: DefaultResolver
     });
   }
 
   teardown() {
     runDestroy(this.applicationInstance);
     super.teardown();
+    setTemplates({});
   }
 
   visit(url, options) {
@@ -54,5 +50,12 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
       return this.appRouter.transitionTo(...arguments);
     });
   }
+
+  addTemplate(name, templateString) {
+    let compiled = this.compile(templateString);
+    setTemplate(name, compiled);
+    return compiled;
+  }
+
 
 }

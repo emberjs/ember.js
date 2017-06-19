@@ -1,4 +1,3 @@
-
 import ApplicationTestCase from './application';
 
 export default class RouterTestCase extends ApplicationTestCase {

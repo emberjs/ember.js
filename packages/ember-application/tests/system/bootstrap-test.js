@@ -1,11 +1,11 @@
-import { Router } from 'ember-routing';
 import { assign } from 'ember-utils';
 import { jQuery } from 'ember-views';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { setTemplates } from 'ember-glimmer';
-import DefaultResolver from '../../system/resolver';
+import {
+  moduleFor,
+  DefaultResolverApplicationTestCase
+} from 'internal-test-helpers';
 
-moduleFor('Ember.Application with default resolver and autoboot', class extends ApplicationTestCase {
+moduleFor('Ember.Application with default resolver and autoboot', class extends DefaultResolverApplicationTestCase {
   constructor() {
     jQuery('#qunit-fixture').html(`
       <div id="app"></div>
@@ -16,22 +16,15 @@ moduleFor('Ember.Application with default resolver and autoboot', class extends 
     super();
   }
 
-  teardown() {
-    setTemplates({});
-  }
-
   get applicationOptions() {
     return assign(super.applicationOptions, {
       autoboot: true,
-      rootElement: '#app',
-      Resolver: DefaultResolver,
-      Router: Router.extend({
-        location: 'none'
-      })
+      rootElement: '#app'
     });
   }
 
   ['@test templates in script tags are extracted at application creation'](assert) {
-    assert.equal(jQuery('#app').text(), 'Hello World!');
+    this.runTask(() => this.createApplication());
+    assert.equal(this.$('#app').text(), 'Hello World!');
   }
 });
