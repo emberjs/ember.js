@@ -204,7 +204,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       this.assertCurrentPath('/', 'QP did not update due to being overriden');
 
       this.setAndFlush(indexController, 'c', false);
-      this.assertCurrentPath('/?c=false', 'QP updated with overriden param');
+      this.assertCurrentPath('/?c=false', 'QP updated with overridden param');
     });
   }
 

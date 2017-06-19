@@ -56,7 +56,7 @@ original notice.
 * If you submit a feature request as an issue, you will be invited to follow the
 [instructions in this document](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md#requesting-a-feature)
 and the issue will be closed
-* Issues that become inactive will be labelled accordingly
+* Issues that become inactive will be labeled accordingly
   to inform the original poster and Ember contributors that the issue
   should be closed since the issue is no longer actionable. The issue
   can be reopened at a later time if needed, e.g. becomes actionable again.

@@ -263,7 +263,7 @@ Registry.prototype = {
   },
 
   /**
-   A hook to enable custom fullName normalization behaviour
+   A hook to enable custom fullName normalization behavior
 
    @private
    @method normalizeFullName

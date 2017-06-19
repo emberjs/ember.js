@@ -55,7 +55,7 @@ function refineBlockSyntax(name, params, hash, _default, inverse, builder) {
 
 export const experimentalMacros = [];
 
-// This is a private API to allow for expiremental macros
+// This is a private API to allow for experimental macros
 // to be created in user space. Registering a macro should
 // should be done in an initializer.
 export function registerMacros(macro) {

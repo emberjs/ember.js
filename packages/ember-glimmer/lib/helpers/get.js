@@ -17,7 +17,7 @@ import {
   Dynamically look up a property on an object. The second argument to `{{get}}`
   should have a string value, although it can be bound.
 
-  For example, these two usages are equivilent:
+  For example, these two usages are equivalent:
 
   ```handlebars
   {{person.height}}

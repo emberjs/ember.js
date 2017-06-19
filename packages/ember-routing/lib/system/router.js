@@ -71,7 +71,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     * `history` - use the browser's history API to make the URLs look just like any standard URL
     * `hash` - use `#` to separate the server part of the URL from the Ember part: `/blog/#/posts/new`
     * `none` - do not store the Ember URL in the actual browser URL (mainly used for testing)
-    * `auto` - use the best option based on browser capabilites: `history` if possible, then `hash` if possible, otherwise `none`
+    * `auto` - use the best option based on browser capabilities: `history` if possible, then `hash` if possible, otherwise `none`
 
     Note: If using ember-cli, this value is defaulted to `auto` by the `locationType` setting of `/config/environment.js`
 
@@ -828,7 +828,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   /**
     Returns the meta information for the query params of a given route. This
-    will be overriden to allow support for lazy routes.
+    will be overridden to allow support for lazy routes.
 
     @private
     @method _getQPMeta

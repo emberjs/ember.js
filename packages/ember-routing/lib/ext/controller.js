@@ -17,7 +17,7 @@ ControllerMixin.reopen({
     `this.category` and `this.page`.
     By default, Ember coerces query parameter values using `toggleProperty`.
     This behavior may lead to unexpected results.
-    To explicity configure a query parameter property so it coerces as expected, you must define a type property:
+    To explicitly configure a query parameter property so it coerces as expected, you must define a type property:
     ```javascript
       queryParams: [{
         category: {

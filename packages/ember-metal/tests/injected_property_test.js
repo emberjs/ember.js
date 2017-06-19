@@ -19,7 +19,7 @@ QUnit.test('injected properties should be overridable', function() {
 
   set(obj, 'foo', 'bar');
 
-  equal(get(obj, 'foo'), 'bar', 'should return the overriden value');
+  equal(get(obj, 'foo'), 'bar', 'should return the overridden value');
 });
 
 QUnit.test('getting on an object without an owner or container should fail assertion', function() {

@@ -254,7 +254,7 @@ QUnit.test('a listener added as part of a mixin may be overridden', function() {
   SecondMixin.apply(obj);
 
   sendEvent(obj, 'bar');
-  equal(triggered, 0, 'should not invoke from overriden property');
+  equal(triggered, 0, 'should not invoke from overridden property');
 
   sendEvent(obj, 'baz');
   equal(triggered, 1, 'should invoke from subclass property');

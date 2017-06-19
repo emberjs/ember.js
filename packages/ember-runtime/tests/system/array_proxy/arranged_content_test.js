@@ -300,7 +300,7 @@ QUnit.test('firstObject - returns first arranged object', function() {
 });
 
 QUnit.test('arrangedContentArray{Will,Did}Change are called when the arranged content changes', function() {
-  // The behaviour covered by this test may change in the future if we decide
+  // The behavior covered by this test may change in the future if we decide
   // that built-in array methods are not overridable.
 
   let willChangeCallCount = 0;
