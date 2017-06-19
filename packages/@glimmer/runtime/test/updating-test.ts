@@ -86,6 +86,14 @@ function assertInvariants(assert: Assert, result: RenderResult, msg?: string) {
   assert.strictEqual(result.lastNode(), root.lastChild, `The lastNode of the result is the same as the root's lastChild${msg ? ': ' + msg : ''}`);
 }
 
+function assertHasUpdateOpcodes(assert: Assert, result) {
+  assert.ok(result.updating._head, "There should be update opcodes");
+}
+
+function assertHasNoUpdateOpcodes(assert: Assert, result) {
+  assert.equal(result.updating._head, null, "There shouldn't be update opcodes");
+}
+
 module("[glimmer-runtime] Updating", hooks => {
   hooks.beforeEach(() => commonSetup());
 
@@ -2873,6 +2881,7 @@ QUnit.module("Updating Element Modifiers", hooks => {
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 0);
     assert.equal(manager.destroyedModifiers.length, 0);
+    assertHasUpdateOpcodes(assert, result);
 
     rerender();
 
@@ -2914,6 +2923,7 @@ QUnit.module("Updating Element Modifiers", hooks => {
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 0);
     assert.equal(manager.destroyedModifiers.length, 0);
+    assertHasNoUpdateOpcodes(assert, result);
 
     rerender();
 
