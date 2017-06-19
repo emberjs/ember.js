@@ -20,7 +20,6 @@ matrix:
   fast_finish: true
 before_script:
   - if [[ `npm -v` < 5* ]]; then npm i -g npm; fi
-  - npm i
   - npm run sauce:connect
 script:
   - npm run problems
