@@ -453,7 +453,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     export default Ember.Route.extend({
       resetController(controller, isExiting, transition) {
-        if (isExiting) {
+        if (isExiting && transition.targetName !== 'error') {
           controller.set('page', 1);
         }
       }
