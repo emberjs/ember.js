@@ -126,13 +126,13 @@ export class SafeDynamicProperty extends DefaultDynamicProperty {
 
 export class InputValueDynamicAttribute extends DefaultDynamicProperty {
   set(dom: ElementBuilder, value: Opaque) {
-    dom.__setProperty('value', normalizeStringValue(value));
+    dom.__setProperty('value', normalizeInputValue(value));
   }
 
   update(value: Opaque) {
     let input = <HTMLInputElement>this.attribute.element;
     let currentValue = input.value;
-    let normalizedValue = normalizeStringValue(value);
+    let normalizedValue = normalizeInputValue(value);
     if (currentValue !== normalizedValue) {
       input.value = normalizedValue!;
     }
@@ -163,6 +163,14 @@ function isOptionSelected(tagName: string, attribute: string) {
 
 function isUserInputValue(tagName: string, attribute: string) {
   return (tagName === 'INPUT' || tagName === 'TEXTAREA') && attribute === 'value';
+}
+
+function normalizeInputValue(value: Opaque) {
+  if (value === null || value === undefined || typeof value.toString !== 'function') {
+    return '';
+  }
+
+  return `${value}`;
 }
 
 function normalizeStringValue(value: Opaque): Option<string> {
