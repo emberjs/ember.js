@@ -1,5 +1,6 @@
 import { Dict, Option } from '@glimmer/util';
 import { Opcodes } from './lib/opcodes';
+import { Opaque } from "@glimmer/interfaces";
 
 export { Opcodes as Ops } from './lib/opcodes';
 
@@ -205,6 +206,7 @@ export type Statement = Statements.Statement;
  * A JSON object of static compile time meta for the template.
  */
 export interface TemplateMeta {
+  [key: string]: Opaque;
   moduleName?: string;
 }
 

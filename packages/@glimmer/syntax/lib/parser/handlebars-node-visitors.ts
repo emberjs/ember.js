@@ -5,6 +5,7 @@ import * as HandlebarsAST from '../types/handlebars-ast';
 import { Parser, Tag, Attribute } from '../parser';
 import SyntaxError from '../errors/syntax-error';
 import { Option } from "@glimmer/util";
+import { Recast } from "@glimmer/interfaces";
 
 export abstract class HandlebarsNodeVisitors extends Parser {
   abstract appendToCommentData(s: string): void;
@@ -287,7 +288,7 @@ function updateTokenizerLocation(tokenizer: Parser['tokenizer'], content: Handle
   let line = content.loc.start.line;
   let column = content.loc.start.column;
 
-  let offsets = calculateRightStrippedOffsets(content.original as any as string, content.value);
+  let offsets = calculateRightStrippedOffsets(content.original as Recast<HandlebarsAST.StripFlags, string>, content.value);
 
   line = line + offsets.lines;
   if (offsets.lines) {

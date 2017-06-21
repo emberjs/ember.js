@@ -9,8 +9,9 @@ import {
 } from '@glimmer/reference';
 import { Opaque, Option } from '@glimmer/util';
 import { Simple } from '@glimmer/interfaces';
-import { ModifierManager } from '../../modifier/interfaces';
-import { APPEND_OPCODES, Op, OpcodeJSON, UpdatingOpcode, Register } from '../../opcodes';
+import { Op, Register } from '@glimmer/vm';
+import { Modifier, ModifierManager } from '../../modifier/interfaces';
+import { APPEND_OPCODES, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { Assert } from './vm';
@@ -80,8 +81,8 @@ APPEND_OPCODES.add(Op.FlushElement, vm => {
 
 APPEND_OPCODES.add(Op.CloseElement, vm => vm.elements().closeElement());
 
-APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
-  let manager = vm.constants.getOther<ModifierManager<Opaque>>(_manager);
+APPEND_OPCODES.add(Op.Modifier, (vm, { op1: specifier }) => {
+  let manager = vm.constants.resolveSpecifier<ModifierManager>(specifier);
   let stack = vm.stack;
   let args = stack.pop<Arguments>();
   let { constructing: element, updateOperations } = vm.elements();
@@ -114,8 +115,8 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
 
   constructor(
     public tag: Tag,
-    private manager: ModifierManager<Opaque>,
-    private modifier: Opaque,
+    private manager: ModifierManager,
+    private modifier: Modifier,
   ) {
     super();
     this.lastUpdated = tag.value();

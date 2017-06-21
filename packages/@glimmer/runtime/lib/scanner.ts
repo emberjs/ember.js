@@ -1,42 +1,42 @@
 import { CompilationMeta } from '@glimmer/interfaces';
 import { EMPTY_ARRAY, assert, unreachable } from '@glimmer/util';
 import * as WireFormat from '@glimmer/wire-format';
-import Environment from './environment';
 import * as ClientSide from './syntax/client-side';
 import CompilableTemplate from './syntax/compilable-template';
 import { ATTRS_BLOCK } from './syntax/functions';
 import {
-  Block,
-  Program,
+  BlockSyntax,
+  TopLevelSyntax,
 } from './syntax/interfaces';
 import Ops = WireFormat.Ops;
 import { TemplateMeta } from "@glimmer/wire-format";
+import { CompilationOptions } from './internal-interfaces';
 
 export type DeserializedStatement = WireFormat.Statement | WireFormat.Statements.Attribute | WireFormat.Statements.Argument;
 
 export default class Scanner {
-  constructor(private block: WireFormat.SerializedTemplateBlock, private env: Environment) {
+  constructor(private block: WireFormat.SerializedTemplateBlock, private options: CompilationOptions) {
   }
 
-  scanEntryPoint(meta: CompilationMeta): Program {
-    let { block } = this;
+  scanEntryPoint(meta: CompilationMeta): TopLevelSyntax {
+    let { block, options } = this;
     let { statements, symbols, hasEval } = block;
-    return new CompilableTemplate(statements, { meta, symbols, hasEval });
+    return new CompilableTemplate(statements, { meta, symbols, hasEval }, options);
   }
 
-  scanBlock(meta: CompilationMeta): Block {
-    let { block } = this;
+  scanBlock(meta: CompilationMeta): BlockSyntax {
+    let { block, options } = this;
     let { statements } = block;
-    return new CompilableTemplate(statements, { meta, parameters: EMPTY_ARRAY });
+    return new CompilableTemplate(statements, { meta, parameters: EMPTY_ARRAY }, options);
   }
 
-  scanLayout(meta: CompilationMeta, attrs: WireFormat.Statements.Attribute[], componentName?: string): Program {
-    let { block } = this;
+  scanLayout(meta: CompilationMeta, componentName?: string): TopLevelSyntax {
+    let { block, options } = this;
     let { symbols, hasEval } = block;
 
-    let scanner = new LayoutScanner(block, this.env, meta, attrs, componentName);
+    let scanner = new LayoutScanner(block, this.options, meta, componentName);
 
-    return new CompilableTemplate(scanner.scan(), { meta, hasEval, symbols });
+    return new CompilableTemplate(scanner.scan(), { meta, hasEval, symbols }, options);
   }
 }
 
@@ -52,7 +52,7 @@ class LayoutScanner {
   private statements: WireFormat.Statement[];
   private meta: TemplateMeta;
 
-  constructor(block: WireFormat.SerializedTemplateBlock, private env: Environment, meta: CompilationMeta, private attrs: WireFormat.Statements.Attribute[], private componentName?: string) {
+  constructor(block: WireFormat.SerializedTemplateBlock, private env: CompilationOptions, meta: CompilationMeta, private componentName?: string) {
     let { statements, symbols } = block;
     this.statements = statements;
     this.symbols = symbols;
@@ -107,13 +107,13 @@ class LayoutScanner {
   private processTopLevelComponent(statement: WireFormat.Statements.Component, buffer: WireFormat.Statement[]) {
     let [, tagName, attrs, , block] = statement;
 
-    if (this.env.hasComponentDefinition(tagName, this.meta) && tagName !== this.componentName) {
+    if (this.env.resolver.lookupComponent(tagName, this.meta) && tagName !== this.componentName) {
       buffer.push(statement);
       this.state = LayoutState.AfterFlush;
       return;
     }
 
-    assert(!this.env.hasComponentDefinition(tagName, this.meta) || tagName === this.componentName, `Cannot use a component (<${tagName}>) as the top-level element in the layout of <${this.componentName}>`);
+    assert(!this.env.resolver.lookupComponent(tagName, this.meta) || tagName === this.componentName, `Cannot use a component (<${tagName}>) as the top-level element in the layout of <${this.componentName}>`);
 
     this.state = LayoutState.InTopLevel;
 
@@ -152,11 +152,10 @@ class LayoutScanner {
     assert(!WireFormat.Statements.isModifier(statement), `Cannot use element modifiers ({{${statement[1]} ...}}) in the top-level element in the layout of <${this.componentName}>`);
 
     if (WireFormat.Statements.isFlushElement(statement)) {
-      let { symbols, attrs } = this;
+      let { symbols } = this;
       this.state = LayoutState.AfterFlush;
 
       let attrsSymbol = symbols.push(ATTRS_BLOCK);
-      buffer.push(...attrs);
       buffer.push([Ops.Yield, attrsSymbol, EMPTY_ARRAY]);
       buffer.push([Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false]);
     }

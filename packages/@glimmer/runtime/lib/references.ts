@@ -1,4 +1,4 @@
-import {  Opaque, Option } from '@glimmer/interfaces';
+import { Opaque, Option, Recast } from '@glimmer/interfaces';
 import { ConstReference, PathReference, Reference, Tag } from '@glimmer/reference';
 
 export type Primitive = undefined | null | boolean | number | string;
@@ -14,9 +14,9 @@ export class PrimitiveReference<T extends Primitive> extends ConstReference<T> i
     } else if (value === false) {
       return FALSE_REFERENCE as PrimitiveReference<T>;
     } else if (typeof value === 'number') {
-      return new ValueReference(value as number) as PrimitiveReference<T>;
+      return new ValueReference(value) as PrimitiveReference<T>;
     } else {
-      return new StringReference(value as string) as any as PrimitiveReference<T>;
+      return new StringReference(value as string) as Recast<StringReference, PrimitiveReference<T>>;
     }
   }
 

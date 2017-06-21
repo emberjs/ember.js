@@ -1,6 +1,6 @@
 import { precompile as rawPrecompile, PrecompileOptions } from "@glimmer/compiler";
 import { Opaque, Option } from "@glimmer/interfaces";
-import { Environment, Template, templateFactory } from "@glimmer/runtime";
+import { Environment } from "@glimmer/runtime";
 import * as WireFormat from '@glimmer/wire-format';
 import { tokenize } from "simple-html-tokenizer";
 
@@ -66,12 +66,6 @@ export function precompile(string: string, options?: TestCompileOptions<WireForm
   let wrapper = JSON.parse(rawPrecompile(string, options));
   wrapper.block = JSON.parse(wrapper.block);
   return wrapper as WireFormat.SerializedTemplate<WireFormat.TemplateMeta>;
-}
-
-export function compile<T extends WireFormat.TemplateMeta>(string: string, options: TestCompileOptions<T>): Template<T> {
-  let js = rawPrecompile(string, options);
-  let factory = templateFactory<T>(JSON.parse(js));
-  return factory.create(options.env);
 }
 
 export function equalInnerHTML(fragment: { innerHTML: string }, html: string, message?: string) {
