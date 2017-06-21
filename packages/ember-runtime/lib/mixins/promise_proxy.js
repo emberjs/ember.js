@@ -104,7 +104,7 @@ export default Mixin.create({
     @default null
     @public
   */
-  reason:  null,
+  reason: null,
 
   /**
     Once the proxied promise has settled this will become `false`.
@@ -113,7 +113,7 @@ export default Mixin.create({
     @default true
     @public
   */
-  isPending:  not('isSettled').readOnly(),
+  isPending: not('isSettled').readOnly(),
 
   /**
     Once the proxied promise has settled this will become `true`.
@@ -122,7 +122,7 @@ export default Mixin.create({
     @default false
     @public
   */
-  isSettled:  or('isRejected', 'isFulfilled').readOnly(),
+  isSettled: or('isRejected', 'isFulfilled').readOnly(),
 
   /**
     Will become `true` if the proxied promise is rejected.
@@ -131,7 +131,7 @@ export default Mixin.create({
     @default false
     @public
   */
-  isRejected:  false,
+  isRejected: false,
 
   /**
     Will become `true` if the proxied promise is fulfilled.
