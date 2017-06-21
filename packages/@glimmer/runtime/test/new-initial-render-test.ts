@@ -41,7 +41,7 @@ abstract class RenderTest {
     this.assertStableRerender();
   }
 
-  @test "HTML boolean attribute 'disabled'"(assert: typeof QUnit.assert) {
+  @test "HTML boolean attribute 'disabled'"() {
     this.render('<input disabled>');
     this.assertHTML("<input disabled>");
 
