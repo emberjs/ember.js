@@ -7,7 +7,3 @@ export class ConstReference<T> implements VersionedReference<T> {
 
   value(): T { return this.inner; }
 }
-
-export function isConst(reference: { tag: Tag }): boolean {
-  return reference.tag === CONSTANT_TAG;
-}
