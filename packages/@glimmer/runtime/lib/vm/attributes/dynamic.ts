@@ -5,6 +5,7 @@ import { sanitizeAttributeValue, requiresSanitization } from '../../dom/sanitize
 import { normalizeProperty } from '../../dom/props';
 import { SVG_NAMESPACE } from '../../dom/helper';
 import { Attribute, AttributeOperation } from './index';
+import { normalizeStringValue } from "@glimmer/runtime/lib/dom/normalize";
 
 export interface DynamicAttributeFactory {
   new(attribute: Attribute): DynamicAttribute;
@@ -59,7 +60,7 @@ export abstract class DynamicAttribute implements AttributeOperation {
 
 export class SimpleDynamicAttribute extends DynamicAttribute {
   set(dom: ElementBuilder, value: Opaque): void {
-    let normalizedValue = normalizeStringValue(value);
+    let normalizedValue = normalizeValue(value);
 
     if (normalizedValue !== null) {
       let { name, namespace } = this.attribute;
@@ -68,7 +69,7 @@ export class SimpleDynamicAttribute extends DynamicAttribute {
   }
 
   update(value: Opaque): void {
-    let normalizedValue = normalizeStringValue(value);
+    let normalizedValue = normalizeValue(value);
     let { element, name } = this.attribute;
 
     if (normalizedValue === null) {
@@ -80,14 +81,14 @@ export class SimpleDynamicAttribute extends DynamicAttribute {
 }
 
 export class DefaultDynamicProperty extends DynamicAttribute {
-  set(dom: ElementBuilder, value: Opaque, env: Environment): void {
+  set(dom: ElementBuilder, value: Opaque, _env: Environment): void {
     if (value !== null && value !== undefined) {
       let { name } = this.attribute;
       dom.__setProperty(name, value);
     }
   }
 
-  update(value: Opaque, env: Environment): void {
+  update(value: Opaque, _env: Environment): void {
     let { element, name } = this.attribute;
 
     element[name] = value;
@@ -126,13 +127,13 @@ export class SafeDynamicProperty extends DefaultDynamicProperty {
 
 export class InputValueDynamicAttribute extends DefaultDynamicProperty {
   set(dom: ElementBuilder, value: Opaque) {
-    dom.__setProperty('value', normalizeInputValue(value));
+    dom.__setProperty('value', normalizeStringValue(value));
   }
 
   update(value: Opaque) {
     let input = <HTMLInputElement>this.attribute.element;
     let currentValue = input.value;
-    let normalizedValue = normalizeInputValue(value);
+    let normalizedValue = normalizeStringValue(value);
     if (currentValue !== normalizedValue) {
       input.value = normalizedValue!;
     }
@@ -165,15 +166,7 @@ function isUserInputValue(tagName: string, attribute: string) {
   return (tagName === 'INPUT' || tagName === 'TEXTAREA') && attribute === 'value';
 }
 
-function normalizeInputValue(value: Opaque) {
-  if (value === null || value === undefined || typeof value.toString !== 'function') {
-    return '';
-  }
-
-  return `${value}`;
-}
-
-function normalizeStringValue(value: Opaque): Option<string> {
+function normalizeValue(value: Opaque): Option<string> {
   if (value === false || value === undefined || value === null || typeof value.toString === 'undefined') {
     return null;
   }

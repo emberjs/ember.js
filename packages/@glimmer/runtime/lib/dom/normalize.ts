@@ -31,19 +31,6 @@ export function normalizeTrustedValue(value: Opaque): TrustingInsertion {
   return String(value);
 }
 
-export function normalizeValue(value: Opaque): CautiousInsertion {
-  if (isEmpty(value)) {
-    return '';
-  }
-  if (isString(value)) {
-    return value;
-  }
-  if (isSafeString(value) || isNode(value)) {
-    return value;
-  }
-  return String(value);
-}
-
 export function isEmpty(value: Opaque): boolean {
   return value === null || value === undefined || typeof value.toString !== 'function';
 }

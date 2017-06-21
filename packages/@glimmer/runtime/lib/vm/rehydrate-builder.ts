@@ -261,7 +261,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     super.willCloseElement();
   }
 
-  pushRemoteElement(element: Simple.Element, nextSibling: Option<Simple.Node> = null) {
+  pushRemoteElement(_element: Simple.Element, _nextSibling: Option<Simple.Node> = null) {
     throw unimplemented();
   }
 

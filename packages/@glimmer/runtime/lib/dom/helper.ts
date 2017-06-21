@@ -125,7 +125,7 @@ export namespace DOM {
       return this.document.createElementNS(namespace, tag);
     }
 
-    setAttribute(element: Element, name: string, value: string, namespace?: Option<string>) {
+    setAttribute(element: Element, name: string, value: string, namespace: Option<string> = null) {
       if (namespace) {
         element.setAttributeNS(namespace, name, value);
       } else {

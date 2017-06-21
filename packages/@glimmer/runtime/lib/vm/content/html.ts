@@ -14,7 +14,7 @@ export default class DynamicHTMLContent extends DynamicContentBase {
 
     if (value === lastValue) return this;
 
-    if (isSafeString(value) && isSafeString(lastValue) && value.toHTML() === lastValue.toHTML()) {
+    if (isSafeString(value) && value.toHTML() === lastValue.toHTML()) {
       this.lastValue = value;
       return this;
     }
@@ -31,7 +31,7 @@ export class DynamicTrustedHTMLContent extends DynamicContentBase {
   update(env: Environment, value: Opaque): DynamicContent {
     let { lastValue } = this;
 
-    if (typeof value === 'string' && value === lastValue) return this;
+    if (value === lastValue) return this;
     let newValue = normalizeTrustedValue(value);
     if (newValue === lastValue) return this;
 

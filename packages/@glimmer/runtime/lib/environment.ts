@@ -8,10 +8,6 @@ import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { Reference, OpaqueIterable } from '@glimmer/reference';
 import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import { DynamicAttributeFactory, defaultDynamicAttributes } from './vm/attributes/dynamic';
-// import {
-//   defaultManagers,
-//   AttributeManager
-// } from './dom/attribute-managers';
 
 import {
   PartialDefinition
@@ -456,7 +452,7 @@ export abstract class Environment {
     transaction.commit();
   }
 
-  attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace: Option<string>): DynamicAttributeFactory {
+  attributeFor(element: Simple.Element, attr: string, _isTrusting: boolean, _namespace: Option<string> = null): DynamicAttributeFactory {
     return defaultDynamicAttributes(element, attr);
   }
 
