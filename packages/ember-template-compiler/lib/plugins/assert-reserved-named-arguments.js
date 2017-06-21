@@ -1,24 +1,21 @@
 import { assert } from 'ember-debug';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
-export default function AssertReservedNamedArguments(options) {
-  this.syntax = null;
-  this.options = options;
-}
+export default function assertReservedNamedArguments(env) {
+  let { moduleName } = env.meta;
 
-AssertReservedNamedArguments.prototype.transform = function AssertReservedNamedArguments_transform(ast) {
-  let moduleName = this.options.meta.moduleName;
+  return {
+    name: 'assert-reserved-named-arguments',
 
-  this.syntax.traverse(ast, {
-    PathExpression(node) {
-      if (node.original[0] === '@') {
-        assert(assertMessage(moduleName, node));
+    visitors: {
+      PathExpression(node) {
+        if (node.original[0] === '@') {
+          assert(assertMessage(moduleName, node));
+        }
       }
     }
-  });
-
-  return ast;
-};
+  }
+}
 
 function assertMessage(moduleName, node) {
   let path = node.original;

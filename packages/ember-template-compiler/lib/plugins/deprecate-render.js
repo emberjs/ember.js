@@ -1,36 +1,29 @@
 import { deprecate } from 'ember-debug';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
-export default function DeprecateRender(options) {
-  this.syntax = null;
-  this.options = options;
-}
+export default function deprecateRender(env) {
+  let { moduleName } = env.meta;
 
-DeprecateRender.prototype.transform = function DeprecateRender_transform(ast) {
-  let moduleName = this.options.meta.moduleName;
-  let walker = new this.syntax.Walker();
+  return {
+    name: 'deprecate-render',
 
-  walker.visit(ast, node => {
-    if (!validate(node)) { return; }
+    visitors: {
+      MustacheStatement(node) {
+        if (node.path.original !== 'render') { return; }
+        if (node.params.length !== 1) { return; }
 
-    each(node.params, (param) => {
-      if (param.type !== 'StringLiteral') { return; }
+        each(node.params, (param) => {
+          if (param.type !== 'StringLiteral') { return; }
 
-      deprecate(deprecationMessage(moduleName, node), false, {
-        id: 'ember-template-compiler.deprecate-render',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x#toc_code-render-code-helper'
-      });
-    });
-  });
-
-  return ast;
-};
-
-function validate(node) {
-  return (node.type === 'MustacheStatement') &&
-    (node.path.original === 'render') &&
-    (node.params.length === 1);
+          deprecate(deprecationMessage(moduleName, node), false, {
+            id: 'ember-template-compiler.deprecate-render',
+            until: '3.0.0',
+            url: 'https://emberjs.com/deprecations/v2.x#toc_code-render-code-helper'
+          });
+        });
+      }
+    }
+  };
 }
 
 function each(list, callback) {

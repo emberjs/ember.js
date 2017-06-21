@@ -52,50 +52,44 @@
   @private
   @class TransFormDotComponentInvocation
 */
-export default function TransFormDotComponentInvocation() {
-  // set later within Glimmer2 to the syntax package
-  this.syntax = null;
-}
+export default function transformDotComponentInvocation(env) {
+  let { builders: b } = env.syntax;
 
-TransFormDotComponentInvocation.prototype = {
-  _isMulipartPath(path)  {
-    return path.parts.length > 1;
-  },
+  return {
+    name: 'transform-dot-component-invocation',
 
-  _isInlineInvocation(path, params, hash) {
-    if (this._isMulipartPath(path)) {
-      if (params.length > 0 || hash.pairs.length > 0) {
-        return true;
-      }
-    }
-
-    return false;
-  },
-
-  _wrapInComponent(node, builder) {
-    let component = node.path;
-    let componentHelper = builder.path('component');
-    node.path = componentHelper;
-    node.params.unshift(component);
-  },
-
-  transform(ast) {
-    let { traverse, builders: b } = this.syntax;
-
-    traverse(ast, {
+    visitors: {
       MustacheStatement: (node) => {
-        if (this._isInlineInvocation(node.path, node.params, node.hash)) {
-          this._wrapInComponent(node, b);
+        if (isInlineInvocation(node.path, node.params, node.hash)) {
+          wrapInComponent(node, b);
         }
       },
       BlockStatement: (node) => {
-        if (this._isMulipartPath(node.path)) {
-          this._wrapInComponent(node, b)
+        if (isMulipartPath(node.path)) {
+          wrapInComponent(node, b)
         }
       }
-    });
-
-    return ast;
+    }
   }
-};
+}
 
+function isMulipartPath(path)  {
+  return path.parts.length > 1;
+}
+
+function isInlineInvocation(path, params, hash) {
+  if (isMulipartPath(path)) {
+    if (params.length > 0 || hash.pairs.length > 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function wrapInComponent(node, builder) {
+  let component = node.path;
+  let componentHelper = builder.path('component');
+  node.path = componentHelper;
+  node.params.unshift(component);
+}

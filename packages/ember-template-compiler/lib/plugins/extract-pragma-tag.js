@@ -1,26 +1,20 @@
 const PRAGMA_TAG = 'use-component-manager';
 
-// Custom Glimmer AST transform to extract custom component
-// manager id from the template
-export default class ExtractPragmaPlugin {
-  constructor(options) {
-    this.options = options;
-  }
+export default function extractPragmaTag(env) {
+  let { meta } = env;
 
-  transform(ast) {
-    let options = this.options;
+  return {
+    name: 'exract-pragma-tag',
 
-    this.syntax.traverse(ast, {
+    visitors: {
       MustacheStatement: {
         enter(node) {
           if (node.path.type === 'PathExpression' && node.path.original === PRAGMA_TAG) {
-            options.meta.managerId = node.params[0].value;
+            meta.managerId = node.params[0].value;
             return null;
           }
         }
       }
-    });
-
-    return ast;
-  }
+    }
+  };
 }

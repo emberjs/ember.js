@@ -1,31 +1,18 @@
-export default function TransformQuotedBindingsIntoJustBindings() {
-  // set later within HTMLBars to the syntax package
-  this.syntax = null;
-}
+export default function transformQuotedBindingsIntoJustBindings(env) {
 
-/**
-  @private
-  @method transform
-  @param {AST} ast The AST to be transformed.
-*/
-TransformQuotedBindingsIntoJustBindings.prototype.transform = function TransformQuotedBindingsIntoJustBindings_transform(ast) {
-  let walker = new this.syntax.Walker();
+  return {
+    name: 'transform-quoted-bindings-into-just-bindings',
 
-  walker.visit(ast, node => {
-    if (!validate(node)) { return; }
+    visitors: {
+      ElementNode(node) {
+        let styleAttr = getStyleAttr(node);
 
-    let styleAttr = getStyleAttr(node);
+        if (!validStyleAttr(styleAttr)) { return; }
 
-    if (!validStyleAttr(styleAttr)) { return; }
-
-    styleAttr.value = styleAttr.value.parts[0];
-  });
-
-  return ast;
-};
-
-function validate(node) {
-  return node.type === 'ElementNode';
+        styleAttr.value = styleAttr.value.parts[0];
+      }
+    }
+  }
 }
 
 function validStyleAttr(attr) {

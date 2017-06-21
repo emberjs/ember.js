@@ -23,9 +23,35 @@
   @class TransformAttrsToProps
 */
 
-export default function TransformAttrsToProps() {
-  // set later within Glimmer2 to the syntax package
-  this.syntax = null;
+export default function transformAttrsIntoArgs(env) {
+  let { builders: b } = env.syntax;
+
+  let stack = [[]];
+
+  return {
+    name: 'transform-attrs-into-args',
+
+    visitors: {
+      Program: {
+        enter(node) {
+          let parent = stack[stack.length - 1];
+          stack.push(parent.concat(node.blockParams));
+        },
+        exit(node) {
+          stack.pop();
+        }
+      },
+
+      PathExpression(node) {
+        if (isAttrs(node, stack[stack.length - 1])) {
+          let path = b.path(node.original.substr(6));
+          path.original = `@${path.original}`;
+          path.data = true;
+          return path;
+        }
+      }
+    }
+  };
 }
 
 function isAttrs(node, symbols) {
@@ -46,37 +72,3 @@ function isAttrs(node, symbols) {
 
   return false;
 }
-
-/**
-  @private
-  @method transform
-  @param {AST} ast The AST to be transformed.
-*/
-TransformAttrsToProps.prototype.transform = function TransformAttrsToProps_transform(ast) {
-  let { traverse, builders: b } = this.syntax;
-
-  let stack = [[]];
-
-  traverse(ast, {
-    Program: {
-      enter(node) {
-        let parent = stack[stack.length - 1];
-        stack.push(parent.concat(node.blockParams));
-      },
-      exit(node) {
-        stack.pop();
-      }
-    },
-
-    PathExpression(node) {
-      if (isAttrs(node, stack[stack.length - 1])) {
-        let path = b.path(node.original.substr(6));
-        path.original = `@${path.original}`;
-        path.data = true;
-        return path;
-      }
-    }
-  });
-
-  return ast;
-};
