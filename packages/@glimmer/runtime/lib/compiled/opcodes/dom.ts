@@ -1,11 +1,10 @@
 import {
-  isConst as isConstReference,
   Reference,
   ReferenceCache,
   Revision,
   Tag,
   VersionedReference,
-  isConst,
+  isConst
 } from '@glimmer/reference';
 import { Opaque, Option } from '@glimmer/util';
 import { Simple } from '@glimmer/interfaces';
@@ -46,7 +45,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   let element: Simple.Element;
   let nextSibling: Option<Simple.Node>;
 
-  if (isConstReference(elementRef)) {
+  if (isConst(elementRef)) {
     element = elementRef.value();
   } else {
     let cache = new ReferenceCache(elementRef);
@@ -54,7 +53,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
     vm.updateWith(new Assert(cache));
   }
 
-  if (isConstReference(nextSiblingRef)) {
+  if (isConst(nextSiblingRef)) {
     nextSibling = nextSiblingRef.value();
   } else {
     let cache = new ReferenceCache(nextSiblingRef);
@@ -98,11 +97,13 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
     vm.newDestroyable(destructor);
   }
 
-  vm.updateWith(new UpdateModifierOpcode(
-    tag,
-    manager,
-    modifier,
-  ));
+  if (!isConst(args)) {
+    vm.updateWith(new UpdateModifierOpcode(
+      tag,
+      manager,
+      modifier,
+    ));
+  }
 });
 
 export class UpdateModifierOpcode extends UpdatingOpcode {

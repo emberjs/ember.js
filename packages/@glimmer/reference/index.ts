@@ -4,8 +4,7 @@ export {
 } from './lib/reference';
 
 export {
-  ConstReference,
-  isConst
+  ConstReference
 } from './lib/const';
 
 export {
