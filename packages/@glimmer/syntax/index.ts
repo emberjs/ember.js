@@ -1,8 +1,9 @@
 // used by ember-compiler
 export {
   preprocess,
-  TransformASTPlugin,
-  TransformASTPluginFactory,
+  PreprocessOptions,
+  ASTPlugin,
+  ASTPluginEnvironment,
   Syntax
 } from './lib/parser/tokenizer-event-handlers';
 

@@ -6,10 +6,11 @@ import * as AST from "../types/nodes";
 import SyntaxError from '../errors/syntax-error';
 import { Tag } from "../parser";
 import builders from "../builders";
-import traverse from "../traversal/traverse";
+import traverse, { NodeVisitor } from "../traversal/traverse";
 import print from "../generation/print";
 import Walker from "../traversal/walker";
 import * as handlebars from "handlebars";
+import { assign } from '@glimmer/util';
 
 const voidMap: {
   [tagName: string]: boolean
@@ -307,38 +308,43 @@ export const syntax: Syntax = {
 };
 
 /**
- * TransformASTPlugins can make changes to the Glimmer template AST before
- * compilation begins. Plugins implement a `transform()` method that takes a
- * `Program` AST node and should return the modified program.
- */
-export interface TransformASTPlugin {
-  syntax: Syntax;
-  transform(program: AST.Program): AST.Program;
+  ASTPlugins can make changes to the Glimmer template AST before
+  compilation begins.
+*/
+export interface ASTPlugin {
+  (env: ASTPluginEnvironment): ASTPluginResult;
 }
 
-export interface TransformASTPluginFactory {
-  new (options: PreprocessOptions): TransformASTPlugin;
+export interface ASTPluginResult {
+  name: string;
+  visitors: NodeVisitor;
+}
+
+export interface ASTPluginEnvironment {
+  meta?: any;
+  syntax: Syntax;
 }
 
 export interface PreprocessOptions {
   plugins?: {
-    ast?: TransformASTPluginFactory[]
+    ast?: ASTPlugin[];
   };
 }
 
 export function preprocess(html: string, options?: PreprocessOptions): AST.Program {
   let ast = (typeof html === 'object') ? html : handlebars.parse(html);
-  let combined = new TokenizerEventHandlers(html, options).acceptNode(ast);
+  let program = new TokenizerEventHandlers(html, options).acceptNode(ast);
 
   if (options && options.plugins && options.plugins.ast) {
     for (let i = 0, l = options.plugins.ast.length; i < l; i++) {
-      let plugin = new options.plugins.ast[i](options);
+      let transform = options.plugins.ast[i];
+      let env = assign({}, options, { syntax }, { plugins: undefined });
 
-      plugin.syntax = syntax;
+      let pluginResult = transform(env);
 
-      combined = plugin.transform(combined);
+      traverse(program, pluginResult.visitors);
     }
   }
 
-  return combined;
+  return program;
 }
