@@ -455,8 +455,6 @@ class Rehydration extends RenderTest {
       mode: 'serialize'
     });
 
-    // Remove adjacent/empty text nodes
-    this.element.innerHTML = this.element.innerHTML;
     this.takeSnapshot();
   }
 
