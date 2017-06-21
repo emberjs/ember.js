@@ -278,9 +278,9 @@ register(UpdatableTag);
 
 //////////
 
-export interface VersionedReference<T> extends Reference<T>, Tagged {}
+export interface VersionedReference<T = Opaque> extends Reference<T>, Tagged {}
 
-export interface VersionedPathReference<T> extends PathReference<T>, Tagged {
+export interface VersionedPathReference<T = Opaque> extends PathReference<T>, Tagged {
   get(property: string): VersionedPathReference<Opaque>;
 }
 

@@ -3,7 +3,6 @@ import EmberObject, {
 } from "@glimmer/object";
 import { CLASS_META, setProperty as set, UpdatableReference } from '@glimmer/object-reference';
 import {
-  Attrs,
   BasicComponent,
   classes,
   EmberishCurlyComponent,
@@ -18,16 +17,13 @@ import {
   TestModifierManager,
 } from "@glimmer/test-helpers";
 import { assign } from "@glimmer/util";
-import {
-  RenderResult,
-  Template,
-} from "../index";
+import { RenderResult, Template } from '../index';
 import { assert, module as nestedModule } from './support';
 
 export class EmberishRootView extends EmberObject {
   public element: Element;
 
-  protected template: Template<undefined>;
+  protected template: Template;
   protected result: RenderResult;
 
   private parent: Element;
@@ -44,7 +40,7 @@ export class EmberishRootView extends EmberObject {
   appendTo(selector: string) {
     let element = this.parent = document.querySelector(selector)!;
     let self = new UpdatableReference(this);
-    let templateIterator = this.template.render({ self, parentNode: element, dynamicScope: new TestDynamicScope() });
+    let templateIterator = this.template.render({ env: this.env, self, parentNode: element, dynamicScope: new TestDynamicScope() });
 
     let result;
     do {
@@ -1063,23 +1059,12 @@ testComponent('parameterized has-block-params (concatted attr, default) when blo
 module("Components - curlies - dynamic component");
 
 QUnit.test('initially missing, then present, then missing', () => {
-  class FooBar extends BasicComponent {
-    public foo = 'foo';
-    public bar = 'bar';
-    public baz = null;
-
-    constructor(attrs: Attrs) {
-      super(attrs);
-      this.baz = attrs['baz'] || 'baz';
-    }
-  }
-
-  env.registerBasicComponent('foo-bar', FooBar, `<p>{{foo}} {{bar}} {{baz}}</p>`);
+  env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{@arg1}}</p>`);
 
   appendViewFor(
     stripTight`
       <div>
-        {{component something}}
+        {{component something arg1="hello"}}
       </div>`,
     {
       something: undefined
@@ -1091,7 +1076,7 @@ QUnit.test('initially missing, then present, then missing', () => {
   set(view, 'something', 'foo-bar');
   rerender();
 
-  equalsElement(view.element, 'div', {}, '<p>foo bar baz</p>');
+  equalsElement(view.element, 'div', {}, '<p>hello</p>');
 
   set(view, 'something', undefined);
   rerender();
@@ -1100,18 +1085,7 @@ QUnit.test('initially missing, then present, then missing', () => {
 });
 
 QUnit.test('initially present, then missing, then present', () => {
-  class FooBar extends BasicComponent {
-    public foo = 'foo';
-    public bar = 'bar';
-    public baz = null;
-
-    constructor(attrs: Attrs) {
-      super(attrs);
-      this.baz = attrs['baz'] || 'baz';
-    }
-  }
-
-  env.registerBasicComponent('foo-bar', FooBar, `<p>{{foo}} {{bar}} {{baz}}</p>`);
+  env.registerBasicComponent('foo-bar', BasicComponent, `<p>foo bar baz</p>`);
 
   appendViewFor(
     stripTight`
@@ -1527,15 +1501,9 @@ QUnit.test('correct scope - self', () => {
   class FooBar extends BasicComponent {
     public foo = 'foo';
     public bar = 'bar';
-    public baz = null;
-
-    constructor(attrs: Attrs) {
-      super(attrs);
-      this.baz = attrs['baz'] || 'baz';
-    }
   }
 
-  env.registerBasicComponent('foo-bar', FooBar, `<p>{{foo}} {{bar}} {{baz}}</p>`);
+  env.registerBasicComponent('foo-bar', FooBar, `<p>{{foo}} {{bar}} {{@baz}}</p>`);
 
   appendViewFor(
     stripTight`
@@ -1548,7 +1516,7 @@ QUnit.test('correct scope - self', () => {
 
   equalsElement(view.element, 'div', {},
     stripTight`
-        <p>foo bar baz</p>
+        <p>foo bar </p>
         <p>foo bar zomg</p>`
   );
 });
@@ -1573,12 +1541,12 @@ module('Curly Components - positional arguments');
 
 QUnit.test('static named positional parameters', function () {
   class SampleComponent extends EmberishCurlyComponent {
-    static positionalParams = ['name', 'age'];
+    static positionalParams = ['person', 'age'];
   }
 
   SampleComponent[CLASS_META].seal();
 
-  env.registerEmberishCurlyComponent('sample-component', SampleComponent, '{{name}}{{age}}');
+  env.registerEmberishCurlyComponent('sample-component', SampleComponent, '{{person}}{{age}}');
 
   appendViewFor('{{sample-component "Quint" 4}}');
 
@@ -1589,10 +1557,10 @@ QUnit.test('dynamic named positional parameters', function () {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
-    positionalParams: ['name', 'age']
+    positionalParams: ['person', 'age']
   });
 
-  env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{name}}{{age}}');
+  env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{person}}{{age}}');
 
   appendViewFor('{{sample-component myName myAge}}', {
     myName: 'Quint',
@@ -1999,6 +1967,59 @@ QUnit.test('component deopt can handle higher order inline components without ar
   );
 
   assertText('Hello World!');
+});
+
+QUnit.test('component helper can curry arguments', () => {
+  let FooBarComponent = EmberishCurlyComponent.extend();
+
+  FooBarComponent.reopenClass({
+    positionalParams: ["one", "two", "three", "four", "five", "six"]
+  });
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBarComponent as any, stripTight`
+    1. [{{one}}]
+    2. [{{two}}]
+    3. [{{three}}]
+    4. [{{four}}]
+    5. [{{five}}]
+    6. [{{six}}]
+
+    {{yield}}
+
+    a. [{{a}}]
+    b. [{{b}}]
+    c. [{{c}}]
+    d. [{{d}}]
+    e. [{{e}}]
+    f. [{{f}}]`);
+
+  appendViewFor(
+    stripTight`
+      {{#with (component "foo-bar" "outer 1" "outer 2" a="outer a" b="outer b" c="outer c" e="outer e") as |outer|}}
+        {{#with (component outer "inner 1" a="inner a" d="inner d" e="inner e") as |inner|}}
+          {{#component inner "invocation 1" "invocation 2" a="invocation a" b="invocation b"}}---{{/component}}
+        {{/with}}
+      {{/with}}
+    `
+
+  );
+  assertText(stripTight`
+    1. [outer 1]
+    2. [outer 2]
+    3. [inner 1]
+    4. [invocation 1]
+    5. [invocation 2]
+    6. []
+
+    ---
+
+    a. [invocation a]
+    b. [invocation b]
+    c. [outer c]
+    d. [inner d]
+    e. [inner e]
+    f. []
+  `);
 });
 
 module("Emberish Component - ids");
@@ -3010,7 +3031,7 @@ module('late bound layout');
 
 QUnit.test('can bind the layout late', () => {
   class FooBar extends EmberishCurlyComponent {
-    layout = 'Swap - {{yield}}';
+    layout = env.registerTemplate('my-dynamic-layout', 'Swap - {{yield}}');
   }
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, null);
@@ -3030,7 +3051,7 @@ QUnit.test('it does not work on optimized appends', () => {
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
-  let definition = env.getComponentDefinition(['foo-bar'] as any);
+  let definition = env.resolveComponentDefinition('foo-bar', {});
 
   appendViewFor('{{foo}}', { foo: definition });
 
@@ -3054,7 +3075,7 @@ QUnit.test('it works on unoptimized appends (dot paths)', () => {
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
-  let definition = env.getComponentDefinition(['foo-bar'] as any);
+  let definition = env.resolveComponentDefinition('foo-bar', {});
 
   appendViewFor('{{foo.bar}}', { foo: { bar: definition } });
 
@@ -3086,7 +3107,7 @@ QUnit.test('it works on unoptimized appends (this paths)', () => {
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
-  let definition = env.getComponentDefinition(['foo-bar'] as any);
+  let definition = env.resolveComponentDefinition('foo-bar', {});
 
   appendViewFor('{{this.foo}}', { foo: definition });
 
@@ -3118,7 +3139,7 @@ QUnit.test('it works on unoptimized appends when initially not a component (dot 
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
-  let definition = env.getComponentDefinition(['foo-bar'] as any);
+  let definition = env.resolveComponentDefinition('foo-bar', {});
 
   appendViewFor('{{foo.bar}}', { foo: { bar: 'lol' } });
 
@@ -3146,7 +3167,7 @@ QUnit.test('it works on unoptimized appends when initially not a component (this
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
-  let definition = env.getComponentDefinition(['foo-bar'] as any);
+  let definition = env.resolveComponentDefinition('foo-bar', {});
 
   appendViewFor('{{this.foo}}', { foo: 'lol' });
 
