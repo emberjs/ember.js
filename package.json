@@ -41,10 +41,11 @@
     "simple-html-tokenizer": "^0.4.1"
   },
   "devDependencies": {
-    "@glimmer/build": "^0.8.1",
+    "@glimmer/build": "^0.8.2",
     "@types/qunit": "^2.0.31",
     "benchmark": "^1.0.0",
     "broccoli-persistent-filter": "^1.2.13",
+    "broccoli-rollup": "^1.3.0",
     "dag-map": "^2.0.2",
     "ember-cli": "^2.13.2",
     "ember-cli-release": "^1.0.0-beta.1",
