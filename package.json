@@ -56,6 +56,6 @@
     "semver": "^5.3.0",
     "testem": "^1.16.0",
     "tslint": "^4.0.2",
-    "typescript": "^2.2.0"
+    "typescript": "^2.3.4"
   }
 }

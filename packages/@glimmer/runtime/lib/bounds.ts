@@ -1,4 +1,4 @@
-import * as Simple from './dom/interfaces';
+import { Simple } from '@glimmer/interfaces';
 import { Option, Destroyable } from '@glimmer/util';
 
 export interface Bounds {
@@ -10,6 +10,16 @@ export interface Bounds {
 
 export class Cursor {
   constructor(public element: Simple.Element, public nextSibling: Option<Simple.Node>) {}
+}
+
+export function currentNode(cursor: Cursor): Option<Simple.Node> {
+  let { element, nextSibling } = cursor;
+
+  if (nextSibling === null) {
+    return element.lastChild;
+  } else {
+    return nextSibling.previousSibling;
+  }
 }
 
 export default Bounds;
@@ -46,11 +56,11 @@ export class SingleNodeBounds implements Bounds {
   lastNode() { return this.node; }
 }
 
-export function bounds(parent: Simple.Element, first: Simple.Node, last: Simple.Node): Bounds {
+export function bounds(parent: Simple.Element, first: Simple.Node, last: Simple.Node): ConcreteBounds {
   return new ConcreteBounds(parent, first, last);
 }
 
-export function single(parent: Simple.Element, node: Simple.Node): Bounds {
+export function single(parent: Simple.Element, node: Simple.Node): SingleNodeBounds {
   return new SingleNodeBounds(parent, node);
 }
 

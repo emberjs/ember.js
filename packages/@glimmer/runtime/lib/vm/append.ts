@@ -1,6 +1,6 @@
 import { Register } from '../opcodes';
 import { Scope, DynamicScope, Environment, Opcode, Handle, Heap } from '../environment';
-import { ElementStack } from '../builder';
+import { ElementBuilder } from './element-builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect, typePos } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { CompiledDynamicProgram } from '../compiled/blocks';
@@ -193,7 +193,7 @@ export default class VM implements PublicVM {
     env: Environment,
     self: PathReference<Opaque>,
     dynamicScope: DynamicScope,
-    elementStack: ElementStack,
+    elementStack: ElementBuilder,
     program: CompiledDynamicProgram
   ) {
     let scope = Scope.root(self, program.symbolTable.symbols.length);
@@ -207,7 +207,7 @@ export default class VM implements PublicVM {
     public env: Environment,
     scope: Scope,
     dynamicScope: DynamicScope,
-    private elementStack: ElementStack,
+    private elementStack: ElementBuilder,
   ) {
     this.env = env;
     this.heap = env.program.heap;
@@ -331,7 +331,7 @@ export default class VM implements PublicVM {
     return expect(this.updatingOpcodeStack.current, 'expected updating opcode on the updating opcode stack');
   }
 
-  elements(): ElementStack {
+  elements(): ElementBuilder {
     return this.elementStack;
   }
 
@@ -374,7 +374,7 @@ export default class VM implements PublicVM {
   }
 
   newDestroyable(d: Destroyable) {
-    this.elements().newDestroyable(d);
+    this.elements().didAddDestroyable(d);
   }
 
   /// SCOPE HELPERS

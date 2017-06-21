@@ -11,7 +11,14 @@
     "**/node_modules": true,
     "**/dist": true,
     "dist": true,
-    "tmp": true
+    "tmp/**": true
+  },
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "tmp": true,
+    "dist": true
   },
   "files.trimTrailingWhitespace": true,
   "editor.renderWhitespace": "boundary",

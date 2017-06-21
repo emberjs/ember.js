@@ -11,7 +11,7 @@ import {
   domChanges as domChangesNodeMergingFix,
   treeConstruction as treeConstructionNodeMergingFix
 } from '../compat/text-node-merging-fix';
-import * as Simple from './interfaces';
+import { Simple } from '@glimmer/interfaces';
 
 import { Option } from '@glimmer/util';
 
@@ -98,7 +98,7 @@ export class DOMOperations {
     parent.insertBefore(node, reference);
   }
 
-  insertHTMLBefore(_parent: Simple.Element, nextSibling: Simple.Node, html: string): Bounds {
+  insertHTMLBefore(_parent: Simple.Element, nextSibling: Option<Simple.Node>, html: string): Bounds {
     return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
   }
 
@@ -125,7 +125,7 @@ export namespace DOM {
       return this.document.createElementNS(namespace, tag);
     }
 
-    setAttribute(element: Element, name: string, value: string, namespace?: string) {
+    setAttribute(element: Element, name: string, value: string, namespace: Option<string> = null) {
       if (namespace) {
         element.setAttributeNS(namespace, name, value);
       } else {
@@ -244,4 +244,4 @@ helper = domChangesSvgElementFix(doc, helper, SVG_NAMESPACE);
 export default helper;
 export const DOMTreeConstruction = DOM.DOMTreeConstruction;
 export type DOMTreeConstruction = DOM.DOMTreeConstruction;
-export { Namespace as DOMNamespace } from './interfaces';
+export type DOMNamespace = Simple.Namespace;

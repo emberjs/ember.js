@@ -1,4 +1,4 @@
-import { Simple } from '@glimmer/runtime';
+import { Simple } from '@glimmer/interfaces';
 import { Dict } from '@glimmer/util';
 
 interface DocumentConstructor {

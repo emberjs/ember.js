@@ -307,7 +307,7 @@ class MethodDescriptor extends ValueDescriptor {
 class MethodBlueprint extends DataBlueprint {
   descriptor(target: Object, key: string, classMeta: ClassMeta): MethodDescriptor {
     let desc = super.descriptor(target, key, classMeta);
-    return new MethodDescriptor(desc);
+    return new MethodDescriptor(desc as PropertyDescriptor);
   }
 }
 

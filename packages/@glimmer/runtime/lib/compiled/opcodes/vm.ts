@@ -175,6 +175,8 @@ APPEND_OPCODES.add(Op.Test, (vm, { op1: _func }) => {
 export class Assert extends UpdatingOpcode {
   public type = 'assert';
 
+  public tag: Tag;
+
   private cache: ReferenceCache<Opaque>;
 
   constructor(cache: ReferenceCache<Opaque>) {
@@ -214,6 +216,8 @@ export class Assert extends UpdatingOpcode {
 export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
   public type = 'jump-if-not-modified';
 
+  public tag: Tag;
+
   private lastRevision: Revision;
 
   constructor(tag: Tag, private target: LabelOpcode) {
@@ -245,6 +249,8 @@ export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
 
 export class DidModifyOpcode extends UpdatingOpcode {
   public type = 'did-modify';
+
+  public tag: Tag;
 
   constructor(private target: JumpIfNotModifiedOpcode) {
     super();
