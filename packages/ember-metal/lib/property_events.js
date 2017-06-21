@@ -51,10 +51,10 @@ function propertyWillChange(obj, keyName, _meta) {
 
   let watching = meta && meta.peekWatching(keyName) > 0;
   let possibleDesc = obj[keyName];
-  let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
-  if (desc && desc.willChange) {
-    desc.willChange(obj, keyName);
+  if (isDescriptor && possibleDesc.willChange) {
+    possibleDesc.willChange(obj, keyName);
   }
 
   if (watching) {
@@ -90,11 +90,11 @@ function propertyDidChange(obj, keyName, _meta) {
   }
 
   let possibleDesc = obj[keyName];
-  let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
   // shouldn't this mean that we're watching this key?
-  if (desc && desc.didChange) {
-    desc.didChange(obj, keyName);
+  if (isDescriptor && possibleDesc.didChange) {
+    possibleDesc.didChange(obj, keyName);
   }
 
   if (hasMeta && meta.peekWatching(keyName) > 0) {
@@ -157,7 +157,7 @@ function dependentKeysDidChange(obj, depKey, meta) {
 }
 
 function iterDeps(method, obj, depKey, seen, meta) {
-  let possibleDesc, desc;
+  let possibleDesc, isDescriptor;
   let guid = guidFor(obj);
   let current = seen[guid];
 
@@ -175,9 +175,9 @@ function iterDeps(method, obj, depKey, seen, meta) {
     if (!value) { return; }
 
     possibleDesc = obj[key];
-    desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
-    if (desc && desc._suspended === obj) {
+    if (isDescriptor && possibleDesc._suspended === obj) {
       return;
     }
 
