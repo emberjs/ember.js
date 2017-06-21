@@ -1,21 +1,17 @@
-export default function TransformTopLevelComponents() {
-  // set later within HTMLBars to the syntax package
-  this.syntax = null;
+export default function transformTopLevelComponent(env) {
+  return {
+    name: 'transform-top-level-component',
+
+    visitors: {
+      Program(node) {
+        hasSingleComponentNode(node, component => {
+          component.tag = `@${component.tag}`;
+          component.isStatic = true;
+        });
+      }
+    }
+  }
 }
-
-/**
-  @private
-  @method transform
-  @param {AST} The AST to be transformed.
-*/
-TransformTopLevelComponents.prototype.transform = function TransformTopLevelComponents_transform(ast) {
-  hasSingleComponentNode(ast, component => {
-    component.tag = `@${component.tag}`;
-    component.isStatic = true;
-  });
-
-  return ast;
-};
 
 function hasSingleComponentNode(program, componentCallback) {
   let { loc, body } = program;
