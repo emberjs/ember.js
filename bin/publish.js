@@ -61,7 +61,7 @@ function promptForVersion() {
 
 function generateDefaultVersion() {
   let currentVersion = require('../package.json').version;
-  return semver.inc(currentVersion, 'pre', 'alpha');
+  return semver.inc(currentVersion, 'patch');
 }
 
 function validateNewVersion(version) {
