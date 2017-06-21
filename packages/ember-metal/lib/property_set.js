@@ -47,10 +47,8 @@ export function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  let meta = peekMeta(obj);
-  let possibleDesc = obj[keyName];
-
   let desc, currentValue;
+  let possibleDesc = obj[keyName];
   if (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) {
     desc = possibleDesc;
   } else {
@@ -65,6 +63,7 @@ export function set(obj, keyName, value, tolerant) {
   } else if (currentValue === value) { /* no change */
     return value;
   } else {
+    let meta = peekMeta(obj);
     propertyWillChange(obj, keyName, meta);
 
     if (MANDATORY_SETTER) {
