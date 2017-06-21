@@ -88,7 +88,7 @@ export default class AbstractTestCase {
   }
 
   click(selector) {
-    this.runTask(() => this.$(selector).click());
+    return this.$(selector).click();
   }
 
   textValue() {
