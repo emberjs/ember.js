@@ -47,11 +47,6 @@ testBoth('should call unknownProperty on watched values if the value is undefine
     }
   };
 
-  let count = 0;
-  addObserver(obj, 'foo', function() {
-    count++;
-  });
-
   equal(get(obj, 'foo'), 'FOO', 'should return value from unknown');
 });
 

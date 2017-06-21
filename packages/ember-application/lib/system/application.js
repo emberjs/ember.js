@@ -332,7 +332,7 @@ const Application = Engine.extend({
   */
   _globalsMode: true,
 
-  init(options) {
+  init() {
     this._super(...arguments);
 
     if (!this.$) {

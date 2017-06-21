@@ -1,4 +1,4 @@
-import { observer, set, computed } from 'ember-metal';
+import { set } from 'ember-metal';
 import { Controller } from 'ember-runtime';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
@@ -235,12 +235,8 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     this.owner.register('controller:post', Controller.extend());
     this.registerTemplate('post', '<p>{{model.title}}</p>');
 
-    let postDidChange = 0;
     expectDeprecation(() => {
       this.render(`<h1>HI</h1>{{render 'post' post}}`, {
-        postDidChange: observer('post', function() {
-          postDidChange++;
-        }),
         post: {
           title: `It's Simple Made Easy`
         }

@@ -37,9 +37,9 @@ var options = {
   rules: {
     'ember-internal/require-yuidoc-access': 'error',
     'ember-internal/no-const-outside-module-scope': 'error',
+    'no-unused-vars': ["error", { "args": "none" }],
 
     // temporarily disabled
-    'no-unused-vars': 'off',
     'comma-dangle': 'off',
   },
 };
