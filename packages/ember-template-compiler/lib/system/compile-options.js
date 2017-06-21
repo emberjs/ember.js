@@ -25,14 +25,36 @@ export default function compileOptions(_options) {
   return options;
 }
 
-export function registerPlugin(type, PluginClass) {
+function ensurePlugin(FunctionOrPlugin) {
+}
+
+export function registerPlugin(type, _plugin) {
   if (type !== 'ast') {
-    throw new Error(`Attempting to register ${PluginClass} as "${type}" which is not a valid Glimmer plugin type.`);
+    throw new Error(`Attempting to register ${_plugin} as "${type}" which is not a valid Glimmer plugin type.`);
   }
 
-  if (USER_PLUGINS.indexOf(PluginClass) === -1) {
-    USER_PLUGINS = [PluginClass, ...USER_PLUGINS];
+  let plugin;
+  if (_plugin.prototype && _plugin.prototype.transform) {
+    plugin = (env) => {
+      return {
+        name: _plugin.constructor && _plugin.constructor.name,
+
+        visitors: {
+          Program(node) {
+            let plugin = new _plugin(env);
+
+            plugin.syntax = env.syntax;
+
+            return plugin.transform(node);
+          }
+        }
+        };
+    };
+  } else {
+    plugin = _plugin;
   }
+
+  USER_PLUGINS = [plugin, ...USER_PLUGINS];
 }
 
 export function removePlugin(type, PluginClass) {
