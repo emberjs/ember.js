@@ -77,6 +77,14 @@ VALUE.push(() => $REVISION);
 VALIDATE.push((_tag, snapshot) => snapshot === $REVISION);
 export const CURRENT_TAG = new TagWrapper(2, null);
 
+export function isVolatile({ tag }: Tagged): boolean {
+  return tag === VOLATILE_TAG;
+}
+
+export function isConst({ tag }: Tagged): boolean {
+  return tag === CONSTANT_TAG;
+}
+
 ///
 
 let $REVISION = INITIAL;
@@ -104,7 +112,7 @@ export class DirtyableTag extends RevisionTag {
 
 register(DirtyableTag);
 
-export function combineTagged(tagged: ReadonlyArray<{ tag: Tag }>): Tag {
+export function combineTagged(tagged: ReadonlyArray<Tagged>): Tag {
   let optimized: Tag[] = [];
 
   for (let i=0, l=tagged.length; i<l; i++) {
@@ -117,7 +125,7 @@ export function combineTagged(tagged: ReadonlyArray<{ tag: Tag }>): Tag {
   return _combine(optimized);
 }
 
-export function combineSlice(slice: Slice<{ tag: Tag } & LinkedListNode>): Tag {
+export function combineSlice(slice: Slice<Tagged & LinkedListNode>): Tag {
   let optimized: Tag[] = [];
 
   let node = slice.head();

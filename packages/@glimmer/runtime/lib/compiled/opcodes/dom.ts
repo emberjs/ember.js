@@ -1,5 +1,4 @@
 import {
-  CONSTANT_TAG,
   Reference,
   ReferenceCache,
   Revision,
@@ -98,7 +97,7 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
     vm.newDestroyable(destructor);
   }
 
-  if (tag !== CONSTANT_TAG) {
+  if (!isConst(args)) {
     vm.updateWith(new UpdateModifierOpcode(
       tag,
       manager,
