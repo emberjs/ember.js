@@ -132,11 +132,7 @@ function makeCtor() {
               let baseValue = this[keyName];
 
               if (baseValue) {
-                if ('function' === typeof baseValue.concat) {
-                  value = baseValue.concat(value);
-                } else {
-                  value = makeArray(baseValue).concat(value);
-                }
+                value = makeArray(baseValue).concat(value);
               } else {
                 value = makeArray(value);
               }
@@ -866,13 +862,13 @@ let ClassMixinProps = {
   metaForProperty(key) {
     let proto = this.proto();
     let possibleDesc = proto[key];
-    let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
     assert(
       `metaForProperty() could not find a computed property with key '${key}'.`,
-      !!desc && desc instanceof ComputedProperty
+      isDescriptor && possibleDesc instanceof ComputedProperty
     );
-    return desc._meta || {};
+    return possibleDesc._meta || {};
   },
 
   _computedProperties: computed(function() {
@@ -884,7 +880,7 @@ let ClassMixinProps = {
     for (let name in proto) {
       property = proto[name];
 
-      if (property && property.isDescriptor) {
+      if (property !== null && typeof property === 'object' && property.isDescriptor) {
         properties.push({
           name,
           meta: property._meta
