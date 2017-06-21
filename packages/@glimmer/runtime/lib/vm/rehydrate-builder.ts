@@ -300,7 +300,7 @@ function isComment(node: Simple.Node): node is Simple.Comment {
 }
 
 function getOpenBoundsDepth(node: Simple.Comment): Option<number> {
-  let boundsDepth = node.nodeValue.match(/^%\+bounds:(\d+)%$/);
+  let boundsDepth = node.nodeValue!.match(/^%\+bounds:(\d+)%$/);
 
   if (boundsDepth && boundsDepth[1]) {
     return Number(boundsDepth[1] as string);
@@ -310,7 +310,7 @@ function getOpenBoundsDepth(node: Simple.Comment): Option<number> {
 }
 
 function getCloseBoundsDepth(node: Simple.Comment): Option<number> {
-  let boundsDepth = node.nodeValue.match(/^%\-bounds:(\d+)%$/);
+  let boundsDepth = node.nodeValue!.match(/^%\-bounds:(\d+)%$/);
 
   if (boundsDepth && boundsDepth[1]) {
     return Number(boundsDepth[1] as string);

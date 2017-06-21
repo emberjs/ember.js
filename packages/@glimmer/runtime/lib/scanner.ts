@@ -1,6 +1,5 @@
-import { unreachable } from '../../util';
 import { CompilationMeta } from '@glimmer/interfaces';
-import { EMPTY_ARRAY, assert } from '@glimmer/util';
+import { EMPTY_ARRAY, assert, unreachable } from '@glimmer/util';
 import * as WireFormat from '@glimmer/wire-format';
 import Environment from './environment';
 import * as ClientSide from './syntax/client-side';
