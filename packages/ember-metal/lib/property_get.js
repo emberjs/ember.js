@@ -55,24 +55,21 @@ export function get(obj, keyName) {
   assert('Cannot call `Ember.get` with an empty string', keyName !== '');
 
   let value = obj[keyName];
-  let desc = (value !== null && typeof value === 'object' && value.isDescriptor) ? value : undefined;
-  let ret;
+  let isDescriptor = value !== null && typeof value === 'object' && value.isDescriptor;
 
-  if (desc === undefined && isPath(keyName)) {
+  if (!isDescriptor && isPath(keyName)) {
     return _getPath(obj, keyName);
   }
 
-  if (desc) {
-    return desc.get(obj, keyName);
+  if (isDescriptor) {
+    return value.get(obj, keyName);
   } else {
-    ret = value;
-
-    if (ret === undefined &&
+    if (value === undefined &&
         'object' === typeof obj && !(keyName in obj) && 'function' === typeof obj.unknownProperty) {
       return obj.unknownProperty(keyName);
     }
 
-    return ret;
+    return value;
   }
 }
 
@@ -96,7 +93,7 @@ export function _getPath(root, path) {
 }
 
 function isGettable(obj) {
-  if (obj == null) {
+  if (obj === undefined || obj === null) {
     return false;
   }
 
