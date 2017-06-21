@@ -1,13 +1,13 @@
 import { TagWrapper } from '../../reference/lib/validators';
 import { PathReference, Tagged, RevisionTag, DirtyableTag, Tag } from '@glimmer/reference';
-import { Template, RenderResult, Simple } from '@glimmer/runtime';
+import { Template, RenderResult } from '@glimmer/runtime';
 import {
   TestEnvironment,
   TestDynamicScope
 } from './environment';
 import { Opaque } from '@glimmer/util';
 import { assign } from './helpers';
-import { Option } from "@glimmer/interfaces";
+import { Simple, Option } from "@glimmer/interfaces";
 
 export function skip(_target: Object, _name: string, descriptor: PropertyDescriptor) {
   descriptor.value['skip'] = true;
@@ -105,7 +105,7 @@ export class RenderingTest {
 
     this.context = rootObject;
 
-    let templateIterator = this.template.render(root, appendTo, new TestDynamicScope());
+    let templateIterator = this.template.render({ self: root, parentNode: appendTo, dynamicScope: new TestDynamicScope() });
 
     let result;
     do {

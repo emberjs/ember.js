@@ -1,6 +1,6 @@
 import { Scope, DynamicScope, Environment, Handle } from '../environment';
 import { DestroyableBounds, clear, move as moveBounds } from '../bounds';
-import { ElementStack, Tracker, UpdatableTracker } from '../builder';
+import { NewElementBuilder, Tracker, UpdatableTracker } from './element-builder';
 import { Option, Opaque, Stack, LinkedList, Dict, dict, expect } from '@glimmer/util';
 import {
   PathReference,
@@ -15,12 +15,13 @@ import {
   TagWrapper,
   combineSlice,
   CONSTANT_TAG,
-  INITIAL
+  INITIAL,
+  Tag
 } from '@glimmer/reference';
 import { OpcodeJSON, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { Constants } from '../environment/constants';
 import { DOMChanges } from '../dom/helper';
-import * as Simple from '../dom/interfaces';
+import { Simple } from '@glimmer/interfaces';
 
 import VM, { CapturedStack, EvaluationStack } from './append';
 
@@ -157,6 +158,8 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
 export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   public type = "try";
 
+  public tag: Tag;
+
   private _tag: TagWrapper<UpdatableTag>;
 
   protected bounds: UpdatableTracker;
@@ -179,7 +182,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
     children.clear();
 
-    let elementStack = ElementStack.resume(
+    let elementStack = NewElementBuilder.resume(
       env,
       bounds,
       bounds.reset(env)
@@ -292,6 +295,7 @@ export class ListBlockOpcode extends BlockOpcode {
   public type = "list-block";
   public map = dict<BlockOpcode>();
   public artifacts: IterationArtifacts;
+  public tag: Tag;
 
   private lastIterated: Revision = INITIAL;
   private _tag: TagWrapper<UpdatableTag>;
@@ -336,7 +340,7 @@ export class ListBlockOpcode extends BlockOpcode {
   vmForInsertion(nextSibling: Option<Simple.Node>): VM {
     let { env, scope, dynamicScope } = this;
 
-    let elementStack = ElementStack.forInitialRender(
+    let elementStack = NewElementBuilder.forInitialRender(
       this.env,
       this.bounds.parentElement(),
       nextSibling
