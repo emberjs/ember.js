@@ -94,21 +94,16 @@ if (MANDATORY_SETTER) {
 }
 
 function setPath(root, path, value, tolerant) {
-  // get the last part of the path
-  let keyName = path.slice(path.lastIndexOf('.') + 1);
-
-  // get the first part of the part
-  path = (path === keyName) ? keyName : path.slice(0, path.length - (keyName.length + 1));
-
-  // unless the path is this, look up the first part to
-  // get the root
-  if (path !== 'this') {
-    root = getPath(root, path);
-  }
+  let parts = path.split('.');
+  let keyName = parts.pop();
 
   if (!keyName || keyName.length === 0) {
     throw new EmberError('Property set failed: You passed an empty path');
   }
+
+  path = parts.length > 0 ? parts.join('.') : keyName;
+
+  root = getPath(root, path);
 
   if (!root) {
     if (tolerant) {
