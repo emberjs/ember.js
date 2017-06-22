@@ -140,7 +140,8 @@ moduleFor('The {{link-to}} helper: invoking with query params', class extends Ap
       let theLink = this.$('#the-link');
       assert.equal(theLink.attr('href'), '/about?baz=lol');
 
-      this.click('#the-link');
+      this.runTask(() => this.click('#the-link'));
+
       let aboutController = this.getController('about');
 
       assert.deepEqual(aboutController.getProperties('baz', 'bat'),
@@ -241,13 +242,13 @@ moduleFor('The {{link-to}} helper: invoking with query params', class extends Ap
 
       assert.equal(router.currentRouteName, 'cars.create');
 
-      this.click('#close-link');
+      this.runTask(() => this.click('#close-link'));
 
       assert.equal(router.currentRouteName, 'cars.index');
       assert.equal(router.get('url'), '/cars');
       assert.equal(carsController.get('page'), 1, 'The page query-param is 1');
 
-      this.click('#page2-link');
+      this.runTask(() => this.click('#page2-link'));
 
       assert.equal(router.currentRouteName, 'cars.index', 'The active route is still cars');
       assert.equal(router.get('url'), '/cars?page=2', 'The url has been updated');
@@ -474,7 +475,7 @@ moduleFor('The {{link-to}} helper: invoking with query params', class extends Ap
       this.shouldBeActive(assert, '#app-link');
       this.shouldBeActive(assert, '#parent-link');
 
-      this.click('#app-link');
+      this.runTask(() => this.click('#app-link'));
 
       assert.equal(router.get('location.path'), '/parent');
     });
