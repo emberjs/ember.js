@@ -221,9 +221,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     this._setupRouter(location);
 
-    location.onUpdateURL(url => {
-      this.handleURL(url);
-    });
+    location.onUpdateURL(this.handleURL);
 
     return true;
   },
