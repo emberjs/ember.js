@@ -70,6 +70,7 @@ import {
 import GlimmerObject from "@glimmer/object";
 
 import {
+  CONSTANT_TAG,
   VOLATILE_TAG,
   DirtyableTag,
   Tag,
@@ -80,8 +81,9 @@ import {
   OpaqueIterable,
   AbstractIterable,
   IterationItem,
-  isConst,
-  VersionedPathReference
+  VersionedPathReference,
+  combine,
+  isConst
 } from "@glimmer/reference";
 
 import {
@@ -334,6 +336,10 @@ class BasicComponentManager implements ComponentManager<BasicStateBucket> {
     return new UpdatableReference(component);
   }
 
+  getTag({ args: { tag } }: BasicStateBucket): Tag {
+    return tag;
+  }
+
   didCreateElement({ component }: BasicStateBucket, element: Element): void {
     component.element = element;
   }
@@ -343,10 +349,6 @@ class BasicComponentManager implements ComponentManager<BasicStateBucket> {
   }
 
   didCreate(): void { }
-
-  getTag(): null {
-    return null;
-  }
 
   update({ component, args } : BasicStateBucket): void {
     component.attrs = args.value();
@@ -403,6 +405,10 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return { args, component };
   }
 
+  getTag({ args: { tag }, component: { dirtinessTag } }: EmberishGlimmerStateBucket): Tag {
+    return combine([tag, dirtinessTag]);
+  }
+
   layoutFor(definition: EmberishGlimmerComponentDefinition, _component: EmberishGlimmerStateBucket, env: TestEnvironment): CompiledDynamicProgram {
     if (env.compiledLayouts[definition.name]) {
       return env.compiledLayouts[definition.name];
@@ -425,10 +431,6 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
   didCreate({ component }: EmberishGlimmerStateBucket): void {
     component.didInsertElement();
     component.didRender();
-  }
-
-  getTag({ component }: EmberishGlimmerStateBucket): Tag {
-    return component.dirtinessTag;
   }
 
   update({ args, component }: EmberishGlimmerStateBucket): void {
@@ -507,6 +509,8 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     let merged = assign({}, attrs, { attrs }, { args }, { targetObject: self }, { HAS_BLOCK: hasDefaultBlock });
     let component = klass.create(merged);
 
+    component.args = args;
+
     let dyn: Option<string[]> = definition.ComponentClass ? definition.ComponentClass['fromDynamicScope'] : null;
 
     if (dyn) {
@@ -522,6 +526,10 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     component.willRender();
 
     return component;
+  }
+
+  getTag({ args: { tag }, dirtinessTag }: EmberishCurlyComponent): Tag {
+    return combine([tag, dirtinessTag]);
   }
 
   layoutFor(definition: EmberishCurlyComponentDefinition, component: EmberishCurlyComponent, env: TestEnvironment): CompiledDynamicProgram {
@@ -570,10 +578,6 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
   didCreate(component: EmberishCurlyComponent): void {
     component.didInsertElement();
     component.didRender();
-  }
-
-  getTag(component: EmberishCurlyComponent): Tag {
-    return component.dirtinessTag;
   }
 
   update(component: EmberishCurlyComponent): void {
@@ -665,6 +669,10 @@ class HelperReference implements PathReference<Opaque> {
 class InertModifierManager implements ModifierManager<Opaque> {
   create() { }
 
+  getTag(): Tag {
+    return CONSTANT_TAG;
+  }
+
   install() { }
 
   update() { }
@@ -689,6 +697,10 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
 
   create(element: Element, args: Arguments, _dynamicScope: DynamicScope, dom: IDOMChanges): TestModifier {
     return new TestModifier(element, args.capture(), dom);
+  }
+
+  getTag({ args: { tag } }: TestModifier): Tag {
+    return tag;
   }
 
   install({ element, args, dom }: TestModifier) {
