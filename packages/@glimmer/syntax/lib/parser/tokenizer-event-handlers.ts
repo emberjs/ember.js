@@ -311,13 +311,13 @@ export const syntax: Syntax = {
   ASTPlugins can make changes to the Glimmer template AST before
   compilation begins.
 */
-export interface ASTPlugin {
-  (env: ASTPluginEnvironment): ASTPluginResult;
+export interface ASTPluginBuilder {
+  (env: ASTPluginEnvironment): ASTPlugin;
 }
 
-export interface ASTPluginResult {
+export interface ASTPlugin {
   name: string;
-  visitors: NodeVisitor;
+  visitor: NodeVisitor;
 }
 
 export interface ASTPluginEnvironment {
@@ -327,7 +327,7 @@ export interface ASTPluginEnvironment {
 
 export interface PreprocessOptions {
   plugins?: {
-    ast?: ASTPlugin[];
+    ast?: ASTPluginBuilder[];
   };
 }
 
@@ -342,7 +342,7 @@ export function preprocess(html: string, options?: PreprocessOptions): AST.Progr
 
       let pluginResult = transform(env);
 
-      traverse(program, pluginResult.visitors);
+      traverse(program, pluginResult.visitor);
     }
   }
 
