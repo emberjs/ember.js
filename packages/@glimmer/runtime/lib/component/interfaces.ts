@@ -39,6 +39,10 @@ export interface ComponentManager<T extends Component> {
   // it should use in the layout.
   getSelf(component: T): VersionedPathReference<Opaque>;
 
+  // Convert the opaque component into a `RevisionTag` that determins when
+  // the component's update hooks need to be called (if at all).
+  getTag(component: T): Tag;
+
   // The `didCreateElement` hook is run for non-tagless components after the
   // element as been created, but before it has been appended ("flushed") to
   // the DOM. This hook allows the manager to save off the element, as well as
@@ -58,15 +62,8 @@ export interface ComponentManager<T extends Component> {
   // the `didCreate` callbacks.
   didCreate(component: T): void;
 
-  // Convert the opaque component into a `RevisionTag` that determins when
-  // the component's update hooks need to be called, in addition to any
-  // outside changes captured in the input arguments. If it returns null,
-  // the update hooks will only be called when one or more of the input
-  // arguments has changed.
-  getTag(component: T): Option<Tag>;
-
-  // When the input arguments have changed, and top-down revalidation has
-  // begun, the manager's `update` hook is called.
+  // When the component's tag has invalidated, the manager's `update` hook is
+  // called.
   update(component: T, dynamicScope: DynamicScope): void;
 
   // This hook is run after the entire layout has been updated.

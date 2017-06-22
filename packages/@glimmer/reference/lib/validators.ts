@@ -81,7 +81,15 @@ export function isVolatile({ tag }: Tagged): boolean {
   return tag === VOLATILE_TAG;
 }
 
+export function isVolatileTag(tag: Tag): boolean {
+  return tag === VOLATILE_TAG;
+}
+
 export function isConst({ tag }: Tagged): boolean {
+  return tag === CONSTANT_TAG;
+}
+
+export function isConstTag(tag: Tag): boolean {
   return tag === CONSTANT_TAG;
 }
 

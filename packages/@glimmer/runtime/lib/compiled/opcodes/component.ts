@@ -2,14 +2,14 @@ import { normalizeStringValue } from '../../dom/normalize';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { Opaque, Option } from '@glimmer/interfaces';
 import {
-  combine,
   combineTagged,
   CONSTANT_TAG,
-  isConst,
   ReferenceCache,
   Tag,
   VersionedReference,
   VersionedPathReference,
+  isConst,
+  isConstTag
 } from '@glimmer/reference';
 import Bounds from '../../bounds';
 import { Component, ComponentDefinition, ComponentManager } from '../../component/interfaces';
@@ -109,7 +109,11 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let component = manager.create(vm.env, definition, args, dynamicScope, vm.getSelf(), !!hasDefaultBlock);
   (state as ComponentState<typeof component>).component = component;
 
-  vm.updateWith(new UpdateComponentOpcode(args.tag, definition.name, component, manager, dynamicScope));
+  let tag = manager.getTag(component);
+
+  if (!isConstTag(tag)) {
+    vm.updateWith(new UpdateComponentOpcode(tag, definition.name, component, manager, dynamicScope));
+  }
 });
 
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
@@ -229,24 +233,14 @@ APPEND_OPCODES.add(Op.CommitComponentTransaction, vm => vm.commitCacheGroup());
 export class UpdateComponentOpcode extends UpdatingOpcode {
   public type = 'update-component';
 
-  public tag: Tag;
-
   constructor(
-    tag: Tag,
+    public tag: Tag,
     private name: string,
     private component: Component,
     private manager: ComponentManager<Component>,
     private dynamicScope: DynamicScope,
   ) {
     super();
-
-    let componentTag = manager.getTag(component);
-
-    if (componentTag) {
-      this.tag = combine([tag, componentTag]);
-    } else {
-      this.tag = tag;
-    }
   }
 
   evaluate(_vm: UpdatingVM) {
