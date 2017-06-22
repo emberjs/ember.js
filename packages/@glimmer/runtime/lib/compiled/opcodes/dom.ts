@@ -4,7 +4,8 @@ import {
   Revision,
   Tag,
   VersionedReference,
-  isConst
+  isConst,
+  isConstTag
 } from '@glimmer/reference';
 import { Opaque, Option } from '@glimmer/util';
 import { Simple } from '@glimmer/interfaces';
@@ -83,7 +84,6 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
   let manager = vm.constants.getOther<ModifierManager<Opaque>>(_manager);
   let stack = vm.stack;
   let args = stack.pop<Arguments>();
-  let tag = args.tag;
   let { constructing: element, updateOperations } = vm.elements();
   let dynamicScope = vm.dynamicScope();
   let modifier = manager.create(element as Simple.FIX_REIFICATION<Element>, args, dynamicScope, updateOperations);
@@ -97,11 +97,13 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: _manager }) => {
     vm.newDestroyable(destructor);
   }
 
-  if (!isConst(args)) {
+  let tag = manager.getTag(modifier);
+
+  if (!isConstTag(tag)) {
     vm.updateWith(new UpdateModifierOpcode(
       tag,
       manager,
-      modifier,
+      modifier
     ));
   }
 });
