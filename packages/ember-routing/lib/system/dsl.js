@@ -68,7 +68,7 @@ class DSL {
 
     if (url === '' || url === '/' || parts[parts.length - 1] === 'index') { this.explicitIndex = true; }
 
-    this.matches.push([url, name, callback]);
+    this.matches.push(url, name, callback);
   }
 
   resource(name, options = {}, callback) {
@@ -90,9 +90,8 @@ class DSL {
     }
 
     return match => {
-      for (let i = 0; i < dslMatches.length; i++) {
-        let dslMatch = dslMatches[i];
-        match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
+      for (let i = 0; i < dslMatches.length; i += 3) {
+        match(dslMatches[i]).to(dslMatches[i + 1], dslMatches[i + 2]);
       }
     };
   }
@@ -136,7 +135,6 @@ class DSL {
       createRoute(childDSL, 'loading');
       createRoute(childDSL, 'error', { path: dummyErrorRoute });
 
-
       engineRouteMap.class.call(childDSL);
 
       callback = childDSL.generate();
@@ -174,7 +172,7 @@ class DSL {
 export default DSL;
 
 function canNest(dsl) {
-  return dsl.parent && dsl.parent !== 'application';
+  return dsl.parent !== 'application';
 }
 
 function getFullName(dsl, name, resetNamespace) {
