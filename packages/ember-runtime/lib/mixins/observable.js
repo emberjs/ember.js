@@ -371,10 +371,12 @@ export default Mixin.create({
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke
+    @return {Ember.Observable}
     @public
   */
   addObserver(key, target, method) {
     addObserver(this, key, target, method);
+    return this;
   },
 
   /**
@@ -386,10 +388,12 @@ export default Mixin.create({
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke
+    @return {Ember.Observable}
     @public
   */
   removeObserver(key, target, method) {
     removeObserver(this, key, target, method);
+    return this;
   },
 
   /**
