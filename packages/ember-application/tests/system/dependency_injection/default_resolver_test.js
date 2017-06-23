@@ -1,6 +1,10 @@
 /* globals EmberDev */
+import {
+  moduleFor,
+  DefaultResolverApplicationTestCase
+} from 'internal-test-helpers';
+
 import { context } from 'ember-environment';
-import { run } from 'ember-metal';
 import {
   Controller,
   Service,
@@ -8,280 +12,340 @@ import {
   Namespace
 } from 'ember-runtime';
 import { Route } from 'ember-routing';
-import Application from '../../../system/application';
 import {
   Component,
-  setTemplates,
-  setTemplate,
   Helper,
   helper as makeHelper,
 } from 'ember-glimmer';
-import { compile } from 'ember-template-compiler';
 import { getDebugFunction, setDebugFunction } from 'ember-debug';
 
-let registry, locator, application, originalLookup, originalInfo;
+moduleFor('Ember.Application Dependency Injection - Integration - default resolver', class extends DefaultResolverApplicationTestCase {
 
-QUnit.module('Ember.Application Dependency Injection - default resolver', {
-  setup() {
-    originalLookup = context.lookup;
-    application = run(Application, 'create');
+  beforeEach() {
+    this.runTask(() => this.createApplication());
+    return this.visit('/');
+  }
 
-    registry = application.__registry__;
-    locator = application.__container__;
-    originalInfo = getDebugFunction('info');
-  },
+  get privateRegistry() {
+    return this.application.__registry__;
+  }
+
+  /*
+   * This first batch of tests are integration tests against the public
+   * applicationInstance API.
+   */
+
+  [`@test the default resolver looks up templates in Ember.TEMPLATES`](assert) {
+    let fooTemplate = this.addTemplate('foo', `foo template`);
+    let fooBarTemplate = this.addTemplate('fooBar', `fooBar template`);
+    let fooBarBazTemplate = this.addTemplate('fooBar/baz', `fooBar/baz template`);
+
+    assert.equal(
+      this.applicationInstance.factoryFor('template:foo').class, fooTemplate,
+      'resolves template:foo'
+    );
+    assert.equal(
+      this.applicationInstance.factoryFor('template:fooBar').class, fooBarTemplate,
+      'resolves template:foo_bar'
+    );
+    assert.equal(
+      this.applicationInstance.factoryFor('template:fooBar.baz').class, fooBarBazTemplate,
+      'resolves template:foo_bar.baz'
+    );
+  }
+
+  [`@test the default resolver looks up basic name as no prefix`](assert) {
+    let instance = this.applicationInstance.lookup('controller:basic');
+    assert.ok(
+      Controller.detect(instance),
+      'locator looks up correct controller'
+    );
+  }
+
+  [`@test the default resolver looks up arbitrary types on the namespace`](assert) {
+    let Class = this.application.FooManager = EmberObject.extend();
+    let resolvedClass = this.application.resolveRegistration('manager:foo');
+    assert.equal(
+      Class, resolvedClass,
+      'looks up FooManager on application'
+    );
+  }
+
+  [`@test the default resolver resolves models on the namespace`](assert) {
+    let Class = this.application.Post = EmberObject.extend();
+    let factoryClass = this.applicationInstance.factoryFor('model:post').class;
+    assert.equal(
+      Class, factoryClass,
+      'looks up Post model on application'
+    );
+  }
+
+  [`@test the default resolver resolves *:main on the namespace`](assert) {
+    let Class = this.application.FooBar = EmberObject.extend();
+    let factoryClass = this.applicationInstance.factoryFor('foo-bar:main').class;
+    assert.equal(
+      Class, factoryClass,
+      'looks up FooBar type without name on application'
+    );
+  }
+
+  [`@test the default resolver resolves container-registered helpers`](assert) {
+    let shorthandHelper = makeHelper(() => {});
+    let helper = Helper.extend();
+
+    this.application.register('helper:shorthand', shorthandHelper);
+    this.application.register('helper:complete', helper);
+
+    let lookedUpShorthandHelper = this.applicationInstance.factoryFor('helper:shorthand').class;
+
+    assert.ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
+
+    let lookedUpHelper = this.applicationInstance.factoryFor('helper:complete').class;
+
+    assert.ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
+    assert.ok(helper.detect(lookedUpHelper), 'looked up complete helper');
+  }
+
+  [`@test the default resolver resolves container-registered helpers via lookupFor`](assert) {
+    let shorthandHelper = makeHelper(() => {});
+    let helper = Helper.extend();
+
+    this.application.register('helper:shorthand', shorthandHelper);
+    this.application.register('helper:complete', helper);
+
+    let lookedUpShorthandHelper = this.applicationInstance.factoryFor('helper:shorthand').class;
+
+    assert.ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
+
+    let lookedUpHelper = this.applicationInstance.factoryFor('helper:complete').class;
+
+    assert.ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
+    assert.ok(helper.detect(lookedUpHelper), 'looked up complete helper');
+  }
+
+  [`@test the default resolver resolves helpers on the namespace`](assert) {
+    let ShorthandHelper = makeHelper(() =>  {});
+    let CompleteHelper = Helper.extend();
+
+    this.application.ShorthandHelper = ShorthandHelper;
+    this.application.CompleteHelper = CompleteHelper;
+
+    let resolvedShorthand = this.application.resolveRegistration('helper:shorthand');
+    let resolvedComplete = this.application.resolveRegistration('helper:complete');
+
+    assert.equal(resolvedShorthand, ShorthandHelper, 'resolve fetches the shorthand helper factory');
+    assert.equal(resolvedComplete, CompleteHelper, 'resolve fetches the complete helper factory');
+  }
+
+  [`@test the default resolver resolves to the same instance, no matter the notation `](assert) {
+    this.application.NestedPostController = Controller.extend({});
+
+    assert.equal(
+      this.applicationInstance.lookup('controller:nested-post'),
+      this.applicationInstance.lookup('controller:nested_post'),
+      'looks up NestedPost controller on application'
+    );
+  }
+
+  [`@test the default resolver throws an error if the fullName to resolve is invalid`](assert) {
+    assert.throws(() => { this.applicationInstance.resolveRegistration(undefined);}, TypeError, /Invalid fullName/);
+    assert.throws(() => { this.applicationInstance.resolveRegistration(null);     }, TypeError, /Invalid fullName/);
+    assert.throws(() => { this.applicationInstance.resolveRegistration('');       }, TypeError, /Invalid fullName/);
+    assert.throws(() => { this.applicationInstance.resolveRegistration('');       }, TypeError, /Invalid fullName/);
+    assert.throws(() => { this.applicationInstance.resolveRegistration(':');      }, TypeError, /Invalid fullName/);
+    assert.throws(() => { this.applicationInstance.resolveRegistration('model');  }, TypeError, /Invalid fullName/);
+    assert.throws(() => { this.applicationInstance.resolveRegistration('model:'); }, TypeError, /Invalid fullName/);
+    assert.throws(() => { this.applicationInstance.resolveRegistration(':type');  }, TypeError, /Invalid fullName/);
+  }
+
+  /*
+   * The following are integration tests against the private registry API.
+   */
+
+  [`@test lookup description`](assert) {
+    this.application.toString = () => 'App';
+
+    assert.equal(
+      this.privateRegistry.describe('controller:foo'), 'App.FooController',
+      'Type gets appended at the end'
+    );
+    assert.equal(
+      this.privateRegistry.describe('controller:foo.bar'), 'App.FooBarController',
+      'dots are removed'
+    );
+    assert.equal(
+      this.privateRegistry.describe('model:foo'), 'App.Foo',
+      'models don\'t get appended at the end'
+    );
+  }
+
+  [`@test assertion for routes without isRouteFactory property`](assert) {
+    this.application.FooRoute = Component.extend();
+
+    expectAssertion(() => {
+      this.privateRegistry.resolve(`route:foo`)
+    }, /to resolve to an Ember.Route/, 'Should assert');
+  }
+
+  [`@test no assertion for routes that extend from Ember.Route`](assert) {
+    assert.expect(0);
+    this.application.FooRoute = Route.extend();
+    this.privateRegistry.resolve(`route:foo`);
+  }
+
+  [`@test deprecation warning for service factories without isServiceFactory property`](assert) {
+    expectAssertion(() =>{
+      this.application.FooService = EmberObject.extend();
+      this.privateRegistry.resolve('service:foo');
+    }, /Expected service:foo to resolve to an Ember.Service but instead it was \.FooService\./);
+  }
+
+  [`@test no deprecation warning for service factories that extend from Ember.Service`](assert) {
+    assert.expect(0);
+    this.application.FooService = Service.extend();
+    this.privateRegistry.resolve('service:foo');
+  }
+
+  [`@test deprecation warning for component factories without isComponentFactory property`](assert) {
+    expectAssertion(() => {
+      this.application.FooComponent = EmberObject.extend();
+      this.privateRegistry.resolve('component:foo');
+    }, /Expected component:foo to resolve to an Ember\.Component but instead it was \.FooComponent\./);
+  }
+
+  [`@test no deprecation warning for component factories that extend from Ember.Component`](assert) {
+    expectNoDeprecation();
+    this.application.FooView = Component.extend();
+    this.privateRegistry.resolve('component:foo');
+  }
+
+  [`@test knownForType returns each item for a given type found`](assert) {
+    this.application.FooBarHelper = 'foo';
+    this.application.BazQuxHelper = 'bar';
+
+    let found = this.privateRegistry.resolver.knownForType('helper');
+
+    assert.deepEqual(found, {
+      'helper:foo-bar': true,
+      'helper:baz-qux': true
+    });
+  }
+
+  [`@test knownForType is not required to be present on the resolver`](assert) {
+    delete this.privateRegistry.resolver.knownForType;
+
+    this.privateRegistry.resolver.knownForType('helper', () => { });
+
+    assert.ok(true, 'does not error');
+  }
+
+});
+
+moduleFor('Ember.Application Dependency Injection - Integration - default resolver w/ other namespace', class extends DefaultResolverApplicationTestCase {
+
+  beforeEach() {
+    this.UserInterface = context.lookup.UserInterface = Namespace.create();
+    this.runTask(() => this.createApplication());
+    return this.visit('/');
+  }
 
   teardown() {
-    setTemplates({});
-    context.lookup = originalLookup;
-    run(application, 'destroy');
     let UserInterfaceNamespace = Namespace.NAMESPACES_BY_ID['UserInterface'];
-    if (UserInterfaceNamespace) { run(UserInterfaceNamespace, 'destroy'); }
+    if (UserInterfaceNamespace) {
+      this.runTask(() => {
+        UserInterfaceNamespace.destroy();
+      });
+    }
+    super.teardown();
+  }
 
-    setDebugFunction('info', originalInfo);
+  [`@test the default resolver can look things up in other namespaces`](assert) {
+    this.UserInterface.NavigationController = Controller.extend();
+
+    let nav = this.applicationInstance.lookup('controller:userInterface/navigation');
+
+    assert.ok(
+      nav instanceof this.UserInterface.NavigationController,
+      'the result should be an instance of the specified class'
+    );
   }
 });
 
-QUnit.test('the default resolver can look things up in other namespaces', function() {
-  let UserInterface = context.lookup.UserInterface = Namespace.create();
-  UserInterface.NavigationController = Controller.extend();
+moduleFor('Ember.Application Dependency Injection - Integration - default resolver', class extends DefaultResolverApplicationTestCase {
 
-  let nav = locator.lookup('controller:userInterface/navigation');
-
-  ok(nav instanceof UserInterface.NavigationController, 'the result should be an instance of the specified class');
-});
-
-QUnit.test('the default resolver looks up templates in Ember.TEMPLATES', function() {
-  let fooTemplate = compile('foo template');
-  let fooBarTemplate = compile('fooBar template');
-  let fooBarBazTemplate = compile('fooBar/baz template');
-
-  setTemplate('foo', fooTemplate);
-  setTemplate('fooBar', fooBarTemplate);
-  setTemplate('fooBar/baz', fooBarBazTemplate);
-
-  equal(locator.factoryFor('template:foo').class, fooTemplate, 'resolves template:foo');
-  equal(locator.factoryFor('template:fooBar').class, fooBarTemplate, 'resolves template:foo_bar');
-  equal(locator.factoryFor('template:fooBar.baz').class, fooBarBazTemplate, 'resolves template:foo_bar.baz');
-});
-
-QUnit.test('the default resolver looks up basic name as no prefix', function() {
-  ok(Controller.detect(locator.lookup('controller:basic')), 'locator looks up correct controller');
-});
-
-function detectEqual(first, second, message) {
-  ok(first.detect(second), message);
-}
-
-QUnit.test('the default resolver looks up arbitrary types on the namespace', function() {
-  application.FooManager = EmberObject.extend({});
-
-  detectEqual(application.FooManager, registry.resolve('manager:foo'), 'looks up FooManager on application');
-});
-
-QUnit.test('the default resolver resolves models on the namespace', function() {
-  application.Post = EmberObject.extend({});
-
-  detectEqual(application.Post, locator.factoryFor('model:post').class, 'looks up Post model on application');
-});
-
-QUnit.test('the default resolver resolves *:main on the namespace', function() {
-  application.FooBar = EmberObject.extend({});
-
-  detectEqual(application.FooBar, locator.factoryFor('foo-bar:main').class, 'looks up FooBar type without name on application');
-});
-
-QUnit.test('the default resolver resolves container-registered helpers', function() {
-  let shorthandHelper = makeHelper(() => {});
-  let helper = Helper.extend();
-
-  application.register('helper:shorthand', shorthandHelper);
-  application.register('helper:complete', helper);
-
-  let lookedUpShorthandHelper = locator.factoryFor('helper:shorthand').class;
-
-  ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
-
-  let lookedUpHelper = locator.factoryFor('helper:complete').class;
-
-  ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
-  ok(helper.detect(lookedUpHelper), 'looked up complete helper');
-});
-
-
-QUnit.test('the default resolver resolves container-registered helpers via lookupFor', function() {
-  let shorthandHelper = makeHelper(() => {});
-  let helper = Helper.extend();
-
-  application.register('helper:shorthand', shorthandHelper);
-  application.register('helper:complete', helper);
-
-  let lookedUpShorthandHelper = locator.factoryFor('helper:shorthand').class;
-
-  ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
-
-  let lookedUpHelper = locator.factoryFor('helper:complete').class;
-
-  ok(lookedUpHelper.isHelperFactory, 'complete helper is factory');
-  ok(helper.detect(lookedUpHelper), 'looked up complete helper');
-});
-
-QUnit.test('the default resolver resolves helpers on the namespace', function() {
-  let ShorthandHelper = makeHelper(() =>  {});
-  let CompleteHelper = Helper.extend();
-  let LegacyHTMLBarsBoundHelper;
-
-  application.ShorthandHelper = ShorthandHelper;
-  application.CompleteHelper = CompleteHelper;
-
-  let resolvedShorthand = registry.resolve('helper:shorthand');
-  let resolvedComplete = registry.resolve('helper:complete');
-
-  equal(resolvedShorthand, ShorthandHelper, 'resolve fetches the shorthand helper factory');
-  equal(resolvedComplete, CompleteHelper, 'resolve fetches the complete helper factory');
-});
-
-QUnit.test('the default resolver resolves to the same instance, no matter the notation ', function() {
-  application.NestedPostController = Controller.extend({});
-
-  equal(locator.lookup('controller:nested-post'), locator.lookup('controller:nested_post'), 'looks up NestedPost controller on application');
-});
-
-QUnit.test('the default resolver throws an error if the fullName to resolve is invalid', function() {
-  throws(() => { registry.resolve(undefined);}, TypeError, /Invalid fullName/);
-  throws(() => { registry.resolve(null);     }, TypeError, /Invalid fullName/);
-  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/);
-  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/);
-  throws(() => { registry.resolve(':');      }, TypeError, /Invalid fullName/);
-  throws(() => { registry.resolve('model');  }, TypeError, /Invalid fullName/);
-  throws(() => { registry.resolve('model:'); }, TypeError, /Invalid fullName/);
-  throws(() => { registry.resolve(':type');  }, TypeError, /Invalid fullName/);
-});
-
-QUnit.test('the default resolver logs hits if `LOG_RESOLVER` is set', function() {
-  if (EmberDev && EmberDev.runningProdBuild) {
-    ok(true, 'Logging does not occur in production builds');
-    return;
+  constructor() {
+    super();
+    this._originalLookup = context.lookup;
+    this._originalInfo = getDebugFunction('info');
   }
 
-  expect(3);
-
-  application.LOG_RESOLVER = true;
-  application.ScoobyDoo = EmberObject.extend();
-  application.toString = () => 'App';
-
-  setDebugFunction('info', function(symbol, name, padding, lookupDescription) {
-    equal(symbol, '[✓]', 'proper symbol is printed when a module is found');
-    equal(name, 'doo:scooby', 'proper lookup value is logged');
-    equal(lookupDescription, 'App.ScoobyDoo');
-  });
-
-  registry.resolve('doo:scooby');
-});
-
-QUnit.test('the default resolver logs misses if `LOG_RESOLVER` is set', function() {
-  if (EmberDev && EmberDev.runningProdBuild) {
-    ok(true, 'Logging does not occur in production builds');
-    return;
+  beforeEach() {
+    this.runTask(() => this.createApplication());
+    return this.visit('/');
   }
 
-  expect(3);
-
-  application.LOG_RESOLVER = true;
-  application.toString = () => 'App';
-
-  setDebugFunction('info', function(symbol, name, padding, lookupDescription) {
-    equal(symbol, '[ ]', 'proper symbol is printed when a module is not found');
-    equal(name, 'doo:scooby', 'proper lookup value is logged');
-    equal(lookupDescription, 'App.ScoobyDoo');
-  });
-
-  registry.resolve('doo:scooby');
-});
-
-QUnit.test('doesn\'t log without LOG_RESOLVER', function() {
-  if (EmberDev && EmberDev.runningProdBuild) {
-    ok(true, 'Logging does not occur in production builds');
-    return;
+  teardown() {
+    setDebugFunction('info', this._originalInfo);
+    context.lookup = this._originalLookup;
+    super.teardown();
   }
 
-  let infoCount = 0;
+  [`@test the default resolver logs hits if 'LOG_RESOLVER' is set`](assert) {
+    if (EmberDev && EmberDev.runningProdBuild) {
+      assert.ok(true, 'Logging does not occur in production builds');
+      return;
+    }
 
-  application.ScoobyDoo = EmberObject.extend();
+    assert.expect(3);
 
-  setDebugFunction('info', (symbol, name) => infoCount = infoCount + 1);
+    this.application.LOG_RESOLVER = true;
+    this.application.ScoobyDoo = EmberObject.extend();
+    this.application.toString = () => 'App';
 
-  registry.resolve('doo:scooby');
-  registry.resolve('doo:scrappy');
-  equal(infoCount, 0, 'Logger.info should not be called if LOG_RESOLVER is not set');
-});
+    setDebugFunction('info', function(symbol, name, padding, lookupDescription) {
+      assert.equal(symbol, '[✓]', 'proper symbol is printed when a module is found');
+      assert.equal(name, 'doo:scooby', 'proper lookup value is logged');
+      assert.equal(lookupDescription, 'App.ScoobyDoo');
+    });
 
-QUnit.test('lookup description', function() {
-  application.toString = () => 'App';
+    this.applicationInstance.resolveRegistration('doo:scooby');
+  }
 
-  equal(registry.describe('controller:foo'), 'App.FooController', 'Type gets appended at the end');
-  equal(registry.describe('controller:foo.bar'), 'App.FooBarController', 'dots are removed');
-  equal(registry.describe('model:foo'), 'App.Foo', 'models don\'t get appended at the end');
-});
+  [`@test the default resolver logs misses if 'LOG_RESOLVER' is set`](assert) {
+    if (EmberDev && EmberDev.runningProdBuild) {
+      assert.ok(true, 'Logging does not occur in production builds');
+      return;
+    }
 
-QUnit.test('assertion for routes without isRouteFactory property', function() {
-  application.FooRoute = Component.extend();
+    assert.expect(3);
 
-  expectAssertion(() => registry.resolve(`route:foo`), /to resolve to an Ember.Route/, 'Should assert');
-});
+    this.application.LOG_RESOLVER = true;
+    this.application.toString = () => 'App';
 
-QUnit.test('no assertion for routes that extend from Ember.Route', function() {
-  expect(0);
-  application.FooRoute = Route.extend();
-  registry.resolve(`route:foo`);
-});
+    setDebugFunction('info', function(symbol, name, padding, lookupDescription) {
+      assert.equal(symbol, '[ ]', 'proper symbol is printed when a module is not found');
+      assert.equal(name, 'doo:scooby', 'proper lookup value is logged');
+      assert.equal(lookupDescription, 'App.ScoobyDoo');
+    });
 
-QUnit.test('deprecation warning for service factories without isServiceFactory property', function() {
-  expectAssertion(() =>{
-    application.FooService = EmberObject.extend();
-    registry.resolve('service:foo');
-  }, /Expected service:foo to resolve to an Ember.Service but instead it was \.FooService\./);
-});
+    this.applicationInstance.resolveRegistration('doo:scooby');
+  }
 
-QUnit.test('no deprecation warning for service factories that extend from Ember.Service', function() {
-  expect(0);
-  application.FooService = Service.extend();
-  registry.resolve('service:foo');
-});
+  [`@test doesn't log without LOG_RESOLVER`](assert) {
+    if (EmberDev && EmberDev.runningProdBuild) {
+      assert.ok(true, 'Logging does not occur in production builds');
+      return;
+    }
 
-QUnit.test('deprecation warning for component factories without isComponentFactory property', function() {
-  expectAssertion(() => {
-    application.FooComponent = EmberObject.extend();
-    registry.resolve('component:foo');
-  }, /Expected component:foo to resolve to an Ember\.Component but instead it was \.FooComponent\./);
-});
+    let infoCount = 0;
 
-QUnit.test('no deprecation warning for component factories that extend from Ember.Component', function() {
-  expectNoDeprecation();
-  application.FooView = Component.extend();
-  registry.resolve('component:foo');
-});
+    this.application.ScoobyDoo = EmberObject.extend();
 
-QUnit.test('knownForType returns each item for a given type found', function() {
-  application.FooBarHelper = 'foo';
-  application.BazQuxHelper = 'bar';
+    setDebugFunction('info', (symbol, name) => infoCount = infoCount + 1);
 
-  let found = registry.resolver.knownForType('helper');
+    this.applicationInstance.resolveRegistration('doo:scooby');
+    this.applicationInstance.resolveRegistration('doo:scrappy');
+    assert.equal(infoCount, 0, 'Logger.info should not be called if LOG_RESOLVER is not set');
+  }
 
-  // using `Object.keys` and manually confirming values over using `deepEqual`
-  // due to an issue in QUnit (through at least 1.20.0) that are unable to properly compare
-  // objects with an `undefined` constructor (like ember-metal/empty_object)
-  let foundKeys = Object.keys(found);
-
-  deepEqual(foundKeys, ['helper:foo-bar', 'helper:baz-qux']);
-  ok(found['helper:foo-bar']);
-  ok(found['helper:baz-qux']);
-});
-
-QUnit.test('knownForType is not required to be present on the resolver', function() {
-  delete registry.resolver.knownForType;
-
-  registry.resolver.knownForType('helper', () => { });
-
-  ok(true, 'does not error');
 });

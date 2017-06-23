@@ -1,3 +1,4 @@
+import { RSVP } from 'ember-runtime';
 import applyMixins from './apply-mixins';
 
 export default function moduleFor(description, TestClass, ...mixins) {
@@ -6,6 +7,9 @@ export default function moduleFor(description, TestClass, ...mixins) {
   QUnit.module(description, {
     setup() {
       context = new TestClass();
+      if (context.beforeEach) {
+        return context.beforeEach();
+      }
     },
 
     teardown() {
