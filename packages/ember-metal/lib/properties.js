@@ -130,14 +130,14 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (!meta) {
     meta = metaFor(obj);
   }
+
   let watchEntry = meta.peekWatching(keyName);
-  let possibleDesc = obj[keyName];
-  let existingDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-
   let watching = watchEntry !== undefined && watchEntry > 0;
+  let possibleDesc = obj[keyName];
+  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
-  if (existingDesc) {
-    existingDesc.teardown(obj, keyName);
+  if (isDescriptor) {
+    possibleDesc.teardown(obj, keyName);
   }
 
   let value;
@@ -161,38 +161,36 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     didDefineComputedProperty(obj.constructor);
 
     if (typeof desc.setup === 'function') { desc.setup(obj, keyName); }
-  } else {
-    if (desc == null) {
-      value = data;
+  } else if (desc === undefined || desc === null) {
+    value = data;
 
-      if (MANDATORY_SETTER) {
-        if (watching) {
-          meta.writeValues(keyName, data);
+    if (MANDATORY_SETTER) {
+      if (watching) {
+        meta.writeValues(keyName, data);
 
-          let defaultDescriptor = {
-            configurable: true,
-            enumerable: true,
-            set: MANDATORY_SETTER_FUNCTION(keyName),
-            get: DEFAULT_GETTER_FUNCTION(keyName)
-          };
+        let defaultDescriptor = {
+          configurable: true,
+          enumerable: true,
+          set: MANDATORY_SETTER_FUNCTION(keyName),
+          get: DEFAULT_GETTER_FUNCTION(keyName)
+        };
 
-          if (REDEFINE_SUPPORTED) {
-            Object.defineProperty(obj, keyName, defaultDescriptor);
-          } else {
-            handleBrokenPhantomDefineProperty(obj, keyName, defaultDescriptor);
-          }
+        if (REDEFINE_SUPPORTED) {
+          Object.defineProperty(obj, keyName, defaultDescriptor);
         } else {
-          obj[keyName] = data;
+          handleBrokenPhantomDefineProperty(obj, keyName, defaultDescriptor);
         }
       } else {
         obj[keyName] = data;
       }
     } else {
-      value = desc;
-
-      // fallback to ES5
-      Object.defineProperty(obj, keyName, desc);
+      obj[keyName] = data;
     }
+  } else {
+    value = desc;
+
+    // fallback to ES5
+    Object.defineProperty(obj, keyName, desc);
   }
 
   // if key is being watched, override chains that
