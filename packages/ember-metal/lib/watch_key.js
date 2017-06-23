@@ -22,10 +22,9 @@ export function watchKey(obj, keyName, meta) {
     m.writeWatching(keyName, 1);
 
     let possibleDesc = obj[keyName];
-    let desc = (possibleDesc !== null &&
-                typeof possibleDesc === 'object' &&
-                possibleDesc.isDescriptor) ? possibleDesc : undefined;
-    if (desc && desc.willWatch) { desc.willWatch(obj, keyName); }
+    let isDescriptor = possibleDesc !== null &&
+      typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+    if (isDescriptor && possibleDesc.willWatch) { possibleDesc.willWatch(obj, keyName); }
 
     if ('function' === typeof obj.willWatchProperty) {
       obj.willWatchProperty(keyName);
@@ -98,11 +97,10 @@ export function unwatchKey(obj, keyName, _meta) {
     meta.writeWatching(keyName, 0);
 
     let possibleDesc = obj[keyName];
-    let desc = (possibleDesc !== null &&
-                typeof possibleDesc === 'object' &&
-                possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    let isDescriptor = possibleDesc !== null &&
+      typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
-    if (desc && desc.didUnwatch) { desc.didUnwatch(obj, keyName); }
+    if (isDescriptor && possibleDesc.didUnwatch) { possibleDesc.didUnwatch(obj, keyName); }
 
     if ('function' === typeof obj.didUnwatchProperty) {
       obj.didUnwatchProperty(keyName);
@@ -117,7 +115,7 @@ export function unwatchKey(obj, keyName, _meta) {
       // for mutation, will bypass observation. This code exists to assert when
       // that occurs, and attempt to provide more helpful feedback. The alternative
       // is tricky to debug partially observable properties.
-      if (!desc && keyName in obj) {
+      if (!isDescriptor && keyName in obj) {
         let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
 
         if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {

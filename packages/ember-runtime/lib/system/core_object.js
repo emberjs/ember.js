@@ -107,9 +107,6 @@ function makeCtor() {
               m.writeBindings(keyName, value);
             }
 
-            let possibleDesc = this[keyName];
-            let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-
             assert(
               'Ember.Object.create no longer supports defining computed ' +
               'properties. Define computed properties using extend() or reopen() ' +
@@ -146,8 +143,11 @@ function makeCtor() {
               value = assign({}, originalValue, value);
             }
 
-            if (desc) {
-              desc.set(this, keyName, value);
+            let possibleDesc = this[keyName];
+            let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+
+            if (isDescriptor) {
+              possibleDesc.set(this, keyName, value);
             } else {
               if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
                 this.setUnknownProperty(keyName, value);
