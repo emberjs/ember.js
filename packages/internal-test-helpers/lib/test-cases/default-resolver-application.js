@@ -7,11 +7,14 @@ import {
 } from 'ember-glimmer';
 import { assign } from 'ember-utils';
 import { runDestroy } from '../run';
+import { Router } from 'ember-routing';
 
 export default class ApplicationTestCase extends AbstractApplicationTestCase {
 
   createApplication() {
-    return this.application = Application.create(this.applicationOptions);
+    let application = this.application = Application.create(this.applicationOptions);
+    application.Router = Router.extend({ location: 'none' });
+    return application;
   }
 
   get applicationOptions() {
