@@ -506,14 +506,6 @@ if (HAS_NATIVE_WEAKMAP) {
     metaStore.set(obj, meta);
   };
 
-  peekMeta = function WeakMap_peekMeta(obj) {
-    if (DEBUG) {
-      counters.peekCalls++
-    }
-
-    return metaStore.get(obj);
-  };
-
   peekMeta = function WeakMap_peekParentMeta(obj) {
     let pointer = obj;
     let meta;
