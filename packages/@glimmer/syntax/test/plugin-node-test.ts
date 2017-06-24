@@ -3,7 +3,8 @@ import {
   Syntax,
   Walker,
   AST,
-  ASTPlugin
+  ASTPluginEnvironment,
+  ASTPluginBuilder
 } from '@glimmer/syntax';
 
 const { test } = QUnit;
@@ -18,7 +19,7 @@ test('function based AST plugins can be provided to the compiler', assert => {
       ast: [
         () => ({
           name: 'plugin-a',
-          visitors: {
+          visitor: {
             Program() {
               assert.ok(true, 'transform was called!');
             }
@@ -38,7 +39,7 @@ test('plugins are provided the syntax package', assert => {
         ({ syntax }) => {
           assert.equal(syntax.Walker, Walker);
 
-          return { name: 'plugin-a', visitors: {} };
+          return { name: 'plugin-a', visitor: {} };
         }
       ]
     }
@@ -46,13 +47,13 @@ test('plugins are provided the syntax package', assert => {
 });
 
 test('can support the legacy AST transform API via ASTPlugin', assert => {
-  function ensurePlugin(FunctionOrPlugin: any): ASTPlugin {
+  function ensurePlugin(FunctionOrPlugin: any): ASTPluginBuilder {
     if (FunctionOrPlugin.prototype && FunctionOrPlugin.prototype.transform) {
-      return (env) => {
+      return (env: ASTPluginEnvironment) => {
         return {
           name: 'plugin-a',
 
-          visitors: {
+          visitor: {
             Program(node: AST.Program) {
               let plugin = new FunctionOrPlugin(env);
 
@@ -90,7 +91,7 @@ test('AST plugins can be chained', assert => {
   let first = () => {
     return {
       name: 'first',
-      visitors: {
+      visitor: {
         Program(program: AST.Program) {
           program['isFromFirstPlugin'] = true;
         }
@@ -101,7 +102,7 @@ test('AST plugins can be chained', assert => {
   let second = () => {
     return {
       name: 'second',
-      visitors: {
+      visitor: {
         Program(node: AST.Program) {
           assert.equal(node['isFromFirstPlugin'], true, 'AST from first plugin is passed to second');
 
@@ -114,7 +115,7 @@ test('AST plugins can be chained', assert => {
   let third = () => {
     return {
       name: 'third',
-      visitors: {
+      visitor: {
         Program(node: AST.Program) {
           assert.equal(node['isFromSecondPlugin'], true, 'AST from second plugin is passed to third');
 
