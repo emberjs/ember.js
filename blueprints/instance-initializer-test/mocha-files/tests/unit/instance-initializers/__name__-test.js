@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { describe, it, beforeEach } from 'mocha';
 import Ember from 'ember';
+const { Application, run } = Ember;
 import { initialize } from '<%= dasherizedModulePrefix %>/instance-initializers/<%= dasherizedModuleName %>';
 import destroyApp from '../../helpers/destroy-app';
 
@@ -8,14 +9,14 @@ describe('<%= friendlyTestName %>', function() {
   let application, appInstance;
 
   beforeEach(function() {
-    Ember.run(function() {
-      application = Ember.Application.create();
+    run(function() {
+      application = Application.create();
       appInstance = application.buildInstance();
     });
   });
 
   afterEach(function() {
-    Ember.run(appInstance, 'destroy');
+    run(appInstance, 'destroy');
     destroyApp(application);
   });
 

@@ -1,12 +1,13 @@
 import Ember from 'ember';
+const { Application, run } = Ember;
 import { initialize } from '<%= dasherizedModulePrefix %>/initializers/<%= dasherizedModuleName %>';
 import { module, test } from 'qunit';
 import destroyApp from '../../helpers/destroy-app';
 
 module('<%= friendlyTestName %>', {
   beforeEach() {
-    Ember.run(() => {
-      this.application = Ember.Application.create();
+    run(() => {
+      this.application = Application.create();
       this.application.deferReadiness();
     });
   },
