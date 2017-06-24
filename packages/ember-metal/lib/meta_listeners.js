@@ -17,7 +17,7 @@ export const SUSPENDED = 2;
 export const protoMethods = {
 
   addToListeners(eventName, target, method, flags) {
-    if (!this._listeners) {
+    if (this._listeners === undefined) {
       this._listeners = [];
     }
     this._listeners.push(eventName, target, method, flags);
@@ -25,11 +25,11 @@ export const protoMethods = {
 
   _finalizeListeners() {
     if (this._listenersFinalized) { return; }
-    if (!this._listeners) { this._listeners = []; }
+    if (this._listeners === undefined) { this._listeners = []; }
     let pointer = this.parent;
-    while (pointer) {
+    while (pointer !== undefined) {
       let listeners = pointer._listeners;
-      if (listeners) {
+      if (listeners !== undefined) {
         this._listeners = this._listeners.concat(listeners);
       }
       if (pointer._listenersFinalized) { break; }
@@ -40,9 +40,9 @@ export const protoMethods = {
 
   removeFromListeners(eventName, target, method, didRemove) {
     let pointer = this;
-    while (pointer) {
+    while (pointer !== undefined) {
       let listeners = pointer._listeners;
-      if (listeners) {
+      if (listeners !== undefined) {
         for (let index = listeners.length - 4; index >= 0; index -= 4) {
           if (listeners[index] === eventName && (!method || (listeners[index + 1] === target && listeners[index + 2] === method))) {
             if (pointer === this) {
@@ -123,9 +123,9 @@ export const protoMethods = {
   watchedEvents() {
     let pointer = this;
     let names = {};
-    while (pointer) {
+    while (pointer !== undefined) {
       let listeners = pointer._listeners;
-      if (listeners) {
+      if (listeners !== undefined) {
         for (let index = 0; index < listeners.length - 3; index += 4) {
           names[listeners[index]] = true;
         }
@@ -141,7 +141,7 @@ function pushUniqueListener(destination, source, index) {
   let target = source[index + 1];
   let method = source[index + 2];
   for (let destinationIndex = 0; destinationIndex < destination.length - 2; destinationIndex += 3) {
-    if (destination[destinationIndex] === target  && destination[destinationIndex + 1] === method) {
+    if (destination[destinationIndex] === target && destination[destinationIndex + 1] === method) {
       return;
     }
   }

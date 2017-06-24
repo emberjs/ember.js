@@ -28,7 +28,7 @@ export function tagForProperty(object, propertyKey, _meta) {
 }
 
 export function tagFor(object, _meta) {
-  if (typeof object === 'object' && object) {
+  if (typeof object === 'object' && object !== null) {
     let meta = _meta || metaFor(object);
     return meta.writableTag(makeTag);
   } else {
