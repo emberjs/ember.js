@@ -47,16 +47,11 @@ export function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  let desc, currentValue;
-  let possibleDesc = obj[keyName];
-  if (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) {
-    desc = possibleDesc;
-  } else {
-    currentValue = possibleDesc;
-  }
+  let currentValue = obj[keyName];
+  let isDescriptor = currentValue !== null && typeof currentValue === 'object' && currentValue.isDescriptor;
 
-  if (desc) { /* computed property */
-    desc.set(obj, keyName, value);
+  if (isDescriptor) { /* computed property */
+    currentValue.set(obj, keyName, value);
   } else if (obj.setUnknownProperty && currentValue === undefined && !(keyName in obj)) { /* unknown property */
     assert('setUnknownProperty must be a function', typeof obj.setUnknownProperty === 'function');
     obj.setUnknownProperty(keyName, value);
