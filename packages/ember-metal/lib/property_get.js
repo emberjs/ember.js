@@ -57,18 +57,14 @@ export function get(obj, keyName) {
   let value = obj[keyName];
   let isDescriptor = value !== null && typeof value === 'object' && value.isDescriptor;
 
-  if (!isDescriptor && isPath(keyName)) {
-    return _getPath(obj, keyName);
-  }
-
   if (isDescriptor) {
     return value.get(obj, keyName);
+  } else if (isPath(keyName)) {
+    return _getPath(obj, keyName);
+  } else if (value === undefined &&
+    'object' === typeof obj && !(keyName in obj) && 'function' === typeof obj.unknownProperty) {
+    return obj.unknownProperty(keyName);
   } else {
-    if (value === undefined &&
-        'object' === typeof obj && !(keyName in obj) && 'function' === typeof obj.unknownProperty) {
-      return obj.unknownProperty(keyName);
-    }
-
     return value;
   }
 }
@@ -93,11 +89,7 @@ export function _getPath(root, path) {
 }
 
 function isGettable(obj) {
-  if (obj === undefined || obj === null) {
-    return false;
-  }
-
-  return ALLOWABLE_TYPES[typeof obj];
+  return obj !== undefined && obj !== null && ALLOWABLE_TYPES[typeof obj];
 }
 
 /**
