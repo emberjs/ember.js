@@ -20,7 +20,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/mixins/foo.js'))
           .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Mixin.create({\n});');
+          .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo-test.js'))
           .to.contain("import FooMixin from 'my-app/mixins/foo';");
@@ -34,7 +34,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/mixins/foo/bar.js'))
           .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Mixin.create({\n});');
+          .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo/bar-test.js'))
           .to.contain("import FooBarMixin from 'my-app/mixins/foo/bar';");
@@ -58,7 +58,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('addon/mixins/foo.js'))
           .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Mixin.create({\n});');
+          .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo-test.js'))
           .to.contain("import FooMixin from 'my-addon/mixins/foo';");
@@ -75,7 +75,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('addon/mixins/foo/bar.js'))
           .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Mixin.create({\n});');
+          .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo/bar-test.js'))
           .to.contain("import FooBarMixin from 'my-addon/mixins/foo/bar';");
@@ -92,7 +92,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('addon/mixins/foo/bar/baz.js'))
           .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Mixin.create({\n});');
+          .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo/bar/baz-test.js'))
           .to.contain("import FooBarBazMixin from 'my-addon/mixins/foo/bar/baz';");
@@ -109,7 +109,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('lib/my-addon/addon/mixins/foo.js'))
           .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Mixin.create({\n});');
+          .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo-test.js'))
           .to.contain("import FooMixin from 'my-addon/mixins/foo';");
@@ -123,7 +123,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('lib/my-addon/addon/mixins/foo/bar.js'))
           .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Mixin.create({\n});');
+          .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo/bar-test.js'))
           .to.contain("import FooBarMixin from 'my-addon/mixins/foo/bar';");
@@ -149,7 +149,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/mixins/foo.js'))
           .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Mixin.create({\n});');
+          .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo-test.js'))
           .to.contain("import FooMixin from 'my-app/mixins/foo';");
@@ -164,7 +164,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/mixins/foo.js'))
           .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Mixin.create({\n});');
+          .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo-test.js'))
           .to.contain("import FooMixin from 'my-app/mixins/foo';");
@@ -178,7 +178,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/mixins/foo/bar.js'))
           .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Mixin.create({\n});');
+          .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo/bar-test.js'))
           .to.contain("import FooBarMixin from 'my-app/mixins/foo/bar';");
@@ -193,7 +193,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/mixins/foo/bar.js'))
           .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Mixin.create({\n});');
+          .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo/bar-test.js'))
           .to.contain("import FooBarMixin from 'my-app/mixins/foo/bar';");

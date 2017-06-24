@@ -1,4 +1,5 @@
 import Ember from 'ember';
+const { Component } = Ember;
 <%= importTemplate %>
-export default Ember.Component.extend({<%= contents %>
+export default Component.extend({<%= contents %>
 });
