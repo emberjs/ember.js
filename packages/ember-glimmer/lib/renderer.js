@@ -70,9 +70,7 @@ class RootState {
       let result = this.result = iteratorResult.value;
 
       // override .render function after initial render
-      this.render = () => {
-        result.rerender(options);
-      };
+      this.render = () => result.rerender(options);
     };
   }
 
