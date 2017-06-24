@@ -80,6 +80,8 @@ function makeCtor() {
 
         let concatenatedProperties = this.concatenatedProperties;
         let mergedProperties = this.mergedProperties;
+        let hasConcatenatedProps = concatenatedProperties && concatenatedProperties.length > 0;
+        let hasMergedProps = mergedProperties && mergedProperties.length > 0;
 
         for (let i = 0; i < props.length; i++) {
           let properties = props[i];
@@ -123,11 +125,10 @@ function makeCtor() {
               !((keyName === 'actions') && ActionHandler.detect(this))
             );
 
-            if (concatenatedProperties &&
-                concatenatedProperties.length > 0 &&
-                concatenatedProperties.indexOf(keyName) > -1) {
-              let baseValue = this[keyName];
+            let baseValue = this[keyName];
+            let isDescriptor = baseValue !== null && typeof baseValue === 'object' && baseValue.isDescriptor;
 
+            if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
               if (baseValue) {
                 value = makeArray(baseValue).concat(value);
               } else {
@@ -135,28 +136,19 @@ function makeCtor() {
               }
             }
 
-            if (mergedProperties &&
-                mergedProperties.length > 0 &&
-                mergedProperties.indexOf(keyName) > -1) {
-              let originalValue = this[keyName];
-
-              value = assign({}, originalValue, value);
+            if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+              value = assign({}, baseValue, value);
             }
 
-            let possibleDesc = this[keyName];
-            let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
-
             if (isDescriptor) {
-              possibleDesc.set(this, keyName, value);
+              baseValue.set(this, keyName, value);
+            } else if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
+              this.setUnknownProperty(keyName, value);
             } else {
-              if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
-                this.setUnknownProperty(keyName, value);
+              if (MANDATORY_SETTER) {
+                defineProperty(this, keyName, null, value); // setup mandatory setter
               } else {
-                if (MANDATORY_SETTER) {
-                  defineProperty(this, keyName, null, value); // setup mandatory setter
-                } else {
-                  this[keyName] = value;
-                }
+                this[keyName] = value;
               }
             }
           }
