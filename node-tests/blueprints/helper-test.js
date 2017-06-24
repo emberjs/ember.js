@@ -21,11 +21,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
-          .to.contain("import Ember from 'ember';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
+          .to.contain("import Ember from 'ember';")
+          .to.contain("export function fooBarBaz(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default Ember.Helper.helper(fooBarBaz);");
+                      "export default Helper.helper(fooBarBaz);");
 
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.contain("moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {");
@@ -38,11 +38,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('addon/helpers/foo-bar.js'))
-          .to.contain("import Ember from 'ember';\n\n" +
-                      "export function fooBar(params/*, hash*/) {\n" +
+          .to.contain("import Ember from 'ember'")
+          .to.contain("export function fooBar(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default Ember.Helper.helper(fooBar);");
+                      "export default Helper.helper(fooBar);");
 
         expect(_file('app/helpers/foo-bar.js'))
           .to.contain("export { default, fooBar } from 'my-addon/helpers/foo-bar';");
@@ -57,11 +57,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('addon/helpers/foo/bar-baz.js'))
-          .to.contain("import Ember from 'ember';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
+          .to.contain("import Ember from 'ember';")
+          .to.contain("export function fooBarBaz(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default Ember.Helper.helper(fooBarBaz);");
+                      "export default Helper.helper(fooBarBaz);");
 
         expect(_file('app/helpers/foo/bar-baz.js'))
           .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
@@ -76,11 +76,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/dummy/app/helpers/foo-bar.js'))
-          .to.contain("import Ember from 'ember';\n\n" +
-                      "export function fooBar(params/*, hash*/) {\n" +
+          .to.contain("import Ember from 'ember';")
+          .to.contain("export function fooBar(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default Ember.Helper.helper(fooBar);");
+                      "export default Helper.helper(fooBar);");
 
         expect(_file('app/helpers/foo-bar.js'))
           .to.not.exist;
@@ -95,11 +95,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/dummy/app/helpers/foo/bar-baz.js'))
-          .to.contain("import Ember from 'ember';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
+          .to.contain("import Ember from 'ember';")
+          .to.contain("export function fooBarBaz(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default Ember.Helper.helper(fooBarBaz);");
+                      "export default Helper.helper(fooBarBaz);");
 
         expect(_file('app/helpers/foo/bar-baz.js'))
           .to.not.exist;
@@ -114,11 +114,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('lib/my-addon/addon/helpers/foo-bar.js'))
-          .to.contain("import Ember from 'ember';\n\n" +
-                      "export function fooBar(params/*, hash*/) {\n" +
+          .to.contain("import Ember from 'ember'")
+          .to.contain("export function fooBar(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default Ember.Helper.helper(fooBar);");
+                      "export default Helper.helper(fooBar);");
 
         expect(_file('lib/my-addon/app/helpers/foo-bar.js'))
           .to.contain("export { default, fooBar } from 'my-addon/helpers/foo-bar';");
@@ -133,11 +133,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('lib/my-addon/addon/helpers/foo/bar-baz.js'))
-          .to.contain("import Ember from 'ember';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
+          .to.contain("import Ember from 'ember';")
+          .to.contain("export function fooBarBaz(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default Ember.Helper.helper(fooBarBaz);");
+                      "export default Helper.helper(fooBarBaz);");
 
         expect(_file('lib/my-addon/app/helpers/foo/bar-baz.js'))
           .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
@@ -152,11 +152,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/helpers/foo-bar.js'))
-          .to.contain("import Ember from 'ember';\n\n" +
-                      "export function fooBar(params/*, hash*/) {\n" +
+          .to.contain("import Ember from 'ember';")
+          .to.contain("export function fooBar(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default Ember.Helper.helper(fooBar);");
+                      "export default Helper.helper(fooBar);");
 
         expect(_file('tests/integration/helpers/foo-bar-test.js'))
           .to.contain("moduleForComponent('foo-bar', 'helper:foo-bar', {");
@@ -170,11 +170,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
       .then(() => setupPodConfig({ podModulePrefix: true }))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/helpers/foo-bar.js'))
-          .to.contain("import Ember from 'ember';\n\n" +
-                      "export function fooBar(params/*, hash*/) {\n" +
+          .to.contain("import Ember from 'ember';")
+          .to.contain("export function fooBar(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default Ember.Helper.helper(fooBar);");
+                      "export default Helper.helper(fooBar);");
 
         expect(_file('tests/integration/helpers/foo-bar-test.js'))
           .to.contain("moduleForComponent('foo-bar', 'helper:foo-bar', {");
@@ -187,11 +187,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
-          .to.contain("import Ember from 'ember';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
+          .to.contain("import Ember from 'ember';")
+          .to.contain("export function fooBarBaz(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default Ember.Helper.helper(fooBarBaz);");
+                      "export default Helper.helper(fooBarBaz);");
 
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.contain("moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {");
@@ -205,11 +205,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
       .then(() => setupPodConfig({ podModulePrefix: true }))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
-          .to.contain("import Ember from 'ember';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
+          .to.contain("import Ember from 'ember';")
+          .to.contain("export function fooBarBaz(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default Ember.Helper.helper(fooBarBaz);");
+                      "export default Helper.helper(fooBarBaz);");
 
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.contain("moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {");
