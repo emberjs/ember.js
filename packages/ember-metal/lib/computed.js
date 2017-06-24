@@ -133,15 +133,7 @@ function ComputedProperty(config, opts) {
     this._getter = config;
   } else {
     assert('Ember.computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
-    assert('Config object passed to an Ember.computed can only contain `get` or `set` keys.', ((() => {
-      let keys = Object.keys(config);
-      for (let i = 0; i < keys.length; i++) {
-        if (keys[i] !== 'get' && keys[i] !== 'set') {
-          return false;
-        }
-      }
-      return true;
-    }))());
+    assert('Config object passed to an Ember.computed can only contain `get` or `set` keys.', Object.keys(config).every((key)=> key === 'get' || key === 'set'));
     this._getter = config.get;
     this._setter = config.set;
   }
