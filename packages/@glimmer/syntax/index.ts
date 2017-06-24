@@ -3,6 +3,7 @@ export {
   preprocess,
   PreprocessOptions,
   ASTPlugin,
+  ASTPluginBuilder,
   ASTPluginEnvironment,
   Syntax
 } from './lib/parser/tokenizer-event-handlers';
