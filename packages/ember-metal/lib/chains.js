@@ -36,7 +36,7 @@ class ChainWatchers {
 
   remove(key, node) {
     let nodes = this.chains[key];
-    if (nodes) {
+    if (nodes !== undefined) {
       for (let i = 0; i < nodes.length; i++) {
         if (nodes[i] === node) {
           nodes.splice(i, 1);
@@ -48,7 +48,7 @@ class ChainWatchers {
 
   has(key, node) {
     let nodes = this.chains[key];
-    if (nodes) {
+    if (nodes !== undefined) {
       for (let i = 0; i < nodes.length; i++) {
         if (nodes[i] === node) {
           return true;
@@ -153,10 +153,10 @@ class ChainNode {
 
     this._value = value;
     this._paths = undefined;
-    if (isWatching === true) {
+    if (isWatching) {
       let obj = parent.value();
 
-      if (!isObject(obj) === true) {
+      if (!isObject(obj)) {
         return;
       }
 
@@ -167,7 +167,7 @@ class ChainNode {
   }
 
   value() {
-    if (this._value === undefined && this._watching === true) {
+    if (this._value === undefined && this._watching) {
       let obj = this._parent.value();
       this._value = lazyGet(obj, this._key);
     }
@@ -175,7 +175,7 @@ class ChainNode {
   }
 
   destroy() {
-    if (this._watching === true) {
+    if (this._watching) {
       removeChainWatcher(this._object, this._key, this);
       this._watching = false; // so future calls do nothing
     }
@@ -268,7 +268,7 @@ class ChainNode {
   }
 
   notify(revalidate, affected) {
-    if (revalidate && this._watching === true) {
+    if (revalidate && this._watching) {
       let parentValue = this._parent.value();
 
       if (parentValue !== this._object) {
@@ -329,7 +329,7 @@ function lazyGet(obj, key) {
   }
 
   // Use `get` if the return value is an EachProxy or an uncacheable value.
-  if (isVolatile(obj[key]) === true) {
+  if (isVolatile(obj[key])) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {
