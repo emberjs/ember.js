@@ -138,7 +138,6 @@ function ComputedProperty(config, opts) {
     this._setter = config.set;
   }
   assert('Computed properties must receive a getter or a setter, you passed none.', !!this._getter || !!this._setter);
-  this._dependentKeys = undefined;
   this._suspended = undefined;
   this._meta = undefined;
   this._volatile = false;
@@ -408,9 +407,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
 
   if (hadCachedValue) {
     cache[keyName] = undefined;
-  }
-
-  if (!hadCachedValue) {
+  } else {
     addDependentKeys(this, obj, keyName, meta);
   }
 
@@ -523,17 +520,12 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   @return {Ember.ComputedProperty} property descriptor instance
   @public
 */
-export default function computed(func) {
-  let args;
-
-  if (arguments.length > 1) {
-    args = [].slice.call(arguments);
-    func = args.pop();
-  }
+export default function computed(...args) {
+  let func = args.pop();
 
   let cp = new ComputedProperty(func);
 
-  if (args) {
+  if (args.length > 0) {
     cp.property(...args);
   }
 
