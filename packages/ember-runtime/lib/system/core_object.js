@@ -854,11 +854,10 @@ let ClassMixinProps = {
   metaForProperty(key) {
     let proto = this.proto();
     let possibleDesc = proto[key];
-    let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
     assert(
       `metaForProperty() could not find a computed property with key '${key}'.`,
-      isDescriptor && possibleDesc instanceof ComputedProperty
+      possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor
     );
     return possibleDesc._meta || {};
   },
