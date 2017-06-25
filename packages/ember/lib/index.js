@@ -259,33 +259,7 @@ Object.defineProperty(Ember, 'testing', {
 
 import Backburner from 'backburner';
 
-/**
- @class Backburner
- @for Ember
- @private
- */
-Ember.Backburner = function() {
-  deprecate(
-    'Usage of Ember.Backburner is deprecated.',
-    false,
-    {
-      id: 'ember-metal.ember-backburner',
-      until: '2.8.0',
-      url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-backburner'
-    }
-  );
-
-  function BackburnerAlias(args) {
-    return Backburner.apply(this, args);
-  }
-
-  BackburnerAlias.prototype = Backburner.prototype;
-
-  return new BackburnerAlias(arguments);
-};
-
 Ember._Backburner = Backburner;
-
 
 import Logger from 'ember-console';
 
