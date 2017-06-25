@@ -48,10 +48,11 @@ if (MANDATORY_SETTER) {
   // ember strip this entire block out
   handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     let descriptor = lookupDescriptor(obj, keyName);
-    let configurable = descriptor ? descriptor.configurable : true;
-    let isWritable = descriptor ? descriptor.writable : true;
-    let hasValue = descriptor ? 'value' in descriptor : true;
-    let possibleDesc = descriptor && descriptor.value;
+    let hasDescriptor = descriptor !== null;
+    let configurable = hasDescriptor ? descriptor.configurable : true;
+    let isWritable = hasDescriptor ? descriptor.writable : true;
+    let hasValue = hasDescriptor ? 'value' in descriptor : true;
+    let possibleDesc = hasDescriptor && descriptor.value;
     let isDescriptor = possibleDesc !== null &&
                        typeof possibleDesc === 'object' &&
                        possibleDesc.isDescriptor;
