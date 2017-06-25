@@ -426,13 +426,12 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
 };
 
 /* called before property is overridden */
-ComputedPropertyPrototype.teardown = function(obj, keyName) {
+ComputedPropertyPrototype.teardown = function(obj, keyName, meta) {
   if (this._volatile) {
     return;
   }
-  let meta = metaFor(obj);
   let cache = meta.readableCache();
-  if (cache && cache[keyName] !== undefined) {
+  if (cache !== undefined && cache[keyName] !== undefined) {
     removeDependentKeys(this, obj, keyName, meta);
     cache[keyName] = undefined;
   }
