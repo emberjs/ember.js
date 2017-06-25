@@ -6,9 +6,9 @@ import EmberError from './error';
 import { default as isFeatureEnabled } from './features';
 import * as FLAGS from 'ember/features';
 let { DEFAULT_FEATURES, FEATURES } = FLAGS;
-
 import _deprecate from './deprecate';
 import _warn from './warn';
+
 export { registerHandler as registerWarnHandler } from './warn';
 export { registerHandler as registerDeprecationHandler } from './deprecate';
 export { default as isFeatureEnabled } from './features';
@@ -16,19 +16,20 @@ export { default as Error } from './error';
 export { isTesting, setTesting } from './testing';
 
 // These are the default production build versions:
-let assert = () => {};
-let info = () => {};
-let warn = () => {};
-let debug = () => {};
-let deprecate = () => {};
-let debugSeal = () => {};
-let debugFreeze = () => {};
-let runInDebug = () => {};
+const noop = () => {};
+
+let assert = noop;
+let info = noop;
+let warn = noop;
+let debug = noop;
+let deprecate = noop;
+let debugSeal = noop;
+let debugFreeze = noop;
+let runInDebug = noop;
+let setDebugFunction = noop;
+let getDebugFunction = noop;
 
 let deprecateFunc = function() { return arguments[arguments.length - 1]; };
-
-let setDebugFunction = () => {};
-let getDebugFunction = () => {};
 
 if (DEBUG) {
   setDebugFunction = function(type, callback) {
