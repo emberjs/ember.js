@@ -480,9 +480,7 @@ if (MANDATORY_SETTER) {
 
   Meta.prototype.writeValue = function(obj, key, value) {
     let descriptor = lookupDescriptor(obj, key);
-    let isMandatorySetter = descriptor !== undefined &&
-                            descriptor !== null &&
-                            descriptor.set && descriptor.set.isMandatorySetter;
+    let isMandatorySetter = descriptor !== null && descriptor.set && descriptor.set.isMandatorySetter;
 
     if (isMandatorySetter) {
       this.writeValues(key, value);

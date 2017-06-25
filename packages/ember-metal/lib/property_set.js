@@ -56,7 +56,6 @@ export function set(obj, keyName, value, tolerant) {
     assert('setUnknownProperty must be a function', typeof obj.setUnknownProperty === 'function');
     obj.setUnknownProperty(keyName, value);
   } else if (currentValue === value) { /* no change */
-    return value;
   } else {
     let meta = peekMeta(obj);
     propertyWillChange(obj, keyName, meta);
