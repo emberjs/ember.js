@@ -39,14 +39,14 @@ export function tagFor(object, _meta) {
 export function markObjectAsDirty(meta, propertyKey) {
   let objectTag = meta.readableTag();
 
-  if (objectTag) {
+  if (objectTag !== undefined) {
     objectTag.dirty();
   }
 
   let tags = meta.readableTags();
-  let propertyTag = tags && tags[propertyKey];
+  let propertyTag = tags !== undefined ? tags[propertyKey] : undefined;
 
-  if (propertyTag) {
+  if (propertyTag !== undefined) {
     propertyTag.dirty();
   }
 
@@ -54,21 +54,18 @@ export function markObjectAsDirty(meta, propertyKey) {
     meta.getTag().contentDidChange();
   }
 
-  if (objectTag || propertyTag) {
+  if (objectTag !== undefined || propertyTag !== undefined) {
     ensureRunloop();
   }
 }
 
 let run;
-
-function K() {}
-
 function ensureRunloop() {
-  if (!run) {
+  if (run === undefined) {
     run = require('ember-metal').run;
   }
 
-  if (hasViews() && !run.backburner.currentInstance) {
-    run.schedule('actions', K);
+  if (hasViews()) {
+    run.backburner.ensureInstance();
   }
 }
