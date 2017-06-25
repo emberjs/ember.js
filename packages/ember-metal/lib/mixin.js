@@ -37,19 +37,18 @@ import {
   removeListener
 } from './events';
 
-const a_slice = Array.prototype.slice;
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
 
 function isMethod(obj) {
   return 'function' === typeof obj &&
-         obj.isMethod !== false &&
-         obj !== Boolean &&
-         obj !== Object &&
-         obj !== Number &&
-         obj !== Array &&
-         obj !== Date &&
-         obj !== String;
+    obj.isMethod !== false &&
+    obj !== Boolean &&
+    obj !== Object &&
+    obj !== Number &&
+    obj !== Array &&
+    obj !== Date &&
+    obj !== String;
 }
 
 const CONTINUE = {};
@@ -213,8 +212,8 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
     values[key] = undefined;
   } else {
     if ((concats && concats.indexOf(key) >= 0) ||
-                key === 'concatenatedProperties' ||
-                key === 'mergedProperties') {
+        key === 'concatenatedProperties' ||
+        key === 'mergedProperties') {
       value = applyConcatenatedProperties(base, key, value, values);
     } else if ((mergings && mergings.indexOf(key) >= 0)) {
       value = applyMergedProperties(base, key, value, values);
@@ -736,7 +735,7 @@ export function aliasMethod(methodName) {
   @public
 */
 export function observer(...args) {
-  let func  = args.slice(-1)[0];
+  let func  = args[args.length - 1];
   let paths;
 
   let addWatchedProperty = path => {
@@ -822,7 +821,7 @@ export function _immediateObserver() {
   @private
 */
 export function _beforeObserver(...args) {
-  let func  = args.slice(-1)[0];
+  let func  = args[args.length - 1];
   let paths;
 
   let addWatchedProperty = path => { paths.push(path); };
