@@ -7,6 +7,20 @@ import {
   Service,
   readOnly
 } from 'ember-runtime';
+import { assign } from 'ember-utils';
+import RouterDSL from '../system/dsl';
+
+
+function shallowEqual(a, b) {
+  let k;
+  for (k in a) {
+    if (a.hasOwnProperty(k) && a[k] !== b[k]) { return false; }
+  }
+  for (k in b) {
+    if (b.hasOwnProperty(k) && a[k] !== b[k]) { return false; }
+  }
+  return true;
+}
 
 /**
    The Router service is the public API that provides component/view layer
@@ -17,11 +31,11 @@ import {
    @category ember-routing-router-service
  */
 const RouterService = Service.extend({
-  currentRouteName: readOnly('router.currentRouteName'),
-  currentURL: readOnly('router.currentURL'),
-  location: readOnly('router.location'),
-  rootURL: readOnly('router.rootURL'),
-  router: null,
+  currentRouteName: readOnly('_router.currentRouteName'),
+  currentURL: readOnly('_router.currentURL'),
+  location: readOnly('_router.location'),
+  rootURL: readOnly('_router.rootURL'),
+  _router: null,
 
   /**
      Transition the application into another route. The route may
@@ -40,8 +54,25 @@ const RouterService = Service.extend({
        attempted transition
      @public
    */
-  transitionTo(/* routeNameOrUrl, ...models, options */) {
-    return this.router.transitionTo(...arguments);
+  transitionTo(...args) {
+    let queryParams;
+    let arg = args[0];
+    if (resemblesURL(arg)) {
+      return this._router._doURLTransition('transitionTo', arg);
+    }
+
+    let possibleQueryParams = args[args.length - 1];
+    if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
+      queryParams = args.pop().queryParams;
+    } else {
+      queryParams = {};
+    }
+
+    let targetRouteName = args.shift();
+    let transition = this._router._doTransition(targetRouteName, args, queryParams, true);
+    transition._keepDefaultQueryParamValues = true;
+
+    return transition;
   },
 
   /**
@@ -62,13 +93,14 @@ const RouterService = Service.extend({
      @public
    */
   replaceWith(/* routeNameOrUrl, ...models, options */) {
-    return this.router.replaceWith(...arguments);
+    return this.transitionTo(...arguments).method('replace');
   },
 
   /**
      Generate a URL based on the supplied route name.
 
      @method urlFor
+     @category ember-routing-router-service
      @param {String} routeName the name of the route
      @param {...Object} models the model(s) or identifier(s) to be used while
        transitioning to the route.
@@ -78,8 +110,53 @@ const RouterService = Service.extend({
      @public
    */
   urlFor(/* routeName, ...models, options */) {
-    return this.router.generate(...arguments);
+    return this._router.generate(...arguments);
+  },
+
+  /**
+     Determines whether a route is active.
+
+     @method isActive
+     @category ember-routing-router-service
+     @param {String} routeName the name of the route
+     @param {...Object} models the model(s) or identifier(s) to be used while
+       transitioning to the route.
+     @param {Object} [options] optional hash with a queryParams property
+       containing a mapping of query parameters
+     @return {boolean} true if the provided routeName/models/queryParams are active
+     @public
+   */
+  isActive(/* routeName, ...models, options */) {
+    let { routeName, models, queryParams } = this._extractArguments(...arguments);
+    let routerMicrolib = this._router._routerMicrolib;
+    let state = routerMicrolib.state;
+
+    if (!routerMicrolib.isActiveIntent(routeName, models, null)) { return false; }
+    let hasQueryParams = Object.keys(queryParams).length > 0;
+
+    if (hasQueryParams) {
+      this._router._prepareQueryParams(routeName, models, queryParams, true /* fromRouterService */);
+      return shallowEqual(queryParams, state.queryParams);
+    }
+
+    return true;
+  },
+
+  _extractArguments(routeName, ...models) {
+    let possibleQueryParams = models[models.length - 1];
+    let queryParams = {};
+
+    if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
+      let options = models.pop();
+      queryParams = options.queryParams;
+    }
+
+    return { routeName, models, queryParams };
   }
 });
+
+function resemblesURL(str) {
+  return typeof str === 'string' && (str === '' || str[0] === '/');
+}
 
 export default RouterService;

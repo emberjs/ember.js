@@ -873,7 +873,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         qp.serializedValue = svalue;
 
         let thisQueryParamHasDefaultValue = (qp.serializedDefaultValue === svalue);
-        if (!thisQueryParamHasDefaultValue) {
+        if (!thisQueryParamHasDefaultValue || transition._keepDefaultQueryParamValues) {
           finalParams.push({
             value: svalue,
             visible: true,

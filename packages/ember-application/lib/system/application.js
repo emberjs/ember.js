@@ -1045,7 +1045,7 @@ function commonSetupRegistry(registry) {
 
   if (EMBER_ROUTING_ROUTER_SERVICE) {
     registry.register('service:router', RouterService);
-    registry.injection('service:router', 'router', 'router:main');
+    registry.injection('service:router', '_router', 'router:main');
   }
 }
 

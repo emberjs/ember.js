@@ -4,6 +4,7 @@ import {
   moduleFor
 } from 'internal-test-helpers';
 import { Transition } from 'router';
+import { Controller } from 'ember-runtime';
 
 import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 
@@ -103,6 +104,31 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         })
         .then(() => {
           assert.deepEqual(this.state, ['/', '/child', '/sister', '/sister']);
+        });
+    }
+
+    ['@test RouterService#replaceWith with basic query params does not remove query param defaults'](assert) {
+      assert.expect(1);
+
+      this.add('controller:parent.child', Controller.extend({
+        queryParams: ['sort'],
+        sort: 'ASC'
+      }));
+
+      let queryParams = this.buildQueryParams({ sort: 'ASC' });
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo('parent.brother');
+        })
+        .then(() => {
+          return this.routerService.replaceWith('parent.sister');
+        })
+        .then(() => {
+          return this.routerService.replaceWith('parent.child', queryParams);
+        })
+        .then(() => {
+          assert.deepEqual(this.state, ['/', '/child?sort=ASC']);
         });
     }
   });
