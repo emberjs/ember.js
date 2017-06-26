@@ -63,6 +63,44 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
       });
     }
 
+    ['@test RouterService#urlFor returns URL for simple route with basic query params and default value'](assert) {
+      assert.expect(1);
+
+      this.add('controller:parent.child', Controller.extend({
+        queryParams: ['sort'],
+        sort: 'ASC'
+      }));
+
+      let queryParams = this.buildQueryParams({ sort: 'ASC' });
+
+      return this.visit('/').then(() => {
+        let expectedURL = this.routerService.urlFor('parent.child', queryParams);
+
+        assert.equal('/child?sort=ASC', expectedURL);
+      });
+    }
+
+    ['@test RouterService#urlFor returns URL for simple route with basic query params and default value with stickyness'](assert) {
+      assert.expect(2);
+
+      this.add('controller:parent.child', Controller.extend({
+        queryParams: ['sort', 'foo'],
+        sort: 'ASC'
+      }));
+
+      let queryParams = this.buildQueryParams({ sort: 'DESC' });
+
+      return this.visit('/child/?sort=DESC').then(() => {
+        let controller = this.applicationInstance.lookup('controller:parent.child');
+        assert.equal(get(controller, 'sort'), 'DESC', 'sticky is set');
+
+        let queryParams = this.buildQueryParams({ foo: 'derp' });
+        let actual = this.routerService.urlFor('parent.child', queryParams);
+
+        assert.equal(actual, '/child?foo=derp', 'does not use "stickiness"');
+      });
+    }
+
     ['@test RouterService#urlFor returns URL for simple route with array as query params'](assert) {
       assert.expect(1);
 

@@ -767,7 +767,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  _doTransition(_targetRouteName, models, _queryParams) {
+  _doTransition(_targetRouteName, models, _queryParams, _keepDefaultQueryParamValues) {
     let targetRouteName = _targetRouteName || getActiveTargetName(this._routerMicrolib);
     assert(`The route ${targetRouteName} was not found`, targetRouteName && this._routerMicrolib.hasRoute(targetRouteName));
 
@@ -776,7 +776,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     this._processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams);
 
     assign(queryParams, _queryParams);
-    this._prepareQueryParams(targetRouteName, models, queryParams);
+    this._prepareQueryParams(targetRouteName, models, queryParams, _keepDefaultQueryParamValues);
 
     let transitionArgs = routeArgs(targetRouteName, models, queryParams);
     let transition = this._routerMicrolib.transitionTo(...transitionArgs);
@@ -817,13 +817,17 @@ const EmberRouter = EmberObject.extend(Evented, {
     @param {String} targetRouteName
     @param {Array<Object>} models
     @param {Object} queryParams
+    @param {boolean} keepDefaultQueryParamValues
     @return {Void}
   */
-  _prepareQueryParams(targetRouteName, models, queryParams) {
+  _prepareQueryParams(targetRouteName, models, queryParams, _fromRouterService) {
     let state = calculatePostTransitionState(this, targetRouteName, models);
-    this._hydrateUnsuppliedQueryParams(state, queryParams);
+    this._hydrateUnsuppliedQueryParams(state, queryParams, _fromRouterService);
     this._serializeQueryParams(state.handlerInfos, queryParams);
-    this._pruneDefaultQueryParamValues(state.handlerInfos, queryParams);
+
+    if (!_fromRouterService) {
+      this._pruneDefaultQueryParamValues(state.handlerInfos, queryParams);
+    }
   },
 
   /**
@@ -945,7 +949,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     @param {Object} queryParams
     @return {Void}
   */
-  _hydrateUnsuppliedQueryParams(state, queryParams) {
+  _hydrateUnsuppliedQueryParams(state, queryParams, _fromRouterService) {
     let handlerInfos = state.handlerInfos;
     let appCache = this._bucketCache;
 
@@ -955,11 +959,26 @@ const EmberRouter = EmberObject.extend(Evented, {
       if (!qpMeta) { continue; }
 
       for (let j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
-        let qp = qpMeta.qps[j];
+        var qp = qpMeta.qps[j];
 
-        let presentProp = qp.prop in queryParams && qp.prop ||
+        var presentProp = qp.prop in queryParams && qp.prop ||
                           qp.scopedPropertyName in queryParams && qp.scopedPropertyName ||
                           qp.urlKey in queryParams && qp.urlKey;
+
+        assert(
+          `You passed the \`${presentProp}\` query parameter during a transition into ${qp.route.routeName}, please update to ${qp.urlKey}`,
+          (function() {
+            if (qp.urlKey === presentProp) {
+              return true;
+            }
+
+            if (_fromRouterService) {
+              return false;
+            }
+
+            return true;
+          })()
+        );
 
         if (presentProp) {
           if (presentProp !== qp.scopedPropertyName) {

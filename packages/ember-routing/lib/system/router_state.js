@@ -8,7 +8,6 @@ export default EmberObject.extend({
   routerJsState: null,
 
   isActiveIntent(routeName, models, queryParams, queryParamsMustMatch) {
-    debugger;
     let state = this.routerJsState;
     if (!this.routerJs.isActiveIntent(routeName, models, null, state)) { return false; }
 

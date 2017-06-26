@@ -1,6 +1,7 @@
 import { inject } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import { Route, NoneLocation } from 'ember-routing';
+import { Controller } from 'ember-runtime';
 import {
   run,
   get,
@@ -234,6 +235,63 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
         assert.equal(this.routerService.get('currentURL'), '/dynamic/1');
         this.assertText('much dynamicism');
+      });
+    }
+
+    ['@test RouterService#transitionTo with basic query params does not remove query param defaults'](assert) {
+      assert.expect(1);
+
+      this.add('controller:parent.child', Controller.extend({
+        queryParams: ['sort'],
+        sort: 'ASC'
+      }));
+
+      let queryParams = this.buildQueryParams({ sort: 'ASC' });
+
+      return this.visit('/').then(() => {
+        return this.routerService.transitionTo('parent.child', queryParams);
+      })
+        .then(() => {
+          assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+        });
+    }
+
+    ['@test RouterService#transitionTo with aliased query params uses the original provided key'](assert) {
+      assert.expect(1);
+
+      this.add('controller:parent.child', Controller.extend({
+        queryParams: {
+          'cont_sort': 'url_sort'
+        },
+        cont_sort: 'ASC'
+      }));
+
+      let queryParams = this.buildQueryParams({ url_sort: 'ASC' });
+
+      return this.visit('/').then(() => {
+        return this.routerService.transitionTo('parent.child', queryParams);
+      })
+        .then(() => {
+          assert.equal(this.routerService.get('currentURL'), '/child?url_sort=ASC');
+        });
+    }
+
+    ['@test RouterService#transitionTo with aliased query params uses the original provided key when controller property name'](assert) {
+      assert.expect(1);
+
+      this.add('controller:parent.child', Controller.extend({
+        queryParams: {
+          'cont_sort': 'url_sort'
+        },
+        cont_sort: 'ASC'
+      }));
+
+      let queryParams = this.buildQueryParams({ cont_sort: 'ASC' });
+
+      return this.visit('/').then(() => {
+        expectAssertion(() => {
+          return this.routerService.transitionTo('parent.child', queryParams);
+        }, 'You passed the `cont_sort` query parameter during a transition into parent.child, please update to url_sort');
       });
     }
   });
