@@ -9,7 +9,19 @@ import {
   Mixin,
   computed
 } from 'ember-metal';
-import { assert } from 'ember-debug';
+import { assert, deprecate } from 'ember-debug';
+
+function deprecateTargetObject() {
+  deprecate(
+    'Using `targetObject` has been deprecated in TargetActionSupport Mixin',
+    false,
+    {
+      id: 'ember-runtime.mixins.target-action-support.targetObject',
+      until: '3.0.0'
+    }
+  );
+}
+
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class
 to add a `triggerAction` method with semantics similar to the Handlebars
@@ -26,6 +38,18 @@ export default Mixin.create({
   target: null,
   action: null,
   actionContext: null,
+
+  targetObject: computed({
+    get() {
+      deprecateTargetObject();
+      return this._targetObject;
+    },
+    set(key, val) {
+      deprecateTargetObject();
+      this._targetObject = val;
+      return val;
+    }
+  }),
 
   actionContextObject: computed('actionContext', function() {
     let actionContext = get(this, 'actionContext');
@@ -121,16 +145,9 @@ export default Mixin.create({
 });
 
 function getTarget(instance) {
-  // TODO: Deprecate specifying `targetObject`
-  let target = get(instance, 'targetObject');
-
-  // if a `targetObject` CP was provided, use it
-  if (target) { return target; }
-
-  // if _targetObject use it
   if (instance._targetObject) { return instance._targetObject; }
 
-  target = get(instance, 'target');
+  let target = get(instance, 'target');
   if (target) {
     if (typeof target === 'string') {
       let value = get(instance, target);
