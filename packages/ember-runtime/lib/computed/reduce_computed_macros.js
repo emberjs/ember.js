@@ -4,14 +4,13 @@
 */
 
 import { guidFor } from 'ember-utils';
-import { assert, Error as EmberError } from 'ember-debug';
+import { assert } from 'ember-debug';
 import {
   get,
   ComputedProperty,
   computed,
   addObserver,
   removeObserver,
-  isNone,
   getProperties,
   WeakMap
 } from 'ember-metal';
@@ -573,9 +572,9 @@ export function intersect(...args) {
   @public
 */
 export function setDiff(setAProperty, setBProperty) {
-  if (arguments.length !== 2) {
-    throw new EmberError('setDiff requires exactly two dependent arrays.');
-  }
+  assert('Ember.computed.setDiff requires exactly two dependent arrays.',
+    arguments.length === 2
+  );
 
   return computed(`${setAProperty}.[]`, `${setBProperty}.[]`, function() {
     let setA = this.get(setAProperty);
@@ -620,7 +619,7 @@ export function collect(...dependentKeys) {
     let res = emberA();
     for (let key in properties) {
       if (properties.hasOwnProperty(key)) {
-        if (isNone(properties[key])) {
+        if (properties[key] === undefined) {
           res.push(null);
         } else {
           res.push(properties[key]);

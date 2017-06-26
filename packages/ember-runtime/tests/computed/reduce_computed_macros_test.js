@@ -639,17 +639,17 @@ QUnit.test('setDiff is readOnly', function() {
   }, /Cannot set read-only property "diff" on object:/);
 });
 
-QUnit.test('it throws an error if given fewer or more than two dependent properties', function() {
-  throws(function () {
+QUnit.test('it asserts if given fewer or more than two dependent properties', function() {
+  expectAssertion(function () {
     EmberObject.extend({
       diff: setDiff('array')
     }).create({
       array: emberA([1, 2, 3, 4, 5, 6, 7]),
       array2: emberA([3, 4, 5])
     });
-  }, /requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
+  }, /Ember\.computed\.setDiff requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 
-  throws(function () {
+  expectAssertion(function () {
     EmberObject.extend({
       diff: setDiff('array', 'array2', 'array3')
     }).create({
@@ -657,7 +657,7 @@ QUnit.test('it throws an error if given fewer or more than two dependent propert
       array2: emberA([3, 4, 5]),
       array3: emberA([7])
     });
-  }, /requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
+  }, /Ember\.computed\.setDiff requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 });
 
 
