@@ -35,12 +35,6 @@ if (DEBUG) {
 
 export const UNDEFINED = symbol('undefined');
 
-// FLAGS
-const SOURCE_DESTROYING = 1 << 1;
-const SOURCE_DESTROYED = 1 << 2;
-const META_DESTROYED = 1 << 3;
-const IS_PROXY = 1 << 4;
-
 const META_FIELD = '__ember_meta__';
 const NODE_STACK = [];
 
@@ -65,7 +59,10 @@ export class Meta {
 
     // initial value for all flags right now is false
     // see FLAGS const for detailed list of flags used
-    this._flags = 0;
+    this._sourceDestroying = false;
+    this._sourceDestroyed = false;
+    this._metaDestroyed = false;
+    this._isProxy = false;
 
     // used only internally
     this.source = obj;
@@ -148,35 +145,35 @@ export class Meta {
   }
 
   isSourceDestroying() {
-    return (this._flags & SOURCE_DESTROYING) !== 0;
+    return this._sourceDestroying;
   }
 
   setSourceDestroying() {
-    this._flags |= SOURCE_DESTROYING;
+    this._sourceDestroying = true;
   }
 
   isSourceDestroyed() {
-    return (this._flags & SOURCE_DESTROYED) !== 0;
+    return this._sourceDestroyed;
   }
 
   setSourceDestroyed() {
-    this._flags |= SOURCE_DESTROYED;
+    this._sourceDestroyed = true;
   }
 
   isMetaDestroyed() {
-    return (this._flags & META_DESTROYED) !== 0;
+    return this._metaDestroyed;
   }
 
   setMetaDestroyed() {
-    this._flags |= META_DESTROYED;
+    this._metaDestroyed = true;
   }
 
   isProxy() {
-    return (this._flags & IS_PROXY) !== 0;
+    return this._isProxy;
   }
 
   setProxy() {
-    this._flags |= IS_PROXY;
+    this._isProxy = true;
   }
 
   _getOrCreateOwnMap(key) {
