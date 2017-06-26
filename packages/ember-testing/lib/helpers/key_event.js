@@ -21,7 +21,7 @@
 export default function keyEvent(app, selector, contextOrType, typeOrKeyCode, keyCode) {
   let context, type;
 
-  if (typeof keyCode === 'undefined') {
+  if (keyCode === undefined) {
     context = null;
     keyCode = typeOrKeyCode;
     type = contextOrType;
@@ -30,5 +30,5 @@ export default function keyEvent(app, selector, contextOrType, typeOrKeyCode, ke
     type = typeOrKeyCode;
   }
 
-  return app.testHelpers.triggerEvent(selector, context, type, { keyCode: keyCode, which: keyCode });
+  return app.testHelpers.triggerEvent(selector, context, type, { keyCode, which: keyCode });
 }

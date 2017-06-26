@@ -109,7 +109,7 @@ export default Mixin.create({
       return ret.concat(options);
     }
 
-    if (typeof actionContext === 'undefined') {
+    if (actionContext === undefined) {
       actionContext = get(this, 'actionContextObject') || this;
     }
 

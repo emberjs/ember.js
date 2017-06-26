@@ -11,7 +11,7 @@ const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
 
 function isAllowedEvent(event, allowedKeys) {
-  if (allowedKeys === null || typeof allowedKeys === 'undefined') {
+  if (allowedKeys === null || allowedKeys === undefined) {
     if (POINTER_EVENT_TYPE_REGEX.test(event.type)) {
       return isSimpleClick(event);
     } else {
