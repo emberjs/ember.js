@@ -93,21 +93,9 @@ export default Mixin.create({
   @private
   */
   triggerAction(opts = {}) {
-    let action = opts.action || get(this, 'action');
-    let target = opts.target;
-
-    if (!target) {
-      target = getTarget(this);
-    }
-
-    let actionContext = opts.actionContext;
-
-    function args(options, actionName) {
-      let ret = [];
-      if (actionName) { ret.push(actionName); }
-
-      return ret.concat(options);
-    }
+    let { action, target, actionContext } = opts;
+    action = action || get(this, 'action');
+    target = target || getTarget(this);
 
     if (typeof actionContext === 'undefined') {
       actionContext = get(this, 'actionContextObject') || this;
@@ -117,20 +105,18 @@ export default Mixin.create({
       let ret;
 
       if (target.send) {
-        ret = target.send(...args(actionContext, action));
+        ret = target.send(...[action].concat(actionContext));
       } else {
         assert(`The action '${action}' did not exist on ${target}`, typeof target[action] === 'function');
-        ret = target[action](...args(actionContext));
+        ret = target[action](...[].concat(actionContext));
       }
 
       if (ret !== false) {
-        ret = true;
+        return true;
       }
-
-      return ret;
-    } else {
-      return false;
     }
+
+    return false;
   }
 });
 
