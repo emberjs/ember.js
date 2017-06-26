@@ -735,30 +735,26 @@ export function aliasMethod(methodName) {
   @public
 */
 export function observer(...args) {
-  let func  = args[args.length - 1];
-  let paths;
-
-  let addWatchedProperty = path => {
-    paths.push(path);
-  };
-  let _paths = args.slice(0, -1);
-
-  if (typeof func !== 'function') {
+  let _paths, func;
+  if (typeof args[args.length - 1] !== 'function') {
     // revert to old, soft-deprecated argument ordering
     deprecate('Passing the dependentKeys after the callback function in Ember.observer is deprecated. Ensure the callback function is the last argument.', false, { id: 'ember-metal.observer-argument-order', until: '3.0.0' });
 
-    func  = args[0];
-    _paths = args.slice(1);
+    func = args.shift();
+    _paths = args;
+  } else {
+    func = args.pop();
+    _paths = args;
   }
 
-  paths = [];
+  assert('Ember.observer called without a function', typeof func === 'function');
+  assert('Ember.observer called without valid path', _paths.length > 0 && _paths.every((p)=> p && p.length));
+
+  let paths = [];
+  let addWatchedProperty = path => paths.push(path);
 
   for (let i = 0; i < _paths.length; ++i) {
     expandProperties(_paths[i], addWatchedProperty);
-  }
-
-  if (typeof func !== 'function') {
-    throw new EmberError('Ember.observer called without a function');
   }
 
   func.__ember_observes__ = paths;
