@@ -6,6 +6,7 @@ const typescript = require('broccoli-typescript-compiler');
 const transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
 const handlebarsInlinedTrees = require('./handlebars-inliner');
 const TSLint = require('broccoli-tslinter');
+const Rollup = require('broccoli-rollup');
 
 /**
  * For development, this returns a Broccoli tree with:
@@ -38,7 +39,7 @@ function transpileGlimmerSourceToAMD() {
     include: ['**/*.ts'],
     exclude: [
       '**/*.d.ts',
-      '@glimmer/node/**/*'
+      '@glimmer/node/test/*'
     ]
   });
 
@@ -123,9 +124,17 @@ function includeVendorDependencies() {
     destDir: 'simple-html-tokenizer'
   });
 
+  let simpleDOM = new Rollup('node_modules/simple-dom/lib', {
+    rollup: {
+      format: 'es6',
+      entry: ['simple-dom.js'],
+      dest: 'simple-dom.js'
+    }
+  });
+
   let handlebars = handlebarsInlinedTrees.compiler;
 
-  let transpiled = transpileES6(merge([simpleHTMLTokenizer, handlebarsInlinedTrees.compiler]), 'test-dependencies', {
+  let transpiled = transpileES6(merge([simpleHTMLTokenizer, handlebarsInlinedTrees.compiler, simpleDOM]), 'test-dependencies', {
     avoidDefine: false
   });
 

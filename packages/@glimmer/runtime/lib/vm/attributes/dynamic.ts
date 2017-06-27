@@ -29,7 +29,7 @@ export function defaultDynamicAttributes(element: Simple.Element, attr: string):
 
 export function defaultDynamicAttribute(tagName: string, name: string): DynamicAttributeFactory {
   if (requiresSanitization(tagName, name)) {
-    throw new Error(`ASSERT: All sanitized properties are not 'attr'`);
+    return SafeDynamicAttribute;
   } else {
     return SimpleDynamicAttribute;
   }
@@ -59,7 +59,7 @@ export abstract class DynamicAttribute implements AttributeOperation {
 }
 
 export class SimpleDynamicAttribute extends DynamicAttribute {
-  set(dom: ElementBuilder, value: Opaque): void {
+  set(dom: ElementBuilder, value: Opaque, _env: Environment): void {
     let normalizedValue = normalizeValue(value);
 
     if (normalizedValue !== null) {
@@ -68,7 +68,7 @@ export class SimpleDynamicAttribute extends DynamicAttribute {
     }
   }
 
-  update(value: Opaque): void {
+  update(value: Opaque, _env: Environment): void {
     let normalizedValue = normalizeValue(value);
     let { element, name } = this.attribute;
 
@@ -112,6 +112,20 @@ export class DefaultDynamicProperty extends DynamicAttribute {
 }
 
 export class SafeDynamicProperty extends DefaultDynamicProperty {
+  set(dom: ElementBuilder, value: Opaque, env: Environment): void {
+    let { element, name } = this.attribute;
+    let sanitized = sanitizeAttributeValue(env, element, name, value);
+    super.set(dom, sanitized, env);
+  }
+
+  update(value: Opaque, env: Environment): void {
+    let { element, name } = this.attribute;
+    let sanitized = sanitizeAttributeValue(env, element, name, value);
+    super.update(sanitized, env);
+  }
+}
+
+export class SafeDynamicAttribute extends SimpleDynamicAttribute {
   set(dom: ElementBuilder, value: Opaque, env: Environment): void {
     let { element, name } = this.attribute;
     let sanitized = sanitizeAttributeValue(env, element, name, value);
