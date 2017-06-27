@@ -209,8 +209,7 @@ export default EmberObject.extend({
     ] = fullName.split(':');
 
     let name = fullNameWithoutType;
-    let namespace = get(this, 'namespace');
-    let root = namespace;
+    let root = get(this, 'namespace');
     let lastSlashIndex = name.lastIndexOf('/');
     let dirname = lastSlashIndex !== -1 ? name.slice(0, lastSlashIndex) : null;
 
@@ -255,13 +254,12 @@ export default EmberObject.extend({
   */
   lookupDescription(fullName) {
     let parsedName = this.parseName(fullName);
-    let description;
 
     if (parsedName.type === 'template') {
       return `template at ${parsedName.fullNameWithoutType.replace(/\./g, '/')}`;
     }
 
-    description = `${parsedName.root}.${StringUtils.classify(parsedName.name).replace(/\./g, '')}`;
+    let description = `${parsedName.root}.${StringUtils.classify(parsedName.name).replace(/\./g, '')}`;
 
     if (parsedName.type !== 'model') {
       description += StringUtils.classify(parsedName.type);
@@ -313,6 +311,7 @@ export default EmberObject.extend({
   */
   resolveView(parsedName) {
     this.useRouterNaming(parsedName);
+
     return this.resolveOther(parsedName);
   },
 
@@ -326,6 +325,7 @@ export default EmberObject.extend({
   */
   resolveController(parsedName) {
     this.useRouterNaming(parsedName);
+
     return this.resolveOther(parsedName);
   },
   /**
@@ -338,6 +338,7 @@ export default EmberObject.extend({
   */
   resolveRoute(parsedName) {
     this.useRouterNaming(parsedName);
+
     return this.resolveOther(parsedName);
   },
 
@@ -351,9 +352,8 @@ export default EmberObject.extend({
   */
   resolveModel(parsedName) {
     let className = StringUtils.classify(parsedName.name);
-    let factory = get(parsedName.root, className);
 
-    return factory;
+    return get(parsedName.root, className);
   },
   /**
     Look up the specified object (from parsedName) on the appropriate
@@ -378,12 +378,13 @@ export default EmberObject.extend({
   */
   resolveOther(parsedName) {
     let className = StringUtils.classify(parsedName.name) + StringUtils.classify(parsedName.type);
-    let factory = get(parsedName.root, className);
-    return factory;
+
+    return get(parsedName.root, className);
   },
 
   resolveMain(parsedName) {
     let className = StringUtils.classify(parsedName.type);
+
     return get(parsedName.root, className);
   },
 
@@ -394,17 +395,14 @@ export default EmberObject.extend({
    @private
   */
   _logLookup(found, parsedName) {
-    let symbol, padding;
+    let symbol = '[ ]';
+    let padding = '.';
 
     if (found) {
       symbol = '[✓]';
-    } else {
-      symbol = '[ ]';
     }
 
-    if (parsedName.fullName.length > 60) {
-      padding = '.';
-    } else {
+    if (parsedName.fullName.length < 60) {
       padding = new Array(60 - parsedName.fullName.length).join('.');
     }
 
@@ -425,8 +423,8 @@ export default EmberObject.extend({
 
     let known = dictionary(null);
     let knownKeys = Object.keys(namespace);
-    for (let index = 0; index < knownKeys.length; index++) {
-      let name = knownKeys[index];
+    for (let i = 0; i < knownKeys.length; i++) {
+      let name = knownKeys[i];
 
       if (typeRegexp.test(name)) {
         let containerName = this.translateToContainerFullname(type, name);
@@ -454,7 +452,7 @@ export default EmberObject.extend({
 
   translateToContainerFullname(type, name) {
     let suffix = StringUtils.classify(type);
-    let namePrefix = name.slice(0, suffix.length * -1);
+    let namePrefix = name.slice(0, -suffix.length);
     let dasherizedName = StringUtils.dasherize(namePrefix);
 
     return `${type}:${dasherizedName}`;

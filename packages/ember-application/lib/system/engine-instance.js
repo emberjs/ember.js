@@ -43,8 +43,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     let base = this.base;
 
     if (!base) {
-      base = this.application;
-      this.base = base;
+      this.base = base = this.application;
     }
 
     // Create a per-instance registry that will use the application's registry
@@ -205,13 +204,12 @@ EngineInstance.reopenClass({
     registry.injection('view', '_environment', '-environment:main');
     registry.injection('route', '_environment', '-environment:main');
 
+    let rendererType = 'inert';
     if (options.isInteractive) {
-      registry.injection('view', 'renderer', 'renderer:-dom');
-      registry.injection('component', 'renderer', 'renderer:-dom');
-    } else {
-      registry.injection('view', 'renderer', 'renderer:-inert');
-      registry.injection('component', 'renderer', 'renderer:-inert');
+      rendererType = 'dom';
     }
+    registry.injection('view', 'renderer', `renderer:-${rendererType}`);
+    registry.injection('component', 'renderer', `renderer:-${rendererType}`);
   }
 });
 

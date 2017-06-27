@@ -14,7 +14,7 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
     run(() => {
       App = Application.create();
       context.lookup = {
-        App: App
+        App
       };
     });
 
@@ -37,7 +37,7 @@ QUnit.test('instances', function() {
   let post = App.__container__.lookup('model:post');
   let guid = guidFor(post);
 
-  equal(post.toString(), '<App.Post:' + guid + '>', 'expecting the model to be post');
+  equal(post.toString(), `<App.Post:${guid}>`, 'expecting the model to be post');
 });
 
 QUnit.test('with a custom resolver', function() {
@@ -58,5 +58,5 @@ QUnit.test('with a custom resolver', function() {
   let peter = App.__container__.lookup('model:peter');
   let guid = guidFor(peter);
 
-  equal(peter.toString(), '<model:peter:' + guid + '>', 'expecting the supermodel to be peter');
+  equal(peter.toString(), `<model:peter:${guid}>`, 'expecting the supermodel to be peter');
 });

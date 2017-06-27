@@ -221,6 +221,7 @@ const ApplicationInstance = EngineInstance.extend({
   */
   getURL() {
     let router = get(this, 'router');
+
     return get(router, 'url');
   },
 
@@ -260,7 +261,7 @@ const ApplicationInstance = EngineInstance.extend({
       }
     };
 
-    let handleTransitionReject = (error) => {
+    let handleTransitionReject = error => {
       if (error.error) {
         throw error.error;
       } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
