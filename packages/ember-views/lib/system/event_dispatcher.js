@@ -143,7 +143,7 @@ export default EmberObject.extend({
       !('canDispatchToEventManager' in this),
       {
         id: 'ember-views.event-dispatcher.canDispatchToEventManager',
-        until: '2.16.0'
+        until: '2.17.0'
       }
     );
   },
