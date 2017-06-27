@@ -25,9 +25,6 @@ export default function compileOptions(_options) {
   return options;
 }
 
-function ensurePlugin(FunctionOrPlugin) {
-}
-
 export function registerPlugin(type, _plugin) {
   if (type !== 'ast') {
     throw new Error(`Attempting to register ${_plugin} as "${type}" which is not a valid Glimmer plugin type.`);
