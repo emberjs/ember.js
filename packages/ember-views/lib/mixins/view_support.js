@@ -518,7 +518,7 @@ export default Mixin.create({
         false,
         {
           id: 'ember-views.event-dispatcher.canDispatchToEventManager',
-          until: '2.16.0'
+          until: '2.17.0'
         }
       );
 
