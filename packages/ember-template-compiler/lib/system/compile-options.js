@@ -57,6 +57,10 @@ export function registerPlugin(type, _plugin) {
   USER_PLUGINS = [plugin, ...USER_PLUGINS];
 }
 
+export function unregisterAllPlugins() {
+  USER_PLUGINS.length = 0;
+}
+
 export function removePlugin(type, PluginClass) {
   if (type !== 'ast') {
     throw new Error(`Attempting to unregister ${PluginClass} as "${type}" which is not a valid Glimmer plugin type.`);
