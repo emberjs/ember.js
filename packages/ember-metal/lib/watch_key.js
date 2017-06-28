@@ -1,7 +1,8 @@
 import { lookupDescriptor } from 'ember-utils';
 import { MANDATORY_SETTER } from 'ember/features';
 import {
-  meta as metaFor
+  meta as metaFor,
+  peekMeta
 } from './meta';
 import {
   MANDATORY_SETTER_FUNCTION,
@@ -12,15 +13,13 @@ import {
 let handleMandatorySetter;
 
 export function watchKey(obj, keyName, meta) {
-  if (typeof obj !== 'object' || obj === null) {
-    return;
-  }
+  if (typeof obj !== 'object' || obj === null) { return; }
+
   let m = meta || metaFor(obj);
+  let count = m.peekWatching(keyName) || 0;
+  m.writeWatching(keyName, count + 1);
 
-  // activate watching first time
-  if (!m.peekWatching(keyName)) {
-    m.writeWatching(keyName, 1);
-
+  if (count === 0) { // activate watching first time
     let possibleDesc = obj[keyName];
     let isDescriptor = possibleDesc !== null &&
       typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
@@ -34,8 +33,6 @@ export function watchKey(obj, keyName, meta) {
       // NOTE: this is dropped for prod + minified builds
       handleMandatorySetter(m, obj, keyName);
     }
-  } else {
-    m.writeWatching(keyName, (m.peekWatching(keyName) || 0) + 1);
   }
 }
 
@@ -87,10 +84,10 @@ export function unwatchKey(obj, keyName, _meta) {
   if (typeof obj !== 'object' || obj === null) {
     return;
   }
-  let meta = _meta || metaFor(obj);
+  let meta = _meta || peekMeta(obj);
 
   // do nothing of this object has already been destroyed
-  if (meta.isSourceDestroyed()) { return; }
+  if (meta === undefined || meta.isSourceDestroyed()) { return; }
 
   let count = meta.peekWatching(keyName);
   if (count === 1) {
