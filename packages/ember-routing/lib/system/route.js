@@ -1980,7 +1980,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       renderTemplate(controller, model){
         this.render('posts', {    // the template to render, referenced by name
           into: 'application',    // the template to render into, referenced by name
-          outlet: 'anOutletName', // the outlet inside `options.template` to render into.
+          outlet: 'anOutletName', // the outlet inside `options.into` to render into.
           controller: 'someControllerName', // the controller to use for this template, referenced by name
           model: model            // the model to set on `options.controller`.
         })
@@ -2042,7 +2042,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @param {Object} [options] the options
     @param {String} [options.into] the template to render into,
                     referenced by name. Defaults to the parent template
-    @param {String} [options.outlet] the outlet inside `options.template` to render into.
+    @param {String} [options.outlet] the outlet inside `options.into` to render into.
                     Defaults to 'main'
     @param {String|Object} [options.controller] the controller to use for this template,
                     referenced by name or as a controller instance. Defaults to the Route's paired controller
