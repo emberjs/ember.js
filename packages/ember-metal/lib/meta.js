@@ -89,7 +89,7 @@ export class Meta {
     }
 
     this._listeners = undefined;
-    this._listenersFinalized = undefined;
+    this._listenersFinalized = false;
     this._suspendedListeners = undefined;
   }
 
