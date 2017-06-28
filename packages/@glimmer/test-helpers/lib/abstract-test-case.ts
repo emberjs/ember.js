@@ -8,6 +8,17 @@ import {
 import { Opaque, dict, expect } from '@glimmer/util';
 import { assign, equalTokens, normalizeInnerHTML } from './helpers';
 import { Option, Dict } from "@glimmer/interfaces";
+import { UpdatableReference } from "@glimmer/object-reference";
+import { TestDynamicScope } from "@glimmer/test-helpers";
+import { NodeDOMTreeConstruction } from "@glimmer/node";
+import * as SimpleDOM from 'simple-dom';
+
+export const OPEN: { marker: 'open-block' } = { marker: 'open-block' };
+export const CLOSE: { marker: 'close-block' } = { marker: 'close-block' };
+export const SEP: { marker: 'sep' } = { marker: 'sep' };
+export const EMPTY: { marker: 'empty' } = { marker: 'empty' };
+
+export type Content = string | typeof OPEN | typeof CLOSE | typeof SEP | typeof EMPTY;
 
 export function skip(_target: Object, _name: string, descriptor: PropertyDescriptor) {
   descriptor.value['skip'] = true;
@@ -73,7 +84,7 @@ class SimplePathReference implements PathReference<Opaque> {
 type IndividualSnapshot = 'up' | 'down' | Node;
 type NodesSnapshot = IndividualSnapshot[];
 
-export abstract class RenderTest {
+export abstract class AbstractRenderTest {
   protected abstract element: HTMLElement;
   protected rawTemplate: string;
   protected serialized: string;
@@ -83,7 +94,7 @@ export abstract class RenderTest {
   private snapshot: NodesSnapshot = [];
   private helpers = {};
 
-  constructor(protected env = new TestEnvironment()) {}
+  constructor(protected env = new TestEnvironment()) { }
 
   registerHelper(name: string, helper: UserHelper) {
     this.helpers[name] = helper;
@@ -208,6 +219,106 @@ export abstract class RenderTest {
   }
 }
 
+export class RenderTests extends AbstractRenderTest {
+  protected element: HTMLDivElement;
+  protected template: Option<Template<Opaque>>;
+  constructor(env: TestEnvironment) {
+    super(env);
+    this.element = this.env.getAppendOperations().createElement('div') as HTMLDivElement;
+  }
+  renderTemplate(template: Template<Opaque>): RenderResult {
+    this.populateHelpers();
+    return renderTemplate(this.env, template, {
+      self: new UpdatableReference(this.context),
+      parentNode: this.element,
+      dynamicScope: new TestDynamicScope()
+    });
+  }
+}
+
+export class RehydrationTests extends RenderTests {
+  serialized: string;
+  setupServer(template: string = this.rawTemplate) {
+    let doc = new SimpleDOM.Document();
+    let env = new TestEnvironment({
+      document: doc,
+      appendOperations: new NodeDOMTreeConstruction(doc)
+    });
+    this.setup({ template, env });
+  }
+
+  setupClient(template: string = this.rawTemplate) {
+    let env = new TestEnvironment();
+    let div = document.createElement('div');
+
+    expect(this.serialized, 'Should have serialized HTML from `this.renderServerSide()`');
+
+    div.innerHTML = this.serialized;
+    this.element = div;
+    this.setup({ template, env });
+  }
+
+  setup({ template, context, env }: { template: string, context?: Dict<Opaque>, env?: TestEnvironment }) {
+    if (env) this.env = env;
+    this.template = this.compile(template);
+    if (context) this.setProperties(context);
+  }
+
+  assertServerOutput(..._expected: Content[]) {
+    let serialized = this.serialize();
+    equalTokens(serialized, content([OPEN, ..._expected, CLOSE]));
+    this.serialized = serialized;
+  }
+
+  renderServerSide(context?: Dict<Opaque>): void {
+    if (context) { this.context = context; }
+    this.setupServer();
+    this.populateHelpers();
+    this.element = this.env.getAppendOperations().createElement('div') as HTMLDivElement;
+    let template = expect(this.template, 'Must set up a template before calling renderServerSide');
+    // Emulate server-side render
+    renderTemplate(this.env, template, {
+      self: new UpdatableReference(this.context),
+      parentNode: this.element,
+      dynamicScope: new TestDynamicScope(),
+      mode: 'serialize'
+    });
+
+    this.takeSnapshot();
+    this.serialized = this.serialize();
+  }
+
+  serialize() {
+    let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+    let serialized = serializer.serializeChildren(this.element);
+    return serialized;
+  }
+
+  renderClientSide(context?: Dict<Opaque>) {
+    if (context) { this.context = context; }
+    this.setupClient();
+    this.populateHelpers();
+    let { env } = this;
+    this.template = this.compile(this.rawTemplate);
+    this.element = env.getAppendOperations().createElement('div') as HTMLDivElement;
+    let template = expect(this.template, 'Must set up a template before calling renderClientSide');
+    // Client-side rehydration
+    this.renderResult = renderTemplate(env, template, {
+      self: new UpdatableReference(this.context),
+      parentNode: this.element,
+      dynamicScope: new TestDynamicScope(),
+      mode: 'rehydrate'
+    });
+  }
+
+  renderTemplate(template: Template<Opaque>): RenderResult {
+    this.template = template;
+    this.renderServerSide();
+    this.renderClientSide();
+    return this.renderResult!;
+  }
+}
+
 function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, except: Array<Node>) {
   let oldIterator = new SnapshotIterator(oldSnapshot);
   let newIterator = new SnapshotIterator(newSnapshot);
@@ -289,7 +400,7 @@ export function test(_target: Object, _name: string, descriptor: PropertyDescrip
   testFunction['isTest'] = true;
 }
 
-export function module(name: string, klass: typeof RenderTest & Function): void {
+export function module(name: string, klass: typeof AbstractRenderTest & Function): void {
   QUnit.module(`[NEW] ${name}`);
 
   for (let prop in klass.prototype) {
@@ -301,7 +412,7 @@ export function module(name: string, klass: typeof RenderTest & Function): void 
   }
 }
 
-function isTestFunction(value: any): value is (this: RenderTest, assert: typeof QUnit.assert) => void {
+function isTestFunction(value: any): value is (this: AbstractRenderTest, assert: typeof QUnit.assert) => void {
   return typeof value === 'function' && value.isTest;
 }
 
@@ -321,4 +432,23 @@ export function renderTemplate(env: TestEnvironment, template: Template<Opaque>,
   env.commit();
 
   return result;
+}
+
+function content(list: Content[]): string {
+  let out: string[] = [];
+  let depth = 0;
+
+  list.forEach(item => {
+    if (typeof item === 'string') {
+      out.push(item);
+    } else if (item.marker === 'open-block') {
+      out.push(`<!--%+block:${depth++}%-->`);
+    } else if (item.marker === 'close-block') {
+      out.push(`<!--%-block:${--depth}%-->`);
+    } else {
+      out.push(`<!--%${item.marker}%-->`);
+    }
+  });
+
+  return out.join('');
 }

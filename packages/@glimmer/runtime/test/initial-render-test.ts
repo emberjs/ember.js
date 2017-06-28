@@ -1,10 +1,6 @@
-import { Opaque, Option, Dict } from "@glimmer/interfaces";
-import { Template, RenderResult, SVG_NAMESPACE } from "@glimmer/runtime";
-import { TestEnvironment, TestDynamicScope, RenderTest as BaseRenderTest, module, test, renderTemplate, strip, assertNodeTagName, equalTokens } from "@glimmer/test-helpers";
-import { UpdatableReference } from "@glimmer/object-reference";
-import { expect } from "@glimmer/util";
-import * as SimpleDOM from 'simple-dom';
-import { NodeDOMTreeConstruction } from "@glimmer/node";
+import { Opaque, Dict } from "@glimmer/interfaces";
+import { SVG_NAMESPACE } from "@glimmer/runtime";
+import { RehydrationTests, RenderTests, module, test, strip, assertNodeTagName, EMPTY, OPEN, CLOSE, Content, TestEnvironment } from "@glimmer/test-helpers";
 
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
@@ -24,7 +20,7 @@ const IE9_SELECT_QUIRK = (() => {
   return isSelectQuirk;
 })();
 
-abstract class RenderTest extends BaseRenderTest {
+abstract class RenderingTest extends RenderTests {
   @test "HTML text content"() {
     this.render("content");
     this.assertHTML("content");
@@ -443,13 +439,13 @@ abstract class RenderTest extends BaseRenderTest {
         <option selected={{somethingNull}}>4</option>
         <option selected={{somethingFalse}}>5</option>
       </select>`,
-    {
-      somethingTrue: true,
-      somethingTruthy: 'is-true',
-      somethingUndefined: undefined,
-      somethingNull: null,
-      somethingFalse: false
-    });
+      {
+        somethingTrue: true,
+        somethingTruthy: 'is-true',
+        somethingUndefined: undefined,
+        somethingNull: null,
+        somethingFalse: false
+      });
 
     let selectNode = this.element.firstElementChild;
     this.assert.ok(selectNode, 'rendered select');
@@ -570,7 +566,7 @@ abstract class RenderTest extends BaseRenderTest {
       let path = svg.firstChild;
       if (assertNodeTagName(path, 'path')) {
         this.assert.equal(path.namespaceURI, SVG_NAMESPACE,
-              "creates the path element with a namespace");
+          "creates the path element with a namespace");
         this.assert.equal(path.getAttribute('d'), d);
       }
     }
@@ -590,7 +586,7 @@ abstract class RenderTest extends BaseRenderTest {
       let foreignObject = svg.firstChild;
       if (assertNodeTagName(foreignObject, 'foreignobject')) {
         this.assert.equal(foreignObject.namespaceURI, SVG_NAMESPACE,
-            "creates the foreignObject element with a namespace");
+          "creates the foreignObject element with a namespace");
       }
     }
 
@@ -602,13 +598,13 @@ abstract class RenderTest extends BaseRenderTest {
     this.assertHTML('<svg></svg><svg></svg><div></div>');
 
     this.assert.equal(this.element.childNodes[0].namespaceURI, SVG_NAMESPACE,
-          "creates the first svg element with a namespace");
+      "creates the first svg element with a namespace");
 
     this.assert.equal(this.element.childNodes[1].namespaceURI, SVG_NAMESPACE,
-          "creates the second svg element with a namespace");
+      "creates the second svg element with a namespace");
 
     this.assert.equal(this.element.childNodes[2].namespaceURI, XHTML_NAMESPACE,
-          "creates the div element without a namespace");
+      "creates the div element without a namespace");
 
     this.assertStableRerender();
   }
@@ -624,17 +620,17 @@ abstract class RenderTest extends BaseRenderTest {
 
     if (assertNodeTagName(firstDiv, 'div')) {
       this.assert.equal(firstDiv.namespaceURI, XHTML_NAMESPACE,
-            "first div's namespace is xhtmlNamespace");
+        "first div's namespace is xhtmlNamespace");
     }
 
     if (assertNodeTagName(svg, 'svg')) {
       this.assert.equal(svg.namespaceURI, SVG_NAMESPACE,
-            "svg's namespace is svgNamespace");
+        "svg's namespace is svgNamespace");
     }
 
     if (assertNodeTagName(secondDiv, 'div')) {
       this.assert.equal(secondDiv.namespaceURI, XHTML_NAMESPACE,
-            "last div's namespace is xhtmlNamespace");
+        "last div's namespace is xhtmlNamespace");
     }
 
     this.assertStableRerender();
@@ -719,7 +715,7 @@ abstract class RenderTest extends BaseRenderTest {
   }
 
   @test "Rerender respects whitespace"() {
-    this.render('Hello {{ foo }} ', { foo: 'bar'});
+    this.render('Hello {{ foo }} ', { foo: 'bar' });
     this.assertHTML('Hello bar ');
     this.assertStableRerender();
 
@@ -731,7 +727,7 @@ abstract class RenderTest extends BaseRenderTest {
     this.assertHTML('Hello  ');
     this.assertStableNodes();
 
-    this.rerender({ foo: 'bar'});
+    this.rerender({ foo: 'bar' });
     this.assertHTML('Hello bar ');
     this.assertStableNodes();
   }
@@ -779,7 +775,7 @@ abstract class RenderTest extends BaseRenderTest {
 
   @test "Extreme nesting"() {
     this.render('{{foo}}<span>{{bar}}<a>{{baz}}<em>{{boo}}{{brew}}</em>{{bat}}</a></span><span><span>{{flute}}</span></span>{{argh}}',
-                { foo: "FOO", bar: "BAR", baz: "BAZ", boo: "BOO", brew: "BREW", bat: "BAT", flute: "FLUTE", argh: "ARGH" });
+      { foo: "FOO", bar: "BAR", baz: "BAZ", boo: "BOO", brew: "BREW", bat: "BAT", flute: "FLUTE", argh: "ARGH" });
     this.assertHTML('FOO<span>BAR<a>BAZ<em>BOOBREW</em>BAT</a></span><span><span>FLUTE</span></span>ARGH');
     this.assertStableRerender();
   }
@@ -857,7 +853,7 @@ abstract class RenderTest extends BaseRenderTest {
 
   @test "GH#13999 The compiler can handle simple helpers with inline null parameter"() {
     let value;
-    this.registerHelper('say-hello', function(params) {
+    this.registerHelper('say-hello', function (params) {
       value = params[0];
       return 'hello';
     });
@@ -869,7 +865,7 @@ abstract class RenderTest extends BaseRenderTest {
 
   @test "GH#13999 The compiler can handle simple helpers with inline string literal null parameter"() {
     let value;
-    this.registerHelper('say-hello', function(params) {
+    this.registerHelper('say-hello', function (params) {
       value = params[0];
       return 'hello';
     });
@@ -883,7 +879,7 @@ abstract class RenderTest extends BaseRenderTest {
   @test "GH#13999 The compiler can handle simple helpers with inline undefined parameter"() {
     let value: Opaque = 'PLACEHOLDER';
     let length;
-    this.registerHelper('say-hello', function(params) {
+    this.registerHelper('say-hello', function (params) {
       length = params.length;
       value = params[0];
       return 'hello';
@@ -899,7 +895,7 @@ abstract class RenderTest extends BaseRenderTest {
   @test "GH#13999 The compiler can handle simple helpers with positional parameter undefined string literal"() {
     let value: Opaque = 'PLACEHOLDER';
     let length;
-    this.registerHelper('say-hello', function(params) {
+    this.registerHelper('say-hello', function (params) {
       length = params.length;
       value = params[0];
       return 'hello';
@@ -914,7 +910,7 @@ abstract class RenderTest extends BaseRenderTest {
 
   @test "GH#13999 The compiler can handle components with undefined named arguments"() {
     let value: Opaque = 'PLACEHOLDER';
-    this.registerHelper('say-hello', function(_, hash) {
+    this.registerHelper('say-hello', function (_, hash) {
       value = hash['foo'];
       return 'hello';
     });
@@ -927,7 +923,7 @@ abstract class RenderTest extends BaseRenderTest {
 
   @test "GH#13999 The compiler can handle components with undefined string literal named arguments"() {
     let value: Opaque = 'PLACEHOLDER';
-    this.registerHelper('say-hello', function(_, hash) {
+    this.registerHelper('say-hello', function (_, hash) {
       value = hash['foo'];
       return 'hello';
     });
@@ -940,7 +936,7 @@ abstract class RenderTest extends BaseRenderTest {
 
   @test "GH#13999 The compiler can handle components with null named arguments"() {
     let value;
-    this.registerHelper('say-hello', function(_, hash) {
+    this.registerHelper('say-hello', function (_, hash) {
       value = hash['foo'];
       return 'hello';
     });
@@ -953,7 +949,7 @@ abstract class RenderTest extends BaseRenderTest {
 
   @test "GH#13999 The compiler can handle components with null string literal named arguments"() {
     let value;
-    this.registerHelper('say-hello', function(_, hash) {
+    this.registerHelper('say-hello', function (_, hash) {
       value = hash['foo'];
       return 'hello';
     });
@@ -977,7 +973,7 @@ abstract class RenderTest extends BaseRenderTest {
   }
 
   @test "Sexpr helpers"() {
-    this.registerHelper('testing', function(params) {
+    this.registerHelper('testing', function (params) {
       return params[0] + "!";
     });
 
@@ -986,8 +982,8 @@ abstract class RenderTest extends BaseRenderTest {
     this.assertStableRerender();
   }
 
-  @test "The compiler can handle multiple invocations of sexprs" () {
-    this.registerHelper('testing', function(params) {
+  @test "The compiler can handle multiple invocations of sexprs"() {
+    this.registerHelper('testing', function (params) {
       return "" + params[0] + params[1];
     });
 
@@ -997,7 +993,7 @@ abstract class RenderTest extends BaseRenderTest {
   }
 
   @test "The compiler passes along the hash arguments"() {
-    this.registerHelper('testing', function(_, hash) {
+    this.registerHelper('testing', function (_, hash) {
       return hash['first'] + '-' + hash['second'];
     });
 
@@ -1007,7 +1003,7 @@ abstract class RenderTest extends BaseRenderTest {
   }
 
   @test "Attributes can be populated with helpers that generate a string"() {
-    this.registerHelper('testing', function(params) {
+    this.registerHelper('testing', function (params) {
       return params[0];
     });
 
@@ -1017,7 +1013,7 @@ abstract class RenderTest extends BaseRenderTest {
   }
 
   @test "Attribute helpers take a hash"() {
-    this.registerHelper('testing', function(_, hash) {
+    this.registerHelper('testing', function (_, hash) {
       return hash['path'];
     });
 
@@ -1027,7 +1023,7 @@ abstract class RenderTest extends BaseRenderTest {
   }
 
   @test "Attributes containing multiple helpers are treated like a block"() {
-    this.registerHelper('testing', function(params) {
+    this.registerHelper('testing', function (params) {
       return params[0];
     });
 
@@ -1055,59 +1051,15 @@ abstract class RenderTest extends BaseRenderTest {
   }
 }
 
-module("Initial Render Tests", class extends RenderTest {
-  protected element: HTMLDivElement;
-
-  constructor(env = new TestEnvironment()) {
-    super(env);
-    this.element = env.getDOM().createElement('div') as HTMLDivElement;
-  }
-
-  renderTemplate(template: Template<Opaque>): RenderResult {
-    this.populateHelpers();
-    return renderTemplate(this.env, template, {
-      self: new UpdatableReference(this.context),
-      parentNode: this.element,
-      dynamicScope: new TestDynamicScope()
-    });
-  }
-});
-
-const OPEN: { marker: 'open-block' } = { marker: 'open-block' };
-const CLOSE: { marker: 'close-block' } = { marker: 'close-block' };
-const SEP: { marker: 'sep' } = { marker: 'sep' };
-const EMPTY: { marker: 'empty' } = { marker: 'empty' };
-
-type Content = string | typeof OPEN | typeof CLOSE | typeof SEP | typeof EMPTY;
-
-function content(list: Content[]): string {
-  let out: string[] = [];
-  let depth = 0;
-
-  list.forEach(item => {
-    if (typeof item === 'string') {
-      out.push(item);
-    } else if (item.marker === 'open-block') {
-      out.push(`<!--%+block:${depth++}%-->`);
-    } else if (item.marker === 'close-block') {
-      out.push(`<!--%-block:${--depth}%-->`);
-    } else {
-      out.push(`<!--%${item.marker}%-->`);
-    }
-  });
-
-  return out.join('');
-}
-
-class Rehydration extends RenderTest {
-  protected element: HTMLDivElement;
-  protected template: Option<Template<Opaque>>;
-  private isBrowser = false;
-
-  constructor(env = new TestEnvironment({ document: new SimpleDOM.Document() })) {
-    super(env);
-    this.element = env.getDOM().createElement('div') as HTMLDivElement;
-  }
+class Rehydration extends RenderingTest {
+  setupClient: (template?: string) => void;
+  setupServer: (template?: string) => void;
+  renderServerSide: (context?: Dict<Opaque>) => void;
+  renderClientSide: (context?: Dict<Opaque>) => void;
+  assertServerOutput: (..._expected: Content[]) => void;
+  serialize: () => string;
+  serialized: string;
+  setup: ({ template, context, env }: { template: string, context?: Dict<Opaque>, env?: TestEnvironment }) => void;
 
   @test "mismatched text nodes"() {
     this.setupServer("{{content}}");
@@ -1182,102 +1134,19 @@ class Rehydration extends RenderTest {
     this.assertHTML('<div>hello</div>');
     this.assertStableNodes({ except: clientNode2 as Text });
   }
-
-  setupServer(template: string = this.rawTemplate) {
-    let doc = new SimpleDOM.Document();
-    let env = new TestEnvironment({
-      document: doc,
-      appendOperations: new NodeDOMTreeConstruction(doc)
-    });
-    this.setup({ template, env });
-  }
-
-  setupClient(template: string = this.rawTemplate) {
-    let env = new TestEnvironment();
-    let div = document.createElement('div');
-
-    expect(this.serialized, 'Should have serialized HTML from `this.renderServerSide()`');
-
-    div.innerHTML = this.serialized;
-    this.element = div;
-    this.setup({ template, env });
-  }
-
-  protected setup({ template, context, env }: { template: string, context?: Dict<Opaque>, env?: TestEnvironment }) {
-    if (env) this.env = env;
-    this.template = this.compile(template);
-    if (context) this.setProperties(context);
-  }
-
-  assertServerOutput(..._expected: Content[]) {
-    let serialized = this.serialize();
-    equalTokens(serialized, content([OPEN, ..._expected, CLOSE]));
-    this.serialized = serialized;
-  }
-
-  assertHTML(html: string) {
-    equalTokens(this.element, html);
-  }
-
-  renderServerSide(context?: Dict<Opaque>): void {
-    if (context) { this.context = context; }
-    this.setupServer();
-    this.populateHelpers();
-    this.element = this.env.getAppendOperations().createElement('div') as HTMLDivElement;
-    let template = expect(this.template, 'Must set up a template before calling renderServerSide');
-    // Emulate server-side render
-    renderTemplate(this.env, template, {
-      self: new UpdatableReference(this.context),
-      parentNode: this.element,
-      dynamicScope: new TestDynamicScope(),
-      mode: 'serialize'
-    });
-
-    this.takeSnapshot();
-    this.serialized = this.serialize();
-  }
-
-  serialize() {
-    let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
-    let serialized = serializer.serializeChildren(this.element);
-    return serialized;
-  }
-
-  renderClientSide(context?: Dict<Opaque>) {
-    this.isBrowser = true;
-    if (context) { this.context = context; }
-    this.setupClient();
-    this.populateHelpers();
-    let { env } = this;
-    this.template = this.compile(this.rawTemplate);
-    this.element = env.getAppendOperations().createElement('div') as HTMLDivElement;
-    let template = expect(this.template, 'Must set up a template before calling renderClientSide');
-    // Client-side rehydration
-    this.renderResult = renderTemplate(env, template, {
-      self: new UpdatableReference(this.context),
-      parentNode: this.element,
-      dynamicScope: new TestDynamicScope(),
-      mode: 'rehydrate'
-    });
-  }
-
-  renderTemplate(template: Template<Opaque>): RenderResult {
-    this.template = template;
-    this.renderServerSide();
-    this.renderClientSide();
-    return this.renderResult!;
-  }
 }
 
-class CompileErrorTests extends BaseRenderTest {
-  protected element: HTMLDivElement;
-  protected template: Option<Template<Opaque>>;
+function applyMixins(derivedCtor: any, baseCtors: any[]) {
+  baseCtors.forEach(baseCtor => {
+    Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+      derivedCtor.prototype[name] = baseCtor.prototype[name];
+    });
+  });
+}
 
-  constructor(env = new TestEnvironment()) {
-    super(env);
-    this.element = env.getDOM().createElement('div') as HTMLDivElement;
-  }
+applyMixins(Rehydration, [RehydrationTests]);
 
+class CompileErrorTests extends RenderTests {
   @test "A helpful error message is provided for unclosed elements"() {
     this.assert.throws(() => {
       this.compile('\n<div class="my-div" \n foo={{bar}}>\n<span>\n</span>\n');
@@ -1406,15 +1275,8 @@ class CompileErrorTests extends BaseRenderTest {
       );
     }
   }
-
-  renderTemplate(template: Template<Opaque>): RenderResult{
-    return renderTemplate(this.env, template, {
-      self: new UpdatableReference(this.context),
-      parentNode: this.element,
-      dynamicScope: new TestDynamicScope()
-    });
-  }
 }
 
 module("Rehydration Tests", Rehydration);
 module("Rendering Error Cases", CompileErrorTests);
+module("Initial Render Tests", RenderingTest);
