@@ -126,11 +126,9 @@ export function removeListener(obj, eventName, target, method) {
     target = null;
   }
 
-  metaFor(obj).removeFromListeners(eventName, target, method, (...args) => {
-    if ('function' === typeof obj.didRemoveListener) {
-      obj.didRemoveListener(...args);
-    }
-  });
+  let func = ('function' === typeof obj.didRemoveListener) ?
+    obj.didRemoveListener.bind(obj) : ()=> {};
+  metaFor(obj).removeFromListeners(eventName, target, method, func);
 }
 
 /**
