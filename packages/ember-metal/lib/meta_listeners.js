@@ -17,9 +17,7 @@ export const SUSPENDED = 2;
 export const protoMethods = {
 
   addToListeners(eventName, target, method, flags) {
-    if (this._listeners === undefined) {
-      this._listeners = [];
-    }
+    if (this._listeners === undefined) { this._listeners = []; }
     this._listeners.push(eventName, target, method, flags);
   },
 
@@ -72,21 +70,21 @@ export const protoMethods = {
     while (pointer !== undefined) {
       let listeners = pointer._listeners;
       if (listeners !== undefined) {
-        for (let index = 0; index < listeners.length - 3; index += 4) {
+        for (let index = 0; index < listeners.length; index += 4) {
           if (listeners[index] === eventName) {
             result = result || [];
             pushUniqueListener(result, listeners, index);
           }
         }
       }
-      if (pointer._listenersFinalized === true) { break; }
+      if (pointer._listenersFinalized) { break; }
       pointer = pointer.parent;
     }
     let sus = this._suspendedListeners;
     if (sus !== undefined && result !== undefined) {
-      for (let susIndex = 0; susIndex < sus.length - 2; susIndex += 3) {
+      for (let susIndex = 0; susIndex < sus.length; susIndex += 3) {
         if (eventName === sus[susIndex]) {
-          for (let resultIndex = 0; resultIndex < result.length - 2; resultIndex += 3) {
+          for (let resultIndex = 0; resultIndex < result.length; resultIndex += 3) {
             if (result[resultIndex] === sus[susIndex + 1] && result[resultIndex + 1] === sus[susIndex + 2]) {
               result[resultIndex + 2] |= SUSPENDED;
             }
@@ -99,7 +97,7 @@ export const protoMethods = {
 
   suspendListeners(eventNames, target, method, callback) {
     let sus = this._suspendedListeners;
-    if (!sus) {
+    if (sus === undefined) {
       sus = this._suspendedListeners = [];
     }
     for (let i = 0; i < eventNames.length; i++) {
@@ -126,7 +124,7 @@ export const protoMethods = {
     while (pointer !== undefined) {
       let listeners = pointer._listeners;
       if (listeners !== undefined) {
-        for (let index = 0; index < listeners.length - 3; index += 4) {
+        for (let index = 0; index < listeners.length; index += 4) {
           names[listeners[index]] = true;
         }
       }
@@ -140,7 +138,7 @@ export const protoMethods = {
 function pushUniqueListener(destination, source, index) {
   let target = source[index + 1];
   let method = source[index + 2];
-  for (let destinationIndex = 0; destinationIndex < destination.length - 2; destinationIndex += 3) {
+  for (let destinationIndex = 0; destinationIndex < destination.length; destinationIndex += 3) {
     if (destination[destinationIndex] === target && destination[destinationIndex + 1] === method) {
       return;
     }
