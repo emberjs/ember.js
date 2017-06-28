@@ -16,25 +16,21 @@ export function makeChainNode(obj) {
 }
 
 export function watchPath(obj, keyPath, meta) {
-  if (typeof obj !== 'object' || obj === null) {
-    return;
-  }
+  if (typeof obj !== 'object' || obj === null) { return; }
   let m = meta || metaFor(obj);
   let counter = m.peekWatching(keyPath) || 0;
-  if (!counter) { // activate watching first time
-    m.writeWatching(keyPath, 1);
+
+  m.writeWatching(keyPath, counter + 1);
+  if (counter === 0) { // activate watching first time
     chainsFor(obj, m).add(keyPath);
-  } else {
-    m.writeWatching(keyPath, counter + 1);
   }
 }
 
 export function unwatchPath(obj, keyPath, meta) {
-  if (typeof obj !== 'object' || obj === null) {
-    return;
-  }
+  if (typeof obj !== 'object' || obj === null) { return; }
   let m = meta || peekMeta(obj);
-  let counter = m && m.peekWatching(keyPath) || 0;
+  if (m === undefined) { return; }
+  let counter = m.peekWatching(keyPath) || 0;
 
   if (counter === 1) {
     m.writeWatching(keyPath, 0);
