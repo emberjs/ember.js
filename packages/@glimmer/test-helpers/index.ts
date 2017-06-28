@@ -34,8 +34,15 @@ export {
 export {
   VersionedObject,
   SimpleRootReference,
-  RenderTest,
+  AbstractRenderTest,
+  RehydrationTests,
+  RenderTests,
+  OPEN,
+  CLOSE,
+  SEP,
+  EMPTY,
   module,
   test,
+  Content,
   renderTemplate
 } from './lib/abstract-test-case';
