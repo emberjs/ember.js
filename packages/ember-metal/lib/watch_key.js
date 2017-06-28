@@ -1,7 +1,8 @@
 import { lookupDescriptor } from 'ember-utils';
 import { MANDATORY_SETTER } from 'ember/features';
 import {
-  meta as metaFor
+  meta as metaFor,
+  peekMeta
 } from './meta';
 import {
   MANDATORY_SETTER_FUNCTION,
@@ -87,10 +88,10 @@ export function unwatchKey(obj, keyName, _meta) {
   if (typeof obj !== 'object' || obj === null) {
     return;
   }
-  let meta = _meta || metaFor(obj);
+  let meta = _meta || peekMeta(obj);
 
   // do nothing of this object has already been destroyed
-  if (meta.isSourceDestroyed()) { return; }
+  if (!meta || meta.isSourceDestroyed()) { return; }
 
   let count = meta.peekWatching(keyName);
   if (count === 1) {

@@ -1,5 +1,6 @@
 import {
-  meta as metaFor
+  meta as metaFor,
+  peekMeta
 } from './meta';
 import { ChainNode } from './chains';
 
@@ -32,8 +33,8 @@ export function unwatchPath(obj, keyPath, meta) {
   if (typeof obj !== 'object' || obj === null) {
     return;
   }
-  let m = meta || metaFor(obj);
-  let counter = m.peekWatching(keyPath) || 0;
+  let m = meta || peekMeta(obj);
+  let counter = m && m.peekWatching(keyPath) || 0;
 
   if (counter === 1) {
     m.writeWatching(keyPath, 0);
