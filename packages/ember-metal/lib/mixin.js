@@ -748,7 +748,7 @@ export function observer(...args) {
   }
 
   assert('Ember.observer called without a function', typeof func === 'function');
-  assert('Ember.observer called without valid path', _paths.length > 0 && _paths.every((p)=> p && p.length));
+  assert('Ember.observer called without valid path', _paths.length > 0 && _paths.every((p)=> typeof p === 'string' && p.length));
 
   let paths = [];
   let addWatchedProperty = path => paths.push(path);
