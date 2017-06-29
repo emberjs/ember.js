@@ -1,16 +1,22 @@
 import { guidFor, assign } from 'ember-utils';
 import { Object as EmberObject } from 'ember-runtime';
 import { Resolver as DefaultResolver } from 'ember-application';
-import { moduleFor, ApplicationTestCase, ModuleBasedTestResolver,
-  DefaultResolverApplicationTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  ModuleBasedTestResolver,
+  DefaultResolverApplicationTestCase
+} from 'internal-test-helpers';
 
-moduleFor('Ember.Application Dependency Injection - DefaultResolver#toString', class extends
-  DefaultResolverApplicationTestCase {
+moduleFor('Ember.Application Dependency Injection - DefaultResolver#toString', class extends DefaultResolverApplicationTestCase {
   constructor() {
     super();
-    this.createApplication();
+    this.runTask(() => this.createApplication());
     this.application.Post = EmberObject.extend();
-    this.visit('/');
+  }
+
+  beforeEach() {
+    return this.visit('/');
   }
 
   ['@test factories'](assert) {
@@ -30,9 +36,9 @@ moduleFor('Ember.Application Dependency Injection - DefaultResolver#toString', c
 });
 
 moduleFor('Ember.Application Dependency Injection - Resolver#toString', class extends ApplicationTestCase {
-  constructor() {
-    super();
-    this.visit('/');
+
+  beforeEach() {
+    return this.visit('/');
   }
 
   get applicationOptions() {
