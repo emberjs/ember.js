@@ -31,6 +31,18 @@ function K() {}
 
 QUnit.module('addObserver');
 
+testBoth('observer should assert to invalid input', function(get, set) {
+  expectAssertion(()=> {
+    observer(()=>{})
+  }, 'Ember.observer called without valid path');
+
+  expectDeprecation('Passing the dependentKeys after the callback function in Ember.observer is deprecated. Ensure the callback function is the last argument.')
+
+  expectAssertion(()=> {
+    observer(null)
+  }, 'Ember.observer called without a function');
+})
+
 testBoth('observer should fire when property is modified', function(get, set) {
   let obj = {};
   let count = 0;
