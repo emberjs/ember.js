@@ -2,7 +2,8 @@ import { lookupDescriptor } from 'ember-utils';
 import { MANDATORY_SETTER } from 'ember/features';
 import {
   meta as metaFor,
-  peekMeta
+  peekMeta,
+  UNDEFINED
 } from './meta';
 import {
   MANDATORY_SETTER_FUNCTION,
@@ -78,8 +79,6 @@ if (MANDATORY_SETTER) {
   };
 }
 
-import { UNDEFINED } from './meta';
-
 export function unwatchKey(obj, keyName, _meta) {
   if (typeof obj !== 'object' || obj === null) {
     return;
@@ -87,7 +86,7 @@ export function unwatchKey(obj, keyName, _meta) {
   let meta = _meta || peekMeta(obj);
 
   // do nothing of this object has already been destroyed
-  if (meta === undefined || meta.isSourceDestroyed()) { return; }
+  if (!meta || meta.isSourceDestroyed()) { return; }
 
   let count = meta.peekWatching(keyName);
   if (count === 1) {

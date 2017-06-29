@@ -3,11 +3,9 @@
 @submodule ember-metal
 */
 import { applyStr } from 'ember-utils';
-import { meta as metaFor, peekMeta } from './meta';
 import { deprecate, assert } from 'ember-debug';
-
+import { meta as metaFor, peekMeta } from './meta';
 import { ONCE, SUSPENDED } from './meta_listeners';
-
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -185,7 +183,8 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
   @param obj
 */
 export function watchedEvents(obj) {
-  return metaFor(obj).watchedEvents();
+  let meta = peekMeta(obj);
+  return meta && meta.watchedEvents() || [];
 }
 
 /**
@@ -212,7 +211,7 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
                      meta.matchingListeners(eventName);
   }
 
-  if (actions === undefined || actions.length === 0) { return; }
+  if (actions === undefined || actions.length === 0) { return false; }
 
   for (let i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
     let target = actions[i];
