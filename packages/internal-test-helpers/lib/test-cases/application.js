@@ -9,15 +9,17 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
     super();
 
     let { applicationOptions } = this;
-    this.application = this.runTask(() => {
-      return Application.create(applicationOptions)
-    });
+    this.application = this.runTask(() => this.createApplication(applicationOptions));
 
     this.resolver = applicationOptions.Resolver.lastInstance;
 
     if (this.resolver) {
       this.resolver.add('router:main', Router.extend(this.routerOptions));
     }
+  }
+
+  createApplication(myOptions={}, MyApplication=Application) {
+    return MyApplication.create(myOptions);
   }
 
   get applicationOptions() {
@@ -40,6 +42,7 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
       return this.runTask(() => {
         return this.application.visit(url, options).then(instance => {
           this.applicationInstance = instance;
+          return instance;
         });
       });
     }

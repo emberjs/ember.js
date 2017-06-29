@@ -13,7 +13,7 @@ export default class ApplicationTestCase extends AbstractApplicationTestCase {
 
   createApplication() {
     let application = this.application = Application.create(this.applicationOptions);
-    application.Router = Router.extend({ location: 'none' });
+    application.Router = Router.extend(this.routerOptions);
     return application;
   }
 
