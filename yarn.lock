@@ -5234,9 +5234,13 @@ rsvp@3.0.14, rsvp@~3.0.6:
   version "3.0.14"
   resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-3.0.14.tgz#9d2968cf36d878d3bb9a9a5a4b8e1ff55a76dd31"
 
-rsvp@^3.0.14, rsvp@^3.0.16, rsvp@^3.0.17, rsvp@^3.0.18, rsvp@^3.0.21, rsvp@^3.0.6, rsvp@^3.1.0, rsvp@^3.2.1, rsvp@^3.3.3, rsvp@^3.5.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-3.5.0.tgz#a62c573a4ae4e1dfd0697ebc6242e79c681eaa34"
+rsvp@^3.0.14, rsvp@^3.0.16, rsvp@^3.0.17, rsvp@^3.0.18, rsvp@^3.0.21, rsvp@^3.0.6, rsvp@^3.1.0, rsvp@^3.2.1, rsvp@^3.3.3:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-3.6.0.tgz#666dfffa715f7e10eef76f4d1e56fb2566fce5c3"
+
+rsvp@^3.6.1:
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-3.6.1.tgz#34f4a7ac2859f7bacc8f49789c5604f1e26ae702"
 
 rsvp@~3.2.1:
   version "3.2.1"
