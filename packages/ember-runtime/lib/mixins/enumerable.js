@@ -742,7 +742,7 @@ const Enumerable = Mixin.create({
       let method = x && x[methodName];
 
       if ('function' === typeof method) {
-        ret[idx] = args ? method.apply(x, args) : x[methodName]();
+        ret[idx] = args.length ? method.apply(x, args) : x[methodName]();
       }
     }, this);
 
