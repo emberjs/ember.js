@@ -1,11 +1,11 @@
 {
   "name": "@glimmer/syntax",
-  "version": "0.25.1",
+  "version": "0.25.2",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/syntax",
   "dependencies": {
     "handlebars": "^4.0.6",
-    "@glimmer/interfaces": "^0.25.1",
-    "@glimmer/util": "^0.25.1",
+    "@glimmer/interfaces": "^0.25.2",
+    "@glimmer/util": "^0.25.2",
     "simple-html-tokenizer": "^0.3.0"
   },
   "devDependencies": {
