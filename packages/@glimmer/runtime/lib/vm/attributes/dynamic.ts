@@ -5,7 +5,7 @@ import { sanitizeAttributeValue, requiresSanitization } from '../../dom/sanitize
 import { normalizeProperty } from '../../dom/props';
 import { SVG_NAMESPACE } from '../../dom/helper';
 import { Attribute, AttributeOperation } from './index';
-import { normalizeStringValue } from "@glimmer/runtime/lib/dom/normalize";
+import { normalizeStringValue } from '../../dom/normalize';
 
 export interface DynamicAttributeFactory {
   new(attribute: Attribute): DynamicAttribute;
