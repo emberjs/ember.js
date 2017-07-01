@@ -145,7 +145,7 @@ function ComputedProperty(config, opts) {
   this._readOnly =  false;
 }
 
-ComputedProperty.prototype = new Descriptor();
+ComputedProperty.prototype = Object.create(Descriptor.prototype);
 ComputedProperty.prototype.constructor = ComputedProperty;
 
 const ComputedPropertyPrototype = ComputedProperty.prototype;

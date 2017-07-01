@@ -681,7 +681,7 @@ function Alias(methodName) {
   this.methodName = methodName;
 }
 
-Alias.prototype = new Descriptor();
+Alias.prototype = Object.create(Descriptor.prototype);
 
 /**
   Makes a method available via an additional name.
