@@ -19,7 +19,7 @@ export default function InjectedProperty(type, name) {
   this.type = type;
   this.name = name;
 
-  this._super$Constructor(injectedPropertyGet);
+  this._getter = injectedPropertyGet;
   AliasedPropertyPrototype.oneWay.call(this);
 }
 
@@ -38,8 +38,6 @@ InjectedProperty.prototype = Object.create(Descriptor.prototype);
 const InjectedPropertyPrototype = InjectedProperty.prototype;
 const ComputedPropertyPrototype = ComputedProperty.prototype;
 const AliasedPropertyPrototype = AliasedProperty.prototype;
-
-InjectedPropertyPrototype._super$Constructor = ComputedProperty;
 
 InjectedPropertyPrototype.get = ComputedPropertyPrototype.get;
 InjectedPropertyPrototype.readOnly = ComputedPropertyPrototype.readOnly;
