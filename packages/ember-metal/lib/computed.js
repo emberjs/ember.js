@@ -128,7 +128,6 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
   @public
 */
 function ComputedProperty(config, opts) {
-  this.isDescriptor = true;
   if (typeof config === 'function') {
     this._getter = config;
   } else {

@@ -18,8 +18,9 @@ import { MANDATORY_SETTER } from 'ember/features';
   @private
 */
 export function Descriptor() {
-  this.isDescriptor = true;
 }
+
+Descriptor.prototype.isDescriptor = true;
 
 const REDEFINE_SUPPORTED = ((() => {
   // https://github.com/spalger/kibana/commit/b7e35e6737df585585332857a4c397dc206e7ff9
