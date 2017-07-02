@@ -17,7 +17,7 @@ function normalizeInnerHTML(actualHTML) {
     // replace self-closing elements
     actualHTML = actualHTML
                   .replace(/ xmlns="[^"]+"/, '')
-                  .replace(/<([^ >]+) [^\/>]*\/>/gi, (tag, tagName) => `${tag.slice(0, tag.length - 3)}></${tagName}>`);
+                  .replace(/<([^ >]+) [^/>]*\/>/gi, (tag, tagName) => `${tag.slice(0, tag.length - 3)}></${tagName}>`);
   }
 
   return actualHTML;
