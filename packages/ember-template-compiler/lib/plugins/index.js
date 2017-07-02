@@ -15,6 +15,7 @@ import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformHasBlockSyntax from './transform-has-block-syntax';
 import TransformDotComponentInvocation from './transform-dot-component-invocation';
 import ExtractPragmaTag from './extract-pragma-tag';
+import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import {
   GLIMMER_CUSTOM_COMPONENT_MANAGER
 } from 'ember/features';
@@ -35,7 +36,8 @@ const transforms = [
   TransformInputTypeSyntax,
   TransformAttrsIntoArgs,
   TransformEachInIntoEach,
-  TransformHasBlockSyntax
+  TransformHasBlockSyntax,
+  AssertInputHelperWithoutBlock
 ];
 
 if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
