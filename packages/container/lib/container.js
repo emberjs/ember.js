@@ -6,13 +6,10 @@ import {
   dictionary,
   symbol,
   setOwner,
-  getOwner,
   OWNER,
   assign,
-  NAME_KEY,
   HAS_NATIVE_PROXY
 } from 'ember-utils';
-import { ENV } from 'ember-environment';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 
@@ -207,7 +204,7 @@ Container.prototype = {
 function wrapManagerInDeprecationProxy(manager) {
   if (HAS_NATIVE_PROXY) {
     let validator = {
-      set(obj, prop, value) {
+      set(obj, prop) {
         throw new Error(`You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`);
       }
     };
