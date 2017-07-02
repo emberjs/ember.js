@@ -175,6 +175,38 @@ export class Meta {
     return this[key] || (this[key] = Object.create(null));
   }
 
+  _forEachInherited() {
+    let pointer = this;
+    let keys = arguments;
+    let len = keys.length - 1;
+    let callback = arguments[len];
+    let value, key, i;
+    let seen = Object.create(null);
+
+    while (pointer !== undefined) {
+      value = pointer;
+      i = 0;
+      for (; i < len; i++) {
+        key = keys[i];
+        value = value[key];
+        if (value === undefined) {
+          break;
+        }
+      }
+
+      if (i === len) {
+        for (let innerKey in value) {
+          if (seen[innerKey] === undefined) {
+            seen[innerKey] = true;
+            callback(innerKey, value[innerKey]);
+          }
+        }
+      }
+
+      pointer = pointer.parent;
+    }
+  }
+
   _findInherited() {
     let pointer = this;
     let keys = arguments;
@@ -218,36 +250,7 @@ export class Meta {
   }
 
   forEachInDeps(subkey, fn) {
-    return this._forEachIn('_deps', subkey, fn);
-  }
-
-  _forEachIn(key, subkey, fn) {
-    let pointer = this;
-    let seen;
-    let calls;
-    while (pointer !== undefined) {
-      let map = pointer[key];
-      if (map !== undefined) {
-        let innerMap = map[subkey];
-        if (innerMap !== undefined) {
-          for (let innerKey in innerMap) {
-            seen = seen || Object.create(null);
-            if (seen[innerKey] === undefined) {
-              seen[innerKey] = true;
-              calls = calls || [];
-              calls.push(innerKey, innerMap[innerKey]);
-            }
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
-
-    if (calls !== undefined) {
-      for (let i = 0; i < calls.length; i+=2) {
-        fn(calls[i], calls[i + 1]);
-      }
-    }
+    return this._forEachInherited('_deps', subkey, fn);
   }
 
   set factory(factory) {
@@ -332,21 +335,7 @@ export class Meta {
   }
 
   forEachMixins(fn) {
-    let pointer = this;
-    let seen;
-    while (pointer !== undefined) {
-      let map = pointer._mixins;
-      if (map !== undefined) {
-        for (let key in map) {
-          seen = seen || Object.create(null);
-          if (seen[key] === undefined) {
-            seen[key] = true;
-            fn(key, map[key]);
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
+    return this._forEachInherited('_mixins', fn);
   }
 
   writeBindings(subkey, value) {
@@ -361,21 +350,7 @@ export class Meta {
   }
 
   forEachBindings(fn) {
-    let pointer = this;
-    let seen;
-    while (pointer !== undefined) {
-      let map = pointer._bindings;
-      if (map !== undefined) {
-        for (let key in map) {
-          seen = seen || Object.create(null);
-          if (seen[key] === undefined) {
-            seen[key] = true;
-            fn(key, map[key]);
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
+    return this._forEachInherited('_bindings', fn);
   }
 
   clearBindings() {
