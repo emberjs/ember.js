@@ -54,7 +54,7 @@ function handleURL(path) {
 
 function handleURLAborts(path) {
   run(() => {
-    router.handleURL(path).then(function(value) {
+    router.handleURL(path).then(function() {
       ok(false, 'url: `' + path + '` was NOT to be handled');
     }, function(reason) {
       ok(reason && reason.message === 'TransitionAborted', 'url: `' + path + '` was to be aborted');
@@ -64,7 +64,7 @@ function handleURLAborts(path) {
 
 function handleURLRejectsWith(path, expectedReason) {
   run(() => {
-    router.handleURL(path).then(function(value) {
+    router.handleURL(path).then(function() {
       ok(false, 'expected handleURLing: `' + path + '` to fail');
     }, function(reason) {
       equal(reason, expectedReason);
@@ -429,7 +429,7 @@ QUnit.test('The route controller is still set when overriding the setupControlle
   });
 
   App.HomeRoute = Route.extend({
-    setupController(controller) {
+    setupController() {
       // no-op
       // importantly, we are not calling  this._super here
     }
@@ -524,7 +524,7 @@ QUnit.test('The Homepage with a `setupController` hook modifying other controlle
   });
 
   App.HomeRoute = Route.extend({
-    setupController(controller) {
+    setupController() {
       set(this.controllerFor('home'), 'hours', emberA([
         'Monday through Friday: 9am to 5pm',
         'Saturday: Noon to Midnight',
@@ -913,7 +913,7 @@ QUnit.asyncTest('Moving from one page to another triggers the correct callbacks'
       run.later(() => RSVP.resolve(promiseContext), 1);
 
       return router.transitionTo('special', promiseContext);
-    }).then(function(result) {
+    }).then(function() {
       deepEqual(router.location.path, '/specials/1');
       QUnit.start();
     });
@@ -1012,7 +1012,7 @@ QUnit.asyncTest('Nested callbacks are not exited when moving to siblings', funct
     let menuItem = App.MenuItem.create({ id: 1 });
     run.later(() => RSVP.resolve(menuItem), 1);
 
-    router.transitionTo('special', menuItem).then(function(result) {
+    router.transitionTo('special', menuItem).then(function() {
       equal(rootSetup, 1, 'The root setup was not triggered again');
       equal(rootRender, 1, 'The root render was not triggered again');
       equal(rootSerialize, 0, 'The root serialize was not called');
@@ -1042,7 +1042,7 @@ QUnit.asyncTest('Events are triggered on the controller if a matching action nam
     },
 
     actions: {
-      showStuff(obj) {
+      showStuff() {
         stateIsNotCalled = false;
       }
     }
@@ -1200,7 +1200,7 @@ QUnit.asyncTest('Actions are not triggered on the controller if a matching actio
   ));
 
   let controller = Controller.extend({
-    showStuff(context) {
+    showStuff() {
       stateIsNotCalled = false;
       ok(stateIsNotCalled, 'an event on the state is not triggered');
     }
@@ -1396,7 +1396,7 @@ QUnit.test('Route inherits model from parent route', function() {
   });
 
   App.ThePostCommentsRoute = Route.extend({
-    afterModel(post, transition) {
+    afterModel(post) {
       let parent_model = this.modelFor('thePost');
 
       equal(post, parent_model);
@@ -1410,7 +1410,7 @@ QUnit.test('Route inherits model from parent route', function() {
   });
 
   App.SharesShareRoute = Route.extend({
-    afterModel(share, transition) {
+    afterModel(share) {
       let parent_model = this.modelFor('shares');
 
       equal(share, parent_model);
@@ -1456,7 +1456,7 @@ QUnit.test('Routes with { resetNamespace: true } inherits model from parent rout
   });
 
   App.CommentsRoute = Route.extend({
-    afterModel(post, transition) {
+    afterModel(post) {
       let parent_model = this.modelFor('thePost');
 
       equal(post, parent_model);
@@ -1637,7 +1637,7 @@ QUnit.test('Redirecting to the current target with a different context aborts th
   let count = 0;
 
   App.BarRoute = Route.extend({
-    afterModel(context) {
+    afterModel() {
       if (count++ > 10) {
         ok(false, 'infinite loop');
       } else {
@@ -1845,14 +1845,14 @@ QUnit.test('Parent route context change', function() {
     },
 
     actions: {
-      editPost(context) {
+      editPost() {
         this.transitionTo('post.edit');
       }
     }
   });
 
   App.PostEditRoute = Route.extend({
-    model(params) {
+    model() {
       let postId = this.modelFor('post').id;
       editedPostIds.push(postId);
       return null;
@@ -2145,11 +2145,11 @@ QUnit.test('The template is not re-rendered when two routes present the exact sa
   });
 
   App.SharedRoute = Route.extend({
-    setupController(controller) {
+    setupController() {
       this.controllerFor('shared').set('message', 'This is the ' + this.routeName + ' message');
     },
 
-    renderTemplate(controller, context) {
+    renderTemplate() {
       this.render('shared', { controller: 'shared' });
     }
   });
@@ -2180,7 +2180,7 @@ QUnit.test('The template is not re-rendered when two routes present the exact sa
 
   // Then transition directly by route name
   run(() => {
-    router.transitionTo('third').then(function(value) {
+    router.transitionTo('third').then(function() {
       ok(true, 'expected transition');
     }, function(reason) {
       ok(false, 'unexpected transition failure: ', QUnit.jsDump.parse(reason));
@@ -3084,11 +3084,11 @@ QUnit.test('Route#resetController gets fired when changing models and exiting ro
   let calls = [];
 
   let SpyRoute = Route.extend({
-    setupController(controller, model, transition) {
+    setupController() {
       calls.push(['setup', this.routeName]);
     },
 
-    resetController(controller) {
+    resetController() {
       calls.push(['reset', this.routeName]);
     }
   });
@@ -3439,7 +3439,7 @@ QUnit.test('Can this.render({into:...}) the render helper', function() {
 
   expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
+  }, /Please refactor [\w{}"` ]+ to a component/);
 
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
@@ -3471,7 +3471,7 @@ QUnit.test('Can disconnect from the render helper', function() {
 
   expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
+  }, /Please refactor [\w{}"` ]+ to a component/);
 
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
@@ -3501,7 +3501,7 @@ QUnit.test('Can this.render({into:...}) the render helper\'s children', function
 
   expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
+  }, /Please refactor [\w{}"` ]+ to a component/);
 
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
@@ -3535,7 +3535,7 @@ QUnit.test('Can disconnect from the render helper\'s children', function() {
 
   expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
+  }, /Please refactor [\w{}"` ]+ to a component/);
 
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
@@ -3567,11 +3567,11 @@ QUnit.test('Can this.render({into:...}) nested render helpers', function() {
 
   expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
+  }, /Please refactor [\w{}"` ]+ to a component/);
 
   expectDeprecation(() => {
     setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
+  }, /Please refactor [\w{}"` ]+ to a component/);
 
   setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
@@ -3603,11 +3603,11 @@ QUnit.test('Can disconnect from nested render helpers', function() {
 
   expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
+  }, /Please refactor [\w{}"` ]+ to a component/);
 
   expectDeprecation(() => {
     setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
+  }, /Please refactor [\w{}"` ]+ to a component/);
 
   setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
@@ -3698,7 +3698,7 @@ QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
   }, /boom/, 'expected an exception but none was thrown');
 });
 
-QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet', function(assert) {
+QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet', function() {
   App.ApplicationRoute = Route.extend({
     actions: {
       showModal() {

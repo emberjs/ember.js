@@ -31,7 +31,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
           defaultValue: 'applol'
         }
       },
-      model(params) {
+      model() {
         appModelCount++;
       }
     }));
@@ -329,7 +329,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index');
 
     this.add('route:index', Route.extend({
-      model(params, transition) {
+      model() {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: 'bar' }, 'could retrieve params for index');
       }
     }));
@@ -347,7 +347,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index');
 
     this.add('route:index', Route.extend({
-      model(params, transition) {
+      model() {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: 'boo' }, 'could retrieve params for index');
       }
     }));
@@ -365,7 +365,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index', 'foo', false);
 
     this.add('route:index', Route.extend({
-      model(params, transition) {
+      model() {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: false }, 'could retrieve params for index');
       }
     }));
@@ -383,7 +383,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index', 'foo', true);
 
     this.add('route:index', Route.extend({
-      model(params, transition) {
+      model() {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: false }, 'could retrieve params for index');
       }
     }));
@@ -443,7 +443,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     let appModelCount = 0;
     this.add('route:application', Route.extend({
-      model(params) {
+      model() {
         appModelCount++;
       }
     }));
@@ -486,7 +486,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     let appModelCount = 0;
     this.add('route:application', Route.extend({
-      model(params) {
+      model() {
         appModelCount++;
       }
     }));
@@ -612,7 +612,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     let appModelCount = 0;
     this.add('route:application', Route.extend({
-      model(params) {
+      model() {
         appModelCount++;
       }
     }));
@@ -620,7 +620,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     let indexModelCount = 0;
     this.add('route:index', Route.extend({
       queryParams: EmberObject.create({
-        unknownProperty(keyName) {
+        unknownProperty() {
           return { refreshModel: true };
         }
       }),
@@ -795,7 +795,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.add('route:application', Route.extend({
       queryParams: EmberObject.create({
-        unknownProperty(keyName) {
+        unknownProperty() {
           // We are simulating all qps requiring refresh
           return { replace: true };
         }
@@ -903,7 +903,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
-  ['@test transitionTo supports query params'](assert) {
+  ['@test transitionTo supports query params']() {
     this.setSingleQPController('index', 'foo', 'lol');
 
     return this.visitAndAssert('/').then(() => {
@@ -921,7 +921,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
-  ['@test transitionTo supports query params (multiple)'](assert) {
+  ['@test transitionTo supports query params (multiple)']() {
     this.add('controller:index', Controller.extend({
       queryParams: ['foo', 'bar'],
       foo: 'lol',
@@ -1161,7 +1161,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
 
     this.add('route:application', Route.extend({
-      model(p, trans) {
+      model() {
         return { woot: true };
       }
     }));
@@ -1243,15 +1243,15 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
-  ['@test when refreshModel is true and loading hook is undefined, model hook will rerun when QPs change even if previous did not finish'](assert) {
+  ['@test when refreshModel is true and loading hook is undefined, model hook will rerun when QPs change even if previous did not finish']() {
     return this.refreshModelWhileLoadingTest();
   }
 
-  ['@test when refreshModel is true and loading hook returns false, model hook will rerun when QPs change even if previous did not finish'](assert) {
+  ['@test when refreshModel is true and loading hook returns false, model hook will rerun when QPs change even if previous did not finish']() {
     return this.refreshModelWhileLoadingTest(false);
   }
 
-  ['@test when refreshModel is true and loading hook returns true, model hook will rerun when QPs change even if previous did not finish'](assert) {
+  ['@test when refreshModel is true and loading hook returns true, model hook will rerun when QPs change even if previous did not finish']() {
     return this.refreshModelWhileLoadingTest(true);
   }
 

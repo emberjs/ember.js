@@ -1,13 +1,9 @@
 import {
   Controller,
-  inject,
   String
 } from 'ember-runtime';
-import { Route, NoneLocation } from 'ember-routing';
-import {
-  get,
-  set
-} from 'ember-metal';
+import { Route } from 'ember-routing';
+import { get } from 'ember-metal';
 import {
   RouterTestCase,
   moduleFor
@@ -87,8 +83,6 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         queryParams: ['sort', 'foo'],
         sort: 'ASC'
       }));
-
-      let queryParams = this.buildQueryParams({ sort: 'DESC' });
 
       return this.visit('/child/?sort=DESC').then(() => {
         let controller = this.applicationInstance.lookup('controller:parent.child');

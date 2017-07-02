@@ -334,7 +334,7 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
 
   App.ApplicationRoute = Route.extend({
     actions: {
-      loading(transition, route) {
+      loading() {
         ok(true, 'loading action received on ApplicationRoute');
       }
     }
@@ -611,7 +611,7 @@ QUnit.test('errors that are bubbled are thrown at a higher level if not handled'
     },
 
     actions: {
-      error(err) {
+      error() {
         step(2, 'MomSallyRoute#error');
         return true;
       }
