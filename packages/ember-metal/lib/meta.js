@@ -175,10 +175,6 @@ export class Meta {
     return this[key] || (this[key] = Object.create(null));
   }
 
-  _getInherited(key) {
-    return this._findInherited(key);
-  }
-
   _findInherited() {
     let pointer = this;
     let keys = arguments;
@@ -312,7 +308,7 @@ export class Meta {
   }
 
   readableChains() {
-    return this._getInherited('_chains');
+    return this._findInherited('_chains');
   }
 
   writeWatching(subkey, value) {
