@@ -65,7 +65,7 @@ export default function transformDotComponentInvocation(env) {
         }
       },
       BlockStatement: (node) => {
-        if (isMulipartPath(node.path)) {
+        if (isMultipartPath(node.path)) {
           wrapInComponent(node, b)
         }
       }
@@ -73,12 +73,12 @@ export default function transformDotComponentInvocation(env) {
   }
 }
 
-function isMulipartPath(path)  {
+function isMultipartPath(path)  {
   return path.parts.length > 1;
 }
 
 function isInlineInvocation(path, params, hash) {
-  if (isMulipartPath(path)) {
+  if (isMultipartPath(path)) {
     if (params.length > 0 || hash.pairs.length > 0) {
       return true;
     }
