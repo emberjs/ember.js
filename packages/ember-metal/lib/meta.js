@@ -176,26 +176,26 @@ export class Meta {
   }
 
   _getInherited(key) {
-    let pointer = this;
-    while (pointer !== undefined) {
-      let map = pointer[key];
-      if (map !== undefined) {
-        return map;
-      }
-      pointer = pointer.parent;
-    }
+    return this._findInherited(key);
   }
 
-  _findInherited(key, subkey) {
+  _findInherited() {
     let pointer = this;
+    let keys = arguments;
+    let len = keys.length;
+    let value, key, i;
+
     while (pointer !== undefined) {
-      let map = pointer[key];
-      if (map !== undefined) {
-        let value = map[subkey];
-        if (value !== undefined) {
-          return value;
+      value = pointer;
+      i = 0;
+      for (; i < len; i++) {
+        key = keys[i];
+        value = value[key];
+        if (value === undefined) {
+          break;
         }
       }
+      if (i === len) { return value; }
       pointer = pointer.parent;
     }
   }
@@ -214,32 +214,11 @@ export class Meta {
   }
 
   peekDeps(subkey, itemkey) {
-    let pointer = this;
-    while (pointer !== undefined) {
-      let map = pointer._deps;
-      if (map !== undefined) {
-        let value = map[subkey];
-        if (value !== undefined) {
-          let itemvalue = value[itemkey];
-          if (itemvalue !== undefined) {
-            return itemvalue;
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
+    return this._findInherited('_deps', subkey, itemkey);
   }
 
   hasDeps(subkey) {
-    let pointer = this;
-    while (pointer !== undefined) {
-      let deps = pointer._deps;
-      if (deps !== undefined && deps[subkey] !== undefined) {
-        return true;
-      }
-      pointer = pointer.parent;
-    }
-    return false;
+    return this._findInherited('_deps', subkey) !== undefined;
   }
 
   forEachInDeps(subkey, fn) {
@@ -343,7 +322,7 @@ export class Meta {
   }
 
   peekWatching(subkey) {
-   return this._findInherited('_watching', subkey);
+    return this._findInherited('_watching', subkey);
   }
 
   writeMixins(subkey, value) {
