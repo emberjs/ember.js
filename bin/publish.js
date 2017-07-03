@@ -126,7 +126,7 @@ function confirmPublish() {
       console.log(chalk.red("Aborting"));
     }
 
-    packages.forEach(package => {
+    packages.filter(pkg => !pkg.private).forEach(package => {
       execWithSideEffects(`npm publish --tag ${distTag}`, {
         cwd: package.absolutePath
       });

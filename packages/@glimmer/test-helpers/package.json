@@ -2,6 +2,7 @@
   "name": "@glimmer/test-helpers",
   "version": "0.26.2",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/test-helpers",
+  "private": true,
   "dependencies": {
     "@glimmer/reference": "^0.26.2",
     "@glimmer/runtime": "^0.26.2",
