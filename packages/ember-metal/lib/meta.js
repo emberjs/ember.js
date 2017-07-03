@@ -1,7 +1,6 @@
 import {
   HAS_NATIVE_WEAKMAP,
   lookupDescriptor,
-  symbol,
   toString
 } from 'ember-utils';
 import { protoMethods as listenerMethods } from './meta_listeners';
@@ -33,7 +32,7 @@ if (DEBUG) {
 @module ember-metal
 */
 
-export const UNDEFINED = symbol('undefined');
+export const UNDEFINED = function UNDEFINED() {};
 
 // FLAGS
 const SOURCE_DESTROYING = 1 << 1;
