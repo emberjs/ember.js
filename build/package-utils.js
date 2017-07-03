@@ -19,6 +19,10 @@ class Package {
     return this.pkg.version;
   }
 
+  get private() {
+    return this.pkg.private;
+  }
+
   get relativePath() {
     return path.relative(process.cwd(), this.absolutePath);
   }
