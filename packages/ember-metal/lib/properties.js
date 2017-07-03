@@ -137,7 +137,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
   if (isDescriptor) {
-    possibleDesc.teardown(obj, keyName);
+    possibleDesc.teardown(obj, keyName, meta);
   }
 
   let value;
