@@ -26,7 +26,11 @@
   <script src="assets/vendor.js"></script>
   <script src="assets/glimmer-vm.js"></script>
   <script src="assets/tests.js"></script>
-
+<style>
+     #qunit-tests.hidepass li.skipped {
+       display: none;
+     }
+   </style>
   <script>
     function getPackagesToTest() {
       if (QUnit.urlParams.packages) {
