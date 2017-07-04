@@ -331,10 +331,11 @@ export class Meta {
     let ret = this._chains;
     if (ret === undefined) {
       if (this.parent) {
-        ret = this._chains = this.parent.writableChains(create).copy(this.source);
+        ret = this.parent.writableChains(create).copy(this.source);
       } else {
-        ret = this._chains = create(this.source);
+        ret = create(this.source);
       }
+      this._chains = ret;
     }
     return ret;
   }
@@ -344,7 +345,7 @@ export class Meta {
   }
 
   writeWatching(subkey, value) {
-    assert(`Cannot update watchers for \`hello\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(`Cannot update watchers for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let map = this._getOrCreateOwnMap('_watching');
     map[subkey] = value;
   }
