@@ -53,10 +53,8 @@ function isMethod(obj) {
 const CONTINUE = {};
 
 function mixinProperties(mixinsMeta, mixin) {
-  let guid;
-
   if (mixin instanceof Mixin) {
-    guid = guidFor(mixin);
+    let guid = guidFor(mixin);
     if (mixinsMeta.peekMixins(guid)) { return CONTINUE; }
     mixinsMeta.writeMixins(guid, mixin);
     return mixin.properties;

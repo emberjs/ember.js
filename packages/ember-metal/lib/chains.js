@@ -137,20 +137,20 @@ class ChainNode {
     this._parent = parent;
     this._key    = key;
 
-    // _watching is true when calling get(this._parent, this._key) will
-    // return the value of this node.
-    //
-    // It is false for the root of a chain (because we have no parent)
-    // and for global paths (because the parent node is the object with
-    // the observer on it)
-    let isWatching = this._watching = (value === undefined);
-
     this._chains = undefined;
     this._object = undefined;
     this.count = 0;
 
     this._value = value;
     this._paths = undefined;
+
+    // _watching is true when calling get(this._parent, this._key) will
+    // return the value of this node.
+    //
+    // It is false for the root of a chain (because we have no parent)
+    // and for global paths (because the parent node is the object with
+    // the observer on it)
+    let isWatching = this._isWatching = (value === undefined);
     if (isWatching) {
       let obj = parent.value();
 
@@ -165,7 +165,7 @@ class ChainNode {
   }
 
   value() {
-    if (this._value === undefined && this._watching) {
+    if (this._value === undefined && this._isWatching) {
       let obj = this._parent.value();
       this._value = lazyGet(obj, this._key);
     }
@@ -173,9 +173,9 @@ class ChainNode {
   }
 
   destroy() {
-    if (this._watching) {
+    if (this._isWatching) {
       removeChainWatcher(this._object, this._key, this);
-      this._watching = false; // so future calls do nothing
+      this._isWatching = false; // so future calls do nothing
     }
   }
 
@@ -262,7 +262,7 @@ class ChainNode {
   }
 
   notify(revalidate, affected) {
-    if (revalidate && this._watching) {
+    if (revalidate && this._isWatching) {
       let parentValue = this._parent.value();
 
       if (parentValue !== this._object) {

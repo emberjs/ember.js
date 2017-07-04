@@ -119,7 +119,7 @@ export class Meta {
         }
 
         // remove chainWatcher in node object
-        if (node._watching) {
+        if (node._isWatching) {
           nodeObject = node._object;
           if (nodeObject !== undefined) {
             let foreignMeta = peekMeta(nodeObject);
