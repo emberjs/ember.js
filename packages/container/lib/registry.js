@@ -608,11 +608,11 @@ Registry.prototype = {
   },
 
   resolverCacheKey(name, options) {
-    if (!EMBER_MODULE_UNIFICATION) {
+    if (EMBER_MODULE_UNIFICATION) {
+      return (options && options.source) ? `${options.source}:${name}` : name;
+    } else {
       return name;
     }
-
-    return (options && options.source) ? `${options.source}:${name}` : name;
   }
 };
 
@@ -697,18 +697,20 @@ function resolve(registry, normalizedName, options) {
     // and source into the full normalizedName
     let expandedNormalizedName = registry.expandLocalLookup(normalizedName, options);
 
-    // if expandLocalLookup returns falsey, we do not support local lookup
-    if (!EMBER_MODULE_UNIFICATION) {
+    if (EMBER_MODULE_UNIFICATION) {
+      if (expandedNormalizedName) {
+        // with ember-module-unification, if expandLocalLookup returns something,
+        // pass it to the resolve without the source
+        normalizedName = expandedNormalizedName;
+        options = {};
+      }
+    } else {
+      // if expandLocalLookup returns falsey, we do not support local lookup
       if (!expandedNormalizedName) {
         return;
       }
 
       normalizedName = expandedNormalizedName;
-    } else if (expandedNormalizedName) {
-      // with ember-module-unification, if expandLocalLookup returns something,
-      // pass it to the resolve without the source
-      normalizedName = expandedNormalizedName;
-      options = {};
     }
   }
 
