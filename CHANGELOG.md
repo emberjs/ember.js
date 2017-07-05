@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.13.4 (July 5, 2017)
+
+- [#15321](https://github.com/emberjs/ember.js/pull/15321) [BUGFIX] Improve fastboot debugger/repl experience.
+
 ### 2.13.3 (May 31, 2017)
 
 - [#15284](https://github.com/emberjs/ember.js/pull/15284) [BUGFIX] remove nested transaction assertion from glimmer.
