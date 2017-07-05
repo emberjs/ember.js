@@ -120,17 +120,6 @@ export default Mixin.create({
   hasRegistration: registryAlias('has'),
 
   /**
-   Register an option for a particular factory.
-
-   @public
-   @method registerOption
-   @param {String} fullName
-   @param {String} optionName
-   @param {Object} options
-   */
-  registerOption: registryAlias('option'),
-
-  /**
    Return a specific registered option for a particular factory.
 
    @public
