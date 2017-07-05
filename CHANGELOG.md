@@ -24,6 +24,10 @@
 - [#15178](https://github.com/emberjs/ember.js/pull/15178) Refactor route to lookup controller for QPs.
 - [#15129](https://github.com/emberjs/ember.js/pull/15129) Fix access to service:-document in ember-engines
 
+### 2.13.4 (July 5, 2017)
+
+- [#15321](https://github.com/emberjs/ember.js/pull/15321) [BUGFIX] Improve fastboot debugger/repl experience.
+
 ### 2.13.3 (May 31, 2017)
 
 - [#15284](https://github.com/emberjs/ember.js/pull/15284) [BUGFIX] remove nested transaction assertion from glimmer.
