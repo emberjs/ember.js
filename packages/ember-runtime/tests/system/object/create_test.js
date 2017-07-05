@@ -126,7 +126,7 @@ QUnit.test('inherits properties from passed in EmberObject', function() {
 QUnit.test('throws if you try to pass anything a string as a parameter', function() {
   let expected = 'EmberObject.create only accepts an objects.';
 
-  throws(() => EmberObject.create('some-string'), expected);
+  expectAssertion(() => EmberObject.create('some-string'), expected);
 });
 
 QUnit.test('EmberObject.create can take undefined as a parameter', function() {

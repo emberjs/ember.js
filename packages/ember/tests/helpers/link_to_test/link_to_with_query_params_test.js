@@ -564,7 +564,7 @@ moduleFor('The {{link-to}} helper + query params - globals mode app', class exte
   [`@test the {{link-to}} helper throws a useful error if you invoke it wrong`](assert) {
     assert.expect(1);
 
-    assert.throws(() => {
+    expectAssertion(() => {
       this.runTask(() => {
         this.createApplication();
 
@@ -574,6 +574,6 @@ moduleFor('The {{link-to}} helper + query params - globals mode app', class exte
 
         this.addTemplate('application', `{{#link-to id='the-link'}}Index{{/link-to}}`);
       });
-    }, /(You must provide one or more parameters to the link-to component.|undefined is not an object)/);
+    }, /You must provide one or more parameters to the link-to component/);
   }
 });
