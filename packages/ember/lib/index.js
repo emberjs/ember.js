@@ -232,6 +232,7 @@ Object.defineProperty(Ember, 'onerror', {
   @method K
   @return {Object}
   @public
+  @deprecated
 */
 function deprecatedEmberK() { return this; }
 
