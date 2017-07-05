@@ -39,6 +39,7 @@ if (DEBUG) {
     @public
     @static
     @method registerWarnHandler
+    @for Ember.Debug
     @param handler {Function} A function to handle warnings.
     @since 2.1.0
   */
