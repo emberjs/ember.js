@@ -115,6 +115,7 @@ function makeComponentDefinition(vm, args) {
   @param {Hash} options
   @return {String} HTML string
   @public
+  @deprecated Use a component instead
 */
 export function renderMacro(name, params, hash, builder) {
   if (!params) {
