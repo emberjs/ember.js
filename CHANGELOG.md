@@ -1,5 +1,15 @@
 # Ember Changelog
 
+### 2.15.0-beta.1 (July 5, 2017)
+
+- [#14338](https://github.com/emberjs/ember.js/pull/14338) [FEATURE] Remove explicit names from initializers.
+- [#15325](https://github.com/emberjs/ember.js/pull/15325) / [#15326](https://github.com/emberjs/ember.js/pull/15326) [FEATURE ember-engines-mount-params] Allow `{{mount` to accept a `model` named parameter.
+- [#15347](https://github.com/emberjs/ember.js/pull/15347) [BUGFIX] Make better errors for meta updates after object destruction.
+- [#15411](https://github.com/emberjs/ember.js/pull/15411) [CLEANUP] Remove deprecated `Ember.Backburner`.
+- [#15366](https://github.com/emberjs/ember.js/pull/15366) [BUGFIX] Allow numeric keys for the `get` helper.
+- [#14805](https://github.com/emberjs/ember.js/pull/14805) / [#14861](https://github.com/emberjs/ember.js/pull/14861) / [#14979](https://github.com/emberjs/ember.js/pull/14979) / [#15414](https://github.com/emberjs/ember.js/pull/15414) / [#15415](https://github.com/emberjs/ember.js/pull/15415) [FEATURE ember-routing-router-service] Enable by default.
+- [#15193](https://github.com/emberjs/ember.js/pull/15193) [CLEANUP] Remove `owner._lookupFactory` support.
+
 ### 2.14.0 (July 5, 2017)
 
 - [#15312](https://github.com/emberjs/ember.js/pull/15312) [BUGFIX] Avoid re-freezing already frozen objects.
