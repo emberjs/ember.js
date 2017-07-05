@@ -160,17 +160,19 @@ Container.prototype = {
     if (options.source) {
       let expandedFullName = this.registry.expandLocalLookup(fullName, options);
       // if expandLocalLookup returns falsey, we do not support local lookup
-      if (!EMBER_MODULE_UNIFICATION) {
+      if (EMBER_MODULE_UNIFICATION) {
+        if (expandedFullName) {
+          // with ember-module-unification, if expandLocalLookup returns something,
+          // pass it to the resolve without the source
+          normalizedName = expandedFullName;
+          options = {};
+        }
+      } else {
         if (!expandedFullName) {
           return;
         }
 
         normalizedName = expandedFullName;
-      } else if (expandedFullName) {
-        // with ember-module-unification, if expandLocalLookup returns something,
-        // pass it to the resolve without the source
-        normalizedName = expandedFullName;
-        options = {};
       }
     }
 
@@ -179,7 +181,12 @@ Container.prototype = {
 
     if (cached !== undefined) { return cached; }
 
-    let factory = EMBER_MODULE_UNIFICATION ? this.registry.resolve(normalizedName, options) : this.registry.resolve(normalizedName);
+    let factory;
+    if (EMBER_MODULE_UNIFICATION) {
+      factory = this.registry.resolve(normalizedName, options)
+    } else {
+      factory = this.registry.resolve(normalizedName);
+    }
 
     if (factory === undefined) {
       return;
@@ -241,18 +248,20 @@ function lookup(container, fullName, options = {}) {
   if (options.source) {
     let expandedFullName = container.registry.expandLocalLookup(fullName, options);
 
-    if (!EMBER_MODULE_UNIFICATION) {
+    if (EMBER_MODULE_UNIFICATION) {
+      if (expandedFullName) {
+        // with ember-module-unification, if expandLocalLookup returns something,
+        // pass it to the resolve without the source
+        fullName = expandedFullName;
+        options = {};
+      }
+    } else {
       // if expandLocalLookup returns falsey, we do not support local lookup
       if (!expandedFullName) {
         return;
       }
 
       fullName = expandedFullName;
-    } else if (expandedFullName) {
-      // with ember-module-unification, if expandLocalLookup returns something,
-      // pass it to the resolve without the source
-      fullName = expandedFullName;
-      options = {};
     }
   }
 
@@ -282,7 +291,17 @@ function isFactoryInstance(container, fullName, { instantiate, singleton }) {
 }
 
 function instantiateFactory(container, fullName, options) {
-  let factoryManager = EMBER_MODULE_UNIFICATION && options && options.source ? container.factoryFor(fullName, options) : container.factoryFor(fullName);
+
+  let factoryManager;
+  if (EMBER_MODULE_UNIFICATION) {
+    if (options && options.source) {
+      factoryManager = container.factoryFor(fullName, options)
+    } else {
+      factoryManager = container.factoryFor(fullName)
+    }
+  } else {
+    factoryManager = container.factoryFor(fullName);
+  }
 
   if (factoryManager === undefined) {
     return;
