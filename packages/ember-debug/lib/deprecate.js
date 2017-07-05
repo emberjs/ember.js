@@ -45,6 +45,7 @@ import { registerHandler as genericRegisterHandler, invoke } from './handlers';
   @public
   @static
   @method registerDeprecationHandler
+  @for Ember.Debug
   @param handler {Function} A function to handle deprecation calls.
   @since 2.1.0
 */
