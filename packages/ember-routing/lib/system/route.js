@@ -1680,7 +1680,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     model supplied by the `model` hook.
 
     By default, the `setupController` hook sets the `model` property of
-    the controller to the `model`.
+    the controller to the specified `model` when it is not `undefined`.
 
     If you implement the `setupController` hook in your Route, it will
     prevent this default behavior. If you want to preserve that behavior
