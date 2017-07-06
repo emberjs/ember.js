@@ -5,12 +5,12 @@
 
 import { ENV } from 'ember-environment';
 import {
+  on,
   computed,
   observer
 } from 'ember-metal';
 import { assert, deprecateFunc } from 'ember-debug';
 
-const a_slice = Array.prototype.slice;
 const FunctionPrototype = Function.prototype;
 
 if (ENV.EXTEND_PROTOTYPES.Function) {
@@ -74,10 +74,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     @public
   */
   FunctionPrototype.property = function () {
-    let ret = computed(this);
-    // ComputedProperty.prototype.property expands properties; no need for us to
-    // do so here.
-    return ret.property(...arguments);
+    return computed(...arguments, this);
   };
 
   /**
@@ -105,9 +102,8 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     @for Function
     @public
   */
-  FunctionPrototype.observes = function(...args) {
-    args.push(this);
-    return observer.apply(this, args);
+  FunctionPrototype.observes = function() {
+    return observer(...arguments, this);
   };
 
 
@@ -184,9 +180,6 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     @public
   */
   FunctionPrototype.on = function () {
-    let events = a_slice.call(arguments);
-    this.__ember_listens__ = events;
-
-    return this;
+    return on(...arguments, this);
   };
 }
