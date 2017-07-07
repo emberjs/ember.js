@@ -58,7 +58,9 @@ export function MANDATORY_SETTER_FUNCTION(name) {
 export function DEFAULT_GETTER_FUNCTION(name) {
   return function GETTER_FUNCTION() {
     let meta = peekMeta(this);
-    return meta && meta.peekValues(name);
+    if (meta !== undefined) {
+      return meta.peekValues(name);
+    }
   };
 }
 
@@ -67,7 +69,10 @@ import { UNDEFINED } from './meta';
 export function INHERITING_GETTER_FUNCTION(name) {
   function IGETTER_FUNCTION() {
     let meta = peekMeta(this);
-    let val = meta && meta.readInheritedValue('values', name);
+    let val;
+    if (meta !== undefined) {
+      val = meta.readInheritedValue('values', name);
+    }
 
     if (val === UNDEFINED) {
       let proto = Object.getPrototypeOf(this);
@@ -127,7 +132,7 @@ export function INHERITING_GETTER_FUNCTION(name) {
     become the explicit value of this property.
 */
 export function defineProperty(obj, keyName, desc, data, meta) {
-  if (!meta) {
+  if (meta === null || meta === undefined) {
     meta = metaFor(obj);
   }
 
