@@ -44,7 +44,6 @@ export {
 } from './property_set';
 export { default as WeakMap } from './weak_map';
 export {
-  accumulateListeners,
   addListener,
   hasListeners,
   listenersFor,

@@ -71,7 +71,6 @@ QUnit.module('ember reexports');
   ['hasListeners', 'ember-metal'],
   ['watchedEvents', 'ember-metal'],
   ['listenersFor', 'ember-metal'],
-  ['accumulateListeners', 'ember-metal'],
   ['isNone', 'ember-metal'],
   ['isEmpty', 'ember-metal'],
   ['isBlank', 'ember-metal'],

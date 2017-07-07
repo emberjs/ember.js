@@ -25,42 +25,6 @@ import { ONCE, SUSPENDED } from './meta_listeners';
 
 */
 
-function indexOf(array, target, method) {
-  let index = -1;
-  // hashes are added to the end of the event array
-  // so it makes sense to start searching at the end
-  // of the array and search in reverse
-  for (let i = array.length - 3; i >= 0; i -= 3) {
-    if (target === array[i] && method === array[i + 1]) {
-      index = i;
-      break;
-    }
-  }
-  return index;
-}
-
-export function accumulateListeners(obj, eventName, otherActions) {
-  let meta = peekMeta(obj);
-  if (!meta) { return; }
-  let actions = meta.matchingListeners(eventName);
-  if (actions === undefined) { return; }
-  let newActions = [];
-
-  for (let i = actions.length - 3; i >= 0; i -= 3) {
-    let target = actions[i];
-    let method = actions[i + 1];
-    let flags = actions[i + 2];
-    let actionIndex = indexOf(otherActions, target, method);
-
-    if (actionIndex === -1) {
-      otherActions.push(target, method, flags);
-      newActions.push(target, method, flags);
-    }
-  }
-
-  return newActions;
-}
-
 /**
   Add an event listener
 
