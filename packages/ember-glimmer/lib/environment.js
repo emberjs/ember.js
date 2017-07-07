@@ -64,7 +64,7 @@ function instrumentationPayload(name) {
 
 export default class Environment extends GlimmerEnvironment {
   static create(options) {
-    return new Environment(options);
+    return new this(options);
   }
 
   constructor({ [OWNER]: owner }) {
