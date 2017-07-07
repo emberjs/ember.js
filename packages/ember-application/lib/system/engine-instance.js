@@ -173,7 +173,6 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
     let registrations = [
       'route:basic',
-      'event_dispatcher:main',
       'service:-routing',
       'service:-glimmer-environment'
     ];
@@ -187,7 +186,9 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       'router:main',
       P`-bucket-cache:main`,
       '-view-registry:main',
-      `renderer:-${env.isInteractive ? 'dom' : 'inert'}`
+      `renderer:-${env.isInteractive ? 'dom' : 'inert'}`,
+      'service:-document',
+      'event_dispatcher:main'
     ];
 
     singletons.forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));

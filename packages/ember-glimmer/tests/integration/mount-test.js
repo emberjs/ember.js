@@ -116,4 +116,105 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
       });
     }
   }
+
+  ['@test it renders with a bound engine name']() {
+    this.router.map(function() {
+      this.route('bound-engine-name');
+    });
+    let controller;
+    this.add('controller:bound-engine-name', Controller.extend({
+      engineName: null,
+      init() {
+        this._super();
+        controller = this;
+      }
+    }));
+    this.addTemplate('bound-engine-name', '{{mount engineName}}');
+
+    this.add('engine:foo', Engine.extend({
+      router: null,
+      init() {
+        this._super(...arguments);
+        this.register('template:application', compile('<h2>Foo Engine</h2>', { moduleName: 'application' }));
+      }
+    }));
+    this.add('engine:bar', Engine.extend({
+      router: null,
+      init() {
+        this._super(...arguments);
+        this.register('template:application', compile('<h2>Bar Engine</h2>', { moduleName: 'application' }));
+      }
+    }));
+
+    return this.visit('/bound-engine-name').then(() => {
+      this.assertComponentElement(this.firstChild, { content: '<!---->' });
+
+      this.runTask(() => set(controller, 'engineName', 'foo'));
+
+      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine</h2>' });
+
+      this.runTask(() => set(controller, 'engineName', undefined));
+
+      this.assertComponentElement(this.firstChild, { content: '<!---->' });
+
+      this.runTask(() => set(controller, 'engineName', 'foo'));
+
+      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine</h2>' });
+
+      this.runTask(() => set(controller, 'engineName', 'bar'));
+
+      this.assertComponentElement(this.firstChild, { content: '<h2>Bar Engine</h2>' });
+
+      this.runTask(() => set(controller, 'engineName', 'foo'));
+
+      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine</h2>' });
+
+      this.runTask(() => set(controller, 'engineName', null));
+
+      this.assertComponentElement(this.firstChild, { content: '<!---->' });
+    });
+  }
+
+  ['@test it declares the event dispatcher as a singleton']() {
+    this.router.map(function() {
+      this.route('engine-event-dispatcher-singleton');
+    });
+
+    let controller;
+    let component;
+
+    this.add('controller:engine-event-dispatcher-singleton', Controller.extend({
+      init() {
+        this._super(...arguments);
+        controller = this;
+      }
+    }));
+    this.addTemplate('engine-event-dispatcher-singleton', '{{mount "foo"}}');
+
+    this.add('engine:foo', Engine.extend({
+      router: null,
+      init() {
+        this._super(...arguments);
+        this.register('template:application', compile('<h2>Foo Engine: {{tagless-component}}</h2>', { moduleName: 'application' }));
+        this.register('component:tagless-component', Component.extend({
+          tagName: "",
+          init() {
+            this._super(...arguments);
+            component = this;
+          }
+        }));
+        this.register('template:components/tagless-component', compile('Tagless Component', { moduleName: 'components/tagless-component' }));
+      }
+    }));
+
+    return this.visit('/engine-event-dispatcher-singleton').then(() => {
+      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine: Tagless Component</h2>' });
+
+      let controllerOwnerEventDispatcher = getOwner(controller).lookup('event_dispatcher:main');
+      let taglessComponentOwnerEventDispatcher = getOwner(component).lookup('event_dispatcher:main');
+
+      this.assert.strictEqual(controllerOwnerEventDispatcher, taglessComponentOwnerEventDispatcher);
+    });
+  }
+
 });
