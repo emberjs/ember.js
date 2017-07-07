@@ -158,7 +158,6 @@ QUnit.test('can build and boot a registered engine', function(assert) {
 
       let registrations = [
         'route:basic',
-        'event_dispatcher:main',
         'service:-routing',
         'service:-glimmer-environment'
       ];
@@ -175,7 +174,8 @@ QUnit.test('can build and boot a registered engine', function(assert) {
         P`-bucket-cache:main`,
         '-view-registry:main',
         '-environment:main',
-        'service:-document'
+        'service:-document',
+        'event_dispatcher:main'
       ];
 
       let env = appInstance.lookup('-environment:main');

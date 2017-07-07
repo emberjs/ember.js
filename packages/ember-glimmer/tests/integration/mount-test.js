@@ -176,4 +176,46 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
     });
   }
 
+  ['@test it declares the event dispatcher as a singleton']() {
+    this.router.map(function() {
+      this.route('engine-event-dispatcher-singleton');
+    });
+
+    let controller;
+    let component;
+
+    this.add('controller:engine-event-dispatcher-singleton', Controller.extend({
+      init() {
+        this._super(...arguments);
+        controller = this;
+      }
+    }));
+    this.addTemplate('engine-event-dispatcher-singleton', '{{mount "foo"}}');
+
+    this.add('engine:foo', Engine.extend({
+      router: null,
+      init() {
+        this._super(...arguments);
+        this.register('template:application', compile('<h2>Foo Engine: {{tagless-component}}</h2>', { moduleName: 'application' }));
+        this.register('component:tagless-component', Component.extend({
+          tagName: "",
+          init() {
+            this._super(...arguments);
+            component = this;
+          }
+        }));
+        this.register('template:components/tagless-component', compile('Tagless Component', { moduleName: 'components/tagless-component' }));
+      }
+    }));
+
+    return this.visit('/engine-event-dispatcher-singleton').then(() => {
+      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine: Tagless Component</h2>' });
+
+      let controllerOwnerEventDispatcher = getOwner(controller).lookup('event_dispatcher:main');
+      let taglessComponentOwnerEventDispatcher = getOwner(component).lookup('event_dispatcher:main');
+
+      this.assert.strictEqual(controllerOwnerEventDispatcher, taglessComponentOwnerEventDispatcher);
+    });
+  }
+
 });
