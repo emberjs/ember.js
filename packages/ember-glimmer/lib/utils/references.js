@@ -35,8 +35,6 @@ import {
 
 export const UPDATE = symbol('UPDATE');
 
-export { NULL_REFERENCE, UNDEFINED_REFERENCE } from '@glimmer/runtime';
-
 let maybeFreeze;
 if (DEBUG) {
   // gaurding this in a DEBUG gaurd (as well as all invocations)
