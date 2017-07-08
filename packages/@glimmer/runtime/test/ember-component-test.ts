@@ -16,7 +16,7 @@ import {
   TestDynamicScope,
   TestEnvironment,
   TestModifierManager,
- } from "@glimmer/test-helpers";
+} from "@glimmer/test-helpers";
 import { assign } from "@glimmer/util";
 import {
   RenderResult,
@@ -135,13 +135,13 @@ export function assertAppended(content: string) {
 function assertText(expected: string) {
   let rawText = (document.querySelector('#qunit-fixture') as HTMLElement).innerText;
   let text = rawText.split(/[\r\n]/g).map((part) => {
-               let p = part.replace(/\s+/g, ' ');
-               return p.trim();
-             }).filter((part) => part !== '').join(' ');
+    let p = part.replace(/\s+/g, ' ');
+    return p.trim();
+  }).filter((part) => part !== '').join(' ');
   QUnit.assert.strictEqual(text, expected, `#qunit-fixture content should be: \`${expected}\``);
 }
 
-function assertFired(component: EmberishGlimmerComponent, name: string, count=1) {
+function assertFired(component: EmberishGlimmerComponent, name: string, count = 1) {
   let hooks = component['hooks'];
 
   if (!hooks) {
@@ -162,8 +162,8 @@ function assertEmberishElement(tagName: string): void;
 function assertEmberishElement(...args: any[]): void {
   let tagName, attrs, contents;
   if (args.length === 2) {
-    if (typeof args[1] === 'string') [tagName, attrs, contents] = [args[0], {}, args[1]];
-    else [tagName, attrs, contents] = [args[0], args[1], null];
+    if (typeof args[1] === 'string')[tagName, attrs, contents] = [args[0], {}, args[1]];
+    else[tagName, attrs, contents] = [args[0], args[1], null];
   } else if (args.length === 1) {
     [tagName, attrs, contents] = [args[0], {}, null];
   } else {
@@ -181,8 +181,8 @@ export function assertElementIsEmberishElement(element: Element | null, tagName:
 export function assertElementIsEmberishElement(element: Element | null, ...args: any[]): void {
   let tagName, attrs, contents;
   if (args.length === 2) {
-    if (typeof args[1] === 'string') [tagName, attrs, contents] = [args[0], {}, args[1]];
-    else [tagName, attrs, contents] = [args[0], args[1], null];
+    if (typeof args[1] === 'string')[tagName, attrs, contents] = [args[0], {}, args[1]];
+    else[tagName, attrs, contents] = [args[0], args[1], null];
   } else if (args.length === 1) {
     [tagName, attrs, contents] = [args[0], {}, null];
   } else {
@@ -631,7 +631,7 @@ testComponent('yield to inverse', {
   layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
 
   invokeAs: {
-    args: { predicate: 'activated', someValue: '42'},
+    args: { predicate: 'activated', someValue: '42' },
     context: { activated: false, outer: "outer" },
     blockParams: ['result'],
     template: 'Hello{{result}}{{outer}}',
@@ -854,7 +854,7 @@ testComponent('Can shadow existing dynamic variable', {
   invokeAs: {
     template: '<div>{{-get-dynamic-var "myKeyword"}}</div>',
     context: { outer: 'original', inner: 'shadowed' },
-    args: { outer: 'outer', inner: 'inner'}
+    args: { outer: 'outer', inner: 'inner' }
   },
   expected: '<div>original</div><div>shadowed</div><div>original</div>',
   updates: [{
@@ -1203,7 +1203,7 @@ QUnit.test('dynamic attribute bindings', assert => {
   fooBarInstance.style = null;
   rerender();
 
-  assertEmberishElement('div', { }, `Hello. It's me.`);
+  assertEmberishElement('div', {}, `Hello. It's me.`);
 
   fooBarInstance.style = 'color: red;';
   rerender();
@@ -1242,7 +1242,7 @@ testComponent('correct scope - conflicting block param and attr names', {
 });
 
 QUnit.test('correct scope - accessing local variable in yielded block (glimmer component)', () => {
-  class FooBar extends BasicComponent {}
+  class FooBar extends BasicComponent { }
 
   env.registerBasicComponent('foo-bar', FooBar, `<div>[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{@foo}}]{{yield}}</div>`);
 
@@ -1263,7 +1263,7 @@ QUnit.test('correct scope - accessing local variable in yielded block (glimmer c
   );
 
   equalsElement(view.element, 'div', {},
-      stripTight`
+    stripTight`
         [Outside: zomg]
         [Inside: zomg]
         [Inside: zomg]
@@ -1301,7 +1301,7 @@ QUnit.test('correct scope - accessing local variable in yielded block (curly com
   );
 
   equalsElement(view.element, 'div', {},
-      stripTight`
+    stripTight`
         [Outside: zomg]
         [Inside: zomg]
         [Inside: zomg]
@@ -1341,7 +1341,7 @@ QUnit.test('correct scope - caller self can be threaded through (curly component
   });
 
   equalsElement(view.element, 'div', {},
-      stripTight`
+    stripTight`
         [Name: foo-bar | Target: outer-scope]
         [Name: qux-derp | Target: foo-bar]
         [Name: foo-bar | Target: outer-scope]
@@ -1421,7 +1421,7 @@ QUnit.test('correct scope - self lookup inside #each', () => {
       </div>`
     , { items: subitems, id: '(self)' });
 
-   equalsElement(view.element, 'div', {}, stripTight`
+  equalsElement(view.element, 'div', {}, stripTight`
     <p>(self)</p><p>(self)</p><p>0</p>
     <p>(self)</p><p>(self)</p><p>1</p>
     <p>(self)</p><p>(self)</p><p>42</p>`);
@@ -1442,40 +1442,40 @@ QUnit.test('correct scope - complex', () => {
         {{/if}}
       </aside>`);
 
-    let itemId = 0;
+  let itemId = 0;
 
-    let items = [];
+  let items = [];
 
-    for (let i = 0; i < 3; i++) {
-      let subitems = [];
-      let subitemId = 0;
+  for (let i = 0; i < 3; i++) {
+    let subitems = [];
+    let subitemId = 0;
 
-      for (let j = 0; j < 2; j++) {
-        subitems.push({
-          id: `${itemId}.${subitemId++}`
-        });
-      }
-
-      items.push({
-        id: String(itemId++),
-        visible: i % 2 === 0,
-        subitems
+    for (let j = 0; j < 2; j++) {
+      subitems.push({
+        id: `${itemId}.${subitemId++}`
       });
     }
 
-    appendViewFor(
-      stripTight`
+    items.push({
+      id: String(itemId++),
+      visible: i % 2 === 0,
+      subitems
+    });
+  }
+
+  appendViewFor(
+    stripTight`
         <article>{{#each items key="id" as |item|}}
           <my-item @item={{item}} />
         {{/each}}</article>`
-      , { items });
+    , { items });
 
-    equalsElement(view.element, 'article', {},
-      stripTight`
+  equalsElement(view.element, 'article', {},
+    stripTight`
         <aside>0:<p>0.0</p><p>0.1</p></aside>
         <aside>1:<!----></aside>
         <aside>2:<p>2.0</p><p>2.1</p></aside>`
-    );
+  );
 });
 
 QUnit.test('correct scope - complex yield', () => {
@@ -1547,7 +1547,7 @@ QUnit.test('correct scope - self', () => {
   );
 
   equalsElement(view.element, 'div', {},
-      stripTight`
+    stripTight`
         <p>foo bar baz</p>
         <p>foo bar zomg</p>`
   );
@@ -1555,7 +1555,7 @@ QUnit.test('correct scope - self', () => {
 
 module('Curly Components - smoke test dynamicScope access');
 
-QUnit.test('component has access to dynamic scope', function() {
+QUnit.test('component has access to dynamic scope', function () {
   class SampleComponent extends EmberishCurlyComponent {
     static fromDynamicScope = ['theme'];
   }
@@ -1571,7 +1571,7 @@ QUnit.test('component has access to dynamic scope', function() {
 
 module('Curly Components - positional arguments');
 
-QUnit.test('static named positional parameters', function() {
+QUnit.test('static named positional parameters', function () {
   class SampleComponent extends EmberishCurlyComponent {
     static positionalParams = ['name', 'age'];
   }
@@ -1585,7 +1585,7 @@ QUnit.test('static named positional parameters', function() {
   assertEmberishElement('div', 'Quint4');
 });
 
-QUnit.test('dynamic named positional parameters', function() {
+QUnit.test('dynamic named positional parameters', function () {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
@@ -1625,7 +1625,7 @@ QUnit.test('if a value is passed as a non-positional parameter, it takes precede
   }, "You cannot specify both a positional param (at position 0) and the hash argument `name`.");
 });
 
-QUnit.test('static arbitrary number of positional parameters', function() {
+QUnit.test('static arbitrary number of positional parameters', function () {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
@@ -1657,14 +1657,14 @@ QUnit.test('arbitrary positional parameter conflict with hash parameter is repor
 
   env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, '{{#each attrs.names key="@index" as |name|}}{{name}}{{/each}}');
 
-  assert.throws(function() {
+  assert.throws(function () {
     appendViewFor('{{sample-component "Foo" 4 "Bar" names=numbers id="args-3"}}', {
       numbers: [1, 2, 3]
     });
   }, `You cannot specify positional parameters and the hash argument \`names\`.`);
 });
 
-QUnit.test('can use hash parameter instead of arbitrary positional param [GH #12444]', function() {
+QUnit.test('can use hash parameter instead of arbitrary positional param [GH #12444]', function () {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
@@ -1680,7 +1680,7 @@ QUnit.test('can use hash parameter instead of arbitrary positional param [GH #12
   assertEmberishElement('div', 'Foo4Bar');
 });
 
-QUnit.test('can use hash parameter instead of positional param', function() {
+QUnit.test('can use hash parameter instead of positional param', function () {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
@@ -1694,8 +1694,8 @@ QUnit.test('can use hash parameter instead of positional param', function() {
     {{sample-component "one" second="two"}}
     {{sample-component first="one" second="two"}}</div>
   `, {
-    things: ['Foo', 4, 'Bar']
-  });
+      things: ['Foo', 4, 'Bar']
+    });
 
   let first = view.element.firstElementChild;
   let second = first && first.nextElementSibling;
@@ -1706,7 +1706,7 @@ QUnit.test('can use hash parameter instead of positional param', function() {
   assertElementIsEmberishElement(third, 'div', 'one - two');
 });
 
-QUnit.test('dynamic arbitrary number of positional parameters', function() {
+QUnit.test('dynamic arbitrary number of positional parameters', function () {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
@@ -1740,7 +1740,7 @@ QUnit.test('dynamic arbitrary number of positional parameters', function() {
   // assertElementIsEmberishElement(second, 'div', 'Bar6');
 });
 
-QUnit.test('{{component}} helper works with positional params', function() {
+QUnit.test('{{component}} helper works with positional params', function () {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   SampleComponent.reopenClass({
@@ -1822,7 +1822,7 @@ function equalObject(actual: EmberObject, expected: EmberObject, msg: string) {
   QUnit.assert.strictEqual(inspect(actual), inspect(expected), msg);
 }
 
-QUnit.skip('newly-added sub-components get correct parentView', function() {
+QUnit.skip('newly-added sub-components get correct parentView', function () {
   let outer: EmberishCurlyComponent | undefined;
   let inner: EmberishCurlyComponent | undefined;
 
@@ -2046,142 +2046,6 @@ QUnit.test('emberish component should have unique IDs', assert => {
   }
 });
 
-// QUnit.skip('non-block with each rendering child components', function() {
-//   expect(2);
-
-//   registry.register(
-//     'template:components/non-block',
-//     compile('In layout. {{#each attrs.items as |item|}}[{{child-non-block item=item}}]{{/each}}')
-//   );
-//   registry.register('template:components/child-non-block', compile('Child: {{attrs.item}}.'));
-
-//   let items = emberA(['Tom', 'Dick', 'Harry']);
-
-//   view = EmberView.extend({
-//     template: compile('{{non-block items=view.items}}'),
-//     container: container,
-//     items: items
-//   }).create();
-
-//   runAppend(view);
-
-//   QUnit.assert.equal(jQuery('#qunit-fixture').text(), 'In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
-
-//   run(function() {
-//     items.pushObject('James');
-//   });
-
-//   QUnit.assert.equal(jQuery('#qunit-fixture').text(), 'In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: James.]');
-// });
-
-// QUnit.skip('specifying classNames results in correct class', function(assert) {
-//   expect(3);
-
-//   let clickyThing;
-//   registry.register('component:some-clicky-thing', Component.extend({
-//     tagName: 'button',
-//     classNames: ['foo', 'bar'],
-//     init() {
-//       this._super(...arguments);
-//       clickyThing = this;
-//     }
-//   }));
-
-//   view = EmberView.extend({
-//     template: compile('{{#some-clicky-thing classNames="baz"}}Click Me{{/some-clicky-thing}}'),
-//     container: container
-//   }).create();
-
-//   runAppend(view);
-
-//   let button = view.$('button');
-//   assert.ok(button.is('.foo.bar.baz.ember-view'), 'the element has the correct classes: ' + button.attr('class'));
-
-//   let expectedClassNames = ['ember-view', 'foo', 'bar', 'baz'];
-//   assert.deepEqual(clickyThing.get('classNames'),  expectedClassNames, 'classNames are properly combined');
-
-//   let buttonClassNames = button.attr('class');
-//   assert.deepEqual(buttonClassNames.split(' '), expectedClassNames, 'all classes are set 1:1 in DOM');
-// });
-
-// QUnit.skip('specifying custom concatenatedProperties avoids clobbering', function(assert) {
-//   expect(1);
-
-//   let clickyThing;
-//   registry.register('component:some-clicky-thing', Component.extend({
-//     concatenatedProperties: ['blahzz'],
-//     blahzz: ['blark', 'pory'],
-//     init() {
-//       this._super(...arguments);
-//       clickyThing = this;
-//     }
-//   }));
-
-//   view = EmberView.extend({
-//     template: compile('{{#some-clicky-thing blahzz="baz"}}Click Me{{/some-clicky-thing}}'),
-//     container: container
-//   }).create();
-
-//   runAppend(view);
-
-//   assert.deepEqual(clickyThing.get('blahzz'),  ['blark', 'pory', 'baz'], 'property is properly combined');
-// });
-
-// // jscs:disable validateIndentation
-// if (isEnabled('ember-glimmer-component-generation')) {
-//   QUnit.module('component - invocation (angle brackets)', {
-//     beforeEach() {
-//       commonSetup();
-//     },
-
-//     afterEach() {
-//       commonTeardown();
-//     }
-//   });
-
-//   QUnit.skip('legacy components cannot be invoked with angle brackets', function() {
-//     registry.register('template:components/non-block', compile('In layout'));
-//     registry.register('component:non-block', Component.extend());
-
-//     expectAssertion(function() {
-//       view = appendViewFor('<non-block />');
-//     }, /cannot invoke the 'non-block' component with angle brackets/);
-//   });
-
-//   QUnit.skip('using a text-fragment in a GlimmerComponent layout gives an error', function() {
-//     registry.register('template:components/non-block', compile('In layout'));
-
-//     expectAssertion(() => {
-//       view = appendViewFor('<non-block />');
-//     }, `The <non-block> template must have a single top-level element because it is a GlimmerComponent.`);
-//   });
-
-//   QUnit.skip('having multiple top-level elements in a GlimmerComponent layout gives an error', function() {
-//     registry.register('template:components/non-block', compile('<div>This is a</div><div>fragment</div>'));
-
-//     expectAssertion(() => {
-//       view = appendViewFor('<non-block />');
-//     }, `The <non-block> template must have a single top-level element because it is a GlimmerComponent.`);
-//   });
-
-//   QUnit.skip('using a modifier in a GlimmerComponent layout gives an error', function() {
-//     registry.register('template:components/non-block', compile('<div {{action "foo"}}></div>'));
-
-//     expectAssertion(() => {
-//       view = appendViewFor('<non-block />');
-//     }, `You cannot use {{action ...}} in the top-level element of the <non-block> template because it is a GlimmerComponent.`);
-//   });
-
-//   QUnit.skip('using triple-curlies in a GlimmerComponent layout gives an error', function() {
-//     registry.register('template:components/non-block', compile('<div style={{{bar}}}>This is a</div>'));
-
-//     expectAssertion(() => {
-//       view = appendViewFor('<non-block />');
-//     }, strip`You cannot use triple curlies (e.g. style={{{ ... }}})
-//       in the top-level element of the <non-block> template because it is a GlimmerComponent.`
-//     );
-//   });
-
 module("Glimmer Component - shadowing");
 
 testComponent('shadowing: normal outer attributes are reflected', {
@@ -2213,7 +2077,7 @@ testComponent('shadowing: outer attributes with concat are reflected', {
     expected: { attrs: {}, content: 'In layout - someProp: something else' }
   }, {
     context: { someProp: '' },
-    expected: { attrs: { }, content: 'In layout - someProp: ' }
+    expected: { attrs: {}, content: 'In layout - someProp: ' }
   }, {
     context: { someProp: 'something here' },
     expected: { attrs: {}, content: 'In layout - someProp: something here' }
@@ -2267,7 +2131,7 @@ testComponent('shadowing: outer attributes clobber inner attributes with concat'
 
 module("Glimmer Component");
 
-QUnit.test(`Modifiers cannot be on the top-level element`, function() {
+QUnit.test(`Modifiers cannot be on the top-level element`, function () {
   env.registerModifier('foo', new TestModifierManager());
   env.registerEmberishGlimmerComponent('non-block', null, `<div {{foo bar}}>Should error</div>`);
   assert.throws(() => {
@@ -2304,7 +2168,7 @@ styles.forEach(style => {
     equalsElement(view.element, style.tagName, { class: 'ember-view', id: regex(/^ember\d*$/) }, 'In layout');
   });
 
-  style.test(`non-block with attributes replaced with ${style.name}`, function() {
+  style.test(`non-block with attributes replaced with ${style.name}`, function () {
     env.registerEmberishGlimmerComponent(
       'non-block',
       null,
@@ -2323,7 +2187,7 @@ styles.forEach(style => {
     equalsElement(node, style.tagName, { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) }, 'In layout');
   });
 
-  QUnit.skip(`non-block replaced with ${style.name} (regression with single element in the root element)`, function() {
+  QUnit.skip(`non-block replaced with ${style.name} (regression with single element in the root element)`, function () {
     env.registerEmberishGlimmerComponent(
       'non-block',
       EmberishGlimmerComponent,
@@ -2342,7 +2206,7 @@ styles.forEach(style => {
     equalsElement(node, style.tagName, { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) }, '<p>In layout</p>');
   });
 
-  QUnit.skip(`non-block with class replaced with ${style.name} merges classes`, function() {
+  QUnit.skip(`non-block with class replaced with ${style.name} merges classes`, function () {
     env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, `<${style.tagName} class="inner-class" />`);
 
     appendViewFor('<non-block class="{{outer}}" />', { outer: 'outer' });
@@ -2355,7 +2219,7 @@ styles.forEach(style => {
     equalsElement(view.element, style.tagName, { class: classes('inner-class new-outer ember-view'), id: regex(/^ember\d*$/) }, '');
   });
 
-  QUnit.skip(`non-block with outer attributes replaced with ${style.name} shadows inner attributes`, function() {
+  QUnit.skip(`non-block with outer attributes replaced with ${style.name} shadows inner attributes`, function () {
     let component: MyComponent | undefined;
 
     class MyComponent extends EmberishGlimmerComponent {
@@ -2386,7 +2250,7 @@ styles.forEach(style => {
     }, '');
   });
 
-  QUnit.skip(`non-block replaced with ${style.name} should have correct scope`, function() {
+  QUnit.skip(`non-block replaced with ${style.name} should have correct scope`, function () {
     class NonBlock extends EmberishGlimmerComponent {
       init() {
         this._super(...arguments);
@@ -2402,7 +2266,7 @@ styles.forEach(style => {
     equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/) }, 'stuff');
   });
 
-  QUnit.skip(`non-block replaced with ${style.name} should have correct 'element'`, function() {
+  QUnit.skip(`non-block replaced with ${style.name} should have correct 'element'`, function () {
     let component: MyComponent;
 
     class MyComponent extends EmberishGlimmerComponent {
@@ -2420,7 +2284,7 @@ styles.forEach(style => {
     equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/) }, '');
   });
 
-  QUnit.skip(`non-block replaced with ${style.name} should have inner attributes`, function() {
+  QUnit.skip(`non-block replaced with ${style.name} should have inner attributes`, function () {
     class NonBlock extends EmberishGlimmerComponent {
       init() {
         this._super(...arguments);
@@ -2441,7 +2305,7 @@ styles.forEach(style => {
     }, '');
   });
 
-  QUnit.skip(`only text attributes are reflected on the underlying DOM element (${style.name})`, function() {
+  QUnit.skip(`only text attributes are reflected on the underlying DOM element (${style.name})`, function () {
     env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, `<${style.tagName}>In layout</${style.tagName}>`);
 
     appendViewFor('<non-block static-prop="static text" concat-prop="{{view.dynamic}} text" dynamic-prop={{view.dynamic}} />', {
@@ -2458,7 +2322,7 @@ styles.forEach(style => {
 
 });
 
-QUnit.test(`Ensure components can be invoked`, function() {
+QUnit.test(`Ensure components can be invoked`, function () {
   env.registerEmberishGlimmerComponent('x-outer', null, `<x-inner></x-inner>`);
   env.registerEmberishGlimmerComponent('x-inner', null, `<div>hi!</div>`);
 
@@ -2466,7 +2330,7 @@ QUnit.test(`Ensure components can be invoked`, function() {
   equalsElement(view.element, 'div', { class: classes('ember-view'), id: regex(/^ember\d*$/) }, 'hi!');
 });
 
-QUnit.test(`Glimmer component with element modifier`, function(assert) {
+QUnit.test(`Glimmer component with element modifier`, function (assert) {
   env.registerEmberishGlimmerComponent('non-block', null, `  <div>In layout</div>  `);
 
   assert.throws(() => {
@@ -2474,7 +2338,7 @@ QUnit.test(`Glimmer component with element modifier`, function(assert) {
   }, new Error("Compile Error: Element modifiers are not allowed in components"), "should throw error");
 });
 
-QUnit.skip('block without properties', function() {
+QUnit.skip('block without properties', function () {
   env.registerEmberishGlimmerComponent('with-block', EmberishGlimmerComponent, '<with-block>In layout - {{yield}}</with-block>');
 
   appendViewFor('<with-block>In template</with-block>');
@@ -2528,7 +2392,7 @@ QUnit.skip('attributes are not installed on the top level', assert => {
   assert.strictEqual(component!['dynamic'], null);
 });
 
-QUnit.skip('non-block with properties on attrs and component class', function() {
+QUnit.skip('non-block with properties on attrs and component class', function () {
   env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, '<non-block>In layout - someProp: {{attrs.someProp}}</non-block>');
 
   appendViewFor('<non-block someProp="something here" />');
@@ -2536,7 +2400,7 @@ QUnit.skip('non-block with properties on attrs and component class', function() 
   assertEmberishElement('non-block', { someProp: 'something here' }, 'In layout - someProp: something here');
 });
 
-QUnit.skip('block with properties on attrs', function() {
+QUnit.skip('block with properties on attrs', function () {
   env.registerEmberishGlimmerComponent(
     'with-block',
     EmberishGlimmerComponent,
@@ -2548,7 +2412,7 @@ QUnit.skip('block with properties on attrs', function() {
   assertEmberishElement('with-block', { someProp: 'something here' }, 'In layout - someProp: something here - In template');
 });
 
-QUnit.skip('computed property alias on a static attr', function() {
+QUnit.skip('computed property alias on a static attr', function () {
   let ComputedAlias = <any>EmberishGlimmerComponent.extend({
     otherProp: alias('attrs.someProp')
   });
@@ -2562,7 +2426,7 @@ QUnit.skip('computed property alias on a static attr', function() {
   assertEmberishElement('computed-alias', { someProp: 'value' }, 'value');
 });
 
-QUnit.skip('computed property alias on a dynamic attr', function() {
+QUnit.skip('computed property alias on a dynamic attr', function () {
   let ComputedAlias = <any>EmberishGlimmerComponent.extend({
     otherProp: alias('attrs.someProp')
   });
@@ -2648,7 +2512,7 @@ QUnit.test('Curly component hooks (with attrs)', assert => {
   assertFired(instance, 'didRender', 3);
 });
 
-QUnit.test('Curly component hooks (attrs as self props)', function() {
+QUnit.test('Curly component hooks (attrs as self props)', function () {
   let instance: NonBlock | undefined;
 
   class NonBlock extends EmberishCurlyComponent {
@@ -2696,7 +2560,7 @@ QUnit.test('Curly component hooks (attrs as self props)', function() {
   assertFired(instance, 'didRender', 3);
 });
 
-QUnit.test('Setting value attributeBinding to null results in empty string value', function(assert) {
+QUnit.test('Setting value attributeBinding to null results in empty string value', function (assert) {
   let instance: InputComponent | undefined;
 
   class InputComponent extends EmberishCurlyComponent {
@@ -2752,21 +2616,21 @@ QUnit.test('Setting class attributeBinding does not clobber ember-view', assert 
     return;
   }
 
-  assertEmberishElement('div',{ class: classes('ember-view foo bar') }, 'FOO BAR');
+  assertEmberishElement('div', { class: classes('ember-view foo bar') }, 'FOO BAR');
 
   rerender();
 
-  assertEmberishElement('div',{ class: classes('ember-view foo bar') }, 'FOO BAR');
+  assertEmberishElement('div', { class: classes('ember-view foo bar') }, 'FOO BAR');
 
   set(view, 'classes', 'foo bar baz');
   rerender();
 
-  assertEmberishElement('div',{ class: classes('ember-view foo bar baz') }, 'FOO BAR');
+  assertEmberishElement('div', { class: classes('ember-view foo bar baz') }, 'FOO BAR');
 
   set(view, 'classes', 'foo bar');
   rerender();
 
-  assertEmberishElement('div',{ class: classes('ember-view foo bar') }, 'FOO BAR');
+  assertEmberishElement('div', { class: classes('ember-view foo bar') }, 'FOO BAR');
 });
 
 QUnit.test('Curly component hooks (force recompute)', assert => {
@@ -2909,302 +2773,9 @@ QUnit.test('Glimmer component hooks (force recompute)', assert => {
   assertFired(instance, 'didRender', 2);
 });
 
-// QUnit.skip('[DEPRECATED] non-block with properties on self', function() {
-//   // TODO: attrs
-//   // expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");
-
-//   registry.register('template:components/non-block', compile('In layout - someProp: {{someProp}}'));
-
-//   view = EmberView.extend({
-//     template: compile('{{non-block someProp="something here"}}'),
-//     container: container
-//   }).create();
-
-//   runAppend(view);
-
-//   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
-// });
-
-// QUnit.skip('[DEPRECATED] block with properties on self', function() {
-//   // TODO: attrs
-//   // expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");
-
-//   registry.register('template:components/with-block', compile('In layout - someProp: {{someProp}} - {{yield}}'));
-
-//   view = EmberView.extend({
-//     template: compile('{{#with-block someProp="something here"}}In template{{/with-block}}'),
-//     container: container
-//   }).create();
-
-//   runAppend(view);
-
-//   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here - In template');
-// });
-
-//   QUnit.skip('moduleName is available on _renderNode when a layout is present', function() {
-//     expect(1);
-
-//     let layoutModuleName = 'my-app-name/templates/components/sample-component';
-//     let sampleComponentLayout = compile('<sample-component>Sample Component - {{yield}}</sample-component>', {
-//       moduleName: layoutModuleName
-//     });
-//     registry.register('template:components/sample-component', sampleComponentLayout);
-//     registry.register('component:sample-component', GlimmerComponent.extend({
-//       didInsertElement: function() {
-//         equal(this._renderNode.lastResult.template.meta.moduleName, layoutModuleName);
-//       }
-//     }));
-
-//     view = EmberView.extend({
-//       layout: compile('<sample-component />'),
-//       container
-//     }).create();
-
-//     runAppend(view);
-//   });
-
-//   QUnit.skip('moduleName is available on _renderNode when no layout is present', function() {
-//     expect(1);
-
-//     let templateModuleName = 'my-app-name/templates/application';
-//     registry.register('component:sample-component', Component.extend({
-//       didInsertElement: function() {
-//         equal(this._renderNode.lastResult.template.meta.moduleName, templateModuleName);
-//       }
-//     }));
-
-//     view = EmberView.extend({
-//       layout: compile('{{#sample-component}}Derp{{/sample-component}}', {
-//         moduleName: templateModuleName
-//       }),
-//       container
-//     }).create();
-
-//     runAppend(view);
-//   });
-
-// QUnit.skip('component without dash is not looked up', function() {
-//   expect(1);
-
-//   registry.register('template:components/somecomponent', compile('somecomponent'));
-
-//   view = EmberView.extend({
-//     template: compile('{{somecomponent}}'),
-//     container: container,
-//     context: {
-//       'somecomponent': 'notsomecomponent'
-//     }
-//   }).create();
-
-//   runAppend(view);
-
-//   equal(jQuery('#qunit-fixture').text(), 'notsomecomponent');
-// });
-
-// QUnit.skip(`partials templates should not be treated like a component layout for ${style.name}`, function() {
-//   registry.register('template:_zomg', compile(`<p>In partial</p>`));
-//   registry.register('template:components/non-block', compile(`<${style.tagName}>{{partial "zomg"}}</${style.tagName}>`));
-
-//   view = appendViewFor('<non-block />');
-
-//   let el = view.$(style.tagName).find('p');
-//   equal(el.length, 1, 'precond - the partial was rendered');
-//   equal(el.text(), 'In partial');
-//   strictEqual(el.attr('id'), undefined, 'the partial should not get an id');
-//   strictEqual(el.attr('class'), undefined, 'the partial should not get a class');
-// });
-
-//   QUnit.skip('[FRAGMENT] non-block rendering a fragment', function() {
-//     registry.register('template:components/non-block', compile('<p>{{attrs.first}}</p><p>{{attrs.second}}</p>'));
-
-//     view = appendViewFor('<non-block first={{view.first}} second={{view.second}} />', {
-//       first: 'first1',
-//       second: 'second1'
-//     });
-
-//     equal(view.$().html(), '<p>first1</p><p>second1</p>', 'No wrapping element was created');
-
-//     run(view, 'setProperties', {
-//       first: 'first2',
-//       second: 'second2'
-//     });
-
-//     equal(view.$().html(), '<p>first2</p><p>second2</p>', 'The fragment was updated');
-//   });
-
-// // TODO: When un-skipping, fix this so it handles all styles
-// QUnit.skip('non-block recursive invocations with outer attributes replaced with a div shadows inner attributes', function() {
-//   registry.register('template:components/non-block-wrapper', compile('<non-block />'));
-//   registry.register('template:components/non-block', compile('<div data-static="static" data-dynamic="{{internal}}" />'));
-
-//   view = appendViewFor('<non-block-wrapper data-static="outer" data-dynamic="outer" />');
-
-//   equal(view.$('div').attr('data-static'), 'outer', 'the outer-most attribute wins');
-//   equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer-most attribute wins');
-
-//   let component = view.childViews[0].childViews[0]; // HAX
-
-//   run(() => component.set('internal', 'changed'));
-
-//   equal(view.$('div').attr('data-static'), 'outer', 'the outer-most attribute wins');
-//   equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer-most attribute wins');
-// });
-
-// QUnit.skip('components should receive the viewRegistry from the parent view', function() {
-//   let outer, innerTemplate, innerLayout;
-
-//   let viewRegistry = {};
-
-//   registry.register('component:x-outer', Component.extend({
-//     init() {
-//       this._super(...arguments);
-//       outer = this;
-//     }
-//   }));
-
-//   registry.register('component:x-inner-in-template', Component.extend({
-//     init() {
-//       this._super(...arguments);
-//       innerTemplate = this;
-//     }
-//   }));
-
-//   registry.register('component:x-inner-in-layout', Component.extend({
-//     init() {
-//       this._super(...arguments);
-//       innerLayout = this;
-//     }
-//   }));
-
-//   registry.register('template:components/x-outer', compile('{{x-inner-in-layout}}{{yield}}'));
-
-//   view = EmberView.extend({
-//     _viewRegistry: viewRegistry,
-//     template: compile('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}'),
-//     container: container
-//   }).create();
-
-//   runAppend(view);
-
-//   equal(innerTemplate._viewRegistry, viewRegistry);
-//   equal(innerLayout._viewRegistry, viewRegistry);
-//   equal(outer._viewRegistry, viewRegistry);
-// });
-
-// QUnit.skip('comopnent should rerender when a property is changed during children\'s rendering', function() {
-//   expectDeprecation(/modified value twice in a single render/);
-
-//   let outer, middle;
-
-//   registry.register('component:x-outer', Component.extend({
-//     value: 1,
-//     grabReference: Ember.on('init', function() {
-//       outer = this;
-//     })
-//   }));
-
-//   registry.register('component:x-middle', Component.extend({
-//     value: null,
-//     grabReference: Ember.on('init', function() {
-//       middle = this;
-//     })
-//   }));
-
-//   registry.register('component:x-inner', Component.extend({
-//     value: null,
-//     pushDataUp: Ember.observer('value', function() {
-//       middle.set('value', this.get('value'));
-//     })
-//   }));
-
-//   registry.register('template:components/x-outer', compile('{{#x-middle}}{{x-inner value=value}}{{/x-middle}}'));
-//   registry.register('template:components/x-middle', compile('<div id="middle-value">{{value}}</div>{{yield}}'));
-//   registry.register('template:components/x-inner', compile('<div id="inner-value">{{value}}</div>'));
-
-//   view = EmberView.extend({
-//     template: compile('{{x-outer}}'),
-//     container: container
-//   }).create();
-
-//   runAppend(view);
-
-//   equal(view.$('#inner-value').text(), '1', 'initial render of inner');
-//   equal(view.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
-
-//   run(() => outer.set('value', 2));
-
-//   equal(view.$('#inner-value').text(), '2', 'second render of inner');
-//   equal(view.$('#middle-value').text(), '2', 'second render of middle');
-
-//   run(() => outer.set('value', 3));
-
-//   equal(view.$('#inner-value').text(), '3', 'third render of inner');
-//   equal(view.$('#middle-value').text(), '3', 'third render of middle');
-// });
-
-// QUnit.skip('moduleName is available on _renderNode when a layout is present', function() {
-//   expect(1);
-
-//   let layoutModuleName = 'my-app-name/templates/components/sample-component';
-//   let sampleComponentLayout = compile('Sample Component - {{yield}}', {
-//     moduleName: layoutModuleName
-//   });
-//   registry.register('template:components/sample-component', sampleComponentLayout);
-//   registry.register('component:sample-component', Component.extend({
-//     didInsertElement: function() {
-//       equal(this._renderNode.lastResult.template.meta.moduleName, layoutModuleName);
-//     }
-//   }));
-
-//   view = EmberView.extend({
-//     layout: compile('{{sample-component}}'),
-//     container
-//   }).create();
-
-//   runAppend(view);
-// });
-
-// QUnit.skip('moduleName is available on _renderNode when no layout is present', function() {
-//   expect(1);
-
-//   let templateModuleName = 'my-app-name/templates/application';
-//   registry.register('component:sample-component', Component.extend({
-//     didInsertElement: function() {
-//       equal(this._renderNode.lastResult.template.meta.moduleName, templateModuleName);
-//     }
-//   }));
-
-//   view = EmberView.extend({
-//     layout: compile('{{#sample-component}}Derp{{/sample-component}}', {
-//       moduleName: templateModuleName
-//     }),
-//     container
-//   }).create();
-
-//   runAppend(view);
-// });
-
-// QUnit.skip('`template` specified in a component is overridden by block', function() {
-//   expect(1);
-
-//   registry.register('component:with-block', Component.extend({
-//     layout: compile('{{yield}}'),
-//     template: compile('Oh, noes!')
-//   }));
-
-//   view = EmberView.extend({
-//     template: compile('{{#with-block}}Whoop, whoop!{{/with-block}}'),
-//     container: container
-//   }).create();
-
-//   runAppend(view);
-
-//   equal(view.$().text(), 'Whoop, whoop!', 'block provided always overrides template property');
-// });
-
 module('Teardown');
 
-QUnit.test('curly components are destroyed', function(assert) {
+QUnit.test('curly components are destroyed', function (assert) {
   let destroyed = 0;
 
   let DestroyMeComponent = EmberishCurlyComponent.extend({
@@ -3225,7 +2796,7 @@ QUnit.test('curly components are destroyed', function(assert) {
   assert.strictEqual(destroyed, 1, 'destroy should be called exactly one');
 });
 
-QUnit.test('glimmer components are destroyed', function(assert) {
+QUnit.test('glimmer components are destroyed', function (assert) {
   let destroyed = 0;
 
   let DestroyMeComponent = EmberishGlimmerComponent.extend({
@@ -3246,7 +2817,7 @@ QUnit.test('glimmer components are destroyed', function(assert) {
   assert.strictEqual(destroyed, 1, 'destroy should be called exactly one');
 });
 
-QUnit.test('component helpers component are destroyed', function(assert) {
+QUnit.test('component helpers component are destroyed', function (assert) {
   let destroyed = 0;
 
   let DestroyMeComponent = EmberishCurlyComponent.extend({
@@ -3271,7 +2842,7 @@ QUnit.test('component helpers component are destroyed', function(assert) {
   assert.strictEqual(destroyed, 1, 'destroy should be called exactly one');
 });
 
-QUnit.test('components inside a list are destroyed', function(assert) {
+QUnit.test('components inside a list are destroyed', function (assert) {
   let destroyed: number[] = [];
 
   let DestroyMeComponent = EmberishGlimmerComponent.extend({
@@ -3283,24 +2854,24 @@ QUnit.test('components inside a list are destroyed', function(assert) {
 
   env.registerEmberishGlimmerComponent('destroy-me', DestroyMeComponent as any, '<div>destroy me!</div>');
 
-  appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me @item={{item}} />{{/each}}`, { list: [1,2,3,4,5] });
+  appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me @item={{item}} />{{/each}}`, { list: [1, 2, 3, 4, 5] });
 
   assert.strictEqual(destroyed.length, 0, 'destroy should not be called');
 
-  view.rerender({ list: [1,2,3] });
+  view.rerender({ list: [1, 2, 3] });
 
-  assert.deepEqual(destroyed, [4,5], 'destroy should be called exactly twice');
+  assert.deepEqual(destroyed, [4, 5], 'destroy should be called exactly twice');
 
-  view.rerender({ list: [3,2,1] });
+  view.rerender({ list: [3, 2, 1] });
 
-  assert.deepEqual(destroyed, [4,5], 'destroy should be called exactly twice');
+  assert.deepEqual(destroyed, [4, 5], 'destroy should be called exactly twice');
 
   view.rerender({ list: [] });
 
-  assert.deepEqual(destroyed, [4,5,3,2,1], 'destroy should be called for each item');
+  assert.deepEqual(destroyed, [4, 5, 3, 2, 1], 'destroy should be called for each item');
 });
 
-QUnit.test('components that are "destroyed twice" are destroyed once', function(assert) {
+QUnit.test('components that are "destroyed twice" are destroyed once', function (assert) {
   let destroyed: string[] = [];
 
   let DestroyMeComponent = EmberishCurlyComponent.extend({
@@ -3329,7 +2900,7 @@ QUnit.test('components that are "destroyed twice" are destroyed once', function(
   assert.deepEqual(destroyed, ['root', 'inner'], 'destroy should be called exactly once per component');
 });
 
-QUnit.test('deeply nested destructions', function(assert) {
+QUnit.test('deeply nested destructions', function (assert) {
   let destroyed: string[] = [];
 
   let DestroyMe1Component = EmberishGlimmerComponent.extend({
@@ -3349,11 +2920,11 @@ QUnit.test('deeply nested destructions', function(assert) {
   env.registerEmberishGlimmerComponent('destroy-me1', DestroyMe1Component as any, '<div>{{#destroy-me2 item=@item from="destroy-me1"}}{{yield}}{{/destroy-me2}}</div>');
   env.registerEmberishCurlyComponent('destroy-me2', DestroyMe2Component as any, 'Destroy me! {{yield}}');
 
-  appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me1 @item={{item}}>{{#destroy-me2 from="root" item=item}}{{/destroy-me2}}</destroy-me1>{{/each}}`, { list: [1,2,3,4,5] });
+  appendViewFor(`{{#each list key='@primitive' as |item|}}<destroy-me1 @item={{item}}>{{#destroy-me2 from="root" item=item}}{{/destroy-me2}}</destroy-me1>{{/each}}`, { list: [1, 2, 3, 4, 5] });
 
   assert.strictEqual(destroyed.length, 0, 'destroy should not be called');
 
-  view.rerender({ list: [1,2,3] });
+  view.rerender({ list: [1, 2, 3] });
 
   assert.deepEqual(destroyed, [
     "destroy-me1: 4",
@@ -3366,7 +2937,7 @@ QUnit.test('deeply nested destructions', function(assert) {
 
   destroyed = [];
 
-  view.rerender({ list: [3,2,1] });
+  view.rerender({ list: [3, 2, 1] });
 
   assert.deepEqual(destroyed, [], 'destroy should be called exactly twice');
 
@@ -3385,7 +2956,7 @@ QUnit.test('deeply nested destructions', function(assert) {
   ], 'destroy should be called for each item');
 });
 
-QUnit.test('components inside the root are destroyed when the render result is destroyed', function(assert) {
+QUnit.test('components inside the root are destroyed when the render result is destroyed', function (assert) {
   let glimmerDestroyed = false;
   let curlyDestroyed = false;
 
@@ -3423,7 +2994,7 @@ QUnit.test('components inside the root are destroyed when the render result is d
 });
 
 QUnit.test('tagless components render properly', () => {
-  class FooBar extends BasicComponent {}
+  class FooBar extends BasicComponent { }
 
   env.registerStaticTaglessComponent('foo-bar', FooBar, `Michael Jordan says "Go Tagless"`);
 
@@ -3455,7 +3026,7 @@ QUnit.test('can bind the layout late', () => {
 module('appendable components');
 
 QUnit.test('it does not work on optimized appends', () => {
-  class FooBar extends EmberishCurlyComponent {}
+  class FooBar extends EmberishCurlyComponent { }
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
@@ -3479,7 +3050,7 @@ QUnit.test('it does not work on optimized appends', () => {
 });
 
 QUnit.test('it works on unoptimized appends (dot paths)', () => {
-  class FooBar extends EmberishCurlyComponent {}
+  class FooBar extends EmberishCurlyComponent { }
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
@@ -3511,7 +3082,7 @@ QUnit.test('it works on unoptimized appends (dot paths)', () => {
 });
 
 QUnit.test('it works on unoptimized appends (this paths)', () => {
-  class FooBar extends EmberishCurlyComponent {}
+  class FooBar extends EmberishCurlyComponent { }
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
@@ -3543,7 +3114,7 @@ QUnit.test('it works on unoptimized appends (this paths)', () => {
 });
 
 QUnit.test('it works on unoptimized appends when initially not a component (dot paths)', () => {
-  class FooBar extends EmberishCurlyComponent {}
+  class FooBar extends EmberishCurlyComponent { }
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
@@ -3571,7 +3142,7 @@ QUnit.test('it works on unoptimized appends when initially not a component (dot 
 });
 
 QUnit.test('it works on unoptimized appends when initially not a component (this paths)', () => {
-  class FooBar extends EmberishCurlyComponent {}
+  class FooBar extends EmberishCurlyComponent { }
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
@@ -3600,7 +3171,7 @@ QUnit.test('it works on unoptimized appends when initially not a component (this
 
 module('bounds tracking');
 
-QUnit.test('it works for wrapped (curly) components', function(assert) {
+QUnit.test('it works for wrapped (curly) components', function (assert) {
   let instance: FooBar | undefined;
 
   class FooBar extends EmberishCurlyComponent {
@@ -3629,7 +3200,7 @@ QUnit.test('it works for wrapped (curly) components', function(assert) {
   assert.equal(instance.bounds.lastNode(), instance.element);
 });
 
-QUnit.test('it works for tagless components', function(assert) {
+QUnit.test('it works for tagless components', function (assert) {
   let instance: FooBar | undefined;
 
   class FooBar extends EmberishCurlyComponent {
@@ -3658,7 +3229,7 @@ QUnit.test('it works for tagless components', function(assert) {
   assert.equal(instance.bounds.lastNode(), document.querySelector('#before-last-node')!.nextSibling);
 });
 
-QUnit.test('it works for unwrapped components', function(assert) {
+QUnit.test('it works for unwrapped components', function (assert) {
   let instance: FooBar | undefined;
 
   class FooBar extends EmberishGlimmerComponent {

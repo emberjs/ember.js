@@ -19,7 +19,7 @@ function commonSetup() {
   root = document.createElement('div');
 }
 
-function render<T>(template: Template<T>, context={}) {
+function render<T>(template: Template<T>, context = {}) {
   self = new UpdatableReference(context);
   env.begin();
   let templateIterator = template.render({ self, parentNode: root, dynamicScope: new TestDynamicScope() });
@@ -102,59 +102,3 @@ class MyComponent extends BasicComponent {
     }
   }
 }
-
-// class MyOtherComponent extends BasicComponent {}
-
-// QUnit.test('creating a new component', assert => {
-//   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
-//   render(template, { color: 'red' });
-
-//   equalTokens(root, "<div color='red'>hello!</div>");
-//   rerender({ color: 'green' });
-//   equalTokens(root, "<div color='green'>hello!</div>");
-// });
-
-// QUnit.test('the component class is its context', assert => {
-//   env.registerBasicComponent('my-component', MyComponent, '<div><p>{{testing}}</p>{{yield}}</div>');
-//   let template = compile("<my-component @color={{color}} color='{{color}}'>hello!</my-component>");
-//   render(template, { color: 'red' });
-
-//   equalTokens(root, "<div color='red'><p>123</p>hello!</div>");
-//   rerender({ color: 'green' });
-//   equalTokens(root, "<div color='green'><p>456</p>hello!</div>");
-// });
-
-// QUnit.test('attrs are available in the layout', assert => {
-//   env.registerBasicComponent('my-component', MyComponent, '<div><p>{{attrs.color}}</p>{{yield}}</div>');
-//   let template = compile("<my-component color='{{color}}' @color={{color}}>hello!</my-component>");
-//   render(template, { color: 'red' });
-
-//   equalTokens(root, "<div color='red'><p>red</p>hello!</div>");
-//   rerender({ color: 'green' });
-//   equalTokens(root, "<div color='green'><p>green</p>hello!</div>");
-// });
-
-// QUnit.test('nested components', assert => {
-//   env.registerBasicComponent('my-other-component', MyOtherComponent, '<p>{{yield}}</p>');
-//   let template = compile('<my-component><my-other-component>{{color}}</my-other-component></my-component>');
-//   render(template, { color: 'red' });
-
-//   equalTokens(root, '<div><p>red</p></div>');
-//   rerender({ color: 'green' });
-//   equalTokens(root, '<div><p>green</p></div>');
-// });
-
-// function testError(layout: string, expected: RegExp) {
-//   QUnit.skip(`'${layout}' produces an error like ${expected}`, assert => {
-//     env.registerBasicComponent('my-component', MyComponent, layout);
-//     let template = compile("<my-component>hello!</my-component>");
-//     assert.throws(() => render(template), expected);
-//   });
-// }
-
-// testError("<div>{{yield}}</div>nope", /non-whitespace text/);
-// testError("<div>{{yield}}</div><div></div>", /multiple root elements/);
-// testError("<div>{{yield}}</div>{{color}}", /cannot have curlies/);
-// testError("{{color}}", /cannot have curlies/);
-// testError("nope", /non-whitespace text/);
-// testError("", /single root element/);
