@@ -3,8 +3,7 @@ import {
   peekMeta
 } from './meta';
 import {
-  sendEvent,
-  accumulateListeners
+  sendEvent
 } from './events';
 import {
   markObjectAsDirty
@@ -252,6 +251,40 @@ function changeProperties(callback, binding) {
   }
 }
 
+function indexOf(array, target, method) {
+  let index = -1;
+  // hashes are added to the end of the event array
+  // so it makes sense to start searching at the end
+  // of the array and search in reverse
+  for (let i = array.length - 3; i >= 0; i -= 3) {
+    if (target === array[i] && method === array[i + 1]) {
+      index = i;
+      break;
+    }
+  }
+  return index;
+}
+
+function accumulateListeners(obj, eventName, otherActions, meta) {
+  let actions = meta.matchingListeners(eventName);
+  if (actions === undefined) { return; }
+  let newActions = [];
+
+  for (let i = actions.length - 3; i >= 0; i -= 3) {
+    let target = actions[i];
+    let method = actions[i + 1];
+    let flags = actions[i + 2];
+    let actionIndex = indexOf(otherActions, target, method);
+
+    if (actionIndex === -1) {
+      otherActions.push(target, method, flags);
+      newActions.push(target, method, flags);
+    }
+  }
+
+  return newActions;
+}
+
 function notifyBeforeObservers(obj, keyName, meta) {
   if (meta.isSourceDestroying()) { return; }
 
@@ -259,7 +292,7 @@ function notifyBeforeObservers(obj, keyName, meta) {
   let listeners, added;
   if (deferred) {
     listeners = beforeObserverSet.add(obj, keyName, eventName);
-    added = accumulateListeners(obj, eventName, listeners);
+    added = accumulateListeners(obj, eventName, listeners, meta);
     sendEvent(obj, eventName, [obj, keyName], added);
   } else {
     sendEvent(obj, eventName, [obj, keyName]);
@@ -273,7 +306,7 @@ function notifyObservers(obj, keyName, meta) {
   let listeners;
   if (deferred) {
     listeners = observerSet.add(obj, keyName, eventName);
-    accumulateListeners(obj, eventName, listeners);
+    accumulateListeners(obj, eventName, listeners, meta);
   } else {
     sendEvent(obj, eventName, [obj, keyName]);
   }
