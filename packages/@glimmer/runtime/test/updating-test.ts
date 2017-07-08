@@ -13,9 +13,9 @@ const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
  * Phantom 1.9 does not serialize namespaced attributes correctly. The namespace
  * prefix is incorrectly stripped off.
  */
-const serializesNSAttributesCorrectly = (function() {
-  let div = <HTMLElement> document.createElement('div');
-  let span = <HTMLElement> document.createElement('span');
+const serializesNSAttributesCorrectly = (function () {
+  let div = <HTMLElement>document.createElement('div');
+  let span = <HTMLElement>document.createElement('span');
   span.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:lang', 'en-uk');
   div.appendChild(span);
   return div.innerHTML === '<span xml:lang="en-uk"></span>';
@@ -148,7 +148,7 @@ module("[glimmer-runtime] Updating", hooks => {
 
     assertText('hello ', 'another ', 'world');
 
-    rerender({value});
+    rerender({ value });
 
     assertText('hello ', 'brave new ', 'world');
   });
@@ -161,16 +161,16 @@ module("[glimmer-runtime] Updating", hooks => {
     let valueNode1: Node | null;
     let valueNode2: Node | null;
     if (assertNodeTagName(root.firstChild, 'div') &&
-        assertNodeTagName(root.firstChild.firstChild, 'p') &&
-        assertNodeTagName(root.firstChild.lastChild, 'p')) {
+      assertNodeTagName(root.firstChild.firstChild, 'p') &&
+      assertNodeTagName(root.firstChild.lastChild, 'p')) {
       valueNode1 = root.firstChild.firstChild.firstChild;
       valueNode2 = root.firstChild.lastChild.firstChild;
     }
 
     function assertStable() {
       if (assertNodeTagName(root.firstChild, 'div') &&
-          assertNodeTagName(root.firstChild.firstChild, 'p') &&
-          assertNodeTagName(root.firstChild.lastChild, 'p')) {
+        assertNodeTagName(root.firstChild.firstChild, 'p') &&
+        assertNodeTagName(root.firstChild.lastChild, 'p')) {
         assert.equal(root.firstChild.firstChild.firstChild, valueNode1, 'The text node was not blown away');
         assert.equal(root.firstChild.lastChild.firstChild, valueNode2, 'The text node was not blown away');
       }
@@ -392,7 +392,7 @@ module("[glimmer-runtime] Updating", hooks => {
 
     equalTokens(root, `<div>${object.value}</div>`, "After updating with many nodes and dirtying");
 
-    rerender({value});
+    rerender({ value });
 
     equalTokens(root, `<div>${value}</div>`, "no change");
   });
@@ -429,7 +429,7 @@ module("[glimmer-runtime] Updating", hooks => {
       assertProperty(root.firstChild.lastChild, 'textContent', 'world');
     }
 
-    rerender({value});
+    rerender({ value });
 
     equalTokens(root, '<div>hello <b>brave new </b>world</div>', 'rerender');
   });
@@ -454,7 +454,7 @@ module("[glimmer-runtime] Updating", hooks => {
       assertProperty(root.firstChild.lastChild, 'textContent', 'another ');
     }
 
-    rerender({value});
+    rerender({ value });
 
     equalTokens(root, '<div>hello <b>brave new </b></div>', 'rerender');
   });
@@ -538,7 +538,7 @@ module("[glimmer-runtime] Updating", hooks => {
   }
 
   class SafeStringImpl implements SafeString {
-    constructor(private string: string) {}
+    constructor(private string: string) { }
     toHTML() {
       return this.string;
     }
@@ -1094,7 +1094,7 @@ module("[glimmer-runtime] Updating", hooks => {
     }
   });
 
-  test('The if helper should consider an empty array falsy', function() {
+  test('The if helper should consider an empty array falsy', function () {
     let object: any = { condition: [], value: 'hello world' };
     let template = compile('<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>');
     render(template, object);
@@ -1127,7 +1127,7 @@ module("[glimmer-runtime] Updating", hooks => {
     equalTokens(root, '<div><p>hello world</p></div>', "If the condition is true, the morph repopulates");
   });
 
-  test('The unless helper without inverse', function() {
+  test('The unless helper without inverse', function () {
     let object: any = { condition: true, value: 'hello world' };
     let template = compile('<div>{{#unless condition}}<p>{{value}}</p>{{/unless}}</div>');
     render(template, object);
@@ -1142,7 +1142,7 @@ module("[glimmer-runtime] Updating", hooks => {
     equalTokens(root, '<div><!----></div>', "If the condition is true, the morph unpopulated");
   });
 
-  test('The unless helper with inverse', function() {
+  test('The unless helper with inverse', function () {
     let object: any = { condition: true, value: 'hello world' };
     let template = compile('<div>{{#unless condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/unless}}</div>');
 
@@ -1158,7 +1158,7 @@ module("[glimmer-runtime] Updating", hooks => {
     equalTokens(root, '<div><p>Nothing</p></div>', "If the condition is true, the inverse renders");
   });
 
-  test('The unless helper should consider an empty array falsy', function() {
+  test('The unless helper should consider an empty array falsy', function () {
     let object: any = { condition: [], value: 'hello world' };
     let template = compile('<div>{{#unless condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/unless}}</div>');
 
@@ -1520,7 +1520,7 @@ module("[glimmer-runtime] Updating", hooks => {
   });
 
   test("helper calls follow the normal dirtying rules", () => {
-    env.registerHelper('capitalize', function(params) {
+    env.registerHelper('capitalize', function (params) {
       let value = params[0];
       if (value !== null && value !== undefined && typeof value === "string") {
         return value.toUpperCase();
@@ -1729,51 +1729,51 @@ module("[glimmer-runtime] Updating", hooks => {
   });
 
   if (serializesNSAttributesCorrectly) {
-  test("namespaced attribute nodes follow the normal dirtying rules", () => {
-    let template = compile("<div xml:lang='{{lang}}'>hello</div>");
-    let object = { lang: "en-us" };
+    test("namespaced attribute nodes follow the normal dirtying rules", () => {
+      let template = compile("<div xml:lang='{{lang}}'>hello</div>");
+      let object = { lang: "en-us" };
 
-    render(template, object);
+      render(template, object);
 
-    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
+      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
 
-    object.lang = "en-uk";
-    rerender();
+      object.lang = "en-uk";
+      rerender();
 
-    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating without dirtying");
+      equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating without dirtying");
 
-    rerender();
+      rerender();
 
-    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating after dirtying");
-  });
+      equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating after dirtying");
+    });
 
-  test("namespaced attribute nodes w/ concat follow the normal dirtying rules", () => {
-    let template = compile("<div xml:lang='en-{{locale}}'>hello</div>");
-    let object = { locale: "us" as (string | null) };
+    test("namespaced attribute nodes w/ concat follow the normal dirtying rules", () => {
+      let template = compile("<div xml:lang='en-{{locale}}'>hello</div>");
+      let object = { locale: "us" as (string | null) };
 
-    render(template, object);
+      render(template, object);
 
-    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
+      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
 
-    rerender();
+      rerender();
 
-    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "No-op rerender");
+      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "No-op rerender");
 
-    object.locale = "uk";
-    rerender();
+      object.locale = "uk";
+      rerender();
 
-    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "After update");
+      equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "After update");
 
-    object.locale = null;
-    rerender();
+      object.locale = null;
+      rerender();
 
-    equalTokens(root, "<div xml:lang='en-'>hello</div>", "After updating to null");
+      equalTokens(root, "<div xml:lang='en-'>hello</div>", "After updating to null");
 
-    object.locale = "us";
-    rerender();
+      object.locale = "us";
+      rerender();
 
-    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "After reset");
-  });
+      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "After reset");
+    });
   }
 
   test("non-standard namespaced attribute nodes follow the normal dirtying rules", () => {
@@ -1897,7 +1897,7 @@ module("[glimmer-runtime] Updating", hooks => {
 
     let tom = { key: "1", name: "Tom Dale", "class": "tomdale" };
     let yehuda = { key: "2", name: "Yehuda Katz", "class": "wycats" };
-    let object = { list: [ tom, yehuda ] };
+    let object = { list: [tom, yehuda] };
 
     render(template, object);
     assertInvariants(assert, result, "initial render");
@@ -1985,7 +1985,7 @@ module("[glimmer-runtime] Updating", hooks => {
     rerender(object);
     assertStableNodes('none', 'after no-op rerender');
 
-    object = { list: [ { name: 'Foo Bar', class: "foobar" } ] };
+    object = { list: [{ name: 'Foo Bar', class: "foobar" }] };
     rerender(object);
 
     equalTokens(root, '<ul><li class="foobar">Foo Bar</li></ul>');
@@ -2028,10 +2028,12 @@ module("[glimmer-runtime] Updating", hooks => {
     equalTokens(root, "<ul><li class='wycats'>Yehuda Katz<p class='index-0'>0</p></li><li class='tomdale'>Tom Dale<p class='index-1'>1</p></li></ul>", "After changing list order");
     assert.strictEqual(getNodeByClassName(`index-0`), indexNode, "The index node has not changed after changing list order");
 
-    object = { list: [
-      { name: "Martin Muñoz", class: "mmun" },
-      { name: "Kris Selden", class: "krisselden" }
-    ]};
+    object = {
+      list: [
+        { name: "Martin Muñoz", class: "mmun" },
+        { name: "Kris Selden", class: "krisselden" }
+      ]
+    };
     rerender(object);
     assertStableNodes('mmun', 0, "after changing the list entries, but with stable keys");
     equalTokens(
@@ -2040,11 +2042,13 @@ module("[glimmer-runtime] Updating", hooks => {
       `After changing the list entries, but with stable keys`
     );
 
-    object = { list: [
-      { name: "Martin Muñoz", class: "mmun" },
-      { name: "Kristoph Selden", class: "krisselden" },
-      { name: "Matthew Beale", class: "mixonic" }
-    ]};
+    object = {
+      list: [
+        { name: "Martin Muñoz", class: "mmun" },
+        { name: "Kristoph Selden", class: "krisselden" },
+        { name: "Matthew Beale", class: "mixonic" }
+      ]
+    };
 
     rerender(object);
     assertStableNodes('mmun', 0, "after adding an additional entry");
@@ -2057,10 +2061,12 @@ module("[glimmer-runtime] Updating", hooks => {
       `After adding an additional entry`
     );
 
-    object = { list: [
-      { name: "Martin Muñoz", class: "mmun" },
-      { name: "Matthew Beale", class: "mixonic" }
-    ]};
+    object = {
+      list: [
+        { name: "Martin Muñoz", class: "mmun" },
+        { name: "Matthew Beale", class: "mixonic" }
+      ]
+    };
 
     rerender(object);
     assertStableNodes('mmun', 0, "after removing the middle entry");
@@ -2070,11 +2076,13 @@ module("[glimmer-runtime] Updating", hooks => {
       "after removing the middle entry"
     );
 
-    object = { list: [
-      { name: "Martin Muñoz", class: "mmun" },
-      { name: "Stefan Penner", class: "stefanpenner" },
-      { name: "Robert Jackson", class: "rwjblue" }
-    ]};
+    object = {
+      list: [
+        { name: "Martin Muñoz", class: "mmun" },
+        { name: "Stefan Penner", class: "stefanpenner" },
+        { name: "Robert Jackson", class: "rwjblue" }
+      ]
+    };
 
     rerender(object);
     assertStableNodes('mmun', 0, "after adding two more entries");
@@ -2092,18 +2100,22 @@ module("[glimmer-runtime] Updating", hooks => {
     nameNode = getFirstChildOfNode('rwjblue');
     indexNode = getNodeByClassName('index-2');
 
-    object = { list: [
-      { name: "Robert Jackson", class: "rwjblue" }
-    ]};
+    object = {
+      list: [
+        { name: "Robert Jackson", class: "rwjblue" }
+      ]
+    };
 
     rerender(object);
     equalTokens(root, "<ul><li class='rwjblue'>Robert Jackson<p class='index-0'>0</p></li></ul>", "After removing two entries");
 
-    object = { list: [
-      { name: "Martin Muñoz", class: "mmun" },
-      { name: "Stefan Penner", class: "stefanpenner" },
-      { name: "Robert Jackson", class: "rwjblue" }
-    ]};
+    object = {
+      list: [
+        { name: "Martin Muñoz", class: "mmun" },
+        { name: "Stefan Penner", class: "stefanpenner" },
+        { name: "Robert Jackson", class: "rwjblue" }
+      ]
+    };
 
     rerender(object);
     equalTokens(
@@ -2120,9 +2132,11 @@ module("[glimmer-runtime] Updating", hooks => {
     nameNode = getFirstChildOfNode('mmun');
     indexNode = getNodeByClassName('index-0');
 
-    object = { list: [
-      { name: "Martin Muñoz", class: "mmun" }
-    ]};
+    object = {
+      list: [
+        { name: "Martin Muñoz", class: "mmun" }
+      ]
+    };
 
     rerender(object);
     assertStableNodes('mmun', 0, "after removing from the back");
@@ -2170,10 +2184,12 @@ module("[glimmer-runtime] Updating", hooks => {
     equalTokens(root, "<ul><li class='wycats'>Yehuda Katz<p class='index-0'>0</p></li><li class='tomdale'>Tom Dale<p class='index-1'>1</p></li></ul>", "After changing list order");
     assert.strictEqual(getNodeByClassName('index-1'), indexNode, "The index node has been moved after changing list order");
 
-    object = { list: [
-      { key: "1", name: "Martin Muñoz", class: "mmun" },
-      { key: "2", name: "Kris Selden", class: "krisselden" }
-    ]};
+    object = {
+      list: [
+        { key: "1", name: "Martin Muñoz", class: "mmun" },
+        { key: "2", name: "Kris Selden", class: "krisselden" }
+      ]
+    };
     rerender(object);
     assertStableNodes('mmun', 0, "after changing the list entries, but with stable keys");
     equalTokens(
@@ -2182,11 +2198,13 @@ module("[glimmer-runtime] Updating", hooks => {
       `After changing the list entries, but with stable keys`
     );
 
-    object = { list: [
-      { key: "1", name: "Martin Muñoz", class: "mmun" },
-      { key: "2", name: "Kristoph Selden", class: "krisselden" },
-      { key: "3", name: "Matthew Beale", class: "mixonic" }
-    ]};
+    object = {
+      list: [
+        { key: "1", name: "Martin Muñoz", class: "mmun" },
+        { key: "2", name: "Kristoph Selden", class: "krisselden" },
+        { key: "3", name: "Matthew Beale", class: "mixonic" }
+      ]
+    };
 
     rerender(object);
     assertStableNodes('mmun', 0, "after adding an additional entry");
@@ -2199,10 +2217,12 @@ module("[glimmer-runtime] Updating", hooks => {
       `After adding an additional entry`
     );
 
-    object = { list: [
-      { key: "1", name: "Martin Muñoz", class: "mmun" },
-      { key: "3", name: "Matthew Beale", class: "mixonic" }
-    ]};
+    object = {
+      list: [
+        { key: "1", name: "Martin Muñoz", class: "mmun" },
+        { key: "3", name: "Matthew Beale", class: "mixonic" }
+      ]
+    };
 
     rerender(object);
     assertStableNodes('mmun', 0, "after removing the middle entry");
@@ -2212,11 +2232,13 @@ module("[glimmer-runtime] Updating", hooks => {
       "after removing the middle entry"
     );
 
-    object = { list: [
-      { key: "1", name: "Martin Muñoz", class: "mmun" },
-      { key: "4", name: "Stefan Penner", class: "stefanpenner" },
-      { key: "5", name: "Robert Jackson", class: "rwjblue" }
-    ]};
+    object = {
+      list: [
+        { key: "1", name: "Martin Muñoz", class: "mmun" },
+        { key: "4", name: "Stefan Penner", class: "stefanpenner" },
+        { key: "5", name: "Robert Jackson", class: "rwjblue" }
+      ]
+    };
 
     rerender(object);
     assertStableNodes('mmun', 0, "after adding two more entries");
@@ -2234,19 +2256,23 @@ module("[glimmer-runtime] Updating", hooks => {
     nameNode = getFirstChildOfNode('rwjblue');
     indexNode = getNodeByClassName('index-2');
 
-    object = { list: [
-      { key: "5", name: "Robert Jackson", class: "rwjblue" }
-    ]};
+    object = {
+      list: [
+        { key: "5", name: "Robert Jackson", class: "rwjblue" }
+      ]
+    };
 
     rerender(object);
     assertStableNodes('rwjblue', 0, "after removing two entries");
     equalTokens(root, "<ul><li class='rwjblue'>Robert Jackson<p class='index-0'>0</p></li></ul>", "After removing two entries");
 
-    object = { list: [
-      { key: "1", name: "Martin Muñoz", class: "mmun" },
-      { key: "4", name: "Stefan Penner", class: "stefanpenner" },
-      { key: "5", name: "Robert Jackson", class: "rwjblue" }
-    ]};
+    object = {
+      list: [
+        { key: "1", name: "Martin Muñoz", class: "mmun" },
+        { key: "4", name: "Stefan Penner", class: "stefanpenner" },
+        { key: "5", name: "Robert Jackson", class: "rwjblue" }
+      ]
+    };
 
     rerender(object);
     assertStableNodes('rwjblue', 2, "after adding back entries");
@@ -2264,9 +2290,11 @@ module("[glimmer-runtime] Updating", hooks => {
     nameNode = getFirstChildOfNode('mmun');
     indexNode = getNodeByClassName('index-0');
 
-    object = { list: [
-      { key: "1", name: "Martin Muñoz", class: "mmun" }
-    ]};
+    object = {
+      list: [
+        { key: "1", name: "Martin Muñoz", class: "mmun" }
+      ]
+    };
 
     rerender(object);
     assertStableNodes('mmun', 0, "after removing from the back");
@@ -2289,12 +2317,12 @@ module("[glimmer-runtime] Updating", hooks => {
 
   // TODO: port https://github.com/emberjs/ember.js/pull/14082
 
-  function testEachHelper(testName: string, templateSource: string, testMethod=QUnit.test) {
+  function testEachHelper(testName: string, templateSource: string, testMethod = QUnit.test) {
     testMethod(testName, assert => {
       let template = compile(templateSource);
       let tom = { key: "1", name: "Tom Dale", class: "tomdale" };
       let yehuda = { key: "2", name: "Yehuda Katz", class: "wycats" };
-      let object = { list: [ tom, yehuda ] };
+      let object = { list: [tom, yehuda] };
 
       render(template, object);
 
@@ -2315,102 +2343,6 @@ module("[glimmer-runtime] Updating", hooks => {
       rerender(object);
       assertStableNodes('tomdale', "after changing the list order");
       equalTokens(root, "<ul><li class='wycats'>Yehuda Katz</li><li class='tomdale'>Tom Dale</li></ul>", "After changing the list order");
-
-      // object = { list: [
-      //   { key: "1", name: "Martin Muñoz", "class": "mmun" },
-      //   { key: "2", name: "Kris Selden", "class": "krisselden" }
-      // ]};
-      // rerender(object);
-      // assertStableNodes('mmun', "after changing the list entries, but with stable keys");
-      // equalTokens(
-      //   root,
-      //   `<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kris Selden</li></ul>`,
-      //   `After changing the list entries, but with stable keys`
-      // );
-
-      // object = { list: [
-      //   { key: "1", name: "Martin Muñoz", "class": "mmun" },
-      //   { key: "2", name: "Kristoph Selden", "class": "krisselden" },
-      //   { key: "3", name: "Matthew Beale", "class": "mixonic" }
-      // ]};
-
-      // rerender(object);
-      // assertStableNodes('mmun', "after adding an additional entry");
-      // equalTokens(
-      //   root,
-      //   stripTight`<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kristoph Selden</li>
-      //     <li class='mixonic'>Matthew Beale</li></ul>`,
-      //   `After adding an additional entry`
-      // );
-
-      // object = { list: [
-      //   { key: "1", name: "Martin Muñoz", "class": "mmun" },
-      //   { key: "3", name: "Matthew Beale", "class": "mixonic" }
-      // ]};
-
-      // rerender(object);
-      // assertStableNodes('mmun', "after removing the middle entry");
-      // equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='mixonic'>Matthew Beale</li></ul>", "after removing the middle entry");
-
-      // object = { list: [
-      //   { key: "1", name: "Martin Muñoz", "class": "mmun" },
-      //   { key: "4", name: "Stefan Penner", "class": "stefanpenner" },
-      //   { key: "5", name: "Robert Jackson", "class": "rwjblue" }
-      // ]};
-
-      // rerender(object);
-      // assertStableNodes('mmun', "after adding two more entries");
-      // equalTokens(
-      //   root,
-      //   stripTight`<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li>
-      //     <li class='rwjblue'>Robert Jackson</li></ul>`,
-      //   `After adding two more entries`
-      // );
-
-      // // New node for stability check
-      // itemNode = getNodeByClassName('rwjblue');
-      // nameNode = getFirstChildOfNode('rwjblue');
-
-      // object = { list: [
-      //   { key: "5", name: "Robert Jackson", "class": "rwjblue" }
-      // ]};
-
-      // rerender(object);
-      // assertStableNodes('rwjblue', "after removing two entries");
-      // equalTokens(root, "<ul><li class='rwjblue'>Robert Jackson</li></ul>", "After removing two entries");
-
-      // object = { list: [
-      //   { key: "1", name: "Martin Muñoz", "class": "mmun" },
-      //   { key: "4", name: "Stefan Penner", "class": "stefanpenner" },
-      //   { key: "5", name: "Robert Jackson", "class": "rwjblue" }
-      // ]};
-
-      // rerender(object);
-      // assertStableNodes('rwjblue', "after adding back entries");
-      // equalTokens(
-      //   root,
-      //   stripTight`<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li>
-      //     <li class='rwjblue'>Robert Jackson</li></ul>`,
-      //   `After adding back entries`
-      // );
-
-      // // New node for stability check
-      // itemNode = getNodeByClassName('mmun');
-      // nameNode = getFirstChildOfNode('mmun');
-
-      // object = { list: [
-      //   { key: "1", name: "Martin Muñoz", "class": "mmun" }
-      // ]};
-
-      // rerender(object);
-      // assertStableNodes('mmun', "after removing from the back");
-      // equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li></ul>", "After removing from the back");
-
-      // object = { list: [] };
-
-      // rerender(object);
-      // assert.strictEqual(root.firstChild.firstChild.nodeType, 8, "there are no li's after removing the remaining entry");
-      // equalTokens(root, "<ul><!----></ul>", "After removing the remaining entries");
 
       function assertStableNodes(className: string, message: string) {
         assert.strictEqual(getNodeByClassName(className), itemNode, "The item node has not changed " + message);
@@ -2591,7 +2523,7 @@ QUnit.module("Updating SVG", hooks => {
     equalTokens(root, `<svg></svg>`);
     assertNamespace();
 
-    rerender({name});
+    rerender({ name });
 
     equalTokens(root, `<svg></svg>${name}`);
     assertNamespace();
@@ -2626,7 +2558,7 @@ QUnit.module("Updating SVG", hooks => {
     equalTokens(root, `<svg></svg>${context.name}`);
     assertNamespaces();
 
-    rerender({name});
+    rerender({ name });
 
     equalTokens(root, `<svg></svg>${name}`);
     assertNamespaces();
@@ -2690,7 +2622,7 @@ QUnit.module("Updating SVG", hooks => {
       }
     });
 
-    rerender({content});
+    rerender({ content });
 
     equalTokens(root, `<svg>${content}</svg><div></div>`);
     assertNamespaces(svg => {
@@ -2729,7 +2661,7 @@ QUnit.module("Updating SVG", hooks => {
     equalTokens(root, `<div><svg>${context.content}</svg></div>`);
     assertNamespaces();
 
-    rerender({content});
+    rerender({ content });
 
     equalTokens(root, `<div><svg>${content}</svg></div>`);
     assertNamespaces();
@@ -2763,7 +2695,7 @@ QUnit.module("Updating SVG", hooks => {
       assert.strictEqual(svg.firstChild && svg.firstChild.textContent, '');
     });
 
-    rerender({content});
+    rerender({ content });
 
     equalTokens(root, `<svg>${content}</svg>`);
     assertSvg();
@@ -2803,7 +2735,7 @@ QUnit.module("Updating SVG", hooks => {
     equalTokens(root, `<div><svg></svg></div>`);
     assertNamespaces(false);
 
-    rerender({isTrue});
+    rerender({ isTrue });
 
     equalTokens(root, `<svg></svg>`);
     assertNamespaces(true);
@@ -2842,7 +2774,7 @@ QUnit.module("Updating SVG", hooks => {
     equalTokens(root, `<div><svg><!----></svg></div>`);
     assertNamespaces(false);
 
-    rerender({isTrue});
+    rerender({ isTrue });
 
     equalTokens(root, `<div><svg><circle /></svg></div>`);
     assertNamespaces(true);
