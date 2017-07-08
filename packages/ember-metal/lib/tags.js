@@ -51,7 +51,7 @@ export function markObjectAsDirty(meta, propertyKey) {
   }
 
   if (propertyKey === 'content' && meta.isProxy()) {
-    meta.getTag().contentDidChange();
+    objectTag.contentDidChange();
   }
 
   if (objectTag !== undefined || propertyTag !== undefined) {
@@ -59,13 +59,13 @@ export function markObjectAsDirty(meta, propertyKey) {
   }
 }
 
-let run;
+let backburner;
 function ensureRunloop() {
-  if (run === undefined) {
-    run = require('ember-metal').run;
+  if (backburner === undefined) {
+    backburner = require('ember-metal').run.backburner;
   }
 
   if (hasViews()) {
-    run.backburner.ensureInstance();
+    backburner.ensureInstance();
   }
 }

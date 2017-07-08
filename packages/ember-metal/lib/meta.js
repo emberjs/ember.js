@@ -97,14 +97,6 @@ export class Meta {
     return this.proto !== obj;
   }
 
-  setTag(tag) {
-    this._tag = tag;
-  }
-
-  getTag(tag) {
-    return this._tag;
-  }
-
   destroy() {
     if (this.isMetaDestroyed()) { return; }
 
