@@ -266,7 +266,6 @@ function indexOf(array, target, method) {
 }
 
 function accumulateListeners(obj, eventName, otherActions, meta) {
-  if (meta === null || meta === undefined) { return; }
   let actions = meta.matchingListeners(eventName);
   if (actions === undefined) { return; }
   let newActions = [];
