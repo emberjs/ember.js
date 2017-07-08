@@ -15,7 +15,7 @@ import {
 } from 'ember/features';
 import { assertNotRendered } from './transaction';
 
-export let PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
+export const PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
 const beforeObserverSet = new ObserverSet();
 const observerSet = new ObserverSet();
@@ -97,10 +97,7 @@ function propertyDidChange(obj, keyName, _meta) {
   }
 
   if (hasMeta && meta.peekWatching(keyName) > 0) {
-    if (meta.hasDeps(keyName) && !meta.isSourceDestroying()) {
-      dependentKeysDidChange(obj, keyName, meta);
-    }
-
+    dependentKeysDidChange(obj, keyName, meta);
     chainsDidChange(obj, keyName, meta);
     notifyObservers(obj, keyName, meta);
   }
@@ -122,25 +119,24 @@ function propertyDidChange(obj, keyName, _meta) {
 let WILL_SEEN, DID_SEEN;
 // called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)
 function dependentKeysWillChange(obj, depKey, meta) {
-  if (meta.isSourceDestroying()) { return; }
-  if (meta.hasDeps(depKey)) {
-    let seen = WILL_SEEN;
-    let top = !seen;
+  if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) { return; }
+  let seen = WILL_SEEN;
+  let top = !seen;
 
-    if (top) {
-      seen = WILL_SEEN = {};
-    }
+  if (top) {
+    seen = WILL_SEEN = {};
+  }
 
-    iterDeps(propertyWillChange, obj, depKey, seen, meta);
+  iterDeps(propertyWillChange, obj, depKey, seen, meta);
 
-    if (top) {
-      WILL_SEEN = null;
-    }
+  if (top) {
+    WILL_SEEN = null;
   }
 }
 
 // called whenever a property has just changed to update dependent keys
 function dependentKeysDidChange(obj, depKey, meta) {
+  if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) { return; }
   let seen = DID_SEEN;
   let top = !seen;
 
@@ -247,7 +243,7 @@ function changeProperties(callback, binding) {
   try {
     callback.call(binding);
   } finally {
-    endPropertyChanges.call(binding);
+    endPropertyChanges();
   }
 }
 
@@ -293,10 +289,8 @@ function notifyBeforeObservers(obj, keyName, meta) {
   if (deferred) {
     listeners = beforeObserverSet.add(obj, keyName, eventName);
     added = accumulateListeners(obj, eventName, listeners, meta);
-    sendEvent(obj, eventName, [obj, keyName], added);
-  } else {
-    sendEvent(obj, eventName, [obj, keyName]);
   }
+  sendEvent(obj, eventName, [obj, keyName], added);
 }
 
 function notifyObservers(obj, keyName, meta) {
