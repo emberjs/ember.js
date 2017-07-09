@@ -414,7 +414,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
         throw new Error('Invalid primitive passed to pushPrimitive');
     }
 
-    this.push(Op.Primitive, (flag << 30) | primitive);
+    this.push(Op.Primitive, primitive << 3 | flag);
   }
 
   pushPrimitiveReference(primitive: Primitive) {

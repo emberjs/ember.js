@@ -32,8 +32,8 @@ APPEND_OPCODES.add(Op.Constant, (vm: VM & { constants: LazyConstants }, { op1: o
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   let stack = vm.stack;
-  let flag = (primitive & (3 << 30)) >>> 30;
-  let value = primitive & ~(3 << 30);
+  let flag = primitive & 7; // 111
+  let value = primitive >> 3;
 
   switch (flag) {
     case 0:
