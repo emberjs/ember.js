@@ -67,7 +67,6 @@ export function set(obj, keyName, value, tolerant) {
 
     propertyDidChange(obj, keyName, meta);
   }
-
   return value;
 }
 

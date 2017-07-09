@@ -13,7 +13,7 @@ function makeTag() {
 }
 
 export function tagForProperty(object, propertyKey, _meta) {
-  if (typeof object !== 'object' || object === null) { return CONSTANT_TAG; }
+  if ((typeof object !== 'object' && typeof object !== 'function') || object === null) { return CONSTANT_TAG; }
 
   let meta = _meta || metaFor(object);
   if (meta.isProxy()) {
