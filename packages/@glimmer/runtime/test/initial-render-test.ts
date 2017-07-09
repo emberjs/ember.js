@@ -870,6 +870,16 @@ abstract class RenderingTest extends RenderTests {
     this.assertStableRerender();
   }
 
+  @test "The compiler can handle simple helpers with float and negative number parameters"() {
+    this.registerHelper('testing', function(params, hash) {
+      return params[0] as number - (hash.arg1 as number);
+    });
+
+    this.render('<div>{{testing -1 arg1=0.234}}</div>');
+    this.assertHTML('<div>-1.234</div>');
+    this.assertStableRerender();
+  }
+
   @test "GH#13999 The compiler can handle simple helpers with inline null parameter"() {
     let value;
     this.registerHelper('say-hello', function (params) {
