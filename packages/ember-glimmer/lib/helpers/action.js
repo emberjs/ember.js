@@ -272,7 +272,6 @@ export default function(vm, args) {
   let { named, positional } = args;
 
   let capturedArgs = positional.capture();
-  let { references } = capturedArgs;
 
   // The first two argument slots are reserved.
   // pos[0] is the context (or `this`)

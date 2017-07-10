@@ -5,7 +5,6 @@
 
 import { assert } from 'ember-debug';
 import {
-  UNDEFINED_REFERENCE,
   CachedReference,
   ConditionalReference
 } from '../utils/references';
@@ -17,11 +16,8 @@ import {
 } from '@glimmer/reference';
 
 class ConditionalHelperReference extends CachedReference {
-  static create(_condRef, _truthyRef, _falsyRef) {
+  static create(_condRef, truthyRef, falsyRef) {
     let condRef = ConditionalReference.create(_condRef);
-    let truthyRef = _truthyRef || UNDEFINED_REFERENCE;
-    let falsyRef = _falsyRef || UNDEFINED_REFERENCE;
-
     if (isConst(condRef)) {
       return condRef.value() ? truthyRef : falsyRef;
     } else {
@@ -41,9 +37,7 @@ class ConditionalHelperReference extends CachedReference {
   }
 
   compute() {
-    let { cond, truthy, falsy } = this;
-
-    let branch = cond.value() ? truthy : falsy;
+    let branch = this.cond.value() ? this.truthy : this.falsy;
 
     this.branchTag.update(branch.tag);
 
@@ -134,15 +128,12 @@ class ConditionalHelperReference extends CachedReference {
   @public
 */
 export function inlineIf(vm, { positional }) {
-  switch (positional.length) {
-    case 2: return ConditionalHelperReference.create(positional.at(0), positional.at(1), null);
-    case 3: return ConditionalHelperReference.create(positional.at(0), positional.at(1), positional.at(2));
-    default:
-      assert(
-        'The inline form of the `if` helper expects two or three arguments, e.g. ' +
-        '`{{if trialExpired "Expired" expiryDate}}`.'
-      );
-  }
+  assert(
+    'The inline form of the `if` helper expects two or three arguments, e.g. ' +
+    '`{{if trialExpired "Expired" expiryDate}}`.',
+    positional.length === 3 || positional.length === 2
+  );
+  return ConditionalHelperReference.create(positional.at(0), positional.at(1), positional.at(2));
 }
 
 /**
@@ -166,13 +157,10 @@ export function inlineIf(vm, { positional }) {
   @public
 */
 export function inlineUnless(vm, { positional }) {
-  switch (positional.length) {
-    case 2: return ConditionalHelperReference.create(positional.at(0), null, positional.at(1));
-    case 3: return ConditionalHelperReference.create(positional.at(0), positional.at(2), positional.at(1));
-    default:
-      assert(
-        'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
-        '`{{unless isFirstLogin "Welcome back!"}}`.'
-      );
-  }
+  assert(
+    'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
+    '`{{unless isFirstLogin "Welcome back!"}}`.',
+    positional.length === 3 || positional.length === 2
+  );
+  return ConditionalHelperReference.create(positional.at(0), positional.at(2), positional.at(1));
 }
