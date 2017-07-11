@@ -22,7 +22,6 @@ import {
 import {
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
-  NULL_REFERENCE,
   UNDEFINED_REFERENCE
 } from '@glimmer/runtime';
 import emberToBool from './to-bool';
@@ -97,7 +96,7 @@ export class RootReference extends ConstReference {
   get(propertyKey) {
     let ref = this.children[propertyKey];
 
-    if (!ref) {
+    if (ref === undefined) {
       ref = this.children[propertyKey] = new RootPropertyReference(this.inner, propertyKey);
     }
 
@@ -318,11 +317,7 @@ export class SimpleHelperReference extends CachedReference {
 
       let result = helper(positionalValue, namedValue);
 
-      if (result === null) {
-        return NULL_REFERENCE;
-      } else if (result === undefined) {
-        return UNDEFINED_REFERENCE;
-      } else if (typeof result === 'object') {
+      if (typeof result === 'object' && result !== null) {
         return new RootReference(result);
       } else {
         return PrimitiveReference.create(result);
@@ -403,11 +398,7 @@ export class InternalHelperReference extends CachedReference {
 // @implements PathReference
 export class UnboundReference extends ConstReference {
   static create(value) {
-    if (value === null) {
-      return NULL_REFERENCE;
-    } else if (value === undefined) {
-      return UNDEFINED_REFERENCE;
-    } else if (typeof value === 'object') {
+    if (typeof value === 'object' && value !== null) {
       return new UnboundReference(value);
     } else {
       return PrimitiveReference.create(value);
