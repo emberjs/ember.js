@@ -394,10 +394,32 @@ function isServerMarker(node: Node) {
   return node.nodeType === Node.COMMENT_NODE && node.nodeValue!.charAt(0) === '%';
 }
 
-export function test(_target: Object, _name: string, descriptor: PropertyDescriptor): PropertyDescriptor | void {
+export interface ComponentTestMeta {
+  kind?: string;
+  skip?: boolean;
+}
+
+function setTestingDescriptor(descriptor: PropertyDescriptor): void {
   let testFunction = descriptor.value as Function;
   descriptor.enumerable = true;
   testFunction['isTest'] = true;
+}
+
+export function test(meta: ComponentTestMeta): MethodDecorator;
+export function test(_target: Object | ComponentTestMeta, _name?: string, descriptor?: PropertyDescriptor): PropertyDescriptor | void;
+export function test(...args: any[]) {
+  if (args.length === 1) {
+    let meta: ComponentTestMeta = args[0];
+    return (_target: Object, _name: string, descriptor: PropertyDescriptor) => {
+      let testFunction = descriptor.value as Function;
+      Object.keys(meta).forEach(key => testFunction[key] = meta[key]);
+      setTestingDescriptor(descriptor);
+    };
+  }
+
+  let descriptor = args[2];
+  setTestingDescriptor(descriptor);
+  return descriptor;
 }
 
 export function module(name: string, klass: typeof AbstractRenderTest & Function): void {
