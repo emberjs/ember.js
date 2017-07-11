@@ -256,10 +256,9 @@ export default EmberObject.extend(MutableArray, {
     return get(this, 'content') && this.objectAtContent(idx);
   },
 
-  length: computed(function() {
+  length: computed('arrangedContent.length', function() {
     let arrangedContent = get(this, 'arrangedContent');
     return arrangedContent ? get(arrangedContent, 'length') : 0;
-    // No dependencies since Enumerable notifies length of change
   }),
 
   _replace(idx, amt, objects) {
