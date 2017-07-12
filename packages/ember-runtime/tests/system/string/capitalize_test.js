@@ -64,3 +64,10 @@ QUnit.test('capitalize namespaced dasherized string', function() {
     deepEqual('private-docs/owner-invoice'.capitalize(), 'Private-docs/Owner-invoice');
   }
 });
+
+QUnit.test('capitalize string with accent character', function() {
+  deepEqual(capitalize('šabc'), 'Šabc');
+  if (ENV.EXTEND_PROTOTYPES.String) {
+    deepEqual('šabc'.capitalize(), 'Šabc');
+  }
+});

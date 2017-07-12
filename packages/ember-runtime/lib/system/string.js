@@ -42,7 +42,7 @@ const STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
 const UNDERSCORE_CACHE = new Cache(1000, str => str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').
   replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase());
 
-const STRING_CAPITALIZE_REGEXP = (/(^|\/)([a-z])/g);
+const STRING_CAPITALIZE_REGEXP = (/(^|\/)([a-z\u00C0-\u024F])/g);
 
 const CAPITALIZE_CACHE = new Cache(1000, str => str.replace(STRING_CAPITALIZE_REGEXP, (match, separator, chr) => match.toUpperCase()));
 
