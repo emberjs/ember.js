@@ -25,9 +25,7 @@ function reduceMacro(dependentKey, callback, initialValue) {
 
     if (arr === null || typeof arr !== 'object') { return initialValue; }
 
-    return arr.reduce((previousValue, currentValue, index, array) => {
-      return callback.call(this, previousValue, currentValue, index, array);
-    }, initialValue);
+    return arr.reduce(callback, initialValue, this);
   }).readOnly();
 }
 
@@ -512,7 +510,6 @@ export function intersect(...args) {
   return multiArrayMacro(args, function(dependentKeys) {
     let arrays = dependentKeys.map(dependentKey => {
       let array = get(this, dependentKey);
-
       return isArray(array) ? array : [];
     });
 
