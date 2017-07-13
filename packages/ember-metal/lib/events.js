@@ -1,7 +1,6 @@
 /**
 @module @ember/object
 */
-import { applyStr } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import { deprecate, assert } from 'ember-debug';
 import { meta as metaFor, peekMeta } from './meta';
@@ -130,18 +129,10 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
     if (once) { removeListener(obj, eventName, target, method); }
     if (!target) { target = obj; }
     if ('string' === typeof method) {
-      if (params) {
-        applyStr(target, method, params);
-      } else {
-        target[method]();
-      }
-    } else {
-      if (params) {
-        method.apply(target, params);
-      } else {
-        method.call(target);
-      }
+      method = target[method];
     }
+
+    method.apply(target, params);
   }
   return true;
 }

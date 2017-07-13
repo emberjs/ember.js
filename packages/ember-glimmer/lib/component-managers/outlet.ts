@@ -56,7 +56,6 @@ const CAPABILITIES: ComponentCapabilities = {
 
 class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>
   implements WithStaticLayout<OutletInstanceState, OutletDefinitionState, OwnedTemplateMeta, RuntimeResolver> {
-
   create(environment: Environment,
          definition: OutletDefinitionState,
          _args: Arguments,

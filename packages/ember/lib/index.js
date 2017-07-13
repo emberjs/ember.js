@@ -23,7 +23,6 @@ Ember.makeArray = utils.makeArray;
 Ember.canInvoke = utils.canInvoke;
 Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
-Ember.applyStr = utils.applyStr;
 Ember.uuid = utils.uuid;
 Ember.assign = utils.assign;
 

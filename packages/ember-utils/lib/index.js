@@ -29,7 +29,6 @@ export { default as inspect } from './inspect';
 export { default as lookupDescriptor } from './lookup-descriptor';
 export { canInvoke, tryInvoke } from './invoke';
 export { default as makeArray } from './make-array';
-export { default as applyStr } from './apply-str';
 export { default as NAME_KEY } from './name';
 export { default as toString } from './to-string';
 export { HAS_NATIVE_PROXY } from './proxy-utils';

@@ -1,5 +1,3 @@
-import applyStr from './apply-str';
-
 /**
   Checks to see if the `methodName` exists on the `obj`.
 
@@ -51,6 +49,7 @@ export function canInvoke(obj, methodName) {
 */
 export function tryInvoke(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
-    return applyStr(obj, methodName, args);
+    let method = obj[methodName];
+    return method.apply(obj, args);
   }
 }
