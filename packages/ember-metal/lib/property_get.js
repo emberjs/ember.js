@@ -3,7 +3,7 @@
 */
 
 import { assert } from 'ember-debug';
-import { isPath, hasThis } from './path_cache';
+import { isPath } from './path_cache';
 
 const ALLOWABLE_TYPES = {
   object: true,
@@ -51,7 +51,7 @@ export function get(obj, keyName) {
   assert(`Get must be called with two arguments; an object and a property key`, arguments.length === 2);
   assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
   assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
-  assert(`'this' in paths is not supported`, !hasThis(keyName));
+  assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
   assert('Cannot call `Ember.get` with an empty string', keyName !== '');
 
   let value = obj[keyName];

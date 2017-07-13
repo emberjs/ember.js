@@ -2,11 +2,9 @@ import Cache from './cache';
 
 const IS_GLOBAL      = /^[A-Z$]/;
 const IS_GLOBAL_PATH = /^[A-Z$].*[\.]/;
-const HAS_THIS       = 'this.';
 
 const isGlobalCache      = new Cache(1000, key => IS_GLOBAL.test(key));
 const isGlobalPathCache  = new Cache(1000, key => IS_GLOBAL_PATH.test(key));
-const hasThisCache       = new Cache(1000, key => key.lastIndexOf(HAS_THIS, 0) === 0);
 const firstDotIndexCache = new Cache(1000, key => key.indexOf('.'));
 
 const firstKeyCache = new Cache(1000, (path) => {
@@ -28,7 +26,6 @@ const tailPathCache = new Cache(1000, (path) => {
 export const caches = {
   isGlobalCache,
   isGlobalPathCache,
-  hasThisCache,
   firstDotIndexCache,
   firstKeyCache,
   tailPathCache
@@ -40,10 +37,6 @@ export function isGlobal(path) {
 
 export function isGlobalPath(path) {
   return isGlobalPathCache.get(path);
-}
-
-export function hasThis(path) {
-  return hasThisCache.get(path);
 }
 
 export function isPath(path) {

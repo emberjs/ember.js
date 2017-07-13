@@ -7,8 +7,7 @@ import {
 } from './property_events';
 
 import {
-  isPath,
-  hasThis as pathHasThis
+  isPath
 } from './path_cache';
 import {
   peekMeta
@@ -40,7 +39,7 @@ export function set(obj, keyName, value, tolerant) {
   );
   assert(`Cannot call set with '${keyName}' on an undefined object.`, obj && typeof obj === 'object' || typeof obj === 'function');
   assert(`The key provided to set must be a string, you passed ${keyName}`, typeof keyName === 'string');
-  assert(`'this' in paths is not supported`, !pathHasThis(keyName));
+  assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
   assert(`calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`, !obj.isDestroyed);
 
   if (isPath(keyName)) {
