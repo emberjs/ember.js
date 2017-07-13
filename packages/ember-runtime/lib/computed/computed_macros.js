@@ -2,6 +2,7 @@ import {
   get,
   set,
   computed,
+  ComputedProperty,
   isEmpty,
   isNone,
   alias,
@@ -38,7 +39,7 @@ function generateComputedWithPredicate(name, predicate) {
   return (...properties) => {
     let expandedProperties = expandPropertiesToArray(name, properties);
 
-    let computedFunc = computed(function() {
+    let computedFunc = new ComputedProperty(function() {
       let lastIdx = expandedProperties.length - 1;
 
       for (let i = 0; i < lastIdx; i++) {
@@ -49,9 +50,9 @@ function generateComputedWithPredicate(name, predicate) {
       }
 
       return get(this, expandedProperties[lastIdx]);
-    });
+    }, { dependentKeys: expandedProperties });
 
-    return computedFunc.property(...expandedProperties);
+    return computedFunc;
   };
 }
 
