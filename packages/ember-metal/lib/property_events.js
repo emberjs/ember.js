@@ -101,7 +101,7 @@ function propertyDidChange(obj, keyName, _meta) {
       dependentKeysDidChange(obj, keyName, meta);
     }
 
-    chainsDidChange(obj, keyName, meta, false);
+    chainsDidChange(obj, keyName, meta);
     notifyObservers(obj, keyName, meta);
   }
 
