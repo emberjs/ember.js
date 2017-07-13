@@ -514,7 +514,7 @@ if (HAS_NATIVE_WEAKMAP) {
 
       pointer = getPrototypeOf(pointer);
       if (DEBUG) {
-        counters.peakPrototypeWalks++;
+        counters.peekPrototypeWalks++;
       }
     }
   };
