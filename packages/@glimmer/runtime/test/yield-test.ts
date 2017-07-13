@@ -1,28 +1,30 @@
-import { module, RenderTests, test } from '@glimmer/test-helpers';
+import { module, RenderTests, test } from "@glimmer/test-helpers";
 
 class YieldTests extends RenderTests {
-
   @test
-  'yielding to an non-existent block'(){
+  "yielding to an non-existent block"() {
     this.render({
-      layout: 'Before-{{yield}}-After'
+      layout: "Before-{{yield}}-After"
     });
 
-    this.assertComponent('Before--After');
+    this.assertComponent("Before--After");
     this.assertStableRerender();
   }
 
   @test
-  'yield'(){
-    this.render({
-      layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
-      args: { predicate: 'activated', someValue: '42' },
-      blockParams: ['result'],
-      template: 'Hello{{result}}{{outer}}',
-      inverse: 'Goodbye{{outer}}'
-    }, { activated: true, outer: "outer" });
+  yield() {
+    this.render(
+      {
+        layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
+        args: { predicate: "activated", someValue: "42" },
+        blockParams: ["result"],
+        template: "Hello{{result}}{{outer}}",
+        inverse: "Goodbye{{outer}}"
+      },
+      { activated: true, outer: "outer" }
+    );
 
-    this.assertComponent('Yes:Hello42outer');
+    this.assertComponent("Yes:Hello42outer");
     this.assertStableRerender();
   }
   /*
@@ -112,7 +114,6 @@ testComponent('yield to inverse', {
   expected: 'No:Goodbyeouter'
 });
 
-
 testComponent('block without properties', {
   layout: 'In layout -- {{yield}}',
   invokeAs: { template: 'In template' },
@@ -142,4 +143,4 @@ testComponent('yield inside a conditional on the component', {
 });*/
 }
 
-module('Component Yielding', YieldTests, { componentModule: true });
+module("Component Yielding", YieldTests, { componentModule: true });
