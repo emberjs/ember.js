@@ -3,7 +3,7 @@
 */
 
 import { assert } from 'ember-debug';
-import { meta as metaFor, peekMeta } from './meta';
+import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
 import { MANDATORY_SETTER } from 'ember/features';
 // ..........................................................
@@ -61,8 +61,6 @@ export function DEFAULT_GETTER_FUNCTION(name) {
     return meta && meta.peekValues(name);
   };
 }
-
-import { UNDEFINED } from './meta';
 
 export function INHERITING_GETTER_FUNCTION(name) {
   function IGETTER_FUNCTION() {

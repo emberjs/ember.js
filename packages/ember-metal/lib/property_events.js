@@ -43,10 +43,7 @@ let deferred = 0;
 */
 function propertyWillChange(obj, keyName, _meta) {
   let meta = _meta || peekMeta(obj);
-
-  if (meta && !meta.isInitialized(obj)) {
-    return;
-  }
+  if (meta && !meta.isInitialized(obj)) { return; }
 
   let watching = meta && meta.peekWatching(keyName) > 0;
   let possibleDesc = obj[keyName];
@@ -84,9 +81,7 @@ function propertyDidChange(obj, keyName, _meta) {
   let meta = _meta || peekMeta(obj);
   let hasMeta = !!meta;
 
-  if (hasMeta && !meta.isInitialized(obj)) {
-    return;
-  }
+  if (hasMeta && !meta.isInitialized(obj)) { return; }
 
   let possibleDesc = obj[keyName];
   let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
@@ -186,21 +181,21 @@ function iterDeps(method, obj, depKey, seen, meta) {
 
 function chainsWillChange(obj, keyName, meta) {
   let chainWatchers = meta.readableChainWatchers();
-  if (chainWatchers) {
+  if (chainWatchers !== undefined) {
     chainWatchers.notify(keyName, false, propertyWillChange);
   }
 }
 
 function chainsDidChange(obj, keyName, meta) {
   let chainWatchers = meta.readableChainWatchers();
-  if (chainWatchers) {
+  if (chainWatchers !== undefined) {
     chainWatchers.notify(keyName, true, propertyDidChange);
   }
 }
 
 function overrideChains(obj, keyName, meta) {
   let chainWatchers = meta.readableChainWatchers();
-  if (chainWatchers) {
+  if (chainWatchers !== undefined) {
     chainWatchers.revalidate(keyName);
   }
 }
@@ -290,7 +285,7 @@ function notifyBeforeObservers(obj, keyName, meta) {
 
   let eventName = `${keyName}:before`;
   let listeners, added;
-  if (deferred) {
+  if (deferred > 0) {
     listeners = beforeObserverSet.add(obj, keyName, eventName);
     added = accumulateListeners(obj, eventName, listeners, meta);
     sendEvent(obj, eventName, [obj, keyName], added);
@@ -304,7 +299,7 @@ function notifyObservers(obj, keyName, meta) {
 
   let eventName = `${keyName}:change`;
   let listeners;
-  if (deferred) {
+  if (deferred > 0) {
     listeners = observerSet.add(obj, keyName, eventName);
     accumulateListeners(obj, eventName, listeners, meta);
   } else {
