@@ -664,12 +664,13 @@ const LinkComponent = EmberComponent.extend({
   queryParams: null,
 
   qualifiedRouteName: computed('targetRouteName', '_routing.currentState', function computeLinkToComponentQualifiedRouteName() {
-    let params = get(this, 'params').slice();
-    let lastParam = params[params.length - 1];
+    let params = get(this, 'params');
+    let paramsLength = params.length;
+    let lastParam = params[paramsLength - 1];
     if (lastParam && lastParam.isQueryParams) {
-      params.pop();
+      paramsLength--;
     }
-    let onlyQueryParamsSupplied = (this[HAS_BLOCK] ? params.length === 0 : params.length === 1);
+    let onlyQueryParamsSupplied = (this[HAS_BLOCK] ? paramsLength === 0 : paramsLength === 1);
     if (onlyQueryParamsSupplied) {
       return get(this, '_routing.currentRouteName');
     }
