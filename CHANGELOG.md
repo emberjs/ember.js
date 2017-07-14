@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.15.0-beta.2 (July 14, 2017)
+
+- [#15502](https://github.com/emberjs/ember.js/pull/15502) [BUGFIX] Work around a browser bug that causes `getOwner` to sometimes return `undefined`.
+
 ### 2.15.0-beta.1 (July 5, 2017)
 
 - [#14338](https://github.com/emberjs/ember.js/pull/14338) [FEATURE] Remove explicit names from initializers.
