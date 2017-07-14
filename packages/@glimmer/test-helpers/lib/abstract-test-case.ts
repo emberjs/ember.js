@@ -171,7 +171,7 @@ export abstract class AbstractRenderTest {
     return `${blockParams.length > 0 ? `as |${blockParams.join(" ")}|` : ""}`;
   }
 
-  private buildInverse(inverse: string): string {
+  private buildInverse(inverse: string | undefined): string {
     return `${inverse ? `{{else}}${inverse}` : ""}`;
   }
 
@@ -179,23 +179,45 @@ export abstract class AbstractRenderTest {
     return Object.keys(attrs).map(attr => `${attr}=${attrs[attr]}`).join(" ");
   }
 
-  private angleBracketComponent(blueprint: ComponentBlueprint): string {
-    let { args = {}, attributes = {}, template, inverse, name = TEST_COMPONENT, blockParams = [] } = blueprint;
-    let componentArgs = this.buildArgs(args, "@");
-    let componentBlockParams = this.buildBlockParams(blockParams);
-    let inv = this.buildInverse(inverse!);
-    let attrs = this.buildAttributes(attributes);
-    let invocation = `<${name} ${componentArgs} ${attrs} ${componentBlockParams} ${template
-      ? `>${template}${inv}</${name}>`
-      : "/>"}`;
-    return invocation;
+  private buildAngleBracketComponent(blueprint: ComponentBlueprint): string {
+    let { args = {}, attributes = {}, template, name = TEST_COMPONENT, blockParams = [] } = blueprint;
+
+    let invocation: string | string[] = [];
+
+    invocation.push(`<${name}`);
+    invocation.push(this.buildArgs(args, "@"));
+    invocation.push(this.buildAttributes(attributes));
+
+    if (template) {
+      let block: string | string[] = [];
+      block.push(this.buildBlockParams(blockParams));
+      block.push(`>`);
+      block.push(template);
+      block.push(`</${name}>`);
+      invocation.push(block.join(""));
+    } else {
+      invocation.push(`/>`);
+    }
+
+    return invocation.join(" ");
   }
   private buildGlimmerComponent(blueprint: ComponentBlueprint): string {
     let { tag = "div", layout, name = TEST_COMPONENT } = blueprint;
-    let invocation = this.angleBracketComponent(blueprint);
+    let invocation = this.buildAngleBracketComponent(blueprint);
+    this.assert.ok(true, `generated glimmer layout as ${`<${tag}>${layout}</${tag}>`}`);
     this.registerComponent("Glimmer", name, `<${tag}>${layout}</${tag}>`);
     this.assert.ok(true, `generated glimmer invocation as ${invocation}`);
     return invocation;
+  }
+
+  private buildCurlyBlockTemplate(name: string, template: string, blockParams: string[], inverse?: string): string {
+    let block: string[] = [];
+    block.push(this.buildBlockParams(blockParams));
+    block.push("}}");
+    block.push(template);
+    block.push(this.buildInverse(inverse));
+    block.push(`{{/${name}}}`);
+    return block.join("");
   }
 
   private buildCurlyComponent(blueprint: ComponentBlueprint): string {
@@ -205,21 +227,32 @@ export abstract class AbstractRenderTest {
       throw new Error("Cannot pass attributes to curly components");
     }
 
-    let componentArgs = this.buildArgs(args);
-    let componentBlockParams = this.buildBlockParams(blockParams);
-    let inv = this.buildInverse(inverse!);
-    let invocation = `${template ? "{{#" : "{{"}${name} ${componentArgs} ${componentBlockParams}}}${template
-      ? `${template}`
-      : ""}${inv}${template ? `{{/${name}}}` : "}}"}`;
-    this.registerComponent("Curly", name, layout);
+    let invocation: string[] | string = [];
 
+    if (template) {
+      invocation.push(`{{#${name}`);
+    } else {
+      invocation.push(`{{${name}`);
+    }
+
+    invocation.push(this.buildArgs(args));
+
+    if (template) {
+      invocation.push(this.buildCurlyBlockTemplate(name, template, blockParams, inverse));
+    } else {
+      invocation.push("}}");
+    }
+    this.assert.ok(true, `generated curly layout as ${layout}`);
+    this.registerComponent("Curly", name, layout);
+    invocation = invocation.join(" ");
     this.assert.ok(true, `generated curly invocation as ${invocation}`);
     return invocation;
   }
 
   private buildBasicComponent(blueprint: ComponentBlueprint): string {
     let { tag = "div", layout, name = TEST_COMPONENT } = blueprint;
-    let invocation = this.angleBracketComponent(blueprint);
+    let invocation = this.buildAngleBracketComponent(blueprint);
+    this.assert.ok(true, `generated basic layout as ${layout}`);
     this.registerComponent("Basic", name, `<${tag}>${layout}</${tag}>`);
     this.assert.ok(true, `generated basic invocation as ${invocation}`);
     return invocation;
@@ -232,16 +265,24 @@ export abstract class AbstractRenderTest {
       throw new Error("Cannot pass attributes to curly components");
     }
 
-    let componentArgs = this.buildArgs(args);
-    let componentBlockParams = this.buildBlockParams(blockParams);
-    let inv = this.buildInverse(inverse!);
-    let invocation = `${template
-      ? "{{#"
-      : "{{"}component componentName ${componentArgs} ${componentBlockParams}}}${template
-      ? `${template}`
-      : ""}${inv}${template ? `{{/component}}` : "}}"}`;
-    this.registerComponent("Curly", name, layout);
+    let invocation: string | string[] = [];
+    if (template) {
+      invocation.push("{{#component componentName");
+    } else {
+      invocation.push("{{component componentName");
+    }
 
+    invocation.push(this.buildArgs(args));
+
+    if (template) {
+      invocation.push(this.buildCurlyBlockTemplate("component", template, blockParams, inverse));
+    } else {
+      invocation.push("}}");
+    }
+
+    this.assert.ok(true, `generated dynamic layout as ${layout}`);
+    this.registerComponent("Curly", name, layout);
+    invocation = invocation.join(" ");
     this.assert.ok(true, `generated dynamic invocation as ${invocation}`);
 
     return invocation;
@@ -348,7 +389,7 @@ export abstract class AbstractRenderTest {
     equalTokens(this.element, html);
   }
 
-  protected assertComponent(content: string, attrs: Object) {
+  protected assertComponent(content: string, attrs: Object = {}) {
     let element = this.element.firstChild as HTMLDivElement;
     assertEmberishElement(element, "div", attrs, content);
   }
