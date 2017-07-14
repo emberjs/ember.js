@@ -193,3 +193,23 @@ export function prefixRouteNameArg(route, args) {
 
   return args;
 }
+
+export function shallowEqual(a, b) {
+  let k;
+  let aCount = 0;
+  let bCount = 0;
+  for (k in a) {
+    if (a.hasOwnProperty(k)) {
+      if (a[k] !== b[k]) { return false; }
+      aCount++;
+    }
+  }
+
+  for (k in b) {
+    if (b.hasOwnProperty(k)) {
+      bCount++;
+    }
+  }
+
+  return aCount === bCount;
+}

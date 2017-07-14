@@ -8,19 +8,8 @@ import {
   readOnly
 } from 'ember-runtime';
 import { assign } from 'ember-utils';
+import { shallowEqual } from '../utils';
 import RouterDSL from '../system/dsl';
-
-
-function shallowEqual(a, b) {
-  let k;
-  for (k in a) {
-    if (a.hasOwnProperty(k) && a[k] !== b[k]) { return false; }
-  }
-  for (k in b) {
-    if (b.hasOwnProperty(k) && a[k] !== b[k]) { return false; }
-  }
-  return true;
-}
 
 /**
    The Router service is the public API that provides component/view layer
