@@ -28,9 +28,10 @@ const CLASSIFY_CACHE = new Cache(1000, str => {
   let replace2 = (match, initialChar, separator, chr) => initialChar + (chr ? chr.toUpperCase() : '');
   let parts = str.split('/');
   for (let i = 0; i < parts.length; i++) {
-    parts[i] = parts[i]
-      .replace(STRING_CLASSIFY_REGEXP_1, replace1)
-      .replace(STRING_CLASSIFY_REGEXP_2, replace2);
+    parts[i] = parts[i].replace(STRING_CLASSIFY_REGEXP_1, replace1);
+    while (STRING_CLASSIFY_REGEXP_2.test(parts[i])) {
+      parts[i] = parts[i].replace(STRING_CLASSIFY_REGEXP_2, replace2);
+    }
   }
   return parts.join('/')
   .replace(STRING_CLASSIFY_REGEXP_3, (match, separator, chr) => match.toUpperCase());
