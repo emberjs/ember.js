@@ -141,19 +141,29 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 
   let meta = peekMeta(array);
   let cache = meta && meta.readableCache();
+  if (cache !== undefined) {
+    let length = get(array, 'length');
+    let addedAmount = (addAmt === -1 ? 0 : addAmt);
+    let removedAmount = (removeAmt === -1 ? 0 : removeAmt);
+    let delta = addedAmount - removedAmount;
+    let previousLength = length - delta;
 
-  if (cache) {
-    if (cache.firstObject !== undefined &&
-        objectAt(array, 0) !== cacheFor.get(cache, 'firstObject')) {
-      propertyWillChange(array, 'firstObject', meta);
-      propertyDidChange(array, 'firstObject', meta);
+    let normalStartIdx = startIdx < 0 ? previousLength + startIdx : startIdx;
+    if (cache.firstObject !== undefined && normalStartIdx === 0) {
+      propertyWillChange(array, 'firstObject');
+      propertyDidChange(array, 'firstObject');
     }
-    if (cache.lastObject !== undefined &&
-        objectAt(array, get(array, 'length') - 1) !== cacheFor.get(cache, 'lastObject')) {
-      propertyWillChange(array, 'lastObject', meta);
-      propertyDidChange(array, 'lastObject', meta);
-    }
+
+    if (cache.lastObject !== undefined) {
+      let previousLastIndex = previousLength - 1;
+      let lastAffectedIndex = normalStartIdx + removedAmount;
+      if (previousLastIndex < lastAffectedIndex) {
+        propertyWillChange(array, 'lastObject');
+        propertyDidChange(array, 'lastObject');
+      }
+   }
   }
+
   return array;
 }
 
