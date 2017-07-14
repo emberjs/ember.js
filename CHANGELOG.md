@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.14.1 (July 14, 2017)
+
+- [#15502](https://github.com/emberjs/ember.js/pull/15502) [BUGFIX] Work around a browser bug that causes `getOwner` to sometimes return `undefined`.
+
 ### 2.14.0 (July 5, 2017)
 
 - [#15312](https://github.com/emberjs/ember.js/pull/15312) [BUGFIX] Avoid re-freezing already frozen objects.
