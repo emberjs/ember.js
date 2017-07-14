@@ -2218,6 +2218,14 @@ ember-cli@2.10.0:
   dependencies:
     ember-cli-babel "^5.0.0"
 
+ember-jquery@^1.0.2:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/ember-jquery/-/ember-jquery-1.0.4.tgz#5c5f04eafd7372bff73a40c5e8123e83829b3cfa"
+  dependencies:
+    broccoli-funnel "^1.0.0"
+    broccoli-merge-trees "^2.0.0"
+    jquery "^3.0.0"
+
 ember-publisher@0.0.7:
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/ember-publisher/-/ember-publisher-0.0.7.tgz#865ca69ef47bafb38120a84244aa58b950ca4850"
@@ -3641,7 +3649,7 @@ jodid25519@^1.0.0:
   dependencies:
     jsbn "~0.1.0"
 
-jquery@^3.2.1:
+jquery@^3.0.0:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.2.1.tgz#5c4d9de652af6cd0a770154a631bba12b015c787"
 
