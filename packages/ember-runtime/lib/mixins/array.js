@@ -8,7 +8,6 @@
 //
 import { symbol } from 'ember-utils';
 
-import { peekMeta } from 'ember-metal';
 import Ember, { // ES6TODO: Ember.A
   get,
   computed,
@@ -24,7 +23,9 @@ import Ember, { // ES6TODO: Ember.A
   _addBeforeObserver,
   _removeBeforeObserver,
   addObserver,
-  removeObserver
+  removeObserver,
+  meta,
+  peekMeta
 } from 'ember-metal';
 import { deprecate, assert } from 'ember-debug';
 import Enumerable from './enumerable';
@@ -638,7 +639,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 function EachProxy(content) {
   this._content = content;
   this._keys = undefined;
-  this.__ember_meta__ = null;
+  meta(this);
 }
 
 EachProxy.prototype = {
