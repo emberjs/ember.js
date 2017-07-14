@@ -513,10 +513,7 @@ if (HAS_NATIVE_WEAKMAP) {
       if (DEBUG) {
         counters.peekCalls++;
       }
-      // stop if we find a `null` value, since
-      // that means the meta was deleted
-      // any other truthy value is a "real" meta
-      if (meta === null || meta !== undefined) {
+      if (meta !== undefined) {
         return meta;
       }
 
@@ -528,14 +525,10 @@ if (HAS_NATIVE_WEAKMAP) {
   };
 } else {
   setMeta = function Fallback_setMeta(obj, meta) {
-    // if `null` already, just set it to the new value
-    // otherwise define property first
-    if (obj[META_FIELD] !== null) {
-      if (obj.__defineNonEnumerable) {
-        obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-      } else {
-        Object.defineProperty(obj, META_FIELD, META_DESC);
-      }
+    if (obj.__defineNonEnumerable) {
+      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+    } else {
+      Object.defineProperty(obj, META_FIELD, META_DESC);
     }
 
     obj[META_FIELD] = meta;
@@ -584,7 +577,7 @@ export function meta(obj) {
   let parent;
 
   // remove this code, in-favor of explicit parent
-  if (maybeMeta !== undefined && maybeMeta !== null) {
+  if (maybeMeta !== undefined) {
     if (maybeMeta.source === obj) {
       return maybeMeta;
     }
