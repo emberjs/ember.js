@@ -317,11 +317,7 @@ class AbstractAppendTest extends RenderingTest {
 
     this.runTask(() => this.component.destroy());
 
-    if (this.isHTMLBars) {
-      // Bug in Glimmer – component should not have .element at this point
-      assert.ok(!this.component.element, 'It should not have an element');
-    }
-
+    assert.ok(!this.component.element, 'It should not have an element');
     assert.ok(!componentElement.parentElement, 'The component element should be detached');
 
     this.assert.equal(willDestroyCalled, 1);
@@ -411,11 +407,8 @@ class AbstractAppendTest extends RenderingTest {
       second.destroy();
     });
 
-    if (this.isHTMLBars) {
-      // Bug in Glimmer – component should not have .element at this point
-      assert.ok(!first.element, 'The first component should not have an element');
-      assert.ok(!second.element, 'The second component should not have an element');
-    }
+    assert.ok(!first.element, 'The first component should not have an element');
+    assert.ok(!second.element, 'The second component should not have an element');
 
     assert.ok(!componentElement1.parentElement, 'The first component element should be detached');
     assert.ok(!componentElement2.parentElement, 'The second component element should be detached');
