@@ -327,6 +327,23 @@ class AbstractAppendTest extends RenderingTest {
     this.assert.equal(willDestroyCalled, 1);
   }
 
+  ['@test releasing a root component after it has been destroy'](assert) {
+    let renderer = this.owner.lookup('renderer:-dom');
+
+    this.registerComponent('x-component', {
+      ComponentClass: Component.extend()
+    });
+
+    this.component = this.owner.factoryFor('component:x-component').create();
+    this.append(this.component);
+
+    assert.equal(renderer._roots.length, 1, 'added a root component');
+
+    this.runTask(() => this.component.destroy());
+
+    assert.equal(renderer._roots.length, 0, 'released the root component');
+  }
+
   ['@test appending, updating and destroying multiple components'](assert) {
     let willDestroyCalled = 0;
 

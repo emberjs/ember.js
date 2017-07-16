@@ -241,6 +241,7 @@ class Renderer {
       let root = roots[i];
       if (root.isFor(view)) {
         root.destroy();
+        roots.splice(i, 1);
       }
     }
   }
