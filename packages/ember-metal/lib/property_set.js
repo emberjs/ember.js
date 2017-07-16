@@ -92,31 +92,24 @@ if (MANDATORY_SETTER) {
 }
 
 function setPath(root, path, value, tolerant) {
-  // get the last part of the path
-  let keyName = path.slice(path.lastIndexOf('.') + 1);
+  let parts = path.split('.');
+  let keyName = parts.pop();
 
-  // get the first part of the part
-  path = (path === keyName) ? keyName : path.slice(0, path.length - (keyName.length + 1));
+  assert('Property set failed: You passed an empty path', keyName && keyName.length > 0)
 
-  // unless the path is this, look up the first part to
-  // get the root
-  if (path !== 'this') {
-    root = getPath(root, path);
-  }
+  let newPath = parts.length > 0 ? parts.join('.') : keyName;
 
-  if (!keyName || keyName.length === 0) {
-    throw new EmberError('Property set failed: You passed an empty path');
-  }
+  let newRoot = getPath(root, newPath);
 
-  if (!root) {
+  if (!newRoot) {
     if (tolerant) {
       return;
     } else {
-      throw new EmberError(`Property set failed: object in path "${path}" could not be found or was destroyed.`);
+      throw new EmberError(`Property set failed: object in path "${newPath}" could not be found or was destroyed.`);
     }
   }
 
-  return set(root, keyName, value);
+  return set(newRoot, keyName, value);
 }
 
 /**
