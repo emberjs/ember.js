@@ -117,11 +117,9 @@ export default EmberObject.extend({
   init() {
     this._parseNameCache = dictionary(null);
   },
+
   normalize(fullName) {
-    let [
-      type,
-      name
-    ] = fullName.split(':', 2);
+    let [ type, name ] = fullName.split(':');
 
     assert(
       'Tried to normalize a container name without a colon (:) in it. ' +
@@ -131,26 +129,14 @@ export default EmberObject.extend({
     );
 
     if (type !== 'template') {
-      let result = name;
-
-      if (result.indexOf('.') > -1) {
-        result = result.replace(/\.(.)/g, m => m.charAt(1).toUpperCase());
-      }
-
-      if (name.indexOf('_') > -1) {
-        result = result.replace(/_(.)/g, m => m.charAt(1).toUpperCase());
-      }
-
-      if (name.indexOf('-') > -1) {
-        result = result.replace(/-(.)/g, m => m.charAt(1).toUpperCase());
-      }
+      let result = name
+        .replace(/(\.|_|-)./g, m => m.charAt(1).toUpperCase());
 
       return `${type}:${result}`;
     } else {
       return fullName;
     }
   },
-
 
   /**
     This method is called via the container's resolver method.
@@ -203,10 +189,7 @@ export default EmberObject.extend({
   },
 
   _parseName(fullName) {
-    let [
-      type,
-      fullNameWithoutType
-    ] = fullName.split(':');
+    let [ type, fullNameWithoutType ] = fullName.split(':');
 
     let name = fullNameWithoutType;
     let namespace = get(this, 'namespace');
@@ -284,9 +267,10 @@ export default EmberObject.extend({
     @protected
   */
   useRouterNaming(parsedName) {
-    parsedName.name = parsedName.name.replace(/\./g, '_');
     if (parsedName.name === 'basic') {
       parsedName.name = '';
+    } else {
+      parsedName.name = parsedName.name.replace(/\./g, '_');
     }
   },
   /**
@@ -394,14 +378,9 @@ export default EmberObject.extend({
    @private
   */
   _logLookup(found, parsedName) {
-    let symbol, padding;
+    let symbol = found ? '[✓]' : '[ ]';
 
-    if (found) {
-      symbol = '[✓]';
-    } else {
-      symbol = '[ ]';
-    }
-
+    let padding;
     if (parsedName.fullName.length > 60) {
       padding = '.';
     } else {
