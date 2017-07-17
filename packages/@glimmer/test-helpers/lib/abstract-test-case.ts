@@ -700,6 +700,15 @@ function componentModule(name: string, klass: typeof AbstractRenderTest & Functi
             tests.curly.push(createTest(prop, test));
             tests.dynamic.push(createTest(prop, test, true));
             break;
+          case true:
+            if (test["kind"] === "basic") {
+              // Basic components are not part of matrix testing
+              tests.basic.push(createTest(prop, test, true));
+            } else {
+              ["glimmer", "curly", "dynamic"].forEach(kind => {
+                tests[kind].push(createTest(prop, test, true));
+              });
+            }
           default:
             tests.glimmer.push(createTest(prop, test));
             tests.curly.push(createTest(prop, test));
