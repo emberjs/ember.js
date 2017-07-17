@@ -63,7 +63,7 @@ class BasicComponents extends RenderTests {
         name: "my-component",
         layout: "{{@arg1}}{{yield}}",
         template: "hello!",
-        args: { arg1: "{{left}}" },
+        args: { arg1: "left" },
         attributes: { color: "{{color}}" }
       },
       { color: "red", left: "left - " }
@@ -91,7 +91,7 @@ class BasicComponents extends RenderTests {
         layout: "{{@arg1}}{{yield @yieldme}}",
         template: "hello! {{yielded}}",
         blockParams: ["yielded"],
-        args: { arg1: "{{left}}", yieldme: "'yield me'" },
+        args: { arg1: "left", yieldme: "'yield me'" },
         attributes: { color: "{{color}}" }
       },
       { color: "red", left: "left - " }

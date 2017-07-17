@@ -163,12 +163,38 @@ export abstract class AbstractRenderTest {
     return invocation;
   }
 
-  private buildArgs(args: Object, sigil = ""): string {
-    return `${Object.keys(args).map(arg => `${sigil}${arg}=${args[arg]}`).join(" ")}`;
+  private buildArgs(args: Object): string {
+    let { testType } = this;
+    let sigil = "";
+    let needsCurlies = false;
+
+    if (testType === "Glimmer" || testType === "Basic") {
+      sigil = "@";
+      needsCurlies = true;
+    }
+
+    return `${Object.keys(args)
+      .map(arg => {
+        let rightSide: string;
+
+        if (needsCurlies) {
+          let isString = arg[0] === "'" || arg[0] === '"';
+          if (isString) {
+            rightSide = `${args[arg]}`;
+          } else {
+            rightSide = `{{${args[arg]}}}`;
+          }
+        } else {
+          rightSide = `${args[arg]}`;
+        }
+
+        return `${sigil}${arg}=${rightSide}`;
+      })
+      .join(" ")}`;
   }
 
   private buildBlockParams(blockParams: string[]): string {
-    return `${blockParams.length > 0 ? `as |${blockParams.join(" ")}|` : ""}`;
+    return `${blockParams.length > 0 ? ` as |${blockParams.join(" ")}|` : ""}`;
   }
 
   private buildInverse(inverse: string | undefined): string {
@@ -185,21 +211,37 @@ export abstract class AbstractRenderTest {
     let invocation: string | string[] = [];
 
     invocation.push(`<${name}`);
-    invocation.push(this.buildArgs(args, "@"));
-    invocation.push(this.buildAttributes(attributes));
+
+    let componetArgs = this.buildArgs(args);
+
+    if (componetArgs !== "") {
+      invocation.push(componetArgs);
+    }
+
+    let attrs = this.buildAttributes(attributes);
+    if (attrs !== "") {
+      invocation.push(attrs);
+    }
+
+    let open = invocation.join(" ");
+    invocation = [open];
 
     if (template) {
       let block: string | string[] = [];
-      block.push(this.buildBlockParams(blockParams));
+      let params = this.buildBlockParams(blockParams);
+      if (params !== "") {
+        block.push(params);
+      }
       block.push(`>`);
       block.push(template);
       block.push(`</${name}>`);
       invocation.push(block.join(""));
     } else {
+      invocation.push(" ");
       invocation.push(`/>`);
     }
 
-    return invocation.join(" ");
+    return invocation.join("");
   }
   private buildGlimmerComponent(blueprint: ComponentBlueprint): string {
     let { tag = "div", layout, name = TEST_COMPONENT } = blueprint;
@@ -235,7 +277,12 @@ export abstract class AbstractRenderTest {
       invocation.push(`{{${name}`);
     }
 
-    invocation.push(this.buildArgs(args));
+    let componentArgs = this.buildArgs(args);
+
+    if (componentArgs !== "") {
+      invocation.push(" ");
+      invocation.push(componentArgs);
+    }
 
     if (template) {
       invocation.push(this.buildCurlyBlockTemplate(name, template, blockParams, inverse));
@@ -244,7 +291,7 @@ export abstract class AbstractRenderTest {
     }
     this.assert.ok(true, `generated curly layout as ${layout}`);
     this.registerComponent("Curly", name, layout);
-    invocation = invocation.join(" ");
+    invocation = invocation.join("");
     this.assert.ok(true, `generated curly invocation as ${invocation}`);
     return invocation;
   }
@@ -272,7 +319,12 @@ export abstract class AbstractRenderTest {
       invocation.push("{{component componentName");
     }
 
-    invocation.push(this.buildArgs(args));
+    let componentArgs = this.buildArgs(args);
+
+    if (componentArgs !== "") {
+      invocation.push(" ");
+      invocation.push(componentArgs);
+    }
 
     if (template) {
       invocation.push(this.buildCurlyBlockTemplate("component", template, blockParams, inverse));
@@ -282,7 +334,7 @@ export abstract class AbstractRenderTest {
 
     this.assert.ok(true, `generated dynamic layout as ${layout}`);
     this.registerComponent("Curly", name, layout);
-    invocation = invocation.join(" ");
+    invocation = invocation.join("");
     this.assert.ok(true, `generated dynamic invocation as ${invocation}`);
 
     return invocation;
@@ -688,7 +740,7 @@ function componentModule(name: string, klass: typeof AbstractRenderTest & Functi
           case "glimmer":
             tests.curly.push(createTest(prop, test));
             tests.dynamic.push(createTest(prop, test));
-            tests.glimmer.push(createTest(prop, test));
+            tests.glimmer.push(createTest(prop, test, true));
             break;
           case "curly":
             tests.glimmer.push(createTest(prop, test));
