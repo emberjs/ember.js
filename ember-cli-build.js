@@ -229,6 +229,7 @@ module.exports = function(options) {
       glimmerUtil,
       glimmerWireFormat,
       backburner,
+      rsvp
     ].map(stripForProd);
 
     let emberProdTestES5 = emberTests.map((tree) => {
@@ -251,7 +252,6 @@ module.exports = function(options) {
       ...emberProdES5,
       ...depsProd,
       emberMetalProd,
-      rsvp,
       productionFeatures,
       babelProdHelpersES5,
       version,
