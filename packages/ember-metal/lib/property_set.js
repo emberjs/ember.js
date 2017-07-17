@@ -95,9 +95,9 @@ function setPath(root, path, value, tolerant) {
   let parts = path.split('.');
   let keyName = parts.pop();
 
-  assert('Property set failed: You passed an empty path', keyName && keyName.length > 0)
+  assert('Property set failed: You passed an empty path', keyName.trim().length > 0)
 
-  let newPath = parts.length > 0 ? parts.join('.') : keyName;
+  let newPath = parts.join('.');
 
   let newRoot = getPath(root, newPath);
 
