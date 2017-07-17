@@ -51,8 +51,8 @@ export function set(obj, keyName, value, tolerant) {
 
   if (isDescriptor) { /* computed property */
     currentValue.set(obj, keyName, value);
-  } else if (obj.setUnknownProperty && currentValue === undefined && !(keyName in obj)) { /* unknown property */
-    assert('setUnknownProperty must be a function', typeof obj.setUnknownProperty === 'function');
+  } else if (currentValue === undefined && 'object' === typeof obj && !(keyName in obj) &&
+    typeof obj.setUnknownProperty === 'function') { /* unknown property */
     obj.setUnknownProperty(keyName, value);
   } else if (currentValue === value) { /* no change */
   } else {
