@@ -27,13 +27,7 @@ export default class EmberError extends ExtendBuiltin(Error) {
     }
 
     let error = Error.call(this, message);
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, EmberError);
-    } else {
-      this.stack = error.stack;
-    }
-
+    this.stack = error.stack;
     this.description = error.description;
     this.fileName = error.fileName;
     this.lineNumber = error.lineNumber;
