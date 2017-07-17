@@ -101,15 +101,11 @@ function setPath(root, path, value, tolerant) {
 
   let newRoot = getPath(root, newPath);
 
-  if (!newRoot) {
-    if (tolerant) {
-      return;
-    } else {
-      throw new EmberError(`Property set failed: object in path "${newPath}" could not be found or was destroyed.`);
-    }
+  if (newRoot) {
+    return set(newRoot, keyName, value);
+  } else if (!tolerant) {
+    throw new EmberError(`Property set failed: object in path "${newPath}" could not be found or was destroyed.`);
   }
-
-  return set(newRoot, keyName, value);
 }
 
 /**
