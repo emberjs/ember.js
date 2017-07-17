@@ -21,6 +21,8 @@
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
 import { guidFor } from 'ember-utils';
+import { runInDebug } from 'ember-debug';
+const THRESHOLD = 50;
 
 function missingFunction(fn) {
   throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);
@@ -41,17 +43,6 @@ function copyNull(obj) {
   return output;
 }
 
-function copyMap(original, newObject) {
-  let keys = original._keys.copy();
-  let values = copyNull(original._values);
-
-  newObject._keys = keys;
-  newObject._values = values;
-  newObject.size = original.size;
-
-  return newObject;
-}
-
 /**
   This class is used internally by Ember and Ember Data.
   Please do not use it at this time. We plan to clean it up
@@ -63,11 +54,12 @@ function copyMap(original, newObject) {
   @private
 */
 function OrderedSet() {
-  if (this instanceof OrderedSet) {
-    this.clear();
-  } else {
-    missingNew('OrderedSet');
-  }
+  runInDebug(() => {
+    if (!(this instanceof OrderedSet)) {
+      missingNew('OrderedSet');
+    }
+  })
+  this.clear();
 }
 
 /**
@@ -77,9 +69,7 @@ function OrderedSet() {
   @private
 */
 OrderedSet.create = function() {
-  let Constructor = this;
-
-  return new Constructor();
+  return new this();
 };
 
 OrderedSet.prototype = {
@@ -89,11 +79,22 @@ OrderedSet.prototype = {
     @private
   */
   clear() {
-    this.presenceSet = Object.create(null);
-    this.list = [];
+    this._presenceSet = undefined;
+    this._list = undefined;
+    this._value = undefined;
     this.size = 0;
   },
 
+  get presenceSet() {
+    return this._presenceSet || (this._presenceSet = Object.create(null))
+  },
+
+  get list() {
+    if (this._list !== undefined) { return this._list; }
+    let size = this.size;
+    if (size === 0) { return this._list = []; }
+    if (size === 1) { return this._list = [this._value]; }
+  },
   /**
     @method add
     @param obj
@@ -101,19 +102,57 @@ OrderedSet.prototype = {
     @return {Ember.OrderedSet}
     @private
   */
-  add(obj, _guid) {
-    let guid = _guid || guidFor(obj);
+  add(obj) {
+    let size = this.size;
+
+    if (size === 1 && this._value === obj) {
+      return this;
+    }
+
+    if (size === 0) {
+      this._value = obj;
+      this.size = 1;
+      return this;
+    }
+
+     if (size < THRESHOLD) {
+      let list = this.list;
+      for (let i = 0; i < list.length; i++) {
+        let entry = list[i];
+        if (list[i] === obj ||
+          /* for NaN */
+          obj !== obj && entry !== entry) {
+          return this;
+        }
+      }
+      list.push(obj);
+      this.size++;
+      return this;
+    }
+
+    return this._slowAdd(obj, size)
+  },
+
+  _slowAdd(obj, size) {
+    let guid = guidFor(obj);
+
     let presenceSet = this.presenceSet;
-    let list = this.list;
+    if (size === THRESHOLD) {
+      // upgrade to index set
+      let list = this.list;
+      for (let i = 0; i < list.length; i++) {
+        let item = list[i];
+        presenceSet[guidFor(item)] = true;
+      }
+    }
 
     if (presenceSet[guid] !== true) {
       presenceSet[guid] = true;
-      this.size = list.push(obj);
+      this.list.push(obj);
+      this.size++;
     }
-
     return this;
   },
-
   /**
     @since 1.8.0
     @method delete
@@ -122,22 +161,47 @@ OrderedSet.prototype = {
     @return {Boolean}
     @private
   */
-  delete(obj, _guid) {
-    let guid = _guid || guidFor(obj);
-    let presenceSet = this.presenceSet;
-    let list = this.list;
+  delete(obj) {
+    let size = this.size;
 
-    if (presenceSet[guid] === true) {
-      delete presenceSet[guid];
-      let index = list.indexOf(obj);
-      if (index > -1) {
-        list.splice(index, 1);
+    if (size === 0) { return false;}
+    if (size === 1) {
+      if (this._value === obj ||
+        /* for NaN */
+          obj !== obj && this._value !== this._value) {
+        this._value = undefined;
+        this.size--;
+        return true;
       }
-      this.size = list.length;
-      return true;
-    } else {
       return false;
     }
+
+    if (size >= THRESHOLD) {
+      let presenceSet = this.presenceSet;
+      let guid = guidFor(obj);
+      if (presenceSet[guid] === true) {
+        delete presenceSet[guid];
+      } else {
+        return false;
+      }
+    }
+
+    let list = this.list;
+    for (let i = 0; i < list.length; i++) {
+      let entry = list[i];
+      if (entry === obj ||
+        /* for NaN */
+        obj !== obj && entry !== entry) {
+        list.splice(i, 1);
+        this.size--;
+        if (this.size === 1) {
+          this._value = this._list[0];
+          this._list = undefined;
+        }
+        return true;
+      }
+    }
+    return false;
   },
 
   /**
@@ -156,12 +220,29 @@ OrderedSet.prototype = {
     @private
   */
   has(obj) {
-    if (this.size === 0) { return false; }
+    let size = this.size;
+    if (size === 0) { return false; }
+    if (size === 1) {
+      let entry = this._value;
+      return entry === obj ||
+        /* for NaN */
+          obj !== obj && entry !== entry;
+    }
+    if (size < THRESHOLD) {
+      let list = this.list;
+      for (let i = 0; i < list.length; i++) {
+        let entry = list[i];
+        if (entry === obj ||
+          /* for NaN */
+          obj !== obj && entry !== entry) {
+          return true;
+        }
+      }
 
-    let guid = guidFor(obj);
-    let presenceSet = this.presenceSet;
-
-    return presenceSet[guid] === true;
+      return false;
+    } else {
+      return this.presenceSet[guidFor(obj)] === true;
+    }
   },
 
   /**
@@ -205,11 +286,11 @@ OrderedSet.prototype = {
     @private
   */
   copy() {
-    let Constructor = this.constructor;
-    let set = new Constructor();
+    let set = new this.constructor();
 
-    set.presenceSet = copyNull(this.presenceSet);
-    set.list = this.toArray();
+    if (this._presenceSet) { set._presenceSet = copyNull(this._presenceSet); }
+    if (this._list)        { set._list = this._list.slice(); }
+
     set.size = this.size;
 
     return set;
@@ -237,13 +318,12 @@ OrderedSet.prototype = {
   @constructor
 */
 function Map() {
-  if (this instanceof Map) {
-    this._keys = OrderedSet.create();
-    this._values = Object.create(null);
-    this.size = 0;
-  } else {
-    missingNew('Map');
-  }
+  runInDebug(() => {
+    if (!(this instanceof Map)) {
+      missingNew('Map');
+    }
+  });
+  this.clear();
 }
 
 /**
@@ -252,8 +332,7 @@ function Map() {
   @private
 */
 Map.create = function() {
-  let Constructor = this;
-  return new Constructor();
+  return new this();
 };
 
 Map.prototype = {
@@ -306,7 +385,6 @@ Map.prototype = {
     let k = key === -0 ? 0 : key;
 
     keys.add(k, guid);
-
     values[guid] = value;
 
     this.size = keys.size;
@@ -333,7 +411,7 @@ Map.prototype = {
 
     if (keys.delete(key, guid)) {
       delete values[guid];
-      this.size = keys.size;
+      this.size--;
       return true;
     } else {
       return false;
@@ -349,6 +427,7 @@ Map.prototype = {
     @private
   */
   has(key) {
+    if (this.size === 0) { return false; }
     return this._keys.has(key);
   },
 
@@ -390,18 +469,33 @@ Map.prototype = {
     @private
   */
   clear() {
-    this._keys.clear();
-    this._values = Object.create(null);
+    this.__keys = undefined;
+    this.__values = undefined;
     this.size = 0;
   },
 
+  get _keys() {
+    return this.__keys || (this.__keys = new OrderedSet());
+  },
+
+  get _values() {
+    return this.__values || (this.__values = Object.create(null));
+  },
   /**
     @method copy
     @return {Ember.Map}
     @private
   */
   copy() {
-    return copyMap(this, new Map());
+    let copied = new this.constructor();
+
+    if (this.size > 0) {
+      copied.__keys = this.__keys.copy();
+      copied.__values = copyNull(this.__values);
+      copied.size = this.size;
+    }
+
+    return copied;
   }
 };
 
@@ -416,7 +510,9 @@ Map.prototype = {
 */
 function MapWithDefault(options) {
   this._super$constructor();
-  this.defaultValue = options.defaultValue;
+  if (typeof options ==='object' && options !== null) {
+    this.defaultValue = options.defaultValue;
+  }
 }
 
 /**
@@ -440,6 +536,7 @@ MapWithDefault.prototype = Object.create(Map.prototype);
 MapWithDefault.prototype.constructor = MapWithDefault;
 MapWithDefault.prototype._super$constructor = Map;
 MapWithDefault.prototype._super$get = Map.prototype.get;
+MapWithDefault.prototype._super$copy = Map.prototype.copy;
 
 /**
   Retrieve the value associated with a given key.
@@ -467,10 +564,9 @@ MapWithDefault.prototype.get = function(key) {
   @private
 */
 MapWithDefault.prototype.copy = function() {
-  let Constructor = this.constructor;
-  return copyMap(this, new Constructor({
-    defaultValue: this.defaultValue
-  }));
+  let map = this._super$copy();
+  map.defaultValue = this.defaultValue;
+  return map;
 };
 
 export default Map;

@@ -24,9 +24,7 @@ function testMap(nameAndFunc) {
     theMap = theMap || map;
 
     let length = 0;
-    theMap.forEach(function() {
-      length++;
-    });
+    theMap.forEach(() => length++);
 
     equal(length, expected, 'map should contain ' + expected + ' items');
   };
