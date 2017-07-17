@@ -115,7 +115,7 @@ WeakMap.prototype.has = function(obj) {
  */
 WeakMap.prototype.delete = function(obj) {
   if (this.has(obj)) {
-    delete metaFor(obj).writableWeak()[this._id];
+    delete peekMeta(obj).writableWeak()[this._id];
     return true;
   } else {
     return false;
