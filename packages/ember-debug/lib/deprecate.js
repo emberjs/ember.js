@@ -91,14 +91,18 @@ if (DEBUG) {
     if (ENV.LOG_STACKTRACE_ON_DEPRECATION) {
       let stackStr = '';
       let error = captureErrorForStack();
-      let stack;
 
-      if (error.stack) {
-        if (error['arguments']) {
-          // Chrome
-          stack = error.stack.replace(/^\s+at\s+/gm, '').
-            replace(/^([^\(]+?)([\n$])/gm, '{anonymous}($1)$2').
-            replace(/^Object.<anonymous>\s*\(([^\)]+)\)/gm, '{anonymous}($1)').split('\n');
+      // only do this when we are going to actually process the stack
+      Error.prepareStackTrace = function(error, stack) {
+        return stack;
+      }
+      // grab the new structured stack
+      let stack = error.stack;
+      // stop capturing structured stacks
+      Error.prepareStackTrace = undefined;
+
+      if (stack) {
+        if (typeof Error.captureStackTrace === 'function') {
           stack.shift();
         } else {
           // Firefox
