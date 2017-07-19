@@ -950,11 +950,11 @@ module("[glimmer-runtime] Updating", hooks => {
   });
 
   test(`helpers passed as arguments to {{component}} are not torn down when switching between blocks`, assert => {
-    env.registerBasicComponent('x-yasss', BasicComponent, '<div>Yes</div>');
+    env.registerBasicComponent('XYasss', BasicComponent, '<div>Yes</div>');
 
     let options = {
       template: '{{component (stateful-foo)}}',
-      truthyValue: 'x-yasss',
+      truthyValue: 'XYasss',
       falsyValue: null
     };
 

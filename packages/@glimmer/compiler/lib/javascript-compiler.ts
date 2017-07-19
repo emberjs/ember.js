@@ -213,7 +213,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   openElement(element: AST.ElementNode) {
     let tag = element.tag;
 
-    if (tag.indexOf('-') !== -1) {
+    if (isComponent(tag)) {
       this.startComponent(element);
     } else if (element.blockParams.length > 0) {
       throw new Error(`Compile Error: <${element.tag}> is not a component and doesn't support block parameters`);
@@ -229,7 +229,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   closeElement(element: AST.ElementNode) {
     let tag = element.tag;
 
-    if (tag.indexOf('-') !== -1) {
+    if (isComponent(tag)) {
       let [attrs, args, block] = this.endComponent();
       this.push([Ops.Component, tag, attrs, args, block]);
     } else {
@@ -374,4 +374,10 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     assert(this.values.length, "No expression found on stack");
     return this.values.pop() as T;
   }
+}
+
+function isComponent(tag: string): boolean {
+  let open = tag.charAt(0);
+
+  return open === open.toUpperCase();
 }

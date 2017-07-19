@@ -9,7 +9,7 @@ const app = `<div class="world">{{#each world.cells key="key" as |cell|}}<organi
 
 let env = new TestEnvironment();
 
-env.registerEmberishGlimmerComponent('organism-cell-component', null,
+env.registerEmberishGlimmerComponent('OrganismCellComponent', null,
   `<organism-cell class="{{if @cell.isAlive "alive" ""}}" style="top: {{@cell.y}}px; left: {{@cell.x}}px" />`);
 
 function getWorld(): World {
