@@ -944,6 +944,10 @@ export class TestEnvironment extends Environment {
   }
 
   registerBasicComponent(name: string, Component: BasicComponentFactory, layoutSource: string): ComponentDefinition<BasicComponentDefinition> {
+    if (name.indexOf('-') !== -1) {
+      throw new Error("DEPRECATED: dasherized components");
+    }
+
     let layout = this.registerTemplate(name, layoutSource);
 
     let definition = new BasicComponentDefinition(name, BASIC_COMPONENT_MANAGER, Component, layout);
@@ -969,6 +973,10 @@ export class TestEnvironment extends Environment {
   }
 
   registerEmberishGlimmerComponent(name: string, Component: Option<EmberishGlimmerComponentFactory>, layoutSource: string): ComponentDefinition<EmberishGlimmerComponentDefinition> {
+    if (name.indexOf('-') !== -1) {
+      throw new Error("DEPRECATED: dasherized components");
+    }
+
     let layout = this.registerTemplate(name, layoutSource);
 
     let definition = new EmberishGlimmerComponentDefinition(name, EMBERISH_GLIMMER_COMPONENT_MANAGER, Component || EmberishGlimmerComponent, layout);

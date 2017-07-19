@@ -22,7 +22,8 @@ export const OPEN: { marker: "open-block" } = { marker: "open-block" };
 export const CLOSE: { marker: "close-block" } = { marker: "close-block" };
 export const SEP: { marker: "sep" } = { marker: "sep" };
 export const EMPTY: { marker: "empty" } = { marker: "empty" };
-const TEST_COMPONENT = "test-component";
+const GLIMMER_TEST_COMPONENT = "TestComponent";
+const CURLY_TEST_COMPONENT = "test-component";
 
 export type Content = string | typeof OPEN | typeof CLOSE | typeof SEP | typeof EMPTY;
 
@@ -206,7 +207,7 @@ export abstract class AbstractRenderTest {
   }
 
   private buildAngleBracketComponent(blueprint: ComponentBlueprint): string {
-    let { args = {}, attributes = {}, template, name = TEST_COMPONENT, blockParams = [] } = blueprint;
+    let { args = {}, attributes = {}, template, name = GLIMMER_TEST_COMPONENT, blockParams = [] } = blueprint;
 
     let invocation: string | string[] = [];
 
@@ -245,7 +246,7 @@ export abstract class AbstractRenderTest {
   }
 
   private buildGlimmerComponent(blueprint: ComponentBlueprint): string {
-    let { tag = "div", layout, name = TEST_COMPONENT } = blueprint;
+    let { tag = "div", layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
     this.assert.ok(true, `generated glimmer layout as ${`<${tag}>${layout}</${tag}>`}`);
     this.registerComponent("Glimmer", name, `<${tag}>${layout}</${tag}>`);
@@ -264,7 +265,7 @@ export abstract class AbstractRenderTest {
   }
 
   private buildCurlyComponent(blueprint: ComponentBlueprint): string {
-    let { args = {}, layout, template, attributes, inverse, name = TEST_COMPONENT, blockParams = [] } = blueprint;
+    let { args = {}, layout, template, attributes, inverse, name = CURLY_TEST_COMPONENT, blockParams = [] } = blueprint;
 
     if (attributes) {
       throw new Error("Cannot pass attributes to curly components");
@@ -298,7 +299,7 @@ export abstract class AbstractRenderTest {
   }
 
   private buildBasicComponent(blueprint: ComponentBlueprint): string {
-    let { tag = "div", layout, name = TEST_COMPONENT } = blueprint;
+    let { tag = "div", layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
     this.assert.ok(true, `generated basic layout as ${layout}`);
     this.registerComponent("Basic", name, `<${tag}>${layout}</${tag}>`);
@@ -307,7 +308,7 @@ export abstract class AbstractRenderTest {
   }
 
   private buildDynamicComponent(blueprint: ComponentBlueprint): string {
-    let { args = {}, layout, template, attributes, inverse, name = TEST_COMPONENT, blockParams = [] } = blueprint;
+    let { args = {}, layout, template, attributes, inverse, name = GLIMMER_TEST_COMPONENT, blockParams = [] } = blueprint;
 
     if (attributes) {
       throw new Error("Cannot pass attributes to curly components");
@@ -365,7 +366,7 @@ export abstract class AbstractRenderTest {
       template = this.buildComponent(blueprint);
 
       if (this.testType === "Dynamic" && properties["componentName"] === undefined) {
-        properties["componentName"] = blueprint.name || TEST_COMPONENT;
+        properties["componentName"] = blueprint.name || GLIMMER_TEST_COMPONENT;
       }
     }
 

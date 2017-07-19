@@ -7,7 +7,7 @@ class BasicComponents extends RenderTests {
   "creating a new component"() {
     this.render(
       {
-        name: "my-component",
+        name: "MyComponent",
         layout: "{{yield}}",
         template: "hello!",
         attributes: { color: "{{color}}" }
@@ -33,7 +33,7 @@ class BasicComponents extends RenderTests {
   "creating a new component passing args"() {
     this.render(
       {
-        name: "my-component",
+        name: "MyComponent",
         layout: "{{@arg1}}{{yield}}",
         template: "hello!",
         args: { arg1: "'hello - '" },
@@ -60,7 +60,7 @@ class BasicComponents extends RenderTests {
   "creating a new component passing dynamic args"() {
     this.render(
       {
-        name: "my-component",
+        name: "MyComponent",
         layout: "{{@arg1}}{{yield}}",
         template: "hello!",
         args: { arg1: "left" },
@@ -87,7 +87,7 @@ class BasicComponents extends RenderTests {
   "creating a new component yielding values"() {
     this.render(
       {
-        name: "my-component",
+        name: "MyComponent",
         layout: "{{@arg1}}{{yield @yieldme}}",
         template: "hello! {{yielded}}",
         blockParams: ["yielded"],
