@@ -45,10 +45,10 @@ export function set(obj, keyName, value, tolerant) {
   assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
   assert(`calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`, !obj.isDestroyed);
 
-  if (isPath(keyName)) {
-    return setPath(obj, keyName, value, tolerant);
-  }
+  return isPath(keyName) ? setPath(obj, keyName.split('.'), value, tolerant) : _set(obj, keyName, value);
+}
 
+function _set(obj, keyName, value) {
   let currentValue = obj[keyName];
   let isDescriptor = currentValue !== null && typeof currentValue === 'object' && currentValue.isDescriptor;
 
@@ -94,20 +94,17 @@ if (MANDATORY_SETTER) {
   };
 }
 
-function setPath(root, path, value, tolerant) {
-  let parts = path.split('.');
-  let keyName = parts.pop();
+function setPath(root, pathParts, value, tolerant) {
+  let keyName = pathParts.pop();
 
   assert('Property set failed: You passed an empty path', keyName.trim().length > 0)
 
-  let newPath = parts.join('.');
-
-  let newRoot = getPath(root, newPath);
+  let newRoot = getPath(root, pathParts);
 
   if (newRoot) {
-    return set(newRoot, keyName, value);
+    return _set(newRoot, keyName, value);
   } else if (!tolerant) {
-    throw new EmberError(`Property set failed: object in path "${newPath}" could not be found or was destroyed.`);
+    throw new EmberError(`Property set failed: object in path "${pathParts.join('.')}" could not be found or was destroyed.`);
   }
 }
 
