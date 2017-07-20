@@ -31,7 +31,7 @@ export interface InstanceWithMixins {
 }
 
 export interface GlimmerObjectFactory<T> {
-  new<U>(attrs?: U): T & U;
+  new<U>(attrs?: U): GlimmerObject & T & U;
   extend(): GlimmerObjectFactory<Object>;
   extend<T>(extension: T): GlimmerObjectFactory<T>;
   extend(...extensions: Object[]): GlimmerObjectFactory<Object>;
@@ -336,11 +336,11 @@ export default class GlimmerObject {
   static "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": InstanceMeta = InstanceMeta.fromParent(null);
   static isClass = true;
 
-  static extend(): typeof GlimmerObject;
-  static extend<T>(extension: T): typeof GlimmerObject;
-  static extend(...extensions: Object[]): typeof GlimmerObject;
+  static extend(): GlimmerObjectFactory<any> & typeof GlimmerObject;
+  static extend<T>(extension: T): GlimmerObjectFactory<T> & typeof GlimmerObject;
+  static extend(...extensions: Object[]): GlimmerObjectFactory<any> & typeof GlimmerObject;
 
-  static extend(...extensions: any[]) {
+  static extend(this: GlimmerObjectFactory<any>, ...extensions: any[]) {
     return extendClass(this, ...extensions);
   }
 
@@ -348,14 +348,14 @@ export default class GlimmerObject {
     return new this(attrs);
   }
 
-  static reopen<U>(extensions: U) {
+  static reopen<U>(extensions: U): void {
     toMixin(extensions).extendPrototype(this);
     this[CLASS_META].seal();
 
     relinkSubclasses(this);
   }
 
-  static reopenClass(extensions: Object) {
+  static reopenClass<U>(extensions: U): void {
     toMixin(extensions).extendStatic(this);
     this[CLASS_META].seal();
   }
@@ -366,7 +366,7 @@ export default class GlimmerObject {
     return value;
   }
 
-  static eachComputedProperty(callback: (s: string, o: Object) => void) {
+  static eachComputedProperty(callback: (s: string, o: Object) => void): void {
     let metadata = this[CLASS_META].getPropertyMetadata();
     if (!metadata) return;
 
