@@ -188,19 +188,19 @@ export class Mixin {
 
 export type Extension = Mixin | Extensions;
 
-export function extend<T extends GlimmerObject>(Parent: GlimmerObjectFactory<T>, ...extensions: Extension[]): typeof GlimmerObject {
+export function extend<T extends GlimmerObject>(Parent: GlimmerObjectFactory<T>, ...extensions: Extension[]): GlimmerObjectFactory<any> {
   let Super = <typeof GlimmerObject>Parent;
 
   let Subclass = class extends Super {};
   Subclass[CLASS_META] = InstanceMeta.fromParent(Parent[CLASS_META]);
 
   let mixins = extensions.map(toMixin);
-  Parent[CLASS_META].addSubclass(Subclass);
+  Parent[CLASS_META].addSubclass(Subclass as GlimmerObjectFactory<any>);
   mixins.forEach(m => Subclass[CLASS_META].addMixin(m));
 
-  ClassMeta.applyAllMixins(Subclass, Parent);
+  ClassMeta.applyAllMixins(Subclass as GlimmerObjectFactory<any>, Parent);
 
-  return Subclass;
+  return Subclass as any;
 }
 
 export function relinkSubclasses(Parent: GlimmerObjectFactory<any>) {
