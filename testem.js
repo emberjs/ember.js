@@ -8,7 +8,7 @@ let config = {
   "disable_watching": true,
   "launchers": {
     "Node": {
-      "command": "./bin/run-node-tests.js",
+      "command": "./bin/run-node-tests.sh",
       "output": "tap"
      }
   },
@@ -18,6 +18,7 @@ let config = {
   ],
   "launch_in_ci": [
     "PhantomJS",
+    "Node"
   ]
 };
 

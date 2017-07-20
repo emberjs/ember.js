@@ -24,11 +24,40 @@ module.exports = function(packages) {
     includeGlimmerAMD(amdTree),
     includeTestFiles(amdTree),
     includeVendorDependencies(),
-    includeTestHarness()
+    includeTestHarness(),
+    includeNodeTests()
   ]);
 
   return funnel(testTree, {
     destDir: 'tests'
+  });
+}
+
+function includeNodeTests() {
+  let tsTree = funnel('packages', {
+    include: ['@glimmer/**/*.ts'],
+    exclude: [
+      '**/*.d.ts'
+    ]
+  });
+
+  let jsTree = typescript(tsTree, {
+    tsconfig: {
+      compilerOptions: {
+        target: 'es6',
+        module: 'commonjs',
+        inlineSourceMap: true,
+        inlineSources: true,
+        moduleResolution: 'node',
+
+        rootDir: '.',
+        mapRoot: '/'
+      }
+    }
+  });
+
+  return funnel(jsTree, {
+    destDir: 'node_modules'
   });
 }
 

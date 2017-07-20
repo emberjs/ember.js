@@ -8,6 +8,10 @@ module.exports = {
   "parallel": 2,
   "launchers":
     {
+      "Node": {
+        "command": "./bin/run-node-tests.sh",
+        "output": "tap"
+      },
       "SL_Chrome_Current": {
         "command": "ember sauce:launch -p 'Windows 10' -b chrome -v latest --no-ct -u '<url>'",
         "protocol": "tap"
@@ -51,10 +55,12 @@ module.exports = {
     }
   ,
   "launch_in_dev": [
+    "Node",
     "PhantomJS",
     "Chrome"
   ],
   "launch_in_ci": [
+    "Node",
     "PhantomJS",
     "SL_Chrome_Current",
     "SL_Chrome_Last",
