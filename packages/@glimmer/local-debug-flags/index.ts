@@ -1,5 +1,5 @@
 export const DEBUG = (() => {
-  let location = typeof window !== undefined && window.location;
+  let location = typeof window !== 'undefined' && window.location;
   if (location && /[?&]glimmer_logging/.test(window.location.search)) {
     return true;
   }
@@ -7,4 +7,4 @@ export const DEBUG = (() => {
 })();
 
 // TODO this is hacky but requires unifying the build
-export const CI = !!window['Testem'];
+export const CI = typeof window !== 'undefined' && !!window['Testem'];
