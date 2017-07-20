@@ -55,10 +55,10 @@ export function get(obj, keyName) {
   assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
   assert('Cannot call `Ember.get` with an empty string', keyName !== '');
 
-  if (isPath(keyName)) {
-    return _getPath(obj, keyName);
-  }
+  return isPath(keyName) ? _getPath(obj, keyName) : _get(obj, keyName);
+}
 
+function _get(obj, keyName) {
   let value = obj[keyName];
   let isDescriptor = value !== null && typeof value === 'object' && value.isDescriptor;
 
@@ -81,7 +81,7 @@ export function _getPath(root, path) {
       return undefined;
     }
 
-    obj = get(obj, parts[i]);
+    obj = _get(obj, parts[i]);
 
     if (obj && obj.isDestroyed) {
       return undefined;
