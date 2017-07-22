@@ -104,11 +104,11 @@ QUnit.test("HTML boolean attribute 'disabled'", function(assert) {
   assert.equal(serializer.serializeChildren(root), '<input disabled>', 'disabled without value set as property is true');
 });
 
-QUnit.test("Quoted attribute expression is coerced to a string", function(assert) {
+QUnit.test("Quoted attribute expression is removed when null", function(assert) {
   let template = compile('<input disabled="{{isDisabled}}">');
   render(template, { isDisabled: null });
 
-  assert.equal(serializer.serializeChildren(root), '<input disabled="null">', 'string of "null" set as property');
+  assert.equal(serializer.serializeChildren(root), '<input>', 'string of "null" set as property');
 });
 
 QUnit.test("Unquoted attribute expression with null value is not coerced", function(assert) {
@@ -281,8 +281,8 @@ module('default template id');
 QUnit.test('generates id in node', function (assert) {
   let template = precompile('hello');
   let obj = JSON.parse(template);
-  assert.equal(obj.id, '3TlrituF', 'short sha of template source');
+  assert.equal(obj.id, 'zgnsoV7o', 'short sha of template source');
   template = precompile('hello', { meta: {moduleName: 'template/hello'} });
   obj = JSON.parse(template);
-  assert.equal(obj.id, 'CiDxizBQ', 'short sha of template source and meta');
+  assert.equal(obj.id, 'Ybe5TwSG', 'short sha of template source and meta');
 });

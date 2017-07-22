@@ -9,7 +9,7 @@ let config = {
   "launchers": {
     "Node": {
       "command": "./bin/run-node-tests.js",
-      "output": "tap"
+      "protocol": "tap"
      }
   },
   "launch_in_dev": [
@@ -18,6 +18,7 @@ let config = {
   ],
   "launch_in_ci": [
     "PhantomJS",
+    "Node"
   ]
 };
 
