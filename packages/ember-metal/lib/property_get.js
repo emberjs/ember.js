@@ -3,7 +3,6 @@
 */
 
 import { assert } from 'ember-debug';
-import { isPath } from './path_cache';
 
 const ALLOWABLE_TYPES = {
   object: true,
@@ -55,7 +54,8 @@ export function get(obj, keyName) {
   assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
   assert('Cannot call `Ember.get` with an empty string', keyName !== '');
 
-  return isPath(keyName) ? _getPath(obj, keyName.split('.')) : _get(obj, keyName);
+  let keys = keyName.split('.');
+  return keys.length === 1 ? _get(obj, keyName) : _getPath(obj, keys);
 }
 
 function _get(obj, keyName) {
