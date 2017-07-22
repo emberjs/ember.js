@@ -1,5 +1,60 @@
 import { module, RenderTests, test } from "@glimmer/test-helpers";
 
+class FragmentComponents extends RenderTests {
+  @test({
+    kind: "fragment"
+  })
+  "creating a new component"() {
+    this.render(
+      {
+        name: "MyComponent",
+        layout: "{{yield}} - {{@color}}",
+        template: "hello!",
+        args: { color: "color" }
+      },
+      { color: "red" }
+    );
+
+    this.assertHTML(`hello! - red`);
+    this.assertStableRerender();
+
+    this.rerender({ color: "green" });
+    this.assertHTML(`hello! - green`);
+    this.assertStableNodes();
+
+    this.rerender({ color: "red" });
+    this.assertHTML(`hello! - red`);
+    this.assertStableNodes();
+  }
+
+  @test({
+    kind: "fragment"
+  })
+  "inner ...attributes"() {
+    this.render(
+      {
+        name: "MyComponent",
+        layout: "<div><span ...attributes>{{yield}} - {{@color}}</span></div>",
+        template: "hello!",
+        args: { color: "color" },
+        attributes: { color: "{{color}}" }
+      },
+      { color: "red" }
+    );
+
+    this.assertHTML(`<div><span color='red'>hello! - red</span></div>`);
+    this.assertStableRerender();
+
+    this.rerender({ color: "green" });
+    this.assertHTML(`<div><span color='green'>hello! - green</span></div>`);
+    this.assertStableNodes();
+
+    this.rerender({ color: "red" });
+    this.assertHTML(`<div><span color='red'>hello! - red</span></div>`);
+    this.assertStableNodes();
+  }
+}
+
 class BasicComponents extends RenderTests {
   @test({
     kind: "basic"
@@ -111,3 +166,4 @@ class BasicComponents extends RenderTests {
 }
 
 module("[glimmer-runtime] Basic Components", BasicComponents, { componentModule: true });
+module("[glimmer-runtime] Fragment Components", FragmentComponents, { componentModule: true });

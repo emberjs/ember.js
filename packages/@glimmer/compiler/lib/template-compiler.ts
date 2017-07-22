@@ -77,7 +77,15 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   }
 
   openElement([action]: [AST.ElementNode]) {
-    this.opcode('openElement', action, action);
+    let attributes = action.attributes;
+    let hasSplat = attributes.find(a => a.name === '...attributes');
+
+    if (hasSplat) {
+      this.opcode('openSplattedElement', action, action);
+    } else {
+      this.opcode('openElement', action, action);
+    }
+
     for (let i = 0; i < action.attributes.length; i++) {
       this.attribute([action.attributes[i]]);
     }
@@ -113,7 +121,9 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     } else {
       let isTrusting = isTrustedValue(value);
 
-      if (isStatic) {
+      if (isStatic && name === '...attributes') {
+        this.opcode('attrSplat', action, this.symbols.allocateBlock('attrs'));
+      } else if (isStatic) {
         this.opcode('staticAttr', action, name, namespace);
       } else if (isTrusting) {
         this.opcode('trustingAttr', action, name, namespace);
