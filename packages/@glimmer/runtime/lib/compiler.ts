@@ -27,7 +27,7 @@ export interface ComponentLayoutBuilder<O extends CompilationOptions<any, any, a
   tag: ComponentTagBuilder;
 
   wrapLayout(layout: Template<TemplateMeta>): void;
-  fromLayout(componentName: string, layout: Template<TemplateMeta>): void;
+  fromLayout(layout: Template<TemplateMeta>): void;
 }
 
 export interface ComponentTagBuilder {

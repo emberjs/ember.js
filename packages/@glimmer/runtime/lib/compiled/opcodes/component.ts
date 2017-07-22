@@ -39,7 +39,7 @@ const ARGS = new Arguments();
 function resolveComponent(resolver: Resolver, name: string, meta: TemplateMeta): ComponentDefinition {
   let specifier = resolver.lookupComponent(name, meta);
   assert(specifier, `Could not find a component named "${name}"`);
-  return resolver.resolve(specifier!);
+  return resolver.resolve<ComponentDefinition>(specifier!);
 }
 
 class CurryComponentReference implements VersionedPathReference<Option<ComponentDefinition>> {
