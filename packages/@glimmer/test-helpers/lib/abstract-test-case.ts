@@ -101,7 +101,7 @@ class SimplePathReference implements PathReference<Opaque> {
   }
 }
 
-type IndividualSnapshot = "up" | "down" | Node;
+type IndividualSnapshot = 'up' | 'down' | Node;
 type NodesSnapshot = IndividualSnapshot[];
 
 export abstract class AbstractRenderTest {
@@ -121,17 +121,33 @@ export abstract class AbstractRenderTest {
     this.helpers[name] = helper;
   }
 
-  registerComponent(type: ComponentKind = this.testType, name: string, layout: string) {
+  registerComponent(
+    type: ComponentKind = this.testType,
+    name: string,
+    layout: string
+  ) {
     switch (type) {
-      case "Glimmer":
-        this.env.registerEmberishGlimmerComponent(name, EmberishGlimmerComponent, layout);
+      case 'Glimmer':
+        this.env.registerEmberishGlimmerComponent(
+          name,
+          EmberishGlimmerComponent,
+          layout
+        );
         break;
-      case "Curly":
-        this.env.registerEmberishCurlyComponent(name, EmberishCurlyComponent, layout);
+      case 'Curly':
+        this.env.registerEmberishCurlyComponent(
+          name,
+          EmberishCurlyComponent,
+          layout
+        );
         break;
 
-      case "Dynamic":
-        this.env.registerEmberishCurlyComponent(name, EmberishCurlyComponent, layout);
+      case 'Dynamic':
+        this.env.registerEmberishCurlyComponent(
+          name,
+          EmberishCurlyComponent,
+          layout
+        );
         break;
       case "Basic":
       case "Fragment":
@@ -141,23 +157,25 @@ export abstract class AbstractRenderTest {
   }
 
   populateHelpers() {
-    Object.keys(this.helpers).forEach(name => this.env.registerHelper(name, this.helpers[name]));
+    Object.keys(this.helpers).forEach(name =>
+      this.env.registerHelper(name, this.helpers[name])
+    );
   }
 
   buildComponent(blueprint: ComponentBlueprint): string {
-    let invocation = "";
+    let invocation = '';
 
     switch (this.testType) {
-      case "Glimmer":
+      case 'Glimmer':
         invocation = this.buildGlimmerComponent(blueprint);
         break;
-      case "Curly":
+      case 'Curly':
         invocation = this.buildCurlyComponent(blueprint);
         break;
-      case "Dynamic":
+      case 'Dynamic':
         invocation = this.buildDynamicComponent(blueprint);
         break;
-      case "Basic":
+      case 'Basic':
         invocation = this.buildBasicComponent(blueprint);
         break;
       case "Fragment":
@@ -206,11 +224,11 @@ export abstract class AbstractRenderTest {
   }
 
   private buildInverse(inverse: string | undefined): string {
-    return `${inverse ? `{{else}}${inverse}` : ""}`;
+    return `${inverse ? `{{else}}${inverse}` : ''}`;
   }
 
   private buildAttributes(attrs: Object): string {
-    return Object.keys(attrs).map(attr => `${attr}=${attrs[attr]}`).join(" ");
+    return Object.keys(attrs).map(attr => `${attr}=${attrs[attr]}`).join(' ');
   }
 
   private buildAngleBracketComponent(blueprint: ComponentBlueprint): string {
@@ -243,7 +261,7 @@ export abstract class AbstractRenderTest {
       block.push(`>`);
       block.push(template);
       block.push(`</${name}>`);
-      invocation.push(block.join(""));
+      invocation.push(block.join(''));
     } else {
       invocation.push(" ");
       invocation.push(`/>`);
@@ -255,27 +273,35 @@ export abstract class AbstractRenderTest {
   private buildGlimmerComponent(blueprint: ComponentBlueprint): string {
     let { tag = "div", layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
-    this.assert.ok(true, `generated glimmer layout as ${`<${tag}>${layout}</${tag}>`}`);
-    this.registerComponent("Glimmer", name, `<${tag}>${layout}</${tag}>`);
+    this.assert.ok(
+      true,
+      `generated glimmer layout as ${`<${tag}>${layout}</${tag}>`}`
+    );
+    this.registerComponent('Glimmer', name, `<${tag}>${layout}</${tag}>`);
     this.assert.ok(true, `generated glimmer invocation as ${invocation}`);
     return invocation;
   }
 
-  private buildCurlyBlockTemplate(name: string, template: string, blockParams: string[], inverse?: string): string {
+  private buildCurlyBlockTemplate(
+    name: string,
+    template: string,
+    blockParams: string[],
+    inverse?: string
+  ): string {
     let block: string[] = [];
     block.push(this.buildBlockParams(blockParams));
-    block.push("}}");
+    block.push('}}');
     block.push(template);
     block.push(this.buildInverse(inverse));
     block.push(`{{/${name}}}`);
-    return block.join("");
+    return block.join('');
   }
 
   private buildCurlyComponent(blueprint: ComponentBlueprint): string {
     let { args = {}, layout, template, attributes, inverse, name = CURLY_TEST_COMPONENT, blockParams = [] } = blueprint;
 
     if (attributes) {
-      throw new Error("Cannot pass attributes to curly components");
+      throw new Error('Cannot pass attributes to curly components');
     }
 
     let invocation: string[] | string = [];
@@ -294,9 +320,11 @@ export abstract class AbstractRenderTest {
     }
 
     if (template) {
-      invocation.push(this.buildCurlyBlockTemplate(name, template, blockParams, inverse));
+      invocation.push(
+        this.buildCurlyBlockTemplate(name, template, blockParams, inverse)
+      );
     } else {
-      invocation.push("}}");
+      invocation.push('}}');
     }
     this.assert.ok(true, `generated curly layout as ${layout}`);
     this.registerComponent("Curly", name, layout);
@@ -327,14 +355,14 @@ export abstract class AbstractRenderTest {
     let { args = {}, layout, template, attributes, inverse, name = GLIMMER_TEST_COMPONENT, blockParams = [] } = blueprint;
 
     if (attributes) {
-      throw new Error("Cannot pass attributes to curly components");
+      throw new Error('Cannot pass attributes to curly components');
     }
 
     let invocation: string | string[] = [];
     if (template) {
-      invocation.push("{{#component componentName");
+      invocation.push('{{#component componentName');
     } else {
-      invocation.push("{{component componentName");
+      invocation.push('{{component componentName');
     }
 
     let componentArgs = this.buildArgs(args);
@@ -345,9 +373,16 @@ export abstract class AbstractRenderTest {
     }
 
     if (template) {
-      invocation.push(this.buildCurlyBlockTemplate("component", template, blockParams, inverse));
+      invocation.push(
+        this.buildCurlyBlockTemplate(
+          'component',
+          template,
+          blockParams,
+          inverse
+        )
+      );
     } else {
-      invocation.push("}}");
+      invocation.push('}}');
     }
 
     this.assert.ok(true, `generated dynamic layout as ${layout}`);
@@ -363,16 +398,16 @@ export abstract class AbstractRenderTest {
     let html = "<" + tagName + " data-foo='bar'><p>hello</p>";
     this.renderTemplate(html);
 
-    let tag = "<" + tagName + ' data-foo="bar">';
-    let closing = "</" + tagName + ">";
-    let extra = "<p>hello</p>";
+    let tag = '<' + tagName + ' data-foo="bar">';
+    let closing = '</' + tagName + '>';
+    let extra = '<p>hello</p>';
     html = normalizeInnerHTML(this.element.innerHTML);
 
     QUnit.assert.pushResult({
       result: html === tag + extra || html === tag + closing + extra,
       actual: html,
       expected: tag + closing + extra,
-      message: tagName + " should be a void element"
+      message: tagName + ' should be a void element'
     });
   }
 
@@ -397,7 +432,10 @@ export abstract class AbstractRenderTest {
     this.setProperties(properties);
 
     this.env.begin();
-    expect(this.renderResult, "the test should call render() before rerender()").rerender();
+    expect(
+      this.renderResult,
+      'the test should call render() before rerender()'
+    ).rerender();
     this.env.commit();
   }
 
@@ -410,7 +448,7 @@ export abstract class AbstractRenderTest {
   }
 
   protected takeSnapshot() {
-    let snapshot: (Node | "up" | "down")[] = (this.snapshot = []);
+    let snapshot: (Node | 'up' | 'down')[] = (this.snapshot = []);
 
     let node = this.element.firstChild;
     let upped = false;
@@ -421,19 +459,19 @@ export abstract class AbstractRenderTest {
           node = node.nextSibling;
           upped = false;
         } else {
-          snapshot.push("up");
+          snapshot.push('up');
           node = node.parentNode;
         }
       } else {
         if (!isServerMarker(node)) snapshot.push(node);
 
         if (node.firstChild) {
-          snapshot.push("down");
+          snapshot.push('down');
           node = node.firstChild;
         } else if (node.nextSibling) {
           node = node.nextSibling;
         } else {
-          snapshot.push("up");
+          snapshot.push('up');
           node = node.parentNode;
           upped = true;
         }
@@ -455,7 +493,7 @@ export abstract class AbstractRenderTest {
 
   protected assertComponent(content: string, attrs: Object = {}) {
     let element = this.element.firstChild as HTMLDivElement;
-    assertEmberishElement(element, "div", attrs, content);
+    assertEmberishElement(element, 'div', attrs, content);
   }
 
   private runTask<T>(callback: () => T): T {
@@ -475,9 +513,13 @@ export abstract class AbstractRenderTest {
       except = [_except];
     }
 
-    let { oldSnapshot, newSnapshot } = normalize(this.snapshot, this.takeSnapshot(), except);
+    let { oldSnapshot, newSnapshot } = normalize(
+      this.snapshot,
+      this.takeSnapshot(),
+      except
+    );
 
-    this.assert.deepEqual(oldSnapshot, newSnapshot, "DOM nodes are stable");
+    this.assert.deepEqual(oldSnapshot, newSnapshot, 'DOM nodes are stable');
   }
 }
 
@@ -485,7 +527,9 @@ export class RenderTests extends AbstractRenderTest {
   protected element: HTMLDivElement;
   constructor(env: TestEnvironment) {
     super(env);
-    this.element = this.env.getAppendOperations().createElement("div") as HTMLDivElement;
+    this.element = this.env
+      .getAppendOperations()
+      .createElement('div') as HTMLDivElement;
   }
   renderTemplate(template: string): RenderResult {
     this.populateHelpers();
@@ -512,16 +556,27 @@ export class RehydrationTests extends RenderTests {
 
   setupClient(template: string = this.template) {
     let env = new TestEnvironment();
-    let div = document.createElement("div");
+    let div = document.createElement('div');
 
-    expect(this.serialized, "Should have serialized HTML from `this.renderServerSide()`");
+    expect(
+      this.serialized,
+      'Should have serialized HTML from `this.renderServerSide()`'
+    );
 
     div.innerHTML = this.serialized;
     this.element = div;
     this.setup({ template, env });
   }
 
-  setup({ template, context, env }: { template: string; context?: Dict<Opaque>; env?: TestEnvironment }) {
+  setup({
+    template,
+    context,
+    env
+  }: {
+    template: string;
+    context?: Dict<Opaque>;
+    env?: TestEnvironment;
+  }) {
     if (env) this.env = env;
     this.template = template;
     if (context) this.setProperties(context);
@@ -548,7 +603,7 @@ export class RehydrationTests extends RenderTests {
       self: new UpdatableReference(this.context),
       cursor: { element: this.element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
-      mode: "serialize"
+      mode: 'serialize'
     });
 
     this.takeSnapshot();
@@ -576,7 +631,7 @@ export class RehydrationTests extends RenderTests {
       self: new UpdatableReference(this.context),
       cursor: { element: this.element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
-      mode: "rehydrate"
+      mode: 'rehydrate'
     });
   }
 
@@ -588,7 +643,11 @@ export class RehydrationTests extends RenderTests {
   }
 }
 
-function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, except: Array<Node>) {
+function normalize(
+  oldSnapshot: NodesSnapshot,
+  newSnapshot: NodesSnapshot,
+  except: Array<Node>
+) {
   let oldIterator = new SnapshotIterator(oldSnapshot);
   let newIterator = new SnapshotIterator(newSnapshot);
 
@@ -636,7 +695,7 @@ class SnapshotIterator {
     let skipUntil = this.depth;
     this.nextNode();
 
-    if (this.snapshot[this.pos] === "down") {
+    if (this.snapshot[this.pos] === 'down') {
       do {
         this.nextNode();
       } while (this.depth !== skipUntil);
@@ -646,9 +705,9 @@ class SnapshotIterator {
   private nextNode(): IndividualSnapshot {
     let token = this.snapshot[this.pos++];
 
-    if (token === "down") {
+    if (token === 'down') {
       this.depth++;
-    } else if (token === "up") {
+    } else if (token === 'up') {
       this.depth--;
     }
 
@@ -664,7 +723,9 @@ function uniq(arr: any[]) {
 }
 
 function isServerMarker(node: Node) {
-  return node.nodeType === Node.COMMENT_NODE && node.nodeValue!.charAt(0) === "%";
+  return (
+    node.nodeType === Node.COMMENT_NODE && node.nodeValue!.charAt(0) === '%'
+  );
 }
 
 export interface ComponentTestMeta {
@@ -675,7 +736,7 @@ export interface ComponentTestMeta {
 function setTestingDescriptor(descriptor: PropertyDescriptor): void {
   let testFunction = descriptor.value as Function;
   descriptor.enumerable = true;
-  testFunction["isTest"] = true;
+  testFunction['isTest'] = true;
 }
 
 export function test(meta: ComponentTestMeta): MethodDecorator;
@@ -727,7 +788,10 @@ interface ComponentTests {
   fragment: Function[];
 }
 
-function componentModule(name: string, klass: typeof AbstractRenderTest & Function) {
+function componentModule(
+  name: string,
+  klass: typeof AbstractRenderTest & Function
+) {
   let tests: ComponentTests = {
     glimmer: [],
     curly: [],
@@ -737,13 +801,20 @@ function componentModule(name: string, klass: typeof AbstractRenderTest & Functi
   };
 
   function createTest(prop: string, test: any, skip = false) {
-    return (type: ComponentKind, klass: typeof AbstractRenderTest & Function) => {
+    return (
+      type: ComponentKind,
+      klass: typeof AbstractRenderTest & Function
+    ) => {
       let instance = new klass();
       instance.testType = type;
       if (skip) {
-        QUnit.skip(`${type.toLowerCase()}: ${prop}`, assert => test.call(instance, assert));
+        QUnit.skip(`${type.toLowerCase()}: ${prop}`, assert =>
+          test.call(instance, assert)
+        );
       } else {
-        QUnit.test(`${type.toLowerCase()}: ${prop}`, assert => test.call(instance, assert));
+        QUnit.test(`${type.toLowerCase()}: ${prop}`, assert =>
+          test.call(instance, assert)
+        );
       }
     };
   }
@@ -751,20 +822,20 @@ function componentModule(name: string, klass: typeof AbstractRenderTest & Functi
   for (let prop in klass.prototype) {
     const test = klass.prototype[prop];
     if (isTestFunction(test)) {
-      if (test["kind"] === undefined) {
-        let skip = test["skip"];
+      if (test['kind'] === undefined) {
+        let skip = test['skip'];
         switch (skip) {
-          case "glimmer":
+          case 'glimmer':
             tests.curly.push(createTest(prop, test));
             tests.dynamic.push(createTest(prop, test));
             tests.glimmer.push(createTest(prop, test, true));
             break;
-          case "curly":
+          case 'curly':
             tests.glimmer.push(createTest(prop, test));
             tests.dynamic.push(createTest(prop, test));
             tests.curly.push(createTest(prop, test, true));
             break;
-          case "dynamic":
+          case 'dynamic':
             tests.glimmer.push(createTest(prop, test));
             tests.curly.push(createTest(prop, test));
             tests.dynamic.push(createTest(prop, test, true));
@@ -788,21 +859,21 @@ function componentModule(name: string, klass: typeof AbstractRenderTest & Functi
         continue;
       }
 
-      let kind = test["kind"];
+      let kind = test['kind'];
 
-      if (kind === "curly") {
+      if (kind === 'curly') {
         tests.curly.push(createTest(prop, test));
       }
 
-      if (kind === "glimmer") {
+      if (kind === 'glimmer') {
         tests.glimmer.push(createTest(prop, test));
       }
 
-      if (kind === "dynamic") {
+      if (kind === 'dynamic') {
         tests.dynamic.push(createTest(prop, test));
       }
 
-      if (kind === "basic") {
+      if (kind === 'basic') {
         tests.basic.push(createTest(prop, test));
       }
 
@@ -816,19 +887,28 @@ function componentModule(name: string, klass: typeof AbstractRenderTest & Functi
   });
 }
 
-function nestedComponentModules(klass: typeof AbstractRenderTest & Function, tests: ComponentTests): void {
+function nestedComponentModules(
+  klass: typeof AbstractRenderTest & Function,
+  tests: ComponentTests
+): void {
   Object.keys(tests).forEach(type => {
     let formattedType = `${type[0].toUpperCase() + type.slice(1)}`;
     QUnit.module(`${formattedType}`, () => {
-      tests[type].forEach((t: (type: string, klass: typeof AbstractRenderTest & Function) => void) =>
-        t(formattedType, klass)
+      tests[
+        type
+      ].forEach(
+        (
+          t: (type: string, klass: typeof AbstractRenderTest & Function) => void
+        ) => t(formattedType, klass)
       );
     });
   });
 }
 
-function isTestFunction(value: any): value is (this: AbstractRenderTest, assert: typeof QUnit.assert) => void {
-  return typeof value === "function" && value.isTest;
+function isTestFunction(
+  value: any
+): value is (this: AbstractRenderTest, assert: typeof QUnit.assert) => void {
+  return typeof value === 'function' && value.isTest;
 }
 
 export function renderTemplate(template: string, options: RenderLayoutOptions & { env: TestEnvironment }) {
@@ -855,30 +935,44 @@ export function content(list: Content[]): string {
   let depth = 0;
 
   list.forEach(item => {
-    if (typeof item === "string") {
+    if (typeof item === 'string') {
       out.push(item);
-    } else if (item.marker === "open-block") {
+    } else if (item.marker === 'open-block') {
       out.push(`<!--%+block:${depth++}%-->`);
-    } else if (item.marker === "close-block") {
+    } else if (item.marker === 'close-block') {
       out.push(`<!--%-block:${--depth}%-->`);
     } else {
       out.push(`<!--%${item.marker}%-->`);
     }
   });
 
-  return out.join("");
+  return out.join('');
 }
 
-function assertEmberishElement(element: HTMLElement, tagName: string, attrs: Object, contents: string): void;
-function assertEmberishElement(element: HTMLElement, tagName: string, attrs: Object): void;
-function assertEmberishElement(element: HTMLElement, tagName: string, contents: string): void;
+function assertEmberishElement(
+  element: HTMLElement,
+  tagName: string,
+  attrs: Object,
+  contents: string
+): void;
+function assertEmberishElement(
+  element: HTMLElement,
+  tagName: string,
+  attrs: Object
+): void;
+function assertEmberishElement(
+  element: HTMLElement,
+  tagName: string,
+  contents: string
+): void;
 function assertEmberishElement(element: HTMLElement, tagName: string): void;
 function assertEmberishElement(...args: any[]): void {
   let element = args[0];
   let tagName, attrs, contents;
 
   if (args.length === 3) {
-    if (typeof args[1] === "string") [tagName, attrs, contents] = [args[1], {}, args[2]];
+    if (typeof args[1] === 'string')
+      [tagName, attrs, contents] = [args[1], {}, args[2]];
     else [tagName, attrs, contents] = [args[1], args[2], null];
   } else if (args.length === 2) {
     [tagName, attrs, contents] = [args[1], {}, null];
@@ -886,7 +980,10 @@ function assertEmberishElement(...args: any[]): void {
     [element, tagName, attrs, contents] = args;
   }
 
-  let fullAttrs = assign({ class: classes("ember-view"), id: regex(/^ember\d*$/) }, attrs);
+  let fullAttrs = assign(
+    { class: classes('ember-view'), id: regex(/^ember\d*$/) },
+    attrs
+  );
 
   equalsElement(element, tagName, fullAttrs, contents);
 }
