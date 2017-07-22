@@ -1,6 +1,18 @@
 import { Opaque, Dict } from "@glimmer/interfaces";
 import { SVG_NAMESPACE } from "@glimmer/runtime";
-import { RehydrationTests, RenderTests, module, test, strip, assertNodeTagName, EMPTY, OPEN, CLOSE, Content, TestEnvironment } from "@glimmer/test-helpers";
+import {
+  RenderTests,
+  module,
+  test,
+  strip,
+  assertNodeTagName,
+  EMPTY,
+  OPEN,
+  CLOSE,
+  Content,
+  TestEnvironment,
+  Rehydratable
+} from "@glimmer/test-helpers";
 
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
@@ -1136,15 +1148,5 @@ class Rehydration extends RenderingTest {
   }
 }
 
-function applyMixins(derivedCtor: any, baseCtors: any[]) {
-  baseCtors.forEach(baseCtor => {
-    Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
-      derivedCtor.prototype[name] = baseCtor.prototype[name];
-    });
-  });
-}
-
-applyMixins(Rehydration, [RehydrationTests]);
-
-module("Rehydration Tests", Rehydration);
-module("Initial Render Tests", RenderingTest);
+module("Rehydration Tests", class extends Rehydratable(Rehydration) {});
+module("Initial Render Tests", class extends RenderingTest {});
