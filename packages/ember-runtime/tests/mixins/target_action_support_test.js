@@ -180,3 +180,13 @@ QUnit.test('it should use a null value specified in the actionContext argument',
   });
   ok(true === obj.triggerAction({ actionContext: null }), 'a valid target and action were specified');
 });
+
+QUnit.test('it should throw deprecation for setting targetObject', function() {
+  expect(1);
+
+  expectDeprecation(()=> {
+    EmberObject.extend(TargetActionSupport).create({
+      targetObject: EmberObject.create({})
+    });
+  }, 'Using `targetObject` has been deprecated in TargetActionSupport Mixin');
+});
