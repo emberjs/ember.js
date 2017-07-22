@@ -44,5 +44,6 @@ export {
   module,
   test,
   Content,
-  renderTemplate
+  renderTemplate,
+  Rehydratable
 } from './lib/abstract-test-case';
