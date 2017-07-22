@@ -8,8 +8,8 @@ let config = {
   "disable_watching": true,
   "launchers": {
     "Node": {
-      "command": "./bin/run-node-tests.sh",
-      "output": "tap"
+      "command": "./bin/run-node-tests.js",
+      "protocol": "tap"
      }
   },
   "launch_in_dev": [

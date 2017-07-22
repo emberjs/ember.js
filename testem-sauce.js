@@ -9,7 +9,7 @@ module.exports = {
   "launchers":
     {
       "Node": {
-        "command": "./bin/run-node-tests.sh",
+        "command": "./bin/run-node-tests.js",
         "output": "tap"
       },
       "SL_Chrome_Current": {
