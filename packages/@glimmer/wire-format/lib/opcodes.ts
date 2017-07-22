@@ -7,10 +7,12 @@ export enum Opcodes {
   Block,
   Component,
   OpenElement,
+  OpenSplattedElement,
   FlushElement,
   CloseElement,
   StaticAttr,
   DynamicAttr,
+  AttrSplat,
   Yield,
   Partial,
 

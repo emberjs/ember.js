@@ -57,8 +57,8 @@ class ConcreteComponentLayoutBuilder<O extends CompilationOptions<any, any, any>
     this.inner = new WrappedBuilder(this.options, layout);
   }
 
-  fromLayout(componentName: string, layout: Template<TemplateMeta>) {
-    this.inner = new UnwrappedBuilder(this.options, componentName, layout);
+  fromLayout(layout: Template<TemplateMeta>) {
+    this.inner = new UnwrappedBuilder(this.options, layout);
   }
 
   scan(): ICompilableTemplate<ProgramSymbolTable> {
@@ -165,8 +165,6 @@ class WrappedBuilder implements InnerLayoutBuilder, ICompilableTemplate<ProgramS
 
     b.label('END');
 
-    b.didRenderLayout(Register.s0);
-
     if (dynamicTag) {
       b.load(Register.s1);
     }
@@ -187,14 +185,14 @@ class WrappedBuilder implements InnerLayoutBuilder, ICompilableTemplate<ProgramS
 }
 
 class UnwrappedBuilder implements InnerLayoutBuilder {
-  constructor(public options: InternalCompilationOptions, private componentName: string, private rawLayout: Template<TemplateMeta>) {}
+  constructor(public options: InternalCompilationOptions, private rawLayout: Template<TemplateMeta>) {}
 
   get tag(): ComponentTagBuilder {
     throw new Error('BUG: Cannot call `tag` on an UnwrappedBuilder');
   }
 
   scan(): ICompilableTemplate<ProgramSymbolTable> {
-    return this.rawLayout.asLayout(this.componentName);
+    return this.rawLayout.asLayout();
   }
 }
 

@@ -402,7 +402,6 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
 
   didCreateElement({ component }: EmberishGlimmerStateBucket, element: Element, operations: ElementOperations): void {
     component.element = element;
-
     operations.setAttribute('id', PrimitiveReference.create(`ember${component._guid}`), false, null);
     operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
   }
@@ -1089,7 +1088,9 @@ export class BasicComponentDefinition extends GenericComponentDefinition<BasicCo
   public capabilities: ComponentCapabilities = {
     dynamicLayout: false,
     prepareArgs: false,
-    createArgs: false
+    createArgs: false,
+    attributeHook: true,
+    elementHook: false
   };
 }
 
@@ -1098,7 +1099,9 @@ class StaticTaglessComponentDefinition extends GenericComponentDefinition<BasicC
   public capabilities: ComponentCapabilities = {
     dynamicLayout: false,
     prepareArgs: false,
-    createArgs: false
+    createArgs: false,
+    attributeHook: false,
+    elementHook: false
   };
 }
 
@@ -1121,7 +1124,9 @@ export class EmberishGlimmerComponentDefinition extends GenericComponentDefiniti
    public capabilities: ComponentCapabilities = {
     dynamicLayout: false,
     prepareArgs: false,
-    createArgs: true
+    createArgs: true,
+    attributeHook: true,
+    elementHook: false
   };
 }
 
@@ -1141,7 +1146,7 @@ export abstract class GenericComponentLayoutCompiler implements CompilableLayout
 
 class BasicComponentLayoutCompiler extends GenericComponentLayoutCompiler {
   compile(builder: ComponentLayoutBuilder<TestCompilationOptions>) {
-    builder.fromLayout(this.name, this.compileLayout(builder.options));
+    builder.fromLayout(this.compileLayout(builder.options));
   }
 }
 
@@ -1160,7 +1165,7 @@ class EmberishCurlyComponentLayoutCompiler extends GenericComponentLayoutCompile
 
 class EmberishGlimmerComponentLayoutCompiler extends GenericComponentLayoutCompiler {
   compile(builder: ComponentLayoutBuilder<TestCompilationOptions>) {
-    builder.fromLayout(this.name, this.compileLayout(builder.options));
+    builder.fromLayout(this.compileLayout(builder.options));
   }
 }
 

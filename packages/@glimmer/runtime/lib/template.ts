@@ -1,10 +1,12 @@
-import { Simple, Opaque, Option } from '@glimmer/interfaces';
+import CompilableTemplate from './syntax/compilable-template';
+import { Simple, Opaque, Option, BlockSymbolTable } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
-import { assign } from '@glimmer/util';
+import { assign, EMPTY_ARRAY } from '@glimmer/util';
 import {
   SerializedTemplateBlock,
   SerializedTemplateWithLazyBlock,
   TemplateMeta,
+  Statement
 } from '@glimmer/wire-format';
 import { ElementBuilder, NewElementBuilder } from './vm/element-builder';
 import { RehydrateBuilder } from './vm/rehydrate-builder';
@@ -53,7 +55,7 @@ export interface Template<T extends TemplateMeta = TemplateMeta> {
 
   // internal casts, these are lazily created and cached
   asEntryPoint(): TopLevelSyntax;
-  asLayout(componentName: string): TopLevelSyntax;
+  asLayout(): TopLevelSyntax;
   asPartial(): TopLevelSyntax;
   asBlock(): BlockSyntax;
 }
@@ -117,18 +119,19 @@ export default function templateFactory({ id: templateId, meta, block }: Seriali
 }
 
 class ScannableTemplate implements Template<TemplateMeta> {
-  private entryPoint: Option<TopLevelSyntax> = null;
   private layout: Option<TopLevelSyntax> = null;
   private partial: Option<TopLevelSyntax> = null;
   private block: Option<BlockSyntax> = null;
   private scanner: Scanner;
   public symbols: string[];
   public hasEval: boolean;
+  private statements: Statement[];
 
   constructor(public id: string, public meta: TemplateMeta, private options: CompilationOptions, rawBlock: SerializedTemplateBlock) {
     this.scanner = new Scanner(rawBlock, options);
     this.symbols = rawBlock.symbols;
     this.hasEval = rawBlock.hasEval;
+    this.statements = rawBlock.statements;
   }
 
   render({ env, self, parentNode, dynamicScope, mode }: RenderOptions) {
@@ -148,23 +151,29 @@ class ScannableTemplate implements Template<TemplateMeta> {
   }
 
   asEntryPoint(): TopLevelSyntax {
-    if (!this.entryPoint) this.entryPoint = this.scanner.scanEntryPoint(this.compilationMeta());
-    return this.entryPoint;
+    return this.asLayout();
   }
 
-  asLayout(componentName: string): TopLevelSyntax {
-    if (!this.layout) this.layout = this.scanner.scanLayout(this.compilationMeta(), componentName);
+  asLayout(): TopLevelSyntax {
+    if (!this.layout) this.layout = this.scanner.scanLayout(this.compilationMeta());
     return this.layout;
   }
 
   asPartial(): TopLevelSyntax {
-    if (!this.partial) this.partial = this.scanner.scanEntryPoint(this.compilationMeta(true));
+    if (!this.partial) this.partial = this.scanner.scanLayout(this.compilationMeta(true));
     return this.partial;
   }
 
   asBlock(): BlockSyntax {
-    if (!this.block) this.block = this.scanner.scanBlock(this.compilationMeta());
-    return this.block;
+    let { options, statements } = this;
+    let { block } = this;
+
+    if (!block) {
+      let meta = this.compilationMeta();
+      block = this.block = new CompilableTemplate<BlockSymbolTable>(statements, { meta, parameters: EMPTY_ARRAY }, options);
+    }
+
+    return block!;
   }
 
   private compilationMeta(asPartial = false) {

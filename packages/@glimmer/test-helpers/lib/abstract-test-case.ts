@@ -55,7 +55,7 @@ export class VersionedObject implements Tagged {
   }
 }
 
-export type ComponentKind = "Glimmer" | "Curly" | "Dynamic" | "Basic";
+export type ComponentKind = "Glimmer" | "Curly" | "Dynamic" | "Basic" | "Fragment";
 
 export interface ComponentBlueprint {
   layout: string;
@@ -108,7 +108,7 @@ export abstract class AbstractRenderTest {
   protected abstract element: HTMLElement;
   protected serialized: string;
   protected assert = QUnit.assert;
-  protected context = dict<Opaque>();
+  protected context: Dict<Opaque> = dict<Opaque>();
   protected renderResult: Option<RenderResult> = null;
   private snapshot: NodesSnapshot = [];
   private helpers = {};
@@ -134,6 +134,7 @@ export abstract class AbstractRenderTest {
         this.env.registerEmberishCurlyComponent(name, EmberishCurlyComponent, layout);
         break;
       case "Basic":
+      case "Fragment":
         this.env.registerBasicComponent(name, BasicComponent, layout);
         break;
     }
@@ -159,6 +160,12 @@ export abstract class AbstractRenderTest {
       case "Basic":
         invocation = this.buildBasicComponent(blueprint);
         break;
+      case "Fragment":
+        invocation = this.buildFragmentComponent(blueprint);
+        break;
+
+      default:
+        throw new Error(`Invalid test type ${this.testType}`);
     }
 
     return invocation;
@@ -169,7 +176,7 @@ export abstract class AbstractRenderTest {
     let sigil = "";
     let needsCurlies = false;
 
-    if (testType === "Glimmer" || testType === "Basic") {
+    if (testType === "Glimmer" || testType === "Basic" || testType === "Fragment") {
       sigil = "@";
       needsCurlies = true;
     }
@@ -298,11 +305,20 @@ export abstract class AbstractRenderTest {
     return invocation;
   }
 
+  private buildFragmentComponent(blueprint: ComponentBlueprint): string {
+    let { layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
+    let invocation = this.buildAngleBracketComponent(blueprint);
+    this.assert.ok(true, `generated fragment layout as ${layout}`);
+    this.registerComponent("Basic", name, `${layout}`);
+    this.assert.ok(true, `generated fragment invocation as ${invocation}`);
+    return invocation;
+  }
+
   private buildBasicComponent(blueprint: ComponentBlueprint): string {
     let { tag = "div", layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
     this.assert.ok(true, `generated basic layout as ${layout}`);
-    this.registerComponent("Basic", name, `<${tag}>${layout}</${tag}>`);
+    this.registerComponent("Basic", name, `<${tag} ...attributes>${layout}</${tag}>`);
     this.assert.ok(true, `generated basic invocation as ${invocation}`);
     return invocation;
   }
@@ -652,8 +668,8 @@ function isServerMarker(node: Node) {
 }
 
 export interface ComponentTestMeta {
-  kind?: "glimmer" | "curly" | "dynamic" | "basic";
-  skip?: boolean | "glimmer" | "curly" | "dynamic" | "basic";
+  kind?: "glimmer" | "curly" | "dynamic" | "basic" | "fragment";
+  skip?: boolean | "glimmer" | "curly" | "dynamic" | "basic" | "fragment";
 }
 
 function setTestingDescriptor(descriptor: PropertyDescriptor): void {
@@ -708,6 +724,7 @@ interface ComponentTests {
   curly: Function[];
   dynamic: Function[];
   basic: Function[];
+  fragment: Function[];
 }
 
 function componentModule(name: string, klass: typeof AbstractRenderTest & Function) {
@@ -715,7 +732,8 @@ function componentModule(name: string, klass: typeof AbstractRenderTest & Functi
     glimmer: [],
     curly: [],
     dynamic: [],
-    basic: []
+    basic: [],
+    fragment: []
   };
 
   function createTest(prop: string, test: any, skip = false) {
@@ -755,6 +773,8 @@ function componentModule(name: string, klass: typeof AbstractRenderTest & Functi
             if (test["kind"] === "basic") {
               // Basic components are not part of matrix testing
               tests.basic.push(createTest(prop, test, true));
+            } else if (test["kind"] === "fragment") {
+              tests.fragment.push(createTest(prop, test, true));
             } else {
               ["glimmer", "curly", "dynamic"].forEach(kind => {
                 tests[kind].push(createTest(prop, test, true));
@@ -784,6 +804,10 @@ function componentModule(name: string, klass: typeof AbstractRenderTest & Functi
 
       if (kind === "basic") {
         tests.basic.push(createTest(prop, test));
+      }
+
+      if (kind === "fragment") {
+        tests.fragment.push(createTest(prop, test));
       }
     }
   }
