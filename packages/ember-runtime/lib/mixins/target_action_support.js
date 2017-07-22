@@ -27,6 +27,14 @@ export default Mixin.create({
   action: null,
   actionContext: null,
 
+  init() {
+    deprecate(
+      'Do not not use the TargetActionSupport mixin.',
+      false,
+      { id: 'ember-runtime.target-action-support-mixin', until: '2.16.0' }
+    );
+  },
+
   actionContextObject: computed('actionContext', function() {
     let actionContext = get(this, 'actionContext');
 
