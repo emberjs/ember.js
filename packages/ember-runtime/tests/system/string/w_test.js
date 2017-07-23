@@ -29,3 +29,10 @@ QUnit.test('\'one two three\'.w() with tabs', function() {
     deepEqual('one\ttwo  three'.w(), ['one', 'two', 'three']);
   }
 });
+
+QUnit.test('\' one two three \'.w() with leading and trailing whitespace => [\'one\',\'two\', \'three\']', function() {
+  deepEqual(w(' one two three '), ['one', 'two', 'three']);
+  if (ENV.EXTEND_PROTOTYPES.String) {
+    deepEqual(' one two three '.w(), ['one', 'two', 'three']);
+  }
+});

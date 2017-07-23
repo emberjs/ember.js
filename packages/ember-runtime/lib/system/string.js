@@ -89,7 +89,7 @@ function loc(str, formats) {
 }
 
 function w(str) {
-  return str.split(/\s+/);
+  return str.trim().split(/\s+/);
 }
 
 function decamelize(str) {
