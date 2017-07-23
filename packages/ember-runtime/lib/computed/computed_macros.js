@@ -251,8 +251,7 @@ export function bool(dependentKey) {
 export function match(dependentKey, regexp) {
   return computed(dependentKey, function() {
     let value = get(this, dependentKey);
-
-    return typeof value === 'string' ? regexp.test(value) : false;
+    return regexp.test(value);
   });
 }
 
