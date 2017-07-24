@@ -35,7 +35,6 @@ export {
   VersionedObject,
   SimpleRootReference,
   AbstractRenderTest,
-  RehydrationTests,
   RenderTests,
   OPEN,
   CLOSE,
