@@ -113,7 +113,6 @@ export abstract class AbstractRenderTest {
   private snapshot: NodesSnapshot = [];
   private helpers = {};
   public testType: ComponentKind;
-  template: Option<Template<Opaque>>;
 
   constructor(protected env = new TestEnvironment()) {}
 
@@ -472,6 +471,7 @@ export abstract class AbstractRenderTest {
 
 export class RenderTests extends AbstractRenderTest {
   protected element: HTMLDivElement;
+  protected template: Option<Template<Opaque>>;
   constructor(env: TestEnvironment) {
     super(env);
     this.element = this.env.getAppendOperations().createElement("div") as HTMLDivElement;
@@ -486,101 +486,91 @@ export class RenderTests extends AbstractRenderTest {
   }
 }
 
-export type Constructor<T> = new(...args: any[]) => T;
+export class RehydrationTests extends RenderTests {
+  serialized: string;
+  setupServer(template: string = this.rawTemplate) {
+    let doc = new SimpleDOM.Document();
+    let env = new TestEnvironment({
+      document: doc,
+      appendOperations: new NodeDOMTreeConstruction(doc)
+    });
+    this.setup({ template, env });
+  }
 
-export function Rehydratable<T extends Constructor<AbstractRenderTest>>(Tests: T) {
-  return class extends Tests {
-    element: HTMLElement;
-    serialized: string;
-    doc: any;
-    setupServer(template: string = this.rawTemplate) {
-      let doc = this.doc = new SimpleDOM.Document();
-      let env = new TestEnvironment({
-        document: doc,
-        appendOperations: new NodeDOMTreeConstruction(doc)
-      });
+  setupClient(template: string = this.rawTemplate) {
+    let env = new TestEnvironment();
+    let div = document.createElement("div");
 
-      this.setup({ template, env });
+    expect(this.serialized, "Should have serialized HTML from `this.renderServerSide()`");
+
+    div.innerHTML = this.serialized;
+    this.element = div;
+    this.setup({ template, env });
+  }
+
+  setup({ template, context, env }: { template: string; context?: Dict<Opaque>; env?: TestEnvironment }) {
+    if (env) this.env = env;
+    this.template = this.compile(template);
+    if (context) this.setProperties(context);
+  }
+
+  assertServerOutput(..._expected: Content[]) {
+    let serialized = this.serialize();
+    equalTokens(serialized, content([OPEN, ..._expected, CLOSE]));
+    this.serialized = serialized;
+  }
+
+  renderServerSide(context?: Dict<Opaque>): void {
+    if (context) {
+      this.context = context;
     }
+    this.setupServer();
+    this.populateHelpers();
+    this.element = this.env.getAppendOperations().createElement("div") as HTMLDivElement;
+    let template = expect(this.template, "Must set up a template before calling renderServerSide");
+    // Emulate server-side render
+    renderTemplate(this.env, template, {
+      self: new UpdatableReference(this.context),
+      parentNode: this.element,
+      dynamicScope: new TestDynamicScope(),
+      mode: "serialize"
+    });
 
-    setupClient(template: string = this.rawTemplate) {
-      let env = new TestEnvironment();
-      this.doc = document;
-      let div = this.doc.createElement("div");
+    this.takeSnapshot();
+    this.serialized = this.serialize();
+  }
 
-      expect(this.serialized, "Should have serialized HTML from `this.renderServerSide()`");
+  serialize() {
+    let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+    let serialized = serializer.serializeChildren(this.element);
+    return serialized;
+  }
 
-      div.innerHTML = this.serialized;
-      this.element = div;
-      this.setup({ template, env });
+  renderClientSide(context?: Dict<Opaque>) {
+    if (context) {
+      this.context = context;
     }
+    this.setupClient();
+    this.populateHelpers();
+    let { env } = this;
+    this.template = this.compile(this.rawTemplate);
+    this.element = env.getAppendOperations().createElement("div") as HTMLDivElement;
+    let template = expect(this.template, "Must set up a template before calling renderClientSide");
+    // Client-side rehydration
+    this.renderResult = renderTemplate(env, template, {
+      self: new UpdatableReference(this.context),
+      parentNode: this.element,
+      dynamicScope: new TestDynamicScope(),
+      mode: "rehydrate"
+    });
+  }
 
-    setup({ template, context, env }: { template: string; context?: Dict<Opaque>; env?: TestEnvironment }) {
-      if (env) this.env = env;
-      this.template = this.compile(template);
-      if (context) this.setProperties(context);
-    }
-
-    assertServerOutput(..._expected: Content[]) {
-      let serialized = this.serialize();
-      equalTokens(serialized, content(['<main>', OPEN, ..._expected, CLOSE, '</main>']));
-      this.serialized = serialized;
-    }
-
-    renderServerSide(context?: Dict<Opaque>): void {
-      if (context) {
-        this.context = context;
-      }
-      this.setupServer();
-      this.populateHelpers();
-      this.element = this.doc.createElement("main") as HTMLDivElement;
-      let template = expect(this.template, "Must set up a template before calling renderServerSide");
-      // Emulate server-side render
-      renderTemplate(this.env, template, {
-        self: new UpdatableReference(this.context),
-        parentNode: this.element,
-        dynamicScope: new TestDynamicScope(),
-        mode: "serialize"
-      });
-
-      this.doc.appendChild(this.element);
-
-      this.takeSnapshot();
-      this.serialized = this.serialize();
-    }
-
-    serialize() {
-      let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
-      let serialized = serializer.serializeChildren(this.doc);
-      return serialized;
-    }
-
-    renderClientSide(context?: Dict<Opaque>) {
-      if (context) {
-        this.context = context;
-      }
-      this.setupClient();
-      this.populateHelpers();
-      let { env } = this;
-      this.template = this.compile(this.rawTemplate);
-      this.element = this.doc.createElement("div") as HTMLDivElement;
-      let template = expect(this.template, "Must set up a template before calling renderClientSide");
-      // Client-side rehydration
-      this.renderResult = renderTemplate(env, template, {
-        self: new UpdatableReference(this.context),
-        parentNode: this.element,
-        dynamicScope: new TestDynamicScope(),
-        mode: "rehydrate"
-      });
-    }
-
-    renderTemplate(template: Template<Opaque>): RenderResult {
-      this.template = template;
-      this.renderServerSide();
-      this.renderClientSide();
-      return this.renderResult!;
-    }
-  };
+  renderTemplate(template: Template<Opaque>): RenderResult {
+    this.template = template;
+    this.renderServerSide();
+    this.renderClientSide();
+    return this.renderResult!;
+  }
 }
 
 function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, except: Array<Node>) {
