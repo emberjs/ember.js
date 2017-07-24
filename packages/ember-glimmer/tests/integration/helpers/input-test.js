@@ -425,6 +425,13 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
       keyCode: 65
     });
   }
+
+  ['@test GH#14727 can render a file input after having had render an input of other type']() {
+    this.render(`{{input type="text"}}{{input type="file"}}`);
+
+    this.assert.equal(this.$input()[0].type, 'text');
+    this.assert.equal(this.$input()[1].type, 'file');
+  }
 });
 
 moduleFor('Helpers test: {{input}} with dynamic type', class extends InputRenderingTest {
