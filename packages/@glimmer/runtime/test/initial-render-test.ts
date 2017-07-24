@@ -1,4 +1,4 @@
-import { Opaque, Dict } from "@glimmer/interfaces";
+import { Opaque } from "@glimmer/interfaces";
 import { SVG_NAMESPACE } from "@glimmer/runtime";
 import {
   RenderTests,
@@ -9,8 +9,6 @@ import {
   EMPTY,
   OPEN,
   CLOSE,
-  Content,
-  TestEnvironment,
   Rehydratable
 } from "@glimmer/test-helpers";
 
@@ -1063,16 +1061,7 @@ abstract class RenderingTest extends RenderTests {
   }
 }
 
-class Rehydration extends RenderingTest {
-  setupClient: (template?: string) => void;
-  setupServer: (template?: string) => void;
-  renderServerSide: (context?: Dict<Opaque>) => void;
-  renderClientSide: (context?: Dict<Opaque>) => void;
-  assertServerOutput: (..._expected: Content[]) => void;
-  serialize: () => string;
-  serialized: string;
-  setup: ({ template, context, env }: { template: string, context?: Dict<Opaque>, env?: TestEnvironment }) => void;
-
+class Rehydration extends Rehydratable(class extends RenderingTest {}) {
   @test "mismatched text nodes"() {
     this.setupServer("{{content}}");
     this.renderServerSide({ content: 'hello' });
@@ -1148,5 +1137,5 @@ class Rehydration extends RenderingTest {
   }
 }
 
-module("Rehydration Tests", class extends Rehydratable(Rehydration) {});
-module("Initial Render Tests", class extends RenderingTest {});
+module("Rehydration Tests", Rehydration);
+module("Initial Render Tests", RenderingTest);
