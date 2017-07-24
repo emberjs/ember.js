@@ -35,6 +35,7 @@ export {
   VersionedObject,
   SimpleRootReference,
   AbstractRenderTest,
+  RehydrationTests,
   RenderTests,
   OPEN,
   CLOSE,
@@ -43,6 +44,5 @@ export {
   module,
   test,
   Content,
-  renderTemplate,
-  Rehydratable
+  renderTemplate
 } from './lib/abstract-test-case';

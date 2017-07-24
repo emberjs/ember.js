@@ -1,16 +1,6 @@
-import { Opaque } from "@glimmer/interfaces";
+import { Opaque, Dict } from "@glimmer/interfaces";
 import { SVG_NAMESPACE } from "@glimmer/runtime";
-import {
-  RenderTests,
-  module,
-  test,
-  strip,
-  assertNodeTagName,
-  EMPTY,
-  OPEN,
-  CLOSE,
-  Rehydratable
-} from "@glimmer/test-helpers";
+import { RehydrationTests, RenderTests, module, test, strip, assertNodeTagName, EMPTY, OPEN, CLOSE, Content, TestEnvironment } from "@glimmer/test-helpers";
 
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
@@ -1061,7 +1051,16 @@ abstract class RenderingTest extends RenderTests {
   }
 }
 
-class Rehydration extends Rehydratable(class extends RenderingTest {}) {
+class Rehydration extends RenderingTest {
+  setupClient: (template?: string) => void;
+  setupServer: (template?: string) => void;
+  renderServerSide: (context?: Dict<Opaque>) => void;
+  renderClientSide: (context?: Dict<Opaque>) => void;
+  assertServerOutput: (..._expected: Content[]) => void;
+  serialize: () => string;
+  serialized: string;
+  setup: ({ template, context, env }: { template: string, context?: Dict<Opaque>, env?: TestEnvironment }) => void;
+
   @test "mismatched text nodes"() {
     this.setupServer("{{content}}");
     this.renderServerSide({ content: 'hello' });
@@ -1136,6 +1135,16 @@ class Rehydration extends Rehydratable(class extends RenderingTest {}) {
     this.assertStableNodes({ except: clientNode2 as Text });
   }
 }
+
+function applyMixins(derivedCtor: any, baseCtors: any[]) {
+  baseCtors.forEach(baseCtor => {
+    Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+      derivedCtor.prototype[name] = baseCtor.prototype[name];
+    });
+  });
+}
+
+applyMixins(Rehydration, [RehydrationTests]);
 
 module("Rehydration Tests", Rehydration);
 module("Initial Render Tests", RenderingTest);
