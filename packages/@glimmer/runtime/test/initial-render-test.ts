@@ -1,6 +1,25 @@
 import { Opaque, Dict } from "@glimmer/interfaces";
-import { SVG_NAMESPACE } from "@glimmer/runtime";
-import { RehydrationTests, RenderTests, module, test, strip, assertNodeTagName, EMPTY, OPEN, CLOSE, Content, TestEnvironment } from "@glimmer/test-helpers";
+import { SVG_NAMESPACE, Template, RenderResult } from "@glimmer/runtime";
+import {
+  RenderTests,
+  module,
+  test,
+  strip,
+  assertNodeTagName,
+  EMPTY,
+  OPEN,
+  CLOSE,
+  renderTemplate,
+  TestEnvironment,
+  equalTokens,
+  Content,
+  TestDynamicScope,
+  content
+} from "@glimmer/test-helpers";
+import * as SimpleDOM from "simple-dom";
+import { NodeDOMTreeConstruction } from "@glimmer/node";
+import { expect } from "@glimmer/util";
+import { UpdatableReference } from "@glimmer/object-reference";
 
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
@@ -1052,15 +1071,95 @@ abstract class RenderingTest extends RenderTests {
 }
 
 class Rehydration extends RenderingTest {
-  setupClient: (template?: string) => void;
-  setupServer: (template?: string) => void;
-  renderServerSide: (context?: Dict<Opaque>) => void;
-  renderClientSide: (context?: Dict<Opaque>) => void;
-  assertServerOutput: (..._expected: Content[]) => void;
-  serialize: () => string;
   serialized: string;
-  setup: ({ template, context, env }: { template: string, context?: Dict<Opaque>, env?: TestEnvironment }) => void;
+  doc: any;
+  setupServer(template: string = this.rawTemplate) {
+    let doc = this.doc = new SimpleDOM.Document();
+    let env = new TestEnvironment({
+      document: doc,
+      appendOperations: new NodeDOMTreeConstruction(doc)
+    });
 
+    this.setup({ template, env });
+  }
+
+  setupClient(template: string = this.rawTemplate) {
+    let env = new TestEnvironment();
+    this.doc = document;
+    let div = this.doc.createElement("div");
+
+    expect(this.serialized, "Should have serialized HTML from `this.renderServerSide()`");
+
+    div.innerHTML = this.serialized;
+    this.element = div;
+    this.setup({ template, env });
+  }
+
+  setup({ template, context, env }: { template: string; context?: Dict<Opaque>; env?: TestEnvironment }) {
+    if (env) this.env = env;
+    this.template = this.compile(template);
+    if (context) this.setProperties(context);
+  }
+
+  assertServerOutput(..._expected: Content[]) {
+    let serialized = this.serialize();
+    equalTokens(serialized, content(['<main>', OPEN, ..._expected, CLOSE, '</main>']));
+    this.serialized = serialized;
+  }
+
+  renderServerSide(context?: Dict<Opaque>): void {
+    if (context) {
+      this.context = context;
+    }
+    this.setupServer();
+    this.populateHelpers();
+    this.element = this.doc.createElement("main") as HTMLDivElement;
+    let template = expect(this.template, "Must set up a template before calling renderServerSide");
+    // Emulate server-side render
+    renderTemplate(this.env, template, {
+      self: new UpdatableReference(this.context),
+      parentNode: this.element,
+      dynamicScope: new TestDynamicScope(),
+      mode: "serialize"
+    });
+
+    this.doc.appendChild(this.element);
+
+    this.takeSnapshot();
+    this.serialized = this.serialize();
+  }
+
+  serialize() {
+    let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+    let serialized = serializer.serializeChildren(this.doc);
+    return serialized;
+  }
+
+  renderClientSide(context?: Dict<Opaque>) {
+    if (context) {
+      this.context = context;
+    }
+    this.setupClient();
+    this.populateHelpers();
+    let { env } = this;
+    this.template = this.compile(this.rawTemplate);
+    this.element = this.doc.createElement("div") as HTMLDivElement;
+    let template = expect(this.template, "Must set up a template before calling renderClientSide");
+    // Client-side rehydration
+    this.renderResult = renderTemplate(env, template, {
+      self: new UpdatableReference(this.context),
+      parentNode: this.element,
+      dynamicScope: new TestDynamicScope(),
+      mode: "rehydrate"
+    });
+  }
+
+  renderTemplate(template: Template<Opaque>): RenderResult {
+    this.template = template;
+    this.renderServerSide();
+    this.renderClientSide();
+    return this.renderResult!;
+  }
   @test "mismatched text nodes"() {
     this.setupServer("{{content}}");
     this.renderServerSide({ content: 'hello' });
@@ -1135,16 +1234,6 @@ class Rehydration extends RenderingTest {
     this.assertStableNodes({ except: clientNode2 as Text });
   }
 }
-
-function applyMixins(derivedCtor: any, baseCtors: any[]) {
-  baseCtors.forEach(baseCtor => {
-    Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
-      derivedCtor.prototype[name] = baseCtor.prototype[name];
-    });
-  });
-}
-
-applyMixins(Rehydration, [RehydrationTests]);
 
 module("Rehydration Tests", Rehydration);
 module("Initial Render Tests", RenderingTest);
