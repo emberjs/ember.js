@@ -1,45 +1,38 @@
 import {
   Option,
-  SymbolTable,
+  SymbolTable
 } from '@glimmer/interfaces';
 import { Statement } from '@glimmer/wire-format';
-import { CompiledDynamicTemplate, CompiledStaticTemplate } from '../compiled/blocks';
-import Environment from '../environment';
+import { Handle } from '../environment';
 import { debugSlice } from '../opcodes';
 import { compileStatements } from './functions';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { CompilableTemplate as ICompilableTemplate } from './interfaces';
+import { CompilationOptions } from '../internal-interfaces';
+
+export { ICompilableTemplate };
 
 export default class CompilableTemplate<S extends SymbolTable> implements ICompilableTemplate<S> {
-  private compiledStatic: Option<CompiledStaticTemplate> = null;
-  private compiledDynamic: Option<CompiledDynamicTemplate<S>> = null;
+  private compiled: Option<Handle> = null;
 
-  constructor(public statements: Statement[], public symbolTable: S) {}
+  constructor(public statements: Statement[], public symbolTable: S, private options: CompilationOptions) {}
 
-  compileStatic(env: Environment): CompiledStaticTemplate {
-    let { compiledStatic } = this;
-    if (!compiledStatic) {
-      let builder = compileStatements(this.statements, this.symbolTable.meta, env);
-      builder.finalize();
-      let handle = builder.start;
-      if (DEBUG) {
-        let start = env.program.heap.size() - env.program.heap.sizeof(handle);
-        let end = start + env.program.heap.sizeof(handle);
-        debugSlice(env, start, end);
-      }
-      compiledStatic = this.compiledStatic = new CompiledStaticTemplate(handle);
+  compile(): Handle {
+    let { compiled } = this;
+    if (compiled !== null) return compiled;
+
+    let { options } = this;
+
+    let builder = compileStatements(this.statements, this.symbolTable.meta, options);
+    let handle = builder.commit(options.program.heap);
+
+    if (DEBUG) {
+      let { program, program: { heap } } = options;
+      let start = heap.getaddr(handle);
+      let end = start + heap.sizeof(handle);
+      debugSlice(program, start, end);
     }
 
-    return compiledStatic;
-  }
-
-  compileDynamic(env: Environment): CompiledDynamicTemplate<S> {
-    let { compiledDynamic } = this;
-    if (!compiledDynamic) {
-      let staticBlock = this.compileStatic(env);
-      compiledDynamic = new CompiledDynamicTemplate(staticBlock.handle, this.symbolTable);
-    }
-
-    return compiledDynamic;
+    return (this.compiled = handle);
   }
 }

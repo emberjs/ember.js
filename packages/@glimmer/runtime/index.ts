@@ -10,7 +10,8 @@ export {
 
 export {
   CompilableLayout,
-  compileLayout
+  ComponentLayoutBuilder,
+  scanLayout
 } from './lib/compiler';
 
 export {
@@ -19,14 +20,6 @@ export {
 } from './lib/opcode-builder';
 
 export {
-  CompiledStaticTemplate,
-  CompiledDynamicTemplate,
-  CompiledDynamicBlock,
-  CompiledDynamicProgram
-} from './lib/compiled/blocks';
-
-export {
-  Register,
   debugSlice
 } from './lib/opcodes';
 
@@ -45,15 +38,18 @@ export {
   Inlines as InlineMacros,
   BlockMacro,
   MissingBlockMacro,
-  compileList,
   expr as compileExpression
 } from './lib/syntax/functions';
 
 export {
   CompilableTemplate,
-  Block,
-  Program
+  BlockSyntax,
+  TopLevelSyntax
 } from './lib/syntax/interfaces';
+
+export {
+  Macros
+} from './lib/syntax/macros';
 
 export { PublicVM as VM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
 
@@ -76,9 +72,12 @@ export { SafeString } from './lib/upsert';
 
 export {
   Scope,
+  Handle,
   default as Environment,
   Helper,
   DynamicScope,
+  Program,
+  CompilationOptions
 } from './lib/environment';
 
 export {
@@ -86,13 +85,13 @@ export {
 } from './lib/partial';
 
 export {
-  Component,
-  ComponentClass,
+  ComponentCapabilities,
   ComponentManager,
   ComponentDefinition,
-  ComponentLayoutBuilder,
-  ComponentAttrsBuilder,
+  WithDynamicTagName,
   PreparedArguments,
+  WithDynamicLayout,
+  WithStaticLayout,
   isComponentDefinition
 } from './lib/component/interfaces';
 

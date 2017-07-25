@@ -9,17 +9,22 @@ import {
 
 import * as WireFormat from '@glimmer/wire-format';
 
-import { Block } from './syntax/interfaces';
+import { BlockSyntax } from './syntax/interfaces';
 
 import { PublicVM } from './vm/append';
+import { Specifier, Resolver } from './internal-interfaces';
 
-export type ComponentArgs = [WireFormat.Core.Params, WireFormat.Core.Hash, Option<Block>, Option<Block>];
+export type ComponentArgs = [WireFormat.Core.Params, WireFormat.Core.Hash, Option<BlockSyntax>, Option<BlockSyntax>];
 
 export interface DynamicComponentDefinition {
-  (vm: PublicVM, args: IArguments, meta: WireFormat.TemplateMeta): VersionedPathReference<Option<ComponentDefinition<Opaque>>>;
+  (
+    vm: PublicVM,
+    args: IArguments,
+    meta: WireFormat.TemplateMeta,
+    resolver: Resolver
+  ): VersionedPathReference<Option<ComponentDefinition<Opaque>>>;
 }
 
 export interface ComponentBuilder {
-  static(definition: ComponentDefinition<Opaque>, args: ComponentArgs): void;
-  dynamic(definitionArgs: ComponentArgs, getDefinition: DynamicComponentDefinition, args: ComponentArgs): void;
+  static(definition: Specifier, args: ComponentArgs): void;
 }

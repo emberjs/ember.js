@@ -1,26 +1,14 @@
 import { VersionedPathReference } from '@glimmer/reference';
-import { Blocks, Inlines, populateBuiltins } from './syntax/functions';
 
-import { Constants } from './environment/constants';
+import { Constants, LazyConstants } from './environment/constants';
 
-import { Simple } from '@glimmer/interfaces';
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { Reference, OpaqueIterable } from '@glimmer/reference';
 import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import { DynamicAttributeFactory, defaultDynamicAttributes } from './vm/attributes/dynamic';
 
 import {
-  PartialDefinition
-} from './partial';
-
-import {
-  Component,
-  ComponentManager,
-  ComponentDefinition
-} from './component/interfaces';
-
-import {
-  ModifierManager
+  ModifierManager, Modifier
 } from './modifier/interfaces';
 
 import {
@@ -34,18 +22,17 @@ import {
   expect
 } from '@glimmer/util';
 
-import {
-  TemplateMeta
-} from '@glimmer/wire-format';
-
-import { Block } from './syntax/interfaces';
-
 import { PublicVM } from './vm/append';
 
+import { Macros } from './syntax/macros';
 import { IArguments } from './vm/arguments';
 import { DEBUG } from "@glimmer/local-debug-flags";
+import { Simple, Unique, Resolver, BlockSymbolTable, Recast } from "@glimmer/interfaces";
+import { Component, ComponentManager } from "@glimmer/runtime/lib/internal-interfaces";
+import { TemplateMeta } from "@glimmer/wire-format";
 
-export type ScopeSlot = VersionedPathReference<Opaque> | Option<Block>;
+export type ScopeBlock = [Handle, BlockSymbolTable];
+export type ScopeSlot = VersionedPathReference<Opaque> | Option<ScopeBlock>;
 
 export interface DynamicScope {
   get(key: string): VersionedPathReference<Opaque>;
@@ -97,8 +84,8 @@ export class Scope {
     return this.get<VersionedPathReference<Opaque>>(symbol);
   }
 
-  getBlock(symbol: number): Block {
-    return this.get<Block>(symbol);
+  getBlock(symbol: number): ScopeBlock {
+    return this.get<ScopeBlock>(symbol);
   }
 
   getEvalScope(): Option<Dict<ScopeSlot>> {
@@ -121,8 +108,8 @@ export class Scope {
     this.set<VersionedPathReference<Opaque>>(symbol, value);
   }
 
-  bindBlock(symbol: number, value: Option<Block>) {
-    this.set<Option<Block>>(symbol, value);
+  bindBlock(symbol: number, value: Option<ScopeBlock>) {
+    this.set<Option<ScopeBlock>>(symbol, value);
   }
 
   bindEvalScope(map: Option<Dict<ScopeSlot>>) {
@@ -145,50 +132,50 @@ export class Scope {
     return new Scope(this.slots.slice(), this.callerScope, this.evalScope, this.partialMap);
   }
 
-  private get<T>(index: number): T {
+  private get<T extends ScopeSlot>(index: number): T {
     if (index >= this.slots.length) {
       throw new RangeError(`BUG: cannot get $${index} from scope; length=${this.slots.length}`);
     }
 
-    return this.slots[index] as any as T;
+    return this.slots[index] as T;
   }
 
-  private set<T>(index: number, value: T): void {
+  private set<T extends ScopeSlot>(index: number, value: T): void {
     if (index >= this.slots.length) {
       throw new RangeError(`BUG: cannot get $${index} from scope; length=${this.slots.length}`);
     }
 
-    this.slots[index] = value as any;
+    this.slots[index] = value;
   }
 }
 
 class Transaction {
-  public scheduledInstallManagers: ModifierManager<Opaque>[] = [];
-  public scheduledInstallModifiers: Object[] = [];
-  public scheduledUpdateModifierManagers: ModifierManager<Opaque>[] = [];
-  public scheduledUpdateModifiers: Object[] = [];
+  public scheduledInstallManagers: ModifierManager[] = [];
+  public scheduledInstallModifiers: Modifier[] = [];
+  public scheduledUpdateModifierManagers: ModifierManager[] = [];
+  public scheduledUpdateModifiers: Modifier[] = [];
   public createdComponents: Component[] = [];
-  public createdManagers: ComponentManager<Component>[] = [];
+  public createdManagers: ComponentManager[] = [];
   public updatedComponents: Component[] = [];
-  public updatedManagers: ComponentManager<Component>[] = [];
+  public updatedManagers: ComponentManager[] = [];
   public destructors: Destroyable[] = [];
 
-  didCreate<T>(component: T, manager: ComponentManager<T>) {
+  didCreate(component: Component, manager: ComponentManager) {
     this.createdComponents.push(component);
     this.createdManagers.push(manager);
   }
 
-  didUpdate<T>(component: T, manager: ComponentManager<T>) {
+  didUpdate(component: Component, manager: ComponentManager) {
     this.updatedComponents.push(component);
     this.updatedManagers.push(manager);
   }
 
-  scheduleInstallModifier<T>(modifier: T, manager: ModifierManager<T>) {
+  scheduleInstallModifier(modifier: Modifier, manager: ModifierManager) {
     this.scheduledInstallManagers.push(manager);
     this.scheduledInstallModifiers.push(modifier);
   }
 
-  scheduleUpdateModifier<T>(modifier: T, manager: ModifierManager<T>) {
+  scheduleUpdateModifier(modifier: Modifier, manager: ModifierManager) {
     this.scheduledUpdateModifierManagers.push(manager);
     this.scheduledUpdateModifiers.push(modifier);
   }
@@ -259,11 +246,7 @@ export class Opcode {
   }
 }
 
-export interface Handle {
-  "[is-handle]": true;
-}
-
-type unsafe = any;
+export type Handle = Unique<"Handle">;
 
 enum TableSlotState {
   Allocated,
@@ -302,13 +285,13 @@ export class Heap {
     this.table.push(this.offset, 0, 0);
     let handle = this.handle;
     this.handle += 3;
-    return handle as unsafe as Handle;
+    return handle as Recast<number, Handle>;
   }
 
   finishMalloc(handle: Handle): void {
-    let start = this.table[handle as unsafe as number];
+    let start = this.table[handle as Recast<Handle, number>];
     let finish = this.offset;
-    this.table[(handle as unsafe as number) + 1] = finish - start;
+    this.table[(handle as Recast<Handle, number>) + 1] = finish - start;
   }
 
   size(): number {
@@ -319,25 +302,25 @@ export class Heap {
   // may move it. However, it is legal to use this address
   // multiple times between compactions.
   getaddr(handle: Handle): number {
-    return this.table[handle as unsafe as number];
+    return this.table[handle as Recast<Handle, number>];
   }
 
   gethandle(address: number): Handle {
     this.table.push(address, 0, TableSlotState.Pointer);
     let handle = this.handle;
     this.handle += 3;
-    return handle as unsafe as Handle;
+    return handle as Recast<number, Handle>;
   }
 
   sizeof(handle: Handle): number {
     if (DEBUG) {
-      return this.table[(handle as unsafe as number) + 1];
+      return this.table[(handle as Recast<Handle, number>) + 1];
     }
     return -1;
   }
 
   free(handle: Handle): void {
-    this.table[(handle as unsafe as number) + 2] = 1;
+    this.table[(handle as Recast<Handle, number>) + 2] = 1;
   }
 
   compact(): void {
@@ -379,10 +362,10 @@ export class Program {
   public constants: Constants;
   public heap: Heap;
 
-  constructor() {
+  constructor(resolver: Resolver<any>) {
     this.heap = new Heap();
     this._opcode = new Opcode(this.heap);
-    this.constants = new Constants();
+    this.constants = new LazyConstants(resolver);
   }
 
   opcode(offset: number): Opcode {
@@ -391,23 +374,27 @@ export class Program {
   }
 }
 
+export interface CompilationOptions<T extends TemplateMeta, Specifier, R extends Resolver<Specifier, T>> {
+  resolver: R;
+  program: Program;
+  macros: Macros;
+}
+
 export abstract class Environment {
   protected updateOperations: DOMChanges;
   protected appendOperations: DOMTreeConstruction;
-  private _macros: Option<{ blocks: Blocks, inlines: Inlines }> = null;
   private _transaction: Option<Transaction> = null;
-  public program = new Program();
 
   constructor({ appendOperations, updateOperations }: { appendOperations: DOMTreeConstruction, updateOperations: DOMChanges }) {
     this.appendOperations = appendOperations;
     this.updateOperations = updateOperations;
   }
 
-  toConditionalReference(reference: Reference<Opaque>): Reference<boolean> {
+  toConditionalReference(reference: Reference): Reference<boolean> {
     return new ConditionalReference(reference);
   }
 
-  abstract iterableFor(reference: Reference<Opaque>, key: string): OpaqueIterable;
+  abstract iterableFor(reference: Reference, key: string): OpaqueIterable;
   abstract protocolForURL(s: string): string;
 
   getAppendOperations(): DOMTreeConstruction { return this.appendOperations; }
@@ -426,19 +413,19 @@ export abstract class Environment {
     return expect(this._transaction!, 'must be in a transaction');
   }
 
-  didCreate<T>(component: T, manager: ComponentManager<T>) {
+  didCreate(component: Component, manager: ComponentManager) {
     this.transaction.didCreate(component, manager);
   }
 
-  didUpdate<T>(component: T, manager: ComponentManager<T>) {
+  didUpdate(component: Component, manager: ComponentManager) {
     this.transaction.didUpdate(component, manager);
   }
 
-  scheduleInstallModifier<T>(modifier: T, manager: ModifierManager<T>) {
+  scheduleInstallModifier(modifier: Modifier, manager: ModifierManager) {
     this.transaction.scheduleInstallModifier(modifier, manager);
   }
 
-  scheduleUpdateModifier<T>(modifier: T, manager: ModifierManager<T>) {
+  scheduleUpdateModifier(modifier: Modifier, manager: ModifierManager) {
     this.transaction.scheduleUpdateModifier(modifier, manager);
   }
 
@@ -455,31 +442,6 @@ export abstract class Environment {
   attributeFor(element: Simple.Element, attr: string, _isTrusting: boolean, _namespace: Option<string> = null): DynamicAttributeFactory {
     return defaultDynamicAttributes(element, attr);
   }
-
-  macros(): { blocks: Blocks, inlines: Inlines } {
-    let macros = this._macros;
-    if (!macros) {
-      this._macros = macros = this.populateBuiltins();
-    }
-
-    return macros;
-  }
-
-  populateBuiltins(): { blocks: Blocks, inlines: Inlines } {
-    return populateBuiltins();
-  }
-
-  abstract hasHelper(helperName: string, meta: TemplateMeta): boolean;
-  abstract lookupHelper(helperName: string, meta: TemplateMeta): Helper;
-
-  abstract hasModifier(modifierName: string, meta: TemplateMeta): boolean;
-  abstract lookupModifier(modifierName: string, meta: TemplateMeta): ModifierManager<Opaque>;
-
-  abstract hasComponentDefinition(tagName: string, meta: TemplateMeta): boolean;
-  abstract getComponentDefinition(tagName: string, meta: TemplateMeta): ComponentDefinition<Opaque>;
-
-  abstract hasPartial(partialName: string, meta: TemplateMeta): boolean;
-  abstract lookupPartial(PartialName: string, meta: TemplateMeta): PartialDefinition<TemplateMeta>;
 }
 
 export default Environment;

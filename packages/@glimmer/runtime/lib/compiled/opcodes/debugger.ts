@@ -2,7 +2,8 @@ import { Opaque } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { dict } from '@glimmer/util';
 import { Scope } from '../../environment';
-import { APPEND_OPCODES, Op } from '../../opcodes';
+import { APPEND_OPCODES } from '../../opcodes';
+import { Op } from '@glimmer/vm';
 
 export type DebugGet = ((path: string) => Opaque);
 
@@ -66,7 +67,7 @@ class ScopeInspector {
 }
 
 APPEND_OPCODES.add(Op.Debugger, (vm, { op1: _symbols, op2: _evalInfo }) => {
-  let symbols = vm.constants.getOther<string[]>(_symbols);
+  let symbols = vm.constants.getStringArray(_symbols);
   let evalInfo = vm.constants.getArray(_evalInfo);
   let inspector = new ScopeInspector(vm.scope(), symbols, evalInfo);
   callback(vm.getSelf().value(), path => inspector.get(path).value());
