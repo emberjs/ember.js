@@ -1,25 +1,13 @@
-import { BlockSymbolTable, CompilationMeta, Opaque, Option, ProgramSymbolTable } from '@glimmer/interfaces';
-import {
-  map,
-  VersionedPathReference,
-} from '@glimmer/reference';
-import {
-  assert,
-  Dict,
-  dict,
-  EMPTY_ARRAY,
-  unwrap,
-} from '@glimmer/util';
+import { CompilationMeta, Option, ProgramSymbolTable } from '@glimmer/interfaces';
+import { assert, dict, EMPTY_ARRAY, unwrap } from '@glimmer/util';
+import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
-import { CompiledDynamicBlock, CompiledDynamicProgram } from '../compiled/blocks';
-import OpcodeBuilder from '../compiled/opcodes/builder';
-import { DynamicInvoker } from '../compiled/opcodes/vm';
-import Environment, { ScopeSlot, Handle } from '../environment';
-import { Register } from '../opcodes';
-import * as ClientSide from '../syntax/client-side';
-import { PublicVM, VM } from '../vm';
-import { IArguments } from '../vm/arguments';
-import { Block } from './interfaces';
+import OpcodeBuilder, { LazyOpcodeBuilder } from '../compiled/opcodes/builder';
+import { Handle, Heap } from '../environment';
+import { hasStaticLayout } from '../component/interfaces';
+import { CompilationOptions, ComponentDefinition } from '../internal-interfaces';
+import * as ClientSide from './client-side';
+import { BlockSyntax } from './interfaces';
 import RawInlineBlock from './raw-block';
 import Ops = WireFormat.Ops;
 
@@ -70,12 +58,14 @@ STATEMENTS.add(Ops.FlushElement, (_sexp: S.FlushElement, builder: OpcodeBuilder)
 });
 
 STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder: OpcodeBuilder) => {
-  let { env, meta } = builder;
+  let { options: { resolver }, meta } = builder;
   let [, name, params, hash] = sexp;
 
-  if (env.hasModifier(name, meta.templateMeta)) {
+  let specifier = resolver.lookupModifier(name, meta.templateMeta);
+
+  if (specifier) {
     builder.compileArgs(params, hash, true);
-    builder.modifier(env.lookupModifier(name, meta.templateMeta));
+    builder.modifier(specifier);
   } else {
     throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
   }
@@ -135,7 +125,7 @@ CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayo
 STATEMENTS.add(Ops.Append, (sexp: S.Append, builder: OpcodeBuilder) => {
   let [, value, trusting] = sexp;
 
-  let { inlines } = builder.env.macros();
+  let { inlines } = builder.options.macros;
   let returned = inlines.compile(sexp, builder) || value;
 
   if (returned === true) return;
@@ -163,89 +153,39 @@ STATEMENTS.add(Ops.Block, (sexp: S.Block, builder: OpcodeBuilder) => {
   let templateBlock = template && template.scan();
   let inverseBlock = inverse && inverse.scan();
 
-  let { blocks } = builder.env.macros();
+  let { blocks } = builder.options.macros;
   blocks.compile(name, params, hash, templateBlock, inverseBlock, builder);
 });
-
-export class InvokeDynamicLayout implements DynamicInvoker<ProgramSymbolTable> {
-  constructor(private attrs: Option<Block>) {}
-
-  invoke(vm: VM, layout: Option<CompiledDynamicProgram>) {
-    let { symbols, hasEval } = layout!.symbolTable as ProgramSymbolTable;
-    let stack = vm.stack;
-
-    let scope = vm.pushRootScope(symbols.length + 1, true);
-    scope.bindSelf(stack.pop<VersionedPathReference<Opaque>>());
-
-    scope.bindBlock(symbols.indexOf(ATTRS_BLOCK) + 1, this.attrs);
-
-    let lookup: Option<Dict<ScopeSlot>> = null;
-    let $eval: Option<number> = -1;
-
-    if (hasEval) {
-      $eval = symbols.indexOf('$eval') + 1;
-      lookup = dict<ScopeSlot>();
-    }
-
-    let callerNames = stack.pop<string[]>();
-
-    for (let i=callerNames.length - 1; i>=0; i--) {
-      let symbol = symbols.indexOf(callerNames[i]);
-      let value = stack.pop<VersionedPathReference<Opaque>>();
-
-      if (symbol !== -1) scope.bindSymbol(symbol + 1, value);
-      if (hasEval) lookup![callerNames[i]] = value;
-    }
-
-    let numPositionalArgs = stack.pop<number>();
-
-    assert(typeof numPositionalArgs === 'number', '[BUG] Incorrect value of positional argument count found during invoke-dynamic-layout.');
-
-    // Currently we don't support accessing positional args in templates, so just throw them away
-    stack.pop(numPositionalArgs);
-
-    let inverseSymbol = symbols.indexOf('&inverse');
-    let inverse = stack.pop<Option<Block>>();
-
-    if (inverseSymbol !== -1) {
-      scope.bindBlock(inverseSymbol + 1, inverse);
-    }
-
-    if (lookup) lookup['&inverse'] = inverse;
-
-    let defaultSymbol = symbols.indexOf('&default');
-    let defaultBlock = stack.pop<Option<Block>>();
-
-    if (defaultSymbol !== -1) {
-      scope.bindBlock(defaultSymbol + 1, defaultBlock);
-    }
-
-    if (lookup) lookup['&default'] = defaultBlock;
-    if (lookup) scope.bindEvalScope(lookup);
-
-    vm.pushFrame();
-    vm.call(layout!.handle);
-  }
-
-  toJSON() {
-    return { GlimmerDebug: '<invoke-dynamic-layout>' };
-  }
-}
 
 STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
   let [, tag, _attrs, args, block] = sexp;
 
-  if (builder.env.hasComponentDefinition(tag, builder.meta.templateMeta)) {
-    let child = builder.template(block);
+  let options = builder.options;
+  let resolver = options.resolver;
+  let specifier = resolver.lookupComponent(tag, builder.meta.templateMeta);
+
+  if (specifier) {
+    let definition = resolver.resolve<ComponentDefinition>(specifier);
+    let manager = definition.manager;
+
     let attrs: WireFormat.Statement[] = [
       [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true],
       ..._attrs,
       [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false]
     ];
-    let attrsBlock = new RawInlineBlock(builder.meta, attrs, EMPTY_ARRAY);
-    let definition = builder.env.getComponentDefinition(tag, builder.meta.templateMeta);
-    builder.pushComponentManager(definition);
-    builder.invokeComponent(attrsBlock, null, args, child && child.scan());
+    let attrsBlock = new RawInlineBlock(attrs, EMPTY_ARRAY, builder.meta, builder.options);
+    let child = builder.template(block);
+
+    if (hasStaticLayout(definition, manager)) {
+      let layoutSpecifier = manager.getLayout(definition, resolver);
+      let layout = resolver.resolve<{ symbolTable: ProgramSymbolTable, template: Handle }>(layoutSpecifier);
+
+      builder.pushComponentManager(specifier);
+      builder.invokeStaticComponent(definition, layout, attrsBlock, null, args, false, child && child.scan());
+    } else {
+      builder.pushComponentManager(specifier);
+      builder.invokeComponent(attrsBlock, null, args, false, child && child.scan());
+    }
   } else if (block && block.parameters.length) {
     throw new Error(`Compile Error: Cannot find component ${tag}`);
   } else {
@@ -266,69 +206,10 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
   }
 });
 
-export class PartialInvoker implements DynamicInvoker<ProgramSymbolTable> {
-  constructor(private outerSymbols: string[], private evalInfo: WireFormat.Core.EvalInfo) {}
-
-  invoke(vm: VM, _partial: Option<CompiledDynamicProgram>) {
-    let partial = unwrap(_partial);
-    let partialSymbols = partial.symbolTable.symbols;
-    let outerScope = vm.scope();
-    let partialScope = vm.pushRootScope(partialSymbols.length, false);
-    partialScope.bindCallerScope(outerScope.getCallerScope());
-    partialScope.bindEvalScope(outerScope.getEvalScope());
-    partialScope.bindSelf(outerScope.getSelf());
-
-    let { evalInfo, outerSymbols } = this;
-
-    let locals = dict<VersionedPathReference<Opaque>>();
-
-    for (let i = 0; i < evalInfo.length; i++) {
-      let slot = evalInfo[i];
-      let name = outerSymbols[slot - 1];
-      let ref  = outerScope.getSymbol(slot);
-      locals[name] = ref;
-    }
-
-    let evalScope = outerScope.getEvalScope()!;
-
-    for (let i = 0; i < partialSymbols.length; i++) {
-      let name = partialSymbols[i];
-      let symbol = i + 1;
-      let value = evalScope[name];
-
-      if (value !== undefined) partialScope.bind(symbol, value);
-    }
-
-    partialScope.bindPartialMap(locals);
-
-    vm.pushFrame();
-    vm.call(partial.handle);
-  }
-}
-
 STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder: OpcodeBuilder) => {
   let [, name, evalInfo] = sexp;
 
-  let { templateMeta, symbols } = builder.meta;
-
-  function helper(vm: PublicVM, args: IArguments) {
-    let { env } = vm;
-    let nameRef = args.positional.at(0);
-
-    return map(nameRef, (n) => {
-      if (typeof n === 'string' && n) {
-        if (!env.hasPartial(n, templateMeta)) {
-          throw new Error(`Could not find a partial named "${n}"`);
-        }
-
-        return env.lookupPartial(n, templateMeta);
-      } else if (n) {
-        throw new Error(`Could not find a partial named "${String(n)}"`);
-      } else {
-        return null;
-      }
-    });
-  }
+  let { meta: { templateMeta, symbols } } = builder;
 
   builder.startLabels();
 
@@ -337,21 +218,14 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder: OpcodeBuilder) => {
   builder.returnTo('END');
 
   expr(name, builder);
-  builder.pushImmediate(1);
-  builder.pushImmediate(EMPTY_ARRAY);
-  builder.pushArgs(true);
-  builder.helper(helper);
 
   builder.dup();
-  builder.test('simple');
 
   builder.enter(2);
 
   builder.jumpUnless('ELSE');
 
-  builder.getPartialTemplate();
-  builder.compileDynamicBlock();
-  builder.invokeDynamic(new PartialInvoker(symbols, evalInfo));
+  builder.invokePartial(templateMeta, symbols, evalInfo);
   builder.popScope();
   builder.popFrame();
 
@@ -365,58 +239,10 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder: OpcodeBuilder) => {
   builder.stopLabels();
 });
 
-class InvokeDynamicYield implements DynamicInvoker<BlockSymbolTable> {
-  constructor(private callerCount: number) {}
-
-  invoke(vm: VM, block: Option<CompiledDynamicBlock>) {
-    let { callerCount } = this;
-    let stack = vm.stack;
-
-    if (!block) {
-      // To balance the pop{Frame,Scope}
-      vm.pushFrame();
-      vm.pushCallerScope();
-
-      return;
-    }
-
-    let table = block.symbolTable;
-    let locals = table.parameters; // always present in inline blocks
-
-    let calleeCount = locals ? locals.length : 0;
-    let count = Math.min(callerCount, calleeCount);
-
-    vm.pushFrame();
-    vm.pushCallerScope(calleeCount > 0);
-
-    let scope = vm.scope();
-
-    for (let i=0; i<count; i++) {
-      scope.bindSymbol(locals![i], stack.fromBase<VersionedPathReference<Opaque>>(callerCount-i));
-    }
-
-    vm.call(block.handle);
-  }
-
-  toJSON() {
-    return { GlimmerDebug: `<invoke-dynamic-yield caller-count=${this.callerCount}>` };
-  }
-}
-
 STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder: OpcodeBuilder) => {
   let [, to, params] = sexp;
 
-  let count = compileList(params, builder);
-
-  builder.getBlock(to);
-  builder.compileDynamicBlock();
-  builder.invokeDynamic(new InvokeDynamicYield(count));
-  builder.popScope();
-  builder.popFrame();
-
-  if (count) {
-    builder.pop(count);
-  }
+  builder.yield(to, params);
 });
 
 STATEMENTS.add(Ops.Debugger, (sexp: WireFormat.Statements.Debugger, builder: OpcodeBuilder) => {
@@ -430,7 +256,6 @@ STATEMENTS.add(Ops.ClientSideStatement, (sexp: WireFormat.Statements.ClientSide,
 });
 
 const EXPRESSIONS = new Compilers<WireFormat.TupleExpression>();
-const CLIENT_SIDE_EXPRS = new Compilers<ClientSide.ClientSideExpression>(1);
 
 import E = WireFormat.Expressions;
 import C = WireFormat.Core;
@@ -439,16 +264,20 @@ export function expr(expression: WireFormat.Expression, builder: OpcodeBuilder):
   if (Array.isArray(expression)) {
     EXPRESSIONS.compile(expression, builder);
   } else {
-    builder.primitive(expression);
+    builder.pushPrimitiveReference(expression);
   }
 }
 
 EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder: OpcodeBuilder) => {
+  let { options: { resolver }, meta } = builder;
   let name = sexp[1];
 
-  if (builder.env.hasHelper(name, builder.meta.templateMeta)) {
-    EXPRESSIONS.compile([Ops.Helper, name, EMPTY_ARRAY, null], builder);
-  } else if (builder.meta.asPartial) {
+  let specifier = resolver.lookupHelper(name, meta.templateMeta);
+
+  if (specifier) {
+    builder.compileArgs(null, null, true);
+    builder.helper(specifier);
+  } else if (meta.asPartial) {
     builder.resolveMaybeLocal(name);
   } else {
     builder.getVariable(0);
@@ -464,17 +293,24 @@ EXPRESSIONS.add(Ops.Concat, ((sexp: E.Concat, builder: OpcodeBuilder) => {
   builder.concat(parts.length);
 }) as any);
 
-CLIENT_SIDE_EXPRS.add(ClientSide.Ops.FunctionExpression, (sexp: ClientSide.FunctionExpression, builder: OpcodeBuilder) => {
-  builder.function(sexp[2]);
-});
-
 EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
-  let { env, meta } = builder;
+  let { options: { resolver }, meta } = builder;
   let [, name, params, hash] = sexp;
 
-  if (env.hasHelper(name, meta.templateMeta)) {
+  // TODO: triage this in the WF compiler
+  if (name === 'component') {
+    assert(params.length, 'SYNTAX ERROR: component helper requires at least one argument');
+
+    let [definition, ...restArgs] = params;
+    builder.curryComponent(definition, restArgs, hash, true);
+    return;
+  }
+
+  let specifier = resolver.lookupHelper(name, meta.templateMeta);
+
+  if (specifier) {
     builder.compileArgs(params, hash, true);
-    builder.helper(env.lookupHelper(name, meta.templateMeta));
+    builder.helper(specifier);
   } else {
     throw new Error(`Compile Error: ${name} is not a helper`);
   }
@@ -506,7 +342,7 @@ EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder: OpcodeBuilder) => 
 });
 
 EXPRESSIONS.add(Ops.Undefined, (_sexp, builder) => {
-  return builder.primitive(undefined);
+  return builder.pushPrimitiveReference(undefined);
 });
 
 EXPRESSIONS.add(Ops.HasBlock, (sexp: E.HasBlock, builder: OpcodeBuilder) => {
@@ -517,22 +353,8 @@ EXPRESSIONS.add(Ops.HasBlockParams, (sexp: E.HasBlockParams, builder: OpcodeBuil
   builder.hasBlockParams(sexp[1]);
 });
 
-EXPRESSIONS.add(Ops.ClientSideExpression, (sexp: E.ClientSide, builder: OpcodeBuilder) => {
-  CLIENT_SIDE_EXPRS.compile(sexp as ClientSide.ClientSideExpression, builder);
-});
-
-export function compileList(params: Option<WireFormat.Expression[]>, builder: OpcodeBuilder): number {
-  if (!params) return 0;
-
-  for (let i = 0; i < params.length; i++) {
-    expr(params[i], builder);
-  }
-
-  return params.length;
-}
-
-export type BlockMacro = (params: C.Params, hash: C.Hash, template: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder) => void;
-export type MissingBlockMacro = (name: string, params: C.Params, hash: C.Hash, template: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder) => void;
+export type BlockMacro = (params: C.Params, hash: C.Hash, template: Option<BlockSyntax>, inverse: Option<BlockSyntax>, builder: OpcodeBuilder) => void;
+export type MissingBlockMacro = (name: string, params: C.Params, hash: C.Hash, template: Option<BlockSyntax>, inverse: Option<BlockSyntax>, builder: OpcodeBuilder) => void;
 
 export class Blocks {
   private names = dict<number>();
@@ -548,7 +370,7 @@ export class Blocks {
     this.missing = func;
   }
 
-  compile(name: string, params: C.Params, hash: C.Hash, template: Option<Block>, inverse: Option<Block>, builder: OpcodeBuilder): void {
+  compile(name: string, params: C.Params, hash: C.Hash, template: Option<BlockSyntax>, inverse: Option<BlockSyntax>, builder: OpcodeBuilder): void {
     let index = this.names[name];
 
     if (index === undefined) {
@@ -652,19 +474,19 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     expr(params[0], builder);
 
-    builder.test('environment');
+    builder.toBoolean();
 
     builder.enter(1);
 
     builder.jumpUnless('ELSE');
 
-    builder.invokeStatic(unwrap(template));
+    builder.invokeStaticBlock(unwrap(template));
 
     if (inverse) {
       builder.jump('EXIT');
 
       builder.label('ELSE');
-      builder.invokeStatic(inverse);
+      builder.invokeStaticBlock(inverse);
 
       builder.label('EXIT');
       builder.exit();
@@ -706,19 +528,19 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     expr(params[0], builder);
 
-    builder.test('environment');
+    builder.toBoolean();
 
     builder.enter(1);
 
     builder.jumpIf('ELSE');
 
-    builder.invokeStatic(unwrap(template));
+    builder.invokeStaticBlock(unwrap(template));
 
     if (inverse) {
       builder.jump('EXIT');
 
       builder.label('ELSE');
-      builder.invokeStatic(inverse);
+      builder.invokeStaticBlock(inverse);
 
       builder.label('EXIT');
       builder.exit();
@@ -761,19 +583,19 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     expr(params[0], builder);
 
     builder.dup();
-    builder.test('environment');
+    builder.toBoolean();
 
     builder.enter(2);
 
     builder.jumpUnless('ELSE');
 
-    builder.invokeStatic(unwrap(template), 1);
+    builder.invokeStaticBlock(unwrap(template), 1);
 
     if (inverse) {
       builder.jump('EXIT');
 
       builder.label('ELSE');
-      builder.invokeStatic(inverse);
+      builder.invokeStaticBlock(inverse);
 
       builder.label('EXIT');
       builder.exit();
@@ -823,7 +645,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     if (hash && hash[0][0] === 'key') {
       expr(hash[1][0], builder);
     } else {
-      builder.primitive(null);
+      builder.pushPrimitiveReference(null);
     }
 
     expr(params[0], builder);
@@ -846,7 +668,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.iterate('BREAK');
 
     builder.label('BODY');
-    builder.invokeStatic(unwrap(template), 2);
+    builder.invokeStaticBlock(unwrap(template), 2);
     builder.pop(2);
     builder.exit();
     builder.return();
@@ -859,7 +681,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       builder.jump('EXIT');
 
       builder.label('ELSE');
-      builder.invokeStatic(inverse);
+      builder.invokeStaticBlock(inverse);
 
       builder.label('EXIT');
       builder.exit();
@@ -902,14 +724,13 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     expr(params[0], builder);
 
     builder.dup();
-    builder.test('simple');
 
     builder.enter(3);
 
     builder.jumpUnless('ELSE');
 
     builder.pushRemoteElement();
-    builder.invokeStatic(unwrap(template));
+    builder.invokeStaticBlock(unwrap(template));
     builder.popRemoteElement();
 
     builder.label('ELSE');
@@ -926,15 +747,31 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     if (hash) {
       let [names, expressions] = hash;
 
-      compileList(expressions, builder);
+      builder.compileParams(expressions);
 
       builder.pushDynamicScope();
       builder.bindDynamicScope(names);
-      builder.invokeStatic(unwrap(template));
+      builder.invokeStaticBlock(unwrap(template));
       builder.popDynamicScope();
     } else {
-      builder.invokeStatic(unwrap(template));
+      builder.invokeStaticBlock(unwrap(template));
     }
+  });
+
+  blocks.add('component', (_params, hash, template, inverse, builder) => {
+    assert(_params && _params.length, 'SYNTAX ERROR: #component requires at least one argument');
+
+    let [definition, ...params] = _params!;
+    builder.dynamicComponent(definition, params, hash, true, template, inverse);
+  });
+
+  inlines.add('component', (_name, _params, hash, builder) => {
+    assert(_params && _params.length, 'SYNTAX ERROR: component helper requires at least one argument');
+
+    let [definition, ...params] = _params!;
+    builder.dynamicComponent(definition, params, hash, true, null, null);
+
+    return true;
   });
 
   return { blocks, inlines };
@@ -944,11 +781,8 @@ export function compileStatement(statement: WireFormat.Statement, builder: Opcod
   STATEMENTS.compile(statement, builder);
 }
 
-export function compileStatements(statements: WireFormat.Statement[], meta: CompilationMeta, env: Environment): {
-  start: Handle;
-  finalize(): Handle;
-} {
-  let b = new OpcodeBuilder(env, meta);
+export function compileStatements(statements: WireFormat.Statement[], meta: CompilationMeta, env: CompilationOptions): { commit(heap: Heap): Handle } {
+  let b = new LazyOpcodeBuilder(env, meta);
 
   for (let i = 0; i < statements.length; i++) {
     compileStatement(statements[i], b);

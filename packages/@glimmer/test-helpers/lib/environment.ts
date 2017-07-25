@@ -5,8 +5,7 @@ import {
 
   // Compiler
   CompilableLayout,
-  CompiledDynamicProgram,
-  compileLayout,
+  scanLayout,
 
   // Environment
   Environment,
@@ -20,21 +19,17 @@ import {
   PartialDefinition,
 
   // Components
-  Component,
+  ComponentCapabilities,
   ComponentManager,
   ComponentDefinition,
   ComponentLayoutBuilder,
-  ComponentArgs,
   PreparedArguments,
+  WithStaticLayout,
 
   // Arguments
   Arguments,
   CapturedArguments,
   CapturedNamedArguments,
-
-  // Syntax Classes
-  BlockMacros,
-  InlineMacros,
 
   // References
   PrimitiveReference,
@@ -46,16 +41,16 @@ import {
   getDynamicVar,
 
   Template,
-  isComponentDefinition,
-  CompiledDynamicTemplate,
-  NULL_REFERENCE,
-  Helper,
+  templateFactory,
+  Macros,
+  TopLevelSyntax,
+  Program,
+  WithDynamicTagName,
+  WithDynamicLayout,
+  CompilationOptions,
+  Handle,
+  CompilableTemplate
 } from "@glimmer/runtime";
-
-import {
-  compile as rawCompile,
-  TestCompileOptions
-} from "./helpers";
 
 import {
   Option,
@@ -64,7 +59,8 @@ import {
   Opaque,
   assign,
   dict,
-  EMPTY_ARRAY
+  EMPTY_ARRAY,
+  unreachable
 } from '@glimmer/util';
 
 import GlimmerObject from "@glimmer/object";
@@ -81,7 +77,6 @@ import {
   OpaqueIterable,
   AbstractIterable,
   IterationItem,
-  VersionedPathReference,
   combine,
   isConst
 } from "@glimmer/reference";
@@ -92,10 +87,11 @@ import {
 
 import * as WireFormat from '@glimmer/wire-format';
 
-import {
-  Simple, BlockSymbolTable, ProgramSymbolTable, unsafe
-} from "@glimmer/interfaces";
+import { Simple, Resolver, Unique, ProgramSymbolTable, Recast } from "@glimmer/interfaces";
 import { TemplateMeta } from "@glimmer/wire-format";
+import { precompile } from "@glimmer/compiler";
+
+export type _ = Unique<any>;
 
 type KeyFor<T> = (item: Opaque, index: T) => string;
 
@@ -238,25 +234,22 @@ export type Attrs = Dict<any>;
 export type AttrsDiff = { oldAttrs: Option<Attrs>, newAttrs: Attrs };
 
 export class BasicComponent {
-  public attrs: Attrs;
   public element: Element;
   public bounds: Bounds;
-
-  constructor(attrs: Attrs) {
-    this.attrs = attrs;
-  }
 }
 
 export class EmberishCurlyComponent extends GlimmerObject {
   public static positionalParams: string[] | string;
 
   public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
+  public layout: TestSpecifier;
+  public name: string;
   public tagName: Option<string> = null;
   public attributeBindings: Option<string[]> = null;
   public attrs: Attrs;
   public element: Element;
   public bounds: Bounds;
-  public parentView: Component = null;
+  public parentView: Option<EmberishCurlyComponent> = null;
   public args: CapturedNamedArguments;
 
   static create(args: { attrs: Attrs }): EmberishCurlyComponent {
@@ -283,7 +276,7 @@ export class EmberishGlimmerComponent extends GlimmerObject {
   public attrs: Attrs;
   public element: Element;
   public bounds: Bounds;
-  public parentView: Component = null;
+  public parentView: Option<EmberishGlimmerComponent> = null;
 
   static create(args: { attrs: Attrs }): EmberishGlimmerComponent {
     return super.create(args) as EmberishGlimmerComponent;
@@ -304,55 +297,43 @@ export class EmberishGlimmerComponent extends GlimmerObject {
   didRender() { }
 }
 
-export interface BasicStateBucket {
-  args: CapturedNamedArguments;
-  component: BasicComponent;
-}
-
-class BasicComponentManager implements ComponentManager<BasicStateBucket> {
+class BasicComponentManager implements WithStaticLayout<BasicComponent, TestSpecifier, TestResolver> {
   prepareArgs(): null {
-    return null;
+    throw unreachable();
   }
 
-  create(_env: Environment, definition: BasicComponentDefinition, _args: Arguments): BasicStateBucket {
-    let args = _args.named.capture();
+  create(_env: Environment, definition: BasicComponentDefinition): BasicComponent {
     let klass = definition.ComponentClass || BasicComponent;
-    let component = new klass(args.value());
-
-    return { args, component };
+    return new klass();
   }
 
-  layoutFor(definition: BasicComponentDefinition, _bucket: BasicStateBucket, env: TestEnvironment): CompiledDynamicProgram {
-    let layout = env.compiledLayouts[definition.name];
-
-    if (layout) {
-      return layout;
+  getLayout({ name, layout }: BasicComponentDefinition, resolver: TestResolver): TestSpecifier {
+    if (!layout) {
+      throw new Error('BUG: missing static layout');
     }
 
-    return env.compiledLayouts[definition.name] = compileLayout(new BasicComponentLayoutCompiler(definition.name, definition.layoutString), env);
+    return resolver.compileTemplate(name, layout, BasicComponentLayoutCompiler);
   }
 
-  getSelf({ component }: BasicStateBucket): PathReference<Opaque> {
+  getSelf(component: BasicComponent): PathReference<Opaque> {
     return new UpdatableReference(component);
   }
 
-  getTag({ args: { tag } }: BasicStateBucket): Tag {
-    return tag;
+  getTag(): Tag {
+    return CONSTANT_TAG;
   }
 
-  didCreateElement({ component }: BasicStateBucket, element: Element): void {
+  didCreateElement(component: BasicComponent, element: Element): void {
     component.element = element;
   }
 
-  didRenderLayout({ component }: BasicStateBucket, bounds: Bounds): void {
+  didRenderLayout(component: BasicComponent, bounds: Bounds): void {
     component.bounds = bounds;
   }
 
   didCreate(): void { }
 
-  update({ component, args } : BasicStateBucket): void {
-    component.attrs = args.value();
-  }
+  update(): void { }
 
   didUpdateLayout(): void { }
 
@@ -366,14 +347,12 @@ class BasicComponentManager implements ComponentManager<BasicStateBucket> {
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 
 class StaticTaglessComponentManager extends BasicComponentManager {
-  layoutFor(definition: StaticTaglessComponentDefinition, _component: BasicStateBucket, env: TestEnvironment): CompiledDynamicProgram {
-    let layout = env.compiledLayouts[definition.name];
-
-    if (layout) {
-      return layout;
+  getLayout({ name, layout }: BasicComponentDefinition, resolver: TestResolver): TestSpecifier {
+    if (!layout) {
+      throw new Error('BUG: missing static layout');
     }
 
-    return env.compiledLayouts[definition.name] = compileLayout(new StaticTaglessComponentLayoutCompiler(definition.layoutString), env);
+    return resolver.compileTemplate(name, layout, StaticTaglessComponentLayoutCompiler);
   }
 }
 
@@ -386,7 +365,7 @@ export interface EmberishGlimmerStateBucket {
   component: EmberishGlimmerComponent;
 }
 
-class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimmerStateBucket> {
+class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimmerStateBucket>, WithStaticLayout<EmberishGlimmerStateBucket, TestSpecifier, TestResolver> {
   prepareArgs(): null {
     return null;
   }
@@ -409,19 +388,23 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return combine([tag, dirtinessTag]);
   }
 
-  layoutFor(definition: EmberishGlimmerComponentDefinition, _component: EmberishGlimmerStateBucket, env: TestEnvironment): CompiledDynamicProgram {
-    if (env.compiledLayouts[definition.name]) {
-      return env.compiledLayouts[definition.name];
+  getLayout({ name, layout }: EmberishGlimmerComponentDefinition, resolver: TestResolver): TestSpecifier {
+    if (!layout) {
+      throw new Error('BUG: missing static layout');
     }
-    return env.compiledLayouts[definition.name] = compileLayout(new EmberishGlimmerComponentLayoutCompiler(definition.name, definition.layoutString), env);
+
+    return resolver.compileTemplate(name, layout, EmberishGlimmerComponentLayoutCompiler);
   }
 
   getSelf({ component }: EmberishGlimmerStateBucket): PathReference<Opaque> {
     return new UpdatableReference(component);
   }
 
-  didCreateElement({ component }: EmberishGlimmerStateBucket, element: Element): void {
+  didCreateElement({ component }: EmberishGlimmerStateBucket, element: Element, operations: ElementOperations): void {
     component.element = element;
+
+    operations.setAttribute('id', PrimitiveReference.create(`ember${component._guid}`), false, null);
+    operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
   }
 
   didRenderLayout({ component }: EmberishGlimmerStateBucket, bounds: Bounds): void {
@@ -464,7 +447,7 @@ const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager()
 
 const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
-class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyComponent> {
+class EmberishCurlyComponentManager implements WithDynamicTagName<EmberishCurlyComponent>, WithDynamicLayout<EmberishCurlyComponent, TestSpecifier, TestResolver> {
   prepareArgs(definition: EmberishCurlyComponentDefinition, args: Arguments): Option<PreparedArguments> {
     const { positionalParams } = definition.ComponentClass || BaseEmberishCurlyComponent;
 
@@ -509,7 +492,12 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     let merged = assign({}, attrs, { attrs }, { args }, { targetObject: self }, { HAS_BLOCK: hasDefaultBlock });
     let component = klass.create(merged);
 
+    component.name = definition.name;
     component.args = args;
+
+    if (definition.layout) {
+      component.layout = definition.layout;
+    }
 
     let dyn: Option<string[]> = definition.ComponentClass ? definition.ComponentClass['fromDynamicScope'] : null;
 
@@ -532,31 +520,33 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     return combine([tag, dirtinessTag]);
   }
 
-  layoutFor(definition: EmberishCurlyComponentDefinition, component: EmberishCurlyComponent, env: TestEnvironment): CompiledDynamicProgram {
-    let layout = env.compiledLayouts[definition.name];
-
-    if (layout) {
-      return layout;
+  getLayout({ name, layout }: EmberishCurlyComponent, resolver: TestResolver): TestSpecifier {
+    if (!layout) {
+      throw new Error('BUG: missing dynamic layout');
     }
 
-    let layoutString = definition.layoutString;
-    let lateBound = layoutString !== null;
-
-    if (layoutString === null) {
-      layoutString = (component as any).layout as string;
-    }
-
-    layout = compileLayout(new EmberishCurlyComponentLayoutCompiler(layoutString), env);
-
-    return lateBound ? layout : (env.compiledLayouts[definition.name] = layout);
+    return resolver.compileTemplate(name, layout, EmberishCurlyComponentLayoutCompiler);
   }
 
   getSelf(component: EmberishCurlyComponent): PathReference<Opaque> {
     return new UpdatableReference(component);
   }
 
+  getTagName({ tagName }: EmberishCurlyComponent): Option<string> {
+    if (tagName) {
+      return tagName;
+    } else if (tagName === null) {
+      return 'div';
+    } else {
+      return null;
+    }
+  }
+
   didCreateElement(component: EmberishCurlyComponent, element: Element, operations: ElementOperations): void {
     component.element = element;
+
+    operations.setAttribute('id', PrimitiveReference.create(`ember${component._guid}`), false, null);
+    operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
 
     let bindings = component.attributeBindings;
     let rootRef = new UpdatableReference(component);
@@ -735,18 +725,166 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
 export interface TestEnvironmentOptions {
   document?: Simple.Document;
   appendOperations?: DOMTreeConstruction;
+  program?: TopLevelSyntax;
 }
 
-export type CompiledDynamicBlock = CompiledDynamicTemplate<BlockSymbolTable>;
-export type CompiledDynamicProgram = CompiledDynamicTemplate<ProgramSymbolTable>;
+export interface Lookup {
+  helper: GlimmerHelper;
+  modifier: ModifierManager;
+  partial: PartialDefinition;
+  component: ComponentDefinition<Opaque>;
+  template: CompilableTemplate<ProgramSymbolTable>;
+  'template-source': string;
+}
+
+export type LookupType = keyof Lookup;
+export type LookupValue = Lookup[LookupType];
+
+export interface TestSpecifier<T extends LookupType = LookupType> {
+  type: T;
+  name: string;
+}
+
+class TypedRegistry<T> {
+  private inner = dict<T>();
+
+  has(name: string): boolean {
+    return name in this.inner;
+  }
+
+  get(name: string): Option<T> {
+    return this.inner[name];
+  }
+
+  register(name: string, value: T): void {
+    this.inner[name] = value;
+  }
+}
+
+export type TestCompilationOptions = CompilationOptions<TemplateMeta, TestSpecifier, TestResolver>;
+
+export class TestResolver implements Resolver<TestSpecifier, TemplateMeta> {
+  private registry = {
+    helper: new TypedRegistry<GlimmerHelper>(),
+    modifier: new TypedRegistry<ModifierManager>(),
+    partial: new TypedRegistry<PartialDefinition>(),
+    component: new TypedRegistry<ComponentDefinition<Opaque>>(),
+    template: new TypedRegistry<CompilableTemplate<ProgramSymbolTable>>(),
+    'template-source': new TypedRegistry<string>()
+  };
+
+  private options: TestCompilationOptions;
+
+  register(type: 'helper', name: string, value: GlimmerHelper): TestSpecifier;
+  register(type: 'modifier', name: string, value: ModifierManager): TestSpecifier;
+  register(type: 'partial', name: string, value: PartialDefinition): TestSpecifier;
+  register(type: 'component', name: string, value: ComponentDefinition<Opaque>): TestSpecifier;
+  register(type: 'template', name: string, value: CompilableTemplate<ProgramSymbolTable>): TestSpecifier;
+  register(type: 'template-source', name: string, value: string): TestSpecifier;
+  register(type: LookupType, name: string, value: any): TestSpecifier {
+    (this.registry[type] as TypedRegistry<any>).register(name, value);
+    return { type, name };
+  }
+
+  lookup(type: LookupType, name: string, _meta: TemplateMeta): Option<TestSpecifier> {
+    if (this.registry[type].has(name)) {
+      return { type, name };
+    } else {
+      return null;
+    }
+  }
+
+  compileTemplate(componentName: string, sourceSpecifier: TestSpecifier, Compiler: ComponentLayoutCompilerFactory): TestSpecifier {
+    let templateName = sourceSpecifier.name;
+    let specifier =  this.lookup('template', templateName, {});
+
+    if (specifier) {
+      return specifier;
+    }
+
+    let source = this.resolve<'template-source'>(sourceSpecifier);
+    let compiler = new Compiler(componentName, source);
+
+    return this.register('template', templateName, scanLayout(compiler, this.options));
+  }
+
+  lookupHelper(name: string, meta: TemplateMeta): Option<TestSpecifier> {
+    return this.lookup('helper', name, meta);
+  }
+
+  lookupModifier(name: string, meta: TemplateMeta): Option<TestSpecifier> {
+    return this.lookup('modifier', name, meta);
+  }
+
+  lookupComponent(name: string, meta: TemplateMeta): Option<TestSpecifier> {
+    return this.lookup('component', name, meta);
+  }
+
+  lookupPartial(name: string, meta: TemplateMeta): Option<TestSpecifier> {
+    return this.lookup('partial', name, meta);
+  }
+
+  resolve<T>(specifier: TestSpecifier): T {
+    return this.registry[specifier.type].get(specifier.name) as Recast<LookupValue, T>;
+  }
+}
+
+class TestMacros extends Macros {
+  constructor() {
+    super();
+
+    let { blocks, inlines} = this;
+
+    blocks.add('identity', (_params, _hash, template, _inverse, builder) => {
+      builder.invokeStaticBlock(template!);
+    });
+
+    blocks.add('render-inverse', (_params, _hash, _template, inverse, builder) => {
+      builder.invokeStaticBlock(inverse!);
+    });
+
+    blocks.addMissing((name, params, hash, template, inverse, builder) => {
+      if (!params) {
+        params = [];
+      }
+
+      let resolver = builder.options.resolver;
+
+      let specifier = resolver.lookupComponent(name, builder.meta.templateMeta);
+
+      if (specifier) {
+        builder.component.static(specifier, [params, hashToArgs(hash), template, inverse]);
+        return true;
+      }
+
+      return false;
+    });
+
+    inlines.addMissing((name, params, hash, builder) => {
+      let resolver = builder.options.resolver;
+      let specifier = resolver.lookupComponent(name, builder.meta.templateMeta);
+
+      if (specifier) {
+        builder.component.static(specifier, [params!, hashToArgs(hash), null, null]);
+        return true;
+      }
+
+      return false;
+    });
+  }
+}
 
 export class TestEnvironment extends Environment {
-  private helpers = dict<GlimmerHelper>();
-  private modifiers = dict<ModifierManager<Opaque>>();
-  private partials = dict<PartialDefinition<WireFormat.TemplateMeta>>();
-  private components = dict<ComponentDefinition<any>>();
+  public resolver = new TestResolver();
+  private program = new Program(this.resolver);
   private uselessAnchor: HTMLAnchorElement;
-  public compiledLayouts = dict<CompiledDynamicProgram>();
+  public compiledLayouts = dict<Handle>();
+
+  public compileOptions: TestCompilationOptions = {
+    resolver: this.resolver,
+    program: this.program,
+    macros: new TestMacros()
+  };
 
   constructor(options: TestEnvironmentOptions = {}) {
     // let document = options.document || window.document;
@@ -756,6 +894,8 @@ export class TestEnvironment extends Environment {
       updateOperations: new DOMChanges((options.document || window.document) as Document)
     });
 
+    // recursive field, so "unsafely" set one half late (but before the resolver is actually used)
+    this.resolver['options'] = this.compileOptions;
     let document = options.document || window.document;
 
     this.uselessAnchor = document.createElement('a') as HTMLAnchorElement;
@@ -772,44 +912,66 @@ export class TestEnvironment extends Environment {
     return this.uselessAnchor.protocol;
   }
 
-  registerHelper(name: string, helper: UserHelper) {
-    this.helpers[name] = (_vm: VM, args: Arguments) => new HelperReference(helper, args);
+  registerHelper(name: string, helper: UserHelper): GlimmerHelper {
+    let glimmerHelper = (_vm: VM, args: Arguments) => new HelperReference(helper, args);
+    this.resolver.register('helper', name, glimmerHelper);
+    return glimmerHelper;
   }
 
-  registerInternalHelper(name: string, helper: GlimmerHelper) {
-    this.helpers[name] = helper;
+  registerInternalHelper(name: string, helper: GlimmerHelper): GlimmerHelper {
+    this.resolver.register('helper', name, helper);
+    return helper;
   }
 
-  registerModifier(name: string, modifier: ModifierManager<Opaque>) {
-    this.modifiers[name] = modifier;
+  registerModifier(name: string, modifier: ModifierManager<any>): ModifierManager {
+    this.resolver.register('modifier', name, modifier);
+    return modifier;
   }
 
-  registerPartial(name: string, source: string) {
-    this.partials[name] = new PartialDefinition(name, rawCompile(source, { env: this } as unsafe as TestCompileOptions<TemplateMeta>));
-  }
-
-  registerComponent(name: string, definition: ComponentDefinition<any>) {
-    this.components[name] = definition;
+  registerPartial(name: string, source: string): PartialDefinition {
+    let definition = new PartialDefinition(name, this.compile(source));
+    this.resolver.register('partial', name, definition);
     return definition;
   }
 
-  registerBasicComponent(name: string, Component: BasicComponentFactory, layout: string): ComponentDefinition<BasicComponentDefinition> {
+  private registerComponent(name: string, definition: ComponentDefinition<any>) {
+    this.resolver.register('component', name, definition);
+    return definition;
+  }
+
+  registerTemplate(name: string, source: string): TestSpecifier {
+    return this.resolver.register("template-source", name, source);
+  }
+
+  registerBasicComponent(name: string, Component: BasicComponentFactory, layoutSource: string): ComponentDefinition<BasicComponentDefinition> {
+    let layout = this.registerTemplate(name, layoutSource);
+
     let definition = new BasicComponentDefinition(name, BASIC_COMPONENT_MANAGER, Component, layout);
     return this.registerComponent(name, definition);
   }
 
-  registerStaticTaglessComponent(name: string, Component: BasicComponentFactory, layout: string): ComponentDefinition<BasicComponentFactory> {
+  registerStaticTaglessComponent(name: string, Component: BasicComponentFactory, layoutSource: string): ComponentDefinition<BasicComponentFactory> {
+    let layout = this.registerTemplate(name, layoutSource);
+
     let definition = new StaticTaglessComponentDefinition(name, STATIC_TAGLESS_COMPONENT_MANAGER, Component, layout);
     return this.registerComponent(name, definition);
   }
 
-  registerEmberishCurlyComponent(name: string, Component: EmberishCurlyComponentFactory | null, layout: string | null): ComponentDefinition<EmberishCurlyComponentDefinition> {
-    let definition = new EmberishCurlyComponentDefinition(name, EMBERISH_CURLY_COMPONENT_MANAGER, Component, layout);
+  registerEmberishCurlyComponent(name: string, Component: Option<EmberishCurlyComponentFactory>, layoutSource: Option<string>): ComponentDefinition<EmberishCurlyComponentDefinition> {
+    let layout: Option<TestSpecifier> = null;
+
+    if (layoutSource !== null) {
+      layout = this.registerTemplate(name, layoutSource);
+    }
+
+    let definition = new EmberishCurlyComponentDefinition(name, EMBERISH_CURLY_COMPONENT_MANAGER, Component || EmberishCurlyComponent, layout);
     return this.registerComponent(name, definition);
   }
 
-  registerEmberishGlimmerComponent(name: string, Component: EmberishGlimmerComponentFactory | null, layout: string): ComponentDefinition<EmberishGlimmerComponentDefinition> {
-    let definition = new EmberishGlimmerComponentDefinition(name, EMBERISH_GLIMMER_COMPONENT_MANAGER, Component, layout);
+  registerEmberishGlimmerComponent(name: string, Component: Option<EmberishGlimmerComponentFactory>, layoutSource: string): ComponentDefinition<EmberishGlimmerComponentDefinition> {
+    let layout = this.registerTemplate(name, layoutSource);
+
+    let definition = new EmberishGlimmerComponentDefinition(name, EMBERISH_GLIMMER_COMPONENT_MANAGER, Component || EmberishGlimmerComponent, layout);
     return this.registerComponent(name, definition);
   }
 
@@ -821,60 +983,30 @@ export class TestEnvironment extends Environment {
     return new EmberishConditionalReference(reference);
   }
 
-  populateBuiltins(): { blocks: BlockMacros, inlines: InlineMacros } {
-    let macros = super.populateBuiltins();
-    populateBlocks(macros.blocks, macros.inlines);
-    return macros;
+  resolveHelper(helperName: string, meta: TemplateMeta): Option<GlimmerHelper> {
+    let specifier = this.resolver.lookupHelper(helperName, meta);
+    return specifier && this.resolver.resolve<GlimmerHelper>(specifier);
   }
 
-  hasHelper(helperName: string): boolean {
-    return (helperName === "component") || (helperName in this.helpers);
+  resolvePartial(partialName: string, meta: TemplateMeta): Option<PartialDefinition> {
+    let specifier = this.resolver.lookupPartial(partialName, meta);
+    return specifier && this.resolver.resolve<PartialDefinition>(specifier);
   }
 
-  lookupHelper(helperName: string, meta: TemplateMeta): Helper {
-    if (helperName === "component") {
-      return (_vm: VM, args: Arguments) => new DynamicComponentReference(args.at(0), this, meta);
-    }
-
-    let helper = this.helpers[helperName];
-
-    if (!helper) throw new Error(`Helper for ${helperName} not found.`);
-
-    return helper;
+  resolveComponentDefinition<T = Opaque>(name: string, meta: TemplateMeta): Option<ComponentDefinition<T>> {
+    let specifier = this.resolver.lookupComponent(name, meta);
+    return specifier && this.resolver.resolve<ComponentDefinition<T>>(specifier);
   }
 
-  hasPartial(partialName: string) {
-    return partialName in this.partials;
+  resolveModifier(modifierName: string, meta: TemplateMeta): Option<ModifierManager> {
+    let specifier = this.resolver.lookupModifier(modifierName, meta);
+    return specifier && this.resolver.resolve<ModifierManager>(specifier);
   }
 
-  lookupPartial(partialName: string) {
-    let partial = this.partials[partialName];
-
-    return partial;
-  }
-
-  hasComponentDefinition(name: string): boolean {
-    return !!this.components[name];
-  }
-
-  getComponentDefinition(name: string, _blockMeta?: WireFormat.TemplateMeta): ComponentDefinition<any> {
-    return this.components[name];
-  }
-
-  hasModifier(modifierName: string): boolean {
-    return modifierName in this.modifiers;
-  }
-
-  lookupModifier(modifierName: string): ModifierManager<Opaque> {
-    let modifier = this.modifiers[modifierName];
-
-    if (!modifier) throw new Error(`Modifier for ${modifierName} not found.`);
-
-    return modifier;
-  }
-
-  compile(template: string): Template<undefined> {
-    return rawCompile<any>(template, { env: this } as any);
+  compile(template: string, meta: TemplateMeta = {}): Template {
+    let wrapper = JSON.parse(precompile(template, { meta }));
+    let factory = templateFactory(wrapper);
+    return factory.create(this.compileOptions);
   }
 
   iterableFor(ref: Reference<Opaque>, keyPath: string): OpaqueIterable {
@@ -898,6 +1030,12 @@ export class TestEnvironment extends Environment {
 
     return new Iterable(ref, keyFor);
   }
+}
+
+export function compileWithOptions(templateSource: string, options: TestCompilationOptions, meta: TemplateMeta = {}) {
+  let wrapper = JSON.parse(precompile(templateSource, { meta }));
+  let factory = templateFactory(wrapper);
+  return factory.create(options);
 }
 
 export class TestDynamicScope implements DynamicScope {
@@ -924,48 +1062,13 @@ export class TestDynamicScope implements DynamicScope {
   }
 }
 
-export class DynamicComponentReference implements VersionedPathReference<Option<ComponentDefinition<Opaque>>> {
-  public tag: Tag;
-
-  constructor(private nameRef: PathReference<Opaque>, private env: Environment, private meta: WireFormat.TemplateMeta) {
-    this.tag = nameRef.tag;
-  }
-
-  value(): Option<ComponentDefinition<Opaque>> {
-    let { env, nameRef, meta } = this;
-
-    let nameOrDef = nameRef.value();
-
-    if (typeof nameOrDef === 'string') {
-      return env.getComponentDefinition(nameOrDef, meta);
-    } else if (isComponentDefinition(nameOrDef)) {
-      return nameOrDef;
-    }
-
-    return null;
-  }
-
-  get(): VersionedPathReference<Opaque> {
-    return NULL_REFERENCE;
-  }
-}
-
-function dynamicComponentFor(vm: VM, args: Arguments, meta: WireFormat.TemplateMeta) {
-  let nameRef = args.positional.at(0);
-  let env = vm.env;
-  return new DynamicComponentReference(nameRef, env, meta);
-};
-
 export interface BasicComponentFactory {
-  new (attrs: Dict<any>): BasicComponent;
+  new (): BasicComponent;
 }
 
 export abstract class GenericComponentDefinition<T> extends ComponentDefinition<T> {
-  public layoutString: string | null;
-
-  constructor(name: string, manager: ComponentManager<T>, ComponentClass: any, layout: string | null) {
-    super(name, manager, ComponentClass);
-    this.layoutString = layout;
+  constructor(name: string, manager: ComponentManager<T>, public ComponentClass: any, public layout: Option<TestSpecifier>) {
+    super(name, manager);
   }
 
   toJSON() {
@@ -973,16 +1076,22 @@ export abstract class GenericComponentDefinition<T> extends ComponentDefinition<
   }
 }
 
-export class BasicComponentDefinition extends GenericComponentDefinition<BasicStateBucket> {
-  public layoutString: string;
-
+export class BasicComponentDefinition extends GenericComponentDefinition<BasicComponent> {
   public ComponentClass: BasicComponentFactory;
+  public capabilities: ComponentCapabilities = {
+    dynamicLayout: false,
+    prepareArgs: false,
+    createArgs: false
+  };
 }
 
-class StaticTaglessComponentDefinition extends GenericComponentDefinition<BasicStateBucket> {
-  public layoutString: string;
-
+class StaticTaglessComponentDefinition extends GenericComponentDefinition<BasicComponent> {
   public ComponentClass: BasicComponentFactory;
+  public capabilities: ComponentCapabilities = {
+    dynamicLayout: false,
+    prepareArgs: false,
+    createArgs: false
+  };
 }
 
 export interface EmberishCurlyComponentFactory {
@@ -999,66 +1108,51 @@ export interface EmberishGlimmerComponentFactory {
 }
 
 export class EmberishGlimmerComponentDefinition extends GenericComponentDefinition<EmberishGlimmerStateBucket> {
-  public layoutString: string;
   public ComponentClass: EmberishGlimmerComponentFactory;
+
+   public capabilities: ComponentCapabilities = {
+    dynamicLayout: false,
+    prepareArgs: false,
+    createArgs: true
+  };
 }
 
-abstract class GenericComponentLayoutCompiler implements CompilableLayout {
-  constructor(private layoutString: string) { }
+export interface ComponentLayoutCompilerFactory {
+  new(name: string, layoutString: string): CompilableLayout<TestCompilationOptions>;
+}
 
-  protected compileLayout(env: Environment): Template<WireFormat.TemplateMeta> {
-    return rawCompile(this.layoutString, { env } as unsafe as TestCompileOptions<TemplateMeta>);
+export abstract class GenericComponentLayoutCompiler implements CompilableLayout<TestCompilationOptions> {
+  constructor(protected name: string, private layoutString: string) { }
+
+  protected compileLayout(options: TestCompilationOptions): Template<WireFormat.TemplateMeta> {
+    return compileWithOptions(this.layoutString, options);
   }
 
-  abstract compile(builder: ComponentLayoutBuilder): void;
+  abstract compile(builder: ComponentLayoutBuilder<TestCompilationOptions>): void;
 }
 
 class BasicComponentLayoutCompiler extends GenericComponentLayoutCompiler {
-  constructor(private componentName: string, layoutString: string) {
-    super(layoutString);
-  }
-
-  compile(builder: ComponentLayoutBuilder) {
-    builder.fromLayout(this.componentName, this.compileLayout(builder.env));
+  compile(builder: ComponentLayoutBuilder<TestCompilationOptions>) {
+    builder.fromLayout(this.name, this.compileLayout(builder.options));
   }
 }
 
 class StaticTaglessComponentLayoutCompiler extends GenericComponentLayoutCompiler {
-  compile(builder: ComponentLayoutBuilder) {
-    builder.wrapLayout(this.compileLayout(builder.env));
+  compile(builder: ComponentLayoutBuilder<TestCompilationOptions>) {
+    builder.wrapLayout(this.compileLayout(builder.options));
   }
 }
 
-function EmberTagName(vm: VM): PathReference<string> {
-  let self = vm.getSelf().value() as Object;
-  let tagName: string = self['tagName'];
-  tagName = tagName === '' ? null : self['tagName'] || 'div';
-  return PrimitiveReference.create(tagName);
-}
-
-function EmberID(vm: VM): PathReference<string> {
-  let self = vm.getSelf().value() as { _guid: string };
-  return PrimitiveReference.create(`ember${self._guid}`);
-}
-
 class EmberishCurlyComponentLayoutCompiler extends GenericComponentLayoutCompiler {
-  compile(builder: ComponentLayoutBuilder) {
-    builder.wrapLayout(this.compileLayout(builder.env));
-    (builder.tag as any).dynamic(EmberTagName);
-    builder.attrs.static('class', 'ember-view');
-    (builder.attrs as any).dynamic('id', EmberID);
+  compile(builder: ComponentLayoutBuilder<TestCompilationOptions>) {
+    builder.wrapLayout(this.compileLayout(builder.options));
+    builder.tag.dynamic();
   }
 }
 
 class EmberishGlimmerComponentLayoutCompiler extends GenericComponentLayoutCompiler {
-  constructor(private componentName: string, layoutString: string) {
-    super(layoutString);
-  }
-
-  compile(builder: ComponentLayoutBuilder) {
-    builder.fromLayout(this.componentName, this.compileLayout(builder.env));
-    builder.attrs.static('class', 'ember-view');
-    (builder.attrs as any).dynamic('id', EmberID);
+  compile(builder: ComponentLayoutBuilder<TestCompilationOptions>) {
+    builder.fromLayout(this.name, this.compileLayout(builder.options));
   }
 }
 
@@ -1124,58 +1218,6 @@ export function inspectHooks<T>(ComponentClass: T): T {
       this.hooks['didRender']++;
     }
   });
-}
-
-function populateBlocks(blocks: BlockMacros, inlines: InlineMacros): { blocks: BlockMacros, inlines: InlineMacros } {
-  blocks.add('identity', (_params, _hash, template, _inverse, builder) => {
-    builder.invokeStatic(template!);
-  });
-
-  blocks.add('render-inverse', (_params, _hash, _template, inverse, builder) => {
-    builder.invokeStatic(inverse!);
-  });
-
-  blocks.add('component', (params, hash, template, inverse, builder) => {
-    let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
-    let args: ComponentArgs = [params.slice(1), hashToArgs(hash), template, inverse];
-    builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
-    return true;
-  });
-
-  blocks.addMissing((name, params, hash, template, inverse, builder) => {
-    if (!params) {
-      params = [];
-    }
-
-    let definition = builder.env.getComponentDefinition(name, builder.meta.templateMeta);
-
-    if (definition) {
-      builder.component.static(definition, [params, hashToArgs(hash), template, inverse]);
-      return true;
-    }
-
-    return false;
-  });
-
-  inlines.add('component', (_name, params, hash, builder) => {
-    let definitionArgs: ComponentArgs = [params!.slice(0, 1), null, null, null];
-    let args: ComponentArgs = [params!.slice(1), hashToArgs(hash), null, null];
-    builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
-    return true;
-  });
-
-  inlines.addMissing((name, params, hash, builder) => {
-    let definition = builder.env.getComponentDefinition(name, builder.meta.templateMeta);
-
-    if (definition) {
-      builder.component.static(definition, [params!, hashToArgs(hash), null, null]);
-      return true;
-    }
-
-    return false;
-  });
-
-  return { blocks, inlines };
 }
 
 function hashToArgs(hash: Option<WireFormat.Core.Hash>): Option<WireFormat.Core.Hash> {

@@ -1,5 +1,5 @@
 import { Opaque, Dict } from "@glimmer/interfaces";
-import { SVG_NAMESPACE, Template, RenderResult } from "@glimmer/runtime";
+import { SVG_NAMESPACE, RenderResult } from "@glimmer/runtime";
 import {
   RenderTests,
   module,
@@ -1071,9 +1071,10 @@ abstract class RenderingTest extends RenderTests {
 }
 
 class Rehydration extends RenderingTest {
-  serialized: string;
-  doc: any;
-  setupServer(template: string = this.rawTemplate) {
+  public serialized: string;
+  public doc: any;
+
+  setupServer(template: string = this.template) {
     let doc = this.doc = new SimpleDOM.Document();
     let env = new TestEnvironment({
       document: doc,
@@ -1083,7 +1084,7 @@ class Rehydration extends RenderingTest {
     this.setup({ template, env });
   }
 
-  setupClient(template: string = this.rawTemplate) {
+  setupClient(template: string = this.template) {
     let env = new TestEnvironment();
     this.doc = document;
     let div = this.doc.createElement("div");
@@ -1097,7 +1098,7 @@ class Rehydration extends RenderingTest {
 
   setup({ template, context, env }: { template: string; context?: Dict<Opaque>; env?: TestEnvironment }) {
     if (env) this.env = env;
-    this.template = this.compile(template);
+    this.template = template;
     if (context) this.setProperties(context);
   }
 
@@ -1116,7 +1117,8 @@ class Rehydration extends RenderingTest {
     this.element = this.doc.createElement("main") as HTMLDivElement;
     let template = expect(this.template, "Must set up a template before calling renderServerSide");
     // Emulate server-side render
-    renderTemplate(this.env, template, {
+    renderTemplate(template, {
+      env: this.env,
       self: new UpdatableReference(this.context),
       parentNode: this.element,
       dynamicScope: new TestDynamicScope(),
@@ -1141,12 +1143,11 @@ class Rehydration extends RenderingTest {
     }
     this.setupClient();
     this.populateHelpers();
-    let { env } = this;
-    this.template = this.compile(this.rawTemplate);
     this.element = this.doc.createElement("div") as HTMLDivElement;
     let template = expect(this.template, "Must set up a template before calling renderClientSide");
     // Client-side rehydration
-    this.renderResult = renderTemplate(env, template, {
+    this.renderResult = renderTemplate(template, {
+      env: this.env,
       self: new UpdatableReference(this.context),
       parentNode: this.element,
       dynamicScope: new TestDynamicScope(),
@@ -1154,12 +1155,13 @@ class Rehydration extends RenderingTest {
     });
   }
 
-  renderTemplate(template: Template<Opaque>): RenderResult {
+  renderTemplate(template: string): RenderResult {
     this.template = template;
     this.renderServerSide();
     this.renderClientSide();
     return this.renderResult!;
   }
+
   @test "mismatched text nodes"() {
     this.setupServer("{{content}}");
     this.renderServerSide({ content: 'hello' });
