@@ -6,7 +6,8 @@ import {
   isWatching,
   addObserver,
   removeObserver,
-  tagFor,
+  getCachedValueFor as cacheFor,
+  computed,
 } from '..';
 import { meta } from 'ember-meta';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -116,5 +117,21 @@ moduleFor(
         "Setting alias 'bar' on self"
       );
     }
+
+    ['@test uses aliased property cache for cacheFor'](assert) {
+      defineProperty(obj, 'bar', alias('foo.faz'));
+      assert.equal(cacheFor(obj, 'bar'), undefined);
+      assert.equal(get(obj, 'bar'), 'FOO');
+      assert.equal(cacheFor(obj, 'bar'), undefined);
+    }
+
+    ['@test uses aliased computed property cache for cacheFor'](assert) {
+      defineProperty(obj, 'prop', computed('foo.faz', function(){ return get(this, 'foo.faz') }));
+      defineProperty(obj, 'bar', alias('prop'));
+      assert.equal(cacheFor(obj, 'bar'), undefined);
+      assert.equal(get(obj, 'prop'), 'FOO');
+      assert.equal(cacheFor(obj, 'bar'), 'FOO');
+    }
+
   }
 );
