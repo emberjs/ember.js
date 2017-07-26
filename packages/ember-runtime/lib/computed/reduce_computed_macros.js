@@ -20,13 +20,13 @@ import { A as emberA } from '../system/native_array';
 
 
 function reduceMacro(dependentKey, callback, initialValue) {
-  return computed(`${dependentKey}.[]`, function() {
+  let cp = new ComputedProperty(function() {
     let arr = get(this, dependentKey);
-
     if (arr === null || typeof arr !== 'object') { return initialValue; }
-
     return arr.reduce(callback, initialValue, this);
-  }).readOnly();
+  }, { dependentKeys: [`${dependentKey}.[]`] })
+
+  return cp.readOnly();
 }
 
 function arrayMacro(dependentKey, callback) {
@@ -39,24 +39,26 @@ function arrayMacro(dependentKey, callback) {
     dependentKey += '.[]';
   }
 
-  return computed(dependentKey, function() {
+  let cp = new ComputedProperty(function() {
     let value = get(this, propertyName);
     if (isArray(value)) {
       return emberA(callback.call(this, value));
     } else {
       return emberA();
     }
-  }).readOnly();
+  }, { dependentKeys: [ dependentKey ] });
+
+  return cp.readOnly();
 }
 
-function multiArrayMacro(dependentKeys, callback) {
-  let args = dependentKeys.map(key => `${key}.[]`);
+function multiArrayMacro(_dependentKeys, callback) {
+  let dependentKeys = _dependentKeys.map(key => `${key}.[]`);
 
-  args.push(function() {
-    return emberA(callback.call(this, dependentKeys));
-  });
+  let cp = new ComputedProperty(function() {
+    return emberA(callback.call(this, _dependentKeys));
+  }, { dependentKeys });
 
-  return computed.apply(this, args).readOnly();
+  return cp.readOnly();
 }
 
 /**
