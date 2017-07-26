@@ -37,20 +37,20 @@ function expandPropertiesToArray(predicateName, properties) {
 
 function generateComputedWithPredicate(name, predicate) {
   return (...properties) => {
-    let expandedProperties = expandPropertiesToArray(name, properties);
+    let dependentKeys = expandPropertiesToArray(name, properties);
 
     let computedFunc = new ComputedProperty(function() {
-      let lastIdx = expandedProperties.length - 1;
+      let lastIdx = dependentKeys.length - 1;
 
       for (let i = 0; i < lastIdx; i++) {
-        let value = get(this, expandedProperties[i]);
+        let value = get(this, dependentKeys[i]);
         if (!predicate(value)) {
           return value;
         }
       }
 
-      return get(this, expandedProperties[lastIdx]);
-    }, { dependentKeys: expandedProperties });
+      return get(this, dependentKeys[lastIdx]);
+    }, { dependentKeys });
 
     return computedFunc;
   };

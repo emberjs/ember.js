@@ -20,13 +20,13 @@ import { A as emberA } from '../system/native_array';
 
 
 function reduceMacro(dependentKey, callback, initialValue) {
-  return computed(`${dependentKey}.[]`, function() {
+  let cp = new ComputedProperty(function() {
     let arr = get(this, dependentKey);
-
     if (arr === null || typeof arr !== 'object') { return initialValue; }
-
     return arr.reduce(callback, initialValue, this);
-  }).readOnly();
+  }, { dependentKeys: [`${dependentKey}.[]`] })
+
+  return cp.readOnly();
 }
 
 function arrayMacro(dependentKey, callback) {
@@ -39,24 +39,26 @@ function arrayMacro(dependentKey, callback) {
     dependentKey += '.[]';
   }
 
-  return computed(dependentKey, function() {
+  let cp = new ComputedProperty(function() {
     let value = get(this, propertyName);
     if (isArray(value)) {
       return emberA(callback.call(this, value));
     } else {
       return emberA();
     }
-  }).readOnly();
+  }, { dependentKeys: [ dependentKey ] });
+
+  return cp.readOnly();
 }
 
-function multiArrayMacro(dependentKeys, callback) {
-  let args = dependentKeys.map(key => `${key}.[]`);
+function multiArrayMacro(_dependentKeys, callback) {
+  let dependentKeys = _dependentKeys.map(key => `${key}.[]`);
 
-  args.push(function() {
-    return emberA(callback.call(this, dependentKeys));
-  });
+  let cp = new ComputedProperty(function() {
+    return emberA(callback.call(this, _dependentKeys));
+  }, { dependentKeys });
 
-  return computed.apply(this, args).readOnly();
+  return cp.readOnly();
 }
 
 /**
@@ -716,7 +718,6 @@ function customSort(itemsKey, comparator) {
 // depending on the sortProperties
 function propertySort(itemsKey, sortPropertiesKey) {
   let cp = new ComputedProperty(function(key) {
-    let itemsKeyIsAtThis = (itemsKey === '@this');
     let sortProperties = get(this, sortPropertiesKey);
 
     assert(
@@ -724,42 +725,37 @@ function propertySort(itemsKey, sortPropertiesKey) {
       isArray(sortProperties) && sortProperties.every(s => typeof s === 'string')
     );
 
-    let normalizedSortProperties = normalizeSortProperties(sortProperties);
-
     // Add/remove property observers as required.
     let activeObserversMap = cp._activeObserverMap || (cp._activeObserverMap = new WeakMap());
     let activeObservers = activeObserversMap.get(this);
 
-    if (activeObservers) {
+    if (activeObservers !== undefined) {
       activeObservers.forEach(args => removeObserver(...args));
     }
+
+    let itemsKeyIsAtThis = (itemsKey === '@this');
+    let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
+    if (!isArray(items)) { return emberA(); }
 
     function sortPropertyDidChange() {
       this.notifyPropertyChange(key);
     }
 
+    let normalizedSortProperties = normalizeSortProperties(sortProperties);
     activeObservers = normalizedSortProperties.map(([prop]) => {
       let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
-      let args = [this, path, sortPropertyDidChange];
-      addObserver(...args);
-      return args;
+      addObserver(this, path, sortPropertyDidChange);
+      return [this, path, sortPropertyDidChange];
     });
 
     activeObserversMap.set(this, activeObservers);
 
-    // Sort and return the array.
-    let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
-
-    if (isArray(items)) {
-      return sortByNormalizedSortProperties(items, normalizedSortProperties);
-    } else {
-      return emberA();
-    }
-  });
+    return sortByNormalizedSortProperties(items, normalizedSortProperties);
+  }, { dependentKeys: [`${sortPropertiesKey}.[]`] });
 
   cp._activeObserverMap = undefined;
 
-  return cp.property(`${sortPropertiesKey}.[]`).readOnly();
+  return cp.readOnly();
 }
 
 function normalizeSortProperties(sortProperties) {
