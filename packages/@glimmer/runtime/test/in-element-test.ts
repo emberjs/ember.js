@@ -1,487 +1,441 @@
 import {
-  TestEnvironment,
   stripTight,
   equalsElement,
   EmberishCurlyComponent,
-  BasicComponent
+  RenderTests,
+  module,
+  test
  } from "@glimmer/test-helpers";
-
-import {
-  assertAppended,
-  assertElementIsEmberishElement,
-  EmberishRootView
-} from './ember-component-test';
 
 import { setProperty as set } from '@glimmer/object-reference';
 
-let view: EmberishRootView;
-let env: TestEnvironment;
+class InElementTests extends RenderTests {
+  @test "Renders curlies into external element"() {
+    let externalElement = document.createElement("div");
+    this.render("{{#-in-element externalElement}}[{{foo}}]{{/-in-element}}", { externalElement, foo: "Yippie!" });
+    equalsElement(externalElement, "div", {}, "[Yippie!]");
+    this.assertStableRerender();
 
-function rerender() {
-  view.rerender();
-}
+    this.rerender({ foo: "Double Yups!" });
+    equalsElement(externalElement, "div", {}, "[Double Yups!]");
+    this.assertStableNodes();
 
-function appendViewFor(template: string, context: Object = {}) {
-  view = new EmberishRootView(env, template, context);
-
-  env.begin();
-  view.appendTo('#qunit-fixture');
-  env.commit();
-
-  return view;
-}
-
-QUnit.module('Targeting a remote element', {
-  beforeEach() {
-    env = new TestEnvironment();
+    this.rerender({ foo: "Yippie!" });
+    equalsElement(externalElement, "div", {}, "[Yippie!]");
+    this.assertStableNodes();
   }
-});
 
-QUnit.test('basic', function() {
-  let externalElement = document.createElement('div');
+  @test "Changing to falsey"() {
+    let first = document.createElement("div");
+    let second = document.createElement("div");
 
-  appendViewFor(
-    stripTight`{{#-in-element externalElement}}[{{foo}}]{{/-in-element}}`,
-    { externalElement, foo: 'Yippie!' }
-  );
-
-  equalsElement(externalElement, 'div', {}, stripTight`[Yippie!]`);
-
-  set(view, 'foo', 'Double Yips!');
-  rerender();
-
-  equalsElement(externalElement, 'div', {}, stripTight`[Double Yips!]`);
-
-  set(view, 'foo', 'Yippie!');
-  rerender();
-
-  equalsElement(externalElement, 'div', {}, stripTight`[Yippie!]`);
-});
-
-QUnit.test('changing to falsey', function() {
-  let first = document.createElement('div');
-  let second = document.createElement('div');
-
-  appendViewFor(
-    stripTight`
-      |{{foo}}|
-      {{#-in-element first}}[{{foo}}]{{/-in-element}}
-      {{#-in-element second}}[{{foo}}]{{/-in-element}}
-    `,
-    { first, second: null, foo: 'Yippie!' }
-  );
-
-  equalsElement(first, 'div', {}, `[Yippie!]`);
-  equalsElement(second, 'div', {}, ``);
-  assertAppended('|Yippie!|<!----><!---->');
-
-  set(view, 'foo', 'Double Yips!');
-  rerender();
-
-  equalsElement(first, 'div', {}, `[Double Yips!]`);
-  equalsElement(second, 'div', {}, ``);
-  assertAppended('|Double Yips!|<!----><!---->');
-
-  set(view, 'first', null);
-  rerender();
-
-  equalsElement(first, 'div', {}, ``);
-  equalsElement(second, 'div', {}, ``);
-  assertAppended('|Double Yips!|<!----><!---->');
-
-  set(view, 'second', second);
-  rerender();
-
-  equalsElement(first, 'div', {}, ``);
-  equalsElement(second, 'div', {}, `[Double Yips!]`);
-  assertAppended('|Double Yips!|<!----><!---->');
-
-  set(view, 'foo', 'Yippie!');
-  rerender();
-
-  equalsElement(first, 'div', {}, ``);
-  equalsElement(second, 'div', {}, `[Yippie!]`);
-  assertAppended('|Yippie!|<!----><!---->');
-
-  set(view, 'first', first);
-  set(view, 'second', null);
-  rerender();
-
-  equalsElement(first, 'div', {}, `[Yippie!]`);
-  equalsElement(second, 'div', {}, ``);
-  assertAppended('|Yippie!|<!----><!---->');
-});
-
-QUnit.test('with pre-existing content', function() {
-  let externalElement = document.createElement('div');
-  let initialContent = externalElement.innerHTML = '<p>Hello there!</p>';
-
-  appendViewFor(
-    stripTight`{{#-in-element externalElement}}[{{foo}}]{{/-in-element}}`,
-    { externalElement, foo: 'Yippie!' }
-  );
-
-  assertAppended('<!---->');
-  equalsElement(externalElement, 'div', {}, `${initialContent}[Yippie!]`);
-
-  set(view, 'foo', 'Double Yips!');
-  rerender();
-
-  assertAppended('<!---->');
-  equalsElement(externalElement, 'div', {}, `${initialContent}[Double Yips!]`);
-
-  set(view, 'foo', 'Yippie!');
-  rerender();
-
-  assertAppended('<!---->');
-  equalsElement(externalElement, 'div', {}, `${initialContent}[Yippie!]`);
-
-  set(view, 'externalElement', null);
-  rerender();
-
-  assertAppended('<!---->');
-  equalsElement(externalElement, 'div', {}, `${initialContent}`);
-
-  set(view, 'externalElement', externalElement);
-  rerender();
-
-  assertAppended('<!---->');
-  equalsElement(externalElement, 'div', {}, `${initialContent}[Yippie!]`);
-});
-
-QUnit.test('with nextSibling', function() {
-  let externalElement = document.createElement('div');
-  externalElement.innerHTML = '<b>Hello</b><em>there!</em>';
-
-  appendViewFor(
-    stripTight`{{#-in-element externalElement nextSibling=nextSibling}}[{{foo}}]{{/-in-element}}`,
-    { externalElement, nextSibling: externalElement.lastChild, foo: 'Yippie!' }
-  );
-
-  assertAppended('<!---->');
-  equalsElement(externalElement, 'div', {}, `<b>Hello</b>[Yippie!]<em>there!</em>`);
-
-  set(view, 'foo', 'Double Yips!');
-  rerender();
-
-  assertAppended('<!---->');
-  equalsElement(externalElement, 'div', {}, `<b>Hello</b>[Double Yips!]<em>there!</em>`);
-
-  set(view, 'nextSibling', null);
-  rerender();
-
-  assertAppended('<!---->');
-  equalsElement(externalElement, 'div', {}, `<b>Hello</b><em>there!</em>[Double Yips!]`);
-
-  set(view, 'externalElement', null);
-  rerender();
-
-  assertAppended('<!---->');
-  equalsElement(externalElement, 'div', {}, `<b>Hello</b><em>there!</em>`);
-
-  set(view, 'foo', 'Yippie!');
-  set(view, 'externalElement', externalElement);
-  set(view, 'nextSibling', externalElement.lastChild);
-  rerender();
-
-  assertAppended('<!---->');
-  equalsElement(externalElement, 'div', {}, `<b>Hello</b>[Yippie!]<em>there!</em>`);
-});
-
-QUnit.test('updating remote element', function() {
-  let first = document.createElement('div');
-  let second = document.createElement('div');
-
-  appendViewFor(
-    stripTight`{{#-in-element targetElement}}[{{foo}}]{{/-in-element}}`,
-    {
-      targetElement: first,
-      foo: 'Yippie!'
-    }
-  );
-
-  equalsElement(first, 'div', {}, `[Yippie!]`);
-  equalsElement(second, 'div', {}, ``);
-
-  set(view, 'foo', 'Double Yips!');
-  rerender();
-
-  equalsElement(first, 'div', {}, `[Double Yips!]`);
-  equalsElement(second, 'div', {}, ``);
-
-  set(view, 'foo', 'Yippie!');
-  rerender();
-
-  equalsElement(first, 'div', {}, `[Yippie!]`);
-  equalsElement(second, 'div', {}, ``);
-
-  set(view, 'targetElement', second);
-  rerender();
-
-  equalsElement(first, 'div', {}, ``);
-  equalsElement(second, 'div', {}, `[Yippie!]`);
-
-  set(view, 'foo', 'Double Yips!');
-  rerender();
-
-  equalsElement(first, 'div', {}, ``);
-  equalsElement(second, 'div', {}, `[Double Yips!]`);
-
-  set(view, 'foo', 'Yippie!');
-  rerender();
-
-  equalsElement(first, 'div', {}, ``);
-  equalsElement(second, 'div', {}, `[Yippie!]`);
-});
-
-QUnit.test('inside an `{{if}}', function() {
-  let first = document.createElement('div');
-  let second = document.createElement('div');
-
-  appendViewFor(
-    stripTight`
-      {{#if showFirst}}
+    this.render(
+      stripTight`
+        |{{foo}}|
         {{#-in-element first}}[{{foo}}]{{/-in-element}}
-      {{/if}}
-      {{#if showSecond}}
         {{#-in-element second}}[{{foo}}]{{/-in-element}}
-      {{/if}}
-    `,
-    {
-      first,
-      second,
-      showFirst: true,
-      showSecond: false,
-      foo: 'Yippie!'
-    }
-  );
-
-  equalsElement(first, 'div', {}, stripTight`[Yippie!]`);
-  equalsElement(second, 'div', {}, stripTight``);
-
-  set(view, 'showFirst', false);
-  rerender();
-
-  equalsElement(first, 'div', {}, stripTight``);
-  equalsElement(second, 'div', {}, stripTight``);
-
-  set(view, 'showSecond', true);
-  rerender();
-
-  equalsElement(first, 'div', {}, stripTight``);
-  equalsElement(second, 'div', {}, stripTight`[Yippie!]`);
-
-  set(view, 'foo', 'Double Yips!');
-  rerender();
-
-  equalsElement(first, 'div', {}, stripTight``);
-  equalsElement(second, 'div', {}, stripTight`[Double Yips!]`);
-
-  set(view, 'showSecond', false);
-  rerender();
-
-  equalsElement(first, 'div', {}, stripTight``);
-  equalsElement(second, 'div', {}, stripTight``);
-
-  set(view, 'showFirst', true);
-  rerender();
-
-  equalsElement(first, 'div', {}, stripTight`[Double Yips!]`);
-  equalsElement(second, 'div', {}, stripTight``);
-
-  set(view, 'foo', 'Yippie!');
-  rerender();
-
-  equalsElement(first, 'div', {}, stripTight`[Yippie!]`);
-  equalsElement(second, 'div', {}, stripTight``);
-});
-
-QUnit.test('multiple', function() {
-  let firstElement = document.createElement('div');
-  let secondElement = document.createElement('div');
-
-  appendViewFor(
-    stripTight`
-      {{#-in-element firstElement}}
-        [{{foo}}]
-      {{/-in-element}}
-      {{#-in-element secondElement}}
-        [{{bar}}]
-      {{/-in-element}}
       `,
-    {
-      firstElement,
-      secondElement,
-      foo: 'Hello!',
-      bar: 'World!'
-    }
-  );
+      { first, second: null, foo: "Yippie!" }
+    );
 
-  equalsElement(firstElement, 'div', {}, stripTight`[Hello!]`);
-  equalsElement(secondElement, 'div', {}, stripTight`[World!]`);
+    equalsElement(first, "div", {}, "[Yippie!]");
+    equalsElement(second, "div", {}, "");
+    this.assertHTML("|Yippie!|<!----><!---->");
+    this.assertStableRerender();
 
-  set(view, 'foo', 'GoodBye!');
-  rerender();
+    this.rerender({ foo: "Double Yips!" });
+    equalsElement(first, "div", {}, "[Double Yips!]");
+    equalsElement(second, "div", {}, "");
+    this.assertHTML("|Double Yips!|<!----><!---->");
+    this.assertStableNodes();
 
-  equalsElement(firstElement, 'div', {}, stripTight`[GoodBye!]`);
-  equalsElement(secondElement, 'div', {}, stripTight`[World!]`);
+    this.rerender({ first: null });
+    equalsElement(first, "div", {}, "");
+    equalsElement(second, "div", {}, "");
+    this.assertHTML("|Double Yips!|<!----><!---->");
+    this.assertStableRerender();
 
-  set(view, 'bar', 'Folks!');
-  rerender();
+    this.rerender({ second });
+    equalsElement(first, "div", {}, "");
+    equalsElement(second, "div", {}, "[Double Yips!]");
+    this.assertHTML("|Double Yips!|<!----><!---->");
+    this.assertStableRerender();
 
-  equalsElement(firstElement, 'div', {}, stripTight`[GoodBye!]`);
-  equalsElement(secondElement, 'div', {}, stripTight`[Folks!]`);
+    this.rerender({ first, second: null, foo: "Yippie!" });
+    equalsElement(first, "div", {}, "[Yippie!]");
+    equalsElement(second, "div", {}, "");
+    this.assertHTML("|Yippie!|<!----><!---->");
+    this.assertStableRerender();
+  }
 
-  set(view, 'bar', 'World!');
-  rerender();
+  @test "With pre-existing content"() {
+    let externalElement = document.createElement("div");
+    let initialContent = externalElement.innerHTML = "<p>Hello there!</p>";
 
-  equalsElement(firstElement, 'div', {}, stripTight`[GoodBye!]`);
-  equalsElement(secondElement, 'div', {}, stripTight`[World!]`);
+    this.render(
+      stripTight`{{#-in-element externalElement}}[{{foo}}]{{/-in-element}}`,
+      { externalElement, foo: "Yippie!" }
+    );
 
-  set(view, 'foo', 'Hello!');
-  rerender();
+    equalsElement(externalElement, "div", {}, `${initialContent}[Yippie!]`);
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
 
-  equalsElement(firstElement, 'div', {}, stripTight`[Hello!]`);
-  equalsElement(secondElement, 'div', {}, stripTight`[World!]`);
-});
+    this.rerender({ foo: "Double Yips!" });
+    equalsElement(externalElement, "div", {}, `${initialContent}[Double Yips!]`);
+    this.assertHTML("<!---->");
+    this.assertStableNodes();
 
-QUnit.test('inside a loop', function() {
-  class FooBar extends BasicComponent { }
+    this.rerender({ externalElement: null });
+    equalsElement(externalElement, "div", {}, `${initialContent}`);
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
 
-  env.registerBasicComponent('foo-bar', FooBar, `<p>{{@value}}</p>`);
+    this.rerender({ externalElement, foo: "Yippie!" });
+    equalsElement(externalElement, "div", {}, `${initialContent}[Yippie!]`);
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+  }
 
-  let roots = [
-    { id: 0, element: document.createElement('div'), value: 'foo' },
-    { id: 1, element: document.createElement('div'), value: 'bar' },
-    { id: 2, element: document.createElement('div'), value: 'baz' },
-  ];
+  @test "With nextSibling"() {
+    let externalElement = document.createElement("div");
+    externalElement.innerHTML = "<b>Hello</b><em>there!</em>";
 
-  appendViewFor(
-    stripTight`
-      {{~#each roots key="id" as |root|~}}
-        {{~#-in-element root.element ~}}
-          {{component 'foo-bar' value=root.value}}
-        {{~/-in-element~}}
-      {{~/each}}
+    this.render(
+      stripTight`{{#-in-element externalElement nextSibling=nextSibling}}[{{foo}}]{{/-in-element}}`,
+      { externalElement, nextSibling: externalElement.lastChild, foo: "Yippie!" }
+    );
+
+    equalsElement(externalElement, "div", {}, "<b>Hello</b>[Yippie!]<em>there!</em>");
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+
+    this.rerender({ foo: "Double Yips!" });
+    equalsElement(externalElement, "div", {}, "<b>Hello</b>[Double Yips!]<em>there!</em>");
+    this.assertHTML("<!---->");
+    this.assertStableNodes();
+
+    this.rerender({ nextSibling: null });
+    equalsElement(externalElement, "div", {}, "<b>Hello</b><em>there!</em>[Double Yips!]");
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+
+    this.rerender({ externalElement: null });
+    equalsElement(externalElement, "div", {}, "<b>Hello</b><em>there!</em>");
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+
+    this.rerender({ externalElement, nextSibling: externalElement.lastChild, foo: "Yippie!" });
+    equalsElement(externalElement, "div", {}, "<b>Hello</b>[Yippie!]<em>there!</em>");
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+  }
+
+  @test "Updating remote element"() {
+    let first = document.createElement("div");
+    let second = document.createElement("div");
+
+    this.render(
+      stripTight`{{#-in-element externalElement}}[{{foo}}]{{/-in-element}}`,
+      { externalElement: first, foo: "Yippie!" }
+    );
+
+    equalsElement(first, "div", {}, "[Yippie!]");
+    equalsElement(second, "div", {}, "");
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+
+    this.rerender({ foo: "Double Yips!" });
+    equalsElement(first, "div", {}, "[Double Yips!]");
+    equalsElement(second, "div", {}, "");
+    this.assertHTML("<!---->");
+    this.assertStableNodes();
+
+    this.rerender({ foo: "Yippie!" });
+    equalsElement(first, "div", {}, "[Yippie!]");
+    equalsElement(second, "div", {}, "");
+    this.assertHTML("<!---->");
+    this.assertStableNodes();
+
+    this.rerender({ externalElement: second });
+    equalsElement(first, "div", {}, "");
+    equalsElement(second, "div", {}, "[Yippie!]");
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+
+    this.rerender({ foo: "Double Yips!" });
+    equalsElement(first, "div", {}, "");
+    equalsElement(second, "div", {}, "[Double Yips!]");
+    this.assertHTML("<!---->");
+    this.assertStableNodes();
+
+    this.rerender({ foo: "Yay!" });
+    equalsElement(first, "div", {}, "");
+    equalsElement(second, "div", {}, "[Yay!]");
+    this.assertHTML("<!---->");
+    this.assertStableNodes();
+
+    this.rerender({ externalElement: first, foo: "Yippie!" });
+    equalsElement(first, "div", {}, "[Yippie!]");
+    equalsElement(second, "div", {}, "");
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+  }
+
+  @test "Inside an '{{if}}'"() {
+    let first = document.createElement("div");
+    let second = document.createElement("div");
+
+    this.render(
+      stripTight`
+        {{#if showFirst}}
+          {{#-in-element first}}[{{foo}}]{{/-in-element}}
+        {{/if}}
+        {{#if showSecond}}
+          {{#-in-element second}}[{{foo}}]{{/-in-element}}
+        {{/if}}
       `,
-    {
-      roots
-    }
-  );
+      {
+        first,
+        second,
+        showFirst: true,
+        showSecond: false,
+        foo: 'Yippie!'
+      }
+    );
 
-  equalsElement(roots[0].element, 'div', {}, '<p>foo</p>');
-  equalsElement(roots[1].element, 'div', {}, '<p>bar</p>');
-  equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
+    equalsElement(first, "div", {}, stripTight`[Yippie!]`);
+    equalsElement(second, "div", {}, stripTight``);
+    this.assertHTML("<!----><!---->");
+    this.assertStableRerender();
 
-  set(roots[0], 'value', 'qux!');
-  rerender();
+    this.rerender({ showFirst: false });
+    equalsElement(first, "div", {}, stripTight``);
+    equalsElement(second, "div", {}, stripTight``);
+    this.assertHTML("<!----><!---->");
+    this.assertStableRerender();
 
-  equalsElement(roots[0].element, 'div', {}, '<p>qux!</p>');
-  equalsElement(roots[1].element, 'div', {}, '<p>bar</p>');
-  equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
+    this.rerender({ showSecond: true });
+    equalsElement(first, "div", {}, stripTight``);
+    equalsElement(second, "div", {}, stripTight`[Yippie!]`);
+    this.assertHTML("<!----><!---->");
+    this.assertStableRerender();
 
-  set(roots[1], 'value', 'derp');
-  rerender();
+    this.rerender({ foo: 'Double Yips!' });
+    equalsElement(first, "div", {}, stripTight``);
+    equalsElement(second, "div", {}, stripTight`[Double Yips!]`);
+    this.assertHTML("<!----><!---->");
+    this.assertStableRerender();
 
-  equalsElement(roots[0].element, 'div', {}, '<p>qux!</p>');
-  equalsElement(roots[1].element, 'div', {}, '<p>derp</p>');
-  equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
+    this.rerender({ showSecond: false });
+    equalsElement(first, "div", {}, stripTight``);
+    equalsElement(second, "div", {}, stripTight``);
+    this.assertHTML("<!----><!---->");
+    this.assertStableRerender();
 
-  set(roots[0], 'value', 'foo');
-  set(roots[1], 'value', 'bar');
-  rerender();
+    this.rerender({ showFirst: true });
+    equalsElement(first, "div", {}, stripTight`[Double Yips!]`);
+    equalsElement(second, "div", {}, stripTight``);
+    this.assertHTML("<!----><!---->");
+    this.assertStableRerender();
 
-  equalsElement(roots[0].element, 'div', {}, '<p>foo</p>');
-  equalsElement(roots[1].element, 'div', {}, '<p>bar</p>');
-  equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
-});
+    this.rerender({ foo: 'Yippie!' });
+    equalsElement(first, "div", {}, stripTight`[Yippie!]`);
+    equalsElement(second, "div", {}, stripTight``);
+    this.assertHTML("<!----><!---->");
+    this.assertStableRerender();
+  }
 
-QUnit.test('nesting', function() {
-  let firstElement = document.createElement('div');
-  let secondElement = document.createElement('div');
+  @test "Multiple"() {
+    let firstElement = document.createElement('div');
+    let secondElement = document.createElement('div');
 
-  appendViewFor(
-    stripTight`
-      {{#-in-element firstElement}}
-        [{{foo}}]
+    this.render(
+      stripTight`
+        {{#-in-element firstElement}}
+          [{{foo}}]
+        {{/-in-element}}
         {{#-in-element secondElement}}
           [{{bar}}]
         {{/-in-element}}
-      {{/-in-element}}
+        `,
+      {
+        firstElement,
+        secondElement,
+        foo: "Hello!",
+        bar: "World!"
+      }
+    );
+
+    equalsElement(firstElement, "div", {}, stripTight`[Hello!]`);
+    equalsElement(secondElement, "div", {}, stripTight`[World!]`);
+    this.assertHTML("<!----><!---->");
+    this.assertStableRerender();
+
+    this.rerender({ foo: "GoodBye!" });
+    equalsElement(firstElement, "div", {}, stripTight`[GoodBye!]`);
+    equalsElement(secondElement, "div", {}, stripTight`[World!]`);
+    this.assertHTML("<!----><!---->");
+    this.assertStableRerender();
+
+    this.rerender({ bar: "Folks!" });
+    equalsElement(firstElement, "div", {}, stripTight`[GoodBye!]`);
+    equalsElement(secondElement, "div", {}, stripTight`[Folks!]`);
+    this.assertHTML("<!----><!---->");
+    this.assertStableRerender();
+
+    this.rerender({ foo: "Hello!", bar: "World!" });
+    equalsElement(firstElement, "div", {}, stripTight`[Hello!]`);
+    equalsElement(secondElement, "div", {}, stripTight`[World!]`);
+    this.assertHTML("<!----><!---->");
+    this.assertStableRerender();
+  }
+
+  @test "Inside a loop"() {
+    this.registerComponent("Basic", "foo-bar", "<p>{{@value}}</p>");
+
+    let roots = [
+      { id: 0, element: document.createElement('div'), value: 'foo' },
+      { id: 1, element: document.createElement('div'), value: 'bar' },
+      { id: 2, element: document.createElement('div'), value: 'baz' },
+    ];
+
+    this.render(
+      stripTight`
+        {{~#each roots key="id" as |root|~}}
+          {{~#-in-element root.element ~}}
+            {{component 'foo-bar' value=root.value}}
+          {{~/-in-element~}}
+        {{~/each}}
+        `,
+      {
+        roots
+      }
+    );
+
+    equalsElement(roots[0].element, 'div', {}, '<p>foo</p>');
+    equalsElement(roots[1].element, 'div', {}, '<p>bar</p>');
+    equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
+    this.assertHTML("<!----><!----><!--->");
+    this.assertStableRerender();
+
+    set(roots[0], "value", "qux!");
+    this.rerender();
+    equalsElement(roots[0].element, 'div', {}, '<p>qux!</p>');
+    equalsElement(roots[1].element, 'div', {}, '<p>bar</p>');
+    equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
+    this.assertHTML("<!----><!----><!--->");
+    this.assertStableRerender();
+
+    set(roots[1], "value", "derp");
+    this.rerender();
+    equalsElement(roots[0].element, 'div', {}, '<p>qux!</p>');
+    equalsElement(roots[1].element, 'div', {}, '<p>derp</p>');
+    equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
+    this.assertHTML("<!----><!----><!--->");
+    this.assertStableRerender();
+
+    set(roots[0], "value", "foo");
+    set(roots[1], "value", "bar");
+    this.rerender();
+    equalsElement(roots[0].element, 'div', {}, '<p>foo</p>');
+    equalsElement(roots[1].element, 'div', {}, '<p>bar</p>');
+    equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
+    this.assertHTML("<!----><!----><!--->");
+    this.assertStableRerender();
+  }
+
+  @test "Nesting"() {
+    let firstElement = document.createElement("div");
+    let secondElement = document.createElement("div");
+
+    this.render(
+      stripTight`
+        {{#-in-element firstElement}}
+          [{{foo}}]
+          {{#-in-element secondElement}}
+            [{{bar}}]
+          {{/-in-element}}
+        {{/-in-element}}
+        `,
+      {
+        firstElement,
+        secondElement,
+        foo: "Hello!",
+        bar: "World!"
+      }
+    );
+
+    equalsElement(firstElement, "div", {}, stripTight`[Hello!]<!---->`);
+    equalsElement(secondElement, "div", {}, stripTight`[World!]`);
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+
+    this.rerender({ foo: "GoodBye!" });
+    equalsElement(firstElement, "div", {}, stripTight`[GoodBye!]<!---->`);
+    equalsElement(secondElement, "div", {}, stripTight`[World!]`);
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+
+    this.rerender({ bar: "Folks!" });
+    equalsElement(firstElement, "div", {}, stripTight`[GoodBye!]<!---->`);
+    equalsElement(secondElement, "div", {}, stripTight`[Folks!]`);
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+
+    this.rerender({ bar: "World!" });
+    equalsElement(firstElement, "div", {}, stripTight`[GoodBye!]<!---->`);
+    equalsElement(secondElement, "div", {}, stripTight`[World!]`);
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+
+    this.rerender({ foo: "Hello!" });
+    equalsElement(firstElement, "div", {}, stripTight`[Hello!]<!---->`);
+    equalsElement(secondElement, "div", {}, stripTight`[World!]`);
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+  }
+
+  @test "Components are destroyed"() {
+    let destroyed = 0;
+    let DestroyMeComponent = EmberishCurlyComponent.extend({
+      destroy(this: EmberishCurlyComponent) {
+        this._super();
+        destroyed++;
+      }
+    });
+    this.env.registerEmberishGlimmerComponent("destroy-me", DestroyMeComponent as any, "destroy me!");
+    let externalElement = document.createElement("div");
+
+    this.render(
+      stripTight`
+        {{#if showExternal}}
+          {{#-in-element externalElement}}[{{destroy-me}}]{{/-in-element}}
+        {{/if}}
       `,
-    {
-      firstElement,
-      secondElement,
-      foo: 'Hello!',
-      bar: 'World!'
-    }
-  );
+      {
+        externalElement,
+        showExternal: false,
+      }
+    );
 
-  equalsElement(firstElement, 'div', {}, stripTight`[Hello!]<!---->`);
-  equalsElement(secondElement, 'div', {}, stripTight`[World!]`);
+    equalsElement(externalElement, "div", {}, stripTight``);
+    this.assert.equal(destroyed, 0, "component was destroyed");
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
 
-  set(view, 'foo', 'GoodBye!');
-  rerender();
+    this.rerender({ showExternal: true });
+    equalsElement(externalElement, "div", {}, stripTight`[destroy me!]`);
+    this.assert.equal(destroyed, 0, "component was destroyed");
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
 
-  equalsElement(firstElement, 'div', {}, stripTight`[GoodBye!]<!---->`);
-  equalsElement(secondElement, 'div', {}, stripTight`[World!]`);
+    this.rerender({ showExternal: false });
+    equalsElement(externalElement, "div", {}, stripTight``);
+    this.assert.equal(destroyed, 1, "component was destroyed");
+    this.assertHTML("<!---->");
+    this.assertStableRerender();
+  }
+};
 
-  set(view, 'bar', 'Folks!');
-  rerender();
-
-  equalsElement(firstElement, 'div', {}, stripTight`[GoodBye!]<!---->`);
-  equalsElement(secondElement, 'div', {}, stripTight`[Folks!]`);
-
-  set(view, 'bar', 'World!');
-  rerender();
-
-  equalsElement(firstElement, 'div', {}, stripTight`[GoodBye!]<!---->`);
-  equalsElement(secondElement, 'div', {}, stripTight`[World!]`);
-
-  set(view, 'foo', 'Hello!');
-  rerender();
-
-  equalsElement(firstElement, 'div', {}, stripTight`[Hello!]<!---->`);
-  equalsElement(secondElement, 'div', {}, stripTight`[World!]`);
-});
-
-QUnit.test('components are destroyed', function(assert) {
-  let destroyed = 0;
-  let DestroyMeComponent = EmberishCurlyComponent.extend({
-    destroy(this: EmberishCurlyComponent) {
-      this._super();
-      destroyed++;
-    }
-  });
-
-  env.registerEmberishCurlyComponent('destroy-me', DestroyMeComponent as any, 'destroy me!');
-
-  let externalElement = document.createElement('div');
-
-  appendViewFor(
-    stripTight`
-      {{#if showExternal}}
-        {{#-in-element externalElement}}[{{destroy-me}}]{{/-in-element}}
-      {{/if}}
-    `,
-    {
-      externalElement,
-      showExternal: false,
-    }
-  );
-
-  equalsElement(externalElement, 'div', {}, stripTight``);
-  assert.equal(destroyed, 0, 'component was destroyed');
-
-  set(view, 'showExternal', true);
-  rerender();
-
-  assertElementIsEmberishElement(externalElement.firstElementChild!, 'div', { }, 'destroy me!');
-  assert.equal(destroyed, 0, 'component was destroyed');
-
-  set(view, 'showExternal', false);
-  rerender();
-
-  equalsElement(externalElement, 'div', {}, stripTight``);
-  assert.equal(destroyed, 1, 'component was destroyed');
-});
+module("#-in-element Test", InElementTests);
