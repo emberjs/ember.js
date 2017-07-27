@@ -113,13 +113,11 @@ function addChainWatcher(obj, keyName, node) {
 }
 
 function removeChainWatcher(obj, keyName, node, _meta) {
-  if (!isObject(obj)) {
-    return;
-  }
+  if (!isObject(obj)) { return; }
 
-  let meta = _meta || peekMeta(obj);
+  let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
-  if (!meta || !meta.readableChainWatchers()) {
+  if (meta === undefined || meta.readableChainWatchers() === undefined) {
     return;
   }
 

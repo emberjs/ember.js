@@ -299,7 +299,7 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
 
   // don't create objects just to invalidate
   let meta = peekMeta(obj);
-  if (!meta || meta.source !== obj) {
+  if (meta === undefined || meta.source !== obj) {
     return;
   }
 

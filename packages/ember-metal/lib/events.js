@@ -210,7 +210,7 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
 */
 export function hasListeners(obj, eventName) {
   let meta = peekMeta(obj);
-  if (!meta) { return false; }
+  if (meta === undefined) { return false; }
   let matched = meta.matchingListeners(eventName);
   return matched !== undefined && matched.length > 0;
 }
