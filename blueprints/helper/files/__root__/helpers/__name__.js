@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import { helper } from '@ember/component/helper';
 
 export function <%= camelizedModuleName %>(params/*, hash*/) {
   return params;
 }
 
-export default Ember.Helper.helper(<%= camelizedModuleName %>);
+export default helper(<%= camelizedModuleName %>);

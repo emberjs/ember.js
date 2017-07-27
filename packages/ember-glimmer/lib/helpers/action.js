@@ -66,10 +66,10 @@ export const ACTION = symbol('ACTION');
 
   Here is an example action handler on a component:
 
-  ```js
-  import Ember from 'ember';
+  ```app/components/my-component.js
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     actions: {
       save() {
         this.get('model').save();
@@ -98,8 +98,10 @@ export const ACTION = symbol('ACTION');
   additional arguments are passed to the action function. This has interesting
   properties combined with currying of arguments. For example:
 
-  ```js
-  export default Ember.Component.extend({
+  ```app/components/my-component.js
+  import Component from '@ember/component';
+
+  export default Component.extend({
     actions: {
       // Usage {{input on-input=(action (action 'setName' model) value="target.value")}}
       setName(model, name) {
@@ -118,9 +120,9 @@ export const ACTION = symbol('ACTION');
   with `on-input` above. For example:
 
   ```app/components/my-input.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     actions: {
       setName(model, name) {
         model.set('name', name);
@@ -134,9 +136,9 @@ export const ACTION = symbol('ACTION');
   ```
 
   ```app/components/my-component.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     click() {
       // Note that model is not passed, it was curried in the template
       this.sendAction('submit', 'bob');
@@ -192,7 +194,7 @@ export const ACTION = symbol('ACTION');
   ```
 
   ```app/helpers/disable-bubbling.js
-  import Ember from 'ember';
+  import { helper } from '@ember/component/helper';
 
   export function disableBubbling([action]) {
     return function(event) {
@@ -200,7 +202,7 @@ export const ACTION = symbol('ACTION');
       return action(event);
     };
   }
-  export default Ember.Helper.helper(disableBubbling);
+  export default helper(disableBubbling);
   ```
 
   If you need the default handler to trigger you should either register your
@@ -257,10 +259,11 @@ export const ACTION = symbol('ACTION');
   ```
 
   ```app/controllers/application.js
-  import Ember from 'ember';
+  import Controller from '@ember/controller';
+  import { inject as service } from '@ember/service';
 
-  export default Ember.Controller.extend({
-    someService: Ember.inject.service()
+  export default Controller.extend({
+    someService: service()
   });
   ```
 

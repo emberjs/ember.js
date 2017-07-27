@@ -418,15 +418,15 @@ computed.intersect = intersect;
 computed.collect = collect;
 
 /**
- Defines the hash of localized strings for the current language. Used by
- the `Ember.String.loc()` helper. To localize, add string values to this
- hash.
+  Defines the hash of localized strings for the current language. Used by
+  the `Ember.String.loc()` helper. To localize, add string values to this
+  hash.
 
- @property STRINGS
- @for Ember
- @type Object
- @private
- */
+  @property STRINGS
+  @for Ember
+  @type Object
+  @private
+*/
 Object.defineProperty(Ember, 'STRINGS', {
   configurable: false,
   get: getStrings,
@@ -434,19 +434,19 @@ Object.defineProperty(Ember, 'STRINGS', {
 });
 
 /**
- Whether searching on the global for new Namespace instances is enabled.
+  Whether searching on the global for new Namespace instances is enabled.
 
- This is only exported here as to not break any addons.  Given the new
- visit API, you will have issues if you treat this as a indicator of
- booted.
+  This is only exported here as to not break any addons.  Given the new
+  visit API, you will have issues if you treat this as a indicator of
+  booted.
 
- Internally this is only exposing a flag in Namespace.
+  Internally this is only exposing a flag in Namespace.
 
- @property BOOTED
- @for Ember
- @type Boolean
- @private
- */
+  @property BOOTED
+  @for Ember
+  @type Boolean
+  @private
+*/
 Object.defineProperty(Ember, 'BOOTED', {
   configurable: false,
   enumerable: false,
@@ -500,15 +500,15 @@ EmberString.htmlSafe = htmlSafe;
 EmberString.isHTMLSafe = isHTMLSafe;
 
 /**
- Global hash of shared templates. This will automatically be populated
- by the build tools so that you can store your Handlebars templates in
- separate files that get loaded into JavaScript at buildtime.
+  Global hash of shared templates. This will automatically be populated
+  by the build tools so that you can store your Handlebars templates in
+  separate files that get loaded into JavaScript at buildtime.
 
- @property TEMPLATES
- @for Ember
- @type Object
- @private
- */
+  @property TEMPLATES
+  @for Ember
+  @type Object
+  @private
+*/
 Object.defineProperty(Ember, 'TEMPLATES', {
   get: getTemplates,
   set: setTemplates,
@@ -520,11 +520,12 @@ import VERSION from './version';
 export { VERSION };
 
 /**
- The semantic version
- @property VERSION
- @type String
- @public
- */
+  The semantic version
+
+  @property VERSION
+  @type String
+  @public
+*/
 Ember.VERSION = VERSION;
 
 metal.libraries.registerCoreLibrary('Ember', VERSION);
@@ -532,13 +533,14 @@ metal.libraries.registerCoreLibrary('Ember', VERSION);
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly
 import * as views from 'ember-views';
-/**
- Alias for jQuery
 
- @method $
- @for Ember
- @public
- */
+/**
+  Alias for jQuery
+
+  @method $
+  @for Ember
+  @public
+*/
 Ember.$ = views.jQuery;
 
 Ember.ViewTargetActionSupport = views.ViewTargetActionSupport;
@@ -605,7 +607,7 @@ if (has('ember-testing')) {
 runLoadHooks('Ember');
 
 /**
-@module ember
+  @module ember
 */
 export default Ember;
 

@@ -27,8 +27,10 @@ export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
   Helpers defined using a class must provide a `compute` function. For example:
 
-  ```js
-  export default Ember.Helper.extend({
+  ```app/helpers/format-currency.js
+  import Helper from '@ember/component/helper';
+
+  export default Helper.extend({
     compute(params, hash) {
       let cents = params[0];
       let currency = hash.currency;
@@ -64,11 +66,14 @@ var Helper = FrameworkObject.extend({
     For example, this component will rerender when the `currentUser` on a
     session service changes:
 
-    ```js
-    // app/helpers/current-user-email.js
-    export default Ember.Helper.extend({
-      session: Ember.inject.service(),
-      onNewUser: Ember.observer('session.currentUser', function() {
+    ```app/helpers/current-user-email.js
+    import Helper from '@ember/component/helper'
+    import { inject as service } from '@ember/service'
+    import { observer } from '@ember/object'
+
+    export default Helper.extend({
+      session: service(),
+      onNewUser: observer('session.currentUser', function() {
         this.recompute();
       }),
       compute() {
@@ -105,9 +110,10 @@ Helper.reopenClass({
   The `helper` method create pure-function helpers without instances. For
   example:
 
-  ```js
-  // app/helpers/format-currency.js
-  export default Ember.Helper.helper(function(params, hash) {
+  ```app/helpers/format-currency.js
+  import { helper } from '@ember/component/helper';
+
+  export default helper(function(params, hash) {
     let cents = params[0];
     let currency = hash.currency;
     return `${currency}${cents * 0.01}`;

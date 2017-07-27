@@ -1371,8 +1371,8 @@ EmberRouter.reopenClass({
     Nested routes, by default, will have the parent route tree's route name and
     path prepended to it's own.
 
-    ```javascript
-    App.Router.map(function(){
+    ```app/router.js
+    Router.map(function(){
       this.route('post', { path: '/post/:post_id' }, function() {
         this.route('edit');
         this.route('comments', { resetNamespace: true }, function() {

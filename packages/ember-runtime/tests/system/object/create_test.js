@@ -107,15 +107,6 @@ QUnit.test('throws if you try to \'mixin\' a definition', function() {
   }, 'Ember.Object.create no longer supports mixing in other definitions, use .extend & .create separately instead.');
 });
 
-// This test is for IE8.
-QUnit.test('property name is the same as own prototype property', function() {
-  let MyClass = EmberObject.extend({
-    toString() { return 'MyClass'; }
-  });
-
-  equal(MyClass.create().toString(), 'MyClass', 'should inherit property from the arguments of `EmberObject.create`');
-});
-
 QUnit.test('inherits properties from passed in EmberObject', function() {
   let baseObj = EmberObject.create({ foo: 'bar' });
   let secondaryObj = EmberObject.create(baseObj);

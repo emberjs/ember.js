@@ -1,5 +1,5 @@
-import Ember from 'ember';
+import { registerAsyncHelper } from '@ember/test';
 
-export default Ember.Test.registerAsyncHelper('<%= camelizedModuleName %>', function(app) {
+export default registerAsyncHelper('<%= camelizedModuleName %>', function(app) {
 
 });

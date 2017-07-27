@@ -21,8 +21,8 @@ describe('Acceptance: ember generate and destroy service', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/services/foo.js'))
-          .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Service.extend({\n});');
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
 
         expect(_file('tests/unit/services/foo-test.js'))
           .to.contain("import { moduleFor, test } from 'ember-qunit';")
@@ -36,8 +36,8 @@ describe('Acceptance: ember generate and destroy service', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/services/foo/bar.js'))
-          .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Service.extend({\n});');
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
 
         expect(_file('tests/unit/services/foo/bar-test.js'))
           .to.contain("import { moduleFor, test } from 'ember-qunit';")
@@ -50,8 +50,8 @@ describe('Acceptance: ember generate and destroy service', function() {
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('addon/services/foo.js'))
-          .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Service.extend({\n});');
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
 
         expect(_file('app/services/foo.js'))
           .to.contain("export { default } from 'my-addon/services/foo';");
@@ -68,8 +68,8 @@ describe('Acceptance: ember generate and destroy service', function() {
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('addon/services/foo/bar.js'))
-          .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Service.extend({\n});');
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
 
         expect(_file('app/services/foo/bar.js'))
           .to.contain("export { default } from 'my-addon/services/foo/bar';");
@@ -86,8 +86,8 @@ describe('Acceptance: ember generate and destroy service', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/foo/service.js'))
-          .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Service.extend({\n});');
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
 
         expect(_file('tests/unit/foo/service-test.js'))
           .to.contain("import { moduleFor, test } from 'ember-qunit';")
@@ -101,8 +101,8 @@ describe('Acceptance: ember generate and destroy service', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/foo/bar/service.js'))
-          .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Service.extend({\n});');
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
 
         expect(_file('tests/unit/foo/bar/service-test.js'))
           .to.contain("import { moduleFor, test } from 'ember-qunit';")
@@ -117,8 +117,8 @@ describe('Acceptance: ember generate and destroy service', function() {
       .then(() => setupPodConfig({ podModulePrefix: true }))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/pods/foo/service.js'))
-          .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Service.extend({\n});');
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
 
         expect(_file('tests/unit/pods/foo/service-test.js'))
           .to.contain("import { moduleFor, test } from 'ember-qunit';")
@@ -133,8 +133,8 @@ describe('Acceptance: ember generate and destroy service', function() {
       .then(() => setupPodConfig({ podModulePrefix: true }))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/pods/foo/bar/service.js'))
-          .to.contain("import Ember from 'ember';")
-          .to.contain('export default Ember.Service.extend({\n});');
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
 
         expect(_file('tests/unit/pods/foo/bar/service-test.js'))
           .to.contain("import { moduleFor, test } from 'ember-qunit';")

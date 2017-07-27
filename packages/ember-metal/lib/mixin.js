@@ -686,15 +686,21 @@ Alias.prototype = new Descriptor();
 /**
   Makes a method available via an additional name.
 
-  ```javascript
-  App.Person = Ember.Object.extend({
-    name: function() {
+  ```app/utils/person.js
+  import EmberObject, {
+    aliasMethod
+  } from '@ember/object';
+
+  export default EmberObject.extend({
+    name() {
       return 'Tomhuda Katzdale';
     },
-    moniker: Ember.aliasMethod('name')
+    moniker: aliasMethod('name')
   });
+  ```
 
-  let goodGuy = App.Person.create();
+  ```javascript
+  let goodGuy = Person.create();
 
   goodGuy.name();    // 'Tomhuda Katzdale'
   goodGuy.moniker(); // 'Tomhuda Katzdale'

@@ -59,8 +59,10 @@ function makeComponentDefinition(vm, args) {
 
   Example:
 
-  ```javascript
-  App.NavigationController = Ember.Controller.extend({
+  ```app/controllers/navigation.js
+  import Controller from '@ember/controller';
+
+  export default Controller.extend({
     who: "world"
   });
   ```
