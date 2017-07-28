@@ -109,6 +109,7 @@ export function isComponentDefinition<T = Unique<'Component'>>(obj: Opaque): obj
 
 export interface ComponentCapabilities {
   dynamicLayout: boolean;
+  dynamicTag: boolean;
   prepareArgs: boolean;
   createArgs: boolean;
   attributeHook: boolean;
@@ -117,6 +118,7 @@ export interface ComponentCapabilities {
 
 const ALL_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: true,
+  dynamicTag: true,
   prepareArgs: true,
   createArgs: true,
   attributeHook: false,

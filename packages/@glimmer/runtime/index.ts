@@ -9,9 +9,7 @@ export {
 } from './lib/compiled/opcodes/builder';
 
 export {
-  CompilableLayout,
-  ComponentLayoutBuilder,
-  scanLayout
+  prepareLayout
 } from './lib/compiler';
 
 export {
