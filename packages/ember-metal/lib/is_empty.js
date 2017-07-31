@@ -2,11 +2,11 @@ import { get } from './property_get';
 import isNone from './is_none';
 
 /**
-  Verifies that a value is `null` or an empty string, empty array,
-  or empty function.
+  Verifies that a value is `null` or `undefined`, an empty string, or an empty
+  array.
 
-  Constrains the rules on `Ember.isNone` by returning true for empty
-  string and empty arrays.
+  Constrains the rules on `Ember.isNone` by returning true for empty strings and
+  empty arrays.
 
   ```javascript
   Ember.isEmpty();                // true
