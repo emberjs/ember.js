@@ -29,7 +29,7 @@ function commonSetup() {
 function render(template: Template, context={}) {
   self = new UpdatableReference(context);
   env.begin();
-  let templateIterator = template.render({ env, self, parentNode: root, dynamicScope: new TestDynamicScope() });
+  let templateIterator = template.renderLayout({ env, self, cursor: { element: root, nextSibling: null }, dynamicScope: new TestDynamicScope() });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next();

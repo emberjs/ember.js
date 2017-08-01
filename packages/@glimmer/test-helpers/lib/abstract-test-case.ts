@@ -1,5 +1,5 @@
 import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag } from "@glimmer/reference";
-import { RenderResult, RenderOptions } from "@glimmer/runtime";
+import { RenderResult, RenderLayoutOptions } from "@glimmer/runtime";
 import { Opaque, Dict, dict, expect } from "@glimmer/util";
 import { NodeDOMTreeConstruction } from "@glimmer/node";
 import { Option } from "@glimmer/interfaces";
@@ -493,7 +493,7 @@ export class RenderTests extends AbstractRenderTest {
     return renderTemplate(template, {
       env,
       self: new UpdatableReference(this.context),
-      parentNode: this.element,
+      cursor: { element: this.element, nextSibling: null },
       dynamicScope: new TestDynamicScope()
     });
   }
@@ -546,7 +546,7 @@ export class RehydrationTests extends RenderTests {
     renderTemplate(template, {
       env,
       self: new UpdatableReference(this.context),
-      parentNode: this.element,
+      cursor: { element: this.element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
       mode: "serialize"
     });
@@ -574,7 +574,7 @@ export class RehydrationTests extends RenderTests {
     this.renderResult = renderTemplate(template, {
       env,
       self: new UpdatableReference(this.context),
-      parentNode: this.element,
+      cursor: { element: this.element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
       mode: "rehydrate"
     });
@@ -831,11 +831,11 @@ function isTestFunction(value: any): value is (this: AbstractRenderTest, assert:
   return typeof value === "function" && value.isTest;
 }
 
-export function renderTemplate(template: string, options: RenderOptions & { env: TestEnvironment }) {
+export function renderTemplate(template: string, options: RenderLayoutOptions & { env: TestEnvironment }) {
   let { env } = options;
   env.begin();
 
-  let templateIterator = env.compile(template).render(options);
+  let templateIterator = env.compile(template).renderLayout(options);
 
   let iteratorResult: IteratorResult<RenderResult>;
 

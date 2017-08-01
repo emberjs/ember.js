@@ -133,8 +133,8 @@ export class NewElementBuilder implements ElementBuilder {
   private cursorStack = new Stack<Cursor>();
   private blockStack = new Stack<Tracker>();
 
-  static forInitialRender(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
-    let builder = new this(env, parentNode, nextSibling);
+  static forInitialRender(env: Environment, cursor: Cursor) {
+    let builder = new this(env, cursor.element, cursor.nextSibling);
     builder.pushSimpleBlock();
     return builder;
   }
