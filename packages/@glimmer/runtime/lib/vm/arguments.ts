@@ -228,6 +228,10 @@ export class PositionalArguments implements IPositionalArguments {
 }
 
 class CapturedPositionalArguments implements ICapturedPositionalArguments {
+  static empty(): CapturedPositionalArguments {
+    return new CapturedPositionalArguments(CONSTANT_TAG, EMPTY_ARRAY, 0);
+  }
+
   constructor(
     public tag: Tag,
     public references: VersionedPathReference<Opaque>[],
@@ -391,6 +395,10 @@ export class NamedArguments implements INamedArguments {
 }
 
 class CapturedNamedArguments implements ICapturedNamedArguments {
+  static empty(): CapturedNamedArguments {
+    return new CapturedNamedArguments(CONSTANT_TAG, EMPTY_ARRAY, EMPTY_ARRAY);
+  }
+
   public length: number;
   private _map: Option<Dict<VersionedPathReference<Opaque>>>;
 
@@ -447,3 +455,7 @@ class CapturedNamedArguments implements ICapturedNamedArguments {
     return out;
   }
 }
+
+const EMPTY_NAMED = new CapturedNamedArguments(CONSTANT_TAG, EMPTY_ARRAY, EMPTY_ARRAY);
+const EMPTY_POSITIONAL = new CapturedPositionalArguments(CONSTANT_TAG, EMPTY_ARRAY);
+export const EMPTY_ARGS: ICapturedArguments = { tag: CONSTANT_TAG, length: 0, positional: EMPTY_POSITIONAL, named: EMPTY_NAMED };

@@ -1,3 +1,4 @@
+import { ICapturedArguments } from './arguments';
 import { Register } from '@glimmer/vm';
 import { Scope, DynamicScope, Environment, Opcode, Handle, Heap, Program } from '../environment';
 import { ElementBuilder } from './element-builder';
@@ -205,12 +206,18 @@ export default class VM implements PublicVM {
     program: Program,
     env: Environment,
     self: PathReference<Opaque>,
+    args: Option<ICapturedArguments>,
     dynamicScope: DynamicScope,
     elementStack: ElementBuilder,
     symbolTable: ProgramSymbolTable,
     handle: Handle
   ) {
     let scope = Scope.root(self, symbolTable.symbols.length);
+
+    if (args) {
+
+    }
+
     let vm = new VM(program, env, scope, dynamicScope, elementStack);
     vm.pc = vm.heap.getaddr(handle);
     vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());

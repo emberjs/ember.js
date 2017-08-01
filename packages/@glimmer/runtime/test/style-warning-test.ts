@@ -24,7 +24,7 @@ function rootElement(): HTMLDivElement {
 function render(template: Template, self: any) {
   let result: RenderResult;
   env.begin();
-  let templateIterator = template.render({ env, self: new UpdatableReference(self), parentNode: root, dynamicScope: new TestDynamicScope() });
+  let templateIterator = template.renderLayout({ env, self: new UpdatableReference(self), cursor: { element: root, nextSibling: null }, dynamicScope: new TestDynamicScope() });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next() as IteratorResult<RenderResult>;
