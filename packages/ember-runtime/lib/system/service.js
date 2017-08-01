@@ -12,7 +12,7 @@ import { createInjectionHelper } from '../inject';
   App.ApplicationRoute = Ember.Route.extend({
     authManager: Ember.inject.service('auth'),
 
-    model: function() {
+    model() {
       return this.get('authManager').findCurrentUser();
     }
   });
