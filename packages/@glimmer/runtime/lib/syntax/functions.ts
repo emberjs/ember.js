@@ -100,6 +100,12 @@ STATEMENTS.add(Ops.OpenElement, (sexp: S.OpenElement, builder: OpcodeBuilder) =>
   builder.openPrimitiveElement(sexp[1]);
 });
 
+STATEMENTS.add(Ops.OpenSplattedElement, (sexp: S.SplatElement, builder) => {
+  builder.setComponentAttrs(true);
+  builder.putComponentOperations();
+  builder.openElementWithOperations(sexp[1]);
+});
+
 CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder: OpcodeBuilder) => {
   builder.putComponentOperations();
   builder.openElementWithOperations(sexp[2]);
@@ -186,23 +192,8 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
       builder.pushComponentManager(specifier);
       builder.invokeComponent(attrsBlock, null, args, false, child && child.scan());
     }
-  } else if (block && block.parameters.length) {
-    throw new Error(`Compile Error: Cannot find component ${tag}`);
   } else {
-    builder.openPrimitiveElement(tag);
-
-    for (let i = 0; i < _attrs.length; i++) {
-      STATEMENTS.compile(_attrs[i], builder);
-    }
-
-    builder.flushElement();
-    if (block) {
-      let stmts = block.statements;
-      for (let i = 0; i <  stmts.length; i++) {
-        STATEMENTS.compile(stmts[i], builder);
-      }
-    }
-    builder.closeElement();
+    throw new Error(`Compile Error: Cannot find component ${tag}`);
   }
 });
 
@@ -243,6 +234,14 @@ STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder: OpcodeBui
   let [, to, params] = sexp;
 
   builder.yield(to, params);
+});
+
+STATEMENTS.add(Ops.AttrSplat, (sexp: WireFormat.Statements.AttrSplat, builder: OpcodeBuilder) => {
+  let [, to] = sexp;
+
+  builder.yield(to, []);
+  builder.didCreateElement(Register.s0);
+  builder.setComponentAttrs(false);
 });
 
 STATEMENTS.add(Ops.Debugger, (sexp: WireFormat.Statements.Debugger, builder: OpcodeBuilder) => {

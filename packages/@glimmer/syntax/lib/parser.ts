@@ -43,6 +43,29 @@ export class Parser {
 
   constructor(source: string, options: Object = {}) {
     this.options = options;
+
+    this.tokenizer['states'].tagOpen = function() {
+      let char = this.consume();
+      if (char === "!") {
+        this.state = 'markupDeclaration';
+      } else if (char === "/") {
+        this.state = 'endTagOpen';
+      } else if (/[A-Za-z]/.test(char)) {
+        this.state = 'tagName';
+        this.delegate.beginStartTag();
+        this.delegate.appendToTagName(char);
+      }
+    };
+
+    this.tokenizer['states'].endTagOpen = function () {
+      let char = this.consume();
+      if (/[A-Za-z]/.test(char)) {
+        this.state = 'tagName';
+        this.delegate.beginEndTag();
+        this.delegate.appendToTagName(char);
+      }
+    };
+
     this.source = source.split(/(?:\r\n?|\n)/g);
   }
 

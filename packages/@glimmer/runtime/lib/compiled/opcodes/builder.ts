@@ -626,6 +626,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     this.getComponentLayout(Register.s0);
     this.resolveLayout();
     this.invokeComponentLayout();
+    this.didRenderLayout(Register.s0);
     this.popFrame();
 
     this.popScope();
@@ -733,6 +734,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     this.pushLayout(layout);
     this.resolveLayout();
     this.invokeStatic();
+    this.didRenderLayout(Register.s0);
     this.popFrame();
 
     this.popScope();

@@ -3,9 +3,9 @@ import { precompile } from "@glimmer/compiler";
 
 let env: TestEnvironment;
 
-QUnit.module('precompile');
+QUnit.module('[glimmer-compiler] precompile');
 
-QUnit.module('Compile options', {
+QUnit.module('[glimmer-compiler] Compile options', {
   beforeEach() {
     env = new TestEnvironment();
   }
@@ -17,7 +17,7 @@ QUnit.test('moduleName option is passed into meta', assert => {
   assert.equal(template.meta.moduleName, moduleName, 'Template has the moduleName');
 });
 
-QUnit.module('precompile', {
+QUnit.module('[glimmer-compiler] precompile', {
   beforeEach() {
     env = new TestEnvironment();
   }

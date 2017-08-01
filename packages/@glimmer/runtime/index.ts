@@ -1,6 +1,6 @@
 import './lib/bootstrap';
 
-export { default as templateFactory, TemplateFactory, Template, TemplateIterator, RenderOptions } from './lib/template';
+export { default as templateFactory, TemplateFactory, Template, TemplateIterator, RenderOptions, RenderLayoutOptions } from './lib/template';
 
 export { NULL_REFERENCE, UNDEFINED_REFERENCE, PrimitiveReference, ConditionalReference } from './lib/references';
 
@@ -9,9 +9,7 @@ export {
 } from './lib/compiled/opcodes/builder';
 
 export {
-  CompilableLayout,
-  ComponentLayoutBuilder,
-  scanLayout
+  prepareLayout
 } from './lib/compiler';
 
 export {

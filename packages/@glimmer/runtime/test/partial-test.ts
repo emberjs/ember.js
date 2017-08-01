@@ -29,7 +29,7 @@ function commonSetup() {
 function render(template: Template, context={}) {
   self = new UpdatableReference(context);
   env.begin();
-  let templateIterator = template.render({ env, self, parentNode: root, dynamicScope: new TestDynamicScope() });
+  let templateIterator = template.renderLayout({ env, self, cursor: { element: root, nextSibling: null }, dynamicScope: new TestDynamicScope() });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next();
@@ -119,9 +119,9 @@ QUnit.test('static partial with local reference (unknown)', () => {
 });
 
 QUnit.test('static partial with named arguments', () => {
-  env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{@foo}}-{{partial 'test'}}</p>`);
+  env.registerBasicComponent('FooBar', BasicComponent, `<p>{{@foo}}-{{partial 'test'}}</p>`);
 
-  let template = compile(`<foo-bar @foo={{foo}} @bar={{bar}} />`);
+  let template = compile(`<FooBar @foo={{foo}} @bar={{bar}} />`);
 
   env.registerPartial('test', `{{@foo}}-{{@bar}}`);
   render(template, { foo: 'foo', bar: 'bar' });
@@ -137,15 +137,15 @@ QUnit.test('static partial with named arguments', () => {
 });
 
 QUnit.test('static partial with has-block in basic component', () => {
-  env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{partial 'test'}}</p>`);
-  env.registerBasicComponent('foo-bar-baz', BasicComponent, `<p>{{partial 'test'}}-{{has-block}}-{{has-block 'inverse'}}</p>`);
+  env.registerBasicComponent('FooBar', BasicComponent, `<p>{{partial 'test'}}</p>`);
+  env.registerBasicComponent('FooBarBaz', BasicComponent, `<p>{{partial 'test'}}-{{has-block}}-{{has-block 'inverse'}}</p>`);
   env.registerPartial('test', `{{has-block}}-{{has-block 'inverse'}}`);
 
   render(compile(strip`
-    <foo-bar>a block</foo-bar>
-    <foo-bar />
-    <foo-bar-baz>a block</foo-bar-baz>
-    <foo-bar-baz />
+    <FooBar>a block</FooBar>
+    <FooBar />
+    <FooBarBaz>a block</FooBarBaz>
+    <FooBarBaz />
   `));
 
   equalTokens(root, strip`
@@ -189,17 +189,17 @@ QUnit.test('static partial with has-block in curly component', () => {
 });
 
 QUnit.test('static partial with has-block-params in basic component', () => {
-  env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{partial 'test'}}</p>`);
-  env.registerBasicComponent('foo-bar-baz', BasicComponent, `<p>{{partial 'test'}}-{{has-block-params}}-{{has-block-params "inverse"}}</p>`);
+  env.registerBasicComponent('FooBar', BasicComponent, `<p>{{partial 'test'}}</p>`);
+  env.registerBasicComponent('FooBarBaz', BasicComponent, `<p>{{partial 'test'}}-{{has-block-params}}-{{has-block-params "inverse"}}</p>`);
   env.registerPartial('test', `{{has-block-params}}-{{has-block-params "inverse"}}`);
 
   render(compile(strip`
-    <foo-bar as |x|>a block</foo-bar>
-    <foo-bar>a block</foo-bar>
-    <foo-bar />
-    <foo-bar-baz as |x|>a block</foo-bar-baz>
-    <foo-bar-baz>a block</foo-bar-baz>
-    <foo-bar-baz />
+    <FooBar as |x|>a block</FooBar>
+    <FooBar>a block</FooBar>
+    <FooBar />
+    <FooBarBaz as |x|>a block</FooBarBaz>
+    <FooBarBaz>a block</FooBarBaz>
+    <FooBarBaz />
   `));
 
   equalTokens(root, strip`
@@ -249,15 +249,15 @@ QUnit.test('static partial with has-block-params in curly component', () => {
 });
 
 QUnit.test('static partial with yield in basic component', () => {
-  env.registerBasicComponent('foo-bar', BasicComponent, `<p>{{partial 'test'}}</p>`);
-  env.registerBasicComponent('foo-bar-baz', BasicComponent, `<p>{{partial 'test'}}-{{yield "layout"}}-{{yield to='inverse'}}</p>`);
+  env.registerBasicComponent('FooBar', BasicComponent, `<p>{{partial 'test'}}</p>`);
+  env.registerBasicComponent('FooBarBaz', BasicComponent, `<p>{{partial 'test'}}-{{yield "layout"}}-{{yield to='inverse'}}</p>`);
   env.registerPartial('test', `{{yield "partial"}}-{{yield to='inverse'}}`);
 
   render(compile(strip`
-    <foo-bar as |source|>from {{source}}</foo-bar>
-    <foo-bar />
-    <foo-bar-baz as |source|>from {{source}}</foo-bar-baz>
-    <foo-bar-baz />
+    <FooBar as |source|>from {{source}}</FooBar>
+    <FooBar />
+    <FooBarBaz as |source|>from {{source}}</FooBarBaz>
+    <FooBarBaz />
   `));
 
   equalTokens(root, strip`
