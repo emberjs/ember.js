@@ -78,7 +78,15 @@ export default class TemplateCompiler<T extends TemplateMeta> {
 
   openElement([action]: [AST.ElementNode]) {
     let attributes = action.attributes;
-    let hasSplat = attributes.find(a => a.name === '...attributes');
+    let hasSplat;
+
+    for (let i = 0; i < attributes.length; i++) {
+      let attr = attributes[i];
+      if (attr.name === '...attributes') {
+        hasSplat = attr;
+        break;
+      }
+    }
 
     if (hasSplat) {
       this.opcode('openSplattedElement', action, action);

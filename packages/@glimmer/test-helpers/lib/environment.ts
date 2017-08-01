@@ -838,7 +838,7 @@ export class TestResolver implements Resolver<TestSpecifier, TemplateMeta> {
     return this.lookup('partial', name, meta);
   }
 
-  resolve<T extends LookupValue>(specifier: TestSpecifier): T {
+  resolve<T>(specifier: TestSpecifier): T {
     return this.registry[specifier.type].get(specifier.name) as Recast<LookupValue, T>;
   }
 }
