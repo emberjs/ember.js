@@ -48,12 +48,9 @@ function pushCtx(ctx) {
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
 
-  function i(item) {
-    let cur = get(item, key);
-    return valueProvided ? value === cur : !!cur;
-  }
-
-  return i;
+  return valueProvided ?
+    (item)=> value === get(item, key) :
+    (item)=> !!get(item, key);
 }
 
 /**
@@ -753,7 +750,7 @@ const Enumerable = Mixin.create({
       let method = x && x[methodName];
 
       if ('function' === typeof method) {
-        ret[idx] = args ? method.apply(x, args) : x[methodName]();
+        ret[idx] = args.length ? method.apply(x, args) : x[methodName]();
       }
     }, this);
 
