@@ -46,7 +46,7 @@ function assertProperty<T, K extends keyof T, V extends T[K]>(obj: T | null, key
 function render(template: Template, context = {}) {
   self = new UpdatableReference(context);
   env.begin();
-  let templateIterator = template.render({ env, self, parentNode: root, dynamicScope: new TestDynamicScope() });
+  let templateIterator = template.renderLayout({ env, self, cursor: { element: root, nextSibling: null }, dynamicScope: new TestDynamicScope() });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next();
@@ -950,11 +950,11 @@ module("[glimmer-runtime] Updating", hooks => {
   });
 
   test(`helpers passed as arguments to {{component}} are not torn down when switching between blocks`, assert => {
-    env.registerBasicComponent('x-yasss', BasicComponent, '<div>Yes</div>');
+    env.registerBasicComponent('XYasss', BasicComponent, '<div>Yes</div>');
 
     let options = {
       template: '{{component (stateful-foo)}}',
-      truthyValue: 'x-yasss',
+      truthyValue: 'XYasss',
       falsyValue: null
     };
 

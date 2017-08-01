@@ -31,15 +31,6 @@ export interface ComponentManager<Component> {
   // the component's update hooks need to be called (if at all).
   getTag(component: Component): Tag;
 
-  // The `didCreateElement` hook is run for non-tagless components after the
-  // element as been created, but before it has been appended ("flushed") to
-  // the DOM. This hook allows the manager to save off the element, as well as
-  // install other dynamic attributes via the ElementOperations object.
-  //
-  // Hosts should use `didCreate`, which runs asynchronously after the rendering
-  // process, to provide hooks for user code.
-  didCreateElement(component: Component, element: Simple.Element, operations: ElementOperations): void;
-
   // This hook is run after the entire layout has been rendered.
   //
   // Hosts should use `didCreate`, which runs asynchronously after the rendering
@@ -79,6 +70,21 @@ export interface WithStaticLayout<Component, Specifier, R extends Resolver<Speci
   getLayout(definition: ComponentDefinition<Component>, resolver: R): Specifier;
 }
 
+export interface WithAttributeHook<Component> extends ComponentManager<Component> {
+  didSplatAttributes(component: Component, element: Component, operations: ElementOperations): void;
+}
+
+export interface WithElementHook<Component> extends ComponentManager<Component> {
+  // The `didCreateElement` hook is run for non-tagless components after the
+  // element as been created, but before it has been appended ("flushed") to
+  // the DOM. This hook allows the manager to save off the element, as well as
+  // install other dynamic attributes via the ElementOperations object.
+  //
+  // Hosts should use `didCreate`, which runs asynchronously after the rendering
+  // process, to provide hooks for user code.
+  didCreateElement(component: Component, element: Simple.Element, operations: ElementOperations): void;
+}
+
 export function hasStaticLayout<T>(definition: ComponentDefinition<T>, _: ComponentManager<T>): _ is WithStaticLayout<T, Unique<'Specifier'>, Resolver<Unique<'Specifier'>>> {
   return definition.capabilities.dynamicLayout === false;
 }
@@ -103,14 +109,20 @@ export function isComponentDefinition<T = Unique<'Component'>>(obj: Opaque): obj
 
 export interface ComponentCapabilities {
   dynamicLayout: boolean;
+  dynamicTag: boolean;
   prepareArgs: boolean;
   createArgs: boolean;
+  attributeHook: boolean;
+  elementHook: boolean;
 }
 
 const ALL_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: true,
+  dynamicTag: true,
   prepareArgs: true,
-  createArgs: true
+  createArgs: true,
+  attributeHook: false,
+  elementHook: false
 };
 
 export abstract class ComponentDefinition<T> {

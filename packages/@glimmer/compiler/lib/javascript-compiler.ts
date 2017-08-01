@@ -81,14 +81,14 @@ export class ComponentBlock extends Block {
 
   push(statement: Statement) {
     if (this.inParams) {
-      if (Statements.isFlushElement(statement)) {
+      if (Statements.isModifier(statement)) {
+        throw new Error('Compile Error: Element modifiers are not allowed in components');
+      } else if (Statements.isFlushElement(statement)) {
         this.inParams = false;
       } else if (Statements.isArgument(statement)) {
         this.arguments.push(statement);
       } else if (Statements.isAttribute(statement)) {
         this.attributes.push(statement);
-      } else if (Statements.isModifier(statement)) {
-        throw new Error('Compile Error: Element modifiers are not allowed in components');
       } else {
         throw new Error('Compile Error: only parameters allowed before flush-element');
       }
@@ -210,10 +210,22 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     this.push([Ops.Block, name, params, hash, blocks[template], blocks[inverse]]);
   }
 
+  openSplattedElement(element: AST.ElementNode) {
+    let tag = element.tag;
+
+    if (isComponent(tag)) {
+      throw new Error(`Compile Error: ...attributes can only be used in an element`);
+    } else if (element.blockParams.length > 0) {
+      throw new Error(`Compile Error: <${element.tag}> is not a component and doesn't support block parameters`);
+    } else {
+      this.push([Ops.OpenSplattedElement, tag]);
+    }
+  }
+
   openElement(element: AST.ElementNode) {
     let tag = element.tag;
 
-    if (tag.indexOf('-') !== -1) {
+    if (isComponent(tag)) {
       this.startComponent(element);
     } else if (element.blockParams.length > 0) {
       throw new Error(`Compile Error: <${element.tag}> is not a component and doesn't support block parameters`);
@@ -229,7 +241,7 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   closeElement(element: AST.ElementNode) {
     let tag = element.tag;
 
-    if (tag.indexOf('-') !== -1) {
+    if (isComponent(tag)) {
       let [attrs, args, block] = this.endComponent();
       this.push([Ops.Component, tag, attrs, args, block]);
     } else {
@@ -265,6 +277,10 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
   yield(to: number) {
     let params = this.popValue<Params>();
     this.push([Ops.Yield, to, params]);
+  }
+
+  attrSplat(to: number) {
+    this.push([Ops.AttrSplat, to]);
   }
 
   debugger(evalInfo: Core.EvalInfo) {
@@ -374,4 +390,10 @@ export default class JavaScriptCompiler<T extends TemplateMeta> {
     assert(this.values.length, "No expression found on stack");
     return this.values.pop() as T;
   }
+}
+
+function isComponent(tag: string): boolean {
+  let open = tag.charAt(0);
+
+  return open === open.toUpperCase();
 }

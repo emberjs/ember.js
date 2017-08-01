@@ -1120,7 +1120,7 @@ class Rehydration extends RenderingTest {
     renderTemplate(template, {
       env: this.env,
       self: new UpdatableReference(this.context),
-      parentNode: this.element,
+      cursor: { element: this.element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
       mode: "serialize"
     });
@@ -1149,7 +1149,7 @@ class Rehydration extends RenderingTest {
     this.renderResult = renderTemplate(template, {
       env: this.env,
       self: new UpdatableReference(this.context),
-      parentNode: this.element,
+      cursor: { element: this.element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
       mode: "rehydrate"
     });

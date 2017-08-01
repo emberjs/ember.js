@@ -73,10 +73,10 @@ class DbmonDatabase extends Component {
 
 let env = new TestEnvironment();
 
-env.registerEmberishGlimmerComponent('dbmon-database', DbmonDatabase as any, `
+env.registerEmberishGlimmerComponent('DbmonDatabase', DbmonDatabase as any, `
  <tr>
   <td class="dbname">
-  {{db.name}}
+  {{@db.name}}
   </td>
   <td class="query-count">
     <span class="{{countClassName}}">
@@ -101,7 +101,7 @@ let app = env.compile(`
 <table class="table table-striped latest-data">
   <tbody>
     {{#each model.databaseArray key='name' as |db|}}
-      {{dbmon-database db=db}}
+      <DbmonDatabase @db={{db}} />
     {{/each}}
   </tbody>
 </table>

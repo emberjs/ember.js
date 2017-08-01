@@ -292,7 +292,7 @@ class InElementTests extends RenderTests {
   }
 
   @test "Inside a loop"() {
-    this.registerComponent("Basic", "foo-bar", "<p>{{@value}}</p>");
+    this.registerComponent("Basic", "FooBar", "<p>{{@value}}</p>");
 
     let roots = [
       { id: 0, element: document.createElement('div'), value: 'foo' },
@@ -304,7 +304,7 @@ class InElementTests extends RenderTests {
       stripTight`
         {{~#each roots key="id" as |root|~}}
           {{~#-in-element root.element ~}}
-            {{component 'foo-bar' value=root.value}}
+            {{component 'FooBar' value=root.value}}
           {{~/-in-element~}}
         {{~/each}}
         `,
@@ -404,13 +404,13 @@ class InElementTests extends RenderTests {
         destroyed++;
       }
     });
-    this.env.registerEmberishGlimmerComponent("destroy-me", DestroyMeComponent as any, "destroy me!");
+    this.env.registerEmberishGlimmerComponent("DestroyMe", DestroyMeComponent as any, "destroy me!");
     let externalElement = document.createElement("div");
 
     this.render(
       stripTight`
         {{#if showExternal}}
-          {{#-in-element externalElement}}[{{destroy-me}}]{{/-in-element}}
+          {{#-in-element externalElement}}[<DestroyMe />]{{/-in-element}}
         {{/if}}
       `,
       {

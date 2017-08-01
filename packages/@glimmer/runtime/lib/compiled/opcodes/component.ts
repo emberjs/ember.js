@@ -11,12 +11,13 @@ import {
 } from '@glimmer/reference';
 import Bounds from '../../bounds';
 import {
-  WithDynamicTagName,
-  isComponentDefinition,
-  hasStaticLayout,
-  hasDynamicLayout,
   CurriedComponentDefinition,
-  isCurriedComponentDefinition
+  hasDynamicLayout,
+  hasStaticLayout,
+  isComponentDefinition,
+  isCurriedComponentDefinition,
+  WithDynamicTagName,
+  WithElementHook,
 } from '../../component/interfaces';
 import { normalizeStringValue } from '../../dom/normalize';
 import { DynamicScope, Handle, ScopeBlock, ScopeSlot } from '../../environment';
@@ -38,7 +39,7 @@ const ARGS = new Arguments();
 function resolveComponent(resolver: Resolver, name: string, meta: TemplateMeta): ComponentDefinition {
   let specifier = resolver.lookupComponent(name, meta);
   assert(specifier, `Could not find a component named "${name}"`);
-  return resolver.resolve(specifier!);
+  return resolver.resolve<ComponentDefinition>(specifier!);
 }
 
 class CurryComponentReference implements VersionedPathReference<Option<ComponentDefinition>> {
@@ -324,7 +325,7 @@ APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
   let operations = vm.fetchValue<ComponentElementOperations>(Register.t0);
 
   let action = 'DidCreateElementOpcode#evaluate';
-  manager.didCreateElement(component, vm.elements().expectConstructing(action), operations);
+  (manager as WithElementHook<Component>).didCreateElement(component, vm.elements().expectConstructing(action), operations);
 });
 
 APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state }) => {

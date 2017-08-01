@@ -335,8 +335,7 @@ export class ListBlockOpcode extends BlockOpcode {
 
     let elementStack = NewElementBuilder.forInitialRender(
       state.env,
-      bounds.parentElement(),
-      nextSibling
+      { element: bounds.parentElement(), nextSibling }
     );
 
     return VM.resume(state, elementStack);
