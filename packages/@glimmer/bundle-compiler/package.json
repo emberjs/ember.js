@@ -1,0 +1,16 @@
+{
+  "name": "@glimmer/bundle-compiler",
+  "version": "0.26.2",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/bundle-compiler",
+  "dependencies": {
+    "@glimmer/syntax": "^0.26.2",
+    "@glimmer/util": "^0.26.2",
+    "@glimmer/runtime": "^0.26.2",
+    "@glimmer/wire-format": "^0.26.2",
+    "@glimmer/interfaces": "^0.26.2",
+    "simple-html-tokenizer": "^0.3.0"
+  },
+  "devDependencies": {
+    "typescript": "^2.2.0"
+  }
+}
