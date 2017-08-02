@@ -1,6 +1,6 @@
 import { TestEnvironment } from "@glimmer/test-helpers";
 import { templateFactory } from "@glimmer/runtime";
-import { precompile } from "@glimmer/compiler";
+import { Templates } from "@glimmer/bundle-compiler";
 import { SerializedTemplateWithLazyBlock, TemplateMeta } from "@glimmer/wire-format";
 
 let env: TestEnvironment;
@@ -21,17 +21,32 @@ let serializedTemplateNoId: SerializedTemplateWithLazyBlock<TestMeta>;
 QUnit.module("templateFactory", {
   beforeEach() {
     env = new TestEnvironment();
-    let templateJs = precompile<TestMeta>("<div>{{name}}</div>", {
+
+    let templates = new Templates();
+
+    templates.compile("<div>{{name}}</div>", {
       meta: {
         version: 12,
         lang: 'es',
         moduleName: "template/module/name"
-      }
-    });
-    serializedTemplate = JSON.parse(templateJs);
-    serializedTemplate.id = 'server-id-1';
+      },
 
-    serializedTemplateNoId = JSON.parse(templateJs);
+      plugins: [],
+      lookup: "template/module/name"
+    });
+
+    let templateJs: string;
+
+    templates.eachTemplate(template => {
+      templateJs = template;
+    });
+
+    // in the browser, require('crypto') will fail, and all we're testing
+    // here is that the factory scrapes the id off correctly.
+    serializedTemplate = JSON.parse(templateJs!);
+    serializedTemplate.id = "server-id-1";
+
+    serializedTemplateNoId = JSON.parse(templateJs!);
     serializedTemplateNoId.id = null;
   }
 });

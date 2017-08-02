@@ -1,24 +1,28 @@
-import { CompilationMeta, Opaque, Option, ProgramSymbolTable, SymbolTable, Unique } from '@glimmer/interfaces';
+import { CompilationMeta, Opaque, Option, ProgramSymbolTable, SymbolTable } from '@glimmer/interfaces';
 import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, typePos, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
-import { Handle, Heap, Program } from '../../environment';
-import {
-  ConstantArray,
-  Constants,
-  ConstantString,
-  ConstantFloat,
-  LazyConstants
-} from '../../environment/constants';
-import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
-import { Primitive, PrimitiveType } from '../../references';
-import { expr, ATTRS_BLOCK } from '../../syntax/functions';
-import { BlockSyntax, CompilableTemplate } from '../../syntax/interfaces';
-import RawInlineBlock from '../../syntax/raw-block';
 import { TemplateMeta } from "@glimmer/wire-format";
-import { ComponentBuilder } from "../../compiler";
-import { ComponentDefinition } from '../../component/interfaces';
-import { Specifier } from "../../internal-interfaces";
+
+import {
+  Handle,
+  Heap,
+  LazyConstants,
+  Primitive,
+  BlockSyntax,
+  CompilableTemplate,
+  Constants,
+  RawInlineBlock,
+  Specifier,
+  Program,
+  ComponentBuilder,
+  ComponentCapabilities
+} from './interfaces';
+
+import {
+  ATTRS_BLOCK,
+  expr
+} from './syntax';
 
 export interface CompilesInto<E> {
   compile(builder: OpcodeBuilder): E;
@@ -60,9 +64,8 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
   private buffer: number[] = [];
   private labelsStack = new Stack<Labels>();
   private isComponentAttrs = false;
-  public component: IComponentBuilder = new ComponentBuilder(this);
 
-  constructor(public program: Program, public meta: CompilationMeta) {
+  constructor(public program: Program, public meta: CompilationMeta, public component: ComponentBuilder) {
     this.constants = program.constants;
   }
 
@@ -228,6 +231,10 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     this.push(Op.OpenElement, this.constants.string(tag));
   }
 
+  openElementWithOperations(tag: string) {
+    this.push(Op.OpenElementWithOperations, this.constants.string(tag));
+  }
+
   openDynamicElement() {
     this.push(Op.OpenDynamicElement);
   }
@@ -383,39 +390,34 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
   }
 
   primitive(_primitive: Primitive) {
-    let type: PrimitiveType = PrimitiveType.NUMBER;
+    let flag: 0 | 1 | 2 = 0;
     let primitive: number;
     switch (typeof _primitive) {
       case 'number':
-        if (_primitive as number % 1 === 0) {
-          primitive = _primitive as number;
-        } else {
-          primitive = this.float(_primitive as number);
-          type = PrimitiveType.FLOAT;
-        }
+        primitive = _primitive as number;
         break;
       case 'string':
         primitive = this.string(_primitive as string);
-        type = PrimitiveType.STRING;
+        flag = 1;
         break;
       case 'boolean':
         primitive = (_primitive as any) | 0;
-        type = PrimitiveType.BOOLEAN_OR_VOID;
+        flag = 2;
         break;
       case 'object':
         // assume null
         primitive = 2;
-        type = PrimitiveType.BOOLEAN_OR_VOID;
+        flag = 2;
         break;
       case 'undefined':
         primitive = 3;
-        type = PrimitiveType.BOOLEAN_OR_VOID;
+        flag = 2;
         break;
       default:
         throw new Error('Invalid primitive passed to pushPrimitive');
     }
 
-    this.push(Op.Primitive, primitive << 3 | type);
+    this.push(Op.Primitive, (flag << 30) | primitive);
   }
 
   pushPrimitiveReference(primitive: Primitive) {
@@ -484,15 +486,11 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
 
   // internal helpers
 
-  string(_string: string): ConstantString {
+  string(_string: string): number {
     return this.constants.string(_string);
   }
 
-  float(num: number): ConstantFloat {
-    return this.constants.float(num);
-  }
-
-  protected names(_names: string[]): ConstantArray {
+  protected names(_names: string[]): number {
     let names: number[] = [];
 
     for (let i = 0; i < _names.length; i++) {
@@ -503,7 +501,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     return this.constants.array(names);
   }
 
-  protected symbols(symbols: number[]): ConstantArray {
+  protected symbols(symbols: number[]): number {
     return this.constants.array(symbols);
   }
 
@@ -641,8 +639,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     this.load(Register.s0);
   }
 
-  invokeStaticComponent(definition: ComponentDefinition<Unique<'Component'>>, layout: Layout, attrs: Option<RawInlineBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<BlockSyntax>, inverse: Option<BlockSyntax> = null) {
-    let { capabilities } = definition;
+  invokeStaticComponent(capabilities: ComponentCapabilities, layout: Layout, attrs: Option<RawInlineBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<BlockSyntax>, inverse: Option<BlockSyntax> = null) {
     let { symbolTable } = layout;
 
     let bailOut =
@@ -802,7 +799,9 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
 
   template(block: Option<WireFormat.SerializedInlineBlock>): Option<RawInlineBlock> {
     if (!block) return null;
-    return new RawInlineBlock(block.statements, block.parameters, this.meta, this.options);
+
+    // TODO: DI the Concrete RawInlineBlock
+    return new RawInlineBlock(block.statements, block.parameters, this.meta, this.program);
   }
 }
 

@@ -4,7 +4,7 @@ import { TemplateMeta } from '@glimmer/wire-format';
 import { Template } from './template';
 import { debugSlice } from './opcodes';
 import { ATTRS_BLOCK } from './syntax/functions';
-import { Handle, CompilationOptions } from './environment';
+import { Handle, CompilationOptions, Program } from './environment';
 import { ComponentCapabilities } from './component/interfaces';
 import { ICompilableTemplate } from './syntax/compilable-template';
 import { CompilationOptions as InternalCompilationOptions, Specifier } from './internal-interfaces';
@@ -119,11 +119,7 @@ class WrappedBuilder implements ICompilableTemplate<ProgramSymbolTable> {
 }
 
 export class ComponentBuilder implements IComponentBuilder {
-  private options: InternalCompilationOptions;
-
-  constructor(private builder: OpcodeBuilderDSL) {
-    this.options = builder.options;
-  }
+  constructor(private builder: OpcodeBuilderDSL) {}
 
   static(definition: Opaque, args: ComponentArgs) {
     let [params, hash, _default, inverse] = args;

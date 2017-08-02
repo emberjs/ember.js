@@ -2,7 +2,6 @@ import { CompilationOptions, Program } from '@glimmer/runtime';
 import { Resolver } from "@glimmer/interfaces";
 import { TemplateMeta } from "@glimmer/wire-format";
 import { preprocess, ASTPluginBuilder } from "@glimmer/syntax";
-import { PrecompileOptions, TemplateCompiler } from "@glimmer/compiler";
 
 export interface EagerCompilerOptions<T extends TemplateMeta> {
   meta: T;
