@@ -1,6 +1,6 @@
 import { preprocess } from "@glimmer/syntax";
 import TemplateCompiler, { CompileOptions } from "./template-compiler";
-import { SerializedTemplateWithLazyBlock, TemplateJavascript, TemplateMeta } from "@glimmer/wire-format";
+import { SerializedTemplateWithLazyBlock, SerializedTemplate, TemplateJavascript, TemplateMeta } from "@glimmer/wire-format";
 import { Option } from "@glimmer/interfaces";
 import { PreprocessOptions } from "@glimmer/syntax";
 
