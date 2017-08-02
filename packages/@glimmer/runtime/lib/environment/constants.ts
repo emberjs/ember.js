@@ -1,8 +1,6 @@
-import { VersionedPathReference } from "@glimmer/reference";
 import { Opaque, SymbolTable } from "@glimmer/interfaces";
 import { Specifier, Resolver } from '../internal-interfaces';
 
-export type ConstantReference =  number;
 export type ConstantString = number;
 export type ConstantExpression = number;
 export type ConstantSlice = number;
@@ -18,23 +16,12 @@ export class Constants {
 
   // `0` means NULL
 
-  private references: VersionedPathReference<Opaque>[] = [];
   private strings: string[] = [];
   private arrays: number[][] = [];
   private tables: SymbolTable[] = [];
   private specifiers: Specifier[] = [];
   private serializables: Opaque[] = [];
   private resolved: Opaque[] = [];
-
-  getReference<T extends Opaque>(value: ConstantReference): VersionedPathReference<T> {
-    return this.references[value - 1] as VersionedPathReference<T>;
-  }
-
-  reference(value: VersionedPathReference<Opaque>): ConstantReference {
-    let index = this.references.length;
-    this.references.push(value);
-    return index + 1;
-  }
 
   getString(value: ConstantString): string {
     return this.strings[value - 1];
