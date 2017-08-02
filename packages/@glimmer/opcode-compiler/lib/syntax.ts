@@ -3,11 +3,10 @@ import { assert, dict, EMPTY_ARRAY, unwrap } from '@glimmer/util';
 import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import OpcodeBuilder, { LazyOpcodeBuilder } from '../compiled/opcodes/builder';
-import { Handle, Heap, Program } from '../environment';
-import { hasStaticLayout } from '../component/interfaces';
-import { CompilationOptions, ComponentDefinition } from '../internal-interfaces';
+import { Handle, Heap } from './interfaces';
+import { ComponentDefinition } from '../internal-interfaces';
 import * as ClientSide from './client-side';
-import { BlockSyntax } from './interfaces';
+import { BlockSyntax, CompilationOptions } from './interfaces';
 import RawInlineBlock from './raw-block';
 import Ops = WireFormat.Ops;
 
@@ -103,12 +102,12 @@ STATEMENTS.add(Ops.OpenElement, (sexp: S.OpenElement, builder: OpcodeBuilder) =>
 STATEMENTS.add(Ops.OpenSplattedElement, (sexp: S.SplatElement, builder) => {
   builder.setComponentAttrs(true);
   builder.putComponentOperations();
-  builder.openPrimitiveElement(sexp[1]);
+  builder.openElementWithOperations(sexp[1]);
 });
 
 CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder: OpcodeBuilder) => {
   builder.putComponentOperations();
-  builder.openPrimitiveElement(sexp[2]);
+  builder.openElementWithOperations(sexp[2]);
 });
 
 CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder: OpcodeBuilder) => {
@@ -697,9 +696,9 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.stopLabels();
   });
 
-  blocks.add('in-element', (params, hash, template, _inverse, builder) => {
+  blocks.add('-in-element', (params, hash, template, _inverse, builder) => {
     if (!params || params.length !== 1) {
-      throw new Error(`SYNTAX ERROR: #in-element requires a single argument`);
+      throw new Error(`SYNTAX ERROR: #-in-element requires a single argument`);
     }
 
     builder.startLabels();
@@ -714,7 +713,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       if (keys.length === 1 && keys[0] === 'nextSibling') {
         expr(values[0], builder);
       } else {
-        throw new Error(`SYNTAX ERROR: #in-element does not take a \`${keys[0]}\` option`);
+        throw new Error(`SYNTAX ERROR: #-in-element does not take a \`${keys[0]}\` option`);
       }
     } else {
       expr(null, builder);
@@ -780,8 +779,8 @@ export function compileStatement(statement: WireFormat.Statement, builder: Opcod
   STATEMENTS.compile(statement, builder);
 }
 
-export function compileStatements(statements: WireFormat.Statement[], meta: CompilationMeta, program: Program): { commit(heap: Heap): Handle } {
-  let b = new LazyOpcodeBuilder(program, meta);
+export function compileStatements(statements: WireFormat.Statement[], meta: CompilationMeta, env: CompilationOptions): { commit(heap: Heap): Handle } {
+  let b = new LazyOpcodeBuilder(env, meta);
 
   for (let i = 0; i < statements.length; i++) {
     compileStatement(statements[i], b);

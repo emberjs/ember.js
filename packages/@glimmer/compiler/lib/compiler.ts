@@ -1,6 +1,6 @@
 import { preprocess } from "@glimmer/syntax";
 import TemplateCompiler, { CompileOptions } from "./template-compiler";
-import { SerializedTemplateWithLazyBlock, SerializedTemplate, TemplateJavascript, TemplateMeta } from "@glimmer/wire-format";
+import { SerializedTemplateWithLazyBlock, TemplateJavascript, TemplateMeta } from "@glimmer/wire-format";
 import { Option } from "@glimmer/interfaces";
 import { PreprocessOptions } from "@glimmer/syntax";
 
@@ -14,7 +14,7 @@ export interface PrecompileOptions<T extends TemplateMeta> extends CompileOption
 
 declare function require(id: string): any;
 
-const defaultId: TemplateIdFn = (() => {
+export const defaultId: TemplateIdFn = (() => {
   if (typeof require === 'function') {
     try {
       /* tslint:disable:no-require-imports */

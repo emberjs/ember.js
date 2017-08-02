@@ -1,6 +1,7 @@
 import { Simple, Dict, Opaque, Option, Resolver, Unique } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util';
+import { ComponentCapabilities } from '@glimmer/opcode-compiler';
 import Bounds from '../bounds';
 import { ElementOperations } from '../vm/element-builder';
 import Environment, { DynamicScope } from '../environment';
@@ -105,15 +106,6 @@ const COMPONENT_DEFINITION_BRAND = 'COMPONENT DEFINITION [id=e59c754e-61eb-4392-
 
 export function isComponentDefinition<T = Unique<'Component'>>(obj: Opaque): obj is ComponentDefinition<T> {
   return typeof obj === 'object' && obj !== null && obj[COMPONENT_DEFINITION_BRAND];
-}
-
-export interface ComponentCapabilities {
-  dynamicLayout: boolean;
-  dynamicTag: boolean;
-  prepareArgs: boolean;
-  createArgs: boolean;
-  attributeHook: boolean;
-  elementHook: boolean;
 }
 
 const ALL_CAPABILITIES: ComponentCapabilities = {

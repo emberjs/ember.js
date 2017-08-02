@@ -1,5 +1,5 @@
 export {
-  precompile, PrecompileOptions
+  defaultId, precompile, PrecompileOptions
 } from "./lib/compiler";
 
 export {
