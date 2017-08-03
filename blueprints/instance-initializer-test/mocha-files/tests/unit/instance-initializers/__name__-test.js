@@ -1,21 +1,22 @@
+import Application from '@ember/application';
 import { expect } from 'chai';
 import { describe, it, beforeEach } from 'mocha';
-import Ember from 'ember';
 import { initialize } from '<%= dasherizedModulePrefix %>/instance-initializers/<%= dasherizedModuleName %>';
 import destroyApp from '../../helpers/destroy-app';
+import { run } from '@ember/runloop';
 
 describe('<%= friendlyTestName %>', function() {
   let application, appInstance;
 
   beforeEach(function() {
-    Ember.run(function() {
-      application = Ember.Application.create();
+    run(function() {
+      application = Application.create();
       appInstance = application.buildInstance();
     });
   });
 
   afterEach(function() {
-    Ember.run(appInstance, 'destroy');
+    run(appInstance, 'destroy');
     destroyApp(application);
   });
 
