@@ -102,16 +102,18 @@ QUnit.module('Controller deprecations');
 
 QUnit.module('Controller Content -> Model Alias');
 
-QUnit.test('`model` is aliased as `content`', function() {
-  expect(1);
+QUnit.test('`content` is a deprecated alias of `model`', function() {
+  expect(2);
   let controller = Controller.extend({
     model: 'foo-bar'
   }).create();
 
-  equal(controller.get('content'), 'foo-bar', 'content is an alias of model');
+  expectDeprecation(function () {
+    equal(controller.get('content'), 'foo-bar', 'content is an alias of model');
+  });
 });
 
-QUnit.test('`content` is moved to `model` when `model` is unset', function() {
+QUnit.test('`content` is not moved to `model` when `model` is unset', function() {
   expect(2);
   let controller;
 
@@ -121,18 +123,19 @@ QUnit.test('`content` is moved to `model` when `model` is unset', function() {
     }).create();
   });
 
-  equal(controller.get('model'), 'foo-bar', 'model is set properly');
-  equal(controller.get('content'), 'foo-bar', 'content is set properly');
+  notEqual(controller.get('model'), 'foo-bar', 'model is set properly');
+  equal(controller.get('content'), 'foo-bar', 'content is not set properly');
 });
 
-QUnit.test('specifying `content` (without `model` specified) results in deprecation', function() {
-  expect(1);
+QUnit.test('specifying `content` (without `model` specified) does not result in deprecation', function() {
+  expect(2);
+  expectNoDeprecation();
 
-  expectDeprecation(function() {
-    Controller.extend({
-      content: 'foo-bar'
-    }).create();
-  }, 'Do not specify `content` on a Controller, use `model` instead.');
+  let controller = Controller.extend({
+    content: 'foo-bar'
+  }).create();
+
+  equal(get(controller, 'content'), 'foo-bar');
 });
 
 QUnit.test('specifying `content` (with `model` specified) does not result in deprecation', function() {
