@@ -185,16 +185,12 @@ class ChainNode {
   copy(obj) {
     let ret = new ChainNode(null, null, obj);
     let paths = this._paths;
-    let path;
     if (paths !== undefined) {
+      let path;
       for (path in paths) {
-        // this check will also catch non-number vals.
-        if (paths[path] <= 0) {
-          continue;
-        }
-        ret.add(path);
+        if (paths[path] > 0) { ret.add(path); }
       }
-  }
+    }
     return ret;
   }
 
@@ -281,13 +277,13 @@ class ChainNode {
           this._object = undefined;
         }
       }
-      this._value  = undefined;
+      this._value = undefined;
     }
 
     // then notify chains...
     let chains = this._chains;
-    let node;
     if (chains !== undefined) {
+      let node;
       for (let key in chains) {
         node = chains[key];
         if (node !== undefined) {
@@ -308,10 +304,8 @@ class ChainNode {
 
     if (this._parent) {
       this._parent.populateAffected(path, depth + 1, affected);
-    } else {
-      if (depth > 1) {
-        affected.push(this.value(), path);
-      }
+    } else if (depth > 1) {
+      affected.push(this.value(), path);
     }
   }
 }
