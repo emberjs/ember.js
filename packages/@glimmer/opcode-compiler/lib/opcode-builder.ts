@@ -9,7 +9,7 @@ import {
   Heap,
   LazyConstants,
   Primitive,
-  BlockSyntax,
+  CompilableBlock,
   Constants,
   Specifier,
   Program,
@@ -23,9 +23,7 @@ import {
   expr
 } from './syntax';
 
-import CompilableTemplate, {
-  RawInlineBlock
-} from './compilable-template';
+import CompilableTemplate from './compilable-template';
 
 import {
   ComponentBuilder
@@ -536,8 +534,10 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
 
   // convenience methods
 
-  inlineBlock(block: SerializedInlineBlock) {
-    return new RawInlineBlock(block, this.containingLayout, this);
+  inlineBlock(block: SerializedInlineBlock): CompilableBlock {
+    let { parameters, statements } = block;
+    let symbolTable = { parameters, meta: this.containingLayout.meta };
+    return new CompilableTemplate(statements, this.containingLayout, this, symbolTable);
   }
 
   evalSymbols(): Option<string[]> {
@@ -572,7 +572,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     this.pushArgs(names, count, synthetic);
   }
 
-  invokeStaticBlock(block: BlockSyntax, callerCount = 0): void {
+  invokeStaticBlock(block: CompilableBlock, callerCount = 0): void {
     let { parameters } = block.symbolTable;
     let calleeCount = parameters.length;
     let count = Math.min(callerCount, calleeCount);
@@ -646,14 +646,14 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     this.popFrame();
   }
 
-  invokeComponent(attrs: Option<RawInlineBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<BlockSyntax>, inverse: Option<BlockSyntax> = null) {
+  invokeComponent(attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
     this.fetch(Register.s0);
     this.dup(Register.sp, 1);
     this.load(Register.s0);
 
     this.pushYieldableBlock(block);
     this.pushYieldableBlock(inverse);
-    this.pushYieldableBlock(attrs && attrs.scan());
+    this.pushYieldableBlock(attrs);
 
     this.compileArgs(params, hash, synthetic);
     this.prepareArgs(Register.s0);
@@ -678,7 +678,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     this.load(Register.s0);
   }
 
-  invokeStaticComponent(capabilities: ComponentCapabilities, layout: Layout, attrs: Option<RawInlineBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<BlockSyntax>, inverse: Option<BlockSyntax> = null) {
+  invokeStaticComponent(capabilities: ComponentCapabilities, layout: Layout, attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
     let { symbolTable } = layout;
 
     let bailOut =
@@ -712,14 +712,14 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
 
       switch (symbol.charAt(0)) {
         case '&':
-          let callerBlock: Option<BlockSyntax> = null;
+          let callerBlock: Option<CompilableBlock> = null;
 
           if (symbol === '&default') {
             callerBlock = block;
           } else if (symbol === '&inverse') {
             callerBlock = inverse;
           } else if (symbol === ATTRS_BLOCK) {
-            callerBlock = attrs && attrs.scan();
+            callerBlock = attrs;
           } else {
             throw unreachable();
           }
@@ -785,7 +785,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     this.load(Register.s0);
   }
 
-  dynamicComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<BlockSyntax>, inverse: Option<BlockSyntax> = null) {
+  dynamicComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
     this.startLabels();
 
     this.pushFrame();
@@ -825,18 +825,18 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     this.push(Op.CurryComponent, this.constants.serializable(meta));
   }
 
-  abstract pushBlock(block: Option<BlockSyntax>): void;
+  abstract pushBlock(block: Option<CompilableBlock>): void;
   abstract resolveBlock(): void;
   abstract pushLayout(layout: Option<Layout>): void;
   abstract resolveLayout(): void;
   abstract pushSymbolTable(block: Option<SymbolTable>): void;
 
-  pushYieldableBlock(block: Option<BlockSyntax>): void {
+  pushYieldableBlock(block: Option<CompilableBlock>): void {
     this.pushSymbolTable(block && block.symbolTable);
     this.pushBlock(block);
   }
 
-  template(block: Option<WireFormat.SerializedInlineBlock>): Option<RawInlineBlock> {
+  template(block: Option<WireFormat.SerializedInlineBlock>): Option<CompilableBlock> {
     if (!block) return null;
 
     return this.inlineBlock(block);
@@ -856,7 +856,7 @@ export class LazyOpcodeBuilder extends OpcodeBuilder<CompilableTemplate<ProgramS
     }
   }
 
-  pushBlock(block: Option<BlockSyntax>): void {
+  pushBlock(block: Option<CompilableBlock>): void {
     if (block) {
       this.pushOther(block);
     } else {

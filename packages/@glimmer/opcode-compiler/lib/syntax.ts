@@ -4,7 +4,7 @@ import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
 import OpcodeBuilder, { LazyOpcodeBuilder, CompileTimeLookup } from './opcode-builder';
-import { BlockSyntax, Handle, Heap, ParsedLayout, Program } from './interfaces';
+import { CompilableBlock, Handle, Heap, ParsedLayout, Program } from './interfaces';
 
 import Ops = WireFormat.Ops;
 
@@ -153,8 +153,8 @@ STATEMENTS.add(Ops.Block, (sexp: S.Block, builder: OpcodeBuilder) => {
   let template = builder.template(_template);
   let inverse = builder.template(_inverse);
 
-  let templateBlock = template && template.scan();
-  let inverseBlock = inverse && inverse.scan();
+  let templateBlock = template && template;
+  let inverseBlock = inverse && inverse;
 
   let { blocks } = builder.macros;
   blocks.compile(name, params, hash, templateBlock, inverseBlock, builder);
@@ -182,10 +182,10 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
       let layout = lookup.getLayout(tag, meta)!;
 
       builder.pushComponentManager(specifier);
-      builder.invokeStaticComponent(capabilities, layout, attrsBlock, null, args, false, child && child.scan());
+      builder.invokeStaticComponent(capabilities, layout, attrsBlock, null, args, false, child && child);
     } else {
       builder.pushComponentManager(specifier);
-      builder.invokeComponent(attrsBlock, null, args, false, child && child.scan());
+      builder.invokeComponent(attrsBlock, null, args, false, child && child);
     }
   } else {
     throw new Error(`Compile Error: Cannot find component ${tag}`);
@@ -359,8 +359,8 @@ export class Macros {
   }
 }
 
-export type BlockMacro = (params: C.Params, hash: C.Hash, template: Option<BlockSyntax>, inverse: Option<BlockSyntax>, builder: OpcodeBuilder) => void;
-export type MissingBlockMacro = (name: string, params: C.Params, hash: C.Hash, template: Option<BlockSyntax>, inverse: Option<BlockSyntax>, builder: OpcodeBuilder) => void;
+export type BlockMacro = (params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder) => void;
+export type MissingBlockMacro = (name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder) => void;
 
 export class Blocks {
   private names = dict<number>();
@@ -376,7 +376,7 @@ export class Blocks {
     this.missing = func;
   }
 
-  compile(name: string, params: C.Params, hash: C.Hash, template: Option<BlockSyntax>, inverse: Option<BlockSyntax>, builder: OpcodeBuilder): void {
+  compile(name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder): void {
     let index = this.names[name];
 
     if (index === undefined) {

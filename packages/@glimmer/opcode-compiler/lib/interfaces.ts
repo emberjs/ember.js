@@ -39,7 +39,7 @@ export interface CompilableTemplate<S extends SymbolTable> {
   compile(): Handle;
 }
 
-export type BlockSyntax = CompilableTemplate<BlockSymbolTable>;
+export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 
 export interface Program {
   [key: number]: never;
@@ -74,7 +74,7 @@ export interface LazyConstants extends Constants {
   other(value: Opaque): number;
 }
 
-export type ComponentArgs = [Core.Params, Core.Hash, Option<BlockSyntax>, Option<BlockSyntax>];
+export type ComponentArgs = [Core.Params, Core.Hash, Option<CompilableBlock>, Option<CompilableBlock>];
 export type Specifier = Opaque;
 
 export interface ComponentBuilder {
