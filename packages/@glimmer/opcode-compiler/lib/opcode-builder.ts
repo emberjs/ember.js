@@ -1,8 +1,8 @@
-import { CompilationMeta, Opaque, Option, ProgramSymbolTable, SymbolTable } from '@glimmer/interfaces';
+import { Opaque, Option, ProgramSymbolTable, SymbolTable, Present } from '@glimmer/interfaces';
 import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, typePos, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
-import { TemplateMeta } from "@glimmer/wire-format";
+import { TemplateMeta, SerializedInlineBlock } from "@glimmer/wire-format";
 
 import {
   Handle,
@@ -10,19 +10,26 @@ import {
   LazyConstants,
   Primitive,
   BlockSyntax,
-  CompilableTemplate,
   Constants,
-  RawInlineBlock,
   Specifier,
   Program,
-  ComponentBuilder,
-  ComponentCapabilities
+  ComponentCapabilities,
+  ParsedLayout
 } from './interfaces';
 
 import {
   ATTRS_BLOCK,
+  Macros,
   expr
 } from './syntax';
+
+import CompilableTemplate, {
+  RawInlineBlock
+} from './compilable-template';
+
+import {
+  ComponentBuilder
+} from './wrapped-component';
 
 export interface CompilesInto<E> {
   compile(builder: OpcodeBuilder): E;
@@ -58,14 +65,36 @@ export interface AbstractTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;
 }
 
+export interface CompileTimeLookup {
+  getCapabilities(name: string, meta: TemplateMeta): ComponentCapabilities;
+  getLayout(name: string, meta: TemplateMeta): Option<{ symbolTable: ProgramSymbolTable, handle: Handle }>;
+
+  // This interface produces specifiers (and indicates if a name is present), but does not
+  // produce any actual objects. The main use-case for producing objects is handled above,
+  // with getCapabilities and getLayout, which drastically shrinks the size of the object
+  // that the core interface is forced to reify.
+  lookupHelper(name: string, meta: TemplateMeta): Option<Present>;
+  lookupModifier(name: string, meta: TemplateMeta): Option<Present>;
+  lookupComponent(name: string, meta: TemplateMeta): Option<Present>;
+  lookupPartial(name: string, meta: TemplateMeta): Option<Present>;
+}
+
 export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbolTable> = AbstractTemplate<ProgramSymbolTable>> {
   public constants: Constants;
 
   private buffer: number[] = [];
   private labelsStack = new Stack<Labels>();
   private isComponentAttrs = false;
+  public component: ComponentBuilder = new ComponentBuilder(this);
 
-  constructor(public program: Program, public meta: CompilationMeta, public component: ComponentBuilder) {
+  constructor(
+    public program: Program,
+    public lookup: CompileTimeLookup,
+    public meta: TemplateMeta,
+    public macros: Macros,
+    public containingLayout: ParsedLayout,
+    public asPartial: boolean
+  ) {
     this.constants = program.constants;
   }
 
@@ -507,6 +536,16 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
 
   // convenience methods
 
+  inlineBlock(block: SerializedInlineBlock) {
+    return new RawInlineBlock(block, this.containingLayout, this);
+  }
+
+  evalSymbols(): Option<string[]> {
+    let { containingLayout: { block } } = this;
+
+    return block.hasEval ? block.symbols : null;
+  }
+
   compileParams(params: Option<WireFormat.Core.Params>) {
     if (!params) return 0;
 
@@ -576,7 +615,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
 
     this.jumpUnless('ELSE');
 
-    this.pushDynamicComponentManager(this.meta.templateMeta);
+    this.pushDynamicComponentManager(this.meta);
     this.invokeComponent(null, null, null, false, null, null);
 
     this.exit();
@@ -761,7 +800,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
 
     this.jumpUnless('ELSE');
 
-    this.pushDynamicComponentManager(this.meta.templateMeta);
+    this.pushDynamicComponentManager(this.meta);
     this.invokeComponent(null, params, hash, synthetic, block, inverse);
 
     this.label('ELSE');
@@ -800,8 +839,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
   template(block: Option<WireFormat.SerializedInlineBlock>): Option<RawInlineBlock> {
     if (!block) return null;
 
-    // TODO: DI the Concrete RawInlineBlock
-    return new RawInlineBlock(block.statements, block.parameters, this.meta, this.program);
+    return this.inlineBlock(block);
   }
 }
 

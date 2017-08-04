@@ -24,7 +24,7 @@ import {
 
 import { PublicVM } from './vm/append';
 
-import { Macros } from './syntax/macros';
+import { Macros } from '@glimmer/opcode-compiler';
 import { IArguments } from './vm/arguments';
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { Simple, Unique, Resolver, BlockSymbolTable, Recast } from "@glimmer/interfaces";

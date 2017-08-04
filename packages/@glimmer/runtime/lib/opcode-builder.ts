@@ -9,12 +9,8 @@ import {
 
 import * as WireFormat from '@glimmer/wire-format';
 
-import { BlockSyntax } from './syntax/interfaces';
-
 import { PublicVM } from './vm/append';
-import { Specifier, Resolver } from './internal-interfaces';
-
-export type ComponentArgs = [WireFormat.Core.Params, WireFormat.Core.Hash, Option<BlockSyntax>, Option<BlockSyntax>];
+import { Resolver } from './internal-interfaces';
 
 export interface DynamicComponentDefinition {
   (
@@ -23,8 +19,4 @@ export interface DynamicComponentDefinition {
     meta: WireFormat.TemplateMeta,
     resolver: Resolver
   ): VersionedPathReference<Option<ComponentDefinition<Opaque>>>;
-}
-
-export interface ComponentBuilder {
-  static(definition: Specifier, args: ComponentArgs): void;
 }
