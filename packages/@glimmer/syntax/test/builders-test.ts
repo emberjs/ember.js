@@ -1,4 +1,4 @@
-import { builders as b } from "../index";
+import { builders as b } from "..";
 import { astEqual } from "./support";
 
 QUnit.module('[glimmer-syntax] AST Builders');

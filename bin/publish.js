@@ -6,9 +6,10 @@ const execSync = require('child_process').execSync;
 const chalk = require('chalk');
 const readline = require('readline');
 const semver = require('semver');
-const findPackages = require('../build/package-utils').findPackages;
 
-const DIST_PATH = path.resolve(__dirname, '../dist');
+const Project = require('../build/utils/project');
+
+const DIST_PATH = path.resolve(__dirname, '../dist/node_modules');
 const PACKAGES_PATH = path.resolve(__dirname, '../packages');
 
 const DRY_RUN = process.argv.indexOf('--dry-run') > -1;
@@ -26,7 +27,10 @@ let cli = readline.createInterface({
 });
 
 // Load up the built packages in dist.
-let packages = findPackages(DIST_PATH);
+let packages = Project.from(DIST_PATH)
+  .packages
+  .filter(pkg => pkg.isPublishable);
+
 let packageNames = packages.map(package => package.name);
 let newVersion;
 let distTag;
@@ -89,7 +93,8 @@ function applyNewVersion() {
   });
 
   // Update source packages
-  findPackages(PACKAGES_PATH)
+  Project.from(PACKAGES_PATH)
+    .packages
     .forEach(package => {
       package.pkg.version = newVersion;
       package.updateDependencies(newVersion);
@@ -124,6 +129,8 @@ function confirmPublish() {
   cli.question(chalk.bgRed.white.bold("Are you sure? [Y/N]") + " ", answer => {
     if (answer !== 'y' && answer !== 'Y') {
       console.log(chalk.red("Aborting"));
+      cli.close();
+      return;
     }
 
     packages.filter(pkg => !pkg.private).forEach(package => {

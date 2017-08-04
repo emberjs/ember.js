@@ -1,139 +1,145 @@
-const buildPackage = require('@glimmer/build');
-const buildTestsIndex = require('@glimmer/build/lib/build-tests-index');
-const plugins = require('@glimmer/build/lib/default-es5-plugins');
+'use strict';
+
 const funnel = require('broccoli-funnel');
+const babel = require('broccoli-babel-transpiler');
 const merge = require('broccoli-merge-trees');
-const Filter = require('broccoli-persistent-filter');
-const DAGMap = require('dag-map').default;
-const glob = require('glob');
-const path = require('path');
-const writeFile = require('broccoli-file-creator');
-const fs = require('fs');
+const Rollup = require('broccoli-rollup');
 
-const TSCONFIG_PATH = `${__dirname}/../../build/tsconfig.json`;
-const PACKAGES_PATH = `${__dirname}/../../packages`;
+const transpileToES5 = require('./transpile-to-es5');
+const writePackageJSON = require('./write-package-json');
+const writeLicense = require('./write-license');
 
-/**
- * Find all packages in `packages/` directory and build them individually.
- * Builds are ordered by inverting the dependency tree, so a package's
- * dependencies should be ready by the time it is built.
- */
-module.exports = function() {
-  // Topographically sort packages, then create a @glimmer/build tree per
-  // package.
-  let packageTrees = topsortPackages()
-    .map(packagePath => treeForPackage(packagePath));
+const Project = require('../utils/project');
+const project = Project.from('packages');
 
-  // Merge all packages together, completing the build.
-  return merge(packageTrees);
-}
-
-function topsortPackages() {
-  // Find all packages in `packages/` that have a `package.json` file, and load
-  // that `package.json`.
-  let pkgs = glob
-    .sync(`${PACKAGES_PATH}/**/package.json`)
-    .map(pkgPath => require(pkgPath));
-
-  // Get a list of package names discovered in the repo.
-  let inRepoDependencies = pkgs.map(pkg => pkg.name);
-
-  let graph = new DAGMap();
-
-  // For each package, get a list of in-repo packages it depends on, and add
-  // them to the graph.
-  pkgs
-    .map(pkg => filterDependencies(pkg))
-    .forEach(([pkg, deps]) => {
-      graph.add(pkg.name, pkg, null, deps)
-    });
-
-  let sorted = [];
-
-  // Get a topographically sorted list of packages.
-  graph.each(pkg => sorted.push(`${PACKAGES_PATH}/${pkg}`));
-
-  return sorted;
-
-  function filterDependencies(pkg) {
-    // Merge the package's dependencies and dev dependencies
-    let dependencies = [
-      ...Object.keys(pkg.dependencies || {}),
-      ...Object.keys(pkg.devDependencies || {})
-    ];
-
-    // Filter out any dependencies that we didn't discover in the repo.
-    dependencies = dependencies
-      .filter(dep => inRepoDependencies.indexOf(dep) > -1);
-
-    return [pkg, dependencies];
-  }
-}
-
-/**
- * Returns a `@glimmer/build` Broccoli tree for a given path.
- *
- * @param {string} packagePath
- */
-function treeForPackage(packagePath) {
-  let srcTrees = [
-    funnel(packagePath, { exclude: ['test/**/*'] })
-  ];
-
-  let packageTree;
-
-  if (fs.existsSync(path.join(packagePath, 'index.d.ts'))) {
-    // @glimmer/interfaces only exports types, so we can copy it verbatim without
-    // any transpilation.
-    packageTree = funnel(packagePath, {
-      destDir: path.join('dist', 'types'),
-      exclude: ['package.json']
-    });
-  } else {
-    packageTree = funnel(buildPackage({
-      srcTrees,
-      projectPath: packagePath,
-      tsconfigPath: TSCONFIG_PATH,
-    }), { destDir: 'dist' });
-  }
-
-  let packageJSONTree = treeForPackageJSON(packagePath);
-
-  let license = writeFile('/LICENSE', fs.readFileSync('./LICENSE', 'utf8'));
-
-  let tree = merge([packageTree, packageJSONTree, license]);
-
-  // Convert the package's absolute path to a relative path so it shows up in
-  // the right place in `dist`.
-  let destDir = path.relative(PACKAGES_PATH, packagePath);
-
-  return funnel(tree, { destDir });
-}
-
-const PACKAGE_JSON_FIELDS = {
-  "main": "dist/commonjs/es5/index.js",
-  "jsnext:main": "dist/modules/es5/index.js",
-  "module": "dist/modules/es5/index.js",
-  "typings": "dist/types/index.d.ts",
-  "license": "MIT"
-};
-
-class PackageJSONRewriter extends Filter {
-  canProcessFile(relativePath) {
-    return relativePath === 'package.json';
-  }
-
-  processString(string, relativePath) {
-    let pkg = JSON.parse(string);
-    Object.assign(pkg, PACKAGE_JSON_FIELDS);
-    return JSON.stringify(pkg, null, 2);
-  }
-}
-
-function treeForPackageJSON(packagePath) {
-  let packageJSONTree = funnel(packagePath, {
-    include: ['package.json']
+module.exports = function buildPackages(es2017, matrix) {
+  // Filter out test files from the package builds.
+  es2017 = funnel(es2017, {
+    exclude: ['**/test/**']
   });
 
-  return new PackageJSONRewriter(packageJSONTree);
+  // Create an ES5 version of the higher-fidelity ES2017 code.
+  let es5 = transpileToES5(es2017);
+  let targets = { es5, es2017 };
+
+  let packages = project.packages
+    .map(buildPackage);
+
+  packages = flatten(packages);
+  packages = merge(flatten(packages));
+
+  return packages;
+
+  function buildPackage(pkg) {
+    let pkgName = pkg.name;
+    let builds;
+
+    // The TypeScript compiler doesn't re-emit `.d.ts` files, which is all that
+    // @glimmer/interfaces exports. We need to special case this package and
+    // copy over the definition files from source.
+    if (pkgName === '@glimmer/interfaces') {
+      builds = [copyVerbatim('@glimmer/interfaces')];
+    } else {
+      builds = buildMatrix(pkgName, matrix);
+    }
+
+    return [
+      writePackageJSON(pkgName),
+      writeLicense(`${pkgName}/LICENSE`),
+      ...builds
+    ];
+  }
+
+  function buildMatrix(pkgName) {
+    return matrix.map(([modules, target]) => {
+      let source = targets[target];
+      switch (modules) {
+        case 'amd':
+          return transpileAMD(pkgName, target, source);
+        case 'commonjs':
+          return transpileCommonJS(pkgName, target, source);
+        case 'modules':
+          return copyESModules(pkgName, target, source);
+        case 'types':
+          return copyTypes(pkgName, targets.es2017);
+        default:
+          throw new Error(`Unsupported module target '${target}'.`);
+      }
+    });
+  }
+}
+
+function copyVerbatim(pkgName) {
+  return funnel(`packages/${pkgName}`, {
+    destDir: `${pkgName}/dist/types/`
+  });
+}
+
+function flatten(arr) {
+  return arr.reduce((out, cur) => out.concat(cur), []);
+}
+
+function copyESModules(pkgName, target, source) {
+  return funnel(source, {
+    srcDir: pkgName,
+    destDir: `${pkgName}/dist/modules/${target}/`,
+    exclude: ['**/*.d.ts']
+  });
+}
+
+function copyTypes(pkg, source) {
+  return funnel(source, {
+    srcDir: pkg,
+    include: ['**/*.d.ts'],
+    destDir: `${pkg}/dist/types`
+  });
+}
+
+function transpileAMD(pkgName, esVersion, tree) {
+  let bundleName = pkgName.replace('/', '-').replace('@', '');
+  let pkgTree = funnel(tree, {
+    include: [`${pkgName}/**/*`],
+    exclude: ['**/*.d.ts']
+  });
+
+  // Provide Rollup a list of package names it should not try to include in the
+  // bundle.
+  let external = ['@glimmer/local-debug-flags', ...project.dependencies];
+
+  let options = {
+    annotation: `Transpile AMD - ${pkgName} - ${esVersion}`,
+    rollup: {
+      entry: `${pkgName}/index.js`,
+      external,
+      targets: [{
+        dest: `${bundleName}.js`,
+        format: 'amd',
+        exports: 'named',
+        moduleId: pkgName
+      }]
+    }
+  };
+
+  let amdTree = new Rollup(pkgTree, options);
+  return funnel(amdTree, { destDir: `${pkgName}/dist/amd/${esVersion}` });
+}
+
+function transpileCommonJS(pkgName, esVersion, tree) {
+  let pkgTree = funnel(tree, {
+    include: [`${pkgName}/**/*`],
+    exclude: ['**/*.d.ts']
+  });
+
+  let options = {
+    annotation: `Transpile CommonJS - ${pkgName} - ${esVersion}`,
+    plugins: ['transform-es2015-modules-commonjs'],
+    sourceMaps: 'inline'
+  };
+
+  let commonjsTree = babel(pkgTree, options);
+
+  return funnel(commonjsTree, {
+    srcDir: pkgName,
+    destDir: `${pkgName}/dist/commonjs/${esVersion}`
+  });
 }

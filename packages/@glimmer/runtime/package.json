@@ -10,7 +10,8 @@
     "@glimmer/object": "^0.26.2",
     "@glimmer/object-reference": "^0.26.2",
     "@glimmer/wire-format": "^0.26.2",
-    "@glimmer/interfaces": "^0.26.2"
+    "@glimmer/interfaces": "^0.26.2",
+    "@glimmer/vm": "^0.26.2"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",

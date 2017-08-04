@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     // Compilation Configuration
-    "target": "es2015",
+    "target": "es2017",
     "inlineSources": true,
     "inlineSourceMap": true,
     "declaration": true,
+    "outDir": "dist",
+    "baseUrl" : "packages",
     "rootDir": "packages",
-    "baseUrl" : "./packages",
 
     // Environment Configuration
     "experimentalDecorators": true,

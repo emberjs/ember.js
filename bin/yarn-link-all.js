@@ -23,11 +23,8 @@ if (!fs.existsSync('dist')) {
 }
 
 let command = process.argv[2] === '--unlink' ? UNLINK_COMMAND : LINK_COMMAND;
-let packages = globSync('dist/@glimmer/*/', { cwd });
+let packages = globSync('dist/node_modules/@glimmer/*/', { cwd });
 
-if (command === LINK_COMMAND) {
-  packages.forEach(symlinkGlimmerDependencies);
-}
 packages.forEach(link);
 
 function link(dir) {
@@ -55,25 +52,4 @@ function link(dir) {
 function exec(cmd) {
   console.log(chalk.blue(cmd));
   return execSync(cmd, { cwd });
-}
-
-function symlinkGlimmerDependencies(packagePath) {
-  let pkg = JSON.parse(fs.readFileSync(packagePath + 'package.json'));
-  let dependencies = Object.keys(pkg.dependencies || {})
-    .filter(isGlimmerDependency);
-
-  exec(`mkdir -p "${packagePath}node_modules/@glimmer"`);
-
-  dependencies.forEach(dependency => {
-    let dependencySourcePath = `../../../../${dependency}`;
-    let dependencyTargetPath = `${packagePath}node_modules/${dependency}`;
-
-    if (!fs.existsSync(dependencyTargetPath)) {
-      exec(`ln -s "${dependencySourcePath}" "${dependencyTargetPath}"`)
-    }
-  })
-}
-
-function isGlimmerDependency(dep) {
-  return dep.substring(0, 9) === '@glimmer/';
 }
