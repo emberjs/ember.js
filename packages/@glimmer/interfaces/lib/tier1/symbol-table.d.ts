@@ -4,14 +4,8 @@ import { TemplateMeta } from '@glimmer/wire-format';
 export interface Symbols {
 }
 
-export interface CompilationMeta {
-  symbols: string[];
-  templateMeta: TemplateMeta;
-  asPartial: boolean;
-}
-
 export interface SymbolTable {
-  meta: CompilationMeta;
+  meta: TemplateMeta;
 }
 
 export interface ProgramSymbolTable extends SymbolTable {

@@ -1,8 +1,7 @@
 import { Cursor } from './bounds';
-import CompilableTemplate from './syntax/compilable-template';
-import { Simple, Opaque, Option, BlockSymbolTable } from '@glimmer/interfaces';
+import { Simple, Opaque, Option } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
-import { assign, EMPTY_ARRAY } from '@glimmer/util';
+import { assign } from '@glimmer/util';
 import {
   SerializedTemplateBlock,
   SerializedTemplateWithLazyBlock,
@@ -12,12 +11,11 @@ import {
 import { NewElementBuilder } from './vm/element-builder';
 import { RehydrateBuilder } from './vm/rehydrate-builder';
 import { SerializeBuilder } from './vm/serialize-builder';
-import { DynamicScope, Environment, CompilationOptions as PublicCompilationOptions } from './environment';
-import Scanner from './scanner';
-import { BlockSyntax, TopLevelSyntax } from './syntax/interfaces';
+import { DynamicScope, Environment, Program } from './environment';
+import { TopLevelSyntax } from './syntax/interfaces';
 import { IteratorResult, RenderResult, VM } from './vm';
-import { CompilationOptions } from './internal-interfaces';
 import { EMPTY_ARGS, ICapturedArguments } from './vm/arguments';
+import { CompilableTemplate, ParsedLayout, TemplateOptions } from "@glimmer/opcode-compiler";
 
 export interface RenderOptions {
   env: Environment;
@@ -64,7 +62,6 @@ export interface Template<T extends TemplateMeta = TemplateMeta> {
   // internal casts, these are lazily created and cached
   asLayout(): TopLevelSyntax;
   asPartial(): TopLevelSyntax;
-  asBlock(): BlockSyntax;
 }
 
 export interface TemplateFactory<T extends TemplateMeta, U> {
@@ -85,7 +82,7 @@ export interface TemplateFactory<T extends TemplateMeta, U> {
    *
    * @param {Environment} env glimmer Environment
    */
-  create(env: PublicCompilationOptions<any, any, any>): Template<T>;
+  create(env: TemplateOptions): Template<T>;
   /**
    * Used to create an environment specific singleton instance
    * of the template.
@@ -93,7 +90,7 @@ export interface TemplateFactory<T extends TemplateMeta, U> {
    * @param {Environment} env glimmer Environment
    * @param {Object} meta environment specific injections into meta
    */
-  create(env: PublicCompilationOptions<any, any, any>, meta: U): Template<T & U>;
+  create(env: TemplateOptions, meta: U): Template<T & U>;
 }
 
 export class TemplateIterator {
@@ -115,30 +112,32 @@ export default function templateFactory<T extends TemplateMeta, U>(serializedTem
 export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}, {}> {
   let parsedBlock: SerializedTemplateBlock;
   let id = templateId || `client-${clientId++}`;
-  let create = (options: CompilationOptions, envMeta?: {}) => {
+  let create = (options: TemplateOptions, envMeta?: {}) => {
     let newMeta = envMeta ? assign({}, envMeta, meta) : meta;
     if (!parsedBlock) {
       parsedBlock = JSON.parse(block);
     }
-    return new ScannableTemplate(id, newMeta, options, parsedBlock);
+    return new ScannableTemplate(options, { id, block: parsedBlock, meta: newMeta });
   };
   return { id, meta, create };
 }
 
-class ScannableTemplate implements Template<TemplateMeta> {
+export class ScannableTemplate implements Template<TemplateMeta> {
   private layout: Option<TopLevelSyntax> = null;
   private partial: Option<TopLevelSyntax> = null;
-  private block: Option<BlockSyntax> = null;
-  private scanner: Scanner;
   public symbols: string[];
   public hasEval: boolean;
+  public id: string;
+  public meta: TemplateMeta;
   private statements: Statement[];
 
-  constructor(public id: string, public meta: TemplateMeta, private options: CompilationOptions, rawBlock: SerializedTemplateBlock) {
-    this.scanner = new Scanner(rawBlock, options);
-    this.symbols = rawBlock.symbols;
-    this.hasEval = rawBlock.hasEval;
-    this.statements = rawBlock.statements;
+  constructor(private options: TemplateOptions, private parsedLayout: ParsedLayout) {
+    let { block } = parsedLayout;
+    this.symbols = block.symbols;
+    this.hasEval = block.hasEval;
+    this.statements = block.statements;
+    this.meta = parsedLayout.meta;
+    this.id = parsedLayout.id || `client-${clientId++}`;
   }
 
   renderLayout(options: RenderLayoutOptions): TemplateIterator {
@@ -148,35 +147,27 @@ class ScannableTemplate implements Template<TemplateMeta> {
     let layout = this.asLayout();
     let handle = layout.compile();
 
-    let vm = VM.initial(this.options.program, env, self, args, dynamicScope, builder, layout.symbolTable, handle);
+    let vm = VM.initial(this.options.program as any as Program, env, self, args, dynamicScope, builder, layout.symbolTable, handle);
     return new TemplateIterator(vm);
   }
 
   asLayout(): TopLevelSyntax {
-    if (!this.layout) this.layout = this.scanner.scanLayout(this.compilationMeta());
-    return this.layout;
+    if (this.layout) return this.layout;
+    return this.layout = compilable(this.parsedLayout, this.options, false);
   }
 
   asPartial(): TopLevelSyntax {
-    if (!this.partial) this.partial = this.scanner.scanLayout(this.compilationMeta(true));
-    return this.partial;
+    if (this.partial) return this.partial;
+    return this.partial = compilable(this.parsedLayout, this.options, true);
   }
+}
 
-  asBlock(): BlockSyntax {
-    let { options, statements } = this;
-    let { block } = this;
+export function compilable(layout: ParsedLayout, options: TemplateOptions, asPartial: boolean) {
+  let { block, meta } = layout;
+  let { hasEval, symbols } = block;
+  let compileOptions = { ...options, asPartial };
 
-    if (!block) {
-      let meta = this.compilationMeta();
-      block = this.block = new CompilableTemplate<BlockSymbolTable>(statements, { meta, parameters: EMPTY_ARRAY }, options);
-    }
-
-    return block!;
-  }
-
-  private compilationMeta(asPartial = false) {
-    return { templateMeta: this.meta, symbols: this.symbols, asPartial };
-  }
+  return new CompilableTemplate(block.statements, layout, compileOptions, { meta, hasEval, symbols });
 }
 
 function elementBuilder({ mode, env, cursor }: Pick<RenderLayoutOptions, 'mode' | 'env' | 'cursor'>) {

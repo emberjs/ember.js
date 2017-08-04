@@ -1,13 +1,11 @@
-import { CompilationMeta, Option, ProgramSymbolTable } from '@glimmer/interfaces';
-import { assert, dict, EMPTY_ARRAY, unwrap } from '@glimmer/util';
+import { Option } from '@glimmer/interfaces';
+import { assert, dict, unwrap, EMPTY_ARRAY } from '@glimmer/util';
 import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
-import OpcodeBuilder, { LazyOpcodeBuilder } from '../compiled/opcodes/builder';
-import { Handle, Heap } from './interfaces';
-import { ComponentDefinition } from '../internal-interfaces';
 import * as ClientSide from './client-side';
-import { BlockSyntax, CompilationOptions } from './interfaces';
-import RawInlineBlock from './raw-block';
+import OpcodeBuilder, { LazyOpcodeBuilder, CompileTimeLookup } from './opcode-builder';
+import { BlockSyntax, Handle, Heap, ParsedLayout, Program } from './interfaces';
+
 import Ops = WireFormat.Ops;
 
 export type TupleSyntax = WireFormat.Statement | WireFormat.TupleExpression;
@@ -57,10 +55,10 @@ STATEMENTS.add(Ops.FlushElement, (_sexp: S.FlushElement, builder: OpcodeBuilder)
 });
 
 STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder: OpcodeBuilder) => {
-  let { options: { resolver }, meta } = builder;
+  let { lookup, meta } = builder;
   let [, name, params, hash] = sexp;
 
-  let specifier = resolver.lookupModifier(name, meta.templateMeta);
+  let specifier = lookup.lookupModifier(name, meta);
 
   if (specifier) {
     builder.compileArgs(params, hash, true);
@@ -130,7 +128,7 @@ CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayo
 STATEMENTS.add(Ops.Append, (sexp: S.Append, builder: OpcodeBuilder) => {
   let [, value, trusting] = sexp;
 
-  let { inlines } = builder.options.macros;
+  let { inlines } = builder.macros;
   let returned = inlines.compile(sexp, builder) || value;
 
   if (returned === true) return;
@@ -158,35 +156,33 @@ STATEMENTS.add(Ops.Block, (sexp: S.Block, builder: OpcodeBuilder) => {
   let templateBlock = template && template.scan();
   let inverseBlock = inverse && inverse.scan();
 
-  let { blocks } = builder.options.macros;
+  let { blocks } = builder.macros;
   blocks.compile(name, params, hash, templateBlock, inverseBlock, builder);
 });
 
 STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
   let [, tag, _attrs, args, block] = sexp;
 
-  let options = builder.options;
-  let resolver = options.resolver;
-  let specifier = resolver.lookupComponent(tag, builder.meta.templateMeta);
+  let lookup = builder.lookup;
+  let meta = builder.meta;
+  let specifier = lookup.lookupComponent(tag, builder.meta);
 
   if (specifier) {
-    let definition = resolver.resolve<ComponentDefinition>(specifier);
-    let manager = definition.manager;
+    let capabilities = lookup.getCapabilities(tag, meta);
 
     let attrs: WireFormat.Statement[] = [
       [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true],
       ..._attrs,
       [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false]
     ];
-    let attrsBlock = new RawInlineBlock(attrs, EMPTY_ARRAY, builder.meta, builder.options);
+    let attrsBlock = builder.inlineBlock({ statements: attrs, parameters: EMPTY_ARRAY });
     let child = builder.template(block);
 
-    if (hasStaticLayout(definition, manager)) {
-      let layoutSpecifier = manager.getLayout(definition, resolver);
-      let layout = resolver.resolve<{ symbolTable: ProgramSymbolTable, template: Handle }>(layoutSpecifier);
+    if (capabilities.dynamicLayout === false) {
+      let layout = lookup.getLayout(tag, meta)!;
 
       builder.pushComponentManager(specifier);
-      builder.invokeStaticComponent(definition, layout, attrsBlock, null, args, false, child && child.scan());
+      builder.invokeStaticComponent(capabilities, layout, attrsBlock, null, args, false, child && child.scan());
     } else {
       builder.pushComponentManager(specifier);
       builder.invokeComponent(attrsBlock, null, args, false, child && child.scan());
@@ -199,7 +195,7 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
 STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder: OpcodeBuilder) => {
   let [, name, evalInfo] = sexp;
 
-  let { meta: { templateMeta, symbols } } = builder;
+  let { meta } = builder;
 
   builder.startLabels();
 
@@ -215,7 +211,7 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder: OpcodeBuilder) => {
 
   builder.jumpUnless('ELSE');
 
-  builder.invokePartial(templateMeta, symbols, evalInfo);
+  builder.invokePartial(meta, builder.evalSymbols()!, evalInfo);
   builder.popScope();
   builder.popFrame();
 
@@ -246,7 +242,7 @@ STATEMENTS.add(Ops.AttrSplat, (sexp: WireFormat.Statements.AttrSplat, builder: O
 STATEMENTS.add(Ops.Debugger, (sexp: WireFormat.Statements.Debugger, builder: OpcodeBuilder) => {
   let [, evalInfo] = sexp;
 
-  builder.debugger(builder.meta.symbols, evalInfo);
+  builder.debugger(builder.evalSymbols()!, evalInfo);
 });
 
 STATEMENTS.add(Ops.ClientSideStatement, (sexp: WireFormat.Statements.ClientSide, builder: OpcodeBuilder) => {
@@ -257,6 +253,7 @@ const EXPRESSIONS = new Compilers<WireFormat.TupleExpression>();
 
 import E = WireFormat.Expressions;
 import C = WireFormat.Core;
+import { Statement } from "@glimmer/wire-format";
 
 export function expr(expression: WireFormat.Expression, builder: OpcodeBuilder): void {
   if (Array.isArray(expression)) {
@@ -267,15 +264,15 @@ export function expr(expression: WireFormat.Expression, builder: OpcodeBuilder):
 }
 
 EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder: OpcodeBuilder) => {
-  let { options: { resolver }, meta } = builder;
+  let { lookup, asPartial, meta } = builder;
   let name = sexp[1];
 
-  let specifier = resolver.lookupHelper(name, meta.templateMeta);
+  let specifier = lookup.lookupHelper(name, meta);
 
   if (specifier) {
     builder.compileArgs(null, null, true);
     builder.helper(specifier);
-  } else if (meta.asPartial) {
+  } else if (asPartial) {
     builder.resolveMaybeLocal(name);
   } else {
     builder.getVariable(0);
@@ -292,7 +289,7 @@ EXPRESSIONS.add(Ops.Concat, ((sexp: E.Concat, builder: OpcodeBuilder) => {
 }) as any);
 
 EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
-  let { options: { resolver }, meta } = builder;
+  let { lookup, meta } = builder;
   let [, name, params, hash] = sexp;
 
   // TODO: triage this in the WF compiler
@@ -304,7 +301,7 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder: OpcodeBuilder) => {
     return;
   }
 
-  let specifier = resolver.lookupHelper(name, meta.templateMeta);
+  let specifier = lookup.lookupHelper(name, meta);
 
   if (specifier) {
     builder.compileArgs(params, hash, true);
@@ -325,7 +322,7 @@ EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder: OpcodeBuilder) => {
 EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder: OpcodeBuilder) => {
   let [, path] = sexp;
 
-  if (builder.meta.asPartial) {
+  if (builder.asPartial) {
     let head = path[0];
     path = path.slice(1);
 
@@ -350,6 +347,17 @@ EXPRESSIONS.add(Ops.HasBlock, (sexp: E.HasBlock, builder: OpcodeBuilder) => {
 EXPRESSIONS.add(Ops.HasBlockParams, (sexp: E.HasBlockParams, builder: OpcodeBuilder) => {
   builder.hasBlockParams(sexp[1]);
 });
+
+export class Macros {
+  public blocks: Blocks;
+  public inlines: Inlines;
+
+  constructor() {
+    let { blocks, inlines } = populateBuiltins();
+    this.blocks = blocks;
+    this.inlines = inlines;
+  }
+}
 
 export type BlockMacro = (params: C.Params, hash: C.Hash, template: Option<BlockSyntax>, inverse: Option<BlockSyntax>, builder: OpcodeBuilder) => void;
 export type MissingBlockMacro = (name: string, params: C.Params, hash: C.Hash, template: Option<BlockSyntax>, inverse: Option<BlockSyntax>, builder: OpcodeBuilder) => void;
@@ -779,8 +787,24 @@ export function compileStatement(statement: WireFormat.Statement, builder: Opcod
   STATEMENTS.compile(statement, builder);
 }
 
-export function compileStatements(statements: WireFormat.Statement[], meta: CompilationMeta, env: CompilationOptions): { commit(heap: Heap): Handle } {
-  let b = new LazyOpcodeBuilder(env, meta);
+export interface TemplateOptions {
+  // already in compilation options
+  program: Program;
+  macros: Macros;
+
+  // a subset of the resolver w/ a couple of small tweaks
+  lookup: CompileTimeLookup;
+}
+
+export interface CompileOptions extends TemplateOptions {
+  asPartial: boolean;
+}
+
+export function compileStatements(statements: Statement[], containingLayout: ParsedLayout, options: CompileOptions): { commit(heap: Heap): Handle } {
+  let { program, lookup, macros, asPartial } = options;
+  let { meta } = containingLayout;
+
+  let b = new LazyOpcodeBuilder(program, lookup, meta, macros, containingLayout, asPartial);
 
   for (let i = 0; i < statements.length; i++) {
     compileStatement(statements[i], b);

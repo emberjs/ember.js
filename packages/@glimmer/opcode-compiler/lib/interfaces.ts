@@ -1,7 +1,7 @@
 import { Unique, Opaque, SymbolTable, Option, BlockSymbolTable } from "@glimmer/interfaces";
 import { VersionedPathReference } from "@glimmer/reference";
-import { Core as C, Statements as S, Expression, Core } from "@glimmer/wire-format";
-import { OpcodeBuilder } from './opcode-builder';
+import { Core, SerializedTemplateBlock, TemplateMeta } from "@glimmer/wire-format";
+import { Macros } from './syntax';
 
 export type Handle = Unique<"Handle">;
 
@@ -9,6 +9,10 @@ export interface Heap {
   push(name: /* TODO: Op */ number, op1?: number, op2?: number, op3?: number): void;
   malloc(): Handle;
   finishMalloc(handle: Handle): void;
+
+  // for debugging
+  getaddr(handle: Handle): number;
+  sizeof(handle: Handle): number;
 }
 
 export interface ComponentCapabilities {
@@ -30,38 +34,12 @@ export interface EagerCompilationOptions<Specifier, R extends EagerResolver<Spec
   macros: Macros;
 }
 
-export interface RawInlineBlock {
-  scan(): BlockSyntax;
-}
-
 export interface CompilableTemplate<S extends SymbolTable> {
   symbolTable: S;
   compile(): Handle;
 }
 
-export interface Macros {
-  blocks: Blocks;
-  inlines: Inlines;
-}
-
 export type BlockSyntax = CompilableTemplate<BlockSymbolTable>;
-export type BlockMacro = (params: C.Params, hash: C.Hash, template: Option<BlockSyntax>, inverse: Option<BlockSyntax>, builder: OpcodeBuilder) => void;
-export type MissingBlockMacro = (name: string, params: C.Params, hash: C.Hash, template: Option<BlockSyntax>, inverse: Option<BlockSyntax>, builder: OpcodeBuilder) => void;
-
-export interface Blocks {
-  add(name: string, func: BlockMacro): void;
-  addMissing(func: MissingBlockMacro): void;
-  compile(name: string, params: C.Params, hash: C.Hash, template: Option<BlockSyntax>, inverse: Option<BlockSyntax>, builder: OpcodeBuilder): void;
-}
-
-export type AppendSyntax = S.Append;
-export type AppendMacro = (name: string, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder) => ['expr', Expression] | true | false;
-
-export interface Inlines {
-  add(name: string, func: AppendMacro): void;
-  addMissing(func: AppendMacro): void;
-  compile(sexp: AppendSyntax, builder: OpcodeBuilder): ['expr', Expression] | true;
-}
 
 export interface Program {
   [key: number]: never;
@@ -101,4 +79,10 @@ export type Specifier = Opaque;
 
 export interface ComponentBuilder {
   static(definition: Specifier, args: ComponentArgs): void;
+}
+
+export interface ParsedLayout {
+  id?: Option<string>;
+  block: SerializedTemplateBlock;
+  meta: TemplateMeta;
 }

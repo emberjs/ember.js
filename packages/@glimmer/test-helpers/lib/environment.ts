@@ -1,10 +1,16 @@
 import {
+  CompilableTemplate,
+  ComponentCapabilities,
+  Macros,
+  ParsedLayout,
+  WrappedBuilder,
+  TemplateOptions
+} from '@glimmer/opcode-compiler';
+
+import {
   // VM
   VM,
   DynamicScope,
-
-  // Compiler
-  prepareLayout,
 
   // Environment
   Environment,
@@ -13,12 +19,12 @@ import {
   DOMTreeConstruction,
   DOMChanges,
   IDOMChanges,
+  Lookup as LookupResolver,
 
   // Partials
   PartialDefinition,
 
   // Components
-  ComponentCapabilities,
   ComponentManager,
   ComponentDefinition,
   PreparedArguments,
@@ -40,14 +46,13 @@ import {
 
   Template,
   templateFactory,
-  Macros,
   TopLevelSyntax,
   Program,
   WithDynamicTagName,
   WithDynamicLayout,
   CompilationOptions,
   Handle,
-  CompilableTemplate
+  ScannableTemplate
 } from "@glimmer/runtime";
 
 import {
@@ -86,7 +91,7 @@ import {
 import * as WireFormat from '@glimmer/wire-format';
 
 import { Simple, Resolver, Unique, ProgramSymbolTable, Recast } from "@glimmer/interfaces";
-import { TemplateMeta } from "@glimmer/wire-format";
+import { TemplateMeta, SerializedTemplateWithLazyBlock, SerializedTemplateBlock } from "@glimmer/wire-format";
 import { precompile } from "@glimmer/compiler";
 
 export type _ = Unique<any>;
@@ -305,12 +310,12 @@ class BasicComponentManager implements WithStaticLayout<BasicComponent, TestSpec
     return new klass();
   }
 
-  getLayout({ name, layout }: BasicComponentDefinition, resolver: TestResolver): TestSpecifier {
-    if (!layout) {
-      throw new Error('BUG: missing static layout');
-    }
+  getLayout({ name }: BasicComponentDefinition, resolver: TestResolver): TestSpecifier {
+    let compile = (source: string, options: TemplateOptions) => {
+      let layout = createTemplate(source);
+      return new ScannableTemplate(options, layout).asLayout();
+    };
 
-    let compile = (source: string, options: TestCompilationOptions) => compileWithOptions(source, options).asLayout();
     let specifier = resolver.lookup('template-source', name, {})!;
 
     return resolver.compileTemplate(specifier, compile);
@@ -349,17 +354,14 @@ const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 
 class StaticTaglessComponentManager extends BasicComponentManager {
   getLayout(definition: BasicComponentDefinition, resolver: TestResolver): TestSpecifier {
-    let { layout, name } = definition;
-
-    if (!layout) {
-      throw new Error('BUG: missing static layout');
-    }
+    let { name, capabilities } = definition;
 
     let specifier = resolver.lookup('template-source', name, {})!;
 
-    return resolver.compileTemplate(specifier, (source: string, options: TestCompilationOptions) => {
-      let template = compileWithOptions(source, options, {});
-      return prepareLayout(options, template, definition.capabilities);
+    return resolver.compileTemplate(specifier, (source, options) => {
+      let template = createTemplate(source, {});
+      let compileOptions = { ...options, asPartial: false };
+      return new WrappedBuilder(compileOptions, template, capabilities);
     });
   }
 }
@@ -396,12 +398,12 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return combine([tag, dirtinessTag]);
   }
 
-  getLayout({ name, layout }: EmberishGlimmerComponentDefinition, resolver: TestResolver): TestSpecifier {
-    if (!layout) {
-      throw new Error('BUG: missing static layout');
-    }
+  getLayout({ name }: EmberishGlimmerComponentDefinition, resolver: TestResolver): TestSpecifier {
+    let compile = (source: string, options: TemplateOptions) => {
+      let layout = createTemplate(source);
+      return new ScannableTemplate(options, layout).asLayout();
+    };
 
-    let compile = (source: string, options: TestCompilationOptions) => compileWithOptions(source, options).asLayout();
     let specifier = resolver.lookup('template-source', name, {})!;
 
     return resolver.compileTemplate(specifier, compile);
@@ -541,9 +543,9 @@ class EmberishCurlyComponentManager implements WithDynamicTagName<EmberishCurlyC
       throw new Error('BUG: missing dynamic layout');
     }
 
-    return resolver.compileTemplate(specifier, (source: string, options: TestCompilationOptions) => {
-      let template = compileWithOptions(source, options, {});
-      return prepareLayout(options, template, CURLY_CAPABILITIES);
+    return resolver.compileTemplate(specifier, (source, options) => {
+      let template = createTemplate(source);
+      return new WrappedBuilder({ ...options, asPartial: false }, template, CURLY_CAPABILITIES);
     });
   }
 
@@ -752,7 +754,7 @@ export interface Lookup {
   modifier: ModifierManager;
   partial: PartialDefinition;
   component: ComponentDefinition<Opaque>;
-  template: CompileTemplate;
+  template: { compile(): Handle };
   'template-source': string;
 }
 
@@ -790,11 +792,11 @@ export class TestResolver implements Resolver<TestSpecifier, TemplateMeta> {
     modifier: new TypedRegistry<ModifierManager>(),
     partial: new TypedRegistry<PartialDefinition>(),
     component: new TypedRegistry<ComponentDefinition<Opaque>>(),
-    template: new TypedRegistry<CompilableTemplate>(),
+    template: new TypedRegistry<{ compile(): Handle }>(),
     'template-source': new TypedRegistry<string>()
   };
 
-  private options: TestCompilationOptions;
+  private options: TemplateOptions;
 
   register<K extends LookupType>(type: K, name: string, value: Lookup[K]): TestSpecifier {
     (this.registry[type] as TypedRegistry<any>).register(name, value);
@@ -809,7 +811,7 @@ export class TestResolver implements Resolver<TestSpecifier, TemplateMeta> {
     }
   }
 
-  compileTemplate(sourceSpecifier: TestSpecifier, compiler: (source: string, options: TestCompilationOptions) => CompilableTemplate<ProgramSymbolTable>): TestSpecifier {
+  compileTemplate(sourceSpecifier: TestSpecifier, create: (source: string, options: TemplateOptions) => { compile(): Handle }): TestSpecifier {
     let templateName = sourceSpecifier.name;
     let specifier = this.lookup('template', templateName, {});
 
@@ -819,7 +821,7 @@ export class TestResolver implements Resolver<TestSpecifier, TemplateMeta> {
 
     let source = this.resolve<string>(sourceSpecifier);
 
-    return this.register('template', templateName, compiler(source, this.options));
+    return this.register('template', templateName, create(source, this.options));
   }
 
   lookupHelper(name: string, meta: TemplateMeta): Option<TestSpecifier> {
@@ -862,9 +864,9 @@ class TestMacros extends Macros {
         params = [];
       }
 
-      let resolver = builder.options.resolver;
+      let lookup = builder.lookup;
 
-      let specifier = resolver.lookupComponent(name, builder.meta.templateMeta);
+      let specifier = lookup.lookupComponent(name, builder.meta);
 
       if (specifier) {
         builder.component.static(specifier, [params, hashToArgs(hash), template, inverse]);
@@ -875,8 +877,8 @@ class TestMacros extends Macros {
     });
 
     inlines.addMissing((name, params, hash, builder) => {
-      let resolver = builder.options.resolver;
-      let specifier = resolver.lookupComponent(name, builder.meta.templateMeta);
+      let lookup = builder.lookup;
+      let specifier = lookup.lookupComponent(name, builder.meta);
 
       if (specifier) {
         builder.component.static(specifier, [params!, hashToArgs(hash), null, null]);
@@ -893,9 +895,10 @@ export class TestEnvironment extends Environment {
   private program = new Program(this.resolver);
   private uselessAnchor: HTMLAnchorElement;
   public compiledLayouts = dict<Handle>();
+  private lookup: LookupResolver;
 
-  public compileOptions: TestCompilationOptions = {
-    resolver: this.resolver,
+  public compileOptions: TemplateOptions = {
+    lookup: new LookupResolver(this.resolver),
     program: this.program,
     macros: new TestMacros()
   };
@@ -910,6 +913,7 @@ export class TestEnvironment extends Environment {
 
     // recursive field, so "unsafely" set one half late (but before the resolver is actually used)
     this.resolver['options'] = this.compileOptions;
+    this.lookup = new LookupResolver(this.resolver);
     let document = options.document || window.document;
 
     this.uselessAnchor = document.createElement('a') as HTMLAnchorElement;
@@ -1054,10 +1058,11 @@ export class TestEnvironment extends Environment {
   }
 }
 
-export function compileWithOptions(templateSource: string, options: TestCompilationOptions, meta: TemplateMeta = {}) {
-  let wrapper = JSON.parse(precompile(templateSource, { meta }));
-  let factory = templateFactory(wrapper);
-  return factory.create(options);
+export function createTemplate(templateSource: string, meta: TemplateMeta = {}): ParsedLayout {
+  let wrapper: SerializedTemplateWithLazyBlock<TemplateMeta> = JSON.parse(precompile(templateSource, { meta }));
+  let block: SerializedTemplateBlock = JSON.parse(wrapper.block);
+
+  return { block, meta };
 }
 
 export class TestDynamicScope implements DynamicScope {

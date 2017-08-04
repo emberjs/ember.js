@@ -1,38 +1,42 @@
+import {
+  ATTRS_BLOCK,
+  ComponentCapabilities,
+  ICompilableTemplate,
+  LazyOpcodeBuilder,
+  OpcodeBuilder,
+  debugSlice
+} from '@glimmer/opcode-compiler';
 import { Register } from '@glimmer/vm';
-import { ProgramSymbolTable, Opaque } from '@glimmer/interfaces';
+import { ProgramSymbolTable, Opaque, BlockSymbolTable } from '@glimmer/interfaces';
 import { TemplateMeta } from '@glimmer/wire-format';
-import { Template } from './template';
-import { debugSlice } from './opcodes';
-import { ATTRS_BLOCK } from './syntax/functions';
-import { Handle, CompilationOptions, Program } from './environment';
-import { ComponentCapabilities } from './component/interfaces';
-import { ICompilableTemplate } from './syntax/compilable-template';
-import { CompilationOptions as InternalCompilationOptions, Specifier } from './internal-interfaces';
 
 import {
+  Handle,
   ComponentArgs,
-  ComponentBuilder as IComponentBuilder
-} from './opcode-builder';
+  ComponentBuilder as IComponentBuilder,
+  ParsedLayout,
+  Specifier
+} from './interfaces';
 
-import OpcodeBuilderDSL, { LazyOpcodeBuilder } from './compiled/opcodes/builder';
+import { CompileOptions } from './syntax';
+import CompilableTemplate from './compilable-template';
 
 import { DEBUG } from "@glimmer/local-debug-flags";
+import { EMPTY_ARRAY } from "@glimmer/util";
 
-export function prepareLayout<O extends CompilationOptions<any, any, any>>(options: O, layout: Template<TemplateMeta>, capabilities: ComponentCapabilities): ICompilableTemplate<ProgramSymbolTable> {
-  return new WrappedBuilder(options, layout, capabilities);
-}
-
-class WrappedBuilder implements ICompilableTemplate<ProgramSymbolTable> {
+export class WrappedBuilder implements ICompilableTemplate<ProgramSymbolTable> {
   public symbolTable: ProgramSymbolTable;
-  private meta: { templateMeta: TemplateMeta, symbols: string[], asPartial: false };
+  private meta: TemplateMeta;
 
-  constructor(public options: InternalCompilationOptions, private layout: Template<TemplateMeta>, private capabilities: ComponentCapabilities) {
-    let meta = this.meta = { templateMeta: layout.meta, symbols: layout.symbols, asPartial: false };
+  constructor(public options: CompileOptions, private layout: ParsedLayout, private capabilities: ComponentCapabilities) {
+    let { block } = layout;
+    this.meta = layout.meta;
+    let meta = this.meta = { templateMeta: layout.meta, symbols: block.symbols, asPartial: false };
 
     this.symbolTable = {
       meta,
-      hasEval: layout.hasEval,
-      symbols: layout.symbols.concat([ATTRS_BLOCK])
+      hasEval: block.hasEval,
+      symbols: block.symbols.concat([ATTRS_BLOCK])
     };
   }
 
@@ -65,10 +69,10 @@ class WrappedBuilder implements ICompilableTemplate<ProgramSymbolTable> {
     //        DidRenderLayout
     //        Exit
 
-    let { options, layout } = this;
-    let meta = { templateMeta: layout.meta, symbols: layout.symbols, asPartial: false };
+    let { options, layout, meta } = this;
+    let { program, lookup, macros, asPartial } = options;
 
-    let b = new LazyOpcodeBuilder(options, meta);
+    let b: LazyOpcodeBuilder = new LazyOpcodeBuilder(program, lookup, meta, macros, layout, asPartial);
 
     b.startLabels();
 
@@ -92,7 +96,7 @@ class WrappedBuilder implements ICompilableTemplate<ProgramSymbolTable> {
       b.label('BODY');
     }
 
-    b.invokeStaticBlock(layout.asBlock());
+    b.invokeStaticBlock(blockFor(layout, this.options));
 
     if (this.capabilities.dynamicTag) {
       b.fetch(Register.s1);
@@ -118,8 +122,14 @@ class WrappedBuilder implements ICompilableTemplate<ProgramSymbolTable> {
   }
 }
 
+function blockFor(layout: ParsedLayout, options: CompileOptions): CompilableTemplate<BlockSymbolTable> {
+  let { block, meta } = layout;
+
+  return new CompilableTemplate<BlockSymbolTable>(block.statements, layout, options, { meta, parameters: EMPTY_ARRAY });
+}
+
 export class ComponentBuilder implements IComponentBuilder {
-  constructor(private builder: OpcodeBuilderDSL) {}
+  constructor(private builder: OpcodeBuilder) {}
 
   static(definition: Opaque, args: ComponentArgs) {
     let [params, hash, _default, inverse] = args;

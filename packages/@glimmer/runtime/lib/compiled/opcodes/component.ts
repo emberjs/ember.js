@@ -21,10 +21,8 @@ import {
 } from '../../component/interfaces';
 import { normalizeStringValue } from '../../dom/normalize';
 import { DynamicScope, Handle, ScopeBlock, ScopeSlot } from '../../environment';
-import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import { AbstractTemplate } from './builder';
+import { APPEND_OPCODES, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { UNDEFINED_REFERENCE } from '../../references';
-import { ATTRS_BLOCK } from '../../syntax/functions';
 import { UpdatingVM, VM } from '../../vm';
 import { Arguments, IArguments, ICapturedArguments } from '../../vm/arguments';
 import { IsComponentDefinitionReference } from './content';
@@ -33,6 +31,7 @@ import { Resolver, Specifier, ComponentDefinition, ComponentManager, Component }
 import { dict, assert, unreachable } from "@glimmer/util";
 import { Op, Register } from '@glimmer/vm';
 import { TemplateMeta } from "@glimmer/wire-format";
+import { AbstractTemplate, ATTRS_BLOCK } from '@glimmer/opcode-compiler';
 
 const ARGS = new Arguments();
 
