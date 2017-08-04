@@ -3,8 +3,8 @@ import { assert, dict, unwrap, EMPTY_ARRAY } from '@glimmer/util';
 import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
-import OpcodeBuilder, { LazyOpcodeBuilder, CompileTimeLookup } from './opcode-builder';
-import { CompilableBlock, Handle, Heap, ParsedLayout, Program } from './interfaces';
+import OpcodeBuilder, { CompileTimeLookup, OpcodeBuilderConstructor } from "./opcode-builder";
+import { CompilableBlock, Program } from './interfaces';
 
 import Ops = WireFormat.Ops;
 
@@ -253,7 +253,6 @@ const EXPRESSIONS = new Compilers<WireFormat.TupleExpression>();
 
 import E = WireFormat.Expressions;
 import C = WireFormat.Core;
-import { Statement } from "@glimmer/wire-format";
 
 export function expr(expression: WireFormat.Expression, builder: OpcodeBuilder): void {
   if (Array.isArray(expression)) {
@@ -791,6 +790,7 @@ export interface TemplateOptions {
   // already in compilation options
   program: Program;
   macros: Macros;
+  Builder: OpcodeBuilderConstructor;
 
   // a subset of the resolver w/ a couple of small tweaks
   lookup: CompileTimeLookup;
@@ -798,17 +798,4 @@ export interface TemplateOptions {
 
 export interface CompileOptions extends TemplateOptions {
   asPartial: boolean;
-}
-
-export function compileStatements(statements: Statement[], containingLayout: ParsedLayout, options: CompileOptions): { commit(heap: Heap): Handle } {
-  let { program, lookup, macros, asPartial } = options;
-  let { meta } = containingLayout;
-
-  let b = new LazyOpcodeBuilder(program, lookup, meta, macros, containingLayout, asPartial);
-
-  for (let i = 0; i < statements.length; i++) {
-    compileStatement(statements[i], b);
-  }
-
-  return b;
 }

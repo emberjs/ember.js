@@ -77,6 +77,16 @@ export interface CompileTimeLookup {
   lookupPartial(name: string, meta: TemplateMeta): Option<Present>;
 }
 
+export interface OpcodeBuilderConstructor {
+  new(program: Program,
+      lookup: CompileTimeLookup,
+      meta: TemplateMeta,
+      macros: Macros,
+      containingLayout: ParsedLayout,
+      asPartial: boolean,
+      Builder: OpcodeBuilderConstructor): { commit(heap: Heap): Handle };
+}
+
 export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbolTable> = AbstractTemplate<ProgramSymbolTable>> {
   public constants: Constants;
 
@@ -91,7 +101,8 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     public meta: TemplateMeta,
     public macros: Macros,
     public containingLayout: ParsedLayout,
-    public asPartial: boolean
+    public asPartial: boolean,
+    public Builder: OpcodeBuilderConstructor
   ) {
     this.constants = program.constants;
   }
