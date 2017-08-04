@@ -1,5 +1,5 @@
 import { Cursor } from './bounds';
-import { Simple, Opaque, Option } from '@glimmer/interfaces';
+import { Opaque, Option } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { assign } from '@glimmer/util';
 import {
@@ -15,16 +15,11 @@ import { DynamicScope, Environment, Program } from './environment';
 import { TopLevelSyntax } from './syntax/interfaces';
 import { IteratorResult, RenderResult, VM } from './vm';
 import { EMPTY_ARGS, ICapturedArguments } from './vm/arguments';
-import { CompilableTemplate, ParsedLayout, TemplateOptions } from "@glimmer/opcode-compiler";
-
-export interface RenderOptions {
-  env: Environment;
-  self: PathReference<Opaque>;
-  parentNode: Simple.Element;
-  nextSibling?: Option<Simple.Node>;
-  dynamicScope: DynamicScope;
-  mode?: 'rehydrate' | 'serialize';
-}
+import {
+  CompilableTemplate,
+  ParsedLayout,
+  TemplateOptions
+} from "@glimmer/opcode-compiler";
 
 export interface RenderLayoutOptions {
   env: Environment;

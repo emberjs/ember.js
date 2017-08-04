@@ -24,7 +24,7 @@ import {
 
 import { PublicVM } from './vm/append';
 
-import { Macros } from '@glimmer/opcode-compiler';
+import { Macros, OpcodeBuilderConstructor } from "@glimmer/opcode-compiler";
 import { IArguments } from './vm/arguments';
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { Simple, Unique, Resolver, BlockSymbolTable, Recast } from "@glimmer/interfaces";
@@ -378,6 +378,7 @@ export interface CompilationOptions<T extends TemplateMeta, Specifier, R extends
   resolver: R;
   program: Program;
   macros: Macros;
+  Builder: OpcodeBuilderConstructor;
 }
 
 export abstract class Environment {

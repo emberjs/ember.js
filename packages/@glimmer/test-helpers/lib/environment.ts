@@ -4,8 +4,9 @@ import {
   Macros,
   ParsedLayout,
   WrappedBuilder,
-  TemplateOptions
-} from '@glimmer/opcode-compiler';
+  TemplateOptions,
+  LazyOpcodeBuilder
+} from "@glimmer/opcode-compiler";
 
 import {
   // VM
@@ -900,7 +901,8 @@ export class TestEnvironment extends Environment {
   public compileOptions: TemplateOptions = {
     lookup: new LookupResolver(this.resolver),
     program: this.program,
-    macros: new TestMacros()
+    macros: new TestMacros(),
+    Builder: LazyOpcodeBuilder
   };
 
   constructor(options: TestEnvironmentOptions = {}) {

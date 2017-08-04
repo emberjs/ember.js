@@ -2,7 +2,6 @@ import {
   ATTRS_BLOCK,
   ComponentCapabilities,
   ICompilableTemplate,
-  LazyOpcodeBuilder,
   OpcodeBuilder,
   debugSlice
 } from '@glimmer/opcode-compiler';
@@ -71,8 +70,9 @@ export class WrappedBuilder implements ICompilableTemplate<ProgramSymbolTable> {
 
     let { options, layout, meta } = this;
     let { program, lookup, macros, asPartial } = options;
+    let { Builder } = options;
 
-    let b: LazyOpcodeBuilder = new LazyOpcodeBuilder(program, lookup, meta, macros, layout, asPartial);
+    let b = new Builder(program, lookup, meta, macros, layout, asPartial, options.Builder) as OpcodeBuilder;
 
     b.startLabels();
 

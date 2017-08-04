@@ -4,15 +4,15 @@ export {
   ATTRS_BLOCK,
   CompileOptions,
   Macros,
-  TemplateOptions,
-  compileStatements
+  TemplateOptions
 } from './lib/syntax';
 
 export {
   AbstractTemplate,
   CompileTimeLookup,
   LazyOpcodeBuilder,
-  OpcodeBuilder
+  OpcodeBuilder,
+  OpcodeBuilderConstructor
 } from './lib/opcode-builder';
 
 export {
