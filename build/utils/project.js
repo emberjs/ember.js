@@ -42,6 +42,16 @@ class Package {
     return Object.assign({}, this.pkg.devDependencies, this.pkg.dependencies);
   }
 
+  /**
+   * The list of a package's dependencies that are internal to the same
+   * monorepo.
+   */
+  get internalDependencies() {
+    let siblings = this.siblingPackages;
+    return Object.keys(this.allDependencies)
+      .filter(dep => siblings.includes(dep));
+  }
+
   get packageJSONPath() {
     return path.join(this.absolutePath, 'package.json');
   }
@@ -73,15 +83,18 @@ class Package {
 const PACKAGES_GLOB = '@glimmer/*/';
 
 function findPackages(cwd, packagesGlob = PACKAGES_GLOB) {
-  let packages = glob.sync(packagesGlob, { cwd });
+  let packageNames = glob.sync(packagesGlob, { cwd })
+    .map(trimTrailingSlash);
 
-  if (!packages.length) { throw new Error(`No packages found in ${cwd}`); }
+  if (!packageNames.length) { throw new Error(`No packages found in ${cwd}`); }
 
-  packages = packages
-    .map(pkg => pkg.replace(/\/$/, ''))
-    .map(pkg => new Package(pkg, cwd, packages));
+  let packages = packageNames.map(pkg => new Package(pkg, cwd, packageNames));
 
   return topsort(packages);
+}
+
+function trimTrailingSlash(filePath) {
+  return filePath.replace(/\/$/, '');
 }
 
 function topsort(packages) {
@@ -132,7 +145,7 @@ class Project {
       return PROJECT_CACHE[absolutePath];
     }
 
-    return new Project(rootPath);
+    return PROJECT_CACHE[absolutePath] = new Project(rootPath);
   }
 
   constructor(rootPath) {
