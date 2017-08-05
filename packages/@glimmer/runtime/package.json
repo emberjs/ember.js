@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
+    "@glimmer/local-debug-flags": "^0.26.2",
     "typescript": "^2.2.0"
   }
 }
