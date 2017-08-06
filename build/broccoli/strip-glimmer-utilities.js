@@ -11,6 +11,7 @@ const debugMacros = require('babel-plugin-debug-macros').default;
 module.exports = function(jsTree) {
   return babel(jsTree, {
     annotation: 'Babel - Strip Glimmer Utilities',
+    sourceMaps: 'inline',
     plugins: [
       [debugMacros, {
         envFlags: {
