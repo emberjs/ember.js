@@ -2,6 +2,7 @@ import { Opaque, SymbolTable } from "@glimmer/interfaces";
 import { Specifier, Resolver } from '../internal-interfaces';
 
 export type ConstantString = number;
+export type ConstantFloat = number;
 export type ConstantExpression = number;
 export type ConstantSlice = number;
 export type ConstantBlock = number;
@@ -17,6 +18,7 @@ export class Constants {
   // `0` means NULL
 
   private strings: string[] = [];
+  private floats: number[] = [];
   private arrays: number[][] = [];
   private tables: SymbolTable[] = [];
   private specifiers: Specifier[] = [];
@@ -25,6 +27,14 @@ export class Constants {
 
   getString(value: ConstantString): string {
     return this.strings[value - 1];
+  }
+
+  getFloat(value: ConstantFloat): number {
+    return this.floats[value - 1];
+  }
+
+  float(value: number): ConstantFloat {
+    return this.floats.push(value);
   }
 
   string(value: string): ConstantString {
