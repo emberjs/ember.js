@@ -31,7 +31,7 @@ module.exports = function(_options) {
   // Glimmer includes a number of assertions and logging information that can be
   // stripped from production builds for better runtime performance.
   if (PRODUCTION) {
-    // jsTree = stripGlimmerUtilities(jsTree);
+    jsTree = stripGlimmerUtilities(jsTree);
   }
 
   let matrix;
