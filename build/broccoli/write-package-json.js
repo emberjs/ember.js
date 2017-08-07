@@ -7,7 +7,7 @@ const funnel = require('broccoli-funnel');
 const PACKAGE_JSON_FIELDS = {
   "main": "dist/commonjs/es5/index.js",
   "jsnext:main": "dist/modules/es5/index.js",
-  "module": "dist/modules/es5/index.js",
+  "module": "dist/modules/es2017/index.js",
   "typings": "dist/types/index.d.ts",
   "license": "MIT"
 };
