@@ -115,7 +115,8 @@ function transpileAMD(pkgName, esVersion, tree) {
         dest: `${bundleName}.js`,
         format: 'amd',
         exports: 'named',
-        moduleId: pkgName
+        moduleId: pkgName,
+        sourceMap: 'inline'
       }]
     }
   };
