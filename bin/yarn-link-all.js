@@ -23,7 +23,7 @@ if (!fs.existsSync('dist')) {
 }
 
 let command = process.argv[2] === '--unlink' ? UNLINK_COMMAND : LINK_COMMAND;
-let packages = globSync('dist/node_modules/@glimmer/*/', { cwd });
+let packages = globSync('dist/@glimmer/*/', { cwd });
 
 packages.forEach(link);
 
