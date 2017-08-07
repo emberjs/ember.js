@@ -1,13 +1,14 @@
 import { Op } from '@glimmer/vm';
 import { Opaque, Option, BlockSymbolTable } from '@glimmer/interfaces';
-import { Reference, VersionedPathReference } from '@glimmer/reference';
 import {
+  VersionedPathReference,
   CONSTANT_TAG,
   isConst,
   isModified,
   ReferenceCache,
   Revision,
-  Tag,
+  Reference,
+  Tag
 } from '@glimmer/reference';
 import { initializeGuid } from '@glimmer/util';
 import { Handle } from '../../environment';
@@ -40,9 +41,12 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
       stack.push(value);
       break;
     case 1:
-      stack.push(vm.constants.getString(value));
+      stack.push(vm.constants.getFloat(value));
       break;
     case 2:
+      stack.push(vm.constants.getString(value));
+      break;
+    case 3:
       switch (value) {
         case 0: stack.push(false); break;
         case 1: stack.push(true); break;
