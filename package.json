@@ -38,6 +38,7 @@
     "@glimmer/build": "^0.8.2",
     "@types/handlebars": "^4.0.32",
     "@types/qunit": "^2.0.31",
+    "babel-plugin-transform-proto-to-assign": "^6.23.0",
     "babel-preset-env": "^1.6.0",
     "benchmark": "^1.0.0",
     "broccoli-babel-transpiler": "^6.1.2",
