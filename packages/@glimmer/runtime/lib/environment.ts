@@ -28,7 +28,7 @@ import { Macros } from './syntax/macros';
 import { IArguments } from './vm/arguments';
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { Simple, Unique, Resolver, BlockSymbolTable, Recast } from "@glimmer/interfaces";
-import { Component, ComponentManager } from "@glimmer/runtime/lib/internal-interfaces";
+import { Component, ComponentManager } from "./internal-interfaces";
 import { TemplateMeta } from "@glimmer/wire-format";
 
 export type ScopeBlock = [Handle, BlockSymbolTable];
