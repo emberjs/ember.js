@@ -145,7 +145,9 @@ class Project {
       return PROJECT_CACHE[absolutePath];
     }
 
-    return PROJECT_CACHE[absolutePath] = new Project(rootPath);
+    PROJECT_CACHE[absolutePath] = new Project(rootPath);
+
+    return PROJECT_CACHE[absolutePath];
   }
 
   constructor(rootPath) {

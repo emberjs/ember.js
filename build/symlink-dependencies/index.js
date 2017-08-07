@@ -25,7 +25,7 @@ module.exports = {
     rimraf('dist/@glimmer/*/node_modules');
   },
 
-  outputReady(results) {
+  outputReady() {
     let outputPath = process.env.EMBER_CLI_TEST_OUTPUT || 'dist';
 
     Project.from('packages')
