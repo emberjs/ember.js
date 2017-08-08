@@ -8,6 +8,6 @@ export type CompilationOptions = ICompilationOptions<TemplateMeta, Specifier, Re
 
 export {
   InternalComponent as Component,
-  InternalComponentDefinition as ComponentDefinition,
+  ComponentDefinition,
   InternalComponentManager as ComponentManager
 } from './component/interfaces';

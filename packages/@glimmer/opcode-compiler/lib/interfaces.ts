@@ -1,5 +1,4 @@
 import { Unique, Opaque, SymbolTable, Option, BlockSymbolTable } from "@glimmer/interfaces";
-import { VersionedPathReference } from "@glimmer/reference";
 import { Core, SerializedTemplateBlock, TemplateMeta } from "@glimmer/wire-format";
 import { Macros } from './syntax';
 
@@ -16,6 +15,7 @@ export interface Heap {
 }
 
 export interface ComponentCapabilities {
+  staticDefinitions: boolean;
   dynamicLayout: boolean;
   dynamicTag: boolean;
   prepareArgs: boolean;
@@ -61,7 +61,6 @@ export interface Opcode {
 export type Primitive = undefined | null | boolean | number | string;
 
 export interface Constants {
-  reference(value: VersionedPathReference<Opaque>): number;
   string(value: string): number;
   stringArray(strings: string[]): number;
   array(values: number[]): number;

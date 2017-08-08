@@ -14,18 +14,19 @@ import {
   CurriedComponentDefinition,
   hasDynamicLayout,
   hasStaticLayout,
-  isComponentDefinition,
   isCurriedComponentDefinition,
   WithDynamicTagName,
   WithElementHook,
+  ComponentSpec,
+  PublicComponentSpec
 } from '../../component/interfaces';
 import { normalizeStringValue } from '../../dom/normalize';
 import { DynamicScope, Handle, ScopeBlock, ScopeSlot } from '../../environment';
-import { APPEND_OPCODES, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UNDEFINED_REFERENCE } from '../../references';
 import { UpdatingVM, VM } from '../../vm';
 import { Arguments, IArguments, ICapturedArguments } from '../../vm/arguments';
-import { IsComponentDefinitionReference } from './content';
+import { IsCurriedComponentDefinitionReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { Resolver, Specifier, ComponentDefinition, ComponentManager, Component } from '../../internal-interfaces';
 import { dict, assert, unreachable } from "@glimmer/util";
@@ -35,73 +36,133 @@ import { AbstractTemplate, ATTRS_BLOCK } from '@glimmer/opcode-compiler';
 
 const ARGS = new Arguments();
 
-function resolveComponent(resolver: Resolver, name: string, meta: TemplateMeta): ComponentDefinition {
+function resolveComponent(resolver: Resolver, name: string, meta: TemplateMeta): Option<ComponentSpec> {
   let specifier = resolver.lookupComponent(name, meta);
   assert(specifier, `Could not find a component named "${name}"`);
-  return resolver.resolve<ComponentDefinition>(specifier!);
+  return resolver.resolve<ComponentSpec>(specifier!);
 }
 
-class CurryComponentReference implements VersionedPathReference<Option<ComponentDefinition>> {
+export const PUBLIC_CURRIED_BRAND = "[CURRIED COMPONENT] 607561bf-57fd-43b2-bf18-fb53d6f9bfb9";
+
+export const enum CurriedComponentType {
+  Spec,
+  Definition,
+  Null
+}
+
+export interface CurriedValue {
+  "[CURRIED COMPONENT] 607561bf-57fd-43b2-bf18-fb53d6f9bfb9": true;
+  type: CurriedComponentType;
+  value: Option<InnerCurriedComponent>;
+}
+
+export interface CurriedSpec extends CurriedValue {
+  type: CurriedComponentType.Spec;
+  value: ComponentSpec;
+}
+
+export interface CurriedDefinition extends CurriedValue {
+  type: CurriedComponentType.Definition;
+  value: CurriedComponentDefinition;
+}
+
+export interface CurriedNull extends CurriedValue{
+  type: CurriedComponentType.Null;
+  value: null;
+}
+
+class BrandedCurriedValue implements CurriedValue {
+  public "[CURRIED COMPONENT] 607561bf-57fd-43b2-bf18-fb53d6f9bfb9": true = true;
+  constructor(public type: CurriedComponentType, public value: Option<InnerCurriedComponent>) {}
+}
+
+export function isCurriedValue(value: Opaque): value is CurriedValue {
+  return value && value[PUBLIC_CURRIED_BRAND];
+}
+
+export function isCurriedNull(value: CurriedValue): value is CurriedNull {
+  return value.type === CurriedComponentType.Null;
+}
+
+export function isCurriedSpec(value: CurriedValue): value is CurriedSpec {
+  return value.type === CurriedComponentType.Spec;
+}
+
+export function isPublicCurriedDefinition(value: CurriedValue): value is CurriedDefinition {
+  return value.type === CurriedComponentType.Definition;
+}
+
+export type InnerCurriedComponent = CurriedComponentDefinition | ComponentSpec;
+
+export function curry(spec: PublicComponentSpec, args: Option<ICapturedArguments> = null): CurriedDefinition {
+  return new BrandedCurriedValue(CurriedComponentType.Definition, new CurriedComponentDefinition(spec as ComponentSpec, args)) as CurriedDefinition;
+}
+
+class CurryComponentReference implements VersionedPathReference<CurriedValue> {
   public tag: Tag;
-  private lastValue: Opaque;
-  private lastDefinition: Option<ComponentDefinition>;
+  private lastValue: Opaque = null;
+  private lastReturn: Option<CurriedValue> = null;
 
   constructor(
-    private inner: VersionedReference<Opaque>,
+    private innerRef: VersionedReference<Opaque>,
     private resolver: Resolver,
     private meta: TemplateMeta,
     private args: Option<ICapturedArguments>
   ) {
-    this.tag = inner.tag;
-    this.lastValue = null;
-    this.lastDefinition = null;
+    this.tag = innerRef.tag;
   }
 
-  value(): Option<ComponentDefinition> {
-    let { inner, lastValue } = this;
+  value(): CurriedValue {
+    let { innerRef, lastValue } = this;
 
-    let value = inner.value();
+    let value = innerRef.value();
 
     if (value === lastValue) {
-      return this.lastDefinition;
+      return this.lastReturn!;
     }
 
-    let definition: Option<ComponentDefinition> = null;
+    let next: Option<InnerCurriedComponent> = null;
+    let type: CurriedComponentType;
 
-    if (isComponentDefinition(value)) {
-      definition = value;
-    } else if(typeof value === 'string' && value) {
+    if (isCurriedComponentDefinition(value)) {
+      next = value;
+      type = CurriedComponentType.Definition;
+    } else if (typeof value === 'string' && value) {
       let { resolver, meta } = this;
-      definition = resolveComponent(resolver, value, meta);
+      next = resolveComponent(resolver, value, meta)!;
+      type = CurriedComponentType.Spec;
+    } else if (value === null) {
+      next = value;
+      type = CurriedComponentType.Null;
+    } else {
+      throw new Error('Passed an illegal value to (component)');
     }
 
-    definition = this.curry(definition);
+    next = this.curry(next);
 
     this.lastValue = value;
-    this.lastDefinition = definition;
-
-    return definition;
+    return this.lastReturn = new BrandedCurriedValue(type, next);
   }
 
   get(): VersionedPathReference<Opaque> {
     return UNDEFINED_REFERENCE;
   }
 
-  private curry(definition: Option<ComponentDefinition>): Option<ComponentDefinition> {
+  private curry(inner: Option<InnerCurriedComponent>): Option<InnerCurriedComponent> {
     let { args } = this;
 
-    if (!definition || !args) {
-      return definition;
+    if (!inner || !args) {
+      return inner;
     }
 
-    return new CurriedComponentDefinition(definition, args);
+    return new CurriedComponentDefinition(inner, args);
   }
 }
 
 APPEND_OPCODES.add(Op.IsComponent, vm => {
   let stack = vm.stack;
 
-  stack.push(IsComponentDefinitionReference.create(stack.pop<Reference>()));
+  stack.push(IsCurriedComponentDefinitionReference.create(stack.pop<Reference>()));
 });
 
 APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
@@ -123,32 +184,60 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
 });
 
 APPEND_OPCODES.add(Op.PushComponentManager, (vm, { op1: specifier }) => {
-  let definition = vm.constants.resolveSpecifier<ComponentDefinition>(specifier);
+  let spec = vm.constants.resolveSpecifier<ComponentSpec>(specifier);
+
+  assert(!!spec, `Missing component for ${specifier}`);
+
   let stack = vm.stack;
 
-  stack.push({ definition, manager: definition.manager, component: null });
+  let { definition, manager } = spec;
+  stack.push({ definition, manager, component: null });
 });
 
 APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
   let stack = vm.stack;
 
-  let value = stack.pop<VersionedPathReference<Opaque>>().value();
-  let definition: ComponentDefinition;
+  let component = stack.pop<VersionedPathReference<CurriedValue | string>>().value();
+  let definition: ComponentSpec['definition'] | CurriedComponentDefinition;
+  let manager: Option<ComponentSpec['manager']> = null;
 
-  if (isComponentDefinition(value)) {
-    definition = value;
-  } else {
-    assert(typeof value === 'string', `Could not find a component named "${String(value)}"`);
-
+  if (typeof component === 'string') {
     let { constants, constants: { resolver } } = vm;
     let meta = constants.getSerializable<TemplateMeta>(_meta);
-    definition = resolveComponent(resolver, value as string, meta);
+    let spec = resolveComponent(resolver, component, meta);
+
+    assert(!!spec, `Could not find a component named "${component}"`);
+
+    definition = spec!.definition;
+    manager = spec!.manager;
+  } else if (isCurriedValue(component)) {
+    debugger;
+    if (isPublicCurriedDefinition(component)) {
+      definition = component.value;
+    } else if (isCurriedSpec(component)) {
+      let { value: { definition: def, manager: mgr } } = component;
+      definition = def;
+      manager = mgr;
+    } else if (isCurriedNull(component)) {
+      throw new Error('not implemented (component) resolving to null');
+    } else {
+      assert(typeof component === 'string', `Could not find a component named "${String(component)}"`);
+      throw unreachable();
+    }
+  } else {
+    throw new Error('unexpected')
   }
 
-  stack.push({ definition, manager: definition.manager, component: null });
+  stack.push({ definition, manager, component: null });
 });
 
 interface InitialComponentState {
+  definition: ComponentDefinition;
+  manager: Option<ComponentManager>;
+  component: null;
+}
+
+interface PopulatedComponentState {
   definition: ComponentDefinition;
   manager: ComponentManager;
   component: null;
@@ -172,17 +261,24 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   let state = vm.fetchValue<InitialComponentState>(_state);
 
   let { definition, manager } = state;
-
-  if (definition.capabilities.prepareArgs !== true) {
-    return;
-  }
-
-  let args = stack.pop<Arguments>();
+  let args: Arguments;
 
   if (isCurriedComponentDefinition(definition)) {
-    state.definition = definition = definition.unwrap(args);
-    state.manager = manager = definition.manager;
+    assert(!manager, "If the component definition was curried, we don't yet have a manager");
+
+    args = stack.pop<Arguments>();
+
+    let { manager: curriedManager } = definition.unwrap(args);
+    state.manager = manager = curriedManager as ComponentManager;
+  } else if (manager && manager.getCapabilities(definition).prepareArgs !== true) {
+    return;
+  } else if (manager) {
+    args = stack.pop<Arguments>();
+  } else {
+    throw unreachable();
   }
+
+  // After this point, the component state is a PopulatedComponentState for sure
 
   let preparedArgs = manager.prepareArgs(definition, args);
 
@@ -213,13 +309,13 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let definition: ComponentDefinition;
   let manager: ComponentManager;
   let dynamicScope = vm.dynamicScope();
-  let state = { definition, manager } = vm.fetchValue<InitialComponentState>(_state);
+  let state = { definition, manager } = vm.fetchValue<PopulatedComponentState>(_state);
 
   let hasDefaultBlock = flags & 1;
 
   let args: Option<IArguments> = null;
 
-  if (definition.capabilities.createArgs) {
+  if (manager.getCapabilities(definition).createArgs) {
     args = vm.stack.peek<IArguments>();
   }
 

@@ -59,13 +59,18 @@ export {
 
 export {
   ComponentManager,
-  ComponentDefinition,
+  CurriedComponentDefinition,
+  PublicComponentSpec as ComponentSpec,
   WithDynamicTagName,
   PreparedArguments,
   WithDynamicLayout,
-  WithStaticLayout,
-  isComponentDefinition
+  WithStaticLayout
 } from './lib/component/interfaces';
+
+export {
+  CurriedDefinition,
+  curry
+} from './lib/compiled/opcodes/component';
 
 export {
   ModifierManager
