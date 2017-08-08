@@ -4,6 +4,7 @@ const funnel = require('broccoli-funnel');
 const babel = require('broccoli-babel-transpiler');
 const merge = require('broccoli-merge-trees');
 const Rollup = require('broccoli-rollup');
+const sourcemaps = require('rollup-plugin-sourcemaps');
 
 const transpileToES5 = require('./transpile-to-es5');
 const writePackageJSON = require('./write-package-json');
@@ -106,11 +107,14 @@ function transpileAMD(pkgName, esVersion, tree) {
   // bundle.
   let external = ['@glimmer/local-debug-flags', ...project.dependencies];
 
+  let plugins = [sourcemaps()];
+
   let options = {
     annotation: `Transpile AMD - ${pkgName} - ${esVersion}`,
     rollup: {
       entry: `${pkgName}/index.js`,
       external,
+      plugins,
       targets: [{
         dest: `${bundleName}.js`,
         format: 'amd',

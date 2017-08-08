@@ -62,6 +62,7 @@
     "qunit-tap": "^1.5.1",
     "qunitjs": "2.2.0",
     "rimraf": "^2.6.1",
+    "rollup-plugin-sourcemaps": "^0.4.2",
     "semver": "^5.3.0",
     "testem": "^1.16.0",
     "tslint": "^4.0.2",
