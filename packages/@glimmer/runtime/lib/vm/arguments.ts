@@ -1,7 +1,7 @@
 import { EvaluationStack } from './append';
 import { dict, EMPTY_ARRAY } from '@glimmer/util';
 import { combineTagged } from '@glimmer/reference';
-import { Dict, Opaque, Option, unsafe, Recast } from '@glimmer/interfaces';
+import { Dict, Opaque, Option, unsafe } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference, CONSTANT_TAG } from '@glimmer/reference';
 import { PrimitiveReference, UNDEFINED_REFERENCE } from '../references';
 
@@ -19,7 +19,6 @@ export interface IArguments {
   named: INamedArguments;
 
   at<T extends VersionedPathReference<Opaque>>(pos: number): T;
-  get<T extends VersionedPathReference<Opaque>>(name: string): T;
   capture(): ICapturedArguments;
 }
 
@@ -70,13 +69,6 @@ export class Arguments implements IArguments {
   public positional = new PositionalArguments();
   public named = new NamedArguments();
 
-  empty() {
-    // because the size is 0, there is definitely no need to look at the
-    // evaluation stack.
-    this.setup(null as Recast<null, EvaluationStack>, EMPTY_ARRAY, 0, true);
-    return this;
-  }
-
   setup(stack: EvaluationStack, names: string[], positionalCount: number, synthetic: boolean) {
     this.stack = stack;
 
@@ -114,10 +106,6 @@ export class Arguments implements IArguments {
 
   at<T extends VersionedPathReference<Opaque>>(pos: number): T {
     return this.positional.at<T>(pos);
-  }
-
-  get<T extends VersionedPathReference<Opaque>>(name: string): T {
-    return this.named.get<T>(name);
   }
 
   realloc(offset: number) {
@@ -395,10 +383,6 @@ export class NamedArguments implements INamedArguments {
 }
 
 class CapturedNamedArguments implements ICapturedNamedArguments {
-  static empty(): CapturedNamedArguments {
-    return new CapturedNamedArguments(CONSTANT_TAG, EMPTY_ARRAY, EMPTY_ARRAY);
-  }
-
   public length: number;
   private _map: Option<Dict<VersionedPathReference<Opaque>>>;
 

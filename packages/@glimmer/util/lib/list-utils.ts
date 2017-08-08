@@ -1,9 +1,5 @@
 import { Option } from './platform-utils';
 
-export interface Destroyable {
-  destroy(): void;
-}
-
 export interface LinkedListNode {
   next: Option<LinkedListNode>;
   prev: Option<LinkedListNode>;
@@ -24,11 +20,6 @@ export class ListNode<T> implements LinkedListNode {
 type trust = any;
 
 export class LinkedList<T extends LinkedListNode> implements Slice<T> {
-  static fromSlice<U extends CloneableListNode>(slice: Slice<U>): LinkedList<U> {
-    let list = new LinkedList<U>();
-    slice.forEachNode(n => list.append(n.clone()));
-    return list;
-  }
 
   private _head: Option<T>;
   private _tail: Option<T>;
@@ -49,40 +40,14 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
     this._head = this._tail = null;
   }
 
-  isEmpty(): boolean {
-    return this._head === null;
-  }
-
   toArray(): T[] {
     let out: T[] = [];
     this.forEachNode(n => out.push(n));
     return out;
   }
 
-  splice(start: T, end: T, reference: T) {
-    let before: Option<T>;
-
-    if (reference === null) {
-      before = this._tail;
-      this._tail = end;
-    } else {
-      before = <T>reference.prev;
-      end.next = reference;
-      reference.prev = end;
-    }
-
-    if (before) {
-      before.next = start;
-      start.prev = before;
-    }
-  }
-
   nextNode(node: T): T {
     return <trust>node.next;
-  }
-
-  prevNode(node: T): T {
-    return <trust>node.prev;
   }
 
   forEachNode(callback: (node: T) => void) {
@@ -92,17 +57,6 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
       callback(<trust>node);
       node = <trust>node.next;
     }
-  }
-
-  contains(needle: T): boolean {
-    let node = this._head;
-
-    while (node !== null) {
-      if (node === needle) return true;
-      node = <trust>node.next;
-    }
-
-    return false;
   }
 
   insertBefore(node: T, reference: Option<T> = null): T {
@@ -132,16 +86,6 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
     return (this._tail = node);
   }
 
-  pop(): Option<T> {
-    if (this._tail) return this.remove(this._tail);
-    return null;
-  }
-
-  prepend(node: T): T {
-    if (this._head) return this.insertBefore(node, this._head);
-    return (this._head = this._tail = node);
-  }
-
   remove(node: T): T {
     if (node.prev) node.prev.next = node.next;
     else this._head = <trust>node.next;
@@ -157,11 +101,8 @@ export interface Slice<T extends LinkedListNode> {
   head(): Option<T>;
   tail(): Option<T>;
   nextNode(node: T): Option<T>;
-  prevNode(node: T): Option<T>;
   forEachNode(callback: (node: T) => void): void;
   toArray(): T[];
-  isEmpty(): boolean;
-  contains(needle: T): boolean;
 }
 
 export interface CloneableListNode extends LinkedListNode {
@@ -169,12 +110,6 @@ export interface CloneableListNode extends LinkedListNode {
 }
 
 export class ListSlice<T extends LinkedListNode> implements Slice<T> {
-  static toList<U extends CloneableListNode>(slice: Slice<U>): LinkedList<U> {
-    let list = new LinkedList<U>();
-    slice.forEachNode(n => list.append(n.clone()));
-    return list;
-  }
-
   private _head: Option<T>;
   private _tail: Option<T>;
 
@@ -190,17 +125,6 @@ export class ListSlice<T extends LinkedListNode> implements Slice<T> {
       callback(node);
       node = this.nextNode(node);
     }
-  }
-
-  contains(needle: T): boolean {
-    let node = this._head;
-
-    while (node !== null) {
-      if (node === needle) return true;
-      node = <trust>node.next;
-    }
-
-    return false;
   }
 
   head(): Option<T> {
@@ -220,15 +144,6 @@ export class ListSlice<T extends LinkedListNode> implements Slice<T> {
   nextNode(node: T): Option<T> {
     if (node === this._tail) return null;
     return node.next as T;
-  }
-
-  prevNode(node: T): Option<T> {
-    if (node === this._head) return null;
-    return node.prev as T;
-  }
-
-  isEmpty() {
-    return false;
   }
 }
 
