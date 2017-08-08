@@ -1,9 +1,10 @@
 import TemplateVisitor, { SymbolTable, Action } from "./template-visitor";
 import JavaScriptCompiler, { Template } from "./javascript-compiler";
-import { Stack, getAttrNamespace } from "@glimmer/util";
+import { Stack } from "@glimmer/util";
 import { assert, expect } from "@glimmer/util";
 import { TemplateMeta } from "@glimmer/wire-format";
 import { AST, isLiteral, SyntaxError } from '@glimmer/syntax';
+import { getAttrNamespace } from './utils';
 
 export interface CompileOptions<T extends TemplateMeta> {
   meta: T;

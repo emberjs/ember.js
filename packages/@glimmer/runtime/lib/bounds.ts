@@ -26,14 +26,6 @@ export default Bounds;
 
 export interface DestroyableBounds extends Bounds, Destroyable {}
 
-export class RealDOMBounds implements Bounds {
-  constructor(private bounds: Bounds) {}
-
-  parentElement() { return this.bounds.parentElement() as Element; }
-  firstNode() { return this.bounds.firstNode() as Node; }
-  lastNode() { return this.bounds.lastNode() as Node; }
-}
-
 export class ConcreteBounds implements Bounds {
   constructor(public parentNode: Simple.Element, private first: Option<Simple.Node>, private last: Option<Simple.Node>) {}
 
