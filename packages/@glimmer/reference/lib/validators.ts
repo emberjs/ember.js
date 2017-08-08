@@ -77,14 +77,6 @@ VALUE.push(() => $REVISION);
 VALIDATE.push((_tag, snapshot) => snapshot === $REVISION);
 export const CURRENT_TAG = new TagWrapper(2, null);
 
-export function isVolatile({ tag }: Tagged): boolean {
-  return tag === VOLATILE_TAG;
-}
-
-export function isVolatileTag(tag: Tag): boolean {
-  return tag === VOLATILE_TAG;
-}
-
 export function isConst({ tag }: Tagged): boolean {
   return tag === CONSTANT_TAG;
 }
