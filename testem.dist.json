@@ -14,11 +14,11 @@
       "protocol": "tap"
     },
     "SL_Safari_Current": {
-      "command": "npm run sauce:launch -- -b safari -v 9 --no-connect -u '<url>'",
+      "command": "npm run sauce:launch -- -b safari -v 10 --no-connect -u '<url>'",
       "protocol": "tap"
     },
     "SL_Safari_Last": {
-      "command": "npm run sauce:launch -- -b safari -v 8 --no-connect -u '<url>'",
+      "command": "npm run sauce:launch -- -b safari -v 9 --no-connect -u '<url>'",
       "protocol": "tap"
     },
     "SL_MS_Edge": {
