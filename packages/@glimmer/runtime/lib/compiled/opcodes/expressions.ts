@@ -86,11 +86,12 @@ APPEND_OPCODES.add(Op.HasBlockParams, (vm, { op1: _block }) => {
 });
 
 APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
-  let out: Array<VersionedPathReference<Opaque>> = [];
+  let out: Array<VersionedPathReference<Opaque>> = new Array(count);
 
   for (let i = count; i > 0; i--) {
-    out.push(vm.stack.pop<VersionedPathReference<Opaque>>());
+    let offset = i - 1;
+    out[offset] = vm.stack.pop<VersionedPathReference<Opaque>>();
   }
 
-  vm.stack.push(new ConcatReference(out.reverse()));
+  vm.stack.push(new ConcatReference(out));
 });

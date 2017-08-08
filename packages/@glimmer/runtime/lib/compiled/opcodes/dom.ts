@@ -30,11 +30,6 @@ APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
   vm.elements().openElement(vm.constants.getString(tag));
 });
 
-APPEND_OPCODES.add(Op.OpenElementWithOperations, (vm, { op1: tag }) => {
-  let tagName = vm.constants.getString(tag);
-  vm.elements().openElement(tagName);
-});
-
 APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
   let tagName = vm.stack.pop<Reference<string>>().value();
   vm.elements().openElement(tagName);

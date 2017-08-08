@@ -103,12 +103,12 @@ STATEMENTS.add(Ops.OpenElement, (sexp: S.OpenElement, builder: OpcodeBuilder) =>
 STATEMENTS.add(Ops.OpenSplattedElement, (sexp: S.SplatElement, builder) => {
   builder.setComponentAttrs(true);
   builder.putComponentOperations();
-  builder.openElementWithOperations(sexp[1]);
+  builder.openPrimitiveElement(sexp[1]);
 });
 
 CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder: OpcodeBuilder) => {
   builder.putComponentOperations();
-  builder.openElementWithOperations(sexp[2]);
+  builder.openPrimitiveElement(sexp[2]);
 });
 
 CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder: OpcodeBuilder) => {
