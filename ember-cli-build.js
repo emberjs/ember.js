@@ -6,13 +6,15 @@ const { typescript } = require('broccoli-typescript-compiler');
 
 const buildTests = require('./build/broccoli/build-tests');
 const buildPackages = require('./build/broccoli/build-packages.js');
+const mergeDefinitionFiles = require('./build/broccoli/merge-definition-files');
 const stripGlimmerUtilities = require('./build/broccoli/strip-glimmer-utilities');
 
 const PRODUCTION = process.env.EMBER_ENV === 'production';
 
 /**
- * For development, we build tests and library code only in AMD. For publishing
- * packages, we use @glimmer/build to build each package in multiple formats.
+ * For development, we build for ES5 AMD (browser tests) and CommonJS (Node
+ * tests). For production builds, we omit tests but include all target
+ * formats.
  */
 module.exports = function(_options) {
   // First, get all of our TypeScript packages while preserving their relative
@@ -27,6 +29,10 @@ module.exports = function(_options) {
   // this once and use the transpiled JavaScript as the input to any further
   // transformations.
   let jsTree = typescript(tsTree);
+
+  // The TypeScript compiler doesn't emit `.d.ts` files, so we need to manually
+  // merge them back into our JavaScript output.
+  jsTree = mergeDefinitionFiles(jsTree);
 
   // Glimmer includes a number of assertions and logging information that can be
   // stripped from production builds for better runtime performance.
