@@ -31,10 +31,6 @@ export default class RenderResult implements DestroyableBounds, ExceptionHandler
     return this.bounds.lastNode();
   }
 
-  opcodes(): LinkedList<UpdatingOpcode> {
-    return this.updating;
-  }
-
   handleException() {
     throw "this should never happen";
   }

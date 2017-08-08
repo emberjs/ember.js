@@ -64,10 +64,6 @@ export class Fragment implements Bounds {
   lastNode(): Option<Simple.Node> {
     return this.bounds.lastNode();
   }
-
-  update(bounds: Bounds) {
-    this.bounds = bounds;
-  }
 }
 
 export interface DOMStack {
@@ -110,7 +106,6 @@ export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
 
   // TODO: ?
   expectConstructing(method: string): Simple.Element;
-  expectOperations(method: string): ElementOperations;
 
   block(): Tracker;
 
@@ -167,10 +162,6 @@ export class NewElementBuilder implements ElementBuilder {
 
   expectConstructing(method: string): Simple.Element {
     return expect(this.constructing, `${method} should only be called while constructing an element`);
-  }
-
-  expectOperations(method: string): ElementOperations {
-    return expect(this.operations, `${method} should only be called while constructing an element`);
   }
 
   block(): Tracker {
@@ -303,17 +294,9 @@ export class NewElementBuilder implements ElementBuilder {
     return node;
   }
 
-  appendNode(node: Simple.Node): Simple.Node {
-    return this.didAppendNode(this.__appendNode(node));
-  }
-
   __appendNode(node: Simple.Node): Simple.Node {
     this.dom.insertBefore(this.element, node, this.nextSibling);
     return node;
-  }
-
-  appendFragment(fragment: Simple.DocumentFragment): Bounds {
-    return this.didAppendBounds(this.__appendFragment(fragment));
   }
 
   __appendFragment(fragment: Simple.DocumentFragment): Bounds {
@@ -326,10 +309,6 @@ export class NewElementBuilder implements ElementBuilder {
     } else {
       return single(this.element, this.__appendComment(''));
     }
-  }
-
-  appendHTML(html: string): Bounds {
-    return this.didAppendBounds(this.__appendHTML(html));
   }
 
   __appendHTML(html: string): Bounds {

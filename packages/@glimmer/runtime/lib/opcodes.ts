@@ -52,27 +52,29 @@ function logOpcode(type: string, params: Option<Object>): string | void {
 }
 
 function json(param: Opaque) {
-  if (typeof param === 'function') {
-    return '<function>';
-  }
+  if (!CI && DEBUG) {
+    if (typeof param === 'function') {
+      return '<function>';
+    }
 
-  let string;
-  try {
-    string = JSON.stringify(param);
-  } catch(e) {
-    return '<cannot generate JSON>';
-  }
+    let string;
+    try {
+      string = JSON.stringify(param);
+    } catch(e) {
+      return '<cannot generate JSON>';
+    }
 
-  if (string === undefined) {
-    return 'undefined';
-  }
+    if (string === undefined) {
+      return 'undefined';
+    }
 
-  let debug = JSON.parse(string);
-  if (typeof debug === 'object' && debug !== null && debug.GlimmerDebug !== undefined) {
-    return debug.GlimmerDebug;
-  }
+    let debug = JSON.parse(string);
+    if (typeof debug === 'object' && debug !== null && debug.GlimmerDebug !== undefined) {
+      return debug.GlimmerDebug;
+    }
 
-  return string;
+    return string;
+  }
 }
 
 function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): [string, object] {
@@ -246,54 +248,3 @@ export abstract class UpdatingOpcode extends AbstractOpcode {
 }
 
 export type UpdatingOpSeq = ListSlice<UpdatingOpcode>;
-
-export function inspect(opcodes: ReadonlyArray<AbstractOpcode>): string {
-  let buffer: string[] = [];
-
-  opcodes.forEach((opcode, i) => {
-    _inspect(opcode.toJSON(), buffer, 0, i);
-  });
-
-  return buffer.join('');
-}
-
-function _inspect(opcode: OpcodeJSON, buffer: string[], level: number, index: number) {
-  let indentation: string[] = [];
-
-  for (let i=0; i<level; i++) {
-    indentation.push('  ');
-  }
-
-  buffer.push(...indentation);
-  buffer.push(`${index}. ${opcode.type}`);
-
-  if (opcode.args || opcode.details) {
-    buffer.push('(');
-
-    if (opcode.args) {
-      buffer.push(opcode.args.join(', '));
-    }
-
-    if (opcode.details) {
-      let keys = Object.keys(opcode.details);
-
-      if (keys.length) {
-        if (opcode.args && opcode.args.length) {
-          buffer.push(', ');
-        }
-
-        buffer.push(keys.map(key => `${key}=${opcode.details && opcode.details[key]}`).join(', '));
-      }
-    }
-
-    buffer.push(')');
-  }
-
-  buffer.push('\n');
-
-  if (opcode.children && opcode.children.length) {
-    for (let i=0; i<opcode.children.length; i++) {
-      _inspect(opcode.children[i], buffer, level+1, i);
-    }
-  }
-}
