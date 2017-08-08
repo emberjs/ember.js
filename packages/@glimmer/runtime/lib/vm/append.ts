@@ -44,10 +44,6 @@ export class EvaluationStack {
     }
   }
 
-  isEmpty() {
-    return this.sp === -1;
-  }
-
   push(value: Opaque): void {
     this.stack[++this.sp] = value;
   }
@@ -465,10 +461,6 @@ export default class VM implements PublicVM {
     this.pc += 4;
 
     return program.opcode(pc);
-  }
-
-  evaluateOpcode(opcode: Opcode) {
-    APPEND_OPCODES.evaluate(this, opcode, opcode.type);
   }
 
   bindDynamicScope(names: ConstantString[]) {
