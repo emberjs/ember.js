@@ -229,10 +229,6 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     this.push(Op.OpenElement, this.constants.string(tag));
   }
 
-  openElementWithOperations(tag: string) {
-    this.push(Op.OpenElementWithOperations, this.constants.string(tag));
-  }
-
   openDynamicElement() {
     this.push(Op.OpenDynamicElement);
   }

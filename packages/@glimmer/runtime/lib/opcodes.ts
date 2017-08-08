@@ -111,7 +111,6 @@ function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): [st
       case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
       case Op.DynamicContent: return ['DynamicContent', { trusting: !!op1 }];
       case Op.OpenElement: return ['OpenElement', { tag: c.getString(op1) }];
-      case Op.OpenElementWithOperations: return ['OpenElementWithOperations', { tag: c.getString(op1) }];
       case Op.OpenDynamicElement: return ['OpenDynamicElement', {}];
       case Op.StaticAttr: return ['StaticAttr', { name: c.getString(op1), value: c.getString(op2), namespace: op3 ? c.getString(op3) : null }];
       case Op.DynamicAttr: return ['DynamicAttr', { name: c.getString(op1), trusting: !!op2, namespace: op3 ? c.getString(op3) : null }];
