@@ -1,9 +1,8 @@
 import { VersionedPathReference } from '@glimmer/reference';
-import { ComponentDefinition } from './component/interfaces';
+import { BrandedComponentDefinition } from './component/interfaces';
 import { IArguments } from './vm/arguments';
 
 import {
-  Opaque,
   Option
 } from '@glimmer/util';
 
@@ -18,5 +17,5 @@ export interface DynamicComponentDefinition {
     args: IArguments,
     meta: WireFormat.TemplateMeta,
     resolver: Resolver
-  ): VersionedPathReference<Option<ComponentDefinition<Opaque>>>;
+  ): VersionedPathReference<Option<BrandedComponentDefinition>>;
 }

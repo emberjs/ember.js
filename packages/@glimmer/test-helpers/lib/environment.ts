@@ -27,7 +27,6 @@ import {
 
   // Components
   ComponentManager,
-  ComponentDefinition,
   PreparedArguments,
   WithStaticLayout,
 
@@ -53,7 +52,10 @@ import {
   WithDynamicLayout,
   CompilationOptions,
   Handle,
-  ScannableTemplate
+  ScannableTemplate,
+  ComponentSpec,
+  curry,
+  CurriedDefinition
 } from "@glimmer/runtime";
 
 import {
@@ -301,7 +303,13 @@ export class EmberishGlimmerComponent extends GlimmerObject {
   didRender() { }
 }
 
-class BasicComponentManager implements WithStaticLayout<BasicComponent, TestSpecifier, TestResolver> {
+class GenericComponentManager {
+  getCapabilities(definition: GenericComponentDefinition<Opaque>): ComponentCapabilities {
+    return definition.capabilities;
+  }
+}
+
+class BasicComponentManager extends GenericComponentManager implements WithStaticLayout<BasicComponent, BasicComponentDefinition, TestSpecifier, TestResolver> {
   prepareArgs(): null {
     throw unreachable();
   }
@@ -376,7 +384,7 @@ export interface EmberishGlimmerStateBucket {
   component: EmberishGlimmerComponent;
 }
 
-class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimmerStateBucket>, WithStaticLayout<EmberishGlimmerStateBucket, TestSpecifier, TestResolver> {
+class EmberishGlimmerComponentManager extends GenericComponentManager implements ComponentManager<EmberishGlimmerStateBucket, EmberishGlimmerComponentDefinition>, WithStaticLayout<EmberishGlimmerStateBucket, EmberishGlimmerComponentDefinition, TestSpecifier, TestResolver> {
   prepareArgs(): null {
     return null;
   }
@@ -460,7 +468,7 @@ const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager()
 
 const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
-class EmberishCurlyComponentManager implements WithDynamicTagName<EmberishCurlyComponent>, WithDynamicLayout<EmberishCurlyComponent, TestSpecifier, TestResolver> {
+class EmberishCurlyComponentManager extends GenericComponentManager implements WithDynamicTagName<EmberishCurlyComponent>, WithDynamicLayout<EmberishCurlyComponent, TestSpecifier, TestResolver> {
   prepareArgs(definition: EmberishCurlyComponentDefinition, args: Arguments): Option<PreparedArguments> {
     const { positionalParams } = definition.ComponentClass || BaseEmberishCurlyComponent;
 
@@ -754,7 +762,7 @@ export interface Lookup {
   helper: GlimmerHelper;
   modifier: ModifierManager;
   partial: PartialDefinition;
-  component: ComponentDefinition<Opaque>;
+  component: ComponentSpec;
   template: { compile(): Handle };
   'template-source': string;
 }
@@ -792,7 +800,7 @@ export class TestResolver implements Resolver<TestSpecifier, TemplateMeta> {
     helper: new TypedRegistry<GlimmerHelper>(),
     modifier: new TypedRegistry<ModifierManager>(),
     partial: new TypedRegistry<PartialDefinition>(),
-    component: new TypedRegistry<ComponentDefinition<Opaque>>(),
+    component: new TypedRegistry<ComponentSpec>(),
     template: new TypedRegistry<{ compile(): Handle }>(),
     'template-source': new TypedRegistry<string>()
   };
@@ -954,8 +962,8 @@ export class TestEnvironment extends Environment {
     return definition;
   }
 
-  private registerComponent(name: string, definition: ComponentDefinition<any>) {
-    this.resolver.register('component', name, definition);
+  private registerComponent(name: string, definition: GenericComponentDefinition<any>) {
+    this.resolver.register('component', name, { definition, manager: definition.manager });
     return definition;
   }
 
@@ -963,7 +971,7 @@ export class TestEnvironment extends Environment {
     return this.resolver.register("template-source", name, source);
   }
 
-  registerBasicComponent(name: string, Component: BasicComponentFactory, layoutSource: string): ComponentDefinition<BasicComponentDefinition> {
+  registerBasicComponent(name: string, Component: BasicComponentFactory, layoutSource: string): void {
     if (name.indexOf('-') !== -1) {
       throw new Error("DEPRECATED: dasherized components");
     }
@@ -971,17 +979,17 @@ export class TestEnvironment extends Environment {
     let layout = this.registerTemplate(name, layoutSource);
 
     let definition = new BasicComponentDefinition(name, BASIC_COMPONENT_MANAGER, Component, layout);
-    return this.registerComponent(name, definition);
+    this.registerComponent(name, definition);
   }
 
-  registerStaticTaglessComponent(name: string, Component: BasicComponentFactory, layoutSource: string): ComponentDefinition<BasicComponentFactory> {
+  registerStaticTaglessComponent(name: string, Component: BasicComponentFactory, layoutSource: string): void {
     let layout = this.registerTemplate(name, layoutSource);
 
     let definition = new StaticTaglessComponentDefinition(name, STATIC_TAGLESS_COMPONENT_MANAGER, Component, layout);
-    return this.registerComponent(name, definition);
+    this.registerComponent(name, definition);
   }
 
-  registerEmberishCurlyComponent(name: string, Component: Option<EmberishCurlyComponentFactory>, layoutSource: Option<string>): ComponentDefinition<EmberishCurlyComponentDefinition> {
+  registerEmberishCurlyComponent(name: string, Component: Option<EmberishCurlyComponentFactory>, layoutSource: Option<string>): void {
     let layout: Option<TestSpecifier> = null;
 
     if (layoutSource !== null) {
@@ -989,10 +997,10 @@ export class TestEnvironment extends Environment {
     }
 
     let definition = new EmberishCurlyComponentDefinition(name, EMBERISH_CURLY_COMPONENT_MANAGER, Component || EmberishCurlyComponent, layout);
-    return this.registerComponent(name, definition);
+    this.registerComponent(name, definition);
   }
 
-  registerEmberishGlimmerComponent(name: string, Component: Option<EmberishGlimmerComponentFactory>, layoutSource: string): ComponentDefinition<EmberishGlimmerComponentDefinition> {
+  registerEmberishGlimmerComponent(name: string, Component: Option<EmberishGlimmerComponentFactory>, layoutSource: string): void {
     if (name.indexOf('-') !== -1) {
       throw new Error("DEPRECATED: dasherized components");
     }
@@ -1000,7 +1008,7 @@ export class TestEnvironment extends Environment {
     let layout = this.registerTemplate(name, layoutSource);
 
     let definition = new EmberishGlimmerComponentDefinition(name, EMBERISH_GLIMMER_COMPONENT_MANAGER, Component || EmberishGlimmerComponent, layout);
-    return this.registerComponent(name, definition);
+    this.registerComponent(name, definition);
   }
 
   toConditionalReference(reference: Reference<any>): Reference<boolean> {
@@ -1021,9 +1029,13 @@ export class TestEnvironment extends Environment {
     return specifier && this.resolver.resolve<PartialDefinition>(specifier);
   }
 
-  resolveComponentDefinition<T = Opaque>(name: string, meta: TemplateMeta): Option<ComponentDefinition<T>> {
+  componentHelper(name: string, meta: TemplateMeta): Option<CurriedDefinition> {
     let specifier = this.resolver.lookupComponent(name, meta);
-    return specifier && this.resolver.resolve<ComponentDefinition<T>>(specifier);
+
+    if (!specifier) return null;
+
+    let spec = this.resolver.resolve<ComponentSpec>(specifier);
+    return curry(spec);
   }
 
   resolveModifier(modifierName: string, meta: TemplateMeta): Option<ModifierManager> {
@@ -1095,9 +1107,10 @@ export interface BasicComponentFactory {
   new (): BasicComponent;
 }
 
-export abstract class GenericComponentDefinition<T> extends ComponentDefinition<T> {
-  constructor(name: string, manager: ComponentManager<T>, public ComponentClass: any, public layout: Option<TestSpecifier>) {
-    super(name, manager);
+export abstract class GenericComponentDefinition<T> {
+  abstract capabilities: ComponentCapabilities;
+
+  constructor(public name: string, public manager: ComponentManager<T, GenericComponentDefinition<T>>, public ComponentClass: any, public layout: Option<TestSpecifier>) {
   }
 
   toJSON() {
@@ -1106,8 +1119,10 @@ export abstract class GenericComponentDefinition<T> extends ComponentDefinition<
 }
 
 export class BasicComponentDefinition extends GenericComponentDefinition<BasicComponent> {
+  public name: string;
   public ComponentClass: BasicComponentFactory;
   public capabilities: ComponentCapabilities = {
+    staticDefinitions: false,
     dynamicLayout: false,
     dynamicTag: false,
     prepareArgs: false,
@@ -1120,6 +1135,7 @@ export class BasicComponentDefinition extends GenericComponentDefinition<BasicCo
 class StaticTaglessComponentDefinition extends GenericComponentDefinition<BasicComponent> {
   public ComponentClass: BasicComponentFactory;
   public capabilities: ComponentCapabilities = {
+    staticDefinitions: false,
     dynamicLayout: false,
     dynamicTag: false,
     prepareArgs: false,
@@ -1135,6 +1151,7 @@ export interface EmberishCurlyComponentFactory {
 }
 
 const CURLY_CAPABILITIES: ComponentCapabilities = {
+  staticDefinitions: false,
   dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: true,
@@ -1156,7 +1173,8 @@ export interface EmberishGlimmerComponentFactory {
 export class EmberishGlimmerComponentDefinition extends GenericComponentDefinition<EmberishGlimmerStateBucket> {
   public ComponentClass: EmberishGlimmerComponentFactory;
 
-   public capabilities: ComponentCapabilities = {
+  public capabilities: ComponentCapabilities = {
+    staticDefinitions: false,
     dynamicLayout: false,
     dynamicTag: true,
     prepareArgs: false,

@@ -2032,7 +2032,7 @@ QUnit.test('it does not work on optimized appends', () => {
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
-  let definition = env.resolveComponentDefinition('foo-bar', {});
+  let definition = env.componentHelper('foo-bar', {});
 
   appendViewFor('{{foo}}', { foo: definition });
 
@@ -2056,7 +2056,7 @@ QUnit.test('it works on unoptimized appends (dot paths)', () => {
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
-  let definition = env.resolveComponentDefinition('foo-bar', {});
+  let definition = env.componentHelper('foo-bar', {});
 
   appendViewFor('{{foo.bar}}', { foo: { bar: definition } });
 
@@ -2088,7 +2088,7 @@ QUnit.test('it works on unoptimized appends (this paths)', () => {
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
-  let definition = env.resolveComponentDefinition('foo-bar', {});
+  let definition = env.componentHelper('foo-bar', {});
 
   appendViewFor('{{this.foo}}', { foo: definition });
 
@@ -2120,7 +2120,7 @@ QUnit.test('it works on unoptimized appends when initially not a component (dot 
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
-  let definition = env.resolveComponentDefinition('foo-bar', {});
+  let definition = env.componentHelper('foo-bar', {});
 
   appendViewFor('{{foo.bar}}', { foo: { bar: 'lol' } });
 
@@ -2148,7 +2148,7 @@ QUnit.test('it works on unoptimized appends when initially not a component (this
 
   env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
 
-  let definition = env.resolveComponentDefinition('foo-bar', {});
+  let definition = env.componentHelper('foo-bar', {});
 
   appendViewFor('{{this.foo}}', { foo: 'lol' });
 
