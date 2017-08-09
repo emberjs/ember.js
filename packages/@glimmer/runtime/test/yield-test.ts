@@ -85,61 +85,60 @@ class YieldTests extends RenderTests {
     this.assertStableRerender();
   }
 
-  /*
-[
-  {
-    value: 'true',
-    output: 'true'
-  }, {
-    value: 'false',
-    output: 'false'
-  }, {
-    value: 'null',
-    output: ''
-  }, {
-    value: 'undefined',
-    output: ''
-  }, {
-    value: '1',
-    output: '1'
-  }, {
-    value: '"foo"',
-    output: 'foo'
+  @test
+  "yielding primatives"() {
+    [
+      {
+        value: 'true',
+        output: 'true'
+      }, {
+        value: 'false',
+        output: 'false'
+      }, {
+        value: 'null',
+        output: ''
+      }, {
+        value: 'undefined',
+        output: ''
+      }, {
+        value: '1',
+        output: '1'
+      }, {
+        value: '"foo"',
+        output: 'foo'
+      }
+    ].forEach(({ value, output }) => {
+      this.render({
+        layout: `{{yield ${value}}}`,
+        blockParams: ['yielded'],
+        template: '{{yielded}}-{{yielded.foo.bar}}'
+      });
+
+      this.assertComponent(`${output}-`);
+      this.assertStableRerender();
+      this.reset();
+    });
   }
-].forEach(({ value, output }) => {
-  testComponent(`yielding ${value}`, {
-    layout: `{{yield ${value}}}`,
 
-    invokeAs: {
-      blockParams: ['yielded'],
-      template: '{{yielded}}-{{yielded.foo.bar}}'
-    },
+  @test
+  "yield inside a conditional on the component"() {
+    this.render({
+      layout: 'In layout -- {{#if @predicate}}{{yield}}{{/if}}',
+      template: 'In template',
+      args: { predicate: 'predicate' }
+    }, { predicate: true });
 
-    expected: `${output}-`
-  });
-});
+    this.assertComponent('In layout -- In template', {});
+    this.assertStableRerender();
 
-testComponent('yield inside a conditional on the component', {
-  layout: 'In layout -- {{#if @predicate}}{{yield}}{{/if}}',
-  invokeAs: {
-    template: 'In template',
-    args: { predicate: 'predicate' },
-    context: { predicate: true }
-  },
-  expected: {
-    attrs: {},
-    content: 'In layout -- In template'
-  },
-  updates: [{
-    expected: 'In layout -- In template'
-  }, {
-    context: { predicate: false },
-    expected: 'In layout -- <!---->'
-  }, {
-    context: { predicate: true },
-    expected: 'In layout -- In template'
-  }]
-});*/
+    this.rerender({ predicate: false });
+    this.assertComponent('In layout -- <!---->');
+    this.assertStableNodes();
+
+    this.rerender({ predicate: true });
+    this.assertComponent('In layout -- In template');
+    this.assertStableNodes();
+  }
 }
 
 module('Component Yielding', YieldTests, { componentModule: true });
