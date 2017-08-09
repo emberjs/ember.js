@@ -868,6 +868,7 @@ function componentModule(
 
       if (kind === 'curly') {
         tests.curly.push(createTest(prop, test));
+        tests.dynamic.push(createTest(prop, test));
       }
 
       if (kind === 'glimmer') {
@@ -875,6 +876,7 @@ function componentModule(
       }
 
       if (kind === 'dynamic') {
+        tests.curly.push(createTest(prop, test));
         tests.dynamic.push(createTest(prop, test));
       }
 
