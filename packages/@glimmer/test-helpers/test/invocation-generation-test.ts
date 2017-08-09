@@ -31,10 +31,10 @@ QUnit.test("Can build glimmer invocation with args", assert => {
   let invocation = renderTests.buildComponent({
     layout: "Hello {{yield}}",
     template: "World",
-    args: { foo: "bar", baz: 1, bar: null }
+    args: { foo: "bar", baz: 1, bar: null, literal: "'literal'" }
   });
 
-  assert.equal(invocation, "<TestComponent @foo={{bar}} @baz={{1}} @bar={{null}}>World</TestComponent>");
+  assert.equal(invocation, "<TestComponent @foo={{bar}} @baz={{1}} @bar={{null}} @literal='literal'>World</TestComponent>");
 });
 
 QUnit.test("Can build glimmer invocation with attributes", assert => {
