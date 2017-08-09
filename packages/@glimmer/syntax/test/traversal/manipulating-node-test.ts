@@ -1,10 +1,12 @@
 import { astEqual } from '../support';
-import { preprocess as parse, traverse, builders as b, AST } from "@glimmer/syntax";
-
 import {
+  preprocess as parse,
+  traverse,
+  builders as b,
+  AST,
   cannotRemoveNode,
-  cannotReplaceNode,
-} from '@glimmer/syntax/lib/traversal/errors';
+  cannotReplaceNode
+} from "@glimmer/syntax";
 
 QUnit.module('[glimmer-syntax] Traversal - manipulating');
 

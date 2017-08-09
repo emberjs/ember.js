@@ -10,7 +10,7 @@ module.exports = {
     {
       "Node": {
         "command": "./bin/run-node-tests.js",
-        "output": "tap"
+        "protocol": "tap"
       },
       "SL_Chrome_Current": {
         "command": "ember sauce:launch -p 'Windows 10' -b chrome -v latest --no-ct -u '<url>'",

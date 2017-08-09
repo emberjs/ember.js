@@ -1,12 +1,12 @@
-/* globals __dirname */
+'use strict';
 
-var path = require('path');
-var Funnel = require('broccoli-funnel');
-var mergeTrees = require('broccoli-merge-trees');
+const path = require('path');
+const Funnel = require('broccoli-funnel');
+const mergeTrees = require('broccoli-merge-trees');
 
 // Gather only the files we need from Handlebars npm package
-var handlebarsRoot = path.dirname(require.resolve('handlebars'));
-var handlebars = new Funnel(handlebarsRoot, {
+let handlebarsRoot = path.dirname(require.resolve('handlebars'));
+let handlebars = new Funnel(handlebarsRoot, {
     files: [
       'handlebars/utils.js',
       'handlebars/exception.js',
@@ -22,9 +22,9 @@ var handlebars = new Funnel(handlebarsRoot, {
 
 // Get our shim file for the Handlebars entry point, which includes just the
 // parser bits and not everything else in Handlebars.
-var handlebarsShim = new Funnel('packages/@glimmer/syntax', {
+let handlebarsShim = new Funnel('packages/@glimmer/syntax', {
     files: ['handlebars-shim.js'],
-    getDestinationPath(relativePath) {
+    getDestinationPath() {
       return 'handlebars.js'
     }
 });

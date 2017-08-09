@@ -1,4 +1,4 @@
-import { assign } from '../lib/object-utils';
+import { assign } from '..';
 
 QUnit.module('object-utils tests');
 

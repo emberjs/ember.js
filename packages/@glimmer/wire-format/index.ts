@@ -1,6 +1,5 @@
-import { Dict, Option } from '@glimmer/util';
+import { Dict, Option, Opaque } from '@glimmer/util';
 import { Opcodes } from './lib/opcodes';
-import { Opaque } from "@glimmer/interfaces";
 
 export { Opcodes as Ops } from './lib/opcodes';
 

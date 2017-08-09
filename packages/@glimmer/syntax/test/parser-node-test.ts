@@ -1,4 +1,4 @@
-import { preprocess as parse, builders as b } from "../index";
+import { preprocess as parse, builders as b } from "..";
 
 import { astEqual } from "./support";
 
