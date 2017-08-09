@@ -65,6 +65,7 @@ export interface ComponentBlueprint {
   name?: string;
   args?: Object;
   attributes?: Object;
+  layoutAttributes?: Object;
   blockParams?: string[];
 }
 
@@ -208,15 +209,16 @@ export abstract class AbstractRenderTest {
       .map(arg => {
         let rightSide: string;
 
+        let value = args[arg];
         if (needsCurlies) {
-          let isString = arg[0] === "'" || arg[0] === '"';
+          let isString = value && (value[0] === "'" || value[0] === '"');
           if (isString) {
-            rightSide = `${args[arg]}`;
+            rightSide = `${value}`;
           } else {
-            rightSide = `{{${args[arg]}}}`;
+            rightSide = `{{${value}}}`;
           }
         } else {
-          rightSide = `${args[arg]}`;
+          rightSide = `${value}`;
         }
 
         return `${sigil}${arg}=${rightSide}`;
@@ -232,8 +234,8 @@ export abstract class AbstractRenderTest {
     return `${inverse ? `{{else}}${inverse}` : ''}`;
   }
 
-  private buildAttributes(attrs: Object): string {
-    return Object.keys(attrs).map(attr => `${attr}=${attrs[attr]}`).join(' ');
+  private buildAttributes(attrs: Object = {}): string {
+    return Object.keys(attrs).map(attr => `${attr}=${attrs[attr]}`).join(" ");
   }
 
   private buildAngleBracketComponent(blueprint: ComponentBlueprint): string {
@@ -278,8 +280,9 @@ export abstract class AbstractRenderTest {
   private buildGlimmerComponent(blueprint: ComponentBlueprint): string {
     let { tag = "div", layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
-    this.assert.ok(true, `generated glimmer layout as ${`<${tag}>${layout}</${tag}>`}`);
-    this.registerComponent("Glimmer", name, `<${tag} ...attributes>${layout}</${tag}>`);
+    let layoutAttrs = this.buildAttributes(blueprint.layoutAttributes);
+    this.assert.ok(true, `generated glimmer layout as ${`<${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`}`);
+    this.registerComponent("Glimmer", name, `<${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`);
     this.assert.ok(true, `generated glimmer invocation as ${invocation}`);
     return invocation;
   }
@@ -803,7 +806,7 @@ function componentModule(
     fragment: []
   };
 
-  function createTest(prop: string, test: any, skip: boolean) {
+  function createTest(prop: string, test: any, skip?: boolean) {
     let shouldSkip: boolean;
     if (skip === true || test.skip === true) {
       shouldSkip = true;

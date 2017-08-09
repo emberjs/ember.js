@@ -807,65 +807,6 @@
 //   assertEmberishElement('div', {}, `true`);
 // });
 
-// module('Dynamically-scoped variable accessors');
-
-// testComponent('Can get and set dynamic variable', {
-//   layout: '{{#-with-dynamic-vars myKeyword=@value}}{{yield}}{{/-with-dynamic-vars}}',
-//   invokeAs: {
-//     template: '{{-get-dynamic-var "myKeyword"}}',
-//     context: { value: "hello" },
-//     args: { value: 'value' }
-//   },
-//   expected: 'hello',
-//   updates: [{
-//     expected: 'hello'
-//   }, {
-//     context: { value: 'goodbye' },
-//     expected: 'goodbye'
-//   }]
-// });
-
-// testComponent('Can get and set dynamic variable with bound names', {
-//   layout: '{{#-with-dynamic-vars myKeyword=@value1 secondKeyword=@value2}}{{yield}}{{/-with-dynamic-vars}}',
-//   invokeAs: {
-//     template: '{{keyword}}-{{-get-dynamic-var keyword}}',
-//     context: { value1: "hello", value2: "goodbye", keyword: "myKeyword" },
-//     args: { value1: "value1", value2: "value2" }
-//   },
-//   expected: 'myKeyword-hello',
-//   updates: [{
-//     expected: 'myKeyword-hello'
-//   }, {
-//     context: { keyword: 'secondKeyword' },
-//     expected: 'secondKeyword-goodbye'
-//   }, {
-//     context: { value2: 'goodbye!' },
-//     expected: 'secondKeyword-goodbye!'
-//   }, {
-//     context: { value1: "hello", value2: "goodbye", keyword: "myKeyword" },
-//     expected: 'myKeyword-hello'
-//   }]
-// });
-
-// testComponent('Can shadow existing dynamic variable', {
-//   layout: '{{#-with-dynamic-vars myKeyword=@outer}}<div>{{-get-dynamic-var "myKeyword"}}</div>{{#-with-dynamic-vars myKeyword=@inner}}{{yield}}{{/-with-dynamic-vars}}<div>{{-get-dynamic-var "myKeyword"}}</div>{{/-with-dynamic-vars}}',
-//   invokeAs: {
-//     template: '<div>{{-get-dynamic-var "myKeyword"}}</div>',
-//     context: { outer: 'original', inner: 'shadowed' },
-//     args: { outer: 'outer', inner: 'inner' }
-//   },
-//   expected: '<div>original</div><div>shadowed</div><div>original</div>',
-//   updates: [{
-//     expected: '<div>original</div><div>shadowed</div><div>original</div>'
-//   }, {
-//     context: { outer: 'original2', inner: 'shadowed' },
-//     expected: '<div>original2</div><div>shadowed</div><div>original2</div>'
-//   }, {
-//     context: { outer: 'original2', inner: 'shadowed2' },
-//     expected: '<div>original2</div><div>shadowed2</div><div>original2</div>'
-//   }]
-// });
-
 // module('Components - has-block-params helper');
 
 // testComponent('parameterized has-block-params (subexpr, inverse) when inverse supplied without block params', {
@@ -1203,19 +1144,6 @@
 // });
 
 // module("Components - integration - scope");
-
-// testComponent('correct scope - conflicting local names', {
-//   layout: stripTight`{{#with @a as |item|}}{{@a}}: {{item}}, {{#with @b as |item|}}
-//                      {{@b}}: {{item}}, {{#with @c as |item|}}{{@c}}: {{item}}{{/with}}{{/with}}{{/with}}`,
-//   invokeAs: { args: { a: '"A"', b: '"B"', c: '"C"' } },
-//   expected: 'A: A, B: B, C: C'
-// });
-
-// testComponent('correct scope - conflicting block param and attr names', {
-//   layout: 'Outer: {{@conflict}} {{#with @item as |conflict|}}Inner: {{@conflict}} Block: {{conflict}}{{/with}}',
-//   invokeAs: { args: { item: '"from block"', conflict: '"from attr"' } },
-//   expected: 'Outer: from attr Inner: from attr Block: from block'
-// });
 
 // QUnit.test('correct scope - accessing local variable in yielded block (glimmer component)', () => {
 //   class FooBar extends BasicComponent { }
@@ -2067,89 +1995,6 @@
 //   for (let id in IDs) {
 //     assert.equal(IDs[id], 1, `Expected ID ${id} to be unique`);
 //   }
-// });
-
-// module("Glimmer Component - shadowing");
-
-// testComponent('shadowing: normal outer attributes are reflected', {
-//   kind: 'glimmer',
-//   layout: 'In layout - someProp: {{@someProp}}',
-//   invokeAs: { args: { someProp: '"something here"' } },
-//   expected: { attrs: {}, content: 'In layout - someProp: something here' }
-// });
-
-// testComponent('shadowing - normal outer attributes clobber inner attributes', {
-//   kind: 'glimmer',
-//   layout: { attributes: { 'data-name': 'Godfrey', 'data-foo': 'foo' } },
-//   invokeAs: { attributes: { 'data-name': 'Godhuda', 'data-bar': 'bar' } },
-//   expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo', 'data-bar': 'bar' }, content: '' }
-// });
-
-// testComponent('shadowing: outer attributes with concat are reflected', {
-//   kind: 'glimmer',
-//   layout: 'In layout - someProp: {{@someProp}}',
-//   invokeAs: {
-//     context: { someProp: 'something here' },
-//     args: { someProp: 'someProp' }
-//   },
-//   expected: { attrs: {}, content: 'In layout - someProp: something here' },
-//   updates: [{
-//     expected: { attrs: {}, content: 'In layout - someProp: something here' }
-//   }, {
-//     context: { someProp: 'something else' },
-//     expected: { attrs: {}, content: 'In layout - someProp: something else' }
-//   }, {
-//     context: { someProp: '' },
-//     expected: { attrs: {}, content: 'In layout - someProp: ' }
-//   }, {
-//     context: { someProp: 'something here' },
-//     expected: { attrs: {}, content: 'In layout - someProp: something here' }
-//   }]
-// });
-
-// testComponent('shadowing: outer attributes with concat clobber inner attributes', {
-//   kind: 'glimmer',
-//   layout: { attributes: { 'data-name': 'Godfrey', 'data-foo': 'foo' } },
-//   invokeAs: {
-//     context: { name: 'Godhuda', foo: 'foo' },
-//     attributes: { 'data-name': '{{name}}', 'data-foo': '{{foo}}-bar' }
-//   },
-//   expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }, content: '' },
-//   updates: [{
-//     expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }, content: '' }
-//   }, {
-//     context: { name: 'Yehuda', foo: 'baz' },
-//     expected: { attrs: { 'data-name': 'Yehuda', 'data-foo': 'baz-bar' }, content: '' }
-//   }, {
-//     context: { name: '', foo: '' },
-//     expected: { attrs: { 'data-name': '', 'data-foo': '-bar' }, content: '' }
-//   }, {
-//     context: { name: 'Godhuda', foo: 'foo' },
-//     expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }, content: '' }
-//   }]
-// });
-
-// testComponent('shadowing: outer attributes clobber inner attributes with concat', {
-//   kind: 'glimmer',
-//   layout: { attributes: { 'data-name': '{{@name}}', 'data-foo': '{{@foo}}-bar' } },
-//   invokeAs: {
-//     context: { name: 'Godfrey', foo: 'foo' },
-//     args: { name: 'name', foo: 'foo' },
-//     attributes: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }
-//   },
-//   expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }, content: '' },
-//   updates: [{
-//     expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }, content: '' }
-//   }, {
-//     context: { name: 'Yehuda', foo: 'baz' },
-//     expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }, content: '' }
-//   }, {
-//     context: { name: '', foo: '' },
-//     expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }, content: '' }
-//   }, {
-//     context: { name: 'Godhuda', foo: 'foo' },
-//     expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }, content: '' }
-//   }]
 // });
 
 // module("Glimmer Component");
