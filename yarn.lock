@@ -5573,13 +5573,21 @@ qunit-tap@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/qunit-tap/-/qunit-tap-1.5.1.tgz#29f9519c56fa9def32f9681711515c41ed231e91"
 
-qunitjs@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/qunitjs/-/qunitjs-2.2.0.tgz#507db368305b6f45839b079195bca251ba76d50a"
-
 qunitjs@^2.3.3:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/qunitjs/-/qunitjs-2.3.3.tgz#456696bdd61a2c8b5bc8f053f00e20d75a73d539"
+  dependencies:
+    chokidar "1.6.1"
+    commander "2.9.0"
+    exists-stat "1.0.0"
+    findup-sync "0.4.3"
+    js-reporters "1.2.0"
+    resolve "1.3.2"
+    walk-sync "0.3.1"
+
+qunitjs@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/qunitjs/-/qunitjs-2.4.0.tgz#58f3a81e846687f2e7f637c5bedc9c267f887261"
   dependencies:
     chokidar "1.6.1"
     commander "2.9.0"
