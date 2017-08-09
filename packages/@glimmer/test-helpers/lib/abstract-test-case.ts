@@ -273,11 +273,8 @@ export abstract class AbstractRenderTest {
   private buildGlimmerComponent(blueprint: ComponentBlueprint): string {
     let { tag = "div", layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
-    this.assert.ok(
-      true,
-      `generated glimmer layout as ${`<${tag}>${layout}</${tag}>`}`
-    );
-    this.registerComponent('Glimmer', name, `<${tag}>${layout}</${tag}>`);
+    this.assert.ok(true, `generated glimmer layout as ${`<${tag}>${layout}</${tag}>`}`);
+    this.registerComponent("Glimmer", name, `<${tag} ...attributes>${layout}</${tag}>`);
     this.assert.ok(true, `generated glimmer invocation as ${invocation}`);
     return invocation;
   }
@@ -493,7 +490,8 @@ export abstract class AbstractRenderTest {
 
   protected assertComponent(content: string, attrs: Object = {}) {
     let element = this.element.firstChild as HTMLDivElement;
-    assertEmberishElement(element, 'div', attrs, content);
+    assertEmberishElement(element, "div", attrs, content);
+    this.takeSnapshot();
   }
 
   private runTask<T>(callback: () => T): T {
@@ -800,17 +798,16 @@ function componentModule(
     fragment: []
   };
 
-  function createTest(prop: string, test: any, skip = false) {
-    return (
-      type: ComponentKind,
-      klass: typeof AbstractRenderTest & Function
-    ) => {
+  function createTest(prop: string, test: any, skip: boolean) {
+    let shouldSkip: boolean;
+    if (skip === true || test.skip === true) {
+      shouldSkip = true;
+    }
+    return (type: ComponentKind, klass: typeof AbstractRenderTest & Function) => {
       let instance = new klass();
       instance.testType = type;
-      if (skip) {
-        QUnit.skip(`${type.toLowerCase()}: ${prop}`, assert =>
-          test.call(instance, assert)
-        );
+      if (shouldSkip) {
+        QUnit.skip(`${type.toLowerCase()}: ${prop}`, assert => test.call(instance, assert));
       } else {
         QUnit.test(`${type.toLowerCase()}: ${prop}`, assert =>
           test.call(instance, assert)
