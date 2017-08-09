@@ -117,6 +117,11 @@ export abstract class AbstractRenderTest {
 
   constructor(protected env = new TestEnvironment()) {}
 
+  reset() {
+    this.element.innerHTML = '';
+    this.env = new TestEnvironment();
+  }
+
   registerHelper(name: string, helper: UserHelper) {
     this.helpers[name] = helper;
   }
