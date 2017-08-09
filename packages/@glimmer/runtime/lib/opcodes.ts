@@ -52,7 +52,7 @@ function logOpcode(type: string, params: Option<Object>): string | void {
 }
 
 function json(param: Opaque) {
-  if (!CI && DEBUG) {
+  if (DEBUG) {
     if (typeof param === 'function') {
       return '<function>';
     }
