@@ -1,7 +1,7 @@
 import { UpdatableReference } from "@glimmer/object-reference";
 import { IteratorResult } from '@glimmer/runtime';
 import { equalTokens, TestDynamicScope, TestEnvironment } from "@glimmer/test-helpers";
-import { SVG_NAMESPACE, RenderResult, Template, normalizeProperty } from "../index";
+import { SVG_NAMESPACE, RenderResult, Template, normalizeProperty } from "@glimmer/runtime";
 
 const { assert, test } = QUnit;
 

@@ -14,7 +14,7 @@ import {
   TestEnvironment,
 } from "@glimmer/test-helpers";
 import { assign } from "@glimmer/util";
-import { RenderResult, Template } from '../index';
+import { RenderResult, Template } from '..';
 import { assert, module as nestedModule } from './support';
 
 export class EmberishRootView extends EmberObject {

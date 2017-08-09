@@ -4,7 +4,7 @@ import { Template } from '@glimmer/runtime';
 import { Simple } from '@glimmer/interfaces';
 import { precompile } from '@glimmer/compiler';
 import { UpdatableReference } from '@glimmer/object-reference';
-import { NodeDOMTreeConstruction } from '@glimmer/node';
+import { NodeDOMTreeConstruction } from '..';
 
 let voidMap = SimpleDOM.voidMap;
 

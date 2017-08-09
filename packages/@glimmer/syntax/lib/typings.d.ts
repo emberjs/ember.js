@@ -26,7 +26,7 @@ declare module "simple-html-tokenizer" {
       loc: {
         start: { line: number, column: number },
         end: { line: number, column: number }
-      }
+      };
     }
 
     export interface Chars extends Base {

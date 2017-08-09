@@ -1,5 +1,4 @@
-import { RenderTests } from "../lib/abstract-test-case";
-import { TestEnvironment } from "../lib/environment";
+import { RenderTests, TestEnvironment } from "..";
 
 QUnit.module("Render Tests: I-N-U-R");
 

@@ -5,6 +5,3 @@ export const DEBUG = (() => {
   }
   return false;
 })();
-
-// TODO this is hacky but requires unifying the build
-export const CI = typeof window !== 'undefined' && !!window['Testem'];

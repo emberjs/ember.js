@@ -4,7 +4,7 @@ import { Tag } from '@glimmer/reference';
 import { VM, UpdatingVM } from './vm';
 import { Opcode, Program } from './environment';
 import { Constants, LazyConstants } from './environment/constants';
-import { DEBUG, CI } from '@glimmer/local-debug-flags';
+import { DEBUG } from '@glimmer/local-debug-flags';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -16,7 +16,7 @@ export interface OpcodeJSON {
 }
 
 export function debugSlice(program: Program, start: number, end: number) {
-  if (!CI && DEBUG) {
+  if (DEBUG) {
     /* tslint:disable:no-console */
     let { constants } = program;
 
@@ -40,7 +40,7 @@ export function debugSlice(program: Program, start: number, end: number) {
 }
 
 function logOpcode(type: string, params: Option<Object>): string | void {
-  if (!CI && DEBUG) {
+  if (DEBUG) {
     let out = type;
 
     if (params) {
@@ -52,7 +52,7 @@ function logOpcode(type: string, params: Option<Object>): string | void {
 }
 
 function json(param: Opaque) {
-  if (!CI && DEBUG) {
+  if (DEBUG) {
     if (typeof param === 'function') {
       return '<function>';
     }
@@ -78,7 +78,7 @@ function json(param: Opaque) {
 }
 
 function debug(c: Constants, op: Op, op1: number, op2: number, op3: number): [string, object] {
-  if (!CI && DEBUG) {
+  if (DEBUG) {
     switch (op) {
       case Op.Bug: throw unreachable();
 
@@ -201,7 +201,7 @@ export class AppendOpcodes {
 
   evaluate(vm: VM, opcode: Opcode, type: number) {
     let func = this.evaluateOpcode[type];
-    if (!CI && DEBUG) {
+    if (DEBUG) {
       /* tslint:disable */
       let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
       console.log(`${typePos(vm['pc'])}. ${logOpcode(name, params)}`);
@@ -211,7 +211,7 @@ export class AppendOpcodes {
 
     func(vm, opcode);
 
-    if (!CI && DEBUG) {
+    if (DEBUG) {
       /* tslint:disable */
       console.log('%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O', 'color: orange', vm['pc'], vm['ra'], vm['fp'], vm['sp'], vm['s0'], vm['s1'], vm['t0'], vm['t1']);
       console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
