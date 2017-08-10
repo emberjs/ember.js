@@ -205,17 +205,16 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
     let { manager: curriedManager, definition: curriedDefinition } = definition.unwrap(args);
     state.manager = manager = curriedManager as ComponentManager;
     state.definition = definition = curriedDefinition;
-  } else if (manager && manager.getCapabilities(definition).prepareArgs !== true) {
-    return;
-  } else if (manager) {
-    args = stack.pop<Arguments>();
   } else {
-    throw unreachable();
+    args = stack.pop<Arguments>();
   }
 
-  // After this point, the component state is a PopulatedComponentState for sure
+  if (manager!.getCapabilities(definition).prepareArgs !== true) {
+    stack.push(args);
+    return;
+  }
 
-  let preparedArgs = manager.prepareArgs(definition, args);
+  let preparedArgs = manager!.prepareArgs(definition, args);
 
   if (preparedArgs) {
     args.clear();
