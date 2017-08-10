@@ -103,6 +103,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
       // Attribute values
       case "beforeAttributeValue":
+        this.beginAttributeValue(false);
         appendDynamicAttributeValuePart(this.currentAttribute!, mustache);
         tokenizer.state = 'attributeValueUnquoted';
         break;
