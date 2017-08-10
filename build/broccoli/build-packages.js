@@ -5,7 +5,7 @@ const babel = require('broccoli-babel-transpiler');
 const merge = require('broccoli-merge-trees');
 const Rollup = require('broccoli-rollup');
 const sourcemaps = require('rollup-plugin-sourcemaps');
-
+const UnwatchedDir = require('broccoli-source').UnwatchedDir;
 const transpileToES5 = require('./transpile-to-es5');
 const writePackageJSON = require('./write-package-json');
 const writeLicense = require('./write-license');
@@ -71,7 +71,7 @@ module.exports = function buildPackages(es2017, matrix) {
 }
 
 function copyVerbatim(pkgName) {
-  return funnel(`packages/${pkgName}`, {
+  return funnel(new UnwatchedDir(`packages/${pkgName}`), {
     destDir: `${pkgName}/dist/types/`
   });
 }
@@ -116,7 +116,7 @@ function transpileAMD(pkgName, esVersion, tree) {
       external,
       plugins,
       targets: [{
-        dest: `${bundleName}.js`,
+        dest: `${pkgName}/dist/amd/${esVersion}/${bundleName}.js`,
         format: 'amd',
         exports: 'named',
         moduleId: pkgName,
@@ -125,8 +125,7 @@ function transpileAMD(pkgName, esVersion, tree) {
     }
   };
 
-  let amdTree = new Rollup(pkgTree, options);
-  return funnel(amdTree, { destDir: `${pkgName}/dist/amd/${esVersion}` });
+  return new Rollup(pkgTree, options);
 }
 
 function transpileCommonJS(pkgName, esVersion, tree) {
