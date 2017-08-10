@@ -9,7 +9,7 @@ const semver = require('semver');
 
 const Project = require('../build/utils/project');
 
-const DIST_PATH = path.resolve(__dirname, '../dist/node_modules');
+const DIST_PATH = path.resolve(__dirname, '../dist');
 const PACKAGES_PATH = path.resolve(__dirname, '../packages');
 
 const DRY_RUN = process.argv.indexOf('--dry-run') > -1;
