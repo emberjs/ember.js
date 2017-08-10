@@ -1,7 +1,7 @@
 import { TemplateMeta } from '@glimmer/wire-format';
+import { ProgramSymbolTable } from '@glimmer/interfaces';
+import { Handle } from '@glimmer/opcode-compiler';
 import { Template } from './template';
-import { ProgramSymbolTable } from "@glimmer/interfaces";
-import { Handle } from './environment';
 
 export class PartialDefinition<T extends TemplateMeta = TemplateMeta> {
   constructor(

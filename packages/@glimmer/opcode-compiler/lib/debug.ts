@@ -1,4 +1,4 @@
-import { Program, Constants } from './interfaces';
+import { CompileTimeProgram, CompileTimeConstants } from './interfaces';
 import { Option, Opaque, SymbolTable, Recast } from '@glimmer/interfaces';
 import { Op, Register } from '@glimmer/vm';
 import { DEBUG, CI } from '@glimmer/local-debug-flags';
@@ -17,7 +17,7 @@ interface LazyDebugConstants {
   getOther<T>(s: number): T;
 }
 
-export function debugSlice(program: Program, start: number, end: number) {
+export function debugSlice(program: CompileTimeProgram, start: number, end: number) {
   if (!CI && DEBUG) {
     /* tslint:disable:no-console */
     let { constants } = program;
@@ -32,7 +32,7 @@ export function debugSlice(program: Program, start: number, end: number) {
 
     for (let i=start; i<end; i= i + 4) {
       let { type, op1, op2, op3 } = program.opcode(i);
-      let [name, params] = debug(constants as Recast<Constants, DebugConstants>, type, op1, op2, op3);
+      let [name, params] = debug(constants as Recast<CompileTimeConstants, DebugConstants>, type, op1, op2, op3);
       console.log(`${i}. ${logOpcode(name, params)}`);
     }
 

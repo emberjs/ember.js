@@ -1,6 +1,5 @@
 import { TestEnvironment } from "@glimmer/test-helpers";
 import { templateFactory } from "@glimmer/runtime";
-import { Templates } from "@glimmer/bundle-compiler";
 import { SerializedTemplateWithLazyBlock, TemplateMeta } from "@glimmer/wire-format";
 
 let env: TestEnvironment;

@@ -5,7 +5,8 @@ import {
   ParsedLayout,
   WrappedBuilder,
   TemplateOptions,
-  LazyOpcodeBuilder
+  LazyOpcodeBuilder,
+  Handle
 } from "@glimmer/opcode-compiler";
 
 import {
@@ -47,15 +48,13 @@ import {
   Template,
   templateFactory,
   TopLevelSyntax,
-  Program,
   WithDynamicTagName,
   WithDynamicLayout,
   CompilationOptions,
-  Handle,
   ScannableTemplate,
   ComponentSpec,
   curry,
-  CurriedDefinition
+  CurriedComponentDefinition
 } from "@glimmer/runtime";
 
 import {
@@ -96,6 +95,7 @@ import * as WireFormat from '@glimmer/wire-format';
 import { Simple, Resolver, Unique, ProgramSymbolTable, Recast } from "@glimmer/interfaces";
 import { TemplateMeta, SerializedTemplateWithLazyBlock, SerializedTemplateBlock } from "@glimmer/wire-format";
 import { precompile } from "@glimmer/compiler";
+import { Program, LazyConstants } from "@glimmer/program";
 
 export type _ = Unique<any>;
 
@@ -901,7 +901,7 @@ class TestMacros extends Macros {
 
 export class TestEnvironment extends Environment {
   public resolver = new TestResolver();
-  private program = new Program(this.resolver);
+  private program = new Program(new LazyConstants(this.resolver));
   private uselessAnchor: HTMLAnchorElement;
   public compiledLayouts = dict<Handle>();
   private lookup: LookupResolver;
@@ -1029,7 +1029,7 @@ export class TestEnvironment extends Environment {
     return specifier && this.resolver.resolve<PartialDefinition>(specifier);
   }
 
-  componentHelper(name: string, meta: TemplateMeta): Option<CurriedDefinition> {
+  componentHelper(name: string, meta: TemplateMeta): Option<CurriedComponentDefinition> {
     let specifier = this.resolver.lookupComponent(name, meta);
 
     if (!specifier) return null;

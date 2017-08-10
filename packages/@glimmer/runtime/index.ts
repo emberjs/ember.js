@@ -41,11 +41,9 @@ export { SafeString } from './lib/upsert';
 
 export {
   Scope,
-  Handle,
   default as Environment,
   Helper,
   DynamicScope,
-  Program,
   CompilationOptions
 } from './lib/environment';
 
@@ -68,7 +66,6 @@ export {
 } from './lib/component/interfaces';
 
 export {
-  CurriedDefinition,
   curry
 } from './lib/compiled/opcodes/component';
 

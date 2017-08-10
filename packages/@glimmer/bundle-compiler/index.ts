@@ -1,3 +1,1 @@
-export {
-  Templates
-} from './lib/templates';
+export {} from './lib/templates';

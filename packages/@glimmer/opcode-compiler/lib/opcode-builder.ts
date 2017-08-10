@@ -1,18 +1,17 @@
-import { Opaque, Option, ProgramSymbolTable, SymbolTable, Present } from '@glimmer/interfaces';
+import { Opaque, Option, ProgramSymbolTable, SymbolTable } from '@glimmer/interfaces';
 import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, typePos, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import { TemplateMeta, SerializedInlineBlock } from "@glimmer/wire-format";
 
 import {
-  Handle,
-  Heap,
-  LazyConstants,
+  Handle as VMHandle,
+  CompileTimeHeap,
+  CompileTimeLazyConstants,
   Primitive,
   CompilableBlock,
-  Constants,
-  Specifier,
-  Program,
+  CompileTimeConstants,
+  CompileTimeProgram,
   ComponentCapabilities,
   ParsedLayout
 } from './interfaces';
@@ -28,10 +27,6 @@ import CompilableTemplate from './compilable-template';
 import {
   ComponentBuilder
 } from './wrapped-component';
-
-export interface CompilesInto<E> {
-  compile(builder: OpcodeBuilder): E;
-}
 
 export type Label = string;
 
@@ -63,32 +58,32 @@ export interface AbstractTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;
 }
 
-export interface CompileTimeLookup {
-  getCapabilities(name: string, meta: TemplateMeta): ComponentCapabilities;
-  getLayout(name: string, meta: TemplateMeta): Option<{ symbolTable: ProgramSymbolTable, handle: Handle }>;
+export interface CompileTimeLookup<Specifier, Handle> {
+  getCapabilities(handle: Handle): ComponentCapabilities;
+  getLayout(name: string, referer: Specifier): Option<{ symbolTable: ProgramSymbolTable, handle: VMHandle }>;
 
   // This interface produces specifiers (and indicates if a name is present), but does not
   // produce any actual objects. The main use-case for producing objects is handled above,
   // with getCapabilities and getLayout, which drastically shrinks the size of the object
   // that the core interface is forced to reify.
-  lookupHelper(name: string, meta: TemplateMeta): Option<Present>;
-  lookupModifier(name: string, meta: TemplateMeta): Option<Present>;
-  lookupComponent(name: string, meta: TemplateMeta): Option<Present>;
-  lookupPartial(name: string, meta: TemplateMeta): Option<Present>;
+  lookupHelper(name: string, referer: Specifier): Option<Handle>;
+  lookupModifier(name: string, referer: Specifier): Option<Handle>;
+  lookupComponent(name: string, referer: Specifier): Option<Handle>;
+  lookupPartial(name: string, referer: Specifier): Option<Handle>;
 }
 
-export interface OpcodeBuilderConstructor {
-  new(program: Program,
-      lookup: CompileTimeLookup,
+export interface OpcodeBuilderConstructor<Specifier, Handle> {
+  new(program: CompileTimeProgram,
+      lookup: CompileTimeLookup<Specifier, Handle>,
       meta: TemplateMeta,
       macros: Macros,
       containingLayout: ParsedLayout,
       asPartial: boolean,
-      Builder: OpcodeBuilderConstructor): { commit(heap: Heap): Handle };
+      Builder: OpcodeBuilderConstructor<Specifier, Handle>): { commit(heap: CompileTimeHeap): VMHandle };
 }
 
-export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbolTable> = AbstractTemplate<ProgramSymbolTable>> {
-  public constants: Constants;
+export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbolTable> = AbstractTemplate<ProgramSymbolTable>, Specifier = Opaque, Handle = Opaque> {
+  public constants: CompileTimeConstants;
 
   private buffer: number[] = [];
   private labelsStack = new Stack<Labels>();
@@ -96,13 +91,13 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
   public component: ComponentBuilder = new ComponentBuilder(this);
 
   constructor(
-    public program: Program,
-    public lookup: CompileTimeLookup,
+    public program: CompileTimeProgram,
+    public lookup: CompileTimeLookup<Specifier, Handle>,
     public meta: TemplateMeta,
     public macros: Macros,
     public containingLayout: ParsedLayout,
     public asPartial: boolean,
-    public Builder: OpcodeBuilderConstructor
+    public Builder: OpcodeBuilderConstructor<Specifier, Handle>
   ) {
     this.constants = program.constants;
   }
@@ -131,7 +126,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
     buffer.push(op3);
   }
 
-  commit(heap: Heap): Handle {
+  commit(heap: CompileTimeHeap): VMHandle {
     this.push(Op.Return);
 
     let { buffer } = this;
@@ -176,8 +171,8 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
 
   // components
 
-  pushComponentManager(specifier: Specifier) {
-    this.push(Op.PushComponentManager, this.constants.specifier(specifier));
+  pushComponentManager(specifier: Handle) {
+    this.push(Op.PushComponentManager, this.constants.handle(specifier));
   }
 
   pushDynamicComponentManager(meta: TemplateMeta) {
@@ -315,7 +310,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
   }
 
   modifier(specifier: Specifier) {
-    this.push(Op.Modifier, this.constants.specifier(specifier));
+    this.push(Op.Modifier, this.constants.handle(specifier));
   }
 
   // lists
@@ -468,7 +463,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
   }
 
   helper(helper: Specifier) {
-    this.push(Op.Helper, this.constants.specifier(helper));
+    this.push(Op.Helper, this.constants.handle(helper));
   }
 
   bindDynamicScope(_names: string[]) {
@@ -856,8 +851,8 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
 
 export default OpcodeBuilder;
 
-export class LazyOpcodeBuilder extends OpcodeBuilder<CompilableTemplate<ProgramSymbolTable>> {
-  public constants: LazyConstants;
+export class LazyOpcodeBuilder<Specifier, Handle> extends OpcodeBuilder<CompilableTemplate<ProgramSymbolTable>, Specifier, Handle> {
+  public constants: CompileTimeLazyConstants;
 
   pushSymbolTable(symbolTable: Option<SymbolTable>) {
     if (symbolTable) {
@@ -902,5 +897,3 @@ export class LazyOpcodeBuilder extends OpcodeBuilder<CompilableTemplate<ProgramS
 
 // export class EagerOpcodeBuilder extends OpcodeBuilder {
 // }
-
-export type BlockCallback = (dsl: OpcodeBuilder, BEGIN: Label, END: Label) => void;

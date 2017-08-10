@@ -88,7 +88,7 @@ export interface WithDynamicTagName<Component> extends ComponentManager<Componen
   getTagName(component: Component): Option<string>;
 }
 
-export interface WithStaticLayout<Component, Definition, Specifier, R extends Resolver<Specifier>> extends ComponentManager<Component, Definition> {
+export interface WithStaticLayout<Component, Definition, Specifier, R extends Resolver<Specifier, Opaque>> extends ComponentManager<Component, Definition> {
   getLayout(definition: Definition, resolver: R): Specifier;
 }
 
@@ -108,11 +108,11 @@ export interface WithElementHook<Component> extends ComponentManager<Component, 
 }
 
 /** @internal */
-export function hasStaticLayout<C, Definition extends ComponentDefinition>(definition: Definition, manager: ComponentManager<C, Definition>): manager is WithStaticLayout<C, Definition, Unique<'Specifier'>, Resolver<Unique<'Specifier'>>> {
+export function hasStaticLayout<C, Definition extends ComponentDefinition>(definition: Definition, manager: ComponentManager<C, Definition>): manager is WithStaticLayout<C, Definition, Unique<'Specifier'>, Resolver<Unique<'Specifier'>, Opaque>> {
   return manager.getCapabilities(definition).dynamicLayout === false;
 }
 
-export interface WithDynamicLayout<Component, Specifier, R extends Resolver<Specifier>> extends ComponentManager<Component, Opaque> {
+export interface WithDynamicLayout<Component, Specifier, R extends Resolver<Specifier, Opaque>> extends ComponentManager<Component, Opaque> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
@@ -121,7 +121,7 @@ export interface WithDynamicLayout<Component, Specifier, R extends Resolver<Spec
 }
 
 /** @internal */
-export function hasDynamicLayout<Component>(definition: ComponentDefinition, manager: ComponentManager<Component, ComponentDefinition>): manager is WithDynamicLayout<Component, Unique<'Specifier'>, Resolver<Unique<'Specifier'>>> {
+export function hasDynamicLayout<Component>(definition: ComponentDefinition, manager: ComponentManager<Component, ComponentDefinition>): manager is WithDynamicLayout<Component, Unique<'Specifier'>, Resolver<Unique<'Specifier'>, Opaque>> {
   return manager.getCapabilities(definition).dynamicLayout === true;
 }
 

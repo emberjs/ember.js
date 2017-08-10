@@ -1,12 +1,13 @@
 import { Opaque, Option, BlockSymbolTable } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { Op } from '@glimmer/vm';
-import { Helper, Handle, ScopeBlock } from '../../environment';
+import { Helper, ScopeBlock } from '../../environment';
 import { APPEND_OPCODES } from '../../opcodes';
 import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
 import { PublicVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { ConcatReference } from '../expressions/concat';
+import { Handle } from "@glimmer/opcode-compiler";
 
 export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
