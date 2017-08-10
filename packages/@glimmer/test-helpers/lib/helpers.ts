@@ -58,11 +58,11 @@ function isMarker(node: Node) {
   return false;
 }
 
-export interface TestCompileOptions<T extends WireFormat.TemplateMeta> extends PrecompileOptions<T> {
+export interface TestCompileOptions extends PrecompileOptions {
   env: Environment;
 }
 
-export function precompile(string: string, options?: TestCompileOptions<WireFormat.TemplateMeta>): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
+export function precompile(string: string, options?: TestCompileOptions): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
   let wrapper = JSON.parse(rawPrecompile(string, options));
   wrapper.block = JSON.parse(wrapper.block);
   return wrapper as WireFormat.SerializedTemplate<WireFormat.TemplateMeta>;

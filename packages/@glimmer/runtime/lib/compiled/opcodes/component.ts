@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Recast } from '@glimmer/interfaces';
+import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Recast, Resolver } from '@glimmer/interfaces';
 import {
   combineTagged,
   CONSTANT_TAG,
@@ -21,22 +21,22 @@ import {
   PublicComponentSpec
 } from '../../component/interfaces';
 import { normalizeStringValue } from '../../dom/normalize';
-import { DynamicScope, Handle, ScopeBlock, ScopeSlot } from '../../environment';
+import { DynamicScope, ScopeBlock, ScopeSlot } from '../../environment';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UNDEFINED_REFERENCE } from '../../references';
 import { UpdatingVM, VM } from '../../vm';
 import { Arguments, IArguments, ICapturedArguments } from '../../vm/arguments';
 import { IsCurriedComponentDefinitionReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
-import { Resolver, Specifier, ComponentDefinition, ComponentManager, Component } from '../../internal-interfaces';
+import { ComponentDefinition, ComponentManager, Component } from '../../internal-interfaces';
 import { dict, assert, unreachable } from "@glimmer/util";
 import { Op, Register } from '@glimmer/vm';
 import { TemplateMeta } from "@glimmer/wire-format";
-import { AbstractTemplate, ATTRS_BLOCK } from '@glimmer/opcode-compiler';
+import { AbstractTemplate, ATTRS_BLOCK, Handle } from '@glimmer/opcode-compiler';
 
 const ARGS = new Arguments();
 
-function resolveComponent(resolver: Resolver, name: string, meta: TemplateMeta): Option<ComponentSpec> {
+function resolveComponent<Specifier, Handle>(resolver: Resolver<Specifier, Handle>, name: string, meta: Specifier): Option<ComponentSpec> {
   let specifier = resolver.lookupComponent(name, meta);
   assert(specifier, `Could not find a component named "${name}"`);
   return resolver.resolve<ComponentSpec>(specifier!);
@@ -46,15 +46,15 @@ export function curry(spec: PublicComponentSpec, args: Option<ICapturedArguments
   return new CurriedComponentDefinition(spec as ComponentSpec, args);
 }
 
-class CurryComponentReference implements VersionedPathReference<Option<CurriedComponentDefinition>> {
+class CurryComponentReference<Specifier, Handle> implements VersionedPathReference<Option<CurriedComponentDefinition>> {
   public tag: Tag;
   private lastValue: Opaque;
   private lastDefinition: Option<CurriedComponentDefinition>;
 
   constructor(
     private inner: VersionedReference<Opaque>,
-    private resolver: Resolver,
-    private meta: TemplateMeta,
+    private resolver: Resolver<Specifier, Handle>,
+    private meta: Specifier,
     private args: Option<ICapturedArguments>
   ) {
     this.tag = inner.tag;
@@ -310,7 +310,7 @@ export class ComponentElementOperations {
     this.attributes[name] = deferred;
   }
 
-  flush(vm: VM) {
+  flush(vm: VM<Opaque, Opaque>) {
     for (let name in this.attributes) {
       let attr = this.attributes[name];
       let { value: reference, namespace, trusting } = attr;
@@ -370,12 +370,12 @@ APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
 APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   let { manager, definition, component } = vm.fetchValue<ComponentState>(_state);
   let { constants: { resolver }, stack } = vm;
-  let specifier: Specifier;
+  let specifier: Opaque;
 
   if (hasStaticLayout(definition, manager)) {
-    specifier = manager.getLayout(definition, resolver) as Specifier;
+    specifier = manager.getLayout(definition, resolver) as Opaque;
   } else if (hasDynamicLayout(definition, manager)) {
-    specifier = manager.getLayout(component, resolver) as Specifier;
+    specifier = manager.getLayout(component, resolver) as Opaque;
   } else {
     throw unreachable();
   }
@@ -469,7 +469,7 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
     super();
   }
 
-  evaluate(_vm: UpdatingVM) {
+  evaluate(_vm: UpdatingVM<Opaque, Opaque>) {
     let { component, manager, dynamicScope } = this;
 
     manager.update(component, dynamicScope);
@@ -488,7 +488,7 @@ export class DidUpdateLayoutOpcode extends UpdatingOpcode {
     super();
   }
 
-  evaluate(vm: UpdatingVM) {
+  evaluate(vm: UpdatingVM<Opaque, Opaque>) {
     let { manager, component, bounds } = this;
 
     manager.didUpdateLayout(component, bounds);

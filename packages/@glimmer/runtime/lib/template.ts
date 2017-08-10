@@ -11,7 +11,7 @@ import {
 import { NewElementBuilder } from './vm/element-builder';
 import { RehydrateBuilder } from './vm/rehydrate-builder';
 import { SerializeBuilder } from './vm/serialize-builder';
-import { DynamicScope, Environment, Program } from './environment';
+import { DynamicScope, Environment } from './environment';
 import { TopLevelSyntax } from './syntax/interfaces';
 import { IteratorResult, RenderResult, VM } from './vm';
 import { EMPTY_ARGS, ICapturedArguments } from './vm/arguments';
@@ -20,6 +20,7 @@ import {
   ParsedLayout,
   TemplateOptions
 } from "@glimmer/opcode-compiler";
+import { Program } from "@glimmer/program";
 
 export interface RenderLayoutOptions {
   env: Environment;
@@ -33,7 +34,7 @@ export interface RenderLayoutOptions {
 /**
  * Environment specific template.
  */
-export interface Template<T extends TemplateMeta = TemplateMeta> {
+export interface Template<TemplateMeta = Opaque> {
   /**
    * Template identifier, if precompiled will be the id of the
    * precompiled template.
@@ -43,7 +44,7 @@ export interface Template<T extends TemplateMeta = TemplateMeta> {
   /**
    * Template meta (both compile time and environment specific).
    */
-  meta: T;
+  meta: TemplateMeta;
 
   hasEval: boolean;
 
@@ -77,7 +78,7 @@ export interface TemplateFactory<T extends TemplateMeta, U> {
    *
    * @param {Environment} env glimmer Environment
    */
-  create(env: TemplateOptions): Template<T>;
+  create(env: TemplateOptions<Opaque, Opaque>): Template<T>;
   /**
    * Used to create an environment specific singleton instance
    * of the template.
@@ -85,11 +86,11 @@ export interface TemplateFactory<T extends TemplateMeta, U> {
    * @param {Environment} env glimmer Environment
    * @param {Object} meta environment specific injections into meta
    */
-  create(env: TemplateOptions, meta: U): Template<T & U>;
+  create(env: TemplateOptions<Opaque, Opaque>, meta: U): Template<T & U>;
 }
 
 export class TemplateIterator {
-  constructor(private vm: VM) {}
+  constructor(private vm: VM<Opaque, Opaque>) {}
   next(): IteratorResult<RenderResult> {
     return this.vm.next();
   }
@@ -107,7 +108,7 @@ export default function templateFactory<T extends TemplateMeta, U>(serializedTem
 export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}, {}> {
   let parsedBlock: SerializedTemplateBlock;
   let id = templateId || `client-${clientId++}`;
-  let create = (options: TemplateOptions, envMeta?: {}) => {
+  let create = (options: TemplateOptions<Opaque, Opaque>, envMeta?: {}) => {
     let newMeta = envMeta ? assign({}, envMeta, meta) : meta;
     if (!parsedBlock) {
       parsedBlock = JSON.parse(block);
@@ -126,7 +127,7 @@ export class ScannableTemplate implements Template<TemplateMeta> {
   public meta: TemplateMeta;
   private statements: Statement[];
 
-  constructor(private options: TemplateOptions, private parsedLayout: ParsedLayout) {
+  constructor(private options: TemplateOptions<Opaque, Opaque>, private parsedLayout: ParsedLayout) {
     let { block } = parsedLayout;
     this.symbols = block.symbols;
     this.hasEval = block.hasEval;
@@ -142,7 +143,7 @@ export class ScannableTemplate implements Template<TemplateMeta> {
     let layout = this.asLayout();
     let handle = layout.compile();
 
-    let vm = VM.initial(this.options.program as any as Program, env, self, args, dynamicScope, builder, layout.symbolTable, handle);
+    let vm = VM.initial(this.options.program as any as Program<Opaque, Opaque>, env, self, args, dynamicScope, builder, layout.symbolTable, handle);
     return new TemplateIterator(vm);
   }
 
@@ -157,7 +158,7 @@ export class ScannableTemplate implements Template<TemplateMeta> {
   }
 }
 
-export function compilable(layout: ParsedLayout, options: TemplateOptions, asPartial: boolean) {
+export function compilable(layout: ParsedLayout, options: TemplateOptions<Opaque, Opaque>, asPartial: boolean) {
   let { block, meta } = layout;
   let { hasEval, symbols } = block;
   let compileOptions = { ...options, asPartial };

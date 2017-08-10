@@ -1,10 +1,10 @@
 import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, typePos } from '@glimmer/util';
 import { Op } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
-import { VM, UpdatingVM } from './vm';
-import { Opcode } from './environment';
-import { DEBUG } from '@glimmer/local-debug-flags';
 import { debug, logOpcode } from "@glimmer/opcode-compiler";
+import { Opcode, Opaque } from "@glimmer/interfaces";
+import { VM, UpdatingVM } from './vm';
+import { DEBUG } from '@glimmer/local-debug-flags';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -19,7 +19,7 @@ export type Operand1 = number;
 export type Operand2 = number;
 export type Operand3 = number;
 
-export type EvaluateOpcode = (vm: VM, opcode: Opcode) => void;
+export type EvaluateOpcode = (vm: VM<Opaque, Opaque>, opcode: Opcode) => void;
 
 export class AppendOpcodes {
   private evaluateOpcode: EvaluateOpcode[] = fillNulls<EvaluateOpcode>(Op.Size).slice();
@@ -28,7 +28,7 @@ export class AppendOpcodes {
     this.evaluateOpcode[name as number] = evaluate;
   }
 
-  evaluate(vm: VM, opcode: Opcode, type: number) {
+  evaluate(vm: VM<Opaque, Opaque>, opcode: Opcode, type: number) {
     let func = this.evaluateOpcode[type];
     if (DEBUG) {
       /* tslint:disable */
@@ -68,7 +68,7 @@ export abstract class UpdatingOpcode extends AbstractOpcode {
   next: Option<UpdatingOpcode> = null;
   prev: Option<UpdatingOpcode> = null;
 
-  abstract evaluate(vm: UpdatingVM): void;
+  abstract evaluate(vm: UpdatingVM<Opaque, Opaque>): void;
 }
 
 export type UpdatingOpSeq = ListSlice<UpdatingOpcode>;

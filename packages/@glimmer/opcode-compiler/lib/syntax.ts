@@ -4,7 +4,7 @@ import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
 import OpcodeBuilder, { CompileTimeLookup, OpcodeBuilderConstructor } from "./opcode-builder";
-import { CompilableBlock, Program } from './interfaces';
+import { CompilableBlock, CompileTimeProgram } from './interfaces';
 
 import Ops = WireFormat.Ops;
 
@@ -168,7 +168,7 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder: OpcodeBuilder) => {
   let specifier = lookup.lookupComponent(tag, builder.meta);
 
   if (specifier) {
-    let capabilities = lookup.getCapabilities(tag, meta);
+    let capabilities = lookup.getCapabilities(specifier);
 
     let attrs: WireFormat.Statement[] = [
       [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true],
@@ -786,16 +786,16 @@ export function compileStatement(statement: WireFormat.Statement, builder: Opcod
   STATEMENTS.compile(statement, builder);
 }
 
-export interface TemplateOptions {
+export interface TemplateOptions<Specifier, Handle> {
   // already in compilation options
-  program: Program;
+  program: CompileTimeProgram;
   macros: Macros;
-  Builder: OpcodeBuilderConstructor;
+  Builder: OpcodeBuilderConstructor<Specifier, Handle>;
 
   // a subset of the resolver w/ a couple of small tweaks
-  lookup: CompileTimeLookup;
+  lookup: CompileTimeLookup<Specifier, Handle>;
 }
 
-export interface CompileOptions extends TemplateOptions {
+export interface CompileOptions<Specifier, Handle> extends TemplateOptions<Specifier, Handle> {
   asPartial: boolean;
 }

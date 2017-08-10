@@ -1,11 +1,11 @@
 import { TemplateMeta } from '@glimmer/wire-format';
 import { Opaque, Option, Unique } from './core';
 
-export interface Resolver<Specifier, T extends TemplateMeta = TemplateMeta> {
-  lookupHelper(name: string, meta: T): Option<Specifier>;
-  lookupModifier(name: string, meta: T): Option<Specifier>;
-  lookupComponent(name: string, meta: T): Option<Specifier>; // ComponentSpec
-  lookupPartial(name: string, meta: T): Option<Specifier>;
+export interface Resolver<Specifier, Handle> {
+  lookupHelper(name: string, meta: Specifier): Option<Handle>;
+  lookupModifier(name: string, meta: Specifier): Option<Handle>;
+  lookupComponent(name: string, meta: Specifier): Option<Handle>; // ComponentSpec
+  lookupPartial(name: string, meta: Specifier): Option<Handle>;
 
-  resolve<U>(specifier: Specifier): U;
+  resolve<U>(specifier: Handle): U;
 }

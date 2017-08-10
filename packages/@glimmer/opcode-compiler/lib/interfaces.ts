@@ -1,10 +1,10 @@
-import { Unique, Opaque, SymbolTable, Option, BlockSymbolTable } from "@glimmer/interfaces";
+import { Unique, Opaque, SymbolTable, Option, BlockSymbolTable, Opcode } from "@glimmer/interfaces";
 import { Core, SerializedTemplateBlock, TemplateMeta } from "@glimmer/wire-format";
 import { Macros } from './syntax';
 
 export type Handle = Unique<"Handle">;
 
-export interface Heap {
+export interface CompileTimeHeap {
   push(name: /* TODO: Op */ number, op1?: number, op2?: number, op3?: number): void;
   malloc(): Handle;
   finishMalloc(handle: Handle): void;
@@ -30,7 +30,7 @@ export interface EagerResolver<Specifier> {
 
 export interface EagerCompilationOptions<Specifier, R extends EagerResolver<Specifier>> {
   resolver: R;
-  program: Program;
+  program: CompileTimeProgram;
   macros: Macros;
 }
 
@@ -41,35 +41,27 @@ export interface CompilableTemplate<S extends SymbolTable> {
 
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 
-export interface Program {
+export interface CompileTimeProgram {
   [key: number]: never;
 
-  constants: Constants;
-  heap: Heap;
+  constants: CompileTimeConstants;
+  heap: CompileTimeHeap;
 
   opcode(offset: number): Opcode;
 }
 
-export interface Opcode {
-  offset: number;
-  type: number;
-  op1: number;
-  op2: number;
-  op3: number;
-}
-
 export type Primitive = undefined | null | boolean | number | string;
 
-export interface Constants {
+export interface CompileTimeConstants {
   string(value: string): number;
   stringArray(strings: string[]): number;
   array(values: number[]): number;
   table(t: SymbolTable): number;
-  specifier(specifier: Opaque): number;
+  handle(specifier: Opaque): number;
   serializable(value: Opaque): number;
 }
 
-export interface LazyConstants extends Constants {
+export interface CompileTimeLazyConstants extends CompileTimeConstants {
   other(value: Opaque): number;
 }
 
