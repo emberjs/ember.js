@@ -493,7 +493,7 @@ export abstract class AbstractRenderTest {
   }
 
   protected assertHTML(html: string) {
-    equalTokens(this.element, html);
+    equalTokens(this.element, html, html);
     this.takeSnapshot();
   }
 
