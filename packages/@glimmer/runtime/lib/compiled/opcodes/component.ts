@@ -42,120 +42,66 @@ function resolveComponent(resolver: Resolver, name: string, meta: TemplateMeta):
   return resolver.resolve<ComponentSpec>(specifier!);
 }
 
-export const PUBLIC_CURRIED_BRAND = "[CURRIED COMPONENT] 607561bf-57fd-43b2-bf18-fb53d6f9bfb9";
-
-export const enum CurriedComponentType {
-  Spec,
-  Definition,
-  Null
+export function curry(spec: PublicComponentSpec, args: Option<ICapturedArguments> = null): CurriedComponentDefinition {
+  return new CurriedComponentDefinition(spec as ComponentSpec, args);
 }
 
-export interface CurriedValue {
-  "[CURRIED COMPONENT] 607561bf-57fd-43b2-bf18-fb53d6f9bfb9": true;
-  type: CurriedComponentType;
-  value: Option<InnerCurriedComponent>;
-}
-
-export interface CurriedSpec extends CurriedValue {
-  type: CurriedComponentType.Spec;
-  value: ComponentSpec;
-}
-
-export interface CurriedDefinition extends CurriedValue {
-  type: CurriedComponentType.Definition;
-  value: CurriedComponentDefinition;
-}
-
-export interface CurriedNull extends CurriedValue{
-  type: CurriedComponentType.Null;
-  value: null;
-}
-
-class BrandedCurriedValue implements CurriedValue {
-  public "[CURRIED COMPONENT] 607561bf-57fd-43b2-bf18-fb53d6f9bfb9": true = true;
-  constructor(public type: CurriedComponentType, public value: Option<InnerCurriedComponent>) {}
-}
-
-export function isCurriedValue(value: Opaque): value is CurriedValue {
-  return value && value[PUBLIC_CURRIED_BRAND];
-}
-
-export function isCurriedNull(value: CurriedValue): value is CurriedNull {
-  return value.type === CurriedComponentType.Null;
-}
-
-export function isCurriedSpec(value: CurriedValue): value is CurriedSpec {
-  return value.type === CurriedComponentType.Spec;
-}
-
-export function isPublicCurriedDefinition(value: CurriedValue): value is CurriedDefinition {
-  return value.type === CurriedComponentType.Definition;
-}
-
-export type InnerCurriedComponent = CurriedComponentDefinition | ComponentSpec;
-
-export function curry(spec: PublicComponentSpec, args: Option<ICapturedArguments> = null): CurriedDefinition {
-  return new BrandedCurriedValue(CurriedComponentType.Definition, new CurriedComponentDefinition(spec as ComponentSpec, args)) as CurriedDefinition;
-}
-
-class CurryComponentReference implements VersionedPathReference<CurriedValue> {
+class CurryComponentReference implements VersionedPathReference<Option<CurriedComponentDefinition>> {
   public tag: Tag;
-  private lastValue: Opaque = null;
-  private lastReturn: Option<CurriedValue> = null;
+  private lastValue: Opaque;
+  private lastDefinition: Option<CurriedComponentDefinition>;
 
   constructor(
-    private innerRef: VersionedReference<Opaque>,
+    private inner: VersionedReference<Opaque>,
     private resolver: Resolver,
     private meta: TemplateMeta,
     private args: Option<ICapturedArguments>
   ) {
-    this.tag = innerRef.tag;
+    this.tag = inner.tag;
+    this.lastValue = null;
+    this.lastDefinition = null;
   }
 
-  value(): CurriedValue {
-    let { innerRef, lastValue } = this;
+  value(): Option<CurriedComponentDefinition> {
+    let { inner, lastValue } = this;
 
-    let value = innerRef.value();
+    let value = inner.value();
 
     if (value === lastValue) {
-      return this.lastReturn!;
+      return this.lastDefinition;
     }
 
-    let next: Option<InnerCurriedComponent> = null;
-    let type: CurriedComponentType;
+    let definition: Option<CurriedComponentDefinition | ComponentSpec> = null;
 
     if (isCurriedComponentDefinition(value)) {
-      next = value;
-      type = CurriedComponentType.Definition;
+      definition = value;
     } else if (typeof value === 'string' && value) {
       let { resolver, meta } = this;
-      next = resolveComponent(resolver, value, meta)!;
-      type = CurriedComponentType.Spec;
-    } else if (value === null) {
-      next = value;
-      type = CurriedComponentType.Null;
-    } else {
-      throw new Error('Passed an illegal value to (component)');
+      definition = resolveComponent(resolver, value, meta);
     }
 
-    next = this.curry(next);
+    definition = this.curry(definition);
 
     this.lastValue = value;
-    return this.lastReturn = new BrandedCurriedValue(type, next);
+    this.lastDefinition = definition;
+
+    return definition;
   }
 
   get(): VersionedPathReference<Opaque> {
     return UNDEFINED_REFERENCE;
   }
 
-  private curry(inner: Option<InnerCurriedComponent>): Option<InnerCurriedComponent> {
+  private curry(definition: Option<CurriedComponentDefinition | ComponentSpec>): Option<CurriedComponentDefinition> {
     let { args } = this;
 
-    if (!inner || !args) {
-      return inner;
+    if (!args && isCurriedComponentDefinition(definition)) {
+      return definition;
+    } else if (!definition) {
+      return null;
+    } else {
+      return new CurriedComponentDefinition(definition, args);
     }
-
-    return new CurriedComponentDefinition(inner, args);
   }
 }
 
@@ -197,7 +143,7 @@ APPEND_OPCODES.add(Op.PushComponentManager, (vm, { op1: specifier }) => {
 APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
   let stack = vm.stack;
 
-  let component = stack.pop<VersionedPathReference<CurriedValue | string>>().value();
+  let component = stack.pop<VersionedPathReference<CurriedComponentDefinition | string>>().value();
   let definition: ComponentSpec['definition'] | CurriedComponentDefinition;
   let manager: Option<ComponentSpec['manager']> = null;
 
@@ -210,22 +156,10 @@ APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
 
     definition = spec!.definition;
     manager = spec!.manager;
-  } else if (isCurriedValue(component)) {
-    debugger;
-    if (isPublicCurriedDefinition(component)) {
-      definition = component.value;
-    } else if (isCurriedSpec(component)) {
-      let { value: { definition: def, manager: mgr } } = component;
-      definition = def;
-      manager = mgr;
-    } else if (isCurriedNull(component)) {
-      throw new Error('not implemented (component) resolving to null');
-    } else {
-      assert(typeof component === 'string', `Could not find a component named "${String(component)}"`);
-      throw unreachable();
-    }
+  } else if (isCurriedComponentDefinition(component)) {
+    definition = component;
   } else {
-    throw new Error('unexpected')
+    throw unreachable();
   }
 
   stack.push({ definition, manager, component: null });
@@ -268,8 +202,9 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
 
     args = stack.pop<Arguments>();
 
-    let { manager: curriedManager } = definition.unwrap(args);
+    let { manager: curriedManager, definition: curriedDefinition } = definition.unwrap(args);
     state.manager = manager = curriedManager as ComponentManager;
+    state.definition = definition = curriedDefinition;
   } else if (manager && manager.getCapabilities(definition).prepareArgs !== true) {
     return;
   } else if (manager) {
