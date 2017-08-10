@@ -184,7 +184,7 @@ export class CurriedComponentDefinition {
   /** @internal */
   get offset(): number {
     let { inner, args } = this;
-    let length = args ? args.length : 0;
+    let length = args ? args.positional.length : 0;
     return isCurriedComponentDefinition(inner) ? length + inner.offset : length;
   }
 }
