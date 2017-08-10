@@ -43,8 +43,7 @@ function transpileBrowserTestsToAMD(tsTree, jsTree) {
   // The TSLint plugin passes through all files, so we need to filter out any
   // non-TypeScript files.
   tsTree = funnel(tsTree, {
-    include: ['**/*.ts'],
-    srcDir: 'packages'
+    include: ['**/*.ts']
   });
 
   let tslintTestsTree = generateTSLintTests(tsTree);

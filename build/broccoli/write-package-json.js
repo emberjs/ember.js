@@ -3,6 +3,7 @@
 const path = require('path');
 const Filter = require('broccoli-persistent-filter');
 const funnel = require('broccoli-funnel');
+const UnwatchedDir = require('broccoli-source').UnwatchedDir;
 
 const PACKAGE_JSON_FIELDS = {
   "main": "dist/commonjs/es5/index.js",
@@ -25,7 +26,7 @@ class PackageJSONWriter extends Filter {
 }
 
 module.exports = function rewritePackageJSON(pkgName) {
-  let tree = funnel('packages', {
+  let tree = funnel(new UnwatchedDir('packages'), {
     include: [`${pkgName}/package.json`]
   });
 
