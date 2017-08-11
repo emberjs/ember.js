@@ -14,7 +14,7 @@ import { initializeGuid } from '@glimmer/util';
 import { Handle } from '../../environment';
 import { LazyConstants } from '../../environment/constants';
 import { APPEND_OPCODES, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { Primitive, PrimitiveReference } from '../../references';
+import { Primitive, PrimitiveReference, PrimitiveType } from '../../references';
 import { CompilableTemplate } from '../../syntax/interfaces';
 import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
@@ -33,20 +33,20 @@ APPEND_OPCODES.add(Op.Constant, (vm: VM & { constants: LazyConstants }, { op1: o
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   let stack = vm.stack;
-  let flag = primitive & 7; // 111
+  let flag: PrimitiveType = primitive & 7; // 111
   let value = primitive >> 3;
 
   switch (flag) {
-    case 0:
+    case PrimitiveType.NUMBER:
       stack.push(value);
       break;
-    case 1:
+    case PrimitiveType.FLOAT:
       stack.push(vm.constants.getFloat(value));
       break;
-    case 2:
+    case PrimitiveType.STRING:
       stack.push(vm.constants.getString(value));
       break;
-    case 3:
+    case PrimitiveType.BOOLEAN_OR_VOID:
       switch (value) {
         case 0: stack.push(false); break;
         case 1: stack.push(true); break;
