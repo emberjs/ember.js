@@ -1,12 +1,12 @@
 import {
-  CompilableTemplate,
   ComponentCapabilities,
   Macros,
   ParsedLayout,
   WrappedBuilder,
   TemplateOptions,
   LazyOpcodeBuilder,
-  Handle
+  VMHandle,
+  ICompilableTemplate
 } from "@glimmer/opcode-compiler";
 
 import {
@@ -92,7 +92,7 @@ import {
 
 import * as WireFormat from '@glimmer/wire-format';
 
-import { Simple, Resolver, Unique, ProgramSymbolTable, Recast } from "@glimmer/interfaces";
+import { Simple, Resolver, Unique, ProgramSymbolTable } from "@glimmer/interfaces";
 import { TemplateMeta, SerializedTemplateWithLazyBlock, SerializedTemplateBlock } from "@glimmer/wire-format";
 import { precompile } from "@glimmer/compiler";
 import { Program, LazyConstants } from "@glimmer/program";
@@ -248,7 +248,7 @@ export class EmberishCurlyComponent extends GlimmerObject {
   public static positionalParams: string[] | string;
 
   public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
-  public layout: TestSpecifier;
+  public layout: { name: string, handle: number };
   public name: string;
   public tagName: Option<string> = null;
   public attributeBindings: Option<string[]> = null;
@@ -319,15 +319,15 @@ class BasicComponentManager extends GenericComponentManager implements WithStati
     return new klass();
   }
 
-  getLayout({ name }: BasicComponentDefinition, resolver: TestResolver): TestSpecifier {
-    let compile = (source: string, options: TemplateOptions) => {
+  getLayout({ name }: BasicComponentDefinition, resolver: TestResolver): number {
+    let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
       let layout = createTemplate(source);
       return new ScannableTemplate(options, layout).asLayout();
     };
 
-    let specifier = resolver.lookup('template-source', name, {})!;
+    let handle = resolver.lookup('template-source', name)!;
 
-    return resolver.compileTemplate(specifier, compile);
+    return resolver.compileTemplate(handle, name, compile);
   }
 
   getSelf(component: BasicComponent): PathReference<Opaque> {
@@ -362,12 +362,12 @@ class BasicComponentManager extends GenericComponentManager implements WithStati
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 
 class StaticTaglessComponentManager extends BasicComponentManager {
-  getLayout(definition: BasicComponentDefinition, resolver: TestResolver): TestSpecifier {
+  getLayout(definition: BasicComponentDefinition, resolver: TestResolver): number {
     let { name, capabilities } = definition;
 
-    let specifier = resolver.lookup('template-source', name, {})!;
+    let handle = resolver.lookup('template-source', name)!;
 
-    return resolver.compileTemplate(specifier, (source, options) => {
+    return resolver.compileTemplate(handle, name, (source, options) => {
       let template = createTemplate(source, {});
       let compileOptions = { ...options, asPartial: false };
       return new WrappedBuilder(compileOptions, template, capabilities);
@@ -407,15 +407,15 @@ class EmberishGlimmerComponentManager extends GenericComponentManager implements
     return combine([tag, dirtinessTag]);
   }
 
-  getLayout({ name }: EmberishGlimmerComponentDefinition, resolver: TestResolver): TestSpecifier {
-    let compile = (source: string, options: TemplateOptions) => {
+  getLayout({ name }: EmberishGlimmerComponentDefinition, resolver: TestResolver): number {
+    let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
       let layout = createTemplate(source);
       return new ScannableTemplate(options, layout).asLayout();
     };
 
-    let specifier = resolver.lookup('template-source', name, {})!;
+    let handle = resolver.lookup('template-source', name)!;
 
-    return resolver.compileTemplate(specifier, compile);
+    return resolver.compileTemplate(handle, name, compile);
   }
 
   getSelf({ component }: EmberishGlimmerStateBucket): PathReference<Opaque> {
@@ -517,7 +517,7 @@ class EmberishCurlyComponentManager extends GenericComponentManager implements W
     component.args = args;
 
     if (definition.layout) {
-      component.layout = definition.layout;
+      component.layout = { name: component.name, handle: definition.layout };
     }
 
     let dyn: Option<string[]> = definition.ComponentClass ? definition.ComponentClass['fromDynamicScope'] : null;
@@ -541,18 +541,18 @@ class EmberishCurlyComponentManager extends GenericComponentManager implements W
     return combine([tag, dirtinessTag]);
   }
 
-  getLayout({ layout }: EmberishCurlyComponent, resolver: TestResolver): TestSpecifier {
+  getLayout({ layout }: EmberishCurlyComponent, resolver: TestResolver): number {
     if (!layout) {
       throw new Error('BUG: missing dynamic layout');
     }
 
-    let specifier = resolver.lookup('template-source', layout.name, {});
+    let handle = resolver.lookup('template-source', layout.name);
 
-    if (!specifier) {
+    if (!handle) {
       throw new Error('BUG: missing dynamic layout');
     }
 
-    return resolver.compileTemplate(specifier, (source, options) => {
+    return resolver.compileTemplate(handle, layout.name, (source, options) => {
       let template = createTemplate(source);
       return new WrappedBuilder({ ...options, asPartial: false }, template, CURLY_CAPABILITIES);
     });
@@ -763,7 +763,7 @@ export interface Lookup {
   modifier: ModifierManager;
   partial: PartialDefinition;
   component: ComponentSpec;
-  template: { compile(): Handle };
+  template: { compile(): VMHandle };
   'template-source': string;
 }
 
@@ -776,81 +776,94 @@ export interface TestSpecifier<T extends LookupType = LookupType> {
 }
 
 class TypedRegistry<T> {
-  private inner = dict<T>();
+  private byName: { [key: string]: number } = dict<number>();
+  private byHandle: { [key: number]: T } = dict<T>();
 
-  has(name: string): boolean {
-    return name in this.inner;
+  hasName(name: string): boolean {
+    return name in this.byName;
   }
 
-  get(name: string): Option<T> {
-    return this.inner[name];
+  getHandle(name: string): Option<number> {
+    return this.byName[name];
   }
 
-  register(name: string, value: T): void {
-    this.inner[name] = value;
+  hasHandle(name: number): boolean {
+    return name in this.byHandle;
+  }
+
+  getByHandle(handle: number): Option<T> {
+    return this.byHandle[handle];
+  }
+
+  register(handle: number, name: string, value: T): void {
+    this.byHandle[handle] = value;
+    this.byName[name] = handle;
   }
 }
 
-export type TestCompilationOptions = CompilationOptions<TemplateMeta, TestSpecifier, TestResolver>;
+export type TestCompilationOptions = CompilationOptions<TestSpecifier, TestResolver>;
 
-export type CompileTemplate = CompilableTemplate<ProgramSymbolTable>;
+export class TestResolver implements Resolver<TestSpecifier> {
+  private handleLookup: TypedRegistry<Opaque>[] = [];
 
-export class TestResolver implements Resolver<TestSpecifier, TemplateMeta> {
   private registry = {
     helper: new TypedRegistry<GlimmerHelper>(),
     modifier: new TypedRegistry<ModifierManager>(),
     partial: new TypedRegistry<PartialDefinition>(),
     component: new TypedRegistry<ComponentSpec>(),
-    template: new TypedRegistry<{ compile(): Handle }>(),
+    template: new TypedRegistry<{ compile(): VMHandle }>(),
     'template-source': new TypedRegistry<string>()
   };
 
-  private options: TemplateOptions;
+  private options: TemplateOptions<TestSpecifier>;
 
-  register<K extends LookupType>(type: K, name: string, value: Lookup[K]): TestSpecifier {
-    (this.registry[type] as TypedRegistry<any>).register(name, value);
-    return { type, name };
+  register<K extends LookupType>(type: K, name: string, value: Lookup[K]): number {
+    let registry = this.registry[type];
+    let handle = this.handleLookup.length;
+    this.handleLookup.push(registry);
+    (this.registry[type] as TypedRegistry<any>).register(handle, name, value);
+    return handle;
   }
 
-  lookup(type: LookupType, name: string, _meta: TemplateMeta): Option<TestSpecifier> {
-    if (this.registry[type].has(name)) {
-      return { type, name };
+  lookup(type: LookupType, name: string, _referer?: TestSpecifier): Option<number> {
+    if (this.registry[type].hasName(name)) {
+      return this.registry[type].getHandle(name);
     } else {
       return null;
     }
   }
 
-  compileTemplate(sourceSpecifier: TestSpecifier, create: (source: string, options: TemplateOptions) => { compile(): Handle }): TestSpecifier {
-    let templateName = sourceSpecifier.name;
-    let specifier = this.lookup('template', templateName, {});
+  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: TemplateOptions<TestSpecifier>) => ICompilableTemplate<ProgramSymbolTable>): number {
+    let handle = this.lookup('template', templateName);
 
-    if (specifier) {
-      return specifier;
+    if (handle) {
+      return handle;
     }
 
-    let source = this.resolve<string>(sourceSpecifier);
+    let source = this.resolve<string>(sourceHandle);
 
     return this.register('template', templateName, create(source, this.options));
   }
 
-  lookupHelper(name: string, meta: TemplateMeta): Option<TestSpecifier> {
-    return this.lookup('helper', name, meta);
+  lookupHelper(name: string, referer?: TestSpecifier): Option<number> {
+    return this.lookup('helper', name, referer);
   }
 
-  lookupModifier(name: string, meta: TemplateMeta): Option<TestSpecifier> {
-    return this.lookup('modifier', name, meta);
+  lookupModifier(name: string, referer?: TestSpecifier): Option<number> {
+    return this.lookup('modifier', name, referer);
   }
 
-  lookupComponent(name: string, meta: TemplateMeta): Option<TestSpecifier> {
-    return this.lookup('component', name, meta);
+  lookupComponent(name: string, referer?: TestSpecifier): Option<number> {
+    return this.lookup('component', name, referer);
   }
 
-  lookupPartial(name: string, meta: TemplateMeta): Option<TestSpecifier> {
-    return this.lookup('partial', name, meta);
+  lookupPartial(name: string, referer?: TestSpecifier): Option<number> {
+    return this.lookup('partial', name, referer);
   }
 
-  resolve<T>(specifier: TestSpecifier): T {
-    return this.registry[specifier.type].get(specifier.name) as Recast<LookupValue, T>;
+  resolve<T>(handle: number): T {
+    let registry = this.handleLookup[handle];
+    return registry.getByHandle(handle) as T;
   }
 }
 
@@ -875,7 +888,7 @@ class TestMacros extends Macros {
 
       let lookup = builder.lookup;
 
-      let specifier = lookup.lookupComponent(name, builder.meta);
+      let specifier = lookup.lookupComponentSpec(name, builder.meta);
 
       if (specifier) {
         builder.component.static(specifier, [params, hashToArgs(hash), template, inverse]);
@@ -887,7 +900,7 @@ class TestMacros extends Macros {
 
     inlines.addMissing((name, params, hash, builder) => {
       let lookup = builder.lookup;
-      let specifier = lookup.lookupComponent(name, builder.meta);
+      let specifier = lookup.lookupComponentSpec(name, builder.meta);
 
       if (specifier) {
         builder.component.static(specifier, [params!, hashToArgs(hash), null, null]);
@@ -903,10 +916,10 @@ export class TestEnvironment extends Environment {
   public resolver = new TestResolver();
   private program = new Program(new LazyConstants(this.resolver));
   private uselessAnchor: HTMLAnchorElement;
-  public compiledLayouts = dict<Handle>();
-  private lookup: LookupResolver;
+  public compiledLayouts = dict<VMHandle>();
+  private lookup: LookupResolver<TestSpecifier>;
 
-  public compileOptions: TemplateOptions = {
+  public compileOptions: TemplateOptions<TestSpecifier> = {
     lookup: new LookupResolver(this.resolver),
     program: this.program,
     macros: new TestMacros(),
@@ -957,7 +970,7 @@ export class TestEnvironment extends Environment {
   }
 
   registerPartial(name: string, source: string): PartialDefinition {
-    let definition = new PartialDefinition(name, this.compile(source));
+    let definition = new PartialDefinition(name, this.compile(source, null));
     this.resolver.register('partial', name, definition);
     return definition;
   }
@@ -967,8 +980,8 @@ export class TestEnvironment extends Environment {
     return definition;
   }
 
-  registerTemplate(name: string, source: string): TestSpecifier {
-    return this.resolver.register("template-source", name, source);
+  registerTemplate(name: string, source: string): { name: string, handle: number } {
+    return { name, handle: this.resolver.register("template-source", name, source) };
   }
 
   registerBasicComponent(name: string, Component: BasicComponentFactory, layoutSource: string): void {
@@ -978,25 +991,25 @@ export class TestEnvironment extends Environment {
 
     let layout = this.registerTemplate(name, layoutSource);
 
-    let definition = new BasicComponentDefinition(name, BASIC_COMPONENT_MANAGER, Component, layout);
+    let definition = new BasicComponentDefinition(name, BASIC_COMPONENT_MANAGER, Component, layout.handle);
     this.registerComponent(name, definition);
   }
 
   registerStaticTaglessComponent(name: string, Component: BasicComponentFactory, layoutSource: string): void {
     let layout = this.registerTemplate(name, layoutSource);
 
-    let definition = new StaticTaglessComponentDefinition(name, STATIC_TAGLESS_COMPONENT_MANAGER, Component, layout);
+    let definition = new StaticTaglessComponentDefinition(name, STATIC_TAGLESS_COMPONENT_MANAGER, Component, layout.handle);
     this.registerComponent(name, definition);
   }
 
   registerEmberishCurlyComponent(name: string, Component: Option<EmberishCurlyComponentFactory>, layoutSource: Option<string>): void {
-    let layout: Option<TestSpecifier> = null;
+    let layout: Option<{ name: string, handle: number }> = null;
 
     if (layoutSource !== null) {
       layout = this.registerTemplate(name, layoutSource);
     }
 
-    let definition = new EmberishCurlyComponentDefinition(name, EMBERISH_CURLY_COMPONENT_MANAGER, Component || EmberishCurlyComponent, layout);
+    let definition = new EmberishCurlyComponentDefinition(name, EMBERISH_CURLY_COMPONENT_MANAGER, Component || EmberishCurlyComponent, layout && layout.handle);
     this.registerComponent(name, definition);
   }
 
@@ -1007,7 +1020,7 @@ export class TestEnvironment extends Environment {
 
     let layout = this.registerTemplate(name, layoutSource);
 
-    let definition = new EmberishGlimmerComponentDefinition(name, EMBERISH_GLIMMER_COMPONENT_MANAGER, Component || EmberishGlimmerComponent, layout);
+    let definition = new EmberishGlimmerComponentDefinition(name, EMBERISH_GLIMMER_COMPONENT_MANAGER, Component || EmberishGlimmerComponent, layout.handle);
     this.registerComponent(name, definition);
   }
 
@@ -1019,34 +1032,34 @@ export class TestEnvironment extends Environment {
     return new EmberishConditionalReference(reference);
   }
 
-  resolveHelper(helperName: string, meta: TemplateMeta): Option<GlimmerHelper> {
-    let specifier = this.resolver.lookupHelper(helperName, meta);
-    return specifier && this.resolver.resolve<GlimmerHelper>(specifier);
+  resolveHelper(helperName: string): Option<GlimmerHelper> {
+    let handle = this.resolver.lookupHelper(helperName);
+    return typeof handle === 'number' ? this.resolver.resolve<GlimmerHelper>(handle) : null;
   }
 
-  resolvePartial(partialName: string, meta: TemplateMeta): Option<PartialDefinition> {
-    let specifier = this.resolver.lookupPartial(partialName, meta);
-    return specifier && this.resolver.resolve<PartialDefinition>(specifier);
+  resolvePartial(partialName: string): Option<PartialDefinition> {
+    let handle = this.resolver.lookupPartial(partialName);
+    return typeof handle === 'number' ? this.resolver.resolve<PartialDefinition>(handle) : null;
   }
 
-  componentHelper(name: string, meta: TemplateMeta): Option<CurriedComponentDefinition> {
-    let specifier = this.resolver.lookupComponent(name, meta);
+  componentHelper(name: string): Option<CurriedComponentDefinition> {
+    let handle = this.resolver.lookupComponent(name);
 
-    if (!specifier) return null;
+    if (handle === null) return null;
 
-    let spec = this.resolver.resolve<ComponentSpec>(specifier);
+    let spec = this.resolver.resolve<ComponentSpec>(handle);
     return curry(spec);
   }
 
-  resolveModifier(modifierName: string, meta: TemplateMeta): Option<ModifierManager> {
-    let specifier = this.resolver.lookupModifier(modifierName, meta);
-    return specifier && this.resolver.resolve<ModifierManager>(specifier);
+  resolveModifier(modifierName: string): Option<ModifierManager> {
+    let handle = this.resolver.lookupModifier(modifierName);
+    return handle === null ? null : this.resolver.resolve<ModifierManager>(handle);
   }
 
-  compile(template: string, meta: TemplateMeta = {}): Template {
-    let wrapper = JSON.parse(precompile(template, { meta }));
+  compile<TemplateMeta>(template: string, meta: TemplateMeta): Template<TemplateMeta> {
+    let wrapper = JSON.parse(precompile(template));
     let factory = templateFactory(wrapper);
-    return factory.create(this.compileOptions);
+    return factory.create(this.compileOptions, meta);
   }
 
   iterableFor(ref: Reference<Opaque>, keyPath: string): OpaqueIterable {
@@ -1110,7 +1123,7 @@ export interface BasicComponentFactory {
 export abstract class GenericComponentDefinition<T> {
   abstract capabilities: ComponentCapabilities;
 
-  constructor(public name: string, public manager: ComponentManager<T, GenericComponentDefinition<T>>, public ComponentClass: any, public layout: Option<TestSpecifier>) {
+  constructor(public name: string, public manager: ComponentManager<T, GenericComponentDefinition<T>>, public ComponentClass: any, public layout: Option<number>) {
   }
 
   toJSON() {

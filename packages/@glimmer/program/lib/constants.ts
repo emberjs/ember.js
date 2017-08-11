@@ -3,13 +3,13 @@ import { CompileTimeConstants } from "@glimmer/opcode-compiler";
 
 const UNRESOLVED = {};
 
-export class WriteOnlyConstants<Handle> implements CompileTimeConstants {
+export class WriteOnlyConstants implements CompileTimeConstants {
   // `0` means NULL
 
   protected strings: string[] = [];
   protected arrays: number[][] = [];
   protected tables: SymbolTable[] = [];
-  protected handles: Handle[] = [];
+  protected handles: number[] = [];
   protected serializables: Opaque[] = [];
   protected resolved: Opaque[] = [];
 
@@ -41,9 +41,9 @@ export class WriteOnlyConstants<Handle> implements CompileTimeConstants {
     return index + 1;
   }
 
-  handle(specifier: Handle): number {
+  handle(handle: number): number {
     let index = this.handles.length;
-    this.handles.push(specifier);
+    this.handles.push(handle);
     this.resolved.push(UNRESOLVED);
     return index + 1;
   }
@@ -55,8 +55,8 @@ export class WriteOnlyConstants<Handle> implements CompileTimeConstants {
   }
 }
 
-export class Constants<Specifier, Handle> extends WriteOnlyConstants<Handle> {
-  constructor(public resolver: Resolver<Specifier, Handle>) {
+export class Constants<Specifier> extends WriteOnlyConstants {
+  constructor(public resolver: Resolver<Specifier>) {
     super();
   }
 
@@ -86,7 +86,7 @@ export class Constants<Specifier, Handle> extends WriteOnlyConstants<Handle> {
     return this.tables[value - 1] as T;
   }
 
-  resolveSpecifier<T>(s: number): T {
+  resolveHandle<T>(s: number): T {
     let index = s - 1;
     let resolved = this.resolved[index];
 
@@ -103,7 +103,7 @@ export class Constants<Specifier, Handle> extends WriteOnlyConstants<Handle> {
   }
 }
 
-export class LazyConstants extends Constants<Opaque, Opaque> {
+export class LazyConstants extends Constants<Opaque> {
   private others: Opaque[] = [];
 
   getOther<T>(value: number): T {

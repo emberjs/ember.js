@@ -16,7 +16,7 @@ import {
 
 import { ProgramSymbolTable, Opcode } from "@glimmer/interfaces";
 import { Constants, Heap, Program } from "@glimmer/program";
-import { Handle as VMHandle } from "@glimmer/opcode-compiler";
+import { VMHandle as VMHandle } from "@glimmer/opcode-compiler";
 
 export interface PublicVM {
   env: Environment;
@@ -95,13 +95,13 @@ export type IteratorResult<T> = {
   value: T;
 };
 
-export default class VM<Specifier, Handle> implements PublicVM {
+export default class VM<Specifier> implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
-  public constants: Constants<Specifier, Handle>;
+  public constants: Constants<Specifier>;
   public heap: Heap;
 
   public stack = EvaluationStack.empty();
@@ -196,8 +196,8 @@ export default class VM<Specifier, Handle> implements PublicVM {
     this.pc = this.ra;
   }
 
-  static initial<Specifier, Handle>(
-    program: Program<Specifier, Handle>,
+  static initial<Specifier>(
+    program: Program<Specifier>,
     env: Environment,
     self: PathReference<Opaque>,
     args: Option<ICapturedArguments>,
@@ -223,7 +223,7 @@ export default class VM<Specifier, Handle> implements PublicVM {
   }
 
   constructor(
-    private program: Program<Specifier, Handle>,
+    private program: Program<Specifier>,
     public env: Environment,
     scope: Scope,
     dynamicScope: DynamicScope,
@@ -410,7 +410,7 @@ export default class VM<Specifier, Handle> implements PublicVM {
 
   /// EXECUTION
 
-  execute(start: VMHandle, initialize?: (vm: VM<Specifier, Handle>) => void): RenderResult {
+  execute(start: VMHandle, initialize?: (vm: VM<Specifier>) => void): RenderResult {
     this.pc = this.heap.getaddr(start);
 
     if (initialize) initialize(this);

@@ -10,7 +10,7 @@ export interface DebugConstants {
   getArray(value: number): number[];
   getSymbolTable<T extends SymbolTable>(value: number): T;
   getSerializable<T>(s: number): T;
-  resolveSpecifier<T>(s: number): T;
+  resolveHandle<T>(s: number): T;
 }
 
 interface LazyDebugConstants {
@@ -82,7 +82,7 @@ export function debug(c: DebugConstants, op: Op, op1: number, op2: number, op3: 
     switch (op) {
       case Op.Bug: throw unreachable();
 
-      case Op.Helper: return ['Helper', { helper: c.resolveSpecifier(op1) }];
+      case Op.Helper: return ['Helper', { helper: c.resolveHandle(op1) }];
       case Op.SetVariable: return ['SetVariable', { symbol: op1 }];
       case Op.SetBlock: return ['SetBlock', { symbol: op1 }];
       case Op.GetVariable: return ['GetVariable', { symbol: op1 }];
@@ -153,7 +153,7 @@ export function debug(c: DebugConstants, op: Op, op1: number, op2: number, op3: 
       /// COMPONENTS
       case Op.IsComponent: return ['IsComponent', {}];
       case Op.CurryComponent: return ['CurryComponent', { meta: c.getSerializable(op1) }];
-      case Op.PushComponentManager: return ['PushComponentManager', { definition: c.resolveSpecifier(op1) }];
+      case Op.PushComponentSpec: return ['PushComponentSpec', { definition: c.resolveHandle(op1) }];
       case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', { meta: c.getSerializable(op1) }];
       case Op.PushArgs: return ['PushArgs', { names: c.getStringArray(op1), positionals: op2, synthetic: !!op3 }];
       case Op.PrepareArgs: return ['PrepareArgs', { state: Register[op1] }];

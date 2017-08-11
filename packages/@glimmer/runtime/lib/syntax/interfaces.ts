@@ -4,11 +4,11 @@ import {
   SymbolTable,
 } from '@glimmer/interfaces';
 
-import { Handle } from '@glimmer/opcode-compiler';
+import { VMHandle } from '@glimmer/opcode-compiler';
 
 export interface CompilableTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;
-  compile(): Handle;
+  compile(): VMHandle;
 }
 
 export type BlockSyntax = CompilableTemplate<BlockSymbolTable>;

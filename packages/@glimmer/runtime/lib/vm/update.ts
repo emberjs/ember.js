@@ -24,17 +24,17 @@ import { Simple } from '@glimmer/interfaces';
 
 import VM, { CapturedStack, EvaluationStack } from './append';
 import { Constants, Program } from "@glimmer/program";
-import { Handle } from "@glimmer/opcode-compiler";
+import { VMHandle } from "@glimmer/opcode-compiler";
 
-export default class UpdatingVM<Specifier = Opaque, Handle = Opaque> {
+export default class UpdatingVM<Specifier = Opaque> {
   public env: Environment;
   public dom: DOMChanges;
   public alwaysRevalidate: boolean;
-  public constants: Constants<Specifier, Handle>;
+  public constants: Constants<Specifier>;
 
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 
-  constructor(env: Environment, program: Program<Specifier, Handle>, { alwaysRevalidate = false }) {
+  constructor(env: Environment, program: Program<Specifier>, { alwaysRevalidate = false }) {
     this.env = env;
     this.constants = program.constants;
     this.dom = env.getDOM();
@@ -84,7 +84,7 @@ export interface ExceptionHandler {
 
 export interface VMState {
   env: Environment;
-  program: Program<Opaque, Opaque>;
+  program: Program<Opaque>;
   scope: Scope;
   dynamicScope: DynamicScope;
   stack: CapturedStack;
@@ -98,7 +98,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
 
   protected bounds: DestroyableBounds;
 
-  constructor(public start: Handle, protected state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
+  constructor(public start: VMHandle, protected state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
 
     this.children = children;
@@ -119,7 +119,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
     return this.bounds.lastNode();
   }
 
-  evaluate(vm: UpdatingVM<Opaque, Opaque>) {
+  evaluate(vm: UpdatingVM<Opaque>) {
     vm.try(this.children, null);
   }
 
@@ -141,7 +141,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   protected bounds: UpdatableTracker;
 
-  constructor(start: Handle, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
+  constructor(start: VMHandle, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
     super(start, state, bounds, children);
     this.tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
   }
@@ -150,7 +150,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     this._tag.inner.update(combineSlice(this.children));
   }
 
-  evaluate(vm: UpdatingVM<Opaque, Opaque>) {
+  evaluate(vm: UpdatingVM<Opaque>) {
     vm.try(this.children, this);
   }
 
@@ -266,7 +266,7 @@ export class ListBlockOpcode extends BlockOpcode {
   private lastIterated: Revision = INITIAL;
   private _tag: TagWrapper<UpdatableTag>;
 
-  constructor(start: Handle, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
+  constructor(start: VMHandle, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
     super(start, state, bounds, children);
     this.artifacts = artifacts;
     let _tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
@@ -281,7 +281,7 @@ export class ListBlockOpcode extends BlockOpcode {
     }
   }
 
-  evaluate(vm: UpdatingVM<Opaque, Opaque>) {
+  evaluate(vm: UpdatingVM<Opaque>) {
     let { artifacts, lastIterated } = this;
 
     if (!artifacts.tag.validate(lastIterated)) {
@@ -303,7 +303,7 @@ export class ListBlockOpcode extends BlockOpcode {
     super.evaluate(vm);
   }
 
-  vmForInsertion(nextSibling: Option<Simple.Node>): VM<Opaque, Opaque> {
+  vmForInsertion(nextSibling: Option<Simple.Node>): VM<Opaque> {
     let { bounds, state } = this;
 
     let elementStack = NewElementBuilder.forInitialRender(
@@ -318,7 +318,7 @@ export class ListBlockOpcode extends BlockOpcode {
 class UpdatingVMFrame {
   private current: Option<UpdatingOpcode>;
 
-  constructor(private vm: UpdatingVM<Opaque, Opaque>, private ops: UpdatingOpSeq, private exceptionHandler: Option<ExceptionHandler>) {
+  constructor(private vm: UpdatingVM<Opaque>, private ops: UpdatingOpSeq, private exceptionHandler: Option<ExceptionHandler>) {
     this.vm = vm;
     this.ops = ops;
     this.current = ops.head();

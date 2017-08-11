@@ -636,12 +636,12 @@ export const enum Op {
    * Operation: Push an appropriate component manager onto the stack.
    *
    * Format:
-   *   (PushComponentManager #ComponentDefinition)
+   *   (PushComponentManager #ComponentSpec)
    * Operand Stack:
    *   ... →
    *   ..., { ComponentDefinition, ComponentManager }
    */
-  PushComponentManager,
+  PushComponentSpec,
 
   /**
    * Operation:

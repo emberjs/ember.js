@@ -22,13 +22,13 @@ import {
 
 import { PublicVM } from './vm/append';
 
-import { Macros, OpcodeBuilderConstructor, Handle } from "@glimmer/opcode-compiler";
+import { Macros, OpcodeBuilderConstructor, VMHandle } from "@glimmer/opcode-compiler";
 import { IArguments } from './vm/arguments';
 import { Simple, Resolver, BlockSymbolTable } from "@glimmer/interfaces";
 import { Component, ComponentManager } from "@glimmer/runtime/lib/internal-interfaces";
 import { Program } from "@glimmer/program";
 
-export type ScopeBlock = [Handle, BlockSymbolTable];
+export type ScopeBlock = [VMHandle, BlockSymbolTable];
 export type ScopeSlot = VersionedPathReference<Opaque> | Option<ScopeBlock>;
 
 export interface DynamicScope {
@@ -222,11 +222,11 @@ class Transaction {
   }
 }
 
-export interface CompilationOptions<Specifier, Handle, R extends Resolver<Specifier, Handle>> {
+export interface CompilationOptions<Specifier, R extends Resolver<Specifier>> {
   resolver: R;
-  program: Program<Specifier, Handle>;
+  program: Program<Specifier>;
   macros: Macros;
-  Builder: OpcodeBuilderConstructor<Specifier, Handle>;
+  Builder: OpcodeBuilderConstructor<Specifier>;
 }
 
 export abstract class Environment {

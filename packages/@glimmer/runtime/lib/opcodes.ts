@@ -19,7 +19,7 @@ export type Operand1 = number;
 export type Operand2 = number;
 export type Operand3 = number;
 
-export type EvaluateOpcode = (vm: VM<Opaque, Opaque>, opcode: Opcode) => void;
+export type EvaluateOpcode = (vm: VM<Opaque>, opcode: Opcode) => void;
 
 export class AppendOpcodes {
   private evaluateOpcode: EvaluateOpcode[] = fillNulls<EvaluateOpcode>(Op.Size).slice();
@@ -28,7 +28,7 @@ export class AppendOpcodes {
     this.evaluateOpcode[name as number] = evaluate;
   }
 
-  evaluate(vm: VM<Opaque, Opaque>, opcode: Opcode, type: number) {
+  evaluate(vm: VM<Opaque>, opcode: Opcode, type: number) {
     let func = this.evaluateOpcode[type];
     if (DEBUG) {
       /* tslint:disable */
@@ -68,7 +68,7 @@ export abstract class UpdatingOpcode extends AbstractOpcode {
   next: Option<UpdatingOpcode> = null;
   prev: Option<UpdatingOpcode> = null;
 
-  abstract evaluate(vm: UpdatingVM<Opaque, Opaque>): void;
+  abstract evaluate(vm: UpdatingVM<Opaque>): void;
 }
 
 export type UpdatingOpSeq = ListSlice<UpdatingOpcode>;

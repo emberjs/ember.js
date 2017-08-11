@@ -17,7 +17,7 @@ import { CompilableTemplate } from '../../syntax/interfaces';
 import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { LazyConstants } from "@glimmer/program";
-import { Handle } from "@glimmer/opcode-compiler";
+import { VMHandle } from "@glimmer/opcode-compiler";
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
 
@@ -27,7 +27,7 @@ APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
 
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
 
-APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque, Opaque> & { constants: LazyConstants }, { op1: other }) => {
+APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque> & { constants: LazyConstants }, { op1: other }) => {
   vm.stack.push(vm.constants.getOther(other));
 });
 
@@ -92,12 +92,12 @@ APPEND_OPCODES.add(Op.CompileBlock, vm => {
   stack.push(block ? block.compile() : null);
 });
 
-APPEND_OPCODES.add(Op.InvokeStatic, vm => vm.call(vm.stack.pop<Handle>()));
+APPEND_OPCODES.add(Op.InvokeStatic, vm => vm.call(vm.stack.pop<VMHandle>()));
 
 APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
 
-  let handle = stack.pop<Option<Handle>>();
+  let handle = stack.pop<Option<VMHandle>>();
   let table = stack.pop<Option<BlockSymbolTable>>();
   let args = stack.pop<Arguments>();
 
@@ -189,7 +189,7 @@ export class Assert extends UpdatingOpcode {
     this.cache = cache;
   }
 
-  evaluate(vm: UpdatingVM<Opaque, Opaque>) {
+  evaluate(vm: UpdatingVM<Opaque>) {
     let { cache } = this;
 
     if (isModified(cache.revalidate())) {

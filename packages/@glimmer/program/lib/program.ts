@@ -3,7 +3,7 @@ import { Recast } from "@glimmer/interfaces";
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { Constants, WriteOnlyConstants } from './constants';
 import { Opcode } from './opcode';
-import { Handle, CompileTimeProgram } from "@glimmer/opcode-compiler";
+import { VMHandle, CompileTimeProgram } from "@glimmer/opcode-compiler";
 
 enum TableSlotState {
   Allocated,
@@ -38,24 +38,24 @@ export class Heap {
     this.heap[address] = value;
   }
 
-  reserve(): Handle {
+  reserve(): VMHandle {
     this.table.push(0, 0, 0);
     let handle = this.handle;
     this.handle += 3;
-    return handle as Recast<number, Handle>;
+    return handle as Recast<number, VMHandle>;
   }
 
-  malloc(): Handle {
+  malloc(): VMHandle {
     this.table.push(this.offset, 0, 0);
     let handle = this.handle;
     this.handle += 3;
-    return handle as Recast<number, Handle>;
+    return handle as Recast<number, VMHandle>;
   }
 
-  finishMalloc(handle: Handle): void {
-    let start = this.table[handle as Recast<Handle, number>];
+  finishMalloc(handle: VMHandle): void {
+    let start = this.table[handle as Recast<VMHandle, number>];
     let finish = this.offset;
-    this.table[(handle as Recast<Handle, number>) + 1] = finish - start;
+    this.table[(handle as Recast<VMHandle, number>) + 1] = finish - start;
   }
 
   size(): number {
@@ -65,26 +65,26 @@ export class Heap {
   // It is illegal to close over this address, as compaction
   // may move it. However, it is legal to use this address
   // multiple times between compactions.
-  getaddr(handle: Handle): number {
-    return this.table[handle as Recast<Handle, number>];
+  getaddr(handle: VMHandle): number {
+    return this.table[handle as Recast<VMHandle, number>];
   }
 
-  gethandle(address: number): Handle {
+  gethandle(address: number): VMHandle {
     this.table.push(address, 0, TableSlotState.Pointer);
     let handle = this.handle;
     this.handle += 3;
-    return handle as Recast<number, Handle>;
+    return handle as Recast<number, VMHandle>;
   }
 
-  sizeof(handle: Handle): number {
+  sizeof(handle: VMHandle): number {
     if (DEBUG) {
-      return this.table[(handle as Recast<Handle, number>) + 1];
+      return this.table[(handle as Recast<VMHandle, number>) + 1];
     }
     return -1;
   }
 
-  free(handle: Handle): void {
-    this.table[(handle as Recast<Handle, number>) + 2] = 1;
+  free(handle: VMHandle): void {
+    this.table[(handle as Recast<VMHandle, number>) + 2] = 1;
   }
 
   compact(): void {
@@ -119,13 +119,13 @@ export class Heap {
   }
 }
 
-export class WriteOnlyProgram<Handle> implements CompileTimeProgram {
+export class WriteOnlyProgram implements CompileTimeProgram {
   [key: number]: never;
 
   private _opcode: Opcode;
   public heap: Heap;
 
-  constructor(public constants: WriteOnlyConstants<Handle>) {
+  constructor(public constants: WriteOnlyConstants) {
     this.heap = new Heap();
     this._opcode = new Opcode(this.heap);
   }
@@ -136,6 +136,6 @@ export class WriteOnlyProgram<Handle> implements CompileTimeProgram {
   }
 }
 
-export class Program<Specifier, Handle> extends WriteOnlyProgram<Handle> {
-  public constants: Constants<Specifier, Handle>;
+export class Program<Specifier> extends WriteOnlyProgram {
+  public constants: Constants<Specifier>;
 }
