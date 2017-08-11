@@ -5,7 +5,7 @@ import * as WireFormat from '@glimmer/wire-format';
 import { TemplateMeta, SerializedInlineBlock } from "@glimmer/wire-format";
 
 import {
-  Handle as VMHandle,
+  VMHandle as VMHandle,
   CompileTimeHeap,
   CompileTimeLazyConstants,
   Primitive,
@@ -22,7 +22,7 @@ import {
   expr
 } from './syntax';
 
-import CompilableTemplate from './compilable-template';
+import CompilableTemplate, { ICompilableTemplate } from './compilable-template';
 
 import {
   ComponentBuilder
@@ -58,46 +58,46 @@ export interface AbstractTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;
 }
 
-export interface CompileTimeLookup<Specifier, Handle> {
-  getCapabilities(handle: Handle): ComponentCapabilities;
-  getLayout(name: string, referer: Specifier): Option<{ symbolTable: ProgramSymbolTable, handle: VMHandle }>;
+export interface CompileTimeLookup<Specifier> {
+  getCapabilities(handle: number): ComponentCapabilities;
+  getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>>;
 
   // This interface produces specifiers (and indicates if a name is present), but does not
   // produce any actual objects. The main use-case for producing objects is handled above,
   // with getCapabilities and getLayout, which drastically shrinks the size of the object
   // that the core interface is forced to reify.
-  lookupHelper(name: string, referer: Specifier): Option<Handle>;
-  lookupModifier(name: string, referer: Specifier): Option<Handle>;
-  lookupComponent(name: string, referer: Specifier): Option<Handle>;
-  lookupPartial(name: string, referer: Specifier): Option<Handle>;
+  lookupHelper(name: string, referer: Specifier): Option<number>;
+  lookupModifier(name: string, referer: Specifier): Option<number>;
+  lookupComponentSpec(name: string, referer: Specifier): Option<number>;
+  lookupPartial(name: string, referer: Specifier): Option<number>;
 }
 
-export interface OpcodeBuilderConstructor<Specifier, Handle> {
+export interface OpcodeBuilderConstructor<Specifier> {
   new(program: CompileTimeProgram,
-      lookup: CompileTimeLookup<Specifier, Handle>,
+      lookup: CompileTimeLookup<Specifier>,
       meta: TemplateMeta,
       macros: Macros,
       containingLayout: ParsedLayout,
       asPartial: boolean,
-      Builder: OpcodeBuilderConstructor<Specifier, Handle>): { commit(heap: CompileTimeHeap): VMHandle };
+      Builder: OpcodeBuilderConstructor<Specifier>): OpcodeBuilder<Specifier>;
 }
 
-export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbolTable> = AbstractTemplate<ProgramSymbolTable>, Specifier = Opaque, Handle = Opaque> {
+export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<ProgramSymbolTable> = AbstractTemplate<ProgramSymbolTable>> {
   public constants: CompileTimeConstants;
 
   private buffer: number[] = [];
   private labelsStack = new Stack<Labels>();
   private isComponentAttrs = false;
-  public component: ComponentBuilder = new ComponentBuilder(this);
+  public component: ComponentBuilder<Specifier> = new ComponentBuilder(this);
 
   constructor(
     public program: CompileTimeProgram,
-    public lookup: CompileTimeLookup<Specifier, Handle>,
+    public lookup: CompileTimeLookup<Specifier>,
     public meta: TemplateMeta,
     public macros: Macros,
     public containingLayout: ParsedLayout,
     public asPartial: boolean,
-    public Builder: OpcodeBuilderConstructor<Specifier, Handle>
+    public Builder: OpcodeBuilderConstructor<Specifier>
   ) {
     this.constants = program.constants;
   }
@@ -171,8 +171,8 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
 
   // components
 
-  pushComponentManager(specifier: Handle) {
-    this.push(Op.PushComponentManager, this.constants.handle(specifier));
+  pushComponentSpec(handle: number) {
+    this.push(Op.PushComponentSpec, this.constants.handle(handle));
   }
 
   pushDynamicComponentManager(meta: TemplateMeta) {
@@ -851,7 +851,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
 
 export default OpcodeBuilder;
 
-export class LazyOpcodeBuilder<Specifier, Handle> extends OpcodeBuilder<CompilableTemplate<ProgramSymbolTable>, Specifier, Handle> {
+export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, CompilableTemplate<ProgramSymbolTable, Specifier>> {
   public constants: CompileTimeLazyConstants;
 
   pushSymbolTable(symbolTable: Option<SymbolTable>) {
@@ -874,7 +874,7 @@ export class LazyOpcodeBuilder<Specifier, Handle> extends OpcodeBuilder<Compilab
     this.push(Op.CompileBlock);
   }
 
-  pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable>>) {
+  pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable, Specifier>>) {
     if (layout) {
       this.pushOther(layout);
     } else {

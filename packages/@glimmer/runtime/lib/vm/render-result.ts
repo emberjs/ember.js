@@ -9,7 +9,7 @@ import { Program } from "@glimmer/program";
 export default class RenderResult implements DestroyableBounds, ExceptionHandler {
   constructor(
     private env: Environment,
-    private program: Program<Opaque, Opaque>,
+    private program: Program<Opaque>,
     private updating: LinkedList<UpdatingOpcode>,
     private bounds: DestroyableBounds
   ) {}

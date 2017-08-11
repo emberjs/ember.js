@@ -7,13 +7,13 @@ import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
 import { PublicVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { ConcatReference } from '../expressions/concat';
-import { Handle } from "@glimmer/opcode-compiler";
+import { VMHandle } from "@glimmer/opcode-compiler";
 
 export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
-APPEND_OPCODES.add(Op.Helper, (vm, { op1: specifier }) => {
+APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let stack = vm.stack;
-  let helper = vm.constants.resolveSpecifier<Helper>(specifier);
+  let helper = vm.constants.resolveHandle<Helper>(handle);
   let args = stack.pop<Arguments>();
   let value = helper(vm, args);
 
@@ -33,7 +33,7 @@ APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
 });
 
 APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
-  let handle = vm.stack.pop<Option<Handle>>();
+  let handle = vm.stack.pop<Option<VMHandle>>();
   let table = vm.stack.pop<Option<BlockSymbolTable>>();
   let block: Option<ScopeBlock> = table ? [handle!, table] : null;
 

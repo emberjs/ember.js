@@ -6,15 +6,14 @@ import {
   debugSlice
 } from '@glimmer/opcode-compiler';
 import { Register } from '@glimmer/vm';
-import { ProgramSymbolTable, Opaque, BlockSymbolTable } from '@glimmer/interfaces';
+import { ProgramSymbolTable, BlockSymbolTable } from '@glimmer/interfaces';
 import { TemplateMeta } from '@glimmer/wire-format';
 
 import {
-  Handle,
+  VMHandle,
   ComponentArgs,
   ComponentBuilder as IComponentBuilder,
-  ParsedLayout,
-  Specifier
+  ParsedLayout
 } from './interfaces';
 
 import { CompileOptions } from './syntax';
@@ -23,11 +22,11 @@ import CompilableTemplate from './compilable-template';
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { EMPTY_ARRAY } from "@glimmer/util";
 
-export class WrappedBuilder implements ICompilableTemplate<ProgramSymbolTable> {
+export class WrappedBuilder<Specifier> implements ICompilableTemplate<ProgramSymbolTable> {
   public symbolTable: ProgramSymbolTable;
   private meta: TemplateMeta;
 
-  constructor(public options: CompileOptions, private layout: ParsedLayout, private capabilities: ComponentCapabilities) {
+  constructor(public options: CompileOptions<Specifier>, private layout: ParsedLayout, private capabilities: ComponentCapabilities) {
     let { block } = layout;
     this.meta = layout.meta;
     let meta = this.meta = { templateMeta: layout.meta, symbols: block.symbols, asPartial: false };
@@ -39,7 +38,7 @@ export class WrappedBuilder implements ICompilableTemplate<ProgramSymbolTable> {
     };
   }
 
-  compile(): Handle {
+  compile(): VMHandle {
     //========DYNAMIC
     //        PutValue(TagExpr)
     //        Test
@@ -72,7 +71,7 @@ export class WrappedBuilder implements ICompilableTemplate<ProgramSymbolTable> {
     let { program, lookup, macros, asPartial } = options;
     let { Builder } = options;
 
-    let b = new Builder(program, lookup, meta, macros, layout, asPartial, options.Builder) as OpcodeBuilder;
+    let b = new Builder(program, lookup, meta, macros, layout, asPartial, options.Builder);
 
     b.startLabels();
 
@@ -122,20 +121,20 @@ export class WrappedBuilder implements ICompilableTemplate<ProgramSymbolTable> {
   }
 }
 
-function blockFor(layout: ParsedLayout, options: CompileOptions): CompilableTemplate<BlockSymbolTable> {
+function blockFor<Specifier>(layout: ParsedLayout, options: CompileOptions<Specifier>): CompilableTemplate<BlockSymbolTable, Specifier> {
   let { block, meta } = layout;
 
-  return new CompilableTemplate<BlockSymbolTable>(block.statements, layout, options, { meta, parameters: EMPTY_ARRAY });
+  return new CompilableTemplate(block.statements, layout, options, { meta, parameters: EMPTY_ARRAY });
 }
 
-export class ComponentBuilder implements IComponentBuilder {
-  constructor(private builder: OpcodeBuilder) {}
+export class ComponentBuilder<Specifier> implements IComponentBuilder {
+  constructor(private builder: OpcodeBuilder<Specifier>) {}
 
-  static(definition: Opaque, args: ComponentArgs) {
+  static(definition: number, args: ComponentArgs) {
     let [params, hash, _default, inverse] = args;
     let { builder } = this;
 
-    builder.pushComponentManager(definition as Specifier);
+    builder.pushComponentSpec(definition);
     builder.invokeComponent(null, params, hash, false, _default, inverse);
   }
 }

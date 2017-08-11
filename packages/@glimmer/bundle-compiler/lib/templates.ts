@@ -1,6 +1,7 @@
+import { SerializedTemplateBlock } from '@glimmer/wire-format';
 import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
 import { TemplateCompiler } from "@glimmer/compiler";
-import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, Handle } from "@glimmer/opcode-compiler";
+import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { WriteOnlyProgram, WriteOnlyConstants } from "@glimmer/program";
 import { Option, ProgramSymbolTable, Recast } from "@glimmer/interfaces";
 
@@ -33,15 +34,15 @@ export class BundleCompiler {
     protected delegate: CompilerDelegate
   ) {}
 
-  compile(input: string, specifier: Specifier, delegate: CompilerDelegate): { symbolTable: ProgramSymbolTable, handle: Handle } {
+  compile(input: string, specifier: Specifier, delegate: CompilerDelegate): { symbolTable: ProgramSymbolTable, handle: number } {
     let ast = preprocess(input, { plugins: { ast: this.plugins } });
     let template = TemplateCompiler.compile({ meta: null }, ast);
     let block = template.toJSON();
 
     let { program, macros, Builder } = this;
-    let lookup = new BundlingLookup(delegate);
+    let lookup = new BundlingLookup(delegate, this.specifiers);
 
-    let options: CompileOptions = {
+    let options: CompileOptions<Specifier> = {
       program,
       macros,
       Builder,
@@ -49,11 +50,13 @@ export class BundleCompiler {
       asPartial: false
     };
 
+    lookup.options = options;
+
     let compilable = CompilableTemplate.topLevel(block, options);
 
-    let handle = compilable.compile();
+    let handle = compilable.compile() as Recast<VMHandle, number>;
 
-    this.specifiers.components.set(handle as Recast<Handle, number>, specifier);
+    this.specifiers.components.set(handle, specifier);
 
     return { handle, symbolTable: compilable.symbolTable };
   }
@@ -84,6 +87,8 @@ export interface CompilerDelegate {
    */
   getComponentCapabilities(specifier: Specifier): ComponentCapabilities;
 
+  getComponentLayout(specifier: Specifier): SerializedTemplateBlock;
+
   hasHelperInScope(helperName: string, referer: Specifier): boolean;
   resolveHelperSpecifier(helperName: string, referer: Specifier): Specifier;
 
@@ -95,17 +100,31 @@ export interface CompilerDelegate {
 }
 
 class BundlingLookup implements CompileTimeLookup<Specifier> {
-  constructor(private delegate: CompilerDelegate) {}
+  public options: CompileOptions<Specifier>;
 
-  getCapabilities(meta: Specifier): ComponentCapabilities {
-    return this.delegate.getComponentCapabilities(meta);
+  constructor(private delegate: CompilerDelegate, private specifiers: SpecifierMap) {}
+
+  lookupComponentSpec(name: string, referer: Specifier): Option<number> {
+    if (this.delegate.hasComponentInScope(name, referer)) {
+      let specifier = this.delegate.resolveComponentSpecifier(name, referer);
+    } else {
+      return null;
+    }
   }
 
-  getLayout(name: string, meta: Specifier): Option<{ symbolTable: ProgramSymbolTable; handle: Handle }> {
-    throw new Error("Method not implemented.");
+  getCapabilities(handle: number): ComponentCapabilities {
+    let specifier = this.specifiers.components.get(handle)!;
+    return this.delegate.getComponentCapabilities(specifier);
   }
 
-  lookupHelper(name: string, referer: Specifier): Option<Specifier> {
+  getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>> {
+    let specifier = this.specifiers.components.get(handle)!;
+    let block = this.delegate.getComponentLayout(specifier);
+
+    return CompilableTemplate.topLevel(block, this.options);
+  }
+
+  lookupHelper(name: string, referer: Specifier): Option<number> {
     if (this.delegate.hasHelperInScope(name, referer)) {
       return this.delegate.resolveHelperSpecifier(name, referer);
     } else {
@@ -113,7 +132,7 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
     }
   }
 
-  lookupModifier(name: string, referer: Specifier): Option<Specifier> {
+  lookupModifier(name: string, referer: Specifier): Option<number> {
     if (this.delegate.hasModifierInScope(name, referer)) {
       return this.delegate.resolveModifierSpecifier(name, referer);
     } else {
@@ -121,11 +140,7 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
     }
   }
 
-  lookupComponent(name: string, meta: Specifier): Option<Specifier> {
-    throw new Error("Method not implemented.");
-  }
-
-  lookupPartial(name: string, meta: Specifier): Option<Specifier> {
+  lookupPartial(name: string, referer: Specifier): Option<number> {
     throw new Error("Method not implemented.");
   }
 }

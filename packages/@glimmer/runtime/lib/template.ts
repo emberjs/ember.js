@@ -60,7 +60,7 @@ export interface Template<TemplateMeta = Opaque> {
   asPartial(): TopLevelSyntax;
 }
 
-export interface TemplateFactory<T extends TemplateMeta, U> {
+export interface TemplateFactory<T extends TemplateMeta> {
   /**
    * Template identifier, if precompiled will be the id of the
    * precompiled template.
@@ -78,7 +78,7 @@ export interface TemplateFactory<T extends TemplateMeta, U> {
    *
    * @param {Environment} env glimmer Environment
    */
-  create(env: TemplateOptions<Opaque, Opaque>): Template<T>;
+  create(env: TemplateOptions<Opaque>): Template<T>;
   /**
    * Used to create an environment specific singleton instance
    * of the template.
@@ -86,11 +86,11 @@ export interface TemplateFactory<T extends TemplateMeta, U> {
    * @param {Environment} env glimmer Environment
    * @param {Object} meta environment specific injections into meta
    */
-  create(env: TemplateOptions<Opaque, Opaque>, meta: U): Template<T & U>;
+  create<U>(env: TemplateOptions<Opaque>, meta: U): Template<T & U>;
 }
 
 export class TemplateIterator {
-  constructor(private vm: VM<Opaque, Opaque>) {}
+  constructor(private vm: VM<Opaque>) {}
   next(): IteratorResult<RenderResult> {
     return this.vm.next();
   }
@@ -103,12 +103,12 @@ let clientId = 0;
  * that handles lazy parsing the template and to create per env singletons
  * of the template.
  */
-export default function templateFactory<T extends TemplateMeta>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T, T>;
-export default function templateFactory<T extends TemplateMeta, U>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T, U>;
-export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}, {}> {
+export default function templateFactory<T extends TemplateMeta>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T>;
+export default function templateFactory<T extends TemplateMeta, U>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T & U>;
+export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}> {
   let parsedBlock: SerializedTemplateBlock;
   let id = templateId || `client-${clientId++}`;
-  let create = (options: TemplateOptions<Opaque, Opaque>, envMeta?: {}) => {
+  let create = (options: TemplateOptions<Opaque>, envMeta?: {}) => {
     let newMeta = envMeta ? assign({}, envMeta, meta) : meta;
     if (!parsedBlock) {
       parsedBlock = JSON.parse(block);
@@ -127,7 +127,7 @@ export class ScannableTemplate implements Template<TemplateMeta> {
   public meta: TemplateMeta;
   private statements: Statement[];
 
-  constructor(private options: TemplateOptions<Opaque, Opaque>, private parsedLayout: ParsedLayout) {
+  constructor(private options: TemplateOptions<Opaque>, private parsedLayout: ParsedLayout) {
     let { block } = parsedLayout;
     this.symbols = block.symbols;
     this.hasEval = block.hasEval;
@@ -143,7 +143,7 @@ export class ScannableTemplate implements Template<TemplateMeta> {
     let layout = this.asLayout();
     let handle = layout.compile();
 
-    let vm = VM.initial(this.options.program as any as Program<Opaque, Opaque>, env, self, args, dynamicScope, builder, layout.symbolTable, handle);
+    let vm = VM.initial(this.options.program as any as Program<Opaque>, env, self, args, dynamicScope, builder, layout.symbolTable, handle);
     return new TemplateIterator(vm);
   }
 
@@ -158,7 +158,7 @@ export class ScannableTemplate implements Template<TemplateMeta> {
   }
 }
 
-export function compilable(layout: ParsedLayout, options: TemplateOptions<Opaque, Opaque>, asPartial: boolean) {
+export function compilable(layout: ParsedLayout, options: TemplateOptions<Opaque>, asPartial: boolean) {
   let { block, meta } = layout;
   let { hasEval, symbols } = block;
   let compileOptions = { ...options, asPartial };

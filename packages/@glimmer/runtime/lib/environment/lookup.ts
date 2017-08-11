@@ -1,56 +1,52 @@
-import { CompileTimeLookup, ComponentCapabilities } from "@glimmer/opcode-compiler";
-import { Resolver, ProgramSymbolTable, Unique, Option } from "@glimmer/interfaces";
-import { TemplateMeta } from "@glimmer/wire-format";
+import { CompileTimeLookup, ComponentCapabilities, ICompilableTemplate } from "@glimmer/opcode-compiler";
+import { Resolver, ProgramSymbolTable, Option } from "@glimmer/interfaces";
 import { WithStaticLayout, ComponentSpec } from '../component/interfaces';
 import { assert } from "@glimmer/util";
 
-export type LookupHandle = Unique<'LookupHandle'>;
-
-export class Lookup implements CompileTimeLookup<TemplateMeta, LookupHandle> {
-  constructor(private resolver: Resolver<TemplateMeta, LookupHandle>) {
+export class Lookup<Specifier> implements CompileTimeLookup<Specifier> {
+  constructor(private resolver: Resolver<Specifier>) {
   }
 
-  private getComponentSpec(name: string, meta: TemplateMeta): ComponentSpec {
-    let specifier = this.resolver.lookupComponent(name, meta);
-    let spec = this.resolver.resolve<Option<ComponentSpec>>(specifier!);
+  private getComponentSpec(handle: number): ComponentSpec {
+    let spec = this.resolver.resolve<Option<ComponentSpec>>(handle);
 
     assert(!!spec, `Couldn't find a template named ${name}`);
 
     return spec!;
   }
 
-  getCapabilities(handle: LookupHandle): ComponentCapabilities {
+  getCapabilities(handle: number): ComponentCapabilities {
     let spec = this.resolver.resolve<Option<ComponentSpec>>(handle);
     let { manager, definition } = spec!;
     return manager.getCapabilities(definition);
   }
 
-  getLayout(name: string, meta: TemplateMeta): Option<{ symbolTable: ProgramSymbolTable; handle: Unique<"Handle">; }> {
-    let { manager, definition } = this.getComponentSpec(name, meta);
+  getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>> {
+    let { manager, definition } = this.getComponentSpec(handle);
     let capabilities = manager.getCapabilities(definition);
 
     if (capabilities.dynamicLayout === true) {
       return null;
     }
 
-    let layoutSpecifier = (manager as WithStaticLayout<any, any, any, any>).getLayout(definition, this.resolver);
-    return this.resolver.resolve<{ symbolTable: ProgramSymbolTable, handle: Unique<'Handle'> }>(layoutSpecifier);
+    let layoutSpecifier = (manager as WithStaticLayout<any, any, Specifier, Resolver<Specifier>>).getLayout(definition, this.resolver);
+    return this.resolver.resolve<ICompilableTemplate<ProgramSymbolTable>>(layoutSpecifier);
   }
 
-  lookupHelper(name: string, meta: TemplateMeta): Option<LookupHandle> {
-    return this.resolver.lookupHelper(name, meta);
+  lookupHelper(name: string, referer: Specifier): Option<number> {
+    return this.resolver.lookupHelper(name, referer);
   }
 
-  lookupModifier(name: string, meta: TemplateMeta): Option<LookupHandle> {
-    return this.resolver.lookupModifier(name, meta);
+  lookupModifier(name: string, referer: Specifier): Option<number> {
+    return this.resolver.lookupModifier(name, referer);
   }
 
-  lookupComponent(name: string, meta: TemplateMeta): Option<LookupHandle> {
-    return this.resolver.lookupComponent(name, meta);
+  lookupComponentSpec(name: string, referer: Specifier): Option<number> {
+    return this.resolver.lookupComponent(name, referer);
   }
 
-  lookupPartial(name: string, meta: TemplateMeta): Option<LookupHandle> {
-    return this.resolver.lookupPartial(name, meta);
+  lookupPartial(name: string, referer: Specifier): Option<number> {
+    return this.resolver.lookupPartial(name, referer);
   }
 
 }

@@ -2,16 +2,16 @@ import { Unique, Opaque, SymbolTable, Option, BlockSymbolTable, Opcode } from "@
 import { Core, SerializedTemplateBlock, TemplateMeta } from "@glimmer/wire-format";
 import { Macros } from './syntax';
 
-export type Handle = Unique<"Handle">;
+export type VMHandle = Unique<"Handle">;
 
 export interface CompileTimeHeap {
   push(name: /* TODO: Op */ number, op1?: number, op2?: number, op3?: number): void;
-  malloc(): Handle;
-  finishMalloc(handle: Handle): void;
+  malloc(): VMHandle;
+  finishMalloc(handle: VMHandle): void;
 
   // for debugging
-  getaddr(handle: Handle): number;
-  sizeof(handle: Handle): number;
+  getaddr(handle: VMHandle): number;
+  sizeof(handle: VMHandle): number;
 }
 
 export interface ComponentCapabilities {
@@ -36,7 +36,7 @@ export interface EagerCompilationOptions<Specifier, R extends EagerResolver<Spec
 
 export interface CompilableTemplate<S extends SymbolTable> {
   symbolTable: S;
-  compile(): Handle;
+  compile(): VMHandle;
 }
 
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
@@ -69,7 +69,7 @@ export type ComponentArgs = [Core.Params, Core.Hash, Option<CompilableBlock>, Op
 export type Specifier = Opaque;
 
 export interface ComponentBuilder {
-  static(definition: Specifier, args: ComponentArgs): void;
+  static(definition: number, args: ComponentArgs): void;
 }
 
 export interface ParsedLayout {
