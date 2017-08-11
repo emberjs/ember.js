@@ -38,9 +38,7 @@ export class Constants {
   }
 
   string(value: string): ConstantString {
-    let index = this.strings.length;
-    this.strings.push(value);
-    return index + 1;
+    return this.strings.push(value);
   }
 
   getStringArray(value: ConstantArray): string[] {
@@ -70,9 +68,7 @@ export class Constants {
   }
 
   array(values: number[]): ConstantArray {
-    let index = this.arrays.length;
-    this.arrays.push(values);
-    return index + 1;
+    return this.arrays.push(values);
   }
 
   getSymbolTable<T extends SymbolTable>(value: ConstantSymbolTable): T {
@@ -80,9 +76,7 @@ export class Constants {
   }
 
   table(t: SymbolTable): ConstantSymbolTable {
-    let index = this.tables.length;
-    this.tables.push(t);
-    return index + 1;
+    return this.tables.push(t);
   }
 
   resolveSpecifier<T>(s: number): T {
@@ -98,10 +92,8 @@ export class Constants {
   }
 
   specifier(specifier: Specifier): number {
-    let index = this.specifiers.length;
-    this.specifiers.push(specifier);
     this.resolved.push(UNRESOLVED);
-    return index + 1;
+    return this.specifiers.push(specifier);
   }
 
   getSerializable<T>(s: number): T {
@@ -109,9 +101,7 @@ export class Constants {
   }
 
   serializable(value: Opaque): number {
-    let index = this.serializables.length;
-    this.serializables.push(value);
-    return index + 1;
+    return this.serializables.push(value);
   }
 }
 
@@ -123,8 +113,6 @@ export class LazyConstants extends Constants {
   }
 
   other(other: Opaque): ConstantOther {
-    let index = this.others.length;
-    this.others.push(other);
-    return index + 1;
+    return this.others.push(other);
   }
 }
