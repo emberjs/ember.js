@@ -37,20 +37,20 @@ function expandPropertiesToArray(predicateName, properties) {
 
 function generateComputedWithPredicate(name, predicate) {
   return (...properties) => {
-    let expandedProperties = expandPropertiesToArray(name, properties);
+    let dependentKeys = expandPropertiesToArray(name, properties);
 
     let computedFunc = new ComputedProperty(function() {
-      let lastIdx = expandedProperties.length - 1;
+      let lastIdx = dependentKeys.length - 1;
 
       for (let i = 0; i < lastIdx; i++) {
-        let value = get(this, expandedProperties[i]);
+        let value = get(this, dependentKeys[i]);
         if (!predicate(value)) {
           return value;
         }
       }
 
-      return get(this, expandedProperties[lastIdx]);
-    }, { dependentKeys: expandedProperties });
+      return get(this, dependentKeys[lastIdx]);
+    }, { dependentKeys });
 
     return computedFunc;
   };
@@ -251,8 +251,7 @@ export function bool(dependentKey) {
 export function match(dependentKey, regexp) {
   return computed(dependentKey, function() {
     let value = get(this, dependentKey);
-
-    return typeof value === 'string' ? regexp.test(value) : false;
+    return regexp.test(value);
   });
 }
 
@@ -463,7 +462,7 @@ export function lte(dependentKey, value) {
   a logical `and` on the values of all the original values for properties.
   @public
 */
-export let and = generateComputedWithPredicate('and', value => value);
+export const and = generateComputedWithPredicate('and', value => value);
 
 /**
   A computed property which performs a logical `or` on the
@@ -500,7 +499,7 @@ export let and = generateComputedWithPredicate('and', value => value);
   a logical `or` on the values of all the original values for properties.
   @public
 */
-export let or = generateComputedWithPredicate('or', value => !value);
+export const or = generateComputedWithPredicate('or', value => !value);
 
 /**
   Creates a new property that is an alias for another property

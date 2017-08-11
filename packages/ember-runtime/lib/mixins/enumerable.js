@@ -28,7 +28,10 @@ import require from 'require';
 let _emberA;
 
 function emberA() {
-  return (_emberA || (_emberA = require('ember-runtime/system/native_array').A))();
+  if (_emberA === undefined) {
+    _emberA = require('ember-runtime/system/native_array').A;
+  }
+  return _emberA();
 }
 
 const contexts = [];
@@ -45,12 +48,9 @@ function pushCtx(ctx) {
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
 
-  function i(item) {
-    let cur = get(item, key);
-    return valueProvided ? value === cur : !!cur;
-  }
-
-  return i;
+  return valueProvided ?
+    (item)=> value === get(item, key) :
+    (item)=> !!get(item, key);
 }
 
 /**
@@ -265,9 +265,7 @@ const Enumerable = Mixin.create({
     @public
   */
   forEach(callback, target) {
-    if (typeof callback !== 'function') {
-      throw new TypeError();
-    }
+    assert('Enumerable#forEach expects a function as first argument.', typeof callback === 'function');
 
     let context = popCtx();
     let len = get(this, 'length');
@@ -343,6 +341,8 @@ const Enumerable = Mixin.create({
     @public
   */
   map(callback, target) {
+    assert('Enumerable#map expects a function as first argument.', typeof callback === 'function');
+
     let ret = emberA();
 
     this.forEach((x, idx, i) => ret[idx] = callback.call(target, x, idx, i));
@@ -393,6 +393,8 @@ const Enumerable = Mixin.create({
     @public
   */
   filter(callback, target) {
+    assert('Enumerable#filter expects a function as first argument.', typeof callback === 'function');
+
     let ret = emberA();
 
     this.forEach((x, idx, i) => {
@@ -432,6 +434,8 @@ const Enumerable = Mixin.create({
     @public
   */
   reject(callback, target) {
+    assert('Enumerable#reject expects a function as first argument.', typeof callback === 'function');
+
     return this.filter(function() {
       return !(callback.apply(target, arguments));
     });
@@ -501,6 +505,8 @@ const Enumerable = Mixin.create({
     @public
   */
   find(callback, target) {
+    assert('Enumerable#find expects a function as first argument.', typeof callback === 'function');
+
     let len = get(this, 'length');
 
     if (target === undefined) {
@@ -582,6 +588,8 @@ const Enumerable = Mixin.create({
     @public
   */
   every(callback, target) {
+    assert('Enumerable#every expects a function as first argument.', typeof callback === 'function');
+
     return !this.find((x, idx, i) => !callback.call(target, x, idx, i));
   },
 
@@ -639,6 +647,8 @@ const Enumerable = Mixin.create({
     @public
   */
   any(callback, target) {
+    assert('Enumerable#any expects a function as first argument.', typeof callback === 'function');
+
     let len = get(this, 'length');
     let context = popCtx();
     let found = false;
@@ -711,9 +721,7 @@ const Enumerable = Mixin.create({
     @public
   */
   reduce(callback, initialValue, reducerProperty) {
-    if (typeof callback !== 'function') {
-      throw new TypeError();
-    }
+    assert('Enumerable#reduce expects a function as first argument.', typeof callback === 'function');
 
     let ret = initialValue;
 

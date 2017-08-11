@@ -51,8 +51,8 @@ export function set(obj, keyName, value, tolerant) {
 
   if (isDescriptor) { /* computed property */
     currentValue.set(obj, keyName, value);
-  } else if (obj.setUnknownProperty && currentValue === undefined && !(keyName in obj)) { /* unknown property */
-    assert('setUnknownProperty must be a function', typeof obj.setUnknownProperty === 'function');
+  } else if (currentValue === undefined && 'object' === typeof obj && !(keyName in obj) &&
+    typeof obj.setUnknownProperty === 'function') { /* unknown property */
     obj.setUnknownProperty(keyName, value);
   } else if (currentValue === value) { /* no change */
   } else {
@@ -95,21 +95,17 @@ function setPath(root, path, value, tolerant) {
   let parts = path.split('.');
   let keyName = parts.pop();
 
-  assert('Property set failed: You passed an empty path', keyName && keyName.length > 0)
+  assert('Property set failed: You passed an empty path', keyName.trim().length > 0)
 
-  let newPath = parts.length > 0 ? parts.join('.') : keyName;
+  let newPath = parts.join('.');
 
   let newRoot = getPath(root, newPath);
 
-  if (!newRoot) {
-    if (tolerant) {
-      return;
-    } else {
-      throw new EmberError(`Property set failed: object in path "${newPath}" could not be found or was destroyed.`);
-    }
+  if (newRoot) {
+    return set(newRoot, keyName, value);
+  } else if (!tolerant) {
+    throw new EmberError(`Property set failed: object in path "${newPath}" could not be found or was destroyed.`);
   }
-
-  return set(newRoot, keyName, value);
 }
 
 /**

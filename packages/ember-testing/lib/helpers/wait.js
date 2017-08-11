@@ -27,6 +27,7 @@ import { pendingRequests } from '../test/pending_requests';
       .fillIn('#password', password)
       .click('.submit');
   });
+  ```
 
   @method wait
   @param {Object} value The value to be returned.

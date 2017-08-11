@@ -58,11 +58,18 @@ module.exports = {
       'ember.debug.js',
       'ember.min.js',
       'ember.prod.js'
-    ].filter(function(file) {
-      var fullPath = path.join(__dirname, 'dist', file);
+    ]
+      .map(function(file) {
+        return [file, file.replace('.js', '.map')];
+      })
+      .reduce(function(flat, jsAndMap) {
+        return flat.concat(jsAndMap);
+      }, [])
+      .filter(function(file) {
+        var fullPath = path.join(__dirname, 'dist', file);
 
-      return fs.existsSync(fullPath);
-    });
+        return fs.existsSync(fullPath);
+      });
 
     var ember = new Funnel(__dirname + '/dist', {
       destDir: 'ember',

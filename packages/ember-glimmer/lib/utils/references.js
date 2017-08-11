@@ -213,11 +213,13 @@ export class NestedPropertyReference extends PropertyReference {
 
     _parentObjectTag.update(tagForProperty(parentValue, _propertyKey));
 
-    if (typeof parentValue === 'string' && _propertyKey === 'length') {
+    let parentValueType = typeof parentValue;
+
+    if (parentValueType === 'string' && _propertyKey === 'length') {
       return parentValue.length;
     }
 
-    if (typeof parentValue === 'object' && parentValue) {
+    if (parentValueType === 'object' && parentValue !== null || parentValueType === 'function') {
       if (MANDATORY_SETTER) {
         watchKey(parentValue, _propertyKey);
       }
@@ -315,7 +317,7 @@ export class SimpleHelperReference extends CachedReference {
 
       let result = helper(positionalValue, namedValue);
 
-      if (typeof result === 'object' && result !== null) {
+      if (typeof result === 'object' && result !== null || typeof result === 'function') {
         return new RootReference(result);
       } else {
         return PrimitiveReference.create(result);
@@ -396,7 +398,7 @@ export class InternalHelperReference extends CachedReference {
 // @implements PathReference
 export class UnboundReference extends ConstReference {
   static create(value) {
-    if (typeof value === 'object' && value !== null) {
+    if (typeof value === 'object' && value !== null || typeof result === 'function') {
       return new UnboundReference(value);
     } else {
       return PrimitiveReference.create(value);

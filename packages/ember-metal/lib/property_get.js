@@ -61,8 +61,8 @@ export function get(obj, keyName) {
     return value.get(obj, keyName);
   } else if (isPath(keyName)) {
     return _getPath(obj, keyName);
-  } else if (value === undefined &&
-    'object' === typeof obj && !(keyName in obj) && 'function' === typeof obj.unknownProperty) {
+  } else if (value === undefined && 'object' === typeof obj && !(keyName in obj) &&
+    typeof obj.unknownProperty === 'function') {
     return obj.unknownProperty(keyName);
   } else {
     return value;
