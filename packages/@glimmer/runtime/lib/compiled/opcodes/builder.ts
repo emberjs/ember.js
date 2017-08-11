@@ -12,7 +12,7 @@ import {
   LazyConstants
 } from '../../environment/constants';
 import { ComponentBuilder as IComponentBuilder } from '../../opcode-builder';
-import { Primitive } from '../../references';
+import { Primitive, PrimitiveType } from '../../references';
 import { expr, ATTRS_BLOCK } from '../../syntax/functions';
 import { BlockSyntax, CompilableTemplate } from '../../syntax/interfaces';
 import RawInlineBlock from '../../syntax/raw-block';
@@ -384,7 +384,7 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
   }
 
   primitive(_primitive: Primitive) {
-    let flag: 0 | 1 | 2 | 3 = 0;
+    let type: PrimitiveType = PrimitiveType.NUMBER;
     let primitive: number;
     switch (typeof _primitive) {
       case 'number':
@@ -392,31 +392,31 @@ export abstract class OpcodeBuilder<Layout extends AbstractTemplate<ProgramSymbo
           primitive = _primitive as number;
         } else {
           primitive = this.float(_primitive as number);
-          flag = 1;
+          type = PrimitiveType.FLOAT;
         }
         break;
       case 'string':
         primitive = this.string(_primitive as string);
-        flag = 2;
+        type = PrimitiveType.STRING;
         break;
       case 'boolean':
         primitive = (_primitive as any) | 0;
-        flag = 3;
+        type = PrimitiveType.BOOLEAN_OR_VOID;
         break;
       case 'object':
         // assume null
         primitive = 2;
-        flag = 3;
+        type = PrimitiveType.BOOLEAN_OR_VOID;
         break;
       case 'undefined':
         primitive = 3;
-        flag = 3;
+        type = PrimitiveType.BOOLEAN_OR_VOID;
         break;
       default:
         throw new Error('Invalid primitive passed to pushPrimitive');
     }
 
-    this.push(Op.Primitive, primitive << 3 | flag);
+    this.push(Op.Primitive, primitive << 3 | type);
   }
 
   pushPrimitiveReference(primitive: Primitive) {
