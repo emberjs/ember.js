@@ -3,6 +3,7 @@ import { strip } from '../../utils/abstract-test-case';
 import { applyMixins } from '../../utils/abstract-test-case';
 import { moduleFor } from '../../utils/test-case';
 import { ObjectProxy, Object as EmberObject } from 'ember-runtime';
+import { HAS_NATIVE_SYMBOL } from 'ember-utils';
 
 import {
   TogglingSyntaxConditionalsTest,
@@ -16,6 +17,16 @@ class EachInTest extends TogglingSyntaxConditionalsTest {
     return `{{#each-in ${cond} as |key|}}${truthy}{{else}}${falsy}{{/each-in}}`;
   }
 
+}
+
+function makeIterator(ary){
+  var index = 0;
+
+  return {
+    next() {
+      return index < ary.length ? { value: ary[index++], done: false } : { done: true };
+    }
+  };
 }
 
 function EmptyFunction() {}
@@ -57,8 +68,7 @@ applyMixins(BasicEachInTest,
   ])
 );
 
-moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
-
+class BasicSyntaxTest extends BasicEachInTest {
   get truthyValue() {
     return { 'Not Empty': 1 };
   }
@@ -458,7 +468,344 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
     this.assertStableRerender();
   }
 
-});
+  ['@test it repeats the given block for each item in the ES6 map']() {
+    let map = new window.Map();
+    map.set('one', 'foo');
+    map.set('two', 'bar');
+
+    this.render(strip`
+      <ul>
+        {{#each-in map as |key value|}}
+          <li>{{key}}: {{value}}</li>
+        {{/each-in}}
+      </ul>`, { map });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>one: foo</li>
+        <li>two: bar</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let map = new window.Map();
+      map.set('three', 'qux');
+      set(this.context, 'map', map);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>three: qux</li>
+      </ul>
+    `);
+  }
+
+  ['@test it can render sub-paths of each item on ES6 Maps']() {
+    let map = new window.Map();
+    map.set('one', { name: 'foo' });
+    map.set('two', { name: 'bar' });
+
+    this.render(strip`
+      <ul>
+        {{#each-in map as |key value|}}
+          <li>{{key}}: {{value.name}}</li>
+        {{/each-in}}
+      </ul>`, { map });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>one: foo</li>
+        <li>two: bar</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let map = new window.Map();
+      map.set('three', { name: 'qux' });
+      set(this.context, 'map', map);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>three: qux</li>
+      </ul>
+    `);
+  }
+
+  ['@test it renders the else block on empty ES6 Maps']() {
+    let map = new window.Map();
+
+    this.render(strip`
+      <ul>
+        {{#each-in map as |key value|}}
+          <li>{{key}}: {{value.name}}</li>
+        {{else}}
+          NADA
+        {{/each-in}}
+      </ul>`, { map });
+
+    this.assertHTML(strip`
+      <ul>
+        NADA
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let map = new window.Map();
+      map.set('three', { name: 'qux' });
+      set(this.context, 'map', map);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>three: qux</li>
+      </ul>
+    `);
+  }
+
+  [`@test it can render duplicate items on ES6 Maps`]() {
+    let map = new window.Map();
+    map.set('Smartphones', 8203);
+    map.set('Tablets', 8203);
+    map.set('JavaScript Frameworks', Infinity);
+    map.set('Bugs', Infinity);
+
+    this.render(strip`
+      <ul>
+        {{#each-in categories key='@identity' as |category count|}}
+          <li>{{category}}: {{count}}</li>
+        {{/each-in}}
+      </ul>
+    `, {
+      categories: map
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>Tablets: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Bugs: Infinity</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let map = new window.Map();
+      map.set('Smartphones', 100);
+      map.set('Tweets', 443115);
+      set(this.context, 'categories', map);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 100</li>
+        <li>Tweets: 443115</li>
+      </ul>
+    `);
+  }
+
+  [`@test it supports having objects as keys on the ES6 Maps`]() {
+    let map = new window.Map();
+    map.set({ name: 'one' }, 'foo');
+    map.set({ name: 'two' }, 'bar');
+
+    this.render(strip`
+      <ul>
+        {{#each-in map key="@identity" as |key value|}}
+          <li>{{key.name}}: {{value}}</li>
+        {{/each-in}}
+      </ul>`, { map });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>one: foo</li>
+        <li>two: bar</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let map = new window.Map();
+      map.set({ name: 'three' }, 'qux');
+      set(this.context, 'map', map);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>three: qux</li>
+      </ul>
+    `);
+  }
+}
+
+
+if (HAS_NATIVE_SYMBOL) {
+  BasicSyntaxTest.prototype['@test it repeats the given block for each pair of entry in the iterable'] = function() {
+    let iterable = {
+      [Symbol.iterator]: () => makeIterator([['one', 'foo'], ['two', 'bar']])
+    };
+
+    this.render(strip`
+    <ul>
+      {{#each-in iterable as |key value|}}
+        <li>{{key}}: {{value}}</li>
+      {{/each-in}}
+    </ul>`, { iterable });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>one: foo</li>
+        <li>two: bar</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let iterable = {
+        [Symbol.iterator]: () => makeIterator([['three', 'qux']])
+      };
+      set(this.context, 'iterable', iterable);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>three: qux</li>
+      </ul>
+    `);
+  };
+
+  BasicSyntaxTest.prototype['@test it can render sub-paths of each item on an iterable'] = function() {
+    let iterable = {
+      [Symbol.iterator]: () => makeIterator([['one', { name: 'foo' }], ['two', { name: 'bar' }]])
+    };
+
+    this.render(strip`
+      <ul>
+        {{#each-in iterable as |key value|}}
+          <li>{{key}}: {{value.name}}</li>
+        {{/each-in}}
+      </ul>`, { iterable });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>one: foo</li>
+        <li>two: bar</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let iterable = {
+        [Symbol.iterator]: () => makeIterator([['three', { name: 'qux' }]])
+      };
+      set(this.context, 'iterable', iterable);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>three: qux</li>
+      </ul>
+    `);
+  };
+
+  BasicSyntaxTest.prototype['@test it renders the else block on empty an iterable'] = function() {
+    let iterable = {
+      [Symbol.iterator]: () => makeIterator([])
+    };
+
+    this.render(strip`
+      <ul>
+        {{#each-in iterable as |key value|}}
+          <li>{{key}}: {{value.name}}</li>
+        {{else}}
+          NADA
+        {{/each-in}}
+      </ul>`, { iterable });
+
+    this.assertHTML(strip`
+      <ul>
+        NADA
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let iterable = {
+        [Symbol.iterator]: () => makeIterator([['three', { name: 'qux' }]])
+      };
+      set(this.context, 'iterable', iterable);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>three: qux</li>
+      </ul>
+    `);
+  };
+
+  BasicSyntaxTest.prototype[`@test it can render duplicate items on an iterable`] = function() {
+    let iterable = {
+      [Symbol.iterator]: () => makeIterator([
+        ['Smartphones', '8203'],
+        ['Tablets', '8203'],
+        ['JavaScript Frameworks', Infinity],
+        ['Bugs', Infinity]
+      ])
+    };
+
+    this.render(strip`
+      <ul>
+        {{#each-in categories key='@identity' as |category count|}}
+          <li>{{category}}: {{count}}</li>
+        {{/each-in}}
+      </ul>
+    `, {
+      categories: iterable
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>Tablets: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+        <li>Bugs: Infinity</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let iterable = {
+        [Symbol.iterator]: () => makeIterator([
+          ['Smartphones', 100],
+          ['Tweets', 443115]
+        ])
+      };
+      set(this.context, 'categories', iterable);
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 100</li>
+        <li>Tweets: 443115</li>
+      </ul>
+    `);
+  };
+}
+
+moduleFor('Syntax test: {{#each-in}}', BasicSyntaxTest);
 
 class EachInEdgeCasesTest extends EachInTest {}
 
