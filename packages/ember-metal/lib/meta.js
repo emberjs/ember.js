@@ -40,6 +40,7 @@ const SOURCE_DESTROYING = 1 << 1;
 const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
 const IS_PROXY = 1 << 4;
+const WAS_APPLIED = 1 << 5;
 
 const META_FIELD = '__ember_meta__';
 const NODE_STACK = [];
@@ -169,6 +170,22 @@ export class Meta {
 
   setProxy() {
     this._flags |= IS_PROXY;
+  }
+
+  get wasApplied() {
+    assert('cannot access wasApplied for an instances meta', this.proto === this.source);
+
+    return (this._flags & WAS_APPLIED) !== 0;
+  }
+
+  set wasApplied(value) {
+    assert('cannot set wasApplied for an instances meta', this.proto === this.source);
+
+    if (value === true) {
+      this._flags |= WAS_APPLIED;
+    } else {
+      this._flags &= ~WAS_APPLIED;
+    }
   }
 
   _getOrCreateOwnMap(key) {
