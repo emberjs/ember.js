@@ -516,7 +516,7 @@ export default class Mixin {
   static mixins(obj) {
     let meta = peekMeta(obj);
     let ret = [];
-    if (!meta) { return ret; }
+    if (meta === undefined) { return ret; }
 
     meta.forEachMixins((key, currentMixin) => {
       // skip primitive mixins since these are always anonymous
@@ -621,7 +621,7 @@ MixinPrototype.detect = function(obj) {
   if (typeof obj !== 'object' || obj === null) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
   let meta = peekMeta(obj);
-  if (!meta) { return false; }
+  if (meta === undefined) { return false; }
   return !!meta.peekMixins(guidFor(this));
 };
 

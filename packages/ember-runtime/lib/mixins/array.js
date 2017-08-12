@@ -139,7 +139,7 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
   let meta = peekMeta(array);
-  let cache = meta && meta.readableCache();
+  let cache = meta !== undefined ? meta.readableCache() : undefined;
   if (cache !== undefined) {
     let length = get(array, 'length');
     let addedAmount = (addAmt === -1 ? 0 : addAmt);
