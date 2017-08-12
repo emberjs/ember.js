@@ -549,8 +549,12 @@ const LinkComponent = EmberComponent.extend({
     let routing = get(this, '_routing');
     let models = get(this, 'models');
     let resolvedQueryParams = get(this, 'resolvedQueryParams');
-
     let currentWhen = get(this, 'current-when');
+
+    if (typeof currentWhen === 'boolean') {
+      return currentWhen ? get(this, 'activeClass') : false;
+    }
+
     let isCurrentWhenSpecified = !!currentWhen;
     currentWhen = currentWhen || get(this, 'qualifiedRouteName');
     currentWhen = currentWhen.split(' ');

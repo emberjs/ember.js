@@ -103,14 +103,14 @@ export class Meta {
     // remove chainWatchers to remove circular references that would prevent GC
     let nodes, key, nodeObject;
     let node = this.readableChains();
-    if (node) {
+    if (node !== undefined) {
       NODE_STACK.push(node);
       // process tree
       while (NODE_STACK.length > 0) {
         node = NODE_STACK.pop();
         // push children
         nodes = node._chains;
-        if (nodes) {
+        if (nodes !== undefined) {
           for (key in nodes) {
             if (nodes[key] !== undefined) {
               NODE_STACK.push(nodes[key]);
@@ -121,7 +121,7 @@ export class Meta {
         // remove chainWatcher in node object
         if (node._watching) {
           nodeObject = node._object;
-          if (nodeObject) {
+          if (nodeObject !== undefined) {
             let foreignMeta = peekMeta(nodeObject);
             // avoid cleaning up chain watchers when both current and
             // foreign objects are being destroyed
@@ -322,10 +322,10 @@ export class Meta {
     assert(`Cannot create a new chains for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let ret = this._chains;
     if (ret === undefined) {
-      if (this.parent) {
-        ret = this.parent.writableChains(create).copy(this.source);
-      } else {
+      if (this.parent === undefined) {
         ret = create(this.source);
+      } else {
+        ret = this.parent.writableChains(create).copy(this.source);
       }
       this._chains = ret;
     }

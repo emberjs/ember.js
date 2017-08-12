@@ -42,7 +42,7 @@ export {
   set,
   trySet
 } from './property_set';
-export { default as WeakMap } from './weak_map';
+export { default as WeakMap, WeakMapPolyfill } from './weak_map';
 export {
   addListener,
   hasListeners,

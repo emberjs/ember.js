@@ -129,7 +129,8 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 */
 function ComputedProperty(config, opts) {
   this.isDescriptor = true;
-  if (typeof config === 'function') {
+  let hasGetterOnly = typeof config === 'function';
+  if (hasGetterOnly) {
     this._getter = config;
   } else {
     assert('Ember.computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
@@ -141,8 +142,9 @@ function ComputedProperty(config, opts) {
   this._suspended = undefined;
   this._meta = undefined;
   this._volatile = false;
+
   this._dependentKeys = opts && opts.dependentKeys;
-  this._readOnly = false;
+  this._readOnly = opts && hasGetterOnly && opts.readOnly === true;
 }
 
 ComputedProperty.prototype = new Descriptor();

@@ -149,16 +149,16 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 
     let normalStartIdx = startIdx < 0 ? previousLength + startIdx : startIdx;
     if (cache.firstObject !== undefined && normalStartIdx === 0) {
-      propertyWillChange(array, 'firstObject');
-      propertyDidChange(array, 'firstObject');
+      propertyWillChange(array, 'firstObject', meta);
+      propertyDidChange(array, 'firstObject', meta);
     }
 
     if (cache.lastObject !== undefined) {
       let previousLastIndex = previousLength - 1;
       let lastAffectedIndex = normalStartIdx + removedAmount;
       if (previousLastIndex < lastAffectedIndex) {
-        propertyWillChange(array, 'lastObject');
-        propertyDidChange(array, 'lastObject');
+        propertyWillChange(array, 'lastObject', meta);
+        propertyDidChange(array, 'lastObject', meta);
       }
    }
   }

@@ -24,9 +24,9 @@ function reduceMacro(dependentKey, callback, initialValue) {
     let arr = get(this, dependentKey);
     if (arr === null || typeof arr !== 'object') { return initialValue; }
     return arr.reduce(callback, initialValue, this);
-  }, { dependentKeys: [`${dependentKey}.[]`] })
+  }, { dependentKeys: [`${dependentKey}.[]`], readOnly: true })
 
-  return cp.readOnly();
+  return cp;
 }
 
 function arrayMacro(dependentKey, callback) {
@@ -46,9 +46,9 @@ function arrayMacro(dependentKey, callback) {
     } else {
       return emberA();
     }
-  }, { dependentKeys: [ dependentKey ] });
+  }, { dependentKeys: [ dependentKey ], readOnly: true });
 
-  return cp.readOnly();
+  return cp;
 }
 
 function multiArrayMacro(_dependentKeys, callback) {
@@ -56,9 +56,9 @@ function multiArrayMacro(_dependentKeys, callback) {
 
   let cp = new ComputedProperty(function() {
     return emberA(callback.call(this, _dependentKeys));
-  }, { dependentKeys });
+  }, { dependentKeys, readOnly: true });
 
-  return cp.readOnly();
+  return cp;
 }
 
 /**
@@ -429,7 +429,7 @@ export function uniq(...args) {
   @public
 */
 export function uniqBy(dependentKey, propertyKey) {
-  return computed(`${dependentKey}.[]`, function() {
+  let cp = new ComputedProperty(function() {
     let uniq = emberA();
     let seen = Object.create(null);
     let list = get(this, dependentKey);
@@ -443,7 +443,9 @@ export function uniqBy(dependentKey, propertyKey) {
       });
     }
     return uniq;
-  }).readOnly();
+  }, { dependentKeys: [`${dependentKey}.[]`], readOnly: true });
+
+  return cp;
 }
 
 /**
@@ -575,7 +577,7 @@ export function setDiff(setAProperty, setBProperty) {
     arguments.length === 2
   );
 
-  return computed(`${setAProperty}.[]`, `${setBProperty}.[]`, function() {
+  let cp = new ComputedProperty(function() {
     let setA = this.get(setAProperty);
     let setB = this.get(setBProperty);
 
@@ -583,7 +585,12 @@ export function setDiff(setAProperty, setBProperty) {
     if (!isArray(setB)) { return emberA(setA); }
 
     return setA.filter(x => setB.indexOf(x) === -1);
-  }).readOnly();
+  }, {
+    dependentKeys: [ `${setAProperty}.[]`, `${setBProperty}.[]` ],
+    readOnly: true
+  });
+
+  return cp;
 }
 
 /**
@@ -751,11 +758,11 @@ function propertySort(itemsKey, sortPropertiesKey) {
     activeObserversMap.set(this, activeObservers);
 
     return sortByNormalizedSortProperties(items, normalizedSortProperties);
-  }, { dependentKeys: [`${sortPropertiesKey}.[]`] });
+  }, { dependentKeys: [`${sortPropertiesKey}.[]`], readOnly: true });
 
   cp._activeObserverMap = undefined;
 
-  return cp.readOnly();
+  return cp;
 }
 
 function normalizeSortProperties(sortProperties) {
@@ -776,7 +783,6 @@ function sortByNormalizedSortProperties(items, normalizedSortProperties) {
         return (direction === 'desc') ? (-1 * result) : result;
       }
     }
-
     return 0;
   }));
 }

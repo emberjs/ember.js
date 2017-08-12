@@ -527,6 +527,22 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(this.$('#link3.active').length, 0, 'The link is not active since current-when does not contain the active route');
   }
 
+  ['@test The {{link-to}} helper supports boolean values for current-when'](assert) {
+    this.router.map(function(match) {
+      this.route('index', { path: '/' }, function() {
+        this.route('about');
+      });
+      this.route('item');
+    });
+
+    this.addTemplate('index', `<h3>Home</h3>{{outlet}}`);
+    this.addTemplate('index.about', `{{#link-to 'item' id='other-link' current-when=true}}ITEM{{/link-to}}`);
+
+    this.visit('/about');
+
+    assert.equal(this.$('#other-link').length, 1, 'The link is active since current-when is true');
+  }
+
   ['@test The {{link-to}} helper defaults to bubbling'](assert) {
     this.addTemplate('about', `
       <div {{action 'hide'}}>
