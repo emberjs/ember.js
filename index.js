@@ -4,6 +4,7 @@
 var fs = require('fs');
 var path = require('path');
 var resolve = require('resolve');
+var SilentError = require('silent-error');
 
 var paths = {};
 var absolutePaths = {};
@@ -26,8 +27,7 @@ module.exports = {
   init: function() {
 		this._super.init && this._super.init.apply(this, arguments);
     if ('ember' in this.project.bowerDependencies()) {
-      // TODO: move this to a throw soon.
-      this.ui.writeWarnLine('Ember.js is now provided by node_module `ember-source`, please remove it from bower');
+      throw new SilentError('Ember.js is now provided by node_module `ember-source`, please remove it from your project\'s bower.json.');
     }
   },
 
