@@ -3,7 +3,8 @@ import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
 import { TemplateCompiler } from "@glimmer/compiler";
 import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { WriteOnlyProgram, WriteOnlyConstants } from "@glimmer/program";
-import { Option, ProgramSymbolTable, Recast } from "@glimmer/interfaces";
+import { Option, ProgramSymbolTable, Recast, Dict } from "@glimmer/interfaces";
+import { dict } from "@glimmer/util";
 
 export interface BundleCompileOptions {
   plugins: ASTPluginBuilder[];
@@ -12,15 +13,68 @@ export interface BundleCompileOptions {
 export type ModuleName = string;
 export type NamedExport = string;
 
-export interface Specifier {
-  import: NamedExport;
-  from: ModuleName;
+export interface Specifier extends Readonly<object> {
+  module: ModuleName;
+  name: NamedExport;
+}
+
+class SpecifierValue implements Specifier {
+  private static values: Dict<Dict<Specifier>> = dict();
+
+  static for(name: NamedExport, module: ModuleName): Specifier {
+    let specifiers = this.values[name];
+
+    if (!specifiers) {
+      specifiers = this.values[module] = dict();
+    }
+
+    let specifier = specifiers[name];
+
+    if (!specifier) {
+      specifier = { name, module };
+    }
+
+    return Object.freeze(specifier);
+  }
+
+  private constructor(public name: NamedExport, public module: ModuleName) {}
+}
+
+export function specifier(name: NamedExport, module: ModuleName): Specifier {
+  return SpecifierValue.for(name, module);
 }
 
 export class SpecifierMap {
   public helpers = new Map<number, Specifier>();
   public modifiers = new Map<number, Specifier>();
   public components = new Map<number, Specifier>();
+
+  private helpersBySpecifier = new Map<Specifier, number>();
+  private modifiersBySpecifier = new Map<Specifier, number>();
+  private componentsBySpecifier = new Map<Specifier, number>();
+
+  private handleFor(handles: Map<Specifier, number>, specifier:  Specifier): number {
+    let handle = handles.get(specifier);
+
+    if (!handle) {
+      handle = handles.size;
+      handles.set(specifier, handle);
+    }
+
+    return handle;
+  }
+
+  handleForHelper(helper: Specifier): number {
+    return this.handleFor(this.helpersBySpecifier, helper);
+  }
+
+  handleForModifier(modifier: Specifier): number {
+    return this.handleFor(this.modifiersBySpecifier, modifier);
+  }
+
+  handleForComponent(component: Specifier): number {
+    return this.handleFor(this.componentsBySpecifier, component);
+  }
 }
 
 export class BundleCompiler {
@@ -107,6 +161,7 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
   lookupComponentSpec(name: string, referer: Specifier): Option<number> {
     if (this.delegate.hasComponentInScope(name, referer)) {
       let specifier = this.delegate.resolveComponentSpecifier(name, referer);
+      return this.specifiers.handleForComponent(specifier);
     } else {
       return null;
     }
@@ -126,7 +181,8 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
 
   lookupHelper(name: string, referer: Specifier): Option<number> {
     if (this.delegate.hasHelperInScope(name, referer)) {
-      return this.delegate.resolveHelperSpecifier(name, referer);
+      let specifier = this.delegate.resolveHelperSpecifier(name, referer);
+      return this.specifiers.handleForHelper(specifier);
     } else {
       return null;
     }
@@ -134,13 +190,14 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
 
   lookupModifier(name: string, referer: Specifier): Option<number> {
     if (this.delegate.hasModifierInScope(name, referer)) {
-      return this.delegate.resolveModifierSpecifier(name, referer);
+      let specifier = this.delegate.resolveHelperSpecifier(name, referer);
+      return this.specifiers.handleForHelper(specifier);
     } else {
       return null;
     }
   }
 
-  lookupPartial(name: string, referer: Specifier): Option<number> {
+  lookupPartial(_name: string, _referer: Specifier): Option<number> {
     throw new Error("Method not implemented.");
   }
 }
