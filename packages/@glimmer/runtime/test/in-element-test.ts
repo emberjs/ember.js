@@ -12,7 +12,7 @@ import { setProperty as set } from '@glimmer/object-reference';
 class InElementTests extends RenderTests {
   @test "Renders curlies into external element"() {
     let externalElement = document.createElement("div");
-    this.render("{{#-in-element externalElement}}[{{foo}}]{{/-in-element}}", { externalElement, foo: "Yippie!" });
+    this.render("{{#in-element externalElement}}[{{foo}}]{{/in-element}}", { externalElement, foo: "Yippie!" });
     equalsElement(externalElement, "div", {}, "[Yippie!]");
     this.assertStableRerender();
 
@@ -32,8 +32,8 @@ class InElementTests extends RenderTests {
     this.render(
       stripTight`
         |{{foo}}|
-        {{#-in-element first}}[{{foo}}]{{/-in-element}}
-        {{#-in-element second}}[{{foo}}]{{/-in-element}}
+        {{#in-element first}}[{{foo}}]{{/in-element}}
+        {{#in-element second}}[{{foo}}]{{/in-element}}
       `,
       { first, second: null, foo: "Yippie!" }
     );
@@ -73,7 +73,7 @@ class InElementTests extends RenderTests {
     let initialContent = externalElement.innerHTML = "<p>Hello there!</p>";
 
     this.render(
-      stripTight`{{#-in-element externalElement}}[{{foo}}]{{/-in-element}}`,
+      stripTight`{{#in-element externalElement}}[{{foo}}]{{/in-element}}`,
       { externalElement, foo: "Yippie!" }
     );
 
@@ -102,7 +102,7 @@ class InElementTests extends RenderTests {
     externalElement.innerHTML = "<b>Hello</b><em>there!</em>";
 
     this.render(
-      stripTight`{{#-in-element externalElement nextSibling=nextSibling}}[{{foo}}]{{/-in-element}}`,
+      stripTight`{{#in-element externalElement nextSibling=nextSibling}}[{{foo}}]{{/in-element}}`,
       { externalElement, nextSibling: externalElement.lastChild, foo: "Yippie!" }
     );
 
@@ -136,7 +136,7 @@ class InElementTests extends RenderTests {
     let second = document.createElement("div");
 
     this.render(
-      stripTight`{{#-in-element externalElement}}[{{foo}}]{{/-in-element}}`,
+      stripTight`{{#in-element externalElement}}[{{foo}}]{{/in-element}}`,
       { externalElement: first, foo: "Yippie!" }
     );
 
@@ -189,10 +189,10 @@ class InElementTests extends RenderTests {
     this.render(
       stripTight`
         {{#if showFirst}}
-          {{#-in-element first}}[{{foo}}]{{/-in-element}}
+          {{#in-element first}}[{{foo}}]{{/in-element}}
         {{/if}}
         {{#if showSecond}}
-          {{#-in-element second}}[{{foo}}]{{/-in-element}}
+          {{#in-element second}}[{{foo}}]{{/in-element}}
         {{/if}}
       `,
       {
@@ -252,12 +252,12 @@ class InElementTests extends RenderTests {
 
     this.render(
       stripTight`
-        {{#-in-element firstElement}}
+        {{#in-element firstElement}}
           [{{foo}}]
-        {{/-in-element}}
-        {{#-in-element secondElement}}
+        {{/in-element}}
+        {{#in-element secondElement}}
           [{{bar}}]
-        {{/-in-element}}
+        {{/in-element}}
         `,
       {
         firstElement,
@@ -303,9 +303,9 @@ class InElementTests extends RenderTests {
     this.render(
       stripTight`
         {{~#each roots key="id" as |root|~}}
-          {{~#-in-element root.element ~}}
+          {{~#in-element root.element ~}}
             {{component 'FooBar' value=root.value}}
-          {{~/-in-element~}}
+          {{~/in-element~}}
         {{~/each}}
         `,
       {
@@ -351,12 +351,12 @@ class InElementTests extends RenderTests {
 
     this.render(
       stripTight`
-        {{#-in-element firstElement}}
+        {{#in-element firstElement}}
           [{{foo}}]
-          {{#-in-element secondElement}}
+          {{#in-element secondElement}}
             [{{bar}}]
-          {{/-in-element}}
-        {{/-in-element}}
+          {{/in-element}}
+        {{/in-element}}
         `,
       {
         firstElement,
@@ -410,7 +410,7 @@ class InElementTests extends RenderTests {
     this.render(
       stripTight`
         {{#if showExternal}}
-          {{#-in-element externalElement}}[<DestroyMe />]{{/-in-element}}
+          {{#in-element externalElement}}[<DestroyMe />]{{/in-element}}
         {{/if}}
       `,
       {
@@ -438,4 +438,4 @@ class InElementTests extends RenderTests {
   }
 };
 
-module("#-in-element Test", InElementTests);
+module("#in-element Test", InElementTests);
