@@ -961,11 +961,11 @@ module("[glimmer-runtime] Updating", hooks => {
     testStatefulHelper(assert, options);
   });
 
-  test(`helpers passed as arguments to {{#-in-element}} are not torn down when switching between blocks`, assert => {
+  test(`helpers passed as arguments to {{#in-element}} are not torn down when switching between blocks`, assert => {
     let externalElement = document.createElement('div');
 
     let options = {
-      template: '{{#-in-element (stateful-foo)}}Yes{{/-in-element}}',
+      template: '{{#in-element (stateful-foo)}}Yes{{/in-element}}',
       truthyValue: externalElement,
       falsyValue: null,
       element: externalElement
