@@ -510,7 +510,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     If the object's class is not defined on an Ember namespace, it will
     indicate it is a subclass of the registered superclass:
 
-   ```javascript
+    ```javascript
     const Student = Person.extend()
     let student = Student.create()
     student.toString() //=> "<(subclass of Person):ember1025>"
