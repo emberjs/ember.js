@@ -4,7 +4,7 @@ import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
 import OpcodeBuilder, { CompileTimeLookup, OpcodeBuilderConstructor } from "./opcode-builder";
-import { CompilableBlock, CompileTimeProgram } from './interfaces';
+import { CompilableBlock } from './interfaces';
 
 import Ops = WireFormat.Ops;
 
@@ -252,6 +252,7 @@ const EXPRESSIONS = new Compilers<WireFormat.TupleExpression>();
 
 import E = WireFormat.Expressions;
 import C = WireFormat.Core;
+import { Program } from "@glimmer/program";
 
 export function expr<Specifier>(expression: WireFormat.Expression, builder: OpcodeBuilder<Specifier>): void {
   if (Array.isArray(expression)) {
@@ -267,7 +268,7 @@ EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
 
   let specifier = lookup.lookupHelper(name, meta);
 
-  if (specifier) {
+  if (specifier !== null) {
     builder.compileArgs(null, null, true);
     builder.helper(specifier);
   } else if (asPartial) {
@@ -301,7 +302,7 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
 
   let specifier = lookup.lookupHelper(name, meta);
 
-  if (specifier) {
+  if (specifier !== null) {
     builder.compileArgs(params, hash, true);
     builder.helper(specifier);
   } else {
@@ -787,7 +788,7 @@ export function compileStatement<Specifier>(statement: WireFormat.Statement, bui
 
 export interface TemplateOptions<Specifier> {
   // already in compilation options
-  program: CompileTimeProgram;
+  program: Program<Specifier>;
   macros: Macros;
   Builder: OpcodeBuilderConstructor<Specifier>;
 

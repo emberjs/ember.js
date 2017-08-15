@@ -17,9 +17,10 @@ export interface Specifier {
 }
 
 export class SpecifierMap {
-  public helpers = new Map<number, Specifier>();
-  public modifiers = new Map<number, Specifier>();
-  public components = new Map<number, Specifier>();
+  public bySpecifier = new Map<Specifier, number>();
+  public byHandle = new Map<number, Specifier>();
+
+  public byTemplateHandle = new Map<number, Specifier>();
 }
 
 export class BundleCompiler {
@@ -43,7 +44,7 @@ export class BundleCompiler {
     let block = template.toJSON();
 
     let { program, macros, Builder } = this;
-    let lookup = new BundlingLookup(this.delegate);
+    let lookup = new BundlingLookup(this.delegate, this.specifiers);
 
     let options: CompileOptions<Specifier> = {
       program,
@@ -58,7 +59,7 @@ export class BundleCompiler {
 
     let handle = compilable.compile();
 
-    this.specifiers.components.set(handle as Recast<VMHandle, number>, specifier);
+    this.specifiers.byTemplateHandle.set(handle as Recast<VMHandle, number>, specifier);
 
     return { handle, symbolTable: compilable.symbolTable };
   }
@@ -99,8 +100,22 @@ export interface CompilerDelegate {
   resolvePartialSpecifier(partialName: string, referer: Specifier): Specifier;
 }
 
-class BundlingLookup implements CompileTimeLookup<VMHandle> {
-  constructor(private delegate: CompilerDelegate) {}
+class BundlingLookup implements CompileTimeLookup<number> {
+  constructor(private delegate: CompilerDelegate, private map: SpecifierMap) { }
+
+  private registerSpecifier(specifier: Specifier): number {
+    let { bySpecifier, byHandle } = this.map;
+
+    let handle = bySpecifier.get(specifier);
+
+    if (handle === undefined) {
+      handle = byHandle.size;
+      byHandle.set(handle, specifier);
+      bySpecifier.set(specifier, handle);
+    }
+
+    return handle;
+  }
 
   getCapabilities(meta: Specifier): ComponentCapabilities {
     return this.delegate.getComponentCapabilities(meta);
@@ -110,13 +125,22 @@ class BundlingLookup implements CompileTimeLookup<VMHandle> {
     throw new Error("Method not implemented.");
   }
 
-  lookupHelper(name: string, referer: Specifier): Option<Specifier> {
+  lookupHelper(name: string, referer: Specifier): Option<number> {
     if (this.delegate.hasHelperInScope(name, referer)) {
-      return this.delegate.resolveHelperSpecifier(name, referer);
+      let specifier =  this.delegate.resolveHelperSpecifier(name, referer);
+      return this.registerSpecifier(specifier);
     } else {
       return null;
     }
   }
+
+  lookupComponentSpec(name: string, referer: Specifier): Option<number> {
+    if (this.delegate.hasComponentInScope(name, referer)) {
+      let specifier =  this.delegate.resolveHelperSpecifier(name, referer);
+      return this.registerSpecifier(specifier);
+    } else {
+      return null;
+    }  }
 
   lookupModifier(name: string, referer: Specifier): Option<Specifier> {
     if (this.delegate.hasModifierInScope(name, referer)) {

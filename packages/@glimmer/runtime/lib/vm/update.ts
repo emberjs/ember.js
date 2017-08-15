@@ -23,7 +23,7 @@ import { DOMChanges } from '../dom/helper';
 import { Simple } from '@glimmer/interfaces';
 
 import VM, { CapturedStack, EvaluationStack } from './append';
-import { Constants, Program } from "@glimmer/program";
+import { RuntimeConstants as Constants, RuntimeProgram as Program } from "@glimmer/program";
 import { VMHandle } from "@glimmer/opcode-compiler";
 
 export default class UpdatingVM<Specifier = Opaque> {

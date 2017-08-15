@@ -5,13 +5,16 @@ import {
   AbstractRenderTest,
   TestDynamicScope,
   strip,
-  UserHelper
+  UserHelper,
+  HelperReference,
+  assertNodeTagName,
+  TestMacros
 } from "@glimmer/test-helpers";
 import { AbstractTestEnvironment } from "@glimmer/test-helpers/lib/environment";
-import { BundleCompiler, CompilerDelegate, Specifier } from "@glimmer/bundle-compiler";
-import { Macros, EagerOpcodeBuilder, CompileTimeLookup } from "@glimmer/opcode-compiler";
-import { Program, Constants } from "@glimmer/program";
-import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult } from "@glimmer/runtime";
+import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap } from "@glimmer/bundle-compiler";
+import { Macros, EagerOpcodeBuilder } from "@glimmer/opcode-compiler";
+import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
+import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, SVG_NAMESPACE } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { renderSync } from "@glimmer/test-helpers/lib/abstract-test-case";
 import { dict } from "@glimmer/util";
@@ -43,7 +46,9 @@ class BundledClientEnvironment extends AbstractTestEnvironment<Opaque> {
   }
 }
 
-class RuntimeResolver implements Resolver<Opaque> {
+class RuntimeResolver implements Resolver<Specifier> {
+  constructor(private map: SpecifierMap, private modules: Modules) {}
+
   lookupHelper(name: string, meta: Opaque): Option<number> {
     throw new Error("Method not implemented.");
   }
@@ -57,48 +62,54 @@ class RuntimeResolver implements Resolver<Opaque> {
     throw new Error("Method not implemented.");
   }
   resolve<U>(specifier: number): U {
-    throw new Error("Method not implemented.");
+    let module = this.map.byHandle.get(specifier)!;
+    return this.modules.get(module.module).get('default') as U;
   }
 }
 
-class BundlingLookup implements CompileTimeLookup<Specifier> {
-  public registry = dict<Dict<Opaque>>();
-
-  getCapabilities(handle: number): ComponentCapabilities {
-    throw new Error("Method not implemented.");
-  }
-  getLayout(handle: number): Option<CompilableTemplate<ProgramSymbolTable>> {
-    throw new Error("Method not implemented.");
+class Module {
+  constructor(private dict: Dict<Opaque>) {
+    Object.freeze(this.dict);
   }
 
-  lookupHelper(name: string, referer: Specifier): Option<number> {
-    if (referer.module === 'main') {
-      let module = this.registry[name];
+  has(key: string) {
+    return key in this.dict;
+  }
+
+  get(key: string): Opaque {
+    return this.dict[key];
+  }
+}
+
+class Modules {
+  private registry = dict<Module>();
+
+  has(name: string): boolean {
+    return name in this.registry;
+  }
+
+  get(name: string): Module {
+    return this.registry[name];
+  }
+
+  register(name: string, value: Dict<Opaque>) {
+    this.registry[name] = new Module(value);
+  }
+
+  resolve(name: string, referer: Specifier): Option<string> {
+    let local = referer.module.replace(/^((.*)\/)?([^\/]*)$/, `$1${name}`);
+    if (this.registry[local]) {
+      return local;
+    } else if (this.registry[name]) {
+      return name;
+    } else {
+      return null;
     }
-    throw new Error("Method not implemented.");
-  }
-
-  lookupModifier(name: string, referer: Specifier): Option<number> {
-    throw new Error("Method not implemented.");
-  }
-  lookupComponentSpec(name: string, referer: Specifier): Option<number> {
-    throw new Error("Method not implemented.");
-  }
-  lookupPartial(name: string, referer: Specifier): Option<number> {
-    throw new Error("Method not implemented.");
-  }
-
-  registerModule(name: string, value: Opaque): void {
-    let module = this.registry[name];
-
-    if (!module) module = this.registry[name] = dict();
-
-    module.default = value;
   }
 }
 
 class BundlingDelegate implements CompilerDelegate {
-  constructor(private lookup: BundlingLookup) {}
+  constructor(private modules: Modules) {}
 
   hasComponentInScope(componentName: string, referrer: Specifier): boolean {
     return false;
@@ -109,12 +120,16 @@ class BundlingDelegate implements CompilerDelegate {
   getComponentCapabilities(specifier: Specifier): ComponentCapabilities {
     throw new Error("Method not implemented.");
   }
+
   hasHelperInScope(helperName: string, referer: Specifier): boolean {
-    return !!this.lookup.lookupHelper(name, referer);
+    return this.modules.resolve(helperName, referer) !== null;
   }
+
   resolveHelperSpecifier(helperName: string, referer: Specifier): Specifier {
-    throw new Error("Method not implemented.");
+    let path = this.modules.resolve(helperName, referer);
+    return { module: path!, name: 'default' };
   }
+
   hasModifierInScope(modifierName: string, referer: Specifier): boolean {
     return false;
   }
@@ -131,7 +146,7 @@ class BundlingDelegate implements CompilerDelegate {
 
 class RenderingTest extends AbstractRenderTest {
   protected element: HTMLElement;
-  protected lookup = new BundlingLookup();
+  protected modules = new Modules();
 
   constructor() {
     super();
@@ -139,7 +154,9 @@ class RenderingTest extends AbstractRenderTest {
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    this.lookup.registerModule(name, helper);
+    let glimmerHelper: Helper = (_vm, args) => new HelperReference(helper, args);
+
+    this.modules.register(name, { default: glimmerHelper });
   }
 
   registerComponent(type: "Glimmer" | "Curly" | "Dynamic" | "Basic" | "Fragment", name: string, layout: string): void {
@@ -151,12 +168,11 @@ class RenderingTest extends AbstractRenderTest {
   }
 
   protected renderTemplate(template: string): RenderResult {
-    let macros = new Macros();
-    let resolver = new RuntimeResolver();
-    let program = new Program(new Constants(resolver));
-    let delegate = new BundlingDelegate(this.lookup);
-
+    let macros = new TestMacros();
+    let delegate = new BundlingDelegate(this.modules);
+    let program = new WriteOnlyProgram();
     let compiler = new BundleCompiler(macros, EagerOpcodeBuilder, delegate, program);
+
     let { symbolTable, handle } = compiler.compile(template, { module: 'main', name: 'default' });
 
     let { env } = this;
@@ -166,7 +182,11 @@ class RenderingTest extends AbstractRenderTest {
     let builder = elementBuilder({ mode: 'client', env, cursor });
     let self = new UpdatableReference(this.context);
     let dynamicScope = new TestDynamicScope();
-    let vm = LowLevelVM.initial(program, env, self, null, dynamicScope, builder, symbolTable, handle);
+    let resolver = new RuntimeResolver(compiler.getSpecifierMap(), this.modules);
+    let pool = program.constants.toPool();
+    let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), program.heap);
+
+    let vm = LowLevelVM.initial(runtimeProgram, env, self, null, dynamicScope, builder, symbolTable, handle);
     let iterator = new TemplateIterator(vm);
 
     return renderSync(env, iterator);
@@ -997,211 +1017,211 @@ class RenderingTest extends AbstractRenderTest {
     this.assertHTML('<div><span>tomdale</span> - Thomas Dale<span>wycats</span> - Yehuda Katz</div>');
   }
 
-  // @test "Simple helpers"() {
-  //   this.registerHelper('testing', ([id]) => id);
-  //   this.render('<div>{{testing title}}</div>', { title: 'hello' });
-  //   this.assertHTML('<div>hello</div>');
-  //   this.assertStableRerender();
-  // }
+  @test "Simple helpers"() {
+    this.registerHelper('testing', ([id]) => id);
+    this.render('<div>{{testing title}}</div>', { title: 'hello' });
+    this.assertHTML('<div>hello</div>');
+    this.assertStableRerender();
+  }
 
-  // @test "GH#13999 The compiler can handle simple helpers with inline null parameter"() {
-  //   let value;
-  //   this.registerHelper('say-hello', function (params) {
-  //     value = params[0];
-  //     return 'hello';
-  //   });
-  //   this.render('<div>{{say-hello null}}</div>');
-  //   this.assertHTML('<div>hello</div>');
-  //   this.assert.strictEqual(value, null, 'is null');
-  //   this.assertStableRerender();
-  // }
+  @test "GH#13999 The compiler can handle simple helpers with inline null parameter"() {
+    let value;
+    this.registerHelper('say-hello', function (params) {
+      value = params[0];
+      return 'hello';
+    });
+    this.render('<div>{{say-hello null}}</div>');
+    this.assertHTML('<div>hello</div>');
+    this.assert.strictEqual(value, null, 'is null');
+    this.assertStableRerender();
+  }
 
-  // @test "GH#13999 The compiler can handle simple helpers with inline string literal null parameter"() {
-  //   let value;
-  //   this.registerHelper('say-hello', function (params) {
-  //     value = params[0];
-  //     return 'hello';
-  //   });
+  @test "GH#13999 The compiler can handle simple helpers with inline string literal null parameter"() {
+    let value;
+    this.registerHelper('say-hello', function (params) {
+      value = params[0];
+      return 'hello';
+    });
 
-  //   this.render('<div>{{say-hello "null"}}</div>');
-  //   this.assertHTML('<div>hello</div>');
-  //   this.assert.strictEqual(value, 'null', 'is null string literal');
-  //   this.assertStableRerender();
-  // }
+    this.render('<div>{{say-hello "null"}}</div>');
+    this.assertHTML('<div>hello</div>');
+    this.assert.strictEqual(value, 'null', 'is null string literal');
+    this.assertStableRerender();
+  }
 
-  // @test "GH#13999 The compiler can handle simple helpers with inline undefined parameter"() {
-  //   let value: Opaque = 'PLACEHOLDER';
-  //   let length;
-  //   this.registerHelper('say-hello', function (params) {
-  //     length = params.length;
-  //     value = params[0];
-  //     return 'hello';
-  //   });
+  @test "GH#13999 The compiler can handle simple helpers with inline undefined parameter"() {
+    let value: Opaque = 'PLACEHOLDER';
+    let length;
+    this.registerHelper('say-hello', function (params) {
+      length = params.length;
+      value = params[0];
+      return 'hello';
+    });
 
-  //   this.render('<div>{{say-hello undefined}}</div>');
-  //   this.assertHTML('<div>hello</div>');
-  //   this.assert.strictEqual(length, 1);
-  //   this.assert.strictEqual(value, undefined, 'is undefined');
-  //   this.assertStableRerender();
-  // }
+    this.render('<div>{{say-hello undefined}}</div>');
+    this.assertHTML('<div>hello</div>');
+    this.assert.strictEqual(length, 1);
+    this.assert.strictEqual(value, undefined, 'is undefined');
+    this.assertStableRerender();
+  }
 
-  // @test "GH#13999 The compiler can handle simple helpers with positional parameter undefined string literal"() {
-  //   let value: Opaque = 'PLACEHOLDER';
-  //   let length;
-  //   this.registerHelper('say-hello', function (params) {
-  //     length = params.length;
-  //     value = params[0];
-  //     return 'hello';
-  //   });
+  @test "GH#13999 The compiler can handle simple helpers with positional parameter undefined string literal"() {
+    let value: Opaque = 'PLACEHOLDER';
+    let length;
+    this.registerHelper('say-hello', function (params) {
+      length = params.length;
+      value = params[0];
+      return 'hello';
+    });
 
-  //   this.render('<div>{{say-hello "undefined"}} undefined</div>');
-  //   this.assertHTML('<div>hello undefined</div>');
-  //   this.assert.strictEqual(length, 1);
-  //   this.assert.strictEqual(value, 'undefined', 'is undefined string literal');
-  //   this.assertStableRerender();
-  // }
+    this.render('<div>{{say-hello "undefined"}} undefined</div>');
+    this.assertHTML('<div>hello undefined</div>');
+    this.assert.strictEqual(length, 1);
+    this.assert.strictEqual(value, 'undefined', 'is undefined string literal');
+    this.assertStableRerender();
+  }
 
-  // @test "GH#13999 The compiler can handle components with undefined named arguments"() {
-  //   let value: Opaque = 'PLACEHOLDER';
-  //   this.registerHelper('say-hello', function (_, hash) {
-  //     value = hash['foo'];
-  //     return 'hello';
-  //   });
+  @test "GH#13999 The compiler can handle components with undefined named arguments"() {
+    let value: Opaque = 'PLACEHOLDER';
+    this.registerHelper('say-hello', function (_, hash) {
+      value = hash['foo'];
+      return 'hello';
+    });
 
-  //   this.render('<div>{{say-hello foo=undefined}}</div>');
-  //   this.assertHTML('<div>hello</div>');
-  //   this.assert.strictEqual(value, undefined, 'is undefined');
-  //   this.assertStableRerender();
-  // }
+    this.render('<div>{{say-hello foo=undefined}}</div>');
+    this.assertHTML('<div>hello</div>');
+    this.assert.strictEqual(value, undefined, 'is undefined');
+    this.assertStableRerender();
+  }
 
-  // @test "GH#13999 The compiler can handle components with undefined string literal named arguments"() {
-  //   let value: Opaque = 'PLACEHOLDER';
-  //   this.registerHelper('say-hello', function (_, hash) {
-  //     value = hash['foo'];
-  //     return 'hello';
-  //   });
+  @test "GH#13999 The compiler can handle components with undefined string literal named arguments"() {
+    let value: Opaque = 'PLACEHOLDER';
+    this.registerHelper('say-hello', function (_, hash) {
+      value = hash['foo'];
+      return 'hello';
+    });
 
-  //   this.render('<div>{{say-hello foo="undefined"}}</div>');
-  //   this.assertHTML('<div>hello</div>');
-  //   this.assert.strictEqual(value, 'undefined', 'is undefined string literal');
-  //   this.assertStableRerender();
-  // }
+    this.render('<div>{{say-hello foo="undefined"}}</div>');
+    this.assertHTML('<div>hello</div>');
+    this.assert.strictEqual(value, 'undefined', 'is undefined string literal');
+    this.assertStableRerender();
+  }
 
-  // @test "GH#13999 The compiler can handle components with null named arguments"() {
-  //   let value;
-  //   this.registerHelper('say-hello', function (_, hash) {
-  //     value = hash['foo'];
-  //     return 'hello';
-  //   });
+  @test "GH#13999 The compiler can handle components with null named arguments"() {
+    let value;
+    this.registerHelper('say-hello', function (_, hash) {
+      value = hash['foo'];
+      return 'hello';
+    });
 
-  //   this.render('<div>{{say-hello foo=null}}</div>');
-  //   this.assertHTML('<div>hello</div>');
-  //   this.assert.strictEqual(value, null, 'is null');
-  //   this.assertStableRerender();
-  // }
+    this.render('<div>{{say-hello foo=null}}</div>');
+    this.assertHTML('<div>hello</div>');
+    this.assert.strictEqual(value, null, 'is null');
+    this.assertStableRerender();
+  }
 
-  // @test "GH#13999 The compiler can handle components with null string literal named arguments"() {
-  //   let value;
-  //   this.registerHelper('say-hello', function (_, hash) {
-  //     value = hash['foo'];
-  //     return 'hello';
-  //   });
+  @test "GH#13999 The compiler can handle components with null string literal named arguments"() {
+    let value;
+    this.registerHelper('say-hello', function (_, hash) {
+      value = hash['foo'];
+      return 'hello';
+    });
 
-  //   this.render('<div>{{say-hello foo="null"}}</div>');
-  //   this.assertHTML('<div>hello</div>');
-  //   this.assert.strictEqual(value, 'null', 'is null string literal');
-  //   this.assertStableRerender();
-  // }
+    this.render('<div>{{say-hello foo="null"}}</div>');
+    this.assertHTML('<div>hello</div>');
+    this.assert.strictEqual(value, 'null', 'is null string literal');
+    this.assertStableRerender();
+  }
 
-  // @test "Null curly in attributes"() {
-  //   this.render('<div class="foo {{null}}">hello</div>');
-  //   this.assertHTML('<div class="foo ">hello</div>');
-  //   this.assertStableRerender();
-  // }
+  @test "Null curly in attributes"() {
+    this.render('<div class="foo {{null}}">hello</div>');
+    this.assertHTML('<div class="foo ">hello</div>');
+    this.assertStableRerender();
+  }
 
-  // @test "Null in primitive syntax"() {
-  //   this.render('{{#if null}}NOPE{{else}}YUP{{/if}}');
-  //   this.assertHTML('YUP');
-  //   this.assertStableRerender();
-  // }
+  @test "Null in primitive syntax"() {
+    this.render('{{#if null}}NOPE{{else}}YUP{{/if}}');
+    this.assertHTML('YUP');
+    this.assertStableRerender();
+  }
 
-  // @test "Sexpr helpers"() {
-  //   this.registerHelper('testing', function (params) {
-  //     return params[0] + "!";
-  //   });
+  @test "Sexpr helpers"() {
+    this.registerHelper('testing', function (params) {
+      return params[0] + "!";
+    });
 
-  //   this.render('<div>{{testing (testing "hello")}}</div>');
-  //   this.assertHTML('<div>hello!!</div>');
-  //   this.assertStableRerender();
-  // }
+    this.render('<div>{{testing (testing "hello")}}</div>');
+    this.assertHTML('<div>hello!!</div>');
+    this.assertStableRerender();
+  }
 
-  // @test "The compiler can handle multiple invocations of sexprs"() {
-  //   this.registerHelper('testing', function (params) {
-  //     return "" + params[0] + params[1];
-  //   });
+  @test "The compiler can handle multiple invocations of sexprs"() {
+    this.registerHelper('testing', function (params) {
+      return "" + params[0] + params[1];
+    });
 
-  //   this.render('<div>{{testing (testing "hello" foo) (testing (testing bar "lol") baz)}}</div>', { foo: "FOO", bar: "BAR", baz: "BAZ" });
-  //   this.assertHTML('<div>helloFOOBARlolBAZ</div>');
-  //   this.assertStableRerender();
-  // }
+    this.render('<div>{{testing (testing "hello" foo) (testing (testing bar "lol") baz)}}</div>', { foo: "FOO", bar: "BAR", baz: "BAZ" });
+    this.assertHTML('<div>helloFOOBARlolBAZ</div>');
+    this.assertStableRerender();
+  }
 
-  // @test "The compiler passes along the hash arguments"() {
-  //   this.registerHelper('testing', function (_, hash) {
-  //     return hash['first'] + '-' + hash['second'];
-  //   });
+  @test "The compiler passes along the hash arguments"() {
+    this.registerHelper('testing', function (_, hash) {
+      return hash['first'] + '-' + hash['second'];
+    });
 
-  //   this.render('<div>{{testing first="one" second="two"}}</div>');
-  //   this.assertHTML('<div>one-two</div>');
-  //   this.assertStableRerender();
-  // }
+    this.render('<div>{{testing first="one" second="two"}}</div>');
+    this.assertHTML('<div>one-two</div>');
+    this.assertStableRerender();
+  }
 
-  // @test "Attributes can be populated with helpers that generate a string"() {
-  //   this.registerHelper('testing', function (params) {
-  //     return params[0];
-  //   });
+  @test "Attributes can be populated with helpers that generate a string"() {
+    this.registerHelper('testing', function (params) {
+      return params[0];
+    });
 
-  //   this.render('<a href="{{testing url}}">linky</a>', { url: 'linky.html' });
-  //   this.assertHTML('<a href="linky.html">linky</a>');
-  //   this.assertStableRerender();
-  // }
+    this.render('<a href="{{testing url}}">linky</a>', { url: 'linky.html' });
+    this.assertHTML('<a href="linky.html">linky</a>');
+    this.assertStableRerender();
+  }
 
-  // @test "Attribute helpers take a hash"() {
-  //   this.registerHelper('testing', function (_, hash) {
-  //     return hash['path'];
-  //   });
+  @test "Attribute helpers take a hash"() {
+    this.registerHelper('testing', function (_, hash) {
+      return hash['path'];
+    });
 
-  //   this.render('<a href="{{testing path=url}}">linky</a>', { url: 'linky.html' });
-  //   this.assertHTML('<a href="linky.html">linky</a>');
-  //   this.assertStableRerender();
-  // }
+    this.render('<a href="{{testing path=url}}">linky</a>', { url: 'linky.html' });
+    this.assertHTML('<a href="linky.html">linky</a>');
+    this.assertStableRerender();
+  }
 
-  // @test "Attributes containing multiple helpers are treated like a block"() {
-  //   this.registerHelper('testing', function (params) {
-  //     return params[0];
-  //   });
+  @test "Attributes containing multiple helpers are treated like a block"() {
+    this.registerHelper('testing', function (params) {
+      return params[0];
+    });
 
-  //   this.render('<a href="http://{{foo}}/{{testing bar}}/{{testing "baz"}}">linky</a>', { foo: 'foo.com', bar: 'bar' });
-  //   this.assertHTML('<a href="http://foo.com/bar/baz">linky</a>');
-  //   this.assertStableRerender();
-  // }
+    this.render('<a href="http://{{foo}}/{{testing bar}}/{{testing "baz"}}">linky</a>', { foo: 'foo.com', bar: 'bar' });
+    this.assertHTML('<a href="http://foo.com/bar/baz">linky</a>');
+    this.assertStableRerender();
+  }
 
-  // @test "Elements inside a yielded block"() {
-  //   this.render('{{#identity}}<div id="test">123</div>{{/identity}}');
-  //   this.assertHTML('<div id="test">123</div>');
-  //   this.assertStableRerender();
-  // }
+  @test "Elements inside a yielded block"() {
+    this.render('{{#identity}}<div id="test">123</div>{{/identity}}');
+    this.assertHTML('<div id="test">123</div>');
+    this.assertStableRerender();
+  }
 
-  // @test "A simple block helper can return text"() {
-  //   this.render('{{#identity}}test{{else}}not shown{{/identity}}');
-  //   this.assertHTML('test');
-  //   this.assertStableRerender();
-  // }
+  @test "A simple block helper can return text"() {
+    this.render('{{#identity}}test{{else}}not shown{{/identity}}');
+    this.assertHTML('test');
+    this.assertStableRerender();
+  }
 
-  // @test "A block helper can have an else block"() {
-  //   this.render('{{#render-inverse}}Nope{{else}}<div id="test">123</div>{{/render-inverse}}');
-  //   this.assertHTML('<div id="test">123</div>');
-  //   this.assertStableRerender();
-  // }
+  @test "A block helper can have an else block"() {
+    this.render('{{#render-inverse}}Nope{{else}}<div id="test">123</div>{{/render-inverse}}');
+    this.assertHTML('<div id="test">123</div>');
+    this.assertStableRerender();
+  }
 }
 
 // module("[Bundle Compiler] Rehydration Tests", Rehydration);

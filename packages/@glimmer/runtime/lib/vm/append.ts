@@ -15,7 +15,7 @@ import {
 } from '../opcodes';
 
 import { ProgramSymbolTable, Opcode } from "@glimmer/interfaces";
-import { Constants, Heap, Program } from "@glimmer/program";
+import { Heap, RuntimeProgram as Program, RuntimeConstants } from "@glimmer/program";
 import { VMHandle as VMHandle } from "@glimmer/opcode-compiler";
 
 export interface PublicVM {
@@ -101,7 +101,7 @@ export default class VM<Specifier> implements PublicVM {
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
-  public constants: Constants<Specifier>;
+  public constants: RuntimeConstants<Specifier>;
   public heap: Heap;
 
   public stack = EvaluationStack.empty();
