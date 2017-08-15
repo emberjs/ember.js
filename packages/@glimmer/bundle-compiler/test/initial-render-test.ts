@@ -12,7 +12,7 @@ import {
 } from "@glimmer/test-helpers";
 import { AbstractTestEnvironment } from "@glimmer/test-helpers/lib/environment";
 import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap } from "@glimmer/bundle-compiler";
-import { Macros, EagerOpcodeBuilder } from "@glimmer/opcode-compiler";
+import { EagerOpcodeBuilder, ComponentCapabilities } from "@glimmer/opcode-compiler";
 import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
 import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, SVG_NAMESPACE } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
@@ -49,16 +49,16 @@ class BundledClientEnvironment extends AbstractTestEnvironment<Opaque> {
 class RuntimeResolver implements Resolver<Specifier> {
   constructor(private map: SpecifierMap, private modules: Modules) {}
 
-  lookupHelper(name: string, meta: Opaque): Option<number> {
+  lookupHelper(_name: string, _meta: Opaque): Option<number> {
     throw new Error("Method not implemented.");
   }
-  lookupModifier(name: string, meta: Opaque): Option<number> {
+  lookupModifier(_name: string, _meta: Opaque): Option<number> {
     throw new Error("Method not implemented.");
   }
-  lookupComponent(name: string, meta: Opaque): Option<number> {
+  lookupComponent(_name: string, _meta: Opaque): Option<number> {
     throw new Error("Method not implemented.");
   }
-  lookupPartial(name: string, meta: Opaque): Option<number> {
+  lookupPartial(_name: string, _meta: Opaque): Option<number> {
     throw new Error("Method not implemented.");
   }
   resolve<U>(specifier: number): U {
@@ -111,13 +111,13 @@ class Modules {
 class BundlingDelegate implements CompilerDelegate {
   constructor(private modules: Modules) {}
 
-  hasComponentInScope(componentName: string, referrer: Specifier): boolean {
+  hasComponentInScope(_componentName: string, _referrer: Specifier): boolean {
     return false;
   }
-  resolveComponentSpecifier(componentName: string, referrer: Specifier): Specifier {
+  resolveComponentSpecifier(_componentName: string, _referrer: Specifier): Specifier {
     throw new Error("Method not implemented.");
   }
-  getComponentCapabilities(specifier: Specifier): ComponentCapabilities {
+  getComponentCapabilities(_specifier: Specifier): ComponentCapabilities {
     throw new Error("Method not implemented.");
   }
 
@@ -130,16 +130,16 @@ class BundlingDelegate implements CompilerDelegate {
     return { module: path!, name: 'default' };
   }
 
-  hasModifierInScope(modifierName: string, referer: Specifier): boolean {
+  hasModifierInScope(_modifierName: string, _referer: Specifier): boolean {
     return false;
   }
-  resolveModifierSpecifier(modifierName: string, referer: Specifier): Specifier {
+  resolveModifierSpecifier(_modifierName: string, _referer: Specifier): Specifier {
     throw new Error("Method not implemented.");
   }
-  hasPartialInScope(partialName: string, referer: Specifier): boolean {
+  hasPartialInScope(_partialName: string, _referer: Specifier): boolean {
     return false;
   }
-  resolvePartialSpecifier(partialName: string, referer: Specifier): Specifier {
+  resolvePartialSpecifier(_partialName: string, _referer: Specifier): Specifier {
     throw new Error("Method not implemented.");
   }
 }
@@ -159,7 +159,7 @@ class RenderingTest extends AbstractRenderTest {
     this.modules.register(name, { default: glimmerHelper });
   }
 
-  registerComponent(type: "Glimmer" | "Curly" | "Dynamic" | "Basic" | "Fragment", name: string, layout: string): void {
+  registerComponent(_type: "Glimmer" | "Curly" | "Dynamic" | "Basic" | "Fragment", _name: string, _layout: string): void {
     throw new Error("Method not implemented.");
   }
 
