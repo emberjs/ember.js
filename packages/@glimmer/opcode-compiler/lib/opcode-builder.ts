@@ -777,7 +777,6 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
     this.pushFrame();
 
-    this.pushSymbolTable(layout.symbolTable);
     this.pushLayout(layout);
     this.resolveLayout();
     this.invokeStatic();
@@ -900,16 +899,25 @@ export class EagerOpcodeBuilder<Specifier, Layout extends AbstractTemplate<Progr
     let handle = block ? block.compile() as Recast<VMHandle, number> : null;
     this.primitive(handle);
   }
+
   resolveBlock(): void {
     return;
   }
+
   pushLayout(layout: Option<Layout>): void {
     throw new Error("Method not implemented.");
   }
+
   resolveLayout(): void {
-    throw new Error("Method not implemented.");
+    return;
   }
-  pushSymbolTable(block: Option<SymbolTable>): void {
-    throw new Error("Method not implemented.");
+
+  pushSymbolTable(table: Option<SymbolTable>): void {
+    if (table) {
+      let constant = this.constants.table(table);
+      this.primitive(constant);
+    } else {
+      this.primitive(null);
+    }
   }
 }

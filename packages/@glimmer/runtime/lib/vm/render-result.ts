@@ -4,12 +4,12 @@ import { DestroyableBounds, clear } from '../bounds';
 import UpdatingVM, { ExceptionHandler } from './update';
 import { UpdatingOpcode } from '../opcodes';
 import { Simple, Opaque } from '@glimmer/interfaces';
-import { Program } from "@glimmer/program";
+import { RuntimeProgram } from "@glimmer/program";
 
 export default class RenderResult implements DestroyableBounds, ExceptionHandler {
   constructor(
     public env: Environment,
-    private program: Program<Opaque>,
+    private program: RuntimeProgram<Opaque>,
     private updating: LinkedList<UpdatingOpcode>,
     private bounds: DestroyableBounds
   ) {}

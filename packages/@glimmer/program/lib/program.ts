@@ -1,7 +1,7 @@
 
 import { Recast } from "@glimmer/interfaces";
 import { DEBUG } from "@glimmer/local-debug-flags";
-import { Constants, WriteOnlyConstants } from './constants';
+import { Constants, WriteOnlyConstants, RuntimeConstants } from './constants';
 import { Opcode } from './opcode';
 import { VMHandle, CompileTimeProgram } from "@glimmer/opcode-compiler";
 
@@ -123,10 +123,23 @@ export class WriteOnlyProgram implements CompileTimeProgram {
   [key: number]: never;
 
   private _opcode: Opcode;
-  public heap: Heap;
 
-  constructor(public constants: WriteOnlyConstants) {
-    this.heap = new Heap();
+  constructor(public constants: WriteOnlyConstants = new WriteOnlyConstants(), public heap = new Heap()) {
+    this._opcode = new Opcode(this.heap);
+  }
+
+  opcode(offset: number): Opcode {
+    this._opcode.offset = offset;
+    return this._opcode;
+  }
+}
+
+export class RuntimeProgram<Specifier> {
+  [key: number]: never;
+
+  private _opcode: Opcode;
+
+  constructor(public constants: RuntimeConstants<Specifier>, public heap: Heap) {
     this._opcode = new Opcode(this.heap);
   }
 

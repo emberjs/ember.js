@@ -369,7 +369,7 @@ class StaticTaglessComponentManager extends BasicComponentManager {
 
     return resolver.compileTemplate(handle, name, (source, options) => {
       let template = createTemplate(source, {});
-      let compileOptions = { ...options, asPartial: false };
+      let compileOptions = { ...options, asPartial: false, referer: null };
       return new WrappedBuilder(compileOptions, template, capabilities);
     });
   }
@@ -554,7 +554,7 @@ class EmberishCurlyComponentManager extends GenericComponentManager implements W
 
     return resolver.compileTemplate(handle, layout.name, (source, options) => {
       let template = createTemplate(source);
-      return new WrappedBuilder({ ...options, asPartial: false }, template, CURLY_CAPABILITIES);
+      return new WrappedBuilder({ ...options, asPartial: false, referer: null }, template, CURLY_CAPABILITIES);
     });
   }
 
@@ -665,7 +665,7 @@ export class SimplePathReference<T> implements PathReference<T> {
 
 export type UserHelper = (args: ReadonlyArray<Opaque>, named: Dict<Opaque>) => any;
 
-class HelperReference implements PathReference<Opaque> {
+export class HelperReference implements PathReference<Opaque> {
   private helper: UserHelper;
   private args: CapturedArguments;
   public tag = VOLATILE_TAG;
@@ -867,7 +867,7 @@ export class TestResolver implements Resolver<TestSpecifier> {
   }
 }
 
-class TestMacros extends Macros {
+export class TestMacros extends Macros {
   constructor() {
     super();
 
@@ -888,7 +888,7 @@ class TestMacros extends Macros {
 
       let lookup = builder.lookup;
 
-      let specifier = lookup.lookupComponentSpec(name, builder.meta);
+      let specifier = lookup.lookupComponentSpec(name, {});
 
       if (specifier) {
         builder.component.static(specifier, [params, hashToArgs(hash), template, inverse]);
@@ -900,7 +900,7 @@ class TestMacros extends Macros {
 
     inlines.addMissing((name, params, hash, builder) => {
       let lookup = builder.lookup;
-      let specifier = lookup.lookupComponentSpec(name, builder.meta);
+      let specifier = lookup.lookupComponentSpec(name, {});
 
       if (specifier) {
         builder.component.static(specifier, [params!, hashToArgs(hash), null, null]);
