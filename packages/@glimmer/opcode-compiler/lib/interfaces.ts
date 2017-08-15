@@ -75,5 +75,5 @@ export interface ComponentBuilder {
 export interface ParsedLayout {
   id?: Option<string>;
   block: SerializedTemplateBlock;
-  meta: TemplateMeta;
+  meta: Opaque;
 }

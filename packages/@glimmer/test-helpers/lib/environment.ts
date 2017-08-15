@@ -912,12 +912,63 @@ class TestMacros extends Macros {
   }
 }
 
-export class TestEnvironment extends Environment {
-  public resolver = new TestResolver();
-  private program = new Program(new LazyConstants(this.resolver));
-  private uselessAnchor: HTMLAnchorElement;
+export abstract class AbstractTestEnvironment<Specifier> extends Environment {
   public compiledLayouts = dict<VMHandle>();
-  private lookup: LookupResolver<TestSpecifier>;
+
+  protected abstract program: Program<Specifier>;
+  protected abstract resolver: Resolver<Specifier>;
+
+  constructor(options: TestEnvironmentOptions) {
+    super({
+      appendOperations: options.appendOperations || new DOMTreeConstruction(options.document as Document || window.document),
+      updateOperations: new DOMChanges((options.document || window.document) as Document)
+    });
+  }
+
+  protocolForURL(url: string): string {
+    if (typeof window === 'undefined') {
+      throw new Error('Must implement protocolForURL outside of the browser');
+    }
+
+    let anchor = window.document.createElement('a');
+    anchor.href = url;
+    return anchor.protocol;
+  }
+
+  toConditionalReference(reference: Reference<any>): Reference<boolean> {
+    if (isConst(reference)) {
+      return PrimitiveReference.create(emberToBool(reference.value()));
+    }
+
+    return new EmberishConditionalReference(reference);
+  }
+
+  iterableFor(ref: Reference<Opaque>, keyPath: string): OpaqueIterable {
+    let keyFor: KeyFor<Opaque>;
+
+    if (!keyPath) {
+      throw new Error('Must specify a key for #each');
+    }
+
+    switch (keyPath) {
+      case '@index':
+        keyFor = (_, index: number) => String(index);
+        break;
+      case '@primitive':
+        keyFor = (item: Opaque) => String(item);
+        break;
+      default:
+        keyFor = (item: Opaque) => item && item[keyPath];
+        break;
+    }
+
+    return new Iterable(ref, keyFor);
+  }
+}
+
+export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
+  public resolver = new TestResolver();
+  protected program = new Program(new LazyConstants(this.resolver));
 
   public compileOptions: TemplateOptions<TestSpecifier> = {
     lookup: new LookupResolver(this.resolver),
@@ -927,57 +978,15 @@ export class TestEnvironment extends Environment {
   };
 
   constructor(options: TestEnvironmentOptions = {}) {
-    // let document = options.document || window.document;
-    // let appendOperations = options.appendOperations || new DOMTreeConstruction(document);
-    super({
-      appendOperations: options.appendOperations || new DOMTreeConstruction(options.document as Document || window.document),
-      updateOperations: new DOMChanges((options.document || window.document) as Document)
-    });
-
+    super(options);
     // recursive field, so "unsafely" set one half late (but before the resolver is actually used)
     this.resolver['options'] = this.compileOptions;
-    this.lookup = new LookupResolver(this.resolver);
-    let document = options.document || window.document;
-
-    this.uselessAnchor = document.createElement('a') as HTMLAnchorElement;
     this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
     this.registerInternalHelper("-get-dynamic-var", getDynamicVar);
     this.registerModifier("action", new InertModifierManager());
 
     this.registerInternalHelper("hash", (_vm: VM, args: Arguments) => args.capture().named);
-  }
-
-  protocolForURL(url: string): string {
-    this.uselessAnchor.href = url;
-    return this.uselessAnchor.protocol;
-  }
-
-  registerHelper(name: string, helper: UserHelper): GlimmerHelper {
-    let glimmerHelper = (_vm: VM, args: Arguments) => new HelperReference(helper, args);
-    this.resolver.register('helper', name, glimmerHelper);
-    return glimmerHelper;
-  }
-
-  registerInternalHelper(name: string, helper: GlimmerHelper): GlimmerHelper {
-    this.resolver.register('helper', name, helper);
-    return helper;
-  }
-
-  registerModifier(name: string, modifier: ModifierManager<any>): ModifierManager {
-    this.resolver.register('modifier', name, modifier);
-    return modifier;
-  }
-
-  registerPartial(name: string, source: string): PartialDefinition {
-    let definition = new PartialDefinition(name, this.compile(source, null));
-    this.resolver.register('partial', name, definition);
-    return definition;
-  }
-
-  private registerComponent(name: string, definition: GenericComponentDefinition<any>) {
-    this.resolver.register('component', name, { definition, manager: definition.manager });
-    return definition;
   }
 
   registerTemplate(name: string, source: string): { name: string, handle: number } {
@@ -1024,12 +1033,26 @@ export class TestEnvironment extends Environment {
     this.registerComponent(name, definition);
   }
 
-  toConditionalReference(reference: Reference<any>): Reference<boolean> {
-    if (isConst(reference)) {
-      return PrimitiveReference.create(emberToBool(reference.value()));
-    }
+  registerHelper(name: string, helper: UserHelper): GlimmerHelper {
+    let glimmerHelper = (_vm: VM, args: Arguments) => new HelperReference(helper, args);
+    this.resolver.register('helper', name, glimmerHelper);
+    return glimmerHelper;
+  }
 
-    return new EmberishConditionalReference(reference);
+  registerInternalHelper(name: string, helper: GlimmerHelper): GlimmerHelper {
+    this.resolver.register('helper', name, helper);
+    return helper;
+  }
+
+  registerModifier(name: string, modifier: ModifierManager<any>): ModifierManager {
+    this.resolver.register('modifier', name, modifier);
+    return modifier;
+  }
+
+  registerPartial(name: string, source: string): PartialDefinition {
+    let definition = new PartialDefinition(name, this.compile(source, null));
+    this.resolver.register('partial', name, definition);
+    return definition;
   }
 
   resolveHelper(helperName: string): Option<GlimmerHelper> {
@@ -1056,32 +1079,15 @@ export class TestEnvironment extends Environment {
     return handle === null ? null : this.resolver.resolve<ModifierManager>(handle);
   }
 
-  compile<TemplateMeta>(template: string, meta: TemplateMeta): Template<TemplateMeta> {
+  compile<TemplateMeta>(template: string, meta?: TemplateMeta): Template<TemplateMeta> {
     let wrapper = JSON.parse(precompile(template));
     let factory = templateFactory(wrapper);
-    return factory.create(this.compileOptions, meta);
+    return factory.create(this.compileOptions, (meta || {}) as any as TemplateMeta);
   }
 
-  iterableFor(ref: Reference<Opaque>, keyPath: string): OpaqueIterable {
-    let keyFor: KeyFor<Opaque>;
-
-    if (!keyPath) {
-      throw new Error('Must specify a key for #each');
-    }
-
-    switch (keyPath) {
-      case '@index':
-        keyFor = (_, index: number) => String(index);
-        break;
-      case '@primitive':
-        keyFor = (item: Opaque) => String(item);
-        break;
-      default:
-        keyFor = (item: Opaque) => item && item[keyPath];
-        break;
-    }
-
-    return new Iterable(ref, keyFor);
+  private registerComponent(name: string, definition: GenericComponentDefinition<any>) {
+    this.resolver.register('component', name, { definition, manager: definition.manager });
+    return definition;
   }
 }
 

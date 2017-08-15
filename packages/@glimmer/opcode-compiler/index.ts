@@ -11,6 +11,7 @@ export {
   AbstractTemplate,
   CompileTimeLookup,
   LazyOpcodeBuilder,
+  EagerOpcodeBuilder,
   OpcodeBuilder,
   OpcodeBuilderConstructor
 } from './lib/opcode-builder';

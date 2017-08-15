@@ -16,9 +16,9 @@ export default class CompilableTemplate<S extends SymbolTable, Specifier> implem
   static topLevel<Specifier>(block: SerializedTemplateBlock, options: CompileOptions<Specifier>): ICompilableTemplate<ProgramSymbolTable> {
     return new CompilableTemplate<ProgramSymbolTable, Specifier>(
       block.statements,
-      { block, meta: {} },
+      { block, meta: options.referer },
       options,
-      { meta: {}, hasEval: block.hasEval, symbols: block.symbols }
+      { meta: options.referer, hasEval: block.hasEval, symbols: block.symbols }
     );
   }
 

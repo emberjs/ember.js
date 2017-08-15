@@ -1,4 +1,4 @@
-import { Opaque, Option, ProgramSymbolTable, SymbolTable } from '@glimmer/interfaces';
+import { Opaque, Option, ProgramSymbolTable, SymbolTable, Recast, BlockSymbolTable } from '@glimmer/interfaces';
 import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, typePos, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
@@ -75,7 +75,7 @@ export interface CompileTimeLookup<Specifier> {
 export interface OpcodeBuilderConstructor<Specifier> {
   new(program: CompileTimeProgram,
       lookup: CompileTimeLookup<Specifier>,
-      meta: TemplateMeta,
+      meta: Opaque,
       macros: Macros,
       containingLayout: ParsedLayout,
       asPartial: boolean,
@@ -93,7 +93,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
   constructor(
     public program: CompileTimeProgram,
     public lookup: CompileTimeLookup<Specifier>,
-    public meta: TemplateMeta,
+    public meta: Opaque,
     public macros: Macros,
     public containingLayout: ParsedLayout,
     public asPartial: boolean,
@@ -175,7 +175,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
     this.push(Op.PushComponentSpec, this.constants.handle(handle));
   }
 
-  pushDynamicComponentManager(meta: TemplateMeta) {
+  pushDynamicComponentManager(meta: Opaque) {
     this.push(Op.PushDynamicComponentManager, this.constants.serializable(meta));
   }
 
@@ -895,5 +895,21 @@ export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, Compi
   }
 }
 
-// export class EagerOpcodeBuilder extends OpcodeBuilder {
-// }
+export class EagerOpcodeBuilder<Specifier, Layout extends AbstractTemplate<ProgramSymbolTable> = AbstractTemplate<ProgramSymbolTable>> extends OpcodeBuilder<Specifier, Layout> {
+  pushBlock(block: Option<ICompilableTemplate<BlockSymbolTable>>): void {
+    let handle = block ? block.compile() as Recast<VMHandle, number> : null;
+    this.primitive(handle);
+  }
+  resolveBlock(): void {
+    return;
+  }
+  pushLayout(layout: Option<Layout>): void {
+    throw new Error("Method not implemented.");
+  }
+  resolveLayout(): void {
+    throw new Error("Method not implemented.");
+  }
+  pushSymbolTable(block: Option<SymbolTable>): void {
+    throw new Error("Method not implemented.");
+  }
+}
