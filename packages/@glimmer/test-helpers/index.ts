@@ -26,6 +26,7 @@ export {
   TestDynamicScope,
   TestSpecifier,
   LookupType,
+  UserHelper,
   equalsElement,
   inspectHooks,
   regex,

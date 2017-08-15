@@ -1,11 +1,11 @@
-import { RenderTests, TestEnvironment } from "..";
+import { RenderTests } from "../lib/abstract-test-case";
 
 QUnit.module("Render Tests: I-N-U-R");
 
 QUnit.test("Can set properties", assert => {
   new class extends RenderTests {
     constructor() {
-      super(new TestEnvironment());
+      super();
       this.setProperties({ foo: "bar" });
       assert.equal(this.context.foo, "bar");
     }
@@ -20,7 +20,7 @@ QUnit.test("Can take basic snapshots", assert => {
   new class extends RenderTests {
     element = div;
     constructor() {
-      super(new TestEnvironment());
+      super();
       let snapShot = this.takeSnapshot();
       assert.deepEqual(snapShot, [text, "up"]);
     }
@@ -37,7 +37,7 @@ QUnit.test("Can take nested snapshots", assert => {
   new class extends RenderTests {
     element = div;
     constructor() {
-      super(new TestEnvironment());
+      super();
       let snapShot = this.takeSnapshot();
       assert.deepEqual(snapShot, [p, "down", text, "up", "up"]);
     }
@@ -56,7 +56,7 @@ QUnit.test("Can take nested snapshots of serialized blocks", assert => {
   new class extends RenderTests {
     element = div;
     constructor() {
-      super(new TestEnvironment());
+      super();
       let snapShot = this.takeSnapshot();
       assert.deepEqual(snapShot, [open, text, close, "up"]);
     }

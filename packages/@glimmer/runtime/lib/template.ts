@@ -166,7 +166,7 @@ export function compilable(layout: ParsedLayout, options: TemplateOptions<Opaque
   return new CompilableTemplate(block.statements, layout, compileOptions, { meta, hasEval, symbols });
 }
 
-function elementBuilder({ mode, env, cursor }: Pick<RenderLayoutOptions, 'mode' | 'env' | 'cursor'>) {
+export function elementBuilder({ mode, env, cursor }: Pick<RenderLayoutOptions, 'mode' | 'env' | 'cursor'>) {
   switch (mode) {
     case 'client': return NewElementBuilder.forInitialRender(env, cursor);
     case 'rehydrate': return RehydrateBuilder.forInitialRender(env, cursor);

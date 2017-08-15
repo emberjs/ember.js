@@ -797,4 +797,5 @@ export interface TemplateOptions<Specifier> {
 
 export interface CompileOptions<Specifier> extends TemplateOptions<Specifier> {
   asPartial: boolean;
+  referer: Specifier;
 }

@@ -20,6 +20,7 @@ import * as SimpleDOM from "simple-dom";
 import { NodeDOMTreeConstruction } from "@glimmer/node";
 import { expect } from "@glimmer/util";
 import { UpdatableReference } from "@glimmer/object-reference";
+import { UserHelper } from "@glimmer/test-helpers/lib/environment";
 
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
@@ -1084,37 +1085,49 @@ class Rehydration extends RenderingTest {
   public serialized: string;
   public doc: any;
 
-  setupServer(template: string = this.template) {
-    let doc = this.doc = new SimpleDOM.Document();
-    let env = new TestEnvironment({
+  protected env: never;
+  protected clientEnv: TestEnvironment;
+  protected serverEnv: TestEnvironment;
+
+  constructor() {
+    super();
+    this.clientEnv = new TestEnvironment();
+
+    let doc = new SimpleDOM.Document();
+
+    this.serverEnv = new TestEnvironment({
       document: doc,
       appendOperations: new NodeDOMTreeConstruction(doc)
     });
+  }
 
-    this.setup({ template, env });
+  registerHelper(name: string, helper: UserHelper): void {
+    this.clientEnv.registerHelper(name, helper);
+    this.serverEnv.registerHelper(name, helper);
+  }
+
+  setupServer(template: string = this.template) {
+    this.setup({ template });
   }
 
   setupClient(template: string = this.template) {
-    let env = new TestEnvironment();
-    this.doc = document;
-    let div = this.doc.createElement("div");
+    let div = document.createElement("div");
 
     expect(this.serialized, "Should have serialized HTML from `this.renderServerSide()`");
 
     div.innerHTML = this.serialized;
     this.element = div;
-    this.setup({ template, env });
+    this.setup({ template });
   }
 
-  setup({ template, context, env }: { template: string; context?: Dict<Opaque>; env?: TestEnvironment }) {
-    if (env) this.env = env;
+  setup({ template, context }: { template: string; context?: Dict<Opaque>; env?: TestEnvironment }) {
     this.template = template;
     if (context) this.setProperties(context);
   }
 
   assertServerOutput(..._expected: Content[]) {
     let serialized = this.serialize();
-    equalTokens(serialized, content(['<main>', OPEN, ..._expected, CLOSE, '</main>']));
+    equalTokens(serialized, content([OPEN, ..._expected, CLOSE]));
     this.serialized = serialized;
   }
 
@@ -1123,19 +1136,17 @@ class Rehydration extends RenderingTest {
       this.context = context;
     }
     this.setupServer();
-    this.populateHelpers();
-    this.element = this.doc.createElement("main") as HTMLDivElement;
+    let env = this.serverEnv;
+    this.element = env.getAppendOperations().createElement("div") as HTMLDivElement;
     let template = expect(this.template, "Must set up a template before calling renderServerSide");
     // Emulate server-side render
     renderTemplate(template, {
-      env: this.env,
+      env,
       self: new UpdatableReference(this.context),
       cursor: { element: this.element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
       mode: "serialize"
     });
-
-    this.doc.appendChild(this.element);
 
     this.takeSnapshot();
     this.serialized = this.serialize();
@@ -1143,7 +1154,7 @@ class Rehydration extends RenderingTest {
 
   serialize() {
     let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
-    let serialized = serializer.serializeChildren(this.doc);
+    let serialized = serializer.serializeChildren(this.element);
     return serialized;
   }
 
@@ -1152,12 +1163,13 @@ class Rehydration extends RenderingTest {
       this.context = context;
     }
     this.setupClient();
-    this.populateHelpers();
-    this.element = this.doc.createElement("div") as HTMLDivElement;
+    // this.populateHelpers();
+    let env = this.clientEnv;
+    this.element = env.getAppendOperations().createElement("div") as HTMLDivElement;
     let template = expect(this.template, "Must set up a template before calling renderClientSide");
     // Client-side rehydration
     this.renderResult = renderTemplate(template, {
-      env: this.env,
+      env,
       self: new UpdatableReference(this.context),
       cursor: { element: this.element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
@@ -1225,18 +1237,20 @@ class Rehydration extends RenderingTest {
   @test "Node curlies"() {
     this.setupServer('<div>{{node}}</div>');
 
-    let node = this.env.getAppendOperations().createTextNode('hello');
+    let env = this.serverEnv;
+    let node = env.getAppendOperations().createTextNode('hello');
     this.renderServerSide({ node });
     this.assertServerOutput('<div>hello</div>');
 
     this.setupClient();
 
-    let clientNode = this.env.getDOM().createTextNode('hello');
+    env = this.clientEnv;
+    let clientNode = env.getDOM().createTextNode('hello');
     this.renderClientSide({ node: clientNode });
     this.assertHTML('<div>hello</div>');
     this.assertStableRerender();
 
-    let clientNode2 = this.env.getDOM().createTextNode('goodbye');
+    let clientNode2 = env.getDOM().createTextNode('goodbye');
     this.rerender({ node: clientNode2 });
     this.assertHTML('<div>goodbye</div>');
     this.assertStableNodes({ except: clientNode as Text });

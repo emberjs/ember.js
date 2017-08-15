@@ -1,6 +1,6 @@
 import './lib/bootstrap';
 
-export { default as templateFactory, ScannableTemplate, TemplateFactory, Template, TemplateIterator, RenderLayoutOptions } from './lib/template';
+export { default as templateFactory, ScannableTemplate, TemplateFactory, Template, TemplateIterator, RenderLayoutOptions, elementBuilder } from './lib/template';
 
 export { NULL_REFERENCE, UNDEFINED_REFERENCE, PrimitiveReference, ConditionalReference } from './lib/references';
 
@@ -20,7 +20,7 @@ export {
   TopLevelSyntax
 } from './lib/syntax/interfaces';
 
-export { PublicVM as VM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
+export { PublicVM as VM, VM as LowLevelVM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
 
 export {
   SimpleDynamicAttribute,
