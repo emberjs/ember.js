@@ -1,5 +1,5 @@
 import { Unique, Opaque, SymbolTable, Option, BlockSymbolTable, Opcode } from "@glimmer/interfaces";
-import { Core, SerializedTemplateBlock, TemplateMeta } from "@glimmer/wire-format";
+import { Core, SerializedTemplateBlock } from "@glimmer/wire-format";
 import { Macros } from './syntax';
 
 export type VMHandle = Unique<"Handle">;
@@ -7,7 +7,7 @@ export type VMHandle = Unique<"Handle">;
 export interface CompileTimeHeap {
   push(name: /* TODO: Op */ number, op1?: number, op2?: number, op3?: number): void;
   malloc(): VMHandle;
-  finishMalloc(handle: VMHandle): void;
+  finishMalloc(handle: VMHandle, scopeSize: number): void;
 
   // for debugging
   getaddr(handle: VMHandle): number;
@@ -72,8 +72,8 @@ export interface ComponentBuilder {
   static(definition: number, args: ComponentArgs): void;
 }
 
-export interface ParsedLayout {
+export interface ParsedLayout<Specifier = Opaque> {
   id?: Option<string>;
   block: SerializedTemplateBlock;
-  meta: Opaque;
+  referer: Specifier;
 }

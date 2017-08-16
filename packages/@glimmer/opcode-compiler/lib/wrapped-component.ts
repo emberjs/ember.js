@@ -7,7 +7,6 @@ import {
 } from '@glimmer/opcode-compiler';
 import { Register } from '@glimmer/vm';
 import { ProgramSymbolTable, BlockSymbolTable } from '@glimmer/interfaces';
-import { TemplateMeta } from '@glimmer/wire-format';
 
 import {
   VMHandle,
@@ -24,15 +23,14 @@ import { EMPTY_ARRAY } from "@glimmer/util";
 
 export class WrappedBuilder<Specifier> implements ICompilableTemplate<ProgramSymbolTable> {
   public symbolTable: ProgramSymbolTable;
-  private meta: TemplateMeta;
+  private referer: Specifier;
 
-  constructor(public options: CompileOptions<Specifier>, private layout: ParsedLayout, private capabilities: ComponentCapabilities) {
+  constructor(public options: CompileOptions<Specifier>, private layout: ParsedLayout<Specifier>, private capabilities: ComponentCapabilities) {
     let { block } = layout;
-    this.meta = layout.meta;
-    let meta = this.meta = { templateMeta: layout.meta, symbols: block.symbols, asPartial: false };
+    let referer = this.referer = layout.referer;
 
     this.symbolTable = {
-      meta,
+      referer,
       hasEval: block.hasEval,
       symbols: block.symbols.concat([ATTRS_BLOCK])
     };
@@ -67,11 +65,11 @@ export class WrappedBuilder<Specifier> implements ICompilableTemplate<ProgramSym
     //        DidRenderLayout
     //        Exit
 
-    let { options, layout, meta } = this;
+    let { options, layout, referer } = this;
     let { program, lookup, macros, asPartial } = options;
     let { Builder } = options;
 
-    let b = new Builder(program, lookup, meta, macros, layout, asPartial, options.Builder);
+    let b = new Builder(program, lookup, referer, macros, layout, asPartial);
 
     b.startLabels();
 
@@ -122,9 +120,9 @@ export class WrappedBuilder<Specifier> implements ICompilableTemplate<ProgramSym
 }
 
 function blockFor<Specifier>(layout: ParsedLayout, options: CompileOptions<Specifier>): CompilableTemplate<BlockSymbolTable, Specifier> {
-  let { block, meta } = layout;
+  let { block, referer } = layout;
 
-  return new CompilableTemplate(block.statements, layout, options, { meta, parameters: EMPTY_ARRAY });
+  return new CompilableTemplate(block.statements, layout, options, { referer, parameters: EMPTY_ARRAY });
 }
 
 export class ComponentBuilder<Specifier> implements IComponentBuilder {

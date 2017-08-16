@@ -2,7 +2,7 @@ import { Opaque, Option, ProgramSymbolTable, SymbolTable, Recast, BlockSymbolTab
 import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, typePos, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
-import { TemplateMeta, SerializedInlineBlock } from "@glimmer/wire-format";
+import { SerializedInlineBlock } from "@glimmer/wire-format";
 
 import {
   VMHandle as VMHandle,
@@ -72,14 +72,13 @@ export interface CompileTimeLookup<Specifier> {
   lookupPartial(name: string, referer: Specifier): Option<number>;
 }
 
-export interface OpcodeBuilderConstructor<Specifier> {
-  new(program: CompileTimeProgram,
+export interface OpcodeBuilderConstructor {
+  new<Specifier>(program: CompileTimeProgram,
       lookup: CompileTimeLookup<Specifier>,
       meta: Opaque,
       macros: Macros,
       containingLayout: ParsedLayout,
-      asPartial: boolean,
-      Builder: OpcodeBuilderConstructor<Specifier>): OpcodeBuilder<Specifier>;
+      asPartial: boolean): OpcodeBuilder<Specifier>;
 }
 
 export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<ProgramSymbolTable> = AbstractTemplate<ProgramSymbolTable>> {
@@ -93,11 +92,10 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
   constructor(
     public program: CompileTimeProgram,
     public lookup: CompileTimeLookup<Specifier>,
-    public meta: Opaque,
+    public referer: Specifier,
     public macros: Macros,
     public containingLayout: ParsedLayout,
-    public asPartial: boolean,
-    public Builder: OpcodeBuilderConstructor<Specifier>
+    public asPartial: boolean
   ) {
     this.constants = program.constants;
   }
@@ -138,7 +136,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
       heap.push(buffer[i]);
     }
 
-    heap.finishMalloc(handle);
+    heap.finishMalloc(handle, this.containingLayout.block.symbols.length);
 
     return handle;
   }
@@ -175,8 +173,8 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
     this.push(Op.PushComponentSpec, this.constants.handle(handle));
   }
 
-  pushDynamicComponentManager(meta: Opaque) {
-    this.push(Op.PushDynamicComponentManager, this.constants.serializable(meta));
+  pushDynamicComponentManager(referer: Specifier) {
+    this.push(Op.PushDynamicComponentManager, this.constants.serializable(referer));
   }
 
   prepareArgs(state: Register) {
@@ -230,8 +228,8 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
   // partial
 
-  invokePartial(meta: TemplateMeta, symbols: string[], evalInfo: number[]) {
-    let _meta = this.constants.serializable(meta);
+  invokePartial(referer: Specifier, symbols: string[], evalInfo: number[]) {
+    let _meta = this.constants.serializable(referer);
     let _symbols = this.constants.stringArray(symbols);
     let _evalInfo = this.constants.array(evalInfo);
 
@@ -542,8 +540,17 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
   inlineBlock(block: SerializedInlineBlock): CompilableBlock {
     let { parameters, statements } = block;
-    let symbolTable = { parameters, meta: this.containingLayout.meta };
-    return new CompilableTemplate(statements, this.containingLayout, this, symbolTable);
+    let symbolTable = { parameters, referer: this.containingLayout.referer };
+    let options = {
+      program: this.program,
+      macros: this.macros,
+      Builder: this.constructor as OpcodeBuilderConstructor,
+      lookup: this.lookup,
+      asPartial: this.asPartial,
+      referer: this.referer
+    };
+
+    return new CompilableTemplate(statements, this.containingLayout, options, symbolTable);
   }
 
   evalSymbols(): Option<string[]> {
@@ -621,7 +628,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
     this.jumpUnless('ELSE');
 
-    this.pushDynamicComponentManager(this.meta);
+    this.pushDynamicComponentManager(this.referer);
     this.invokeComponent(null, null, null, false, null, null);
 
     this.exit();
@@ -805,7 +812,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
     this.jumpUnless('ELSE');
 
-    this.pushDynamicComponentManager(this.meta);
+    this.pushDynamicComponentManager(this.referer);
     this.invokeComponent(null, params, hash, synthetic, block, inverse);
 
     this.label('ELSE');
@@ -823,11 +830,11 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
   }
 
   curryComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean) {
-    let meta = this.meta.templateMeta;
+    let referer = this.referer;
 
     expr(definition, this);
     this.compileArgs(params, hash, synthetic);
-    this.push(Op.CurryComponent, this.constants.serializable(meta));
+    this.push(Op.CurryComponent, this.constants.serializable(referer));
   }
 
   abstract pushBlock(block: Option<CompilableBlock>): void;
@@ -904,7 +911,7 @@ export class EagerOpcodeBuilder<Specifier, Layout extends AbstractTemplate<Progr
     return;
   }
 
-  pushLayout(layout: Option<Layout>): void {
+  pushLayout(): void {
     throw new Error("Method not implemented.");
   }
 

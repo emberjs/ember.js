@@ -12,6 +12,11 @@ enum TableSlotState {
   Pointer
 }
 
+const ENTRY_SIZE = 4;
+const SIZE_OFFSET = 1;
+const SCOPESIZE_OFFSET = 2;
+const STATE_OFFSET = 3;
+
 export class Heap {
   private heap: number[] = [];
   private offset = 0;
@@ -22,6 +27,7 @@ export class Heap {
    *
    * - pointer into heap
    * - size
+   * - scope size
    * - freed (0 or 1)
    */
   private table: number[] = [];
@@ -39,23 +45,24 @@ export class Heap {
   }
 
   reserve(): VMHandle {
-    this.table.push(0, 0, 0);
+    this.table.push(0, 0, 0, 0);
     let handle = this.handle;
-    this.handle += 3;
+    this.handle += ENTRY_SIZE;
     return handle as Recast<number, VMHandle>;
   }
 
   malloc(): VMHandle {
-    this.table.push(this.offset, 0, 0);
+    this.table.push(this.offset, 0, 0, 0);
     let handle = this.handle;
-    this.handle += 3;
+    this.handle += ENTRY_SIZE;
     return handle as Recast<number, VMHandle>;
   }
 
-  finishMalloc(handle: VMHandle): void {
+  finishMalloc(handle: VMHandle, scopeSize: number): void {
     let start = this.table[handle as Recast<VMHandle, number>];
     let finish = this.offset;
-    this.table[(handle as Recast<VMHandle, number>) + 1] = finish - start;
+    this.table[(handle as Recast<VMHandle, number>) + SIZE_OFFSET] = finish - start;
+    this.table[(handle as Recast<VMHandle, number>) + SCOPESIZE_OFFSET] = scopeSize;
   }
 
   size(): number {
@@ -70,39 +77,43 @@ export class Heap {
   }
 
   gethandle(address: number): VMHandle {
-    this.table.push(address, 0, TableSlotState.Pointer);
+    this.table.push(address, 0, 0, TableSlotState.Pointer);
     let handle = this.handle;
-    this.handle += 3;
+    this.handle += ENTRY_SIZE;
     return handle as Recast<number, VMHandle>;
   }
 
   sizeof(handle: VMHandle): number {
     if (DEBUG) {
-      return this.table[(handle as Recast<VMHandle, number>) + 1];
+      return this.table[(handle as Recast<VMHandle, number>) + SIZE_OFFSET];
     }
     return -1;
   }
 
+  scopesizeof(handle: VMHandle): number {
+    return this.table[(handle as Recast<VMHandle, number>) + SCOPESIZE_OFFSET];
+  }
+
   free(handle: VMHandle): void {
-    this.table[(handle as Recast<VMHandle, number>) + 2] = 1;
+    this.table[(handle as Recast<VMHandle, number>) + STATE_OFFSET] = 1;
   }
 
   compact(): void {
     let compactedSize = 0;
     let { table, table: { length }, heap } = this;
 
-    for (let i=0; i<length; i+=3) {
+    for (let i=0; i<length; i+=ENTRY_SIZE) {
       let offset = table[i];
-      let size = table[i + 1];
-      let state = table[i + 2];
+      let size = table[i + SIZE_OFFSET];
+      let state = table[i + STATE_OFFSET];
 
       if (state === TableSlotState.Purged) {
         continue;
       } else if (state === TableSlotState.Freed) {
-        // transition to "already freed"
+        // transition to "already freed" aka "purged"
         // a good improvement would be to reuse
         // these slots
-        table[i + 2] = 2;
+        table[i + STATE_OFFSET] = TableSlotState.Purged;
         compactedSize += size;
       } else if (state === TableSlotState.Allocated) {
         for (let j=offset; j<=i+size; j++) {

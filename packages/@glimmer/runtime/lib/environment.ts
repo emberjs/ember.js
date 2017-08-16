@@ -226,7 +226,7 @@ export interface CompilationOptions<Specifier, R extends Resolver<Specifier>> {
   resolver: R;
   program: Program<Specifier>;
   macros: Macros;
-  Builder: OpcodeBuilderConstructor<Specifier>;
+  Builder: OpcodeBuilderConstructor;
 }
 
 export abstract class Environment {

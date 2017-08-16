@@ -35,18 +35,6 @@ export {
   classes
 } from './lib/environment';
 
-export {
-  VersionedObject,
-  SimpleRootReference,
-  AbstractRenderTest,
-  RenderTests,
-  OPEN,
-  CLOSE,
-  SEP,
-  EMPTY,
-  module,
-  test,
-  Content,
-  renderTemplate,
-  content
-} from './lib/abstract-test-case';
+export * from './lib/abstract-test-case';
+
+export * from './lib/suites/initial-render';

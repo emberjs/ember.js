@@ -2,14 +2,17 @@ import {
   stripTight,
   equalsElement,
   EmberishCurlyComponent,
-  RenderTests,
+  AbstractRenderTest,
   module,
-  test
+  test,
+  TestEnvironment
  } from "@glimmer/test-helpers";
 
 import { setProperty as set } from '@glimmer/object-reference';
 
-class InElementTests extends RenderTests {
+class InElementTests extends AbstractRenderTest {
+  protected env = new TestEnvironment();
+
   @test "Renders curlies into external element"() {
     let externalElement = document.createElement("div");
     this.render("{{#in-element externalElement}}[{{foo}}]{{/in-element}}", { externalElement, foo: "Yippie!" });
@@ -404,7 +407,7 @@ class InElementTests extends RenderTests {
         destroyed++;
       }
     });
-    this.env.registerEmberishGlimmerComponent("DestroyMe", DestroyMeComponent as any, "destroy me!");
+    this.registerComponent('Glimmer', 'DestroyMe', 'destroy me!', DestroyMeComponent);
     let externalElement = document.createElement("div");
 
     this.render(

@@ -69,7 +69,7 @@ QUnit.test("meta is accessible from factory", assert => {
 QUnit.test("meta is accessible from template", assert => {
   let factory = templateFactory(serializedTemplate);
   let template = factory.create(env.compileOptions);
-  assert.deepEqual(template.meta, {
+  assert.deepEqual(template.referer, {
     version: 12,
     lang: 'es',
     moduleName: "template/module/name"
@@ -81,8 +81,8 @@ QUnit.test("can inject per environment things into meta", assert => {
   let factory = templateFactory<TestMeta, OwnerMeta>(serializedTemplate);
 
   let template = factory.create(env.compileOptions, { owner });
-  assert.strictEqual(template.meta.owner, owner, 'is owner');
-  assert.deepEqual(template.meta, {
+  assert.strictEqual(template.referer.owner, owner, 'is owner');
+  assert.deepEqual(template.referer, {
     version: 12,
     lang: 'es',
     moduleName: "template/module/name",
