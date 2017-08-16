@@ -34,7 +34,10 @@ import { DEBUG } from 'ember-env-flags';
   And the following application code:
 
   ```app/controllers/application.js
-  export default Ember.Controller.extend({
+  import Controller from '@ember/controller';
+  import { computed } from '@ember/object';
+
+  export default Controller.extend({
     infographicComponentName: computed('isMarketOpen', {
       get() {
         if (this.get('isMarketOpen')) {
@@ -72,7 +75,10 @@ import { DEBUG } from 'ember-env-flags';
   The following controller code:
 
   ```app/controllers/application.js
-  export default Ember.Controller.extend({
+  import Controller from '@ember/controller';
+  import { computed } from '@ember/object';
+
+  export default Controller.extend({
     lastUpdateTimestamp: computed(function() {
       return new Date();
     }),

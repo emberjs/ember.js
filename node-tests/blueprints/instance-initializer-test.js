@@ -259,7 +259,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
         expect(_file('tests/unit/instance-initializers/foo-test.js'))
           .to.contain("import { initialize } from 'my-app/instance-initializers/foo';")
           .to.contain("module('Unit | Instance Initializer | foo'")
-          .to.contain("application = Ember.Application.create();")
+          .to.contain("application = Application.create();")
           .to.contain("this.appInstance = this.application.buildInstance();")
           .to.contain("initialize(this.appInstance);");
       }));
@@ -273,7 +273,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
         expect(_file('tests/unit/instance-initializers/foo-test.js'))
           .to.contain("import { initialize } from 'dummy/instance-initializers/foo';")
           .to.contain("module('Unit | Instance Initializer | foo'")
-          .to.contain("application = Ember.Application.create();")
+          .to.contain("application = Application.create();")
           .to.contain("this.appInstance = this.application.buildInstance();")
           .to.contain("initialize(this.appInstance);");
       }));
@@ -291,7 +291,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
         expect(_file('tests/unit/instance-initializers/foo-test.js'))
           .to.contain("import { initialize } from 'my-app/instance-initializers/foo';")
           .to.contain("describe('Unit | Instance Initializer | foo', function() {")
-          .to.contain("application = Ember.Application.create();")
+          .to.contain("application = Application.create();")
           .to.contain("appInstance = application.buildInstance();")
           .to.contain("initialize(appInstance);");
       }));

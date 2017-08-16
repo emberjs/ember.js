@@ -61,12 +61,16 @@ export const Resolver = EmberObject.extend({
   in a subclass. For example, you could enhance how a template
   is resolved like so:
 
-  ```javascript
-  App = Ember.Application.create({
-    Resolver: Ember.DefaultResolver.extend({
-      resolveTemplate: function(parsedName) {
+  ```app/app.js
+  import Application from '@ember/application';
+  import GlobalsResolver from '@ember/application/globals-resolver';
+
+  App = Application.create({
+    Resolver: GlobalsResolver.extend({
+      resolveTemplate(parsedName) {
         let resolvedTemplate = this._super(parsedName);
         if (resolvedTemplate) { return resolvedTemplate; }
+
         return Ember.TEMPLATES['not_found'];
       }
     })
@@ -372,10 +376,10 @@ export default EmberObject.extend({
   },
 
   /**
-   @method _logLookup
-   @param {Boolean} found
-   @param {Object} parsedName
-   @private
+    @method _logLookup
+    @param {Boolean} found
+    @param {Object} parsedName
+    @private
   */
   _logLookup(found, parsedName) {
     let symbol = found ? '[✓]' : '[ ]';
@@ -391,12 +395,12 @@ export default EmberObject.extend({
   },
 
   /**
-   Used to iterate all items of a given type.
+    Used to iterate all items of a given type.
 
-   @method knownForType
-   @param {String} type the type to search for
-   @private
-   */
+    @method knownForType
+    @param {String} type the type to search for
+    @private
+  */
   knownForType(type) {
     let namespace = get(this, 'namespace');
     let suffix = StringUtils.classify(type);
@@ -418,19 +422,18 @@ export default EmberObject.extend({
   },
 
   /**
-   Converts provided name from the backing namespace into a container lookup name.
+    Converts provided name from the backing namespace into a container lookup name.
 
-   Examples:
+    Examples:
 
-   App.FooBarHelper -> helper:foo-bar
-   App.THelper -> helper:t
+    * App.FooBarHelper -> helper:foo-bar
+    * App.THelper -> helper:t
 
-   @method translateToContainerFullname
-   @param {String} type
-   @param {String} name
-   @private
-   */
-
+    @method translateToContainerFullname
+    @param {String} type
+    @param {String} name
+    @private
+  */
   translateToContainerFullname(type, name) {
     let suffix = StringUtils.classify(type);
     let namePrefix = name.slice(0, suffix.length * -1);

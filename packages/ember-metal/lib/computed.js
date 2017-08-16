@@ -266,10 +266,13 @@ ComputedPropertyPrototype.property = function() {
   You can pass a hash of these values to a computed property like this:
 
   ```
-  person: Ember.computed(function() {
+  import { computed } from '@ember/object';
+  import Person from 'my-app/utils/person';
+
+  person: computed(function() {
     let personId = this.get('personId');
-    return App.Person.create({ id: personId });
-  }).meta({ type: App.Person })
+    return Person.create({ id: personId });
+  }).meta({ type: Person })
   ```
 
   The hash that you pass to the `meta()` function will be saved on the

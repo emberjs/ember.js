@@ -22,14 +22,14 @@ import EmberLocation from './api';
 
   Example:
 
-  ```javascript
-  App.Router.map(function() {
+  ```app/router.js
+  Router.map(function() {
     this.route('posts', function() {
       this.route('new');
     });
   });
 
-  App.Router.reopen({
+  Router.reopen({
     location: 'hash'
   });
   ```

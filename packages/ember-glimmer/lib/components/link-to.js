@@ -245,13 +245,13 @@
 
   ### Allowing Default Action
 
- By default the `{{link-to}}` component prevents the default browser action
- by calling `preventDefault()` as this sort of action bubbling is normally
- handled internally and we do not want to take the browser to a new URL (for
- example).
+  By default the `{{link-to}}` component prevents the default browser action
+  by calling `preventDefault()` as this sort of action bubbling is normally
+  handled internally and we do not want to take the browser to a new URL (for
+  example).
 
- If you need to override this behavior specify `preventDefault=false` in
- your template:
+  If you need to override this behavior specify `preventDefault=false` in
+  your template:
 
   ```handlebars
   {{#link-to 'photoGallery' aPhotoId preventDefault=false}}
@@ -496,9 +496,11 @@ const LinkComponent = EmberComponent.extend({
 
     Example:
 
-    ```javascript
-    App.MyLinkComponent = Ember.LinkComponent.extend({
-      init: function() {
+    ```app/components/my-link.js
+    import LinkComponent from '@ember/routing/link-component';
+
+    export default LinkComponent.extend({
+      init() {
         this._super(...arguments);
         Ember.Logger.log('Event is ' + this.get('eventName'));
       }

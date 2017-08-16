@@ -449,7 +449,7 @@ class FactoryManager {
     if (typeof this.class._initFactory === 'function') {
       this.class._initFactory(this);
     } else {
-      // in the non-Ember.Object case we need to still setOwner
+      // in the non-EmberObject case we need to still setOwner
       // this is required for supporting glimmer environment and
       // template instantiation which rely heavily on
       // `options[OWNER]` being passed into `create`

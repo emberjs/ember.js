@@ -21,17 +21,20 @@ export const OWNER = symbol('OWNER');
   `audioType` passed as an attribute:
 
   ```app/components/play-audio.js
-  import Ember from 'ember';
-
+  import Component from '@ember/component';
+  import { computed } from '@ember/object';
+  import { getOwner } from '@ember/application';
+  
   // Usage:
   //
   //   {{play-audio audioType=model.audioType audioFile=model.file}}
   //
-  export default Ember.Component.extend({
-    audioService: Ember.computed('audioType', function() {
-      let owner = Ember.getOwner(this);
+  export default Component.extend({
+    audioService: computed('audioType', function() {
+      let owner = getOwner(this);
       return owner.lookup(`service:${this.get('audioType')}`);
     }),
+
     click() {
       let player = this.get('audioService');
       player.play(this.get('audioFile'));

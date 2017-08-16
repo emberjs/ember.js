@@ -932,11 +932,11 @@ const Application = Engine.extend({
     ```
 
     ```app/routes/post.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
     // An example of how the (hypothetical) service is used in routes.
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       model(params) {
         return this.network.fetch(`/api/posts/${params.post_id}.json`);
       },

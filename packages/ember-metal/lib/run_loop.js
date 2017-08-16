@@ -134,16 +134,26 @@ run.join = function() {
   We can use that setup option to do some additional setup for our component.
   The component itself could look something like the following:
 
-  ```javascript
-  App.RichTextEditorComponent = Ember.Component.extend({
+  ```app/components/rich-text-editor.js
+  import Component from '@ember/component';
+  import { bind } from '@ember/runloop';
+
+  export default Component.extend({
     initializeTinyMCE: Ember.on('didInsertElement', function() {
       tinymce.init({
         selector: '#' + this.$().prop('id'),
         setup: Ember.run.bind(this, this.setupEditor)
       });
     }),
+    
+    didInsertElement() {
+      tinymce.init({
+        selector: '#' + this.$().prop('id'),
+        setup: Ember.run.bind(this, this.setupEditor)
+      });
+    }
 
-    setupEditor: function(editor) {
+    setupEditor(editor) {
       this.set('editor', editor);
 
       editor.on('change', function() {
@@ -154,7 +164,7 @@ run.join = function() {
   ```
 
   In this example, we use Ember.run.bind to bind the setupEditor method to the
-  context of the App.RichTextEditorComponent and to have the invocation of that
+  context of the RichTextEditor component and to have the invocation of that
   method be safely handled and executed by the Ember run loop.
 
   @method bind
@@ -445,8 +455,10 @@ run.scheduleOnce = function(/*queue, target, method*/) {
 
   Example:
 
-  ```javascript
-  export default Ember.Component.extend({
+  ```app/components/my-component.js
+  import Component from '@ember/component';
+
+  export Component.extend({
     didInsertElement() {
       this._super(...arguments);
       run.scheduleOnce('afterRender', this, 'processChildElements');

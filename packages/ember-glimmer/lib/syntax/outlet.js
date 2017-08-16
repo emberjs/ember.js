@@ -101,9 +101,10 @@ function outletComponentFor(vm, args) {
   Your routes can then render into a specific one of these `outlet`s by specifying the `outlet`
   attribute in your `renderTemplate` function:
 
-  ```javascript
-  // app/routes/menu.js
-  export default Ember.Route.extend({
+  ```app/routes/menu.js
+  import Route from '@ember/routing/route';
+
+  export default Route.extend({
     renderTemplate() {
       this.render({ outlet: 'menu' });
     }
