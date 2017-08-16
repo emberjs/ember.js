@@ -14,8 +14,8 @@ import {
   UpdatingOpcode
 } from '../opcodes';
 
-import { ProgramSymbolTable, Opcode } from "@glimmer/interfaces";
-import { Heap, RuntimeProgram as Program, RuntimeConstants } from "@glimmer/program";
+import { Opcode } from "@glimmer/interfaces";
+import { Heap, RuntimeProgram as Program, RuntimeConstants, RuntimeProgram } from "@glimmer/program";
 import { VMHandle as VMHandle } from "@glimmer/opcode-compiler";
 
 export interface PublicVM {
@@ -197,16 +197,16 @@ export default class VM<Specifier> implements PublicVM {
   }
 
   static initial<Specifier>(
-    program: Program<Specifier>,
+    program: RuntimeProgram<Specifier>,
     env: Environment,
     self: PathReference<Opaque>,
     args: Option<ICapturedArguments>,
     dynamicScope: DynamicScope,
     elementStack: ElementBuilder,
-    symbolTable: ProgramSymbolTable,
     handle: VMHandle
   ) {
-    let scope = Scope.root(self, symbolTable.symbols.length);
+    let scopeSize = program.heap.scopesizeof(handle);
+    let scope = Scope.root(self, scopeSize);
 
     if (args) {
 

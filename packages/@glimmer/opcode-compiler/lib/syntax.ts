@@ -4,7 +4,7 @@ import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
 import OpcodeBuilder, { CompileTimeLookup, OpcodeBuilderConstructor } from "./opcode-builder";
-import { CompilableBlock } from './interfaces';
+import { CompilableBlock, CompileTimeProgram } from './interfaces';
 
 import Ops = WireFormat.Ops;
 
@@ -55,10 +55,10 @@ STATEMENTS.add(Ops.FlushElement, (_sexp: S.FlushElement, builder) => {
 });
 
 STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder) => {
-  let { lookup, meta } = builder;
+  let { lookup, referer } = builder;
   let [, name, params, hash] = sexp;
 
-  let specifier = lookup.lookupModifier(name, meta);
+  let specifier = lookup.lookupModifier(name, referer);
 
   if (specifier) {
     builder.compileArgs(params, hash, true);
@@ -163,8 +163,8 @@ STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {
 STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
   let [, tag, _attrs, args, block] = sexp;
 
-  let { lookup, meta } = builder;
-  let handle = lookup.lookupComponentSpec(tag, meta);
+  let { lookup, referer } = builder;
+  let handle = lookup.lookupComponentSpec(tag, referer);
 
   if (handle) {
     let capabilities = lookup.getCapabilities(handle);
@@ -194,7 +194,7 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
 STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
   let [, name, evalInfo] = sexp;
 
-  let { meta } = builder;
+  let { referer } = builder;
 
   builder.startLabels();
 
@@ -210,7 +210,7 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
 
   builder.jumpUnless('ELSE');
 
-  builder.invokePartial(meta, builder.evalSymbols()!, evalInfo);
+  builder.invokePartial(referer, builder.evalSymbols()!, evalInfo);
   builder.popScope();
   builder.popFrame();
 
@@ -252,7 +252,6 @@ const EXPRESSIONS = new Compilers<WireFormat.TupleExpression>();
 
 import E = WireFormat.Expressions;
 import C = WireFormat.Core;
-import { Program } from "@glimmer/program";
 
 export function expr<Specifier>(expression: WireFormat.Expression, builder: OpcodeBuilder<Specifier>): void {
   if (Array.isArray(expression)) {
@@ -263,10 +262,10 @@ export function expr<Specifier>(expression: WireFormat.Expression, builder: Opco
 }
 
 EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
-  let { lookup, asPartial, meta } = builder;
+  let { lookup, asPartial, referer } = builder;
   let name = sexp[1];
 
-  let specifier = lookup.lookupHelper(name, meta);
+  let specifier = lookup.lookupHelper(name, referer);
 
   if (specifier !== null) {
     builder.compileArgs(null, null, true);
@@ -288,7 +287,7 @@ EXPRESSIONS.add(Ops.Concat, (sexp: E.Concat, builder) => {
 });
 
 EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
-  let { lookup, meta } = builder;
+  let { lookup, referer } = builder;
   let [, name, params, hash] = sexp;
 
   // TODO: triage this in the WF compiler
@@ -300,7 +299,7 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
     return;
   }
 
-  let specifier = lookup.lookupHelper(name, meta);
+  let specifier = lookup.lookupHelper(name, referer);
 
   if (specifier !== null) {
     builder.compileArgs(params, hash, true);
@@ -788,9 +787,9 @@ export function compileStatement<Specifier>(statement: WireFormat.Statement, bui
 
 export interface TemplateOptions<Specifier> {
   // already in compilation options
-  program: Program<Specifier>;
+  program: CompileTimeProgram;
   macros: Macros;
-  Builder: OpcodeBuilderConstructor<Specifier>;
+  Builder: OpcodeBuilderConstructor;
 
   // a subset of the resolver w/ a couple of small tweaks
   lookup: CompileTimeLookup<Specifier>;

@@ -1,6 +1,6 @@
-import { module, RenderTests, test } from "@glimmer/test-helpers";
+import { module, test, AbstractRenderTest } from "@glimmer/test-helpers";
 
-class FragmentComponents extends RenderTests {
+class FragmentComponents extends AbstractRenderTest {
   @test({
     kind: "fragment"
   })
@@ -55,7 +55,7 @@ class FragmentComponents extends RenderTests {
   }
 }
 
-class BasicComponents extends RenderTests {
+class BasicComponents extends AbstractRenderTest {
   @test({
     kind: "basic"
   })

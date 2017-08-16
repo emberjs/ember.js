@@ -1,6 +1,8 @@
-import { RenderTests, test, module } from "@glimmer/test-helpers";
+import { AbstractRenderTest, test, module, TestEnvironment } from "@glimmer/test-helpers";
 
-class CompileErrorTests extends RenderTests {
+class CompileErrorTests extends AbstractRenderTest {
+  protected env = new TestEnvironment();
+
   @test "A helpful error message is provided for unclosed elements"() {
     this.assert.throws(() => {
       this.env.compile('\n<div class="my-div" \n foo={{bar}}>\n<span>\n</span>\n');

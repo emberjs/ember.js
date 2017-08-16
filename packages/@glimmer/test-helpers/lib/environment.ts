@@ -6,7 +6,8 @@ import {
   TemplateOptions,
   LazyOpcodeBuilder,
   VMHandle,
-  ICompilableTemplate
+  ICompilableTemplate,
+  OpcodeBuilderConstructor
 } from "@glimmer/opcode-compiler";
 
 import {
@@ -974,7 +975,7 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
     lookup: new LookupResolver(this.resolver),
     program: this.program,
     macros: new TestMacros(),
-    Builder: LazyOpcodeBuilder
+    Builder: LazyOpcodeBuilder as OpcodeBuilderConstructor
   };
 
   constructor(options: TestEnvironmentOptions = {}) {
@@ -1095,7 +1096,7 @@ export function createTemplate(templateSource: string, meta: TemplateMeta = {}):
   let wrapper: SerializedTemplateWithLazyBlock<TemplateMeta> = JSON.parse(precompile(templateSource, { meta }));
   let block: SerializedTemplateBlock = JSON.parse(wrapper.block);
 
-  return { block, meta };
+  return { block, referer: meta };
 }
 
 export class TestDynamicScope implements DynamicScope {

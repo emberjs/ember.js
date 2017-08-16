@@ -3,6 +3,8 @@ import { TemplateCompiler } from "@glimmer/compiler";
 import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle } from "@glimmer/opcode-compiler";
 import { WriteOnlyProgram, WriteOnlyConstants } from "@glimmer/program";
 import { Option, ProgramSymbolTable, Recast } from "@glimmer/interfaces";
+import { SerializedTemplateBlock } from "@glimmer/wire-format";
+import { expect } from "@glimmer/util";
 
 export interface BundleCompileOptions {
   plugins: ASTPluginBuilder[];
@@ -20,15 +22,17 @@ export class SpecifierMap {
   public bySpecifier = new Map<Specifier, number>();
   public byHandle = new Map<number, Specifier>();
 
-  public byTemplateHandle = new Map<number, Specifier>();
+  public byVMHandle = new Map<number, Specifier>();
+  public vmHandleBySpecifier = new Map<Specifier, number>();
 }
 
 export class BundleCompiler {
   private specifiers = new SpecifierMap();
+  private firstPass = new Map<Specifier, SerializedTemplateBlock>();
 
   constructor(
     protected macros: Macros,
-    protected Builder: OpcodeBuilderConstructor<Specifier>,
+    protected Builder: OpcodeBuilderConstructor,
     protected delegate: CompilerDelegate,
     private program: WriteOnlyProgram = new WriteOnlyProgram(new WriteOnlyConstants()),
     protected plugins: ASTPluginBuilder[] = []
@@ -38,10 +42,16 @@ export class BundleCompiler {
     return this.specifiers;
   }
 
-  compile(input: string, specifier: Specifier): { symbolTable: ProgramSymbolTable, handle: VMHandle } {
+  add(input: string, specifier: Specifier): void {
     let ast = preprocess(input, { plugins: { ast: this.plugins } });
     let template = TemplateCompiler.compile({ meta: specifier }, ast);
     let block = template.toJSON();
+
+    this.firstPass.set(specifier, block);
+  }
+
+  compile(specifier: Specifier): void {
+    let block = expect(this.firstPass.get(specifier), `Can't compile a template that wasn't already added (${specifier.name} @ ${specifier.module})`);
 
     let { program, macros, Builder } = this;
     let lookup = new BundlingLookup(this.delegate, this.specifiers);
@@ -57,11 +67,10 @@ export class BundleCompiler {
 
     let compilable = CompilableTemplate.topLevel(block, options);
 
-    let handle = compilable.compile();
+    let handle = compilable.compile() as Recast<VMHandle, number>;
 
-    this.specifiers.byTemplateHandle.set(handle as Recast<VMHandle, number>, specifier);
-
-    return { handle, symbolTable: compilable.symbolTable };
+    this.specifiers.byVMHandle.set(handle as Recast<VMHandle, number>, specifier);
+    this.specifiers.vmHandleBySpecifier.set(specifier, handle as Recast<VMHandle, number>);
   }
 }
 
@@ -100,7 +109,7 @@ export interface CompilerDelegate {
   resolvePartialSpecifier(partialName: string, referer: Specifier): Specifier;
 }
 
-class BundlingLookup implements CompileTimeLookup<number> {
+class BundlingLookup implements CompileTimeLookup<Specifier> {
   constructor(private delegate: CompilerDelegate, private map: SpecifierMap) { }
 
   private registerSpecifier(specifier: Specifier): number {
@@ -117,11 +126,12 @@ class BundlingLookup implements CompileTimeLookup<number> {
     return handle;
   }
 
-  getCapabilities(meta: Specifier): ComponentCapabilities {
-    return this.delegate.getComponentCapabilities(meta);
+  getCapabilities(handle: number): ComponentCapabilities {
+    let specifier = expect(this.map.byHandle.get(handle), `BUG: Shouldn't call getCapabilities if a handle has no associated specifier`);
+    return this.delegate.getComponentCapabilities(specifier);
   }
 
-  getLayout(name: string, meta: Specifier): Option<{ symbolTable: ProgramSymbolTable; handle: VMHandle }> {
+  getLayout(handle: number): Option<CompilableTemplate<ProgramSymbolTable, Specifier>> {
     throw new Error("Method not implemented.");
   }
 
@@ -140,21 +150,23 @@ class BundlingLookup implements CompileTimeLookup<number> {
       return this.registerSpecifier(specifier);
     } else {
       return null;
-    }  }
+    }
+  }
 
-  lookupModifier(name: string, referer: Specifier): Option<Specifier> {
+  lookupModifier(name: string, referer: Specifier): Option<number> {
     if (this.delegate.hasModifierInScope(name, referer)) {
-      return this.delegate.resolveModifierSpecifier(name, referer);
+      let specifier = this.delegate.resolveModifierSpecifier(name, referer);
+      return this.registerSpecifier(specifier);
     } else {
       return null;
     }
   }
 
-  lookupComponent(name: string, meta: Specifier): Option<Specifier> {
+  lookupComponent(name: string, meta: Specifier): Option<number> {
     throw new Error("Method not implemented.");
   }
 
-  lookupPartial(name: string, meta: Specifier): Option<Specifier> {
+  lookupPartial(name: string, meta: Specifier): Option<number> {
     throw new Error("Method not implemented.");
   }
 }

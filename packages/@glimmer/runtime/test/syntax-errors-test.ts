@@ -1,6 +1,8 @@
-import { RenderTests, module, test } from "@glimmer/test-helpers";
+import { AbstractRenderTest, module, test, TestEnvironment } from "@glimmer/test-helpers";
 
-class SyntaxErrors extends RenderTests {
+class SyntaxErrors extends AbstractRenderTest {
+  protected env = new TestEnvironment();
+
   @test "context switching using ../ is not allowed"() {
     this.assert.throws(() => {
       this.env.compile('<div><p>{{../value}}</p></div>');
