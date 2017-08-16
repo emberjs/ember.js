@@ -95,9 +95,7 @@
     {{/each}}
   {{/with}}
   ```
-
-  Without the `as` operator, it would be impossible to reference `user.name` in the example above.
-
+  
   NOTE: The alias should not reuse a name from the bound property path.
 
   For example: `{{#with foo.bar as |foo|}}` is not supported because it attempts to alias using
