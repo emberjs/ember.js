@@ -1,6 +1,4 @@
-import { getOwner, OWNER, assign } from 'ember-utils';
-import { ENV } from 'ember-environment';
-import { get } from 'ember-metal';
+import { OWNER, assign } from 'ember-utils';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { Registry } from '..';
 import { factory } from 'internal-test-helpers';
@@ -154,7 +152,7 @@ QUnit.test('An invalid factory throws an error', function() {
 
   throws(() => {
     container.lookup('controller:foo');
-  }, /Failed to create an instance of \'controller:foo\'/);
+  }, /Failed to create an instance of 'controller:foo'/);
 });
 
 QUnit.test('Injecting a failed lookup raises an error', function() {
@@ -165,8 +163,8 @@ QUnit.test('Injecting a failed lookup raises an error', function() {
   let fooFactory  = {};
 
   let Foo = {
-    create(args) { return fooInstance; },
-    extend(args) { return fooFactory;  }
+    create() { return fooInstance; },
+    extend() { return fooFactory;  }
   };
 
   registry.register('model:foo', Foo);
@@ -245,7 +243,7 @@ QUnit.test('The container normalizes names before resolving', function() {
   let container = registry.container();
   let PostController = factory();
 
-  registry.normalizeFullName = function(fullName) {
+  registry.normalizeFullName = function() {
     return 'controller:post';
   };
 
@@ -260,7 +258,7 @@ QUnit.test('The container normalizes names when looking factory up', function() 
   let container = registry.container();
   let PostController = factory();
 
-  registry.normalizeFullName = function(fullName) {
+  registry.normalizeFullName = function() {
     return 'controller:post';
   };
 
@@ -569,11 +567,9 @@ QUnit.test('#factoryFor options passed to create clobber injections', (assert) =
 });
 
 QUnit.test('#factoryFor does not add properties to the object being instantiated when _initFactory is present', function(assert) {
-  let owner = {};
   let registry = new Registry();
   let container = registry.container();
 
-  let factory;
   class Component {
     static _initFactory(_factory) { factory = _factory; }
     static create(options) {
@@ -595,11 +591,9 @@ QUnit.test('#factoryFor does not add properties to the object being instantiated
 // this is skipped until templates and the glimmer environment do not require `OWNER` to be
 // passed in as constructor args
 QUnit.skip('#factoryFor does not add properties to the object being instantiated', function(assert) {
-  let owner = {};
   let registry = new Registry();
   let container = registry.container();
 
-  let factory;
   class Component {
     static create(options) {
       let instance = new this();

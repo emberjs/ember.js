@@ -88,7 +88,7 @@ moduleFor('Application Lifecycle', class extends AutobootApplicationTestCase {
     return application;
   }
 
-  [`@test Destroying a route after the router does create an undestroyed 'toplevelView'`](assert) {
+  [`@test Destroying a route after the router does create an undestroyed 'toplevelView'`]() {
     this.runTask(() => {
       this.createApplication();
       this.addTemplate('index', `Index!`);

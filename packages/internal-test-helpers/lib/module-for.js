@@ -1,4 +1,3 @@
-import { RSVP } from 'ember-runtime';
 import applyMixins from './apply-mixins';
 
 export default function moduleFor(description, TestClass, ...mixins) {

@@ -1,5 +1,4 @@
 import TestResolverApplicationTestCase from './test-resolver-application';
-import TestResolver from '../test-resolver';
 import { Application } from 'ember-application';
 import { assign } from 'ember-utils';
 import { Router } from 'ember-routing';

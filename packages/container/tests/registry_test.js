@@ -99,7 +99,7 @@ QUnit.test('The registry normalizes names when resolving', function() {
   let registry = new Registry();
   let PostController = factory();
 
-  registry.normalizeFullName = function(fullName) {
+  registry.normalizeFullName = function() {
     return 'controller:post';
   };
 
@@ -129,7 +129,7 @@ QUnit.test('validateFullName throws an error if name is incorrect', function() {
   let registry = new Registry();
   let PostController = factory();
 
-  registry.normalize = function(fullName) {
+  registry.normalize = function() {
     return 'controller:post';
   };
 
@@ -148,7 +148,7 @@ QUnit.test('The registry normalizes names when injecting', function() {
   let PostController = factory();
   let user = { name: 'Stef' };
 
-  registry.normalize = function(fullName) {
+  registry.normalize = function() {
     return 'controller:post';
   };
 
@@ -200,7 +200,7 @@ QUnit.test('registry.has should not accidentally cause injections on that factor
   let FirstApple = factory('first');
   let SecondApple = factory('second');
 
-  SecondApple.extend = function(a, b, c) {
+  SecondApple.extend = function() {
     ok(false, 'should not extend or touch the injected model, merely to inspect existence of another');
   };
 
@@ -607,7 +607,7 @@ QUnit.test('resolver.expandLocalLookup result is cached', function(assert) {
   let result;
 
   let resolver = {
-    expandLocalLookup(targetFullName, sourceFullName) {
+    expandLocalLookup() {
       assert.ok(true, 'expandLocalLookup is called on the resolver');
 
       return 'foo:qux/bar';
@@ -636,7 +636,7 @@ QUnit.test('resolver.expandLocalLookup cache is busted when any unregister is ca
   let result;
 
   let resolver = {
-    expandLocalLookup(targetFullName, sourceFullName) {
+    expandLocalLookup() {
       assert.ok(true, 'expandLocalLookup is called on the resolver');
 
       return 'foo:qux/bar';
@@ -698,7 +698,7 @@ QUnit.test('has uses expandLocalLookup', function(assert) {
       return 'yippie!';
     },
 
-    expandLocalLookup(targetFullName, sourceFullName) {
+    expandLocalLookup(targetFullName) {
       assert.ok(true, 'expandLocalLookup is called on the resolver');
 
       if (targetFullName === 'foo:bar') {

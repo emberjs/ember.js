@@ -31,7 +31,7 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     return this.application.resolveRegistration('router:main');
   }
 
-  compile(string, options) {
+  compile() {
     return compile(...arguments);
   }
 

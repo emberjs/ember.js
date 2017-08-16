@@ -1,14 +1,4 @@
-import {
-  Controller,
-  inject,
-  String
-} from 'ember-runtime';
-import { Component } from 'ember-glimmer';
-import { Route, NoneLocation } from 'ember-routing';
-import {
-  get,
-  set
-} from 'ember-metal';
+import { Controller } from 'ember-runtime';
 import {
   RouterTestCase,
   moduleFor

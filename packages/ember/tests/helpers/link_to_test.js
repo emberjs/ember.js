@@ -20,7 +20,7 @@ import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 
 // IE includes the host name
 function normalizeUrl(url) {
-  return url.replace(/https?:\/\/[^\/]+/, '');
+  return url.replace(/https?:\/\/[^/]+/, '');
 }
 
 function shouldNotBeActive(assert, element) {
@@ -437,7 +437,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(this.$('#other-link.active').length, 1, 'The link is active since current-when is a parent route');
   }
 
-  [`@test The {{link-to}} helper supports custom, nested, current-when`](assert) {
+  [`@test The {{link-to}} helper supports custom, nested, current-when`]() {
     this.router.map(function() {
       this.route('index', { path: '/' }, function() {
         this.route('about');
@@ -792,7 +792,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(event.isDefaultPrevented(), false, 'should not preventDefault');
   }
 
-  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`](assert) {
+  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`]() {
     this.router.map(function() {
       this.route('about');
     });
@@ -827,7 +827,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(event.isDefaultPrevented(), false, 'should not preventDefault when target attribute is specified');
   }
 
-  [`@test The {{link-to}} helper should preventDefault when 'target = _self'`](assert) {
+  [`@test The {{link-to}} helper should preventDefault when 'target = _self'`]() {
     this.addTemplate('index', `
       <h3>Home</h3>
       {{#link-to 'index' id='self-link' target='_self'}}Self{{/link-to}}
@@ -1410,7 +1410,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     });
 
     this.add('route:parent', Route.extend({
-      afterModel(transition) {
+      afterModel() {
         this.transitionTo('parent.child');
       }
     }));

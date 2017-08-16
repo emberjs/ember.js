@@ -22,6 +22,9 @@ var options = {
     'expectNoWarning': true,
     'ignoreAssertion': true,
     'ignoreDeprecation': true,
+    'require': true,
+    'enifed': true,
+    'process': true,
 
     // A safe subset of "browser:true":
     'window': true,
@@ -39,7 +42,6 @@ var options = {
     'ember-internal/no-const-outside-module-scope': 'error',
 
     // temporarily disabled
-    'no-unused-vars': 'off',
     'comma-dangle': 'off',
   },
 };

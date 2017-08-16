@@ -3,7 +3,7 @@ import {
   readOnly
 } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
-import { Route, NoneLocation } from 'ember-routing';
+import { Route } from 'ember-routing';
 import { get } from 'ember-metal';
 import {
   RouterTestCase,

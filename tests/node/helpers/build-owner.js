@@ -17,7 +17,7 @@ module.exports = function buildOwner(Ember, resolver) {
     __container__: null
   });
 
-  container = registry.container({ owner: owner });
+  var container = registry.container({ owner: owner });
   owner.__container__ = container;
 
   return owner;

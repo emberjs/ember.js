@@ -1,4 +1,4 @@
-/* globals global */
+/* globals global __dirname */
 var path = require('path');
 var SimpleDOM = require('simple-dom');
 var buildOwner = require('./build-owner');

@@ -10,7 +10,7 @@ QUnit.test("App boots and routes to a URL", function(assert) {
   assert.ok(this.app);
 });
 
-QUnit.test("nested {{component}}", function(assert) {
+QUnit.test("nested {{component}}", function() {
   this.template('index', "{{root-component}}");
 
   this.template('components/root-component', "\
@@ -32,18 +32,18 @@ QUnit.test("nested {{component}}", function(assert) {
   });
 });
 
-QUnit.test("{{link-to}}", function(assert) {
+QUnit.test("{{link-to}}", function() {
   this.template('application', "<h1>{{#link-to 'photos'}}Go to photos{{/link-to}}</h1>");
   this.routes(function() {
     this.route('photos');
   });
 
   return this.renderToHTML('/').then(function(html) {
-    assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><h1><a id="EMBER_ID" href="/photos" class="ember-view">Go to photos</a><\/h1></div></body>');
+    assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><h1><a id="EMBER_ID" href="/photos" class="ember-view">Go to photos</a></h1></div></body>');
   });
 });
 
-QUnit.test("non-escaped content", function(assert) {
+QUnit.test("non-escaped content", function() {
   this.routes(function() {
     this.route('photos');
   });
@@ -58,7 +58,7 @@ QUnit.test("non-escaped content", function(assert) {
   });
 });
 
-QUnit.test("outlets", function(assert) {
+QUnit.test("outlets", function() {
   this.routes(function() {
     this.route('photos');
   });
