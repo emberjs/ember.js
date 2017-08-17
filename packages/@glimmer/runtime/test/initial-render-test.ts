@@ -16,10 +16,12 @@ import {
 import { expect } from "@glimmer/util";
 
 class RenderTests extends InitialRenderSuite {
+  name = 'client';
   protected env: TestEnvironment = new TestEnvironment();
 }
 
 class Rehydration extends InitialRenderSuite {
+  name = 'rehydration';
   protected delegate: RehydrationDelegate;
   protected serverOutput: Option<string>;
 

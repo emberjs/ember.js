@@ -3,7 +3,8 @@ import { strip, assertNodeTagName } from '../helpers';
 import { SVG_NAMESPACE } from "@glimmer/runtime";
 import { Opaque } from "@glimmer/interfaces";
 
-export class InitialRenderSuite extends AbstractRenderTest {
+export abstract class InitialRenderSuite extends AbstractRenderTest {
+  name = 'BASE';
   @test "HTML text content"() {
     this.render("content");
     this.assertHTML("content");
@@ -354,12 +355,12 @@ export class InitialRenderSuite extends AbstractRenderTest {
     this.assertHTML(strip`
       <select>
         <option>1</option>
-        <option>2</option>
+        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
         <option>3</option>
       </select>
     `);
 
-    let selectNode: any = this.element.childNodes[1];
+    let selectNode: any = this.element.childNodes[0];
     this.assert.equal(selectNode.selectedIndex, 1);
     this.assertStableRerender();
 
@@ -367,11 +368,12 @@ export class InitialRenderSuite extends AbstractRenderTest {
     this.assertHTML(strip`
       <select>
         <option>1</option>
-        <option>2</option>
+        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
         <option>3</option>
       </select>
     `);
-    selectNode = this.element.childNodes[1];
+
+    selectNode = this.element.childNodes[0];
 
     if (IE9_SELECT_QUIRK) {
       this.assert.equal(selectNode.selectedIndex, -1);
@@ -382,14 +384,16 @@ export class InitialRenderSuite extends AbstractRenderTest {
     this.assertStableNodes();
 
     this.rerender({ selected: '' });
+
     this.assertHTML(strip`
       <select>
         <option>1</option>
-        <option>2</option>
+        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
         <option>3</option>
       </select>
     `);
-    selectNode = this.element.childNodes[1];
+
+    selectNode = this.element.childNodes[0];
 
     if (IE9_SELECT_QUIRK) {
       this.assert.equal(selectNode.selectedIndex, -1);
@@ -403,11 +407,11 @@ export class InitialRenderSuite extends AbstractRenderTest {
     this.assertHTML(strip`
       <select>
         <option>1</option>
-        <option>2</option>
+        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
         <option>3</option>
       </select>
     `);
-    selectNode = this.element.childNodes[1];
+    selectNode = this.element.childNodes[0];
     this.assert.equal(selectNode.selectedIndex, 1);
     this.assertStableNodes();
   }
@@ -447,8 +451,8 @@ export class InitialRenderSuite extends AbstractRenderTest {
     this.assertHTML(strip`
       <select multiple="">
         <option>0</option>
-        <option>1</option>
-        <option>2</option>
+        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>1</option>
+        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
         <option>3</option>
         <option>4</option>
         <option>5</option>
