@@ -222,8 +222,14 @@ export function getTextContent(el: Node) {
   }
 }
 
-export function strip(strings: TemplateStringsArray) {
-  return strings[0].split('\n').map(s => s.trim()).join(' ');
+export function strip(strings: TemplateStringsArray, ...args: string[]) {
+  if (typeof strings === 'object') {
+    return strings.map((str: string, i: number) => {
+      return `${str.split('\n').map(s => s.trim()).join('')}${args[i] ? args[i] : ''}`;
+    }).join('');
+  } else {
+    return strings[0].split('\n').map((s: string) => s.trim()).join(' ');
+  }
 }
 
 export function stripTight(strings: TemplateStringsArray) {
