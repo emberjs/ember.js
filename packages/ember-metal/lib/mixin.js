@@ -140,16 +140,14 @@ function applyConcatenatedProperties(obj, key, value, values) {
 
   if (baseValue === null || baseValue === undefined) {
     ret = makeArray(value);
-  } else {
-    if (isArray(baseValue)) {
-      if (value === null || value === undefined) {
-        ret = baseValue;
-      } else {
-        ret = a_concat.call(baseValue, value);
-      }
+  } else if (isArray(baseValue)) {
+    if (value === null || value === undefined) {
+      ret = baseValue;
     } else {
-      ret = a_concat.call(makeArray(baseValue), value);
+      ret = a_concat.call(baseValue, value);
     }
+  } else {
+    ret = a_concat.call(makeArray(baseValue), value);
   }
 
   if (DEBUG) {
@@ -215,7 +213,7 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
         key === 'concatenatedProperties' ||
         key === 'mergedProperties') {
       value = applyConcatenatedProperties(base, key, value, values);
-    } else if ((mergings && mergings.indexOf(key) >= 0)) {
+    } else if (mergings && mergings.indexOf(key) > -1) {
       value = applyMergedProperties(base, key, value, values);
     } else if (isMethod(value)) {
       value = giveMethodSuper(base, key, value, values, descs);
@@ -315,9 +313,7 @@ function followAlias(obj, desc, descs, values) {
   return { desc, value };
 }
 
-function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, updateMethod) {
-  let paths = observerOrListener[pathsKey];
-
+function updateObserversAndListeners(obj, key, paths, updateMethod) {
   if (paths) {
     for (let i = 0; i < paths.length; i++) {
       updateMethod(obj, paths[i], null, key);
@@ -328,16 +324,16 @@ function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, upd
 function replaceObserversAndListeners(obj, key, observerOrListener) {
   let prev = obj[key];
 
-  if ('function' === typeof prev) {
-    updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', _removeBeforeObserver);
-    updateObserversAndListeners(obj, key, prev, '__ember_observes__', removeObserver);
-    updateObserversAndListeners(obj, key, prev, '__ember_listens__', removeListener);
+  if (typeof prev === 'function') {
+    updateObserversAndListeners(obj, key, prev.__ember_observesBefore__, _removeBeforeObserver);
+    updateObserversAndListeners(obj, key, prev.__ember_observes__, removeObserver);
+    updateObserversAndListeners(obj, key, prev.__ember_listens__, removeListener);
   }
 
-  if ('function' === typeof observerOrListener) {
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', _addBeforeObserver);
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observes__', addObserver);
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_listens__', addListener);
+  if (typeof observerOrListener === 'function') {
+    updateObserversAndListeners(obj, key, observerOrListener.__ember_observesBefore__, _addBeforeObserver);
+    updateObserversAndListeners(obj, key, observerOrListener.__ember_observes__, addObserver);
+    updateObserversAndListeners(obj, key, observerOrListener.__ember_listens__, addListener);
   }
 }
 
