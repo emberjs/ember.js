@@ -9,6 +9,14 @@ export interface ConstantPool {
   tables: SymbolTable[];
   handles: number[];
   serializables: Opaque[];
+  floats: number[];
+}
+
+export const enum PrimitiveType {
+  NUMBER          = 0b00,
+  FLOAT           = 0b01,
+  STRING          = 0b10,
+  BOOLEAN_OR_VOID = 0b11
 }
 
 export class WriteOnlyConstants implements CompileTimeConstants {
@@ -20,6 +28,13 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   protected handles: number[] = [];
   protected serializables: Opaque[] = [];
   protected resolved: Opaque[] = [];
+  protected floats: number[] = [];
+
+  float(float: number) {
+    let index = this.floats.length;
+    this.floats.push(float);
+    return index + 1;
+  }
 
   string(value: string): number {
     let index = this.strings.length;
@@ -68,7 +83,8 @@ export class WriteOnlyConstants implements CompileTimeConstants {
       arrays: this.arrays,
       tables: this.tables,
       handles: this.handles,
-      serializables: this.serializables
+      serializables: this.serializables,
+      floats: this.floats
     };
   }
 }
@@ -80,6 +96,7 @@ export class RuntimeConstants<Specifier> {
   protected handles: number[];
   protected serializables: Opaque[];
   protected resolved: Opaque[];
+  protected floats: number[];
 
   constructor(public resolver: Resolver<Specifier>, pool: ConstantPool) {
     this.strings = pool.strings;
@@ -87,10 +104,15 @@ export class RuntimeConstants<Specifier> {
     this.tables = pool.tables;
     this.handles = pool.handles;
     this.serializables = pool.serializables;
+    this.floats = pool.floats;
     this.resolved = this.handles.map(() => UNRESOLVED);
   }
 
   // `0` means NULL
+
+  getFloat(value: number): number {
+    return this.floats[value - 1];
+  }
 
   getString(value: number): string {
     return this.strings[value - 1];

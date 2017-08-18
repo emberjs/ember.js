@@ -461,7 +461,7 @@ export default class VM<Specifier> implements PublicVM {
     return program.opcode(pc);
   }
 
-  bindDynamicScope(names: ConstantString[]) {
+  bindDynamicScope(names: number[]) {
     let scope = this.dynamicScope();
 
     for(let i=names.length - 1; i>=0; i--) {

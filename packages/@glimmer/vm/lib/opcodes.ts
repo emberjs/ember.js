@@ -312,6 +312,18 @@ export const enum Op {
 
   /**
    * Operation:
+   *   Open a new Element named `tag` with special operations provided
+   *   on the stack.
+   * Format:
+   *   (OpenElementWithOperations tag:#string)
+   * Operand Stack:
+   *   ..., ElementOperations →
+   *   ...
+   */
+  OpenElementWithOperations,
+
+  /**
+   * Operation:
    *   Open a new Element with a name on the stack and with special
    *   operations provided on the stack.
    * Format:

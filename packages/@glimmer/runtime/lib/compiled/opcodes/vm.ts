@@ -12,11 +12,11 @@ import {
 } from '@glimmer/reference';
 import { initializeGuid } from '@glimmer/util';
 import { APPEND_OPCODES, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { Primitive, PrimitiveReference, PrimitiveType } from '../../references';
+import { Primitive, PrimitiveReference } from '../../references';
 import { CompilableTemplate } from '../../syntax/interfaces';
 import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
-import { LazyConstants } from "@glimmer/program";
+import { LazyConstants, PrimitiveType } from "@glimmer/program";
 import { VMHandle } from "@glimmer/opcode-compiler";
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
@@ -33,7 +33,7 @@ APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque> & { constants: LazyConstants }, 
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   let stack = vm.stack;
-  let flag: PrimitiveType = primitive & 7; // 111
+  let flag = primitive & 7; // 111
   let value = primitive >> 3;
 
   switch (flag) {
