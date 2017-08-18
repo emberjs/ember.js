@@ -495,6 +495,10 @@ export class AbstractRenderTest {
 export class TestEnvironmentRenderDelegate implements RenderDelegate {
   constructor(protected env: TestEnvironment = new TestEnvironment()) {}
 
+  resetEnv() {
+    this.env = new TestEnvironment();
+  }
+
   getInitialElement(): HTMLElement {
     return this.env.getAppendOperations().createElement('div') as HTMLElement;
   }

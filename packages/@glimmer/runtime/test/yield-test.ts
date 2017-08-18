@@ -116,6 +116,8 @@ class YieldTests extends AbstractRenderTest {
 
       this.assertComponent(`${output}-`);
       this.assertStableRerender();
+      this.element.innerHTML = '';
+      this.delegate['resetEnv']();
     });
   }
 
