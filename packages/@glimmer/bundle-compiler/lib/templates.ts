@@ -1,10 +1,10 @@
 import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
 import { TemplateCompiler } from "@glimmer/compiler";
-import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle } from "@glimmer/opcode-compiler";
+import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { WriteOnlyProgram, WriteOnlyConstants } from "@glimmer/program";
-import { Option, ProgramSymbolTable, Recast } from "@glimmer/interfaces";
+import { Option, ProgramSymbolTable, Recast, Dict } from "@glimmer/interfaces";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
-import { expect } from "@glimmer/util";
+import { expect, dict } from "@glimmer/util";
 
 export interface BundleCompileOptions {
   plugins: ASTPluginBuilder[];
@@ -16,6 +16,20 @@ export type NamedExport = string;
 export interface Specifier {
   module: NamedExport;
   name: ModuleName;
+}
+
+const SPECIFIERS = dict<Dict<Specifier>>();
+
+export function specifier(module: ModuleName, name: NamedExport): Specifier {
+  let specifiers = SPECIFIERS[module];
+
+  if (!specifiers) specifiers = SPECIFIERS[module] = dict<Specifier>();
+
+  let specifier = specifiers[name];
+
+  if (!specifier) specifier = specifiers[name] = { module, name };
+
+  return specifier;
 }
 
 export class SpecifierMap {
@@ -42,15 +56,25 @@ export class BundleCompiler {
     return this.specifiers;
   }
 
-  add(input: string, specifier: Specifier): void {
+  add(input: string, specifier: Specifier): SerializedTemplateBlock {
     let ast = preprocess(input, { plugins: { ast: this.plugins } });
     let template = TemplateCompiler.compile({ meta: specifier }, ast);
     let block = template.toJSON();
 
     this.firstPass.set(specifier, block);
+    return block;
   }
 
-  compile(specifier: Specifier): void {
+  compile(): void {
+    this.firstPass.forEach((_block, specifier) => {
+      this.compileSpecifier(specifier);
+    });
+  }
+
+  compileSpecifier(specifier: Specifier): VMHandle {
+    let handle = this.specifiers.vmHandleBySpecifier.get(specifier) as Recast<number, VMHandle>;
+    if (handle) return handle;
+
     let block = expect(this.firstPass.get(specifier), `Can't compile a template that wasn't already added (${specifier.name} @ ${specifier.module})`);
 
     let { program, macros, Builder } = this;
@@ -67,10 +91,12 @@ export class BundleCompiler {
 
     let compilable = CompilableTemplate.topLevel(block, options);
 
-    let handle = compilable.compile() as Recast<VMHandle, number>;
+    handle = compilable.compile();
 
     this.specifiers.byVMHandle.set(handle as Recast<VMHandle, number>, specifier);
     this.specifiers.vmHandleBySpecifier.set(specifier, handle as Recast<VMHandle, number>);
+
+    return handle;
   }
 }
 
@@ -98,6 +124,7 @@ export interface CompilerDelegate {
    * it produces a statically known list of required capabilities.
    */
   getComponentCapabilities(specifier: Specifier): ComponentCapabilities;
+  getComponentLayout(specifier: Specifier): ICompilableTemplate<ProgramSymbolTable>;
 
   hasHelperInScope(helperName: string, referer: Specifier): boolean;
   resolveHelperSpecifier(helperName: string, referer: Specifier): Specifier;
@@ -131,13 +158,14 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
     return this.delegate.getComponentCapabilities(specifier);
   }
 
-  getLayout(handle: number): Option<CompilableTemplate<ProgramSymbolTable, Specifier>> {
-    throw new Error("Method not implemented.");
+  getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>> {
+    let specifier =  expect(this.map.byHandle.get(handle), `BUG: Shouldn't call getLayout if a handle has no associated specifier`);
+    return this.delegate.getComponentLayout(specifier);
   }
 
   lookupHelper(name: string, referer: Specifier): Option<number> {
     if (this.delegate.hasHelperInScope(name, referer)) {
-      let specifier =  this.delegate.resolveHelperSpecifier(name, referer);
+      let specifier = this.delegate.resolveHelperSpecifier(name, referer);
       return this.registerSpecifier(specifier);
     } else {
       return null;
@@ -146,7 +174,7 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
 
   lookupComponentSpec(name: string, referer: Specifier): Option<number> {
     if (this.delegate.hasComponentInScope(name, referer)) {
-      let specifier =  this.delegate.resolveHelperSpecifier(name, referer);
+      let specifier = this.delegate.resolveComponentSpecifier(name, referer);
       return this.registerSpecifier(specifier);
     } else {
       return null;
@@ -162,11 +190,11 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
     }
   }
 
-  lookupComponent(name: string, meta: Specifier): Option<number> {
+  lookupComponent(_name: string, _meta: Specifier): Option<number> {
     throw new Error("Method not implemented.");
   }
 
-  lookupPartial(name: string, meta: Specifier): Option<number> {
+  lookupPartial(_name: string, _meta: Specifier): Option<number> {
     throw new Error("Method not implemented.");
   }
 }

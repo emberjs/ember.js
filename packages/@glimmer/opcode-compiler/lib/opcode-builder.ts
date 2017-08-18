@@ -357,8 +357,10 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
     this.push(Op.HasBlock, symbol);
   }
 
-  hasBlockParams(symbol: number) {
-    this.push(Op.HasBlockParams, symbol);
+  hasBlockParams(to: number) {
+    this.getBlock(to);
+    this.resolveBlock();
+    this.push(Op.HasBlockParams);
   }
 
   concat(size: number) {
@@ -860,9 +862,10 @@ export default OpcodeBuilder;
 export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, CompilableTemplate<ProgramSymbolTable, Specifier>> {
   public constants: CompileTimeLazyConstants;
 
-  pushSymbolTable(symbolTable: Option<SymbolTable>) {
-    if (symbolTable) {
-      this.pushOther(symbolTable);
+  pushSymbolTable(table: Option<SymbolTable>) {
+    if (table) {
+      let constant = this.constants.table(table);
+      this.primitive(constant);
     } else {
       this.primitive(null);
     }
@@ -901,7 +904,7 @@ export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, Compi
   }
 }
 
-export class EagerOpcodeBuilder<Specifier, Layout extends AbstractTemplate<ProgramSymbolTable> = AbstractTemplate<ProgramSymbolTable>> extends OpcodeBuilder<Specifier, Layout> {
+export class EagerOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, ICompilableTemplate<ProgramSymbolTable>> {
   pushBlock(block: Option<ICompilableTemplate<BlockSymbolTable>>): void {
     let handle = block ? block.compile() as Recast<VMHandle, number> : null;
     this.primitive(handle);
@@ -911,8 +914,12 @@ export class EagerOpcodeBuilder<Specifier, Layout extends AbstractTemplate<Progr
     return;
   }
 
-  pushLayout(): void {
-    throw new Error("Method not implemented.");
+  pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable, Specifier>>): void {
+    if (layout) {
+      this.primitive(layout.compile() as Recast<VMHandle, number>);
+    } else {
+      this.primitive(null);
+    }
   }
 
   resolveLayout(): void {

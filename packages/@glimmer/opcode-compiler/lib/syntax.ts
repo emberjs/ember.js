@@ -166,7 +166,7 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
   let { lookup, referer } = builder;
   let handle = lookup.lookupComponentSpec(tag, referer);
 
-  if (handle) {
+  if (handle !== null) {
     let capabilities = lookup.getCapabilities(handle);
 
     let attrs: WireFormat.Statement[] = [

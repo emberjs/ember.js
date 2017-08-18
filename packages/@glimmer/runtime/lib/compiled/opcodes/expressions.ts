@@ -34,7 +34,7 @@ APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
 
 APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
   let handle = vm.stack.pop<Option<VMHandle>>();
-  let table = vm.stack.pop<Option<BlockSymbolTable>>();
+  let table = vm.stack.pop<Option<number>>();
   let block: Option<ScopeBlock> = table ? [handle!, table] : null;
 
   vm.scope().bindBlock(symbol, block);
@@ -80,9 +80,12 @@ APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {
   vm.stack.push(hasBlock ? TRUE_REFERENCE : FALSE_REFERENCE);
 });
 
-APPEND_OPCODES.add(Op.HasBlockParams, (vm, { op1: _block }) => {
-  let block = vm.scope().getBlock(_block);
-  let hasBlockParams = block && block[1].parameters.length;
+APPEND_OPCODES.add(Op.HasBlockParams, (vm) => {
+  let handle = vm.stack.pop<VMHandle>();
+  let _table = vm.stack.pop<number>();
+  let table = vm.constants.getSymbolTable<BlockSymbolTable>(_table);
+
+  let hasBlockParams = handle && table.parameters.length;
   vm.stack.push(hasBlockParams ? TRUE_REFERENCE : FALSE_REFERENCE);
 });
 
