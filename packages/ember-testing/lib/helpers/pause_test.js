@@ -31,6 +31,28 @@ export function resumeTest() {
  return pauseTest();
  click('.btn');
  ```
+
+ You may want to turn off the timeout before pausing.
+
+ qunit (as of 2.4.0):
+
+ ```
+ visit('/');
+ assert.timeout(0);
+ return pauseTest();
+ click('.btn');
+ ```
+
+ mocha:
+
+ ```
+ visit('/');
+ this.timeout(0);
+ return pauseTest();
+ click('.btn');
+ ```
+
+
  @since 1.9.0
  @method pauseTest
  @return {Object} A promise that will never resolve
