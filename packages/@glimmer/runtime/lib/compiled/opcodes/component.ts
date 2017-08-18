@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Recast, Resolver } from '@glimmer/interfaces';
+import { Opaque, Option, Dict, ProgramSymbolTable, Recast, Resolver } from '@glimmer/interfaces';
 import {
   combineTagged,
   CONSTANT_TAG,
@@ -422,7 +422,7 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
     let bindBlock = (name: string) => {
       let symbol = symbols.indexOf(name);
       let handle = stack.pop<Option<VMHandle>>();
-      let table = stack.pop<Option<BlockSymbolTable>>();
+      let table = stack.pop<Option<number>>();
 
       let block: Option<ScopeBlock> = table ? [handle!, table] : null;
 
