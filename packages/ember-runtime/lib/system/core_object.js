@@ -54,18 +54,14 @@ function makeCtor() {
   // possible.
 
   let wasApplied = false;
-  let initProperties, initFactory;
+  let initFactory;
 
   class Class {
-    constructor() {
+    constructor(properties) {
       let self = this;
 
       if (!wasApplied) {
         Class.proto(); // prepare prototype...
-      }
-
-      if (arguments.length > 0) {
-        initProperties = [arguments[0]];
       }
 
       let beforeInitCalled; // only used in debug builds to enable the proxy trap
@@ -127,87 +123,75 @@ function makeCtor() {
         FACTORY_FOR.set(this, initFactory);
         initFactory = null;
       }
-      if (initProperties) {
-        // capture locally so we can clear the closed over variable
-        let props = initProperties;
-        initProperties = null;
+
+      if (properties !== undefined) {
+        assert('EmberObject.create only accepts objects.', typeof properties === 'object' && properties !== null);
+
+        assert(
+          'EmberObject.create no longer supports mixing in other ' +
+          'definitions, use .extend & .create separately instead.',
+          !(properties instanceof Mixin)
+        );
 
         let concatenatedProperties = self.concatenatedProperties;
         let mergedProperties = self.mergedProperties;
-        let hasConcatenatedProps = concatenatedProperties && concatenatedProperties.length > 0;
-        let hasMergedProps = mergedProperties && mergedProperties.length > 0;
+        let hasConcatenatedProps = concatenatedProperties !== undefined && concatenatedProperties.length > 0;
+        let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
 
-        for (let i = 0; i < props.length; i++) {
-          let properties = props[i];
+        let keyNames = Object.keys(properties);
+
+        for (let i = 0; i < keyNames.length; i++) {
+          let keyName = keyNames[i];
+          let value = properties[keyName];
+
+          if (ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding(keyName)) {
+            m.writeBindings(keyName, value);
+          }
 
           assert(
-            'EmberObject.create only accepts objects.',
-            typeof properties === 'object' || properties === undefined
+            'EmberObject.create no longer supports defining computed ' +
+            'properties. Define computed properties using extend() or reopen() ' +
+            'before calling create().',
+            !(value instanceof ComputedProperty)
           );
-
           assert(
-            'EmberObject.create no longer supports mixing in other ' +
-            'definitions, use .extend & .create separately instead.',
-            !(properties instanceof Mixin)
+            'EmberObject.create no longer supports defining methods that call _super.',
+            !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
+          );
+          assert(
+            '`actions` must be provided at extend time, not at create time, ' +
+            'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
+            !((keyName === 'actions') && ActionHandler.detect(this))
           );
 
-          if (!properties) { continue; }
+          let possibleDesc = descriptorFor(self, keyName, m);
+          let isDescriptor = possibleDesc !== undefined;
 
-          let keyNames = Object.keys(properties);
+          if (!isDescriptor) {
+            let baseValue = self[keyName];
 
-          for (let j = 0; j < keyNames.length; j++) {
-            let keyName = keyNames[j];
-            let value = properties[keyName];
-
-            if (ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding(keyName)) {
-              m.writeBindings(keyName, value);
-            }
-
-            assert(
-              'EmberObject.create no longer supports defining computed ' +
-              'properties. Define computed properties using extend() or reopen() ' +
-              'before calling create().',
-              !(value instanceof ComputedProperty)
-            );
-            assert(
-              'EmberObject.create no longer supports defining methods that call _super.',
-              !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
-            );
-            assert(
-              '`actions` must be provided at extend time, not at create time, ' +
-              'when ActionHandler is used (i.e. views, controllers & routes).',
-              !((keyName === 'actions') && ActionHandler.detect(this))
-            );
-
-            let possibleDesc = descriptorFor(self, keyName, m);
-            let isDescriptor = possibleDesc !== undefined;
-
-            if (!isDescriptor) {
-              let baseValue = self[keyName];
-
-              if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
-                if (baseValue) {
-                  value = makeArray(baseValue).concat(value);
-                } else {
-                  value = makeArray(value);
-                }
-              }
-
-              if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
-                value = assign({}, baseValue, value);
-              }
-            }
-
-            if (isDescriptor) {
-              possibleDesc.set(self, keyName, value);
-            } else if (typeof self.setUnknownProperty === 'function' && !(keyName in self)) {
-              self.setUnknownProperty(keyName, value);
-            } else {
-              if (MANDATORY_SETTER) {
-                defineProperty(self, keyName, null, value); // setup mandatory setter
+            if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+              if (baseValue) {
+                value = makeArray(baseValue).concat(value);
               } else {
-                self[keyName] = value;
+                value = makeArray(value);
               }
+            }
+
+            if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+              value = assign({}, baseValue, value);
+            }
+          }
+
+          if (isDescriptor) {
+            possibleDesc.set(self, keyName, value);
+          } else if (typeof self.setUnknownProperty === 'function' && !(keyName in self)) {
+            self.setUnknownProperty(keyName, value);
+          } else {
+            if (MANDATORY_SETTER) {
+              defineProperty(self, keyName, null, value); // setup mandatory setter
+            } else {
+              self[keyName] = value;
             }
           }
         }
@@ -243,7 +227,6 @@ function makeCtor() {
       wasApplied = false;
     }
 
-    static _initProperties(args) { initProperties = args; }
     static _initFactory(factory) { initFactory = factory; }
 
     static proto() {
@@ -782,13 +765,14 @@ let ClassMixinProps = {
     @param [arguments]*
     @public
   */
-  create(...args) {
+  create(props, extra) {
     let C = this;
-    if (args.length > 0) {
-      this._initProperties(args);
-    }
 
-    return new C();
+    if (extra === undefined) {
+      return new C(props);
+    } else {
+      return new C(flattenProps.apply(this, arguments));
+    }
   },
 
   /**
@@ -1002,6 +986,51 @@ if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
 
 function injectedPropertyAssertion() {
   assert('Injected properties are invalid', validatePropertyInjections(this));
+}
+
+function flattenProps(... props) {
+  let { concatenatedProperties, mergedProperties } = this;
+  let hasConcatenatedProps = concatenatedProperties !== undefined && concatenatedProperties.length > 0;
+  let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
+
+  let initProperties = {};
+
+  for (let i = 0; i < props.length; i++) {
+    let properties = props[i];
+
+    assert(
+      'EmberObject.create no longer supports mixing in other ' +
+      'definitions, use .extend & .create separately instead.',
+      !(properties instanceof Mixin)
+    );
+
+    let keyNames = Object.keys(properties);
+
+    for (let j = 0, k = keyNames.length; j < k; j++) {
+      let keyName = keyNames[j];
+      let value = properties[keyName];
+
+      if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+        let baseValue = initProperties[keyName];
+
+        if (baseValue) {
+          value = makeArray(baseValue).concat(value);
+        } else {
+          value = makeArray(value);
+        }
+      }
+
+      if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+        let baseValue = initProperties[keyName];
+
+        value = assign({}, baseValue, value);
+      }
+
+      initProperties[keyName] = value;
+    }
+  }
+
+  return initProperties;
 }
 
 if (DEBUG) {

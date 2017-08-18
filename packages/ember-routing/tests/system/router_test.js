@@ -41,7 +41,7 @@ moduleFor('Ember Router', class extends AbstractTestCase {
   }
 
   ['@test can create a router without an owner'](assert) {
-    createRouter(null, { disableSetup: true, skipOwner: true });
+    createRouter(undefined, { disableSetup: true, skipOwner: true });
 
     assert.ok(true, 'no errors were thrown when creating without a container');
   }
@@ -54,13 +54,13 @@ moduleFor('Ember Router', class extends AbstractTestCase {
   }
 
   ['@test should not create a router.js instance upon init'](assert) {
-    let router = createRouter(null, { disableSetup: true });
+    let router = createRouter(undefined, { disableSetup: true });
 
     assert.ok(!router._routerMicrolib);
   }
 
   ['@test should not reify location until setupRouter is called'](assert) {
-    let router = createRouter(null, { disableSetup: true });
+    let router = createRouter(undefined, { disableSetup: true });
     assert.equal(typeof router.location, 'string', 'location is specified as a string');
 
     router.setupRouter();
