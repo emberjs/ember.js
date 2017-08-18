@@ -7,15 +7,15 @@ import {
   RenderDelegate,
   InitialRenderSuite,
   rawModule,
-  BasicComponents
+  BasicComponents,
+  AbstractTestEnvironment,
+  renderSync
 } from "@glimmer/test-helpers";
-import { AbstractTestEnvironment } from "@glimmer/test-helpers/lib/environment";
 import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifier } from "@glimmer/bundle-compiler";
 import { EagerOpcodeBuilder, ComponentCapabilities, OpcodeBuilderConstructor, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
 import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
-import { renderSync } from "@glimmer/test-helpers/lib/abstract-test-case";
 import { dict, unreachable } from "@glimmer/util";
 import { PathReference, CONSTANT_TAG, Tag } from "@glimmer/reference";
 

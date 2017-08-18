@@ -1,6 +1,6 @@
-import { RenderTests, module, test } from "@glimmer/test-helpers";
+import { AbstractRenderTest, module, test } from "@glimmer/test-helpers";
 
-class ShadowingTests extends RenderTests {
+class ShadowingTests extends AbstractRenderTest {
   @test({ kind: 'glimmer' })
   "normal outer attributes are reflected"() {
     this.render({

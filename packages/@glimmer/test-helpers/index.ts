@@ -17,6 +17,7 @@ export {
 } from './lib/helpers';
 
 export {
+  AbstractTestEnvironment,
   Attrs,
   BasicComponent,
   BasicComponentDefinition,

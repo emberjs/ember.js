@@ -1,5 +1,4 @@
-import { AbstractRenderTest } from "../lib/abstract-test-case";
-import { TestEnvironmentRenderDelegate } from "@glimmer/test-helpers";
+import { TestEnvironmentRenderDelegate, AbstractRenderTest } from "@glimmer/test-helpers";
 
 let renderTests: AbstractRenderTest;
 QUnit.module("Render Tests: buildComponent", {

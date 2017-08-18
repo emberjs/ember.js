@@ -1,6 +1,6 @@
-import { module, RenderTests, test, classes } from "@glimmer/test-helpers";
+import { module, AbstractRenderTest, test, classes } from "@glimmer/test-helpers";
 
-class EmberishComponentTests extends RenderTests {
+class EmberishComponentTests extends AbstractRenderTest {
   @test
   "non-block without properties"() {
     this.render({

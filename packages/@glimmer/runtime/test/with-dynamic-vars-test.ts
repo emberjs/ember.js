@@ -1,7 +1,6 @@
+import { module, AbstractRenderTest, test } from "@glimmer/test-helpers";
 
-import { module, RenderTests, test } from "@glimmer/test-helpers";
-
-class WithDynamicVarsTests extends RenderTests {
+class WithDynamicVarsTests extends AbstractRenderTest {
   @test
   "Can get and set dynamic variable"() {
     this.render({

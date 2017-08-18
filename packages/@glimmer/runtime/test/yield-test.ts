@@ -1,6 +1,6 @@
-import { module, RenderTests, test } from '@glimmer/test-helpers';
+import { module, AbstractRenderTest, test } from '@glimmer/test-helpers';
 
-class YieldTests extends RenderTests {
+class YieldTests extends AbstractRenderTest {
   @test
   'yield'() {
     this.render(
@@ -116,7 +116,6 @@ class YieldTests extends RenderTests {
 
       this.assertComponent(`${output}-`);
       this.assertStableRerender();
-      this.reset();
     });
   }
 
