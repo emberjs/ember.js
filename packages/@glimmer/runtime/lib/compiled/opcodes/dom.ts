@@ -22,6 +22,11 @@ APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm.constants.getString(text));
 });
 
+APPEND_OPCODES.add(Op.OpenElementWithOperations, (vm, { op1: tag }) => {
+  let tagName = vm.constants.getString(tag);
+  vm.elements().openElement(tagName);
+});
+
 APPEND_OPCODES.add(Op.Comment, (vm, { op1: text }) => {
   vm.elements().appendComment(vm.constants.getString(text));
 });

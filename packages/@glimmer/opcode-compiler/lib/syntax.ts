@@ -702,9 +702,9 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.stopLabels();
   });
 
-  blocks.add('-in-element', (params, hash, template, _inverse, builder) => {
+  blocks.add('in-element', (params, hash, template, _inverse, builder) => {
     if (!params || params.length !== 1) {
-      throw new Error(`SYNTAX ERROR: #-in-element requires a single argument`);
+      throw new Error(`SYNTAX ERROR: #in-element requires a single argument`);
     }
 
     builder.startLabels();
@@ -719,7 +719,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       if (keys.length === 1 && keys[0] === 'nextSibling') {
         expr(values[0], builder);
       } else {
-        throw new Error(`SYNTAX ERROR: #-in-element does not take a \`${keys[0]}\` option`);
+        throw new Error(`SYNTAX ERROR: #in-element does not take a \`${keys[0]}\` option`);
       }
     } else {
       expr(null, builder);
