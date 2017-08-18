@@ -61,12 +61,16 @@ export const Resolver = EmberObject.extend({
   in a subclass. For example, you could enhance how a template
   is resolved like so:
 
-  ```javascript
-  App = Ember.Application.create({
-    Resolver: Ember.DefaultResolver.extend({
-      resolveTemplate: function(parsedName) {
+  ```app/app.js
+  import Application from '@ember/application';
+  import GlobalsResolver from '@ember/application/globals-resolver';
+
+  App = Application.create({
+    Resolver: GlobalsResolver.extend({
+      resolveTemplate(parsedName) {
         let resolvedTemplate = this._super(parsedName);
         if (resolvedTemplate) { return resolvedTemplate; }
+
         return Ember.TEMPLATES['not_found'];
       }
     })
@@ -117,11 +121,9 @@ export default EmberObject.extend({
   init() {
     this._parseNameCache = dictionary(null);
   },
+
   normalize(fullName) {
-    let [
-      type,
-      name
-    ] = fullName.split(':', 2);
+    let [ type, name ] = fullName.split(':');
 
     assert(
       'Tried to normalize a container name without a colon (:) in it. ' +
@@ -131,26 +133,14 @@ export default EmberObject.extend({
     );
 
     if (type !== 'template') {
-      let result = name;
-
-      if (result.indexOf('.') > -1) {
-        result = result.replace(/\.(.)/g, m => m.charAt(1).toUpperCase());
-      }
-
-      if (name.indexOf('_') > -1) {
-        result = result.replace(/_(.)/g, m => m.charAt(1).toUpperCase());
-      }
-
-      if (name.indexOf('-') > -1) {
-        result = result.replace(/-(.)/g, m => m.charAt(1).toUpperCase());
-      }
+      let result = name
+        .replace(/(\.|_|-)./g, m => m.charAt(1).toUpperCase());
 
       return `${type}:${result}`;
     } else {
       return fullName;
     }
   },
-
 
   /**
     This method is called via the container's resolver method.
@@ -203,10 +193,7 @@ export default EmberObject.extend({
   },
 
   _parseName(fullName) {
-    let [
-      type,
-      fullNameWithoutType
-    ] = fullName.split(':');
+    let [ type, fullNameWithoutType ] = fullName.split(':');
 
     let name = fullNameWithoutType;
     let namespace = get(this, 'namespace');
@@ -284,9 +271,10 @@ export default EmberObject.extend({
     @protected
   */
   useRouterNaming(parsedName) {
-    parsedName.name = parsedName.name.replace(/\./g, '_');
     if (parsedName.name === 'basic') {
       parsedName.name = '';
+    } else {
+      parsedName.name = parsedName.name.replace(/\./g, '_');
     }
   },
   /**
@@ -388,20 +376,15 @@ export default EmberObject.extend({
   },
 
   /**
-   @method _logLookup
-   @param {Boolean} found
-   @param {Object} parsedName
-   @private
+    @method _logLookup
+    @param {Boolean} found
+    @param {Object} parsedName
+    @private
   */
   _logLookup(found, parsedName) {
-    let symbol, padding;
+    let symbol = found ? '[✓]' : '[ ]';
 
-    if (found) {
-      symbol = '[✓]';
-    } else {
-      symbol = '[ ]';
-    }
-
+    let padding;
     if (parsedName.fullName.length > 60) {
       padding = '.';
     } else {
@@ -412,12 +395,12 @@ export default EmberObject.extend({
   },
 
   /**
-   Used to iterate all items of a given type.
+    Used to iterate all items of a given type.
 
-   @method knownForType
-   @param {String} type the type to search for
-   @private
-   */
+    @method knownForType
+    @param {String} type the type to search for
+    @private
+  */
   knownForType(type) {
     let namespace = get(this, 'namespace');
     let suffix = StringUtils.classify(type);
@@ -439,19 +422,18 @@ export default EmberObject.extend({
   },
 
   /**
-   Converts provided name from the backing namespace into a container lookup name.
+    Converts provided name from the backing namespace into a container lookup name.
 
-   Examples:
+    Examples:
 
-   App.FooBarHelper -> helper:foo-bar
-   App.THelper -> helper:t
+    * App.FooBarHelper -> helper:foo-bar
+    * App.THelper -> helper:t
 
-   @method translateToContainerFullname
-   @param {String} type
-   @param {String} name
-   @private
-   */
-
+    @method translateToContainerFullname
+    @param {String} type
+    @param {String} name
+    @private
+  */
   translateToContainerFullname(type, name) {
     let suffix = StringUtils.classify(type);
     let namePrefix = name.slice(0, suffix.length * -1);

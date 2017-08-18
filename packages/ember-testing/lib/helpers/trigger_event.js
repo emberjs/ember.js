@@ -19,7 +19,7 @@ import { fireEvent } from '../events';
                            argument to find only within the context's children
  @param {String} type The event type to be triggered.
  @param {Object} [options] The options to be passed to jQuery.Event.
- @return {RSVP.Promise}
+ @return {RSVP.Promise<undefined>}
  @since 1.5.0
  @public
 */

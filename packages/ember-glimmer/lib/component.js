@@ -84,9 +84,9 @@ export const BOUNDS = symbol('BOUNDS');
   `hello` for the `person-profile` component:
 
   ```app/components/person-profile.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     actions: {
       hello(name) {
         console.log("Hello", name);
@@ -118,9 +118,9 @@ export const BOUNDS = symbol('BOUNDS');
   The following component class:
 
   ```app/components/emphasized-paragraph.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     tagName: 'em'
   });
   ```
@@ -138,9 +138,9 @@ export const BOUNDS = symbol('BOUNDS');
   `classNames` property that is set to an array of strings:
 
   ```app/components/my-widget.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     classNames: ['my-class', 'my-other-class']
   });
   ```
@@ -157,9 +157,9 @@ export const BOUNDS = symbol('BOUNDS');
   attribute. These properties can be computed properties:
 
   ```app/components/my-widget.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     classNameBindings: ['propertyA', 'propertyB'],
     propertyA: 'from-a',
     propertyB: Ember.computed(function() {
@@ -179,9 +179,9 @@ export const BOUNDS = symbol('BOUNDS');
   The class name will not be added if the value is `false` or `undefined`.
 
   ```app/components/my-widget.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     classNameBindings: ['hovered'],
     hovered: true
   });
@@ -198,9 +198,9 @@ export const BOUNDS = symbol('BOUNDS');
   preferred value after a ":" character when defining the binding:
 
   ```app/components/my-widget.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     classNameBindings: ['awesome:so-very-cool'],
     awesome: true
   });
@@ -216,9 +216,9 @@ export const BOUNDS = symbol('BOUNDS');
   camelCase-style format will be converted to a dasherized format:
 
   ```app/components/my-widget.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     classNameBindings: ['isUrgent'],
     isUrgent: true
   });
@@ -234,9 +234,9 @@ export const BOUNDS = symbol('BOUNDS');
   traversing a path relative to the component itself:
 
   ```app/components/my-widget.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     classNameBindings: ['messages.empty'],
     messages: Ember.Object.create({
       empty: true
@@ -255,9 +255,9 @@ export const BOUNDS = symbol('BOUNDS');
   like this:
 
   ```app/components/my-widget.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     classNameBindings: ['isEnabled:enabled:disabled'],
     isEnabled: true
   });
@@ -279,10 +279,10 @@ export const BOUNDS = symbol('BOUNDS');
   This syntax offers the convenience to add a class if a property is `false`:
 
   ```app/components/my-widget.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
   // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
-  export default Ember.Component.extend({
+  export default Component.extend({
     classNameBindings: ['isEnabled::disabled'],
     isEnabled: true
   });
@@ -318,9 +318,9 @@ export const BOUNDS = symbol('BOUNDS');
   HTML associated attribute:
 
   ```app/components/my-anchor.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     tagName: 'a',
     attributeBindings: ['href'],
     href: 'http://google.com'
@@ -337,9 +337,9 @@ export const BOUNDS = symbol('BOUNDS');
   the source property and the destination property:
 
   ```app/components/my-anchor.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     tagName: 'a',
     attributeBindings: ['url:href'],
     url: 'http://google.com'
@@ -356,9 +356,9 @@ export const BOUNDS = symbol('BOUNDS');
   mapped, since `:` is not a valid character for properties in Javascript:
 
   ```app/components/my-use.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     tagName: 'use',
     attributeBindings: ['xlinkHref:xlink:href'],
     xlinkHref: '#triangle'
@@ -375,9 +375,9 @@ export const BOUNDS = symbol('BOUNDS');
   the attribute will be present or absent depending on the value:
 
   ```app/components/my-text-input.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     tagName: 'input',
     attributeBindings: ['disabled'],
     disabled: false
@@ -393,9 +393,9 @@ export const BOUNDS = symbol('BOUNDS');
   `attributeBindings` can refer to computed properties:
 
   ```app/components/my-text-input.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     tagName: 'input',
     attributeBindings: ['disabled'],
     disabled: Ember.computed(function() {
@@ -412,9 +412,9 @@ export const BOUNDS = symbol('BOUNDS');
   return value of the `attributeBindings` monitored property:
 
   ```app/components/my-text-input.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     tagName: 'form',
     attributeBindings: ['novalidate'],
     novalidate: null
@@ -432,6 +432,34 @@ export const BOUNDS = symbol('BOUNDS');
   See [Ember.Templates.helpers.yield](/api/classes/Ember.Templates.helpers.html#method_yield)
   for more information.
 
+  Layout can be used to wrap content in a component. In addition
+  to wrapping content in a Component's template, you can also use
+  the public layout API in your Component JavaScript.
+
+  ```app/templates/components/person-profile.hbs
+    <h1>Person's Title</h1>
+    <div class='details'>{{yield}}</div>
+  ```
+
+  ```app/components/person-profile.js
+    import Component from '@ember/component';
+    import layout from '../templates/components/person-profile';
+
+    export default Component.extend({
+      layout
+    });
+  ```
+
+  The above will result in the following HTML output:
+
+  ```html
+    <h1>Person's Title</h1>
+    <div class="details">
+      <h2>Chief Basket Weaver</h2>
+      <h3>Fisherman Industries</h3>
+    </div>
+  ```
+
 
   ## Responding to Browser Events
 
@@ -447,9 +475,9 @@ export const BOUNDS = symbol('BOUNDS');
   argument to this method.
 
   ```app/components/my-widget.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     click(event) {
       // will be called when an instance's
       // rendered element is clicked
@@ -550,7 +578,7 @@ const Component = CoreView.extend(
           {
             id: 'ember-views.component.defaultLayout',
             until: '3.0.0',
-            url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-component-defaultlayout'
+            url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-component-defaultlayout'
           }
         );
 
@@ -809,14 +837,7 @@ const Component = CoreView.extend(
      */
 
     /**
-      A component may contain a layout. A layout is a regular template but
-      supersedes the `template` property during rendering. It is the
-      responsibility of the layout template to retrieve the `template`
-      property from the component (or alternatively, call `Handlebars.helpers.yield`,
-      `{{yield}}`) to render it in the correct location.
-      This is useful for a component that has a shared wrapper, but which delegates
-      the rendering of the contents of the wrapper to the `template` property
-      on a subclass.
+      Layout can be used to wrap content in a component.
       @property layout
       @type Function
       @public
@@ -858,7 +879,7 @@ const Component = CoreView.extend(
       instantiated:
 
       ```javascript
-      export default Ember.Component.extend({
+      export default Component.extend({
         init() {
           this._super(...arguments);
 

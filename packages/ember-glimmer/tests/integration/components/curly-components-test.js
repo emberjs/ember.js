@@ -1485,7 +1485,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
   }
 
-  ['@test `template` specified in component is overriden by block']() {
+  ['@test `template` specified in component is overridden by block']() {
     this.registerComponent('with-template', {
       ComponentClass: Component.extend({
         template: compile('Should not be used')
@@ -3149,5 +3149,17 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.render('{{foo-bar}}');
 
     this.assertText('Hi!');
+  }
+
+  ['@test can access properties off of rest style positionalParams array'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend().reopenClass({ positionalParams: 'things' }),
+      // using `attrs` here to simulate `@things.length`
+      template: `{{attrs.things.length}}`
+    });
+
+    this.render('{{foo-bar "foo" "bar" "baz"}}');
+
+    this.assertText('3');
   }
 });

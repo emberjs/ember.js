@@ -1,15 +1,30 @@
 # Ember Changelog
 
-### 2.14.0-beta.2 (May 10, 2017)
+### 2.15.0-beta.1 (July 5, 2017)
 
+- [#14338](https://github.com/emberjs/ember.js/pull/14338) [FEATURE] Remove explicit names from initializers.
+- [#15325](https://github.com/emberjs/ember.js/pull/15325) / [#15326](https://github.com/emberjs/ember.js/pull/15326) [FEATURE ember-engines-mount-params] Allow `{{mount` to accept a `model` named parameter.
+- [#15347](https://github.com/emberjs/ember.js/pull/15347) [BUGFIX] Make better errors for meta updates after object destruction.
+- [#15411](https://github.com/emberjs/ember.js/pull/15411) [CLEANUP] Remove deprecated `Ember.Backburner`.
+- [#15366](https://github.com/emberjs/ember.js/pull/15366) [BUGFIX] Allow numeric keys for the `get` helper.
+- [#14805](https://github.com/emberjs/ember.js/pull/14805) / [#14861](https://github.com/emberjs/ember.js/pull/14861) / [#14979](https://github.com/emberjs/ember.js/pull/14979) / [#15414](https://github.com/emberjs/ember.js/pull/15414) / [#15415](https://github.com/emberjs/ember.js/pull/15415) [FEATURE ember-routing-router-service] Enable by default.
+- [#15193](https://github.com/emberjs/ember.js/pull/15193) [CLEANUP] Remove `owner._lookupFactory` support.
+
+### 2.14.0 (July 5, 2017)
+
+- [#15312](https://github.com/emberjs/ember.js/pull/15312) [BUGFIX] Avoid re-freezing already frozen objects.
+- [#15315](https://github.com/emberjs/ember.js/pull/15315) [FEATURE] Add minlength to TextSupport
+- [#15321](https://github.com/emberjs/ember.js/pull/15321) [BUGFIX] Improve fastboot debugger/repl experience
+- [#15366](https://github.com/emberjs/ember.js/pull/15366) [BUGFIX] Allow numeric keys for the `get` helper.
+- [#15242](https://github.com/emberjs/ember.js/pull/15242) [BUGFIX] Fix EmberError import in system/router
+- [#15204](https://github.com/emberjs/ember.js/pull/15204) [DEPRECATION] `Ember.MODEL_FACTORY_INJECTIONS` is now always false, and issues a deprecation if set.
+- [#15239](https://github.com/emberjs/ember.js/pull/15239) [BUGFIX] Ensure `Ember.deprecate` is exported properly.
+- [glimmerjs/glimmer-vm#529](https://github.com/glimmerjs/glimmer-vm/pull/529) [BUGFIX] Fix issues identified with custom element support.
+- [#15277](https://github.com/emberjs/ember.js/pull/15277) [BUGFIX] Fix issues with retrying an initial transition.
 - [#15138](https://github.com/emberjs/ember.js/pull/15138) [BUGFIX] Fix mocha blueprint service test filename
 - [#15193](https://github.com/emberjs/ember.js/pull/15193) [BUGFIX] Ensure `factoryFor` does validation.
 - [#15207](https://github.com/emberjs/ember.js/pull/15207) [BUGFIX] Ensure that an engines container is only destroyed once.
 - [#15218](https://github.com/emberjs/ember.js/pull/15218) [BUGFIX] Update route-recognizer to v0.3.3.
-
-
-### 2.14.0-beta.1 (April 27, 2017)
-
 - [#15015](https://github.com/emberjs/ember.js/pull/15015) Allow mounting routeless engines with a bound engine name
 - [#15078](https://github.com/emberjs/ember.js/pull/15078) [DEPRECATION] Deprecate `EventManager#canDispatchToEventManager`.
 - [#15085](https://github.com/emberjs/ember.js/pull/15085) Add missing instrumentation for compilation/lookup phase
@@ -19,6 +34,27 @@
 - [#15178](https://github.com/emberjs/ember.js/pull/15178) Refactor route to lookup controller for QPs.
 - [#15129](https://github.com/emberjs/ember.js/pull/15129) Fix access to service:-document in ember-engines
 
+### 2.13.4 (July 5, 2017)
+
+- [#15321](https://github.com/emberjs/ember.js/pull/15321) [BUGFIX] Improve fastboot debugger/repl experience.
+
+### 2.13.3 (May 31, 2017)
+
+- [#15284](https://github.com/emberjs/ember.js/pull/15284) [BUGFIX] remove nested transaction assertion from glimmer.
+- [glimmerjs/glimmer-vm#529](https://github.com/glimmerjs/glimmer-vm/pull/529) [BUGFIX] Fix issues identified with custom element support.
+
+### 2.13.2 (May 18, 2017)
+
+- Revert over eager dependency upgrades in 2.13.1.
+
+### 2.13.1 (May 17, 2017)
+
+- [#15129](https://github.com/emberjs/ember.js/pull/15129) Fix access to document service in `ember-engines`.
+- [#15138](https://github.com/emberjs/ember.js/pull/15138) [BUGFIX] Fix mocha blueprint service test filename
+- [#15204](https://github.com/emberjs/ember.js/pull/15204) [DEPRECATION] `Ember.MODEL_FACTORY_INJECTIONS` is now always false, deprecate setting it.
+- [#15207](https://github.com/emberjs/ember.js/pull/15207) [BUGFIX] Ensure child engines do not have their container destroyed twice.
+- [#15242](https://github.com/emberjs/ember.js/pull/15242) [BUGFIX] Fix `EmberError` import in system/router.
+- [#15247](https://github.com/emberjs/ember.js/pull/15247) [BUGFIX] Ensure nested custom elements render properly.
 
 ### 2.13.0 (April 27, 2017)
 
@@ -218,7 +254,7 @@
 - [#13672](https://github.com/emberjs/ember.js/pull/13672) [BUGFIX] Fix issue with `this.render` and `this.disconnectOutlet` in routes.
 - [#13716](https://github.com/emberjs/ember.js/pull/13716) [BUGFIX] Ensure that `Ember.Test.waiters` allows access to configured test waiters.
 - [#13273](https://github.com/emberjs/ember.js/pull/13273) [BUGFIX] Fix a number of query param related issues reported.
-- [#13424](https://github.com/emberjs/ember.js/pull/13424) [DEPRECATE] Deprecate Ember.Binding. See [the deprecation guide](http://emberjs.com/deprecations/v2.x/#toc_ember-binding) for more details.
+- [#13424](https://github.com/emberjs/ember.js/pull/13424) [DEPRECATE] Deprecate Ember.Binding. See [the deprecation guide](https://emberjs.com/deprecations/v2.x/#toc_ember-binding) for more details.
 - [#13599](https://github.com/emberjs/ember.js/pull/13599) [FEATURE] Enable `ember-runtime-computed-uniq-by` feature.
 
 ### 2.6.2 (July 11, 2016)
@@ -359,7 +395,7 @@
 ### 2.3.0 (January 17, 2016)
 
 - [#12712](https://github.com/emberjs/ember.js/pull/12712) [BUGFIX] Create a new hash parameter when creating a component cell
-- [#12746](https://github.com/emberjs/ember.js/pull/12746) [BUGFIX] Update htmlbars to 0.14.11 to fix [CVE-2015-7565](http://emberjs.com/blog/2016/01/14/security-releases-ember-1-11-4-1-12-2-1-13-12-2-0-3-2-1-2-2-2-1.html).
+- [#12746](https://github.com/emberjs/ember.js/pull/12746) [BUGFIX] Update htmlbars to 0.14.11 to fix [CVE-2015-7565](https://emberjs.com/blog/2016/01/14/security-releases-ember-1-11-4-1-12-2-1-13-12-2-0-3-2-1-2-2-2-1.html).
 - [#12752](https://github.com/emberjs/ember.js/pull/12752) [BUGFIX] Do not re-raise on errors handled in route error action.
 - [#12764](https://github.com/emberjs/ember.js/pull/12764) [BUGFIX] Read values of `action` helper parameters
 - [#12793](https://github.com/emberjs/ember.js/pull/12793) [BUGFIX] Remove jQuery version assertion.
@@ -590,7 +626,7 @@
 
 ### 1.13.12 (January 14, 2016)
 
-- [CVE-2015-7565](http://emberjs.com/blog/2016/01/14/security-releases-ember-1-11-4-1-12-2-1-13-12-2-0-3-2-1-2-2-2-1.html)
+- [CVE-2015-7565](https://emberjs.com/blog/2016/01/14/security-releases-ember-1-11-4-1-12-2-1-13-12-2-0-3-2-1-2-2-2-1.html)
 
 ### 1.13.11 (November 16, 2015)
 
@@ -604,7 +640,7 @@
 ### 1.13.10 (September 6, 2015)
 
 - [#12104](https://github.com/emberjs/ember.js/pull/12104) [BUGFIX] Ensure `concatenatedProperties` are not stomped.
-- [#12256](https://github.com/emberjs/ember.js/pull/12256) [BUGFIX] Ensure concat streams unsubscribe properly. Fixes memory leak with attributes specified within quotes in the template (i.e. `<div data-foo="{{somethign}}"></div>`).
+- [#12256](https://github.com/emberjs/ember.js/pull/12256) [BUGFIX] Ensure concat streams unsubscribe properly. Fixes memory leak with attributes specified within quotes in the template (i.e. `<div data-foo="{{something}}"></div>`).
 - [#12272](https://github.com/emberjs/ember.js/pull/12272) [BUGFIX] Update HTMLBars to fix memory leak when an `{{each}}` is inside an `{{if}}`.
 
 ### 1.13.9 (August 22, 2015)
@@ -805,7 +841,7 @@
 - [#10709](https://github.com/emberjs/ember.js/pull/10709) [BUGFIX] Clear `src` attributes that are set to `null` or `undefined`.
 - [#10695](https://github.com/emberjs/ember.js/pull/10695) [SECURITY] Add `<base>` and `<embed>` to list of tags where `src` and `href` are sanitized.
 - [#10683](https://github.com/emberjs/ember.js/pull/10683) / [#10703](https://github.com/emberjs/ember.js/pull/10703) / [#10712](https://github.com/emberjs/ember.js/pull/10712) [BUGFIX] Fix regressions added during the `{{outlet}}` refactor.
-- [#10663](https://github.com/emberjs/ember.js/pull/10663) / [#10711](https://github.com/emberjs/ember.js/pull/10711) [SECURITY] Warn when using dynamic style attributes without a `SafeString` value. [See here](http://emberjs.com/deprecations/v1.x/#toc_warning-when-binding-style-attributes) for more details.
+- [#10663](https://github.com/emberjs/ember.js/pull/10663) / [#10711](https://github.com/emberjs/ember.js/pull/10711) [SECURITY] Warn when using dynamic style attributes without a `SafeString` value. [See here](https://emberjs.com/deprecations/v1.x/#toc_warning-when-binding-style-attributes) for more details.
 - [#10463](https://github.com/emberjs/ember.js/pull/10463) [BUGFIX] Make async test helpers more robust. Fixes hanging test when elements are not found.
 - [#10631](https://github.com/emberjs/ember.js/pull/10631) Deprecate using `fooBinding` syntax (`{{some-thing nameBinding="model.name"}}`) in templates.
 - [#10627](https://github.com/emberjs/ember.js/pull/10627) [BUGFIX] Ensure specifying `class` as a sub-expression (`{{input value=foo class=(some-sub-expr)}}`) works properly.
@@ -863,7 +899,7 @@
 * [BUGFIX] Ensure that property case is normalized.
 * [BUGFIX] Prevent an error from being thrown if the errorThrown property is a string when catching unhandled promise rejections.
 * [BUGFIX] `contenteditable` elements should fire focus events in `ember-testing` click helper.
-* [BUGFIX] Remove HTMLBars from builds `ember.debug.js` and `ember.prod.js` builds. Please see http://emberjs.com/blog/2015/02/05/compiling-templates-in-1-10-0.html for more details.
+* [BUGFIX] Remove HTMLBars from builds `ember.debug.js` and `ember.prod.js` builds. Please see https://emberjs.com/blog/2015/02/05/compiling-templates-in-1-10-0.html for more details.
 * [BUGFIX] Ensure that calling the `wait` testing helper without routing works properly.
 * [BUGFIX] Ensure that a plus sign in query params are treated as spaces.
 * [BUGFIX] Fix broken `Ember.Test.unregisterWaiter` semantics.
@@ -878,7 +914,7 @@
   * `removeAttribute` fix for IE <11 and SVG.
   * Disable `cloneNodes` in IE8.
   * Improve HTML validation and error messages thrown.
-  * Fix a number of template compliation issues in IE8.
+  * Fix a number of template compilation issues in IE8.
   * Use the correct namespace in `parseHTML` (fixes various issues that occur
     when changing to and from alternate namespaces).
   * Ensure values are converted to `String`'s when setting attributes (fixes issues in IE10 & IE11).
@@ -961,7 +997,7 @@
 Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Previously, if `component-a` did not handle the action, it would silently continue.  Now, an assertion would be triggered.
 
 * [PERF] Speedup Mixin creation.
-* [BREAKING] Require Handlebars 2.0. See [blog post](http://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
+* [BREAKING] Require Handlebars 2.0. See [blog post](https://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
 * Allow all rejection types in promises to be handled.
 * Mandatory setter checks for configurable, and does not clobber non-configurable properties.
 * Remove long deprecated `Ember.empty` and `Ember.none`.
@@ -1045,7 +1081,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [FEATURE] ember-metal-is-present
 * [FEATURE] property-brace-expansion-improvement
 * Deprecate usage of Internet Explorer 6 & 7.
-* Deprecate global access to view classes from template (see the [deprecation guide](http://emberjs.com/guides/deprecations/)).
+* Deprecate global access to view classes from template (see the [deprecation guide](https://emberjs.com/guides/deprecations/)).
 * Deprecate `Ember.Set` (note: this is NOT the `Ember.set`).
 * Deprecate `Ember.computed.defaultTo`.
 * Remove long deprecated `Ember.StateManager` warnings.
@@ -1116,7 +1152,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 ### Ember 1.6.0 (July, 7, 2014)
 
 * [BREAKING BUGFIX] An empty array is treated as falsy value in `bind-attr` to be in consistent
-  with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty
+  with `if` helper. Breaking for apps that relies on the previous behavior which treats an empty
   array as truthy value in `bind-attr`.
 * [BUGFIX] Ensure itemController's do not leak by tying them to the parent controller lifecycle.
 * [BUGFIX] Spaces in brace expansion throws an error.
@@ -1955,7 +1991,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Various enhancements to bound helpers: adds multiple property support to bound helpers, adds bind-able options hash properties, adds {{unbound}} helper support to render unbound form of helpers.
 * Add App.inject
 * Add Ember.EnumberableUtils.intersection
-* Deprecate Controller#controllerFor in favour of Controller#needs
+* Deprecate Controller#controllerFor in favor of Controller#needs
 * Adds `bubbles` property to Ember.TextField
 * Allow overriding of Ember.Router#handleURL
 * Allow libraries loaded before Ember to tie into Ember load hooks
@@ -1987,7 +2023,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Add `action` support to Ember.TextField
 * Warn about using production builds in localhost
 * Update Metamorph
-* Deprecate Ember.alias in favour of Ember.aliasMethod
+* Deprecate Ember.alias in favor of Ember.aliasMethod
 * Add Ember.computed.alias
 * Allow chaining on DeferredMixin#then
 * ArrayController learned itemControllerClass.

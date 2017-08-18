@@ -10,7 +10,6 @@ import {
   isNone
 } from 'ember-metal';
 import { UnboundReference } from '../utils/references';
-import { EvaluatedPositionalArgs } from '@glimmer/runtime';
 import { isConst } from '@glimmer/reference';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
@@ -67,10 +66,10 @@ export const ACTION = symbol('ACTION');
 
   Here is an example action handler on a component:
 
-  ```js
-  import Ember from 'ember';
+  ```app/components/my-component.js
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     actions: {
       save() {
         this.get('model').save();
@@ -84,7 +83,7 @@ export const ACTION = symbol('ACTION');
   Two options can be passed to the `action` helper when it is used in this way.
 
   * `target=someProperty` will look to `someProperty` instead of the current
-    context for the `actions` hash. This can be useful when targetting a
+    context for the `actions` hash. This can be useful when targeting a
     service for actions.
   * `value="target.value"` will read the path `target.value` off the first
     argument to the action when it is called and rewrite the first argument
@@ -99,8 +98,10 @@ export const ACTION = symbol('ACTION');
   additional arguments are passed to the action function. This has interesting
   properties combined with currying of arguments. For example:
 
-  ```js
-  export default Ember.Component.extend({
+  ```app/components/my-component.js
+  import Component from '@ember/component';
+
+  export default Component.extend({
     actions: {
       // Usage {{input on-input=(action (action 'setName' model) value="target.value")}}
       setName(model, name) {
@@ -119,9 +120,9 @@ export const ACTION = symbol('ACTION');
   with `on-input` above. For example:
 
   ```app/components/my-input.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     actions: {
       setName(model, name) {
         model.set('name', name);
@@ -135,9 +136,9 @@ export const ACTION = symbol('ACTION');
   ```
 
   ```app/components/my-component.js
-  import Ember from 'ember';
+  import Component from '@ember/component';
 
-  export default Ember.Component.extend({
+  export default Component.extend({
     click() {
       // Note that model is not passed, it was curried in the template
       this.sendAction('submit', 'bob');
@@ -193,7 +194,7 @@ export const ACTION = symbol('ACTION');
   ```
 
   ```app/helpers/disable-bubbling.js
-  import Ember from 'ember';
+  import { helper } from '@ember/component/helper';
 
   export function disableBubbling([action]) {
     return function(event) {
@@ -201,13 +202,13 @@ export const ACTION = symbol('ACTION');
       return action(event);
     };
   }
-  export default Ember.Helper.helper(disableBubbling);
+  export default helper(disableBubbling);
   ```
 
   If you need the default handler to trigger you should either register your
   own event handler, or use event methods on your view class. See
-  ["Responding to Browser Events"](/api/classes/Ember.View.html#toc_responding-to-browser-events)
-  in the documentation for Ember.View for more information.
+  ["Responding to Browser Events"](/api/classes/Ember.Component#responding-to-browser-events)
+  in the documentation for Ember.Component for more information.
 
   ### Specifying DOM event type
 
@@ -221,7 +222,7 @@ export const ACTION = symbol('ACTION');
   </div>
   ```
 
-  See ["Event Names"](/api/classes/Ember.View.html#toc_event-names) for a list of
+  See ["Event Names"](/api/classes/Ember.Component#event-names) for a list of
   acceptable DOM event names.
 
   ### Specifying whitelisted modifier keys
@@ -258,10 +259,11 @@ export const ACTION = symbol('ACTION');
   ```
 
   ```app/controllers/application.js
-  import Ember from 'ember';
+  import Controller from '@ember/controller';
+  import { inject as service } from '@ember/service';
 
-  export default Ember.Controller.extend({
-    someService: Ember.inject.service()
+  export default Controller.extend({
+    someService: service()
   });
   ```
 
@@ -272,23 +274,16 @@ export const ACTION = symbol('ACTION');
 export default function(vm, args) {
   let { named, positional } = args;
 
+  let capturedArgs = positional.capture();
+
   // The first two argument slots are reserved.
   // pos[0] is the context (or `this`)
   // pos[1] is the action name or function
   // Anything else is an action argument.
-  let context = positional.at(0);
-  let action = positional.at(1);
+  let [context, action, ...restArgs] = capturedArgs.references;
 
   // TODO: Is there a better way of doing this?
   let debugKey = action._propertyKey;
-
-  let restArgs;
-
-  if (positional.length === 2) {
-    restArgs = EvaluatedPositionalArgs.empty();
-  } else {
-    restArgs = EvaluatedPositionalArgs.create(positional.values.slice(2));
-  }
 
   let target = named.has('target') ? named.get('target') : context;
   let processArgs = makeArgsProcessor(named.has('value') && named.get('value'), restArgs);
@@ -315,7 +310,7 @@ function makeArgsProcessor(valuePathRef, actionArgsRef) {
 
   if (actionArgsRef.length > 0) {
     mergeArgs = function(args) {
-      return actionArgsRef.value().concat(args);
+      return actionArgsRef.map(ref => ref.value()).concat(args);
     };
   }
 

@@ -7,13 +7,15 @@
   the DOM) to a user. For example, given a component with the property "name",
   that component's template can use the name in several ways:
 
-  ```app/components/person.js
-    export default Ember.Component.extend({
-      name: 'Jill'
-    });
+  ```app/components/person-profile.js
+  import Component from '@ember/component';
+
+  export default Component.extend({
+    name: 'Jill'
+  });
   ```
 
-  ```app/components/person.hbs
+  ```app/components/person-profile.hbs
   {{name}}
   <div>{{name}}</div>
   <span data-name={{name}}></span>
@@ -81,7 +83,7 @@
   for semantic clarity as it allows you to retain default scope or to reference a property from another
   `{{with}}` block.
 
-  If the aliased property is "falsey", for example: `false`, `undefined` `null`, `""`, `0`, NaN or
+  If the aliased property is "falsey", for example: `false`, `undefined` `null`, `""`, `0`, `NaN` or
   an empty array, the block will not be rendered.
 
   ```handlebars
@@ -95,9 +97,7 @@
     {{/each}}
   {{/with}}
   ```
-
-  Without the `as` operator, it would be impossible to reference `user.name` in the example above.
-
+  
   NOTE: The alias should not reuse a name from the bound property path.
 
   For example: `{{#with foo.bar as |foo|}}` is not supported because it attempts to alias using
@@ -119,13 +119,13 @@
   When designing components `{{yield}}` is used to denote where, inside the component's
   template, an optional block passed to the component should render:
 
-  ```application.hbs
+  ```app/templates/application.hbs
   {{#labeled-textfield value=someProperty}}
     First name:
   {{/labeled-textfield}}
   ```
 
-  ```components/labeled-textfield.hbs
+  ```app/templates/components/labeled-textfield.hbs
   <label>
     {{yield}} {{input value=value}}
   </label>
@@ -141,7 +141,7 @@
 
   Additionally you can `yield` properties into the context for use by the consumer:
 
-  ```application.hbs
+  ```app/templates/application.hbs
   {{#labeled-textfield value=someProperty validator=(action 'firstNameValidator') as |validationError|}}
     {{#if validationError}}
       <p class="error">{{ValidationError}}</p>
@@ -150,7 +150,7 @@
   {{/labeled-textfield}}
   ```
 
-  ```components/labeled-textfield.hbs
+  ```app/templates/components/labeled-textfield.hbs
   <label>
     {{yield validationError}} {{input value=value}}
   </label>
@@ -274,7 +274,8 @@ export {
 export {
   Renderer,
   InertRenderer,
-  InteractiveRenderer
+  InteractiveRenderer,
+  _resetRenderers
 } from './renderer';
 export {
   getTemplate,
@@ -286,3 +287,4 @@ export {
 export { setupEngineRegistry, setupApplicationRegistry } from './setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './dom';
 export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './syntax';
+export { default as AbstractComponentManager } from './component-managers/abstract';

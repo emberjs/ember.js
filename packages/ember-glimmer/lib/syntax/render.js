@@ -2,20 +2,18 @@
 @module ember
 @submodule ember-glimmer
 */
-import {
-  ComponentDefinition
-} from '@glimmer/runtime';
+
 import { ConstReference, isConst } from '@glimmer/reference';
 import { assert } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
-import { RootReference } from '../utils/references';
-import { generateController, generateControllerFactory } from 'ember-routing';
-import { OutletLayoutCompiler } from './outlet';
-import AbstractManager from './abstract-manager';
+import { hashToArgs } from './utils';
+import {
+  RenderDefinition,
+  SINGLETON_RENDER_MANAGER,
+  NON_SINGLETON_RENDER_MANAGER
+} from '../component-managers/render';
 
-function makeComponentDefinition(vm) {
+function makeComponentDefinition(vm, args) {
   let env     = vm.env;
-  let args    = vm.getArgs();
   let nameRef = args.positional.at(0);
 
   assert(`The first argument of {{render}} must be quoted, e.g. {{render "sidebar"}}.`, isConst(nameRef));
@@ -61,8 +59,10 @@ function makeComponentDefinition(vm) {
 
   Example:
 
-  ```javascript
-  App.NavigationController = Ember.Controller.extend({
+  ```app/controllers/navigation.js
+  import Controller from '@ember/controller';
+
+  export default Controller.extend({
     who: "world"
   });
   ```
@@ -117,110 +117,14 @@ function makeComponentDefinition(vm) {
   @param {Hash} options
   @return {String} HTML string
   @public
+  @deprecated Use a component instead
 */
-export function renderMacro(path, params, hash, builder) {
+export function renderMacro(name, params, hash, builder) {
   if (!params) {
     params = [];
   }
   let definitionArgs = [params.slice(0), hash, null, null];
-  let args = [params.slice(1), hash, null, null];
-  builder.component.dynamic(definitionArgs, makeComponentDefinition, args, builder.symbolTable);
+  let args = [params.slice(1), hashToArgs(hash), null, null];
+  builder.component.dynamic(definitionArgs, makeComponentDefinition, args);
   return true;
-}
-
-class AbstractRenderManager extends AbstractManager {
-  prepareArgs(definition, args) {
-    return args;
-  }
-
-  /* abstract create(environment, definition, args, dynamicScope); */
-
-  layoutFor(definition, bucket, env) {
-    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
-  }
-
-  getSelf({ controller }) {
-    return new RootReference(controller);
-  }
-
-  getTag() {
-    return null;
-  }
-
-  getDestructor() {
-    return null;
-  }
-
-  didCreateElement() {}
-  didRenderLayout() {}
-  didCreate() {}
-  update() {}
-  didUpdateLayout() {}
-  didUpdate() {}
-}
-
-if (DEBUG) {
-  AbstractRenderManager.prototype.didRenderLayout = function() {
-    this.debugStack.pop();
-  };
-}
-
-class SingletonRenderManager extends AbstractRenderManager {
-  create(environment, definition, args, dynamicScope) {
-    let { name, env } = definition;
-    let controller = env.owner.lookup(`controller:${name}`) || generateController(env.owner, name);
-
-    if (DEBUG) {
-      this._pushToDebugStack(`controller:${name} (with the render helper)`, environment);
-    }
-
-    if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
-    }
-
-    return { controller };
-  }
-}
-
-const SINGLETON_RENDER_MANAGER = new SingletonRenderManager();
-
-class NonSingletonRenderManager extends AbstractRenderManager {
-  create(environment, definition, args, dynamicScope) {
-    let { name, env } = definition;
-    let modelRef = args.positional.at(0);
-    let controllerFactory = env.owner.factoryFor(`controller:${name}`);
-
-    let factory = controllerFactory || generateControllerFactory(env.owner, name);
-    let controller = factory.create({ model: modelRef.value() });
-
-    if (DEBUG) {
-      this._pushToDebugStack(`controller:${name} (with the render helper)`, environment);
-    }
-
-    if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
-    }
-
-    return { controller };
-  }
-
-  update({ controller }, args, dynamicScope) {
-    controller.set('model', args.positional.at(0).value());
-  }
-
-  getDestructor({ controller }) {
-    return controller;
-  }
-}
-
-const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
-
-class RenderDefinition extends ComponentDefinition {
-  constructor(name, template, env, manager) {
-    super('render', manager, null);
-
-    this.name = name;
-    this.template = template;
-    this.env = env;
-  }
 }

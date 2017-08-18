@@ -1,5 +1,4 @@
 import TransformOldBindingSyntax from './transform-old-binding-syntax';
-import TransformItemClass from './transform-item-class';
 import TransformAngleBracketComponents from './transform-angle-bracket-components';
 import TransformInputOnToOnEvent from './transform-input-on-to-onEvent';
 import TransformTopLevelComponents from './transform-top-level-components';
@@ -15,11 +14,15 @@ import TransformAttrsIntoArgs from './transform-attrs-into-args';
 import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformHasBlockSyntax from './transform-has-block-syntax';
 import TransformDotComponentInvocation from './transform-dot-component-invocation';
+import ExtractPragmaTag from './extract-pragma-tag';
+import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
+import {
+  GLIMMER_CUSTOM_COMPONENT_MANAGER
+} from 'ember/features';
 
-export default Object.freeze([
+const transforms = [
   TransformDotComponentInvocation,
   TransformOldBindingSyntax,
-  TransformItemClass,
   TransformAngleBracketComponents,
   TransformInputOnToOnEvent,
   TransformTopLevelComponents,
@@ -33,5 +36,12 @@ export default Object.freeze([
   TransformInputTypeSyntax,
   TransformAttrsIntoArgs,
   TransformEachInIntoEach,
-  TransformHasBlockSyntax
-]);
+  TransformHasBlockSyntax,
+  AssertInputHelperWithoutBlock
+];
+
+if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
+  transforms.push(ExtractPragmaTag);
+}
+
+export default Object.freeze(transforms);

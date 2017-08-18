@@ -20,7 +20,8 @@ module.exports = function toES5(tree, _options) {
     injectBabelHelpers,
     ['debug-macros', {
       debugTools: {
-        source: 'ember-debug'
+        source: 'ember-debug',
+        assertPredicateIndex: 1
       },
       envFlags: {
         source: 'ember-env-flags',
@@ -42,7 +43,7 @@ module.exports = function toES5(tree, _options) {
     ['transform-es2015-parameters'],
     ['transform-es2015-computed-properties', {loose: true}],
     ['transform-es2015-shorthand-properties'],
-    ['transform-es2015-block-scoping'],
+    ['transform-es2015-block-scoping', { 'throwIfClosureRequired': true }],
     ['check-es2015-constants'],
     ['transform-es2015-classes', { loose: true }],
     ['transform-proto-to-assign'],

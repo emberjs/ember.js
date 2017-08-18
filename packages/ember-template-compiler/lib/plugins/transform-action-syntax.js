@@ -24,39 +24,33 @@
   @class TransformActionSyntax
 */
 
-export default function TransformActionSyntax() {
-  // set later within Glimmer2 to the syntax package
-  this.syntax = null;
-}
+export default function transformActionSyntax({ syntax }) {
+  let { builders: b } = syntax;
 
-/**
-  @private
-  @method transform
-  @param {AST} ast The AST to be transformed.
-*/
-TransformActionSyntax.prototype.transform = function TransformActionSyntax_transform(ast) {
-  let { traverse, builders: b } = this.syntax;
+  return {
+    name: 'transform-action-syntax',
 
-  traverse(ast, {
-    ElementModifierStatement(node) {
-      if (isAction(node)) {
-        insertThisAsFirstParam(node, b);
-      }
-    },
-    MustacheStatement(node) {
-      if (isAction(node)) {
-        insertThisAsFirstParam(node, b);
-      }
-    },
-    SubExpression(node) {
-      if (isAction(node)) {
-        insertThisAsFirstParam(node, b);
+    visitors: {
+      ElementModifierStatement(node) {
+        if (isAction(node)) {
+          insertThisAsFirstParam(node, b);
+        }
+      },
+
+      MustacheStatement(node) {
+        if (isAction(node)) {
+          insertThisAsFirstParam(node, b);
+        }
+      },
+
+      SubExpression(node) {
+        if (isAction(node)) {
+          insertThisAsFirstParam(node, b);
+        }
       }
     }
-  });
-
-  return ast;
-};
+  };
+}
 
 function isAction(node) {
   return node.path.original === 'action';

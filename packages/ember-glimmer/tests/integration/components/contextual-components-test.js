@@ -835,14 +835,14 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     assert.ok(!isEmpty(instance), 'a instance was created');
     assert.equal(previousInstance, undefined, 'no previous component exists');
     assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-    assert.equal(this.$().text(), 'open', 'the componet text is "open"');
+    assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
     this.runTask(() => this.rerender());
 
     assert.ok(!isEmpty(instance), 'the component instance exists');
     assert.equal(previousInstance, undefined, 'no previous component exists');
     assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-    assert.equal(this.$().text(), 'open', 'the componet text is "open"');
+    assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
     this.runTask(() => this.context.set('isOpen', false));
 
@@ -863,7 +863,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     assert.ok(!isEmpty(instance), 'the component instance exists');
     assert.equal(previousInstance, undefined, 'no previous component exists');
     assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-    assert.equal(this.$().text(), 'open', 'the componet text is "open"');
+    assert.equal(this.$().text(), 'open', 'the components text is "open"');
   }
 
   ['@test GH#13982 contextual component ref is stable even when bound params change (bound name param)'](assert) {
@@ -895,14 +895,14 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     assert.ok(!isEmpty(instance), 'a instance was created');
     assert.equal(previousInstance, undefined, 'no previous component exists');
     assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-    assert.equal(this.$().text(), 'open', 'the componet text is "open"');
+    assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
     this.runTask(() => this.rerender());
 
     assert.ok(!isEmpty(instance), 'the component instance exists');
     assert.equal(previousInstance, undefined, 'no previous component exists');
     assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-    assert.equal(this.$().text(), 'open', 'the componet text is "open"');
+    assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
     this.runTask(() => this.context.set('isOpen', false));
 
@@ -923,7 +923,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     assert.ok(!isEmpty(instance), 'the component instance exists');
     assert.equal(previousInstance, undefined, 'no previous component exists');
     assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-    assert.equal(this.$().text(), 'open', 'the componet text is "open"');
+    assert.equal(this.$().text(), 'open', 'the components text is "open"');
   }
 
   ['@test GH#13982 contextual component ref is recomputed when component name param changes'](assert) {

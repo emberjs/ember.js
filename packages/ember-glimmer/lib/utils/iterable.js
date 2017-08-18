@@ -68,7 +68,7 @@ function identity(item) {
 function ensureUniqueKey(seen, key) {
   let seenCount = seen[key];
 
-  if (seenCount) {
+  if (seenCount > 0) {
     seen[key]++;
     return `${key}${ITERATOR_KEY_GUID}${seenCount}`;
   } else {
@@ -91,13 +91,21 @@ class ArrayIterator {
     return false;
   }
 
+  getMemo(position) {
+    return position;
+  }
+
+  getValue(position) {
+    return this.array[position];
+  }
+
   next() {
-    let { array, length, keyFor, position, seen } = this;
+    let { length, keyFor, position, seen } = this;
 
     if (position >= length) { return null; }
 
-    let value = array[position];
-    let memo = position;
+    let value = this.getValue(position);
+    let memo = this.getMemo(position);
     let key = ensureUniqueKey(seen, keyFor(value, memo));
 
     this.position++;
@@ -106,59 +114,30 @@ class ArrayIterator {
   }
 }
 
-class EmberArrayIterator {
+class EmberArrayIterator extends ArrayIterator {
   constructor(array, keyFor) {
-    this.array = array;
+    super(array, keyFor);
     this.length = get(array, 'length');
-    this.keyFor = keyFor;
-    this.position = 0;
-    this.seen = Object.create(null);
   }
 
-  isEmpty() {
-    return this.length === 0;
-  }
-
-  next() {
-    let { array, length, keyFor, position, seen } = this;
-
-    if (position >= length) { return null; }
-
-    let value = objectAt(array, position);
-    let memo = position;
-    let key = ensureUniqueKey(seen, keyFor(value, memo));
-
-    this.position++;
-
-    return { key, value, memo };
+  getValue(position) {
+    return objectAt(this.array, position);
   }
 }
 
-class ObjectKeysIterator {
+class ObjectKeysIterator extends ArrayIterator {
   constructor(keys, values, keyFor) {
+    super(values, keyFor);
     this.keys = keys;
-    this.values = values;
-    this.keyFor = keyFor;
-    this.position = 0;
-    this.seen = Object.create(null);
+    this.length = keys.length;
   }
 
-  isEmpty() {
-    return this.keys.length === 0;
+  getMemo(position) {
+    return this.keys[position];
   }
 
-  next() {
-    let { keys, values, keyFor, position, seen } = this;
-
-    if (position >= keys.length) { return null; }
-
-    let value = values[position];
-    let memo = keys[position];
-    let key = ensureUniqueKey(seen, keyFor(value, memo));
-
-    this.position++;
-
-    return { key, value, memo };
+  getValue(position) {
+    return this.array[position];
   }
 }
 

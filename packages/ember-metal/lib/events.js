@@ -3,11 +3,9 @@
 @submodule ember-metal
 */
 import { applyStr } from 'ember-utils';
-import { meta as metaFor, peekMeta } from './meta';
 import { deprecate, assert } from 'ember-debug';
-
+import { meta as metaFor, peekMeta } from './meta';
 import { ONCE, SUSPENDED } from './meta_listeners';
-
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -26,42 +24,6 @@ import { ONCE, SUSPENDED } from './meta_listeners';
       }
 
 */
-
-function indexOf(array, target, method) {
-  let index = -1;
-  // hashes are added to the end of the event array
-  // so it makes sense to start searching at the end
-  // of the array and search in reverse
-  for (let i = array.length - 3; i >= 0; i -= 3) {
-    if (target === array[i] && method === array[i + 1]) {
-      index = i;
-      break;
-    }
-  }
-  return index;
-}
-
-export function accumulateListeners(obj, eventName, otherActions) {
-  let meta = peekMeta(obj);
-  if (!meta) { return; }
-  let actions = meta.matchingListeners(eventName);
-  if (actions === undefined) { return; }
-  let newActions = [];
-
-  for (let i = actions.length - 3; i >= 0; i -= 3) {
-    let target = actions[i];
-    let method = actions[i + 1];
-    let flags = actions[i + 2];
-    let actionIndex = indexOf(otherActions, target, method);
-
-    if (actionIndex === -1) {
-      otherActions.push(target, method, flags);
-      newActions.push(target, method, flags);
-    }
-  }
-
-  return newActions;
-}
 
 /**
   Add an event listener
@@ -84,7 +46,7 @@ export function addListener(obj, eventName, target, method, once) {
     {
       id: 'ember-views.did-init-attrs',
       until: '3.0.0',
-      url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+      url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
     }
   );
 
@@ -126,11 +88,9 @@ export function removeListener(obj, eventName, target, method) {
     target = null;
   }
 
-  metaFor(obj).removeFromListeners(eventName, target, method, (...args) => {
-    if ('function' === typeof obj.didRemoveListener) {
-      obj.didRemoveListener(...args);
-    }
-  });
+  let func = ('function' === typeof obj.didRemoveListener) ?
+    obj.didRemoveListener.bind(obj) : ()=> {};
+  metaFor(obj).removeFromListeners(eventName, target, method, func);
 }
 
 /**
@@ -185,7 +145,8 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
   @param obj
 */
 export function watchedEvents(obj) {
-  return metaFor(obj).watchedEvents();
+  let meta = peekMeta(obj);
+  return meta && meta.watchedEvents() || [];
 }
 
 /**
@@ -212,7 +173,7 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
                      meta.matchingListeners(eventName);
   }
 
-  if (actions === undefined || actions.length === 0) { return; }
+  if (actions === undefined || actions.length === 0) { return false; }
 
   for (let i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
     let target = actions[i];
@@ -249,7 +210,7 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
 */
 export function hasListeners(obj, eventName) {
   let meta = peekMeta(obj);
-  if (!meta) { return false; }
+  if (meta === undefined) { return false; }
   let matched = meta.matchingListeners(eventName);
   return matched !== undefined && matched.length > 0;
 }
@@ -304,6 +265,10 @@ export function listenersFor(obj, eventName) {
 export function on(...args) {
   let func = args.pop();
   let events = args;
+
+  assert('Ember.on expects function as last argument', typeof func === 'function');
+  assert('Ember.on called without valid event names', events.length > 0 && events.every((p)=> typeof p === 'string' && p.length));
+
   func.__ember_listens__ = events;
   return func;
 }

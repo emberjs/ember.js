@@ -1,7 +1,6 @@
 import { CONSTANT_TAG, DirtyableTag } from '@glimmer/reference';
 import { meta as metaFor } from './meta';
 import require from 'require';
-import { isProxy } from './is_proxy';
 
 let hasViews = () => false;
 
@@ -29,7 +28,7 @@ export function tagForProperty(object, propertyKey, _meta) {
 }
 
 export function tagFor(object, _meta) {
-  if (typeof object === 'object' && object) {
+  if (typeof object === 'object' && object !== null) {
     let meta = _meta || metaFor(object);
     return meta.writableTag(makeTag);
   } else {
@@ -40,36 +39,33 @@ export function tagFor(object, _meta) {
 export function markObjectAsDirty(meta, propertyKey) {
   let objectTag = meta.readableTag();
 
-  if (objectTag) {
+  if (objectTag !== undefined) {
     objectTag.dirty();
   }
 
   let tags = meta.readableTags();
-  let propertyTag = tags && tags[propertyKey];
+  let propertyTag = tags !== undefined ? tags[propertyKey] : undefined;
 
-  if (propertyTag) {
+  if (propertyTag !== undefined) {
     propertyTag.dirty();
   }
 
   if (propertyKey === 'content' && meta.isProxy()) {
-    meta.getTag().contentDidChange();
+    objectTag.contentDidChange();
   }
 
-  if (objectTag || propertyTag) {
+  if (objectTag !== undefined || propertyTag !== undefined) {
     ensureRunloop();
   }
 }
 
-let run;
-
-function K() {}
-
+let backburner;
 function ensureRunloop() {
-  if (!run) {
-    run = require('ember-metal').run;
+  if (backburner === undefined) {
+    backburner = require('ember-metal').run.backburner;
   }
 
-  if (hasViews() && !run.backburner.currentInstance) {
-    run.schedule('actions', K);
+  if (hasViews()) {
+    backburner.ensureInstance();
   }
 }

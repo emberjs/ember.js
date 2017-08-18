@@ -5,8 +5,10 @@
     "ember-improved-instrumentation": null,
     "ember-metal-weakmap": null,
     "ember-glimmer-allow-backtracking-rerender": null,
-    "ember-routing-router-service": null,
-    "ember-engines-mount-params": null
+    "ember-routing-router-service": true,
+    "ember-engines-mount-params": true,
+    "ember-module-unification": null,
+    "glimmer-custom-component-manager": null
   },
   "deprecations": {
     "container-lookupFactory": "2.12.0",
@@ -33,10 +35,10 @@
     "ember-views.render-double-modify": "2.0.0",
     "ember-routing.router-resource": "2.0.0",
     "ember-routing.top-level-render-helper": "2.11.0",
+    "ember-runtime.controller-content": "2.16.0",
     "ember-runtime.controller-proxy": "2.0.0",
     "ember-runtime.action-handler-_actions": "2.0.0",
     "ember-runtime.enumerable-contains": "2.7.0",
-    "ember-runtime.will-merge-mixin": "2.0.0",
     "ember-runtime.frozen-copy": "2.0.0",
     "ember-runtime.freezable-init": "2.0.0",
     "ember-string-utils.fmt": "2.0.0",

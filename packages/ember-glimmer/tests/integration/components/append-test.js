@@ -317,14 +317,27 @@ class AbstractAppendTest extends RenderingTest {
 
     this.runTask(() => this.component.destroy());
 
-    if (this.isHTMLBars) {
-      // Bug in Glimmer – component should not have .element at this point
-      assert.ok(!this.component.element, 'It should not have an element');
-    }
-
+    assert.ok(!this.component.element, 'It should not have an element');
     assert.ok(!componentElement.parentElement, 'The component element should be detached');
 
     this.assert.equal(willDestroyCalled, 1);
+  }
+
+  ['@test releasing a root component after it has been destroy'](assert) {
+    let renderer = this.owner.lookup('renderer:-dom');
+
+    this.registerComponent('x-component', {
+      ComponentClass: Component.extend()
+    });
+
+    this.component = this.owner.factoryFor('component:x-component').create();
+    this.append(this.component);
+
+    assert.equal(renderer._roots.length, 1, 'added a root component');
+
+    this.runTask(() => this.component.destroy());
+
+    assert.equal(renderer._roots.length, 0, 'released the root component');
   }
 
   ['@test appending, updating and destroying multiple components'](assert) {
@@ -411,11 +424,8 @@ class AbstractAppendTest extends RenderingTest {
       second.destroy();
     });
 
-    if (this.isHTMLBars) {
-      // Bug in Glimmer – component should not have .element at this point
-      assert.ok(!first.element, 'The first component should not have an element');
-      assert.ok(!second.element, 'The second component should not have an element');
-    }
+    assert.ok(!first.element, 'The first component should not have an element');
+    assert.ok(!second.element, 'The second component should not have an element');
 
     assert.ok(!componentElement1.parentElement, 'The first component element should be detached');
     assert.ok(!componentElement2.parentElement, 'The second component element should be detached');

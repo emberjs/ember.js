@@ -10,7 +10,7 @@ function firstKey(path) {
 }
 
 function isObject(obj) {
-  return typeof obj === 'object' && obj;
+  return typeof obj === 'object' && obj !== null;
 }
 
 function isVolatile(obj) {
@@ -36,7 +36,7 @@ class ChainWatchers {
 
   remove(key, node) {
     let nodes = this.chains[key];
-    if (nodes) {
+    if (nodes !== undefined) {
       for (let i = 0; i < nodes.length; i++) {
         if (nodes[i] === node) {
           nodes.splice(i, 1);
@@ -48,7 +48,7 @@ class ChainWatchers {
 
   has(key, node) {
     let nodes = this.chains[key];
-    if (nodes) {
+    if (nodes !== undefined) {
       for (let i = 0; i < nodes.length; i++) {
         if (nodes[i] === node) {
           return true;
@@ -113,13 +113,11 @@ function addChainWatcher(obj, keyName, node) {
 }
 
 function removeChainWatcher(obj, keyName, node, _meta) {
-  if (!isObject(obj)) {
-    return;
-  }
+  if (!isObject(obj)) { return; }
 
-  let meta = _meta || peekMeta(obj);
+  let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
-  if (!meta || !meta.readableChainWatchers()) {
+  if (meta === undefined || meta.readableChainWatchers() === undefined) {
     return;
   }
 
@@ -153,10 +151,10 @@ class ChainNode {
 
     this._value = value;
     this._paths = undefined;
-    if (isWatching === true) {
+    if (isWatching) {
       let obj = parent.value();
 
-      if (!isObject(obj) === true) {
+      if (!isObject(obj)) {
         return;
       }
 
@@ -167,7 +165,7 @@ class ChainNode {
   }
 
   value() {
-    if (this._value === undefined && this._watching === true) {
+    if (this._value === undefined && this._watching) {
       let obj = this._parent.value();
       this._value = lazyGet(obj, this._key);
     }
@@ -175,11 +173,8 @@ class ChainNode {
   }
 
   destroy() {
-    if (this._watching === true) {
-      let obj = this._object;
-      if (obj) {
-        removeChainWatcher(obj, this._key, this);
-      }
+    if (this._watching) {
+      removeChainWatcher(this._object, this._key, this);
       this._watching = false; // so future calls do nothing
     }
   }
@@ -188,16 +183,12 @@ class ChainNode {
   copy(obj) {
     let ret = new ChainNode(null, null, obj);
     let paths = this._paths;
-    let path;
     if (paths !== undefined) {
+      let path;
       for (path in paths) {
-        // this check will also catch non-number vals.
-        if (paths[path] <= 0) {
-          continue;
-        }
-        ret.add(path);
+        if (paths[path] > 0) { ret.add(path); }
       }
-  }
+    }
     return ret;
   }
 
@@ -271,13 +262,11 @@ class ChainNode {
   }
 
   notify(revalidate, affected) {
-    if (revalidate && this._watching === true) {
+    if (revalidate && this._watching) {
       let parentValue = this._parent.value();
 
       if (parentValue !== this._object) {
-        if (this._object !== undefined) {
-          removeChainWatcher(this._object, this._key, this);
-        }
+        removeChainWatcher(this._object, this._key, this);
 
         if (isObject(parentValue)) {
           this._object = parentValue;
@@ -286,13 +275,13 @@ class ChainNode {
           this._object = undefined;
         }
       }
-      this._value  = undefined;
+      this._value = undefined;
     }
 
     // then notify chains...
     let chains = this._chains;
-    let node;
     if (chains !== undefined) {
+      let node;
       for (let key in chains) {
         node = chains[key];
         if (node !== undefined) {
@@ -313,10 +302,8 @@ class ChainNode {
 
     if (this._parent) {
       this._parent.populateAffected(path, depth + 1, affected);
-    } else {
-      if (depth > 1) {
-        affected.push(this.value(), path);
-      }
+    } else if (depth > 1) {
+      affected.push(this.value(), path);
     }
   }
 }
@@ -334,12 +321,12 @@ function lazyGet(obj, key) {
   }
 
   // Use `get` if the return value is an EachProxy or an uncacheable value.
-  if (isVolatile(obj[key]) === true) {
+  if (isVolatile(obj[key])) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {
     let cache = meta.readableCache();
-    if (cache) {
+    if (cache !== undefined) {
       return cacheFor.get(cache, key);
     }
   }

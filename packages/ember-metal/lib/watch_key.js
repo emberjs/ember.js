@@ -1,7 +1,9 @@
 import { lookupDescriptor } from 'ember-utils';
 import { MANDATORY_SETTER } from 'ember/features';
 import {
-  meta as metaFor
+  meta as metaFor,
+  peekMeta,
+  UNDEFINED
 } from './meta';
 import {
   MANDATORY_SETTER_FUNCTION,
@@ -12,20 +14,17 @@ import {
 let handleMandatorySetter;
 
 export function watchKey(obj, keyName, meta) {
-  if (typeof obj !== 'object' || obj === null) {
-    return;
-  }
+  if (typeof obj !== 'object' || obj === null) { return; }
+
   let m = meta || metaFor(obj);
+  let count = m.peekWatching(keyName) || 0;
+  m.writeWatching(keyName, count + 1);
 
-  // activate watching first time
-  if (!m.peekWatching(keyName)) {
-    m.writeWatching(keyName, 1);
-
+  if (count === 0) { // activate watching first time
     let possibleDesc = obj[keyName];
-    let desc = (possibleDesc !== null &&
-                typeof possibleDesc === 'object' &&
-                possibleDesc.isDescriptor) ? possibleDesc : undefined;
-    if (desc && desc.willWatch) { desc.willWatch(obj, keyName); }
+    let isDescriptor = possibleDesc !== null &&
+      typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+    if (isDescriptor && possibleDesc.willWatch) { possibleDesc.willWatch(obj, keyName); }
 
     if ('function' === typeof obj.willWatchProperty) {
       obj.willWatchProperty(keyName);
@@ -35,8 +34,6 @@ export function watchKey(obj, keyName, meta) {
       // NOTE: this is dropped for prod + minified builds
       handleMandatorySetter(m, obj, keyName);
     }
-  } else {
-    m.writeWatching(keyName, (m.peekWatching(keyName) || 0) + 1);
   }
 }
 
@@ -51,10 +48,11 @@ if (MANDATORY_SETTER) {
   // ember strip this entire block out
   handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     let descriptor = lookupDescriptor(obj, keyName);
-    let configurable = descriptor ? descriptor.configurable : true;
-    let isWritable = descriptor ? descriptor.writable : true;
-    let hasValue = descriptor ? 'value' in descriptor : true;
-    let possibleDesc = descriptor && descriptor.value;
+    let hasDescriptor = descriptor !== null;
+    let configurable = hasDescriptor ? descriptor.configurable : true;
+    let isWritable = hasDescriptor ? descriptor.writable : true;
+    let hasValue = hasDescriptor ? 'value' in descriptor : true;
+    let possibleDesc = hasDescriptor && descriptor.value;
     let isDescriptor = possibleDesc !== null &&
                        typeof possibleDesc === 'object' &&
                        possibleDesc.isDescriptor;
@@ -82,27 +80,24 @@ if (MANDATORY_SETTER) {
   };
 }
 
-import { UNDEFINED } from './meta';
-
 export function unwatchKey(obj, keyName, _meta) {
   if (typeof obj !== 'object' || obj === null) {
     return;
   }
-  let meta = _meta || metaFor(obj);
+  let meta = _meta || peekMeta(obj);
 
   // do nothing of this object has already been destroyed
-  if (meta.isSourceDestroyed()) { return; }
+  if (meta === undefined || meta.isSourceDestroyed()) { return; }
 
   let count = meta.peekWatching(keyName);
   if (count === 1) {
     meta.writeWatching(keyName, 0);
 
     let possibleDesc = obj[keyName];
-    let desc = (possibleDesc !== null &&
-                typeof possibleDesc === 'object' &&
-                possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    let isDescriptor = possibleDesc !== null &&
+      typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
-    if (desc && desc.didUnwatch) { desc.didUnwatch(obj, keyName); }
+    if (isDescriptor && possibleDesc.didUnwatch) { possibleDesc.didUnwatch(obj, keyName); }
 
     if ('function' === typeof obj.didUnwatchProperty) {
       obj.didUnwatchProperty(keyName);
@@ -117,7 +112,7 @@ export function unwatchKey(obj, keyName, _meta) {
       // for mutation, will bypass observation. This code exists to assert when
       // that occurs, and attempt to provide more helpful feedback. The alternative
       // is tricky to debug partially observable properties.
-      if (!desc && keyName in obj) {
+      if (!isDescriptor && keyName in obj) {
         let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
 
         if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {

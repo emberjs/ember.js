@@ -1,6 +1,7 @@
 import { guidFor, OWNER } from 'ember-utils';
 import { Cache, _instrumentStart } from 'ember-metal';
 import { assert, warn } from 'ember-debug';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
 import {
   lookupPartial,
@@ -17,7 +18,7 @@ import {
 } from '@glimmer/runtime';
 import {
   CurlyComponentDefinition
-} from './syntax/curly-component';
+} from './component-managers/curly';
 import {
   populateMacros
 } from './syntax';
@@ -53,13 +54,17 @@ import { default as htmlSafeHelper } from './helpers/-html-safe';
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 import { default as ActionModifierManager } from './modifiers/action';
 
+import {
+  GLIMMER_CUSTOM_COMPONENT_MANAGER
+} from 'ember/features';
+
 function instrumentationPayload(name) {
   return { object: `component:${name}` };
 }
 
 export default class Environment extends GlimmerEnvironment {
   static create(options) {
-    return new Environment(options);
+    return new this(options);
   }
 
   constructor({ [OWNER]: owner }) {
@@ -74,12 +79,21 @@ export default class Environment extends GlimmerEnvironment {
 
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
+      let customManager = undefined;
 
       if (componentFactory || layout) {
-        return new CurlyComponentDefinition(name, componentFactory, layout);
+        if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
+          let managerId = layout && layout.meta.managerId;
+
+          if (managerId) {
+            customManager = owner.factoryFor(`component-manager:${managerId}`).class;
+          }
+        }
+        return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);
       }
     }, ({ name, source, owner }) => {
-      let expandedName = source && owner._resolveLocalLookupName(name, source) || name;
+      let expandedName = source && this._resolveLocalLookupName(name, source, owner) || name;
+
       let ownerGuid = guidFor(owner);
 
       return ownerGuid + '|' + expandedName;
@@ -112,7 +126,6 @@ export default class Environment extends GlimmerEnvironment {
     this.builtInHelpers = {
       if: inlineIf,
       action,
-      component: componentHelper,
       concat,
       get,
       hash,
@@ -136,6 +149,11 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
+  _resolveLocalLookupName(name, source, owner) {
+    return EMBER_MODULE_UNIFICATION ? `${source}:${name}`
+      : owner._resolveLocalLookupName(name, source);
+  }
+
   macros() {
     let macros = super.macros();
     populateMacros(macros.blocks, macros.inlines);
@@ -146,12 +164,9 @@ export default class Environment extends GlimmerEnvironment {
     return false;
   }
 
-  getComponentDefinition(path, symbolTable) {
-    let name = path[0];
+  getComponentDefinition(name, { owner, moduleName }) {
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
-    let blockMeta = symbolTable.getMeta();
-    let owner = blockMeta.owner;
-    let source = blockMeta.moduleName && `template:${blockMeta.moduleName}`;
+    let source = moduleName && `template:${moduleName}`;
     let definition = this._definitionCache.get({ name, source, owner });
     finalizer();
     return definition;
@@ -170,13 +185,11 @@ export default class Environment extends GlimmerEnvironment {
     return compilerCache.get(template);
   }
 
-  hasPartial(name, symbolTable) {
-    let { owner } = symbolTable.getMeta();
+  hasPartial(name, { owner }) {
     return hasPartial(name, owner);
   }
 
-  lookupPartial(name, symbolTable) {
-    let { owner } = symbolTable.getMeta();
+  lookupPartial(name, { owner }) {
     let partial = {
       template: lookupPartial(name, owner)
     };
@@ -188,36 +201,37 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  hasHelper(name, symbolTable) {
-    if (this.builtInHelpers[name]) {
+  hasHelper(name, { owner, moduleName }) {
+    if (name === 'component' || this.builtInHelpers[name]) {
       return true;
     }
 
-    let blockMeta = symbolTable.getMeta();
-    let owner = blockMeta.owner;
-    let options = { source: `template:${blockMeta.moduleName}` };
+    let options = { source: `template:${moduleName}` };
 
     return owner.hasRegistration(`helper:${name}`, options) ||
       owner.hasRegistration(`helper:${name}`);
   }
 
-  lookupHelper(name, symbolTable) {
+  lookupHelper(name, meta) {
+    if (name === 'component') {
+      return (vm, args) => componentHelper(vm, args, meta);
+    }
+
+    let { owner, moduleName } = meta;
     let helper = this.builtInHelpers[name];
 
     if (helper) {
       return helper;
     }
 
-    let blockMeta = symbolTable.getMeta();
-    let owner = blockMeta.owner;
-    let options = blockMeta.moduleName && { source: `template:${blockMeta.moduleName}` } || {};
+    let options = moduleName && { source: `template:${moduleName}` } || {};
     let helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helperFactory.class.isHelperInstance) {
-      return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args);
+      return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args.capture());
     } else if (helperFactory.class.isHelperFactory) {
-      return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args);
+      return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args.capture());
     } else {
       throw new Error(`${name} is not a helper`);
     }
@@ -241,9 +255,8 @@ export default class Environment extends GlimmerEnvironment {
     return ConditionalReference.create(reference);
   }
 
-  iterableFor(ref, args) {
-    let keyPath = args.named.get('key').value();
-    return createIterable(ref, keyPath);
+  iterableFor(ref, key) {
+    return createIterable(ref, key);
   }
 
   scheduleInstallModifier() {

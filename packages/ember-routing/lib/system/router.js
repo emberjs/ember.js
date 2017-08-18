@@ -53,7 +53,7 @@ const { slice } = Array.prototype;
 
 /**
   The `Ember.Router` class manages the application state and URLs. Refer to
-  the [routing guide](http://emberjs.com/guides/routing/) for documentation.
+  the [routing guide](https://emberjs.com/guides/routing/) for documentation.
 
   @class Router
   @namespace Ember
@@ -71,7 +71,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     * `history` - use the browser's history API to make the URLs look just like any standard URL
     * `hash` - use `#` to separate the server part of the URL from the Ember part: `/blog/#/posts/new`
     * `none` - do not store the Ember URL in the actual browser URL (mainly used for testing)
-    * `auto` - use the best option based on browser capabilites: `history` if possible, then `hash` if possible, otherwise `none`
+    * `auto` - use the best option based on browser capabilities: `history` if possible, then `hash` if possible, otherwise `none`
 
     Note: If using ember-cli, this value is defaulted to `auto` by the `locationType` setting of `/config/environment.js`
 
@@ -197,7 +197,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let initialURL = get(this, 'initialURL');
 
     if (this.setupRouter()) {
-      if (typeof initialURL === 'undefined') {
+      if (initialURL === undefined) {
         initialURL = get(this, 'location').getURL();
       }
       let initialTransition = this.handleURL(initialURL);
@@ -351,8 +351,8 @@ const EmberRouter = EmberObject.extend(Evented, {
   handleURL(url) {
     // Until we have an ember-idiomatic way of accessing #hashes, we need to
     // remove it because router.js doesn't know how to handle it.
-    url = url.split(/#(.+)?/)[0];
-    return this._doURLTransition('handleURL', url);
+    let _url = url.split(/#(.+)?/)[0];
+    return this._doURLTransition('handleURL', _url);
   },
 
   _doURLTransition(routerJsMethod, url) {
@@ -365,7 +365,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     Transition the application into another route. The route may
     be either a single route or route path:
 
-    See [Route.transitionTo](http://emberjs.com/api/classes/Ember.Route.html#method_transitionTo) for more info.
+    See [Route.transitionTo](https://emberjs.com/api/classes/Ember.Route.html#method_transitionTo) for more info.
 
     @method transitionTo
     @param {String} name the name of the route or a URL
@@ -379,8 +379,9 @@ const EmberRouter = EmberObject.extend(Evented, {
   */
   transitionTo(...args) {
     let queryParams;
-    if (resemblesURL(args[0])) {
-      return this._doURLTransition('transitionTo', args[0]);
+    let arg = args[0];
+    if (resemblesURL(arg)) {
+      return this._doURLTransition('transitionTo', arg);
     }
 
     let possibleQueryParams = args[args.length - 1];
@@ -424,7 +425,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     @return {Boolean}
     @private
   */
-  isActive(routeName) {
+  isActive() {
     return this._routerMicrolib.isActive(...arguments);
   },
 
@@ -445,7 +446,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     return this.currentState.isActiveIntent(routeName, models, queryParams);
   },
 
-  send(name, context) {
+  send() { /*name, context*/
     this._routerMicrolib.trigger(...arguments);
   },
 
@@ -538,7 +539,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     if ('string' === typeof location && owner) {
       let resolvedLocation = owner.lookup(`location:${location}`);
 
-      if ('undefined' !== typeof resolvedLocation) {
+      if (resolvedLocation !== undefined) {
         location = set(this, 'location', resolvedLocation);
       } else {
         // Allow for deprecated registration of custom location API's
@@ -633,7 +634,6 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   _setupRouter(location) {
     let lastURL;
-    let emberRouter = this;
     let routerMicrolib = this._routerMicrolib;
 
     routerMicrolib.getHandler = this._getHandlerFunction();
@@ -641,7 +641,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     let doUpdateURL = () => {
       location.setURL(lastURL);
-      set(emberRouter, 'currentURL', lastURL);
+      set(this, 'currentURL', lastURL);
     };
 
     routerMicrolib.updateURL = path => {
@@ -652,7 +652,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     if (location.replaceURL) {
       let doReplaceURL = () => {
         location.replaceURL(lastURL);
-        set(emberRouter, 'currentURL', lastURL);
+        set(this, 'currentURL', lastURL);
       };
 
       routerMicrolib.replaceURL = path => {
@@ -662,11 +662,11 @@ const EmberRouter = EmberObject.extend(Evented, {
     }
 
     routerMicrolib.didTransition = infos => {
-      emberRouter.didTransition(infos);
+      this.didTransition(infos);
     };
 
     routerMicrolib.willTransition = (oldInfos, newInfos, transition) => {
-      emberRouter.willTransition(oldInfos, newInfos, transition);
+      this.willTransition(oldInfos, newInfos, transition);
     };
   },
 
@@ -738,13 +738,12 @@ const EmberRouter = EmberObject.extend(Evented, {
   */
   _deserializeQueryParam(value, defaultType) {
     if (defaultType === 'boolean') {
-      return (value === 'true') ? true : false;
+      return value === 'true';
     } else if (defaultType === 'number') {
       return (Number(value)).valueOf();
     } else if (defaultType === 'array') {
       return emberA(JSON.parse(value));
     }
-
     return value;
   },
 
@@ -768,7 +767,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  _doTransition(_targetRouteName, models, _queryParams) {
+  _doTransition(_targetRouteName, models, _queryParams, _keepDefaultQueryParamValues) {
     let targetRouteName = _targetRouteName || getActiveTargetName(this._routerMicrolib);
     assert(`The route ${targetRouteName} was not found`, targetRouteName && this._routerMicrolib.hasRoute(targetRouteName));
 
@@ -777,7 +776,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     this._processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams);
 
     assign(queryParams, _queryParams);
-    this._prepareQueryParams(targetRouteName, models, queryParams);
+    this._prepareQueryParams(targetRouteName, models, queryParams, _keepDefaultQueryParamValues);
 
     let transitionArgs = routeArgs(targetRouteName, models, queryParams);
     let transition = this._routerMicrolib.transitionTo(...transitionArgs);
@@ -792,11 +791,12 @@ const EmberRouter = EmberObject.extend(Evented, {
     // queryParams from the url on initial load.
     if (!this._routerMicrolib.activeTransition) { return; }
 
-    var unchangedQPs = {};
-    var qpUpdates = this._qpUpdates || {};
-    for (var key in this._routerMicrolib.activeTransition.queryParams) {
+    let unchangedQPs = {};
+    let qpUpdates = this._qpUpdates || {};
+    let params = this._routerMicrolib.activeTransition.queryParams;
+    for (let key in params) {
       if (!qpUpdates[key]) {
-        unchangedQPs[key] = this._routerMicrolib.activeTransition.queryParams[key];
+        unchangedQPs[key] = params[key];
       }
     }
 
@@ -817,18 +817,22 @@ const EmberRouter = EmberObject.extend(Evented, {
     @param {String} targetRouteName
     @param {Array<Object>} models
     @param {Object} queryParams
+    @param {boolean} keepDefaultQueryParamValues
     @return {Void}
   */
-  _prepareQueryParams(targetRouteName, models, queryParams) {
+  _prepareQueryParams(targetRouteName, models, queryParams, _fromRouterService) {
     let state = calculatePostTransitionState(this, targetRouteName, models);
-    this._hydrateUnsuppliedQueryParams(state, queryParams);
+    this._hydrateUnsuppliedQueryParams(state, queryParams, _fromRouterService);
     this._serializeQueryParams(state.handlerInfos, queryParams);
-    this._pruneDefaultQueryParamValues(state.handlerInfos, queryParams);
+
+    if (!_fromRouterService) {
+      this._pruneDefaultQueryParamValues(state.handlerInfos, queryParams);
+    }
   },
 
   /**
     Returns the meta information for the query params of a given route. This
-    will be overriden to allow support for lazy routes.
+    will be overridden to allow support for lazy routes.
 
     @private
     @method _getQPMeta
@@ -850,9 +854,11 @@ const EmberRouter = EmberObject.extend(Evented, {
     @return {Object}
    */
   _queryParamsFor(handlerInfos) {
-    let leafRouteName = handlerInfos[handlerInfos.length - 1].name;
-    if (this._qpCache[leafRouteName]) {
-      return this._qpCache[leafRouteName];
+    let handlerInfoLength = handlerInfos.length;
+    let leafRouteName = handlerInfos[handlerInfoLength - 1].name;
+    let cached = this._qpCache[leafRouteName];
+    if (cached) {
+      return cached;
     }
 
     let shouldCache = true;
@@ -860,7 +866,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     let map = {};
     let qps = [];
 
-    for (let i = 0; i < handlerInfos.length; ++i) {
+    for (let i = 0; i < handlerInfoLength; ++i) {
       let qpMeta = this._getQPMeta(handlerInfos[i]);
 
       if (!qpMeta) {
@@ -886,10 +892,7 @@ const EmberRouter = EmberObject.extend(Evented, {
       assign(map, qpMeta.map);
     }
 
-    let finalQPMeta = {
-      qps: qps,
-      map: map
-    };
+    let finalQPMeta = { qps, map };
 
     if (shouldCache) {
       this._qpCache[leafRouteName] = finalQPMeta;
@@ -910,18 +913,18 @@ const EmberRouter = EmberObject.extend(Evented, {
     @return {Void}
   */
   _fullyScopeQueryParams(leafRouteName, contexts, queryParams) {
-    var state = calculatePostTransitionState(this, leafRouteName, contexts);
-    var handlerInfos = state.handlerInfos;
+    let state = calculatePostTransitionState(this, leafRouteName, contexts);
+    let handlerInfos = state.handlerInfos;
 
-    for (var i = 0, len = handlerInfos.length; i < len; ++i) {
-      var qpMeta = this._getQPMeta(handlerInfos[i]);
+    for (let i = 0, len = handlerInfos.length; i < len; ++i) {
+      let qpMeta = this._getQPMeta(handlerInfos[i]);
 
       if (!qpMeta) { continue; }
 
-      for (var j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
-        var qp = qpMeta.qps[j];
+      for (let j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
+        let qp = qpMeta.qps[j];
 
-        var presentProp = qp.prop in queryParams  && qp.prop ||
+        let presentProp = qp.prop in queryParams && qp.prop ||
                           qp.scopedPropertyName in queryParams && qp.scopedPropertyName ||
                           qp.urlKey in queryParams && qp.urlKey;
 
@@ -946,7 +949,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     @param {Object} queryParams
     @return {Void}
   */
-  _hydrateUnsuppliedQueryParams(state, queryParams) {
+  _hydrateUnsuppliedQueryParams(state, queryParams, _fromRouterService) {
     let handlerInfos = state.handlerInfos;
     let appCache = this._bucketCache;
 
@@ -956,11 +959,26 @@ const EmberRouter = EmberObject.extend(Evented, {
       if (!qpMeta) { continue; }
 
       for (let j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
-        let qp = qpMeta.qps[j];
+        var qp = qpMeta.qps[j];
 
-        let presentProp = qp.prop in queryParams  && qp.prop ||
+        var presentProp = qp.prop in queryParams && qp.prop ||
                           qp.scopedPropertyName in queryParams && qp.scopedPropertyName ||
                           qp.urlKey in queryParams && qp.urlKey;
+
+        assert(
+          `You passed the \`${presentProp}\` query parameter during a transition into ${qp.route.routeName}, please update to ${qp.urlKey}`,
+          (function() {
+            if (qp.urlKey === presentProp) {
+              return true;
+            }
+
+            if (_fromRouterService) {
+              return false;
+            }
+
+            return true;
+          })()
+        );
 
         if (presentProp) {
           if (presentProp !== qp.scopedPropertyName) {
@@ -1186,14 +1204,11 @@ function logError(_error, initialMessage) {
   @return {String}
 */
 function findRouteSubstateName(route, state) {
-  let router = route.router;
   let owner = getOwner(route);
+  let { routeName, fullRouteName, router } = route;
 
-  let routeName = route.routeName;
   let substateName = `${routeName}_${state}`;
-
-  let routeNameFull = route.fullRouteName;
-  let substateNameFull = `${routeNameFull}_${state}`;
+  let substateNameFull = `${fullRouteName}_${state}`;
 
   return routeHasBeenDefined(owner, router, substateName, substateNameFull) ?
     substateNameFull :
@@ -1211,14 +1226,11 @@ function findRouteSubstateName(route, state) {
   @return {String}
 */
 function findRouteStateName(route, state) {
-  let router = route.router;
   let owner = getOwner(route);
+  let { routeName, fullRouteName, router } = route;
 
-  let routeName = route.routeName;
   let stateName = routeName === 'application' ? state : `${routeName}.${state}`;
-
-  let routeNameFull = route.fullRouteName;
-  let stateNameFull = routeNameFull === 'application' ? state : `${routeNameFull}.${state}`;
+  let stateNameFull = fullRouteName === 'application' ? state : `${fullRouteName}.${state}`;
 
   return routeHasBeenDefined(owner, router, stateName, stateNameFull) ?
     stateNameFull :
@@ -1251,14 +1263,14 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
   }
 
   let eventWasHandled = false;
-  let handlerInfo, handler;
+  let handlerInfo, handler, actionHandler;
 
   for (let i = handlerInfos.length - 1; i >= 0; i--) {
     handlerInfo = handlerInfos[i];
     handler = handlerInfo.handler;
-
-    if (handler && handler.actions && handler.actions[name]) {
-      if (handler.actions[name].apply(handler, args) === true) {
+    actionHandler = handler && handler.actions && handler.actions[name];
+    if (actionHandler) {
+      if (actionHandler.apply(handler, args) === true) {
         eventWasHandled = true;
       } else {
         // Should only hit here if a non-bubbling error action is triggered on a route.
@@ -1271,8 +1283,9 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
     }
   }
 
-  if (defaultActionHandlers[name]) {
-    defaultActionHandlers[name].apply(null, args);
+  let defaultHandler = defaultActionHandlers[name]
+  if (defaultHandler) {
+    defaultHandler.apply(null, args);
     return;
   }
 
@@ -1282,10 +1295,8 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
 }
 
 function calculatePostTransitionState(emberRouter, leafRouteName, contexts) {
-  let routerMicrolib = emberRouter._routerMicrolib;
-  let state = routerMicrolib.applyIntent(leafRouteName, contexts);
-  let handlerInfos = state.handlerInfos;
-  let params = state.params;
+  let state = emberRouter._routerMicrolib.applyIntent(leafRouteName, contexts);
+  let { handlerInfos, params } = state;
 
   for (let i = 0; i < handlerInfos.length; ++i) {
     let handlerInfo = handlerInfos[i];
@@ -1360,8 +1371,8 @@ EmberRouter.reopenClass({
     Nested routes, by default, will have the parent route tree's route name and
     path prepended to it's own.
 
-    ```javascript
-    App.Router.map(function(){
+    ```app/router.js
+    Router.map(function(){
       this.route('post', { path: '/post/:post_id' }, function() {
         this.route('edit');
         this.route('comments', { resetNamespace: true }, function() {
@@ -1372,7 +1383,7 @@ EmberRouter.reopenClass({
     ```
 
     For more detailed documentation and examples please see
-    [the guides](http://emberjs.com/guides/routing/defining-your-routes/).
+    [the guides](https://emberjs.com/guides/routing/defining-your-routes/).
 
     @method map
     @param callback
@@ -1501,7 +1512,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
         {
           id: 'ember-routing.top-level-render-helper',
           until: '3.0.0',
-          url: 'http://emberjs.com/deprecations/v2.x/#toc_rendering-into-a-render-helper-that-resolves-to-an-outlet'
+          url: 'https://emberjs.com/deprecations/v2.x/#toc_rendering-into-a-render-helper-that-resolves-to-an-outlet'
         }
       );
 
@@ -1565,7 +1576,7 @@ function representEmptyRoute(liveRoutes, defaultParentState, route) {
 deprecateProperty(EmberRouter.prototype, 'router', '_routerMicrolib', {
   id: 'ember-router.router',
   until: '2.16',
-  url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-router-router-renamed-to-ember-router-_routermicrolib'
+  url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-router-router-renamed-to-ember-router-_routermicrolib'
 });
 
 export default EmberRouter;

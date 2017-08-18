@@ -16,5 +16,5 @@ function normalizeClass({ positional, named }) {
 }
 
 export default function(vm, args) {
-  return new InternalHelperReference(normalizeClass, args);
+  return new InternalHelperReference(normalizeClass, args.capture());
 }

@@ -1,4 +1,3 @@
-
 import ApplicationTestCase from './application';
 
 export default class RouterTestCase extends ApplicationTestCase {
@@ -17,5 +16,11 @@ export default class RouterTestCase extends ApplicationTestCase {
 
   get routerService() {
     return this.applicationInstance.lookup('service:router');
+  }
+
+  buildQueryParams(queryParams) {
+    return {
+      queryParams
+    };
   }
 }

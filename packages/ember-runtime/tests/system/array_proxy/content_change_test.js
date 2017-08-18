@@ -95,7 +95,7 @@ QUnit.test('The ArrayProxy doesn\'t explode when assigned a destroyed object', f
 });
 
 QUnit.test('arrayContent{Will,Did}Change are called when the content changes', function() {
-  // The behaviour covered by this test may change in the future if we decide
+  // The behavior covered by this test may change in the future if we decide
   // that built-in array methods are not overridable.
 
   let willChangeCallCount = 0;

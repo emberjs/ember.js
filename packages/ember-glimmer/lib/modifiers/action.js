@@ -11,7 +11,7 @@ const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
 
 function isAllowedEvent(event, allowedKeys) {
-  if (allowedKeys === null || typeof allowedKeys === 'undefined') {
+  if (allowedKeys === null || allowedKeys === undefined) {
     if (POINTER_EVENT_TYPE_REGEX.test(event.type)) {
       return isSimpleClick(event);
     } else {
@@ -154,7 +154,7 @@ export class ActionState {
 // implements ModifierManager<Action>
 export default class ActionModifierManager {
   create(element, args, dynamicScope, dom) {
-    let { named, positional } = args;
+    let { named, positional } = args.capture();
     let implicitTarget;
     let actionName;
     let actionNameRef;

@@ -6,9 +6,7 @@
 // ..........................................................
 // HELPERS
 //
-import { symbol } from 'ember-utils';
-
-import { peekMeta } from 'ember-metal';
+import { symbol, toString } from 'ember-utils';
 import Ember, { // ES6TODO: Ember.A
   get,
   computed,
@@ -24,7 +22,9 @@ import Ember, { // ES6TODO: Ember.A
   _addBeforeObserver,
   _removeBeforeObserver,
   addObserver,
-  removeObserver
+  removeObserver,
+  meta,
+  peekMeta
 } from 'ember-metal';
 import { deprecate, assert } from 'ember-debug';
 import Enumerable from './enumerable';
@@ -57,11 +57,7 @@ export function removeArrayObserver(array, target, opts) {
 }
 
 export function objectAt(content, idx) {
-  if (content.objectAt) {
-    return content.objectAt(idx);
-  }
-
-  return content[idx];
+  return typeof content.objectAt === 'function' ? content.objectAt(idx) : content[idx];
 }
 
 export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
@@ -139,27 +135,37 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
   let meta = peekMeta(array);
-  let cache = meta && meta.readableCache();
+  let cache = meta !== undefined ? meta.readableCache() : undefined;
+  if (cache !== undefined) {
+    let length = get(array, 'length');
+    let addedAmount = (addAmt === -1 ? 0 : addAmt);
+    let removedAmount = (removeAmt === -1 ? 0 : removeAmt);
+    let delta = addedAmount - removedAmount;
+    let previousLength = length - delta;
 
-  if (cache) {
-    if (cache.firstObject !== undefined &&
-        objectAt(array, 0) !== cacheFor.get(cache, 'firstObject')) {
+    let normalStartIdx = startIdx < 0 ? previousLength + startIdx : startIdx;
+    if (cache.firstObject !== undefined && normalStartIdx === 0) {
       propertyWillChange(array, 'firstObject', meta);
       propertyDidChange(array, 'firstObject', meta);
     }
-    if (cache.lastObject !== undefined &&
-        objectAt(array, get(array, 'length') - 1) !== cacheFor.get(cache, 'lastObject')) {
-      propertyWillChange(array, 'lastObject', meta);
-      propertyDidChange(array, 'lastObject', meta);
-    }
+
+    if (cache.lastObject !== undefined) {
+      let previousLastIndex = previousLength - 1;
+      let lastAffectedIndex = normalStartIdx + removedAmount;
+      if (previousLastIndex < lastAffectedIndex) {
+        propertyWillChange(array, 'lastObject', meta);
+        propertyDidChange(array, 'lastObject', meta);
+      }
+   }
   }
+
   return array;
 }
 
 const EMBER_ARRAY = symbol('EMBER_ARRAY');
 
 export function isEmberArray(obj) {
-  return obj && !!obj[EMBER_ARRAY];
+  return obj && obj[EMBER_ARRAY];
 }
 
 // ..........................................................
@@ -307,7 +313,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     deprecate(
       '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
       false,
-      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
+      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
     );
 
     return this.indexOf(obj) >= 0;
@@ -339,17 +345,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     if (isNone(beginIndex)) {
       beginIndex = 0;
+    } else if (beginIndex < 0) {
+      beginIndex = length + beginIndex;
     }
 
     if (isNone(endIndex) || (endIndex > length)) {
       endIndex = length;
-    }
-
-    if (beginIndex < 0) {
-      beginIndex = length + beginIndex;
-    }
-
-    if (endIndex < 0) {
+    } else if (endIndex < 0) {
       endIndex = length + endIndex;
     }
 
@@ -638,7 +640,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 function EachProxy(content) {
   this._content = content;
   this._keys = undefined;
-  this.__ember_meta__ = null;
+  meta(this);
 }
 
 EachProxy.prototype = {
@@ -732,7 +734,7 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   while (--loc >= idx) {
     let item = objectAt(content, loc);
     if (item) {
-      assert(`When using @each to observe the array ${content}, the array must return an object`, typeof item === 'object');
+      assert(`When using @each to observe the array \`${toString(content)}\`, the array must return an object`, typeof item === 'object');
       _addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
       addObserver(item, keyName, proxy, 'contentKeyDidChange');
     }

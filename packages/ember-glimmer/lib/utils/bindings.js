@@ -46,7 +46,7 @@ export function wrapComponentClassAttribute(hash) {
 
     if (type === Ops.Get) {
       let getExp = values[index];
-      let path = getExp[1];
+      let path = getExp[2];
       let propName = path[path.length - 1];
       hash[1][index] = [Ops.Helper, ['-class'], [getExp, propName]];
     }

@@ -1,1042 +1,1016 @@
-import { RSVP, Controller } from 'ember-runtime';
-import { Route, NoneLocation } from 'ember-routing';
-import { run } from 'ember-metal';
-import { compile } from 'ember-template-compiler';
-import { Application, Resolver } from 'ember-application';
-import { jQuery } from 'ember-views';
-import { setTemplates, setTemplate } from 'ember-glimmer';
+import { RSVP } from 'ember-runtime';
+import { Route } from 'ember-routing';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  AutobootApplicationTestCase } from 'internal-test-helpers';
 
-let Router, App, templates, router, container, counter;
+  let counter;
 
-function step(expectedValue, description) {
-  equal(counter, expectedValue, 'Step ' + expectedValue + ': ' + description);
-  counter++;
-}
-
-function bootApplication(startingURL) {
-  for (let name in templates) {
-    setTemplate(name, compile(templates[name]));
+  function step(expectedValue, description) {
+    equal(counter, expectedValue, 'Step ' + expectedValue + ': ' + description);
+    counter++;
   }
 
-  if (startingURL) {
-    NoneLocation.reopen({
-      path: startingURL
-    });
-  }
-
-  startingURL = startingURL || '';
-  router = container.lookup('router:main');
-  run(App, 'advanceReadiness');
-}
-
-QUnit.module('Loading/Error Substates', {
-  setup() {
+moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
+  constructor() {
+    super();
     counter = 1;
 
-    run(function() {
-      App = Application.create({
-        name: 'App',
-        rootElement: '#qunit-fixture',
-        // fake a modules resolver
-        Resolver: Resolver.extend({ moduleBasedResolver: true })
-      });
+    this.addTemplate('application', `<div id="app">{{outlet}}</div>`);
+    this.addTemplate('index', 'INDEX');
+  }
 
-      App.deferReadiness();
+  getController(name) {
+    return this.applicationInstance.lookup(`controller:${name}`);
+  }
 
-      App.Router.reopen({
-        location: 'none'
-      });
+  get currentPath() {
+    return this.getController('application').get('currentPath');
+  }
 
-      Router = App.Router;
+  ['@test Slow promise from a child route of application enters nested loading state'](assert) {
+    let turtleDeferred = RSVP.defer();
 
-      container = App.__container__;
-
-      templates = {
-        application: '<div id="app">{{outlet}}</div>',
-        index: 'INDEX',
-        loading: 'LOADING',
-        bro: 'BRO',
-        sis: 'SIS'
-      };
-    });
-  },
-
-  teardown() {
-    run(function() {
-      App.destroy();
-      App = null;
-
-      setTemplates({});
+    this.router.map(function() {
+      this.route('turtle');
     });
 
-    NoneLocation.reopen({
-      path: ''
+    this.add('route:application', Route.extend({
+      setupController() {
+        step(2, 'ApplicationRoute#setupController');
+      }
+    }));
+
+    this.add('route:turtle', Route.extend({
+      model() {
+        step(1, 'TurtleRoute#model');
+        return turtleDeferred.promise;
+      }
+    }));
+    this.addTemplate('turtle', 'TURTLE');
+    this.addTemplate('loading', 'LOADING');
+
+    let promise = this.visit('/turtle').then(() => {
+      text = this.$('#app').text();
+      assert.equal(
+        text,
+        'TURTLE',
+        `turtle template has loaded and replaced the loading template`
+      );
+    });
+
+    let text = this.$('#app').text();
+    assert.equal(
+      text,
+      'LOADING',
+      `The Loading template is nested in application template's outlet`
+    );
+
+    turtleDeferred.resolve();
+    return promise;
+  }
+
+  [`@test Slow promises returned from ApplicationRoute#model don't enter LoadingRoute`](assert) {
+    let appDeferred = RSVP.defer();
+
+    this.add('route:application', Route.extend({
+      model() {
+        return appDeferred.promise;
+      }
+    }));
+    this.add('route:loading', Route.extend({
+      setupController() {
+        ok(false, `shouldn't get here`);
+      }
+    }));
+
+    let promise = this.visit('/').then(() => {
+      text = this.$('#app').text();
+
+      assert.equal(text, 'INDEX', `index template has been rendered`);
+    });
+
+    let text = this.$('#app').text();
+
+    assert.equal(text, '', `nothing has been rendered yet`);
+    appDeferred.resolve();
+
+    return promise;
+  }
+
+  [`@test Don't enter loading route unless either route or template defined`](assert) {
+    let deferred = RSVP.defer();
+
+    this.router.map(function() {
+      this.route('dummy');
+    })
+    this.add('route:dummy', Route.extend({
+      model() {
+        return deferred.promise;
+      }
+    }));
+    this.addTemplate('dummy', 'DUMMY');
+
+    return this.visit('/').then(() => {
+      let promise = this.visit('/dummy').then(() => {
+        let text = this.$('#app').text();
+
+        assert.equal(text, 'DUMMY', `dummy template has been rendered`);
+      });
+
+      assert.ok(this.currentPath !== 'loading', `
+        loading state not entered
+      `);
+      deferred.resolve();
+
+      return promise;
+    });
+  }
+
+  ['@test Enter loading route only if loadingRoute is defined'](assert) {
+    let deferred = RSVP.defer();
+
+    this.router.map(function() {
+      this.route('dummy');
+    });
+
+    this.add('route:dummy', Route.extend({
+      model() {
+        step(1, 'DummyRoute#model');
+        return deferred.promise;
+      }
+    }));
+    this.add('route:loading', Route.extend({
+      setupController() {
+        step(2, 'LoadingRoute#setupController');
+      }
+    }));
+    this.addTemplate('dummy', 'DUMMY');
+
+    return this.visit('/').then(() => {
+      let promise = this.visit('/dummy').then(() => {
+        let text = this.$('#app').text();
+
+        assert.equal(text, 'DUMMY', `dummy template has been rendered`);
+      });
+
+      assert.equal(
+        this.currentPath,
+        'loading',
+        `loading state entered`
+      );
+      deferred.resolve();
+
+      return promise;
+    });
+  }
+
+  ['@test Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present'](assert) {
+    let appDeferred = RSVP.defer();
+
+    this.add('route:application', Route.extend({
+      model() {
+        return appDeferred.promise;
+      }
+    }));
+    let loadingRouteEntered = false;
+    this.add('route:application_loading', Route.extend({
+      setupController() {
+        loadingRouteEntered = true;
+      }
+    }));
+
+    let promise = this.visit('/').then(() => {
+      assert.equal(this.$('#app').text(), 'INDEX', 'index route loaded');
+    });
+    assert.ok(loadingRouteEntered, 'ApplicationLoadingRoute was entered');
+    appDeferred.resolve();
+
+    return promise;
+  }
+
+  ['@test Slow promises returned from ApplicationRoute#model enter application_loading if template present'](assert) {
+    let appDeferred = RSVP.defer();
+
+    this.addTemplate('application_loading', `
+      <div id="toplevel-loading">TOPLEVEL LOADING</div>
+    `);
+    this.add('route:application', Route.extend({
+      model() {
+        return appDeferred.promise;
+      }
+    }));
+
+    let promise = this.visit('/').then(() => {
+      let length = this.$('#toplevel-loading').length;
+      text = this.$('#app').text()
+
+      assert.equal(
+        length,
+        0,
+        `top-level loading view has been entirely removed from the DOM`
+      );
+      assert.equal(text, 'INDEX', 'index has fully rendered');
+    });
+    let text = this.$('#toplevel-loading').text();
+
+    assert.equal(text, 'TOPLEVEL LOADING', 'still loading the top level');
+    appDeferred.resolve();
+
+    return promise;
+  }
+
+  ['@test Prioritized substate entry works with preserved-namespace nested routes'](assert) {
+    let deferred = RSVP.defer();
+
+    this.addTemplate('foo.bar_loading', 'FOOBAR LOADING');
+    this.addTemplate('foo.bar.index', 'YAY');
+
+    this.router.map(function() {
+      this.route('foo', function() {
+        this.route('bar', { path: '/bar' }, function() {
+        });
+      });
+    });
+
+    this.add('route:foo.bar', Route.extend({
+      model() {
+        return deferred.promise;
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let promise = this.visit('/foo/bar').then(() => {
+        text = this.$('#app').text();
+
+        assert.equal(text, 'YAY', 'foo.bar.index fully loaded');
+      });
+      let text = this.$('#app').text();
+
+      assert.equal(
+        text,
+        'FOOBAR LOADING',
+        `foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)`
+      );
+      deferred.resolve();
+
+      return promise;
+    });
+  }
+
+  ['@test Prioritized substate entry works with reset-namespace nested routes'](assert) {
+    let deferred = RSVP.defer();
+
+    this.addTemplate('bar_loading', 'BAR LOADING');
+    this.addTemplate('bar.index', 'YAY');
+
+    this.router.map(function() {
+      this.route('foo', function() {
+        this.route('bar', { path: '/bar', resetNamespace: true }, function() {
+        });
+      });
+    });
+
+    this.add('route:bar', Route.extend({
+      model() {
+        return deferred.promise;
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let promise = this.visit('/foo/bar').then(() => {
+        text = this.$('#app').text();
+
+        assert.equal(text, 'YAY', 'bar.index fully loaded');
+      });
+
+      let text = this.$('#app').text();
+
+      assert.equal(
+        text,
+        'BAR LOADING',
+        `foo.bar_loading was entered (as opposed to something likefoo/foo/bar_loading)`
+      );
+      deferred.resolve();
+
+      return promise;
+    });
+  }
+
+  ['@test Prioritized loading substate entry works with preserved-namespace nested routes'](assert) {
+    let deferred = RSVP.defer();
+
+    this.addTemplate('foo.bar_loading', 'FOOBAR LOADING');
+    this.addTemplate('foo.bar', 'YAY');
+
+    this.router.map(function() {
+      this.route('foo', function() {
+        this.route('bar');
+      })
+    });
+
+    this.add('route:foo.bar', Route.extend({
+      model() {
+        return deferred.promise;
+      }
+    }));
+
+    let promise = this.visit('/foo/bar').then(() => {
+      text = this.$('#app').text();
+
+      assert.equal(text, 'YAY', 'foo.bar has rendered');
+    });
+    let text = this.$('#app').text();
+
+    assert.equal(
+      text,
+      'FOOBAR LOADING',
+      `foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)`
+    );
+    deferred.resolve();
+
+    return promise;
+  }
+
+  ['@test Prioritized error substate entry works with preserved-namespaec nested routes'](assert) {
+    this.addTemplate('foo.bar_error', 'FOOBAR ERROR: {{model.msg}}');
+    this.addTemplate('foo.bar', 'YAY');
+
+    this.router.map(function() {
+      this.route('foo', function() {
+        this.route('bar');
+      });
+    });
+
+    this.add('route:foo.bar', Route.extend({
+      model() {
+        return RSVP.reject({
+          msg: 'did it broke?'
+        });
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      assert.throws(() => {
+        this.visit('/foo/bar');
+      }, (err) => err.msg === "did it broke?", 'it broke');
+      let text = this.$('#app').text();
+      assert.equal(
+        text,
+        'FOOBAR ERROR: did it broke?',
+        `foo.bar_error was entered (as opposed to something like foo/foo/bar_error)`
+      );
+    });
+  }
+  ['@test Prioritized loading substate entry works with auto-generated index routes'](assert) {
+    let deferred = RSVP.defer();
+    this.addTemplate('foo.index_loading', 'FOO LOADING');
+    this.addTemplate('foo.index', 'YAY');
+    this.addTemplate('foo', '{{outlet}}');
+
+    this.router.map(function() {
+      this.route('foo', function() {
+        this.route('bar');
+      });
+    });
+
+    this.add('route:foo.index', Route.extend({
+      model() {
+        return deferred.promise;
+      }
+    }));
+    this.add('route:foo', Route.extend({
+      model() {
+        return true;
+      }
+    }));
+
+    let promise = this.visit('/foo').then(() => {
+      text = this.$('#app').text();
+
+      assert.equal(text, 'YAY', 'foo.index was rendered');
+    });
+    let text = this.$('#app').text();
+    assert.equal(text, 'FOO LOADING', 'foo.index_loading was entered');
+
+    deferred.resolve();
+
+    return promise;
+  }
+
+  ['@test Prioritized error substate entry works with auto-generated index routes'](assert) {
+    this.addTemplate('foo.index_error', 'FOO ERROR: {{model.msg}}');
+    this.addTemplate('foo.index', 'YAY');
+    this.addTemplate('foo', '{{outlet}}');
+
+    this.router.map(function() {
+      this.route('foo', function() {
+        this.route('bar');
+      })
+    });
+
+    this.add('route:foo.index', Route.extend({
+      model() {
+        return RSVP.reject({
+          msg: 'did it broke?'
+        });
+      }
+    }));
+    this.add('route:foo', Route.extend({
+      model() {
+        return true;
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      assert.throws(() => {
+        this.visit('/foo');
+      }, (err) => err.msg === 'did it broke?', 'it broke');
+      let text = this.$('#app').text();
+
+      assert.equal(
+        text,
+        'FOO ERROR: did it broke?',
+        'foo.index_error was entered'
+      );
     });
   }
 });
 
-QUnit.test('Slow promise from a child route of application enters nested loading state', function() {
-  let broModel = {};
-  let broDeferred = RSVP.defer();
+moduleFor('Loading/Error Substates - globals mode app', class extends AutobootApplicationTestCase {
+  /*
+   * When an exception is thrown during the initial rendering phase, the
+   * `visit` promise is not resolved or rejected. This means the `applicationInstance`
+   * is never torn down and tests running after this one will fail.
+   *
+   * It is ugly, but since this test intentionally causes an initial render
+   * error, it requires globals mode to access the `applicationInstance`
+   * for teardown after test completion.
+   *
+   * Application "globals mode" is trigged by `autoboot: true`. It doesn't
+   * have anything to do with the resolver.
+   *
+   * We should be able to fix this by having the application eagerly stash a
+   * copy of each application instance it creates. When the application is
+   * destroyed, it can also destroy the instances (this is how the globals
+   * mode avoid the problem).
+   *
+   * See: https://github.com/emberjs/ember.js/issues/15327
+   */
+  ['@test Rejected promises returned from ApplicationRoute transition into top-level application_error'](assert) {
+    let reject = true;
 
-  Router.map(function() {
-    this.route('bro');
-  });
+    assert.throws(() => {
+      this.runTask(() => {
+        this.createApplication();
+        this.addTemplate('index', '<div id="app">INDEX</div>');
+        this.add('route:application', Route.extend({
+          init() {
+            this._super(...arguments);
+          },
+          model() {
+            if (reject) {
+              return RSVP.reject({ msg: 'BAD NEWS BEARS' });
+            } else {
+              return {};
+            }
+          }
+        }));
 
-  App.ApplicationRoute = Route.extend({
-    setupController() {
-      step(2, 'ApplicationRoute#setup');
-    }
-  });
+        this.addTemplate('application_error', `
+          <p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>
+        `);
+      })
+    }, (err) => err.msg === 'BAD NEWS BEARS', 'it went poorly');
 
-  App.BroRoute = Route.extend({
-    model() {
-      step(1, 'BroRoute#model');
-      return broDeferred.promise;
-    }
-  });
+    let text = this.$('#toplevel-error').text();
+    assert.equal(
+      text,
+      'TOPLEVEL ERROR: BAD NEWS BEARS',
+      'toplevel error rendered'
+    );
 
-  bootApplication('/bro');
+    reject = false
 
-  equal(jQuery('#app', '#qunit-fixture').text(), 'LOADING', 'The Loading template is nested in application template\'s outlet');
+    return this.visit('/').then(() => {
+      let text = this.$('#app').text();
 
-  run(broDeferred, 'resolve', broModel);
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'BRO', 'bro template has loaded and replaced loading template');
+      assert.equal(text, 'INDEX', 'the index route resolved');
+    });
+  }
 });
 
-QUnit.test('Slow promises waterfall on startup', function() {
-  expect(7);
+moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTestCase {
+  constructor() {
+    super();
 
-  let grandmaDeferred = RSVP.defer();
-  let sallyDeferred = RSVP.defer();
+    counter = 1;
+    
+    this.addTemplate('application', `<div id="app">{{outlet}}</div>`);
+    this.addTemplate('index', 'INDEX');
+    this.addTemplate('grandma', 'GRANDMA {{outlet}}');
+    this.addTemplate('mom', 'MOM');
 
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom', { resetNamespace: true }, function() {
-        this.route('sally');
+    this.router.map(function() {
+      this.route('grandma', function() {
+        this.route('mom', { resetNamespace: true }, function() {
+          this.route('sally');
+          this.route('this-route-throws');
+        });
+        this.route('puppies');
       });
+      this.route('memere', { path: '/memere/:seg' }, function() {});
     });
-  });
 
-  templates.grandma = 'GRANDMA {{outlet}}';
-  templates.mom = 'MOM {{outlet}}';
-  templates['mom/loading'] = 'MOMLOADING';
-  templates['mom/sally'] = 'SALLY';
+    this.visit('/');
+  }
 
-  App.GrandmaRoute = Route.extend({
-    model() {
-      step(1, 'GrandmaRoute#model');
-      return grandmaDeferred.promise;
-    }
-  });
+  getController(name) {
+    return this.applicationInstance.lookup(`controller:${name}`);
+  }
 
-  App.MomRoute = Route.extend({
-    model() {
-      step(2, 'Mom#model');
-      return {};
-    }
-  });
+  get currentPath() {
+    return this.getController('application').get('currentPath');
+  }
 
-  App.MomSallyRoute = Route.extend({
-    model() {
-      step(3, 'SallyRoute#model');
-      return sallyDeferred.promise;
-    },
-    setupController() {
-      step(4, 'SallyRoute#setupController');
-    }
-  });
+  ['@test ApplicationRoute#currentPath reflects loading state path'](assert) {
+    let momDeferred = RSVP.defer();
 
-  bootApplication('/grandma/mom/sally');
+    this.addTemplate('grandma.loading', 'GRANDMALOADING');
 
-  equal(jQuery('#app', '#qunit-fixture').text(), 'LOADING', 'The Loading template is nested in application template\'s outlet');
-
-  run(grandmaDeferred, 'resolve', {});
-  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA MOM MOMLOADING', 'Mom\'s child loading route is displayed due to sally\'s slow promise');
-
-  run(sallyDeferred, 'resolve', {});
-  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA MOM SALLY', 'Sally template displayed');
-});
-
-QUnit.test('ApplicationRoute#currentPath reflects loading state path', function() {
-  expect(4);
-
-  let momDeferred = RSVP.defer();
-
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom');
-    });
-  });
-
-  templates.grandma = 'GRANDMA {{outlet}}';
-  templates['grandma/loading'] = 'GRANDMALOADING';
-  templates['grandma/mom'] = 'MOM';
-
-  App.GrandmaMomRoute = Route.extend({
-    model() {
-      return momDeferred.promise;
-    }
-  });
-
-  bootApplication('/grandma/mom');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA GRANDMALOADING');
-
-  let appController = container.lookup('controller:application');
-  equal(appController.get('currentPath'), 'grandma.loading', 'currentPath reflects loading state');
-
-  run(momDeferred, 'resolve', {});
-  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA MOM');
-  equal(appController.get('currentPath'), 'grandma.mom', 'currentPath reflects final state');
-});
-
-QUnit.test('Slow promises returned from ApplicationRoute#model don\'t enter LoadingRoute', function() {
-  expect(2);
-
-  let appDeferred = RSVP.defer();
-
-  App.ApplicationRoute = Route.extend({
-    model() {
-      return appDeferred.promise;
-    }
-  });
-
-  App.LoadingRoute = Route.extend({
-    setupController() {
-      ok(false, 'shouldn\'t get here');
-    }
-  });
-
-  bootApplication();
-
-  equal(jQuery('#app', '#qunit-fixture').text(), '', 'nothing has been rendered yet');
-
-  run(appDeferred, 'resolve', {});
-  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
-});
-
-QUnit.test('Don\'t enter loading route unless either route or template defined', function() {
-  delete templates.loading;
-
-  expect(2);
-
-  let indexDeferred = RSVP.defer();
-
-  App.ApplicationController = Controller.extend();
-
-  App.IndexRoute = Route.extend({
-    model() {
-      return indexDeferred.promise;
-    }
-  });
-
-  bootApplication();
-
-  let appController = container.lookup('controller:application');
-  ok(appController.get('currentPath') !== 'loading', 'loading state not entered');
-
-  run(indexDeferred, 'resolve', {});
-  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
-});
-
-QUnit.test('Enter loading route if only LoadingRoute defined', function() {
-  delete templates.loading;
-
-  expect(4);
-
-  let indexDeferred = RSVP.defer();
-
-  App.IndexRoute = Route.extend({
-    model() {
-      step(1, 'IndexRoute#model');
-      return indexDeferred.promise;
-    }
-  });
-
-  App.LoadingRoute = Route.extend({
-    setupController() {
-      step(2, 'LoadingRoute#setupController');
-    }
-  });
-
-  bootApplication();
-
-  let appController = container.lookup('controller:application');
-  equal(appController.get('currentPath'), 'loading', 'loading state entered');
-
-  run(indexDeferred, 'resolve', {});
-  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
-});
-
-QUnit.test('Enter child loading state of pivot route', function() {
-  expect(4);
-
-  let deferred = RSVP.defer();
-
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom', { resetNamespace: true }, function() {
-        this.route('sally');
-      });
-      this.route('smells');
-    });
-  });
-
-  templates['grandma/loading'] = 'GMONEYLOADING';
-
-  App.ApplicationController = Controller.extend();
-
-  App.MomSallyRoute = Route.extend({
-    setupController() {
-      step(1, 'SallyRoute#setupController');
-    }
-  });
-
-  App.GrandmaSmellsRoute = Route.extend({
-    model() {
-      return deferred.promise;
-    }
-  });
-
-  bootApplication('/grandma/mom/sally');
-
-  let appController = container.lookup('controller:application');
-  equal(appController.get('currentPath'), 'grandma.mom.sally', 'Initial route fully loaded');
-
-  run(router, 'transitionTo', 'grandma.smells');
-  equal(appController.get('currentPath'), 'grandma.loading', 'in pivot route\'s child loading state');
-
-  run(deferred, 'resolve', {});
-
-  equal(appController.get('currentPath'), 'grandma.smells', 'Finished transition');
-});
-
-QUnit.test('Loading actions bubble to root, but don\'t enter substates above pivot', function() {
-  expect(6);
-
-  delete templates.loading;
-
-  let sallyDeferred = RSVP.defer();
-  let smellsDeferred = RSVP.defer();
-
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom', { resetNamespace: true }, function() {
-        this.route('sally');
-      });
-      this.route('smells');
-    });
-  });
-
-  App.ApplicationController = Controller.extend();
-
-  App.ApplicationRoute = Route.extend({
-    actions: {
-      loading(transition, route) {
-        ok(true, 'loading action received on ApplicationRoute');
+    this.add('route:mom', Route.extend({
+      model() {
+        return momDeferred.promise;
       }
-    }
-  });
+    }));
 
-  App.MomSallyRoute = Route.extend({
-    model() {
-      return sallyDeferred.promise;
-    }
-  });
+    let promise = this.visit('/grandma/mom').then(() => {
+      text = this.$('#app').text();
 
-  App.GrandmaSmellsRoute = Route.extend({
-    model() {
-      return smellsDeferred.promise;
-    }
-  });
-
-  bootApplication('/grandma/mom/sally');
-
-  let appController = container.lookup('controller:application');
-  ok(!appController.get('currentPath'), 'Initial route fully loaded');
-  run(sallyDeferred, 'resolve', {});
-
-  equal(appController.get('currentPath'), 'grandma.mom.sally', 'transition completed');
-
-  run(router, 'transitionTo', 'grandma.smells');
-  equal(appController.get('currentPath'), 'grandma.mom.sally', 'still in initial state because the only loading state is above the pivot route');
-
-  run(smellsDeferred, 'resolve', {});
-
-  equal(appController.get('currentPath'), 'grandma.smells', 'Finished transition');
-});
-
-QUnit.test('Default error event moves into nested route', function() {
-  expect(6);
-
-  templates['grandma'] = 'GRANDMA {{outlet}}';
-  templates['grandma/error'] = 'ERROR: {{model.msg}}';
-
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom', { resetNamespace: true }, function() {
-        this.route('sally');
-      });
+      assert.equal(
+        text,
+        'GRANDMA MOM',
+        `Grandma.mom loaded text is displayed`
+      );
+      assert.equal(
+        this.currentPath,
+        'grandma.mom.index',
+        `currentPath reflects final state`
+      );
     });
-  });
+    let text = this.$('#app').text();
 
-  App.ApplicationController = Controller.extend();
+    assert.equal(
+      text,
+      'GRANDMA GRANDMALOADING',
+      `Grandma.mom loading text displayed`
+    );
 
-  App.MomSallyRoute = Route.extend({
-    model() {
-      step(1, 'MomSallyRoute#model');
+    assert.equal(
+      this.currentPath,
+      'grandma.loading',
+      `currentPath reflects loading state`
+    );
 
-      return RSVP.reject({
-        msg: 'did it broke?'
-      });
-    },
-    actions: {
-      error() {
-        step(2, 'MomSallyRoute#actions.error');
-        return true;
+    momDeferred.resolve();
+
+    return promise;
+  }
+
+  [`@test Loading actions bubble to root but don't enter substates above pivot `](assert) {
+    let sallyDeferred = RSVP.defer();
+    let puppiesDeferred = RSVP.defer();
+
+    this.add('route:application', Route.extend({
+      actions: {
+        loading(transition, route) {
+          assert.ok(true, 'loading action received on ApplicationRoute');
+        }
       }
-    }
-  });
+    }));
 
-  throws(function() {
-    bootApplication('/grandma/mom/sally');
-  }, function(err) { return err.msg === 'did it broke?';});
-
-  step(3, 'App finished booting');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA ERROR: did it broke?', 'error bubbles');
-
-  let appController = container.lookup('controller:application');
-  equal(appController.get('currentPath'), 'grandma.error', 'Initial route fully loaded');
-});
-
-QUnit.test('Error events that aren\'t bubbled don\t throw application assertions', function() {
-  expect(2);
-
-  templates['grandma'] = 'GRANDMA {{outlet}}';
-
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom', { resetNamespace: true }, function() {
-        this.route('sally');
-      });
-    });
-  });
-
-  App.ApplicationController =
-  Controller.extend();
-
-  App.MomSallyRoute = Route.extend({
-    model() {
-      step(1, 'MomSallyRoute#model');
-
-      return RSVP.reject({
-        msg: 'did it broke?'
-      });
-    },
-    actions: {
-      error(err) {
-        equal(err.msg, 'did it broke?');
-        return false;
+    this.add('route:mom.sally', Route.extend({
+      model() {
+        return sallyDeferred.promise;
       }
-    }
-  });
+    }));
 
-  bootApplication('/grandma/mom/sally');
-});
-
-QUnit.test('Non-bubbled errors that re-throw aren\'t swallowed', function() {
-  expect(2);
-
-  templates['grandma'] = 'GRANDMA {{outlet}}';
-
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom', { resetNamespace: true }, function() {
-        this.route('sally');
-      });
-    });
-  });
-
-  App.ApplicationController = Controller.extend();
-
-  App.MomSallyRoute = Route.extend({
-    model() {
-      step(1, 'MomSallyRoute#model');
-
-      return RSVP.reject({
-        msg: 'did it broke?'
-      });
-    },
-    actions: {
-      error(err) {
-        // returns undefined which is falsey
-        throw err;
+    this.add('route:grandma.puppies', Route.extend({
+      model() {
+        return puppiesDeferred.promise;
       }
-    }
-  });
+    }));
 
-  throws(function() {
-    bootApplication('/grandma/mom/sally');
-  }, function(err) { return err.msg === 'did it broke?';});
-});
+    let promise = this.visit('/grandma/mom/sally');
+    assert.equal(this.currentPath, 'index', 'Initial route fully loaded');
 
-QUnit.test('Handled errors that re-throw aren\'t swallowed', function() {
-  expect(4);
+    sallyDeferred.resolve();
 
-  let handledError;
+    promise.then(() => {
+      assert.equal(this.currentPath, 'grandma.mom.sally', 'transition completed');
 
-  templates['grandma'] = 'GRANDMA {{outlet}}';
+      let visit =  this.visit('/grandma/puppies');
+      assert.equal(
+        this.currentPath,
+        'grandma.mom.sally',
+        'still in initial state because the only loading state is above the pivot route'
+      );
 
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom', { resetNamespace: true }, function() {
-        this.route('sally');
-        this.route('this-route-throws');
-      });
+      return visit;
+    }).then(() => {
+      this.runTask(() => puppiesDeferred.resolve());
+
+      assert.equal(this.currentPath, 'grandma.puppies', 'Finished transition');
     });
-  });
 
-  App.ApplicationController = Controller.extend();
+    return promise;
+  }
 
-  App.MomSallyRoute = Route.extend({
-    model() {
-      step(1, 'MomSallyRoute#model');
+  ['@test Default error event moves into nested route'](assert) {
+    this.addTemplate('grandma.error', 'ERROR: {{model.msg}}');
 
-      return RSVP.reject({
-        msg: 'did it broke?'
-      });
-    },
-    actions: {
-      error(err) {
-        step(2, 'MomSallyRoute#error');
-
-        handledError = err;
-
-        this.transitionTo('mom.this-route-throws');
-
-        // Marks error as handled
-        return false;
+    this.add('route:mom.sally', Route.extend({
+      model() {
+        step(1, 'MomSallyRoute#model');
+        return RSVP.reject({
+          msg: 'did it broke?'
+        })
+      },
+      actions: {
+        error() {
+          step(2, 'MomSallyRoute#actions.error');
+          return true;
+        }
       }
-    }
-  });
+    }));
 
-  App.MomThisRouteThrowsRoute = Route.extend({
-    model() {
-      step(3, 'MomThisRouteThrows#model');
+    assert.throws(() => {
+      this.visit('/grandma/mom/sally');
+    }, (err) =>  err.msg === "did it broke?", 'it broke.');
 
-      throw handledError;
-    }
-  });
+    step(3, 'App finished loading');
 
-  throws(function() {
-    bootApplication('/grandma/mom/sally');
-  }, function(err) { return err.msg === 'did it broke?'; });
-});
+    let text = this.$('#app').text();
 
-QUnit.test('Handled errors that bubble can be handled at a higher level', function() {
-  expect(4);
+    assert.equal(text, 'GRANDMA ERROR: did it broke?', 'error bubbles');
+    assert.equal(this.currentPath, 'grandma.error', 'Initial route fully loaded');
+  }
 
-  let handledError;
-
-  templates['grandma'] = 'GRANDMA {{outlet}}';
-
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom', { resetNamespace: true }, function() {
-        this.route('sally');
-      });
-    });
-  });
-
-  App.ApplicationController = Controller.extend();
-
-  App.MomRoute = Route.extend({
-    actions: {
-      error(err) {
-        step(3, 'MomRoute#error');
-
-        equal(err, handledError, 'error handled and rebubbled is handleable at higher route');
+  [`@test Non-bubbled errors that re-throw aren't swallowed`](assert) {
+    this.add('route:mom.sally', Route.extend({
+      model() {
+        return RSVP.reject({
+          msg: 'did it broke?'
+        });
+      },
+      actions: {
+        error(err) {
+          // returns undefined which is falsey
+          throw err;
+        }
       }
-    }
-  });
+    }));
 
-  App.MomSallyRoute = Route.extend({
-    model() {
-      step(1, 'MomSallyRoute#model');
+    assert.throws(() => {
+      this.visit('/grandma/mom/sally');
+    }, (err) => err.msg === 'did it broke?', 'it broke');
+  }
 
-      return RSVP.reject({
-        msg: 'did it broke?'
-      });
-    },
+  [`@test Handled errors that re-throw aren't swallowed`](assert) {
+    let handledError;
 
-    actions: {
-      error(err) {
-        step(2, 'MomSallyRoute#error');
+    this.add('route:mom.sally', Route.extend({
+      model() {
+        step(1, 'MomSallyRoute#model');
+        return RSVP.reject({
+          msg: 'did it broke?'
+        })
+      },
+      actions: {
+        error(err) {
+          step(2, 'MomSallyRoute#actions.error');
+          handledError = err;
+          this.transitionTo('mom.this-route-throws');
 
-        handledError = err;
-
-        return true;
+          return false;
+        }
       }
-    }
-  });
+    }));
 
-  bootApplication('/grandma/mom/sally');
-});
-
-QUnit.test('errors that are bubbled are thrown at a higher level if not handled', function() {
-  expect(3);
-
-  templates['grandma'] = 'GRANDMA {{outlet}}';
-
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom', { resetNamespace: true }, function() {
-        this.route('sally');
-      });
-    });
-  });
-
-  App.ApplicationController = Controller.extend();
-
-  App.MomSallyRoute = Route.extend({
-    model() {
-      step(1, 'MomSallyRoute#model');
-
-      return RSVP.reject({
-        msg: 'did it broke?'
-      });
-    },
-
-    actions: {
-      error(err) {
-        step(2, 'MomSallyRoute#error');
-        return true;
+    this.add('route:mom.this-route-throws', Route.extend({
+      model() {
+        step(3, 'MomThisRouteThrows#model');
+        throw handledError;
       }
-    }
-  });
+    }));
 
-  throws(
-    function() {
-      bootApplication('/grandma/mom/sally');
-    },
-    function(err) {
-      return err.msg === 'did it broke?';
-    },
-    'Correct error was thrown'
-  );
-});
+    assert.throws(() => {
+      this.visit('/grandma/mom/sally');
+    }, (err) => err.msg  === 'did it broke?', `it broke`);
+  }
 
-QUnit.test('Handled errors that are thrown through rejection aren\'t swallowed', function() {
-  expect(4);
-
-  let handledError;
-
-  templates['grandma'] = 'GRANDMA {{outlet}}';
-
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom', { resetNamespace: true }, function() {
-        this.route('sally');
-        this.route('this-route-throws');
-      });
-    });
-  });
-
-  App.ApplicationController = Controller.extend();
-
-  App.MomSallyRoute = Route.extend({
-    model() {
-      step(1, 'MomSallyRoute#model');
-
-      return RSVP.reject({
-        msg: 'did it broke?'
-      });
-    },
-    actions: {
-      error(err) {
-        step(2, 'MomSallyRoute#error');
-
-        handledError = err;
-
-        this.transitionTo('mom.this-route-throws');
-
-        // Marks error as handled
-        return false;
+  ['@test errors that are bubbled are thrown at a higher level if not handled'](assert) {
+    this.add('route:mom.sally', Route.extend({
+      model() {
+        step(1, 'MomSallyRoute#model');
+        return RSVP.reject({
+          msg: 'did it broke?'
+        });
+      },
+      actions: {
+        error(err) {
+          step(2, 'MomSallyRoute#actions.error');
+          return true;
+        }
       }
-    }
-  });
+    }));
 
-  App.MomThisRouteThrowsRoute = Route.extend({
-    model() {
-      step(3, 'MomThisRouteThrows#model');
+    assert.throws(() => {
+      this.visit('/grandma/mom/sally');
+    }, (err) => err.msg == "did it broke?", 'Correct error was thrown');
+  }
 
-      return RSVP.reject(handledError);
-    }
-  });
+  [`@test Handled errors that are thrown through rejection aren't swallowed`](assert) {
+    let handledError;
 
-  throws(function() {
-    bootApplication('/grandma/mom/sally');
-  }, function(err) { return err.msg === 'did it broke?'; });
-});
+    this.add('route:mom.sally', Route.extend({
+      model() {
+        step(1, 'MomSallyRoute#model');
+        return RSVP.reject({
+          msg: 'did it broke?'
+        });
+      },
+      actions: {
+        error(err) {
+          step(2, 'MomSallyRoute#actions.error');
+          handledError = err;
+          this.transitionTo('mom.this-route-throws');
 
-QUnit.test('Setting a query param during a slow transition should work', function() {
-  let deferred = RSVP.defer();
-
-  Router.map(function() {
-    this.route('grandma', { path: '/grandma/:seg' },  function() { });
-  });
-
-  templates['grandma/loading'] = 'GMONEYLOADING';
-
-  App.ApplicationController = Controller.extend();
-
-  App.IndexRoute = Route.extend({
-    beforeModel: function() {
-      this.transitionTo('grandma', 1);
-    }
-  });
-
-  App.GrandmaRoute = Route.extend({
-    queryParams: {
-      test: { defaultValue: 1 }
-    }
-  });
-
-  App.GrandmaIndexRoute = Route.extend({
-    model() {
-      return deferred.promise;
-    }
-  });
-
-  bootApplication('/');
-
-  let appController = container.lookup('controller:application');
-  let grandmaController = container.lookup('controller:grandma');
-
-  equal(appController.get('currentPath'), 'grandma.loading', 'Initial route should be loading');
-
-  run(function() {
-    grandmaController.set('test', 3);
-  });
-
-  equal(appController.get('currentPath'), 'grandma.loading', 'Route should still be loading');
-  equal(grandmaController.get('test'), 3, 'Controller query param value should have changed');
-
-  run(deferred, 'resolve', {});
-
-  equal(appController.get('currentPath'), 'grandma.index', 'Transition should be complete');
-});
-
-QUnit.test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
-  expect(2);
-
-  let appDeferred = RSVP.defer();
-
-  App.ApplicationRoute = Route.extend({
-    model() {
-      return appDeferred.promise;
-    }
-  });
-
-  let loadingRouteEntered = false;
-  App.ApplicationLoadingRoute = Route.extend({
-    setupController() {
-      loadingRouteEntered = true;
-    }
-  });
-
-  bootApplication();
-
-  ok(loadingRouteEntered, 'ApplicationLoadingRoute was entered');
-
-  run(appDeferred, 'resolve', {});
-  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
-});
-
-QUnit.test('Slow promises returned from ApplicationRoute#model enter application_loading if template present', function() {
-  expect(3);
-
-  templates['application_loading'] = '<div id="toplevel-loading">TOPLEVEL LOADING</div>';
-
-  let appDeferred = RSVP.defer();
-  App.ApplicationRoute = Route.extend({
-    model() {
-      return appDeferred.promise;
-    }
-  });
-
-  bootApplication();
-
-  equal(jQuery('#qunit-fixture #toplevel-loading').text(), 'TOPLEVEL LOADING');
-
-  run(appDeferred, 'resolve', {});
-
-  equal(jQuery('#toplevel-loading', '#qunit-fixture').length, 0, 'top-level loading View has been entirely removed from DOM');
-  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
-});
-
-QUnit.test('Default error event moves into nested route, prioritizing more specifically named error route', function() {
-  expect(6);
-
-  templates['grandma'] = 'GRANDMA {{outlet}}';
-  templates['grandma/error'] = 'ERROR: {{model.msg}}';
-  templates['mom_error'] = 'MOM ERROR: {{model.msg}}';
-
-  Router.map(function() {
-    this.route('grandma', function() {
-      this.route('mom', { resetNamespace: true }, function() {
-        this.route('sally');
-      });
-    });
-  });
-
-  App.ApplicationController = Controller.extend();
-
-  App.MomSallyRoute = Route.extend({
-    model() {
-      step(1, 'MomSallyRoute#model');
-
-      return RSVP.reject({
-        msg: 'did it broke?'
-      });
-    },
-    actions: {
-      error() {
-        step(2, 'MomSallyRoute#actions.error');
-        return true;
+          return false;
+        }
       }
-    }
-  });
+    }));
 
-  throws(function() {
-    bootApplication('/grandma/mom/sally');
-  }, function(err) { return err.msg === 'did it broke?'; });
+    this.add('route:mom.this-route-throws', Route.extend({
+      model() {
+        step(3, 'MomThisRouteThrows#model');
+        return RSVP.reject(handledError);
+      }
+    }));
 
-  step(3, 'App finished booting');
+    assert.throws(() => {
+      this.visit('/grandma/mom/sally');
+    }, (err) => err.msg === 'did it broke?', 'it broke');
+  }
 
-  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA MOM ERROR: did it broke?', 'the more specifically-named mom error substate was entered over the other error route');
+  ['@test Default error events move into nested route, prioritizing more specifically named error routes - NEW'](assert) {
+    this.addTemplate('grandma.error', 'ERROR: {{model.msg}}');
+    this.addTemplate('mom_error', 'MOM ERROR: {{model.msg}}');
 
-  let appController = container.lookup('controller:application');
-  equal(appController.get('currentPath'), 'grandma.mom_error', 'Initial route fully loaded');
-});
+    this.add('route:mom.sally', Route.extend({
+      model() {
+        step(1, 'MomSallyRoute#model');
+        return RSVP.reject({
+          msg: 'did it broke?'
+        });
+      },
+      actions: {
+        error() {
+          step(2, 'MomSallyRoute#actions.error');
+          return true;
+        }
+      }
+    }));
 
-QUnit.test('Prioritized substate entry works with preserved-namespace nested routes', function() {
-  expect(2);
+    assert.throws(() => {
+      this.visit('/grandma/mom/sally');
+    }, (err) => err.msg === 'did it broke?', 'it broke');
 
-  templates['foo/bar_loading'] = 'FOOBAR LOADING';
-  templates['foo/bar/index'] = 'YAY';
+    step(3, 'Application finished booting');
 
-  Router.map(function() {
-    this.route('foo', function() {
-      this.route('bar', { path: '/bar' }, function() {
-      });
-    });
-  });
+    assert.equal(
+      this.$('#app').text(),
+      'GRANDMA MOM ERROR: did it broke?',
+      'the more specifically named mome error substate was entered over the other error route'
+    );
 
-  App.ApplicationController = Controller.extend();
+    assert.equal(this.currentPath, 'grandma.mom_error',
+      'Initial route fully loaded'
+    );
+  }
 
-  let deferred = RSVP.defer();
-  App.FooBarRoute = Route.extend({
-    model() {
-      return deferred.promise;
-    }
-  });
+  ['@test Slow promises waterfall on startup'](assert) {
+    let grandmaDeferred = RSVP.defer();
+    let sallyDeferred = RSVP.defer();
 
-  bootApplication('/foo/bar');
+    this.addTemplate('loading', 'LOADING');
+    this.addTemplate('mom', 'MOM {{outlet}}');
+    this.addTemplate('mom.loading', 'MOMLOADING');
+    this.addTemplate('mom.sally', 'SALLY');
 
-  equal(jQuery('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
+    this.add('route:grandma', Route.extend({
+      model() {
+        step(1, 'GrandmaRoute#model');
+        return grandmaDeferred.promise;
+      }
+    }));
 
-  run(deferred, 'resolve');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'YAY');
-});
-
-QUnit.test('Prioritized substate entry works with reset-namespace nested routes', function() {
-  expect(2);
-
-  templates['bar_loading'] = 'BAR LOADING';
-  templates['bar/index'] = 'YAY';
-
-  Router.map(function() {
-    this.route('foo', function() {
-      this.route('bar', { path: '/bar', resetNamespace: true }, function() {
-      });
-    });
-  });
-
-  App.ApplicationController = Controller.extend();
-
-  let deferred = RSVP.defer();
-  App.BarRoute = Route.extend({
-    model() {
-      return deferred.promise;
-    }
-  });
-
-  bootApplication('/foo/bar');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'BAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
-
-  run(deferred, 'resolve');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'YAY');
-});
-
-QUnit.test('Prioritized loading substate entry works with preserved-namespace nested routes', function() {
-  expect(2);
-
-  templates['foo/bar_loading'] = 'FOOBAR LOADING';
-  templates['foo/bar'] = 'YAY';
-
-  Router.map(function() {
-    this.route('foo', function() {
-      this.route('bar');
-    });
-  });
-
-  App.ApplicationController = Controller.extend();
-
-  let deferred = RSVP.defer();
-  App.FooBarRoute = Route.extend({
-    model() {
-      return deferred.promise;
-    }
-  });
-
-  bootApplication('/foo/bar');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
-
-  run(deferred, 'resolve');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'YAY');
-});
-
-QUnit.test('Prioritized error substate entry works with preserved-namespace nested routes', function() {
-  expect(2);
-
-  templates['foo/bar_error'] = 'FOOBAR ERROR: {{model.msg}}';
-  templates['foo/bar'] = 'YAY';
-
-  Router.map(function() {
-    this.route('foo', function() {
-      this.route('bar');
-    });
-  });
-
-  App.ApplicationController = Controller.extend();
-
-  App.FooBarRoute = Route.extend({
-    model() {
-      return RSVP.reject({
-        msg: 'did it broke?'
-      });
-    }
-  });
-
-  throws(function() {
-    bootApplication('/foo/bar');
-  }, function(err) { return err.msg === 'did it broke?'; });
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'FOOBAR ERROR: did it broke?', 'foo.bar_error was entered (as opposed to something like foo/foo/bar_error)');
-});
-
-QUnit.test('Prioritized loading substate entry works with auto-generated index routes', function() {
-  expect(2);
-
-  templates['foo/index_loading'] = 'FOO LOADING';
-  templates['foo/index'] = 'YAY';
-  templates['foo'] = '{{outlet}}';
-
-  Router.map(function() {
-    this.route('foo', function() {
-      this.route('bar');
-    });
-  });
-
-  App.ApplicationController = Controller.extend();
-
-  let deferred = RSVP.defer();
-  App.FooIndexRoute = Route.extend({
-    model() {
-      return deferred.promise;
-    }
-  });
-  App.FooRoute = Route.extend({
-    model() {
-      return true;
-    }
-  });
-
-  bootApplication('/foo');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'FOO LOADING', 'foo.index_loading was entered');
-
-  run(deferred, 'resolve');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'YAY');
-});
-
-QUnit.test('Prioritized error substate entry works with auto-generated index routes', function() {
-  expect(2);
-
-  templates['foo/index_error'] = 'FOO ERROR: {{model.msg}}';
-  templates['foo/index'] = 'YAY';
-  templates['foo'] = '{{outlet}}';
-
-  Router.map(function() {
-    this.route('foo', function() {
-      this.route('bar');
-    });
-  });
-
-  App.ApplicationController = Controller.extend();
-
-  App.FooIndexRoute = Route.extend({
-    model() {
-      return RSVP.reject({
-        msg: 'did it broke?'
-      });
-    }
-  });
-  App.FooRoute = Route.extend({
-    model() {
-      return true;
-    }
-  });
-
-  throws(() => bootApplication('/foo'),
-         err => err.msg === 'did it broke?');
-
-  equal(jQuery('#app', '#qunit-fixture').text(), 'FOO ERROR: did it broke?', 'foo.index_error was entered');
-});
-
-QUnit.test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
-  expect(3);
-
-  templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';
-
-  let reject = true;
-  App.ApplicationRoute = Route.extend({
-    model() {
-      if (reject) {
-        return RSVP.reject({ msg: 'BAD NEWS BEARS' });
-      } else {
+    this.add('route:mom', Route.extend({
+      model() {
+        step(2, 'MomRoute#model');
         return {};
       }
-    }
-  });
+    }));
 
-  throws(() => bootApplication(),
-        err => err.msg === 'BAD NEWS BEARS');
+    this.add('route:mom.sally', Route.extend({
+      model() {
+        step(3, 'SallyRoute#model');
+        return sallyDeferred.promise;
+      },
+      setupController() {
+        step(4, 'SallyRoute#setupController');
+      }
+    }));
 
-  equal(jQuery('#toplevel-error', '#qunit-fixture').text(), 'TOPLEVEL ERROR: BAD NEWS BEARS');
+    let promise = this.visit('/grandma/mom/sally').then(() => {
+      text = this.$('#app').text();
 
-  reject = false;
-  run(router, 'transitionTo', 'index');
+      assert.equal(
+        text,
+        'GRANDMA MOM SALLY',
+        `Sally template displayed`
+      );
+    });
+    let text = this.$('#app').text();
 
-  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
+    assert.equal(
+      text,
+      'LOADING',
+      `The loading template is nested in application template's outlet`
+    );
+
+    this.runTask(() => grandmaDeferred.resolve());
+    text = this.$('#app').text();
+
+    assert.equal(
+      text,
+      'GRANDMA MOM MOMLOADING',
+      `Mom's child loading route is displayed due to sally's slow promise`
+    );
+
+    sallyDeferred.resolve();
+
+    return promise;
+  }
+  ['@test Enter child loading state of pivot route'](assert) {
+    let deferred = RSVP.defer();
+    this.addTemplate('grandma.loading', 'GMONEYLOADING');
+
+    this.add('route:mom.sally', Route.extend({
+      setupController() {
+        step(1, 'SallyRoute#setupController');
+      }
+    }));
+
+    this.add('route:grandma.puppies', Route.extend({
+      model() {
+        return deferred.promise;
+      }
+    }));
+
+    return this.visit('/grandma/mom/sally').then(() => {
+      assert.equal(
+        this.currentPath,
+        'grandma.mom.sally',
+        'Initial route fully loaded'
+      );
+
+      let promise = this.visit('/grandma/puppies').then(() => {
+        assert.equal(
+          this.currentPath,
+          'grandma.puppies',
+          'Finished transition'
+        );
+      });
+
+      assert.equal(
+        this.currentPath,
+        'grandma.loading',
+        `in pivot route's child loading state`
+      );
+      deferred.resolve()
+
+      return promise;
+    });
+  }
+
+  [`@test Error events that aren't bubbled don't throw application assertions`](assert) {
+    this.add('route:mom.sally', Route.extend({
+      model() {
+        step(1, 'MomSallyRoute#model');
+        return RSVP.reject({
+          msg: 'did it broke?'
+        });
+      },
+      actions: {
+        error(err) {
+          step(2, 'MomSallyRoute#actions.error');
+          assert.equal(err.msg, 'did it broke?', `it didn't break`);
+          return false;
+        }
+      }
+    }));
+
+    return this.visit('/grandma/mom/sally');
+  }
+
+  ['@test Handled errors that bubble can be handled at a higher level'](assert) {
+    let handledError;
+
+    this.add('route:mom', Route.extend({
+      actions: {
+        error(err) {
+          step(3, 'MomRoute#actions.error');
+          assert.equal(
+            err,
+            handledError,
+            `error handled and rebubbled is handleable at higher route`
+          );
+        }
+      }
+    }));
+
+    this.add('route:mom.sally', Route.extend({
+      model() {
+        step(1, 'MomSallyRoute#model');
+        return RSVP.reject({
+          msg: 'did it broke?'
+        });
+      },
+      actions: {
+        error(err) {
+          step(2, 'MomSallyRoute#actions.error');
+          handledError = err;
+
+          return true;
+        }
+      }
+    }));
+
+    return this.visit('/grandma/mom/sally');
+  }
+
+  ['@test Setting a query param during a slow transition should work'](assert) {
+    let deferred = RSVP.defer();
+    this.addTemplate('memere.loading', 'MMONEYLOADING');
+
+    this.add('route:grandma', Route.extend({
+      beforeModel: function() {
+        this.transitionTo('memere', 1);
+      }
+    }));
+
+    this.add('route:memere', Route.extend({
+      queryParams: {
+        test: { defaultValue: 1 }
+      }
+    }));
+
+    this.add('route:memere.index', Route.extend({
+      model() {
+        return deferred.promise;
+      }
+    }));
+
+    let promise = this.visit('/grandma').then(() => {
+      assert.equal(
+        this.currentPath,
+        'memere.index',
+        'Transition should be complete'
+      );
+    });
+    let memereController = this.getController('memere');
+
+    assert.equal(
+      this.currentPath,
+      'memere.loading',
+      'Initial route should be loading'
+    );
+
+    memereController.set('test', 3);
+
+    assert.equal(
+      this.currentPath,
+      'memere.loading',
+      'Initial route should still be loading'
+    );
+
+    assert.equal(memereController.get('test'), 3,
+      'Controller query param value should have changed'
+    );
+    deferred.resolve();
+
+    return promise;
+  }
 });

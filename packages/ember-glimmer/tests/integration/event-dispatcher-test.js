@@ -37,6 +37,59 @@ moduleFor('EventDispatcher', class extends RenderingTest {
     assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
   }
 
+  ['@test events bubble to parent view'](assert) {
+    let receivedEvent;
+
+    this.registerComponent('x-foo', {
+      ComponentClass: Component.extend({
+        change(event) {
+          receivedEvent = event;
+        }
+      }),
+      template: `{{yield}}`
+    });
+
+    this.registerComponent('x-bar', {
+      ComponentClass: Component.extend({
+        change() {}
+      }),
+      template: `<input id="is-done" type="checkbox">`
+    });
+
+    this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
+
+    this.runTask(() => this.$('#is-done').trigger('change'));
+    assert.ok(receivedEvent, 'change event was triggered');
+    assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
+  }
+
+  ['@test events bubbling up can be prevented'](assert) {
+    let hasReceivedEvent;
+
+    this.registerComponent('x-foo', {
+      ComponentClass: Component.extend({
+        change() {
+          hasReceivedEvent = true;
+        }
+      }),
+      template: `{{yield}}`
+    });
+
+    this.registerComponent('x-bar', {
+      ComponentClass: Component.extend({
+        change() {
+          return false;
+        }
+      }),
+      template: `<input id="is-done" type="checkbox">`
+    });
+
+    this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
+
+    this.runTask(() => this.$('#is-done').trigger('change'));
+    assert.notOk(hasReceivedEvent, 'change event has not been received');
+  }
+
   ['@test dispatches to the nearest event manager'](assert) {
     let receivedEvent;
 

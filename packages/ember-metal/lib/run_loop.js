@@ -134,16 +134,26 @@ run.join = function() {
   We can use that setup option to do some additional setup for our component.
   The component itself could look something like the following:
 
-  ```javascript
-  App.RichTextEditorComponent = Ember.Component.extend({
+  ```app/components/rich-text-editor.js
+  import Component from '@ember/component';
+  import { bind } from '@ember/runloop';
+
+  export default Component.extend({
     initializeTinyMCE: Ember.on('didInsertElement', function() {
       tinymce.init({
         selector: '#' + this.$().prop('id'),
         setup: Ember.run.bind(this, this.setupEditor)
       });
     }),
+    
+    didInsertElement() {
+      tinymce.init({
+        selector: '#' + this.$().prop('id'),
+        setup: Ember.run.bind(this, this.setupEditor)
+      });
+    }
 
-    setupEditor: function(editor) {
+    setupEditor(editor) {
       this.set('editor', editor);
 
       editor.on('change', function() {
@@ -154,7 +164,7 @@ run.join = function() {
   ```
 
   In this example, we use Ember.run.bind to bind the setupEditor method to the
-  context of the App.RichTextEditorComponent and to have the invocation of that
+  context of the RichTextEditor component and to have the invocation of that
   method be safely handled and executed by the Ember run loop.
 
   @method bind
@@ -259,7 +269,7 @@ run.end = function() {
     will be resolved on the target object at the time the scheduled item is
     invoked allowing you to change the target function.
   @param {Object} [arguments*] Optional arguments to be passed to the queued method.
-  @return {*} Timer information for use in cancelling, see `run.cancel`.
+  @return {*} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.schedule = function(/* queue, target, method */) {
@@ -328,7 +338,7 @@ run.sync = function() {
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @param {Number} wait Number of milliseconds to wait.
-  @return {*} Timer information for use in cancelling, see `run.cancel`.
+  @return {*} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.later = function(/*target, method*/) {
@@ -345,7 +355,7 @@ run.later = function(/*target, method*/) {
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
-  @return {Object} Timer information for use in cancelling, see `run.cancel`.
+  @return {Object} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.once = function(...args) {
@@ -407,7 +417,7 @@ run.once = function(...args) {
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
-  @return {Object} Timer information for use in cancelling, see `run.cancel`.
+  @return {Object} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.scheduleOnce = function(/*queue, target, method*/) {
@@ -445,8 +455,10 @@ run.scheduleOnce = function(/*queue, target, method*/) {
 
   Example:
 
-  ```javascript
-  export default Ember.Component.extend({
+  ```app/components/my-component.js
+  import Component from '@ember/component';
+
+  export Component.extend({
     didInsertElement() {
       this._super(...arguments);
       run.scheduleOnce('afterRender', this, 'processChildElements');
@@ -479,7 +491,7 @@ run.scheduleOnce = function(/*queue, target, method*/) {
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
-  @return {Object} Timer information for use in cancelling, see `run.cancel`.
+  @return {Object} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.next = function(...args) {
@@ -533,13 +545,13 @@ run.next = function(...args) {
     // will be executed since we passed in true (immediate)
   }, 100, true);
 
-  // the 100ms delay until this method can be called again will be cancelled
+  // the 100ms delay until this method can be called again will be canceled
   run.cancel(debounceImmediate);
   ```
 
   @method cancel
   @param {Object} timer Timer object to cancel
-  @return {Boolean} true if cancelled or false/undefined if it wasn't found
+  @return {Boolean} true if canceled or false/undefined if it wasn't found
   @public
 */
 run.cancel = function(timer) {
@@ -612,7 +624,7 @@ run.cancel = function(timer) {
   @param {Number} wait Number of milliseconds to wait.
   @param {Boolean} immediate Trigger the function on the leading instead
     of the trailing edge of the wait interval. Defaults to false.
-  @return {Array} Timer information for use in cancelling, see `run.cancel`.
+  @return {Array} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.debounce = function() {
@@ -655,7 +667,7 @@ run.debounce = function() {
   @param {Number} spacing Number of milliseconds to space out requests.
   @param {Boolean} immediate Trigger the function on the leading instead
     of the trailing edge of the wait interval. Defaults to true.
-  @return {Array} Timer information for use in cancelling, see `run.cancel`.
+  @return {Array} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.throttle = function() {

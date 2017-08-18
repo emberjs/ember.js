@@ -1,66 +1,70 @@
-export default function TransformOldClassBindingSyntax(options) {
-  this.syntax = null;
-  this.options = options;
+export default function transformOldClassBindingSyntax(env) {
+  let b = env.syntax.builders;
+
+  return {
+    name: 'transform-old-class-binding-syntax',
+
+    visitors: {
+      MustacheStatement(node) {
+        process(b, node);
+      },
+
+      BlockStatement(node) {
+        process(b, node);
+      }
+    }
+  };
 }
 
-TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassBindingSyntax_transform(ast) {
-  let b = this.syntax.builders;
-  let walker = new this.syntax.Walker();
+function process(b, node) {
+  let allOfTheMicrosyntaxes = [];
+  let allOfTheMicrosyntaxIndexes = [];
+  let classPair;
 
-  walker.visit(ast, node => {
-    if (!validate(node)) { return; }
+  each(node.hash.pairs, (pair, index) => {
+    let { key } = pair;
 
-    let allOfTheMicrosyntaxes = [];
-    let allOfTheMicrosyntaxIndexes = [];
-    let classPair;
-
-    each(node.hash.pairs, (pair, index) => {
-      let { key } = pair;
-
-      if (key === 'classBinding' || key === 'classNameBindings') {
-        allOfTheMicrosyntaxIndexes.push(index);
-        allOfTheMicrosyntaxes.push(pair);
-      } else if (key === 'class') {
-        classPair = pair;
-      }
-    });
-
-    if (allOfTheMicrosyntaxes.length === 0) { return; }
-
-    let classValue = [];
-
-    if (classPair) {
-      classValue.push(classPair.value);
-      classValue.push(b.string(' '));
-    } else {
-      classPair = b.pair('class', null);
-      node.hash.pairs.push(classPair);
+    if (key === 'classBinding' || key === 'classNameBindings') {
+      allOfTheMicrosyntaxIndexes.push(index);
+      allOfTheMicrosyntaxes.push(pair);
+    } else if (key === 'class') {
+      classPair = pair;
     }
-
-    each(allOfTheMicrosyntaxIndexes, index => {
-      node.hash.pairs.splice(index, 1);
-    });
-
-    each(allOfTheMicrosyntaxes, ({ value, loc }) => {
-      let sexprs = [];
-      // TODO: add helpful deprecation when both `classNames` and `classNameBindings` can
-      // be removed.
-
-      if (value.type === 'StringLiteral') {
-        let microsyntax = parseMicrosyntax(value.original);
-
-        buildSexprs(microsyntax, sexprs, b);
-
-        classValue.push(...sexprs);
-      }
-    });
-
-    let hash = b.hash();
-    classPair.value = b.sexpr(b.path('concat'), classValue, hash);
   });
 
-  return ast;
-};
+  if (allOfTheMicrosyntaxes.length === 0) { return; }
+
+  let classValue = [];
+
+  if (classPair) {
+    classValue.push(classPair.value);
+    classValue.push(b.string(' '));
+  } else {
+    classPair = b.pair('class', null);
+    node.hash.pairs.push(classPair);
+  }
+
+  each(allOfTheMicrosyntaxIndexes, index => {
+    node.hash.pairs.splice(index, 1);
+  });
+
+  each(allOfTheMicrosyntaxes, ({ value, loc }) => {
+    let sexprs = [];
+    // TODO: add helpful deprecation when both `classNames` and `classNameBindings` can
+    // be removed.
+
+    if (value.type === 'StringLiteral') {
+      let microsyntax = parseMicrosyntax(value.original);
+
+      buildSexprs(microsyntax, sexprs, b);
+
+      classValue.push(...sexprs);
+    }
+  });
+
+  let hash = b.hash();
+  classPair.value = b.sexpr(b.path('concat'), classValue, hash);
+}
 
 function buildSexprs(microsyntax, sexprs, b) {
   for (let i = 0; i < microsyntax.length; i++) {
@@ -100,10 +104,6 @@ function buildSexprs(microsyntax, sexprs, b) {
     sexprs.push(sexpr);
     sexprs.push(b.string(' '));
   }
-}
-
-function validate(node) {
-  return (node.type === 'BlockStatement' || node.type === 'MustacheStatement');
 }
 
 function each(list, callback) {

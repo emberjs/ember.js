@@ -28,7 +28,10 @@ import require from 'require';
 let _emberA;
 
 function emberA() {
-  return (_emberA || (_emberA = require('ember-runtime/system/native_array').A))();
+  if (_emberA === undefined) {
+    _emberA = require('ember-runtime/system/native_array').A;
+  }
+  return _emberA();
 }
 
 const contexts = [];
@@ -45,12 +48,9 @@ function pushCtx(ctx) {
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
 
-  function i(item) {
-    let cur = get(item, key);
-    return valueProvided ? value === cur : !!cur;
-  }
-
-  return i;
+  return valueProvided ?
+    (item)=> value === get(item, key) :
+    (item)=> !!get(item, key);
 }
 
 /**
@@ -221,7 +221,7 @@ const Enumerable = Mixin.create({
     ```
 
     @method contains
-    @deprecated Use `Enumerable#includes` instead. See http://emberjs.com/deprecations/v2.x#toc_enumerable-contains
+    @deprecated Use `Enumerable#includes` instead. See https://emberjs.com/deprecations/v2.x#toc_enumerable-contains
     @param {Object} obj The object to search for.
     @return {Boolean} `true` if object is found in enumerable.
     @public
@@ -230,7 +230,7 @@ const Enumerable = Mixin.create({
     deprecate(
       '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
       false,
-      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
+      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
     );
 
     let found = this.find(item => item === obj);
@@ -265,9 +265,7 @@ const Enumerable = Mixin.create({
     @public
   */
   forEach(callback, target) {
-    if (typeof callback !== 'function') {
-      throw new TypeError();
-    }
+    assert('Enumerable#forEach expects a function as first argument.', typeof callback === 'function');
 
     let context = popCtx();
     let len = get(this, 'length');
@@ -343,6 +341,8 @@ const Enumerable = Mixin.create({
     @public
   */
   map(callback, target) {
+    assert('Enumerable#map expects a function as first argument.', typeof callback === 'function');
+
     let ret = emberA();
 
     this.forEach((x, idx, i) => ret[idx] = callback.call(target, x, idx, i));
@@ -393,6 +393,8 @@ const Enumerable = Mixin.create({
     @public
   */
   filter(callback, target) {
+    assert('Enumerable#filter expects a function as first argument.', typeof callback === 'function');
+
     let ret = emberA();
 
     this.forEach((x, idx, i) => {
@@ -432,6 +434,8 @@ const Enumerable = Mixin.create({
     @public
   */
   reject(callback, target) {
+    assert('Enumerable#reject expects a function as first argument.', typeof callback === 'function');
+
     return this.filter(function() {
       return !(callback.apply(target, arguments));
     });
@@ -501,6 +505,8 @@ const Enumerable = Mixin.create({
     @public
   */
   find(callback, target) {
+    assert('Enumerable#find expects a function as first argument.', typeof callback === 'function');
+
     let len = get(this, 'length');
 
     if (target === undefined) {
@@ -582,6 +588,8 @@ const Enumerable = Mixin.create({
     @public
   */
   every(callback, target) {
+    assert('Enumerable#every expects a function as first argument.', typeof callback === 'function');
+
     return !this.find((x, idx, i) => !callback.call(target, x, idx, i));
   },
 
@@ -603,7 +611,7 @@ const Enumerable = Mixin.create({
 
   /**
     Returns `true` if the passed function returns true for any item in the
-    enumeration. This corresponds with the `some()` method in JavaScript 1.6.
+    enumeration.
 
     The callback method you provide should have the following signature (all
     parameters are optional):
@@ -616,8 +624,9 @@ const Enumerable = Mixin.create({
     - `index` is the current index in the iteration.
     - `enumerable` is the enumerable object itself.
 
-    It should return the `true` to include the item in the results, `false`
-    otherwise.
+    It must return a truthy value (i.e. `true`) to include an item in the
+    results. Any non-truthy return value will discard the item from the
+    results.
 
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as `this` on the context. This is a good way
@@ -638,6 +647,8 @@ const Enumerable = Mixin.create({
     @public
   */
   any(callback, target) {
+    assert('Enumerable#any expects a function as first argument.', typeof callback === 'function');
+
     let len = get(this, 'length');
     let context = popCtx();
     let found = false;
@@ -710,9 +721,7 @@ const Enumerable = Mixin.create({
     @public
   */
   reduce(callback, initialValue, reducerProperty) {
-    if (typeof callback !== 'function') {
-      throw new TypeError();
-    }
+    assert('Enumerable#reduce expects a function as first argument.', typeof callback === 'function');
 
     let ret = initialValue;
 
@@ -741,7 +750,7 @@ const Enumerable = Mixin.create({
       let method = x && x[methodName];
 
       if ('function' === typeof method) {
-        ret[idx] = args ? method.apply(x, args) : x[methodName]();
+        ret[idx] = args.length ? method.apply(x, args) : x[methodName]();
       }
     }, this);
 

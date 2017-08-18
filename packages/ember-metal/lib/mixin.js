@@ -37,19 +37,18 @@ import {
   removeListener
 } from './events';
 
-const a_slice = Array.prototype.slice;
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
 
 function isMethod(obj) {
   return 'function' === typeof obj &&
-         obj.isMethod !== false &&
-         obj !== Boolean &&
-         obj !== Object &&
-         obj !== Number &&
-         obj !== Array &&
-         obj !== Date &&
-         obj !== String;
+    obj.isMethod !== false &&
+    obj !== Boolean &&
+    obj !== Object &&
+    obj !== Number &&
+    obj !== Array &&
+    obj !== Date &&
+    obj !== String;
 }
 
 const CONTINUE = {};
@@ -141,16 +140,14 @@ function applyConcatenatedProperties(obj, key, value, values) {
 
   if (baseValue === null || baseValue === undefined) {
     ret = makeArray(value);
-  } else {
-    if (isArray(baseValue)) {
-      if (value === null || value === undefined) {
-        ret = baseValue;
-      } else {
-        ret = a_concat.call(baseValue, value);
-      }
+  } else if (isArray(baseValue)) {
+    if (value === null || value === undefined) {
+      ret = baseValue;
     } else {
-      ret = a_concat.call(makeArray(baseValue), value);
+      ret = a_concat.call(baseValue, value);
     }
+  } else {
+    ret = a_concat.call(makeArray(baseValue), value);
   }
 
   if (DEBUG) {
@@ -213,10 +210,10 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
     values[key] = undefined;
   } else {
     if ((concats && concats.indexOf(key) >= 0) ||
-                key === 'concatenatedProperties' ||
-                key === 'mergedProperties') {
+        key === 'concatenatedProperties' ||
+        key === 'mergedProperties') {
       value = applyConcatenatedProperties(base, key, value, values);
-    } else if ((mergings && mergings.indexOf(key) >= 0)) {
+    } else if (mergings && mergings.indexOf(key) > -1) {
       value = applyMergedProperties(base, key, value, values);
     } else if (isMethod(value)) {
       value = giveMethodSuper(base, key, value, values, descs);
@@ -316,9 +313,7 @@ function followAlias(obj, desc, descs, values) {
   return { desc, value };
 }
 
-function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, updateMethod) {
-  let paths = observerOrListener[pathsKey];
-
+function updateObserversAndListeners(obj, key, paths, updateMethod) {
   if (paths) {
     for (let i = 0; i < paths.length; i++) {
       updateMethod(obj, paths[i], null, key);
@@ -329,16 +324,16 @@ function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, upd
 function replaceObserversAndListeners(obj, key, observerOrListener) {
   let prev = obj[key];
 
-  if ('function' === typeof prev) {
-    updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', _removeBeforeObserver);
-    updateObserversAndListeners(obj, key, prev, '__ember_observes__', removeObserver);
-    updateObserversAndListeners(obj, key, prev, '__ember_listens__', removeListener);
+  if (typeof prev === 'function') {
+    updateObserversAndListeners(obj, key, prev.__ember_observesBefore__, _removeBeforeObserver);
+    updateObserversAndListeners(obj, key, prev.__ember_observes__, removeObserver);
+    updateObserversAndListeners(obj, key, prev.__ember_listens__, removeListener);
   }
 
-  if ('function' === typeof observerOrListener) {
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', _addBeforeObserver);
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observes__', addObserver);
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_listens__', addListener);
+  if (typeof observerOrListener === 'function') {
+    updateObserversAndListeners(obj, key, observerOrListener.__ember_observesBefore__, _addBeforeObserver);
+    updateObserversAndListeners(obj, key, observerOrListener.__ember_observes__, addObserver);
+    updateObserversAndListeners(obj, key, observerOrListener.__ember_listens__, addListener);
   }
 }
 
@@ -517,7 +512,7 @@ export default class Mixin {
   static mixins(obj) {
     let meta = peekMeta(obj);
     let ret = [];
-    if (!meta) { return ret; }
+    if (meta === undefined) { return ret; }
 
     meta.forEachMixins((key, currentMixin) => {
       // skip primitive mixins since these are always anonymous
@@ -622,7 +617,7 @@ MixinPrototype.detect = function(obj) {
   if (typeof obj !== 'object' || obj === null) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
   let meta = peekMeta(obj);
-  if (!meta) { return false; }
+  if (meta === undefined) { return false; }
   return !!meta.peekMixins(guidFor(this));
 };
 
@@ -687,15 +682,21 @@ Alias.prototype = new Descriptor();
 /**
   Makes a method available via an additional name.
 
-  ```javascript
-  App.Person = Ember.Object.extend({
-    name: function() {
+  ```app/utils/person.js
+  import EmberObject, {
+    aliasMethod
+  } from '@ember/object';
+
+  export default EmberObject.extend({
+    name() {
       return 'Tomhuda Katzdale';
     },
-    moniker: Ember.aliasMethod('name')
+    moniker: aliasMethod('name')
   });
+  ```
 
-  let goodGuy = App.Person.create();
+  ```javascript
+  let goodGuy = Person.create();
 
   goodGuy.name();    // 'Tomhuda Katzdale'
   goodGuy.moniker(); // 'Tomhuda Katzdale'
@@ -736,30 +737,26 @@ export function aliasMethod(methodName) {
   @public
 */
 export function observer(...args) {
-  let func  = args.slice(-1)[0];
-  let paths;
-
-  let addWatchedProperty = path => {
-    paths.push(path);
-  };
-  let _paths = args.slice(0, -1);
-
-  if (typeof func !== 'function') {
+  let _paths, func;
+  if (typeof args[args.length - 1] !== 'function') {
     // revert to old, soft-deprecated argument ordering
     deprecate('Passing the dependentKeys after the callback function in Ember.observer is deprecated. Ensure the callback function is the last argument.', false, { id: 'ember-metal.observer-argument-order', until: '3.0.0' });
 
-    func  = args[0];
-    _paths = args.slice(1);
+    func = args.shift();
+    _paths = args;
+  } else {
+    func = args.pop();
+    _paths = args;
   }
 
-  paths = [];
+  assert('Ember.observer called without a function', typeof func === 'function');
+  assert('Ember.observer called without valid path', _paths.length > 0 && _paths.every((p)=> typeof p === 'string' && p.length));
+
+  let paths = [];
+  let addWatchedProperty = path => paths.push(path);
 
   for (let i = 0; i < _paths.length; ++i) {
     expandProperties(_paths[i], addWatchedProperty);
-  }
-
-  if (typeof func !== 'function') {
-    throw new EmberError('Ember.observer called without a function');
   }
 
   func.__ember_observes__ = paths;
@@ -822,7 +819,7 @@ export function _immediateObserver() {
   @private
 */
 export function _beforeObserver(...args) {
-  let func  = args.slice(-1)[0];
+  let func  = args[args.length - 1];
   let paths;
 
   let addWatchedProperty = path => { paths.push(path); };

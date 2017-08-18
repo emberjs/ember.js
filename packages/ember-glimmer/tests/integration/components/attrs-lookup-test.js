@@ -207,7 +207,7 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
     assert.equal(instance.get('second'), 'second', 'matches known value');
   }
 
-  ['@test bound computed properties can be overriden in extensions, set during init, and passed in as attrs']() {
+  ['@test bound computed properties can be overridden in extensions, set during init, and passed in as attrs']() {
     let FooClass = Component.extend({
       attributeBindings: ['style'],
       style: computed('height', 'color', function() {

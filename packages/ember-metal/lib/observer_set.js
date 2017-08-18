@@ -29,12 +29,12 @@ export default class ObserverSet {
     let observers = this.observers;
     let senderGuid = guidFor(sender);
     let keySet = observerSet[senderGuid];
-    let index;
 
-    if (!keySet) {
+    if (keySet === undefined) {
       observerSet[senderGuid] = keySet = {};
     }
-    index = keySet[keyName];
+
+    let index = keySet[keyName];
     if (index === undefined) {
       index = observers.push({
         sender,
@@ -49,9 +49,9 @@ export default class ObserverSet {
 
   flush() {
     let observers = this.observers;
-    let i, observer, sender;
+    let observer, sender;
     this.clear();
-    for (i = 0; i < observers.length; ++i) {
+    for (let i = 0; i < observers.length; ++i) {
       observer = observers[i];
       sender = observer.sender;
       if (sender.isDestroying || sender.isDestroyed) { continue; }

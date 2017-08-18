@@ -1,5 +1,6 @@
 /* globals Proxy */
-import { assert, deprecate } from 'ember-debug';
+import { assert } from 'ember-debug';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
 import {
   dictionary,
@@ -28,14 +29,17 @@ const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
  @private
  @class Container
  */
-export default function Container(registry, options) {
+export default function Container(registry, options = {}) {
   this.registry        = registry;
-  this.owner           = options && options.owner ? options.owner : null;
-  this.cache           = dictionary(options && options.cache ? options.cache : null);
-  this.factoryManagerCache = dictionary(options && options.factoryManagerCache ? options.factoryManagerCache : null);
-  this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
+  this.owner           = options.owner || null;
+  this.cache           = dictionary(options.cache || null);
+  this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
   this[CONTAINER_OVERRIDE] = undefined;
   this.isDestroyed = false;
+
+  if (DEBUG) {
+    this.validationCache = dictionary(options.validationCache || null);
+  }
 }
 
 Container.prototype = {
@@ -60,7 +64,7 @@ Container.prototype = {
 
   /**
    Given a fullName return a corresponding instance.
-    The default behaviour is for lookup to return a singleton instance.
+    The default behavior is for lookup to return a singleton instance.
    The singleton is scoped to the container, allowing multiple containers
    to all have their own locally scoped singletons.
     ```javascript
@@ -108,12 +112,13 @@ Container.prototype = {
 
   /**
    Clear either the entire cache or just the cache for a particular key.
-    @private
+
+   @private
    @method reset
    @param {String} fullName optional key to reset; if missing, resets everything
-   */
+  */
   reset(fullName) {
-    if (arguments.length > 0) {
+    if (fullName !== undefined) {
       resetMember(this, this.registry.normalize(fullName));
     } else {
       resetCache(this);
@@ -129,6 +134,10 @@ Container.prototype = {
   */
   ownerInjection() {
     return { [OWNER]: this.owner };
+  },
+
+  _resolverCacheKey(name, options) {
+    return this.registry.resolverCacheKey(name, options);
   },
 
   /**
@@ -149,18 +158,28 @@ Container.prototype = {
     assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
 
     if (options.source) {
-      normalizedName = this.registry.expandLocalLookup(fullName, options);
+      let expandedFullName = this.registry.expandLocalLookup(fullName, options);
       // if expandLocalLookup returns falsey, we do not support local lookup
-      if (!normalizedName) {
-        return;
+      if (!EMBER_MODULE_UNIFICATION) {
+        if (!expandedFullName) {
+          return;
+        }
+
+        normalizedName = expandedFullName;
+      } else if (expandedFullName) {
+        // with ember-module-unification, if expandLocalLookup returns something,
+        // pass it to the resolve without the source
+        normalizedName = expandedFullName;
+        options = {};
       }
     }
 
-    let cached = this.factoryManagerCache[normalizedName];
+    let cacheKey = this._resolverCacheKey(normalizedName, options);
+    let cached = this.factoryManagerCache[cacheKey];
 
     if (cached !== undefined) { return cached; }
 
-    let factory = this.registry.resolve(normalizedName);
+    let factory = EMBER_MODULE_UNIFICATION ? this.registry.resolve(normalizedName, options) : this.registry.resolve(normalizedName);
 
     if (factory === undefined) {
       return;
@@ -176,7 +195,7 @@ Container.prototype = {
       manager = wrapManagerInDeprecationProxy(manager);
     }
 
-    this.factoryManagerCache[normalizedName] = manager;
+    this.factoryManagerCache[cacheKey] = manager;
     return manager;
   }
 };
@@ -188,13 +207,6 @@ Container.prototype = {
 function wrapManagerInDeprecationProxy(manager) {
   if (HAS_NATIVE_PROXY) {
     let validator = {
-      get(obj, prop) {
-        if (prop !== 'class' && prop !== 'create') {
-          throw new Error(`You attempted to access "${prop}" on a factory manager created by container#factoryFor. "${prop}" is not a member of a factory manager."`);
-        }
-
-        return obj[prop];
-      },
       set(obj, prop, value) {
         throw new Error(`You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`);
       }
@@ -227,15 +239,25 @@ function isInstantiatable(container, fullName) {
 
 function lookup(container, fullName, options = {}) {
   if (options.source) {
-    fullName = container.registry.expandLocalLookup(fullName, options);
+    let expandedFullName = container.registry.expandLocalLookup(fullName, options);
 
-    // if expandLocalLookup returns falsey, we do not support local lookup
-    if (!fullName) {
-      return;
+    if (!EMBER_MODULE_UNIFICATION) {
+      // if expandLocalLookup returns falsey, we do not support local lookup
+      if (!expandedFullName) {
+        return;
+      }
+
+      fullName = expandedFullName;
+    } else if (expandedFullName) {
+      // with ember-module-unification, if expandLocalLookup returns something,
+      // pass it to the resolve without the source
+      fullName = expandedFullName;
+      options = {};
     }
   }
 
-  let cached = container.cache[fullName];
+  let cacheKey = container._resolverCacheKey(fullName, options);
+  let cached = container.cache[cacheKey];
   if (cached !== undefined && options.singleton !== false) {
     return cached;
   }
@@ -260,16 +282,18 @@ function isFactoryInstance(container, fullName, { instantiate, singleton }) {
 }
 
 function instantiateFactory(container, fullName, options) {
-  let factoryManager = container.factoryFor(fullName);
+  let factoryManager = EMBER_MODULE_UNIFICATION && options && options.source ? container.factoryFor(fullName, options) : container.factoryFor(fullName);
 
   if (factoryManager === undefined) {
     return;
   }
 
+  let cacheKey = container._resolverCacheKey(fullName, options);
+
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
-    return container.cache[fullName] = factoryManager.create();
+    return container.cache[cacheKey] = factoryManager.create();
   }
 
   // SomeClass { singleton: false, instantiate: true }
@@ -391,7 +415,6 @@ class FactoryManager {
   }
 
   create(options = {}) {
-
     let injections = this.injections;
     if (injections === undefined) {
       injections = injectionsFor(this.container, this.normalizedName);
@@ -400,7 +423,6 @@ class FactoryManager {
       }
     }
     let props = assign({}, injections, options);
-
 
     if (DEBUG) {
       let lazyInjections;
@@ -427,7 +449,7 @@ class FactoryManager {
     if (typeof this.class._initFactory === 'function') {
       this.class._initFactory(this);
     } else {
-      // in the non-Ember.Object case we need to still setOwner
+      // in the non-EmberObject case we need to still setOwner
       // this is required for supporting glimmer environment and
       // template instantiation which rely heavily on
       // `options[OWNER]` being passed into `create`

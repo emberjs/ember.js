@@ -1,6 +1,8 @@
 import { dictionary, assign, intern } from 'ember-utils';
 import { assert, deprecate } from 'ember-debug';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import Container from './container';
+import { DEBUG } from 'ember-env-flags';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
 
@@ -17,18 +19,17 @@ const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
  @class Registry
  @since 1.11.0
 */
-export default function Registry(options) {
-  this.fallback = options && options.fallback ? options.fallback : null;
+export default function Registry(options = {}) {
+  this.fallback = options.fallback || null;
 
-  if (options && options.resolver) {
+  if (options.resolver) {
     this.resolver = options.resolver;
-
     if (typeof this.resolver === 'function') {
       deprecateResolverFunction(this);
     }
   }
 
-  this.registrations  = dictionary(options && options.registrations ? options.registrations : null);
+  this.registrations = dictionary(options.registrations || null);
 
   this._typeInjections        = dictionary(null);
   this._injections            = dictionary(null);
@@ -263,7 +264,7 @@ Registry.prototype = {
   },
 
   /**
-   A hook to enable custom fullName normalization behaviour
+   A hook to enable custom fullName normalization behavior
 
    @private
    @method normalizeFullName
@@ -573,18 +574,6 @@ Registry.prototype = {
     return VALID_FULL_NAME_REGEXP.test(fullName);
   },
 
-  validateInjections(injections) {
-    if (!injections) { return; }
-
-    let fullName;
-
-    for (let i = 0; i < injections.length; i++) {
-      fullName = injections[i].fullName;
-
-      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName));
-    }
-  },
-
   normalizeInjectionsHash(hash) {
     let injections = [];
 
@@ -616,16 +605,38 @@ Registry.prototype = {
       injections = injections.concat(this.fallback.getTypeInjections(type));
     }
     return injections;
+  },
+
+  resolverCacheKey(name, options) {
+    if (!EMBER_MODULE_UNIFICATION) {
+      return name;
+    }
+
+    return (options && options.source) ? `${options.source}:${name}` : name;
   }
 };
 
 function deprecateResolverFunction(registry) {
   deprecate('Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.',
             false,
-            { id: 'ember-application.registry-resolver-as-function', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function' });
+            { id: 'ember-application.registry-resolver-as-function', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function' });
   registry.resolver = {
     resolve: registry.resolver
   };
+}
+
+if (DEBUG) {
+  Registry.prototype.validateInjections = function(injections) {
+    if (!injections) { return; }
+
+    let fullName;
+
+    for (let i = 0; i < injections.length; i++) {
+      fullName = injections[i].fullName;
+
+      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName));
+    }
+  }
 }
 
 /**
@@ -684,20 +695,32 @@ function resolve(registry, normalizedName, options) {
   if (options && options.source) {
     // when `source` is provided expand normalizedName
     // and source into the full normalizedName
-    normalizedName = registry.expandLocalLookup(normalizedName, options);
+    let expandedNormalizedName = registry.expandLocalLookup(normalizedName, options);
 
     // if expandLocalLookup returns falsey, we do not support local lookup
-    if (!normalizedName) { return; }
+    if (!EMBER_MODULE_UNIFICATION) {
+      if (!expandedNormalizedName) {
+        return;
+      }
+
+      normalizedName = expandedNormalizedName;
+    } else if (expandedNormalizedName) {
+      // with ember-module-unification, if expandLocalLookup returns something,
+      // pass it to the resolve without the source
+      normalizedName = expandedNormalizedName;
+      options = {};
+    }
   }
 
-  let cached = registry._resolveCache[normalizedName];
+  let cacheKey = registry.resolverCacheKey(normalizedName, options);
+  let cached = registry._resolveCache[cacheKey];
   if (cached !== undefined) { return cached; }
-  if (registry._failCache[normalizedName]) { return; }
+  if (registry._failCache[cacheKey]) { return; }
 
   let resolved;
 
   if (registry.resolver) {
-    resolved = registry.resolver.resolve(normalizedName);
+    resolved = registry.resolver.resolve(normalizedName, options && options.source);
   }
 
   if (resolved === undefined) {
@@ -705,9 +728,9 @@ function resolve(registry, normalizedName, options) {
   }
 
   if (resolved === undefined) {
-    registry._failCache[normalizedName] = true;
+    registry._failCache[cacheKey] = true;
   } else {
-    registry._resolveCache[normalizedName] = resolved;
+    registry._resolveCache[cacheKey] = resolved;
   }
 
   return resolved;
@@ -718,7 +741,7 @@ function has(registry, fullName, source) {
 }
 
 const privateNames = dictionary(null);
-const privateSuffix = `${Math.random()}${Date.now()}`;
+const privateSuffix = `${Math.random()}${Date.now()}`.replace('.', '');
 
 export function privatize([fullName]) {
   let name = privateNames[fullName];

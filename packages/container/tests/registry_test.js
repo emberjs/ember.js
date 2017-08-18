@@ -1,5 +1,6 @@
-import { Registry } from '..';
+import { Registry, privatize } from '..';
 import { factory } from 'internal-test-helpers';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 
 QUnit.module('Registry');
 
@@ -691,6 +692,7 @@ QUnit.test('has uses expandLocalLookup', function(assert) {
 
   let resolver = {
     resolve(name) {
+      if (EMBER_MODULE_UNIFICATION && name === 'foo:baz') { return; }
       resolvedFullNames.push(name);
 
       return 'yippie!';
@@ -725,3 +727,42 @@ QUnit.test('has uses expandLocalLookup', function(assert) {
 
   assert.deepEqual(['foo:qux/bar'], resolvedFullNames);
 });
+
+QUnit.module('Registry privatize');
+
+QUnit.test('valid format', function(assert) {
+  let privatized = privatize(['secret:factory']);
+  let matched = privatized.match(/^([^:]+):([^:]+)-(\d+)$/);
+
+  assert.ok(matched, 'privatized format was recognized');
+  assert.equal(matched[1], 'secret');
+  assert.equal(matched[2], 'factory');
+  assert.ok(/^\d+$/.test(matched[3]));
+});
+
+if (EMBER_MODULE_UNIFICATION) {
+  QUnit.module('Registry module unification');
+
+  QUnit.test('The registry can pass a source to the resolver', function(assert) {
+    let PrivateComponent = factory();
+    let lookup = 'component:my-input';
+    let source = 'template:routes/application';
+    let resolveCount = 0;
+    let resolver = {
+      resolve(fullName, src) {
+        resolveCount++;
+        if (fullName === lookup && src === source) {
+          return PrivateComponent;
+        }
+      }
+    };
+    let registry = new Registry({ resolver });
+    registry.normalize = function(name) {
+      return name;
+    };
+
+    assert.strictEqual(registry.resolve(lookup, { source }), PrivateComponent, 'The correct factory was provided');
+    assert.strictEqual(registry.resolve(lookup, { source }), PrivateComponent, 'The correct factory was provided again');
+    assert.equal(resolveCount, 1, 'resolve called only once and a cached factory was returned the second time');
+  });
+}

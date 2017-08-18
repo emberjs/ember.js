@@ -184,7 +184,7 @@ testBoth('observing chain with property in mixin after', function(get, set) {
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observing chain with overriden property', function(get, set) {
+testBoth('observing chain with overridden property', function(get, set) {
   let obj2 = { baz: 'baz' };
   let obj3 = { baz: 'foo' };
 

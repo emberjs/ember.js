@@ -32,12 +32,6 @@ QUnit.test('SEMVER_REGEX properly validates and invalidates version numbers', fu
   validateVersionString('1.11', false);
 });
 
-QUnit.test('Ember.Backburner is deprecated', function() {
-  expectDeprecation(function() {
-    new Ember.Backburner(['foo']);
-  }, 'Usage of Ember.Backburner is deprecated.');
-});
-
 QUnit.test('Ember.K is deprecated', function(assert) {
   expectDeprecation(function() {
     let obj = {

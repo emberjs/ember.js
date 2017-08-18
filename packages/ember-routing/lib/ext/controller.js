@@ -17,7 +17,7 @@ ControllerMixin.reopen({
     `this.category` and `this.page`.
     By default, Ember coerces query parameter values using `toggleProperty`.
     This behavior may lead to unexpected results.
-    To explicity configure a query parameter property so it coerces as expected, you must define a type property:
+    To explicitly configure a query parameter property so it coerces as expected, you must define a type property:
     ```javascript
       queryParams: [{
         category: {
@@ -100,13 +100,15 @@ ControllerMixin.reopen({
     Multiple models will be applied last to first recursively up the
     route tree.
 
-    ```javascript
-    App.Router.map(function() {
+    ```app/router.js
+    Router.map(function() {
       this.route('blogPost', { path: ':blogPostId' }, function() {
         this.route('blogComment', { path: ':blogCommentId', resetNamespace: true });
       });
     });
+    ```
 
+    ```javascript
     aController.transitionToRoute('blogComment', aPost, aComment);
     aController.transitionToRoute('blogComment', 1, 13);
     ```
@@ -180,13 +182,15 @@ ControllerMixin.reopen({
     Multiple models will be applied last to first recursively up the
     route tree.
 
-    ```javascript
-    App.Router.map(function() {
+    ```app/router.js
+    Router.map(function() {
       this.route('blogPost', { path: ':blogPostId' }, function() {
         this.route('blogComment', { path: ':blogCommentId', resetNamespace: true });
       });
     });
+    ```
 
+    ```
     aController.replaceRoute('blogComment', aPost, aComment);
     aController.replaceRoute('blogComment', 1, 13);
     ```
@@ -211,7 +215,7 @@ ControllerMixin.reopen({
     // target may be either another controller or a router
     let target = get(this, 'target');
     let method = target.replaceRoute || target.replaceWith;
-    return method.apply(target, prefixRouteNameArg(target, args));
+    return method.apply(target, prefixRouteNameArg(this, args));
   }
 });
 

@@ -75,7 +75,7 @@
 
   any passed value to `disabled` will disable it except `undefined`.
   to ensure that only `true` disable the `link-to` component you can
-  override the global behaviour of `Ember.LinkComponent`.
+  override the global behavior of `Ember.LinkComponent`.
 
   ```javascript
   Ember.LinkComponent.reopen({
@@ -245,13 +245,13 @@
 
   ### Allowing Default Action
 
- By default the `{{link-to}}` component prevents the default browser action
- by calling `preventDefault()` as this sort of action bubbling is normally
- handled internally and we do not want to take the browser to a new URL (for
- example).
+  By default the `{{link-to}}` component prevents the default browser action
+  by calling `preventDefault()` as this sort of action bubbling is normally
+  handled internally and we do not want to take the browser to a new URL (for
+  example).
 
- If you need to override this behavior specify `preventDefault=false` in
- your template:
+  If you need to override this behavior specify `preventDefault=false` in
+  your template:
 
   ```handlebars
   {{#link-to 'photoGallery' aPhotoId preventDefault=false}}
@@ -496,9 +496,11 @@ const LinkComponent = EmberComponent.extend({
 
     Example:
 
-    ```javascript
-    App.MyLinkComponent = Ember.LinkComponent.extend({
-      init: function() {
+    ```app/components/my-link.js
+    import LinkComponent from '@ember/routing/link-component';
+
+    export default LinkComponent.extend({
+      init() {
         this._super(...arguments);
         Ember.Logger.log('Event is ' + this.get('eventName'));
       }
@@ -549,8 +551,12 @@ const LinkComponent = EmberComponent.extend({
     let routing = get(this, '_routing');
     let models = get(this, 'models');
     let resolvedQueryParams = get(this, 'resolvedQueryParams');
-
     let currentWhen = get(this, 'current-when');
+
+    if (typeof currentWhen === 'boolean') {
+      return currentWhen ? get(this, 'activeClass') : false;
+    }
+
     let isCurrentWhenSpecified = !!currentWhen;
     currentWhen = currentWhen || get(this, 'qualifiedRouteName');
     currentWhen = currentWhen.split(' ');
@@ -594,17 +600,19 @@ const LinkComponent = EmberComponent.extend({
   }),
 
   transitioningIn: computed('active', 'willBeActive', function computeLinkToComponentTransitioningIn() {
-    let willBeActive = get(this, 'willBeActive');
-    if (typeof willBeActive === 'undefined') { return false; }
-
-    return !get(this, 'active') && willBeActive && 'ember-transitioning-in';
+    if (get(this, 'willBeActive') === true && !get(this, 'active')) {
+      return 'ember-transitioning-in';
+    } else {
+      return false;
+    }
   }),
 
   transitioningOut: computed('active', 'willBeActive', function computeLinkToComponentTransitioningOut() {
-    let willBeActive = get(this, 'willBeActive');
-    if (typeof willBeActive === 'undefined') { return false; }
-
-    return get(this, 'active') && !willBeActive && 'ember-transitioning-out';
+    if (get(this, 'willBeActive') === false && get(this, 'active')) {
+      return 'ember-transitioning-out';
+    } else {
+      return false;
+    }
   }),
 
   /**
@@ -662,12 +670,13 @@ const LinkComponent = EmberComponent.extend({
   queryParams: null,
 
   qualifiedRouteName: computed('targetRouteName', '_routing.currentState', function computeLinkToComponentQualifiedRouteName() {
-    let params = get(this, 'params').slice();
-    let lastParam = params[params.length - 1];
+    let params = get(this, 'params');
+    let paramsLength = params.length;
+    let lastParam = params[paramsLength - 1];
     if (lastParam && lastParam.isQueryParams) {
-      params.pop();
+      paramsLength--;
     }
-    let onlyQueryParamsSupplied = (this[HAS_BLOCK] ? params.length === 0 : params.length === 1);
+    let onlyQueryParamsSupplied = (this[HAS_BLOCK] ? paramsLength === 0 : paramsLength === 1);
     if (onlyQueryParamsSupplied) {
       return get(this, '_routing.currentRouteName');
     }
@@ -794,13 +803,7 @@ const LinkComponent = EmberComponent.extend({
       params = params.slice();
     }
 
-    assert('You must provide one or more parameters to the link-to component.', (() => {
-      if (!params) {
-        return false;
-      }
-
-      return params.length;
-    })());
+    assert('You must provide one or more parameters to the link-to component.', params && params.length);
 
     let disabledWhen = get(this, 'disabledWhen');
     if (disabledWhen !== undefined) {

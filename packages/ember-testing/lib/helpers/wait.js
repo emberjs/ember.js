@@ -27,10 +27,11 @@ import { pendingRequests } from '../test/pending_requests';
       .fillIn('#password', password)
       .click('.submit');
   });
+  ```
 
   @method wait
   @param {Object} value The value to be returned.
-  @return {RSVP.Promise}
+  @return {RSVP.Promise<any>} Promise that resolves to the passed value.
   @public
   @since 1.0.0
 */

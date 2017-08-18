@@ -1,36 +1,10 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { ModuleBasedTestResolver } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
+import { helper, Helper } from 'ember-glimmer';
 
-function buildResolver() {
-  let resolver = {
-    resolve() { },
-    expandLocalLookup(fullName, sourceFullName) {
-      let [sourceType, sourceName ] = sourceFullName.split(':');
-      let [type, name ] = fullName.split(':');
-
-      if (type !== 'template' && sourceType === 'template' && sourceName.slice(0, 11) === 'components/') {
-        sourceName = sourceName.slice(11);
-      }
-
-      if (type === 'template' && sourceType === 'template' && name.slice(0, 11) === 'components/') {
-        name = name.slice(11);
-      }
-
-
-      let result = `${type}:${sourceName}/${name}`;
-
-      return result;
-    }
-  };
-
-  return resolver;
-}
-
-moduleFor('Components test: local lookup', class extends RenderingTest {
-  getResolver() {
-    return buildResolver();
-  }
-
+class LocalLookupTest extends RenderingTest {
   ['@test it can lookup a local template']() {
     this.registerComponent('x-outer/x-inner', { template: 'Nested template says: {{yield}}' });
     this.registerComponent('x-outer', { template: '{{#x-inner}}Hi!{{/x-inner}}' });
@@ -217,4 +191,114 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
 
     this.assertText('Nested template says (from global): Hi! Nested template says (from local): Hi! Nested template says (from local): Hi!');
   }
+}
+
+// first run these tests with expandLocalLookup
+
+function buildResolver() {
+  let resolver = {
+    resolve() { },
+    expandLocalLookup(fullName, sourceFullName) {
+      let [sourceType, sourceName ] = sourceFullName.split(':');
+      let [type, name ] = fullName.split(':');
+
+      if (type !== 'template' && sourceType === 'template' && sourceName.slice(0, 11) === 'components/') {
+        sourceName = sourceName.slice(11);
+      }
+
+      if (type === 'template' && sourceType === 'template' && name.slice(0, 11) === 'components/') {
+        name = name.slice(11);
+      }
+
+
+      let result = `${type}:${sourceName}/${name}`;
+
+      return result;
+    }
+  };
+
+  return resolver;
+}
+
+moduleFor('Components test: local lookup with expandLocalLookup feature', class extends LocalLookupTest {
+  getResolver() {
+    return buildResolver();
+  }
 });
+
+if (EMBER_MODULE_UNIFICATION) {
+  class LocalLookupTestResolver extends ModuleBasedTestResolver {
+    resolve(specifier, referrer) {
+      let fullSpecifier = specifier;
+
+      if (referrer) {
+        let namespace = referrer.split('template:components/')[1];
+        if (specifier.indexOf('template:components/') !== -1) {
+            let name = specifier.split('template:components/')[1];
+            fullSpecifier = `template:components/${namespace}/${name}`;
+        } else if (specifier.indexOf(':') !== -1) {
+          let [type, name] = specifier.split(':');
+          fullSpecifier = `${type}:${namespace}/${name}`;
+        }
+      }
+
+      return super.resolve(fullSpecifier);
+    }
+  }
+
+  /*
+   * This sub-classing changes `registerXXX` methods to use the resolver.
+   * Required for testing the module unification-friendly `resolve` call
+   * with a `referrer` argument.
+   *
+   * In theory all these tests can be ported to use the resolver instead of
+   * the registry.
+   */
+  moduleFor('Components test: local lookup with resolution referrer', class extends LocalLookupTest {
+    get resolver() {
+      return this.owner.__registry__.fallback.resolver;
+    }
+
+    getResolver() {
+      return new LocalLookupTestResolver();
+    }
+
+    registerComponent(name, { ComponentClass = null, template = null }) {
+      let { resolver } = this;
+
+      if (ComponentClass) {
+        resolver.add(`component:${name}`, ComponentClass);
+      }
+
+      if (typeof template === 'string') {
+        resolver.add(`template:components/${name}`, this.compile(template, {
+          moduleName: `components/${name}`
+        }));
+      }
+    }
+
+    registerTemplate(name, template) {
+      let { resolver } = this;
+      if (typeof template === 'string') {
+        resolver.add(`template:${name}`, this.compile(template, {
+          moduleName: name
+        }));
+      } else {
+        throw new Error(`Registered template "${name}" must be a string`);
+      }
+    }
+
+    registerHelper(name, funcOrClassBody) {
+      let { resolver } = this;
+      let type = typeof funcOrClassBody;
+
+      if (type === 'function') {
+        resolver.add(`helper:${name}`, helper(funcOrClassBody));
+      } else if (type === 'object' && type !== null) {
+        resolver.add(`helper:${name}`, Helper.extend(funcOrClassBody));
+      } else {
+        throw new Error(`Cannot register ${funcOrClassBody} as a helper`);
+      }
+    }
+  });
+}

@@ -12,8 +12,8 @@ import {
   getViewId
 } from 'ember-views';
 import { BOUNDS } from './component';
-import { RootComponentDefinition } from './syntax/curly-component';
-import { TopLevelOutletComponentDefinition } from './syntax/outlet';
+import { RootComponentDefinition } from './component-managers/root';
+import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
 import { assert } from 'ember-debug';
 
 const { backburner } = run;
@@ -70,9 +70,7 @@ class RootState {
       let result = this.result = iteratorResult.value;
 
       // override .render function after initial render
-      this.render = () => {
-        result.rerender(options);
-      };
+      this.render = () => result.rerender(options);
     };
   }
 
@@ -117,6 +115,10 @@ class RootState {
 }
 
 const renderers = [];
+
+export function _resetRenderers() {
+  renderers.length = 0;
+}
 
 setHasViews(() => renderers.length > 0);
 
@@ -239,6 +241,7 @@ class Renderer {
       let root = roots[i];
       if (root.isFor(view)) {
         root.destroy();
+        roots.splice(i, 1);
       }
     }
   }
@@ -252,7 +255,7 @@ class Renderer {
   }
 
   getElement(view) {
-    // overriden in the subclasses
+    // overridden in the subclasses
   }
 
   getBounds(view) {

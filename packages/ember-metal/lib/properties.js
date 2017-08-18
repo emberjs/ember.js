@@ -3,7 +3,7 @@
 */
 
 import { assert } from 'ember-debug';
-import { meta as metaFor, peekMeta } from './meta';
+import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
 import { MANDATORY_SETTER } from 'ember/features';
 // ..........................................................
@@ -58,16 +58,19 @@ export function MANDATORY_SETTER_FUNCTION(name) {
 export function DEFAULT_GETTER_FUNCTION(name) {
   return function GETTER_FUNCTION() {
     let meta = peekMeta(this);
-    return meta && meta.peekValues(name);
+    if (meta !== undefined) {
+      return meta.peekValues(name);
+    }
   };
 }
-
-import { UNDEFINED } from './meta';
 
 export function INHERITING_GETTER_FUNCTION(name) {
   function IGETTER_FUNCTION() {
     let meta = peekMeta(this);
-    let val = meta && meta.readInheritedValue('values', name);
+    let val;
+    if (meta !== undefined) {
+      val = meta.readInheritedValue('values', name);
+    }
 
     if (val === UNDEFINED) {
       let proto = Object.getPrototypeOf(this);
@@ -127,17 +130,15 @@ export function INHERITING_GETTER_FUNCTION(name) {
     become the explicit value of this property.
 */
 export function defineProperty(obj, keyName, desc, data, meta) {
-  if (!meta) {
-    meta = metaFor(obj);
-  }
+  if (meta === undefined) { meta = metaFor(obj); }
+
   let watchEntry = meta.peekWatching(keyName);
-  let possibleDesc = obj[keyName];
-  let existingDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-
   let watching = watchEntry !== undefined && watchEntry > 0;
+  let possibleDesc = obj[keyName];
+  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
-  if (existingDesc) {
-    existingDesc.teardown(obj, keyName);
+  if (isDescriptor) {
+    possibleDesc.teardown(obj, keyName, meta);
   }
 
   let value;
@@ -161,38 +162,36 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     didDefineComputedProperty(obj.constructor);
 
     if (typeof desc.setup === 'function') { desc.setup(obj, keyName); }
-  } else {
-    if (desc == null) {
-      value = data;
+  } else if (desc === undefined || desc === null) {
+    value = data;
 
-      if (MANDATORY_SETTER) {
-        if (watching) {
-          meta.writeValues(keyName, data);
+    if (MANDATORY_SETTER) {
+      if (watching) {
+        meta.writeValues(keyName, data);
 
-          let defaultDescriptor = {
-            configurable: true,
-            enumerable: true,
-            set: MANDATORY_SETTER_FUNCTION(keyName),
-            get: DEFAULT_GETTER_FUNCTION(keyName)
-          };
+        let defaultDescriptor = {
+          configurable: true,
+          enumerable: true,
+          set: MANDATORY_SETTER_FUNCTION(keyName),
+          get: DEFAULT_GETTER_FUNCTION(keyName)
+        };
 
-          if (REDEFINE_SUPPORTED) {
-            Object.defineProperty(obj, keyName, defaultDescriptor);
-          } else {
-            handleBrokenPhantomDefineProperty(obj, keyName, defaultDescriptor);
-          }
+        if (REDEFINE_SUPPORTED) {
+          Object.defineProperty(obj, keyName, defaultDescriptor);
         } else {
-          obj[keyName] = data;
+          handleBrokenPhantomDefineProperty(obj, keyName, defaultDescriptor);
         }
       } else {
         obj[keyName] = data;
       }
     } else {
-      value = desc;
-
-      // fallback to ES5
-      Object.defineProperty(obj, keyName, desc);
+      obj[keyName] = data;
     }
+  } else {
+    value = desc;
+
+    // fallback to ES5
+    Object.defineProperty(obj, keyName, desc);
   }
 
   // if key is being watched, override chains that

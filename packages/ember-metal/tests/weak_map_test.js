@@ -1,4 +1,4 @@
-import { WeakMap } from '..';
+import { WeakMapPolyfill as WeakMap } from '..';
 
 QUnit.module('Ember.WeakMap');
 
@@ -45,15 +45,6 @@ QUnit.test('has weakMap like qualities', function(assert) {
   assert.strictEqual(map.get(c), 1);
   assert.strictEqual(map.get(a), 2);
   assert.strictEqual(map.get(b), undefined);
-});
-
-QUnit.test('WeakMap constructor requres new', function(assert) {
-  let expectedError = new TypeError(`Constructor WeakMap requires 'new'`);
-
-  assert.throws(() => {
-    // jshint newcap: false
-    WeakMap();
-  }, expectedError);
 });
 
 QUnit.test('constructing a WeakMap with an invalid iterator throws an error', function(assert) {

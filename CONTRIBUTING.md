@@ -56,7 +56,7 @@ original notice.
 * If you submit a feature request as an issue, you will be invited to follow the
 [instructions in this document](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md#requesting-a-feature)
 and the issue will be closed
-* Issues that become inactive will be labelled accordingly
+* Issues that become inactive will be labeled accordingly
   to inform the original poster and Ember contributors that the issue
   should be closed since the issue is no longer actionable. The issue
   can be reopened at a later time if needed, e.g. becomes actionable again.
@@ -90,7 +90,7 @@ along.
 
 In short, if you have an idea that would be nice to have, create an issue on the
 emberjs/rfcs repo. If you have a question about requesting a feature, start a
-discussion at [discuss.emberjs.com](http://discuss.emberjs.com)
+discussion at [discuss.emberjs.com](https://discuss.emberjs.com)
 
 # Building Ember.js
 
@@ -116,7 +116,7 @@ Pull requests should pass the Ember.js unit tests. Do the following to run these
 
 1. Follow the setup steps listed above under [Building Ember.js](#building-emberjs).
 
-2. To start the development server, run `npm start`.
+2. To start the development server, run `yarn start`.
 
 3. To run all tests, visit <http://localhost:4200/>.
 
@@ -137,7 +137,7 @@ versions of jQuery.
 
 1. Install phantomjs from http://phantomjs.org.
 
-2. Run `npm test` to run a basic test suite or run `TEST_SUITE=all npm test` to
+2. Run `yarn test` to run a basic test suite or run `TEST_SUITE=all yarn test` to
    run a more comprehensive suite.
 
 ## From ember-cli
@@ -168,7 +168,7 @@ to know that you have a clean slate: `yarn install && yarn test`.
 3. Add a test for your change. Only refactoring and documentation changes
 require no new tests. If you are adding functionality or fixing a bug, we need
 a test! If your change is a new feature, please
-[wrap it in a feature flag](http://emberjs.com/guides/contributing/adding-new-features/).
+[wrap it in a feature flag](https://emberjs.com/guides/contributing/adding-new-features/).
 
 4. Make sure to check out the
    [JavaScript Style Guide](https://github.com/emberjs/ember.js/blob/master/STYLEGUIDE.md) and
@@ -311,7 +311,7 @@ Documentation commits are tagged as `[DOC channel]` where channel is `canary`,
 
 ### Security
 
-Security commits will be tagged as `[SECURITY cve]`. Please do not submit security related PRs without coordinating with the security team. See the [Security Policy](http://emberjs.com/security/) for more information.
+Security commits will be tagged as `[SECURITY cve]`. Please do not submit security related PRs without coordinating with the security team. See the [Security Policy](https://emberjs.com/security/) for more information.
 
 ### Other
 

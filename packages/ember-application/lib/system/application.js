@@ -932,11 +932,11 @@ const Application = Engine.extend({
     ```
 
     ```app/routes/post.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
     // An example of how the (hypothetical) service is used in routes.
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       model(params) {
         return this.network.fetch(`/api/posts/${params.post_id}.json`);
       },
@@ -1028,7 +1028,7 @@ Application.reopenClass({
 });
 
 function commonSetupRegistry(registry) {
-  registry.register('router:main', Router);
+  registry.register('router:main', Router.extend());
   registry.register('-view-registry:main', { create() { return dictionary(null); } });
 
   registry.register('route:basic', Route);
@@ -1045,7 +1045,7 @@ function commonSetupRegistry(registry) {
 
   if (EMBER_ROUTING_ROUTER_SERVICE) {
     registry.register('service:router', RouterService);
-    registry.injection('service:router', 'router', 'router:main');
+    registry.injection('service:router', '_router', 'router:main');
   }
 }
 

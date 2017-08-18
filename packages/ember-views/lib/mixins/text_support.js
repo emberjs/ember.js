@@ -19,7 +19,7 @@ const KEY_EVENTS = {
   `TextSupport` is a shared mixin used by both `Ember.TextField` and
   `Ember.TextArea`. `TextSupport` adds a number of methods that allow you to
   specify a controller action to invoke when a certain event is fired on your
-  text field or textarea. The specifed controller action would get the current
+  text field or textarea. The specified controller action would get the current
   value of the field passed in as the only argument unless the value of
   the field is empty. In that case, the instance of the field itself is passed
   in as the only argument.
@@ -123,6 +123,7 @@ export default Mixin.create(TargetActionSupport, {
     'disabled',
     'form',
     'maxlength',
+    'minlength',
     'placeholder',
     'readonly',
     'required',

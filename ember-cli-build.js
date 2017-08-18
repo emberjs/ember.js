@@ -58,7 +58,7 @@ module.exports = function(options) {
   let emberTemplateCompiler = emberPkgES('ember-template-compiler');
   let emberTemplateCompilerES5 = toES5(emberTemplateCompiler, { annotation: 'ember-template-compiler' });
   let glimmerSyntax = toES5(
-    glimmerPkgES('@glimmer/syntax', ['handlebars', 'simple-html-tokenizer']),
+    glimmerPkgES('@glimmer/syntax', ['@glimmer/util', 'handlebars', 'simple-html-tokenizer']),
     { annotation: '@glimmer/syntax' }
   );
   let glimmerCompiler = toES5(
@@ -229,6 +229,7 @@ module.exports = function(options) {
       glimmerUtil,
       glimmerWireFormat,
       backburner,
+      rsvp
     ].map(stripForProd);
 
     let emberProdTestES5 = emberTests.map((tree) => {
@@ -251,7 +252,6 @@ module.exports = function(options) {
       ...emberProdES5,
       ...depsProd,
       emberMetalProd,
-      rsvp,
       productionFeatures,
       babelProdHelpersES5,
       version,

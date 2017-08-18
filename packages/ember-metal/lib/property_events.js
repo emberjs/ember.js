@@ -3,8 +3,7 @@ import {
   peekMeta
 } from './meta';
 import {
-  sendEvent,
-  accumulateListeners
+  sendEvent
 } from './events';
 import {
   markObjectAsDirty
@@ -16,7 +15,7 @@ import {
 } from 'ember/features';
 import { assertNotRendered } from './transaction';
 
-export let PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
+export const PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
 const beforeObserverSet = new ObserverSet();
 const observerSet = new ObserverSet();
@@ -44,17 +43,14 @@ let deferred = 0;
 */
 function propertyWillChange(obj, keyName, _meta) {
   let meta = _meta || peekMeta(obj);
-
-  if (meta && !meta.isInitialized(obj)) {
-    return;
-  }
+  if (meta && !meta.isInitialized(obj)) { return; }
 
   let watching = meta && meta.peekWatching(keyName) > 0;
   let possibleDesc = obj[keyName];
-  let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
-  if (desc && desc.willChange) {
-    desc.willChange(obj, keyName);
+  if (isDescriptor && possibleDesc.willChange) {
+    possibleDesc.willChange(obj, keyName);
   }
 
   if (watching) {
@@ -85,24 +81,19 @@ function propertyDidChange(obj, keyName, _meta) {
   let meta = _meta || peekMeta(obj);
   let hasMeta = !!meta;
 
-  if (hasMeta && !meta.isInitialized(obj)) {
-    return;
-  }
+  if (hasMeta && !meta.isInitialized(obj)) { return; }
 
   let possibleDesc = obj[keyName];
-  let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
   // shouldn't this mean that we're watching this key?
-  if (desc && desc.didChange) {
-    desc.didChange(obj, keyName);
+  if (isDescriptor && possibleDesc.didChange) {
+    possibleDesc.didChange(obj, keyName);
   }
 
   if (hasMeta && meta.peekWatching(keyName) > 0) {
-    if (meta.hasDeps(keyName) && !meta.isSourceDestroying()) {
-      dependentKeysDidChange(obj, keyName, meta);
-    }
-
-    chainsDidChange(obj, keyName, meta, false);
+    dependentKeysDidChange(obj, keyName, meta);
+    chainsDidChange(obj, keyName, meta);
     notifyObservers(obj, keyName, meta);
   }
 
@@ -123,25 +114,24 @@ function propertyDidChange(obj, keyName, _meta) {
 let WILL_SEEN, DID_SEEN;
 // called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)
 function dependentKeysWillChange(obj, depKey, meta) {
-  if (meta.isSourceDestroying()) { return; }
-  if (meta.hasDeps(depKey)) {
-    let seen = WILL_SEEN;
-    let top = !seen;
+  if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) { return; }
+  let seen = WILL_SEEN;
+  let top = !seen;
 
-    if (top) {
-      seen = WILL_SEEN = {};
-    }
+  if (top) {
+    seen = WILL_SEEN = {};
+  }
 
-    iterDeps(propertyWillChange, obj, depKey, seen, meta);
+  iterDeps(propertyWillChange, obj, depKey, seen, meta);
 
-    if (top) {
-      WILL_SEEN = null;
-    }
+  if (top) {
+    WILL_SEEN = null;
   }
 }
 
 // called whenever a property has just changed to update dependent keys
 function dependentKeysDidChange(obj, depKey, meta) {
+  if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) { return; }
   let seen = DID_SEEN;
   let top = !seen;
 
@@ -157,7 +147,7 @@ function dependentKeysDidChange(obj, depKey, meta) {
 }
 
 function iterDeps(method, obj, depKey, seen, meta) {
-  let possibleDesc, desc;
+  let possibleDesc, isDescriptor;
   let guid = guidFor(obj);
   let current = seen[guid];
 
@@ -175,9 +165,9 @@ function iterDeps(method, obj, depKey, seen, meta) {
     if (!value) { return; }
 
     possibleDesc = obj[key];
-    desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
-    if (desc && desc._suspended === obj) {
+    if (isDescriptor && possibleDesc._suspended === obj) {
       return;
     }
 
@@ -187,21 +177,21 @@ function iterDeps(method, obj, depKey, seen, meta) {
 
 function chainsWillChange(obj, keyName, meta) {
   let chainWatchers = meta.readableChainWatchers();
-  if (chainWatchers) {
+  if (chainWatchers !== undefined) {
     chainWatchers.notify(keyName, false, propertyWillChange);
   }
 }
 
 function chainsDidChange(obj, keyName, meta) {
   let chainWatchers = meta.readableChainWatchers();
-  if (chainWatchers) {
+  if (chainWatchers !== undefined) {
     chainWatchers.notify(keyName, true, propertyDidChange);
   }
 }
 
 function overrideChains(obj, keyName, meta) {
   let chainWatchers = meta.readableChainWatchers();
-  if (chainWatchers) {
+  if (chainWatchers !== undefined) {
     chainWatchers.revalidate(keyName);
   }
 }
@@ -248,8 +238,42 @@ function changeProperties(callback, binding) {
   try {
     callback.call(binding);
   } finally {
-    endPropertyChanges.call(binding);
+    endPropertyChanges();
   }
+}
+
+function indexOf(array, target, method) {
+  let index = -1;
+  // hashes are added to the end of the event array
+  // so it makes sense to start searching at the end
+  // of the array and search in reverse
+  for (let i = array.length - 3; i >= 0; i -= 3) {
+    if (target === array[i] && method === array[i + 1]) {
+      index = i;
+      break;
+    }
+  }
+  return index;
+}
+
+function accumulateListeners(obj, eventName, otherActions, meta) {
+  let actions = meta.matchingListeners(eventName);
+  if (actions === undefined) { return; }
+  let newActions = [];
+
+  for (let i = actions.length - 3; i >= 0; i -= 3) {
+    let target = actions[i];
+    let method = actions[i + 1];
+    let flags = actions[i + 2];
+    let actionIndex = indexOf(otherActions, target, method);
+
+    if (actionIndex === -1) {
+      otherActions.push(target, method, flags);
+      newActions.push(target, method, flags);
+    }
+  }
+
+  return newActions;
 }
 
 function notifyBeforeObservers(obj, keyName, meta) {
@@ -257,13 +281,11 @@ function notifyBeforeObservers(obj, keyName, meta) {
 
   let eventName = `${keyName}:before`;
   let listeners, added;
-  if (deferred) {
+  if (deferred > 0) {
     listeners = beforeObserverSet.add(obj, keyName, eventName);
-    added = accumulateListeners(obj, eventName, listeners);
-    sendEvent(obj, eventName, [obj, keyName], added);
-  } else {
-    sendEvent(obj, eventName, [obj, keyName]);
+    added = accumulateListeners(obj, eventName, listeners, meta);
   }
+  sendEvent(obj, eventName, [obj, keyName], added);
 }
 
 function notifyObservers(obj, keyName, meta) {
@@ -271,9 +293,9 @@ function notifyObservers(obj, keyName, meta) {
 
   let eventName = `${keyName}:change`;
   let listeners;
-  if (deferred) {
+  if (deferred > 0) {
     listeners = observerSet.add(obj, keyName, eventName);
-    accumulateListeners(obj, eventName, listeners);
+    accumulateListeners(obj, eventName, listeners, meta);
   } else {
     sendEvent(obj, eventName, [obj, keyName]);
   }

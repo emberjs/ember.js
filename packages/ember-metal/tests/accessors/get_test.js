@@ -55,19 +55,19 @@ testBoth('should call unknownProperty on watched values if the value is undefine
   equal(get(obj, 'foo'), 'FOO', 'should return value from unknown');
 });
 
-QUnit.test('warn on attemps to call get with no arguments', function() {
+QUnit.test('warn on attempts to call get with no arguments', function() {
   expectAssertion(function() {
     get('aProperty');
   }, /Get must be called with two arguments;/i);
 });
 
-QUnit.test('warn on attemps to call get with only one argument', function() {
+QUnit.test('warn on attempts to call get with only one argument', function() {
   expectAssertion(function() {
     get('aProperty');
   }, /Get must be called with two arguments;/i);
 });
 
-QUnit.test('warn on attemps to call get with more then two arguments', function() {
+QUnit.test('warn on attempts to call get with more then two arguments', function() {
   expectAssertion(function() {
     get({}, 'aProperty', true);
   }, /Get must be called with two arguments;/i);

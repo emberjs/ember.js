@@ -23,6 +23,17 @@
 
    Where the `title` is bound to updates of the `office` property.
 
+   Note that the hash is an empty object with no prototype chain, therefore
+   common methods like `toString` are not available in the resulting hash.
+   If you need to use such a method, you can use the `call` or `apply`
+   approach:
+
+   ```js
+   function toString(obj) {
+     return Object.prototype.toString.apply(obj);
+   }
+   ```
+
    @method hash
    @for Ember.Templates.helpers
    @param {Object} options
@@ -32,5 +43,5 @@
  */
 
 export default function(vm, args) {
-  return args.named;
+  return args.named.capture();
 }

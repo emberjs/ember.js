@@ -188,6 +188,48 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
     });
   }
 
+  ['@test it declares the event dispatcher as a singleton']() {
+    this.router.map(function() {
+      this.route('engine-event-dispatcher-singleton');
+    });
+
+    let controller;
+    let component;
+
+    this.add('controller:engine-event-dispatcher-singleton', Controller.extend({
+      init() {
+        this._super(...arguments);
+        controller = this;
+      }
+    }));
+    this.addTemplate('engine-event-dispatcher-singleton', '{{mount "foo"}}');
+
+    this.add('engine:foo', Engine.extend({
+      router: null,
+      init() {
+        this._super(...arguments);
+        this.register('template:application', compile('<h2>Foo Engine: {{tagless-component}}</h2>', { moduleName: 'application' }));
+        this.register('component:tagless-component', Component.extend({
+          tagName: "",
+          init() {
+            this._super(...arguments);
+            component = this;
+          }
+        }));
+        this.register('template:components/tagless-component', compile('Tagless Component', { moduleName: 'components/tagless-component' }));
+      }
+    }));
+
+    return this.visit('/engine-event-dispatcher-singleton').then(() => {
+      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine: Tagless Component</h2>' });
+
+      let controllerOwnerEventDispatcher = getOwner(controller).lookup('event_dispatcher:main');
+      let taglessComponentOwnerEventDispatcher = getOwner(component).lookup('event_dispatcher:main');
+
+      this.assert.strictEqual(controllerOwnerEventDispatcher, taglessComponentOwnerEventDispatcher);
+    });
+  }
+
 });
 
 if (EMBER_ENGINES_MOUNT_PARAMS) {
@@ -208,7 +250,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
       this.router.map(function() {
         this.route('engine-params-static');
       });
-      this.addTemplate('engine-params-static', '{{mount "paramEngine" foo="bar"}}');
+      this.addTemplate('engine-params-static', '{{mount "paramEngine" model=(hash foo="bar")}}');
 
       return this.visit('/engine-params-static').then(() => {
         this.assertComponentElement(this.firstChild, { content: '<h2>Param Engine: bar</h2>' });
@@ -227,7 +269,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
           controller = this;
         }
       }));
-      this.addTemplate('engine-params-bound', '{{mount "paramEngine" foo=boundParamValue}}');
+      this.addTemplate('engine-params-bound', '{{mount "paramEngine" model=(hash foo=boundParamValue)}}');
 
       return this.visit('/engine-params-bound').then(() => {
         this.assertComponentElement(this.firstChild, { content: '<h2>Param Engine: </h2>' });
@@ -277,7 +319,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
           this.register('template:application', compile('{{model.foo}}', { moduleName: 'application' }));
         }
       }));
-      this.addTemplate('engine-params-contextual-component', '{{mount "componentParamEngine" foo=(component "foo-component")}}');
+      this.addTemplate('engine-params-contextual-component', '{{mount "componentParamEngine" model=(hash foo=(component "foo-component"))}}');
 
       return this.visit('/engine-params-contextual-component').then(() => {
         this.assertComponentElement(this.firstChild.firstChild, { content: 'foo-component rendered! - rendered app-bar-component from the app' });

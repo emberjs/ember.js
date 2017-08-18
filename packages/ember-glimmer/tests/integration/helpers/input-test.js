@@ -125,6 +125,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
         placeholder=placeholder
         name=name
         maxlength=maxlength
+        minlength=minlength
         size=size
         tabindex=tabindex
       }}`, {
@@ -133,6 +134,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
         placeholder: 'Original placeholder',
         name: 'original-name',
         maxlength: 10,
+        minlength: 5,
         size: 20,
         tabindex: 30
       }
@@ -143,6 +145,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20'); //NOTE: failing in IE  (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -153,6 +156,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20'); //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -162,6 +166,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
       set(this.context, 'placeholder', 'Updated placeholder');
       set(this.context, 'name', 'updated-name');
       set(this.context, 'maxlength', 11);
+      set(this.context, 'minlength', 6);
       // set(this.context, 'size', 21); //NOTE: failing in IE (TEST_SUITE=sauce)
       // set(this.context, 'tabindex', 31); //NOTE: failing in IE (TEST_SUITE=sauce)
     });
@@ -171,6 +176,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Updated placeholder');
     this.assertAttr('name', 'updated-name');
     this.assertAttr('maxlength', '11');
+    this.assertAttr('minlength', '6');
     // this.assertAttr('size', '21'); //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '31'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -180,6 +186,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
       set(this.context, 'placeholder', 'Original placeholder');
       set(this.context, 'name', 'original-name');
       set(this.context, 'maxlength', 10);
+      set(this.context, 'minlength', 5);
       // set(this.context, 'size', 20); //NOTE: failing in IE (TEST_SUITE=sauce)
       // set(this.context, 'tabindex', 30); //NOTE: failing in IE (TEST_SUITE=sauce)
     });
@@ -189,6 +196,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20'); //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
   }
@@ -201,6 +209,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
         placeholder="Original placeholder"
         name="original-name"
         maxlength=10
+        minlength=5
         size=20
         tabindex=30
       }}`
@@ -211,6 +220,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20');  //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30');  //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -221,6 +231,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20');  //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30');  //NOTE: failing in IE (TEST_SUITE=sauce)
   }
@@ -413,6 +424,13 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.triggerEvent('keyup', {
       keyCode: 65
     });
+  }
+
+  ['@test GH#14727 can render a file input after having had render an input of other type']() {
+    this.render(`{{input type="text"}}{{input type="file"}}`);
+
+    this.assert.equal(this.$input()[0].type, 'text');
+    this.assert.equal(this.$input()[1].type, 'file');
   }
 });
 

@@ -50,7 +50,7 @@ let containerProxyMixin = {
   /**
    Given a fullName return a corresponding instance.
 
-   The default behaviour is for lookup to return a singleton instance.
+   The default behavior is for lookup to return a singleton instance.
    The singleton is scoped to the container, allowing multiple containers
    to all have their own locally scoped singletons.
 
@@ -93,18 +93,6 @@ let containerProxyMixin = {
    */
   lookup(fullName, options) {
     return this.__container__.lookup(fullName, options);
-  },
-
-  /**
-   Given a fullName return the corresponding factory.
-
-   @private
-   @method _lookupFactory
-   @param {String} fullName
-   @return {any}
-   */
-  _lookupFactory(fullName, options) {
-    return this.__container__.lookupFactory(fullName, options);
   },
 
   /**

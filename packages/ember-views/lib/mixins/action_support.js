@@ -32,9 +32,10 @@ export default Mixin.create({
     into action notifications of "play" or "stop" depending on some internal state
     of the component:
 
-    ```javascript
-    // app/components/play-button.js
-    export default Ember.Component.extend({
+    ```app/components/play-button.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
       click() {
         if (this.get('isPlaying')) {
           this.sendAction('play');
@@ -56,9 +57,10 @@ export default Mixin.create({
     interaction into application-specific semantics ("play" or "stop") and
     calls the specified action.
 
-    ```javascript
-    // app/controller/application.js
-    export default Ember.Controller.extend({
+    ```app/controller/application.js
+    import Controller from '@ember/controller';
+
+    export default Controller.extend({
       actions: {
         musicStarted() {
           // called when the play button is clicked
@@ -75,9 +77,10 @@ export default Mixin.create({
     If no action is passed to `sendAction` a default name of "action"
     is assumed.
 
-    ```javascript
-    // app/components/next-button.js
-    export default Ember.Component.extend({
+    ```app/components/next-button.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
       click() {
         this.sendAction();
       }
@@ -89,9 +92,10 @@ export default Mixin.create({
     {{next-button action=(action "playNextSongInAlbum")}}
     ```
 
-    ```javascript
-    // app/controllers/application.js
-    App.ApplicationController = Ember.Controller.extend({
+    ```app/controllers/application.js
+    import Controller from '@ember/controller';
+
+    export default Controller.extend({
       actions: {
         playNextSongInAlbum() {
           ...

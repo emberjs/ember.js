@@ -9,10 +9,6 @@ import { DEBUG } from 'ember-env-flags';
 
 function K() { return this; }
 
-export function dispatchLifeCycleHook(component, hook, oldAttrs, newAttrs) {
-  component.trigger(hook);
-}
-
 /**
  @class ViewMixin
  @namespace Ember
@@ -26,8 +22,10 @@ export default Mixin.create({
 
     The following example creates a tag like `<div priority="high" />`.
 
-    ```javascript
-    Ember.Component.extend({
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
       attributeBindings: ['priority'],
       priority: 'high'
     });
@@ -39,8 +37,10 @@ export default Mixin.create({
 
     The following example creates markup like `<div visible />`.
 
-    ```javascript
-    Ember.Component.extend({
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
       attributeBindings: ['visible'],
       visible: true
     });
@@ -50,8 +50,10 @@ export default Mixin.create({
     you can create the same markup as the last example with a binding like
     this:
 
-    ```javascript
-    Ember.Component.extend({
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
       attributeBindings: ['isVisible:visible'],
       isVisible: true
     });
@@ -66,9 +68,10 @@ export default Mixin.create({
     @public
    */
   concatenatedProperties: ['attributeBindings'],
+
   [POST_INIT]() {
-    dispatchLifeCycleHook(this, 'didInitAttrs', undefined, this.attrs);
-    dispatchLifeCycleHook(this, 'didReceiveAttrs', undefined, this.attrs);
+    this.trigger('didInitAttrs');
+    this.trigger('didReceiveAttrs');
   },
 
   // ..........................................................
@@ -347,14 +350,16 @@ export default Mixin.create({
     `elementId`, you should do this when the component or element is being
     instantiated:
 
-    ```javascript
-      export default Ember.Component.extend({
-        init() {
-          this._super(...arguments);
-          let index = this.get('index');
-          this.set('elementId', 'component-id' + index);
-        }
-      });
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
+      init() {
+        this._super(...arguments);
+        let index = this.get('index');
+        this.set('elementId', 'component-id' + index);
+      }
+    });
     ```
 
     @property elementId
@@ -500,7 +505,7 @@ export default Mixin.create({
         false,
         {
           id: 'ember-views.event-dispatcher.canDispatchToEventManager',
-          until: '2.16.0'
+          until: '2.17.0'
         }
       );
 
@@ -515,7 +520,7 @@ export default Mixin.create({
       {
         id: 'ember-views.did-init-attrs',
         until: '3.0.0',
-        url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+        url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
       }
     );
 
@@ -534,7 +539,7 @@ export default Mixin.create({
   //
 
   /**
-    Handle events from `Ember.EventDispatcher`
+    Handle events from `EventDispatcher`
 
     @method handleEvent
     @param eventName {String}

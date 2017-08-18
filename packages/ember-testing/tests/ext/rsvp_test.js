@@ -1,5 +1,6 @@
 import RSVP from '../../ext/rsvp';
 import { getAdapter, setAdapter } from '../../test/adapter';
+import TestPromise, { getLastPromise } from '../../test/promise';
 import { run } from 'ember-metal';
 import { isTesting, setTesting } from 'ember-debug';
 
@@ -83,4 +84,36 @@ QUnit.test('given `Ember.testing = true`, correctly informs the test suite about
     equal(asyncStarted, 2);
     equal(asyncEnded, 2);
   });
+});
+
+
+QUnit.module('TestPromise');
+
+QUnit.test('does not throw error when falsy value passed to then', function() {
+  expect(1);
+  return new TestPromise(function(resolve) {
+    resolve()
+  })
+  .then(null)
+  .then(function() {
+    ok(true);
+  });
+});
+
+QUnit.test('able to get last Promise', function() {
+  expect(2);
+
+  var p1 = new TestPromise(function(resolve) {
+    resolve()
+  })
+  .then(function() {
+    ok(true);
+  });
+
+  var p2 = new TestPromise(function(resolve) {
+    resolve()
+  });
+
+  deepEqual(getLastPromise(), p2);
+  return p1;
 });

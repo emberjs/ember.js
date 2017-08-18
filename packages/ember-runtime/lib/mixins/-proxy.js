@@ -86,7 +86,7 @@ export default Mixin.create({
     this._super(...arguments);
     let m = meta(this);
     m.setProxy();
-    m.setTag(new ProxyTag(this));
+    m.writableTag((source)=> new ProxyTag(source));
   },
 
   isTruthy: bool('content'),

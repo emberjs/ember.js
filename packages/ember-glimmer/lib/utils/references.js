@@ -22,7 +22,6 @@ import {
 import {
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
-  NULL_REFERENCE,
   UNDEFINED_REFERENCE
 } from '@glimmer/runtime';
 import emberToBool from './to-bool';
@@ -36,7 +35,21 @@ import {
 
 export const UPDATE = symbol('UPDATE');
 
-export { NULL_REFERENCE, UNDEFINED_REFERENCE } from '@glimmer/runtime';
+let maybeFreeze;
+if (DEBUG) {
+  // gaurding this in a DEBUG gaurd (as well as all invocations)
+  // so that it is properly stripped during the minification's
+  // dead code elimination
+  maybeFreeze = (obj) => {
+    // re-freezing an already frozen object introduces a significant
+    // performance penalty on Chrome (tested through 59).
+    //
+    // See: https://bugs.chromium.org/p/v8/issues/detail?id=6450
+    if (!Object.isFrozen(obj) && HAS_NATIVE_WEAKMAP) {
+      Object.freeze(obj);
+    }
+  }
+}
 
 // @abstract
 // @implements PathReference
@@ -81,7 +94,7 @@ export class RootReference extends ConstReference {
   get(propertyKey) {
     let ref = this.children[propertyKey];
 
-    if (!ref) {
+    if (ref === undefined) {
       ref = this.children[propertyKey] = new RootPropertyReference(this.inner, propertyKey);
     }
 
@@ -200,11 +213,13 @@ export class NestedPropertyReference extends PropertyReference {
 
     _parentObjectTag.update(tagForProperty(parentValue, _propertyKey));
 
-    if (typeof parentValue === 'string' && _propertyKey === 'length') {
+    let parentValueType = typeof parentValue;
+
+    if (parentValueType === 'string' && _propertyKey === 'length') {
       return parentValue.length;
     }
 
-    if (typeof parentValue === 'object' && parentValue) {
+    if (parentValueType === 'object' && parentValue !== null || parentValueType === 'function') {
       if (MANDATORY_SETTER) {
         watchKey(parentValue, _propertyKey);
       }
@@ -296,19 +311,13 @@ export class SimpleHelperReference extends CachedReference {
       let namedValue = named.value();
 
       if (DEBUG) {
-        if (HAS_NATIVE_WEAKMAP) {
-          Object.freeze(positionalValue);
-          Object.freeze(namedValue);
-        }
+        maybeFreeze(positionalValue);
+        maybeFreeze(namedValue);
       }
 
       let result = helper(positionalValue, namedValue);
 
-      if (result === null) {
-        return NULL_REFERENCE;
-      } else if (result === undefined) {
-        return UNDEFINED_REFERENCE;
-      } else if (typeof result === 'object') {
+      if (typeof result === 'object' && result !== null || typeof result === 'function') {
         return new RootReference(result);
       } else {
         return PrimitiveReference.create(result);
@@ -333,10 +342,8 @@ export class SimpleHelperReference extends CachedReference {
     let namedValue = named.value();
 
     if (DEBUG) {
-      if (HAS_NATIVE_WEAKMAP) {
-        Object.freeze(positionalValue);
-        Object.freeze(namedValue);
-      }
+      maybeFreeze(positionalValue);
+      maybeFreeze(namedValue);
     }
 
     return helper(positionalValue, namedValue);
@@ -365,10 +372,8 @@ export class ClassBasedHelperReference extends CachedReference {
     let namedValue = named.value();
 
     if (DEBUG) {
-      if (HAS_NATIVE_WEAKMAP) {
-        Object.freeze(positionalValue);
-        Object.freeze(namedValue);
-      }
+      maybeFreeze(positionalValue);
+      maybeFreeze(namedValue);
     }
 
     return instance.compute(positionalValue, namedValue);
@@ -393,11 +398,7 @@ export class InternalHelperReference extends CachedReference {
 // @implements PathReference
 export class UnboundReference extends ConstReference {
   static create(value) {
-    if (value === null) {
-      return NULL_REFERENCE;
-    } else if (value === undefined) {
-      return UNDEFINED_REFERENCE;
-    } else if (typeof value === 'object') {
+    if (typeof value === 'object' && value !== null || typeof result === 'function') {
       return new UnboundReference(value);
     } else {
       return PrimitiveReference.create(value);

@@ -91,7 +91,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     `);
 
     this.addTemplate('nav', strip`
-      <a href="http://emberjs.com/">Ember</a>
+      <a href="https://emberjs.com/">Ember</a>
     `);
 
     this.add('route:application', Route.extend({
@@ -122,7 +122,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       this.assertComponentElement(this.firstChild, {
         content: strip`
           <nav>
-            <a href="http://emberjs.com/">Ember</a>
+            <a href="https://emberjs.com/">Ember</a>
           </nav>
           <main>
             <ul>
@@ -147,7 +147,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     `);
 
     this.addTemplate('nav', strip`
-      <a href="http://emberjs.com/">Ember</a>
+      <a href="https://emberjs.com/">Ember</a>
     `);
 
     this.add('route:application', Route.extend({
@@ -178,7 +178,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       this.assertComponentElement(this.firstChild, {
         content: strip`
           <nav>
-            <a href="http://emberjs.com/">Ember</a>
+            <a href="https://emberjs.com/">Ember</a>
           </nav>
           <main>
             <ul>

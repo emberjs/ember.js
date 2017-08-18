@@ -8,11 +8,14 @@ import { createInjectionHelper } from '../inject';
 
   Example:
 
-  ```javascript
-  App.ApplicationRoute = Ember.Route.extend({
-    authManager: Ember.inject.service('auth'),
+  ```app/routes/application.js
+  import Route from '@ember/routing/route';
+  import { inject as service } from '@ember/service';
 
-    model: function() {
+  export default Route.extend({
+    authManager: service('auth'),
+
+    model() {
       return this.get('authManager').findCurrentUser();
     }
   });

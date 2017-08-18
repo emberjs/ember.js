@@ -80,18 +80,22 @@ function makeCtor() {
 
         let concatenatedProperties = this.concatenatedProperties;
         let mergedProperties = this.mergedProperties;
+        let hasConcatenatedProps = concatenatedProperties && concatenatedProperties.length > 0;
+        let hasMergedProps = mergedProperties && mergedProperties.length > 0;
 
         for (let i = 0; i < props.length; i++) {
           let properties = props[i];
+
+          assert(
+            'Ember.Object.create only accepts objects.',
+            typeof properties === 'object' || properties === undefined
+          );
+
           assert(
             'Ember.Object.create no longer supports mixing in other ' +
             'definitions, use .extend & .create separately instead.',
             !(properties instanceof Mixin)
           );
-
-          if (typeof properties !== 'object' && properties !== undefined) {
-            throw new EmberError('Ember.Object.create only accepts objects.');
-          }
 
           if (!properties) { continue; }
 
@@ -104,9 +108,6 @@ function makeCtor() {
             if (detectBinding(keyName)) {
               m.writeBindings(keyName, value);
             }
-
-            let possibleDesc = this[keyName];
-            let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
             assert(
               'Ember.Object.create no longer supports defining computed ' +
@@ -124,41 +125,30 @@ function makeCtor() {
               !((keyName === 'actions') && ActionHandler.detect(this))
             );
 
-            if (concatenatedProperties &&
-                concatenatedProperties.length > 0 &&
-                concatenatedProperties.indexOf(keyName) >= 0) {
-              let baseValue = this[keyName];
+            let baseValue = this[keyName];
+            let isDescriptor = baseValue !== null && typeof baseValue === 'object' && baseValue.isDescriptor;
 
+            if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
               if (baseValue) {
-                if ('function' === typeof baseValue.concat) {
-                  value = baseValue.concat(value);
-                } else {
-                  value = makeArray(baseValue).concat(value);
-                }
+                value = makeArray(baseValue).concat(value);
               } else {
                 value = makeArray(value);
               }
             }
 
-            if (mergedProperties &&
-                mergedProperties.length &&
-                mergedProperties.indexOf(keyName) >= 0) {
-              let originalValue = this[keyName];
-
-              value = assign({}, originalValue, value);
+            if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+              value = assign({}, baseValue, value);
             }
 
-            if (desc) {
-              desc.set(this, keyName, value);
+            if (isDescriptor) {
+              baseValue.set(this, keyName, value);
+            } else if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
+              this.setUnknownProperty(keyName, value);
             } else {
-              if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
-                this.setUnknownProperty(keyName, value);
+              if (MANDATORY_SETTER) {
+                defineProperty(this, keyName, null, value); // setup mandatory setter
               } else {
-                if (MANDATORY_SETTER) {
-                  defineProperty(this, keyName, null, value); // setup mandatory setter
-                } else {
-                  this[keyName] = value;
-                }
+                this[keyName] = value;
               }
             }
           }
@@ -420,7 +410,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     set(value) {
       // prevent setting while applying mixins
-      if (typeof value === 'object' && value !== null && value.isDescriptor) {
+      if (value !== null && typeof value === 'object' && value.isDescriptor) {
         return;
       }
 
@@ -445,7 +435,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     set(value) {
       // prevent setting while applying mixins
-      if (typeof value === 'object' && value !== null && value.isDescriptor) {
+      if (value !== null && typeof value === 'object' && value.isDescriptor) {
         return;
       }
 
@@ -520,7 +510,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     If the object's class is not defined on an Ember namespace, it will
     indicate it is a subclass of the registered superclass:
 
-   ```javascript
+    ```javascript
     const Student = Person.extend()
     let student = Student.create()
     student.toString() //=> "<(subclass of Person):ember1025>"
@@ -864,13 +854,12 @@ let ClassMixinProps = {
   metaForProperty(key) {
     let proto = this.proto();
     let possibleDesc = proto[key];
-    let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
     assert(
       `metaForProperty() could not find a computed property with key '${key}'.`,
-      !!desc && desc instanceof ComputedProperty
+      possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor
     );
-    return desc._meta || {};
+    return possibleDesc._meta || {};
   },
 
   _computedProperties: computed(function() {
@@ -882,7 +871,7 @@ let ClassMixinProps = {
     for (let name in proto) {
       property = proto[name];
 
-      if (property && property.isDescriptor) {
+      if (property !== null && typeof property === 'object' && property.isDescriptor) {
         properties.push({
           name,
           meta: property._meta

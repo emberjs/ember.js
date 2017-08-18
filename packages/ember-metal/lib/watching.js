@@ -1,7 +1,6 @@
 /**
 @module ember-metal
 */
-
 import {
   watchKey,
   unwatchKey
@@ -31,22 +30,16 @@ import {
   @param obj
   @param {String} _keyPath
 */
-function watch(obj, _keyPath, m) {
-  if (!isPath(_keyPath)) {
-    watchKey(obj, _keyPath, m);
-  } else {
+export function watch(obj, _keyPath, m) {
+  if (isPath(_keyPath)) {
     watchPath(obj, _keyPath, m);
+  } else {
+    watchKey(obj, _keyPath, m);
   }
 }
 
-export { watch };
-
 export function isWatching(obj, key) {
-  if (typeof obj !== 'object' || obj === null) {
-    return false;
-  }
-  let meta = peekMeta(obj);
-  return (meta && meta.peekWatching(key)) > 0;
+  return watcherCount(obj, key) > 0;
 }
 
 export function watcherCount(obj, key) {
@@ -55,10 +48,10 @@ export function watcherCount(obj, key) {
 }
 
 export function unwatch(obj, _keyPath, m) {
-  if (!isPath(_keyPath)) {
-    unwatchKey(obj, _keyPath, m);
-  } else {
+  if (isPath(_keyPath)) {
     unwatchPath(obj, _keyPath, m);
+  } else {
+    unwatchKey(obj, _keyPath, m);
   }
 }
 
@@ -72,6 +65,4 @@ export function unwatch(obj, _keyPath, m) {
   @return {void}
   @private
 */
-export function destroy(obj) {
-  deleteMeta(obj);
-}
+export { deleteMeta as destroy };

@@ -111,22 +111,27 @@ QUnit.test('customEvents added to the application instance before setupEventDisp
 });
 
 QUnit.test('unregistering a factory clears all cached instances of that factory', function(assert) {
-  assert.expect(3);
+  assert.expect(5);
 
   appInstance = run(() => ApplicationInstance.create({ application }));
 
-  let PostController = factory();
+  let PostController1 = factory();
+  let PostController2 = factory();
 
-  appInstance.register('controller:post', PostController);
+  appInstance.register('controller:post', PostController1);
 
   let postController1 = appInstance.lookup('controller:post');
-  assert.ok(postController1, 'lookup creates instance');
+  let postController1Factory = appInstance.factoryFor('controller:post');
+  assert.ok(postController1 instanceof PostController1, 'precond - lookup creates instance');
+  assert.equal(PostController1, postController1Factory.class, 'precond - factoryFor().class matches')
 
   appInstance.unregister('controller:post');
-  appInstance.register('controller:post', PostController);
+  appInstance.register('controller:post', PostController2);
 
   let postController2 = appInstance.lookup('controller:post');
-  assert.ok(postController2, 'lookup creates instance');
+  let postController2Factory = appInstance.factoryFor('controller:post');
+  assert.ok(postController2 instanceof PostController2, 'lookup creates instance');
+  assert.equal(PostController2, postController2Factory.class, 'factoryFor().class matches')
 
   assert.notStrictEqual(postController1, postController2, 'lookup creates a brand new instance, because the previous one was reset');
 });
@@ -151,7 +156,6 @@ QUnit.test('can build and boot a registered engine', function(assert) {
 
       let registrations = [
         'route:basic',
-        'event_dispatcher:main',
         'service:-routing',
         'service:-glimmer-environment'
       ];
@@ -168,7 +172,8 @@ QUnit.test('can build and boot a registered engine', function(assert) {
         P`-bucket-cache:main`,
         '-view-registry:main',
         '-environment:main',
-        'service:-document'
+        'service:-document',
+        'event_dispatcher:main'
       ];
 
       let env = appInstance.lookup('-environment:main');

@@ -19,12 +19,12 @@ import { focus, fireEvent } from '../events';
   @param {String} selector jQuery selector finding an input element on the DOM
   to fill text with
   @param {String} text text to place inside the input element
-  @return {RSVP.Promise}
+  @return {RSVP.Promise<undefined>}
   @public
 */
 export default function fillIn(app, selector, contextOrText, text) {
   let $el, el, context;
-  if (typeof text === 'undefined') {
+  if (text === undefined) {
     text = contextOrText;
   } else {
     context = contextOrText;

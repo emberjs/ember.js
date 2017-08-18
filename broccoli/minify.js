@@ -12,7 +12,7 @@ module.exports = function _minify(tree, name) {
     },
     mangle: true,
     compress: {
-      // this is adversely affects heuristics for IIFE eval
+      // this adversely affects heuristics for IIFE eval
       negate_iife: false,
       // limit sequences because of memory issues during parsing
       sequences: 30
