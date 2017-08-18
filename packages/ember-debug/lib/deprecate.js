@@ -91,9 +91,10 @@ if (DEBUG) {
     if (ENV.LOG_STACKTRACE_ON_DEPRECATION) {
       let stackStr = '';
       let error = captureErrorForStack();
-      let stack;
-
-      if (error.stack) {
+     
+      // do this when we are actually processing the stack
+      try {
+      Error.prepareStackTrace = function(error, stack) {
         if (error['arguments']) {
           // Chrome
           stack = error.stack.replace(/^\s+at\s+/gm, '').
@@ -104,6 +105,9 @@ if (DEBUG) {
           // Firefox
           stack = error.stack.replace(/(?:\n@:0)?\s+$/m, '').
             replace(/^\(/gm, '{anonymous}(').split('\n');
+        }
+      } finally {
+          Error.prepareStackTrace = prevPrepareStackTrace;
         }
 
         stackStr = `\n    ${stack.slice(2).join('\n    ')}`;
