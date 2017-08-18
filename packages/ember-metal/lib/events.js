@@ -265,6 +265,10 @@ export function listenersFor(obj, eventName) {
 export function on(...args) {
   let func = args.pop();
   let events = args;
+
+  assert('Ember.on expects function as last argument', typeof func === 'function');
+  assert('Ember.on called without valid event names', events.length > 0 && events.every((p)=> typeof p === 'string' && p.length));
+
   func.__ember_listens__ = events;
   return func;
 }
