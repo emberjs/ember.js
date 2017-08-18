@@ -244,7 +244,6 @@ class EachInIterable {
     reference.update(item.value);
   }
 }
-
 class ArrayIterable {
   public ref: UpdatableReference;
   public keyFor: KeyFor;
@@ -279,6 +278,8 @@ class ArrayIterable {
       let array: any[] = [];
       iterable.forEach((item: any) => array.push(item));
       return ArrayIterator.from(array, keyFor);
+    } else if (typeof iterable[Symbol.iterator] === 'function') {
+      return ArrayIterator.from(Array.from(iterable), keyFor);
     } else {
       return EMPTY_ITERATOR;
     }
