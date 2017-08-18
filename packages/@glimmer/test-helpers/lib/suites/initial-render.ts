@@ -3,7 +3,7 @@ import { strip, assertNodeTagName } from '../helpers';
 import { SVG_NAMESPACE } from "@glimmer/runtime";
 import { Opaque } from "@glimmer/interfaces";
 
-export abstract class InitialRenderSuite extends AbstractRenderTest {
+export class InitialRenderSuite extends AbstractRenderTest {
   name = 'BASE';
   @test "HTML text content"() {
     this.render("content");

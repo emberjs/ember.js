@@ -81,8 +81,6 @@ export interface DOMStack {
   closeElement(): void;
 }
 
-const ommittedTags = ['TBODY', 'TFOOT', 'THEAD', 'COLGROUP'];
-
 export interface TreeOperations {
   __openElement(tag: string): Simple.Element;
   __flushElement(parent: Simple.Element, constructing: Simple.Element): void;
