@@ -59,6 +59,7 @@ export interface CompileTimeConstants {
   table(t: SymbolTable): number;
   handle(specifier: Opaque): number;
   serializable(value: Opaque): number;
+  float(value: number): number;
 }
 
 export interface CompileTimeLazyConstants extends CompileTimeConstants {

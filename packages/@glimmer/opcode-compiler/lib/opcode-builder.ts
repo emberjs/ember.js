@@ -3,6 +3,7 @@ import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, typePos, unreachable } fro
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import { SerializedInlineBlock } from "@glimmer/wire-format";
+import { PrimitiveType } from "@glimmer/program";
 
 import {
   VMHandle as VMHandle,
@@ -423,34 +424,43 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
   }
 
   primitive(_primitive: Primitive) {
-    let flag: 0 | 1 | 2 = 0;
+    let type: PrimitiveType = PrimitiveType.NUMBER;
     let primitive: number;
     switch (typeof _primitive) {
       case 'number':
-        primitive = _primitive as number;
+        if (_primitive as number % 1 === 0 && _primitive as number > 0) {
+          primitive = _primitive as number;
+        } else {
+          primitive = this.float(_primitive as number);
+          type = PrimitiveType.FLOAT;
+        }
         break;
       case 'string':
         primitive = this.string(_primitive as string);
-        flag = 1;
+        type = PrimitiveType.STRING;
         break;
       case 'boolean':
         primitive = (_primitive as any) | 0;
-        flag = 2;
+        type = PrimitiveType.BOOLEAN_OR_VOID;
         break;
       case 'object':
         // assume null
         primitive = 2;
-        flag = 2;
+        type = PrimitiveType.BOOLEAN_OR_VOID;
         break;
       case 'undefined':
         primitive = 3;
-        flag = 2;
+        type = PrimitiveType.BOOLEAN_OR_VOID;
         break;
       default:
         throw new Error('Invalid primitive passed to pushPrimitive');
     }
 
-    this.push(Op.Primitive, (flag << 30) | primitive);
+    this.push(Op.Primitive, primitive << 3 | type);
+  }
+
+  float(num: number): number {
+    return this.constants.float(num);
   }
 
   pushPrimitiveReference(primitive: Primitive) {

@@ -1,7 +1,7 @@
 import { CompileTimeProgram, CompileTimeConstants } from './interfaces';
 import { Option, Opaque, SymbolTable, Recast } from '@glimmer/interfaces';
 import { Op, Register } from '@glimmer/vm';
-import { DEBUG, CI } from '@glimmer/local-debug-flags';
+import { DEBUG } from '@glimmer/local-debug-flags';
 import { unreachable } from "@glimmer/util";
 
 export interface DebugConstants {
@@ -18,7 +18,7 @@ interface LazyDebugConstants {
 }
 
 export function debugSlice(program: CompileTimeProgram, start: number, end: number) {
-  if (!CI && DEBUG) {
+  if (DEBUG) {
     /* tslint:disable:no-console */
     let { constants } = program;
 
@@ -42,7 +42,7 @@ export function debugSlice(program: CompileTimeProgram, start: number, end: numb
 }
 
 export function logOpcode(type: string, params: Option<Object>): string | void {
-  if (!CI && DEBUG) {
+  if (DEBUG) {
     let out = type;
 
     if (params) {
@@ -54,31 +54,33 @@ export function logOpcode(type: string, params: Option<Object>): string | void {
 }
 
 function json(param: Opaque) {
-  if (typeof param === 'function') {
-    return '<function>';
-  }
+  if (DEBUG) {
+    if (typeof param === 'function') {
+      return '<function>';
+    }
 
-  let string;
-  try {
-    string = JSON.stringify(param);
-  } catch(e) {
-    return '<cannot generate JSON>';
-  }
+    let string;
+    try {
+      string = JSON.stringify(param);
+    } catch(e) {
+      return '<cannot generate JSON>';
+    }
 
-  if (string === undefined) {
-    return 'undefined';
-  }
+    if (string === undefined) {
+      return 'undefined';
+    }
 
-  let debug = JSON.parse(string);
-  if (typeof debug === 'object' && debug !== null && debug.GlimmerDebug !== undefined) {
-    return debug.GlimmerDebug;
-  }
+    let debug = JSON.parse(string);
+    if (typeof debug === 'object' && debug !== null && debug.GlimmerDebug !== undefined) {
+      return debug.GlimmerDebug;
+    }
 
-  return string;
+    return string;
+  }
 }
 
 export function debug(c: DebugConstants, op: Op, op1: number, op2: number, op3: number): [string, object] {
-  if (!CI && DEBUG) {
+  if (DEBUG) {
     switch (op) {
       case Op.Bug: throw unreachable();
 
