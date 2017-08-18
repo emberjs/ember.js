@@ -304,13 +304,13 @@ export class EmberishGlimmerComponent extends GlimmerObject {
   didRender() { }
 }
 
-class GenericComponentManager {
+export class GenericComponentManager {
   getCapabilities(definition: GenericComponentDefinition<Opaque>): ComponentCapabilities {
     return definition.capabilities;
   }
 }
 
-class BasicComponentManager extends GenericComponentManager implements WithStaticLayout<BasicComponent, BasicComponentDefinition, TestSpecifier, TestResolver> {
+export class BasicComponentManager extends GenericComponentManager implements WithStaticLayout<BasicComponent, BasicComponentDefinition, TestSpecifier, TestResolver> {
   prepareArgs(): null {
     throw unreachable();
   }
@@ -1127,7 +1127,11 @@ export interface BasicComponentFactory {
   new (): BasicComponent;
 }
 
-export abstract class GenericComponentDefinition<T> {
+export interface Definition {
+  capabilities: ComponentCapabilities;
+}
+
+export abstract class GenericComponentDefinition<T> implements Definition {
   abstract capabilities: ComponentCapabilities;
 
   constructor(public name: string, public manager: ComponentManager<T, GenericComponentDefinition<T>>, public ComponentClass: any, public layout: Option<number>) {

@@ -24,11 +24,11 @@ import { PublicVM } from './vm/append';
 
 import { Macros, OpcodeBuilderConstructor, VMHandle } from "@glimmer/opcode-compiler";
 import { IArguments } from './vm/arguments';
-import { Simple, Resolver, BlockSymbolTable } from "@glimmer/interfaces";
+import { Simple, Resolver } from "@glimmer/interfaces";
 import { Component, ComponentManager } from "@glimmer/runtime/lib/internal-interfaces";
 import { Program } from "@glimmer/program";
 
-export type ScopeBlock = [VMHandle, BlockSymbolTable];
+export type ScopeBlock = [VMHandle, number];
 export type ScopeSlot = VersionedPathReference<Opaque> | Option<ScopeBlock>;
 
 export interface DynamicScope {

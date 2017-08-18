@@ -19,6 +19,7 @@ export {
 export {
   Attrs,
   BasicComponent,
+  BasicComponentDefinition,
   EmberishCurlyComponent,
   EmberishGlimmerComponent,
   TestModifierManager,
@@ -37,4 +38,4 @@ export {
 
 export * from './lib/abstract-test-case';
 
-export * from './lib/suites/initial-render';
+export * from './lib/suites';

@@ -98,7 +98,8 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
 
   let handle = stack.pop<Option<VMHandle>>();
-  let table = stack.pop<Option<BlockSymbolTable>>();
+  let _table = stack.pop<number>();
+  let table = vm.constants.getSymbolTable<BlockSymbolTable>(_table);
   let args = stack.pop<Arguments>();
 
   if (!table) {
