@@ -11,7 +11,7 @@ import { Opaque, Option } from '@glimmer/util';
 import { Simple } from '@glimmer/interfaces';
 import { Op, Register } from '@glimmer/vm';
 import { Modifier, ModifierManager } from '../../modifier/interfaces';
-import { APPEND_OPCODES, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { Assert } from './vm';
@@ -124,13 +124,6 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
       vm.env.scheduleUpdateModifier(modifier, manager);
       this.lastUpdated = tag.value();
     }
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-    };
   }
 }
 

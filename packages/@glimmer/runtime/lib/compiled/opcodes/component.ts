@@ -21,7 +21,7 @@ import {
 } from '../../component/interfaces';
 import { normalizeStringValue } from '../../dom/normalize';
 import { DynamicScope, Handle, ScopeBlock, ScopeSlot } from '../../environment';
-import { APPEND_OPCODES, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { AbstractTemplate } from './builder';
 import { UNDEFINED_REFERENCE } from '../../references';
 import { ATTRS_BLOCK } from '../../syntax/functions';
@@ -233,7 +233,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let tag = manager.getTag(component);
 
   if (!isConstTag(tag)) {
-    vm.updateWith(new UpdateComponentOpcode(tag, definition.name, component, manager, dynamicScope));
+    vm.updateWith(new UpdateComponentOpcode(tag, component, manager, dynamicScope));
   }
 });
 
@@ -433,7 +433,6 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
 
   constructor(
     public tag: Tag,
-    private name: string,
     private component: Component,
     private manager: ComponentManager,
     private dynamicScope: DynamicScope,
@@ -445,14 +444,6 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
     let { component, manager, dynamicScope } = this;
 
     manager.update(component, dynamicScope);
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      args: [JSON.stringify(this.name)],
-      guid: this._guid,
-      type: this.type,
-    };
   }
 }
 
