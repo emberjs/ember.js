@@ -1,5 +1,5 @@
 import { Bounds } from '../bounds';
-import { DOMChanges, DOMTreeConstruction } from '../dom/helper';
+import { DOMOperations } from '../dom/helper';
 import { Option } from '@glimmer/util';
 
 // Patch:    Adjacent text node merging fix
@@ -14,14 +14,14 @@ import { Option } from '@glimmer/util';
 //           Note that this fix must only apply to the previous text node, as
 //           the base implementation of `insertHTMLBefore` already handles
 //           following text nodes correctly.
-export function domChanges(document: Option<Document>, DOMChangesClass: typeof DOMChanges): typeof DOMChanges {
-  if (!document) return DOMChangesClass;
+export function applyTextNodeMergingFix(document: Option<Document>, DOMClass: typeof DOMOperations): typeof DOMOperations {
+  if (!document) return DOMClass;
 
   if (!shouldApplyFix(document)) {
-    return DOMChangesClass;
+    return DOMClass;
   }
 
-  return class DOMChangesWithTextNodeMergingFix extends DOMChangesClass {
+  return class DOMChangesWithTextNodeMergingFix extends DOMClass {
     private uselessComment: Comment;
 
     constructor(document: Document) {
@@ -43,45 +43,6 @@ export function domChanges(document: Option<Document>, DOMChangesClass: typeof D
       }
 
       let bounds = super.insertHTMLBefore(parent, nextSibling, html);
-
-      if (didSetUselessComment) {
-        parent.removeChild(this.uselessComment);
-      }
-
-      return bounds;
-    }
-  };
-}
-
-export function treeConstruction(document: Option<Document>, TreeConstructionClass: typeof DOMTreeConstruction): typeof DOMTreeConstruction {
-  if (!document) return TreeConstructionClass;
-
-  if (!shouldApplyFix(document)) {
-    return TreeConstructionClass;
-  }
-
-  return class TreeConstructionWithTextNodeMergingFix extends TreeConstructionClass {
-    private uselessComment: Comment;
-
-    constructor(document: Document) {
-      super(document);
-      this.uselessComment = this.createComment('') as Comment;
-    }
-
-    insertHTMLBefore(parent: HTMLElement, reference: Node, html: string): Bounds {
-      if (html === null) {
-        return super.insertHTMLBefore(parent, reference, html);
-      }
-
-      let didSetUselessComment = false;
-
-      let nextPrevious = reference ? reference.previousSibling : parent.lastChild;
-      if (nextPrevious && nextPrevious instanceof Text) {
-        didSetUselessComment = true;
-        parent.insertBefore(this.uselessComment, reference);
-      }
-
-      let bounds = super.insertHTMLBefore(parent, reference, html);
 
       if (didSetUselessComment) {
         parent.removeChild(this.uselessComment);

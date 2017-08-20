@@ -1,5 +1,5 @@
 import { Bounds, ConcreteBounds } from '../bounds';
-import { moveNodesBefore, DOMChanges, DOMTreeConstruction } from '../dom/helper';
+import { moveNodesBefore, DOMOperations } from '../dom/helper';
 import { Option, unwrap } from '@glimmer/util';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -16,16 +16,16 @@ export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
 //           approach is used. A pre/post SVG tag is added to the string, then
 //           that whole string is added to a div. The created nodes are plucked
 //           out and applied to the target location on DOM.
-export function domChanges(document: Option<Document>, DOMChangesClass: typeof DOMChanges, svgNamespace: SVG_NAMESPACE): typeof DOMChanges {
-  if (!document) return DOMChangesClass;
+export function applySVGInnerHTMLFix(document: Option<Document>, DOMClass: typeof DOMOperations, svgNamespace: SVG_NAMESPACE): typeof DOMOperations {
+  if (!document) return DOMClass;
 
   if (!shouldApplyFix(document, svgNamespace)) {
-    return DOMChangesClass;
+    return DOMClass;
   }
 
   let div = document.createElement('div');
 
-  return class DOMChangesWithSVGInnerHTMLFix extends DOMChangesClass {
+  return class DOMChangesWithSVGInnerHTMLFix extends DOMClass {
     insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
       if (html === null || html === '') {
         return super.insertHTMLBefore(parent, nextSibling, html);
@@ -36,30 +36,6 @@ export function domChanges(document: Option<Document>, DOMChangesClass: typeof D
       }
 
       return fixSVG(parent, div, html, nextSibling);
-    }
-  };
-}
-
-export function treeConstruction(document: Option<Document>, TreeConstructionClass: typeof DOMTreeConstruction, svgNamespace: SVG_NAMESPACE): typeof DOMTreeConstruction {
-  if (!document) return TreeConstructionClass;
-
-  if (!shouldApplyFix(document, svgNamespace)) {
-    return TreeConstructionClass;
-  }
-
-  let div = document.createElement('div');
-
-  return class TreeConstructionWithSVGInnerHTMLFix extends TreeConstructionClass {
-    insertHTMLBefore(parent: HTMLElement, reference: Node, html: string): Bounds {
-      if (html === null || html === '') {
-        return super.insertHTMLBefore(parent, reference, html);
-      }
-
-      if (parent.namespaceURI !== svgNamespace) {
-        return super.insertHTMLBefore(parent, reference, html);
-      }
-
-      return fixSVG(parent, div, html, reference);
     }
   };
 }
