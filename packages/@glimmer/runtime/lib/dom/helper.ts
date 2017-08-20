@@ -1,15 +1,12 @@
 import { Bounds, ConcreteBounds } from '../bounds';
 import {
-  domChanges as domChangesTableElementFix,
-  treeConstruction as treeConstructionTableElementFix
+  applyInnerHTMFix
 } from '../compat/inner-html-fix';
 import {
-  domChanges as domChangesSvgElementFix,
-  treeConstruction as treeConstructionSvgElementFix
+  applySVGInnerHTMLFix
 } from '../compat/svg-inner-html-fix';
 import {
-  domChanges as domChangesNodeMergingFix,
-  treeConstruction as treeConstructionNodeMergingFix
+  applyTextNodeMergingFix
 } from '../compat/text-node-merging-fix';
 import { Simple } from '@glimmer/interfaces';
 
@@ -135,9 +132,9 @@ export namespace DOM {
   }
 
   let appliedTreeContruction = TreeConstruction;
-  appliedTreeContruction = treeConstructionNodeMergingFix(doc, appliedTreeContruction);
-  appliedTreeContruction = treeConstructionTableElementFix(doc, appliedTreeContruction);
-  appliedTreeContruction = treeConstructionSvgElementFix(doc, appliedTreeContruction, SVG_NAMESPACE);
+  appliedTreeContruction = applyTextNodeMergingFix(doc, appliedTreeContruction) as typeof TreeConstruction;
+  appliedTreeContruction = applyInnerHTMFix(doc, appliedTreeContruction) as typeof TreeConstruction;
+  appliedTreeContruction = applySVGInnerHTMLFix(doc, appliedTreeContruction, SVG_NAMESPACE) as typeof TreeConstruction;
 
   export const DOMTreeConstruction = appliedTreeContruction;
   export type DOMTreeConstruction = TreeConstruction;
@@ -157,10 +154,6 @@ export class DOMChanges extends DOMOperations {
 
   removeAttribute(element: Simple.Element, name: string) {
     element.removeAttribute(name);
-  }
-
-  insertBefore(element: Simple.Element, node: Simple.Node, reference: Option<Simple.Node>) {
-    element.insertBefore(node, reference);
   }
 
   insertAfter(element: Simple.Element, node: Simple.Node, reference: Simple.Node) {
@@ -208,9 +201,9 @@ export function insertHTMLBefore(this: void, _useless: Simple.Element, _parent: 
 
 let helper = DOMChanges;
 
-helper = domChangesNodeMergingFix(doc, helper);
-helper = domChangesTableElementFix(doc, helper);
-helper = domChangesSvgElementFix(doc, helper, SVG_NAMESPACE);
+helper = applyTextNodeMergingFix(doc, helper) as typeof DOMChanges;
+helper = applyInnerHTMFix(doc, helper) as typeof DOMChanges;
+helper = applySVGInnerHTMLFix(doc, helper, SVG_NAMESPACE) as typeof DOMChanges;
 
 export default helper;
 export const DOMTreeConstruction = DOM.DOMTreeConstruction;
