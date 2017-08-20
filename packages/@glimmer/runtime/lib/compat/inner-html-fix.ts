@@ -1,5 +1,5 @@
 import { Bounds, ConcreteBounds } from '../bounds';
-import { moveNodesBefore, DOMChanges, DOMTreeConstruction } from '../dom/helper';
+import { moveNodesBefore, DOMOperations } from '../dom/helper';
 import { Option } from '@glimmer/util';
 
 interface Wrapper {
@@ -24,16 +24,16 @@ let innerHTMLWrapper = {
 // Fix:      Wrap the innerHTML we are about to set in its parents, apply the
 //           wrapped innerHTML on a div, then move the unwrapped nodes into the
 //           target position.
-export function domChanges(document: Option<Document>, DOMChangesClass: typeof DOMChanges): typeof DOMChanges {
-  if (!document) return DOMChangesClass;
+export function applyInnerHTMFix(document: Option<Document>, DOMClass: typeof DOMOperations): typeof DOMOperations {
+  if (!document) return DOMClass;
 
   if (!shouldApplyFix(document)) {
-    return DOMChangesClass;
+    return DOMClass;
   }
 
   let div = document.createElement('div');
 
-  return class DOMChangesWithInnerHTMLFix extends DOMChangesClass {
+  return class DOMChangesWithInnerHTMLFix extends DOMClass {
     insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
       if (html === null || html === '') {
         return super.insertHTMLBefore(parent, nextSibling, html);
@@ -47,33 +47,6 @@ export function domChanges(document: Option<Document>, DOMChangesClass: typeof D
       }
 
       return fixInnerHTML(parent, wrapper, div, html, nextSibling);
-    }
-  };
-}
-
-export function treeConstruction(document: Option<Document>, DOMTreeConstructionClass: typeof DOMTreeConstruction): typeof DOMTreeConstruction {
-  if (!document) return DOMTreeConstructionClass;
-
-  if (!shouldApplyFix(document)) {
-    return DOMTreeConstructionClass;
-  }
-
-  let div = document.createElement('div');
-
-  return class DOMTreeConstructionWithInnerHTMLFix extends DOMTreeConstructionClass {
-    insertHTMLBefore(parent: HTMLElement, referenceNode: Node, html: string): Bounds {
-      if (html === null || html === '') {
-        return super.insertHTMLBefore(parent, referenceNode, html);
-      }
-
-      let parentTag = parent.tagName.toLowerCase();
-      let wrapper = innerHTMLWrapper[parentTag];
-
-      if(wrapper === undefined) {
-        return super.insertHTMLBefore(parent, referenceNode, html);
-      }
-
-      return fixInnerHTML(parent, wrapper, div, html, referenceNode);
     }
   };
 }
