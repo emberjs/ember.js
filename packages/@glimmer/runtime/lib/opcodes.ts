@@ -1,19 +1,10 @@
-import { Opaque, Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, unreachable, typePos } from '@glimmer/util';
+import { Opaque, Option, Slice as ListSlice, initializeGuid, fillNulls, unreachable, typePos } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
 import { VM, UpdatingVM } from './vm';
 import { Opcode, Program } from './environment';
 import { Constants, LazyConstants } from './environment/constants';
 import { DEBUG } from '@glimmer/local-debug-flags';
-
-export interface OpcodeJSON {
-  type: number | string;
-  guid?: Option<number>;
-  deopted?: boolean;
-  args?: string[];
-  details?: Dict<Option<string>>;
-  children?: OpcodeJSON[];
-}
 
 export function debugSlice(program: Program, start: number, end: number) {
   if (DEBUG) {
@@ -230,10 +221,6 @@ export abstract class AbstractOpcode {
 
   constructor() {
     initializeGuid(this);
-  }
-
-  toJSON(): OpcodeJSON {
-    return { guid: this._guid, type: this.type };
   }
 }
 
