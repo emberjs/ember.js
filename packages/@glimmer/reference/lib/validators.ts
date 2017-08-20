@@ -285,7 +285,7 @@ export abstract class CachedReference<T> implements VersionedReference<T> {
   value(): T {
     let { tag, lastRevision, lastValue } = this;
 
-    if (!lastRevision || !tag.validate(lastRevision)) {
+    if (lastRevision === null || !tag.validate(lastRevision)) {
       lastValue = this.lastValue = this.compute();
       this.lastRevision = tag.value();
     }
