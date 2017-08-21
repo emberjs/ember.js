@@ -13,7 +13,7 @@ import {
 import { initializeGuid } from '@glimmer/util';
 import { Handle } from '../../environment';
 import { LazyConstants } from '../../environment/constants';
-import { APPEND_OPCODES, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { Primitive, PrimitiveReference, PrimitiveType } from '../../references';
 import { CompilableTemplate } from '../../syntax/interfaces';
 import { VM, UpdatingVM } from '../../vm';
@@ -196,25 +196,6 @@ export class Assert extends UpdatingOpcode {
       vm.throw();
     }
   }
-
-  toJSON(): OpcodeJSON {
-    let { type, _guid, cache } = this;
-
-    let expected: string;
-
-    try {
-      expected = JSON.stringify(cache.peek());
-    } catch (e) {
-      expected = String(cache.peek());
-    }
-
-    return {
-      args: [],
-      details: { expected },
-      guid: _guid,
-      type,
-    };
-  }
 }
 
 export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
@@ -240,14 +221,6 @@ export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
 
   didModify() {
     this.lastRevision = this.tag.value();
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      args: [JSON.stringify(this.target.inspect())],
-      guid: this._guid,
-      type: this.type,
-    };
   }
 }
 
@@ -284,13 +257,5 @@ export class LabelOpcode implements UpdatingOpcode {
 
   inspect(): string {
     return `${this.label} [${this._guid}]`;
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      args: [JSON.stringify(this.inspect())],
-      guid: this._guid,
-      type: this.type,
-    };
   }
 }
