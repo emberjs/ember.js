@@ -31,7 +31,6 @@ class DebuggerTests extends RenderTests {
     this.rerender(expectedContext);
     this.assert.equal(callbackExecuted, 2);
     this.assertHTML('false');
-    this.assertStableRerender();
     this.assertStableNodes();
 
     expectedContext = {
@@ -43,7 +42,6 @@ class DebuggerTests extends RenderTests {
     this.rerender(expectedContext);
     this.assert.equal(callbackExecuted, 3);
     this.assertHTML('true');
-    this.assertStableRerender();
     this.assertStableNodes();
   }
 
@@ -77,7 +75,6 @@ class DebuggerTests extends RenderTests {
     this.rerender(expectedContext);
     this.assert.equal(callbackExecuted, 2);
     this.assertHTML('false');
-    this.assertStableRerender();
     this.assertStableNodes();
 
     expectedContext = {
@@ -89,7 +86,6 @@ class DebuggerTests extends RenderTests {
     this.rerender(expectedContext);
     this.assert.equal(callbackExecuted, 3);
     this.assertHTML('true');
-    this.assertStableRerender();
     this.assertStableNodes();
   }
 }
