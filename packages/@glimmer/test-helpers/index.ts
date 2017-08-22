@@ -17,20 +17,7 @@ export {
 } from './lib/helpers';
 
 export {
-  AbstractTestEnvironment,
-  Attrs,
-  BasicComponent,
-  BasicComponentDefinition,
-  EmberishCurlyComponent,
-  EmberishGlimmerComponent,
-  TestModifierManager,
-  TestEnvironment,
   TestDynamicScope,
-  TestSpecifier,
-  TestMacros,
-  LookupType,
-  UserHelper,
-  HelperReference,
   equalsElement,
   inspectHooks,
   regex,
@@ -40,3 +27,25 @@ export {
 export * from './lib/abstract-test-case';
 
 export * from './lib/suites';
+
+export {
+  HelperReference,
+  UserHelper
+} from './lib/environment/helper';
+
+export {
+  TestMacros
+} from './lib/environment/generic/macros';
+
+export {
+  AbstractTestEnvironment,
+  EnvironmentOptions
+} from './lib/environment/env';
+
+export * from './lib/environment/modifier';
+
+export {
+  TestEnvironment
+} from './lib/environment/lazy-env';
+
+export * from './lib/environment/components';
