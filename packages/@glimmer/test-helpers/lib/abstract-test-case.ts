@@ -5,17 +5,15 @@ import { NodeDOMTreeConstruction } from "@glimmer/node";
 import { Option } from "@glimmer/interfaces";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { assign, equalTokens, normalizeInnerHTML } from "./helpers";
+import { TestEnvironment } from './environment/lazy-env';
 import {
-  TestEnvironment,
   TestDynamicScope,
-  EmberishGlimmerComponent,
-  EmberishCurlyComponent,
-  UserHelper,
   equalsElement,
   classes,
-  regex,
-  BasicComponent
+  regex
 } from "./environment";
+import { UserHelper } from './environment/helper';
+import { EmberishGlimmerComponent, EmberishCurlyComponent, BasicComponent } from './environment/components';
 import * as SimpleDOM from "simple-dom";
 
 export const OPEN: { marker: "open-block" } = { marker: "open-block" };

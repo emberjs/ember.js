@@ -708,8 +708,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
     let bailOut =
       symbolTable.hasEval ||
-      capabilities.prepareArgs ||
-      capabilities.createArgs;
+      capabilities.prepareArgs;
 
     if (bailOut) {
       this.invokeComponent(attrs, params, hash, synthetic, block, inverse);
@@ -722,9 +721,18 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
     let { symbols } = symbolTable;
 
+    if (capabilities.createArgs) {
+      this.compileArgs(params, hash, synthetic);
+    }
+
     this.beginComponentTransaction();
     this.pushDynamicScope();
     this.createComponent(Register.s0, block !== null, inverse !== null);
+
+    if (capabilities.createArgs) {
+      this.pop();
+    }
+
     this.registerComponentDestructor(Register.s0);
 
     let bindings: { symbol: number, isBlock: boolean }[] = [];

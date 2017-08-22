@@ -156,6 +156,8 @@ APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
 
     definition = spec!.definition;
     manager = spec!.manager;
+
+    assert(definition && manager, 'missing definition or manager');
   } else if (isCurriedComponentDefinition(component)) {
     definition = component;
   } else {
@@ -367,6 +369,7 @@ APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
   vm.stack.push((manager as Recast<ComponentManager, WithDynamicTagName<Component>>).getTagName(component));
 });
 
+// Dynamic Invocation Only
 APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   let { manager, definition, component } = vm.fetchValue<ComponentState>(_state);
   let { constants: { resolver }, stack } = vm;
@@ -386,6 +389,7 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   stack.push(layout);
 });
 
+// Dynamic Invocation Only
 APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
   let { stack } = vm;
 

@@ -6,15 +6,19 @@ import {
   TestMacros,
   RenderDelegate,
   InitialRenderSuite,
-  rawModule,
   BasicComponents,
   AbstractTestEnvironment,
-  renderSync
+  renderSync,
+  EmberishComponentTests,
+  AbstractEmberishGlimmerComponentManager,
+  rawModule,
+  EmberishGlimmerComponent,
+  EnvironmentOptions
 } from "@glimmer/test-helpers";
 import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifier } from "@glimmer/bundle-compiler";
 import { EagerOpcodeBuilder, ComponentCapabilities, OpcodeBuilderConstructor, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
-import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager } from "@glimmer/runtime";
+import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { dict, unreachable } from "@glimmer/util";
 import { PathReference, CONSTANT_TAG, Tag } from "@glimmer/reference";
@@ -23,7 +27,14 @@ class BundledClientEnvironment extends AbstractTestEnvironment<Opaque> {
   protected program: Program<Opaque>;
   protected resolver: Resolver<Opaque>;
 
-  constructor(options = {}) {
+  constructor(options?: EnvironmentOptions) {
+    if (!options) {
+      let document = window.document;
+      let appendOperations = new DOMTreeConstruction(document);
+      let updateOperations = new DOMChanges(document as HTMLDocument);
+      options = { appendOperations, updateOperations };
+    }
+
     super(options);
   }
 }
@@ -46,6 +57,10 @@ export class RuntimeResolver implements Resolver<Specifier> {
   resolve<U>(specifier: number): U {
     let module = this.map.byHandle.get(specifier)!;
     return this.modules.get(module.module).get('default') as U;
+  }
+
+  getVMHandle(specifier: Specifier): number {
+    return this.map.vmHandleBySpecifier.get(specifier) as Recast<VMHandle, number>;
   }
 }
 
@@ -98,7 +113,7 @@ export class Modules {
 }
 
 class BundlingDelegate implements CompilerDelegate {
-  constructor(private modules: Modules, private compileTimeModules: Modules, private compile: (specifier: Specifier) => VMHandle) {}
+  constructor(private components: Dict<CompileTimeComponent>, private modules: Modules, private compileTimeModules: Modules, private compile: (specifier: Specifier) => VMHandle) {}
 
   hasComponentInScope(componentName: string, referer: Specifier): boolean {
     let name = this.modules.resolve(componentName, referer);
@@ -109,8 +124,9 @@ class BundlingDelegate implements CompilerDelegate {
     return specifier(this.modules.resolve(componentName, referer)!, 'default');
   }
 
-  getComponentCapabilities(_specifier: Specifier): ComponentCapabilities {
-    return EMPTY_CAPABILITIES;
+  getComponentCapabilities(specifier: Specifier): ComponentCapabilities {
+    let component: string = specifier.module.split('/').pop()!;
+    return this.components[component].capabilities;
   }
 
   getComponentLayout(specifier: Specifier): ICompilableTemplate<ProgramSymbolTable> {
@@ -212,25 +228,65 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, t
   }
 }
 
+class BundledEmberishGlimmerComponentManager extends AbstractEmberishGlimmerComponentManager<Specifier, RuntimeResolver> {
+  getLayout(): number {
+    throw unreachable();
+  }
+}
+
 const BASIC_MANAGER = new BasicComponentManager();
+const EMBERISH_GLIMMER_COMPONENT_MANAGER = new BundledEmberishGlimmerComponentManager();
+
+const EMBERISH_GLIMMER_CAPABILITIES = {
+  ...EMPTY_CAPABILITIES,
+  staticDefinitions: false,
+  dynamicTag: true,
+  createArgs: true,
+  attributeHook: true
+};
+
+interface CompileTimeComponent {
+  definition: Opaque;
+  manager: ComponentManager<Opaque, Opaque>;
+  template: string;
+  capabilities: ComponentCapabilities;
+}
 
 class BundlingRenderDelegate implements RenderDelegate {
   protected env = new BundledClientEnvironment();
   protected modules = new Modules();
   protected compileTimeModules = new Modules();
-  protected components = dict<{ definition: Opaque, manager: ComponentManager<Opaque, Opaque>, template: string }>();
+  protected components = dict<CompileTimeComponent>();
 
   getInitialElement(): HTMLElement {
     return this.env.getAppendOperations().createElement('div') as HTMLElement;
   }
 
   registerComponent(type: "Glimmer" | "Curly" | "Dynamic" | "Basic" | "Fragment", name: string, layout: string): void {
-    if (type === "Basic") {
-      this.components[name] = {
-        definition: class {},
-        manager: BASIC_MANAGER,
-        template: layout
-      };
+    switch (type) {
+      case "Basic":
+        this.components[name] = {
+          definition: class {},
+          manager: BASIC_MANAGER,
+          capabilities: EMPTY_CAPABILITIES,
+          template: layout
+        };
+        return;
+      case "Glimmer":
+        this.components[name] = {
+          definition: {
+            name,
+            specifier: specifier(`ui/components/${name}`, 'default'),
+            capabilities: EMBERISH_GLIMMER_CAPABILITIES,
+            ComponentClass: EmberishGlimmerComponent
+          },
+          capabilities: EMBERISH_GLIMMER_CAPABILITIES,
+          manager: EMBERISH_GLIMMER_COMPONENT_MANAGER,
+          template: layout
+        };
+        return;
+      default:
+        throw new Error(`Not implemented in the Bundle Compiler yet: ${type}`);
     }
   }
 
@@ -242,7 +298,7 @@ class BundlingRenderDelegate implements RenderDelegate {
 
   renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
     let macros = new TestMacros();
-    let delegate: BundlingDelegate = new BundlingDelegate(this.modules, this.compileTimeModules, specifier => {
+    let delegate: BundlingDelegate = new BundlingDelegate(this.components, this.modules, this.compileTimeModules, specifier => {
       return compiler.compileSpecifier(specifier);
     });
     let program = new WriteOnlyProgram();
@@ -288,3 +344,4 @@ class BundlingRenderDelegate implements RenderDelegate {
 // module("[Bundle Compiler] Rehydration Tests", Rehydration);
 rawModule("[Bundle Compiler] Initial Render Tests", InitialRenderSuite, BundlingRenderDelegate);
 rawModule("[Bundle Compiler] Basic Components", BasicComponents, BundlingRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] Emberish Components', EmberishComponentTests, BundlingRenderDelegate, { componentModule: true });
