@@ -1,10 +1,3 @@
-import {
-  ATTRS_BLOCK,
-  ComponentCapabilities,
-  ICompilableTemplate,
-  OpcodeBuilder,
-  debugSlice
-} from '@glimmer/opcode-compiler';
 import { Register } from '@glimmer/vm';
 import { ProgramSymbolTable, BlockSymbolTable } from '@glimmer/interfaces';
 
@@ -12,11 +5,15 @@ import {
   VMHandle,
   ComponentArgs,
   ComponentBuilder as IComponentBuilder,
+  ComponentCapabilities,
   ParsedLayout
 } from './interfaces';
 
 import { CompileOptions } from './syntax';
-import CompilableTemplate from './compilable-template';
+import CompilableTemplate, { ICompilableTemplate } from './compilable-template';
+import { debugSlice } from './debug';
+import { OpcodeBuilder } from './opcode-builder';
+import { ATTRS_BLOCK } from './syntax';
 
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { EMPTY_ARRAY } from "@glimmer/util";

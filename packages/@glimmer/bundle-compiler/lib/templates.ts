@@ -1,7 +1,7 @@
 import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
 import { TemplateCompiler } from "@glimmer/compiler";
 import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle, ICompilableTemplate, EagerOpcodeBuilder } from "@glimmer/opcode-compiler";
-import { WriteOnlyProgram, WriteOnlyConstants } from "@glimmer/program";
+import { WriteOnlyProgram, WriteOnlyConstants, Heap, ConstantPool } from "@glimmer/program";
 import { Option, ProgramSymbolTable, Recast, Dict } from "@glimmer/interfaces";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
 import { expect, dict } from "@glimmer/util";
@@ -47,6 +47,11 @@ export interface BundleCompilerOptions {
   program?: WriteOnlyProgram;
 }
 
+export interface BundleCompilationResult {
+  heap: Heap;
+  pool: ConstantPool;
+}
+
 export class BundleCompiler {
   protected delegate: CompilerDelegate;
   protected macros: Macros;
@@ -78,10 +83,17 @@ export class BundleCompiler {
     return block;
   }
 
-  compile(): void {
+  compile(): BundleCompilationResult {
     this.firstPass.forEach((_block, specifier) => {
       this.compileSpecifier(specifier);
     });
+
+    let program = this.program;
+
+    return {
+      heap: program.heap,
+      pool: program.constants.toPool()
+    };
   }
 
   compileSpecifier(specifier: Specifier): VMHandle {
