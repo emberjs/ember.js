@@ -14,13 +14,13 @@ export type ModuleName = string;
 export type NamedExport = string;
 
 export interface Specifier {
-  module: NamedExport;
-  name: ModuleName;
+  module: ModuleName;
+  name: NamedExport;
 }
 
 const SPECIFIERS = dict<Dict<Specifier>>();
 
-export function specifier(module: ModuleName, name: NamedExport): Specifier {
+export function specifierFor(module: ModuleName, name: NamedExport): Specifier {
   let specifiers = SPECIFIERS[module];
 
   if (!specifiers) specifiers = SPECIFIERS[module] = dict<Specifier>();
