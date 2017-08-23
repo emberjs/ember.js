@@ -69,8 +69,8 @@ export class BundleCompiler {
     return this.specifiers;
   }
 
-  add(input: string, specifier: Specifier): SerializedTemplateBlock {
-    let ast = preprocess(input, { plugins: { ast: this.plugins } });
+  add(specifier: Specifier, templateSource: string): SerializedTemplateBlock {
+    let ast = preprocess(templateSource, { plugins: { ast: this.plugins } });
     let template = TemplateCompiler.compile({ meta: specifier }, ast);
     let block = template.toJSON();
 

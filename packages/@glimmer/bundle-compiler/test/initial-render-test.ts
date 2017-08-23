@@ -304,14 +304,14 @@ class BundlingRenderDelegate implements RenderDelegate {
     let program = new WriteOnlyProgram();
     let compiler = new BundleCompiler(delegate, { macros, program });
 
-    compiler.add(template, spec);
     let spec = specifierFor('ui/components/main', 'default');
+    compiler.add(spec, template);
 
     let { components, modules, compileTimeModules } = this;
     Object.keys(components).forEach(key => {
       let component = components[key];
-      let block = compiler.add(component.template, spec);
       let spec = specifierFor(`ui/components/${key}`, 'default');
+      let block = compiler.add(spec, component.template);
       compileTimeModules.register(`ui/components/${key}`, 'other', {
         default: {
           hasEval: block.hasEval,
