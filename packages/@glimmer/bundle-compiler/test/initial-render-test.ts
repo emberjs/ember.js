@@ -16,7 +16,7 @@ import {
   EnvironmentOptions
 } from "@glimmer/test-helpers";
 import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifier } from "@glimmer/bundle-compiler";
-import { EagerOpcodeBuilder, ComponentCapabilities, OpcodeBuilderConstructor, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
+import { ComponentCapabilities, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
 import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
@@ -302,7 +302,7 @@ class BundlingRenderDelegate implements RenderDelegate {
       return compiler.compileSpecifier(specifier);
     });
     let program = new WriteOnlyProgram();
-    let compiler = new BundleCompiler(macros, EagerOpcodeBuilder as OpcodeBuilderConstructor, delegate, program);
+    let compiler = new BundleCompiler(delegate, { macros, program });
 
     let spec = specifier('ui/components/main', 'default');
     compiler.add(template, spec);

@@ -1,6 +1,6 @@
 import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
 import { TemplateCompiler } from "@glimmer/compiler";
-import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
+import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle, ICompilableTemplate, EagerOpcodeBuilder } from "@glimmer/opcode-compiler";
 import { WriteOnlyProgram, WriteOnlyConstants } from "@glimmer/program";
 import { Option, ProgramSymbolTable, Recast, Dict } from "@glimmer/interfaces";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
@@ -40,17 +40,30 @@ export class SpecifierMap {
   public vmHandleBySpecifier = new Map<Specifier, number>();
 }
 
+export interface BundleCompilerOptions {
+  macros?: Macros;
+  Builder?: OpcodeBuilderConstructor;
+  plugins?: ASTPluginBuilder[];
+  program?: WriteOnlyProgram;
+}
+
 export class BundleCompiler {
+  protected delegate: CompilerDelegate;
+  protected macros: Macros;
+  protected Builder: OpcodeBuilderConstructor;
+  protected plugins: ASTPluginBuilder[];
+  private program: WriteOnlyProgram;
+
   private specifiers = new SpecifierMap();
   private firstPass = new Map<Specifier, SerializedTemplateBlock>();
 
-  constructor(
-    protected macros: Macros,
-    protected Builder: OpcodeBuilderConstructor,
-    protected delegate: CompilerDelegate,
-    private program: WriteOnlyProgram = new WriteOnlyProgram(new WriteOnlyConstants()),
-    protected plugins: ASTPluginBuilder[] = []
-  ) {}
+  constructor(delegate: CompilerDelegate, options: BundleCompilerOptions = {}) {
+    this.delegate = delegate;
+    this.macros = options.macros || new Macros();
+    this.Builder = options.Builder || EagerOpcodeBuilder as OpcodeBuilderConstructor;
+    this.program = options.program || new WriteOnlyProgram(new WriteOnlyConstants());
+    this.plugins = options.plugins || [];
+  }
 
   getSpecifierMap(): SpecifierMap {
     return this.specifiers;
