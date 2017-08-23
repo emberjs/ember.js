@@ -124,11 +124,13 @@ export class Arguments implements IArguments {
   }
 
   capture(): ICapturedArguments {
+    let positional = this.positional.length === 0 ? EMPTY_POSITIONAL : this.positional.capture();
+    let named = this.named.length === 0 ? EMPTY_NAMED : this.named.capture();
     return {
       tag: this.tag,
       length: this.length,
-      positional: this.positional.capture(),
-      named: this.named.capture()
+      positional,
+      named
     };
   }
 
