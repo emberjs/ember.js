@@ -15,7 +15,7 @@ import {
   EmberishGlimmerComponent,
   EnvironmentOptions
 } from "@glimmer/test-helpers";
-import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifier } from "@glimmer/bundle-compiler";
+import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifierFor } from "@glimmer/bundle-compiler";
 import { ComponentCapabilities, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
 import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges } from "@glimmer/runtime";
@@ -121,7 +121,7 @@ class BundlingDelegate implements CompilerDelegate {
   }
 
   resolveComponentSpecifier(componentName: string, referer: Specifier): Specifier {
-    return specifier(this.modules.resolve(componentName, referer)!, 'default');
+    return specifierFor(this.modules.resolve(componentName, referer)!, 'default');
   }
 
   getComponentCapabilities(specifier: Specifier): ComponentCapabilities {
@@ -149,7 +149,7 @@ class BundlingDelegate implements CompilerDelegate {
 
   resolveHelperSpecifier(helperName: string, referer: Specifier): Specifier {
     let path = this.modules.resolve(helperName, referer);
-    return specifier(path!, 'default');
+    return specifierFor(path!, 'default');
   }
 
   hasModifierInScope(_modifierName: string, _referer: Specifier): boolean {
@@ -276,7 +276,7 @@ class BundlingRenderDelegate implements RenderDelegate {
         this.components[name] = {
           definition: {
             name,
-            specifier: specifier(`ui/components/${name}`, 'default'),
+            specifier: specifierFor(`ui/components/${name}`, 'default'),
             capabilities: EMBERISH_GLIMMER_CAPABILITIES,
             ComponentClass: EmberishGlimmerComponent
           },
@@ -304,14 +304,14 @@ class BundlingRenderDelegate implements RenderDelegate {
     let program = new WriteOnlyProgram();
     let compiler = new BundleCompiler(delegate, { macros, program });
 
-    let spec = specifier('ui/components/main', 'default');
     compiler.add(template, spec);
+    let spec = specifierFor('ui/components/main', 'default');
 
     let { components, modules, compileTimeModules } = this;
     Object.keys(components).forEach(key => {
       let component = components[key];
-      let spec = specifier(`ui/components/${key}`, 'default');
       let block = compiler.add(component.template, spec);
+      let spec = specifierFor(`ui/components/${key}`, 'default');
       compileTimeModules.register(`ui/components/${key}`, 'other', {
         default: {
           hasEval: block.hasEval,
