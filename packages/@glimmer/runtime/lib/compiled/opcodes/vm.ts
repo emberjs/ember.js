@@ -1,5 +1,5 @@
 import { Op } from '@glimmer/vm';
-import { Opaque, Option, BlockSymbolTable } from '@glimmer/interfaces';
+import { Opaque, Option, BlockSymbolTable, Recast } from '@glimmer/interfaces';
 import {
   VersionedPathReference,
   CONSTANT_TAG,
@@ -12,7 +12,7 @@ import {
 } from '@glimmer/reference';
 import { initializeGuid, assert } from '@glimmer/util';
 import { stackAssert } from './assert';
-import { APPEND_OPCODES, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { Primitive, PrimitiveReference } from '../../references';
 import { CompilableTemplate } from '../../syntax/interfaces';
 import { VM, UpdatingVM } from '../../vm';
@@ -98,7 +98,9 @@ APPEND_OPCODES.add(Op.CompileBlock, vm => {
   stack.push(block ? block.compile() : null);
 });
 
-APPEND_OPCODES.add(Op.InvokeStatic, vm => vm.call(vm.stack.pop<VMHandle>()));
+APPEND_OPCODES.add(Op.InvokeVirtual, vm => vm.call(vm.stack.pop<VMHandle>()));
+
+APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: handle }) => vm.call(handle as Recast<number, VMHandle>));
 
 APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;

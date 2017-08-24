@@ -18,7 +18,7 @@ import {
   INITIAL,
   Tag
 } from '@glimmer/reference';
-import { OpcodeJSON, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
+import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { DOMChanges } from '../dom/helper';
 import { Simple } from '@glimmer/interfaces';
 

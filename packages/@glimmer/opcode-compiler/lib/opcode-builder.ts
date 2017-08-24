@@ -82,7 +82,7 @@ export interface OpcodeBuilderConstructor {
       asPartial: boolean): OpcodeBuilder<Specifier>;
 }
 
-export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<ProgramSymbolTable> = AbstractTemplate<ProgramSymbolTable>> {
+export abstract class OpcodeBuilder<Specifier> {
   public constants: CompileTimeConstants;
 
   private buffer: number[] = [];
@@ -500,8 +500,8 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
     this.push(Op.PopFrame);
   }
 
-  invokeStatic(): void {
-    this.push(Op.InvokeStatic);
+  invokeVirtual(): void {
+    this.push(Op.InvokeVirtual);
   }
 
   invokeYield(): void {
@@ -615,7 +615,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
     this.pushBlock(block);
     this.resolveBlock();
-    this.invokeStatic();
+    this.invokeVirtual();
 
     if (count) {
       this.popScope();
@@ -671,7 +671,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
     this.popFrame();
   }
 
-  invokeComponent(attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null, layout?: Layout) {
+  invokeComponent(attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null, layout?: ICompilableTemplate<ProgramSymbolTable>) {
     this.fetch(Register.s0);
     this.dup(Register.sp, 1);
     this.load(Register.s0);
@@ -709,7 +709,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
     this.load(Register.s0);
   }
 
-  invokeStaticComponent(capabilities: ComponentCapabilities, layout: Layout, attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
+  invokeStaticComponent(capabilities: ComponentCapabilities, layout: ICompilableTemplate<ProgramSymbolTable>, attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
     let { symbolTable } = layout;
 
     let bailOut =
@@ -810,9 +810,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
     this.pushFrame();
 
-    this.pushLayout(layout);
-    this.resolveLayout();
-    this.invokeStatic();
+    this.invokeStatic(layout);
     this.didRenderLayout(Register.s0);
     this.popFrame();
 
@@ -865,7 +863,8 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
   abstract pushBlock(block: Option<CompilableBlock>): void;
   abstract resolveBlock(): void;
-  abstract pushLayout(layout: Option<Layout>): void;
+  abstract pushLayout(layout: Option<ICompilableTemplate<ProgramSymbolTable>>): void;
+  abstract invokeStatic(block: ICompilableTemplate<SymbolTable>): void;
   abstract resolveLayout(): void;
 
   pushSymbolTable(table: Option<SymbolTable>): void {
@@ -891,7 +890,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
 export default OpcodeBuilder;
 
-export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, CompilableTemplate<ProgramSymbolTable, Specifier>> {
+export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier> {
   public constants: CompileTimeLazyConstants;
 
   pushBlock(block: Option<CompilableBlock>): void {
@@ -918,6 +917,12 @@ export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, Compi
     this.push(Op.CompileBlock);
   }
 
+  invokeStatic(compilable: ICompilableTemplate<SymbolTable>): void {
+    this.pushOther(compilable);
+    this.push(Op.CompileBlock);
+    this.push(Op.InvokeVirtual);
+  }
+
   protected pushOther<T>(value: T) {
     this.push(Op.Constant, this.other(value));
   }
@@ -927,7 +932,7 @@ export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, Compi
   }
 }
 
-export class EagerOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, ICompilableTemplate<ProgramSymbolTable>> {
+export class EagerOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier> {
   pushBlock(block: Option<ICompilableTemplate<BlockSymbolTable>>): void {
     let handle = block ? block.compile() as Recast<VMHandle, number> : null;
     this.primitive(handle);
@@ -946,4 +951,9 @@ export class EagerOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, ICom
   }
 
   resolveLayout() {}
+
+  invokeStatic(compilable: ICompilableTemplate<SymbolTable>): void {
+    let handle = compilable.compile();
+    this.push(Op.InvokeStatic, handle as Recast<VMHandle, number>);
+  }
 }
