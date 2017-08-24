@@ -136,7 +136,8 @@ export function debug(c: DebugConstants, op: Op, op1: number, op2: number, op3: 
       /// VM
       case Op.PushSymbolTable: return ['PushSymbolTable', { table: c.getSymbolTable(op1) }];
       case Op.CompileBlock: return ['CompileBlock', {}];
-      case Op.InvokeStatic: return ['InvokeStatic', {}];
+      case Op.InvokeVirtual: return ['InvokeVirtual', {}];
+      case Op.InvokeStatic: return ['InvokeStatic', { handle: op1 }];
       case Op.InvokeYield: return ['InvokeYield', {}];
       case Op.Jump: return ['Jump', { to: op1 }];
       case Op.JumpIf: return ['JumpIf', { to: op1 }];

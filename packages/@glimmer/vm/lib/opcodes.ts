@@ -443,9 +443,19 @@ export const enum Op {
   PushSymbolTable,
 
   /**
-   * Operation: Evaluate the specified block.
+   * Operation: Evaluate the handle at the top of the stack.
    * Format:
-   *   (InvokeStatic)
+   *   (InvokeVirtual)
+   * Operand Stack:
+   *   ..., Handle, →
+   *   ...
+   */
+  InvokeVirtual,
+
+  /**
+   * Operation: Evaluate the handle.
+   * Format:
+   *   (InvokeStatic handle:u32)
    * Operand Stack:
    *   ... →
    *   ...
