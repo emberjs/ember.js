@@ -671,7 +671,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
     this.popFrame();
   }
 
-  invokeComponent(attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
+  invokeComponent(attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null, layout?: Layout) {
     this.fetch(Register.s0);
     this.dup(Register.sp, 1);
     this.load(Register.s0);
@@ -690,7 +690,13 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
 
     this.getComponentSelf(Register.s0);
 
-    this.getComponentLayout(Register.s0);
+    if (layout) {
+      this.pushSymbolTable(layout.symbolTable);
+      this.pushLayout(layout);
+    } else {
+      this.getComponentLayout(Register.s0);
+    }
+
     this.resolveLayout();
     this.invokeComponentLayout();
     this.didRenderLayout(Register.s0);
@@ -711,7 +717,7 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
       capabilities.prepareArgs;
 
     if (bailOut) {
-      this.invokeComponent(attrs, params, hash, synthetic, block, inverse);
+      this.invokeComponent(attrs, params, hash, synthetic, block, inverse, layout);
       return;
     }
 
@@ -861,7 +867,15 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
   abstract resolveBlock(): void;
   abstract pushLayout(layout: Option<Layout>): void;
   abstract resolveLayout(): void;
-  abstract pushSymbolTable(block: Option<SymbolTable>): void;
+
+  pushSymbolTable(table: Option<SymbolTable>): void {
+    if (table) {
+      let constant = this.constants.table(table);
+      this.push(Op.PushSymbolTable, constant);
+    } else {
+      this.primitive(null);
+    }
+  }
 
   pushYieldableBlock(block: Option<CompilableBlock>): void {
     this.pushSymbolTable(block && block.symbolTable);
@@ -879,15 +893,6 @@ export default OpcodeBuilder;
 
 export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, CompilableTemplate<ProgramSymbolTable, Specifier>> {
   public constants: CompileTimeLazyConstants;
-
-  pushSymbolTable(table: Option<SymbolTable>) {
-    if (table) {
-      let constant = this.constants.table(table);
-      this.primitive(constant);
-    } else {
-      this.primitive(null);
-    }
-  }
 
   pushBlock(block: Option<CompilableBlock>): void {
     if (block) {
@@ -942,14 +947,5 @@ export class EagerOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, ICom
 
   resolveLayout(): void {
     return;
-  }
-
-  pushSymbolTable(table: Option<SymbolTable>): void {
-    if (table) {
-      let constant = this.constants.table(table);
-      this.primitive(constant);
-    } else {
-      this.primitive(null);
-    }
   }
 }

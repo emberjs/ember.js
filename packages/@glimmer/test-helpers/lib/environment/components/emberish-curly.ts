@@ -30,7 +30,7 @@ export class EmberishCurlyComponentDefinition extends GenericComponentDefinition
   public capabilities: ComponentCapabilities = CURLY_CAPABILITIES;
 }
 
-export class EmberishCurlyComponentManager extends GenericComponentManager implements WithDynamicTagName<EmberishCurlyComponent>, WithDynamicLayout<EmberishCurlyComponent, TestSpecifier, TestResolver> {
+export class AbstractEmberishCurlyComponentManager extends GenericComponentManager implements WithDynamicTagName<EmberishCurlyComponent> {
   prepareArgs(definition: EmberishCurlyComponentDefinition, args: Arguments): Option<PreparedArguments> {
     const { positionalParams } = definition.ComponentClass || BaseEmberishCurlyComponent;
 
@@ -103,23 +103,6 @@ export class EmberishCurlyComponentManager extends GenericComponentManager imple
     return combine([tag, dirtinessTag]);
   }
 
-  getLayout({ layout }: EmberishCurlyComponent, resolver: TestResolver): number {
-    if (!layout) {
-      throw new Error('BUG: missing dynamic layout');
-    }
-
-    let handle = resolver.lookup('template-source', layout.name);
-
-    if (!handle) {
-      throw new Error('BUG: missing dynamic layout');
-    }
-
-    return resolver.compileTemplate(handle, layout.name, (source, options) => {
-      let template = createTemplate(source);
-      return new WrappedBuilder({ ...options, asPartial: false, referer: null }, template, CURLY_CAPABILITIES);
-    });
-  }
-
   getSelf(component: EmberishCurlyComponent): PathReference<Opaque> {
     return new UpdatableReference(component);
   }
@@ -188,6 +171,26 @@ export class EmberishCurlyComponentManager extends GenericComponentManager imple
       }
     };
   }
+}
+
+export class EmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager implements WithDynamicLayout<EmberishCurlyComponent, TestSpecifier, TestResolver> {
+  getLayout({ layout }: EmberishCurlyComponent, resolver: TestResolver): number {
+    if (!layout) {
+      throw new Error('BUG: missing dynamic layout');
+    }
+
+    let handle = resolver.lookup('template-source', layout.name);
+
+    if (!handle) {
+      throw new Error('BUG: missing dynamic layout');
+    }
+
+    return resolver.compileTemplate(handle, layout.name, (source, options) => {
+      let template = createTemplate(source);
+      return new WrappedBuilder({ ...options, asPartial: false, referer: null }, template, CURLY_CAPABILITIES);
+    });
+  }
+
 }
 
 export class EmberishCurlyComponent extends GlimmerObject {

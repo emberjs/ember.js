@@ -4,7 +4,7 @@ import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabili
 import { WriteOnlyProgram, WriteOnlyConstants, Heap, ConstantPool } from "@glimmer/program";
 import { Option, ProgramSymbolTable, Recast, Dict } from "@glimmer/interfaces";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
-import { expect, dict } from "@glimmer/util";
+import { expect, dict, assert } from "@glimmer/util";
 
 export interface BundleCompileOptions {
   plugins: ASTPluginBuilder[];
@@ -19,6 +19,11 @@ export interface Specifier {
 }
 
 const SPECIFIERS = dict<Dict<Specifier>>();
+type AddedTemplate = SerializedTemplateBlock | ICompilableTemplate<ProgramSymbolTable>;
+
+function isCompilableTemplate(v: AddedTemplate): v is ICompilableTemplate<ProgramSymbolTable> {
+  return typeof v['compile'] === 'function';
+}
 
 export function specifierFor(module: ModuleName, name: NamedExport): Specifier {
   let specifiers = SPECIFIERS[module];
@@ -28,6 +33,8 @@ export function specifierFor(module: ModuleName, name: NamedExport): Specifier {
   let specifier = specifiers[name];
 
   if (!specifier) specifier = specifiers[name] = { module, name };
+
+  assert(module.indexOf('ui/components/ui') === -1, `BUG: unexpected ui/components/ui`);
 
   return specifier;
 }
@@ -60,7 +67,7 @@ export class BundleCompiler {
   private program: WriteOnlyProgram;
 
   private specifiers = new SpecifierMap();
-  private firstPass = new Map<Specifier, SerializedTemplateBlock>();
+  private firstPass = new Map<Specifier, AddedTemplate>();
 
   constructor(delegate: CompilerDelegate, options: BundleCompilerOptions = {}) {
     this.delegate = delegate;
@@ -74,16 +81,24 @@ export class BundleCompiler {
     return this.specifiers;
   }
 
-  add(specifier: Specifier, templateSource: string): SerializedTemplateBlock {
-    let ast = preprocess(templateSource, { plugins: { ast: this.plugins } });
+  preprocess(specifier: Specifier, input: string): SerializedTemplateBlock {
+    let ast = preprocess(input, { plugins: { ast: this.plugins } });
     let template = TemplateCompiler.compile({ meta: specifier }, ast);
-    let block = template.toJSON();
+    return template.toJSON();
+  }
+
+  add(specifier: Specifier, input: string): SerializedTemplateBlock {
+    let block = this.preprocess(specifier, input);
 
     this.firstPass.set(specifier, block);
     return block;
   }
 
-  compile(): BundleCompilationResult {
+  addCustom(specifier: Specifier, input: ICompilableTemplate<ProgramSymbolTable>): void {
+    this.firstPass.set(specifier, input);
+  }
+
+  compile() {
     this.firstPass.forEach((_block, specifier) => {
       this.compileSpecifier(specifier);
     });
@@ -96,27 +111,34 @@ export class BundleCompiler {
     };
   }
 
+  compileOptions(specifier: Specifier, asPartial = false): CompileOptions<Specifier> {
+    let { program, macros, Builder } = this;
+    let lookup = new BundlingLookup(this.delegate, this.specifiers);
+
+    return {
+      program,
+      macros,
+      Builder,
+      lookup,
+      asPartial,
+      referer: specifier
+    };
+  }
+
   compileSpecifier(specifier: Specifier): VMHandle {
     let handle = this.specifiers.vmHandleBySpecifier.get(specifier) as Recast<number, VMHandle>;
     if (handle) return handle;
 
     let block = expect(this.firstPass.get(specifier), `Can't compile a template that wasn't already added (${specifier.name} @ ${specifier.module})`);
 
-    let { program, macros, Builder } = this;
-    let lookup = new BundlingLookup(this.delegate, this.specifiers);
+    let options = this.compileOptions(specifier);
 
-    let options: CompileOptions<Specifier> = {
-      program,
-      macros,
-      Builder,
-      lookup,
-      referer: specifier,
-      asPartial: false
-    };
-
-    let compilable = CompilableTemplate.topLevel(block, options);
-
-    handle = compilable.compile();
+    if (isCompilableTemplate(block)) {
+      handle = block.compile();
+    } else {
+      let compilable = CompilableTemplate.topLevel(block, options);
+      handle = compilable.compile();
+    }
 
     this.specifiers.byVMHandle.set(handle as Recast<VMHandle, number>, specifier);
     this.specifiers.vmHandleBySpecifier.set(specifier, handle as Recast<VMHandle, number>);

@@ -134,6 +134,7 @@ export function debug(c: DebugConstants, op: Op, op1: number, op2: number, op3: 
       case Op.PopDynamicScope: return ['PopDynamicScope', {}];
 
       /// VM
+      case Op.PushSymbolTable: return ['PushSymbolTable', { table: c.getSymbolTable(op1) }];
       case Op.CompileBlock: return ['CompileBlock', {}];
       case Op.InvokeStatic: return ['InvokeStatic', {}];
       case Op.InvokeYield: return ['InvokeYield', {}];

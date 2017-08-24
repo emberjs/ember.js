@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, ProgramSymbolTable, Recast, Resolver } from '@glimmer/interfaces';
+import { Opaque, Option, Dict, ProgramSymbolTable, Recast, Resolver, BlockSymbolTable } from '@glimmer/interfaces';
 import {
   combineTagged,
   CONSTANT_TAG,
@@ -33,6 +33,7 @@ import { dict, assert, unreachable } from "@glimmer/util";
 import { Op, Register } from '@glimmer/vm';
 import { TemplateMeta } from "@glimmer/wire-format";
 import { AbstractTemplate, ATTRS_BLOCK, VMHandle } from '@glimmer/opcode-compiler';
+import { stackAssert } from './assert';
 
 const ARGS = new Arguments();
 
@@ -426,7 +427,9 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
     let bindBlock = (name: string) => {
       let symbol = symbols.indexOf(name);
       let handle = stack.pop<Option<VMHandle>>();
-      let table = stack.pop<Option<number>>();
+      let table = stack.pop<Option<BlockSymbolTable>>();
+
+      assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
 
       let block: Option<ScopeBlock> = table ? [handle!, table] : null;
 

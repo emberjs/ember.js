@@ -13,14 +13,16 @@ import {
   AbstractEmberishGlimmerComponentManager,
   rawModule,
   EmberishGlimmerComponent,
-  EnvironmentOptions
+  EnvironmentOptions,
+  EmberishCurlyComponent,
+  ComponentKind
 } from "@glimmer/test-helpers";
 import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifierFor } from "@glimmer/bundle-compiler";
-import { ComponentCapabilities, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
+import { WrappedBuilder, ComponentCapabilities, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
 import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
-import { dict, unreachable } from "@glimmer/util";
+import { dict, unreachable, assert } from "@glimmer/util";
 import { PathReference, CONSTANT_TAG, Tag } from "@glimmer/reference";
 
 class BundledClientEnvironment extends AbstractTestEnvironment<Opaque> {
@@ -97,13 +99,17 @@ export class Modules {
   }
 
   register(name: string, type: ModuleType, value: Dict<Opaque>) {
+    assert(name.indexOf('ui/components/ui') === -1, `BUG: ui/components/ui shouldn't be a prefix`);
+    assert(!name.match(/^[A-Z]/), 'BUG: Components should be nested under ui/components');
     this.registry[name] = new Module(value, type);
   }
 
-  resolve(name: string, referer: Specifier): Option<string> {
+  resolve(name: string, referer: Specifier, defaultRoot?: string): Option<string> {
     let local = referer.module && referer.module.replace(/^((.*)\/)?([^\/]*)$/, `$1${name}`);
     if (local && this.registry[local]) {
       return local;
+    } else if (defaultRoot && this.registry[`${defaultRoot}/${name}`]) {
+      return `${defaultRoot}/${name}`;
     } else if (this.registry[name]) {
       return name;
     } else {
@@ -116,17 +122,16 @@ class BundlingDelegate implements CompilerDelegate {
   constructor(private components: Dict<CompileTimeComponent>, private modules: Modules, private compileTimeModules: Modules, private compile: (specifier: Specifier) => VMHandle) {}
 
   hasComponentInScope(componentName: string, referer: Specifier): boolean {
-    let name = this.modules.resolve(componentName, referer);
+    let name = this.modules.resolve(componentName, referer, 'ui/components');
     return name ? this.modules.type(name) === 'component' : false;
   }
 
   resolveComponentSpecifier(componentName: string, referer: Specifier): Specifier {
-    return specifierFor(this.modules.resolve(componentName, referer)!, 'default');
+    return specifierFor(this.modules.resolve(componentName, referer, 'ui/components')!, 'default');
   }
 
   getComponentCapabilities(specifier: Specifier): ComponentCapabilities {
-    let component: string = specifier.module.split('/').pop()!;
-    return this.components[component].capabilities;
+    return this.components[specifier.module].capabilities;
   }
 
   getComponentLayout(specifier: Specifier): ICompilableTemplate<ProgramSymbolTable> {
@@ -234,6 +239,12 @@ class BundledEmberishGlimmerComponentManager extends AbstractEmberishGlimmerComp
   }
 }
 
+class BundledEmberishCurlyComponentManager extends AbstractEmberishGlimmerComponentManager<Specifier, RuntimeResolver> {
+  getLayout(): number {
+    throw unreachable();
+  }
+}
+
 const BASIC_MANAGER = new BasicComponentManager();
 const EMBERISH_GLIMMER_COMPONENT_MANAGER = new BundledEmberishGlimmerComponentManager();
 
@@ -245,7 +256,19 @@ const EMBERISH_GLIMMER_CAPABILITIES = {
   attributeHook: true
 };
 
+const EMBERISH_CURLY_COMPONENT_MANAGER = new BundledEmberishCurlyComponentManager();
+const EMBERISH_CURLY_CAPABILITIES = {
+  staticDefinitions: true,
+  dynamicLayout: false,
+  dynamicTag: true,
+  prepareArgs: true,
+  createArgs: true,
+  attributeHook: false,
+  elementHook: true
+};
+
 interface CompileTimeComponent {
+  type: ComponentKind;
   definition: Opaque;
   manager: ComponentManager<Opaque, Opaque>;
   template: string;
@@ -262,10 +285,13 @@ class BundlingRenderDelegate implements RenderDelegate {
     return this.env.getAppendOperations().createElement('div') as HTMLElement;
   }
 
-  registerComponent(type: "Glimmer" | "Curly" | "Dynamic" | "Basic" | "Fragment", name: string, layout: string): void {
+  registerComponent(type: ComponentKind, name: string, layout: string): void {
+    let module = `ui/components/${name}`;
+
     switch (type) {
       case "Basic":
-        this.components[name] = {
+        this.components[module] = {
+          type,
           definition: class {},
           manager: BASIC_MANAGER,
           capabilities: EMPTY_CAPABILITIES,
@@ -273,7 +299,8 @@ class BundlingRenderDelegate implements RenderDelegate {
         };
         return;
       case "Glimmer":
-        this.components[name] = {
+        this.components[module] = {
+          type,
           definition: {
             name,
             specifier: specifierFor(`ui/components/${name}`, 'default'),
@@ -282,6 +309,20 @@ class BundlingRenderDelegate implements RenderDelegate {
           },
           capabilities: EMBERISH_GLIMMER_CAPABILITIES,
           manager: EMBERISH_GLIMMER_COMPONENT_MANAGER,
+          template: layout
+        };
+        return;
+      case "Curly":
+        this.components[module] = {
+          type,
+          definition: {
+            name,
+            specifier: specifierFor(`ui/components/${name}`, 'default'),
+            capabilities: EMBERISH_CURLY_CAPABILITIES,
+            ComponentClass: EmberishCurlyComponent
+          },
+          capabilities: EMBERISH_CURLY_CAPABILITIES,
+          manager: EMBERISH_CURLY_COMPONENT_MANAGER,
           template: layout
         };
         return;
@@ -309,17 +350,36 @@ class BundlingRenderDelegate implements RenderDelegate {
 
     let { components, modules, compileTimeModules } = this;
     Object.keys(components).forEach(key => {
+      assert(key.indexOf('ui/components') !== -1, `Expected component key to start with ui/components, got ${key}.`);
+
       let component = components[key];
-      let spec = specifierFor(`ui/components/${key}`, 'default');
-      let block = compiler.add(spec, component.template);
-      compileTimeModules.register(`ui/components/${key}`, 'other', {
-        default: {
-          hasEval: block.hasEval,
-          symbols: block.symbols,
-          referer: `ui/components/${key}`
-        } as ProgramSymbolTable
-      });
-      modules.register(`ui/components/${key}`, 'component', { default: { definition: component.definition, manager: component.manager } });
+      let spec = specifierFor(key, 'default');
+
+      let block;
+
+      if (component.type === "Curly") {
+        let block = compiler.preprocess(spec, component.template);
+        let options = compiler.compileOptions(spec);
+        let parsedLayout = { block, referer: spec };
+        let wrapped = new WrappedBuilder(options, parsedLayout, EMBERISH_CURLY_CAPABILITIES);
+        compiler.addCustom(spec, wrapped);
+
+        compileTimeModules.register(key, 'other', {
+          default: wrapped.symbolTable
+        });
+      } else {
+        block = compiler.add(spec, component.template);
+
+        compileTimeModules.register(key, 'other', {
+          default: {
+            hasEval: block.hasEval,
+            symbols: block.symbols,
+            referer: key,
+          } as ProgramSymbolTable
+        });
+      }
+
+      modules.register(key, 'component', { default: { definition: component.definition, manager: component.manager } });
     });
 
     compiler.compile();
