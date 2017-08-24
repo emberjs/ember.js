@@ -801,9 +801,7 @@ function componentModule<D extends RenderDelegate, T extends AbstractRenderTest>
     return (type: ComponentKind, klass: RenderTestConstructor<D, T>) => {
       let instance = new klass(new Delegate());
       instance['testType'] = type;
-      if (shouldSkip) {
-        QUnit.skip(`${type.toLowerCase()}: ${prop}`, assert => test.call(instance, assert));
-      } else {
+      if (!shouldSkip) {
         QUnit.test(`${type.toLowerCase()}: ${prop}`, assert =>
           test.call(instance, assert)
         );

@@ -1965,12 +1965,6 @@ module("[glimmer-runtime] Updating", hooks => {
     "<ul>{{#each list key='key' as |item|}}<li class='{{item.class}}'>{{item.name}}</li>{{/each}}</ul>"
   );
 
-  testEachHelper(
-    "An implementation of #each using a self binding",
-    "<ul>{{#each list}}<li class={{class}}>{{name}}</li>{{/each}}</ul>",
-    QUnit.skip
-  );
-
   test('The each helper with inverse', assert => {
     let object = { list: [] as any[] };
     let template = compile(`<ul>{{#each list key='name' as |item|}}<li class="{{item.class}}">{{item.name}}</li>{{else}}<li class="none">none</li>{{/each}}</ul>`);
