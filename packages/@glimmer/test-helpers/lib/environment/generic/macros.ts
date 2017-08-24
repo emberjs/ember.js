@@ -24,7 +24,7 @@ export class TestMacros extends Macros {
 
       let lookup = builder.lookup;
 
-      let specifier = lookup.lookupComponentSpec(name, {});
+      let specifier = lookup.lookupComponentSpec(name, builder.referer);
 
       if (specifier) {
         builder.component.static(specifier, [params, hashToArgs(hash), template, inverse]);
@@ -36,10 +36,10 @@ export class TestMacros extends Macros {
 
     inlines.addMissing((name, params, hash, builder) => {
       let lookup = builder.lookup;
-      let specifier = lookup.lookupComponentSpec(name, {});
+      let handle = lookup.lookupComponentSpec(name, builder.referer);
 
-      if (specifier) {
-        builder.component.static(specifier, [params!, hashToArgs(hash), null, null]);
+      if (handle !== null) {
+        builder.component.static(handle, [params!, hashToArgs(hash), null, null]);
         return true;
       }
 

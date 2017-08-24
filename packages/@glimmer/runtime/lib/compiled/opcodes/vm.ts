@@ -10,7 +10,8 @@ import {
   Reference,
   Tag
 } from '@glimmer/reference';
-import { initializeGuid } from '@glimmer/util';
+import { initializeGuid, assert } from '@glimmer/util';
+import { stackAssert } from './assert';
 import { APPEND_OPCODES, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { Primitive, PrimitiveReference } from '../../references';
 import { CompilableTemplate } from '../../syntax/interfaces';
@@ -86,6 +87,11 @@ APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => vm.enter(args));
 
 APPEND_OPCODES.add(Op.Exit, (vm) => vm.exit());
 
+APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
+  let stack = vm.stack;
+  stack.push(vm.constants.getSymbolTable(_table));
+});
+
 APPEND_OPCODES.add(Op.CompileBlock, vm => {
   let stack = vm.stack;
   let block = stack.pop<Option<CompilableTemplate> | 0>();
@@ -98,11 +104,13 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
 
   let handle = stack.pop<Option<VMHandle>>();
-  let _table = stack.pop<number>();
-  let table = vm.constants.getSymbolTable<BlockSymbolTable>(_table);
+  let table = stack.pop<Option<BlockSymbolTable>>();
+
+  assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
+
   let args = stack.pop<Arguments>();
 
-  if (!table) {
+  if (table === null) {
     args.clear();
 
     // To balance the pop{Frame,Scope}

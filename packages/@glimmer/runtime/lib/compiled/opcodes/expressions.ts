@@ -8,6 +8,8 @@ import { PublicVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { ConcatReference } from '../expressions/concat';
 import { VMHandle } from "@glimmer/opcode-compiler";
+import { assert } from "@glimmer/util";
+import { stackAssert } from './assert';
 
 export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
@@ -34,7 +36,10 @@ APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
 
 APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
   let handle = vm.stack.pop<Option<VMHandle>>();
-  let table = vm.stack.pop<Option<number>>();
+  let table = vm.stack.pop<Option<BlockSymbolTable>>();
+
+  assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
+
   let block: Option<ScopeBlock> = table ? [handle!, table] : null;
 
   vm.scope().bindBlock(symbol, block);
@@ -81,11 +86,12 @@ APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {
 });
 
 APPEND_OPCODES.add(Op.HasBlockParams, (vm) => {
-  let handle = vm.stack.pop<VMHandle>();
-  let _table = vm.stack.pop<number>();
-  let table = vm.constants.getSymbolTable<BlockSymbolTable>(_table);
+  vm.stack.pop<VMHandle>();
+  let table = vm.stack.pop<Option<BlockSymbolTable>>();
 
-  let hasBlockParams = handle && table.parameters.length;
+  assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
+
+  let hasBlockParams = table && table.parameters.length;
   vm.stack.push(hasBlockParams ? TRUE_REFERENCE : FALSE_REFERENCE);
 });
 

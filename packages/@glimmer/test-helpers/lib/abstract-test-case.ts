@@ -133,7 +133,6 @@ export class AbstractRenderTest {
 
   buildComponent(blueprint: ComponentBlueprint): string {
     let invocation = '';
-
     switch (this.testType) {
       case 'Glimmer':
         invocation = this.buildGlimmerComponent(blueprint);

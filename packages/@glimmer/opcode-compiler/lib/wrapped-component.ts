@@ -125,11 +125,23 @@ function blockFor<Specifier>(layout: ParsedLayout, options: CompileOptions<Speci
 export class ComponentBuilder<Specifier> implements IComponentBuilder {
   constructor(private builder: OpcodeBuilder<Specifier>) {}
 
-  static(definition: number, args: ComponentArgs) {
+  static(handle: number, args: ComponentArgs) {
     let [params, hash, _default, inverse] = args;
     let { builder } = this;
+    let { lookup } = builder;
 
-    builder.pushComponentSpec(definition);
-    builder.invokeComponent(null, params, hash, false, _default, inverse);
+    if (handle !== null) {
+      let capabilities = lookup.getCapabilities(handle);
+
+      if (capabilities.dynamicLayout === false) {
+        let layout = lookup.getLayout(handle)!;
+
+        builder.pushComponentSpec(handle);
+        builder.invokeStaticComponent(capabilities, layout, null, params, hash, false, _default, inverse);
+      } else {
+        builder.pushComponentSpec(handle);
+        builder.invokeComponent(null, params, hash, false, _default, inverse);
+      }
+    }
   }
 }

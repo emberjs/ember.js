@@ -433,6 +433,16 @@ export const enum Op {
   CompileBlock,
 
   /**
+   * Operation: Push a symbol table onto the stack.
+   * Format:
+   *   (PushSymbolTable #SymbolTable)
+   * Operand Stack:
+   *   ..., →
+   *   ..., SymbolTable
+   */
+  PushSymbolTable,
+
+  /**
    * Operation: Evaluate the specified block.
    * Format:
    *   (InvokeStatic)
