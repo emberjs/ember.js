@@ -55,7 +55,7 @@ export interface BundleCompilerOptions {
 }
 
 export interface BundleCompilationResult {
-  heap: Heap;
+  heap: number[];
   pool: ConstantPool;
 }
 
@@ -103,11 +103,11 @@ export class BundleCompiler {
       this.compileSpecifier(specifier);
     });
 
-    let program = this.program;
+    let { heap, constants } = this.program;
 
     return {
-      heap: program.heap,
-      pool: program.constants.toPool()
+      heap: heap.toArray(),
+      pool: constants.toPool()
     };
   }
 

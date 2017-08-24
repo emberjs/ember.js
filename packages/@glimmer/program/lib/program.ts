@@ -128,6 +128,10 @@ export class Heap {
 
     this.offset = this.offset - compactedSize;
   }
+
+  toArray(): number[] {
+    return this.heap.slice();
+  }
 }
 
 export class WriteOnlyProgram implements CompileTimeProgram {
