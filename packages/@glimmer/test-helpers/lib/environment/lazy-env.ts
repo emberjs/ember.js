@@ -4,12 +4,13 @@ import { AbstractTestEnvironment } from './env';
 import { UserHelper, HelperReference } from './helper';
 import { InertModifierManager } from './modifier';
 import { TestMacros } from './generic/macros';
-import { Option, Resolver, Opaque, ProgramSymbolTable, Maybe, Simple } from "@glimmer/interfaces";
-import { Helper as GlimmerHelper, Lookup as LookupResolver, DOMTreeConstruction, TopLevelSyntax, ModifierManager, PartialDefinition, ComponentSpec, CompilationOptions, templateFactory, Template, IDOMChanges, DOMChanges, VM, Arguments, getDynamicVar, CurriedComponentDefinition, curry } from "@glimmer/runtime";
-import { VMHandle, TemplateOptions, ICompilableTemplate, LazyOpcodeBuilder, OpcodeBuilderConstructor } from "@glimmer/opcode-compiler";
+import { Option, RuntimeResolver, Opaque, Maybe, Simple } from "@glimmer/interfaces";
+import { Helper as GlimmerHelper, DOMTreeConstruction, TopLevelSyntax, ModifierManager, PartialDefinition, ComponentSpec, CompilationOptions, templateFactory, Template, IDOMChanges, DOMChanges, VM, Arguments, getDynamicVar, CurriedComponentDefinition, curry, Invocation } from "@glimmer/runtime";
+import { TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor } from "@glimmer/opcode-compiler";
 import { dict } from "@glimmer/util";
 import { precompile } from "@glimmer/compiler";
 import { LazyConstants, Program } from "@glimmer/program";
+import { LookupResolver } from "./lookup";
 
 export interface TestSpecifier<T extends LookupType = LookupType> {
   type: T;
@@ -28,7 +29,7 @@ export interface Lookup {
   modifier: ModifierManager;
   partial: PartialDefinition;
   component: ComponentSpec;
-  template: { compile(): VMHandle };
+  template: Invocation;
   'template-source': string;
 }
 
@@ -63,7 +64,7 @@ class TypedRegistry<T> {
 
 export type TestCompilationOptions = CompilationOptions<TestSpecifier, TestResolver>;
 
-export class TestResolver implements Resolver<TestSpecifier> {
+export class TestResolver implements RuntimeResolver<TestSpecifier> {
   private handleLookup: TypedRegistry<Opaque>[] = [];
 
   private registry = {
@@ -71,7 +72,7 @@ export class TestResolver implements Resolver<TestSpecifier> {
     modifier: new TypedRegistry<ModifierManager>(),
     partial: new TypedRegistry<PartialDefinition>(),
     component: new TypedRegistry<ComponentSpec>(),
-    template: new TypedRegistry<{ compile(): VMHandle }>(),
+    template: new TypedRegistry<Invocation>(),
     'template-source': new TypedRegistry<string>()
   };
 
@@ -93,16 +94,18 @@ export class TestResolver implements Resolver<TestSpecifier> {
     }
   }
 
-  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: TemplateOptions<TestSpecifier>) => ICompilableTemplate<ProgramSymbolTable>): number {
-    let handle = this.lookup('template', templateName);
+  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: TemplateOptions<TestSpecifier>) => Invocation): Invocation {
+    let invocationHandle = this.lookup('template', templateName);
 
-    if (handle) {
-      return handle;
+    if (invocationHandle) {
+      return this.resolve<Invocation>(invocationHandle);
     }
 
     let source = this.resolve<string>(sourceHandle);
 
-    return this.register('template', templateName, create(source, this.options));
+    let invocation = create(source, this.options);
+    this.register('template', templateName, invocation);
+    return invocation;
   }
 
   lookupHelper(name: string, referer?: TestSpecifier): Option<number> {
@@ -113,7 +116,13 @@ export class TestResolver implements Resolver<TestSpecifier> {
     return this.lookup('modifier', name, referer);
   }
 
-  lookupComponent(name: string, referer?: TestSpecifier): Option<number> {
+  lookupComponent(name: string, referer?: TestSpecifier): Option<ComponentSpec> {
+    let handle = this.lookupComponentHandle(name, referer);
+    if (handle === null) return null;
+    return this.resolve(handle) as ComponentSpec;
+  }
+
+  lookupComponentHandle(name: string, referer?: TestSpecifier): Option<number> {
     return this.lookup('component', name, referer);
   }
 
@@ -227,7 +236,7 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
   }
 
   componentHelper(name: string): Option<CurriedComponentDefinition> {
-    let handle = this.resolver.lookupComponent(name);
+    let handle = this.resolver.lookupComponentHandle(name);
 
     if (handle === null) return null;
 

@@ -9,13 +9,13 @@ import {
 import * as WireFormat from '@glimmer/wire-format';
 
 import { PublicVM } from './vm/append';
-import { Resolver } from "@glimmer/interfaces";
+import { RuntimeResolver } from "@glimmer/interfaces";
 
 export interface DynamicComponentDefinition<Specifier> {
   (
     vm: PublicVM,
     args: IArguments,
     meta: WireFormat.TemplateMeta,
-    resolver: Resolver<Specifier>
+    resolver: RuntimeResolver<Specifier>
   ): VersionedPathReference<Option<BrandedComponentDefinition>>;
 }

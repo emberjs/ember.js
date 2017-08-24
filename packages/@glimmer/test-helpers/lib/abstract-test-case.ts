@@ -105,7 +105,7 @@ type NodesSnapshot = IndividualSnapshot[];
 
 export interface RenderDelegate {
   getInitialElement(): HTMLElement;
-  registerComponent<K extends ComponentKind>(type: K, name: string, layout: string, Class?: ComponentTypes[K]): void;
+  registerComponent<K extends ComponentKind, L extends ComponentKind>(type: K, testType: L, name: string, layout: string, Class?: ComponentTypes[K]): void;
   registerHelper(name: string, helper: UserHelper): void;
   renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement, snapshot: () => void): RenderResult;
 }
@@ -128,7 +128,7 @@ export class AbstractRenderTest {
   }
 
   registerComponent<K extends ComponentKind>(type: K, name: string, layout: string, Class?: ComponentTypes[K]) {
-    this.delegate.registerComponent(type, name, layout, Class);
+    this.delegate.registerComponent(type, this.testType, name, layout, Class);
   }
 
   buildComponent(blueprint: ComponentBlueprint): string {
@@ -244,7 +244,7 @@ export class AbstractRenderTest {
     let invocation = this.buildAngleBracketComponent(blueprint);
     let layoutAttrs = this.buildAttributes(blueprint.layoutAttributes);
     this.assert.ok(true, `generated glimmer layout as ${`<${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`}`);
-    this.delegate.registerComponent("Glimmer", name, `<${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`);
+    this.delegate.registerComponent("Glimmer", this.testType, name, `<${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`);
     this.assert.ok(true, `generated glimmer invocation as ${invocation}`);
     return invocation;
   }
@@ -294,7 +294,7 @@ export class AbstractRenderTest {
       invocation.push('}}');
     }
     this.assert.ok(true, `generated curly layout as ${layout}`);
-    this.delegate.registerComponent("Curly", name, layout);
+    this.delegate.registerComponent("Curly", this.testType, name, layout);
     invocation = invocation.join("");
     this.assert.ok(true, `generated curly invocation as ${invocation}`);
     return invocation;
@@ -304,7 +304,7 @@ export class AbstractRenderTest {
     let { layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
     this.assert.ok(true, `generated fragment layout as ${layout}`);
-    this.delegate.registerComponent("Basic", name, `${layout}`);
+    this.delegate.registerComponent("Basic", this.testType, name, `${layout}`);
     this.assert.ok(true, `generated fragment invocation as ${invocation}`);
     return invocation;
   }
@@ -313,7 +313,7 @@ export class AbstractRenderTest {
     let { tag = "div", layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
     this.assert.ok(true, `generated basic layout as ${layout}`);
-    this.delegate.registerComponent("Basic", name, `<${tag} ...attributes>${layout}</${tag}>`);
+    this.delegate.registerComponent("Basic", this.testType, name, `<${tag} ...attributes>${layout}</${tag}>`);
     this.assert.ok(true, `generated basic invocation as ${invocation}`);
     return invocation;
   }
@@ -353,7 +353,7 @@ export class AbstractRenderTest {
     }
 
     this.assert.ok(true, `generated dynamic layout as ${layout}`);
-    this.delegate.registerComponent("Curly", name, layout);
+    this.delegate.registerComponent("Curly", this.testType, name, layout);
     invocation = invocation.join("");
     this.assert.ok(true, `generated dynamic invocation as ${invocation}`);
 
@@ -500,7 +500,7 @@ export class TestEnvironmentRenderDelegate implements RenderDelegate {
     return this.env.getAppendOperations().createElement('div') as HTMLElement;
   }
 
-  registerComponent<K extends ComponentKind>(type: K, name: string, layout: string, Class?: ComponentTypes[K]) {
+  registerComponent<K extends ComponentKind, L extends ComponentKind>(type: K, _testType: L, name: string, layout: string, Class?: ComponentTypes[K]) {
     registerComponent(this.env, type, name, layout, Class);
   }
 

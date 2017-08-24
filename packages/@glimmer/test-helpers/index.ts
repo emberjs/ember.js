@@ -49,3 +49,5 @@ export {
 } from './lib/environment/lazy-env';
 
 export * from './lib/environment/components';
+
+export * from './lib/environment/lookup';

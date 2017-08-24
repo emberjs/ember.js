@@ -1,7 +1,7 @@
 import { GenericComponentManager, createTemplate, GenericComponentDefinition } from '../shared';
 import { TestSpecifier, TestResolver } from '../lazy-env';
 
-import { WithStaticLayout, Environment, ScannableTemplate, Bounds } from "@glimmer/runtime";
+import { WithStaticLayout, Environment, ScannableTemplate, Bounds, Invocation } from "@glimmer/runtime";
 import { unreachable } from "@glimmer/util";
 import { TemplateOptions, ComponentCapabilities } from "@glimmer/opcode-compiler";
 import { PathReference, Tag, CONSTANT_TAG } from "@glimmer/reference";
@@ -18,10 +18,15 @@ export class BasicComponentManager extends GenericComponentManager implements Wi
     return new klass();
   }
 
-  getLayout({ name }: BasicComponentDefinition, resolver: TestResolver): number {
+  getLayout({ name }: BasicComponentDefinition, resolver: TestResolver): Invocation {
     let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
       let layout = createTemplate(source);
-      return new ScannableTemplate(options, layout).asLayout();
+      let template = new ScannableTemplate(options, layout).asLayout();
+
+      return {
+        handle: template.compile(),
+        symbolTable: template.symbolTable
+      };
     };
 
     let handle = resolver.lookup('template-source', name)!;

@@ -48,10 +48,6 @@ export {
 } from './lib/environment';
 
 export {
-  Lookup
-} from './lib/environment/lookup';
-
-export {
   PartialDefinition
 } from './lib/partial';
 
@@ -62,6 +58,7 @@ export {
   WithDynamicTagName,
   PreparedArguments,
   WithDynamicLayout,
+  Invocation,
   WithStaticLayout
 } from './lib/component/interfaces';
 

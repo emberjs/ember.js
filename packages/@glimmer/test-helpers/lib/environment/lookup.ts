@@ -1,10 +1,11 @@
-import { CompileTimeLookup, ComponentCapabilities, ICompilableTemplate } from "@glimmer/opcode-compiler";
-import { Resolver, ProgramSymbolTable, Option } from "@glimmer/interfaces";
-import { WithStaticLayout, ComponentSpec } from '../component/interfaces';
+import { ComponentCapabilities, ICompilableTemplate } from "@glimmer/opcode-compiler";
+import { ProgramSymbolTable, Option } from "@glimmer/interfaces";
 import { assert } from "@glimmer/util";
+import { ComponentSpec, WithStaticLayout } from "@glimmer/runtime";
+import { TestResolver, TestSpecifier } from './lazy-env';
 
-export class Lookup<Specifier> implements CompileTimeLookup<Specifier> {
-  constructor(private resolver: Resolver<Specifier>) {
+export class LookupResolver {
+  constructor(private resolver: TestResolver) {
   }
 
   private getComponentSpec(handle: number): ComponentSpec {
@@ -29,23 +30,27 @@ export class Lookup<Specifier> implements CompileTimeLookup<Specifier> {
       return null;
     }
 
-    let layoutSpecifier = (manager as WithStaticLayout<any, any, Specifier, Resolver<Specifier>>).getLayout(definition, this.resolver);
-    return this.resolver.resolve<ICompilableTemplate<ProgramSymbolTable>>(layoutSpecifier);
+    let invocation = (manager as WithStaticLayout<any, any, TestSpecifier, TestResolver>).getLayout(definition, this.resolver);
+
+    return {
+      compile() { return invocation.handle; },
+      symbolTable: invocation.symbolTable
+    };
   }
 
-  lookupHelper(name: string, referer: Specifier): Option<number> {
+  lookupHelper(name: string, referer: TestSpecifier): Option<number> {
     return this.resolver.lookupHelper(name, referer);
   }
 
-  lookupModifier(name: string, referer: Specifier): Option<number> {
+  lookupModifier(name: string, referer: TestSpecifier): Option<number> {
     return this.resolver.lookupModifier(name, referer);
   }
 
-  lookupComponentSpec(name: string, referer: Specifier): Option<number> {
-    return this.resolver.lookupComponent(name, referer);
+  lookupComponentSpec(name: string, referer: TestSpecifier): Option<number> {
+    return this.resolver.lookupComponentHandle(name, referer);
   }
 
-  lookupPartial(name: string, referer: Specifier): Option<number> {
+  lookupPartial(name: string, referer: TestSpecifier): Option<number> {
     return this.resolver.lookupPartial(name, referer);
   }
 

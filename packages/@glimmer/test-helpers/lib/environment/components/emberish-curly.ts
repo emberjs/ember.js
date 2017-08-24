@@ -3,7 +3,7 @@ import { Option, Opaque } from "@glimmer/interfaces";
 import GlimmerObject from "@glimmer/object";
 import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from "@glimmer/reference";
 import { EMPTY_ARRAY, assign, Destroyable } from "@glimmer/util";
-import { Environment, Arguments, WithDynamicTagName, PreparedArguments, WithDynamicLayout, PrimitiveReference, ElementOperations, Bounds, CapturedNamedArguments, DynamicScope } from "@glimmer/runtime";
+import { Environment, Arguments, WithDynamicTagName, PreparedArguments, WithDynamicLayout, PrimitiveReference, ElementOperations, Bounds, CapturedNamedArguments, DynamicScope, Invocation } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
 
 import { Attrs, GenericComponentDefinition, GenericComponentManager, createTemplate, AttrsDiff } from "../shared";
@@ -174,7 +174,7 @@ export class AbstractEmberishCurlyComponentManager extends GenericComponentManag
 }
 
 export class EmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager implements WithDynamicLayout<EmberishCurlyComponent, TestSpecifier, TestResolver> {
-  getLayout({ layout }: EmberishCurlyComponent, resolver: TestResolver): number {
+  getLayout({ layout }: EmberishCurlyComponent, resolver: TestResolver): Invocation {
     if (!layout) {
       throw new Error('BUG: missing dynamic layout');
     }
@@ -187,7 +187,11 @@ export class EmberishCurlyComponentManager extends AbstractEmberishCurlyComponen
 
     return resolver.compileTemplate(handle, layout.name, (source, options) => {
       let template = createTemplate(source);
-      return new WrappedBuilder({ ...options, asPartial: false, referer: null }, template, CURLY_CAPABILITIES);
+      let builder = new WrappedBuilder({ ...options, asPartial: false, referer: null }, template, CURLY_CAPABILITIES);
+      return {
+        handle: builder.compile(),
+        symbolTable: builder.symbolTable
+      };
     });
   }
 
