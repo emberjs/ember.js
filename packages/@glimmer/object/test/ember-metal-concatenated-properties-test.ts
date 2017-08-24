@@ -76,31 +76,3 @@ QUnit.test('adding a prop that is not an array should make array', assert => {
   let obj = mixin({}, MixinA);
   assert.deepEqual(get(obj, 'foo'), ['bar']);
 });
-
-QUnit.skip('adding a non-concatenable property that already has a defined value should result in an array with both values', assert => {
-  let mixinA = Mixin.create({
-    foo: 1
-  });
-
-  let mixinB = Mixin.create({
-    concatenatedProperties: ['foo'],
-    foo: 2
-  });
-
-  let obj = mixin({}, mixinA, mixinB);
-  assert.deepEqual(get(obj, 'foo'), [1, 2]);
-});
-
-QUnit.skip('adding a concatenable property that already has a defined value should result in a concatenated value', assert => {
-  let mixinA = Mixin.create({
-    foobar: 'foo'
-  });
-
-  let mixinB = Mixin.create({
-    concatenatedProperties: ['foobar'],
-    foobar: 'bar'
-  });
-
-  let obj = mixin({}, mixinA, mixinB);
-  assert.equal(get(obj, 'foobar'), 'foobar');
-});

@@ -15,12 +15,13 @@ import {
   EmberishGlimmerComponent,
   EnvironmentOptions,
   EmberishCurlyComponent,
-  ComponentKind
+  ComponentKind,
+  AbstractEmberishCurlyComponentManager
 } from "@glimmer/test-helpers";
 import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifierFor } from "@glimmer/bundle-compiler";
 import { WrappedBuilder, ComponentCapabilities, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
-import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges } from "@glimmer/runtime";
+import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges, ComponentSpec, Invocation } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { dict, unreachable, assert } from "@glimmer/util";
 import { PathReference, CONSTANT_TAG, Tag } from "@glimmer/reference";
@@ -50,12 +51,20 @@ export class RuntimeResolver implements Resolver<Specifier> {
   lookupModifier(_name: string, _meta: Opaque): Option<number> {
     throw new Error("Method not implemented.");
   }
-  lookupComponent(_name: string, _meta: Opaque): Option<number> {
-    throw new Error("Method not implemented.");
+
+  lookupComponent(name: string, referer: Specifier): Option<ComponentSpec> {
+    let moduleName = this.modules.resolve(name, referer, 'ui/components');
+
+    if (!moduleName) return null;
+
+    let module = this.modules.get(moduleName);
+    return module.get('default') as ComponentSpec;
   }
+
   lookupPartial(_name: string, _meta: Opaque): Option<number> {
     throw new Error("Method not implemented.");
   }
+
   resolve<U>(specifier: number): U {
     let module = this.map.byHandle.get(specifier)!;
     return this.modules.get(module.module).get('default') as U;
@@ -200,7 +209,7 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, t
     return new klass();
   }
 
-  getLayout(): number {
+  getLayout(): never {
     throw new Error('unimplemented');
   }
 
@@ -234,14 +243,18 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, t
 }
 
 class BundledEmberishGlimmerComponentManager extends AbstractEmberishGlimmerComponentManager<Specifier, RuntimeResolver> {
-  getLayout(): number {
+  getLayout(): Invocation {
     throw unreachable();
   }
 }
 
-class BundledEmberishCurlyComponentManager extends AbstractEmberishGlimmerComponentManager<Specifier, RuntimeResolver> {
-  getLayout(): number {
-    throw unreachable();
+class BundledEmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager {
+  getLayout(definition: RuntimeComponentDefinition, resolver: RuntimeResolver): Invocation {
+    let handle = resolver.getVMHandle(definition.specifier);
+    return {
+      handle: handle as Recast<number, VMHandle>,
+      symbolTable: definition.symbolTable!
+    };
   }
 }
 
@@ -267,9 +280,25 @@ const EMBERISH_CURLY_CAPABILITIES = {
   elementHook: true
 };
 
+interface RegisteredComponentDefinition {
+  symbolTable?: boolean;
+  name?: string;
+  specifier?: Specifier;
+  capabilities?: ComponentCapabilities;
+  ComponentClass?: Opaque;
+}
+
+interface RuntimeComponentDefinition {
+  symbolTable?: ProgramSymbolTable;
+  name: string;
+  specifier: Specifier;
+  capabilities: ComponentCapabilities;
+  ComponentClass: Opaque;
+}
+
 interface CompileTimeComponent {
   type: ComponentKind;
-  definition: Opaque;
+  definition: RegisteredComponentDefinition;
   manager: ComponentManager<Opaque, Opaque>;
   template: string;
   capabilities: ComponentCapabilities;
@@ -285,14 +314,14 @@ class BundlingRenderDelegate implements RenderDelegate {
     return this.env.getAppendOperations().createElement('div') as HTMLElement;
   }
 
-  registerComponent(type: ComponentKind, name: string, layout: string): void {
+  registerComponent(type: ComponentKind, testType: ComponentKind, name: string, layout: string): void {
     let module = `ui/components/${name}`;
 
     switch (type) {
       case "Basic":
         this.components[module] = {
           type,
-          definition: class {},
+          definition: class {} as RegisteredComponentDefinition,
           manager: BASIC_MANAGER,
           capabilities: EMPTY_CAPABILITIES,
           template: layout
@@ -312,11 +341,13 @@ class BundlingRenderDelegate implements RenderDelegate {
           template: layout
         };
         return;
+      case "Dynamic":
       case "Curly":
         this.components[module] = {
           type,
           definition: {
             name,
+            symbolTable: testType === 'Dynamic',
             specifier: specifierFor(`ui/components/${name}`, 'default'),
             capabilities: EMBERISH_CURLY_CAPABILITIES,
             ComponentClass: EmberishCurlyComponent
@@ -356,8 +387,9 @@ class BundlingRenderDelegate implements RenderDelegate {
       let spec = specifierFor(key, 'default');
 
       let block;
+      let symbolTable;
 
-      if (component.type === "Curly") {
+      if (component.type === "Curly" || component.type === "Dynamic") {
         let block = compiler.preprocess(spec, component.template);
         let options = compiler.compileOptions(spec);
         let parsedLayout = { block, referer: spec };
@@ -367,19 +399,27 @@ class BundlingRenderDelegate implements RenderDelegate {
         compileTimeModules.register(key, 'other', {
           default: wrapped.symbolTable
         });
+
+        symbolTable = wrapped.symbolTable;
       } else {
         block = compiler.add(spec, component.template);
 
+        symbolTable = {
+          hasEval: block.hasEval,
+          symbols: block.symbols,
+          referer: key,
+        };
+
         compileTimeModules.register(key, 'other', {
-          default: {
-            hasEval: block.hasEval,
-            symbols: block.symbols,
-            referer: key,
-          } as ProgramSymbolTable
+          default: symbolTable
         });
       }
 
-      modules.register(key, 'component', { default: { definition: component.definition, manager: component.manager } });
+      if (component.definition.symbolTable) {
+        modules.register(key, 'component', { default: { definition: { ...component.definition, symbolTable }, manager: component.manager } });
+      } else {
+        modules.register(key, 'component', { default: { definition: component.definition, manager: component.manager } });
+      }
     });
 
     compiler.compile();

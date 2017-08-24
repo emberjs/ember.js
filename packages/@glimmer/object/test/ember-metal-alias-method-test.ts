@@ -29,7 +29,7 @@ QUnit.test('should follow aliasMethods all the way down', assert => {
   assert.equal(get(obj, 'bar')(), 'baz', 'should have followed aliasMethods');
 });
 
-QUnit.skip('should alias methods from other dependent mixins', function() {
+QUnit.test('should alias methods from other dependent mixins', function() {
   let BaseMixin = Mixin.create({
     fooMethod() { return 'FOO'; }
   });
