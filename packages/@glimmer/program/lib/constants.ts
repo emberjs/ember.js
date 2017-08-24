@@ -1,4 +1,4 @@
-import { Opaque, SymbolTable, Resolver } from "@glimmer/interfaces";
+import { Opaque, SymbolTable, RuntimeResolver } from "@glimmer/interfaces";
 import { CompileTimeConstants } from "@glimmer/opcode-compiler";
 
 const UNRESOLVED = {};
@@ -98,7 +98,7 @@ export class RuntimeConstants<Specifier> {
   protected resolved: Opaque[];
   protected floats: number[];
 
-  constructor(public resolver: Resolver<Specifier>, pool: ConstantPool) {
+  constructor(public resolver: RuntimeResolver<Specifier>, pool: ConstantPool) {
     this.strings = pool.strings;
     this.arrays = pool.arrays;
     this.tables = pool.tables;
@@ -156,7 +156,7 @@ export class RuntimeConstants<Specifier> {
 }
 
 export class Constants<Specifier> extends WriteOnlyConstants {
-  constructor(public resolver: Resolver<Specifier>, pool?: ConstantPool) {
+  constructor(public resolver: RuntimeResolver<Specifier>, pool?: ConstantPool) {
     super();
 
     if (pool) {

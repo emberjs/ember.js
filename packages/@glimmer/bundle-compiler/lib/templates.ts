@@ -1,7 +1,7 @@
 import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
 import { TemplateCompiler } from "@glimmer/compiler";
 import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle, ICompilableTemplate, EagerOpcodeBuilder } from "@glimmer/opcode-compiler";
-import { WriteOnlyProgram, WriteOnlyConstants, Heap, ConstantPool } from "@glimmer/program";
+import { WriteOnlyProgram, WriteOnlyConstants, ConstantPool } from "@glimmer/program";
 import { Option, ProgramSymbolTable, Recast, Dict } from "@glimmer/interfaces";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
 import { expect, dict, assert } from "@glimmer/util";

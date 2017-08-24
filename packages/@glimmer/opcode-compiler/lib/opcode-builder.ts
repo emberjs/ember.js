@@ -693,11 +693,11 @@ export abstract class OpcodeBuilder<Specifier, Layout extends AbstractTemplate<P
     if (layout) {
       this.pushSymbolTable(layout.symbolTable);
       this.pushLayout(layout);
+      this.resolveLayout();
     } else {
       this.getComponentLayout(Register.s0);
     }
 
-    this.resolveLayout();
     this.invokeComponentLayout();
     this.didRenderLayout(Register.s0);
     this.popFrame();
@@ -945,7 +945,5 @@ export class EagerOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier, ICom
     }
   }
 
-  resolveLayout(): void {
-    return;
-  }
+  resolveLayout() {}
 }

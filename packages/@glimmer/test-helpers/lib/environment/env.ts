@@ -2,7 +2,7 @@ import { KeyFor, Iterable } from './iterable';
 
 import { Environment, DOMTreeConstruction, IDOMChanges, PrimitiveReference, ConditionalReference } from "@glimmer/runtime";
 import { dict } from "@glimmer/util";
-import { Dict, Resolver, Opaque } from "@glimmer/interfaces";
+import { Dict, RuntimeResolver, Opaque } from "@glimmer/interfaces";
 import { VMHandle } from "@glimmer/opcode-compiler";
 import { Program } from "@glimmer/program";
 import { Reference, isConst, OpaqueIterable } from "@glimmer/reference";
@@ -16,7 +16,7 @@ export abstract class AbstractTestEnvironment<Specifier> extends Environment {
   public compiledLayouts: Dict<VMHandle> = dict();
 
   protected abstract program: Program<Specifier>;
-  protected abstract resolver: Resolver<Specifier>;
+  protected abstract resolver: RuntimeResolver<Specifier>;
 
   protocolForURL(url: string): string {
     if (typeof window === 'undefined') {

@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, ProgramSymbolTable, Recast, Resolver, BlockSymbolTable } from '@glimmer/interfaces';
+import { Opaque, Option, Dict, ProgramSymbolTable, Recast, RuntimeResolver, BlockSymbolTable } from '@glimmer/interfaces';
 import {
   combineTagged,
   CONSTANT_TAG,
@@ -32,15 +32,15 @@ import { ComponentDefinition, ComponentManager, Component } from '../../internal
 import { dict, assert, unreachable } from "@glimmer/util";
 import { Op, Register } from '@glimmer/vm';
 import { TemplateMeta } from "@glimmer/wire-format";
-import { AbstractTemplate, ATTRS_BLOCK, VMHandle } from '@glimmer/opcode-compiler';
+import { ATTRS_BLOCK, VMHandle } from '@glimmer/opcode-compiler';
 import { stackAssert } from './assert';
 
 const ARGS = new Arguments();
 
-function resolveComponent<Specifier>(resolver: Resolver<Specifier>, name: string, meta: Specifier): Option<ComponentSpec> {
-  let specifier = resolver.lookupComponent(name, meta);
-  assert(specifier, `Could not find a component named "${name}"`);
-  return resolver.resolve<ComponentSpec>(specifier!);
+function resolveComponent<Specifier>(resolver: RuntimeResolver<Specifier>, name: string, meta: Specifier): Option<ComponentSpec> {
+  let spec = resolver.lookupComponent(name, meta);
+  assert(spec, `Could not find a component named "${name}"`);
+  return spec as ComponentSpec;
 }
 
 export function curry(spec: PublicComponentSpec, args: Option<ICapturedArguments> = null): CurriedComponentDefinition {
@@ -54,7 +54,7 @@ class CurryComponentReference<Specifier> implements VersionedPathReference<Optio
 
   constructor(
     private inner: VersionedReference<Opaque>,
-    private resolver: Resolver<Specifier>,
+    private resolver: RuntimeResolver<Specifier>,
     private meta: Specifier,
     private args: Option<ICapturedArguments>
   ) {
@@ -374,20 +374,18 @@ APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
 APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   let { manager, definition, component } = vm.fetchValue<ComponentState>(_state);
   let { constants: { resolver }, stack } = vm;
-  let specifier: number;
+  let invoke: { handle: VMHandle, symbolTable: ProgramSymbolTable };
 
   if (hasStaticLayout(definition, manager)) {
-    specifier = manager.getLayout(definition, resolver);
+    invoke = manager.getLayout(definition, resolver);
   } else if (hasDynamicLayout(definition, manager)) {
-    specifier = manager.getLayout(component, resolver);
+    invoke = manager.getLayout(component, resolver);
   } else {
     throw unreachable();
   }
 
-  let layout = resolver.resolve<AbstractTemplate<ProgramSymbolTable>>(specifier);
-
-  stack.push(layout.symbolTable);
-  stack.push(layout);
+  stack.push(invoke.symbolTable);
+  stack.push(invoke.handle);
 });
 
 // Dynamic Invocation Only

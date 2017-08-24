@@ -1,4 +1,4 @@
-import { Simple, Dict, Opaque, Option, Resolver, Unique } from '@glimmer/interfaces';
+import { Simple, Dict, Opaque, Option, RuntimeResolver, Unique, ProgramSymbolTable } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util';
 import { ComponentCapabilities, VMHandle } from '@glimmer/opcode-compiler';
@@ -82,14 +82,19 @@ export interface ComponentManager<Component, Definition> {
   getDestructor(component: Component): Option<Destroyable>;
 }
 
+export interface Invocation {
+  handle: VMHandle;
+  symbolTable: ProgramSymbolTable;
+}
+
 export interface WithDynamicTagName<Component> extends ComponentManager<Component, Opaque> {
   // If the component asks for the dynamic tag name capability, ask for
   // the tag name to use. (Only used in the "WrappedBuilder".)
   getTagName(component: Component): Option<string>;
 }
 
-export interface WithStaticLayout<Component, Definition, Specifier, R extends Resolver<Specifier>> extends ComponentManager<Component, Definition> {
-  getLayout(definition: Definition, resolver: R): number;
+export interface WithStaticLayout<Component, Definition, Specifier, R extends RuntimeResolver<Specifier>> extends ComponentManager<Component, Definition> {
+  getLayout(definition: Definition, resolver: R): Invocation;
 }
 
 export interface WithAttributeHook<Component, Definition> extends ComponentManager<Component, Definition> {
@@ -108,20 +113,20 @@ export interface WithElementHook<Component> extends ComponentManager<Component, 
 }
 
 /** @internal */
-export function hasStaticLayout<C, Definition extends ComponentDefinition>(definition: Definition, manager: ComponentManager<C, Definition>): manager is WithStaticLayout<C, Definition, Opaque, Resolver<Opaque>> {
+export function hasStaticLayout<C, Definition extends ComponentDefinition>(definition: Definition, manager: ComponentManager<C, Definition>): manager is WithStaticLayout<C, Definition, Opaque, RuntimeResolver<Opaque>> {
   return manager.getCapabilities(definition).dynamicLayout === false;
 }
 
-export interface WithDynamicLayout<Component, Specifier, R extends Resolver<Specifier>> extends ComponentManager<Component, Opaque> {
+export interface WithDynamicLayout<Component, Specifier, R extends RuntimeResolver<Specifier>> extends ComponentManager<Component, Opaque> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
   // or to implement features like Ember's "late-bound" layouts.
-  getLayout(component: Component, resolver: R): number;
+  getLayout(component: Component, resolver: R): Invocation;
 }
 
 /** @internal */
-export function hasDynamicLayout<Component>(definition: ComponentDefinition, manager: ComponentManager<Component, ComponentDefinition>): manager is WithDynamicLayout<Component, Opaque, Resolver<Opaque>> {
+export function hasDynamicLayout<Component>(definition: ComponentDefinition, manager: ComponentManager<Component, ComponentDefinition>): manager is WithDynamicLayout<Component, Opaque, RuntimeResolver<Opaque>> {
   return manager.getCapabilities(definition).dynamicLayout === true;
 }
 

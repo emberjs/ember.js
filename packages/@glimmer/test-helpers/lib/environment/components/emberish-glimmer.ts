@@ -1,7 +1,7 @@
 
 import { ComponentCapabilities, TemplateOptions } from "@glimmer/opcode-compiler";
-import { CapturedNamedArguments, ComponentManager, WithStaticLayout, Environment, Arguments, PrimitiveReference, ElementOperations, Bounds, ScannableTemplate } from "@glimmer/runtime";
-import { Resolver, Opaque, Option } from "@glimmer/interfaces";
+import { CapturedNamedArguments, ComponentManager, WithStaticLayout, Environment, Arguments, PrimitiveReference, ElementOperations, Bounds, ScannableTemplate, Invocation } from "@glimmer/runtime";
+import { RuntimeResolver, Opaque, Option } from "@glimmer/interfaces";
 import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
 import GlimmerObject from "@glimmer/object";
@@ -15,7 +15,7 @@ export interface EmberishGlimmerStateBucket {
   component: EmberishGlimmerComponent;
 }
 
-export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R extends Resolver<Specifier>> extends GenericComponentManager implements ComponentManager<EmberishGlimmerStateBucket, EmberishGlimmerComponentDefinition>, WithStaticLayout<EmberishGlimmerStateBucket, EmberishGlimmerComponentDefinition, Specifier, R> {
+export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R extends RuntimeResolver<Specifier>> extends GenericComponentManager implements ComponentManager<EmberishGlimmerStateBucket, EmberishGlimmerComponentDefinition>, WithStaticLayout<EmberishGlimmerStateBucket, EmberishGlimmerComponentDefinition, Specifier, R> {
   prepareArgs(): null {
     return null;
   }
@@ -38,7 +38,7 @@ export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R exten
     return combine([tag, dirtinessTag]);
   }
 
-  abstract getLayout(definition: EmberishGlimmerComponentDefinition, resolver: R): number;
+  abstract getLayout(definition: EmberishGlimmerComponentDefinition, resolver: R): Invocation;
 
   getSelf({ component }: EmberishGlimmerStateBucket): PathReference<Opaque> {
     return new UpdatableReference(component);
@@ -87,10 +87,15 @@ export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R exten
 }
 
 export class EmberishGlimmerComponentManager extends AbstractEmberishGlimmerComponentManager<TestSpecifier, TestResolver> {
-  getLayout({ name }: EmberishGlimmerComponentDefinition, resolver: TestResolver): number {
+  getLayout({ name }: EmberishGlimmerComponentDefinition, resolver: TestResolver): Invocation {
     let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
       let layout = createTemplate(source);
-      return new ScannableTemplate(options, layout).asLayout();
+      let template = new ScannableTemplate(options, layout).asLayout();
+
+      return {
+        handle: template.compile(),
+        symbolTable: template.symbolTable
+      };
     };
 
     let handle = resolver.lookup('template-source', name)!;

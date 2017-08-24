@@ -1,4 +1,4 @@
-import { Opaque, Resolver, Option, Dict, Recast, Simple, ProgramSymbolTable } from "@glimmer/interfaces";
+import { Opaque, RuntimeResolver as IRuntimeResolver, Option, Dict, Recast, Simple, ProgramSymbolTable } from "@glimmer/interfaces";
 import {
   TestDynamicScope,
   UserHelper,
@@ -28,7 +28,7 @@ import { PathReference, CONSTANT_TAG, Tag } from "@glimmer/reference";
 
 class BundledClientEnvironment extends AbstractTestEnvironment<Opaque> {
   protected program: Program<Opaque>;
-  protected resolver: Resolver<Opaque>;
+  protected resolver: IRuntimeResolver<Opaque>;
 
   constructor(options?: EnvironmentOptions) {
     if (!options) {
@@ -42,7 +42,7 @@ class BundledClientEnvironment extends AbstractTestEnvironment<Opaque> {
   }
 }
 
-export class RuntimeResolver implements Resolver<Specifier> {
+export class RuntimeResolver implements IRuntimeResolver<Specifier> {
   constructor(private map: SpecifierMap, private modules: Modules) {}
 
   lookupHelper(_name: string, _meta: Opaque): Option<number> {

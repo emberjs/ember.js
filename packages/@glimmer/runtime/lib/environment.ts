@@ -24,7 +24,7 @@ import { PublicVM } from './vm/append';
 
 import { Macros, OpcodeBuilderConstructor, VMHandle } from "@glimmer/opcode-compiler";
 import { IArguments } from './vm/arguments';
-import { Simple, Resolver, BlockSymbolTable } from "@glimmer/interfaces";
+import { Simple, RuntimeResolver, BlockSymbolTable } from "@glimmer/interfaces";
 import { Component, ComponentManager } from "@glimmer/runtime/lib/internal-interfaces";
 import { Program } from "@glimmer/program";
 
@@ -222,7 +222,7 @@ class Transaction {
   }
 }
 
-export interface CompilationOptions<Specifier, R extends Resolver<Specifier>> {
+export interface CompilationOptions<Specifier, R extends RuntimeResolver<Specifier>> {
   resolver: R;
   program: Program<Specifier>;
   macros: Macros;

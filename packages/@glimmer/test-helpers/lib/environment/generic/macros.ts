@@ -26,7 +26,7 @@ export class TestMacros extends Macros {
 
       let specifier = lookup.lookupComponentSpec(name, builder.referer);
 
-      if (specifier) {
+      if (specifier !== null) {
         builder.component.static(specifier, [params, hashToArgs(hash), template, inverse]);
         return true;
       }
