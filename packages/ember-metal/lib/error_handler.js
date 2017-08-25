@@ -14,6 +14,12 @@ let getStack = error => {
 };
 
 let onerror;
+export const onErrorTarget = {
+  get onerror() {
+    return dispatchOverride || onerror;
+  }
+};
+
 // Ember.onerror getter
 export function getOnerror() {
   return onerror;

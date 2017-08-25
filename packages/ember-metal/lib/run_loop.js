@@ -1,8 +1,7 @@
 import { GUID_KEY } from 'ember-utils';
 import { assert, isTesting } from 'ember-debug';
 import {
-  dispatchError,
-  setOnerror
+  onErrorTarget
 } from './error_handler';
 import {
   beginPropertyChanges,
@@ -18,25 +17,16 @@ function onEnd(current, next) {
   run.currentRunLoop = next;
 }
 
-const onErrorTarget = {
-  get onerror() {
-    return dispatchError;
-  },
-  set onerror(handler) {
-    return setOnerror(handler);
-  }
-};
-
 const backburner = new Backburner(['sync', 'actions', 'destroy'], {
-  GUID_KEY: GUID_KEY,
+  GUID_KEY,
   sync: {
     before: beginPropertyChanges,
     after: endPropertyChanges
   },
   defaultQueue: 'actions',
-  onBegin: onBegin,
-  onEnd: onEnd,
-  onErrorTarget: onErrorTarget,
+  onBegin,
+  onEnd,
+  onErrorTarget,
   onErrorMethod: 'onerror'
 });
 
