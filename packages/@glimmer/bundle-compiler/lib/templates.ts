@@ -2,7 +2,7 @@ import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
 import { TemplateCompiler } from "@glimmer/compiler";
 import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle, ICompilableTemplate, EagerOpcodeBuilder } from "@glimmer/opcode-compiler";
 import { WriteOnlyProgram, WriteOnlyConstants, ConstantPool } from "@glimmer/program";
-import { Option, ProgramSymbolTable, Recast, Dict } from "@glimmer/interfaces";
+import { Option, ProgramSymbolTable, Recast, Dict, Opaque } from "@glimmer/interfaces";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
 import { expect, dict, assert } from "@glimmer/util";
 
@@ -39,12 +39,44 @@ export function specifierFor(module: ModuleName, name: NamedExport): Specifier {
   return specifier;
 }
 
-export class SpecifierMap {
-  public bySpecifier = new Map<Specifier, number>();
-  public byHandle = new Map<number, Specifier>();
+export interface Mapping {
+  get(key: any): any;
+  set(key: any, value: any): void;
+}
 
-  public byVMHandle = new Map<number, Specifier>();
-  public vmHandleBySpecifier = new Map<Specifier, number>();
+export class LookupMap<K, V> implements Mapping {
+  private pairs: Opaque[];
+  size = 0;
+  constructor() {
+    this.pairs = [];
+  }
+
+  set(key: K, value: V) {
+    let idx = this.pairs.indexOf(key);
+    if (idx === -1) {
+      this.pairs.push(key, value);
+      this.size++;
+    } else {
+      this.pairs[idx + 1] = value;
+    }
+  }
+
+  get(key: K): V | undefined {
+    let idx = this.pairs.indexOf(key);
+    if (idx > -1) {
+      return this.pairs[idx + 1] as V;
+    }
+
+    return undefined;
+  }
+}
+
+export class SpecifierMap {
+  public bySpecifier = new LookupMap<Specifier, number>();
+  public byHandle = new LookupMap<number, Specifier>();
+
+  public byVMHandle = new LookupMap<number, Specifier>();
+  public vmHandleBySpecifier = new LookupMap<Specifier, number>();
 }
 
 export interface BundleCompilerOptions {
