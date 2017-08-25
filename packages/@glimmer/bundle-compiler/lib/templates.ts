@@ -2,7 +2,7 @@ import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
 import { TemplateCompiler } from "@glimmer/compiler";
 import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle, ICompilableTemplate, EagerOpcodeBuilder } from "@glimmer/opcode-compiler";
 import { WriteOnlyProgram, WriteOnlyConstants, ConstantPool } from "@glimmer/program";
-import { Option, ProgramSymbolTable, Recast, Dict } from "@glimmer/interfaces";
+import { Option, ProgramSymbolTable, Recast, Dict, Opaque } from "@glimmer/interfaces";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
 import { expect, dict, assert } from "@glimmer/util";
 
@@ -40,13 +40,13 @@ export function specifierFor(module: ModuleName, name: NamedExport): Specifier {
 }
 
 export interface Mapping {
-  get(key: any): any;
-  set(key: any, value: any): void;
-  forEach(cb: (value: any, key: any) => void): void;
+  get(key: Opaque): Opaque;
+  set(key: Opaque, value: Opaque): void;
+  forEach(cb: (value: Opaque, key: Opaque) => void): void;
 }
 
 export class LookupMap<K, V> implements Mapping {
-  private pairs: any[];
+  private pairs: Opaque[];
   size = 0;
   constructor() {
     this.pairs = [];
@@ -75,7 +75,7 @@ export class LookupMap<K, V> implements Mapping {
     for (let i = 0; i < this.pairs.length; i += 2) {
       let value = this.pairs[i + 1];
       let key = this.pairs[i];
-      cb(value, key);
+      cb(value as V, key as K);
     }
   }
 }
