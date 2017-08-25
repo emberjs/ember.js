@@ -5,6 +5,25 @@ import { Opaque } from "@glimmer/interfaces";
 
 export class InitialRenderSuite extends AbstractRenderTest {
   name = 'BASE';
+  isIe9PropIssues() {
+    if (typeof window === undefined) {
+      return false;
+    } else {
+      let select = document.createElement('select');
+      let option1 = document.createElement('option');
+      let option2 = document.createElement('option');
+      option1.setAttribute('selected', '');
+      select.appendChild(option1);
+      select.appendChild(option2);
+      document.body.appendChild(select);
+      let idx = select.selectedIndex;
+      option1.selected = false;
+      idx = select.selectedIndex;
+      let isSelectQuirk = idx === -1;
+      document.body.removeChild(select);
+      return isSelectQuirk;
+    }
+  }
   @test "HTML text content"() {
     this.render("content");
     this.assertHTML("content");
@@ -30,12 +49,14 @@ export class InitialRenderSuite extends AbstractRenderTest {
   }
 
   @test "HTML checked attributes"() {
+    let IE9_PROP_ISSUES = this.isIe9PropIssues() && this.name === 'rehydration';
     this.render("<input checked='checked'>");
-    this.assertHTML("<input checked='checked'>");
+    this.assertHTML(`<input ${IE9_PROP_ISSUES ? '': "checked='checked'" }>`);
     this.assertStableRerender();
   }
 
   @test "HTML selected options"() {
+    let IE9_PROP_ISSUES = this.isIe9PropIssues() && this.name === 'rehydration';
     this.render(strip`
       <select>
         <option>1</option>
@@ -43,10 +64,11 @@ export class InitialRenderSuite extends AbstractRenderTest {
         <option>3</option>
       </select>
     `);
+
     this.assertHTML(strip`
       <select>
         <option>1</option>
-        <option selected>2</option>
+        <option ${IE9_PROP_ISSUES ? '' : ' selected'}>2</option>
         <option>3</option>
       </select>
     `);
@@ -54,6 +76,7 @@ export class InitialRenderSuite extends AbstractRenderTest {
   }
 
   @test "HTML multi-select options"() {
+    let IE9_PROP_ISSUES = this.isIe9PropIssues() && this.name === 'rehydration';
     this.render(strip`
       <select multiple>
         <option>1</option>
@@ -64,8 +87,8 @@ export class InitialRenderSuite extends AbstractRenderTest {
     this.assertHTML(strip`
       <select multiple>
         <option>1</option>
-        <option selected>2</option>
-        <option selected>3</option>
+        <option ${IE9_PROP_ISSUES ? '': ' selected'}>2</option>
+        <option ${IE9_PROP_ISSUES ? '': ' selected'}>3</option>
       </select>
     `);
     this.assertStableRerender();
@@ -345,6 +368,8 @@ export class InitialRenderSuite extends AbstractRenderTest {
   }
 
   @test "Dynamic selected options"() {
+    const IE9_SELECT_QUIRK = this.isIe9PropIssues();
+
     this.render(strip`
       <select>
         <option>1</option>
@@ -1040,19 +1065,3 @@ export class InitialRenderSuite extends AbstractRenderTest {
 }
 
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
-
-const IE9_SELECT_QUIRK = (() => {
-  let select = document.createElement('select');
-  let option1 = document.createElement('option');
-  let option2 = document.createElement('option');
-  option1.setAttribute('selected', '');
-  select.appendChild(option1);
-  select.appendChild(option2);
-  document.body.appendChild(select);
-  let idx = select.selectedIndex;
-  option1.selected = false;
-  idx = select.selectedIndex;
-  let isSelectQuirk = idx === -1;
-  document.body.removeChild(select);
-  return isSelectQuirk;
-})();
