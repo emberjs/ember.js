@@ -595,7 +595,9 @@ if (ENV._ENABLE_BINDING_SUPPORT) {
 }
 
 let MixinPrototype = Mixin.prototype;
-MixinPrototype.toString = Object.toString;
+MixinPrototype.toString = function Mixin_toString() {
+  return '(unknown mixin)';
+};
 
 debugSeal(MixinPrototype);
 
