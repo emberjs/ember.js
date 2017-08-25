@@ -2,7 +2,7 @@ import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
 import { TemplateCompiler } from "@glimmer/compiler";
 import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle, ICompilableTemplate, EagerOpcodeBuilder } from "@glimmer/opcode-compiler";
 import { WriteOnlyProgram, WriteOnlyConstants, ConstantPool } from "@glimmer/program";
-import { Option, ProgramSymbolTable, Recast, Dict, Opaque } from "@glimmer/interfaces";
+import { Option, ProgramSymbolTable, Recast, Dict } from "@glimmer/interfaces";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
 import { expect, dict, assert } from "@glimmer/util";
 
@@ -42,10 +42,11 @@ export function specifierFor(module: ModuleName, name: NamedExport): Specifier {
 export interface Mapping {
   get(key: any): any;
   set(key: any, value: any): void;
+  forEach(cb: (value: any, key: any) => void): void;
 }
 
 export class LookupMap<K, V> implements Mapping {
-  private pairs: Opaque[];
+  private pairs: any[];
   size = 0;
   constructor() {
     this.pairs = [];
@@ -68,6 +69,14 @@ export class LookupMap<K, V> implements Mapping {
     }
 
     return undefined;
+  }
+
+  forEach(cb: (value: V, key: K) => void) {
+    for (let i = 0; i < this.pairs.length; i += 2) {
+      let value = this.pairs[i + 1];
+      let key = this.pairs[i];
+      cb(value, key);
+    }
   }
 }
 
@@ -99,7 +108,7 @@ export class BundleCompiler {
   private program: WriteOnlyProgram;
 
   private specifiers = new SpecifierMap();
-  private firstPass = new Map<Specifier, AddedTemplate>();
+  private firstPass = new LookupMap<Specifier, AddedTemplate>();
 
   constructor(delegate: CompilerDelegate, options: BundleCompilerOptions = {}) {
     this.delegate = delegate;

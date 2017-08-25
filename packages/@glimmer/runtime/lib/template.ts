@@ -160,7 +160,7 @@ export class ScannableTemplate<Specifier = Opaque> implements Template<Specifier
 export function compilable<Specifier>(layout: ParsedLayout<Specifier>, options: TemplateOptions<Opaque>, asPartial: boolean) {
   let { block, referer } = layout;
   let { hasEval, symbols } = block;
-  let compileOptions = { ...options, asPartial, referer };
+  let compileOptions = assign({}, options, { asPartial, referer });
 
   return new CompilableTemplate(block.statements, layout, compileOptions, { referer, hasEval, symbols });
 }
