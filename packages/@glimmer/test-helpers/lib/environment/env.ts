@@ -20,7 +20,8 @@ export abstract class AbstractTestEnvironment<Specifier> extends Environment {
 
   protocolForURL(url: string): string {
     if (typeof window === 'undefined') {
-      throw new Error('Must implement protocolForURL outside of the browser');
+      let match =  /^([a-z][a-z0-9.+-]*:)?(\/\/)?([\S\s]*)/i.exec(url);
+      return match && match[1] ? match[1].toLowerCase() : '';
     }
 
     let anchor = window.document.createElement('a');
