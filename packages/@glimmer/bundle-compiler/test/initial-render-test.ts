@@ -23,7 +23,7 @@ import { WrappedBuilder, ComponentCapabilities, VMHandle, ICompilableTemplate } 
 import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
 import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges, ComponentSpec, Invocation } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
-import { dict, unreachable, assert } from "@glimmer/util";
+import { dict, unreachable, assert, assign } from "@glimmer/util";
 import { PathReference, CONSTANT_TAG, Tag } from "@glimmer/reference";
 
 class BundledClientEnvironment extends AbstractTestEnvironment<Opaque> {
@@ -416,7 +416,12 @@ class BundlingRenderDelegate implements RenderDelegate {
       }
 
       if (component.definition.symbolTable) {
-        modules.register(key, 'component', { default: { definition: { ...component.definition, symbolTable }, manager: component.manager } });
+        modules.register(key, 'component', {
+          default: {
+            definition: assign({}, component.definition, { symbolTable }),
+            manager: component.manager
+          }
+        });
       } else {
         modules.register(key, 'component', { default: { definition: component.definition, manager: component.manager } });
       }

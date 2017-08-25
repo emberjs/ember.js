@@ -3,6 +3,7 @@ import { BasicComponentManager, BasicComponentDefinition, BasicComponentFactory,
 import { TestResolver } from '../lazy-env';
 import { WrappedBuilder, ComponentCapabilities } from "@glimmer/opcode-compiler";
 import { Invocation } from "@glimmer/runtime";
+import { assign } from "@glimmer/util";
 
 export class StaticTaglessComponentManager extends BasicComponentManager {
   getLayout(definition: BasicComponentDefinition, resolver: TestResolver): Invocation {
@@ -12,7 +13,7 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
 
     return resolver.compileTemplate(handle, name, (source, options) => {
       let template = createTemplate(source, {});
-      let compileOptions = { ...options, asPartial: false, referer: null };
+      let compileOptions = assign({}, options, { asPartial: false, referer: null });
       let builder = new WrappedBuilder(compileOptions, template, capabilities);
 
       return {
