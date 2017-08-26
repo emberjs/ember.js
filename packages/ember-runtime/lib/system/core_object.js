@@ -916,31 +916,31 @@ if (DEBUG) {
     @method _onLookup
   */
   ClassMixinProps._onLookup = injectedPropertyAssertion;
+  /**
+    Returns a hash of property names and container names that injected
+    properties will lookup on the container lazily.
+
+    @method _lazyInjections
+    @return {Object} Hash of all lazy injected property keys to container names
+    @private
+  */
+  ClassMixinProps._lazyInjections = function() {
+    let injections = {};
+    let proto = this.proto();
+    let key;
+    let desc;
+
+    for (key in proto) {
+      desc = proto[key];
+      if (desc instanceof InjectedProperty) {
+        injections[key] = `${desc.type}:${desc.name || key}`;
+      }
+    }
+
+    return injections;
+  };
 }
 
-/**
-  Returns a hash of property names and container names that injected
-  properties will lookup on the container lazily.
-
-  @method _lazyInjections
-  @return {Object} Hash of all lazy injected property keys to container names
-  @private
-*/
-ClassMixinProps._lazyInjections = function() {
-  let injections = {};
-  let proto = this.proto();
-  let key;
-  let desc;
-
-  for (key in proto) {
-    desc = proto[key];
-    if (desc instanceof InjectedProperty) {
-      injections[key] = `${desc.type}:${desc.name || key}`;
-    }
-  }
-
-  return injections;
-};
 
 let ClassMixin = Mixin.create(ClassMixinProps);
 
