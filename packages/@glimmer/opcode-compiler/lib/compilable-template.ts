@@ -46,6 +46,7 @@ export default class CompilableTemplate<S extends SymbolTable, Specifier> implem
       let { heap } = program;
       let start = heap.getaddr(handle);
       let end = start + heap.sizeof(handle);
+
       debugSlice(program, start, end);
     }
 
