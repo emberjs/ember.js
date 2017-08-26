@@ -20,7 +20,7 @@ import {
 } from "@glimmer/test-helpers";
 import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifierFor } from "@glimmer/bundle-compiler";
 import { WrappedBuilder, ComponentCapabilities, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
-import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
+import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants, WriteOnlyConstants } from "@glimmer/program";
 import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges, ComponentSpec, Invocation } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { dict, unreachable, assert, assign } from "@glimmer/util";
@@ -40,6 +40,14 @@ class BundledClientEnvironment extends AbstractTestEnvironment<Opaque> {
 
     super(options);
   }
+}
+
+function debugConstants(derivedCtor: any, baseCtors: any[]) {
+  baseCtors.forEach(baseCtor => {
+      Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+          derivedCtor.prototype[name] = baseCtor.prototype[name];
+      });
+  });
 }
 
 export class RuntimeResolver implements IRuntimeResolver<Specifier> {
@@ -373,7 +381,9 @@ class BundlingRenderDelegate implements RenderDelegate {
     let delegate: BundlingDelegate = new BundlingDelegate(this.components, this.modules, this.compileTimeModules, specifier => {
       return compiler.compileSpecifier(specifier);
     });
-    let program = new WriteOnlyProgram();
+    let DebugConstants = WriteOnlyConstants;
+    debugConstants(DebugConstants, [RuntimeConstants]);
+    let program = new WriteOnlyProgram(new DebugConstants());
     let compiler = new BundleCompiler(delegate, { macros, program });
 
     let spec = specifierFor('ui/components/main', 'default');
